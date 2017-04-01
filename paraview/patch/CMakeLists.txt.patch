@@ -1,0 +1,20 @@
+--- a/Applications/ParaView/CMakeLists.txt  2016-06-18 17:39:09.000000000 +0200
++++ b/Applications/ParaView/CMakeLists.txt  2016-07-10 11:19:08.279995954 +0200
+@@ -75,7 +75,7 @@
+ # ParaView itself needs vtkPVStaticPluginsInit as well.
+ set(SUPPORT_STATIC_PLUGINS TRUE)
+ 
+-set(title "ParaView ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
++set(title "TTK 0.9 - ParaView ${PARAVIEW_VERSION_FULL}")
+ if("${VTK_RENDERING_BACKEND}" STREQUAL "OpenGL")
+   set(title "${title} (Legacy Rendering Backend)")
+ endif()
+@@ -84,7 +84,7 @@
+ build_paraview_client(paraview
+     APPLICATION_NAME "ParaView"
+     TITLE ${title}
+-    ORGANIZATION  "ParaView"
++    ORGANIZATION  "TTK"
+     VERSION_MAJOR ${PARAVIEW_VERSION_MAJOR}
+     VERSION_MINOR ${PARAVIEW_VERSION_MINOR}
+     VERSION_PATCH ${PARAVIEW_VERSION_PATCH}

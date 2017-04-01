@@ -1,0 +1,5 @@
+ttk_add_baseCode_package(abstractTriangulation)
+ttk_add_baseCode_package(explicitTriangulation)
+ttk_add_baseCode_package(implicitTriangulation)
+
+ttk_wrapup_library(libTriangulation "Triangulation.cpp")

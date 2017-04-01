@@ -1,0 +1,19 @@
+--- a/Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc	2016-11-14 16:41:57.000000000 +0100
++++ b/Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc	2016-12-16 15:31:25.177036208 +0100
+@@ -1,10 +1,10 @@
+ <RCC>
+   <qresource prefix="/pqApplicationComponents">
+-    <file>Thumbnails/CanExample.png</file>
+-    <file>Thumbnails/DiskOutRefExample.png</file>
+-    <file>Thumbnails/WaveletExample.png</file>
+-    <file>ExampleVisualizations/CanExample.pvsm</file>
+-    <file>ExampleVisualizations/DiskOutRefExample.pvsm</file>
+-    <file>ExampleVisualizations/WaveletExample.pvsm</file>
++    <file>Thumbnails/Example1.png</file>
++    <file>Thumbnails/Example2.png</file>
++    <file>Thumbnails/Example3.png</file>
++    <file>ExampleVisualizations/Example1.pvsm</file>
++    <file>ExampleVisualizations/Example2.pvsm</file>
++    <file>ExampleVisualizations/Example3.pvsm</file>
+   </qresource>
+ </RCC>

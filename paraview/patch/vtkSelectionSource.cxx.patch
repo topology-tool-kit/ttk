@@ -1,0 +1,29 @@
+--- a/VTK/Filters/Sources/vtkSelectionSource.cxx	2016-01-08 21:22:21.000000000 +0100
++++ b/VTK/Filters/Sources/vtkSelectionSource.cxx	2016-06-06 17:48:28.891136603 +0200
+@@ -35,7 +35,7 @@
+ class vtkSelectionSourceInternals
+ {
+ public:
+-  typedef std::set<vtkIdType> IDSetType;
++  typedef std::vector<vtkIdType> IDSetType;
+   typedef std::vector<IDSetType> IDsType;
+   IDsType IDs;
+ 
+@@ -118,7 +118,7 @@
+     this->Internal->IDs.resize(proc+1);
+     }
+   vtkSelectionSourceInternals::IDSetType& idSet = this->Internal->IDs[proc];
+-  idSet.insert(id);
++  idSet.push_back(id);
+   this->Modified();
+ }
+ 
+@@ -171,7 +171,7 @@
+ //----------------------------------------------------------------------------
+ void vtkSelectionSource::AddBlock(vtkIdType block)
+ {
+-  this->Internal->Blocks.insert(block);
++  this->Internal->Blocks.push_back(block);
+   this->Modified();
+ }
+ 

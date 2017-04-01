@@ -1,0 +1,3 @@
+ttk_add_baseCode_package(triangulation)
+
+ttk_wrapup_library(libScalarFieldSmoother "ScalarFieldSmoother.cpp")

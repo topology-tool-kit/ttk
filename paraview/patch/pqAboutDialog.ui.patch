@@ -1,0 +1,11 @@
+--- a/Qt/Components/Resources/UI/pqAboutDialog.ui	2014-09-23 16:46:44.000000000 +0200
++++ b/Qt/Components/Resources/UI/pqAboutDialog.ui	2014-12-22 09:37:39.146448159 +0100
+@@ -17,7 +17,7 @@
+    </sizepolicy>
+   </property>
+   <property name="windowTitle">
+-   <string>About ParaView</string>
++   <string>About TTK ParaView</string>
+   </property>
+   <property name="modal">
+    <bool>true</bool>

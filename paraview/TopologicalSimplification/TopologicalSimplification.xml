@@ -1,0 +1,249 @@
+<ServerManagerConfiguration>
+	<ProxyGroup name="filters">
+   <SourceProxy 
+     name="TopologicalSimplification" 
+		 class="vtkTopologicalSimplification" 
+		 label="TTK TopologicalSimplification">
+		 <Documentation
+			 long_help="TTK plugin for the topological simplification of scalar data."
+			 short_help="TTK plugin for the topological simplification of scalar 
+data.">
+       
+       Given an input scalar field and a list of critical points to remove, 
+this plugin minimally edits the scalar field such that the listed critical 
+points disappear. This procedure is useful to speedup subsequent topological 
+data analysis when outlier critical points can be easily identified. It is 
+also useful for data simplification.
+
+The list of critical points to remove must be associated with a point data
+scalar field that represent the vertex global identifiers in the input 
+geometry.
+ 
+Note that this plugin will also produce an output vertex offset scalar field
+that can be used for further topological data analysis tasks to disambiguate
+vertices on flat plateaus. For instance, this output vertex offset field 
+can specified to the ContourForests, IntegralLines, or 
+ScalarFieldCriticalPoints plugins.
+
+Also, this plugin can be given a specific input vertex offset.
+
+Related publication:
+"Generalized Topological Simplification of Scalar Fields on Surfaces"
+Julien Tierny, Valerio Pascucci
+Proc. of IEEE VIS 2012.
+IEEE Transactions on Visualization and Computer Graphics, 2012.
+
+See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
+       
+		 </Documentation>
+
+		 <InputProperty
+			 name="Domain"
+			 port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Domain" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+		 <InputProperty
+			 name="Constraints"
+			 port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Constraints" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+					vtkPointSet that represent the constraints of the topological simplification.
+        </Documentation>
+			</InputProperty>
+
+			
+      <StringVectorProperty
+        name="ScalarField"
+        command="SetScalarField"
+        number_of_elements="1"
+        animateable="0"
+        label="Scalar Field"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+         name="UseInputOffsetScalarField"
+         command="SetUseInputOffsetScalarField"
+         label="Use Input Offset Field"
+         number_of_elements="1"
+         default_values="0">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use an input offset field (to disambiguate flat plateaus).
+         </Documentation>
+      </IntVectorProperty>
+ 
+       <StringVectorProperty
+        name="InputOffsetScalarFieldName"
+        command="SetInputOffsetScalarFieldName"
+        label="Input Offset Field"
+        number_of_elements="1"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+					default_values="0"
+					data_type="VTK_INT">
+          <RequiredProperties>
+            <Property name="Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the input offset field (to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
+			<StringVectorProperty
+        name="VertexIdentifierScalarField"
+        command="SetVertexIdentifierScalarField"
+        label="Vertex Identifier Field"
+        default_values="VertexIdentifier"
+        number_of_elements="1"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+					data_type="VTK_INT">
+          <RequiredProperties>
+            <Property name="Constraints" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the field to use as vertex identifier on the constraints.
+        </Documentation>
+			</StringVectorProperty>
+
+     <IntVectorProperty
+         name="ConsiderIdentifierAsBlackList"
+         command="SetConsiderIdentifierAsBlackList"
+         label="Remove selected extrema"
+         number_of_elements="1"
+         default_values="0">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Check this box to remove the selected extrema (instead of 
+removing all non-selected extrema).
+         </Documentation>
+			 </IntVectorProperty>
+
+    <IntVectorProperty
+         name="AddPerturbation"
+         command="SetAddPerturbation"
+         label="Numerical Perturbation"
+         number_of_elements="1"
+         default_values="0">
+        <BooleanDomain name="bool"/>
+				<Documentation>
+          Numerically perturb the output (to avoid the usage of an output 
+offset field for flat plateau disambiguation).
+         </Documentation>
+      </IntVectorProperty>
+
+			<StringVectorProperty
+				name="OutputOffsetScalarFieldName"
+				command="SetOutputOffsetScalarFieldName"
+				label="Output Offset Scalar Field"
+				number_of_elements="1"
+				default_values="OutputOffsetScalarField">
+        <Documentation>
+          Select the name of the output offset field.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+         name="UseAllCores"
+         command="SetUseAllCores"
+         label="Use All Cores"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use all available cores.
+         </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="ThreadNumber"
+         command="SetThreadNumber"
+         label="Thread Number"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="100" />
+         <Documentation>
+          Thread number.
+         </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="DebugLevel"
+         command="SetdebugLevel_"
+         label="Debug Level"
+         number_of_elements="1"
+         default_values="3" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Debug level.
+         </Documentation>
+       </IntVectorProperty>
+
+      
+			<PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
+
+			<PropertyGroup panel_widget="Line" label="Input options">
+				<Property name="ScalarField"/>
+				<Property name="VertexIdentifierScalarField"/>
+				<Property name="UseInputOffsetScalarField"/>
+				<Property name="InputOffsetScalarFieldName"/>
+				<Property name="VertexIdentifierScalarField"/>
+				<Property name="ConsiderIdentifierAsBlackList"/>
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Output options">
+				<Property name="OutputOffsetScalarFieldName"/>
+				<Property name="AddPerturbation"/>
+			</PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

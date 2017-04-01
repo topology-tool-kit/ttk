@@ -1,0 +1,180 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy 
+     name="ScalarFieldCriticalPoints" 
+     class="vtkScalarFieldCriticalPoints" 
+     label="TTK ScalarFieldCriticalPoints">
+     <Documentation
+        long_help="TTK plugin for the computation of critical points in PL
+scalar fields defined on PL manifolds."
+        short_help="TTK plugin for the computation of critical points in PL
+scalar fields defined on PL manifolds.">
+       
+This plugin computes the list of critical points of the input scalar field 
+and classify them according to their type.
+
+Related publication:
+"Critical points and curvature for embedded polyhedral surfaces"
+Thomas Banchoff 
+American Mathematical Monthly, 1970.
+
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="Scalar Field"
+        command="SetScalarField"
+        number_of_elements="1"
+        animateable="0"
+        label="Scalar Field"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process
+        </Documentation>
+      </StringVectorProperty>
+     
+      <IntVectorProperty name="With predefined offset"
+        label="Use Input Offset Field"
+        command="SetPredefinedOffset"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box if one of the input scalar fields needs to be 
+          considered as a vertex offset field (to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+      
+      <StringVectorProperty
+        name="Offset"
+        command="SetOffsetField"
+        number_of_elements="1"
+        animateable="0"
+        label="Input Offset field"
+        >
+        <ArrayListDomain
+          name="array_list"
+          data_type="VTK_INT"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to use as a vertex offset (used to 
+disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+      
+      <IntVectorProperty name="With vertex identifiers"
+       command="SetVertexIds"
+       number_of_elements="1"
+       default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Add vertex identifiers on the output.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="With vertex scalars"
+       command="SetVertexScalars"
+       number_of_elements="1"
+       default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Add vertex scalars on the output.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="UseAllCores"
+         label="Use All Cores"
+         command="SetUseAllCores"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use all available cores
+         </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="ThreadNumber"
+         label="Thread Number"
+         command="SetThreadNumber"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="100" />
+         <Documentation>
+          Thread number
+         </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="DebugLevel"
+         label="Debug Level"
+         command="SetdebugLevel_"
+         number_of_elements="1"
+         default_values="3" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Debug level
+         </Documentation>
+      </IntVectorProperty>
+      
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Scalar Field" />
+        <Property name="With predefined offset" />
+        <Property name="Offset" />
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="With vertex identifiers" />
+        <Property name="With vertex scalars" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+      
+      <Hints>
+        <Visibility replace_input="0" />
+      </Hints>
+      
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>

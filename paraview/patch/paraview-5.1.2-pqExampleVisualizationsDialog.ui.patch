@@ -1,0 +1,110 @@
+--- a/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2016-07-26 21:52:16.000000000 +0200
++++ b/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2016-09-23 14:10:23.475200668 +0200
+@@ -11,7 +11,7 @@
+    </rect>
+   </property>
+   <property name="windowTitle">
+-   <string>ParaView Example Visualizations</string>
++   <string>TTK Example Visualizations</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+@@ -25,7 +25,7 @@
+       </font>
+      </property>
+      <property name="text">
+-      <string>ParaView Example Visualizations</string>
++      <string>TTK Example Visualizations</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+@@ -45,7 +45,7 @@
+       <number>2</number>
+      </property>
+      <item row="0" column="0">
+-      <widget class="QPushButton" name="CanExampleButton">
++      <widget class="QPushButton" name="Example1Button">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+@@ -78,7 +78,7 @@
+        </property>
+        <property name="icon">
+         <iconset>
+-         <normalon>:/pqApplicationComponents/Thumbnails/CanExample.png</normalon>
++         <normalon>:/pqApplicationComponents/Thumbnails/Example1.png</normalon>
+         </iconset>
+        </property>
+        <property name="iconSize">
+@@ -102,7 +102,7 @@
+       </widget>
+      </item>
+      <item row="0" column="1">
+-      <widget class="QPushButton" name="DiskOutRefExampleButton">
++      <widget class="QPushButton" name="Example2Button">
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+@@ -114,7 +114,7 @@
+        </property>
+        <property name="icon">
+         <iconset>
+-         <normalon>:/pqApplicationComponents/Thumbnails/DiskOutRefExample.png</normalon>
++         <normalon>:/pqApplicationComponents/Thumbnails/Example2.png</normalon>
+         </iconset>
+        </property>
+        <property name="iconSize">
+@@ -129,7 +129,7 @@
+       </widget>
+      </item>
+      <item row="0" column="2">
+-      <widget class="QPushButton" name="WaveletExampleButton">
++      <widget class="QPushButton" name="Example3Button">
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+@@ -141,7 +141,7 @@
+        </property>
+        <property name="icon">
+         <iconset resource="../pqApplicationComponents.qrc">
+-         <normaloff>:/pqApplicationComponents/Thumbnails/WaveletExample.png</normaloff>:/pqApplicationComponents/Thumbnails/WaveletExample.png</iconset>
++         <normaloff>:/pqApplicationComponents/Thumbnails/Example3.png</normaloff>:/pqApplicationComponents/Thumbnails/Example3.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+@@ -155,9 +155,9 @@
+       </widget>
+      </item>
+      <item row="1" column="0">
+-      <widget class="QLabel" name="CanExampleDescription">
++      <widget class="QLabel" name="Example1Description">
+        <property name="text">
+-        <string>Exodus II file with timesteps, Clip filter</string>
++        <string>Scalar data example</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+@@ -168,9 +168,9 @@
+       </widget>
+      </item>
+      <item row="1" column="1">
+-      <widget class="QLabel" name="DiskOutRefExampleDescription">
++      <widget class="QLabel" name="Example2Description">
+        <property name="text">
+-        <string>Exodus II file, Clip filter, Stream Tracer filter, Tube filter, Glyph filter</string>
++        <string>Bivariate scalar data example</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+@@ -181,9 +181,9 @@
+       </widget>
+      </item>
+      <item row="1" column="2">
+-      <widget class="QLabel" name="WaveletExampleDescription">
++      <widget class="QLabel" name="Example3Description">
+        <property name="text">
+-        <string>Wavelet  with volume rendering and contours</string>
++        <string>Uncertain scalar data example</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

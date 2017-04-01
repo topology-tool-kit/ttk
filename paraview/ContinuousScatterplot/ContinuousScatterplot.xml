@@ -1,0 +1,192 @@
+
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="ContinuousScatterplot"
+      class="vtkContinuousScatterplot"
+      label="TTK ContinuousScatterplot">
+      <Documentation
+        long_help="TTK plugin that computes the continuous scatterplot of 
+bivariate volumetric data."
+        short_help="TTK plugin that computes the continuous scatterplot of 
+bivariate volumetric data.">
+        This plugin produces a 2D vtkUnstructuredGrid with a scalar 
+field (named 'Density') representing the continuous scatter plot (attached 
+to the 2D geometry as point data). A point mask is also attached to the 2D 
+geometry as point data. The components of the input bivariate data must be 
+specified as independent scalar fields attached to the input geometry as 
+point data.
+
+Related publication: 'Continuous Scatterplots', Sven Bachthaler, 
+Daniel Weiskopf, Proc. of IEEE VIS 2008, IEEE Transactions on Visualization and 
+Computer Graphics, 2008.
+      </Documentation>
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="ScalarField1"
+        command="SetScalarField1"
+        number_of_elements="1"
+        animateable="0"
+        label="Scalar Field 1"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Scalar field to be used as first component of the 
+input bivariate data.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="ScalarField2"
+        command="SetScalarField2"
+        number_of_elements="1"
+        animateable="0"
+        label="Scalar Field 2"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Scalar field to be used as second component of the input
+bivariate data.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+        name="ScatterplotResolution"
+        label="Scatterplot Resolution"
+        command="SetScatterplotResolution"
+        number_of_elements="2"
+        default_values="1920 1080">
+        <IntRangeDomain name="range" min="1" max="3840" />
+        <Documentation>
+          Resolution of the scatterplot.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="ProjectImageSupport"
+        label="Non-normalized range"
+        command="SetProjectImageSupport"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Uncheck this box to normalize the dimensions of the continuous 
+scatterplot to the unit square.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+        name="WithDummyValue"
+        label="With Ignored Value"
+        command="SetWithDummyValue"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box if a value should be ignored from the projection.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+        name="DummyValue"
+        label="Ignored Value"
+        command="SetDummyValue"
+        number_of_elements="1"
+        default_values="0">
+        <DoubleRangeDomain min="0.0" max="100"/>
+        <Documentation>
+          Value to ignore.
+        </Documentation>
+      </DoubleVectorProperty>
+      
+      <IntVectorProperty
+        name="UseAllCores"
+        label="Use All Cores"
+        command="SetUseAllCores"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use all available cores.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="ThreadNumber"
+        label="Thread Number"
+        command="SetThreadNumber"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Documentation>
+          Thread number.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DebugLevel"
+        label="Debug Level"
+        command="SetdebugLevel_"
+        number_of_elements="1"
+        default_values="3" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Debug level.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarField1" />
+        <Property name="ScalarField2" />
+      </PropertyGroup>
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="ScatterplotResolution" />
+        <Property name="ProjectImageSupport" />
+        <Property name="WithDummyValue" />
+        <Property name="DummyValue" />
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
+
+      <OutputPort name="ProjectedTriangles" index="0" id="port0" />
+
+      <Hints>
+        <ShowInMenu category="TTK - Bivariate Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

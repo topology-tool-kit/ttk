@@ -1,0 +1,3 @@
+ttk_add_baseCode_package(rangeMinimumQuery)
+
+ttk_wrapup_library(libLowestCommonAncestor "LowestCommonAncestor.cpp")

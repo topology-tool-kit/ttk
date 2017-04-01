@@ -1,0 +1,43 @@
+--- a/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx	2016-11-14 16:41:57.000000000 +0100
++++ b/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx	2016-12-16 15:35:38.997408484 +0100
+@@ -19,11 +19,11 @@
+   ui->setupUi(this);
+ 
+   QObject::connect(
+-    this->ui->CanExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
++    this->ui->Example1Button, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+   QObject::connect(
+-    this->ui->DiskOutRefExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
++    this->ui->Example2Button, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+   QObject::connect(
+-    this->ui->WaveletExampleButton, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
++    this->ui->Example3Button, SIGNAL(clicked(bool)), this, SLOT(onButtonPressed()));
+ }
+ 
+ //-----------------------------------------------------------------------------
+@@ -50,19 +50,19 @@
+   {
+     const char* stateFile = NULL;
+     bool needsData = false;
+-    if (button == this->ui->CanExampleButton)
++    if (button == this->ui->Example1Button)
+     {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/CanExample.pvsm";
++      stateFile = ":/pqApplicationComponents/ExampleVisualizations/Example1.pvsm";
+       needsData = true;
+     }
+-    else if (button == this->ui->DiskOutRefExampleButton)
++    else if (button == this->ui->Example2Button)
+     {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/DiskOutRefExample.pvsm";
++      stateFile = ":/pqApplicationComponents/ExampleVisualizations/Example2.pvsm";
+       needsData = true;
+     }
+-    else if (button == this->ui->WaveletExampleButton)
++    else if (button == this->ui->Example3Button)
+     {
+-      stateFile = ":/pqApplicationComponents/ExampleVisualizations/WaveletExample.pvsm";
++      stateFile = ":/pqApplicationComponents/ExampleVisualizations/Example3.pvsm";
+       needsData = false;
+     }
+     else
