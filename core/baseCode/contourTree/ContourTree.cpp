@@ -1,10 +1,3 @@
-/*
- * file:                ContourTree.h
- * description:         Implements Carr's algorithm and more.
- * author:              (©) Julien Tierny <tierny@telecom-paristech.fr>.
- * date:                July 2011.
- */
-
 #include                <ContourTree.h>
 #include    <iomanip>
 
