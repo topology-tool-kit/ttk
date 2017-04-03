@@ -61,6 +61,17 @@ namespace ttk{
         return 0;
       }
       
+      /// Computes and displays the memory footprint of the data-structure.
+      /// \return Returns 0 upon success, negative values otherwise.
+      inline int footprint() const {
+        
+        if(abstractTriangulation_){
+          return abstractTriangulation_->footprint();
+        }
+        
+        return 0;
+      }
+      
       /// Get the \p localEdgeId-th edge of the \p cellId-th cell.
       /// 
       /// Here the notion of cell refers to the simplicices of maximal 
@@ -523,15 +534,12 @@ namespace ttk{
         return abstractTriangulation_->getEdges();
       }
       
-      /// Get the \p localLinkId-th cell of the link of the \p edgeId-th 
+      /// Get the \p localLinkId-th simplex of the link of the \p edgeId-th 
       /// edge.
       ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension IN THE LINK (3D: triangles, 2D: edges, 1D: vertices).
+      /// The output \p linkId refers in 2D to a vertex identifier and in 3D
+      /// to an edge identifier.
       ///
-      /// The link cell is given as a vector of integers. The first one 
-      /// refers to the number of vertices in the cell, while the following
-      /// ones refer to the vertex identifiers of the cell.
       /// \pre For this function to behave correctly, 
       /// preprocessEdgeLinks() needs to be called
       /// on this object prior to any traversal, in a clearly distinct 
@@ -542,13 +550,11 @@ namespace ttk{
       /// \param edgeId Input global edge identifier.
       /// \param localLinkId Input local link simplex identifier, 
       /// in [0, getEdgeLinkNumber()].
-      /// \param link Output link cell.
+      /// \param linkId Output link simplex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getEdgeLinkNumber()
-      /// \warning This function is not implemented in this version of the API 
-      /// (it is a placeholder for a future version).
       inline int getEdgeLink(const int &edgeId, 
-        const int &localLinkId, vector<long long int> &link) const{
+        const int &localLinkId, int &linkId) const{
 #ifndef withKamikaze
         if(isEmptyCheck())
           return -1;
@@ -566,13 +572,13 @@ namespace ttk{
         }
 #endif
         return abstractTriangulation_->getEdgeLink(
-          edgeId, localLinkId, link);
+          edgeId, localLinkId, linkId);
       }
       
-      /// Get the number of cells in the link of the \p edgeId-th edge.
+      /// Get the number of simplicies in the link of the \p edgeId-th edge.
       ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension IN THE LINK (3D: triangles, 2D: edges, 1D: vertices).
+      /// In 2D, this will return the number of vertices in the link, in 3D the
+      /// number of edges.
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessEdgeLinks() needs to be called
@@ -583,8 +589,6 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param edgeId Input global edge identifier.
       /// \return Returns the number of cells in the link of the edge. 
-      /// \warning This function is not implemented in this version of the API 
-      /// (it is a placeholder for a future version).
       inline int getEdgeLinkNumber(const int &edgeId) const{
 #ifndef withKamikaze
         if(isEmptyCheck())
@@ -609,15 +613,11 @@ namespace ttk{
       /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
       /// DOING.
       ///
-      /// Get the list of link cells for all edges.
-      ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension IN THE LINK (3D: triangles, 2D: edges, 1D: vertices).
+      /// Get the list of link simplices for all edges.
       ///
       /// The number of entries in this list is equal to the number of edges.
-      /// Each entry is a vector of identifiers representing a cell.
-      /// The first one refers to the number of vertices in the cell, while
-      /// the following ones refer to the vertex identifiers of the cell.
+      /// Each entry is a vector of identifiers representing vertices in 2D and
+      /// edges in 3D.
       ///
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
@@ -631,9 +631,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge link list.
-      /// \warning This function is not implemented in this version of the API 
-      /// (it is a placeholder for a future version).
-      inline const vector<vector<long long int> > *getEdgeLinks(){
+      inline const vector<vector<int> > *getEdgeLinks(){
 #ifndef withKamikaze
         if(isEmptyCheck())
           return NULL;
@@ -1219,18 +1217,14 @@ namespace ttk{
         return abstractTriangulation_->getTriangleEdges();
       }
       
-      /// Get the \p localLinkId-th cell of the link of the \p triangleId-th 
+      /// Get the \p localLinkId-th simplex of the link of the \p triangleId-th 
       /// triangle.
       ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension IN THE LINK (3D: triangles, 2D: edges, 1D: vertices).
-      ///
-      /// Also, the notion of triangle only makes sense if the triangulation 
+      /// Here, the notion of triangle only makes sense if the triangulation 
       /// has a dimension greater than 2 (otherwise, use the cell information).
       ///
-      /// The link cell is given as a vector of integers. The first one 
-      /// refers to the number of vertices in the cell, while the following
-      /// ones refer to the vertex identifiers of the cell.
+      /// In 3D, the output \p linkId refers to a vertex identifier.
+      ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangleLinks() needs to be called
       /// on this object prior to any traversal, in a clearly distinct 
@@ -1241,13 +1235,11 @@ namespace ttk{
       /// \param triangleId Input global triangle identifier.
       /// \param localLinkId Input local link simplex identifier, 
       /// in [0, getTriangleLinkNumber()].
-      /// \param link Output link cell.
+      /// \param linkId Output link simplex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getTriangleLinkNumber()
-      /// \warning This function is not implemented in this version of the API 
-      /// (it is a placeholder for a future version).
       inline int getTriangleLink(const int &triangleId, 
-        const int &localLinkId, vector<long long int> &link) const{
+        const int &localLinkId, int &linkId) const{
 #ifndef withKamikaze
         if(isEmptyCheck())
           return -1;
@@ -1265,16 +1257,16 @@ namespace ttk{
         }
 #endif
         return abstractTriangulation_->getTriangleLink(
-          triangleId, localLinkId, link);
+          triangleId, localLinkId, linkId);
       }
       
-      /// Get the number of cells in the link of the \p triangleId-th triangle.
+      /// Get the number of simplices in the link of the \p triangleId-th 
+      /// triangle.
       ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension IN THE LINK (3D: triangles, 2D: edges, 1D: vertices).
-      ///
-      /// Also, the notion of triangle only makes sense if the triangulation 
+      /// Here, the notion of triangle only makes sense if the triangulation 
       /// has a dimension greater than 2 (otherwise, use the cell information).
+      ///
+      /// In 3D, this will return the number of vertices in the link.
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangleLinks() needs to be called
@@ -1284,9 +1276,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \param triangleId Input global triangle identifier.
-      /// \return Returns the number of cells in the link of the triangle. 
-      /// \warning This function is not implemented in this version of the API 
-      /// (it is a placeholder for a future version).
+      /// \return Returns the number of simplices in the link of the triangle. 
       inline int getTriangleLinkNumber(const int &triangleId) const{
 #ifndef withKamikaze
         if(isEmptyCheck())
@@ -1311,19 +1301,14 @@ namespace ttk{
       /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
       /// DOING.
       ///
-      /// Get the list of link cells for all triangle.
+      /// Get the list of link simplices for all triangles.
       ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension IN THE LINK (3D: triangles, 2D: edges, 1D: vertices).
-      ///
-      /// Also, the notion of triangle only makes sense if the triangulation 
+      /// Here, the notion of triangle only makes sense if the triangulation 
       /// has a dimension greater than 2 (otherwise, use the cell information).
       ///
       /// The number of entries in this list is equal to the number of 
       /// triangles.
-      /// Each entry is a vector of identifiers representing a cell.
-      /// The first one refers to the number of vertices in the cell, while
-      /// the following ones refer to the vertex identifiers of the cell.
+      /// Each entry is a vector of identifiers representing a vertex.
       ///
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
@@ -1337,9 +1322,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle link list.
-      /// \warning This function is not implemented in this version of the API 
-      /// (it is a placeholder for a future version).
-      inline const vector<vector<long long int> > *getTriangleLinks(){
+      inline const vector<vector<int> > *getTriangleLinks(){
 #ifndef withKamikaze
         if(isEmptyCheck())
           return NULL;
@@ -1651,15 +1634,12 @@ namespace ttk{
         return abstractTriangulation_->getVertexEdges();
       }
       
-      /// Get the \p localLinkId-th cell of the link of the \p vertexId-th 
+      /// Get the \p localLinkId-th simplex of the link of the \p vertexId-th 
       /// vertex.
       ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension IN THE LINK (3D: triangles, 2D: edges, 1D: vertices).
+      /// The output \p linkId refers in 2D to an edge identifier and in 3D to 
+      /// a triangle identifier.
       ///
-      /// The link cell is given as a vector of integers. The first one 
-      /// refers to the number of vertices in the cell, while the following
-      /// ones refer to the vertex identifiers of the cell.
       /// \pre For this function to behave correctly, 
       /// preprocessVertexLinks() needs to be called
       /// on this object prior to any traversal, in a clearly distinct 
@@ -1670,11 +1650,11 @@ namespace ttk{
       /// \param vertexId Input global vertex identifier.
       /// \param localLinkId Input local link simplex identifier, 
       /// in [0, getVertexLinkNumber()].
-      /// \param link Output link cell.
+      /// \param linkId Output link simplex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getVertexLinkNumber()
       inline int getVertexLink(const int &vertexId, 
-        const int &localLinkId, vector<long long int> &link) const{
+        const int &localLinkId, int &linkId) const{
           
 #ifndef withKamikaze
         if(isEmptyCheck())
@@ -1693,13 +1673,13 @@ namespace ttk{
         }
 #endif
         return abstractTriangulation_->getVertexLink(
-          vertexId, localLinkId, link);
+          vertexId, localLinkId, linkId);
       }
       
-      /// Get the number of cells in the link of the \p vertexId-th vertex.
+      /// Get the number of simplices in the link of the \p vertexId-th vertex.
       ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension IN THE LINK (3D: triangles, 2D: edges, 1D: vertices).
+      /// In 2D, this will return the number of edges in the link, in 3D the 
+      /// number of triangles.
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessVertexLinks() needs to be called
@@ -1735,16 +1715,12 @@ namespace ttk{
       /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
       /// DOING.
       ///
-      /// Get the list of link cells for all vertices.
-      ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension IN THE LINK (3D: triangles, 2D: edges, 1D: vertices).
+      /// Get the list of link simplices for all vertices.
       ///
       /// The number of entries in this list is equal to the number of 
       /// vertices.
-      /// Each entry is a vector of identifiers representing a cell.
-      /// The first one refers to the number of vertices in the cell, while
-      /// the following ones refer to the vertex identifiers of the cell.
+      /// Each entry is a vector of identifiers representing edges in 2D and 
+      /// triangles in 3D.
       ///
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
@@ -1758,7 +1734,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex link list.
-      inline const vector<vector<long long int> > *getVertexLinks(){
+      inline const vector<vector<int> > *getVertexLinks(){
         
 #ifndef withKamikaze
         if(isEmptyCheck())

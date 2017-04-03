@@ -87,7 +87,43 @@ namespace ttk{
         const long long int *cellArray,
         vector<vector<long long int > > &vertexLinks,
         vector<vector<int> > *vertexStars = NULL) const;
-      
+     
+      /// Compute the link of each vertex of a 2D triangulation (unspecified 
+      /// behavior if the input mesh is not a valid triangulation).
+      /// \param vertexStars List of vertex stars. The size of this vector 
+      /// should be equal to the number of vertices in the triangulation. Each
+      /// entry is a vector listing the identifiers of triangles.
+      /// \param cellEdges List of cell edges. The size of this vector should be
+      /// equal to the number of triangles. Each entry is a vector of 
+      /// identifiers of edges.
+      /// \param vertexLinks Output vertex links. The size of this vector 
+      /// will be equal to the number of vertices in the triangulation. Each 
+      /// entry will be a vector listing the edges in the link of the 
+      /// corresponding vertex.
+      /// \return Returns 0 upon success, negative values otherwise.
+      int buildVertexLinks(const vector<vector<int> > &vertexStars, 
+        const vector<vector<int> > &cellEdges,
+        const vector<pair<int, int> > &edgeList,
+        vector<vector<int> > &vertexLinks) const;
+        
+      /// Compute the link of each vertex of a 3D triangulation (unspecified 
+      /// behavior if the input mesh is not a valid triangulation).
+      /// \param vertexStars List of vertex stars. The size of this vector 
+      /// should be equal to the number of vertices in the triangulation. Each
+      /// entry is a vector listing the identifiers of tetrahedra.
+      /// \param cellTriangles List of cell triangles. The size of this vector 
+      /// should be equal to the number of tetrahedra. Each entry is a vector
+      /// of identifiers of triangles.
+      /// \param vertexLinks Output vertex links. The size of this vector 
+      /// will be equal to the number of vertices in the triangulation. Each 
+      /// entry will be a vector listing the triangles in the link of the 
+      /// corresponding vertex.
+      /// \return Returns 0 upon success, negative values otherwise.
+      int buildVertexLinks(const vector<vector<int> > &vertexStars, 
+        const vector<vector<int> > &cellTriangles,
+        const vector<vector<int> > &triangleList,
+        vector<vector<int> > &vertexLinks) const;
+        
       /// Compute the list of neighbors of each vertex of a triangulation.
       /// Unspecified behavior if the input mesh is not a valid triangulation).
       /// \param vertexNumber Number of vertices in the triangulation.

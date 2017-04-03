@@ -374,6 +374,109 @@ int ZeroSkeleton::buildVertexLinks(const int &vertexNumber,
   return 0;
 }
 
+int ZeroSkeleton::buildVertexLinks(const vector<vector<int> > &vertexStars,
+  const vector<vector<int> > &cellEdges,
+  const vector<pair<int, int> > &edgeList,
+  vector<vector<int> > &vertexLinks) const{
+
+#ifndef withKamikaze
+  if(vertexStars.empty())
+    return -1;
+  if(cellEdges.empty())
+    return -2;
+  if(edgeList.empty())
+    return -3;
+#endif
+  
+  Timer t;
+  
+  vertexLinks.resize(vertexStars.size());
+  
+#ifdef withOpenMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i = 0; i < (int) vertexLinks.size(); i++){
+    
+    for(int j = 0; j < (int) vertexStars[i].size(); j++){
+      for(int k = 0; k < (int) cellEdges[vertexStars[i][j]].size(); k++){
+        int edgeId = cellEdges[vertexStars[i][j]][k];
+        
+        int vertexId0 = edgeList[edgeId].first;
+        int vertexId1 = edgeList[edgeId].second;
+        
+        if((vertexId0 != i)&&(vertexId1 != i)){
+          vertexLinks[i].push_back(edgeId);
+        }
+      }
+    }
+  }
+  
+  {
+    stringstream msg;
+    msg << "[ZeroSkeleton] Vertex links built in " 
+      << t.getElapsedTime() << " s. (" << threadNumber_
+      << " thread(s))."
+      << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
+    
+  return 0;
+}
+
+int ZeroSkeleton::buildVertexLinks(const vector<vector<int> > &vertexStars,
+  const vector<vector<int> > &cellTriangles,
+  const vector<vector<int> > &triangleList,
+  vector<vector<int> > &vertexLinks) const{
+
+#ifndef withKamikaze
+  if(vertexStars.empty())
+    return -1;
+  if(cellTriangles.empty())
+    return -2;
+  if(triangleList.empty())
+    return -3;
+#endif
+  
+  Timer t;
+  
+  vertexLinks.resize(vertexStars.size());
+  
+#ifdef withOpenMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i = 0; i < (int) vertexLinks.size(); i++){
+    
+    for(int j = 0; j < (int) vertexStars[i].size(); j++){
+      for(int k = 0; k < (int) cellTriangles[vertexStars[i][j]].size(); k++){
+        int triangleId = cellTriangles[vertexStars[i][j]][k];
+        
+        bool hasVertex = false;
+        for(int l = 0; l < 3; l++){
+          if(i == triangleList[triangleId][l]){
+            hasVertex = true;
+            break;
+          }
+        }
+        
+        if(!hasVertex){
+          vertexLinks[i].push_back(triangleId);
+        }
+      }
+    }
+  }
+  
+  {
+    stringstream msg;
+    msg << "[ZeroSkeleton] Vertex links built in " 
+      << t.getElapsedTime() << " s. (" << threadNumber_
+      << " thread(s))."
+      << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
+    
+  return 0;
+}
+
 int ZeroSkeleton::buildVertexNeighbors(const int &vertexNumber, 
   const int &cellNumber, 
   const long long int *cellArray,

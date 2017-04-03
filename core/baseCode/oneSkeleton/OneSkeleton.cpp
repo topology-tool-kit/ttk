@@ -10,6 +10,118 @@ OneSkeleton::~OneSkeleton(){
   
 }
 
+int OneSkeleton::buildEdgeLinks(const vector<pair<int, int> > &edgeList, 
+  const vector<vector<int> > &edgeStars, 
+  const long long int *cellArray, 
+  vector<vector<int> > &edgeLinks) const{
+
+#ifndef withKamikaze
+    if(edgeList.empty())
+      return -1;
+    if((edgeStars.empty())||(edgeStars.size() != edgeList.size()))
+      return -2;
+    if(!cellArray)
+      return -3;
+#endif
+    
+  Timer t;
+    
+  edgeLinks.resize(edgeList.size());
+  
+  int verticesPerCell = cellArray[0];
+  
+#ifdef withOpenMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i = 0; i < (int) edgeLinks.size(); i++){
+    for(int j = 0; j < (int) edgeStars[i].size(); j++){
+      
+      int vertexId = -1;
+      for(int k = 0; k < 3; k++){
+        if((cellArray[(verticesPerCell + 1)*edgeStars[i][j] + 1 + k] == 
+          edgeList[i].first)
+          ||
+          (cellArray[(verticesPerCell + 1)*edgeStars[i][j] + 1 + k] == 
+          edgeList[i].second)){
+          vertexId = cellArray[(verticesPerCell + 1)*edgeStars[i][j] + 1 + k];
+          break;
+        }
+      }
+      if(vertexId  != -1){
+        edgeLinks[i].push_back(vertexId);
+      }
+    }
+  }
+  
+  {
+    stringstream msg;
+    msg << "[OneSkeleton] Edge links built in " 
+      << t.getElapsedTime() << " s. (" << threadNumber_
+      << " thread(s))."
+      << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
+    
+  return 0;
+}
+
+int OneSkeleton::buildEdgeLinks(const vector<pair<int, int> > &edgeList, 
+  const vector<vector<int> > &edgeStars, 
+  const vector<vector<int> > &cellEdges,
+  vector<vector<int> > &edgeLinks) const{
+
+#ifndef withKamikaze
+    if(edgeList.empty())
+      return -1;
+    if((edgeStars.empty())||(edgeStars.size() != edgeList.size()))
+      return -2;
+    if(cellEdges.empty())
+      return -3;
+#endif
+    
+  Timer t;
+    
+  edgeLinks.resize(edgeList.size());
+  
+#ifdef withOpenMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i = 0; i < (int) edgeLinks.size(); i++){
+    
+    int otherEdgeId = -1;
+    
+    for(int j = 0; j < (int) edgeStars[i].size(); j++){
+     
+      int linkEdgeId = -1;
+      
+      for(int k = 0; k < (int) cellEdges[edgeStars[i][j]].size(); k++){
+        otherEdgeId = cellEdges[edgeStars[i][j]][k];
+        
+        if((edgeList[otherEdgeId].first != edgeList[i].first)
+          &&(edgeList[otherEdgeId].first != edgeList[i].second)
+          &&(edgeList[otherEdgeId].second != edgeList[i].first)
+          &&(edgeList[otherEdgeId].second != edgeList[i].second)){
+          linkEdgeId = otherEdgeId;
+          break;
+        }
+      }
+      
+      edgeLinks[i].push_back(linkEdgeId);
+    }
+  }
+  
+  {
+    stringstream msg;
+    msg << "[OneSkeleton] Edge links built in " 
+      << t.getElapsedTime() << " s. (" << threadNumber_
+      << " thread(s))."
+      << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
+    
+  return 0;
+}
+
 int OneSkeleton::buildEdgeList(const int &vertexNumber, const int &cellNumber, 
   const long long int *cellArray,
   vector<pair<int, int> > &edgeList) const{

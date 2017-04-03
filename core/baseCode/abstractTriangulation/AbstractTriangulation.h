@@ -30,6 +30,8 @@ namespace ttk{
 
       virtual int clear();
       
+      virtual int footprint() const;
+      
       virtual int getCellEdge(const int &cellId, 
         const int &localEdgeId, int &edgeId) const = 0;
         
@@ -61,11 +63,11 @@ namespace ttk{
       virtual const vector<pair<int, int> > *getEdges() = 0;
         
       virtual int getEdgeLink(const int &edgeId, 
-        const int &localLinkId, vector<long long int> &link) const = 0;
+        const int &localLinkId, int &linkId) const = 0;
         
       virtual int getEdgeLinkNumber(const int &edgeId) const = 0;
       
-      virtual const vector<vector<long long int> > *getEdgeLinks() = 0;
+      virtual const vector<vector<int> > *getEdgeLinks() = 0;
       
       virtual int getEdgeStar(const int &edgeId, 
         const int &localStarId, int &starId) const = 0;
@@ -102,11 +104,11 @@ namespace ttk{
       virtual const vector<vector<int> > *getTriangleEdges() = 0;
       
       virtual int getTriangleLink(const int &triangleId, 
-        const int &localLinkId, vector<long long int> &link) const = 0;
+        const int &localLinkId, int &linkId) const = 0;
         
       virtual int getTriangleLinkNumber(const int &triangleId) const = 0;
       
-      virtual const vector<vector<long long int> > *getTriangleLinks() = 0;
+      virtual const vector<vector<int> > *getTriangleLinks() = 0;
       
       virtual int getTriangleStar(const int &triangleId,
         const int &localStarId, int &starId) const = 0;  
@@ -126,11 +128,11 @@ namespace ttk{
       virtual const vector<vector<int> > *getVertexEdges() = 0;
       
       virtual int getVertexLink(const int &vertexId, 
-        const int &localLinkId, vector<long long int> &link) const = 0;
+        const int &localLinkId, int &linkId) const = 0;
         
       virtual int getVertexLinkNumber(const int &vertexId) const = 0;
       
-      virtual const vector<vector<long long int> > *getVertexLinks() = 0;
+      virtual const vector<vector<int> > *getVertexLinks() = 0;
       
       virtual int getVertexNeighbor(const int &vertexId, 
         const int &localNeighborId, int &neighborId) const = 0;
@@ -241,11 +243,13 @@ namespace ttk{
       virtual bool isVertexOnBoundary(const int &vertexId) const = 0;
 
       virtual int preprocessBoundaryEdges(){
+        preprocessEdges();
         hasPreprocessedBoundaryEdges_ = true;
         return 0;
       }
       
       virtual int preprocessBoundaryTriangles(){
+        preprocessTriangles();
         hasPreprocessedBoundaryTriangles_ = true;
         return 0;
       }
@@ -256,6 +260,7 @@ namespace ttk{
       }
       
       virtual int preprocessCellEdges(){
+        preprocessEdges();
         hasPreprocessedCellEdges_ = true;
         return 0;
       }
@@ -266,6 +271,7 @@ namespace ttk{
       }
       
       virtual int preprocessCellTriangles(){
+        preprocessTriangles();
         hasPreprocessedCellTriangles_ = true;
         return 0;
       }
@@ -276,16 +282,20 @@ namespace ttk{
       }
       
       virtual int preprocessEdgeLinks(){
+        preprocessEdges();
         hasPreprocessedEdgeLinks_ = true;
         return 0;
       }
       
       virtual int preprocessEdgeStars(){
+        preprocessEdges();
         hasPreprocessedEdgeStars_ = true;
         return 0;
       }
       
       virtual int preprocessEdgeTriangles(){
+        preprocessEdges();
+        preprocessTriangles();
         hasPreprocessedEdgeTriangles_ = true;
         return 0;
       }
@@ -296,21 +306,26 @@ namespace ttk{
       }
       
       virtual int preprocessTriangleEdges(){
+        preprocessEdges();
+        preprocessTriangles();
         hasPreprocessedTriangleEdges_ = true;
         return 0;
       }
       
       virtual int preprocessTriangleLinks(){
+        preprocessTriangles();
         hasPreprocessedTriangleLinks_ = true;
         return 0;
       }
       
       virtual int preprocessTriangleStars(){
+        preprocessTriangles();
         hasPreprocessedTriangleStars_ = true;
         return 0;
       }
       
       virtual int preprocessVertexEdges() { 
+        preprocessEdges();
         hasPreprocessedVertexEdges_ = true;
         return 0;
       }
@@ -331,6 +346,7 @@ namespace ttk{
       }
       
       virtual int preprocessVertexTriangles(){
+        preprocessTriangles();
         hasPreprocessedVertexTriangles_ = true;
         return 0;
       }
@@ -339,6 +355,22 @@ namespace ttk{
       
       // empty wrapping to VTK for now
       bool needsToAbort(){ return false;};
+      
+      template <class itemType>
+        int tableFootprint(const vector<itemType> &table,
+          const string tableName = "", stringstream *msg = NULL) const{
+        
+        if((table.size())&&(tableName.length())&&(msg)){
+          (*msg) << "[AbstractTriangulation] " << tableName << ": "
+            << table.size()*sizeof(itemType) << " bytes" << endl;
+        }
+            
+        return table.size()*sizeof(itemType);
+      }
+      
+      template <class itemType>
+        int tableTableFootprint(const vector<vector<itemType> > &table,
+          const string tableName = "", stringstream *msg = NULL) const;
       
       int updateProgress(const float &progress) {return 0;};
       
@@ -371,7 +403,7 @@ namespace ttk{
                           cellNeighborList_;
       vector<vector<int> > 
                           cellTriangleList_;
-      vector<vector<long long int> >
+      vector<vector<int> >
                           edgeLinkList_;
       vector<pair<int, int> >
                           edgeList_;
@@ -383,13 +415,13 @@ namespace ttk{
                           triangleList_;
       vector<vector<int> > 
                           triangleEdgeList_;
-      vector<vector<long long int> >
+      vector<vector<int> >
                           triangleLinkList_;
       vector<vector<int> >
                           triangleStarList_;
       vector<vector<int> > 
                           vertexEdgeList_;
-      vector<vector<long long int> >
+      vector<vector<int> >
                           vertexLinkList_;
       vector<vector<int> > 
                           vertexNeighborList_;

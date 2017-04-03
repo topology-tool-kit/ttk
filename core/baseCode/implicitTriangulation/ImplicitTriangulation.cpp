@@ -628,36 +628,7 @@ int ImplicitTriangulation::getVertexLinkNumber(const int& vertexId) const{
   return getVertexStarNumber(vertexId);
 }
 
-int ImplicitTriangulation::getVertexLink(const int &vertexId,
-    const int &localLinkId, vector<long long int> &link) const{
-#ifndef withKamikaze
-  if(localLinkId<0 or localLinkId>=getVertexLinkNumber(vertexId)) return -1;
-#endif
-
-  int v;
-  long long int id;
-  getVertexLink(vertexId,localLinkId,id);
-  if(dimensionality_==3){
-    link.resize(3);
-    for(unsigned int i=0; i<link.size(); ++i){
-      int triangleId=id;
-      getTriangleVertex(triangleId,i,v);
-      link[i]=v;
-    }
-  }
-  else if(dimensionality_==2){
-    link.resize(2);
-    for(unsigned int i=0; i<link.size(); ++i){
-      int edgeId=id;
-      getEdgeVertex(edgeId,i,v);
-      link[i]=v;
-    }
-  }
-
-  return 0;
-}
-
-int ImplicitTriangulation::getVertexLink(const int& vertexId, const int& localLinkId, long long int& linkId) const{
+int ImplicitTriangulation::getVertexLink(const int& vertexId, const int& localLinkId, int& linkId) const{
 #ifndef withKamikaze
   if(localLinkId<0 or localLinkId>=getVertexLinkNumber(vertexId)) return -1;
 #endif
@@ -744,7 +715,7 @@ int ImplicitTriangulation::getVertexLink(const int& vertexId, const int& localLi
   return 0;
 }
 
-const vector<vector<long long int>>* ImplicitTriangulation::getVertexLinks(){
+const vector<vector<int>>* ImplicitTriangulation::getVertexLinks(){
   if(!vertexLinkList_.size()){
     Timer t;
 
@@ -1197,121 +1168,6 @@ const vector<pair<int,int>>* ImplicitTriangulation::getEdges(){
   return &edgeList_;
 }
 
-inline int ImplicitTriangulation::getEdgeStarNumber(const int& edgeId) const{
-#ifndef withKamikaze
-  if(edgeId<0 or edgeId>=edgeNumber_) return -1;
-#endif
-
-  if(dimensionality_==3){
-    int p[3];
-
-    //L
-    if(edgeId<esetshift_[0]){
-      edgeToPosition(edgeId,0,p);
-
-      if(p[2]>0 and p[2]<nbvoxels_[2]){
-        if(p[1]>0 and p[1]<nbvoxels_[1]) return 6;//ABCG,ABEG,BCDG,BEFG,BFGH,BDGH
-        else return 3;//BCDG,BFGH,BDGH or ABCG,ABEG,BEFG
-      }
-      else if(p[2]==0){
-        if(p[1]>0 and p[1]<nbvoxels_[1]) return 3;//ABCG,ABEG,BCDG
-        else if(p[1]==0) return 2;//ABCG,ABEG
-        else return 1;//BCDG
-      }
-      else{
-        if(p[1]>0 and p[1]<nbvoxels_[1]) return 3;//BEFG,BFGH,BDGH
-        else if(p[1]==0) return 1;//BEFG
-        else return 2;//BFGH,BDGH
-      }
-    }
-    //H
-    else if(edgeId<esetshift_[1]){
-      edgeToPosition(edgeId,1,p);
-
-      if(p[0]>0 and p[0]<nbvoxels_[0]){
-        if(p[2]>0 and p[2]<nbvoxels_[2]) return 6;//ABCG,ABEG,BEFG,BFGH,BCDG,BDGH
-        else if(p[2]==0) return 3;//BCDG,BDGH,ABCG
-        else return 3;//ABEG,BEFG,BFGH
-      }
-      else if(p[0]==0){
-        if(p[2]>0 and p[2]<nbvoxels_[2]) return 3;//ABEG,BEFG,ABCG
-        else if(p[2]==0) return 1;//ABCG
-        else return 2;//ABEG,BEFG
-      }
-      else{
-        if(p[2]>0 and p[2]<nbvoxels_[2]) return 3;//BCDG,BDGH,BFGH
-        else if(p[2]==0) return 2;//BCDG,BDGH
-        else return 1;//BFGH
-      }
-    }
-    //P
-    else if(edgeId<esetshift_[2]){
-      edgeToPosition(edgeId,2,p);
-
-      if(p[0]>0 and p[0]<nbvoxels_[0]){
-        if(p[1]>0 and p[1]<nbvoxels_[1]) return 6;//BDGH,ABCG,BCDG,ABEG,BEFG,BFGH
-        else if(p[1]==0) return 3;//BEFG,BFGH,ABEG
-        else return 3;//ABCG,BCDG,BDGH
-      }
-      else if(p[0]==0){
-        if(p[1]>0 and p[1]<nbvoxels_[1]) return 3;//ABCG,BCDG,ABEG
-        else if(p[1]==0) return 1;//ABEG
-        else return 2;//ABCG,BCDG
-      }
-      else{
-        if(p[1]>0 and p[1]<nbvoxels_[1]) return 3;//BEFG,BFGH,BDGH
-        else if(p[1]==0) return 2;//BEFG,BFGH
-        else return 1;//BDGH
-      }
-    }
-    //D1
-    else if(edgeId<esetshift_[3]){
-      edgeToPosition(edgeId,3,p);
-
-      if(p[2]>0 and p[2]<nbvoxels_[2]) return 4;//ABCG,BCDG,BEFG,BFGH
-      else return 2;//ABCG,BCDG ou BEFG,BFGH
-    }
-    //D2
-    else if(edgeId<esetshift_[4]){
-      edgeToPosition(edgeId,4,p);
-
-      if(p[0]>0 and p[0]<nbvoxels_[0]) return 4;//ABCG,ABEG,BDGH,BFGH
-      else return 2;//ABCG,ABEG ou BDGH,BFGH
-    }
-    //D3
-    else if(edgeId<esetshift_[5]){
-      edgeToPosition(edgeId,5,p);
-
-      if(p[1]>0 and p[1]<nbvoxels_[1]) return 4;//ABEG,BEFG,BCDG,BDGH
-      else return 2;//ABEG,BEFG ou BCDG,BDGH
-    }
-    //D4
-    else if(edgeId<esetshift_[6]) return 6;
-  }
-  else if(dimensionality_==2){
-    int p[2];
-
-    //L
-    if(edgeId<esetshift_[0]){
-      edgeToPosition2d(edgeId,0,p);
-
-      if(p[1]>0 and p[1]<nbvoxels_[Dj_]) return 2;
-      else return 1;
-    }
-    //H
-    else if(edgeId<esetshift_[1]){
-      edgeToPosition2d(edgeId,1,p);
-
-      if(p[0]>0 and p[0]<nbvoxels_[Di_]) return 2;
-      else return 1;
-    }
-    //D1
-    else if(edgeId<esetshift_[2]) return 2;
-  }
-
-  return 0;
-}
-
 inline int ImplicitTriangulation::getEdgeTriangleNumber(const int& edgeId) const{
 #ifndef withKamikaze
   if(edgeId<0 or edgeId>=edgeNumber_) return -1;
@@ -1581,6 +1437,197 @@ const vector<vector<int>>* ImplicitTriangulation::getEdgeTriangles(){
   }
 
   return &edgeTriangleList_;
+}
+
+inline int ImplicitTriangulation::getEdgeLinkNumber(const int &edgeId) const{
+  return getEdgeStarNumber(edgeId);
+}
+
+int ImplicitTriangulation::getEdgeLink(const int &edgeId, const int &localLinkId, int &linkId) const{
+#ifndef withKamikaze
+  if(localLinkId<0 or localLinkId>=getEdgeLinkNumber(edgeId)) return -1;
+#endif
+
+  linkId=-1;
+
+  int starId;
+  getEdgeStar(edgeId, localLinkId, starId);
+
+  int v0;
+  int v1;
+  getEdgeVertex(edgeId, 0, v0);
+  getEdgeVertex(edgeId, 1, v1);
+
+  if(dimensionality_==3){
+    for(int i=0; i<4; ++i){
+      int anotherEdgeId;
+      getTetrahedronEdge(starId, i, anotherEdgeId);
+
+      if(anotherEdgeId==edgeId) continue;
+
+      int w0;
+      int w1;
+      getEdgeVertex(anotherEdgeId, 0, w0);
+      getEdgeVertex(anotherEdgeId, 1, w1);
+
+      if(w0!=v0 and w0!=v1 and w1!=v0 and w1!=v1){
+        linkId=anotherEdgeId;
+        break;
+      }
+    }
+  }
+  else if(dimensionality_==2){
+    for(int i=0; i<3; ++i){
+      int vertexId;
+      getTriangleVertex(starId, i, vertexId);
+
+      if(vertexId!=v0 and vertexId!=v1){
+        linkId=vertexId;
+        break;
+      }
+    }
+  }
+
+  return 0;
+}
+
+const vector<vector<int>>* ImplicitTriangulation::getEdgeLinks(){
+  if(!edgeLinkList_.size()){
+    Timer t;
+
+    edgeLinkList_.resize(edgeNumber_);
+    for(int i=0; i<edgeNumber_; ++i){
+      edgeLinkList_[i].resize(getEdgeLinkNumber(i));
+      for(unsigned int j=0; j<edgeLinkList_[i].size(); ++j)
+        getEdgeLink(i,j,edgeLinkList_[i][j]);
+    }
+
+    {
+      stringstream msg;
+      msg << "[ImplicitTriangulation] List of edge links built in "
+        << t.getElapsedTime() << " s. (" << 1
+        << " thread(s))."
+        << endl;
+      dMsg(cout, msg.str(), timeMsg);
+    }
+  }
+
+  return &edgeLinkList_;
+}
+
+inline int ImplicitTriangulation::getEdgeStarNumber(const int& edgeId) const{
+#ifndef withKamikaze
+  if(edgeId<0 or edgeId>=edgeNumber_) return -1;
+#endif
+
+  if(dimensionality_==3){
+    int p[3];
+
+    //L
+    if(edgeId<esetshift_[0]){
+      edgeToPosition(edgeId,0,p);
+
+      if(p[2]>0 and p[2]<nbvoxels_[2]){
+        if(p[1]>0 and p[1]<nbvoxels_[1]) return 6;//ABCG,ABEG,BCDG,BEFG,BFGH,BDGH
+        else return 3;//BCDG,BFGH,BDGH or ABCG,ABEG,BEFG
+      }
+      else if(p[2]==0){
+        if(p[1]>0 and p[1]<nbvoxels_[1]) return 3;//ABCG,ABEG,BCDG
+        else if(p[1]==0) return 2;//ABCG,ABEG
+        else return 1;//BCDG
+      }
+      else{
+        if(p[1]>0 and p[1]<nbvoxels_[1]) return 3;//BEFG,BFGH,BDGH
+        else if(p[1]==0) return 1;//BEFG
+        else return 2;//BFGH,BDGH
+      }
+    }
+    //H
+    else if(edgeId<esetshift_[1]){
+      edgeToPosition(edgeId,1,p);
+
+      if(p[0]>0 and p[0]<nbvoxels_[0]){
+        if(p[2]>0 and p[2]<nbvoxels_[2]) return 6;//ABCG,ABEG,BEFG,BFGH,BCDG,BDGH
+        else if(p[2]==0) return 3;//BCDG,BDGH,ABCG
+        else return 3;//ABEG,BEFG,BFGH
+      }
+      else if(p[0]==0){
+        if(p[2]>0 and p[2]<nbvoxels_[2]) return 3;//ABEG,BEFG,ABCG
+        else if(p[2]==0) return 1;//ABCG
+        else return 2;//ABEG,BEFG
+      }
+      else{
+        if(p[2]>0 and p[2]<nbvoxels_[2]) return 3;//BCDG,BDGH,BFGH
+        else if(p[2]==0) return 2;//BCDG,BDGH
+        else return 1;//BFGH
+      }
+    }
+    //P
+    else if(edgeId<esetshift_[2]){
+      edgeToPosition(edgeId,2,p);
+
+      if(p[0]>0 and p[0]<nbvoxels_[0]){
+        if(p[1]>0 and p[1]<nbvoxels_[1]) return 6;//BDGH,ABCG,BCDG,ABEG,BEFG,BFGH
+        else if(p[1]==0) return 3;//BEFG,BFGH,ABEG
+        else return 3;//ABCG,BCDG,BDGH
+      }
+      else if(p[0]==0){
+        if(p[1]>0 and p[1]<nbvoxels_[1]) return 3;//ABCG,BCDG,ABEG
+        else if(p[1]==0) return 1;//ABEG
+        else return 2;//ABCG,BCDG
+      }
+      else{
+        if(p[1]>0 and p[1]<nbvoxels_[1]) return 3;//BEFG,BFGH,BDGH
+        else if(p[1]==0) return 2;//BEFG,BFGH
+        else return 1;//BDGH
+      }
+    }
+    //D1
+    else if(edgeId<esetshift_[3]){
+      edgeToPosition(edgeId,3,p);
+
+      if(p[2]>0 and p[2]<nbvoxels_[2]) return 4;//ABCG,BCDG,BEFG,BFGH
+      else return 2;//ABCG,BCDG ou BEFG,BFGH
+    }
+    //D2
+    else if(edgeId<esetshift_[4]){
+      edgeToPosition(edgeId,4,p);
+
+      if(p[0]>0 and p[0]<nbvoxels_[0]) return 4;//ABCG,ABEG,BDGH,BFGH
+      else return 2;//ABCG,ABEG ou BDGH,BFGH
+    }
+    //D3
+    else if(edgeId<esetshift_[5]){
+      edgeToPosition(edgeId,5,p);
+
+      if(p[1]>0 and p[1]<nbvoxels_[1]) return 4;//ABEG,BEFG,BCDG,BDGH
+      else return 2;//ABEG,BEFG ou BCDG,BDGH
+    }
+    //D4
+    else if(edgeId<esetshift_[6]) return 6;
+  }
+  else if(dimensionality_==2){
+    int p[2];
+
+    //L
+    if(edgeId<esetshift_[0]){
+      edgeToPosition2d(edgeId,0,p);
+
+      if(p[1]>0 and p[1]<nbvoxels_[Dj_]) return 2;
+      else return 1;
+    }
+    //H
+    else if(edgeId<esetshift_[1]){
+      edgeToPosition2d(edgeId,1,p);
+
+      if(p[0]>0 and p[0]<nbvoxels_[Di_]) return 2;
+      else return 1;
+    }
+    //D1
+    else if(edgeId<esetshift_[2]) return 2;
+  }
+
+  return 0;
 }
 
 int ImplicitTriangulation::getEdgeStar(const int& edgeId, const int& localStarId, int& starId) const{
@@ -1885,47 +1932,79 @@ const vector<vector<int>>* ImplicitTriangulation::getTriangles(){
   return &triangleList_;
 }
 
-int ImplicitTriangulation::getTriangleStar(const int &triangleId, const int &localStarId, int &starId) const{
+int ImplicitTriangulation::getTriangleLink(const int &triangleId, const int &localLinkId, int &linkId) const{
 #ifndef withKamikaze
-  if(localStarId<0 or localStarId>=getTriangleStarNumber(triangleId)) return -1;
+  if(localLinkId<0 or localLinkId>=getTriangleLinkNumber(triangleId)) return -1;
 #endif
 
-  starId=-1;
-  if(dimensionality_==3){
-    int p[3];
+  linkId=-1;
 
-    //F
-    if(triangleId<tsetshift_[0]){
-      triangleToPosition(triangleId,0,p);
-      starId=getTriangleStarF(p,localStarId);
-    }
-    //H
-    else if(triangleId<tsetshift_[1]){
-      triangleToPosition(triangleId,1,p);
-      starId=getTriangleStarH(p,localStarId);
-    }
-    //C
-    else if(triangleId<tsetshift_[2]){
-      triangleToPosition(triangleId,2,p);
-      starId=getTriangleStarC(p,localStarId);
-    }
-    //D1
-    else if(triangleId<tsetshift_[3]){
-      triangleToPosition(triangleId,3,p);
-      starId=getTriangleStarD1(p,localStarId);
-    }
-    //D2
-    else if(triangleId<tsetshift_[4]){
-      triangleToPosition(triangleId,4,p);
-      starId=getTriangleStarD2(p,localStarId);
-    }
-    //D3
-    else if(triangleId<tsetshift_[5]){
-      triangleToPosition(triangleId,5,p);
-      starId=getTriangleStarD3(p,localStarId);
+  if(dimensionality_==3){
+    int starId;
+    getTriangleStar(triangleId, localLinkId, starId);
+
+    int v0;
+    int v1;
+    int v2;
+    getTriangleVertex(triangleId, 0, v0);
+    getTriangleVertex(triangleId, 1, v1);
+    getTriangleVertex(triangleId, 2, v2);
+
+    for(int i=0; i<4; ++i){
+      int anotherTriangleId;
+      getTetrahedronTriangle(starId, i, anotherTriangleId);
+
+      if(anotherTriangleId==triangleId) continue;
+
+      int w;
+      getTriangleVertex(anotherTriangleId, 0, w);
+      if(w!=v0 and w!=v1 and w!=v2){
+        linkId=w;
+        break;
+      }
+
+      getTriangleVertex(anotherTriangleId, 1, w);
+      if(w!=v0 and w!=v1 and w!=v2){
+        linkId=w;
+        break;
+      }
+
+      getTriangleVertex(anotherTriangleId, 2, w);
+      if(w!=v0 and w!=v1 and w!=v2){
+        linkId=w;
+        break;
+      }
     }
   }
+
   return 0;
+}
+
+inline int ImplicitTriangulation::getTriangleLinkNumber(const int &triangleId) const{
+  return getTriangleStarNumber(triangleId);
+}
+
+const vector<vector<int>>* ImplicitTriangulation::getTriangleLinks(){
+  if(!triangleLinkList_.size()){
+    Timer t;
+
+    triangleLinkList_.resize(triangleNumber_);
+    for(int i=0; i<triangleNumber_; ++i){
+      triangleLinkList_[i].resize(getTriangleLinkNumber(i));
+      for(unsigned int j=0; j<triangleLinkList_[i].size(); ++j)
+        getTriangleLink(i,j,triangleLinkList_[i][j]);
+    }
+
+    {
+      stringstream msg;
+      msg << "[TriangulationVTI] Triangle links built in "
+        << t.getElapsedTime() << " s. (" << 1
+        << " thread(s))."
+        << endl;
+      dMsg(cout, msg.str(), timeMsg);
+    }
+  }
+  return &triangleLinkList_;
 }
 
 inline int ImplicitTriangulation::getTriangleStarNumber(const int &triangleId) const{
@@ -1967,6 +2046,49 @@ inline int ImplicitTriangulation::getTriangleStarNumber(const int &triangleId) c
     else if(triangleId<tsetshift_[5]){
       triangleToPosition(triangleId,5,p);
       return 2;
+    }
+  }
+  return 0;
+}
+
+int ImplicitTriangulation::getTriangleStar(const int &triangleId, const int &localStarId, int &starId) const{
+#ifndef withKamikaze
+  if(localStarId<0 or localStarId>=getTriangleStarNumber(triangleId)) return -1;
+#endif
+
+  starId=-1;
+  if(dimensionality_==3){
+    int p[3];
+
+    //F
+    if(triangleId<tsetshift_[0]){
+      triangleToPosition(triangleId,0,p);
+      starId=getTriangleStarF(p,localStarId);
+    }
+    //H
+    else if(triangleId<tsetshift_[1]){
+      triangleToPosition(triangleId,1,p);
+      starId=getTriangleStarH(p,localStarId);
+    }
+    //C
+    else if(triangleId<tsetshift_[2]){
+      triangleToPosition(triangleId,2,p);
+      starId=getTriangleStarC(p,localStarId);
+    }
+    //D1
+    else if(triangleId<tsetshift_[3]){
+      triangleToPosition(triangleId,3,p);
+      starId=getTriangleStarD1(p,localStarId);
+    }
+    //D2
+    else if(triangleId<tsetshift_[4]){
+      triangleToPosition(triangleId,4,p);
+      starId=getTriangleStarD2(p,localStarId);
+    }
+    //D3
+    else if(triangleId<tsetshift_[5]){
+      triangleToPosition(triangleId,5,p);
+      starId=getTriangleStarD3(p,localStarId);
     }
   }
   return 0;

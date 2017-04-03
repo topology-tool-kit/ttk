@@ -782,6 +782,56 @@ int TwoSkeleton::buildTriangleEdgeList(const int &vertexNumber,
   return 0;
 }
 
+int TwoSkeleton::buildTriangleLinks(const vector<vector<int> > &triangleList,
+  const vector<vector<int> > &triangleStars,
+  const long long int *cellArray,
+  vector<vector<int> > &triangleLinks) const{
+
+#ifndef withKamikaze
+  if(triangleList.empty())
+    return -1;
+  if((triangleStars.empty())||(triangleStars.size() != triangleList.size()))
+    return -2;
+  if(!cellArray)
+    return -3;
+#endif
+    
+  Timer t;
+    
+  triangleLinks.resize(triangleList.size());
+  
+#ifdef withOpenMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i = 0; i < (int) triangleList.size(); i++){
+    
+    for(int j = 0; j < (int) triangleStars[i].size(); j++){
+      
+      for(int k = 0; k < 4; k++){
+        int vertexId = cellArray[5*triangleStars[i][j] + 1 + k];
+        
+        if((vertexId != triangleList[i][0])
+          &&(vertexId != triangleList[i][1])
+          &&(vertexId != triangleList[i][2])){
+          triangleLinks[i].push_back(vertexId);
+          break;
+        }
+      }
+    }
+  }
+  
+  {
+    stringstream msg;
+    msg << "[TwoSkeleton] Triangle links built in " 
+      << t.getElapsedTime() << " s. (" << threadNumber_
+      << " thread(s))."
+      << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
+    
+  return 0;
+}
+
 int TwoSkeleton::buildVertexTriangles(
   const int &vertexNumber,
   const vector<vector<int> > &triangleList,

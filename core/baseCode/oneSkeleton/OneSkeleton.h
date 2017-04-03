@@ -30,6 +30,48 @@ namespace ttk{
       
       ~OneSkeleton();
 
+      /// Compute the link of each edge of a 2D triangulation (unspecified 
+      /// behavior if the input mesh is not a valid triangulation).
+      /// \param edgeList List of edges. The size of this vector 
+      /// should be equal to the number of edges in the triangulation. Each
+      /// entry is a pair of vertex identifiers.
+      /// \param edgeStars List of edge stars. The size of this vector should be
+      /// equal to the number of edges. Each entry is a vector of triangle
+      /// identifiers.
+      /// \param cellArray Pointer to a contiguous array of cells. Each entry 
+      /// starts by the number of vertices in the cell, followed by the vertex
+      /// identifiers of the cell.
+      /// \param edgeLinks Output edge links. The size of this vector 
+      /// will be equal to the number of edges in the triangulation. Each 
+      /// entry will be a vector listing the vertices in the link of the 
+      /// corresponding vertex.
+      /// \return Returns 0 upon success, negative values otherwise.
+      int buildEdgeLinks(const vector<pair<int, int> > &edgeList,
+        const vector<vector<int> > &edgeStars,
+        const long long int *cellArray,
+        vector<vector<int> > &edgeLinks) const;
+      
+      /// Compute the link of each edge of a 3D triangulation (unspecified 
+      /// behavior if the input mesh is not a valid triangulation).
+      /// \param edgeList List of edges. The size of this vector 
+      /// should be equal to the number of edges in the triangulation. Each
+      /// entry is a pair of vertex identifiers.
+      /// \param edgeStars List of edge stars. The size of this vector should be
+      /// equal to the number of edges. Each entry is a vector of tetrahedron
+      /// identifiers.
+      /// \param cellEdges List of celle edges. The size of this vector 
+      /// should be equal to the number of tetrahedra in the triangulation. Each
+      /// entry is a vector of edge identifiers.
+      /// \param edgeLinks Output edge links. The size of this vector 
+      /// will be equal to the number of edges in the triangulation. Each 
+      /// entry will be a vector listing the vertices in the link of the 
+      /// corresponding vertex.
+      /// \return Returns 0 upon success, negative values otherwise.
+      int buildEdgeLinks(const vector<pair<int, int> > &edgeList,
+        const vector<vector<int> > &edgeStars,
+        const vector<vector<int> > &cellEdges,
+        vector<vector<int> > &edgeLinks) const;
+      
       /// Compute the list of edges of a valid triangulation.
       /// \param vertexNumber Number of vertices in the triangulation.
       /// \param cellNumber Number of maximum-dimensional cells in the 

@@ -51,32 +51,11 @@ namespace ttk{
 
       int getDimensionality() const {return dimensionality_;};
 
-      int getEdgeLink(const int &edgeId, const int &localLinkId, vector<long long int> &link) const{
+      int getEdgeLink(const int &edgeId, const int &localLinkId, int &linkId) const;
 
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
+      int getEdgeLinkNumber(const int &edgeId) const;
 
-        return -1;
-      }
-
-      int getEdgeLinkNumber(const int &edgeId) const{
-
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-
-        return -1;
-      }
-
-      const vector<vector<long long int>>* getEdgeLinks(){
-
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-
-        return NULL;
-      }
+      const vector<vector<int> >* getEdgeLinks();
 
       int getEdgeStar(const int &edgeId, const int &localStarId, int &starId) const;
 
@@ -130,33 +109,11 @@ namespace ttk{
 
       int getTriangleEdges(vector<vector<int>>& edges) const;
 
-      int getTriangleLink(const int &triangleId, const int &localLinkId, vector<long long int> &link) const{
+      int getTriangleLink(const int &triangleId, const int &localLinkId, int &linkId) const;
 
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
+      int getTriangleLinkNumber(const int &triangleId) const;
 
-        return -1;
-      }
-
-      int getTriangleLinkNumber(const int &triangleId) const{
-
-
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-
-        return -1;
-      }
-
-      const vector<vector<long long int>>* getTriangleLinks(){
-
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-
-        return NULL;
-      }
+      const vector<vector<int> >* getTriangleLinks();
 
       int getTriangleNeighbor(const int &triangleId, const int &localNeighborId, int &neighborId) const;
 
@@ -180,13 +137,11 @@ namespace ttk{
 
       const vector<vector<int>>* getVertexEdges();
 
-      int getVertexLink(const int &vertexId, const int &localLinkId, vector<long long int> &link) const;
-
-      int getVertexLink(const int& vertexId, const int& localLinkId, long long int& linkId) const;
+      int getVertexLink(const int& vertexId, const int& localLinkId, int &linkId) const;
 
       int getVertexLinkNumber(const int &vertexId) const;
 
-      const vector<vector<long long int>>* getVertexLinks();
+      const vector<vector<int> >* getVertexLinks();
 
       int getVertexNeighbor(const int &vertexId, const int &localNeighborId, int &neighborId) const;
 

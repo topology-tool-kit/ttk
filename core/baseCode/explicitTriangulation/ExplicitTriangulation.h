@@ -145,31 +145,29 @@ namespace ttk{
       }
       
       inline int getEdgeLink(const int &edgeId, 
-        const int &localLinkId, vector<long long int> &link) const{
-          
-        stringstream msg;
-        msg << "[ExplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-          
-        return -1;
+        const int &localLinkId, int &linkId) const{
+#ifndef withKamikaze
+        if((edgeId < 0)||(edgeId >= (int) edgeLinkList_.size()))
+          return -1;
+        if((localLinkId < 0)
+          ||(localLinkId >= (int) edgeLinkList_[edgeId].size()))
+          return -2;
+#endif
+        linkId = edgeLinkList_[edgeId][localLinkId];
+        return 0;
       }
       
       inline int getEdgeLinkNumber(const int &edgeId) const{
-        
-        stringstream msg;
-        msg << "[ExplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-        
-        return -1;
+#ifndef withKamikaze
+        if((edgeId < 0)||(edgeId >= (int) edgeLinkList_.size()))
+          return -1;
+#endif
+        return edgeLinkList_[edgeId].size();
       }
       
-      inline const vector<vector<long long int> > *getEdgeLinks(){
+      inline const vector<vector<int> > *getEdgeLinks(){
         
-        stringstream msg;
-        msg << "[ExplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-        
-        return NULL;
+        return &edgeLinkList_;
       }
       
       inline int getEdgeStar(const int &edgeId,
@@ -290,31 +288,28 @@ namespace ttk{
       }
       
       inline int getTriangleLink(const int &triangleId, 
-        const int &localLinkId, vector<long long int> &link) const{
-          
-        stringstream msg;
-        msg << "[ExplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-          
-        return -1;
+        const int &localLinkId, int &linkId) const{
+#ifndef withKamikaze
+        if((triangleId < 0)||(triangleId >= (int) triangleLinkList_.size()))
+          return -1;
+        if((localLinkId < 0)
+          ||(localLinkId >= (int) triangleLinkList_[triangleId].size()))
+          return -2;
+#endif
+        linkId = triangleLinkList_[triangleId][localLinkId];
+        return 0;
       }
       
       inline int getTriangleLinkNumber(const int &triangleId) const{
-        
-        stringstream msg;
-        msg << "[ExplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-        
-        return -1;
+#ifndef withKamikaze
+        if((triangleId < 0)||(triangleId >= (int) triangleLinkList_.size()))
+          return -1;
+#endif
+        return triangleLinkList_[triangleId].size();
       }
       
-      inline const vector<vector<long long int> > *getTriangleLinks(){
-        
-        stringstream msg;
-        msg << "[ExplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-        
-        return NULL;
+      inline const vector<vector<int> > *getTriangleLinks(){
+        return &triangleLinkList_;
       }
       
       inline int getTriangleStar(const int &triangleId,
@@ -382,19 +377,17 @@ namespace ttk{
       }
       
       inline int getVertexLink(const int &vertexId, 
-        const int &localLinkId, vector<long long int> &link) const{
+        const int &localLinkId, int &linkId) const{
+         
+        
 #ifndef withKamikaze
         if((vertexId < 0)||(vertexId >= (int) vertexLinkList_.size()))
           return -1;
         if((localLinkId < 0)
-          ||(localLinkId >= (int) (vertexLinkList_[vertexId].size()
-            /(vertexLinkList_[vertexId][0] + 1))))
+          ||(localLinkId >= (int) vertexLinkList_[vertexId].size()))
           return -2;
 #endif
-        link.resize(vertexLinkList_[vertexId][0] + 1);
-        for(int i = 0; i < (int) link.size(); i++){
-          link[i] = vertexLinkList_[vertexId][link.size()*localLinkId + i];
-        }
+        linkId = vertexLinkList_[vertexId][localLinkId];
         
         return 0;
       }
@@ -404,11 +397,10 @@ namespace ttk{
         if((vertexId < 0)||(vertexId >= (int) vertexLinkList_.size()))
           return -1;
 #endif
-        return vertexLinkList_[vertexId].size()
-          /(vertexLinkList_[vertexId][0] + 1);
+        return vertexLinkList_[vertexId].size();
       }
       
-      inline const vector<vector<long long int> > *getVertexLinks(){
+      inline const vector<vector<int> > *getVertexLinks(){
         return &vertexLinkList_;
       }
       
@@ -533,6 +525,10 @@ namespace ttk{
         return (edgeList_.size() != 0);
       }
       
+      inline bool hasPreprocessedEdgeLinks() const{
+        return (edgeLinkList_.size() != 0);
+      }
+      
       inline bool hasPreprocessedEdgeStars() const{
         return (edgeStarList_.size() != 0);
       }
@@ -547,6 +543,10 @@ namespace ttk{
       
       inline bool hasPreprocessedTriangleEdges() const{
         return (triangleEdgeList_.size() != 0);
+      }
+      
+      inline bool hasPreprocessedTriangleLinks() const{
+        return (triangleLinkList_.size() != 0);
       }
       
       inline bool hasPreprocessedTriangleStars() const{
@@ -804,6 +804,46 @@ namespace ttk{
         return 0;
       }
       
+      inline int preprocessEdgeLinks(){
+        
+        if(!edgeLinkList_.size()){
+          
+          if(getDimensionality() == 2){
+            preprocessEdges();
+            preprocessEdgeStars();
+            
+            
+            OneSkeleton oneSkeleton;
+            oneSkeleton.setWrapper(this);
+            return oneSkeleton.buildEdgeLinks(
+              edgeList_, edgeStarList_, 
+              cellArray_, edgeLinkList_);
+          }
+          else if(getDimensionality() == 3){
+            preprocessEdges();
+            preprocessEdgeStars();
+            preprocessCellEdges();
+            
+            OneSkeleton oneSkeleton;
+            oneSkeleton.setWrapper(this);
+            return oneSkeleton.buildEdgeLinks(
+              edgeList_, edgeStarList_, cellEdgeList_, edgeLinkList_);
+          }
+          else{
+            // unsupported dimension
+            stringstream msg;
+            msg 
+              << "[ExplicitTriangulation] Unsupported dimension for edge link "
+              << "preprocessing."
+              << endl;
+            dMsg(cerr, msg.str(), infoMsg);
+            return -1;
+          }
+        }
+        
+        return 0;
+      }
+      
       inline int preprocessEdgeStars(){
         
         if(!edgeStarList_.size()){
@@ -876,6 +916,21 @@ namespace ttk{
         return 0;
       }
       
+      inline int preprocessTriangleLinks(){
+        
+        if(!triangleLinkList_.size()){
+          
+          preprocessTriangleStars();
+          
+          TwoSkeleton twoSkeleton;
+          twoSkeleton.setWrapper(this);
+          return twoSkeleton.buildTriangleLinks(
+            triangleList_, triangleStarList_, cellArray_, triangleLinkList_);
+        }
+        
+        return 0;
+      }
+      
       inline int preprocessTriangleStars(){
         
         if(!triangleStarList_.size()){
@@ -911,11 +966,36 @@ namespace ttk{
       inline int preprocessVertexLinks(){
        
         if((int) vertexLinkList_.size() != vertexNumber_){
-          ZeroSkeleton zeroSkeleton;
           
-          zeroSkeleton.setWrapper(this);
-          return zeroSkeleton.buildVertexLinks(vertexNumber_, cellNumber_,
-            cellArray_, vertexLinkList_, &vertexStarList_);
+          if(getDimensionality() == 2){
+            preprocessVertexStars();
+            preprocessCellEdges();
+            
+            ZeroSkeleton zeroSkeleton;
+            zeroSkeleton.setWrapper(this);
+            return zeroSkeleton.buildVertexLinks(
+              vertexStarList_, cellEdgeList_, edgeList_, vertexLinkList_);
+          }
+          else if(getDimensionality() == 3){
+            preprocessVertexStars();
+            preprocessCellTriangles();
+            
+            ZeroSkeleton zeroSkeleton;
+            zeroSkeleton.setWrapper(this);
+            return zeroSkeleton.buildVertexLinks(
+              vertexStarList_, cellTriangleList_, triangleList_, 
+              vertexLinkList_);
+          }
+          else{
+            // unsupported dimension
+            stringstream msg;
+            msg 
+              << "[ExplicitTriangulation] Unsupported dimension for vertex"
+              << " link preprocessing."
+              << endl;
+            dMsg(cerr, msg.str(), infoMsg);
+            return -1;
+          }
         }
         return 0;
       }
