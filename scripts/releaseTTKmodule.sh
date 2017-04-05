@@ -5,7 +5,7 @@ function print_usage(){
 
   echo "Usage:"
   echo "  $0"
-  echo "  -n <Name of the project, first letter uppercase, no space>"
+  echo "  -n <Name of the module, first letter uppercase, no space>"
   echo "  -a [Optional code anonymization]"
   echo "  -c [With command line program]"
   echo "  -d [With documentation]"
@@ -46,30 +46,21 @@ function process_dependency(){
     CMAKE="$DIR/$2/$3/$3.cmake"
 
     # export the actual entry
-    if [ ! -e release/$PROJECT/ttk/$2/$3 ]; then
+    if [ ! -e release/$MODULE/ttk/$2/$3 ]; then
       echo "Processing $1 $2 dependency '$3'..."
       if [ "$1" == "core" ] && [ "$2" == "baseCode" ]; then
         cp -R $CORE_PATH/baseCode/$3 \
-          release/$PROJECT/ttk/$2/$3 > /dev/null
+          release/$MODULE/ttk/$2/$3 > /dev/null
       fi
       if [ "$1" == "core" ] && [ "$2" == "vtkWrappers" ]; then
         cp -R $CORE_PATH/vtkWrappers/$3 \
-          release/$PROJECT/ttk/$2/$3 > /dev/null
+          release/$MODULE/ttk/$2/$3 > /dev/null
       fi
-      if [ "$1" == "sandbox" ] && [ "$2" == "baseCode" ]; then
-        cp -R sandbox/baseCode/$3 \
-          release/$PROJECT/ttk/$2/$3 > /dev/null
-      fi
-      if [ "$1" == "sandbox" ] && [ "$2" == "vtkWrappers" ]; then
-        cp -R sandbox/vtkWrappers/$3 \
-          release/$PROJECT/ttk/$2/$3 > /dev/null
-      fi
-      
     else
       EXPORT=""
     fi
   else
-    echo "Processing dependencies for project's root: $1"
+    echo "Processing dependencies for module's root: $1"
   fi
 
   if [ ! -z "$EXPORT" ]; then
@@ -77,42 +68,28 @@ function process_dependency(){
     # baseCode dependencies
     for i in `cat $CMAKE | grep baseCode_package`; do
       entry=`echo $i | cut -d '(' -f2 | cut -d ')' -f1`
-      if [ -e sandbox/baseCode/$entry/ ]; then
+      if [ -e $CORE_PATH/baseCode/$entry ]; then
         process_dependency \
-          sandbox \
+          core \
           baseCode \
           $entry
       else
-        if [ -e $CORE_PATH/baseCode/$entry ]; then
-          process_dependency \
-            core \
-            baseCode \
-            $entry
-        else
-          echo "Error! Could not find dependency '$entry'!"
-          exit -1
-        fi
+        echo "Error! Could not find dependency '$entry'!"
+        exit -1
       fi
     done
 
     # vtkWrapper dependencies
     for i in `cat $CMAKE | grep vtkWrapper_package`; do
       entry=`echo $i | cut -d '(' -f2 | cut -d ')' -f1`
-      if [ -e sandbox/vtkWrappers/$entry/ ]; then
+      if [ -e $CORE_PATH/vtkWrappers/$entry ]; then
         process_dependency \
-          sandbox \
+          core \
           vtkWrappers \
           $entry
       else
-        if [ -e $CORE_PATH/vtkWrappers/$entry ]; then
-          process_dependency \
-            core \
-            vtkWrappers \
-            $entry
-        else
-          echo "Error! Could not find dependency '$entry'!"
-          exit -1
-        fi
+        echo "Error! Could not find dependency '$entry'!"
+        exit -1
       fi
     done
   fi
@@ -120,16 +97,16 @@ function process_dependency(){
   if [ `echo $1 | grep CMakeLists.txt` ]; then
     # finishing the dependencies for the root
     cp -R $CORE_PATH/ttk.cmake \
-      release/$PROJECT/ttk/ttk.cmake > /dev/null
+      release/$MODULE/ttk/ttk.cmake > /dev/null
     cp -R $CORE_PATH/ttk.doxygen \
-      release/$PROJECT/ttk/ttk.doxygen > /dev/null
+      release/$MODULE/ttk/ttk.doxygen > /dev/null
     cp -R $CORE_PATH/baseCode/baseCode.cmake \
-      release/$PROJECT/ttk/baseCode/baseCode.cmake > /dev/null
+      release/$MODULE/ttk/baseCode/baseCode.cmake > /dev/null
 
     cp -R $CORE_PATH/baseCode/common \
-      release/$PROJECT/ttk/baseCode/common > /dev/null
+      release/$MODULE/ttk/baseCode/common > /dev/null
     cp -R $CORE_PATH/baseCode/triangulation \
-      release/$PROJECT/ttk/baseCode/triangulation > /dev/null
+      release/$MODULE/ttk/baseCode/triangulation > /dev/null
   fi
 }
 
@@ -140,16 +117,23 @@ if [ -z "$SED" ]; then
   exit -1
 fi
 
+# check for paths
+if [ ! -e "scripts/createTTKmodule.sh" ]; then
+  echo "Error: Please run this script from the top of the source tree"
+  exit -1
+fi
+
+
 ANONYMOUS=""
 COMMANDLINE=""
 GUI=""
 PARAVIEW=""
-PROJECT=""
+MODULE=""
 ROOT=""
 DOCUMENTATION=""
 IS_SANDBOX=""
 CORE_PATH="core/"
-LICENSE="../../LICENSE"
+LICENSE="LICENSE"
 
 if [ ! -e "$CORE_PATH" ]; then
   CORE_PATH="../../core/"
@@ -175,7 +159,7 @@ do
       print_usage
       ;;
     n)
-      PROJECT=$OPTARG
+      MODULE=$OPTARG
       ;;
     p)
       PARAVIEW="1"
@@ -183,7 +167,7 @@ do
   esac 
 done
 
-if [ -z "$PROJECT" ]; then
+if [ -z "$MODULE" ]; then
   print_usage
 fi
 
@@ -191,138 +175,129 @@ if [ -z "$COMMANDLINE" ] && [ -z "$PARAVIEW" ] && [ -z "$GUI" ]; then
   print_usage
 fi
 
-smallName=${PROJECT,}
+smallName=${MODULE,}
+Name=${MODULE}
 bigName=${Name^^}
 
-
-
-# assuming server plugins
 if [ ! -z "$PARAVIEW" ]; then
-  ROOT=paraview/server/$PROJECT/
+  ROOT=paraview/$MODULE/
 fi
 
 if [ ! -z "$COMMANDLINE" ]; then
-  ROOT=standalone/$smallName/cmd/
+  ROOT=standalone/$MODULE/cmd/
 fi
 
 if [ ! -z "$GUI" ]; then
-  ROOT=standalone/$smallName/gui/
+  ROOT=standalone/$MODULE/gui/
 fi
 
 if [ ! -e $ROOT/CMakeLists.txt ]; then
-  echo "Error: Could not find project's root '${ROOT}/CMakeLists.txt'!"
+  echo "Error: Could not find module's root '${ROOT}/CMakeLists.txt'!"
   exit -1
 fi
 
-if [ -e release/$PROJECT ]; then
-  echo "Removing previous instance of project release..."
-  rm -R release/$PROJECT &> /dev/null
+if [ -e release/$MODULE ]; then
+  echo "Removing previous instance of module release..."
+  rm -R release/$MODULE &> /dev/null
 fi 
 
 # 1. create the main folder
-mkdir -p release/$PROJECT/data
-mkdir -p release/$PROJECT/ttk/baseCode
-mkdir -p release/$PROJECT/ttk/vtkWrappers
-
-LICENSE="../../LICENSE"
+mkdir -p release/$MODULE/data
+mkdir -p release/$MODULE/ttk/baseCode
+mkdir -p release/$MODULE/ttk/vtkWrappers
 
 # 2. Process the code dependencies
 process_dependency $ROOT/CMakeLists.txt
 
 # 3. Create the paraview plugin
 if [ ! -z "$PARAVIEW" ]; then
-  # assuming server plugins
   echo "Creating ParaView plugin..."
-  mkdir release/$PROJECT/paraview
-  cp paraview/server/$PROJECT/CMakeLists.txt release/$PROJECT/paraview
-  cp paraview/server/$PROJECT/*xml release/$PROJECT/paraview
-  $SED "s/core/ttk/g" release/$PROJECT/paraview/CMakeLists.txt > tmp.txt
-  mv tmp.txt release/$PROJECT/paraview/CMakeLists.txt
+  mkdir release/$MODULE/paraview
+  cp paraview/$MODULE/CMakeLists.txt release/$MODULE/paraview
+  cp paraview/$MODULE/*xml release/$MODULE/paraview
+  $SED "s/core/ttk/g" release/$MODULE/paraview/CMakeLists.txt > tmp.txt
+  mv tmp.txt release/$MODULE/paraview/CMakeLists.txt
   echo "  Assuming binaries (if any) have been compiled in a 'build' subdir..."
-  rm -R release/$PROJECT/paraview/build &> /dev/null
+  rm -R release/$MODULE/paraview/build &> /dev/null
 fi
 
 # 4. Create the command line program
 if [ ! -z "$COMMANDLINE" ]; then
-  # assuming server plugins
   echo "Creating command line program..."
   cp -R $CORE_PATH/vtkWrappers/ttkWrapper \
-    release/${PROJECT}/ttk/vtkWrappers/ttkWrapper > /dev/null
+    release/${MODULE}/ttk/vtkWrappers/ttkWrapper > /dev/null
   cp -R $CORE_PATH/vtkWrappers/vtkTriangulation \
-    release/${PROJECT}/ttk/vtkWrappers/vtkTriangulation > /dev/null
+    release/${MODULE}/ttk/vtkWrappers/vtkTriangulation > /dev/null
   cp -R $CORE_PATH/vtkWrappers/vtkProgramBase \
-    release/$PROJECT/ttk/vtkWrappers/vtkProgramBase > /dev/null
-  cp -R standalone/$smallName/cmd release/$PROJECT/cmd > /dev/null
-  $SED "s/core/ttk/g" release/$PROJECT/cmd/CMakeLists.txt > tmp.txt
-  mv tmp.txt release/$PROJECT/cmd/CMakeLists.txt
-  rm release/$PROJECT/cmd/core &> /dev/null
-  rm release/$PROJECT/cmd/data &> /dev/null
-  rm release/$PROJECT/cmd/sandbox &> /dev/null
+    release/$MODULE/ttk/vtkWrappers/vtkProgramBase > /dev/null
+  cp -R standalone/$Name/cmd release/$MODULE/cmd > /dev/null
+  $SED "s/core/ttk/g" release/$MODULE/cmd/CMakeLists.txt > tmp.txt
+  mv tmp.txt release/$MODULE/cmd/CMakeLists.txt
+  rm release/$MODULE/cmd/core &> /dev/null
+  rm release/$MODULE/cmd/data &> /dev/null
   echo "  Assuming binaries (if any) have been compiled in a 'build' subdir..."
-  rm -R release/$PROJECT/cmd/build &> /dev/null
+  rm -R release/$MODULE/cmd/build &> /dev/null
 fi
 
 # 5. Create the gui program
 if [ ! -z "$GUI" ]; then
-  # assuming server plugins
   echo "Creating graphical user interface program..."
   cp -R $CORE_PATH/vtkWrappers/ttkWrapper \
-    release/${PROJECT}/ttk/vtkWrappers/ttkWrapper > /dev/null
+    release/${MODULE}/ttk/vtkWrappers/ttkWrapper > /dev/null
   cp -R $CORE_PATH/vtkWrappers/vtkTriangulation \
-    release/${PROJECT}/ttk/vtkWrappers/vtkTriangulation > /dev/null
+    release/${MODULE}/ttk/vtkWrappers/vtkTriangulation > /dev/null
   cp -R $CORE_PATH/vtkWrappers/vtkUserInterfaceBase \
-    release/$PROJECT/ttk/vtkWrappers/vtkUserInterfaceBase > /dev/null
+    release/$MODULE/ttk/vtkWrappers/vtkUserInterfaceBase > /dev/null
   cp -R $CORE_PATH/vtkWrappers/vtkTextureMapFromField \
-    release/$PROJECT/ttk/vtkWrappers/vtkTextureMapFromField > /dev/null
+    release/$MODULE/ttk/vtkWrappers/vtkTextureMapFromField > /dev/null
   cp -R $CORE_PATH/vtkWrappers/vtkWRLExporter \
-    release/$PROJECT/ttk/vtkWrappers/vtkWRLExporter > /dev/null
-  cp -R standalone/$smallName/gui release/$PROJECT/gui > /dev/null
-  $SED "s/core/ttk/g" release/$PROJECT/gui/CMakeLists.txt > tmp.txt
-  mv tmp.txt release/$PROJECT/gui/CMakeLists.txt
-  rm release/$PROJECT/gui/core
-  rm release/$PROJECT/gui/data &> /dev/null
-  rm release/$PROJECT/gui/sandbox &> /dev/null
-  rm release/$PROJECT/gui/textures &> /dev/null
-  mkdir -p release/$PROJECT/gui/textures
-  cp -R standalone/$smallName/gui/textures/png \
-    release/$PROJECT/gui/textures
+    release/$MODULE/ttk/vtkWrappers/vtkWRLExporter > /dev/null
+  cp -R standalone/$Name/gui release/$MODULE/gui > /dev/null
+  $SED "s/core/ttk/g" release/$MODULE/gui/CMakeLists.txt > tmp.txt
+  mv tmp.txt release/$MODULE/gui/CMakeLists.txt
+  rm release/$MODULE/gui/core
+  rm release/$MODULE/gui/data &> /dev/null
+  rm release/$MODULE/gui/textures &> /dev/null
+  mkdir -p release/$MODULE/gui/textures
+  cp -R standalone/$Name/gui/textures/png \
+    release/$MODULE/gui/textures
   echo "  Assuming binaries (if any) have been compiled in a 'build' subdir..."
-  rm -R release/$PROJECT/gui/build &> /dev/null
+  rm -R release/$MODULE/gui/build &> /dev/null
 fi
 
 # 6. Create license and readme
-cp $LICENSE release/$PROJECT/LICENSE
+cp $LICENSE release/$MODULE/LICENSE
 
 # 7. Anonymize code
 if [ ! -z "$ANONYMOUS" ]; then
   if [ ! -z "$COMMANDLINE" ]; then
-    for i in release/$PROJECT/cmd/*; do
+    for i in release/$MODULE/cmd/*; do
       anonymize $i
     done
   fi
   if [ ! -z "$GUI" ]; then
-    for i in release/$PROJECT/gui/*; do
+    for i in release/$MODULE/gui/*; do
       anonymize $i
     done
   fi
   if [ ! -z "$PARAVIEW" ]; then
-    for i in release/$PROJECT/paraview/*; do
+    for i in release/$MODULE/paraview/*; do
       anonymize $i
     done
   fi
-  for i in release/$PROJECT/ttk/*; do
+  for i in release/$MODULE/ttk/*; do
     anonymize $i
   done
-  for i in release/$PROJECT/ttk/baseCode/*; do
+  for i in release/$MODULE/ttk/baseCode/*; do
     anonymize $i
   done
-  for i in release/$PROJECT/ttk/vtkWrappers/*; do
+  for i in release/$MODULE/ttk/vtkWrappers/*; do
     anonymize $i
   done
-  for i in release/$PROJECT/ttk/baseCode/*/*; do
+  for i in release/$MODULE/ttk/baseCode/*/*; do
     anonymize $i
   done
-  for i in release/$PROJECT/ttk/vtkWrappers/*/*; do
+  for i in release/$MODULE/ttk/vtkWrappers/*/*; do
     anonymize $i
   done
 fi
@@ -330,25 +305,25 @@ fi
 # 8. Create the documentation
 if [ ! -z "$DOCUMENTATION" ]; then
   echo "Generating documentation..."
-  cd release/$PROJECT/ttk
+  cd release/$MODULE/ttk
   doxygen ttk.doxygen &> /dev/null
   cd ../../../
-  mv release/doc release/$PROJECT/doc/
+  mv release/doc release/$MODULE/doc/
 fi 
 
 # Message: provide data-sets, update README file and zip and ready to ship!
 echo ""
-echo "Release directory 'release/$PROJECT' completed!"
+echo "Release directory 'release/$MODULE' completed!"
 echo ""
 echo "Now:"
 echo "=="
 echo "  1) Copy some carefully-chosen test data-sets to the following folder:"
-echo "    release/$PROJECT/data"
+echo "    release/$MODULE/data"
 echo "  2) Create and edit your README file:"
-echo "    release/$PROJECT/README"
+echo "    release/$MODULE/README"
 echo "  3) Edit the default LICENSE file:"
-echo "    release/$PROJECT/LICENSE"
+echo "    release/$MODULE/LICENSE"
 echo "  4) Once you are finished, zip the release directory:"
-echo "    release/$PROJECT"
+echo "    release/$MODULE"
 echo ""
 echo "And that's it! Your release is all set to ship!"
