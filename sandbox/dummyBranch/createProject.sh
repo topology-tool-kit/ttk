@@ -34,6 +34,12 @@ function replace {
   mv tmp.cmake $1
 }
 
+mkdir -p sandbox/baseCode 2> /dev/null
+mkdir -p sandbox/vtkWrappers 2> /dev/null
+mkdir -p standalone 2> /dev/null
+mkdir -p paraview/client 2> /dev/null
+mkdir -p paraview/server 2> /dev/null
+
 # 1) duplicate the blank base code
 cp -R ../../core/baseCode/blank sandbox/baseCode/${smallName}
 mv sandbox/baseCode/${smallName}/blank.cmake \
