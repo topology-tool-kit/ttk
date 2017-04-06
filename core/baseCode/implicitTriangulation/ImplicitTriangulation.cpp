@@ -1483,6 +1483,14 @@ int ImplicitTriangulation::getEdgeLink(const int &edgeId, const int &localLinkId
     }
   }
   else if(dimensionality_==2){
+    int starId;
+    getEdgeStar(edgeId, localLinkId, starId);
+
+    int v0;
+    int v1;
+    getEdgeVertex(edgeId, 0, v0);
+    getEdgeVertex(edgeId, 1, v1);
+
     for(int i=0; i<3; ++i){
       int vertexId;
       getTriangleVertex(starId, i, vertexId);
