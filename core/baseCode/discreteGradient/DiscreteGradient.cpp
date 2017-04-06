@@ -1,6 +1,10 @@
 #include                  <DiscreteGradient.h>
 
 DiscreteGradient::DiscreteGradient():
+  MustBeRemovable{true},
+  AllowBoundary{},
+  ForceBoundary{},
+
   IterationThreshold{-1},
   ReverseSaddleMaximumConnection{},
   ReverseSaddleSaddleConnection{},

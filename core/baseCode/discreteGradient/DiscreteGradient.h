@@ -40,6 +40,9 @@
 // debug feature : automatic double-pairing detection
 //#define ALLOW_DOUBLE_PAIRING_DETECTOR
 
+// debug feature : automatic PL-compliant detection
+//#define ALLOW_PL_COMPLIANT_DETECTOR
+
 // debug feature : exit(-1) when a cycle is detected
 //#define ALLOW_EXIT
 
@@ -454,7 +457,8 @@ namespace ttk{
             vector<char>& isRemovable) const;
 
       template <typename dataType>
-        int initializeSaddleMaximumConnections(const vector<char>& isRemovable,
+        int initializeSaddleMaximumConnections(const vector<char>& isRemovableMaximum,
+            const vector<char>& isRemovableSaddle,
             const bool allowBoundary,
             vector<Segment>& segments,
             vector<VPath>& vpaths,
@@ -483,9 +487,10 @@ namespace ttk{
         int reverseSaddleMaximumConnections(const vector<Segment>& segments);
 
       template <typename dataType>
-        int simplifySaddleMaximumConnections(const vector<char>& isRemovable,
+        int simplifySaddleMaximumConnections(const vector<char>& isRemovableMaximum,
+            const vector<char>& isRemovableSaddle,
             const int iterationThreshold,
-            const bool allowBoundary=false);
+            const bool allowBoundary);
 
       template <typename dataType>
         int naive_reverseSaddleSaddleConnection(vector<char>& isRemovableSaddle1,
@@ -702,6 +707,9 @@ namespace ttk{
       int setGradientGlyphs() const;
 
     protected:
+      bool MustBeRemovable;
+      bool AllowBoundary;
+      bool ForceBoundary;
 
       int IterationThreshold;
       bool ReverseSaddleMaximumConnection;
@@ -1549,7 +1557,7 @@ int DiscreteGradient::getRemovableMaxima(const vector<pair<int,char>>& criticalP
     for(int i=0; i<numberOfCriticalPoints; ++i){
       const pair<int,char>& criticalPoint=criticalPoints[i];
       const int criticalPointId=criticalPoint.first;
-      const int criticalPointType=criticalPoint.second;
+      const char criticalPointType=criticalPoint.second;
 
       if(criticalPointType==maximumDim){
         const int starNumber=inputTriangulation_->getVertexStarNumber(criticalPointId);
@@ -1738,7 +1746,8 @@ int DiscreteGradient::getRemovableSaddles2(const vector<pair<int,char>>& critica
 }
 
 template <typename dataType>
-int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isRemovable,
+int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isRemovableMaximum,
+    const vector<char>& isRemovableSaddle,
     const bool allowBoundary,
     vector<Segment>& segments,
     vector<VPath>& vpaths,
@@ -1755,13 +1764,15 @@ int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isR
   // add the saddles to CriticalPointList and count them
   const int numberOfSaddleCandidates=getNumberOfCells(saddleDim);
   for(int i=0; i<numberOfSaddleCandidates; ++i){
-    const Cell saddleCandidate(saddleDim, i);
+    if(isRemovableSaddle[i]){
+      const Cell saddleCandidate(saddleDim, i);
 
-    if(!allowBoundary and isBoundary(saddleCandidate))
-      continue;
+      if(!allowBoundary and isBoundary(saddleCandidate))
+        continue;
 
-    if(isCellCritical(saddleCandidate))
-      criticalPoints.push_back(CriticalPoint(saddleCandidate));
+      if(isCellCritical(saddleCandidate))
+        criticalPoints.push_back(CriticalPoint(saddleCandidate));
+    }
   }
   const int numberOfSaddles=criticalPoints.size();
 
@@ -1769,7 +1780,7 @@ int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isR
   const int numberOfMaximumCandidates=getNumberOfCells(maximumDim);
   vector<int> maximumIndex(numberOfMaximumCandidates,-1);
   for(int i=0; i<numberOfMaximumCandidates; ++i){
-    if(isRemovable[i]){
+    if(isRemovableMaximum[i]){
       const int index=criticalPoints.size();
       maximumIndex[i]=index;
 
@@ -1800,9 +1811,8 @@ int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isR
     else if(maximumDim==3)
       starNumber=inputTriangulation_->getTriangleStarNumber(saddleId);
 
+    vector<vector<Cell>> paths(starNumber);
     for(int j=0; j<starNumber; ++j){
-      const int shift=j;
-
       int starId;
       if(maximumDim==2)
         inputTriangulation_->getEdgeStar(saddleId, j, starId);
@@ -1811,12 +1821,32 @@ int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isR
 
       const Cell star(maximumDim, starId);
 
-      vector<Cell> path{saddle};
-      getAscendingPath(star, path);
+      paths[j].push_back(saddle);
+      getAscendingPath(star, paths[j]);
+    }
+
+    // detect initial double-connection
+    if(starNumber>1){
+      bool isDoubleConnected=false;
+      const Cell& lastCell0=paths[0].back();
+      for(int j=1; j<starNumber; ++j){
+        const Cell& lastCell=paths[j].back();
+
+        if(lastCell0.id_==lastCell.id_){
+          isDoubleConnected=true;
+          break;
+        }
+      }
+      if(isDoubleConnected)
+        continue;
+    }
+
+    for(int j=0; j<starNumber; ++j){
+      const int shift=j;
 
       // apriori: there is at least 1 one cell
-      const Cell& lastCell=path.back();
-      if(isMaximum(lastCell) and isRemovable[lastCell.id_]){
+      const Cell& lastCell=paths[j].back();
+      if(isMaximum(lastCell) and isRemovableMaximum[lastCell.id_]){
         const Cell& maximum=lastCell;
 
         const int destinationIndex=maximumIndex[maximum.id_];
@@ -1841,7 +1871,7 @@ int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isR
         // update segment
         Segment& segment=segments[vpathIndex];
         segment.orientation_=true;
-        segment.cells_=std::move(path);
+        segment.cells_=std::move(paths[j]);
         segment.isValid_=true;
       }
     }
@@ -2043,6 +2073,14 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
     VPath& vpath=vpaths[vpathId];
 
     if(vpath.isValid_){
+#ifdef PRINT_DEBUG
+      {
+        const int sourceId=vpath.source_;
+        const int destinationId=vpath.destination_;
+        cout << "reverse saddle2.id=" << criticalPoints[sourceId].cell_.id_;
+        cout << " max.id=" << criticalPoints[destinationId].cell_.id_ << endl;
+      }
+#endif
 
       // all segments of the selected vpath are reversed
       const int numberOfVPathSegments=vpath.segments_.size();
@@ -2181,7 +2219,8 @@ int DiscreteGradient::reverseSaddleMaximumConnections(const vector<Segment>& seg
 }
 
 template <typename dataType>
-int DiscreteGradient::simplifySaddleMaximumConnections(const vector<char>& isRemovable,
+int DiscreteGradient::simplifySaddleMaximumConnections(const vector<char>& isRemovableMaximum,
+    const vector<char>& isRemovableSaddle,
     const int iterationThreshold,
     const bool allowBoundary){
   Timer t;
@@ -2190,7 +2229,7 @@ int DiscreteGradient::simplifySaddleMaximumConnections(const vector<char>& isRem
   vector<Segment> segments;
   vector<VPath> vpaths;
   vector<CriticalPoint> criticalPoints;
-  initializeSaddleMaximumConnections<dataType>(isRemovable, allowBoundary, segments, vpaths, criticalPoints);
+  initializeSaddleMaximumConnections<dataType>(isRemovableMaximum, isRemovableSaddle, allowBoundary, segments, vpaths, criticalPoints);
 
   // Part 2 : push the vpaths and order by persistence
   SaddleMaximumVPathComparator<dataType> cmp_f;
@@ -2361,14 +2400,17 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
   const int numberOfSaddle2Candidates=getNumberOfCells(saddle2Dim);
   saddle2Index.resize(numberOfSaddle2Candidates, -1);
   for(int i=0; i<numberOfSaddle2Candidates; ++i){
-    if(isRemovableSaddle2[i]){
-      const Cell saddle2Candidate(saddle2Dim, i);
+    //if(MustBeRemovable and !isRemovableSaddle2[i]) continue;
+    if(!isRemovableSaddle2[i]) continue;
 
-      if(isSaddle2(saddle2Candidate) and !isBoundary(saddle2Candidate)){
-        const int index=criticalPoints.size();
-        saddle2Index[i]=index;
-        criticalPoints.push_back(CriticalPoint(saddle2Candidate));
-      }
+    const Cell saddle2Candidate(saddle2Dim, i);
+
+    if(!AllowBoundary and isBoundary(saddle2Candidate)) continue;
+
+    if(isSaddle2(saddle2Candidate)){
+      const int index=criticalPoints.size();
+      saddle2Index[i]=index;
+      criticalPoints.push_back(CriticalPoint(saddle2Candidate));
     }
   }
   const int numberOf2Saddles=criticalPoints.size();
@@ -2377,9 +2419,11 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
   const int numberOfSaddle1Candidates=getNumberOfCells(saddle1Dim);
   saddle1Index.resize(numberOfSaddle1Candidates, -1);
   for(int i=0; i<numberOfSaddle1Candidates; ++i){
-    if(!isRemovableSaddle1[i]) continue;
+    if(MustBeRemovable and !isRemovableSaddle1[i]) continue;
 
     const Cell saddle1Candidate(saddle1Dim, i);
+
+    if(ForceBoundary and !isBoundary(saddle1Candidate)) continue;
 
     if(isSaddle1(saddle1Candidate)){
       const int index=criticalPoints.size();
@@ -2403,9 +2447,11 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
     ++descendingWallId;
 
     for(const int saddle1Id : saddles1){
-      if(!isRemovableSaddle1[saddle1Id]) continue;
+      if(MustBeRemovable and !isRemovableSaddle1[saddle1Id]) continue;
 
       const Cell& saddle1=Cell(1,saddle1Id);
+
+      if(ForceBoundary and !isBoundary(saddle1)) continue;
 
       vector<Cell> path;
       const bool isMultiConnected=getAscendingPathThroughWall(savedDescendingWallId, saddle1, saddle2, isVisited, &path);
@@ -2635,8 +2681,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
 
           // connection to a new saddle1 (not present in the graph before)
           if(newSourceId==-1){
-            if(!isRemovableSaddle1[saddle1Id])
-              continue;
+            if(MustBeRemovable and !isRemovableSaddle1[saddle1Id]) continue;
 
             const int newCriticalPointId=criticalPoints.size();
             saddle1Index[saddle1Id]=newCriticalPointId;
@@ -2906,14 +2951,17 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
     const int numberOfSaddle1Candidates=getNumberOfCells(saddle1Dim);
     saddle1Index.resize(numberOfSaddle1Candidates, -1);
     for(int i=0; i<numberOfSaddle1Candidates; ++i){
-      if(isRemovableSaddle1[i]){
-        const Cell saddle1Candidate(saddle1Dim, i);
+      //if(MustBeRemovable and !isRemovableSaddle1[i]) continue;
+      if(!isRemovableSaddle1[i]) continue;
 
-        if(isSaddle1(saddle1Candidate) and !isBoundary(saddle1Candidate)){
-          const int index=criticalPoints.size();
-          saddle1Index[i]=index;
-          criticalPoints.push_back(CriticalPoint(saddle1Candidate));
-        }
+      const Cell saddle1Candidate(saddle1Dim, i);
+
+      if(!AllowBoundary and isBoundary(saddle1Candidate)) continue;
+
+      if(isSaddle1(saddle1Candidate)){
+        const int index=criticalPoints.size();
+        saddle1Index[i]=index;
+        criticalPoints.push_back(CriticalPoint(saddle1Candidate));
       }
     }
     const int numberOf1Saddles=criticalPoints.size();
@@ -2922,9 +2970,11 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
     const int numberOfSaddle2Candidates=getNumberOfCells(saddle2Dim);
     saddle2Index.resize(numberOfSaddle2Candidates, -1);
     for(int i=0; i<numberOfSaddle2Candidates; ++i){
-      if(!isRemovableSaddle2[i]) continue;
+      if(MustBeRemovable and !isRemovableSaddle2[i]) continue;
 
       const Cell saddle2Candidate(saddle2Dim, i);
+
+      if(ForceBoundary and !isBoundary(saddle2Candidate)) continue;
 
       if(isSaddle2(saddle2Candidate)){
         const int index=criticalPoints.size();
@@ -2948,9 +2998,11 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
       ++ascendingWallId;
 
       for(const int saddle2Id : saddles2){
-        if(!isRemovableSaddle2[saddle2Id]) continue;
+        if(MustBeRemovable and !isRemovableSaddle2[saddle2Id]) continue;
 
         const Cell& saddle2=Cell(2,saddle2Id);
+
+        if(ForceBoundary and !isBoundary(saddle2)) continue;
 
         vector<Cell> path;
         const bool isMultiConnected=getDescendingPathThroughWall(savedAscendingWallId, saddle2, saddle1, isVisited, &path);
@@ -3178,8 +3230,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
 
           // connection to a new saddle2 (not present in the graph before)
           if(newDestinationId==-1){
-            if(!isRemovableSaddle2[saddle2Id])
-              continue;
+            if(MustBeRemovable and !isRemovableSaddle2[saddle2Id]) continue;
 
             const int newCriticalPointId=criticalPoints.size();
             saddle2Index[saddle2Id]=newCriticalPointId;
@@ -3274,6 +3325,7 @@ template <typename dataType>
 int DiscreteGradient::simplifySaddleSaddleConnections2(vector<char>& isRemovableSaddle1,
     vector<char>& isRemovableSaddle2,
     const int iterationThreshold){
+
   // Part 1 : initialization
   vector<VPath> vpaths;
   vector<CriticalPoint> criticalPoints;
@@ -3310,6 +3362,14 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
     vector<char> isRemovableMaximum;
     getRemovableMaxima<dataType>(criticalPoints, isRemovableMaximum);
 
+    vector<char> isRemovableSaddle;
+    if(dimensionality_==2){
+      const int numberOfEdges=inputTriangulation_->getNumberOfEdges();
+      isRemovableSaddle.resize(numberOfEdges, true);
+    }
+    else if(dimensionality_==3)
+      getRemovableSaddles2<dataType>(criticalPoints, isRemovableSaddle);
+
     const int needFirstPass=std::count(isRemovableMaximum.begin(), isRemovableMaximum.end(), true);
     if(!needFirstPass){
       stringstream msg;
@@ -3318,7 +3378,7 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
     }
 
     if(needFirstPass){
-      simplifySaddleMaximumConnections<dataType>(isRemovableMaximum, IterationThreshold, true);
+      simplifySaddleMaximumConnections<dataType>(isRemovableMaximum, isRemovableSaddle, IterationThreshold, true);
 
       /*
       bool needSecondPass=false;
@@ -3347,6 +3407,114 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
       dMsg(cout, msg.str(), advancedInfoMsg);
     }
   }
+
+#ifdef ALLOW_PL_COMPLIANT_DETECTOR
+  if(dimensionality_==3){
+    for(pair<int,char> criticalPoint : criticalPoints){
+      const int criticalPointId=criticalPoint.first;
+      const char criticalPointType=criticalPoint.second;
+
+      if(inputTriangulation_->isVertexOnBoundary(criticalPointId))
+        continue;
+
+      switch(criticalPointType){
+        case 0:
+          if(!isMinimum(Cell(0,criticalPointId))){
+            cout << "[DiscreteGradient] Non PL-compliant PL-minimum vertexId=" << criticalPointId << endl;
+#ifdef ALLOW_EXIT
+            exit(-1);
+#endif
+          }
+          break;
+
+        case 1:
+          {
+            bool isFound=false;
+            const int edgeNumber=inputTriangulation_->getVertexEdgeNumber(criticalPointId);
+            for(int i=0; i<edgeNumber; ++i){
+              int edgeId;
+              inputTriangulation_->getVertexEdge(criticalPointId, i, edgeId);
+
+              if(isSaddle1(Cell(1,edgeId))){
+                isFound=true;
+                break;
+              }
+            }
+            if(!isFound){
+              cout << "[DiscreteGradient] Non PL-compliant PL-saddle1 vertexId=" << criticalPointId << endl;
+#ifdef ALLOW_EXIT
+              exit(-1);
+#endif
+            }
+          }
+          break;
+
+        case 2:
+          {
+            bool isFound=false;
+            const int tetraNumber=inputTriangulation_->getVertexStarNumber(criticalPointId);
+            for(int i=0; i<tetraNumber; ++i){
+              int tetraId;
+              inputTriangulation_->getVertexStar(criticalPointId, i, tetraId);
+
+              for(int j=0; j<4; ++j){
+                int triangleId;
+                inputTriangulation_->getCellTriangle(tetraId, j, triangleId);
+
+                bool isValid=false;
+                for(int k=0; k<3; ++k){
+                  int vertexId;
+                  inputTriangulation_->getTriangleVertex(triangleId, k, vertexId);
+
+                  if(vertexId==criticalPointId){
+                    isValid=true;
+                    break;
+                  }
+                }
+
+                if(isValid and isSaddle2(Cell(2,triangleId))){
+                  isFound=true;
+                  break;
+                }
+              }
+              if(isFound)
+                break;
+            }
+            if(!isFound){
+              cout << "[DiscreteGradient] Non PL-compliant PL-saddle2 vertexId=" << criticalPointId << endl;
+#ifdef ALLOW_EXIT
+              exit(-1);
+#endif
+            }
+          }
+          break;
+
+        case 3:
+          {
+            bool isFound=false;
+            const int tetraNumber=inputTriangulation_->getVertexStarNumber(criticalPointId);
+            for(int i=0; i<tetraNumber; ++i){
+              int tetraId;
+              inputTriangulation_->getVertexStar(criticalPointId, i, tetraId);
+
+              if(isMaximum(Cell(3,tetraId))){
+                isFound=true;
+                break;
+              }
+            }
+            if(!isFound){
+              cout << "[DiscreteGradient] Non PL-compliant PL-maximum vertexId=" << criticalPointId << endl;
+#ifdef ALLOW_EXIT
+              exit(-1);
+#endif
+            }
+          }
+          break;
+      }
+    }
+    cout << "[DiscreteGradient] DMT cells are PL-compliant." << endl;
+  }
+#endif
 
 #ifdef ALLOW_CYCLE_DETECTOR
   if(dimensionality_==3){
@@ -3441,6 +3609,157 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
 
     // walls computed from 1-saddles
     simplifySaddleSaddleConnections2<dataType>(isRemovableSaddle1, isRemovableSaddle2, IterationThreshold);
+
+    // experimental
+//#define REVERSE_LITTLE_PAIRS_INSIDE
+#ifdef REVERSE_LITTLE_PAIRS_INSIDE
+    {
+      getRemovableSaddles1<dataType>(criticalPoints, isRemovableSaddle1);
+      getRemovableSaddles2<dataType>(criticalPoints, isRemovableSaddle2);
+
+      // 2-saddle
+      const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+      vector<char> isPLSaddle2(numberOfVertices, false);
+      for(const pair<int, char>& criticalPoint : criticalPoints){
+        const int criticalPointId=criticalPoint.first;
+        const char criticalPointType=criticalPoint.second;
+
+        if(criticalPointType==2)
+          isPLSaddle2[criticalPointId]=true;
+      }
+
+      // add 2-saddles of the stars
+      vector<vector<int>> saddles2(numberOfVertices);
+      const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
+      for(int i=0; i<numberOfTriangles; ++i){
+        const Cell saddle2Candidate(2,i);
+
+        if(!isSaddle2(saddle2Candidate) or isBoundary(saddle2Candidate)) continue;
+
+        for(int j=0; j<3; ++j){
+          int vertexId;
+          inputTriangulation_->getTriangleVertex(i, j, vertexId);
+
+          if(isPLSaddle2[vertexId])
+            saddles2[vertexId].push_back(i);
+        }
+      }
+
+      // add 2-saddles of the link
+      /*
+      for(int i=0; i<numberOfTriangles; ++i){
+        const Cell saddle2Candidate(2,i);
+
+        if(!isSaddle2(saddle2Candidate) or isBoundary(saddle2Candidate)) continue;
+
+        vector<int> pl_saddles2;
+        const int starNumber=inputTriangulation_->getTriangleStarNumber(i);
+        for(int j=0; j<starNumber; ++j){
+          int starId;
+          inputTriangulation_->getTriangleStar(i, j, starId);
+
+          for(int k=0; k<4; ++k){
+            int vertexId;
+            inputTriangulation_->getCellVertex(starId, k, vertexId);
+
+            if(isPLSaddle2[vertexId])
+              pl_saddles2.push_back(vertexId);
+          }
+        }
+
+        if(pl_saddles2.size()==1){
+          const int vertexId=pl_saddles2[0];
+          saddles2[vertexId].push_back(i);
+        }
+      }
+      */
+
+      // invert
+      for(int i=0; i<numberOfVertices; ++i){
+        if(isPLSaddle2[i] and saddles2[i].size()>1){
+          for(const int saddle2Id : saddles2[i]){
+            isRemovableSaddle2[saddle2Id]=!isRemovableSaddle2[saddle2Id];
+          }
+        }
+      }
+
+      simplifySaddleSaddleConnections1<dataType>(isRemovableSaddle1, isRemovableSaddle2, IterationThreshold);
+    }
+#endif
+
+//#define LAST_PASS
+#ifdef LAST_PASS
+    {
+      MustBeRemovable=false;
+      ForceBoundary=true;
+      simplifySaddleSaddleConnections1<dataType>(isRemovableSaddle1, isRemovableSaddle2, IterationThreshold);
+      simplifySaddleSaddleConnections2<dataType>(isRemovableSaddle1, isRemovableSaddle2, IterationThreshold);
+      ForceBoundary=false;
+      MustBeRemovable=true;
+    }
+#endif
+
+//#define REVERSE_LITTLE_PAIRS_BOUNDARY
+#ifdef REVERSE_LITTLE_PAIRS_BOUNDARY
+    {
+      AllowBoundary=true;
+      // 1-saddle
+      // add 1-saddles of the stars
+      const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+      vector<char> isPLSaddle1(numberOfVertices, false);
+      vector<vector<int>> saddles1(numberOfVertices);
+      for(const pair<int, char>& criticalPoint : criticalPoints){
+        const int criticalPointId=criticalPoint.first;
+        const char criticalPointType=criticalPoint.second;
+
+        if(!inputTriangulation_->isVertexOnBoundary(criticalPointId))
+          continue;
+
+        if(criticalPointType==1){
+          isPLSaddle1[criticalPointId]=true;
+
+          const int edgeNumber=inputTriangulation_->getVertexEdgeNumber(criticalPointId);
+          for(int j=0; j<edgeNumber; ++j){
+            int edgeId;
+            inputTriangulation_->getVertexEdge(criticalPointId, j, edgeId);
+
+            if(isSaddle1(Cell(1,edgeId)) and inputTriangulation_->isEdgeOnBoundary(edgeId))
+              saddles1[criticalPointId].push_back(edgeId);
+          }
+        }
+      }
+
+      // invert
+      for(int i=0; i<numberOfVertices; ++i){
+        if(isPLSaddle1[i] and saddles1[i].size()>1){
+          for(const int saddle1Id : saddles1[i]){
+            isRemovableSaddle1[saddle1Id]=!isRemovableSaddle1[saddle1Id];
+          }
+        }
+      }
+
+      simplifySaddleSaddleConnections2<dataType>(isRemovableSaddle1, isRemovableSaddle2, IterationThreshold);
+      AllowBoundary=false;
+    }
+#endif
+
+#ifdef PRINT_PB1
+    const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
+    vector<wallId_t> isVisited(numberOfTriangles, -1);
+    set<int> saddles1;
+    const Cell start(2,13124973);
+    getDescendingWall(0, start, isVisited, nullptr, &saddles1);
+
+    cout << "saddles=" << endl;
+    for(int k : saddles1){
+      cout << k << " isOnBoundary=" << inputTriangulation_->isEdgeOnBoundary(k);
+      bool isMultiConnected=getAscendingPathThroughWall(0, Cell(1,k), start, isVisited, nullptr);
+      cout << " isMultiConnected=" << isMultiConnected;
+      cout << " isRemovable=" << (int)isRemovableSaddle1[k] << endl;
+    }
+    cout << endl;
+#endif
+
 #endif
     {
       stringstream msg;
@@ -3511,6 +3830,114 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
     }
 
     cout << "[DiscreteGradient] No cycle detected." << endl;
+#endif
+
+#ifdef ALLOW_PL_COMPLIANT_DETECTOR
+  if(dimensionality_==3){
+    for(pair<int,char> criticalPoint : criticalPoints){
+      const int criticalPointId=criticalPoint.first;
+      const char criticalPointType=criticalPoint.second;
+
+      if(inputTriangulation_->isVertexOnBoundary(criticalPointId))
+        continue;
+
+      switch(criticalPointType){
+        case 0:
+          if(!isMinimum(Cell(0,criticalPointId))){
+            cout << "[DiscreteGradient] Non PL-compliant PL-minimum vertexId=" << criticalPointId << endl;
+#ifdef ALLOW_EXIT
+            exit(-1);
+#endif
+          }
+          break;
+
+        case 1:
+          {
+            bool isFound=false;
+            const int edgeNumber=inputTriangulation_->getVertexEdgeNumber(criticalPointId);
+            for(int i=0; i<edgeNumber; ++i){
+              int edgeId;
+              inputTriangulation_->getVertexEdge(criticalPointId, i, edgeId);
+
+              if(isSaddle1(Cell(1,edgeId))){
+                isFound=true;
+                break;
+              }
+            }
+            if(!isFound){
+              cout << "[DiscreteGradient] Non PL-compliant PL-saddle1 vertexId=" << criticalPointId << endl;
+#ifdef ALLOW_EXIT
+              exit(-1);
+#endif
+            }
+          }
+          break;
+
+        case 2:
+          {
+            bool isFound=false;
+            const int tetraNumber=inputTriangulation_->getVertexStarNumber(criticalPointId);
+            for(int i=0; i<tetraNumber; ++i){
+              int tetraId;
+              inputTriangulation_->getVertexStar(criticalPointId, i, tetraId);
+
+              for(int j=0; j<4; ++j){
+                int triangleId;
+                inputTriangulation_->getCellTriangle(tetraId, j, triangleId);
+
+                bool isValid=false;
+                for(int k=0; k<3; ++k){
+                  int vertexId;
+                  inputTriangulation_->getTriangleVertex(triangleId, k, vertexId);
+
+                  if(vertexId==criticalPointId){
+                    isValid=true;
+                    break;
+                  }
+                }
+
+                if(isValid and isSaddle2(Cell(2,triangleId))){
+                  isFound=true;
+                  break;
+                }
+              }
+              if(isFound)
+                break;
+            }
+            if(!isFound){
+              cout << "[DiscreteGradient] Non PL-compliant PL-saddle2 vertexId=" << criticalPointId << endl;
+#ifdef ALLOW_EXIT
+              exit(-1);
+#endif
+            }
+          }
+          break;
+
+        case 3:
+          {
+            bool isFound=false;
+            const int tetraNumber=inputTriangulation_->getVertexStarNumber(criticalPointId);
+            for(int i=0; i<tetraNumber; ++i){
+              int tetraId;
+              inputTriangulation_->getVertexStar(criticalPointId, i, tetraId);
+
+              if(isMaximum(Cell(3,tetraId))){
+                isFound=true;
+                break;
+              }
+            }
+            if(!isFound){
+              cout << "[DiscreteGradient] Non PL-compliant PL-maximum vertexId=" << criticalPointId << endl;
+#ifdef ALLOW_EXIT
+              exit(-1);
+#endif
+            }
+          }
+          break;
+      }
+    }
+    cout << "[DiscreteGradient] DMT cells are PL-compliant." << endl;
+  }
 #endif
 
 #ifdef PRINT_DEBUG
