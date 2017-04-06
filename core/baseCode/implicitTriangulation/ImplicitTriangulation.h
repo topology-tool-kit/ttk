@@ -19,7 +19,6 @@ namespace ttk{
   class ImplicitTriangulation : public AbstractTriangulation{
 
     public:
-
       ImplicitTriangulation();
       ~ImplicitTriangulation();
 
@@ -456,6 +455,14 @@ namespace ttk{
       int getEdgeTriangleD3_xNz(const int p[3], const int localTriangleId) const;
 
       int getEdgeTriangleD4_xyz(const int p[3], const int localTriangleId) const;
+
+      int getEdgeLinkL(const int p[3], const int id) const;
+      int getEdgeLinkH(const int p[3], const int id) const;
+      int getEdgeLinkP(const int p[3], const int id) const;
+      int getEdgeLinkD1(const int p[3], const int id) const;
+      int getEdgeLinkD2(const int p[3], const int id) const;
+      int getEdgeLinkD3(const int p[3], const int id) const;
+      int getEdgeLinkD4(const int p[3], const int id) const;
 
       int getEdgeStarL(const int p[3], const int id) const;
       int getEdgeStarH(const int p[3], const int id) const;
@@ -2745,6 +2752,258 @@ inline int ImplicitTriangulation::getEdgeTriangleD4_xyz(const int p[3], const in
     case 3: return tsetshift_[3]+p[0]*2+p[1]*tshift_[8]+p[2]*tshift_[9]+1;
     case 4: return tsetshift_[4]+p[0]*2+p[1]*tshift_[10]+p[2]*tshift_[11];
     case 5: return tsetshift_[4]+p[0]*2+p[1]*tshift_[10]+p[2]*tshift_[11]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getEdgeLinkL(const int p[3], const int id) const{
+  if(p[2]==0 and p[1]==0){
+    switch(id){
+      case 0: return esetshift_[1]+p[0]+eshift_[4]; //CG
+      case 1: return esetshift_[0]+p[0]+eshift_[3]; //EG
+    }
+  }
+  else if(p[2]==0 and p[1]==nbvoxels_[1]) return esetshift_[5]+p[0]+(p[1]-1)*eshift_[12]; //BG
+  else if(p[2]==nbvoxels_[2] and p[1]==0) return esetshift_[5]+p[0]+(p[2]-1)*eshift_[13]; //BG
+  else if(p[2]==nbvoxels_[2] and p[1]==nbvoxels_[1]){
+    switch(id){
+      case 0: return esetshift_[1]+p[0]+(p[1]-1)*eshift_[4]+(p[2]-1)*eshift_[5]+1; //BF
+      case 1: return esetshift_[0]+p[0]+(p[1]-1)*eshift_[2]+(p[2]-1)*eshift_[3]+1; //BD
+    }
+  }
+  else if(p[2]==0 and p[1]>0 and p[1]<nbvoxels_[1]){
+    switch(id){
+      case 0: return esetshift_[1]+p[0]+(p[1]+1)*eshift_[4]; //CG
+      case 1: return esetshift_[0]+p[0]+p[1]*eshift_[2]+eshift_[3]; //EG
+      case 2: return esetshift_[5]+p[0]+(p[1]-1)*eshift_[12]; //BG
+    }
+  }
+  else if(p[2]==nbvoxels_[2] and p[1]>0 and p[1]<nbvoxels_[1]){
+    switch(id){
+      case 0: return esetshift_[1]+p[0]+(p[1]-1)*eshift_[4]+(p[2]-1)*eshift_[5]+1; //BF
+      case 1: return esetshift_[0]+p[0]+(p[1]-1)*eshift_[2]+(p[2]-1)*eshift_[3]+1; //BD
+      case 2: return esetshift_[5]+p[0]+p[1]*eshift_[12]+(p[2]-1)*eshift_[13]; //BG
+   }
+  }
+  else if(p[2]>0 and p[2]<nbvoxels_[2] and p[1]==0){
+    switch(id){
+      case 0: return esetshift_[1]+p[0]+p[2]*eshift_[5]+eshift_[4]; //CG
+      case 1: return esetshift_[0]+p[0]+(p[2]+1)*eshift_[3]; //EG
+      case 2: return esetshift_[5]+p[0]+(p[2]-1)*eshift_[13]; //BG
+    }
+  }
+  else if(p[2]>0 and p[2]<nbvoxels_[2] and p[1]==nbvoxels_[1]){
+    switch(id){
+      case 0: return esetshift_[1]+p[0]+(p[1]-1)*eshift_[4]+(p[2]-1)*eshift_[5]+1; //BF
+      case 1: return esetshift_[0]+p[0]+(p[1]-1)*eshift_[2]+(p[2]-1)*eshift_[3]+1; //BD
+      case 2: return esetshift_[5]+p[0]+(p[1]-1)*eshift_[12]+p[2]*eshift_[13]; //BG
+    }
+  }
+  else{
+    switch(id){
+      case 0: return esetshift_[1]+p[0]+(p[1]+1)*eshift_[4]+p[2]*eshift_[5]; //CG
+      case 1: return esetshift_[0]+p[0]+p[1]*eshift_[2]+(p[2]+1)*eshift_[3]; //EG
+      case 2: return esetshift_[5]+p[0]+(p[1]-1)*eshift_[12]+p[2]*eshift_[13];
+      case 3: return esetshift_[1]+p[0]+1+(p[1]-1)*eshift_[4]+(p[2]-1)*eshift_[5]; //CG
+      case 4: return esetshift_[0]+p[0]+1+(p[1]-1)*eshift_[2]+(p[2]-1)*eshift_[3]; //EG
+      case 5: return esetshift_[5]+p[0]+p[1]*eshift_[12]+(p[2]-1)*eshift_[13];
+    }
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getEdgeLinkH(const int p[3], const int id) const{
+  if(p[0]==0 and p[2]==0) return esetshift_[5]+p[1]*eshift_[12];
+  else if(p[0]==nbvoxels_[0] and p[2]==0){
+    switch(id){
+      case 0: return esetshift_[1]+p[0]+(p[1]+1)*eshift_[4]-1;
+      case 1: return p[0]+(p[1]+1)*eshift_[0]+eshift_[1]-1;
+    }
+  }
+  else if(p[0]==0 and p[2]==nbvoxels_[2]){
+    switch(id){
+      case 0: return p[1]*eshift_[0]+(p[2]-1)*eshift_[1];
+      case 1: return esetshift_[1]+p[1]*eshift_[4]+(p[2]-1)*eshift_[5]+1;
+    }
+  }
+  else if(p[0]==nbvoxels_[0] and p[2]==nbvoxels_[2]) return esetshift_[5]+p[0]-1+p[1]*eshift_[12]+(p[2]-1)*eshift_[13];
+  else if(p[0]>0 and p[0]<nbvoxels_[0] and p[2]==0){
+    switch(id){
+      case 0: return p[0]-1+(p[1]+1)*eshift_[0]+eshift_[1];
+      case 1: return esetshift_[1]+p[0]-1+(p[1]+1)*eshift_[4];
+      case 2: return esetshift_[5]+p[0]+p[1]*eshift_[12];
+    }
+  }
+  else if(p[0]>0 and p[0]<nbvoxels_[0] and p[2]==nbvoxels_[2]){
+    switch(id){
+      case 0: return esetshift_[5]+p[0]-1+p[1]*eshift_[12]+(p[2]-1)*eshift_[13];
+      case 1: return p[0]+p[1]*eshift_[0]+(p[2]-1)*eshift_[1];
+      case 2: return esetshift_[1]+p[0]+1+p[1]*eshift_[4]+(p[2]-1)*eshift_[5];
+    }
+  }
+  else if(p[0]==0 and p[2]>0 and p[2]<nbvoxels_[2]){
+    switch(id){
+      case 0: return esetshift_[1]+p[1]*eshift_[4]+(p[2]-1)*eshift_[5]+1;
+      case 1: return esetshift_[5]+p[1]*eshift_[12]+p[2]*eshift_[13];
+      case 2: return p[1]*eshift_[0]+(p[2]-1)*eshift_[1];
+    }
+  }
+  else if(p[0]==nbvoxels_[0] and p[2]>0 and p[2]<nbvoxels_[2]){
+    switch(id){
+      case 0: return esetshift_[5]+p[0]-1+p[1]*eshift_[12]+(p[2]-1)*eshift_[13];
+      case 1: return esetshift_[1]+p[0]-1+(p[1]+1)*eshift_[4]+p[2]*eshift_[5];
+      case 2: return p[0]-1+(p[1]+1)*eshift_[0]+(p[2]+1)*eshift_[1];
+    }
+  }
+  else{
+    switch(id){
+      case 0: return p[0]+p[1]*eshift_[0]+(p[2]-1)*eshift_[1];
+      case 1: return p[0]+(p[1]+1)*eshift_[0]+(p[2]+1)*eshift_[1]-1;
+      case 2: return esetshift_[1]+p[0]-1+(p[1]+1)*eshift_[4]+p[2]*eshift_[5];
+      case 3: return esetshift_[1]+p[0]+1+p[1]*eshift_[4]+(p[2]-1)*eshift_[5];
+      case 4: return esetshift_[5]+(p[0]-1)+p[1]*eshift_[12]+(p[2]-1)*eshift_[13];
+      case 5: return esetshift_[5]+p[0]+p[1]*eshift_[12]+p[2]*eshift_[13];
+    }
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getEdgeLinkP(const int p[3], const int id) const{
+  if(p[0]==0 and p[1]==0) return esetshift_[5]+p[0]+p[1]*eshift_[12]+p[2]*eshift_[13];
+  else if(p[0]==0 and p[1]==nbvoxels_[1]){
+    switch(id){
+      case 0: return esetshift_[0]+p[0]+(p[1]-1)*eshift_[2]+p[2]*eshift_[3]+1;
+      case 1: return p[0]+(p[1]-1)*eshift_[0]+p[2]*eshift_[1];
+    }
+  }
+  else if(p[0]==nbvoxels_[0] and p[1]==0){
+    switch(id){
+      case 0: return esetshift_[0]+p[0]+p[1]*eshift_[2]+(p[2]+1)*eshift_[3]-1;
+      case 1: return p[0]+(p[1]+1)*eshift_[0]+(p[2]+1)*eshift_[1]-1;
+    }
+  }
+  else if(p[0]==nbvoxels_[0] and p[1]==nbvoxels_[1]) return esetshift_[5]+p[0]-1+(p[1]-1)*eshift_[12]+p[2]*eshift_[13];
+  else if(p[0]>0 and p[0]<nbvoxels_[0] and p[1]==0){
+    switch(id){
+      case 0: return p[0]+(p[1]+1)*eshift_[0]+(p[2]+1)*eshift_[1]-1;
+      case 1: return esetshift_[0]+p[0]+p[1]*eshift_[2]+(p[2]+1)*eshift_[3]-1;
+      case 2: return esetshift_[5]+p[0]+p[1]*eshift_[12]+p[2]*eshift_[13];
+    }
+  }
+  else if(p[0]>0 and p[0]<nbvoxels_[0] and p[1]==nbvoxels_[1]){
+    switch(id){
+      case 0: return p[0]+(p[1]-1)*eshift_[0]+p[2]*eshift_[1];
+      case 1: return esetshift_[0]+p[0]+(p[1]-1)*eshift_[2]+p[2]*eshift_[3]+1;
+      case 2: return esetshift_[5]+p[0]+(p[1]-1)*eshift_[12]+p[2]*eshift_[13]-1;
+    }
+  }
+  else if(p[0]==0 and p[1]>0 and p[1]<nbvoxels_[1]){
+    switch(id){
+      case 0: return p[0]+(p[1]-1)*eshift_[0]+p[2]*eshift_[1];
+      case 1: return esetshift_[0]+p[0]+(p[1]-1)*eshift_[2]+p[2]*eshift_[3]+1;
+      case 2: return esetshift_[5]+p[0]+p[1]*eshift_[12]+p[2]*eshift_[13];
+    }
+  }
+  else if(p[0]==nbvoxels_[0] and p[1]>0 and p[1]<nbvoxels_[1]){
+    switch(id){
+      case 0: return esetshift_[5]+p[0]+(p[1]-1)*eshift_[12]+p[2]*eshift_[13]-1;
+      case 1: return esetshift_[0]+p[0]+p[1]*eshift_[2]+(p[2]+1)*eshift_[3]-1;
+      case 2: return p[0]+(p[1]+1)*eshift_[0]+(p[2]+1)*eshift_[1]-1;
+    }
+  }
+  else{
+    switch(id){
+      case 0: return p[0]+(p[1]-1)*eshift_[0]+p[2]*eshift_[1];
+      case 1: return p[0]+(p[1]+1)*eshift_[0]+(p[2]+1)*eshift_[1]-1;
+      case 2: return esetshift_[5]+p[0]+p[1]*eshift_[12]+p[2]*eshift_[13];
+      case 3: return esetshift_[5]+p[0]+(p[1]-1)*eshift_[12]+p[2]*eshift_[13]-1;
+      case 4: return esetshift_[0]+p[0]+p[1]*eshift_[2]+(p[2]+1)*eshift_[3]-1;
+      case 5: return esetshift_[0]+p[0]+(p[1]-1)*eshift_[2]+p[2]*eshift_[3]+1;
+    }
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getEdgeLinkD1(const int p[3], const int id) const{
+  if(p[2]>0 and p[2]<nbvoxels_[2]){
+    switch(id){
+      case 0: return esetshift_[4]+p[0]+p[1]*eshift_[10]+(p[2]-1)*eshift_[11];
+      case 1: return esetshift_[4]+p[0]+(p[1]+1)*eshift_[10]+p[2]*eshift_[11];
+      case 2: return esetshift_[3]+p[0]+p[1]*eshift_[8]+p[2]*eshift_[9];
+      case 3: return esetshift_[3]+p[0]+p[1]*eshift_[8]+(p[2]-1)*eshift_[9]+1;
+    }
+  }
+  else if(p[2]==0){
+    switch(id){
+      case 0: return esetshift_[3]+p[0]+p[1]*eshift_[8]+p[2]*eshift_[9];
+      case 1: return esetshift_[4]+p[0]+(p[1]+1)*eshift_[10]+p[2]*eshift_[11];
+    }
+  }
+  else{
+    switch(id){
+      case 0: return esetshift_[3]+p[0]+p[1]*eshift_[8]+(p[2]-1)*eshift_[9]+1;
+      case 1: return esetshift_[4]+p[0]+p[1]*eshift_[10]+(p[2]-1)*eshift_[11];
+    }
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getEdgeLinkD2(const int p[3], const int id) const{
+  if(p[0]>0 and p[0]<nbvoxels_[0]){
+    switch(id){
+      case 0: return esetshift_[4]+p[0]+p[1]*eshift_[10]+p[2]*eshift_[11];
+      case 1: return esetshift_[4]+p[0]+(p[1]+1)*eshift_[10]+p[2]*eshift_[11]-1;
+      case 2: return esetshift_[2]+p[0]+p[1]*eshift_[6]+p[2]*eshift_[7];
+      case 3: return esetshift_[2]+p[0]+p[1]*eshift_[6]+(p[2]+1)*eshift_[7]-1;
+    }
+  }
+  else if(p[0]==0){
+    switch(id){
+      case 0: return esetshift_[2]+p[0]+p[1]*eshift_[6]+p[2]*eshift_[7];
+      case 1: return esetshift_[4]+p[0]+p[1]*eshift_[10]+p[2]*eshift_[11];
+    }
+  }
+  else{
+    switch(id){
+      case 0: return esetshift_[2]+p[0]+p[1]*eshift_[6]+(p[2]+1)*eshift_[7]-1;
+      case 1: return esetshift_[4]+p[0]+(p[1]+1)*eshift_[10]+p[2]*eshift_[11]-1;
+    }
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getEdgeLinkD3(const int p[3], const int id) const{
+  if(p[1]>0 and p[1]<nbvoxels_[1]){
+    switch(id){
+      case 0: return esetshift_[2]+p[0]+(p[1]-1)*eshift_[6]+p[2]*eshift_[7];
+      case 1: return esetshift_[2]+p[0]+p[1]*eshift_[6]+(p[2]+1)*eshift_[7];
+      case 2: return esetshift_[3]+p[0]+p[1]*eshift_[8]+p[2]*eshift_[9];
+      case 3: return esetshift_[3]+p[0]+(p[1]-1)*eshift_[8]+p[2]*eshift_[9]+1;
+    }
+  }
+  else if(p[1]==0){
+    switch(id){
+      case 0: return esetshift_[2]+p[0]+p[1]*eshift_[6]+(p[2]+1)*eshift_[7];
+      case 1: return esetshift_[3]+p[0]+p[1]*eshift_[8]+p[2]*eshift_[9];
+    }
+  }
+  else{
+    switch(id){
+      case 0: return esetshift_[2]+p[0]+(p[1]-1)*eshift_[6]+p[2]*eshift_[7];
+      case 1: return esetshift_[3]+p[0]+(p[1]-1)*eshift_[8]+p[2]*eshift_[9]+1;
+    }
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getEdgeLinkD4(const int p[3], const int id) const{
+  switch(id){
+    case 0: return p[0]+(p[1]+1)*eshift_[0]+p[2]*eshift_[1];
+    case 1: return p[0]+p[1]*eshift_[0]+(p[2]+1)*eshift_[1];
+    case 2: return esetshift_[1]+p[0]+p[1]*eshift_[4]+p[2]*eshift_[5];
+    case 3: return esetshift_[1]+p[0]+1+(p[1]+1)*eshift_[4]+p[2]*eshift_[5];
+    case 4: return esetshift_[0]+p[0]+p[1]*eshift_[2]+p[2]*eshift_[3];
+    case 5: return esetshift_[0]+p[0]+1+p[1]*eshift_[2]+(p[2]+1)*eshift_[3];
   }
   return -1;
 }
