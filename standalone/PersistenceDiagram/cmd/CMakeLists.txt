@@ -19,6 +19,7 @@ include(${TTK_DIR}/ttk.cmake)
 
 # include the different packages required for the application
 ttk_add_vtkWrapper_package(vtkPersistenceDiagram)
+ttk_add_vtkWrapper_package(vtkProgramBase)
 
 # add the local cpp files 
 ttk_add_source(main.cpp)
