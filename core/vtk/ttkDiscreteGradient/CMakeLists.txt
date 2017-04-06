@@ -1,0 +1,4 @@
+ttk_add_vtk_library(ttkDiscreteGradient
+	SOURCES ttkDiscreteGradient.cpp
+	HEADERS ttkDiscreteGradient.h
+	LINK discreteGradient ttkTriangulation)
