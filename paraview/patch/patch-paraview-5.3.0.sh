@@ -18,7 +18,7 @@ PATCH_DIR=`pwd`
 
 cd $1
 $PATCH_BIN Applications/ParaView/CMakeLists.txt \
-  < ${PATCH_DIR}/paraview-5.1.0-CMakeLists.txt.patch 
+  < ${PATCH_DIR}/paraview-5.3.0-CMakeLists.txt.patch 
 $PATCH_BIN Qt/Components/Resources/UI/pqAboutDialog.ui \
   < ${PATCH_DIR}/pqAboutDialog.ui.patch 
 $PATCH_BIN VTK/IO/Export/vtkVRMLExporter.cxx \
