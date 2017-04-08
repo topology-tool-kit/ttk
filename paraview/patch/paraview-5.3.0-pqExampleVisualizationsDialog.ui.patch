@@ -1,0 +1,120 @@
+--- a/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2017-04-08 07:00:28.509994959 +0200
++++ b/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2017-04-08 07:10:42.869994031 +0200
+@@ -11,7 +11,7 @@
+    </rect>
+   </property>
+   <property name="windowTitle">
+-   <string>ParaView Example Visualizations</string>
++   <string>TTK Example Visualizations</string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+@@ -25,7 +25,7 @@
+       </font>
+      </property>
+      <property name="text">
+-      <string>ParaView Example Visualizations</string>
++      <string>TTK Example Visualizations</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+@@ -73,7 +73,7 @@
+           <number>2</number>
+          </property>
+          <item>
+-          <widget class="QPushButton" name="CanExampleButton">
++          <widget class="QPushButton" name="Example1Button">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+@@ -106,7 +106,7 @@
+            </property>
+            <property name="icon">
+             <iconset>
+-             <normalon>:/pqApplicationComponents/Thumbnails/CanExample.png</normalon>
++             <normalon>:/pqApplicationComponents/Thumbnails/Example1.png</normalon>
+             </iconset>
+            </property>
+            <property name="iconSize">
+@@ -127,7 +127,7 @@
+           </widget>
+          </item>
+          <item>
+-          <widget class="QLabel" name="CanExampleDescription">
++          <widget class="QLabel" name="Example1Description">
+            <property name="frameShape">
+             <enum>QFrame::NoFrame</enum>
+            </property>
+@@ -138,11 +138,7 @@
+             <number>1</number>
+            </property>
+            <property name="text">
+-            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+-p, li { white-space: pre-wrap; }
+-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.SF NS Text'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+-&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Exodus II file with timesteps, Clip filter&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
++            <string>Scalar data example</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+@@ -177,7 +173,7 @@
+           <number>2</number>
+          </property>
+          <item>
+-          <widget class="QPushButton" name="DiskOutRefExampleButton">
++          <widget class="QPushButton" name="Example2Button">
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+@@ -189,7 +185,7 @@
+            </property>
+            <property name="icon">
+             <iconset>
+-             <normalon>:/pqApplicationComponents/Thumbnails/DiskOutRefExample.png</normalon>
++             <normalon>:/pqApplicationComponents/Thumbnails/Example2.png</normalon>
+             </iconset>
+            </property>
+            <property name="iconSize">
+@@ -204,9 +200,9 @@
+           </widget>
+          </item>
+          <item>
+-          <widget class="QLabel" name="DiskOutRefExampleDescription">
++          <widget class="QLabel" name="Example2Description">
+            <property name="text">
+-            <string>Exodus II file, Clip filter, Stream Tracer filter, Tube filter, Glyph filter</string>
++            <string>Bivariate scalar data example</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+@@ -235,7 +231,7 @@
+           <number>2</number>
+          </property>
+          <item>
+-          <widget class="QPushButton" name="WaveletExampleButton">
++          <widget class="QPushButton" name="Example3Button">
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+@@ -247,7 +243,7 @@
+            </property>
+            <property name="icon">
+             <iconset resource="../pqApplicationComponents.qrc">
+-             <normaloff>:/pqApplicationComponents/Thumbnails/WaveletExample.png</normaloff>:/pqApplicationComponents/Thumbnails/WaveletExample.png</iconset>
++             <normaloff>:/pqApplicationComponents/Thumbnails/Example3.png</normaloff>:/pqApplicationComponents/Thumbnails/Example3.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+@@ -261,9 +257,9 @@
+           </widget>
+          </item>
+          <item>
+-          <widget class="QLabel" name="WaveletExampleDescription">
++          <widget class="QLabel" name="Example3Description">
+            <property name="text">
+-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wavelet with volume rendering and contours&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
++            <string>Uncertain scalar data example</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
