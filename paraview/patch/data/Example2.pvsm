@@ -34216,7 +34216,7 @@ number_of_elements="1">
         <Domain name="bool" id="4892.Splitting.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="ContinuousScatterplot" id="4454" servers="1">
+    <Proxy group="filters" type="ContinuousScatterPlot" id="4454" servers="1">
       <Property name="DebugLevel" id="4454.DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="4454.DebugLevel.range"/>
@@ -37479,7 +37479,7 @@ number_of_elements="1">
       <Item id="4870" name="GenerateSurfaceNormals2"/>
       <Item id="4881" name="GenerateSurfaceNormals3"/>
       <Item id="4892" name="GenerateSurfaceNormals4"/>
-      <Item id="4454" name="TTKContinuousScatterplot1"/>
+      <Item id="4454" name="TTKContinuousScatterPlot1"/>
       <Item id="4650" name="TTKFiberSurface1"/>
       <Item id="4716" name="TTKFiberSurface2"/>
       <Item id="4782" name="TTKFiberSurface3"/>
@@ -37505,7 +37505,7 @@ number_of_elements="1">
       <Item id="259" name="TimeKeeper1"/>
     </ProxyCollection>
     <ProxyCollection name="views">
-      <Item id="9204" name="ContinuousScatterplot"/>
+      <Item id="9204" name="ContinuousScatterPlot"/>
       <Item id="11612" name="FiberSurfaces"/>
       <Item id="9851" name="Isosurfaces"/>
     </ProxyCollection>

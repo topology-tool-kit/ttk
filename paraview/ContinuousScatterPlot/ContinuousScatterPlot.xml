@@ -2,9 +2,9 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-      name="ContinuousScatterplot"
-      class="vtkContinuousScatterplot"
-      label="TTK ContinuousScatterplot">
+      name="ContinuousScatterPlot"
+      class="vtkContinuousScatterPlot"
+      label="TTK ContinuousScatterPlot">
       <Documentation
         long_help="TTK plugin that computes the continuous scatterplot of 
 bivariate volumetric data."
