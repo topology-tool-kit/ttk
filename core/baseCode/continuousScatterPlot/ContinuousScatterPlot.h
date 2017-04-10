@@ -1,5 +1,5 @@
 /// \ingroup baseCode
-/// \class ttk::ContinuousScatterplot
+/// \class ttk::ContinuousScatterPlot
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \date March 2016
 ///
@@ -12,7 +12,7 @@
 /// Proc. of IEEE VIS 2008.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2008.
 ///
-/// \sa vtkContinuousScatterplot.cpp %for a usage example.
+/// \sa vtkContinuousScatterPlot.cpp %for a usage example.
 
 #ifndef _CONTINUOUSSCATTERPLOT_H
 #define _CONTINUOUSSCATTERPLOT_H
@@ -24,12 +24,12 @@
 
 namespace ttk{
 
-  class ContinuousScatterplot : public Debug{
+  class ContinuousScatterPlot : public Debug{
 
     public:
 
-      ContinuousScatterplot();
-      ~ContinuousScatterplot();
+      ContinuousScatterPlot();
+      ~ContinuousScatterPlot();
 
       template<typename dataType1, typename dataType2>
         int execute() const;
@@ -105,7 +105,7 @@ namespace ttk{
 }
 
 template<typename dataType1, typename dataType2>
-int ContinuousScatterplot::execute() const{
+int ContinuousScatterPlot::execute() const{
 #ifndef withKamikaze
   if(!inputScalarField1_) return -1;
   if(!inputScalarField2_) return -2;
@@ -113,12 +113,12 @@ int ContinuousScatterplot::execute() const{
   if(!density_) return -4;
 
   if(triangulation_->getNumberOfCells()<=0){
-    cerr << "[ContinuousScatterplot] Error : no cells." << endl;
+    cerr << "[ContinuousScatterPlot] Error : no cells." << endl;
     return -5;
   }
 
   if(triangulation_->getCellVertexNumber(0) != 4){
-    cerr << "[ContinuousScatterplot] Error : no tetrahedra."  << endl;
+    cerr << "[ContinuousScatterPlot] Error : no tetrahedra."  << endl;
     return -6;
   }
 #endif
@@ -467,7 +467,7 @@ int ContinuousScatterplot::execute() const{
 
   {
     stringstream msg;
-    msg << "[ContinuousScatterplot] Data-set (" << numberOfCells
+    msg << "[ContinuousScatterPlot] Data-set (" << numberOfCells
       << " tetrahedra) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."

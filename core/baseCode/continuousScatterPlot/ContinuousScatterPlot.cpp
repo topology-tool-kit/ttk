@@ -1,6 +1,6 @@
-#include                  <ContinuousScatterplot.h>
+#include                  <ContinuousScatterPlot.h>
 
-ContinuousScatterplot::ContinuousScatterplot():
+ContinuousScatterPlot::ContinuousScatterPlot():
   vertexNumber_{},
   triangulation_{},
   withDummyValue_{},
@@ -13,6 +13,6 @@ ContinuousScatterplot::ContinuousScatterplot():
   density_{}
 {}
 
-ContinuousScatterplot::~ContinuousScatterplot(){
+ContinuousScatterPlot::~ContinuousScatterPlot(){
 }
 

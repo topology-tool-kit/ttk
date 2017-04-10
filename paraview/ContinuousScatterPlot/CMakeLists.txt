@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.4)
 
-project(ContinuousScatterplot)
+project(ContinuousScatterPlot)
 
 option(withParaView "Enable ParaView support" true)
 set(withParaView true)
@@ -21,9 +21,9 @@ include(${TTK_DIR}/ttk.cmake)
 
 # include the vtk wrapper for the scalar field smoothing package
 # HERE: change to whatever wrapper you want to use
-ttk_add_vtkWrapper_package(vtkContinuousScatterplot)
+ttk_add_vtkWrapper_package(vtkContinuousScatterPlot)
 
 # Add the plugin
 ttk_wrapup_paraview_plugin(
-  ContinuousScatterplot
+  ContinuousScatterPlot
   1.0)
