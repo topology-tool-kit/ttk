@@ -291,6 +291,10 @@ namespace ttk{
       int getEdgeTriangleH_Ny(const int p[3], const int localTriangleId) const;
       int getEdgeTriangleD1_xy(const int p[3], const int localTriangleId) const;
 
+      int getEdgeLink2dL(const int p[2], const int id) const;
+      int getEdgeLink2dH(const int p[2], const int id) const;
+      int getEdgeLink2dD1(const int p[2], const int id) const;
+
       int getEdgeStar2dL(const int p[2], const int id) const;
       int getEdgeStar2dH(const int p[2], const int id) const;
 
@@ -934,6 +938,18 @@ inline int ImplicitTriangulation::getEdgeTriangleD1_xy(const int p[3], const int
     case 0: return p[Di_]*2+p[Dj_]*tshift_[0];
     case 1: return p[Di_]*2+p[Dj_]*tshift_[0]+1;
   }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getEdgeLink2dL(const int p[2], const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getEdgeLink2dH(const int p[2], const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getEdgeLink2dD1(const int p[2], const int id) const{
   return -1;
 }
 
