@@ -26,11 +26,11 @@
   # needs multilib support on the system (including vtk and paraview)
   # NOTE: gentoo does not provide multilib support for vtk or paraview
   # ...for now. let's be patient
-  option(with32bits "Enable 32-bit mode" false)
-  if(with32bits)
-    set(PROJECT_FLAGS "${PROJECT_FLAGS} -m32")
-    set(PROJECT_DEP "${PROJECT_DEP} -m32")
-  endif(with32bits)
+  #  option(with32bits "Enable 32-bit mode" false)
+  #if(with32bits)
+  #  set(PROJECT_FLAGS "${PROJECT_FLAGS} -m32")
+  #  set(PROJECT_DEP "${PROJECT_DEP} -m32")
+  #endif(with32bits)
 
   # cpuOptimization - to disable for release on other computers
   option(withCpuOptimization "Enable CPU optimization (to disable for release)"
@@ -68,8 +68,8 @@
 
   message(STATUS
 "baseCode --------------------------------------------------------------------")
-  message(STATUS
-    "32 bit compilation mode: ${with32bits}   (-Dwith32bits=)")
+#  message(STATUS
+#    "32 bit compilation mode: ${with32bits}   (-Dwith32bits=)")
   message(STATUS
     "CPU optimizations: ${withCpuOptimization}   (-DwithCpuOptimization=)")
   message(STATUS 
