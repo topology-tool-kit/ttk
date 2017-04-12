@@ -3,7 +3,7 @@
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date March 2017.
 ///
-/// \brief TTK VTK-filter randomly shuffles segmentation identifiers.
+/// \brief TTK VTK-filter that randomly shuffles segmentation identifiers.
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
@@ -73,7 +73,11 @@ class VTKFILTERSCORE_EXPORT vtkIdentifierRandomizer
       UseAllCores = false;
     }
     
-    ~vtkIdentifierRandomizer(){};
+    ~vtkIdentifierRandomizer(){
+      if(outputScalarField_){
+        outputScalarField_->Delete();
+      }
+    };
     
     TTK_SETUP();
     

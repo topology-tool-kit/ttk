@@ -31,29 +31,31 @@ int vtkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
     return -2;
   
   // allocate the memory for the output scalar field
-  if(!outputScalarField_){
-    switch(inputScalarField->GetDataType()){
+  if(outputScalarField_){
+    outputScalarField_->Delete();
+  }
+  
+  switch(inputScalarField->GetDataType()){
+    
+    case VTK_CHAR:
+      outputScalarField_ = vtkCharArray::New();
+      break;
       
-      case VTK_CHAR:
-        outputScalarField_ = vtkCharArray::New();
-        break;
-        
-      case VTK_DOUBLE:
-        outputScalarField_ = vtkDoubleArray::New();
-        break;
+    case VTK_DOUBLE:
+      outputScalarField_ = vtkDoubleArray::New();
+      break;
 
-      case VTK_FLOAT:
-        outputScalarField_ = vtkFloatArray::New();
-        break;
-       
-      case VTK_INT:
-        outputScalarField_ = vtkIntArray::New();
-        break;
-        
-      stringstream msg;
-      msg << "[vtkIdentifierRandomizer] Unsupported data type :(" << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
-    }
+    case VTK_FLOAT:
+      outputScalarField_ = vtkFloatArray::New();
+      break;
+      
+    case VTK_INT:
+      outputScalarField_ = vtkIntArray::New();
+      break;
+      
+    stringstream msg;
+    msg << "[vtkIdentifierRandomizer] Unsupported data type :(" << endl;
+    dMsg(cerr, msg.str(), fatalMsg);
   }
   outputScalarField_->SetNumberOfTuples(input->GetNumberOfPoints());
   outputScalarField_->SetName(inputScalarField->GetName());
