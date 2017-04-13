@@ -1,8 +1,8 @@
-#include                  <vtkContinuousScatterplot.h>
+#include                  <vtkContinuousScatterPlot.h>
 
-vtkStandardNewMacro(vtkContinuousScatterplot)
+vtkStandardNewMacro(vtkContinuousScatterPlot)
 
-  vtkContinuousScatterplot::vtkContinuousScatterplot():
+vtkContinuousScatterPlot::vtkContinuousScatterPlot():
     inputScalars1_{},
     inputScalars2_{}
 {
@@ -15,10 +15,10 @@ vtkStandardNewMacro(vtkContinuousScatterplot)
   triangulation_ = NULL;
 }
 
-vtkContinuousScatterplot::~vtkContinuousScatterplot(){
+vtkContinuousScatterPlot::~vtkContinuousScatterPlot(){
 }
 
-int vtkContinuousScatterplot::FillInputPortInformation(int port, 
+int vtkContinuousScatterPlot::FillInputPortInformation(int port, 
   vtkInformation *info){
   
   if(port==0)
@@ -27,7 +27,7 @@ int vtkContinuousScatterplot::FillInputPortInformation(int port,
   return 1;
 }
 
-int vtkContinuousScatterplot::FillOutputPortInformation(int port, 
+int vtkContinuousScatterPlot::FillOutputPortInformation(int port, 
   vtkInformation *info){
   
   if(port==0)
@@ -36,12 +36,12 @@ int vtkContinuousScatterplot::FillOutputPortInformation(int port,
   return 1;
 }
 
-int vtkContinuousScatterplot::getScalars(vtkDataSet* input){
+int vtkContinuousScatterPlot::getScalars(vtkDataSet* input){
   vtkPointData* pointData=input->GetPointData();
 
 #ifndef withKamikaze
   if(!pointData){
-    cerr << "[vtkContinuousScatterplot] Error : input has no point data." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error : input has no point data." << endl;
     return -1;
   }
 #endif
@@ -53,7 +53,7 @@ int vtkContinuousScatterplot::getScalars(vtkDataSet* input){
 
 #ifndef withKamikaze
   if(!inputScalars1_){
-    cerr << "[vtkContinuousScatterplot] Error : input scalar field 1 pointer is null." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error : input scalar field 1 pointer is null." << endl;
     return -3;
   }
 #endif
@@ -68,7 +68,7 @@ int vtkContinuousScatterplot::getScalars(vtkDataSet* input){
 
 #ifndef withKamikaze
   if(!inputScalars2_){
-    cerr << "[vtkContinuousScatterplot] Error : input scalar field 2 pointer is null." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error : input scalar field 2 pointer is null." << endl;
     return -5;
   }
 #endif
@@ -77,16 +77,16 @@ int vtkContinuousScatterplot::getScalars(vtkDataSet* input){
     ScalarField2 = inputScalars2_->GetName();
 
   stringstream msg;
-  msg << "[vtkContinuoursScatterplot] U-component `" 
+  msg << "[vtkContinuousScatterPlot] U-component `" 
     << inputScalars1_->GetName() << "'" << endl;
-  msg << "[vtkContinuoursScatterplot] V-component `" 
+  msg << "[vtkContinuousScatterPlot] V-component `" 
     << inputScalars2_->GetName() << "'" << endl;
   dMsg(cout, msg.str(), infoMsg);
 
   return 0;
 }
 
-int vtkContinuousScatterplot::getTriangulation(vtkDataSet* input){
+int vtkContinuousScatterPlot::getTriangulation(vtkDataSet* input){
   
   triangulation_ = vtkTriangulation::getTriangulation(input);
   
@@ -98,7 +98,7 @@ int vtkContinuousScatterplot::getTriangulation(vtkDataSet* input){
   return 0;
 }
 
-int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
+int vtkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
   
   Memory m;
@@ -112,7 +112,7 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef withKamikaze
   // wrong triangulation
   if(ret){
-    cerr << "[vtkContinuousScatterplot] Error : wrong triangulation." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error : wrong triangulation." << endl;
     return -1;
   }
 #endif
@@ -121,7 +121,7 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef withKamikaze
   // wrong scalar fields
   if(ret){
-    cerr << "[vtkContinuousScatterplot] Error : wrong scalar fields." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error : wrong scalar fields." << endl;
     return -2;
   }
 #endif
@@ -130,7 +130,7 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef withKamikaze
   // no pixels
   if(!numberOfPixels){
-    cerr << "[vtkContinuousScatterplot] Error : no pixels." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error : no pixels." << endl;
     return -3;
   }
 #endif
@@ -148,7 +148,7 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef withKamikaze
   // no points
   if(!numberOfPoints){
-    cerr << "[vtkContinuousScatterplot] Error : no points." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error : no points." << endl;
     return -4;
   }
 #endif
@@ -168,63 +168,63 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef withKamikaze
   // scalar fields stats problem
   if(scalarMin_[0]==scalarMax_[0] or scalarMin_[1]==scalarMax_[1]){
-    cerr << "[vtkContinuousScatterplot] Error : scalar fields stats problem." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error : scalar fields stats problem." << endl;
     return -5;
   }
 #endif
 
   // calling the executing package
-  ContinuousScatterplot continuousScatterplot;
-  continuousScatterplot.setWrapper(this);
-  continuousScatterplot.setVertexNumber(numberOfPoints);
-  continuousScatterplot.setDummyValue(WithDummyValue, DummyValue);
-  continuousScatterplot.setTriangulation(triangulation_);
-  continuousScatterplot.setResolutions(ScatterplotResolution[0],ScatterplotResolution[1]);
-  continuousScatterplot.setInputScalarField1(inputScalars1_->GetVoidPointer(0));
-  continuousScatterplot.setInputScalarField2(inputScalars2_->GetVoidPointer(0));
-  continuousScatterplot.setScalarMin(scalarMin_);
-  continuousScatterplot.setScalarMax(scalarMax_);
-  continuousScatterplot.setOutputDensity(&density_);
-  continuousScatterplot.setOutputMask(&validPointMask_);
+  ContinuousScatterPlot continuousScatterPlot;
+  continuousScatterPlot.setWrapper(this);
+  continuousScatterPlot.setVertexNumber(numberOfPoints);
+  continuousScatterPlot.setDummyValue(WithDummyValue, DummyValue);
+  continuousScatterPlot.setTriangulation(triangulation_);
+  continuousScatterPlot.setResolutions(ScatterplotResolution[0],ScatterplotResolution[1]);
+  continuousScatterPlot.setInputScalarField1(inputScalars1_->GetVoidPointer(0));
+  continuousScatterPlot.setInputScalarField2(inputScalars2_->GetVoidPointer(0));
+  continuousScatterPlot.setScalarMin(scalarMin_);
+  continuousScatterPlot.setScalarMax(scalarMax_);
+  continuousScatterPlot.setOutputDensity(&density_);
+  continuousScatterPlot.setOutputMask(&validPointMask_);
   switch(inputScalars1_->GetDataType()){
     case VTK_CHAR:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterplot.execute<char,VTK_TT>();}));
+        vtkTemplateMacro(({ret=continuousScatterPlot.execute<char,VTK_TT>();}));
       }
       break;
     case VTK_UNSIGNED_CHAR:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterplot.execute<unsigned char,VTK_TT>();}));
+        vtkTemplateMacro(({ret=continuousScatterPlot.execute<unsigned char,VTK_TT>();}));
       }
       break;
     case VTK_SHORT:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterplot.execute<short,VTK_TT>();}));
+        vtkTemplateMacro(({ret=continuousScatterPlot.execute<short,VTK_TT>();}));
       }
       break;
     case VTK_UNSIGNED_SHORT:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterplot.execute<unsigned short,VTK_TT>();}));
+        vtkTemplateMacro(({ret=continuousScatterPlot.execute<unsigned short,VTK_TT>();}));
       }
       break;
     case VTK_INT:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterplot.execute<int,VTK_TT>();}));
+        vtkTemplateMacro(({ret=continuousScatterPlot.execute<int,VTK_TT>();}));
       }
       break;
     case VTK_UNSIGNED_INT:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterplot.execute<unsigned int,VTK_TT>();}));
+        vtkTemplateMacro(({ret=continuousScatterPlot.execute<unsigned int,VTK_TT>();}));
       }
       break;
     case VTK_FLOAT:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterplot.execute<float,VTK_TT>();}));
+        vtkTemplateMacro(({ret=continuousScatterPlot.execute<float,VTK_TT>();}));
       }
       break;
     case VTK_DOUBLE:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterplot.execute<double,VTK_TT>();}));
+        vtkTemplateMacro(({ret=continuousScatterPlot.execute<double,VTK_TT>();}));
       }
       break;
   }
@@ -232,7 +232,7 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef withKamikaze
   // something wrong in baseCode
   if(ret){
-    cerr << "[vtkContinuousScatterplot] ContinuousScatterplot.execute() error code : " << ret << endl;
+    cerr << "[vtkContinuousScatterPlot] ContinuousScatterPlot.execute() error code : " << ret << endl;
     return -6;
   }
 #endif
@@ -247,7 +247,7 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef withKamikaze
   // allocation problem
   else{
-    cerr << "[vtkContinuousScatterplot] Error detected : vtkCharArray allocation problem." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error detected : vtkCharArray allocation problem." << endl;
     return -9;
   }
 #endif
@@ -261,7 +261,7 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef withKamikaze
   // allocation problem
   else{
-    cerr << "[vtkContinuousScatterplot] Error detected : vtkDoubleArray allocation problem." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error detected : vtkDoubleArray allocation problem." << endl;
     return -10;
   }
 #endif
@@ -275,7 +275,7 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef withKamikaze
   // allocation problem
   else{
-    cerr << "[vtkContinuousScatterplot] Error detected : vtkDoubleArray allocation problem." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error detected : vtkDoubleArray allocation problem." << endl;
     return -11;
   }
 #endif
@@ -289,7 +289,7 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef withKamikaze
   // allocation problem
   else{
-    cerr << "[vtkContinuousScatterplot] Error detected : vtkDoubleArray allocation problem." << endl;
+    cerr << "[vtkContinuousScatterPlot] Error detected : vtkDoubleArray allocation problem." << endl;
     return -12;
   }
 #endif
@@ -357,7 +357,7 @@ int vtkContinuousScatterplot::doIt(vector<vtkDataSet *> &inputs,
 
   {
     stringstream msg;
-    msg << "[vtkContinuousScatterplot] Memory usage: " << m.getElapsedUsage()
+    msg << "[vtkContinuousScatterPlot] Memory usage: " << m.getElapsedUsage()
       << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   } 

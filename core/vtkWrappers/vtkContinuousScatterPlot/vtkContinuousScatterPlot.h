@@ -1,5 +1,5 @@
 /// \ingroup vtkWrappers
-/// \class vtkContinuousScatterplot
+/// \class vtkContinuousScatterPlot
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date March 2016
@@ -31,13 +31,13 @@
 /// Proc. of IEEE VIS 2008.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2008.
 ///
-/// \sa ttk::ContinuousScatterplot
+/// \sa ttk::ContinuousScatterPlot
 
 #ifndef _VTK_CONTINUOUSSCATTERPLOT_H
 #define _VTK_CONTINUOUSSCATTERPLOT_H
 
 // ttk baseCode includes
-#include  <ContinuousScatterplot.h>
+#include  <ContinuousScatterPlot.h>
 #include  <ttkWrapper.h>
 
 // VTK includes
@@ -54,14 +54,14 @@
 #include<vtkPointData.h>
 #include<vtkSmartPointer.h>
 
-class VTKFILTERSCORE_EXPORT vtkContinuousScatterplot
+class VTKFILTERSCORE_EXPORT vtkContinuousScatterPlot
 : public vtkDataSetAlgorithm, public Wrapper{
 
   public:
 
-    static vtkContinuousScatterplot* New();
+    static vtkContinuousScatterPlot* New();
 
-    vtkTypeMacro(vtkContinuousScatterplot, vtkDataSetAlgorithm);
+    vtkTypeMacro(vtkContinuousScatterPlot, vtkDataSetAlgorithm);
 
     vtkSetMacro(debugLevel_, int);
 
@@ -113,8 +113,8 @@ class VTKFILTERSCORE_EXPORT vtkContinuousScatterplot
     
   protected:
 
-    vtkContinuousScatterplot();
-    ~vtkContinuousScatterplot();
+    vtkContinuousScatterPlot();
+    ~vtkContinuousScatterPlot();
     
     TTK_SETUP();
 
