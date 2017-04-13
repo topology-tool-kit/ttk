@@ -11,7 +11,7 @@ if [ -z "${Name}" ]; then
   echo "Usage:"
   echo "  $0 <Name, first letter in uppercase, no space>"
   echo "Example:"
-  echo "  $0 ScalarFieldSmoother"
+  echo "  $0 HelloWorld"
   exit -1
 fi
 
