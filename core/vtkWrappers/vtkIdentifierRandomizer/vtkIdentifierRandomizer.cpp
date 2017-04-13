@@ -53,9 +53,11 @@ int vtkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
       outputScalarField_ = vtkIntArray::New();
       break;
       
-    stringstream msg;
-    msg << "[vtkIdentifierRandomizer] Unsupported data type :(" << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+    default:
+      stringstream msg;
+      msg << "[vtkIdentifierRandomizer] Unsupported data type :(" << endl;
+      dMsg(cerr, msg.str(), fatalMsg);
+      return -1;
   }
   outputScalarField_->SetNumberOfTuples(input->GetNumberOfPoints());
   outputScalarField_->SetName(inputScalarField->GetName());
