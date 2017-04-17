@@ -21,6 +21,7 @@
 #include                  <ttkWrapper.h>
 
 // VTK includes -- to adapt
+#include                  <vtkCellData.h>
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
 #include                  <vtkDataSet.h>
