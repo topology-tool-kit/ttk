@@ -7,6 +7,8 @@ int vtkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
 
   Memory m;
   
+  bool isPointData = true;
+  
   vtkDataSet *input = inputs[0];
   vtkDataSet *output = outputs[0];
   
@@ -27,8 +29,32 @@ int vtkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
     inputScalarField = input->GetPointData()->GetArray(0);
   }
   
+  if(!inputScalarField){
+    // it may be a cell data field
+    if(ScalarField.length()){
+      inputScalarField = input->GetCellData()->GetArray(ScalarField.data());
+    }
+    else{
+      inputScalarField = input->GetCellData()->GetArray(0);
+    }
+    if(inputScalarField)
+      isPointData = false;
+  }
+  
   if(!inputScalarField)
     return -2;
+ 
+  {
+    stringstream msg;
+    msg << "[vtkIdentifierRandomizer] Shuffling ";
+    if(isPointData)
+      msg << "vertex";
+    else
+      msg << "cell";
+    msg << " field `"
+      << inputScalarField->GetName() << "'..." << endl;
+    dMsg(cout, msg.str(), infoMsg);
+  }
   
   // allocate the memory for the output scalar field
   if(outputScalarField_){
@@ -59,19 +85,30 @@ int vtkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
       dMsg(cerr, msg.str(), fatalMsg);
       return -1;
   }
-  outputScalarField_->SetNumberOfTuples(input->GetNumberOfPoints());
+  outputScalarField_->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
   outputScalarField_->SetName(inputScalarField->GetName());
   
   
   // on the output, replace the field array by a pointer to its processed
   // version
-  if(ScalarField.length()){
-    output->GetPointData()->RemoveArray(ScalarField.data());
+  if(isPointData){
+    if(ScalarField.length()){
+      output->GetPointData()->RemoveArray(ScalarField.data());
+    }
+    else{
+      output->GetPointData()->RemoveArray(0);
+    }
+    output->GetPointData()->AddArray(outputScalarField_);
   }
   else{
-    output->GetPointData()->RemoveArray(0);
+    if(ScalarField.length()){
+      output->GetCellData()->RemoveArray(ScalarField.data());
+    }
+    else{
+      output->GetCellData()->RemoveArray(0);
+    }
+    output->GetCellData()->AddArray(outputScalarField_);
   }
-  output->GetPointData()->AddArray(outputScalarField_);
   
   vector<pair<int, int> > identifierMap;
   
