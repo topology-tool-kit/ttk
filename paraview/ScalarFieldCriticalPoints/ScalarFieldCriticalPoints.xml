@@ -79,6 +79,7 @@ American Mathematical Monthly, 1970.
         number_of_elements="1"
         animateable="0"
         label="Input Offset field"
+        default_values="OutputOffsetScalarField"
         >
         <ArrayListDomain
           name="array_list"

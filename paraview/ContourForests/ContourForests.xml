@@ -87,6 +87,7 @@
         name="InputOffsetScalarFieldName"
         command="SetinputOffsetScalarFieldName_"
         label="Input Offset Field"
+        default_values="OutputOffsetScalarField"
         number_of_elements="1"
         animateable="0"
         >

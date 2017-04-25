@@ -6,6 +6,7 @@ vtkContourForests::vtkContourForests()
   :  // Base //
     FieldId{0},
     InputOffsetFieldId{-1},
+    inputOffsetScalarFieldName_{"OutputOffsetScalarField"},
     isLoaded_{},
     lessPartition_{true},
     tree_{},

@@ -179,6 +179,7 @@ class VTKFILTERSCORE_EXPORT vtkContourForests
     int ThreadNumber;
     int FieldId;
     int InputOffsetFieldId;
+    string inputOffsetScalarFieldName_;
     bool isLoaded_;
     bool lessPartition_;
     MergeTree* tree_;
@@ -192,7 +193,6 @@ class VTKFILTERSCORE_EXPORT vtkContourForests
     vtkPolyData* voidPolyData_;
 
     // Configuration //
-    string inputOffsetScalarFieldName_;
     bool useInputOffsetScalarField_;
     bool varyingMesh_;
     bool varyingDataValues_;

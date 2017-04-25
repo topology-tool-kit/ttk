@@ -16,6 +16,7 @@ vtkStandardNewMacro(vtkTopologicalSimplification)
   OutputOffsetScalarFieldName = "OutputOffsetScalarField";
   VertexIdentifierScalarField = "VertexIdentifier";
   ConsiderIdentifierAsBlackList = false;
+  InputOffsetScalarFieldName = "OutputOffsetScalarField";
 }
 
 vtkTopologicalSimplification::~vtkTopologicalSimplification(){
