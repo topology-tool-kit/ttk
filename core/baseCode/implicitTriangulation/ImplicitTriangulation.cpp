@@ -1483,22 +1483,22 @@ int ImplicitTriangulation::getEdgeLink(const int &edgeId, const int &localLinkId
     }
   }
   else if(dimensionality_==2){
-    int starId;
-    getEdgeStar(edgeId, localLinkId, starId);
+    int p[2];
 
-    int v0;
-    int v1;
-    getEdgeVertex(edgeId, 0, v0);
-    getEdgeVertex(edgeId, 1, v1);
-
-    for(int i=0; i<3; ++i){
-      int vertexId;
-      getTriangleVertex(starId, i, vertexId);
-
-      if(vertexId!=v0 and vertexId!=v1){
-        linkId=vertexId;
-        break;
-      }
+    //L
+    if(edgeId<esetshift_[0]){
+      edgeToPosition2d(edgeId,0,p);
+      linkId=getEdgeLink2dL(p,localLinkId);
+    }
+    //H
+    else if(edgeId<esetshift_[1]){
+      edgeToPosition2d(edgeId,1,p);
+      linkId=getEdgeLink2dH(p,localLinkId);
+    }
+    //D1
+    else if(edgeId<esetshift_[2]){
+      edgeToPosition2d(edgeId,2,p);
+      linkId=getEdgeLink2dD1(p,localLinkId);
     }
   }
 

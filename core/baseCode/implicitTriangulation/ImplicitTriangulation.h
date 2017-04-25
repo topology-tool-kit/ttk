@@ -942,14 +942,34 @@ inline int ImplicitTriangulation::getEdgeTriangleD1_xy(const int p[3], const int
 }
 
 inline int ImplicitTriangulation::getEdgeLink2dL(const int p[2], const int id) const{
+  if(p[1]>0 and p[1]<nbvoxels_[Dj_]){
+    switch(id){
+      case 0: return p[0]+(p[1]+1)*vshift_[0];
+      case 1: return p[0]+(p[1]-1)*vshift_[0]+1;
+    }
+  }
+  else if(p[1]==0) return p[0]+vshift_[0];
+  else return p[0]+(p[1]-1)*vshift_[0]+1;
   return -1;
 }
 
 inline int ImplicitTriangulation::getEdgeLink2dH(const int p[2], const int id) const{
+  if(p[0]>0 and p[0]<nbvoxels_[Di_]){
+    switch(id){
+      case 0: return p[0]+p[1]*vshift_[0]+1;
+      case 1: return p[0]+(p[1]+1)*vshift_[0]-1;
+    }
+  }
+  else if(p[0]==0) return p[1]*vshift_[0]+1;
+  else return p[0]+(p[1]+1)*vshift_[0]-1;
   return -1;
 }
 
 inline int ImplicitTriangulation::getEdgeLink2dD1(const int p[2], const int id) const{
+  switch(id){
+    case 0: return p[0]+p[1]*vshift_[0];
+    case 1: return p[0]+(p[1]+1)*vshift_[0]+1;
+  }
   return -1;
 }
 
