@@ -16,6 +16,7 @@ vtkStandardNewMacro(vtkPersistenceDiagram)
   ScalarFieldId = 0;
   OffsetFieldId = -1;
   ComputeSaddleConnectors = false;
+  InputOffsetScalarFieldName = "OutputOffsetScalarField";
   
   triangulation_ = NULL;
 }

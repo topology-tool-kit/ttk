@@ -11,6 +11,7 @@ vtkScalarFieldCriticalPoints::vtkScalarFieldCriticalPoints(){
 
   ScalarFieldId = 0;
   OffsetFieldId = -1;
+  OffsetField = "OutputOffsetScalarField";
 }
 
 vtkScalarFieldCriticalPoints::~vtkScalarFieldCriticalPoints(){
