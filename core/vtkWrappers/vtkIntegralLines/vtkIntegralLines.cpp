@@ -11,6 +11,8 @@ vtkStandardNewMacro(vtkIntegralLines)
 {
   SetNumberOfInputPorts(2);
   triangulation_ = NULL;
+  
+  OffsetScalarFieldName = "OutputOffsetScalarField";
 }
 
 vtkIntegralLines::~vtkIntegralLines(){
