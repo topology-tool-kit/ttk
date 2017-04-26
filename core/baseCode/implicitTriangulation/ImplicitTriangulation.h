@@ -484,6 +484,13 @@ namespace ttk{
       int getTriangleEdgeD3_0(const int p[3], const int localEdgeId) const;
       int getTriangleEdgeD3_1(const int p[3], const int localEdgeId) const;
 
+      int getTriangleLinkF(const int p[3], const int id) const;
+      int getTriangleLinkH(const int p[3], const int id) const;
+      int getTriangleLinkC(const int p[3], const int id) const;
+      int getTriangleLinkD1(const int p[3], const int id) const;
+      int getTriangleLinkD2(const int p[3], const int id) const;
+      int getTriangleLinkD3(const int p[3], const int id) const;
+
       int getTriangleStarF(const int p[3], const int id) const;
       int getTriangleStarH(const int p[3], const int id) const;
       int getTriangleStarC(const int p[3], const int id) const;
@@ -3179,6 +3186,30 @@ inline int ImplicitTriangulation::getTriangleEdgeD3_1(const int p[3], const int 
     case 1: return esetshift_[2]+p[0]/2+p[1]*eshift_[6]+(p[2]+1)*eshift_[7];
     case 2: return esetshift_[5]+p[0]/2+p[1]*eshift_[12]+p[2]*eshift_[13];
   }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getTriangleLinkF(const int p[3], const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getTriangleLinkH(const int p[3], const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getTriangleLinkC(const int p[3], const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getTriangleLinkD1(const int p[3], const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getTriangleLinkD2(const int p[3], const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getTriangleLinkD3(const int p[3], const int id) const{
   return -1;
 }
 
