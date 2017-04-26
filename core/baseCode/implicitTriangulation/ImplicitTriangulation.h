@@ -3190,26 +3190,89 @@ inline int ImplicitTriangulation::getTriangleEdgeD3_1(const int p[3], const int 
 }
 
 inline int ImplicitTriangulation::getTriangleLinkF(const int p[3], const int id) const{
+  if(p[2]>0 and p[2]<nbvoxels_[2]){
+    switch(id){
+      case 0: return p[0]/2+(p[1]+1)*vshift_[0]+(p[2]+1)*vshift_[1];
+      case 1: return p[0]/2+p[1]*vshift_[0]+(p[2]-1)*vshift_[1]+1;
+    }
+  }
+  else if(p[2]==0) return p[0]/2+(p[1]+1)*vshift_[0]+vshift_[1];
+  else return p[0]/2+p[1]*vshift_[0]+(p[2]-1)*vshift_[1]+1;
+
   return -1;
 }
 
 inline int ImplicitTriangulation::getTriangleLinkH(const int p[3], const int id) const{
+  if(p[1]>0 and p[1]<nbvoxels_[1]){
+    switch(id){
+      case 0: return p[0]/2+(p[1]+1)*vshift_[0]+(p[2]+1)*vshift_[1];
+      case 1: return p[0]/2+(p[1]-1)*vshift_[0]+p[2]*vshift_[1]+1;
+    }
+  }
+  else if(p[1]==0) return p[0]/2+(p[1]+1)*vshift_[0]+(p[2]+1)*vshift_[1];
+  else return p[0]/2+(p[1]-1)*vshift_[0]+p[2]*vshift_[1]+1;
+
   return -1;
 }
 
 inline int ImplicitTriangulation::getTriangleLinkC(const int p[3], const int id) const{
+  if(p[0]>1 and p[0]<(dimensions_[0]*2-2)){
+    switch(id){
+      case 0: return p[0]/2+p[1]*vshift_[0]+p[2]*vshift_[1]+1;
+      case 1: return p[0]/2+(p[1]+1)*vshift_[0]+(p[2]+1)*vshift_[1]-1;
+    }
+  }
+  else if(p[0]<2) return p[0]/2+p[1]*vshift_[0]+p[2]*vshift_[1]+1;
+  else return p[0]/2+(p[1]+1)*vshift_[0]+(p[2]+1)*vshift_[1]-1;
+
   return -1;
 }
 
 inline int ImplicitTriangulation::getTriangleLinkD1(const int p[3], const int id) const{
+  if(p[0]%2){
+    switch(id){
+      case 0: return p[0]/2+p[1]*vshift_[0]+p[2]*vshift_[1];
+      case 1: return p[0]/2+p[1]*vshift_[0]+(p[2]+1)*vshift_[1]+1;
+    }
+  }
+  else{
+    switch(id){
+      case 0: return p[0]/2+(p[1]+1)*vshift_[0]+p[2]*vshift_[1];
+      case 1: return p[0]/2+(p[1]+1)*vshift_[0]+(p[2]+1)*vshift_[1]+1;
+    }
+  }
   return -1;
 }
 
 inline int ImplicitTriangulation::getTriangleLinkD2(const int p[3], const int id) const{
+  if(p[0]%2){
+    switch(id){
+      case 0: return p[0]/2+(p[1]+1)*vshift_[0]+p[2]*vshift_[1]+1;
+      case 1: return p[0]/2+p[1]*vshift_[0]+(p[2]+1)*vshift_[1]+1;
+    }
+  }
+  else{
+    switch(id){
+      case 0: return p[0]/2+(p[1]+1)*vshift_[0]+p[2]*vshift_[1];
+      case 1: return p[0]/2+p[1]*vshift_[0]+(p[2]+1)*vshift_[1];
+    }
+  }
   return -1;
 }
 
 inline int ImplicitTriangulation::getTriangleLinkD3(const int p[3], const int id) const{
+  if(p[0]%2){
+    switch(id){
+      case 0: return p[0]/2+p[1]*vshift_[0]+(p[2]+1)*vshift_[1];
+      case 1: return p[0]/2+(p[1]+1)*vshift_[0]+(p[2]+1)*vshift_[1]+1;
+    }
+  }
+  else{
+    switch(id){
+      case 0: return p[0]/2+p[1]*vshift_[0]+p[2]*vshift_[1];
+      case 1: return p[0]/2+(p[1]+1)*vshift_[0]+p[2]*vshift_[1]+1;
+    }
+  }
   return -1;
 }
 
