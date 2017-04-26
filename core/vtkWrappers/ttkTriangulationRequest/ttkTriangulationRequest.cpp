@@ -114,6 +114,33 @@ vtkStandardNewMacro(ttkTriangulationRequest)
         addTetra(starId);
     };
 
+    // do minimum preprocess and put watchdog on SimplexId
+    switch(simplexType){
+      case Vertex:
+        if(SimplexId<0 or SimplexId>=numberOfVertices) return -1;
+        break;
+
+      case Edge:
+        triangulation->preprocessEdges();
+        if(SimplexId<0 or SimplexId>=triangulation->getNumberOfEdges()) return -1;
+        break;
+
+      case Triangle:
+        if(dimensionality==2){
+          if(SimplexId<0 or SimplexId>=triangulation->getNumberOfCells()) return -1;
+        }
+        else if(dimensionality==3){
+          triangulation->preprocessTriangles();
+          if(SimplexId<0 or SimplexId>=triangulation->getNumberOfTriangles()) return -1;
+        }
+        break;
+
+      case Tetra:
+        if(dimensionality==3)
+          if(SimplexId<0 or SimplexId>=triangulation->getNumberOfCells()) return -1;
+        break;
+    }
+
     switch(requestType){
       case ComputeSimplex:
         switch(simplexType){
@@ -122,14 +149,10 @@ vtkStandardNewMacro(ttkTriangulationRequest)
             break;
 
           case Edge:
-            triangulation->preprocessEdges();
             addEdge(SimplexId);
             break;
 
           case Triangle:
-            if(dimensionality==3)
-              triangulation->preprocessTriangles();
-
             addTriangle(SimplexId);
             break;
 
@@ -146,7 +169,6 @@ vtkStandardNewMacro(ttkTriangulationRequest)
             break;
 
           case Edge:
-            triangulation->preprocessEdges();
             for(int i=0; i<2; ++i){
               int vertexId;
               triangulation->getEdgeVertex(SimplexId, i, vertexId);
@@ -155,7 +177,6 @@ vtkStandardNewMacro(ttkTriangulationRequest)
             break;
 
           case Triangle:
-            triangulation->preprocessEdges();
             if(dimensionality==2){
               triangulation->preprocessCellEdges();
               for(int i=0; i<3; ++i){
@@ -176,7 +197,6 @@ vtkStandardNewMacro(ttkTriangulationRequest)
 
           case Tetra:
             if(dimensionality==3){
-              triangulation->preprocessTriangles();
               triangulation->preprocessCellTriangles();
               for(int i=0; i<4; ++i){
                 int triangleId;
@@ -192,7 +212,6 @@ vtkStandardNewMacro(ttkTriangulationRequest)
         switch(simplexType){
           case Vertex:
             triangulation->preprocessVertexEdges();
-            triangulation->preprocessEdges();
             {
               const int edgeNumber=triangulation->getVertexEdgeNumber(SimplexId);
               for(int i=0; i<edgeNumber; ++i){
@@ -215,7 +234,6 @@ vtkStandardNewMacro(ttkTriangulationRequest)
             }
             else if(dimensionality==3){
               triangulation->preprocessEdgeTriangles();
-              triangulation->preprocessTriangles();
               const int triangleNumber=triangulation->getEdgeTriangleNumber(SimplexId);
               for(int i=0; i<triangleNumber; ++i){
                 int triangleId;
@@ -290,7 +308,6 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Vertex:
             triangulation->preprocessVertexLinks();
             if(dimensionality==2){
-              triangulation->preprocessEdges();
               const int linkNumber=triangulation->getVertexLinkNumber(SimplexId);
               for(int i=0; i<linkNumber; ++i){
                 int linkId;
@@ -320,7 +337,6 @@ vtkStandardNewMacro(ttkTriangulationRequest)
               }
             }
             else if(dimensionality==3){
-              triangulation->preprocessEdges();
               const int linkNumber=triangulation->getEdgeLinkNumber(SimplexId);
               for(int i=0; i<linkNumber; ++i){
                 int linkId;
