@@ -58,7 +58,7 @@
       </IntVectorProperty>
 
       <IntVectorProperty name="RequestType"
-        label="Compute only"
+        label="Request type"
         command="SetRequestType"
         number_of_elements="1"
         default_values="0"
@@ -111,9 +111,12 @@
         </Documentation>
       </IntVectorProperty>
 
-      <PropertyGroup panel_widget="Line" label="Output options">
+      <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="SimplexType" />
         <Property name="SimplexId" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="RequestType" />
       </PropertyGroup>
 
