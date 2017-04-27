@@ -112,7 +112,7 @@ int MorseSmaleComplex3D::getSaddleConnectors(const vector<Cell>& criticalPoints,
         const bool isMultiConnected=discreteGradient_.getAscendingPathThroughWall(savedDescendingWallId, saddle1, saddle2, isVisited, &vpath);
 
         const Cell& lastCell=vpath.back();
-        if(!isMultiConnected and lastCell.dim_==saddle2.dim_ and lastCell.id_==lastCell.id_){
+        if(!isMultiConnected and lastCell.dim_==saddle2.dim_ and lastCell.id_==saddle2.id_){
           const int separatrixIndex=separatrices.size();
           separatricesGeometry.push_back(std::move(vpath));
           separatrices.push_back(std::move(Separatrix(true,saddle1,saddle2,false,separatrixIndex)));
