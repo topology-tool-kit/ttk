@@ -48,5 +48,6 @@ add_subdirectory(paraview/ScalarFieldSmoother/)
 add_subdirectory(paraview/SphereFromPoint/)
 add_subdirectory(paraview/TextureMapFromField/)
 add_subdirectory(paraview/TopologicalSimplification/)
-add_subdirectory(paraview/UncertainDataEstimator/)
 add_subdirectory(paraview/TriangulationRequest/)
+add_subdirectory(paraview/UncertainDataEstimator/)
+
