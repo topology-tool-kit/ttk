@@ -189,7 +189,7 @@ vtkStandardNewMacro(vtkTriangulationRequest)
               triangulation->preprocessTriangleEdges();
               for(int i=0; i<3; ++i){
                 int edgeId;
-                triangulation->getEdgeVertex(SimplexId, i, edgeId);
+                triangulation->getTriangleEdge(SimplexId, i, edgeId);
                 addEdge(edgeId);
               }
             }
