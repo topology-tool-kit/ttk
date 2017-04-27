@@ -3,20 +3,22 @@
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \date April 2017.
 ///
-/// \brief TTK VTK-filter that wraps the triangulationRequest processing package.
+/// \brief TTK VTK-filter that wraps the triangulation processing package.
 ///
-/// VTK wrapping code for the @TriangulationRequest package.
-/// 
-/// \param Input Input scalar field (vtkDataSet)
-/// \param Output Output scalar field (vtkDataSet)
+/// VTK wrapping code for the @Triangulation package.
 ///
-/// This filter can be used as any other VTK filter (for instance, by using the 
+/// \param Input Geometry, either 2D or 3D, either regular grid or
+/// triangulation (vtkDataSet)
+/// \param Output Output geometry requested by the user (vtkDataSet)
+///
+/// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
-/// See the related ParaView example state files for usage examples within a 
+/// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \sa ttk::TriangulationRequest
+/// \sa ttk::Triangulation
+///
 #pragma once
 
 // ttk code includes
