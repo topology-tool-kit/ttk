@@ -241,22 +241,22 @@ if(NOT TTK_PKG)
     string(REPLACE " " ";" sourceList ${source})
 
     foreach(sourceFile ${sourceList})
-      if(withParaView)
+      if("${TTK_BUILD_MODE}" MATCHES "ParaView")
         add_library(${library} OBJECT 
           ${CMAKE_CURRENT_LIST_DIR}/${sourceFile})
-      elseif(NOT withParaView)
+      elseif(NOT "${TTK_BUILD_MODE}" MATCHES "ParaView")
         ttk_add_source(${sourceFile})
-      endif(withParaView)
+      endif("${TTK_BUILD_MODE}" MATCHES "ParaView")
     endforeach(sourceFile)
 
-    if(withParaView)
+    if("${TTK_BUILD_MODE}" MATCHES "ParaView")
       # use the project flags
       set_target_properties(${library}
         PROPERTIES
         COMPILE_FLAGS
         "${PROJECT_FLAGS}")
       add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${library}>)
-    endif(withParaView)
+    endif("${TTK_BUILD_MODE}" MATCHES "ParaView")
 
     set(LIB_LIST "${LIB_LIST} ${source}" CACHE INTERNAL "LIB_LIST")
 
@@ -266,7 +266,7 @@ if(NOT TTK_PKG)
     plugin_name
     plugin_version)
 
-    if(withParaView)
+    if("${TTK_BUILD_MODE}" MATCHES "ParaView")
       
       add_paraview_plugin(
         # name
@@ -276,7 +276,7 @@ if(NOT TTK_PKG)
         SERVER_MANAGER_XML "${plugin_name}.xml"
         SERVER_MANAGER_SOURCES "${PROJECT_SRC}"
       )
-    endif(withParaView)
+    endif("${TTK_BUILD_MODE}" MATCHES "ParaView")
 
     ttk_wrapup_flags(${plugin_name})
     install(
@@ -291,14 +291,8 @@ if(NOT TTK_PKG)
   message(STATUS
 "-----------------------------------------------------------------------------")
 
-  option(withVTK "Enable VTK support" false)
+  set(withVTK false)
 
-  option(withParaView "Enable ParaView support" false)
-
-  option(withVTKCMD "Enable VTK CMD support" false)
-
-  option(withVTKGUI "Enable VTK GUI support" false)
- 
   set(TTK_BINARY_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin"
     CACHE PATH "Directory where TTK binary programs will be installed")
   set(CMAKE_INSTALL_RPATH "${TTK_BINARY_INSTALL_DIR}/../")
@@ -306,17 +300,17 @@ if(NOT TTK_PKG)
   # add the common package
   ttk_add_baseCode_package(common)
 
-  if(withVTKGUI)
+  if("${TTK_BUILD_MODE}" MATCHES "VTK-GUI")
     set(withVTK true)
     ttk_add_vtkWrapper_package(ttkWrapper)
-  endif(withVTKGUI)
+  endif("${TTK_BUILD_MODE}" MATCHES "VTK-GUI")
 
-  if(withVTKCMD)
+  if("${TTK_BUILD_MODE}" MATCHES "VTK-CMD")
     set(withVTK true)
     ttk_add_vtkWrapper_package(ttkWrapper)
-  endif(withVTKCMD)
+  endif("${TTK_BUILD_MODE}" MATCHES "VTK-CMD")
 
-  if(NOT withParaView)
+  if(NOT "${TTK_BUILD_MODE}" MATCHES "ParaView")
     if(withVTK)
       if(NOT VTK_USE_FILE)
         find_package(VTK REQUIRED)
@@ -326,20 +320,20 @@ if(NOT TTK_PKG)
         set(PROJECT_FLAGS "${PROJECT_FLAGS} -DwithVTK"
           CACHE INTERNAL "PROJECT_FLAGS")
 
-        if(withVTKCMD)
+        if("${TTK_BUILD_MODE}" MATCHES "VTK-CMD")
           ttk_add_vtkWrapper_package(vtkProgramBase)
-        endif(withVTKCMD)
+        endif("${TTK_BUILD_MODE}" MATCHES "VTK-CMD")
           
-        if(withVTKGUI)
+        if("${TTK_BUILD_MODE}" MATCHES "VTK-GUI")
           ttk_add_vtkWrapper_package(vtkUserInterfaceBase)
           ttk_add_vtkWrapper_package(vtkTextureMapFromField)
           ttk_add_vtkWrapper_package(vtkWRLExporter)
-        endif(withVTKGUI)
+        endif("${TTK_BUILD_MODE}" MATCHES "VTK-GUI")
       endif(NOT VTK_USE_FILE)
     endif(withVTK)
-  endif(NOT withParaView)
+  endif(NOT "${TTK_BUILD_MODE}" MATCHES "ParaView")
 
-  if(withParaView)
+  if("${TTK_BUILD_MODE}" MATCHES "ParaView")
     find_package(ParaView REQUIRED)
     include(${PARAVIEW_USE_FILE})
     set(TTK_PLUGIN_INSTALL_DIR "${VTK_INSTALL_PREFIX}/lib/paraview-${PARAVIEW_VERSION_MAJOR}.${PARAVIEW_VERSION_MINOR}/plugins"
@@ -347,7 +341,7 @@ if(NOT TTK_PKG)
       "Directory where TTK ParaView plugins will be installed")
     set(withVTK true)
     ttk_add_vtkWrapper_package(ttkWrapper)
-  endif(withParaView)
+  endif("${TTK_BUILD_MODE}" MATCHES "ParaView")
 
   # messages on dependencies
   message(STATUS
@@ -355,10 +349,6 @@ if(NOT TTK_PKG)
   message(STATUS "baseCode path: ${BASECODE_DIR}")
 
   # optional dependency on VTK
-  message(STATUS "VTK support: ${withVTK}   (-DwithVTK=)")
-  message(STATUS "VTK CMD support: ${withVTKCMD}   (-DwithVTKCMD=)")
-  message(STATUS "VTK GUI support: ${withVTKGUI}   (-DwithVTKGUI=)")
-  message(STATUS "ParaView support: ${withParaView}   (-DwithParaView=)")
   message(STATUS "Binary installation path: ${TTK_BINARY_INSTALL_DIR}")
   message(STATUS "Plugin installation path: ${TTK_PLUGIN_INSTALL_DIR}")
   message(STATUS
