@@ -4,8 +4,7 @@ cmake_minimum_required(VERSION 2.4)
 project(contourForestsGui)
 
 # GUI build-mode
-option(withVTKGUI "Enable VTK GUI support" true)
-set(withVTKGUI true)
+set(TTK_BUILD_MODE "VTK-GUI")
 
 # path to the common code base
 find_path(TTK_DIR ttk.cmake
