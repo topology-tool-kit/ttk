@@ -38,10 +38,10 @@ int OneSkeleton::buildEdgeLinks(const vector<pair<int, int> > &edgeList,
       
       int vertexId = -1;
       for(int k = 0; k < 3; k++){
-        if((cellArray[(verticesPerCell + 1)*edgeStars[i][j] + 1 + k] == 
+        if((cellArray[(verticesPerCell + 1)*edgeStars[i][j] + 1 + k] != 
           edgeList[i].first)
-          ||
-          (cellArray[(verticesPerCell + 1)*edgeStars[i][j] + 1 + k] == 
+          &&
+          (cellArray[(verticesPerCell + 1)*edgeStars[i][j] + 1 + k] != 
           edgeList[i].second)){
           vertexId = cellArray[(verticesPerCell + 1)*edgeStars[i][j] + 1 + k];
           break;
