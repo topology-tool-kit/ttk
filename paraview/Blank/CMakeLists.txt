@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 2.4)
 
 project(Blank)
 
-option(withParaView "Enable ParaView support" true)
-set(withParaView true)
+set(TTK_BUILD_MODE "ParaView")
 
 # path to the common code base
 find_path(TTK_DIR ttk.cmake
@@ -12,10 +11,6 @@ find_path(TTK_DIR ttk.cmake
     ../core/
     ../../core/
     ../../../core/
-    sandbox/core/
-    sandbox/../core/
-    sandbox/../../core/
-    sandbox/../../../core/
 )
 include(${TTK_DIR}/ttk.cmake)
 

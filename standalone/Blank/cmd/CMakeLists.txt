@@ -4,8 +4,7 @@ cmake_minimum_required(VERSION 2.4)
 project(blankCmd)
 
 # command-line build-mode
-option(withVTKCMD "Enable VTK CMD support" true)
-set(withVTKCMD true)
+set(TTK_BUILD_MODE "VTK-CMD")
 
 # path to the common code base
 find_path(TTK_DIR ttk.cmake
