@@ -4051,6 +4051,30 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
 
 template<typename dataType>
 int DiscreteGradient::reverseGradient(){
+  {
+    // foreach dimension
+    const int numberOfDimensions=getNumberOfDimensions();
+    vector<int> numberOfCriticalPointsByDimension(numberOfDimensions,0);
+    for(int i=0; i<numberOfDimensions; ++i){
+
+      // foreach cell of that dimension
+      const int numberOfCells=getNumberOfCells(i);
+      for(int j=0; j<numberOfCells; ++j){
+        const Cell cell(i,j);
+
+        if(isCellCritical(cell))
+          ++numberOfCriticalPointsByDimension[i];
+      }
+    }
+
+    {
+      stringstream msg;
+      for(int i=0; i<numberOfDimensions; ++i)
+        msg << "[DiscreteGradient] " << numberOfCriticalPointsByDimension[i] << " " << i << "-cell(s)." << endl;
+      dMsg(cout, msg.str(), infoMsg);
+    }
+  }
+
   vector<pair<int,char>> criticalPoints;
 
   // get the PL critical points
