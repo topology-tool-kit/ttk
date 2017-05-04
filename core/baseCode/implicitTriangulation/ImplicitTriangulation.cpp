@@ -1954,40 +1954,37 @@ int ImplicitTriangulation::getTriangleLink(const int &triangleId, const int &loc
   linkId=-1;
 
   if(dimensionality_==3){
-    int starId;
-    getTriangleStar(triangleId, localLinkId, starId);
+    int p[3];
 
-    int v0;
-    int v1;
-    int v2;
-    getTriangleVertex(triangleId, 0, v0);
-    getTriangleVertex(triangleId, 1, v1);
-    getTriangleVertex(triangleId, 2, v2);
-
-    for(int i=0; i<4; ++i){
-      int anotherTriangleId;
-      getTetrahedronTriangle(starId, i, anotherTriangleId);
-
-      if(anotherTriangleId==triangleId) continue;
-
-      int w;
-      getTriangleVertex(anotherTriangleId, 0, w);
-      if(w!=v0 and w!=v1 and w!=v2){
-        linkId=w;
-        break;
-      }
-
-      getTriangleVertex(anotherTriangleId, 1, w);
-      if(w!=v0 and w!=v1 and w!=v2){
-        linkId=w;
-        break;
-      }
-
-      getTriangleVertex(anotherTriangleId, 2, w);
-      if(w!=v0 and w!=v1 and w!=v2){
-        linkId=w;
-        break;
-      }
+    //F
+    if(triangleId<tsetshift_[0]){
+      triangleToPosition(triangleId,0,p);
+      linkId=getTriangleLinkF(p,localLinkId);
+    }
+    //H
+    else if(triangleId<tsetshift_[1]){
+      triangleToPosition(triangleId,1,p);
+      linkId=getTriangleLinkH(p,localLinkId);
+    }
+    //C
+    else if(triangleId<tsetshift_[2]){
+      triangleToPosition(triangleId,2,p);
+      linkId=getTriangleLinkC(p,localLinkId);
+    }
+    //D1
+    else if(triangleId<tsetshift_[3]){
+      triangleToPosition(triangleId,3,p);
+      linkId=getTriangleLinkD1(p,localLinkId);
+    }
+    //D2
+    else if(triangleId<tsetshift_[4]){
+      triangleToPosition(triangleId,4,p);
+      linkId=getTriangleLinkD2(p,localLinkId);
+    }
+    //D3
+    else if(triangleId<tsetshift_[5]){
+      triangleToPosition(triangleId,5,p);
+      linkId=getTriangleLinkD3(p,localLinkId);
     }
   }
 
