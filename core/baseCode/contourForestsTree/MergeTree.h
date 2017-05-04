@@ -548,11 +548,11 @@ namespace ttk
 
       // For persistance pair on CT
       // these function allow to make a JT / ST od the CT
-      const vector<idNode>&& getNodeNeighbors(const idNode &node);
+      const vector<idNode> getNodeNeighbors(const idNode &node);
 
-      const vector<idNode>&& getNodeUpNeighbors(const idNode &n);
+      const vector<idNode> getNodeUpNeighbors(const idNode &n);
 
-      const vector<idNode>&& getNodeDownNeighbors(const idNode &n);
+      const vector<idNode> getNodeDownNeighbors(const idNode &n);
 
       // Remove part not in partition
 

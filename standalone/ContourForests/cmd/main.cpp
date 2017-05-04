@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
   program.ttkObject_->SetTreeType(treeType);
   program.ttkObject_->SetArcResolution(arcSampling);
   program.ttkObject_->SetSkeletonSmoothing(arcSmoothing);
-  globalDebugLevel_ = 2;
+  // globalDebugLevel_ = 2;
   
   // execute data processing
   ret = program.run();
