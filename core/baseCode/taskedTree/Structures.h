@@ -1,0 +1,176 @@
+/// \ingroup baseCode
+//
+/// \class ttk::MergeTree
+/// \author Charles Gueuent <charles.gueunet@lip6.fr>
+/// \date September 2016.
+///
+///\brief TTK structures for the contour tree
+///
+/// \b Related \b publication \n
+/// "Contour Forests: Fast Multi-threaded Augmented Contour Trees" \n
+/// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
+/// Proc. of IEEE LDAV 2016.
+
+#ifndef STRUCTURES_H
+#define STRUCTURES_H
+
+#include <forward_list>
+#include <iterator>
+#include <memory>
+#include <vector>
+
+#include <boost/heap/fibonacci_heap.hpp>
+
+#include "AtomicVector.h"
+#include "DataTypes.h"
+
+// todo remove
+#include<iostream>
+
+namespace ttk
+{
+   // Compute parameters (global)
+   struct Params {
+      TreeType      treeType;
+      SimplifMethod simplifyMethod;
+      double        simplifyThreshold;
+   };
+
+   // Scalar related containers (global)
+   struct Scalars {
+      idVertex size;
+      void*    values;
+
+      // Actually, fields below are unused -----
+      std::shared_ptr<std::vector<idVertex>> sosOffsets;
+      std::shared_ptr<std::vector<idVertex>> sortedVertices, mirrorVertices;
+
+      // Need vertices to be sorted : use mirrorVertices.
+
+      bool isLower(idVertex a, idVertex b) const
+      {
+         return (*mirrorVertices)[a] < (*mirrorVertices)[b];
+      }
+      bool isEqLower(idVertex a, idVertex b) const
+      {
+         return (*mirrorVertices)[a] <= (*mirrorVertices)[b];
+      }
+
+      bool isHigher(idVertex a, idVertex b) const
+      {
+         return (*mirrorVertices)[a] > (*mirrorVertices)[b];
+      }
+      bool isEqHigher(idVertex a, idVertex b) const
+      {
+         return (*mirrorVertices)[a] >= (*mirrorVertices)[b];
+      }
+
+      Scalars() : sosOffsets(nullptr), sortedVertices(nullptr), mirrorVertices(nullptr)
+      {
+      }
+
+      // Heavy
+      Scalars(const Scalars& o)
+          : sosOffsets(o.sosOffsets),
+            sortedVertices(o.sortedVertices),
+            mirrorVertices(o.mirrorVertices)
+      {
+      }
+   };
+
+   struct CurrentState {
+      idVertex vertex;
+      boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation;
+
+      CurrentState(idVertex startVert, VertCompFN vertComp)
+          : vertex(startVert), propagation(vertComp)
+      {
+      }
+
+      idVertex getNextMinVertex(void)
+      {
+          vertex = propagation.top();
+          propagation.pop();
+          return vertex;
+      }
+
+      void addNewVertex(const idVertex v)
+      {
+          propagation.emplace(v);
+      }
+
+      void merge(CurrentState& other)
+      {
+         propagation.merge(other.propagation);
+         vertex = propagation.top();
+      }
+
+      bool empty()
+      {
+         return propagation.empty();
+      }
+
+      // DEBUG ONLY
+      bool find(idVertex v)
+      {
+         return std::find(propagation.begin(), propagation.end(), v) != propagation.end();
+      }
+   };
+
+   struct SharedData {
+      idVertex                    extrema;
+      AtomicVector<CurrentState*> states;
+      AtomicVector<idSuperArc>    openedArcs;
+
+      SharedData(idVertex e) : extrema(e), states(50), openedArcs(50)
+      {
+      }
+
+      void addState(CurrentState* curState)
+      {
+         const idThread& thisTask = states.getNext();
+         states[thisTask]         = curState;
+      }
+
+      void addArc(const idSuperArc arc)
+      {
+         idSuperArc thisArc  = openedArcs.getNext();
+         openedArcs[thisArc] = arc;
+      }
+
+      void merge(SharedData& other)
+      {
+         for (auto* state : other.states) {
+            addState(state);
+         }
+
+         for (auto& arc : other.openedArcs) {
+            addArc(arc);
+         }
+      }
+
+      void reserve(const size_t& s)
+      {
+          states.reserve(s);
+          openedArcs.reserve(s);
+      }
+   };
+
+   struct Comparison {
+      VertCompFN vertLower, vertHigher;
+   };
+
+   using segm_it           = std::vector<idVertex>::iterator;
+   using segm_rev_it       = std::vector<idVertex>::reverse_iterator;
+   using segm_const_it     = std::vector<idVertex>::const_iterator;
+   using segm_const_rev_it = std::vector<idVertex>::const_reverse_iterator;
+
+   // Segmentation data
+   struct Region {
+      // inverted in case of split tree
+      segm_it segmentBegin;
+      segm_it segmentEnd;
+   };
+}
+
+#endif /* end of include guard: STRUCTURES_H */

@@ -1,0 +1,240 @@
+
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+      name="taskedTree"
+      class="vtkTaskedTree"
+      label="TTK Tasked ContourTree ">
+      <Documentation
+        long_help="Plugin that computes the contour tree of a tetrahedralized DataSet.
+        NodeType:
+        * 0 - minimum,
+        * 1 - 1saddle,
+        * 2 - 2saddle,
+        * 3 - maximum,
+        * (-1) - arcs.
+
+        RegionType:
+        * 0 - (x,minimum),
+        * 1 - (x,maximum),
+        * 2 - (1-saddle,1-saddle),
+        * 3 - (2-saddle,2-saddle),
+        * 4 - (1-saddle,2-saddle)."
+        short_help="Contour tree plugin.">
+        Plugin that computes the contour tree of a tetrahedralized vtkUnstruturedGrid.
+      </Documentation>
+
+      <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="UseAllCores"
+        command="SetUseAllCores"
+        label="Use All Cores"
+        number_of_elements="1"
+        default_values="0" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use all available cores.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="ThreadNumber"
+        command="SetThreadNumber"
+        label="Thread Number"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Documentation>
+          Thread number.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DebugLevel"
+        command="SetdebugLevel_"
+        label="Debug Level"
+        number_of_elements="1"
+        default_values="2" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="10" />
+        <Documentation>
+          Debug level.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="Scalar Field"
+        command="SetScalarField"
+        number_of_elements="1"
+        animateable="0"
+        label="Scalar Field"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="Tree Type" command="SettreeType_"
+        number_of_elements="1" default_values="2">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Join    Tree"/>
+          <Entry value="1" text="Split   Tree"/>
+          <Entry value="2" text="Contour Tree"/>
+        </EnumerationDomain>
+        <Documentation>
+        0 is JT, 1 is ST, 2 is CT
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="Simplification Method"
+          command="SetsimplificationMethod_"
+          number_of_elements="1"
+          default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Persistance"/>
+          <Entry value="1" text="Region Span"/>
+          <!--<Entry value="2" text="Number of vertices"/>-->
+          <!--<Entry value="3" text="Number of arcs"/>-->
+        </EnumerationDomain>
+        <Documentation>
+          Simplification metric.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty name="Simplification Threshold"
+        command="SetsimplificationThreshold_"
+        number_of_elements="1"
+        default_values="0">
+        <DoubleRangeDomain name="range" min="0" max="1"/>
+        <Documentation>
+          Simplification threshold.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty name="Use Threshold Normalization"
+        label="Use Threshold Normalization"
+        command="SetuseThresholdNormalization_"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use Threshold Normalization.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="SuperArcSamplingLevel"
+        label="Super Arc Sampling Level"
+        command="SetSuperArcSamplingLevel"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Super Arc Sampling Level.
+        </Documentation>
+      </IntVectorProperty>
+
+<!--
+      <DoubleVectorProperty name="Skeleton Smoothing"
+        command="SetSkeletonSmoothing"
+        number_of_elements="1"
+        default_values="0">
+        <DoubleRangeDomain name="range" min="0" max="100"/>
+        <Documentation>
+          Smooth the skeleton.
+        </Documentation>
+      </DoubleVectorProperty>
+!-->
+
+      <IntVectorProperty
+        name="UseInputOffsetScalarField"
+        command="SetUseInputOffsetScalarField"
+        label="Use Input Offset Scalar Field"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use an input offset field (to disambiguate flat plateaus).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="InputOffsetScalarFieldName"
+        command="SetInputOffsetScalarFieldName"
+        label="Input Offset Scalar Field Name"
+        number_of_elements="1"
+        animateable="0"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          data_type="VTK_INT">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the input offset scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+
+
+      <PropertyGroup panel_widget="Line" label="Performances">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="Tree Type"/>
+        <Property name="Simplification Method"/>
+        <Property name="Simplification Threshold"/>
+        <Property name="Use Threshold Normalization"/>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Scalar Field"/>
+        <Property name="UseInputOffsetScalarField"/>
+        <Property name="InputOffsetScalarFieldName"/>
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Skeleton">
+        <!-- <Property name="Arc Resolution"/> -->
+        <!--<Property name="Skeleton Smoothing"/>-->
+      </PropertyGroup>
+
+      <OutputPort name="Skeleton Nodes" index="0" id="port0" />
+      <OutputPort name="Skeleton Arcs" index="1" id="port1" />
+      <OutputPort name="Segmentation" index="2" id="port2"/>
+
+      <Hints>
+        <ShowInMenu category="TTK - Charles" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
