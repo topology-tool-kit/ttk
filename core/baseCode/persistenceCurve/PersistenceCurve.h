@@ -136,7 +136,7 @@ int PersistenceCurve::execute() const{
   ContourForests contourTree;
   contourTree.setupTriangulation(triangulation_, false);
   contourTree.setVertexScalars(inputScalars_);
-  contourTree.setTreeType(TreeType::Join);
+  contourTree.setTreeType(TreeType::JoinAndSplit);
   contourTree.setVertexSoSoffsets(voffsets);
   contourTree.setLessPartition(true);
   // at the moment, only one thread is supported

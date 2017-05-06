@@ -2281,6 +2281,6 @@ DOT_CLEANUP            = YES
 
 # ttk
 RECURSIVE=YES
-OUTPUT_DIRECTORY=../../doc
+OUTPUT_DIRECTORY=../doc
 INPUT=baseCode/ \
       vtkWrappers/ \

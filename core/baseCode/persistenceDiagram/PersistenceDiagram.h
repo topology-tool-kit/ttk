@@ -176,7 +176,7 @@ int PersistenceDiagram::execute() const{
   ContourForests contourTree;
   contourTree.setupTriangulation(triangulation_, false);
   contourTree.setVertexScalars(inputScalars_);
-  contourTree.setTreeType(TreeType::Join);
+  contourTree.setTreeType(TreeType::JoinAndSplit);
   contourTree.setVertexSoSoffsets(voffsets);
   contourTree.setLessPartition(true);
   // for now, only one thread is supported
