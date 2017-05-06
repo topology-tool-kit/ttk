@@ -4,6 +4,13 @@ https://topology-tool-kit.github.io/
 
 ChangeLog
 =
+* ttk.git
+- TriangulationRequest module (to locally inspect triangulations in ParaView)
+- improved time efficiency for link queries on implicit triangulations
+- constructors fixes for VTK wrappers
+- removed legacy CMake options
+- minor bug fixes
+
 * 0.9.1
 - latest triangulation API
 - improved module handling scripts
