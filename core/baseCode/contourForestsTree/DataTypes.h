@@ -74,7 +74,7 @@ namespace ttk
    // Enum data
    // ----------
 
-   enum TreeType : char { Join = 0, Split = 1, Contour = 2 };
+   enum TreeType : char { Join = 0, Split = 1, Contour = 2 , JoinAndSplit = 3};
 
    enum SimplifMethod : char { Persist = 0, Span = 1, NbVert = 2, NbArc = 3 };
 

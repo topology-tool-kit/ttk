@@ -171,6 +171,7 @@ int vtkPersistenceCurve::getPersistenceCurve(TreeType treeType,
       break;
 
     case TreeType::Contour:
+    case TreeType::JoinAndSplit:
       persistenceScalars->SetName("Persistence (all pairs)");
       numberOfPairsScalars->SetName(
         "Number Of Pairs (all pairs)");
@@ -201,6 +202,7 @@ int vtkPersistenceCurve::getPersistenceCurve(TreeType treeType,
         STPersistenceCurve_->ShallowCopy(persistenceCurve);
         break;
 
+      case JoinAndSplit:
       case TreeType::Contour:
         CTPersistenceCurve_->ShallowCopy(persistenceCurve);
         break;

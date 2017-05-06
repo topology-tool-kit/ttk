@@ -84,6 +84,7 @@ namespace ttk
       inline MergeTree* getTree(const TreeType & tt)
       {
           switch (tt) {
+              case TreeType::JoinAndSplit:
               case TreeType::Split:
                   return getSplitTree();
                   break;

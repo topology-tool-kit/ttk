@@ -1394,6 +1394,10 @@ void vtkContourForests::updateTree()
     case TreeType::Split:
       tree_ = contourTree_->getSplitTree();
       break;
+    case TreeType::JoinAndSplit:
+      tree_ = contourTree_->getJoinTree();
+      tree_ = contourTree_->getSplitTree();
+      break;
     case TreeType::Contour:
       tree_ = contourTree_;
       break;
