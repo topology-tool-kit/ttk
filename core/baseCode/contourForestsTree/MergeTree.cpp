@@ -1095,7 +1095,7 @@ idNode MergeTree::getParent(const idNode &n)
 }
 
 // Here the return of the vector use the move constructor
-const vector<idNode>&& MergeTree::getNodeNeighbors(const idNode &n)
+const vector<idNode> MergeTree::getNodeNeighbors(const idNode &n)
 {
    Node *node   = getNode(n);
    auto  nbUp   = node->getNumberOfUpSuperArcs();
@@ -1119,10 +1119,10 @@ const vector<idNode>&& MergeTree::getNodeNeighbors(const idNode &n)
       res[currentPos++]         = corNode;
    }
 
-   return move(res);
+   return res;
 }
 
-const vector<idNode>&& MergeTree::getNodeUpNeighbors(const idNode &n)
+const vector<idNode> MergeTree::getNodeUpNeighbors(const idNode &n)
 {
    Node *node   = getNode(n);
    auto  nbUp   = node->getNumberOfUpSuperArcs();
@@ -1136,10 +1136,10 @@ const vector<idNode>&& MergeTree::getNodeUpNeighbors(const idNode &n)
       res[i]                    = corNode;
    }
 
-   return move(res);
+   return res;
 }
 
-const vector<idNode>&& MergeTree::getNodeDownNeighbors(const idNode &n)
+const vector<idNode> MergeTree::getNodeDownNeighbors(const idNode &n)
 {
    Node *node   = getNode(n);
    auto  nbDown   = node->getNumberOfDownSuperArcs();
@@ -1153,7 +1153,7 @@ const vector<idNode>&& MergeTree::getNodeDownNeighbors(const idNode &n)
       res[i]                    = corNode;
    }
 
-   return move(res);
+   return res;
 }
 
 // hide / clear

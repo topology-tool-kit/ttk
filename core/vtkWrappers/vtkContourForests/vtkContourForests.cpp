@@ -63,7 +63,7 @@ vtkContourForests::vtkContourForests()
   // VTK Interface //
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);
-  
+
   triangulation_ = NULL;
 }
 
@@ -331,18 +331,18 @@ void vtkContourForests::SetSimplificationThreshold(double simplificationThreshol
 
 int vtkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
 {
-  
+
   triangulation_ = vtkTriangulation::getTriangulation(input);
-  
+
   if(!triangulation_)
     return -1;
-  
+
   varyingMesh_ = false;
   if(triangulation_->isEmpty())
     varyingMesh_ = true;
   if(vtkTriangulation::hasChangedConnectivity(triangulation_, input, this))
     varyingMesh_ = true;
-  
+
   // init
   if (varyingMesh_ || !numberOfVertices_){
     numberOfVertices_ = input->GetNumberOfPoints();
@@ -357,10 +357,11 @@ int vtkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
     return -2;
 
   // scalars
-  if(scalarField_.length())
-    vtkInputScalars_=input->GetPointData()->GetArray(scalarField_.data());
-  else
-    vtkInputScalars_=input->GetPointData()->GetArray(0);
+  if (scalarField_.length()) {
+     vtkInputScalars_ = input->GetPointData()->GetArray(scalarField_.data());
+  } else {
+     vtkInputScalars_ = input->GetPointData()->GetArray(FieldId);
+  }
 
   if(!vtkInputScalars_)
     return -2;
@@ -406,22 +407,21 @@ int vtkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
   }
 
   if (scalarField_.size() == 0) {
-    vertexScalars_ = &((*inputScalars_)[FieldId]);
-    scalarField_ = (*inputScalarsName_)[FieldId];
-
+     vertexScalars_ = &((*inputScalars_)[FieldId]);
+     scalarField_   = (*inputScalarsName_)[FieldId];
   } else {
     for (unsigned int i = 0; i < inputScalarsName_->size(); ++i) {
-      if ((*inputScalarsName_)[i] == scalarField_){
-        vertexScalars_ = &((*inputScalars_)[i]);
-        FieldId = i;
-      }
+       if ((*inputScalarsName_)[i] == scalarField_) {
+          vertexScalars_ = &((*inputScalars_)[i]);
+          FieldId        = i;
+       }
     }
   }
 
-  auto result      = std::minmax_element(vertexScalars_->begin(), vertexScalars_->end());
+  auto   result    = std::minmax_element(vertexScalars_->begin(), vertexScalars_->end());
   double scalarMin = *result.first;
   double scalarMax = *result.second;
-  deltaScalar_           = (scalarMax - scalarMin);
+  deltaScalar_     = (scalarMax - scalarMin);
 
   // neighbors
   triangulation_->setWrapper(this);
@@ -430,20 +430,20 @@ int vtkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
   if (varyingMesh_ || varyingDataValues_ || !vertexSoSoffsets_->size()) {
 
     vertexSoSoffsets_->clear();
-   
+
     if((InputOffsetFieldId != -1)&&(inputOffsetScalarFieldName_.empty())){
       if(input->GetPointData()->GetArray(InputOffsetFieldId)){
-        inputOffsetScalarFieldName_ = 
+        inputOffsetScalarFieldName_ =
           input->GetPointData()->GetArray(InputOffsetFieldId)->GetName();
         useInputOffsetScalarField_ = true;
       }
     }
 
     if (useInputOffsetScalarField_ and inputOffsetScalarFieldName_.length()) {
-      
-      auto offsets = 
+
+      auto offsets =
         input->GetPointData()->GetArray(inputOffsetScalarFieldName_.data());
-      
+
       if(offsets->GetNumberOfTuples() != numberOfVertices_){
         stringstream msg;
         msg << "[vtkContourForests] Mesh and offset sizes do not match :("
@@ -1359,6 +1359,7 @@ void vtkContourForests::getTree()
 {
   setDebugLevel(debugLevel_);
   // sequential params
+  cout << "debug level wrapper : " << debugLevel_ << endl;
   contourTree_->setDebugLevel(debugLevel_);
   contourTree_->setupTriangulation(triangulation_);
   contourTree_->setVertexScalars(
@@ -1405,14 +1406,14 @@ void vtkContourForests::updateTree()
 
 int vtkContourForests::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
-  
+
   Memory m;
-  
+
   vtkDataSet *input = inputs[0];
   vtkPolyData *outputSkeletonNodes = vtkPolyData::SafeDownCast(outputs[0]);
   vtkPolyData *outputSkeletonArcs = vtkPolyData::SafeDownCast(outputs[1]);
   vtkDataSet *outputSegmentation = outputs[2];
-  
+
   if(!input->GetNumberOfPoints())
     return 1;
 
@@ -1421,24 +1422,21 @@ int vtkContourForests::doIt(vector<vtkDataSet *> &inputs,
 
   if(simplificationType_ == 0){
     simplificationThreshold_ = simplificationThresholdBuffer_ * deltaScalar_;
-  } else if (simplificationType_ == 1){
-    double coord0[3], coord1[3], spanTotal;
-    double* bounds = input->GetBounds();
-    coord0[0] = bounds[0];
-    coord1[0] = bounds[1];
-    coord0[1] = bounds[2];
-    coord1[1] = bounds[3];
-    coord0[2] = bounds[4];
-    coord1[2] = bounds[5];
-    spanTotal = Geometry::distance(coord0,coord1);
-    simplificationThreshold_ =
-      simplificationThresholdBuffer_ * spanTotal;
+  } else if (simplificationType_ == 1) {
+     double  coord0[3], coord1[3], spanTotal;
+     double* bounds           = input->GetBounds();
+     coord0[0]                = bounds[0];
+     coord1[0]                = bounds[1];
+     coord0[1]                = bounds[2];
+     coord1[1]                = bounds[3];
+     coord0[2]                = bounds[4];
+     coord1[2]                = bounds[5];
+     spanTotal                = Geometry::distance(coord0, coord1);
+     simplificationThreshold_ = simplificationThresholdBuffer_ * spanTotal;
   } else if (simplificationType_ == 2) {
-    simplificationThreshold_ =
-      simplificationThresholdBuffer_ * triangulation_->getNumberOfVertices();
+     simplificationThreshold_ =
+         simplificationThresholdBuffer_ * triangulation_->getNumberOfVertices();
   }
-
-  //cout << "doit threshold : " << simplificationThreshold_ << endl;
 
   // ContourForestsTree //
   if (varyingMesh_ || varyingDataValues_ ||
@@ -1468,13 +1466,13 @@ int vtkContourForests::doIt(vector<vtkDataSet *> &inputs,
   outputSkeletonArcs->ShallowCopy(skeletonArcs_);
   // segmentation
   outputSegmentation->ShallowCopy(segmentation_);
-  
+
    {
     stringstream msg;
-    msg << "[vtkContourForests] Memory usage: " 
+    msg << "[vtkContourForests] Memory usage: "
       << m.getElapsedUsage() << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }
-  
+
   return 0;
 }

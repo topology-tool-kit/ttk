@@ -88,7 +88,7 @@ int ContourForests::build()
    DebugTimer timerInitOverlap;
    initInterfaces();
    initOverlap();
-   if(params_->debugLevel > 2){
+   if(params_->debugLevel > 3){
         for (idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
             cout << "interface : " << static_cast<unsigned>(i);
             cout << " seed : " << parallelData_.interfaces[i].getSeed();
@@ -329,50 +329,56 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
 
 #pragma omp section
         {
-            DebugTimer timerSimplify;
-            DebugTimer timerBuild;
-            parallelData_.trees[i].getJoinTree()->build(vect_baseUF_JT[i],
-                get<0>(overlaps), get<1>(overlaps),
-                get<0>(rangeJT), get<1>(rangeJT),
-                get<0>(seedsPos), get<1>(seedsPos)
-            );
-            speedProcess[i] = partitionSize / timerBuild.getElapsedTime();
+            if(params_->treeType == TreeType::Join || params_->treeType == TreeType::Contour)
+            {
+                DebugTimer timerSimplify;
+                DebugTimer timerBuild;
+                parallelData_.trees[i].getJoinTree()->build(vect_baseUF_JT[i],
+                        get<0>(overlaps), get<1>(overlaps),
+                        get<0>(rangeJT), get<1>(rangeJT),
+                        get<0>(seedsPos), get<1>(seedsPos)
+                        );
+                speedProcess[i] = partitionSize / timerBuild.getElapsedTime();
 
 #ifdef withParallelSimplify
-            timerSimplify.reStart();
-            const idEdge tmpMerge =
-                parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
-                    get<0>(seedsPos), get<1>(seedsPos));
+                timerSimplify.reStart();
+                const idEdge tmpMerge =
+                    parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
+                            get<0>(seedsPos), get<1>(seedsPos));
 #pragma omp atomic update
-            timeSimplify[i] += timerSimplify.getElapsedTime();
+                timeSimplify[i] += timerSimplify.getElapsedTime();
 #pragma omp atomic update
-            nbPairMerged += tmpMerge;
+                nbPairMerged += tmpMerge;
 #endif
+            }
         }
 
 
 #pragma omp section
         {
-            DebugTimer timerSimplify;
-            DebugTimer timerBuild;
-            parallelData_.trees[i].getSplitTree()->build(vect_baseUF_ST[i],
-                get<1>(overlaps), get<0>(overlaps),
-                get<0>(rangeST), get<1>(rangeST),
-                get<0>(seedsPos), get<1>(seedsPos)
-            );
-            speedProcess[parallelParams_.nbPartitions + i] =
-                partitionSize / timerBuild.getElapsedTime();
+            if(params_->treeType == TreeType::Split || params_->treeType == TreeType::Contour)
+            {
+                DebugTimer timerSimplify;
+                DebugTimer timerBuild;
+                parallelData_.trees[i].getSplitTree()->build(vect_baseUF_ST[i],
+                        get<1>(overlaps), get<0>(overlaps),
+                        get<0>(rangeST), get<1>(rangeST),
+                        get<0>(seedsPos), get<1>(seedsPos)
+                        );
+                speedProcess[parallelParams_.nbPartitions + i] =
+                    partitionSize / timerBuild.getElapsedTime();
 
 #ifdef withParallelSimplify
-            timerSimplify.reStart();
-            const idEdge tmpMerge =
-                parallelData_.trees[i].getSplitTree()->localSimplify<scalarType>(
-                    get<0>(seedsPos), get<1>(seedsPos));
+                timerSimplify.reStart();
+                const idEdge tmpMerge =
+                    parallelData_.trees[i].getSplitTree()->localSimplify<scalarType>(
+                            get<0>(seedsPos), get<1>(seedsPos));
 #pragma omp atomic update
-            timeSimplify[i] += timerSimplify.getElapsedTime();
+                timeSimplify[i] += timerSimplify.getElapsedTime();
 #pragma omp atomic update
-            nbPairMerged += tmpMerge;
+                nbPairMerged += tmpMerge;
 #endif
+            }
         }
 
 
