@@ -1450,41 +1450,55 @@ int ImplicitTriangulation::getEdgeLink(const int &edgeId, const int &localLinkId
 
   linkId=-1;
 
-  int starId;
-  getEdgeStar(edgeId, localLinkId, starId);
-
-  int v0;
-  int v1;
-  getEdgeVertex(edgeId, 0, v0);
-  getEdgeVertex(edgeId, 1, v1);
-
   if(dimensionality_==3){
-    for(int i=0; i<4; ++i){
-      int anotherEdgeId;
-      getTetrahedronEdge(starId, i, anotherEdgeId);
+    int p[3];
 
-      if(anotherEdgeId==edgeId) continue;
-
-      int w0;
-      int w1;
-      getEdgeVertex(anotherEdgeId, 0, w0);
-      getEdgeVertex(anotherEdgeId, 1, w1);
-
-      if(w0!=v0 and w0!=v1 and w1!=v0 and w1!=v1){
-        linkId=anotherEdgeId;
-        break;
-      }
+    if(edgeId<esetshift_[0]){
+      edgeToPosition(edgeId,0,p);
+      linkId=getEdgeLinkL(p,localLinkId);//L
+    }
+    else if(edgeId<esetshift_[1]){
+      edgeToPosition(edgeId,1,p);
+      linkId=getEdgeLinkH(p,localLinkId);//H
+    }
+    else if(edgeId<esetshift_[2]){
+      edgeToPosition(edgeId,2,p);
+      linkId=getEdgeLinkP(p,localLinkId);//P
+    }
+    else if(edgeId<esetshift_[3]){
+      edgeToPosition(edgeId,3,p);
+      linkId=getEdgeLinkD1(p,localLinkId);//D1
+    }
+    else if(edgeId<esetshift_[4]){
+      edgeToPosition(edgeId,4,p);
+      linkId=getEdgeLinkD2(p,localLinkId);//D2
+    }
+    else if(edgeId<esetshift_[5]){
+      edgeToPosition(edgeId,5,p);
+      linkId=getEdgeLinkD3(p,localLinkId);//D3
+    }
+    else if(edgeId<esetshift_[6]){
+      edgeToPosition(edgeId,6,p);
+      linkId=getEdgeLinkD4(p,localLinkId);//D4
     }
   }
   else if(dimensionality_==2){
-    for(int i=0; i<3; ++i){
-      int vertexId;
-      getTriangleVertex(starId, i, vertexId);
+    int p[2];
 
-      if(vertexId!=v0 and vertexId!=v1){
-        linkId=vertexId;
-        break;
-      }
+    //L
+    if(edgeId<esetshift_[0]){
+      edgeToPosition2d(edgeId,0,p);
+      linkId=getEdgeLink2dL(p,localLinkId);
+    }
+    //H
+    else if(edgeId<esetshift_[1]){
+      edgeToPosition2d(edgeId,1,p);
+      linkId=getEdgeLink2dH(p,localLinkId);
+    }
+    //D1
+    else if(edgeId<esetshift_[2]){
+      edgeToPosition2d(edgeId,2,p);
+      linkId=getEdgeLink2dD1(p,localLinkId);
     }
   }
 
@@ -1940,40 +1954,37 @@ int ImplicitTriangulation::getTriangleLink(const int &triangleId, const int &loc
   linkId=-1;
 
   if(dimensionality_==3){
-    int starId;
-    getTriangleStar(triangleId, localLinkId, starId);
+    int p[3];
 
-    int v0;
-    int v1;
-    int v2;
-    getTriangleVertex(triangleId, 0, v0);
-    getTriangleVertex(triangleId, 1, v1);
-    getTriangleVertex(triangleId, 2, v2);
-
-    for(int i=0; i<4; ++i){
-      int anotherTriangleId;
-      getTetrahedronTriangle(starId, i, anotherTriangleId);
-
-      if(anotherTriangleId==triangleId) continue;
-
-      int w;
-      getTriangleVertex(anotherTriangleId, 0, w);
-      if(w!=v0 and w!=v1 and w!=v2){
-        linkId=w;
-        break;
-      }
-
-      getTriangleVertex(anotherTriangleId, 1, w);
-      if(w!=v0 and w!=v1 and w!=v2){
-        linkId=w;
-        break;
-      }
-
-      getTriangleVertex(anotherTriangleId, 2, w);
-      if(w!=v0 and w!=v1 and w!=v2){
-        linkId=w;
-        break;
-      }
+    //F
+    if(triangleId<tsetshift_[0]){
+      triangleToPosition(triangleId,0,p);
+      linkId=getTriangleLinkF(p,localLinkId);
+    }
+    //H
+    else if(triangleId<tsetshift_[1]){
+      triangleToPosition(triangleId,1,p);
+      linkId=getTriangleLinkH(p,localLinkId);
+    }
+    //C
+    else if(triangleId<tsetshift_[2]){
+      triangleToPosition(triangleId,2,p);
+      linkId=getTriangleLinkC(p,localLinkId);
+    }
+    //D1
+    else if(triangleId<tsetshift_[3]){
+      triangleToPosition(triangleId,3,p);
+      linkId=getTriangleLinkD1(p,localLinkId);
+    }
+    //D2
+    else if(triangleId<tsetshift_[4]){
+      triangleToPosition(triangleId,4,p);
+      linkId=getTriangleLinkD2(p,localLinkId);
+    }
+    //D3
+    else if(triangleId<tsetshift_[5]){
+      triangleToPosition(triangleId,5,p);
+      linkId=getTriangleLinkD3(p,localLinkId);
     }
   }
 

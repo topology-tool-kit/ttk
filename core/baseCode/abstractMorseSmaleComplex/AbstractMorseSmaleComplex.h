@@ -42,10 +42,11 @@ namespace ttk{
         const int segmentGeometry):
       isValid_{isValid},
       source_{saddle},
-      destination_{extremum},
-      isReversed_{isSegmentReversed},
-      geometry_{segmentGeometry}
-    {}
+      destination_{extremum}
+    {
+      isReversed_.push_back(isSegmentReversed);
+      geometry_.push_back(segmentGeometry);
+    }
 
     // for multiple segments :
     Separatrix(const bool isValid,
