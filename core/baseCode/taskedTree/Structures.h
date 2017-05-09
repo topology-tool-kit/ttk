@@ -19,7 +19,7 @@
 #include <memory>
 #include <vector>
 
-#include <lib/boost_1_64_0/boost/heap/fibonacci_heap.hpp>
+#include <boost/heap/fibonacci_heap.hpp>
 
 #include "AtomicVector.h"
 #include "DataTypes.h"
