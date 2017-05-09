@@ -329,7 +329,7 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
 
 #pragma omp section
         {
-            if(params_->treeType == TreeType::Join 
+            if(params_->treeType == TreeType::Join
               || params_->treeType == TreeType::Contour
               || params_->treeType == TreeType::JoinAndSplit)
             {
@@ -358,7 +358,7 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
 
 #pragma omp section
         {
-            if(params_->treeType == TreeType::Split 
+            if(params_->treeType == TreeType::Split
               || params_->treeType == TreeType::Contour
               || params_->treeType == TreeType::JoinAndSplit)
             {
