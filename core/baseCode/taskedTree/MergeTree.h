@@ -661,10 +661,10 @@ namespace ttk
          return max(10000, 1 + (s / (nbtasks * threadNumber_)));
       }
 
-      inline idVertex getChunkCount(const idVertex nbVerts = -1) const
+      inline idVertex getChunkCount(const idVertex nbVerts = -1, const idVertex nbTasks = 100) const
       {
          const idVertex s = (nbVerts == -1) ? scalars_->size : nbVerts;
-         return 1 + (s / getChunkSize(s));
+         return 1 + (s / getChunkSize(s, nbTasks));
       }
 
       // }
