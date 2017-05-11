@@ -522,10 +522,11 @@ idVertex MergeTree::trunk()
 #endif
    // bounds
    idVertex begin, stop;
-   tie(begin, stop) = getBoundsFromVerts(pendingVerts);
-   const auto sizeBackBone = abs(stop - begin);
-   const auto chunkSize    = getChunkSize(sizeBackBone, 400);
-   const auto chunkNb      = getChunkCount(sizeBackBone);
+   tie(begin, stop)         = getBoundsFromVerts(pendingVerts);
+   const auto sizeBackBone  = abs(stop - begin);
+   const int nbTasksThreads = 40;
+   const auto chunkSize     = getChunkSize(sizeBackBone, nbTasksThreads);
+   const auto chunkNb       = getChunkCount(sizeBackBone, nbTasksThreads);
 
    // si pas efficace vecteur de la taille de node ici a la place de acc
    idNode   lastVertInRange = 0;
