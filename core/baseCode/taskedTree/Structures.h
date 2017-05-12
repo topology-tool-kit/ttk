@@ -75,7 +75,50 @@ namespace ttk
             sortedVertices(o.sortedVertices),
             mirrorVertices(o.mirrorVertices)
       {
+          std::cout << "copy in depth" << std::endl;
       }
+
+      // Sort
+      template <typename type>
+      void qsort(type arr[], const long int begin, const long int stop,
+                 std::function<bool(type, type)> comp)
+      {
+         if (begin >= stop)
+            return;
+
+         static const long int MINSIZE = 10;
+
+         long int   left  = begin - 1;
+         long int   right = stop + 1;
+         const type pivot = arr[begin];
+
+         while (1) {
+            while (comp(pivot, arr[--right]))
+               ;
+            while (++left <= stop && !comp(pivot, arr[left]))
+               ;
+
+            if (left < right)
+               swap_el<type>(arr, left, right);
+            else
+               break;
+         }
+
+         swap_el<type>(arr, begin, right);
+#pragma omp task untied if (right - begin > MINSIZE)
+         qsort(arr, begin, right - 1, comp);
+#pragma omp task untied if (stop - right > MINSIZE)
+         qsort(arr, right + 1, stop, comp);
+      }
+
+     private:
+      template <typename type>
+      inline void swap_el(type arr[], const size_t a, const size_t b)
+      {
+         const type tmp = arr[a];
+         arr[a]         = arr[b];
+         arr[b]         = tmp;
+        }
    };
 
    struct CurrentState {

@@ -48,6 +48,10 @@ void MergeTree::sortInput(void)
    sortedVect->resize(nbVertices, 0);
    std::iota(sortedVect->begin(), sortedVect->end(), 0);
 
+// #pragma omp parallel
+// #pragma omp single
+//    scalars_->qsort<idVertex>(sortedVect->data(), 0, scalars_->size -1, indirect_sort);
+
 #ifdef withOpenMP
 # ifdef __clang__
    cout << "Caution, outside GCC, sequential sort" << endl;
