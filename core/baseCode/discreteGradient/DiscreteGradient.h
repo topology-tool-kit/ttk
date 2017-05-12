@@ -1761,6 +1761,305 @@ int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isR
   const int maximumDim=dimensionality_;
   const int saddleDim=maximumDim-1;
 
+  // ### Stats ###
+  if(dimensionality_==3){
+    const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+    vector<set<int>> vtriangles(numberOfVertices);
+
+    // build getVertexTriangle() : SLOW!
+    const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
+    for(int i=0; i<numberOfTriangles; ++i){
+      for(int j=0; j<3; ++j){
+        int vertexId;
+        inputTriangulation_->getTriangleVertex(i, j, vertexId);
+        vtriangles[vertexId].insert(i);
+      }
+    }
+
+    // stats
+    float st_2saddle=0;
+    float st_2saddle_void=0;
+    float st_2saddle_void_boundary=0;
+    float st_2saddle_alone=0;
+    float st_2saddle_nonAmbiguous=0;
+    float st_2saddle_0NR=0;
+    float st_2saddle_1NR=0;
+    float st_2saddle_nNR=0;
+
+    // is [triangleId] in star of PL-2saddle?
+    vector<char> isInStar(numberOfTriangles, false);
+    for(pair<int,char> criticalPoint : criticalPoints_){
+      const int criticalPointId=criticalPoint.first;
+      const char criticalPointType=criticalPoint.second;
+
+      if(criticalPointType==2){
+        // focus only on interior
+        if(inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
+
+        // stats
+        ++st_2saddle;
+
+        vector<int> saddles;
+        for(const int triangleId : vtriangles[criticalPointId]){
+          const Cell saddleCandidate(2, triangleId);
+
+          if(isSaddle2(saddleCandidate)){
+            saddles.push_back(triangleId);
+            isInStar[triangleId]=true;
+          }
+        }
+
+        const int numberOfSaddles=saddles.size();
+
+        if(numberOfSaddles==0){
+          // stats
+          ++st_2saddle_void;
+          if(inputTriangulation_->isVertexOnBoundary(criticalPointId))
+            ++st_2saddle_void_boundary;
+        }
+        // only one DMT-2saddle in the star so this one is non-removable
+        else if(numberOfSaddles==1){
+          // stats
+          ++st_2saddle_alone;
+        }
+        else if(numberOfSaddles>1){
+          // now, search for the non-removable
+          bool isFound=false;
+          for(const int triangleId : saddles){
+            const Cell saddle(2,triangleId);
+            const int saddleId=saddle.id_;
+
+// ### VPATH : BEGIN ###
+            const int starNumber=inputTriangulation_->getTriangleStarNumber(saddleId);
+
+            vector<vector<Cell>> paths(starNumber);
+            for(int j=0; j<starNumber; ++j){
+              int starId;
+              inputTriangulation_->getTriangleStar(saddleId, j, starId);
+
+              const Cell star(maximumDim, starId);
+
+              paths[j].push_back(saddle);
+              getAscendingPath(star, paths[j]);
+            }
+
+            // detect initial double-connection
+            if(starNumber>1){
+              bool isDoubleConnected=false;
+              const Cell& lastCell0=paths[0].back();
+              for(int j=1; j<starNumber; ++j){
+                const Cell& lastCell=paths[j].back();
+
+                if(lastCell0.id_==lastCell.id_){
+                  isDoubleConnected=true;
+                  break;
+                }
+              }
+              if(isDoubleConnected)
+                continue;
+            }
+// ### VPATH : END ###
+
+            // DMT-2saddle must be connected only to non-removable DMT-maxima
+            bool noRemovableOnly=false;
+            for(int j=0; j<starNumber; ++j){
+              const Cell& lastCell=paths[j].back();
+              if(isMaximum(lastCell) and !isRemovableMaximum[lastCell.id_])
+                noRemovableOnly=true;
+              else
+                noRemovableOnly=false;
+            }
+
+            if(noRemovableOnly){
+              isFound=true;
+              //stats
+              ++st_2saddle_nonAmbiguous;
+              break;
+            }
+          }
+          // for more stats
+          if(!isFound){
+            int st_nr=0;
+            for(const int triangleId : saddles){
+              const Cell saddle(2,triangleId);
+              const int saddleId=saddle.id_;
+
+              // ### VPATH : BEGIN ###
+              const int starNumber=inputTriangulation_->getTriangleStarNumber(saddleId);
+
+              vector<vector<Cell>> paths(starNumber);
+              for(int j=0; j<starNumber; ++j){
+                int starId;
+                inputTriangulation_->getTriangleStar(saddleId, j, starId);
+
+                const Cell star(maximumDim, starId);
+
+                paths[j].push_back(saddle);
+                getAscendingPath(star, paths[j]);
+              }
+
+              // detect initial double-connection
+              if(starNumber>1){
+                bool isDoubleConnected=false;
+                const Cell& lastCell0=paths[0].back();
+                for(int j=1; j<starNumber; ++j){
+                  const Cell& lastCell=paths[j].back();
+
+                  if(lastCell0.id_==lastCell.id_){
+                    isDoubleConnected=true;
+                    break;
+                  }
+                }
+                if(isDoubleConnected)
+                  continue;
+              }
+              // ### VPATH : END ###
+
+              // DMT-2saddle must be connected only to non-removable DMT-maxima
+              for(int j=0; j<starNumber; ++j){
+                const Cell& lastCell=paths[j].back();
+                if(isMaximum(lastCell) and !isRemovableMaximum[lastCell.id_]){
+                  ++st_nr;
+                  break;
+                }
+              }
+            }
+            if(st_nr==0)
+              ++st_2saddle_0NR;
+            else if(st_nr==1)
+              ++st_2saddle_1NR;
+            else
+              ++st_2saddle_nNR;
+          }
+        }
+      }
+    }
+
+    // print stats
+    cout << "st_2saddle="<< st_2saddle << endl;
+    cout << "st_2saddle_void="<< st_2saddle_void/st_2saddle*100.0f << endl;
+    cout << "st_2saddle_void_boundary="<< st_2saddle_void_boundary/st_2saddle_void*100.0f << endl;
+    cout << "st_2saddle_alone="<< st_2saddle_alone/st_2saddle*100.0f << endl;
+    cout << "st_2saddle_nonAmbiguous="<< st_2saddle_nonAmbiguous/st_2saddle*100.0f << endl;
+    cout << "st_2saddle_0NR="<< st_2saddle_0NR/st_2saddle*100.0f << endl;
+    cout << "st_2saddle_1NR="<< st_2saddle_1NR/st_2saddle*100.0f << endl;
+    cout << "st_2saddle_nNR="<< st_2saddle_nNR/st_2saddle*100.0f << endl;
+  }
+  //
+
+  // ### Initial Modification ###
+  if(dimensionality_==3){
+    std::fill(isRemovableSaddle.begin(), isRemovableSaddle.end(), false);
+
+    const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+    vector<set<int>> vtriangles(numberOfVertices);
+
+    // build getVertexTriangle() : SLOW!
+    const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
+    for(int i=0; i<numberOfTriangles; ++i){
+      for(int j=0; j<3; ++j){
+        int vertexId;
+        inputTriangulation_->getTriangleVertex(i, j, vertexId);
+        vtriangles[vertexId].insert(i);
+      }
+    }
+
+    // is [triangleId] in star of PL-2saddle?
+    vector<char> isInStar(numberOfTriangles, false);
+    for(pair<int,char> criticalPoint : criticalPoints_){
+      const int criticalPointId=criticalPoint.first;
+      const char criticalPointType=criticalPoint.second;
+
+      if(criticalPointType==2){
+        // focus only on interior
+        if(inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
+
+        vector<int> saddles;
+        for(const int triangleId : vtriangles[criticalPointId]){
+          const Cell saddleCandidate(2, triangleId);
+
+          if(isSaddle2(saddleCandidate)){
+            saddles.push_back(triangleId);
+            isInStar[triangleId]=true;
+          }
+        }
+
+        const int numberOfSaddles=saddles.size();
+
+        // only one DMT-2saddle in the star so this one is non-removable
+        if(numberOfSaddles==1){
+          const int triangleId=saddles[0];
+          isRemovableSaddle[triangleId]=false;
+        }
+        else if(numberOfSaddles>1){
+          // by default, all are removable
+          for(const int triangleId : saddles)
+            isRemovableSaddle[triangleId]=true;
+
+          // now, search for a non-removable
+          for(const int triangleId : saddles){
+            const Cell saddle(2,triangleId);
+            const int saddleId=saddle.id_;
+
+// ### VPATH : BEGIN ###
+            const int starNumber=inputTriangulation_->getTriangleStarNumber(saddleId);
+
+            vector<vector<Cell>> paths(starNumber);
+            for(int j=0; j<starNumber; ++j){
+              int starId;
+              inputTriangulation_->getTriangleStar(saddleId, j, starId);
+
+              const Cell star(maximumDim, starId);
+
+              paths[j].push_back(saddle);
+              getAscendingPath(star, paths[j]);
+            }
+
+            // detect initial double-connection
+            if(starNumber>1){
+              bool isDoubleConnected=false;
+              const Cell& lastCell0=paths[0].back();
+              for(int j=1; j<starNumber; ++j){
+                const Cell& lastCell=paths[j].back();
+
+                if(lastCell0.id_==lastCell.id_){
+                  isDoubleConnected=true;
+                  break;
+                }
+              }
+              if(isDoubleConnected)
+                continue;
+            }
+// ### VPATH : END ###
+
+            // DMT-2saddle must be connected only to non-removable DMT-maxima
+            bool noRemovableOnly=false;
+            for(int j=0; j<starNumber; ++j){
+              const Cell& lastCell=paths[j].back();
+              if(isMaximum(lastCell) and !isRemovableMaximum[lastCell.id_])
+                noRemovableOnly=true;
+              else
+                noRemovableOnly=false;
+            }
+
+            if(noRemovableOnly){
+              isRemovableSaddle[triangleId]=false;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // add lonely 2-saddle to removable list
+    for(int i=0; i<numberOfTriangles; ++i){
+      const Cell saddleCandidate(2, i);
+
+      if(isSaddle2(saddleCandidate) and !isInStar[i])
+        isRemovableSaddle[i]=true;
+    }
+  }
+
   // Part 1 : build initial structures
   // add the saddles to CriticalPointList and count them
   const int numberOfSaddleCandidates=getNumberOfCells(saddleDim);
@@ -1966,7 +2265,7 @@ int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isR
       }
       if(isFound) ++n;
     }
-    cout << "number of PL 2-saddle connected to a non-removable MSC 2-saddle connected to a removable not-covered MSC maximum : " << n << endl;
+    cout << "PL 2-saddle connected to a non-removable MSC 2-saddle connected to a removable not-covered MSC maximum : " << n << endl;
   }
   if(dimensionality_==3){
     const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
@@ -2047,87 +2346,7 @@ int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isR
       }
       if(isFound) ++n;
     }
-    cout << "number of PL 2-saddle connected to a non-removable MSC 2-saddle connected only to removable not-covered MSC maximum : " << n << endl;
-  }
-  if(dimensionality_==3){
-    const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-    vector<set<int>> vtriangles(numberOfVertices);
-
-    const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
-    for(int i=0; i<numberOfTriangles; ++i){
-      for(int j=0; j<3; ++j){
-        int vertexId;
-        inputTriangulation_->getTriangleVertex(i, j, vertexId);
-        vtriangles[vertexId].insert(i);
-      }
-    }
-
-    vector<int> saddles2;
-    for(pair<int,char> criticalPoint : criticalPoints_){
-      const int criticalPointId=criticalPoint.first;
-      const char criticalPointType=criticalPoint.second;
-
-      if(criticalPointType==2)
-        saddles2.push_back(criticalPointId);
-    }
-
-    int n=0;
-    for(int saddle2Id : saddles2){
-      bool isFound=false;
-      for(int triangleId : vtriangles[saddle2Id]){
-        const Cell saddle(2,triangleId);
-        const int saddleId=triangleId;
-
-        if(isRemovableSaddle[triangleId]){
-          const int starNumber=inputTriangulation_->getTriangleStarNumber(saddleId);
-
-          vector<vector<Cell>> paths(starNumber);
-          for(int j=0; j<starNumber; ++j){
-            int starId;
-            inputTriangulation_->getTriangleStar(saddleId, j, starId);
-
-            const Cell star(maximumDim, starId);
-
-            paths[j].push_back(saddle);
-            getAscendingPath(star, paths[j]);
-          }
-
-          // detect initial double-connection
-          if(starNumber>1){
-            bool isDoubleConnected=false;
-            const Cell& lastCell0=paths[0].back();
-            for(int j=1; j<starNumber; ++j){
-              const Cell& lastCell=paths[j].back();
-
-              if(lastCell0.id_==lastCell.id_){
-                isDoubleConnected=true;
-                break;
-              }
-            }
-            if(isDoubleConnected)
-              continue;
-          }
-
-          for(int j=0; j<starNumber; ++j){
-            const Cell& lastCell=paths[j].back();
-            // apriori: triangleId is connected by the gradient to a removable max
-            if(isMaximum(lastCell) and !isRemovableMaximum[lastCell.id_]){
-              for(int tId : vtriangles[saddle2Id]){
-                // apriori: triangleId has a removable neighbor
-                if(tId!=triangleId and isRemovableSaddle[tId]){
-                  isFound=true;
-                  break;
-                }
-              }
-            }
-            else
-              isFound=false;
-          }
-        }
-      }
-      if(isFound) ++n;
-    }
-    cout << "number of PL 2-saddle connected to at least one removable MSC 2-saddle connected only to non-removable MSC maximum : " << n << endl;
+    cout << "PL 2-saddle connected to a non-removable MSC 2-saddle connected only to removable not-covered MSC maximum : " << n << endl;
   }
   //
 
