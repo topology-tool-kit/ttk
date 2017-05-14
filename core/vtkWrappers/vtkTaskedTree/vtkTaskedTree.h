@@ -65,15 +65,6 @@ class VTKFILTERSCORE_EXPORT vtkTaskedTree : public vtkDataSetAlgorithm, public W
    vtkSetMacro(partitionNumber_, int);
    vtkGetMacro(partitionNumber_, int);
 
-   vtkSetMacro(simplificationMethod_, int);
-   vtkGetMacro(simplificationMethod_, int);
-
-   vtkSetMacro(simplificationThreshold_, double);
-   vtkGetMacro(simplificationThreshold_, double);
-
-   vtkSetMacro(useThresholdNormalization_, int);
-   vtkGetMacro(useThresholdNormalization_, int);
-
    vtkSetMacro(ScalarFieldId, int);
    vtkGetMacro(ScalarFieldId, int);
 
@@ -121,9 +112,6 @@ class VTKFILTERSCORE_EXPORT vtkTaskedTree : public vtkDataSetAlgorithm, public W
    int    treeType_;
    int    lessPartition_;
    int    partitionNumber_;
-   int    simplificationMethod_;
-   double simplificationThreshold_;
-   bool   useThresholdNormalization_;
 
    Triangulation* triangulation_;
    TaskedTree     contourForests_;

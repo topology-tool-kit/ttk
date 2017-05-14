@@ -109,43 +109,6 @@
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty name="Simplification Method"
-          command="SetsimplificationMethod_"
-          number_of_elements="1"
-          default_values="0">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="Persistance"/>
-          <Entry value="1" text="Region Span"/>
-          <!--<Entry value="2" text="Number of vertices"/>-->
-          <!--<Entry value="3" text="Number of arcs"/>-->
-        </EnumerationDomain>
-        <Documentation>
-          Simplification metric.
-        </Documentation>
-      </IntVectorProperty>
-
-      <DoubleVectorProperty name="Simplification Threshold"
-        command="SetsimplificationThreshold_"
-        number_of_elements="1"
-        default_values="0">
-        <DoubleRangeDomain name="range" min="0" max="1"/>
-        <Documentation>
-          Simplification threshold.
-        </Documentation>
-      </DoubleVectorProperty>
-
-      <IntVectorProperty name="Use Threshold Normalization"
-        label="Use Threshold Normalization"
-        command="SetuseThresholdNormalization_"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="default">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use Threshold Normalization.
-        </Documentation>
-      </IntVectorProperty>
-
       <IntVectorProperty name="SuperArcSamplingLevel"
         label="Super Arc Sampling Level"
         command="SetSuperArcSamplingLevel"
@@ -212,9 +175,6 @@
 
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="Tree Type"/>
-        <Property name="Simplification Method"/>
-        <Property name="Simplification Threshold"/>
-        <Property name="Use Threshold Normalization"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Input options">

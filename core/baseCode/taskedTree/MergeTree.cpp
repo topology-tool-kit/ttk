@@ -1232,16 +1232,6 @@ void MergeTree::printParams(void) const
          cout << "Split";
       }
       cout << endl;
-      cout << "simplif method : ";
-      if (params_->simplifyMethod == SimplifMethod::Persist) {
-         cout << "Persist";
-      } else if (params_->simplifyMethod == SimplifMethod::NbVert) {
-         cout << "Nb vertices";
-      } else if (params_->simplifyMethod == SimplifMethod::Span) {
-         cout << "Region span";
-      }
-      cout << endl;
-      cout << "simplif thresh  : " << params_->simplifyThreshold << endl;
       cout << "------------" << endl;
    }
 }
