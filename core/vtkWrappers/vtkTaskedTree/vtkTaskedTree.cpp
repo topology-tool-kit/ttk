@@ -245,18 +245,16 @@ int vtkTaskedTree::getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* output
       }
 #endif
 
-      if (!node->isHidden()) {
-         const idVertex vertexId = node->getVertexId();
-         const idVertex nodeType = static_cast<idVertex>(getNodeType(node));
+      const idVertex vertexId = node->getVertexId();
+      const idVertex nodeType = static_cast<idVertex>(getNodeType(node));
 
-         float point[3];
-         triangulation_->getVertexPoint(vertexId, point[0], point[1], point[2]);
+      float point[3];
+      triangulation_->getVertexPoint(vertexId, point[0], point[1], point[2]);
 
-         points->InsertNextPoint(point);
-         nodeIds->InsertNextTuple1(nodeId);
-         vertexIds->InsertNextTuple1(vertexId);
-         nodeTypes->InsertNextTuple1(nodeType);
-      }
+      points->InsertNextPoint(point);
+      nodeIds->InsertNextTuple1(nodeId);
+      vertexIds->InsertNextTuple1(vertexId);
+      nodeTypes->InsertNextTuple1(nodeType);
    }
 
    skeletonNodes->SetPoints(points);
@@ -495,30 +493,28 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    for (idVertex i = 0; i < numberOfSuperArcs; ++i) {
       SuperArc* arc = tree->getSuperArc(i);
 
-      if (arc->isVisible()) {
-         const int numberOfRegularNodes = arc->getNumberOfRegularNodes();
-         if (numberOfRegularNodes > 0 and samplingLevel > 0)
-            addSampledSkeletonArc(tree, arc, samplingLevel, points, skeletonArcs);
-         else if (samplingLevel == -1)
-            addCompleteSkeletonArc(tree, arc, points, skeletonArcs);
-         else
-            addDirectSkeletonArc(tree, arc, points, skeletonArcs);
+      const int numberOfRegularNodes = arc->getNumberOfRegularNodes();
+      if (numberOfRegularNodes > 0 and samplingLevel > 0)
+          addSampledSkeletonArc(tree, arc, samplingLevel, points, skeletonArcs);
+      else if (samplingLevel == -1)
+          addCompleteSkeletonArc(tree, arc, points, skeletonArcs);
+      else
+          addDirectSkeletonArc(tree, arc, points, skeletonArcs);
 
 #ifdef withStatsHeight
-         depthArcs->InsertNextTuple1(tree->getArcDepth(i));
-         potArcs->InsertNextTuple1(tree->getArcPotential(i));
+      depthArcs->InsertNextTuple1(tree->getArcDepth(i));
+      potArcs->InsertNextTuple1(tree->getArcPotential(i));
 #endif
 
 #ifdef withStatsTime
-         startArcs->InsertNextTuple1(tree->getArcStart(i));
-         endArcs->InsertNextTuple1(tree->getArcEnd(i));
-         timeArcs->InsertNextTuple1(tree->getArcEnd(i) - tree->getArcStart(i));
-         origArcs->InsertNextTuple1(tree->getArcOrig(i));
-         tasksArcs->InsertNextTuple1(tree->getArcActiveTasks(i));
+      startArcs->InsertNextTuple1(tree->getArcStart(i));
+      endArcs->InsertNextTuple1(tree->getArcEnd(i));
+      timeArcs->InsertNextTuple1(tree->getArcEnd(i) - tree->getArcStart(i));
+      origArcs->InsertNextTuple1(tree->getArcOrig(i));
+      tasksArcs->InsertNextTuple1(tree->getArcActiveTasks(i));
 #endif
 
-         sizeArcs->InsertNextTuple1(tree->getArcSize(i));
-      }
+      sizeArcs->InsertNextTuple1(tree->getArcSize(i));
    }
 
    skeletonArcs->SetPoints(points);
@@ -617,68 +613,66 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
       }
 #endif
 
-      if (arc->isVisible()) {
-         const int   upNodeId = arc->getUpNodeId();
-         const Node* upNode   = tree->getNode(upNodeId);
+      const int   upNodeId = arc->getUpNodeId();
+      const Node* upNode   = tree->getNode(upNodeId);
 #ifndef withKamikaze
-         if (!upNode) {
-            cerr << "[vtkTaskedTree] Error : TaskedTree node" << upNodeId << " is null." << endl;
-            return -8;
-         }
-#endif
-         const NodeType upNodeType = getNodeType(upNode);
-         const int      upVertex   = upNode->getVertexId();
-         float          coordUp[3];
-         triangulation_->getVertexPoint(upVertex, coordUp[0], coordUp[1], coordUp[2]);
-
-         const int   downNodeId = arc->getDownNodeId();
-         const Node* downNode   = tree->getNode(downNodeId);
-#ifndef withKamikaze
-         if (!downNode) {
-            cerr << "[vtkTaskedTree] Error : TaskedTree node" << downNodeId << " is null." << endl;
-            return -9;
-         }
-#endif
-         const NodeType downNodeType = getNodeType(downNode);
-         const int      downVertex   = downNode->getVertexId();
-         float          coordDown[3];
-         triangulation_->getVertexPoint(downVertex, coordDown[0], coordDown[1], coordDown[2]);
-
-         const int    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
-         const double regionSpan = Geometry::distance(coordUp, coordDown);
-
-         int regionType{};
-         if (upNodeType == NodeType::Local_minimum or downNodeType == NodeType::Local_minimum)
-            regionType = static_cast<int>(ArcType::Min_arc);
-         else if (upNodeType == NodeType::Local_maximum or downNodeType == NodeType::Local_maximum)
-            regionType = static_cast<int>(ArcType::Max_arc);
-         else if (upNodeType == NodeType::Saddle1 and downNodeType == NodeType::Saddle1)
-            regionType = static_cast<int>(ArcType::Saddle1_arc);
-         else if (upNodeType == NodeType::Saddle2 and downNodeType == NodeType::Saddle2)
-            regionType = static_cast<int>(ArcType::Saddle2_arc);
-         else
-            regionType = static_cast<int>(ArcType::Saddle1_saddle2_arc);
-
-         // critical points
-         regionIds->SetTuple1(upVertex, id);
-         regionIds->SetTuple1(downVertex, id);
-         regionSizes->SetTuple1(upVertex, regionSize);
-         regionSizes->SetTuple1(downVertex, regionSize);
-         regionSpans->SetTuple1(upVertex, regionSpan);
-         regionSpans->SetTuple1(downVertex, regionSpan);
-         regionTypes->SetTuple1(upVertex, -1);
-         regionTypes->SetTuple1(downVertex, -1);
-
-         // regular nodes
-         for (const idVertex vertexId : *arc) {
-            regionIds->SetTuple1(vertexId, id);
-            regionSizes->SetTuple1(vertexId, regionSize);
-            regionSpans->SetTuple1(vertexId, regionSpan);
-            regionTypes->SetTuple1(vertexId, regionType);
-         }
-
-         ++id;
+      if (!upNode) {
+          cerr << "[vtkTaskedTree] Error : TaskedTree node" << upNodeId << " is null." << endl;
+          return -8;
       }
+#endif
+      const NodeType upNodeType = getNodeType(upNode);
+      const int      upVertex   = upNode->getVertexId();
+      float          coordUp[3];
+      triangulation_->getVertexPoint(upVertex, coordUp[0], coordUp[1], coordUp[2]);
+
+      const int   downNodeId = arc->getDownNodeId();
+      const Node* downNode   = tree->getNode(downNodeId);
+#ifndef withKamikaze
+      if (!downNode) {
+          cerr << "[vtkTaskedTree] Error : TaskedTree node" << downNodeId << " is null." << endl;
+          return -9;
+      }
+#endif
+      const NodeType downNodeType = getNodeType(downNode);
+      const int      downVertex   = downNode->getVertexId();
+      float          coordDown[3];
+      triangulation_->getVertexPoint(downVertex, coordDown[0], coordDown[1], coordDown[2]);
+
+      const int    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
+      const double regionSpan = Geometry::distance(coordUp, coordDown);
+
+      int regionType{};
+      if (upNodeType == NodeType::Local_minimum or downNodeType == NodeType::Local_minimum)
+          regionType = static_cast<int>(ArcType::Min_arc);
+      else if (upNodeType == NodeType::Local_maximum or downNodeType == NodeType::Local_maximum)
+          regionType = static_cast<int>(ArcType::Max_arc);
+      else if (upNodeType == NodeType::Saddle1 and downNodeType == NodeType::Saddle1)
+          regionType = static_cast<int>(ArcType::Saddle1_arc);
+      else if (upNodeType == NodeType::Saddle2 and downNodeType == NodeType::Saddle2)
+          regionType = static_cast<int>(ArcType::Saddle2_arc);
+      else
+          regionType = static_cast<int>(ArcType::Saddle1_saddle2_arc);
+
+      // critical points
+      regionIds->SetTuple1(upVertex, id);
+      regionIds->SetTuple1(downVertex, id);
+      regionSizes->SetTuple1(upVertex, regionSize);
+      regionSizes->SetTuple1(downVertex, regionSize);
+      regionSpans->SetTuple1(upVertex, regionSpan);
+      regionSpans->SetTuple1(downVertex, regionSpan);
+      regionTypes->SetTuple1(upVertex, -1);
+      regionTypes->SetTuple1(downVertex, -1);
+
+      // regular nodes
+      for (const idVertex vertexId : *arc) {
+          regionIds->SetTuple1(vertexId, id);
+          regionSizes->SetTuple1(vertexId, regionSize);
+          regionSpans->SetTuple1(vertexId, regionSpan);
+          regionTypes->SetTuple1(vertexId, regionType);
+      }
+
+      ++id;
    }
 
    vtkPointData* pointData = outputSegmentation->GetPointData();

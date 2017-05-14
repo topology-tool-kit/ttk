@@ -164,15 +164,10 @@ void ContourTree::insertNodes(void)
    vector<idNode> sortedSTNodes = st_->sortedNodes(true);
 
    for (const idNode& t : sortedSTNodes) {
-      if (!st_->getNode(t)->isVisible())
-         continue;
 
       idVertex vertId = st_->getNode(t)->getVertexId();
       if (jt_->isCorrespondingNode(vertId)) {
-         idNode node = jt_->getCorrespondingNodeId(vertId);
-         if (jt_->getNode(node)->isVisible()) {
-            continue;
-         }
+          continue;
       } else {
          idSuperArc baseArc = jt_->getCorrespondingSuperArcId(vertId);
          if (jt_->getSuperArc(baseArc)->isMerged()) {
@@ -183,15 +178,10 @@ void ContourTree::insertNodes(void)
    }
 
    for (const idNode& t : sortedJTNodes) {
-      if (!jt_->getNode(t)->isVisible())
-         continue;
 
       idVertex vertId = jt_->getNode(t)->getVertexId();
       if (st_->isCorrespondingNode(vertId)) {
-         idNode node = st_->getCorrespondingNodeId(vertId);
-         if (st_->getNode(node)->isVisible()) {
-            continue;
-         }
+          continue;
       } else {
          idSuperArc baseArc = st_->getCorrespondingSuperArcId(vertId);
          if (st_->getSuperArc(baseArc)->isMerged()) {
@@ -217,61 +207,36 @@ int ContourTree::combine()
    treeData_.superArcs->reserve(jt_->getNumberOfSuperArcs()+2);
    treeData_.leaves->reserve(jt_->getNumberOfLeaves()+st_->getNumberOfLeaves());
 
-   // If a tree add only one leaf, the other tree is the result
-   idVertex nbAddedleavesST = 0, nbAddedleavesJT = 0;
-
    // ----------------------------------
    // Add JT & ST Leaves to growingNodes
    // ----------------------------------
 
    // Add leves to growing nodes
-   // We insert non hidden nodes, only those of the interface or those
-   // just beyond, linked to a crossing arc
    const auto& nbSTLeaves = st_->getNumberOfLeaves();
-   for (idNode n = 0; n < nbSTLeaves; ++n) {
-      const auto& nId = st_->getLeave(n);
-      if (!st_->getNode(nId)->isHidden() && st_->getNode(nId)->getNumberOfSuperArcs()) {
+   if (nbSTLeaves > 1) {
+      for (idNode n = 0; n < nbSTLeaves; ++n) {
+         const auto &nId = st_->getLeave(n);
          growingNodes.emplace(false, nId);
-         ++nbAddedleavesST;
       }
-   }
-
-   // filiform tree
-   if (nbAddedleavesST == 1) {
-      growingNodes.pop();
+   } else {
+      clone(jt_);
+      return 0;
    }
 
    // count how many leaves can be added, if more than one : ok!
    const auto& nbJTLeaves = jt_->getNumberOfLeaves();
-   for (idNode n = 0; n < nbJTLeaves; ++n) {
-      const auto& nId = jt_->getLeave(n);
-      if (!jt_->getNode(nId)->isHidden() && jt_->getNode(nId)->getNumberOfSuperArcs()) {
-         ++nbAddedleavesJT;
-      }
-      // should break fast
-      if (nbAddedleavesJT > 1)
-         break;
-   }
-
-   // Avoid filliform JT leaf
-   if (nbAddedleavesJT > 1) {
+   if (nbJTLeaves > 1) {
       for (idNode n = 0; n < nbJTLeaves; ++n) {
          const auto &nId = jt_->getLeave(n);
-         if (!jt_->getNode(nId)->isHidden() && jt_->getNode(nId)->getNumberOfSuperArcs()) {
-            growingNodes.emplace(true, nId);
-         }
+         growingNodes.emplace(true, nId);
       }
-   }
+   } // else can't clone, not same up and down
 
    if (DEBUG) {
       cout << "growingNodes : " << growingNodes.size() << " in : " << stepTime.getElapsedTime()
            << endl;
    }
 
-   if (nbAddedleavesST == 1) {
-      clone(jt_);
-      return 0;
-   }
 
    // Warning, have a reserve here, can't make it at the begnining, need build output
    treeData_.leaves->reserve(jt_->getLeaves().size() + st_->getLeaves().size());

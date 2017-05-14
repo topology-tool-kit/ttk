@@ -823,10 +823,6 @@ idSuperArc MergeTree::makeSuperArc(idNode downNodeId, idNode upNodeId)
    (*treeData_.superArcs)[newSuperArcId].setDownNodeId(downNodeId);
    (*treeData_.superArcs)[newSuperArcId].setUpNodeId(upNodeId);
 
-   if (downNodeId == upNodeId) {
-      (*treeData_.superArcs)[newSuperArcId].hide();
-   }
-
    (*treeData_.nodes)[downNodeId].addUpSuperArcId(newSuperArcId);
    (*treeData_.nodes)[upNodeId].addDownSuperArcId(newSuperArcId);
 
@@ -853,13 +849,6 @@ void MergeTree::closeSuperArc(idSuperArc superArcId, idNode upNodeId)
 }
 
 // state
-
-void MergeTree::hideArc(idSuperArc sa)
-{
-   (*treeData_.superArcs)[sa].hide();
-   (*treeData_.nodes)[(*treeData_.superArcs)[sa].getUpNodeId()].removeDownSuperArc(sa);
-   (*treeData_.nodes)[(*treeData_.superArcs)[sa].getDownNodeId()].removeUpSuperArc(sa);
-}
 
 void MergeTree::mergeArc(idSuperArc sa, idSuperArc recept, const bool changeConnectivity)
 {
@@ -941,17 +930,11 @@ idSuperArc MergeTree::insertNode(Node *node, const bool segm)
    if (isCorrespondingNode(node->getVertexId())) {
       Node *myNode = vertex2Node(node->getVertexId());
       // If it has been hidden / replaced we need to re-make it
-      if (myNode->isHidden()) {
-         SuperArc * sa                 = getSuperArc(myNode->getUpSuperArcId(0));
-         idSuperArc correspondingArcId = (sa->getReplacantArcId() == nullSuperArc)
-                                             ? myNode->getUpSuperArcId(0)
-                                             : sa->getReplacantArcId();
-         updateCorrespondingArc(myNode->getVertexId(), correspondingArcId);
-      } else {
-         cout << "already exists" << endl;
-         cout << "is : " << (*treeData_.vert2tree)[myNode->getVertexId()] << endl;
-         return nullSuperArc;
-      }
+      SuperArc * sa                 = getSuperArc(myNode->getUpSuperArcId(0));
+      idSuperArc correspondingArcId = (sa->getReplacantArcId() == nullSuperArc)
+          ? myNode->getUpSuperArcId(0)
+          : sa->getReplacantArcId();
+      updateCorrespondingArc(myNode->getVertexId(), correspondingArcId);
    }
 
    idNode     upNodeId, newNodeId;
@@ -1026,8 +1009,6 @@ void MergeTree::delNode(idNode node)
 
       downNode->removeUpSuperArc(downArc);
       mainNode->clearDownSuperArcs();
-      (*treeData_.superArcs)[downArc].hide();
-      mainNode->hide();
 
    } else if (mainNode->getNumberOfDownSuperArcs() < 2) {
       // ---------------
@@ -1042,7 +1023,6 @@ void MergeTree::delNode(idNode node)
       Node *     upNode = getNode(upId);
 
       upNode->removeDownSuperArc(upArc);
-      (*treeData_.superArcs)[upArc].hide();
       mainNode->clearUpSuperArcs();
 
       if (mainNode->getNumberOfDownSuperArcs()) {
@@ -1064,11 +1044,6 @@ void MergeTree::delNode(idNode node)
    else
       cerr << "delete node with multiple childrens " << endl;
 #endif
-}
-
-void MergeTree::hideNode(idNode node)
-{
-   (*treeData_.nodes)[node].hide();
 }
 
 // }
@@ -1119,10 +1094,6 @@ string MergeTree::printArc(idSuperArc a)
    const SuperArc *sa = getSuperArc(a);
    stringstream    res;
    res << a;
-   if (sa->isVisible())
-      res << " V";
-   else
-      res << " X";
    res << " : ";
    res << getNode(sa->getDownNodeId())->getVertexId() << " -- ";
    res << getNode(sa->getUpNodeId())->getVertexId();
@@ -1153,30 +1124,18 @@ string MergeTree::printNode(idNode n)
    const Node * node = getNode(n);
    stringstream res;
    res << n;
-   if (node->isVisible())
-      res << " V";
-   else
-      res << " X";
    res << " : (";
    res << node->getVertexId() << ") \\ ";
 
    for (idSuperArc i = 0; i < node->getNumberOfDownSuperArcs(); ++i) {
-      if (getSuperArc(node->getDownSuperArcId(i))->isVisible()) {
-         res << "+";
-      } else {
-         res << "-";
-      }
+      res << "+";
       res << node->getDownSuperArcId(i) << " ";
    }
 
    res << " / ";
 
    for (idSuperArc i = 0; i < node->getNumberOfUpSuperArcs(); ++i) {
-      if (getSuperArc(node->getUpSuperArcId(i))->isVisible()) {
-         res << "+";
-      } else {
-         res << "-";
-      }
+      res << "+";
       res << node->getUpSuperArcId(i) << " ";
    }
 
@@ -1191,18 +1150,12 @@ void MergeTree::printTree2()
    {
       cout << "Nodes----------" << endl;
       for (idNode nid = 0; nid < getNumberOfNodes(); nid++) {
-         const Node &n = (*treeData_.nodes)[nid];
-         if (n.isVisible()) {
-            cout << printNode(nid) << endl;
-         }
+         cout << printNode(nid) << endl;
       }
 
       cout << "Arcs-----------" << endl;
       for (idSuperArc said = 0; said < getNumberOfSuperArcs(); ++said) {
-         const SuperArc &sa = (*treeData_.superArcs)[said];
-         if (sa.isVisible()) {
-            cout << printArc(said) << endl;
-         }
+         cout << printArc(said) << endl;
       }
 
       cout << "Leaves" << endl;

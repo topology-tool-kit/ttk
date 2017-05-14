@@ -38,8 +38,6 @@ namespace ttk
       idVertex linkedNode_;
       // link with superArc above and below
       std::vector<idSuperArc> vect_downSuperArcList_, vect_upSuperArcList_;
-      // Won't be displayed if hidden
-      bool hidden_;
 
      public:
       // -----------------
@@ -48,11 +46,11 @@ namespace ttk
       // {
 
       // This node will need to receive a vertex id before being printed
-      Node() : vertexId_(nullVertex), linkedNode_(nullNodes), hidden_(false)
+      Node() : vertexId_(nullVertex), linkedNode_(nullNodes)
       {
       }
 
-      Node(idVertex id, idVertex linked) : vertexId_(id), linkedNode_(linked), hidden_(false)
+      Node(idVertex id, idVertex linked) : vertexId_(id), linkedNode_(linked)
       {
       }
 
@@ -200,30 +198,6 @@ namespace ttk
                return;
             }
          }
-      }
-
-      // }
-      // hidden node
-      // ...........................................{
-
-      inline bool isHidden() const
-      {
-         return hidden_;
-      }
-
-      inline bool isVisible() const
-      {
-         return !hidden_;
-      }
-
-      inline void hide()
-      {
-         hidden_ = true;
-      }
-
-      inline void setHidden(const bool local_hidden)
-      {
-         hidden_ = local_hidden;
       }
 
       // }
