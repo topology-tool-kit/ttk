@@ -553,8 +553,6 @@ namespace ttk
 
       void closeSuperArc(idSuperArc superArcId, idNode upNodeId);
 
-      void hideArc(idSuperArc sa);
-
       void mergeArc(idSuperArc sa, idSuperArc recept, const bool changeConnectivity = true);
 
       // }
@@ -580,16 +578,9 @@ namespace ttk
 
       void delNode(idNode node);
 
-      void hideNode(idNode node);
-
       // }
       // Segmentation
       // ...........................{
-
-      tuple<segm_it, segm_it> addSimpleSegment(idVertex v)
-      {
-         return treeData_.segments_.addLateSimpleSegment(v);
-      }
 
       // }
       // Update informations

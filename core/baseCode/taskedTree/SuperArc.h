@@ -161,11 +161,6 @@ namespace ttk
          return state_ == ComponentState::Visible;
       }
 
-      inline void hide(void)
-      {
-         state_ = ComponentState::Hidden;
-      }
-
       inline void merge(idSuperArc arc)
       {
          substituteArcId_ = arc;
