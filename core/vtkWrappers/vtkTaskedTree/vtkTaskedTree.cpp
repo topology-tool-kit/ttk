@@ -739,14 +739,6 @@ int vtkTaskedTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& output
        cout << "Launch on field : " << ScalarField << endl;
    }
 
-   double simplificationThreshold = simplificationThreshold_;
-   if (useThresholdNormalization_ and simplificationThreshold_ >= 0.0 and
-       simplificationThreshold_ <= 1.0) {
-      double range[2];
-      inputScalars_->GetRange(range, 0);
-      simplificationThreshold *= (range[1] - range[0]);
-   }
-
    vector<idVertex> offsets(numberOfVertices);
    for (idVertex i = 0; i < numberOfVertices; ++i)
       offsets[i]   = inputOffsets_->GetTuple1(i);
@@ -756,9 +748,6 @@ int vtkTaskedTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& output
    // contour.setVertexSoSoffsets(inputOffsets_->GetVoidPointer(0));
    contourForests_.setVertexSoSoffsets(offsets);
    contourForests_.setTreeType(treeType_);
-
-   contourForests_.setSimplificationMethod(simplificationMethod_);
-   contourForests_.setSimplificationThreshold(simplificationThreshold);
 
    switch (inputScalars_->GetDataType()) {
       vtkTemplateMacro(({ contourForests_.build<VTK_TT>(); }));

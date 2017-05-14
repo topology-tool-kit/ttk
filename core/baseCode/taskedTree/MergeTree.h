@@ -5,7 +5,7 @@
 ///
 ///\brief TTK processing package that efficiently computes the
 /// sublevel set tree of scalar data and more
-/// (data segmentation, topological simplification,
+/// (data segmentation
 /// persistence diagrams, persistence curves, etc.).
 ///
 ///\param dataType Data type of the input scalar field (char, float,
@@ -260,16 +260,6 @@ namespace ttk
       inline void setTreeType(const int &local_treeType)
       {
          params_->treeType = static_cast<TreeType>(local_treeType);
-      }
-
-      inline void setSimplificationMethod(const int &local_simplifyMethod)
-      {
-         params_->simplifyMethod = static_cast<SimplifMethod>(local_simplifyMethod);
-      }
-
-      inline void setSimplificationThreshold(const double &local_simplificationThreshold)
-      {
-         params_->simplifyThreshold = local_simplificationThreshold;
       }
 
       inline void setScalars(void *local_scalars)
@@ -547,7 +537,6 @@ namespace ttk
       // segmentation
 
       /// \brief use vert2tree to compute the segmentation of the fresh builded merge tree.
-      /// must be called before the simplification.
       void buildSegmentation();
 
       // }

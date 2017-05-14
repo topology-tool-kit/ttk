@@ -32,8 +32,6 @@ namespace ttk
    // Compute parameters (global)
    struct Params {
       TreeType      treeType;
-      SimplifMethod simplifyMethod;
-      double        simplifyThreshold;
    };
 
    // Scalar related containers (global)
