@@ -10,20 +10,19 @@
 #include <vtksys/SystemTools.hxx>
 
 Editor::Editor(){
+   grid_       = NULL;
+   lastObject_ = true;
 
-  grid_ = NULL;
-  lastObject_ = true;
+   debug_       = 1;
+   contourTree_ = vtkTaskedTree::New();
 
-  debug_ = 1;
-  contourTree_ = vtkTaskedTree::New();
-
-  core_ = -INT_MAX;
-  fieldId_ = -INT_MAX;
-  treeType_ = -INT_MAX;
-  lessPartitions_ = false;
-  partitionNum_ = -INT_MAX;
-  threshold_ = -DBL_MAX;
-  method_ = -INT_MAX;
+   core_           = -INT_MAX;
+   fieldId_        = -INT_MAX;
+   treeType_       = -INT_MAX;
+   lessPartitions_ = false;
+   partitionNum_   = -INT_MAX;
+   threshold_      = -DBL_MAX;
+   method_         = -INT_MAX;
 }
 
 Editor::~Editor(){
@@ -42,8 +41,6 @@ int Editor::execute(){
   contourTree_->SetInputData(grid_);
   contourTree_->SetScalarFieldId(fieldId_);
   contourTree_->SettreeType_(treeType_);
-  contourTree_->SetsimplificationMethod_(method_);
-  contourTree_->SetsimplificationThreshold_(threshold_);
 
   contourTree_->Update();
 
