@@ -23,6 +23,7 @@ MergeTree::MergeTree(Params *const params, Triangulation *mesh, Scalars *const s
    treeData_.roots       = nullptr;
    treeData_.leaves      = nullptr;
    treeData_.vert2tree   = nullptr;
+   treeData_.visitOrder  = nullptr;
    treeData_.ufs         = nullptr;
    treeData_.propagation = nullptr;
    treeData_.valences    = nullptr;
@@ -237,6 +238,8 @@ void MergeTree::processTask(const idVertex startVert, const idNode d, const idVe
    // ------------------------
    // current task id / propag
    // ------------------------
+   // local order (ignore non regular verts)
+   idVertex localOrder = -1;
    UF startUF = (*treeData_.ufs)[startVert]->find();
    // get or recover states
    CurrentState *currentState;
@@ -286,6 +289,9 @@ void MergeTree::processTask(const idVertex startVert, const idNode d, const idVe
             }
          }
       }
+
+      // local order to avoid sort
+      (*treeData_.visitOrder)[currentVert] = localOrder++;
 
       // -------------------------------------
       // Saddle & Last detection + propagation
@@ -750,12 +756,16 @@ void MergeTree::buildSegmentation()
           const idVertex lowerBound = chunkId * chunkSize;
           const idVertex upperBound = min(nbVert, (chunkId+1)*chunkSize);
           for (idVertex i = lowerBound; i < upperBound; ++i) {
-             const auto &vert = (*scalars_->sortedVertices)[i];
+             const auto vert = (*scalars_->sortedVertices)[i];
              if (isCorrespondingArc(vert)) {
                 idSuperArc sa = getCorrespondingSuperArcId(vert);
                 idVertex   vertToAdd;
+                if((*treeData_.visitOrder)[vert] != nullVertex){
+                   vertToAdd = (*treeData_.visitOrder)[vert];
+                } else {
 #pragma omp atomic capture
-                vertToAdd = posSegm[sa]++;
+                   vertToAdd = posSegm[sa]++;
+                }
 
                 treeData_.segments_[sa][vertToAdd] = vert;
              }
@@ -766,8 +776,15 @@ void MergeTree::buildSegmentation()
 
    printTime(segmentsSet, "segm. set verts", -1, 3);
 
+   // sort arc that have been filled by the trunk
    DebugTimer segmentsSortTime;
-   treeData_.segments_.sortAll(scalars_);
+   for (idSuperArc a = 0; a < nbArcs; ++a) {
+      if (posSegm[a]) {
+#pragma omp task firstprivate(a)
+         treeData_.segments_[a].sort(scalars_);
+      }
+   }
+#pragma omp taskwait
    printTime(segmentsSortTime, "segm. sort verts", -1, 3);
 
    // ----------------------
