@@ -79,7 +79,7 @@ namespace ttk
       // Sort
       template <typename type>
       void qsort(type arr[], const long int begin, const long int stop,
-                 std::function<bool(type, type)> comp)
+                 std::function<bool(type, type)> comp) const
       {
          if (begin >= stop)
             return;
@@ -111,7 +111,7 @@ namespace ttk
 
      private:
       template <typename type>
-      inline void swap_el(type arr[], const size_t a, const size_t b)
+      inline void swap_el(type arr[], const size_t a, const size_t b) const
       {
          const type tmp = arr[a];
          arr[a]         = arr[b];

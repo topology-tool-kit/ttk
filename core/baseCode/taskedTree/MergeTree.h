@@ -71,6 +71,7 @@ namespace ttk
 
       // vertex 2 node / superarc
       vector<idCorresp> *vert2tree;
+      vector<idVertex>  *visitOrder;
 
       // uf
       vector<UF> *ufs, *propagation;
@@ -176,6 +177,9 @@ namespace ttk
          createVector<idCorresp>(treeData_.vert2tree);
          treeData_.vert2tree->resize(scalars_->size);
 
+         createVector<idVertex>(treeData_.visitOrder);
+         treeData_.visitOrder->resize(scalars_->size);
+
          createVector<UF>(treeData_.ufs);
          treeData_.ufs->resize(scalars_->size);
 
@@ -193,6 +197,7 @@ namespace ttk
 
       void makeInit(void) {
           initVector<idCorresp>(treeData_.vert2tree, nullCorresp);
+          initVector<idVertex>(treeData_.visitOrder, nullVertex);
           initVector<UF>(treeData_.ufs, nullptr);
           initVector<UF>(treeData_.propagation, nullptr);
           initVector<valence>(treeData_.valences, 0);

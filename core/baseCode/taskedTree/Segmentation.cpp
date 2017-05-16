@@ -14,6 +14,23 @@
 
 #include "Segmentation.h"
 
+#ifdef __APPLE__
+# include <algorithm>
+# include <numeric>
+#else
+# ifdef _WIN32
+#  include <algorithm>
+#  include <numeric>
+# else
+#  ifdef __clang__
+#   include <algorithm>
+#   include <numeric>
+#  else
+#   include <parallel/algorithm>
+#  endif
+# endif
+#endif
+
 using namespace ttk;
 using namespace std;
 
@@ -25,16 +42,20 @@ Segment::Segment(idVertex size) : vertices_(size, nullVertex)
 {
 }
 
-Segment::Segment(idVertex size, idVertex v) : vertices_(size, v)
-{
-}
-
 void Segment::sort(const Scalars* s)
 {
    // Sort by scalar value
    auto comp = [&](idVertex a, idVertex b) { return s->isLower(a, b); };
 
+#ifdef withOpenMP
+# ifdef __clang__
    std::sort(vertices_.begin(), vertices_.end(), comp);
+# else
+   __gnu_parallel::sort(vertices_.begin(), vertices_.end(), comp);
+# endif
+#else
+   std::sort(vertices_.begin(), vertices_.end(), comp);
+#endif
 }
 
 segm_const_it Segment::begin(void) const
