@@ -109,6 +109,4 @@ namespace ttk
 
 // #define withStatsTime 1
 
-// #define withStatsRatio 1
-
 #endif /* end of include guard: DATATYPES_H */

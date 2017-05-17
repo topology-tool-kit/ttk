@@ -523,9 +523,6 @@ idVertex MergeTree::trunk()
 // ------------
 // Segmentation
 // ------------
-#ifdef withStatsRatio
-   idVertex duplicateSeen = 0;
-#endif
    // bounds
    idVertex begin, stop;
    tie(begin, stop)         = getBoundsFromVerts(pendingVerts);
@@ -572,10 +569,6 @@ idVertex MergeTree::trunk()
 
    printTime(bbTimer, "Backbone para.", -1, 3);
 
-#ifdef withStatsRatio
-   cout << "duplicate : " << duplicateSeen << " / " << (stop-begin) << endl;
-#endif
-
    // ---------------------
    // Root (close last arc)
    // ---------------------
@@ -602,12 +595,6 @@ void MergeTree::assignChunkTrunk(const vector<idVertex> &pendingVerts, idNode &l
          acc = 1;
       }
    }
-#ifdef withStatsRatio
-   else {
-#pragma omp atomic update
-            ++duplicateSeen;
-         }
-#endif
 }
 
 // stats
