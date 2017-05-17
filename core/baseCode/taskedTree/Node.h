@@ -186,7 +186,6 @@ namespace ttk
          }
       }
 
-
       // Find and remove the arc
       inline void removeUpSuperArc(idSuperArc idSa)
       {

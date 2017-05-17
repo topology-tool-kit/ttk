@@ -146,11 +146,6 @@ namespace ttk
          return state_ == ComponentState::Hidden;
       }
 
-      inline bool isPruned(void) const
-      {
-         return state_ == ComponentState::Merged;
-      }
-
       inline bool isMerged(void) const
       {
          return state_ == ComponentState::Merged;
