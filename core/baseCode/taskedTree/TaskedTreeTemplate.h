@@ -98,6 +98,8 @@ void TaskedTree::build(void)
        getSplitTree()->buildSegmentation();
        getSplitTree()->finalizeSegmentation();
    }
+
+   // exit(0);
 }
 
 // }

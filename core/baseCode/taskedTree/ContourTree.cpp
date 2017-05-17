@@ -155,6 +155,19 @@ void ContourTree::build(TreeType tt)
          default:
             printTree2();
       }
+   } else {
+      cout << " nodes :";
+      switch (tt) {
+         case TreeType::Join:
+            cout << jt_->getNumberOfNodes();
+            break;
+         case TreeType::Split:
+            cout << st_->getNumberOfNodes();
+            break;
+         default:
+            cout << getNumberOfNodes();
+      }
+      cout << endl;
    }
 }
 
