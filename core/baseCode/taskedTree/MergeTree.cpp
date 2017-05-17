@@ -29,11 +29,6 @@ MergeTree::MergeTree(Params *const params, Triangulation *mesh, Scalars *const s
    treeData_.valences    = nullptr;
    treeData_.openedNodes = nullptr;
 
-#ifdef withStatsHeight
-   treeData_.arcDepth     = nullptr;
-   treeData_.arcPotential = nullptr;
-#endif
-
 #ifdef withStatsTime
    treeData_.arcStart = nullptr;
    treeData_.arcEnd   = nullptr;
@@ -100,11 +95,6 @@ void MergeTree::build(const bool ct)
       buildSegmentation();
       printTime(segmTime, "6 segmentation " + treeString, scalars_->size);
    }
-
-   // -----
-   // Stats
-   // -----
-   stats();
 }
 
 // extrema
@@ -213,27 +203,14 @@ void MergeTree::leaves()
       (*treeData_.ufs)[v] = new AtomicUF(v);
 
 #pragma omp task untied
-      processTask(v, 0, n);
+      processTask(v, n);
    }
 
 #pragma omp taskwait
 }
 
-#ifdef withStatsHeight
-idNode _maxDepth = 1;
-#endif
-
-void MergeTree::processTask(const idVertex startVert, const idNode d, const idVertex orig)
+void MergeTree::processTask(const idVertex startVert, const idVertex orig)
 {
-
-#ifdef withStatsHeight
-# pragma omp critical
-   {
-      if (d > _maxDepth) {
-         _maxDepth = d;
-      }
-   }
-#endif
 
    // ------------------------
    // current task id / propag
@@ -336,7 +313,7 @@ void MergeTree::processTask(const idVertex startVert, const idNode d, const idVe
 
             // recursively continue
 #pragma omp taskyield
-            processTask(currentVert, d+1, orig);
+            processTask(currentVert, orig);
          } else {
             // Active tasks / threads
 #pragma omp atomic update seq_cst
@@ -479,20 +456,20 @@ idVertex MergeTree::trunk()
 {
    DebugTimer bbTimer;
 
-   vector<idVertex>pendingVerts;
-   const auto &nbScalars = scalars_->size;
+   vector<idVertex> pendingNodesVerts;
+   const auto &     nbScalars = scalars_->size;
 
    // -----
-   //pendingVerts
+   //pendingNodesVerts
    // -----
-  pendingVerts.reserve(max(10, nbScalars / 500));
+  pendingNodesVerts.reserve(max(10, nbScalars / 500));
    for (idVertex v = 0; v < nbScalars; ++v) {
        if((*treeData_.openedNodes)[v]){
-          pendingVerts.emplace_back(v);
+          pendingNodesVerts.emplace_back(v);
        }
    }
-   sort(pendingVerts.begin(), pendingVerts.end(), comp_.vertLower);
-   for (const idVertex v : pendingVerts) {
+   sort(pendingNodesVerts.begin(), pendingNodesVerts.end(), comp_.vertLower);
+   for (const idVertex v : pendingNodesVerts) {
       closeOnBackBone(v);
    }
 
@@ -500,17 +477,17 @@ idVertex MergeTree::trunk()
    // Arcs
    // ----
 
-   const auto &nbNodes =pendingVerts.size();
+   const auto &nbNodes =pendingNodesVerts.size();
    for (idNode n = 1; n < nbNodes; ++n) {
       idSuperArc na =
-          makeSuperArc(getCorrespondingNodeId(pendingVerts[n - 1]), getCorrespondingNodeId(pendingVerts[n]));
-      getSuperArc(na)->setLastVisited(pendingVerts[n]);
+          makeSuperArc(getCorrespondingNodeId(pendingNodesVerts[n - 1]), getCorrespondingNodeId(pendingNodesVerts[n]));
+      getSuperArc(na)->setLastVisited(pendingNodesVerts[n]);
    }
 
    if (!nbNodes) {
       return 0;
    }
-   const idSuperArc lastArc = openSuperArc(getCorrespondingNodeId(pendingVerts[nbNodes - 1]));
+   const idSuperArc lastArc = openSuperArc(getCorrespondingNodeId(pendingNodesVerts[nbNodes - 1]));
 
    // debug close Root
    const idNode rootNode = makeNode((*scalars_->sortedVertices)[(isJT())?scalars_->size -1:0]);
@@ -525,48 +502,8 @@ idVertex MergeTree::trunk()
 // ------------
    // bounds
    idVertex begin, stop;
-   tie(begin, stop)         = getBoundsFromVerts(pendingVerts);
-   const auto sizeBackBone  = abs(stop - begin);
-   const int nbTasksThreads = 40;
-   const auto chunkSize     = getChunkSize(sizeBackBone, nbTasksThreads);
-   const auto chunkNb       = getChunkCount(sizeBackBone, nbTasksThreads);
-
-   // si pas efficace vecteur de la taille de node ici a la place de acc
-   idNode   lastVertInRange = 0;
-   idVertex acc             = 0;
-   if (isJT()) {
-      for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
-#pragma omp task firstprivate(chunkId)
-         {
-            const idVertex lowerBound = begin + chunkId * chunkSize;
-            const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
-            for (idVertex v = lowerBound; v < upperBound; ++v) {
-               assignChunkTrunk(pendingVerts, lastVertInRange, acc, v);
-            }
-            // force increment last arc
-            const idNode     baseNode = getCorrespondingNodeId(pendingVerts[lastVertInRange]);
-            const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
-            getSuperArc(upArc)->atomicIncVisited(acc);
-         }
-      }
-   } else {
-      for (idVertex chunkId = chunkNb - 1; chunkId >= 0; --chunkId) {
-#pragma omp task firstprivate(chunkId)
-         {
-            const idVertex upperBound = begin - chunkId * chunkSize;
-            const idVertex lowerBound = max(stop, begin - (chunkId + 1) * chunkSize);
-            for (idVertex v = upperBound; v > lowerBound; --v) {
-               assignChunkTrunk(pendingVerts, lastVertInRange, acc, v);
-            }
-            // force increment last arc
-            const idNode     baseNode = getCorrespondingNodeId(pendingVerts[lastVertInRange]);
-            const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
-            getSuperArc(upArc)->atomicIncVisited(acc);
-         }
-      }
-   }
-#pragma omp taskwait
-
+   tie(begin, stop)         = getBoundsFromVerts(pendingNodesVerts);
+   trunkSegmentation(pendingNodesVerts, begin, stop);
    printTime(bbTimer, "Backbone para.", -1, 3);
 
    // ---------------------
@@ -574,121 +511,71 @@ idVertex MergeTree::trunk()
    // ---------------------
    // if several CC still the backbone is only in one.
    // But the root may not be the max node of the whole dataset
-   return sizeBackBone;
+   return abs(stop-begin);
 }
 
-void MergeTree::assignChunkTrunk(const vector<idVertex> &pendingVerts, idNode &lastVertInRange,
+void MergeTree::trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
+                                  const idVertex begin, const idVertex stop)
+{
+   const int nbTasksThreads = 40;
+   const auto sizeBackBone  = abs(stop - begin);
+   const auto chunkSize     = getChunkSize(sizeBackBone, nbTasksThreads);
+   const auto chunkNb       = getChunkCount(sizeBackBone, nbTasksThreads);
+   // si pas efficace vecteur de la taille de node ici a la place de acc
+   idNode   lastVertInRange = 0;
+   idVertex acc             = 0;
+   if (isJT()) {
+      for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+#pragma omp task firstprivate(chunkId, acc) shared(pendingNodesVerts)
+         {
+            const idVertex lowerBound = begin + chunkId * chunkSize;
+            const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
+            for (idVertex v = lowerBound; v < upperBound; ++v) {
+               assignChunkTrunk(pendingNodesVerts, lastVertInRange, acc, v);
+            }
+            // force increment last arc
+            const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
+            const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
+            getSuperArc(upArc)->atomicIncVisited(acc);
+         }
+      }
+   } else {
+      for (idVertex chunkId = chunkNb - 1; chunkId >= 0; --chunkId) {
+#pragma omp task firstprivate(chunkId, acc) shared(pendingNodesVerts)
+         {
+            const idVertex upperBound = begin - chunkId * chunkSize;
+            const idVertex lowerBound = max(stop, begin - (chunkId + 1) * chunkSize);
+            for (idVertex v = upperBound; v > lowerBound; --v) {
+               assignChunkTrunk(pendingNodesVerts, lastVertInRange, acc, v);
+            }
+            // force increment last arc
+            const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
+            const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
+            getSuperArc(upArc)->atomicIncVisited(acc);
+         }
+      }
+   }
+#pragma omp taskwait
+}
+
+void MergeTree::assignChunkTrunk(const vector<idVertex> &pendingNodesVerts, idNode &lastVertInRange,
                                  idVertex &acc, const idVertex v)
 {
    const idVertex s = (*scalars_->sortedVertices)[v];
    if (isCorrespondingNull(s)) {
       const idNode oldVertInRange = lastVertInRange;
-      lastVertInRange             = getVertInRange(pendingVerts, s, lastVertInRange);
-      const idSuperArc thisArc    = upArcFromVert(pendingVerts[lastVertInRange]);
+      lastVertInRange             = getVertInRange(pendingNodesVerts, s, lastVertInRange);
+      const idSuperArc thisArc    = upArcFromVert(pendingNodesVerts[lastVertInRange]);
       updateCorrespondingArc(s, thisArc);
       if (oldVertInRange == lastVertInRange) {
          ++acc;
       } else {
          // accumulated to have only one atomic update when needed
-         const idSuperArc oldArc = upArcFromVert(pendingVerts[oldVertInRange]);
+         const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
          getSuperArc(oldArc)->atomicIncVisited(acc);
          acc = 1;
       }
    }
-}
-
-// stats
-
-void MergeTree::stats()
-{
-
-#ifdef withStatsHeight
-   cout << "arcs " << treeData_.superArcs->size() << endl;
-   cout << "depth " << _maxDepth << endl;
-
-   initPtrVector<idSuperArc>(treeData_.arcDepth);
-   treeData_.arcDepth->resize(treeData_.superArcs->size(), nullSuperArc);
-
-   const auto nbleaves = treeData_.leaves->size();
-   vector<idNode> heights(nbleaves, 0);
-
-   for (idNode l = 0; l < nbleaves; ++l) {
-      heights[l] = height(l);
-   }
-
-   float avg = 0, var = 0;
-
-   // Max
-   const auto& itMax = max_element(heights.cbegin(), heights.cend());
-   idNode heightval = *itMax;
-
-   cout << "height " << heightval << endl;
-
-   // Avg
-   for (const auto& h : heights) {
-      avg += h;
-   }
-   avg /= nbleaves;
-
-   cout << "avg    " << avg << endl;
-
-   // Var
-   for (const auto& h : heights) {
-       var += powf((h-avg), 2);
-   }
-   var /= nbleaves;
-
-   float stddev = sqrtf(var);
-
-   cout << "var    " << var << endl;
-   cout << "stddev " << stddev << endl;
-
-   // Segm size
-   initPtrVector<idSuperArc>(treeData_.arcPotential);
-   treeData_.arcPotential->resize(treeData_.superArcs->size(), nullVertex);
-
-   createArcPotential();
-
-#endif
-}
-
-idNode MergeTree::height(const idNode& node, const idNode h)
-{
-#ifdef withStatsHeight
-    if(getNode(node)->getNumberOfUpSuperArcs()){
-
-       const idSuperArc &upArc = getNode(node)->getUpSuperArcId(0);
-       if((*treeData_.arcDepth)[upArc] == nullSuperArc || (*treeData_.arcDepth)[upArc] < h){
-           (*treeData_.arcDepth)[upArc] = h;
-       }
-
-       return height(getParent(node), h + 1);
-    }
-#endif
-    return h;
-}
-
-void MergeTree::createArcPotential()
-{
-    for (const idNode& r : (*treeData_.roots)) {
-       arcPotential(r);
-    }
-}
-
-void MergeTree::arcPotential(const idNode parentId, const idVertex pot)
-{
-#ifdef withStatsHeight
-   auto *parentNode = getNode(parentId);
-   const auto& nbChilds = parentNode->getNumberOfDownSuperArcs();
-   for (idSuperArc c = 0; c < nbChilds; c++) {
-      const idSuperArc curChild = parentNode->getDownSuperArcId(c);
-      const idVertex curSegm = getSuperArc(curChild)->getRegion().count();
-
-      (*treeData_.arcPotential)[curChild] = pot + curSegm;
-
-      arcPotential(getSuperArc(curChild)->getDownNodeId(), pot + curSegm);
-   }
-#endif
 }
 
 // segmentation

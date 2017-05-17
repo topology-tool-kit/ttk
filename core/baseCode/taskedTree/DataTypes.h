@@ -103,10 +103,6 @@ namespace ttk
 
 // Tests
 
-// #define withStatsParent 1
-
-// #define withStatsHeight 1
-
 // #define withStatsTime 1
 
 #endif /* end of include guard: DATATYPES_H */

@@ -80,11 +80,6 @@ namespace ttk
       // opened nodes
       vector<char> *openedNodes;
 
-#ifdef withStatsHeight
-      vector<idSuperArc> *arcDepth;
-      vector<idSuperArc> *arcPotential;
-#endif
-
 #ifdef withStatsTime
       vector<float> *   arcStart;
       vector<float> *   arcEnd;
@@ -212,18 +207,6 @@ namespace ttk
       //{
 
       // Tree info for wrapper
-
-#ifdef withStatsHeight
-      inline idSuperArc getArcDepth(const idSuperArc arcId)
-      {
-          return (*treeData_.arcDepth)[arcId];
-      }
-
-      inline idVertex getArcPotential(const idSuperArc arcId)
-      {
-          return (*treeData_.arcPotential)[arcId];
-      }
-#endif
 
 #ifdef withStatsTime
       inline float getArcStart(const idSuperArc arcId)
@@ -514,7 +497,7 @@ namespace ttk
 
       void leaves();
 
-      void processTask(const idVertex startVert, const idNode h, const idVertex orig);
+      void processTask(const idVertex startVert, const idVertex orig);
 
       tuple<bool, bool> propage(CurrentState &currentState, UF curUF);
 
@@ -526,18 +509,11 @@ namespace ttk
 
       idVertex trunk();
 
+      void trunkSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
+                             const idVertex stop);
+
       void assignChunkTrunk(const vector<idVertex> &pendingVerts, idNode &lastVertInRange,
                             idVertex &acc, const idVertex v);
-
-      // stats
-
-      void stats();
-
-      idNode height(const idNode &node, const idNode h=0);
-
-      void createArcPotential(void);
-
-      void arcPotential(const idNode parentId, const idVertex pot = 0);
 
       // segmentation
 

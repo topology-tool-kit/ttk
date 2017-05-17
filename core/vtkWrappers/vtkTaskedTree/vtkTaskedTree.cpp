@@ -403,26 +403,6 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    }
 #endif
 
-#ifdef withStatsHeight
-   vtkSmartPointer<vtkIntArray> depthArcs =vtkSmartPointer<vtkIntArray>::New();
-   depthArcs->SetName("Depth");
-# ifndef withKamikaze
-   if(!depthArcs) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray depth allocation problem." << endl;
-      return -3;
-   }
-# endif
-
-   vtkSmartPointer<vtkIntArray> potArcs=vtkSmartPointer<vtkIntArray>::New();
-   potArcs->SetName("Potential");
-# ifndef withKamikaze
-   if (!potArcs) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray pot allocation problem." << endl;
-      return -4;
-   }
-# endif
-#endif
-
 #ifdef withStatsTime
    vtkSmartPointer<vtkFloatArray> startArcs=vtkSmartPointer<vtkFloatArray>::New();
    startArcs->SetName("Start");
@@ -501,11 +481,6 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
       else
           addDirectSkeletonArc(tree, arc, points, skeletonArcs);
 
-#ifdef withStatsHeight
-      depthArcs->InsertNextTuple1(tree->getArcDepth(i));
-      potArcs->InsertNextTuple1(tree->getArcPotential(i));
-#endif
-
 #ifdef withStatsTime
       startArcs->InsertNextTuple1(tree->getArcStart(i));
       endArcs->InsertNextTuple1(tree->getArcEnd(i));
@@ -518,10 +493,6 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    }
 
    skeletonArcs->SetPoints(points);
-#ifdef withStatsHeight
-   skeletonArcs->GetCellData()->AddArray(depthArcs);
-   skeletonArcs->GetCellData()->AddArray(potArcs);
-#endif
 #ifdef withStatsTime
    skeletonArcs->GetCellData()->AddArray(startArcs);
    skeletonArcs->GetCellData()->AddArray(endArcs);
