@@ -43,7 +43,7 @@ void Segment::createFromList(const Scalars* s, list<vector<idVertex>>& regularLi
    for (const auto& vectReg : regularList) {
       totalSize += vectReg.size();
    }
-   vertices_.reserve(totalSize);
+   vertices_.resize(totalSize);
    // TODO parallel
    regularList.sort(vectComp);
    //TODO parallel
