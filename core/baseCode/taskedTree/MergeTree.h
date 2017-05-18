@@ -72,7 +72,7 @@ namespace ttk
       // vertex 2 node / superarc
       vector<idCorresp> *vert2tree;
       vector<idVertex>  *visitOrder;
-      vector<list<vector<idVertex>>> trunkSegments;
+      vector<list<vector<idVertex>>> *trunkSegments;
 
       // uf
       vector<UF> *ufs, *propagation;
@@ -173,6 +173,8 @@ namespace ttk
          createVector<idCorresp>(treeData_.vert2tree);
          treeData_.vert2tree->resize(scalars_->size);
 
+         createVector<list<vector<idVertex>>>(treeData_.trunkSegments);
+
          createVector<idVertex>(treeData_.visitOrder);
          treeData_.visitOrder->resize(scalars_->size);
 
@@ -189,7 +191,6 @@ namespace ttk
          treeData_.openedNodes->resize(scalars_->size);
 
          treeData_.segments_.clear();
-         treeData_.trunkSegments.clear();
       }
 
       void makeInit(void) {

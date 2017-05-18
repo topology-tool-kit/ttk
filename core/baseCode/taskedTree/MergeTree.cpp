@@ -18,16 +18,17 @@ MergeTree::MergeTree(Params *const params, Triangulation *mesh, Scalars *const s
 {
    treeData_.treeType = type;
 
-   treeData_.superArcs   = nullptr;
-   treeData_.nodes       = nullptr;
-   treeData_.roots       = nullptr;
-   treeData_.leaves      = nullptr;
-   treeData_.vert2tree   = nullptr;
-   treeData_.visitOrder  = nullptr;
-   treeData_.ufs         = nullptr;
-   treeData_.propagation = nullptr;
-   treeData_.valences    = nullptr;
-   treeData_.openedNodes = nullptr;
+   treeData_.superArcs     = nullptr;
+   treeData_.nodes         = nullptr;
+   treeData_.roots         = nullptr;
+   treeData_.leaves        = nullptr;
+   treeData_.vert2tree     = nullptr;
+   treeData_.trunkSegments = nullptr;
+   treeData_.visitOrder    = nullptr;
+   treeData_.ufs           = nullptr;
+   treeData_.propagation   = nullptr;
+   treeData_.valences      = nullptr;
+   treeData_.openedNodes   = nullptr;
 
 #ifdef withStatsTime
    treeData_.arcStart = nullptr;
@@ -571,7 +572,7 @@ void MergeTree::trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts,
    const auto chunkNb       = getChunkCount(sizeBackBone, nbTasksThreads);
    // si pas efficace vecteur de la taille de node ici a la place de acc
    idNode   lastVertInRange = 0;
-   treeData_.trunkSegments.resize(getNumberOfSuperArcs());
+   treeData_.trunkSegments->resize(getNumberOfSuperArcs());
    if (isJT()) {
       for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #pragma omp task firstprivate(chunkId, lastVertInRange) shared(pendingNodesVerts)
@@ -587,8 +588,11 @@ void MergeTree::trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts,
             regularList.emplace_back((*scalars_->sortedVertices)[lastVertInRange]);
             const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
             const idSuperArc upArc = getNode(baseNode)->getUpSuperArcId(0);
-            treeData_.trunkSegments[upArc].emplace_back(regularList);
-            regularList.clear();
+#pragma omp critical
+            {
+               (*treeData_.trunkSegments)[upArc].emplace_back(regularList);
+               regularList.clear();
+            }
          }
       }
    } else {
@@ -606,8 +610,11 @@ void MergeTree::trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts,
             regularList.emplace_back((*scalars_->sortedVertices)[lastVertInRange]);
             const idNode baseNode  = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
             const idSuperArc upArc = getNode(baseNode)->getUpSuperArcId(0);
-            treeData_.trunkSegments[upArc].emplace_back(regularList);
-            regularList.clear();
+#pragma omp critical
+            {
+               (*treeData_.trunkSegments)[upArc].emplace_back(regularList);
+               regularList.clear();
+            }
          }
       }
    }
@@ -650,8 +657,11 @@ void MergeTree::addChunkTrunk(const vector<idVertex> &pendingNodesVerts, idNode 
          regularList.emplace_back(s);
          const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
          // TODO Critical here WARNING !!
-         treeData_.trunkSegments[oldArc].emplace_back(regularList);
-         regularList.clear();
+#pragma omp critical
+         {
+             (*treeData_.trunkSegments)[oldArc].emplace_back(regularList);
+             regularList.clear();
+         }
       }
    }
 }
@@ -715,13 +725,7 @@ void MergeTree::buildSegmentation()
                 if((*treeData_.visitOrder)[vert] != nullVertex){
                    vertToAdd = (*treeData_.visitOrder)[vert];
                    treeData_.segments_[sa][vertToAdd] = vert;
-                } else if (treeData_.trunkSegments.size()){
-                   // CT computation, we have already the vert list
-                   if (treeData_.trunkSegments[sa].size()) {
-                      treeData_.segments_[sa].createFromList(scalars_, treeData_.trunkSegments[sa],
-                                                             treeData_.treeType == TreeType::Split);
-                   }
-                } else {
+                } else if (treeData_.trunkSegments->size() == 0){
                     // MT computation
 #pragma omp atomic capture
                    vertToAdd = posSegm[sa]++;
@@ -736,16 +740,32 @@ void MergeTree::buildSegmentation()
 
    printTime(segmentsSet, "segm. set verts", -1, 3);
 
-   // sort arc that have been filled by the trunk
-   DebugTimer segmentsSortTime;
-   for (idSuperArc a = 0; a < nbArcs; ++a) {
-      if (posSegm[a]) {
+   if (treeData_.trunkSegments->size() == 0) {
+      // sort arc that have been filled by the trunk
+      // only for MT
+      DebugTimer segmentsSortTime;
+      for (idSuperArc a = 0; a < nbArcs; ++a) {
+         if (posSegm[a]) {
 #pragma omp task firstprivate(a)
-         treeData_.segments_[a].sort(scalars_);
+            treeData_.segments_[a].sort(scalars_);
+         }
       }
-   }
 #pragma omp taskwait
-   printTime(segmentsSortTime, "segm. sort verts", -1, 3);
+      printTime(segmentsSortTime, "segm. sort verts", -1, 3);
+   } else {
+       // Contour tree: we create the arc segmentation for arcs in the trunk
+       DebugTimer segmentsArcTime;
+       for (idSuperArc a = 0; a < nbArcs; ++a) {
+          // CT computation, we have already the vert list
+          if ((*treeData_.trunkSegments)[a].size()) {
+#pragma omp task firstprivate(a)
+             treeData_.segments_[a].createFromList(scalars_, (*treeData_.trunkSegments)[a],
+                                                   treeData_.treeType == TreeType::Split);
+          }
+       }
+#pragma omp taskwait
+      printTime(segmentsArcTime, "segm. creat trunk verts", -1, 3);
+   }
 
    // ----------------------
    // Update SuperArc region
