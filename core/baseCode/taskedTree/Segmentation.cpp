@@ -14,23 +14,6 @@
 
 #include "Segmentation.h"
 
-#ifdef __APPLE__
-# include <algorithm>
-# include <numeric>
-#else
-# ifdef _WIN32
-#  include <algorithm>
-#  include <numeric>
-# else
-#  ifdef __clang__
-#   include <algorithm>
-#   include <numeric>
-#  else
-#   include <parallel/algorithm>
-#  endif
-# endif
-#endif
-
 using namespace ttk;
 using namespace std;
 
@@ -47,15 +30,38 @@ void Segment::sort(const Scalars* s)
    // Sort by scalar value
    auto comp = [&](idVertex a, idVertex b) { return s->isLower(a, b); };
 
-#ifdef withOpenMP
-# ifdef __clang__
    std::sort(vertices_.begin(), vertices_.end(), comp);
-# else
-   __gnu_parallel::sort(vertices_.begin(), vertices_.end(), comp);
-# endif
-#else
-   std::sort(vertices_.begin(), vertices_.end(), comp);
-#endif
+}
+
+void Segment::createFromList(const Scalars* s, list<vector<idVertex>>& regularList, const bool reverse)
+{
+   auto vectComp = [&](const vector<idVertex>& a, const vector<idVertex>& b) {
+      return s->isLower(a[0], b[0]);
+   };
+
+   idVertex totalSize = 0;
+   for (const auto& vectReg : regularList) {
+      totalSize += vectReg.size();
+   }
+   vertices_.reserve(totalSize);
+   // TODO parallel
+   regularList.sort(vectComp);
+   //TODO parallel
+   if (reverse) {
+      for (auto it1 = regularList.crbegin(); it1 != regularList.crend(); ++it1) {
+         for (auto it2 = it1->crbegin(); it2 != it1->crend(); ++it2) {
+            vertices_.emplace_back(*it2);
+         }
+      }
+   } else {
+      for (const auto& vectReg : regularList) {
+         for (const idVertex v : vectReg) {
+            vertices_.emplace_back(v);
+         }
+      }
+   }
+
+   regularList.clear();
 }
 
 segm_const_it Segment::begin(void) const

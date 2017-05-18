@@ -44,6 +44,7 @@ namespace ttk
       Segment(idVertex size);
 
       void sort(const Scalars* s);
+      void createFromList(const Scalars* s, list<vector<idVertex>>& regularsList, const bool reverse);
 
       segm_const_it begin(void) const;
       segm_const_it end(void) const;
@@ -53,7 +54,6 @@ namespace ttk
 
       idVertex operator[](const size_t& idx) const;
       idVertex& operator[](const size_t& idx);
-      void emplace_back(const idVertex v);
    };
 
    // All the segments of the mesh, like a vector<Segment>
