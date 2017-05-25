@@ -136,7 +136,6 @@ void ContourTree::build(TreeType tt)
       DebugTimer combineTime;
       combine();
       printTime(combineTime, "8 combine trees");
-      finalizeSegmentation();
       printTime(combineFullTime, "combine full", -1, 3);
    }
 

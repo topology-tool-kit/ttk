@@ -176,7 +176,7 @@ void MergeTree::leaves()
 {
    _launchGlobalTime.reStart();
 
-   const auto &nbLeaves = treeData_.leaves->size();
+   const idNode nbLeaves = treeData_.leaves->size();
 
    // elevation: backbone only
    if (nbLeaves == 1) {
@@ -196,16 +196,30 @@ void MergeTree::leaves()
    };
    sort(treeData_.leaves->begin(), treeData_.leaves->end(), comp);
 
-   for (idNode n = 0; n < nbLeaves; ++n)
+   DebugTimer launchTaskTime;
+   const int nbTasksThreads = 40;
+   const idNode chunkSize = getChunkSize(nbLeaves, nbTasksThreads);
+   const idNode chunkNb   = getChunkCount(nbLeaves, nbTasksThreads);
+   for (idNode chunkId = 0; chunkId < chunkNb ; ++chunkId)
    {
-      const idNode l = (*treeData_.leaves)[n];
-      int          v = getNode(l)->getVertexId();
-      // for each node: get vert, create uf and lauch
-      (*treeData_.ufs)[v] = new AtomicUF(v);
+// #pragma omp task firstprivate(chunkId)
+      {
+         const idNode lowerBound = chunkId * chunkSize;
+         const idNode upperBound = min(nbLeaves, (chunkId + 1) * chunkSize);
+
+         for (idNode n = lowerBound; n < upperBound; ++n) {
+            const idNode l = (*treeData_.leaves)[n];
+            int          v = getNode(l)->getVertexId();
+            // for each node: get vert, create uf and lauch
+            (*treeData_.ufs)[v] = new AtomicUF(v);
 
 #pragma omp task untied
-      processTask(v, n);
+            processTask(v, n);
+         }
+      }
    }
+
+   printTime(launchTaskTime, "TASKS LAUNCH", 0);
 
 #pragma omp taskwait
 }

@@ -47,14 +47,20 @@ void TaskedTree::build(void)
 
    // Alloc / reserve
    DebugTimer initTime;
-   if (params_->treeType == TreeType::Join || params_->treeType == TreeType::Contour) {
-      getJoinTree()->makeAlloc();
-   }
-   if (params_->treeType == TreeType::Split || params_->treeType == TreeType::Contour) {
-      getSplitTree()->makeAlloc();
-   }
-   if (params_->treeType == TreeType::Contour) {
-      makeAlloc();
+   switch (params_->treeType) {
+      case TreeType::Join:
+         getJoinTree()->makeAlloc();
+         break;
+      case TreeType::Split:
+         getSplitTree()->makeAlloc();
+         break;
+      case TreeType::Contour:
+         getJoinTree()->makeAlloc();
+         getSplitTree()->makeAlloc();
+         makeAlloc();
+         break;
+      default:
+         break;
    }
    printTime(initTime, "alloc step", -1, 3);
 
@@ -62,14 +68,20 @@ void TaskedTree::build(void)
 
    // init values
    DebugTimer setTimer;
-   if (params_->treeType == TreeType::Join || params_->treeType == TreeType::Contour) {
-      getJoinTree()->makeInit();
-   }
-   if (params_->treeType == TreeType::Split || params_->treeType == TreeType::Contour) {
-      getSplitTree()->makeInit();
-   }
-   if (params_->treeType == TreeType::Contour) {
-      makeInit();
+   switch (params_->treeType) {
+      case TreeType::Join:
+         getJoinTree()->makeInit();
+         break;
+      case TreeType::Split:
+         getSplitTree()->makeInit();
+         break;
+      case TreeType::Contour:
+         getJoinTree()->makeInit();
+         getSplitTree()->makeInit();
+         makeInit();
+         break;
+      default:
+         break;
    }
    printTime(setTimer, "0 init");
 
@@ -90,13 +102,20 @@ void TaskedTree::build(void)
 
    printTime(startTime, "10 TOTAL ", -1, 1);
 
-   if(params_->treeType == TreeType::Join){
-       getJoinTree()->buildSegmentation();
-       getJoinTree()->finalizeSegmentation();
-   }
-   if(params_->treeType == TreeType::Split){
-       getSplitTree()->buildSegmentation();
-       getSplitTree()->finalizeSegmentation();
+   switch (params_->treeType) {
+      case TreeType::Join:
+         getJoinTree()->buildSegmentation();
+         getJoinTree()->finalizeSegmentation();
+         break;
+      case TreeType::Split:
+         getSplitTree()->buildSegmentation();
+         getSplitTree()->finalizeSegmentation();
+         break;
+      case TreeType::Contour:
+         finalizeSegmentation();
+         break;
+      default:
+         break;
    }
 
    // exit(0);
