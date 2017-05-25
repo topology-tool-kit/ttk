@@ -34,22 +34,8 @@ template <typename scalarType>
 int ContourForests::build()
 {
 
-   // NOTE:
-   // Feb13,2017
-   // Quick fix due to segfaults in multi-threaded mode for join or split tree
-   // computation only.
-   // TODO: implement stitching for these.
-   if(params_->treeType != TreeType::Contour){
-      parallelParams_.nbThreads = 1;
-   }
-
 #ifdef withOpenMP
-        omp_set_num_threads(parallelParams_.nbThreads);
-
-// Get number of proc <- find number of socket for NUMA ??
-// omp_get_num_procs();
-
-// std::thread::hardware_concurrency();
+   omp_set_num_threads(parallelParams_.nbThreads);
 #endif
 
    DebugTimer timerTOTAL;
