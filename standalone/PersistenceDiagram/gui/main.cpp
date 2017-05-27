@@ -4,10 +4,10 @@
 /// \brief GUI program for persistence diagram computation.
 
 // include the local headers
-#include                  <vtkPersistenceDiagram.h>
-#include                  <vtkUserInterfaceBase.h>
+#include                  <ttkPersistenceDiagram.h>
+#include                  <ttkUserInterfaceBase.h>
 
-vtkUserInterface<vtkPersistenceDiagram> program;
+vtkUserInterface<ttkPersistenceDiagram> program;
 
 int main(int argc, char **argv) {
   

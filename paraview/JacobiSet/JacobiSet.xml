@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="JacobiSet" 
-     class="vtkJacobiSet" 
+     class="ttkJacobiSet" 
      label="TTK JacobiSet">
      <Documentation
         long_help="TTK plugin that computes the Jacobi set of a bivariate 

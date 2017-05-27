@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="TextureMapFromField" 
-     class="vtkTextureMapFromField" 
+     class="ttkTextureMapFromField" 
      label="TTK TextureMapFromField">
      <Documentation
         long_help="TTK plugin which generates a texture map from one or two 

@@ -11,7 +11,7 @@ Editor::Editor(){
 
   outputBounds_ = NULL;
   outputHistograms_ = NULL;
-  // uncertainDataEstimator_ = vtkUncertainDataEstimator::New();
+  // uncertainDataEstimator_ = ttkUncertainDataEstimator::New();
 }
 
 Editor::~Editor(){

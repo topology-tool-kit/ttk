@@ -4,12 +4,12 @@
 /// \brief dummy program example.
 
 // include the local headers
-#include                  <vtkBlank.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkBlank.h>
+#include                  <ttkProgramBase.h>
 
 int main(int argc, char **argv) {
 
-  vtkProgram<vtkBlank> program;
+  vtkProgram<ttkBlank> program;
   
   // TODO-1: 
   // specify local parameters to the TTK module with default values.

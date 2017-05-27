@@ -6,7 +6,7 @@
   <ProxyGroup name="filters">
     <SourceProxy 
 	name="PointDataConverter" 
-	class="vtkPointDataConverter" 
+	class="ttkPointDataConverter" 
 	label="TTK PointDataConverter">
       <Documentation
           long_help="TTK plugin that converts data types for point-based 

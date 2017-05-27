@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
     <SourceProxy
       name="PersistenceCurve"
-      class="vtkPersistenceCurve"
+      class="ttkPersistenceCurve"
       label="TTK PersistenceCurve">
       <Documentation
         long_help="TTK plugin for the computation of persistence curves."

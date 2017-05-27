@@ -20,7 +20,7 @@ include(${TTK_DIR}/ttk.cmake)
 
 # include the vtk wrapper for the scalar field smoothing package
 # HERE: change to whatever wrapper you want to use
-ttk_add_vtkWrapper_package(vtkCellDataConverter)
+ttk_add_vtkWrapper_package(ttkCellDataConverter)
 
 # Add the plugin
 ttk_wrapup_paraview_plugin(

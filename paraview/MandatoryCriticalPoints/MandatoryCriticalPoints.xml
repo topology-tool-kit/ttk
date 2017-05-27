@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy
      name="MandatoryCriticalPoints"
-     class="vtkMandatoryCriticalPoints"
+     class="ttkMandatoryCriticalPoints"
      label="TTK MandatoryCriticalPoints">
      <Documentation
         long_help="TTK plugin for the computation of mandatory critical 

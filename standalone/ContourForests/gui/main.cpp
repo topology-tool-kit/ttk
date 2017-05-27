@@ -4,10 +4,10 @@
 /// \brief GUI program for contour tree computation.
 
 // include the local headers
-#include                  <vtkContourForests.h>
-#include                  <vtkUserInterfaceBase.h>
+#include                  <ttkContourForests.h>
+#include                  <ttkUserInterfaceBase.h>
 
-vtkUserInterface<vtkContourForests> program;
+vtkUserInterface<ttkContourForests> program;
 
 int main(int argc, char **argv) {
 

@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="MeshSubdivision" 
-     class="vtkMeshSubdivision" 
+     class="ttkMeshSubdivision" 
      label="TTK MeshSubdivision">
      <Documentation
         long_help="TTK plugin for the computation of mesh 

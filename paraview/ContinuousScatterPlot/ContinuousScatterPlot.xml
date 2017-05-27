@@ -3,7 +3,7 @@
   <ProxyGroup name="filters">
     <SourceProxy
       name="ContinuousScatterPlot"
-      class="vtkContinuousScatterPlot"
+      class="ttkContinuousScatterPlot"
       label="TTK ContinuousScatterPlot">
       <Documentation
         long_help="TTK plugin that computes the continuous scatterplot of 

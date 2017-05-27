@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
     <SourceProxy
       name="PersistenceDiagram"
-      class="vtkPersistenceDiagram"
+      class="ttkPersistenceDiagram"
       label="TTK PersistenceDiagram">
       <Documentation
         long_help="TTK plugin for the computation of persistence diagrams."

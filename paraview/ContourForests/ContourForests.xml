@@ -3,7 +3,7 @@
   <ProxyGroup name="filters">
     <SourceProxy
       name="ContourForests"
-      class="vtkContourForests"
+      class="ttkContourForests"
       label="TTK ContourForests">
       <Documentation
         long_help="TTK plugin that efficiently computes the contour tree of
