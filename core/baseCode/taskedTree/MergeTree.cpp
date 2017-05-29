@@ -503,7 +503,8 @@ idVertex MergeTree::trunk(const bool ct)
 // ------------
    // bounds
    idVertex begin, stop;
-   tie(begin, stop)         = getBoundsFromVerts(pendingNodesVerts);
+   tie(begin, stop) = getBoundsFromVerts(pendingNodesVerts);
+   cout << "trunk size " << abs(stop-begin) << endl;
    if(ct){
        trunkCTSegmentation(pendingNodesVerts, begin, stop);
    } else {
