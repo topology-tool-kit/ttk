@@ -5,6 +5,7 @@ https://topology-tool-kit.github.io/
 ChangeLog
 =
 * ttk.git
+- New naming convention for vtkWrappers (name conflicts under MacOs)
 - TriangulationRequest module (to locally inspect triangulations in ParaView)
 - improved time efficiency for link queries on implicit triangulations
 - constructors fixes for VTK wrappers
