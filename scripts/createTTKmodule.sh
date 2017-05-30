@@ -58,17 +58,17 @@ mv core/baseCode/${smallName}/Blank.h \
 replace "core/baseCode/${smallName}/${Name}.h"
 
 # 2) duplicate the blank wrapper
-echo "Creating VTK wrapper 'core/vtkWrappers/vtk${Name}'..."
-cp -R core/vtkWrappers/vtkBlank core/vtkWrappers/vtk${Name}
-mv core/vtkWrappers/vtk${Name}/vtkBlank.cmake \
-  core/vtkWrappers/vtk${Name}/vtk${Name}.cmake
-replace "core/vtkWrappers/vtk${Name}/vtk${Name}.cmake"
-mv core/vtkWrappers/vtk${Name}/vtkBlank.cpp \
-  core/vtkWrappers/vtk${Name}/vtk${Name}.cpp
-replace "core/vtkWrappers/vtk${Name}/vtk${Name}.cpp"
-mv core/vtkWrappers/vtk${Name}/vtkBlank.h \
-  core/vtkWrappers/vtk${Name}/vtk${Name}.h
-replace "core/vtkWrappers/vtk${Name}/vtk${Name}.h"
+echo "Creating VTK wrapper 'core/vtkWrappers/ttk${Name}'..."
+cp -R core/vtkWrappers/ttkBlank core/vtkWrappers/ttk${Name}
+mv core/vtkWrappers/ttk${Name}/ttkBlank.cmake \
+  core/vtkWrappers/ttk${Name}/ttk${Name}.cmake
+replace "core/vtkWrappers/ttk${Name}/ttk${Name}.cmake"
+mv core/vtkWrappers/ttk${Name}/ttkBlank.cpp \
+  core/vtkWrappers/ttk${Name}/ttk${Name}.cpp
+replace "core/vtkWrappers/ttk${Name}/ttk${Name}.cpp"
+mv core/vtkWrappers/ttk${Name}/ttkBlank.h \
+  core/vtkWrappers/ttk${Name}/ttk${Name}.h
+replace "core/vtkWrappers/ttk${Name}/ttk${Name}.h"
 
 # 3) duplicate the blank standalone modules
 echo "Creating command line standalone program 'standalone/${Name}/cmd'..."

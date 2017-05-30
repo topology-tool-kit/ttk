@@ -4,13 +4,13 @@
 /// \brief Command line program for bivariate Reeb space computation.
 
 // include the local headers
-#include                  <vtkReebSpace.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkReebSpace.h>
+#include                  <ttkProgramBase.h>
 
 int main(int argc, char **argv) {
 
   // init editor
-  vtkProgram<vtkReebSpace> program;
+  vtkProgram<ttkReebSpace> program;
   
   // specify local parameters to the TTK module with default values.
   double threshold = 0;

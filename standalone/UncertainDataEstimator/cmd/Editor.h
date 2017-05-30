@@ -13,7 +13,7 @@
 #include                  <CommandLineParser.h>
 
 // vtk wrappers
-#include                  <vtkUncertainDataEstimator.h>
+#include                  <ttkUncertainDataEstimator.h>
 #include                  <UncertainDataEstimator.h>
 
 // VTK includes

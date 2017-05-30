@@ -4,12 +4,12 @@
 /// \brief Continuous scatterplot computation program.
 
 // include the local headers
-#include                  <vtkContinuousScatterPlot.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkContinuousScatterPlot.h>
+#include                  <ttkProgramBase.h>
 
 int main(int argc, char **argv) {
 
-  vtkProgram<vtkContinuousScatterPlot> program;
+  vtkProgram<ttkContinuousScatterPlot> program;
   
   // specify local parameters to the TTK module with default values.
   int uId = 0, vId = 1;

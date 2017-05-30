@@ -4,10 +4,10 @@
 /// \brief dummy GUI program example.
 
 // include the local headers
-#include                  <vtkBlank.h>
-#include                  <vtkUserInterfaceBase.h>
+#include                  <ttkBlank.h>
+#include                  <ttkUserInterfaceBase.h>
 
-vtkUserInterface<vtkBlank> program;
+vtkUserInterface<ttkBlank> program;
 
 class myKeyHandler : public ttkKeyHandler{
   

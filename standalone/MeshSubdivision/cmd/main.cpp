@@ -4,12 +4,12 @@
 /// \brief Command line program for mesh subdivision.
 
 // include the local headers
-#include                  <vtkMeshSubdivision.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkMeshSubdivision.h>
+#include                  <ttkProgramBase.h>
 
 int main(int argc, char **argv) {
 
-  vtkProgram<vtkMeshSubdivision> program;
+  vtkProgram<ttkMeshSubdivision> program;
   
   // specify local parameters to the TTK module with default values.
   int iterationNumber = 1;

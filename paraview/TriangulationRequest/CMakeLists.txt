@@ -19,7 +19,7 @@ find_path(TTK_DIR ttk.cmake
 include(${TTK_DIR}/ttk.cmake)
 
 # include the vtk wrapper for your TTK package 
-ttk_add_vtkWrapper_package(vtkTriangulationRequest)
+ttk_add_vtkWrapper_package(ttkTriangulationRequest)
 
 # Add the plugin
 ttk_wrapup_paraview_plugin(

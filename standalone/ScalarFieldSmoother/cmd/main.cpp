@@ -4,12 +4,12 @@
 /// \brief Command line program example for scalar field smoothing.
 
 // include the local headers
-#include                  <vtkScalarFieldSmoother.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkScalarFieldSmoother.h>
+#include                  <ttkProgramBase.h>
 
 int main(int argc, char **argv) {
 
-  vtkProgram<vtkScalarFieldSmoother> program;
+  vtkProgram<ttkScalarFieldSmoother> program;
   
   // specify local parameters to the TTK module with default values.
   int iterationNumber = 1, scalarFieldId = 0;

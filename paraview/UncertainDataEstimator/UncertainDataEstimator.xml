@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy
      name="UncertainDataEstimator"
-     class="vtkUncertainDataEstimator"
+     class="ttkUncertainDataEstimator"
      label="TTK UncertainDataEstimator">
      <Documentation
         long_help="TTK plugin that takes an input ensemble data set (represented 

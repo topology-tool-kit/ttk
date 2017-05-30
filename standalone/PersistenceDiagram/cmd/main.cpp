@@ -4,12 +4,12 @@
 /// \brief Command line program for persistence diagram computation.
 
 // include the local headers
-#include                  <vtkPersistenceDiagram.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkPersistenceDiagram.h>
+#include                  <ttkProgramBase.h>
 
 int main(int argc, char **argv) {
 
-  vtkProgram<vtkPersistenceDiagram> program;
+  vtkProgram<ttkPersistenceDiagram> program;
   
   // specify local parameters to the TTK module with default values.
   int scalarFieldId = 0, offsetFieldId = -1;

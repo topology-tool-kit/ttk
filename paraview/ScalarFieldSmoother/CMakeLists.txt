@@ -16,7 +16,7 @@ include(${TTK_DIR}/ttk.cmake)
 
 # include the vtk wrapper for the scalar field smoothing package
 # HERE: change to whatever wrapper you want to use
-ttk_add_vtkWrapper_package(vtkScalarFieldSmoother)
+ttk_add_vtkWrapper_package(ttkScalarFieldSmoother)
 
 # Add the plugin
 ttk_wrapup_paraview_plugin(

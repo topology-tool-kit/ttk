@@ -4,12 +4,12 @@
 /// \brief Command line program for critical point computation.
 
 // include the local headers
-#include                  <vtkScalarFieldCriticalPoints.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkScalarFieldCriticalPoints.h>
+#include                  <ttkProgramBase.h>
 
 int main(int argc, char **argv) {
 
-  vtkProgram<vtkScalarFieldCriticalPoints> program;
+  vtkProgram<ttkScalarFieldCriticalPoints> program;
 
   // specify local parameters to the TTK module with default values.
   int scalarFieldId = 0, offsetFieldId = -1;

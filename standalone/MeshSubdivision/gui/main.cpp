@@ -4,10 +4,10 @@
 /// \brief GUI program for mesh subdivision.
 
 // include the local headers
-#include                  <vtkMeshSubdivision.h>
-#include                  <vtkUserInterfaceBase.h>
+#include                  <ttkMeshSubdivision.h>
+#include                  <ttkUserInterfaceBase.h>
 
-vtkUserInterface<vtkMeshSubdivision> program;
+vtkUserInterface<ttkMeshSubdivision> program;
 
 int main(int argc, char **argv) {
 

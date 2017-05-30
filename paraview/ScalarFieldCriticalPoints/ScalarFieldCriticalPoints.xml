@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="ScalarFieldCriticalPoints" 
-     class="vtkScalarFieldCriticalPoints" 
+     class="ttkScalarFieldCriticalPoints" 
      label="TTK ScalarFieldCriticalPoints">
      <Documentation
         long_help="TTK plugin for the computation of critical points in PL

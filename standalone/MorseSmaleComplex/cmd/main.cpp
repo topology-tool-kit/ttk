@@ -4,12 +4,12 @@
 /// \brief Command line program for Morse-Smale complex computation.
 
 // include the local headers
-#include                  <vtkMorseSmaleComplex.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkMorseSmaleComplex.h>
+#include                  <ttkProgramBase.h>
 
 int main(int argc, char **argv) {
 
-  vtkProgram<vtkMorseSmaleComplex> program;
+  vtkProgram<ttkMorseSmaleComplex> program;
   
   // specify local parameters to the TTK module with default values.
   int scalarFieldId = 0, offsetFieldId = -1;

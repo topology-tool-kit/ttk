@@ -17,7 +17,7 @@ find_path(TTK_DIR ttk.cmake
 include(${TTK_DIR}/ttk.cmake)
 
 # include the different packages required for the application
-ttk_add_vtkWrapper_package(vtkContourForests)
+ttk_add_vtkWrapper_package(ttkContourForests)
 
 # add the local cpp files 
 ttk_add_source(main.cpp)

@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="ComponentSize" 
-     class="vtkComponentSize" 
+     class="ttkComponentSize" 
      label="TTK ComponentSize">
      <Documentation
         long_help="TTK plugin that computes the connected components of a 
