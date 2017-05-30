@@ -19,7 +19,7 @@ find_path(TTK_DIR ttk.cmake
 include(${TTK_DIR}/ttk.cmake)
 
 # include the vtk wrapper for your TTK package 
-ttk_add_vtkWrapper_package(vtkIdentifierRandomizer)
+ttk_add_vtkWrapper_package(ttkIdentifierRandomizer)
 
 # Add the plugin
 ttk_wrapup_paraview_plugin(

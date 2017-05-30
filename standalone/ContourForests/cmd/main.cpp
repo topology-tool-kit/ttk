@@ -4,12 +4,12 @@
 /// \brief Command line program for contour tree computation.
 
 // include the local headers
-#include                  <vtkContourForests.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkContourForests.h>
+#include                  <ttkProgramBase.h>
 
 int main(int argc, char **argv) {
 
-  vtkProgram<vtkContourForests> program;
+  vtkProgram<ttkContourForests> program;
 
   // specify local parameters to the TTK module with default values.
   int scalarFieldId = 0, offsetFieldId = -1, treeType = 2, 

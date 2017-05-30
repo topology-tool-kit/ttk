@@ -4,12 +4,12 @@
 /// \brief Command line program for Jacobi set computation.
 
 // include the local headers
-#include                  <vtkJacobiSet.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkJacobiSet.h>
+#include                  <ttkProgramBase.h>
 
 int main(int argc, char **argv) {
 
-  vtkProgram<vtkJacobiSet> program;
+  vtkProgram<ttkJacobiSet> program;
   
   // specify local parameters to the TTK module with default values.
   int uComponentId = 0, vComponentId = 1;

@@ -4,8 +4,8 @@
 /// \brief command line program for mandatory critical point computation.
 
 // include the local headers
-#include                  <vtkMandatoryCriticalPoints.h>
-#include                  <vtkProgramBase.h>
+#include                  <ttkMandatoryCriticalPoints.h>
+#include                  <ttkProgramBase.h>
 
 template <class vtkWriterClass>
   int save(vtkDataSet *dataSet, stringstream &fileName){
@@ -20,7 +20,7 @@ template <class vtkWriterClass>
   return 0;
 }
 
-int saveSaddles(vtkProgram<vtkMandatoryCriticalPoints> program,
+int saveSaddles(vtkProgram<ttkMandatoryCriticalPoints> program,
   const int &portId, const int &saddleType){
 
   vtkUnstructuredGrid *tree = 
@@ -81,7 +81,7 @@ int saveSaddles(vtkProgram<vtkMandatoryCriticalPoints> program,
 int main(int argc, char **argv) {
 
   // init editor
-  vtkProgram<vtkMandatoryCriticalPoints> program;
+  vtkProgram<ttkMandatoryCriticalPoints> program;
   
   int lowerBoundId = 0, upperBoundId = 1;
   double normalizedSimplificationThreshold = 0;

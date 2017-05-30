@@ -4,10 +4,10 @@
 /// \brief dummy GUI program example for geometry smoothing.
 
 // include the local headers
-#include                  <vtkGeometrySmoother.h>
-#include                  <vtkUserInterfaceBase.h>
+#include                  <ttkGeometrySmoother.h>
+#include                  <ttkUserInterfaceBase.h>
 
-vtkUserInterface<vtkGeometrySmoother> program;
+vtkUserInterface<ttkGeometrySmoother> program;
 
 int main(int argc, char **argv) {
   

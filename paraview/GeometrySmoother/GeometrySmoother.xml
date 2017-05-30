@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="GeometrySmoother" 
-     class="vtkGeometrySmoother" 
+     class="ttkGeometrySmoother" 
      label="TTK GeometrySmoother">
      <Documentation
         long_help="TTK plugin for geometry smoothing."

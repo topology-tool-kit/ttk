@@ -24,7 +24,7 @@ include(${PARAVIEW_USE_FILE})
 
 # include the vtk wrapper for the scalar field smoothing package
 # HERE: change to whatever wrapper you want to use
-ttk_add_vtkWrapper_package(vtkScalarFieldCriticalPoints)
+ttk_add_vtkWrapper_package(ttkScalarFieldCriticalPoints)
 
 # Add the plugin
 ttk_wrapup_paraview_plugin(

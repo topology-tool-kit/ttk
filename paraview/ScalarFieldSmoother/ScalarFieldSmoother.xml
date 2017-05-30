@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="ScalarFieldSmoother" 
-     class="vtkScalarFieldSmoother" 
+     class="ttkScalarFieldSmoother" 
      label="TTK ScalarFieldSmoother">
      <Documentation
         long_help="TTK plugin for scalar field smoothing."

@@ -15,7 +15,7 @@ find_path(TTK_DIR ttk.cmake
 include(${TTK_DIR}/ttk.cmake)
 
 # include the vtk wrapper for your TTK package 
-ttk_add_vtkWrapper_package(vtkBlank)
+ttk_add_vtkWrapper_package(ttkBlank)
 
 # Add the plugin
 ttk_wrapup_paraview_plugin(

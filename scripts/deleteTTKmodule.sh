@@ -25,7 +25,7 @@ fi
 echo "Deleting TTK module ${Name}..."
 
 rm -R core/baseCode/${smallName}  2> /dev/null
-rm -R core/vtkWrappers/vtk${Name} 2> /dev/null
+rm -R core/vtkWrappers/ttk${Name} 2> /dev/null
 rm -R standalone/${Name} 2> /dev/null
 rm -R paraview/${Name} 2> /dev/null
 

@@ -226,10 +226,10 @@ if [ ! -z "$COMMANDLINE" ]; then
   echo "Creating command line program..."
   cp -R $CORE_PATH/vtkWrappers/ttkWrapper \
     release/${MODULE}/ttk/vtkWrappers/ttkWrapper > /dev/null
-  cp -R $CORE_PATH/vtkWrappers/vtkTriangulation \
-    release/${MODULE}/ttk/vtkWrappers/vtkTriangulation > /dev/null
-  cp -R $CORE_PATH/vtkWrappers/vtkProgramBase \
-    release/$MODULE/ttk/vtkWrappers/vtkProgramBase > /dev/null
+  cp -R $CORE_PATH/vtkWrappers/ttkTriangulation \
+    release/${MODULE}/ttk/vtkWrappers/ttkTriangulation > /dev/null
+  cp -R $CORE_PATH/vtkWrappers/ttkProgramBase \
+    release/$MODULE/ttk/vtkWrappers/ttkProgramBase > /dev/null
   cp -R standalone/$Name/cmd release/$MODULE/cmd > /dev/null
   $SED "s/core/ttk/g" release/$MODULE/cmd/CMakeLists.txt > tmp.txt
   mv tmp.txt release/$MODULE/cmd/CMakeLists.txt
@@ -244,14 +244,14 @@ if [ ! -z "$GUI" ]; then
   echo "Creating graphical user interface program..."
   cp -R $CORE_PATH/vtkWrappers/ttkWrapper \
     release/${MODULE}/ttk/vtkWrappers/ttkWrapper > /dev/null
-  cp -R $CORE_PATH/vtkWrappers/vtkTriangulation \
-    release/${MODULE}/ttk/vtkWrappers/vtkTriangulation > /dev/null
-  cp -R $CORE_PATH/vtkWrappers/vtkUserInterfaceBase \
-    release/$MODULE/ttk/vtkWrappers/vtkUserInterfaceBase > /dev/null
-  cp -R $CORE_PATH/vtkWrappers/vtkTextureMapFromField \
-    release/$MODULE/ttk/vtkWrappers/vtkTextureMapFromField > /dev/null
-  cp -R $CORE_PATH/vtkWrappers/vtkWRLExporter \
-    release/$MODULE/ttk/vtkWrappers/vtkWRLExporter > /dev/null
+  cp -R $CORE_PATH/vtkWrappers/ttkTriangulation \
+    release/${MODULE}/ttk/vtkWrappers/ttkTriangulation > /dev/null
+  cp -R $CORE_PATH/vtkWrappers/ttkUserInterfaceBase \
+    release/$MODULE/ttk/vtkWrappers/ttkUserInterfaceBase > /dev/null
+  cp -R $CORE_PATH/vtkWrappers/ttkTextureMapFromField \
+    release/$MODULE/ttk/vtkWrappers/ttkTextureMapFromField > /dev/null
+  cp -R $CORE_PATH/vtkWrappers/ttkWRLExporter \
+    release/$MODULE/ttk/vtkWrappers/ttkWRLExporter > /dev/null
   cp -R standalone/$Name/gui release/$MODULE/gui > /dev/null
   $SED "s/core/ttk/g" release/$MODULE/gui/CMakeLists.txt > tmp.txt
   mv tmp.txt release/$MODULE/gui/CMakeLists.txt

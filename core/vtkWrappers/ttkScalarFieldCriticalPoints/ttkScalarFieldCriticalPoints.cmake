@@ -1,0 +1,3 @@
+ttk_add_baseCode_package(scalarFieldCriticalPoints)
+
+ttk_add_source("ttkScalarFieldCriticalPoints.cpp")

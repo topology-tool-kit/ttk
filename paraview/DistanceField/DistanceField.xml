@@ -3,7 +3,7 @@
   <ProxyGroup name="filters">
     <SourceProxy
       name="DistanceField"
-      class="vtkDistanceField"
+      class="ttkDistanceField"
       label="TTK DistanceField">
       <Documentation
         long_help="TTK plugin for distance field computations."
