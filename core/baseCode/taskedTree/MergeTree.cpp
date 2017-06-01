@@ -40,7 +40,43 @@ MergeTree::MergeTree(Params *const params, Triangulation *mesh, Scalars *const s
 
 MergeTree::~MergeTree()
 {
-   // all is automatically destroyed in treedata
+   delete treeData_.superArcs;
+   delete treeData_.nodes;
+   delete treeData_.roots;
+   delete treeData_.leaves;
+   delete treeData_.vert2tree;
+   delete treeData_.trunkSegments;
+   delete treeData_.visitOrder;
+   delete treeData_.ufs;
+   delete treeData_.propagation;
+   delete treeData_.valences;
+   delete treeData_.openedNodes;
+
+#ifdef withStatsTime
+   delete treeData_.arcStart;
+   delete treeData_.arcEnd;
+   delete treeData_.arcOrig;
+   delete treeData_.arcTasks;
+#endif
+
+   treeData_.superArcs     = nullptr;
+   treeData_.nodes         = nullptr;
+   treeData_.roots         = nullptr;
+   treeData_.leaves        = nullptr;
+   treeData_.vert2tree     = nullptr;
+   treeData_.trunkSegments = nullptr;
+   treeData_.visitOrder    = nullptr;
+   treeData_.ufs           = nullptr;
+   treeData_.propagation   = nullptr;
+   treeData_.valences      = nullptr;
+   treeData_.openedNodes   = nullptr;
+
+#ifdef withStatsTime
+   treeData_.arcStart = nullptr;
+   treeData_.arcEnd   = nullptr;
+   treeData_.arcOrig  = nullptr;
+   treeData_.arcTasks = nullptr;
+#endif
 }
 
 // }
@@ -637,24 +673,27 @@ idVertex MergeTree::trunkCTSegmentation(const vector<idVertex> &pendingNodesVert
                   } else {
                      // accumulated to have only one atomic update when needed
                      const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
+                     if (regularList.size()) {
 #pragma omp critical
-                     {
-                        (*treeData_.trunkSegments)[oldArc].emplace_back(regularList);
-                        regularList.clear();
+                        {
+                           (*treeData_.trunkSegments)[oldArc].emplace_back(regularList);
+                           regularList.clear();
+                        }
+                        regularList.emplace_back(s);
                      }
-                     regularList.emplace_back(s);
                   }
                }
             }
             // force increment last arc
             const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
             const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
+            if (regularList.size()) {
 #pragma omp critical
-            {
-               (*treeData_.trunkSegments)[upArc].emplace_back(regularList);
-               regularList.clear();
+               {
+                  (*treeData_.trunkSegments)[upArc].emplace_back(regularList);
+                  regularList.clear();
+               }
             }
-            regularList.emplace_back((*scalars_->sortedVertices)[lastVertInRange]);
          }
       }
    } else {
@@ -679,10 +718,12 @@ idVertex MergeTree::trunkCTSegmentation(const vector<idVertex> &pendingNodesVert
                   } else {
                      // accumulated to have only one atomic update when needed
                      const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
+                     if (regularList.size()) {
 #pragma omp critical
-                     {
-                        (*treeData_.trunkSegments)[oldArc].emplace_back(regularList);
-                        regularList.clear();
+                        {
+                           (*treeData_.trunkSegments)[oldArc].emplace_back(regularList);
+                           regularList.clear();
+                        }
                      }
                      regularList.emplace_back(s);
                   }
@@ -691,12 +732,13 @@ idVertex MergeTree::trunkCTSegmentation(const vector<idVertex> &pendingNodesVert
             // force increment last arc
             const idNode baseNode  = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
             const idSuperArc upArc = getNode(baseNode)->getUpSuperArcId(0);
+            if (regularList.size()) {
 #pragma omp critical
-            {
-               (*treeData_.trunkSegments)[upArc].emplace_back(regularList);
-               regularList.clear();
+               {
+                  (*treeData_.trunkSegments)[upArc].emplace_back(regularList);
+                  regularList.clear();
+               }
             }
-            regularList.emplace_back((*scalars_->sortedVertices)[lastVertInRange]);
          }
       }
    }
