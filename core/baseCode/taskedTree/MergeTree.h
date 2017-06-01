@@ -623,7 +623,12 @@ namespace ttk
       inline idVertex getChunkSize(const idVertex nbVerts = -1, const idVertex nbtasks = 100) const
       {
          const idVertex s = (nbVerts == -1) ? scalars_->size : nbVerts;
-         return max(10000, 1 + (s / (nbtasks * threadNumber_)));
+#ifndef NDEBUG
+         static const idVertex minWorks = 1;
+#else
+         static const idVertex minWorks = 10000;
+#endif
+         return max(minWorks, 1 + (s / (nbtasks * threadNumber_)));
       }
 
       inline idVertex getChunkCount(const idVertex nbVerts = -1, const idVertex nbTasks = 100) const
