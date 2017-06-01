@@ -81,6 +81,21 @@ namespace ttk
       void clear(void);
       Segment& operator[](const size_t& idx);
       const Segment& operator[](const size_t& idx) const;
+
+      // print
+      inline string print(void) const
+      {
+         stringstream res;
+         res << "{" << endl;
+         for (const auto& s : segments_) {
+            if (s.size()) {
+               res << s[0] << " " << s[s.size() - 1] << " : " << s.size() << endl;
+            }
+         }
+         res << "}" << endl;
+         return res.str();
+      }
+
    };
 
    // The segmentation of one arc is a list of segment

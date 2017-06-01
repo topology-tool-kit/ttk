@@ -43,20 +43,20 @@ void Segment::createFromList(const Scalars* s, list<vector<idVertex>>& regularLi
    for (const auto& vectReg : regularList) {
       totalSize += vectReg.size();
    }
-   vertices_.resize(totalSize);
+   vertices_.reserve(totalSize);
    // TODO parallel
    regularList.sort(vectComp);
    //TODO parallel
    if (reverse) {
-      for (auto it1 = regularList.crbegin(); it1 != regularList.crend(); ++it1) {
+      for (auto it1 = regularList.cbegin(); it1 != regularList.cend(); ++it1) {
          for (auto it2 = it1->crbegin(); it2 != it1->crend(); ++it2) {
             vertices_.emplace_back(*it2);
          }
       }
    } else {
-      for (const auto& vectReg : regularList) {
-         for (const idVertex v : vectReg) {
-            vertices_.emplace_back(v);
+      for (auto it1 = regularList.cbegin(); it1 != regularList.cend(); ++it1) {
+         for (auto it2 = it1->cbegin(); it2 != it1->cend(); ++it2) {
+            vertices_.emplace_back(*it2);
          }
       }
    }

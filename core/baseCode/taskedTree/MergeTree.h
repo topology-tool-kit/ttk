@@ -512,19 +512,12 @@ namespace ttk
 
       idVertex trunk(const bool ct);
 
-      virtual void trunkSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
+      virtual idVertex trunkSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
                              const idVertex stop);
 
       // fill treedata_.trunkSegments
-      void trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
+      idVertex trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
                              const idVertex stop);
-
-      // only set vert2tree for missing vertices and set arc nb regular size
-      void assignChunkTrunk(const vector<idVertex> &pendingVerts, idNode &lastVertInRange,
-                            idVertex &acc, const idVertex v);
-
-      void addChunkTrunk(const vector<idVertex> &pendingNodesVerts, idNode &lastVertInRange,
-                         vector<idVertex> &regularList, const idVertex v);
 
       // segmentation
 
