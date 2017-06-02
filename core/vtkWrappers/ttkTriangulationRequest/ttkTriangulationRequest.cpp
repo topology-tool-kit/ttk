@@ -316,6 +316,7 @@ vtkStandardNewMacro(ttkTriangulationRequest)
               }
             }
             else if(dimensionality==3){
+              triangulation->preprocessVertexTriangles();
               const int linkNumber=triangulation->getVertexLinkNumber(SimplexId);
               for(int i=0; i<linkNumber; ++i){
                 int linkId;
