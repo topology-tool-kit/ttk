@@ -339,6 +339,34 @@ namespace ttk{
       int getVertexEdgeGHDC(const int p[3],const int id) const;
       int getVertexEdgeABCDEFGH(const int p[3],const int id) const;
 
+      int getVertexTriangleA(const int p[3],const int id) const;
+      int getVertexTriangleB(const int p[3],const int id) const;
+      int getVertexTriangleC(const int p[3],const int id) const;
+      int getVertexTriangleD(const int p[3],const int id) const;
+      int getVertexTriangleE(const int p[3],const int id) const;
+      int getVertexTriangleF(const int p[3],const int id) const;
+      int getVertexTriangleG(const int p[3],const int id) const;
+      int getVertexTriangleH(const int p[3],const int id) const;
+      int getVertexTriangleAB(const int p[3],const int id) const;
+      int getVertexTriangleCD(const int p[3],const int id) const;
+      int getVertexTriangleEF(const int p[3],const int id) const;
+      int getVertexTriangleGH(const int p[3],const int id) const;
+      int getVertexTriangleAC(const int p[3],const int id) const;
+      int getVertexTriangleBD(const int p[3],const int id) const;
+      int getVertexTriangleEG(const int p[3],const int id) const;
+      int getVertexTriangleFH(const int p[3],const int id) const;
+      int getVertexTriangleAE(const int p[3],const int id) const;
+      int getVertexTriangleBF(const int p[3],const int id) const;
+      int getVertexTriangleCG(const int p[3],const int id) const;
+      int getVertexTriangleDH(const int p[3],const int id) const;
+      int getVertexTriangleABDC(const int p[3],const int id) const;
+      int getVertexTriangleEFHG(const int p[3],const int id) const;
+      int getVertexTriangleAEGC(const int p[3],const int id) const;
+      int getVertexTriangleBFHD(const int p[3],const int id) const;
+      int getVertexTriangleAEFB(const int p[3],const int id) const;
+      int getVertexTriangleGHDC(const int p[3],const int id) const;
+      int getVertexTriangleABCDEFGH(const int p[3],const int id) const;
+
       int getVertexLinkA(const int p[3],const int id) const;
       int getVertexLinkB(const int p[3],const int id) const;
       int getVertexLinkC(const int p[3],const int id) const;
@@ -1781,6 +1809,114 @@ inline int ImplicitTriangulation::getVertexEdgeABCDEFGH(const int p[3],const int
     case 12: return esetshift_[5]+p[0]+p[1]*eshift_[12]+p[2]*eshift_[13]-1;//bg-D4
     case 13: return esetshift_[3]+p[0]+p[1]*eshift_[8]+p[2]*eshift_[9];//bh-D2
   }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleA(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleB(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleC(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleD(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleE(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleF(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleG(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleH(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleAB(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleCD(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleEF(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleGH(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleAC(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleBD(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleEG(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleFH(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleAE(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleBF(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleCG(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleDH(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleABDC(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleEFHG(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleAEGC(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleBFHD(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleAEFB(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleGHDC(const int p[3],const int id) const{
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleABCDEFGH(const int p[3],const int id) const{
   return -1;
 }
 

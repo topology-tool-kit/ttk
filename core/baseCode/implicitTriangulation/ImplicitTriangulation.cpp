@@ -630,6 +630,57 @@ inline int ImplicitTriangulation::getVertexTriangleNumber(const int &vertexId) c
 #endif
 
   if(dimensionality_==3){
+    int p[3];
+    vertexToPosition(vertexId,p);
+
+    if(0<p[0] and p[0]<nbvoxels_[0]){
+      if(0<p[1] and p[1]<nbvoxels_[1]){
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//abcdefgh
+        else return 0;//abdc ou efhg
+      }
+      else if(p[1]==0){
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//aefb
+        else if(p[2]==0) return 0;//ab
+        else return 0;//ef
+      }
+      else{
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//ghdc
+        else if(p[2]==0) return 0;//cd
+        else return 0;//gh
+      }
+    }
+    else if(p[0]==0){
+      if(0<p[1] and p[1]<nbvoxels_[1]){
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//aegc
+        else if(p[2]==0) return 0;//ac
+        else return 0;//eg
+      }
+      else if(p[1]==0){
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//ae
+        else return 5;//a ou e
+      }
+      else{
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//cg
+        else if(p[2]==0) return 5;//c
+        else return 12;//g
+      }
+    }
+    else{
+      if(0<p[1] and p[1]<nbvoxels_[1]){
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//bfhd
+        else if(p[2]==0) return 0;//bd
+        else return 0;//fh
+      }
+      else if(p[1]==0){
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//bf
+        else if(p[2]==0) return 12;//b
+        else return 5;//f
+      }
+      else{
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//dh
+        else return 5;//d ou h
+      }
+    }
   }
 
   return 0;
@@ -642,6 +693,60 @@ int ImplicitTriangulation::getVertexTriangle(const int &vertexId, const int &loc
   triangleId=-1;
 
   if(dimensionality_==3){
+    int p[3];
+    vertexToPosition(vertexId,p);
+
+    if(0<p[0] and p[0]<nbvoxels_[0]){
+      if(0<p[1] and p[1]<nbvoxels_[1]){
+        if(0<p[2] and p[2]<nbvoxels_[2]) triangleId=getVertexTriangleABCDEFGH(p,localTriangleId);//abcdefgh
+        else if(p[2]==0) triangleId=getVertexTriangleABDC(p,localTriangleId);//abdc
+        else triangleId=getVertexTriangleEFHG(p,localTriangleId);//efhg
+      }
+      else if(p[1]==0){
+        if(0<p[2] and p[2]<nbvoxels_[2]) triangleId=getVertexTriangleAEFB(p,localTriangleId);//aefb
+        else if(p[2]==0) triangleId=getVertexTriangleAB(p,localTriangleId);//ab
+        else triangleId=getVertexTriangleEF(p,localTriangleId);//ef
+      }
+      else{
+        if(0<p[2] and p[2]<nbvoxels_[2]) triangleId=getVertexTriangleGHDC(p,localTriangleId);//ghdc
+        else if(p[2]==0) triangleId=getVertexTriangleCD(p,localTriangleId);//cd
+        else triangleId=getVertexTriangleGH(p,localTriangleId);//gh
+      }
+    }
+    else if(p[0]==0){
+      if(0<p[1] and p[1]<nbvoxels_[1]){
+        if(0<p[2] and p[2]<nbvoxels_[2]) triangleId=getVertexTriangleAEGC(p,localTriangleId);//aegc
+        else if(p[2]==0) triangleId=getVertexTriangleAC(p,localTriangleId);//ac
+        else triangleId=getVertexTriangleEG(p,localTriangleId);//eg
+      }
+      else if(p[1]==0){
+        if(0<p[2] and p[2]<nbvoxels_[2]) triangleId=getVertexTriangleAE(p,localTriangleId);//ae
+        else if(p[2]==0) triangleId=getVertexTriangleA(p,localTriangleId);//a
+        else triangleId=getVertexTriangleE(p,localTriangleId);//e
+      }
+      else{
+        if(0<p[2] and p[2]<nbvoxels_[2]) triangleId=getVertexTriangleCG(p,localTriangleId);//cg
+        else if(p[2]==0) triangleId=getVertexTriangleC(p,localTriangleId);//c
+        else triangleId=getVertexTriangleG(p,localTriangleId);//g
+      }
+    }
+    else{
+      if(0<p[1] and p[1]<nbvoxels_[1]){
+        if(0<p[2] and p[2]<nbvoxels_[2]) triangleId=getVertexTriangleBFHD(p,localTriangleId);//bfhd
+        else if(p[2]==0) triangleId=getVertexTriangleBD(p,localTriangleId);//bd
+        else triangleId=getVertexTriangleFH(p,localTriangleId);//fh
+      }
+      else if(p[1]==0){
+        if(0<p[2] and p[2]<nbvoxels_[2]) triangleId=getVertexTriangleBF(p,localTriangleId);//bf
+        else if(p[2]==0) triangleId=getVertexTriangleB(p,localTriangleId);//b
+        else triangleId=getVertexTriangleF(p,localTriangleId);//f
+      }
+      else{
+        if(0<p[2] and p[2]<nbvoxels_[2]) triangleId=getVertexTriangleDH(p,localTriangleId);//dh
+        else if(p[2]==0) triangleId=getVertexTriangleD(p,localTriangleId);//d
+        else triangleId=getVertexTriangleH(p,localTriangleId);//h
+      }
+    }
   }
 
   return 0;
