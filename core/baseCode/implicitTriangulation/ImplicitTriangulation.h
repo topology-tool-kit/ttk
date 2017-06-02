@@ -156,32 +156,11 @@ namespace ttk{
 
       const vector<vector<int>>* getVertexStars();
 
-      int getVertexTriangle(const int &vertexId, const int &localTriangleId, int &triangleId) const{
+      int getVertexTriangle(const int &vertexId, const int &localTriangleId, int &triangleId) const;
 
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
+      int getVertexTriangleNumber(const int &vertexId) const;
 
-        return -1;
-      }
-
-      int getVertexTriangleNumber(const int &vertexId) const{
-
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-
-        return -1;
-      }
-
-      const vector<vector<int>>* getVertexTriangles(){
-
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-
-        return NULL;
-      }
+      const vector<vector<int>>* getVertexTriangles();
 
       bool isEdgeOnBoundary(const int &edgeId) const;
 

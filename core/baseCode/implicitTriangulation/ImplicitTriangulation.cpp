@@ -624,6 +624,53 @@ const vector<vector<int>>* ImplicitTriangulation::getVertexEdges(){
   return &vertexEdgeList_;
 }
 
+inline int ImplicitTriangulation::getVertexTriangleNumber(const int &vertexId) const{
+#ifndef withKamikaze
+  if(vertexId<0 or vertexId>=vertexNumber_) return -1;
+#endif
+
+  if(dimensionality_==3){
+  }
+
+  return 0;
+}
+
+int ImplicitTriangulation::getVertexTriangle(const int &vertexId, const int &localTriangleId, int &triangleId) const{
+#ifndef withKamikaze
+  if(localTriangleId<0 or localTriangleId>=getVertexTriangleNumber(vertexId)) return -1;
+#endif
+  triangleId=-1;
+
+  if(dimensionality_==3){
+  }
+
+  return 0;
+}
+
+const vector<vector<int>>* ImplicitTriangulation::getVertexTriangles(){
+  if(!vertexTriangleList_.size()){
+    Timer t;
+
+    vertexTriangleList_.resize(vertexNumber_);
+    for(int i=0; i<vertexNumber_; ++i){
+      vertexTriangleList_[i].resize(getVertexTriangleNumber(i));
+      for(unsigned int j=0; j<vertexTriangleList_[i].size(); ++j)
+        getVertexTriangle(i,j,vertexTriangleList_[i][j]);
+    }
+
+    {
+      stringstream msg;
+      msg << "[ImplicitTriangulation] Vertex triangles built in "
+        << t.getElapsedTime() << " s. (" << 1
+        << " thread(s))."
+        << endl;
+      dMsg(cout, msg.str(), timeMsg);
+    }
+  }
+
+  return &vertexTriangleList_;
+}
+
 int ImplicitTriangulation::getVertexLinkNumber(const int& vertexId) const{
   return getVertexStarNumber(vertexId);
 }
