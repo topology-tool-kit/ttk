@@ -107,11 +107,9 @@ void ContourTree::build(TreeType tt)
 #pragma omp single nowait
        {
           if (tt == TreeType::Join || ct) {
-// #pragma omp task untied if(ct)
              jt_->build(ct);
           }
           if (tt == TreeType::Split || ct) {
-// #pragma omp task untied if(ct)
              st_->build(ct);
           }
        }
