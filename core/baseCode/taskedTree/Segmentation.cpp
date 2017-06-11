@@ -1,9 +1,13 @@
-/*
- * file: Segmentation.cpp
- * description: Segmentation processing package.
- * author: Gueunet Charles
- * date: September 2016
- */
+/// \ingroup baseCode
+/// \class ttk:TaskedTree
+/// \author Charles Gueunet <charles.gueunet@lip6.fr>
+/// \date Sept 2016.
+///
+///\brief TTK processing package that deal with segmentation
+// for the merge tree and contour tree
+///
+///\param dataType Data type of the input scalar field (char, float,
+/// etc.).
 
 #ifndef withKamikaze
 #include <iostream>

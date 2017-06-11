@@ -1,6 +1,6 @@
 /// \ingroup baseCode
 /// \class ttk::AtomicVector
-/// \author Charles Gueuent <charles.gueunet@lip6.fr>
+/// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2017-02-09
 ///
 ///\brief TTK processing package that manage a paralle vecrion of vector
@@ -59,14 +59,14 @@ class AtomicVector : public std::vector<type>
 #ifndef withKamikaze
 # ifdef withOpenMP
          if (omp_in_parallel()) {
-// In parallel we do not want to make reserve as it can lead to
-// data race
+// WARNING: In parallel we do not want to make reserve as it can lead to
+// data race, we should not enter here
 # pragma omp critical(AtomicUFReserve)
             {
-               if (fromOther)
-                  std::cout << " a function in the class ";
-               std::cout << "call RE-Reserve in AtomicVector " << nextId;
-               std::cout << " ! Data Race may occurs ! " << typeid(this).name() << std::endl;
+               // if (fromOther)
+               //    std::cout << " a function in the class ";
+               // std::cout << "call RE-Reserve in AtomicVector " << nextId;
+               // std::cout << " ! Data Race may occurs ! " << typeid(this).name() << std::endl;
 
                std::vector<type>::resize(newSize);
             }
