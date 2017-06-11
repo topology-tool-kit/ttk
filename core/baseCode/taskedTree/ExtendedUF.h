@@ -1,6 +1,6 @@
 /// \ingroup baseCode
 /// \class ttk::ExtendedUnionFind
-/// \author Charles Gueuent <charles.gueunet@lip6.fr>
+/// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.
 ///
 ///\brief TTK processing package that efficiently computes the contour tree of
@@ -12,7 +12,6 @@
 ///
 /// \b Related \b publication \n
 /// "Contour Forests: Fast Multi-threaded Augmented Contour Trees" \n
-/// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 ///
 /// \sa vtkContourForests.cpp %for a usage example.

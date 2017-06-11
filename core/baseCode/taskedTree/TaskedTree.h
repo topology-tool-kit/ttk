@@ -1,6 +1,6 @@
 /// \ingroup baseCode
 /// \class ttk::TaskedTree
-/// \author Charles Gueuent <charles.gueunet@lip6.fr>
+/// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date December 2016.
 ///
 ///\brief TTK processing package that efficiently computes the contour tree of

@@ -1,15 +1,10 @@
 /// \ingroup baseCode
 //
 /// \class ttk::MergeTree
-/// \author Charles Gueuent <charles.gueunet@lip6.fr>
+/// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date September 2016.
 ///
 ///\brief TTK structures for the contour tree
-///
-/// \b Related \b publication \n
-/// "Contour Forests: Fast Multi-threaded Augmented Contour Trees" \n
-/// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
-/// Proc. of IEEE LDAV 2016.
 
 #ifndef STRUCTURES_H
 #define STRUCTURES_H
