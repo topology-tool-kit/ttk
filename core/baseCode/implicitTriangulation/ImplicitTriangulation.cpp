@@ -635,49 +635,49 @@ inline int ImplicitTriangulation::getVertexTriangleNumber(const int &vertexId) c
 
     if(0<p[0] and p[0]<nbvoxels_[0]){
       if(0<p[1] and p[1]<nbvoxels_[1]){
-        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//abcdefgh
-        else return 0;//abdc ou efhg
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 36;//abcdefgh
+        else return 21;//abdc ou efhg
       }
       else if(p[1]==0){
-        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//aefb
-        else if(p[2]==0) return 0;//ab
-        else return 0;//ef
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 21;//aefb
+        else if(p[2]==0) return 15;//ab
+        else return 9;//ef
       }
       else{
-        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//ghdc
-        else if(p[2]==0) return 0;//cd
-        else return 0;//gh
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 21;//ghdc
+        else if(p[2]==0) return 9;//cd
+        else return 15;//gh
       }
     }
     else if(p[0]==0){
       if(0<p[1] and p[1]<nbvoxels_[1]){
-        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//aegc
-        else if(p[2]==0) return 0;//ac
-        else return 0;//eg
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 21;//aegc
+        else if(p[2]==0) return 9;//ac
+        else return 15;//eg
       }
       else if(p[1]==0){
-        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//ae
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 9;//ae
         else return 5;//a ou e
       }
       else{
-        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//cg
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 15;//cg
         else if(p[2]==0) return 5;//c
         else return 12;//g
       }
     }
     else{
       if(0<p[1] and p[1]<nbvoxels_[1]){
-        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//bfhd
-        else if(p[2]==0) return 0;//bd
-        else return 0;//fh
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 21;//bfhd
+        else if(p[2]==0) return 15;//bd
+        else return 9;//fh
       }
       else if(p[1]==0){
-        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//bf
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 15;//bf
         else if(p[2]==0) return 12;//b
         else return 5;//f
       }
       else{
-        if(0<p[2] and p[2]<nbvoxels_[2]) return 0;//dh
+        if(0<p[2] and p[2]<nbvoxels_[2]) return 9;//dh
         else return 5;//d ou h
       }
     }
