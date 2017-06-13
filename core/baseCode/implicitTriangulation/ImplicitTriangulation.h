@@ -2231,6 +2231,7 @@ inline int ImplicitTriangulation::getVertexTriangleBFHD(const int p[3],const int
     case 15: return tsetshift_[3]+(p[0]-1)*2+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
     case 16: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
     case 17: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 18: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
     case 19: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+(p[2]-1)*tshift_[11]+1;
     case 20: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4]+(p[2]-1)*tshift_[5]+1;
   }
