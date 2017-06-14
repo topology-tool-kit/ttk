@@ -100,6 +100,7 @@ void TaskedTree::build(void)
    printTime(buildTime, "9 build tree", -1, 1);
 
    printTime(startTime, "10 TOTAL ", -1, 1);
+   // exit(0);
 
    switch (params_->treeType) {
       case TreeType::Join:
@@ -116,8 +117,6 @@ void TaskedTree::build(void)
       default:
          break;
    }
-
-   // exit(0);
 }
 
 // }
