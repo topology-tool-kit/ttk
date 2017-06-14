@@ -99,5 +99,6 @@ namespace ttk
 // Tests
 
 // #define withStatsTime 1
+// #define withProcessSpeed 1
 
 #endif /* end of include guard: DATATYPES_H */

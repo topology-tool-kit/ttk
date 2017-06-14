@@ -124,7 +124,16 @@ void MergeTree::build(const bool ct)
 
    DebugTimer buildTime;
    leaves();
-   printTime(buildTime, "4 leaves "+treeString, scalars_->size);
+   int nbProcessed = 0;
+#ifdef withProcessSpeed
+   // count process
+   for (int i = 0; i < scalars_->size; i++) {
+       if((*treeData_.vert2tree)[i] != nullCorresp)
+           ++nbProcessed;
+   }
+#endif
+   // TODO continue + patch add. mat
+   printTime(buildTime, "4 leaves "+treeString, nbProcessed);
 
    DebugTimer bbTime;
    idVertex bbSize = trunk(ct);
@@ -284,7 +293,6 @@ void MergeTree::processTask(const idVertex startVert, const idVertex orig)
 #ifdef withStatsTime
    (*treeData_.arcStart)[currentArc] = _launchGlobalTime.getElapsedTime();
    (*treeData_.arcOrig)[currentArc] = orig;
-   (*treeData_.arcTasks)[currentArc] = treeData_.activeTasks;
 #endif
 
    // ----------------
@@ -330,6 +338,7 @@ void MergeTree::processTask(const idVertex startVert, const idVertex orig)
 
 # ifdef withStatsTime
          (*treeData_.arcEnd)[currentArc] = _launchGlobalTime.getElapsedTime();
+         (*treeData_.arcTasks)[currentArc] = treeData_.activeTasks;
 # endif
          // need a node on this vertex
          (*treeData_.openedNodes)[currentVert] = 1;
@@ -595,8 +604,10 @@ idVertex MergeTree::trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
                      // accumulated to have only one atomic update when needed
                      const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
                      getSuperArc(oldArc)->atomicIncVisited(acc);
+#ifdef withProcessSpeed
 #pragma omp atomic update
                      tot += acc;
+#endif
                      acc = 1;
                   }
                }
@@ -605,8 +616,10 @@ idVertex MergeTree::trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
             const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
             const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
             getSuperArc(upArc)->atomicIncVisited(acc);
+#ifdef withProcessSpeed
 #pragma omp atomic update
             tot += acc;
+#endif
          } // end task
       }
    } else {
@@ -628,8 +641,10 @@ idVertex MergeTree::trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
                      // accumulated to have only one atomic update when needed
                      const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
                      getSuperArc(oldArc)->atomicIncVisited(acc);
+#ifdef withProcessSpeed
 #pragma omp atomic update
                      tot += acc;
+#endif
                      acc = 1;
                   }
                }
@@ -638,8 +653,10 @@ idVertex MergeTree::trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
             const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
             const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
             getSuperArc(upArc)->atomicIncVisited(acc);
+#ifdef withProcessSpeed
 #pragma omp atomic update
             tot += acc;
+#endif
          }
       }
    }
@@ -751,6 +768,7 @@ idVertex MergeTree::trunkCTSegmentation(const vector<idVertex> &pendingNodesVert
 #pragma omp taskwait
    // count added
    idVertex tot = 0;
+#ifdef withProcessSpeed
    for (const auto& l : *treeData_.trunkSegments) {
        idVertex arcSize = 0;
        for (const auto& v: l){
@@ -758,6 +776,7 @@ idVertex MergeTree::trunkCTSegmentation(const vector<idVertex> &pendingNodesVert
        }
        tot += arcSize;
    }
+#endif
    return tot;
 }
 
@@ -1289,7 +1308,9 @@ int MergeTree::printTime(DebugTimer &t, const string &s, idVertex nbScalars, con
 
    if (debugLevel_ >= debugLevel) {
       stringstream st;
+#ifdef withProcessSpeed
       int          speed = nbScalars / t.getElapsedTime();
+#endif
       for (int i = 2; i < debugLevel; i++)
          st << "-";
       st << s << " in ";
@@ -1301,6 +1322,7 @@ int MergeTree::printTime(DebugTimer &t, const string &s, idVertex nbScalars, con
       st.seekg(0, ios::beg);
       st << t.getElapsedTime();
 
+#ifdef withProcessSpeed
       st.seekg(0, ios::end);
       while (st.tellg() < 35) {
          st << " ";
@@ -1308,6 +1330,7 @@ int MergeTree::printTime(DebugTimer &t, const string &s, idVertex nbScalars, con
       }
       st.seekg(0, ios::beg);
       st << " at " << speed << " vert/s";
+#endif
       cout << st.str() << endl;
    }
    return 1;
