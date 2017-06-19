@@ -184,11 +184,6 @@ void FTMTree_CT::insertNodes(void)
       idVertex vertId = st_->getNode(t)->getVertexId();
       if (jt_->isCorrespondingNode(vertId)) {
           continue;
-      } else {
-         idSuperArc baseArc = jt_->getCorrespondingSuperArcId(vertId);
-         if (jt_->getSuperArc(baseArc)->isMerged()) {
-            jt_->updateCorrespondingArc(vertId, jt_->getSuperArc(baseArc)->getReplacantArcId());
-         }
       }
       jt_->insertNode(st_->getNode(t));
    }
@@ -198,11 +193,6 @@ void FTMTree_CT::insertNodes(void)
       idVertex vertId = jt_->getNode(t)->getVertexId();
       if (st_->isCorrespondingNode(vertId)) {
           continue;
-      } else {
-         idSuperArc baseArc = st_->getCorrespondingSuperArcId(vertId);
-         if (st_->getSuperArc(baseArc)->isMerged()) {
-            st_->updateCorrespondingArc(vertId, st_->getSuperArc(baseArc)->getReplacantArcId());
-         }
       }
       st_->insertNode(jt_->getNode(t));
    }
@@ -368,9 +358,6 @@ int FTMTree_CT::combine()
 
          // j <- GetAdj(XT, i)
          idSuperArc curUpArc = currentNode->getUpSuperArcId(0);
-         if (xt->getSuperArc(curUpArc)->isMerged()) {
-            curUpArc = xt->getSuperArc(curUpArc)->getReplacantArcId();
-         }
          idNode      parentId   = xt->getSuperArc(curUpArc)->getUpNodeId();
          const Node *parentNode = xt->getNode(parentId);
 

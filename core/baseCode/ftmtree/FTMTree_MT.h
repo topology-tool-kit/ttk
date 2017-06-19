@@ -537,8 +537,6 @@ namespace ttk
 
       void closeSuperArc(idSuperArc superArcId, idNode upNodeId);
 
-      void mergeArc(idSuperArc sa, idSuperArc recept, const bool changeConnectivity = true);
-
       // }
       // Nodes
       // ...........................{
@@ -551,9 +549,19 @@ namespace ttk
 
       idSuperArc insertNode(Node *node, const bool segm = true);
 
+      // get node starting / ending this arc
+      // orientation depends on Join/Split tree
       Node *getDownNode(const SuperArc *a);
-
       Node *getUpNode(const SuperArc *a);
+      idNode getDownNodeId(const SuperArc *a);
+      idNode getUpNodeId(const SuperArc *a);
+
+      // get node above / below this arc
+      // in term of scalar value
+      Node *getLowerNode(const SuperArc *a);
+      Node * getUpperNode(const SuperArc *a);
+      idNode getLowerNodeId(const SuperArc *a);
+      idNode getUpperNodeId(const SuperArc *a);
 
       idNode getParent(const idNode n)
       {

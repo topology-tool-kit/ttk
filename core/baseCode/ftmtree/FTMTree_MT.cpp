@@ -959,17 +959,6 @@ void FTMTree_MT::closeSuperArc(idSuperArc superArcId, idNode upNodeId)
    (*treeData_.nodes)[upNodeId].addDownSuperArcId(superArcId);
 }
 
-// state
-
-void FTMTree_MT::mergeArc(idSuperArc sa, idSuperArc recept, const bool changeConnectivity)
-{
-   (*treeData_.superArcs)[sa].merge(recept);
-
-   if (changeConnectivity) {
-      (*treeData_.nodes)[(*treeData_.superArcs)[sa].getUpNodeId()].removeDownSuperArc(sa);
-      (*treeData_.nodes)[(*treeData_.superArcs)[sa].getDownNodeId()].removeUpSuperArc(sa);
-   }
-}
 
 //   }
 // nodes
@@ -1041,10 +1030,7 @@ idSuperArc FTMTree_MT::insertNode(Node *node, const bool segm)
    if (isCorrespondingNode(node->getVertexId())) {
       Node *myNode = vertex2Node(node->getVertexId());
       // If it has been hidden / replaced we need to re-make it
-      SuperArc * sa                 = getSuperArc(myNode->getUpSuperArcId(0));
-      idSuperArc correspondingArcId = (sa->getReplacantArcId() == nullSuperArc)
-          ? myNode->getUpSuperArcId(0)
-          : sa->getReplacantArcId();
+      idSuperArc correspondingArcId = myNode->getUpSuperArcId(0);
       updateCorrespondingArc(myNode->getVertexId(), correspondingArcId);
    }
 
@@ -1092,6 +1078,47 @@ Node *FTMTree_MT::getUpNode(const SuperArc *a)
 {
    return &((*treeData_.nodes)[a->getUpNodeId()]);
 }
+
+idNode FTMTree_MT::getDownNodeId(const SuperArc *a)
+{
+   return a->getDownNodeId();
+}
+
+idNode FTMTree_MT::getUpNodeId(const SuperArc *a)
+{
+   return a->getUpNodeId();
+}
+
+Node *FTMTree_MT::getLowerNode(const SuperArc *a)
+{
+    if(isJT()) return getDownNode(a);
+
+    return getUpNode(a);
+}
+
+Node *FTMTree_MT::getUpperNode(const SuperArc *a)
+{
+    if(isJT()) return getUpNode(a);
+
+    return getDownNode(a);
+}
+
+idNode FTMTree_MT::getLowerNodeId(const SuperArc *a)
+{
+    if(isJT()) return getDownNodeId(a);
+
+    return getUpNodeId(a);
+}
+
+idNode FTMTree_MT::getUpperNodeId(const SuperArc *a)
+{
+    if(isJT()) return getUpNodeId(a);
+
+    return getDownNodeId(a);
+}
+
+
+
 
 // remove
 

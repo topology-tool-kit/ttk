@@ -31,9 +31,6 @@ namespace ttk
       idNode downNodeId_, upNodeId_;
       // Stat of this arc (visible, hidden, merged) if merged...
       ComponentState state_;
-      // ... use this field to know the replacant arc.
-      // Caution, we do not want chained replacant !
-      idSuperArc substituteArcId_;
 
       // Keep th last vertex seen by this arc
       // After the build a a merge tree, a close step is
@@ -54,7 +51,6 @@ namespace ttk
           : downNodeId_(nullNodes),
             upNodeId_(nullNodes),
             state_(ComponentState::Visible),
-            substituteArcId_(nullSuperArc),
             lastVisited_(nullVertex),
             region_(),
             verticesSeen_(0)
@@ -65,7 +61,6 @@ namespace ttk
           : downNodeId_(d),
             upNodeId_(u),
             state_(state),
-            substituteArcId_(nullSuperArc),
             lastVisited_(nullVertex),
             region_(),
             verticesSeen_(0)
@@ -149,21 +144,6 @@ namespace ttk
       inline bool isVisible(void) const
       {
          return state_ == ComponentState::Visible;
-      }
-
-      inline void merge(idSuperArc arc)
-      {
-         substituteArcId_ = arc;
-         state_           = ComponentState::Merged;
-      }
-
-      // }
-      // replacant arc/tree (merge)
-      // .................................{
-
-      inline idSuperArc getReplacantArcId(void) const
-      {
-         return substituteArcId_;
       }
 
       // }
