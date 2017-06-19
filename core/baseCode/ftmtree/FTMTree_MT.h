@@ -1,5 +1,5 @@
 /// \ingroup baseCode
-/// \class ttk::MergeTree
+/// \class ttk::FTMTree_MT
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.
 ///
@@ -12,8 +12,8 @@
 /// etc.).
 ///
 
-#ifndef _MERGETREE_H
-#define _MERGETREE_H
+#ifndef FTMTREE_MT_H
+#define FTMTREE_MT_H
 
 #include <functional>
 #include <map>
@@ -45,7 +45,6 @@
 #include "AtomicUF.h"
 #include "AtomicVector.h"
 #include "DataTypes.h"
-#include "ExtendedUF.h"
 #include "Node.h"
 #include "Structures.h"
 #include "SuperArc.h"
@@ -96,7 +95,7 @@ namespace ttk
       Segments segments_;
    };
 
-   class MergeTree : virtual public Debug
+   class FTMTree_MT : virtual public Debug
    {
      protected:
       // global
@@ -117,9 +116,9 @@ namespace ttk
       // {
 
       // Tree with global data and partition number
-      MergeTree(Params *const params, Triangulation *mesh, Scalars *const scalars, TreeType type);
+      FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const scalars, TreeType type);
 
-      virtual ~MergeTree();
+      virtual ~FTMTree_MT();
 
       //}
       // --------------------
@@ -422,7 +421,7 @@ namespace ttk
 #ifndef withKamikaze
          if (!isCorrespondingNode(val)) {
             stringstream debug;
-            debug << "[MergeTree] : getCorrespondingNode, ";
+            debug << "[FTMTree_MT] : getCorrespondingNode, ";
             debug << "Vertex :" << val << " is not a node :";
             debug << (*treeData_.vert2tree)[val] << endl;
             err(debug.str(), fatalMsg);
@@ -436,7 +435,7 @@ namespace ttk
 #ifndef withKamikaze
          if (!isCorrespondingArc(val)) {
             stringstream debug;
-            debug << "[MergeTree] : getCorrespondingSuperArcId, ";
+            debug << "[FTMTree_MT] : getCorrespondingSuperArcId, ";
             debug << "Vertex :" << val << " is not on an arc :";
             debug << (*treeData_.vert2tree)[val] << endl;
             err(debug.str(), fatalMsg);
@@ -583,11 +582,11 @@ namespace ttk
       // {
 
       // Clone
-      MergeTree *clone() const;
+      FTMTree_MT *clone() const;
 
-      void clone(const MergeTree *mt);
+      void clone(const FTMTree_MT *mt);
 
-      void doSwap(MergeTree *mt);
+      void doSwap(FTMTree_MT *mt);
 
       // Print
       string printArc(idSuperArc a);
@@ -708,7 +707,7 @@ namespace ttk
    ostream &operator<<(ostream &o, Node const &n);
    ostream &operator<<(ostream &o, SuperArc const &a);
 
-#include <MergeTreeTemplate.h>
+#include <FTMTree_MT_Template.h>
 }
 
 #endif /* end of include guard: MERGETREE_H */

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.4)
 
-project(TaskedTree)
+project(FTMTree)
 
 set(TTK_BUILD_MODE "ParaView")
 
@@ -20,9 +20,9 @@ include(${TTK_DIR}/ttk.cmake)
 
 # include the vtk wrapper for the scalar field smoothing package
 # HERE: change to whatever wrapper you want to use
-ttk_add_vtkWrapper_package(vtkTaskedTree)
+ttk_add_vtkWrapper_package(ttkFTMTree)
 
 # Add the plugin
 ttk_wrapup_paraview_plugin(
-  TaskedTree
+  FTMTree
   1.0)

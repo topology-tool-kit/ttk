@@ -1,5 +1,5 @@
 /// \ingroup baseCode
-/// \class ttk::MergeTree
+/// \class ttk::FTMTree_MT
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.
 ///
@@ -13,12 +13,12 @@
 ///
 /// \sa vtkContourForests.cpp %for a usage example.
 
-#ifndef MERGETREETEMPLATE_H
-#define MERGETREETEMPLATE_H
+#ifndef FTMTREE_MT_TPL_H
+#define FTMTREE_MT_TPL_H
 
 #include <functional>
 
-#include "MergeTree.h"
+#include "FTMTree_MT.h"
 
 // ----
 // Init
@@ -26,7 +26,7 @@
 // {
 
 template <typename scalarType>
-void MergeTree::sortInput(void)
+void FTMTree_MT::sortInput(void)
 {
    const auto &nbVertices = scalars_->size;
 
@@ -79,5 +79,5 @@ void MergeTree::sortInput(void)
 // {
 // }
 
-#endif /* end of include guard: MERGETREETEMPLATE_H */
+#endif /* end of include guard: FTMTREE_MT_TPL_H */
 

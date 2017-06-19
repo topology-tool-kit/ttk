@@ -1,5 +1,5 @@
 /// \ingroup baseCode
-/// \class ttk::TaskedTree
+/// \class ttk::FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date December 2016.
 ///
@@ -10,22 +10,22 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 ///
-/// \sa vtkTaskedTree.cpp %for a usage example.
+/// \sa vtkFTMTree.cpp %for a usage example.
 
-#ifndef _TASKEDTREE_H_
-#define _TASKEDTREE_H_
+#ifndef FTMTREE_H
+#define FTMTREE_H
 
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>
 #include <Wrapper.h>
 
-#include "ContourTree.h"
+#include "FTMTree_CT.h"
 #include "DataTypes.h"
 
 namespace ttk
 {
-   class TaskedTree : public ContourTree
+   class FTMTree : public FTMTree_CT
    {
      public:
       // -----------------
@@ -33,8 +33,8 @@ namespace ttk
       // -----------------
       // {
 
-      TaskedTree();
-      virtual ~TaskedTree();
+      FTMTree();
+      virtual ~FTMTree();
 
       // }
 
@@ -51,7 +51,7 @@ namespace ttk
       // }
    };
 
-#include "TaskedTreeTemplate.h"
+#include "FTMTree_Template.h"
 }
 
 #endif  // TASKEDTREE_H

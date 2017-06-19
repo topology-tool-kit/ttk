@@ -1,5 +1,5 @@
 /// \ingroup baseCode
-/// \class ttk::ContourTree
+/// \class ttk::FTMTree_CT
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.
 ///
@@ -12,8 +12,8 @@
 ///
 /// \sa vtkContourForests.cpp %for a usage example.
 
-#ifndef _CONTOURTREE_H
-#define _CONTOURTREE_H
+#ifndef FTMTREE_CT_H
+#define FTMTREE_CT_H
 
 #include <queue>
 #include <set>
@@ -24,15 +24,14 @@
 #include <Wrapper.h>
 
 #include "DataTypes.h"
-#include "ExtendedUF.h"
-#include "MergeTree.h"
+#include "FTMTree_MT.h"
 
 namespace ttk
 {
-   class ContourTree : public MergeTree
+   class FTMTree_CT : public FTMTree_MT
    {
      protected:
-      MergeTree *jt_, *st_;
+      FTMTree_MT *jt_, *st_;
 
      public:
       // -----------------
@@ -40,8 +39,8 @@ namespace ttk
       // -----------------
       // {
 
-      ContourTree(Params* const params, Triangulation* mesh, Scalars* const scalars);
-      virtual ~ContourTree();
+      FTMTree_CT(Params* const params, Triangulation* mesh, Scalars* const scalars);
+      virtual ~FTMTree_CT();
 
       // }
       // -----------------
@@ -49,17 +48,17 @@ namespace ttk
       // -----------------
       // {
 
-      inline MergeTree* getJoinTree(void) const
+      inline FTMTree_MT* getJoinTree(void) const
       {
          return jt_;
       }
 
-      inline MergeTree* getSplitTree(void) const
+      inline FTMTree_MT* getSplitTree(void) const
       {
          return st_;
       }
 
-      inline MergeTree* getTree(const TreeType& tt)
+      inline FTMTree_MT* getTree(const TreeType& tt)
       {
          switch (tt) {
             case TreeType::Split:
@@ -77,7 +76,7 @@ namespace ttk
 
       inline void setupTriangulation(Triangulation* m, const bool preproc = true)
       {
-         MergeTree::setupTriangulation(m, preproc);
+         FTMTree_MT::setupTriangulation(m, preproc);
          jt_->setupTriangulation(m, false);
          st_->setupTriangulation(m, false);
       }
@@ -121,7 +120,5 @@ namespace ttk
       // }
    };
 }
-
-#include "ContourTreeTemplate.h"
 
 #endif  // CONTOURTREE_H

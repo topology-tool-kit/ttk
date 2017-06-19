@@ -1,10 +1,10 @@
 
 /// \ingroup baseCode
-/// \class ttk::MergeTree
+/// \class ttk::FTMTree_MT
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.
 ///
-///\brief TTK container representing a node of the MergeTree
+///\brief TTK container representing a node of the FTMTree_MT
 //
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
@@ -17,13 +17,12 @@
 #include <Debug.h>
 
 #include "DataTypes.h"
-#include "ExtendedUF.h"
 
 namespace ttk
 {
    class Node
    {
-      friend class MergeTree;
+      friend class FTMTree_MT;
 
      private:
       // mesh vertex where this node is
@@ -127,7 +126,7 @@ namespace ttk
       {
 #ifndef withKamikaze
          if (neighborId >= vect_upSuperArcList_.size()) {
-            cerr << "[MergeTree:Node] No SuperArc to access " << static_cast<unsigned>(neighborId);
+            cerr << "[FTMTree_MT:Node] No SuperArc to access " << static_cast<unsigned>(neighborId);
             cerr << endl;
          }
 #endif

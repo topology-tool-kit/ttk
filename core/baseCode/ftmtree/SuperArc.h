@@ -1,6 +1,6 @@
 /// \ingroup baseCode
 //
-/// \class ttk::MergeTree
+/// \class ttk::FTMTree_MT
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.
 ///

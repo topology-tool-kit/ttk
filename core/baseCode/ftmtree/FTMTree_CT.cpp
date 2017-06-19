@@ -1,5 +1,5 @@
 /// \ingroup baseCode
-/// \class ttk:TaskedTree
+/// \class ttk:FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date Dec 2016.
 ///
@@ -14,21 +14,21 @@
 #include <iterator>
 #include <string>
 
-#include "ContourTree.h"
+#include "FTMTree_CT.h"
 
 // ------------
 // CONSTRUCTOR
 // ------------
 // {
 
-ContourTree::ContourTree(Params *const params, Triangulation *mesh, Scalars *const scalars)
-    : MergeTree(params, mesh, scalars, TreeType::Contour),
-      jt_(new MergeTree(params, mesh, scalars, TreeType::Join)),
-      st_(new MergeTree(params, mesh, scalars, TreeType::Split))
+FTMTree_CT::FTMTree_CT(Params *const params, Triangulation *mesh, Scalars *const scalars)
+    : FTMTree_MT(params, mesh, scalars, TreeType::Contour),
+      jt_(new FTMTree_MT(params, mesh, scalars, TreeType::Join)),
+      st_(new FTMTree_MT(params, mesh, scalars, TreeType::Split))
 {
 }
 
-ContourTree::~ContourTree()
+FTMTree_CT::~FTMTree_CT()
 {
    if (jt_) {
       delete jt_;
@@ -45,7 +45,7 @@ ContourTree::~ContourTree()
 // PROCESS
 // -------
 // {
-int ContourTree::vertexPrecomputation()
+int FTMTree_CT::vertexPrecomputation()
 {
    const auto  nbScalars = scalars_->size;
    const auto  chunkSize = getChunkSize();
@@ -92,7 +92,7 @@ int ContourTree::vertexPrecomputation()
    return 0;
 }
 
-void ContourTree::build(TreeType tt)
+void FTMTree_CT::build(TreeType tt)
 {
    DebugTimer mergeTreesTime;
 
@@ -174,7 +174,7 @@ void ContourTree::build(TreeType tt)
    }
 }
 
-void ContourTree::insertNodes(void)
+void FTMTree_CT::insertNodes(void)
 {
    vector<idNode> sortedJTNodes = jt_->sortedNodes(true);
    vector<idNode> sortedSTNodes = st_->sortedNodes(true);
@@ -208,7 +208,7 @@ void ContourTree::insertNodes(void)
    }
 }
 
-int ContourTree::combine()
+int FTMTree_CT::combine()
 {
    DebugTimer stepTime;
    queue<pair<bool, idNode>> growingNodes, remainingNodes;
@@ -260,7 +260,7 @@ int ContourTree::combine()
    treeData_.nodes->reserve(jt_->getNumberOfNodes());
 
    if (growingNodes.empty()) {
-      cout << "[ContourTree::combine ] Nothing to combine" << endl;
+      cout << "[FTMTree_CT::combine ] Nothing to combine" << endl;
    }
 
 #ifdef withDualQueueCombine
@@ -268,7 +268,7 @@ int ContourTree::combine()
       while (!remainingNodes.empty()) {
          bool       isJT;
          idNode     currentNodeId;
-         MergeTree *xt;
+         FTMTree_MT *xt;
 
          tie(isJT, currentNodeId) = remainingNodes.front();
          remainingNodes.pop();
@@ -301,8 +301,8 @@ int ContourTree::combine()
          tie(isJT, currentNodeId) = growingNodes.front();
          growingNodes.pop();
 
-         MergeTree *xt = (isJT) ? jt_ : st_;
-         MergeTree *yt = (isJT) ? st_ : jt_;
+         FTMTree_MT *xt = (isJT) ? jt_ : st_;
+         FTMTree_MT *yt = (isJT) ? st_ : jt_;
 
          // }
 
@@ -460,9 +460,9 @@ int ContourTree::combine()
    return 0;
 }
 
-void ContourTree::createCTArcSegmentation(idSuperArc ctArc, const bool isJT, idSuperArc xtArc)
+void FTMTree_CT::createCTArcSegmentation(idSuperArc ctArc, const bool isJT, idSuperArc xtArc)
 {
-   const MergeTree *xt = (isJT) ? jt_ : st_;
+   const FTMTree_MT *xt = (isJT) ? jt_ : st_;
 
    /*Here we prefere to create lots of small region, each arc having its own segmentation with
     * no overlap instead of having a same vertice in several arc and using vert2tree to decide
@@ -493,7 +493,7 @@ void ContourTree::createCTArcSegmentation(idSuperArc ctArc, const bool isJT, idS
    }
 }
 
-void ContourTree::finalizeSegmentation(void)
+void FTMTree_CT::finalizeSegmentation(void)
 {
    DebugTimer  finSegmTime;
    const auto &nbArc = getNumberOfSuperArcs();

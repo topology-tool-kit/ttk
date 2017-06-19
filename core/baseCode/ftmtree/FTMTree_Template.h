@@ -1,5 +1,5 @@
 /// \ingroup baseCode
-/// \class ttk::TaskedTree
+/// \class ttk::FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date Dec 2016.
 ///
@@ -11,12 +11,12 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 ///
-/// \sa vtkTaskedTree.cpp %for a usage example.
+/// \sa vtkFTMTree.cpp %for a usage example.
 
-#ifndef TASKEDTREETEMPLATE_H
-#define TASKEDTREETEMPLATE_H
+#ifndef FTMTREE_TPL_H
+#define FTMTREE_TPL_H
 
-#include "TaskedTree.h"
+#include "FTMTree.h"
 
 // -------
 // PROCESS
@@ -24,7 +24,7 @@
 // {
 
 template <typename scalarType>
-void TaskedTree::build(void)
+void FTMTree::build(void)
 {
    // -----
    // INPUT
@@ -96,7 +96,7 @@ void TaskedTree::build(void)
    // -----
 
    DebugTimer buildTime;
-   ContourTree::build(params_->treeType);
+   FTMTree_CT::build(params_->treeType);
    printTime(buildTime, "9 build tree", -1, 1);
 
    printTime(startTime, "10 TOTAL ", -1, 1);
@@ -121,4 +121,4 @@ void TaskedTree::build(void)
 
 // }
 
-#endif /* end of include guard: TASKEDTREETEMPLATE_H */
+#endif /* end of include guard: FTMTREE_TPL_H */

@@ -1,9 +1,9 @@
 #include <vtkCellData.h>
-#include <vtkTaskedTree.h>
+#include <ttkFTMTree.h>
 
-vtkStandardNewMacro(vtkTaskedTree)
+vtkStandardNewMacro(ttkFTMTree)
 
-    vtkTaskedTree::vtkTaskedTree()
+    ttkFTMTree::ttkFTMTree()
     : ScalarField{},
       UseInputOffsetScalarField{},
       InputOffsetScalarFieldName{},
@@ -20,20 +20,20 @@ vtkStandardNewMacro(vtkTaskedTree)
    SetNumberOfOutputPorts(3);
 }
 
-vtkTaskedTree::~vtkTaskedTree()
+ttkFTMTree::~ttkFTMTree()
 {
    if (offsets_)
       offsets_->Delete();
 }
 
-int vtkTaskedTree::FillInputPortInformation(int port, vtkInformation* info)
+int ttkFTMTree::FillInputPortInformation(int port, vtkInformation* info)
 {
    if (port == 0)
       info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
    return 1;
 }
 
-int vtkTaskedTree::FillOutputPortInformation(int port, vtkInformation* info)
+int ttkFTMTree::FillOutputPortInformation(int port, vtkInformation* info)
 {
    switch (port) {
       case 0:
@@ -49,12 +49,12 @@ int vtkTaskedTree::FillOutputPortInformation(int port, vtkInformation* info)
    return 1;
 }
 
-int vtkTaskedTree::setupTriangulation(vtkDataSet* input)
+int ttkFTMTree::setupTriangulation(vtkDataSet* input)
 {
    triangulation_ = ttkTriangulation::getTriangulation(input);
 #ifndef withKamikaze
    if (!triangulation_) {
-      cerr << "[vtkTaskedTree] Error : ttkTriangulation::getTriangulation() is null." << endl;
+      cerr << "[ttkFTMTree] Error : ttkTriangulation::getTriangulation() is null." << endl;
       return -1;
    }
 #endif
@@ -68,7 +68,7 @@ int vtkTaskedTree::setupTriangulation(vtkDataSet* input)
 
 #ifndef withKamikaze
    if (triangulation_->isEmpty()) {
-      cerr << "[vtkTaskedTree] Error : ttkTriangulation allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : ttkTriangulation allocation problem." << endl;
       return -1;
    }
 #endif
@@ -76,13 +76,13 @@ int vtkTaskedTree::setupTriangulation(vtkDataSet* input)
    return 0;
 }
 
-int vtkTaskedTree::getScalars(vtkDataSet* input)
+int ttkFTMTree::getScalars(vtkDataSet* input)
 {
    vtkPointData* pointData = input->GetPointData();
 
 #ifndef withKamikaze
    if (!pointData) {
-      cerr << "[vtkTaskedTree] Error : input has no point data." << endl;
+      cerr << "[ttkFTMTree] Error : input has no point data." << endl;
       return -1;
    }
 #endif
@@ -97,7 +97,7 @@ int vtkTaskedTree::getScalars(vtkDataSet* input)
 
 #ifndef withKamikaze
    if (!inputScalars_) {
-      cerr << "[vtkTaskedTree] Error : input scalar field pointer is null." << endl;
+      cerr << "[ttkFTMTree] Error : input scalar field pointer is null." << endl;
       return -3;
    }
 #endif
@@ -105,7 +105,7 @@ int vtkTaskedTree::getScalars(vtkDataSet* input)
    return 0;
 }
 
-int vtkTaskedTree::getOffsets(vtkDataSet* input)
+int ttkFTMTree::getOffsets(vtkDataSet* input)
 {
    if (OffsetFieldId != -1) {
       inputOffsets_ = input->GetPointData()->GetArray(OffsetFieldId);
@@ -139,7 +139,7 @@ int vtkTaskedTree::getOffsets(vtkDataSet* input)
 
 #ifndef withKamikaze
    if (!inputOffsets_) {
-      cerr << "[vtkTaskedTree] Error : wrong input offset scalar field." << endl;
+      cerr << "[ttkFTMTree] Error : wrong input offset scalar field." << endl;
       return -1;
    }
 #endif
@@ -147,7 +147,7 @@ int vtkTaskedTree::getOffsets(vtkDataSet* input)
    return 0;
 }
 
-NodeType vtkTaskedTree::getNodeType(const Node* node)
+NodeType ttkFTMTree::getNodeType(const Node* node)
 {
    int upDegree{};
    int downDegree{};
@@ -180,12 +180,12 @@ NodeType vtkTaskedTree::getNodeType(const Node* node)
    }
 }
 
-int vtkTaskedTree::getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* outputSkeletonNodes)
+int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonNodes)
 {
    vtkSmartPointer<vtkUnstructuredGrid> skeletonNodes = vtkSmartPointer<vtkUnstructuredGrid>::New();
 #ifndef withKamikaze
    if (!skeletonNodes) {
-      cerr << "[vtkTaskedTree] Error : vtkUnstructuredGrid allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkUnstructuredGrid allocation problem." << endl;
       return -1;
    }
 #endif
@@ -193,7 +193,7 @@ int vtkTaskedTree::getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* output
    const idVertex numberOfNodes = tree->getNumberOfNodes();
 #ifndef withKamikaze
    if (!numberOfNodes) {
-      cerr << "[vtkTaskedTree] Error : tree has no nodes." << endl;
+      cerr << "[ttkFTMTree] Error : tree has no nodes." << endl;
       return -2;
    }
 #endif
@@ -201,7 +201,7 @@ int vtkTaskedTree::getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* output
    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 #ifndef withKamikaze
    if (!points) {
-      cerr << "[vtkTaskedTree] Error : vtkPoints allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkPoints allocation problem." << endl;
       return -3;
    }
 #endif
@@ -209,7 +209,7 @@ int vtkTaskedTree::getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* output
    vtkSmartPointer<vtkIntArray> nodeIds = vtkSmartPointer<vtkIntArray>::New();
 #ifndef withKamikaze
    if (!nodeIds) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem." << endl;
       return -4;
    }
 #endif
@@ -219,7 +219,7 @@ int vtkTaskedTree::getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* output
    vtkSmartPointer<vtkIntArray> vertexIds = vtkSmartPointer<vtkIntArray>::New();
 #ifndef withKamikaze
    if (!vertexIds) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray allocation problem" << endl;
+      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem" << endl;
       return -5;
    }
 #endif
@@ -229,7 +229,7 @@ int vtkTaskedTree::getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* output
    vtkSmartPointer<vtkIntArray> nodeTypes = vtkSmartPointer<vtkIntArray>::New();
 #ifndef withKamikaze
    if (!nodeTypes) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray allocation problem" << endl;
+      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem" << endl;
       return -6;
    }
 #endif
@@ -240,7 +240,7 @@ int vtkTaskedTree::getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* output
       const Node* node = tree->getNode(nodeId);
 #ifndef withKamikaze
       if (!node) {
-         cerr << "[vtkTaskedTree] Error : node " << nodeId << " is null." << endl;
+         cerr << "[ttkFTMTree] Error : node " << nodeId << " is null." << endl;
          return -7;
       }
 #endif
@@ -262,7 +262,7 @@ int vtkTaskedTree::getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* output
    vtkPointData* pointData = skeletonNodes->GetPointData();
 #ifndef withKamikaze
    if (!pointData) {
-      cerr << "[vtkTaskedTree] Error : output skeleton nodes has no point data." << endl;
+      cerr << "[ttkFTMTree] Error : output skeleton nodes has no point data." << endl;
       return -8;
    }
 #endif
@@ -276,7 +276,7 @@ int vtkTaskedTree::getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* output
    return 0;
 }
 
-int vtkTaskedTree::addDirectSkeletonArc(MergeTree* tree, SuperArc* arc, vtkPoints* points,
+int ttkFTMTree::addDirectSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints* points,
                                         vtkUnstructuredGrid* skeletonArcs)
 {
    float     point[3];
@@ -297,7 +297,7 @@ int vtkTaskedTree::addDirectSkeletonArc(MergeTree* tree, SuperArc* arc, vtkPoint
    return 0;
 }
 
-int vtkTaskedTree::addSampledSkeletonArc(MergeTree* tree, SuperArc* arc, const int samplingLevel,
+int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, SuperArc* arc, const int samplingLevel,
                                          vtkPoints* points, vtkUnstructuredGrid* skeletonArcs)
 {
    float     point[3];
@@ -355,7 +355,7 @@ int vtkTaskedTree::addSampledSkeletonArc(MergeTree* tree, SuperArc* arc, const i
    return 0;
 }
 
-int vtkTaskedTree::addCompleteSkeletonArc(MergeTree* tree, SuperArc* arc, vtkPoints* points,
+int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints* points,
                                           vtkUnstructuredGrid* skeletonArcs)
 {
    float     point[3];
@@ -385,12 +385,12 @@ int vtkTaskedTree::addCompleteSkeletonArc(MergeTree* tree, SuperArc* arc, vtkPoi
    return 0;
 }
 
-int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputSkeletonArcs)
+int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonArcs)
 {
    vtkSmartPointer<vtkUnstructuredGrid> skeletonArcs = vtkSmartPointer<vtkUnstructuredGrid>::New();
 #ifndef withKamikaze
    if (!skeletonArcs) {
-      cerr << "[vtkTaskedTree] Error : vtkUnstructuredGrid allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkUnstructuredGrid allocation problem." << endl;
       return -1;
    }
 #endif
@@ -398,7 +398,7 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    const idVertex numberOfSuperArcs = tree->getNumberOfSuperArcs();
 #ifndef withKamikaze
    if (!numberOfSuperArcs) {
-      cerr << "[vtkTaskedTree] Error : tree has no super arcs." << endl;
+      cerr << "[ttkFTMTree] Error : tree has no super arcs." << endl;
       return -2;
    }
 #endif
@@ -408,7 +408,7 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    startArcs->SetName("Start");
 # ifndef withKamikaze
    if (!startArcs) {
-      cerr << "[vtkTaskedTree] Error : vtkFloatArray start allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkFloatArray start allocation problem." << endl;
       return -5;
    }
 # endif
@@ -417,7 +417,7 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    endArcs->SetName("End");
 # ifndef withKamikaze
    if (!endArcs) {
-      cerr << "[vtkTaskedTree] Error : vtkFloatArray end allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkFloatArray end allocation problem." << endl;
       return -5;
    }
 # endif
@@ -426,7 +426,7 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    timeArcs->SetName("Time");
 # ifndef withKamikaze
    if (!timeArcs) {
-      cerr << "[vtkTaskedTree] Error : vtkFloatArray time allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkFloatArray time allocation problem." << endl;
       return -5;
    }
 # endif
@@ -435,7 +435,7 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    origArcs->SetName("Origin");
 # ifndef withKamikaze
    if (!origArcs) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray origin allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkIntArray origin allocation problem." << endl;
       return -6;
    }
 # endif
@@ -444,7 +444,7 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    tasksArcs->SetName("Tasks");
 # ifndef withKamikaze
    if (!tasksArcs) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray tasks allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkIntArray tasks allocation problem." << endl;
       return -5;
    }
 # endif
@@ -455,7 +455,7 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    sizeArcs->SetName("Size");
 #ifndef withKamikaze
    if(!sizeArcs) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray size allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
       return -7;
    }
 #endif
@@ -463,7 +463,7 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 #ifndef withKamikaze
    if (!points) {
-      cerr << "[vtkTaskedTree] Error : vtkPoints allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkPoints allocation problem." << endl;
       return -8;
    }
 #endif
@@ -506,7 +506,7 @@ int vtkTaskedTree::getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputS
    return 0;
 }
 
-int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
+int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input,
                                    vtkDataSet* outputSegmentation)
 {
    outputSegmentation->ShallowCopy(input);
@@ -514,7 +514,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
    const idVertex numberOfSuperArcs = tree->getNumberOfSuperArcs();
 #ifndef withKamikaze
    if (!numberOfSuperArcs) {
-      cerr << "[vtkTaskedTree] Error : tree has no super arcs." << endl;
+      cerr << "[ttkFTMTree] Error : tree has no super arcs." << endl;
       return -1;
    }
 #endif
@@ -522,7 +522,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
    const idVertex numberOfVertices = triangulation_->getNumberOfVertices();
 #ifndef withKamikaze
    if (!numberOfVertices) {
-      cerr << "[vtkTaskedTree] Error : triangulation has no vertices." << endl;
+      cerr << "[ttkFTMTree] Error : triangulation has no vertices." << endl;
       return -2;
    }
 #endif
@@ -531,7 +531,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
    vtkSmartPointer<vtkIntArray> regionIds = vtkSmartPointer<vtkIntArray>::New();
 #ifndef withKamikaze
    if (!regionIds) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem." << endl;
       return -3;
    }
 #endif
@@ -542,7 +542,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
    vtkSmartPointer<vtkIntArray> regionTypes = vtkSmartPointer<vtkIntArray>::New();
 #ifndef withKamikaze
    if (!regionTypes) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem." << endl;
       return -4;
    }
 #endif
@@ -553,7 +553,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
    vtkSmartPointer<vtkIntArray> regionSizes = vtkSmartPointer<vtkIntArray>::New();
 #ifndef withKamikaze
    if (!regionSizes) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem." << endl;
       return -5;
    }
 #endif
@@ -564,7 +564,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
    vtkSmartPointer<vtkDoubleArray> regionSpans = vtkSmartPointer<vtkDoubleArray>::New();
 #ifndef withKamikaze
    if (!regionSpans) {
-      cerr << "[vtkTaskedTree] Error : vtkIntArray allocation problem." << endl;
+      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem." << endl;
       return -6;
    }
 #endif
@@ -579,7 +579,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
       SuperArc* arc = tree->getSuperArc(arcId);
 #ifndef withKamikaze
       if (!arc) {
-         cerr << "[vtkTaskedTree] Error : TaskedTree arc " << arcId << " is null." << endl;
+         cerr << "[ttkFTMTree] Error : FTMTree arc " << arcId << " is null." << endl;
          return -7;
       }
 #endif
@@ -588,7 +588,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
       const Node* upNode   = tree->getNode(upNodeId);
 #ifndef withKamikaze
       if (!upNode) {
-          cerr << "[vtkTaskedTree] Error : TaskedTree node" << upNodeId << " is null." << endl;
+          cerr << "[ttkFTMTree] Error : FTMTree node" << upNodeId << " is null." << endl;
           return -8;
       }
 #endif
@@ -601,7 +601,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
       const Node* downNode   = tree->getNode(downNodeId);
 #ifndef withKamikaze
       if (!downNode) {
-          cerr << "[vtkTaskedTree] Error : TaskedTree node" << downNodeId << " is null." << endl;
+          cerr << "[ttkFTMTree] Error : FTMTree node" << downNodeId << " is null." << endl;
           return -9;
       }
 #endif
@@ -649,7 +649,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
    vtkPointData* pointData = outputSegmentation->GetPointData();
 #ifndef withKamikaze
    if (!pointData) {
-      cerr << "[vtkTaskedTree] Error : output segmentation has no point data." << endl;
+      cerr << "[ttkFTMTree] Error : output segmentation has no point data." << endl;
       return -9;
    }
 #endif
@@ -662,7 +662,7 @@ int vtkTaskedTree::getSegmentation(MergeTree* tree, vtkDataSet* input,
    return 0;
 }
 
-int vtkTaskedTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
+int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 {
    Memory m;
 
@@ -673,7 +673,7 @@ int vtkTaskedTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& output
 
    if (setupTriangulation(input)) {
 #ifndef withKamikaze
-      cerr << "[vtkTaskedTree] Error : wrong triangulation." << endl;
+      cerr << "[ttkFTMTree] Error : wrong triangulation." << endl;
       return -1;
 #endif
    }
@@ -681,21 +681,21 @@ int vtkTaskedTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& output
    const idVertex numberOfVertices = triangulation_->getNumberOfVertices();
 #ifndef withKamikaze
    if (!numberOfVertices) {
-      cerr << "[vtkTaskedTree] Error : input data has no vertices." << endl;
+      cerr << "[ttkFTMTree] Error : input data has no vertices." << endl;
       return -2;
    }
 #endif
 
    if (getScalars(input)) {
 #ifndef withKamikaze
-      cerr << "[vtkTaskedTree] Error : wrong scalars." << endl;
+      cerr << "[ttkFTMTree] Error : wrong scalars." << endl;
       return -3;
 #endif
    }
 
    if (getOffsets(input)) {
 #ifndef withKamikaze
-      cerr << "[vtkTaskedTree] Error : wrong offsets." << endl;
+      cerr << "[ttkFTMTree] Error : wrong offsets." << endl;
       return -4;
 #endif
    }
@@ -718,7 +718,7 @@ int vtkTaskedTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& output
       vtkTemplateMacro(({ contourForests_.build<VTK_TT>(); }));
    }
 
-   MergeTree* tree{};
+   FTMTree_MT* tree{};
    switch (treeType_) {
       case TreeType::Join:
          tree = contourForests_.getJoinTree();
@@ -732,35 +732,35 @@ int vtkTaskedTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& output
    }
 #ifndef withKamikaze
    if (!tree) {
-      cerr << "[vtkTaskedTree] tree is null." << endl;
+      cerr << "[ttkFTMTree] tree is null." << endl;
       return -6;
    }
 #endif
 
    if (getSkeletonNodes(tree, outputSkeletonNodes)) {
 #ifndef withKamikaze
-      cerr << "[vtkTaskedTree] Error : wrong properties on skeleton nodes." << endl;
+      cerr << "[ttkFTMTree] Error : wrong properties on skeleton nodes." << endl;
       return -7;
 #endif
    }
 
    if (getSkeletonArcs(tree, outputSkeletonArcs)) {
 #ifndef withKamikaze
-      cerr << "[vtkTaskedTree] Error : wrong properties on skeleton arcs." << endl;
+      cerr << "[ttkFTMTree] Error : wrong properties on skeleton arcs." << endl;
       return -8;
 #endif
    }
 
    if (getSegmentation(tree, input, outputSegmentation)) {
 #ifndef withKamikaze
-      cerr << "[vtkTaskedTree] Error : wrong properties on segmentation." << endl;
+      cerr << "[ttkFTMTree] Error : wrong properties on segmentation." << endl;
       return -9;
 #endif
    }
 
    {
       stringstream msg;
-      msg << "[vtkTaskedTree] Memory usage: " << m.getElapsedUsage() << " MB." << endl;
+      msg << "[ttkFTMTree] Memory usage: " << m.getElapsedUsage() << " MB." << endl;
       dMsg(cout, msg.str(), memoryMsg);
    }
 

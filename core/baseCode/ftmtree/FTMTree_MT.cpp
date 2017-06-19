@@ -1,5 +1,5 @@
 /// \ingroup baseCode
-/// \class ttk:TaskedTree
+/// \class ttk:FTMTree
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date Dec 2016.
 ///
@@ -11,14 +11,14 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 
-#include "MergeTree.h"
+#include "FTMTree_MT.h"
 
 // -----------
 // CONSTRUCT
 // -----------
 // {
 
-MergeTree::MergeTree(Params *const params, Triangulation *mesh, Scalars *const scalars,
+FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const scalars,
                      TreeType type)
     : params_(params), mesh_(mesh), scalars_(scalars)
 {
@@ -44,7 +44,7 @@ MergeTree::MergeTree(Params *const params, Triangulation *mesh, Scalars *const s
 #endif
 }
 
-MergeTree::~MergeTree()
+FTMTree_MT::~FTMTree_MT()
 {
    delete treeData_.superArcs;
    delete treeData_.nodes;
@@ -91,7 +91,7 @@ MergeTree::~MergeTree()
 // -------
 // {
 
-void MergeTree::build(const bool ct)
+void FTMTree_MT::build(const bool ct)
 {
     string treeString;
    // --------------------------
@@ -151,7 +151,7 @@ void MergeTree::build(const bool ct)
 
 // extrema
 
-int MergeTree::precompute()
+int FTMTree_MT::precompute()
 {
    int ret = 0;
    // if not already computed by CT
@@ -223,7 +223,7 @@ int MergeTree::precompute()
 
 DebugTimer _launchGlobalTime;
 
-void MergeTree::leaves()
+void FTMTree_MT::leaves()
 {
    _launchGlobalTime.reStart();
 
@@ -261,7 +261,7 @@ void MergeTree::leaves()
 #pragma omp taskwait
 }
 
-void MergeTree::processTask(const idVertex startVert, const idVertex orig)
+void FTMTree_MT::processTask(const idVertex startVert, const idVertex orig)
 {
 
    // ------------------------
@@ -399,7 +399,7 @@ void MergeTree::processTask(const idVertex startVert, const idVertex orig)
 #endif
 }
 
-tuple<bool, bool> MergeTree::propage(CurrentState &currentState, UF curUF)
+tuple<bool, bool> FTMTree_MT::propage(CurrentState &currentState, UF curUF)
 {
    bool        becameSaddle = false, isLast = false;
    const auto &nbNeigh = mesh_->getVertexNeighborNumber(currentState.vertex);
@@ -446,7 +446,7 @@ tuple<bool, bool> MergeTree::propage(CurrentState &currentState, UF curUF)
    return make_tuple(becameSaddle, isLast);
 }
 
-void MergeTree::closeAndMergeOnSaddle(idVertex saddleVert)
+void FTMTree_MT::closeAndMergeOnSaddle(idVertex saddleVert)
 {
    idNode closeNode = makeNode(saddleVert);
 
@@ -472,7 +472,7 @@ void MergeTree::closeAndMergeOnSaddle(idVertex saddleVert)
    (*treeData_.ufs)[saddleVert]->find()->setExtrema(saddleVert);
 }
 
-void MergeTree::closeOnBackBone(idVertex saddleVert)
+void FTMTree_MT::closeOnBackBone(idVertex saddleVert)
 {
    idNode closeNode = makeNode(saddleVert);
 
@@ -496,7 +496,7 @@ void MergeTree::closeOnBackBone(idVertex saddleVert)
    closeArcsUF(closeNode, (*treeData_.ufs)[saddleVert]);
 }
 
-void MergeTree::closeArcsUF(idNode closeNode, UF uf)
+void FTMTree_MT::closeArcsUF(idNode closeNode, UF uf)
 {
    for (const auto &sa : uf->find()->getOpenedArcs()) {
       closeSuperArc(sa, closeNode);
@@ -504,7 +504,7 @@ void MergeTree::closeArcsUF(idNode closeNode, UF uf)
    uf->find()->clearOpenedArcs();
 }
 
-idVertex MergeTree::trunk(const bool ct)
+idVertex FTMTree_MT::trunk(const bool ct)
 {
    DebugTimer bbTimer;
 
@@ -571,7 +571,7 @@ idVertex MergeTree::trunk(const bool ct)
    return processed;
 }
 
-idVertex MergeTree::trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
+idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
                                       const idVertex begin, const idVertex stop)
 {
    // Assign missing vert to the good arc
@@ -664,7 +664,7 @@ idVertex MergeTree::trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
    return tot;
 }
 
-idVertex MergeTree::trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts,
+idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts,
                                         const idVertex begin, const idVertex stop)
 {
    const int nbTasksThreads = 40;
@@ -782,7 +782,7 @@ idVertex MergeTree::trunkCTSegmentation(const vector<idVertex> &pendingNodesVert
 
 // segmentation
 
-void MergeTree::buildSegmentation()
+void FTMTree_MT::buildSegmentation()
 {
 
    const idSuperArc nbArcs = treeData_.superArcs->size();
@@ -911,7 +911,7 @@ void MergeTree::buildSegmentation()
 // {
 // SuperArcs
 // .......................{
-idSuperArc MergeTree::openSuperArc(idNode downNodeId)
+idSuperArc FTMTree_MT::openSuperArc(idNode downNodeId)
 {
 #ifndef withKamikaze
    if (downNodeId < 0 || (size_t)downNodeId >= getNumberOfNodes()) {
@@ -927,7 +927,7 @@ idSuperArc MergeTree::openSuperArc(idNode downNodeId)
    return newSuperArcId;
 }
 
-idSuperArc MergeTree::makeSuperArc(idNode downNodeId, idNode upNodeId)
+idSuperArc FTMTree_MT::makeSuperArc(idNode downNodeId, idNode upNodeId)
 
 {
    idSuperArc newSuperArcId = treeData_.superArcs->getNext();
@@ -940,7 +940,7 @@ idSuperArc MergeTree::makeSuperArc(idNode downNodeId, idNode upNodeId)
    return newSuperArcId;
 }
 
-void MergeTree::closeSuperArc(idSuperArc superArcId, idNode upNodeId)
+void FTMTree_MT::closeSuperArc(idSuperArc superArcId, idNode upNodeId)
 {
 #ifndef withKamikaze
 
@@ -961,7 +961,7 @@ void MergeTree::closeSuperArc(idSuperArc superArcId, idNode upNodeId)
 
 // state
 
-void MergeTree::mergeArc(idSuperArc sa, idSuperArc recept, const bool changeConnectivity)
+void FTMTree_MT::mergeArc(idSuperArc sa, idSuperArc recept, const bool changeConnectivity)
 {
    (*treeData_.superArcs)[sa].merge(recept);
 
@@ -975,7 +975,7 @@ void MergeTree::mergeArc(idSuperArc sa, idSuperArc recept, const bool changeConn
 // nodes
 // .....................{
 
-vector<idNode> MergeTree::sortedNodes(const bool para)
+vector<idNode> FTMTree_MT::sortedNodes(const bool para)
 {
    vector<idNode> sortedNodes(treeData_.nodes->size());
    std::iota(sortedNodes.begin(), sortedNodes.end(), 0);
@@ -1002,7 +1002,7 @@ vector<idNode> MergeTree::sortedNodes(const bool para)
 
 // add
 
-idNode MergeTree::makeNode(idVertex vertexId, idVertex term)
+idNode FTMTree_MT::makeNode(idVertex vertexId, idVertex term)
 {
 #ifndef withKamikaze
    if (vertexId < 0 || vertexId >= scalars_->size) {
@@ -1024,7 +1024,7 @@ idNode MergeTree::makeNode(idVertex vertexId, idVertex term)
    return newNodeId;
 }
 
-idNode MergeTree::makeNode(const Node *const n, idVertex term)
+idNode FTMTree_MT::makeNode(const Node *const n, idVertex term)
 {
    return makeNode(n->getVertexId());
 }
@@ -1035,7 +1035,7 @@ idNode MergeTree::makeNode(const Node *const n, idVertex term)
 //  |   * <- newNodeId
 //  |   |   <- currentSA
 //  - - -
-idSuperArc MergeTree::insertNode(Node *node, const bool segm)
+idSuperArc FTMTree_MT::insertNode(Node *node, const bool segm)
 {
    // already present
    if (isCorrespondingNode(node->getVertexId())) {
@@ -1083,19 +1083,19 @@ idSuperArc MergeTree::insertNode(Node *node, const bool segm)
 
 // traverse
 
-Node *MergeTree::getDownNode(const SuperArc *a)
+Node *FTMTree_MT::getDownNode(const SuperArc *a)
 {
    return &((*treeData_.nodes)[a->getDownNodeId()]);
 }
 
-Node *MergeTree::getUpNode(const SuperArc *a)
+Node *FTMTree_MT::getUpNode(const SuperArc *a)
 {
    return &((*treeData_.nodes)[a->getUpNodeId()]);
 }
 
 // remove
 
-void MergeTree::delNode(idNode node)
+void FTMTree_MT::delNode(idNode node)
 {
    Node *mainNode = getNode(node);
 
@@ -1107,7 +1107,7 @@ void MergeTree::delNode(idNode node)
 #ifndef withKamikaze
       if (mainNode->getNumberOfDownSuperArcs() != 1) {
          // Root with several childs: impossible /\ .
-         cout << endl << "[MergeTree]:delNode won't delete ";
+         cout << endl << "[FTMTree_MT]:delNode won't delete ";
          cout << mainNode->getVertexId() << " (root) with ";
          cout << static_cast<unsigned>(mainNode->getNumberOfDownSuperArcs()) << " down ";
          cout << static_cast<unsigned>(mainNode->getNumberOfUpSuperArcs()) << " up ";
@@ -1161,7 +1161,7 @@ void MergeTree::delNode(idNode node)
 // Segmentation
 // ...........................{
 
-void MergeTree::finalizeSegmentation(void)
+void FTMTree_MT::finalizeSegmentation(void)
 {
    for (auto &arc : *treeData_.superArcs) {
       arc.createSegmentation(scalars_);
@@ -1176,9 +1176,9 @@ void MergeTree::finalizeSegmentation(void)
 // {
 
 // Clone
-MergeTree *MergeTree::clone() const
+FTMTree_MT *FTMTree_MT::clone() const
 {
-   MergeTree *newMT = new MergeTree(params_, mesh_, scalars_, treeData_.treeType);
+   FTMTree_MT *newMT = new FTMTree_MT(params_, mesh_, scalars_, treeData_.treeType);
 
    newMT->treeData_.superArcs = treeData_.superArcs;
    newMT->treeData_.nodes     = treeData_.nodes;
@@ -1189,7 +1189,7 @@ MergeTree *MergeTree::clone() const
    return newMT;
 }
 
-void MergeTree::clone(const MergeTree *mt)
+void FTMTree_MT::clone(const FTMTree_MT *mt)
 {
    // we already have common data
    treeData_.superArcs = mt->treeData_.superArcs;
@@ -1200,7 +1200,7 @@ void MergeTree::clone(const MergeTree *mt)
 }
 
 // Print
-string MergeTree::printArc(idSuperArc a)
+string FTMTree_MT::printArc(idSuperArc a)
 {
    const SuperArc *sa = getSuperArc(a);
    stringstream    res;
@@ -1230,7 +1230,7 @@ string MergeTree::printArc(idSuperArc a)
    return res.str();
 }
 
-string MergeTree::printNode(idNode n)
+string FTMTree_MT::printNode(idNode n)
 {
    const Node * node = getNode(n);
    stringstream res;
@@ -1253,7 +1253,7 @@ string MergeTree::printNode(idNode n)
    return res.str();
 }
 
-void MergeTree::printTree2()
+void FTMTree_MT::printTree2()
 {
 #ifdef withOpenMP
 #pragma omp critical
@@ -1281,7 +1281,7 @@ void MergeTree::printTree2()
    }
 }
 
-void MergeTree::printParams(void) const
+void FTMTree_MT::printParams(void) const
 {
    if (debugLevel_ > 1) {
       cout << "------------" << endl;
@@ -1300,7 +1300,7 @@ void MergeTree::printParams(void) const
    }
 }
 
-int MergeTree::printTime(DebugTimer &t, const string &s, idVertex nbScalars, const int debugLevel) const
+int FTMTree_MT::printTime(DebugTimer &t, const string &s, idVertex nbScalars, const int debugLevel) const
 {
    if (nbScalars == -1) {
       nbScalars = scalars_->size;
@@ -1346,7 +1346,7 @@ int MergeTree::printTime(DebugTimer &t, const string &s, idVertex nbScalars, con
 // Tools
 // -----
 
-idNode MergeTree::getVertInRange(const vector<idVertex> &range, const idVertex v,
+idNode FTMTree_MT::getVertInRange(const vector<idVertex> &range, const idVertex v,
                                  const idNode last) const
 {
     idNode idRes = last;
@@ -1357,7 +1357,7 @@ idNode MergeTree::getVertInRange(const vector<idVertex> &range, const idVertex v
     return idRes;
 }
 
-tuple<idVertex, idVertex> MergeTree::getBoundsFromVerts(const vector<idVertex> &nodes) const
+tuple<idVertex, idVertex> FTMTree_MT::getBoundsFromVerts(const vector<idVertex> &nodes) const
 {
     idVertex begin, stop;
 

@@ -1,6 +1,6 @@
 /// \ingroup baseCode
 //
-/// \class ttk::MergeTree
+/// \class ttk::FTMTree_MT
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date September 2016.
 ///
@@ -14,7 +14,7 @@
 #include <memory>
 #include <vector>
 
-#include <lib/boost_1_64_0/boost/heap/fibonacci_heap.hpp>
+#include <boost/heap/fibonacci_heap.hpp>
 
 #include "AtomicVector.h"
 #include "DataTypes.h"

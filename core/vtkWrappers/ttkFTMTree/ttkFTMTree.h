@@ -1,9 +1,9 @@
-/// \sa ttk::TaskedTree
+/// \sa ttk::FTMTree
 #ifndef _VTK_CONTOURFORESTS_H
 #define _VTK_CONTOURFORESTS_H
 
 // ttk code includes
-#include <TaskedTree.h>
+#include <FTMTree.h>
 #include <ttkWrapper.h>
 
 // VTK includes
@@ -24,12 +24,12 @@
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
 
-class VTKFILTERSCORE_EXPORT vtkTaskedTree : public vtkDataSetAlgorithm, public Wrapper
+class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
 {
   public:
-   static vtkTaskedTree* New();
+   static ttkFTMTree* New();
 
-   vtkTypeMacro(vtkTaskedTree, vtkDataSetAlgorithm);
+   vtkTypeMacro(ttkFTMTree, vtkDataSetAlgorithm);
 
    // default ttk setters
    vtkSetMacro(debugLevel_, int);
@@ -80,21 +80,21 @@ class VTKFILTERSCORE_EXPORT vtkTaskedTree : public vtkDataSetAlgorithm, public W
 
    NodeType getNodeType(const Node* node);
 
-   int getSkeletonNodes(MergeTree* tree, vtkUnstructuredGrid* outputSkeletonNodes);
+   int getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonNodes);
 
-   int addDirectSkeletonArc(MergeTree* tree, SuperArc* arc, vtkPoints* points,
+   int addDirectSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints* points,
                             vtkUnstructuredGrid* skeletonArcs);
-   int addSampledSkeletonArc(MergeTree* tree, SuperArc* arc, const int samplingLevel,
+   int addSampledSkeletonArc(FTMTree_MT* tree, SuperArc* arc, const int samplingLevel,
                              vtkPoints* points, vtkUnstructuredGrid* skeletonArcs);
-   int addCompleteSkeletonArc(MergeTree* tree, SuperArc* arc, vtkPoints* points,
+   int addCompleteSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints* points,
                               vtkUnstructuredGrid* skeletonArcs);
-   int getSkeletonArcs(MergeTree* tree, vtkUnstructuredGrid* outputSkeletonArcs);
+   int getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonArcs);
 
-   int getSegmentation(MergeTree* tree, vtkDataSet* input, vtkDataSet* outputSegmentation);
+   int getSegmentation(FTMTree_MT* tree, vtkDataSet* input, vtkDataSet* outputSegmentation);
 
   protected:
-   vtkTaskedTree();
-   ~vtkTaskedTree();
+   ttkFTMTree();
+   ~ttkFTMTree();
 
    TTK_SETUP();
 
@@ -109,12 +109,12 @@ class VTKFILTERSCORE_EXPORT vtkTaskedTree : public vtkDataSetAlgorithm, public W
    int    OffsetFieldId;
    int    SuperArcSamplingLevel;
 
-   int    treeType_;
-   int    lessPartition_;
-   int    partitionNumber_;
+   int treeType_;
+   int lessPartition_;
+   int partitionNumber_;
 
    Triangulation* triangulation_;
-   TaskedTree     contourForests_;
+   FTMTree        contourForests_;
    vtkDataArray*  inputScalars_;
    vtkIntArray*   offsets_;
    vtkDataArray*  inputOffsets_;
