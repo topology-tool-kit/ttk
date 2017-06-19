@@ -51,15 +51,15 @@ int vtkTaskedTree::FillOutputPortInformation(int port, vtkInformation* info)
 
 int vtkTaskedTree::setupTriangulation(vtkDataSet* input)
 {
-   triangulation_ = vtkTriangulation::getTriangulation(input);
+   triangulation_ = ttkTriangulation::getTriangulation(input);
 #ifndef withKamikaze
    if (!triangulation_) {
-      cerr << "[vtkTaskedTree] Error : vtkTriangulation::getTriangulation() is null." << endl;
+      cerr << "[vtkTaskedTree] Error : ttkTriangulation::getTriangulation() is null." << endl;
       return -1;
    }
 #endif
 
-   hasUpdatedMesh_ = vtkTriangulation::hasChangedConnectivity(triangulation_, input, this);
+   hasUpdatedMesh_ = ttkTriangulation::hasChangedConnectivity(triangulation_, input, this);
 
    triangulation_->setWrapper(this);
    contourForests_.setDebugLevel(debugLevel_);
@@ -68,7 +68,7 @@ int vtkTaskedTree::setupTriangulation(vtkDataSet* input)
 
 #ifndef withKamikaze
    if (triangulation_->isEmpty()) {
-      cerr << "[vtkTaskedTree] Error : vtkTriangulation allocation problem." << endl;
+      cerr << "[vtkTaskedTree] Error : ttkTriangulation allocation problem." << endl;
       return -1;
    }
 #endif
