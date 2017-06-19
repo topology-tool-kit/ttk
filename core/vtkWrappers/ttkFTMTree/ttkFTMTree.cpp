@@ -303,13 +303,13 @@ int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, SuperArc* arc, const int
    float     point[3];
    vtkIdType ids[2];
 
-   const idVertex downNodeId   = arc->getDownNodeId();
+   const idVertex downNodeId   = tree->getLowerNodeId(arc);
    const idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
    triangulation_->getVertexPoint(downVertexId, point[0], point[1], point[2]);
    const vtkIdType downId    = points->InsertNextPoint(point);
    const double    scalarMin = inputScalars_->GetTuple1(downVertexId);
 
-   const idVertex upNodeId   = arc->getUpNodeId();
+   const idVertex upNodeId   = tree->getUpperNodeId(arc);
    const idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
    triangulation_->getVertexPoint(upVertexId, point[0], point[1], point[2]);
    const vtkIdType upId      = points->InsertNextPoint(point);
