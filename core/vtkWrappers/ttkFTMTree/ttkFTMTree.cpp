@@ -474,13 +474,17 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
       SuperArc* arc = tree->getSuperArc(i);
 
       const int numberOfRegularNodes = arc->getNumberOfRegularNodes();
-      if (numberOfRegularNodes > 0 and samplingLevel > 0)
-          addSampledSkeletonArc(tree, arc, samplingLevel, points, skeletonArcs);
-      else if (samplingLevel == -1)
-          addCompleteSkeletonArc(tree, arc, points, skeletonArcs);
-      else
-          addDirectSkeletonArc(tree, arc, points, skeletonArcs);
+      if (numberOfRegularNodes > 0 and samplingLevel > 0) {
+         cout << "Arc: " << tree->printArc(i) << endl;
+         addSampledSkeletonArc(tree, arc, samplingLevel, points, skeletonArcs);
+      } else if (samplingLevel == -1) {
+         addCompleteSkeletonArc(tree, arc, points, skeletonArcs);
+      } else {
+         addDirectSkeletonArc(tree, arc, points, skeletonArcs);
+      }
 
+      // TODO in a function, called in the tree arc contruct above
+      // TODO Use a struct containing arc informations
 #ifdef withStatsTime
       startArcs->InsertNextTuple1(tree->getArcStart(i));
       endArcs->InsertNextTuple1(tree->getArcEnd(i));

@@ -837,7 +837,9 @@ void FTMTree_MT::buildSegmentation()
                 idSuperArc sa = getCorrespondingSuperArcId(vert);
                 idVertex   vertToAdd;
                 if((*treeData_.visitOrder)[vert] != nullVertex){
+                   // Opposite order for Split Tree
                    vertToAdd = (*treeData_.visitOrder)[vert];
+                   if(!isJT()) vertToAdd = getSuperArc(sa)->getNbVertSeen() - vertToAdd -2;
                    treeData_.segments_[sa][vertToAdd] = vert;
                 } else if (treeData_.trunkSegments->size() == 0){
                     // MT computation
