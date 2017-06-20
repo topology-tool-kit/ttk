@@ -147,8 +147,6 @@ void FTMTree_MT::build(const bool ct)
       buildSegmentation();
       printTime(segmTime, "6 segmentation " + treeString, scalars_->size);
    }
-
-   printTree2();
 }
 
 // extrema
@@ -684,8 +682,10 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
             regularList.reserve(25);
             const idVertex lowerBound = begin + chunkId * chunkSize;
             const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
-            lastVertInRange =
-                getVertInRange(pendingNodesVerts, (*scalars_->sortedVertices)[lowerBound], 0);
+            if (lowerBound != upperBound) {
+               lastVertInRange =
+                   getVertInRange(pendingNodesVerts, (*scalars_->sortedVertices)[lowerBound], 0);
+            }
             for (idVertex v = lowerBound; v < upperBound; ++v) {
                const idVertex s = (*scalars_->sortedVertices)[v];
                if (isCorrespondingNull(s)) {
@@ -729,8 +729,10 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
             regularList.reserve(25);
             const idVertex upperBound = begin - chunkId * chunkSize;
             const idVertex lowerBound = max(stop, begin - (chunkId + 1) * chunkSize);
-            lastVertInRange =
-                getVertInRange(pendingNodesVerts, (*scalars_->sortedVertices)[upperBound], 0);
+            if (lowerBound != upperBound) {
+               lastVertInRange =
+                   getVertInRange(pendingNodesVerts, (*scalars_->sortedVertices)[upperBound], 0);
+            }
             for (idVertex v = upperBound; v > lowerBound; --v) {
                const idVertex s = (*scalars_->sortedVertices)[v];
                if (isCorrespondingNull(s)) {

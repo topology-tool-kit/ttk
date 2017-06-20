@@ -172,8 +172,6 @@ void FTMTree_CT::build(TreeType tt)
       }
       cout << endl;
    }
-
-   printTree2();
 }
 
 void FTMTree_CT::insertNodes(void)
