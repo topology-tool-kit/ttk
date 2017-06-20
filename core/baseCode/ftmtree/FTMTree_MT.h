@@ -242,6 +242,11 @@ namespace ttk
          return treeData_.treeType == TreeType::Join;
       }
 
+      inline bool isST(void) const
+      {
+         return treeData_.treeType == TreeType::Split;
+      }
+
       // global
       // called for the tree used by the wrapper (only).
       // On this implementation, the warpper communicate with ContourForest

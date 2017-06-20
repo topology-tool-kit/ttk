@@ -475,7 +475,6 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
 
       const int numberOfRegularNodes = arc->getNumberOfRegularNodes();
       if (numberOfRegularNodes > 0 and samplingLevel > 0) {
-         cout << "Arc: " << tree->printArc(i) << endl;
          addSampledSkeletonArc(tree, arc, samplingLevel, points, skeletonArcs);
       } else if (samplingLevel == -1) {
          addCompleteSkeletonArc(tree, arc, points, skeletonArcs);
