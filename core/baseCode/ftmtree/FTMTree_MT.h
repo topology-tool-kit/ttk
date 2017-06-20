@@ -636,8 +636,10 @@ namespace ttk
       {
          const idVertex s = (nbVerts == -1) ? scalars_->size : nbVerts;
 #ifndef NDEBUG
+         // Debug mode
          static const idVertex minWorks = 1;
 #else
+         // Release mode
          static const idVertex minWorks = 10000;
 #endif
          return max(minWorks, 1 + (s / (nbtasks * threadNumber_)));
