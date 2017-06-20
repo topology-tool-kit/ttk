@@ -147,6 +147,8 @@ void FTMTree_MT::build(const bool ct)
       buildSegmentation();
       printTime(segmTime, "6 segmentation " + treeString, scalars_->size);
    }
+
+   printTree2();
 }
 
 // extrema
@@ -839,7 +841,7 @@ void FTMTree_MT::buildSegmentation()
                 if((*treeData_.visitOrder)[vert] != nullVertex){
                    // Opposite order for Split Tree
                    vertToAdd = (*treeData_.visitOrder)[vert];
-                   if(!isJT()) vertToAdd = getSuperArc(sa)->getNbVertSeen() - vertToAdd -2;
+                   if(isST()) vertToAdd = getSuperArc(sa)->getNbVertSeen() - vertToAdd -2;
                    treeData_.segments_[sa][vertToAdd] = vert;
                 } else if (treeData_.trunkSegments->size() == 0){
                     // MT computation
@@ -1093,34 +1095,35 @@ idNode FTMTree_MT::getUpNodeId(const SuperArc *a)
 
 Node *FTMTree_MT::getLowerNode(const SuperArc *a)
 {
-    if(isJT()) return getDownNode(a);
+   if (isST())
+      return getUpNode(a);
 
-    return getUpNode(a);
+   return getDownNode(a);
 }
 
 Node *FTMTree_MT::getUpperNode(const SuperArc *a)
 {
-    if(isJT()) return getUpNode(a);
+   if (isST())
+      return getDownNode(a);
 
-    return getDownNode(a);
+   return getUpNode(a);
 }
 
 idNode FTMTree_MT::getLowerNodeId(const SuperArc *a)
 {
-    if(isJT()) return getDownNodeId(a);
+   if (isST())
+      return getUpNodeId(a);
 
-    return getUpNodeId(a);
+   return getDownNodeId(a);
 }
 
 idNode FTMTree_MT::getUpperNodeId(const SuperArc *a)
 {
-    if(isJT()) return getUpNodeId(a);
+   if (isST())
+      return getDownNodeId(a);
 
-    return getDownNodeId(a);
+   return getUpNodeId(a);
 }
-
-
-
 
 // remove
 
