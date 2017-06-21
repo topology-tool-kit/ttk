@@ -275,9 +275,10 @@ int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSk
    return 0;
 }
 
-int ttkFTMTree::addDirectSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints* points,
-                                        vtkUnstructuredGrid* skeletonArcs)
+int ttkFTMTree::addDirectSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPoints* points,
+                                     vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
+   SuperArc* arc = tree->getSuperArc(arcId);
    float     point[3];
    vtkIdType ids[2];
 
@@ -293,13 +294,18 @@ int ttkFTMTree::addDirectSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints*
 
    skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
 
+   if (withSegmentation_) {
+      arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
+   }
+
    return 0;
 }
 
-int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, SuperArc* arc, const int samplingLevel,
+int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, const int samplingLevel,
                                       vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
                                       ArcData& arcData)
 {
+   SuperArc* arc = tree->getSuperArc(arcId);
    float     point[3];
    vtkIdType ids[2];
 
@@ -332,13 +338,19 @@ int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, SuperArc* arc, const int
          sum[2] += point[2];
          ++c;
       } else {
-         sum[0] /= c;
-         sum[1] /= c;
-         sum[2] /= c;
+         if (c) {
+            sum[0] /= c;
+            sum[1] /= c;
+            sum[2] /= c;
 
-         ids[1] = points->InsertNextPoint(sum);
-         skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
-         ids[0] = ids[1];
+            ids[1] = points->InsertNextPoint(sum);
+            skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
+            ids[0] = ids[1];
+
+            if (withSegmentation_) {
+               arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
+            }
+         }
 
          scalarLimit += delta;
          sum[0] = 0;
@@ -352,12 +364,17 @@ int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, SuperArc* arc, const int
 
    skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
 
+   if (withSegmentation_) {
+      arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
+   }
+
    return 0;
 }
 
-int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints* points,
-                                          vtkUnstructuredGrid* skeletonArcs)
+int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPoints* points,
+                                       vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
+   SuperArc* arc = tree->getSuperArc(arcId);
    float     point[3];
    vtkIdType ids[2];
 
@@ -372,7 +389,9 @@ int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoint
 
       skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
 
-      ids[0] = ids[1];
+      if (withSegmentation_) {
+         arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
+      }
    }
 
    const idVertex upNodeId   = arc->getUpNodeId();
@@ -381,6 +400,11 @@ int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoint
    ids[1] = points->InsertNextPoint(point);
 
    skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
+   cout << ids[0] << " - " << ids[1] << endl;
+
+   if (withSegmentation_) {
+      arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
+   }
 
    return 0;
 }
@@ -416,31 +440,25 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
 
    const int samplingLevel = SuperArcSamplingLevel;
 
-   for (idVertex i = 0; i < numberOfSuperArcs; ++i) {
-      SuperArc* arc = tree->getSuperArc(i);
+   for (idVertex arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
 
-      const int numberOfRegularNodes = arc->getNumberOfRegularNodes();
+      const int numberOfRegularNodes = tree->getArcSize(arcId);
       if (numberOfRegularNodes > 0 and samplingLevel > 0) {
-         addSampledSkeletonArc(tree, arc, samplingLevel, points, skeletonArcs, arcData);
+         addSampledSkeletonArc(tree, arcId, samplingLevel, points, skeletonArcs, arcData);
       } else if (samplingLevel == -1) {
-         addCompleteSkeletonArc(tree, arc, points, skeletonArcs);
+         addCompleteSkeletonArc(tree, arcId, points, skeletonArcs, arcData);
       } else {
-         addDirectSkeletonArc(tree, arc, points, skeletonArcs);
+         addDirectSkeletonArc(tree, arcId, points, skeletonArcs, arcData);
       }
 
-      // TODO in a function, called in the tree arc contruct above
-      // TODO Use a struct containing arc informations
 #ifdef withStatsTime
-      arcData.startArcs->InsertNextTuple1(tree->getArcStart(i));
-      arcData.endArcs->InsertNextTuple1(tree->getArcEnd(i));
-      arcData.timeArcs->InsertNextTuple1(tree->getArcEnd(i) - tree->getArcStart(i));
-      arcData.origArcs->InsertNextTuple1(tree->getArcOrig(i));
-      arcData.tasksArcs->InsertNextTuple1(tree->getArcActiveTasks(i));
+      arcData.startArcs->InsertNextTuple1(tree->getArcStart(arcId));
+      arcData.endArcs->InsertNextTuple1(tree->getArcEnd(arcId));
+      arcData.timeArcs->InsertNextTuple1(tree->getArcEnd(arcId) - tree->getArcStart(arcId));
+      arcData.origArcs->InsertNextTuple1(tree->getArcOrig(arcId));
+      arcData.tasksArcs->InsertNextTuple1(tree->getArcActiveTasks(arcId));
 #endif
 
-      if (withSegmentation_) {
-         arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(i));
-      }
    }
 
    skeletonArcs->SetPoints(points);
