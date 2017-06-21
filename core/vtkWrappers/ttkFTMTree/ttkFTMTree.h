@@ -161,12 +161,13 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
 
    int getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonNodes);
 
-   int addDirectSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints* points,
-                            vtkUnstructuredGrid* skeletonArcs);
-   int addSampledSkeletonArc(FTMTree_MT* tree, SuperArc* arc, const int samplingLevel,
-                             vtkPoints* points, vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
-   int addCompleteSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints* points,
-                              vtkUnstructuredGrid* skeletonArcs);
+   int addDirectSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPoints* points,
+                            vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+   int addSampledSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, const int samplingLevel,
+                             vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
+                             ArcData& arcData);
+   int addCompleteSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPoints* points,
+                              vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
    int getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonArcs);
 
    int getSegmentation(FTMTree_MT* tree, vtkDataSet* input, vtkDataSet* outputSegmentation);
