@@ -394,7 +394,9 @@ int FTMTree_CT::combine()
          }
 
          // Segmentation
-         createCTArcSegmentation(createdArc, isJT, processArc);
+         if (params_->segm) {
+            createCTArcSegmentation(createdArc, isJT, processArc);
+         }
 
          if (DEBUG) {
             cout << "create arc : " << printArc(createdArc) << endl;

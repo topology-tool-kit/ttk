@@ -26,7 +26,8 @@ namespace ttk
 {
    // Compute parameters (global)
    struct Params {
-      TreeType      treeType;
+      TreeType treeType;
+      bool     segm = true;
    };
 
    // Scalar related containers (global)

@@ -59,11 +59,8 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
    vtkSetMacro(treeType_, int);
    vtkGetMacro(treeType_, int);
 
-   vtkSetMacro(lessPartition_, int);
-   vtkGetMacro(lessPartition_, int);
-
-   vtkSetMacro(partitionNumber_, int);
-   vtkGetMacro(partitionNumber_, int);
+   vtkSetMacro(withSegmentation_, bool);
+   vtkGetMacro(withSegmentation_, bool);
 
    vtkSetMacro(ScalarFieldId, int);
    vtkGetMacro(ScalarFieldId, int);
@@ -109,12 +106,11 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
    int    OffsetFieldId;
    int    SuperArcSamplingLevel;
 
-   int treeType_;
-   int lessPartition_;
-   int partitionNumber_;
+   int  treeType_;
+   bool withSegmentation_;
 
    Triangulation* triangulation_;
-   FTMTree        contourForests_;
+   FTMTree        ftmTree_;
    vtkDataArray*  inputScalars_;
    vtkIntArray*   offsets_;
    vtkDataArray*  inputOffsets_;
