@@ -26,6 +26,7 @@
 #include <vtkUnstructuredGrid.h>
 
 struct ArcData {
+   vtkSmartPointer<vtkIntArray> idArcs;
    vtkSmartPointer<vtkIntArray> sizeArcs;
 #ifdef withStatsTime
    vtkSmartPointer<vtkFloatArray> startArcs;
@@ -37,6 +38,9 @@ struct ArcData {
 
    int init()
    {
+      idArcs = vtkSmartPointer<vtkIntArray>::New();
+      idArcs->SetName("SegmentationId");
+
       sizeArcs = vtkSmartPointer<vtkIntArray>::New();
       sizeArcs->SetName("Size");
 
@@ -60,11 +64,18 @@ struct ArcData {
 // Check
 #ifndef withKamikaze
 
+      if (!idArcs) {
+         cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
+         return -1;
+      }
+
       if (!sizeArcs) {
          cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
          return -1;
       }
+
 # ifdef withStatsTime
+
       if (!startArcs) {
          cerr << "[ttkFTMTree] Error : vtkFloatArray start allocation problem." << endl;
          return -2;
@@ -89,12 +100,14 @@ struct ArcData {
          cerr << "[ttkFTMTree] Error : vtkIntArray tasks allocation problem." << endl;
          return -3;
       }
+
 # endif
 #endif
       return 0;
    }
 
    void addArray(vtkUnstructuredGrid *skeletonArcs){
+      skeletonArcs->GetCellData()->AddArray(idArcs);
       skeletonArcs->GetCellData()->AddArray(sizeArcs);
 #ifdef withStatsTime
       skeletonArcs->GetCellData()->AddArray(startArcs);
