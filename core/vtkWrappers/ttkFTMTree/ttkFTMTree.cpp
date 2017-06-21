@@ -1,4 +1,3 @@
-#include <vtkCellData.h>
 #include <ttkFTMTree.h>
 
 vtkStandardNewMacro(ttkFTMTree)
@@ -298,25 +297,20 @@ int ttkFTMTree::addDirectSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints*
 }
 
 int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, SuperArc* arc, const int samplingLevel,
-                                         vtkPoints* points, vtkUnstructuredGrid* skeletonArcs)
+                                      vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
+                                      ArcData& arcData)
 {
    float     point[3];
    vtkIdType ids[2];
 
    const idVertex downNodeId   = tree->getLowerNodeId(arc);
    const idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
-      if (downVertexId == nullVertex) {
-         cout << "Down vertex is null !" << endl;
-      }
    triangulation_->getVertexPoint(downVertexId, point[0], point[1], point[2]);
    const vtkIdType downId    = points->InsertNextPoint(point);
    const double    scalarMin = inputScalars_->GetTuple1(downVertexId);
 
    const idVertex upNodeId   = tree->getUpperNodeId(arc);
    const idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
-      if (upVertexId == nullVertex) {
-         cout << "Up vertex is null !" << endl;
-      }
    triangulation_->getVertexPoint(upVertexId, point[0], point[1], point[2]);
    const vtkIdType upId      = points->InsertNextPoint(point);
    const double    scalarMax = inputScalars_->GetTuple1(upVertexId);
@@ -409,62 +403,8 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
    }
 #endif
 
-#ifdef withStatsTime
-   vtkSmartPointer<vtkFloatArray> startArcs=vtkSmartPointer<vtkFloatArray>::New();
-   startArcs->SetName("Start");
-# ifndef withKamikaze
-   if (!startArcs) {
-      cerr << "[ttkFTMTree] Error : vtkFloatArray start allocation problem." << endl;
-      return -5;
-   }
-# endif
-
-   vtkSmartPointer<vtkFloatArray> endArcs=vtkSmartPointer<vtkFloatArray>::New();
-   endArcs->SetName("End");
-# ifndef withKamikaze
-   if (!endArcs) {
-      cerr << "[ttkFTMTree] Error : vtkFloatArray end allocation problem." << endl;
-      return -5;
-   }
-# endif
-
-   vtkSmartPointer<vtkFloatArray> timeArcs=vtkSmartPointer<vtkFloatArray>::New();
-   timeArcs->SetName("Time");
-# ifndef withKamikaze
-   if (!timeArcs) {
-      cerr << "[ttkFTMTree] Error : vtkFloatArray time allocation problem." << endl;
-      return -5;
-   }
-# endif
-
-   vtkSmartPointer<vtkIntArray> origArcs=vtkSmartPointer<vtkIntArray>::New();
-   origArcs->SetName("Origin");
-# ifndef withKamikaze
-   if (!origArcs) {
-      cerr << "[ttkFTMTree] Error : vtkIntArray origin allocation problem." << endl;
-      return -6;
-   }
-# endif
-
-   vtkSmartPointer<vtkIntArray> tasksArcs=vtkSmartPointer<vtkIntArray>::New();
-   tasksArcs->SetName("Tasks");
-# ifndef withKamikaze
-   if (!tasksArcs) {
-      cerr << "[ttkFTMTree] Error : vtkIntArray tasks allocation problem." << endl;
-      return -5;
-   }
-# endif
-
-#endif
-
-   vtkSmartPointer<vtkIntArray> sizeArcs=vtkSmartPointer<vtkIntArray>::New();
-   sizeArcs->SetName("Size");
-#ifndef withKamikaze
-   if(!sizeArcs) {
-      cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
-      return -7;
-   }
-#endif
+   ArcData arcData;
+   arcData.init();
 
    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 #ifndef withKamikaze
@@ -481,7 +421,7 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
 
       const int numberOfRegularNodes = arc->getNumberOfRegularNodes();
       if (numberOfRegularNodes > 0 and samplingLevel > 0) {
-         addSampledSkeletonArc(tree, arc, samplingLevel, points, skeletonArcs);
+         addSampledSkeletonArc(tree, arc, samplingLevel, points, skeletonArcs, arcData);
       } else if (samplingLevel == -1) {
          addCompleteSkeletonArc(tree, arc, points, skeletonArcs);
       } else {
@@ -491,27 +431,20 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
       // TODO in a function, called in the tree arc contruct above
       // TODO Use a struct containing arc informations
 #ifdef withStatsTime
-      startArcs->InsertNextTuple1(tree->getArcStart(i));
-      endArcs->InsertNextTuple1(tree->getArcEnd(i));
-      timeArcs->InsertNextTuple1(tree->getArcEnd(i) - tree->getArcStart(i));
-      origArcs->InsertNextTuple1(tree->getArcOrig(i));
-      tasksArcs->InsertNextTuple1(tree->getArcActiveTasks(i));
+      arcData.startArcs->InsertNextTuple1(tree->getArcStart(i));
+      arcData.endArcs->InsertNextTuple1(tree->getArcEnd(i));
+      arcData.timeArcs->InsertNextTuple1(tree->getArcEnd(i) - tree->getArcStart(i));
+      arcData.origArcs->InsertNextTuple1(tree->getArcOrig(i));
+      arcData.tasksArcs->InsertNextTuple1(tree->getArcActiveTasks(i));
 #endif
 
       if (withSegmentation_) {
-         sizeArcs->InsertNextTuple1(tree->getArcSize(i));
+         arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(i));
       }
    }
 
    skeletonArcs->SetPoints(points);
-#ifdef withStatsTime
-   skeletonArcs->GetCellData()->AddArray(startArcs);
-   skeletonArcs->GetCellData()->AddArray(endArcs);
-   skeletonArcs->GetCellData()->AddArray(timeArcs);
-   skeletonArcs->GetCellData()->AddArray(origArcs);
-   skeletonArcs->GetCellData()->AddArray(tasksArcs);
-#endif
-   skeletonArcs->GetCellData()->AddArray(sizeArcs);
+   arcData.addArray(skeletonArcs);
    outputSkeletonArcs->ShallowCopy(skeletonArcs);
 
    return 0;

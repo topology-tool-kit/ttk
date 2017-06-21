@@ -133,6 +133,23 @@ void FTMTree::build(void)
             break;
       }
    }
+
+   if (debugLevel_ > 3) {
+      switch (params_->treeType) {
+         case TreeType::Join:
+            jt_->printTree2();
+            break;
+         case TreeType::Split:
+            st_->printTree2();
+            break;
+         case TreeType::Join_Split:
+            jt_->printTree2();
+            st_->printTree2();
+            break;
+         default:
+            printTree2();
+      }
+   }
 }
 
 // }

@@ -7,6 +7,7 @@
 #include <ttkWrapper.h>
 
 // VTK includes
+#include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -23,6 +24,87 @@
 #include <vtkSmartPointer.h>
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
+
+struct ArcData {
+   vtkSmartPointer<vtkIntArray> sizeArcs;
+#ifdef withStatsTime
+   vtkSmartPointer<vtkFloatArray> startArcs;
+   vtkSmartPointer<vtkFloatArray> endArcs;
+   vtkSmartPointer<vtkFloatArray> timeArcs;
+   vtkSmartPointer<vtkIntArray>   origArcs;
+   vtkSmartPointer<vtkIntArray>   tasksArcs;
+#endif
+
+   int init()
+   {
+      sizeArcs = vtkSmartPointer<vtkIntArray>::New();
+      sizeArcs->SetName("Size");
+
+#ifdef withStatsTime
+      startArcs = vtkSmartPointer<vtkFloatArray>::New();
+      startArcs->SetName("Start");
+
+      endArcs = vtkSmartPointer<vtkFloatArray>::New();
+      endArcs->SetName("End");
+
+      timeArcs = vtkSmartPointer<vtkFloatArray>::New();
+      timeArcs->SetName("Time");
+
+      origArcs = vtkSmartPointer<vtkIntArray>::New();
+      origArcs->SetName("Origin");
+
+      tasksArcs = vtkSmartPointer<vtkIntArray>::New();
+      tasksArcs->SetName("Tasks");
+#endif
+
+// Check
+#ifndef withKamikaze
+
+      if (!sizeArcs) {
+         cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
+         return -1;
+      }
+# ifdef withStatsTime
+      if (!startArcs) {
+         cerr << "[ttkFTMTree] Error : vtkFloatArray start allocation problem." << endl;
+         return -2;
+      }
+
+      if (!endArcs) {
+         cerr << "[ttkFTMTree] Error : vtkFloatArray end allocation problem." << endl;
+         return -2;
+      }
+
+      if (!timeArcs) {
+         cerr << "[ttkFTMTree] Error : vtkFloatArray time allocation problem." << endl;
+         return -2;
+      }
+
+      if (!origArcs) {
+         cerr << "[ttkFTMTree] Error : vtkIntArray origin allocation problem." << endl;
+         return -3;
+      }
+
+      if (!tasksArcs) {
+         cerr << "[ttkFTMTree] Error : vtkIntArray tasks allocation problem." << endl;
+         return -3;
+      }
+# endif
+#endif
+      return 0;
+   }
+
+   void addArray(vtkUnstructuredGrid *skeletonArcs){
+      skeletonArcs->GetCellData()->AddArray(sizeArcs);
+#ifdef withStatsTime
+      skeletonArcs->GetCellData()->AddArray(startArcs);
+      skeletonArcs->GetCellData()->AddArray(endArcs);
+      skeletonArcs->GetCellData()->AddArray(timeArcs);
+      skeletonArcs->GetCellData()->AddArray(origArcs);
+      skeletonArcs->GetCellData()->AddArray(tasksArcs);
+#endif
+   }
+};
 
 class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
 {
@@ -82,7 +164,7 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
    int addDirectSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints* points,
                             vtkUnstructuredGrid* skeletonArcs);
    int addSampledSkeletonArc(FTMTree_MT* tree, SuperArc* arc, const int samplingLevel,
-                             vtkPoints* points, vtkUnstructuredGrid* skeletonArcs);
+                             vtkPoints* points, vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
    int addCompleteSkeletonArc(FTMTree_MT* tree, SuperArc* arc, vtkPoints* points,
                               vtkUnstructuredGrid* skeletonArcs);
    int getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonArcs);

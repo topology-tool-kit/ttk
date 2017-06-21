@@ -129,10 +129,6 @@ void FTMTree_CT::build(TreeType tt)
    // -------
 
    if (tt == TreeType::Contour) {
-      if (debugLevel_ >= 4) {
-         jt_->printTree2();
-         st_->printTree2();
-      }
 
       DebugTimer combineFullTime;
       insertNodes();
@@ -148,21 +144,6 @@ void FTMTree_CT::build(TreeType tt)
    // -----
 
    if (debugLevel_ > 3) {
-      switch (tt) {
-         case TreeType::Join:
-            jt_->printTree2();
-            break;
-         case TreeType::Split:
-            st_->printTree2();
-            break;
-         case TreeType::Join_Split:
-            jt_->printTree2();
-            st_->printTree2();
-            break;
-         default:
-            printTree2();
-      }
-   } else {
       cout << " nodes :";
       switch (tt) {
          case TreeType::Join:
