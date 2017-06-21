@@ -294,6 +294,7 @@ int ttkFTMTree::addDirectSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPoin
 
    skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
 
+   arcData.idArcs->InsertNextTuple1(arcId);
    if (withSegmentation_) {
       arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
    }
@@ -347,6 +348,7 @@ int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, const 
             skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
             ids[0] = ids[1];
 
+            arcData.idArcs->InsertNextTuple1(arcId);
             if (withSegmentation_) {
                arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
             }
@@ -364,6 +366,7 @@ int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, const 
 
    skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
 
+   arcData.idArcs->InsertNextTuple1(arcId);
    if (withSegmentation_) {
       arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
    }
@@ -389,6 +392,7 @@ int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPo
 
       skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
 
+      arcData.idArcs->InsertNextTuple1(arcId);
       if (withSegmentation_) {
          arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
       }
@@ -402,6 +406,7 @@ int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPo
    skeletonArcs->InsertNextCell(VTK_LINE, 2, ids);
    cout << ids[0] << " - " << ids[1] << endl;
 
+   arcData.idArcs->InsertNextTuple1(arcId);
    if (withSegmentation_) {
       arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
    }
