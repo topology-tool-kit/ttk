@@ -9,7 +9,7 @@ vtkStandardNewMacro(ttkFTMTree)
       InputOffsetScalarFieldName{},
       ScalarFieldId{},
       OffsetFieldId{-1},
-
+      withSegmentation_{true},
       triangulation_{},
       inputScalars_{},
       offsets_{},
@@ -62,9 +62,9 @@ int ttkFTMTree::setupTriangulation(vtkDataSet* input)
    hasUpdatedMesh_ = ttkTriangulation::hasChangedConnectivity(triangulation_, input, this);
 
    triangulation_->setWrapper(this);
-   contourForests_.setDebugLevel(debugLevel_);
-   contourForests_.setThreadNumber(threadNumber_);
-   contourForests_.setupTriangulation(triangulation_);
+   ftmTree_.setDebugLevel(debugLevel_);
+   ftmTree_.setThreadNumber(threadNumber_);
+   ftmTree_.setupTriangulation(triangulation_);
 
 #ifndef withKamikaze
    if (triangulation_->isEmpty()) {
@@ -305,12 +305,18 @@ int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, SuperArc* arc, const int
 
    const idVertex downNodeId   = tree->getLowerNodeId(arc);
    const idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
+      if (downVertexId == nullVertex) {
+         cout << "Down vertex is null !" << endl;
+      }
    triangulation_->getVertexPoint(downVertexId, point[0], point[1], point[2]);
    const vtkIdType downId    = points->InsertNextPoint(point);
    const double    scalarMin = inputScalars_->GetTuple1(downVertexId);
 
    const idVertex upNodeId   = tree->getUpperNodeId(arc);
    const idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
+      if (upVertexId == nullVertex) {
+         cout << "Up vertex is null !" << endl;
+      }
    triangulation_->getVertexPoint(upVertexId, point[0], point[1], point[2]);
    const vtkIdType upId      = points->InsertNextPoint(point);
    const double    scalarMax = inputScalars_->GetTuple1(upVertexId);
@@ -492,7 +498,9 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
       tasksArcs->InsertNextTuple1(tree->getArcActiveTasks(i));
 #endif
 
-      sizeArcs->InsertNextTuple1(tree->getArcSize(i));
+      if (withSegmentation_) {
+         sizeArcs->InsertNextTuple1(tree->getArcSize(i));
+      }
    }
 
    skeletonArcs->SetPoints(points);
@@ -596,9 +604,9 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input,
       }
 #endif
       const NodeType upNodeType = getNodeType(upNode);
-      const int      upVertex   = upNode->getVertexId();
+      const int      upVertexId   = upNode->getVertexId();
       float          coordUp[3];
-      triangulation_->getVertexPoint(upVertex, coordUp[0], coordUp[1], coordUp[2]);
+      triangulation_->getVertexPoint(upVertexId, coordUp[0], coordUp[1], coordUp[2]);
 
       const int   downNodeId = arc->getDownNodeId();
       const Node* downNode   = tree->getNode(downNodeId);
@@ -609,9 +617,9 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input,
       }
 #endif
       const NodeType downNodeType = getNodeType(downNode);
-      const int      downVertex   = downNode->getVertexId();
+      const int      downVertexId   = downNode->getVertexId();
       float          coordDown[3];
-      triangulation_->getVertexPoint(downVertex, coordDown[0], coordDown[1], coordDown[2]);
+      triangulation_->getVertexPoint(downVertexId, coordDown[0], coordDown[1], coordDown[2]);
 
       const int    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
       const double regionSpan = Geometry::distance(coordUp, coordDown);
@@ -629,14 +637,14 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input,
           regionType = static_cast<int>(ArcType::Saddle1_saddle2_arc);
 
       // critical points
-      regionIds->SetTuple1(upVertex, id);
-      regionIds->SetTuple1(downVertex, id);
-      regionSizes->SetTuple1(upVertex, regionSize);
-      regionSizes->SetTuple1(downVertex, regionSize);
-      regionSpans->SetTuple1(upVertex, regionSpan);
-      regionSpans->SetTuple1(downVertex, regionSpan);
-      regionTypes->SetTuple1(upVertex, -1);
-      regionTypes->SetTuple1(downVertex, -1);
+      regionIds->SetTuple1(upVertexId, id);
+      regionIds->SetTuple1(downVertexId, id);
+      regionSizes->SetTuple1(upVertexId, regionSize);
+      regionSizes->SetTuple1(downVertexId, regionSize);
+      regionSpans->SetTuple1(upVertexId, regionSpan);
+      regionSpans->SetTuple1(downVertexId, regionSpan);
+      regionTypes->SetTuple1(upVertexId, -1);
+      regionTypes->SetTuple1(downVertexId, -1);
 
       // regular nodes
       for (const idVertex vertexId : *arc) {
@@ -711,26 +719,25 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    for (idVertex i = 0; i < numberOfVertices; ++i)
       offsets[i]   = inputOffsets_->GetTuple1(i);
 
-   contourForests_.setVertexScalars(inputScalars_->GetVoidPointer(0));
-   // for now, gets only vector<idVertex>, no raw data
-   // contour.setVertexSoSoffsets(inputOffsets_->GetVoidPointer(0));
-   contourForests_.setVertexSoSoffsets(offsets);
-   contourForests_.setTreeType(treeType_);
+   ftmTree_.setVertexScalars(inputScalars_->GetVoidPointer(0));
+   ftmTree_.setVertexSoSoffsets(offsets);
+   ftmTree_.setTreeType(treeType_);
+   ftmTree_.setSegmentation(withSegmentation_);
 
    switch (inputScalars_->GetDataType()) {
-      vtkTemplateMacro(({ contourForests_.build<VTK_TT>(); }));
+      vtkTemplateMacro(({ ftmTree_.build<VTK_TT>(); }));
    }
 
    FTMTree_MT* tree{};
    switch (treeType_) {
       case TreeType::Join:
-         tree = contourForests_.getJoinTree();
+         tree = ftmTree_.getJoinTree();
          break;
       case TreeType::Split:
-         tree = contourForests_.getSplitTree();
+         tree = ftmTree_.getSplitTree();
          break;
       case TreeType::Contour:
-         tree = &contourForests_;
+         tree = &ftmTree_;
          break;
    }
 #ifndef withKamikaze
@@ -754,11 +761,13 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 #endif
    }
 
-   if (getSegmentation(tree, input, outputSegmentation)) {
+   if (withSegmentation_) {
+      if (getSegmentation(tree, input, outputSegmentation)) {
 #ifndef withKamikaze
-      cerr << "[ttkFTMTree] Error : wrong properties on segmentation." << endl;
-      return -9;
+         cerr << "[ttkFTMTree] Error : wrong properties on segmentation." << endl;
+         return -9;
 #endif
+      }
    }
 
    {

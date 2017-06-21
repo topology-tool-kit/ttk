@@ -252,9 +252,14 @@ namespace ttk
       // On this implementation, the warpper communicate with ContourForest
       // A child class of this one.
 
-      inline void setTreeType(const int &local_treeType)
+      inline void setTreeType(const int local_treeType)
       {
          params_->treeType = static_cast<TreeType>(local_treeType);
+      }
+
+      inline void setSegmentation(const bool segm)
+      {
+          params_->segm = segm;
       }
 
       inline void setScalars(void *local_scalars)

@@ -102,20 +102,22 @@ void FTMTree::build(void)
    printTime(startTime, "10 TOTAL ", -1, 1);
    // exit(0);
 
-   switch (params_->treeType) {
-      case TreeType::Join:
-         getJoinTree()->buildSegmentation();
-         getJoinTree()->finalizeSegmentation();
-         break;
-      case TreeType::Split:
-         getSplitTree()->buildSegmentation();
-         getSplitTree()->finalizeSegmentation();
-         break;
-      case TreeType::Contour:
-         finalizeSegmentation();
-         break;
-      default:
-         break;
+   if (params_->segm) {
+      switch (params_->treeType) {
+         case TreeType::Join:
+            getJoinTree()->buildSegmentation();
+            getJoinTree()->finalizeSegmentation();
+            break;
+         case TreeType::Split:
+            getSplitTree()->buildSegmentation();
+            getSplitTree()->finalizeSegmentation();
+            break;
+         case TreeType::Contour:
+            finalizeSegmentation();
+            break;
+         default:
+            break;
+      }
    }
 }
 

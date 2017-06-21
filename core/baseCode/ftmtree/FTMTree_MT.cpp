@@ -132,7 +132,6 @@ void FTMTree_MT::build(const bool ct)
            ++nbProcessed;
    }
 #endif
-   // TODO continue + patch add. mat
    printTime(buildTime, "4 leaves "+treeString, nbProcessed);
 
    DebugTimer bbTime;
@@ -142,7 +141,7 @@ void FTMTree_MT::build(const bool ct)
    // ------------
    // Segmentation
    // ------------
-   if (ct) {
+   if (ct && params_->segm) {
       DebugTimer segmTime;
       buildSegmentation();
       printTime(segmTime, "6 segmentation " + treeString, scalars_->size);
@@ -555,7 +554,6 @@ idVertex FTMTree_MT::trunk(const bool ct)
    // bounds
    idVertex begin, stop, processed;
    tie(begin, stop) = getBoundsFromVerts(pendingNodesVerts);
-   cout << "trunk range " << abs(stop-begin) << endl;
    if(ct){
        processed = trunkCTSegmentation(pendingNodesVerts, begin, stop);
    } else {
@@ -598,17 +596,20 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &pendingNodesVerts
                   lastVertInRange          = getVertInRange(pendingNodesVerts, s, lastVertInRange);
                   const idSuperArc thisArc = upArcFromVert(pendingNodesVerts[lastVertInRange]);
                   updateCorrespondingArc(s, thisArc);
-                  if (oldVertInRange == lastVertInRange) {
-                     ++acc;
-                  } else {
-                     // accumulated to have only one atomic update when needed
-                     const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
-                     getSuperArc(oldArc)->atomicIncVisited(acc);
+
+                  if(params_->segm){
+                     if (oldVertInRange == lastVertInRange) {
+                        ++acc;
+                     } else {
+                        // accumulated to have only one atomic update when needed
+                        const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
+                        getSuperArc(oldArc)->atomicIncVisited(acc);
 #ifdef withProcessSpeed
 #pragma omp atomic update
-                     tot += acc;
+                        tot += acc;
 #endif
-                     acc = 1;
+                        acc = 1;
+                     }
                   }
                }
             }
@@ -635,17 +636,20 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &pendingNodesVerts
                   lastVertInRange          = getVertInRange(pendingNodesVerts, s, lastVertInRange);
                   const idSuperArc thisArc = upArcFromVert(pendingNodesVerts[lastVertInRange]);
                   updateCorrespondingArc(s, thisArc);
-                  if (oldVertInRange == lastVertInRange) {
-                     ++acc;
-                  } else {
-                     // accumulated to have only one atomic update when needed
-                     const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
-                     getSuperArc(oldArc)->atomicIncVisited(acc);
+
+                  if (params_->segm) {
+                     if (oldVertInRange == lastVertInRange) {
+                        ++acc;
+                     } else {
+                        // accumulated to have only one atomic update when needed
+                        const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
+                        getSuperArc(oldArc)->atomicIncVisited(acc);
 #ifdef withProcessSpeed
 #pragma omp atomic update
-                     tot += acc;
+                        tot += acc;
 #endif
-                     acc = 1;
+                        acc = 1;
+                     }
                   }
                }
             }
@@ -679,7 +683,9 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
 #pragma omp task firstprivate(chunkId, lastVertInRange) shared(pendingNodesVerts)
          {
             vector<idVertex> regularList;
-            regularList.reserve(25);
+            if (params_->segm) {
+               regularList.reserve(25);
+            }
             const idVertex lowerBound = begin + chunkId * chunkSize;
             const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
             if (lowerBound != upperBound) {
@@ -693,18 +699,21 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
                   lastVertInRange          = getVertInRange(pendingNodesVerts, s, lastVertInRange);
                   const idSuperArc thisArc = upArcFromVert(pendingNodesVerts[lastVertInRange]);
                   updateCorrespondingArc(s, thisArc);
-                  if (oldVertInRange == lastVertInRange) {
-                     regularList.emplace_back(s);
-                  } else {
-                     // accumulated to have only one atomic update when needed
-                     const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
-                     if (regularList.size()) {
-#pragma omp critical
-                        {
-                           (*treeData_.trunkSegments)[oldArc].emplace_back(regularList);
-                           regularList.clear();
-                        }
+
+                  if (params_->segm) {
+                     if (oldVertInRange == lastVertInRange) {
                         regularList.emplace_back(s);
+                     } else {
+                        // accumulated to have only one atomic update when needed
+                        const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
+                        if (regularList.size()) {
+#pragma omp critical
+                           {
+                              (*treeData_.trunkSegments)[oldArc].emplace_back(regularList);
+                              regularList.clear();
+                           }
+                           regularList.emplace_back(s);
+                        }
                      }
                   }
                }
@@ -726,7 +735,9 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
 #pragma omp task firstprivate(chunkId, lastVertInRange) shared(pendingNodesVerts)
          {
             vector<idVertex> regularList;
-            regularList.reserve(25);
+            if (params_->segm) {
+               regularList.reserve(25);
+            }
             const idVertex upperBound = begin - chunkId * chunkSize;
             const idVertex lowerBound = max(stop, begin - (chunkId + 1) * chunkSize);
             if (lowerBound != upperBound) {
@@ -740,19 +751,22 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
                   lastVertInRange          = getVertInRange(pendingNodesVerts, s, lastVertInRange);
                   const idSuperArc thisArc = upArcFromVert(pendingNodesVerts[lastVertInRange]);
                   updateCorrespondingArc(s, thisArc);
-                  if (oldVertInRange == lastVertInRange) {
-                     regularList.emplace_back(s);
-                  } else {
-                     // accumulated to have only one atomic update when needed
-                     const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
-                     if (regularList.size()) {
+
+                  if (params_->segm) {
+                     if (oldVertInRange == lastVertInRange) {
+                        regularList.emplace_back(s);
+                     } else {
+                        // accumulated to have only one atomic update when needed
+                        const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
+                        if (regularList.size()) {
 #pragma omp critical
-                        {
-                           (*treeData_.trunkSegments)[oldArc].emplace_back(regularList);
-                           regularList.clear();
+                           {
+                              (*treeData_.trunkSegments)[oldArc].emplace_back(regularList);
+                              regularList.clear();
+                           }
                         }
+                        regularList.emplace_back(s);
                      }
-                     regularList.emplace_back(s);
                   }
                }
             }
