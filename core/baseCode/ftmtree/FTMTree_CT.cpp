@@ -96,9 +96,9 @@ void FTMTree_CT::build(TreeType tt)
 {
    DebugTimer mergeTreesTime;
 
-   const bool ct = tt == TreeType::Contour;
+   const bool bothMT = tt == TreeType::Contour || tt == TreeType::Join_Split;
 
-   // if(ct){
+   // if(bothMT){
    //    DebugTimer precomputeTime;
    //    vertexPrecomputation();
    //    printTime(precomputeTime, "2 precompute ");
@@ -112,11 +112,11 @@ void FTMTree_CT::build(TreeType tt)
    {
 #pragma omp single nowait
        {
-          if (tt == TreeType::Join || ct) {
-             jt_->build(ct);
+          if (tt == TreeType::Join || bothMT) {
+             jt_->build(tt == TreeType::Contour);
           }
-          if (tt == TreeType::Split || ct) {
-             st_->build(ct);
+          if (tt == TreeType::Split || bothMT) {
+             st_->build(tt == TreeType::Contour);
           }
        }
 #pragma omp taskwait
@@ -155,6 +155,10 @@ void FTMTree_CT::build(TreeType tt)
          case TreeType::Split:
             st_->printTree2();
             break;
+         case TreeType::Join_Split:
+            jt_->printTree2();
+            st_->printTree2();
+            break;
          default:
             printTree2();
       }
@@ -166,6 +170,9 @@ void FTMTree_CT::build(TreeType tt)
             break;
          case TreeType::Split:
             cout << st_->getNumberOfNodes();
+            break;
+         case TreeType::Join_Split:
+            cout << jt_->getNumberOfNodes() + st_->getNumberOfNodes();
             break;
          default:
             cout << getNumberOfNodes();

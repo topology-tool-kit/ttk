@@ -70,6 +70,9 @@ namespace ttk
             case TreeType::Contour:
                return this;
                break;
+            default:
+               return this;
+               break;
          }
          return this;
       }

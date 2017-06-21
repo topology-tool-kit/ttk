@@ -53,6 +53,10 @@ void FTMTree::build(void)
       case TreeType::Split:
          getSplitTree()->makeAlloc();
          break;
+      case TreeType::Join_Split:
+         getJoinTree()->makeAlloc();
+         getSplitTree()->makeAlloc();
+         break;
       case TreeType::Contour:
          getJoinTree()->makeAlloc();
          getSplitTree()->makeAlloc();
@@ -72,6 +76,10 @@ void FTMTree::build(void)
          getJoinTree()->makeInit();
          break;
       case TreeType::Split:
+         getSplitTree()->makeInit();
+         break;
+      case TreeType::Join_Split:
+         getJoinTree()->makeInit();
          getSplitTree()->makeInit();
          break;
       case TreeType::Contour:
@@ -110,6 +118,12 @@ void FTMTree::build(void)
             break;
          case TreeType::Split:
             getSplitTree()->buildSegmentation();
+            getSplitTree()->finalizeSegmentation();
+            break;
+         case TreeType::Join_Split:
+            getJoinTree()->buildSegmentation();
+            getSplitTree()->buildSegmentation();
+            getJoinTree()->finalizeSegmentation();
             getSplitTree()->finalizeSegmentation();
             break;
          case TreeType::Contour:
