@@ -59,17 +59,24 @@ namespace ttk
          return (*mirrorVertices)[a] >= (*mirrorVertices)[b];
       }
 
-      Scalars() : sosOffsets(nullptr), sortedVertices(nullptr), mirrorVertices(nullptr)
+      Scalars()
+          : size(0),
+            values(nullptr),
+            sosOffsets(nullptr),
+            sortedVertices(nullptr),
+            mirrorVertices(nullptr)
       {
       }
 
       // Heavy
       Scalars(const Scalars& o)
-          : sosOffsets(o.sosOffsets),
+          : size(o.size),
+            values(o.values),
+            sosOffsets(o.sosOffsets),
             sortedVertices(o.sortedVertices),
             mirrorVertices(o.mirrorVertices)
       {
-          std::cout << "copy in depth" << std::endl;
+          std::cout << "copy in depth, bad perfs" << std::endl;
       }
 
       // Sort
@@ -107,12 +114,12 @@ namespace ttk
 
      private:
       template <typename type>
-      inline void swap_el(type arr[], const size_t a, const size_t b) const
+      static void swap_el(type arr[], const size_t a, const size_t b)
       {
          const type tmp = arr[a];
          arr[a]         = arr[b];
          arr[b]         = tmp;
-        }
+      }
    };
 
    struct CurrentState {
@@ -159,7 +166,7 @@ namespace ttk
       AtomicVector<CurrentState*> states;
       AtomicVector<idSuperArc>    openedArcs;
 
-      SharedData(idVertex e) : extrema(e), states(50), openedArcs(50)
+      explicit SharedData(idVertex e) : extrema(e), states(50), openedArcs(50)
       {
       }
 

@@ -31,7 +31,7 @@ namespace ttk
       SharedData data_;
 
      public:
-      inline AtomicUF(idVertex extrema = nullVertex) : rank_(0), data_(extrema)
+      inline explicit AtomicUF(idVertex extrema = nullVertex) : rank_(0), data_(extrema)
       {
          parent_ = this;
       }

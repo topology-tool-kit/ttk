@@ -24,7 +24,7 @@ class AtomicVector : public std::vector<type>
    std::size_t nextId;
 
   public:
-   AtomicVector(const std::size_t initSize = 1) : std::vector<type>(), nextId(0)
+   explicit AtomicVector(const std::size_t initSize = 1) : std::vector<type>(), nextId(0)
    {
 #ifndef withKamikaze
       if (!initSize) {
