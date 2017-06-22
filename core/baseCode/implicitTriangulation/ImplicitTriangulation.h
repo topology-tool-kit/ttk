@@ -156,32 +156,11 @@ namespace ttk{
 
       const vector<vector<int>>* getVertexStars();
 
-      int getVertexTriangle(const int &vertexId, const int &localTriangleId, int &triangleId) const{
+      int getVertexTriangle(const int &vertexId, const int &localTriangleId, int &triangleId) const;
 
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
+      int getVertexTriangleNumber(const int &vertexId) const;
 
-        return -1;
-      }
-
-      int getVertexTriangleNumber(const int &vertexId) const{
-
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-
-        return -1;
-      }
-
-      const vector<vector<int>>* getVertexTriangles(){
-
-        stringstream msg;
-        msg << "[ImplicitTriangulation] NOT IMPLEMENTED! TODO!" << endl;
-        dMsg(cerr, msg.str(), 0);
-
-        return NULL;
-      }
+      const vector<vector<int>>* getVertexTriangles();
 
       bool isEdgeOnBoundary(const int &edgeId) const;
 
@@ -359,6 +338,34 @@ namespace ttk{
       int getVertexEdgeAEFB(const int p[3],const int id) const;
       int getVertexEdgeGHDC(const int p[3],const int id) const;
       int getVertexEdgeABCDEFGH(const int p[3],const int id) const;
+
+      int getVertexTriangleA(const int p[3],const int id) const;
+      int getVertexTriangleB(const int p[3],const int id) const;
+      int getVertexTriangleC(const int p[3],const int id) const;
+      int getVertexTriangleD(const int p[3],const int id) const;
+      int getVertexTriangleE(const int p[3],const int id) const;
+      int getVertexTriangleF(const int p[3],const int id) const;
+      int getVertexTriangleG(const int p[3],const int id) const;
+      int getVertexTriangleH(const int p[3],const int id) const;
+      int getVertexTriangleAB(const int p[3],const int id) const;
+      int getVertexTriangleCD(const int p[3],const int id) const;
+      int getVertexTriangleEF(const int p[3],const int id) const;
+      int getVertexTriangleGH(const int p[3],const int id) const;
+      int getVertexTriangleAC(const int p[3],const int id) const;
+      int getVertexTriangleBD(const int p[3],const int id) const;
+      int getVertexTriangleEG(const int p[3],const int id) const;
+      int getVertexTriangleFH(const int p[3],const int id) const;
+      int getVertexTriangleAE(const int p[3],const int id) const;
+      int getVertexTriangleBF(const int p[3],const int id) const;
+      int getVertexTriangleCG(const int p[3],const int id) const;
+      int getVertexTriangleDH(const int p[3],const int id) const;
+      int getVertexTriangleABDC(const int p[3],const int id) const;
+      int getVertexTriangleEFHG(const int p[3],const int id) const;
+      int getVertexTriangleAEGC(const int p[3],const int id) const;
+      int getVertexTriangleBFHD(const int p[3],const int id) const;
+      int getVertexTriangleAEFB(const int p[3],const int id) const;
+      int getVertexTriangleGHDC(const int p[3],const int id) const;
+      int getVertexTriangleABCDEFGH(const int p[3],const int id) const;
 
       int getVertexLinkA(const int p[3],const int id) const;
       int getVertexLinkB(const int p[3],const int id) const;
@@ -1801,6 +1808,528 @@ inline int ImplicitTriangulation::getVertexEdgeABCDEFGH(const int p[3],const int
     case 11: return esetshift_[0]+p[0]+p[1]*eshift_[2]+p[2]*eshift_[3];//bd-H
     case 12: return esetshift_[5]+p[0]+p[1]*eshift_[12]+p[2]*eshift_[13]-1;//bg-D4
     case 13: return esetshift_[3]+p[0]+p[1]*eshift_[8]+p[2]*eshift_[9];//bh-D2
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleA(const int p[3],const int id) const{
+  switch(id){
+    case 0: return 0;
+    case 1: return tsetshift_[0];
+    case 2: return tsetshift_[1];
+    case 3: return tsetshift_[3];
+    case 4: return tsetshift_[1]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleB(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[0]-1)*2+1;
+    case 1: return tsetshift_[4]+(p[0]-1)*2;
+    case 2: return tsetshift_[2]+(p[0]-1)*2;
+    case 3: return tsetshift_[3]+(p[0]-1)*2+1;
+    case 4: return tsetshift_[1]+p[0]*2;
+    case 5: return tsetshift_[1]+p[0]*2+1;
+    case 6: return tsetshift_[4]+(p[0]-1)*2+1;
+    case 7: return tsetshift_[0]+(p[0]-1)*2+1;
+    case 8: return tsetshift_[2]+(p[0]-1)*2+1;
+    case 9: return tsetshift_[3]+(p[0]-1)*2;
+    case 10: return tsetshift_[0]+(p[0]-1)*2;
+    case 11: return (p[0]-1)*2;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleC(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[1]-1)*tshift_[0];
+    case 1: return (p[1]-1)*tshift_[0]+1;
+    case 2: return tsetshift_[4]+(p[1]-1)*tshift_[10];
+    case 3: return tsetshift_[0]+p[1]*tshift_[2];
+    case 4: return tsetshift_[1]+(p[1]-1)*tshift_[4];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleD(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+1;
+    case 1: return tsetshift_[2]+(p[0]-1)*2+(p[1]-1)*tshift_[6];
+    case 2: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2];
+    case 3: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4];
+    case 4: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleE(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[0]+(p[2]-1)*tshift_[3];
+    case 1: return tsetshift_[2]+(p[2]-1)*tshift_[7]+1;
+    case 2: return tsetshift_[1]+(p[2]-1)*tshift_[5]+1;
+    case 3: return p[2]*tshift_[1];
+    case 4: return tsetshift_[0]+(p[2]-1)*tshift_[3]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleF(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[0]+(p[0]-1)*2+(p[2]-1)*tshift_[3]+1;
+    case 1: return (p[0]-1)*2+p[2]*tshift_[1];
+    case 2: return (p[0]-1)*2+p[2]*tshift_[1]+1;
+    case 3: return tsetshift_[4]+(p[0]-1)*2+(p[2]-1)*tshift_[11]+1;
+    case 4: return tsetshift_[1]+p[0]*2+(p[2]-1)*tshift_[5]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleG(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7];
+    case 1: return tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 2: return tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 3: return tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 4: return tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9];
+    case 5: return tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 6: return tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11];
+    case 7: return tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 8: return (p[1]-1)*tshift_[0]+p[2]*tshift_[1];
+    case 9: return (p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 10: return tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3];
+    case 11: return tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleH(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[3]+(p[0]-1)*2+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 1: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 2: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 3: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 4: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleAB(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[0]-1)*2+1;
+    case 1: return tsetshift_[4]+(p[0]-1)*2;
+    case 2: return tsetshift_[2]+(p[0]-1)*2;
+    case 3: return tsetshift_[3]+(p[0]-1)*2+1;
+    case 4: return tsetshift_[1]+p[0]*2;
+    case 5: return tsetshift_[1]+p[0]*2+1;
+    case 6: return tsetshift_[4]+(p[0]-1)*2+1;
+    case 7: return tsetshift_[0]+(p[0]-1)*2+1;
+    case 8: return tsetshift_[2]+(p[0]-1)*2+1;
+    case 9: return tsetshift_[3]+(p[0]-1)*2;
+    case 10: return tsetshift_[0]+(p[0]-1)*2;
+    case 11: return (p[0]-1)*2;
+    case 12: return p[0]*2;
+    case 13: return tsetshift_[0]+p[0]*2;
+    case 14: return tsetshift_[3]+p[0]*2;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleCD(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+1;
+    case 1: return tsetshift_[2]+(p[0]-1)*2+(p[1]-1)*tshift_[6];
+    case 2: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2];
+    case 3: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4];
+    case 4: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+1;
+    case 5: return p[0]*2+(p[1]-1)*tshift_[0];
+    case 6: return p[0]*2+(p[1]-1)*tshift_[0]+1;
+    case 7: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10];
+    case 8: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleEF(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[0]+(p[0]-1)*2+(p[2]-1)*tshift_[3]+1;
+    case 1: return (p[0]-1)*2+p[2]*tshift_[1];
+    case 2: return (p[0]-1)*2+p[2]*tshift_[1]+1;
+    case 3: return tsetshift_[4]+(p[0]-1)*2+(p[2]-1)*tshift_[11]+1;
+    case 4: return tsetshift_[1]+p[0]*2+(p[2]-1)*tshift_[5]+1;
+    case 5: return p[0]*2+tsetshift_[0]+(p[2]-1)*tshift_[3];
+    case 6: return p[0]*2+tsetshift_[2]+(p[2]-1)*tshift_[7]+1;
+    case 7: return p[0]*2+p[2]*tshift_[1];
+    case 8: return p[0]*2+tsetshift_[0]+(p[2]-1)*tshift_[3]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleGH(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[3]+(p[0]-1)*2+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 1: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 2: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 3: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 4: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 5: return p[0]*2+tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7];
+    case 6: return p[0]*2+tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 7: return p[0]*2+tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9];
+    case 8: return p[0]*2+tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 9: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11];
+    case 10: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 11: return p[0]*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1];
+    case 12: return p[0]*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 13: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3];
+    case 14: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleAC(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[1]-1)*tshift_[0];
+    case 1: return (p[1]-1)*tshift_[0]+1;
+    case 2: return tsetshift_[4]+(p[1]-1)*tshift_[10];
+    case 3: return tsetshift_[0]+p[1]*tshift_[2];
+    case 4: return tsetshift_[1]+(p[1]-1)*tshift_[4];
+    case 5: return p[1]*tshift_[0];
+    case 6: return tsetshift_[1]+p[1]*tshift_[4];
+    case 7: return tsetshift_[3]+p[1]*tshift_[8];
+    case 8: return tsetshift_[1]+p[1]*tshift_[4]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleBD(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+1;
+    case 1: return tsetshift_[2]+(p[0]-1)*2+(p[1]-1)*tshift_[6];
+    case 2: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2];
+    case 3: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4];
+    case 4: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+1;
+    case 5: return (p[0]-1)*2+p[1]*tshift_[0]+1;
+    case 6: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10];
+    case 7: return tsetshift_[2]+(p[0]-1)*2+p[1]*tshift_[6];
+    case 8: return tsetshift_[3]+(p[0]-1)*2+p[1]*tshift_[8]+1;
+    case 9: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4];
+    case 10: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4]+1;
+    case 11: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+1;
+    case 12: return tsetshift_[2]+(p[0]-1)*2+p[1]*tshift_[6]+1;
+    case 13: return tsetshift_[3]+(p[0]-1)*2+p[1]*tshift_[8];
+    case 14: return (p[0]-1)*2+p[1]*tshift_[0];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleEG(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7];
+    case 1: return tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 2: return tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 3: return tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 4: return tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9];
+    case 5: return tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 6: return tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11];
+    case 7: return tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 8: return (p[1]-1)*tshift_[0]+p[2]*tshift_[1];
+    case 9: return (p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 10: return tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3];
+    case 11: return tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 12: return tsetshift_[2]+p[1]*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 13: return tsetshift_[1]+p[1]*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 14: return p[1]*tshift_[0]+p[2]*tshift_[1];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleFH(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[3]+(p[0]-1)*2+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 1: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 2: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 3: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 4: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 5: return (p[0]-1)*2+p[1]*tshift_[0]+p[2]*tshift_[1];
+    case 6: return (p[0]-1)*2+p[1]*tshift_[0]+p[2]*tshift_[1]+1;
+    case 7: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 8: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleAE(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[0]+(p[2]-1)*tshift_[3];
+    case 1: return tsetshift_[2]+(p[2]-1)*tshift_[7]+1;
+    case 2: return tsetshift_[1]+(p[2]-1)*tshift_[5]+1;
+    case 3: return p[2]*tshift_[1];
+    case 4: return tsetshift_[0]+(p[2]-1)*tshift_[3]+1;
+    case 5: return tsetshift_[0]+p[2]*tshift_[3];
+    case 6: return tsetshift_[1]+p[2]*tshift_[5];
+    case 7: return tsetshift_[3]+p[2]*tshift_[9];
+    case 8: return tsetshift_[1]+p[2]*tshift_[5]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleBF(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[0]+(p[0]-1)*2+(p[2]-1)*tshift_[3]+1;
+    case 1: return (p[0]-1)*2+p[2]*tshift_[1];
+    case 2: return (p[0]-1)*2+p[2]*tshift_[1]+1;
+    case 3: return tsetshift_[4]+(p[0]-1)*2+(p[2]-1)*tshift_[11]+1;
+    case 4: return tsetshift_[1]+p[0]*2+(p[2]-1)*tshift_[5]+1;
+    case 5: return tsetshift_[4]+(p[0]-1)*2+p[2]*tshift_[11];
+    case 6: return tsetshift_[2]+(p[0]-1)*2+p[2]*tshift_[7];
+    case 7: return tsetshift_[3]+(p[0]-1)*2+p[2]*tshift_[9]+1;
+    case 8: return tsetshift_[1]+p[0]*2+p[2]*tshift_[5];
+    case 9: return tsetshift_[1]+p[0]*2+p[2]*tshift_[5]+1;
+    case 10: return tsetshift_[4]+(p[0]-1)*2+p[2]*tshift_[11]+1;
+    case 11: return tsetshift_[0]+(p[0]-1)*2+p[2]*tshift_[3]+1;
+    case 12: return tsetshift_[2]+(p[0]-1)*2+p[2]*tshift_[7]+1;
+    case 13: return tsetshift_[3]+(p[0]-1)*2+p[2]*tshift_[9];
+    case 14: return tsetshift_[0]+(p[0]-1)*2+p[2]*tshift_[3];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleCG(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7];
+    case 1: return tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 2: return tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 3: return tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 4: return tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9];
+    case 5: return tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 6: return tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11];
+    case 7: return tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 8: return (p[1]-1)*tshift_[0]+p[2]*tshift_[1];
+    case 9: return (p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 10: return tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3];
+    case 11: return tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 12: return tsetshift_[4]+(p[1]-1)*tshift_[10]+p[2]*tshift_[11];
+    case 13: return tsetshift_[0]+p[1]*tshift_[2]+p[2]*tshift_[3];
+    case 14: return tsetshift_[1]+(p[1]-1)*tshift_[4]+p[2]*tshift_[5];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleDH(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[3]+(p[0]-1)*2+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 1: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 2: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 3: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 4: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 5: return tsetshift_[2]+(p[0]-1)*2+(p[1]-1)*tshift_[6]+p[2]*tshift_[7];
+    case 6: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+p[2]*tshift_[3];
+    case 7: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+p[2]*tshift_[5];
+    case 8: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+p[2]*tshift_[3]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleABDC(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[0]-1)*2+p[1]*tshift_[0]+1;
+    case 1: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10];
+    case 2: return tsetshift_[2]+(p[0]-1)*2+p[1]*tshift_[6];
+    case 3: return tsetshift_[3]+(p[0]-1)*2+p[1]*tshift_[8]+1;
+    case 4: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4];
+    case 5: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4]+1;
+    case 6: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+1;
+    case 7: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+1;
+    case 8: return tsetshift_[2]+(p[0]-1)*2+p[1]*tshift_[6]+1;
+    case 9: return tsetshift_[3]+(p[0]-1)*2+p[1]*tshift_[8];
+    case 10: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2];
+    case 11: return (p[0]-1)*2+p[1]*tshift_[0];
+    case 12: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+1;
+    case 13: return tsetshift_[2]+(p[0]-1)*2+(p[1]-1)*tshift_[6];
+    case 14: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4];
+    case 15: return p[0]*2+(p[1]-1)*tshift_[0];
+    case 16: return p[0]*2+(p[1]-1)*tshift_[0]+1;
+    case 17: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10];
+    case 18: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2];
+    case 19: return p[0]*2+p[1]*tshift_[0];
+    case 20: return p[0]*2+tsetshift_[3]+p[1]*tshift_[8];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleEFHG(const int p[3],const int id) const{
+  switch(id){
+    case 0: return p[0]*2+tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7];
+    case 1: return p[0]*2+tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 2: return p[0]*2+tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 3: return p[0]*2+tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 4: return p[0]*2+tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9];
+    case 5: return p[0]*2+tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 6: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11];
+    case 7: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 8: return p[0]*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1];
+    case 9: return p[0]*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 10: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3];
+    case 11: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 12: return tsetshift_[3]+(p[0]-1)*2+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 13: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 14: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 15: return (p[0]-1)*2+p[1]*tshift_[0]+p[2]*tshift_[1];
+    case 16: return (p[0]-1)*2+p[1]*tshift_[0]+p[2]*tshift_[1]+1;
+    case 17: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 18: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 19: return p[0]*2+tsetshift_[2]+p[1]*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 20: return p[0]*2+p[1]*tshift_[0]+p[2]*tshift_[1];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleAEGC(const int p[3],const int id) const{
+  switch(id){
+    case 0: return tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7];
+    case 1: return tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 2: return tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 3: return tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 4: return tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9];
+    case 5: return tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 6: return tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11];
+    case 7: return tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 8: return (p[1]-1)*tshift_[0]+p[2]*tshift_[1];
+    case 9: return (p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 10: return tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3];
+    case 11: return tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 12: return tsetshift_[2]+p[1]*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 13: return tsetshift_[1]+p[1]*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 14: return p[1]*tshift_[0]+p[2]*tshift_[1];
+    case 15: return tsetshift_[0]+p[1]*tshift_[2]+p[2]*tshift_[3];
+    case 16: return tsetshift_[1]+p[1]*tshift_[4]+p[2]*tshift_[5];
+    case 17: return tsetshift_[3]+p[1]*tshift_[8]+p[2]*tshift_[9];
+    case 18: return tsetshift_[1]+p[1]*tshift_[4]+p[2]*tshift_[5]+1;
+    case 19: return tsetshift_[4]+(p[1]-1)*tshift_[10]+p[2]*tshift_[11];
+    case 20: return tsetshift_[1]+(p[1]-1)*tshift_[4]+p[2]*tshift_[5];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleBFHD(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[0]-1)*2+p[1]*tshift_[0]+p[2]*tshift_[1]+1;
+    case 1: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+p[2]*tshift_[11];
+    case 2: return tsetshift_[2]+(p[0]-1)*2+p[1]*tshift_[6]+p[2]*tshift_[7];
+    case 3: return tsetshift_[3]+(p[0]-1)*2+p[1]*tshift_[8]+p[2]*tshift_[9]+1;
+    case 4: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4]+p[2]*tshift_[5];
+    case 5: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4]+p[2]*tshift_[5]+1;
+    case 6: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+p[2]*tshift_[11]+1;
+    case 7: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+p[2]*tshift_[3]+1;
+    case 8: return tsetshift_[2]+(p[0]-1)*2+p[1]*tshift_[6]+p[2]*tshift_[7]+1;
+    case 9: return tsetshift_[3]+(p[0]-1)*2+p[1]*tshift_[8]+p[2]*tshift_[9];
+    case 10: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+p[2]*tshift_[3];
+    case 11: return (p[0]-1)*2+p[1]*tshift_[0]+p[2]*tshift_[1];
+    case 12: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 13: return tsetshift_[2]+(p[0]-1)*2+(p[1]-1)*tshift_[6]+p[2]*tshift_[7];
+    case 14: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+p[2]*tshift_[5];
+    case 15: return tsetshift_[3]+(p[0]-1)*2+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 16: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 17: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 18: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 19: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 20: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleAEFB(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[0]-1)*2+p[2]*tshift_[1]+1;
+    case 1: return tsetshift_[4]+(p[0]-1)*2+p[2]*tshift_[11];
+    case 2: return tsetshift_[2]+(p[0]-1)*2+p[2]*tshift_[7];
+    case 3: return tsetshift_[3]+(p[0]-1)*2+p[2]*tshift_[9]+1;
+    case 4: return tsetshift_[1]+p[0]*2+p[2]*tshift_[5];
+    case 5: return tsetshift_[1]+p[0]*2+p[2]*tshift_[5]+1;
+    case 6: return tsetshift_[4]+(p[0]-1)*2+p[2]*tshift_[11]+1;
+    case 7: return tsetshift_[0]+(p[0]-1)*2+p[2]*tshift_[3]+1;
+    case 8: return tsetshift_[2]+(p[0]-1)*2+p[2]*tshift_[7]+1;
+    case 9: return tsetshift_[3]+(p[0]-1)*2+p[2]*tshift_[9];
+    case 10: return tsetshift_[0]+(p[0]-1)*2+p[2]*tshift_[3];
+    case 11: return (p[0]-1)*2+p[2]*tshift_[1];
+    case 12: return tsetshift_[0]+(p[0]-1)*2+(p[2]-1)*tshift_[3]+1;
+    case 13: return tsetshift_[4]+(p[0]-1)*2+(p[2]-1)*tshift_[11]+1;
+    case 14: return tsetshift_[1]+p[0]*2+(p[2]-1)*tshift_[5]+1;
+    case 15: return p[0]*2+tsetshift_[0]+(p[2]-1)*tshift_[3];
+    case 16: return p[0]*2+tsetshift_[2]+(p[2]-1)*tshift_[7]+1;
+    case 17: return p[0]*2+p[2]*tshift_[1];
+    case 18: return p[0]*2+tsetshift_[0]+(p[2]-1)*tshift_[3]+1;
+    case 19: return p[0]*2+tsetshift_[0]+p[2]*tshift_[3];
+    case 20: return p[0]*2+tsetshift_[3]+p[2]*tshift_[9];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleGHDC(const int p[3],const int id) const{
+  switch(id){
+    case 0: return p[0]*2+tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7];
+    case 1: return p[0]*2+tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 2: return p[0]*2+tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 3: return p[0]*2+tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 4: return p[0]*2+tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9];
+    case 5: return p[0]*2+tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 6: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11];
+    case 7: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 8: return p[0]*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1];
+    case 9: return p[0]*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 10: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3];
+    case 11: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 12: return tsetshift_[3]+(p[0]-1)*2+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 13: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 14: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 15: return tsetshift_[2]+(p[0]-1)*2+(p[1]-1)*tshift_[6]+p[2]*tshift_[7];
+    case 16: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+p[2]*tshift_[3];
+    case 17: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+p[2]*tshift_[5];
+    case 18: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+p[2]*tshift_[3]+1;
+    case 19: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10]+p[2]*tshift_[11];
+    case 20: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2]+p[2]*tshift_[3];
+  }
+  return -1;
+}
+
+inline int ImplicitTriangulation::getVertexTriangleABCDEFGH(const int p[3],const int id) const{
+  switch(id){
+    case 0: return (p[0]-1)*2+p[1]*tshift_[0]+p[2]*tshift_[1]+1;
+    case 1: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+p[2]*tshift_[11];
+    case 2: return tsetshift_[2]+(p[0]-1)*2+p[1]*tshift_[6]+p[2]*tshift_[7];
+    case 3: return tsetshift_[3]+(p[0]-1)*2+p[1]*tshift_[8]+p[2]*tshift_[9]+1;
+    case 4: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4]+p[2]*tshift_[5];
+    case 5: return tsetshift_[1]+p[0]*2+p[1]*tshift_[4]+p[2]*tshift_[5]+1;
+    case 6: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+p[2]*tshift_[11]+1;
+    case 7: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+p[2]*tshift_[3]+1;
+    case 8: return tsetshift_[2]+(p[0]-1)*2+p[1]*tshift_[6]+p[2]*tshift_[7]+1;
+    case 9: return tsetshift_[3]+(p[0]-1)*2+p[1]*tshift_[8]+p[2]*tshift_[9];
+    case 10: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+p[2]*tshift_[3];
+    case 11: return (p[0]-1)*2+p[1]*tshift_[0]+p[2]*tshift_[1];
+    case 12: return p[0]*2+tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7];
+    case 13: return p[0]*2+tsetshift_[2]+(p[1]-1)*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 14: return p[0]*2+tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5];
+    case 15: return p[0]*2+tsetshift_[1]+(p[1]-1)*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 16: return p[0]*2+tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9];
+    case 17: return p[0]*2+tsetshift_[3]+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 18: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11];
+    case 19: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 20: return p[0]*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1];
+    case 21: return p[0]*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 22: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3];
+    case 23: return p[0]*2+tsetshift_[0]+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 24: return (p[0]-1)*2+(p[1]-1)*tshift_[0]+p[2]*tshift_[1]+1;
+    case 25: return tsetshift_[2]+(p[0]-1)*2+(p[1]-1)*tshift_[6]+p[2]*tshift_[7];
+    case 26: return tsetshift_[1]+p[0]*2+(p[1]-1)*tshift_[4]+p[2]*tshift_[5];
+    case 27: return p[0]*2+tsetshift_[2]+p[1]*tshift_[6]+(p[2]-1)*tshift_[7]+1;
+    case 28: return p[0]*2+tsetshift_[1]+p[1]*tshift_[4]+(p[2]-1)*tshift_[5]+1;
+    case 29: return p[0]*2+p[1]*tshift_[0]+p[2]*tshift_[1];
+    case 30: return tsetshift_[3]+(p[0]-1)*2+(p[1]-1)*tshift_[8]+(p[2]-1)*tshift_[9]+1;
+    case 31: return tsetshift_[0]+(p[0]-1)*2+p[1]*tshift_[2]+(p[2]-1)*tshift_[3]+1;
+    case 32: return tsetshift_[0]+p[0]*2+p[1]*tshift_[2]+p[2]*tshift_[3];
+    case 33: return tsetshift_[3]+p[0]*2+p[1]*tshift_[8]+p[2]*tshift_[9];
+    case 34: return tsetshift_[4]+(p[0]-1)*2+p[1]*tshift_[10]+(p[2]-1)*tshift_[11]+1;
+    case 35: return p[0]*2+tsetshift_[4]+(p[1]-1)*tshift_[10]+p[2]*tshift_[11];
   }
   return -1;
 }
