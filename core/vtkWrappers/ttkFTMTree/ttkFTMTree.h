@@ -26,6 +26,7 @@
 #include <vtkUnstructuredGrid.h>
 
 struct ArcData {
+   vector<vtkIdType> ids;
    vtkSmartPointer<vtkIntArray> idArcs;
    vtkSmartPointer<vtkIntArray> sizeArcs;
 #ifdef withStatsTime
@@ -36,8 +37,11 @@ struct ArcData {
    vtkSmartPointer<vtkIntArray>   tasksArcs;
 #endif
 
-   int init()
+   int init(const idNode nbNodes)
    {
+      ids.clear();
+      ids.resize(nbNodes, nullNodes);
+
       idArcs = vtkSmartPointer<vtkIntArray>::New();
       idArcs->SetName("SegmentationId");
 
