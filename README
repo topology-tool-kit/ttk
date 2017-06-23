@@ -2,19 +2,4 @@ The Topology ToolKit (TTK)
 =
 https://topology-tool-kit.github.io/
 
-ChangeLog
-=
-* ttk.git
-- New naming convention for vtkWrappers (name conflicts under MacOs)
-- TriangulationRequest module (to locally inspect triangulations in ParaView)
-- improved time efficiency for link queries on implicit triangulations
-- constructors fixes for VTK wrappers
-- removed legacy CMake options
-- minor bug fixes
 
-* 0.9.1
-- latest triangulation API
-- improved module handling scripts
-- build fixes (in response to early user feedback)
-- updates for VTK-7.1.0 and ParaView-5.3.0
-- IdentifierRandomizer module (to shuffle segmentation ids)
