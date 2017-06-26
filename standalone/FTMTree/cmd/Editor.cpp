@@ -41,7 +41,7 @@ int Editor::execute()
 
    ftmTree_->SetInputData(grid_);
    ftmTree_->SetScalarFieldId(fieldId_);
-   ftmTree_->SettreeType_(treeType_);
+   ftmTree_->SetTreeType(treeType_);
 
    ftmTree_->Update();
 
