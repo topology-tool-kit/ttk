@@ -26,10 +26,11 @@
 #include <vtkUnstructuredGrid.h>
 
 struct ArcData {
-   vector<vtkIdType> pointIds;
-   vtkSmartPointer<vtkIntArray> idArcs;
-   vtkSmartPointer<vtkIntArray> normalizedIdArc;
-   vtkSmartPointer<vtkIntArray> sizeArcs;
+   vector<vtkIdType>               pointIds;
+   vtkSmartPointer<vtkIntArray>    idArcs;
+   vtkSmartPointer<vtkIntArray>    normalizedIdArc;
+   vtkSmartPointer<vtkIntArray>    sizeArcs;
+   vtkSmartPointer<vtkDoubleArray> spanArcs;
 #ifdef withStatsTime
    vtkSmartPointer<vtkFloatArray> startArcs;
    vtkSmartPointer<vtkFloatArray> endArcs;
@@ -44,35 +45,52 @@ struct ArcData {
 
       idArcs = vtkSmartPointer<vtkIntArray>::New();
       idArcs->SetName("SegmentationId");
+      idArcs->SetNumberOfComponents(1);
 
       normalizedIdArc = vtkSmartPointer<vtkIntArray>::New();
       normalizedIdArc->SetName("NormalizedIds");
+      normalizedIdArc->SetNumberOfComponents(1);
 
       sizeArcs = vtkSmartPointer<vtkIntArray>::New();
-      sizeArcs->SetName("Size");
+      sizeArcs->SetName("RegionSize");
+      sizeArcs->SetNumberOfComponents(1);
+
+      spanArcs = vtkSmartPointer<vtkDoubleArray>::New();
+      spanArcs->SetName("RegionSpan");
+      spanArcs->SetNumberOfComponents(1);
 
 #ifdef withStatsTime
       startArcs = vtkSmartPointer<vtkFloatArray>::New();
       startArcs->SetName("Start");
+      startArcs->SetNumberOfComponents(1);
 
       endArcs = vtkSmartPointer<vtkFloatArray>::New();
       endArcs->SetName("End");
+      endArcs->SetNumberOfComponents(1);
 
       timeArcs = vtkSmartPointer<vtkFloatArray>::New();
       timeArcs->SetName("Time");
+      timeArcs->SetNumberOfComponents(1);
 
       origArcs = vtkSmartPointer<vtkIntArray>::New();
       origArcs->SetName("Origin");
+      origArcs->SetNumberOfComponents(1);
 
       tasksArcs = vtkSmartPointer<vtkIntArray>::New();
       tasksArcs->SetName("Tasks");
+      tasksArcs->SetNumberOfComponents(1);
 #endif
 
 // Check
 #ifndef withKamikaze
 
       if (!idArcs) {
-         cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
+         cerr << "[ttkFTMTree] Error : vtkIntArray id allocation problem." << endl;
+         return -1;
+      }
+
+      if (!normalizedIdArc) {
+         cerr << "[ttkFTMTree] Error : vtkIntArray normId allocation problem." << endl;
          return -1;
       }
 
@@ -81,36 +99,73 @@ struct ArcData {
          return -1;
       }
 
+      if (!spanArcs) {
+         cerr << "[ttkFTMTree] Error : vtkDoubleArray span allocation problem." << endl;
+         return -2;
+      }
+
 # ifdef withStatsTime
 
       if (!startArcs) {
          cerr << "[ttkFTMTree] Error : vtkFloatArray start allocation problem." << endl;
-         return -2;
+         return -3;
       }
 
       if (!endArcs) {
          cerr << "[ttkFTMTree] Error : vtkFloatArray end allocation problem." << endl;
-         return -2;
+         return -3;
       }
 
       if (!timeArcs) {
          cerr << "[ttkFTMTree] Error : vtkFloatArray time allocation problem." << endl;
-         return -2;
+         return -3;
       }
 
       if (!origArcs) {
          cerr << "[ttkFTMTree] Error : vtkIntArray origin allocation problem." << endl;
-         return -3;
+         return -4;
       }
 
       if (!tasksArcs) {
          cerr << "[ttkFTMTree] Error : vtkIntArray tasks allocation problem." << endl;
-         return -3;
+         return -4;
       }
 
 # endif
 #endif
       return 0;
+   }
+
+   void fillArray(const idSuperArc arcId, Triangulation* triangulation, FTMTree_MT* tree,
+                  Params params)
+   {
+      SuperArc* arc = tree->getSuperArc(arcId);
+
+      float          downPoints[3];
+      const idVertex downNodeId   = tree->getLowerNodeId(arc);
+      const idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
+      triangulation->getVertexPoint(downVertexId, downPoints[0], downPoints[1], downPoints[2]);
+
+      float          upPoints[3];
+      const idVertex upNodeId   = tree->getUpperNodeId(arc);
+      const idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
+      triangulation->getVertexPoint(upVertexId, upPoints[0], upPoints[1], upPoints[2]);
+
+      idArcs->InsertNextTuple1( arcId);
+      if (params.normalize) {
+         normalizedIdArc->InsertNextTuple1( arc->getNormalizedId());
+      }
+      if (params.segm) {
+         sizeArcs->InsertNextTuple1( tree->getArcSize(arcId));
+      }
+      spanArcs->InsertNextTuple1(Geometry::distance(downPoints, upPoints));
+#ifdef withStatsTime
+      startArcs->InsertNextTuple1(tree->getArcStart(arcId));
+      endArcs  ->InsertNextTuple1(tree->getArcEnd(arcId));
+      timeArcs ->InsertNextTuple1(tree->getArcEnd(arcId) - tree->getArcStart(arcId));
+      origArcs ->InsertNextTuple1(tree->getArcOrig(arcId));
+      tasksArcs->InsertNextTuple1(tree->getArcActiveTasks(arcId));
+#endif
    }
 
    void addArray(vtkUnstructuredGrid *skeletonArcs, Params params){
@@ -122,6 +177,7 @@ struct ArcData {
       {
          skeletonArcs->GetCellData()->AddArray(sizeArcs);
       }
+      skeletonArcs->GetCellData()->AddArray(spanArcs);
 #ifdef withStatsTime
       skeletonArcs->GetCellData()->AddArray(startArcs);
       skeletonArcs->GetCellData()->AddArray(endArcs);
@@ -132,6 +188,122 @@ struct ArcData {
       pointIds.clear();
    }
 };
+
+struct VertData {
+   vtkSmartPointer<vtkIntArray> idVerts;
+   vtkSmartPointer<vtkIntArray> normalizedIdVert;
+   vtkSmartPointer<vtkIntArray> sizeRegion;
+   vtkSmartPointer<vtkDoubleArray> spanRegion;
+
+   int init(const idVertex numberOfVertices)
+   {
+      idVerts = vtkSmartPointer<vtkIntArray>::New();
+      idVerts->SetName("SegmentationId");
+      idVerts->SetNumberOfComponents(1);
+      idVerts->SetNumberOfTuples(numberOfVertices);
+
+      normalizedIdVert = vtkSmartPointer<vtkIntArray>::New();
+      normalizedIdVert->SetName("NormalizedIds");
+      normalizedIdVert->SetNumberOfComponents(1);
+      normalizedIdVert->SetNumberOfTuples(numberOfVertices);
+
+      sizeRegion = vtkSmartPointer<vtkIntArray>::New();
+      sizeRegion->SetName("RegionSize");
+      sizeRegion->SetNumberOfComponents(1);
+      sizeRegion->SetNumberOfTuples(numberOfVertices);
+
+      spanRegion = vtkSmartPointer<vtkDoubleArray>::New();
+      spanRegion->SetName("RegionSpan");
+      spanRegion->SetNumberOfComponents(1);
+      spanRegion->SetNumberOfTuples(numberOfVertices);
+
+// Check
+#ifndef withKamikaze
+
+      if (!idVerts) {
+         cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
+         return -1;
+      }
+
+      if (!normalizedIdVert) {
+         cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
+         return -1;
+      }
+
+      if (!sizeRegion) {
+         cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
+         return -1;
+      }
+
+      if (!spanRegion) {
+         cerr << "[ttkFTMTree] Error : vtkDoubleArray size allocation problem." << endl;
+         return -2;
+      }
+
+#endif
+      return 0;
+   }
+
+   void fillArray(const idSuperArc arcId, Triangulation* triangulation, FTMTree_MT* tree,
+                  Params params)
+   {
+      SuperArc* arc = tree->getSuperArc(arcId);
+
+      const int   upNodeId = arc->getUpNodeId();
+      const Node* upNode   = tree->getNode(upNodeId);
+      const int      upVertexId   = upNode->getVertexId();
+      float          coordUp[3];
+      triangulation->getVertexPoint(upVertexId, coordUp[0], coordUp[1], coordUp[2]);
+
+      const int   downNodeId = arc->getDownNodeId();
+      const Node* downNode   = tree->getNode(downNodeId);
+      const int      downVertexId   = downNode->getVertexId();
+      float          coordDown[3];
+      triangulation->getVertexPoint(downVertexId, coordDown[0], coordDown[1], coordDown[2]);
+
+      const int    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
+      const double regionSpan = Geometry::distance(coordUp, coordDown);
+
+      idSuperArc nid = arc->getNormalizedId();
+
+      // critical points
+      idVerts->SetTuple1(upVertexId, arcId);
+      idVerts->SetTuple1(downVertexId, arcId);
+      if(params.normalize){
+         normalizedIdVert->SetTuple1(upVertexId, nid);
+         normalizedIdVert->SetTuple1(downVertexId, nid);
+      }
+      sizeRegion->SetTuple1(upVertexId, regionSize);
+      sizeRegion->SetTuple1(downVertexId, regionSize);
+      spanRegion->SetTuple1(upVertexId, regionSpan);
+      spanRegion->SetTuple1(downVertexId, regionSpan);
+
+      // regular nodes
+      for (const idVertex vertexId : *arc) {
+         idVerts->SetTuple1(vertexId, arcId);
+         if (params.normalize) {
+            normalizedIdVert->SetTuple1(vertexId, nid);
+         }
+         sizeRegion->SetTuple1(vertexId, regionSize);
+         spanRegion->SetTuple1(vertexId, regionSpan);
+      }
+
+   }
+
+   void addArray(vtkPointData* pointData, Params params){
+      if (!params.segm)
+         return;
+
+      pointData->AddArray(idVerts);
+      if(params.normalize){
+          pointData->AddArray(normalizedIdVert);
+      }
+
+      pointData->AddArray(sizeRegion);
+      pointData->AddArray(spanRegion);
+   }
+};
+
 
 class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
 {
