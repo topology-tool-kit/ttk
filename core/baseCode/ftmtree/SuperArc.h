@@ -38,8 +38,9 @@ namespace ttk
       idVertex lastVisited_;
 
       // Segmentation related
-      ArcRegion region_;
-      idVertex  verticesSeen_;
+      ArcRegion  region_;
+      idVertex   verticesSeen_;
+      idSuperArc normalizedId_;
 
      public:
       // CONSTRUCT
@@ -53,7 +54,8 @@ namespace ttk
             state_(ComponentState::Visible),
             lastVisited_(nullVertex),
             region_(),
-            verticesSeen_(0)
+            verticesSeen_(0),
+            normalizedId_(nullSuperArc)
       {
       }
 
@@ -63,7 +65,8 @@ namespace ttk
             state_(state),
             lastVisited_(nullVertex),
             region_(),
-            verticesSeen_(0)
+            verticesSeen_(0),
+            normalizedId_(nullSuperArc)
       {
       }
 
@@ -97,7 +100,7 @@ namespace ttk
       }
 
       // }
-      // last vertex seen & nb vertex seen
+      // last vertex seen, nb vertex seen & ids
       // .................................{
 
       inline idVertex getLastVisited(void) const
@@ -111,7 +114,7 @@ namespace ttk
          ++verticesSeen_;
       }
 
-      inline void atomicIncVisited(const idVertex nb)
+      inline void atomicIncVisited(const idVertex nb=1)
       {
 #pragma omp atomic update
          verticesSeen_ += nb;
@@ -125,6 +128,16 @@ namespace ttk
       inline idVertex getNbVertSeen(void) const
       {
          return verticesSeen_;
+      }
+
+      inline idSuperArc getNormalizedId(void) const
+      {
+          return normalizedId_;
+      }
+
+      inline void setNormalizeIds(const idSuperArc id)
+      {
+          normalizedId_ = id;
       }
 
       // }

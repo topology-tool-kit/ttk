@@ -110,21 +110,19 @@ namespace ttk
       using sortedVertIt = vector<idVertex>::iterator;
 
      public:
+
       // -----------
       // CONSTRUCT
       // -----------
-      // {
 
       // Tree with global data and partition number
       FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const scalars, TreeType type);
 
       virtual ~FTMTree_MT();
 
-      //}
       // --------------------
       // Init
       // --------------------
-      // {
 
       void initNbScalars(void)
       {
@@ -143,6 +141,25 @@ namespace ttk
          if (!sosVect->size()) {
             sosVect->resize(scalars_->size);
             iota(sosVect->begin(), sosVect->end(), 0);
+         }
+      }
+
+      void initComp(void)
+      {
+         if (isST()) {
+            comp_.vertLower = [this](idVertex a, idVertex b) -> bool {
+               return this->scalars_->isHigher(a, b);
+            };
+            comp_.vertHigher = [this](idVertex a, idVertex b) -> bool {
+               return this->scalars_->isLower(a, b);
+            };
+         } else {
+            comp_.vertLower = [this](idVertex a, idVertex b) -> bool {
+               return this->scalars_->isLower(a, b);
+            };
+            comp_.vertHigher = [this](idVertex a, idVertex b) -> bool {
+               return this->scalars_->isHigher(a, b);
+            };
          }
       }
 
@@ -192,21 +209,63 @@ namespace ttk
          treeData_.segments_.clear();
       }
 
-      void makeInit(void) {
-          initVector<idCorresp>(treeData_.vert2tree, nullCorresp);
-          initVector<idVertex>(treeData_.visitOrder, nullVertex);
-          initVector<UF>(treeData_.ufs, nullptr);
-          initVector<UF>(treeData_.propagation, nullptr);
-          initVector<valence>(treeData_.valences, 0);
-          initVector<char>(treeData_.openedNodes,0);
+      void makeInit(void)
+      {
+         initVector<idCorresp>(treeData_.vert2tree, nullCorresp);
+         initVector<idVertex>(treeData_.visitOrder, nullVertex);
+         initVector<UF>(treeData_.ufs, nullptr);
+         initVector<UF>(treeData_.propagation, nullptr);
+         initVector<valence>(treeData_.valences, 0);
+         initVector<char>(treeData_.openedNodes, 0);
       }
 
-      //}
+      // -------------------
+      // Process
+      // -------------------
+
+      /// \brief Compute the merge
+      void build(const bool ct);
+
+      // extrema
+
+      virtual int precompute();
+
+      // skeleton
+
+      void leaves();
+
+      void processTask(const idVertex startVert, const idVertex orig);
+
+      tuple<bool, bool> propage(CurrentState &currentState, UF curUF);
+
+      void closeAndMergeOnSaddle(idVertex saddleVert);
+
+      void closeOnBackBone(idVertex saddleVert);
+
+      void closeArcsUF(idNode closeNode, UF uf);
+
+      idVertex trunk(const bool ct);
+
+      virtual idVertex trunkSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
+                             const idVertex stop);
+
+      // fill treedata_.trunkSegments
+      idVertex trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
+                             const idVertex stop);
+
+      // segmentation
+
+      /// \brief use vert2tree to compute the segmentation of the fresh builded merge tree.
+      void buildSegmentation();
+
+      // Create the segmentation of all arcs by operating the pending operations
+      void finalizeSegmentation(void);
+
+      void normalizeIds();
+
       // -------------
       // ACCESSOR
       // ------------
-      // {
-      //{
 
       // Tree info for wrapper
 
@@ -252,6 +311,20 @@ namespace ttk
       // On this implementation, the warpper communicate with ContourForest
       // A child class of this one.
 
+      inline void setupTriangulation(Triangulation *m, const bool preproc = true)
+      {
+         mesh_ = m;
+         if (mesh_ && preproc) {
+            // propage through vertices (build)
+            mesh_->preprocessVertexNeighbors();
+         }
+      }
+
+      inline void setScalars(void *local_scalars)
+      {
+         scalars_->values = local_scalars;
+      }
+
       inline void setTreeType(const int local_treeType)
       {
          params_->treeType = static_cast<TreeType>(local_treeType);
@@ -262,23 +335,12 @@ namespace ttk
           params_->segm = segm;
       }
 
-      inline void setScalars(void *local_scalars)
+      inline void setNormalizeIds(const bool normalize)
       {
-         scalars_->values = local_scalars;
+          params_->normalize = normalize;
       }
 
-      inline void setupTriangulation(Triangulation *m, const bool preproc = true)
-      {
-         mesh_ = m;
-         if (mesh_ && preproc) {
-            // propage through vertices (build)
-            mesh_->preprocessVertexNeighbors();
-         }
-      }
-
-      // }
       // scalar
-      // .....................{
 
       template <typename scalarType>
       inline const scalarType &getValue(idVertex idNode) const
@@ -292,9 +354,7 @@ namespace ttk
          scalars_->values = (void *)vals;
       }
 
-      // }
       // offset
-      // .....................{
 
       inline void setVertexSoSoffsets(const vector<idVertex> &offsets)
       {
@@ -302,9 +362,7 @@ namespace ttk
          scalars_->sosOffsets.reset(new vector<idVertex>(offsets.cbegin(), offsets.cend()));
       }
 
-      // }
       // arcs
-      // .....................{
 
       inline idSuperArc getNumberOfSuperArcs(void) const
       {
@@ -335,9 +393,7 @@ namespace ttk
          return &((*treeData_.superArcs)[i]);
       }
 
-      // }
       // nodes
-      // .....................{
 
       inline idNode getNumberOfNodes(void) const
       {
@@ -354,9 +410,7 @@ namespace ttk
           (*treeData_.valences)[v] = val;
       }
 
-      // }
       // leaves / root
-      // .....................{
 
       inline idNode getNumberOfLeaves(void) const
       {
@@ -388,24 +442,18 @@ namespace ttk
          return (*treeData_.roots);
       }
 
-      // }
       // vert2tree
-      // .....................{
 
       inline void setVert2Tree(decltype(treeData_.vert2tree) const vect2tree)
       {
          treeData_.vert2tree = vect2tree;
       }
 
-      // }
-      // }
       // --------------------
       // VERT 2 TREE Special functions
       // --------------------
-      // {
 
       // test vertex correpondance
-      // ...........................{
 
       inline bool isCorrespondingArc(const idVertex val) const
       {
@@ -422,9 +470,7 @@ namespace ttk
          return (*treeData_.vert2tree)[val] == nullCorresp;
       }
 
-      //   }
       // Get vertex info
-      // ...........................{
 
       inline idNode getCorrespondingNodeId(const idVertex val) const
       {
@@ -454,9 +500,8 @@ namespace ttk
          return (*treeData_.vert2tree)[val];
       }
 
-      //   }
       // Get corresponding elemnt
-      // ................................{
+
       inline SuperArc *vertex2SuperArc(const idVertex vert)
       {
          return &((*treeData_.superArcs)[getCorrespondingSuperArcId(vert)]);
@@ -466,9 +511,9 @@ namespace ttk
       {
          return &((*treeData_.nodes)[getCorrespondingNodeId(vert)]);
       }
-      //   }
+
       // Update vertex info
-      // ................................{
+
 
       inline void updateCorrespondingArc(const idVertex vert, const idSuperArc arc)
       {
@@ -491,55 +536,10 @@ namespace ttk
          return -(idNode)((*treeData_.vert2tree)[corr] + 1);
       }
 
-      //   }
-      // }
-      // -------------------
-      // Process
-      // -------------------
-      // {
-
-      /// \brief Compute the merge
-      void build(const bool ct);
-
-      // extrema
-
-      virtual int precompute();
-
-      // skeleton
-
-      void leaves();
-
-      void processTask(const idVertex startVert, const idVertex orig);
-
-      tuple<bool, bool> propage(CurrentState &currentState, UF curUF);
-
-      void closeAndMergeOnSaddle(idVertex saddleVert);
-
-      void closeOnBackBone(idVertex saddleVert);
-
-      void closeArcsUF(idNode closeNode, UF uf);
-
-      idVertex trunk(const bool ct);
-
-      virtual idVertex trunkSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
-                             const idVertex stop);
-
-      // fill treedata_.trunkSegments
-      idVertex trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
-                             const idVertex stop);
-
-      // segmentation
-
-      /// \brief use vert2tree to compute the segmentation of the fresh builded merge tree.
-      void buildSegmentation();
-
-      // }
       // --------------------------------
       // Arcs and node manipulations
       // --------------------------------
-      // {
       // SuperArcs
-      // .......................{
 
       idSuperArc openSuperArc(idNode downNodeId);
 
@@ -547,11 +547,11 @@ namespace ttk
 
       void closeSuperArc(idSuperArc superArcId, idNode upNodeId);
 
-      // }
       // Nodes
-      // ...........................{
 
       vector<idNode> sortedNodes(const bool parallel = false);
+
+      void sortLeaves(const bool parallel = false);
 
       idNode makeNode(idVertex vertexId, idVertex linked = nullVertex);
 
@@ -580,24 +580,9 @@ namespace ttk
 
       void delNode(idNode node);
 
-      // }
-      // Segmentation
-      // ...........................{
-
-      // }
-      // Update informations
-      // ...........................{
-
-      // Create the segmentation of all arcs by operating the pending operations
-      void finalizeSegmentation(void);
-
-      // }
-
-      // }
       // ---------------------------
       // Operators : clone & print
       // ---------------------------
-      // {
 
       // Clone
       FTMTree_MT *clone() const;
@@ -618,14 +603,11 @@ namespace ttk
       int printTime(DebugTimer &t, const string &s, idVertex nbScalars = -1,
                     const int debugLevel = 2) const;
 
-      //}
-
      protected:
 
       // -----
       // Tools
       // -----
-      // {
 
       idNode getVertInRange(const vector<idVertex> &range, const idVertex v,
                               const idNode last = 0) const;
@@ -656,11 +638,29 @@ namespace ttk
          return 1 + (s / getChunkSize(s, nbTasks));
       }
 
-      // }
+      void sortUpArcs(const idNode nid)
+      {
+         auto comp = [&](const idSuperArc a, const idSuperArc b) -> bool {
+            return comp_.vertLower(getUpperNode(getSuperArc(a))->getVertexId(),
+                                   getUpperNode(getSuperArc(b))->getVertexId());
+         };
+
+         getNode(nid)->sortUpArcs(comp);
+      }
+
+      void sortDownArcs(const idNode nid)
+      {
+         auto comp = [&](const idSuperArc a, const idSuperArc b) -> bool {
+            return comp_.vertHigher(getUpperNode(getSuperArc(a))->getVertexId(),
+                                    getUpperNode(getSuperArc(b))->getVertexId());
+         };
+
+         getNode(nid)->sortDownArcs(comp);
+      }
+
       // ------------------
       // Comparisons
       // -----------------
-      // {
       // Compare using the scalar array : only for sort step
 
       template <typename scalarType>
@@ -721,7 +721,6 @@ namespace ttk
          }
       }
 
-      // }
    };
 
    ostream &operator<<(ostream &o, Node const &n);

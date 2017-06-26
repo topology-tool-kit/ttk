@@ -26,8 +26,9 @@
 #include <vtkUnstructuredGrid.h>
 
 struct ArcData {
-   vector<vtkIdType> ids;
+   vector<vtkIdType> pointIds;
    vtkSmartPointer<vtkIntArray> idArcs;
+   vtkSmartPointer<vtkIntArray> normalizedIdArc;
    vtkSmartPointer<vtkIntArray> sizeArcs;
 #ifdef withStatsTime
    vtkSmartPointer<vtkFloatArray> startArcs;
@@ -39,11 +40,13 @@ struct ArcData {
 
    int init(const idNode nbNodes)
    {
-      ids.clear();
-      ids.resize(nbNodes, nullNodes);
+      pointIds.resize(nbNodes, nullNodes);
 
       idArcs = vtkSmartPointer<vtkIntArray>::New();
       idArcs->SetName("SegmentationId");
+
+      normalizedIdArc = vtkSmartPointer<vtkIntArray>::New();
+      normalizedIdArc->SetName("NormalizedIds");
 
       sizeArcs = vtkSmartPointer<vtkIntArray>::New();
       sizeArcs->SetName("Size");
@@ -110,9 +113,15 @@ struct ArcData {
       return 0;
    }
 
-   void addArray(vtkUnstructuredGrid *skeletonArcs){
+   void addArray(vtkUnstructuredGrid *skeletonArcs, Params params){
       skeletonArcs->GetCellData()->AddArray(idArcs);
-      skeletonArcs->GetCellData()->AddArray(sizeArcs);
+      if (params.normalize) {
+         skeletonArcs->GetCellData()->AddArray(normalizedIdArc);
+      }
+      if(params.segm)
+      {
+         skeletonArcs->GetCellData()->AddArray(sizeArcs);
+      }
 #ifdef withStatsTime
       skeletonArcs->GetCellData()->AddArray(startArcs);
       skeletonArcs->GetCellData()->AddArray(endArcs);
@@ -120,6 +129,7 @@ struct ArcData {
       skeletonArcs->GetCellData()->AddArray(origArcs);
       skeletonArcs->GetCellData()->AddArray(tasksArcs);
 #endif
+      pointIds.clear();
    }
 };
 
@@ -155,12 +165,6 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
    vtkSetMacro(InputOffsetScalarFieldName, string);
    vtkGetMacro(InputOffsetScalarFieldName, string);
 
-   vtkSetMacro(treeType_, int);
-   vtkGetMacro(treeType_, int);
-
-   vtkSetMacro(withSegmentation_, bool);
-   vtkGetMacro(withSegmentation_, bool);
-
    vtkSetMacro(ScalarFieldId, int);
    vtkGetMacro(ScalarFieldId, int);
 
@@ -169,6 +173,40 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
 
    vtkSetMacro(SuperArcSamplingLevel, int);
    vtkGetMacro(SuperArcSamplingLevel, int);
+
+   // Parameters uses a structure, we can't use vtkMacro on them
+   void SetTreeType(const int type)
+   {
+       params_.treeType = (TreeType)type;
+       Modified();
+   }
+
+   TreeType GetTreeType(void) const
+   {
+       return params_.treeType;
+   }
+
+   void SetWithSegmentation(const bool segm)
+   {
+      params_.segm = segm;
+      Modified();
+   }
+
+   bool GetWithSegmentation(void) const
+   {
+      return params_.segm;
+   }
+
+   void SetWithNormalize(const bool norm)
+   {
+      params_.normalize = norm;
+      Modified();
+   }
+
+   bool GetWithNormalize(void) const
+   {
+      return params_.normalize;
+   }
 
    int setupTriangulation(vtkDataSet* input);
    int getScalars(vtkDataSet* input);
@@ -206,8 +244,7 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
    int    OffsetFieldId;
    int    SuperArcSamplingLevel;
 
-   int  treeType_;
-   bool withSegmentation_;
+   Params params_;
 
    Triangulation* triangulation_;
    FTMTree        ftmTree_;

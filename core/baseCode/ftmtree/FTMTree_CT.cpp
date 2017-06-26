@@ -98,6 +98,8 @@ void FTMTree_CT::build(TreeType tt)
 
    const bool bothMT = tt == TreeType::Contour || tt == TreeType::Join_Split;
 
+   initComp();
+
    // if(bothMT){
    //    DebugTimer precomputeTime;
    //    vertexPrecomputation();

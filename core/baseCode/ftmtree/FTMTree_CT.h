@@ -58,7 +58,7 @@ namespace ttk
          return st_;
       }
 
-      inline FTMTree_MT* getTree(const TreeType& tt)
+      inline FTMTree_MT* getTree(const TreeType tt)
       {
          switch (tt) {
             case TreeType::Split:

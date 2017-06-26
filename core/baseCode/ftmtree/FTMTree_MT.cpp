@@ -13,6 +13,8 @@
 
 #include "FTMTree_MT.h"
 
+#include <stack>
+
 // -----------
 // CONSTRUCT
 // -----------
@@ -97,22 +99,17 @@ void FTMTree_MT::build(const bool ct)
    // --------------------------
    // Comparator init (template)
    // --------------------------
-   if (treeData_.treeType == TreeType::Join) {
-      treeString = "JT";
-      comp_.vertLower = [this](idVertex a, idVertex b) -> bool {
-         return this->scalars_->isLower(a, b);
-      };
-      comp_.vertHigher = [this](idVertex a, idVertex b) -> bool {
-         return this->scalars_->isHigher(a, b);
-      };
-   } else {
-      treeString = "ST";
-      comp_.vertLower = [this](idVertex a, idVertex b) -> bool {
-         return this->scalars_->isHigher(a, b);
-      };
-      comp_.vertHigher = [this](idVertex a, idVertex b) -> bool {
-         return this->scalars_->isLower(a, b);
-      };
+   initComp();
+   switch(treeData_.treeType){
+       case TreeType::Join:
+           treeString = "JT";
+           break;
+       case TreeType::Split:
+           treeString = "ST";
+           break;
+       default:
+           treeString = "CT";
+           break;
    }
 
    // ----------------------------
@@ -924,6 +921,100 @@ void FTMTree_MT::buildSegmentation()
 #pragma omp taskwait
 }
 
+
+void FTMTree_MT::finalizeSegmentation(void)
+{
+   for (auto &arc : *treeData_.superArcs) {
+      arc.createSegmentation(scalars_);
+   }
+}
+
+void FTMTree_MT::normalizeIds(void)
+{
+    sortLeaves(true);
+
+    auto getNodeParentArcNb = [&](const idNode curNode, const bool goUp) -> idSuperArc {
+       if (goUp) {
+          return getNode(curNode)->getNumberOfUpSuperArcs();
+       }
+
+       return getNode(curNode)->getNumberOfDownSuperArcs();
+    };
+
+    auto getNodeParentArc = [&](const idNode curNode, const bool goUp, idSuperArc i) -> idSuperArc {
+       if (goUp) {
+          return getNode(curNode)->getUpSuperArcId(i);
+       }
+
+       return getNode(curNode)->getDownSuperArcId(i);
+    };
+
+    auto getArcParentNode = [&](const idSuperArc curArc, const bool goUp) -> idNode {
+       if(goUp){
+           return getSuperArc(curArc)->getUpNodeId();
+       }
+
+       return getSuperArc(curArc)->getDownNodeId();
+    };
+
+    std::queue<tuple<idNode, bool>> q;
+    std::stack<tuple<idNode, bool>> qr;
+    for (const idNode n : *treeData_.leaves) {
+       bool goUp = isJT() || isST() || getNode(n)->getNumberOfUpSuperArcs();
+       if(goUp)
+           q.emplace(make_tuple(n, goUp));
+       else
+           qr.emplace(make_tuple(n, goUp));
+    }
+
+    while (!qr.empty()) {
+        q.emplace(qr.top());
+        qr.pop();
+    }
+
+    // Normalized id
+    idSuperArc nIdMin = 0;
+    idSuperArc nIdMax = getNumberOfSuperArcs()-1;
+
+    vector<bool> seenUp(getNumberOfSuperArcs(), false);
+    vector<bool> seenDown(getNumberOfSuperArcs(), false);
+
+    while (!q.empty()) {
+        bool goUp;
+        idNode curNodeId;
+        tie(curNodeId, goUp) = q.front();
+        q.pop();
+
+        if(goUp)
+           sortUpArcs(curNodeId);
+        else
+           sortDownArcs(curNodeId);
+
+        // Assign arc above
+        const idSuperArc nbArcParent = getNodeParentArcNb(curNodeId, goUp);
+        for (idSuperArc pid = 0; pid < nbArcParent; pid++) {
+           const idSuperArc currentArcId = getNodeParentArc(curNodeId, goUp, pid);
+           if (goUp) {
+              if (getSuperArc(currentArcId)->getNormalizedId() == nullSuperArc) {
+                 getSuperArc(currentArcId)->setNormalizeIds(nIdMin++);
+              }
+              if (!seenUp[currentArcId]) {
+                 q.emplace(make_tuple(getArcParentNode(currentArcId, goUp), goUp));
+                 seenUp[currentArcId] = true;
+              }
+           } else {
+              if (getSuperArc(currentArcId)->getNormalizedId() == nullSuperArc) {
+                 getSuperArc(currentArcId)->setNormalizeIds(nIdMax--);
+              }
+              if (!seenDown[currentArcId]) {
+                 q.emplace(make_tuple(getArcParentNode(currentArcId, goUp), goUp));
+                 seenDown[currentArcId] = true;
+              }
+           }
+        }
+    }
+}
+
 // }
 // ---------------------------
 // Arcs and node manipulations
@@ -1007,6 +1098,27 @@ vector<idNode> FTMTree_MT::sortedNodes(const bool para)
    }
 
    return sortedNodes;
+}
+
+void FTMTree_MT::sortLeaves(const bool para)
+{
+   auto indirect_sort = [&](const idNode a, const idNode b) {
+      return comp_.vertLower(getNode(a)->getVertexId(), getNode(b)->getVertexId());
+   };
+
+   if (para) {
+#ifdef __clang__
+      std::sort(treeData_.leaves->begin(), treeData_.leaves->end(), indirect_sort);
+#else
+      __gnu_parallel::sort(treeData_.leaves->begin(), treeData_.leaves->end(), indirect_sort);
+#endif
+   } else {
+#pragma omp single
+      {
+         std::sort(treeData_.leaves->begin(), treeData_.leaves->end(), indirect_sort);
+      }
+   }
+
 }
 
 // add
@@ -1206,17 +1318,7 @@ void FTMTree_MT::delNode(idNode node)
 }
 
 // }
-// Segmentation
-// ...........................{
 
-void FTMTree_MT::finalizeSegmentation(void)
-{
-   for (auto &arc : *treeData_.superArcs) {
-      arc.createSegmentation(scalars_);
-   }
-}
-
-//    }
 // }
 // -------------------------------
 // Operators : find, print & clone

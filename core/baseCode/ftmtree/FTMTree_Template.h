@@ -110,6 +110,7 @@ void FTMTree::build(void)
    printTime(startTime, "10 TOTAL ", -1, 1);
    // exit(0);
 
+   // Build the list of regular vertices of the arc
    if (params_->segm) {
       switch (params_->treeType) {
          case TreeType::Join:
@@ -133,6 +134,27 @@ void FTMTree::build(void)
             break;
       }
    }
+
+   // Normalization
+  if(params_->normalize) {
+      switch (params_->treeType) {
+         case TreeType::Join:
+            getJoinTree()->normalizeIds();
+            break;
+         case TreeType::Split:
+            getSplitTree()->normalizeIds();
+            break;
+         case TreeType::Join_Split:
+            getJoinTree()->normalizeIds();
+            getSplitTree()->normalizeIds();
+            break;
+         case TreeType::Contour:
+            normalizeIds();
+            break;
+         default:
+            break;
+      }
+  }
 
    if (debugLevel_ > 3) {
       switch (params_->treeType) {

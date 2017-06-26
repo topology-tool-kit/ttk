@@ -28,6 +28,7 @@ namespace ttk
    struct Params {
       TreeType treeType;
       bool     segm = true;
+      bool     normalize = true;
    };
 
    // Scalar related containers (global)
