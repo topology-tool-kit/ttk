@@ -96,7 +96,7 @@
                 </Documentation>
             </StringVectorProperty>
 
-            <IntVectorProperty name="Tree Type" command="SettreeType_"
+            <IntVectorProperty name="Tree Type" command="SetTreeType"
                 number_of_elements="1" default_values="2">
                 <EnumerationDomain name="enum">
                     <Entry value="0" text="Join    Tree"/>
