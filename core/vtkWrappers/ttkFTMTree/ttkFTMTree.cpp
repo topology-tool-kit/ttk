@@ -308,13 +308,7 @@ int ttkFTMTree::addDirectSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPoin
 
    skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
 
-   arcData.idArcs->InsertNextTuple1(arcId);
-   if(GetWithNormalize()){
-      arcData.normalizedIdArc->InsertNextTuple1(arc->getNormalizedId());
-   }
-   if (GetWithSegmentation()) {
-      arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
-   }
+   arcData.fillArray(arcId, triangulation_, tree, params_);
 
    return 0;
 }
@@ -379,15 +373,10 @@ int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, const 
 
             pointIds[1] = points->InsertNextPoint(sum);
             skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
-            pointIds[0] = pointIds[1];
 
-            arcData.idArcs->InsertNextTuple1(arcId);
-            if (GetWithNormalize()) {
-               arcData.normalizedIdArc->InsertNextTuple1(arc->getNormalizedId());
-            }
-            if (GetWithSegmentation()) {
-               arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
-            }
+            arcData.fillArray(arcId, triangulation_, tree, params_);
+
+            pointIds[0] = pointIds[1];
          }
 
          scalarLimit += delta;
@@ -402,13 +391,7 @@ int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, const 
 
    skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
 
-   arcData.idArcs->InsertNextTuple1(arcId);
-   if (GetWithNormalize()) {
-      arcData.normalizedIdArc->InsertNextTuple1(arc->getNormalizedId());
-   }
-   if (GetWithSegmentation()) {
-      arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
-   }
+   arcData.fillArray(arcId, triangulation_, tree, params_);
 
    return 0;
 }
@@ -441,13 +424,7 @@ int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPo
 
       skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
 
-      arcData.idArcs->InsertNextTuple1(arcId);
-      if (GetWithNormalize()) {
-         arcData.normalizedIdArc->InsertNextTuple1(arc->getNormalizedId());
-      }
-      if (GetWithSegmentation()) {
-         arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
-      }
+      arcData.fillArray(arcId, triangulation_, tree, params_);
 
       pointIds[0] = pointIds[1];
    }
@@ -469,13 +446,7 @@ int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPo
 
    skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
 
-   arcData.idArcs->InsertNextTuple1(arcId);
-   if (GetWithNormalize()) {
-      arcData.normalizedIdArc->InsertNextTuple1(arc->getNormalizedId());
-   }
-   if (GetWithSegmentation()) {
-      arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
-   }
+   arcData.fillArray(arcId, triangulation_, tree, params_);
 
    return 0;
 }
@@ -521,15 +492,6 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
       } else {
          addDirectSkeletonArc(tree, arcId, points, skeletonArcs, arcData);
       }
-
-#ifdef withStatsTime
-      arcData.startArcs->InsertNextTuple1(tree->getArcStart(arcId));
-      arcData.endArcs->InsertNextTuple1(tree->getArcEnd(arcId));
-      arcData.timeArcs->InsertNextTuple1(tree->getArcEnd(arcId) - tree->getArcStart(arcId));
-      arcData.origArcs->InsertNextTuple1(tree->getArcOrig(arcId));
-      arcData.tasksArcs->InsertNextTuple1(tree->getArcActiveTasks(arcId));
-#endif
-
    }
 
    skeletonArcs->SetPoints(points);
@@ -560,123 +522,13 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input,
    }
 #endif
 
-   // field
-   vtkSmartPointer<vtkIntArray> regionIds = vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
-   if (!regionIds) {
-      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem." << endl;
-      return -3;
-   }
-#endif
-   regionIds->SetName("SegmentationId");
-   regionIds->SetNumberOfComponents(1);
-   regionIds->SetNumberOfTuples(numberOfVertices);
+   VertData vertdata;
 
-   vtkSmartPointer<vtkIntArray> regionTypes = vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
-   if (!regionTypes) {
-      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem." << endl;
-      return -4;
-   }
-#endif
-   regionTypes->SetName("RegionType");
-   regionTypes->SetNumberOfComponents(1);
-   regionTypes->SetNumberOfTuples(numberOfVertices);
-
-   vtkSmartPointer<vtkIntArray> regionSizes = vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
-   if (!regionSizes) {
-      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem." << endl;
-      return -5;
-   }
-#endif
-   regionSizes->SetName("RegionSize");
-   regionSizes->SetNumberOfComponents(1);
-   regionSizes->SetNumberOfTuples(numberOfVertices);
-
-   vtkSmartPointer<vtkDoubleArray> regionSpans = vtkSmartPointer<vtkDoubleArray>::New();
-#ifndef withKamikaze
-   if (!regionSpans) {
-      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem." << endl;
-      return -6;
-   }
-#endif
-   regionSpans->SetName("RegionSpan");
-   regionSpans->SetNumberOfComponents(1);
-   regionSpans->SetNumberOfTuples(numberOfVertices);
-
-   int id{};
+   vertdata.init(numberOfVertices);
 
    // arcs
    for (idVertex arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
-      SuperArc* arc = tree->getSuperArc(arcId);
-#ifndef withKamikaze
-      if (!arc) {
-         cerr << "[ttkFTMTree] Error : FTMTree arc " << arcId << " is null." << endl;
-         return -7;
-      }
-#endif
-
-      const int   upNodeId = arc->getUpNodeId();
-      const Node* upNode   = tree->getNode(upNodeId);
-#ifndef withKamikaze
-      if (!upNode) {
-          cerr << "[ttkFTMTree] Error : FTMTree node" << upNodeId << " is null." << endl;
-          return -8;
-      }
-#endif
-      const NodeType upNodeType = getNodeType(upNode);
-      const int      upVertexId   = upNode->getVertexId();
-      float          coordUp[3];
-      triangulation_->getVertexPoint(upVertexId, coordUp[0], coordUp[1], coordUp[2]);
-
-      const int   downNodeId = arc->getDownNodeId();
-      const Node* downNode   = tree->getNode(downNodeId);
-#ifndef withKamikaze
-      if (!downNode) {
-          cerr << "[ttkFTMTree] Error : FTMTree node" << downNodeId << " is null." << endl;
-          return -9;
-      }
-#endif
-      const NodeType downNodeType = getNodeType(downNode);
-      const int      downVertexId   = downNode->getVertexId();
-      float          coordDown[3];
-      triangulation_->getVertexPoint(downVertexId, coordDown[0], coordDown[1], coordDown[2]);
-
-      const int    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
-      const double regionSpan = Geometry::distance(coordUp, coordDown);
-
-      int regionType{};
-      if (upNodeType == NodeType::Local_minimum or downNodeType == NodeType::Local_minimum)
-          regionType = static_cast<int>(ArcType::Min_arc);
-      else if (upNodeType == NodeType::Local_maximum or downNodeType == NodeType::Local_maximum)
-          regionType = static_cast<int>(ArcType::Max_arc);
-      else if (upNodeType == NodeType::Saddle1 and downNodeType == NodeType::Saddle1)
-          regionType = static_cast<int>(ArcType::Saddle1_arc);
-      else if (upNodeType == NodeType::Saddle2 and downNodeType == NodeType::Saddle2)
-          regionType = static_cast<int>(ArcType::Saddle2_arc);
-      else
-          regionType = static_cast<int>(ArcType::Saddle1_saddle2_arc);
-
-      // critical points
-      regionIds->SetTuple1(upVertexId, id);
-      regionIds->SetTuple1(downVertexId, id);
-      regionSizes->SetTuple1(upVertexId, regionSize);
-      regionSizes->SetTuple1(downVertexId, regionSize);
-      regionSpans->SetTuple1(upVertexId, regionSpan);
-      regionSpans->SetTuple1(downVertexId, regionSpan);
-      regionTypes->SetTuple1(upVertexId, -1);
-      regionTypes->SetTuple1(downVertexId, -1);
-
-      // regular nodes
-      for (const idVertex vertexId : *arc) {
-          regionIds->SetTuple1(vertexId, id);
-          regionSizes->SetTuple1(vertexId, regionSize);
-          regionSpans->SetTuple1(vertexId, regionSpan);
-          regionTypes->SetTuple1(vertexId, regionType);
-      }
-
-      ++id;
+       vertdata.fillArray(arcId, triangulation_, tree, params_);
    }
 
    vtkPointData* pointData = outputSegmentation->GetPointData();
@@ -687,10 +539,7 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input,
    }
 #endif
 
-   pointData->AddArray(regionIds);
-   pointData->AddArray(regionSizes);
-   pointData->AddArray(regionSpans);
-   pointData->AddArray(regionTypes);
+   vertdata.addArray(pointData, params_);
 
    return 0;
 }
