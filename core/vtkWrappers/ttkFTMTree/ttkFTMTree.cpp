@@ -311,8 +311,6 @@ int ttkFTMTree::addDirectSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPoin
    arcData.idArcs->InsertNextTuple1(arcId);
    if(GetWithNormalize()){
       arcData.normalizedIdArc->InsertNextTuple1(arc->getNormalizedId());
-      if(arc->getNormalizedId() < 0 || arc->getNormalizedId() >= tree->getNumberOfSuperArcs()) 
-          exit(3);
    }
    if (GetWithSegmentation()) {
       arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
@@ -386,8 +384,6 @@ int ttkFTMTree::addSampledSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, const 
             arcData.idArcs->InsertNextTuple1(arcId);
             if (GetWithNormalize()) {
                arcData.normalizedIdArc->InsertNextTuple1(arc->getNormalizedId());
-               if(arc->getNormalizedId() < 0 || arc->getNormalizedId() >= tree->getNumberOfSuperArcs()) 
-                   exit(3);
             }
             if (GetWithSegmentation()) {
                arcData.sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
@@ -755,6 +751,8 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       vtkTemplateMacro(({ ftmTree_.build<VTK_TT>(); }));
    }
 
+   UpdateProgress(0.50);
+
    FTMTree_MT* tree = ftmTree_.getTree(GetTreeType());
 #ifndef withKamikaze
    if (!tree) {
@@ -763,12 +761,16 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    }
 #endif
 
+   UpdateProgress(0.70);
+
    if (getSkeletonNodes(tree, outputSkeletonNodes)) {
 #ifndef withKamikaze
       cerr << "[ttkFTMTree] Error : wrong properties on skeleton nodes." << endl;
       return -7;
 #endif
    }
+
+   UpdateProgress(0.75);
 
    if (getSkeletonArcs(tree, outputSkeletonArcs)) {
 #ifndef withKamikaze
@@ -785,6 +787,8 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 #endif
       }
    }
+
+   UpdateProgress(1);
 
    {
       stringstream msg;
