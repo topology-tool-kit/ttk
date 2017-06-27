@@ -104,7 +104,7 @@ void FTMTree_CT::build(TreeType tt)
    //    DebugTimer precomputeTime;
    //    vertexPrecomputation();
    //    printTime(precomputeTime, "2 precompute ");
-   // }
+
 
    // -------
    // JT & ST
@@ -277,19 +277,19 @@ int FTMTree_CT::combine()
          // ------------
          // INFO QUEUE
          // ------------
-         // {
+
          tie(isJT, currentNodeId) = growingNodes.front();
          growingNodes.pop();
 
          FTMTree_MT *xt = (isJT) ? jt_ : st_;
          FTMTree_MT *yt = (isJT) ? st_ : jt_;
 
-         // }
+
 
          // ------------
          // INFO JT / ST
          // ------------
-         // {
+
          // i <- Get(Q)
          const Node *currentNode = xt->getNode(currentNodeId);
 
@@ -323,12 +323,12 @@ int FTMTree_CT::combine()
 #endif
             continue;
          }
-         // }
+
 
          // -----------
          // NODES IN CT
          // -----------
-         // {
+
          idNode   node1, node2;
          idVertex curVert = currentNode->getVertexId();
          // NODE1
@@ -366,11 +366,11 @@ int FTMTree_CT::combine()
             if (!parentNode->getNumberOfUpSuperArcs())
                treeData_.leaves->emplace_back(node2);
          }
-         // }
+
          // ----------
          // CREATE ARC
          // ----------
-         // {
+
          idSuperArc processArc = currentNode->getUpSuperArcId(0);
 
          // create the arc in in the good direction
@@ -392,12 +392,10 @@ int FTMTree_CT::combine()
             cout << "create arc : " << printArc(createdArc) << endl;
          }
 
-         // }
-
          // ---------
          // DEL NODES
          // ---------
-         // {
+
          // DelNode(XT, i)
          {
             if (DEBUG) {
@@ -417,12 +415,12 @@ int FTMTree_CT::combine()
 
             yt->delNode(correspondingNodeId);
          }
-         // }
+
 
          // -------------
          // PROCESS QUEUE
          // -------------
-         // {
+
          if (parentNode->getNumberOfDownSuperArcs() == 0 && parentNode->getNumberOfUpSuperArcs()) {
             growingNodes.emplace(isJT, parentId);
 
@@ -430,7 +428,7 @@ int FTMTree_CT::combine()
                cout << "will see : " << parentNode->getVertexId() << endl;
             }
          }
-         // }
+
       }
 #ifdef withDualQueueCombine
    } while (!remainingNodes.empty());

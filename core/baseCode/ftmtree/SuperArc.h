@@ -43,9 +43,10 @@ namespace ttk
       idSuperArc normalizedId_;
 
      public:
+
+      // -----------------
       // CONSTRUCT
       // -----------------
-      // {
 
       // This arc will needs to receive both ends before being printed
       SuperArc()
@@ -70,14 +71,12 @@ namespace ttk
       {
       }
 
-      // }
+
       // ------------------
       // ACCESSOR
       // --------------------
-      // {
-      //
+
       // node
-      // .................................{
 
       inline idNode getUpNodeId(void) const
       {
@@ -99,9 +98,8 @@ namespace ttk
          downNodeId_ = downId;
       }
 
-      // }
+
       // last vertex seen, nb vertex seen & ids
-      // .................................{
 
       inline idVertex getLastVisited(void) const
       {
@@ -140,9 +138,8 @@ namespace ttk
           normalizedId_ = id;
       }
 
-      // }
+
       // state
-      // .................................{
 
       inline bool isHidden(void) const
       {
@@ -159,11 +156,11 @@ namespace ttk
          return state_ == ComponentState::Visible;
       }
 
-      // }
-      // -----------
+
+      // ------------
       // Segmentation
-      // ----------
-      // {
+      // ------------
+
       // Fonction using ArcRegion
 
       inline void concat(const segm_it &begin, const segm_it &end)
@@ -287,7 +284,7 @@ namespace ttk
       {
          return region_.print();
       }
-      // }
+
    };
 }
 

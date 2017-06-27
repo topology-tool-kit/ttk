@@ -34,10 +34,10 @@ namespace ttk
       std::vector<idSuperArc> vect_downSuperArcList_, vect_upSuperArcList_;
 
      public:
+
       // -----------------
       // CONSTRUCTOR
       // -----------------
-      // {
 
       // This node will need to receive a vertex id before being printed
       Node() : vertexId_(nullVertex), linkedNode_(nullNodes)
@@ -48,14 +48,13 @@ namespace ttk
       {
       }
 
-      // }
+
       // -----------------
       // ACCESSOR
       // ------------------
-      // {
+
 
       // Vertex id
-      // ........................{
 
       inline idVertex getVertexId() const
       {
@@ -67,9 +66,8 @@ namespace ttk
          vertexId_ = vertexId;
       }
 
-      // }
+
       // Linked node
-      // ........................{
 
       inline idVertex getOrigin(void) const
       {
@@ -91,9 +89,8 @@ namespace ttk
          linkedNode_ = linked;
       }
 
-      // }
+
       // vector arcs
-      // ............................{
 
       inline idSuperArc getNumberOfDownSuperArcs() const
       {
@@ -203,9 +200,6 @@ namespace ttk
          sort(vect_downSuperArcList_.begin(), vect_downSuperArcList_.end(), comp);
       }
 
-      // }
-
-      // }
    };
 }
 #endif /* end of include guard: NODE_H */
