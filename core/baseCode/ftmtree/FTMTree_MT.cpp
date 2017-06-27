@@ -18,7 +18,7 @@
 // -----------
 // CONSTRUCT
 // -----------
-// {
+
 
 FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const scalars,
                      TreeType type)
@@ -87,11 +87,11 @@ FTMTree_MT::~FTMTree_MT()
 #endif
 }
 
-// }
+
 // -------
 // Process
 // -------
-// {
+
 
 void FTMTree_MT::build(const bool ct)
 {
@@ -379,9 +379,9 @@ void FTMTree_MT::processTask(const idVertex startVert, const idVertex orig)
 
    }  // end wile propagation
 
-// ----------
-// close root
-// ----------
+   // ----------
+   // close root
+   // ----------
    const idVertex closeVert      = getSuperArc(currentArc)->getLastVisited();
    bool           existCloseNode = isCorrespondingNode(closeVert);
    idNode closeNode = (existCloseNode) ? getCorrespondingNodeId(closeVert) : makeNode(closeVert);
@@ -524,7 +524,6 @@ idVertex FTMTree_MT::trunk(const bool ct)
    // ----
    // Arcs
    // ----
-
    const auto &nbNodes =pendingNodesVerts.size();
    for (idNode n = 1; n < nbNodes; ++n) {
       idSuperArc na =
@@ -537,7 +536,11 @@ idVertex FTMTree_MT::trunk(const bool ct)
    }
    const idSuperArc lastArc = openSuperArc(getCorrespondingNodeId(pendingNodesVerts[nbNodes - 1]));
 
-   // debug close Root
+   // ---------------------
+   // Root (close last arc)
+   // ---------------------
+   // if several CC still the backbone is only in one.
+   // But the root may not be the max node of the whole dataset: TODO
    const idNode rootNode = makeNode((*scalars_->sortedVertices)[(isJT())?scalars_->size -1:0]);
    closeSuperArc(lastArc, rootNode);
    getSuperArc(lastArc)->setLastVisited(getNode(rootNode)->getVertexId());
@@ -545,10 +548,9 @@ idVertex FTMTree_MT::trunk(const bool ct)
    printTime(bbTimer, "Backbone seq.", -1, 3);
    bbTimer.reStart();
 
-// ------------
-// Segmentation
-// ------------
-   // bounds
+   // ------------
+   // Segmentation
+   // ------------
    idVertex begin, stop, processed;
    tie(begin, stop) = getBoundsFromVerts(pendingNodesVerts);
    if(ct){
@@ -558,11 +560,6 @@ idVertex FTMTree_MT::trunk(const bool ct)
    }
    printTime(bbTimer, "Backbone para.", -1, 3);
 
-   // ---------------------
-   // Root (close last arc)
-   // ---------------------
-   // if several CC still the backbone is only in one.
-   // But the root may not be the max node of the whole dataset
    return processed;
 }
 
@@ -658,7 +655,7 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &pendingNodesVerts
 #pragma omp atomic update
             tot += acc;
 #endif
-         }
+         } // end task
       }
    }
 #pragma omp taskwait
@@ -1015,13 +1012,12 @@ void FTMTree_MT::normalizeIds(void)
     }
 }
 
-// }
+
 // ---------------------------
 // Arcs and node manipulations
 // ---------------------------
-// {
+
 // SuperArcs
-// .......................{
 idSuperArc FTMTree_MT::openSuperArc(idNode downNodeId)
 {
 #ifndef withKamikaze
@@ -1071,10 +1067,8 @@ void FTMTree_MT::closeSuperArc(idSuperArc superArcId, idNode upNodeId)
 }
 
 
-//   }
-// nodes
-// .....................{
 
+// nodes
 vector<idNode> FTMTree_MT::sortedNodes(const bool para)
 {
    vector<idNode> sortedNodes(treeData_.nodes->size());
@@ -1260,10 +1254,10 @@ void FTMTree_MT::delNode(idNode node)
    Node *mainNode = getNode(node);
 
    if (mainNode->getNumberOfUpSuperArcs() == 0) {
-// -----------------
-// Root: No Superarc
-// -----------------
 
+      // -----------------
+      // Root: No Superarc
+      // -----------------
 #ifndef withKamikaze
       if (mainNode->getNumberOfDownSuperArcs() != 1) {
          // Root with several childs: impossible /\ .
@@ -1317,13 +1311,10 @@ void FTMTree_MT::delNode(idNode node)
 #endif
 }
 
-// }
 
-// }
 // -------------------------------
 // Operators : find, print & clone
 // -------------------------------
-// {
 
 // Clone
 FTMTree_MT *FTMTree_MT::clone() const
@@ -1485,12 +1476,6 @@ int FTMTree_MT::printTime(DebugTimer &t, const string &s, idVertex nbScalars, co
    }
    return 1;
 }
-
-// }
-
-// ##########
-// Protected
-// ##########
 
 // -----
 // Tools

@@ -23,7 +23,6 @@
 // ----
 // Init
 // ----
-// {
 
 template <typename scalarType>
 void FTMTree_MT::sortInput(void)
@@ -73,11 +72,8 @@ void FTMTree_MT::sortInput(void)
       (*scalars_->mirrorVertices)[(*sortedVect)[i]] = i;
    }
 }
-// }
 
 // Process
-// {
-// }
 
 #endif /* end of include guard: FTMTREE_MT_TPL_H */
 

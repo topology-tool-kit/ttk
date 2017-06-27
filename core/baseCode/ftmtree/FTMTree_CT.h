@@ -34,19 +34,17 @@ namespace ttk
       FTMTree_MT *jt_, *st_;
 
      public:
+
       // -----------------
       // Constructors
       // -----------------
-      // {
 
       FTMTree_CT(Params* const params, Triangulation* mesh, Scalars* const scalars);
       virtual ~FTMTree_CT();
 
-      // }
       // -----------------
       // ACCESSOR
       // -----------------
-      // {
 
       inline FTMTree_MT* getJoinTree(void) const
       {
@@ -100,11 +98,9 @@ namespace ttk
          return 0;
       }
 
-      // }
       // -----------------
       // PROCESS
       // -----------------
-      // {
 
       int vertexPrecomputation();
 
@@ -120,7 +116,7 @@ namespace ttk
 
       void finalizeSegmentation(void);
 
-      // }
+
    };
 }
 

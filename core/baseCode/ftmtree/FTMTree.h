@@ -28,27 +28,23 @@ namespace ttk
    class FTMTree : public FTMTree_CT
    {
      public:
+
       // -----------------
       // CONSTRUCTORS
       // -----------------
-      // {
 
       FTMTree();
       virtual ~FTMTree();
 
-      // }
-
       // -------
       // PROCESS
       // -------
-      // {
 
       // Initialize structures then build tree
       // Need triangulation, scalars and all params set before call
       template <typename scalarType>
       void build(void);
 
-      // }
    };
 
 #include "FTMTree_Template.h"

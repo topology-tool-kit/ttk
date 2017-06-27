@@ -36,7 +36,6 @@ namespace ttk
       idVertex size;
       void*    values;
 
-      // Actually, fields below are unused -----
       std::shared_ptr<std::vector<idVertex>> sosOffsets;
       std::shared_ptr<std::vector<idVertex>> sortedVertices, mirrorVertices;
 

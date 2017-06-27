@@ -21,7 +21,6 @@
 // -------
 // PROCESS
 // -------
-// {
 
 template <typename scalarType>
 void FTMTree::build(void)
@@ -173,7 +172,5 @@ void FTMTree::build(void)
       }
    }
 }
-
-// }
 
 #endif /* end of include guard: FTMTREE_TPL_H */
