@@ -377,7 +377,6 @@ int DiscreteGradient::getDescendingPathThroughWall(const wallId_t wallId,
     }
 
     int oldId;
-    int connectedTriangleId;
     do{
 
       // debug
@@ -390,7 +389,7 @@ int DiscreteGradient::getDescendingPathThroughWall(const wallId_t wallId,
 #ifdef ALLOW_EXIT
           exit(-1);
 #endif
-          break ;
+          break;
         }
       }
 
@@ -403,7 +402,7 @@ int DiscreteGradient::getDescendingPathThroughWall(const wallId_t wallId,
 
       if(isCellCritical(edge)) break;
 
-      connectedTriangleId=getPairedCell(edge);
+      const int connectedTriangleId=getPairedCell(edge);
 
       // add a triangle
       const Cell triangle(2,connectedTriangleId);
@@ -445,7 +444,6 @@ int DiscreteGradient::getAscendingPath(const Cell& cell,
       // assume that cellId is a triangle
       int currentId=cell.id_;
       int oldId;
-      int connectedEdgeId;
       do{
         oldId=currentId;
 
@@ -455,7 +453,7 @@ int DiscreteGradient::getAscendingPath(const Cell& cell,
 
         if(isCellCritical(triangle)) break;
 
-        connectedEdgeId=getPairedCell(triangle, true);
+        const int connectedEdgeId=getPairedCell(triangle, true);
         if(connectedEdgeId==-1) break;
 
         // add an edge
@@ -484,7 +482,6 @@ int DiscreteGradient::getAscendingPath(const Cell& cell,
       // assume that cellId is a tetra
       int currentId=cell.id_;
       int oldId;
-      int connectedTriangleId;
       do{
 
         // debug
@@ -497,7 +494,7 @@ int DiscreteGradient::getAscendingPath(const Cell& cell,
 #ifdef ALLOW_EXIT
             exit(-1);
 #endif
-            break ;
+            break;
           }
         }
 
@@ -509,7 +506,7 @@ int DiscreteGradient::getAscendingPath(const Cell& cell,
 
         if(isCellCritical(tetra)) break;
 
-        connectedTriangleId=getPairedCell(tetra, true);
+        const int connectedTriangleId=getPairedCell(tetra, true);
         if(connectedTriangleId==-1) break;
 
         // add a triangle
@@ -577,7 +574,6 @@ bool DiscreteGradient::getAscendingPathThroughWall(const wallId_t wallId,
     }
 
     int oldId;
-    int connectedEdgeId;
     do{
 
       // debug
@@ -590,7 +586,7 @@ bool DiscreteGradient::getAscendingPathThroughWall(const wallId_t wallId,
 #ifdef ALLOW_EXIT
           exit(-1);
 #endif
-          break ;
+          break;
         }
       }
 
@@ -603,7 +599,7 @@ bool DiscreteGradient::getAscendingPathThroughWall(const wallId_t wallId,
 
       if(isCellCritical(triangle)) break;
 
-      connectedEdgeId=getPairedCell(triangle, true);
+      const int connectedEdgeId=getPairedCell(triangle, true);
 
       // add an edge
       const Cell edge(1,connectedEdgeId);
