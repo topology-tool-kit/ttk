@@ -254,9 +254,16 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  topologicalSimplification_.setVertexNumber(domain->GetNumberOfPoints());
-  topologicalSimplification_.setConstraintNumber(
-    constraints->GetNumberOfPoints());
+  const int numberOfConstraints=constraints->GetNumberOfPoints();
+#ifndef withKamikaze
+  if(numberOfConstraints<=0){
+    cerr << "[ttkTopologicalSimplification] Error : input has no constraints." << endl;
+    return -10;
+  }
+#endif
+
+  topologicalSimplification_.setVertexNumber(numberOfVertices);
+  topologicalSimplification_.setConstraintNumber(numberOfConstraints);
   topologicalSimplification_.setInputScalarFieldPointer(
     inputScalars_->GetVoidPointer(0));
   topologicalSimplification_.setVertexIdentifierScalarFieldPointer(
@@ -281,7 +288,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   // something wrong in baseCode
   if(ret){
     cerr << "[ttkTopologicalSimplification] TopologicalSimplification.execute() error code : " << ret << endl;
-    return -10;
+    return -11;
   }
 #endif
 
