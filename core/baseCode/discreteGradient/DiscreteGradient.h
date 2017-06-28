@@ -1377,14 +1377,14 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
         if(gradient[alphaDim][alpha]==-1){
           int betaNumber{};
           switch(alphaDim){
-            case 1: betaNumber=inputTriangulation_->getEdgeStarNumber(alpha); break;
+            case 1: betaNumber=inputTriangulation_->getEdgeTriangleNumber(alpha); break;
             case 2: betaNumber=inputTriangulation_->getTriangleStarNumber(alpha); break;
           }
           int gamma{-1};
           for(int k=0; k<betaNumber; ++k){
             int beta;
             switch(alphaDim){
-              case 1: inputTriangulation_->getEdgeStar(alpha,k,beta); break;
+              case 1: inputTriangulation_->getEdgeTriangle(alpha,k,beta); break;
               case 2: inputTriangulation_->getTriangleStar(alpha,k,beta); break;
             }
             // take beta such that alpha is the second highest facet of beta
