@@ -1,15 +1,14 @@
-#include                  <ScalarFieldSmoother.h>
+#include <ScalarFieldSmoother.h>
 
 ScalarFieldSmoother::ScalarFieldSmoother(){
-
-  inputData_ = NULL;
-  outputData_ = NULL;
-  dimensionNumber_ = 1;
-  triangulation_ = NULL;
+   inputData_       = nullptr;
+   outputData_      = nullptr;
+   dimensionNumber_ = 1;
+   mask_            = nullptr;
+   triangulation_   = nullptr;
 }
 
 ScalarFieldSmoother::~ScalarFieldSmoother(){
-  
 }
 
 

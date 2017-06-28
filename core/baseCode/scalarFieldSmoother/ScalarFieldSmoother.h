@@ -45,6 +45,11 @@ namespace ttk{
         outputData_ = data;
         return 0;
       }
+
+      int setMaskDataPointer(void *mask){
+        mask_ = (char*)mask;
+        return 0;
+      }
     
       inline int setupTriangulation(Triangulation *triangulation){
         
@@ -65,6 +70,7 @@ namespace ttk{
     
       int                   dimensionNumber_;
       void                  *inputData_, *outputData_;
+      char                  *mask_;
       Triangulation         *triangulation_;
   };
 
@@ -102,6 +108,8 @@ template <class dataType> int ScalarFieldSmoother::smooth(
       outputData[dimensionNumber_*i + j] = inputData[dimensionNumber_*i + j];
     }
   }
+
+  cout << "Mask: " << (mask_ == nullptr) << endl;
  
   for(int it = 0; it < numberOfIterations; it++){
 #ifdef withOpenMP
@@ -109,8 +117,11 @@ template <class dataType> int ScalarFieldSmoother::smooth(
     omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
-    for(int i = 0; i < (int) vertexNumber; i++){
+    for(int i = 0; i < vertexNumber; i++){
     
+      // avoid to process masked vertices
+      if(mask_ != nullptr && mask_[i] == 0) continue;
+
       // avoid any processing if the abort signal is sent
       if((!wrapper_)||((wrapper_)&&(!wrapper_->needsToAbort()))){
         
@@ -150,7 +161,11 @@ template <class dataType> int ScalarFieldSmoother::smooth(
       // assign the tmpData back to the output
       for(int i = 0; i < vertexNumber; i++){
         for(int j = 0; j < dimensionNumber_; j++){
-          outputData[dimensionNumber_*i + j] = tmpData[dimensionNumber_*i + j];
+           // only set value for unmasked points
+           if (mask_ == nullptr || mask_[i] != 0)
+           {
+              outputData[dimensionNumber_ * i + j] = tmpData[dimensionNumber_ * i + j];
+           }
         }
       }
     }
