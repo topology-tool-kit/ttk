@@ -293,7 +293,14 @@ int TopologicalSimplification::execute() const{
 
   // get the user extremum list
   vector<bool> extrema(vertexNumber_, false);
-  for(int k=0; k<constraintNumber_; ++k) extrema[identifiers[k]]=true;
+  for(int k=0; k<constraintNumber_; ++k){
+    const int identifierId=identifiers[k];
+
+#ifndef withKamikaze
+    if(identifierId>=0 and identifierId<vertexNumber_)
+#endif
+      extrema[identifierId]=true;
+  }
 
   vector<int> authorizedMinima;
   vector<int> authorizedMaxima;
