@@ -31,6 +31,7 @@ struct ArcData {
    vtkSmartPointer<vtkIntArray>    normalizedIdArc;
    vtkSmartPointer<vtkIntArray>    sizeArcs;
    vtkSmartPointer<vtkDoubleArray> spanArcs;
+   vtkSmartPointer<vtkCharArray>   regularMask;
 #ifdef withStatsTime
    vtkSmartPointer<vtkFloatArray> startArcs;
    vtkSmartPointer<vtkFloatArray> endArcs;
@@ -58,6 +59,10 @@ struct ArcData {
       spanArcs = vtkSmartPointer<vtkDoubleArray>::New();
       spanArcs->SetName("RegionSpan");
       spanArcs->SetNumberOfComponents(1);
+
+      regularMask = vtkSmartPointer<vtkCharArray>::New();
+      regularMask->SetName("RegularMask");
+      regularMask->SetNumberOfComponents(1);
 
 #ifdef withStatsTime
       startArcs = vtkSmartPointer<vtkFloatArray>::New();
@@ -101,34 +106,39 @@ struct ArcData {
 
       if (!spanArcs) {
          cerr << "[ttkFTMTree] Error : vtkDoubleArray span allocation problem." << endl;
-         return -2;
+         return -1;
+      }
+
+      if (!regularMask) {
+         cerr << "[ttkFTMTree] Error : vtkCharArray span allocation problem." << endl;
+         return -1;
       }
 
 # ifdef withStatsTime
 
       if (!startArcs) {
          cerr << "[ttkFTMTree] Error : vtkFloatArray start allocation problem." << endl;
-         return -3;
+         return -1;
       }
 
       if (!endArcs) {
          cerr << "[ttkFTMTree] Error : vtkFloatArray end allocation problem." << endl;
-         return -3;
+         return -1;
       }
 
       if (!timeArcs) {
          cerr << "[ttkFTMTree] Error : vtkFloatArray time allocation problem." << endl;
-         return -3;
+         return -1;
       }
 
       if (!origArcs) {
          cerr << "[ttkFTMTree] Error : vtkIntArray origin allocation problem." << endl;
-         return -4;
+         return -1;
       }
 
       if (!tasksArcs) {
          cerr << "[ttkFTMTree] Error : vtkIntArray tasks allocation problem." << endl;
-         return -4;
+         return -1;
       }
 
 # endif
@@ -137,7 +147,7 @@ struct ArcData {
    }
 
    void fillArray(const idSuperArc arcId, Triangulation* triangulation, FTMTree_MT* tree,
-                  Params params)
+                  Params params, bool reg=false)
    {
       SuperArc* arc = tree->getSuperArc(arcId);
 
@@ -178,6 +188,7 @@ struct ArcData {
          skeletonArcs->GetCellData()->AddArray(sizeArcs);
       }
       skeletonArcs->GetCellData()->AddArray(spanArcs);
+      skeletonArcs->GetPointData()->AddArray(regularMask);
 #ifdef withStatsTime
       skeletonArcs->GetCellData()->AddArray(startArcs);
       skeletonArcs->GetCellData()->AddArray(endArcs);
@@ -221,22 +232,22 @@ struct VertData {
 #ifndef withKamikaze
 
       if (!idVerts) {
-         cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
-         return -1;
+         cerr << "[ttkFTMTree] Error : vtkIntArray id allocation problem." << endl;
+         return -2;
       }
 
       if (!normalizedIdVert) {
-         cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
-         return -1;
+         cerr << "[ttkFTMTree] Error : vtkIntArray normalized id allocation problem." << endl;
+         return -2;
       }
 
       if (!sizeRegion) {
-         cerr << "[ttkFTMTree] Error : vtkIntArray size allocation problem." << endl;
-         return -1;
+         cerr << "[ttkFTMTree] Error : vtkIntArray region size allocation problem." << endl;
+         return -2;
       }
 
       if (!spanRegion) {
-         cerr << "[ttkFTMTree] Error : vtkDoubleArray size allocation problem." << endl;
+         cerr << "[ttkFTMTree] Error : vtkDoubleArray region span allocation problem." << endl;
          return -2;
       }
 
