@@ -2,7 +2,7 @@
 ttk_add_basecode_package(triangulation)
 
 # Boost dependencies
-ttk_add_external_package(boost boost ${TTK_DIR}/third_party/boost/)
+ttk_add_external_package(boost boost)
 
 set(CMAKE_CXX_FLAGS "-D_GLIBCXX_PARALLEL")
 
