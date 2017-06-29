@@ -145,8 +145,6 @@ void FTMTree_MT::build(const bool ct)
    }
 }
 
-// extrema
-
 int FTMTree_MT::precompute()
 {
    int ret = 0;
@@ -214,8 +212,6 @@ int FTMTree_MT::precompute()
 
    return ret;
 }
-
-// skeleton
 
 DebugTimer _launchGlobalTime;
 

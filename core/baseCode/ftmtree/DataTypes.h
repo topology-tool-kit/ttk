@@ -97,8 +97,9 @@ namespace ttk
 }
 
 // Tests
-
+// Stats time are not compatible with CT, only MT
 // #define withStatsTime 1
+
 // #define withProcessSpeed 1
 
 #endif /* end of include guard: DATATYPES_H */
