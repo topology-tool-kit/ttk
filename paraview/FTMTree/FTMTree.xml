@@ -154,6 +154,19 @@
                 </Documentation>
             </IntVectorProperty>
 
+            <IntVectorProperty
+                name="NormalizeId"
+                command="SetWithNormalize"
+                label="Normalize Ids"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                    Normalize Ids to have them consitent between different runs.
+                </Documentation>
+            </IntVectorProperty>
+
             <PropertyGroup panel_widget="Line" label="Input options">
                 <Property name="Scalar Field"/>
                 <Property name="UseInputOffsetScalarField"/>
@@ -169,6 +182,7 @@
                 <Property name="UseAllCores" />
                 <Property name="ThreadNumber" />
                 <Property name="DebugLevel" />
+                <Property name="NormalizeId" />
             </PropertyGroup>
 
             <OutputPort name="Skeleton Nodes" index="0" id="port0" />

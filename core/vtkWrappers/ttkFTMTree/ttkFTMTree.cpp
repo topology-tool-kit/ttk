@@ -478,7 +478,7 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
 #endif
 
    ArcData arcData;
-   arcData.init(tree->getNumberOfNodes());
+   arcData.init(tree->getNumberOfNodes(), params_);
 
    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 #ifndef withKamikaze
@@ -532,7 +532,7 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input,
 
    VertData vertdata;
 
-   vertdata.init(numberOfVertices);
+   vertdata.init(numberOfVertices, params_);
 
    // arcs
    for (idVertex arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
