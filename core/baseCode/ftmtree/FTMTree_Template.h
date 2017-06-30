@@ -64,7 +64,7 @@ void FTMTree::build(void)
       default:
          break;
    }
-   printTime(initTime, "alloc step", -1, 3);
+   printTime(initTime, "[FTM] alloc", -1, 3);
 
    DebugTimer startTime;
 
@@ -89,14 +89,14 @@ void FTMTree::build(void)
       default:
          break;
    }
-   printTime(setTimer, "0 init");
+   printTime(setTimer, "[FTM] init", -1, 3);
 
    // for fast comparison
    // and regions / segmentation
    DebugTimer sortTime;
    initSoS();
    sortInput<scalarType>();
-   printTime(sortTime, "1 sort step", -1, 1);
+   printTime(sortTime, "[FTM] sort step", -1, 3);
 
    // -----
    // BUILD
@@ -104,9 +104,9 @@ void FTMTree::build(void)
 
    DebugTimer buildTime;
    FTMTree_CT::build(params_->treeType);
-   printTime(buildTime, "9 build tree", -1, 1);
+   printTime(buildTime, "[FTM] build tree", -1, 3);
 
-   printTime(startTime, "10 TOTAL ", -1, 1);
+   printTime(startTime, "[FTM] Total ", -1, 1);
    // exit(0);
 
    // Build the list of regular vertices of the arc
@@ -155,7 +155,7 @@ void FTMTree::build(void)
       }
   }
 
-   if (debugLevel_ > 3) {
+   if (debugLevel_ > 4) {
       switch (params_->treeType) {
          case TreeType::Join:
             jt_->printTree2();

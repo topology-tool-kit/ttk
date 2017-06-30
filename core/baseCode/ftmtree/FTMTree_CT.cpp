@@ -103,8 +103,7 @@ void FTMTree_CT::build(TreeType tt)
    // if(bothMT){
    //    DebugTimer precomputeTime;
    //    vertexPrecomputation();
-   //    printTime(precomputeTime, "2 precompute ");
-
+   //    printTime(precomputeTime, "[FTM] precompute ", -1, 3);
 
    // -------
    // JT & ST
@@ -124,7 +123,7 @@ void FTMTree_CT::build(TreeType tt)
 #pragma omp taskwait
   }
 
-   printTime(mergeTreesTime, "7 merge trees ");
+   printTime(mergeTreesTime, "[FTM] merge trees ", -1, 3);
 
    // -------
    // Combine
@@ -137,8 +136,8 @@ void FTMTree_CT::build(TreeType tt)
 
       DebugTimer combineTime;
       combine();
-      printTime(combineTime, "8 combine trees");
-      printTime(combineFullTime, "combine full", -1, 3);
+      printTime(combineTime, "[FTM] combine trees", -1, 4);
+      printTime(combineFullTime, "[FTM] combine full", -1, 3);
    }
 
    // -----
@@ -195,7 +194,6 @@ int FTMTree_CT::combine()
 
    const bool DEBUG = false;
 
-
    // -------
    // Reserve
    // -------
@@ -232,7 +230,6 @@ int FTMTree_CT::combine()
       cout << "growingNodes : " << growingNodes.size() << " in : " << stepTime.getElapsedTime()
            << endl;
    }
-
 
    // Warning, have a reserve here, can't make it at the begnining, need build output
    treeData_.leaves->reserve(jt_->getLeaves().size() + st_->getLeaves().size());
@@ -284,8 +281,6 @@ int FTMTree_CT::combine()
          FTMTree_MT *xt = (isJT) ? jt_ : st_;
          FTMTree_MT *yt = (isJT) ? st_ : jt_;
 
-
-
          // ------------
          // INFO JT / ST
          // ------------
@@ -323,7 +318,6 @@ int FTMTree_CT::combine()
 #endif
             continue;
          }
-
 
          // -----------
          // NODES IN CT
@@ -480,7 +474,7 @@ void FTMTree_CT::finalizeSegmentation(void)
       getSuperArc(i)->createSegmentation(scalars_);
    }
 
-   printTime(finSegmTime, "Finalize segm", -1, 3);
+   printTime(finSegmTime, "[FTM] post-process segm", -1, 4);
 }
 
 // }
