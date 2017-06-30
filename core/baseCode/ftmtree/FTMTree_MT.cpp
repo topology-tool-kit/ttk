@@ -117,7 +117,7 @@ void FTMTree_MT::build(const bool ct)
    // ----------------------------
    DebugTimer precomputeTime;
    int alreadyDone = precompute();
-   printTime(precomputeTime, "3 precompute " + treeString, scalars_->size, 2 + alreadyDone);
+   printTime(precomputeTime, "[FTM] precompute " + treeString, scalars_->size, 3 + alreadyDone);
 
    DebugTimer buildTime;
    leaves();
@@ -129,11 +129,11 @@ void FTMTree_MT::build(const bool ct)
            ++nbProcessed;
    }
 #endif
-   printTime(buildTime, "4 leaves "+treeString, nbProcessed);
+   printTime(buildTime, "[FTM] leaves "+treeString, nbProcessed, 3);
 
    DebugTimer bbTime;
    idVertex bbSize = trunk(ct);
-   printTime(bbTime, "5 trunk "+treeString, bbSize);
+   printTime(bbTime, "[FTM] trunk "+treeString, bbSize, 3);
 
    // ------------
    // Segmentation
@@ -141,7 +141,7 @@ void FTMTree_MT::build(const bool ct)
    if (ct && params_->segm) {
       DebugTimer segmTime;
       buildSegmentation();
-      printTime(segmTime, "6 segmentation " + treeString, scalars_->size);
+      printTime(segmTime, "[FTM] segment " + treeString, scalars_->size, 3);
    }
 }
 
@@ -191,7 +191,7 @@ int FTMTree_MT::precompute()
    treeData_.leaves->resize(nbLeaves);
    std::iota(treeData_.leaves->begin(), treeData_.leaves->end(), 0);
 
-   if (debugLevel_ >= 3) {
+   if (debugLevel_ >= 4) {
       cout << "nb leaves " << nbLeaves << endl;
    }
 
@@ -541,7 +541,7 @@ idVertex FTMTree_MT::trunk(const bool ct)
    closeSuperArc(lastArc, rootNode);
    getSuperArc(lastArc)->setLastVisited(getNode(rootNode)->getVertexId());
 
-   printTime(bbTimer, "Backbone seq.", -1, 3);
+   printTime(bbTimer, "[FTM] trunk seq.", -1, 4);
    bbTimer.reStart();
 
    // ------------
@@ -554,7 +554,7 @@ idVertex FTMTree_MT::trunk(const bool ct)
    } else {
        processed = trunkSegmentation(pendingNodesVerts, begin, stop);
    }
-   printTime(bbTimer, "Backbone para.", -1, 3);
+   printTime(bbTimer, "[FTM] trunk para.", -1, 4);
 
    return processed;
 }
@@ -862,7 +862,7 @@ void FTMTree_MT::buildSegmentation()
    }
 #pragma omp taskwait
 
-   printTime(segmentsSet, "segm. set verts", -1, 3);
+   printTime(segmentsSet, "segm. set verts", -1, 4);
 
    if (treeData_.trunkSegments->size() == 0) {
       // sort arc that have been filled by the trunk
@@ -875,7 +875,7 @@ void FTMTree_MT::buildSegmentation()
          }
       }
 #pragma omp taskwait
-      printTime(segmentsSortTime, "segm. sort verts", -1, 3);
+      printTime(segmentsSortTime, "segm. sort verts", -1, 4);
    } else {
        // Contour tree: we create the arc segmentation for arcs in the trunk
        DebugTimer segmentsArcTime;
@@ -888,7 +888,7 @@ void FTMTree_MT::buildSegmentation()
           }
        }
 #pragma omp taskwait
-      printTime(segmentsArcTime, "segm. creat trunk verts", -1, 3);
+      printTime(segmentsArcTime, "segm. trunk verts", -1, 4);
    }
 
    // ----------------------
@@ -924,6 +924,7 @@ void FTMTree_MT::finalizeSegmentation(void)
 
 void FTMTree_MT::normalizeIds(void)
 {
+    DebugTimer normTime;
     sortLeaves(true);
 
     auto getNodeParentArcNb = [&](const idNode curNode, const bool goUp) -> idSuperArc {
@@ -1006,6 +1007,7 @@ void FTMTree_MT::normalizeIds(void)
            }
         }
     }
+   printTime(normTime, "[FTM] normalize ids", -1, 4);
 }
 
 
@@ -1421,19 +1423,23 @@ void FTMTree_MT::printTree2()
 void FTMTree_MT::printParams(void) const
 {
    if (debugLevel_ > 1) {
-      cout << "------------" << endl;
-      cout << "nb threads : " << threadNumber_ << endl;
-      cout << "debug lvl  : " << debugLevel_ << endl;
-      cout << "tree type  : ";
-      if (params_->treeType == TreeType::Contour) {
-         cout << "Contour";
-      } else if (params_->treeType == TreeType::Join) {
-         cout << "Join";
-      } else if (params_->treeType == TreeType::Split) {
-         cout << "Split";
+      if (debugLevel_ > 2) {
+         cout << "------------" << endl;
       }
-      cout << endl;
-      cout << "------------" << endl;
+      cout << "nb threads : " << threadNumber_ << endl;
+      if (debugLevel_ > 2) {
+         cout << "debug lvl  : " << debugLevel_ << endl;
+         cout << "tree type  : ";
+         if (params_->treeType == TreeType::Contour) {
+            cout << "Contour";
+         } else if (params_->treeType == TreeType::Join) {
+            cout << "Join";
+         } else if (params_->treeType == TreeType::Split) {
+            cout << "Split";
+         }
+         cout << endl;
+         cout << "------------" << endl;
+      }
    }
 }
 
@@ -1448,7 +1454,7 @@ int FTMTree_MT::printTime(DebugTimer &t, const string &s, idVertex nbScalars, co
 #ifdef withProcessSpeed
       int          speed = nbScalars / t.getElapsedTime();
 #endif
-      for (int i = 2; i < debugLevel; i++)
+      for (int i = 3; i < debugLevel; i++)
          st << "-";
       st << s << " in ";
       st.seekg(0, ios::end);
