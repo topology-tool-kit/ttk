@@ -460,6 +460,8 @@ int MorseSmaleComplex3D::execute(){
   discreteGradient_.setAllowReversingWithNonRemovable(false);
   discreteGradient_.setCollectPersistencePairs(false);
   discreteGradient_.buildGradient<dataType>();
+  discreteGradient_.buildGradient2<dataType>();
+  discreteGradient_.buildGradient3<dataType>();
   discreteGradient_.reverseGradient<dataType>();
 
   vector<Cell> criticalPoints;
