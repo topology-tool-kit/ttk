@@ -49,7 +49,15 @@ if(NOT TTK_PKG)
       CACHE INTERNAL "PROJECT_DEP")
   endfunction(ttk_add_dep)
 
+  function(ttk_add_external_header_package header)
+    ttk_add_external_package(${header} ${header})
+  endfunction(ttk_add_external_header_package)
+
   function(ttk_add_external_package header lib)
+
+    # Use the same entry for the fields 'header' and 'lib' for header-only
+    # packages (ex: boost, Eigen, etc.)
+
     option(with${lib} "Enable ${lib} support" true)
 
     if(with${lib})
@@ -84,7 +92,9 @@ if(NOT TTK_PKG)
 
         if(${lib}_PATH)
           ttk_add_option(with${lib})
-          ttk_add_dep(${${lib}_PATH})
+          if(NOT "${lib}" MATCHES "${header}")
+            ttk_add_dep(${${lib}_PATH})
+          endif(NOT "${lib}" MATCHES "${header}")
         endif(${lib}_PATH)
       endif(${header}_PATH)
     endif(with${lib})
