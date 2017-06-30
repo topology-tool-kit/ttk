@@ -40,17 +40,19 @@ struct ArcData {
    vtkSmartPointer<vtkIntArray>   tasksArcs;
 #endif
 
-   int init(const idNode nbNodes)
+   int init(const idNode nbNodes, Params params)
    {
       pointIds.resize(nbNodes, nullNodes);
 
-      idArcs = vtkSmartPointer<vtkIntArray>::New();
-      idArcs->SetName("SegmentationId");
-      idArcs->SetNumberOfComponents(1);
-
-      normalizedIdArc = vtkSmartPointer<vtkIntArray>::New();
-      normalizedIdArc->SetName("NormalizedIds");
-      normalizedIdArc->SetNumberOfComponents(1);
+      if(params.normalize){
+         normalizedIdArc = vtkSmartPointer<vtkIntArray>::New();
+         normalizedIdArc->SetName("SegmentationId");
+         normalizedIdArc->SetNumberOfComponents(1);
+      } else {
+         idArcs = vtkSmartPointer<vtkIntArray>::New();
+         idArcs->SetName("SegmentationId");
+         idArcs->SetNumberOfComponents(1);
+      }
 
       sizeArcs = vtkSmartPointer<vtkIntArray>::New();
       sizeArcs->SetName("RegionSize");
@@ -89,13 +91,8 @@ struct ArcData {
 // Check
 #ifndef withKamikaze
 
-      if (!idArcs) {
+      if (!idArcs && !normalizedIdArc) {
          cerr << "[ttkFTMTree] Error : vtkIntArray id allocation problem." << endl;
-         return -1;
-      }
-
-      if (!normalizedIdArc) {
-         cerr << "[ttkFTMTree] Error : vtkIntArray normId allocation problem." << endl;
          return -1;
       }
 
@@ -161,12 +158,13 @@ struct ArcData {
       const idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
       triangulation->getVertexPoint(upVertexId, upPoints[0], upPoints[1], upPoints[2]);
 
-      idArcs->InsertNextTuple1( arcId);
       if (params.normalize) {
-         normalizedIdArc->InsertNextTuple1( arc->getNormalizedId());
+         normalizedIdArc->InsertNextTuple1(arc->getNormalizedId());
+      } else {
+         idArcs->InsertNextTuple1(arcId);
       }
       if (params.segm) {
-         sizeArcs->InsertNextTuple1( tree->getArcSize(arcId));
+         sizeArcs->InsertNextTuple1(tree->getArcSize(arcId));
       }
       spanArcs->InsertNextTuple1(Geometry::distance(downPoints, upPoints));
 #ifdef withStatsTime
@@ -179,9 +177,10 @@ struct ArcData {
    }
 
    void addArray(vtkUnstructuredGrid *skeletonArcs, Params params){
-      skeletonArcs->GetCellData()->AddArray(idArcs);
       if (params.normalize) {
          skeletonArcs->GetCellData()->AddArray(normalizedIdArc);
+      } else {
+         skeletonArcs->GetCellData()->AddArray(idArcs);
       }
       if(params.segm)
       {
@@ -206,17 +205,20 @@ struct VertData {
    vtkSmartPointer<vtkIntArray> sizeRegion;
    vtkSmartPointer<vtkDoubleArray> spanRegion;
 
-   int init(const idVertex numberOfVertices)
+   int init(const idVertex numberOfVertices, Params params)
    {
-      idVerts = vtkSmartPointer<vtkIntArray>::New();
-      idVerts->SetName("SegmentationId");
-      idVerts->SetNumberOfComponents(1);
-      idVerts->SetNumberOfTuples(numberOfVertices);
 
-      normalizedIdVert = vtkSmartPointer<vtkIntArray>::New();
-      normalizedIdVert->SetName("NormalizedIds");
-      normalizedIdVert->SetNumberOfComponents(1);
-      normalizedIdVert->SetNumberOfTuples(numberOfVertices);
+      if (params.normalize) {
+         normalizedIdVert = vtkSmartPointer<vtkIntArray>::New();
+         normalizedIdVert->SetName("SegmentationId");
+         normalizedIdVert->SetNumberOfComponents(1);
+         normalizedIdVert->SetNumberOfTuples(numberOfVertices);
+      } else {
+         idVerts = vtkSmartPointer<vtkIntArray>::New();
+         idVerts->SetName("SegmentationId");
+         idVerts->SetNumberOfComponents(1);
+         idVerts->SetNumberOfTuples(numberOfVertices);
+       }
 
       sizeRegion = vtkSmartPointer<vtkIntArray>::New();
       sizeRegion->SetName("RegionSize");
@@ -231,13 +233,8 @@ struct VertData {
 // Check
 #ifndef withKamikaze
 
-      if (!idVerts) {
+      if (!idVerts && !normalizedIdVert) {
          cerr << "[ttkFTMTree] Error : vtkIntArray id allocation problem." << endl;
-         return -2;
-      }
-
-      if (!normalizedIdVert) {
-         cerr << "[ttkFTMTree] Error : vtkIntArray normalized id allocation problem." << endl;
          return -2;
       }
 
@@ -278,12 +275,14 @@ struct VertData {
       idSuperArc nid = arc->getNormalizedId();
 
       // critical points
-      idVerts->SetTuple1(upVertexId, arcId);
-      idVerts->SetTuple1(downVertexId, arcId);
       if(params.normalize){
          normalizedIdVert->SetTuple1(upVertexId, nid);
          normalizedIdVert->SetTuple1(downVertexId, nid);
+      } else{
+         idVerts->SetTuple1(upVertexId, arcId);
+         idVerts->SetTuple1(downVertexId, arcId);
       }
+
       sizeRegion->SetTuple1(upVertexId, regionSize);
       sizeRegion->SetTuple1(downVertexId, regionSize);
       spanRegion->SetTuple1(upVertexId, regionSpan);
@@ -291,9 +290,10 @@ struct VertData {
 
       // regular nodes
       for (const idVertex vertexId : *arc) {
-         idVerts->SetTuple1(vertexId, arcId);
          if (params.normalize) {
             normalizedIdVert->SetTuple1(vertexId, nid);
+         } else {
+            idVerts->SetTuple1(vertexId, arcId);
          }
          sizeRegion->SetTuple1(vertexId, regionSize);
          spanRegion->SetTuple1(vertexId, regionSpan);
@@ -305,9 +305,10 @@ struct VertData {
       if (!params.segm)
          return;
 
-      pointData->AddArray(idVerts);
       if(params.normalize){
-          pointData->AddArray(normalizedIdVert);
+         pointData->AddArray(normalizedIdVert);
+      } else {
+         pointData->AddArray(idVerts);
       }
 
       pointData->AddArray(sizeRegion);
