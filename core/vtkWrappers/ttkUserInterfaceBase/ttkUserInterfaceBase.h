@@ -102,7 +102,7 @@ class ttkUserInterfaceBase : public ttkProgramBase{
 
   protected:
     
-    bool                          hasTexture_, isUp_, repeat_, transparency_;
+    bool                          hasTexture_, isUp_, repeat_, transparency_, fullscreen_;
     vector<bool>                  visibleOutputs_;
     vector<int>                   hiddenOutputs_;
     ttkKeyHandler                 *keyHandler_;
