@@ -64,6 +64,9 @@ class VTKFILTERSCORE_EXPORT ttkGeometrySmoother
     vtkSetMacro(NumberOfIterations, int);
     vtkGetMacro(NumberOfIterations, int);
     
+    vtkSetMacro(MaskIdentifier, int);
+    vtkGetMacro(MaskIdentifier, int);
+
     vtkSetMacro(UseInputMask, bool);
     vtkGetMacro(UseInputMask, bool);
     

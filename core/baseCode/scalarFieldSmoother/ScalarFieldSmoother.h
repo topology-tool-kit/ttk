@@ -109,8 +109,6 @@ template <class dataType> int ScalarFieldSmoother::smooth(
     }
   }
 
-  cout << "Mask: " << (mask_ == nullptr) << endl;
- 
   for(int it = 0; it < numberOfIterations; it++){
 #ifdef withOpenMP
     omp_lock_t writeLock;
