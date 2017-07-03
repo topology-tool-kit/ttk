@@ -1758,7 +1758,7 @@ int DiscreteGradient::proto_getRemovableMaxima(const vector<pair<int,char>>& cri
 
   // by default : maximum is removable
   for(int i=0; i<numberOfCells; ++i){
-    const Cell maximumCandidate(3, i);
+    const Cell maximumCandidate(maximumDim, i);
 
     if(isMaximum(maximumCandidate))
       isRemovableMaximum[i]=true;
