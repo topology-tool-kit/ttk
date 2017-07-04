@@ -67,12 +67,22 @@ class VTKFILTERSCORE_EXPORT ttkScalarFieldSmoother
     vtkSetMacro(NumberOfIterations, int);
     vtkGetMacro(NumberOfIterations, int);
     
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
-
     vtkSetMacro(ScalarFieldIdentifier, int);
     vtkGetMacro(ScalarFieldIdentifier, int);
 
+    vtkSetMacro(MaskIdentifier, int);
+    vtkGetMacro(MaskIdentifier, int);
+
+    vtkSetMacro(UseInputMask, bool);
+    vtkGetMacro(UseInputMask, bool);
+    
+    vtkSetMacro(ScalarField, string);
+    vtkGetMacro(ScalarField, string);
+
+    vtkSetMacro(InputMask, string);
+    vtkGetMacro(InputMask, string);
+
+    
     
   protected:
     
@@ -87,7 +97,10 @@ class VTKFILTERSCORE_EXPORT ttkScalarFieldSmoother
     
     int                   NumberOfIterations;
     int                   ScalarFieldIdentifier;
+    int                   MaskIdentifier;
+    bool                  UseInputMask;
     string                ScalarField;
+    string                InputMask;
     vtkDataArray          *outputScalarField_;
     ScalarFieldSmoother   smoother_;
     

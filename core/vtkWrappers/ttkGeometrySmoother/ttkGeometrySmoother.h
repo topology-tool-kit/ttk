@@ -64,6 +64,14 @@ class VTKFILTERSCORE_EXPORT ttkGeometrySmoother
     vtkSetMacro(NumberOfIterations, int);
     vtkGetMacro(NumberOfIterations, int);
     
+    vtkSetMacro(MaskIdentifier, int);
+    vtkGetMacro(MaskIdentifier, int);
+
+    vtkSetMacro(UseInputMask, bool);
+    vtkGetMacro(UseInputMask, bool);
+    
+    vtkSetMacro(InputMask, string);
+    vtkGetMacro(InputMask, string);
     
   protected:
     
@@ -77,6 +85,9 @@ class VTKFILTERSCORE_EXPORT ttkGeometrySmoother
   private:
     
     int                   NumberOfIterations;
+    int                   MaskIdentifier;
+    bool                  UseInputMask;
+    string                InputMask;
     
     ScalarFieldSmoother   smoother_;
   

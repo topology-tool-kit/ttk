@@ -69,6 +69,7 @@ ttkUserInterfaceBase::ttkUserInterfaceBase() {
   isUp_ = false;
   repeat_ = false;
   transparency_ = false;
+  fullscreen_ = false;
   
   customInteractor_ = vtkSmartPointer<ttkCustomInteractor>::New();
   pngReader_ = vtkSmartPointer<vtkPNGReader>::New();
@@ -107,6 +108,7 @@ int ttkUserInterfaceBase::init(int &argc, char **argv){
 
   parser_.setOption("R", 
     &repeat_, "Repeat the program when hitting `Return'");
+  parser_.setOption("fullscreen", &fullscreen_, "Maximize the window at launch");
   
   return ProgramBase::init(argc, argv);
 }
@@ -198,7 +200,11 @@ int ttkUserInterfaceBase::run(){
   }
   
   renderWindow_->AddRenderer(renderer_);
-  renderWindow_->SetFullScreen(true);
+  if (fullscreen_) {
+     renderWindow_->SetFullScreen(fullscreen_);
+  } else {
+     renderWindow_->SetSize(1920,1080);
+  }
   renderWindow_->SetWindowName("TTK - The Topology ToolKit");
   
   interactor_->SetRenderWindow(renderWindow_);

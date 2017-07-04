@@ -7,6 +7,8 @@ ttkScalarFieldSmoother::ttkScalarFieldSmoother(){
   // init
   NumberOfIterations = 1;
   ScalarFieldIdentifier = 0;
+  MaskIdentifier = 0;
+  UseInputMask = false;
   outputScalarField_ = NULL;
   
 }
@@ -21,7 +23,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
 
   Memory m;
-  
+
   vtkDataSet *input = inputs[0];
   vtkDataSet *output = outputs[0];
   
@@ -40,6 +42,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
   output->ShallowCopy(input);
  
   vtkDataArray *inputScalarField = NULL;
+  vtkCharArray *inputMaskField = NULL;
   
   if(ScalarField.length()){
     inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
@@ -59,6 +62,24 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
     msg << "[ScalarFieldSmoother] Using field `"
       << inputScalarField->GetName() << "'..." << endl;
     dMsg(cout, msg.str(), infoMsg);
+  }
+
+  if(UseInputMask){
+      if(InputMask.length()){
+          inputMaskField = vtkCharArray::SafeDownCast(input->GetPointData()->GetArray(InputMask.data()));
+      } else {
+          inputMaskField = vtkCharArray::SafeDownCast(input->GetPointData()->GetArray(MaskIdentifier));
+      }
+
+      if(inputMaskField->GetName())
+          InputMask = inputMaskField->GetName();
+
+      {
+          stringstream msg;
+          msg << "[ScalarFieldSmoother] Using mask `"
+              << inputMaskField->GetName() << "'..." << endl;
+          dMsg(cout, msg.str(), infoMsg);
+      }
   }
 
   if(outputScalarField_){
@@ -108,6 +129,8 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
     output->GetPointData()->RemoveArray(0);
   }
   output->GetPointData()->AddArray(outputScalarField_);
+
+  void* inputMaskPtr = (inputMaskField)?inputMaskField->GetVoidPointer(0):nullptr;
   
   // calling the smoothing package
   switch(inputScalarField->GetDataType()){
@@ -117,6 +140,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
         smoother_.setDimensionNumber(inputScalarField->GetNumberOfComponents());
         smoother_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
         smoother_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
+        smoother_.setMaskDataPointer(inputMaskPtr);
         smoother_.smooth<VTK_TT>(NumberOfIterations);
       }      
     ));
