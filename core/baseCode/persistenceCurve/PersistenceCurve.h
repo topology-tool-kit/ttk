@@ -240,7 +240,6 @@ int PersistenceCurve::execute() const{
       discreteGradient.setIterationThreshold(-1);
       discreteGradient.setReverseSaddleMaximumConnection(true);
       discreteGradient.setReverseSaddleSaddleConnection(true);
-      discreteGradient.setAllowReversingWithNonRemovable(false);
       discreteGradient.setCollectPersistencePairs(false);
       discreteGradient.setInputScalarField(inputScalars_);
       discreteGradient.setInputOffsets(inputOffsets_);

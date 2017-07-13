@@ -108,7 +108,8 @@ namespace ttk{
       source_{-1},
       destination_{-1},
       sourceSlot_{-1},
-      destinationSlot_{-1}
+      destinationSlot_{-1},
+      persistence_{}
     {}
 
     VPath(const bool isValid,
@@ -332,11 +333,6 @@ namespace ttk{
 
       int setReverseSaddleSaddleConnection(const bool state){
         ReverseSaddleSaddleConnection=state;
-        return 0;
-      }
-
-      int setAllowReversingWithNonRemovable(const bool state){
-        AllowReversingWithNonRemovable=state;
         return 0;
       }
 
@@ -789,7 +785,6 @@ namespace ttk{
       int IterationThreshold;
       bool ReverseSaddleMaximumConnection;
       bool ReverseSaddleSaddleConnection;
-      bool AllowReversingWithNonRemovable;
       bool CollectPersistencePairs;
 
       int dimensionality_;
@@ -1338,12 +1333,12 @@ int DiscreteGradient::g0_third(const int cellDim,
     const int cellId,
     const dataType* const scalars,
     const int* const offsets) const{
-  int facetMax{-1};
-  int facetMaxSecond{-1};
   int facetMaxThird{-1};
-  int facetMin{-1};
 
   if(dimensionality_==3){
+    int facetMax{-1};
+    int facetMaxSecond{-1};
+    int facetMin{-1};
     int facets[4];
 
     switch(cellDim){
@@ -2826,7 +2821,7 @@ int DiscreteGradient::proto_processSaddleMaximumConnections(const int iterationT
 
       if(!isRemovedSaddle[dmt_saddleId]){
         for(int i=0; i<(saddleDim+1); ++i){
-          int vertexId;
+          int vertexId=-1;
           if(dimensionality_==2)
             inputTriangulation_->getEdgeVertex(dmt_saddleId, i, vertexId);
           else if(dimensionality_==3)
@@ -2851,7 +2846,7 @@ int DiscreteGradient::proto_processSaddleMaximumConnections(const int iterationT
               saddleCandidateNumber=inputTriangulation_->getVertexTriangleNumber(pl_saddleId);
 
             for(int j=0; j<saddleCandidateNumber; ++j){
-              int saddleCandidateId;
+              int saddleCandidateId=-1;
               if(dimensionality_==2)
                 inputTriangulation_->getVertexEdge(pl_saddleId, j, saddleCandidateId);
               else if(dimensionality_==3)
@@ -2873,7 +2868,7 @@ int DiscreteGradient::proto_processSaddleMaximumConnections(const int iterationT
             toRemoveSaddle=-1;
             break;
           }
-          else if(pl2dmt_saddle[vertexId]!=dmt_saddleId){
+          else{
             toRemoveSaddle=1;
             break;
           }
@@ -2931,7 +2926,7 @@ int DiscreteGradient::proto_processSaddleMaximumConnections(const int iterationT
             toRemoveMaximum=-1;
             break;
           }
-          else if(pl2dmt_maximum[vertexId]!=dmt_maxId){
+          else{
             toRemoveMaximum=1;
             break;
           }
