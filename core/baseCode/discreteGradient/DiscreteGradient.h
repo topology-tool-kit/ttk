@@ -445,6 +445,7 @@ namespace ttk{
 
       template <typename dataType>
         int proto_getRemovableSaddles1(const vector<pair<int,char>>& criticalPoints,
+            const bool allowBoundary,
             vector<char>& isRemovableSaddle,
             vector<int>& pl2dmt_saddle) const;
 
@@ -454,6 +455,7 @@ namespace ttk{
 
       template <typename dataType>
         int proto_getRemovableSaddles2(const vector<pair<int,char>>& criticalPoints,
+            const bool allowBoundary,
             vector<char>& isRemovableSaddle,
             vector<int>& pl2dmt_saddle) const;
 
@@ -494,6 +496,7 @@ namespace ttk{
       template <typename dataType>
         int proto_processSaddleMaximumConnections(const int iterationThreshold,
             const vector<char>& isPL,
+            const bool allowBoundary,
             const bool allowBruteForce,
             set<pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S,
             vector<int>& pl2dmt_saddle,
@@ -513,11 +516,21 @@ namespace ttk{
       template <typename dataType>
         int proto_simplifySaddleMaximumConnections(const vector<pair<int,char>>& criticalPoints,
             const int iterationThreshold,
+            const bool allowBoundary,
             const bool allowBruteForce);
 
       template <typename dataType>
         int initializeSaddleSaddleConnections1(const vector<char>& isRemovableSaddle1,
             const vector<char>& isRemovableSaddle2,
+            vector<VPath>& vpaths,
+            vector<CriticalPoint>& criticalPoints,
+            vector<int>& saddle1Index,
+            vector<int>& saddle2Index) const;
+
+      template <typename dataType>
+        int proto_initializeSaddleSaddleConnections1(const vector<char>& isRemovableSaddle1,
+            const vector<char>& isRemovableSaddle2,
+            const bool allowBruteForce,
             vector<VPath>& vpaths,
             vector<CriticalPoint>& criticalPoints,
             vector<int>& saddle1Index,
@@ -539,13 +552,43 @@ namespace ttk{
             vector<int>& saddle2Index);
 
       template <typename dataType>
+        int proto_processSaddleSaddleConnections1(const int iterationThreshold,
+            const vector<char>& isPL,
+            const bool allowBoundary,
+            const bool allowBruteForce,
+            set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
+            vector<int>& pl2dmt_saddle1,
+            vector<int>& pl2dmt_saddle2,
+            vector<char>& isRemovableSaddle1,
+            vector<char>& isRemovableSaddle2,
+            vector<VPath>& vpaths,
+            vector<CriticalPoint>& criticalPoints,
+            vector<int>& saddle1Index,
+            vector<int>& saddle2Index);
+
+      template <typename dataType>
         int simplifySaddleSaddleConnections1(vector<char>& isRemovableSaddle1,
             vector<char>& isRemovableSaddle2,
             const int iterationThreshold);
 
       template <typename dataType>
+        int proto_simplifySaddleSaddleConnections1(const vector<pair<int,char>>& criticalPoints,
+            const int iterationThreshold,
+            const bool allowBoundary,
+            const bool allowBruteForce);
+
+      template <typename dataType>
         int initializeSaddleSaddleConnections2(const vector<char>& isRemovableSaddle1,
             const vector<char>& isRemovableSaddle2,
+            vector<VPath>& vpaths,
+            vector<CriticalPoint>& criticalPoints,
+            vector<int>& saddle1Index,
+            vector<int>& saddle2Index) const;
+
+      template <typename dataType>
+        int proto_initializeSaddleSaddleConnections2(const vector<char>& isRemovableSaddle1,
+            const vector<char>& isRemovableSaddle2,
+            const bool allowBruteForce,
             vector<VPath>& vpaths,
             vector<CriticalPoint>& criticalPoints,
             vector<int>& saddle1Index,
@@ -567,9 +610,30 @@ namespace ttk{
             vector<int>& saddle2Index);
 
       template <typename dataType>
+        int proto_processSaddleSaddleConnections2(const int iterationThreshold,
+            const vector<char>& isPL,
+            const bool allowBoundary,
+            const bool allowBruteForce,
+            set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
+            vector<int>& pl2dmt_saddle1,
+            vector<int>& pl2dmt_saddle2,
+            vector<char>& isRemovableSaddle1,
+            vector<char>& isRemovableSaddle2,
+            vector<VPath>& vpaths,
+            vector<CriticalPoint>& criticalPoints,
+            vector<int>& saddle1Index,
+            vector<int>& saddle2Index);
+
+      template <typename dataType>
         int simplifySaddleSaddleConnections2(vector<char>& isRemovableSaddle1,
             vector<char>& isRemovableSaddle2,
             const int iterationThreshold);
+
+      template <typename dataType>
+        int proto_simplifySaddleSaddleConnections2(const vector<pair<int,char>>& criticalPoints,
+            const int iterationThreshold,
+            const bool allowBoundary,
+            const bool allowBruteForce);
 
       template<typename dataType>
         int reverseGradient(const vector<pair<int,char>>& criticalPoints);
@@ -722,10 +786,6 @@ namespace ttk{
       int setGradientGlyphs() const;
 
     protected:
-      bool MustBeRemovable;
-      bool AllowBoundary;
-      bool ForceBoundary;
-
       int IterationThreshold;
       bool ReverseSaddleMaximumConnection;
       bool ReverseSaddleSaddleConnection;
@@ -1747,21 +1807,23 @@ int DiscreteGradient::getRemovableMaxima(const vector<pair<int,char>>& criticalP
 template <typename dataType>
 int DiscreteGradient::proto_getRemovableMaxima(const vector<pair<int,char>>& criticalPoints,
     vector<char>& isRemovableMaximum,
-    vector<int>& pl2dmt_saddle) const{
+    vector<int>& pl2dmt_maximum) const{
   const int numberOfCriticalPoints=criticalPoints.size();
   const int numberOfCells=inputTriangulation_->getNumberOfCells();
   const int maximumDim=dimensionality_;
 
   // Detect DMT-max cells to remove
   isRemovableMaximum.resize(numberOfCells);
-  std::fill(isRemovableMaximum.begin(), isRemovableMaximum.end(), false);
+
+  vector<char> dmt2PL(numberOfCells, false);
 
   // by default : maximum is removable
+#ifdef withOpenMP
+# pragma omp parallel for num_threads(threadNumber_)
+#endif
   for(int i=0; i<numberOfCells; ++i){
     const Cell maximumCandidate(maximumDim, i);
-
-    if(isMaximum(maximumCandidate))
-      isRemovableMaximum[i]=true;
+    isRemovableMaximum[i]=isMaximum(maximumCandidate);
   }
 
   for(int i=0; i<numberOfCriticalPoints; ++i){
@@ -1770,17 +1832,7 @@ int DiscreteGradient::proto_getRemovableMaxima(const vector<pair<int,char>>& cri
     const char criticalPointType=criticalPoint.second;
 
     if(criticalPointType==maximumDim){
-      if(inputTriangulation_->isVertexOnBoundary(criticalPointId)){
-        const int starNumber=inputTriangulation_->getVertexStarNumber(criticalPointId);
-        for(int j=0; j<starNumber; ++j){
-          int starId;
-          inputTriangulation_->getVertexStar(criticalPointId, j, starId);
-
-          if(isMaximum(Cell(maximumDim, starId)))
-            isRemovableMaximum[starId]=true;
-        }
-        continue;
-      }
+      if(inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
       int numberOfMaxima=0;
       int maximumId=-1;
@@ -1789,14 +1841,19 @@ int DiscreteGradient::proto_getRemovableMaxima(const vector<pair<int,char>>& cri
         int starId;
         inputTriangulation_->getVertexStar(criticalPointId, j, starId);
 
-        if(isMaximum(Cell(maximumDim, starId))){
+        if(isMaximum(Cell(maximumDim, starId)) and !dmt2PL[starId]){
           maximumId=starId;
           ++numberOfMaxima;
         }
       }
 
-      if(numberOfMaxima==1)
-        isRemovableMaximum[maximumId]=false;
+      if(numberOfMaxima==1){
+        if(!dmt2PL[maximumId] and pl2dmt_maximum[criticalPointId]==-1){
+          dmt2PL[maximumId]=true;
+          pl2dmt_maximum[criticalPointId]=maximumId;
+          isRemovableMaximum[maximumId]=false;
+        }
+      }
     }
   }
 
@@ -1876,21 +1933,21 @@ int DiscreteGradient::getRemovableSaddles1(const vector<pair<int,char>>& critica
 
 template <typename dataType>
 int DiscreteGradient::proto_getRemovableSaddles1(const vector<pair<int,char>>& criticalPoints,
+    const bool allowBoundary,
     vector<char>& isRemovableSaddle,
     vector<int>& pl2dmt_saddle) const{
   const int numberOfEdges=inputTriangulation_->getNumberOfEdges();
-
   isRemovableSaddle.resize(numberOfEdges);
-  std::fill(isRemovableSaddle.begin(), isRemovableSaddle.end(), false);
 
-  vector<int> dmt2PL(numberOfEdges, -1);
+  vector<char> dmt2PL(numberOfEdges, false);
 
   // by default : 1-saddle is removable
+#ifdef withOpenMP
+# pragma omp parallel for num_threads(threadNumber_)
+#endif
   for(int i=0; i<numberOfEdges; ++i){
     const Cell saddleCandidate(1, i);
-
-    if(isSaddle1(saddleCandidate))
-      isRemovableSaddle[i]=true;
+    isRemovableSaddle[i]=isSaddle1(saddleCandidate);
   }
 
   // is [edgeId] in star of PL-1saddle?
@@ -1899,19 +1956,7 @@ int DiscreteGradient::proto_getRemovableSaddles1(const vector<pair<int,char>>& c
     const char criticalPointType=criticalPoint.second;
 
     if(criticalPointType==1){
-      if(inputTriangulation_->isVertexOnBoundary(criticalPointId)){
-        const int edgeNumber=inputTriangulation_->getVertexEdgeNumber(criticalPointId);
-        for(int i=0; i<edgeNumber; ++i){
-          int edgeId;
-          inputTriangulation_->getVertexEdge(criticalPointId, i, edgeId);
-
-          const Cell saddleCandidate(1, edgeId);
-
-          if(isSaddle1(saddleCandidate))
-            isRemovableSaddle[edgeId]=true;
-        }
-        continue;
-      }
+      if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
       int numberOfSaddles=0;
       int saddleId=-1;
@@ -1921,7 +1966,7 @@ int DiscreteGradient::proto_getRemovableSaddles1(const vector<pair<int,char>>& c
         inputTriangulation_->getVertexEdge(criticalPointId, i, edgeId);
         const Cell saddleCandidate(1, edgeId);
 
-        if(isSaddle1(saddleCandidate)){
+        if(isSaddle1(saddleCandidate) and !dmt2PL[edgeId]){
           saddleId=edgeId;
           ++numberOfSaddles;
         }
@@ -1929,8 +1974,8 @@ int DiscreteGradient::proto_getRemovableSaddles1(const vector<pair<int,char>>& c
 
       // only one DMT-1saddle in the star so this one is non-removable
       if(numberOfSaddles==1){
-        if(dmt2PL[saddleId]==-1){
-          dmt2PL[saddleId]=criticalPointId;
+        if(!dmt2PL[saddleId] and pl2dmt_saddle[criticalPointId]==-1){
+          dmt2PL[saddleId]=true;
           pl2dmt_saddle[criticalPointId]=saddleId;
           isRemovableSaddle[saddleId]=false;
         }
@@ -2016,21 +2061,21 @@ int DiscreteGradient::getRemovableSaddles2(const vector<pair<int,char>>& critica
 
 template <typename dataType>
 int DiscreteGradient::proto_getRemovableSaddles2(const vector<pair<int,char>>& criticalPoints,
+    const bool allowBoundary,
     vector<char>& isRemovableSaddle,
     vector<int>& pl2dmt_saddle) const{
   const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
-
   isRemovableSaddle.resize(numberOfTriangles);
-  std::fill(isRemovableSaddle.begin(), isRemovableSaddle.end(), false);
 
-  vector<int> dmt2PL(numberOfTriangles, -1);
+  vector<char> dmt2PL(numberOfTriangles, false);
 
   // by default : 2-saddle is removable
+#ifdef withOpenMP
+# pragma omp parallel for num_threads(threadNumber_)
+#endif
   for(int i=0; i<numberOfTriangles; ++i){
     const Cell saddleCandidate(2, i);
-
-    if(isSaddle2(saddleCandidate))
-      isRemovableSaddle[i]=true;
+    isRemovableSaddle[i]=isSaddle2(saddleCandidate);
   }
 
   // is [triangleId] in star of PL-2saddle?
@@ -2039,19 +2084,7 @@ int DiscreteGradient::proto_getRemovableSaddles2(const vector<pair<int,char>>& c
     const char criticalPointType=criticalPoint.second;
 
     if(criticalPointType==2){
-      if(inputTriangulation_->isVertexOnBoundary(criticalPointId)){
-        const int triangleNumber=inputTriangulation_->getVertexTriangleNumber(criticalPointId);
-        for(int i=0; i<triangleNumber; ++i){
-          int triangleId;
-          inputTriangulation_->getVertexTriangle(criticalPointId, i, triangleId);
-
-          const Cell saddleCandidate(2, triangleId);
-
-          if(isSaddle2(saddleCandidate))
-            isRemovableSaddle[triangleId]=true;
-        }
-        continue;
-      }
+      if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
       int numberOfSaddles=0;
       int saddleId=-1;
@@ -2061,7 +2094,7 @@ int DiscreteGradient::proto_getRemovableSaddles2(const vector<pair<int,char>>& c
         inputTriangulation_->getVertexTriangle(criticalPointId, i, triangleId);
         const Cell saddleCandidate(2, triangleId);
 
-        if(isSaddle2(saddleCandidate)){
+        if(isSaddle2(saddleCandidate) and !dmt2PL[triangleId]){
           saddleId=triangleId;
           ++numberOfSaddles;
         }
@@ -2069,8 +2102,8 @@ int DiscreteGradient::proto_getRemovableSaddles2(const vector<pair<int,char>>& c
 
       // only one DMT-2saddle in the star so this one is non-removable
       if(numberOfSaddles==1){
-        if(dmt2PL[saddleId]==-1){
-          dmt2PL[saddleId]=criticalPointId;
+        if(dmt2PL[saddleId]==false and pl2dmt_saddle[criticalPointId]==-1){
+          dmt2PL[saddleId]=true;
           pl2dmt_saddle[criticalPointId]=saddleId;
           isRemovableSaddle[saddleId]=false;
         }
@@ -2610,11 +2643,12 @@ int DiscreteGradient::proto_initializeSaddleMaximumConnections(vector<char>& isR
   vector<int> maximumIndex(numberOfMaximumCandidates,-1);
   for(int i=0; i<numberOfMaximumCandidates; ++i){
     if(isRemovableMaximum[i]){
+      const Cell maximumCandidate(maximumDim, i);
+
       const int index=criticalPoints.size();
       maximumIndex[i]=index;
 
-      const Cell maximum(maximumDim, i);
-      criticalPoints.push_back(CriticalPoint(maximum));
+      criticalPoints.push_back(CriticalPoint(maximumCandidate));
     }
   }
 
@@ -2749,6 +2783,7 @@ int DiscreteGradient::proto_initializeSaddleMaximumConnections(vector<char>& isR
 template <typename dataType>
 int DiscreteGradient::proto_processSaddleMaximumConnections(const int iterationThreshold,
     const vector<char>& isPL,
+    const bool allowBoundary,
     const bool allowBruteForce,
     set<pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S,
     vector<int>& pl2dmt_saddle,
@@ -2799,11 +2834,12 @@ int DiscreteGradient::proto_processSaddleMaximumConnections(const int iterationT
 
           if(isPL[vertexId]!=saddleDim) continue;
 
-          if(inputTriangulation_->isVertexOnBoundary(vertexId)){
+          if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)){
             toRemoveSaddle=1;
             continue;
           }
-          else if(pl2dmt_saddle[vertexId]==-1){
+
+          if(pl2dmt_saddle[vertexId]==-1){
             const int pl_saddleId=vertexId;
 
             int numberOfRemainingSaddles=0;
@@ -2866,11 +2902,12 @@ int DiscreteGradient::proto_processSaddleMaximumConnections(const int iterationT
 
           if(isPL[vertexId]!=maximumDim) continue;
 
-          if(inputTriangulation_->isVertexOnBoundary(vertexId)){
+          if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)){
             toRemoveMaximum=1;
             continue;
           }
-          else if(pl2dmt_maximum[vertexId]==-1){
+
+          if(pl2dmt_maximum[vertexId]==-1){
             const int pl_maxId=vertexId;
 
             int numberOfRemainingMaxima=0;
@@ -3043,6 +3080,7 @@ int DiscreteGradient::proto_processSaddleMaximumConnections(const int iterationT
 template <typename dataType>
 int DiscreteGradient::proto_simplifySaddleMaximumConnections(const vector<pair<int,char>>& criticalPoints,
     const int iterationThreshold,
+    const bool allowBoundary,
     const bool allowBruteForce){
   Timer t;
 
@@ -3064,9 +3102,9 @@ int DiscreteGradient::proto_simplifySaddleMaximumConnections(const vector<pair<i
   vector<int> pl2dmt_saddle(numberOfVertices, -1);
   if(!allowBruteForce){
     if(dimensionality_==2)
-      proto_getRemovableSaddles1<dataType>(criticalPoints, isRemovableSaddle, pl2dmt_saddle);
+      proto_getRemovableSaddles1<dataType>(criticalPoints, allowBoundary, isRemovableSaddle, pl2dmt_saddle);
     else if(dimensionality_==3)
-      proto_getRemovableSaddles2<dataType>(criticalPoints, isRemovableSaddle, pl2dmt_saddle);
+      proto_getRemovableSaddles2<dataType>(criticalPoints, allowBoundary, isRemovableSaddle, pl2dmt_saddle);
   }
 
   // Part 1 : initialization
@@ -3088,6 +3126,7 @@ int DiscreteGradient::proto_simplifySaddleMaximumConnections(const vector<pair<i
   // Part 3 : process the vpaths
   proto_processSaddleMaximumConnections<dataType>(iterationThreshold,
       isPL,
+      allowBoundary,
       allowBruteForce,
       S,
       pl2dmt_saddle,
@@ -3129,12 +3168,9 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
   const int numberOfSaddle2Candidates=getNumberOfCells(saddle2Dim);
   saddle2Index.resize(numberOfSaddle2Candidates, -1);
   for(int i=0; i<numberOfSaddle2Candidates; ++i){
-    //if(MustBeRemovable and !isRemovableSaddle2[i]) continue;
     if(!isRemovableSaddle2[i]) continue;
 
     const Cell saddle2Candidate(saddle2Dim, i);
-
-    if(!AllowBoundary and isBoundary(saddle2Candidate)) continue;
 
     if(isSaddle2(saddle2Candidate)){
       const int index=criticalPoints.size();
@@ -3148,11 +3184,9 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
   const int numberOfSaddle1Candidates=getNumberOfCells(saddle1Dim);
   saddle1Index.resize(numberOfSaddle1Candidates, -1);
   for(int i=0; i<numberOfSaddle1Candidates; ++i){
-    if(MustBeRemovable and !isRemovableSaddle1[i]) continue;
+    if(!isRemovableSaddle1[i]) continue;
 
     const Cell saddle1Candidate(saddle1Dim, i);
-
-    if(ForceBoundary and !isBoundary(saddle1Candidate)) continue;
 
     if(isSaddle1(saddle1Candidate)){
       const int index=criticalPoints.size();
@@ -3176,11 +3210,133 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
     ++descendingWallId;
 
     for(const int saddle1Id : saddles1){
-      if(MustBeRemovable and !isRemovableSaddle1[saddle1Id]) continue;
+      if(!isRemovableSaddle1[saddle1Id]) continue;
 
       const Cell& saddle1=Cell(1,saddle1Id);
 
-      if(ForceBoundary and !isBoundary(saddle1)) continue;
+      vector<Cell> path;
+      const bool isMultiConnected=getAscendingPathThroughWall(savedDescendingWallId, saddle1, saddle2, isVisited, &path);
+
+      if(!isMultiConnected){
+        const int sourceIndex=saddle1Index[saddle1Id];
+        CriticalPoint& source=criticalPoints[sourceIndex];
+
+        // update source and destination
+        const int sourceSlot=source.addSlot();
+        const int destinationSlot=destination.addSlot();
+
+        // update vpath
+        const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
+        vpaths.push_back(VPath(true,-1,sourceIndex,destinationIndex,sourceSlot,destinationSlot,persistence));
+      }
+    }
+  }
+
+  // Part 3 : initialize the last structures
+  const int numberOfCriticalPoints=criticalPoints.size();
+  for(int i=0; i<numberOfCriticalPoints; ++i){
+    CriticalPoint& cp=criticalPoints[i];
+
+    const int numberOfSlots=cp.numberOfSlots_;
+    cp.vpaths_.resize(numberOfSlots);
+    cp.numberOfSlots_=0;
+  }
+
+  const int numberOfVPaths=vpaths.size();
+#ifdef withOpenMP
+# pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i=0; i<numberOfVPaths; ++i){
+    const VPath& vpath=vpaths[i];
+
+    if(vpath.isValid_){
+      const int sourceIndex=vpath.source_;
+      const int destinationIndex=vpath.destination_;
+
+      const int sourceSlot=vpath.sourceSlot_;
+      const int destinationSlot=vpath.destinationSlot_;
+
+      CriticalPoint& source=criticalPoints[sourceIndex];
+      CriticalPoint& destination=criticalPoints[destinationIndex];
+
+      source.vpaths_[sourceSlot]=i;
+      destination.vpaths_[destinationSlot]=i;
+    }
+  }
+
+  {
+    stringstream msg;
+    msg << "[DiscreteGradient]  Initialization step :\t" << t.getElapsedTime() << " s." << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
+
+  return 0;
+}
+
+template <typename dataType>
+int DiscreteGradient::proto_initializeSaddleSaddleConnections1(const vector<char>& isRemovableSaddle1,
+    const vector<char>& isRemovableSaddle2,
+    const bool allowBruteForce,
+    vector<VPath>& vpaths,
+    vector<CriticalPoint>& criticalPoints,
+    vector<int>& saddle1Index,
+    vector<int>& saddle2Index) const{
+  Timer t;
+
+  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+
+  const int maximumDim=dimensionality_;
+  const int saddle2Dim=maximumDim-1;
+  const int saddle1Dim=saddle2Dim-1;
+
+  // Part 1 : build initial structures
+  // add the 2-saddles to CriticalPointList
+  const int numberOfSaddle2Candidates=getNumberOfCells(saddle2Dim);
+  saddle2Index.resize(numberOfSaddle2Candidates, -1);
+  for(int i=0; i<numberOfSaddle2Candidates; ++i){
+    if(allowBruteForce or isRemovableSaddle2[i]){
+      const Cell saddle2Candidate(saddle2Dim, i);
+
+      if(isSaddle2(saddle2Candidate)){
+        const int index=criticalPoints.size();
+        saddle2Index[i]=index;
+        criticalPoints.push_back(CriticalPoint(saddle2Candidate));
+      }
+    }
+  }
+  const int numberOf2Saddles=criticalPoints.size();
+
+  // add the 1-saddles to CriticalPointList
+  const int numberOfSaddle1Candidates=getNumberOfCells(saddle1Dim);
+  saddle1Index.resize(numberOfSaddle1Candidates, -1);
+  for(int i=0; i<numberOfSaddle1Candidates; ++i){
+    if(isRemovableSaddle1[i]){
+      const Cell saddle1Candidate(saddle1Dim, i);
+
+      const int index=criticalPoints.size();
+      saddle1Index[i]=index;
+      criticalPoints.push_back(CriticalPoint(saddle1Candidate));
+    }
+  }
+
+  // Part 2 : update the structures
+  // apriori: by default construction, the vpaths and segments are not valid
+  wallId_t descendingWallId=1;
+  vector<wallId_t> isVisited(numberOfSaddle2Candidates, 0);
+  for(int i=0; i<numberOf2Saddles; ++i){
+    const int destinationIndex=i;
+    CriticalPoint& destination=criticalPoints[destinationIndex];
+    const Cell& saddle2=destination.cell_;
+
+    set<int> saddles1;
+    const wallId_t savedDescendingWallId=descendingWallId;
+    getDescendingWall(descendingWallId, saddle2, isVisited, nullptr, &saddles1);
+    ++descendingWallId;
+
+    for(const int saddle1Id : saddles1){
+      if(!isRemovableSaddle1[saddle1Id]) continue;
+
+      const Cell& saddle1=Cell(1,saddle1Id);
 
       vector<Cell> path;
       const bool isMultiConnected=getAscendingPathThroughWall(savedDescendingWallId, saddle1, saddle2, isVisited, &path);
@@ -3401,7 +3557,346 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
 
           // connection to a new saddle1 (not present in the graph before)
           if(newSourceId==-1){
-            if(MustBeRemovable and !isRemovableSaddle1[saddle1Id]) continue;
+            if(!isRemovableSaddle1[saddle1Id]) continue;
+
+            const int newCriticalPointId=criticalPoints.size();
+            saddle1Index[saddle1Id]=newCriticalPointId;
+            criticalPoints.push_back(CriticalPoint(saddle1));
+
+            newSourceId=newCriticalPointId;
+          }
+          CriticalPoint& newSource=criticalPoints[newSourceId];
+
+          // update vpaths
+          const int newVPathId=vpaths.size();
+          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
+          vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
+
+          // update criticalPoints
+          newDestination.vpaths_.push_back(newVPathId);
+          newSource.vpaths_.push_back(newVPathId);
+
+          // update set
+          S.insert(make_tuple(persistence,newVPathId,newDestination.cell_.id_));
+        }
+      }
+
+      // look at the gradient : get the links not predicted by the graph
+      for(const int newSourceId : newSourceIds){
+        CriticalPoint& newSource=criticalPoints[newSourceId];
+        const Cell& saddle1=newSource.cell_;
+
+        set<int> saddles2;
+        const wallId_t savedWallId=wallId;
+        getAscendingWall(wallId, saddle1, isVisited, nullptr, &saddles2);
+        ++wallId;
+
+        for(const int saddle2Id : saddles2){
+          const Cell saddle2(2,saddle2Id);
+
+          vector<Cell> path;
+          const bool isMultiConnected=getDescendingPathThroughWall(savedWallId, saddle2, saddle1, isVisited, &path);
+          if(isMultiConnected)
+            continue;
+
+          const int newDestinationId=saddle2Index[saddle2Id];
+
+          // connection to a new saddle2 (not present in the graph before)
+          if(newDestinationId==-1)
+            continue;
+
+          CriticalPoint& newDestination=criticalPoints[newDestinationId];
+
+          // check existence of the possibly newVPath in the graph
+          bool alreadyExists=false;
+          for(const int newDestinationVPathId : newDestination.vpaths_){
+            const VPath& newDestinationVPath=vpaths[newDestinationVPathId];
+
+            if(newDestinationVPath.isValid_ and newDestinationVPath.source_==newSourceId){
+              alreadyExists=true;
+              break;
+            }
+          }
+
+          if(alreadyExists)
+            continue;
+
+          // update vpaths
+          const int newVPathId=vpaths.size();
+          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
+          vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
+
+          // update criticalPoints
+          newDestination.vpaths_.push_back(newVPathId);
+          newSource.vpaths_.push_back(newVPathId);
+
+          // update set
+          S.insert(make_tuple(persistence,newVPathId,newDestination.cell_.id_));
+        }
+      }
+    }
+
+    ++numberOfIterations;
+  }
+
+  {
+    stringstream msg;
+    msg << "[DiscreteGradient]  Processing of the vpaths :\t" << t.getElapsedTime() << " s." << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
+  return 0;
+}
+
+template <typename dataType>
+int DiscreteGradient::proto_processSaddleSaddleConnections1(const int iterationThreshold,
+    const vector<char>& isPL,
+    const bool allowBoundary,
+    const bool allowBruteForce,
+    set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
+    vector<int>& pl2dmt_saddle1,
+    vector<int>& pl2dmt_saddle2,
+    vector<char>& isRemovableSaddle1,
+    vector<char>& isRemovableSaddle2,
+    vector<VPath>& vpaths,
+    vector<CriticalPoint>& criticalPoints,
+    vector<int>& saddle1Index,
+    vector<int>& saddle2Index){
+  Timer t;
+
+  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+
+  const int numberOfEdges=inputTriangulation_->getNumberOfEdges();
+  const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
+  const int optimizedSize=std::max(numberOfEdges, numberOfTriangles);
+  wallId_t wallId=1;
+  vector<wallId_t> isVisited(optimizedSize, 0);
+
+  int numberOfIterations{};
+  while(!S.empty()){
+    if(iterationThreshold>=0 and numberOfIterations>=iterationThreshold) break;
+
+    auto ptr=S.begin();
+    const int vpathId=get<1>(*ptr);
+    S.erase(ptr);
+    VPath& vpath=vpaths[vpathId];
+
+    if(vpath.isValid_){
+      const Cell& minSaddle1=criticalPoints[vpath.source_].cell_;
+      const Cell& minSaddle2=criticalPoints[vpath.destination_].cell_;
+
+      set<int> saddles1;
+      const wallId_t savedWallId=wallId;
+      getDescendingWall(wallId, minSaddle2, isVisited, nullptr, &saddles1);
+      ++wallId;
+
+      // check if at least one connection exists
+      auto isFound=saddles1.find(minSaddle1.id_);
+      if(isFound==saddles1.end()){
+        ++numberOfIterations;
+        continue;
+      }
+
+      // check if there is multiple connections
+      vector<Cell> path;
+      const bool isMultiConnected=getAscendingPathThroughWall(savedWallId, minSaddle1, minSaddle2, isVisited, &path);
+      if(isMultiConnected){
+        ++numberOfIterations;
+        continue;
+      }
+
+      // filter by 1-saddle condition
+      if(vpath.isValid_){
+        const Cell& dmt_saddle1=criticalPoints[vpath.source_].cell_;
+        const int dmt_saddle1Id=dmt_saddle1.id_;
+
+        if(isSaddle1(dmt_saddle1)){
+          for(int i=0; i<2; ++i){
+            int vertexId;
+            inputTriangulation_->getEdgeVertex(dmt_saddle1Id, i, vertexId);
+
+            if(isPL[vertexId]!=1) continue;
+
+            if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
+
+            if(pl2dmt_saddle1[vertexId]==-1){
+              const int pl_saddle1Id=vertexId;
+
+              int numberOfRemainingSaddles1=0;
+
+              int savedId=-1;
+              const int edgeNumber=inputTriangulation_->getVertexEdgeNumber(pl_saddle1Id);
+              for(int j=0; j<edgeNumber; ++j){
+                int edgeId;
+                inputTriangulation_->getVertexEdge(pl_saddle1Id, j, edgeId);
+
+                if(edgeId!=dmt_saddle1Id and isSaddle1(Cell(1,edgeId)) and isRemovableSaddle1[edgeId]){
+                  ++numberOfRemainingSaddles1;
+                  savedId=edgeId;
+                }
+              }
+
+              if(numberOfRemainingSaddles1==0){
+                isRemovableSaddle1[dmt_saddle1Id]=false;
+                pl2dmt_saddle1[vertexId]=dmt_saddle1Id;
+                vpath.invalidate();
+                break;
+              }
+              if(numberOfRemainingSaddles1==1){
+                isRemovableSaddle1[dmt_saddle1Id]=false;
+                isRemovableSaddle1[savedId]=false;
+                pl2dmt_saddle1[vertexId]=savedId;
+                break;
+              }
+            }
+            else if(pl2dmt_saddle1[vertexId]==dmt_saddle1Id){
+              vpath.invalidate();
+              break;
+            }
+          }
+        }
+        else
+          vpath.invalidate();
+      }
+
+      // filter by 2-saddle condition
+      if(!allowBruteForce and vpath.isValid_){
+        const Cell& dmt_saddle2=criticalPoints[vpath.destination_].cell_;
+        const int dmt_saddle2Id=dmt_saddle2.id_;
+
+        if(isSaddle2(dmt_saddle2)){
+          for(int i=0; i<3; ++i){
+            int vertexId;
+            inputTriangulation_->getTriangleVertex(dmt_saddle2Id, i, vertexId);
+
+            if(isPL[vertexId]!=2) continue;
+
+            if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
+
+            if(pl2dmt_saddle2[vertexId]==-1){
+              const int pl_saddle2Id=vertexId;
+
+              int numberOfRemainingSaddles2=0;
+
+              int savedId=-1;
+              const int triangleNumber=inputTriangulation_->getVertexTriangleNumber(pl_saddle2Id);
+              for(int j=0; j<triangleNumber; ++j){
+                int triangleId;
+                inputTriangulation_->getVertexTriangle(pl_saddle2Id, j, triangleId);
+
+                if(triangleId!=dmt_saddle2Id and isSaddle2(Cell(2,triangleId)) and isRemovableSaddle2[triangleId]){
+                  ++numberOfRemainingSaddles2;
+                  savedId=triangleId;
+                }
+              }
+
+              if(numberOfRemainingSaddles2==0){
+                isRemovableSaddle2[dmt_saddle2Id]=false;
+                pl2dmt_saddle2[vertexId]=dmt_saddle2Id;
+                vpath.invalidate();
+                break;
+              }
+              if(numberOfRemainingSaddles2==1){
+                isRemovableSaddle2[dmt_saddle2Id]=false;
+                isRemovableSaddle2[savedId]=false;
+                pl2dmt_saddle2[vertexId]=savedId;
+                break;
+              }
+            }
+            else if(pl2dmt_saddle2[vertexId]==dmt_saddle2Id){
+              vpath.invalidate();
+              break;
+            }
+          }
+        }
+        else
+          vpath.invalidate();
+      }
+
+      if(vpath.isValid_)
+        reverseAscendingPathOnWall(path);
+    }
+
+    if(vpath.isValid_){
+      // add persistence pair to collection if necessary
+      if(CollectPersistencePairs and outputPersistencePairs_){
+        const Cell& minSaddle1=criticalPoints[vpath.source_].cell_;
+        const Cell& minSaddle2=criticalPoints[vpath.destination_].cell_;
+        outputPersistencePairs_->push_back(make_tuple(minSaddle1, minSaddle2));
+      }
+
+      const int sourceId=vpath.source_;
+      const int destinationId=vpath.destination_;
+
+      // invalidate vpaths connected to destination
+      vector<int> newSourceIds;
+      CriticalPoint& destination=criticalPoints[destinationId];
+      for(const int destinationVPathId : destination.vpaths_){
+        VPath& destinationVPath=vpaths[destinationVPathId];
+
+        if(destinationVPath.isValid_ and destinationVPath.source_!=sourceId){
+          // save critical point
+          const int newSourceId=destinationVPath.source_;
+          newSourceIds.push_back(newSourceId);
+
+          // clear vpath
+          destinationVPath.invalidate();
+        }
+      }
+
+      // invalidate vpaths connected to source and save the critical points to update
+      vector<int> newDestinationIds;
+      CriticalPoint& source=criticalPoints[sourceId];
+      for(const int sourceVPathId : source.vpaths_){
+        VPath& sourceVPath=vpaths[sourceVPathId];
+
+        if(sourceVPath.isValid_ and sourceVPath.destination_!=destinationId){
+          // save critical point
+          const int newDestinationId=sourceVPath.destination_;
+          newDestinationIds.push_back(newDestinationId);
+
+          CriticalPoint& newDestination=criticalPoints[newDestinationId];
+          for(const int newDestinationVPathId : newDestination.vpaths_){
+            VPath& newDestinationVPath=vpaths[newDestinationVPathId];
+            if(newDestinationVPath.isValid_ and newDestinationVPath.source_!=sourceId){
+
+              // clear vpath
+              newDestinationVPath.invalidate();
+            }
+          }
+
+          // clear vpath
+          sourceVPath.invalidate();
+        }
+      }
+
+      // finally invalidate current vpath and critical points
+      vpath.invalidate();
+      source.clear();
+      destination.clear();
+
+      // look at the gradient : reconnect locally the critical points
+      for(const int newDestinationId : newDestinationIds){
+        CriticalPoint& newDestination=criticalPoints[newDestinationId];
+        const Cell& saddle2=newDestination.cell_;
+
+        set<int> saddles1;
+        const wallId_t savedWallId=wallId;
+        getDescendingWall(wallId, saddle2, isVisited, nullptr, &saddles1);
+        ++wallId;
+
+        for(const int saddle1Id : saddles1){
+          const Cell saddle1(1,saddle1Id);
+
+          vector<Cell> path;
+          const bool isMultiConnected=getAscendingPathThroughWall(savedWallId, saddle1, saddle2, isVisited, &path);
+          if(isMultiConnected)
+            continue;
+
+          int newSourceId=saddle1Index[saddle1Id];
+
+          // connection to a new saddle1 (not present in the graph before)
+          if(newSourceId==-1){
+            if(!isRemovableSaddle1[saddle1Id]) continue;
 
             const int newCriticalPointId=criticalPoints.size();
             saddle1Index[saddle1Id]=newCriticalPointId;
@@ -3526,6 +4021,67 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(vector<char>& isRemovable
 }
 
 template <typename dataType>
+int DiscreteGradient::proto_simplifySaddleSaddleConnections1(const vector<pair<int,char>>& criticalPoints,
+    const int iterationThreshold,
+    const bool allowBoundary,
+    const bool allowBruteForce){
+  Timer t;
+
+  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+  vector<char> isPL(numberOfVertices, false);
+  for(pair<int,char> criticalPoint : criticalPoints){
+    const int criticalPointId=criticalPoint.first;
+    const char criticalPointType=criticalPoint.second;
+
+    isPL[criticalPointId]=criticalPointType;
+  }
+
+  // Part 0 : get removable cells
+  vector<char> isRemovableSaddle1;
+  vector<int> pl2dmt_saddle1(numberOfVertices, -1);
+  proto_getRemovableSaddles1<dataType>(criticalPoints, allowBoundary, isRemovableSaddle1, pl2dmt_saddle1);
+
+  vector<char> isRemovableSaddle2;
+  vector<int> pl2dmt_saddle2(numberOfVertices, -1);
+  proto_getRemovableSaddles2<dataType>(criticalPoints, allowBoundary, isRemovableSaddle2, pl2dmt_saddle2);
+
+  // Part 1 : initialization
+  vector<VPath> vpaths;
+  vector<CriticalPoint> dmt_criticalPoints;
+  vector<int> saddle1Index;
+  vector<int> saddle2Index;
+  proto_initializeSaddleSaddleConnections1<dataType>(isRemovableSaddle1,
+      isRemovableSaddle2,
+      allowBruteForce,
+      vpaths,
+      dmt_criticalPoints,
+      saddle1Index,
+      saddle2Index);
+
+  // Part 2 : push the vpaths and order by persistence
+  SaddleSaddleVPathComparator<dataType> cmp_f;
+  set<tuple<dataType,int,int>, SaddleSaddleVPathComparator<dataType>> S(cmp_f);
+  orderSaddleSaddleConnections1<dataType>(vpaths, dmt_criticalPoints, S);
+
+  // Part 3 : process the vpaths
+  proto_processSaddleSaddleConnections1<dataType>(iterationThreshold,
+      isPL,
+      allowBoundary,
+      allowBruteForce,
+      S,
+      pl2dmt_saddle1,
+      pl2dmt_saddle2,
+      isRemovableSaddle1,
+      isRemovableSaddle2,
+      vpaths,
+      dmt_criticalPoints,
+      saddle1Index,
+      saddle2Index);
+
+  return 0;
+}
+
+template <typename dataType>
 int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isRemovableSaddle1,
     const vector<char>& isRemovableSaddle2,
     vector<VPath>& vpaths,
@@ -3545,12 +4101,9 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
     const int numberOfSaddle1Candidates=getNumberOfCells(saddle1Dim);
     saddle1Index.resize(numberOfSaddle1Candidates, -1);
     for(int i=0; i<numberOfSaddle1Candidates; ++i){
-      //if(MustBeRemovable and !isRemovableSaddle1[i]) continue;
       if(!isRemovableSaddle1[i]) continue;
 
       const Cell saddle1Candidate(saddle1Dim, i);
-
-      if(!AllowBoundary and isBoundary(saddle1Candidate)) continue;
 
       if(isSaddle1(saddle1Candidate)){
         const int index=criticalPoints.size();
@@ -3564,11 +4117,9 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
     const int numberOfSaddle2Candidates=getNumberOfCells(saddle2Dim);
     saddle2Index.resize(numberOfSaddle2Candidates, -1);
     for(int i=0; i<numberOfSaddle2Candidates; ++i){
-      if(MustBeRemovable and !isRemovableSaddle2[i]) continue;
+      if(!isRemovableSaddle2[i]) continue;
 
       const Cell saddle2Candidate(saddle2Dim, i);
-
-      if(ForceBoundary and !isBoundary(saddle2Candidate)) continue;
 
       if(isSaddle2(saddle2Candidate)){
         const int index=criticalPoints.size();
@@ -3592,11 +4143,132 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
       ++ascendingWallId;
 
       for(const int saddle2Id : saddles2){
-        if(MustBeRemovable and !isRemovableSaddle2[saddle2Id]) continue;
+        if(!isRemovableSaddle2[saddle2Id]) continue;
 
         const Cell& saddle2=Cell(2,saddle2Id);
 
-        if(ForceBoundary and !isBoundary(saddle2)) continue;
+        vector<Cell> path;
+        const bool isMultiConnected=getDescendingPathThroughWall(savedAscendingWallId, saddle2, saddle1, isVisited, &path);
+
+        if(!isMultiConnected){
+          const int destinationIndex=saddle2Index[saddle2Id];
+          CriticalPoint& destination=criticalPoints[destinationIndex];
+
+          // update source and destination
+          const int sourceSlot=source.addSlot();
+          const int destinationSlot=destination.addSlot();
+
+          // update vpath
+          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
+          vpaths.push_back(VPath(true,-1,sourceIndex,destinationIndex,sourceSlot,destinationSlot,persistence));
+        }
+      }
+    }
+
+    // Part 3 : initialize the last structures
+    const int numberOfCriticalPoints=criticalPoints.size();
+    for(int i=0; i<numberOfCriticalPoints; ++i){
+      CriticalPoint& cp=criticalPoints[i];
+
+      const int numberOfSlots=cp.numberOfSlots_;
+      cp.vpaths_.resize(numberOfSlots);
+      cp.numberOfSlots_=0;
+    }
+
+    const int numberOfVPaths=vpaths.size();
+#ifdef withOpenMP
+# pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(int i=0; i<numberOfVPaths; ++i){
+      const VPath& vpath=vpaths[i];
+
+      if(vpath.isValid_){
+        const int sourceIndex=vpath.source_;
+        const int destinationIndex=vpath.destination_;
+
+        const int sourceSlot=vpath.sourceSlot_;
+        const int destinationSlot=vpath.destinationSlot_;
+
+        CriticalPoint& source=criticalPoints[sourceIndex];
+        CriticalPoint& destination=criticalPoints[destinationIndex];
+
+        source.vpaths_[sourceSlot]=i;
+        destination.vpaths_[destinationSlot]=i;
+      }
+    }
+
+    {
+      stringstream msg;
+      msg << "[DiscreteGradient]  Initialization step :\t" << t.getElapsedTime() << " s." << endl;
+      dMsg(cout, msg.str(), timeMsg);
+    }
+  return 0;
+}
+
+template <typename dataType>
+int DiscreteGradient::proto_initializeSaddleSaddleConnections2(const vector<char>& isRemovableSaddle1,
+    const vector<char>& isRemovableSaddle2,
+    const bool allowBruteForce,
+    vector<VPath>& vpaths,
+    vector<CriticalPoint>& criticalPoints,
+    vector<int>& saddle1Index,
+    vector<int>& saddle2Index) const{
+    Timer t;
+
+    const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+
+    const int maximumDim=dimensionality_;
+    const int saddle2Dim=maximumDim-1;
+    const int saddle1Dim=saddle2Dim-1;
+
+    // Part 1 : build initial structures
+    // add the 1-saddles to CriticalPointList
+    const int numberOfSaddle1Candidates=getNumberOfCells(saddle1Dim);
+    saddle1Index.resize(numberOfSaddle1Candidates, -1);
+    for(int i=0; i<numberOfSaddle1Candidates; ++i){
+      if(isRemovableSaddle1[i]){
+        const Cell saddle1Candidate(saddle1Dim, i);
+
+        const int index=criticalPoints.size();
+        saddle1Index[i]=index;
+        criticalPoints.push_back(CriticalPoint(saddle1Candidate));
+      }
+    }
+    const int numberOf1Saddles=criticalPoints.size();
+
+    // add the 2-saddles to CriticalPointList
+    const int numberOfSaddle2Candidates=getNumberOfCells(saddle2Dim);
+    saddle2Index.resize(numberOfSaddle2Candidates, -1);
+    for(int i=0; i<numberOfSaddle2Candidates; ++i){
+      if(allowBruteForce or isRemovableSaddle2[i]){
+        const Cell saddle2Candidate(saddle2Dim, i);
+
+        if(isSaddle2(saddle2Candidate)){
+          const int index=criticalPoints.size();
+          saddle2Index[i]=index;
+          criticalPoints.push_back(CriticalPoint(saddle2Candidate));
+        }
+      }
+    }
+
+    // Part 2 : update the structures
+    // apriori: by default construction, the vpaths and segments are not valid
+    wallId_t ascendingWallId=1;
+    vector<wallId_t> isVisited(numberOfSaddle1Candidates, 0);
+    for(int i=0; i<numberOf1Saddles; ++i){
+      const int sourceIndex=i;
+      CriticalPoint& source=criticalPoints[sourceIndex];
+      const Cell& saddle1=source.cell_;
+
+      set<int> saddles2;
+      const wallId_t savedAscendingWallId=ascendingWallId;
+      getAscendingWall(ascendingWallId, saddle1, isVisited, nullptr, &saddles2);
+      ++ascendingWallId;
+
+      for(const int saddle2Id : saddles2){
+        if(!isRemovableSaddle2[saddle2Id]) continue;
+
+        const Cell& saddle2=Cell(2,saddle2Id);
 
         vector<Cell> path;
         const bool isMultiConnected=getDescendingPathThroughWall(savedAscendingWallId, saddle2, saddle1, isVisited, &path);
@@ -3815,7 +4487,346 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
 
           // connection to a new saddle2 (not present in the graph before)
           if(newDestinationId==-1){
-            if(MustBeRemovable and !isRemovableSaddle2[saddle2Id]) continue;
+            if(!isRemovableSaddle2[saddle2Id]) continue;
+
+            const int newCriticalPointId=criticalPoints.size();
+            saddle2Index[saddle2Id]=newCriticalPointId;
+            criticalPoints.push_back(CriticalPoint(saddle2));
+
+            newDestinationId=newCriticalPointId;
+          }
+
+          CriticalPoint& newDestination=criticalPoints[newDestinationId];
+
+          // update vpaths
+          const int newVPathId=vpaths.size();
+          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
+          vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
+
+          // update criticalPoints
+          newDestination.vpaths_.push_back(newVPathId);
+          newSource.vpaths_.push_back(newVPathId);
+
+          // update set
+          S.insert(make_tuple(persistence,newVPathId,newSource.cell_.id_));
+        }
+      }
+
+      // look at the gradient : get the links not predicted by the graph
+      for(const int newDestinationId : newDestinationIds){
+        CriticalPoint& newDestination=criticalPoints[newDestinationId];
+        const Cell& saddle2=newDestination.cell_;
+
+        set<int> saddles1;
+        const wallId_t savedWallId=wallId;
+        getDescendingWall(wallId, saddle2, isVisited, nullptr, &saddles1);
+        ++wallId;
+
+        for(const int saddle1Id : saddles1){
+          const Cell saddle1(1,saddle1Id);
+
+          vector<Cell> path;
+          const bool isMultiConnected=getAscendingPathThroughWall(savedWallId, saddle1, saddle2, isVisited, &path);
+          if(isMultiConnected)
+            continue;
+
+          const int newSourceId=saddle1Index[saddle1Id];
+
+          if(newSourceId==-1)
+            continue;
+
+          CriticalPoint& newSource=criticalPoints[newSourceId];
+
+          // check existence of the possibly newVPath in the graph
+          bool alreadyExists=false;
+          for(const int newSourceVPathId : newSource.vpaths_){
+            const VPath& newSourceVPath=vpaths[newSourceVPathId];
+
+            if(newSourceVPath.isValid_ and newSourceVPath.destination_==newDestinationId){
+              alreadyExists=true;
+              break;
+            }
+          }
+
+          if(alreadyExists)
+            continue;
+
+          // update vpaths
+          const int newVPathId=vpaths.size();
+          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
+          vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
+
+          // update criticalPoints
+          newDestination.vpaths_.push_back(newVPathId);
+          newSource.vpaths_.push_back(newVPathId);
+
+          // update set
+          S.insert(make_tuple(persistence,newVPathId,newSource.cell_.id_));
+        }
+      }
+    }
+
+    ++numberOfIterations;
+  }
+
+  {
+    stringstream msg;
+    msg << "[DiscreteGradient]  Processing of the vpaths :\t" << t.getElapsedTime() << " s." << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
+
+  return 0;
+}
+
+template <typename dataType>
+int DiscreteGradient::proto_processSaddleSaddleConnections2(const int iterationThreshold,
+    const vector<char>& isPL,
+    const bool allowBoundary,
+    const bool allowBruteForce,
+    set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
+    vector<int>& pl2dmt_saddle1,
+    vector<int>& pl2dmt_saddle2,
+    vector<char>& isRemovableSaddle1,
+    vector<char>& isRemovableSaddle2,
+    vector<VPath>& vpaths,
+    vector<CriticalPoint>& criticalPoints,
+    vector<int>& saddle1Index,
+    vector<int>& saddle2Index){
+  Timer t;
+
+  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+
+  const int numberOfEdges=inputTriangulation_->getNumberOfEdges();
+  const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
+  const int optimizedSize=std::max(numberOfEdges, numberOfTriangles);
+  wallId_t wallId=1;
+  vector<wallId_t> isVisited(optimizedSize, 0);
+
+  int numberOfIterations{};
+  while(!S.empty()){
+    if(iterationThreshold>=0 and numberOfIterations>=iterationThreshold) break;
+
+    auto ptr=S.begin();
+    const int vpathId=get<1>(*ptr);
+    S.erase(ptr);
+    VPath& vpath=vpaths[vpathId];
+
+    if(vpath.isValid_){
+      const Cell& minSaddle1=criticalPoints[vpath.source_].cell_;
+      const Cell& minSaddle2=criticalPoints[vpath.destination_].cell_;
+
+      set<int> saddles2;
+      const wallId_t savedWallId=wallId;
+      getAscendingWall(wallId, minSaddle1, isVisited, nullptr, &saddles2);
+      ++wallId;
+
+      // check if at least one connection exists
+      auto isFound=saddles2.find(minSaddle2.id_);
+      if(isFound==saddles2.end()){
+        ++numberOfIterations;
+        continue;
+      }
+
+      // check if there is multiple connections
+      vector<Cell> path;
+      const bool isMultiConnected=getDescendingPathThroughWall(savedWallId, minSaddle2, minSaddle1, isVisited, &path);
+      if(isMultiConnected){
+        ++numberOfIterations;
+        continue;
+      }
+
+      // filter by 1-saddle condition
+      if(vpath.isValid_){
+        const Cell& dmt_saddle1=criticalPoints[vpath.source_].cell_;
+        const int dmt_saddle1Id=dmt_saddle1.id_;
+
+        if(isSaddle1(dmt_saddle1)){
+          for(int i=0; i<2; ++i){
+            int vertexId;
+            inputTriangulation_->getEdgeVertex(dmt_saddle1Id, i, vertexId);
+
+            if(isPL[vertexId]!=1) continue;
+
+            if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
+
+            if(pl2dmt_saddle1[vertexId]==-1){
+              const int pl_saddle1Id=vertexId;
+
+              int numberOfRemainingSaddles1=0;
+
+              int savedId=-1;
+              const int edgeNumber=inputTriangulation_->getVertexEdgeNumber(pl_saddle1Id);
+              for(int j=0; j<edgeNumber; ++j){
+                int edgeId;
+                inputTriangulation_->getVertexEdge(pl_saddle1Id, j, edgeId);
+
+                if(edgeId!=dmt_saddle1Id and isSaddle1(Cell(1,edgeId)) and isRemovableSaddle1[edgeId]){
+                  ++numberOfRemainingSaddles1;
+                  savedId=edgeId;
+                }
+              }
+
+              if(numberOfRemainingSaddles1==0){
+                isRemovableSaddle1[dmt_saddle1Id]=false;
+                pl2dmt_saddle1[vertexId]=dmt_saddle1Id;
+                vpath.invalidate();
+                break;
+              }
+              if(numberOfRemainingSaddles1==1){
+                isRemovableSaddle1[dmt_saddle1Id]=false;
+                isRemovableSaddle1[savedId]=false;
+                pl2dmt_saddle1[vertexId]=savedId;
+                break;
+              }
+            }
+            else if(pl2dmt_saddle1[vertexId]==dmt_saddle1Id){
+              vpath.invalidate();
+              break;
+            }
+          }
+        }
+        else
+          vpath.invalidate();
+      }
+
+      // filter by 2-saddle condition
+      if(!allowBruteForce and vpath.isValid_){
+        const Cell& dmt_saddle2=criticalPoints[vpath.destination_].cell_;
+        const int dmt_saddle2Id=dmt_saddle2.id_;
+
+        if(isSaddle2(dmt_saddle2)){
+          for(int i=0; i<3; ++i){
+            int vertexId;
+            inputTriangulation_->getTriangleVertex(dmt_saddle2Id, i, vertexId);
+
+            if(isPL[vertexId]!=2) continue;
+
+            if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
+
+            if(pl2dmt_saddle2[vertexId]==-1){
+              const int pl_saddle2Id=vertexId;
+
+              int numberOfRemainingSaddles2=0;
+
+              int savedId=-1;
+              const int triangleNumber=inputTriangulation_->getVertexTriangleNumber(pl_saddle2Id);
+              for(int j=0; j<triangleNumber; ++j){
+                int triangleId;
+                inputTriangulation_->getVertexTriangle(pl_saddle2Id, j, triangleId);
+
+                if(triangleId!=dmt_saddle2Id and isSaddle2(Cell(2,triangleId)) and isRemovableSaddle2[triangleId]){
+                  ++numberOfRemainingSaddles2;
+                  savedId=triangleId;
+                }
+              }
+
+              if(!numberOfRemainingSaddles2){
+                isRemovableSaddle2[dmt_saddle2Id]=false;
+                pl2dmt_saddle2[vertexId]=dmt_saddle2Id;
+                vpath.invalidate();
+                break;
+              }
+              if(numberOfRemainingSaddles2==1){
+                isRemovableSaddle2[dmt_saddle2Id]=false;
+                isRemovableSaddle2[savedId]=false;
+                pl2dmt_saddle2[vertexId]=savedId;
+                break;
+              }
+            }
+            else if(pl2dmt_saddle2[vertexId]==dmt_saddle2Id){
+              vpath.invalidate();
+              break;
+            }
+          }
+        }
+        else
+          vpath.invalidate();
+      }
+
+      if(vpath.isValid_)
+        reverseDescendingPathOnWall(path);
+    }
+
+    if(vpath.isValid_){
+      // add persistence pair to collection if necessary
+      if(CollectPersistencePairs and outputPersistencePairs_){
+        const Cell& minSaddle1=criticalPoints[vpath.source_].cell_;
+        const Cell& minSaddle2=criticalPoints[vpath.destination_].cell_;
+        outputPersistencePairs_->push_back(make_tuple(minSaddle1, minSaddle2));
+      }
+
+      const int sourceId=vpath.source_;
+      const int destinationId=vpath.destination_;
+
+      // invalidate vpaths connected to source
+      vector<int> newDestinationIds;
+      CriticalPoint& source=criticalPoints[sourceId];
+      for(const int sourceVPathId : source.vpaths_){
+        VPath& sourceVPath=vpaths[sourceVPathId];
+
+        if(sourceVPath.isValid_ and sourceVPath.destination_!=destinationId){
+          // save critical point
+          const int newDestinationId=sourceVPath.destination_;
+          newDestinationIds.push_back(newDestinationId);
+
+          // clear vpath
+          sourceVPath.invalidate();
+        }
+      }
+
+      // invalidate vpaths connected to destination and save the critical points to update
+      vector<int> newSourceIds;
+      CriticalPoint& destination=criticalPoints[destinationId];
+      for(const int destinationVPathId : destination.vpaths_){
+        VPath& destinationVPath=vpaths[destinationVPathId];
+
+        if(destinationVPath.isValid_ and destinationVPath.source_!=sourceId){
+          // save critical point
+          const int newSourceId=destinationVPath.source_;
+          newSourceIds.push_back(newSourceId);
+
+          CriticalPoint& newSource=criticalPoints[newSourceId];
+          for(const int newSourceVPathId : newSource.vpaths_){
+            VPath& newSourceVPath=vpaths[newSourceVPathId];
+            if(newSourceVPath.isValid_ and newSourceVPath.destination_!=destinationId){
+
+              // clear vpath
+              newSourceVPath.invalidate();
+            }
+          }
+
+          // clear vpath
+          destinationVPath.invalidate();
+        }
+      }
+
+      // finally invalidate current vpath and critical points
+      vpath.invalidate();
+      source.clear();
+      destination.clear();
+
+      // look at the gradient : reconnect locally the critical points
+      for(const int newSourceId : newSourceIds){
+        CriticalPoint& newSource=criticalPoints[newSourceId];
+        const Cell& saddle1=newSource.cell_;
+
+        set<int> saddles2;
+        const wallId_t savedWallId=wallId;
+        getAscendingWall(wallId, saddle1, isVisited, nullptr, &saddles2);
+        ++wallId;
+
+        for(const int saddle2Id : saddles2){
+          const Cell saddle2(2,saddle2Id);
+
+          const bool isMultiConnected=getDescendingPathThroughWall(savedWallId, saddle2, saddle1, isVisited, nullptr);
+          if(isMultiConnected)
+            continue;
+
+          int newDestinationId=saddle2Index[saddle2Id];
+
+          // connection to a new saddle2 (not present in the graph before)
+          if(newDestinationId==-1){
+            if(!isRemovableSaddle2[saddle2Id]) continue;
 
             const int newCriticalPointId=criticalPoints.size();
             saddle2Index[saddle2Id]=newCriticalPointId;
@@ -3941,42 +4952,83 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(vector<char>& isRemovable
   return 0;
 }
 
-template<typename dataType>
-int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoints){
-  if(ReverseSaddleMaximumConnection){
-    proto_simplifySaddleMaximumConnections<dataType>(criticalPoints, IterationThreshold, false);
-    proto_simplifySaddleMaximumConnections<dataType>(criticalPoints, IterationThreshold, true);
+template <typename dataType>
+int DiscreteGradient::proto_simplifySaddleSaddleConnections2(const vector<pair<int,char>>& criticalPoints,
+    const int iterationThreshold,
+    const bool allowBoundary,
+    const bool allowBruteForce){
+  Timer t;
+
+  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+  vector<char> isPL(numberOfVertices, false);
+  for(pair<int,char> criticalPoint : criticalPoints){
+    const int criticalPointId=criticalPoint.first;
+    const char criticalPointType=criticalPoint.second;
+
+    isPL[criticalPointId]=criticalPointType;
   }
 
-  // experimental
+  // Part 0 : get removable cells
+  vector<char> isRemovableSaddle1;
+  vector<int> pl2dmt_saddle1(numberOfVertices, -1);
+  proto_getRemovableSaddles1<dataType>(criticalPoints, allowBoundary, isRemovableSaddle1, pl2dmt_saddle1);
+
+  vector<char> isRemovableSaddle2;
+  vector<int> pl2dmt_saddle2(numberOfVertices, -1);
+  proto_getRemovableSaddles2<dataType>(criticalPoints, allowBoundary, isRemovableSaddle2, pl2dmt_saddle2);
+
+  // Part 1 : initialization
+  vector<VPath> vpaths;
+  vector<CriticalPoint> dmt_criticalPoints;
+  vector<int> saddle1Index;
+  vector<int> saddle2Index;
+  proto_initializeSaddleSaddleConnections2<dataType>(isRemovableSaddle1,
+      isRemovableSaddle2,
+      allowBruteForce,
+      vpaths,
+      dmt_criticalPoints,
+      saddle1Index,
+      saddle2Index);
+
+  // Part 2 : push the vpaths and order by persistence
+  SaddleSaddleVPathComparator<dataType> cmp_f;
+  set<tuple<dataType,int,int>, SaddleSaddleVPathComparator<dataType>> S(cmp_f);
+  orderSaddleSaddleConnections2<dataType>(vpaths, dmt_criticalPoints, S);
+
+  // Part 3 : process the vpaths
+  proto_processSaddleSaddleConnections2<dataType>(iterationThreshold,
+      isPL,
+      allowBoundary,
+      allowBruteForce,
+      S,
+      pl2dmt_saddle1,
+      pl2dmt_saddle2,
+      isRemovableSaddle1,
+      isRemovableSaddle2,
+      vpaths,
+      dmt_criticalPoints,
+      saddle1Index,
+      saddle2Index);
+
+  return 0;
+}
+
+template<typename dataType>
+int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoints){
+  if(ReverseSaddleMaximumConnection)
+    proto_simplifySaddleMaximumConnections<dataType>(criticalPoints, IterationThreshold, true, false);
+
   if(dimensionality_==3 and ReverseSaddleSaddleConnection){
-    vector<char> isRemovableSaddle1;
-    vector<char> isRemovableSaddle2;
+    proto_simplifySaddleSaddleConnections1<dataType>(criticalPoints, IterationThreshold, true, false);
+    proto_simplifySaddleSaddleConnections2<dataType>(criticalPoints, IterationThreshold, true, false);
+  }
 
-    Timer t;
+  if(ReverseSaddleMaximumConnection)
+    proto_simplifySaddleMaximumConnections<dataType>(criticalPoints, IterationThreshold, true, true);
 
-    getRemovableSaddles1<dataType>(criticalPoints, isRemovableSaddle1);
-    getRemovableSaddles2<dataType>(criticalPoints, isRemovableSaddle2);
-
-    // walls computed from 2-saddles
-    simplifySaddleSaddleConnections1<dataType>(isRemovableSaddle1, isRemovableSaddle2, IterationThreshold);
-
-    getRemovableSaddles1<dataType>(criticalPoints, isRemovableSaddle1);
-    getRemovableSaddles2<dataType>(criticalPoints, isRemovableSaddle2);
-
-    // walls computed from 1-saddles
-    simplifySaddleSaddleConnections2<dataType>(isRemovableSaddle1, isRemovableSaddle2, IterationThreshold);
-
-    {
-      stringstream msg;
-      msg << "[DiscreteGradient] Saddle-Saddle pairs ";
-      if(CollectPersistencePairs)
-        msg << "collected in ";
-      else
-        msg << "simplified in ";
-      msg << t.getElapsedTime() << " s, "<< threadNumber_ << " thread(s)." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+  if(dimensionality_==3 and ReverseSaddleSaddleConnection){
+    proto_simplifySaddleSaddleConnections1<dataType>(criticalPoints, IterationThreshold, true, true);
+    proto_simplifySaddleSaddleConnections2<dataType>(criticalPoints, IterationThreshold, true, true);
   }
 
   return 0;
@@ -4013,7 +5065,7 @@ int DiscreteGradient::reverseGradient(){
   {
     // foreach dimension
     const int numberOfDimensions=getNumberOfDimensions();
-    vector<int> numberOfCriticalPointsByDimension(numberOfDimensions,0);
+    vector<int> numberOfDMTCriticalPointsByDimension(numberOfDimensions,0);
     for(int i=0; i<numberOfDimensions; ++i){
 
       // foreach cell of that dimension
@@ -4022,14 +5074,26 @@ int DiscreteGradient::reverseGradient(){
         const Cell cell(i,j);
 
         if(isCellCritical(cell))
-          ++numberOfCriticalPointsByDimension[i];
+          ++numberOfDMTCriticalPointsByDimension[i];
       }
+    }
+
+    vector<int> numberOfPLInteriorCriticalPoints(numberOfDimensions,0);
+    for(pair<int,char> criticalPoint : criticalPoints){
+      const int criticalPointId=criticalPoint.first;
+      const char criticalPointType=criticalPoint.second;
+
+      if(!inputTriangulation_->isVertexOnBoundary(criticalPointId) and criticalPointType!=-1)
+        ++numberOfPLInteriorCriticalPoints[criticalPointType];
     }
 
     {
       stringstream msg;
-      for(int i=0; i<numberOfDimensions; ++i)
-        msg << "[DiscreteGradient] " << numberOfCriticalPointsByDimension[i] << " " << i << "-cell(s)." << endl;
+      for(int i=0; i<numberOfDimensions; ++i){
+        msg << "[DiscreteGradient] " << numberOfDMTCriticalPointsByDimension[i] << " " << i << "-cell(s)";
+        msg << " and " << numberOfPLInteriorCriticalPoints[i] << " interior PL." << endl;
+      }
+
       dMsg(cout, msg.str(), infoMsg);
     }
   }
