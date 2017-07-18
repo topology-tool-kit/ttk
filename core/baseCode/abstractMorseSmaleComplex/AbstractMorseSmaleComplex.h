@@ -194,6 +194,7 @@ namespace ttk{
 
       inline int setOutputSeparatrices1(int* const separatrices1_numberOfPoints,
           vector<float>* const separatrices1_points,
+          vector<char>* const separatrices1_points_smoothingMask,
           vector<int>* const separatrices1_points_cellDimensions,
           vector<int>* const separatrices1_points_cellIds,
           int* const separatrices1_numberOfCells,
@@ -208,6 +209,7 @@ namespace ttk{
           vector<char>* const separatrices1_cells_isOnBoundary){
         outputSeparatrices1_numberOfPoints_=separatrices1_numberOfPoints;
         outputSeparatrices1_points_=separatrices1_points;
+        outputSeparatrices1_points_smoothingMask_=separatrices1_points_smoothingMask;
         outputSeparatrices1_points_cellDimensions_=separatrices1_points_cellDimensions;
         outputSeparatrices1_points_cellIds_=separatrices1_points_cellIds;
         outputSeparatrices1_numberOfCells_=separatrices1_numberOfCells;
@@ -285,6 +287,7 @@ namespace ttk{
 
       int* outputSeparatrices1_numberOfPoints_;
       vector<float>* outputSeparatrices1_points_;
+      vector<char>* outputSeparatrices1_points_smoothingMask_;
       vector<int>* outputSeparatrices1_points_cellDimensions_;
       vector<int>* outputSeparatrices1_points_cellIds_;
       int* outputSeparatrices1_numberOfCells_;

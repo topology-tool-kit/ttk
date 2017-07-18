@@ -228,6 +228,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   // 1-separatrices
   int separatrices1_numberOfPoints{};
   vector<float> separatrices1_points;
+  vector<char> separatrices1_points_smoothingMask;
   vector<int> separatrices1_points_cellDimensions;
   vector<int> separatrices1_points_cellIds;
   int separatrices1_numberOfCells{};
@@ -361,6 +362,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           morseSmaleComplex_.setOutputSeparatrices1(
               &separatrices1_numberOfPoints,
               &separatrices1_points,
+              &separatrices1_points_smoothingMask,
               &separatrices1_points_cellDimensions,
               &separatrices1_points_cellIds,
               &separatrices1_numberOfCells,
@@ -499,6 +501,17 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
               return -15;
             }
 #endif
+            vtkSmartPointer<vtkCharArray>
+              smoothingMask=vtkSmartPointer<vtkCharArray>::New();
+#ifndef withKamikaze
+            if(!smoothingMask){
+              cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+                << "problem." << endl;
+              return -16;
+            }
+#endif
+            smoothingMask->SetNumberOfComponents(1);
+            smoothingMask->SetName("SmoothingMask");
 
             vtkSmartPointer<vtkIntArray> 
               cellDimensions=vtkSmartPointer<vtkIntArray>::New();
@@ -622,7 +635,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
                   separatrices1_points[3*i+1],
                   separatrices1_points[3*i+2]);
 
-
+              smoothingMask->InsertNextTuple1(separatrices1_points_smoothingMask[i]);
               cellDimensions->InsertNextTuple1(separatrices1_points_cellDimensions[i]);
               cellIds->InsertNextTuple1(separatrices1_points_cellIds[i]);
             }
@@ -668,6 +681,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             }
 #endif
 
+            pointData->AddArray(smoothingMask);
             pointData->AddArray(cellDimensions);
             pointData->AddArray(cellIds);
 
@@ -865,9 +879,6 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
       << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }
-
-  // debug
-  //exit(0);
 
   return 0;
 }

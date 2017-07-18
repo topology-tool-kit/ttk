@@ -94,7 +94,9 @@ int MorseSmaleComplex2D::setSeparatrices(const vector<Separatrix>& separatrices,
 
       for(const int geometryId : separatrix.geometry_){
         int oldPointId=-1;
-        for(const Cell& cell : separatricesGeometry[geometryId]){
+        for(auto cellIte=separatricesGeometry[geometryId].begin(); cellIte!=separatricesGeometry[geometryId].end(); ++cellIte){
+          const Cell& cell=*cellIte;
+
           float point[3];
           discreteGradient_.getCellIncenter(cell, point);
 
@@ -102,6 +104,11 @@ int MorseSmaleComplex2D::setSeparatrices(const vector<Separatrix>& separatrices,
           outputSeparatrices1_points_->push_back(point[1]);
           outputSeparatrices1_points_->push_back(point[2]);
 
+          if(cellIte==separatricesGeometry[geometryId].begin() or
+              cellIte==separatricesGeometry[geometryId].end()-1)
+            outputSeparatrices1_points_smoothingMask_->push_back(0);
+          else
+            outputSeparatrices1_points_smoothingMask_->push_back(1);
           outputSeparatrices1_points_cellDimensions_->push_back(cell.dim_);
           outputSeparatrices1_points_cellIds_->push_back(cell.id_);
 
