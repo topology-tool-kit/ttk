@@ -519,7 +519,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!cellDimensions){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
-              return -16;
+              return -17;
             }
 #endif
             cellDimensions->SetNumberOfComponents(1);
@@ -531,7 +531,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!cellIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
-              return -17;
+              return -18;
             }
 #endif
             cellIds->SetNumberOfComponents(1);
@@ -543,7 +543,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!sourceIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
-              return -18;
+              return -19;
             }
 #endif
             sourceIds->SetNumberOfComponents(1);
@@ -555,7 +555,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!destinationIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
-              return -19;
+              return -20;
             }
 #endif
             destinationIds->SetNumberOfComponents(1);
@@ -567,7 +567,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!separatrixIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
-              return -20;
+              return -21;
             }
 #endif
             separatrixIds->SetNumberOfComponents(1);
@@ -579,7 +579,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!separatrixTypes){
               cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
                 << "problem." << endl;
-              return -21;
+              return -22;
             }
 #endif
             separatrixTypes->SetNumberOfComponents(1);
@@ -590,7 +590,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!separatrixFunctionMaxima){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
-              return -22;
+              return -23;
             }
 #endif
             separatrixFunctionMaxima->SetNumberOfComponents(1);
@@ -601,7 +601,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!separatrixFunctionMinima){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
-              return -23;
+              return -24;
             }
 #endif
             separatrixFunctionMinima->SetNumberOfComponents(1);
@@ -612,7 +612,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!separatrixFunctionDiffs){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
-              return -24;
+              return -25;
             }
 #endif
             separatrixFunctionDiffs->SetNumberOfComponents(1);
@@ -624,7 +624,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!isOnBoundary){
               cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
                 << "problem." << endl;
-              return -25;
+              return -26;
             }
 #endif
             isOnBoundary->SetNumberOfComponents(1);
@@ -677,7 +677,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!pointData){
               cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
                 << "no point data." << endl;
-              return -26;
+              return -27;
             }
 #endif
 
@@ -690,7 +690,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!cellData){
               cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
                 << "no cell data." << endl;
-              return -27;
+              return -28;
             }
 #endif
 
@@ -711,7 +711,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!points){
               cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation problem." 
                 << endl;
-              return -28;
+              return -29;
             }
 #endif
 
@@ -720,7 +720,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!sourceIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem." 
                 << endl;
-              return -29;
+              return -30;
             }
 #endif
             sourceIds->SetNumberOfComponents(1);
@@ -731,7 +731,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!separatrixIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem." 
                 << endl;
-              return -30;
+              return -31;
             }
 #endif
             separatrixIds->SetNumberOfComponents(1);
@@ -742,7 +742,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!separatrixTypes){
               cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation problem." 
                 << endl;
-              return -31;
+              return -32;
             }
 #endif
             separatrixTypes->SetNumberOfComponents(1);
@@ -753,7 +753,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!separatrixFunctionMaxima){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
-              return -32;
+              return -33;
             }
 #endif
             separatrixFunctionMaxima->SetNumberOfComponents(1);
@@ -764,7 +764,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!separatrixFunctionMinima){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
-              return -33;
+              return -34;
             }
 #endif
             separatrixFunctionMinima->SetNumberOfComponents(1);
@@ -775,7 +775,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!separatrixFunctionDiffs){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
-              return -34;
+              return -35;
             }
 #endif
             separatrixFunctionDiffs->SetNumberOfComponents(1);
@@ -786,7 +786,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!isOnBoundary){
               cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation problem." 
                 << endl;
-              return -35;
+              return -36;
             }
 #endif
             isOnBoundary->SetNumberOfComponents(1);
@@ -841,7 +841,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             if(!cellData){
               cerr << "[ttkMorseSmaleComplex] Error : "
                 << "outputSeparatrices2 has no cell data." << endl;
-              return -36;
+              return -37;
             }
 #endif
 
@@ -865,7 +865,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
       cerr 
         << "[ttkMorseSmaleComplex] Error : outputMorseComplexes has no point "
         << "data." << endl;
-      return -37;
+      return -38;
     }
 #endif
     pointData->AddArray(descendingManifold);
