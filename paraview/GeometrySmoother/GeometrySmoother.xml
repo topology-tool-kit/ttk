@@ -32,6 +32,22 @@ vertex.
         </Documentation>
       </InputProperty>
 
+      
+
+      
+
+      <IntVectorProperty
+         name="NumberOfIterations"
+         label="Iteration Number"
+         command="SetNumberOfIterations"
+         number_of_elements="1"
+         default_values="1" >
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Number of iterations for the smoothing filter.
+         </Documentation>
+      </IntVectorProperty>
+      
       <IntVectorProperty
         name="UseInputMask"
         command="SetUseInputMask"
@@ -45,7 +61,7 @@ vertex.
           vertex mask (used to mark vertices to smooth).
         </Documentation>
       </IntVectorProperty>
-
+      
       <StringVectorProperty
         name="InputMask"
         command="SetInputMask"
@@ -66,18 +82,6 @@ vertex.
           Input mask field (used to mark vertices to smooth).
         </Documentation>
       </StringVectorProperty>
-
-      <IntVectorProperty
-         name="NumberOfIterations"
-         label="Iteration Number"
-         command="SetNumberOfIterations"
-         number_of_elements="1"
-         default_values="1" >
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Number of iterations for the smoothing filter.
-         </Documentation>
-      </IntVectorProperty>
       
       <IntVectorProperty
          name="UseAllCores"
@@ -117,9 +121,9 @@ vertex.
       
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Input" />
+        <Property name="NumberOfIterations" />
         <Property name="UseInputMask" />
         <Property name="InputMask" />
-        <Property name="NumberOfIterations" />
       </PropertyGroup>
       
       <PropertyGroup panel_widget="Line" label="Testing">
