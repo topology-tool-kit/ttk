@@ -55,6 +55,20 @@ See also GeometrySmoother.
         </Documentation>
       </StringVectorProperty>
       
+      
+
+      <IntVectorProperty
+         name="NumberOfIterations"
+         label="Iteration Number"
+         command="SetNumberOfIterations"
+         number_of_elements="1"
+         default_values="1" >
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Number of iterations for the smoothing filter.
+         </Documentation>
+      </IntVectorProperty>
+
       <IntVectorProperty
         name="UseInputMask"
         command="SetUseInputMask"
@@ -89,19 +103,7 @@ See also GeometrySmoother.
           Input mask field (used to mark vertices to smooth).
         </Documentation>
       </StringVectorProperty>
-
-      <IntVectorProperty
-         name="NumberOfIterations"
-         label="Iteration Number"
-         command="SetNumberOfIterations"
-         number_of_elements="1"
-         default_values="1" >
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Number of iterations for the smoothing filter.
-         </Documentation>
-      </IntVectorProperty>
-
+      
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -141,9 +143,9 @@ See also GeometrySmoother.
       
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Scalar Field" />
+        <Property name="NumberOfIterations" />
         <Property name="UseInputMask" />
         <Property name="InputMask" />
-        <Property name="NumberOfIterations" />
       </PropertyGroup>
       
       <PropertyGroup panel_widget="Line" label="Testing">
