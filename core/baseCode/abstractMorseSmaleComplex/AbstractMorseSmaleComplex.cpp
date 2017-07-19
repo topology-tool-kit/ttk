@@ -25,6 +25,7 @@ AbstractMorseSmaleComplex::AbstractMorseSmaleComplex():
 
   outputSeparatrices1_numberOfPoints_{},
   outputSeparatrices1_points_{},
+  outputSeparatrices1_points_smoothingMask_{},
   outputSeparatrices1_points_cellDimensions_{},
   outputSeparatrices1_points_cellIds_{},
   outputSeparatrices1_numberOfCells_{},
