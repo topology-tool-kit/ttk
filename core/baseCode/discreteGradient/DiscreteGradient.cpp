@@ -386,9 +386,6 @@ int DiscreteGradient::getDescendingPathThroughWall(const wallId_t wallId,
         }
         else{
           cout << "[DiscreteGradient] Error : cycle detected on the wall of 1-saddleId=" << saddle1.id_ << endl;
-#ifdef ALLOW_EXIT
-          exit(-1);
-#endif
           break;
         }
       }
@@ -491,9 +488,6 @@ int DiscreteGradient::getAscendingPath(const Cell& cell,
           }
           else{
             cout << "[DiscreteGradient] Error : cycle detected in the path from tetraId=" << cell.id_ << endl;
-#ifdef ALLOW_EXIT
-            exit(-1);
-#endif
             break;
           }
         }
@@ -583,9 +577,6 @@ bool DiscreteGradient::getAscendingPathThroughWall(const wallId_t wallId,
         }
         else{
           cout << "[DiscreteGradient] Error : cycle detected on the wall of 2-saddleId=" << saddle2.id_ << endl;
-#ifdef ALLOW_EXIT
-          exit(-1);
-#endif
           break;
         }
       }

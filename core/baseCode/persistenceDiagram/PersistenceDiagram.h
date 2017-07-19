@@ -252,13 +252,13 @@ int PersistenceDiagram::execute() const{
       scp.execute();
     }
 
-    // build rejecting list
-    vector<char> isRejected(numberOfVertices, false);
+    // build accepting list
+    vector<char> isAccepted(numberOfVertices, false);
     for(const auto& i : CTPairs){
       const int v0=get<0>(i);
       const int v1=get<1>(i);
-      isRejected[v0]=true;
-      isRejected[v1]=true;
+      isAccepted[v0]=true;
+      isAccepted[v1]=true;
     }
 
     // filter the critical points according to the filtering list and boundary condition
@@ -268,7 +268,7 @@ int PersistenceDiagram::execute() const{
     for(const auto& i : pl_criticalPoints){
       const int vertexId=i.first;
       const char type=i.second;
-      if(!isRejected[vertexId]){
+      if(isAccepted[vertexId]){
         pl_filteredCriticalPoints.push_back(i);
 
         switch(type){
@@ -293,15 +293,16 @@ int PersistenceDiagram::execute() const{
       discreteGradient.setIterationThreshold(-1);
       discreteGradient.setReverseSaddleMaximumConnection(true);
       discreteGradient.setReverseSaddleSaddleConnection(true);
-      discreteGradient.setAllowReversingWithNonRemovable(false);
       discreteGradient.setCollectPersistencePairs(false);
       discreteGradient.setInputScalarField(inputScalars_);
       discreteGradient.setInputOffsets(inputOffsets_);
       discreteGradient.buildGradient<scalarType>();
+      discreteGradient.buildGradient2<scalarType>();
+      discreteGradient.buildGradient3<scalarType>();
       discreteGradient.reverseGradient<scalarType>(pl_criticalPoints);
 
       // collect saddle-saddle connections
-      discreteGradient.setReverseSaddleMaximumConnection(false);
+      discreteGradient.setReverseSaddleMaximumConnection(true);
       discreteGradient.setCollectPersistencePairs(true);
       discreteGradient.setOutputPersistencePairs(&dmt_pairs);
       discreteGradient.reverseGradient<scalarType>(pl_filteredCriticalPoints);
@@ -362,8 +363,11 @@ int PersistenceDiagram::execute() const{
 
       const scalarType persistence=scalars[v1]-scalars[v0];
 
-      if(v0!=-1 and v1!=-1 and persistence>=0)
-        pl_saddleSaddlePairs.push_back(make_tuple(v0,v1,persistence));
+      if(v0!=-1 and v1!=-1 and persistence>=0){
+        if(!triangulation_->isVertexOnBoundary(v0) or !triangulation_->isVertexOnBoundary(v1)){
+          pl_saddleSaddlePairs.push_back(make_tuple(v0,v1,persistence));
+        }
+      }
     }
   }
 
