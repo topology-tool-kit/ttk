@@ -1,6 +1,7 @@
 ChangeLog
 =
 * ttk.git
+- Optional 3D embedding of the persistence diagram
 - optional mask array for constrained smoothing
 - bug fixes in DiscreteGradient
 - bug fixes in TopologicalSimplification
