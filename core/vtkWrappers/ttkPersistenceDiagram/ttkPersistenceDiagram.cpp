@@ -17,6 +17,7 @@ vtkStandardNewMacro(ttkPersistenceDiagram)
   OffsetFieldId = -1;
   ComputeSaddleConnectors = false;
   InputOffsetScalarFieldName = "OutputOffsetScalarField";
+  ShowInsideDomain = false;
   
   triangulation_ = NULL;
 }
@@ -195,6 +196,9 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
           }
 #endif
 
+          if(ShowInsideDomain)
+          ret=getPersistenceDiagramInsideDomain<VTK_TT>(TreeType::Contour, CTDiagram);
+          else
           ret=getPersistenceDiagram<VTK_TT>(TreeType::Contour, CTDiagram);
 #ifndef withKamikaze
           if(ret){

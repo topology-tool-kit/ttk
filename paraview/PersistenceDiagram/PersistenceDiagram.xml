@@ -117,7 +117,19 @@ TopologicalSimplification.
           Add saddle-saddle pairs in the diagram (SLOW!).
          </Documentation>
       </IntVectorProperty>
-      
+
+      <IntVectorProperty name="ShowInsideDomain"
+        label="Show the persistence pairs inside the domain"
+        command="SetShowInsideDomain"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Show the persistence pairs inside the domain.
+        </Documentation>
+      </IntVectorProperty>
+
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -164,6 +176,7 @@ TopologicalSimplification.
 
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="SaddleConnectors" />
+        <Property name="ShowInsideDomain" />
       </PropertyGroup>
       
       <PropertyGroup panel_widget="Line" label="Testing">
