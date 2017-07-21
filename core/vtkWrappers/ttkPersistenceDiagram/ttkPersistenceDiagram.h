@@ -247,7 +247,7 @@ int ttkPersistenceDiagram::getPersistenceDiagram(TreeType treeType,
   vtkSmartPointer<vtkFloatArray> coordsScalars=
     vtkSmartPointer<vtkFloatArray>::New();
   coordsScalars->SetNumberOfComponents(3);
-  coordsScalars->SetName("Coordinate");
+  coordsScalars->SetName("Coordinates");
 
   const idVertex minIndex=0;
   const idVertex saddleSaddleIndex=1;

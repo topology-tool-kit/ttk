@@ -119,14 +119,14 @@ TopologicalSimplification.
       </IntVectorProperty>
 
       <IntVectorProperty name="ShowInsideDomain"
-        label="Show the persistence pairs inside the domain"
+        label="Embed in Domain"
         command="SetShowInsideDomain"
         number_of_elements="1"
         default_values="0"
         panel_visibility="default">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Show the persistence pairs inside the domain.
+          Embed the persistence pairs in the domain.
         </Documentation>
       </IntVectorProperty>
 
