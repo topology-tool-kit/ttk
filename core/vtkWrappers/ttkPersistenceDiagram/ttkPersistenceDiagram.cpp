@@ -18,8 +18,10 @@ vtkStandardNewMacro(ttkPersistenceDiagram)
   ComputeSaddleConnectors = false;
   InputOffsetScalarFieldName = "OutputOffsetScalarField";
   ShowInsideDomain = false;
-  
-  triangulation_ = NULL;
+  computeDiagram_= true;
+
+  triangulation_ = nullptr;
+  CTDiagram_ = nullptr;
 }
 
 ttkPersistenceDiagram::~ttkPersistenceDiagram(){
@@ -27,6 +29,8 @@ ttkPersistenceDiagram::~ttkPersistenceDiagram(){
     CTPersistenceDiagram_->Delete();
   if(offsets_)
     offsets_->Delete();
+
+  deleteDiagram();
 }
 
 int ttkPersistenceDiagram::FillOutputPortInformation(int port, 
@@ -90,6 +94,7 @@ int ttkPersistenceDiagram::getTriangulation(vtkDataSet* input){
     or ttkTriangulation::hasChangedConnectivity(triangulation_, input, this)){
     Modified();
     varyingMesh_=true;
+    computeDiagram_=true;
   }
 
   return 0;
@@ -139,6 +144,19 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
   return 0;
 }
 
+int ttkPersistenceDiagram::deleteDiagram(){
+  if(CTDiagram_ and inputScalars_){
+    switch(inputScalars_->GetDataType()){
+      vtkTemplateMacro(({
+            using tuple_t=tuple<idVertex,NodeType,idVertex,NodeType,VTK_TT,idVertex>;
+            vector<tuple_t>* CTDiagram=(vector<tuple_t>*) CTDiagram_;
+            delete CTDiagram;
+            }));
+    }
+  }
+  return 0;
+}
+
 int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
   
@@ -183,10 +201,22 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   persistenceDiagram_.setComputeSaddleConnectors(ComputeSaddleConnectors);
   switch(inputScalars_->GetDataType()){
     vtkTemplateMacro(({
-          vector<tuple<idVertex,NodeType,idVertex,NodeType,VTK_TT,idVertex>> 
-            CTDiagram;
+          using tuple_t=tuple<idVertex,NodeType,idVertex,NodeType,VTK_TT,idVertex>;
 
-          persistenceDiagram_.setOutputCTDiagram(&CTDiagram);
+          if(CTDiagram_ and computeDiagram_){
+          vector<tuple_t>* tmpDiagram=(vector<tuple_t>*) CTDiagram_;
+          delete tmpDiagram;
+          CTDiagram_=new vector<tuple_t>();
+          }
+          else if(!CTDiagram_){
+          CTDiagram_=new vector<tuple_t>();
+          computeDiagram_=true;
+          }
+
+          vector<tuple_t>* CTDiagram=(vector<tuple_t>*) CTDiagram_;
+
+          if(computeDiagram_){
+          persistenceDiagram_.setOutputCTDiagram(CTDiagram);
           ret=persistenceDiagram_.execute<VTK_TT>();
 #ifndef withKamikaze
           if(ret){
@@ -195,11 +225,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
           return -4;
           }
 #endif
+          }
 
           if(ShowInsideDomain)
-          ret=getPersistenceDiagramInsideDomain<VTK_TT>(TreeType::Contour, CTDiagram);
+          ret=getPersistenceDiagramInsideDomain<VTK_TT>(TreeType::Contour, *CTDiagram);
           else
-          ret=getPersistenceDiagram<VTK_TT>(TreeType::Contour, CTDiagram);
+          ret=getPersistenceDiagram<VTK_TT>(TreeType::Contour, *CTDiagram);
 #ifndef withKamikaze
           if(ret){
             cerr << "[ttkPersistenceDiagram] Error : "
@@ -212,6 +243,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   }
 
   outputCTPersistenceDiagram->ShallowCopy(CTPersistenceDiagram_);
+  computeDiagram_=false;
 
   {
     stringstream msg;
