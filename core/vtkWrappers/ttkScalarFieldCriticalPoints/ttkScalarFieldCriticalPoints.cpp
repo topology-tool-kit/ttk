@@ -6,6 +6,7 @@ ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints(){
 
   // init
   PredefinedOffset = false;
+  VertexBoundary = true;
   VertexIds = true;
   VertexScalars = true;
 
@@ -31,6 +32,9 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   
   if(!triangulation)
     return -1;
+  
+  if(VertexBoundary)
+    triangulation->preprocessBoundaryVertices();
   
   // in the following, the target scalar field of the input is replaced in the 
   // variable 'output' with the result of the computation.
@@ -122,7 +126,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   
   vertexTypes->SetNumberOfComponents(1);
   vertexTypes->SetNumberOfTuples(criticalPoints_.size());
-  vertexTypes->SetName("Critical Type");
+  vertexTypes->SetName("CriticalIndex");
   
   vtkSmartPointer<vtkPoints> pointSet = vtkSmartPointer<vtkPoints>::New();
   pointSet->SetNumberOfPoints(criticalPoints_.size());
@@ -135,21 +139,41 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   output->SetPoints(pointSet);
   output->GetPointData()->AddArray(vertexTypes);
   
+  if(VertexBoundary){
+    vtkSmartPointer<vtkCharArray> vertexBoundary = 
+      vtkSmartPointer<vtkCharArray>::New();
+    vertexBoundary->SetNumberOfComponents(1);
+    vertexBoundary->SetNumberOfTuples(criticalPoints_.size());
+    vertexBoundary->SetName("IsOnBoundary");
+    
+#pragma omp parallel for num_threads(threadNumber_)
+    for(int i = 0; i < (int) criticalPoints_.size(); i++){
+      vertexBoundary->SetTuple1(i, 
+        (char) triangulation->isVertexOnBoundary(       
+          criticalPoints_[i].first));
+    }
+      
+    output->GetPointData()->AddArray(vertexBoundary);
+  }
+  else{
+    output->GetPointData()->RemoveArray("IsOnBoundary");
+  }
+  
   if(VertexIds){
     vtkSmartPointer<vtkIntArray> vertexIds = 
       vtkSmartPointer<vtkIntArray>::New();
     vertexIds->SetNumberOfComponents(1);
     vertexIds->SetNumberOfTuples(criticalPoints_.size());
-    vertexIds->SetName("Vertex Ids");
+    vertexIds->SetName("VertexIdentifiers");
     
     for(int i = 0; i < (int) criticalPoints_.size(); i++){
-      vertexIds->SetTuple1(i, (float) criticalPoints_[i].first);
+      vertexIds->SetTuple1(i, (int) criticalPoints_[i].first);
     }
       
     output->GetPointData()->AddArray(vertexIds);
   }
   else{
-    output->GetPointData()->RemoveArray("Vertex Ids");
+    output->GetPointData()->RemoveArray("VertexIdentifiers");
   }
   
   if(VertexScalars){

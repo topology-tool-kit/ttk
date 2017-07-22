@@ -84,6 +84,9 @@ class VTKFILTERSCORE_EXPORT ttkScalarFieldCriticalPoints
     vtkSetMacro(OffsetFieldId, int);
     vtkGetMacro(OffsetFieldId, int);
 
+    vtkGetMacro(VertexBoundary, bool);
+    vtkSetMacro(VertexBoundary, bool);
+    
     vtkGetMacro(VertexIds, bool);
     vtkSetMacro(VertexIds, bool);
     
@@ -114,7 +117,7 @@ class VTKFILTERSCORE_EXPORT ttkScalarFieldCriticalPoints
    
     bool                  PredefinedOffset;
     int                   ScalarFieldId, OffsetFieldId;
-    bool                  VertexIds, VertexScalars;
+    bool                  VertexIds, VertexScalars, VertexBoundary;
     string                ScalarField, OffsetField;
     vector<vector<pair<int, int> > > vertexLinkEdgeList_;
     vector<pair<int, char> > criticalPoints_;
