@@ -1,7 +1,8 @@
 ChangeLog
 =
 * ttk.git
-- Optional 3D embedding of the persistence diagram
+- boundary mask on scalar field critical points
+- optional 3D embedding of the persistence diagram
 - optional mask array for constrained smoothing
 - bug fixes in DiscreteGradient
 - bug fixes in TopologicalSimplification
