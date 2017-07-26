@@ -433,7 +433,7 @@ namespace ttk{
       template <typename dataType>
         int proto_getRemovableMaxima(const vector<pair<int,char>>& criticalPoints,
             vector<char>& isRemovableMaximum,
-            vector<int>& pl2dmt_maximum) const;
+            vector<int>& pl2dmt_maximum);
 
       template <typename dataType>
         int getRemovableSaddles1(const vector<pair<int,char>>& criticalPoints,
@@ -680,13 +680,17 @@ namespace ttk{
           vector<int>* const criticalPoints_points_cellDimensons,
           vector<int>* const criticalPoints_points_cellIds,
           void* const criticalPoints_points_cellScalars,
-          vector<char>* const criticalPoints_points_isOnBoundary){
+          vector<char>* const criticalPoints_points_isOnBoundary,
+          vector<int>* const criticalPoints_points_PLVertexIdentifiers,
+          vector<int>* const criticalPoints_points_manifoldSize){
         outputCriticalPoints_numberOfPoints_=criticalPoints_numberOfPoints;
         outputCriticalPoints_points_=criticalPoints_points;
         outputCriticalPoints_points_cellDimensions_=criticalPoints_points_cellDimensons;
         outputCriticalPoints_points_cellIds_=criticalPoints_points_cellIds;
         outputCriticalPoints_points_cellScalars_=criticalPoints_points_cellScalars;
         outputCriticalPoints_points_isOnBoundary_=criticalPoints_points_isOnBoundary;
+        outputCriticalPoints_points_PLVertexIdentifiers_=criticalPoints_points_PLVertexIdentifiers;
+        outputCriticalPoints_points_manifoldSize_=criticalPoints_points_manifoldSize;
         return 0;
       }
 
@@ -779,6 +783,12 @@ namespace ttk{
       template <typename dataType>
         int setCriticalPoints() const;
 
+      template <typename dataType>
+        int setAugmentedCriticalPoints(const vector<Cell>& criticalPoints,
+            vector<int>& maxSeeds,
+            int* ascendingManifold,
+            int* descendingManifold) const;
+
       int setGradientGlyphs() const;
 
     protected:
@@ -789,6 +799,7 @@ namespace ttk{
 
       int dimensionality_;
       vector<vector<vector<int>>> gradient_;
+      vector<int> dmtMax2PL_;
 
       void* inputScalarField_;
       void* inputOffsets_;
@@ -800,6 +811,8 @@ namespace ttk{
       vector<int>* outputCriticalPoints_points_cellIds_;
       void* outputCriticalPoints_points_cellScalars_;
       vector<char>* outputCriticalPoints_points_isOnBoundary_;
+      vector<int>* outputCriticalPoints_points_PLVertexIdentifiers_;
+      vector<int>* outputCriticalPoints_points_manifoldSize_;
 
       int* outputGradientGlyphs_numberOfPoints_;
       vector<float>* outputGradientGlyphs_points_;
@@ -1603,6 +1616,7 @@ int DiscreteGradient::buildGradient(){
   for(int i=0; i<numberOfDimensions; ++i)
     numberOfCells[i]=getNumberOfCells(i);
 
+  dmtMax2PL_.clear();
   gradient_.clear();
   gradient_.resize(dimensionality_);
   for(int i=0; i<dimensionality_; ++i){
@@ -1713,6 +1727,16 @@ int DiscreteGradient::setCriticalPoints(const vector<Cell>& criticalPoints) cons
     outputCriticalPoints_points_cellIds_->push_back(cellId);
     outputCriticalPoints_points_cellScalars->push_back(scalar);
     outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
+    if(dmtMax2PL_.size()){
+      if(cellDim==0)
+        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(cellId);
+      else if(cellDim==dimensionality_)
+        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
+      else
+        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
+    }
+    else
+      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
 
     (*outputCriticalPoints_numberOfPoints_)++;
   }
@@ -1733,6 +1757,82 @@ int DiscreteGradient::setCriticalPoints() const{
   getCriticalPoints(criticalPoints);
 
   setCriticalPoints<dataType>(criticalPoints);
+
+  return 0;
+}
+
+template <typename dataType>
+int DiscreteGradient::setAugmentedCriticalPoints(const vector<Cell>& criticalPoints,
+    vector<int>& maxSeeds,
+    int* ascendingManifold,
+    int* descendingManifold) const{
+  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  vector<dataType>* outputCriticalPoints_points_cellScalars=
+    static_cast<vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
+
+  (*outputCriticalPoints_numberOfPoints_)=0;
+
+  const int numberOfDimensions=getNumberOfDimensions();
+  vector<int> numberOfCriticalPointsByDimension(numberOfDimensions,0);
+
+  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+
+  // for all critical cells
+  const int numberOfCriticalPoints=criticalPoints.size();
+  for(int i=0; i<numberOfCriticalPoints; ++i){
+    const Cell& cell=criticalPoints[i];
+    const int cellDim=cell.dim_;
+    const int cellId=cell.id_;
+    numberOfCriticalPointsByDimension[cellDim]++;
+
+    float incenter[3];
+    getCellIncenter(cell, incenter);
+
+    const dataType scalar=scalarMax<dataType>(cell, scalars);
+    const char isOnBoundary=isBoundary(cell);
+
+    outputCriticalPoints_points_->push_back(incenter[0]);
+    outputCriticalPoints_points_->push_back(incenter[1]);
+    outputCriticalPoints_points_->push_back(incenter[2]);
+
+    outputCriticalPoints_points_cellDimensions_->push_back(cellDim);
+    outputCriticalPoints_points_cellIds_->push_back(cellId);
+    outputCriticalPoints_points_cellScalars->push_back(scalar);
+    outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
+    if(dmtMax2PL_.size()){
+      if(cellDim==0)
+        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(cellId);
+      else if(cellDim==dimensionality_)
+        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
+      else
+        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
+    }
+    else
+      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
+
+    int manifoldSize=0;
+    if(cellDim==0){
+      const int seedId=descendingManifold[cellId];
+      manifoldSize=std::count(descendingManifold, descendingManifold+numberOfVertices, seedId);
+    }
+    else if(cellDim==dimensionality_){
+      auto ite=std::find(maxSeeds.begin(), maxSeeds.end(), cellId);
+      if(ite!=maxSeeds.end()){
+        const int seedId=std::distance(maxSeeds.begin(), ite);
+        manifoldSize=std::count(ascendingManifold, ascendingManifold+numberOfVertices, seedId);
+      }
+    }
+    outputCriticalPoints_points_manifoldSize_->push_back(manifoldSize);
+
+    (*outputCriticalPoints_numberOfPoints_)++;
+  }
+
+  {
+    stringstream msg;
+    for(int i=0; i<numberOfDimensions; ++i)
+      msg << "[DiscreteGradient] " << numberOfCriticalPointsByDimension[i] << " " << i << "-cell(s)." << endl;
+    dMsg(cout, msg.str(), infoMsg);
+  }
 
   return 0;
 }
@@ -1802,7 +1902,7 @@ int DiscreteGradient::getRemovableMaxima(const vector<pair<int,char>>& criticalP
 template <typename dataType>
 int DiscreteGradient::proto_getRemovableMaxima(const vector<pair<int,char>>& criticalPoints,
     vector<char>& isRemovableMaximum,
-    vector<int>& pl2dmt_maximum) const{
+    vector<int>& pl2dmt_maximum){
   const int numberOfCriticalPoints=criticalPoints.size();
   const int numberOfCells=inputTriangulation_->getNumberOfCells();
   const int maximumDim=dimensionality_;
@@ -1810,7 +1910,8 @@ int DiscreteGradient::proto_getRemovableMaxima(const vector<pair<int,char>>& cri
   // Detect DMT-max cells to remove
   isRemovableMaximum.resize(numberOfCells);
 
-  vector<char> dmt2PL(numberOfCells, false);
+  dmtMax2PL_.resize(numberOfCells);
+  fill(dmtMax2PL_.begin(), dmtMax2PL_.end(), -1);
 
   // by default : maximum is removable
 #ifdef withOpenMP
@@ -1836,15 +1937,15 @@ int DiscreteGradient::proto_getRemovableMaxima(const vector<pair<int,char>>& cri
         int starId;
         inputTriangulation_->getVertexStar(criticalPointId, j, starId);
 
-        if(isMaximum(Cell(maximumDim, starId)) and !dmt2PL[starId]){
+        if(isMaximum(Cell(maximumDim, starId)) and dmtMax2PL_[starId]==-1){
           maximumId=starId;
           ++numberOfMaxima;
         }
       }
 
       if(numberOfMaxima==1){
-        if(!dmt2PL[maximumId] and pl2dmt_maximum[criticalPointId]==-1){
-          dmt2PL[maximumId]=true;
+        if(dmtMax2PL_[maximumId]==-1 and pl2dmt_maximum[criticalPointId]==-1){
+          dmtMax2PL_[maximumId]=criticalPointId;
           pl2dmt_maximum[criticalPointId]=maximumId;
           isRemovableMaximum[maximumId]=false;
         }

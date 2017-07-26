@@ -182,13 +182,17 @@ namespace ttk{
           vector<int>* const criticalPoints_points_cellDimensons,
           vector<int>* const criticalPoints_points_cellIds,
           void* const criticalPoints_points_cellScalars,
-          vector<char>* const criticalPoints_points_isOnBoundary){
+          vector<char>* const criticalPoints_points_isOnBoundary,
+          vector<int>* const criticalPoints_points_PLVertexIdentifiers,
+          vector<int>* criticalPoints_points_manifoldSize){
         discreteGradient_.setOutputCriticalPoints(criticalPoints_numberOfPoints,
             criticalPoints_points,
             criticalPoints_points_cellDimensons,
             criticalPoints_points_cellIds,
             criticalPoints_points_cellScalars,
-            criticalPoints_points_isOnBoundary);
+            criticalPoints_points_isOnBoundary,
+            criticalPoints_points_PLVertexIdentifiers,
+            criticalPoints_points_manifoldSize);
         return 0;
       }
 
@@ -284,6 +288,8 @@ namespace ttk{
       vector<int>* outputCriticalPoints_points_cellIds_;
       void* outputCriticalPoints_points_cellScalars_;
       vector<char>* outputCriticalPoints_points_isOnBoundary_;
+      vector<int>* outputCriticalPoints_points_PLVertexIdentifiers_;
+      vector<int>* outputCriticalPoints_points_manifoldSize_;
 
       int* outputSeparatrices1_numberOfPoints_;
       vector<float>* outputSeparatrices1_points_;

@@ -8,6 +8,7 @@ DiscreteGradient::DiscreteGradient():
 
   dimensionality_{-1},
   gradient_{},
+  dmtMax2PL_{},
 
   inputScalarField_{},
   inputOffsets_{},
@@ -19,6 +20,8 @@ DiscreteGradient::DiscreteGradient():
   outputCriticalPoints_points_cellIds_{},
   outputCriticalPoints_points_cellScalars_{},
   outputCriticalPoints_points_isOnBoundary_{},
+  outputCriticalPoints_points_PLVertexIdentifiers_{},
+  outputCriticalPoints_points_manifoldSize_{},
 
   outputGradientGlyphs_numberOfPoints_{},
   outputGradientGlyphs_points_{},

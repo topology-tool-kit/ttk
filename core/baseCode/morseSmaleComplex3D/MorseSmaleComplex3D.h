@@ -35,6 +35,11 @@ namespace ttk{
             const vector<tuple<int, int, dataType>>& STPairs,
             vector<tuple<int,int,dataType>>& pl_saddleSaddlePairs);
 
+      template <typename dataType>
+        int setAugmentedCriticalPoints(const vector<Cell>& criticalPoints,
+            int* ascendingManifold,
+            int* descendingManifold) const;
+
       int getSeparatrices1(const vector<Cell>& criticalPoints,
           vector<Separatrix>& separatrices,
           vector<vector<Cell>>& separatricesGeometry) const;
@@ -76,12 +81,13 @@ namespace ttk{
           const vector<set<int>>& separatricesSaddles) const;
 
       int setAscendingSegmentation(const vector<Cell>& criticalPoints,
+          vector<int>& maxSeeds,
           int* const morseSmaleManifold,
-          int& numberOfMaxima) const;
+          int& numberOfMaxima);
 
       int setDescendingSegmentation(const vector<Cell>& criticalPoints,
           int* const morseSmaleManifold,
-          int& numberOfMinima) const;
+          int& numberOfMinima);
 
       int setFinalSegmentation(const int numberOfMaxima,
           const int numberOfMinima,
@@ -477,7 +483,6 @@ int MorseSmaleComplex3D::execute(){
 
   vector<Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
-  discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
 
   // 1-separatrices
   if(ComputeDescendingSeparatrices1 or ComputeAscendingSeparatrices1){
@@ -513,12 +518,13 @@ int MorseSmaleComplex3D::execute(){
     setAscendingSeparatrices2<dataType>(separatrices, separatricesGeometry, separatricesSaddles);
   }
 
+  vector<int> maxSeeds;
   {
     int numberOfMaxima{};
     int numberOfMinima{};
 
     if(ComputeAscendingSegmentation)
-      setAscendingSegmentation(criticalPoints, ascendingManifold, numberOfMaxima);
+      setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold, numberOfMaxima);
 
     if(ComputeDescendingSegmentation)
       setDescendingSegmentation(criticalPoints, descendingManifold, numberOfMinima);
@@ -526,6 +532,14 @@ int MorseSmaleComplex3D::execute(){
     if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation)
       setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold, descendingManifold, morseSmaleManifold);
   }
+
+  if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
+    discreteGradient_.setAugmentedCriticalPoints<dataType>(criticalPoints,
+        maxSeeds,
+        ascendingManifold,
+        descendingManifold);
+  else
+    discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
 
   {
     const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
