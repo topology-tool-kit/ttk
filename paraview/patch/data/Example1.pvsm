@@ -11029,9 +11029,9 @@
         <Domain name="array_list" id="6927.SelectionCellFieldDataArrayName.array_list"/>
       </Property>
       <Property name="SelectionPointFieldDataArrayName" id="6927.SelectionPointFieldDataArrayName" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="6927.SelectionPointFieldDataArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -11102,9 +11102,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6927.ColorArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -11195,9 +11195,9 @@
         <Domain name="range" id="6927.NonlinearSubdivisionLevel.range"/>
       </Property>
       <Property name="OSPRayScaleArray" id="6927.OSPRayScaleArray" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="6927.OSPRayScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -11224,9 +11224,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6927.OpacityArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -11321,7 +11321,7 @@
       <Property name="SelectOrientationVectors" id="6927.SelectOrientationVectors" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="6927.SelectOrientationVectors.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -11332,7 +11332,7 @@
       <Property name="SelectScaleArray" id="6927.SelectScaleArray" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="6927.SelectScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -11473,9 +11473,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6927.SetScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -11577,9 +11577,9 @@
         <Domain name="array_list" id="5878.SelectionCellFieldDataArrayName.array_list"/>
       </Property>
       <Property name="SelectionPointFieldDataArrayName" id="5878.SelectionPointFieldDataArrayName" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="5878.SelectionPointFieldDataArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -11650,9 +11650,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="5878.ColorArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -11743,9 +11743,9 @@
         <Domain name="range" id="5878.NonlinearSubdivisionLevel.range"/>
       </Property>
       <Property name="OSPRayScaleArray" id="5878.OSPRayScaleArray" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="5878.OSPRayScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -11772,9 +11772,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="5878.OpacityArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -11869,7 +11869,7 @@
       <Property name="SelectOrientationVectors" id="5878.SelectOrientationVectors" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="5878.SelectOrientationVectors.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -11880,7 +11880,7 @@
       <Property name="SelectScaleArray" id="5878.SelectScaleArray" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="5878.SelectScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -12021,9 +12021,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="5878.SetScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -15109,9 +15109,9 @@
         <Domain name="array_list" id="7271.SelectionCellFieldDataArrayName.array_list"/>
       </Property>
       <Property name="SelectionPointFieldDataArrayName" id="7271.SelectionPointFieldDataArrayName" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="7271.SelectionPointFieldDataArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -15182,9 +15182,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="7271.ColorArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -15279,9 +15279,9 @@
         <Domain name="range" id="7271.NonlinearSubdivisionLevel.range"/>
       </Property>
       <Property name="OSPRayScaleArray" id="7271.OSPRayScaleArray" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="7271.OSPRayScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -15308,9 +15308,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="7271.OpacityArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -15421,7 +15421,7 @@
       <Property name="SelectOrientationVectors" id="7271.SelectOrientationVectors" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="7271.SelectOrientationVectors.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -15432,7 +15432,7 @@
       <Property name="SelectScaleArray" id="7271.SelectScaleArray" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="7271.SelectScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -15573,9 +15573,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="7271.SetScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -15679,9 +15679,9 @@
         <Domain name="array_list" id="6061.SelectionCellFieldDataArrayName.array_list"/>
       </Property>
       <Property name="SelectionPointFieldDataArrayName" id="6061.SelectionPointFieldDataArrayName" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="6061.SelectionPointFieldDataArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -15752,9 +15752,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6061.ColorArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -15849,9 +15849,9 @@
         <Domain name="range" id="6061.NonlinearSubdivisionLevel.range"/>
       </Property>
       <Property name="OSPRayScaleArray" id="6061.OSPRayScaleArray" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="6061.OSPRayScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -15878,9 +15878,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6061.OpacityArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -15991,7 +15991,7 @@
       <Property name="SelectOrientationVectors" id="6061.SelectOrientationVectors" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="6061.SelectOrientationVectors.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -16002,7 +16002,7 @@
       <Property name="SelectScaleArray" id="6061.SelectScaleArray" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="6061.SelectScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -16143,9 +16143,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6061.SetScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -16249,9 +16249,9 @@
         <Domain name="array_list" id="6244.SelectionCellFieldDataArrayName.array_list"/>
       </Property>
       <Property name="SelectionPointFieldDataArrayName" id="6244.SelectionPointFieldDataArrayName" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="6244.SelectionPointFieldDataArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -16322,9 +16322,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6244.ColorArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -16419,9 +16419,9 @@
         <Domain name="range" id="6244.NonlinearSubdivisionLevel.range"/>
       </Property>
       <Property name="OSPRayScaleArray" id="6244.OSPRayScaleArray" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="6244.OSPRayScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -16448,9 +16448,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6244.OpacityArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -16561,7 +16561,7 @@
       <Property name="SelectOrientationVectors" id="6244.SelectOrientationVectors" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="6244.SelectOrientationVectors.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -16572,7 +16572,7 @@
       <Property name="SelectScaleArray" id="6244.SelectScaleArray" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="6244.SelectScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -16713,9 +16713,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6244.SetScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -20211,9 +20211,9 @@
         <Domain name="array_list" id="6770.SelectionCellFieldDataArrayName.array_list"/>
       </Property>
       <Property name="SelectionPointFieldDataArrayName" id="6770.SelectionPointFieldDataArrayName" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="6770.SelectionPointFieldDataArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="VectorGradient"/>
           <String text="Vectors_"/>
@@ -20288,7 +20288,7 @@
         <Element index="3" value="0"/>
         <Element index="4" value="myVorticity"/>
         <Domain name="array_list" id="6770.ColorArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="VectorGradient"/>
           <String text="Vectors_"/>
@@ -20385,9 +20385,9 @@
         <Domain name="range" id="6770.NonlinearSubdivisionLevel.range"/>
       </Property>
       <Property name="OSPRayScaleArray" id="6770.OSPRayScaleArray" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="6770.OSPRayScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="VectorGradient"/>
           <String text="Vectors_"/>
@@ -20416,9 +20416,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6770.OpacityArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -20529,7 +20529,7 @@
       <Property name="SelectOrientationVectors" id="6770.SelectOrientationVectors" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="6770.SelectOrientationVectors.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="OutputOffsetScalarField"/>
           <String text="VectorGradient"/>
@@ -20542,7 +20542,7 @@
       <Property name="SelectScaleArray" id="6770.SelectScaleArray" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="6770.SelectScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="OutputOffsetScalarField"/>
           <String text="VectorGradient"/>
@@ -20685,9 +20685,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6770.SetScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -20791,9 +20791,9 @@
         <Domain name="array_list" id="7099.SelectionCellFieldDataArrayName.array_list"/>
       </Property>
       <Property name="SelectionPointFieldDataArrayName" id="7099.SelectionPointFieldDataArrayName" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="7099.SelectionPointFieldDataArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -20864,9 +20864,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="7099.ColorArrayName.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -20961,9 +20961,9 @@
         <Domain name="range" id="7099.NonlinearSubdivisionLevel.range"/>
       </Property>
       <Property name="OSPRayScaleArray" id="7099.OSPRayScaleArray" number_of_elements="1">
-        <Element index="0" value="Critical Type"/>
+        <Element index="0" value="CriticalIndex"/>
         <Domain name="array_list" id="7099.OSPRayScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
@@ -20990,9 +20990,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="7099.OpacityArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -21103,7 +21103,7 @@
       <Property name="SelectOrientationVectors" id="7099.SelectOrientationVectors" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="7099.SelectOrientationVectors.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -21114,7 +21114,7 @@
       <Property name="SelectScaleArray" id="7099.SelectScaleArray" number_of_elements="1">
         <Element index="0" value=""/>
         <Domain name="array_list" id="7099.SelectScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="None"/>
           <String text="Normals"/>
           <String text="OutputOffsetScalarField"/>
@@ -21255,9 +21255,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="7099.SetScaleArray.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -21782,9 +21782,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="6072.SelectInputScalars.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -21819,9 +21819,9 @@
         <Element index="1" value=""/>
         <Element index="2" value=""/>
         <Element index="3" value="0"/>
-        <Element index="4" value="Critical Type"/>
+        <Element index="4" value="CriticalIndex"/>
         <Domain name="array_list" id="5889.SelectInputScalars.array_list">
-          <String text="Critical Type"/>
+          <String text="CriticalIndex"/>
           <String text="OutputOffsetScalarField"/>
           <String text="Vertex Ids"/>
           <String text="myVorticity"/>
@@ -24878,7 +24878,7 @@
       <Item id="7328" name="XYChartRepresentation2"/>
     </ProxyCollection>
     <ProxyCollection name="sources">
-      <Item id="4593" name="BuiltInExample..vti"/>
+      <Item id="4593" name="$PARAVIEW_EXAMPLES_DATA/Example..vti"/>
       <Item id="5117" name="Calculator1"/>
       <Item id="4947" name="CellDatatoPointData1"/>
       <Item id="4777" name="ComputeDerivatives1"/>
