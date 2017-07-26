@@ -865,6 +865,9 @@ void ttkContourForests::getSkeletonNodes()
   vtkIntArray* nodeTypeScalars = vtkIntArray::New();
   nodeTypeScalars->SetName("NodeType");
 
+  vtkIntArray* regionSizeScalars = vtkIntArray::New();
+  regionSizeScalars->SetName("RegionSize");
+
   int identifier{};
   for (unsigned i = 0; i < criticalPoints_->size(); ++i) {
     int nodeId        = (*criticalPoints_)[i];
@@ -898,6 +901,18 @@ void ttkContourForests::getSkeletonNodes()
       type = static_cast<int>(nodeType);
       nodeTypeScalars->InsertTuple1(identifier, type);
 
+      // RegionSize
+      int regionSize=0;
+      if(nodeType==NodeType::Local_maximum){
+        const int arcId=tree_->getNode(nodeId)->getDownSuperArcId(0);
+        regionSize=tree_->getSuperArc(arcId)->getNumberOfRegularNodes()+1;
+      }
+      else if(nodeType==NodeType::Local_minimum){
+        const int arcId=tree_->getNode(nodeId)->getUpSuperArcId(0);
+        regionSize=tree_->getSuperArc(arcId)->getNumberOfRegularNodes()+1;
+      }
+      regionSizeScalars->InsertTuple1(identifier, regionSize);
+
       ++identifier;
     }
   }
@@ -907,12 +922,14 @@ void ttkContourForests::getSkeletonNodes()
   skeletonNodes_->GetPointData()->AddArray(nodeIdentifierScalars);
   skeletonNodes_->GetPointData()->AddArray(vertexIdentifierScalars);
   skeletonNodes_->GetPointData()->AddArray(nodeTypeScalars);
+  skeletonNodes_->GetPointData()->AddArray(regionSizeScalars);
 
   for (unsigned int f = 0; f < inputScalars_->size(); ++f)
     scalars[f]->Delete();
   nodeIdentifierScalars->Delete();
   vertexIdentifierScalars->Delete();
   nodeTypeScalars->Delete();
+  regionSizeScalars->Delete();
 }
 
 NodeType ttkContourForests::getNodeType(int id)
