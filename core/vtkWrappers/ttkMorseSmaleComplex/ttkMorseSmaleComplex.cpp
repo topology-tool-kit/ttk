@@ -503,8 +503,11 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
               PLVertexIdentifiers->InsertNextTuple1(
                   criticalPoints_points_PLVertexIdentifiers[i]);
 
-              manifoldSizeScalars->InsertNextTuple1(
-                  criticalPoints_points_manifoldSize[i]);
+              if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
+                manifoldSizeScalars->InsertNextTuple1(
+                    criticalPoints_points_manifoldSize[i]);
+              else
+                manifoldSizeScalars->InsertNextTuple1(-1);
             }
             outputCriticalPoints->SetPoints(points);
 
