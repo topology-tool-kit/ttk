@@ -136,19 +136,25 @@ namespace ttk{
           vector<int>* const criticalPoints_points_cellDimensons,
           vector<int>* const criticalPoints_points_cellIds,
           void* const criticalPoints_points_cellScalars,
-          vector<char>* const criticalPoints_points_isOnBoundary){
+          vector<char>* const criticalPoints_points_isOnBoundary,
+          vector<int>* const criticalPoints_points_PLVertexIdentifiers,
+          vector<int>* const criticalPoints_points_manifoldSize){
         morseSmaleComplex2D_.setOutputCriticalPoints(criticalPoints_numberOfPoints,
             criticalPoints_points,
             criticalPoints_points_cellDimensons,
             criticalPoints_points_cellIds,
             criticalPoints_points_cellScalars,
-            criticalPoints_points_isOnBoundary);
+            criticalPoints_points_isOnBoundary,
+            criticalPoints_points_PLVertexIdentifiers,
+            criticalPoints_points_manifoldSize);
         morseSmaleComplex3D_.setOutputCriticalPoints(criticalPoints_numberOfPoints,
             criticalPoints_points,
             criticalPoints_points_cellDimensons,
             criticalPoints_points_cellIds,
             criticalPoints_points_cellScalars,
-            criticalPoints_points_isOnBoundary);
+            criticalPoints_points_isOnBoundary,
+            criticalPoints_points_PLVertexIdentifiers,
+            criticalPoints_points_manifoldSize);
 
         return 0;
       }

@@ -22,6 +22,8 @@ AbstractMorseSmaleComplex::AbstractMorseSmaleComplex():
   outputCriticalPoints_points_cellIds_{},
   outputCriticalPoints_points_cellScalars_{},
   outputCriticalPoints_points_isOnBoundary_{},
+  outputCriticalPoints_points_PLVertexIdentifiers_{},
+  outputCriticalPoints_points_manifoldSize_{},
 
   outputSeparatrices1_numberOfPoints_{},
   outputSeparatrices1_points_{},

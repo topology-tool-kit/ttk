@@ -39,6 +39,7 @@ namespace ttk{
             const vector<vector<Cell>>& separatricesGeometry) const;
 
       int setAscendingSegmentation(const vector<Cell>& criticalPoints,
+          vector<int>& maxSeeds,
           int* const morseSmaleManifold,
           int& numberOfMinima) const;
 
@@ -159,7 +160,6 @@ int MorseSmaleComplex2D::execute(){
 
   vector<Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
-  discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
 
   // 1-separatrices
   if(ComputeDescendingSeparatrices1 or ComputeAscendingSeparatrices1){
@@ -170,12 +170,13 @@ int MorseSmaleComplex2D::execute(){
     setSeparatrices<dataType>(separatrices, separatricesGeometry);
   }
 
+  vector<int> maxSeeds;
   {
     int numberOfMaxima{};
     int numberOfMinima{};
 
     if(ComputeAscendingSegmentation)
-      setAscendingSegmentation(criticalPoints, ascendingManifold, numberOfMaxima);
+      setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold, numberOfMaxima);
 
     if(ComputeDescendingSegmentation)
       setDescendingSegmentation(criticalPoints, descendingManifold, numberOfMinima);
@@ -183,6 +184,14 @@ int MorseSmaleComplex2D::execute(){
     if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation)
       setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold, descendingManifold, morseSmaleManifold);
   }
+
+  if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
+    discreteGradient_.setAugmentedCriticalPoints<dataType>(criticalPoints,
+        maxSeeds,
+        ascendingManifold,
+        descendingManifold);
+  else
+    discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
 
   {
     const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
