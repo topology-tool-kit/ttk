@@ -472,7 +472,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             }
 #endif
             PLVertexIdentifiers->SetNumberOfComponents(1);
-            PLVertexIdentifiers->SetName("PLVertexIdentifier");
+            PLVertexIdentifiers->SetName("VertexIdentifier");
 
             vtkSmartPointer<vtkIntArray> manifoldSizeScalars=vtkSmartPointer<vtkIntArray>::New();
 #ifndef withKamikaze
