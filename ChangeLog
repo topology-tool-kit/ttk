@@ -1,6 +1,8 @@
 ChangeLog
 =
 * ttk.git
+- Bottleneck and Wasserstein distances between peristence diagrams
+- Lp distance between scalar fields
 - boundary mask on scalar field critical points
 - optional 3D embedding of the persistence diagram
 - optional mask array for constrained smoothing

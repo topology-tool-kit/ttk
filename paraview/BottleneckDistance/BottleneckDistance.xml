@@ -8,7 +8,8 @@
     <SourceProxy
         name="BottleneckDistance"
         class="ttkBottleneckDistance"
-        label="TTK BottleneckDistance">
+        label="TTK BottleneckDistance"
+        >
       <Documentation
           long_help="TTK bottleneckDistance plugin."
           short_help="TTK bottleneckDistance plugin.">
@@ -18,8 +19,9 @@
       <InputProperty
           name="Input1"
           port_index="0"
-          label="First persistence diagram"
-          command="SetInputConnection">
+          label="Smallest persistence diagram"
+          command="SetInputConnection"
+          >
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
@@ -38,7 +40,7 @@
       <InputProperty
           name="Input2"
           port_index="1"
-          label="Second persistence diagram"
+          label="Largest persistence diagram"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
@@ -55,34 +57,23 @@
         </Documentation>
       </InputProperty>
 
-      <IntVectorProperty
-        name="Output matchings"
-        command="SetUseOutputMatching"
-        label="Output matching mesh"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Ouput matchings in an unstructured mesh.
-        </Documentation>
-      </IntVectorProperty>
+      
 
       <StringVectorProperty
           name="n"
-          label="Metric type (inf, 1, 2, ...)"
+          label="p parameter"
           command="SetWassersteinMetric"
           number_of_elements="1"
           default_values="1" >
         <Documentation>
-          "inf" for the Bottleneck distance or an integer argument for custom
-          Wasserstein metric.
+          Value of the parameter p for the Wp (p-th Wasserstein) distance 
+computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
 
       <DoubleVectorProperty
           name="alpha"
-          label="Geometric matching"
+          label="Diagram blending"
           command="SetAlpha"
           number_of_elements="1"
           default_values="1"
@@ -90,42 +81,58 @@
           >
         <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
         <Documentation>
-          Mix persistence with geometric matching.
-          Must be in [0, 1].
-          Persistence pairs are then matched with a coefficient, by
-          modifying the distance used in the affectation solver:
-          d(P1, P2) = alpha * delta(persistence) + (1 - alpha) * delta(geometry)
+          Blending coefficient for the cost evaluation of each critical point  
+matching. By default (1), only distances  in 
+the persistence diagrams are considered between matched critical points. When 
+set to 0, only distances in the original 3D domain are considered 
+between matched critical points.
         </Documentation>
       </DoubleVectorProperty>
 
       <IntVectorProperty
-          name="Use spacing"
-          command="SetUseGeometricSpacing"
-          label="Use geometric spacing when embedded"
-          number_of_elements="1"
-          default_values="0"
-          panel_visibility="advanced">
+        name="Output matchings"
+        command="SetUseOutputMatching"
+        label="Display the matchings with line segments"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Bind Zth coordinates of vertices of the matching mesh
-          (corresponding to the second persistence diagram)
-          to an offset when dealing with embedded persistence diagrams.
-          Best used when dealing with 2D datasets.
+          Display the matching between pairs of the persistence diagrams with 
+line segments in 3D.
         </Documentation>
       </IntVectorProperty>
+      
+
 
       <DoubleVectorProperty
           name="spacing"
-          label="Geometric spacing"
+          label="Z-Translation"
           command="SetSpacing"
           number_of_elements="1"
           default_values="1"
           panel_visibility="advanced"
       >
         <Documentation>
-          Absolute spacing between meshes.
+          Translation on the Z axis between the output representations of the 
+persistence diagrams.
         </Documentation>
       </DoubleVectorProperty>
+      
+        <IntVectorProperty
+          name="Use spacing"
+          command="SetUseGeometricSpacing"
+          label="Force Z-translation"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          For the translation of the second set of critical points even the 
+persistence diagrams are embedded in the original domain. This is useful to 
+visualize the matching between the diagrams of two 2D scalar fields.
+        </Documentation>
+      </IntVectorProperty>
 
       <IntVectorProperty
           name="UseAllCores"
@@ -164,8 +171,16 @@
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="n" />
+        <Property name="alpha" />
       </PropertyGroup>
 
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="Output matchings" />
+        <Property name="spacing" />
+        <Property name="Use spacing" />
+      </PropertyGroup>
+      
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
