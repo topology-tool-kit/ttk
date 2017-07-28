@@ -74,23 +74,24 @@
 
      <StringVectorProperty
          name="n"
-         label="Distance type (inf, 1, 2, ...)"
+         label="p parameter"
          command="SetDistanceType"
          number_of_elements="1"
-         default_values="1" >
+         default_values="2" >
          <Documentation>
-           "inf" or integer argument for the lDistance filter.
+          Value of the parameter p for the Lp distance computation (type "inf" 
+for the L-infinity distance).
          </Documentation>
      </StringVectorProperty>
 
      <StringVectorProperty
          name="name"
-         label="Output distance type name."
+         label="Output name"
          command="SetDistanceFieldName"
          number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
+         default_values="L2-distance" panel_visibility="advanced">
        <Documentation>
-         Name of the output distance field (default "Distance Field").
+         Name of the output distance field.
        </Documentation>
      </StringVectorProperty>
      
@@ -133,6 +134,11 @@
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField1" />
         <Property name="ScalarField2" />
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="n" />
+        <Property name="name" />
       </PropertyGroup>
       
       <PropertyGroup panel_widget="Line" label="Testing">
