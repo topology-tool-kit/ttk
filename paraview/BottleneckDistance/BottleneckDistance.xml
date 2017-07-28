@@ -1,0 +1,184 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="BottleneckDistance"
+        class="ttkBottleneckDistance"
+        label="TTK BottleneckDistance">
+      <Documentation
+          long_help="TTK bottleneckDistance plugin."
+          short_help="TTK bottleneckDistance plugin.">
+        TTK bottleneckDistance plugin documentation.
+      </Documentation>
+
+      <InputProperty
+          name="Input1"
+          port_index="0"
+          label="First persistence diagram"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="Input2"
+          port_index="1"
+          label="Second persistence diagram"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="Output matchings"
+        command="SetUseOutputMatching"
+        label="Output matching mesh"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Ouput matchings in an unstructured mesh.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="n"
+          label="Metric type (inf, 1, 2, ...)"
+          command="SetWassersteinMetric"
+          number_of_elements="1"
+          default_values="1" >
+        <Documentation>
+          "inf" for the Bottleneck distance or an integer argument for custom
+          Wasserstein metric.
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty
+          name="alpha"
+          label="Geometric matching"
+          command="SetAlpha"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced"
+          >
+        <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
+        <Documentation>
+          Mix persistence with geometric matching.
+          Must be in [0, 1].
+          Persistence pairs are then matched with a coefficient, by
+          modifying the distance used in the affectation solver:
+          d(P1, P2) = alpha * delta(persistence) + (1 - alpha) * delta(geometry)
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+          name="Use spacing"
+          command="SetUseGeometricSpacing"
+          label="Use geometric spacing when embedded"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Bind Zth coordinates of vertices of the matching mesh
+          (corresponding to the second persistence diagram)
+          to an offset when dealing with embedded persistence diagrams.
+          Best used when dealing with 2D datasets.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="spacing"
+          label="Geometric spacing"
+          command="SetSpacing"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced"
+      >
+        <Documentation>
+          Absolute spacing between meshes.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+          name="UseAllCores"
+          label="Use All Cores"
+          command="SetUseAllCores"
+          number_of_elements="1"
+          default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use all available cores.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ThreadNumber"
+          label="Thread Number"
+          command="SetThreadNumber"
+          number_of_elements="1"
+          default_values="1" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Documentation>
+          Thread number.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="DebugLevel"
+          label="Debug Level"
+          command="SetdebugLevel_"
+          number_of_elements="1"
+          default_values="3" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Debug level.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
+
+      <OutputPort name="Persistence Diagram 1" index="0" id="port1"/>
+      <OutputPort name="Persistence Diagram 2" index="1" id="port2"/>
+      <OutputPort name="Persistence Mesh" index="2" id="port3"/>
+
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
