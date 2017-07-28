@@ -1,0 +1,149 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy 
+     name="LDistance" 
+     class="ttkLDistance" 
+     label="TTK LDistance">
+     
+     <Documentation
+        long_help="TTK lDistance plugin."
+        short_help="TTK lDistance plugin.">
+          TTK lDistance plugin documentation.
+     </Documentation>
+     
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars_1" number_of_components="1">
+          <Property name="Input1" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="ScalarField1"
+        command="SetScalarField1"
+        number_of_elements="1"
+        animateable="0"
+        label="Scalar Field 1"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the first scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+      
+     <StringVectorProperty
+        name="ScalarField2"
+        command="SetScalarField2"
+        number_of_elements="1"
+        animateable="0"
+        label="Scalar Field 2"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the second scalar field to process.
+        </Documentation>
+     </StringVectorProperty>
+
+     <StringVectorProperty
+         name="n"
+         label="Distance type (inf, 1, 2, ...)"
+         command="SetDistanceType"
+         number_of_elements="1"
+         default_values="1" >
+         <Documentation>
+           "inf" or integer argument for the lDistance filter.
+         </Documentation>
+     </StringVectorProperty>
+
+     <StringVectorProperty
+         name="name"
+         label="Output distance type name."
+         command="SetDistanceFieldName"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+       <Documentation>
+         Name of the output distance field (default "Distance Field").
+       </Documentation>
+     </StringVectorProperty>
+     
+      <IntVectorProperty
+         name="UseAllCores"
+         label="Use All Cores"
+         command="SetUseAllCores"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use all available cores.
+         </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="ThreadNumber"
+         label="Thread Number"
+         command="SetThreadNumber"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="100" />
+         <Documentation>
+          Thread number.
+         </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="DebugLevel"
+         label="Debug Level"
+         command="SetdebugLevel_"
+         number_of_elements="1"
+         default_values="3" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Debug level.
+         </Documentation>
+      </IntVectorProperty>
+      
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarField1" />
+        <Property name="ScalarField2" />
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
+      
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>
