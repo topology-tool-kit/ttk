@@ -79,33 +79,62 @@ class VTKFILTERSCORE_EXPORT ttkPersistenceDiagram
     void SetThreadNumber(int threadNumber){
       ThreadNumber = threadNumber;
       SetThreads();
+      computeDiagram_ = true;
     }
 
     void SetUseAllCores(bool onOff){
       UseAllCores = onOff;
       SetThreads();
+      computeDiagram_ = true;
     }
     // end of default ttk setters
 
-    vtkSetMacro(ScalarField, string);
+    void SetScalarField(string data){
+      ScalarField = data;
+      Modified();
+      computeDiagram_ = true;
+    }
     vtkGetMacro(ScalarField, string);
 
-    vtkSetMacro(ScalarFieldId, int);
+    void SetScalarFieldId(int data){
+      ScalarFieldId = data;
+      Modified();
+      computeDiagram_ = true;
+    }
     vtkGetMacro(ScalarFieldId, int);
 
-    vtkSetMacro(OffsetFieldId, int);
+    void SetOffsetFieldId(int data){
+      OffsetFieldId = data;
+      Modified();
+      computeDiagram_ = true;
+    }
     vtkGetMacro(OffsetFieldId, int);
 
-    vtkSetMacro(UseInputOffsetScalarField, int);
+    void SetUseInputOffsetScalarField(int data){
+      UseInputOffsetScalarField = data;
+      Modified();
+      computeDiagram_ = true;
+    }
     vtkGetMacro(UseInputOffsetScalarField, int);
 
-    vtkSetMacro(ComputeSaddleConnectors, int);
+    void SetComputeSaddleConnectors(int data){
+      ComputeSaddleConnectors = data;
+      Modified();
+      computeDiagram_ = true;
+    }
     vtkGetMacro(ComputeSaddleConnectors, int);
 
-    vtkSetMacro(InputOffsetScalarFieldName, string);
+    void SetInputOffsetScalarFieldName(string data){
+      InputOffsetScalarFieldName = data;
+      Modified();
+      computeDiagram_ = true;
+    }
     vtkGetMacro(InputOffsetScalarFieldName, string);
 
-    vtkSetMacro(ShowInsideDomain, int);
+    void SetShowInsideDomain(int onOff){
+      ShowInsideDomain = onOff;
+      Modified();
+    }
     vtkGetMacro(ShowInsideDomain, int);
 
     int getScalars(vtkDataSet* input);
@@ -143,6 +172,8 @@ class VTKFILTERSCORE_EXPORT ttkPersistenceDiagram
           const vector<tuple<idVertex,NodeType,idVertex,NodeType,
           scalarType,idVertex>>& diagram);
 
+    int deleteDiagram();
+
   protected:
 
     ttkPersistenceDiagram();
@@ -168,6 +199,8 @@ class VTKFILTERSCORE_EXPORT ttkPersistenceDiagram
     vtkDataArray* inputOffsets_;
     bool varyingMesh_;
     int ScalarFieldId, OffsetFieldId;
+    void* CTDiagram_;
+    bool computeDiagram_;
 
 };
 
