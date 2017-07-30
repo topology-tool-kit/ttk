@@ -82,6 +82,16 @@ namespace ttk {
         dataType
         getDistance();
 
+      template<typename type>
+      static type abs(const type var){
+         return (var >= 0) ? var : -var;
+      }
+
+      template<typename type>
+      static type abs_diff(const type var1, const type var2){
+         return (var1 > var2) ? var1 - var2 : var2 - var1;
+      }
+
       // Triangulation
       inline int setupTriangulation(Triangulation *triangulation) 
       {
@@ -213,12 +223,12 @@ int BottleneckDistance::computeBottleneck(
   vector<dataType> toSort;
   for (int i = 0; i < d1Size; ++i) {
     diagramTuple t = CTDiagram1->at(i);
-    dataType persistence = std::abs(get<4>(t));
+    dataType persistence = abs<dataType>(get<4>(t));
     toSort.push_back(persistence);
   }
   for (int i = 0; i < d2Size; ++i) {
     diagramTuple t = CTDiagram2->at(i);
-    dataType persistence = std::abs(get<4>(t));
+    dataType persistence = abs<dataType>(get<4>(t));
     toSort.push_back(persistence);
   }
   std::sort(toSort.begin(), toSort.end());
@@ -260,7 +270,7 @@ int BottleneckDistance::computeBottleneck(
     NodeType nt1 = get<1>(t);
     NodeType nt2 = get<3>(t);
     dataType dt = get<4>(t);
-    if (std::abs(dt) < zeroThresh) continue;
+    if (abs<dataType>(dt) < zeroThresh) continue;
 
     if (nt1 == NodeType::Local_minimum && nt2 == NodeType::Local_maximum) ++nbRowMax;
     else {
@@ -276,7 +286,7 @@ int BottleneckDistance::computeBottleneck(
     NodeType nt1 = get<1>(t);
     NodeType nt2 = get<3>(t);
     dataType dt = get<4>(t);
-    if (std::abs(dt) < zeroThresh) continue;
+    if (abs<dataType>(dt) < zeroThresh) continue;
 
     if (nt1 == NodeType::Local_minimum && nt2 == NodeType::Local_maximum) ++nbColMax;
     else {
@@ -307,7 +317,7 @@ int BottleneckDistance::computeBottleneck(
   for (int i = 0; i < d1Size; ++i)
   {
     diagramTuple t1 = CTDiagram1->at(i);
-    if (std::abs(get<4>(t1)) < zeroThresh) continue;
+    if (abs<dataType>(get<4>(t1)) < zeroThresh) continue;
 
     bool isMin1 = (get<1>(t1) == NodeType::Local_minimum || get<3>(t1) == NodeType::Local_minimum);
     bool isMax1 = (get<1>(t1) == NodeType::Local_maximum || get<3>(t1) == NodeType::Local_maximum);
@@ -322,8 +332,8 @@ int BottleneckDistance::computeBottleneck(
     dataType rY = get<10>(t1);
     dataType rDiff2 = usePersistenceMetric ?
                       wasserstein > 0 ?
-                        std::pow(std::abs(get<4>(t1)), wasserstein) :
-                        std::abs(get<4>(t1)) : 0;
+                        std::pow(abs<dataType>(get<4>(t1)), wasserstein) :
+                        abs<dataType>(get<4>(t1)) : 0;
 
     // Reinit indices.
     minJ = 0;
@@ -333,7 +343,7 @@ int BottleneckDistance::computeBottleneck(
     for (int j = 0; j < d2Size; ++j)
     {
       diagramTuple t2 = CTDiagram2->at(j);
-      if (std::abs(get<4>(t2)) < zeroThresh) continue;
+      if (abs<dataType>(get<4>(t2)) < zeroThresh) continue;
 
       bool isMin2 = (get<1>(t2) == NodeType::Local_minimum || get<3>(t2) == NodeType::Local_minimum);
       bool isMax2 = (get<1>(t2) == NodeType::Local_maximum || get<3>(t2) == NodeType::Local_maximum);
@@ -350,13 +360,13 @@ int BottleneckDistance::computeBottleneck(
       dataType cY = get<10>(t2);
       dataType cDiff2 = usePersistenceMetric ?
         wasserstein > 0 ?
-          std::pow(std::abs(get<4>(t2)), wasserstein) :
-          std::abs(get<4>(t2)) : 0;
+          std::pow(abs<dataType>(get<4>(t2)), wasserstein) :
+          abs<dataType>(get<4>(t2)) : 0;
 
       // 1. Compute Wasserstein distance (w = 2 => square mean; w = infty => bottleneck distance).
       // 2. Account for non-paired cost by removing the feature heights.
-      dataType x = std::abs(rX - cX);
-      dataType y = std::abs(rY - cY);
+      dataType x = abs_diff<dataType>(rX, cX);
+      dataType y = abs_diff<dataType>(rY, cY);
 
       double dist = std::sqrt(
           std::pow((get<7>(t1)+get<11>(t1))/2 - (get<7>(t2)+get<11>(t2))/2, 2) +
@@ -399,7 +409,7 @@ int BottleneckDistance::computeBottleneck(
     sadI = 0;
     for (int i = 0; i < d1Size; ++i) {
       diagramTuple t1 = CTDiagram1->at(i);
-      if (std::abs(get<4>(t1)) < zeroThresh) continue;
+      if (abs<dataType>(get<4>(t1)) < zeroThresh) continue;
       bool isMin1 = (get<1>(t1) == NodeType::Local_minimum || get<3>(t1) == NodeType::Local_minimum);
       bool isMax1 = (get<1>(t1) == NodeType::Local_maximum || get<3>(t1) == NodeType::Local_maximum);
       bool isSad1 = ((get<1>(t1) == NodeType::Saddle1 && get<3>(t1) == NodeType::Saddle2) ||
@@ -412,8 +422,8 @@ int BottleneckDistance::computeBottleneck(
       if (!isMin1 && !isMax1 && !isSad1) continue;
 
       dataType rDiff2 = wasserstein > 0 ?
-                        std::pow(std::abs(get<4>(t1)), wasserstein) :
-                        std::abs(get<4>(t1));
+                        std::pow(abs<dataType>(get<4>(t1)), wasserstein) :
+                        abs<dataType>(get<4>(t1));
 
       if (isMin1) {
         int start = std::min(nbColMin, nbRowMin);
@@ -463,7 +473,7 @@ int BottleneckDistance::computeBottleneck(
     maxJ = 0;
     for (int i = 0; i < d2Size; ++i) {
       diagramTuple t2 = CTDiagram2->at(i);
-      if (std::abs(get<4>(t2)) < zeroThresh) continue;
+      if (abs<dataType>(get<4>(t2)) < zeroThresh) continue;
       bool isMin2 = (get<1>(t2) == NodeType::Local_minimum || get<3>(t2) == NodeType::Local_minimum);
       bool isMax2 = (get<1>(t2) == NodeType::Local_maximum || get<3>(t2) == NodeType::Local_maximum);
       bool isSad2 = ((get<1>(t2) == NodeType::Saddle1 && get<3>(t2) == NodeType::Saddle2) ||
@@ -477,8 +487,8 @@ int BottleneckDistance::computeBottleneck(
       if (!isMin2 && !isMax2 && !isSad2) continue;
 
       dataType cDiff2 = wasserstein > 0 ?
-                        std::pow(std::abs(get<4>(t2)), wasserstein) :
-                        std::abs(get<4>(t2));
+                        std::pow(abs<dataType>(get<4>(t2)), wasserstein) :
+                        abs<dataType>(get<4>(t2));
 
       if (isMin2) {
         int start = std::min(nbColMin, nbRowMin);
@@ -772,7 +782,7 @@ int BottleneckDistance::computeBottleneck(
 
   for (int i = 0; i < d1Size; ++i) {
     diagramTuple t1 = CTDiagram1->at(i);
-    if (std::abs(get<4>(t1)) < zeroThresh) continue;
+    if (abs<dataType>(get<4>(t1)) < zeroThresh) continue;
 
     if (get<1>(t1) == NodeType::Local_minimum && get<3>(t1) == NodeType::Local_maximum) {
         maxMap1.push_back(i);
@@ -789,7 +799,7 @@ int BottleneckDistance::computeBottleneck(
 
   for (int j = 0; j < d2Size; ++j) {
     diagramTuple t1 = CTDiagram2->at(j);
-    if (std::abs(get<4>(t1)) < zeroThresh) continue;
+    if (abs<dataType>(get<4>(t1)) < zeroThresh) continue;
 
     if (get<1>(t1) == NodeType::Local_minimum && get<3>(t1) == NodeType::Local_maximum) {
       maxMap2.push_back(j);
@@ -808,7 +818,7 @@ int BottleneckDistance::computeBottleneck(
   dataType addedMinPersistence = 0;
   for (int i = 0, s = minMatchings->size(); i < s; ++i) {
     tuple<idVertex, idVertex, dataType> t = minMatchings->at(i);
-    dataType val = std::abs(get<2>(t));
+    dataType val = abs<dataType>(get<2>(t));
 
     if (get<0>(t) >= (int) minMap1.size()) {
       addedMinPersistence = (wasserstein > 0 ?
@@ -827,7 +837,7 @@ int BottleneckDistance::computeBottleneck(
   dataType addedMaxPersistence = 0;
   for (int i = 0, s = maxMatchings->size(); i < s; ++i) {
     tuple<idVertex, idVertex, dataType> t = maxMatchings->at(i);
-    dataType val = std::abs(get<2>(t));
+    dataType val = abs<dataType>(get<2>(t));
 
     if (get<0>(t) >= (int) maxMap1.size()) {
       addedMaxPersistence = (wasserstein > 0 ?
@@ -846,7 +856,7 @@ int BottleneckDistance::computeBottleneck(
   dataType addedSadPersistence = 0;
   for (int i = 0, s = sadMatchings->size(); i < s; ++i) {
     tuple<idVertex, idVertex, dataType> t = sadMatchings->at(i);
-    dataType val = std::abs(get<2>(t));
+    dataType val = abs<dataType>(get<2>(t));
 
     if (get<0>(t) >= (int) sadMap1.size()) {
       addedSadPersistence = (wasserstein > 0 ?
@@ -894,7 +904,7 @@ int BottleneckDistance::computeBottleneck(
 
     paired1[i] = true;
     paired2[j] = true;
-    dataType linfty = std::max(std::abs(x), std::abs(y));
+    dataType linfty = std::max(abs<dataType>(x), abs<dataType>(y));
     if (wasserstein > 0) {
       d += std::pow(linfty, wasserstein);
     } else {
@@ -906,14 +916,14 @@ int BottleneckDistance::computeBottleneck(
     for (int j = 0; j < d2Size; ++j) {
       if (paired2[j]) continue;
       diagramTuple t2 = CTDiagram2->at(j);
-      dataType cDiff = std::abs(get<4>(t2));
+      dataType cDiff = abs<dataType>(get<4>(t2));
       d += wasserstein > 0 ? std::pow(cDiff, wasserstein) : 0;
     }
   } else if (d2Size < d1Size)  {
     for (int i = 0; i < d1Size; ++i) {
       if (paired1[i]) continue;
       diagramTuple t1 = CTDiagram1->at(i);
-      dataType rDiff = std::abs(get<4>(t1));
+      dataType rDiff = abs<dataType>(get<4>(t1));
       d += wasserstein > 0 ? std::pow(rDiff, wasserstein) : 0;
       // Bottleneck => only maximum matching weight.
     }
