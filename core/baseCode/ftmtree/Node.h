@@ -15,6 +15,7 @@
 #include <vector>
 
 #include <Debug.h>
+#include <functional>
 
 #include "DataTypes.h"
 
@@ -48,11 +49,9 @@ namespace ttk
       {
       }
 
-
       // -----------------
       // ACCESSOR
       // ------------------
-
 
       // Vertex id
 
@@ -65,7 +64,6 @@ namespace ttk
       {
          vertexId_ = vertexId;
       }
-
 
       // Linked node
 
@@ -89,7 +87,6 @@ namespace ttk
          linkedNode_ = linked;
       }
 
-
       // vector arcs
 
       inline idSuperArc getNumberOfDownSuperArcs() const
@@ -110,7 +107,7 @@ namespace ttk
       inline idSuperArc getDownSuperArcId(idSuperArc neighborId) const
       {
 #ifndef withKamikaze
-         if ((neighborId < 0) || ((size_t)neighborId >= vect_downSuperArcList_.size())) {
+         if ((size_t)neighborId >= vect_downSuperArcList_.size()) {
             cerr << "[Merge Tree:Node] get down on bad neighbor !";
             cerr << endl;
             return 0;

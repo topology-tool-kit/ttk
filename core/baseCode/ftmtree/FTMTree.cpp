@@ -16,7 +16,6 @@
 // ------------
 // CONSTRUCTOR
 // ------------
-// {
 
 FTMTree::FTMTree() : FTMTree_CT(new Params, nullptr, new Scalars)
 {
