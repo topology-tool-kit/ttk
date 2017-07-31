@@ -47,6 +47,8 @@ class AtomicVector : public std::vector<type>
 #endif
    }
 
+   AtomicVector(AtomicVector && other) = default;
+
    virtual ~AtomicVector() = default;
 
    // ---
@@ -114,10 +116,26 @@ class AtomicVector : public std::vector<type>
       return nextId;
    }
 
+   bool empty(void) const
+   {
+      return nextId == 0;
+   }
+
    void push_back(const type &elmt)
    {
        const auto& curPos = getNext();
-       operator[](curPos) = elmt;
+       (*this)[curPos] = elmt;
+   }
+
+
+   // --------
+   // OPERATOR
+   // --------
+
+   AtomicVector<type> &operator=(const AtomicVector<type> &other)
+   {
+       std::vector<type>::operator=(other);
+       nextId = other.nextId;
    }
 
    // ---------
@@ -136,6 +154,19 @@ class AtomicVector : public std::vector<type>
    const_iterator cend() const
    {
       return this->cbegin() + nextId;
+   }
+
+   typedef typename std::vector<type>::reverse_iterator riterator;
+   typedef typename std::vector<type>::const_reverse_iterator const_riterator;
+
+   riterator rbegin()
+   {
+      return this->rend() - (nextId - 1);
+   }
+
+   const_riterator crbegin() const
+   {
+      return this->crend() - (nextId - 1);
    }
 };
 

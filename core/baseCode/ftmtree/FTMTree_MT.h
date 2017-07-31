@@ -587,7 +587,7 @@ namespace ttk
       // Clone
       FTMTree_MT *clone() const;
 
-      void clone(const FTMTree_MT *mt);
+      void move(FTMTree_MT *mt);
 
       void doSwap(FTMTree_MT *mt);
 
