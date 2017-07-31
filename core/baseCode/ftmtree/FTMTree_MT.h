@@ -228,13 +228,13 @@ namespace ttk
 
       // extrema
 
-      virtual int precompute();
+      virtual int leafSearch();
 
       // skeleton
 
-      void leaves();
+      void leafGrowth();
 
-      void processTask(const idVertex startVert, const idVertex orig);
+      void arcGrowth(const idVertex startVert, const idVertex orig);
 
       tuple<bool, bool> propage(CurrentState &currentState, UF curUF);
 

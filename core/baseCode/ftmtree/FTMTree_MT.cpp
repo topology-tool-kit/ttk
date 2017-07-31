@@ -156,11 +156,11 @@ void FTMTree_MT::build(const bool ct)
    // Build Merge treeString using tasks
    // ----------------------------
    DebugTimer precomputeTime;
-   int alreadyDone = precompute();
-   printTime(precomputeTime, "[FTM] precompute " + treeString, scalars_->size, 3 + alreadyDone);
+   int alreadyDone = leafSearch();
+   printTime(precomputeTime, "[FTM] leafSearch " + treeString, scalars_->size, 3 + alreadyDone);
 
    DebugTimer buildTime;
-   leaves();
+   leafGrowth();
    int nbProcessed = 0;
 #ifdef withProcessSpeed
    // count process
@@ -169,7 +169,7 @@ void FTMTree_MT::build(const bool ct)
            ++nbProcessed;
    }
 #endif
-   printTime(buildTime, "[FTM] leaves "+treeString, nbProcessed, 3);
+   printTime(buildTime, "[FTM] leafGrowth "+treeString, nbProcessed, 3);
 
    DebugTimer bbTime;
    idVertex bbSize = trunk(ct);
@@ -185,7 +185,7 @@ void FTMTree_MT::build(const bool ct)
    }
 }
 
-int FTMTree_MT::precompute()
+int FTMTree_MT::leafSearch()
 {
    int ret = 0;
    // if not already computed by CT
@@ -255,7 +255,7 @@ int FTMTree_MT::precompute()
 
 DebugTimer _launchGlobalTime;
 
-void FTMTree_MT::leaves()
+void FTMTree_MT::leafGrowth()
 {
    _launchGlobalTime.reStart();
 
@@ -287,13 +287,13 @@ void FTMTree_MT::leaves()
       (*treeData_.ufs)[v] = new AtomicUF(v);
 
 #pragma omp task untied
-      processTask(v, n);
+      arcGrowth(v, n);
    }
 
 #pragma omp taskwait
 }
 
-void FTMTree_MT::processTask(const idVertex startVert, const idVertex orig)
+void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
 {
 
    // ------------------------
@@ -397,7 +397,7 @@ void FTMTree_MT::processTask(const idVertex startVert, const idVertex orig)
 
             // recursively continue
 #pragma omp taskyield
-            processTask(currentVert, orig);
+            arcGrowth(currentVert, orig);
          } else {
             // Active tasks / threads
 #pragma omp atomic update seq_cst
