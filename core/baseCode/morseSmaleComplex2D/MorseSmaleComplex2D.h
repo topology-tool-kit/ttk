@@ -156,6 +156,7 @@ int MorseSmaleComplex2D::execute(){
   discreteGradient_.setDebugLevel(debugLevel_);
   discreteGradient_.setThreadNumber(threadNumber_);
   discreteGradient_.buildGradient<dataType>();
+  discreteGradient_.buildGradient2<dataType>();
   discreteGradient_.reverseGradient<dataType>();
 
   vector<Cell> criticalPoints;
