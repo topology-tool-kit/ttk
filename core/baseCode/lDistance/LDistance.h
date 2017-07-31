@@ -84,6 +84,11 @@ namespace ttk {
       inline double getResult() {
         return result;
       }
+
+      template<typename type>
+      static type abs_diff(const type var1, const type var2){
+         return (var1 > var2) ? var1 - var2 : var2 - var1;
+      }
     
     protected:
     
@@ -153,7 +158,7 @@ template <class dataType> int LDistance::computeLn(
   #pragma omp parallel for num_threads(threadNumber_) reduction(+:sum)
   #endif
   for (int i = 0; i < vertexNumber; ++i) {
-    diff = abs(input1[i] - input2[i]);
+    diff =  abs_diff<dataType>(input1[i], input2[i]);
     power = pow(diff, (double)n);
     
     // Careful: huge dataset + huge values
@@ -185,7 +190,7 @@ template <class dataType> int LDistance::computeLinf(
   
   if (vertexNumber < 1) return 0;
   
-  dataType maxValue = abs(input1[0] - input2[0]);
+  dataType maxValue = abs_diff<dataType>(input1[0], input2[0]);
   dataType iter;
   
   // Compute difference for each point.
@@ -193,7 +198,7 @@ template <class dataType> int LDistance::computeLinf(
   #pragma omp parallel for num_threads(threadNumber_) reduction(max:maxValue)
   #endif
   for (int i = 1; i < vertexNumber; ++i) {
-    iter = abs(input1[i] - input2[i]);
+    iter = abs_diff<dataType>(input1[i], input2[i]);
     if (iter > maxValue) maxValue = iter;
     
     // Store absolute difference in output.
