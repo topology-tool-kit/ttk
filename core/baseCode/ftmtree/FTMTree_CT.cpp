@@ -213,7 +213,7 @@ int FTMTree_CT::combine()
          growingNodes.emplace(false, nId);
       }
    } else {
-      clone(jt_);
+      move(jt_);
       return 0;
    }
 

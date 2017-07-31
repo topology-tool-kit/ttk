@@ -48,45 +48,85 @@ FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const
 
 FTMTree_MT::~FTMTree_MT()
 {
-   delete treeData_.superArcs;
-   delete treeData_.nodes;
-   delete treeData_.roots;
-   delete treeData_.leaves;
-   delete treeData_.vert2tree;
-   delete treeData_.trunkSegments;
-   delete treeData_.visitOrder;
-   delete treeData_.ufs;
-   delete treeData_.propagation;
-   delete treeData_.valences;
-   delete treeData_.openedNodes;
+    if(treeData_.superArcs)
+    {
+        delete treeData_.superArcs;
+        treeData_.superArcs = nullptr;
+    }
+    if(treeData_.nodes)
+    {
+        delete treeData_.nodes;
+        treeData_.nodes = nullptr;
+    }
+    if(treeData_.roots)
+    {
+        delete treeData_.roots;
+        treeData_.roots = nullptr;
+    }
+    if(treeData_.leaves)
+    {
+        delete treeData_.leaves;
+        treeData_.leaves = nullptr;
+    }
+    if(treeData_.vert2tree)
+    {
+        delete treeData_.vert2tree;
+        treeData_.vert2tree = nullptr;
+    }
+    if(treeData_.trunkSegments)
+    {
+        delete treeData_.trunkSegments;
+        treeData_.trunkSegments = nullptr;
+    }
+    if(treeData_.visitOrder)
+    {
+        delete treeData_.visitOrder;
+        treeData_.visitOrder = nullptr;
+    }
+    if(treeData_.ufs)
+    {
+        delete treeData_.ufs;
+        treeData_.ufs = nullptr;
+    }
+    if(treeData_.propagation)
+    {
+        delete treeData_.propagation;
+        treeData_.propagation = nullptr;
+    }
+    if(treeData_.valences)
+    {
+        delete treeData_.valences;
+        treeData_.valences = nullptr;
+    }
+    if(treeData_.openedNodes)
+    {
+        delete treeData_.openedNodes;
+        treeData_.openedNodes = nullptr;
+    }
 
 #ifdef withStatsTime
-   delete treeData_.arcStart;
-   delete treeData_.arcEnd;
-   delete treeData_.arcOrig;
-   delete treeData_.arcTasks;
-#endif
-
-   treeData_.superArcs     = nullptr;
-   treeData_.nodes         = nullptr;
-   treeData_.roots         = nullptr;
-   treeData_.leaves        = nullptr;
-   treeData_.vert2tree     = nullptr;
-   treeData_.trunkSegments = nullptr;
-   treeData_.visitOrder    = nullptr;
-   treeData_.ufs           = nullptr;
-   treeData_.propagation   = nullptr;
-   treeData_.valences      = nullptr;
-   treeData_.openedNodes   = nullptr;
-
-#ifdef withStatsTime
-   treeData_.arcStart = nullptr;
-   treeData_.arcEnd   = nullptr;
-   treeData_.arcOrig  = nullptr;
-   treeData_.arcTasks = nullptr;
+    if(treeData_.arcStart)
+    {
+        delete treeData_.arcStart;
+        treeData_.arcStart = nullptr;
+    }
+    if(treeData_.arcEnd)
+    {
+        delete treeData_.arcEnd;
+        treeData_.arcEnd = nullptr;
+    }
+    if(treeData_.arcOrig)
+    {
+        delete treeData_.arcOrig;
+        treeData_.arcOrig = nullptr;
+    }
+    if(treeData_.arcTasks)
+    {
+        delete treeData_.arcTasks;
+        treeData_.arcTasks = nullptr;
+    }
 #endif
 }
-
 
 // -------
 // Process
@@ -1309,12 +1349,6 @@ void FTMTree_MT::delNode(idNode node)
 #endif
 }
 
-
-// -------------------------------
-// Operators : find, print & clone
-// -------------------------------
-
-// Clone
 FTMTree_MT *FTMTree_MT::clone() const
 {
    FTMTree_MT *newMT = new FTMTree_MT(params_, mesh_, scalars_, treeData_.treeType);
@@ -1328,14 +1362,19 @@ FTMTree_MT *FTMTree_MT::clone() const
    return newMT;
 }
 
-void FTMTree_MT::clone(const FTMTree_MT *mt)
+void FTMTree_MT::move(FTMTree_MT *mt)
 {
    // we already have common data
-   treeData_.superArcs = mt->treeData_.superArcs;
-   treeData_.nodes     = mt->treeData_.nodes;
-   treeData_.leaves    = mt->treeData_.leaves;
-   treeData_.roots     = mt->treeData_.roots;
-   treeData_.vert2tree = mt->treeData_.vert2tree;
+   treeData_.superArcs     = mt->treeData_.superArcs;
+   mt->treeData_.superArcs = nullptr;
+   treeData_.nodes         = mt->treeData_.nodes;
+   mt->treeData_.nodes     = nullptr;
+   treeData_.leaves        = mt->treeData_.leaves;
+   mt->treeData_.leaves    = nullptr;
+   treeData_.roots         = mt->treeData_.roots;
+   mt->treeData_.roots     = nullptr;
+   treeData_.vert2tree     = mt->treeData_.vert2tree;
+   mt->treeData_.vert2tree = nullptr;
 }
 
 // Print
