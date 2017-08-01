@@ -69,7 +69,7 @@ int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet* input){
   triangulation_=ttkTriangulation::getTriangulation(input);
 #ifndef withKamikaze
   if(!triangulation_){
-    cerr << "[vtkContourForests] Error : ttkTriangulation::getTriangulation() is null." << endl;
+    cerr << "[ttkMorseSmaleComplex] Error : ttkTriangulation::getTriangulation() is null." << endl;
     return -1;
   }
 #endif
