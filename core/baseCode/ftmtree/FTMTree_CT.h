@@ -102,7 +102,7 @@ namespace ttk
       // PROCESS
       // -----------------
 
-      int vertexPrecomputation();
+      int leafSearch();
 
       void build(TreeType tt);
 
