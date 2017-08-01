@@ -426,7 +426,7 @@ namespace ttk
       inline idNode getLeave(const idNode id) const
       {
 #ifndef withKamikaze
-         if ((id < 0) || (size_t)id > (treeData_.leaves->size())) {
+         if ((size_t)id > (treeData_.leaves->size())) {
             stringstream msg;
             msg << "[MergTree] getLeaves out of bounds : " << id << endl;
             err(msg.str(), fatalMsg);

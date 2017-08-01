@@ -15,11 +15,6 @@
 
 #include <stack>
 
-// -----------
-// CONSTRUCT
-// -----------
-
-
 FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const scalars,
                      TreeType type)
     : params_(params), mesh_(mesh), scalars_(scalars)
@@ -128,17 +123,10 @@ FTMTree_MT::~FTMTree_MT()
 #endif
 }
 
-// -------
-// Process
-// -------
-
-
 void FTMTree_MT::build(const bool ct)
 {
     string treeString;
-   // --------------------------
    // Comparator init (template)
-   // --------------------------
    initComp();
    switch(treeData_.treeType){
        case TreeType::Join:
@@ -152,9 +140,7 @@ void FTMTree_MT::build(const bool ct)
            break;
    }
 
-   // ----------------------------
    // Build Merge treeString using tasks
-   // ----------------------------
    DebugTimer precomputeTime;
    int alreadyDone = leafSearch();
    printTime(precomputeTime, "[FTM] leafSearch " + treeString, scalars_->size, 3 + alreadyDone);
@@ -175,9 +161,7 @@ void FTMTree_MT::build(const bool ct)
    idVertex bbSize = trunk(ct);
    printTime(bbTime, "[FTM] trunk "+treeString, bbSize, 3);
 
-   // ------------
    // Segmentation
-   // ------------
    if (ct && params_->segm) {
       DebugTimer segmTime;
       buildSegmentation();
@@ -194,9 +178,7 @@ int FTMTree_MT::leafSearch()
       const auto chunkSize = getChunkSize();
       const auto chunkNb   = getChunkCount();
 
-      // --------------------------------
       // Extrema extract and launch tasks
-      // --------------------------------
       for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #pragma omp task firstprivate(chunkId)
          {
@@ -235,9 +217,7 @@ int FTMTree_MT::leafSearch()
       cout << "nb leaves " << nbLeaves << endl;
    }
 
-   // -------
    // Reserve Arcs
-   // -------
    treeData_.superArcs->reserve(nbLeaves * 2 + 1);
 #ifdef withStatsTime
    createVector<float>(treeData_.arcStart);
@@ -296,9 +276,8 @@ void FTMTree_MT::leafGrowth()
 void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
 {
 
-   // ------------------------
    // current task id / propag
-   // ------------------------
+
    // local order (ignore non regular verts)
    idVertex localOrder = -1;
    UF startUF = (*treeData_.ufs)[startVert]->find();
@@ -316,9 +295,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
    // avoid duplicate processing of startVert
    bool seenFirst = false;
 
-   // -----------
    // ARC OPENING
-   // -----------
    idNode     startNode  = getCorrespondingNodeId(startVert);
    idSuperArc currentArc = openSuperArc(startNode);
    startUF->addArcToClose(currentArc);
@@ -327,13 +304,10 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
    (*treeData_.arcOrig)[currentArc] = orig;
 #endif
 
-   // ----------------
    // TASK PROPAGATION
-   // ----------------
    while (!currentState->empty()) {
-      // -----------
       // Next vertex
-      // -----------
+
       idVertex currentVert = currentState->getNextMinVertex();
 
       // ignore duplicate
@@ -353,9 +327,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
       // local order to avoid sort
       (*treeData_.visitOrder)[currentVert] = localOrder++;
 
-      // -------------------------------------
       // Saddle & Last detection + propagation
-      // -------------------------------------
       bool isSaddle, isLast;
       tie(isSaddle, isLast) = propage(*currentState, startUF);
 
@@ -363,9 +335,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
 #pragma omp atomic write seq_cst
       (*treeData_.ufs)[currentVert] = startUF;
 
-      // -----------
       // Saddle case
-      // -----------
       if (isSaddle) {
 
 # ifdef withStatsTime
@@ -375,9 +345,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
          // need a node on this vertex
          (*treeData_.openedNodes)[currentVert] = 1;
 
-         // ---------------------------
          // If last close all and merge
-         // ---------------------------
          if (isLast) {
             // last task detection
             idNode remainingTasks;
@@ -415,9 +383,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
 
    }  // end wile propagation
 
-   // ----------
    // close root
-   // ----------
    const idVertex closeVert      = getSuperArc(currentArc)->getLastVisited();
    bool           existCloseNode = isCorrespondingNode(closeVert);
    idNode closeNode = (existCloseNode) ? getCorrespondingNodeId(closeVert) : makeNode(closeVert);
@@ -543,9 +509,7 @@ idVertex FTMTree_MT::trunk(const bool ct)
    vector<idVertex> pendingNodesVerts;
    const auto &     nbScalars = scalars_->size;
 
-   // -----
    //pendingNodesVerts
-   // -----
   pendingNodesVerts.reserve(max(10, nbScalars / 500));
    for (idVertex v = 0; v < nbScalars; ++v) {
        if((*treeData_.openedNodes)[v]){
@@ -557,9 +521,7 @@ idVertex FTMTree_MT::trunk(const bool ct)
       closeOnBackBone(v);
    }
 
-   // ----
    // Arcs
-   // ----
    const auto &nbNodes =pendingNodesVerts.size();
    for (idNode n = 1; n < nbNodes; ++n) {
       idSuperArc na =
@@ -572,9 +534,7 @@ idVertex FTMTree_MT::trunk(const bool ct)
    }
    const idSuperArc lastArc = openSuperArc(getCorrespondingNodeId(pendingNodesVerts[nbNodes - 1]));
 
-   // ---------------------
    // Root (close last arc)
-   // ---------------------
    // if several CC still the backbone is only in one.
    // But the root may not be the max node of the whole dataset: TODO
    const idNode rootNode = makeNode((*scalars_->sortedVertices)[(isJT())?scalars_->size -1:0]);
@@ -584,9 +544,7 @@ idVertex FTMTree_MT::trunk(const bool ct)
    printTime(bbTimer, "[FTM] trunk seq.", -1, 4);
    bbTimer.reStart();
 
-   // ------------
    // Segmentation
-   // ------------
    idVertex begin, stop, processed;
    tie(begin, stop) = getBoundsFromVerts(pendingNodesVerts);
    if(ct){
@@ -835,9 +793,8 @@ void FTMTree_MT::buildSegmentation()
 
    const idSuperArc nbArcs = treeData_.superArcs->size();
 
-   // ------------
    // Make reserve
-   // ------------
+
    // SuperArc i correspond to segment i,
    // one arc correspond to one segment
    vector<idVertex> sizes(nbArcs);
@@ -862,9 +819,9 @@ void FTMTree_MT::buildSegmentation()
    treeData_.segments_.resize(sizes);
 
    DebugTimer segmentsSet;
-   // -----------------------------
+
    // Fill segments using vert2tree
-   // -----------------------------
+
    // current status of the segmentation of this arc
    vector<idVertex> posSegm(nbArcs, 0);
 
@@ -931,9 +888,8 @@ void FTMTree_MT::buildSegmentation()
       printTime(segmentsArcTime, "segm. trunk verts", -1, 4);
    }
 
-   // ----------------------
    // Update SuperArc region
-   // ----------------------
+
    // ST have a segmentation wich is in the reverse-order of its build
    // ST have a segmentation sorted in ascending order as JT
    for(idSuperArc arcChunkId = 0; arcChunkId < arcChunkNb; ++arcChunkId){
@@ -1051,11 +1007,6 @@ void FTMTree_MT::normalizeIds(void)
 }
 
 
-// ---------------------------
-// Arcs and node manipulations
-// ---------------------------
-
-// SuperArcs
 idSuperArc FTMTree_MT::openSuperArc(idNode downNodeId)
 {
 #ifndef withKamikaze
@@ -1106,7 +1057,6 @@ void FTMTree_MT::closeSuperArc(idSuperArc superArcId, idNode upNodeId)
 
 
 
-// nodes
 vector<idNode> FTMTree_MT::sortedNodes(const bool para)
 {
    vector<idNode> sortedNodes(treeData_.nodes->size());
@@ -1153,8 +1103,6 @@ void FTMTree_MT::sortLeaves(const bool para)
 
 }
 
-// add
-
 idNode FTMTree_MT::makeNode(idVertex vertexId, idVertex term)
 {
 #ifndef withKamikaze
@@ -1182,14 +1130,14 @@ idNode FTMTree_MT::makeNode(const Node *const n, idVertex term)
    return makeNode(n->getVertexId());
 }
 
-// Normal insert : existing arc stay below inserted (JT example)
-//  *   - <- upNodeId
-//  | \ |   <- newSA
-//  |   * <- newNodeId
-//  |   |   <- currentSA
-//  - - -
 idSuperArc FTMTree_MT::insertNode(Node *node, const bool segm)
 {
+   // Normal insert : existing arc stay below inserted (JT example)
+   //  *   - <- upNodeId
+   //  | \ |   <- newSA
+   //  |   * <- newNodeId
+   //  |   |   <- currentSA
+   //  - - -
    // already present
    if (isCorrespondingNode(node->getVertexId())) {
       Node *myNode = vertex2Node(node->getVertexId());
@@ -1230,8 +1178,6 @@ idSuperArc FTMTree_MT::insertNode(Node *node, const bool segm)
 
    return newSA;
 }
-
-// traverse
 
 Node *FTMTree_MT::getDownNode(const SuperArc *a)
 {
@@ -1285,17 +1231,13 @@ idNode FTMTree_MT::getUpperNodeId(const SuperArc *a)
    return getUpNodeId(a);
 }
 
-// remove
-
 void FTMTree_MT::delNode(idNode node)
 {
    Node *mainNode = getNode(node);
 
    if (mainNode->getNumberOfUpSuperArcs() == 0) {
 
-      // -----------------
       // Root: No Superarc
-      // -----------------
 #ifndef withKamikaze
       if (mainNode->getNumberOfDownSuperArcs() != 1) {
          // Root with several childs: impossible /\ .
@@ -1314,9 +1256,7 @@ void FTMTree_MT::delNode(idNode node)
       mainNode->clearDownSuperArcs();
 
    } else if (mainNode->getNumberOfDownSuperArcs() < 2) {
-      // ---------------
       // Have one up arc
-      // ---------------
 
       // We delete the upArc of this node,
       // if there is a down arc, we reattach it to the upNode
@@ -1329,9 +1269,7 @@ void FTMTree_MT::delNode(idNode node)
       mainNode->clearUpSuperArcs();
 
       if (mainNode->getNumberOfDownSuperArcs()) {
-         // -----------------
          // Have one down arc
-         // -----------------
 
          // Reconnect
          idSuperArc downArc = mainNode->getDownSuperArcId(0);
@@ -1377,7 +1315,6 @@ void FTMTree_MT::move(FTMTree_MT *mt)
    mt->treeData_.vert2tree = nullptr;
 }
 
-// Print
 string FTMTree_MT::printArc(idSuperArc a)
 {
    const SuperArc *sa = getSuperArc(a);
@@ -1518,10 +1455,6 @@ int FTMTree_MT::printTime(DebugTimer &t, const string &s, idVertex nbScalars, co
    return 1;
 }
 
-// -----
-// Tools
-// -----
-
 idNode FTMTree_MT::getVertInRange(const vector<idVertex> &range, const idVertex v,
                                  const idNode last) const
 {
@@ -1547,10 +1480,6 @@ tuple<idVertex, idVertex> FTMTree_MT::getBoundsFromVerts(const vector<idVertex> 
 
     return make_tuple(begin, stop);
 }
-
-// ---------
-// Operators
-// ---------
 
 ostream &ttk::operator<<(ostream &o, SuperArc const &a)
 {
