@@ -1,8 +1,8 @@
 #include <ttkFTMTree.h>
 
-vtkStandardNewMacro(ttkFTMTree)
+vtkStandardNewMacro(ttkFTMTree);
 
-    ttkFTMTree::ttkFTMTree()
+ttkFTMTree::ttkFTMTree()
     : ScalarField{},
       UseInputOffsetScalarField{},
       InputOffsetScalarFieldName{},

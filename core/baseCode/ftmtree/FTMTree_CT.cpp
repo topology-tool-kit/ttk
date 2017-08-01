@@ -16,11 +16,6 @@
 
 #include "FTMTree_CT.h"
 
-// ------------
-// CONSTRUCTOR
-// ------------
-// {
-
 FTMTree_CT::FTMTree_CT(Params *const params, Triangulation *mesh, Scalars *const scalars)
     : FTMTree_MT(params, mesh, scalars, TreeType::Contour),
       jt_(new FTMTree_MT(params, mesh, scalars, TreeType::Join)),
@@ -40,20 +35,13 @@ FTMTree_CT::~FTMTree_CT()
    }
 }
 
-// }
-// -------
-// PROCESS
-// -------
-// {
 int FTMTree_CT::vertexPrecomputation()
 {
    const auto  nbScalars = scalars_->size;
    const auto  chunkSize = getChunkSize();
    const auto  chunkNb   = getChunkCount();
 
-   // --------------------------------
    // Extrema extract and launch tasks
-   // --------------------------------
    for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #pragma omp task firstprivate(chunkId)
       {
@@ -105,9 +93,7 @@ void FTMTree_CT::build(TreeType tt)
    //    vertexPrecomputation();
    //    printTime(precomputeTime, "[FTM] precompute ", -1, 3);
 
-   // -------
    // JT & ST
-   // -------
 
 #pragma omp parallel num_threads(threadNumber_)
    {
@@ -125,9 +111,7 @@ void FTMTree_CT::build(TreeType tt)
 
    printTime(mergeTreesTime, "[FTM] merge trees ", -1, 3);
 
-   // -------
    // Combine
-   // -------
 
    if (tt == TreeType::Contour) {
 
@@ -140,9 +124,7 @@ void FTMTree_CT::build(TreeType tt)
       printTime(combineFullTime, "[FTM] combine full", -1, 3);
    }
 
-   // -----
    // Debug
-   // -----
 
    if (debugLevel_ > 3) {
       cout << " nodes :";
@@ -194,16 +176,12 @@ int FTMTree_CT::combine()
 
    const bool DEBUG = false;
 
-   // -------
    // Reserve
-   // -------
    treeData_.nodes->reserve(jt_->getNumberOfNodes());
    treeData_.superArcs->reserve(jt_->getNumberOfSuperArcs()+2);
    treeData_.leaves->reserve(jt_->getNumberOfLeaves()+st_->getNumberOfLeaves());
 
-   // ----------------------------------
    // Add JT & ST Leaves to growingNodes
-   // ----------------------------------
 
    // Add leves to growing nodes
    const auto& nbSTLeaves = st_->getNumberOfLeaves();
@@ -269,11 +247,7 @@ int FTMTree_CT::combine()
          idNode currentNodeId;
          bool   isJT;
 
-         // stats[iteration] = growingNodes.size();
-         //++iteration;
-         // ------------
          // INFO QUEUE
-         // ------------
 
          tie(isJT, currentNodeId) = growingNodes.front();
          growingNodes.pop();
@@ -281,9 +255,7 @@ int FTMTree_CT::combine()
          FTMTree_MT *xt = (isJT) ? jt_ : st_;
          FTMTree_MT *yt = (isJT) ? st_ : jt_;
 
-         // ------------
          // INFO JT / ST
-         // ------------
 
          // i <- Get(Q)
          const Node *currentNode = xt->getNode(currentNodeId);
@@ -319,9 +291,7 @@ int FTMTree_CT::combine()
             continue;
          }
 
-         // -----------
          // NODES IN CT
-         // -----------
 
          idNode   node1, node2;
          idVertex curVert = currentNode->getVertexId();
@@ -361,9 +331,7 @@ int FTMTree_CT::combine()
                treeData_.leaves->emplace_back(node2);
          }
 
-         // ----------
          // CREATE ARC
-         // ----------
 
          idSuperArc processArc = currentNode->getUpSuperArcId(0);
 
@@ -386,9 +354,7 @@ int FTMTree_CT::combine()
             cout << "create arc : " << printArc(createdArc) << endl;
          }
 
-         // ---------
          // DEL NODES
-         // ---------
 
          // DelNode(XT, i)
          {
@@ -411,9 +377,7 @@ int FTMTree_CT::combine()
          }
 
 
-         // -------------
          // PROCESS QUEUE
-         // -------------
 
          if (parentNode->getNumberOfDownSuperArcs() == 0 && parentNode->getNumberOfUpSuperArcs()) {
             growingNodes.emplace(isJT, parentId);

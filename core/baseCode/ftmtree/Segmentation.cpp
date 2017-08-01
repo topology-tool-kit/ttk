@@ -21,10 +21,6 @@
 using namespace ttk;
 using namespace std;
 
-// -------
-// Segment
-// -------
-
 Segment::Segment(idVertex size) : vertices_(size, nullVertex)
 {
 }
@@ -103,10 +99,6 @@ idVertex& Segment::operator[](const size_t& idx)
    return vertices_[idx];
 }
 
-// --------
-// Segments
-// --------
-
 Segments::Segments()
 {
 }
@@ -136,8 +128,6 @@ void Segments::resize(const vector<idVertex>& sizes)
    }
 }
 
-// vector like
-
 idSegment Segments::size(void) const
 {
    return segments_.size();
@@ -157,10 +147,6 @@ const Segment& Segments::operator[](const size_t& idx) const
 {
    return segments_[idx];
 }
-
-// ---------
-// ArcRegion
-// ---------
 
 ArcRegion::ArcRegion()
 {
