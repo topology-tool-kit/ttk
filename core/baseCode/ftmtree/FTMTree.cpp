@@ -13,10 +13,6 @@
 
 #include "FTMTree.h"
 
-// ------------
-// CONSTRUCTOR
-// ------------
-
 FTMTree::FTMTree() : FTMTree_CT(new Params, nullptr, new Scalars)
 {
 }

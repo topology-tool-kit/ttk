@@ -35,51 +35,6 @@ FTMTree_CT::~FTMTree_CT()
    }
 }
 
-int FTMTree_CT::vertexPrecomputation()
-{
-   const auto  nbScalars = scalars_->size;
-   const auto  chunkSize = getChunkSize();
-   const auto  chunkNb   = getChunkCount();
-
-   // Extrema extract and launch tasks
-   for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
-#pragma omp task firstprivate(chunkId)
-      {
-         const idVertex lowerBound = chunkId * chunkSize;
-         const idVertex upperBound = min(nbScalars, (chunkId + 1) * chunkSize);
-         for (idVertex v = lowerBound; v < upperBound; ++v) {
-            const auto &neighNumb   = mesh_->getVertexNeighborNumber(v);
-            valence     upval       = 0;
-            valence     downval     = 0;
-
-            for (valence n = 0; n < neighNumb; ++n) {
-               idVertex neigh;
-               mesh_->getVertexNeighbor(v, n, neigh);
-               if(scalars_->isLower(neigh, v)){
-                  ++downval;
-               } else {
-                  ++upval;
-               }
-            }
-
-            jt_->setValence(v, downval);
-            st_->setValence(v, upval);
-
-            if (!downval) {
-               jt_->makeNode(v);
-            }
-
-            if (!upval) {
-               st_->makeNode(v);
-            }
-         }
-      }
-   }
-
-#pragma omp taskwait
-   return 0;
-}
-
 void FTMTree_CT::build(TreeType tt)
 {
    DebugTimer mergeTreesTime;
@@ -92,6 +47,7 @@ void FTMTree_CT::build(TreeType tt)
    //    DebugTimer precomputeTime;
    //    vertexPrecomputation();
    //    printTime(precomputeTime, "[FTM] precompute ", -1, 3);
+   // }
 
    // JT & ST
 
@@ -142,30 +98,6 @@ void FTMTree_CT::build(TreeType tt)
             cout << getNumberOfNodes();
       }
       cout << endl;
-   }
-}
-
-void FTMTree_CT::insertNodes(void)
-{
-   vector<idNode> sortedJTNodes = jt_->sortedNodes(true);
-   vector<idNode> sortedSTNodes = st_->sortedNodes(true);
-
-   for (const idNode& t : sortedSTNodes) {
-
-      idVertex vertId = st_->getNode(t)->getVertexId();
-      if (jt_->isCorrespondingNode(vertId)) {
-          continue;
-      }
-      jt_->insertNode(st_->getNode(t));
-   }
-
-   for (const idNode& t : sortedJTNodes) {
-
-      idVertex vertId = jt_->getNode(t)->getVertexId();
-      if (st_->isCorrespondingNode(vertId)) {
-          continue;
-      }
-      st_->insertNode(jt_->getNode(t));
    }
 }
 
@@ -441,4 +373,71 @@ void FTMTree_CT::finalizeSegmentation(void)
    printTime(finSegmTime, "[FTM] post-process segm", -1, 4);
 }
 
-// }
+void FTMTree_CT::insertNodes(void)
+{
+   vector<idNode> sortedJTNodes = jt_->sortedNodes(true);
+   vector<idNode> sortedSTNodes = st_->sortedNodes(true);
+
+   for (const idNode& t : sortedSTNodes) {
+
+      idVertex vertId = st_->getNode(t)->getVertexId();
+      if (jt_->isCorrespondingNode(vertId)) {
+          continue;
+      }
+      jt_->insertNode(st_->getNode(t));
+   }
+
+   for (const idNode& t : sortedJTNodes) {
+
+      idVertex vertId = jt_->getNode(t)->getVertexId();
+      if (st_->isCorrespondingNode(vertId)) {
+          continue;
+      }
+      st_->insertNode(jt_->getNode(t));
+   }
+}
+
+int FTMTree_CT::vertexPrecomputation()
+{
+   const auto  nbScalars = scalars_->size;
+   const auto  chunkSize = getChunkSize();
+   const auto  chunkNb   = getChunkCount();
+
+   // Extrema extract and launch tasks
+   for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+#pragma omp task firstprivate(chunkId)
+      {
+         const idVertex lowerBound = chunkId * chunkSize;
+         const idVertex upperBound = min(nbScalars, (chunkId + 1) * chunkSize);
+         for (idVertex v = lowerBound; v < upperBound; ++v) {
+            const auto &neighNumb   = mesh_->getVertexNeighborNumber(v);
+            valence     upval       = 0;
+            valence     downval     = 0;
+
+            for (valence n = 0; n < neighNumb; ++n) {
+               idVertex neigh;
+               mesh_->getVertexNeighbor(v, n, neigh);
+               if(scalars_->isLower(neigh, v)){
+                  ++downval;
+               } else {
+                  ++upval;
+               }
+            }
+
+            jt_->setValence(v, downval);
+            st_->setValence(v, upval);
+
+            if (!downval) {
+               jt_->makeNode(v);
+            }
+
+            if (!upval) {
+               st_->makeNode(v);
+            }
+         }
+      }
+   }
+
+#pragma omp taskwait
+   return 0;
+}
