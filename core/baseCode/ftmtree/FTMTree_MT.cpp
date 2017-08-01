@@ -556,16 +556,16 @@ void FTMTree_MT::finalizeSegmentation(void)
    }
 }
 
-tuple<idVertex, idVertex> FTMTree_MT::getBoundsFromVerts(const vector<idVertex> &nodes) const
+tuple<idVertex, idVertex> FTMTree_MT::getBoundsFromVerts(const vector<idVertex> &trunkVerts) const
 {
     idVertex begin, stop;
 
-    if(isJT()){
-       begin = (*scalars_->mirrorVertices)[nodes[0]];
+    if(isST()){
+       begin = 0;
+       stop  = (*scalars_->mirrorVertices)[trunkVerts[0]];
+    } else{
+       begin = (*scalars_->mirrorVertices)[trunkVerts[0]];
        stop  = scalars_->size;
-    } else {
-       begin = (*scalars_->mirrorVertices)[nodes[0]];
-       stop  = -1;
     }
 
     return make_tuple(begin, stop);
@@ -1242,107 +1242,54 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
    // si pas efficace vecteur de la taille de node ici a la place de acc
    idNode   lastVertInRange = 0;
    mt_data_.trunkSegments->resize(getNumberOfSuperArcs());
-   if (isJT()) {
-      for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+   for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #pragma omp task firstprivate(chunkId, lastVertInRange) shared(pendingNodesVerts)
-         {
-            vector<idVertex> regularList;
-            if (params_->segm) {
-               regularList.reserve(25);
-            }
-            const idVertex lowerBound = begin + chunkId * chunkSize;
-            const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
-            if (lowerBound != upperBound) {
-               lastVertInRange =
-                   getVertInRange(pendingNodesVerts, (*scalars_->sortedVertices)[lowerBound], 0);
-            }
-            for (idVertex v = lowerBound; v < upperBound; ++v) {
-               const idVertex s = (*scalars_->sortedVertices)[v];
-               if (isCorrespondingNull(s)) {
-                  const idNode oldVertInRange = lastVertInRange;
-                  lastVertInRange          = getVertInRange(pendingNodesVerts, s, lastVertInRange);
-                  const idSuperArc thisArc = upArcFromVert(pendingNodesVerts[lastVertInRange]);
-                  updateCorrespondingArc(s, thisArc);
+      {
+         vector<idVertex> regularList;
+         if (params_->segm) {
+            regularList.reserve(25);
+         }
+         const idVertex lowerBound = begin + chunkId * chunkSize;
+         const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
+         if (lowerBound != upperBound) {
+            lastVertInRange =
+                getVertInRange(pendingNodesVerts, (*scalars_->sortedVertices)[lowerBound], 0);
+         }
+         for (idVertex v = lowerBound; v < upperBound; ++v) {
+            const idVertex s = isST() ? (*scalars_->sortedVertices)[lowerBound + upperBound - 1 - v]
+                                      : (*scalars_->sortedVertices)[v];
+            if (isCorrespondingNull(s)) {
+               const idNode oldVertInRange = lastVertInRange;
+               lastVertInRange             = getVertInRange(pendingNodesVerts, s, lastVertInRange);
+               const idSuperArc thisArc    = upArcFromVert(pendingNodesVerts[lastVertInRange]);
+               updateCorrespondingArc(s, thisArc);
 
-                  if (params_->segm) {
-                     if (oldVertInRange == lastVertInRange) {
-                        regularList.emplace_back(s);
-                     } else {
-                        // accumulated to have only one atomic update when needed
-                        const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
-                        if (regularList.size()) {
+               if (params_->segm) {
+                  if (oldVertInRange == lastVertInRange) {
+                     regularList.emplace_back(s);
+                  } else {
+                     // accumulated to have only one atomic update when needed
+                     const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
+                     if (regularList.size()) {
 #pragma omp critical
-                           {
-                              (*mt_data_.trunkSegments)[oldArc].emplace_back(regularList);
-                              regularList.clear();
-                           }
-                           regularList.emplace_back(s);
+                        {
+                           (*mt_data_.trunkSegments)[oldArc].emplace_back(regularList);
+                           regularList.clear();
                         }
+                        regularList.emplace_back(s);
                      }
                   }
-               }
-            }
-            // force increment last arc
-            const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
-            const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
-            if (regularList.size()) {
-#pragma omp critical
-               {
-                  (*mt_data_.trunkSegments)[upArc].emplace_back(regularList);
-                  regularList.clear();
                }
             }
          }
-      }
-   } else {
-      for (idVertex chunkId = chunkNb - 1; chunkId >= 0; --chunkId) {
-#pragma omp task firstprivate(chunkId, lastVertInRange) shared(pendingNodesVerts)
-         {
-            vector<idVertex> regularList;
-            if (params_->segm) {
-               regularList.reserve(25);
-            }
-            const idVertex upperBound = begin - chunkId * chunkSize;
-            const idVertex lowerBound = max(stop, begin - (chunkId + 1) * chunkSize);
-            if (lowerBound != upperBound) {
-               lastVertInRange =
-                   getVertInRange(pendingNodesVerts, (*scalars_->sortedVertices)[upperBound], 0);
-            }
-            for (idVertex v = upperBound; v > lowerBound; --v) {
-               const idVertex s = (*scalars_->sortedVertices)[v];
-               if (isCorrespondingNull(s)) {
-                  const idNode oldVertInRange = lastVertInRange;
-                  lastVertInRange          = getVertInRange(pendingNodesVerts, s, lastVertInRange);
-                  const idSuperArc thisArc = upArcFromVert(pendingNodesVerts[lastVertInRange]);
-                  updateCorrespondingArc(s, thisArc);
-
-                  if (params_->segm) {
-                     if (oldVertInRange == lastVertInRange) {
-                        regularList.emplace_back(s);
-                     } else {
-                        // accumulated to have only one atomic update when needed
-                        const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
-                        if (regularList.size()) {
+         // force increment last arc
+         const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
+         const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
+         if (regularList.size()) {
 #pragma omp critical
-                           {
-                              (*mt_data_.trunkSegments)[oldArc].emplace_back(regularList);
-                              regularList.clear();
-                           }
-                        }
-                        regularList.emplace_back(s);
-                     }
-                  }
-               }
-            }
-            // force increment last arc
-            const idNode baseNode  = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
-            const idSuperArc upArc = getNode(baseNode)->getUpSuperArcId(0);
-            if (regularList.size()) {
-#pragma omp critical
-               {
-                  (*mt_data_.trunkSegments)[upArc].emplace_back(regularList);
-                  regularList.clear();
-               }
+            {
+               (*mt_data_.trunkSegments)[upArc].emplace_back(regularList);
+               regularList.clear();
             }
          }
       }
@@ -1376,86 +1323,45 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &pendingNodesVerts
    idNode   lastVertInRange = 0;
    idVertex acc             = 0;
    idVertex tot             = 0;
-   if (isJT()) {
-      for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+   for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #pragma omp task firstprivate(chunkId, acc, lastVertInRange) shared(pendingNodesVerts, tot)
-         {
-            const idVertex lowerBound = begin + chunkId * chunkSize;
-            const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
-            for (idVertex v = lowerBound; v < upperBound; ++v) {
-               const idVertex s = (*scalars_->sortedVertices)[v];
-               if (isCorrespondingNull(s)) {
-                  const idNode oldVertInRange = lastVertInRange;
-                  lastVertInRange          = getVertInRange(pendingNodesVerts, s, lastVertInRange);
-                  const idSuperArc thisArc = upArcFromVert(pendingNodesVerts[lastVertInRange]);
-                  updateCorrespondingArc(s, thisArc);
+      {
+         const idVertex lowerBound = begin + chunkId * chunkSize;
+         const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
+         for (idVertex v = lowerBound; v < upperBound; ++v) {
+            const idVertex s = isST() ? (*scalars_->sortedVertices)[lowerBound + upperBound - 1 - v]
+                                      : (*scalars_->sortedVertices)[v];
+            if (isCorrespondingNull(s)) {
+               const idNode oldVertInRange = lastVertInRange;
+               lastVertInRange             = getVertInRange(pendingNodesVerts, s, lastVertInRange);
+               const idSuperArc thisArc    = upArcFromVert(pendingNodesVerts[lastVertInRange]);
+               updateCorrespondingArc(s, thisArc);
 
-                  if(params_->segm){
-                     if (oldVertInRange == lastVertInRange) {
-                        ++acc;
-                     } else {
-                        // accumulated to have only one atomic update when needed
-                        const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
-                        getSuperArc(oldArc)->atomicIncVisited(acc);
+               if (params_->segm) {
+                  if (oldVertInRange == lastVertInRange) {
+                     ++acc;
+                  } else {
+                     // accumulated to have only one atomic update when needed
+                     const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
+                     getSuperArc(oldArc)->atomicIncVisited(acc);
 #ifdef withProcessSpeed
 #pragma omp atomic update
-                        tot += acc;
+                     tot += acc;
 #endif
-                        acc = 1;
-                     }
+                     acc = 1;
                   }
                }
             }
-            // force increment last arc
-            const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
-            const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
-            getSuperArc(upArc)->atomicIncVisited(acc);
+         }
+         // force increment last arc
+         const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
+         const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
+         getSuperArc(upArc)->atomicIncVisited(acc);
 #ifdef withProcessSpeed
 #pragma omp atomic update
-            tot += acc;
+         tot += acc;
 #endif
-         } // end task
-      }
-   } else {
-      for (idVertex chunkId = chunkNb - 1; chunkId >= 0; --chunkId) {
-#pragma omp task firstprivate(chunkId, acc, lastVertInRange) shared(pendingNodesVerts, tot)
-         {
-            const idVertex upperBound = begin - chunkId * chunkSize;
-            const idVertex lowerBound = max(stop, begin - (chunkId + 1) * chunkSize);
-            for (idVertex v = upperBound; v > lowerBound; --v) {
-               const idVertex s = (*scalars_->sortedVertices)[v];
-               if (isCorrespondingNull(s)) {
-                  const idNode oldVertInRange = lastVertInRange;
-                  lastVertInRange          = getVertInRange(pendingNodesVerts, s, lastVertInRange);
-                  const idSuperArc thisArc = upArcFromVert(pendingNodesVerts[lastVertInRange]);
-                  updateCorrespondingArc(s, thisArc);
-
-                  if (params_->segm) {
-                     if (oldVertInRange == lastVertInRange) {
-                        ++acc;
-                     } else {
-                        // accumulated to have only one atomic update when needed
-                        const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
-                        getSuperArc(oldArc)->atomicIncVisited(acc);
-#ifdef withProcessSpeed
-#pragma omp atomic update
-                        tot += acc;
-#endif
-                        acc = 1;
-                     }
-                  }
-               }
-            }
-            // force increment last arc
-            const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
-            const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
-            getSuperArc(upArc)->atomicIncVisited(acc);
-#ifdef withProcessSpeed
-#pragma omp atomic update
-            tot += acc;
-#endif
-         } // end task
-      }
+      }  // end task
    }
 #pragma omp taskwait
    return tot;
