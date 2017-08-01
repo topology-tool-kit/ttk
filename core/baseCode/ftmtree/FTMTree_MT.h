@@ -246,12 +246,14 @@ namespace ttk
 
       idVertex trunk(const bool ct);
 
-      virtual idVertex trunkSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
-                             const idVertex stop);
+      virtual idVertex trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
+                                         const idVertex begin,
+                                         const idVertex stop);
 
       // fill treedata_.trunkSegments
-      idVertex trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts, const idVertex begin,
-                             const idVertex stop);
+      idVertex trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts,
+                                   const idVertex begin,
+                                   const idVertex stop);
 
       // segmentation
 
@@ -581,15 +583,12 @@ namespace ttk
       void delNode(idNode node);
 
       // ---------------------------
-      // Operators : clone & print
+      // Operators : clone/ move & print
       // ---------------------------
 
-      // Clone
       FTMTree_MT *clone() const;
 
       void move(FTMTree_MT *mt);
-
-      void doSwap(FTMTree_MT *mt);
 
       // Print
       string printArc(idSuperArc a);
@@ -609,8 +608,9 @@ namespace ttk
       // Tools
       // -----
 
-      idNode getVertInRange(const vector<idVertex> &range, const idVertex v,
-                              const idNode last = 0) const;
+      idNode getVertInRange(const vector<idVertex> &range,
+                            const idVertex v,
+                            const idNode last = 0) const;
 
       tuple<idVertex, idVertex> getBoundsFromVerts(const vector<idVertex> &nodes) const;
 

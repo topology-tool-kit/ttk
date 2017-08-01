@@ -161,10 +161,10 @@ namespace ttk
             res << " " << *reg.segmentBegin;
             res << "-" << *(reg.segmentEnd - 1);
 
-            //auto it = reg.segmentBegin;
-            //for(; it != reg.segmentEnd; ++it){
-                //cout << *it << ", ";
-            //}
+            // auto it = reg.segmentBegin;
+            // for(; it != reg.segmentEnd; ++it){
+            //     ress << *it << ", ";
+            // }
          }
          res << " }";
          return res.str();
