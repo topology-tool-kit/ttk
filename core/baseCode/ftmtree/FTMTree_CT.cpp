@@ -109,9 +109,9 @@ int FTMTree_CT::combine()
    const bool DEBUG = false;
 
    // Reserve
-   treeData_.nodes->reserve(jt_->getNumberOfNodes());
-   treeData_.superArcs->reserve(jt_->getNumberOfSuperArcs()+2);
-   treeData_.leaves->reserve(jt_->getNumberOfLeaves()+st_->getNumberOfLeaves());
+   mt_data_.nodes->reserve(jt_->getNumberOfNodes());
+   mt_data_.superArcs->reserve(jt_->getNumberOfSuperArcs()+2);
+   mt_data_.leaves->reserve(jt_->getNumberOfLeaves()+st_->getNumberOfLeaves());
 
    // Add JT & ST Leaves to growingNodes
 
@@ -142,9 +142,9 @@ int FTMTree_CT::combine()
    }
 
    // Warning, have a reserve here, can't make it at the begnining, need build output
-   treeData_.leaves->reserve(jt_->getLeaves().size() + st_->getLeaves().size());
-   treeData_.superArcs->reserve(jt_->getNumberOfSuperArcs());
-   treeData_.nodes->reserve(jt_->getNumberOfNodes());
+   mt_data_.leaves->reserve(jt_->getLeaves().size() + st_->getLeaves().size());
+   mt_data_.superArcs->reserve(jt_->getNumberOfSuperArcs());
+   mt_data_.nodes->reserve(jt_->getNumberOfNodes());
 
    if (growingNodes.empty()) {
       cout << "[FTMTree_CT::combine ] Nothing to combine" << endl;
@@ -237,9 +237,9 @@ int FTMTree_CT::combine()
 
             // check if leaf
             if (!currentNode->getNumberOfDownSuperArcs())
-               treeData_.leaves->emplace_back(node1);
+               mt_data_.leaves->emplace_back(node1);
             else if (!currentNode->getNumberOfUpSuperArcs())
-               treeData_.leaves->emplace_back(node1);
+               mt_data_.leaves->emplace_back(node1);
          }
 
          // j <- GetAdj(XT, i)
@@ -260,7 +260,7 @@ int FTMTree_CT::combine()
             // create a new node
             node2 = makeNode(parentNode);
             if (!parentNode->getNumberOfUpSuperArcs())
-               treeData_.leaves->emplace_back(node2);
+               mt_data_.leaves->emplace_back(node2);
          }
 
          // CREATE ARC
