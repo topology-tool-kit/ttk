@@ -46,7 +46,7 @@ void FTMTree_CT::build(TreeType tt)
    // if(bothMT){
    //    DebugTimer precomputeTime;
    //    leafSearch();
-   //    printTime(precomputeTime, "[FTM] precompute ", -1, 3);
+   //    printTime(precomputeTime, "leafSearch", -1, 3);
    // }
 
    // JT & ST
