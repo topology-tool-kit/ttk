@@ -104,7 +104,7 @@ namespace ttk
       Scalars *const scalars_;
 
       // local
-      TreeData   treeData_;
+      TreeData   mt_data_;
       Comparison comp_;
 
       using sortedVertIt = vector<idVertex>::iterator;
@@ -171,52 +171,52 @@ namespace ttk
       /// \brief clear local data for new computation
       void makeAlloc(void)
       {
-         createAtomicVector<SuperArc>(treeData_.superArcs);
+         createAtomicVector<SuperArc>(mt_data_.superArcs);
 
          // Stats alloc
 
-         createAtomicVector<Node>(treeData_.nodes);
-         treeData_.nodes->reserve(scalars_->size/2);
+         createAtomicVector<Node>(mt_data_.nodes);
+         mt_data_.nodes->reserve(scalars_->size/2);
 
-         createAtomicVector<idNode>(treeData_.roots);
-         treeData_.roots->reserve(10);
+         createAtomicVector<idNode>(mt_data_.roots);
+         mt_data_.roots->reserve(10);
 
-         createVector<idNode>(treeData_.leaves);
-         treeData_.leaves->reserve(scalars_->size/3);
+         createVector<idNode>(mt_data_.leaves);
+         mt_data_.leaves->reserve(scalars_->size/3);
 
          // Known size
 
-         createVector<idCorresp>(treeData_.vert2tree);
-         treeData_.vert2tree->resize(scalars_->size);
+         createVector<idCorresp>(mt_data_.vert2tree);
+         mt_data_.vert2tree->resize(scalars_->size);
 
-         createVector<list<vector<idVertex>>>(treeData_.trunkSegments);
+         createVector<list<vector<idVertex>>>(mt_data_.trunkSegments);
 
-         createVector<idVertex>(treeData_.visitOrder);
-         treeData_.visitOrder->resize(scalars_->size);
+         createVector<idVertex>(mt_data_.visitOrder);
+         mt_data_.visitOrder->resize(scalars_->size);
 
-         createVector<UF>(treeData_.ufs);
-         treeData_.ufs->resize(scalars_->size);
+         createVector<UF>(mt_data_.ufs);
+         mt_data_.ufs->resize(scalars_->size);
 
-         createVector<UF>(treeData_.propagation);
-         treeData_.propagation->resize(scalars_->size);
+         createVector<UF>(mt_data_.propagation);
+         mt_data_.propagation->resize(scalars_->size);
 
-         createVector<valence>(treeData_.valences);
-         treeData_.valences->resize(scalars_->size);
+         createVector<valence>(mt_data_.valences);
+         mt_data_.valences->resize(scalars_->size);
 
-         createVector<char>(treeData_.openedNodes);
-         treeData_.openedNodes->resize(scalars_->size);
+         createVector<char>(mt_data_.openedNodes);
+         mt_data_.openedNodes->resize(scalars_->size);
 
-         treeData_.segments_.clear();
+         mt_data_.segments_.clear();
       }
 
       void makeInit(void)
       {
-         initVector<idCorresp>(treeData_.vert2tree, nullCorresp);
-         initVector<idVertex>(treeData_.visitOrder, nullVertex);
-         initVector<UF>(treeData_.ufs, nullptr);
-         initVector<UF>(treeData_.propagation, nullptr);
-         initVector<valence>(treeData_.valences, 0);
-         initVector<char>(treeData_.openedNodes, 0);
+         initVector<idCorresp>(mt_data_.vert2tree, nullCorresp);
+         initVector<idVertex>(mt_data_.visitOrder, nullVertex);
+         initVector<UF>(mt_data_.ufs, nullptr);
+         initVector<UF>(mt_data_.propagation, nullptr);
+         initVector<valence>(mt_data_.valences, 0);
+         initVector<char>(mt_data_.openedNodes, 0);
       }
 
       // -------------------
@@ -272,22 +272,22 @@ namespace ttk
 #ifdef withStatsTime
       inline float getArcStart(const idSuperArc arcId)
       {
-          return (*treeData_.arcStart)[arcId];
+          return (*mt_data_.arcStart)[arcId];
       }
 
       inline float getArcEnd(const idSuperArc arcId)
       {
-          return (*treeData_.arcEnd)[arcId];
+          return (*mt_data_.arcEnd)[arcId];
       }
 
       inline idVertex getArcOrig(const idSuperArc arcId)
       {
-          return (*treeData_.arcOrig)[arcId];
+          return (*mt_data_.arcOrig)[arcId];
       }
 
       inline idVertex getArcActiveTasks(const idSuperArc arcId)
       {
-          return(*treeData_.arcTasks)[arcId];
+          return(*mt_data_.arcTasks)[arcId];
       }
 #endif
 
@@ -298,12 +298,12 @@ namespace ttk
 
       inline bool isJT(void) const
       {
-         return treeData_.treeType == TreeType::Join;
+         return mt_data_.treeType == TreeType::Join;
       }
 
       inline bool isST(void) const
       {
-         return treeData_.treeType == TreeType::Split;
+         return mt_data_.treeType == TreeType::Split;
       }
 
       // global
@@ -366,87 +366,87 @@ namespace ttk
 
       inline idSuperArc getNumberOfSuperArcs(void) const
       {
-         return treeData_.superArcs->size();
+         return mt_data_.superArcs->size();
       }
 
       inline SuperArc *getSuperArc(idSuperArc i)
       {
 #ifndef withKamikaze
-         if ((size_t)i >= treeData_.superArcs->size()) {
+         if ((size_t)i >= mt_data_.superArcs->size()) {
             cout << "[Merge Tree] get superArc on bad id :" << i;
-            cout << " / " << treeData_.superArcs->size() << endl;
+            cout << " / " << mt_data_.superArcs->size() << endl;
             return nullptr;
          }
 #endif
-         return &((*treeData_.superArcs)[i]);
+         return &((*mt_data_.superArcs)[i]);
       }
 
       inline const SuperArc *getSuperArc(idSuperArc i) const
       {
 #ifndef withKamikaze
-         if ((size_t)i >= treeData_.superArcs->size()) {
+         if ((size_t)i >= mt_data_.superArcs->size()) {
             cout << "[Merge Tree] get superArc on bad id :" << i;
-            cout << " / " << treeData_.superArcs->size() << endl;
+            cout << " / " << mt_data_.superArcs->size() << endl;
             return nullptr;
          }
 #endif
-         return &((*treeData_.superArcs)[i]);
+         return &((*mt_data_.superArcs)[i]);
       }
 
       // nodes
 
       inline idNode getNumberOfNodes(void) const
       {
-         return treeData_.nodes->size();
+         return mt_data_.nodes->size();
       }
 
       inline Node *getNode(idNode nodeId)
       {
-         return &((*treeData_.nodes)[nodeId]);
+         return &((*mt_data_.nodes)[nodeId]);
       }
 
       inline void setValence(const idVertex v, const idVertex val)
       {
-          (*treeData_.valences)[v] = val;
+          (*mt_data_.valences)[v] = val;
       }
 
       // leaves / root
 
       inline idNode getNumberOfLeaves(void) const
       {
-         return treeData_.leaves->size();
+         return mt_data_.leaves->size();
       }
 
       inline const vector<idNode> &getLeaves(void) const
       {
          // break encapsulation...
-         return (*treeData_.leaves);
+         return (*mt_data_.leaves);
       }
 
       inline idNode getLeave(const idNode id) const
       {
 #ifndef withKamikaze
-         if ((size_t)id > (treeData_.leaves->size())) {
+         if ((size_t)id > (mt_data_.leaves->size())) {
             stringstream msg;
             msg << "[MergTree] getLeaves out of bounds : " << id << endl;
             err(msg.str(), fatalMsg);
-            return (*treeData_.leaves)[0];
+            return (*mt_data_.leaves)[0];
          }
 #endif
-         return (*treeData_.leaves)[id];
+         return (*mt_data_.leaves)[id];
       }
 
       inline const vector<idNode> &getRoots(void) const
       {
          // break encapsulation...
-         return (*treeData_.roots);
+         return (*mt_data_.roots);
       }
 
       // vert2tree
 
-      inline void setVert2Tree(decltype(treeData_.vert2tree) const vect2tree)
+      inline void setVert2Tree(decltype(mt_data_.vert2tree) const vect2tree)
       {
-         treeData_.vert2tree = vect2tree;
+         mt_data_.vert2tree = vect2tree;
       }
 
       // --------------------
@@ -457,17 +457,17 @@ namespace ttk
 
       inline bool isCorrespondingArc(const idVertex val) const
       {
-         return !isCorrespondingNull(val) && (*treeData_.vert2tree)[val] >= 0;
+         return !isCorrespondingNull(val) && (*mt_data_.vert2tree)[val] >= 0;
       }
 
       inline bool isCorrespondingNode(const idVertex val) const
       {
-         return (*treeData_.vert2tree)[val] < 0;
+         return (*mt_data_.vert2tree)[val] < 0;
       }
 
       inline bool isCorrespondingNull(const idVertex val) const
       {
-         return (*treeData_.vert2tree)[val] == nullCorresp;
+         return (*mt_data_.vert2tree)[val] == nullCorresp;
       }
 
       // Get vertex info
@@ -479,7 +479,7 @@ namespace ttk
             stringstream debug;
             debug << "[FTMTree_MT] : getCorrespondingNode, ";
             debug << "Vertex :" << val << " is not a node :";
-            debug << (*treeData_.vert2tree)[val] << endl;
+            debug << (*mt_data_.vert2tree)[val] << endl;
             err(debug.str(), fatalMsg);
          }
 #endif
@@ -493,23 +493,23 @@ namespace ttk
             stringstream debug;
             debug << "[FTMTree_MT] : getCorrespondingSuperArcId, ";
             debug << "Vertex :" << val << " is not on an arc :";
-            debug << (*treeData_.vert2tree)[val] << endl;
+            debug << (*mt_data_.vert2tree)[val] << endl;
             err(debug.str(), fatalMsg);
          }
 #endif
-         return (*treeData_.vert2tree)[val];
+         return (*mt_data_.vert2tree)[val];
       }
 
       // Get corresponding elemnt
 
       inline SuperArc *vertex2SuperArc(const idVertex vert)
       {
-         return &((*treeData_.superArcs)[getCorrespondingSuperArcId(vert)]);
+         return &((*mt_data_.superArcs)[getCorrespondingSuperArcId(vert)]);
       }
 
       inline Node *vertex2Node(const idVertex vert)
       {
-         return &((*treeData_.nodes)[getCorrespondingNodeId(vert)]);
+         return &((*mt_data_.nodes)[getCorrespondingNodeId(vert)]);
       }
 
       // Update vertex info
@@ -517,12 +517,12 @@ namespace ttk
 
       inline void updateCorrespondingArc(const idVertex vert, const idSuperArc arc)
       {
-         (*treeData_.vert2tree)[vert] = arc;
+         (*mt_data_.vert2tree)[vert] = arc;
       }
 
       inline void updateCorrespondingNode(const idVertex vert, const idNode node)
       {
-         (*treeData_.vert2tree)[vert] = idNode2corr(node);
+         (*mt_data_.vert2tree)[vert] = idNode2corr(node);
       }
 
       inline idCorresp idNode2corr(const idNode id) const
@@ -533,7 +533,7 @@ namespace ttk
 
       inline idNode corr2idNode(const idCorresp &corr) const
       {
-         return -(idNode)((*treeData_.vert2tree)[corr] + 1);
+         return -(idNode)((*mt_data_.vert2tree)[corr] + 1);
       }
 
       // --------------------------------
