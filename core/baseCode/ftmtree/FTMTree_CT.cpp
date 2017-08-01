@@ -45,7 +45,7 @@ void FTMTree_CT::build(TreeType tt)
 
    // if(bothMT){
    //    DebugTimer precomputeTime;
-   //    vertexPrecomputation();
+   //    leafSearch();
    //    printTime(precomputeTime, "[FTM] precompute ", -1, 3);
    // }
 
@@ -397,7 +397,7 @@ void FTMTree_CT::insertNodes(void)
    }
 }
 
-int FTMTree_CT::vertexPrecomputation()
+int FTMTree_CT::leafSearch()
 {
    const auto  nbScalars = scalars_->size;
    const auto  chunkSize = getChunkSize();
