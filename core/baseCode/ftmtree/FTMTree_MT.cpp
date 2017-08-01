@@ -91,26 +91,22 @@ FTMTree_MT::~FTMTree_MT()
    }
 
 #ifdef withStatsTime
-    if(mt_data_.arcStart)
-    {
-        delete mt_data_.arcStart;
-        mt_data_.arcStart = nullptr;
-    }
-    if(mt_data_.arcEnd)
-    {
-        delete mt_data_.arcEnd;
-        mt_data_.arcEnd = nullptr;
-    }
-    if(mt_data_.arcOrig)
-    {
-        delete mt_data_.arcOrig;
-        mt_data_.arcOrig = nullptr;
-    }
-    if(mt_data_.arcTasks)
-    {
-        delete mt_data_.arcTasks;
-        mt_data_.arcTasks = nullptr;
-    }
+   if (mt_data_.arcStart) {
+      delete mt_data_.arcStart;
+      mt_data_.arcStart = nullptr;
+   }
+   if (mt_data_.arcEnd) {
+      delete mt_data_.arcEnd;
+      mt_data_.arcEnd = nullptr;
+   }
+   if (mt_data_.arcOrig) {
+      delete mt_data_.arcOrig;
+      mt_data_.arcOrig = nullptr;
+   }
+   if (mt_data_.arcTasks) {
+      delete mt_data_.arcTasks;
+      mt_data_.arcTasks = nullptr;
+   }
 #endif
 }
 
