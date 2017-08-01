@@ -179,7 +179,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
          (*mt_data_.arcTasks)[currentArc] = mt_data_.activeTasks;
 # endif
          // need a node on this vertex
-#pragma omp atomic wrtie seq_cst
+#pragma omp atomic write seq_cst
          (*mt_data_.openedNodes)[currentVert] = 1;
 
          // If last close all and merge
