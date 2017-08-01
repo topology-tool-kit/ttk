@@ -137,7 +137,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
    startUF->addArcToClose(currentArc);
 #ifdef withStatsTime
    (*mt_data_.arcStart)[currentArc] = _launchGlobalTime.getElapsedTime();
-   (*mt_data_.arcOrig)[currentArc] = orig;
+   (*mt_data_.arcOrig)[currentArc]  = orig;
 #endif
 
    // TASK PROPAGATION
@@ -179,6 +179,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
          (*mt_data_.arcTasks)[currentArc] = mt_data_.activeTasks;
 # endif
          // need a node on this vertex
+#pragma omp atomic wrtie seq_cst
          (*mt_data_.openedNodes)[currentVert] = 1;
 
          // If last close all and merge
