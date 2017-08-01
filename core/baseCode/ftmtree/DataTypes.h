@@ -12,8 +12,8 @@
 ///
 /// \sa vtkContourForests.cpp %for a usage example.
 
-#ifndef DATATYPES_H
-#define DATATYPES_H
+#ifndef DATATYPES_FTM_H
+#define DATATYPES_FTM_H
 
 #include <functional>
 #include <limits>
