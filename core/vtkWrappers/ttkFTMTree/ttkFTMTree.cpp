@@ -25,8 +25,10 @@ int ttkFTMTree::FillOutputPortInformation(int port, vtkInformation* info)
    return 1;
 }
 
-int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPoints* points,
-                                       vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree,
+                                       idSuperArc arcId, vtkPoints* points,
+                                       vtkUnstructuredGrid* skeletonArcs,
+                                       ArcData& arcData)
 {
    SuperArc* arc = tree->getSuperArc(arcId);
    float     point[3];
@@ -83,8 +85,11 @@ int ttkFTMTree::addCompleteSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPo
    return 0;
 }
 
-int ttkFTMTree::addDirectSkeletonArc(FTMTree_MT* tree, idSuperArc arcId, vtkPoints* points,
-                                     vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+int ttkFTMTree::addDirectSkeletonArc(FTMTree_MT* tree,
+                                     idSuperArc arcId,
+                                     vtkPoints* points,
+                                     vtkUnstructuredGrid* skeletonArcs,
+                                     ArcData& arcData)
 {
    SuperArc* arc = tree->getSuperArc(arcId);
    float     point[3];

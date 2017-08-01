@@ -116,12 +116,12 @@ void Segments::clear(void)
     segments_.clear();
 }
 
-Segment& Segments::operator[](const size_t& idx)
+const Segment& Segments::operator[](const size_t& idx) const
 {
    return segments_[idx];
 }
 
-const Segment& Segments::operator[](const size_t& idx) const
+Segment& Segments::operator[](const size_t& idx)
 {
    return segments_[idx];
 }
@@ -238,7 +238,8 @@ void ArcRegion::createSegmentation(const Scalars* s)
 #endif
 }
 
-idVertex ArcRegion::findBelow(idVertex v, const Scalars* s,
+idVertex ArcRegion::findBelow(idVertex v,
+                              const Scalars* s,
                               const vector<idCorresp>& vert2treeOther) const
 {
    // split at v and return remaining vertices
@@ -311,54 +312,6 @@ bool ArcRegion::merge(const ArcRegion& r)
    return false;
 }
 
-tuple<idVertex, ArcRegion> ArcRegion::splitFront(idVertex v, const Scalars* s)
-{
-   // this function does not create empty region
-
-   auto comp = [s](idVertex a, idVertex b) { return s->isLower(a, b); };
-   ArcRegion remainingRegion;
-   idVertex  splitVert = nullVertex;
-
-   list<decltype(segmentsIn_)::iterator> willErase;
-
-   for (decltype(segmentsIn_)::iterator it = segmentsIn_.begin(); it != segmentsIn_.end(); ++it) {
-      auto& reg = *it;
-      if (s->isEqLower(*reg.segmentBegin, v) && s->isEqHigher(*(reg.segmentEnd - 1), v)) {
-         // is v is between beg/end
-         // append once
-         const auto& oldEnd = reg.segmentEnd;
-         auto        posV   = lower_bound(reg.segmentBegin, oldEnd, v, comp);
-
-         if (posV != oldEnd) {
-            splitVert = *posV;
-            remainingRegion.concat(posV, oldEnd);
-         }
-
-         if (posV == reg.segmentBegin) {
-            willErase.emplace_back(it);
-         } else {
-            reg.segmentEnd = posV;
-         }
-
-      } else if (s->isHigher(*reg.segmentBegin, v)) {
-         // reg is completely above v, we give it to remainingRegion
-         remainingRegion.concat(reg.segmentBegin, reg.segmentEnd);
-         willErase.emplace_back(it);
-         if (splitVert == nullVertex || s->isLower(*reg.segmentBegin, splitVert)) {
-            // we ignore vertices that does not come frome this arc
-            splitVert = *reg.segmentBegin;
-         }
-      }
-   }
-
-   // remove in this arc segments that have been moved in remaining
-   for (auto& tmpIt : willErase) {
-      segmentsIn_.erase(tmpIt);
-   }
-
-   return make_tuple(splitVert, remainingRegion);
-}
-
 tuple<idVertex, ArcRegion> ArcRegion::splitBack(idVertex v, const Scalars* s)
 {
    // split at v and return remaining vertices
@@ -399,6 +352,54 @@ tuple<idVertex, ArcRegion> ArcRegion::splitBack(idVertex v, const Scalars* s)
          willErase.emplace_back(it);
          if (splitVert == nullVertex || s->isHigher(*(reg.segmentEnd - 1), splitVert)) {
             splitVert = *(reg.segmentEnd - 1);
+         }
+      }
+   }
+
+   // remove in this arc segments that have been moved in remaining
+   for (auto& tmpIt : willErase) {
+      segmentsIn_.erase(tmpIt);
+   }
+
+   return make_tuple(splitVert, remainingRegion);
+}
+
+tuple<idVertex, ArcRegion> ArcRegion::splitFront(idVertex v, const Scalars* s)
+{
+   // this function does not create empty region
+
+   auto comp = [s](idVertex a, idVertex b) { return s->isLower(a, b); };
+   ArcRegion remainingRegion;
+   idVertex  splitVert = nullVertex;
+
+   list<decltype(segmentsIn_)::iterator> willErase;
+
+   for (decltype(segmentsIn_)::iterator it = segmentsIn_.begin(); it != segmentsIn_.end(); ++it) {
+      auto& reg = *it;
+      if (s->isEqLower(*reg.segmentBegin, v) && s->isEqHigher(*(reg.segmentEnd - 1), v)) {
+         // is v is between beg/end
+         // append once
+         const auto& oldEnd = reg.segmentEnd;
+         auto        posV   = lower_bound(reg.segmentBegin, oldEnd, v, comp);
+
+         if (posV != oldEnd) {
+            splitVert = *posV;
+            remainingRegion.concat(posV, oldEnd);
+         }
+
+         if (posV == reg.segmentBegin) {
+            willErase.emplace_back(it);
+         } else {
+            reg.segmentEnd = posV;
+         }
+
+      } else if (s->isHigher(*reg.segmentBegin, v)) {
+         // reg is completely above v, we give it to remainingRegion
+         remainingRegion.concat(reg.segmentBegin, reg.segmentEnd);
+         willErase.emplace_back(it);
+         if (splitVert == nullVertex || s->isLower(*reg.segmentBegin, splitVert)) {
+            // we ignore vertices that does not come frome this arc
+            splitVert = *reg.segmentBegin;
          }
       }
    }

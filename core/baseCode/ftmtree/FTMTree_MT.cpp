@@ -1178,33 +1178,33 @@ idVertex FTMTree_MT::trunk(const bool ct)
 {
    DebugTimer bbTimer;
 
-   vector<idVertex> pendingNodesVerts;
+   vector<idVertex> trunkVerts;
    const auto &     nbScalars = scalars_->size;
 
-   //pendingNodesVerts
-  pendingNodesVerts.reserve(max(10, nbScalars / 500));
+   //trunkVerts
+  trunkVerts.reserve(max(10, nbScalars / 500));
    for (idVertex v = 0; v < nbScalars; ++v) {
        if((*mt_data_.openedNodes)[v]){
-          pendingNodesVerts.emplace_back(v);
+          trunkVerts.emplace_back(v);
        }
    }
-   sort(pendingNodesVerts.begin(), pendingNodesVerts.end(), comp_.vertLower);
-   for (const idVertex v : pendingNodesVerts) {
+   sort(trunkVerts.begin(), trunkVerts.end(), comp_.vertLower);
+   for (const idVertex v : trunkVerts) {
       closeOnBackBone(v);
    }
 
    // Arcs
-   const auto &nbNodes =pendingNodesVerts.size();
+   const auto &nbNodes =trunkVerts.size();
    for (idNode n = 1; n < nbNodes; ++n) {
       idSuperArc na =
-          makeSuperArc(getCorrespondingNodeId(pendingNodesVerts[n - 1]), getCorrespondingNodeId(pendingNodesVerts[n]));
-      getSuperArc(na)->setLastVisited(pendingNodesVerts[n]);
+          makeSuperArc(getCorrespondingNodeId(trunkVerts[n - 1]), getCorrespondingNodeId(trunkVerts[n]));
+      getSuperArc(na)->setLastVisited(trunkVerts[n]);
    }
 
    if (!nbNodes) {
       return 0;
    }
-   const idSuperArc lastArc = openSuperArc(getCorrespondingNodeId(pendingNodesVerts[nbNodes - 1]));
+   const idSuperArc lastArc = openSuperArc(getCorrespondingNodeId(trunkVerts[nbNodes - 1]));
 
    // Root (close last arc)
    // if several CC still the backbone is only in one.
@@ -1218,18 +1218,18 @@ idVertex FTMTree_MT::trunk(const bool ct)
 
    // Segmentation
    idVertex begin, stop, processed;
-   tie(begin, stop) = getBoundsFromVerts(pendingNodesVerts);
+   tie(begin, stop) = getBoundsFromVerts(trunkVerts);
    if(ct){
-       processed = trunkCTSegmentation(pendingNodesVerts, begin, stop);
+       processed = trunkCTSegmentation(trunkVerts, begin, stop);
    } else {
-       processed = trunkSegmentation(pendingNodesVerts, begin, stop);
+       processed = trunkSegmentation(trunkVerts, begin, stop);
    }
    printTime(bbTimer, "[FTM] trunk para.", -1, 4);
 
    return processed;
 }
 
-idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts,
+idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
                                         const idVertex begin, const idVertex stop)
 {
    const int nbTasksThreads = 40;
@@ -1240,7 +1240,7 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
    idNode   lastVertInRange = 0;
    mt_data_.trunkSegments->resize(getNumberOfSuperArcs());
    for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
-#pragma omp task firstprivate(chunkId, lastVertInRange) shared(pendingNodesVerts)
+#pragma omp task firstprivate(chunkId, lastVertInRange) shared(trunkVerts)
       {
          vector<idVertex> regularList;
          if (params_->segm) {
@@ -1250,15 +1250,15 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
          const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
          if (lowerBound != upperBound) {
             lastVertInRange =
-                getVertInRange(pendingNodesVerts, (*scalars_->sortedVertices)[lowerBound], 0);
+                getVertInRange(trunkVerts, (*scalars_->sortedVertices)[lowerBound], 0);
          }
          for (idVertex v = lowerBound; v < upperBound; ++v) {
             const idVertex s = isST() ? (*scalars_->sortedVertices)[lowerBound + upperBound - 1 - v]
                                       : (*scalars_->sortedVertices)[v];
             if (isCorrespondingNull(s)) {
                const idNode oldVertInRange = lastVertInRange;
-               lastVertInRange             = getVertInRange(pendingNodesVerts, s, lastVertInRange);
-               const idSuperArc thisArc    = upArcFromVert(pendingNodesVerts[lastVertInRange]);
+               lastVertInRange             = getVertInRange(trunkVerts, s, lastVertInRange);
+               const idSuperArc thisArc    = upArcFromVert(trunkVerts[lastVertInRange]);
                updateCorrespondingArc(s, thisArc);
 
                if (params_->segm) {
@@ -1266,7 +1266,7 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
                      regularList.emplace_back(s);
                   } else {
                      // accumulated to have only one atomic update when needed
-                     const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
+                     const idSuperArc oldArc = upArcFromVert(trunkVerts[oldVertInRange]);
                      if (regularList.size()) {
 #pragma omp critical
                         {
@@ -1280,7 +1280,7 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
             }
          }
          // force increment last arc
-         const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
+         const idNode     baseNode = getCorrespondingNodeId(trunkVerts[lastVertInRange]);
          const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
          if (regularList.size()) {
 #pragma omp critical
@@ -1306,7 +1306,7 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &pendingNodesVer
    return tot;
 }
 
-idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
+idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
                                       const idVertex begin, const idVertex stop)
 {
    // Assign missing vert to the good arc
@@ -1321,7 +1321,7 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &pendingNodesVerts
    idVertex acc             = 0;
    idVertex tot             = 0;
    for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
-#pragma omp task firstprivate(chunkId, acc, lastVertInRange) shared(pendingNodesVerts, tot)
+#pragma omp task firstprivate(chunkId, acc, lastVertInRange) shared(trunkVerts, tot)
       {
          const idVertex lowerBound = begin + chunkId * chunkSize;
          const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
@@ -1330,8 +1330,8 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &pendingNodesVerts
                                       : (*scalars_->sortedVertices)[v];
             if (isCorrespondingNull(s)) {
                const idNode oldVertInRange = lastVertInRange;
-               lastVertInRange             = getVertInRange(pendingNodesVerts, s, lastVertInRange);
-               const idSuperArc thisArc    = upArcFromVert(pendingNodesVerts[lastVertInRange]);
+               lastVertInRange             = getVertInRange(trunkVerts, s, lastVertInRange);
+               const idSuperArc thisArc    = upArcFromVert(trunkVerts[lastVertInRange]);
                updateCorrespondingArc(s, thisArc);
 
                if (params_->segm) {
@@ -1339,7 +1339,7 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &pendingNodesVerts
                      ++acc;
                   } else {
                      // accumulated to have only one atomic update when needed
-                     const idSuperArc oldArc = upArcFromVert(pendingNodesVerts[oldVertInRange]);
+                     const idSuperArc oldArc = upArcFromVert(trunkVerts[oldVertInRange]);
                      getSuperArc(oldArc)->atomicIncVisited(acc);
 #ifdef withProcessSpeed
 #pragma omp atomic update
@@ -1351,7 +1351,7 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &pendingNodesVerts
             }
          }
          // force increment last arc
-         const idNode     baseNode = getCorrespondingNodeId(pendingNodesVerts[lastVertInRange]);
+         const idNode     baseNode = getCorrespondingNodeId(trunkVerts[lastVertInRange]);
          const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
          getSuperArc(upArc)->atomicIncVisited(acc);
 #ifdef withProcessSpeed
