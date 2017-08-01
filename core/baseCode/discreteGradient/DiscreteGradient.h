@@ -439,6 +439,7 @@ namespace ttk{
 
       template <typename dataType>
         int getRemovableMaxima(const vector<pair<int,char>>& criticalPoints,
+            const bool allowBoundary,
             vector<char>& isRemovableMaximum,
             vector<int>& pl2dmt_maximum);
 
@@ -1779,6 +1780,7 @@ int DiscreteGradient::setAugmentedCriticalPoints(const vector<Cell>& criticalPoi
 
 template <typename dataType>
 int DiscreteGradient::getRemovableMaxima(const vector<pair<int,char>>& criticalPoints,
+    const bool allowBoundary,
     vector<char>& isRemovableMaximum,
     vector<int>& pl2dmt_maximum){
   const int numberOfCriticalPoints=criticalPoints.size();
@@ -1806,7 +1808,7 @@ int DiscreteGradient::getRemovableMaxima(const vector<pair<int,char>>& criticalP
     const char criticalPointType=criticalPoint.second;
 
     if(criticalPointType==maximumDim){
-      if(inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
+      if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
       int numberOfMaxima=0;
       int maximumId=-1;
@@ -2585,7 +2587,7 @@ int DiscreteGradient::simplifySaddleMaximumConnections(const vector<pair<int,cha
   // Part 0 : get removable cells
   vector<char> isRemovableMaximum;
   vector<int> pl2dmt_maximum(numberOfVertices, -1);
-  getRemovableMaxima<dataType>(criticalPoints, isRemovableMaximum, pl2dmt_maximum);
+  getRemovableMaxima<dataType>(criticalPoints, allowBoundary, isRemovableMaximum, pl2dmt_maximum);
 
   vector<char> isRemovableSaddle;
   vector<int> pl2dmt_saddle(numberOfVertices, -1);
