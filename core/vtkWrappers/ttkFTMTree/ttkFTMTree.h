@@ -200,13 +200,16 @@ struct ArcData {
 };
 
 struct VertData {
-   vtkSmartPointer<vtkIntArray> idVerts;
-   vtkSmartPointer<vtkIntArray> normalizedIdVert;
-   vtkSmartPointer<vtkIntArray> sizeRegion;
+   vtkSmartPointer<vtkIntArray>    idVerts;
+   vtkSmartPointer<vtkIntArray>    normalizedIdVert;
+   vtkSmartPointer<vtkIntArray>    sizeRegion;
    vtkSmartPointer<vtkDoubleArray> spanRegion;
+   vtkSmartPointer<vtkCharArray>   typeRegion;
 
    int init(const idVertex numberOfVertices, Params params)
    {
+      if (!params.segm)
+         return 0;
 
       if (params.normalize) {
          normalizedIdVert = vtkSmartPointer<vtkIntArray>::New();
@@ -218,7 +221,7 @@ struct VertData {
          idVerts->SetName("SegmentationId");
          idVerts->SetNumberOfComponents(1);
          idVerts->SetNumberOfTuples(numberOfVertices);
-       }
+      }
 
       sizeRegion = vtkSmartPointer<vtkIntArray>::New();
       sizeRegion->SetName("RegionSize");
@@ -229,6 +232,11 @@ struct VertData {
       spanRegion->SetName("RegionSpan");
       spanRegion->SetNumberOfComponents(1);
       spanRegion->SetNumberOfTuples(numberOfVertices);
+
+      typeRegion = vtkSmartPointer<vtkCharArray>::New();
+      typeRegion->SetName("RegionType");
+      typeRegion->SetNumberOfComponents(1);
+      typeRegion->SetNumberOfTuples(numberOfVertices);
 
 // Check
 #ifndef withKamikaze
@@ -248,6 +256,11 @@ struct VertData {
          return -2;
       }
 
+      if (!typeRegion) {
+         cerr << "[ttkFTMTree] Error : vtkCharArray region type allocation problem." << endl;
+         return -2;
+      }
+
 #endif
       return 0;
    }
@@ -255,17 +268,55 @@ struct VertData {
    void fillArray(const idSuperArc arcId, Triangulation* triangulation, FTMTree_MT* tree,
                   Params params)
    {
+      if (!params.segm)
+         return;
+
+      auto getNodeType = [&](const idNode nodeId) {
+         Node* node = tree->getNode(nodeId);
+         int upDegree{};
+         int downDegree{};
+         if (tree->isST()) {
+            downDegree = node->getNumberOfUpSuperArcs();
+            upDegree   = node->getNumberOfDownSuperArcs();
+         } else {
+            upDegree   = node->getNumberOfUpSuperArcs();
+            downDegree = node->getNumberOfDownSuperArcs();
+         }
+         int degree = upDegree + downDegree;
+
+         // saddle point
+         if (degree > 1) {
+            if (upDegree == 2 and downDegree == 1)
+               return NodeType::Saddle2;
+            else if (upDegree == 1 && downDegree == 2)
+               return NodeType::Saddle1;
+            else if (upDegree == 1 && downDegree == 1)
+               return NodeType::Regular;
+            else
+               return NodeType::Degenerate;
+         }
+         // local extremum
+         else {
+            if (upDegree)
+               return NodeType::Local_minimum;
+            else
+               return NodeType::Local_maximum;
+         }
+      };
+
       SuperArc* arc = tree->getSuperArc(arcId);
 
-      const int   upNodeId = arc->getUpNodeId();
-      const Node* upNode   = tree->getNode(upNodeId);
-      const int      upVertexId   = upNode->getVertexId();
+      const int      upNodeId   = arc->getUpNodeId();
+      const Node*    upNode     = tree->getNode(upNodeId);
+      const int      upVertexId = upNode->getVertexId();
+      const NodeType upNodeType = getNodeType(upNodeId);
       float          coordUp[3];
       triangulation->getVertexPoint(upVertexId, coordUp[0], coordUp[1], coordUp[2]);
 
-      const int   downNodeId = arc->getDownNodeId();
-      const Node* downNode   = tree->getNode(downNodeId);
-      const int      downVertexId   = downNode->getVertexId();
+      const int      downNodeId   = arc->getDownNodeId();
+      const Node*    downNode     = tree->getNode(downNodeId);
+      const int      downVertexId = downNode->getVertexId();
+      const NodeType downNodeType = getNodeType(downNodeId);
       float          coordDown[3];
       triangulation->getVertexPoint(downVertexId, coordDown[0], coordDown[1], coordDown[2]);
 
@@ -274,19 +325,38 @@ struct VertData {
 
       idSuperArc nid = arc->getNormalizedId();
 
+      ArcType regionType;
+      // RegionType
+      if (upNodeType == NodeType::Local_minimum && downNodeType == NodeType::Local_maximum)
+         regionType = ArcType::Min_arc;
+      else if (upNodeType == NodeType::Local_minimum || downNodeType == NodeType::Local_minimum)
+         regionType = ArcType::Min_arc;
+      else if (upNodeType == NodeType::Local_maximum || downNodeType == NodeType::Local_maximum)
+         regionType = ArcType::Max_arc;
+      else if (upNodeType == NodeType::Saddle1 && downNodeType == NodeType::Saddle1)
+         regionType = ArcType::Saddle1_arc;
+      else if (upNodeType == NodeType::Saddle2 && downNodeType == NodeType::Saddle2)
+         regionType = ArcType::Saddle2_arc;
+      else
+         regionType = ArcType::Saddle1_saddle2_arc;
+
+      // fill extrema and regular verts of this arc
+
       // critical points
       if(params.normalize){
-         normalizedIdVert->SetTuple1(upVertexId, nid);
-         normalizedIdVert->SetTuple1(downVertexId, nid);
+         normalizedIdVert->SetTuple1(upVertexId   , nid);
+         normalizedIdVert->SetTuple1(downVertexId , nid);
       } else{
-         idVerts->SetTuple1(upVertexId, arcId);
-         idVerts->SetTuple1(downVertexId, arcId);
+         idVerts->SetTuple1(upVertexId   , arcId);
+         idVerts->SetTuple1(downVertexId , arcId);
       }
 
-      sizeRegion->SetTuple1(upVertexId, regionSize);
-      sizeRegion->SetTuple1(downVertexId, regionSize);
-      spanRegion->SetTuple1(upVertexId, regionSpan);
-      spanRegion->SetTuple1(downVertexId, regionSpan);
+      sizeRegion->SetTuple1(upVertexId   , regionSize);
+      sizeRegion->SetTuple1(downVertexId , regionSize);
+      spanRegion->SetTuple1(upVertexId   , regionSpan);
+      spanRegion->SetTuple1(downVertexId , regionSpan);
+      typeRegion->SetTuple1(upVertexId   , static_cast<char>(regionType));
+      typeRegion->SetTuple1(downVertexId , static_cast<char>(regionType));
 
       // regular nodes
       for (const idVertex vertexId : *arc) {
@@ -297,6 +367,7 @@ struct VertData {
          }
          sizeRegion->SetTuple1(vertexId, regionSize);
          spanRegion->SetTuple1(vertexId, regionSpan);
+         typeRegion->SetTuple1(vertexId, static_cast<char>(regionType));
       }
 
    }
@@ -313,6 +384,7 @@ struct VertData {
 
       pointData->AddArray(sizeRegion);
       pointData->AddArray(spanRegion);
+      pointData->AddArray(typeRegion);
    }
 };
 
