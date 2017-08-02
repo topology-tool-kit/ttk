@@ -91,7 +91,7 @@ namespace ttk
 
    enum class TreeComponent { Arc = -1, Local_minimum, Saddle1, Saddle2, Local_maximum };
 
-   enum class ArcType { Min_arc = 0, Max_arc, Saddle1_arc, Saddle2_arc, Saddle1_saddle2_arc };
+   enum class ArcType:char { Min_arc = 0, Max_arc, Saddle1_arc, Saddle2_arc, Saddle1_saddle2_arc };
 
    enum class NodeType { Local_minimum = 0, Saddle1, Saddle2, Degenerate, Local_maximum, Regular };
 }
