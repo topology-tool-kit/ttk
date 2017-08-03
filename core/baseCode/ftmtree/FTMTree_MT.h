@@ -149,20 +149,25 @@ namespace ftm
       void initComp(void)
       {
          if (isST()) {
-            comp_.vertLower = [this](idVertex a, idVertex b) -> bool {
+            comp_.vertLower = [this](const idVertex a, const idVertex b) -> bool {
                return this->scalars_->isHigher(a, b);
             };
-            comp_.vertHigher = [this](idVertex a, idVertex b) -> bool {
+            comp_.vertHigher = [this](const idVertex a, const idVertex b) -> bool {
                return this->scalars_->isLower(a, b);
             };
          } else {
-            comp_.vertLower = [this](idVertex a, idVertex b) -> bool {
+            comp_.vertLower = [this](const idVertex a, const idVertex b) -> bool {
                return this->scalars_->isLower(a, b);
             };
-            comp_.vertHigher = [this](idVertex a, idVertex b) -> bool {
+            comp_.vertHigher = [this](const idVertex a, const idVertex b) -> bool {
                return this->scalars_->isHigher(a, b);
             };
          }
+      }
+
+      bool compLower(const idVertex a, const idVertex b)
+      {
+         return comp_.vertLower(a, b);
       }
 
       /// \brief if sortedVertices_ is null, define and fill it
