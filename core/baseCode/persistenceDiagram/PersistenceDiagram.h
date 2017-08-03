@@ -50,18 +50,30 @@ namespace ttk{
         return 0;
       }
 
-      ftm::NodeType getNodeType(ftm::FTMTree_MT* tree, ftm::TreeType treeType, const int vertexId) const;
+      ftm::NodeType getNodeType(ftm::FTMTree_MT* tree,
+                                ftm::TreeType    treeType,
+                                const int        vertexId) const;
 
       template <typename scalarType>
-        int sortPersistenceDiagram(
-            vector<tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>>& diagram,
-            scalarType* scalars) const;
+      int sortPersistenceDiagram(vector<tuple<ftm::idVertex,
+                                              ftm::NodeType,
+                                              ftm::idVertex,
+                                              ftm::NodeType,
+                                              scalarType,
+                                              ftm::idVertex>>& diagram,
+                                 scalarType*                   scalars) const;
 
       template <typename scalarType>
-        int computeCTPersistenceDiagram(ftm::FTMTreePP& tree,
-            const vector<tuple<ftm::idVertex, ftm::idVertex, scalarType, bool>>& pairs,
-            vector<tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType, ftm::idVertex>>& diagram,
-            scalarType* scalars) const;
+      int computeCTPersistenceDiagram(
+          ftm::FTMTreePP& tree,
+          const vector<tuple<ftm::idVertex, ftm::idVertex, scalarType, bool>>& pairs,
+          vector<tuple<ftm::idVertex,
+                       ftm::NodeType,
+                       ftm::idVertex,
+                       ftm::NodeType,
+                       scalarType,
+                       ftm::idVertex>>& diagram,
+          scalarType*                   scalars) const;
 
       template <class scalarType>
         int execute() const;
@@ -189,19 +201,8 @@ int PersistenceDiagram::execute() const{
   // get persistence pairs
   vector<tuple<ftm::idVertex, ftm::idVertex, scalarType>> JTPairs;
   vector<tuple<ftm::idVertex,ftm::idVertex,scalarType>> STPairs;
-#ifdef withOpenMP
-# pragma omp parallel sections
-#endif
-  {
-#ifdef withOpenMP
-# pragma omp section
-#endif
-     contourTree.computePersistencePairs<scalarType>(JTPairs,true);
-#ifdef withOpenMP
-# pragma omp section
-#endif
-     contourTree.computePersistencePairs<scalarType>(STPairs,false);
-  }
+  contourTree.computePersistencePairs<scalarType>(JTPairs, true);
+  contourTree.computePersistencePairs<scalarType>(STPairs, false);
 
   // merge pairs
   vector<tuple<ftm::idVertex, ftm::idVertex, scalarType, bool>> CTPairs(JTPairs.size() +
