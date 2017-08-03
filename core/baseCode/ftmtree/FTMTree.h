@@ -25,6 +25,9 @@
 
 namespace ttk
 {
+namespace ftm
+{
+
    class FTMTree : public FTMTree_CT
    {
      public:
@@ -48,6 +51,8 @@ namespace ttk
    };
 
 #include "FTMTree_Template.h"
+
+}
 }
 
 #endif  // TASKEDTREE_H

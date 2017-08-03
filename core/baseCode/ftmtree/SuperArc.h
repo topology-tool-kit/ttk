@@ -24,6 +24,8 @@
 
 namespace ttk
 {
+namespace ftm
+{
    class SuperArc
    {
      private:
@@ -286,6 +288,8 @@ namespace ttk
       }
 
    };
+
+}
 }
 
 #endif /* end of include guard: SUPERARC_H */

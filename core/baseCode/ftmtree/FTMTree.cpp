@@ -13,6 +13,8 @@
 
 #include "FTMTree.h"
 
+using namespace ftm;
+
 FTMTree::FTMTree() : FTMTree_CT(new Params, nullptr, new Scalars)
 {
 }

@@ -24,6 +24,8 @@
 
 namespace ttk
 {
+namespace ftm
+{
    // Compute parameters (global)
    struct Params {
       TreeType treeType;
@@ -215,6 +217,8 @@ namespace ttk
       segm_it segmentBegin;
       segm_it segmentEnd;
    };
+
+}
 }
 
 #endif /* end of include guard: STRUCTURES_H */
