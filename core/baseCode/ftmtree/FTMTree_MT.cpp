@@ -15,6 +15,8 @@
 
 #include <stack>
 
+using namespace ftm;
+
 DebugTimer _launchGlobalTime;
 
 FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const scalars,
@@ -1364,13 +1366,13 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
    return tot;
 }
 
-ostream &ttk::operator<<(ostream &o, SuperArc const &a)
+ostream &ttk::ftm::operator<<(ostream &o, SuperArc const &a)
 {
    o << a.getDownNodeId() << " <>> " << a.getUpNodeId();
    return o;
 }
 
-ostream &ttk::operator<<(ostream &o, Node const &n)
+ostream &ttk::ftm::operator<<(ostream &o, Node const &n)
 {
    o << n.getNumberOfDownSuperArcs() << " .-. " << n.getNumberOfUpSuperArcs();
    return o;

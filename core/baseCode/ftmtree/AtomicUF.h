@@ -23,6 +23,9 @@
 
 namespace ttk
 {
+namespace ftm
+{
+
    class AtomicUF
    {
      private:
@@ -192,6 +195,8 @@ namespace ttk
          return rank_ > other.rank_;
       }
    };
+
+}
 }
 
 #endif /* end of include guard: ATOMICUF_H */

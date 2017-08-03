@@ -1,5 +1,7 @@
 #include <ttkFTMTree.h>
 
+using namespace ftm;
+
 vtkStandardNewMacro(ttkFTMTree);
 
 int ttkFTMTree::FillInputPortInformation(int port, vtkInformation* info)

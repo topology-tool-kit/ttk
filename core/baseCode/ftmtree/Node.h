@@ -21,6 +21,8 @@
 
 namespace ttk
 {
+namespace ftm
+{
    class Node
    {
       friend class FTMTree_MT;
@@ -198,6 +200,9 @@ namespace ttk
       }
 
    };
+
 }
+}
+
 #endif /* end of include guard: NODE_H */
 

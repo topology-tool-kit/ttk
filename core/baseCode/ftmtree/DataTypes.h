@@ -22,6 +22,8 @@
 
 namespace ttk
 {
+namespace ftm
+{
    // Types
    // --------
 
@@ -94,6 +96,7 @@ namespace ttk
    enum class ArcType:char { Min_arc = 0, Max_arc, Saddle1_arc, Saddle2_arc, Saddle1_saddle2_arc };
 
    enum class NodeType { Local_minimum = 0, Saddle1, Saddle2, Degenerate, Local_maximum, Regular };
+}
 }
 
 // Tests

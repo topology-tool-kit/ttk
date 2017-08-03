@@ -16,6 +16,8 @@
 
 #include "FTMTree_CT.h"
 
+using namespace ftm;
+
 FTMTree_CT::FTMTree_CT(Params *const params, Triangulation *mesh, Scalars *const scalars)
     : FTMTree_MT(params, mesh, scalars, TreeType::Contour),
       jt_(new FTMTree_MT(params, mesh, scalars, TreeType::Join)),

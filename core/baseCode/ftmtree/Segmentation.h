@@ -28,6 +28,9 @@ using namespace std;
 
 namespace ttk
 {
+namespace ftm
+{
+
    // one segment: like a vector<idVertex>
    // have a fixed size
    class Segment
@@ -220,6 +223,8 @@ namespace ttk
          return segmentation_.end();
       }
    };
+
+}
 }
 
 #endif /* end of include guard: SEGMENTATION_H_ */

@@ -18,8 +18,9 @@
 
 #include "Segmentation.h"
 
-using namespace ttk;
 using namespace std;
+using namespace ttk;
+using namespace ftm;
 
 // -------
 // Segment

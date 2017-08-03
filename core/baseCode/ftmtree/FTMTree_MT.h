@@ -51,6 +51,8 @@
 
 namespace ttk
 {
+namespace ftm
+{
    using UF = AtomicUF *;
 
    /*
@@ -727,6 +729,8 @@ namespace ttk
    ostream &operator<<(ostream &o, SuperArc const &a);
 
 #include <FTMTree_MT_Template.h>
+
+}
 }
 
 #endif /* end of include guard: MERGETREE_H */

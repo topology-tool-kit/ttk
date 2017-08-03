@@ -28,6 +28,9 @@
 
 namespace ttk
 {
+namespace ftm
+{
+
    class FTMTree_CT : public FTMTree_MT
    {
      protected:
@@ -118,6 +121,8 @@ namespace ttk
 
 
    };
+
+}
 }
 
 #endif  // CONTOURTREE_H
