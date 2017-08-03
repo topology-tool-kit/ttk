@@ -1143,10 +1143,7 @@ void FTMTree_MT::sortLeaves(const bool para)
       __gnu_parallel::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
 #endif
    } else {
-#pragma omp single
-      {
-         std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
-      }
+      std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
    }
 
 }
