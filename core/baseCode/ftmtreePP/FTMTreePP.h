@@ -33,7 +33,7 @@ namespace ttk
          void computePersistencePairs(vector<tuple<idVertex, idVertex, scalarType>>& pairs,
                                       const bool jt);
 
-        private:
+        protected:
          template <typename scalarType>
          void computePairs(ftm::FTMTree_MT* tree,
                            vector<tuple<idVertex, idVertex, scalarType>>& pairs);
@@ -98,6 +98,7 @@ namespace ttk
                }
             }
          }
+
       };
    }
 }
