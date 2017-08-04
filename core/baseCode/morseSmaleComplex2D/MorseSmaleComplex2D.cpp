@@ -37,7 +37,8 @@ int MorseSmaleComplex2D::getSeparatrices(const vector<Cell>& criticalPoints,
 
     // add ascending vpaths
     if(ComputeAscendingSeparatrices1){
-      for(int j=0; j<2; ++j){
+      const int starNumber=inputTriangulation_->getEdgeStarNumber(saddle.id_);
+      for(int j=0; j<starNumber; ++j){
         const int shift=j;
 
         int triangleId;
