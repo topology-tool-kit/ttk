@@ -161,13 +161,13 @@ namespace ftm
          stringstream res;
          res << "{";
          for (const auto& reg : segmentsIn_) {
-            res << " " << *reg.segmentBegin;
-            res << "-" << *(reg.segmentEnd - 1);
+            // res << " " << *reg.segmentBegin;
+            // res << "-" << *(reg.segmentEnd - 1);
 
-            // auto it = reg.segmentBegin;
-            // for(; it != reg.segmentEnd; ++it){
-            //     ress << *it << ", ";
-            // }
+            auto it = reg.segmentBegin;
+            for(; it != reg.segmentEnd; ++it){
+               res << *it << ", ";
+            }
          }
          res << " }";
          return res.str();
