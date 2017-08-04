@@ -1,4 +1,4 @@
-ttk_add_baseCode_package(contourForests)
+ttk_add_baseCode_package(ftmtreePP)
 ttk_add_baseCode_package(morseSmaleComplex3D)
 ttk_add_baseCode_package(triangulation)
 
