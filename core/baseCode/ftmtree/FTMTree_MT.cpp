@@ -1012,6 +1012,8 @@ void FTMTree_MT::printParams(void) const
             cout << "Join";
          } else if (params_->treeType == TreeType::Split) {
             cout << "Split";
+         } else if (params_->treeType == TreeType::Join_Split) {
+            cout << "Join + Split";
          }
          cout << endl;
          cout << "------------" << endl;
