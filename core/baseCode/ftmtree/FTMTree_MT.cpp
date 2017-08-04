@@ -622,8 +622,9 @@ idNode FTMTree_MT::getUpperNodeId(const SuperArc *a)
    return getUpNodeId(a);
 }
 
-idNode FTMTree_MT::getVertInRange(const vector<idVertex> &range, const idVertex v,
-                                 const idNode last) const
+idNode FTMTree_MT::getVertInRange(const vector<idVertex> &range,
+                                  const idVertex v,
+                                  const idNode last) const
 {
     idNode idRes = last;
     const idNode rangeSize = range.size();
@@ -1231,7 +1232,8 @@ idVertex FTMTree_MT::trunk(const bool ct)
 }
 
 idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
-                                        const idVertex begin, const idVertex stop)
+                                         const idVertex begin,
+                                         const idVertex stop)
 {
    const int nbTasksThreads = 40;
    const auto sizeBackBone  = abs(stop - begin);
@@ -1250,8 +1252,8 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
          const idVertex lowerBound = begin + chunkId * chunkSize;
          const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
          if (lowerBound != upperBound) {
-            lastVertInRange =
-                getVertInRange(trunkVerts, (*scalars_->sortedVertices)[lowerBound], 0);
+            const idVertex pos = isST() ? upperBound - 1 : lowerBound;
+            lastVertInRange    = getVertInRange(trunkVerts, (*scalars_->sortedVertices)[pos], 0);
          }
          for (idVertex v = lowerBound; v < upperBound; ++v) {
             const idVertex s = isST() ? (*scalars_->sortedVertices)[lowerBound + upperBound - 1 - v]
@@ -1308,7 +1310,8 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
 }
 
 idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
-                                      const idVertex begin, const idVertex stop)
+                                       const idVertex begin,
+                                       const idVertex stop)
 {
    // Assign missing vert to the good arc
    // and also add the corresponding number for

@@ -326,6 +326,10 @@ int FTMTree_CT::combine()
    } while (!remainingNodes.empty());
 #endif
 
+   if (DEBUG) {
+       printTree2();
+   }
+
    return 0;
 }
 
