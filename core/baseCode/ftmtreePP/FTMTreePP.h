@@ -90,10 +90,10 @@ namespace ttk
                const idVertex tmpVert = nodesUF_[nodeid]->getExtrema();
                if (tmpVert != mp) {
                   const scalarType tmpVal = getValue<scalarType>(tmpVert);
-                  if (tree->compLower(tmpVert, curVert)) {
+                  if (scalars_->isLower(tmpVert, curVert)) {
                      pairs.emplace_back(tmpVert, curVert, curVal - tmpVal);
                   } else {
-                     pairs.emplace_back(curVert, tmpVert, tmpVal - curVal);
+                     pairs.emplace_back(tmpVert, curVert, tmpVal - curVal);
                   }
                }
             }
