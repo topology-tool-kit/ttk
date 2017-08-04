@@ -27,9 +27,9 @@
 /// See the related ParaView example state files for usage examples within a 
 /// VTK pipeline.
 ///
-/// \sa vtkContourForests
-/// \sa vtkPersistenceDiagram
-/// \sa vtkTopologicalSimplification
+/// \sa ttkFTMTreePP
+/// \sa ttkPersistenceDiagram
+/// \sa ttkTopologicalSimplification
 /// \sa ttk::PersistenceCurve
 #ifndef _TTK_PERSISTENCECURVE_H
 #define _TTK_PERSISTENCECURVE_H
@@ -110,12 +110,12 @@ class VTKFILTERSCORE_EXPORT ttkPersistenceCurve
     int FillOutputPortInformation(int port, vtkInformation* info);
 
     template <typename vtkArrayType, typename scalarType>
-      int getPersistenceCurve(TreeType treeType, 
-        const vector<pair<scalarType, idVertex>>& plot);
+      int getPersistenceCurve(ftm::TreeType treeType, 
+        const vector<pair<scalarType, ftm::idVertex>>& plot);
 
     template <typename vtkArrayType, typename scalarType>
       int getMSCPersistenceCurve(
-        const vector<pair<scalarType, idVertex>>& plot);
+        const vector<pair<scalarType, ftm::idVertex>>& plot);
 
   private:
 
@@ -150,9 +150,9 @@ class VTKFILTERSCORE_EXPORT ttkPersistenceCurve
 };
 
 template <typename vtkArrayType, typename scalarType>
-int ttkPersistenceCurve::getPersistenceCurve(TreeType treeType, 
-  const vector<pair<scalarType, idVertex>>& plot){
-  const idVertex numberOfPairs = plot.size();
+int ttkPersistenceCurve::getPersistenceCurve(ftm::TreeType treeType, 
+  const vector<pair<scalarType, ftm::idVertex>>& plot){
+  const ftm::idVertex numberOfPairs = plot.size();
 
   vtkSmartPointer<vtkArrayType> persistenceScalars = 
     vtkSmartPointer<vtkArrayType>::New();
@@ -160,18 +160,18 @@ int ttkPersistenceCurve::getPersistenceCurve(TreeType treeType,
     vtkSmartPointer<vtkIntArray>::New();
 
   switch(treeType){
-    case TreeType::Join:
+    case ftm::TreeType::Join:
       persistenceScalars->SetName("Persistence (minimum-saddle pairs)");
       numberOfPairsScalars->SetName("Number Of Pairs (minimum-saddle pairs)");
       break;
 
-    case TreeType::Split:
+    case ftm::TreeType::Split:
       persistenceScalars->SetName("Persistence (maximum-saddle pairs)");
       numberOfPairsScalars->SetName("Number Of Pairs (maximum-saddle pairs)");
       break;
 
-    case TreeType::Contour:
-    case TreeType::JoinAndSplit:
+    case ftm::TreeType::Join_Split:
+    case ftm::TreeType::Contour:
       persistenceScalars->SetName("Persistence (all pairs)");
       numberOfPairsScalars->SetName(
         "Number Of Pairs (all pairs)");
@@ -185,7 +185,7 @@ int ttkPersistenceCurve::getPersistenceCurve(TreeType treeType,
     numberOfPairsScalars->SetNumberOfTuples(numberOfPairs);
     persistenceCurve->SetNumberOfRows(numberOfPairs);
 
-    for (idVertex i = 0; i < numberOfPairs; ++i) {
+    for (ftm::idVertex i = 0; i < numberOfPairs; ++i) {
       persistenceScalars->SetTuple1(i, plot[i].first);
       numberOfPairsScalars->SetTuple1(i, plot[i].second);
     }
@@ -194,16 +194,16 @@ int ttkPersistenceCurve::getPersistenceCurve(TreeType treeType,
     persistenceCurve->AddColumn(numberOfPairsScalars);
 
     switch(treeType){
-      case TreeType::Join:
+      case ftm::TreeType::Join:
         JTPersistenceCurve_->ShallowCopy(persistenceCurve);
         break;
 
-      case TreeType::Split:
+      case ftm::TreeType::Split:
         STPersistenceCurve_->ShallowCopy(persistenceCurve);
         break;
 
-      case JoinAndSplit:
-      case TreeType::Contour:
+      case ftm::TreeType::Join_Split:
+      case ftm::TreeType::Contour:
         CTPersistenceCurve_->ShallowCopy(persistenceCurve);
         break;
     }
@@ -214,8 +214,8 @@ int ttkPersistenceCurve::getPersistenceCurve(TreeType treeType,
 
 template <typename vtkArrayType, typename scalarType>
 int ttkPersistenceCurve::getMSCPersistenceCurve(
-  const vector<pair<scalarType, idVertex>>& plot){
-  const idVertex numberOfPairs = plot.size();
+  const vector<pair<scalarType, ftm::idVertex>>& plot){
+  const ftm::idVertex numberOfPairs = plot.size();
 
   vtkSmartPointer<vtkArrayType> persistenceScalars = 
     vtkSmartPointer<vtkArrayType>::New();
@@ -232,7 +232,7 @@ int ttkPersistenceCurve::getMSCPersistenceCurve(
     numberOfPairsScalars->SetNumberOfTuples(numberOfPairs);
     persistenceCurve->SetNumberOfRows(numberOfPairs);
 
-    for (idVertex i = 0; i < numberOfPairs; ++i) {
+    for (ftm::idVertex i = 0; i < numberOfPairs; ++i) {
       persistenceScalars->SetTuple1(i, plot[i].first);
       numberOfPairsScalars->SetTuple1(i, plot[i].second);
     }

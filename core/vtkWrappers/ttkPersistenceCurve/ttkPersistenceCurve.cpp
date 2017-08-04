@@ -1,5 +1,7 @@
 #include                  <ttkPersistenceCurve.h>
 
+using namespace ftm;
+
 vtkStandardNewMacro(ttkPersistenceCurve)
 
   ttkPersistenceCurve::ttkPersistenceCurve():
