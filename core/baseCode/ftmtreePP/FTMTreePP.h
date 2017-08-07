@@ -42,26 +42,27 @@ namespace ttk
          void sortPairs(ftm::FTMTree_MT* tree,
                         vector<tuple<idVertex, idVertex, scalarType>>& pairs);
 
-         void addPendingNode(const idNode parent, const idNode toAdd)
+         void addPendingNode(const idNode parentNode, const idNode toAdd)
          {
             // Trick, we use the arc list to maintaint nodes
             // coming to this UF.
-            nodesUF_[parent]->addArcToClose(toAdd);
+            nodesUF_[parentNode]->find()->addArcToClose(toAdd);
          }
 
          idNode countPendingNode(const idNode current)
          {
-            return nodesUF_[current]->getOpenedArcs().size();
+            return nodesUF_[current]->find()->getOpenedArcs().size();
          }
+
 
          template <typename scalarType>
          idVertex getMostPersistVert(const idNode current, ftm::FTMTree_MT* tree)
          {
             idVertex  minVert = tree->getNode(current)->getVertexId();
-            AtomicUF* uf      = nodesUF_[current];
+            AtomicUF* uf      = nodesUF_[current]->find();
 
             for (const auto nodeid : uf->getOpenedArcs()) {
-               const idVertex vtmp = nodesUF_[nodeid]->getExtrema();
+               const idVertex vtmp = nodesUF_[nodeid]->find()->getExtrema();
                if (tree->compLower(vtmp, minVert)) {
                   minVert = vtmp;
                }
@@ -72,7 +73,7 @@ namespace ttk
 
          void clearPendingNodes(const idNode current)
          {
-            nodesUF_[current]->clearOpenedArcs();
+            nodesUF_[current]->find()->clearOpenedArcs();
          }
 
          template <typename scalarType>
@@ -81,13 +82,13 @@ namespace ttk
                           ftm::FTMTree_MT* tree,
                           const idVertex   mp)
          {
-            AtomicUF*        uf      = nodesUF_[current];
+            AtomicUF*        uf      = nodesUF_[current]->find();
             const idVertex   curVert = tree->getNode(current)->getVertexId();
             const scalarType curVal  = getValue<scalarType>(curVert);
 
             for (const auto nodeid : uf->getOpenedArcs()) {
+               const idVertex tmpVert = nodesUF_[nodeid]->find()->getExtrema();
                AtomicUF::makeUnion(uf, nodesUF_[nodeid]);
-               const idVertex tmpVert = nodesUF_[nodeid]->getExtrema();
                if (tmpVert != mp) {
                   const scalarType tmpVal = getValue<scalarType>(tmpVert);
                   if (scalars_->isLower(tmpVert, curVert)) {
@@ -142,8 +143,8 @@ void ftm::FTMTreePP::computePairs(ftm::FTMTree_MT* tree,
    std::queue<idNode> toSee;
 
    // start at the leaves
-   const auto& vectLeaves = tree->getLeaves();
-   for (const idNode nid : vectLeaves) {
+   auto& vectLeaves = tree->getLeaves();
+   for (auto nid : vectLeaves) {
       toSee.emplace(nid);
    }
 
@@ -159,14 +160,14 @@ void ftm::FTMTreePP::computePairs(ftm::FTMTree_MT* tree,
          clearPendingNodes(current);
       }
 
-      const idNode parent = getParentNode(current);
-      addPendingNode(parent, current);
+      const idNode parentNode = getParentNode(current);
+      addPendingNode(parentNode, current);
 
-      if (countPendingNode(parent) == tree->getNode(parent)->getNumberOfDownSuperArcs()) {
-         const idVertex mostPersist = getMostPersistVert<scalarType>(parent, tree);
-         createPairs<scalarType>(parent, pairs, tree, mostPersist);
-         nodesUF_[parent]->setExtrema(mostPersist);
-         toSee.push(parent);
+      if (countPendingNode(parentNode) == tree->getNode(parentNode)->getNumberOfDownSuperArcs()) {
+         const idVertex mostPersist = getMostPersistVert<scalarType>(parentNode, tree);
+         createPairs<scalarType>(parentNode, pairs, tree, mostPersist);
+         nodesUF_[parentNode]->find()->setExtrema(mostPersist);
+         toSee.push(parentNode);
       }
    }
 }
