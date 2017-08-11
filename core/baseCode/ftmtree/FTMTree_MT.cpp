@@ -702,8 +702,8 @@ void FTMTree_MT::leafGrowth()
    // Need testing, simulate priority
    // best with gcc
    auto comp = [this](const idNode a, const idNode b) {
-      return this->comp_.vertLower(this->getNode(a)->getVertexId(),
-                                   this->getNode(b)->getVertexId());
+      return this->comp_.vertHigher(this->getNode(a)->getVertexId(),
+                                    this->getNode(b)->getVertexId());
    };
    sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), comp);
 
