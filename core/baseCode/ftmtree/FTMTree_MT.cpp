@@ -15,6 +15,13 @@
 
 #include <stack>
 
+#define PRIOR(x)
+// #define PRIOR(x) priority(x)
+
+#ifdef __INTEL_COMPILER
+#define HIGHER
+#endif
+
 using namespace ftm;
 
 DebugTimer _launchGlobalTime;
@@ -699,11 +706,14 @@ void FTMTree_MT::leafGrowth()
 
    mt_data_.activeTasks = nbLeaves;
 
-   // Need testing, simulate priority
-   // best with gcc
    auto comp = [this](const idNode a, const idNode b) {
+#ifdef HIGHER
       return this->comp_.vertHigher(this->getNode(a)->getVertexId(),
                                     this->getNode(b)->getVertexId());
+#else
+      return this->comp_.vertLower(this->getNode(a)->getVertexId(),
+                                   this->getNode(b)->getVertexId());
+#endif
    };
    sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), comp);
 
