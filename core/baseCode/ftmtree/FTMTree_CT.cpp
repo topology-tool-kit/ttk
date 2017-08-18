@@ -85,7 +85,7 @@ void FTMTree_CT::build(TreeType tt)
    // Debug
 
    if (debugLevel_ > 3) {
-      cout << " nodes :";
+      cout << "- [FTM] final number of nodes :";
       switch (tt) {
          case TreeType::Join:
             cout << jt_->getNumberOfNodes();
