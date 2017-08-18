@@ -360,7 +360,7 @@ void FTMTree_MT::buildSegmentation()
    }
 #pragma omp taskwait
 
-   printTime(segmentsSet, "segm. set verts", -1, 4);
+   printTime(segmentsSet, "[FTM] segmentation set vertices", -1, 4);
 
    if (mt_data_.trunkSegments->size() == 0) {
       // sort arc that have been filled by the trunk
@@ -373,7 +373,7 @@ void FTMTree_MT::buildSegmentation()
          }
       }
 #pragma omp taskwait
-      printTime(segmentsSortTime, "segm. sort verts", -1, 4);
+      printTime(segmentsSortTime, "[FTM] segmentation sort vertices", -1, 4);
    } else {
        // Contour tree: we create the arc segmentation for arcs in the trunk
        DebugTimer segmentsArcTime;
@@ -386,7 +386,7 @@ void FTMTree_MT::buildSegmentation()
           }
        }
 #pragma omp taskwait
-      printTime(segmentsArcTime, "segm. trunk verts", -1, 4);
+      printTime(segmentsArcTime, "[FTM] segmentation arcs lists", -1, 4);
    }
 
    // Update SuperArc region
@@ -776,7 +776,7 @@ int FTMTree_MT::leafSearch()
    std::iota(mt_data_.leaves->begin(), mt_data_.leaves->end(), 0);
 
    if (debugLevel_ >= 4) {
-      cout << "nb leaves " << nbLeaves << endl;
+      cout << "- [FTM] found " << nbLeaves << " leaves" << endl;
    }
 
    // Reserve Arcs
@@ -1013,10 +1013,10 @@ void FTMTree_MT::printParams(void) const
       if (debugLevel_ > 2) {
          cout << "------------" << endl;
       }
-      cout << "nb threads : " << threadNumber_ << endl;
+      cout << "[FTM] number of threads : " << threadNumber_ << endl;
       if (debugLevel_ > 2) {
-         cout << "debug lvl  : " << debugLevel_ << endl;
-         cout << "tree type  : ";
+         cout << "* debug lvl  : " << debugLevel_ << endl;
+         cout << "* tree type  : ";
          if (params_->treeType == TreeType::Contour) {
             cout << "Contour";
          } else if (params_->treeType == TreeType::Join) {
