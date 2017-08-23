@@ -25,7 +25,7 @@
 // ----
 
 template <typename scalarType>
-void FTMTree_MT::sortInput(void)
+void ftm::FTMTree_MT::sortInput(void)
 {
    const auto &nbVertices = scalars_->size;
 

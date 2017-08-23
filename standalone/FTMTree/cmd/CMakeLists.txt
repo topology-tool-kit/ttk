@@ -18,6 +18,12 @@ find_path(TTK_DIR ttk.cmake
 )
 include(${TTK_DIR}/ttk.cmake)
 
+# Special build for perf, don't create the result data set
+option(PERF_TESTS  "Build only for performances, avoid post-process" OFF)
+if(PERF_TESTS)
+   add_definitions(-DPERF_TESTS)
+endif(PERF_TESTS)
+
 # include the different packages required for the application
 ttk_add_vtkWrapper_package(ttkFTMTree)
 
