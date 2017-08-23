@@ -23,7 +23,7 @@
 // -------
 
 template <typename scalarType>
-void FTMTree::build(void)
+void ftm::FTMTree::build(void)
 {
    // -----
    // INPUT
@@ -107,7 +107,10 @@ void FTMTree::build(void)
    printTime(buildTime, "[FTM] build tree", -1, 3);
 
    printTime(startTime, "[FTM] Total ", -1, 1);
-   // exit(0);
+
+#ifdef PERF_TESTS
+   exit(0);
+#endif
 
    // Build the list of regular vertices of the arc
    if (params_->segm) {
