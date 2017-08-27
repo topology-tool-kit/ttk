@@ -11,7 +11,9 @@
     cmake_policy(SET CMP0012 NEW)
     cmake_policy(SET CMP0023 OLD)
     cmake_policy(SET CMP0028 OLD)
-    cmake_policy(SET CMP0054 NEW)
+    if(POLICY CMP0054)
+       cmake_policy(SET CMP0054 NEW)
+    endif(POLICY CMP0054)
   endif(COMMAND cmake_policy)
   
   # kamikaze code compilation mode
