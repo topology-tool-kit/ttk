@@ -51,7 +51,7 @@ function(ttk_add_base_template_library library)
 		ARCHIVE DESTINATION lib/ttk/base
 		LIBRARY DESTINATION lib/ttk/base)
 
-	install(FILES ${HEADERS} DESTINATION include/ttk/base)
+	install(FILES ${ARGN} DESTINATION include/ttk/base)
 endfunction()
 
 add_subdirectory(abstractMorseSmaleComplex)
