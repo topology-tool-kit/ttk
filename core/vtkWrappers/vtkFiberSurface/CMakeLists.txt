@@ -1,0 +1,4 @@
+ttk_add_vtk_library(vtkFiberSurface vtkFiberSurface.cpp HEADERS vtkFiberSurface.h)
+target_link_libraries(vtkFiberSurface fiberSurface ttkWrapper)
+
+

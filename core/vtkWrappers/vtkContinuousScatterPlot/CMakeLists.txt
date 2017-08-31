@@ -1,0 +1,3 @@
+ttk_add_vtk_library(vtkContinuousScatterPlot vtkContinuousScatterPlot.cpp
+	HEADERS vtkContinuousScatterPlot.h)
+target_link_libraries(vtkContinuousScatterPlot continuousScatterPlot ttkWrapper)

@@ -1,0 +1,3 @@
+ttk_add_vtk_library(vtkPersistenceDiagram vtkPersistenceDiagram.cpp HEADERS vtkPersistenceDiagram.h)
+target_link_libraries(vtkPersistenceDiagram persistenceDiagram ttkWrapper)
+

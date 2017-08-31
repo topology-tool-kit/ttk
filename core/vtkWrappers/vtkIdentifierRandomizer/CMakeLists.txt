@@ -1,0 +1,3 @@
+ttk_add_vtk_library(vtkIdentifierRandomizer vtkIdentifierRandomizer.cpp HEADERS vtkIdentifierRandomizer.h)
+target_link_libraries(vtkIdentifierRandomizer common ttkWrapper)
+

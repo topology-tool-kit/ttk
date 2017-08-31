@@ -1,0 +1,3 @@
+ttk_add_vtk_library(vtkProjectionFromField vtkProjectionFromField.cpp HEADERS vtkProjectionFromField.h)
+target_link_libraries(vtkProjectionFromField common)
+

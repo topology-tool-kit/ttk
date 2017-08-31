@@ -150,7 +150,4 @@ template <class ttkModule>
     vtkSmartPointer<ttkModule>    ttkObject_;
 };
 
-
-#include <vtkUserInterfaceBase.cpp>
-
 #endif //_VTK_USERINTERFACE_BASE_H

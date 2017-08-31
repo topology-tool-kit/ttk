@@ -118,7 +118,95 @@ template <class ttkModule>
     
 };
 
-// template
-#include                          <vtkProgramBase.cpp>
+template < class vtkReaderClass> 
+  int vtkProgramBase::load(const string &fileName,
+    vector<vtkSmartPointer<vtkReaderClass> > &readerList){
+   
+  readerList.resize(readerList.size() + 1);
+  readerList.back() = vtkSmartPointer<vtkReaderClass>::New();
+    
+  readerList.back()->SetFileName(fileName.data());
+  
+  // handle debug messages
+  {
+    stringstream msg;
+    msg << "[vtkProgramBase] Reading input data..." << endl;
+    // choose where to display this message (cout, cerr, a file)
+    // choose the priority of this message (1, nearly always displayed, 
+    // higher values mean lower priorities)
+    dMsg(cout, msg.str(), 1);
+  }
+  
+  readerList.back()->Update();
+  inputs_.push_back(readerList.back()->GetOutput());
+
+  if(!inputs_.back())
+    return -1;
+
+  if(!inputs_.back()->GetNumberOfPoints())
+    return -2;
+
+  if(!inputs_.back()->GetNumberOfCells())
+    return -3;
+
+  {
+    stringstream msg;
+    msg << "[vtkProgramBase]   done! (read " 
+      << inputs_.back()->GetNumberOfPoints()
+      << " vertices, "
+      << inputs_.back()->GetNumberOfCells() 
+      << " cells)" << endl;
+    dMsg(cout, msg.str(), Debug::infoMsg);
+  }
+
+  return 0;
+}
+
+template <class vtkWriterClass>
+  int vtkProgramBase::save(const int &outputPortId) const{
+   
+  if(!vtkWrapper_)
+    return -1;
+    
+  string extension;
+  
+  if((vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType() 
+    == VTK_IMAGE_DATA)
+    ||(vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType()
+      == TTK_IMAGE_DATA)){
+    extension = "vti";
+  }
+  
+  if((vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType() 
+    == VTK_POLY_DATA)
+    ||(vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType()
+      == TTK_POLY_DATA)){
+    extension = "vtp";
+  }
+  
+  if((vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType() 
+    == VTK_UNSTRUCTURED_GRID)
+    ||(vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType()
+      == TTK_UNSTRUCTURED_GRID)){
+    extension = "vtu";
+  }
+  
+  stringstream fileName;
+  fileName << outputPath_
+    << "_port#" << outputPortId << "." << extension;
+  
+  vtkSmartPointer<vtkWriterClass> writer = 
+    vtkSmartPointer<vtkWriterClass>::New();
+  writer->SetFileName(fileName.str().data());
+  writer->SetInputData(vtkWrapper_->GetOutput(outputPortId));
+  stringstream msg;
+  msg << "[vtkProgramBase] Saving output file `" 
+    << fileName.str() << "'..." << endl;
+  dMsg(cout, msg.str(), Debug::infoMsg);
+  
+  writer->Write();
+    
+  return 0;
+}
 
 #endif // VTK_EDITOR_BASE_H

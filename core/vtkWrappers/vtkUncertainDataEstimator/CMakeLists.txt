@@ -1,0 +1,3 @@
+ttk_add_vtk_library(vtkUncertainDataEstimator vtkUncertainDataEstimator.cpp HEADERS vtkUncertainDataEstimator.h)
+target_link_libraries(vtkUncertainDataEstimator uncertainDataEstimator)
+

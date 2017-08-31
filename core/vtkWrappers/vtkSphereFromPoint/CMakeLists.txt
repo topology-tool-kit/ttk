@@ -1,0 +1,3 @@
+ttk_add_vtk_library(vtkSphereFromPoint vtkSphereFromPoint.cpp HEADERS vtkSphereFromPoint.h)
+target_link_libraries(vtkSphereFromPoint common)
+

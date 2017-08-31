@@ -1,0 +1,3 @@
+ttk_add_vtk_library(vtkMorseSmaleComplex vtkMorseSmaleComplex.cpp HEADERS vtkMorseSmaleComplex.h)
+target_link_libraries(vtkMorseSmaleComplex morseSmaleComplex ttkWrapper)
+

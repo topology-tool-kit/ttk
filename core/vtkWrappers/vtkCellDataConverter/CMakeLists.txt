@@ -1,0 +1,3 @@
+ttk_add_vtk_library(vtkCellDataConverter vtkCellDataConverter.cpp HEADERS vtkCellDataConverter.h)
+target_link_libraries(vtkCellDataConverter common)
+
