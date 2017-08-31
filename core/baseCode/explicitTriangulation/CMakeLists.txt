@@ -1,0 +1,5 @@
+ttk_add_base_library(explicitTriangulation ExplicitTriangulation.cpp
+	HEADERS ExplicitTriangulation.h)
+target_link_libraries(explicitTriangulation abstractTriangulation
+	zeroSkeleton oneSkeleton twoSkeleton threeSkeleton)
+

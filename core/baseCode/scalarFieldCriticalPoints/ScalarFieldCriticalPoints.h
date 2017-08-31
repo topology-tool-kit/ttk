@@ -139,6 +139,6 @@ namespace ttk{
 }
 
 // if the package is not a template, comment the following line
-#include                  <ScalarFieldCriticalPoints.cpp>
+#include                  <ScalarFieldCriticalPoints.inl>
 
 #endif // SCALARFIELDCRITICALPOINTS_H

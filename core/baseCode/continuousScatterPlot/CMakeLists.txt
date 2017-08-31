@@ -1,0 +1,4 @@
+ttk_add_base_library(continuousScatterPlot ContinuousScatterPlot.cpp
+	HEADERS ContinuousScatterPlot.h)
+target_link_libraries(continuousScatterPlot triangulation geometry)
+

@@ -1,0 +1,3 @@
+ttk_add_base_library(persistenceCurve PersistenceCurve.cpp HEADERS PersistenceCurve.h)
+target_link_libraries(persistenceCurve contourForests discreteGradient triangulation)
+

@@ -1,0 +1,5 @@
+ttk_add_base_library(discreteGradient DiscreteGradient.cpp
+	HEADERS DiscreteGradient.h)
+target_link_libraries(discreteGradient triangulation geometry
+	scalarFieldCriticalPoints)
+

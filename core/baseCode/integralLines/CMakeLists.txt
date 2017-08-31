@@ -1,0 +1,3 @@
+ttk_add_base_library(integralLines IntegralLines.cpp HEADERS IntegralLines.h)
+target_link_libraries(integralLines geometry triangulation)
+

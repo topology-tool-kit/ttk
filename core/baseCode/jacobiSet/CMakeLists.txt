@@ -1,0 +1,3 @@
+ttk_add_base_template_library(jacobiSet JacobiSet.h JacobiSet.inl)
+target_link_libraries(jacobiSet INTERFACE scalarFieldCriticalPoints
+	triangulation unionFind)

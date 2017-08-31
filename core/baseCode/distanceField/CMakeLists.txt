@@ -1,0 +1,3 @@
+ttk_add_base_library(distanceField DistanceField.cpp HEADERS DistanceField.h)
+target_link_libraries(distanceField geometry triangulation)
+

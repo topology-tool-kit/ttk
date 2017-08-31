@@ -1,0 +1,4 @@
+ttk_add_base_library(lowestCommonAncestor LowestCommonAncestor.cpp
+	HEADERS LowestCommonAncestor.h)
+target_link_libraries(lowestCommonAncestor rangeMinimumQuery common)
+

@@ -1,0 +1,4 @@
+ttk_add_base_library(scalarFieldSmoother ScalarFieldSmoother.cpp
+	HEADERS ScalarFieldSmoother.cpp)
+target_link_libraries(scalarFieldSmoother triangulation)
+

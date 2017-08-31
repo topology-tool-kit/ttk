@@ -1,0 +1,5 @@
+ttk_add_base_library(abstractTriangulation
+	AbstractTriangulation.cpp
+	HEADERS AbstractTriangulation.h)
+target_link_libraries(abstractTriangulation common)
+

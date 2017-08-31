@@ -1,0 +1,6 @@
+ttk_add_base_library(morseSmaleComplex MorseSmaleComplex.cpp
+	HEADERS MorseSmaleComplex.h)
+target_link_libraries(morseSmaleComplex abstractMorseSmaleComplex
+	morseSmaleComplex2D morseSmaleComplex3D)
+
+
