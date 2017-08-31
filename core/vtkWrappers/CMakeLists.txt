@@ -36,9 +36,7 @@ function(ttk_add_vtk_library library)
 endfunction()
 
 add_subdirectory(ttkWrapper)
-# TODO: is just a sample, so we don't really need to
-# build or install it.
-#add_subdirectory(vtkBlank)
+add_subdirectory(vtkBlank)
 add_subdirectory(vtkCellDataConverter)
 add_subdirectory(vtkComponentSize)
 add_subdirectory(vtkContinuousScatterPlot)

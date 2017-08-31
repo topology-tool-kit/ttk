@@ -1,25 +1,11 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.1)
 
-# name of the project (blankGui)
 project(blankGui)
 
-# GUI build-mode
-set(TTK_BUILD_MODE "VTK-GUI")
+find_package(VTK REQUIRED)
+include_directories(${VTK_INCLUDE_DIRS})
 
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
+add_executable(blankGui main.cpp)
+target_link_libraries(blankGui ${VTK_LIBRARIES}
+	ttk::vtk::blank vtkProgramBase vtkUserInterfaceBase)
 
-# include the different packages required for the application
-ttk_add_vtkWrapper_package(vtkBlank)
-
-# add the local cpp files
-ttk_add_source(main.cpp)
-
-ttk_wrapup_binary(blankGui)

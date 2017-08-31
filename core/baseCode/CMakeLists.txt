@@ -56,8 +56,7 @@ endfunction()
 
 add_subdirectory(abstractMorseSmaleComplex)
 add_subdirectory(abstractTriangulation)
-# TODO: Blank is just a sample, do we really need to build and install it?
-#add_subdirectory(blank)
+add_subdirectory(blank)
 add_subdirectory(common)
 add_subdirectory(continuousScatterPlot)
 add_subdirectory(contourForests)
