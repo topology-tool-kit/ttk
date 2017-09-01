@@ -33,8 +33,8 @@
 // base code includes
 #include<Wrapper.h>
 #include<Triangulation.h>
-#include<DiscreteGradient.h>
 #include<ContourForests.h>
+#include<MorseSmaleComplex3D.h>
 
 namespace ttk{
 
@@ -230,141 +230,13 @@ int PersistenceDiagram::execute() const{
   vector<tuple<int,int,scalarType>> pl_saddleSaddlePairs;
   const int dimensionality=triangulation_->getDimensionality();
   if(dimensionality==3 and ComputeSaddleConnectors){
-    // get original list of critical points
-    vector<pair<int,char>> pl_criticalPoints;
-    {
-      const int* const offsets=static_cast<int*>(inputOffsets_);
-      vector<int> sosOffsets(numberOfVertices);
-      for(int i=0; i<numberOfVertices; ++i)
-        sosOffsets[i]=offsets[i];
-
-      ScalarFieldCriticalPoints<scalarType> scp;
-
-      scp.setDebugLevel(debugLevel_);
-      scp.setThreadNumber(threadNumber_);
-      scp.setDomainDimension(dimensionality);
-      scp.setScalarValues(inputScalars_);
-      scp.setVertexNumber(numberOfVertices);
-      scp.setSosOffsets(&sosOffsets);
-      scp.setupTriangulation(triangulation_);
-      scp.setOutput(&pl_criticalPoints);
-
-      scp.execute();
-    }
-
-    // build rejecting list
-    vector<char> isRejected(numberOfVertices, false);
-    for(const auto& i : CTPairs){
-      const int v0=get<0>(i);
-      const int v1=get<1>(i);
-      isRejected[v0]=true;
-      isRejected[v1]=true;
-    }
-
-    // filter the critical points according to the filtering list and boundary condition
-    vector<char> isSaddle1(numberOfVertices, false);
-    vector<char> isSaddle2(numberOfVertices, false);
-    vector<pair<int,char>> pl_filteredCriticalPoints;
-    for(const auto& i : pl_criticalPoints){
-      const int vertexId=i.first;
-      const char type=i.second;
-      if(!isRejected[vertexId]){
-        pl_filteredCriticalPoints.push_back(i);
-
-        switch(type){
-          case 1:
-            isSaddle1[vertexId]=true;
-            break;
-
-          case 2:
-            isSaddle2[vertexId]=true;
-            break;
-        }
-      }
-    }
-
-    vector<tuple<Cell,Cell>> dmt_pairs;
-    {
-      // simplify to be PL-conformant
-      DiscreteGradient discreteGradient;
-      discreteGradient.setDebugLevel(debugLevel_);
-      discreteGradient.setThreadNumber(threadNumber_);
-      discreteGradient.setupTriangulation(triangulation_);
-      discreteGradient.setIterationThreshold(-1);
-      discreteGradient.setReverseSaddleMaximumConnection(true);
-      discreteGradient.setReverseSaddleSaddleConnection(true);
-      discreteGradient.setAllowReversingWithNonRemovable(false);
-      discreteGradient.setCollectPersistencePairs(false);
-      discreteGradient.setInputScalarField(inputScalars_);
-      discreteGradient.setInputOffsets(inputOffsets_);
-      discreteGradient.buildGradient<scalarType>();
-      discreteGradient.reverseGradient<scalarType>(pl_criticalPoints);
-
-      // collect saddle-saddle connections
-      discreteGradient.setReverseSaddleMaximumConnection(false);
-      discreteGradient.setCollectPersistencePairs(true);
-      discreteGradient.setOutputPersistencePairs(&dmt_pairs);
-      discreteGradient.reverseGradient<scalarType>(pl_filteredCriticalPoints);
-    }
-
-    // transform DMT pairs into PL pairs
-    for(const auto& i : dmt_pairs){
-      const Cell& saddle1=get<0>(i);
-      const Cell& saddle2=get<1>(i);
-
-      int v0=-1;
-      for(int j=0; j<2; ++j){
-        int vertexId;
-        triangulation_->getEdgeVertex(saddle1.id_, j, vertexId);
-
-        if(isSaddle1[vertexId]){
-          v0=vertexId;
-          break;
-        }
-      }
-      if(v0==-1){
-        scalarType scalar{};
-        for(int j=0; j<2; ++j){
-          int vertexId;
-          triangulation_->getEdgeVertex(saddle1.id_,j,vertexId);
-          const scalarType vertexScalar=scalars[vertexId];
-
-          if(!j or scalar>vertexScalar){
-            v0=vertexId;
-            scalar=vertexScalar;
-          }
-        }
-      }
-
-      int v1=-1;
-      for(int j=0; j<3; ++j){
-        int vertexId;
-        triangulation_->getTriangleVertex(saddle2.id_, j, vertexId);
-
-        if(isSaddle2[vertexId]){
-          v1=vertexId;
-          break;
-        }
-      }
-      if(v1==-1){
-        scalarType scalar{};
-        for(int j=0; j<3; ++j){
-          int vertexId;
-          triangulation_->getTriangleVertex(saddle2.id_,j,vertexId);
-          const scalarType vertexScalar=scalars[vertexId];
-
-          if(!j or scalar<vertexScalar){
-            v1=vertexId;
-            scalar=vertexScalar;
-          }
-        }
-      }
-
-      const scalarType persistence=scalars[v1]-scalars[v0];
-
-      if(v0!=-1 and v1!=-1 and persistence>=0)
-        pl_saddleSaddlePairs.push_back(make_tuple(v0,v1,persistence));
-    }
+    MorseSmaleComplex3D morseSmaleComplex;
+    morseSmaleComplex.setDebugLevel(debugLevel_);
+    morseSmaleComplex.setThreadNumber(threadNumber_);
+    morseSmaleComplex.setupTriangulation(triangulation_);
+    morseSmaleComplex.setInputScalarField(inputScalars_);
+    morseSmaleComplex.setInputOffsets(inputOffsets_);
+    morseSmaleComplex.computePersistencePairs<scalarType>(JTPairs, STPairs, pl_saddleSaddlePairs);
   }
 
   // get persistence diagrams

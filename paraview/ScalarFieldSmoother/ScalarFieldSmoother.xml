@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="ScalarFieldSmoother" 
-     class="vtkScalarFieldSmoother" 
+     class="ttkScalarFieldSmoother" 
      label="TTK ScalarFieldSmoother">
      <Documentation
         long_help="TTK plugin for scalar field smoothing."
@@ -28,7 +28,7 @@ See also GeometrySmoother.
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
+        <InputArrayDomain name="input_scalars" number_of_components="1" attribute_type="point">
           <Property name="Input" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
@@ -55,6 +55,8 @@ See also GeometrySmoother.
         </Documentation>
       </StringVectorProperty>
       
+      
+
       <IntVectorProperty
          name="NumberOfIterations"
          label="Iteration Number"
@@ -67,6 +69,41 @@ See also GeometrySmoother.
          </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+        name="UseInputMask"
+        command="SetUseInputMask"
+        label="Use Input Mask Field"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box if an input scalar field should be considered as
+          vertex mask (used to mark vertices to smooth).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="InputMask"
+        command="SetInputMask"
+        label="Input Mask Field"
+        default_values="MaskField"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        animateable="0">
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          data_type="VTK_CHAR">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Input mask field (used to mark vertices to smooth).
+        </Documentation>
+      </StringVectorProperty>
+      
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -107,6 +144,8 @@ See also GeometrySmoother.
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Scalar Field" />
         <Property name="NumberOfIterations" />
+        <Property name="UseInputMask" />
+        <Property name="InputMask" />
       </PropertyGroup>
       
       <PropertyGroup panel_widget="Line" label="Testing">

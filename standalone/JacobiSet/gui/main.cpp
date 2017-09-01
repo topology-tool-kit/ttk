@@ -4,10 +4,10 @@
 /// \brief GUI program for Jacobi set computation.
 
 // include the local headers
-#include                  <vtkJacobiSet.h>
-#include                  <vtkUserInterfaceBase.h>
+#include                  <ttkJacobiSet.h>
+#include                  <ttkUserInterfaceBase.h>
 
-vtkUserInterface<vtkJacobiSet> program;
+vtkUserInterface<ttkJacobiSet> program;
 
 int main(int argc, char **argv) {
   

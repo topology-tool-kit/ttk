@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="ScalarFieldNormalizer" 
-     class="vtkScalarFieldNormalizer" 
+     class="ttkScalarFieldNormalizer" 
      label="TTK ScalarFieldNormalizer">
      <Documentation
         long_help="TTK plugin that normalizes an input scalar field."

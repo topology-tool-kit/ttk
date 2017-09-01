@@ -3,7 +3,7 @@
   <ProxyGroup name="filters">
     <SourceProxy
       name="IntegralLines"
-      class="vtkIntegralLines"
+      class="ttkIntegralLines"
       label="TTK IntegralLines">
       <Documentation
         long_help="TTK plugin for the computation of edge-based integral 

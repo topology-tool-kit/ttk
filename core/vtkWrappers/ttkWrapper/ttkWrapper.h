@@ -1,8 +1,8 @@
-/// \defgroup vtkWrappers vtkWrappers
+/// \defgroup ttkWrappers ttkWrappers
 /// \brief The Topology ToolKit - VTK wrapping code for the processing 
 /// packages.
 /// @{
-/// \ingroup vtkWrappers
+/// \ingroup ttkWrappers
 /// \class ttkWrapper
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date February 2016.
@@ -11,15 +11,15 @@
 #pragma once
 
 #include                  <Wrapper.h>
-#include                  <vtkTriangulation.h>
+#include                  <ttkTriangulation.h>
 
 #include                  <vtkDataSetAlgorithm.h>
 #include                  <vtkImageData.h>
 #include                  <vtkPolyData.h>
-#include                  <vtkTriangulation.h>
+#include                  <ttkTriangulation.h>
 #include                  <vtkUnstructuredGrid.h>
 
-// Macros for vtkWrappers
+// Macros for ttkWrappers
 #define TTK_POLY_DATA_NEW(i, ouputInformation, dataTYpe)\
   if(dataType == "vtkPolyData"){\
     ttkPolyData *data = ttkPolyData::SafeDownCast(\
@@ -91,7 +91,7 @@
       
 #define TTK_PIPELINE_REQUEST() \
     protected:\
-      vector<vtkSmartPointer<vtkTriangulationFilter> > inputTriangulations_;\
+      vector<vtkSmartPointer<ttkTriangulationFilter> > inputTriangulations_;\
       int RequestData(vtkInformation *request, \
         vtkInformationVector **inputVector, \
         vtkInformationVector *outputVector){\
@@ -100,7 +100,7 @@
           inputTriangulations_.resize(GetNumberOfInputPorts());\
           for(int i = 0; i < (int) inputTriangulations_.size(); i++){\
             inputTriangulations_[i] = \
-              vtkSmartPointer<vtkTriangulationFilter>::New();\
+              vtkSmartPointer<ttkTriangulationFilter>::New();\
           }\
         }\
         \
@@ -155,19 +155,19 @@
       int                   ThreadNumber;\
       
 
-class VTKFILTERSCORE_EXPORT vtkTriangulationFilter 
+class VTKFILTERSCORE_EXPORT ttkTriangulationFilter 
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:
       
-    static vtkTriangulationFilter* New();
+    static ttkTriangulationFilter* New();
     
-    vtkTypeMacro(vtkTriangulationFilter, vtkDataSetAlgorithm);
+    vtkTypeMacro(ttkTriangulationFilter, vtkDataSetAlgorithm);
     
   protected:
    
-    vtkTriangulationFilter();
-    ~vtkTriangulationFilter(){};
+    ttkTriangulationFilter();
+    ~ttkTriangulationFilter(){};
     
     int RequestData(vtkInformation *request, 
       vtkInformationVector **inputVector, vtkInformationVector *outputVector);

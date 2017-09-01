@@ -30,6 +30,16 @@ namespace ttk{
       template<typename dataType>
         int execute();
 
+      template<typename dataType>
+        int computePersistencePairs(const vector<tuple<int, int, dataType>>& JTPairs,
+            const vector<tuple<int, int, dataType>>& STPairs,
+            vector<tuple<int,int,dataType>>& pl_saddleSaddlePairs);
+
+      template <typename dataType>
+        int setAugmentedCriticalPoints(const vector<Cell>& criticalPoints,
+            int* ascendingManifold,
+            int* descendingManifold) const;
+
       int getSeparatrices1(const vector<Cell>& criticalPoints,
           vector<Separatrix>& separatrices,
           vector<vector<Cell>>& separatricesGeometry) const;
@@ -71,12 +81,13 @@ namespace ttk{
           const vector<set<int>>& separatricesSaddles) const;
 
       int setAscendingSegmentation(const vector<Cell>& criticalPoints,
+          vector<int>& maxSeeds,
           int* const morseSmaleManifold,
-          int& numberOfMaxima) const;
+          int& numberOfMaxima);
 
       int setDescendingSegmentation(const vector<Cell>& criticalPoints,
           int* const morseSmaleManifold,
-          int& numberOfMinima) const;
+          int& numberOfMinima);
 
       int setFinalSegmentation(const int numberOfMaxima,
           const int numberOfMinima,
@@ -124,7 +135,9 @@ int MorseSmaleComplex3D::setSeparatrices1(const vector<Separatrix>& separatrices
 
       for(const int geometryId : separatrix.geometry_){
         int oldPointId=-1;
-        for(const Cell& cell : separatricesGeometry[geometryId]){
+        for(auto cellIte=separatricesGeometry[geometryId].begin(); cellIte!=separatricesGeometry[geometryId].end(); ++cellIte){
+          const Cell& cell=*cellIte;
+
           float point[3];
           discreteGradient_.getCellIncenter(cell, point);
 
@@ -132,6 +145,11 @@ int MorseSmaleComplex3D::setSeparatrices1(const vector<Separatrix>& separatrices
           outputSeparatrices1_points_->push_back(point[1]);
           outputSeparatrices1_points_->push_back(point[2]);
 
+          if(cellIte==separatricesGeometry[geometryId].begin() or
+              cellIte==separatricesGeometry[geometryId].end()-1)
+            outputSeparatrices1_points_smoothingMask_->push_back(0);
+          else
+            outputSeparatrices1_points_smoothingMask_->push_back(1);
           outputSeparatrices1_points_cellDimensions_->push_back(cell.dim_);
           outputSeparatrices1_points_cellIds_->push_back(cell.id_);
 
@@ -457,14 +475,14 @@ int MorseSmaleComplex3D::execute(){
 
   discreteGradient_.setDebugLevel(debugLevel_);
   discreteGradient_.setThreadNumber(threadNumber_);
-  discreteGradient_.setAllowReversingWithNonRemovable(false);
   discreteGradient_.setCollectPersistencePairs(false);
   discreteGradient_.buildGradient<dataType>();
+  discreteGradient_.buildGradient2<dataType>();
+  discreteGradient_.buildGradient3<dataType>();
   discreteGradient_.reverseGradient<dataType>();
 
   vector<Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
-  discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
 
   // 1-separatrices
   if(ComputeDescendingSeparatrices1 or ComputeAscendingSeparatrices1){
@@ -500,12 +518,13 @@ int MorseSmaleComplex3D::execute(){
     setAscendingSeparatrices2<dataType>(separatrices, separatricesGeometry, separatricesSaddles);
   }
 
+  vector<int> maxSeeds;
   {
     int numberOfMaxima{};
     int numberOfMinima{};
 
     if(ComputeAscendingSegmentation)
-      setAscendingSegmentation(criticalPoints, ascendingManifold, numberOfMaxima);
+      setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold, numberOfMaxima);
 
     if(ComputeDescendingSegmentation)
       setDescendingSegmentation(criticalPoints, descendingManifold, numberOfMinima);
@@ -513,6 +532,14 @@ int MorseSmaleComplex3D::execute(){
     if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation)
       setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold, descendingManifold, morseSmaleManifold);
   }
+
+  if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
+    discreteGradient_.setAugmentedCriticalPoints<dataType>(criticalPoints,
+        maxSeeds,
+        ascendingManifold,
+        descendingManifold);
+  else
+    discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
 
   {
     const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
@@ -525,6 +552,156 @@ int MorseSmaleComplex3D::execute(){
     dMsg(cout, msg.str(), timeMsg);
   }
 
+  return 0;
+}
+
+template<typename dataType>
+int MorseSmaleComplex3D::computePersistencePairs(const vector<tuple<int, int, dataType>>& JTPairs,
+    const vector<tuple<int, int, dataType>>& STPairs,
+    vector<tuple<int,int,dataType>>& pl_saddleSaddlePairs){
+  dataType* scalars=static_cast<dataType*>(inputScalarField_);
+  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+
+  // get original list of critical points
+  vector<pair<int,char>> pl_criticalPoints;
+  {
+    const int* const offsets=static_cast<int*>(inputOffsets_);
+    vector<int> sosOffsets(numberOfVertices);
+    for(int i=0; i<numberOfVertices; ++i)
+      sosOffsets[i]=offsets[i];
+
+    ScalarFieldCriticalPoints<dataType> scp;
+
+    scp.setDebugLevel(debugLevel_);
+    scp.setThreadNumber(threadNumber_);
+    scp.setDomainDimension(inputTriangulation_->getDimensionality());
+    scp.setScalarValues(inputScalarField_);
+    scp.setVertexNumber(numberOfVertices);
+    scp.setSosOffsets(&sosOffsets);
+    scp.setupTriangulation(inputTriangulation_);
+    scp.setOutput(&pl_criticalPoints);
+
+    scp.execute();
+  }
+
+  // build accepting list
+  vector<char> isAccepted(numberOfVertices, false);
+  for(const auto& i : JTPairs){
+    const int v0=get<0>(i);
+    const int v1=get<1>(i);
+    isAccepted[v0]=true;
+    isAccepted[v1]=true;
+  }
+  for(const auto& i : STPairs){
+    const int v0=get<0>(i);
+    const int v1=get<1>(i);
+    isAccepted[v0]=true;
+    isAccepted[v1]=true;
+  }
+
+  // filter the critical points according to the filtering list and boundary condition
+  vector<char> isSaddle1(numberOfVertices, false);
+  vector<char> isSaddle2(numberOfVertices, false);
+  vector<pair<int,char>> pl_filteredCriticalPoints;
+  for(const auto& i : pl_criticalPoints){
+    const int vertexId=i.first;
+    const char type=i.second;
+    if(isAccepted[vertexId]){
+      pl_filteredCriticalPoints.push_back(i);
+
+      switch(type){
+        case 1:
+          isSaddle1[vertexId]=true;
+          break;
+
+        case 2:
+          isSaddle2[vertexId]=true;
+          break;
+      }
+    }
+  }
+
+  vector<tuple<Cell,Cell>> dmt_pairs;
+  {
+    // simplify to be PL-conformant
+    discreteGradient_.setDebugLevel(debugLevel_);
+    discreteGradient_.setThreadNumber(threadNumber_);
+    discreteGradient_.setReverseSaddleMaximumConnection(true);
+    discreteGradient_.setReverseSaddleSaddleConnection(true);
+    discreteGradient_.setCollectPersistencePairs(false);
+    discreteGradient_.buildGradient<dataType>();
+    discreteGradient_.buildGradient2<dataType>();
+    discreteGradient_.buildGradient3<dataType>();
+    discreteGradient_.reverseGradient<dataType>(pl_criticalPoints);
+
+    // collect saddle-saddle connections
+    discreteGradient_.setReverseSaddleMaximumConnection(true);
+    discreteGradient_.setCollectPersistencePairs(true);
+    discreteGradient_.setOutputPersistencePairs(&dmt_pairs);
+    discreteGradient_.reverseGradient<dataType>(pl_filteredCriticalPoints);
+  }
+
+  // transform DMT pairs into PL pairs
+  for(const auto& i : dmt_pairs){
+    const Cell& saddle1=get<0>(i);
+    const Cell& saddle2=get<1>(i);
+
+    int v0=-1;
+    for(int j=0; j<2; ++j){
+      int vertexId;
+      inputTriangulation_->getEdgeVertex(saddle1.id_, j, vertexId);
+
+      if(isSaddle1[vertexId]){
+        v0=vertexId;
+        break;
+      }
+    }
+    if(v0==-1){
+      dataType scalar{};
+      for(int j=0; j<2; ++j){
+        int vertexId;
+        inputTriangulation_->getEdgeVertex(saddle1.id_,j,vertexId);
+        const dataType vertexScalar=scalars[vertexId];
+
+        if(!j or scalar>vertexScalar){
+          v0=vertexId;
+          scalar=vertexScalar;
+        }
+      }
+    }
+
+    int v1=-1;
+    for(int j=0; j<3; ++j){
+      int vertexId;
+      inputTriangulation_->getTriangleVertex(saddle2.id_, j, vertexId);
+
+      if(isSaddle2[vertexId]){
+        v1=vertexId;
+        break;
+      }
+    }
+    if(v1==-1){
+      dataType scalar{};
+      for(int j=0; j<3; ++j){
+        int vertexId;
+        inputTriangulation_->getTriangleVertex(saddle2.id_,j,vertexId);
+        const dataType vertexScalar=scalars[vertexId];
+
+        if(!j or scalar<vertexScalar){
+          v1=vertexId;
+          scalar=vertexScalar;
+        }
+      }
+    }
+
+    const dataType persistence=scalars[v1]-scalars[v0];
+
+    if(v0!=-1 and v1!=-1 and persistence>=0){
+      if(!inputTriangulation_->isVertexOnBoundary(v0) or !inputTriangulation_->isVertexOnBoundary(v1)){
+        pl_saddleSaddlePairs.push_back(make_tuple(v0,v1,persistence));
+      }
+    }
+  }
   return 0;
 }
 

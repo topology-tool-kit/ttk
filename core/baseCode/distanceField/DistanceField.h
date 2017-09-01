@@ -28,7 +28,6 @@
 // std includes
 #include<limits>
 #include<set>
-#include<unordered_set>
 
 namespace ttk{
 
@@ -116,7 +115,7 @@ int DistanceField::execute() const{
   fill(origin,origin+vertexNumber_,-1);
 
   // get the sources
-  unordered_set<int> isSource;
+  set<int> isSource;
   for(int k=0; k<sourceNumber_; ++k)
     isSource.insert(identifiers[k]);
   vector<int> sources;

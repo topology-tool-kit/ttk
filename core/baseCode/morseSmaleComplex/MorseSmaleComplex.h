@@ -136,25 +136,32 @@ namespace ttk{
           vector<int>* const criticalPoints_points_cellDimensons,
           vector<int>* const criticalPoints_points_cellIds,
           void* const criticalPoints_points_cellScalars,
-          vector<char>* const criticalPoints_points_isOnBoundary){
+          vector<char>* const criticalPoints_points_isOnBoundary,
+          vector<int>* const criticalPoints_points_PLVertexIdentifiers,
+          vector<int>* const criticalPoints_points_manifoldSize){
         morseSmaleComplex2D_.setOutputCriticalPoints(criticalPoints_numberOfPoints,
             criticalPoints_points,
             criticalPoints_points_cellDimensons,
             criticalPoints_points_cellIds,
             criticalPoints_points_cellScalars,
-            criticalPoints_points_isOnBoundary);
+            criticalPoints_points_isOnBoundary,
+            criticalPoints_points_PLVertexIdentifiers,
+            criticalPoints_points_manifoldSize);
         morseSmaleComplex3D_.setOutputCriticalPoints(criticalPoints_numberOfPoints,
             criticalPoints_points,
             criticalPoints_points_cellDimensons,
             criticalPoints_points_cellIds,
             criticalPoints_points_cellScalars,
-            criticalPoints_points_isOnBoundary);
+            criticalPoints_points_isOnBoundary,
+            criticalPoints_points_PLVertexIdentifiers,
+            criticalPoints_points_manifoldSize);
 
         return 0;
       }
 
       inline int setOutputSeparatrices1(int* const separatrices1_numberOfPoints,
           vector<float>* const separatrices1_points,
+          vector<char>* const separatrices1_points_smoothingMask,
           vector<int>* const separatrices1_points_cellDimensions,
           vector<int>* const separatrices1_points_cellIds,
           int* const separatrices1_numberOfCells,
@@ -169,6 +176,7 @@ namespace ttk{
           vector<char>* const separatrices1_cells_isOnBoundary){
         morseSmaleComplex2D_.setOutputSeparatrices1(separatrices1_numberOfPoints,
             separatrices1_points,
+            separatrices1_points_smoothingMask,
             separatrices1_points_cellDimensions,
             separatrices1_points_cellIds,
             separatrices1_numberOfCells,
@@ -183,6 +191,7 @@ namespace ttk{
             separatrices1_cells_isOnBoundary);
         morseSmaleComplex3D_.setOutputSeparatrices1(separatrices1_numberOfPoints,
             separatrices1_points,
+            separatrices1_points_smoothingMask,
             separatrices1_points_cellDimensions,
             separatrices1_points_cellIds,
             separatrices1_numberOfCells,

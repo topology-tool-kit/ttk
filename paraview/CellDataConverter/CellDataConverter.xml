@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
     <SourceProxy 
 	name="CellDataConverter" 
-	class="vtkCellDataConverter" 
+	class="ttkCellDataConverter" 
 	label="TTK CellDataConverter">
       <Documentation
           long_help="TTK plugin that converts data types for cell-based 

@@ -1,0 +1,27 @@
+ChangeLog
+=
+* ttk.git
+- Bottleneck and Wasserstein distances between peristence diagrams
+- Lp distance between scalar fields
+- boundary mask on scalar field critical points
+- optional 3D embedding of the persistence diagram
+- optional mask array for constrained smoothing
+- bug fixes in DiscreteGradient
+- bug fixes in TopologicalSimplification
+- code cleaning
+
+* 0.9.2
+- Updates for ParaView-5.4.0
+- New naming convention for vtkWrappers (name conflicts under MacOs)
+- TriangulationRequest module (to locally inspect triangulations in ParaView)
+- improved time efficiency for link queries on implicit triangulations
+- constructors fixes for VTK wrappers
+- removed legacy CMake options
+- minor bug fixes
+
+* 0.9.1
+- latest triangulation API
+- improved module handling scripts
+- build fixes (in response to early user feedback)
+- updates for VTK-7.1.0 and ParaView-5.3.0
+- IdentifierRandomizer module (to shuffle segmentation ids)

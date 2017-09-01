@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="GeometrySmoother" 
-     class="vtkGeometrySmoother" 
+     class="ttkGeometrySmoother" 
      label="TTK GeometrySmoother">
      <Documentation
         long_help="TTK plugin for geometry smoothing."
@@ -32,6 +32,10 @@ vertex.
         </Documentation>
       </InputProperty>
 
+      
+
+      
+
       <IntVectorProperty
          name="NumberOfIterations"
          label="Iteration Number"
@@ -43,6 +47,41 @@ vertex.
            Number of iterations for the smoothing filter.
          </Documentation>
       </IntVectorProperty>
+      
+      <IntVectorProperty
+        name="UseInputMask"
+        command="SetUseInputMask"
+        label="Use Input Mask Field"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box if an input scalar field should be considered as
+          vertex mask (used to mark vertices to smooth).
+        </Documentation>
+      </IntVectorProperty>
+      
+      <StringVectorProperty
+        name="InputMask"
+        command="SetInputMask"
+        label="Input Mask Field"
+        default_values="MaskField"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        animateable="0">
+        <ArrayListDomain
+          name="array_list"
+          default_values="0"
+          data_type="VTK_CHAR">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Input mask field (used to mark vertices to smooth).
+        </Documentation>
+      </StringVectorProperty>
       
       <IntVectorProperty
          name="UseAllCores"
@@ -81,7 +120,10 @@ vertex.
       </IntVectorProperty>
       
       <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Input" />
         <Property name="NumberOfIterations" />
+        <Property name="UseInputMask" />
+        <Property name="InputMask" />
       </PropertyGroup>
       
       <PropertyGroup panel_widget="Line" label="Testing">

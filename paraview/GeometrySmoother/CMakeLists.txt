@@ -16,7 +16,7 @@ include(${TTK_DIR}/ttk.cmake)
 
 # include the vtk wrapper for the geometry smoothing package
 # HERE: change to whatever wrapper you want to use
-ttk_add_vtkWrapper_package(vtkGeometrySmoother)
+ttk_add_vtkWrapper_package(ttkGeometrySmoother)
 
 # Add the plugin
 ttk_wrapup_paraview_plugin(

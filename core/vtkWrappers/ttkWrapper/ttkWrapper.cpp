@@ -1,21 +1,21 @@
 #include                  <ttkWrapper.h>
 
-vtkStandardNewMacro(vtkTriangulationFilter) // constructor
-  vtkTriangulationFilter::vtkTriangulationFilter(){
+vtkStandardNewMacro(ttkTriangulationFilter) // constructor
+  ttkTriangulationFilter::ttkTriangulationFilter(){
 
 }
 
 // transmit abort signals -- to copy paste in other wrappers
-bool vtkTriangulationFilter::needsToAbort(){
+bool ttkTriangulationFilter::needsToAbort(){
   return GetAbortExecute();
 }
 
 // transmit progress status -- to copy paste in other wrappers
-int vtkTriangulationFilter::updateProgress(const float &progress){
+int ttkTriangulationFilter::updateProgress(const float &progress){
 
   {
     stringstream msg;
-    msg << "[vtkTriangulationFilter] " << progress*100 
+    msg << "[ttkTriangulationFilter] " << progress*100 
       << "% processed...." << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
@@ -24,7 +24,7 @@ int vtkTriangulationFilter::updateProgress(const float &progress){
   return 0;
 }
 
-int vtkTriangulationFilter::RequestDataObject(vtkInformation *request,
+int ttkTriangulationFilter::RequestDataObject(vtkInformation *request,
   vtkInformationVector **inputVector, vtkInformationVector *outputVector){
   
   vtkDataSetAlgorithm::RequestDataObject(
@@ -77,7 +77,7 @@ int vtkTriangulationFilter::RequestDataObject(vtkInformation *request,
 
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int vtkTriangulationFilter::RequestData(vtkInformation *request, 
+int ttkTriangulationFilter::RequestData(vtkInformation *request, 
   vtkInformationVector **inputVector, vtkInformationVector *outputVector){
   
   Memory m;

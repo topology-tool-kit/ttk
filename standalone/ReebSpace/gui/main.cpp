@@ -4,10 +4,10 @@
 /// \brief Command line program for bivariate Reeb space computation.
 
 // include the local headers
-#include                  <vtkReebSpace.h>
-#include                  <vtkUserInterfaceBase.h>
+#include                  <ttkReebSpace.h>
+#include                  <ttkUserInterfaceBase.h>
 
-vtkUserInterface<vtkReebSpace> program;
+vtkUserInterface<ttkReebSpace> program;
 
 int main(int argc, char **argv) {
 

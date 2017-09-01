@@ -4,10 +4,10 @@
 /// \brief GUI program for Morse-Smale complex computation.
 
 // include the local headers
-#include                  <vtkMorseSmaleComplex.h>
-#include                  <vtkUserInterfaceBase.h>
+#include                  <ttkMorseSmaleComplex.h>
+#include                  <ttkUserInterfaceBase.h>
 
-vtkUserInterface<vtkMorseSmaleComplex> program;
+vtkUserInterface<ttkMorseSmaleComplex> program;
 
 class myKeyHandler : public ttkKeyHandler{
   

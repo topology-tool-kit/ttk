@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="Fiber" 
-     class="vtkFiber" 
+     class="ttkFiber" 
      label="TTK Fiber">
      <Documentation
         long_help="TTK plugin for fiber computation on bivariate volumetric 

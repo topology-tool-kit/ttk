@@ -266,20 +266,20 @@ int MorseSmaleComplex3D::sortDualPolygonVertices(vector<int>& polygon) const{
 
 int MorseSmaleComplex3D::setDescendingSegmentation(const vector<Cell>& criticalPoints,
     int* const morseSmaleManifold,
-    int& numberOfMinima) const{
+    int& numberOfMinima){
   const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
   std::fill(morseSmaleManifold,morseSmaleManifold+numberOfVertices, -1);
 
   // get the seeds : minima
-  vector<int> seeds;
+  vector<int> minSeeds;
   const int numberOfCriticalPoints=criticalPoints.size();
   for(int i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
     if(criticalPoint.dim_==0)
-      seeds.push_back(criticalPoint.id_);
+      minSeeds.push_back(criticalPoint.id_);
   }
-  const int numberOfSeeds=seeds.size();
+  const int numberOfSeeds=minSeeds.size();
   numberOfMinima=numberOfSeeds;
 
 #ifdef withOpenMP
@@ -290,7 +290,7 @@ int MorseSmaleComplex3D::setDescendingSegmentation(const vector<Cell>& criticalP
 
     // push the seed
     {
-      const int seedId=seeds[i];
+      const int seedId=minSeeds[i];
       bfs.push(seedId);
     }
 
@@ -325,8 +325,9 @@ int MorseSmaleComplex3D::setDescendingSegmentation(const vector<Cell>& criticalP
 }
 
 int MorseSmaleComplex3D::setAscendingSegmentation(const vector<Cell>& criticalPoints,
+    vector<int>& maxSeeds,
     int* const morseSmaleManifold,
-    int& numberOfMaxima) const{
+    int& numberOfMaxima){
   const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
   std::fill(morseSmaleManifold,morseSmaleManifold+numberOfVertices, -1);
 
@@ -334,15 +335,14 @@ int MorseSmaleComplex3D::setAscendingSegmentation(const vector<Cell>& criticalPo
   vector<int> morseSmaleManifoldOnCells(numberOfCells, -1);
 
   // get the seeds : maxima
-  vector<int> seeds;
   const int numberOfCriticalPoints=criticalPoints.size();
   for(int i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
     if(criticalPoint.dim_==3)
-      seeds.push_back(criticalPoint.id_);
+      maxSeeds.push_back(criticalPoint.id_);
   }
-  const int numberOfSeeds=seeds.size();
+  const int numberOfSeeds=maxSeeds.size();
   numberOfMaxima=numberOfSeeds;
 
 #ifdef withOpenMP
@@ -353,7 +353,7 @@ int MorseSmaleComplex3D::setAscendingSegmentation(const vector<Cell>& criticalPo
 
     // push the seed
     {
-      const int seedId=seeds[i];
+      const int seedId=maxSeeds[i];
       bfs.push(seedId);
     }
 

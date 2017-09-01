@@ -7,7 +7,7 @@
   <ProxyGroup name="filters">
    <SourceProxy 
      name="ScalarFieldCriticalPoints" 
-     class="vtkScalarFieldCriticalPoints" 
+     class="ttkScalarFieldCriticalPoints" 
      label="TTK ScalarFieldCriticalPoints">
      <Documentation
         long_help="TTK plugin for the computation of critical points in PL
@@ -95,6 +95,16 @@ disambiguate flat plateaus).
         </Documentation>
       </StringVectorProperty>
       
+      <IntVectorProperty name="With boundary mask"
+       command="SetVertexBoundary"
+       number_of_elements="1"
+       default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Indicate if a critical point is on the boundary or not.
+        </Documentation>
+      </IntVectorProperty>
+      
       <IntVectorProperty name="With vertex identifiers"
        command="SetVertexIds"
        number_of_elements="1"
@@ -108,7 +118,7 @@ disambiguate flat plateaus).
       <IntVectorProperty name="With vertex scalars"
        command="SetVertexScalars"
        number_of_elements="1"
-       default_values="0">
+       default_values="1">
         <BooleanDomain name="bool"/>
         <Documentation>
           Add vertex scalars on the output.
@@ -164,6 +174,7 @@ disambiguate flat plateaus).
       </PropertyGroup>
       
       <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="With boundary mask" />
         <Property name="With vertex identifiers" />
         <Property name="With vertex scalars" />
       </PropertyGroup>
