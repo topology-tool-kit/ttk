@@ -1,4 +1,4 @@
 ttk_add_vtk_library(vtkGeometrySmoother vtkGeometrySmoother.cpp
 	HEADERS vtkGeometrySmoother.h)
-target_link_libraries(vtkGeometrySmoother scalarFieldSmoother ttkWrapper)
+target_link_libraries(vtkGeometrySmoother scalarFieldSmoother vtkTTKWrapper)
 

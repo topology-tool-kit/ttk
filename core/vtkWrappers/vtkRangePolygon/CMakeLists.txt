@@ -1,3 +1,3 @@
 ttk_add_vtk_library(vtkRangePolygon vtkRangePolygon.cpp HEADERS vtkRangePolygon.h)
-target_link_libraries(vtkRangePolygon scalarFieldSmoother ttkWrapper)
+target_link_libraries(vtkRangePolygon scalarFieldSmoother vtkTTKWrapper)
 

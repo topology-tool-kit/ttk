@@ -1,3 +1,3 @@
 ttk_add_vtk_library(vtkDistanceField vtkDistanceField.cpp HEADERS vtkDistanceField.h)
-target_link_libraries(vtkDistanceField distanceField ttkWrapper)
+target_link_libraries(vtkDistanceField distanceField vtkTTKWrapper)
 

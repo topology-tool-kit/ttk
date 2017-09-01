@@ -1,3 +1,3 @@
 ttk_add_vtk_library(vtkPersistenceCurve vtkPersistenceCurve.cpp HEADERS vtkPersistenceCurve.h)
-target_link_libraries(vtkPersistenceCurve persistenceCurve ttkWrapper)
+target_link_libraries(vtkPersistenceCurve persistenceCurve vtkTTKWrapper)
 

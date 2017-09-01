@@ -28,6 +28,13 @@ function(ttk_add_base_library library)
 		ARCHIVE DESTINATION lib/ttk/base
 		LIBRARY DESTINATION lib/ttk/base)
 
+	# Generate the ttk::base namespaced target name
+	string(SUBSTRING "${library}" 0 1 first_letter)
+	string(SUBSTRING "${library}" 1 -1 rest_of_name)
+	string(TOUPPER "${first_letter}" first_letter)
+	string(CONCAT namespaced_library ${first_letter} ${rest_of_name})
+	add_library(ttk::base::${namespaced_library} ALIAS ${library})
+
 	install(FILES ${HEADERS} DESTINATION include/ttk/base)
 endfunction()
 
@@ -50,6 +57,13 @@ function(ttk_add_base_template_library library)
 		RUNTIME DESTINATION bin/ttk/base/
 		ARCHIVE DESTINATION lib/ttk/base
 		LIBRARY DESTINATION lib/ttk/base)
+
+	# Generate the ttk::base namespaced target name
+	string(SUBSTRING "${library}" 0 1 first_letter)
+	string(SUBSTRING "${library}" 1 -1 rest_of_name)
+	string(TOUPPER "${first_letter}" first_letter)
+	string(CONCAT namespaced_library ${first_letter} ${rest_of_name})
+	add_library(ttk::base::${namespaced_library} ALIAS ${library})
 
 	install(FILES ${ARGN} DESTINATION include/ttk/base)
 endfunction()

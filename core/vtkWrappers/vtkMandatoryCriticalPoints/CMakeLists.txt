@@ -1,5 +1,5 @@
 ttk_add_vtk_library(vtkMandatoryCriticalPoints vtkMandatoryCriticalPoints.cpp
 	HEADERS vtkMandatoryCriticalPoints.h)
 target_link_libraries(vtkMandatoryCriticalPoints mandatoryCriticalPoints
-	ttkWrapper)
+	vtkTTKWrapper)
 

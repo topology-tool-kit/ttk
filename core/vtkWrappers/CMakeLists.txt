@@ -1,4 +1,5 @@
 find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
 include_directories(${VTK_INCLUDE_DIRS})
 
 # Function to create the library and install targets
@@ -31,6 +32,10 @@ function(ttk_add_vtk_library library)
 		RUNTIME DESTINATION bin/ttk/vtk/
 		ARCHIVE DESTINATION lib/ttk/vtk
 		LIBRARY DESTINATION lib/ttk/vtk)
+
+	# Generate the ttk::vtk namespaced target name
+	string(SUBSTRING "${library}" 3 -1 unprefixed_library)
+	add_library(ttk::vtk::${unprefixed_library} ALIAS ${library})
 
 	install(FILES ${HEADERS} DESTINATION include/ttk/vtk)
 endfunction()
