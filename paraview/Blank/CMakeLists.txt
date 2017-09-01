@@ -1,23 +1,11 @@
-cmake_minimum_required(VERSION 2.4)
-
+cmake_minimum_required(VERSION 3.1)
 project(Blank)
 
-set(TTK_BUILD_MODE "ParaView")
+add_paraview_plugin(Blank 1.0
+	SERVER_MANAGER_XML Blank.xml
+	SERVER_MANAGER_SOURCES Blank.cpp)
 
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
+target_link_libraries(Blank ttk::vtk::Blank)
 
-# include the vtk wrapper for your TTK package 
-ttk_add_vtkWrapper_package(vtkBlank)
+install(TARGETS Blank DESTINATION bin)
 
-# Add the plugin
-ttk_wrapup_paraview_plugin(
-  Blank
-  1.0)
