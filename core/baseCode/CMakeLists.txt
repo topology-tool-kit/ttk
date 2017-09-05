@@ -17,7 +17,7 @@ function(ttk_add_base_library library)
 		endif()
 	endforeach()
 
-	add_library(${library} ${SOURCES})
+	add_library(${library} SHARED ${SOURCES})
 	target_include_directories(${library} PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/base>)
@@ -91,7 +91,6 @@ add_subdirectory(mandatoryCriticalPoints)
 add_subdirectory(morseSmaleComplex)
 add_subdirectory(morseSmaleComplex2D)
 add_subdirectory(morseSmaleComplex3D)
-add_subdirectory(oneSkeleton)
 add_subdirectory(persistenceCurve)
 add_subdirectory(persistenceDiagram)
 add_subdirectory(rangeDrivenOctree)
@@ -99,13 +98,11 @@ add_subdirectory(rangeMinimumQuery)
 add_subdirectory(reebSpace)
 add_subdirectory(scalarFieldCriticalPoints)
 add_subdirectory(scalarFieldSmoother)
-add_subdirectory(threeSkeleton)
+add_subdirectory(skeleton)
 add_subdirectory(topologicalSimplification)
 add_subdirectory(triangulation)
-add_subdirectory(twoSkeleton)
 add_subdirectory(uncertainDataEstimator)
 add_subdirectory(unionFind)
-add_subdirectory(zeroSkeleton)
 
 install(EXPORT TTKBaseConfig
 	NAMESPACE ttk::base::

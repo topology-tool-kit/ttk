@@ -17,7 +17,6 @@
 #include                  <map>
 
 // base code includes
-#include                  <OneSkeleton.h>
 #include                  <Wrapper.h>
 
 namespace ttk{
