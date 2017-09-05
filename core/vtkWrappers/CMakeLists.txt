@@ -33,11 +33,6 @@ function(ttk_add_vtk_library library)
 		ARCHIVE DESTINATION lib/ttk/vtk
 		LIBRARY DESTINATION lib/ttk/vtk)
 
-	# Generate the ttk::vtk namespaced target name
-	string(SUBSTRING "${library}" 3 -1 unprefixed_library)
-	add_library(ttk::vtk::${unprefixed_library} ALIAS ${library})
-	message("alias is ttk::vtk::${unprefixed_library}")
-
 	install(FILES ${HEADER_LIST} DESTINATION include/ttk/vtk)
 endfunction()
 

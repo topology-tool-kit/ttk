@@ -7,5 +7,5 @@ include_directories(${VTK_INCLUDE_DIRS})
 
 add_executable(blankCmd main.cpp)
 target_link_libraries(blankCmd ${VTK_LIBRARIES}
-	ttk::vtk::Blank ttk::vtk::ProgramBase)
+	ttkBlank ttkProgramBase)
 

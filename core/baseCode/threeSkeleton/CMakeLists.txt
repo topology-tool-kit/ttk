@@ -1,3 +1,0 @@
-ttk_add_base_library(threeSkeleton ThreeSkeleton.cpp HEADERS ThreeSkeleton.h)
-target_link_libraries(threeSkeleton zeroSkeleton oneSkeleton twoSkeleton)
-
