@@ -1,3 +1,7 @@
-ttk_add_vtk_library(ttkReebSpace ttkReebSpace.cpp HEADERS ttkReebSpace.h)
-target_link_libraries(ttkReebSpace PUBLIC reebSpace ttkTriangulation)
+ttk_add_vtk_library(ttkReebSpace
+	SOURCES ttkReebSpace.cpp
+	HEADERS ttkReebSpace.h
+	PLUGIN_VERSION 1.0
+	PLUGIN_XML ReebSpace.xml
+	LINK reebSpace ttkTriangulation)
 

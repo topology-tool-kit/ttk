@@ -1,5 +1,7 @@
-ttk_add_vtk_library(ttkScalarFieldCriticalPoints ttkScalarFieldCriticalPoints.cpp
-	HEADERS ttkScalarFieldCriticalPoints.h)
-target_link_libraries(ttkScalarFieldCriticalPoints PUBLIC scalarFieldCriticalPoints
-	ttkTriangulation)
+ttk_add_vtk_library(ttkScalarFieldCriticalPoints
+	SOURCES ttkScalarFieldCriticalPoints.cpp
+	HEADERS ttkScalarFieldCriticalPoints.h
+	PLUGIN_VERSION 1.0
+	PLUGIN_XML ScalarFieldCriticalPoints.xml
+	LINK scalarFieldCriticalPoints ttkTriangulation)
 

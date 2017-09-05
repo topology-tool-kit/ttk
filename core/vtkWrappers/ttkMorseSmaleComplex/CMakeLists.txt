@@ -1,3 +1,7 @@
-ttk_add_vtk_library(ttkMorseSmaleComplex ttkMorseSmaleComplex.cpp HEADERS ttkMorseSmaleComplex.h)
-target_link_libraries(ttkMorseSmaleComplex PUBLIC morseSmaleComplex ttkTriangulation)
+ttk_add_vtk_library(ttkMorseSmaleComplex
+	SOURCES ttkMorseSmaleComplex.cpp
+	HEADERS ttkMorseSmaleComplex.h
+	PLUGIN_VERSION 1.0
+	PLUGIN_XML MorseSmaleComplex.xml
+	LINK morseSmaleComplex ttkTriangulation)
 

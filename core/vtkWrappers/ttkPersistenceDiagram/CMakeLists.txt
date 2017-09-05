@@ -1,3 +1,7 @@
-ttk_add_vtk_library(ttkPersistenceDiagram ttkPersistenceDiagram.cpp HEADERS ttkPersistenceDiagram.h)
-target_link_libraries(ttkPersistenceDiagram PUBLIC persistenceDiagram ttkTriangulation)
+ttk_add_vtk_library(ttkPersistenceDiagram
+	SOURCES ttkPersistenceDiagram.cpp
+	HEADERS ttkPersistenceDiagram.h
+	PLUGIN_VERSION 1.0
+	PLUGIN_XML PersistenceDiagram.xml
+	LINK persistenceDiagram ttkTriangulation)
 

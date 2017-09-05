@@ -1,24 +1,17 @@
 # Function to create the library and install targets
 # for a TTK VTK Wrapper library.
-#
+# TODO: Docs
 # Usage:
 # ttk_add_vtk_library(<library_name> <source list> HEADERS <headers to install>)
 #
 function(ttk_add_vtk_library library)
-	set(SOURCES "")
-	set(HEADER_LIST "")
+	cmake_parse_arguments(ARG "" "PLUGIN_XML;PLUGIN_VERSION"
+		"SOURCES;HEADERS;LINK" ${ARGN})
 
-	set(CURRENT_LIST SOURCES)
-	foreach (arg ${ARGN})
-		if ("${arg}" STREQUAL "HEADERS")
-			set(CURRENT_LIST HEADER_LIST)
-		else()
-			list(APPEND ${CURRENT_LIST} ${arg})
-		endif()
-	endforeach()
+	# Build the VTK Wrapper
+	add_library(${library} ${ARG_SOURCES})
+	target_link_libraries(${library} PUBLIC ${VTK_LIBRARIES} ${ARG_LINK})
 
-	add_library(${library} ${SOURCES})
-	target_link_libraries(${library} PUBLIC ${VTK_LIBRARIES})
 	target_include_directories(${library} PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/vtk>)
@@ -29,7 +22,22 @@ function(ttk_add_vtk_library library)
 		ARCHIVE DESTINATION lib/ttk/vtk
 		LIBRARY DESTINATION lib/ttk/vtk)
 
-	install(FILES ${HEADER_LIST} DESTINATION include/ttk/vtk)
+	install(FILES ${ARG_HEADERS} DESTINATION include/ttk/vtk)
+
+	# Build the ParaView plugin, if we're building with ParaView
+	# and this wrapper library has a plugin
+	if (TTK_BUILD_PARAVIEW_PLUGINS AND ARG_PLUGIN_XML)
+		set(plugin_name "${library}Plugin")
+		add_paraview_plugin(${plugin_name} ${ARG_PLUGIN_VERSION}
+			SERVER_MANAGER_XML ${ARG_PLUGIN_XML}
+			SERVER_MANAGER_SOURCES ${ARG_SOURCES})
+		target_link_libraries(${plugin_name} PUBLIC ${VTK_LIBRARIES} ${ARG_LINK})
+
+		target_include_directories(${plugin_name} PUBLIC
+			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+
+		install(TARGETS ${plugin_name} DESTINATION plugin)
+	endif()
 endfunction()
 
 add_subdirectory(ttkBlank)

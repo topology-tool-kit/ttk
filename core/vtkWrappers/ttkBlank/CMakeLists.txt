@@ -1,8 +1,7 @@
-add_library(ttkBlank ttkBlank.cpp)
-target_include_directories(ttkBlank PUBLIC
-	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-	$<INSTALL_INTERFACE:include/ttk/vtk>)
-target_link_libraries(ttkBlank PUBLIC ttk::base::Blank ttkTriangulation ${VTK_LIBRARIES})
-add_library(ttk::vtk::Blank ALIAS ttkBlank)
-
+ttk_add_vtk_library(ttkBlank
+	SOURCES ttkBlank.cpp
+	HEADERS ttkBlank.h
+	PLUGIN_VERSION 1.0
+	PLUGIN_XML Blank.xml
+	LINK blank ttkTriangulation)
 

@@ -1,3 +1,5 @@
-ttk_add_vtk_library(ttkProgramBase ttkProgramBase.cpp HEADERS ttkProgramBase.h)
-target_link_libraries(ttkProgramBase PUBLIC common ttkTriangulation)
+ttk_add_vtk_library(ttkProgramBase
+	SOURCES ttkProgramBase.cpp
+	HEADERS ttkProgramBase.h
+	LINK common ttkTriangulation)
 

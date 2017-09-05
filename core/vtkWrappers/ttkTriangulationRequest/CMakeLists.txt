@@ -1,3 +1,7 @@
-ttk_add_vtk_library(ttkTriangulationRequest ttkTriangulationRequest.cpp HEADERS ttkTriangulationRequest.h)
-target_link_libraries(ttkTriangulationRequest PUBLIC ttkTriangulation)
+ttk_add_vtk_library(ttkTriangulationRequest
+	SOURCES ttkTriangulationRequest.cpp
+	HEADERS ttkTriangulationRequest.h
+	PLUGIN_VERSION 1.0
+	PLUGIN_XML TriangulationRequest.xml
+	LINK ttkTriangulation)
 

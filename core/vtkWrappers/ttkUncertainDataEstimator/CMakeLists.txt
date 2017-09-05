@@ -1,3 +1,7 @@
-ttk_add_vtk_library(ttkUncertainDataEstimator ttkUncertainDataEstimator.cpp HEADERS ttkUncertainDataEstimator.h)
-target_link_libraries(ttkUncertainDataEstimator PUBLIC uncertainDataEstimator)
+ttk_add_vtk_library(ttkUncertainDataEstimator
+	SOURCES ttkUncertainDataEstimator.cpp
+	HEADERS ttkUncertainDataEstimator.h
+	PLUGIN_VERSION 1.0
+	PLUGIN_XML UncertainDataEstimator.xml
+	LINK uncertainDataEstimator)
 
