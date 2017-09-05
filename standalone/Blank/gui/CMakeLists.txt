@@ -7,5 +7,5 @@ include_directories(${VTK_INCLUDE_DIRS})
 
 add_executable(blankGui main.cpp)
 target_link_libraries(blankGui ${VTK_LIBRARIES}
-	ttk::vtk::Blank vtkProgramBase vtkUserInterfaceBase)
+	ttk::vtk::Blank ttkProgramBase ttkUserInterfaceBase)
 

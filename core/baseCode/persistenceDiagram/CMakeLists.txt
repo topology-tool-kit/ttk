@@ -1,5 +1,5 @@
 ttk_add_base_library(persistenceDiagram PersistenceDiagram.cpp
 	HEADERS PersistenceDiagram.h)
 target_link_libraries(persistenceDiagram contourForests
-	discreteGradient triangulation)
+	discreteGradient triangulation morseSmaleComplex3D)
 

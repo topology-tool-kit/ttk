@@ -10,12 +10,12 @@ include_directories(${VTK_INCLUDE_DIRS})
 #
 function(ttk_add_vtk_library library)
 	set(SOURCES "")
-	set(HEADERS "")
+	set(HEADER_LIST "")
 
 	set(CURRENT_LIST SOURCES)
 	foreach (arg ${ARGN})
 		if ("${arg}" STREQUAL "HEADERS")
-			set(CURRENT_LIST HEADERS)
+			set(CURRENT_LIST HEADER_LIST)
 		else()
 			list(APPEND ${CURRENT_LIST} ${arg})
 		endif()
@@ -37,7 +37,7 @@ function(ttk_add_vtk_library library)
 	string(SUBSTRING "${library}" 3 -1 unprefixed_library)
 	add_library(ttk::vtk::${unprefixed_library} ALIAS ${library})
 
-	install(FILES ${HEADERS} DESTINATION include/ttk/vtk)
+	install(FILES ${HEADER_LIST} DESTINATION include/ttk/vtk)
 endfunction()
 
 add_subdirectory(ttkWrapper)
