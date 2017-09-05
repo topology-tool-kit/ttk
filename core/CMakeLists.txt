@@ -1,3 +1,6 @@
 add_subdirectory(baseCode)
-add_subdirectory(vtkWrappers)
+
+if (TTK_BUILD_VTK_WRAPPERS)
+	add_subdirectory(vtkWrappers)
+endif()
 

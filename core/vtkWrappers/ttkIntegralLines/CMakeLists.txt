@@ -1,3 +1,3 @@
 ttk_add_vtk_library(ttkIntegralLines ttkIntegralLines.cpp HEADERS ttkIntegralLines.h)
-target_link_libraries(ttkIntegralLines integralLines ttkTriangulation)
+target_link_libraries(ttkIntegralLines PUBLIC integralLines ttkTriangulation)
 

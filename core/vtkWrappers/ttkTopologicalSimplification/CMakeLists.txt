@@ -1,5 +1,5 @@
 ttk_add_vtk_library(ttkTopologicalSimplification ttkTopologicalSimplification.cpp
 	HEADERS ttkTopologicalSimplification.h)
-target_link_libraries(ttkTopologicalSimplification topologicalSimplification
+target_link_libraries(ttkTopologicalSimplification PUBLIC topologicalSimplification
 	ttkTriangulation)
 

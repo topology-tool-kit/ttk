@@ -1,3 +1,3 @@
 ttk_add_vtk_library(ttkRangePolygon ttkRangePolygon.cpp HEADERS ttkRangePolygon.h)
-target_link_libraries(ttkRangePolygon scalarFieldSmoother ttkTriangulation)
+target_link_libraries(ttkRangePolygon PUBLIC scalarFieldSmoother ttkTriangulation)
 

@@ -1,3 +1,3 @@
 ttk_add_vtk_library(ttkDistanceField ttkDistanceField.cpp HEADERS ttkDistanceField.h)
-target_link_libraries(ttkDistanceField distanceField ttkTriangulation)
+target_link_libraries(ttkDistanceField PUBLIC distanceField ttkTriangulation)
 

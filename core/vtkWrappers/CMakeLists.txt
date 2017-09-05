@@ -1,7 +1,3 @@
-find_package(VTK REQUIRED)
-include(${VTK_USE_FILE})
-include_directories(${VTK_INCLUDE_DIRS})
-
 # Function to create the library and install targets
 # for a TTK VTK Wrapper library.
 #
@@ -22,7 +18,7 @@ function(ttk_add_vtk_library library)
 	endforeach()
 
 	add_library(${library} ${SOURCES})
-	target_link_libraries(${library} ${VTK_LIBRARIES})
+	target_link_libraries(${library} PUBLIC ${VTK_LIBRARIES})
 	target_include_directories(${library} PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/vtk>)

@@ -1,11 +1,11 @@
 find_package(ParaView REQUIRED)
 include(${PARAVIEW_USE_FILE})
 
-add_subdirectory(Blank)
+#add_subdirectory(Blank)
 #add_subdirectory(CellDataConverter)
 #add_subdirectory(ComponentSize)
 #add_subdirectory(ContinuousScatterPlot)
-add_subdirectory(ContourForests)
+#add_subdirectory(ContourForests)
 #add_subdirectory(DistanceField)
 #add_subdirectory(Fiber)
 #add_subdirectory(FiberSurface)

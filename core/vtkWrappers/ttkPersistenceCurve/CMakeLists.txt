@@ -1,3 +1,3 @@
 ttk_add_vtk_library(ttkPersistenceCurve ttkPersistenceCurve.cpp HEADERS ttkPersistenceCurve.h)
-target_link_libraries(ttkPersistenceCurve persistenceCurve ttkTriangulation)
+target_link_libraries(ttkPersistenceCurve PUBLIC persistenceCurve ttkTriangulation)
 

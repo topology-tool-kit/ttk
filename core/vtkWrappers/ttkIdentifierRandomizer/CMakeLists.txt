@@ -1,3 +1,3 @@
 ttk_add_vtk_library(ttkIdentifierRandomizer ttkIdentifierRandomizer.cpp HEADERS ttkIdentifierRandomizer.h)
-target_link_libraries(ttkIdentifierRandomizer common ttkTriangulation)
+target_link_libraries(ttkIdentifierRandomizer PUBLIC common ttkTriangulation)
 
