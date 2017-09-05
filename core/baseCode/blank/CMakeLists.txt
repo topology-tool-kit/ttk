@@ -1,4 +1,4 @@
-add_library(blank SHARED Blank.cpp)
+add_library(blank Blank.cpp)
 target_include_directories(blank PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:include/ttk/base>)

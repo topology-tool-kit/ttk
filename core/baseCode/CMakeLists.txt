@@ -17,7 +17,7 @@ function(ttk_add_base_library library)
 		endif()
 	endforeach()
 
-	add_library(${library} SHARED ${SOURCES})
+	add_library(${library} ${SOURCES})
 	target_include_directories(${library} PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/base>)

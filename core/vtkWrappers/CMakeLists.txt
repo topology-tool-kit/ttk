@@ -21,7 +21,7 @@ function(ttk_add_vtk_library library)
 		endif()
 	endforeach()
 
-	add_library(${library} SHARED ${SOURCES})
+	add_library(${library} ${SOURCES})
 	target_link_libraries(${library} ${VTK_LIBRARIES})
 	target_include_directories(${library} PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -36,6 +36,7 @@ function(ttk_add_vtk_library library)
 	# Generate the ttk::vtk namespaced target name
 	string(SUBSTRING "${library}" 3 -1 unprefixed_library)
 	add_library(ttk::vtk::${unprefixed_library} ALIAS ${library})
+	message("alias is ttk::vtk::${unprefixed_library}")
 
 	install(FILES ${HEADER_LIST} DESTINATION include/ttk/vtk)
 endfunction()

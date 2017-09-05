@@ -1,4 +1,4 @@
-add_library(ttkBlank SHARED ttkBlank.cpp)
+add_library(ttkBlank ttkBlank.cpp)
 target_include_directories(ttkBlank PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 	$<INSTALL_INTERFACE:include/ttk/vtk>)
