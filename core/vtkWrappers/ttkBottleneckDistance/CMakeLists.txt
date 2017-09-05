@@ -1,0 +1,4 @@
+ttk_add_vtk_library(ttkBottleneckDistance ttkBottleneckDistance.cpp
+	HEADERS ttkBottleneckDistance.h)
+target_link_libraries(ttkBottleneckDistance bottleneckDistance ttkTriangulation)
+
