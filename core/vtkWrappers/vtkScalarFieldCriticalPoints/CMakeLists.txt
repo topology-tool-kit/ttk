@@ -1,5 +1,0 @@
-ttk_add_vtk_library(vtkScalarFieldCriticalPoints vtkScalarFieldCriticalPoints.cpp
-	HEADERS vtkScalarFieldCriticalPoints.h)
-target_link_libraries(vtkScalarFieldCriticalPoints scalarFieldCriticalPoints
-	vtkTTKWrapper)
-

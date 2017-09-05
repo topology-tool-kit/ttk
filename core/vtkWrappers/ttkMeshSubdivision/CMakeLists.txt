@@ -1,0 +1,3 @@
+ttk_add_vtk_library(ttkMeshSubdivision ttkMeshSubdivision.cpp HEADERS ttkMeshSubdivision.h)
+target_link_libraries(ttkMeshSubdivision common)
+

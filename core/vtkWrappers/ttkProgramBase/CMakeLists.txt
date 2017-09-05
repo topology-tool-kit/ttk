@@ -1,0 +1,3 @@
+ttk_add_vtk_library(ttkProgramBase ttkProgramBase.cpp HEADERS ttkProgramBase.h)
+target_link_libraries(ttkProgramBase common ttkWrapper)
+

@@ -1,3 +1,0 @@
-ttk_add_vtk_library(vtkScalarFieldNormalizer vtkScalarFieldNormalizer.cpp HEADERS vtkScalarFieldNormalizer.h)
-target_link_libraries(vtkScalarFieldNormalizer common)
-

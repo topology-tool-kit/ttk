@@ -1,3 +1,0 @@
-ttk_add_vtk_library(vtkIntegralLines vtkIntegralLines.cpp HEADERS vtkIntegralLines.h)
-target_link_libraries(vtkIntegralLines integralLines vtkTTKWrapper)
-

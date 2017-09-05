@@ -1,0 +1,5 @@
+ttk_add_vtk_library(ttkScalarFieldSmoother ttkScalarFieldSmoother.cpp
+	HEADERS ttkScalarFieldSmoother.h)
+target_link_libraries(ttkScalarFieldSmoother scalarFieldSmoother
+	ttkWrapper)
+

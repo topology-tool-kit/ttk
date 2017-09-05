@@ -1,0 +1,3 @@
+ttk_add_vtk_library(ttkTextureMapFromField ttkTextureMapFromField.cpp HEADERS ttkTextureMapFromField.h)
+target_link_libraries(ttkTextureMapFromField common)
+

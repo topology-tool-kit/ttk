@@ -1,5 +1,0 @@
-ttk_add_vtk_library(vtkUserInterfaceBase vtkUserInterfaceBase.cpp
-	HEADERS vtkUserInterfaceBase.h)
-target_link_libraries(vtkUserInterfaceBase vtkProgramBase
-	vtkTextureMapFromField)
-

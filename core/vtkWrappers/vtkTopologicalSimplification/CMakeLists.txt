@@ -1,5 +1,0 @@
-ttk_add_vtk_library(vtkTopologicalSimplification vtkTopologicalSimplification.cpp
-	HEADERS vtkTopologicalSimplification.h)
-target_link_libraries(vtkTopologicalSimplification topologicalSimplification
-	vtkTTKWrapper)
-

@@ -1,0 +1,3 @@
+ttk_add_vtk_library(ttkPointDataConverter ttkPointDataConverter.cpp HEADERS ttkPointDataConverter.h)
+target_link_libraries(ttkPointDataConverter common)
+

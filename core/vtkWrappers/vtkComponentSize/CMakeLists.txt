@@ -1,3 +1,0 @@
-ttk_add_vtk_library(vtkComponentSize vtkComponentSize.cpp HEADERS vtkComponentSize.h)
-target_link_libraries(vtkComponentSize common)
-

@@ -1,3 +1,0 @@
-ttk_add_vtk_library(vtkTriangulation vtkTriangulation.cpp HEADERS vtkTriangulation.h)
-target_link_libraries(vtkTriangulation triangulation vtkTTKWrapper)
-
