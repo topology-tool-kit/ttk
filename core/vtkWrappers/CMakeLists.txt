@@ -1,8 +1,28 @@
 # Function to create the library and install targets
-# for a TTK VTK Wrapper library.
-# TODO: Docs
-# Usage:
-# ttk_add_vtk_library(<library_name> <source list> HEADERS <headers to install>)
+# for a TTK VTK Wrapper library. The VTK Libraries will
+# automatically be linked.
+# Options:
+# SOURCES: Specify the list of source files for the library
+# HEADERS: Specify the list of header files to install for the library
+# LINK: Specify the link dependencies of the library
+# PLUGIN_VERSION: Specify ParaView plugin version
+# PLUGIN_XML: Specify ParaView plugin XML file
+#
+# To build a VTK Wrapper library:
+# ttk_add_vtk_library(<library_name>
+#     SOURCES <source list>
+#     HEADERS <headers to install>
+#     LINK <libraries to link>)
+#
+# To build a VTK Wrapper library and optional ParaView plugin:
+# (the plugin will only be built if TTK_BUILD_PARAVIEW_PLUGINS is enabled)
+#
+# ttk_add_vtk_library(<library_name>
+#     SOURCES <source list>
+#     HEADERS <headers to install>
+#     PLUGIN_VERSION <version>
+#     PLUGIN_XML <XML file for the plugin>
+#     LINK <libraries to link>)
 #
 function(ttk_add_vtk_library library)
 	cmake_parse_arguments(ARG "" "PLUGIN_XML;PLUGIN_VERSION"
@@ -61,7 +81,6 @@ add_subdirectory(ttkMorseSmaleComplex)
 add_subdirectory(ttkPersistenceCurve)
 add_subdirectory(ttkPersistenceDiagram)
 add_subdirectory(ttkPointDataConverter)
-# TODO: Is program base used? It was commented out
 add_subdirectory(ttkProgramBase)
 add_subdirectory(ttkProjectionFromField)
 add_subdirectory(ttkRangePolygon)
@@ -77,7 +96,6 @@ add_subdirectory(ttkTriangulationRequest)
 add_subdirectory(ttkUncertainDataEstimator)
 add_subdirectory(ttkUserInterfaceBase)
 add_subdirectory(ttkWRLExporter)
-
 
 install(EXPORT TTKVTKConfig
 	NAMESPACE ttk::vtk::
