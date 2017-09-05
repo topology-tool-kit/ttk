@@ -16,7 +16,6 @@
 #include                  <vtkDataSetAlgorithm.h>
 #include                  <vtkImageData.h>
 #include                  <vtkPolyData.h>
-#include                  <ttkTriangulation.h>
 #include                  <vtkUnstructuredGrid.h>
 
 // Macros for ttkWrappers
