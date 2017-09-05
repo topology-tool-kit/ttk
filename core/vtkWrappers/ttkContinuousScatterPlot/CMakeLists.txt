@@ -1,3 +1,4 @@
 ttk_add_vtk_library(ttkContinuousScatterPlot ttkContinuousScatterPlot.cpp
 	HEADERS ttkContinuousScatterPlot.h)
-target_link_libraries(ttkContinuousScatterPlot continuousScatterPlot ttkWrapper)
+target_link_libraries(ttkContinuousScatterPlot continuousScatterPlot
+	ttkTriangulation)

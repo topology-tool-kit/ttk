@@ -1,5 +1,5 @@
 ttk_add_vtk_library(ttkContourForests ttkContourForests.cpp
 	HEADERS ttkContourForests.h)
 target_link_libraries(ttkContourForests geometry contourForests
-	contourForestsTree ttkWrapper)
+	contourForestsTree ttkTriangulation)
 

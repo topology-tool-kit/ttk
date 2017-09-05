@@ -21,7 +21,7 @@ function(ttk_add_vtk_library library)
 		endif()
 	endforeach()
 
-	add_library(${library} ${SOURCES})
+	add_library(${library} SHARED ${SOURCES})
 	target_link_libraries(${library} ${VTK_LIBRARIES})
 	target_include_directories(${library} PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -40,7 +40,6 @@ function(ttk_add_vtk_library library)
 	install(FILES ${HEADER_LIST} DESTINATION include/ttk/vtk)
 endfunction()
 
-add_subdirectory(ttkWrapper)
 add_subdirectory(ttkBlank)
 add_subdirectory(ttkBottleneckDistance)
 add_subdirectory(ttkCellDataConverter)
