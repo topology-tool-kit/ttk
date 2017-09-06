@@ -1,2 +1,4 @@
-ttk_add_base_library(contourTree ContourTree.cpp HEADERS ContourTree.h)
-target_link_libraries(contourTree unionFind triangulation)
+ttk_add_base_library(contourTree
+	SOURCES ContourTree.cpp
+	HEADERS ContourTree.h
+	LINK unionFind triangulation)

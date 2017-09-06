@@ -1,4 +1,5 @@
-ttk_add_base_library(uncertainDataEstimator UncertainDataEstimator.cpp
-	HEADERS UncertainDataEstimator.h)
-target_link_libraries(uncertainDataEstimator common)
+ttk_add_base_library(uncertainDataEstimator
+	SOURCES UncertainDataEstimator.cpp
+	HEADERS UncertainDataEstimator.h
+	LINK common)
 

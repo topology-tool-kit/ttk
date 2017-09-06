@@ -1,3 +1,5 @@
-ttk_add_base_library(geometry Geometry.cpp HEADERS Geometry.h)
-target_link_libraries(geometry common)
+ttk_add_base_library(geometry
+	SOURCES Geometry.cpp
+	HEADERS Geometry.h
+	LINK common)
 

@@ -42,7 +42,9 @@ function(ttk_add_vtk_library library)
 		ARCHIVE DESTINATION lib/ttk/vtk
 		LIBRARY DESTINATION lib/ttk/vtk)
 
-	install(FILES ${ARG_HEADERS} DESTINATION include/ttk/vtk)
+	if (ARG_HEADERS)
+		install(FILES ${ARG_HEADERS} DESTINATION include/ttk/vtk)
+	endif()
 
 	# Build the ParaView plugin, if we're building with ParaView
 	# and this wrapper library has a plugin

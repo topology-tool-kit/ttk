@@ -1,5 +1,5 @@
-ttk_add_base_library(mandatoryCriticalPoints MandatoryCriticalPoints.cpp
-	HEADERS MandatoryCriticalPoints.h)
-target_link_libraries(mandatoryCriticalPoints  triangulation
-	contourTree lowestCommonAncestor)
+ttk_add_base_library(mandatoryCriticalPoints
+	SOURCES MandatoryCriticalPoints.cpp
+	HEADERS MandatoryCriticalPoints.h
+	LINK triangulation contourTree lowestCommonAncestor)
 

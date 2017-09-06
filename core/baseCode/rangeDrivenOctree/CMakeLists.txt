@@ -1,3 +1,5 @@
-ttk_add_base_library(rangeDrivenOctree RangeDrivenOctree.cpp HEADERS RangeDrivenOctree.h)
-target_link_libraries(rangeDrivenOctree triangulation)
+ttk_add_base_library(rangeDrivenOctree
+	SOURCES RangeDrivenOctree.cpp
+	HEADERS RangeDrivenOctree.h
+	LINK triangulation)
 

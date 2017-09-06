@@ -1,4 +1,5 @@
 ttk_add_base_library(contourForestsTree
+	SOURCES
 	ContourForestsTree.cpp
 	MergeTree.cpp
 	Segmentation.cpp
@@ -12,7 +13,7 @@ ttk_add_base_library(contourForestsTree
 	Node.h
 	Segmentation.h
 	Structures.h
-	SuperArc.h)
+	SuperArc.h
 
-target_link_libraries(contourForestsTree triangulation geometry)
+	LINK triangulation geometry)
 

@@ -1,4 +1,5 @@
-ttk_add_base_library(triangulation Triangulation.cpp HEADERS Triangulation.h)
-target_link_libraries(triangulation abstractTriangulation explicitTriangulation
-	implicitTriangulation)
+ttk_add_base_library(triangulation
+	SOURCES Triangulation.cpp
+	HEADERS Triangulation.h
+	LINK abstractTriangulation explicitTriangulation implicitTriangulation)
 

@@ -2,25 +2,21 @@
 # for a TTK BaseCode library.
 #
 # Usage:
-# ttk_add_base_library(<library_name> <source list> HEADERS <headers to install>)
+# ttk_add_base_library(<library_name>
+#     SOURCES <source list>
+#     HEADERS <headers to install>
+#     LINK <libraries to link>)
 #
 function(ttk_add_base_library library)
-	set(SOURCES "")
-	set(HEADER_LIST "")
+	cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LINK" ${ARGN})
 
-	set(CURRENT_LIST SOURCES)
-	foreach (arg ${ARGN})
-		if ("${arg}" STREQUAL "HEADERS")
-			set(CURRENT_LIST HEADER_LIST)
-		else()
-			list(APPEND ${CURRENT_LIST} ${arg})
-		endif()
-	endforeach()
-
-	add_library(${library} ${SOURCES})
+	add_library(${library} ${ARG_SOURCES})
 	target_include_directories(${library} PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/base>)
+	if (ARG_LINK)
+		target_link_libraries(${library} PUBLIC ${ARG_LINK})
+	endif()
 
 	install(TARGETS ${library}
 		EXPORT TTKBaseConfig
@@ -28,17 +24,24 @@ function(ttk_add_base_library library)
 		ARCHIVE DESTINATION lib/ttk/base
 		LIBRARY DESTINATION lib/ttk/base)
 
-	install(FILES ${HEADER_LIST} DESTINATION include/ttk/base)
+	if (ARG_HEADERS)
+		install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
+	endif()
 endfunction()
 
 # Function to create a header only template library and install targets
-# for a TTK BaseCode template library.
+# for a TTK BaseCode template library. Note that here "libraries to link"
+# has a bit of a different meaning. Since it's a template library no code
+# is compiled or linked, but this "linking" is used to express dependencies
+# on other libraries that users of this library will also need.
 #
 # Usage:
-# ttk_add_base_template_library(<library_name> <headers list>)
+# ttk_add_base_template_library(<library_name>
+#     SOURCES <headers list>
+#     LINK <libraries to link>)
 #
 function(ttk_add_base_template_library library)
-	set(SOURCES ${ARGN})
+	cmake_parse_arguments(ARG "" "" "SOURCES;LINK" ${ARGN})
 
 	add_library(${library} INTERFACE)
 	target_include_directories(${library} INTERFACE
@@ -50,15 +53,11 @@ function(ttk_add_base_template_library library)
 		RUNTIME DESTINATION bin/ttk/base/
 		ARCHIVE DESTINATION lib/ttk/base
 		LIBRARY DESTINATION lib/ttk/base)
+	if (ARG_LINK)
+		target_link_libraries(${library} INTERFACE ${ARG_LINK})
+	endif()
 
-	# Generate the ttk::base namespaced target name
-	string(SUBSTRING "${library}" 0 1 first_letter)
-	string(SUBSTRING "${library}" 1 -1 rest_of_name)
-	string(TOUPPER "${first_letter}" first_letter)
-	string(CONCAT namespaced_library ${first_letter} ${rest_of_name})
-	add_library(ttk::base::${namespaced_library} ALIAS ${library})
-
-	install(FILES ${ARGN} DESTINATION include/ttk/base)
+	install(FILES ${ARG_SOURCES} DESTINATION include/ttk/base)
 endfunction()
 
 add_subdirectory(abstractMorseSmaleComplex)

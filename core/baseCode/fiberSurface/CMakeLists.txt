@@ -7,10 +7,14 @@ if (TTK_BASE_FIBER_SURFACE_WITH_RANGE_DRIVEN_OCTREE)
 	add_definitions(-DwithrangeDrivenOctree)
 endif()
 
-ttk_add_base_library(fiberSurface FiberSurface.cpp HEADERS FiberSurface.h)
-target_link_libraries(fiberSurface geometry triangulation)
+set(DEPS geometry triangulation)
 
 if (TTK_BASE_FIBER_SURFACE_WITH_RANGE_DRIVEN_OCTREE)
-	target_link_libraries(fiberSurface rangeDrivenOctree)
+	set(DEPS ${DEPS} rangeDrivenOctree)
 endif()
+
+ttk_add_base_library(fiberSurface
+	SOURCES FiberSurface.cpp
+	HEADERS FiberSurface.h
+	LINK ${DEPS})
 

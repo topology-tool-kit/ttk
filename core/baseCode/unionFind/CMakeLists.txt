@@ -1,3 +1,5 @@
-ttk_add_base_library(unionFind UnionFind.cpp HEADERS UnionFind.h)
-target_link_libraries(unionFind common)
+ttk_add_base_library(unionFind
+	SOURCES UnionFind.cpp
+	HEADERS UnionFind.h
+	LINK common)
 
