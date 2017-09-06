@@ -73,20 +73,15 @@ cp -R standalone/Blank/cmd/ standalone/${Name}/cmd
 rm -R standalone/${Name}/cmd/build &> /dev/null
 replace "standalone/${Name}/cmd/CMakeLists.txt"
 replace "standalone/${Name}/cmd/main.cpp"
-rm standalone/${Name}/cmd/core &> /dev/null
-ln -sf ../../../core standalone/${Name}/cmd/core
 
 echo "Creating GUI standalone program 'standalone/${Name}/gui'..."
 cp -R standalone/Blank/gui/ standalone/${Name}/gui
 rm -R standalone/${Name}/gui/build &> /dev/null
 replace "standalone/${Name}/gui/CMakeLists.txt"
 replace "standalone/${Name}/gui/main.cpp"
-rm standalone/${Name}/gui/core &> /dev/null
-ln -sf ..//cmd/core standalone/${Name}/gui/core
 
 # 4) duplicate the blank paraview plugin
 echo "Creating ParaView plugin 'paraview/${Name}'..."
-cp -R paraview/Blank paraview/${Name}
 mv core/vtkWrappers/ttk${Name}/Blank.xml core/vtkWrappers/ttk${Name}/${Name}.xml
 replace "core/vtkWrappers/ttk${Name}/${Name}.xml"
 
@@ -97,4 +92,3 @@ touch core/vtkWrappers/CMakeLists.txt
 touch standalone/CMakeLists.txt
 
 echo "Module created."
-
