@@ -1,3 +1,13 @@
+if (NOT TTK_BUILD_PARAVIEW_PLUGINS)
+	find_package(VTK REQUIRED)
+	include(${VTK_USE_FILE})
+	include_directories(${VTK_INCLUDE_DIRS})
+else()
+	find_package(ParaView REQUIRED)
+	include(${PARAVIEW_USE_FILE})
+	include_directories(${PARAVIEW_INCLUDE_DIRS})
+endif()
+
 add_subdirectory(Blank/cmd)
 add_subdirectory(Blank/gui)
 add_subdirectory(BottleneckDistance/gui)
