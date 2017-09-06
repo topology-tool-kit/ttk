@@ -1,8 +1,8 @@
 #!/bin/bash
 # Copyright (C) Julien Tierny <julien.tierny@lip6.fr>
 
-# ex: ScalarFieldSmoother
-Name=$1 
+# example: ScalarFieldSmoother
+Name=$1
 
 smallName="`tr '[:upper:]' '[:lower:]'  <<< ${Name:0:1}`${Name:1}"
 bigName=`echo $Name | tr '[:lower:]' '[:upper:]'`
@@ -47,9 +47,7 @@ mkdir -p paraview/ 2> /dev/null
 # 1) duplicate the blank base code
 echo "Creating base code functor 'core/baseCode/${smallName}'"
 cp -R core/baseCode/blank core/baseCode/${smallName}
-mv core/baseCode/${smallName}/blank.cmake \
-  core/baseCode/${smallName}/${smallName}.cmake
-replace "core/baseCode/${smallName}/${smallName}.cmake"
+replace "core/baseCode/${smallName}/CMakeLists.txt"
 mv core/baseCode/${smallName}/Blank.cpp \
   core/baseCode/${smallName}/${Name}.cpp
 replace "core/baseCode/${smallName}/${Name}.cpp"
@@ -60,9 +58,7 @@ replace "core/baseCode/${smallName}/${Name}.h"
 # 2) duplicate the blank wrapper
 echo "Creating VTK wrapper 'core/vtkWrappers/ttk${Name}'..."
 cp -R core/vtkWrappers/ttkBlank core/vtkWrappers/ttk${Name}
-mv core/vtkWrappers/ttk${Name}/ttkBlank.cmake \
-  core/vtkWrappers/ttk${Name}/ttk${Name}.cmake
-replace "core/vtkWrappers/ttk${Name}/ttk${Name}.cmake"
+replace "core/vtkWrappers/ttk${Name}/CMakeLists.txt"
 mv core/vtkWrappers/ttk${Name}/ttkBlank.cpp \
   core/vtkWrappers/ttk${Name}/ttk${Name}.cpp
 replace "core/vtkWrappers/ttk${Name}/ttk${Name}.cpp"
@@ -91,29 +87,14 @@ ln -sf ..//cmd/core standalone/${Name}/gui/core
 # 4) duplicate the blank paraview plugin
 echo "Creating ParaView plugin 'paraview/${Name}'..."
 cp -R paraview/Blank paraview/${Name}
-mv paraview/${Name}/Blank.xml paraview/${Name}/${Name}.xml
-ln -sf ../../core paraview/${Name}/core
-replace "paraview/${Name}/${Name}.xml"
-replace "paraview/${Name}/CMakeLists.txt"
+mv core/vtkWrappers/ttk${Name}/Blank.xml core/vtkWrappers/ttk${Name}/${Name}.xml
+replace "core/vtkWrappers/ttk${Name}/${Name}.xml"
 
 # 5) update CMakeLists.txt
 echo "Updating CMakeLists.txt..."
-cat CMakeLists.txt | grep standalone | grep cmd > standalone-cmd.tmp
-cat CMakeLists.txt | grep standalone | grep gui > standalone-gui.tmp
-cat CMakeLists.txt | grep paraview > paraview.tmp
-
-echo "cmake_minimum_required(VERSION 2.4)" > CMakeLists.txt.new
-cat standalone-cmd.tmp >> CMakeLists.txt.new
-echo "add_subdirectory(standalone/${Name}/cmd/)" >> CMakeLists.txt.new
-cat standalone-gui.tmp >> CMakeLists.txt.new
-echo "add_subdirectory(standalone/${Name}/gui/)" >> CMakeLists.txt.new
-cat paraview.tmp >> CMakeLists.txt.new
-echo "add_subdirectory(paraview/${Name}/)" >> CMakeLists.txt.new
-
-mv CMakeLists.txt CMakeLists.txt.old
-mv CMakeLists.txt.new CMakeLists.txt
-rm standalone-cmd.tmp 2> /dev/null
-rm standalone-gui.tmp 2> /dev/null
-rm paraview.tmp 2> /dev/null
+touch core/baseCode/CMakeLists.txt
+touch core/vtkWrappers/CMakeLists.txt
+touch standalone/CMakeLists.txt
 
 echo "Module created."
+
