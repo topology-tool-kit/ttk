@@ -1,25 +1,7 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.5)
 
-# name of the project (geometrySmootherGui)
 project(geometrySmootherGui)
 
-# GUI build-mode
-set(TTK_BUILD_MODE "VTK-GUI")
+add_executable(geometrySmootherGui main.cpp)
+target_link_libraries(geometrySmootherGui ttkGeometrySmoother ttkUserInterfaceBase)
 
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
-
-# include the different packages required for the application
-ttk_add_vtkWrapper_package(ttkGeometrySmoother)
-
-# add the local cpp files
-ttk_add_source(main.cpp)
-
-ttk_wrapup_binary(geometrySmootherGui)

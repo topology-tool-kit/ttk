@@ -1,26 +1,6 @@
-cmake_minimum_required(VERSION 2.4)
-
-# name of the project (dummy)
+cmake_minimum_required(VERSION 3.5)
 project(jacobiSetCmd)
 
-# command-line build-mode
-set(TTK_BUILD_MODE "VTK-CMD")
+add_executable(jacobiSetCmd main.cpp)
+target_link_libraries(jacobiSetCmd ttkJacobiSet ttkProgramBase)
 
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
-
-# include the different packages required for the application
-ttk_add_vtkWrapper_package(ttkJacobiSet)
-
-# add the local cpp files 
-ttk_add_source(main.cpp)
-
-# wrap-up the build
-ttk_wrapup_binary(jacobiSetCmd)

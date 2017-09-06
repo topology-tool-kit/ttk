@@ -1,25 +1,8 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.5)
 
-# name of the project (bottleneckDistanceGui)
 project(bottleneckDistanceGui)
 
-# GUI build-mode
-set(TTK_BUILD_MODE "VTK-GUI")
+add_executable(bottleneckDistanceGui main.cpp)
+target_link_libraries(bottleneckDistanceGui  ${VTK_LIBRARIES}
+	ttkBottleneckDistance ttkUserInterfaceBase)
 
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
-
-# include the different packages required for the application
-ttk_add_vtkWrapper_package(ttkBottleneckDistance)
-
-# add the local cpp files
-ttk_add_source(main.cpp)
-
-ttk_wrapup_binary(bottleneckDistanceGui)

@@ -1,27 +1,9 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.5)
 
-# name of the project (dummy)
 project(uncertainDataEstimatorCmd)
 
-# command-line build-mode
-set(TTK_BUILD_MODE "VTK-CMD")
+add_executable(uncertainDataEstimatorCmd main.cpp Editor.cpp)
+target_link_libraries(uncertainDataEstimatorCmd ttkUncertainDataEstimator ttkProgramBase)
+target_include_directories(uncertainDataEstimatorCmd PUBLIC
+	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
-
-# include the different packages required for the application
-ttk_add_vtkWrapper_package(ttkUncertainDataEstimator)
-
-# add the local cpp files 
-ttk_add_source(Editor.cpp)
-ttk_add_source(main.cpp)
-
-# wrap-up the build
-ttk_wrapup_binary(uncertainDataEstimatorCmd)
