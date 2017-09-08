@@ -58,7 +58,7 @@ function(ttk_add_vtk_library library)
 		target_include_directories(${plugin_name} PUBLIC
 			$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
-		install(TARGETS ${plugin_name} DESTINATION plugin)
+		install(TARGETS ${plugin_name} DESTINATION ${TTK_PLUGIN_INSTALL_DIR})
 	endif()
 endfunction()
 
@@ -73,6 +73,10 @@ else()
 	find_package(ParaView REQUIRED)
 	include(${PARAVIEW_USE_FILE})
 	include_directories(${PARAVIEW_INCLUDE_DIRS})
+	set(TTK_PLUGIN_INSTALL_DIR 
+		"${VTK_INSTALL_PREFIX}/lib/paraview-${PARAVIEW_VERSION_MAJOR}.${PARAVIEW_VERSION_MINOR}/plugins"
+		CACHE PATH
+		"Directory where TTK ParaView plugins will be installed")
 endif()
 
 file(GLOB VTKWRAPPER_DIRS ttk*)
