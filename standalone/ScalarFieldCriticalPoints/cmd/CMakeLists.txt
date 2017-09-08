@@ -4,4 +4,5 @@ project(scalarFieldCriticalPointsCmd)
 add_executable(scalarFieldCriticalPointsCmd main.cpp)
 target_link_libraries(scalarFieldCriticalPointsCmd ttkScalarFieldCriticalPoints
 	ttkProgramBase)
+install(TARGETS scalarFieldCriticalPointsCmd RUNTIME DESTINATION bin/ttk)
 

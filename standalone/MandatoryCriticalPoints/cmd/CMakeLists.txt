@@ -4,4 +4,5 @@ project(mandatoryCriticalPointsCmd)
 add_executable(mandatoryCriticalPointsCmd main.cpp)
 target_link_libraries(mandatoryCriticalPointsCmd ttkMandatoryCriticalPoints
 	ttkProgramBase)
+install(TARGETS mandatoryCriticalPointsCmd RUNTIME DESTINATION bin/ttk)
 

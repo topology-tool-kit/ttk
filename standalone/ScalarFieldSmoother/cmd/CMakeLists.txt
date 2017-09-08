@@ -3,4 +3,5 @@ cmake_minimum_required(VERSION 3.5)
 project(scalarFieldSmootherCmd)
 add_executable(scalarFieldSmootherCmd main.cpp)
 target_link_libraries(scalarFieldSmootherCmd ttkScalarFieldSmoother ttkProgramBase)
+install(TARGETS scalarFieldSmootherCmd RUNTIME DESTINATION bin/ttk)
 
