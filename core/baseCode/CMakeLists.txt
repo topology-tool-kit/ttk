@@ -24,9 +24,9 @@ function(ttk_add_base_library library)
 
 	install(TARGETS ${library}
 		EXPORT TTKBaseConfig
-		RUNTIME DESTINATION bin/ttk/base/
-		ARCHIVE DESTINATION lib/ttk/base
-		LIBRARY DESTINATION lib/ttk/base)
+		RUNTIME DESTINATION bin/ttk
+		ARCHIVE DESTINATION lib/ttk
+		LIBRARY DESTINATION lib/ttk)
 
 	if (ARG_HEADERS)
 		install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
@@ -75,9 +75,9 @@ function(ttk_add_base_template_library library)
 
 	install(TARGETS ${library}
 		EXPORT TTKBaseConfig
-		RUNTIME DESTINATION bin/ttk/base/
-		ARCHIVE DESTINATION lib/ttk/base
-		LIBRARY DESTINATION lib/ttk/base)
+		RUNTIME DESTINATION bin/ttk
+		ARCHIVE DESTINATION lib/ttk
+		LIBRARY DESTINATION lib/ttk)
 
 	install(FILES ${ARG_SOURCES} DESTINATION include/ttk/base)
 endfunction()

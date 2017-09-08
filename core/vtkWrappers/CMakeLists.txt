@@ -40,9 +40,9 @@ function(ttk_add_vtk_library library)
 
 	install(TARGETS ${library}
 		EXPORT TTKVTKConfig
-		RUNTIME DESTINATION bin/ttk/vtk/
-		ARCHIVE DESTINATION lib/ttk/vtk
-		LIBRARY DESTINATION lib/ttk/vtk)
+		RUNTIME DESTINATION bin/ttk
+		ARCHIVE DESTINATION lib/ttk
+		LIBRARY DESTINATION lib/ttk)
 
 	if (ARG_HEADERS)
 		install(FILES ${ARG_HEADERS} DESTINATION include/ttk/vtk)
