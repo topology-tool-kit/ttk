@@ -88,7 +88,7 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
 
   int count = 0;
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
@@ -97,7 +97,7 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
     
     int threadId = 0;
     
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
     threadId = omp_get_thread_num();
 #endif
     
@@ -124,7 +124,7 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
       textureCoordinates_->SetTuple(i, coordinates[threadId]);
     
       if(debugLevel_ > 3){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_set_lock(&writeLock);
 #endif
         if(!(count % (output->GetNumberOfPoints()/10))){
@@ -132,14 +132,14 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
         }
 
         count++;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_unset_lock(&writeLock);
 #endif
       }
     }
   }
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_destroy_lock(&writeLock);
 #endif
   

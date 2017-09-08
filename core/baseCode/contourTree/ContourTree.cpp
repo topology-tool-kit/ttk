@@ -2463,12 +2463,12 @@ int ContourTree::build(){
       maximumList_->push_back(i);
   }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel sections
 #endif
   {
     
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
@@ -2482,7 +2482,7 @@ int ContourTree::build(){
       mergeTree_.build();
     }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
@@ -2812,25 +2812,25 @@ bool ContourTree::isNodeEligible(const Node *n) const{
 }
 
 int ContourTree::computeSkeleton(unsigned int arcResolution){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel sections
 #endif
   {
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
       SubLevelSetTree::computeSkeleton(arcResolution);
     }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
       mergeTree_.computeSkeleton(arcResolution);
     }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
@@ -2842,25 +2842,25 @@ int ContourTree::computeSkeleton(unsigned int arcResolution){
 }
 
 int ContourTree::smoothSkeleton(unsigned int skeletonSmoothing){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel sections
 #endif
   {
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
       SubLevelSetTree::smoothSkeleton(skeletonSmoothing);
     }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
       mergeTree_.smoothSkeleton(skeletonSmoothing);
     }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
@@ -2872,25 +2872,25 @@ int ContourTree::smoothSkeleton(unsigned int skeletonSmoothing){
 }
 
 int ContourTree::clearSkeleton(){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel sections
 #endif
   {
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
       SubLevelSetTree::clearSkeleton();
     }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
       mergeTree_.clearSkeleton();
     }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
@@ -2919,12 +2919,12 @@ int ContourTree::getPersistencePairs(vector<pair<pair<int,int>,double>>* pairs,
   }
 
   if(!mergePairs->size() || !splitPairs->size()){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel sections
 #endif
     {
     
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
       {
@@ -2932,7 +2932,7 @@ int ContourTree::getPersistencePairs(vector<pair<pair<int,int>,double>>* pairs,
 	  mergeTree_.getPersistencePairs(*mergePairs);
       }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
       {
@@ -3035,19 +3035,19 @@ int ContourTree::getPersistenceDiagram(vector<pair<double, double> > &diagram,
 
 int ContourTree::simplify(const double &simplificationThreshold,
 			  ContourTreeSimplificationMetric *metric){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel sections
 #endif
   {
     
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {
       mergeTree_.simplify(simplificationThreshold, metric);
     }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     {

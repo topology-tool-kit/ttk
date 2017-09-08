@@ -732,7 +732,7 @@ int FiberSurface::flipEdges() const {
     }
   }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) tetList.size(); i++){
@@ -1228,7 +1228,7 @@ int FiberSurface::mergeEdges(const double &distanceThreshold) const{
     
     bool hasMerged = false;
  
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int i = 0; i < (int) polygonEdgeTriangleLists_.size(); i++){
@@ -1333,7 +1333,7 @@ int FiberSurface::mergeEdges(const double &distanceThreshold) const{
                 isCollapsible = false;
               }
               
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp critical
 #endif
               if(isCollapsible){
@@ -1559,7 +1559,7 @@ int FiberSurface::mergeVertices(const double &distanceThreshold) const{
     keepTriangle[i].resize((*polygonEdgeTriangleLists_[i]).size(), true);
   }
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) polygonEdgeTriangleLists_.size(); i++){
@@ -1655,7 +1655,7 @@ int FiberSurface::snapVertexBarycentrics(const double &distanceThreshold) const{
     }
   }
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) tetList.size(); i++){
@@ -1755,7 +1755,7 @@ int FiberSurface::snapVertexBarycentrics(
         }
         
         // now do the re-location
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp critical
         for(int k = 0; k < 3; k++){
           (*globalVertexList_)[vertexId].p_[k] = 

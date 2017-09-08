@@ -50,7 +50,7 @@ int ttkIntegralLines::getTriangulation(vtkDataSet* input){
   Modified();
   hasUpdatedMesh_ = true;
   
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // allocation problem
   if(triangulation_->isEmpty()){
     cerr << "[ttkIntegralLines] Error : ttkTriangulation allocation problem." << endl;
@@ -64,7 +64,7 @@ int ttkIntegralLines::getTriangulation(vtkDataSet* input){
 int ttkIntegralLines::getScalars(vtkDataSet* input){
   vtkPointData* pointData=input->GetPointData();
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!pointData){
     cerr << "[ttkIntegralLines] Error : input has no point data." << endl;
     return -1;
@@ -78,7 +78,7 @@ int ttkIntegralLines::getScalars(vtkDataSet* input){
 
   inputScalars_=pointData->GetArray(ScalarField.data());
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!inputScalars_){
     cerr << "[ttkIntegralLines] Error : input scalar field pointer is null." << endl;
     return -3;
@@ -114,7 +114,7 @@ int ttkIntegralLines::getOffsets(vtkDataSet* input){
     inputOffsets_=offsets_;
   }
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // allocation problem
   if(!inputOffsets_){
     cerr << "[ttkIntegralLines] Error : wrong input offset scalar field." << endl;
@@ -129,7 +129,7 @@ int ttkIntegralLines::getIdentifiers(vtkPointSet* input){
   if(VertexIdentifierScalarFieldName.length())
     identifiers_=input->GetPointData()->GetArray(VertexIdentifierScalarFieldName.data());
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // allocation problem
   if(!identifiers_){
     cerr << "[ttkIntegralLines] Error : wrong input vertex identifier scalar field." << endl;
@@ -227,7 +227,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   int ret{};
 
   ret=getTriangulation(domain);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // triangulation problem
   if(ret){
     cerr << "[ttkIntegralLines] Error : wrong triangulation." << endl;
@@ -236,7 +236,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   ret=getScalars(domain);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // field problem
   if(ret){
     cerr << "[ttkIntegralLines] Error : wrong scalar field." << endl;
@@ -245,7 +245,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   ret=getOffsets(domain);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // field problem
   if(ret){
     cerr << "[ttkIntegralLines] Error : wrong offsets." << endl;
@@ -254,7 +254,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   ret=getIdentifiers(seeds);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // field problem
   if(ret){
     cerr << "[ttkIntegralLines] Error : wrong identifiers." << endl;
@@ -263,7 +263,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   const int numberOfPointsInDomain=domain->GetNumberOfPoints();
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // no points.
   if(numberOfPointsInDomain<=0){
     cerr << "[ttkIntegralLines] Error : domain has no points." << endl;
@@ -272,7 +272,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   const int numberOfPointsInSeeds=seeds->GetNumberOfPoints();
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // no points.
   if(numberOfPointsInSeeds<=0){
     cerr << "[ttkIntegralLines] Error : seeds have no points." << endl;
@@ -295,7 +295,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   switch(inputScalars_->GetDataType()){
     vtkTemplateMacro(({ret=integralLines_.execute<VTK_TT>();}));
   }
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // something wrong in baseCode
   if(ret){
     cerr << "[ttkIntegralLines] IntegralLines.execute() error code : " << ret << endl;
@@ -305,7 +305,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
 
   // make the vtk trajectories
   ret=getTrajectories(domain, trajectories, output);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   // trajectories problem
   if(ret){
     cerr << "[ttkIntegralLines] Error : wrong trajectories." << endl;

@@ -13,6 +13,6 @@ ttk_add_base_library(fiberSurface
 	LINK ${DEPS})
 
 if (TTK_BASE_FIBER_SURFACE_WITH_RANGE_DRIVEN_OCTREE)
-	target_compile_definitions(fiberSurface PUBLIC withrangeDrivenOctree)
+	target_compile_definitions(fiberSurface PUBLIC TTK_WITH_RANGE_DRIVEN_OCTREE)
 endif()
 

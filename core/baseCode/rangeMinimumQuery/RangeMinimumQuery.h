@@ -108,7 +108,7 @@ int RangeMinimumQuery<DataType>::preprocess(const bool silent) {
 template<class DataType>
 int RangeMinimumQuery<DataType>::query(int i, int j) const {
 
-  #ifndef withKamikaze
+  #ifndef TTK_WITH_KAMIKAZE
   // i must be lower or equal to j, else swap values
   if(i>j) {
     swap(i,j);

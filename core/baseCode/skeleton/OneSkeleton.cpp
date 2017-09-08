@@ -15,7 +15,7 @@ int OneSkeleton::buildEdgeLinks(const vector<pair<int, int> > &edgeList,
   const long long int *cellArray, 
   vector<vector<int> > &edgeLinks) const{
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
     if(edgeList.empty())
       return -1;
     if((edgeStars.empty())||(edgeStars.size() != edgeList.size()))
@@ -30,7 +30,7 @@ int OneSkeleton::buildEdgeLinks(const vector<pair<int, int> > &edgeList,
   
   int verticesPerCell = cellArray[0];
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) edgeLinks.size(); i++){
@@ -70,7 +70,7 @@ int OneSkeleton::buildEdgeLinks(const vector<pair<int, int> > &edgeList,
   const vector<vector<int> > &cellEdges,
   vector<vector<int> > &edgeLinks) const{
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
     if(edgeList.empty())
       return -1;
     if((edgeStars.empty())||(edgeStars.size() != edgeList.size()))
@@ -83,7 +83,7 @@ int OneSkeleton::buildEdgeLinks(const vector<pair<int, int> > &edgeList,
     
   edgeLinks.resize(edgeList.size());
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) edgeLinks.size(); i++){
@@ -132,7 +132,7 @@ int OneSkeleton::buildEdgeList(const int &vertexNumber, const int &cellNumber,
   // let's force the usage of only 1 thread.
   threadNumber_ = 1;
     
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!cellArray)
     return -1;
 #endif
@@ -149,14 +149,14 @@ int OneSkeleton::buildEdgeList(const int &vertexNumber, const int &cellNumber,
   // assuming triangulations here
   int verticesPerCell = cellArray[0];
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < cellNumber; i++){
     
     int threadId = 0, tmpVertexId = 0;
     pair<int, int> edgeIds;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
     threadId = omp_get_thread_num();
 #endif
    
@@ -276,7 +276,7 @@ int OneSkeleton::buildEdgeLists(
   
   edgeLists.resize(cellArrays.size());
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) cellArrays.size(); i++){
@@ -318,7 +318,7 @@ int OneSkeleton::buildEdgeStars(const int &vertexNumber, const int &cellNumber,
   vector<pair<int, int> > *edgeList,
   vector<vector<int> > *vertexStars) const{
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!cellArray)
     return -1;
 #endif
@@ -355,7 +355,7 @@ int OneSkeleton::buildEdgeStars(const int &vertexNumber, const int &cellNumber,
       cellArray, *localVertexStars);
   }
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) localEdgeList->size(); i++){

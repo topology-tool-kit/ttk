@@ -53,7 +53,7 @@ function(ttk_add_base_template_library library)
 		$<INSTALL_INTERFACE:include/ttk/base>)
 
 	if (TTK_WITH_KAMIKAZE)
-		target_compile_definitions(${library} INTERFACE withKamikaze)
+		target_compile_definitions(${library} INTERFACE TTK_WITH_KAMIKAZE)
 	endif()
 
 	if (TTK_ENABLE_CPU_OPTIMIZATION)
@@ -61,7 +61,7 @@ function(ttk_add_base_template_library library)
 	endif()
 
 	if (TTK_WITH_OPENMP)
-		target_compile_definitions(${library} INTERFACE withOpenMP)
+		target_compile_definitions(${library} INTERFACE TTK_WITH_OPENMP)
 		target_compile_options(${library} INTERFACE ${OpenMP_CXX_FLAGS})
 	endif()
 

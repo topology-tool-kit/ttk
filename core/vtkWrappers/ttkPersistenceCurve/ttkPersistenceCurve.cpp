@@ -80,7 +80,7 @@ int ttkPersistenceCurve::FillOutputPortInformation(int port, vtkInformation* inf
 int ttkPersistenceCurve::getScalars(vtkDataSet* input){
   vtkPointData* pointData=input->GetPointData();
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!pointData){
     cerr << "[ttkPersistenceCurve] Error : input has no point data." << endl;
     return -1;
@@ -96,7 +96,7 @@ int ttkPersistenceCurve::getScalars(vtkDataSet* input){
       ScalarField = inputScalars_->GetName();
   }
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!inputScalars_){
     cerr << "[ttkPersistenceCurve] Error : input scalar field pointer is null." 
       << endl;
@@ -152,7 +152,7 @@ int ttkPersistenceCurve::getOffsets(vtkDataSet* input){
     inputOffsets_=offsets_;
   }
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!inputOffsets_){
     cerr << "[ttkPersistenceCurve] Error : wrong input offset scalar field." 
       << endl;
@@ -171,7 +171,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
   int ret{};
 
   ret=getScalars(input);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(ret){
     cerr << "[ttkPersistenceCurve] Error : wrong scalars." << endl;
     return -1;
@@ -179,7 +179,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 #endif
 
   ret=getTriangulation(input);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(ret){
     cerr << "[ttkPersistenceCurve] Error : wrong triangulation." << endl;
     return -2;
@@ -187,7 +187,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 #endif
 
   ret=getOffsets(input);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(ret){
     cerr << "[ttkPersistenceCurve] Error : wrong offsets." << endl;
     return -3;
@@ -211,7 +211,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
           persistenceCurve_.setOutputCTPlot(&CTPlot);
           ret=persistenceCurve_.execute<VTK_TT>();
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
           if(ret){
           cerr 
             << "[ttkPersistenceCurve] PersistenceCurve.execute() error code : " 
@@ -221,7 +221,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 #endif
 
           ret=getPersistenceCurve<vtkDoubleArray,VTK_TT>(TreeType::Join, JTPlot);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
           if(ret){
           cerr << "[ttkPersistenceCurve] Error :"
             << " build of join tree persistence curve has failed." << endl;
@@ -230,7 +230,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 #endif
 
           ret=getMSCPersistenceCurve<vtkDoubleArray,VTK_TT>(MSCPlot);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
           if(ret){
           cerr << "[ttkPersistenceCurve] Error : "
             << "build of saddle-saddle persistence curve has failed." << endl;
@@ -239,7 +239,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 #endif
 
           ret=getPersistenceCurve<vtkDoubleArray,VTK_TT>(TreeType::Split, STPlot);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
           if(ret){
           cerr << "[ttkPersistenceCurve] Error : "
             << "build of split tree persistence curve has failed." << endl;
@@ -248,7 +248,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 #endif
 
           ret=getPersistenceCurve<vtkDoubleArray,VTK_TT>(TreeType::Contour, CTPlot);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
           if(ret){
           cerr << "[ttkPersistenceCurve] Error : "
             << "build of contour tree persistence curve has failed." << endl;

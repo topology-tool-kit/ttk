@@ -354,7 +354,7 @@ namespace ttk{
 
     inline int getVertexScalar(const int &vertexId, double &scalar){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
       if(!vertexScalars_)
 	return -1;
       if((vertexId < 0)||(vertexId >= (int) vertexScalars_->size()))

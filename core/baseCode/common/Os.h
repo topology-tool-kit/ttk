@@ -133,7 +133,7 @@ namespace ttk{
       };
      
       inline static int getNumberOfCores(){
-        #ifdef withOpenMP
+        #ifdef TTK_WITH_OPENMP
           return omp_get_num_procs();
         #endif
         return 1;

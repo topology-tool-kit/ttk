@@ -66,7 +66,7 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
 //     printf("\t%d entries...\n", original->GetNumberOfTuples());
 //   }
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
@@ -79,7 +79,7 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
       
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_set_lock(&writeLock);
 #endif
         if((wrapper_)
@@ -89,14 +89,14 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
         }
 
         count++;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_unset_lock(&writeLock);
 #endif
       }
     }
   } 
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
   for(int i = 0; i < cellNumber; i++){
@@ -107,7 +107,7 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
       
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_set_lock(&writeLock);
 #endif
         if((wrapper_)
@@ -117,14 +117,14 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
         }
 
         count++;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_unset_lock(&writeLock);
 #endif
       }
     }
   }
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_destroy_lock(&writeLock);
 #endif
  

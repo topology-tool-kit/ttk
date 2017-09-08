@@ -93,7 +93,7 @@ namespace ttk{
       inline int getCellEdge(const int &cellId,
         const int &localEdgeId, int &edgeId) const{
          
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -127,7 +127,7 @@ namespace ttk{
       /// \param cellId Input global cell identifier.
       /// \return Returns the number of cell edges.
       inline int getCellEdgeNumber(const int &cellId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         if(!abstractTriangulation_->hasPreprocessedCellEdges()){
@@ -171,7 +171,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the cell edge list.
       inline const vector<vector<int> > *getCellEdges(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -212,7 +212,7 @@ namespace ttk{
       inline int getCellNeighbor(const int &cellId,
         const int &localNeighborId, int &neighborId) const{
          
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -248,7 +248,7 @@ namespace ttk{
       /// \return Returns the number of cell neighbors.
       inline int getCellNeighborNumber(const int &cellId) const{
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -293,7 +293,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the cell neighbor list.
       inline const vector<vector<int> > *getCellNeighbors(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -337,7 +337,7 @@ namespace ttk{
       inline int getCellTriangle(const int &cellId,
         const int &localTriangleId, int &triangleId) const{
          
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -375,7 +375,7 @@ namespace ttk{
       /// \param cellId Input global cell identifier.
       /// \return Returns the number of cell triangles.
       inline int getCellTriangleNumber(const int &cellId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -423,7 +423,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the cell triangle list.
       inline const vector<vector<int> > *getCellTriangles(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -456,7 +456,7 @@ namespace ttk{
       inline int getCellVertex(const int &cellId,
         const int &localVertexId, int &vertexId) const{
           
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -473,7 +473,7 @@ namespace ttk{
       /// \returns Number of vertices in the cell.
       inline int getCellVertexNumber(const int &cellId) const{
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -484,7 +484,7 @@ namespace ttk{
       /// the dimension of the simplex with largest dimensionality).
       /// \return Returns the dimensionality of the triangulation.
       inline int getDimensionality() const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -515,7 +515,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge list.
       inline const vector<pair<int, int> > *getEdges(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -555,7 +555,7 @@ namespace ttk{
       /// \sa getEdgeLinkNumber()
       inline int getEdgeLink(const int &edgeId, 
         const int &localLinkId, int &linkId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -590,7 +590,7 @@ namespace ttk{
       /// \param edgeId Input global edge identifier.
       /// \return Returns the number of cells in the link of the edge. 
       inline int getEdgeLinkNumber(const int &edgeId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -632,7 +632,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge link list.
       inline const vector<vector<int> > *getEdgeLinks(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -675,7 +675,7 @@ namespace ttk{
       /// \sa getEdgeStarNumber()
       inline int getEdgeStar(const int &edgeId,
         const int &localStarId, int &starId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -713,7 +713,7 @@ namespace ttk{
       /// \param edgeId Input global edge identifier
       /// \return Returns the number of star cells.
       inline int getEdgeStarNumber(const int &edgeId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -761,7 +761,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge star list.
       inline const vector<vector<int> > *getEdgeStars(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -802,7 +802,7 @@ namespace ttk{
       inline int getEdgeTriangle(const int &edgeId,
         const int &localTriangleId, int &triangleId) const{
          
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -837,7 +837,7 @@ namespace ttk{
       /// \param edgeId Input global edge identifier.
       /// \return Returns the number of edge triangles.
       inline int getEdgeTriangleNumber(const int &edgeId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
       
@@ -882,7 +882,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge triangle list.
       inline const vector<vector<int> > *getEdgeTriangles(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -919,7 +919,7 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       inline int getEdgeVertex(const int &edgeId, 
         const int &localVertexId, int &vertexId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -968,7 +968,7 @@ namespace ttk{
       /// \return Returns the number of cells.
       inline int getNumberOfCells() const{
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -990,7 +990,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns the number of edges.
       inline int getNumberOfEdges() const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -1023,7 +1023,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns the number of triangles.
       inline int getNumberOfTriangles() const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         
         if(isEmptyCheck())
           return -1;
@@ -1047,7 +1047,7 @@ namespace ttk{
       /// \return Returns the number of vertices.
       inline int getNumberOfVertices() const{
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -1079,7 +1079,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle list.
       inline const vector<vector<int> > *getTriangles(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -1118,7 +1118,7 @@ namespace ttk{
       /// \sa getTriangleEdgeNumber()
       inline int getTriangleEdge(const int &triangleId, 
         const int &localEdgeId, int &edgeId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -1153,7 +1153,7 @@ namespace ttk{
       /// \param triangleId Input global triangle identifier.
       /// \return Returns the number of cells in the link of the triangle. 
       inline int getTriangleEdgeNumber(const int &triangleId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -1198,7 +1198,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle edge list.
       inline const vector<vector<int> > *getTriangleEdges(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -1240,7 +1240,7 @@ namespace ttk{
       /// \sa getTriangleLinkNumber()
       inline int getTriangleLink(const int &triangleId, 
         const int &localLinkId, int &linkId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -1278,7 +1278,7 @@ namespace ttk{
       /// \param triangleId Input global triangle identifier.
       /// \return Returns the number of simplices in the link of the triangle. 
       inline int getTriangleLinkNumber(const int &triangleId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -1323,7 +1323,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle link list.
       inline const vector<vector<int> > *getTriangleLinks(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -1367,7 +1367,7 @@ namespace ttk{
       /// \sa getTriangleStarNumber()
       inline int getTriangleStar(const int &triangleId,
         const int &localStarId, int &starId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -1405,7 +1405,7 @@ namespace ttk{
       /// \param triangleId Input global triangle identifier.
       /// \return Returns the number of star cells.
       inline int getTriangleStarNumber(const int &triangleId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -1454,7 +1454,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle star list.
       inline const vector<vector<int> > *getTriangleStars(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -1492,7 +1492,7 @@ namespace ttk{
       inline int getTriangleVertex(const int &triangleId,
         const int &localVertexId, int &vertexId) const{
           
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -1534,7 +1534,7 @@ namespace ttk{
       inline int getVertexEdge(const int &vertexId, 
         const int &localEdgeId, int &edgeId) const{
           
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -1569,7 +1569,7 @@ namespace ttk{
       /// \param vertexId Input global vertex identifier.
       /// \return Returns the number of edges connected to the vertex.
       inline int getVertexEdgeNumber(const int &vertexId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -1615,7 +1615,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex edge list.
       inline const vector<vector<int> > *getVertexEdges(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -1656,7 +1656,7 @@ namespace ttk{
       inline int getVertexLink(const int &vertexId, 
         const int &localLinkId, int &linkId) const{
           
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -1692,7 +1692,7 @@ namespace ttk{
       /// \return Returns the number of cells in the link of the vertex. 
       inline int getVertexLinkNumber(const int &vertexId) const{
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -1736,7 +1736,7 @@ namespace ttk{
       /// \return Returns a pointer to the vertex link list.
       inline const vector<vector<int> > *getVertexLinks(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -1774,7 +1774,7 @@ namespace ttk{
       inline int getVertexNeighbor(const int &vertexId, 
         const int &localNeighborId, int &neighborId) const{
           
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -1807,7 +1807,7 @@ namespace ttk{
       /// \return Returns the number vertex neighbors.
       inline int getVertexNeighborNumber(const int &vertexId) const{
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -1850,7 +1850,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex neighbor list.
       inline const vector<vector<int> > *getVertexNeighbors(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -1878,7 +1878,7 @@ namespace ttk{
       inline int getVertexPoint(const int &vertexId, 
         float &x, float &y, float &z) const{
           
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -1908,7 +1908,7 @@ namespace ttk{
       inline int getVertexStar(const int &vertexId, 
         const int &localStarId, int &starId) const{
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -1943,7 +1943,7 @@ namespace ttk{
       /// \param vertexId Input global vertex identifier
       /// \return Returns the number of star cells.
       inline int getVertexStarNumber(const int &vertexId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
       
@@ -1988,7 +1988,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex star list.
       inline const vector<vector<int> > *getVertexStars(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -2032,7 +2032,7 @@ namespace ttk{
       inline int getVertexTriangle(const int &vertexId,
         const int &localTriangleId, int &triangleId) const{
          
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
           
@@ -2070,7 +2070,7 @@ namespace ttk{
       /// (it is a placeholder for a future version).
       inline int getVertexTriangleNumber(const int &vertexId) const{
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
@@ -2118,7 +2118,7 @@ namespace ttk{
       /// (it is a placeholder for a future version).
       inline const vector<vector<int> > *getVertexTriangles(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
@@ -2154,7 +2154,7 @@ namespace ttk{
       /// \param edgeId Input global edge identifier.
       /// \return Returns true if the edge is on the boundary, false otherwise.
       inline bool isEdgeOnBoundary(const int &edgeId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return false;
         
@@ -2200,7 +2200,7 @@ namespace ttk{
       /// \return Returns true if the triangle is on the boundary, false 
       /// otherwise.
       inline bool isTriangleOnBoundary(const int &triangleId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return false;
         
@@ -2237,7 +2237,7 @@ namespace ttk{
       /// \return Returns true if the vertex is on the boundary, false 
       /// otherwise.
       inline bool isVertexOnBoundary(const int &vertexId) const{
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return false;
         
@@ -2270,7 +2270,7 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa isEdgeOnBoundary()
       inline int preprocessBoundaryEdges(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -2292,7 +2292,7 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa isTriangleOnBoundary()
       inline int preprocessBoundaryTriangles(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -2314,7 +2314,7 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa isVertexOnBoundary()
       inline int preprocessBoundaryVertices(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -2338,7 +2338,7 @@ namespace ttk{
       /// \sa getCellEdge()
       /// \sa getCellEdgeNumber()
       inline int preprocessCellEdges(){
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -2365,7 +2365,7 @@ namespace ttk{
       /// \sa getCellNeighborNumber()
       inline int preprocessCellNeighbors(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -2392,7 +2392,7 @@ namespace ttk{
       /// \sa getCellTriangleNumber()
       inline int preprocessCellTriangles(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif        
@@ -2419,7 +2419,7 @@ namespace ttk{
       /// \sa getNumberOfEdges()
       inline int preprocessEdges(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif
@@ -2446,7 +2446,7 @@ namespace ttk{
       /// \sa getEdgeLinkNumber()
       inline int preprocessEdgeLinks(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif        
@@ -2473,7 +2473,7 @@ namespace ttk{
       /// \sa getEdgeStarNumber()
       inline int preprocessEdgeStars(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif          
@@ -2500,7 +2500,7 @@ namespace ttk{
       /// \sa getEdgeTriangleNumber()
       inline int preprocessEdgeTriangles(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif         
@@ -2527,7 +2527,7 @@ namespace ttk{
       /// \sa getTriangleVertex()
       inline int preprocessTriangles(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif    
@@ -2554,7 +2554,7 @@ namespace ttk{
       /// \sa getTriangleEdgeNumber()
       inline int preprocessTriangleEdges(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif 
@@ -2581,7 +2581,7 @@ namespace ttk{
       /// \sa getTriangleLinkNumber()
       inline int preprocessTriangleLinks(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif 
@@ -2608,7 +2608,7 @@ namespace ttk{
       /// \sa getTriangleStarNumber()
       inline int preprocessTriangleStars(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif         
@@ -2635,7 +2635,7 @@ namespace ttk{
       /// \sa getVertexEdgeNumber()
       inline int preprocessVertexEdges(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif         
@@ -2662,7 +2662,7 @@ namespace ttk{
       /// \sa getVertexLinkNumber()
       inline int preprocessVertexLinks(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif         
@@ -2689,7 +2689,7 @@ namespace ttk{
       /// \sa getVertexNeighborNumber()
       inline int preprocessVertexNeighbors(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif         
@@ -2716,7 +2716,7 @@ namespace ttk{
       /// \sa getVertexStarNumber()
       inline int preprocessVertexStars(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif          
@@ -2743,7 +2743,7 @@ namespace ttk{
       /// \sa getVertexTriangleNumber()
       inline int preprocessVertexTriangles(){
         
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
         if(isEmptyCheck())
           return -1;
 #endif        

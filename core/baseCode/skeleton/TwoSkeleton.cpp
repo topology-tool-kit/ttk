@@ -39,13 +39,13 @@ int TwoSkeleton::buildCellNeighborsFromVertices(const int &vertexNumber,
     cellNeighbors[i].reserve(vertexPerCell);
   
   // pre-sort vertex stars
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < vertexNumber; i++)
     sort((*localVertexStars)[i].begin(), (*localVertexStars)[i].end());
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < cellNumber; i++){
@@ -132,7 +132,7 @@ int TwoSkeleton::buildEdgeTriangles(const int &vertexNumber,
   Timer t;
   
   // check the consistency of the variables -- to adapt
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(vertexNumber <= 0)
     return -1;
   if(cellNumber <= 0)
@@ -206,7 +206,7 @@ int TwoSkeleton::buildEdgeTriangles(const int &vertexNumber,
   edgeTriangleList.resize(localEdgeList->size());
   
   // alright, let's get things done now.
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) localEdgeList->size(); i++){
@@ -313,7 +313,7 @@ int TwoSkeleton::buildTriangleList(const int &vertexNumber,
   int triangleNumber = 0;
   
   // check the consistency of the variables -- to adapt
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(vertexNumber <= 0)
     return -1;
   if(cellNumber <= 0)
@@ -448,7 +448,7 @@ int TwoSkeleton::buildTriangleList(const int &vertexNumber,
     
     // the following open-mp processing is only relevant for embarassingly 
     // parallel algorithms (such as smoothing) -- to adapt
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
     omp_lock_t writeLock;
     omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
@@ -459,7 +459,7 @@ int TwoSkeleton::buildTriangleList(const int &vertexNumber,
       if((!wrapper_)||((wrapper_)&&(!wrapper_->needsToAbort()))){
 
         int threadId = 1;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         threadId = omp_get_thread_num();
 #endif     
         
@@ -511,7 +511,7 @@ int TwoSkeleton::buildTriangleList(const int &vertexNumber,
         
         // update the progress bar of the wrapping code -- to adapt
         if(debugLevel_ > advancedInfoMsg){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
           omp_set_lock(&writeLock);
 #endif
           if((wrapper_)
@@ -521,14 +521,14 @@ int TwoSkeleton::buildTriangleList(const int &vertexNumber,
           }
 
           count++;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
           omp_unset_lock(&writeLock);
 #endif
         }
       }
     }
     
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
     omp_destroy_lock(&writeLock);
 #endif
   
@@ -713,7 +713,7 @@ int TwoSkeleton::buildTriangleEdgeList(const int &vertexNumber,
   // now for each triangle, grab its vertices, add the edges in the triangle
   // with no duplicate
   // let's do the real stuff
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) localTriangleList->size(); i++){
@@ -787,7 +787,7 @@ int TwoSkeleton::buildTriangleLinks(const vector<vector<int> > &triangleList,
   const long long int *cellArray,
   vector<vector<int> > &triangleLinks) const{
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(triangleList.empty())
     return -1;
   if((triangleStars.empty())||(triangleStars.size() != triangleList.size()))
@@ -800,7 +800,7 @@ int TwoSkeleton::buildTriangleLinks(const vector<vector<int> > &triangleList,
     
   triangleLinks.resize(triangleList.size());
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) triangleList.size(); i++){
@@ -849,12 +849,12 @@ int TwoSkeleton::buildVertexTriangles(
       threadedLists[i].resize(vertexNumber);
     }
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int i = 0; i < (int) triangleList.size(); i++){
       int threadId = 0;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
       threadId = omp_get_thread_num();
 #endif
 

@@ -82,7 +82,7 @@ template <class dataType> int ScalarFieldSmoother::smooth(
 
   Timer t;
   
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!triangulation_)
     return -1;
   if(!dimensionNumber_)
@@ -110,7 +110,7 @@ template <class dataType> int ScalarFieldSmoother::smooth(
   }
 
   for(int it = 0; it < numberOfIterations; it++){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
     omp_lock_t writeLock;
     omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
@@ -138,7 +138,7 @@ template <class dataType> int ScalarFieldSmoother::smooth(
         }
 
         if(debugLevel_ > advancedInfoMsg){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
           omp_set_lock(&writeLock);
 #endif
           // update the progress bar of the wrapping code
@@ -148,7 +148,7 @@ template <class dataType> int ScalarFieldSmoother::smooth(
               /(numberOfIterations*vertexNumber));
           }
           count++;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
           omp_unset_lock(&writeLock);
 #endif
         }
@@ -168,7 +168,7 @@ template <class dataType> int ScalarFieldSmoother::smooth(
       }
     }
     
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
     omp_destroy_lock(&writeLock);
 #endif
   }

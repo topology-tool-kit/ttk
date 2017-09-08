@@ -8,7 +8,7 @@ function(ttk_set_compile_options library)
 	target_compile_options(${library} PRIVATE -Wall)
 
 	if (TTK_WITH_KAMIKAZE)
-		target_compile_definitions(${library} PUBLIC withKamikaze)
+		target_compile_definitions(${library} PUBLIC TTK_WITH_KAMIKAZE)
 	endif()
 
 	if (TTK_ENABLE_CPU_OPTIMIZATION)
@@ -16,12 +16,13 @@ function(ttk_set_compile_options library)
 	endif()
 
 	if (TTK_WITH_OPENMP)
-		target_compile_definitions(${library} PUBLIC withOpenMP)
+		target_compile_definitions(${library} PUBLIC TTK_WITH_OPENMP)
 		target_compile_options(${library} PUBLIC ${OpenMP_CXX_FLAGS})
 		target_link_libraries(${library} PUBLIC ${OpenMP_CXX_FLAGS})
 	endif()
 
 	if (TTK_WITH_MPI)
+		target_compile_definitions(${library} PUBLIC TTK_WITH_MPI)
 		target_include_directories(${library} PUBLIC ${MPI_CXX_INCLUDE_PATH})
 		target_link_libraries(${library} PUBLIC ${MPI_CXX_LIBRARIES})
 	endif()

@@ -168,7 +168,7 @@ template <class dataTypeU, class dataTypeV>
   cellRangeBox_.resize(cellNumber_);
 
   // WARNING: assuming tets only here
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < cellNumber_; i++){

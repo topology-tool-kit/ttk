@@ -485,7 +485,7 @@ void MergeTree::parallelInitNodeValence(const int nbThreadValence)
 idSuperArc MergeTree::openSuperArc(const idNode &downNodeId, const bool overlapB,
                                    const bool overlapA)
 {
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
    if (downNodeId < 0 || (size_t)downNodeId >= getNumberOfNodes()) {
       cout << "[Merge Tree] openSuperArc on a inexisting node !" << endl;
       return -2;
@@ -530,7 +530,7 @@ idSuperArc MergeTree::makeSuperArc(const idNode &downNodeId, const idNode &upNod
 void MergeTree::closeSuperArc(const idSuperArc &superArcId, const idNode &upNodeId,
                               const bool overlapB, const bool overlapA)
 {
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
 
    if (superArcId < 0 || (size_t)superArcId >= getNumberOfSuperArcs()) {
       cout << "[Merge Tree] closeSuperArc on a inexisting arc !" << endl;
@@ -782,7 +782,7 @@ void MergeTree::hideNode(const idNode &node)
 
 idNode MergeTree::makeNode(const idVertex &vertexId, const idVertex &term)
 {
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
    if (vertexId < 0 || vertexId >= scalars_->size) {
       cout << "[Merge Tree] make node, wrong vertex :" << vertexId << " on "
            << scalars_->size << endl;
@@ -817,7 +817,7 @@ void MergeTree::delNode(const idNode &node, const pair<idVertex, bool> *markVert
       // Root
       // ----
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
       if (mainNode->getNumberOfDownSuperArcs() != 1) {
          cout << endl << "[MergeTree]:delNode won't delete ";
          cout << mainNode->getVertexId() << " (root) with ";
@@ -1242,7 +1242,7 @@ idSuperArc MergeTree::hideAndClearLeadingTo(const idNode &baseNode, const idVert
 // Print
 void MergeTree::printTree2()
 {
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp critical
 #endif
    {

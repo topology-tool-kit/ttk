@@ -116,7 +116,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
   
   int count = 0;
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
@@ -127,7 +127,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
     
       int threadId = 0;
     
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
       threadId = omp_get_thread_num();
 #endif
     
@@ -250,7 +250,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
         sphereList_[i]->GetOutputPort());
  
       if(debugLevel_ > 3){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_set_lock(&writeLock);
 #endif   
         if(!(count % (input->GetNumberOfPoints()/10))){
@@ -258,7 +258,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
         }
 
         count++;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_unset_lock(&writeLock);
 #endif
       }
@@ -272,7 +272,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
   }
   masterAppender_->Update();
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_destroy_lock(&writeLock);
 #endif
   

@@ -163,7 +163,7 @@ bool ttkTriangulation::hasChangedConnectivity(
   vtkDataSet *dataSet, vtkObject *callingObject)
 {
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!triangulation)
     return false;
   if(!dataSet)

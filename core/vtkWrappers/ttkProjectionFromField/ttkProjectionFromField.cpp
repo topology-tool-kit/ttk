@@ -83,7 +83,7 @@ int ttkProjectionFromField::doIt(vtkPointSet *input, vtkPointSet *output){
   
   int count = 0;
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
@@ -92,7 +92,7 @@ int ttkProjectionFromField::doIt(vtkPointSet *input, vtkPointSet *output){
     
     int threadId = 0;
     
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
     threadId = omp_get_thread_num();
 #endif
     
@@ -110,7 +110,7 @@ int ttkProjectionFromField::doIt(vtkPointSet *input, vtkPointSet *output){
         points[threadId][0], points[threadId][1], points[threadId][2]);
     
       if(debugLevel_ > Debug::advancedInfoMsg){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_set_lock(&writeLock);
 #endif
         if(!(count % (input->GetNumberOfPoints()/10))){
@@ -118,7 +118,7 @@ int ttkProjectionFromField::doIt(vtkPointSet *input, vtkPointSet *output){
         }
 
         count++;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_unset_lock(&writeLock);
 #endif
       }
@@ -128,7 +128,7 @@ int ttkProjectionFromField::doIt(vtkPointSet *input, vtkPointSet *output){
   output->SetPoints(pointSet_);
 
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_destroy_lock(&writeLock);
 #endif
   

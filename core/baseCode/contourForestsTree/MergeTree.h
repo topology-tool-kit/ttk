@@ -226,7 +226,7 @@ namespace ttk
 
       inline SuperArc *getSuperArc(const idSuperArc &i)
       {
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
          if ((size_t)i >= treeData_.superArcs.size()) {
             cout << "[Merge Tree] get superArc on bad id :" << i;
             cout << " / " << treeData_.superArcs.size() << endl;
@@ -294,7 +294,7 @@ namespace ttk
 
       inline const idNode &getLeave(const idNode &id) const
       {
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
          if ((id < 0) || (size_t)id > (treeData_.leaves.size())) {
             stringstream msg;
             msg << "[MergTree] getLeaves out of bounds : " << id << endl;
@@ -352,7 +352,7 @@ namespace ttk
 
       inline const idNode getCorrespondingNodeId(const idVertex &val) const
       {
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
          if (!isCorrespondingNode(val)) {
             stringstream debug;
             debug << "[MergeTree] : getCorrespondingNode, ";
@@ -366,7 +366,7 @@ namespace ttk
 
       inline const idSuperArc getCorrespondingSuperArcId(const idVertex &val) const
       {
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
          if (!isCorrespondingArc(val)) {
             stringstream debug;
             debug << "[MergeTree] : getCorrespondingSuperArcId, ";

@@ -187,15 +187,15 @@ int PersistenceDiagram::execute() const{
   // get persistence pairs
   vector<tuple<idVertex,idVertex,scalarType>> JTPairs;
   vector<tuple<idVertex,idVertex,scalarType>> STPairs;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel sections
 #endif
   {
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     contourTree.getJoinTree()->computePersistencePairs<scalarType>(JTPairs);
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp section
 #endif
     contourTree.getSplitTree()->computePersistencePairs<scalarType>(STPairs);

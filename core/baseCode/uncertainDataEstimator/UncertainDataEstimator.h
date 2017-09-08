@@ -31,7 +31,7 @@ namespace ttk{
     }
 
     int evaluateRealization(const void *voidPointer) {
-      #ifdef withKamikaze
+      #ifdef TTK_WITH_KAMIKAZE
       if(!(numberOfVertices_>0)) {
         return -1; // Number of vertices not defined
       }
@@ -143,7 +143,7 @@ namespace ttk{
 
     template <class dataType>
     int evaluateRealization(const dataType *inputData) {
-      #ifdef withKamikaze
+      #ifdef TTK_WITH_KAMIKAZE
       if(!(rangeMin_<rangeMax_)) {
         return -1; // Range error
       }
@@ -402,7 +402,7 @@ template <class dataType> int UncertainDataEstimator::execute() const{
   Timer t;
 
   // Check the consistency of the variables
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!numberOfInputs_)
     return -1;
   if(!vertexNumber_)
@@ -430,7 +430,7 @@ template <class dataType> int UncertainDataEstimator::execute() const{
   double *outputMeanField = static_cast<double*>(outputMeanField_);
 
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
@@ -469,7 +469,7 @@ template <class dataType> int UncertainDataEstimator::execute() const{
 
       // Update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_set_lock(&writeLock);
 #endif
         if((wrapper_)
@@ -479,7 +479,7 @@ template <class dataType> int UncertainDataEstimator::execute() const{
         }
 
         count++;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_unset_lock(&writeLock);
 #endif
       }
@@ -511,7 +511,7 @@ template <class dataType> int UncertainDataEstimator::execute() const{
 
     int idx;
     double increment = 1.0 / (double)numberOfInputs_;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for private(idx) num_threads(threadNumber_)
 #endif
     for(int v=0 ; v<vertexNumber_ ; v++){
@@ -534,7 +534,7 @@ template <class dataType> int UncertainDataEstimator::execute() const{
 
 
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_destroy_lock(&writeLock);
 #endif
 

@@ -34,7 +34,7 @@ template <class dataTypeU, class dataTypeV>
   Timer t;
  
   // check the consistency of the variables -- to adapt
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!vertexNumber_)
     return -1;
   if(!tetList_)
@@ -86,7 +86,7 @@ template <class dataTypeU, class dataTypeV>
     threadedTriangleIds[i][0] = 3;
   }
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
@@ -97,7 +97,7 @@ template <class dataTypeU, class dataTypeV>
     if((!wrapper_)||((wrapper_)&&(!wrapper_->needsToAbort()))){
 
       int threadId = 0;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
       threadId = omp_get_thread_num();
 #endif
       
@@ -151,7 +151,7 @@ template <class dataTypeU, class dataTypeV>
       
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_set_lock(&writeLock);
 #endif
         if((wrapper_)
@@ -161,14 +161,14 @@ template <class dataTypeU, class dataTypeV>
         }
 
         count++;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_unset_lock(&writeLock);
 #endif
       }
     }
   }
    
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_destroy_lock(&writeLock);
 #endif
   
@@ -191,7 +191,7 @@ template <class dataTypeU, class dataTypeV>
   Timer t;
   
   // check the consistency of the variables -- to adapt
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if((!triangulation_)||(triangulation_->isEmpty())){
     if(vertexNumber_){
       return executeLegacy(jacobiSet);
@@ -238,7 +238,7 @@ template <class dataTypeU, class dataTypeV>
   
   vector<vector<pair<int, char> > > threadedCriticalTypes(threadNumber_);
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < edgeNumber; i++){
@@ -248,7 +248,7 @@ template <class dataTypeU, class dataTypeV>
     if(type != -2){
       // -2: regular vertex
       int threadId = 0;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
       threadId = omp_get_thread_num();
 #endif
       threadedCriticalTypes[threadId].push_back(pair<int, char>(i, type));
@@ -322,7 +322,7 @@ template <class dataTypeU, class dataTypeV>
   }
   
   // check the consistency of the variables -- to adapt
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!vertexNumber_)
     return -1;
   if(!uField_)
@@ -366,7 +366,7 @@ template <class dataTypeU, class dataTypeV>
 
   vector<vector<pair<int, char> > > threadedCriticalTypes(threadNumber_);
 
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
@@ -377,7 +377,7 @@ template <class dataTypeU, class dataTypeV>
     if((!wrapper_)||((wrapper_)&&(!wrapper_->needsToAbort()))){
 
       int threadId = 0;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
       threadId = omp_get_thread_num();
 #endif
       
@@ -440,7 +440,7 @@ template <class dataTypeU, class dataTypeV>
       
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg){
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_set_lock(&writeLock);
 #endif
         if((wrapper_)
@@ -450,7 +450,7 @@ template <class dataTypeU, class dataTypeV>
         }
 
         count++;
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
         omp_unset_lock(&writeLock);
 #endif
       }
@@ -464,7 +464,7 @@ template <class dataTypeU, class dataTypeV>
     }
   }
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
   omp_destroy_lock(&writeLock);
 #endif
  
@@ -773,7 +773,7 @@ template <class dataTypeU, class dataTypeV>
   int JacobiSet<dataTypeU, dataTypeV>::perturbate(
     const dataTypeU &uEpsilon, const dataTypeV &vEpsilon) const{
       
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!uField_)
     return -1;
   if(!vField_)
@@ -785,7 +785,7 @@ template <class dataTypeU, class dataTypeV>
   dataTypeU *uField = (dataTypeU *) uField_;
   dataTypeV *vField = (dataTypeV *) vField_;
   
-#ifdef withOpenMP
+#ifdef TTK_WITH_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < vertexNumber_; i++){

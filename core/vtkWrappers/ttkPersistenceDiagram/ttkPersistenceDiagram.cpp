@@ -47,7 +47,7 @@ int ttkPersistenceDiagram::FillOutputPortInformation(int port,
 int ttkPersistenceDiagram::getScalars(vtkDataSet* input){
   vtkPointData* pointData=input->GetPointData();
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!pointData){
     cerr << "[ttkPersistenceDiagram] Error : input has no point data." << endl;
     return -1;
@@ -63,7 +63,7 @@ int ttkPersistenceDiagram::getScalars(vtkDataSet* input){
       ScalarField = inputScalars_->GetName();
   }
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!inputScalars_){
     cerr 
       << "[ttkPersistenceDiagram] Error : input scalar field pointer is null." 
@@ -133,7 +133,7 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
     inputOffsets_=offsets_;
   }
 
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(!inputOffsets_){
     cerr << "[ttkPersistenceDiagram] Error : wrong input offset scalar field." 
       << endl;
@@ -169,7 +169,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   int ret{};
 
   ret=getScalars(input);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(ret){
     cerr << "[ttkPersistenceDiagram] Error : wrong scalars." << endl;
     return -1;
@@ -177,7 +177,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   ret=getTriangulation(input);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(ret){
     cerr << "[ttkPersistenceDiagram] Error : wrong triangulation." << endl;
     return -2;
@@ -185,7 +185,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   ret=getOffsets(input);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
   if(ret){
     cerr << "[ttkPersistenceDiagram] Error : wrong offsets." << endl;
     return -3;
@@ -218,7 +218,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
           if(computeDiagram_){
           persistenceDiagram_.setOutputCTDiagram(CTDiagram);
           ret=persistenceDiagram_.execute<VTK_TT>();
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
           if(ret){
           cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
             << "error code : " << ret << endl;
@@ -231,7 +231,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
           ret=getPersistenceDiagramInsideDomain<VTK_TT>(TreeType::Contour, *CTDiagram);
           else
           ret=getPersistenceDiagram<VTK_TT>(TreeType::Contour, *CTDiagram);
-#ifndef withKamikaze
+#ifndef TTK_WITH_KAMIKAZE
           if(ret){
             cerr << "[ttkPersistenceDiagram] Error : "
               << "build of contour tree persistence diagram has failed." 
