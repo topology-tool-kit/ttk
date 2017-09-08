@@ -38,6 +38,7 @@ if (DOXYGEN_FOUND)
 		COMMENT "Generating API documentation with Doxygen" VERBATIM)
 endif()
 
+option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" TRUE)
 option(TTK_WITH_KAMIKAZE "Enable Kamikaze compilation mode" FALSE)
 option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" TRUE)
 if (NOT APPLE)
@@ -58,5 +59,7 @@ if (MSVC)
 endif()
 
 add_subdirectory(baseCode)
-add_subdirectory(vtkWrappers)
+if (TTK_BUILD_VTK_WRAPPERS)
+	add_subdirectory(vtkWrappers)
+endif()
 
