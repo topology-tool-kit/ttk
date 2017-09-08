@@ -29,7 +29,7 @@ function(ttk_add_vtk_library library)
 		"SOURCES;HEADERS;LINK" ${ARGN})
 
 	# Build the VTK Wrapper
-	add_library(${library} ${ARG_SOURCES})
+	add_library(${library} SHARED ${ARG_SOURCES})
 	target_link_libraries(${library} PUBLIC ${VTK_LIBRARIES} ${ARG_LINK})
 
 	target_include_directories(${library} PUBLIC
@@ -73,7 +73,7 @@ else()
 	find_package(ParaView REQUIRED)
 	include(${PARAVIEW_USE_FILE})
 	include_directories(${PARAVIEW_INCLUDE_DIRS})
-	set(TTK_PLUGIN_INSTALL_DIR 
+	set(TTK_PLUGIN_INSTALL_DIR
 		"${VTK_INSTALL_PREFIX}/lib/paraview-${PARAVIEW_VERSION_MAJOR}.${PARAVIEW_VERSION_MINOR}/plugins"
 		CACHE PATH
 		"Directory where TTK ParaView plugins will be installed")
