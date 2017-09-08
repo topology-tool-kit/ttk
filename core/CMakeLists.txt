@@ -1,3 +1,31 @@
+# Add compile flags and defintions to the target
+# according to the options selected by the user.
+#
+# Usage:
+# ttk_set_compile_options(<library_name>)
+#
+function(ttk_set_compile_options library)
+	target_compile_options(${library} PRIVATE -Wall)
+
+	if (TTK_WITH_KAMIKAZE)
+		target_compile_definitions(${library} PUBLIC withKamikaze)
+	endif()
+
+	if (TTK_ENABLE_CPU_OPTIMIZATION)
+		target_compile_options(${library} PRIVATE -march=native)
+	endif()
+
+	if (TTK_WITH_OPENMP)
+		target_compile_definitions(${library} PUBLIC withOpenMP)
+		target_compile_options(${library} PUBLIC ${OpenMP_CXX_FLAGS})
+	endif()
+
+	if (TTK_WITH_MPI)
+		target_include_directories(${library} PUBLIC ${MPI_CXX_INCLUDE_PATH})
+		target_link_libraries(${library} PUBLIC ${MPI_CXX_LIBRARIES})
+	endif()
+endfunction()
+
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
 	configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ttk.doxygen
@@ -6,6 +34,21 @@ if (DOXYGEN_FOUND)
 		${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/ttk.doxygen
 		WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 		COMMENT "Generating API documentation with Doxygen" VERBATIM)
+endif()
+
+option(TTK_WITH_KAMIKAZE "Enable Kamikaze compilation mode" FALSE)
+option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" TRUE)
+if (NOT APPLE)
+	option(TTK_WITH_OPENMP "Enable OpenMP support" TRUE)
+endif()
+option(TTK_WITH_MPI "Enable MPI support" FALSE)
+
+if (TTK_WITH_OPENMP)
+	find_package(OpenMP REQUIRED)
+endif()
+
+if (TTK_WITH_MPI)
+	find_package(MPI Required)
 endif()
 
 add_subdirectory(baseCode)

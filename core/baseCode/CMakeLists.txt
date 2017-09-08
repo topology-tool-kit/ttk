@@ -11,12 +11,16 @@ function(ttk_add_base_library library)
 	cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LINK" ${ARGN})
 
 	add_library(${library} SHARED ${ARG_SOURCES})
+
 	target_include_directories(${library} PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/base>)
+
 	if (ARG_LINK)
 		target_link_libraries(${library} PUBLIC ${ARG_LINK})
 	endif()
+
+	ttk_set_compile_options(${library})
 
 	install(TARGETS ${library}
 		EXPORT TTKBaseConfig
@@ -48,14 +52,32 @@ function(ttk_add_base_template_library library)
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/base>)
 
+	if (TTK_WITH_KAMIKAZE)
+		target_compile_definitions(${library} INTERFACE withKamikaze)
+	endif()
+
+	if (TTK_ENABLE_CPU_OPTIMIZATION)
+		target_compile_options(${library} INTERFACE "-march=native")
+	endif()
+
+	if (TTK_WITH_OPENMP)
+		target_compile_definitions(${library} INTERFACE withOpenMP)
+		target_compile_options(${library} INTERFACE ${OpenMP_CXX_FLAGS})
+	endif()
+
+	if (ARG_LINK)
+		target_link_libraries(${library} INTERFACE ${ARG_LINK})
+	endif()
+
+	if (TTK_WITH_MPI)
+		target_link_libraries(${library} INTERFACE ${MPI_CXX_LIBRARIES})
+	endif()
+
 	install(TARGETS ${library}
 		EXPORT TTKBaseConfig
 		RUNTIME DESTINATION bin/ttk/base/
 		ARCHIVE DESTINATION lib/ttk/base
 		LIBRARY DESTINATION lib/ttk/base)
-	if (ARG_LINK)
-		target_link_libraries(${library} INTERFACE ${ARG_LINK})
-	endif()
 
 	install(FILES ${ARG_SOURCES} DESTINATION include/ttk/base)
 endfunction()

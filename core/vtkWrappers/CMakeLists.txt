@@ -36,6 +36,8 @@ function(ttk_add_vtk_library library)
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/vtk>)
 
+	ttk_set_compile_options(${library})
+
 	install(TARGETS ${library}
 		EXPORT TTKVTKConfig
 		RUNTIME DESTINATION bin/ttk/vtk/
