@@ -18,6 +18,7 @@ function(ttk_set_compile_options library)
 	if (TTK_WITH_OPENMP)
 		target_compile_definitions(${library} PUBLIC withOpenMP)
 		target_compile_options(${library} PUBLIC ${OpenMP_CXX_FLAGS})
+		target_link_libraries(${library} PUBLIC ${OpenMP_CXX_FLAGS})
 	endif()
 
 	if (TTK_WITH_MPI)
