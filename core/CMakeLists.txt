@@ -52,6 +52,10 @@ if (TTK_WITH_MPI)
 	find_package(MPI Required)
 endif()
 
+if (MSVC)
+	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
+
 add_subdirectory(baseCode)
 add_subdirectory(vtkWrappers)
 
