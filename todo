@@ -1,0 +1,25 @@
+- accessible cmake features
+=
+. make ParaView_DIR accessible through cmake config
+. make VTK_DIR accessible through cmake config
+. make TTK_BINARY_INSTALL_DIR accessible through cmake config
+. make TTK_PLUGIN_INSTALL_DIR accessible through cmake config
+. careful about open mp flag (macro)
+. careful about kamikaze, mpi,
+
+- default values: 
+=
+. install everything
+
+- variable convention
+=
+TTK_LIBRARY
+TTK_VTK_LIBRARY
+TTK_PARAVIEW_PLUGINS
+TTK_STANDALONE_APPS
+
+TTK_ENABLE_CPU_OPTIMIZATION
+TTK_ENABLE_KAMIKAZE
+TTK_ENABLE_MPI
+TTK_ENABLE_OPENMP
+TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
