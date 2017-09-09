@@ -51,7 +51,7 @@ if (TTK_WITH_OPENMP)
 endif()
 
 if (TTK_WITH_MPI)
-	find_package(MPI Required)
+	find_package(MPI REQUIRED)
 endif()
 
 add_subdirectory(baseCode)
