@@ -14,9 +14,9 @@
 
 - default values: 
 =
-. install everything
+[.] install everything
 
-- variable convention
+- variable namng convention
 =
 TTK_LIBRARY
 TTK_VTK_LIBRARY
