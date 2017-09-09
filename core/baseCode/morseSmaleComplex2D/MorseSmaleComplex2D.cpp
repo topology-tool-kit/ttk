@@ -28,7 +28,7 @@ int MorseSmaleComplex2D::getSeparatrices(const vector<Cell>& criticalPoints,
   separatricesGeometry.resize(numberOfSeparatrices);
 
   // apriori: by default construction, the separatrices are not valid
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfSaddles; ++i){
@@ -103,7 +103,7 @@ int MorseSmaleComplex2D::setAscendingSegmentation(const vector<Cell>& criticalPo
   const int numberOfSeeds=maxSeeds.size();
   numberOfMaxima=numberOfSeeds;
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfSeeds; ++i){
@@ -143,7 +143,7 @@ int MorseSmaleComplex2D::setAscendingSegmentation(const vector<Cell>& criticalPo
   }
 
   // put segmentation infos from cells to points
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfVertices; ++i){
@@ -173,7 +173,7 @@ int MorseSmaleComplex2D::setDescendingSegmentation(const vector<Cell>& criticalP
   const int numberOfSeeds=seeds.size();
   numberOfMinima=numberOfSeeds;
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfSeeds; ++i){

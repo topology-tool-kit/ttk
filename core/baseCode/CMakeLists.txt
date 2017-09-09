@@ -52,16 +52,16 @@ function(ttk_add_base_template_library library)
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/base>)
 
-	if (TTK_WITH_KAMIKAZE)
-		target_compile_definitions(${library} INTERFACE TTK_WITH_KAMIKAZE)
+	if (TTK_ENABLE_KAMIKAZE)
+		target_compile_definitions(${library} INTERFACE TTK_ENABLE_KAMIKAZE)
 	endif()
 
 	if (TTK_ENABLE_CPU_OPTIMIZATION)
 		target_compile_options(${library} INTERFACE "-march=native")
 	endif()
 
-	if (TTK_WITH_OPENMP)
-		target_compile_definitions(${library} INTERFACE TTK_WITH_OPENMP)
+	if (TTK_ENABLE_OPENMP)
+		target_compile_definitions(${library} INTERFACE TTK_ENABLE_OPENMP)
 		target_compile_options(${library} INTERFACE ${OpenMP_CXX_FLAGS})
 	endif()
 
@@ -69,7 +69,7 @@ function(ttk_add_base_template_library library)
 		target_link_libraries(${library} INTERFACE ${ARG_LINK})
 	endif()
 
-	if (TTK_WITH_MPI)
+	if (TTK_ENABLE_MPI)
 		target_link_libraries(${library} INTERFACE ${MPI_CXX_LIBRARIES})
 	endif()
 

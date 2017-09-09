@@ -138,7 +138,7 @@ template <class dataType> int Blank::execute(
   Timer t;
   
   // check the consistency of the variables -- to adapt
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_)
     return -1;
   if(!inputData_)
@@ -159,7 +159,7 @@ template <class dataType> int Blank::execute(
   
   // the following open-mp processing is only relevant for embarrassingly 
   // parallel algorithms (such as smoothing) -- to adapt
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
   for(int i = 0; i < (int) vertexNumber; i++){

@@ -39,14 +39,14 @@ int ZeroSkeleton::buildVertexEdges(const int &vertexNumber,
       threadedVertexEdges[i].resize(vertexNumber);
     }
       
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int i = 0; i < (int) edgeList.size(); i++){
       
       int threadId = 0;
       
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
       threadId = omp_get_thread_num();
 #endif
       
@@ -96,7 +96,7 @@ int ZeroSkeleton::buildVertexLink(const int &vertexId, const int &cellNumber,
   const long long int *cellArray,
   vector<long long int> &vertexLink) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!cellArray)
     return -1;
 #endif
@@ -190,7 +190,7 @@ int ZeroSkeleton::buildVertexLinks(const int &vertexNumber,
   vector<vector<long long int> > &vertexLinks,
   vector<vector<int> > *vertexStars) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!cellArray)
     return -1;
 #endif
@@ -239,13 +239,13 @@ int ZeroSkeleton::buildVertexLinks(const int &vertexNumber,
   // 8-thread (4 cores): 0.38 s. [< 18%] total 2.53
   // processing: 
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < vertexNumber; i++){
     
     int threadId = 0;
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
     threadId = omp_get_thread_num();
 #endif
 
@@ -380,7 +380,7 @@ int ZeroSkeleton::buildVertexLinks(const vector<vector<int> > &vertexStars,
   const vector<pair<int, int> > &edgeList,
   vector<vector<int> > &vertexLinks) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(vertexStars.empty())
     return -1;
   if(cellEdges.empty())
@@ -393,7 +393,7 @@ int ZeroSkeleton::buildVertexLinks(const vector<vector<int> > &vertexStars,
   
   vertexLinks.resize(vertexStars.size());
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) vertexLinks.size(); i++){
@@ -429,7 +429,7 @@ int ZeroSkeleton::buildVertexLinks(const vector<vector<int> > &vertexStars,
   const vector<vector<int> > &triangleList,
   vector<vector<int> > &vertexLinks) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(vertexStars.empty())
     return -1;
   if(cellTriangles.empty())
@@ -442,7 +442,7 @@ int ZeroSkeleton::buildVertexLinks(const vector<vector<int> > &vertexStars,
   
   vertexLinks.resize(vertexStars.size());
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) vertexLinks.size(); i++){
@@ -484,7 +484,7 @@ int ZeroSkeleton::buildVertexNeighbors(const int &vertexNumber,
   vector<vector<int> > &oneSkeleton,
   vector<pair<int, int> > *edgeList) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!cellArray)
     return -1;
 #endif
@@ -541,7 +541,7 @@ int ZeroSkeleton::buildVertexStars(const int &vertexNumber,
   const int &cellNumber, const long long int *cellArray,
   vector<vector<int> > &vertexStars) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!cellArray)
     return -1;
 #endif
@@ -573,13 +573,13 @@ int ZeroSkeleton::buildVertexStars(const int &vertexNumber,
 
   int vertexNumberPerCell = cellArray[0];
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < cellNumber; i++){
     
     int threadId = 0;
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
     threadId = omp_get_thread_num();
 #endif
     

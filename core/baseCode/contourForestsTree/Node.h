@@ -122,7 +122,7 @@ namespace ttk
 
       inline idSuperArc getDownSuperArcId(const idSuperArc &neighborId) const
       {
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
          if ((neighborId < 0) || ((size_t)neighborId >= vect_downSuperArcList_.size())) {
             cerr << "[Merge Tree:Node] get down on bad neighbor !";
             cerr << endl;
@@ -134,7 +134,7 @@ namespace ttk
 
       inline idSuperArc getUpSuperArcId(const idSuperArc &neighborId) const
       {
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
          if (neighborId >= vect_upSuperArcList_.size()) {
             cerr << "[MergeTree:Node] No SuperArc to access " << static_cast<unsigned>(neighborId);
             cerr << endl;

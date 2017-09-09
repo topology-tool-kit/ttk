@@ -39,7 +39,7 @@ int ttkContinuousScatterPlot::FillOutputPortInformation(int port,
 int ttkContinuousScatterPlot::getScalars(vtkDataSet* input){
   vtkPointData* pointData=input->GetPointData();
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!pointData){
     cerr << "[ttkContinuousScatterPlot] Error : input has no point data." << endl;
     return -1;
@@ -51,7 +51,7 @@ int ttkContinuousScatterPlot::getScalars(vtkDataSet* input){
     inputScalars1_ = pointData->GetArray(UcomponentId);
   }
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalars1_){
     cerr << "[ttkContinuousScatterPlot] Error : input scalar field 1 pointer is null." << endl;
     return -3;
@@ -66,7 +66,7 @@ int ttkContinuousScatterPlot::getScalars(vtkDataSet* input){
     inputScalars2_ = pointData->GetArray(VcomponentId);
   }
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalars2_){
     cerr << "[ttkContinuousScatterPlot] Error : input scalar field 2 pointer is null." << endl;
     return -5;
@@ -109,7 +109,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   int ret{};
 
   ret=getTriangulation(input);
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // wrong triangulation
   if(ret){
     cerr << "[ttkContinuousScatterPlot] Error : wrong triangulation." << endl;
@@ -118,7 +118,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   ret=getScalars(input);
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // wrong scalar fields
   if(ret){
     cerr << "[ttkContinuousScatterPlot] Error : wrong scalar fields." << endl;
@@ -127,7 +127,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   int numberOfPixels=ScatterplotResolution[0]*ScatterplotResolution[1];
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // no pixels
   if(!numberOfPixels){
     cerr << "[ttkContinuousScatterPlot] Error : no pixels." << endl;
@@ -145,7 +145,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   }
 
   int numberOfPoints=input->GetNumberOfPoints();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // no points
   if(!numberOfPoints){
     cerr << "[ttkContinuousScatterPlot] Error : no points." << endl;
@@ -165,7 +165,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
     if(!k or scalarMax_[1]<d2)
       scalarMax_[1]=d2;
   }
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // scalar fields stats problem
   if(scalarMin_[0]==scalarMax_[0] or scalarMin_[1]==scalarMax_[1]){
     cerr << "[ttkContinuousScatterPlot] Error : scalar fields stats problem." << endl;
@@ -229,7 +229,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
       break;
   }
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(ret){
     cerr << "[ttkContinuousScatterPlot] ContinuousScatterPlot.execute() error code : " << ret << endl;
@@ -244,7 +244,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
     maskScalars->SetNumberOfTuples(numberOfPixels);
     maskScalars->SetName("ValidPointMask");
   }
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // allocation problem
   else{
     cerr << "[ttkContinuousScatterPlot] Error detected : vtkCharArray allocation problem." << endl;
@@ -258,7 +258,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
     densityScalars->SetNumberOfTuples(numberOfPixels);
     densityScalars->SetName("Density");
   }
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // allocation problem
   else{
     cerr << "[ttkContinuousScatterPlot] Error detected : vtkDoubleArray allocation problem." << endl;
@@ -272,7 +272,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
     scalars1->SetNumberOfTuples(numberOfPixels);
     scalars1->SetName(ScalarField1.data());
   }
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // allocation problem
   else{
     cerr << "[ttkContinuousScatterPlot] Error detected : vtkDoubleArray allocation problem." << endl;
@@ -286,7 +286,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
     scalars2->SetNumberOfTuples(numberOfPixels);
     scalars2->SetName(ScalarField2.data());
   }
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // allocation problem
   else{
     cerr << "[ttkContinuousScatterPlot] Error detected : vtkDoubleArray allocation problem." << endl;

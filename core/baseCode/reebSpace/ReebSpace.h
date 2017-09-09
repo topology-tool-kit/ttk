@@ -124,7 +124,7 @@ namespace ttk{
       
       inline const Sheet0* get0sheet(const int &sheetId) const{
         
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((sheetId < 0)||(sheetId >= (int) currentData_.sheet0List_.size()))
           return NULL;
 #endif
@@ -133,7 +133,7 @@ namespace ttk{
       }
       
       inline const Sheet1* get1sheet(const int &sheetId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((sheetId < 0)||(sheetId >= (int) currentData_.sheet1List_.size()))
           return NULL;
 #endif
@@ -143,7 +143,7 @@ namespace ttk{
       
       // warning, these are the originals
       inline const Sheet2* get2sheet(const int &sheetId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((sheetId < 0)||(sheetId >= (int) originalData_.sheet2List_.size()))
           return NULL;
 #endif
@@ -152,7 +152,7 @@ namespace ttk{
       }
       
       inline const Sheet3* get3sheet(const int &sheetId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((sheetId < 0)||(sheetId >= (int) currentData_.sheet3List_.size()))
           return NULL;
 #endif
@@ -219,7 +219,7 @@ namespace ttk{
         uField_ = uField;
         vField_ = vField;
         
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
         fiberSurface_.flushOctree();
 #endif
         
@@ -284,7 +284,7 @@ namespace ttk{
           fiberSurface_.setInputField(uField_, vField_);
           fiberSurface_.setupTriangulation(triangulation_);
           // trigger the fiber surface precomputation
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
           if(withRangeDrivenOctree_)
             fiberSurface_.buildOctree<dataTypeU, dataTypeV>();
 #endif
@@ -480,7 +480,7 @@ template <class dataTypeU, class dataTypeV>
     
     Timer t;
     
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int i = 0; i < (int) originalData_.sheet3List_.size(); i++){
@@ -514,7 +514,7 @@ template <class dataTypeU, class dataTypeV>
   inline int ReebSpace::compute2sheets(
     const vector<pair<int, int> > &jacobiEdges){
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_)
     return -1;
 #endif
@@ -557,7 +557,7 @@ template <class dataTypeU, class dataTypeV>
     jacobi2edges_[i] = edgeId; 
   }
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) originalData_.sheet2List_.size(); i++){
@@ -578,7 +578,7 @@ template <class dataTypeU, class dataTypeV>
     }
   }
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) jacobiEdges.size(); i++){
@@ -609,7 +609,7 @@ template <class dataTypeU, class dataTypeV>
         edge2polygonEdgeId[edgeId]);
     }
     else{
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
       if(withRangeDrivenOctree_){
         fiberSurface_.computeSurfaceWithOctree<dataTypeU, dataTypeV>(
           rangePoint0, rangePoint1, edge2polygonEdgeId[edgeId]);
@@ -626,7 +626,7 @@ template <class dataTypeU, class dataTypeV>
   }
  
  
-// #ifdef TTK_WITH_OPENMP
+// #ifdef TTK_ENABLE_OPENMP
 // #pragma omp parallel for num_threads(threadNumber_)
 // #endif
 //   for(int i = 0; i < (int) originalData_.sheet2List_.size(); i++){
@@ -690,7 +690,7 @@ template <class dataTypeU, class dataTypeV>
 template <class dataTypeU, class dataTypeV>
   inline int ReebSpace::compute2sheetChambers(){
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_)
     return -1;
 #endif
@@ -728,7 +728,7 @@ template <class dataTypeU, class dataTypeV>
       &(originalData_.sheet2List_[i].vertexList_[0]));
   }
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) edgeNumber_; i++){
@@ -844,7 +844,7 @@ template <class dataTypeU, class dataTypeV>
     
     Timer t;
     
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int i = 0; i < (int) originalData_.sheet3List_.size(); i++){

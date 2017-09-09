@@ -81,7 +81,7 @@ int MandatoryCriticalPoints::buildSubTrees(){
 
   Timer t;
 
-  #ifndef TTK_WITH_KAMIKAZE
+  #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexNumber_ <= 0)
   return -1;
   if((int)upperVertexScalars_.size() != vertexNumber_)
@@ -99,7 +99,7 @@ int MandatoryCriticalPoints::buildSubTrees(){
   // upperMaximumList_ and lowerMinimumList_ computation (not sorted by function value)
   lowerMinimumList_.clear();
   upperMaximumList_.clear();
-  #ifdef TTK_WITH_OPENMP
+  #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel for num_threads(threadNumber_)
   #endif
   for(int i=0 ; i<vertexNumber_ ; i++){
@@ -121,7 +121,7 @@ int MandatoryCriticalPoints::buildSubTrees(){
       break;
     }
     if(isLowerMin){
-      #ifdef TTK_WITH_OPENMP
+      #ifdef TTK_ENABLE_OPENMP
       #pragma omp critical
       #endif
       {
@@ -129,7 +129,7 @@ int MandatoryCriticalPoints::buildSubTrees(){
       }
     }
     if(isUpperMax){
-      #ifdef TTK_WITH_OPENMP
+      #ifdef TTK_ENABLE_OPENMP
       #pragma omp critical
       #endif
       {
@@ -138,11 +138,11 @@ int MandatoryCriticalPoints::buildSubTrees(){
     }
   }
 
-  #ifdef TTK_WITH_OPENMP
+  #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel sections num_threads(threadNumber_)
   #endif
   {
-    #ifdef TTK_WITH_OPENMP
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp section
     #endif
     {
@@ -154,7 +154,7 @@ int MandatoryCriticalPoints::buildSubTrees(){
       upperJoinTree_.buildExtremumList(upperMinimumList_, true);
       upperJoinTree_.build();
     }
-    #ifdef TTK_WITH_OPENMP
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp section
     #endif
     {
@@ -166,7 +166,7 @@ int MandatoryCriticalPoints::buildSubTrees(){
       lowerJoinTree_.setMinimumList(lowerMinimumList_);
       lowerJoinTree_.build();
     }
-    #ifdef TTK_WITH_OPENMP
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp section
     #endif
     {
@@ -178,7 +178,7 @@ int MandatoryCriticalPoints::buildSubTrees(){
       upperSplitTree_.setMaximumList(upperMaximumList_);
       upperSplitTree_.build();
     }
-    #ifdef TTK_WITH_OPENMP
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp section
     #endif
     {
@@ -501,7 +501,7 @@ int MandatoryCriticalPoints::buildPairs(const TreeType treeType) {
   vector<pair<pair<int,int>,double> > *extremaSaddlePair = (treeType == TreeType::JoinTree) ?
     &( mdtMinJoinSaddlePair_ ) : &( mdtMaxSplitSaddlePair );
 
-  #ifdef TTK_WITH_KAMIKAZE
+  #ifdef TTK_ENABLE_KAMIKAZE
   if(lowerTree->isJoinTree() != upperTree->isJoinTree())
     return -1;
   #endif
@@ -855,7 +855,7 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(const PointType pointType
   (pointType == PointType::Minimum) ?
   &( mandatoryMinimumInterval_ ) : &( mandatoryMaximumInterval_ );
 
-  #ifndef TTK_WITH_KAMIKAZE
+  #ifndef TTK_ENABLE_KAMIKAZE
   if( !(firstTree->isJoinTree() != firstTree->isSplitTree()) )
   return -1;
   if( !(secondTree->isJoinTree() != secondTree->isSplitTree()) )
@@ -880,7 +880,7 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(const PointType pointType
   // To mark the super arc in the second tree as already used for a mandatory critical component
   vector<bool> isSuperArcAlreadyVisited(secondTree->getNumberOfSuperArcs(), false);
 
-  // #ifdef TTK_WITH_OPENMP
+  // #ifdef TTK_ENABLE_OPENMP
   // #pragma omp parallel for num_threads(threadNumber_)
   // #endif
   for(int i=0 ; i<extremumNumber ; i++) {
@@ -1548,11 +1548,11 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   }
 
   // Getting global max and min
-  #ifdef TTK_WITH_OPENMP
+  #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel sections
   #endif
   {
-    #ifdef TTK_WITH_OPENMP
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp section
     #endif
     {
@@ -1565,7 +1565,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         }
       }
     }
-    #ifdef TTK_WITH_OPENMP
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp section
     #endif
     {

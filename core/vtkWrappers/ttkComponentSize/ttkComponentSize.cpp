@@ -51,7 +51,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
   vtkDataArray *cellIds = output->GetCellData()->GetArray("RegionId");
   vtkDataArray *vertexIds = output->GetPointData()->GetArray("RegionId");
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < output->GetNumberOfPoints(); i++){
@@ -67,7 +67,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
   vertexNumbers_->SetNumberOfComponents(1);
   vertexNumbers_->SetName("VertexNumber");
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
   for(int i = 0; i < output->GetNumberOfPoints(); i++){
     
@@ -79,7 +79,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
 #endif
   output->GetPointData()->AddArray(vertexNumbers_);
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < output->GetNumberOfCells(); i++){
@@ -95,7 +95,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
   cellNumbers_->SetNumberOfComponents(1);
   cellNumbers_->SetName("CellNumber");
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
   for(int i = 0; i < output->GetNumberOfCells(); i++){
     

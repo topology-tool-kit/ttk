@@ -253,7 +253,7 @@ namespace ttk{
     int omp_addSlot(){
       int numberOfSlots=0;
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp atomic capture
 #endif
       numberOfSlots=(numberOfSlots_++);
@@ -1406,7 +1406,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
   const int alphaNumber=gradient[alphaDim].size();
 
   if(dimensionality_==2){
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int alpha=0; alpha<alphaNumber; ++alpha){
@@ -1437,7 +1437,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
     }
   }
   else if(dimensionality_==3){
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int alpha=0; alpha<alphaNumber; ++alpha){
@@ -1483,7 +1483,7 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
     const int alphaNumber=gradient[alphaDim].size();
 
     if(dimensionality_==2){
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(int alpha=0; alpha<alphaNumber; ++alpha){
@@ -1516,7 +1516,7 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
       }
     }
     else if(dimensionality_==3){
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(int alpha=0; alpha<alphaNumber; ++alpha){
@@ -1565,7 +1565,7 @@ int DiscreteGradient::assignGradient3(const int alphaDim,
     const int alphaNumber=gradient[alphaDim].size();
 
     if(dimensionality_==3){
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(int alpha=0; alpha<alphaNumber; ++alpha){
@@ -1914,7 +1914,7 @@ int DiscreteGradient::proto_getRemovableMaxima(const vector<pair<int,char>>& cri
   fill(dmtMax2PL_.begin(), dmtMax2PL_.end(), -1);
 
   // by default : maximum is removable
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfCells; ++i){
@@ -2038,7 +2038,7 @@ int DiscreteGradient::proto_getRemovableSaddles1(const vector<pair<int,char>>& c
   vector<char> dmt2PL(numberOfEdges, false);
 
   // by default : 1-saddle is removable
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfEdges; ++i){
@@ -2166,7 +2166,7 @@ int DiscreteGradient::proto_getRemovableSaddles2(const vector<pair<int,char>>& c
   vector<char> dmt2PL(numberOfTriangles, false);
 
   // by default : 2-saddle is removable
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfTriangles; ++i){
@@ -2257,7 +2257,7 @@ int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isR
 
   // Part 2 : update the structures
   // apriori: by default construction, the vpaths and segments are not valid
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfSaddles; ++i){
@@ -2349,7 +2349,7 @@ int DiscreteGradient::initializeSaddleMaximumConnections(const vector<char>& isR
     cp.numberOfSlots_=0;
   }
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfVPaths; ++i){
@@ -2754,7 +2754,7 @@ int DiscreteGradient::proto_initializeSaddleMaximumConnections(vector<char>& isR
 
   // Part 2 : update the structures
   // apriori: by default construction, the vpaths and segments are not valid
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfSaddles; ++i){
@@ -2846,7 +2846,7 @@ int DiscreteGradient::proto_initializeSaddleMaximumConnections(vector<char>& isR
     cp.numberOfSlots_=0;
   }
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfVPaths; ++i){
@@ -3339,7 +3339,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
   }
 
   const int numberOfVPaths=vpaths.size();
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfVPaths; ++i){
@@ -3463,7 +3463,7 @@ int DiscreteGradient::proto_initializeSaddleSaddleConnections1(const vector<char
   }
 
   const int numberOfVPaths=vpaths.size();
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i<numberOfVPaths; ++i){
@@ -4272,7 +4272,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
     }
 
     const int numberOfVPaths=vpaths.size();
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int i=0; i<numberOfVPaths; ++i){
@@ -4395,7 +4395,7 @@ int DiscreteGradient::proto_initializeSaddleSaddleConnections2(const vector<char
     }
 
     const int numberOfVPaths=vpaths.size();
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int i=0; i<numberOfVPaths; ++i){

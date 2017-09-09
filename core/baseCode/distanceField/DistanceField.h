@@ -134,7 +134,7 @@ int DistanceField::execute() const{
   for(auto& k : scalars)
     k.resize(vertexNumber_, numeric_limits<dataType>::max());
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i< (int) sources.size(); ++i){
@@ -180,7 +180,7 @@ int DistanceField::execute() const{
     }
   }
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int k=0; k<vertexNumber_; ++k){

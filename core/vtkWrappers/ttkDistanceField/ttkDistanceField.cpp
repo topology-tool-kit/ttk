@@ -31,7 +31,7 @@ int ttkDistanceField::getTriangulation(vtkDataSet* input){
   distanceField_.setupTriangulation(triangulation_);
   Modified();
   
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // allocation problem
   if(triangulation_->isEmpty()){
     cerr << "[ttkDistanceField] Error : ttkTriangulation allocation problem." << endl;
@@ -46,7 +46,7 @@ int ttkDistanceField::getIdentifiers(vtkDataSet* input){
   if(VertexIdentifierScalarFieldName.length())
     identifiers_=input->GetPointData()->GetArray(VertexIdentifierScalarFieldName.data());
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // allocation problem
   if(!identifiers_){
     cerr << "[ttkDistanceField] Error : wrong vertex identifiers." << endl;
@@ -69,7 +69,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   int ret{};
 
   ret=getTriangulation(domain);
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(ret){
     cerr << "[ttkDistanceField] Error : wrong triangulation." << endl;
     return -1;
@@ -77,7 +77,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   ret=getIdentifiers(sources);
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(ret){
     cerr << "[ttkDistanceField] Error : wrong identifiers." << endl;
     return -2;
@@ -85,7 +85,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   const int numberOfPointsInDomain=domain->GetNumberOfPoints();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInDomain){
     cerr << "[ttkDistanceField] Error : domain has no points." << endl;
     return -3;
@@ -93,7 +93,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   const int numberOfPointsInSources=sources->GetNumberOfPoints();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInSources){
     cerr << "[ttkDistanceField] Error : sources have no points." << endl;
     return -4;
@@ -106,7 +106,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
     origin->SetNumberOfTuples(numberOfPointsInDomain);
     origin->SetName("SeedVertexIdentifier");
   }
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   else{
     cerr << "[ttkDistanceField] Error : vtkIntArray allocation problem." << endl;
     return -5;
@@ -119,7 +119,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
     seg->SetNumberOfTuples(numberOfPointsInDomain);
     seg->SetName("SeedIdentifier");
   }
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   else{
     cerr << "[ttkDistanceField] Error : vtkIntArray allocation problem." << endl;
     return -6;
@@ -144,7 +144,7 @@ GetVoidPointer(0));
         distanceScalars->SetNumberOfTuples(numberOfPointsInDomain);
         distanceScalars->SetName(OutputScalarFieldName.data());
       }
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
       else{
         cerr << "[ttkDistanceField] Error : vtkFloatArray allocation problem." 
 << endl;
@@ -164,7 +164,7 @@ distanceField_.setOutputScalarFieldPointer(distanceScalars->GetVoidPointer(0));
         distanceScalars->SetNumberOfTuples(numberOfPointsInDomain);
         distanceScalars->SetName(OutputScalarFieldName.data());
       }
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
       else{
         cerr << "[ttkDistanceField] Error : vtkDoubleArray allocation problem." 
 << endl;
@@ -178,14 +178,14 @@ distanceField_.setOutputScalarFieldPointer(distanceScalars->GetVoidPointer(0));
       break;
 
     default:
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkDistanceField] Error : Scalar field type problem." << endl;
       return -9;
 #endif
       break;
   }
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(ret){
     cerr << "[ttkDistanceField] DistanceField.execute() error code : " << ret << endl;

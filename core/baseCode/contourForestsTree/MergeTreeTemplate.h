@@ -40,7 +40,7 @@ void MergeTree::sortInput(void)
       sortedVect.resize(nbVertices, 0);
       iota(sortedVect.begin(), sortedVect.end(), 0);
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
       __gnu_parallel::sort(sortedVect.begin(), sortedVect.end(), indirect_sort);
 #else
       sort(sortedVect.begin(), sortedVect.end(), indirect_sort);
@@ -130,7 +130,7 @@ idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex posSeed
     iota(sortedNodes.begin(), sortedNodes.end(), 0);
 // Sort nodes by vertex scalar
 //{
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
     __gnu_parallel::sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
 #else
     sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
@@ -173,7 +173,7 @@ idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex posSeed
     //{
     // IS SET STILL BETTER ? (parallel sort) TODO
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
         __gnu_parallel::sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
 #else
         sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
@@ -456,7 +456,7 @@ idEdge MergeTree::simplifyTree(
 template <typename scalarType>
 int MergeTree::computePersistencePairs(vector<tuple<idVertex, idVertex, scalarType>> &pairs)
 {
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!getNumberOfSuperArcs()) {
       return -1;
    }
@@ -487,7 +487,7 @@ int MergeTree::computePersistencePairs(vector<tuple<idVertex, idVertex, scalarTy
 {
     // Need to be called on MergeTree, not ContourTree
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!getNumberOfSuperArcs()) {
       return -1;
    }

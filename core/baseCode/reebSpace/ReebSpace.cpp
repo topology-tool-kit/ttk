@@ -533,7 +533,7 @@ int ReebSpace::compute3sheets(
   // end of 3-sheet expansion
   
   // add the tets in parallel
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) originalData_.sheet3List_.size(); i++){
@@ -1244,7 +1244,7 @@ int ReebSpace::prepareSimplification(){
   
   currentData_.sheet2List_.resize(originalData_.sheet2List_.size());
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) currentData_.sheet2List_.size(); i++){
@@ -1807,7 +1807,7 @@ int ReebSpace::simplifySheets(const double &simplificationThreshold,
 //     }
 //   }
 //   
-// #ifdef TTK_WITH_OPENMP
+// #ifdef TTK_ENABLE_OPENMP
 // #pragma omp parallel for num_threads(threadNumber_)
 // #endif
 //   for(int i = 0; i < (int) tetList.size(); i++){

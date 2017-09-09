@@ -8,7 +8,7 @@ Debug::Debug() {
   
   threadNumber_ = 1;
   lastObject_ = false;
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
   threadNumber_ = omp_get_num_procs();
 #endif
   wrapper_ = NULL;

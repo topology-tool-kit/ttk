@@ -30,7 +30,7 @@ namespace ttk{
       inline int getCellEdge(const int &cellId, 
         const int &localEdgeId, int &edgeId) const{
        
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((cellId < 0)||(cellId >= (int) cellEdgeList_.size()))
           return -1;
         if((localEdgeId < 0)
@@ -42,7 +42,7 @@ namespace ttk{
       }
       
       inline int getCellEdgeNumber(const int &cellId) const {
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((cellId < 0)||(cellId >= (int) cellEdgeList_.size()))
           return -1;
 #endif
@@ -56,7 +56,7 @@ namespace ttk{
       
       inline int getCellNeighbor(const int &cellId,
         const int &localNeighborId, int &neighborId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((cellId < 0)||(cellId >= (int) cellNeighborList_.size()))
           return -1;
         if((localNeighborId < 0)
@@ -68,7 +68,7 @@ namespace ttk{
       }
       
       inline int getCellNeighborNumber(const int &cellId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((cellId < 0)||(cellId >= (int) cellNeighborList_.size()))
           return -1;
 #endif
@@ -81,7 +81,7 @@ namespace ttk{
       inline int getCellTriangle(const int &cellId,
         const int &localTriangleId, int &triangleId) const{
         
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((cellId < 0)||(cellId >= (int) cellTriangleList_.size()))
           return -1;
         if((localTriangleId < 0)
@@ -95,7 +95,7 @@ namespace ttk{
       
       inline int getCellTriangleNumber(const int &cellId) const{
        
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((cellId < 0)||(cellId >= (int) cellTriangleList_.size()))
           return -1;
 #endif
@@ -110,7 +110,7 @@ namespace ttk{
       
       inline int getCellVertex(const int &cellId,
         const int &localVertexId, int &vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((cellId < 0)||(cellId >= cellNumber_))
           return -1;
         if((localVertexId < 0)
@@ -122,7 +122,7 @@ namespace ttk{
       }
       
       inline int getCellVertexNumber(const int &cellId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((cellId < 0)||(cellId >= cellNumber_))
           return -1;
         if((!cellArray_)||(!cellNumber_))
@@ -146,7 +146,7 @@ namespace ttk{
       
       inline int getEdgeLink(const int &edgeId, 
         const int &localLinkId, int &linkId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((edgeId < 0)||(edgeId >= (int) edgeLinkList_.size()))
           return -1;
         if((localLinkId < 0)
@@ -158,7 +158,7 @@ namespace ttk{
       }
       
       inline int getEdgeLinkNumber(const int &edgeId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((edgeId < 0)||(edgeId >= (int) edgeLinkList_.size()))
           return -1;
 #endif
@@ -172,7 +172,7 @@ namespace ttk{
       
       inline int getEdgeStar(const int &edgeId,
         const int &localStarId, int &starId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((edgeId < 0)||(edgeId >= (int) edgeStarList_.size()))
           return -1;
         if((localStarId < 0)
@@ -184,7 +184,7 @@ namespace ttk{
       }
       
       inline int getEdgeStarNumber(const int &edgeId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((edgeId < 0)||(edgeId >= (int) edgeStarList_.size()))
           return -1;
 #endif
@@ -198,7 +198,7 @@ namespace ttk{
       inline int getEdgeTriangle(const int &edgeId,
         const int &localTriangleId, int &triangleId) const{
           
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((edgeId < 0)||(edgeId >= (int) edgeTriangleList_.size()))
           return -1;
         if((localTriangleId < 0)
@@ -213,7 +213,7 @@ namespace ttk{
       
       inline int getEdgeTriangleNumber(const int &edgeId) const{
         
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((edgeId < 0)||(edgeId >= (int) edgeTriangleList_.size()))
           return -1;
 #endif
@@ -228,7 +228,7 @@ namespace ttk{
       
       inline int getEdgeVertex(const int &edgeId,
         const int &localVertexId, int &vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((edgeId < 0)||(edgeId >= (int) edgeList_.size()))
           return -1;
         if((localVertexId != 0)&&(localVertexId != 1))
@@ -260,7 +260,7 @@ namespace ttk{
       inline int getTriangleEdge(const int &triangleId, 
         const int &localEdgeId, int &edgeId) const{
           
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((triangleId < 0)||(triangleId >= (int) triangleEdgeList_.size()))
           return -1;
         if((localEdgeId < 0)||(localEdgeId > 2))
@@ -274,7 +274,7 @@ namespace ttk{
       
       inline int getTriangleEdgeNumber(const int &triangleId) const{
        
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((triangleId < 0)||(triangleId >= (int) triangleEdgeList_.size()))
           return -1;
 #endif 
@@ -289,7 +289,7 @@ namespace ttk{
       
       inline int getTriangleLink(const int &triangleId, 
         const int &localLinkId, int &linkId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((triangleId < 0)||(triangleId >= (int) triangleLinkList_.size()))
           return -1;
         if((localLinkId < 0)
@@ -301,7 +301,7 @@ namespace ttk{
       }
       
       inline int getTriangleLinkNumber(const int &triangleId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((triangleId < 0)||(triangleId >= (int) triangleLinkList_.size()))
           return -1;
 #endif
@@ -314,7 +314,7 @@ namespace ttk{
       
       inline int getTriangleStar(const int &triangleId,
         const int &localStarId, int &starId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((triangleId < 0)||(triangleId >= (int) triangleStarList_.size()))
           return -1;
         if((localStarId < 0)
@@ -326,7 +326,7 @@ namespace ttk{
       }
       
       inline int getTriangleStarNumber(const int &triangleId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((triangleId < 0)||(triangleId >= (int) triangleStarList_.size()))
           return -1;
 #endif
@@ -339,7 +339,7 @@ namespace ttk{
       
       inline int getTriangleVertex(const int &triangleId,
         const int &localVertexId, int &vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((triangleId < 0)||(triangleId >= (int) triangleList_.size()))
           return -1;
         if((localVertexId < 0)
@@ -352,7 +352,7 @@ namespace ttk{
       
       inline int getVertexEdge(const int &vertexId, 
         const int &localEdgeId, int &edgeId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= (int) vertexEdgeList_.size()))
           return -1;
         if((localEdgeId < 0)
@@ -365,7 +365,7 @@ namespace ttk{
       
       inline int getVertexEdgeNumber(const int &vertexId) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= (int) vertexEdgeList_.size()))
           return -1;
 #endif
@@ -380,7 +380,7 @@ namespace ttk{
         const int &localLinkId, int &linkId) const{
          
         
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= (int) vertexLinkList_.size()))
           return -1;
         if((localLinkId < 0)
@@ -393,7 +393,7 @@ namespace ttk{
       }
 
       inline int getVertexLinkNumber(const int &vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= (int) vertexLinkList_.size()))
           return -1;
 #endif
@@ -406,7 +406,7 @@ namespace ttk{
       
       inline int getVertexNeighbor(const int &vertexId, 
         const int &localNeighborId, int &neighborId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= (int) vertexNeighborList_.size()))
           return -1;
         if((localNeighborId < 0)
@@ -418,7 +418,7 @@ namespace ttk{
       }
       
       inline int getVertexNeighborNumber(const int &vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= vertexNumber_))
           return -1;
 #endif
@@ -432,7 +432,7 @@ namespace ttk{
       inline int getVertexPoint(const int &vertexId, 
         float &x, float &y, float &z) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= vertexNumber_))
           return -1;
 #endif
@@ -446,7 +446,7 @@ namespace ttk{
       
       inline int getVertexStar(const int &vertexId, 
         const int &localStarId, int &starId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= (int) vertexStarList_.size()))
           return -1;
         if((localStarId < 0)
@@ -458,7 +458,7 @@ namespace ttk{
       }
       
       inline int getVertexStarNumber(const int &vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= (int) vertexStarList_.size()))
           return -1;
 #endif
@@ -472,7 +472,7 @@ namespace ttk{
       inline int getVertexTriangle(const int &vertexId,
         const int &localTriangleId, int &triangleId) const{
         
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= (int) vertexTriangleList_.size()))
           return -1;
         if((localTriangleId < 0)
@@ -485,7 +485,7 @@ namespace ttk{
       
       inline int getVertexTriangleNumber(const int &vertexId) const{
         
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= (int) vertexTriangleList_.size()))
           return -1;
 #endif
@@ -574,7 +574,7 @@ namespace ttk{
       }
       
       inline bool isEdgeOnBoundary(const int &edgeId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((edgeId < 0)||(edgeId >= (int) boundaryEdges_.size()))
           return false;
 #endif
@@ -584,7 +584,7 @@ namespace ttk{
       inline bool isEmpty() const { return !vertexNumber_;}
       
       inline bool isTriangleOnBoundary(const int &triangleId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((triangleId < 0)||(triangleId >= (int) boundaryTriangles_.size()))
           return false;
 #endif
@@ -592,7 +592,7 @@ namespace ttk{
       }
       
       inline bool isVertexOnBoundary(const int &vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((vertexId < 0)||(vertexId >= (int) boundaryVertices_.size()))
           return false;
 #endif

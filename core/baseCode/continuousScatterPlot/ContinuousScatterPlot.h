@@ -106,7 +106,7 @@ namespace ttk{
 
 template<typename dataType1, typename dataType2>
 int ContinuousScatterPlot::execute() const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField1_) return -1;
   if(!inputScalarField2_) return -2;
   if(!triangulation_) return -3;
@@ -138,7 +138,7 @@ int ContinuousScatterPlot::execute() const{
   const double sampling[2]{delta[0]/resolutions_[0],delta[1]/resolutions_[1]};
   const double epsilon{0.000001};
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int cell=0; cell<numberOfCells; ++cell){
@@ -438,7 +438,7 @@ int ContinuousScatterPlot::execute() const{
             if(v<0.0 or (u+v)>1.0) continue;
 
             // triangle/ray intersection below
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #ifdef _WIN32
 #pragma omp atomic
 #else
@@ -447,7 +447,7 @@ int ContinuousScatterPlot::execute() const{
 #endif
             (*density_)[i][j]+=(1.0-u-v)*density;
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #ifdef _WIN32
 #pragma omp atomic 
             (*validPointMask_)[i][j] += 1;

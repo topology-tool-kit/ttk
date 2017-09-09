@@ -68,7 +68,7 @@ int ttkMeshSubdivision::doIt(vtkUnstructuredGrid *input,
       }
     }
     
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int j = 0; j < (int) tmpGrid->GetNumberOfCells(); j++){

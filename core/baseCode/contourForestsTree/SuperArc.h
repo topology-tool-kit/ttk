@@ -75,7 +75,7 @@ namespace ttk
       pair<idVertex, bool> *vertList_;
       // The size of *vertList_
       idVertex sizeVertList_;
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
       // add a size verification for global simplify step
       idVertex allocSgm_=-1;
 #endif
@@ -357,7 +357,7 @@ namespace ttk
       inline int addSegmentationGlobal(const pair<idVertex, bool> *arr, const idVertex &size)
       {
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
           //cout << "size " << sizeVertList_ << " add " << size << " on " << allocSgm_ << endl;
          if (sizeVertList_ + size >= allocSgm_) {
             cerr << "SEGMENTATION SIZE PROBLEM :" << endl;
@@ -419,7 +419,7 @@ namespace ttk
       {
          vertList_     = new pair<idVertex, bool>[size];
          sizeVertList_ = 0;
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
          allocSgm_     = size;
 #endif
       }

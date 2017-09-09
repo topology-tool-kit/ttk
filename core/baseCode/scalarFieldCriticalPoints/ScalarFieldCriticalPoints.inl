@@ -23,7 +23,7 @@ template <class dataType>
 template <class dataType> int ScalarFieldCriticalPoints<dataType>::execute(){
 
   // check the consistency of the variables -- to adapt
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if((!dimension_)&&((!triangulation_)||(triangulation_->isEmpty())))
     return -1;
   if((!vertexNumber_)&&((!triangulation_)||(triangulation_->isEmpty())))
@@ -65,7 +65,7 @@ template <class dataType> int ScalarFieldCriticalPoints<dataType>::execute(){
   vector<char> vertexTypes(vertexNumber_);
  
   if(triangulation_){
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
     for(int i = 0; i < (int) vertexNumber_; i++){
@@ -75,7 +75,7 @@ template <class dataType> int ScalarFieldCriticalPoints<dataType>::execute(){
   }
   else if(vertexLinkEdgeLists_){
     // legacy implementation
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
     for(int i = 0; i < (int) vertexNumber_; i++){

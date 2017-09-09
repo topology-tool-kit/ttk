@@ -192,7 +192,7 @@ namespace ttk{
           upperVertexScalars_.resize(vertexNumber_);
         if((int)lowerVertexScalars_.size() != vertexNumber_)
           lowerVertexScalars_.resize(vertexNumber_);
-        #ifdef TTK_WITH_OPENMP
+        #ifdef TTK_ENABLE_OPENMP
         #pragma omp parallel for num_threads(threadNumber_)
         #endif
         for(int i=0 ; i<vertexNumber_ ; i++){
@@ -708,7 +708,7 @@ template <class dataType> int MandatoryCriticalPoints::execute() {
 
   // Check the consistency of the variables
   // TODO Déplacer les vérifications des outputs dans les bonnes fonctions
-  #ifndef TTK_WITH_KAMIKAZE
+  #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputUpperBoundField_)
     return -1;
   if(!inputLowerBoundField_)

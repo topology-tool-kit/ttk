@@ -43,7 +43,7 @@ int ContourForests::build()
       parallelParams_.nbThreads = 1;
    }
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
         omp_set_num_threads(parallelParams_.nbThreads);
 
 // Get number of proc <- find number of socket for NUMA ??
@@ -291,7 +291,7 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
    idEdge nbPairMerged = 0;
 #endif
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
    omp_set_nested(1);
 #endif
 

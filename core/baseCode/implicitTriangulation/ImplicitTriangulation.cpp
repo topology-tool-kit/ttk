@@ -201,7 +201,7 @@ bool ImplicitTriangulation::isPowerOfTwo(unsigned int v, unsigned int& r){
 }
 
 bool ImplicitTriangulation::isVertexOnBoundary(const int& vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId<0 or vertexId>=vertexNumber_) return -1;
 #endif
 
@@ -222,7 +222,7 @@ bool ImplicitTriangulation::isVertexOnBoundary(const int& vertexId) const{
 }
 
 bool ImplicitTriangulation::isEdgeOnBoundary(const int& edgeId) const {
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId<0 or edgeId>=edgeNumber_) return -1;
 #endif
 
@@ -269,7 +269,7 @@ bool ImplicitTriangulation::isEdgeOnBoundary(const int& edgeId) const {
 }
 
 bool ImplicitTriangulation::isTriangleOnBoundary(const int& triangleId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId<0 or triangleId>=triangleNumber_) return -1;
 #endif
 
@@ -280,7 +280,7 @@ bool ImplicitTriangulation::isTriangleOnBoundary(const int& triangleId) const{
 }
 
 inline int ImplicitTriangulation::getVertexNeighborNumber(const int& vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId<0 or vertexId>=vertexNumber_) return -1;
 #endif
 
@@ -366,7 +366,7 @@ inline int ImplicitTriangulation::getVertexNeighborNumber(const int& vertexId) c
 }
 
 int ImplicitTriangulation::getVertexNeighbor(const int& vertexId, const int& localNeighborId, int& neighborId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId<0 or localNeighborId>=getVertexNeighborNumber(vertexId)) return -1;
 #endif
 
@@ -489,7 +489,7 @@ int ImplicitTriangulation::getVertexEdgeNumber(const int& vertexId) const{
 }
 
 int ImplicitTriangulation::getVertexEdge(const int& vertexId, const int& localEdgeId, int& edgeId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localEdgeId<0 or localEdgeId>=getVertexEdgeNumber(vertexId)) return -1;
 #endif
   //    e--------f
@@ -625,7 +625,7 @@ const vector<vector<int>>* ImplicitTriangulation::getVertexEdges(){
 }
 
 inline int ImplicitTriangulation::getVertexTriangleNumber(const int &vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId<0 or vertexId>=vertexNumber_) return -1;
 #endif
 
@@ -687,7 +687,7 @@ inline int ImplicitTriangulation::getVertexTriangleNumber(const int &vertexId) c
 }
 
 int ImplicitTriangulation::getVertexTriangle(const int &vertexId, const int &localTriangleId, int &triangleId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localTriangleId<0 or localTriangleId>=getVertexTriangleNumber(vertexId)) return -1;
 #endif
   triangleId=-1;
@@ -781,7 +781,7 @@ int ImplicitTriangulation::getVertexLinkNumber(const int& vertexId) const{
 }
 
 int ImplicitTriangulation::getVertexLink(const int& vertexId, const int& localLinkId, int& linkId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localLinkId<0 or localLinkId>=getVertexLinkNumber(vertexId)) return -1;
 #endif
 
@@ -892,7 +892,7 @@ const vector<vector<int>>* ImplicitTriangulation::getVertexLinks(){
 }
 
 inline int ImplicitTriangulation::getVertexStarNumber(const int& vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId<0 or vertexId>=vertexNumber_) return -1;
 #endif
 
@@ -974,7 +974,7 @@ inline int ImplicitTriangulation::getVertexStarNumber(const int& vertexId) const
 }
 
 int ImplicitTriangulation::getVertexStar(const int& vertexId, const int& localStarId, int& starId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localStarId<0 or localStarId>=getVertexStarNumber(vertexId)) return -1;
 #endif
 
@@ -1084,7 +1084,7 @@ const vector<vector<int>>* ImplicitTriangulation::getVertexStars(){
 }
 
 int ImplicitTriangulation::getVertexPoint(const int& vertexId, float& x, float& y, float& z) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId<0 or vertexId>=vertexNumber_) return -1;
 #endif
 
@@ -1138,7 +1138,7 @@ int ImplicitTriangulation::getVertexPoint(const int& vertexId, float& x, float& 
 }
 
 int ImplicitTriangulation::getEdgeVertex(const int& edgeId, const int& localVertexId, int& vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId<0 or edgeId>=edgeNumber_) return -1;
   if(localVertexId<0 or localVertexId>=2) return -2;
 #endif
@@ -1321,7 +1321,7 @@ const vector<pair<int,int>>* ImplicitTriangulation::getEdges(){
 }
 
 inline int ImplicitTriangulation::getEdgeTriangleNumber(const int& edgeId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId<0 or edgeId>=edgeNumber_) return -1;
 #endif
 
@@ -1437,7 +1437,7 @@ inline int ImplicitTriangulation::getEdgeTriangleNumber(const int& edgeId) const
 }
 
 int ImplicitTriangulation::getEdgeTriangle(const int& edgeId, const int& localTriangleId, int& triangleId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localTriangleId<0 or localTriangleId>=getEdgeTriangleNumber(edgeId)) return -1;
 #endif
 
@@ -1596,7 +1596,7 @@ inline int ImplicitTriangulation::getEdgeLinkNumber(const int &edgeId) const{
 }
 
 int ImplicitTriangulation::getEdgeLink(const int &edgeId, const int &localLinkId, int &linkId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localLinkId<0 or localLinkId>=getEdgeLinkNumber(edgeId)) return -1;
 #endif
 
@@ -1682,7 +1682,7 @@ const vector<vector<int>>* ImplicitTriangulation::getEdgeLinks(){
 }
 
 inline int ImplicitTriangulation::getEdgeStarNumber(const int& edgeId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId<0 or edgeId>=edgeNumber_) return -1;
 #endif
 
@@ -1797,7 +1797,7 @@ inline int ImplicitTriangulation::getEdgeStarNumber(const int& edgeId) const{
 }
 
 int ImplicitTriangulation::getEdgeStar(const int& edgeId, const int& localStarId, int& starId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localStarId<0 or localStarId>=getEdgeStarNumber(edgeId)) return -1;
 #endif
 
@@ -1883,7 +1883,7 @@ const vector<vector<int>>* ImplicitTriangulation::getEdgeStars(){
 }
 
 int ImplicitTriangulation::getTriangleVertex(const int& triangleId, const int& localVertexId, int &vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId<0 or triangleId>=triangleNumber_) return -1;
   if(localVertexId<0 or localVertexId>=3) return -2;
 #endif
@@ -1965,7 +1965,7 @@ int ImplicitTriangulation::getTriangleVertex(const int& triangleId, const int& l
 }
 
 int ImplicitTriangulation::getTriangleEdge(const int &triangleId, const int &localEdgeId, int &edgeId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId<0 or triangleId>=triangleNumber_) return -1;
   if(localEdgeId<0 or localEdgeId>=3) return -2;
 #endif
@@ -2099,7 +2099,7 @@ const vector<vector<int>>* ImplicitTriangulation::getTriangles(){
 }
 
 int ImplicitTriangulation::getTriangleLink(const int &triangleId, const int &localLinkId, int &linkId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localLinkId<0 or localLinkId>=getTriangleLinkNumber(triangleId)) return -1;
 #endif
 
@@ -2171,7 +2171,7 @@ const vector<vector<int>>* ImplicitTriangulation::getTriangleLinks(){
 }
 
 inline int ImplicitTriangulation::getTriangleStarNumber(const int &triangleId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId<0 or triangleId>=triangleNumber_) return -1;
 #endif
 
@@ -2215,7 +2215,7 @@ inline int ImplicitTriangulation::getTriangleStarNumber(const int &triangleId) c
 }
 
 int ImplicitTriangulation::getTriangleStar(const int &triangleId, const int &localStarId, int &starId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localStarId<0 or localStarId>=getTriangleStarNumber(triangleId)) return -1;
 #endif
 
@@ -2281,7 +2281,7 @@ const vector<vector<int>>* ImplicitTriangulation::getTriangleStars(){
 }
 
 inline int ImplicitTriangulation::getTriangleNeighborNumber(const int &triangleId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId<0 or triangleId>=triangleNumber_) return -1;
 #endif
 
@@ -2307,7 +2307,7 @@ inline int ImplicitTriangulation::getTriangleNeighborNumber(const int &triangleI
 
 int ImplicitTriangulation::getTriangleNeighbor(const int &triangleId,
     const int &localNeighborId, int &neighborId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId<0 or localNeighborId>=getTriangleNeighborNumber(triangleId)) return -1;
 #endif
 
@@ -2378,7 +2378,7 @@ int ImplicitTriangulation::getTriangleNeighbors(vector<vector<int>>& neighbors){
 }
 
 int ImplicitTriangulation::getTetrahedronVertex(const int& tetId, const int& localVertexId, int& vertexId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(tetId<0 or tetId>=tetrahedronNumber_) return -1;
   if(localVertexId<0 or localVertexId>=4) return -2;
 #endif
@@ -2403,7 +2403,7 @@ int ImplicitTriangulation::getTetrahedronVertex(const int& tetId, const int& loc
 }
 
 int ImplicitTriangulation::getTetrahedronEdge(const int &tetId, const int &localEdgeId, int &edgeId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(tetId<0 or tetId>=tetrahedronNumber_) return -1;
   if(localEdgeId<0 or localEdgeId>=6) return -2;
 #endif
@@ -2440,7 +2440,7 @@ int ImplicitTriangulation::getTetrahedronEdges(vector<vector<int>>& edges) const
 }
 
 int ImplicitTriangulation::getTetrahedronTriangle(const int &tetId, const int &localTriangleId, int &triangleId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(tetId<0 or tetId>=tetrahedronNumber_) return -1;
   if(localTriangleId<0 or localTriangleId>=4) return -2;
 #endif
@@ -2477,7 +2477,7 @@ int ImplicitTriangulation::getTetrahedronTriangles(vector<vector<int>>& triangle
 }
 
 int ImplicitTriangulation::getTetrahedronNeighborNumber(const int &tetId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(tetId<0 or tetId>=tetrahedronNumber_) return -1;
 #endif
 
@@ -2524,7 +2524,7 @@ int ImplicitTriangulation::getTetrahedronNeighborNumber(const int &tetId) const{
 }
 
 int ImplicitTriangulation::getTetrahedronNeighbor(const int &tetId, const int &localNeighborId, int &neighborId) const{
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId<0 or localNeighborId>=getTetrahedronNeighborNumber(tetId)) return -1;
 #endif
 

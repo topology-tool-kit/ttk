@@ -15,7 +15,7 @@ int ThreeSkeleton::buildCellEdges(const int &vertexNumber,
   vector<pair<int, int> > *edgeList,
   vector<vector<int> > *vertexEdges) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(vertexNumber <= 0)
     return -1;
   if(cellNumber <= 0)
@@ -175,13 +175,13 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(const int &vertexNumber,
         threadedCellNeighbors[i][j].reserve(4);
     }
     
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int i = 0; i < (int) (*localTriangleStars).size(); i++){
       
       int threadId = 0;
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
       threadId = omp_get_thread_num();
 #endif
       
@@ -294,13 +294,13 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
     cellNeighbors[i].reserve(vertexPerCell);
  
   // pre-sort vertex stars
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < vertexNumber; i++)
     sort((*localVertexStars)[i].begin(), (*localVertexStars)[i].end());
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif  
   for(int i = 0; i < cellNumber; i++){

@@ -67,7 +67,7 @@ int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet* input){
   hasUpdatedMesh_=false;
 
   triangulation_=ttkTriangulation::getTriangulation(input);
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_){
     cerr << "[ttkMorseSmaleComplex] Error : ttkTriangulation::getTriangulation() is null." << endl;
     return -1;
@@ -83,7 +83,7 @@ int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet* input){
     Modified();
   }
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(triangulation_->isEmpty()){
     cerr << "[ttkMorseSmaleComplex] Error : ttkTriangulation allocation problem." << endl;
     return -1;
@@ -98,7 +98,7 @@ vtkDataArray* ttkMorseSmaleComplex::getScalars(vtkDataSet* input){
 
   vtkPointData* pointData=input->GetPointData();
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!pointData){
     cerr << "[ttkMorseSmaleComplex] Error : input has no point data." << endl;
     return inputScalars;
@@ -114,7 +114,7 @@ vtkDataArray* ttkMorseSmaleComplex::getScalars(vtkDataSet* input){
       ScalarField=inputScalars->GetName();
   }
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalars){
     cerr 
       << "[ttkMorseSmaleComplex] Error : input scalar field pointer is null." 
@@ -161,7 +161,7 @@ vtkDataArray* ttkMorseSmaleComplex::getOffsets(vtkDataSet* input){
     inputOffsets=defaultOffsets_;
   }
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputOffsets){
     cerr 
       << "[ttkMorseSmaleComplex] Error : wrong input offset scalar field." 
@@ -188,7 +188,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   vtkDataSet *outputMorseComplexes = outputs[3];
 
   ret=setupTriangulation(input);
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(ret){
     cerr << "[ttkMorseSmaleComplex] Error : wrong triangulation." << endl;
     return -1;
@@ -196,7 +196,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   vtkDataArray* inputScalars=getScalars(input);
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalars){
     cerr << "[ttkMorseSmaleComplex] Error : wrong scalars." << endl;
     return -2;
@@ -204,7 +204,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   vtkDataArray* inputOffsets=getOffsets(input);
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputOffsets){
     cerr << "[ttkMorseSmaleComplex] Error : wrong offsets." << endl;
     return -3;
@@ -255,7 +255,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
   // morse complexes
   const int numberOfVertices=triangulation_->getNumberOfVertices();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfVertices){
     cerr << "[ttkMorseSmaleComplex] Error : input has no vertices." << endl;
     return -4;
@@ -264,7 +264,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
   vtkSmartPointer<vtkIntArray> 
     ascendingManifold=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!ascendingManifold){
     cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem." << 
       endl;
@@ -277,7 +277,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
   vtkSmartPointer<vtkIntArray> 
     descendingManifold=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!descendingManifold){
     cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem." << 
       endl;
@@ -290,7 +290,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
   vtkSmartPointer<vtkIntArray> 
     morseSmaleManifold=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!morseSmaleManifold){
     cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem." << 
       endl;
@@ -395,7 +395,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
               &separatrices2_cells_isOnBoundary);
 
           ret=morseSmaleComplex_.execute<VTK_TT>();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
           if(ret){
             cerr 
               << "[ttkMorseSmaleComplex] Error : MorseSmaleComplex.execute() "
@@ -407,7 +407,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           // critical points
           {
             vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!points){
               cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation "
                 << "problem." << endl;
@@ -417,7 +417,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkIntArray> cellDimensions = 
               vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!cellDimensions){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
@@ -429,7 +429,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkIntArray> cellIds=
               vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!cellIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
@@ -440,7 +440,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             cellIds->SetName("CellId");
 
             vtkDataArray* cellScalars=inputScalars->NewInstance();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!cellScalars){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
@@ -452,7 +452,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkCharArray> isOnBoundary=
               vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!isOnBoundary){
               cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
                 << "problem." << endl;
@@ -464,7 +464,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkIntArray> PLVertexIdentifiers=
               vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!PLVertexIdentifiers){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
@@ -475,7 +475,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             PLVertexIdentifiers->SetName("VertexIdentifier");
 
             vtkSmartPointer<vtkIntArray> manifoldSizeScalars=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!manifoldSizeScalars){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
@@ -512,7 +512,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             outputCriticalPoints->SetPoints(points);
 
             vtkPointData* pointData=outputCriticalPoints->GetPointData();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!pointData){
               cerr << "[ttkMorseSmaleComplex] Error : outputCriticalPoints has "
                 << "no point data." << endl;
@@ -532,7 +532,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           if(ComputeAscendingSeparatrices1 or ComputeDescendingSeparatrices1 or 
               ComputeSaddleConnectors){
             vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!points){
               cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation "
                 << "problem." << endl;
@@ -541,7 +541,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 #endif
             vtkSmartPointer<vtkCharArray>
               smoothingMask=vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!smoothingMask){
               cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
                 << "problem." << endl;
@@ -553,7 +553,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkIntArray> 
               cellDimensions=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!cellDimensions){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
@@ -565,7 +565,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkIntArray> 
               cellIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!cellIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
@@ -577,7 +577,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkIntArray> 
               sourceIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!sourceIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
@@ -589,7 +589,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkIntArray> 
               destinationIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!destinationIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
@@ -601,7 +601,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkIntArray> 
               separatrixIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!separatrixIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
@@ -613,7 +613,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkCharArray> 
               separatrixTypes=vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!separatrixTypes){
               cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
                 << "problem." << endl;
@@ -624,7 +624,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             separatrixTypes->SetName("CriticalPointIndex");
 
             vtkDataArray* separatrixFunctionMaxima=inputScalars->NewInstance();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!separatrixFunctionMaxima){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
@@ -635,7 +635,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
 
             vtkDataArray* separatrixFunctionMinima=inputScalars->NewInstance();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!separatrixFunctionMinima){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
@@ -646,7 +646,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
 
             vtkDataArray* separatrixFunctionDiffs=inputScalars->NewInstance();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!separatrixFunctionDiffs){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
@@ -658,7 +658,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkCharArray> 
               isOnBoundary=vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!isOnBoundary){
               cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
                 << "problem." << endl;
@@ -711,7 +711,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             }
 
             vtkPointData* pointData=outputSeparatrices1->GetPointData();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!pointData){
               cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
                 << "no point data." << endl;
@@ -724,7 +724,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             pointData->AddArray(cellIds);
 
             vtkCellData* cellData=outputSeparatrices1->GetCellData();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!cellData){
               cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
                 << "no cell data." << endl;
@@ -745,7 +745,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           // 2-separatrices
           if(dimensionality==3 and (ComputeAscendingSeparatrices2 or ComputeDescendingSeparatrices2)){
             vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!points){
               cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation problem." 
                 << endl;
@@ -754,7 +754,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
             vtkSmartPointer<vtkIntArray> sourceIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!sourceIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem." 
                 << endl;
@@ -765,7 +765,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             sourceIds->SetName("SourceId");
 
             vtkSmartPointer<vtkIntArray> separatrixIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!separatrixIds){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem." 
                 << endl;
@@ -776,7 +776,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             separatrixIds->SetName("SeparatrixId");
 
             vtkSmartPointer<vtkCharArray> separatrixTypes=vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!separatrixTypes){
               cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation problem." 
                 << endl;
@@ -787,7 +787,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             separatrixTypes->SetName("CriticalPointIndex");
 
             vtkDataArray* separatrixFunctionMaxima=inputScalars->NewInstance();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!separatrixFunctionMaxima){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
@@ -798,7 +798,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
 
             vtkDataArray* separatrixFunctionMinima=inputScalars->NewInstance();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!separatrixFunctionMinima){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
@@ -809,7 +809,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
 
             vtkDataArray* separatrixFunctionDiffs=inputScalars->NewInstance();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!separatrixFunctionDiffs){
               cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
                 << "problem." << endl;
@@ -820,7 +820,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
 
             vtkSmartPointer<vtkCharArray> isOnBoundary=vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!isOnBoundary){
               cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation problem." 
                 << endl;
@@ -875,7 +875,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
             }
 
             vtkCellData* cellData=outputSeparatrices2->GetCellData();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!cellData){
               cerr << "[ttkMorseSmaleComplex] Error : "
                 << "outputSeparatrices2 has no cell data." << endl;
@@ -898,7 +898,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   outputMorseComplexes->ShallowCopy(input);
   if(ComputeAscendingSegmentation or ComputeDescendingSegmentation){
     vtkPointData* pointData=outputMorseComplexes->GetPointData();
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
     if(!pointData){
       cerr 
         << "[ttkMorseSmaleComplex] Error : outputMorseComplexes has no point "

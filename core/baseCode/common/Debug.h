@@ -23,7 +23,7 @@
 #ifndef                 _DEBUG_H
 #define                 _DEBUG_H
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
   #include              <omp.h>
 #endif
 

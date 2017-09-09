@@ -123,7 +123,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   fiberSurface_.setPointMerging(PointMerge);
   fiberSurface_.setPointMergingThreshold(PointMergeDistanceThreshold);
   
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
   if((!RangeOctree)
     ||(dataUfield->GetMTime() > GetMTime())
     ||(dataVfield->GetMTime() > GetMTime())){
@@ -175,7 +175,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
       switch(dataVfield->GetDataType()){
         vtkTemplateMacro((
           {
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
             if(RangeOctree)
               fiberSurface_.buildOctree<char, VTK_TT>();
 #endif
@@ -191,7 +191,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
       switch(dataVfield->GetDataType()){
         vtkTemplateMacro((
           {
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
             if(RangeOctree)
               fiberSurface_.buildOctree<double, VTK_TT>();
 #endif
@@ -207,7 +207,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
       switch(dataVfield->GetDataType()){
         vtkTemplateMacro((
           {
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
             if(RangeOctree)
               fiberSurface_.buildOctree<float, VTK_TT>();
 #endif
@@ -223,7 +223,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
       switch(dataVfield->GetDataType()){
         vtkTemplateMacro((
           {
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
             if(RangeOctree)
               fiberSurface_.buildOctree<int, VTK_TT>();
 #endif
@@ -239,7 +239,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
       switch(dataVfield->GetDataType()){
         vtkTemplateMacro((
           {
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
             if(RangeOctree)
               fiberSurface_.buildOctree<unsigned char, VTK_TT>();
 #endif
@@ -255,7 +255,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
       switch(dataVfield->GetDataType()){
         vtkTemplateMacro((
           {
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
             if(RangeOctree)
               fiberSurface_.buildOctree<unsigned short, VTK_TT>();
 #endif
@@ -310,7 +310,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   outputVertexList->SetNumberOfPoints(outputVertexList_.size());
   output->SetPoints(outputVertexList);
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) outputVertexList_.size(); i++){

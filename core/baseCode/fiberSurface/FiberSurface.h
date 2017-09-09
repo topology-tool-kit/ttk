@@ -42,7 +42,7 @@
 
 // base code includes
 #include                  <Geometry.h>
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
 #include                  <RangeDrivenOctree.h>
 #endif
 #include                  <Triangulation.h>
@@ -79,7 +79,7 @@ namespace ttk{
       
       ~FiberSurface();
       
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
       template <class dataTypeU, class dataTypeV>
         inline int buildOctree();
 #endif
@@ -108,7 +108,7 @@ namespace ttk{
         inline int computeSurface();
       
                  
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
       template <class dataTypeU, class dataTypeV>
         inline int computeSurfaceWithOctree(
           const pair<double, double> &rangePoint0,
@@ -123,7 +123,7 @@ namespace ttk{
           const bool &edgeFlips = false,
           const bool &intersectionRemesh = false);
         
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
       inline int flushOctree(){
         return octree_.flush();
       }
@@ -199,7 +199,7 @@ namespace ttk{
       inline int setTriangleList(const int &polygonEdgeId,
         vector<Triangle> *triangleList){
         
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((polygonEdgeId >= 0)
           &&(polygonEdgeId < (int) polygonEdgeTriangleLists_.size()))
 #endif
@@ -222,7 +222,7 @@ namespace ttk{
       inline int setVertexList(const int &polygonEdgeId,
         vector<Vertex> *vertexList){
         
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if((polygonEdgeId >= 0)
           &&(polygonEdgeId < (int) polygonEdgeVertexLists_.size()))
 #endif
@@ -443,13 +443,13 @@ namespace ttk{
                           
       Triangulation       *triangulation_;
                           
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
       RangeDrivenOctree   octree_;
 #endif
   };
 }
 
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
 template <class dataTypeU, class dataTypeV>
   inline int FiberSurface::buildOctree(){
  
@@ -1430,7 +1430,7 @@ template <class dataTypeU, class dataTypeV>
     const vector<int> &seedTetList,
     const int &polygonEdgeId) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!uField_)
     return -4;
   if(!vField_)
@@ -1490,7 +1490,7 @@ template <class dataTypeU, class dataTypeV> int FiberSurface::computeContour(
   const vector<int> &seedTetList,
   const vector<int> *edgeIdList) const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!tetNeighbors_)
     return -1;
   if(!tetNumber_)
@@ -1527,7 +1527,7 @@ template <class dataTypeU, class dataTypeV> int FiberSurface::computeContour(
     if(!visitedTets[tetId]){
      
       vector<vector<int> > threadedTetQueue(edgeList.size());
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(int i = 0; i < (int) edgeList.size(); i++){
@@ -1574,7 +1574,7 @@ template <class dataTypeU, class dataTypeV>
     const pair<double, double> &rangePoint1,
     const int &polygonEdgeId) const {
   
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if((!tetNumber_)&&(!triangulation_))
     return -1;
   if((!tetList_)&&(!triangulation_))
@@ -1597,7 +1597,7 @@ template <class dataTypeU, class dataTypeV>
     tetNumber = triangulation_->getNumberOfCells();
   }
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < tetNumber; i++){
@@ -1612,7 +1612,7 @@ template <class dataTypeU, class dataTypeV>
 template <class dataTypeU, class dataTypeV>
   inline int FiberSurface::computeSurface(){
     
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if((!tetNumber_)&&(!triangulation_))
     return -1;
   if((!tetList_)&&(!triangulation_))
@@ -1633,10 +1633,10 @@ template <class dataTypeU, class dataTypeV>
   
   Timer t;
  
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
   if(!octree_.empty()){
     
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int i = 0; i < polygonEdgeNumber_; i++){
@@ -1647,7 +1647,7 @@ template <class dataTypeU, class dataTypeV>
   }
   else{
     // regular extraction (the octree has not been computed)
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(int i = 0; i < polygonEdgeNumber_; i++){
@@ -1657,7 +1657,7 @@ template <class dataTypeU, class dataTypeV>
   }
   
 #else 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < polygonEdgeNumber_; i++){
@@ -1681,14 +1681,14 @@ template <class dataTypeU, class dataTypeV>
   return 0;
 }
 
-#ifdef TTK_WITH_RANGE_DRIVEN_OCTREE
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
 template <class dataTypeU, class dataTypeV>
   inline int FiberSurface::computeSurfaceWithOctree(
     const pair<double, double> &rangePoint0,
     const pair<double, double> &rangePoint1,
     const int &polygonEdgeId) const {
   
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if((!tetNumber_)&&(!triangulation_))
     return -1;
   if((!tetList_)&&(!triangulation_))
@@ -1708,7 +1708,7 @@ template <class dataTypeU, class dataTypeV>
   vector<int> tetList;
   octree_.rangeSegmentQuery(rangePoint0, rangePoint1, tetList);
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) tetList.size(); i++){
@@ -2310,7 +2310,7 @@ template <class dataTypeU, class dataTypeV>
 template <class dataTypeU, class dataTypeV>
   inline int FiberSurface::remeshIntersections() const{
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if((!tetNumber_)&&(!triangulation_))
     return -1;
 #endif
@@ -2371,7 +2371,7 @@ template <class dataTypeU, class dataTypeV>
       tetList.push_back(i);
   }
   
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < (int) tetList.size(); i++){

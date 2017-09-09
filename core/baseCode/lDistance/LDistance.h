@@ -109,7 +109,7 @@ template <class dataType> int LDistance::execute(
   int status;
   
   // Check variables consistency
-  #ifndef TTK_WITH_KAMIKAZE
+  #ifndef TTK_ENABLE_KAMIKAZE
   if (!inputData1_ || !inputData2_ || !outputData_)
     return -1;
   #endif
@@ -154,7 +154,7 @@ template <class dataType> int LDistance::computeLn(
   dataType sum = 0;
   
   // Compute difference for each point.
-  #ifdef TTK_WITH_OPENMP
+  #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel for num_threads(threadNumber_) reduction(+:sum)
   #endif
   for (int i = 0; i < vertexNumber; ++i) {
@@ -194,7 +194,7 @@ template <class dataType> int LDistance::computeLinf(
   dataType iter;
   
   // Compute difference for each point.
-  #ifdef TTK_WITH_OPENMP
+  #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel for num_threads(threadNumber_) reduction(max:maxValue)
   #endif
   for (int i = 1; i < vertexNumber; ++i) {

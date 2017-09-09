@@ -105,7 +105,7 @@ void ContourForests::initOverlap()
 #pragma omp parallel for num_threads(parallelParams_.nbThreads) schedule(static)
    for (idEdge e = 0; e < nbEdges; e++) {
 
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
        idPartition part = omp_get_thread_num();
 #else
        idPartition part = 0;

@@ -210,7 +210,7 @@ int TopologicalSimplification::getCriticalPoints(dataType* scalars,
     vector<int>& minima,
     vector<int>& maxima) const{
   vector<int> type(vertexNumber_);
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
   for(int k=0; k<vertexNumber_; ++k)
@@ -230,7 +230,7 @@ int TopologicalSimplification::getCriticalPoints(dataType* scalars,
     vector<int>& maxima,
     vector<bool>& extrema) const{
   vector<int> type(vertexNumber_);
-#ifdef TTK_WITH_OPENMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int k=0; k<vertexNumber_; ++k){
@@ -296,7 +296,7 @@ int TopologicalSimplification::execute() const{
   for(int k=0; k<constraintNumber_; ++k){
     const int identifierId=identifiers[k];
 
-#ifndef TTK_WITH_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
     if(identifierId>=0 and identifierId<vertexNumber_)
 #endif
       extrema[identifierId]=true;
