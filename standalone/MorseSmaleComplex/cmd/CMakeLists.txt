@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.2)
 
 project(morseSmaleComplexCmd)
 add_executable(morseSmaleComplexCmd main.cpp)

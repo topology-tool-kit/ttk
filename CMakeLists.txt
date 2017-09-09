@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.2)
 project(ttk VERSION 0.9.2 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
