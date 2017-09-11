@@ -65,6 +65,7 @@ ttkContourForests::ttkContourForests()
   SetNumberOfOutputPorts(3);
 
   triangulation_ = NULL;
+  vtkWarningMacro("[ContourForests]: DEPRECATED This plugin will be removed in a futur release, please use FTM instead");
 }
 
 ttkContourForests::~ttkContourForests()
