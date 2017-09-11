@@ -116,7 +116,7 @@ class ttkTriangulation : public Debug{
     /// \param dataSet Input VTK data-set.
     /// \param callingObject Calling VTK object (typically a vtkWrapper)
     /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa vtkContourForests
+    /// \sa ttkFTMTree
     /// \sa vtkMorseSmaleComplex
     /// \sa vtkReebSpace
     static bool hasChangedConnectivity(Triangulation *triangulation,

@@ -19,7 +19,7 @@
 /// Note that this filter will also produce an output vertex offset scalar field
 /// that can be used for further topological data analysis tasks to disambiguate
 /// vertices on flat plateaus. For instance, this output vertex offset field 
-/// can specified to the vtkContourForests, vtkIntegralLines, or 
+/// can specified to the ttkFTMTree, vtkIntegralLines, or 
 /// vtkScalarFieldCriticalPoints filters.
 /// 
 /// Also, this filter can be given a specific input vertex offset.
@@ -41,10 +41,10 @@
 /// Proc. of IEEE VIS 2012.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2012.
 ///
-/// \sa vtkScalarFieldCriticalPoints
-/// \sa vtkIntegralLines
-/// \sa vtkContourForests
-/// \sa vtkIdentifiers
+/// \sa ttkScalarFieldCriticalPoints
+/// \sa ttkIntegralLines
+/// \sa ttkFTMTree
+/// \sa ttkIdentifiers
 /// \sa ttk::TopologicalSimplification
 #ifndef _TTK_TOPOLOGICALSIMPLIFICATION_H
 #define _TTK_TOPOLOGICALSIMPLIFICATION_H
