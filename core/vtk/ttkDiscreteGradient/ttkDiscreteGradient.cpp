@@ -203,6 +203,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
   vector<int> gradientGlyphs_cells_pairTypes;
 
   // baseCode processing
+  discreteGradient_.setWrapper(this);
   discreteGradient_.setIterationThreshold(IterationThreshold);
   discreteGradient_.setReverseSaddleMaximumConnection(ReverseSaddleMaximumConnection);
   discreteGradient_.setReverseSaddleSaddleConnection(ReverseSaddleSaddleConnection);
@@ -322,6 +323,18 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             isOnBoundary->SetNumberOfComponents(1);
             isOnBoundary->SetName("IsOnBoundary");
 
+            vtkSmartPointer<vtkIntArray> PLVertexIdentifiers=
+              vtkSmartPointer<vtkIntArray>::New();
+#ifndef withKamikaze
+            if(!PLVertexIdentifiers){
+              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+                << "problem." << endl;
+              return -10;
+            }
+#endif
+            PLVertexIdentifiers->SetNumberOfComponents(1);
+            PLVertexIdentifiers->SetName("VertexIdentifier");
+
             for(int i=0; i<criticalPoints_numberOfPoints; ++i){
               points->InsertNextPoint(criticalPoints_points[3*i],
                   criticalPoints_points[3*i+1],
@@ -331,6 +344,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
               cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
               cellScalars->InsertNextTuple1(criticalPoints_points_cellScalars[i]);
               isOnBoundary->InsertNextTuple1(criticalPoints_points_isOnBoundary[i]);
+              PLVertexIdentifiers->InsertNextTuple1(criticalPoints_points_PLVertexIdentifiers[i]);
             }
             outputCriticalPoints->SetPoints(points);
 
@@ -346,6 +360,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             pointData->AddArray(cellIds);
             pointData->AddArray(cellScalars);
             pointData->AddArray(isOnBoundary);
+            pointData->AddArray(PLVertexIdentifiers);
           }
 
     }));
