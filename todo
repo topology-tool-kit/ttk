@@ -37,7 +37,7 @@ TTK_INSTALL_PLUGIN_DIR
 
 - paraview plugins
 =
-. move cmake code to the paraview dir
+[.] move cmake code to the paraview dir
 
 - binaries
 =
