@@ -4,5 +4,5 @@ project(jacobiSetGui)
 
 add_executable(jacobiSetGui main.cpp)
 target_link_libraries(jacobiSetGui ttkJacobiSet ttkUserInterfaceBase)
-install(TARGETS jacobiSetGui RUNTIME DESTINATION bin/ttk)
 
+install(TARGETS jacobiSetGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})

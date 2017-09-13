@@ -8,10 +8,10 @@ else()
 	include_directories(${PARAVIEW_INCLUDE_DIRS})
 endif()
 
+set(TTK_INSTALL_BINARY_DIR "bin")
 file(GLOB STANDALONE_DIRS */cmd */gui)
 foreach(STANDALONE ${STANDALONE_DIRS})
 	if (IS_DIRECTORY ${STANDALONE})
 		add_subdirectory(${STANDALONE})
 	endif()
 endforeach()
-

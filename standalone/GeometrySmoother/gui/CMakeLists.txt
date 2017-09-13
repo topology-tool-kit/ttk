@@ -4,5 +4,6 @@ project(geometrySmootherGui)
 
 add_executable(geometrySmootherGui main.cpp)
 target_link_libraries(geometrySmootherGui ttkGeometrySmoother ttkUserInterfaceBase)
-install(TARGETS geometrySmootherGui RUNTIME DESTINATION bin/ttk)
+
+install(TARGETS geometrySmootherGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
 
