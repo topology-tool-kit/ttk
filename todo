@@ -6,9 +6,9 @@
 
 - accessible cmake features
 =
-. make ParaView_DIR accessible through cmake config (appears when paraview enabled)
+[.] make ParaView_DIR accessible through cmake config (appears when paraview enabled)
 . make VTK_DIR accessible through cmake config
-. make TTK_PLUGIN_INSTALL_DIR accessible through cmake config
+[.] make TTK_PLUGIN_INSTALL_DIR accessible through cmake config
 . careful about open mp flag (macro)
 . careful about kamikaze, mpi,
 
@@ -32,7 +32,8 @@ TTK_STANDALONE_APPS
 TTK_INSTALL_PLUGIN_DIR
 
 - libraries
-. make sure only the paraview plugins build against the VKT shipped with PV and not everything.
+. make sure only the paraview plugins build against the VTK shipped with PV and not everything.
+ > there's pros and cons about that feature (let's see that later)
 
 - paraview plugins
 =
@@ -45,7 +46,7 @@ TTK_INSTALL_PLUGIN_DIR
 - root CMakeLists.txt
 =
 . list all buildadble components (such that users can simply comment things out)
- > there's pros and cons about that feature
+ > there's pros and cons about that feature (let's see that later)
 
 = 
 Travis CI support?
