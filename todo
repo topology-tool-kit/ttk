@@ -48,6 +48,10 @@ TTK_INSTALL_PLUGIN_DIR
 . list all buildadble components (such that users can simply comment things out)
  > there's pros and cons about that feature (let's see that later)
 
+- third party code
+=
+. create a TTK_LIBRARIES variable (just like VTK_LIBRARIES) to make the CMakeLists.txt simpler (see my comment on topo-vol commit)
+
 = 
 Travis CI support?
 
