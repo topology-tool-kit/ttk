@@ -1,4 +1,6 @@
-
+- libraries
+. make sure only the paraview plugins build against the VTK shipped with PV and not everything.
+  -- to fix first 
 
 - CMake TTK messages
 =
@@ -30,10 +32,6 @@ TTK_STANDALONE_APPS
 [x] TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
 
 TTK_INSTALL_PLUGIN_DIR
-
-- libraries
-. make sure only the paraview plugins build against the VTK shipped with PV and not everything.
- > there's pros and cons about that feature (let's see that later)
 
 - paraview plugins
 =
