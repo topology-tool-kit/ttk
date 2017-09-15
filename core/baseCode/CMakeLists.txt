@@ -89,6 +89,49 @@ foreach(BASECODE ${BASECODE_DIRS})
 	endif()
 endforeach()
 
+add_library(baseAll INTERFACE)
+target_link_libraries(baseAll INTERFACE
+	abstractMorseSmaleComplex
+	abstractTriangulation
+	bottleneckDistance
+	common
+	continuousScatterPlot
+	contourForests
+	contourForestsTree
+	contourTree
+	discreteGradient
+	distanceField
+	explicitTriangulation
+	fiberSurface
+	geometry
+	implicitTriangulation
+	integralLines
+	jacobiSet
+	lDistance
+	lowestCommonAncestor
+	mandatoryCriticalPoints
+	morseSmaleComplex
+	morseSmaleComplex2D
+	morseSmaleComplex3D
+	persistenceCurve
+	persistenceDiagram
+	rangeDrivenOctree
+	rangeMinimumQuery
+	reebSpace
+	scalarFieldCriticalPoints
+	scalarFieldSmoother
+	skeleton
+	topologicalSimplification
+	triangulation
+	uncertainDataEstimator
+	unionFind)
+
+install(TARGETS baseAll
+	EXPORT TTKBaseConfig
+	RUNTIME DESTINATION bin/ttk
+	ARCHIVE DESTINATION lib/ttk
+	LIBRARY DESTINATION lib/ttk)
+
 install(EXPORT TTKBaseConfig
 	NAMESPACE ttk::base::
 	DESTINATION lib/cmake/ttk)

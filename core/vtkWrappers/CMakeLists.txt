@@ -85,6 +85,51 @@ foreach(VTKWRAPPER ${VTKWRAPPER_DIRS})
 	endif()
 endforeach()
 
+# Add a bundle library that will just link all the TTK vtkWrappers
+add_library(ttkAll INTERFACE)
+target_link_libraries(ttkAll INTERFACE
+	ttkBottleneckDistance
+	ttkCellDataConverter
+	ttkComponentSize
+	ttkContinuousScatterPlot
+	ttkContourForests
+	ttkDistanceField
+	ttkFiber
+	ttkFiberSurface
+	ttkGeometrySmoother
+	ttkIdentifierRandomizer
+	ttkIdentifiers
+	ttkIntegralLines
+	ttkJacobiSet
+	ttkLDistance
+	ttkMandatoryCriticalPoints
+	ttkMeshSubdivision
+	ttkMorseSmaleComplex
+	ttkPersistenceCurve
+	ttkPersistenceDiagram
+	ttkPointDataConverter
+	ttkProgramBase
+	ttkProjectionFromField
+	ttkRangePolygon
+	ttkReebSpace
+	ttkScalarFieldCriticalPoints
+	ttkScalarFieldNormalizer
+	ttkScalarFieldSmoother
+	ttkSphereFromPoint
+	ttkTextureMapFromField
+	ttkTopologicalSimplification
+	ttkTriangulation
+	ttkTriangulationRequest
+	ttkUncertainDataEstimator
+	ttkUserInterfaceBase
+	ttkWRLExporter)
+
+install(TARGETS ttkAll
+	EXPORT TTKVTKConfig
+	RUNTIME DESTINATION bin/ttk
+	ARCHIVE DESTINATION lib/ttk
+	LIBRARY DESTINATION lib/ttk)
+
 install(EXPORT TTKVTKConfig
 	NAMESPACE ttk::vtk::
 	DESTINATION lib/cmake/ttk)
