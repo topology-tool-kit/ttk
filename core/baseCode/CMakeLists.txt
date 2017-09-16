@@ -10,6 +10,11 @@
 function(ttk_add_base_library library)
 	cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LINK" ${ARGN})
 
+	set(CMAKE_SKIP_BUILD_RPATH TRUE)
+	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
+	set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
+	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 	add_library(${library} SHARED ${ARG_SOURCES})
 
 	target_include_directories(${library} PUBLIC

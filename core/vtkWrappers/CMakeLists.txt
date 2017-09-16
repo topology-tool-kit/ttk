@@ -28,6 +28,12 @@ function(ttk_add_vtk_library library)
 	cmake_parse_arguments(ARG "" "PLUGIN_XML;PLUGIN_VERSION"
 		"SOURCES;HEADERS;LINK" ${ARGN})
 
+	set(CMAKE_SKIP_BUILD_RPATH TRUE)
+	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
+	set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
+	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+
 	# Build the VTK Wrapper
 	add_library(${library} SHARED ${ARG_SOURCES})
 	target_link_libraries(${library} PUBLIC ${VTK_LIBRARIES} ${ARG_LINK})
