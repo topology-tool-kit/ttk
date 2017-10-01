@@ -38,10 +38,6 @@ if (DOXYGEN_FOUND)
 		COMMENT "Generating API documentation with Doxygen" VERBATIM)
 endif()
 
-option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" FALSE)
-option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" TRUE)
-option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" ON)
-option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON)
 if (NOT APPLE)
 	option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
 endif()
@@ -53,10 +49,6 @@ endif()
 
 if (TTK_ENABLE_MPI)
 	find_package(MPI REQUIRED)
-endif()
-
-if (TTK_BUILD_PARAVIEW_PLUGINS)
-	set(TTK_BUILD_VTK_WRAPPERS ON CACHE BOOL "Build the TTK VTK Wrappers" FORCE)
 endif()
 
 add_subdirectory(baseCode)
