@@ -18,7 +18,7 @@ if [ "$TTK_BUILD_PARAVIEW_PLUGINS" == "ON" ]; then
 		-DPARAVIEW_INSTALL_DEVELOPMENT_FILES=ON \
 		-DPARAVIEW_QT_VERSION=4 ..
 
-	cmake --build . --target install -- -j `nproc`
+	cmake --build . --target install -- -j 2
 
 elif [ "$TTK_BUILD_VTK_WRAPPERS" == "ON" ]; then
 	wget "http://www.vtk.org/files/release/7.1/VTK-7.1.1.tar.gz"
@@ -29,7 +29,7 @@ elif [ "$TTK_BUILD_VTK_WRAPPERS" == "ON" ]; then
 		-DVTK_RENDERING_BACKEND=OpenGL2 \
 		-DVTK_WRAP_PYTHON=ON .
 
-	cmake --build . --target install -- -j `nproc`
+	cmake --build . --target install -- -j 2
 
 fi
 
