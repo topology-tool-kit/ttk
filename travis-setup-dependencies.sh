@@ -4,6 +4,8 @@
 # on Travis CI since they're not provided through the container
 # based infrastructure (I think an old VTK version is? might be too old)
 
+MAKE_NUM_JOBS=2
+
 if [ "$TTK_BUILD_PARAVIEW_PLUGINS" == "ON" ]; then
 	wget "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.4&type=binary&os=Sources&downloadFile=ParaView-v5.4.1.tar.gz" -O ParaView-v5.4.1.tar.gz
 	tar -xf ParaView-v5.4.1.tar.gz
@@ -18,7 +20,7 @@ if [ "$TTK_BUILD_PARAVIEW_PLUGINS" == "ON" ]; then
 		-DPARAVIEW_INSTALL_DEVELOPMENT_FILES=ON \
 		-DPARAVIEW_QT_VERSION=4 ..
 
-	cmake --build . --target install -- -j 2
+	cmake --build . --target install -- -j $MAKE_NUM_JOBS
 
 elif [ "$TTK_BUILD_VTK_WRAPPERS" == "ON" ]; then
 	wget "http://www.vtk.org/files/release/7.1/VTK-7.1.1.tar.gz"
@@ -29,7 +31,7 @@ elif [ "$TTK_BUILD_VTK_WRAPPERS" == "ON" ]; then
 		-DVTK_RENDERING_BACKEND=OpenGL2 \
 		-DVTK_WRAP_PYTHON=ON .
 
-	cmake --build . --target install -- -j 2
+	cmake --build . --target install -- -j $MAKE_NUM_JOBS
 
 fi
 
