@@ -1,4 +1,4 @@
-#include                  <ttkPersistenceDiagram.h>
+#include <ttkPersistenceDiagram.h>
 
 vtkStandardNewMacro(ttkPersistenceDiagram)
 
@@ -148,7 +148,7 @@ int ttkPersistenceDiagram::deleteDiagram(){
   if(CTDiagram_ and inputScalars_){
     switch(inputScalars_->GetDataType()){
       vtkTemplateMacro(({
-            using tuple_t=tuple<idVertex,NodeType,idVertex,NodeType,VTK_TT,idVertex>;
+            using tuple_t=tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,VTK_TT,ftm::idVertex>;
             vector<tuple_t>* CTDiagram=(vector<tuple_t>*) CTDiagram_;
             delete CTDiagram;
             }));
@@ -200,46 +200,49 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   persistenceDiagram_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
   persistenceDiagram_.setComputeSaddleConnectors(ComputeSaddleConnectors);
   switch(inputScalars_->GetDataType()){
-    vtkTemplateMacro(({
-          using tuple_t=tuple<idVertex,NodeType,idVertex,NodeType,VTK_TT,idVertex>;
+     vtkTemplateMacro(({
+        using tuple_t = tuple<ftm::idVertex,
+                              ftm::NodeType,
+                              ftm::idVertex,
+                              ftm::NodeType,
+                              VTK_TT,
+                              ftm::idVertex>;
 
-          if(CTDiagram_ and computeDiagram_){
-          vector<tuple_t>* tmpDiagram=(vector<tuple_t>*) CTDiagram_;
-          delete tmpDiagram;
-          CTDiagram_=new vector<tuple_t>();
-          }
-          else if(!CTDiagram_){
-          CTDiagram_=new vector<tuple_t>();
-          computeDiagram_=true;
-          }
+        if (CTDiagram_ and computeDiagram_) {
+           vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;
+           delete tmpDiagram;
+           CTDiagram_ = new vector<tuple_t>();
+        } else if (!CTDiagram_) {
+           CTDiagram_      = new vector<tuple_t>();
+           computeDiagram_ = true;
+        }
 
-          vector<tuple_t>* CTDiagram=(vector<tuple_t>*) CTDiagram_;
+        vector<tuple_t>* CTDiagram = (vector<tuple_t>*)CTDiagram_;
 
-          if(computeDiagram_){
-          persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-          ret=persistenceDiagram_.execute<VTK_TT>();
+        if (computeDiagram_) {
+           persistenceDiagram_.setOutputCTDiagram(CTDiagram);
+           ret = persistenceDiagram_.execute<VTK_TT>();
 #ifndef TTK_ENABLE_KAMIKAZE
-          if(ret){
-          cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
-            << "error code : " << ret << endl;
-          return -4;
-          }
+           if (ret) {
+              cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
+                   << "error code : " << ret << endl;
+              return -4;
+           }
 #endif
-          }
+        }
 
-          if(ShowInsideDomain)
-          ret=getPersistenceDiagramInsideDomain<VTK_TT>(TreeType::Contour, *CTDiagram);
-          else
-          ret=getPersistenceDiagram<VTK_TT>(TreeType::Contour, *CTDiagram);
+        if (ShowInsideDomain)
+           ret = getPersistenceDiagramInsideDomain<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
+        else
+           ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
 #ifndef TTK_ENABLE_KAMIKAZE
-          if(ret){
-            cerr << "[ttkPersistenceDiagram] Error : "
-              << "build of contour tree persistence diagram has failed." 
-              << endl;
-            return -5;
-          }
+        if (ret) {
+           cerr << "[ttkPersistenceDiagram] Error : "
+                << "build of contour tree persistence diagram has failed." << endl;
+           return -5;
+        }
 #endif
-    }));
+     }));
   }
 
   outputCTPersistenceDiagram->ShallowCopy(CTPersistenceDiagram_);

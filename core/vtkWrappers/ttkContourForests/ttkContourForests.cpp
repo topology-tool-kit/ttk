@@ -65,6 +65,7 @@ ttkContourForests::ttkContourForests()
   SetNumberOfOutputPorts(3);
 
   triangulation_ = NULL;
+  vtkWarningMacro("[ContourForests]: DEPRECATED This plugin will be removed in a futur release, please use FTM instead");
 }
 
 ttkContourForests::~ttkContourForests()
@@ -1376,7 +1377,6 @@ void ttkContourForests::getTree()
 {
   setDebugLevel(debugLevel_);
   // sequential params
-  cout << "debug level wrapper : " << debugLevel_ << endl;
   contourTree_->setDebugLevel(debugLevel_);
   contourTree_->setupTriangulation(triangulation_);
   contourTree_->setVertexScalars(

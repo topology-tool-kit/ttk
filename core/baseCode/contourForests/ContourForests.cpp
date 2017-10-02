@@ -20,6 +20,7 @@ ContourForests::ContourForests()
     : ContourForestsTree(new Params(), nullptr, new Scalars()), parallelParams_(), parallelData_()
 {
    params_->treeType = TreeType::Contour;
+   cerr << "[ContourForests]: DEPRECATED This plugin will be removed in a futur release, please use FTM instead" << endl;
 }
 
 ContourForests::~ContourForests()
