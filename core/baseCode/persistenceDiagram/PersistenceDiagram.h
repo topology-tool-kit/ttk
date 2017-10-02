@@ -33,7 +33,7 @@
 // base code includes
 #include<Wrapper.h>
 #include<Triangulation.h>
-#include<ContourForests.h>
+#include<FTMTreePP.h>
 #include<MorseSmaleComplex3D.h>
 
 namespace ttk{
@@ -50,20 +50,30 @@ namespace ttk{
         return 0;
       }
 
-      NodeType getNodeType(MergeTree* tree,
-          TreeType treeType,
-          const int vertexId) const;
+      ftm::NodeType getNodeType(ftm::FTMTree_MT* tree,
+                                ftm::TreeType    treeType,
+                                const int        vertexId) const;
 
       template <typename scalarType>
-        int sortPersistenceDiagram(
-            vector<tuple<idVertex,NodeType,idVertex,NodeType,scalarType,idVertex>>& diagram,
-            scalarType* scalars) const;
+      int sortPersistenceDiagram(vector<tuple<ftm::idVertex,
+                                              ftm::NodeType,
+                                              ftm::idVertex,
+                                              ftm::NodeType,
+                                              scalarType,
+                                              ftm::idVertex>>& diagram,
+                                 scalarType*                   scalars) const;
 
       template <typename scalarType>
-        int computeCTPersistenceDiagram(ContourForests& tree,
-            const vector<tuple<idVertex, idVertex, scalarType, bool>>& pairs,
-            vector<tuple<idVertex,NodeType,idVertex,NodeType,scalarType, idVertex>>& diagram,
-            scalarType* scalars) const;
+      int computeCTPersistenceDiagram(
+          ftm::FTMTreePP& tree,
+          const vector<tuple<ftm::idVertex, ftm::idVertex, scalarType, bool>>& pairs,
+          vector<tuple<ftm::idVertex,
+                       ftm::NodeType,
+                       ftm::idVertex,
+                       ftm::NodeType,
+                       scalarType,
+                       ftm::idVertex>>& diagram,
+          scalarType*                   scalars) const;
 
       template <class scalarType>
         int execute() const;
@@ -76,7 +86,7 @@ namespace ttk{
       inline int setupTriangulation(Triangulation* data){
         triangulation_ = data;
         if(triangulation_){
-          ContourForests contourTree;
+          ftm::FTMTreePP contourTree;
           contourTree.setupTriangulation(triangulation_);
 
           triangulation_->preprocessBoundaryVertices();
@@ -114,10 +124,10 @@ namespace ttk{
 
 template <typename scalarType>
 int PersistenceDiagram::sortPersistenceDiagram(
-    vector<tuple<idVertex,NodeType,idVertex,NodeType,scalarType,idVertex>>& diagram,
+    vector<tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>>& diagram,
     scalarType* scalars) const{
-  auto cmp=[scalars](const tuple<idVertex,NodeType,idVertex,NodeType,scalarType,idVertex>& a,
-      const tuple<idVertex,NodeType,idVertex,NodeType,scalarType,idVertex>& b){
+  auto cmp=[scalars](const tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>& a,
+      const tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>& b){
     return scalars[get<0>(a)] < scalars[get<0>(b)];
   };
 
@@ -127,103 +137,96 @@ int PersistenceDiagram::sortPersistenceDiagram(
 }
 
 template <typename scalarType>
-int PersistenceDiagram::computeCTPersistenceDiagram(ContourForests& tree,
-    const vector<tuple<idVertex, idVertex, scalarType, bool>>& pairs,
-    vector<tuple<idVertex,NodeType,idVertex,NodeType,scalarType,idVertex>>& diagram,
-    scalarType* scalars) const{
-  const idVertex numberOfPairs=pairs.size();
-  diagram.resize(numberOfPairs);
-  for(idVertex i=0; i<numberOfPairs; ++i){
-    const idVertex v0=get<0>(pairs[i]);
-    const idVertex v1=get<1>(pairs[i]);
-    const scalarType persistenceValue=get<2>(pairs[i]);
-    const bool type=get<3>(pairs[i]);
+int PersistenceDiagram::computeCTPersistenceDiagram(
+    ftm::FTMTreePP& tree,
+    const vector<tuple<ftm::idVertex, ftm::idVertex, scalarType, bool>>& pairs,
+    vector<tuple<ftm::idVertex,
+                 ftm::NodeType,
+                 ftm::idVertex,
+                 ftm::NodeType,
+                 scalarType,
+                 ftm::idVertex>>& diagram,
+    scalarType*                   scalars) const
+{
+   const ftm::idVertex numberOfPairs = pairs.size();
+   diagram.resize(numberOfPairs);
+   for (ftm::idVertex i = 0; i < numberOfPairs; ++i) {
+      const ftm::idVertex v0               = get<0>(pairs[i]);
+      const ftm::idVertex v1               = get<1>(pairs[i]);
+      const scalarType    persistenceValue = get<2>(pairs[i]);
+      const bool          type             = get<3>(pairs[i]);
 
-    get<4>(diagram[i])=persistenceValue;
-    if(type==true){
-      get<0>(diagram[i])=v0;
-      get<1>(diagram[i])=getNodeType(tree.getJoinTree(),TreeType::Join,v0);
-      get<2>(diagram[i])=v1;
-      get<3>(diagram[i])=getNodeType(tree.getJoinTree(),TreeType::Join,v1);
-      get<5>(diagram[i])=0;
-    }
-    else{
-      get<0>(diagram[i])=v1;
-      get<1>(diagram[i])=getNodeType(tree.getSplitTree(),TreeType::Split,v1);
-      get<2>(diagram[i])=v0;
-      get<3>(diagram[i])=getNodeType(tree.getSplitTree(),TreeType::Split,v0);
-      get<5>(diagram[i])=2;
-    }
-  }
+      get<4>(diagram[i]) = persistenceValue;
+      if (type == true) {
+         get<0>(diagram[i]) = v0;
+         get<1>(diagram[i]) = getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v0);
+         get<2>(diagram[i]) = v1;
+         get<3>(diagram[i]) = getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v1);
+         get<5>(diagram[i]) = 0;
+      } else {
+         get<0>(diagram[i]) = v1;
+         get<1>(diagram[i]) = getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v1);
+         get<2>(diagram[i]) = v0;
+         get<3>(diagram[i]) = getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v0);
+         get<5>(diagram[i]) = 2;
+      }
+   }
 
-  return 0;
+   return 0;
 }
 
 template <typename scalarType>
 int PersistenceDiagram::execute() const{
   // get data
-  vector<tuple<idVertex,NodeType,idVertex,NodeType,scalarType,idVertex>>& CTDiagram=
-    *static_cast<vector<tuple<idVertex,NodeType,idVertex,NodeType,scalarType,idVertex>>*>(CTDiagram_);
+  vector<tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>>& CTDiagram=
+    *static_cast<vector<tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>>*>(CTDiagram_);
   scalarType* scalars=static_cast<scalarType*>(inputScalars_);
   int* offsets=static_cast<int*>(inputOffsets_);
 
-  const idVertex numberOfVertices=triangulation_->getNumberOfVertices();
+  const ftm::idVertex numberOfVertices=triangulation_->getNumberOfVertices();
   // convert offsets into a valid format for contour forests
-  vector<idVertex> voffsets(numberOfVertices);
+  vector<ftm::idVertex> voffsets(numberOfVertices);
   std::copy(offsets,offsets+numberOfVertices,voffsets.begin());
 
   // get contour tree
-  ContourForests contourTree;
+  ftm::FTMTreePP contourTree;
   contourTree.setupTriangulation(triangulation_, false);
   contourTree.setVertexScalars(inputScalars_);
-  contourTree.setTreeType(TreeType::JoinAndSplit);
+  contourTree.setTreeType(ftm::TreeType::Join_Split);
   contourTree.setVertexSoSoffsets(voffsets);
-  contourTree.setLessPartition(true);
-  // for now, only one thread is supported
-  //contourTree_->setThreadNumber(threadNumber_);
-  contourTree.setThreadNumber(1);
+  contourTree.setThreadNumber(threadNumber_);
+  contourTree.setSegmentation(false);
   contourTree.build<scalarType>();
 
   // get persistence pairs
-  vector<tuple<idVertex,idVertex,scalarType>> JTPairs;
-  vector<tuple<idVertex,idVertex,scalarType>> STPairs;
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel sections
-#endif
-  {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp section
-#endif
-    contourTree.getJoinTree()->computePersistencePairs<scalarType>(JTPairs);
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp section
-#endif
-    contourTree.getSplitTree()->computePersistencePairs<scalarType>(STPairs);
-  }
+  vector<tuple<ftm::idVertex, ftm::idVertex, scalarType>> JTPairs;
+  vector<tuple<ftm::idVertex,ftm::idVertex,scalarType>> STPairs;
+  contourTree.computePersistencePairs<scalarType>(JTPairs, true);
+  contourTree.computePersistencePairs<scalarType>(STPairs, false);
 
   // merge pairs
-  vector<tuple<idVertex, idVertex, scalarType, bool>> 
-    CTPairs(JTPairs.size()+STPairs.size());
-  const idVertex JTSize=JTPairs.size();
-  for(idVertex i=0; i<JTSize; ++i){
-    const auto& x=JTPairs[i];
-    CTPairs[i]=make_tuple(get<0>(x),get<1>(x),get<2>(x),true);
+  vector<tuple<ftm::idVertex, ftm::idVertex, scalarType, bool>> CTPairs(JTPairs.size() +
+                                                                        STPairs.size());
+  const ftm::idVertex JTSize = JTPairs.size();
+  for (ftm::idVertex i = 0; i < JTSize; ++i) {
+     const auto& x = JTPairs[i];
+     CTPairs[i]    = make_tuple(get<0>(x), get<1>(x), get<2>(x), true);
   }
-  const idVertex STSize=STPairs.size();
-  for(idVertex i=0; i<STSize; ++i){
-    const auto& x=STPairs[i];
-    CTPairs[JTSize+i]=make_tuple(get<0>(x),get<1>(x),get<2>(x),false);
+  const ftm::idVertex STSize = STPairs.size();
+  for (ftm::idVertex i = 0; i < STSize; ++i) {
+     const auto& x       = STPairs[i];
+     CTPairs[JTSize + i] = make_tuple(get<0>(x), get<1>(x), get<2>(x), false);
   }
 
   // remove the last pair which is present two times (global extrema pair)
   {
-    auto cmp=[](const tuple<idVertex,idVertex,scalarType,bool>& a,
-        const tuple<idVertex,idVertex,scalarType,bool>& b){
-      return get<2>(a) < get<2>(b);
-    };
+     auto cmp = [](const tuple<ftm::idVertex, ftm::idVertex, scalarType, bool>& a,
+                   const tuple<ftm::idVertex, ftm::idVertex, scalarType, bool>& b) {
+        return get<2>(a) < get<2>(b);
+     };
 
-    std::sort(CTPairs.begin(), CTPairs.end(), cmp);
-    CTPairs.erase(CTPairs.end()-1);
+     std::sort(CTPairs.begin(), CTPairs.end(), cmp);
+     CTPairs.erase(CTPairs.end() - 1);
   }
 
   // get the saddle-saddle pairs
@@ -246,16 +249,16 @@ int PersistenceDiagram::execute() const{
   // add saddle-saddle pairs to the diagram if needed
   if(dimensionality==3 and ComputeSaddleConnectors){
     for(const auto& i : pl_saddleSaddlePairs){
-      const idVertex v0=get<0>(i);
-      const idVertex v1=get<1>(i);
+      const ftm::idVertex v0=get<0>(i);
+      const ftm::idVertex v1=get<1>(i);
       const scalarType persistenceValue=get<2>(i);
 
-      tuple<idVertex,NodeType,idVertex,NodeType,scalarType,idVertex> t;
+      tuple<ftm::idVertex, ftm::NodeType, ftm::idVertex, ftm::NodeType, scalarType, ftm::idVertex> t;
 
       get<0>(t)=v0;
-      get<1>(t)=NodeType::Saddle1;
+      get<1>(t)=ftm::NodeType::Saddle1;
       get<2>(t)=v1;
-      get<3>(t)=NodeType::Saddle2;
+      get<3>(t)=ftm::NodeType::Saddle2;
       get<4>(t)=persistenceValue;
       get<5>(t)=1;
 

@@ -1,6 +1,7 @@
 ChangeLog
 =
 * ttk.git
+- Greatly accelerated merge tree features using task-based Fibonacci heaps
 - Bottleneck and Wasserstein distances between peristence diagrams
 - Lp distance between scalar fields
 - boundary mask on scalar field critical points
