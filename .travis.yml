@@ -11,6 +11,7 @@ addons:
             - qt4-dev-tools
             - python2.7
             - libopenmpi-dev
+            - libboost-dev
 git:
     depth: 3
 
