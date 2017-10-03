@@ -6,7 +6,7 @@
  */
 
 // include the local headers
-#include                  <Editor.h>
+#include                  "Editor.h"
 
 int main(int argc, char **argv) {
 
