@@ -13,6 +13,7 @@
 [.] make TTK_PLUGIN_INSTALL_DIR accessible through cmake config
 . careful about open mp flag (macro)
 . careful about kamikaze, mpi,
+[ ] Update the scripts for the paraview split again
 
 - default values: 
 =
