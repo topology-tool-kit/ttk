@@ -15,10 +15,10 @@
 - [x] install everything by default
 
 # Variable naming conventions
-- `TTK_LIBRARY`
-- `TTK_VTK_LIBRARY`
-- `TTK_PARAVIEW_PLUGINS`
-- `TTK_STANDALONE_APPS`
+- [ ] `TTK_LIBRARY`
+- [ ] `TTK_VTK_LIBRARY`
+- [ ] `TTK_PARAVIEW_PLUGINS`
+- [ ] `TTK_STANDALONE_APPS`
 - [x] `TTK_ENABLE_CPU_OPTIMIZATION`
 - [x] `TTK_ENABLE_KAMIKAZE`
 - [x] `TTK_ENABLE_MPI`
