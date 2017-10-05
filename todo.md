@@ -44,3 +44,9 @@
 - [x] Build basic TTK libraries
 - [ ] Build VTK and ParaView code? This is tough b/c Travis migrated their infrastructure and now we run out of time. We could build the binaries and pull from some server to the CI builder to save this time.
 
+# Documentation
+make install -> cmake_prefix + share
+
+# Notes
+paraview is broken :(
+/usr/local/include/ttk/vtk (/usr/local/include/ttk/vtkWrappers?)
