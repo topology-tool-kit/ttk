@@ -31,6 +31,7 @@ namespace ftm
       TreeType treeType;
       bool     segm = true;
       bool     normalize = true;
+      bool     advStats = true;
    };
 
    // Scalar related containers (global)

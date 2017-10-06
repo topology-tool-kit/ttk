@@ -320,39 +320,6 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    return 0;
 }
 
-NodeType ttkFTMTree::getNodeType(const Node* node)
-{
-   int upDegree{};
-   int downDegree{};
-   if (GetTreeType() == TreeType::Join or GetTreeType() == TreeType::Contour) {
-      upDegree   = node->getNumberOfUpSuperArcs();
-      downDegree = node->getNumberOfDownSuperArcs();
-   } else {
-      downDegree = node->getNumberOfUpSuperArcs();
-      upDegree   = node->getNumberOfDownSuperArcs();
-   }
-   int degree = upDegree + downDegree;
-
-   // saddle point
-   if (degree > 1) {
-      if (upDegree == 2 and downDegree == 1)
-         return NodeType::Saddle2;
-      else if (upDegree == 1 && downDegree == 2)
-         return NodeType::Saddle1;
-      else if (upDegree == 1 && downDegree == 1)
-         return NodeType::Regular;
-      else
-         return NodeType::Degenerate;
-   }
-   // local extremum
-   else {
-      if (upDegree)
-         return NodeType::Local_minimum;
-      else
-         return NodeType::Local_maximum;
-   }
-}
-
 int ttkFTMTree::getOffsets(vtkDataSet* input)
 {
    if (OffsetFieldId != -1) {
@@ -543,35 +510,8 @@ int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSk
    }
 #endif
 
-   vtkSmartPointer<vtkIntArray> nodeIds = vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
-   if (!nodeIds) {
-      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem." << endl;
-      return -4;
-   }
-#endif
-   nodeIds->SetNumberOfComponents(1);
-   nodeIds->SetName("NodeId");
-
-   vtkSmartPointer<vtkIntArray> vertexIds = vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
-   if (!vertexIds) {
-      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem" << endl;
-      return -5;
-   }
-#endif
-   vertexIds->SetNumberOfComponents(1);
-   vertexIds->SetName("VertexId");
-
-   vtkSmartPointer<vtkIntArray> nodeTypes = vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
-   if (!nodeTypes) {
-      cerr << "[ttkFTMTree] Error : vtkIntArray allocation problem" << endl;
-      return -6;
-   }
-#endif
-   nodeTypes->SetNumberOfComponents(1);
-   nodeTypes->SetName("NodeType");
+   NodeData nodeData;
+   nodeData.init(tree->getNumberOfNodes(), params_);
 
    for (idVertex nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
       const Node* node = tree->getNode(nodeId);
@@ -583,15 +523,11 @@ int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSk
 #endif
 
       const idVertex vertexId = node->getVertexId();
-      const idVertex nodeType = static_cast<idVertex>(getNodeType(node));
-
       float point[3];
       triangulation_->getVertexPoint(vertexId, point[0], point[1], point[2]);
-
       points->InsertNextPoint(point);
-      nodeIds->InsertNextTuple1(nodeId);
-      vertexIds->InsertNextTuple1(vertexId);
-      nodeTypes->InsertNextTuple1(nodeType);
+
+      nodeData.fillArray(nodeId, triangulation_, tree, params_);
    }
 
    skeletonNodes->SetPoints(points);
@@ -604,9 +540,7 @@ int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSk
    }
 #endif
 
-   pointData->AddArray(nodeIds);
-   pointData->AddArray(vertexIds);
-   pointData->AddArray(nodeTypes);
+   nodeData.addArray(pointData, params_);
 
    outputSkeletonNodes->ShallowCopy(skeletonNodes);
 

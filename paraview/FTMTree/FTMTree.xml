@@ -117,6 +117,32 @@
             </IntVectorProperty>
 
             <IntVectorProperty
+                name="NormalizeId"
+                command="SetWithNormalize"
+                label="Normalize Ids"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                    Normalize Ids to have them consitent between different runs.
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty
+                name="AdvancedStats"
+                command="SetWithAdvStats"
+                label="Advanced Stats"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                   Additional fields on Arcs and Nodes
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty
                 name="UseAllCores"
                 command="SetUseAllCores"
                 label="Use All Cores"
@@ -154,19 +180,6 @@
                 </Documentation>
             </IntVectorProperty>
 
-            <IntVectorProperty
-                name="NormalizeId"
-                command="SetWithNormalize"
-                label="Normalize Ids"
-                number_of_elements="1"
-                default_values="1"
-                panel_visibility="advanced">
-                <BooleanDomain name="bool"/>
-                <Documentation>
-                    Normalize Ids to have them consitent between different runs.
-                </Documentation>
-            </IntVectorProperty>
-
             <PropertyGroup panel_widget="Line" label="Input options">
                 <Property name="Scalar Field"/>
                 <Property name="UseInputOffsetScalarField"/>
@@ -176,13 +189,14 @@
             <PropertyGroup panel_widget="Line" label="Output options">
                 <Property name="Tree Type"/>
                 <Property name="SuperArcSamplingLevel"/>
+                <Property name="NormalizeId" />
+                <Property name="AdvancedStats" />
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Testing">
                 <Property name="UseAllCores" />
                 <Property name="ThreadNumber" />
                 <Property name="DebugLevel" />
-                <Property name="NormalizeId" />
             </PropertyGroup>
 
             <OutputPort name="Skeleton Nodes" index="0" id="port0" />
