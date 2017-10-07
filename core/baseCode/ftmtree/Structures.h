@@ -29,9 +29,10 @@ namespace ftm
    // Compute parameters (global)
    struct Params {
       TreeType treeType;
-      bool     segm = true;
-      bool     normalize = true;
-      bool     advStats = true;
+      bool     segm        = true;
+      bool     normalize   = true;
+      bool     advStats    = true;
+      int      samplingLvl = 0;
    };
 
    // Scalar related containers (global)

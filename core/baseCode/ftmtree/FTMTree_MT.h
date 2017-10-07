@@ -451,6 +451,13 @@ namespace ftm
          return (*mt_data_.roots);
       }
 
+      // vertices
+
+      inline idVertex getNumberOfVertices(void) const
+      {
+         return scalars_->size;
+      }
+
       // vert2tree
 
       inline void setVert2Tree(decltype(mt_data_.vert2tree) const vect2tree)
