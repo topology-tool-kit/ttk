@@ -193,9 +193,12 @@ int TopologicalSimplification::getCriticalType(int vertex, dataType* scalars, in
   for(int i=0; i<neighborNumber; ++i){
     int neighbor;
     triangulation_->getVertexNeighbor(vertex,i,neighbor);
+    
     if(isLowerThan<dataType>(neighbor,vertex,scalars,offsets)) isMinima=false;
     if(isHigherThan<dataType>(neighbor,vertex,scalars,offsets)) isMaxima=false;
-    if(!isMinima and !isMaxima) return 0;
+    if(!isMinima and !isMaxima){
+      return 0;
+    }
   }
 
   if(isMinima) return -1;
@@ -209,7 +212,9 @@ int TopologicalSimplification::getCriticalPoints(dataType* scalars,
     int* offsets,
     vector<int>& minima,
     vector<int>& maxima) const{
-  vector<int> type(vertexNumber_);
+      
+  vector<int> type(vertexNumber_, 0);
+  
 #ifdef withOpenMP
 #pragma omp parallel for
 #endif
@@ -234,8 +239,9 @@ int TopologicalSimplification::getCriticalPoints(dataType* scalars,
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int k=0; k<vertexNumber_; ++k){
-    if(considerIdentifierAsBlackList_ xor extrema[k])
+    if(considerIdentifierAsBlackList_ xor extrema[k]){
       type[k]=getCriticalType<dataType>(k,scalars,offsets);
+    }
   }
 
   for(int k=0; k<vertexNumber_; ++k){
@@ -276,6 +282,7 @@ int TopologicalSimplification::addPerturbation(dataType* scalars, int* offsets) 
 
 template <typename dataType>
 int TopologicalSimplification::execute() const{
+  
   // get input data
   dataType* inputScalars=static_cast<dataType*>(inputScalarFieldPointer_);
   dataType* scalars=static_cast<dataType*>(outputScalarFieldPointer_);
@@ -286,8 +293,13 @@ int TopologicalSimplification::execute() const{
   Timer t;
 
   // pre-processing
+#ifdef withOpenMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
   for(int k=0; k<vertexNumber_; ++k){
     scalars[k]=inputScalars[k];
+    if(isnan(scalars[k]))
+      scalars[k] = 0;
     offsets[k]=inputOffsets[k];
   }
 
@@ -305,15 +317,39 @@ int TopologicalSimplification::execute() const{
   vector<int> authorizedMinima;
   vector<int> authorizedMaxima;
   vector<bool> authorizedExtrema(vertexNumber_, false);
-  getCriticalPoints<dataType>(scalars,offsets,authorizedMinima,authorizedMaxima,extrema);
-
+  
+  getCriticalPoints<dataType>(
+    scalars, offsets,
+    authorizedMinima,
+    authorizedMaxima,
+    extrema);
+  
+  {
+    stringstream msg;
+    msg << "[TopologicalSimplification] Maintaining "
+      << constraintNumber_ 
+      << " constraints ("
+      << authorizedMinima.size() << " minima and "
+      << authorizedMaxima.size() << " maxima)." << endl;
+    dMsg(cout, msg.str(), advancedInfoMsg);
+  }
+  
   // declare the tuple-comparison functor
   SweepCmp cmp;
 
   // processing
   int iteration{};
   for(int i=0; i<vertexNumber_; ++i){
+   
+    {
+      stringstream msg;
+      msg << "[TopologicalSimplification] Starting simplifying iteration #"
+        << i << "..." << endl;
+      dMsg(cout, msg.str(), advancedInfoMsg);
+    }
+    
     for(int j=0; j<2; ++j){
+      
       bool isIncreasingOrder=!j;
 
       cmp.setIsIncreasingOrder(isIncreasingOrder);
@@ -336,9 +372,9 @@ int TopologicalSimplification::execute() const{
           visitedVertices[k]=true;
         }
       }
-
+      
       // growth by neighborhood of the seeds
-      int adjustmentPos{};
+      int adjustmentPos = 0;
       do{
         auto front=sweepFront.begin();
         if(front==sweepFront.end()) return -1;
@@ -360,8 +396,10 @@ int TopologicalSimplification::execute() const{
       }while(!sweepFront.empty());
 
       // save offsets and rearrange scalars
-      int offset=(isIncreasingOrder)?0:vertexNumber_+1;
+      int offset = (isIncreasingOrder ? 0 : vertexNumber_ + 1);
+      
       for(int k=0; k<vertexNumber_; ++k){
+        
         if(isIncreasingOrder){
           if(k and scalars[adjustmentSequence[k]] <= scalars[adjustmentSequence[k-1]])
             scalars[adjustmentSequence[k]]=scalars[adjustmentSequence[k-1]];
@@ -381,9 +419,18 @@ int TopologicalSimplification::execute() const{
     vector<int> minima;
     vector<int> maxima;
     getCriticalPoints<dataType>(scalars,offsets,minima,maxima);
-
+    
     if(maxima.size() > authorizedMaxima.size()) needForMoreIterations=true;
     if(minima.size() > authorizedMinima.size()) needForMoreIterations=true;
+    
+    {
+      stringstream msg;
+      msg << "[TopologicalSimplification] Current status: "
+        << minima.size() << " minima, " 
+        << maxima.size() << " maxima." << endl;
+      dMsg(cout, msg.str(), advancedInfoMsg);
+    }
+    
     if(!needForMoreIterations){
       for(int k : minima){
         if(!authorizedExtrema[k]){
