@@ -98,7 +98,6 @@ struct ArcData : public WrapperData {
    vtkSmartPointer<vtkFloatArray> endArcs;
    vtkSmartPointer<vtkFloatArray> timeArcs;
    vtkSmartPointer<vtkIntArray>   origArcs;
-   vtkSmartPointer<vtkIntArray>   tasksArcs;
 #endif
 
    inline int init(ftm::FTMTree_MT* tree, ftm::Params params)
@@ -129,7 +128,6 @@ struct ArcData : public WrapperData {
       endArcs   = initArray<vtkFloatArray>("End", nbArcs);
       timeArcs  = initArray<vtkFloatArray>("Time", nbArcs);
       origArcs  = initArray<vtkIntArray>("Origin", nbArcs);
-      tasksArcs = initArray<vtkIntArray>("Tasks", nbArcs);
 #endif
 
       return 0;
@@ -164,11 +162,10 @@ struct ArcData : public WrapperData {
       }
 
 #ifdef withStatsTime
-      startArcs->SetTuple1(arcId,tree->getArcStart(arcId));
-      endArcs  ->SetTuple1(arcId,tree->getArcEnd(arcId));
-      timeArcs ->SetTuple1(arcId,tree->getArcEnd(arcId) - tree->getArcStart(arcId));
-      origArcs ->SetTuple1(arcId,tree->getArcOrig(arcId));
-      tasksArcs->SetTuple1(arcId,tree->getArcActiveTasks(arcId));
+      startArcs->SetTuple1(arcId,tree->getActiveTasks(arcId).begin);
+      endArcs  ->SetTuple1(arcId,tree->getActiveTasks(arcId).end);
+      timeArcs ->SetTuple1(arcId,tree->getActiveTasks(arcId).end - tree->getActiveTasks(arcId).begin);
+      origArcs ->SetTuple1(arcId,tree->getActiveTasks(arcId).origin);
 #endif
    }
 
@@ -188,7 +185,6 @@ struct ArcData : public WrapperData {
       skeletonArcs->GetCellData()->AddArray(endArcs);
       skeletonArcs->GetCellData()->AddArray(timeArcs);
       skeletonArcs->GetCellData()->AddArray(origArcs);
-      skeletonArcs->GetCellData()->AddArray(tasksArcs);
 #endif
       pointIds.clear();
    }
