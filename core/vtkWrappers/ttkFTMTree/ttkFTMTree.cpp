@@ -309,6 +309,10 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       }
    }
 
+#ifdef withStatsTime
+   printCSVStats();
+#endif
+
    UpdateProgress(1);
 
    {
@@ -391,8 +395,7 @@ int ttkFTMTree::getScalars(vtkDataSet* input)
    return 0;
 }
 
-int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input,
-                                   vtkDataSet* outputSegmentation)
+int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input, vtkDataSet* outputSegmentation)
 {
    outputSegmentation->ShallowCopy(input);
 
@@ -545,6 +548,46 @@ int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSk
 
    return 0;
 }
+
+#ifdef withStatsTime
+void ttkFTMTree::printCSVStats()
+{
+   switch(GetTreeType()){
+      case ftm::TreeType::Join:
+         cout << "JT" << endl;
+         printCSVTree(ftmTree_.getTree(ftm::TreeType::Join));
+         break;
+      case ftm::TreeType::Split:
+         cout << "ST" << endl;
+         printCSVTree(ftmTree_.getTree(ftm::TreeType::Split));
+         break;
+      default:
+         cout << "JT" << endl;
+         printCSVTree(ftmTree_.getTree(ftm::TreeType::Join));
+         cout << "ST" << endl;
+         printCSVTree(ftmTree_.getTree(ftm::TreeType::Split));
+         break;
+   }
+}
+
+void ttkFTMTree::printCSVTree(const ftm::FTMTree_MT* const tree) const
+{
+     const idSuperArc nbArc = tree->getNumberOfLeaves();
+     cout << "begin; ";
+     for (idSuperArc a = 0; a < nbArc; a++) {
+        cout << tree->getActiveTasks(a).begin << "; ";
+     }
+     cout << endl << "end; ";
+     for (idSuperArc a = 0; a < nbArc; a++) {
+        cout << tree->getActiveTasks(a).end << "; ";
+     }
+     cout << endl << "origing; ";
+     for (idSuperArc a = 0; a < nbArc; a++) {
+        cout << tree->getActiveTasks(a).origin << "; ";
+     }
+     cout << endl;
+}
+#endif
 
 int ttkFTMTree::setupTriangulation(vtkDataSet* input)
 {

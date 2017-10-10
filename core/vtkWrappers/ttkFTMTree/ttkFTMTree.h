@@ -93,12 +93,6 @@ struct ArcData : public WrapperData {
    vtkSmartPointer<vtkIntArray>    sizeArcs;
    vtkSmartPointer<vtkDoubleArray> spanArcs;
    vtkSmartPointer<vtkCharArray>   regularMask;
-#ifdef withStatsTime
-   vtkSmartPointer<vtkFloatArray> startArcs;
-   vtkSmartPointer<vtkFloatArray> endArcs;
-   vtkSmartPointer<vtkFloatArray> timeArcs;
-   vtkSmartPointer<vtkIntArray>   origArcs;
-#endif
 
    inline int init(ftm::FTMTree_MT* tree, ftm::Params params)
    {
@@ -122,13 +116,6 @@ struct ArcData : public WrapperData {
          }
          spanArcs = initArray<vtkDoubleArray>("RegionSpan", nbArcs);
       }
-
-#ifdef withStatsTime
-      startArcs = initArray<vtkFloatArray>("Start", nbArcs);
-      endArcs   = initArray<vtkFloatArray>("End", nbArcs);
-      timeArcs  = initArray<vtkFloatArray>("Time", nbArcs);
-      origArcs  = initArray<vtkIntArray>("Origin", nbArcs);
-#endif
 
       return 0;
    }
@@ -160,16 +147,10 @@ struct ArcData : public WrapperData {
          }
          spanArcs->SetTuple1(arcId,Geometry::distance(downPoints, upPoints));
       }
-
-#ifdef withStatsTime
-      startArcs->SetTuple1(arcId,tree->getActiveTasks(arcId).begin);
-      endArcs  ->SetTuple1(arcId,tree->getActiveTasks(arcId).end);
-      timeArcs ->SetTuple1(arcId,tree->getActiveTasks(arcId).end - tree->getActiveTasks(arcId).begin);
-      origArcs ->SetTuple1(arcId,tree->getActiveTasks(arcId).origin);
-#endif
    }
 
-   inline void addArray(vtkUnstructuredGrid *skeletonArcs, ftm::Params params){
+   inline void addArray(vtkUnstructuredGrid* skeletonArcs, ftm::Params params)
+   {
       skeletonArcs->GetCellData()->AddArray(ids);
 
       if (params.advStats) {
@@ -180,12 +161,6 @@ struct ArcData : public WrapperData {
       }
 
       skeletonArcs->GetPointData()->AddArray(regularMask);
-#ifdef withStatsTime
-      skeletonArcs->GetCellData()->AddArray(startArcs);
-      skeletonArcs->GetCellData()->AddArray(endArcs);
-      skeletonArcs->GetCellData()->AddArray(timeArcs);
-      skeletonArcs->GetCellData()->AddArray(origArcs);
-#endif
       pointIds.clear();
    }
 };
@@ -349,7 +324,8 @@ struct VertData: public WrapperData {
 
    }
 
-   void addArray(vtkPointData* pointData, ftm::Params params){
+   void addArray(vtkPointData* pointData, ftm::Params params)
+   {
       if (!params.segm)
          return;
 
@@ -487,6 +463,11 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
 
    int getSegmentation(ftm::FTMTree_MT* tree, vtkDataSet* input, vtkDataSet* outputSegmentation);
 
+#ifdef withStatsTime
+   void printCSVStats();
+   void printCSVTree(const ftm::FTMTree_MT* const tree) const;
+#endif
+
   protected:
    ttkFTMTree();
    ~ttkFTMTree();
@@ -506,7 +487,7 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
    ftm::Params params_;
 
    Triangulation* triangulation_;
-   ftm::FTMTree        ftmTree_;
+   ftm::FTMTree   ftmTree_;
    vtkDataArray*  inputScalars_;
    vtkIntArray*   offsets_;
    vtkDataArray*  inputOffsets_;
