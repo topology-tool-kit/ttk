@@ -101,7 +101,7 @@ namespace ftm
 
 // Tests
 // Stats time are not compatible with CT, only MT
-#define withStatsTime 1
+// #define withStatsTime 1
 
 // #define withProcessSpeed 1
 
