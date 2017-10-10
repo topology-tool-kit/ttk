@@ -35,6 +35,14 @@ namespace ftm
       int      samplingLvl = 0;
    };
 
+#ifdef withStatsTime
+   struct ActiveTask {
+      float    begin = -1;
+      float    end  = -1;
+      idVertex origin = nullVertex;
+   };
+#endif
+
    // Scalar related containers (global)
    struct Scalars {
       idVertex size;
