@@ -394,7 +394,7 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input, vtkDataSet*
 {
    outputSegmentation->ShallowCopy(input);
 
-   const idVertex numberOfSuperArcs = tree->getNumberOfSuperArcs();
+   const idSuperArc numberOfSuperArcs = tree->getNumberOfSuperArcs();
 #ifndef withKamikaze
    if (!numberOfSuperArcs) {
       cerr << "[ttkFTMTree] Error : tree has no super arcs." << endl;
@@ -414,7 +414,7 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input, vtkDataSet*
    vertdata.init(tree, params_);
 
    // arcs
-   for (idVertex arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
+   for (idSuperArc arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
        vertdata.fillArray(arcId, tree, triangulation_, params_);
    }
 
