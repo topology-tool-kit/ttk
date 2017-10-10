@@ -43,6 +43,21 @@ void ftm::FTMTree::build(void)
    setDebugLevel(debugLevel_);
    initNbScalars();
 
+   // This section is aimed to prevent un-deterministic results if the data-set
+   // have NaN values in it.
+   // In this loop, we replace every NaN by a 0 value.
+   // Recall: Equals values are distinguished using Simulation of Simplicity in the FTM tree
+   // computation
+   // Note: Can we detect NaN using vtk ?
+   if (std::numeric_limits<scalarType>::has_quiet_NaN) {
+#pragma omp parallel for
+      for (idVertex i = 0; i < scalars_->size; i++) {
+         if (isnan(((scalarType*)scalars_->values)[i])) {
+            ((scalarType*)scalars_->values)[i] = 0;
+         }
+      }
+   }
+
    // Alloc / reserve
    DebugTimer initTime;
    switch (params_->treeType) {
