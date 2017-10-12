@@ -83,10 +83,7 @@ namespace ftm
       vector<char> *openedNodes;
 
 #ifdef withStatsTime
-      vector<float> *   arcStart;
-      vector<float> *   arcEnd;
-      vector<idVertex> *arcOrig;
-      vector<idNode>   *arcTasks;
+      vector<ActiveTask> *activeTasksStats;
 #endif
 
       // current nb of tasks
@@ -279,24 +276,9 @@ namespace ftm
       // Tree info for wrapper
 
 #ifdef withStatsTime
-      inline float getArcStart(const idSuperArc arcId)
+      const ActiveTask& getActiveTasks(const idSuperArc taskId) const
       {
-          return (*mt_data_.arcStart)[arcId];
-      }
-
-      inline float getArcEnd(const idSuperArc arcId)
-      {
-          return (*mt_data_.arcEnd)[arcId];
-      }
-
-      inline idVertex getArcOrig(const idSuperArc arcId)
-      {
-          return (*mt_data_.arcOrig)[arcId];
-      }
-
-      inline idVertex getArcActiveTasks(const idSuperArc arcId)
-      {
-          return(*mt_data_.arcTasks)[arcId];
+         return (*mt_data_.activeTasksStats)[taskId];
       }
 #endif
 
@@ -449,6 +431,13 @@ namespace ftm
       {
          // break encapsulation...
          return (*mt_data_.roots);
+      }
+
+      // vertices
+
+      inline idVertex getNumberOfVertices(void) const
+      {
+         return scalars_->size;
       }
 
       // vert2tree

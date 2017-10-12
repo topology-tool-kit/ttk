@@ -29,9 +29,19 @@ namespace ftm
    // Compute parameters (global)
    struct Params {
       TreeType treeType;
-      bool     segm = true;
-      bool     normalize = true;
+      bool     segm        = true;
+      bool     normalize   = true;
+      bool     advStats    = true;
+      int      samplingLvl = 0;
    };
+
+#ifdef withStatsTime
+   struct ActiveTask {
+      float    begin = -1;
+      float    end  = -1;
+      idVertex origin = nullVertex;
+   };
+#endif
 
    // Scalar related containers (global)
    struct Scalars {
