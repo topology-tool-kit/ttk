@@ -119,26 +119,28 @@
             <IntVectorProperty
                 name="NormalizeId"
                 command="SetWithNormalize"
-                label="Normalize Ids"
+                label="Deterministic arc and node identifiers"
                 number_of_elements="1"
                 default_values="1"
                 panel_visibility="advanced">
                 <BooleanDomain name="bool"/>
                 <Documentation>
-                    Normalize Ids to have them consitent between different runs.
+                  Force the deterministic generation of 
+arc and node identifiers across distinct runs.
                 </Documentation>
             </IntVectorProperty>
 
             <IntVectorProperty
                 name="AdvancedStats"
                 command="SetWithAdvStats"
-                label="Advanced Stats"
+                label="Advanced Statistics"
                 number_of_elements="1"
                 default_values="1"
                 panel_visibility="advanced">
                 <BooleanDomain name="bool"/>
                 <Documentation>
-                   Additional fields on Arcs and Nodes
+                  Extra statistics on arcs and nodes (vertex numbers, distances 
+between nodes, ...)
                 </Documentation>
             </IntVectorProperty>
 
