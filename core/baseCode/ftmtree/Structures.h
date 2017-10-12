@@ -35,7 +35,7 @@ namespace ftm
       int      samplingLvl = 0;
    };
 
-#ifdef withStatsTime
+#ifdef TTK_FTM_TREE_ENABLE_STATS_TIME
    struct ActiveTask {
       float    begin = -1;
       float    end  = -1;
