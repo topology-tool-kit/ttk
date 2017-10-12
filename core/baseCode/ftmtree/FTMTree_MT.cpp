@@ -49,6 +49,7 @@ FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const
    mt_data_.arcEnd   = nullptr;
    mt_data_.arcOrig  = nullptr;
    mt_data_.arcTasks = nullptr;
+   mt_data_.activeTasksStats = nullptr;
 #endif
 }
 
@@ -100,21 +101,9 @@ FTMTree_MT::~FTMTree_MT()
    }
 
 #ifdef withStatsTime
-   if (mt_data_.arcStart) {
-      delete mt_data_.arcStart;
-      mt_data_.arcStart = nullptr;
-   }
-   if (mt_data_.arcEnd) {
-      delete mt_data_.arcEnd;
-      mt_data_.arcEnd = nullptr;
-   }
-   if (mt_data_.arcOrig) {
-      delete mt_data_.arcOrig;
-      mt_data_.arcOrig = nullptr;
-   }
-   if (mt_data_.arcTasks) {
-      delete mt_data_.arcTasks;
-      mt_data_.arcTasks = nullptr;
+   if (mt_data_.activeTasksStats) {
+      delete mt_data_.activeTasksStats;
+      mt_data_.activeTasksStats = nullptr;
    }
 #endif
 }
@@ -145,8 +134,8 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
    idSuperArc currentArc = openSuperArc(startNode);
    startUF->addArcToClose(currentArc);
 #ifdef withStatsTime
-   (*mt_data_.arcStart)[currentArc] = _launchGlobalTime.getElapsedTime();
-   (*mt_data_.arcOrig)[currentArc]  = orig;
+   (*mt_data_.activeTasksStats)[currentArc].begin = _launchGlobalTime.getElapsedTime();
+   (*mt_data_.activeTasksStats)[currentArc].origin  = orig;
 #endif
 
    // TASK PROPAGATION
@@ -184,8 +173,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
       if (isSaddle) {
 
 # ifdef withStatsTime
-         (*mt_data_.arcEnd)[currentArc]   = _launchGlobalTime.getElapsedTime();
-         (*mt_data_.arcTasks)[currentArc] = mt_data_.activeTasks;
+         (*mt_data_.activeTasksStats)[currentArc].end = _launchGlobalTime.getElapsedTime();
 # endif
          // need a node on this vertex
 #pragma omp atomic write seq_cst
@@ -239,7 +227,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
    (*mt_data_.roots)[rootPos] = closeNode;
 
 #ifdef withStatsTime
-   (*mt_data_.arcEnd)[currentArc] = _launchGlobalTime.getElapsedTime();
+   (*mt_data_.activeTasksStats)[currentArc].end = _launchGlobalTime.getElapsedTime();
 #endif
 }
 
@@ -782,14 +770,8 @@ int FTMTree_MT::leafSearch()
    // Reserve Arcs
    mt_data_.superArcs->reserve(nbLeaves * 2 + 1);
 #ifdef withStatsTime
-   createVector<float>(mt_data_.arcStart);
-   createVector<float>(mt_data_.arcEnd);
-   createVector<idVertex>(mt_data_.arcOrig);
-   createVector<idNode>(mt_data_.arcTasks);
-   mt_data_.arcStart->resize(nbLeaves*2 +1,0);
-   mt_data_.arcEnd->resize(nbLeaves*2 +1,0);
-   mt_data_.arcOrig->resize(nbLeaves*2 +1,0);
-   mt_data_.arcTasks->resize(nbLeaves*2 +1,0);
+   createVector<ActiveTask>(mt_data_.activeTasksStats);
+   mt_data_.activeTasksStats->resize(nbLeaves*2 +1);
 #endif
 
    return ret;
@@ -1286,8 +1268,9 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
                            (*mt_data_.trunkSegments)[oldArc].emplace_back(regularList);
                            regularList.clear();
                         }
-                        regularList.emplace_back(s);
                      }
+                     // hand.vtu, sequential: 28554
+                     regularList.emplace_back(s);
                   }
                }
             }

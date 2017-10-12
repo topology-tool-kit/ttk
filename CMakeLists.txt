@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 cmake_minimum_required(VERSION 3.2)
 project(ttk VERSION 0.9.2 LANGUAGES CXX)
 

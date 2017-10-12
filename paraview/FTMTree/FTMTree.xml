@@ -1,0 +1,213 @@
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy
+            name="ftmtree"
+            class="ttkFTMTree"
+            label="TTK Merge and Contour Tree (FTM)">
+            <Documentation
+                long_help="Plugin that computes the merge or contour tree of a tetrahedralized DataSet.
+                NodeType:
+                * 0 - minimum,
+                * 1 - 1saddle,
+                * 2 - 2saddle,
+                * 3 - maximum,
+                * (-1) - arcs.
+
+                RegionType:
+                * 0 - (x,minimum),
+                * 1 - (x,maximum),
+                * 2 - (1-saddle,1-saddle),
+                * 3 - (2-saddle,2-saddle),
+                * 4 - (1-saddle,2-saddle)."
+                short_help="Contour tree plugin.">
+                Plugin that computes the merge or contour tree of a tetrahedralized vtkUnstruturedGrid.
+            </Documentation>
+
+            <InputProperty
+                name="Input"
+                command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources"/>
+                    <Group name="filters"/>
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkDataSet"/>
+                </DataTypeDomain>
+                <InputArrayDomain name="input_scalars" number_of_components="1" attribute_type="point">
+                    <Property name="Input" function="FieldDataSelection" />
+                </InputArrayDomain>
+                <Documentation>
+                    Data-set to process.
+                </Documentation>
+            </InputProperty>
+
+            <StringVectorProperty
+                name="Scalar Field"
+                command="SetScalarField"
+                number_of_elements="1"
+                animateable="0"
+                label="Scalar Field"
+                >
+                <ArrayListDomain
+                    name="array_list"
+                    default_values="0">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>
+                    Select the scalar field to process.
+                </Documentation>
+            </StringVectorProperty>
+
+            <IntVectorProperty
+                name="UseInputOffsetScalarField"
+                command="SetUseInputOffsetScalarField"
+                label="Use Input Offset Scalar Field"
+                number_of_elements="1"
+                default_values="0">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                    Use an input offset field (to disambiguate flat plateaus).
+                </Documentation>
+            </IntVectorProperty>
+
+            <StringVectorProperty
+                name="InputOffsetScalarFieldName"
+                command="SetInputOffsetScalarFieldName"
+                label="Input Offset"
+                number_of_elements="1"
+                animateable="0"
+                >
+                <ArrayListDomain
+                    name="array_list"
+                    default_values="0"
+                    data_type="VTK_INT">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>
+                    Select the input offset scalar field to process.
+                </Documentation>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="Tree Type" command="SetTreeType"
+                number_of_elements="1" default_values="2">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Join    Tree"/>
+                    <Entry value="1" text="Split   Tree"/>
+                    <Entry value="2" text="Contour Tree"/>
+                </EnumerationDomain>
+                <Documentation>
+                    0 is JT, 1 is ST, 2 is CT
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="SuperArcSamplingLevel"
+                command="SetSuperArcSamplingLevel"
+                label="Arc Sampling"
+                number_of_elements="1"
+                default_values="0"
+                panel_visibility="default">
+                <IntRangeDomain name="range" min="0" max="100" />
+                <Documentation>
+                    Super Arc Sampling Level.
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty
+                name="NormalizeId"
+                command="SetWithNormalize"
+                label="Deterministic arc and node identifiers"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                  Force the deterministic generation of 
+arc and node identifiers across distinct runs.
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty
+                name="AdvancedStats"
+                command="SetWithAdvStats"
+                label="Advanced Statistics"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                  Extra statistics on arcs and nodes (vertex numbers, distances 
+between nodes, ...)
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty
+                name="UseAllCores"
+                command="SetUseAllCores"
+                label="Use All Cores"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                    Use all available cores.
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty
+                name="ThreadNumber"
+                command="SetThreadNumber"
+                label="Thread Number"
+                number_of_elements="1"
+                default_values="1"
+                panel_visibility="advanced">
+                <IntRangeDomain name="range" min="1" max="128" />
+                <Documentation>
+                    Number of threads to use for the computation.
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty
+                name="DebugLevel"
+                command="SetdebugLevel_"
+                label="Debug Level"
+                number_of_elements="1"
+                default_values="2" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="0" max="10" />
+                <Documentation>
+                    Debug level.
+                </Documentation>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Input options">
+                <Property name="Scalar Field"/>
+                <Property name="UseInputOffsetScalarField"/>
+                <Property name="InputOffsetScalarFieldName"/>
+            </PropertyGroup>
+
+            <PropertyGroup panel_widget="Line" label="Output options">
+                <Property name="Tree Type"/>
+                <Property name="SuperArcSamplingLevel"/>
+                <Property name="NormalizeId" />
+                <Property name="AdvancedStats" />
+            </PropertyGroup>
+
+            <PropertyGroup panel_widget="Line" label="Testing">
+                <Property name="UseAllCores" />
+                <Property name="ThreadNumber" />
+                <Property name="DebugLevel" />
+            </PropertyGroup>
+
+            <OutputPort name="Skeleton Nodes" index="0" id="port0" />
+            <OutputPort name="Skeleton Arcs" index="1" id="port1" />
+            <OutputPort name="Segmentation" index="2" id="port2"/>
+
+            <Hints>
+                <ShowInMenu category="TTK - Scalar Data" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>
