@@ -1264,8 +1264,9 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
                            (*mt_data_.trunkSegments)[oldArc].emplace_back(regularList);
                            regularList.clear();
                         }
-                        regularList.emplace_back(s);
                      }
+                     // hand.vtu, sequential: 28554
+                     regularList.emplace_back(s);
                   }
                }
             }
