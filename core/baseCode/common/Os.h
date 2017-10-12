@@ -90,6 +90,12 @@ using namespace std;
 
 namespace ttk{
  
+#ifdef SINGLE_PRECISION
+	typedef float real;
+#else
+	typedef double real;
+#endif
+ 
   class OsCall{
     
     
