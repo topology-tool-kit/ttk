@@ -46,7 +46,7 @@ void ftm::FTMTree_MT::sortInput(void)
 // #pragma omp single
 //    scalars_->qsort<idVertex>(sortedVect->data(), 0, scalars_->size -1, indirect_sort);
 
-#ifdef withOpenMP
+#ifdef TTK_ENABLE_OPENMP
 # ifdef __clang__
    cout << "Caution, outside GCC, sequential sort" << endl;
    std::sort(sortedVect->begin(), sortedVect->end(), indirect_sort);

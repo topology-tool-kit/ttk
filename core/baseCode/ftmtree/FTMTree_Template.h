@@ -31,7 +31,7 @@ void ftm::FTMTree::build(void)
 
    printParams();
 
-#ifdef withOpenMP
+#ifdef TTK_ENABLE_OPENMP
    omp_set_num_threads(threadNumber_);
    omp_set_nested(1);
 #endif

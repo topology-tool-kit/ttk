@@ -61,7 +61,7 @@ namespace ttk
       {
          if (newSize > std::vector<type>::size()) {
 #ifndef TTK_ENABLE_KAMIKAZE
-#ifdef withOpenMP
+#ifdef TTK_ENABLE_OPENMP
             if (omp_in_parallel()) {
                // WARNING: In parallel we do not want to make reserve as it can lead to
                // data race, we should not enter here
