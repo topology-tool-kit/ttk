@@ -34,7 +34,7 @@ struct WrapperData {
       arr->SetNumberOfComponents(1);
       arr->SetNumberOfTuples(nbElmnt);
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
       if (!arr) {
          cerr << "[ttkFTMTree] Error, unable to allocate " << fieldName
               << " the program will likely crash" << endl;
