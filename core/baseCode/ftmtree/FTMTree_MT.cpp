@@ -1052,7 +1052,7 @@ int FTMTree_MT::printTime(DebugTimer &t, const string &s, idVertex nbScalars, co
 
 void FTMTree_MT::printTree2()
 {
-#ifdef withOpenMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif
    {

@@ -292,7 +292,7 @@ int TopologicalSimplification::execute() const{
   Timer t;
 
   // pre-processing
-#ifdef withOpenMP
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int k=0; k<vertexNumber_; ++k){
