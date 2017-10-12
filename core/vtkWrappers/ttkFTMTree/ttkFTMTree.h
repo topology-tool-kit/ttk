@@ -143,22 +143,22 @@ struct ArcData : public WrapperData {
    {
       // Some arcs might have been less sampled than the desired value, if they have not enought
       // regular vertices. Here we ensur that we will no keep noise in these arrays.
-      const size_t realSize = skeletonArcs->GetNumberOfPoints() - 1;
-      cout << realSize << " --------------------- " << endl;
+      const size_t nbPoints = skeletonArcs->GetNumberOfPoints();
+      const size_t nbCells = nbPoints -1;
 
-      ids->SetNumberOfTuples(realSize);
+      ids->SetNumberOfTuples(nbCells);
       skeletonArcs->GetCellData()->AddArray(ids);
 
       if (params.advStats) {
          if (params.segm) {
-            sizeArcs->SetNumberOfTuples(realSize);
+            sizeArcs->SetNumberOfTuples(nbCells);
             skeletonArcs->GetCellData()->AddArray(sizeArcs);
          }
-         spanArcs->SetNumberOfTuples(realSize);
+         spanArcs->SetNumberOfTuples(nbCells);
          skeletonArcs->GetCellData()->AddArray(spanArcs);
       }
 
-      regularMask->SetNumberOfTuples(realSize);
+      regularMask->SetNumberOfTuples(nbPoints);
       skeletonArcs->GetPointData()->AddArray(regularMask);
 
       pointIds.clear();
