@@ -62,7 +62,7 @@ namespace ftm
 
       inline CurrentState* getFirstState(void)
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
           if(data_.states.size() != 1){
              std::cout << "AtomicUF :: getFirstState : nb state 1 !=  " << data_.states.size()
                        << std::endl;

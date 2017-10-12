@@ -9,7 +9,7 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
 #include <iostream>
 #endif
 
@@ -129,7 +129,7 @@ Segment& Segments::operator[](const size_t& idx)
 
 void Segments::resize(const vector<idVertex>& sizes)
 {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (segments_.size()) {
       cerr << "Call reserve on an already reserved Segments! " << endl;
    }
@@ -163,7 +163,7 @@ void Segments::sortAll(const Scalars* s)
 
 ArcRegion::ArcRegion()
 {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    segmented_ = false;
 #endif
 }
@@ -187,7 +187,7 @@ void ArcRegion::concat(const ArcRegion& r)
 
 void ArcRegion::createSegmentation(const Scalars* s)
 {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (segmentation_.size()) {
       cout << "createSegmentation called on an already segmented region" << endl;
    }
@@ -234,7 +234,7 @@ void ArcRegion::createSegmentation(const Scalars* s)
       }
    }  // end while
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    segmented_ = true;
 #endif
 }

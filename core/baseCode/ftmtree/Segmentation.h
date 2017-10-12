@@ -12,7 +12,7 @@
 #ifndef SEGMENTATION_H_
 #define SEGMENTATION_H_
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
 #include <iostream>
 #endif
 #include <sstream>
@@ -106,7 +106,7 @@ namespace ftm
       // when and how to compact ?
       vector<idVertex> segmentation_;
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
       // true if the segmentation have been sent to the segmentation_ vector
       bool segmented_;
 #endif
@@ -188,7 +188,7 @@ namespace ftm
 
       inline idVertex size(void) const
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if (!segmented_)
             std::cerr << "Needs to create segmentation before size" << std::endl;
 #endif
@@ -197,7 +197,7 @@ namespace ftm
 
       idVertex operator[](idVertex v) const
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if (!segmented_)
             cerr << "Needs to create segmentation before getting segmentation" << endl;
 #endif
@@ -206,7 +206,7 @@ namespace ftm
 
       idVertex& operator[](idVertex v)
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if (!segmented_)
             cerr << "Needs to create segmentation before getting segmentation" << endl;
 #endif

@@ -12,7 +12,7 @@
 #include <iterator>
 #include <vector>
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
 #include <iostream>
 #include <typeinfo>
 #endif
@@ -28,7 +28,7 @@ namespace ttk
      public:
       explicit AtomicVector(const std::size_t initSize = 1) : std::vector<type>(), nextId(0)
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if (!initSize) {
             std::cout << "Caution, Atomic vector need a non-0 init size !" << std::endl;
             std::vector<type>::resize(initSize);
@@ -42,7 +42,7 @@ namespace ttk
       // copy constructor
       AtomicVector(const AtomicVector &other) : std::vector<type>(other), nextId(other.nextId)
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if (!std::vector<type>::size()) {
             reserve(1);
          }
@@ -60,7 +60,7 @@ namespace ttk
       void reserve(const std::size_t &newSize, const bool fromOther = false)
       {
          if (newSize > std::vector<type>::size()) {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
 #ifdef withOpenMP
             if (omp_in_parallel()) {
                // WARNING: In parallel we do not want to make reserve as it can lead to

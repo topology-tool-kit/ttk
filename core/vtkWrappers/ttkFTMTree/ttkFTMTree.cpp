@@ -221,14 +221,14 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    vtkDataSet*          outputSegmentation  = outputs[2];
 
    if (setupTriangulation(input)) {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkFTMTree] Error : wrong triangulation." << endl;
       return -1;
 #endif
    }
 
    const idVertex numberOfVertices = triangulation_->getNumberOfVertices();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!numberOfVertices) {
       cerr << "[ttkFTMTree] Error : input data has no vertices." << endl;
       return -2;
@@ -236,14 +236,14 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 #endif
 
    if (getScalars(input)) {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkFTMTree] Error : wrong scalars." << endl;
       return -3;
 #endif
    }
 
    if (getOffsets(input)) {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkFTMTree] Error : wrong offsets." << endl;
       return -4;
 #endif
@@ -270,7 +270,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    UpdateProgress(0.50);
 
    FTMTree_MT* tree = ftmTree_.getTree(GetTreeType());
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!tree) {
       cerr << "[ttkFTMTree] tree is null." << endl;
       return -6;
@@ -280,7 +280,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    UpdateProgress(0.70);
 
    if (getSkeletonNodes(tree, outputSkeletonNodes)) {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkFTMTree] Error : wrong properties on skeleton nodes." << endl;
       return -7;
 #endif
@@ -289,7 +289,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    UpdateProgress(0.75);
 
    if (getSkeletonArcs(tree, outputSkeletonArcs)) {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkFTMTree] Error : wrong properties on skeleton arcs." << endl;
       return -8;
 #endif
@@ -297,7 +297,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 
    if (GetWithSegmentation()) {
       if (getSegmentation(tree, input, outputSegmentation)) {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          cerr << "[ttkFTMTree] Error : wrong properties on segmentation." << endl;
          return -9;
 #endif
@@ -351,7 +351,7 @@ int ttkFTMTree::getOffsets(vtkDataSet* input)
       inputOffsets_ = offsets_;
    }
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!inputOffsets_) {
       cerr << "[ttkFTMTree] Error : wrong input offset scalar field." << endl;
       return -1;
@@ -365,7 +365,7 @@ int ttkFTMTree::getScalars(vtkDataSet* input)
 {
    vtkPointData* pointData = input->GetPointData();
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!pointData) {
       cerr << "[ttkFTMTree] Error : input has no point data." << endl;
       return -1;
@@ -380,7 +380,7 @@ int ttkFTMTree::getScalars(vtkDataSet* input)
          ScalarField = inputScalars_->GetName();
    }
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!inputScalars_) {
       cerr << "[ttkFTMTree] Error : input scalar field pointer is null." << endl;
       return -3;
@@ -395,14 +395,14 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input, vtkDataSet*
    outputSegmentation->ShallowCopy(input);
 
    const idSuperArc numberOfSuperArcs = tree->getNumberOfSuperArcs();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!numberOfSuperArcs) {
       cerr << "[ttkFTMTree] Error : tree has no super arcs." << endl;
       return -1;
    }
 #endif
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    const idVertex numberOfVertices = triangulation_->getNumberOfVertices();
    if (!numberOfVertices) {
       cerr << "[ttkFTMTree] Error : triangulation has no vertices." << endl;
@@ -420,7 +420,7 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input, vtkDataSet*
    }
 
    vtkPointData* pointData = outputSegmentation->GetPointData();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!pointData) {
       cerr << "[ttkFTMTree] Error : output segmentation has no point data." << endl;
       return -9;
@@ -435,7 +435,7 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input, vtkDataSet*
 int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonArcs)
 {
    vtkSmartPointer<vtkUnstructuredGrid> skeletonArcs = vtkSmartPointer<vtkUnstructuredGrid>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!skeletonArcs) {
       cerr << "[ttkFTMTree] Error : vtkUnstructuredGrid allocation problem." << endl;
       return -1;
@@ -443,7 +443,7 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
 #endif
 
    const idVertex numberOfSuperArcs = tree->getNumberOfSuperArcs();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!numberOfSuperArcs) {
       cerr << "[ttkFTMTree] Error : tree has no super arcs." << endl;
       return -2;
@@ -454,7 +454,7 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
    arcData.init(tree, params_);
 
    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!points) {
       cerr << "[ttkFTMTree] Error : vtkPoints allocation problem." << endl;
       return -8;
@@ -494,7 +494,7 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
 int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonNodes)
 {
    vtkSmartPointer<vtkUnstructuredGrid> skeletonNodes = vtkSmartPointer<vtkUnstructuredGrid>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!skeletonNodes) {
       cerr << "[ttkFTMTree] Error : vtkUnstructuredGrid allocation problem." << endl;
       return -1;
@@ -502,7 +502,7 @@ int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSk
 #endif
 
    const idVertex numberOfNodes = tree->getNumberOfNodes();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!numberOfNodes) {
       cerr << "[ttkFTMTree] Error : tree has no nodes." << endl;
       return -2;
@@ -510,7 +510,7 @@ int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSk
 #endif
 
    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!points) {
       cerr << "[ttkFTMTree] Error : vtkPoints allocation problem." << endl;
       return -3;
@@ -522,7 +522,7 @@ int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSk
 
    for (idVertex nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
       const Node* node = tree->getNode(nodeId);
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
       if (!node) {
          cerr << "[ttkFTMTree] Error : node " << nodeId << " is null." << endl;
          return -7;
@@ -540,7 +540,7 @@ int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSk
    skeletonNodes->SetPoints(points);
 
    vtkPointData* pointData = skeletonNodes->GetPointData();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!pointData) {
       cerr << "[ttkFTMTree] Error : output skeleton nodes has no point data." << endl;
       return -8;
@@ -597,7 +597,7 @@ void ttkFTMTree::printCSVTree(const ftm::FTMTree_MT* const tree) const
 int ttkFTMTree::setupTriangulation(vtkDataSet* input)
 {
    triangulation_ = ttkTriangulation::getTriangulation(input);
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (!triangulation_) {
       cerr << "[ttkFTMTree] Error : ttkTriangulation::getTriangulation() is null." << endl;
       return -1;
@@ -611,7 +611,7 @@ int ttkFTMTree::setupTriangulation(vtkDataSet* input)
 
    hasUpdatedMesh_ = ttkTriangulation::hasChangedConnectivity(triangulation_, input, this);
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (triangulation_->isEmpty()) {
       cerr << "[ttkFTMTree] Error : ttkTriangulation allocation problem." << endl;
       return -1;

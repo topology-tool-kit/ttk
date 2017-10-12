@@ -362,7 +362,7 @@ namespace ftm
 
       inline SuperArc *getSuperArc(idSuperArc i)
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if ((size_t)i >= mt_data_.superArcs->size()) {
             cout << "[Merge Tree] get superArc on bad id :" << i;
             cout << " / " << mt_data_.superArcs->size() << endl;
@@ -374,7 +374,7 @@ namespace ftm
 
       inline const SuperArc *getSuperArc(idSuperArc i) const
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if ((size_t)i >= mt_data_.superArcs->size()) {
             cout << "[Merge Tree] get superArc on bad id :" << i;
             cout << " / " << mt_data_.superArcs->size() << endl;
@@ -416,7 +416,7 @@ namespace ftm
 
       inline idNode getLeave(const idNode id) const
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if ((size_t)id > (mt_data_.leaves->size())) {
             stringstream msg;
             msg << "[MergTree] getLeaves out of bounds : " << id << endl;
@@ -472,7 +472,7 @@ namespace ftm
 
       inline idNode getCorrespondingNodeId(const idVertex val) const
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if (!isCorrespondingNode(val)) {
             stringstream debug;
             debug << "[FTMTree_MT] : getCorrespondingNode, ";
@@ -486,7 +486,7 @@ namespace ftm
 
       inline idSuperArc getCorrespondingSuperArcId(const idVertex val) const
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if (!isCorrespondingArc(val)) {
             stringstream debug;
             debug << "[FTMTree_MT] : getCorrespondingSuperArcId, ";

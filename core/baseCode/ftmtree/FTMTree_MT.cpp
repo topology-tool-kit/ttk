@@ -470,7 +470,7 @@ void FTMTree_MT::closeOnBackBone(idVertex saddleVert)
 
 void FTMTree_MT::closeSuperArc(idSuperArc superArcId, idNode upNodeId)
 {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
 
    if (superArcId < 0 || (size_t)superArcId >= getNumberOfSuperArcs()) {
       cout << "[Merge Tree] closeSuperArc on a inexisting arc !" << endl;
@@ -494,7 +494,7 @@ void FTMTree_MT::delNode(idNode node)
    if (mainNode->getNumberOfUpSuperArcs() == 0) {
 
       // Root: No Superarc
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
       if (mainNode->getNumberOfDownSuperArcs() != 1) {
          // Root with several childs: impossible /\ .
          cout << endl << "[FTMTree_MT]:delNode won't delete ";
@@ -537,7 +537,7 @@ void FTMTree_MT::delNode(idNode node)
          (*mt_data_.superArcs)[downArc].concat((*mt_data_.superArcs)[upArc]);
       }
    }
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    else
       cerr << "delete node with multiple childrens " << endl;
 #endif
@@ -779,7 +779,7 @@ int FTMTree_MT::leafSearch()
 
 idNode FTMTree_MT::makeNode(idVertex vertexId, idVertex term)
 {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (vertexId < 0 || vertexId >= scalars_->size) {
       cout << "[Merge Tree] make node, wrong vertex :" << vertexId << " on " << scalars_->size
            << endl;
@@ -922,7 +922,7 @@ void FTMTree_MT::normalizeIds(void)
 
 idSuperArc FTMTree_MT::openSuperArc(idNode downNodeId)
 {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
    if (downNodeId < 0 || (size_t)downNodeId >= getNumberOfNodes()) {
       cout << "[Merge Tree] openSuperArc on a inexisting node !" << endl;
       return -2;

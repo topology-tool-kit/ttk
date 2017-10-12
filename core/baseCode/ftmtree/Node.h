@@ -108,7 +108,7 @@ namespace ftm
 
       inline idSuperArc getDownSuperArcId(idSuperArc neighborId) const
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if ((size_t)neighborId >= vect_downSuperArcList_.size()) {
             cerr << "[Merge Tree:Node] get down on bad neighbor !";
             cerr << endl;
@@ -120,7 +120,7 @@ namespace ftm
 
       inline idSuperArc getUpSuperArcId(idSuperArc neighborId) const
       {
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
          if (neighborId >= vect_upSuperArcList_.size()) {
             cerr << "[FTMTree_MT:Node] No SuperArc to access " << static_cast<unsigned>(neighborId);
             cerr << endl;
