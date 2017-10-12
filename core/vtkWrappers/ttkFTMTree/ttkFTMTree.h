@@ -502,7 +502,7 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
 
    int getSegmentation(ftm::FTMTree_MT* tree, vtkDataSet* input, vtkDataSet* outputSegmentation);
 
-#ifdef withStatsTime
+#ifdef TTK_FTM_TREE_ENABLE_STATS_TIME
    void printCSVStats();
    void printCSVTree(const ftm::FTMTree_MT* const tree) const;
 #endif
