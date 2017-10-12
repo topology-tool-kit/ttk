@@ -254,6 +254,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    }
 
    vector<idVertex> offsets(numberOfVertices);
+#pragma omp parallel for
    for (idVertex i = 0; i < numberOfVertices; ++i)
       offsets[i]   = inputOffsets_->GetTuple1(i);
 
@@ -344,6 +345,7 @@ int ttkFTMTree::getOffsets(vtkDataSet* input)
          offsets_->SetNumberOfComponents(1);
          offsets_->SetNumberOfTuples(numberOfVertices);
          offsets_->SetName("OffsetsScalarField");
+#pragma omp parallel for
          for (int i = 0; i < numberOfVertices; ++i)
             offsets_->SetTuple1(i, i);
       }
@@ -414,6 +416,7 @@ int ttkFTMTree::getSegmentation(FTMTree_MT* tree, vtkDataSet* input, vtkDataSet*
    vertdata.init(tree, params_);
 
    // arcs
+#pragma omp for
    for (idSuperArc arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
        vertdata.fillArray(arcId, tree, triangulation_, params_);
    }
