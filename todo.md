@@ -28,9 +28,10 @@
 
 # ParaView Plugins
 - [x] move cmake code to the paraview dir
+- [x] fix paraview plugin segfault issues
 
 # Binaries
-- [ ] move them to an executable location (/usr/local/bin is by default)
+- [x] move them to an executable location (/usr/local/bin is by default)
 
 # Root CMakeLists.txt
 - [ ] list all buildadble components (such that users can simply comment things out)
