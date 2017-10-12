@@ -16,18 +16,13 @@ function(ttk_add_paraview_plugin library)
 	cmake_parse_arguments(ARG "" "PLUGIN_XML;PLUGIN_VERSION"
 		"SOURCES;LINK" ${ARGN})
 
-	set(CMAKE_SKIP_BUILD_RPATH TRUE)
-	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-	set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
-	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 	# Build the ParaView plugin, if we're building with ParaView
 	# and this wrapper library has a plugin
 	set(plugin_name "${library}Plugin")
 	add_paraview_plugin(${plugin_name} ${ARG_PLUGIN_VERSION}
 		SERVER_MANAGER_XML ${ARG_PLUGIN_XML}
-		SERVER_MANAGER_SOURCES ${ARG_SOURCES})
-	target_link_libraries(${plugin_name} PUBLIC ${VTK_LIBRARIES} ${ARG_LINK})
+		SERVER_MANAGER_SOURCES ${ARG_SOURCES} ${TTK_TRIANGULATION_SRCS})
+	target_link_libraries(${plugin_name} PUBLIC ${VTK_LIBRARIES} ${ARG_LINK} ttkPVTriangulation)
 
 	target_include_directories(${plugin_name} PUBLIC
 		$<BUILD_INTERFACE:${VTKWRAPPER_DIR}/${library}>
@@ -45,6 +40,16 @@ set(TTK_PLUGIN_INSTALL_DIR
 	"Directory where TTK ParaView plugins will be installed")
 
 set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/../core/vtkWrappers/")
+
+# Build the ttkTriangulation library against the ParaView VTK
+add_library(ttkPVTriangulation STATIC
+	${VTKWRAPPER_DIR}/ttkTriangulation/ttkTriangulation.cpp
+	${VTKWRAPPER_DIR}/ttkTriangulation/ttkWrapper.cpp)
+target_link_libraries(ttkPVTriangulation PUBLIC ${VTK_LIBRARIES} triangulation)
+set_target_properties(ttkPVTriangulation PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+target_include_directories(ttkPVTriangulation PUBLIC
+	$<BUILD_INTERFACE:${VTKWRAPPER_DIR}/ttkTriangulation>)
+
 file(GLOB PARAVIEW_PLUGIN_DIRS ttk*)
 foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
 	if (IS_DIRECTORY ${PARAVIEW_PLUGIN})
