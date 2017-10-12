@@ -478,7 +478,16 @@ int ttkFTMTree::getSkeletonArcs(FTMTree_MT* tree, vtkUnstructuredGrid* outputSke
    arcData.addArray(skeletonArcs, params_);
    outputSkeletonArcs->ShallowCopy(skeletonArcs);
 
-   return 0;
+  // const idVertex p_size = points->GetNumberOfPoints();
+  // const idVertex s_size = tree->getNumberOfVertices();
+  // cout << "arcs points " << p_size << endl;
+  // cout << "scal points " << s_size << endl;
+  // cout << "nb arcs     " << tree->getNumberOfSuperArcs()<< endl;
+  // if(p_size != s_size){
+  //    exit(3);
+  // }
+
+  return 0;
 }
 
 int ttkFTMTree::getSkeletonNodes(FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonNodes)
