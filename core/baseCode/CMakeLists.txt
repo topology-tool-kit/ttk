@@ -15,7 +15,9 @@ function(ttk_add_base_library library)
 	set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
 	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-	add_library(${library} SHARED ${ARG_SOURCES})
+	add_library(${library} STATIC ${ARG_SOURCES})
+	set_target_properties(${library} PROPERTIES
+		POSITION_INDEPENDENT_CODE TRUE)
 
 	target_include_directories(${library} PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
