@@ -1,5 +1,9 @@
 #include <ttkFTMTree.h>
 
+// only used on the cpp
+#include<vtkConnectivityFilter.h>
+
+
 using namespace ftm;
 
 vtkStandardNewMacro(ttkFTMTree);
@@ -218,10 +222,33 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 {
    Memory m;
 
-   vtkDataSet*          input               = inputs[0];
+   //TODO : New + Shallowcopy
+
+   vtkDataSet* input;
    vtkUnstructuredGrid* outputSkeletonNodes = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
    vtkUnstructuredGrid* outputSkeletonArcs  = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
    vtkDataSet*          outputSegmentation  = outputs[2];
+
+   if(inputs[0]->IsA("vtkUnstructuredGrid")){
+      // This data set may have several connected components,
+      // we need to apply the FTM Tree for each one of these components
+      // We then reconstruct the global tree using an offest mecanism
+      vtkSmartPointer<vtkConnectivityFilter> connectivity =
+          vtkSmartPointer<vtkConnectivityFilter>::New();
+      connectivity->SetInputData(inputs[0]);
+      connectivity->SetExtractionModeToAllRegions();
+      connectivity->ColorRegionsOn();
+      connectivity->Update();
+      vtkUnstructuredGrid* out_connectivity = connectivity->GetOutput();
+
+      // As we need to use the shallow copy of the ttkUnstructuredGrid to pass the triangulation
+      // info, this is a little trick
+      input = ttkUnstructuredGrid::New();
+      input->ShallowCopy(out_connectivity);
+   } else {
+      input = ttkImageData::New();
+      input->ShallowCopy(inputs[0]);
+   }
 
    if (setupTriangulation(input)) {
 #ifndef withKamikaze
