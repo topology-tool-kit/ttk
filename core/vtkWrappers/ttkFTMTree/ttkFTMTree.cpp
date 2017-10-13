@@ -1,8 +1,9 @@
 #include <ttkFTMTree.h>
 
 // only used on the cpp
-#include<vtkConnectivityFilter.h>
-
+#include <vtkConnectivityFilter.h>
+#include <vtkDataObject.h>
+#include <vtkThreshold.h>
 
 using namespace ftm;
 
@@ -222,9 +223,6 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 {
    Memory m;
 
-   //TODO : New + Shallowcopy
-
-   vtkDataSet* input;
    vtkUnstructuredGrid* outputSkeletonNodes = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
    vtkUnstructuredGrid* outputSkeletonArcs  = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
    vtkDataSet*          outputSegmentation  = outputs[2];
@@ -241,16 +239,25 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       connectivity->Update();
       vtkUnstructuredGrid* out_connectivity = connectivity->GetOutput();
 
-      // As we need to use the shallow copy of the ttkUnstructuredGrid to pass the triangulation
-      // info, this is a little trick
-      input = ttkUnstructuredGrid::New();
-      input->ShallowCopy(out_connectivity);
+      nbCC_ = out_connectivity->GetCellData()->GetArray("RegionId")->GetRange()[1] + 1;
+      connected_components_.resize(nbCC_);
+      for (int i = 0; i < nbCC_; i++) {
+         vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
+         threshold->SetInputData(out_connectivity);
+         threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
+         threshold->Update();
+         connected_components_[i] = ttkUnstructuredGrid::New();
+         connected_components_[i]->ShallowCopy(threshold->GetOutput());
+      }
    } else {
-      input = ttkImageData::New();
-      input->ShallowCopy(inputs[0]);
+      connected_components_.resize(1);
+      connected_components_[0] = ttkImageData::New();
+      connected_components_[0]->ShallowCopy(inputs[0]);
    }
 
-   if (setupTriangulation(input)) {
+   // now proceed for each triangulation obtained.
+
+   if (setupTriangulation()) {
 #ifndef withKamikaze
       cerr << "[ttkFTMTree] Error : wrong triangulation." << endl;
       return -1;
@@ -624,30 +631,34 @@ void ttkFTMTree::printCSVTree(const ftm::FTMTree_MT* const tree) const
 }
 #endif
 
-int ttkFTMTree::setupTriangulation(vtkDataSet* input)
+int ttkFTMTree::setupTriangulation()
 {
-   triangulation_ = ttkTriangulation::getTriangulation(input);
+   triangulation_.resize(nbCC_);
+   ftmTree_.resize(nbCC_);
+
+   for (int i = 0; i < nbCC_; i++) {
+      triangulation_[i] = ttkTriangulation::getTriangulation(connected_components_[i]);
 #ifndef withKamikaze
-   if (!triangulation_) {
-      cerr << "[ttkFTMTree] Error : ttkTriangulation::getTriangulation() is null." << endl;
-      return -1;
-   }
+         cerr << "[ttkFTMTree] Error : ttkTriangulation::getTriangulation() is null." << endl;
+         if (!triangulation_[i]) {
+         return -1;
+      }
 #endif
 
-   triangulation_->setWrapper(this);
-   ftmTree_.setDebugLevel(debugLevel_);
-   ftmTree_.setThreadNumber(threadNumber_);
-   ftmTree_.setupTriangulation(triangulation_);
+      triangulation_[i]->setWrapper(this);
+      ftmTree_[i].setDebugLevel(debugLevel_);
+      ftmTree_[i].setThreadNumber(threadNumber_);
+      ftmTree_[i].setupTriangulation(triangulation_[i]);
 
-   hasUpdatedMesh_ = ttkTriangulation::hasChangedConnectivity(triangulation_, input, this);
+      hasUpdatedMesh_ = ttkTriangulation::hasChangedConnectivity(triangulation_[i], connected_components_[i], this);
 
 #ifndef withKamikaze
-   if (triangulation_->isEmpty()) {
-      cerr << "[ttkFTMTree] Error : ttkTriangulation allocation problem." << endl;
-      return -1;
-   }
+      if (triangulation_[i]->isEmpty()) {
+         cerr << "[ttkFTMTree] Error : ttkTriangulation on connected component" << i << " allocation problem." << endl;
+         return -1;
+      }
 #endif
-
+   }
    return 0;
 }
 

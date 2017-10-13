@@ -123,7 +123,7 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
       return params_.samplingLvl;
    }
 
-   int setupTriangulation(vtkDataSet* input);
+   int setupTriangulation();
    int getScalars(vtkDataSet* input);
    int getOffsets(vtkDataSet* input);
 
@@ -175,8 +175,10 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
 
    ftm::Params params_;
 
-   Triangulation* triangulation_;
-   ftm::FTMTree   ftmTree_;
+   int                    nbCC_;
+   vector<vtkDataSet*>    connected_components_;
+   vector<Triangulation*> triangulation_;
+   vector<ftm::FTMTree>   ftmTree_;
    vtkDataArray*  inputScalars_;
    vtkIntArray*   offsets_;
    vtkDataArray*  inputOffsets_;
