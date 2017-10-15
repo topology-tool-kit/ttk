@@ -9,6 +9,10 @@ option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" ON)
 option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON)
 option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
 
+if (TTK_BUILD_STANDALONE_APPS)
+	set(TTK_BUILD_VTK_WRAPPERS TRUE)
+endif()
+
 add_subdirectory(core)
 if (TTK_BUILD_PARAVIEW_PLUGINS)
 	add_subdirectory(paraview)
