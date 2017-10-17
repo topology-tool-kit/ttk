@@ -42,6 +42,8 @@ namespace ttk{
       
       inline int getRank() const { return rank_;};
       
+      static inline UnionFind* makeUnion(UnionFind *uf0, UnionFind *uf1);
+      
       static inline UnionFind* makeUnion(vector<UnionFind *> &sets);
       
       inline void setParent(UnionFind *parent){ parent_ = parent;};
