@@ -63,17 +63,17 @@
          </Documentation>
       </IntVectorProperty>
       
-      <IntVectorProperty
+      <DoubleVectorProperty
          name="DoubleArgument"
          label="Output double argument"
          command="SetSomeDoubleArgument"
          number_of_elements="1"
          default_values="1" >
-        <IntRangeDomain name="range" min="0" max="100" />
+        <DoubleRangeDomain name="range" min="0" max="100" />
          <Documentation>
           Double argument for the blank filter.
          </Documentation>
-      </IntVectorProperty>
+      </DoubleVectorProperty>
      
        <IntVectorProperty
          name="Option"
