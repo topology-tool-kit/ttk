@@ -124,33 +124,23 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
    }
 
    int setupTriangulation();
-   int getScalars(vtkDataSet* input);
-   int getOffsets(vtkDataSet* input);
+   int getScalars();
+   int getOffsets();
 
-   int getSkeletonNodes(ftm::FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonNodes);
+   int getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes);
 
-   int addDirectSkeletonArc(ftm::FTMTree_MT* tree,
-                            ftm::idSuperArc arcId,
-                            vtkPoints* points,
-                            vtkUnstructuredGrid* skeletonArcs,
-                            ArcData& arcData);
+   int addDirectSkeletonArc(const ftm::idSuperArc arcId, const int cc, vtkPoints* points,
+                            vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
 
-   int addSampledSkeletonArc(ftm::FTMTree_MT* tree,
-                             ftm::idSuperArc arcId,
-                             const int samplingLevel,
-                             vtkPoints* points,
-                             vtkUnstructuredGrid* skeletonArcs,
-                             ArcData& arcData);
+   int addSampledSkeletonArc(const ftm::idSuperArc arcId, const int cc, vtkPoints* points,
+                             vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
 
-   int addCompleteSkeletonArc(ftm::FTMTree_MT* tree,
-                              ftm::idSuperArc arcId,
-                              vtkPoints* points,
-                              vtkUnstructuredGrid* skeletonArcs,
-                              ArcData& arcData);
+   int addCompleteSkeletonArc(const ftm::idSuperArc arcId, const int cc, vtkPoints* points,
+                              vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
 
-   int getSkeletonArcs(ftm::FTMTree_MT* tree, vtkUnstructuredGrid* outputSkeletonArcs);
+   int getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs);
 
-   int getSegmentation(ftm::FTMTree_MT* tree, vtkDataSet* input, vtkDataSet* outputSegmentation);
+   int getSegmentation(vtkDataSet* outputSegmentation);
 
 #ifdef withStatsTime
    void printCSVStats();
@@ -175,14 +165,14 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
 
    ftm::Params params_;
 
-   int                    nbCC_;
-   vector<vtkDataSet*>    connected_components_;
-   vector<Triangulation*> triangulation_;
-   vector<ftm::FTMTree>   ftmTree_;
-   vtkDataArray*  inputScalars_;
-   vtkIntArray*   offsets_;
-   vtkDataArray*  inputOffsets_;
-   bool           hasUpdatedMesh_;
+   int                            nbCC_;
+   vector<vtkDataSet*>            connected_components_;
+   vector<Triangulation*>         triangulation_;
+   vector<ftm::FTMTree>           ftmTree_;
+   vector<vtkDataArray*>          inputScalars_;
+   vector<vector<ftm::idVertex>>  offsets_;
+
+   bool                   hasUpdatedMesh_;
 };
 
 #endif  // _VTK_CONTOURFORESTS_H
