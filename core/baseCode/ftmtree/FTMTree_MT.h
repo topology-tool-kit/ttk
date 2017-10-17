@@ -131,16 +131,14 @@ namespace ftm
       /// \brief init Simulation of Simplicity datastructure if not set
       void initSoS(void)
       {
-         auto *sosVect = scalars_->sosOffsets.get();
-         if (sosVect == nullptr) {
-            sosVect = new vector<idVertex>(0);
-            scalars_->sosOffsets.reset(sosVect);
+         if (scalars_->offsets == nullptr) {
+            scalars_->offsets = new idVertex[scalars_->size];
+#pragma omp parallel for
+            for (idVertex i = 0; i < scalars_->size; i++) {
+               scalars_->offsets[i] = i;
+            }
          }
 
-         if (!sosVect->size()) {
-            sosVect->resize(scalars_->size);
-            iota(sosVect->begin(), sosVect->end(), 0);
-         }
       }
 
       void initComp(void)
@@ -347,10 +345,9 @@ namespace ftm
 
       // offset
 
-      inline void setVertexSoSoffsets(const vector<idVertex> &offsets)
+      inline void setVertexSoSoffsets(idVertex* sos)
       {
-         // copy input vector
-         scalars_->sosOffsets.reset(new vector<idVertex>(offsets.cbegin(), offsets.cend()));
+         scalars_->offsets = sos;
       }
 
       // arcs
@@ -664,7 +661,7 @@ namespace ftm
       {
          return ((scalarType *)scalars_->values)[a] < ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
-                 (*scalars_->sosOffsets)[a] < (*scalars_->sosOffsets)[b]);
+                 scalars_->offsets[a] < scalars_->offsets[b]);
       }
 
       template <typename scalarType>
@@ -672,7 +669,7 @@ namespace ftm
       {
          return ((scalarType *)scalars_->values)[a] > ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
-                 (*scalars_->sosOffsets)[a] > (*scalars_->sosOffsets)[b]);
+                 scalars_->offsets[a] > scalars_->offsets[b]);
       }
 
       template <typename scalarType>
@@ -680,7 +677,7 @@ namespace ftm
       {
          return ((scalarType *)scalars_->values)[a] < ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
-                 (*scalars_->sosOffsets)[a] <= (*scalars_->sosOffsets)[b]);
+                 scalars_->offsets[a] <= scalars_->offsets[b]);
       }
 
       template <typename scalarType>
@@ -688,7 +685,7 @@ namespace ftm
       {
          return ((scalarType *)scalars_->values)[a] > ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
-                 (*scalars_->sosOffsets)[a] >= (*scalars_->sosOffsets)[b]);
+                 scalars_->offsets[a] >= scalars_->offsets[b]);
       }
 
       template <typename type>

@@ -45,10 +45,10 @@ namespace ftm
 
    // Scalar related containers (global)
    struct Scalars {
-      idVertex size;
-      void*    values;
+      idVertex  size;
+      void*     values;
+      idVertex* offsets;
 
-      std::shared_ptr<std::vector<idVertex>> sosOffsets;
       std::shared_ptr<std::vector<idVertex>> sortedVertices, mirrorVertices;
 
       // Need vertices to be sorted : use mirrorVertices.
@@ -74,7 +74,7 @@ namespace ftm
       Scalars()
           : size(0),
             values(nullptr),
-            sosOffsets(nullptr),
+            offsets(nullptr),
             sortedVertices(nullptr),
             mirrorVertices(nullptr)
       {
@@ -84,7 +84,7 @@ namespace ftm
       Scalars(const Scalars& o)
           : size(o.size),
             values(o.values),
-            sosOffsets(o.sosOffsets),
+            offsets(o.offsets),
             sortedVertices(o.sortedVertices),
             mirrorVertices(o.mirrorVertices)
       {
