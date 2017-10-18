@@ -476,6 +476,9 @@ int MorseSmaleComplex3D::execute(){
   discreteGradient_.setDebugLevel(debugLevel_);
   discreteGradient_.setThreadNumber(threadNumber_);
   discreteGradient_.setCollectPersistencePairs(false);
+  discreteGradient_.setReturnSaddleConnectors(ReturnSaddleConnectors);
+  discreteGradient_.setSaddleConnectorsPersistenceThreshold(
+      SaddleConnectorsPersistenceThreshold);
   discreteGradient_.buildGradient<dataType>();
   discreteGradient_.buildGradient2<dataType>();
   discreteGradient_.buildGradient3<dataType>();

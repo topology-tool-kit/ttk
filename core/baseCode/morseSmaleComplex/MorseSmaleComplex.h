@@ -76,6 +76,14 @@ namespace ttk{
         return abstractMorseSmaleComplex_->setComputeFinalSegmentation(state);
       }
 
+      int setReturnSaddleConnectors(const bool state){
+        return abstractMorseSmaleComplex_->setReturnSaddleConnectors(state);
+      }
+
+      int setSaddleConnectorsPersistenceThreshold(const double threshold){
+        return abstractMorseSmaleComplex_->setSaddleConnectorsPersistenceThreshold(threshold);
+      }
+
       int setupTriangulation(Triangulation* const data){
         inputTriangulation_=data;
         const int dimensionality=inputTriangulation_->getCellVertexNumber(0)-1;

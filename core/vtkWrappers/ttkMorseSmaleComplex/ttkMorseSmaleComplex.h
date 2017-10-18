@@ -126,6 +126,12 @@ class VTKFILTERSCORE_EXPORT ttkMorseSmaleComplex
     vtkSetMacro(ComputeFinalSegmentation, int);
     vtkGetMacro(ComputeFinalSegmentation, int);
 
+    vtkSetMacro(ReturnSaddleConnectors, int);
+    vtkGetMacro(ReturnSaddleConnectors, int);
+
+    vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
+    vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
+
     int setupTriangulation(vtkDataSet* input);
     vtkDataArray* getScalars(vtkDataSet* input);
     vtkDataArray* getOffsets(vtkDataSet* input);
@@ -157,6 +163,8 @@ class VTKFILTERSCORE_EXPORT ttkMorseSmaleComplex
     bool ComputeFinalSegmentation;
     int ScalarFieldId;
     int OffsetFieldId;
+    int ReturnSaddleConnectors;
+    double SaddleConnectorsPersistenceThreshold;
 
     MorseSmaleComplex morseSmaleComplex_;
     Triangulation *triangulation_;

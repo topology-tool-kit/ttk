@@ -20,6 +20,7 @@
 #include<Geometry.h>
 #include<Wrapper.h>
 #include<ScalarFieldCriticalPoints.h>
+#include<FTMTree.h>
 
 #include<queue>
 #include<algorithm>
@@ -341,6 +342,16 @@ namespace ttk{
         return 0;
       }
 
+      int setReturnSaddleConnectors(const bool state){
+        ReturnSaddleConnectors=state;
+        return 0;
+      }
+
+      int setSaddleConnectorsPersistenceThreshold(const double threshold){
+        SaddleConnectorsPersistenceThreshold=threshold;
+        return 0;
+      }
+
       int setOutputPersistencePairs(vector<tuple<Cell,Cell>>* const data){
         outputPersistencePairs_=data;
         return 0;
@@ -552,6 +563,7 @@ namespace ttk{
             const vector<char>& isPL,
             const bool allowBoundary,
             const bool allowBruteForce,
+            const bool returnSaddleConnectors,
             set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
             vector<int>& pl2dmt_saddle1,
             vector<int>& pl2dmt_saddle2,
@@ -571,7 +583,8 @@ namespace ttk{
         int proto_simplifySaddleSaddleConnections1(const vector<pair<int,char>>& criticalPoints,
             const int iterationThreshold,
             const bool allowBoundary,
-            const bool allowBruteForce);
+            const bool allowBruteForce,
+            const bool returnSaddleConnectors);
 
       template <typename dataType>
         int initializeSaddleSaddleConnections2(const vector<char>& isRemovableSaddle1,
@@ -610,6 +623,7 @@ namespace ttk{
             const vector<char>& isPL,
             const bool allowBoundary,
             const bool allowBruteForce,
+            const bool returnSaddleConnectors,
             set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
             vector<int>& pl2dmt_saddle1,
             vector<int>& pl2dmt_saddle2,
@@ -629,7 +643,8 @@ namespace ttk{
         int proto_simplifySaddleSaddleConnections2(const vector<pair<int,char>>& criticalPoints,
             const int iterationThreshold,
             const bool allowBoundary,
-            const bool allowBruteForce);
+            const bool allowBruteForce,
+            const bool returnSaddleConnectors);
 
       template<typename dataType>
         int reverseGradient(const vector<pair<int,char>>& criticalPoints);
@@ -796,6 +811,8 @@ namespace ttk{
       bool ReverseSaddleMaximumConnection;
       bool ReverseSaddleSaddleConnection;
       bool CollectPersistencePairs;
+      bool ReturnSaddleConnectors;
+      double SaddleConnectorsPersistenceThreshold;
 
       int dimensionality_;
       vector<vector<vector<int>>> gradient_;
@@ -3748,6 +3765,7 @@ int DiscreteGradient::proto_processSaddleSaddleConnections1(const int iterationT
     const vector<char>& isPL,
     const bool allowBoundary,
     const bool allowBruteForce,
+    const bool returnSaddleConnectors,
     set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
     vector<int>& pl2dmt_saddle1,
     vector<int>& pl2dmt_saddle2,
@@ -3777,6 +3795,11 @@ int DiscreteGradient::proto_processSaddleSaddleConnections1(const int iterationT
     VPath& vpath=vpaths[vpathId];
 
     if(vpath.isValid_){
+      if(returnSaddleConnectors){
+        const dataType persistence=vpath.persistence_;
+        if(persistence>SaddleConnectorsPersistenceThreshold) break;
+      }
+
       const Cell& minSaddle1=criticalPoints[vpath.source_].cell_;
       const Cell& minSaddle2=criticalPoints[vpath.destination_].cell_;
 
@@ -4120,7 +4143,8 @@ template <typename dataType>
 int DiscreteGradient::proto_simplifySaddleSaddleConnections1(const vector<pair<int,char>>& criticalPoints,
     const int iterationThreshold,
     const bool allowBoundary,
-    const bool allowBruteForce){
+    const bool allowBruteForce,
+    const bool returnSaddleConnectors){
   Timer t;
 
   const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
@@ -4164,6 +4188,7 @@ int DiscreteGradient::proto_simplifySaddleSaddleConnections1(const vector<pair<i
       isPL,
       allowBoundary,
       allowBruteForce,
+      returnSaddleConnectors,
       S,
       pl2dmt_saddle1,
       pl2dmt_saddle2,
@@ -4679,6 +4704,7 @@ int DiscreteGradient::proto_processSaddleSaddleConnections2(const int iterationT
     const vector<char>& isPL,
     const bool allowBoundary,
     const bool allowBruteForce,
+    const bool returnSaddleConnectors,
     set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
     vector<int>& pl2dmt_saddle1,
     vector<int>& pl2dmt_saddle2,
@@ -4708,6 +4734,11 @@ int DiscreteGradient::proto_processSaddleSaddleConnections2(const int iterationT
     VPath& vpath=vpaths[vpathId];
 
     if(vpath.isValid_){
+      if(returnSaddleConnectors){
+        const dataType persistence=vpath.persistence_;
+        if(persistence>SaddleConnectorsPersistenceThreshold) break;
+      }
+
       const Cell& minSaddle1=criticalPoints[vpath.source_].cell_;
       const Cell& minSaddle2=criticalPoints[vpath.destination_].cell_;
 
@@ -5052,7 +5083,8 @@ template <typename dataType>
 int DiscreteGradient::proto_simplifySaddleSaddleConnections2(const vector<pair<int,char>>& criticalPoints,
     const int iterationThreshold,
     const bool allowBoundary,
-    const bool allowBruteForce){
+    const bool allowBruteForce,
+    const bool returnSaddleConnectors){
   Timer t;
 
   const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
@@ -5096,6 +5128,7 @@ int DiscreteGradient::proto_simplifySaddleSaddleConnections2(const vector<pair<i
       isPL,
       allowBoundary,
       allowBruteForce,
+      returnSaddleConnectors,
       S,
       pl2dmt_saddle1,
       pl2dmt_saddle2,
@@ -5115,16 +5148,71 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
     proto_simplifySaddleMaximumConnections<dataType>(criticalPoints, IterationThreshold, true, false);
 
   if(dimensionality_==3 and ReverseSaddleSaddleConnection){
-    proto_simplifySaddleSaddleConnections1<dataType>(criticalPoints, IterationThreshold, true, false);
-    proto_simplifySaddleSaddleConnections2<dataType>(criticalPoints, IterationThreshold, true, false);
+    proto_simplifySaddleSaddleConnections1<dataType>(criticalPoints, IterationThreshold, true, false, false);
+    proto_simplifySaddleSaddleConnections2<dataType>(criticalPoints, IterationThreshold, true, false, false);
   }
 
   if(ReverseSaddleMaximumConnection)
     proto_simplifySaddleMaximumConnections<dataType>(criticalPoints, IterationThreshold, true, true);
 
   if(dimensionality_==3 and ReverseSaddleSaddleConnection){
-    proto_simplifySaddleSaddleConnections1<dataType>(criticalPoints, IterationThreshold, true, true);
-    proto_simplifySaddleSaddleConnections2<dataType>(criticalPoints, IterationThreshold, true, true);
+    proto_simplifySaddleSaddleConnections1<dataType>(criticalPoints, IterationThreshold, true, true, false);
+    proto_simplifySaddleSaddleConnections2<dataType>(criticalPoints, IterationThreshold, true, true, false);
+  }
+
+  if(dimensionality_==3 and ReverseSaddleMaximumConnection and ReverseSaddleSaddleConnection and ReturnSaddleConnectors){
+    auto getNodeType=[&](const ftm::FTMTree_MT* tree, const ftm::Node* node){
+      const int upDegree   = node->getNumberOfUpSuperArcs();
+      const int downDegree = node->getNumberOfDownSuperArcs();
+      const int degree = upDegree + downDegree;
+
+      // saddle point
+      if (degree > 1) {
+         if (upDegree == 2 and downDegree == 1)
+            return 2;
+         else if (upDegree == 1 and downDegree == 2)
+            return 1;
+      }
+      // local extremum
+      else {
+         if (upDegree)
+            return 0;
+         else
+            return 3;
+      }
+
+      return -1;
+    };
+
+    vector<pair<int,char>> cpset;
+
+    const int* const offsets=static_cast<int*>(inputOffsets_);
+    const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+    const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+
+    vector<ftm::idVertex> voffsets(numberOfVertices);
+    std::copy(offsets,offsets+numberOfVertices,voffsets.begin());
+
+    ftm::FTMTree contourTree;
+    contourTree.setupTriangulation(inputTriangulation_, false);
+    contourTree.setVertexScalars(scalars);
+    contourTree.setTreeType(ftm::TreeType::Contour);
+    contourTree.setVertexSoSoffsets(voffsets);
+    contourTree.setThreadNumber(threadNumber_);
+    contourTree.setSegmentation(false);
+    contourTree.build<dataType>();
+    ftm::FTMTree_MT* tree=contourTree.getTree(ftm::TreeType::Contour);
+
+    const ftm::idVertex numberOfNodes=tree->getNumberOfNodes();
+    for (ftm::idVertex nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
+      const ftm::Node* node = tree->getNode(nodeId);
+      const ftm::idVertex vertexId = node->getVertexId();
+
+      cpset.push_back(make_pair((int)vertexId, getNodeType(tree,node)));
+    }
+
+    proto_simplifySaddleSaddleConnections1<dataType>(cpset, IterationThreshold, true, false, true);
+    proto_simplifySaddleSaddleConnections2<dataType>(cpset, IterationThreshold, true, false, true);
   }
 
   return 0;
