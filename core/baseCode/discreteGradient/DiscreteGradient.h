@@ -28,8 +28,15 @@
 #include<array>
 
 namespace ttk{
+  /**
+   * Type of the identifiers of the 2-separatrices.
+   * Must be the biggest integer type because it will provide more 2-separatrices.
+   */
   using wallId_t=unsigned long long int;
 
+  /**
+   * Basic concept of cell, so it must be able to identify any cell of any dimension.
+   */
   struct Cell{
     Cell():
       dim_{-1},
@@ -51,6 +58,10 @@ namespace ttk{
     int id_;
   };
 
+  /**
+   * Low-level structure storing a succession of cells. The orientation tells whether
+   * the segment has been reversed or not.
+   */
   struct Segment{
     Segment():
       orientation_{},
@@ -85,6 +96,9 @@ namespace ttk{
       isValid_{segment.isValid_}
     {}
 
+    /**
+     * Invalidate this segment so that it is ignored in the simplification process, free memory for economy reasons.
+     */
     int invalidate(){
       isValid_=false;
       clear();
@@ -92,6 +106,9 @@ namespace ttk{
       return 0;
     }
 
+    /**
+     * Free internal cells' memory.
+     */
     int clear(){
       cells_.clear();
 
@@ -103,6 +120,9 @@ namespace ttk{
     bool isValid_;
   };
 
+  /**
+   * Sequence of cells such that two consecutive cells differ in dimension by one.
+   */
   struct VPath{
     VPath():
       isValid_{},
@@ -188,6 +208,9 @@ namespace ttk{
       persistence_{vpath.persistence_}
     {}
 
+    /**
+     * Invalidate this vpath so that it is ignored in the simplification process, free memory for economy reasons.
+     */
     int invalidate(){
       isValid_=false;
       source_=-1;
@@ -198,6 +221,9 @@ namespace ttk{
       return 0;
     }
 
+    /**
+     * Free internal segments' memory.
+     */
     int clear(){
       states_.clear();
       segments_.clear();
@@ -215,6 +241,9 @@ namespace ttk{
     double persistence_;
   };
 
+  /**
+   * Limit point of integral lines in the gradient.
+   */
   struct CriticalPoint{
     CriticalPoint():
       numberOfSlots_{}
@@ -251,6 +280,9 @@ namespace ttk{
       numberOfSlots_{criticalPoint.numberOfSlots_}
     {}
 
+    /**
+     * Increase the connectivity of the critical point with openmp acceleration if enabled.
+     */
     int omp_addSlot(){
       int numberOfSlots=0;
 
@@ -262,10 +294,16 @@ namespace ttk{
       return numberOfSlots;
     }
 
+    /**
+     * Increase the connectivity of the critical point.
+     */
     int addSlot(){
       return (numberOfSlots_++);
     }
 
+    /**
+     * Free the connectivity of the critical point from the memory.
+     */
     int clear(){
       vpaths_.clear();
 
@@ -277,6 +315,9 @@ namespace ttk{
     int numberOfSlots_;
   };
 
+  /**
+   * Comparator of VPaths, first compare persistence values then vpaths' identifiers.
+   */
   template <typename dataType>
     struct SaddleMaximumVPathComparator{
       bool operator()(const pair<dataType,int>& v1, const pair<dataType,int>& v2) const{
@@ -293,6 +334,10 @@ namespace ttk{
       };
     };
 
+  /**
+   * Comparator of saddle-connectors, first compare persistence values then saddle identifiers
+   * and finally vpaths' identifiers.
+   */
   template <typename dataType>
     struct SaddleSaddleVPathComparator{
       bool operator()(const tuple<dataType,int,int>& v1, const tuple<dataType,int,int>& v2) const{
@@ -315,6 +360,9 @@ namespace ttk{
       };
     };
 
+  /**
+   * Compute and manage a discrete gradient of a function on a triangulation.
+   */
   class DiscreteGradient : public Debug{
 
     public:
@@ -322,62 +370,105 @@ namespace ttk{
       DiscreteGradient();
       ~DiscreteGradient();
 
+      /**
+       * Impose a threshold on the number of simplification passes.
+       */
       int setIterationThreshold(const int iterationThreshold){
         IterationThreshold=iterationThreshold;
         return 0;
       }
 
+      /**
+       * Enable/Disable gradient reversal of saddle to maximum VPaths.
+       */
       int setReverseSaddleMaximumConnection(const bool state){
         ReverseSaddleMaximumConnection=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable gradient reversal of saddle/saddle VPaths.
+       */
       int setReverseSaddleSaddleConnection(const bool state){
         ReverseSaddleSaddleConnection=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable collecting of persistence pairs during the simplification.
+       */
       int setCollectPersistencePairs(const bool state){
         CollectPersistencePairs=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable returning saddle-connectors as post-process.
+       */
       int setReturnSaddleConnectors(const bool state){
         ReturnSaddleConnectors=state;
         return 0;
       }
 
+      /**
+       * Set the persistence threshold value of the post-processing on the saddle-connectors.
+       */
       int setSaddleConnectorsPersistenceThreshold(const double threshold){
         SaddleConnectorsPersistenceThreshold=threshold;
         return 0;
       }
 
+      /**
+       * Set the output data pointer to the container of the persistence pairs
+       * (collecting of persistence pairs must be enabled).
+       */
       int setOutputPersistencePairs(vector<tuple<Cell,Cell>>* const data){
         outputPersistencePairs_=data;
         return 0;
       }
 
+      /**
+       * Return the scalar value of the point in the cell which has the highest function value.
+       */
       template <typename dataType>
         dataType scalarMax(const Cell& cell, const dataType* const scalars) const;
 
+      /**
+       * Return the scalar value of the point in the cell which has the lowest function value.
+       */
       template <typename dataType>
         dataType scalarMin(const Cell& cell, const dataType* const scalars) const;
 
+      /**
+       * Compute the difference of function values of a pair of cells.
+       */
       template <typename dataType>
         dataType getPersistence(const Cell& up, const Cell& down, const dataType* const scalars) const;
 
+      /**
+       * Comparator of vertices, return true if a vertex A is higher then a vertex B, false otherwise
+       * (support simulation of simplicity).
+       */
       template <typename dataType>
         bool isHigherThan(const int vertexA,
             const int vertexB,
             const dataType* const scalars,
             const int* const offsets) const;
 
+      /**
+       * Comparator of vertices, return true if a vertex A is lower then a vertex B, false otherwise
+       * (support simulation of simplicity).
+       */
       template <typename dataType>
         bool isLowerThan(const int vertexA,
             const int vertexB,
             const dataType* const scalars,
             const int* const offsets) const;
 
+      /**
+       * Comparator of cells, return the identifier of the cell which is higher in the lexicographic order
+       * of their vertices.
+       */
       template <typename dataType>
         int cellMax(const int cellDim,
             const int cellA,
@@ -385,6 +476,10 @@ namespace ttk{
             const dataType* const scalars,
             const int* const offsets) const;
 
+      /**
+       * Comparator of cells, return the identifier of the cell which is lower in the lexicographic order
+       * of their vertices.
+       */
       template <typename dataType>
         int cellMin(const int cellDim,
             const int cellA,
@@ -392,69 +487,115 @@ namespace ttk{
             const dataType* const scalars,
             const int* const offsets) const;
 
+      /**
+       * G0 function from "Parallel Computation of 3D Morse-Smale Complexes",
+       * N. Shivashankar and V. Natarajan.
+       * Return the highest facet of a given cell.
+       */
       template <typename dataType>
         int g0(const int cellDim,
             const int cellId,
             const dataType* const scalars,
             const int* const offsets) const;
 
+      /**
+       * Slightly modified version of the G0 function, return the second highest facet.
+       */
       template <typename dataType>
         int g0_second(const int cellDim,
             const int cellId,
             const dataType* const scalars,
             const int* const offsets) const;
 
+      /**
+       * Modified version of the G0 function, return the third highest facet.
+       */
       template <typename dataType>
         int g0_third(const int cellDim,
             const int cellId,
             const dataType* const scalars,
             const int* const offsets) const;
 
+      /**
+       * Body of AssignGradient algorithm from "Parallel Computation of 3D Morse-Smale Complexes",
+       * N. Shivashankar and V. Natarajan.
+       * Compute the initial gradient field of the input scalar function for a given dimension.
+       */
       template <typename dataType>
         int assignGradient(const int alphaDim,
             const dataType* const scalars,
             const int* const offsets,
             vector<vector<int>>& gradient) const;
 
+      /**
+       * Second pass of AssignGradient algorithm, minimize the number of unpaired cells.
+       */
       template <typename dataType>
         int assignGradient2(const int alphaDim,
             const dataType* const scalars,
             const int* const offsets,
             vector<vector<int>>& gradient) const;
 
+      /**
+       * New pass of AssignGradient, minimize the number of unpaired cells (3D triangulation only).
+       */
       template <typename dataType>
         int assignGradient3(const int alphaDim,
             const dataType* const scalars,
             const int* const offsets,
             vector<vector<int>>& gradient) const;
 
+      /**
+       * Compute the initial gradient field of the input scalar function on the triangulation.
+       */
       template <typename dataType>
         int buildGradient();
 
+      /**
+       * Minimize the number of unpaired cells of any dimensions.
+       * Assume that buildGradient() has been called before.
+       */
       template <typename dataType>
         int buildGradient2();
 
+      /**
+       * Minimize further the number of unpaired cells of any dimensions (3D triangulation only).
+       * Assume that buildGradient2() has been called before.
+       */
       template <typename dataType>
         int buildGradient3();
 
+      /**
+       * Get the list of maxima candidates for simplification.
+       */
       template <typename dataType>
         int getRemovableMaxima(const vector<pair<int,char>>& criticalPoints,
             const bool allowBoundary,
             vector<char>& isRemovableMaximum,
             vector<int>& pl2dmt_maximum);
 
+      /**
+       * Get the list of 1-saddles candidates for simplification.
+       */
       template <typename dataType>
         int getRemovableSaddles1(const vector<pair<int,char>>& criticalPoints,
             const bool allowBoundary,
             vector<char>& isRemovableSaddle,
             vector<int>& pl2dmt_saddle) const;
 
+      /**
+       * Get the list of 2-saddles candidates for simplification.
+       */
       template <typename dataType>
         int getRemovableSaddles2(const vector<pair<int,char>>& criticalPoints,
             const bool allowBoundary,
             vector<char>& isRemovableSaddle,
             vector<int>& pl2dmt_saddle) const;
 
+      /**
+       * Create initial Morse-Smale Complex structure and initialize the (saddle,...,maximum)
+       * vpaths to the simplification process.
+       */
       template <typename dataType>
         int initializeSaddleMaximumConnections(vector<char>& isRemovableMaximum,
             vector<char>& isRemovableSaddle,
@@ -463,10 +604,17 @@ namespace ttk{
             vector<VPath>& vpaths,
             vector<CriticalPoint>& criticalPoints) const;
 
+      /**
+       * Order the (saddle,...,maximum) vpaths by persistence value.
+       */
       template <typename dataType>
         int orderSaddleMaximumConnections(const vector<VPath>& vpaths,
             set<pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S);
 
+      /**
+       * Compute simple algebra on the vpaths to minimize the number of gradient paths reversal.
+       * Two representations are available for the accumulation vector, a dense and a sparse one (default).
+       */
       template <typename dataType>
         int computeCoefficients(const bool isDense,
             vector<char>& denseCoefficients,
@@ -475,6 +623,9 @@ namespace ttk{
             VPath& newVPath,
             const vector<VPath>& vpaths) const;
 
+      /**
+       * Core of the simplification process, tag the (saddle,...,maximum) vpaths to be reversed.
+       */
       template <typename dataType>
         int processSaddleMaximumConnections(const int iterationThreshold,
             const vector<char>& isPL,
@@ -487,15 +638,26 @@ namespace ttk{
             vector<VPath>& vpaths,
             vector<CriticalPoint>& criticalPoints) const;
 
+      /**
+       * Actually reverse the so-tagged (saddle,...,vpaths) to simplify the discrete gradient.
+       * The gradient is modified during this step.
+       */
       template <typename dataType>
         int reverseSaddleMaximumConnections(const vector<Segment>& segments);
 
+      /**
+       * High-level function that manages the global simplification of (saddle,...,maximum) vpaths.
+       */
       template <typename dataType>
         int simplifySaddleMaximumConnections(const vector<pair<int,char>>& criticalPoints,
             const int iterationThreshold,
             const bool allowBoundary,
             const bool allowBruteForce);
 
+      /**
+       * Create initial Morse-Smale Complex structure and initialize the (2-saddle,...,1-saddle) vpaths
+       * to the simplification process.
+       */
       template <typename dataType>
         int initializeSaddleSaddleConnections1(const vector<char>& isRemovableSaddle1,
             const vector<char>& isRemovableSaddle2,
@@ -505,11 +667,18 @@ namespace ttk{
             vector<int>& saddle1Index,
             vector<int>& saddle2Index) const;
 
+      /**
+       * Order the (2-saddle,...,1-saddle) vpaths by persistence value.
+       */
       template <typename dataType>
         int orderSaddleSaddleConnections1(const vector<VPath>& vpaths,
             vector<CriticalPoint>& criticalPoints,
             set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S);
 
+      /**
+       * Core of the simplification process, modify the gradient and
+       * reverse the selected (2-saddle,...,1-saddle) vpaths to simplify.
+       */
       template <typename dataType>
         int processSaddleSaddleConnections1(const int iterationThreshold,
             const vector<char>& isPL,
@@ -526,6 +695,9 @@ namespace ttk{
             vector<int>& saddle1Index,
             vector<int>& saddle2Index);
 
+      /**
+       * High-level function that manages the global simplification of (2-saddle,...,1-saddle) vpaths.
+       */
       template <typename dataType>
         int simplifySaddleSaddleConnections1(const vector<pair<int,char>>& criticalPoints,
             const int iterationThreshold,
@@ -533,6 +705,10 @@ namespace ttk{
             const bool allowBruteForce,
             const bool returnSaddleConnectors);
 
+      /**
+       * Create initial Morse-Smale Complex structure and initialize the (1-saddle,...,2-saddle) vpaths
+       * to the simplification process.
+       */
       template <typename dataType>
         int initializeSaddleSaddleConnections2(const vector<char>& isRemovableSaddle1,
             const vector<char>& isRemovableSaddle2,
@@ -542,11 +718,18 @@ namespace ttk{
             vector<int>& saddle1Index,
             vector<int>& saddle2Index) const;
 
+      /**
+       * Order the (1-saddle,...,2-saddle) vpaths by persistence value.
+       */
       template <typename dataType>
         int orderSaddleSaddleConnections2(const vector<VPath>& vpaths,
             vector<CriticalPoint>& criticalPoints,
             set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S);
 
+      /**
+       * Core of the simplification process, modify the gradient and
+       * reverse the selected (1-saddle,...,2-saddle) vpaths to simplify.
+       */
       template <typename dataType>
         int processSaddleSaddleConnections2(const int iterationThreshold,
             const vector<char>& isPL,
@@ -563,6 +746,9 @@ namespace ttk{
             vector<int>& saddle1Index,
             vector<int>& saddle2Index);
 
+      /**
+       * High-level function that manages the global simplification of (1-saddle,...,2-saddle) vpaths.
+       */
       template <typename dataType>
         int simplifySaddleSaddleConnections2(const vector<pair<int,char>>& criticalPoints,
             const int iterationThreshold,
@@ -570,17 +756,30 @@ namespace ttk{
             const bool allowBruteForce,
             const bool returnSaddleConnectors);
 
+      /**
+       * Highest-level simplification function, manage all the simplification steps
+       * compliant to the critical points given bu the user.
+       */
       template<typename dataType>
         int reverseGradient(const vector<pair<int,char>>& criticalPoints);
 
+      /**
+       * Automatic detection of the PL critical points and simplification according to them.
+       */
       template <typename dataType>
         int reverseGradient();
 
+      /**
+       * Set the input scalar function.
+       */
       inline int setInputScalarField(void* const data){
         inputScalarField_=data;
         return 0;
       }
 
+      /**
+       * Preprocess all the required connectivity requests on the triangulation.
+       */
       inline int setupTriangulation(Triangulation* const data){
         inputTriangulation_=data;
         if(inputTriangulation_){
@@ -609,11 +808,17 @@ namespace ttk{
         return 0;
       }
 
+      /**
+       * Set the input offset function.
+       */
       inline int setInputOffsets(void* const data){
         inputOffsets_=data;
         return 0;
       }
 
+      /**
+       * Set the output data pointer to the critical points.
+       */
       inline int setOutputCriticalPoints(int* const criticalPoints_numberOfPoints,
           vector<float>* const criticalPoints_points,
           vector<int>* const criticalPoints_points_cellDimensons,
@@ -633,6 +838,9 @@ namespace ttk{
         return 0;
       }
 
+      /**
+       * Set the output data pointer to the gradient glyphs.
+       */
       inline int setOutputGradientGlyphs(int* const gradientGlyphs_numberOfPoints,
           vector<float>* const gradientGlyphs_points,
           vector<int>* const gradientGlyphs_points_pairOrigins,
@@ -648,34 +856,76 @@ namespace ttk{
         return 0;
       }
 
+      /**
+       * Get the dimensionality of the triangulation.
+       */
       int getDimensionality() const;
 
+      /**
+       * Get the number of dimensions available for the cells in the triangulation (equal to dimensionality+1).
+       */
       int getNumberOfDimensions() const;
 
+      /**
+       * Get the number of cells of the given dimension.
+       */
       int getNumberOfCells(const int dimension) const;
 
+      /**
+       * Return true if the given cell is a minimum regarding the discrete gradient, false otherwise.
+       */
       bool isMinimum(const Cell& cell) const;
 
+      /**
+       * Return true if the given cell is a 1-saddle regarding the discrete gradient, false otherwise.
+       */
       bool isSaddle1(const Cell& cell) const;
 
+      /**
+       * Return true if the given cell is a 2-saddle regarding the discrete gradient, false otherwise.
+       */
       bool isSaddle2(const Cell& cell) const;
 
+      /**
+       * Return true if the given cell is a maximum regarding the discrete gradient, false otherwise.
+       */
       bool isMaximum(const Cell& cell) const;
 
+      /**
+       * Return true if the given cell is a critical point regarding the discrete gradient, false otherwise.
+       */
       bool isCellCritical(const Cell& cell) const;
 
+      /**
+       * Return true if the given cell is at boundary, false otherwise.
+       */
       bool isBoundary(const Cell& cell) const;
 
+      /**
+       * Return the identifier of the cell paired to the cell given by the user in the gradient.
+       */
       int getPairedCell(const Cell& cell, bool isReverse=false) const;
 
+      /**
+       * Get the output critical points as a STL vector of cells.
+       */
       int getCriticalPoints(vector<Cell>& criticalPoints) const;
 
+      /**
+       * Return the VPath coming from the given cell.
+       */
       int getAscendingPath(const Cell& cell,
           vector<Cell>& vpath,
           const bool enableCycleDetector=false) const;
 
+      /**
+       * Return the VPath terminating at the given cell.
+       */
       int getDescendingPath(const Cell& cell, vector<Cell>& vpath) const;
 
+      /**
+       * Return the VPath terminating at the given 2-saddle restricted to the 2-separatrice of the 1-saddle.
+       */
       int getDescendingPathThroughWall(const wallId_t wallId,
           const Cell& saddle2,
           const Cell& saddle1,
@@ -683,6 +933,9 @@ namespace ttk{
           vector<Cell>* const vpath,
           const bool enableCycleDetector=false) const;
 
+      /**
+       * Return the VPath coming from the given 1-saddle restricted to the 2-separatrice of the 2-saddle.
+       */
       bool getAscendingPathThroughWall(const wallId_t wallId,
           const Cell& saddle1,
           const Cell& saddle2,
@@ -690,44 +943,87 @@ namespace ttk{
           vector<Cell>* const vpath,
           const bool enableCycleDetector=false) const;
 
+      /**
+       * Return the 2-separatrice terminating at the given 2-saddle.
+       */
       int getDescendingWall(const wallId_t wallId,
           const Cell& cell,
           vector<wallId_t>& isVisited,
           vector<Cell>* const wall=nullptr,
           set<int>* const saddles=nullptr) const;
 
+      /**
+       * Return the 2-separatrice coming from the given 1-saddle.
+       */
       int getAscendingWall(const wallId_t wallId,
           const Cell& cell,
           vector<wallId_t>& isVisited,
           vector<Cell>* const wall=nullptr,
           set<int>* const saddles=nullptr) const;
 
+      /**
+       * Reverse the given ascending VPath.
+       */
       int reverseAscendingPath(const vector<Cell>& vpath);
 
+      /**
+       * Reverse the given ascending VPath restricted on a 2-separatrice.
+       */
       int reverseAscendingPathOnWall(const vector<Cell>& vpath);
 
+      /**
+       * Reverse the given descending VPath restricted on a 2-separatrice.
+       */
       int reverseDescendingPathOnWall(const vector<Cell>& vpath);
 
+      /**
+       * Compute the barycenter of the points of the given edge identifier.
+       */
       int getEdgeIncenter(int edgeId, float incenter[3]) const;
 
+      /**
+       * Compute the incenter of the points of the given triangle identifier.
+       */
       int getTriangleIncenter(int triangleId, float incenter[3]) const;
 
+      /**
+       * Compute the barycenter of the incenters of the triangles of the given tetra identifier.
+       */
       int getTetraIncenter(int tetraId, float incenter[3]) const;
 
+      /**
+       * Compute the geometric barycenter of a given cell.
+       */
       int getCellIncenter(const Cell& cell, float incenter[3]) const;
 
+      /**
+       * Build the geometric embedding of the given STL vector of cells.
+       * The output data pointers are modified accordingly.
+       */
       template <typename dataType>
         int setCriticalPoints(const vector<Cell>& criticalPoints) const;
 
+      /**
+       * Detect the critical points and build their geometric embedding.
+       * The output data pointers are modified accordingly.
+       */
       template <typename dataType>
         int setCriticalPoints() const;
 
+      /**
+       * Build the geometric embedding of the given STL vector of cells and add
+       * global information as scalar fields.
+       * The output data pointers are modified accordingly.
+       */
       template <typename dataType>
         int setAugmentedCriticalPoints(const vector<Cell>& criticalPoints,
             vector<int>& maxSeeds,
             int* ascendingManifold,
             int* descendingManifold) const;
 
+      /**
+       * Build the gradient glyphs representing the discrete vector field.
+       */
       int setGradientGlyphs() const;
 
     protected:
@@ -3831,8 +4127,8 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
       cpset.push_back(make_pair((int)vertexId, getNodeType(tree,node)));
     }
 
-    simplifySaddleSaddleConnections1<dataType>(criticalPoints, IterationThreshold, allowBoundary, allowBruteForce, returnSaddleConnectors);
-    simplifySaddleSaddleConnections2<dataType>(criticalPoints, IterationThreshold, allowBoundary, allowBruteForce, returnSaddleConnectors);
+    simplifySaddleSaddleConnections1<dataType>(cpset, IterationThreshold, allowBoundary, allowBruteForce, returnSaddleConnectors);
+    simplifySaddleSaddleConnections2<dataType>(cpset, IterationThreshold, allowBoundary, allowBruteForce, returnSaddleConnectors);
   }
 
   return 0;

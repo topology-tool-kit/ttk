@@ -23,6 +23,17 @@
 #include<MorseSmaleComplex2D.h>
 #include<MorseSmaleComplex3D.h>
 
+/*
+ * Morse-Smale Complex developer help:
+ *
+ * -architecture
+ * -gradient build
+ * -gradient simplification
+ * -add a new field
+ * -geometry
+ * -parallelism
+ */
+
 namespace ttk{
 
   class MorseSmaleComplex : public AbstractMorseSmaleComplex{
