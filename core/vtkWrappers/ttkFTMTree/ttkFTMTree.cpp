@@ -4,6 +4,7 @@
 #include <vtkConnectivityFilter.h>
 #include <vtkDataObject.h>
 #include <vtkThreshold.h>
+#include <ttkIdentifiers.h>
 
 using namespace ftm;
 
@@ -234,16 +235,20 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       connectivity->SetExtractionModeToAllRegions();
       connectivity->ColorRegionsOn();
       connectivity->Update();
-      vtkUnstructuredGrid* out_connectivity = connectivity->GetOutput();
-      // Note: When using the scripted version and so the ScalarFieldId/OffsetFieldId,
-      // the use of the connectivity plugin add an array.
-      // Can it change the index of an existing one ?
 
-      nbCC_ = out_connectivity->GetCellData()->GetArray("RegionId")->GetRange()[1] + 1;
+      // We need a field to recover the link between the current data set and
+      // each connected component that will be extracted
+
+      vtkSmartPointer<ttkIdentifiers> vertIdentifiers = vtkSmartPointer<ttkIdentifiers>::New();
+      vertIdentifiers->SetInputConnection(connectivity->GetOutputPort());
+      vertIdentifiers->Update();
+
+      nbCC_ = vertIdentifiers->GetOutput()->GetCellData()->GetArray("RegionId")->GetRange()[1] + 1;
       connected_components_.resize(nbCC_);
+
       for (int cc = 0; cc < nbCC_; cc++) {
          vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
-         threshold->SetInputData(out_connectivity);
+         threshold->SetInputConnection(vertIdentifiers->GetOutputPort());
          threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
          threshold->Update();
          connected_components_[cc] = ttkUnstructuredGrid::New();
@@ -580,6 +585,7 @@ int ttkFTMTree::setupTriangulation()
       ftmTree_[cc].setDebugLevel(debugLevel_);
       ftmTree_[cc].setThreadNumber(threadNumber_);
       ftmTree_[cc].setupTriangulation(triangulation_[cc]);
+      cout << "triangulation: " << triangulation_[cc] << endl;
 
       hasUpdatedMesh_ = ttkTriangulation::hasChangedConnectivity(triangulation_[cc], connected_components_[cc], this);
 
