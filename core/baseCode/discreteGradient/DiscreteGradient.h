@@ -3489,6 +3489,13 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(const vector<pair<int,cha
       saddle1Index,
       saddle2Index);
 
+  {
+    stringstream msg;
+    msg << "[DiscreteGradient] Saddle-Saddle pairs simplified in "
+      << t.getElapsedTime() << " s, "<< threadNumber_ << " thread(s)." << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
+
   return 0;
 }
 
@@ -4044,6 +4051,13 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(const vector<pair<int,cha
       dmt_criticalPoints,
       saddle1Index,
       saddle2Index);
+
+  {
+    stringstream msg;
+    msg << "[DiscreteGradient] Saddle-Saddle pairs simplified in "
+      << t.getElapsedTime() << " s, "<< threadNumber_ << " thread(s)." << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
 
   return 0;
 }
