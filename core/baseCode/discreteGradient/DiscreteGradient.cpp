@@ -2,9 +2,11 @@
 
 DiscreteGradient::DiscreteGradient():
   IterationThreshold{-1},
-  ReverseSaddleMaximumConnection{},
-  ReverseSaddleSaddleConnection{},
-  CollectPersistencePairs{},
+  ReverseSaddleMaximumConnection{false},
+  ReverseSaddleSaddleConnection{false},
+  CollectPersistencePairs{false},
+  ReturnSaddleConnectors{false},
+  SaddleConnectorsPersistenceThreshold{0},
 
   dimensionality_{-1},
   gradient_{},

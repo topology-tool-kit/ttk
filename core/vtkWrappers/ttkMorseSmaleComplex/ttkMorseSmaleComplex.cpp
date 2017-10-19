@@ -19,6 +19,8 @@ vtkStandardNewMacro(ttkMorseSmaleComplex)
     ComputeFinalSegmentation{true},
     ScalarFieldId{},
     OffsetFieldId{-1},
+    ReturnSaddleConnectors{false},
+    SaddleConnectorsPersistenceThreshold{0},
 
     triangulation_{},
     defaultOffsets_{},
@@ -328,6 +330,11 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   morseSmaleComplex_.setComputeDescendingSegmentation(
       ComputeDescendingSegmentation);
   morseSmaleComplex_.setComputeFinalSegmentation(ComputeFinalSegmentation);
+
+  morseSmaleComplex_.setReturnSaddleConnectors(
+      ReturnSaddleConnectors);
+  morseSmaleComplex_.setSaddleConnectorsPersistenceThreshold(
+      SaddleConnectorsPersistenceThreshold);
 
   morseSmaleComplex_.setInputScalarField(inputScalars->GetVoidPointer(0));
   morseSmaleComplex_.setInputOffsets(inputOffsets->GetVoidPointer(0));

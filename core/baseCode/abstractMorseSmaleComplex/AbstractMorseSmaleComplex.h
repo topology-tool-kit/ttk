@@ -156,6 +156,16 @@ namespace ttk{
         return 0;
       }
 
+      int setReturnSaddleConnectors(const bool state){
+        ReturnSaddleConnectors=state;
+        return 0;
+      }
+
+      int setSaddleConnectorsPersistenceThreshold(const double threshold){
+        SaddleConnectorsPersistenceThreshold=threshold;
+        return 0;
+      }
+
       inline int setupTriangulation(Triangulation* const data){
         inputTriangulation_=data;
         discreteGradient_.setupTriangulation(inputTriangulation_);
@@ -275,6 +285,8 @@ namespace ttk{
       bool ComputeAscendingSegmentation;
       bool ComputeDescendingSegmentation;
       bool ComputeFinalSegmentation;
+      bool ReturnSaddleConnectors;
+      double SaddleConnectorsPersistenceThreshold;
 
       DiscreteGradient discreteGradient_;
 

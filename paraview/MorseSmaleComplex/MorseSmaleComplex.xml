@@ -213,6 +213,30 @@ Computer Graphics Forum, 2012.
          </Documentation>
        </IntVectorProperty>
 
+       <IntVectorProperty name="ReturnSaddleConnectors"
+         label="Return Saddle Connectors"
+         command="SetReturnSaddleConnectors"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Return the saddle connectors.
+         </Documentation>
+       </IntVectorProperty>
+
+       <DoubleVectorProperty name="SaddleConnectorsPersistenceThreshold"
+         label="Saddle Connectors Persistence Threshold"
+         command="SetSaddleConnectorsPersistenceThreshold"
+         number_of_elements="1"
+         default_values="0"
+         panel_visibility="advanced">
+         <DoubleRangeDomain name="range" min="0.0" max="100.0" />
+         <Documentation>
+           Saddle Connectors Persistence Threshold.
+         </Documentation>
+       </DoubleVectorProperty>
+
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -279,6 +303,8 @@ Computer Graphics Forum, 2012.
         <Property name="ComputeAscendingSegmentation"/>
         <Property name="ComputeDescendingSegmentation"/>
         <Property name="ComputeFinalSegmentation"/>
+        <Property name="ReturnSaddleConnectors"/>
+        <Property name="SaddleConnectorsPersistenceThreshold"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
