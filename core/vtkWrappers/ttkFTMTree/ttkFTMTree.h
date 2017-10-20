@@ -80,15 +80,16 @@ struct WrapperData {
 };
 
 struct ArcData : public WrapperData {
-   vector<vtkIdType>               pointIds;
-   vtkSmartPointer<vtkIntArray>    ids;
-   vtkSmartPointer<vtkIntArray>    sizeArcs;
-   vtkSmartPointer<vtkDoubleArray> spanArcs;
-   vtkSmartPointer<vtkCharArray>   regularMask;
+   vector<vtkIdType>               point_ids;
+   vtkSmartPointer<vtkCharArray>   point_regularMask;
+   vtkSmartPointer<vtkFloatArray>  point_scalar;
+   vtkSmartPointer<vtkIntArray>    cell_ids;
+   vtkSmartPointer<vtkIntArray>    cell_sizeArcs;
+   vtkSmartPointer<vtkDoubleArray> cell_spanArcs;
 
    inline int init(ftm::FTMTree_MT* tree, ftm::Params params)
    {
-      pointIds.resize(tree->getNumberOfNodes(), ftm::nullNodes);
+      point_ids.resize(tree->getNumberOfNodes(), ftm::nullNodes);
 
       const ftm::idSuperArc nbArcs  = tree->getNumberOfSuperArcs();
       const ftm::idSuperArc nbNodes = tree->getNumberOfNodes();
@@ -96,33 +97,53 @@ struct ArcData : public WrapperData {
                                                ? nbNodes + (nbArcs * params.samplingLvl)
                                                : tree->getNumberOfVertices();
 
-      ids         = initArray<vtkIntArray>("SegmentationId", samplePoints);
-      regularMask = initArray<vtkCharArray>("RegularMask", samplePoints);
+      cell_ids          = initArray<vtkIntArray>("SegmentationId", samplePoints);
+      point_regularMask = initArray<vtkCharArray>("RegularMask", samplePoints);
+      point_scalar      = initArray<vtkFloatArray>("Scalar", samplePoints);
 
       if(params.advStats){
          if (params.segm) {
-            sizeArcs = initArray<vtkIntArray>("RegionSize", samplePoints);
+            cell_sizeArcs = initArray<vtkIntArray>("RegionSize", samplePoints);
          }
-         spanArcs = initArray<vtkDoubleArray>("RegionSpan", samplePoints);
+         cell_spanArcs = initArray<vtkDoubleArray>("RegionSpan", samplePoints);
       }
 
       return 0;
    }
 
-   inline void fillArray(const vtkIdType pos, const ftm::idSuperArc arcId, ftm::FTMTree_MT* tree,
-                         Triangulation* triangulation, ftm::Params params)
+   inline bool hasPoint(const ftm::idVertex vertId)
+   {
+      return point_ids[vertId] != ftm::nullNodes;
+   }
+
+   inline void addPoint(const ftm::idVertex vertId, const vtkIdType id, const float scalar,
+                        const bool reg)
+   {
+      point_ids[vertId] = id;
+      setPoint(id, scalar, reg);
+   }
+
+   inline void setPoint(const vtkIdType id, const float scalar, const bool reg)
+   {
+      point_scalar->SetTuple1(id, scalar);
+      point_regularMask->SetTuple1(id, reg);
+   }
+
+   inline void fillArrayCell(const vtkIdType pos, const ftm::idSuperArc arcId,
+                             ftm::FTMTree_MT* tree, Triangulation* triangulation,
+                             ftm::Params params)
    {
       ftm::SuperArc* arc = tree->getSuperArc(arcId);
 
       if (params.normalize) {
-         ids->SetTuple1(pos, arc->getNormalizedId());
+         cell_ids->SetTuple1(pos, arc->getNormalizedId());
       } else {
-         ids->SetTuple1(pos, arcId);
+         cell_ids->SetTuple1(pos, arcId);
       }
 
       if (params.advStats) {
          if (params.segm) {
-            sizeArcs->SetTuple1(pos, tree->getArcSize(arcId));
+            cell_sizeArcs->SetTuple1(pos, tree->getArcSize(arcId));
          }
 
          float               downPoints[3];
@@ -135,7 +156,7 @@ struct ArcData : public WrapperData {
          const ftm::idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
          triangulation->getVertexPoint(upVertexId, upPoints[0], upPoints[1], upPoints[2]);
 
-         spanArcs->SetTuple1(pos, Geometry::distance(downPoints, upPoints));
+         cell_spanArcs->SetTuple1(pos, Geometry::distance(downPoints, upPoints));
       }
    }
 
@@ -146,22 +167,24 @@ struct ArcData : public WrapperData {
       const size_t nbPoints = skeletonArcs->GetNumberOfPoints();
       const size_t nbCells = nbPoints -1;
 
-      ids->SetNumberOfTuples(nbCells);
-      skeletonArcs->GetCellData()->AddArray(ids);
+      cell_ids->SetNumberOfTuples(nbCells);
+      skeletonArcs->GetCellData()->AddArray(cell_ids);
 
       if (params.advStats) {
          if (params.segm) {
-            sizeArcs->SetNumberOfTuples(nbCells);
-            skeletonArcs->GetCellData()->AddArray(sizeArcs);
+            cell_sizeArcs->SetNumberOfTuples(nbCells);
+            skeletonArcs->GetCellData()->AddArray(cell_sizeArcs);
          }
-         spanArcs->SetNumberOfTuples(nbCells);
-         skeletonArcs->GetCellData()->AddArray(spanArcs);
+         cell_spanArcs->SetNumberOfTuples(nbCells);
+         skeletonArcs->GetCellData()->AddArray(cell_spanArcs);
       }
 
-      regularMask->SetNumberOfTuples(nbPoints);
-      skeletonArcs->GetPointData()->AddArray(regularMask);
+      point_scalar->SetNumberOfTuples(nbPoints);
+      skeletonArcs->GetPointData()->AddArray(point_scalar);
+      point_regularMask->SetNumberOfTuples(nbPoints);
+      skeletonArcs->GetPointData()->AddArray(point_regularMask);
 
-      pointIds.clear();
+      point_ids.clear();
    }
 };
 
@@ -189,8 +212,8 @@ struct NodeData : public WrapperData{
       return 0;
    }
 
-   inline void fillArray(const ftm::idNode nodeId, ftm::FTMTree_MT* tree,
-                         Triangulation* triangulation, ftm::Params params)
+   inline void fillArrayPoint(const ftm::idNode nodeId, ftm::FTMTree_MT* tree,
+                              Triangulation* triangulation, ftm::Params params)
    {
       const ftm::Node*    node     = tree->getNode(nodeId);
       const ftm::idVertex vertexId = node->getVertexId();
@@ -285,8 +308,8 @@ struct VertData: public WrapperData {
       return 0;
    }
 
-   void fillArray(const ftm::idSuperArc arcId, ftm::FTMTree_MT* tree, Triangulation* triangulation,
-                  ftm::Params params)
+   void fillArrayPoint(const ftm::idSuperArc arcId, ftm::FTMTree_MT* tree,
+                       Triangulation* triangulation, ftm::Params params)
    {
       if (!params.segm)
          return;
