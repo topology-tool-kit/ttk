@@ -639,7 +639,7 @@ namespace ttk{
             vector<CriticalPoint>& criticalPoints) const;
 
       /**
-       * Actually reverse the so-tagged (saddle,...,vpaths) to simplify the discrete gradient.
+       * Actually reverse the so-tagged (saddle,...,maximum) vpaths to simplify the discrete gradient.
        * The gradient is modified during this step.
        */
       template <typename dataType>

@@ -24,14 +24,152 @@
 #include<MorseSmaleComplex3D.h>
 
 /*
- * Morse-Smale Complex developer help:
+ * Morse-Smale complex developer quick guide:
  *
- * -architecture
- * -gradient build
- * -gradient simplification
- * -add a new field
- * -geometry
- * -parallelism
+ * What is the architecture?
+ * -------------------------
+ * The DiscreteGradient class contains the basic structures to define and build
+ * a discrete gradient. It also has several functions that decrease the number
+ * of unpaired cells as parallel post-processing steps. Even more work is done
+ * on the gradient with a sequential simplification step. Finally, it is able
+ * to build critical points and vpaths.
+ * Its files are:
+ *   DiscreteGradient.cpp
+ *   DiscreteGradient.h
+ *
+ * The AbstractMorseSmaleComplex class contains whatever is common
+ * between the MorseSmaleComplex2D class and the MorseSmaleComplex3D class
+ * e.g. parameters, configuration functions, input and output data pointers.
+ * In particular, it contains a DiscreteGradient attribute and a Triangulation
+ * attribute.
+ * Its files are:
+ *   AbstractMorseSmaleComplex.cpp
+ *   AbstractMorseSmaleComplex.h
+ *
+ * The MorseSmaleComplex2D class is derived from the AbstractMorseSmaleComplex
+ * class. It is specialized in building the Morse-Smale complex on 2D
+ * triangulations. This class uses the DiscreteGradient attribute to build a
+ * valid discrete gradient before building the MSC outputs itself i.e.
+ * critical points, 1-separatrices, segmentation.
+ * Its files are:
+ *   MorseSmaleComplex2D.cpp
+ *   MorseSmaleComplex2D.h
+ *
+ * The MorseSmaleComplex3D class is derived from the AbstractMorseSmaleComplex
+ * class. It does the same job as the MorseSmaleComplex2D class but on 3D
+ * triangulations. Note that this class has a function
+ * computePersistencePairs() to get the saddle-saddle pairs of the data.
+ * It adds the saddle-connectors to the 1-separatrices and adds another output
+ * for 2-separatrices.
+ * Its files are:
+ *   MorseSmaleComplex3D.cpp
+ *   MorseSmaleComplex3D.h
+ *
+ * The MorseSmaleComplex class is derived from the AbstractMorseSmaleComplex
+ * class. It is a convenience class that detects the dimensionality of the data
+ * and uses the correct implementation of the Morse-Smale complex computation
+ * (between MorseSmaleComplex2D and MorseSmaleComplex3D).
+ * Its files are:
+ *   MorseSmaleComplex.cpp
+ *   MorseSmaleComplex.h
+ *
+ * How to build the gradient?
+ * --------------------------
+ * Everything that concerns the gradient is in the DiscreteGradient class.
+ * In order to build a valid discrete gradient you need to first set the data
+ * pointers to the input scalar field, offset field and triangulation. You need
+ * to set also the data pointers to the output critical points, 1-separatrices,
+ * 2-separatrices and segmentation. Additionnal parameters can be configured
+ * like an iteration threshold, options to have PL-Compliant extrema and
+ * saddles, an option to enable collecting of persistence pairs or
+ * post-processing of the saddle-connectors. Note that they all have default
+ * values that correspond to a standard scenario. Like any other TTK
+ * module, the level of debug and the number of threads can be adjusted to suit
+ * your needs.
+ * Once all the parameters and data pointers are set, the function
+ * buildGradient() builds the discrete gradient. As a substantial number of
+ * unpaired cells is expected, it is strongly recommended to use after this
+ * function the function buildGradient2() and after that the buildGradient3()
+ * function if the input dataset is in the 3D domain.
+ * Finally, you can apply reverseGradient() to auto-detect the PL critical
+ * points and impose that the gradient is PL-Compliant (except on the
+ * boundary).
+ * Examples of such usage of the DiscreteGradient class can be found in
+ * the execute() function of the MorseSmaleComplex2D class and
+ * MorseSmaleComplex3D class as these classes need to compute a discrete
+ * gradient to build their own outputs.
+ *
+ * Where is the simplification algorithm?
+ * --------------------------------------
+ * The main steps of the gradient simplification algorithm are stored in the
+ * reverseGradient() function in the DiscreteGradient class. More informations
+ * can be found in each simplify-like function as the process is slightly
+ * different depending on the index of the critical points involved:
+ *   simplifySaddleMaximumConnections() for reversal of (saddle,...,maximum)
+ *   vpaths.
+ *   simplifySaddleSaddleConnections1() for reversal of
+ *   (2-saddle,...,1-saddle) vpaths.
+ *   simplifySaddleSaddleConnections2() for reversal of
+ *   (1-saddle,...,2-saddle) vpaths.
+ *
+ * How to add a scalar field on any output geometry?
+ * -------------------------------------------------
+ * First, go to AbstractMorseSmaleComplex.h and add the void* pointer to a STL
+ * container (e.g. vector) as a class attribute. In the code, the attributes
+ * of the same output are grouped together and are prefixed by its name.
+ * So for example, the outputSeparatrices1_points_smoothingMask_ variable
+ * represents the smoothingMask scalar field that is associated to the points
+ * of the 1-separatrices of the Morse-Smale complex. As you just added a new
+ * attribute, you need to update the setter corresponding to the output to
+ * add this new element:
+ * The setters available are:
+ *   setOutputCriticalPoints()
+ *   setOutputSeparatrices1()
+ *   setOutputSeparatrices2()
+ *   setOutputMorseComplexes()
+ * As you added a new attribute in the class, you need to give it a default
+ * value in the constructor in AbstractMorseSmaleComplex.cpp (typically nullptr
+ * for a pointer).
+ * Now, you need to overload the same setter than previously but in
+ * MorseSmaleComplex.h this time in order to propagate the new field
+ * information to the concrete implementations. As the MorseSmaleComplex2D and
+ * MorseSmaleComplex3D classes are both derived from AbstractMorseSmaleComplex
+ * they already have the updated version of the function.
+ * Now that you have access to the data pointer inside the actual
+ * implementation you can cast it from void* to dataType* and modify it to
+ * your convenience.
+ *
+ * What part of the code is parallel?
+ * ----------------------------------
+ * From a global point a view, the part of the code that builds the gradient
+ * as well as the two post-processing steps are accelerated by OpenMP (if
+ * available).
+ * The gradient simplification step is mostly sequential except the
+ * initialization of internal structures in the initialize-like functions which
+ * is done is parallel with OpenMP.
+ * Then, each output of the Morse-Smale complex is computed in parallel with
+ * OpenMP except the 2-separatrices of a 3D dataset that require heavy
+ * synchronisation.
+ * Finally, the generation of the geometry for the visualization is done
+ * sequentially.
+ * Complete list:
+ * In the DiscreteGradient class:
+ *   buildGradient()
+ *   buildGradient2()
+ *   buildGradient3()
+ *   initializeSaddleMaximumConnections()
+ *   initializeSaddleSaddleConnections1()
+ *   initializeSaddleSaddleConnections2()
+ * In the MorseSmaleComplex2D class:
+ *   getSeparatrices1()
+ *   setAscendingSegmentation()
+ *   setDescendingSegmentation()
+ * In the MorseSmaleComplex3D class:
+ *   getSeparatrices1()
+ *   getAscendingSeparatrices2()
+ *   getDescendingSeparatrices2()
+ *   setAscendingSegmentation()
+ *   setDescendingSegmentation()
  */
 
 namespace ttk{
