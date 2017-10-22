@@ -169,28 +169,28 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   int ret{};
 
   ret=getScalars(input);
-#ifndef withKamikaze
   if(ret){
+#ifndef withKamikaze
     cerr << "[ttkPersistenceDiagram] Error : wrong scalars." << endl;
     return -1;
-  }
 #endif
+  }
 
   ret=getTriangulation(input);
-#ifndef withKamikaze
   if(ret){
+#ifndef withKamikaze
     cerr << "[ttkPersistenceDiagram] Error : wrong triangulation." << endl;
     return -2;
-  }
 #endif
+  }
 
   ret=getOffsets(input);
-#ifndef withKamikaze
   if(ret){
+#ifndef withKamikaze
     cerr << "[ttkPersistenceDiagram] Error : wrong offsets." << endl;
     return -3;
-  }
 #endif
+  }
 
   vector<tuple<Cell,Cell>> dmt_pairs;
   persistenceDiagram_.setDMTPairs(&dmt_pairs);
