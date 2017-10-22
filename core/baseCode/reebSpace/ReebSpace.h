@@ -192,7 +192,7 @@ namespace ttk{
         return jacobi2edges_[jacobiEdgeId];
       }
       
-      inline const int getNumberOf2sheets() const {
+      inline int getNumberOf2sheets() const {
         return currentData_.sheet2List_.size();
       }
      

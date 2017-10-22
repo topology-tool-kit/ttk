@@ -1798,7 +1798,7 @@ int SubLevelSetTree::openSuperArc(const int &nodeId){
   return (int)superArcList_.size() - 1;
 }
 
-const bool SubLevelSetTree::isSosHigherThan(const int &vertexId0, 
+bool SubLevelSetTree::isSosHigherThan(const int &vertexId0, 
 					    const int &vertexId1) const{
 
   return (((*vertexScalars_)[vertexId0] > (*vertexScalars_)[vertexId1])
@@ -1806,7 +1806,7 @@ const bool SubLevelSetTree::isSosHigherThan(const int &vertexId0,
 	     &&((*vertexSoSoffsets_)[vertexId0] > (*vertexSoSoffsets_)[vertexId1])));
 }
 
-const bool SubLevelSetTree::isSosLowerThan(const int &vertexId0, 
+bool SubLevelSetTree::isSosLowerThan(const int &vertexId0, 
 					   const int &vertexId1) const{
     
   return (((*vertexScalars_)[vertexId0] < (*vertexScalars_)[vertexId1])

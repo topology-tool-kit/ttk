@@ -59,12 +59,12 @@ namespace ttk
       {
          return lowerOverlap_;
       }
-      inline const idVertex getNbUpper(void) const
+      inline idVertex getNbUpper(void) const
       {
          return upperOverlap_.size();
       }
 
-      inline const idVertex getNbLower(void) const
+      inline idVertex getNbLower(void) const
       {
          return lowerOverlap_.size();
       }

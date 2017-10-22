@@ -136,12 +136,12 @@ namespace ttk
       // .................................{
       //
       // idPartition u_char so lighter than a ref
-      inline const idPartition getDownCT(void) const
+      inline idPartition getDownCT(void) const
       {
          return downCT_;
       }
 
-      inline const idPartition getUpCT(void) const
+      inline idPartition getUpCT(void) const
       {
          return upCT_;
       }
@@ -155,17 +155,17 @@ namespace ttk
       // overlap
       // .................................{
 
-      inline const bool getOverlapAbove(void) const
+      inline bool getOverlapAbove(void) const
       {
          return overlapAbove_;
       }
 
-      inline const bool getOverlapBelow(void) const
+      inline bool getOverlapBelow(void) const
       {
          return overlapBelow_;
       }
 
-      inline const bool isCrossing(void) const
+      inline bool isCrossing(void) const
       {
           return overlapBelow_ || overlapAbove_;
       }
@@ -245,7 +245,7 @@ namespace ttk
          return replacantId_;
       }
 
-      inline const idPartition getReplacantCT(void) const
+      inline idPartition getReplacantCT(void) const
       {
          return replacantCT_;
       }
@@ -264,14 +264,14 @@ namespace ttk
          return getVertList()[idx].first;
       }
 
-      inline const bool isMasqued(const idVertex &v) const
+      inline bool isMasqued(const idVertex &v) const
       {
          return vertList_[v].second;
       }
 
       // The vector
 
-      inline const idVertex getSegmentationSize(void) const
+      inline idVertex getSegmentationSize(void) const
       {
          return vertices_.size();
       }
