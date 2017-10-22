@@ -265,17 +265,17 @@ namespace ttk
       // Valence
       // .......................................... {
 
-      inline const idSuperArc getUpValence(void) const
+      inline idSuperArc getUpValence(void) const
       {
         return std::get<1>(valence_);
       }
 
-      inline const idSuperArc getDownValence(void) const
+      inline idSuperArc getDownValence(void) const
       {
         return std::get<0>(valence_);
       }
 
-      inline const idSuperArc getValence(void) const
+      inline idSuperArc getValence(void) const
       {
         return std::get<0>(valence_) + std::get<1>(valence_);
       }

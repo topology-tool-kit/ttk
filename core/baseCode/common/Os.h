@@ -376,7 +376,7 @@ namespace ttk{
       
     protected:
       
-      inline const double getTimeStamp(){
+      inline double getTimeStamp(){
         return OsCall::getTimeStamp();
       };
       

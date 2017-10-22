@@ -318,7 +318,7 @@ namespace ttk{
 			 arcList_[nodeList_[nodeId].getUpArcId(neighborId)].getUpNodeId()]);
     };
       
-    inline const double getNodeScalar(const int &nodeId) const {
+    inline double getNodeScalar(const int &nodeId) const {
       if(!vertexScalars_)
 	return -DBL_MAX;
       if((nodeId < 0)||(nodeId >= (int) nodeList_.size()))
@@ -372,7 +372,7 @@ namespace ttk{
         
       return &(superArcList_[vertex2superArc_[vertexId]]);}; 
 
-    inline const int getVertexSuperArcId(const int &vertexId) const {
+    inline int getVertexSuperArcId(const int &vertexId) const {
       if((vertexId < 0)||(vertexId >= vertexNumber_)) return -1;
       return vertex2superArc_[vertexId];
     };
@@ -383,25 +383,25 @@ namespace ttk{
 	return &(nodeList_[vertex2node_[vertexId]]);
       return NULL;};
         
-    inline const int getVertexNodeId(const int &vertexId) const{
+    inline int getVertexNodeId(const int &vertexId) const{
       if((vertexId < 0)||(vertexId >= vertexNumber_)) return -1;
       return vertex2node_[vertexId];
     };
 
-    const bool isJoinTree() const{
+    bool isJoinTree() const{
       return 
         ((maximumList_ == NULL)||((maximumList_)&&(maximumList_->empty())));
     }
     
-    const bool isSplitTree() const{
+    bool isSplitTree() const{
       return 
         ((minimumList_ == NULL)||((minimumList_)&&(minimumList_->empty())));
     }
     
-    const bool isSosLowerThan(const int &vertexId0, 
+    bool isSosLowerThan(const int &vertexId0, 
 			      const int &vertexId1) const;
 
-    const bool isSosHigherThan(const int &vertexId0, 
+    bool isSosHigherThan(const int &vertexId0, 
 			       const int &vertexId1) const;
       
     virtual inline int maintainRegularVertices(const bool &onOff){

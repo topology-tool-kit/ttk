@@ -564,7 +564,7 @@ void MergeTree::closeSuperArc(const idSuperArc &superArcId, const idNode &upNode
    }
 }
 
-const idVertex MergeTree::insertNodeAboveSeed(const idSuperArc &arc,
+idVertex MergeTree::insertNodeAboveSeed(const idSuperArc &arc,
                                               const pair<idVertex, bool> &seed)
 {
    auto isLowerComp = [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
@@ -607,7 +607,7 @@ const idVertex MergeTree::insertNodeAboveSeed(const idSuperArc &arc,
    return stitchVert;
 }
 
-const idVertex MergeTree::getVertBelowSeed(const idSuperArc &arc, const pair<idVertex, bool> &seed,
+idVertex MergeTree::getVertBelowSeed(const idSuperArc &arc, const pair<idVertex, bool> &seed,
                                            const vector<idCorresp> &vert2treeOther)
 {
    auto isLowerComp = [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
@@ -733,7 +733,7 @@ idSuperArc MergeTree::getNumberOfExternalDownArcs(const idNode &n)
     return res;
 }
 
-const bool MergeTree::alreadyExtLinked(const idNode &node, const idPartition &tree, const idNode &treeNode)
+bool MergeTree::alreadyExtLinked(const idNode &node, const idPartition &tree, const idNode &treeNode)
 {
     Node* n = getNode(node);
 
@@ -938,7 +938,7 @@ void MergeTree::delNode(const idNode &node, const pair<idVertex, bool> *markVert
 //  |   * <- newNodeId
 //  |   |   <- currentSA
 //  - - -
-const idSuperArc MergeTree::insertNode(Node *node, const bool segment)
+idSuperArc MergeTree::insertNode(Node *node, const bool segment)
 {
    // already present
    if (isCorrespondingNode(node->getVertexId())) {
@@ -1011,7 +1011,7 @@ const idSuperArc MergeTree::insertNode(Node *node, const bool segment)
 //  |   * <- newNodeId
 //  | / |   <- newSA
 //  - - -
-const idSuperArc MergeTree::reverseInsertNode(Node *node, const bool segment)
+idSuperArc MergeTree::reverseInsertNode(Node *node, const bool segment)
 {
    // already present
    if (isCorrespondingNode(node->getVertexId())) {
@@ -1095,7 +1095,7 @@ idNode MergeTree::getParent(const idNode &n)
 }
 
 // Here the return of the vector use the move constructor
-const vector<idNode> MergeTree::getNodeNeighbors(const idNode &n)
+vector<idNode> MergeTree::getNodeNeighbors(const idNode &n)
 {
    Node *node   = getNode(n);
    auto  nbUp   = node->getNumberOfUpSuperArcs();
@@ -1122,7 +1122,7 @@ const vector<idNode> MergeTree::getNodeNeighbors(const idNode &n)
    return res;
 }
 
-const vector<idNode> MergeTree::getNodeUpNeighbors(const idNode &n)
+vector<idNode> MergeTree::getNodeUpNeighbors(const idNode &n)
 {
    Node *node   = getNode(n);
    auto  nbUp   = node->getNumberOfUpSuperArcs();
@@ -1139,7 +1139,7 @@ const vector<idNode> MergeTree::getNodeUpNeighbors(const idNode &n)
    return res;
 }
 
-const vector<idNode> MergeTree::getNodeDownNeighbors(const idNode &n)
+vector<idNode> MergeTree::getNodeDownNeighbors(const idNode &n)
 {
    Node *node   = getNode(n);
    auto  nbDown   = node->getNumberOfDownSuperArcs();
@@ -1368,7 +1368,7 @@ void MergeTree::markThisArc(vector<ExtendedUnionFind *> &ufArray, const idNode &
    ufArray[parentNodeId]->find()->setData(-((ufDataType)parentNodeId) - 1);
 }
 
-const idSuperArc MergeTree::newUpArc(const idNode &curNodeId, vector<ExtendedUnionFind *> &ufArray)
+idSuperArc MergeTree::newUpArc(const idNode &curNodeId, vector<ExtendedUnionFind *> &ufArray)
 {
 
     idSuperArc keepArc = nullSuperArc;
@@ -1390,7 +1390,7 @@ const idSuperArc MergeTree::newUpArc(const idNode &curNodeId, vector<ExtendedUni
     return keepArc;
 }
 
-const idSuperArc MergeTree::newDownArc(const idNode &               curNodeId,
+idSuperArc MergeTree::newDownArc(const idNode &               curNodeId,
                                        vector<ExtendedUnionFind *> &ufArray)
 {
 
@@ -1413,7 +1413,7 @@ const idSuperArc MergeTree::newDownArc(const idNode &               curNodeId,
     return keepArc;
 }
 
-const tuple<idNode, idNode, idVertex> MergeTree::createReceptArc(
+tuple<idNode, idNode, idVertex> MergeTree::createReceptArc(
     const idNode &root, const idSuperArc &receptacleArcId, vector<ExtendedUnionFind *> &ufArray,
     const vector<pair<idSuperArc, idSuperArc>> &valenceOffsets)
 {

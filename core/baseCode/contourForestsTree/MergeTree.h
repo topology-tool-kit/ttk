@@ -168,7 +168,7 @@ namespace ttk
       // partition
       // .....................{
 
-      inline const idPartition getPartition(void) const
+      inline idPartition getPartition(void) const
       {
          return treeData_.partition;
       }
@@ -202,12 +202,12 @@ namespace ttk
       // arcs
       // .....................{
 
-      inline const idSuperArc getNumberOfSuperArcs(void) const
+      inline idSuperArc getNumberOfSuperArcs(void) const
       {
          return treeData_.superArcs.size();
       }
 
-      inline const idSuperArc getNumberOfVisibleArcs(void) const
+      inline idSuperArc getNumberOfVisibleArcs(void) const
       {
          // Costly ! for dedbug only
          idSuperArc visibleArc = 0;
@@ -261,7 +261,7 @@ namespace ttk
       // nodes
       // .....................{
 
-      inline const idNode getNumberOfNodes(void) const
+      inline idNode getNumberOfNodes(void) const
       {
          return treeData_.nodes.size();
       }
@@ -281,7 +281,7 @@ namespace ttk
       // leaves / root
       // .....................{
 
-      inline const idVertex getNumberOfLeaves(void) const
+      inline idVertex getNumberOfLeaves(void) const
       {
          return treeData_.leaves.size();
       }
@@ -331,17 +331,17 @@ namespace ttk
       // test vertex correpondance
       // ...........................{
 
-      inline const bool isCorrespondingArc(const idVertex &val) const
+      inline bool isCorrespondingArc(const idVertex &val) const
       {
          return !isCorrespondingNull(val) && treeData_.vert2tree[val] >= 0;
       }
 
-      inline const bool isCorrespondingNode(const idVertex &val) const
+      inline bool isCorrespondingNode(const idVertex &val) const
       {
          return treeData_.vert2tree[val] < 0;
       }
 
-      inline const bool isCorrespondingNull(const idVertex &val) const
+      inline bool isCorrespondingNull(const idVertex &val) const
       {
          return treeData_.vert2tree[val] == nullCorresp;
       }
@@ -350,7 +350,7 @@ namespace ttk
       // Get vertex info
       // ...........................{
 
-      inline const idNode getCorrespondingNodeId(const idVertex &val) const
+      inline idNode getCorrespondingNodeId(const idVertex &val) const
       {
 #ifndef withKamikaze
          if (!isCorrespondingNode(val)) {
@@ -364,7 +364,7 @@ namespace ttk
          return corr2idNode(val);
       }
 
-      inline const idSuperArc getCorrespondingSuperArcId(const idVertex &val) const
+      inline idSuperArc getCorrespondingSuperArcId(const idVertex &val) const
       {
 #ifndef withKamikaze
          if (!isCorrespondingArc(val)) {
@@ -406,13 +406,13 @@ namespace ttk
          treeData_.vert2tree[vert] = idNode2corr(val);
       }
 
-      inline const idCorresp idNode2corr(const idNode &id) const
+      inline idCorresp idNode2corr(const idNode &id) const
       {
          // transform idNode to special value for the array : -idNode -1
          return -(idCorresp)(id + 1);
       }
 
-      inline const idNode corr2idNode(const idCorresp &corr) const
+      inline idNode corr2idNode(const idCorresp &corr) const
       {
           return -(idNode)(treeData_.vert2tree[corr]+1);
       }
@@ -501,14 +501,13 @@ namespace ttk
       void mergeArc(const idSuperArc &sa, const idSuperArc &recept,
                     const bool changeConnectivity = true);
 
-      const idVertex insertNodeAboveSeed(const idSuperArc &arc, const pair<idVertex, bool> &seed);
+      idVertex insertNodeAboveSeed(const idSuperArc &arc, const pair<idVertex, bool> &seed);
 
-      const idVertex getVertBelowSeed(const idSuperArc &arc, const pair<idVertex, bool> &seed,
-                                      const vector<idCorresp> &vert2treeOther);
+      idVertex getVertBelowSeed(const idSuperArc &arc, const pair<idVertex, bool> &seed,
+                                const vector<idCorresp> &vert2treeOther);
 
       // is there an external arc linkind node with treeNode in tree
-      const bool alreadyExtLinked(const idNode &node, const idPartition &tree,
-                                  const idNode &treeNode);
+      bool alreadyExtLinked(const idNode &node, const idPartition &tree, const idNode &treeNode);
 
       idSuperArc getNumberOfExternalDownArcs(const idNode &node);
 
@@ -531,9 +530,9 @@ namespace ttk
 
       idNode makeNode(const Node *const n, const idVertex &linked = nullVertex);
 
-      const idSuperArc insertNode(Node *node, const bool segment);
+      idSuperArc insertNode(Node *node, const bool segment);
 
-      const idSuperArc reverseInsertNode(Node *node, const bool segment);
+      idSuperArc reverseInsertNode(Node *node, const bool segment);
 
       inline Node *getDownNode(const SuperArc *a);
 
@@ -548,11 +547,11 @@ namespace ttk
 
       // For persistance pair on CT
       // these function allow to make a JT / ST od the CT
-      const vector<idNode> getNodeNeighbors(const idNode &node);
+      vector<idNode> getNodeNeighbors(const idNode &node);
 
-      const vector<idNode> getNodeUpNeighbors(const idNode &n);
+      vector<idNode> getNodeUpNeighbors(const idNode &n);
 
-      const vector<idNode> getNodeDownNeighbors(const idNode &n);
+      vector<idNode> getNodeDownNeighbors(const idNode &n);
 
       // Remove part not in partition
 
@@ -651,24 +650,24 @@ namespace ttk
 
       // Strict
 
-      inline const bool isLower(const idVertex &a, const idVertex &b) const
+      inline bool isLower(const idVertex &a, const idVertex &b) const
       {
          return scalars_->mirrorVertices[a] < scalars_->mirrorVertices[b];
       }
 
-      inline const bool isHigher(const idVertex &a, const idVertex &b) const
+      inline bool isHigher(const idVertex &a, const idVertex &b) const
       {
          return scalars_->mirrorVertices[a] > scalars_->mirrorVertices[b];
       }
 
       // Large
 
-      inline const bool isEqLower(const idVertex &a, const idVertex &b) const
+      inline bool isEqLower(const idVertex &a, const idVertex &b) const
       {
          return scalars_->mirrorVertices[a] <= scalars_->mirrorVertices[b];
       }
 
-      inline const bool isEqHigher(const idVertex &a, const idVertex &b) const
+      inline bool isEqHigher(const idVertex &a, const idVertex &b) const
       {
          return scalars_->mirrorVertices[a] >= scalars_->mirrorVertices[b];
       }
@@ -684,7 +683,7 @@ namespace ttk
       // Compare using the scalar array : only for sort step
 
       template <typename scalarType>
-      inline const bool isLower(const idVertex &a, const idVertex &b) const
+      inline bool isLower(const idVertex &a, const idVertex &b) const
       {
          return ((scalarType *)scalars_->values)[a] < ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
@@ -692,7 +691,7 @@ namespace ttk
       }
 
       template <typename scalarType>
-      inline const bool isHigher(const idVertex &a, const idVertex &b) const
+      inline bool isHigher(const idVertex &a, const idVertex &b) const
       {
          return ((scalarType *)scalars_->values)[a] > ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
@@ -700,7 +699,7 @@ namespace ttk
       }
 
       template <typename scalarType>
-      inline const bool isEqLower(const idVertex &a, const idVertex &b) const
+      inline bool isEqLower(const idVertex &a, const idVertex &b) const
       {
          return ((scalarType *)scalars_->values)[a] < ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
@@ -708,7 +707,7 @@ namespace ttk
       }
 
       template <typename scalarType>
-      inline const bool isEqHigher(const idVertex &a, const idVertex &b) const
+      inline bool isEqHigher(const idVertex &a, const idVertex &b) const
       {
          return ((scalarType *)scalars_->values)[a] > ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
@@ -726,14 +725,14 @@ namespace ttk
                         const bool preserveDownNode = false);
 
       // Use BFS from root to find down and up of the receptarc (maintaining segmentation information)
-      const tuple<idNode, idNode, idVertex> createReceptArc(
+      tuple<idNode, idNode, idVertex> createReceptArc(
           const idNode &root, const idSuperArc &receptArcId, vector<ExtendedUnionFind *> &arrayUF,
           const vector<pair<idSuperArc, idSuperArc>> &valenceOffsets);
 
       // during this BFS nodes should have only one arc up/down : find it :
-      const idSuperArc newUpArc(const idNode &curNodeId, vector<ExtendedUnionFind *> &ufArray);
+      idSuperArc newUpArc(const idNode &curNodeId, vector<ExtendedUnionFind *> &ufArray);
 
-      const idSuperArc newDownArc(const idNode &curNodeId, vector<ExtendedUnionFind *> &ufArray);
+      idSuperArc newDownArc(const idNode &curNodeId, vector<ExtendedUnionFind *> &ufArray);
 
       // }
       // --------------
