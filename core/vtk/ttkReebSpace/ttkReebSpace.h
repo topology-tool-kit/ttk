@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkReebSpace
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date October 2015.

@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::RangeDrivenOctree
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date March 2015.

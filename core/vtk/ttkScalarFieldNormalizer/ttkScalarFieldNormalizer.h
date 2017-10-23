@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkScalarFieldNormalizer
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date May 2016.

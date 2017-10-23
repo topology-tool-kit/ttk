@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkTriangulation
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date January 2016.

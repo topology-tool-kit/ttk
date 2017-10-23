@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::DataTypes
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.

@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkGeometrySmoother
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date November 2014.

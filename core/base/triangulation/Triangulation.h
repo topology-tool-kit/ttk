@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::Triangulation
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date January 2016.

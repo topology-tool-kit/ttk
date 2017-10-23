@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::Blank 
 /// \author Your Name Here <Your Email Address Here>
 /// \date The Date Here.
@@ -71,7 +71,7 @@ namespace ttk{
      
       // General documentation info:
       //
-      /// Setup a (valid) triangulation object for this TTK baseCode object.
+      /// Setup a (valid) triangulation object for this TTK base object.
       ///
       /// \pre This function should be called prior to any usage of this TTK 
       /// object, in a clearly distinct pre-processing step that involves no 

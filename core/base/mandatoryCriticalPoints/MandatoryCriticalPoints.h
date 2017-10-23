@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::MandatoryCriticalPoints
 /// \author Michael Michaux <michauxmichael89@gmail.com>
 /// \author Julien Tierny <julien.tierny@lip6.fr>

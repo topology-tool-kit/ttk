@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkDistanceField
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \date March 2016

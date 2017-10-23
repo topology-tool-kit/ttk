@@ -55,7 +55,7 @@ function(ttk_print_summary)
 
 endfunction()
 
-option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" TRUE)
+option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)
 if(TTK_BUILD_DOCUMENTATION)
 	find_package(Doxygen)
 	if (DOXYGEN_FOUND)

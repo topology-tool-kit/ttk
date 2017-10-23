@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::ScalarFieldSmoother
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date October 2014.

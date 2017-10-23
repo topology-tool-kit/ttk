@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::UnionFind
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date July 2011.

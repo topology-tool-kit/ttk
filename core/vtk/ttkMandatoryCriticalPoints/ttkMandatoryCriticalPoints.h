@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkMandatoryCriticalPoints
 /// \author Michael Michaux <michauxmichael89@gmail.com>
 /// \author Julien Tierny <julien.tierny@lip6.fr>

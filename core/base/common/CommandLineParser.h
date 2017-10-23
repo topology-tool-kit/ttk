@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::CommandLineParser
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date September 2013.

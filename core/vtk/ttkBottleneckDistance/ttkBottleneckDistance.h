@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkBottleneckDistance
 /// \author Maxime Soler <soler.maxime@total.com>
 /// \date The Date Here.

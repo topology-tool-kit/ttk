@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkIdentifierRandomizer
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date March 2017.

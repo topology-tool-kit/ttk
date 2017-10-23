@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::ContinuousScatterPlot
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \date March 2016

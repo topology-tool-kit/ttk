@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkScalarFieldCriticalPoints
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date June 2015.

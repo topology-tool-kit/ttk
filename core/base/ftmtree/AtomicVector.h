@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::AtomicVector
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2017-02-09

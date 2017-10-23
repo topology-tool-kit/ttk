@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkComponentSize
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date September 2015.
