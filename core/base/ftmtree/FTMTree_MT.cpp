@@ -44,7 +44,7 @@ FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const
    mt_data_.valences      = nullptr;
    mt_data_.openedNodes   = nullptr;
 
-#ifdef TTK_FTM_TREE_ENABLE_STATS_TIME
+#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
    mt_data_.arcStart = nullptr;
    mt_data_.arcEnd   = nullptr;
    mt_data_.arcOrig  = nullptr;
@@ -100,7 +100,7 @@ FTMTree_MT::~FTMTree_MT()
       mt_data_.openedNodes = nullptr;
    }
 
-#ifdef TTK_FTM_TREE_ENABLE_STATS_TIME
+#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
    if (mt_data_.activeTasksStats) {
       delete mt_data_.activeTasksStats;
       mt_data_.activeTasksStats = nullptr;
@@ -133,7 +133,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
    idNode     startNode  = getCorrespondingNodeId(startVert);
    idSuperArc currentArc = openSuperArc(startNode);
    startUF->addArcToClose(currentArc);
-#ifdef TTK_FTM_TREE_ENABLE_STATS_TIME
+#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
    (*mt_data_.activeTasksStats)[currentArc].begin = _launchGlobalTime.getElapsedTime();
    (*mt_data_.activeTasksStats)[currentArc].origin  = orig;
 #endif
@@ -172,7 +172,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
       // Saddle case
       if (isSaddle) {
 
-# ifdef TTK_FTM_TREE_ENABLE_STATS_TIME
+# ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
          (*mt_data_.activeTasksStats)[currentArc].end = _launchGlobalTime.getElapsedTime();
 # endif
          // need a node on this vertex
@@ -226,7 +226,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
    idNode rootPos             = mt_data_.roots->getNext();
    (*mt_data_.roots)[rootPos] = closeNode;
 
-#ifdef TTK_FTM_TREE_ENABLE_STATS_TIME
+#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
    (*mt_data_.activeTasksStats)[currentArc].end = _launchGlobalTime.getElapsedTime();
 #endif
 }
@@ -256,7 +256,7 @@ void FTMTree_MT::build(const bool ct)
    DebugTimer buildTime;
    leafGrowth();
    int nbProcessed = 0;
-#ifdef TTK_FTM_TREE_ENABLE_PROCESS_SPEED
+#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
    // count process
    for (int i = 0; i < scalars_->size; i++) {
        if((*mt_data_.vert2tree)[i] != nullCorresp)
@@ -769,7 +769,7 @@ int FTMTree_MT::leafSearch()
 
    // Reserve Arcs
    mt_data_.superArcs->reserve(nbLeaves * 2 + 1);
-#ifdef TTK_FTM_TREE_ENABLE_STATS_TIME
+#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
    createVector<ActiveTask>(mt_data_.activeTasksStats);
    mt_data_.activeTasksStats->resize(nbLeaves*2 +1);
 #endif
@@ -1022,7 +1022,7 @@ int FTMTree_MT::printTime(DebugTimer &t, const string &s, idVertex nbScalars, co
 
    if (debugLevel_ >= debugLevel) {
       stringstream st;
-#ifdef TTK_FTM_TREE_ENABLE_PROCESS_SPEED
+#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
       int          speed = nbScalars / t.getElapsedTime();
 #endif
       for (int i = 3; i < debugLevel; i++)
@@ -1036,7 +1036,7 @@ int FTMTree_MT::printTime(DebugTimer &t, const string &s, idVertex nbScalars, co
       st.seekg(0, ios::beg);
       st << t.getElapsedTime();
 
-#ifdef TTK_FTM_TREE_ENABLE_PROCESS_SPEED
+#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
       st.seekg(0, ios::end);
       while (st.tellg() < 35) {
          st << " ";
@@ -1290,7 +1290,7 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
 #pragma omp taskwait
    // count added
    idVertex tot = 0;
-#ifdef TTK_FTM_TREE_ENABLE_PROCESS_SPEED
+#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
    for (const auto& l : *mt_data_.trunkSegments) {
        idVertex arcSize = 0;
        for (const auto& v: l){
@@ -1338,7 +1338,7 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
                      // accumulated to have only one atomic update when needed
                      const idSuperArc oldArc = upArcFromVert(trunkVerts[oldVertInRange]);
                      getSuperArc(oldArc)->atomicIncVisited(acc);
-#ifdef TTK_FTM_TREE_ENABLE_PROCESS_SPEED
+#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
 #pragma omp atomic update
                      tot += acc;
 #endif
@@ -1351,7 +1351,7 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
          const idNode     baseNode = getCorrespondingNodeId(trunkVerts[lastVertInRange]);
          const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
          getSuperArc(upArc)->atomicIncVisited(acc);
-#ifdef TTK_FTM_TREE_ENABLE_PROCESS_SPEED
+#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
 #pragma omp atomic update
          tot += acc;
 #endif

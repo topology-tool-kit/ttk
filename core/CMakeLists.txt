@@ -50,7 +50,7 @@ function(ttk_print_summary)
 	endif()
 	message(STATUS "ttk install -----------------------------------------------------------------")
 	message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
-	message(STATUS "TTK_PLUGIN_INSTALL_DIR: ${TTK_PLUGIN_INSTALL_DIR}")
+	message(STATUS "TTK_INSTALL_PLUGIN_DIR: ${TTK_INSTALL_PLUGIN_DIR}")
 	message(STATUS "-----------------------------------------------------------------------------")
 
 endfunction()

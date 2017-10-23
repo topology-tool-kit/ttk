@@ -28,13 +28,13 @@ function(ttk_add_paraview_plugin library)
 		$<BUILD_INTERFACE:${VTKWRAPPER_DIR}/${library}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
-	install(TARGETS ${plugin_name} DESTINATION ${TTK_PLUGIN_INSTALL_DIR})
+	install(TARGETS ${plugin_name} DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
 endfunction()
 
 find_package(ParaView REQUIRED)
 include(${PARAVIEW_USE_FILE})
 include_directories(${PARAVIEW_INCLUDE_DIRS})
-set(TTK_PLUGIN_INSTALL_DIR
+set(TTK_INSTALL_PLUGIN_DIR
 	"${VTK_INSTALL_PREFIX}/lib/paraview-${PARAVIEW_VERSION_MAJOR}.${PARAVIEW_VERSION_MINOR}/plugins"
 	CACHE PATH
 	"Directory where TTK ParaView plugins will be installed")
