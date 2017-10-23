@@ -273,7 +273,7 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
 {
    vector<float> timeSimplify(parallelParams_.nbPartitions, 0);
    vector<float> speedProcess(parallelParams_.nbPartitions*2, 0);
-#ifdef TTK_CONTOUR_FORESTS_ENABLE_PARALLEL_SIMPLIFY
+#ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
    idEdge nbPairMerged = 0;
 #endif
 
@@ -328,7 +328,7 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
                         );
                 speedProcess[i] = partitionSize / timerBuild.getElapsedTime();
 
-#ifdef TTK_CONTOUR_FORESTS_ENABLE_PARALLEL_SIMPLIFY
+#ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
                 timerSimplify.reStart();
                 const idEdge tmpMerge =
                     parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
@@ -358,7 +358,7 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
                 speedProcess[parallelParams_.nbPartitions + i] =
                     partitionSize / timerBuild.getElapsedTime();
 
-#ifdef TTK_CONTOUR_FORESTS_ENABLE_PARALLEL_SIMPLIFY
+#ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
                 timerSimplify.reStart();
                 const idEdge tmpMerge =
                     parallelData_.trees[i].getSplitTree()->localSimplify<scalarType>(
@@ -456,7 +456,7 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
    // -------------------------------------
 
    if(params_->debugLevel > 2) {
-#ifdef TTK_CONTOUR_FORESTS_ENABLE_PARALLEL_SIMPLIFY
+#ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
       if (params_->simplifyThreshold) {
          auto  maxSimplifIt = max_element(timeSimplify.cbegin(), timeSimplify.cend());
          float maxSimplif   = *maxSimplifIt;

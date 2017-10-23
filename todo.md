@@ -13,26 +13,25 @@
 - [x] make ParaView_DIR accessible through cmake config (appears when paraview enabled)
 - [x] make VTK_DIR accessible through cmake config
 - [x] make TTK_PLUGIN_INSTALL_DIR accessible through cmake config
-- [ ] careful about open mp flag (macro)
-- [ ] careful about kamikaze, mpi,
-- [ ] careful about march flags
+- [x] careful about open mp flag (macro)
+- [x] careful about kamikaze, mpi,
+- [x] careful about march flags
 - [ ] Update the scripts for the paraview split again
 	> here, generate the create module script at build time and install it under 
 	${CMAKE_INSTALL_PREFIX}/bin 
 - [x] install everything by default
 
 # Variable naming conventions
-- [ ] `TTK_LIBRARY`
-- [ ] `TTK_VTK_LIBRARY`
-- [ ] `TTK_PARAVIEW_PLUGINS`
-- [ ] `TTK_STANDALONE_APPS`
+- [x] `TTK_VTK_WRAPPERS`
+- [x] `TTK_PARAVIEW_PLUGINS`
+- [x] `TTK_STANDALONE_APPS`
 - [x] `TTK_ENABLE_CPU_OPTIMIZATION`
 - [x] `TTK_ENABLE_KAMIKAZE`
 - [x] `TTK_ENABLE_MPI`
 - [x] `TTK_ENABLE_OPENMP`
 - [x] `TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE`
-- [ ] `TTK_INSTALL_PLUGIN_DIR`
-- [ ] change all feature-enabler flags to TTK_ENABLE_XX
+- [x] `TTK_INSTALL_PLUGIN_DIR`
+- [x] change all feature-enabler flags to TTK_ENABLE_XX
 
 # Documentation
 - [x] provide a flag "TTK_BUILD_DOC" that calls doxygen if present, upon install ${CMAKE_INSTALL_PREFIX}/share/doc/ttk/

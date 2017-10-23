@@ -152,7 +152,7 @@ int FTMTree_CT::combine()
       cout << "[FTMTree_CT::combine ] Nothing to combine" << endl;
    }
 
-#ifdef TTK_FTM_TREE_ENABLE_DUAL_QUEUE_COMBINE
+#ifdef TTK_ENABLE_FTM_TREE_DUAL_QUEUE_COMBINE
    do {
       while (!remainingNodes.empty()) {
          bool       isJT;
@@ -217,7 +217,7 @@ int FTMTree_CT::combine()
                cout << "put remain:" << isJT << "::" << xt->printNode(currentNodeId) << endl;
                cout << " which is in yt : " << yt->printNode(correspondingNodeId) << endl;
             }
-#ifdef TTK_FTM_TREE_ENABLE_DUAL_QUEUE_COMBINE
+#ifdef TTK_ENABLE_FTM_TREE_DUAL_QUEUE_COMBINE
             remainingNodes.emplace(isJT, currentNodeId);
 #else
             growingNodes.emplace(isJT, currentNodeId);
@@ -322,7 +322,7 @@ int FTMTree_CT::combine()
          }
 
       }
-#ifdef TTK_FTM_TREE_ENABLE_DUAL_QUEUE_COMBINE
+#ifdef TTK_ENABLE_FTM_TREE_DUAL_QUEUE_COMBINE
    } while (!remainingNodes.empty());
 #endif
 
