@@ -232,8 +232,6 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    vtkUnstructuredGrid* outputSkeletonArcs  = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
    vtkDataSet*          outputSegmentation  = outputs[2];
 
-   nbVerts_ = inputs[0]->GetNumberOfPoints();
-
    if(inputs[0]->IsA("vtkUnstructuredGrid")){
       // This data set may have several connected components,
       // we need to apply the FTM Tree for each one of these components
@@ -425,11 +423,13 @@ int ttkFTMTree::getSegmentation(vtkDataSet* outputSegmentation)
    vertData.init(ftmTree_, params_);
 
    for (int cc = 0; cc < nbCC_; cc++) {
-      FTMTree_MT* tree = ftmTree_[cc].getTree(GetTreeType());
+      FTMTree_MT*   tree = ftmTree_[cc].getTree(GetTreeType());
+      vtkDataArray* idMapper =
+          connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
       const idSuperArc numberOfSuperArcs = tree->getNumberOfSuperArcs();
-#pragma omp for
+      // #pragma omp for
       for (idSuperArc arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
-         vertData.fillArrayPoint(arcId, tree, triangulation_[cc], params_);
+         vertData.fillArrayPoint(arcId, tree, triangulation_[cc], idMapper, params_);
       }
    }
 
@@ -445,7 +445,7 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs)
    vtkSmartPointer<vtkPoints>           points       = vtkSmartPointer<vtkPoints>::New();
 
    ArcData arcData;
-   arcData.init(ftmTree_, nbVerts_, params_);
+   arcData.init(ftmTree_, params_);
 
    const int       samplingLevel = params_.samplingLvl;
    ftm::idSuperArc start_offset  = 0;

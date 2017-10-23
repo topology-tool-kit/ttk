@@ -169,7 +169,6 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
    ftm::Params params_;
 
    int                            nbCC_;
-   ftm::idVertex                  nbVerts_;
    vector<vtkDataSet*>            connected_components_;
    vector<Triangulation*>         triangulation_;
    vector<ftm::FTMTree>           ftmTree_;

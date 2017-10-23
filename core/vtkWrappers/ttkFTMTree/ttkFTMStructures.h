@@ -76,11 +76,12 @@ struct ArcData : public WrapperData {
    vtkSmartPointer<vtkIntArray>    cell_sizeArcs;
    vtkSmartPointer<vtkDoubleArray> cell_spanArcs;
 
-   inline int init(vector<ftm::FTMTree>& ftmTree, const ftm::idVertex nbVerts, ftm::Params params)
+   inline int init(vector<ftm::FTMTree>& ftmTree, ftm::Params params)
    {
       ftm::idSuperArc nbArcs       = 0;
       ftm::idSuperArc nbNodes      = 0;
       ftm::idSuperArc samplePoints = 0;
+      ftm::idVertex   nbVerts      = 0;
 
       for (auto& t : ftmTree) {
          nbArcs += t.getNumberOfSuperArcs();
@@ -88,9 +89,9 @@ struct ArcData : public WrapperData {
          samplePoints += params.samplingLvl >= 0
                              ? t.getNumberOfNodes() + (nbArcs * params.samplingLvl)
                              : t.getNumberOfVertices();
+         nbVerts += t.getNumberOfVertices();
       }
 
-      cout << "nb verts " << nbVerts << endl;
       point_ids.resize(nbVerts, ftm::nullVertex);
       cell_ids          = initArray<vtkIntArray>("SegmentationId", samplePoints);
       point_regularMask = initArray<vtkCharArray>("RegularMask", samplePoints);
@@ -313,26 +314,28 @@ struct VertData: public WrapperData {
    }
 
    void fillArrayPoint(const ftm::idSuperArc arcId, ftm::FTMTree_MT* tree,
-                       Triangulation* triangulation, ftm::Params params)
+                       Triangulation* triangulation, vtkDataArray* idMapper, ftm::Params params)
    {
       if (!params.segm)
          return;
 
       ftm::SuperArc* arc = tree->getSuperArc(arcId);
 
-      const int           upNodeId   = arc->getUpNodeId();
-      const ftm::Node*    upNode     = tree->getNode(upNodeId);
-      const int           upVertexId = upNode->getVertexId();
-      const ftm::NodeType upNodeType = getNodeType(tree, upNodeId, params);
+      const ftm::idNode   upNodeId     = arc->getUpNodeId();
+      const ftm::Node*    upNode       = tree->getNode(upNodeId);
+      const ftm::idVertex l_upVertexId = upNode->getVertexId();
+      const ftm::idVertex g_upVertexId = idMapper->GetTuple1(l_upVertexId);
+      const ftm::NodeType upNodeType   = getNodeType(tree, upNodeId, params);
       float               coordUp[3];
-      triangulation->getVertexPoint(upVertexId, coordUp[0], coordUp[1], coordUp[2]);
+      triangulation->getVertexPoint(l_upVertexId, coordUp[0], coordUp[1], coordUp[2]);
 
-      const int           downNodeId   = arc->getDownNodeId();
-      const ftm::Node*    downNode     = tree->getNode(downNodeId);
-      const int           downVertexId = downNode->getVertexId();
-      const ftm::NodeType downNodeType = getNodeType(tree, downNodeId, params);
+      const ftm::idNode   downNodeId     = arc->getDownNodeId();
+      const ftm::Node*    downNode       = tree->getNode(downNodeId);
+      const int           l_downVertexId = downNode->getVertexId();
+      const int           g_downVertexId = idMapper->GetTuple1(l_downVertexId);
+      const ftm::NodeType downNodeType   = getNodeType(tree, downNodeId, params);
       float               coordDown[3];
-      triangulation->getVertexPoint(downVertexId, coordDown[0], coordDown[1], coordDown[2]);
+      triangulation->getVertexPoint(l_downVertexId, coordDown[0], coordDown[1], coordDown[2]);
 
       const int    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
       const double regionSpan = Geometry::distance(coordUp, coordDown);
@@ -358,34 +361,35 @@ struct VertData: public WrapperData {
 
       // critical points
       if(params.normalize){
-         ids->SetTuple1(upVertexId   , nid);
-         ids->SetTuple1(downVertexId , nid);
+         ids->SetTuple1(g_upVertexId   , nid);
+         ids->SetTuple1(g_downVertexId , nid);
       } else{
-         ids->SetTuple1(upVertexId   , arcId);
-         ids->SetTuple1(downVertexId , arcId);
+         ids->SetTuple1(g_upVertexId   , arcId);
+         ids->SetTuple1(g_downVertexId , arcId);
       }
 
       if (params.advStats) {
-         sizeRegion->SetTuple1(upVertexId   , regionSize);
-         sizeRegion->SetTuple1(downVertexId , regionSize);
-         spanRegion->SetTuple1(upVertexId   , regionSpan);
-         spanRegion->SetTuple1(downVertexId , regionSpan);
+         sizeRegion->SetTuple1(g_upVertexId   , regionSize);
+         sizeRegion->SetTuple1(g_downVertexId , regionSize);
+         spanRegion->SetTuple1(g_upVertexId   , regionSpan);
+         spanRegion->SetTuple1(g_downVertexId , regionSpan);
       }
-      typeRegion->SetTuple1(upVertexId   , static_cast<char>(regionType));
-      typeRegion->SetTuple1(downVertexId , static_cast<char>(regionType));
+      typeRegion->SetTuple1(g_upVertexId   , static_cast<char>(regionType));
+      typeRegion->SetTuple1(g_downVertexId , static_cast<char>(regionType));
 
       // regular nodes
-      for (const ftm::idVertex vertexId : *arc) {
+      for (const ftm::idVertex l_vertexId : *arc) {
+         const ftm::idVertex g_vertexId = idMapper->GetTuple1(l_vertexId);
          if (params.normalize) {
-            ids->SetTuple1(vertexId, nid);
+            ids->SetTuple1(g_vertexId, nid);
          } else {
-            ids->SetTuple1(vertexId, arcId);
+            ids->SetTuple1(g_vertexId, arcId);
          }
          if (params.advStats) {
-            sizeRegion->SetTuple1(vertexId, regionSize);
-            spanRegion->SetTuple1(vertexId, regionSpan);
+            sizeRegion->SetTuple1(g_vertexId, regionSize);
+            spanRegion->SetTuple1(g_vertexId, regionSpan);
          }
-         typeRegion->SetTuple1(vertexId, static_cast<char>(regionType));
+         typeRegion->SetTuple1(g_vertexId, static_cast<char>(regionType));
       }
 
    }
