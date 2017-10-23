@@ -16,7 +16,10 @@
 - [x] careful about open mp flag (macro)
 - [x] careful about kamikaze, mpi,
 - [x] careful about march flags
-- [ ] Update the scripts for the paraview split again
+- [x] Clone script (to create a new module from an existing one)
+- [ ] Remove the ttk prefix from paraview plugins
+- [ ] Build time automatically generated createTTKmodule.sh script
+- [x] Update the scripts for the paraview split again
 	> here, generate the create module script at build time and install it under 
 	${CMAKE_INSTALL_PREFIX}/bin 
 - [x] install everything by default

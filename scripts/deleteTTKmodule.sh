@@ -24,12 +24,9 @@ fi
 # check for dependencies
 echo "Deleting TTK module ${Name}..."
 
-rm -R core/baseCode/${smallName}  2> /dev/null
-rm -R core/vtkWrappers/ttk${Name} 2> /dev/null
+rm -R core/base/${smallName}  2> /dev/null
+rm -R core/vtk/ttk${Name} 2> /dev/null
 rm -R standalone/${Name} 2> /dev/null
-
-touch core/baseCode/CMakeLists.txt
-touch core/vtkWrappers/CMakeLists.txt
-touch standalone/CMakeLists.txt
+rm -R paraview/ttk${Name} 2> /dev/null
 
 echo "Module deleted."
