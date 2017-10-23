@@ -92,6 +92,7 @@ struct ArcData : public WrapperData {
       point_ids.resize(nbNodes, ftm::nullNodes);
       cell_ids          = initArray<vtkIntArray>("SegmentationId", samplePoints);
       point_regularMask = initArray<vtkCharArray>("RegularMask", samplePoints);
+      point_scalar      = initArray<vtkFloatArray>("Scalar", samplePoints);
 
       if (params.advStats) {
          if (params.segm) {
