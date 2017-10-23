@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::MorseSmaleComplex3D
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \author Julien Tierny <julien.tierny@lip6.fr>

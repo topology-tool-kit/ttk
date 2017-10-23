@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::RangeMinimumQuery
 /// \author Michael Michaux <michauxmichael89@gmail.com>
 /// \date August 2016.

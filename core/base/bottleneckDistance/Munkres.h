@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::Munkres 
 /// \author Maxime Soler <soler.maxime@total.com>
 

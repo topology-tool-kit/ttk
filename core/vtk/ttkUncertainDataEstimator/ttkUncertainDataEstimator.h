@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkUncertainDataEstimator
 /// \author Michael Michaux <michauxmichael89@gmail.com>
 /// \date August 2016.

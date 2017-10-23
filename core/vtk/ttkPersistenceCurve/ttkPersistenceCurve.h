@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkPersistenceCurve
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \date September 2016.

@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkProgramBase
 /// \author Julien Tierny <julien.tierny@lip6.fr>.
 /// \date February 2017.

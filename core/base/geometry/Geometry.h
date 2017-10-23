@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::Geometry
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date February 2016.

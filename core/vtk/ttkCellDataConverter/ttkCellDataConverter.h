@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkCellDataConverter
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \date February 2016

@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::ImplicitTriangulation
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \date January 2016.

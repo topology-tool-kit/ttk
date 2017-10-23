@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkMeshSubdivision
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date December 2015.

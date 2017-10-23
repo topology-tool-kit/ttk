@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::ZeroSkeleton 
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date June 2015.

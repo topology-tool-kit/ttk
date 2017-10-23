@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkLDistance
 /// \author Maxime Soler <soler.maxime@total.com>
 /// \date 26/02/2017

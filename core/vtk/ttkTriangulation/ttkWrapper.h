@@ -1,8 +1,8 @@
-/// \defgroup ttkWrappers ttkWrappers
+/// \defgroup vtk vtk
 /// \brief The Topology ToolKit - VTK wrapping code for the processing 
 /// packages.
 /// @{
-/// \ingroup ttkWrappers
+/// \ingroup vtk
 /// \class ttkWrapper
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date February 2016.
@@ -18,7 +18,7 @@
 #include                  <vtkPolyData.h>
 #include                  <vtkUnstructuredGrid.h>
 
-// Macros for ttkWrappers
+// Macros for vtkWrappers
 #define TTK_POLY_DATA_NEW(i, ouputInformation, dataTYpe)\
   if(dataType == "vtkPolyData"){\
     ttkPolyData *data = ttkPolyData::SafeDownCast(\

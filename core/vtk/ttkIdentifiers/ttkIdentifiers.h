@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkIdentifiers
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date August 2015.

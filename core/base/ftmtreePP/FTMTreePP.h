@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::FTMTreePP
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2017-08-03

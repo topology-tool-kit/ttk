@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkJacobiSet
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date May 2015.

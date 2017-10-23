@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkBlank
 /// \author Your Name Here <Your Email Address Here>
 /// \date The Date Here.

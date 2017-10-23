@@ -7,7 +7,7 @@
 /// <a href="https://topology-tool-kit.github.io/" 
 /// target="new">http://topology-tool-kit .github.io/</a>
 
-/// \defgroup baseCode baseCode
+/// \defgroup base base
 /// \brief The Topology ToolKit - Base code processing packages.
 /// @{
 /// \class ttk::Debug
@@ -106,7 +106,7 @@ namespace ttk{
       /// deriving from ttk::Debug.
       /// 
       /// This function is useful to pass the execution context (debug level,
-      /// number of threads, etc.) from a wrapper to a baseCode object.
+      /// number of threads, etc.) from a wrapper to a base object.
       /// \param wrapper Pointer to the wrapping object.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa vtkBlank

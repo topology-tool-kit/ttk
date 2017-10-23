@@ -1,4 +1,4 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkTriangulationRequest
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \date April 2017.

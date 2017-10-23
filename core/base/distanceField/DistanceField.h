@@ -1,4 +1,4 @@
-/// \ingroup baseCode
+/// \ingroup base
 /// \class ttk::DistanceField
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \date March 2016
