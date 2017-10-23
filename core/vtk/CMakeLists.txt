@@ -46,51 +46,18 @@ find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 include_directories(${VTK_INCLUDE_DIRS})
 
+set(VTKWRAPPER_LIB_LIST "")
 file(GLOB VTKWRAPPER_DIRS ttk*)
 foreach(VTKWRAPPER ${VTKWRAPPER_DIRS})
 	if (IS_DIRECTORY ${VTKWRAPPER})
 		add_subdirectory(${VTKWRAPPER})
+		set(VTKWRAPPER_LIB_LIST "${VTKWRAPPER_LIB_LIST} ${BASECODE}")
 	endif()
 endforeach()
 
 # Add a bundle library that will just link all the TTK vtkWrappers
 add_library(ttkAll INTERFACE)
-target_link_libraries(ttkAll INTERFACE
-	ttkBottleneckDistance
-	ttkCellDataConverter
-	ttkComponentSize
-	ttkContinuousScatterPlot
-	ttkContourForests
-	ttkDistanceField
-	ttkFiber
-	ttkFiberSurface
-	ttkGeometrySmoother
-	ttkIdentifierRandomizer
-	ttkIdentifiers
-	ttkIntegralLines
-	ttkJacobiSet
-	ttkLDistance
-	ttkMandatoryCriticalPoints
-	ttkMeshSubdivision
-	ttkMorseSmaleComplex
-	ttkPersistenceCurve
-	ttkPersistenceDiagram
-	ttkPointDataConverter
-	ttkProgramBase
-	ttkProjectionFromField
-	ttkRangePolygon
-	ttkReebSpace
-	ttkScalarFieldCriticalPoints
-	ttkScalarFieldNormalizer
-	ttkScalarFieldSmoother
-	ttkSphereFromPoint
-	ttkTextureMapFromField
-	ttkTopologicalSimplification
-	ttkTriangulation
-	ttkTriangulationRequest
-	ttkUncertainDataEstimator
-	ttkUserInterfaceBase
-	ttkWRLExporter)
+target_link_libraries(ttkAll INTERFACE ${VTKWRAPPER_LIB_LIST})
 
 install(TARGETS ttkAll
 	EXPORT TTKVTKConfig
