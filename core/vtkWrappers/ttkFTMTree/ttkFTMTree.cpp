@@ -228,25 +228,23 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       // This data set may have several connected components,
       // we need to apply the FTM Tree for each one of these components
       // We then reconstruct the global tree using an offest mecanism
+      vtkSmartPointer<vtkUnstructuredGrid> input = vtkSmartPointer<vtkUnstructuredGrid>::New();
+      input->ShallowCopy(inputs[0]);
+      identify(input);
+
       vtkSmartPointer<vtkConnectivityFilter> connectivity =
           vtkSmartPointer<vtkConnectivityFilter>::New();
-      connectivity->SetInputData(inputs[0]);
+      connectivity->SetInputData(input);
       connectivity->SetExtractionModeToAllRegions();
       connectivity->ColorRegionsOn();
       connectivity->Update();
 
-      // We need a field to recover the link between the current data set and
-      // each connected component that will be extracted
-
-      vtkUnstructuredGrid* output_connectivity = connectivity->GetOutput();
-      identify(output_connectivity);
-
-      nbCC_ = output_connectivity->GetCellData()->GetArray("RegionId")->GetRange()[1] + 1;
+      nbCC_ = connectivity->GetOutput()->GetCellData()->GetArray("RegionId")->GetRange()[1] + 1;
       connected_components_.resize(nbCC_);
 
       for (int cc = 0; cc < nbCC_; cc++) {
          vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
-         threshold->SetInputData(output_connectivity);
+         threshold->SetInputConnection(connectivity->GetOutputPort());
          threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
          threshold->ThresholdBetween(cc, cc);
          threshold->Update();
@@ -258,6 +256,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       connected_components_.resize(nbCC_);
       connected_components_[0] = ttkImageData::New();
       connected_components_[0]->ShallowCopy(inputs[0]);
+      identify(connected_components_[0]);
    }
 
    // now proceed for each triangulation obtained.
@@ -492,8 +491,9 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
 
    for (int cc = 0; cc < nbCC_; cc++) {
       FTMTree_MT* tree = ftmTree_[cc].getTree(GetTreeType());
+      vtkDataArray* idMapper =  connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
 
-      const idVertex numberOfNodes = tree->getNumberOfNodes();
+      const idNode numberOfNodes = tree->getNumberOfNodes();
 #ifndef withKamikaze
       if (!numberOfNodes) {
          cerr << "[ttkFTMTree] Error : tree has no nodes." << endl;
@@ -501,7 +501,7 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
       }
 #endif
 
-      for (idVertex nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
+      for (idNode nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
          const Node* node = tree->getNode(nodeId);
 #ifndef withKamikaze
          if (!node) {
@@ -574,9 +574,9 @@ int ttkFTMTree::setupTriangulation()
    for (int cc = 0; cc < nbCC_; cc++) {
       triangulation_[cc] = ttkTriangulation::getTriangulation(connected_components_[cc]);
 #ifndef withKamikaze
-         cerr << "[ttkFTMTree] Error : ttkTriangulation::getTriangulation() is null." << endl;
          if (!triangulation_[cc]) {
-         return -1;
+            cerr << "[ttkFTMTree] Error : ttkTriangulation::getTriangulation() is null." << endl;
+            return -1;
       }
 #endif
 
@@ -584,7 +584,6 @@ int ttkFTMTree::setupTriangulation()
       ftmTree_[cc].setDebugLevel(debugLevel_);
       ftmTree_[cc].setThreadNumber(threadNumber_);
       ftmTree_[cc].setupTriangulation(triangulation_[cc]);
-      cout << "triangulation: " << triangulation_[cc] << endl;
 
       hasUpdatedMesh_ = ttkTriangulation::hasChangedConnectivity(triangulation_[cc], connected_components_[cc], this);
 
@@ -628,7 +627,8 @@ void ttkFTMTree::identify(vtkDataSet* ds) const
    identifiers->SetNumberOfComponents(1);
    identifiers->SetNumberOfTuples(nbPoints);
 
-#pragma omp parallel for
+   cout << " nb points " << nbPoints << " on " << ds->GetPointData()->GetNumberOfTuples() << endl;
+
    for (int i = 0; i < nbPoints; i++) {
       identifiers->SetTuple1(i, i);
    }
