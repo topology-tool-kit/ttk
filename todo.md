@@ -35,7 +35,8 @@
 - [ ] change all feature-enabler flags to TTK_ENABLE_XX
 
 # Documentation
-- [ ] provide a flag "TTK_BUILD_DOC" that calls doxygen if present, upon install ${CMAKE_INSTALL_PREFIX}/share/doc/ttk/
+- [x] provide a flag "TTK_BUILD_DOC" that calls doxygen if present, upon install ${CMAKE_INSTALL_PREFIX}/share/doc/ttk/
+- [ ] change the module names to match source tree (base, vtk)
 
 # ParaView Plugins
 - [x] move cmake code to the paraview dir
