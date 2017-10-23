@@ -4,7 +4,6 @@
 #include <vtkConnectivityFilter.h>
 #include <vtkDataObject.h>
 #include <vtkThreshold.h>
-#include <ttkIdentifiers.h>
 
 using namespace ftm;
 
@@ -239,17 +238,17 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       // We need a field to recover the link between the current data set and
       // each connected component that will be extracted
 
-      vtkSmartPointer<ttkIdentifiers> vertIdentifiers = vtkSmartPointer<ttkIdentifiers>::New();
-      vertIdentifiers->SetInputConnection(connectivity->GetOutputPort());
-      vertIdentifiers->Update();
+      vtkUnstructuredGrid* output_connectivity = connectivity->GetOutput();
+      identify(output_connectivity);
 
-      nbCC_ = vertIdentifiers->GetOutput()->GetCellData()->GetArray("RegionId")->GetRange()[1] + 1;
+      nbCC_ = output_connectivity->GetCellData()->GetArray("RegionId")->GetRange()[1] + 1;
       connected_components_.resize(nbCC_);
 
       for (int cc = 0; cc < nbCC_; cc++) {
          vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
-         threshold->SetInputConnection(vertIdentifiers->GetOutputPort());
+         threshold->SetInputData(output_connectivity);
          threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
+         threshold->ThresholdBetween(cc, cc);
          threshold->Update();
          connected_components_[cc] = ttkUnstructuredGrid::New();
          connected_components_[cc]->ShallowCopy(threshold->GetOutput());
@@ -599,6 +598,8 @@ int ttkFTMTree::setupTriangulation()
    return 0;
 }
 
+// protected
+
 ttkFTMTree::ttkFTMTree()
     : ScalarField{},
       UseInputOffsetScalarField{},
@@ -617,4 +618,20 @@ ttkFTMTree::ttkFTMTree()
 
 ttkFTMTree::~ttkFTMTree()
 {
+}
+
+void ttkFTMTree::identify(vtkDataSet* ds) const
+{
+   vtkSmartPointer<vtkIntArray> identifiers=vtkSmartPointer<vtkIntArray>::New();
+   const vtkIdType nbPoints = ds->GetNumberOfPoints();
+   identifiers->SetName("VertexIdentifier");
+   identifiers->SetNumberOfComponents(1);
+   identifiers->SetNumberOfTuples(nbPoints);
+
+#pragma omp parallel for
+   for (int i = 0; i < nbPoints; i++) {
+      identifiers->SetTuple1(i, i);
+   }
+
+   ds->GetPointData()->AddArray(identifiers);
 }

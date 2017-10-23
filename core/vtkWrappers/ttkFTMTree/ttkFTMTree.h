@@ -153,10 +153,13 @@ class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrap
 
    TTK_SETUP();
 
+   void identify(vtkDataSet* ds) const;
+
    virtual int FillInputPortInformation(int port, vtkInformation* info);
    virtual int FillOutputPortInformation(int port, vtkInformation* info);
 
   private:
+
    string ScalarField;
    bool   UseInputOffsetScalarField;
    string InputOffsetScalarFieldName;
