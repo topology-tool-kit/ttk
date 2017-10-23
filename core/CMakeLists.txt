@@ -51,8 +51,8 @@ if (TTK_ENABLE_MPI)
 	find_package(MPI REQUIRED)
 endif()
 
-add_subdirectory(baseCode)
+add_subdirectory(base)
 if (TTK_BUILD_VTK_WRAPPERS)
-	add_subdirectory(vtkWrappers)
+	add_subdirectory(vtk)
 endif()
 

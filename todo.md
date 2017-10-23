@@ -1,10 +1,13 @@
 # libraries
 
 - [x] make sure only the paraview plugins build against the VTK shipped with PV and not everything.
-- [ ] rename installation dir to make them consistent with the code source tree
+- [x] rename installation dir to make them consistent with the code source tree (or the other way around)
 
 # CMake TTK messages
 - [ ] put the cmake ttk messages back in (useful for debug of low level stuff)
+
+# CMake bundles
+- [ ] automatic creation based on the listing of the vtkWrappers directory
 
 # Accessible CMake features
 - [x] make ParaView_DIR accessible through cmake config (appears when paraview enabled)

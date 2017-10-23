@@ -39,7 +39,7 @@ set(TTK_PLUGIN_INSTALL_DIR
 	CACHE PATH
 	"Directory where TTK ParaView plugins will be installed")
 
-set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/../core/vtkWrappers/")
+set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/../core/vtk/")
 
 # Build the ttkTriangulation library against the ParaView VTK
 add_library(ttkPVTriangulation STATIC
