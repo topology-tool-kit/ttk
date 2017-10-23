@@ -7,7 +7,7 @@
 - [x] put the cmake ttk messages back in (useful for debug of low level stuff)
 
 # CMake bundles
-- [ ] automatic creation based on the listing of the vtkWrappers directory
+- [x] automatic creation based on the listing of the vtkWrappers directory
 
 # Accessible CMake features
 - [x] make ParaView_DIR accessible through cmake config (appears when paraview enabled)
