@@ -76,7 +76,7 @@ struct ArcData : public WrapperData {
    vtkSmartPointer<vtkIntArray>    cell_sizeArcs;
    vtkSmartPointer<vtkDoubleArray> cell_spanArcs;
 
-   inline int init(vector<ftm::FTMTree>& ftmTree, ftm::Params params)
+   inline int init(vector<ftm::FTMTree>& ftmTree, const ftm::idVertex nbVerts, ftm::Params params)
    {
       ftm::idSuperArc nbArcs       = 0;
       ftm::idSuperArc nbNodes      = 0;
@@ -85,11 +85,13 @@ struct ArcData : public WrapperData {
       for (auto& t : ftmTree) {
          nbArcs += t.getNumberOfSuperArcs();
          nbNodes += t.getNumberOfNodes();
-         samplePoints += params.samplingLvl >= 0 ? nbNodes + (nbArcs * params.samplingLvl)
-                                                 : t.getNumberOfVertices();
+         samplePoints += params.samplingLvl >= 0
+                             ? t.getNumberOfNodes() + (nbArcs * params.samplingLvl)
+                             : t.getNumberOfVertices();
       }
 
-      point_ids.resize(nbNodes, ftm::nullNodes);
+      cout << "nb verts " << nbVerts << endl;
+      point_ids.resize(nbVerts, ftm::nullVertex);
       cell_ids          = initArray<vtkIntArray>("SegmentationId", samplePoints);
       point_regularMask = initArray<vtkCharArray>("RegularMask", samplePoints);
       point_scalar      = initArray<vtkFloatArray>("Scalar", samplePoints);
@@ -106,13 +108,13 @@ struct ArcData : public WrapperData {
 
    inline bool hasPoint(const ftm::idVertex vertId)
    {
-      return point_ids[vertId] != ftm::nullNodes;
+      return point_ids[vertId] != ftm::nullVertex;
    }
 
-   inline void addPoint(const ftm::idVertex vertId, const vtkIdType id, const float scalar,
+   inline void addPoint(const ftm::idVertex globalId, const vtkIdType id, const float scalar,
                         const bool reg)
    {
-      point_ids[vertId] = id;
+      point_ids[globalId] = id;
       setPoint(id, scalar, reg);
    }
 

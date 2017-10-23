@@ -35,26 +35,28 @@ int ttkFTMTree::FillOutputPortInformation(int port, vtkInformation* info)
 int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId, const int cc, vtkPoints* points,
                                        vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
-   FTMTree_MT* tree = ftmTree_[cc].getTree(GetTreeType());
-   SuperArc* arc = tree->getSuperArc(arcId);
-   float     point[3];
-   vtkIdType pointIds[2];
+   FTMTree_MT*   tree     = ftmTree_[cc].getTree(GetTreeType());
+   vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
+   SuperArc*     arc      = tree->getSuperArc(arcId);
+   float         point[3];
+   vtkIdType     pointIds[2];
 
-   const idVertex downNodeId   = tree->getLowerNodeId(arc);
-   const idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
-   triangulation_[cc]->getVertexPoint(downVertexId, point[0], point[1], point[2]);
-   const double scalarMin = inputScalars_[cc]->GetTuple1(downVertexId);
+   const idVertex downNodeId     = tree->getLowerNodeId(arc);
+   const idVertex l_downVertexId = tree->getNode(downNodeId)->getVertexId();
+   const idVertex g_downVertexId = idMapper->GetTuple1(l_downVertexId);
+   triangulation_[cc]->getVertexPoint(l_downVertexId, point[0], point[1], point[2]);
+   const double scalarMin = inputScalars_[cc]->GetTuple1(l_downVertexId);
 
    // Get or create first point of the arc
-   vtkIdType downId;
-   if (!arcData.hasPoint(downNodeId)) {
-      downId = points->InsertNextPoint(point);
-      arcData.addPoint(downNodeId, downId, scalarMin, false);
+   vtkIdType nextPointId;
+   if (!arcData.hasPoint(g_downVertexId)) {
+      nextPointId = points->InsertNextPoint(point);
+      arcData.addPoint(g_downVertexId, nextPointId, scalarMin, false);
    } else {
-      downId = arcData.point_ids[downNodeId];
+      nextPointId = arcData.point_ids[g_downVertexId];
    }
 
-   pointIds[0] = downId;
+   pointIds[0] = nextPointId;
 
    for (const idVertex vertexId : *arc) {
       triangulation_[cc]->getVertexPoint(vertexId, point[0], point[1], point[2]);
@@ -68,21 +70,21 @@ int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId, const int cc
       pointIds[0] = pointIds[1];
    }
 
-   const idVertex upNodeId   = tree->getUpperNodeId(arc);
-   const idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
-   triangulation_[cc]->getVertexPoint(upVertexId, point[0], point[1], point[2]);
-   const double scalarMax = inputScalars_[cc]->GetTuple1(upVertexId);
+   const idVertex upNodeId     = tree->getUpperNodeId(arc);
+   const idVertex l_upVertexId = tree->getNode(upNodeId)->getVertexId();
+   const idVertex g_upVertexId = idMapper->GetTuple1(l_upVertexId);
+   triangulation_[cc]->getVertexPoint(l_upVertexId, point[0], point[1], point[2]);
+   const double scalarMax = inputScalars_[cc]->GetTuple1(l_upVertexId);
 
    // Get or create last point of the arc
-   vtkIdType upId;
-   if (!arcData.hasPoint(upNodeId)) {
-      upId = points->InsertNextPoint(point);
-      arcData.addPoint(upNodeId, upId, scalarMax, false);
+   if (!arcData.hasPoint(g_upVertexId)) {
+      nextPointId = points->InsertNextPoint(point);
+      arcData.addPoint(g_upVertexId, nextPointId, scalarMax, false);
    } else {
-      upId = arcData.point_ids[upNodeId];
+      nextPointId = arcData.point_ids[g_upVertexId];
    }
 
-   pointIds[1] = upId;
+   pointIds[1] = nextPointId;
 
    const vtkIdType nextCell = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
    arcData.fillArrayCell(nextCell, arcId, tree, triangulation_[cc], params_);
@@ -94,34 +96,37 @@ int ttkFTMTree::addDirectSkeletonArc(const idSuperArc arcId, const int cc, vtkPo
                                      vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
    FTMTree_MT* tree = ftmTree_[cc].getTree(GetTreeType());
+   vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
    SuperArc* arc = tree->getSuperArc(arcId);
    float     point[3];
    vtkIdType pointIds[2];
 
-   const idVertex downNodeId   = tree->getLowerNodeId(arc);
-   const idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
-   triangulation_[cc]->getVertexPoint(downVertexId, point[0], point[1], point[2]);
-   const double scalarMin = inputScalars_[cc]->GetTuple1(downVertexId);
+   const idVertex downNodeId     = tree->getLowerNodeId(arc);
+   const idVertex l_downVertexId = tree->getNode(downNodeId)->getVertexId();
+   const idVertex g_downVertexId = idMapper->GetTuple1(l_downVertexId);
+   triangulation_[cc]->getVertexPoint(l_downVertexId, point[0], point[1], point[2]);
+   const double scalarMin = inputScalars_[cc]->GetTuple1(l_downVertexId);
    // Get or create first point of the arc
-   if (!arcData.hasPoint(downNodeId)) {
-      const vtkIdType downId       = points->InsertNextPoint(point);
-      pointIds[0]                   = downId;
-      arcData.addPoint(downNodeId, downId, scalarMin, false);
+   if (!arcData.hasPoint(g_downVertexId)) {
+      const vtkIdType nextPointId = points->InsertNextPoint(point);
+      pointIds[0]                 = nextPointId;
+      arcData.addPoint(g_downVertexId, nextPointId, scalarMin, false);
    } else {
-      pointIds[0] = arcData.point_ids[downNodeId];
+      pointIds[0] = arcData.point_ids[g_downVertexId];
    }
 
-   const idVertex upNodeId   = tree->getUpperNodeId(arc);
-   const idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
-   triangulation_[cc]->getVertexPoint(upVertexId, point[0], point[1], point[2]);
-   const double scalarMax = inputScalars_[cc]->GetTuple1(upVertexId);
+   const idVertex upNodeId     = tree->getUpperNodeId(arc);
+   const idVertex l_upVertexId = tree->getNode(upNodeId)->getVertexId();
+   const idVertex g_upVertexId = idMapper->GetTuple1(l_upVertexId);
+   triangulation_[cc]->getVertexPoint(l_upVertexId, point[0], point[1], point[2]);
+   const double scalarMax = inputScalars_[cc]->GetTuple1(l_upVertexId);
    // Get or create last point of the arc
-   if (!arcData.hasPoint(upNodeId)) {
-      const vtkIdType upId       = points->InsertNextPoint(point);
-      pointIds[1]                = upId;
-      arcData.addPoint(upNodeId, upId, scalarMax, false);
+   if (!arcData.hasPoint(g_upVertexId)) {
+      const vtkIdType nextPointId = points->InsertNextPoint(point);
+      pointIds[1]                 = nextPointId;
+      arcData.addPoint(g_upVertexId, nextPointId, scalarMax, false);
    } else {
-      pointIds[1] = arcData.point_ids[upNodeId];
+      pointIds[1] = arcData.point_ids[g_upVertexId];
    }
 
    const vtkIdType nextCell = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
@@ -134,43 +139,45 @@ int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId, const int cc, vtkP
                                       vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
    FTMTree_MT* tree = ftmTree_[cc].getTree(GetTreeType());
+   vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
    SuperArc* arc = tree->getSuperArc(arcId);
    float     point[3];
    vtkIdType pointIds[2];
 
-   const idVertex downNodeId   = tree->getLowerNodeId(arc);
-   const idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
-   triangulation_[cc]->getVertexPoint(downVertexId, point[0], point[1], point[2]);
-   const double scalarMin = inputScalars_[cc]->GetTuple1(downVertexId);
+   const idVertex downNodeId     = tree->getLowerNodeId(arc);
+   const idVertex l_downVertexId = tree->getNode(downNodeId)->getVertexId();
+   const idVertex g_downVertexId = idMapper->GetTuple1(l_downVertexId);
+   triangulation_[cc]->getVertexPoint(l_downVertexId, point[0], point[1], point[2]);
+   const double scalarMin = inputScalars_[cc]->GetTuple1(l_downVertexId);
 
    // Get or create first point of the arc
-   vtkIdType downId;
-   if (!arcData.hasPoint(downNodeId)) {
-      downId = points->InsertNextPoint(point);
-      arcData.addPoint(downNodeId, downId, scalarMin, false);
+   vtkIdType nextPointId;
+   if (!arcData.hasPoint(g_downVertexId)) {
+      nextPointId = points->InsertNextPoint(point);
+      arcData.addPoint(g_downVertexId, nextPointId, scalarMin, false);
    } else {
-      downId = arcData.point_ids[downNodeId];
+      nextPointId = arcData.point_ids[g_downVertexId];
    }
 
-   const idVertex upNodeId   = tree->getUpperNodeId(arc);
-   const idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
-   triangulation_[cc]->getVertexPoint(upVertexId, point[0], point[1], point[2]);
-   const double scalarMax = inputScalars_[cc]->GetTuple1(upVertexId);
+   pointIds[0] = nextPointId;
+
+   const idVertex upNodeId     = tree->getUpperNodeId(arc);
+   const idVertex l_upVertexId = tree->getNode(upNodeId)->getVertexId();
+   const idVertex g_upVertexId = idMapper->GetTuple1(l_upVertexId);
+   triangulation_[cc]->getVertexPoint(l_upVertexId, point[0], point[1], point[2]);
+   const double scalarMax = inputScalars_[cc]->GetTuple1(l_upVertexId);
 
    const double delta       = (scalarMax - scalarMin) / (params_.samplingLvl + 1);
    double       scalarLimit = scalarMin + delta;
    double       scalarAvg   = 0;
 
    // Get or create last point of the arc
-   vtkIdType upId;
-   if (!arcData.hasPoint(upNodeId)) {
-      upId = points->InsertNextPoint(point);
-      arcData.addPoint(upNodeId, upId, scalarMax, false);
+   if (!arcData.hasPoint(g_upVertexId)) {
+      nextPointId = points->InsertNextPoint(point);
+      arcData.addPoint(g_upVertexId, nextPointId, scalarMax, false);
    } else {
-      upId = arcData.point_ids[upNodeId];
+      nextPointId = arcData.point_ids[g_upVertexId];
    }
-
-   pointIds[0] = downId;
 
    int       c = 0;
    float     sum[3]{0, 0, 0};
@@ -208,7 +215,8 @@ int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId, const int cc, vtkP
       }
    }
 
-   pointIds[1] = upId;
+   // The up id
+   pointIds[1] = nextPointId;
 
    const vtkIdType nextCell = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
    arcData.fillArrayCell(nextCell, arcId, tree, triangulation_[cc], params_);
@@ -223,6 +231,8 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    vtkUnstructuredGrid* outputSkeletonNodes = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
    vtkUnstructuredGrid* outputSkeletonArcs  = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
    vtkDataSet*          outputSegmentation  = outputs[2];
+
+   nbVerts_ = inputs[0]->GetNumberOfPoints();
 
    if(inputs[0]->IsA("vtkUnstructuredGrid")){
       // This data set may have several connected components,
@@ -435,7 +445,7 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs)
    vtkSmartPointer<vtkPoints>           points       = vtkSmartPointer<vtkPoints>::New();
 
    ArcData arcData;
-   arcData.init(ftmTree_, params_);
+   arcData.init(ftmTree_, nbVerts_, params_);
 
    const int       samplingLevel = params_.samplingLvl;
    ftm::idSuperArc start_offset  = 0;
@@ -491,7 +501,6 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
 
    for (int cc = 0; cc < nbCC_; cc++) {
       FTMTree_MT* tree = ftmTree_[cc].getTree(GetTreeType());
-      vtkDataArray* idMapper =  connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
 
       const idNode numberOfNodes = tree->getNumberOfNodes();
 #ifndef withKamikaze
@@ -510,9 +519,9 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
          }
 #endif
 
-         const idVertex vertexId = node->getVertexId();
+         const idVertex local_vertId  = node->getVertexId();
          float          point[3];
-         triangulation_[cc]->getVertexPoint(vertexId, point[0], point[1], point[2]);
+         triangulation_[cc]->getVertexPoint(local_vertId, point[0], point[1], point[2]);
          const vtkIdType nextPoint = points->InsertNextPoint(point);
          nodeData.fillArrayPoint(nextPoint, nodeId, tree, triangulation_[cc], params_);
       }
