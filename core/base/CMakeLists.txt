@@ -64,7 +64,7 @@ function(ttk_add_base_template_library library)
 	endif()
 
 	if (TTK_ENABLE_CPU_OPTIMIZATION)
-		target_compile_options(${library} INTERFACE "-march=native")
+		target_compile_options(${library} INTERFACE -march=native -O3)
 	endif()
 
 	if (TTK_ENABLE_OPENMP)
@@ -89,49 +89,17 @@ function(ttk_add_base_template_library library)
 	install(FILES ${ARG_SOURCES} DESTINATION include/ttk/base)
 endfunction()
 
+set(LIB_LIST "")
 file(GLOB BASECODE_DIRS *)
 foreach(BASECODE ${BASECODE_DIRS})
 	if (IS_DIRECTORY ${BASECODE})
 		add_subdirectory(${BASECODE})
+		set(LIB_LIST "${LIB_LIST} ${BASECODE}")
 	endif()
 endforeach()
 
 add_library(baseAll INTERFACE)
-target_link_libraries(baseAll INTERFACE
-	abstractMorseSmaleComplex
-	abstractTriangulation
-	bottleneckDistance
-	common
-	continuousScatterPlot
-	contourForests
-	contourForestsTree
-	contourTree
-	discreteGradient
-	distanceField
-	explicitTriangulation
-	fiberSurface
-	geometry
-	implicitTriangulation
-	integralLines
-	jacobiSet
-	lDistance
-	lowestCommonAncestor
-	mandatoryCriticalPoints
-	morseSmaleComplex
-	morseSmaleComplex2D
-	morseSmaleComplex3D
-	persistenceCurve
-	persistenceDiagram
-	rangeDrivenOctree
-	rangeMinimumQuery
-	reebSpace
-	scalarFieldCriticalPoints
-	scalarFieldSmoother
-	skeleton
-	topologicalSimplification
-	triangulation
-	uncertainDataEstimator
-	unionFind)
+target_link_libraries(baseAll INTERFACE ${LIB_LIST})
 
 install(TARGETS baseAll
 	EXPORT TTKBaseConfig
