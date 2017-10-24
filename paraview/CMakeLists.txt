@@ -50,10 +50,12 @@ set_target_properties(ttkPVTriangulation PROPERTIES POSITION_INDEPENDENT_CODE TR
 target_include_directories(ttkPVTriangulation PUBLIC
 	$<BUILD_INTERFACE:${VTKWRAPPER_DIR}/ttkTriangulation>)
 
-file(GLOB PARAVIEW_PLUGIN_DIRS ttk*)
+file(GLOB PARAVIEW_PLUGIN_DIRS *)
 foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
 	if (IS_DIRECTORY ${PARAVIEW_PLUGIN})
-		add_subdirectory(${PARAVIEW_PLUGIN})
+		if (NOT ${PARAVIEW_PLUGIN} MATCHES "patch" )
+			add_subdirectory(${PARAVIEW_PLUGIN})
+		endif()
 	endif()
 endforeach()
 
