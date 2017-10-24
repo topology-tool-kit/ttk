@@ -136,7 +136,7 @@ int PersistenceCurve::execute() const{
   contourTree.setupTriangulation(triangulation_, false);
   contourTree.setVertexScalars(inputScalars_);
   contourTree.setTreeType(ftm::TreeType::Join_Split);
-  contourTree.setVertexSoSoffsets(voffsets);
+  contourTree.setVertexSoSoffsets(voffsets.data());
   contourTree.setSegmentation(false);
   contourTree.setThreadNumber(threadNumber_);
   contourTree.build<scalarType>();

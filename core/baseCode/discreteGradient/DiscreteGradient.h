@@ -4116,18 +4116,14 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
 
     vector<pair<int,char>> cpset;
 
-    const int* const offsets=static_cast<int*>(inputOffsets_);
+    int* const offsets=static_cast<int*>(inputOffsets_);
     const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-    const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-
-    vector<ftm::idVertex> voffsets(numberOfVertices);
-    std::copy(offsets,offsets+numberOfVertices,voffsets.begin());
 
     ftm::FTMTree contourTree;
     contourTree.setupTriangulation(inputTriangulation_, false);
     contourTree.setVertexScalars(scalars);
     contourTree.setTreeType(ftm::TreeType::Contour);
-    contourTree.setVertexSoSoffsets(voffsets);
+    contourTree.setVertexSoSoffsets(offsets);
     contourTree.setThreadNumber(threadNumber_);
     contourTree.setSegmentation(false);
     contourTree.build<dataType>();
