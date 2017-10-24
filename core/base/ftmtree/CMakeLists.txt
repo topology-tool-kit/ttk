@@ -6,7 +6,7 @@ ttk_add_base_library(ftmTree
 		FTMTree_MT.h FTMTree_MT_Template.h FTMTree_Template.h Node.h
 		Segmentation.h Structures.h SuperArc.h
 	LINK triangulation geometry)
-target_include_directories(ftmTree PUBLIC ${BOOST_INCLUDE_DIRS})
+target_include_directories(ftmTree PUBLIC ${Boost_INCLUDE_DIR})
 
 option(TTK_ENABLE_FTM_TREE_PROCESS_SPEED "Enable FTM tree process speed" OFF)
 

@@ -8,7 +8,9 @@
 #ifndef ATOMICVECTOR_H
 #define ATOMICVECTOR_H
 
+#ifdef TTK_ENABLE_OPENMP
 #include <omp.h>
+#endif // TTK_ENABLE_OPENMP
 #include <iterator>
 #include <vector>
 
