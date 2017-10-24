@@ -55,7 +55,7 @@ int ttkDiscreteGradient::FillOutputPortInformation(int port, vtkInformation* inf
 
 int ttkDiscreteGradient::setupTriangulation(vtkDataSet* input){
   triangulation_=ttkTriangulation::getTriangulation(input);
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_){
     cerr << "[ttkDiscreteGradient] Error : ttkTriangulation::getTriangulation() is null." << endl;
     return -1;
@@ -69,7 +69,7 @@ int ttkDiscreteGradient::setupTriangulation(vtkDataSet* input){
   discreteGradient_.setupTriangulation(triangulation_);
   Modified();
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
   if(triangulation_->isEmpty()){
     cerr << "[vtkIntegralLines] Error : vtkTriangulation allocation problem." << endl;
     return -1;
@@ -81,7 +81,7 @@ int ttkDiscreteGradient::setupTriangulation(vtkDataSet* input){
 int ttkDiscreteGradient::getScalars(vtkDataSet* input){
   vtkPointData* pointData=input->GetPointData();
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!pointData){
     cerr << "[ttkDiscreteGradient] Error : input has no point data." << endl;
     return -1;
@@ -102,7 +102,7 @@ int ttkDiscreteGradient::getScalars(vtkDataSet* input){
       ScalarField=inputScalars_->GetName();
   }
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalars_){
     cerr << "[ttkDiscreteGradient] Error : input scalar field pointer is null." << endl;
     return -3;
@@ -143,7 +143,7 @@ int ttkDiscreteGradient::getOffsets(vtkDataSet* input){
     inputOffsets_=offsets_;
   }
 
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputOffsets_){
     cerr << "[ttkDiscreteGradient] Error : wrong input offset scalar field." << endl;
     return -1;
@@ -162,7 +162,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
   int ret{};
 
   ret=setupTriangulation(input);
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
   if(ret){
     cerr << "[ttkDiscreteGradient] Error : wrong triangulation." << endl;
     return -1;
@@ -170,7 +170,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   ret=getScalars(input);
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
   if(ret){
     cerr << "[ttkDiscreteGradient] Error : wrong scalars." << endl;
     return -2;
@@ -178,7 +178,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   ret=getOffsets(input);
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
   if(ret){
     cerr << "[ttkDiscreteGradient] Error : wrong offsets." << endl;
     return -3;
@@ -236,7 +236,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
               &criticalPoints_points_manifoldSize);
 
           ret=discreteGradient_.buildGradient<VTK_TT>();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
           if(ret){
           cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient() error code : " << ret << endl;
           return -8;
@@ -245,7 +245,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
           if(AllowSecondPass){
             ret=discreteGradient_.buildGradient2<VTK_TT>();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
             if(ret){
               cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient2() error code : " << ret << endl;
               return -9;
@@ -255,7 +255,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
           if(dimensionality==3 and AllowThirdPass){
             ret=discreteGradient_.buildGradient3<VTK_TT>();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
             if(ret){
               cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient2() error code : " << ret << endl;
               return -10;
@@ -264,7 +264,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
           }
 
           ret=discreteGradient_.reverseGradient<VTK_TT>();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
           if(ret){
             cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.reverseGradient() error code : " << ret << endl;
             return -11;
@@ -276,7 +276,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             discreteGradient_.setCriticalPoints<VTK_TT>();
 
             vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!points){
               cerr << "[ttkDiscreteGradient] Error : vtkPoints allocation problem." << endl;
               return -12;
@@ -284,7 +284,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
             vtkSmartPointer<vtkIntArray> cellDimensions=vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!cellDimensions){
               cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
               return -13;
@@ -294,7 +294,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             cellDimensions->SetName("CellDimension");
 
             vtkSmartPointer<vtkIntArray> cellIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!cellIds){
               cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
               return -14;
@@ -304,7 +304,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             cellIds->SetName("CellId");
 
             vtkDataArray* cellScalars=inputScalars_->NewInstance();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!cellScalars){
               cerr << "[ttkDiscreteGradient] Error : vtkDataArray allocation problem." << endl;
               return -15;
@@ -314,7 +314,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             cellScalars->SetName(ScalarField.data());
 
             vtkSmartPointer<vtkCharArray> isOnBoundary=vtkSmartPointer<vtkCharArray>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!isOnBoundary){
               cerr << "[vtkMorseSmaleComplex] Error : vtkCharArray allocation problem." << endl;
               return -16;
@@ -325,7 +325,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkIntArray> PLVertexIdentifiers=
               vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!PLVertexIdentifiers){
               cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
                 << "problem." << endl;
@@ -349,7 +349,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             outputCriticalPoints->SetPoints(points);
 
             vtkPointData* pointData=outputCriticalPoints->GetPointData();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
             if(!pointData){
               cerr << "[ttkDiscreteGradient] Error : outputCriticalPoints has no point data." << endl;
               return -17;
@@ -371,7 +371,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     discreteGradient_.setGradientGlyphs();
 
     vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
     if(!points){
       cerr << "[ttkDiscreteGradient] Error : vtkPoints allocation problem." << endl;
       return -18;
@@ -379,7 +379,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
     vtkSmartPointer<vtkIntArray> pairOrigins=vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
     if(!pairOrigins){
       cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
       return -19;
@@ -389,7 +389,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     pairOrigins->SetName("PairOrigin");
 
     vtkSmartPointer<vtkIntArray> pairTypes=vtkSmartPointer<vtkIntArray>::New();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
     if(!pairTypes){
       cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
       return -20;
@@ -422,7 +422,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     }
 
     vtkPointData* pointData=outputGradientGlyphs->GetPointData();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
     if(!pointData){
       cerr << "[ttkDiscreteGradient] Error : outputGradientGlyphs has no point data." << endl;
       return -21;
@@ -432,7 +432,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     pointData->AddArray(pairOrigins);
 
     vtkCellData* cellData=outputGradientGlyphs->GetCellData();
-#ifndef withKamikaze
+#ifndef TTK_ENABLE_KAMIKAZE
     if(!cellData){
       cerr << "[ttkDiscreteGradient] Error : outputGradientGlyphs has no cell data." << endl;
       return -22;
