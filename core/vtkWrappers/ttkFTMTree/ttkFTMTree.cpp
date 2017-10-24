@@ -299,7 +299,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       }
 
       ftmTree_[cc].offset = acc_nbNodes;
-      acc_nbNodes += ftmTree_[cc].tree.getNumberOfNodes();
+      acc_nbNodes += ftmTree_[cc].tree.getTree(GetTreeType())->getNumberOfNodes();
    }
 
    UpdateProgress(0.50);
@@ -362,6 +362,7 @@ int ttkFTMTree::getOffsets()
       if (UseInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
          inputOffsets =
              connected_components_[cc]->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
+         offsets_[cc].resize(numberOfVertices);
          for (int i = 0; i < numberOfVertices; i++) {
             offsets_[cc][i] = inputOffsets->GetTuple1(i);
          }
