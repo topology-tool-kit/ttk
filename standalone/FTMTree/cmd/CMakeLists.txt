@@ -1,35 +1,14 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.2)
 
-# name of the project (dummy)
-project(ftmTreeCmd)
+project(FTMTreeCmd)
 
-set(CMAKE_CXX_FLAGS "-D_GLIBCXX_PARALLEL")
+set(CMAKE_SKIP_BUILD_RPATH TRUE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# command-line build-mode
-set(TTK_BUILD_MODE "VTK-CMD")
+add_executable(ftmTreeCmd main.cpp Editor.cpp)
+target_link_libraries(ftmTreeCmd  ${VTK_LIBRARIES} ttkFTMTree ttkUserInterfaceBase)
 
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
+install(TARGETS ftmTreeCmd RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
 
-# Special build for perf, don't create the result data set
-option(PERF_TESTS  "Build only for performances, avoid post-process" OFF)
-if(PERF_TESTS)
-   add_definitions(-DPERF_TESTS)
-endif(PERF_TESTS)
-
-# include the different packages required for the application
-ttk_add_vtkWrapper_package(ttkFTMTree)
-
-# add the local cpp files
-ttk_add_source(Editor.cpp)
-ttk_add_source(main.cpp)
-
-# wrap-up the build
-ttk_wrapup_binary(ftmTreeCmd)

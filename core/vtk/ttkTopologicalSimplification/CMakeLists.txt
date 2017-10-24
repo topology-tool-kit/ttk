@@ -1,0 +1,4 @@
+ttk_add_vtk_library(ttkTopologicalSimplification
+	SOURCES ttkTopologicalSimplification.cpp
+	HEADERS ttkTopologicalSimplification.h
+	LINK topologicalSimplification ttkTriangulation)

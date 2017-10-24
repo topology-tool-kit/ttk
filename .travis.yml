@@ -1,0 +1,88 @@
+dist: trusty
+sudo: required
+language: cpp
+addons:
+    apt:
+        sources:
+            - ubuntu-toolchain-r-test
+        packages:
+            - g++-6
+            - cmake
+            - qt4-dev-tools
+            - python2.7
+            - libopenmpi-dev
+            - libboost-dev
+git:
+    depth: 3
+
+# Test the build with VTK, ParaView and different combinations of
+# the TTK build options
+matrix:
+    include:
+        # Just base code
+        - env:
+            - TTK_BUILD_VTK_WRAPPERS=OFF
+            - TTK_BUILD_PARAVIEW_PLUGINS=OFF
+            - TTK_BUILD_STANDALONE_APPS=OFF
+            - TTK_ENABLE_KAMIKAZE=OFF
+            - TTK_ENABLE_MPI=OFF
+            - TTK_ENABLE_OPENMP=ON
+        # Base code + MPI, Kamikaze
+        - env:
+            - TTK_BUILD_VTK_WRAPPERS=OFF
+            - TTK_BUILD_PARAVIEW_PLUGINS=OFF
+            - TTK_BUILD_STANDALONE_APPS=OFF
+            - TTK_ENABLE_KAMIKAZE=ON
+            - TTK_ENABLE_MPI=ON
+            - TTK_ENABLE_OPENMP=ON
+        # Base code, VTK wrappers, apps
+#       - env:
+#           - TTK_BUILD_VTK_WRAPPERS=ON
+#           - TTK_BUILD_PARAVIEW_PLUGINS=OFF
+#           - TTK_BUILD_STANDALONE_APPS=ON
+#           - TTK_ENABLE_KAMIKAZE=OFF
+#           - TTK_ENABLE_MPI=OFF
+#           - TTK_ENABLE_OPENMP=ON
+#       # Base code, VTK wrappers, ParaView plugins, no OpenMP
+#       - env:
+#           - TTK_BUILD_PARAVIEW_PLUGINS=ON
+#           - TTK_BUILD_STANDALONE_APPS=OFF
+#           - TTK_ENABLE_KAMIKAZE=OFF
+#           - TTK_ENABLE_MPI=OFF
+#           - TTK_ENABLE_OPENMP=OFF
+#        # Everything on besides apps
+#        - env:
+#            - TTK_BUILD_PARAVIEW_PLUGINS=ON
+#            - TTK_BUILD_STANDALONE_APPS=ON
+#            - TTK_ENABLE_KAMIKAZE=ON
+#            - TTK_ENABLE_MPI=ON
+#            - TTK_ENABLE_OPENMP=ON
+
+before_install:
+    - export CC=gcc-6
+    - export CXX=g++-6
+    - mkdir ext && cd ext
+    - wget "https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh"
+    - chmod +x ./cmake-3.9.2-Linux-x86_64.sh
+    - printf "y\ny" | ./cmake-3.9.2-Linux-x86_64.sh > /dev/null
+    - export PATH=`pwd`/cmake-3.9.2-Linux-x86_64/bin/:$PATH
+    - ../travis-setup-dependencies.sh
+    - export VTK_DIR=`pwd`/VTK-7.1.1/install/lib/cmake/vtk-7.1/
+    - export ParaView_DIR=`pwd`/ParaView-v5.4.1/install/lib/cmake/paraview-5.4/
+    - cd ../
+
+script:
+    - mkdir build
+    - cd build
+    - cmake
+      -DTTK_BUILD_VTK_WRAPPERS=$TTK_BUILD_VTK_WRAPPERS
+      -DTTK_BUILD_PARAVIEW_PLUGINS=$TTK_BUILD_PARAVIEW_PLUGINS
+      -DTTK_BUILD_STANDALONE_APPS=$TTK_BUILD_STANDALONE_APPS
+      -DTTK_ENABLE_KAMIKAZE=$TTK_ENABLE_KAMIKAZE
+      -DTTK_ENABLE_MPI=$TTK_ENABLE_MPI
+      -DTTK_ENABLE_OPENMP=$TTK_ENABLE_OPENMP
+      -DVTK_DIR=$VTK_DIR
+      -DParaView_DIR=$ParaView_DIR
+      ..
+    - cmake --build .
+

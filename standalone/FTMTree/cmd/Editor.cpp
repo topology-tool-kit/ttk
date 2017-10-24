@@ -5,7 +5,7 @@
  * date:                  The Date Here.
  */
 
-#include <Editor.h>
+#include "Editor.h"
 
 #include <vtksys/SystemTools.hxx>
 

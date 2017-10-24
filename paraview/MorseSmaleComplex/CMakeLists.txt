@@ -1,27 +1,6 @@
-cmake_minimum_required(VERSION 2.4)
+ttk_add_paraview_plugin(ttkMorseSmaleComplex
+	SOURCES ${VTKWRAPPER_DIR}/ttkMorseSmaleComplex/ttkMorseSmaleComplex.cpp
+	PLUGIN_VERSION 1.0
+	PLUGIN_XML MorseSmaleComplex.xml
+	LINK morseSmaleComplex)
 
-project(MorseSmaleComplex)
-
-set(TTK_BUILD_MODE "ParaView")
-
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-    sandbox/core/
-    sandbox/../core/
-    sandbox/../../core/
-    sandbox/../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
-
-# include the vtk wrapper for your TTK package 
-ttk_add_vtkWrapper_package(ttkMorseSmaleComplex)
-
-# Add the plugin
-ttk_wrapup_paraview_plugin(
-  MorseSmaleComplex
-  1.0)

@@ -1,8 +1,8 @@
 #!/bin/bash
 # Copyright (C) Julien Tierny <julien.tierny@lip6.fr>
 
-# ex: ScalarFieldSmoother
-Name=$1 
+# example: ScalarFieldSmoother
+Name=$1
 
 smallName="`tr '[:upper:]' '[:lower:]'  <<< ${Name:0:1}`${Name:1}"
 bigName=`echo $Name | tr '[:lower:]' '[:upper:]'`
@@ -24,13 +24,9 @@ fi
 # check for dependencies
 echo "Deleting TTK module ${Name}..."
 
-rm -R core/baseCode/${smallName}  2> /dev/null
-rm -R core/vtkWrappers/ttk${Name} 2> /dev/null
+rm -R core/base/${smallName}  2> /dev/null
+rm -R core/vtk/ttk${Name} 2> /dev/null
 rm -R standalone/${Name} 2> /dev/null
 rm -R paraview/${Name} 2> /dev/null
-
-cat CMakeLists.txt | grep -v ${Name} > CMakeLists.txt.new
-mv CMakeLists.txt CMakeLists.txt.old
-mv CMakeLists.txt.new CMakeLists.txt
 
 echo "Module deleted."
