@@ -1,0 +1,11 @@
+find_package(VTK REQUIRED)
+include(${VTK_USE_FILE})
+include_directories(${VTK_INCLUDE_DIRS})
+
+set(TTK_INSTALL_BINARY_DIR "bin")
+file(GLOB STANDALONE_DIRS */cmd */gui)
+foreach(STANDALONE ${STANDALONE_DIRS})
+	if (IS_DIRECTORY ${STANDALONE})
+		add_subdirectory(${STANDALONE})
+	endif()
+endforeach()

@@ -1,23 +1,14 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.2)
 
-# name of the project (dummy)
 project(geometrySmootherCmd)
 
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
+set(CMAKE_SKIP_BUILD_RPATH TRUE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# include the different packages required for the application
-ttk_add_baseCode_package(scalarFieldSmoother)
+add_executable(geometrySmootherCmd main.cpp)
+target_link_libraries(geometrySmootherCmd scalarFieldSmoother ttkProgramBase)
 
-# add the local cpp files 
-ttk_add_source(main.cpp)
+install(TARGETS geometrySmootherCmd RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
 
-# wrap-up the build
-ttk_wrapup_binary(geometrySmootherCmd)

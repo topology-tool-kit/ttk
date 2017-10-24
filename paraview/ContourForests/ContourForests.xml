@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-      name="ContourForests"
+      name="ttkContourForests"
       class="ttkContourForests"
       label="TTK ContourForests">
       <Documentation

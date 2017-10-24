@@ -1,26 +1,14 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.2)
 
-# name of the project (dummy)
 project(blankCmd)
 
-# command-line build-mode
-set(TTK_BUILD_MODE "VTK-CMD")
+set(CMAKE_SKIP_BUILD_RPATH TRUE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
+add_executable(blankCmd main.cpp)
+target_link_libraries(blankCmd ${VTK_LIBRARIES}
+	ttkBlank ttkProgramBase)
 
-# include the different packages required for the application
-ttk_add_vtkWrapper_package(ttkBlank)
-
-# add the local cpp files 
-ttk_add_source(main.cpp)
-
-# wrap-up the build
-ttk_wrapup_binary(blankCmd)
+install(TARGETS blankCmd RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
