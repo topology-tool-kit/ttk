@@ -27,10 +27,11 @@
 // base code includes
 #include                  <Wrapper.h>
 
-#include<Triangulation.h>
-#include<set>
-#include<tuple>
-#include<type_traits>
+#include <Triangulation.h>
+#include <cmath>
+#include <set>
+#include <tuple>
+#include <type_traits>
 
 namespace ttk{
   
@@ -299,6 +300,7 @@ int TopologicalSimplification::execute() const{
     scalars[k]=inputScalars[k];
     if(isnan(scalars[k]))
       scalars[k] = 0;
+
     offsets[k]=inputOffsets[k];
   }
 

@@ -8,17 +8,7 @@ ttk_add_base_library(ftmTree
 	LINK triangulation geometry)
 target_include_directories(ftmTree PUBLIC ${BOOST_INCLUDE_DIRS})
 
-option(TTK_ENABLE_FTM_TREE_DUAL_QUEUE_COMBINE "Enable FTM tree dual queue combine" OFF)
-option(TTK_ENABLE_FTM_TREE_STATS_TIME "Enable FTM tree statistics timing" OFF)
 option(TTK_ENABLE_FTM_TREE_PROCESS_SPEED "Enable FTM tree process speed" OFF)
-
-if (TTK_ENABLE_FTM_TREE_DUAL_QUEUE_COMBINE)
-	target_compile_definitions(ftmTree PUBLIC TTK_ENABLE_FTM_TREE_DUAL_QUEUE_COMBINE)
-endif()
-
-if (TTK_ENABLE_FTM_TREE_STATS_TIME)
-	target_compile_definitions(ftmTree PUBLIC TTK_ENABLE_FTM_TREE_STATS_TIME)
-endif()
 
 if (TTK_ENABLE_FTM_TREE_PROCESS_SPEED)
 	target_compile_definitions(ftmTree PUBLIC TTK_ENABLE_FTM_TREE_PROCESS_SPEED)
