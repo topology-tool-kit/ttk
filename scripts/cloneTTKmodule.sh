@@ -87,10 +87,10 @@ replace "standalone/${NameDestination}/gui/main.cpp"
 
 # 4) duplicate the blank paraview plugin
 echo "Creating ParaView plugin 'paraview/${NameDestination}'..."
-cp -R paraview/ttk${NameSource}/ paraview/ttk${NameDestination}
-mv paraview/ttk${NameDestination}/${NameSource}.xml paraview/ttk${NameDestination}/${NameDestination}.xml
-replace "paraview/ttk${NameDestination}/${NameDestination}.xml"
-replace "paraview/ttk${NameDestination}/CMakeLists.txt"
+cp -R paraview/${NameSource}/ paraview/${NameDestination}
+mv paraview/${NameDestination}/${NameSource}.xml paraview/${NameDestination}/${NameDestination}.xml
+replace "paraview/${NameDestination}/${NameDestination}.xml"
+replace "paraview/${NameDestination}/CMakeLists.txt"
 
 
 echo "Module created."
