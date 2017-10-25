@@ -12,6 +12,7 @@ addons:
             - python2.7
             - libopenmpi-dev
             - libboost-dev
+            - libvtk6-dev
 git:
     depth: 3
 
