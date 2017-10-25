@@ -30,13 +30,13 @@ matrix:
             - TTK_ENABLE_MPI=OFF
             - TTK_ENABLE_OPENMP=OFF
         # Base code + OpenMP
-        - env:
-            - TTK_BUILD_VTK_WRAPPERS=OFF
-            - TTK_BUILD_PARAVIEW_PLUGINS=OFF
-            - TTK_BUILD_STANDALONE_APPS=OFF
-            - TTK_ENABLE_KAMIKAZE=OFF
-            - TTK_ENABLE_MPI=OFF
-            - TTK_ENABLE_OPENMP=ON
+#        - env:
+#            - TTK_BUILD_VTK_WRAPPERS=OFF
+#            - TTK_BUILD_PARAVIEW_PLUGINS=OFF
+#            - TTK_BUILD_STANDALONE_APPS=OFF
+#            - TTK_ENABLE_KAMIKAZE=OFF
+#            - TTK_ENABLE_MPI=OFF
+#            - TTK_ENABLE_OPENMP=ON
         # Base code + VTK + OpenMP
         - env:
             - TTK_BUILD_VTK_WRAPPERS=ON
@@ -45,10 +45,10 @@ matrix:
             - TTK_ENABLE_KAMIKAZE=OFF
             - TTK_ENABLE_MPI=OFF
             - TTK_ENABLE_OPENMP=ON
-        # Base code, VTK wrappers, apps
+        # Base code, VTK wrappers, apps, ParaView plugins
        - env:
            - TTK_BUILD_VTK_WRAPPERS=ON
-           - TTK_BUILD_PARAVIEW_PLUGINS=OFF
+           - TTK_BUILD_PARAVIEW_PLUGINS=ON
            - TTK_BUILD_STANDALONE_APPS=ON
            - TTK_ENABLE_KAMIKAZE=OFF
            - TTK_ENABLE_MPI=OFF
