@@ -7,14 +7,13 @@ addons:
             - ubuntu-toolchain-r-test
         packages:
             - cmake
-            - libvtk6-dev 
             - qt4-dev-tools 
             - libboost-all-dev
             - g++-6
 #            - cmake
 #            - qt4-dev-tools
 #            - python2.7
-#            - libopenmpi-dev
+            - libopenmpi-dev
 #            - libboost-dev
 #            - libvtk6-dev
 #            - libpq-dev
@@ -32,22 +31,22 @@ matrix:
             - TTK_BUILD_STANDALONE_APPS=OFF
             - TTK_ENABLE_KAMIKAZE=OFF
             - TTK_ENABLE_MPI=OFF
-            - TTK_ENABLE_OPENMP=ON
-        # Base code + OpenMP, Kamikaze
+            - TTK_ENABLE_OPENMP=OFF
+        # Base code + OpenMP
         - env:
             - TTK_BUILD_VTK_WRAPPERS=OFF
             - TTK_BUILD_PARAVIEW_PLUGINS=OFF
             - TTK_BUILD_STANDALONE_APPS=OFF
-            - TTK_ENABLE_KAMIKAZE=ON
-            - TTK_ENABLE_MPI=ON
+            - TTK_ENABLE_KAMIKAZE=OFF
+            - TTK_ENABLE_MPI=OFF
             - TTK_ENABLE_OPENMP=ON
-        # Base code + VTK + OpenMP, Kamikaze
+        # Base code + VTK + OpenMP
         - env:
             - TTK_BUILD_VTK_WRAPPERS=ON
             - TTK_BUILD_PARAVIEW_PLUGINS=OFF
             - TTK_BUILD_STANDALONE_APPS=OFF
-            - TTK_ENABLE_KAMIKAZE=ON
-            - TTK_ENABLE_MPI=ON
+            - TTK_ENABLE_KAMIKAZE=OFF
+            - TTK_ENABLE_MPI=OFF
             - TTK_ENABLE_OPENMP=ON
         # Base code, VTK wrappers, apps
 #       - env:
@@ -68,8 +67,8 @@ matrix:
 #        - env:
 #            - TTK_BUILD_PARAVIEW_PLUGINS=ON
 #            - TTK_BUILD_STANDALONE_APPS=ON
-#            - TTK_ENABLE_KAMIKAZE=ON
-#            - TTK_ENABLE_MPI=ON
+#            - TTK_ENABLE_KAMIKAZE=OFF
+#            - TTK_ENABLE_MPI=OFF
 #            - TTK_ENABLE_OPENMP=ON
 
 before_install:
@@ -81,8 +80,8 @@ before_install:
     - printf "y\ny" | ./cmake-3.9.2-Linux-x86_64.sh > /dev/null
     - export PATH=`pwd`/cmake-3.9.2-Linux-x86_64/bin/:$PATH
     - ../travis-setup-dependencies.sh
-#    - export VTK_DIR=`pwd`/VTK-7.1.1/install/lib/cmake/vtk-7.1/
-#    - export ParaView_DIR=`pwd`/ParaView-v5.4.1/install/lib/cmake/paraview-5.4/
+    - export VTK_DIR=`pwd`/VTK-7.1.1/install/lib/cmake/vtk-7.1/
+    - export ParaView_DIR=`pwd`/ParaView-v5.4.1/install/lib/cmake/paraview-5.4/
     - cd ../
 
 script:
