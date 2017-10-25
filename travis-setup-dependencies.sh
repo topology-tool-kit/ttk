@@ -22,16 +22,16 @@ if [ "$TTK_BUILD_PARAVIEW_PLUGINS" == "ON" ]; then
 
 	cmake --build . --target install -- -j $MAKE_NUM_JOBS
 
-elif [ "$TTK_BUILD_VTK_WRAPPERS" == "ON" ]; then
-	wget "http://www.vtk.org/files/release/7.1/VTK-7.1.1.tar.gz"
-	tar -xf VTK-7.1.1.tar.gz
-	cd VTK-7.1.1
-
-	cmake -DCMAKE_INSTALL_PREFIX=./install \
-		-DVTK_RENDERING_BACKEND=OpenGL2 \
-		-DVTK_WRAP_PYTHON=ON .
-
-	cmake --build . --target install -- -j $MAKE_NUM_JOBS
+#elif [ "$TTK_BUILD_VTK_WRAPPERS" == "ON" ]; then
+#	wget "http://www.vtk.org/files/release/7.1/VTK-7.1.1.tar.gz"
+#	tar -xf VTK-7.1.1.tar.gz
+#	cd VTK-7.1.1
+#
+#	cmake -DCMAKE_INSTALL_PREFIX=./install \
+#		-DVTK_RENDERING_BACKEND=OpenGL2 \
+#		-DVTK_WRAP_PYTHON=ON .
+#
+#	cmake --build . --target install -- -j $MAKE_NUM_JOBS
 
 fi
 
