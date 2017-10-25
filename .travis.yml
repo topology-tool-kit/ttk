@@ -14,6 +14,7 @@ addons:
             - libopenmpi-dev
             - libvtk6-dev
             - libpq-dev
+            - doxygen
 git:
     depth: 3
 
@@ -39,6 +40,7 @@ matrix:
             - TTK_ENABLE_OPENMP=ON
         # Base code + VTK + OpenMP
         - env:
+            - TTK_BUILD_DOCUMENTATION=ON
             - TTK_BUILD_VTK_WRAPPERS=ON
             - TTK_BUILD_PARAVIEW_PLUGINS=ON
             - TTK_BUILD_STANDALONE_APPS=ON
@@ -80,6 +82,7 @@ script:
     - mkdir build
     - cd build
     - cmake
+      -DTTK_BUILD_DOCUMENTATION=$TTK_BUILD_DOCUMENTATION
       -DTTK_BUILD_VTK_WRAPPERS=$TTK_BUILD_VTK_WRAPPERS
       -DTTK_BUILD_PARAVIEW_PLUGINS=$TTK_BUILD_PARAVIEW_PLUGINS
       -DTTK_BUILD_STANDALONE_APPS=$TTK_BUILD_STANDALONE_APPS
@@ -87,5 +90,5 @@ script:
       -DTTK_ENABLE_MPI=$TTK_ENABLE_MPI
       -DTTK_ENABLE_OPENMP=$TTK_ENABLE_OPENMP
       ..
-    - cmake --build .
+    - cmake --build . --target install
 
