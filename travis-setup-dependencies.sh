@@ -7,9 +7,11 @@
 MAKE_NUM_JOBS=2
 
 if [ "$TTK_BUILD_PARAVIEW_PLUGINS" == "ON" ]; then
-	wget "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.4&type=binary&os=Sources&downloadFile=ParaView-v5.4.1.tar.gz" -O ParaView-v5.4.1.tar.gz
-	tar -xf ParaView-v5.4.1.tar.gz
-	cd ParaView-v5.4.1
+	wget "http://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.4&type=source&os=all&downloadFile=ParaView-v5.4.0.tar.gz
+	tar -xf ParaView-v5.4.0.tar.gz
+	cd ttk/paraview/patch
+	./patch-paraview-5.4.0.sh ../../../ParaView-v5.4.0/
+	cd ../../../ParaView-v5.4.0/
 
 	mkdir build
 	cd build
@@ -21,17 +23,5 @@ if [ "$TTK_BUILD_PARAVIEW_PLUGINS" == "ON" ]; then
 		-DPARAVIEW_QT_VERSION=4 ..
 
 	cmake --build . --target install -- -j $MAKE_NUM_JOBS
-
-#elif [ "$TTK_BUILD_VTK_WRAPPERS" == "ON" ]; then
-#	wget "http://www.vtk.org/files/release/7.1/VTK-7.1.1.tar.gz"
-#	tar -xf VTK-7.1.1.tar.gz
-#	cd VTK-7.1.1
-#
-#	cmake -DCMAKE_INSTALL_PREFIX=./install \
-#		-DVTK_RENDERING_BACKEND=OpenGL2 \
-#		-DVTK_WRAP_PYTHON=ON .
-#
-#	cmake --build . --target install -- -j $MAKE_NUM_JOBS
-#
 fi
 
