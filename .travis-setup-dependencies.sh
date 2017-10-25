@@ -13,9 +13,13 @@ if [ "$TTK_BUILD_PARAVIEW_PLUGINS" == "ON" ]; then
 	ls -lh ../
 	ls -lh ../../
 	ls -lh ../../../
-	cd ../topology-tool-kit/ttk/paraview/patch
-	./patch-paraview-5.4.0.sh ../../../../ext/ParaView-v5.4.0/
-	cd ../../../../ext/ParaView-v5.4.0/
+	cd ../paraview/patch
+	pwd
+	ls -lh
+	./patch-paraview-5.4.0.sh ../../ext/ParaView-v5.4.0/
+	cd ../../ext/ParaView-v5.4.0/
+	pwd
+	ls -lh
 
 	mkdir build
 	cd build
