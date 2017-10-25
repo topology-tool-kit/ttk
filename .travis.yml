@@ -9,6 +9,7 @@ addons:
             - cmake
             - libvtk6-dev 
             - qt4-dev-tools 
+            - libboost-all-dev
 #            - g++-6
 #            - cmake
 #            - qt4-dev-tools
