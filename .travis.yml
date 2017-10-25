@@ -27,9 +27,17 @@ matrix:
             - TTK_ENABLE_KAMIKAZE=OFF
             - TTK_ENABLE_MPI=OFF
             - TTK_ENABLE_OPENMP=ON
-        # Base code + MPI, Kamikaze
+        # Base code + OpenMP, Kamikaze
         - env:
             - TTK_BUILD_VTK_WRAPPERS=OFF
+            - TTK_BUILD_PARAVIEW_PLUGINS=OFF
+            - TTK_BUILD_STANDALONE_APPS=OFF
+            - TTK_ENABLE_KAMIKAZE=ON
+            - TTK_ENABLE_MPI=ON
+            - TTK_ENABLE_OPENMP=ON
+        # Base code + VTK + OpenMP, Kamikaze
+        - env:
+            - TTK_BUILD_VTK_WRAPPERS=ON
             - TTK_BUILD_PARAVIEW_PLUGINS=OFF
             - TTK_BUILD_STANDALONE_APPS=OFF
             - TTK_ENABLE_KAMIKAZE=ON
