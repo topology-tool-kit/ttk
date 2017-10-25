@@ -15,8 +15,8 @@ addons:
 #            - python2.7
             - libopenmpi-dev
 #            - libboost-dev
-#            - libvtk6-dev
-#            - libpq-dev
+            - libvtk6-dev
+            - libpq-dev
 git:
     depth: 3
 
@@ -80,9 +80,11 @@ before_install:
     - printf "y\ny" | ./cmake-3.9.2-Linux-x86_64.sh > /dev/null
     - export PATH=`pwd`/cmake-3.9.2-Linux-x86_64/bin/:$PATH
     - ../travis-setup-dependencies.sh
-    - export VTK_DIR=`pwd`/VTK-7.1.1/install/lib/cmake/vtk-7.1/
-    - export ParaView_DIR=`pwd`/ParaView-v5.4.1/install/lib/cmake/paraview-5.4/
+#    - export VTK_DIR=`pwd`/VTK-7.1.1/install/lib/cmake/vtk-7.1/
+#    - export ParaView_DIR=`pwd`/ParaView-v5.4.1/install/lib/cmake/paraview-5.4/
     - cd ../
+    - sudo ln -sf /usr/lib/x86_64-linux-gnu/libpq.so.5 /usr/lib/libpq.so
+    - ls -lh /usr/lib/libpq.so
 
 script:
     - mkdir build
