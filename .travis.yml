@@ -13,6 +13,7 @@ addons:
             - libopenmpi-dev
             - libboost-dev
             - libvtk6-dev
+            - libpq-dev
 git:
     depth: 3
 
