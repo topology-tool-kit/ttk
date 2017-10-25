@@ -61,7 +61,7 @@ namespace ttk{
       geometry_{geometry}
     {}
 
-    Separatrix(Separatrix& separatrix):
+    Separatrix(const Separatrix& separatrix):
       isValid_{separatrix.isValid_},
       source_{separatrix.source_},
       destination_{separatrix.destination_},
