@@ -9,17 +9,9 @@ MAKE_NUM_JOBS=2
 if [ "$TTK_BUILD_PARAVIEW_PLUGINS" == "ON" ]; then
 	wget "http://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.4&type=source&os=all&downloadFile=ParaView-v5.4.0.tar.gz" -O ParaView-v5.4.0.tar.gz
 	tar -xf ParaView-v5.4.0.tar.gz
-	pwd 
-	ls -lh ../
-	ls -lh ../../
-	ls -lh ../../../
 	cd ../paraview/patch
-	pwd
-	ls -lh
 	./patch-paraview-5.4.0.sh ../../ext/ParaView-v5.4.0/
 	cd ../../ext/ParaView-v5.4.0/
-	pwd
-	ls -lh
 
 	mkdir build
 	cd build
