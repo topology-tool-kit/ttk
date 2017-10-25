@@ -74,6 +74,7 @@ before_install:
     - printf "y\ny" | ./cmake-3.9.2-Linux-x86_64.sh > /dev/null
     - export PATH=`pwd`/cmake-3.9.2-Linux-x86_64/bin/:$PATH
     - ../.travis-setup-dependencies.sh
+    - export ParaView_DIR=`pwd`/ParaView-v5.4.0/install/lib/cmake/paraview-5.4/
     - cd ../
     # fixes broken vtk package in trusty
     - sudo ln -sf /usr/lib/x86_64-linux-gnu/libpq.so.5 /usr/lib/libpq.so
@@ -89,6 +90,7 @@ script:
       -DTTK_ENABLE_KAMIKAZE=$TTK_ENABLE_KAMIKAZE
       -DTTK_ENABLE_MPI=$TTK_ENABLE_MPI
       -DTTK_ENABLE_OPENMP=$TTK_ENABLE_OPENMP
+      -DParaView_DIR=$ParaView_DIR
       ..
     - cmake --build . --target install
 
