@@ -1,5 +1,4 @@
-#dist: trusty
-dist: zesty
+dist: trusty
 sudo: required
 language: cpp
 addons:
