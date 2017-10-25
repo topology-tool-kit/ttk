@@ -15,7 +15,7 @@ addons:
             - libvtk6-dev
             - libpq-dev
 git:
-    depth: 3
+    depth: 5
 
 # Test the build with VTK, ParaView and different combinations of
 # the TTK build options
@@ -46,21 +46,21 @@ matrix:
             - TTK_ENABLE_MPI=OFF
             - TTK_ENABLE_OPENMP=ON
         # Base code, VTK wrappers, apps
-#       - env:
-#           - TTK_BUILD_VTK_WRAPPERS=ON
-#           - TTK_BUILD_PARAVIEW_PLUGINS=OFF
-#           - TTK_BUILD_STANDALONE_APPS=ON
-#           - TTK_ENABLE_KAMIKAZE=OFF
-#           - TTK_ENABLE_MPI=OFF
-#           - TTK_ENABLE_OPENMP=ON
-#       # Base code, VTK wrappers, ParaView plugins
-#       - env:
-#           - TTK_BUILD_PARAVIEW_PLUGINS=ON
-#           - TTK_BUILD_STANDALONE_APPS=ON
-#           - TTK_BUILD_STANDALONE_APPS=ON
-#           - TTK_ENABLE_KAMIKAZE=OFF
-#           - TTK_ENABLE_MPI=OFF
-#           - TTK_ENABLE_OPENMP=ON
+       - env:
+           - TTK_BUILD_VTK_WRAPPERS=ON
+           - TTK_BUILD_PARAVIEW_PLUGINS=OFF
+           - TTK_BUILD_STANDALONE_APPS=ON
+           - TTK_ENABLE_KAMIKAZE=OFF
+           - TTK_ENABLE_MPI=OFF
+           - TTK_ENABLE_OPENMP=ON
+       # Base code, VTK wrappers, ParaView plugins
+       - env:
+           - TTK_BUILD_PARAVIEW_PLUGINS=ON
+           - TTK_BUILD_STANDALONE_APPS=ON
+           - TTK_BUILD_STANDALONE_APPS=ON
+           - TTK_ENABLE_KAMIKAZE=OFF
+           - TTK_ENABLE_MPI=OFF
+           - TTK_ENABLE_OPENMP=ON
 
 
 before_install:
