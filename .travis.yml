@@ -71,7 +71,7 @@ before_install:
     - chmod +x ./cmake-3.9.2-Linux-x86_64.sh
     - printf "y\ny" | ./cmake-3.9.2-Linux-x86_64.sh > /dev/null
     - export PATH=`pwd`/cmake-3.9.2-Linux-x86_64/bin/:$PATH
-    - ../travis-setup-dependencies.sh
+    - ../.travis-setup-dependencies.sh
     - cd ../
     # fixes broken vtk package in trusty
     - sudo ln -sf /usr/lib/x86_64-linux-gnu/libpq.so.5 /usr/lib/libpq.so
