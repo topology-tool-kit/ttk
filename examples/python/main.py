@@ -1,4 +1,4 @@
-#!/usr/local/bin/pvpython
+#!/usr/bin/env pvpython
 
 #/// \ingroup examples
 #/// \author Julien Tierny <julien.tierny@lip6.fr>
