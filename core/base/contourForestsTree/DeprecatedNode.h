@@ -22,7 +22,7 @@
 #include<Debug.h>
 
 
-#include "DataTypes.h"
+#include "DeprecatedDataTypes.h"
 #include "ExtendedUF.h"
 
 namespace ttk

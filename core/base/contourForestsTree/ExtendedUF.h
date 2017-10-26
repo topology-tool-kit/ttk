@@ -22,7 +22,7 @@
 
 #include <vector>
 
-#include "DataTypes.h"
+#include "DeprecatedDataTypes.h"
 
 namespace ttk
 {

@@ -5,7 +5,7 @@
  * date: September 2016
  */
 
-#include "Segmentation.h"
+#include "DeprecatedSegmentation.h"
 
 using namespace ttk;
 

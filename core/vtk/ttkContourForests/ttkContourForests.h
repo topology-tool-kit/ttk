@@ -67,7 +67,7 @@
 
 #include "ContourForests.h"
 #include "ContourForestsTree.h"
-#include "DataTypes.h"
+#include "DeprecatedDataTypes.h"
 
 class VTKFILTERSCORE_EXPORT ttkContourForests 
   : public vtkDataSetAlgorithm, public Wrapper{

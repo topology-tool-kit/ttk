@@ -16,10 +16,10 @@
 
 #include<iterator>
 
-#include "DataTypes.h"
-#include "Node.h"
-#include "Structures.h"
-#include "SuperArc.h"
+#include "DeprecatedDataTypes.h"
+#include "DeprecatedNode.h"
+#include "DeprecatedStructures.h"
+#include "DeprecatedSuperArc.h"
 
 namespace ttk
 {

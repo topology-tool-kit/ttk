@@ -28,7 +28,7 @@
 #include <Triangulation.h>
 #include <Wrapper.h>
 
-#include "DataTypes.h"
+#include "DeprecatedDataTypes.h"
 #include "ExtendedUF.h"
 #include "MergeTree.h"
 

@@ -21,8 +21,8 @@
 #include <forward_list>
 #include <vector>
 
-#include "DataTypes.h"
-#include "Structures.h"
+#include "DeprecatedDataTypes.h"
+#include "DeprecatedStructures.h"
 
 using namespace std;
 

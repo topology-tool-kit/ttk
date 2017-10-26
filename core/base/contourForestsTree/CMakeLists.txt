@@ -2,18 +2,18 @@ ttk_add_base_library(contourForestsTree
 	SOURCES
 	ContourForestsTree.cpp
 	MergeTree.cpp
-	Segmentation.cpp
+	DeprecatedSegmentation.cpp
 
 	HEADERS
 	ContourForestsTree.h
-	DataTypes.h
+  DeprecatedDataTypes.h
 	ExtendedUF.h
 	MergeTree.h
 	MergeTreeTemplate.h
-	Node.h
-	Segmentation.h
-	Structures.h
-	SuperArc.h
+  DeprecatedNode.h
+  DeprecatedSegmentation.h
+	DeprecatedStructures.h
+	DeprecatedSuperArc.h
 
 	LINK triangulation geometry)
 

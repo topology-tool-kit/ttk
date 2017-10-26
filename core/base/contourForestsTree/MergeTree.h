@@ -38,11 +38,11 @@
 #include <Triangulation.h>
 #include <Wrapper.h>
 
-#include "DataTypes.h"
+#include "DeprecatedDataTypes.h"
 #include "ExtendedUF.h"
-#include "Node.h"
-#include "Structures.h"
-#include "SuperArc.h"
+#include "DeprecatedNode.h"
+#include "DeprecatedStructures.h"
+#include "DeprecatedSuperArc.h"
 
 namespace ttk
 {

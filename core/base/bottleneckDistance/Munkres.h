@@ -9,7 +9,7 @@
 #include <limits>
 #include <iostream>
 #include <Debug.h>
-#include <DataTypes.h>
+#include <DeprecatedDataTypes.h>
 
 namespace ttk {
   
