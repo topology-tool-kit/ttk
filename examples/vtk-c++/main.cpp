@@ -1,27 +1,35 @@
-#include <vtkMorseSmaleComplex.h>
-#include <vtkPersistenceCurve.h> 
-#include <vtkPersistenceDiagram.h>
+/// \defgroup examples examples
+/// \brief The Topology ToolKit - Example programs.
+/// @{
+
+
+#include <ttkMorseSmaleComplex.h>
+#include <ttkPersistenceCurve.h> 
+#include <ttkPersistenceDiagram.h>
+#include <ttkTopologicalSimplification.h>
+
 #include <vtkTableWriter.h>
 #include <vtkThreshold.h>
-#include <vtkTopologicalSimplification.h>
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 
 int main(int argc, char **argv){
-  
+
+  // TODO: add some command line parsing.
+
   // 1. loading the input data
   vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = 
     vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
   reader->SetFileName("inputData.vtu");
  
   // 2. computing the persistence curve
-  vtkSmartPointer<vtkPersistenceCurve> curve = 
-    vtkSmartPointer<vtkPersistenceCurve>::New();
+  vtkSmartPointer<ttkPersistenceCurve> curve = 
+    vtkSmartPointer<ttkPersistenceCurve>::New();
   curve->SetInputConnection(reader->GetOutputPort());
   
   // 3. computing the persitence diagram
-  vtkSmartPointer<vtkPersistenceDiagram> diagram = 
-    vtkSmartPointer<vtkPersistenceDiagram>::New();
+  vtkSmartPointer<ttkPersistenceDiagram> diagram = 
+    vtkSmartPointer<ttkPersistenceDiagram>::New();
   diagram->SetInputConnection(reader->GetOutputPort());
   
   // 4. selecting the critical point pairs
@@ -41,15 +49,15 @@ int main(int argc, char **argv){
   persistentPairs->ThresholdBetween(1.0, 999999);
   
   // 6. simplifying the input data to remove non-persistent pairs
-  vtkSmartPointer<vtkTopologicalSimplification> topologicalSimplification =
-    vtkSmartPointer<vtkTopologicalSimplification>::New();
+  vtkSmartPointer<ttkTopologicalSimplification> topologicalSimplification =
+    vtkSmartPointer<ttkTopologicalSimplification>::New();
   topologicalSimplification->SetInputConnection(0, reader->GetOutputPort());
   topologicalSimplification->SetInputConnection(1, 
     persistentPairs->GetOutputPort());
   
   // 7. computing the Morse-Smale complex
-  vtkSmartPointer<vtkMorseSmaleComplex> morseSmaleComplex = 
-    vtkSmartPointer<vtkMorseSmaleComplex>::New();
+  vtkSmartPointer<ttkMorseSmaleComplex> morseSmaleComplex = 
+    vtkSmartPointer<ttkMorseSmaleComplex>::New();
   morseSmaleComplex->SetInputConnection(
     topologicalSimplification->GetOutputPort());
   morseSmaleComplex->SetUseInputOffsetScalarField(true);
@@ -75,3 +83,5 @@ int main(int argc, char **argv){
   
   return 0;
 }
+
+/// @}

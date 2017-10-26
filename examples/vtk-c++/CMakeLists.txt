@@ -1,30 +1,16 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 3.5)
 
-# name of the project (dummy)
-project(blankCmd)
+# name of the project
+project(ttkExample-vtk-c++)
 
-# command-line build-mode
-option(withVTKCMD "Enable VTK CMD support" true)
-set(withVTKCMD true)
+find_package(VTK REQUIRED)
+find_package(TTKBase REQUIRED)
+find_package(TTKVTK REQUIRED)
 
-# path to the common code base
-find_path(TTK_DIR ttk.cmake
-  PATHS
-    core/
-    ../core/
-    ../../core/
-    ../../../core/
-)
-include(${TTK_DIR}/ttk.cmake)
+include(${VTK_USE_FILE})
 
-# include the different packages required for the application
-ttk_add_vtkWrapper_package(vtkPersistenceCurve)
-ttk_add_vtkWrapper_package(vtkPersistenceDiagram)
-ttk_add_vtkWrapper_package(vtkTopologicalSimplification)
-ttk_add_vtkWrapper_package(vtkMorseSmaleComplex)
+add_executable(ttkExample-vtk-c++ main.cpp)
 
-# add the local cpp files 
-ttk_add_source(main.cpp)
-
-# wrap-up the build
-ttk_wrapup_binary(blankCmd)
+target_link_libraries(ttkExample-vtk-c++ PUBLIC
+  ${VTK_LIBRARIES}
+  ttk::vtk::ttkAll)
