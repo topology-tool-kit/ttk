@@ -1,18 +1,30 @@
-/// \author Julien Tierny <julien.tierny@lip6.fr>.
-/// \date February 2017.
+/// \ingroup examples
+/// \author Julien Tierny <julien.tierny@lip6.fr>
+/// \date October 2017.
+/// 
+/// \brief Minimalist C++-only TTK example pipeline, including:
+///  -# The computation of a persistence curve
+///  -# The computation of a persistence diagram
+///  -# The selection of the most persistent pairs of the diagram
+///  -# The pre-simplification of the data according to this selection
+///  -# The computation of the Morse-Smale complex on this simplified data
+///  -# The storage of the output of this pipeline to disk.
 ///
-/// \brief dummy VTK-free program example that smoothes the geometry of an 
-/// input surface.
+/// This reproduces the Figure 1 of the TTK companion paper:
+/// "The Topology ToolKit", J. Tierny, G. Favelier, J. Levine, C. Gueunet, M.
+/// Michaux., IEEE Transactions on Visualization and Computer Graphics, Proc.
+/// of IEEE VIS 2017.
+///
+/// See the individual VTK wrappers to see how to use each ttk::base (C++-only)
+/// TTK component.
 
 // include the local headers
+#include                  <Blank.h>
 #include                  <MorseSmaleComplex.h>
 #include                  <PersistenceCurve.h>
 #include                  <PersistenceDiagram.h>
-#include                  <ScalarFieldSmoother.h>
-#include                  <TopologicalSimplification.h>
 #include                  <ProgramBase.h>
-
-int                       iterationNumber_ = 1;
+#include                  <TopologicalSimplification.h>
 
 template <class ttkModule>
   class ExampleProgram : public Program<ttkModule>{
@@ -25,7 +37,8 @@ template <class ttkModule>
       vector<float> height(pointSet_.size()/3);
       vector<int> offsets(height.size());
       int vertexId = 0;
-      for(int i = 1; i < (int) pointSet_.size(); i+=3){
+      // use the z-coordinate here
+      for(int i = 2; i < (int) pointSet_.size(); i+=3){
         height[vertexId] = pointSet_[i];
         offsets[vertexId] = vertexId;
         vertexId++;
@@ -33,7 +46,7 @@ template <class ttkModule>
       
       // 2. computing the persistence curve
       ttk::PersistenceCurve curve;
-      vector<pair<float, idVertex> > outputCurve;
+      vector<pair<float, ftm::idVertex> > outputCurve;
       curve.setupTriangulation(&triangulation_);
       curve.setInputScalars(height.data());
       curve.setInputOffsets(offsets.data());
@@ -42,7 +55,8 @@ template <class ttkModule>
       
       // 3. computing the persitence diagram
       ttk::PersistenceDiagram diagram;
-      vector<tuple<idVertex, NodeType, idVertex, NodeType, float, idVertex> >
+      vector<tuple<ftm::idVertex, ftm::NodeType, 
+        ftm::idVertex, ftm::NodeType, float, ftm::idVertex> >
         diagramOutput;
       diagram.setupTriangulation(&triangulation_);
       diagram.setInputScalars(height.data());
@@ -55,7 +69,7 @@ template <class ttkModule>
       vector<int> authorizedCriticalPoints, simplifiedOffsets = offsets;
       for(int i = 0; i < (int) diagramOutput.size(); i++){
         double persistence = get<4>(diagramOutput[i]);
-        if(persistence > 1.0){
+        if(persistence > 0.2){
           // 5. selecting the most persistent pairs
           authorizedCriticalPoints.push_back(get<0>(diagramOutput[i]));
           authorizedCriticalPoints.push_back(get<2>(diagramOutput[i]));
@@ -75,6 +89,11 @@ template <class ttkModule>
         authorizedCriticalPoints.data());
       simplification.execute<float>();
       
+      // assign the simplified values to the input mesh
+      for(int i = 0; i < (int) simplifiedHeight.size(); i++){
+        pointSet_[3*i + 2] = simplifiedHeight[i];
+      }
+      
       // 7. computing the Morse-Smale complex
       ttk::MorseSmaleComplex morseSmaleComplex;
       // critical points
@@ -84,9 +103,12 @@ template <class ttkModule>
       vector<int> criticalPoints_points_cellIds;
       vector<char> criticalPoints_points_isOnBoundary;
       vector<float> criticalPoints_points_cellScalars;
+      vector<int> criticalPoints_points_PLVertexIdentifiers;
+      vector<int> criticalPoints_points_manifoldSize;
       // 1-separatrices
       int separatrices1_numberOfPoints;
       vector<float> separatrices1_points;
+      vector<char> separatrices1_points_smoothingMask;
       vector<int> separatrices1_points_cellDimensions;
       vector<int> separatrices1_points_cellIds;
       int separatrices1_numberOfCells{};
@@ -117,10 +139,13 @@ template <class ttkModule>
         &criticalPoints_points_cellDimensions,
         &criticalPoints_points_cellIds,
         &criticalPoints_points_cellScalars,
-        &criticalPoints_points_isOnBoundary);
+        &criticalPoints_points_isOnBoundary,
+        &criticalPoints_points_PLVertexIdentifiers,
+        &criticalPoints_points_manifoldSize);
       morseSmaleComplex.setOutputSeparatrices1(
         &separatrices1_numberOfPoints,
         &separatrices1_points,
+        &separatrices1_points_smoothingMask,
         &separatrices1_points_cellDimensions,
         &separatrices1_points_cellIds,
         &separatrices1_numberOfCells,
@@ -133,6 +158,7 @@ template <class ttkModule>
         &separatrices1_cells_separatrixFunctionMinima,
         &separatrices1_cells_separatrixFunctionDiffs,
         &separatrices1_cells_isOnBoundary);
+
       morseSmaleComplex.execute<float>();
       
       return 0;
@@ -195,8 +221,8 @@ template <class ttkModule>
       
       f.close();
       
-      ScalarFieldSmoother *smoother = 
-        (ScalarFieldSmoother *) Program<ttkModule>::ttkModule_;
+      Blank *smoother = 
+        (Blank *) Program<ttkModule>::ttkModule_;
       
       triangulation_.setInputPoints(vertexNumber, pointSet_.data());
       triangulation_.setInputCells(triangleNumber, triangleSet_.data());
@@ -217,6 +243,8 @@ template <class ttkModule>
     
     int save() const{
       
+      // save the simplified terrain
+        
       string fileName(Program<ttkModule>::outputPath_ + ".off");
       
       ofstream f(fileName.data(), ios::out);
@@ -263,11 +291,11 @@ template <class ttkModule>
 
 int main(int argc, char **argv) {
 
-  ExampleProgram<ScalarFieldSmoother> program;
+  ExampleProgram<Blank> program;
   
   // register the arguments to the command line parser
-  program.parser_.setArgument("I", &iterationNumber_,
-    "Number of smoothing iterations", true);
+  string inputFilePath;
+  program.parser_.setArgument("i", &inputFilePath, "Path to input OFF file");
   
   int ret = 0;
   ret = program.init(argc, argv);
