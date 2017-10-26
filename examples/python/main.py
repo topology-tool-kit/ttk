@@ -1,8 +1,31 @@
-#!/usr/bin/pvpython
+#!/usr/local/bin/pvpython
+
+#/// \ingroup examples
+#/// \author Julien Tierny <julien.tierny@lip6.fr>
+#/// \date October 2017.
+#/// 
+#/// \brief Minimalist python TTK example pipeline, including:
+#///  -# The computation of a persistence curve
+#///  -# The computation of a persistence diagram
+#///  -# The selection of the most persistent pairs of the diagram
+#///  -# The pre-simplification of the data according to this selection
+#///  -# The computation of the Morse-Smale complex on this simplified data
+#///  -# The storage of the output of this pipeline to disk.
+#/// This reproduces the Figure 1 of the TTK companion paper:
+#/// "The Topology ToolKit", J. Tierny, G. Favelier, J. Levine, C. Gueunet, M.
+#/// Michaux., IEEE Transactions on Visualization and Computer Graphics, Proc.
+#/// of IEEE VIS 2017.
+
 from paraview.simple import *
 
+if len(sys.argv) == 2:
+    inputFilePath = sys.argv[1]
+else:
+    print "Missing mandatory argument: Path to input VTU file"
+    sys.exit() 
+
 # 1. loading the input data
-inputData = XMLUnstructuredGridReader(FileName=['inputData.vtu'])
+inputData = XMLUnstructuredGridReader(FileName=[inputFilePath])
 
 # 2. computing the persistence curve
 persistenceCurve = TTKPersistenceCurve(inputData)
@@ -29,6 +52,6 @@ morseSmaleComplex = TTKMorseSmaleComplex(topologicalSimplification)
 morseSmaleComplex.UseInputOffsetField = 1
 
 # 8. saving the output data
-SaveData('curve.csv', OutputPort(persistenceCurve, 3))
+SaveData('curve.vtk', OutputPort(persistenceCurve, 3))
 SaveData('separatrices.vtu', CleantoGrid(OutputPort(morseSmaleComplex, 1)))
 SaveData('segmentation.vtu', CleantoGrid(OutputPort(morseSmaleComplex, 3)))
