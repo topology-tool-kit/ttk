@@ -1,7 +1,22 @@
 /// \defgroup examples examples
 /// \brief The Topology ToolKit - Example programs.
 /// @{
+/// \author Julien Tierny <julien.tierny@lip6.fr>
+/// \date October 2017.
+/// 
+/// \brief Minimalist VTK-based TTK example pipeline, including:
+///  -# The computation of a persistence curve
+///  -# The computation of a persistence diagram
+///  -# The selection of the most persistent pairs of the diagram
+///  -# The pre-simplification of the data according to this selection
+///  -# The computation of the Morse-Smale complex on this simplified data
+///  -# The storage of the output of this pipeline to disk.
+/// This reproduces the Figure 1 of the TTK companion paper:
+/// "The Topology ToolKit", J. Tierny, G. Favelier, J. Levine, C. Gueunet, M.
+/// Michaux., IEEE Transactions on Visualization and Computer Graphics, Proc.
+/// of IEEE VIS 2017.
 
+#include <CommandLineParser.h>
 
 #include <ttkMorseSmaleComplex.h>
 #include <ttkPersistenceCurve.h> 
@@ -15,12 +30,17 @@
 
 int main(int argc, char **argv){
 
-  // TODO: add some command line parsing.
+  ttk::CommandLineParser parser;
+  
+  string inputFilePath;
+  
+  parser.setArgument("i", &inputFilePath, "Path to input VTU file");
+  parser.parse(argc, argv);
 
   // 1. loading the input data
   vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = 
     vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
-  reader->SetFileName("inputData.vtu");
+  reader->SetFileName(inputFilePath.data());
  
   // 2. computing the persistence curve
   vtkSmartPointer<ttkPersistenceCurve> curve = 
