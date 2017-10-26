@@ -14,3 +14,5 @@ if (TTK_ENABLE_FTM_TREE_PROCESS_SPEED)
 	target_compile_definitions(ftmTree PUBLIC TTK_ENABLE_FTM_TREE_PROCESS_SPEED)
 endif()
 
+# target_compile_definitions(ftmTree PUBLIC TTK_ENABLE_FTM_TREE_STATS_TIME)
+

@@ -45,11 +45,6 @@ FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const
    mt_data_.openedNodes   = nullptr;
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-   // INVESTIGATE
-   mt_data_.arcStart = nullptr;
-   mt_data_.arcEnd   = nullptr;
-   mt_data_.arcOrig  = nullptr;
-   mt_data_.arcTasks = nullptr;
    mt_data_.activeTasksStats = nullptr;
 #endif
 }
