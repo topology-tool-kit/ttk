@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD 11)
 option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" OFF)
 option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" ON)
 
-option(TTK_BUILD_EXAMPLES "Build TTK examples" OFF)
 option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" ON)
 option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON)
 option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
@@ -22,10 +21,6 @@ endif()
 
 if (TTK_BUILD_STANDALONE_APPS)
 	add_subdirectory(standalone)
-endif()
-
-if (TTK_BUILD_EXAMPLES)
-  add_subdirectory(examples)
 endif()
 
 ttk_print_summary()
