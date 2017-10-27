@@ -28,7 +28,7 @@
 int load(const string &inputPath, 
   vector<float> &pointSet,
   vector<long long int> &triangleSet,
-  Triangulation &triangulation){
+  ttk::Triangulation &triangulation){
   
   if(inputPath.empty())
     return -1;
@@ -148,7 +148,7 @@ int save(const vector<float> &pointSet,
 int main(int argc, char **argv) {
 
   string inputFilePath;
-  CommandLineParser parser;
+  ttk::CommandLineParser parser;
   
   // register the arguments to the command line parser
   parser.setArgument("i", &inputFilePath, "Path to input OFF file");
@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
   
   vector<float> pointSet;
   vector<long long int> triangleSet;
-  Triangulation triangulation;
+  ttk::Triangulation triangulation;
 
   // load the input
   load(inputFilePath, pointSet, triangleSet, triangulation);
