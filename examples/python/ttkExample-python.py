@@ -11,7 +11,8 @@
 #///  -# The pre-simplification of the data according to this selection
 #///  -# The computation of the Morse-Smale complex on this simplified data
 #///  -# The storage of the output of this pipeline to disk.
-#/// This reproduces the Figure 1 of the TTK companion paper:
+#///
+#/// This example reproduces the Figure 1 of the TTK companion paper:
 #/// "The Topology ToolKit", J. Tierny, G. Favelier, J. Levine, C. Gueunet, M.
 #/// Michaux., IEEE Transactions on Visualization and Computer Graphics, Proc.
 #/// of IEEE VIS 2017.

@@ -3,5 +3,5 @@ To run this example, first install ttk on your system
 
 Then, from the current directory, enter the following command (omit the '$'
 character):
-$ ./main.py ../data/inputData.vtu
+$ ./ttkExample-python.py ../data/inputData.vtu
 
