@@ -37,7 +37,7 @@ int load(const string &inputPath,
   
   {
     stringstream msg;
-    msg << "[ExampleProgram] Reading input mesh..." << endl;
+    msg << "[main::load] Reading input mesh..." << endl;
     // choose where to display this message (cout, cerr, a file)
     // choose the priority of this message (1, nearly always displayed, 
     // higher values mean lower priorities)
@@ -51,7 +51,7 @@ int load(const string &inputPath,
   
   if(!f){
     stringstream msg;
-    msg << "[Editor] Cannot open file `" 
+    msg << "[main::load] Cannot open file `" 
       << inputPath << "'!" << endl;
     d.dMsg(cerr, msg.str(), d.fatalMsg);
     return -1;
@@ -61,7 +61,7 @@ int load(const string &inputPath,
   
   if(keyword != "OFF"){
     stringstream msg;
-    msg << "[Editor] Input OFF file `" 
+    msg << "[main::load] Input OFF file `" 
       << inputPath << "' seems invalid :(" 
       << endl;
     d.dMsg(cerr, msg.str(), d.fatalMsg);
@@ -90,7 +90,7 @@ int load(const string &inputPath,
   
   {
     stringstream msg;
-    msg << "[Editor]   done! (read " 
+    msg << "[main::load]   done! (read " 
       << vertexNumber
       << " vertices, "
       << triangleNumber
@@ -115,7 +115,7 @@ int save(const vector<float> &pointSet,
   if(!f){
     stringstream msg;
     msg 
-      << "[Editor] Could not write output file `" 
+      << "[main::save] Could not write output file `" 
       << fileName << "'!" << endl;
     d.dMsg(cerr, msg.str(), d.fatalMsg);
     return -1;
