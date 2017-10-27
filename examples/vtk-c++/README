@@ -1,0 +1,20 @@
+1) To build this example, first install ttk on your system
+(https://topology-tool-kit.github.io/installation.html).
+
+Then, from the current directory, enter the following commands (omit the '$' 
+character):
+
+$ mkdir build
+$ cd build
+$ cmake ../ \
+  -DTTKBase_DIR=<path to installed cmake files for ttk base> \
+  -DTTKVTK_DIR=<path to installed cmake files for ttk vtk, same as above>
+$ make
+
+A typical value for TTKBase_DIR and TTKVTK_DIR is "/usr/local/lib/cmake/ttk"
+(depending on the path you selected to install TTK).
+
+2) To run this example, from the current directory, enter the following command
+(omit the '$' character):
+
+$ build/ttkExample-vtk-c++ -i ../data/inputData.vtu
