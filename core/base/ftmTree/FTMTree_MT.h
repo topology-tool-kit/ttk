@@ -82,7 +82,7 @@ namespace ftm
       // opened nodes
       vector<char> *openedNodes;
 
-#ifdef TTK_FTM_TREE_ENABLE_STATS_TIME
+#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
       vector<ActiveTask> *activeTasksStats;
 #endif
 
@@ -273,7 +273,7 @@ namespace ftm
 
       // Tree info for wrapper
 
-#ifdef TTK_FTM_TREE_ENABLE_STATS_TIME
+#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
       const ActiveTask& getActiveTasks(const idSuperArc taskId) const
       {
          return (*mt_data_.activeTasksStats)[taskId];

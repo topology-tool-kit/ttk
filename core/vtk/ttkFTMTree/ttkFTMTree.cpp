@@ -542,21 +542,23 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
 void ttkFTMTree::printCSVStats()
 {
-   switch(GetTreeType()){
-      case ftm::TreeType::Join:
-         cout << "JT" << endl;
-         printCSVTree(ftmTree_.getTree(ftm::TreeType::Join));
-         break;
-      case ftm::TreeType::Split:
-         cout << "ST" << endl;
-         printCSVTree(ftmTree_.getTree(ftm::TreeType::Split));
-         break;
-      default:
-         cout << "JT" << endl;
-         printCSVTree(ftmTree_.getTree(ftm::TreeType::Join));
-         cout << "ST" << endl;
-         printCSVTree(ftmTree_.getTree(ftm::TreeType::Split));
-         break;
+   for (auto& t : ftmTree_) {
+      switch (GetTreeType()) {
+         case ftm::TreeType::Join:
+            cout << "JT" << endl;
+            printCSVTree(t.tree.getTree(ftm::TreeType::Join));
+            break;
+         case ftm::TreeType::Split:
+            cout << "ST" << endl;
+            printCSVTree(t.tree.getTree(ftm::TreeType::Split));
+            break;
+         default:
+            cout << "JT" << endl;
+            printCSVTree(t.tree.getTree(ftm::TreeType::Join));
+            cout << "ST" << endl;
+            printCSVTree(t.tree.getTree(ftm::TreeType::Split));
+            break;
+      }
    }
 }
 
