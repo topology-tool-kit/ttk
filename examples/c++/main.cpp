@@ -27,9 +27,10 @@
 
 int load(const string &inputPath, 
   vector<float> &pointSet,
-  vector<long long int> &triangleSet,
-  ttk::Triangulation &triangulation){
-  
+  vector<long long int> &triangleSet){
+ 
+  // load some terrain from some OFF file.
+
   if(inputPath.empty())
     return -1;
  
@@ -84,10 +85,7 @@ int load(const string &inputPath,
   }
   
   f.close();
-  
-  triangulation.setInputPoints(vertexNumber, pointSet.data());
-  triangulation.setInputCells(triangleNumber, triangleSet.data());
-  
+    
   {
     stringstream msg;
     msg << "[main::load]   done! (read " 
@@ -105,7 +103,7 @@ int save(const vector<float> &pointSet,
   const vector<long long int> &triangleSet,
   const string &outputPath){
   
-  // save the simplified terrain
+  // save the simplified terrain in some OFF file
   Debug d;
   
   string fileName(outputPath);
@@ -152,6 +150,7 @@ int main(int argc, char **argv) {
   
   // register the arguments to the command line parser
   parser.setArgument("i", &inputFilePath, "Path to input OFF file");
+  // parse
   parser.parse(argc, argv);
   
   vector<float> pointSet;
@@ -159,8 +158,10 @@ int main(int argc, char **argv) {
   ttk::Triangulation triangulation;
 
   // load the input
-  load(inputFilePath, pointSet, triangleSet, triangulation);
-  
+  load(inputFilePath, pointSet, triangleSet);
+  triangulation.setInputPoints(pointSet.size()/3, pointSet.data());
+  triangulation.setInputCells(triangleSet.size()/4, triangleSet.data());
+
   // NOW, do the TTK processing
   
   // computing some elevation
