@@ -149,8 +149,6 @@ template <class dataType> int LDistance::computeLn(
   const int n,
   const int vertexNumber) 
 {
-  dataType diff;
-  dataType power;
   dataType sum = 0;
   
   // Compute difference for each point.
@@ -158,15 +156,16 @@ template <class dataType> int LDistance::computeLn(
   #pragma omp parallel for num_threads(threadNumber_) reduction(+:sum)
   #endif
   for (int i = 0; i < vertexNumber; ++i) {
-    diff =  abs_diff<dataType>(input1[i], input2[i]);
-    power = pow(diff, (double)n);
+    const dataType diff =  abs_diff<dataType>(input1[i], input2[i]);
+    const dataType power = pow(diff, (double)n);
     
     // Careful: huge dataset + huge values
     // may exceed double capacity.
     sum += power;
     
     // Store difference.
-    output[i] = power;
+    if(output)
+      output[i] = power;
   }
   
   sum = pow(sum, 1.0 / (double) n);
@@ -187,22 +186,21 @@ template <class dataType> int LDistance::computeLinf(
   dataType *output,
   const int vertexNumber) 
 {
-  
   if (vertexNumber < 1) return 0;
   
   dataType maxValue = abs_diff<dataType>(input1[0], input2[0]);
-  dataType iter;
   
   // Compute difference for each point.
   #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel for num_threads(threadNumber_) reduction(max:maxValue)
   #endif
   for (int i = 1; i < vertexNumber; ++i) {
-    iter = abs_diff<dataType>(input1[i], input2[i]);
+    const dataType iter = abs_diff<dataType>(input1[i], input2[i]);
     if (iter > maxValue) maxValue = iter;
     
     // Store absolute difference in output.
-    output[i] = iter;
+    if(output)
+      output[i] = iter;
   }
   
   // Affect result.
