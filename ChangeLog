@@ -1,7 +1,8 @@
 ChangeLog
 =
 * ttk.git
-- New cmake architecture, find_package(TTKBase) find_package(TTKVTK) now available
+- New cmake structure, find_package(TTKBase) find_package(TTKVTK) now available
+- New simple python, vtk-c++ and plain c++ examples (TTK companion paper teaser)
 - Greatly accelerated merge tree features using task-based Fibonacci heaps
 - Bottleneck and Wasserstein distances between peristence diagrams
 - Lp distance between scalar fields
