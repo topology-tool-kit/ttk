@@ -1,6 +1,8 @@
 ChangeLog
 =
 * ttk.git
+
+* 0.9.3
 - Updates for ParaView-5.4.1
 - New cmake structure, find_package(TTKBase) find_package(TTKVTK) now available
 - New simple python, vtk-c++ and plain c++ examples (TTK companion paper teaser)
