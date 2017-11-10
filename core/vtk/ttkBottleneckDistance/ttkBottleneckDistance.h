@@ -247,7 +247,6 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   int pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
   float s = (float) 0.0;
   if (!deathScalars && !birthScalars) {
-    pairingsSize -= 2;
     Is3D = false;
     if (diagramNumber == 1)
       s = spacing;
@@ -286,6 +285,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
     scalarType value1 = (!birthScalars) ? (scalarType) x1 : (scalarType) birthScalars->GetValue(2*i);
     scalarType value2 = (!deathScalars) ? (scalarType) y2 : (scalarType) deathScalars->GetValue(2*i+1);
 
+    if (pairIdentifier != -1)
     diagram->at(pairIdentifier) = make_tuple(
       vertexId1,
       (NodeType) nodeType1,
