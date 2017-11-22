@@ -2,8 +2,17 @@
 
 vtkStandardNewMacro(ttkBottleneckDistance)
 
+#ifndef macroDiagramTuple
+#define macroDiagramTuple tuple<ftm::idVertex, ftm::NodeType, ftm::idVertex, \
+  ftm::NodeType, VTK_TT, ftm::idVertex, \
+  VTK_TT, float, float, float, VTK_TT, float, float, float>
+#endif
+#ifndef macroMatchingTuple
+#define macroMatchingTuple tuple<ftm::idVertex, ftm::idVertex, VTK_TT>
+#endif
+
 int ttkBottleneckDistance::doIt(
-  vector<vtkDataSet *> &inputs, 
+  vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs)
 {
 
@@ -33,28 +42,18 @@ int ttkBottleneckDistance::doIt(
 
   // Call package
   int status = 0;
+
   switch (dataType1) {
     vtkTemplateMacro(({
+      vector<macroDiagramTuple>* CTDiagram1 = new vector<macroDiagramTuple>();
 
-      vector<tuple<idVertex, NodeType, idVertex, NodeType, VTK_TT, idVertex,
-        VTK_TT, float, float, float, VTK_TT, float, float, float> >*
-        CTDiagram1 =
-        new vector<tuple<idVertex, NodeType, idVertex, NodeType, VTK_TT, idVertex,
-        VTK_TT, float, float, float, VTK_TT, float, float, float> >();
-
-      vector<tuple<idVertex, NodeType, idVertex, NodeType, VTK_TT, idVertex,
-        VTK_TT, float, float, float, VTK_TT, float, float, float> >*
-        CTDiagram2 =
-        new vector<tuple<idVertex, NodeType, idVertex, NodeType, VTK_TT, idVertex,
-        VTK_TT, float, float, float, VTK_TT, float, float, float> >();
+      vector<macroDiagramTuple>* CTDiagram2 = new vector<macroDiagramTuple>();
 
       status = getPersistenceDiagram<VTK_TT>(
-        CTDiagram1,
-        CTPersistenceDiagram1_, Spacing, 0);
+        CTDiagram1, CTPersistenceDiagram1_, Spacing, 0);
 
       status = getPersistenceDiagram<VTK_TT>(
-        CTDiagram2,
-        CTPersistenceDiagram2_, Spacing, 1);
+        CTDiagram2, CTPersistenceDiagram2_, Spacing, 1);
 
       bottleneckDistance_.setCTDiagram1(CTDiagram1);
       bottleneckDistance_.setCTDiagram2(CTDiagram2);
@@ -63,8 +62,7 @@ int ttkBottleneckDistance::doIt(
       bottleneckDistance_.setWasserstein(wassersteinMetric);
 
       // Empty matchings.
-      vector<tuple<idVertex, idVertex, VTK_TT> >* matchings
-        = new vector<tuple<idVertex, idVertex, VTK_TT> >();
+      vector<macroMatchingTuple>* matchings = new vector<macroMatchingTuple>();
       bottleneckDistance_.setOutputMatchings(matchings);
 
       // Exec.
@@ -91,7 +89,6 @@ int ttkBottleneckDistance::doIt(
       }
 
       if (status != 0) { return status; }
-  
     }));
   }
 
@@ -103,4 +100,3 @@ int ttkBottleneckDistance::doIt(
 
   return status;
 }
-
