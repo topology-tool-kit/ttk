@@ -250,14 +250,22 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       nbCC_ = connectivity->GetOutput()->GetCellData()->GetArray("RegionId")->GetRange()[1] + 1;
       connected_components_.resize(nbCC_);
 
-      for (int cc = 0; cc < nbCC_; cc++) {
-         vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
-         threshold->SetInputConnection(connectivity->GetOutputPort());
-         threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
-         threshold->ThresholdBetween(cc, cc);
-         threshold->Update();
-         connected_components_[cc] = ttkUnstructuredGrid::New();
-         connected_components_[cc]->ShallowCopy(threshold->GetOutput());
+      if (nbCC_ > 1) {
+         // Warning, in case of several connected components, the ids seen by
+         // the base code will not be consistent with those of the original
+         // mesh
+         for (int cc = 0; cc < nbCC_; cc++) {
+            vtkSmartPointer<vtkThreshold> threshold = vtkSmartPointer<vtkThreshold>::New();
+            threshold->SetInputConnection(connectivity->GetOutputPort());
+            threshold->SetInputArrayToProcess(0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
+            threshold->ThresholdBetween(cc, cc);
+            threshold->Update();
+            connected_components_[cc] = ttkUnstructuredGrid::New();
+            connected_components_[cc]->ShallowCopy(threshold->GetOutput());
+         }
+      } else {
+         connected_components_[0] = ttkUnstructuredGrid::New();
+         connected_components_[0]->ShallowCopy(input);
       }
    } else {
       nbCC_ = 1;
