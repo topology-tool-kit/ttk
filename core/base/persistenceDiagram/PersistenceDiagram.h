@@ -61,7 +61,8 @@ namespace ttk{
                                               ftm::NodeType,
                                               scalarType,
                                               ftm::idVertex>>& diagram,
-                                 scalarType*                   scalars) const;
+                                              scalarType* scalars,
+                                              int* offsets) const;
 
       template <typename scalarType>
       int computeCTPersistenceDiagram(
@@ -125,10 +126,19 @@ namespace ttk{
 template <typename scalarType>
 int PersistenceDiagram::sortPersistenceDiagram(
     vector<tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>>& diagram,
-    scalarType* scalars) const{
-  auto cmp=[scalars](const tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>& a,
+    scalarType* scalars,
+    int* offsets) const{
+  auto cmp=[scalars, offsets](const tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>& a,
       const tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>& b){
-    return scalars[get<0>(a)] < scalars[get<0>(b)];
+    const ftm::idVertex idA=get<0>(a);
+    const ftm::idVertex idB=get<0>(b);
+    const ftm::idVertex va=offsets[idA];
+    const ftm::idVertex vb=offsets[idB];
+    const scalarType sa=scalars[idA];
+    const scalarType sb=scalars[idB];
+
+    if(sa!=sb) return sa < sb;
+    else return va < vb;
   };
 
   std::sort(diagram.begin(), diagram.end(), cmp);
@@ -267,7 +277,7 @@ int PersistenceDiagram::execute() const{
   }
 
   // finally sort the diagram
-  sortPersistenceDiagram(CTDiagram, scalars);
+  sortPersistenceDiagram(CTDiagram, scalars, offsets);
 
   return 0;
 }
