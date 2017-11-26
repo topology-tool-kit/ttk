@@ -830,89 +830,96 @@ void FTMTree_MT::move(FTMTree_MT *mt)
 
 void FTMTree_MT::normalizeIds(void)
 {
-    DebugTimer normTime;
-    sortLeaves(true);
+   DebugTimer normTime;
+   sortLeaves(true);
 
-    auto getNodeParentArcNb = [&](const idNode curNode, const bool goUp) -> idSuperArc {
-       if (goUp) {
-          return getNode(curNode)->getNumberOfUpSuperArcs();
-       }
+   auto getNodeParentArcNb = [&](const idNode curNode, const bool goUp) -> idSuperArc {
+      if (goUp) {
+         return getNode(curNode)->getNumberOfUpSuperArcs();
+      }
 
-       return getNode(curNode)->getNumberOfDownSuperArcs();
-    };
+      return getNode(curNode)->getNumberOfDownSuperArcs();
+   };
 
-    auto getNodeParentArc = [&](const idNode curNode, const bool goUp, idSuperArc i) -> idSuperArc {
-       if (goUp) {
-          return getNode(curNode)->getUpSuperArcId(i);
-       }
+   auto getNodeParentArc = [&](const idNode curNode, const bool goUp, idSuperArc i) -> idSuperArc {
+      if (goUp) {
+         return getNode(curNode)->getUpSuperArcId(i);
+      }
 
-       return getNode(curNode)->getDownSuperArcId(i);
-    };
+      return getNode(curNode)->getDownSuperArcId(i);
+   };
 
-    auto getArcParentNode = [&](const idSuperArc curArc, const bool goUp) -> idNode {
-       if(goUp){
-           return getSuperArc(curArc)->getUpNodeId();
-       }
+   auto getArcParentNode = [&](const idSuperArc curArc, const bool goUp) -> idNode {
+      if (goUp) {
+         return getSuperArc(curArc)->getUpNodeId();
+      }
 
-       return getSuperArc(curArc)->getDownNodeId();
-    };
+      return getSuperArc(curArc)->getDownNodeId();
+   };
 
-    std::queue<tuple<idNode, bool>> q;
-    std::stack<tuple<idNode, bool>> qr;
-    for (const idNode n : *mt_data_.leaves) {
-       bool goUp = isJT() || isST() || getNode(n)->getNumberOfUpSuperArcs();
-       if(goUp)
-           q.emplace(make_tuple(n, goUp));
-       else
-           qr.emplace(make_tuple(n, goUp));
-    }
+   std::queue<tuple<idNode, bool>> q;
+   std::stack<tuple<idNode, bool>> qr;
+   for (const idNode n : *mt_data_.leaves) {
+      bool goUp = isJT() || isST() || getNode(n)->getNumberOfUpSuperArcs();
+      if (goUp)
+         q.emplace(make_tuple(n, goUp));
+      else
+         qr.emplace(make_tuple(n, goUp));
+   }
 
-    while (!qr.empty()) {
-        q.emplace(qr.top());
-        qr.pop();
-    }
+   while (!qr.empty()) {
+      q.emplace(qr.top());
+      qr.pop();
+   }
 
-    // Normalized id
-    idSuperArc nIdMin = 0;
-    idSuperArc nIdMax = getNumberOfSuperArcs()-1;
+   // Normalized id
+   idSuperArc nIdMin = 0;
+   idSuperArc nIdMax = getNumberOfSuperArcs() - 1;
 
-    vector<bool> seenUp(getNumberOfSuperArcs(), false);
-    vector<bool> seenDown(getNumberOfSuperArcs(), false);
+   vector<bool> seenUp(getNumberOfSuperArcs(), false);
+   vector<bool> seenDown(getNumberOfSuperArcs(), false);
 
-    while (!q.empty()) {
-        bool goUp;
-        idNode curNodeId;
-        tie(curNodeId, goUp) = q.front();
-        q.pop();
+   while (!q.empty()) {
+      bool   goUp;
+      idNode curNodeId;
+      tie(curNodeId, goUp) = q.front();
+      q.pop();
 
-        if(goUp)
-           sortUpArcs(curNodeId);
-        else
-           sortDownArcs(curNodeId);
+      if (goUp)
+         sortUpArcs(curNodeId);
+      else
+         sortDownArcs(curNodeId);
 
-        // Assign arc above
-        const idSuperArc nbArcParent = getNodeParentArcNb(curNodeId, goUp);
-        for (idSuperArc pid = 0; pid < nbArcParent; pid++) {
-           const idSuperArc currentArcId = getNodeParentArc(curNodeId, goUp, pid);
-           if (goUp) {
-              if (getSuperArc(currentArcId)->getNormalizedId() == nullSuperArc) {
-                 getSuperArc(currentArcId)->setNormalizeIds(nIdMin++);
-              }
-              if (!seenUp[currentArcId]) {
-                 q.emplace(make_tuple(getArcParentNode(currentArcId, goUp), goUp));
-                 seenUp[currentArcId] = true;
-              }
-           } else {
-              if (getSuperArc(currentArcId)->getNormalizedId() == nullSuperArc) {
-                 getSuperArc(currentArcId)->setNormalizeIds(nIdMax--);
-              }
-              if (!seenDown[currentArcId]) {
-                 q.emplace(make_tuple(getArcParentNode(currentArcId, goUp), goUp));
-                 seenDown[currentArcId] = true;
-              }
-           }
-        }
-    }
+      // Assign arc above
+      const idSuperArc nbArcParent = getNodeParentArcNb(curNodeId, goUp);
+      for (idSuperArc pid = 0; pid < nbArcParent; pid++) {
+         const idSuperArc currentArcId = getNodeParentArc(curNodeId, goUp, pid);
+         if (goUp) {
+            if (getSuperArc(currentArcId)->getNormalizedId() == nullSuperArc) {
+               getSuperArc(currentArcId)->setNormalizeIds(nIdMin++);
+            }
+            if (!seenUp[currentArcId]) {
+               q.emplace(make_tuple(getArcParentNode(currentArcId, goUp), goUp));
+               seenUp[currentArcId] = true;
+            }
+         } else {
+            if (getSuperArc(currentArcId)->getNormalizedId() == nullSuperArc) {
+               getSuperArc(currentArcId)->setNormalizeIds(nIdMax--);
+            }
+            if (!seenDown[currentArcId]) {
+               q.emplace(make_tuple(getArcParentNode(currentArcId, goUp), goUp));
+               seenDown[currentArcId] = true;
+            }
+         }
+      }
+   }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+   if (nIdMin + 1 != nIdMax) {
+      cout << "[FTM] error during normalize, tree compromized: " << nIdMin << " " << nIdMax << endl;
+   }
+#endif
+
    printTime(normTime, "[FTM] normalize ids", -1, 4);
 }
 
