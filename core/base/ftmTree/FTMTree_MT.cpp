@@ -915,7 +915,7 @@ void FTMTree_MT::normalizeIds(void)
    }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-   if (nIdMin + 1 != nIdMax) {
+   if (std::abs((long)nIdMax - (long)nIdMin) > 1) {
       cout << "[FTM] error during normalize, tree compromized: " << nIdMin << " " << nIdMax << endl;
    }
 #endif
