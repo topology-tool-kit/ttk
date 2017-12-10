@@ -59,11 +59,11 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
       return -2;
    }
 
-   int         nbVerts, nbFaces, nbEdges, curLine;
+   int         nbVerts, nbFaces, curLine;
    std::string line;
 
    // init values
-   offFile >> nbVerts >> nbFaces >> nbEdges;
+   offFile >> nbVerts >> nbFaces;
    std::getline(offFile, line);
 
    if (!nbVerts) {
