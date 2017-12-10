@@ -4,30 +4,44 @@
 
 #pragma once
 
+#include "vtkPoints.h"
+#include "vtkSmartPointer.h"
 #include "vtkUnstructuredGridAlgorithm.h"
 
-class ttkOFFReader : public vtkUnstructuredGridAlgorithm {
-public:
-  vtkTypeMacro(ttkOFFReader, vtkUnstructuredGridAlgorithm);
-  void PrintSelf(ostream &os, vtkIndent indent) override;
+#include <string>
+#include <vector>
 
-  static ttkOFFReader *New();
+class ttkOFFReader : public vtkUnstructuredGridAlgorithm
+{
+  public:
+   vtkTypeMacro(ttkOFFReader, vtkUnstructuredGridAlgorithm);
+   void PrintSelf(ostream &os, vtkIndent indent) override;
 
-  // Description:
-  // Specify file name of the .abc file.
-  vtkSetStringMacro(FileName);
-  vtkGetStringMacro(FileName);
+   static ttkOFFReader *New();
 
-protected:
-  ttkOFFReader();
-  ~ttkOFFReader() = default;
+   // Description:
+   // Specify file name of the .abc file.
+   vtkSetStringMacro(FileName);
+   vtkGetStringMacro(FileName);
 
-  int RequestData(vtkInformation *, vtkInformationVector **,
-                  vtkInformationVector *) override;
+  protected:
+   ttkOFFReader();
+   ~ttkOFFReader() = default;
 
-private:
-  ttkOFFReader(const ttkOFFReader &) = delete;
-  void operator=(const ttkOFFReader &) = delete;
+   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
-  char *FileName;
+   int countNbFields(std::string line);
+   int processLineVert(int curLine, std::string &line);
+   int processLineCell(int curLine, std::string &line);
+
+  private:
+   ttkOFFReader(const ttkOFFReader &) = delete;
+   void operator=(const ttkOFFReader &) = delete;
+
+   char *FileName;
+   int   nbFields_;
+
+   vtkSmartPointer<vtkUnstructuredGrid>         mesh_;
+   vtkSmartPointer<vtkPoints>                   points_;
+   std::vector<vtkSmartPointer<vtkDoubleArray>> scalars_;
 };
