@@ -47,7 +47,7 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
    ifstream offFile(FileName, ios::in);
 
    if (!offFile) {
-      cerr << "[ttkOFFReader]: Can't read file: " << FileName << endl;
+      cerr << "[ttkOFFReader] Can't read file: '" << FileName << "'" << endl;
       return -1;
    }
 
@@ -55,7 +55,8 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
 
    offFile >> FileType;
    if (FileType != "OFF") {
-      cerr << "[ttkOFFReader]: Bad format for file: " << FileName << endl;
+      cerr << "[ttkOFFReader] Bad format for file: '" 
+        << FileName << "'" << endl;
       return -2;
    }
 
@@ -105,8 +106,10 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
    }
 
 #ifndef NDEBUG
-   cout << "[ttkOFFReader]: mesh have : " << mesh_->GetNumberOfPoints() << " vertices" << endl;
-   cout << "[ttkOFFReader]: mesh have : " << mesh_->GetNumberOfCells() << " cells" << endl;
+   cout << "[ttkOFFReader] Read " << mesh_->GetNumberOfPoints() 
+    << " vertice(s)" << endl;
+   cout << "[ttkOFFReader] Read " << mesh_->GetNumberOfCells() 
+    << " cell(s)" << endl;
 #endif
 
    // get the info object
@@ -176,7 +179,7 @@ int ttkOFFReader::processLineCell(int curLine, std::string &line)
          mesh_->InsertNextCell(VTK_TETRA, cellVerts);
          break;
       default:
-         cerr << "[ttkOFFReader]: Unsupported cell type having: " << nbCellVerts << " vertices"
+         cerr << "[ttkOFFReader] Unsupported cell type having " << nbCellVerts << " vertices"
               << endl;
          return -3;
    }
