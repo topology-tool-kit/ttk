@@ -99,6 +99,11 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
       mesh_->GetPointData()->SetScalars(scalarArray);
    }
 
+  if(line.length()){
+    // don't miss the first simplex if any
+    curLine = processLineCell(curLine, line);
+  }
+
    // add cells to the mesh
    for (int i = 0; i < nbFaces; i++) {
       std::getline(offFile, line);
