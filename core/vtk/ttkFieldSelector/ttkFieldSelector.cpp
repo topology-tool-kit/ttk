@@ -43,8 +43,10 @@ int ttkFieldSelector::doIt(vtkDataSet* input, vtkDataSet* output){
 #endif
 
   for(auto& scalar : ScalarFields){
-    vtkDataArray* arr=inputPointData->GetArray(scalar.data());
-    if(arr) outputPointData->AddArray(arr);
+    if(scalar.length()>0){
+      vtkDataArray* arr=inputPointData->GetArray(scalar.data());
+      if(arr) outputPointData->AddArray(arr);
+    }
   }
 
   if(ScalarFields.size())
