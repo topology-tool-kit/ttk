@@ -34,20 +34,19 @@ int ttkFieldSelector::doIt(vtkDataSet* input, vtkDataSet* output){
   }
 #endif
 
-  vtkPointData* outputPointData=output->GetPointData();
+  vtkSmartPointer<vtkPointData> outputPointData=vtkSmartPointer<vtkPointData>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!outputPointData){
-    cerr << "[ttkFieldSelector] Error: output has no point data." << endl;
+    cerr << "[ttkFieldSelector] Error: vtkPointData memory allocation problem." << endl;
     return -1;
   }
 #endif
 
-  const int numberOfArrays=outputPointData->GetNumberOfArrays();
-  for(int i=0; i<numberOfArrays; ++i)
-    outputPointData->RemoveArray(0);
-
   for(auto& scalar : ScalarFields)
     outputPointData->AddArray(inputPointData->GetArray(scalar.data()));
+
+  if(ScalarFields.size())
+    output->GetPointData()->ShallowCopy(outputPointData);
 
   ScalarFields.clear();
 
