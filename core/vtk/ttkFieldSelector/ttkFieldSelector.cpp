@@ -1,0 +1,83 @@
+#include <ttkFieldSelector.h>
+
+vtkStandardNewMacro(ttkFieldSelector)
+
+  // transmit abort signals
+  bool ttkFieldSelector::needsToAbort(){
+    return GetAbortExecute();
+  }
+
+// transmit progress status
+int ttkFieldSelector::updateProgress(const float &progress){
+
+  {
+    stringstream msg;
+    msg << "[ttkFieldSelector] " << progress*100 
+      << "% processed...." << endl;
+    dMsg(cout, msg.str(), advancedInfoMsg);
+  }
+
+  UpdateProgress(progress);
+  return 0;
+}
+
+int ttkFieldSelector::doIt(vtkDataSet* input, vtkDataSet* output){
+  Memory m;
+
+  output->ShallowCopy(input);
+
+  vtkPointData* inputPointData=input->GetPointData();
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputPointData){
+    cerr << "[ttkFieldSelector] Error: input has no point data." << endl;
+    return -1;
+  }
+#endif
+
+  vtkPointData* outputPointData=output->GetPointData();
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!outputPointData){
+    cerr << "[ttkFieldSelector] Error: output has no point data." << endl;
+    return -1;
+  }
+#endif
+
+  const int numberOfArrays=outputPointData->GetNumberOfArrays();
+  for(int i=0; i<numberOfArrays; ++i)
+    outputPointData->RemoveArray(0);
+
+  for(auto& scalar : ScalarFields)
+    outputPointData->AddArray(inputPointData->GetArray(scalar.data()));
+
+  ScalarFields.clear();
+
+  {
+    stringstream msg;
+    msg << "[ttkFieldSelector] Memory usage: " << m.getElapsedUsage()
+      << " MB." << endl;
+    dMsg(cout, msg.str(), memoryMsg);
+  }
+
+  return 0;
+}
+
+int ttkFieldSelector::RequestData(vtkInformation *request,
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector){
+
+  Memory m;
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkDataSet *output = vtkDataSet::GetData(outputVector);
+
+  doIt(input, output);
+
+  {
+    stringstream msg;
+    msg << "[ttkFieldSelector] Memory usage: " << m.getElapsedUsage()
+      << " MB." << endl;
+    dMsg(cout, msg.str(), memoryMsg);
+  }
+
+  return 1;
+}
