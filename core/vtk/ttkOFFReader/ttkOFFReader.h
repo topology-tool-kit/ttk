@@ -1,6 +1,12 @@
-// .NAME ttkOFFReader - Object File Format Reader
-// .SECTION Load a .off file into VTK format
-// Note: This reader is not able to deal with comment on the file
+/// \ingroup vtk
+/// \class ttkOFFReader
+/// \author Charles Gueunet <charles.gueunet@kitware.com>
+/// \date December 2017.
+/// \brief ttkOFFReader - Object File Format Reader
+///
+/// Load an .off file into VTK format
+///
+/// Note: This reader is not able to deal with comment on the file
 
 #pragma once
 

@@ -4,8 +4,8 @@
       <!-- ================================================================== -->
       <SourceProxy name="OFFReader" class="ttkOFFReader" label="OFFReader">
          <Documentation
-            long_help="Import on Object File Format mesh into a VTK Unstructured Grid."
-            short_help="Read a .off file.">
+            long_help="Import an Object File Format mesh into a VTK Unstructured Grid."
+            short_help="Read an .off file.">
          </Documentation>
          <StringVectorProperty
             name="FileName"
