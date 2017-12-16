@@ -1,5 +1,7 @@
 #include <ttkOFFWriter.h>
 
+#include <vtkCell.h>
+#include <vtkCellData.h>
 #include <vtkCellType.h>
 #include <vtkDataObject.h>
 #include <vtkDoubleArray.h>
@@ -41,15 +43,75 @@ ttkOFFWriter::~ttkOFFWriter(){
     delete Stream;
 }
 
+int ttkOFFWriter::OpenFile(){
+
+  ofstream *f = new ofstream(FileName, ios::out);
+  
+  if(!f->fail()){
+    Stream = f;
+  }
+  else{
+    delete f;
+    return -1;
+  }
+  
+  return 0;
+}
+
 void ttkOFFWriter::WriteData(){
   
-  vtkDataSet *grid = 
+  vtkDataSet *dataSet = 
     vtkDataSet::SafeDownCast(this->GetInput());
     
-  if(!grid)
+  if(!dataSet)
     return;
   
-  cout << "Writing things!!!!" << endl;
+  if(this->OpenFile()){
+    cerr << "[ttkOFFWriter] Could not open file `"
+      << FileName << "' :(" << endl; 
+    return;
+  }
+  
+  (*Stream) << "OFF" << endl;
+  (*Stream) << dataSet->GetNumberOfPoints() << " " 
+    << dataSet->GetNumberOfCells() << " 0" << endl;
+    
+  double p[3];
+  for(int i = 0; i < dataSet->GetNumberOfPoints(); i++){
+    dataSet->GetPoint(i, p);
+    (*Stream) << p[0] << " " << p[1] << " " << p[2] << " ";
+   
+    // by default, store everything
+    // use the field selector to select a subset
+    for(int j = 0; j < dataSet->GetPointData()->GetNumberOfArrays(); j++){
+      vtkDataArray *array = dataSet->GetPointData()->GetArray(j);
+      for(int k = 0; k < array->GetNumberOfComponents(); k++){
+        (*Stream) << array->GetComponent(i, k) << " ";
+      }
+    }
+    
+    (*Stream) << endl;
+  }
+  
+  for(int i = 0; i < dataSet->GetNumberOfCells(); i++){
+    vtkCell *c = dataSet->GetCell(i);
+   
+    (*Stream) << c->GetNumberOfPoints() << " ";
+    for(int j = 0; j < c->GetNumberOfPoints(); j++){
+      (*Stream) << c->GetPointId(j) << " ";
+    }
+    
+    // by default, store everything
+    // use the field selector to select a subset
+    for(int j = 0; j < dataSet->GetCellData()->GetNumberOfArrays(); j++){
+      vtkDataArray *array = dataSet->GetCellData()->GetArray(j);
+      for(int k = 0; k < array->GetNumberOfComponents(); k++){
+        (*Stream) << array->GetComponent(i, k) << " ";
+      }
+    }
+    
+    (*Stream) << endl;
+  }
 }
 
 

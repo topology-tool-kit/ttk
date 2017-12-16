@@ -33,6 +33,7 @@ class ttkOFFWriter : public vtkDataSetWriter{
     ttkOFFWriter();
     ~ttkOFFWriter();
     
+    int OpenFile();
     virtual void WriteData() override;
     
     char *FileName;
