@@ -89,7 +89,7 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
    }
 
    // process vertices
-   while ((curLine = processLineVert(curLine, line)) <= nbVerts) {
+   while ((curLine = processLineVert(curLine, line)) < nbVerts) {
       std::getline(offFile, line);
    }
 
@@ -98,11 +98,6 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
    for (const auto &scalarArray : scalars_) {
       mesh_->GetPointData()->SetScalars(scalarArray);
    }
-
-  if(line.length()){
-    // don't miss the first simplex if any
-    curLine = processLineCell(curLine, line);
-  }
 
    // add cells to the mesh
    for (int i = 0; i < nbFaces; i++) {
