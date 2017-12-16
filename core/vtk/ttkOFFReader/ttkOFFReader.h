@@ -36,7 +36,8 @@ class ttkOFFReader : public vtkUnstructuredGridAlgorithm
 
    int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
-   int countNbFields(std::string line);
+   int countVertsData(std::string line);
+   int countCellsData(std::string line);
    int processLineVert(int curLine, std::string &line);
    int processLineCell(int curLine, std::string &line);
 
@@ -45,9 +46,11 @@ class ttkOFFReader : public vtkUnstructuredGridAlgorithm
    void operator=(const ttkOFFReader &) = delete;
 
    char *FileName;
-   int   nbFields_;
+   int  nbVerts_, nbCells_;
+   int   nbVertsData_, nbCellsData_;
 
    vtkSmartPointer<vtkUnstructuredGrid>         mesh_;
    vtkSmartPointer<vtkPoints>                   points_;
-   std::vector<vtkSmartPointer<vtkDoubleArray>> scalars_;
+   std::vector<vtkSmartPointer<vtkDoubleArray>> vertScalars_;
+   std::vector<vtkSmartPointer<vtkDoubleArray>> cellScalars_;
 };
