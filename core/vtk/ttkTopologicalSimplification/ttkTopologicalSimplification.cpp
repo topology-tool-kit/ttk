@@ -282,7 +282,11 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
     outputOffsets->GetVoidPointer(0));
 
   switch(inputScalars_->GetDataType()){
-    vtkTemplateMacro(({ret=topologicalSimplification_.execute<VTK_TT>();}));
+#ifndef _MSC_VER
+	  vtkTemplateMacro(({ ret = topologicalSimplification_.execute<VTK_TT>(); }));
+#else
+	  vtkTemplateMacro({ ret = topologicalSimplification_.execute<VTK_TT>(); });
+#endif
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode

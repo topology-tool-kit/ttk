@@ -101,7 +101,9 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
 
   return 0;  
 }
-
+#ifdef _MSC_VER
+#define COMMA ,
+#endif 
 int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs, 
   vector<vtkDataSet *> &outputs){
 
@@ -146,61 +148,109 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
     
     case VTK_CHAR:
       switch(vComponent->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<char, VTK_TT>(input, uComponent, vComponent);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<char, VTK_TT>(input, uComponent, vComponent);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<char COMMA VTK_TT>(input, uComponent, vComponent);
+		  }
+		  );
+#endif
       }
       break;
       
     case VTK_DOUBLE:
       switch(vComponent->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<double, VTK_TT>(input, uComponent, vComponent);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<double, VTK_TT>(input, uComponent, vComponent);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<double COMMA VTK_TT>(input, uComponent, vComponent);
+		  }
+		  );
+#endif
       }
       break;
       
     case VTK_FLOAT:
       switch(vComponent->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<float, VTK_TT>(input, uComponent, vComponent);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<float, VTK_TT>(input, uComponent, vComponent);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<float COMMA VTK_TT>(input, uComponent, vComponent);
+		  }
+		  );
+#endif
       }
       break;
       
     case VTK_INT:
       switch(vComponent->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<int, VTK_TT>(input, uComponent, vComponent);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<int, VTK_TT>(input, uComponent, vComponent);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<int COMMA VTK_TT>(input, uComponent, vComponent);
+		  }
+		  );
+#endif
       }
       break;
       
     case VTK_UNSIGNED_CHAR:
       switch(vComponent->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<unsigned char, VTK_TT>(input, uComponent, vComponent);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<unsigned char, VTK_TT>(input, uComponent, vComponent);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<unsigned char COMMA VTK_TT>(input, uComponent, vComponent);
+		  }
+		  );
+#endif
       }
       break;
       
     case VTK_UNSIGNED_SHORT:
       switch(vComponent->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<unsigned short, VTK_TT>(input, uComponent, vComponent);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<unsigned short, VTK_TT>(input, uComponent, vComponent);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<unsigned short COMMA VTK_TT>(input, uComponent, vComponent);
+		  }
+		  );
+#endif
       }
       break;
       

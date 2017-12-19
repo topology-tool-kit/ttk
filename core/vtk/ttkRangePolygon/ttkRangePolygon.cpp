@@ -128,11 +128,19 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
     smoother.setupTriangulation(triangulation);
     
     switch(output->GetPoints()->GetDataType()){
-      vtkTemplateMacro((
-        {
-          smoother.smooth<VTK_TT>(NumberOfIterations);
-        }
-      ));
+#ifndef _MSC_VER
+		vtkTemplateMacro((
+		{
+			smoother.smooth<VTK_TT>(NumberOfIterations);
+		}
+		));
+#else
+		vtkTemplateMacro(
+		{
+			smoother.smooth<VTK_TT>(NumberOfIterations);
+		}
+		);
+#endif
     }
     
     for(int i = 0; i < (int) output->GetPointData()->GetNumberOfArrays(); i++){
@@ -140,19 +148,35 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
       
       switch(field->GetDataType()){
     
-        vtkTemplateMacro((
-          {
-            smoother.setWrapper(this);
-            smoother.setDebugLevel(0);
-            
-            smoother.setDimensionNumber(field->GetNumberOfComponents());
-            smoother.setInputDataPointer(field->GetVoidPointer(0));
-            
-            smoother.setOutputDataPointer(field->GetVoidPointer(0));
-            smoother.setupTriangulation(triangulation);
-            smoother.smooth<VTK_TT>(NumberOfIterations);
-          }      
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  smoother.setWrapper(this);
+		  smoother.setDebugLevel(0);
+
+		  smoother.setDimensionNumber(field->GetNumberOfComponents());
+		  smoother.setInputDataPointer(field->GetVoidPointer(0));
+
+		  smoother.setOutputDataPointer(field->GetVoidPointer(0));
+		  smoother.setupTriangulation(triangulation);
+		  smoother.smooth<VTK_TT>(NumberOfIterations);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  smoother.setWrapper(this);
+		  smoother.setDebugLevel(0);
+
+		  smoother.setDimensionNumber(field->GetNumberOfComponents());
+		  smoother.setInputDataPointer(field->GetVoidPointer(0));
+
+		  smoother.setOutputDataPointer(field->GetVoidPointer(0));
+		  smoother.setupTriangulation(triangulation);
+		  smoother.smooth<VTK_TT>(NumberOfIterations);
+		  }
+		  );
+#endif
       }
     }
   }

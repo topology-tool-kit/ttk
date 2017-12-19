@@ -44,6 +44,7 @@
 #ifndef _TTK_REEBSPACE_H
 #define _TTK_REEBSPACE_H
 
+#ifndef _MSC_VER
 // ttk code includes
 #include                  <ReebSpace.h>
 #include                  <ttkWrapper.h>
@@ -63,13 +64,38 @@
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
 #include                  <vtkUnstructuredGrid.h>
+#else
+// VTK includes -- to adapt
+#include                  <vtkCellArray.h>
+#include                  <vtkCellData.h>
+#include                  <vtkCharArray.h>
+#include                  <vtkDataArray.h>
+#include                  <vtkDataSetAlgorithm.h>
+#include                  <vtkDoubleArray.h>
+#include                  <vtkFiltersCoreModule.h>
+#include                  <vtkFloatArray.h>
+#include                  <vtkInformation.h>
+#include                  <vtkInformationVector.h>
+#include                  <vtkObjectFactory.h>
+#include                  <vtkPointData.h>
+#include                  <vtkSmartPointer.h>
+#include                  <vtkUnstructuredGrid.h>
+
+// ttk code includes
+#include                  <ReebSpace.h>
+#include                  <ttkWrapper.h>
+#endif
 
 
 // in this example, this wrapper takes a data-set on the input and produces a 
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK 
 // class your wrapper should inherit.
-class VTKFILTERSCORE_EXPORT ttkReebSpace 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkReebSpace
+#else
+class ttkReebSpace
+#endif 
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

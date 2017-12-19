@@ -64,7 +64,15 @@
 #include                  <vtkSmartPointer.h>
 #include                  <vtkUnstructuredGrid.h>
 
-class ttkTriangulation : public Debug{
+#ifndef _MSC_VER
+class ttkTriangulation : public Debug {
+#else
+#ifndef TTK_PLUGIN
+class VTKCOMMONDATAMODEL_EXPORT ttkTriangulation : public Debug {
+#else
+class ttkTriangulation : public Debug {
+#endif
+#endif
 
   public:
     
@@ -196,7 +204,11 @@ class ttkTriangulation : public Debug{
 
 #define TTK_UNSTRUCTURED_GRID (INT_MAX - VTK_UNSTRUCTURED_GRID)
 
-class VTKCOMMONDATAMODEL_EXPORT ttkUnstructuredGrid : 
+#ifndef TTK_PLUGIN
+class VTKCOMMONDATAMODEL_EXPORT ttkUnstructuredGrid :
+#else
+class ttkUnstructuredGrid :
+#endif
   public ttkTriangulation,
   public vtkUnstructuredGrid{
 
@@ -222,7 +234,11 @@ class VTKCOMMONDATAMODEL_EXPORT ttkUnstructuredGrid :
 
 #define TTK_IMAGE_DATA (INT_MAX - VTK_IMAGE_DATA)
 
-class VTKCOMMONDATAMODEL_EXPORT ttkImageData : 
+#ifndef TTK_PLUGIN
+class VTKCOMMONDATAMODEL_EXPORT ttkImageData :
+#else
+class ttkImageData :
+#endif
   public ttkTriangulation,
   public vtkImageData{
 
@@ -248,7 +264,11 @@ class VTKCOMMONDATAMODEL_EXPORT ttkImageData :
 
 #define TTK_POLY_DATA (INT_MAX - VTK_POLY_DATA)
 
-class VTKCOMMONDATAMODEL_EXPORT ttkPolyData : 
+#ifndef TTK_PLUGIN
+class VTKCOMMONDATAMODEL_EXPORT ttkPolyData :
+#else
+class ttkPolyData :
+#endif
   public ttkTriangulation,
   public vtkPolyData{
 

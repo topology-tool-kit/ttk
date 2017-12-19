@@ -76,14 +76,25 @@ int ttkLDistance::doIt(
 	
   // Calling the executing package.
   switch (inputScalarField1->GetDataType()) {
-    vtkTemplateMacro((
-      {
-        lDistance_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
-        lDistance_.setInputDataPointer1(inputScalarField1->GetVoidPointer(0));
-        lDistance_.setInputDataPointer2(inputScalarField2->GetVoidPointer(0));
-        lDistance_.execute<VTK_TT>(DistanceType);
-      }
-    ));  
+#ifndef _MSC_VER
+	  vtkTemplateMacro((
+	  {
+		  lDistance_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
+	  lDistance_.setInputDataPointer1(inputScalarField1->GetVoidPointer(0));
+	  lDistance_.setInputDataPointer2(inputScalarField2->GetVoidPointer(0));
+	  lDistance_.execute<VTK_TT>(DistanceType);
+	  }
+	  ));
+#else
+	  vtkTemplateMacro(
+	  {
+		  lDistance_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
+	  lDistance_.setInputDataPointer1(inputScalarField1->GetVoidPointer(0));
+	  lDistance_.setInputDataPointer2(inputScalarField2->GetVoidPointer(0));
+	  lDistance_.execute<VTK_TT>(DistanceType);
+	  }
+	  );
+#endif  
   }
   
   result = lDistance_.getResult();

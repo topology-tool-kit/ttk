@@ -75,7 +75,11 @@ if(TTK_BUILD_DOCUMENTATION)
 endif()
 
 if (NOT APPLE)
-	option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
+	if (MSVC)
+  		option(TTK_ENABLE_OPENMP "Enable OpenMP support" FALSE)
+	else()
+  		option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
+	endif()
 endif()
 option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 

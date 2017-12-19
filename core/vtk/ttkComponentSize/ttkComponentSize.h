@@ -27,6 +27,7 @@
 #ifndef _TTK_PROJECTION_FROM_FIELD_H
 #define _TTK_PROJECTION_FROM_FIELD_H
 
+#ifndef _MSC_VER
 // ttk code includes
 #include                  <Wrapper.h>
 
@@ -42,8 +43,29 @@
 #include                  <vtkPointSetAlgorithm.h>
 #include                  <vtkSmartPointer.h>
 #include                  <vtkUnstructuredGrid.h>
+#else
+// VTK includes 
+#include                  <vtkCellData.h>
+#include                  <vtkConnectivityFilter.h>
+#include                  <vtkDoubleArray.h>
+#include                  <vtkFiltersCoreModule.h>
+#include                  <vtkInformation.h>
+#include                  <vtkObjectFactory.h>
+#include                  <vtkPointData.h>
+#include                  <vtkPointSet.h>
+#include                  <vtkPointSetAlgorithm.h>
+#include                  <vtkSmartPointer.h>
+#include                  <vtkUnstructuredGrid.h>
 
-class VTKFILTERSCORE_EXPORT ttkComponentSize 
+// ttk code includes
+#include                  <Wrapper.h>
+#endif
+
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkComponentSize
+#else
+class ttkComponentSize
+#endif 
   : public vtkPointSetAlgorithm, public Wrapper{
 
   public:

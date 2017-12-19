@@ -97,7 +97,9 @@ int ttkContinuousScatterPlot::getTriangulation(vtkDataSet* input){
   
   return 0;
 }
-
+#ifdef _MSC_VER
+#define COMMA ,
+#endif 
 int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
   
@@ -189,42 +191,74 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   switch(inputScalars1_->GetDataType()){
     case VTK_CHAR:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterPlot.execute<char,VTK_TT>();}));
+#ifndef _MSC_VER
+		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<char,VTK_TT>(); }));
+#else
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<char COMMA VTK_TT>(); });
+#endif
       }
       break;
     case VTK_UNSIGNED_CHAR:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterPlot.execute<unsigned char,VTK_TT>();}));
+#ifndef _MSC_VER
+		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<unsigned char,VTK_TT>(); }));
+#else
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned char COMMA VTK_TT>(); });
+#endif
       }
       break;
     case VTK_SHORT:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterPlot.execute<short,VTK_TT>();}));
+#ifndef _MSC_VER
+		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<short,VTK_TT>(); }));
+#else
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<short COMMA VTK_TT>(); });
+#endif
       }
       break;
     case VTK_UNSIGNED_SHORT:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterPlot.execute<unsigned short,VTK_TT>();}));
+#ifndef _MSC_VER
+		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<unsigned short,VTK_TT>(); }));
+#else
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned short COMMA VTK_TT>(); });
+#endif
       }
       break;
     case VTK_INT:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterPlot.execute<int,VTK_TT>();}));
+#ifndef _MSC_VER
+		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<int,VTK_TT>(); }));
+#else
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<int COMMA VTK_TT>(); });
+#endif
       }
       break;
     case VTK_UNSIGNED_INT:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterPlot.execute<unsigned int,VTK_TT>();}));
+#ifndef _MSC_VER
+		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<unsigned int,VTK_TT>(); }));
+#else
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned int COMMA VTK_TT>(); });
+#endif
       }
       break;
     case VTK_FLOAT:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterPlot.execute<float,VTK_TT>();}));
+#ifndef _MSC_VER
+		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<float,VTK_TT>(); }));
+#else
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<float COMMA VTK_TT>(); });
+#endif
       }
       break;
     case VTK_DOUBLE:
       switch(inputScalars2_->GetDataType()){
-        vtkTemplateMacro(({ret=continuousScatterPlot.execute<double,VTK_TT>();}));
+#ifndef _MSC_VER
+		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<double,VTK_TT>(); }));
+#else
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<double COMMA VTK_TT>(); });
+#endif
       }
       break;
   }

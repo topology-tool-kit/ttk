@@ -24,6 +24,10 @@ function(ttk_add_paraview_plugin library)
 		SERVER_MANAGER_SOURCES ${ARG_SOURCES} ${TTK_TRIANGULATION_SRCS})
 	target_link_libraries(${plugin_name} PUBLIC ${VTK_LIBRARIES} ${ARG_LINK} ttkPVTriangulation)
 
+	if (MSVC)
+		target_compile_definitions(${plugin_name} PUBLIC TTK_PLUGIN)				
+	endif()	
+
 	target_include_directories(${plugin_name} PUBLIC
 		$<BUILD_INTERFACE:${VTKWRAPPER_DIR}/${library}>
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
@@ -49,12 +53,15 @@ target_link_libraries(ttkPVTriangulation PUBLIC ${VTK_LIBRARIES} triangulation)
 set_target_properties(ttkPVTriangulation PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
 target_include_directories(ttkPVTriangulation PUBLIC
 	$<BUILD_INTERFACE:${VTKWRAPPER_DIR}/ttkTriangulation>)
+if (MSVC)
+	target_compile_definitions(ttkPVTriangulation PUBLIC TTK_PLUGIN)				
+endif()	
 
 file(GLOB PARAVIEW_PLUGIN_DIRS *)
 foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
 	if (IS_DIRECTORY ${PARAVIEW_PLUGIN})
-    if (NOT ${PARAVIEW_PLUGIN} MATCHES "patch" )
-      add_subdirectory(${PARAVIEW_PLUGIN})
+		if (NOT ${PARAVIEW_PLUGIN} MATCHES "patch" )
+			add_subdirectory(${PARAVIEW_PLUGIN})
 		endif()
 	endif()
 endforeach()

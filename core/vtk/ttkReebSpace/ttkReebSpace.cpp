@@ -122,7 +122,9 @@ template<class dataTypeU, class dataTypeV> int ttkReebSpace::baseCall(
  
   return 0;
 }
-
+#ifdef _MSC_VER
+#define COMMA ,
+#endif 
 int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
 
@@ -215,73 +217,133 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     
     case VTK_CHAR:
       switch(vComponent_->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<char, VTK_TT>(input, 
-              uComponent_, offsetFieldU_,
-              vComponent_, offsetFieldV_);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<char, VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<char COMMA VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  );
+#endif
       }
       break;
       
     case VTK_DOUBLE:
       switch(vComponent_->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<double, VTK_TT>(input, 
-              uComponent_, offsetFieldU_,
-              vComponent_, offsetFieldV_);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<double, VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<double COMMA VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  );
+#endif
       }
       break;
       
     case VTK_FLOAT:
       switch(vComponent_->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<float, VTK_TT>(input, 
-              uComponent_, offsetFieldU_,
-              vComponent_, offsetFieldV_);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<float, VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<float COMMA VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  );
+#endif
       }
       break;
       
     case VTK_INT:
       switch(vComponent_->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<int, VTK_TT>(input, 
-              uComponent_, offsetFieldU_,
-              vComponent_, offsetFieldV_);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<int, VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<int COMMA VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  );
+#endif
       }
       break;
       
     case VTK_UNSIGNED_CHAR:
       switch(vComponent_->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<unsigned char, VTK_TT>(input, 
-              uComponent_, offsetFieldU_,
-              vComponent_, offsetFieldV_);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<unsigned char, VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<unsigned char COMMA VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  );
+#endif
       }
       break;
       
     case VTK_UNSIGNED_SHORT:
       switch(vComponent_->GetDataType()){
-        vtkTemplateMacro((
-          {
-            baseCall<unsigned short, VTK_TT>(input, 
-              uComponent_, offsetFieldU_,
-              vComponent_, offsetFieldV_);
-          }
-        ));
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<unsigned short, VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<unsigned short COMMA VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  );
+#endif
       }
       break;
       

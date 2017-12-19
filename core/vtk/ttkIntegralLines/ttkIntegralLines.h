@@ -31,6 +31,7 @@
 #ifndef _TTK_DISCRETESTREAMLINE_H
 #define _TTK_DISCRETESTREAMLINE_H
 
+#ifndef _MSC_VER
 // ttk code includes
 #include<IntegralLines.h>
 #include<ttkWrapper.h>
@@ -48,8 +49,31 @@
 #include<vtkObjectFactory.h>
 #include<vtkPointData.h>
 #include<vtkSmartPointer.h>
+#else
+// VTK includes
+#include<vtkLine.h>
+#include<vtkDataArray.h>
+#include<vtkDoubleArray.h>
+#include<vtkDataSet.h>
+#include<vtkPointData.h>
+#include<vtkDataSetAlgorithm.h>
+#include<vtkFiltersCoreModule.h>
+#include<vtkFloatArray.h>
+#include<vtkInformation.h>
+#include<vtkObjectFactory.h>
+#include<vtkPointData.h>
+#include<vtkSmartPointer.h>
 
+// ttk code includes
+#include<IntegralLines.h>
+#include<ttkWrapper.h>
+#endif
+
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkIntegralLines
+#else
+class ttkIntegralLines
+#endif
 : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

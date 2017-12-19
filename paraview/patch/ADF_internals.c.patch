@@ -1,0 +1,18 @@
+--- a/ThirdParty/cgns/vtkcgns/src/adf/ADF_internals.c
++++ b/ThirdParty/cgns/vtkcgns/src/adf/ADF_internals.c
+@@ -213,10 +213,14 @@ bytes   start   end   description      range / format
+    Large File Support - files > 2Gb on 32-bit machines
+  ***********************************************************************/
+ #ifdef HAVE_OPEN64
++#ifndef _WIN32
+ # define file_open open64
+ #else
+ # define file_open OPEN
+ #endif
++#else
++# define file_open OPEN
++#endif
+ #ifdef HAVE_LSEEK64
+ # ifdef _WIN32
+    typedef __int64 file_offset_t;
+

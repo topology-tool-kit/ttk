@@ -2,6 +2,7 @@
 #ifndef _VTK_CONTOURFORESTS_H
 #define _VTK_CONTOURFORESTS_H
 
+#ifndef _MSC_VER
 // ttk code includes
 #include <FTMTree.h>
 #include <ttkWrapper.h>
@@ -28,8 +29,40 @@
 #include <vtkObjectFactory.h>
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
+#else
+// VTK includes
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkDataSetAlgorithm.h>
+#include <vtkPointData.h>
+#include <vtkSmartPointer.h>
+// Data array
+#include <vtkCharArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
 
+// Unused ? (compile without these on my computer)
+#include <vtkFiltersCoreModule.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkLine.h>
+#include <vtkObjectFactory.h>
+#include <vtkType.h>
+#include <vtkUnstructuredGrid.h>
+
+// ttk code includes
+#include <FTMTree.h>
+#include <ttkWrapper.h>
+#include<ttkFTMStructures.h>
+#endif
+
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
+#else
+class ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
+#endif
 {
   public:
    static ttkFTMTree* New();

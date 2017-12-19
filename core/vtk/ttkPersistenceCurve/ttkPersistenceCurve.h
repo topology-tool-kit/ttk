@@ -34,6 +34,7 @@
 #ifndef _TTK_PERSISTENCECURVE_H
 #define _TTK_PERSISTENCECURVE_H
 
+#ifndef _MSC_VER
 // ttk code includes
 #include<PersistenceCurve.h>
 #include<ttkWrapper.h>
@@ -50,8 +51,30 @@
 #include<vtkObjectFactory.h>
 #include<vtkPointData.h>
 #include<vtkSmartPointer.h>
+#else
+// VTK includes
+#include<vtkDataArray.h>
+#include<vtkDataSet.h>
+#include<vtkDataSetAlgorithm.h>
+#include<vtkFiltersCoreModule.h>
+#include<vtkInformation.h>
+#include<vtkInformationVector.h>
+#include<vtkDoubleArray.h>
+#include<vtkTable.h>
+#include<vtkObjectFactory.h>
+#include<vtkPointData.h>
+#include<vtkSmartPointer.h>
 
+// ttk code includes
+#include<PersistenceCurve.h>
+#include<ttkWrapper.h>
+#endif
+
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkPersistenceCurve
+#else
+class ttkPersistenceCurve
+#endif
 : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

@@ -29,6 +29,7 @@
 #ifndef _TTK_FIBER_H
 #define _TTK_FIBER_H
 
+#ifndef _MSC_VER
 // ttk code includes
 #include                  <Wrapper.h>
 
@@ -42,8 +43,27 @@
 #include                  <vtkPointData.h>
 #include                  <vtkPolyData.h>
 #include                  <vtkSmartPointer.h>
+#else
+// VTK includes -- to adapt
+#include                  <vtkContourFilter.h>
+#include                  <vtkDataSet.h>
+#include                  <vtkDataSetAlgorithm.h>
+#include                  <vtkFiltersCoreModule.h>
+#include                  <vtkInformation.h>
+#include                  <vtkObjectFactory.h>
+#include                  <vtkPointData.h>
+#include                  <vtkPolyData.h>
+#include                  <vtkSmartPointer.h>
 
-class VTKFILTERSCORE_EXPORT ttkFiber 
+// ttk code includes
+#include                  <Wrapper.h>
+#endif
+
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkFiber
+#else
+class ttkFiber
+#endif
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

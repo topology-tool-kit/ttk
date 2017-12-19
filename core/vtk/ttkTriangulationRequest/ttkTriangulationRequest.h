@@ -38,7 +38,11 @@
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
 
-class VTKFILTERSCORE_EXPORT ttkTriangulationRequest 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkTriangulationRequest
+#else
+class ttkTriangulationRequest
+#endif
 : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

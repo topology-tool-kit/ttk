@@ -23,6 +23,7 @@
 #ifndef _TTK_SCALAR_FIELD_SMOOTHER_H
 #define _TTK_SCALAR_FIELD_SMOOTHER_H
 
+#ifndef _MSC_VER
 // ttk code includes
 #include                  <ScalarFieldSmoother.h>
 #include                  <ttkWrapper.h>
@@ -40,8 +41,31 @@
 #include                  <vtkObjectFactory.h>
 #include                  <vtkPointData.h>
 #include                  <vtkUnsignedShortArray.h>
+#else
+// VTK includes
+#include                  <vtkCharArray.h>
+#include                  <vtkDataArray.h>
+#include                  <vtkDataSet.h>
+#include                  <vtkDataSetAlgorithm.h>
+#include                  <vtkDoubleArray.h>
+#include                  <vtkFiltersCoreModule.h>
+#include                  <vtkFloatArray.h>
+#include                  <vtkInformation.h>
+#include                  <vtkIntArray.h>
+#include                  <vtkObjectFactory.h>
+#include                  <vtkPointData.h>
+#include                  <vtkUnsignedShortArray.h>
 
-class VTKFILTERSCORE_EXPORT ttkScalarFieldSmoother 
+// ttk code includes
+#include                  <ScalarFieldSmoother.h>
+#include                  <ttkWrapper.h>
+#endif
+
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkScalarFieldSmoother
+#else
+class ttkScalarFieldSmoother
+#endif
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

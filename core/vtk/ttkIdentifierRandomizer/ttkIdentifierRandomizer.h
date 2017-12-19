@@ -17,6 +17,7 @@
 /// \sa ttk::IdentifierRandomizer
 #pragma once
 
+#ifndef _MSC_VER
 // ttk code includes
 #include                  <ttkWrapper.h>
 
@@ -34,12 +35,35 @@
 #include                  <vtkObjectFactory.h>
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
+#else
+// VTK includes -- to adapt
+#include                  <vtkCellData.h>
+#include                  <vtkCharArray.h>
+#include                  <vtkDataArray.h>
+#include                  <vtkDataSet.h>
+#include                  <vtkDataSetAlgorithm.h>
+#include                  <vtkDoubleArray.h>
+#include                  <vtkFiltersCoreModule.h>
+#include                  <vtkFloatArray.h>
+#include                  <vtkInformation.h>
+#include                  <vtkIntArray.h>
+#include                  <vtkObjectFactory.h>
+#include                  <vtkPointData.h>
+#include                  <vtkSmartPointer.h>
+
+// ttk code includes
+#include                  <ttkWrapper.h>
+#endif
 
 // in this example, this wrapper takes a data-set on the input and produces a 
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK 
 // class your wrapper should inherit.
-class VTKFILTERSCORE_EXPORT ttkIdentifierRandomizer 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkIdentifierRandomizer
+#else
+class ttkIdentifierRandomizer
+#endif 
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

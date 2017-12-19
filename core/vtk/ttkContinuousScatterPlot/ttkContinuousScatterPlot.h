@@ -36,6 +36,7 @@
 #ifndef _TTK_CONTINUOUSSCATTERPLOT_H
 #define _TTK_CONTINUOUSSCATTERPLOT_H
 
+#ifndef _MSC_VER
 // ttk baseCode includes
 #include  <ContinuousScatterPlot.h>
 #include  <ttkWrapper.h>
@@ -53,8 +54,31 @@
 #include<vtkObjectFactory.h>
 #include<vtkPointData.h>
 #include<vtkSmartPointer.h>
+#else
+// VTK includes
+#include<vtkPoints.h>
+#include<vtkUnstructuredGrid.h>
+#include<vtkCharArray.h>
+#include<vtkDataArray.h>
+#include<vtkDataSet.h>
+#include<vtkDataSetAlgorithm.h>
+#include<vtkDoubleArray.h>
+#include<vtkFiltersCoreModule.h>
+#include<vtkInformation.h>
+#include<vtkObjectFactory.h>
+#include<vtkPointData.h>
+#include<vtkSmartPointer.h>
 
+// ttk baseCode includes
+#include  <ContinuousScatterPlot.h>
+#include  <ttkWrapper.h>
+#endif
+
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkContinuousScatterPlot
+#else
+class ttkContinuousScatterPlot
+#endif
 : public vtkDataSetAlgorithm, public Wrapper{
 
   public:
