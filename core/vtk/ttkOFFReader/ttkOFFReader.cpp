@@ -118,10 +118,12 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
       cellScalars_[i]->SetName(name.c_str());
    }
 
-   // read cells
-   while ((curLine = processLineCell(curLine, line)) < nbVerts_ + nbCells_) {
-      std::getline(offFile, line);
-   }
+	// read cells
+	if(nbCells_){
+		while ((curLine = processLineCell(curLine, line)) < nbVerts_ + nbCells_) {
+		std::getline(offFile, line);
+		}
+	}
 
    // add cell data to the mesh
    for (const auto &scalarArray : cellScalars_) {
