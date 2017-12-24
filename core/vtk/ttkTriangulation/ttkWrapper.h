@@ -10,15 +10,6 @@
 
 #pragma once
 
-#ifndef _MSC_VER
-#include                  <Wrapper.h>
-#include                  <ttkTriangulation.h>
-
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkImageData.h>
-#include                  <vtkPolyData.h>
-#include                  <vtkUnstructuredGrid.h>
-#else
 #include                  <vtkDataSetAlgorithm.h>
 #include                  <vtkImageData.h>
 #include                  <vtkPolyData.h>
@@ -26,7 +17,6 @@
 
 #include                  <Wrapper.h>
 #include                  <ttkTriangulation.h>
-#endif 
 
 // Macros for vtkWrappers
 #define TTK_POLY_DATA_NEW(i, ouputInformation, dataTYpe)\
