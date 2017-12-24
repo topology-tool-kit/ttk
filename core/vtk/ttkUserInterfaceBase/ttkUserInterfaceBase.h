@@ -56,11 +56,7 @@ class ttkKeyHandler : public Debug{
       vtkRenderWindowInteractor *interactor, string &key) = 0;
 };
 
-#ifndef _MSC_VER
-class ttkUserInterfaceBase : public ttkProgramBase {
-#else
 class VTKFILTERSCORE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
-#endif
   
   public:
     
