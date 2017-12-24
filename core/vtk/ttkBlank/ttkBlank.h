@@ -19,25 +19,6 @@
 /// \sa ttk::Blank
 #pragma once
 
-#ifndef _MSC_VER
-// ttk code includes
-#include                  <Blank.h>
-#include                  <ttkWrapper.h>
-
-// VTK includes -- to adapt
-#include                  <vtkCharArray.h>
-#include                  <vtkDataArray.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkDoubleArray.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkFloatArray.h>
-#include                  <vtkInformation.h>
-#include                  <vtkIntArray.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkPointData.h>
-#include                  <vtkSmartPointer.h>
-#else
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
@@ -55,7 +36,6 @@
 // ttk code includes
 #include                  <Blank.h>
 #include                  <ttkWrapper.h>
-#endif
 
 // in this example, this wrapper takes a data-set on the input and produces a 
 // data-set on the output - to adapt.
