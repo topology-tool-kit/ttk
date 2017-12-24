@@ -9,26 +9,6 @@
 #ifndef _TTK_EDITOR_BASE_H
 #define _TTK_EDITOR_BASE_H
 
-#ifndef _MSC_VER
-// base code includes
-#include                  <ProgramBase.h>
-
-#include                  <ttkWrapper.h>
-
-// VTK IO
-#include                  <vtkDataSet.h>
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkImageData.h>
-#include                  <vtkPolyData.h>
-#include                  <vtkSmartPointer.h>
-#include                  <vtkUnstructuredGrid.h>
-#include                  <vtkXMLImageDataReader.h>
-#include                  <vtkXMLImageDataWriter.h>
-#include                  <vtkXMLPolyDataReader.h>
-#include                  <vtkXMLPolyDataWriter.h>
-#include                  <vtkXMLUnstructuredGridReader.h>
-#include                  <vtkXMLUnstructuredGridWriter.h>
-#else
 // VTK IO
 #include                  <vtkDataSet.h>
 #include                  <vtkDataSetAlgorithm.h>
@@ -46,13 +26,8 @@
 // base code includes
 #include                  <ProgramBase.h>
 #include                  <ttkWrapper.h>
-#endif
 
-#ifndef _MSC_VER
-class ttkProgramBase : public ProgramBase {
-#else
 class VTKFILTERSCORE_EXPORT ttkProgramBase : public ProgramBase {
-#endif
 
   public:
       
