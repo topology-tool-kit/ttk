@@ -64,14 +64,10 @@
 #include                  <vtkSmartPointer.h>
 #include                  <vtkUnstructuredGrid.h>
 
-#ifndef _MSC_VER
-class ttkTriangulation : public Debug {
-#else
 #ifndef TTK_PLUGIN
 class VTKCOMMONDATAMODEL_EXPORT ttkTriangulation : public Debug {
 #else
 class ttkTriangulation : public Debug {
-#endif
 #endif
 
   public:
