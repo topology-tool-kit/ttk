@@ -22,7 +22,7 @@ from paraview.simple import *
 if len(sys.argv) == 2:
     inputFilePath = sys.argv[1]
 else:
-    print "Missing mandatory argument: Path to input VTU file"
+    print("Missing mandatory argument: Path to input VTU file")
     sys.exit() 
 
 # 1. loading the input data
