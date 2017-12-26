@@ -1,19 +1,16 @@
 @echo off
-echo Patching ParaView sources for compiling on MSVC x86
+echo Patching ParaView 5.4.1 sources
 set cdir=%cd%
 set paraviewsrc=%1
 :loop
 if "%paraviewsrc%"=="" goto error
 if not exist %paraviewsrc% goto error
 
-set paraviewpath=%paraviewsrc%/ThirdParty/cgns/vtkcgns/src/adf/ADF_internals.c
-if exist %paraviewpath% goto patch
-echo File %paraviewpath% not exist
-goto exit
-:patch
 %~d1
 cd %paraviewsrc%
-git apply %cdir%/ADF_internals.c.patch
+
+git apply %cdir%/paraview-msvc-CMakeLists.txt.patch
+
 cd %cdir%
 echo Finished patching.
 
