@@ -31,24 +31,6 @@
 #ifndef _TTK_DISTANCEFIELD_H
 #define _TTK_DISTANCEFIELD_H
 
-#ifndef _MSC_VER
-// ttk code includes
-#include<DistanceField.h>
-#include<ttkWrapper.h>
-
-// VTK includes
-#include<vtkDataArray.h>
-#include<vtkDataSet.h>
-#include<vtkPointSet.h>
-#include<vtkDataSetAlgorithm.h>
-#include<vtkDoubleArray.h>
-#include<vtkFiltersCoreModule.h>
-#include<vtkFloatArray.h>
-#include<vtkInformation.h>
-#include<vtkObjectFactory.h>
-#include<vtkPointData.h>
-#include<vtkSmartPointer.h>
-#else
 // VTK includes
 #include<vtkDataArray.h>
 #include<vtkDataSet.h>
@@ -65,7 +47,6 @@
 // ttk code includes
 #include<DistanceField.h>
 #include<ttkWrapper.h>
-#endif
 
 enum DistanceType{
   Float=0,
