@@ -1,7 +1,7 @@
 ChangeLog
 =
 * ttk.git
-- OFF reader
+- OFF reader/writer
 
 * 0.9.3
 - Updates for ParaView-5.4.1
