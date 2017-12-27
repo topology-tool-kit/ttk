@@ -21,21 +21,6 @@
 #ifndef _TTK_PROJECTION_FROM_FIELD_H
 #define _TTK_PROJECTION_FROM_FIELD_H
 
-#ifndef _MSC_VER
-// ttk code includes
-#include                  <Wrapper.h>
-
-// VTK includes 
-#include                  <vtkDataArray.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkInformation.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkPointData.h>
-#include                  <vtkPointSet.h>
-#include                  <vtkPointSetAlgorithm.h>
-#include                  <vtkPoints.h>
-#include                  <vtkSmartPointer.h>
-#else
 // VTK includes 
 #include                  <vtkDataArray.h>
 #include                  <vtkFiltersCoreModule.h>
@@ -49,7 +34,6 @@
 
 // ttk code includes
 #include                  <Wrapper.h>
-#endif
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkProjectionFromField
