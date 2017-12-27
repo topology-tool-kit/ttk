@@ -15,24 +15,6 @@
 /// VTK pipeline.
 #pragma once
 
-#ifndef _MSC_VER
-// ttk code includes
-#include<Wrapper.h>
-
-// VTK includes
-#include<vtkCharArray.h>
-#include<vtkDataArray.h>
-#include<vtkDataSet.h>
-#include<vtkDataSetAlgorithm.h>
-#include<vtkDoubleArray.h>
-#include<vtkFiltersCoreModule.h>
-#include<vtkFloatArray.h>
-#include<vtkInformation.h>
-#include<vtkIntArray.h>
-#include<vtkObjectFactory.h>
-#include<vtkPointData.h>
-#include<vtkSmartPointer.h>
-#else
 // VTK includes
 #include<vtkCharArray.h>
 #include<vtkDataArray.h>
@@ -49,7 +31,6 @@
 
 // ttk code includes
 #include<Wrapper.h>
-#endif
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkFieldSelector
