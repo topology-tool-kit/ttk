@@ -43,32 +43,6 @@
 #ifndef _TTK_MANDATORYCRITICALPOINTS_H
 #define _TTK_MANDATORYCRITICALPOINTS_H
 
-#ifndef _MSC_VER
-// ttk code includes
-#include                  <MandatoryCriticalPoints.h>
-#include                  <ttkWrapper.h>
-
-// VTK includes -- to adapt
-#include                  <vtkCharArray.h>
-#include                  <vtkDataArray.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkDoubleArray.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkFloatArray.h>
-#include                  <vtkInformation.h>
-#include                  <vtkInformationVector.h>
-#include                  <vtkIntArray.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkPointData.h>
-#include                  <vtkSmartPointer.h>
-#include                  <vtkUnstructuredGrid.h>
-#include                  <vtkPoints.h>
-#include                  <vtkIdList.h>
-#include                  <vtkCellType.h>
-#include                  <vtkCellData.h>
-#include                  <vtkUnsignedCharArray.h>
-#else
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
@@ -93,7 +67,6 @@
 // ttk code includes
 #include                  <MandatoryCriticalPoints.h>
 #include                  <ttkWrapper.h>
-#endif
 
 #include                  <vector>
 #include                  <queue>

@@ -720,105 +720,54 @@ int ttkMandatoryCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   // Calling the executing package
   switch(inputUpperBoundField->GetDataType()){
 
-#ifndef _MSC_VER
-	  vtkTemplateMacro((
-	  {
-		  // Reset the baseCode object
-		  if ((computeAll_) || (hasChangedConnectivity))
-		  mandatoryCriticalPoints_.flush();
-	  // Wrapper
-	  mandatoryCriticalPoints_.setWrapper(this);
-	  // Set the number of vertex
-	  mandatoryCriticalPoints_.setVertexNumber(input->GetNumberOfPoints());
-	  // Set the coordinates of each vertex
-	  double point[3];
-	  for (int i = 0; i<input->GetNumberOfPoints(); i++) {
-		  input->GetPoint(i, point);
-		  mandatoryCriticalPoints_.setVertexPosition(i,point);
-	  }
-	  // Set the void pointers to the upper and lower bound fields
-	  mandatoryCriticalPoints_.setLowerBoundFieldPointer(
-		  inputLowerBoundField->GetVoidPointer(0));
-	  mandatoryCriticalPoints_.setUpperBoundFieldPointer(
-		  inputUpperBoundField->GetVoidPointer(0));
-	  // Set the output data pointers
-	  mandatoryCriticalPoints_.setOutputMinimumDataPointer(
-		  outputMandatoryMinimum_->GetVoidPointer(0));
-	  mandatoryCriticalPoints_.setOutputJoinSaddleDataPointer(
-		  outputMandatoryJoinSaddle_->GetVoidPointer(0));
-	  mandatoryCriticalPoints_.setOutputSplitSaddleDataPointer(
-		  outputMandatorySplitSaddle_->GetVoidPointer(0));
-	  mandatoryCriticalPoints_.setOutputMaximumDataPointer(
-		  outputMandatoryMaximum_->GetVoidPointer(0));
-	  // Set the triangulation object
-	  // Set the offsets
-	  mandatoryCriticalPoints_.setSoSoffsets();
-	  // Simplification threshold
+    vtkTemplateMacro(
+    {
+      // Reset the baseCode object
+      if ((computeAll_) || (hasChangedConnectivity))
+        mandatoryCriticalPoints_.flush();
+      
+      // Wrapper
+      mandatoryCriticalPoints_.setWrapper(this);
+      // Set the number of vertex
+      mandatoryCriticalPoints_.setVertexNumber(input->GetNumberOfPoints());
+      // Set the coordinates of each vertex
+      double point[3];
+      for (int i = 0; i<input->GetNumberOfPoints(); i++) {
+        input->GetPoint(i, point);
+        mandatoryCriticalPoints_.setVertexPosition(i,point);
+      }
+      // Set the void pointers to the upper and lower bound fields
+      mandatoryCriticalPoints_.setLowerBoundFieldPointer(
+        inputLowerBoundField->GetVoidPointer(0));
+      mandatoryCriticalPoints_.setUpperBoundFieldPointer(
+        inputUpperBoundField->GetVoidPointer(0));
+      // Set the output data pointers
+      mandatoryCriticalPoints_.setOutputMinimumDataPointer(
+        outputMandatoryMinimum_->GetVoidPointer(0));
+      mandatoryCriticalPoints_.setOutputJoinSaddleDataPointer(
+        outputMandatoryJoinSaddle_->GetVoidPointer(0));
+      mandatoryCriticalPoints_.setOutputSplitSaddleDataPointer(
+        outputMandatorySplitSaddle_->GetVoidPointer(0));
+      mandatoryCriticalPoints_.setOutputMaximumDataPointer(
+        outputMandatoryMaximum_->GetVoidPointer(0));
+      // Set the triangulation object
+      // Set the offsets
+      mandatoryCriticalPoints_.setSoSoffsets();
+      // Simplification threshold
 
-	  mandatoryCriticalPoints_.setSimplificationThreshold(
-		  simplificationThreshold_);
-	  // Execute process
-	  if (computeAll_) {
-		  mandatoryCriticalPoints_.execute<VTK_TT>();
-		  computeAll_ = false;
-		  simplify_ = false;
-		  computeMinimumOutput_ = true;
-		  computeJoinSaddleOutput_ = true;
-		  computeSplitSaddleOutput_ = true;
-		  computeMaximumOutput_ = true;
-	  }
-	  }
-	  ));
-#else
-	  vtkTemplateMacro(
-	  {
-		  // Reset the baseCode object
-		  if ((computeAll_) || (hasChangedConnectivity))
-		  mandatoryCriticalPoints_.flush();
-	  // Wrapper
-	  mandatoryCriticalPoints_.setWrapper(this);
-	  // Set the number of vertex
-	  mandatoryCriticalPoints_.setVertexNumber(input->GetNumberOfPoints());
-	  // Set the coordinates of each vertex
-	  double point[3];
-	  for (int i = 0; i<input->GetNumberOfPoints(); i++) {
-		  input->GetPoint(i, point);
-		  mandatoryCriticalPoints_.setVertexPosition(i,point);
-	  }
-	  // Set the void pointers to the upper and lower bound fields
-	  mandatoryCriticalPoints_.setLowerBoundFieldPointer(
-		  inputLowerBoundField->GetVoidPointer(0));
-	  mandatoryCriticalPoints_.setUpperBoundFieldPointer(
-		  inputUpperBoundField->GetVoidPointer(0));
-	  // Set the output data pointers
-	  mandatoryCriticalPoints_.setOutputMinimumDataPointer(
-		  outputMandatoryMinimum_->GetVoidPointer(0));
-	  mandatoryCriticalPoints_.setOutputJoinSaddleDataPointer(
-		  outputMandatoryJoinSaddle_->GetVoidPointer(0));
-	  mandatoryCriticalPoints_.setOutputSplitSaddleDataPointer(
-		  outputMandatorySplitSaddle_->GetVoidPointer(0));
-	  mandatoryCriticalPoints_.setOutputMaximumDataPointer(
-		  outputMandatoryMaximum_->GetVoidPointer(0));
-	  // Set the triangulation object
-	  // Set the offsets
-	  mandatoryCriticalPoints_.setSoSoffsets();
-	  // Simplification threshold
-
-	  mandatoryCriticalPoints_.setSimplificationThreshold(
-		  simplificationThreshold_);
-	  // Execute process
-	  if (computeAll_) {
-		  mandatoryCriticalPoints_.execute<VTK_TT>();
-		  computeAll_ = false;
-		  simplify_ = false;
-		  computeMinimumOutput_ = true;
-		  computeJoinSaddleOutput_ = true;
-		  computeSplitSaddleOutput_ = true;
-		  computeMaximumOutput_ = true;
-	  }
-	  }
-	  );
-#endif
+      mandatoryCriticalPoints_.setSimplificationThreshold(
+        simplificationThreshold_);
+      // Execute process
+      if (computeAll_) {
+        mandatoryCriticalPoints_.execute<VTK_TT>();
+        computeAll_ = false;
+        simplify_ = false;
+        computeMinimumOutput_ = true;
+        computeJoinSaddleOutput_ = true;
+        computeSplitSaddleOutput_ = true;
+        computeMaximumOutput_ = true;
+      }
+    });
   }
   
   // Simplification
