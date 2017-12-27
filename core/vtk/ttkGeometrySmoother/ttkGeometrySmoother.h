@@ -24,21 +24,6 @@
 #ifndef _TTK_GEOMETRY_SMOOTHER_H
 #define _TTK_GEOMETRY_SMOOTHER_H
 
-#ifndef _MSC_VER
-// ttk code includes
-#include                  <ScalarFieldSmoother.h>
-#include                  <ttkWrapper.h>
-
-// VTK includes
-#include                  <vtkDataArray.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkInformation.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkSmartPointer.h>
-#else
 // VTK includes
 #include                  <vtkDataArray.h>
 #include                  <vtkDataSet.h>
@@ -52,7 +37,6 @@
 // ttk code includes
 #include                  <ttkWrapper.h>
 #include                  <ScalarFieldSmoother.h>
-#endif
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkGeometrySmoother

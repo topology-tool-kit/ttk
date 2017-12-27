@@ -66,27 +66,15 @@ int ttkGeometrySmoother::doIt(vector<vtkDataSet *> &inputs,
   vtkPoints *outputPointSet = (vtkPointSet::SafeDownCast(output))->GetPoints();
   switch(outputPointSet->GetDataType()){
    
-#ifndef _MSC_VER
-	  vtkTemplateMacro((
-	  {
-		  smoother_.setDimensionNumber(3);
-	  smoother_.setInputDataPointer(inputPointSet->GetVoidPointer(0));
-	  smoother_.setOutputDataPointer(outputPointSet->GetVoidPointer(0));
-	  smoother_.setMaskDataPointer(inputMaskPtr);
-	  smoother_.smooth<VTK_TT>(NumberOfIterations);
-	  }
-	  ));
-#else
-	  vtkTemplateMacro(
-	  {
-		  smoother_.setDimensionNumber(3);
-	  smoother_.setInputDataPointer(inputPointSet->GetVoidPointer(0));
-	  smoother_.setOutputDataPointer(outputPointSet->GetVoidPointer(0));
-	  smoother_.setMaskDataPointer(inputMaskPtr);
-	  smoother_.smooth<VTK_TT>(NumberOfIterations);
-	  }
-	  );
-#endif
+    vtkTemplateMacro(
+    {
+      smoother_.setDimensionNumber(3);
+      smoother_.setInputDataPointer(inputPointSet->GetVoidPointer(0));
+      smoother_.setOutputDataPointer(outputPointSet->GetVoidPointer(0));
+      smoother_.setMaskDataPointer(inputMaskPtr);
+      smoother_.smooth<VTK_TT>(NumberOfIterations);
+    }
+    );
   }
   
   {
