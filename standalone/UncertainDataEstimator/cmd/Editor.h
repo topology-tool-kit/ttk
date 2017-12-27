@@ -9,53 +9,6 @@
 #include <cmath>
 #include <stdexcept>
 
-#ifndef _MSC_VER
-// base code includes
-#include                  <CommandLineParser.h>
-
-// vtk wrappers
-#include                  <ttkUncertainDataEstimator.h>
-#include                  <UncertainDataEstimator.h>
-
-// VTK includes
-#include                  <vtkPointData.h>
-#include <vtkSmartPointer.h>
-// Data types
-#include <vtkUnstructuredGrid.h>
-#include <vtkPolyData.h>
-#include <vtkStructuredGrid.h>
-#include <vtkRectilinearGrid.h>
-#include <vtkImageData.h>
-#include <vtkHyperOctree.h>
-#include <vtkDataSet.h>
-// Readers
-#include <vtkImageReader2.h>
-#include <vtkXMLUnstructuredGridReader.h>
-#include <vtkXMLPolyDataReader.h>
-#include <vtkXMLStructuredGridReader.h>
-#include <vtkXMLRectilinearGridReader.h>
-#include <vtkXMLImageDataReader.h>
-#include <vtkXMLHyperOctreeReader.h>
-#include <vtkDataSetReader.h>
-// Writers
-#include <vtkXMLUnstructuredGridWriter.h>
-#include <vtkXMLPolyDataWriter.h>
-#include <vtkXMLStructuredGridWriter.h>
-#include <vtkXMLRectilinearGridWriter.h>
-#include <vtkXMLImageDataWriter.h>
-#include <vtkXMLHyperOctreeWriter.h>
-#include <vtkDataSetWriter.h>
-// Array types
-#include <vtkFloatArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkIntArray.h>
-#include <vtkUnsignedIntArray.h>
-#include <vtkShortArray.h>
-#include <vtkUnsignedShortArray.h>
-#include <vtkCharArray.h>
-#include <vtkSignedCharArray.h>
-#include <vtkUnsignedCharArray.h>
-#else
 // VTK includes
 #include                  <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -101,7 +54,6 @@
 // vtk wrappers
 #include                  <ttkUncertainDataEstimator.h>
 #include                  <UncertainDataEstimator.h>
-#endif
 
 class Editor : public Debug{
 
