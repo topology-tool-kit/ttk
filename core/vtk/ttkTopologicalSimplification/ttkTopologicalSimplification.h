@@ -49,28 +49,6 @@
 #ifndef _TTK_TOPOLOGICALSIMPLIFICATION_H
 #define _TTK_TOPOLOGICALSIMPLIFICATION_H
 
-#ifndef _MSC_VER
-// ttk code includes
-#include                  <TopologicalSimplification.h>
-#include                  <ttkWrapper.h>
-
-// VTK includes -- to adapt
-#include                  <vtkCharArray.h>
-#include                  <vtkUnsignedCharArray.h>
-#include                  <vtkShortArray.h>
-#include                  <vtkUnsignedShortArray.h>
-#include                  <vtkIntArray.h>
-#include                  <vtkFloatArray.h>
-#include                  <vtkDoubleArray.h>
-#include                  <vtkDataArray.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkInformation.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkPointData.h>
-#include                  <vtkSmartPointer.h>
-#else
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>
 #include                  <vtkUnsignedCharArray.h>
@@ -91,9 +69,8 @@
 // ttk code includes
 #include                  <TopologicalSimplification.h>
 #include                  <ttkWrapper.h>
-#endif
 
-#include<ttkTriangulation.h>
+#include                  <ttkTriangulation.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkTopologicalSimplification
