@@ -1394,11 +1394,11 @@ void ttkContourForests::getTree()
   contourTree_->setSimplificationThreshold(simplificationThreshold_);
   // build
   switch(vtkInputScalars_->GetDataType()){
-#ifndef _MSC_VER
-	  vtkTemplateMacro(({ contourTree_->build<VTK_TT>(); }));
-#else
+// #ifndef _MSC_VER
+// 	  vtkTemplateMacro(({ contourTree_->build<VTK_TT>(); }));
+// #else
 	  vtkTemplateMacro({ contourTree_->build<VTK_TT>(); });
-#endif
+// #endif
   }
 
   // ce qui est fait n'est plus à faire
