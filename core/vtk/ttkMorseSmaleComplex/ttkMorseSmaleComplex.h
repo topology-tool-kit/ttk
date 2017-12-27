@@ -35,27 +35,6 @@
 #ifndef _TTK_MORSESMALECOMPLEX_H
 #define _TTK_MORSESMALECOMPLEX_H
 
-#ifndef _MSC_VER
-// ttk code includes
-#include<MorseSmaleComplex.h>
-#include<ttkWrapper.h>
-
-// VTK includes -- to adapt
-#include<vtkCharArray.h>
-#include<vtkDataArray.h>
-#include<vtkDataSet.h>
-#include<vtkDataSetAlgorithm.h>
-#include<vtkDoubleArray.h>
-#include<vtkFiltersCoreModule.h>
-#include<vtkFloatArray.h>
-#include<vtkInformation.h>
-#include<vtkInformationVector.h>
-#include<vtkIntArray.h>
-#include<vtkObjectFactory.h>
-#include<vtkCellData.h>
-#include<vtkPointData.h>
-#include<vtkSmartPointer.h>
-#else
 // VTK includes -- to adapt
 #include<vtkCharArray.h>
 #include<vtkDataArray.h>
@@ -75,7 +54,6 @@
 // ttk code includes
 #include<MorseSmaleComplex.h>
 #include<ttkWrapper.h>
-#endif
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkMorseSmaleComplex
