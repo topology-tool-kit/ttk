@@ -45,26 +45,6 @@
 #ifndef _TTK_PERSISTENCEDIAGRAM_H
 #define _TTK_PERSISTENCEDIAGRAM_H
 
-#ifndef _MSC_VER
-// ttk code includes
-#include<PersistenceDiagram.h>
-#include<ttkWrapper.h>
-
-// VTK includes
-#include<vtkDataArray.h>
-#include<vtkDataSet.h>
-#include<vtkDataSetAlgorithm.h>
-#include<vtkFiltersCoreModule.h>
-#include<vtkInformation.h>
-#include<vtkInformationVector.h>
-#include<vtkFloatArray.h>
-#include<vtkDoubleArray.h>
-#include<vtkTable.h>
-#include<vtkObjectFactory.h>
-#include<vtkPointData.h>
-#include<vtkCellData.h>
-#include<vtkSmartPointer.h>
-#else
 // VTK includes
 #include<vtkDataArray.h>
 #include<vtkDataSet.h>
@@ -83,7 +63,6 @@
 // ttk code includes
 #include<PersistenceDiagram.h>
 #include<ttkWrapper.h>
-#endif
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkPersistenceDiagram
