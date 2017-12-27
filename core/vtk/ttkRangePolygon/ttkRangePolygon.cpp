@@ -128,55 +128,29 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
     smoother.setupTriangulation(triangulation);
     
     switch(output->GetPoints()->GetDataType()){
-#ifndef _MSC_VER
-		vtkTemplateMacro((
-		{
-			smoother.smooth<VTK_TT>(NumberOfIterations);
-		}
-		));
-#else
-		vtkTemplateMacro(
-		{
-			smoother.smooth<VTK_TT>(NumberOfIterations);
-		}
-		);
-#endif
+      vtkTemplateMacro(
+      {
+        smoother.smooth<VTK_TT>(NumberOfIterations);
+      });
     }
     
     for(int i = 0; i < (int) output->GetPointData()->GetNumberOfArrays(); i++){
       vtkDataArray *field = output->GetPointData()->GetArray(i);
       
       switch(field->GetDataType()){
-    
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  smoother.setWrapper(this);
-		  smoother.setDebugLevel(0);
 
-		  smoother.setDimensionNumber(field->GetNumberOfComponents());
-		  smoother.setInputDataPointer(field->GetVoidPointer(0));
+        vtkTemplateMacro(
+        {
+          smoother.setWrapper(this);
+          smoother.setDebugLevel(0);
 
-		  smoother.setOutputDataPointer(field->GetVoidPointer(0));
-		  smoother.setupTriangulation(triangulation);
-		  smoother.smooth<VTK_TT>(NumberOfIterations);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  smoother.setWrapper(this);
-		  smoother.setDebugLevel(0);
+          smoother.setDimensionNumber(field->GetNumberOfComponents());
+          smoother.setInputDataPointer(field->GetVoidPointer(0));
 
-		  smoother.setDimensionNumber(field->GetNumberOfComponents());
-		  smoother.setInputDataPointer(field->GetVoidPointer(0));
-
-		  smoother.setOutputDataPointer(field->GetVoidPointer(0));
-		  smoother.setupTriangulation(triangulation);
-		  smoother.smooth<VTK_TT>(NumberOfIterations);
-		  }
-		  );
-#endif
+          smoother.setOutputDataPointer(field->GetVoidPointer(0));
+          smoother.setupTriangulation(triangulation);
+          smoother.smooth<VTK_TT>(NumberOfIterations);
+        });
       }
     }
   }

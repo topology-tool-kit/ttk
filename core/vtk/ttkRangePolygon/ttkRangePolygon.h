@@ -50,24 +50,6 @@
 #ifndef _TTK_RANGEPOLYGON_H
 #define _TTK_RANGEPOLYGON_H
 
-#ifndef _MSC_VER
-// ttk code includes
-#include                  <ScalarFieldSmoother.h>
-#include                  <ttkWrapper.h>
-
-// VTK includes -- to adapt
-#include                  <vtkCleanPolyData.h>
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkDataSetSurfaceFilter.h>
-#include                  <vtkDataSetTriangleFilter.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkFeatureEdges.h>
-#include                  <vtkInformation.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkPointData.h>
-#include                  <vtkSmartPointer.h>
-#include                  <vtkUnstructuredGrid.h>
-#else
 // VTK includes -- to adapt
 #include                  <vtkCleanPolyData.h>
 #include                  <vtkDataSetAlgorithm.h>
@@ -84,7 +66,6 @@
 // ttk code includes
 #include                  <ScalarFieldSmoother.h>
 #include                  <ttkWrapper.h>
-#endif
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkRangePolygon
