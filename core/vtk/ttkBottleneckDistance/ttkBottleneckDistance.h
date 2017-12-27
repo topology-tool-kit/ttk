@@ -19,27 +19,6 @@
 /// \sa ttk::BottleneckDistance
 #pragma once
 
-#ifndef _MSC_VER
-// TTK includes
-#include                  <BottleneckDistance.h>
-#include                  <ttkWrapper.h>
-
-// VTK includes
-#include                  <vtkCharArray.h>
-#include                  <vtkDataArray.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkDoubleArray.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkFloatArray.h>
-#include                  <vtkInformation.h>
-#include                  <vtkIntArray.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkPointData.h>
-#include                  <vtkSmartPointer.h>
-#include                  <vtkUnstructuredGrid.h>
-#include                  <vtkCellData.h>
-#else
 // VTK includes
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
@@ -59,7 +38,6 @@
 // TTK includes
 #include                  <BottleneckDistance.h>
 #include                  <ttkWrapper.h>
-#endif
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkBottleneckDistance
