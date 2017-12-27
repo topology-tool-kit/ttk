@@ -21,25 +21,6 @@
 #ifndef _TTK_POINTDATACONVERTER_H
 #define _TTK_POINTDATACONVERTER_H
 
-#ifndef _MSC_VER
-// ttk code includes
-#include                  <Wrapper.h>
-
-// VTK includes -- to adapt
-#include                  <vtkUnsignedCharArray.h>
-#include                  <vtkUnsignedShortArray.h>
-#include                  <vtkDataArray.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkDoubleArray.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkFloatArray.h>
-#include                  <vtkInformation.h>
-#include                  <vtkIntArray.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkPointData.h>
-#include                  <vtkSmartPointer.h>
-#else
 // VTK includes -- to adapt
 #include                  <vtkUnsignedCharArray.h>
 #include                  <vtkUnsignedShortArray.h>
@@ -57,7 +38,6 @@
 
 // ttk code includes
 #include                  <Wrapper.h>
-#endif
 
 #include<limits>
 
