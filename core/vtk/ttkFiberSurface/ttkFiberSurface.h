@@ -41,25 +41,6 @@
 #ifndef _TTK_RANGEPOLYGON_H
 #define _TTK_RANGEPOLYGON_H
 
-#ifndef _MSC_VER
-// ttk code includes
-#include                  <FiberSurface.h>
-#include                  <ttkWrapper.h>
-
-// VTK includes -- to adapt
-#include                  <vtkCellArray.h>
-#include                  <vtkCellData.h>
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkDoubleArray.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkInformation.h>
-#include                  <vtkIntArray.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkPointData.h>
-#include                  <vtkPolyData.h>
-#include                  <vtkSmartPointer.h>
-#include                  <vtkUnstructuredGrid.h>
-#else
 // VTK includes -- to adapt
 #include                  <vtkCellArray.h>
 #include                  <vtkCellData.h>
@@ -77,7 +58,6 @@
 // ttk code includes
 #include                  <FiberSurface.h>
 #include                  <ttkWrapper.h>
-#endif
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkFiberSurface
