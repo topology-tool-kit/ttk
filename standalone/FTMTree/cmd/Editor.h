@@ -8,21 +8,6 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#ifndef _MSC_VER
- // base code includes
-#include <CommandLineParser.h>
-
- // vtk wrappers
-#include <ttkFTMTree.h>
-
- // VTK includes
-#include <vtkDataSet.h>
-
-#include <vtkXMLImageDataReader.h>
-#include <vtkXMLUnstructuredGridReader.h>
-
-#include <vtkXMLUnstructuredGridWriter.h>
-#else
  // VTK includes
 #include <vtkDataSet.h>
 
@@ -36,7 +21,6 @@
 
  // base code includes
 #include <CommandLineParser.h>
-#endif
 
 class Editor : public Debug
 {
