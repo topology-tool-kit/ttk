@@ -80,13 +80,13 @@ int ttkBlank::doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs){
   // calling the executing package
   switch(inputScalarField->GetDataType()){
    
-    vtkTemplateMacro((
-      {
-        blank_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
-        blank_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
-        blank_.execute<VTK_TT>(SomeIntegerArgument);
-      }
-    ));
+    vtkTemplateMacro(
+    {
+      blank_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
+      blank_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
+      blank_.execute<VTK_TT>(SomeIntegerArgument);
+    }
+    );
   }
   
   {

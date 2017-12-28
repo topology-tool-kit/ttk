@@ -56,7 +56,7 @@ class ttkKeyHandler : public Debug{
       vtkRenderWindowInteractor *interactor, string &key) = 0;
 };
 
-class ttkUserInterfaceBase : public ttkProgramBase{
+class VTKFILTERSCORE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
   
   public:
     

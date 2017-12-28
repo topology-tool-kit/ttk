@@ -11,6 +11,7 @@ vtkStandardNewMacro(ttkBottleneckDistance)
 #define macroMatchingTuple tuple<ftm::idVertex, ftm::idVertex, VTK_TT>
 #endif
 
+
 int ttkBottleneckDistance::doIt(
   vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs)
@@ -44,6 +45,7 @@ int ttkBottleneckDistance::doIt(
   int status = 0;
 
   switch (dataType1) {
+#ifndef _MSC_VER
     vtkTemplateMacro(({
       vector<macroDiagramTuple>* CTDiagram1 = new vector<macroDiagramTuple>();
 
@@ -90,6 +92,55 @@ int ttkBottleneckDistance::doIt(
 
       if (status != 0) { return status; }
     }));
+#else
+	  vtkTemplateMacro({
+		  vector<macroDiagramTuple>* CTDiagram1 = new vector<macroDiagramTuple>();
+
+	  vector<macroDiagramTuple>* CTDiagram2 = new vector<macroDiagramTuple>();
+
+	  status = getPersistenceDiagram<VTK_TT>(
+		  CTDiagram1, CTPersistenceDiagram1_, Spacing, 0);
+
+	  status = getPersistenceDiagram<VTK_TT>(
+		  CTDiagram2, CTPersistenceDiagram2_, Spacing, 1);
+
+	  bottleneckDistance_.setCTDiagram1(CTDiagram1);
+	  bottleneckDistance_.setCTDiagram2(CTDiagram2);
+
+	  string wassersteinMetric = WassersteinMetric;
+	  bottleneckDistance_.setWasserstein(wassersteinMetric);
+
+	  // Empty matchings.
+	  vector<macroMatchingTuple>* matchings = new vector<macroMatchingTuple>();
+	  bottleneckDistance_.setOutputMatchings(matchings);
+
+	  // Exec.
+	  bool usePersistenceMetric = UsePersistenceMetric;
+	  double alpha = Alpha;
+	  status = bottleneckDistance_.execute<VTK_TT>(usePersistenceMetric, alpha);
+
+	  // Apply results to outputs 0 and 1.
+	  status = augmentPersistenceDiagrams<VTK_TT>(
+		  CTDiagram1,
+		  CTDiagram2,
+		  matchings,
+		  CTPersistenceDiagram1_,
+		  CTPersistenceDiagram2_);
+
+	  bool useOutputMatching = UseOutputMatching;
+	  bool useGeometricSpacing = UseGeometricSpacing;
+
+	  // Apply results to output 2.
+	  if (useOutputMatching) {
+		  status = getMatchingMesh<VTK_TT>(
+			  CTDiagram1, CTDiagram2, matchings,
+			  useGeometricSpacing, Spacing);
+	  }
+
+	  if (status != 0) { return status; }
+	  });
+#endif
+
   }
 
   // Set output.

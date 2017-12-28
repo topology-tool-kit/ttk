@@ -345,560 +345,887 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
       morseSmaleManifold->GetVoidPointer(0));
 
   switch(inputScalars->GetDataType()){
-    vtkTemplateMacro(({
-          // critical points
-          vector<VTK_TT> criticalPoints_points_cellScalars;
-
-          // 1-separatrices
-          vector<VTK_TT> separatrices1_cells_separatrixFunctionMaxima;
-          vector<VTK_TT> separatrices1_cells_separatrixFunctionMinima;
-          vector<VTK_TT> separatrices1_cells_separatrixFunctionDiffs;
-
-          // 2-separatrices
-          vector<VTK_TT> separatrices2_cells_separatrixFunctionMaxima;
-          vector<VTK_TT> separatrices2_cells_separatrixFunctionMinima;
-          vector<VTK_TT> separatrices2_cells_separatrixFunctionDiffs;
-
-          morseSmaleComplex_.setOutputCriticalPoints(
-              &criticalPoints_numberOfPoints,
-              &criticalPoints_points,
-              &criticalPoints_points_cellDimensions,
-              &criticalPoints_points_cellIds,
-              &criticalPoints_points_cellScalars,
-              &criticalPoints_points_isOnBoundary,
-              &criticalPoints_points_PLVertexIdentifiers,
-              &criticalPoints_points_manifoldSize);
-
-
-          morseSmaleComplex_.setOutputSeparatrices1(
-              &separatrices1_numberOfPoints,
-              &separatrices1_points,
-              &separatrices1_points_smoothingMask,
-              &separatrices1_points_cellDimensions,
-              &separatrices1_points_cellIds,
-              &separatrices1_numberOfCells,
-              &separatrices1_cells,
-              &separatrices1_cells_sourceIds,
-              &separatrices1_cells_destinationIds,
-              &separatrices1_cells_separatrixIds,
-              &separatrices1_cells_separatrixTypes,
-              &separatrices1_cells_separatrixFunctionMaxima,
-              &separatrices1_cells_separatrixFunctionMinima,
-              &separatrices1_cells_separatrixFunctionDiffs,
-              &separatrices1_cells_isOnBoundary);
-
-
-          morseSmaleComplex_.setOutputSeparatrices2(
-              &separatrices2_numberOfPoints,
-              &separatrices2_points,
-              &separatrices2_numberOfCells,
-              &separatrices2_cells,
-              &separatrices2_cells_sourceIds,
-              &separatrices2_cells_separatrixIds,
-              &separatrices2_cells_separatrixTypes,
-              &separatrices2_cells_separatrixFunctionMaxima,
-              &separatrices2_cells_separatrixFunctionMinima,
-              &separatrices2_cells_separatrixFunctionDiffs,
-              &separatrices2_cells_isOnBoundary);
-
-          ret=morseSmaleComplex_.execute<VTK_TT>();
 #ifndef TTK_ENABLE_KAMIKAZE
-          if(ret){
-            cerr 
-              << "[ttkMorseSmaleComplex] Error : MorseSmaleComplex.execute() "
-              << "error code : " << ret << endl;
-            return -8;
+    vtkTemplateMacro({
+      // critical points
+      vector<VTK_TT> criticalPoints_points_cellScalars;
+
+      // 1-separatrices
+      vector<VTK_TT> separatrices1_cells_separatrixFunctionMaxima;
+      vector<VTK_TT> separatrices1_cells_separatrixFunctionMinima;
+      vector<VTK_TT> separatrices1_cells_separatrixFunctionDiffs;
+
+      // 2-separatrices
+      vector<VTK_TT> separatrices2_cells_separatrixFunctionMaxima;
+      vector<VTK_TT> separatrices2_cells_separatrixFunctionMinima;
+      vector<VTK_TT> separatrices2_cells_separatrixFunctionDiffs;
+
+      morseSmaleComplex_.setOutputCriticalPoints(
+        &criticalPoints_numberOfPoints,
+        &criticalPoints_points,
+        &criticalPoints_points_cellDimensions,
+        &criticalPoints_points_cellIds,
+        &criticalPoints_points_cellScalars,
+        &criticalPoints_points_isOnBoundary,
+        &criticalPoints_points_PLVertexIdentifiers,
+        &criticalPoints_points_manifoldSize);
+
+
+      morseSmaleComplex_.setOutputSeparatrices1(
+        &separatrices1_numberOfPoints,
+        &separatrices1_points,
+        &separatrices1_points_smoothingMask,
+        &separatrices1_points_cellDimensions,
+        &separatrices1_points_cellIds,
+        &separatrices1_numberOfCells,
+        &separatrices1_cells,
+        &separatrices1_cells_sourceIds,
+        &separatrices1_cells_destinationIds,
+        &separatrices1_cells_separatrixIds,
+        &separatrices1_cells_separatrixTypes,
+        &separatrices1_cells_separatrixFunctionMaxima,
+        &separatrices1_cells_separatrixFunctionMinima,
+        &separatrices1_cells_separatrixFunctionDiffs,
+        &separatrices1_cells_isOnBoundary);
+
+
+      morseSmaleComplex_.setOutputSeparatrices2(
+        &separatrices2_numberOfPoints,
+        &separatrices2_points,
+        &separatrices2_numberOfCells,
+        &separatrices2_cells,
+        &separatrices2_cells_sourceIds,
+        &separatrices2_cells_separatrixIds,
+        &separatrices2_cells_separatrixTypes,
+        &separatrices2_cells_separatrixFunctionMaxima,
+        &separatrices2_cells_separatrixFunctionMinima,
+        &separatrices2_cells_separatrixFunctionDiffs,
+        &separatrices2_cells_isOnBoundary);
+
+      ret = morseSmaleComplex_.execute<VTK_TT>();
+      if (ret) {
+        cerr
+          << "[ttkMorseSmaleComplex] Error : MorseSmaleComplex.execute() "
+          << "error code : " << ret << endl;
+        return -8;
+      }
+
+      // critical points
+      {
+        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+        if (!points) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation "
+            << "problem." << endl;
+          return -9;
+        }
+
+        vtkSmartPointer<vtkIntArray> cellDimensions =
+          vtkSmartPointer<vtkIntArray>::New();
+        if (!cellDimensions) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+            << "problem." << endl;
+          return -10;
+        }
+        cellDimensions->SetNumberOfComponents(1);
+        cellDimensions->SetName("CellDimension");
+
+        vtkSmartPointer<vtkIntArray> cellIds =
+          vtkSmartPointer<vtkIntArray>::New();
+        if (!cellIds) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+            << "problem." << endl;
+          return -11;
+        }
+        cellIds->SetNumberOfComponents(1);
+        cellIds->SetName("CellId");
+
+        vtkDataArray* cellScalars = inputScalars->NewInstance();
+        if (!cellScalars) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
+            << "problem." << endl;
+          return -12;
+        }
+        cellScalars->SetNumberOfComponents(1);
+        cellScalars->SetName(ScalarField.data());
+
+        vtkSmartPointer<vtkCharArray> isOnBoundary =
+          vtkSmartPointer<vtkCharArray>::New();
+        if (!isOnBoundary) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+            << "problem." << endl;
+          return -13;
+        }
+        isOnBoundary->SetNumberOfComponents(1);
+        isOnBoundary->SetName("IsOnBoundary");
+
+        vtkSmartPointer<vtkIntArray> PLVertexIdentifiers =
+          vtkSmartPointer<vtkIntArray>::New();
+        if (!PLVertexIdentifiers) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+            << "problem." << endl;
+          return -14;
+        }
+        PLVertexIdentifiers->SetNumberOfComponents(1);
+        PLVertexIdentifiers->SetName("VertexIdentifier");
+
+        vtkSmartPointer<vtkIntArray> manifoldSizeScalars = 
+          vtkSmartPointer<vtkIntArray>::New();
+        if (!manifoldSizeScalars) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+            << "problem." << endl;
+          return -15;
+        }
+        manifoldSizeScalars->SetNumberOfComponents(1);
+        manifoldSizeScalars->SetName("ManifoldSize");
+
+        for (int i = 0; i<criticalPoints_numberOfPoints; ++i) {
+          points->InsertNextPoint(criticalPoints_points[3 * i],
+            criticalPoints_points[3 * i + 1],
+            criticalPoints_points[3 * i + 2]);
+
+          cellDimensions->InsertNextTuple1(
+            criticalPoints_points_cellDimensions[i]);
+          cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
+
+          cellScalars->InsertNextTuple1(
+            criticalPoints_points_cellScalars[i]);
+
+          isOnBoundary->InsertNextTuple1(
+            criticalPoints_points_isOnBoundary[i]);
+
+          PLVertexIdentifiers->InsertNextTuple1(
+            criticalPoints_points_PLVertexIdentifiers[i]);
+
+          if (ComputeAscendingSegmentation and ComputeDescendingSegmentation)
+            manifoldSizeScalars->InsertNextTuple1(
+              criticalPoints_points_manifoldSize[i]);
+          else
+            manifoldSizeScalars->InsertNextTuple1(-1);
+        }
+        outputCriticalPoints->SetPoints(points);
+
+        vtkPointData* pointData = outputCriticalPoints->GetPointData();
+        if (!pointData) {
+          cerr << "[ttkMorseSmaleComplex] Error : outputCriticalPoints has "
+            << "no point data." << endl;
+          return -16;
+        }
+
+        pointData->AddArray(cellDimensions);
+        pointData->AddArray(cellIds);
+        pointData->AddArray(cellScalars);
+        pointData->AddArray(isOnBoundary);
+        pointData->AddArray(PLVertexIdentifiers);
+        pointData->AddArray(manifoldSizeScalars);
+      }
+
+      // 1-separatrices
+      if (ComputeAscendingSeparatrices1 or ComputeDescendingSeparatrices1 or
+        ComputeSaddleConnectors) {
+        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+        if (!points) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation "
+            << "problem." << endl;
+          return -17;
+        }
+        vtkSmartPointer<vtkCharArray>
+          smoothingMask = vtkSmartPointer<vtkCharArray>::New();
+        if (!smoothingMask) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+            << "problem." << endl;
+          return -18;
+        }
+        smoothingMask->SetNumberOfComponents(1);
+        smoothingMask->SetName("SmoothingMask");
+
+        vtkSmartPointer<vtkIntArray>
+          cellDimensions = vtkSmartPointer<vtkIntArray>::New();
+        if (!cellDimensions) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+            << "problem." << endl;
+          return -19;
+        }
+        cellDimensions->SetNumberOfComponents(1);
+        cellDimensions->SetName("CellDimension");
+
+        vtkSmartPointer<vtkIntArray>
+          cellIds = vtkSmartPointer<vtkIntArray>::New();
+        if (!cellIds) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+            << "problem." << endl;
+          return -20;
+        }
+        cellIds->SetNumberOfComponents(1);
+        cellIds->SetName("CellId");
+
+        vtkSmartPointer<vtkIntArray>
+          sourceIds = vtkSmartPointer<vtkIntArray>::New();
+        if (!sourceIds) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+            << "problem." << endl;
+          return -21;
+        }
+        sourceIds->SetNumberOfComponents(1);
+        sourceIds->SetName("SourceId");
+
+        vtkSmartPointer<vtkIntArray>
+          destinationIds = vtkSmartPointer<vtkIntArray>::New();
+        if (!destinationIds) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+            << "problem." << endl;
+          return -22;
+        }
+        destinationIds->SetNumberOfComponents(1);
+        destinationIds->SetName("DestinationId");
+
+        vtkSmartPointer<vtkIntArray>
+          separatrixIds = vtkSmartPointer<vtkIntArray>::New();
+        if (!separatrixIds) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+            << "problem." << endl;
+          return -23;
+        }
+        separatrixIds->SetNumberOfComponents(1);
+        separatrixIds->SetName("SeparatrixId");
+
+        vtkSmartPointer<vtkCharArray>
+          separatrixTypes = vtkSmartPointer<vtkCharArray>::New();
+        if (!separatrixTypes) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+            << "problem." << endl;
+          return -24;
+        }
+        separatrixTypes->SetNumberOfComponents(1);
+        separatrixTypes->SetName("CriticalPointIndex");
+
+        vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
+        if (!separatrixFunctionMaxima) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
+            << "problem." << endl;
+          return -25;
+        }
+        separatrixFunctionMaxima->SetNumberOfComponents(1);
+        separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
+
+        vtkDataArray* separatrixFunctionMinima = inputScalars->NewInstance();
+        if (!separatrixFunctionMinima) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
+            << "problem." << endl;
+          return -26;
+        }
+        separatrixFunctionMinima->SetNumberOfComponents(1);
+        separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
+
+        vtkDataArray* separatrixFunctionDiffs = inputScalars->NewInstance();
+        if (!separatrixFunctionDiffs) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
+            << "problem." << endl;
+          return -27;
+        }
+        separatrixFunctionDiffs->SetNumberOfComponents(1);
+        separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
+
+        vtkSmartPointer<vtkCharArray>
+          isOnBoundary = vtkSmartPointer<vtkCharArray>::New();
+        if (!isOnBoundary) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+            << "problem." << endl;
+          return -28;
+        }
+        isOnBoundary->SetNumberOfComponents(1);
+        isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
+
+        for (int i = 0; i<separatrices1_numberOfPoints; ++i) {
+          points->InsertNextPoint(separatrices1_points[3 * i],
+            separatrices1_points[3 * i + 1],
+            separatrices1_points[3 * i + 2]);
+
+          
+          smoothingMask->InsertNextTuple1(
+            separatrices1_points_smoothingMask[i]);
+          cellDimensions->InsertNextTuple1(
+            separatrices1_points_cellDimensions[i]);
+            cellIds->InsertNextTuple1(separatrices1_points_cellIds[i]);
+        }
+        outputSeparatrices1->SetPoints(points);
+
+        outputSeparatrices1->Allocate(separatrices1_numberOfCells);
+        int ptr{};
+        for (int i = 0; i<separatrices1_numberOfCells; ++i) {
+          vtkIdType line[2];
+          line[0] = separatrices1_cells[ptr + 1];
+          line[1] = separatrices1_cells[ptr + 2];
+
+          outputSeparatrices1->InsertNextCell(VTK_LINE, 2, line);
+
+          sourceIds->InsertNextTuple1(separatrices1_cells_sourceIds[i]);
+
+          destinationIds->InsertNextTuple1(
+            separatrices1_cells_destinationIds[i]);
+
+          separatrixIds->InsertNextTuple1(separatrices1_cells_separatrixIds[i]);
+
+          
+          separatrixTypes->InsertNextTuple1(
+            separatrices1_cells_separatrixTypes[i]);
+
+          separatrixFunctionMaxima->InsertNextTuple1(
+            separatrices1_cells_separatrixFunctionMaxima[i]);
+
+          separatrixFunctionMinima->InsertNextTuple1(
+            separatrices1_cells_separatrixFunctionMinima[i]);
+
+          separatrixFunctionDiffs->InsertNextTuple1(
+            separatrices1_cells_separatrixFunctionDiffs[i]);
+
+          isOnBoundary->InsertNextTuple1(separatrices1_cells_isOnBoundary[i]);
+
+          ptr += (separatrices1_cells[ptr] + 1);
+        }
+
+        vtkPointData* pointData = outputSeparatrices1->GetPointData();
+        if (!pointData) {
+          cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
+            << "no point data." << endl;
+          return -29;
+        }
+
+        pointData->AddArray(smoothingMask);
+        pointData->AddArray(cellDimensions);
+        pointData->AddArray(cellIds);
+
+        vtkCellData* cellData = outputSeparatrices1->GetCellData();
+        if (!cellData) {
+          cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
+            << "no cell data." << endl;
+          return -30;
+        }
+
+        cellData->AddArray(sourceIds);
+        cellData->AddArray(destinationIds);
+        cellData->AddArray(separatrixIds);
+        cellData->AddArray(separatrixTypes);
+        cellData->AddArray(separatrixFunctionMaxima);
+        cellData->AddArray(separatrixFunctionMinima);
+        cellData->AddArray(separatrixFunctionDiffs);
+        cellData->AddArray(isOnBoundary);
+      }
+
+      // 2-separatrices
+      if (dimensionality == 3 and (ComputeAscendingSeparatrices2 or 
+        ComputeDescendingSeparatrices2)) {
+        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+        if (!points) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation problem."
+            << endl;
+          return -32;
+        }
+
+        vtkSmartPointer<vtkIntArray> sourceIds = 
+          vtkSmartPointer<vtkIntArray>::New();
+        if (!sourceIds) {
+          cerr 
+            << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem."
+            << endl;
+          return -32;
+        }
+        sourceIds->SetNumberOfComponents(1);
+        sourceIds->SetName("SourceId");
+
+        vtkSmartPointer<vtkIntArray> separatrixIds = 
+    vtkSmartPointer<vtkIntArray>::New();
+        if (!separatrixIds) {
+          cerr 
+            << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem."
+            << endl;
+          return -33;
+        }
+        separatrixIds->SetNumberOfComponents(1);
+        separatrixIds->SetName("SeparatrixId");
+
+        vtkSmartPointer<vtkCharArray> separatrixTypes = 
+    vtkSmartPointer<vtkCharArray>::New();
+        if (!separatrixTypes) {
+          cerr << 
+            "[ttkMorseSmaleComplex] Error : vtkCharArray allocation  problem."
+            << endl;
+          return -34;
+        }
+        separatrixTypes->SetNumberOfComponents(1);
+        separatrixTypes->SetName("CriticalPointIndex");
+
+        vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
+        if (!separatrixFunctionMaxima) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
+            << "problem." << endl;
+          return -35;
+        }
+        separatrixFunctionMaxima->SetNumberOfComponents(1);
+        separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
+
+        vtkDataArray* separatrixFunctionMinima = inputScalars->NewInstance();
+        if (!separatrixFunctionMinima) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
+            << "problem." << endl;
+          return -36;
+        }
+        separatrixFunctionMinima->SetNumberOfComponents(1);
+        separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
+
+        vtkDataArray* separatrixFunctionDiffs = inputScalars->NewInstance();
+        if (!separatrixFunctionDiffs) {
+          cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
+            << "problem." << endl;
+          return -37;
+        }
+        separatrixFunctionDiffs->SetNumberOfComponents(1);
+        separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
+
+        vtkSmartPointer<vtkCharArray> isOnBoundary = 
+          vtkSmartPointer<vtkCharArray>::New();
+        if (!isOnBoundary) {
+          cerr << 
+            "[ttkMorseSmaleComplex] Error : vtkCharArray allocation problem."
+            << endl;
+          return -38;
+        }
+        isOnBoundary->SetNumberOfComponents(1);
+        isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
+
+        for (int i = 0; i<separatrices2_numberOfPoints; ++i) {
+          points->InsertNextPoint(separatrices2_points[3 * i],
+            separatrices2_points[3 * i + 1],
+            separatrices2_points[3 * i + 2]);
+        }
+        outputSeparatrices2->SetPoints(points);
+
+        outputSeparatrices2->Allocate(separatrices2_numberOfCells);
+        int ptr{};
+        for (int i = 0; i<separatrices2_numberOfCells; ++i) {
+          const int vertexNumber = separatrices2_cells[ptr];
+
+          if (vertexNumber == 3) {
+            vtkIdType triangle[3];
+            triangle[0] = separatrices2_cells[ptr + 1];
+            triangle[1] = separatrices2_cells[ptr + 2];
+            triangle[2] = separatrices2_cells[ptr + 3];
+
+            outputSeparatrices2->InsertNextCell(
+              VTK_TRIANGLE, vertexNumber, triangle);
           }
-#endif
+          else {
+            vtkIdType ids[16];
+            for (int j = 1; j <= vertexNumber; ++j)
+              ids[j - 1] = separatrices2_cells[ptr + j];
 
-          // critical points
-          {
-            vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!points){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation "
-                << "problem." << endl;
-              return -9;
-            }
-#endif
-
-            vtkSmartPointer<vtkIntArray> cellDimensions = 
-              vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!cellDimensions){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
-                << "problem." << endl;
-              return -10;
-            }
-#endif
-            cellDimensions->SetNumberOfComponents(1);
-            cellDimensions->SetName("CellDimension");
-
-            vtkSmartPointer<vtkIntArray> cellIds=
-              vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!cellIds){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
-                << "problem." << endl;
-              return -11;
-            }
-#endif
-            cellIds->SetNumberOfComponents(1);
-            cellIds->SetName("CellId");
-
-            vtkDataArray* cellScalars=inputScalars->NewInstance();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!cellScalars){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-                << "problem." << endl;
-              return -12;
-            }
-#endif
-            cellScalars->SetNumberOfComponents(1);
-            cellScalars->SetName(ScalarField.data());
-
-            vtkSmartPointer<vtkCharArray> isOnBoundary=
-              vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!isOnBoundary){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
-                << "problem." << endl;
-              return -13;
-            }
-#endif
-            isOnBoundary->SetNumberOfComponents(1);
-            isOnBoundary->SetName("IsOnBoundary");
-
-            vtkSmartPointer<vtkIntArray> PLVertexIdentifiers=
-              vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!PLVertexIdentifiers){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
-                << "problem." << endl;
-              return -14;
-            }
-#endif
-            PLVertexIdentifiers->SetNumberOfComponents(1);
-            PLVertexIdentifiers->SetName("VertexIdentifier");
-
-            vtkSmartPointer<vtkIntArray> manifoldSizeScalars=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!manifoldSizeScalars){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
-                << "problem." << endl;
-              return -15;
-            }
-#endif
-            manifoldSizeScalars->SetNumberOfComponents(1);
-            manifoldSizeScalars->SetName("ManifoldSize");
-
-            for(int i=0; i<criticalPoints_numberOfPoints; ++i){
-              points->InsertNextPoint(criticalPoints_points[3*i],
-                  criticalPoints_points[3*i+1],
-                  criticalPoints_points[3*i+2]);
-
-              cellDimensions->InsertNextTuple1(
-                  criticalPoints_points_cellDimensions[i]);
-              cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
-
-              cellScalars->InsertNextTuple1(
-                  criticalPoints_points_cellScalars[i]);
-
-              isOnBoundary->InsertNextTuple1(
-                  criticalPoints_points_isOnBoundary[i]);
-
-              PLVertexIdentifiers->InsertNextTuple1(
-                  criticalPoints_points_PLVertexIdentifiers[i]);
-
-              if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
-                manifoldSizeScalars->InsertNextTuple1(
-                    criticalPoints_points_manifoldSize[i]);
-              else
-                manifoldSizeScalars->InsertNextTuple1(-1);
-            }
-            outputCriticalPoints->SetPoints(points);
-
-            vtkPointData* pointData=outputCriticalPoints->GetPointData();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!pointData){
-              cerr << "[ttkMorseSmaleComplex] Error : outputCriticalPoints has "
-                << "no point data." << endl;
-              return -16;
-            }
-#endif
-
-            pointData->AddArray(cellDimensions);
-            pointData->AddArray(cellIds);
-            pointData->AddArray(cellScalars);
-            pointData->AddArray(isOnBoundary);
-            pointData->AddArray(PLVertexIdentifiers);
-            pointData->AddArray(manifoldSizeScalars);
+            outputSeparatrices2->InsertNextCell(VTK_POLYGON, vertexNumber, ids);
           }
 
-          // 1-separatrices
-          if(ComputeAscendingSeparatrices1 or ComputeDescendingSeparatrices1 or 
-              ComputeSaddleConnectors){
-            vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!points){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation "
-                << "problem." << endl;
-              return -17;
-            }
-#endif
-            vtkSmartPointer<vtkCharArray>
-              smoothingMask=vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!smoothingMask){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
-                << "problem." << endl;
-              return -18;
-            }
-#endif
-            smoothingMask->SetNumberOfComponents(1);
-            smoothingMask->SetName("SmoothingMask");
+          sourceIds->InsertNextTuple1(separatrices2_cells_sourceIds[i]);
+          separatrixIds->InsertNextTuple1(separatrices2_cells_separatrixIds[i]);
+          
+          separatrixTypes->InsertNextTuple1(
+            separatrices2_cells_separatrixTypes[i]);
+          separatrixFunctionMaxima->InsertNextTuple1(
+            separatrices2_cells_separatrixFunctionMaxima[i]);
 
-            vtkSmartPointer<vtkIntArray> 
-              cellDimensions=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!cellDimensions){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
-                << "problem." << endl;
-              return -19;
-            }
-#endif
-            cellDimensions->SetNumberOfComponents(1);
-            cellDimensions->SetName("CellDimension");
+          separatrixFunctionMinima->InsertNextTuple1(
+            separatrices2_cells_separatrixFunctionMinima[i]);
 
-            vtkSmartPointer<vtkIntArray> 
-              cellIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!cellIds){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
-                << "problem." << endl;
-              return -20;
-            }
-#endif
-            cellIds->SetNumberOfComponents(1);
-            cellIds->SetName("CellId");
+          separatrixFunctionDiffs->InsertNextTuple1(
+            separatrices2_cells_separatrixFunctionDiffs[i]);
+          isOnBoundary->InsertNextTuple1(separatrices2_cells_isOnBoundary[i]);
 
-            vtkSmartPointer<vtkIntArray> 
-              sourceIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!sourceIds){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
-                << "problem." << endl;
-              return -21;
-            }
-#endif
-            sourceIds->SetNumberOfComponents(1);
-            sourceIds->SetName("SourceId");
+          ptr += (separatrices2_cells[ptr] + 1);
+        }
 
-            vtkSmartPointer<vtkIntArray> 
-              destinationIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!destinationIds){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
-                << "problem." << endl;
-              return -22;
-            }
-#endif
-            destinationIds->SetNumberOfComponents(1);
-            destinationIds->SetName("DestinationId");
+        vtkCellData* cellData = outputSeparatrices2->GetCellData();
+        if (!cellData) {
+          cerr << "[ttkMorseSmaleComplex] Error : "
+            << "outputSeparatrices2 has no cell data." << endl;
+          return -39;
+        }
 
-            vtkSmartPointer<vtkIntArray> 
-              separatrixIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!separatrixIds){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
-                << "problem." << endl;
-              return -23;
-            }
-#endif
-            separatrixIds->SetNumberOfComponents(1);
-            separatrixIds->SetName("SeparatrixId");
+        cellData->AddArray(sourceIds);
+        cellData->AddArray(separatrixIds);
+        cellData->AddArray(separatrixTypes);
+        cellData->AddArray(separatrixFunctionMaxima);
+        cellData->AddArray(separatrixFunctionMinima);
+        cellData->AddArray(separatrixFunctionDiffs);
+        cellData->AddArray(isOnBoundary);
+      }
+    });
+  #else
+    vtkTemplateMacro({
+      // critical points
+      vector<VTK_TT> criticalPoints_points_cellScalars;
 
-            vtkSmartPointer<vtkCharArray> 
-              separatrixTypes=vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!separatrixTypes){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
-                << "problem." << endl;
-              return -24;
-            }
-#endif
-            separatrixTypes->SetNumberOfComponents(1);
-            separatrixTypes->SetName("CriticalPointIndex");
+      // 1-separatrices
+      vector<VTK_TT> separatrices1_cells_separatrixFunctionMaxima;
+      vector<VTK_TT> separatrices1_cells_separatrixFunctionMinima;
+      vector<VTK_TT> separatrices1_cells_separatrixFunctionDiffs;
 
-            vtkDataArray* separatrixFunctionMaxima=inputScalars->NewInstance();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!separatrixFunctionMaxima){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-                << "problem." << endl;
-              return -25;
-            }
-#endif
-            separatrixFunctionMaxima->SetNumberOfComponents(1);
-            separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
+      // 2-separatrices
+      vector<VTK_TT> separatrices2_cells_separatrixFunctionMaxima;
+      vector<VTK_TT> separatrices2_cells_separatrixFunctionMinima;
+      vector<VTK_TT> separatrices2_cells_separatrixFunctionDiffs;
 
-            vtkDataArray* separatrixFunctionMinima=inputScalars->NewInstance();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!separatrixFunctionMinima){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-                << "problem." << endl;
-              return -26;
-            }
-#endif
-            separatrixFunctionMinima->SetNumberOfComponents(1);
-            separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
+      morseSmaleComplex_.setOutputCriticalPoints(
+        &criticalPoints_numberOfPoints,
+        &criticalPoints_points,
+        &criticalPoints_points_cellDimensions,
+        &criticalPoints_points_cellIds,
+        &criticalPoints_points_cellScalars,
+        &criticalPoints_points_isOnBoundary,
+        &criticalPoints_points_PLVertexIdentifiers,
+        &criticalPoints_points_manifoldSize);
 
-            vtkDataArray* separatrixFunctionDiffs=inputScalars->NewInstance();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!separatrixFunctionDiffs){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-                << "problem." << endl;
-              return -27;
-            }
-#endif
-            separatrixFunctionDiffs->SetNumberOfComponents(1);
-            separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
 
-            vtkSmartPointer<vtkCharArray> 
-              isOnBoundary=vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!isOnBoundary){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
-                << "problem." << endl;
-              return -28;
-            }
-#endif
-            isOnBoundary->SetNumberOfComponents(1);
-            isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
+      morseSmaleComplex_.setOutputSeparatrices1(
+        &separatrices1_numberOfPoints,
+        &separatrices1_points,
+        &separatrices1_points_smoothingMask,
+        &separatrices1_points_cellDimensions,
+        &separatrices1_points_cellIds,
+        &separatrices1_numberOfCells,
+        &separatrices1_cells,
+        &separatrices1_cells_sourceIds,
+        &separatrices1_cells_destinationIds,
+        &separatrices1_cells_separatrixIds,
+        &separatrices1_cells_separatrixTypes,
+        &separatrices1_cells_separatrixFunctionMaxima,
+        &separatrices1_cells_separatrixFunctionMinima,
+        &separatrices1_cells_separatrixFunctionDiffs,
+        &separatrices1_cells_isOnBoundary);
 
-            for(int i=0; i<separatrices1_numberOfPoints; ++i){
-              points->InsertNextPoint(separatrices1_points[3*i],
-                  separatrices1_points[3*i+1],
-                  separatrices1_points[3*i+2]);
 
-              smoothingMask->InsertNextTuple1(separatrices1_points_smoothingMask[i]);
-              cellDimensions->InsertNextTuple1(separatrices1_points_cellDimensions[i]);
-              cellIds->InsertNextTuple1(separatrices1_points_cellIds[i]);
-            }
-            outputSeparatrices1->SetPoints(points);
+      morseSmaleComplex_.setOutputSeparatrices2(
+        &separatrices2_numberOfPoints,
+        &separatrices2_points,
+        &separatrices2_numberOfCells,
+        &separatrices2_cells,
+        &separatrices2_cells_sourceIds,
+        &separatrices2_cells_separatrixIds,
+        &separatrices2_cells_separatrixTypes,
+        &separatrices2_cells_separatrixFunctionMaxima,
+        &separatrices2_cells_separatrixFunctionMinima,
+        &separatrices2_cells_separatrixFunctionDiffs,
+        &separatrices2_cells_isOnBoundary);
 
-            outputSeparatrices1->Allocate(separatrices1_numberOfCells);
-            int ptr{};
-            for(int i=0; i<separatrices1_numberOfCells; ++i){
-              vtkIdType line[2];
-              line[0]=separatrices1_cells[ptr+1];
-              line[1]=separatrices1_cells[ptr+2];
+      ret = morseSmaleComplex_.execute<VTK_TT>();
 
-              outputSeparatrices1->InsertNextCell(VTK_LINE, 2, line);
+      // critical points
+      {
+        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
-              sourceIds->InsertNextTuple1(separatrices1_cells_sourceIds[i]);
+        vtkSmartPointer<vtkIntArray> cellDimensions =
+          vtkSmartPointer<vtkIntArray>::New();
 
-              destinationIds->InsertNextTuple1(separatrices1_cells_destinationIds[i]);
+        cellDimensions->SetNumberOfComponents(1);
+        cellDimensions->SetName("CellDimension");
 
-              separatrixIds->InsertNextTuple1(separatrices1_cells_separatrixIds[i]);
+        vtkSmartPointer<vtkIntArray> cellIds =
+          vtkSmartPointer<vtkIntArray>::New();
 
-              separatrixTypes->InsertNextTuple1(separatrices1_cells_separatrixTypes[i]);
+        cellIds->SetNumberOfComponents(1);
+        cellIds->SetName("CellId");
 
-              separatrixFunctionMaxima->InsertNextTuple1(
-                  separatrices1_cells_separatrixFunctionMaxima[i]);
+        vtkDataArray* cellScalars = inputScalars->NewInstance();
 
-              separatrixFunctionMinima->InsertNextTuple1(
-                  separatrices1_cells_separatrixFunctionMinima[i]);
+        cellScalars->SetNumberOfComponents(1);
+        cellScalars->SetName(ScalarField.data());
 
-              separatrixFunctionDiffs->InsertNextTuple1(
-                  separatrices1_cells_separatrixFunctionDiffs[i]);
+        vtkSmartPointer<vtkCharArray> isOnBoundary =
+          vtkSmartPointer<vtkCharArray>::New();
 
-              isOnBoundary->InsertNextTuple1(separatrices1_cells_isOnBoundary[i]);
+        isOnBoundary->SetNumberOfComponents(1);
+        isOnBoundary->SetName("IsOnBoundary");
 
-              ptr+=(separatrices1_cells[ptr]+1);
-            }
+        vtkSmartPointer<vtkIntArray> PLVertexIdentifiers =
+          vtkSmartPointer<vtkIntArray>::New();
 
-            vtkPointData* pointData=outputSeparatrices1->GetPointData();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!pointData){
-              cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
-                << "no point data." << endl;
-              return -29;
-            }
-#endif
+        PLVertexIdentifiers->SetNumberOfComponents(1);
+        PLVertexIdentifiers->SetName("VertexIdentifier");
 
-            pointData->AddArray(smoothingMask);
-            pointData->AddArray(cellDimensions);
-            pointData->AddArray(cellIds);
+        vtkSmartPointer<vtkIntArray> manifoldSizeScalars = 
+          vtkSmartPointer<vtkIntArray>::New();
 
-            vtkCellData* cellData=outputSeparatrices1->GetCellData();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!cellData){
-              cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
-                << "no cell data." << endl;
-              return -30;
-            }
-#endif
+        manifoldSizeScalars->SetNumberOfComponents(1);
+        manifoldSizeScalars->SetName("ManifoldSize");
 
-            cellData->AddArray(sourceIds);
-            cellData->AddArray(destinationIds);
-            cellData->AddArray(separatrixIds);
-            cellData->AddArray(separatrixTypes);
-            cellData->AddArray(separatrixFunctionMaxima);
-            cellData->AddArray(separatrixFunctionMinima);
-            cellData->AddArray(separatrixFunctionDiffs);
-            cellData->AddArray(isOnBoundary);
+        for (int i = 0; i<criticalPoints_numberOfPoints; ++i) {
+          points->InsertNextPoint(criticalPoints_points[3 * i],
+            criticalPoints_points[3 * i + 1],
+            criticalPoints_points[3 * i + 2]);
+
+          cellDimensions->InsertNextTuple1(
+            criticalPoints_points_cellDimensions[i]);
+          cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
+
+          cellScalars->InsertNextTuple1(
+            criticalPoints_points_cellScalars[i]);
+
+          isOnBoundary->InsertNextTuple1(
+            criticalPoints_points_isOnBoundary[i]);
+
+          PLVertexIdentifiers->InsertNextTuple1(
+            criticalPoints_points_PLVertexIdentifiers[i]);
+
+          if (ComputeAscendingSegmentation and ComputeDescendingSegmentation)
+            manifoldSizeScalars->InsertNextTuple1(
+              criticalPoints_points_manifoldSize[i]);
+          else
+            manifoldSizeScalars->InsertNextTuple1(-1);
+        }
+        outputCriticalPoints->SetPoints(points);
+
+        vtkPointData* pointData = outputCriticalPoints->GetPointData();
+
+        pointData->AddArray(cellDimensions);
+        pointData->AddArray(cellIds);
+        pointData->AddArray(cellScalars);
+        pointData->AddArray(isOnBoundary);
+        pointData->AddArray(PLVertexIdentifiers);
+        pointData->AddArray(manifoldSizeScalars);
+      }
+
+      // 1-separatrices
+      if (ComputeAscendingSeparatrices1 or ComputeDescendingSeparatrices1 or
+        ComputeSaddleConnectors) {
+        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
+        vtkSmartPointer<vtkCharArray>
+          smoothingMask = vtkSmartPointer<vtkCharArray>::New();
+
+        smoothingMask->SetNumberOfComponents(1);
+        smoothingMask->SetName("SmoothingMask");
+
+        vtkSmartPointer<vtkIntArray>
+          cellDimensions = vtkSmartPointer<vtkIntArray>::New();
+
+        cellDimensions->SetNumberOfComponents(1);
+        cellDimensions->SetName("CellDimension");
+
+        vtkSmartPointer<vtkIntArray>
+          cellIds = vtkSmartPointer<vtkIntArray>::New();
+
+        cellIds->SetNumberOfComponents(1);
+        cellIds->SetName("CellId");
+
+        vtkSmartPointer<vtkIntArray>
+          sourceIds = vtkSmartPointer<vtkIntArray>::New();
+
+        sourceIds->SetNumberOfComponents(1);
+        sourceIds->SetName("SourceId");
+
+        vtkSmartPointer<vtkIntArray>
+          destinationIds = vtkSmartPointer<vtkIntArray>::New();
+
+        destinationIds->SetNumberOfComponents(1);
+        destinationIds->SetName("DestinationId");
+
+        vtkSmartPointer<vtkIntArray>
+          separatrixIds = vtkSmartPointer<vtkIntArray>::New();
+
+        separatrixIds->SetNumberOfComponents(1);
+        separatrixIds->SetName("SeparatrixId");
+
+        vtkSmartPointer<vtkCharArray>
+          separatrixTypes = vtkSmartPointer<vtkCharArray>::New();
+
+        separatrixTypes->SetNumberOfComponents(1);
+        separatrixTypes->SetName("CriticalPointIndex");
+
+        vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
+
+        separatrixFunctionMaxima->SetNumberOfComponents(1);
+        separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
+
+        vtkDataArray* separatrixFunctionMinima = inputScalars->NewInstance();
+
+        separatrixFunctionMinima->SetNumberOfComponents(1);
+        separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
+
+        vtkDataArray* separatrixFunctionDiffs = inputScalars->NewInstance();
+
+        separatrixFunctionDiffs->SetNumberOfComponents(1);
+        separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
+
+        vtkSmartPointer<vtkCharArray>
+          isOnBoundary = vtkSmartPointer<vtkCharArray>::New();
+
+        isOnBoundary->SetNumberOfComponents(1);
+        isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
+
+        for (int i = 0; i<separatrices1_numberOfPoints; ++i) {
+          points->InsertNextPoint(separatrices1_points[3 * i],
+            separatrices1_points[3 * i + 1],
+            separatrices1_points[3 * i + 2]);
+
+          
+          smoothingMask->InsertNextTuple1(
+            separatrices1_points_smoothingMask[i]);
+          
+          cellDimensions->InsertNextTuple1(
+            separatrices1_points_cellDimensions[i]);
+          cellIds->InsertNextTuple1(separatrices1_points_cellIds[i]);
+        }
+        outputSeparatrices1->SetPoints(points);
+
+        outputSeparatrices1->Allocate(separatrices1_numberOfCells);
+        int ptr{};
+        for (int i = 0; i<separatrices1_numberOfCells; ++i) {
+          vtkIdType line[2];
+          line[0] = separatrices1_cells[ptr + 1];
+          line[1] = separatrices1_cells[ptr + 2];
+
+          outputSeparatrices1->InsertNextCell(VTK_LINE, 2, line);
+
+          sourceIds->InsertNextTuple1(separatrices1_cells_sourceIds[i]);
+
+          destinationIds->InsertNextTuple1(
+            separatrices1_cells_destinationIds[i]);
+
+          separatrixIds->InsertNextTuple1(separatrices1_cells_separatrixIds[i]);
+
+          separatrixTypes->InsertNextTuple1(
+            separatrices1_cells_separatrixTypes[i]);
+
+          separatrixFunctionMaxima->InsertNextTuple1(
+            separatrices1_cells_separatrixFunctionMaxima[i]);
+
+          separatrixFunctionMinima->InsertNextTuple1(
+            separatrices1_cells_separatrixFunctionMinima[i]);
+
+          separatrixFunctionDiffs->InsertNextTuple1(
+            separatrices1_cells_separatrixFunctionDiffs[i]);
+
+          isOnBoundary->InsertNextTuple1(separatrices1_cells_isOnBoundary[i]);
+
+          ptr += (separatrices1_cells[ptr] + 1);
+        }
+
+        vtkPointData* pointData = outputSeparatrices1->GetPointData();
+
+        pointData->AddArray(smoothingMask);
+        pointData->AddArray(cellDimensions);
+        pointData->AddArray(cellIds);
+
+        vtkCellData* cellData = outputSeparatrices1->GetCellData();
+
+        cellData->AddArray(sourceIds);
+        cellData->AddArray(destinationIds);
+        cellData->AddArray(separatrixIds);
+        cellData->AddArray(separatrixTypes);
+        cellData->AddArray(separatrixFunctionMaxima);
+        cellData->AddArray(separatrixFunctionMinima);
+        cellData->AddArray(separatrixFunctionDiffs);
+        cellData->AddArray(isOnBoundary);
+      }
+
+      // 2-separatrices
+      if (dimensionality == 3 and (ComputeAscendingSeparatrices2 or 
+        ComputeDescendingSeparatrices2)) {
+        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
+        vtkSmartPointer<vtkIntArray> sourceIds = 
+          vtkSmartPointer<vtkIntArray>::New();
+
+        sourceIds->SetNumberOfComponents(1);
+        sourceIds->SetName("SourceId");
+
+        vtkSmartPointer<vtkIntArray> separatrixIds = 
+          vtkSmartPointer<vtkIntArray>::New();
+
+        separatrixIds->SetNumberOfComponents(1);
+        separatrixIds->SetName("SeparatrixId");
+
+        vtkSmartPointer<vtkCharArray> separatrixTypes = 
+          vtkSmartPointer<vtkCharArray>::New();
+
+        separatrixTypes->SetNumberOfComponents(1);
+        separatrixTypes->SetName("CriticalPointIndex");
+
+        vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
+
+        separatrixFunctionMaxima->SetNumberOfComponents(1);
+        separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
+
+        vtkDataArray* separatrixFunctionMinima = inputScalars->NewInstance();
+
+        separatrixFunctionMinima->SetNumberOfComponents(1);
+        separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
+
+        vtkDataArray* separatrixFunctionDiffs = inputScalars->NewInstance();
+
+        separatrixFunctionDiffs->SetNumberOfComponents(1);
+        separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
+
+        vtkSmartPointer<vtkCharArray> isOnBoundary = 
+          vtkSmartPointer<vtkCharArray>::New();
+
+        isOnBoundary->SetNumberOfComponents(1);
+        isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
+
+        for (int i = 0; i<separatrices2_numberOfPoints; ++i) {
+          points->InsertNextPoint(separatrices2_points[3 * i],
+            separatrices2_points[3 * i + 1],
+            separatrices2_points[3 * i + 2]);
+        }
+        outputSeparatrices2->SetPoints(points);
+
+        outputSeparatrices2->Allocate(separatrices2_numberOfCells);
+        int ptr{};
+        for (int i = 0; i<separatrices2_numberOfCells; ++i) {
+          const int vertexNumber = separatrices2_cells[ptr];
+
+          if (vertexNumber == 3) {
+            vtkIdType triangle[3];
+            triangle[0] = separatrices2_cells[ptr + 1];
+            triangle[1] = separatrices2_cells[ptr + 2];
+            triangle[2] = separatrices2_cells[ptr + 3];
+
+            outputSeparatrices2->InsertNextCell(
+              VTK_TRIANGLE, vertexNumber, triangle);
+          }
+          else {
+            vtkIdType ids[16];
+            for (int j = 1; j <= vertexNumber; ++j)
+              ids[j - 1] = separatrices2_cells[ptr + j];
+
+            outputSeparatrices2->InsertNextCell(VTK_POLYGON, vertexNumber, ids);
           }
 
-          // 2-separatrices
-          if(dimensionality==3 and (ComputeAscendingSeparatrices2 or ComputeDescendingSeparatrices2)){
-            vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!points){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation problem." 
-                << endl;
-              return -32;
-            }
+          sourceIds->InsertNextTuple1(separatrices2_cells_sourceIds[i]);
+          separatrixIds->InsertNextTuple1(separatrices2_cells_separatrixIds[i]);
+          
+          separatrixTypes->InsertNextTuple1(
+            separatrices2_cells_separatrixTypes[i]);
+          separatrixFunctionMaxima->InsertNextTuple1(
+            separatrices2_cells_separatrixFunctionMaxima[i]);
+
+          separatrixFunctionMinima->InsertNextTuple1(
+            separatrices2_cells_separatrixFunctionMinima[i]);
+
+          separatrixFunctionDiffs->InsertNextTuple1(
+            separatrices2_cells_separatrixFunctionDiffs[i]);
+          isOnBoundary->InsertNextTuple1(separatrices2_cells_isOnBoundary[i]);
+
+          ptr += (separatrices2_cells[ptr] + 1);
+        }
+
+        vtkCellData* cellData = outputSeparatrices2->GetCellData();
+
+        cellData->AddArray(sourceIds);
+        cellData->AddArray(separatrixIds);
+        cellData->AddArray(separatrixTypes);
+        cellData->AddArray(separatrixFunctionMaxima);
+        cellData->AddArray(separatrixFunctionMinima);
+        cellData->AddArray(separatrixFunctionDiffs);
+        cellData->AddArray(isOnBoundary);
+      }
+    });
 #endif
-
-            vtkSmartPointer<vtkIntArray> sourceIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!sourceIds){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem." 
-                << endl;
-              return -32;
-            }
-#endif
-            sourceIds->SetNumberOfComponents(1);
-            sourceIds->SetName("SourceId");
-
-            vtkSmartPointer<vtkIntArray> separatrixIds=vtkSmartPointer<vtkIntArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!separatrixIds){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation problem." 
-                << endl;
-              return -33;
-            }
-#endif
-            separatrixIds->SetNumberOfComponents(1);
-            separatrixIds->SetName("SeparatrixId");
-
-            vtkSmartPointer<vtkCharArray> separatrixTypes=vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!separatrixTypes){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation problem." 
-                << endl;
-              return -34;
-            }
-#endif
-            separatrixTypes->SetNumberOfComponents(1);
-            separatrixTypes->SetName("CriticalPointIndex");
-
-            vtkDataArray* separatrixFunctionMaxima=inputScalars->NewInstance();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!separatrixFunctionMaxima){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-                << "problem." << endl;
-              return -35;
-            }
-#endif
-            separatrixFunctionMaxima->SetNumberOfComponents(1);
-            separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
-
-            vtkDataArray* separatrixFunctionMinima=inputScalars->NewInstance();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!separatrixFunctionMinima){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-                << "problem." << endl;
-              return -36;
-            }
-#endif
-            separatrixFunctionMinima->SetNumberOfComponents(1);
-            separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
-
-            vtkDataArray* separatrixFunctionDiffs=inputScalars->NewInstance();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!separatrixFunctionDiffs){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-                << "problem." << endl;
-              return -37;
-            }
-#endif
-            separatrixFunctionDiffs->SetNumberOfComponents(1);
-            separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
-
-            vtkSmartPointer<vtkCharArray> isOnBoundary=vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!isOnBoundary){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation problem." 
-                << endl;
-              return -38;
-            }
-#endif
-            isOnBoundary->SetNumberOfComponents(1);
-            isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
-
-            for(int i=0; i<separatrices2_numberOfPoints; ++i){
-              points->InsertNextPoint(separatrices2_points[3*i],
-                  separatrices2_points[3*i+1],
-                  separatrices2_points[3*i+2]);
-            }
-            outputSeparatrices2->SetPoints(points);
-
-            outputSeparatrices2->Allocate(separatrices2_numberOfCells);
-            int ptr{};
-            for(int i=0; i<separatrices2_numberOfCells; ++i){
-              const int vertexNumber=separatrices2_cells[ptr];
-
-              if(vertexNumber==3){
-                vtkIdType triangle[3];
-                triangle[0]=separatrices2_cells[ptr+1];
-                triangle[1]=separatrices2_cells[ptr+2];
-                triangle[2]=separatrices2_cells[ptr+3];
-
-                outputSeparatrices2->InsertNextCell(VTK_TRIANGLE, vertexNumber, triangle);
-              }
-              else{
-                vtkIdType ids[16];
-                for(int j=1; j<=vertexNumber; ++j)
-                  ids[j-1]=separatrices2_cells[ptr+j];
-
-                outputSeparatrices2->InsertNextCell(VTK_POLYGON, vertexNumber, ids);
-              }
-
-              sourceIds->InsertNextTuple1(separatrices2_cells_sourceIds[i]);
-              separatrixIds->InsertNextTuple1(separatrices2_cells_separatrixIds[i]);
-              separatrixTypes->InsertNextTuple1(separatrices2_cells_separatrixTypes[i]);
-              separatrixFunctionMaxima->InsertNextTuple1(
-                  separatrices2_cells_separatrixFunctionMaxima[i]);
-
-              separatrixFunctionMinima->InsertNextTuple1(
-                  separatrices2_cells_separatrixFunctionMinima[i]);
-
-              separatrixFunctionDiffs->InsertNextTuple1(
-                  separatrices2_cells_separatrixFunctionDiffs[i]);
-              isOnBoundary->InsertNextTuple1(separatrices2_cells_isOnBoundary[i]);
-
-              ptr+=(separatrices2_cells[ptr]+1);
-            }
-
-            vtkCellData* cellData=outputSeparatrices2->GetCellData();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(!cellData){
-              cerr << "[ttkMorseSmaleComplex] Error : "
-                << "outputSeparatrices2 has no cell data." << endl;
-              return -39;
-            }
-#endif
-
-            cellData->AddArray(sourceIds);
-            cellData->AddArray(separatrixIds);
-            cellData->AddArray(separatrixTypes);
-            cellData->AddArray(separatrixFunctionMaxima);
-            cellData->AddArray(separatrixFunctionMinima);
-            cellData->AddArray(separatrixFunctionDiffs);
-            cellData->AddArray(isOnBoundary);
-          }
-    }));
   }
 
   // morse complexes

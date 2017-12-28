@@ -45,10 +45,6 @@
 #ifndef _TTK_PERSISTENCEDIAGRAM_H
 #define _TTK_PERSISTENCEDIAGRAM_H
 
-// ttk code includes
-#include<PersistenceDiagram.h>
-#include<ttkWrapper.h>
-
 // VTK includes
 #include<vtkDataArray.h>
 #include<vtkDataSet.h>
@@ -64,7 +60,15 @@
 #include<vtkCellData.h>
 #include<vtkSmartPointer.h>
 
+// ttk code includes
+#include<PersistenceDiagram.h>
+#include<ttkWrapper.h>
+
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkPersistenceDiagram
+#else
+class ttkPersistenceDiagram
+#endif
 : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

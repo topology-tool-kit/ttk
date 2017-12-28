@@ -21,9 +21,6 @@
 #ifndef _TTK_POINTDATACONVERTER_H
 #define _TTK_POINTDATACONVERTER_H
 
-// ttk code includes
-#include                  <Wrapper.h>
-
 // VTK includes -- to adapt
 #include                  <vtkUnsignedCharArray.h>
 #include                  <vtkUnsignedShortArray.h>
@@ -39,9 +36,16 @@
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
 
+// ttk code includes
+#include                  <Wrapper.h>
+
 #include<limits>
 
-class VTKFILTERSCORE_EXPORT ttkPointDataConverter 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkPointDataConverter
+#else
+class ttkPointDataConverter
+#endif 
 : public vtkDataSetAlgorithm, public Wrapper{
 
 enum SupportedType{

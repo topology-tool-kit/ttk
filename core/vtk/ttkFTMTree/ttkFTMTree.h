@@ -2,11 +2,6 @@
 #ifndef _VTK_CONTOURFORESTS_H
 #define _VTK_CONTOURFORESTS_H
 
-// ttk code includes
-#include <FTMTree.h>
-#include <ttkWrapper.h>
-#include<ttkFTMStructures.h>
-
 // VTK includes
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -29,7 +24,16 @@
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
 
+// ttk code includes
+#include <FTMTree.h>
+#include <ttkWrapper.h>
+#include<ttkFTMStructures.h>
+
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
+#else
+class ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
+#endif
 {
   public:
    static ttkFTMTree* New();

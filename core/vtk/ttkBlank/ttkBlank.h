@@ -19,10 +19,6 @@
 /// \sa ttk::Blank
 #pragma once
 
-// ttk code includes
-#include                  <Blank.h>
-#include                  <ttkWrapper.h>
-
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
@@ -37,11 +33,19 @@
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
 
+// ttk code includes
+#include                  <Blank.h>
+#include                  <ttkWrapper.h>
+
 // in this example, this wrapper takes a data-set on the input and produces a 
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK 
 // class your wrapper should inherit.
-class VTKFILTERSCORE_EXPORT ttkBlank 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkBlank
+#else
+class ttkBlank
+#endif
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

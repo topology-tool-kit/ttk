@@ -21,9 +21,6 @@
 #ifndef _TTK_PROJECTION_FROM_FIELD_H
 #define _TTK_PROJECTION_FROM_FIELD_H
 
-// ttk code includes
-#include                  <Wrapper.h>
-
 // VTK includes 
 #include                  <vtkDataArray.h>
 #include                  <vtkFiltersCoreModule.h>
@@ -35,7 +32,14 @@
 #include                  <vtkPoints.h>
 #include                  <vtkSmartPointer.h>
 
-class VTKFILTERSCORE_EXPORT ttkProjectionFromField 
+// ttk code includes
+#include                  <Wrapper.h>
+
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkProjectionFromField
+#else
+class ttkProjectionFromField
+#endif
   : public vtkPointSetAlgorithm, public Wrapper{
 
   public:

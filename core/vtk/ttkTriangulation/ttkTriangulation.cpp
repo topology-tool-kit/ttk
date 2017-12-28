@@ -222,8 +222,15 @@ int ttkTriangulation::setInputData(vtkDataSet* dataSet){
         ((vtkUnstructuredGrid *) dataSet)->GetPoints()->GetVoidPointer(0));
     }
     if(((vtkUnstructuredGrid *) dataSet)->GetCells()){
-      triangulation_->setInputCells(dataSet->GetNumberOfCells(),
-        ((vtkUnstructuredGrid *) dataSet)->GetCells()->GetPointer());
+#if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
+		triangulation_->setInputCells(dataSet->GetNumberOfCells(),
+			((vtkUnstructuredGrid *)dataSet)->GetCells()->GetPointer());
+#else
+		int* pt = ((vtkUnstructuredGrid *)dataSet)->GetCells()->GetPointer();
+		long long extra_pt = *pt;
+		triangulation_->setInputCells(dataSet->GetNumberOfCells(),
+			&extra_pt);
+#endif
     }
     inputDataSet_ = dataSet;
   }
@@ -236,8 +243,15 @@ int ttkTriangulation::setInputData(vtkDataSet* dataSet){
         ((vtkPolyData *) dataSet)->GetPoints()->GetVoidPointer(0));
     }
     if(((vtkPolyData *) dataSet)->GetPolys()){
-      triangulation_->setInputCells(dataSet->GetNumberOfCells(),
-        ((vtkPolyData *) dataSet)->GetPolys()->GetPointer());
+#if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
+		triangulation_->setInputCells(dataSet->GetNumberOfCells(),
+			((vtkPolyData *)dataSet)->GetPolys()->GetPointer());
+#else
+		int* pt = ((vtkPolyData *)dataSet)->GetPolys()->GetPointer();
+		long long extra_pt = *pt;
+		triangulation_->setInputCells(dataSet->GetNumberOfCells(),
+			&extra_pt);
+#endif
     }
     inputDataSet_ = dataSet;
   }

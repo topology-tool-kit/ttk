@@ -32,7 +32,9 @@
 
   #define               drand48() (double(rand()) / RAND_MAX)
   #define               isnan(x)      _isnan(x)
+#ifndef _MSC_VER
   #define               round(x) OsCall::roundToNearestInt(x)
+#endif
   #define               srand48(seed) srand(seed)
   #define               pow10(x) pow(10, x)
 #endif

@@ -43,10 +43,6 @@
 #ifndef _TTK_MANDATORYCRITICALPOINTS_H
 #define _TTK_MANDATORYCRITICALPOINTS_H
 
-// ttk code includes
-#include                  <MandatoryCriticalPoints.h>
-#include                  <ttkWrapper.h>
-
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
@@ -68,6 +64,10 @@
 #include                  <vtkCellData.h>
 #include                  <vtkUnsignedCharArray.h>
 
+// ttk code includes
+#include                  <MandatoryCriticalPoints.h>
+#include                  <ttkWrapper.h>
+
 #include                  <vector>
 #include                  <queue>
 #include                  <utility>
@@ -78,7 +78,11 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkMandatoryCriticalPoints
+#else
+class ttkMandatoryCriticalPoints
+#endif
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

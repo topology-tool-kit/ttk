@@ -33,10 +33,6 @@
 #ifndef _TTK_JACOBISET_H
 #define _TTK_JACOBISET_H
 
-// ttk code includes
-#include                  <JacobiSet.h>
-#include                  <ttkWrapper.h>
-
 // VTK includes -- to adapt
 #include                  <vtkCellArray.h>
 #include                  <vtkCellData.h>
@@ -54,11 +50,19 @@
 #include                  <vtkUnsignedShortArray.h>
 #include                  <vtkUnstructuredGrid.h>
 
+// ttk code includes
+#include                  <JacobiSet.h>
+#include                  <ttkWrapper.h>
+
 // in this example, this wrapper takes a data-set on the input and produces a 
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK 
 // class your wrapper should inherit.
-class VTKFILTERSCORE_EXPORT ttkJacobiSet 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkJacobiSet
+#else
+class ttkJacobiSet
+#endif 
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

@@ -17,9 +17,6 @@
 #ifndef _TTK_SPHERE_FROM_POINT_H
 #define _TTK_SPHERE_FROM_POINT_H
 
-// ttk code includes
-#include                  <Wrapper.h>
-
 // VTK includes 
 #include                  <vtkAppendPolyData.h>  
 #include                  <vtkCharArray.h>
@@ -36,7 +33,14 @@
 #include                  <vtkSphereSource.h>
 #include                  <vtkType.h>
 
-class VTKFILTERSCORE_EXPORT ttkSphereFromPoint 
+// ttk code includes
+#include                  <Wrapper.h>
+
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkSphereFromPoint
+#else
+class ttkSphereFromPoint
+#endif 
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

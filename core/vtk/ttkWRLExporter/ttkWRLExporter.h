@@ -9,9 +9,6 @@
 #ifndef _TTK_WRL_EXPORTER_H
 #define _TTK_WRL_EXPORTER_H
 
-// base code includes
-#include                  <Debug.h>
-
 // VTK includes
 #include                  <vtkActor.h>
 #include                  <vtkActorCollection.h>
@@ -36,6 +33,9 @@
 #include                  <vtkTransform.h>
 #include                  <vtkUnsignedCharArray.h>
 #include                  <vtkVRMLExporter.h>
+
+// base code includes
+#include                  <Debug.h>
 
 extern vtkPolyData *wrlExporterPolyData_;
 

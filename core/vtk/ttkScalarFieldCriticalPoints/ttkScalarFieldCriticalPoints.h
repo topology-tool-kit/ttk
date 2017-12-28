@@ -28,10 +28,6 @@
 #ifndef _TTK_SCALARFIELDCRITICALPOINTS_H
 #define _TTK_SCALARFIELDCRITICALPOINTS_H
 
-// ttk baseCode includes
-#include                  <ScalarFieldCriticalPoints.h>
-#include                  <ttkWrapper.h>
-
 // VTK includes -- to adapt
 #include                  <vtkCellArray.h>
 #include                  <vtkCharArray.h>
@@ -48,11 +44,19 @@
 #include                  <vtkSmartPointer.h>
 #include                  <vtkUnstructuredGrid.h>
 
+// ttk baseCode includes
+#include                  <ScalarFieldCriticalPoints.h>
+#include                  <ttkWrapper.h>
+
 // in this example, this wrapper takes a data-set on the input and produces a 
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK 
 // class your wrapper should inherit.
-class VTKFILTERSCORE_EXPORT ttkScalarFieldCriticalPoints 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkScalarFieldCriticalPoints
+#else
+class ttkScalarFieldCriticalPoints
+#endif 
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

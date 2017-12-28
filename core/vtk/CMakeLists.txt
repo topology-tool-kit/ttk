@@ -31,6 +31,10 @@ function(ttk_add_vtk_library library)
 
 	ttk_set_compile_options(${library})
 
+	if (MSVC)
+		target_compile_definitions(${library} PUBLIC vtkFiltersCore_EXPORTS)		
+	endif()
+
 	install(TARGETS ${library}
 		EXPORT TTKVTKConfig
 		RUNTIME DESTINATION bin/ttk

@@ -83,41 +83,40 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
   
   switch(inputScalarField->GetDataType()){
-    vtkTemplateMacro((
-      {
-        ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
-        criticalPoints.setupTriangulation(triangulation);
-      }
-    ));
+
+    vtkTemplateMacro(
+    {
+      ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
+      criticalPoints.setupTriangulation(triangulation);
+    });
   }
     
   int domainDimension = triangulation->getCellVertexNumber(0) - 1;
  
   switch(inputScalarField->GetDataType()){
-    vtkTemplateMacro((
-      {
-        ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
-       
-        criticalPoints.setWrapper(this);
-        criticalPoints.setDebugLevel(Debug::infoMsg);
-        criticalPoints.setDomainDimension(domainDimension);
-        // set up input
-        // 1 -- vertex values
-        criticalPoints.setScalarValues(inputScalarField->GetVoidPointer(0));
-        criticalPoints.setVertexNumber(input->GetNumberOfPoints());
-        
-        // 2 -- set offsets (here, let the baseCode class fill it for us)
-        criticalPoints.setSosOffsets(&sosOffsets_);
-        
-        // 3 -- set the connectivity
-        criticalPoints.setupTriangulation(triangulation);
-        
-        // set up output
-        criticalPoints.setOutput(&criticalPoints_);
-        
-        criticalPoints.execute();
-      }
-    ));
+    vtkTemplateMacro(
+    {
+      ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
+
+      criticalPoints.setWrapper(this);
+      criticalPoints.setDebugLevel(Debug::infoMsg);
+      criticalPoints.setDomainDimension(domainDimension);
+      // set up input
+      // 1 -- vertex values
+      criticalPoints.setScalarValues(inputScalarField->GetVoidPointer(0));
+      criticalPoints.setVertexNumber(input->GetNumberOfPoints());
+
+      // 2 -- set offsets (here, let the baseCode class fill it for us)
+      criticalPoints.setSosOffsets(&sosOffsets_);
+
+      // 3 -- set the connectivity
+      criticalPoints.setupTriangulation(triangulation);
+
+      // set up output
+      criticalPoints.setOutput(&criticalPoints_);
+
+      criticalPoints.execute();
+    });
   }
 
   // allocate the output
@@ -146,7 +145,9 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     vertexBoundary->SetNumberOfTuples(criticalPoints_.size());
     vertexBoundary->SetName("IsOnBoundary");
     
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
+#endif
     for(int i = 0; i < (int) criticalPoints_.size(); i++){
       vertexBoundary->SetTuple1(i, 
         (char) triangulation->isVertexOnBoundary(       

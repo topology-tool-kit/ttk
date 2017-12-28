@@ -37,9 +37,6 @@
 #ifndef _TTK_CONTOURTREE_H
 #define _TTK_CONTOURTREE_H
 
-// vtk wrapper includes
-#include <ttkWrapper.h>
-
 // VTK includes
 #include <vtkAppendPolyData.h>
 #include <vtkCellArray.h>
@@ -62,6 +59,9 @@
 #include <vtkSphereSource.h>
 #include <vtkTable.h>
 
+// vtk wrapper includes
+#include <ttkWrapper.h>
+
 // base code includes
 #include <Geometry.h>
 
@@ -69,7 +69,11 @@
 #include "ContourForestsTree.h"
 #include "DeprecatedDataTypes.h"
 
-class VTKFILTERSCORE_EXPORT ttkContourForests 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkContourForests
+#else
+class ttkContourForests
+#endif 
   : public vtkDataSetAlgorithm, public Wrapper{
     
     

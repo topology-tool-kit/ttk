@@ -19,10 +19,6 @@
 /// \sa ttk::BottleneckDistance
 #pragma once
 
-// TTK includes
-#include                  <BottleneckDistance.h>
-#include                  <ttkWrapper.h>
-
 // VTK includes
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
@@ -39,7 +35,15 @@
 #include                  <vtkUnstructuredGrid.h>
 #include                  <vtkCellData.h>
 
+// TTK includes
+#include                  <BottleneckDistance.h>
+#include                  <ttkWrapper.h>
+
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkBottleneckDistance
+#else
+class ttkBottleneckDistance
+#endif
   : public vtkDataSetAlgorithm, public Wrapper
 {
 
@@ -92,7 +96,7 @@ class VTKFILTERSCORE_EXPORT ttkBottleneckDistance
        case 1:
          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
        break;
-       default:
+       default:		   
          break;
       }
       return 1;

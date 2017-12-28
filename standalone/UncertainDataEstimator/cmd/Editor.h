@@ -9,13 +9,6 @@
 #include <cmath>
 #include <stdexcept>
 
-// base code includes
-#include                  <CommandLineParser.h>
-
-// vtk wrappers
-#include                  <ttkUncertainDataEstimator.h>
-#include                  <UncertainDataEstimator.h>
-
 // VTK includes
 #include                  <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -54,6 +47,13 @@
 #include <vtkCharArray.h>
 #include <vtkSignedCharArray.h>
 #include <vtkUnsignedCharArray.h>
+
+// base code includes
+#include                  <CommandLineParser.h>
+
+// vtk wrappers
+#include                  <ttkUncertainDataEstimator.h>
+#include                  <UncertainDataEstimator.h>
 
 class Editor : public Debug{
 

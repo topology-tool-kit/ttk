@@ -31,10 +31,6 @@
 #ifndef _TTK_DISTANCEFIELD_H
 #define _TTK_DISTANCEFIELD_H
 
-// ttk code includes
-#include<DistanceField.h>
-#include<ttkWrapper.h>
-
 // VTK includes
 #include<vtkDataArray.h>
 #include<vtkDataSet.h>
@@ -48,12 +44,20 @@
 #include<vtkPointData.h>
 #include<vtkSmartPointer.h>
 
+// ttk code includes
+#include<DistanceField.h>
+#include<ttkWrapper.h>
+
 enum DistanceType{
   Float=0,
   Double
 };
 
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkDistanceField
+#else
+class ttkDistanceField
+#endif
 : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

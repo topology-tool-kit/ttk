@@ -23,9 +23,6 @@
 #ifndef _TTK_TEXTURE_MAP_FROM_FIELD_H
 #define _TTK_TEXTURE_MAP_FROM_FIELD_H
 
-// ttk code includes
-#include                  <Wrapper.h>
-
 // VTK includes 
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
@@ -39,7 +36,14 @@
 #include                  <vtkObjectFactory.h>
 #include                  <vtkPointData.h>
 
-class VTKFILTERSCORE_EXPORT ttkTextureMapFromField 
+// ttk code includes
+#include                  <Wrapper.h>
+
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkTextureMapFromField
+#else
+class ttkTextureMapFromField
+#endif
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

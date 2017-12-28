@@ -21,9 +21,6 @@
 #ifndef _TTK_IDENTIFIERS_H
 #define _TTK_IDENTIFIERS_H
 
-// ttk code includes
-#include                  <Wrapper.h>
-
 // VTK includes -- to adapt
 #include                  <vtkCellData.h>
 #include                  <vtkDataArray.h>
@@ -36,11 +33,18 @@
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
 
+// ttk code includes
+#include                  <Wrapper.h>
+
 // in this example, this wrapper takes a data-set on the input and produces a 
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK 
 // class your wrapper should inherit.
-class VTKFILTERSCORE_EXPORT ttkIdentifiers 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkIdentifiers
+#else
+class ttkIdentifiers
+#endif 
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

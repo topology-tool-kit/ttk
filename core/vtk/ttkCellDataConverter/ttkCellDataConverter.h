@@ -20,9 +20,6 @@
 #ifndef _TTK_CELLDATACONVERTER_H
 #define _TTK_CELLDATACONVERTER_H
 
-// ttk code includes
-#include                  <Wrapper.h>
-
 // VTK includes -- to adapt
 #include                  <vtkUnsignedCharArray.h>
 #include                  <vtkUnsignedShortArray.h>
@@ -38,9 +35,16 @@
 #include                  <vtkCellData.h>
 #include                  <vtkSmartPointer.h>
 
+// ttk code includes
+#include                  <Wrapper.h>
+
 #include<limits>
 
-class VTKFILTERSCORE_EXPORT ttkCellDataConverter 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkCellDataConverter
+#else
+class ttkCellDataConverter
+#endif
 : public vtkDataSetAlgorithm, public Wrapper{
 
 enum SupportedType{

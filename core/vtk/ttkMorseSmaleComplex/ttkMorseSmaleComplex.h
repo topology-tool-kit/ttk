@@ -35,10 +35,6 @@
 #ifndef _TTK_MORSESMALECOMPLEX_H
 #define _TTK_MORSESMALECOMPLEX_H
 
-// ttk code includes
-#include<MorseSmaleComplex.h>
-#include<ttkWrapper.h>
-
 // VTK includes -- to adapt
 #include<vtkCharArray.h>
 #include<vtkDataArray.h>
@@ -55,7 +51,15 @@
 #include<vtkPointData.h>
 #include<vtkSmartPointer.h>
 
+// ttk code includes
+#include<MorseSmaleComplex.h>
+#include<ttkWrapper.h>
+
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkMorseSmaleComplex
+#else
+class ttkMorseSmaleComplex
+#endif
 : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

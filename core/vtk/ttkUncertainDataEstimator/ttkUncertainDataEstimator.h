@@ -27,10 +27,6 @@
 #ifndef _TTK_UNCERTAINDATAESTIMATOR_H
 #define _TTK_UNCERTAINDATAESTIMATOR_H
 
-// ttk code includes
-#include                  <UncertainDataEstimator.h>
-#include                  <Wrapper.h>
-
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
@@ -47,11 +43,19 @@
 #include                  <vtkSmartPointer.h>
 #include                  <vtkTable.h>
 
+// ttk code includes
+#include                  <UncertainDataEstimator.h>
+#include                  <Wrapper.h>
+
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkUncertainDataEstimator
+#else
+class ttkUncertainDataEstimator
+#endif
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:

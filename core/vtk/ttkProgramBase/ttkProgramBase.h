@@ -9,11 +9,6 @@
 #ifndef _TTK_EDITOR_BASE_H
 #define _TTK_EDITOR_BASE_H
 
-// base code includes
-#include                  <ProgramBase.h>
-
-#include                  <ttkWrapper.h>
-
 // VTK IO
 #include                  <vtkDataSet.h>
 #include                  <vtkDataSetAlgorithm.h>
@@ -28,7 +23,11 @@
 #include                  <vtkXMLUnstructuredGridReader.h>
 #include                  <vtkXMLUnstructuredGridWriter.h>
 
-class ttkProgramBase : public ProgramBase{
+// base code includes
+#include                  <ProgramBase.h>
+#include                  <ttkWrapper.h>
+
+class VTKFILTERSCORE_EXPORT ttkProgramBase : public ProgramBase {
 
   public:
       

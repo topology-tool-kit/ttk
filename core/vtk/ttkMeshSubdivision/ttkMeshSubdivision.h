@@ -36,9 +36,6 @@
 #ifndef _TTK_MESHSUBDIVISION_H
 #define _TTK_MESHSUBDIVISION_H
 
-// ttk code includes
-#include                  <Wrapper.h>
-
 // VTK includes -- to adapt
 #include                  <vtkCellArray.h>
 #include                  <vtkCellData.h>
@@ -52,11 +49,18 @@
 #include                  <vtkUnstructuredGrid.h>
 #include                  <vtkUnstructuredGridAlgorithm.h>
 
+// ttk code includes
+#include                  <Wrapper.h>
+
 // in this example, this wrapper takes a data-set on the input and produces a 
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK 
 // class your wrapper should inherit.
-class VTKFILTERSCORE_EXPORT ttkMeshSubdivision 
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkMeshSubdivision
+#else
+class ttkMeshSubdivision
+#endif 
   : public vtkUnstructuredGridAlgorithm, public Wrapper{
 
   public:

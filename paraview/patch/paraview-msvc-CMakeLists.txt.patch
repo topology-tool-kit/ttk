@@ -1,0 +1,11 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -213,7 +213,7 @@ if (UNIX)
+   option(PARAVIEW_ENABLE_FFMPEG "Enable FFMPEG Support." OFF)
+ endif()
+ 
+-if (UNIX)
++if (UNIX OR MSVC)
+   # Since development installs are currently being tested only on linuxes. We
+   # can support these for other platforms if time permits.
+   option(PARAVIEW_INSTALL_DEVELOPMENT_FILES

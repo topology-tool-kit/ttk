@@ -24,10 +24,6 @@
 #ifndef _TTK_GEOMETRY_SMOOTHER_H
 #define _TTK_GEOMETRY_SMOOTHER_H
 
-// ttk code includes
-#include                  <ScalarFieldSmoother.h>
-#include                  <ttkWrapper.h>
-
 // VTK includes
 #include                  <vtkDataArray.h>
 #include                  <vtkDataSet.h>
@@ -38,7 +34,15 @@
 #include                  <vtkDataSetAlgorithm.h>
 #include                  <vtkSmartPointer.h>
 
-class VTKFILTERSCORE_EXPORT ttkGeometrySmoother 
+// ttk code includes
+#include                  <ttkWrapper.h>
+#include                  <ScalarFieldSmoother.h>
+
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkGeometrySmoother
+#else
+class ttkGeometrySmoother
+#endif 
   : public vtkDataSetAlgorithm, public Wrapper{
 
   public:
