@@ -1,6 +1,7 @@
 ChangeLog
 =
 * ttk.git
+- Windows support
 - OFF reader/writer
 
 * 0.9.3
