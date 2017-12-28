@@ -1,8 +1,12 @@
 ChangeLog
 =
 * ttk.git
+
+* 0.9.4
 - Windows support
 - OFF reader/writer
+- Field selector
+- Bug fixes
 
 * 0.9.3
 - Updates for ParaView-5.4.1

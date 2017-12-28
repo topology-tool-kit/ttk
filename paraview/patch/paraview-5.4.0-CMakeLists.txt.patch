@@ -5,7 +5,7 @@
  set(SUPPORT_STATIC_PLUGINS TRUE)
  
 -set(title "ParaView ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
-+set(title "TTK 0.9.3 - ParaView ${PARAVIEW_VERSION_FULL}")
++set(title "TTK 0.9.4 - ParaView ${PARAVIEW_VERSION_FULL}")
  if("${VTK_RENDERING_BACKEND}" STREQUAL "OpenGL")
    set(title "${title} (Legacy Rendering Backend)")
  endif()
