@@ -71,6 +71,11 @@ class ttkPointDataSelector
       Modified();
     }
 
+    void ClearScalarFields(){
+      ScalarFields.clear();
+      Modified();
+    }
+
     int FillInputPortInformation(int port, vtkInformation *info){
       switch(port){
         case 0:

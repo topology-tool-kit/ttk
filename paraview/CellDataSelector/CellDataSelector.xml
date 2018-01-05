@@ -70,6 +70,7 @@
       </IntVectorProperty>
 
       <StringVectorProperty command="SetScalarFields"
+        clean_command="ClearScalarFields"
         label="Scalar Fields"
         name="ScalarFields"
         number_of_elements="0"
@@ -91,14 +92,8 @@
         </Documentation>
       </StringVectorProperty>
 
-      <Property name="RemoveCellData"
-        label="Remove cell data"
-        command="Modified"
-        panel_widget="command_button"/>
-
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFields" />
-        <Property name="RemoveCellData" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">

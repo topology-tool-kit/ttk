@@ -51,8 +51,6 @@ int ttkPointDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
 
   output->GetPointData()->ShallowCopy(outputPointData);
 
-  ScalarFields.clear();
-
   {
     stringstream msg;
     msg << "[ttkPointDataSelector] Memory usage: " << m.getElapsedUsage()
@@ -66,7 +64,6 @@ int ttkPointDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
 int ttkPointDataSelector::RequestData(vtkInformation *request,
     vtkInformationVector **inputVector,
     vtkInformationVector *outputVector){
-
   Memory m;
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);

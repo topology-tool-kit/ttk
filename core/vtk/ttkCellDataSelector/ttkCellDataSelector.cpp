@@ -51,8 +51,6 @@ int ttkCellDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
 
   output->GetCellData()->ShallowCopy(outputCellData);
 
-  ScalarFields.clear();
-
   {
     stringstream msg;
     msg << "[ttkCellDataSelector] Memory usage: " << m.getElapsedUsage()
