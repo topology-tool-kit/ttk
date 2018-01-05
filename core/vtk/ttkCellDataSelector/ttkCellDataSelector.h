@@ -15,9 +15,6 @@
 /// VTK pipeline.
 #pragma once
 
-// ttk code includes
-#include<Wrapper.h>
-
 // VTK includes
 #include<vtkCharArray.h>
 #include<vtkDataArray.h>
@@ -32,7 +29,14 @@
 #include<vtkCellData.h>
 #include<vtkSmartPointer.h>
 
-class VTKFILTERSCORE_EXPORT ttkCellDataSelector 
+// ttk code includes
+#include<Wrapper.h>
+
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkCellDataSelector
+#else
+class ttkCellDataSelector
+#endif
 : public vtkDataSetAlgorithm, public Wrapper{
 
   public:
