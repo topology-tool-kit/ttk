@@ -33,6 +33,29 @@
         </Documentation>
       </InputProperty>
 
+      <StringVectorProperty command="SetScalarFields"
+        clean_command="ClearScalarFields"
+        label="Scalar Fields"
+        name="ScalarFields"
+        number_of_elements="0"
+        default_values="1"
+        number_of_elements_per_command="1"
+        repeat_command="1">
+        <ArrayListDomain name="array_list"
+          default_values="1">
+          <RequiredProperties>
+            <Property name="Input"
+              function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <NoDefault />
+        </Hints>
+        <Documentation>
+          Select the scalar fields to process.
+        </Documentation>
+      </StringVectorProperty>
+
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -68,29 +91,6 @@
           Debug level.
         </Documentation>
       </IntVectorProperty>
-
-      <StringVectorProperty command="SetScalarFields"
-        clean_command="ClearScalarFields"
-        label="Scalar Fields"
-        name="ScalarFields"
-        number_of_elements="0"
-        default_values="0"
-        number_of_elements_per_command="1"
-        repeat_command="1">
-        <ArrayListDomain name="array_list"
-          default_values="0">
-          <RequiredProperties>
-            <Property name="Input"
-              function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Hints>
-          <NoDefault />
-        </Hints>
-        <Documentation>
-          Select the scalar fields to process.
-        </Documentation>
-      </StringVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFields" />
