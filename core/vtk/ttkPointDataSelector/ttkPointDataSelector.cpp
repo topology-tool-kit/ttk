@@ -1,18 +1,18 @@
-#include <ttkFieldSelector.h>
+#include <ttkPointDataSelector.h>
 
-vtkStandardNewMacro(ttkFieldSelector)
+vtkStandardNewMacro(ttkPointDataSelector)
 
   // transmit abort signals
-  bool ttkFieldSelector::needsToAbort(){
+  bool ttkPointDataSelector::needsToAbort(){
     return GetAbortExecute();
   }
 
 // transmit progress status
-int ttkFieldSelector::updateProgress(const float &progress){
+int ttkPointDataSelector::updateProgress(const float &progress){
 
   {
     stringstream msg;
-    msg << "[ttkFieldSelector] " << progress*100 
+    msg << "[ttkPointDataSelector] " << progress*100 
       << "% processed...." << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
@@ -21,7 +21,7 @@ int ttkFieldSelector::updateProgress(const float &progress){
   return 0;
 }
 
-int ttkFieldSelector::doIt(vtkDataSet* input, vtkDataSet* output){
+int ttkPointDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
   Memory m;
 
   output->ShallowCopy(input);
@@ -29,7 +29,7 @@ int ttkFieldSelector::doIt(vtkDataSet* input, vtkDataSet* output){
   vtkPointData* inputPointData=input->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputPointData){
-    cerr << "[ttkFieldSelector] Error: input has no point data." << endl;
+    cerr << "[ttkPointDataSelector] Error: input has no point data." << endl;
     return -1;
   }
 #endif
@@ -37,7 +37,7 @@ int ttkFieldSelector::doIt(vtkDataSet* input, vtkDataSet* output){
   vtkSmartPointer<vtkPointData> outputPointData=vtkSmartPointer<vtkPointData>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!outputPointData){
-    cerr << "[ttkFieldSelector] Error: vtkPointData memory allocation problem." << endl;
+    cerr << "[ttkPointDataSelector] Error: vtkPointData memory allocation problem." << endl;
     return -1;
   }
 #endif
@@ -49,14 +49,11 @@ int ttkFieldSelector::doIt(vtkDataSet* input, vtkDataSet* output){
     }
   }
 
-  if(ScalarFields.size())
-    output->GetPointData()->ShallowCopy(outputPointData);
-
-  ScalarFields.clear();
+  output->GetPointData()->ShallowCopy(outputPointData);
 
   {
     stringstream msg;
-    msg << "[ttkFieldSelector] Memory usage: " << m.getElapsedUsage()
+    msg << "[ttkPointDataSelector] Memory usage: " << m.getElapsedUsage()
       << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }
@@ -64,10 +61,9 @@ int ttkFieldSelector::doIt(vtkDataSet* input, vtkDataSet* output){
   return 0;
 }
 
-int ttkFieldSelector::RequestData(vtkInformation *request,
+int ttkPointDataSelector::RequestData(vtkInformation *request,
     vtkInformationVector **inputVector,
     vtkInformationVector *outputVector){
-
   Memory m;
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
@@ -77,7 +73,7 @@ int ttkFieldSelector::RequestData(vtkInformation *request,
 
   {
     stringstream msg;
-    msg << "[ttkFieldSelector] Memory usage: " << m.getElapsedUsage()
+    msg << "[ttkPointDataSelector] Memory usage: " << m.getElapsedUsage()
       << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }

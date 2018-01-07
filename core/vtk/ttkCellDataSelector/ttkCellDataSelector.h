@@ -1,5 +1,5 @@
 /// \ingroup vtk
-/// \class ttkFieldSelector
+/// \class ttkCellDataSelector
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \date December 2017
 ///
@@ -26,23 +26,23 @@
 #include<vtkInformation.h>
 #include<vtkIntArray.h>
 #include<vtkObjectFactory.h>
-#include<vtkPointData.h>
+#include<vtkCellData.h>
 #include<vtkSmartPointer.h>
 
 // ttk code includes
 #include<Wrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFieldSelector
+class VTKFILTERSCORE_EXPORT ttkCellDataSelector
 #else
-class ttkFieldSelector
+class ttkCellDataSelector
 #endif
 : public vtkDataSetAlgorithm, public Wrapper{
 
   public:
 
-    static ttkFieldSelector* New();
-    vtkTypeMacro(ttkFieldSelector, vtkDataSetAlgorithm)
+    static ttkCellDataSelector* New();
+    vtkTypeMacro(ttkCellDataSelector, vtkDataSetAlgorithm)
 
       // default ttk setters
       vtkSetMacro(debugLevel_, int);
@@ -68,6 +68,11 @@ class ttkFieldSelector
 
     void SetScalarFields(string s){
       ScalarFields.push_back(s);
+      Modified();
+    }
+
+    void ClearScalarFields(){
+      ScalarFields.clear();
       Modified();
     }
 
@@ -98,14 +103,14 @@ class ttkFieldSelector
 
   protected:
 
-    ttkFieldSelector(){
+    ttkCellDataSelector(){
       UseAllCores = false;
 
       SetNumberOfInputPorts(1);
       SetNumberOfOutputPorts(1);
     }
 
-    ~ttkFieldSelector(){};
+    ~ttkCellDataSelector(){};
 
     int RequestData(vtkInformation *request,
         vtkInformationVector **inputVector,
