@@ -56,6 +56,16 @@
         </Documentation>
       </StringVectorProperty>
 
+      <StringVectorProperty
+         name="Filter"
+         command="SetRegexpString"
+         number_of_elements="1"
+         default_values=".*" panel_visibility="advanced">
+         <Documentation>
+            This regexp will be used to filter the chosen fields. Only matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -94,6 +104,7 @@
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFields" />
+        <Property name="Filter" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">

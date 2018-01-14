@@ -46,6 +46,7 @@ class ttkCellDataSelector
 
       // default ttk setters
       vtkSetMacro(debugLevel_, int);
+      vtkSetMacro(RegexpString, string);
 
     void SetThreads(){
       if(!UseAllCores)
@@ -121,6 +122,7 @@ class ttkCellDataSelector
     bool UseAllCores;
     int ThreadNumber;
     vector<string> ScalarFields;
+    string RegexpString;
 
     int doIt(vtkDataSet *input, vtkDataSet *output);
     bool needsToAbort();

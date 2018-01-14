@@ -1,4 +1,5 @@
 #include <ttkPointDataSelector.h>
+#include <regex>
 
 vtkStandardNewMacro(ttkPointDataSelector)
 
@@ -42,11 +43,15 @@ int ttkPointDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
   }
 #endif
 
-  for(auto& scalar : ScalarFields){
-    if(scalar.length()>0){
-      vtkDataArray* arr=inputPointData->GetArray(scalar.data());
-      if(arr) outputPointData->AddArray(arr);
-    }
+  try {
+     for(auto& scalar : ScalarFields){
+        if(scalar.length()>0 && regex_match(scalar, regex(RegexpString))){
+           vtkDataArray* arr=inputPointData->GetArray(scalar.data());
+           if(arr) outputPointData->AddArray(arr);
+        }
+     }
+  } catch (std::regex_error) {
+     vtkWarningMacro("[ttkPointDataSelector]: Bad regexp.");
   }
 
   output->GetPointData()->ShallowCopy(outputPointData);
