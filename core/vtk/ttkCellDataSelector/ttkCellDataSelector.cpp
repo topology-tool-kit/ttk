@@ -1,4 +1,5 @@
 #include <ttkCellDataSelector.h>
+#include <regex>
 
 vtkStandardNewMacro(ttkCellDataSelector)
 
@@ -42,11 +43,15 @@ int ttkCellDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
   }
 #endif
 
-  for(auto& scalar : ScalarFields){
-    if(scalar.length()>0){
-      vtkDataArray* arr=inputCellData->GetArray(scalar.data());
-      if(arr) outputCellData->AddArray(arr);
-    }
+  try {
+     for (auto &scalar : ScalarFields) {
+        if (scalar.length() > 0 && regex_match(scalar, regex(RegexpString))) {
+           vtkDataArray *arr = inputCellData->GetArray(scalar.data());
+           if (arr) outputCellData->AddArray(arr);
+        }
+     }
+  } catch (std::regex_error) {
+     vtkWarningMacro("[ttkCellDataSelector]: Bad regexp.");
   }
 
   output->GetCellData()->ShallowCopy(outputCellData);
