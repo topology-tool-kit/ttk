@@ -11,8 +11,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef DYNAMIC_GRAPH_H
-#define DYNAMIC_GRAPH_H
+#pragma once
 
 // TODO implement this using ST-tree.
 
@@ -29,6 +28,4 @@ namespace ttk
       };
    }
 }
-
-#endif /* end of include guard: DYNAMIC_GRAPH_H */
 

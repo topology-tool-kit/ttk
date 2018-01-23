@@ -9,8 +9,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef PROPAGATION_H
-#define PROPAGATION_H
+#pragma once
 
 // TODO implement this using fibonacci heaps
 
@@ -27,5 +26,3 @@ namespace ttk
       };
    }
 }
-
-#endif /* end of include guard: PROPAGATION_H */

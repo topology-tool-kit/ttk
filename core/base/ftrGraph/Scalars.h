@@ -9,8 +9,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef SCALARS_H
-#define SCALARS_H
+#pragma once
 
 // TODO implement this using AOS as it is more efficient
 
@@ -27,5 +26,3 @@ namespace ttk
       };
    }
 }
-
-#endif /* end of include guard: SCALARS_H */

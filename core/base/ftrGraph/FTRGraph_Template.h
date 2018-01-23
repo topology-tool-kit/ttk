@@ -9,18 +9,24 @@ namespace ttk
    {
       // template functions
       template <class dataType>
-      int FTRGraph::build(const int &argument) const
+      void FTRGraph::build()
       {
          Timer t;
 
          // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
-         if (!mesh_)
-            return -1;
-         if (!inputData_)
-            return -2;
-         if (!outputData_)
-            return -3;
+         if (!mesh_) {
+            cerr << "[FTRGraph]: no mesh input" << endl;
+            return ;
+         }
+         if (!inputData_) {
+            cerr << "[FTRGraph]: no input data" << endl;
+            return ;
+         }
+         if (!outputData_) {
+            cerr << "[FTRGraph]: no ouput data" << endl;
+            return ;
+         }
 #endif
 
          dataType *outputData = (dataType *)outputData_;
@@ -50,8 +56,6 @@ namespace ttk
                 << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << endl;
             dMsg(cout, msg.str(), timeMsg);
          }
-
-         return 0;
       }
    }
 }

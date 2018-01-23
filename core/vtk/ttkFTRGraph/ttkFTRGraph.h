@@ -1,71 +1,54 @@
-/// \ingroup vtk
-/// \class ttkFTRGraph
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
-///
-/// \brief TTK VTK-filter that wraps the fTRGraph processing package.
-///
-/// VTK wrapping code for the @FTRGraph package.
-///
-/// \param Input Input scalar field (vtkDataSet)
-/// \param Output Output scalar field (vtkDataSet)
-///
-/// This filter can be used as any other VTK filter (for instance, by using the
-/// sequence of calls SetInputData(), Update(), GetOutput()).
-///
-/// See the related ParaView example state files for usage examples within a
-/// VTK pipeline.
-///
-/// \sa ttk::FTRGraph
-#pragma once
+/// \sa ttk::ftr::FTMTree
+#ifndef _VTK_CONTOURFORESTS_H
+#define _VTK_CONTOURFORESTS_H
 
-// VTK includes -- to adapt
-#include <vtkCharArray.h>
+// VTK includes
+#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
+// Data array
+#include <vtkCharArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
+
+// Unused ? (compile without these on my computer)
+#include <vtkFiltersCoreModule.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkLine.h>
+#include <vtkObjectFactory.h>
+#include <vtkType.h>
+#include <vtkUnstructuredGrid.h>
 
 // ttk code includes
-#include <ttkWrapper.h>
 #include <FTRGraph.h>
+#include <ttkFTRGraphStructures.h>
+#include <ttkWrapper.h>
 
-// in this example, this wrapper takes a data-set on the input and produces a
-// data-set on the output - to adapt.
-// see the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFTRGraph
+class VTKFILTERSCORE_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
 #else
-class ttkFTRGraph
+class ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
 #endif
-    : public vtkDataSetAlgorithm,
-      public Wrapper
 {
-  private:
-   string        ScalarField;
-   vtkDataArray* outputScalarField_;
-   ftr::FTRGraph fTRGraph_;
-
   public:
    static ttkFTRGraph* New();
-   vtkTypeMacro(ttkFTRGraph, vtkDataSetAlgorithm)
 
-       // default ttk setters
-       vtkSetMacro(debugLevel_, int);
+   vtkTypeMacro(ttkFTRGraph, vtkDataSetAlgorithm);
+
+   // default ttk setters
+   vtkSetMacro(debugLevel_, int);
 
    void SetThreadNumber(int threadNumber)
    {
       ThreadNumber = threadNumber;
       SetThreads();
    }
+
    void SetUseAllCores(bool onOff)
    {
       UseAllCores = onOff;
@@ -75,71 +58,110 @@ class ttkFTRGraph
 
    vtkSetMacro(ScalarField, string);
    vtkGetMacro(ScalarField, string);
-   // end of TODO-4
 
-   // TODO-2
-   // Over-ride the input types.
-   // By default, this filter has one input and one output, of the same type.
-   // Here, you can re-define the input types, on a per input basis.
-   // In this example, the first input type is forced to vtkUnstructuredGrid.
-   // The second input type is forced to vtkImageData.
-   //     int FillInputPortInformation(int port, vtkInformation *info){
-   //
-   //       switch(port){
-   //         case 0:
-   //           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-   //           break;
-   //         case 1:
-   //           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
-   //           break;
-   //         default:
-   //           break;
-   //       }
-   //
-   //       return 1;
-   //     }
-   // end of TODO-2
+   vtkSetMacro(UseInputOffsetScalarField, int);
+   vtkGetMacro(UseInputOffsetScalarField, int);
 
-   // TODO-3
-   // Over-ride the output types.
-   // By default, this filter has one input and one output, of the same type.
-   // Here, you can re-define the output types, on a per output basis.
-   // In this example, the first output type is forced to vtkUnstructuredGrid.
-   // The second output type is forced to vtkImageData.
-   //     int FillOutputPortInformation(int port, vtkInformation *info){
-   //
-   //       switch(port){
-   //         case 0:
-   //           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-   //           break;
-   //         case 1:
-   //           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
-   //           break;
-   //         default:
-   //           break;
-   //       }
-   //
-   //       return 1;
-   //     }
-   // end of TODO-3
+   vtkSetMacro(InputOffsetScalarFieldName, string);
+   vtkGetMacro(InputOffsetScalarFieldName, string);
 
-  protected:
-   ttkFTRGraph()
+   vtkSetMacro(ScalarFieldId, int);
+   vtkGetMacro(ScalarFieldId, int);
+
+   vtkSetMacro(OffsetFieldId, int);
+   vtkGetMacro(OffsetFieldId, int);
+
+   void SetWithSegmentation(const bool segm)
    {
-      // init
-      outputScalarField_  = nullptr;
-      UseAllCores = false;
-
-      // TODO-1
-      // Specify the number of input and output ports.
-      // By default, this filter has one input and one output.
-      // In this example, we define 2 inputs and 2 outputs.
-      //       SetNumberOfInputPorts(2);
-      //       SetNumberOfOutputPorts(2);
-      // end of TODO-1
+      params_.segm = segm;
+      Modified();
    }
 
-   ~ttkFTRGraph(){};
+   bool GetWithSegmentation(void) const
+   {
+      return params_.segm;
+   }
+
+   void SetWithNormalize(const bool norm)
+   {
+      params_.normalize = norm;
+      Modified();
+   }
+
+   bool GetWithNormalize(void) const
+   {
+      return params_.normalize;
+   }
+
+   void SetWithAdvStats(const bool adv)
+   {
+      params_.advStats = adv;
+      Modified();
+   }
+
+   bool GetWithAdvStats(void) const
+   {
+      return params_.advStats;
+   }
+
+   void SetSuperArcSamplingLevel(int lvl)
+   {
+      params_.samplingLvl = lvl;
+      Modified();
+   }
+
+   int GetSuperArcSamplingLevel(void) const
+   {
+      return params_.samplingLvl;
+   }
+
+   int setupTriangulation();
+   int getScalars();
+   int getOffsets();
+
+   int getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes);
+
+   int addDirectSkeletonArc(const ftr::idSuperArc arcId, const int cc, vtkPoints* points,
+                            vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+
+   int addSampledSkeletonArc(const ftr::idSuperArc arcId, const int cc, vtkPoints* points,
+                             vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+
+   int addCompleteSkeletonArc(const ftr::idSuperArc arcId, const int cc, vtkPoints* points,
+                              vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+
+   int getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs);
+
+   int getSegmentation(vtkDataSet* outputSegmentation);
+
+  protected:
+   ttkFTRGraph();
+   ~ttkFTRGraph();
 
    TTK_SETUP();
+
+   void identify(vtkDataSet* ds) const;
+
+   virtual int FillInputPortInformation(int port, vtkInformation* info);
+   virtual int FillOutputPortInformation(int port, vtkInformation* info);
+
+  private:
+
+   string ScalarField;
+   bool   UseInputOffsetScalarField;
+   string InputOffsetScalarFieldName;
+   int    ScalarFieldId;
+   int    OffsetFieldId;
+
+   ftr::Params params_;
+
+   vtkDataSet*           mesh_;
+   Triangulation*        triangulation_;
+   ftr::FTRGraph         ftrGraph_;
+   vtkDataArray*         inputScalars_;
+   vector<ftr::idVertex> offsets_;
+
+   bool                   hasUpdatedMesh_;
 };
+
+#endif  // _VTK_CONTOURFORESTS_H

@@ -17,6 +17,9 @@
 // base code includes
 #include <Triangulation.h>
 
+#include "Structures.h"
+#include "DataTypes.h"
+
 namespace ttk
 {
    namespace ftr
@@ -42,7 +45,7 @@ namespace ttk
          /// \param argment Dummy integer argument.
          /// \return Returns 0 upon success, negative values otherwise.
          template <class dataType>
-         int build(const int &argument) const;
+         void build();
 
          /// Pass a pointer to an input array representing a scalarfield.
          /// The expected format for the array is the following:
