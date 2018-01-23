@@ -60,6 +60,8 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    vtkUnstructuredGrid* outputSkeletonArcs  = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
    vtkDataSet*          outputSegmentation  = outputs[2];
 
+   mesh_ = inputs[0];
+
    if (setupTriangulation()) {
 #ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkFTRGraph] Error : wrong triangulation." << endl;
@@ -75,16 +77,19 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
        cout << "Launch on field : " << ScalarField << endl;
    }
 
-   ftr::idNode acc_nbNodes = 0;
-
-   // Build graph
-
-   // set params
-   // TODO
-
-   // compute
+   // compute graph
    switch (inputScalars_->GetDataType()) {
-      vtkTemplateMacro({ ftrGraph_.build<VTK_TT>(); });
+      vtkTemplateMacro({
+         ftr::FTRGraph<VTK_TT> ftrGraph_;
+         // common parameters
+         ftrGraph_.setDebugLevel(debugLevel_);
+         ftrGraph_.setThreadNumber(threadNumber_);
+         ftrGraph_.setupTriangulation(triangulation_);
+         // reeb graph parameters
+         // TODO
+         // build
+         ftrGraph_.build();
+      });
    }
 
    UpdateProgress(0.50);
@@ -199,14 +204,17 @@ int ttkFTRGraph::getScalars()
 
 int ttkFTRGraph::getSegmentation(vtkDataSet* outputSegmentation)
 {
+   return 0;
 }
 
 int ttkFTRGraph::getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs)
 {
+   return 0;
 }
 
 int ttkFTRGraph::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
 {
+   return 0;
 }
 
 int ttkFTRGraph::setupTriangulation()
@@ -220,10 +228,6 @@ int ttkFTRGraph::setupTriangulation()
 #endif
 
       triangulation_->setWrapper(this);
-      ftrGraph_.setDebugLevel(debugLevel_);
-      ftrGraph_.setThreadNumber(threadNumber_);
-      ftrGraph_.setupTriangulation(triangulation_);
-
       hasUpdatedMesh_ = ttkTriangulation::hasChangedConnectivity(triangulation_, mesh_, this);
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -244,6 +248,7 @@ ttkFTRGraph::ttkFTRGraph()
       ScalarFieldId{},
       OffsetFieldId{-1},
       params_{},
+      mesh_{},
       triangulation_{},
       inputScalars_{},
       offsets_{},

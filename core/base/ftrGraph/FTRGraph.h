@@ -17,65 +17,37 @@
 // base code includes
 #include <Triangulation.h>
 
-#include "Structures.h"
 #include "DataTypes.h"
+#include "Scalars.h"
+#include "Structures.h"
 
 namespace ttk
 {
    namespace ftr
    {
+      template<typename ScalarType>
       class FTRGraph : public Debug
       {
-        protected:
-         void *         inputData_, *outputData_;
+        private:
+         Params* const params_;
          Triangulation *mesh_;
+         Scalars<ScalarType>* const scalars_;
+
+         const bool needDelete_;
 
         public:
+         FTRGraph(Params* const params, Triangulation* mesh, Scalars<ScalarType>* const scalars);
          FTRGraph();
-
          virtual ~FTRGraph();
 
-         /// build the package.
+         /// build the Reeb Graph
          /// \pre If this TTK package uses ttk::Triangulation for fast mesh
          /// traversals, the function setupTriangulation() must be called on this
          /// object prior to this function, in a clearly distinct pre-processing
          /// steps. An error will be returned otherwise.
          /// \note In such a case, it is recommended to exclude
          /// setupTriangulation() from any time performance measurement.
-         /// \param argment Dummy integer argument.
-         /// \return Returns 0 upon success, negative values otherwise.
-         template <class dataType>
          void build();
-
-         /// Pass a pointer to an input array representing a scalarfield.
-         /// The expected format for the array is the following:
-         /// <vertex0-component0> <vertex0-component1> ... <vertex0-componentN>
-         /// <vertex1-component0> <vertex1-component1> ... <vertex1-componentN>
-         /// <vertexM-component0> <vertexM-component1> ... <vertexM-componentN>.
-         /// The array is expected to be correctly allocated.
-         /// \param data Pointer to the data array.
-         /// \return Returns 0 upon success, negative values otherwise.
-         /// \sa setVertexNumber() and setDimensionNumber().
-         inline int setInputDataPointer(void *data)
-         {
-            inputData_ = data;
-            return 0;
-         }
-
-         /// Pass a pointer to an output array representing a scalar field.
-         /// The expected format for the array is the following:
-         /// <vertex0-component0> <vertex0-component1> ... <vertex0-componentN>
-         /// <vertex1-component0> <vertex1-component1> ... <vertex1-componentN>
-         /// <vertexM-component0> <vertexM-component1> ... <vertexM-componentN>.
-         /// The array is expected to be correctly allocated.
-         /// \param data Pointer to the data array.
-         /// \return Returns 0 upon success, negative values otherwise.
-         /// \sa setVertexNumber() and setDimensionNumber().
-         inline int setOutputDataPointer(void *data)
-         {
-            outputData_ = data;
-            return 0;
-         }
 
          // General documentation info:
          //
@@ -122,6 +94,28 @@ namespace ttk
 
             return 0;
          }
+
+         // Accessor on the Tree
+         // ---------------------
+
+         void setThreadNumber(const idThread nb) {
+            params_->threadNumber_ = nb;
+         }
+
+         void setDebugLevel(const int lvl) {
+            params_->debugLevel_ = lvl;
+         }
+
+        protected:
+
+         // Build functions
+
+         // Print function
+
+         void printGraph(const int lvl) const;
+
+         void printTime(DebugTimer timer, const string& msg, const int lvl) const;
+
       };
 
    }  // namespace ftr

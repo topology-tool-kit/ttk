@@ -7,52 +7,55 @@ namespace ttk
 {
    namespace ftr
    {
-      // template functions
-      template <class dataType>
-      void FTRGraph::build()
+      template <typename ScalarType>
+      FTRGraph<ScalarType>::FTRGraph()
+          : params_(new Params),
+            mesh_(nullptr),
+            scalars_(new Scalars<ScalarType>),
+            needDelete_(true)
+      {
+      }
+
+      template <typename ScalarType>
+      FTRGraph<ScalarType>::FTRGraph(Params* const params, Triangulation* mesh,
+                                     Scalars<ScalarType>* const scalars)
+          : params_(params), mesh_(mesh), scalars_(scalars), needDelete_(false)
+      {
+      }
+
+      template<typename ScalarType>
+      FTRGraph<ScalarType>::~FTRGraph()
+      {
+         if(needDelete_) {
+            delete params_;
+            delete scalars_;
+         }
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::build()
       {
          Timer t;
-
          // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!mesh_) {
-            cerr << "[FTRGraph]: no mesh input" << endl;
-            return ;
-         }
-         if (!inputData_) {
-            cerr << "[FTRGraph]: no input data" << endl;
-            return ;
-         }
-         if (!outputData_) {
-            cerr << "[FTRGraph]: no ouput data" << endl;
-            return ;
+            cerr << "[FTR Graph]: no mesh input" << endl;
+            return;
          }
 #endif
+#ifdef TTK_ENABLE_OPENMP
+         omp_set_num_threads(threadNumber_);
+         omp_set_nested(1);
+#endif
 
-         dataType *outputData = (dataType *)outputData_;
-         dataType *inputData  = (dataType *)inputData_;
+         params_->printSelf();
 
          int vertexNumber = mesh_->getNumberOfVertices();
-
-         // init the output -- to adapt
-         for (int i = 0; i < vertexNumber; i++) {
-            outputData[i] = inputData[i];
-         }
-
-            // the following open-mp processing is only relevant for embarrassingly
-            // parallel algorithms (such as smoothing) -- to adapt
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-         for (int i = 0; i < (int)vertexNumber; i++) {
-            // TODO-2
-            // processing here!
-            // end of TODO-2
-         }
+         scalars_->setSize(vertexNumber);
 
          {
             stringstream msg;
-            msg << "[FTRGraph] Data-set (" << vertexNumber << " points) processed in "
+            msg << "[FTR Graph] Data-set (" << vertexNumber << " points) processed in "
                 << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << endl;
             dMsg(cout, msg.str(), timeMsg);
          }

@@ -35,6 +35,23 @@ class VTKFILTERSCORE_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm, public Wra
 class ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
 #endif
 {
+  private:
+
+   string ScalarField;
+   bool   UseInputOffsetScalarField;
+   string InputOffsetScalarFieldName;
+   int    ScalarFieldId;
+   int    OffsetFieldId;
+
+   ftr::Params params_;
+
+   vtkDataSet*           mesh_;
+   Triangulation*        triangulation_;
+   vtkDataArray*         inputScalars_;
+   vector<ftr::idVertex> offsets_;
+
+   bool                   hasUpdatedMesh_;
+
   public:
    static ttkFTRGraph* New();
 
@@ -145,23 +162,6 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
    virtual int FillInputPortInformation(int port, vtkInformation* info);
    virtual int FillOutputPortInformation(int port, vtkInformation* info);
 
-  private:
-
-   string ScalarField;
-   bool   UseInputOffsetScalarField;
-   string InputOffsetScalarFieldName;
-   int    ScalarFieldId;
-   int    OffsetFieldId;
-
-   ftr::Params params_;
-
-   vtkDataSet*           mesh_;
-   Triangulation*        triangulation_;
-   ftr::FTRGraph         ftrGraph_;
-   vtkDataArray*         inputScalars_;
-   vector<ftr::idVertex> offsets_;
-
-   bool                   hasUpdatedMesh_;
 };
 
 #endif  // _VTK_CONTOURFORESTS_H

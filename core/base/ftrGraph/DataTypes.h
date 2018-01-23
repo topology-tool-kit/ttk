@@ -33,6 +33,8 @@ namespace ftr
    using idCell = int;
    /// \brief for task identifiers
    using idTask = idNode;
+   /// \brief for threads identifiers
+   using idThread = idNode;
    /// \brief for vertex up/down valence
    using valence = unsigned char;
 
