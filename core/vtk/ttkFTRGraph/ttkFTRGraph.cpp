@@ -32,23 +32,22 @@ int ttkFTRGraph::FillOutputPortInformation(int port, vtkInformation* info)
    return 1;
 }
 
-int ttkFTRGraph::addCompleteSkeletonArc(const ftr::idSuperArc arcId, const int cc, vtkPoints* points,
-                                       vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+int ttkFTRGraph::addCompleteSkeletonArc(const ftr::idSuperArc arcId, const int cc,
+                                        vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
+                                        ArcData& arcData)
 {
    return 0;
 }
 
 int ttkFTRGraph::addDirectSkeletonArc(const idSuperArc arcId, const int cc, vtkPoints* points,
-                                     vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+                                      vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
-
    return 0;
 }
 
 int ttkFTRGraph::addSampledSkeletonArc(const idSuperArc arcId, const int cc, vtkPoints* points,
-                                      vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+                                       vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
-
    return 0;
 }
 
@@ -56,11 +55,13 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 {
    Memory m;
 
+   // Input
+   mesh_ = inputs[0];
+
+   // Output
    vtkUnstructuredGrid* outputSkeletonNodes = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
    vtkUnstructuredGrid* outputSkeletonArcs  = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
    vtkDataSet*          outputSegmentation  = outputs[2];
-
-   mesh_ = inputs[0];
 
    if (setupTriangulation()) {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -69,12 +70,12 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 #endif
    }
 
-   // Fill the vector of scalar/offset, cut the array in pieces if needed
-    getScalars();
-    getOffsets();
+   // Scalar field related
+   getScalars();
+   getOffsets();
 
-   if(debugLevel_) {
-       cout << "Launch on field : " << ScalarField << endl;
+   if (debugLevel_) {
+      cout << "Launch on field : " << ScalarField << endl;
    }
 
    // compute graph
@@ -86,7 +87,8 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
          ftrGraph_.setThreadNumber(threadNumber_);
          ftrGraph_.setupTriangulation(triangulation_);
          // reeb graph parameters
-         // TODO
+         ftrGraph_.setScalars(inputScalars_->GetVoidPointer(0));
+         ftrGraph_.setVertexSoSoffsets(offsets_.data());
          // build
          ftrGraph_.build();
       });
@@ -133,43 +135,41 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 int ttkFTRGraph::getOffsets()
 {
    vtkDataArray* inputOffsets;
-   if (OffsetFieldId != -1) {
-      inputOffsets = mesh_->GetPointData()->GetArray(OffsetFieldId);
-      if (inputOffsets) {
-         InputOffsetScalarFieldName = inputOffsets->GetName();
-         UseInputOffsetScalarField  = true;
+   inputOffsets = mesh_->GetPointData()->GetArray(OffsetFieldId);
+   if (inputOffsets) {
+      InputOffsetScalarFieldName = inputOffsets->GetName();
+      UseInputOffsetScalarField  = true;
+   }
+
+   const idVertex numberOfVertices = mesh_->GetNumberOfPoints();
+
+   if (UseInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
+      inputOffsets = mesh_->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
+      offsets_.resize(numberOfVertices);
+      for (int i = 0; i < numberOfVertices; i++) {
+         offsets_[i] = inputOffsets->GetTuple1(i);
+      }
+   } else {
+      if (hasUpdatedMesh_ and offsets_.size()) {
+         // don't keep an out-dated offset array
+         offsets_.clear();
       }
 
-      const idVertex numberOfVertices = mesh_->GetNumberOfPoints();
-
-      if (UseInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
-         inputOffsets = mesh_->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
+      if (offsets_.empty()) {
          offsets_.resize(numberOfVertices);
-         for (int i = 0; i < numberOfVertices; i++) {
-            offsets_[i] = inputOffsets->GetTuple1(i);
-         }
-      } else {
-         if (hasUpdatedMesh_ and offsets_.size()) {
-            // don't keep an out-dated offset array
-            offsets_.clear();
-         }
-
-         if (offsets_.empty()) {
-            offsets_.resize(numberOfVertices);
 #pragma omp parallel for
-            for (int i = 0; i < numberOfVertices; i++) {
-               offsets_[i] = i;
-            }
+         for (int i = 0; i < numberOfVertices; i++) {
+            offsets_[i] = i;
          }
       }
+   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if (offsets_.empty()) {
-         cerr << "[ttkFTRGraph] Error : wrong input offset scalar field " << endl;
-         return -1;
-      }
-#endif
+   if (offsets_.empty()) {
+      cerr << "[ttkFTRGraph] Error : wrong input offset scalar field " << endl;
+      return -1;
    }
+#endif
 
    return 0;
 }
@@ -219,22 +219,23 @@ int ttkFTRGraph::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
 
 int ttkFTRGraph::setupTriangulation()
 {
-      triangulation_ = ttkTriangulation::getTriangulation(mesh_);
+   triangulation_ = ttkTriangulation::getTriangulation(mesh_);
 #ifndef TTK_ENABLE_KAMIKAZE
-         if (!triangulation_) {
-            cerr << "[ttkFTRGraph] Error : ttkTriangulation::getTriangulation() is null." << endl;
-            return -1;
-      }
+   if (!triangulation_) {
+      cerr << "[ttkFTRGraph] Error : ttkTriangulation::getTriangulation() is null." << endl;
+      return -1;
+   }
 #endif
 
-      triangulation_->setWrapper(this);
-      hasUpdatedMesh_ = ttkTriangulation::hasChangedConnectivity(triangulation_, mesh_, this);
+   triangulation_->setWrapper(this);
+   hasUpdatedMesh_ = ttkTriangulation::hasChangedConnectivity(triangulation_, mesh_, this);
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if (triangulation_->isEmpty()) {
-         cerr << "[ttkFTRGraph] Error : ttkTriangulation on connected component allocation problem." << endl;
-         return -1;
-      }
+   if (triangulation_->isEmpty()) {
+      cerr << "[ttkFTRGraph] Error : ttkTriangulation on connected component allocation problem."
+           << endl;
+      return -1;
+   }
 #endif
    return 0;
 }
@@ -264,8 +265,8 @@ ttkFTRGraph::~ttkFTRGraph()
 
 void ttkFTRGraph::identify(vtkDataSet* ds) const
 {
-   vtkSmartPointer<vtkIntArray> identifiers=vtkSmartPointer<vtkIntArray>::New();
-   const vtkIdType nbPoints = ds->GetNumberOfPoints();
+   vtkSmartPointer<vtkIntArray> identifiers = vtkSmartPointer<vtkIntArray>::New();
+   const vtkIdType              nbPoints    = ds->GetNumberOfPoints();
    identifiers->SetName("VertexIdentifier");
    identifiers->SetNumberOfComponents(1);
    identifiers->SetNumberOfTuples(nbPoints);

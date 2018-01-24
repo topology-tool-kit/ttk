@@ -29,8 +29,8 @@ namespace ttk
       class FTRGraph : public Debug
       {
         private:
-         Params* const params_;
-         Triangulation *mesh_;
+         Params* const              params_;
+         Triangulation*             mesh_;
          Scalars<ScalarType>* const scalars_;
 
          const bool needDelete_;
@@ -98,29 +98,65 @@ namespace ttk
          // Accessor on the Tree
          // ---------------------
 
-         void setThreadNumber(const idThread nb) {
+         // TODO
+
+         // Parameters
+         // ----------
+
+         /// The nuber of threads to be used during the computation
+         /// of the reeb graph
+         void setThreadNumber(const idThread nb)
+         {
             params_->threadNumber_ = nb;
          }
 
-         void setDebugLevel(const int lvl) {
+         /// Control the verbosity of the base code
+         void setDebugLevel(const int lvl)
+         {
+            Debug::setDebugLevel(lvl);
             params_->debugLevel_ = lvl;
+         }
+
+         /// Scalar field used to compute the Reeb Graph
+         void setScalars(const void* scalars)
+         {
+            scalars_->setScalars((ScalarType*)scalars);
+         }
+
+         /// When several points have the same scalar value,
+         /// we use simulation of simplicity to distingish between
+         /// them in a morse discret geometry compliant way.
+         /// This is explained in the TTK report.
+         /// Set the array to use here
+         void setVertexSoSoffsets(idVertex* sos)
+         {
+            scalars_->setOffsets(sos);
          }
 
         protected:
 
          // Build functions
 
+         // TODO
+
          // Print function
 
          void printGraph(const int lvl) const;
 
-         void printTime(DebugTimer timer, const string& msg, const int lvl) const;
+         void printTime(DebugTimer& timer, const string& msg, const int lvl) const;
+
+         // Initialize functions
+
+         void alloc();
+
+         void init();
 
       };
 
    }  // namespace ftr
 }  // namespace ttk
 
+// Implementation
 #include "FTRGraph_Template.h"
 
 #endif  // FTRGRAPH_H

@@ -27,7 +27,7 @@ namespace ftr
          if (debugLevel_) {
             std::cout << "[FTR Graph]: thread number: " << threadNumber_ << std::endl;
             std::cout << "[FTR Graph]: debug lvl: " << debugLevel_ << std::endl;
-            if (debugLevel_ > 1) {
+            if (debugLevel_ > 2) {
                std::cout << "[FTR Graph]: segmentation: " << std::boolalpha << segm << std::endl;
                std::cout << "[FTR Graph]: sampling level: " << samplingLvl << std::endl;
             }

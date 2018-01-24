@@ -52,6 +52,38 @@
         </StringVectorProperty>
 
         <IntVectorProperty
+           name="UseInputOffsetScalarField"
+           command="SetUseInputOffsetScalarField"
+           label="Use Input Offset Scalar Field"
+           number_of_elements="1"
+           default_values="0">
+           <BooleanDomain name="bool"/>
+           <Documentation>
+              Use an input offset field (to disambiguate flat plateaus).
+           </Documentation>
+        </IntVectorProperty>
+
+        <StringVectorProperty
+           name="InputOffsetScalarFieldName"
+           command="SetInputOffsetScalarFieldName"
+           label="Input Offset"
+           number_of_elements="1"
+           animateable="0"
+           >
+           <ArrayListDomain
+              name="array_list"
+              default_values="0"
+              data_type="VTK_INT">
+              <RequiredProperties>
+                 <Property name="Input" function="Input" />
+              </RequiredProperties>
+           </ArrayListDomain>
+           <Documentation>
+              Select the input offset scalar field to process.
+           </Documentation>
+        </StringVectorProperty>
+
+        <IntVectorProperty
            name="UseAllCores"
            label="Use All Cores"
            command="SetUseAllCores"
@@ -80,7 +112,7 @@
            label="Debug Level"
            command="SetdebugLevel_"
            number_of_elements="1"
-           default_values="3" panel_visibility="advanced">
+           default_values="2" panel_visibility="advanced">
            <IntRangeDomain name="range" min="0" max="100" />
            <Documentation>
               Debug level.
@@ -89,6 +121,8 @@
 
         <PropertyGroup panel_widget="Line" label="Input options">
            <Property name="ScalarField" />
+           <Property name="UseInputOffsetScalarField" />
+           <Property name="InputOffsetScalarFieldName" />
         </PropertyGroup>
 
         <PropertyGroup panel_widget="Line" label="Testing">

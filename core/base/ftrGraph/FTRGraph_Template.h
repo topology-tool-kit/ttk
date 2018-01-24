@@ -36,22 +36,54 @@ namespace ttk
       void FTRGraph<ScalarType>::build()
       {
          Timer t;
-         // check the consistency of the variables -- to adapt
+
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!mesh_) {
             cerr << "[FTR Graph]: no mesh input" << endl;
             return;
          }
+         if (!scalars_) {
+            cerr << "[FTR Graph]: no scalars given" << endl;
+            return;
+         }
+         if (!params_) {
+            cerr << "[FTR Graph]: no parameters" << endl;
+            return;
+         }
 #endif
+         // init some values
+
 #ifdef TTK_ENABLE_OPENMP
          omp_set_num_threads(threadNumber_);
          omp_set_nested(1);
 #endif
 
-         params_->printSelf();
-
          int vertexNumber = mesh_->getNumberOfVertices();
          scalars_->setSize(vertexNumber);
+
+         params_->printSelf();
+
+         // Precompute
+
+         DebugTimer timeAlloc;
+         alloc();
+         printTime(timeAlloc, "[FTR Graph]: alloc time: ", infoMsg);
+
+         DebugTimer timeNaN;
+         scalars_->removeNaN();
+         printTime(timeNaN, "[FTR Graph]: remove NaN time: ", infoMsg);
+
+         DebugTimer timeInit;
+         init();
+         printTime(timeInit, "[FTR Graph]: init time: ", infoMsg);
+
+         DebugTimer timeSort;
+         scalars_->sort();
+         printTime(timeSort, "[FTR Graph]: sort time: ", infoMsg);
+
+         // Build the graph
+
+         // TODO
 
          {
             stringstream msg;
@@ -59,6 +91,26 @@ namespace ttk
                 << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << endl;
             dMsg(cout, msg.str(), timeMsg);
          }
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::printTime(DebugTimer& timer, const string& msg, const int lvl) const
+      {
+         ostringstream outString;
+         outString << msg << timer.getElapsedTime()  << " :: " << lvl << endl;
+         dMsg(cout, outString.str(), lvl);
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::alloc()
+      {
+         scalars_->alloc();
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::init()
+      {
+         scalars_->init();
       }
    }
 }

@@ -107,7 +107,7 @@ namespace ttk
 
          void setOffsets(idVertex* sos)
          {
-            externalOffsets_ = true;
+            externalOffsets_ = sos;
             offsets_         = sos;
          }
 
