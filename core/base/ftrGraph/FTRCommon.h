@@ -7,8 +7,10 @@
 
 #pragma once
 
-#include <iostream>
 #include "DataTypes.h"
+
+#include <iostream>
+#include <vector>
 
 namespace ttk
 {
@@ -37,16 +39,31 @@ namespace ttk
          }
       };
 
+      /// Force the class to use functions alloc and init
+      /// alloc is used for all system allocation
+      /// init is used to fill arrays that needs to be
       class Allocable
       {
-        private:
+        protected:
          /// Allocation may depends on the number of vertices
-         idVertex nbVerts_;
+         idVertex nbVerts_ = nullVertex;
 
         public:
          void setNumberOfVertices(const idVertex nbVerts)
          {
             nbVerts_ = nbVerts;
+         }
+
+         template<typename type>
+         void fillVector(std::vector<type>& vect, const type& elmt)
+         {
+            const std::size_t nbIt = vect.size();
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+            for (std::size_t i = 0; i < nbIt; i++) {
+               vect[i] = elmt;
+            }
          }
 
          virtual void alloc() = 0;

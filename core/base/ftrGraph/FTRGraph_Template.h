@@ -2,6 +2,7 @@
 #define FTRGRAPH_TEMPLATE_H
 
 #include "FTRGraph.h"
+#include "Tasks.h"
 
 namespace ttk
 {
@@ -103,6 +104,19 @@ namespace ttk
       template <typename ScalarType>
       void FTRGraph<ScalarType>::leafSearch()
       {
+         TaskChunk leafChunkParams(scalars_->getSize());
+         leafChunkParams.grainSize = 10000;
+         auto leafChunk            = Tasks::getChunk(leafChunkParams);
+
+         cout << " grain size " << get<0>(leafChunk) << " nb Tasks " << get<1>(leafChunk) << endl;
+
+         for (idTask leafChunkId = 0; leafChunkId < get<1>(leafChunk); ++leafChunkId) {
+            const idVertex lowerBound = Tasks::getBegin(leafChunkId, get<0>(leafChunk));
+            const idVertex upperBound = Tasks::getEnd(leafChunkId, get<0>(leafChunk), scalars_->getSize());
+            cout << "lower " << lowerBound << endl;
+            cout << "upper " << upperBound << endl;
+            cout << " " << endl;
+         }
       }
 
       template <typename ScalarType>
@@ -122,12 +136,14 @@ namespace ttk
       void FTRGraph<ScalarType>::alloc()
       {
          scalars_->alloc();
+         graph_.alloc();
       }
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::init()
       {
          scalars_->init();
+         graph_.init();
       }
    }
 }

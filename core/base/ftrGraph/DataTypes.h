@@ -29,6 +29,8 @@ namespace ftr
    using idEdge = int;
    /// \brief Cell index in vect_cellList_
    using idCell = int;
+   /// \brief id to an element of the graph, negative for Nodes.
+   using graphElmt = long int;
    /// \brief for task identifiers
    using idTask = idNode;
    /// \brief for threads identifiers
@@ -45,10 +47,11 @@ namespace ftr
 
    // QUESTION impact on performance using max (0 would be faster alloacted)
    static const idSuperArc     nullSuperArc  = std::numeric_limits<idSuperArc>::max();
-   static const idNode         nullNodes     = std::numeric_limits<idNode>::max();
+   static const idNode         nullNode      = std::numeric_limits<idNode>::max();
    static const idVertex       nullVertex    = std::numeric_limits<idVertex>::max();
    static const idEdge         nullEdge      = std::numeric_limits<idEdge>::max();
    static const idCell         nullCell      = std::numeric_limits<idCell>::max();
+   static const graphElmt      nullGraphElmt = std::numeric_limits<graphElmt>::max();
 
    // Enum data
    // ----------

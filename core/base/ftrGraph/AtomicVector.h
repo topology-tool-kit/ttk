@@ -131,6 +131,14 @@ namespace ttk
          (*this)[curPos]    = elmt;
       }
 
+      void emplace_back(const type &elmt)
+      {
+         // Not really constructed in place
+         // here to ensure vector compatibility
+         const auto &curPos = getNext();
+         (*this)[curPos]    = elmt;
+      }
+
       // --------
       // OPERATOR
       // --------
