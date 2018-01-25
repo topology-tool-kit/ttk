@@ -18,22 +18,29 @@
 #include <Triangulation.h>
 
 #include "DataTypes.h"
+#include "DynamicGraph.h"
+#include "Graph.h"
+#include "Propagation.h"
 #include "Scalars.h"
-#include "Structures.h"
+#include "FTRCommon.h"
 
 namespace ttk
 {
    namespace ftr
    {
       template<typename ScalarType>
-      class FTRGraph : public Debug
+      class FTRGraph : virtual public Debug, public Allocable
       {
         private:
+         // Exernal fields
          Params* const              params_;
          Triangulation*             mesh_;
          Scalars<ScalarType>* const scalars_;
 
          const bool needDelete_;
+
+         // Internal fields
+         Graph graph_;
 
         public:
          FTRGraph(Params* const params, Triangulation* mesh, Scalars<ScalarType>* const scalars);
@@ -137,7 +144,13 @@ namespace ttk
 
          // Build functions
 
-         // TODO
+         /// Find the extrema from which the local propagations will start
+         void leafSearch();
+
+         /// Swipe over the dataset, using Fibonacci Heap for the
+         /// propagation and Dynamic Graph to track the connected component
+         /// in oreder to construct the Graph
+         void swipe();
 
          // Print function
 
@@ -145,11 +158,12 @@ namespace ttk
 
          void printTime(DebugTimer& timer, const string& msg, const int lvl) const;
 
-         // Initialize functions
+         // Initialize functions (virtual inherit from Allocable)
+         // called automatically by the build
 
-         void alloc();
+         void alloc() override;
 
-         void init();
+         void init() override;
 
       };
 

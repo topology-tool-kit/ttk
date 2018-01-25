@@ -11,18 +11,27 @@
 
 #pragma once
 
+#include "FTRCommon.h"
+
 // TODO implement this using fibonacci heaps
 
 namespace ttk
 {
    namespace ftr
    {
-      class Propagation
+      class Propagation : public Allocable
       {
         private:
         public:
          Propagation();
          virtual ~Propagation();
+
+         // Initialize functions
+         // --------------------
+
+         void alloc() override;
+
+         void init() override;
       };
    }
 }

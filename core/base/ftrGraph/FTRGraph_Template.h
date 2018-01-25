@@ -60,6 +60,7 @@ namespace ttk
 
          int vertexNumber = mesh_->getNumberOfVertices();
          scalars_->setSize(vertexNumber);
+         graph_.setNumberOfVertices(vertexNumber);
 
          params_->printSelf();
 
@@ -83,7 +84,13 @@ namespace ttk
 
          // Build the graph
 
-         // TODO
+         DebugTimer timeLeafSearch;
+         leafSearch();
+         printTime(timeLeafSearch, "[FTR Graph]: leaf search time: ", timeMsg);
+
+         DebugTimer timeSwipe;
+         swipe();
+         printTime(timeSwipe, "[FTR Graph]: swipe time: ", timeMsg);
 
          {
             stringstream msg;
@@ -94,10 +101,20 @@ namespace ttk
       }
 
       template <typename ScalarType>
+      void FTRGraph<ScalarType>::leafSearch()
+      {
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::swipe()
+      {
+      }
+
+      template <typename ScalarType>
       void FTRGraph<ScalarType>::printTime(DebugTimer& timer, const string& msg, const int lvl) const
       {
          ostringstream outString;
-         outString << msg << timer.getElapsedTime()  << " :: " << lvl << endl;
+         outString << msg << timer.getElapsedTime()  << endl;
          dMsg(cout, outString.str(), lvl);
       }
 

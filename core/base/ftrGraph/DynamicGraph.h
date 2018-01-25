@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::ftr::Dynamicgraph
+/// \class ttk::ftr::DynamicGraph
 /// \author Gueunet Charles <charles.gueunet+ttk@gmail.com>
 /// \date 2018-01-15
 ///
@@ -13,18 +13,27 @@
 
 #pragma once
 
+#include "FTRCommon.h"
+
 // TODO implement this using ST-tree.
 
 namespace ttk
 {
    namespace ftr
    {
-      class Dynamicgraph
+      class DynamicGraph : public Allocable
       {
         private:
         public:
-         Dynamicgraph();
-         virtual ~Dynamicgraph();
+         DynamicGraph();
+         virtual ~DynamicGraph();
+
+         // Initialize functions
+         // --------------------
+
+         void alloc() override;
+
+         void init() override;
       };
    }
 }

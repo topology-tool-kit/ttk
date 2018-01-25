@@ -3,10 +3,10 @@
 using namespace ttk;
 using namespace ftr;
 
-Dynamicgraph::Dynamicgraph()
+DynamicGraph::DynamicGraph()
 {
 }
 
-Dynamicgraph::~Dynamicgraph()
+DynamicGraph::~DynamicGraph()
 {
 }

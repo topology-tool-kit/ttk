@@ -11,8 +11,6 @@
 
 #include <functional>
 #include <limits>
-#include <set>
-#include <tuple>
 
 namespace ttk
 {
