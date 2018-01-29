@@ -51,6 +51,7 @@ namespace ttk
 #endif
       }
 
+      // move constructor
       AtomicVector(AtomicVector &&other) = default;
 
       virtual ~AtomicVector() = default;
@@ -88,7 +89,9 @@ namespace ttk
 
       void reset(const std::size_t &nId = 0)
       {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
+#endif
          nextId = nId;
       }
 
@@ -105,7 +108,9 @@ namespace ttk
       std::size_t getNext(void)
       {
          std::size_t resId;
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
+#endif
          resId = nextId++;
 
          if (nextId == std::vector<type>::size()) {
@@ -139,6 +144,14 @@ namespace ttk
          (*this)[curPos]    = elmt;
       }
 
+      void pop_back(void)
+      {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic update
+#endif
+         --nextId;
+      }
+
       // --------
       // OPERATOR
       // --------
@@ -147,7 +160,16 @@ namespace ttk
       {
          std::vector<type>::operator=(other);
          nextId                     = other.nextId;
+         return *this;
       }
+
+      AtomicVector<type> &operator=(AtomicVector<type> &&other)
+      {
+         std::vector<type>::operator=(std::move(other));
+         nextId                     = std::move(other.nextId);
+         return *this;
+      }
+
 
       // ---------
       // ITERATORS

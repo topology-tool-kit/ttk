@@ -26,10 +26,10 @@ void Graph::alloc()
    leaves_.reserve(nbVerts_/3);
    nodes_.reserve(nbVerts_/2);
    arcs_.reserve(nbVerts_/2);
-   vert2Graph_.resize(nbVerts_);
+   segmentation_.resize(nbVerts_);
 }
 
 void Graph::init()
 {
-   fillVector<graphElmt>(vert2Graph_, nullGraphElmt);
+   fillVector<graphElmt>(segmentation_, nullGraphElmt);
 }

@@ -1,5 +1,9 @@
+find_package(Boost REQUIRED)
+
 ttk_add_base_library(ftrGraph
-   SOURCES DynamicGraph.cpp Propagation.cpp Graph.cpp
+   SOURCES Graph.cpp
    HEADERS FTRGraph.h FTRGraph_Template.h DynamicGraph.h Propagation.h Scalars.h
-	LINK triangulation)
+   LINK triangulation)
+
+target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})
 

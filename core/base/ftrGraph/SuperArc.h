@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "DataTypes.h"
+#include "DataTypesFTR.h"
 
 #ifndef TTK_ENABLE_KAMIKAZE
 #include<iostream>

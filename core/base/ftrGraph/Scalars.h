@@ -1,5 +1,7 @@
 #pragma once
 
+#include "DataTypesFTR.h"
+
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -22,7 +24,6 @@
 #endif
 
 #include <Debug.h>
-#include "DataTypes.h"
 
 namespace ttk
 {

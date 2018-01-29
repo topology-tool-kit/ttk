@@ -1,14 +1,18 @@
 #pragma once
 
 #include <vtkSmartPointer.h>
+#include <vtkIntArray.h>
+#include <vtkPointData.h>
 
-#include <DataTypes.h>
+#include "DataTypesFTR.h"
+#include "FTRCommon.h"
+#include "Graph.h"
 
 /// Vertex / Node / Arc data inherit from this
 /// master structure.
 struct ObjectData {
    template <typename vtkArrayType>
-   inline vtkSmartPointer<vtkArrayType> alloc(const char* fieldName, size_t nbElmnt)
+   inline vtkSmartPointer<vtkArrayType> allocArray(const char* fieldName, size_t nbElmnt)
    {
       vtkSmartPointer<vtkArrayType> arr = vtkSmartPointer<vtkArrayType>::New();
       arr->SetName(fieldName);
@@ -26,6 +30,22 @@ struct ObjectData {
 };
 
 struct NodeData : public ObjectData {
+   vtkSmartPointer<vtkIntArray> ids;
+
+   explicit NodeData(const ttk::ftr::idVertex nbNodes)
+   {
+      ids = allocArray<vtkIntArray>("NodeId", nbNodes);
+   }
+
+   void addNode(const ttk::ftr::Graph& graph, const ttk::ftr::idNode n)
+   {
+      ids->SetTuple1(n, graph.getNode(n).getVertexIdentifier());
+   }
+
+   void addArrays(vtkPointData* pointData, ttk::ftr::Params params)
+   {
+      pointData->AddArray(ids);
+   }
 };
 
 struct ArcData : public ObjectData {

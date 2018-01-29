@@ -131,8 +131,12 @@
            <Property name="DebugLevel" />
         </PropertyGroup>
 
+        <OutputPort name="Skeleton Nodes" index="0" id="port0" />
+        <OutputPort name="Skeleton Arcs" index="1" id="port1" />
+        <OutputPort name="Segmentation" index="2" id="port2" />
+
         <Hints>
-           <ShowInMenu category="TTK - Misc" />
+           <ShowInMenu category="TTK - Scalar Data" />
         </Hints>
      </SourceProxy>
   </ProxyGroup>

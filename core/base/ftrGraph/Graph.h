@@ -13,7 +13,7 @@
 #pragma once
 
 #include "AtomicVector.h"
-#include "DataTypes.h"
+#include "DataTypesFTR.h"
 #include "FTRCommon.h"
 #include "Node.h"
 #include "SuperArc.h"
@@ -35,11 +35,25 @@ namespace ttk
          AtomicVector<idVertex> leaves_;
          AtomicVector<Node>     nodes_;
          AtomicVector<SuperArc> arcs_;
-         std::vector<graphElmt> vert2Graph_;
+         std::vector<graphElmt> segmentation_;
 
         public:
          Graph();
+         Graph(Graph&& other)      = default;
+         Graph(const Graph& other) = delete;
          virtual ~Graph();
+
+         Graph& operator=(Graph&& other) {
+            if (this != &other) {
+               leaves_       = std::move(other.leaves_);
+               nodes_        = std::move(other.nodes_);
+               arcs_         = std::move(other.arcs_);
+               segmentation_ = std::move(other.segmentation_);
+            }
+            return *this;
+         }
+
+         Graph& operator=(Graph& other) = delete;
 
          // Accessor on structure
          // ---------------------
@@ -66,7 +80,7 @@ namespace ttk
 
          bool isVisied(const idVertex v) const
          {
-            return vert2Graph_[v] == nullGraphElmt;
+            return segmentation_[v] == nullGraphElmt;
          }
 
          bool isNode(const idVertex v) const
@@ -76,7 +90,7 @@ namespace ttk
                std::cerr << "[FTR Graph]: Node is not visited: " << v << std::endl;
             }
 #endif
-            return vert2Graph_[v] < 0;
+            return segmentation_[v] < 0;
          }
 
          bool isArc(const idVertex v) const
@@ -86,7 +100,7 @@ namespace ttk
                std::cerr << "[FTR Graph]: Node is not visited: " << v << std::endl;
             }
 #endif
-            return vert2Graph_[v] >= 0;
+            return segmentation_[v] >= 0;
          }
 
          const Node& getCorrespondingNode(const idVertex v) const
@@ -96,7 +110,7 @@ namespace ttk
                std::cerr << "[FTR Graph]: " << v << " is not a node" << std::endl;
             }
 #endif
-            return nodes_[-vert2Graph_[v]];
+            return nodes_[-segmentation_[v]];
          }
 
          const SuperArc& getCorrespondingArc(const idVertex v) const
@@ -106,7 +120,7 @@ namespace ttk
                std::cerr << "[FTR Graph]: " << v << " is not an arc" << std::endl;
             }
 #endif
-            return arcs_[vert2Graph_[v]];
+            return arcs_[segmentation_[v]];
          }
 
          // Build structure

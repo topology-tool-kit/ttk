@@ -1,4 +1,4 @@
-#include <ttkFTRGraph.h>
+#include "ttkFTRGraph.h"
 
 // only used on the cpp
 #include <vtkConnectivityFilter.h>
@@ -63,6 +63,9 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    vtkUnstructuredGrid* outputSkeletonArcs  = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
    vtkDataSet*          outputSegmentation  = outputs[2];
 
+   // Skeleton
+   Graph graph;
+
    if (setupTriangulation()) {
 #ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkFTRGraph] Error : wrong triangulation." << endl;
@@ -91,13 +94,15 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
          ftrGraph_.setVertexSoSoffsets(offsets_.data());
          // build
          ftrGraph_.build();
+         // get output
+         graph = std::move(ftrGraph_.extractOutputGraph());
       });
    }
 
    UpdateProgress(0.50);
 
    // Construct output
-   if (getSkeletonNodes(outputSkeletonNodes)) {
+   if (getSkeletonNodes(graph, outputSkeletonNodes)) {
 #ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkFTRGraph] Error : wrong properties on skeleton nodes." << endl;
       return -7;
@@ -212,8 +217,27 @@ int ttkFTRGraph::getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs)
    return 0;
 }
 
-int ttkFTRGraph::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
+int ttkFTRGraph::getSkeletonNodes(const Graph& graph, vtkUnstructuredGrid* outputSkeletonNodes)
 {
+   const idNode nbNodes = graph.getNumberOfNodes();
+
+   NodeData nodeData(nbNodes);
+   vtkSmartPointer<vtkUnstructuredGrid> nodes  = vtkSmartPointer<vtkUnstructuredGrid>::New();
+   vtkSmartPointer<vtkPoints>           points = vtkSmartPointer<vtkPoints>::New();
+
+   for (idNode i = 0; i < nbNodes; i++) {
+      const ftr::idVertex vertId = graph.getNode(i).getVertexIdentifier();
+      float point[3];
+      triangulation_->getVertexPoint(vertId, point[0], point[1], point[2]);
+      points->InsertNextPoint(point);
+
+      nodeData.addNode(graph, i);
+   }
+
+   nodes->SetPoints(points);
+   nodeData.addArrays(nodes->GetPointData(), params_);
+
+   outputSkeletonNodes->ShallowCopy(nodes);
    return 0;
 }
 

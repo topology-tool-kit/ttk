@@ -62,6 +62,7 @@ namespace ttk
          int vertexNumber = mesh_->getNumberOfVertices();
          scalars_->setSize(vertexNumber);
          graph_.setNumberOfVertices(vertexNumber);
+         dynGraph_.setNumberOfVertices(vertexNumber);
 
          params_->printSelf();
 
@@ -70,10 +71,6 @@ namespace ttk
          DebugTimer timeAlloc;
          alloc();
          printTime(timeAlloc, "[FTR Graph]: alloc time: ", infoMsg);
-
-         DebugTimer timeNaN;
-         scalars_->removeNaN();
-         printTime(timeNaN, "[FTR Graph]: remove NaN time: ", infoMsg);
 
          DebugTimer timeInit;
          init();
@@ -85,14 +82,27 @@ namespace ttk
 
          // Build the graph
 
-         DebugTimer timeLeafSearch;
-         leafSearch();
-         printTime(timeLeafSearch, "[FTR Graph]: leaf search time: ", timeMsg);
+         DebugTimer timeBuild;
 
-         DebugTimer timeSwipe;
-         swipe();
-         printTime(timeSwipe, "[FTR Graph]: swipe time: ", timeMsg);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel num_threads(params_->threadNumber_)
+#endif
+         {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp single nowait
+#endif
+            {
+               DebugTimer timeLeafSearch;
+               leafSearch();
+               printTime(timeLeafSearch, "[FTR Graph]: leaf search time: ", timeMsg);
 
+               DebugTimer timeSwipe;
+               swipe();
+               printTime(timeSwipe, "[FTR Graph]: swipe time: ", timeMsg);
+            }
+         }
+
+         // Message user
          {
             stringstream msg;
             msg << "[FTR Graph] Data-set (" << vertexNumber << " points) processed in "
@@ -133,6 +143,7 @@ namespace ttk
                   // v is a minimum, add it to the leaves
                   if(isMinV) {
                      graph_.addLeaf(v);
+                     graph_.makeNode(v);
                   }
                }
             } // end task
@@ -140,13 +151,15 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
-
          cout << "find: " << graph_.getNumberOfLeaves() << " leaves" << endl;
       }
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::swipe()
       {
+         // TODO
+         // DynGraph
+         // Propagation FH
       }
 
       template <typename ScalarType>
@@ -162,13 +175,16 @@ namespace ttk
       {
          scalars_->alloc();
          graph_.alloc();
+         dynGraph_.alloc();
       }
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::init()
       {
+         scalars_->removeNaN();
          scalars_->init();
          graph_.init();
+         dynGraph_.init();
       }
    }
 }

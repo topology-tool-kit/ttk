@@ -17,7 +17,7 @@
 // base code includes
 #include <Triangulation.h>
 
-#include "DataTypes.h"
+#include "DataTypesFTR.h"
 #include "DynamicGraph.h"
 #include "Graph.h"
 #include "Propagation.h"
@@ -41,6 +41,7 @@ namespace ttk
 
          // Internal fields
          Graph graph_;
+         DynamicGraph<ScalarType> dynGraph_;
 
         public:
          FTRGraph(Params* const params, Triangulation* mesh, Scalars<ScalarType>* const scalars);
@@ -102,10 +103,13 @@ namespace ttk
             return 0;
          }
 
-         // Accessor on the Tree
+         // Accessor on the graph
          // ---------------------
 
-         // TODO
+         Graph&& extractOutputGraph(void)
+         {
+            return std::move(graph_);
+         }
 
          // Parameters
          // ----------

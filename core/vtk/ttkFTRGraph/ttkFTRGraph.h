@@ -2,6 +2,12 @@
 #ifndef _VTK_CONTOURFORESTS_H
 #define _VTK_CONTOURFORESTS_H
 
+// ttk code includes
+#include "FTRGraph.h"
+#include "Graph.h"
+#include "ttkFTRGraphStructures.h"
+#include "ttkWrapper.h"
+
 // VTK includes
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
@@ -23,11 +29,6 @@
 #include <vtkObjectFactory.h>
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
-
-// ttk code includes
-#include <FTRGraph.h>
-#include <ttkFTRGraphStructures.h>
-#include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
@@ -136,7 +137,7 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
    int getScalars();
    int getOffsets();
 
-   int getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes);
+   int getSkeletonNodes(const ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonNodes);
 
    int addDirectSkeletonArc(const ftr::idSuperArc arcId, const int cc, vtkPoints* points,
                             vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
@@ -159,8 +160,8 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
 
    void identify(vtkDataSet* ds) const;
 
-   virtual int FillInputPortInformation(int port, vtkInformation* info);
-   virtual int FillOutputPortInformation(int port, vtkInformation* info);
+   virtual int FillInputPortInformation(int port, vtkInformation* info) override;
+   virtual int FillOutputPortInformation(int port, vtkInformation* info) override;
 
 };
 
