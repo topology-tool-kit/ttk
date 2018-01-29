@@ -49,6 +49,11 @@ namespace ttk
             return nodes_.size();
          }
 
+         idNode getNumberOfLeaves(void) const
+         {
+            return leaves_.size();
+         }
+
          const Node& getNode(const idNode id) const
          {
            return nodes_[id];
@@ -106,6 +111,11 @@ namespace ttk
 
          // Build structure
          // ---------------
+
+         void addLeaf(const idVertex v)
+         {
+            leaves_.emplace_back(v);
+         }
 
          void makeNode(const idVertex v)
          {

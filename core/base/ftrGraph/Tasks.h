@@ -47,7 +47,6 @@ namespace ttk
          /// ONLY ONE of nbTasks or grainSize should be set.
          static std::tuple<idVertex,idTask> getChunk(const TaskChunk& params)
          {
-
 #ifndef TTK_ENABLE_KAMIKAZE
             if (!params.nbElemt) {
                std::cerr << "[FTR Graph]: getChunk called with nbElemnt null" << std::endl;

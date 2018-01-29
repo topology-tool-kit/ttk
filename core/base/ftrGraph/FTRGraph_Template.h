@@ -108,15 +108,40 @@ namespace ttk
          leafChunkParams.grainSize = 10000;
          auto leafChunk            = Tasks::getChunk(leafChunkParams);
 
-         cout << " grain size " << get<0>(leafChunk) << " nb Tasks " << get<1>(leafChunk) << endl;
-
          for (idTask leafChunkId = 0; leafChunkId < get<1>(leafChunk); ++leafChunkId) {
-            const idVertex lowerBound = Tasks::getBegin(leafChunkId, get<0>(leafChunk));
-            const idVertex upperBound = Tasks::getEnd(leafChunkId, get<0>(leafChunk), scalars_->getSize());
-            cout << "lower " << lowerBound << endl;
-            cout << "upper " << upperBound << endl;
-            cout << " " << endl;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task firstprivate(leafChunkId)
+#endif
+            {
+               const idVertex lowerBound = Tasks::getBegin(leafChunkId, get<0>(leafChunk));
+               const idVertex upperBound = Tasks::getEnd(leafChunkId, get<0>(leafChunk), scalars_->getSize());
+
+               for(idVertex v = lowerBound; v < upperBound ; ++v) {
+                  const valence vNeighNumber = mesh_->getVertexNeighborNumber(v);
+                  bool isMinV = true;
+
+                  for(valence n = 0; n < vNeighNumber; ++n) {
+                     idVertex neigh;
+                     mesh_->getVertexNeighbor(v, n, neigh);
+
+                     if (scalars_->isLower(neigh, v)){
+                        isMinV = false;
+                        break;
+                     }
+                  }
+
+                  // v is a minimum, add it to the leaves
+                  if(isMinV) {
+                     graph_.addLeaf(v);
+                  }
+               }
+            } // end task
          }
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp taskwait
+#endif
+
+         cout << "find: " << graph_.getNumberOfLeaves() << " leaves" << endl;
       }
 
       template <typename ScalarType>
