@@ -1184,7 +1184,11 @@ void FTMTree_MT::sortLeaves(const bool para)
       std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
 #else
 #ifndef _MSC_VER
+#ifdef TTK_ENABLE_OPENMP
 	   __gnu_parallel::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
+#else
+     std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
+#endif
 #else
 	   std::sort(mt_data_.leaves->begin(), mt_data_.leaves->end(), indirect_sort);
 #endif
@@ -1209,7 +1213,11 @@ vector<idNode> FTMTree_MT::sortedNodes(const bool para)
       std::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
 #else
 #ifndef _MSC_VER
+#ifdef TTK_ENABLE_OPENMP
 	   __gnu_parallel::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
+#else
+     std::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
+#endif
 #else
 	   std::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
 #endif
