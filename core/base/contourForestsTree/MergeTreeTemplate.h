@@ -50,7 +50,9 @@ void MergeTree::sortInput(void)
    if (!scalars_->mirrorVertices.size()) {
       scalars_->mirrorVertices.resize(nbVertices);
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
+#endif
       for (idVertex i = 0; i < nbVertices; i++) {
          scalars_->mirrorVertices[sortedVect[i]] = i;
       }
@@ -527,9 +529,13 @@ void MergeTree::recoverMTPairs(
     vector<ExtendedUnionFind *> vect_JoinUF(nbNode, nullptr);
     vector<ExtendedUnionFind *> vect_SplitUF(nbNode, nullptr);
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel sections num_threads(2)
+#endif
     {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp section
+#endif
        {
           pairsJT.reserve(treeData_.leaves.size());
           // For the biggest pair of the component
@@ -620,7 +626,9 @@ void MergeTree::recoverMTPairs(
           }
        } // end para section
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp section
+#endif
        {
           pairsST.reserve(treeData_.leaves.size());
           // For the biggest pair of the component

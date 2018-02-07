@@ -162,7 +162,9 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
       tie(isSaddle, isLast) = propage(*currentState, startUF);
 
       // regular propagation
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write seq_cst
+#endif
       (*mt_data_.ufs)[currentVert] = startUF;
 
       // Saddle case
@@ -172,14 +174,18 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
          (*mt_data_.activeTasksStats)[currentArc].end = _launchGlobalTime.getElapsedTime();
 # endif
          // need a node on this vertex
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write seq_cst
+#endif
          (*mt_data_.openedNodes)[currentVert] = 1;
 
          // If last close all and merge
          if (isLast) {
             // last task detection
             idNode remainingTasks;
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic read seq_cst
+#endif
             remainingTasks = mt_data_.activeTasks;
             if (remainingTasks == 1) {
                 // only backbone remaining
@@ -190,15 +196,21 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
             closeAndMergeOnSaddle(currentVert);
 
             // made a node on this vertex
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write seq_cst
+#endif
             (*mt_data_.openedNodes)[currentVert] = 0;
 
             // recursively continue
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskyield
+#endif
             arcGrowth(currentVert, orig);
          } else {
             // Active tasks / threads
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update seq_cst
+#endif
             mt_data_.activeTasks--;
          }
 
@@ -289,7 +301,9 @@ void FTMTree_MT::buildSegmentation()
    const idSuperArc arcChunkNb   = getChunkCount(nbArcs);
    for(idSuperArc arcChunkId = 0; arcChunkId < arcChunkNb; ++arcChunkId){
        // WHY shared(sizes) is needed ??
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(arcChunkId) shared(sizes)
+#endif
        {
            const idSuperArc lowerBound = arcChunkId*arcChunkSize;
            const idSuperArc upperBound = min(nbArcs, (arcChunkId+1)*arcChunkSize );
@@ -298,7 +312,9 @@ void FTMTree_MT::buildSegmentation()
            }
        }
    }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
 
    // change segments size using the created vector
    mt_data_.segments_.resize(sizes);
@@ -317,7 +333,9 @@ void FTMTree_MT::buildSegmentation()
    const idVertex chunkNb   = getChunkCount();
    for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId)
    {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId) shared(posSegm)
+#endif
        {
           const idVertex lowerBound = chunkId * chunkSize;
           const idVertex upperBound = min(nbVert, (chunkId+1)*chunkSize);
@@ -333,7 +351,9 @@ void FTMTree_MT::buildSegmentation()
                    mt_data_.segments_[sa][vertToAdd] = vert;
                 } else if (mt_data_.trunkSegments->size() == 0){
                     // MT computation
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
+#endif
                    vertToAdd = posSegm[sa]++;
                    mt_data_.segments_[sa][vertToAdd] = vert;
                 }
@@ -342,7 +362,9 @@ void FTMTree_MT::buildSegmentation()
           } // end for
        } // end task
    }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
 
    printTime(segmentsSet, "[FTM] segmentation set vertices", -1, 4);
 
@@ -352,11 +374,15 @@ void FTMTree_MT::buildSegmentation()
       DebugTimer segmentsSortTime;
       for (idSuperArc a = 0; a < nbArcs; ++a) {
          if (posSegm[a]) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(a)
+#endif
             mt_data_.segments_[a].sort(scalars_);
          }
       }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
       printTime(segmentsSortTime, "[FTM] segmentation sort vertices", -1, 4);
    } else {
        // Contour tree: we create the arc segmentation for arcs in the trunk
@@ -364,12 +390,17 @@ void FTMTree_MT::buildSegmentation()
        for (idSuperArc a = 0; a < nbArcs; ++a) {
           // CT computation, we have already the vert list
           if ((*mt_data_.trunkSegments)[a].size()) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(a)
+#endif
              mt_data_.segments_[a].createFromList(scalars_, (*mt_data_.trunkSegments)[a],
                                                   mt_data_.treeType == TreeType::Split);
           }
        }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
+
       printTime(segmentsArcTime, "[FTM] segmentation arcs lists", -1, 4);
    }
 
@@ -378,7 +409,9 @@ void FTMTree_MT::buildSegmentation()
    // ST have a segmentation wich is in the reverse-order of its build
    // ST have a segmentation sorted in ascending order as JT
    for(idSuperArc arcChunkId = 0; arcChunkId < arcChunkNb; ++arcChunkId){
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(arcChunkId)
+#endif
       {
          const idSuperArc lowerBound = arcChunkId * arcChunkSize;
          const idSuperArc upperBound = min(nbArcs, (arcChunkId + 1) * arcChunkSize);
@@ -392,7 +425,9 @@ void FTMTree_MT::buildSegmentation()
 
       }
    }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
 }
 
 FTMTree_MT *FTMTree_MT::clone() const
@@ -708,11 +743,15 @@ void FTMTree_MT::leafGrowth()
       // for each node: get vert, create uf and lauch
       (*mt_data_.ufs)[v] = new AtomicUF(v);
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task untied
+#endif
       arcGrowth(v, n);
    }
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
 }
 
 int FTMTree_MT::leafSearch()
@@ -726,7 +765,9 @@ int FTMTree_MT::leafSearch()
 
       // Extrema extract and launch tasks
       for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId)
+#endif
          {
             const idVertex lowerBound = chunkId * chunkSize;
             const idVertex upperBound = min(nbScalars, (chunkId + 1) * chunkSize);
@@ -749,7 +790,9 @@ int FTMTree_MT::leafSearch()
          }
       }
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
    } else {
        ret = 1;
    }
@@ -1116,7 +1159,9 @@ tuple<bool, bool> FTMTree_MT::propage(CurrentState &currentState, UF curUF)
 
    // is last
    valence  oldVal;
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
+#endif
    {
       oldVal = (*mt_data_.valences)[currentState.vertex];
       (*mt_data_.valences)[currentState.vertex] -= decr;
@@ -1170,7 +1215,9 @@ vector<idNode> FTMTree_MT::sortedNodes(const bool para)
 #endif
 #endif
    } else {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp single
+#endif
       {
          std::sort(sortedNodes.begin(), sortedNodes.end(), indirect_sort);
       }
@@ -1246,7 +1293,9 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
    idNode   lastVertInRange = 0;
    mt_data_.trunkSegments->resize(getNumberOfSuperArcs());
    for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId, lastVertInRange) shared(trunkVerts)
+#endif
       {
          vector<idVertex> regularList;
          if (params_->segm) {
@@ -1274,7 +1323,9 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
                      // accumulated to have only one atomic update when needed
                      const idSuperArc oldArc = upArcFromVert(trunkVerts[oldVertInRange]);
                      if (regularList.size()) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
+#endif
                         {
                            (*mt_data_.trunkSegments)[oldArc].emplace_back(regularList);
                            regularList.clear();
@@ -1290,7 +1341,9 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
          const idNode     baseNode = getCorrespondingNodeId(trunkVerts[lastVertInRange]);
          const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
          if (regularList.size()) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
+#endif
             {
                (*mt_data_.trunkSegments)[upArc].emplace_back(regularList);
                regularList.clear();
@@ -1298,7 +1351,9 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
          }
       }
    }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
    // count added
    idVertex tot = 0;
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
@@ -1329,7 +1384,9 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
    idVertex acc             = 0;
    idVertex tot             = 0;
    for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId, acc, lastVertInRange) shared(trunkVerts, tot)
+#endif
       {
          const idVertex lowerBound = begin + chunkId * chunkSize;
          const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
@@ -1350,7 +1407,9 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
                      const idSuperArc oldArc = upArcFromVert(trunkVerts[oldVertInRange]);
                      getSuperArc(oldArc)->atomicIncVisited(acc);
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
+#endif
                      tot += acc;
 #endif
                      acc = 1;
@@ -1363,12 +1422,16 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
          const idSuperArc upArc    = getNode(baseNode)->getUpSuperArcId(0);
          getSuperArc(upArc)->atomicIncVisited(acc);
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
+#endif
          tot += acc;
 #endif
       }  // end task
    }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
    return tot;
 }
 

@@ -52,10 +52,13 @@ void FTMTree_CT::build(TreeType tt)
    // }
 
    // JT & ST
-
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(threadNumber_)
+#endif
    {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp single nowait
+#endif
        {
           if (tt == TreeType::Join || bothMT) {
              jt_->build(tt == TreeType::Contour);
@@ -64,7 +67,9 @@ void FTMTree_CT::build(TreeType tt)
              st_->build(tt == TreeType::Contour);
           }
        }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
   }
 
    printTime(mergeTreesTime, "[FTM] merge trees ", -1, 3);
@@ -371,7 +376,9 @@ void FTMTree_CT::finalizeSegmentation(void)
    DebugTimer  finSegmTime;
    const auto &nbArc = getNumberOfSuperArcs();
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic)
+#endif
    for (idSuperArc i = 0; i < nbArc; i++) {
       getSuperArc(i)->createSegmentation(scalars_);
    }
@@ -411,7 +418,9 @@ int FTMTree_CT::leafSearch()
 
    // Extrema extract and launch tasks
    for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId)
+#endif
       {
          const idVertex lowerBound = chunkId * chunkSize;
          const idVertex upperBound = min(nbScalars, (chunkId + 1) * chunkSize);
@@ -444,6 +453,8 @@ int FTMTree_CT::leafSearch()
       }
    }
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
    return 0;
 }

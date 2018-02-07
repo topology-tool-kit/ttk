@@ -88,7 +88,9 @@ namespace ttk
 
       void reset(const std::size_t &nId = 0)
       {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
+#endif
          nextId = nId;
       }
 
@@ -105,7 +107,9 @@ namespace ttk
       std::size_t getNext(void)
       {
          std::size_t resId;
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
+#endif
          resId = nextId++;
 
          if (nextId == std::vector<type>::size()) {

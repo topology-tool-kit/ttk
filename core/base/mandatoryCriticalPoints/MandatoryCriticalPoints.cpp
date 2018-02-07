@@ -1087,10 +1087,12 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 //   #pragma omp parallel num_threads(threadNumber_)
   {
     // Build the list of all saddles joining the extrema
+    #ifdef TTK_ENABLE_OPENMP
     #ifdef _WIN32
     #pragma omp for
     #else
     #pragma omp for schedule(auto)
+    #endif
     #endif
     for(int i=0 ; i < (int) mandatoryExtremumVertex->size() ; i++) {
       // Super arc in upper and lower trees
@@ -1106,7 +1108,9 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       multipleSaddleFound = false;
       rootReached = false;
       do {
+        #ifdef TTK_ENABLE_OPENMP
         #pragma omp critical (upperTreeTransverse)
+        #endif
         {
           // Check if it's the first time the super arc is visited
           if(++upperTransverse[upperSuperArcId]) {
@@ -1128,7 +1132,9 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         } else {
           if(!multipleSaddleFound) {
             int saddleId = upperTree->getSuperArc(upperSuperArcId)->getDownNodeId();
+            #ifdef TTK_ENABLE_OPENMP
             #pragma omp critical
+            #endif
             upperSaddleList.push_back(saddleId);
           }
         }
@@ -1138,7 +1144,9 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       multipleSaddleFound = false;
       rootReached = false;
       do {
+        #ifdef TTK_ENABLE_OPENMP
         #pragma omp critical (lowerTreeTransverse)
+        #endif
         {
           // Check if it's the first time the super arc is visited
           if(++lowerTransverse[lowerSuperArcId]) {
@@ -1160,7 +1168,9 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         } else {
           if(!multipleSaddleFound) {
             int saddleId = lowerTree->getSuperArc(lowerSuperArcId)->getDownNodeId();
+            #ifdef TTK_ENABLE_OPENMP
             #pragma omp critical
+            #endif
             lowerSaddleList.push_back(saddleId);
           }
         }
@@ -1171,43 +1181,53 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   // NOTE-julien
   // something is not thread-safe above
 
+  #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel num_threads(threadNumber_)
+  #endif
   {
     // Reinitialize the transverse arrays to -1
 
+    #ifdef TTK_ENABLE_OPENMP
     #ifdef _WIN32
     #pragma omp for
     #else
     #pragma omp for schedule(auto)
     #endif
+    #endif
     for (int i=0 ; i< (int) upperTransverse.size() ; i++) {
       upperTransverse[i] = -1;
     }
 
+    #ifdef TTK_ENABLE_OPENMP
     #ifdef _WIN32
     #pragma omp for
     #else
     #pragma omp for schedule(auto)
+    #endif
     #endif
     for (int i=0 ; i< (int) lowerTransverse.size() ; i++) {
       lowerTransverse[i] = -1;
     }
 
     // Mark the super arcs with the id of the saddle
+    #ifdef TTK_ENABLE_OPENMP
     #ifdef _WIN32
     #pragma omp for
     #else
     #pragma omp for schedule(auto)
+    #endif
     #endif
     for (int i=0 ; i< (int) upperSaddleList.size() ; i++) {
       int superArcId = upperTree->getNode(upperSaddleList[i])->getUpSuperArcId(0);
       upperTransverse[superArcId] = i;
     }
 
+    #ifdef TTK_ENABLE_OPENMP
     #ifdef _WIN32
     #pragma omp for
     #else
     #pragma omp for schedule(auto)
+    #endif
     #endif
     for (int i=0 ; i< (int) lowerSaddleList.size() ; i++) {
       int superArcId = lowerTree->getNode(lowerSaddleList[i])->getUpSuperArcId(0);
@@ -1215,25 +1235,33 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     }
 
     // Create the nodes in the LCA object
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp sections
+    #endif
     {
       // Upper lca
+      #ifdef TTK_ENABLE_OPENMP
       #pragma omp section
+      #endif
       {
         upperLca.addNodes(mandatoryExtremumVertex->size()+upperSaddleList.size());
       }
       // Lower lca
+      #ifdef TTK_ENABLE_OPENMP
       #pragma omp section
+      #endif
       {
         lowerLca.addNodes(mandatoryExtremumVertex->size()+lowerSaddleList.size());
       }
     }
 
     // For each extrema, find it's first up saddle
+    #ifdef TTK_ENABLE_OPENMP
     #ifdef _WIN32
     #pragma omp for
     #else
     #pragma omp for schedule(auto)
+    #endif
     #endif
     for(int i=0 ; i< (int) mandatoryExtremumVertex->size() ; i++) {
       int superArcId;
@@ -1249,7 +1277,9 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         // Ancestor
         upperLca.getNode(i)->setAncestor(lcaSaddleId);
         // Successor
+        #ifdef TTK_ENABLE_OPENMP
         #pragma omp critical (upperLca)
+        #endif
         upperLca.getNode(lcaSaddleId)->addSuccessor(i);
       }
 
@@ -1264,16 +1294,20 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         // Ancestor
         lowerLca.getNode(i)->setAncestor(lcaSaddleId);
         // Successor
+        #ifdef TTK_ENABLE_OPENMP
         #pragma omp critical (lowerLca)
+        #endif
         lowerLca.getNode(lcaSaddleId)->addSuccessor(i);
       }
     }
 
     // For each saddle, find it's first up saddle
+    #ifdef TTK_ENABLE_OPENMP
     #ifdef _WIN32
     #pragma omp for
     #else
     #pragma omp for schedule(auto)
+    #endif
     #endif
     for(int i=0 ; i< (int) upperSaddleList.size() ; i++) {
       int superArcId = upperTree->getNode(upperSaddleList[i])->getUpSuperArcId(0);
@@ -1287,15 +1321,19 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         // Ancestor
         upperLca.getNode(lcaSuccessorSaddleId)->setAncestor(lcaAncestorSaddleId);
         // Successor
+        #ifdef TTK_ENABLE_OPENMP
         #pragma omp critical (upperLca)
+        #endif
         upperLca.getNode(lcaAncestorSaddleId)->addSuccessor(lcaSuccessorSaddleId);
       }
     }
 
+    #ifdef TTK_ENABLE_OPENMP
     #ifdef _WIN32
     #pragma omp for
     #else
     #pragma omp for schedule(auto)
+    #endif
     #endif
     for(int i=0 ; i< (int) lowerSaddleList.size() ; i++) {
       int superArcId = lowerTree->getNode(lowerSaddleList[i])->getUpSuperArcId(0);
@@ -1309,19 +1347,27 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         // Ancestor
         lowerLca.getNode(lcaSuccessorSaddleId)->setAncestor(lcaAncestorSaddleId);
         // Successor
+        #ifdef TTK_ENABLE_OPENMP
         #pragma omp critical (lowerLca)
+        #endif
         lowerLca.getNode(lcaAncestorSaddleId)->addSuccessor(lcaSuccessorSaddleId);
       }
     }
 
     // Preprocess lowest common ancestors requests
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp sections
+    #endif
     {
+      #ifdef TTK_ENABLE_OPENMP
       #pragma omp section
+      #endif
       {
         upperLca.preprocess();
       }
+      #ifdef TTK_ENABLE_OPENMP
       #pragma omp section
+      #endif
       {
         lowerLca.preprocess();
       }
@@ -1339,10 +1385,12 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     // Number of iterations (triangular loop without diagonal)
     unsigned int kmax = (extremaNumber*(extremaNumber-1)) / 2;
     // Loop over pairs of extrema
+    #ifdef TTK_ENABLE_OPENMP
     #ifdef _WIN32
     #pragma omp for
     #else
     #pragma omp for schedule(auto)
+    #endif
     #endif
     for(int k=0 ; k< (int) kmax ; k++) {
       unsigned int i=k/extremaNumber;
@@ -1360,7 +1408,9 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     }
 
     // Cleaning of duplicates and fusion of vectors
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp single
+    #endif
     {
       lowerToUpperLinks.resize(lowerSaddleList.size());
       upperToLowerLinks.resize(upperSaddleList.size());
@@ -1372,7 +1422,9 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       newEnd = unique(
         localLowerToUpperLinks[i].begin(), localLowerToUpperLinks[i].end()
       );
+      #ifdef TTK_ENABLE_OPENMP
       #pragma omp critical (lowerToUpperFusion)
+      #endif
       {
         lowerToUpperLinks[i].insert(
           lowerToUpperLinks[i].end(),
@@ -1389,7 +1441,9 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       newEnd = unique(
         localUpperToLowerLinks[i].begin(), localUpperToLowerLinks[i].end()
       );
+      #ifdef TTK_ENABLE_OPENMP
       #pragma omp critical (upperToLowerFusion)
+      #endif
       {
         upperToLowerLinks[i].insert(
           upperToLowerLinks[i].end(),
@@ -1407,7 +1461,9 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       newEnd = unique(
         localMergedExtrema[i].begin(), localMergedExtrema[i].end()
       );
+      #ifdef TTK_ENABLE_OPENMP
       #pragma omp critical (mergedExtremaFusion)
+      #endif
       {
         mergedExtrema[i].insert(
           mergedExtrema[i].end(),

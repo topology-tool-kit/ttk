@@ -44,13 +44,17 @@ namespace ttk{
       if (!(upperBound_.size()==numberOfVertices) || !(lowerBound_.size()==numberOfVertices)) {
         upperBound_.resize(numberOfVertices);
         lowerBound_.resize(numberOfVertices);
+        #ifdef TTK_ENABLE_OPENMP
         #pragma omp parallel for num_threads(threadNumber_)
+        #endif
         for (size_t i = 0 ; i < numberOfVertices ; i++) {
           upperBound_[i] = inputData[i];
           lowerBound_[i] = inputData[i];
         }
       } else { /* Update the two fields with the new input */
+        #ifdef TTK_ENABLE_OPENMP
         #pragma omp parallel for num_threads(threadNumber_)
+        #endif
         for (size_t i = 0 ; i < numberOfVertices ; i++) {
           // Upper Bound
           if (inputData[i] > upperBound_[i]) {
@@ -195,11 +199,13 @@ namespace ttk{
     void getVertexHistogram(const unsigned int vertexId, vector<double> &histogram) const {
       histogram.resize(numberOfBins_);
       if(vertexId < numberOfVertices_) {
+        #ifdef TTK_ENABLE_OPENMP
         #ifdef _WIN32
         #pragma omp parallel for num_threads(threadNumber_)
         #else
         #pragma omp parallel for num_threads(threadNumber_) \
           schedule(static, numberOfBins_/threadNumber_)
+        #endif
         #endif
         for(int i=0 ; i< (int) numberOfBins_ ; i++) {
           if(probability_[i].size()==numberOfVertices_) {
@@ -215,11 +221,13 @@ namespace ttk{
 
     int normalize() {
       const double normalization = 1.0 / static_cast<double>(numberOfInputs_);
+      #ifdef TTK_ENABLE_OPENMP
       #ifdef _WIN32
       #pragma omp parallel for num_threads(threadNumber_)
       #else
       #pragma omp parallel for num_threads(threadNumber_) collapse(2) \
         schedule(static, (numberOfBins_*numberOfVertices_)/threadNumber_)
+      #endif
       #endif
       for(int i=0 ; i< (int) numberOfBins_ ; i++) {
         for(int j=0 ; j< (int) numberOfVertices_ ; j++) {

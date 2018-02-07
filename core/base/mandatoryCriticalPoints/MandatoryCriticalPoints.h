@@ -737,13 +737,19 @@ template <class dataType> int MandatoryCriticalPoints::execute() {
   buildSubTrees();
 
   // Compute mandatory extrema
+  #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel sections
+  #endif
   {
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp section
+    #endif
     {
       enumerateMandatoryExtrema(PointType::Minimum);
     }
+    #ifdef TTK_ENABLE_OPENMP
     #pragma omp section
+    #endif
     {
       enumerateMandatoryExtrema(PointType::Maximum);
     }

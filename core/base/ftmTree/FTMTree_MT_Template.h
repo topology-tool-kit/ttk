@@ -67,7 +67,9 @@ void ftm::FTMTree_MT::sortInput(void)
 
    scalars_->mirrorVertices->resize(nbVertices);
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
+#endif
    for (idVertex i = 0; i < nbVertices; i++) {
       (*scalars_->mirrorVertices)[(*sortedVect)[i]] = i;
    }

@@ -133,7 +133,9 @@ namespace ftm
       {
          if (scalars_->offsets == nullptr) {
             scalars_->offsets = new idVertex[scalars_->size];
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
+#endif
             for (idVertex i = 0; i < scalars_->size; i++) {
                scalars_->offsets[i] = i;
             }
@@ -708,7 +710,9 @@ namespace ftm
       void initVector(vector<type> *&vect, const type val)
       {
          int s = vect->size();
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(static)
+#endif
          for (int i = 0; i < s; i++) {
             (*vect)[i] = val;
          }

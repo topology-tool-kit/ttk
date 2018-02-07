@@ -68,7 +68,9 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
 
    // print debug
    if(params_->debugLevel >= 3){
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
+#endif
       {
          cout << "partition : " << static_cast<unsigned>(treeData_.partition);
          cout << ", isJT : "    << isJT;
@@ -397,7 +399,9 @@ void MergeTree::parallelUpdateSegmentation(const bool ct)
 
    const idSuperArc nbArc = getNumberOfSuperArcs();
    if (treeData_.treeType == TreeType::Split) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
+#endif
       for (idSuperArc sa = 0; sa < nbArc; sa++) {
          SuperArc *superArc     = getSuperArc(sa);
          if(!superArc->isVisible()) continue;
@@ -416,7 +420,9 @@ void MergeTree::parallelUpdateSegmentation(const bool ct)
          }
       }
    } else {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
+#endif
       for (idSuperArc sa = 0; sa < nbArc; sa++) {
          SuperArc *superArc     = getSuperArc(sa);
          if(!superArc->isVisible()) continue;
@@ -451,7 +457,9 @@ void MergeTree::parallelInitNodeValence(const int nbThreadValence)
    //cout << "SENTINEL : Parallel Init Node Valence " << endl;
    const auto &nbNodes = getNumberOfNodes();
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(nbThreadValence)
+#endif
    for (idNode n = 0; n < nbNodes; n++) {
       short downVal = 0, upVal = 0;
       Node *node = getNode(n);
@@ -1553,7 +1561,9 @@ bool MergeTree::verifyTree(void)
 {
    bool res = true;
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
+#endif
    {
       const idSuperArc &nbArcs  = getNumberOfSuperArcs();
       const idSuperArc &nbNodes = getNumberOfNodes();

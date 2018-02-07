@@ -68,7 +68,9 @@ int ThreeSkeleton::buildCellEdges(const int &vertexNumber,
   
   // for each cell, for each pair of vertices, find the edge
   // TODO: check for parallel efficiency here
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
+#endif
   for(int i = 0; i < cellNumber; i++){
     
     int cellId = (vertexPerCell+1)*i;

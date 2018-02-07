@@ -101,7 +101,9 @@ int ContourForests::build()
       parallelData_.trees.emplace_back(params_,mesh_,scalars_, tree);
    }
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(parallelParams_.nbPartitions) schedule(static)
+#endif
    for (idPartition tree = 0; tree < parallelParams_.nbPartitions; ++tree) {
       // Tree array initialization
       parallelData_.trees[tree].flush();
@@ -282,7 +284,9 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
 #endif
 
 //cout << "NO PARALLEL DEBUG MODE" << endl;
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(parallelParams_.nbPartitions) schedule(static)
+#endif
    for (idPartition i = 0; i < parallelParams_.nbPartitions; ++i) {
       DebugTimer timerMergeTree;
 
@@ -308,12 +312,15 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
       // Build JT and ST
       // ---------------
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel sections num_threads(2) if (parallelParams_.lessPartition)
+#endif
       {
 
           // if less partition : we built JT and ST in parallel
-
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp section
+#endif
         {
             if(params_->treeType == TreeType::Join
               || params_->treeType == TreeType::Contour
@@ -333,16 +340,21 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
                 const idEdge tmpMerge =
                     parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
                             get<0>(seedsPos), get<1>(seedsPos));
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
+#endif
                 timeSimplify[i] += timerSimplify.getElapsedTime();
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
+#endif
                 nbPairMerged += tmpMerge;
 #endif
             }
         }
 
-
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp section
+#endif
         {
             if(params_->treeType == TreeType::Split
               || params_->treeType == TreeType::Contour
@@ -363,9 +375,13 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
                 const idEdge tmpMerge =
                     parallelData_.trees[i].getSplitTree()->localSimplify<scalarType>(
                             get<0>(seedsPos), get<1>(seedsPos));
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
+#endif
                 timeSimplify[i] += timerSimplify.getElapsedTime();
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
+#endif
                 nbPairMerged += tmpMerge;
 #endif
             }

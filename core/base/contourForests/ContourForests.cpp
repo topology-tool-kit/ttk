@@ -103,7 +103,9 @@ void ContourForests::initOverlap()
         uppers[p].resize(parallelParams_.nbInterfaces);
    }
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(parallelParams_.nbThreads) schedule(static)
+#endif
    for (idEdge e = 0; e < nbEdges; e++) {
 
 #ifdef TTK_ENABLE_OPENMP
@@ -178,7 +180,9 @@ void ContourForests::initOverlap()
 
    auto vertComp = [&](const idVertex &a, const idVertex &b) { return isLower(a, b); };
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(parallelParams_.nbThreads) schedule(static)
+#endif
    for (idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
       vector<idVertex> &upOverlap = parallelData_.interfaces[i].getUpper();
       vector<idVertex> &loOverlap = parallelData_.interfaces[i].getLower();

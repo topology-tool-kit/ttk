@@ -46,7 +46,9 @@ namespace ftm
             return this;
          else {
             decltype(parent_) tmp = parent_->find();
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
+#endif
             parent_ = tmp;
 
             return parent_;
@@ -134,13 +136,17 @@ namespace ftm
 
       inline void setRank(const int &rank)
       {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
+#endif
          rank_ = rank;
       }
 
       inline void setParent(AtomicUF *parent)
       {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
+#endif
          parent_ = parent;
       }
 

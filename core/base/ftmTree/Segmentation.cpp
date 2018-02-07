@@ -151,10 +151,14 @@ void Segments::sortAll(const Scalars* s)
    const idSegment& nbSegments = size();
 
    for (idSegment i = 0; i < nbSegments; i++) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(i)
+#endif
       segments_[i].sort(s);
    }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
+#endif
 }
 
 // ----------

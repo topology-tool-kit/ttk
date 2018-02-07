@@ -116,7 +116,9 @@ namespace ftm
 
       inline void atomicIncVisited(const idVertex nb=1)
       {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
+#endif
          verticesSeen_ += nb;
       }
 
