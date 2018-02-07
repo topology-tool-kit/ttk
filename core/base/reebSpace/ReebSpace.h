@@ -733,7 +733,7 @@ template <class dataTypeU, class dataTypeV>
 #endif
   for(int i = 0; i < (int) edgeNumber_; i++){
 
- #if defined(_OPENMP)
+ #ifdef TTK_ENABLE_OPENMP
     int threadId = omp_get_thread_num();
  #else
     int threadId = 0;
