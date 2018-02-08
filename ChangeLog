@@ -1,6 +1,7 @@
 ChangeLog
 =
 * ttk.git
+- Fixes for gcc 4
 
 * 0.9.4
 - Windows support
