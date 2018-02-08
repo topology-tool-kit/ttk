@@ -22,6 +22,10 @@
 #define HIGHER
 #endif
 
+#ifndef TTK_ENABLE_OPENMP
+#define HIGHER
+#endif
+
 using namespace ftm;
 
 DebugTimer _launchGlobalTime;
