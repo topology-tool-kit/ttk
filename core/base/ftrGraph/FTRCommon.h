@@ -9,6 +9,23 @@
 
 #include "DataTypesFTR.h"
 
+#ifdef __APPLE__
+# include <algorithm>
+# include <numeric>
+#else
+# ifdef _WIN32
+#  include <algorithm>
+#  include <numeric>
+# else
+#  ifdef __clang__
+#   include <algorithm>
+#   include <numeric>
+#  else
+#   include <parallel/algorithm>
+#  endif
+# endif
+#endif
+
 #include <iostream>
 #include <vector>
 
@@ -23,15 +40,15 @@ namespace ttk
          bool advStats    = true;
          int  samplingLvl = 0;
 
-         int threadNumber_ = 1;
-         int debugLevel_   = 1;
+         idThread threadNumber = 1;
+         int      debugLevel   = 1;
 
          void printSelf()
          {
-            if (debugLevel_) {
-               std::cout << "[FTR Graph]: thread number: " << threadNumber_ << std::endl;
-               std::cout << "[FTR Graph]: debug lvl: " << debugLevel_ << std::endl;
-               if (debugLevel_ > 2) {
+            if (debugLevel) {
+               std::cout << "[FTR Graph]: thread number: " << threadNumber << std::endl;
+               std::cout << "[FTR Graph]: debug lvl: " << debugLevel << std::endl;
+               if (debugLevel > 2) {
                   std::cout << "[FTR Graph]: segmentation: " << std::boolalpha << segm << std::endl;
                   std::cout << "[FTR Graph]: sampling level: " << samplingLvl << std::endl;
                }
@@ -54,12 +71,12 @@ namespace ttk
             nbVerts_ = nbVerts;
          }
 
-         template<typename type>
-         void fillVector(std::vector<type>& vect, const type& elmt)
+         template <typename type>
+         void fillVector(std::vector<type> &vect, const type &elmt)
          {
             const std::size_t nbIt = vect.size();
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(dynamic)
 #endif
             for (std::size_t i = 0; i < nbIt; i++) {
                vect[i] = elmt;
@@ -70,6 +87,50 @@ namespace ttk
 
          virtual void init() = 0;
       };
+
+      template <typename Iterator>
+      void parallel_sort(Iterator begin, Iterator end)
+      {
+         // Sort the vertices array
+#ifdef TTK_ENABLE_OPENMP
+#ifdef _GLIBCXX_PARALLEL_FEATURES_H
+         ::__gnu_parallel::sort(begin, end);
+#else
+         cout << "Caution, sequential sort" << endl;
+         ::std::sort(begin, end);
+#endif
+#else
+         ::std::sort(begin, end);
+#endif
+      }
+
+      template <typename Iterator, typename el>
+      void parallel_sort(Iterator begin, Iterator end, std::function<bool(el, el)> comp)
+      {
+         // Sort the vertices array
+#ifdef TTK_ENABLE_OPENMP
+#ifdef _GLIBCXX_PARALLEL_FEATURES_H
+         ::__gnu_parallel::sort(begin, end, comp);
+#else
+         cout << "Caution, sequential sort" << endl;
+         ::std::sort(begin, end, comp);
+#endif
+#else
+         ::std::sort(begin, end, comp);
+#endif
+      }
+
+      template <typename Iterator>
+      void sort(Iterator begin, Iterator end)
+      {
+         ::std::sort(begin, end);
+      }
+
+      template <typename Iterator, typename el>
+      void sort(Iterator begin, Iterator end, std::function<bool(el, el)> comp)
+      {
+         ::std::sort(begin, end, comp);
+      }
    }
 }
 

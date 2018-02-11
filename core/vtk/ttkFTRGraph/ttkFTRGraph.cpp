@@ -1,11 +1,12 @@
 #include "ttkFTRGraph.h"
+#include "ttkFTRGraph.h"
 
 // only used on the cpp
 #include <vtkConnectivityFilter.h>
 #include <vtkDataObject.h>
 #include <vtkThreshold.h>
 
-using namespace ftr;
+using namespace ttk::ftr;
 
 vtkStandardNewMacro(ttkFTRGraph);
 
@@ -32,7 +33,7 @@ int ttkFTRGraph::FillOutputPortInformation(int port, vtkInformation* info)
    return 1;
 }
 
-int ttkFTRGraph::addCompleteSkeletonArc(const ftr::idSuperArc arcId, const int cc,
+int ttkFTRGraph::addCompleteSkeletonArc(const ttk::ftr::idSuperArc arcId, const int cc,
                                         vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
                                         ArcData& arcData)
 {
@@ -51,9 +52,9 @@ int ttkFTRGraph::addSampledSkeletonArc(const idSuperArc arcId, const int cc, vtk
    return 0;
 }
 
-int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
+int ttkFTRGraph::doIt(std::vector<vtkDataSet*>& inputs, std::vector<vtkDataSet*>& outputs)
 {
-   Memory m;
+   ttk::Memory m;
 
    // Input
    mesh_ = inputs[0];
@@ -84,7 +85,7 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    // compute graph
    switch (inputScalars_->GetDataType()) {
       vtkTemplateMacro({
-         ftr::FTRGraph<VTK_TT> ftrGraph_;
+         ttk::ftr::FTRGraph<VTK_TT> ftrGraph_;
          // common parameters
          ftrGraph_.setDebugLevel(debugLevel_);
          ftrGraph_.setThreadNumber(threadNumber_);
@@ -109,7 +110,7 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 #endif
    }
 
-   if (getSkeletonArcs(outputSkeletonArcs)) {
+   if (getSkeletonArcs(graph, outputSkeletonArcs)) {
 #ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkFTRGraph] Error : wrong properties on skeleton arcs." << endl;
       return -8;
@@ -118,7 +119,7 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 
    if (GetWithSegmentation()) {
       outputSegmentation->ShallowCopy(inputs[0]);
-      if (getSegmentation(outputSegmentation)) {
+      if (getSegmentation(graph, outputSegmentation)) {
 #ifndef TTK_ENABLE_KAMIKAZE
          cerr << "[ttkFTRGraph] Error : wrong properties on segmentation." << endl;
          return -9;
@@ -129,7 +130,7 @@ int ttkFTRGraph::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    UpdateProgress(1);
 
    {
-      stringstream msg;
+      std::stringstream msg;
       msg << "[ttkFTRGraph] Memory usage: " << m.getElapsedUsage() << " MB." << endl;
       dMsg(cout, msg.str(), memoryMsg);
    }
@@ -162,7 +163,9 @@ int ttkFTRGraph::getOffsets()
 
       if (offsets_.empty()) {
          offsets_.resize(numberOfVertices);
-#pragma omp parallel for
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) schedule(static, numberOfVertices / threadNumber_)
+#endif
          for (int i = 0; i < numberOfVertices; i++) {
             offsets_[i] = i;
          }
@@ -207,12 +210,22 @@ int ttkFTRGraph::getScalars()
    return 0;
 }
 
-int ttkFTRGraph::getSegmentation(vtkDataSet* outputSegmentation)
+int ttkFTRGraph::getSegmentation(const ttk::ftr::Graph& graph, vtkDataSet* outputSegmentation)
 {
+   const idVertex numberOfVertices = mesh_->GetNumberOfPoints();
+   VertData vertData(numberOfVertices);
+
+   // TODO parallel
+   for (idVertex v = 0; v < numberOfVertices; ++v) {
+      vertData.setVertexInfo(graph, v);
+   }
+
+   vertData.addArrays(outputSegmentation, params_);
+
    return 0;
 }
 
-int ttkFTRGraph::getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs)
+int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonArcs)
 {
    return 0;
 }
@@ -226,7 +239,7 @@ int ttkFTRGraph::getSkeletonNodes(const Graph& graph, vtkUnstructuredGrid* outpu
    vtkSmartPointer<vtkPoints>           points = vtkSmartPointer<vtkPoints>::New();
 
    for (idNode i = 0; i < nbNodes; i++) {
-      const ftr::idVertex vertId = graph.getNode(i).getVertexIdentifier();
+      const ttk::ftr::idVertex vertId = graph.getNode(i).getVertexIdentifier();
       float point[3];
       triangulation_->getVertexPoint(vertId, point[0], point[1], point[2]);
       points->InsertNextPoint(point);

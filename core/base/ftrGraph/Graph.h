@@ -17,11 +17,14 @@
 #include "FTRCommon.h"
 #include "Node.h"
 #include "SuperArc.h"
+#include "Scalars.h"
+#include "Propagation.h"
 
 #ifndef TTK_ENABLE_KAMIKAZE
 #include<iostream>
 #endif
 
+#include <forward_list>
 #include <vector>
 
 namespace ttk
@@ -35,7 +38,9 @@ namespace ttk
          AtomicVector<idVertex> leaves_;
          AtomicVector<Node>     nodes_;
          AtomicVector<SuperArc> arcs_;
-         std::vector<graphElmt> segmentation_;
+
+         std::vector<std::forward_list<idSuperArc>> segmentation_;
+         std::vector<valence>                     valences_;
 
         public:
          Graph();
@@ -49,6 +54,7 @@ namespace ttk
                nodes_        = std::move(other.nodes_);
                arcs_         = std::move(other.arcs_);
                segmentation_ = std::move(other.segmentation_);
+               valences_     = std::move(other.valences_);
             }
             return *this;
          }
@@ -68,6 +74,11 @@ namespace ttk
             return leaves_.size();
          }
 
+         idVertex getLeaf(const idNode id) const
+         {
+            return leaves_[id];
+         }
+
          const Node& getNode(const idNode id) const
          {
            return nodes_[id];
@@ -78,49 +89,56 @@ namespace ttk
             return arcs_[id];
          }
 
-         bool isVisied(const idVertex v) const
+         bool isVisited(const idVertex v) const
          {
-            return segmentation_[v] == nullGraphElmt;
+            return !segmentation_[v].empty();
          }
 
-         bool isNode(const idVertex v) const
+         void visit(const idVertex v, const idSuperArc id)
          {
-#ifndef TTK_ENABLE_KAMIKAZE
-            if (!isVisied(v)) {
-               std::cerr << "[FTR Graph]: Node is not visited: " << v << std::endl;
-            }
-#endif
-            return segmentation_[v] < 0;
+            segmentation_[v].emplace_front(id);
          }
 
-         bool isArc(const idVertex v) const
+         const std::forward_list<idSuperArc> visit(const idVertex v) const
          {
-#ifndef TTK_ENABLE_KAMIKAZE
-            if (!isVisied(v)) {
-               std::cerr << "[FTR Graph]: Node is not visited: " << v << std::endl;
-            }
-#endif
-            return segmentation_[v] >= 0;
+            return segmentation_[v];
          }
 
-         const Node& getCorrespondingNode(const idVertex v) const
+         bool hasVisited(const idVertex v, const idSuperArc id) const
          {
-#ifndef TTK_ENABLE_KAMIKAZE
-            if (!isNode(v)) {
-               std::cerr << "[FTR Graph]: " << v << " is not a node" << std::endl;
+            for(const idSuperArc tmp :  segmentation_[v]){
+               if (tmp == id) return true;
             }
-#endif
-            return nodes_[-segmentation_[v]];
+            return false;
          }
 
-         const SuperArc& getCorrespondingArc(const idVertex v) const
+         idSuperArc getFirstVisit(const idVertex v) const
          {
+            return segmentation_[v].front();
+         }
+
 #ifndef TTK_ENABLE_KAMIKAZE
-            if (!isArc(v)) {
-               std::cerr << "[FTR Graph]: " << v << " is not an arc" << std::endl;
+         valence getNbVisit(const idVertex v) const
+         {
+            // Debug only, costly
+            valence s = 0;
+            for(const idSuperArc tmp :  segmentation_[v]){
+               std::ignore = tmp;
+               ++s;
             }
+            return s;
+         }
 #endif
-            return arcs_[segmentation_[v]];
+
+         // direct access for openmp
+         const valence& val(const idVertex v) const
+         {
+            return valences_[v];
+         }
+
+         valence& val(const idVertex v)
+         {
+            return valences_[v];
          }
 
          // Build structure
@@ -131,15 +149,78 @@ namespace ttk
             leaves_.emplace_back(v);
          }
 
-         void makeNode(const idVertex v)
+         idNode makeNode(const idVertex v)
          {
-            nodes_.emplace_back(Node{v});
+            const idNode newNode = nodes_.getNext();
+            nodes_[newNode].setVerterIdentifier(v);
+            return newNode;
+         }
+
+         idSuperArc openArc(const idNode downId, Propagation * p = nullptr)
+         {
+             idSuperArc newArc = arcs_.getNext();
+             arcs_[newArc].setDownNodeId(downId);
+             if (p) {
+                arcs_[newArc].setPropagation(p);
+             }
+             return newArc;
+         }
+
+         void closeArc(const idSuperArc arc, const idNode upId)
+         {
+            arcs_[arc].setUpNodeId(upId);
          }
 
          void makeArc(const idNode downId, const idNode upId)
          {
             arcs_.emplace_back(SuperArc{downId, upId});
          }
+
+         // Process
+         // -------
+
+         template<typename ScalarType>
+         void sortLeaves(const Scalars<ScalarType>* s, const bool parallel = false){
+            auto compare_fun = [&](idVertex a, idVertex b) { return s->isLower(a, b); };
+            if(parallel){
+               ::ttk::ftr::parallel_sort<decltype(leaves_.begin()), idVertex>(
+                   leaves_.begin(), leaves_.end(), compare_fun);
+            } else {
+               ::ttk::ftr::sort<decltype(leaves_.begin()), idVertex>(leaves_.begin(), leaves_.end(),
+                                                                     compare_fun);
+            }
+         }
+
+         // Merge porpagations and close arcs at a saddle
+         void mergeAtSaddle(const idNode saddleId)
+         {
+            const idVertex saddleVert = getNode(saddleId).getVertexIdentifier();
+#ifndef TTK_ENABLE_KAMIKAZE
+            if (getNbVisit(saddleVert) < 2) {
+               std::cerr << "[FTR Graph]: merge on saddle having less than 2 visits:";
+               std::cerr << saddleVert << std::endl;
+            }
+#endif
+            const idSuperArc firstArc  = getFirstVisit(saddleVert);
+            Propagation*     firstProp = getArc(firstArc).getPropagation();
+            for (const idSuperArc a : visit(saddleVert)) {
+               Propagation* lowerProp = getArc(a).getPropagation();
+               if (firstProp != lowerProp) {
+                  firstProp->merge(*lowerProp);
+                  closeArc(a, saddleId);
+                  std::cout << "close " << printArc(a) << std::endl;
+               }
+            }
+         }
+
+         // Tools
+         // -----
+
+         void print(const int verbosity) const;
+
+         std::string printArc(const idSuperArc arcId) const;
+
+         std::string printNode(const idNode nodeId) const;
 
          // Initialize functions
          // --------------------

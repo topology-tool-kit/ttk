@@ -13,6 +13,8 @@
 #pragma once
 
 #include "DataTypesFTR.h"
+#include "Propagation.h"
+#include "Scalars.h"
 
 #ifndef TTK_ENABLE_KAMIKAZE
 #include<iostream>
@@ -29,10 +31,11 @@ namespace ttk
         private:
          idNode upNodeId_;
          idNode downNodeId_;
+         Propagation* propagation_;
          // TODO Charles: segmentation
 
         public:
-         SuperArc() : upNodeId_(nullNode), downNodeId_(nullNode)
+         SuperArc() : upNodeId_(nullNode), downNodeId_(nullNode), propagation_(nullptr)
          {
          }
 
@@ -51,6 +54,11 @@ namespace ttk
             return upNodeId_;
          }
 
+         void setUpNodeId(const idNode id)
+         {
+            upNodeId_ = id;
+         }
+
          idNode getDownNodeId(void) const
          {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -62,14 +70,25 @@ namespace ttk
             return downNodeId_;
          }
 
-         void setUpNodeId(const idNode id)
-         {
-            upNodeId_ = id;
-         }
-
-         void seDownNodeId(const idNode id)
+         void setDownNodeId(const idNode id)
          {
             downNodeId_ = id;
+         }
+
+         Propagation* getPropagation(void) const
+         {
+#ifndef TTK_ENABLE_KAMIKAZE
+            if(!propagation_)
+            {
+               std::cerr << "[FTR Graph]: Arc have null propagation" << std::endl;
+            }
+#endif
+            return propagation_;
+         }
+
+         void setPropagation(Propagation* const prop)
+         {
+            propagation_ = prop;
          }
       };
    }

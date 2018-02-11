@@ -11,7 +11,6 @@
 // VTK includes
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
-#include <vtkDataSet.h>
 #include <vtkDataSetAlgorithm.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -31,27 +30,26 @@
 #include <vtkUnstructuredGrid.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
+class VTKFILTERSCORE_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
 #else
-class ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
+class ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
 #endif
 {
   private:
+   std::string ScalarField;
+   bool        UseInputOffsetScalarField;
+   std::string InputOffsetScalarFieldName;
+   int         ScalarFieldId;
+   int         OffsetFieldId;
 
-   string ScalarField;
-   bool   UseInputOffsetScalarField;
-   string InputOffsetScalarFieldName;
-   int    ScalarFieldId;
-   int    OffsetFieldId;
+   ttk::ftr::Params params_;
 
-   ftr::Params params_;
+   vtkDataSet*                     mesh_;
+   ttk::Triangulation*             triangulation_;
+   vtkDataArray*                   inputScalars_;
+   std::vector<ttk::ftr::idVertex> offsets_;
 
-   vtkDataSet*           mesh_;
-   Triangulation*        triangulation_;
-   vtkDataArray*         inputScalars_;
-   vector<ftr::idVertex> offsets_;
-
-   bool                   hasUpdatedMesh_;
+   bool hasUpdatedMesh_;
 
   public:
    static ttkFTRGraph* New();
@@ -74,14 +72,14 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
    }
    // end of default ttk setters
 
-   vtkSetMacro(ScalarField, string);
-   vtkGetMacro(ScalarField, string);
+   vtkSetMacro(ScalarField, std::string);
+   vtkGetMacro(ScalarField, std::string);
 
    vtkSetMacro(UseInputOffsetScalarField, int);
    vtkGetMacro(UseInputOffsetScalarField, int);
 
-   vtkSetMacro(InputOffsetScalarFieldName, string);
-   vtkGetMacro(InputOffsetScalarFieldName, string);
+   vtkSetMacro(InputOffsetScalarFieldName, std::string);
+   vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
    vtkSetMacro(ScalarFieldId, int);
    vtkGetMacro(ScalarFieldId, int);
@@ -137,20 +135,20 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
    int getScalars();
    int getOffsets();
 
-   int getSkeletonNodes(const ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonNodes);
+   int getSkeletonNodes(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonNodes);
 
-   int addDirectSkeletonArc(const ftr::idSuperArc arcId, const int cc, vtkPoints* points,
+   int addDirectSkeletonArc(const ttk::ftr::idSuperArc arcId, const int cc, vtkPoints* points,
                             vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
 
-   int addSampledSkeletonArc(const ftr::idSuperArc arcId, const int cc, vtkPoints* points,
+   int addSampledSkeletonArc(const ttk::ftr::idSuperArc arcId, const int cc, vtkPoints* points,
                              vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
 
-   int addCompleteSkeletonArc(const ftr::idSuperArc arcId, const int cc, vtkPoints* points,
+   int addCompleteSkeletonArc(const ttk::ftr::idSuperArc arcId, const int cc, vtkPoints* points,
                               vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
 
-   int getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs);
+   int getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonArcs);
 
-   int getSegmentation(vtkDataSet* outputSegmentation);
+   int getSegmentation(const ttk::ftr::Graph& graph, vtkDataSet* outputSegmentation);
 
   protected:
    ttkFTRGraph();
@@ -162,7 +160,6 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public Wrapper
 
    virtual int FillInputPortInformation(int port, vtkInformation* info) override;
    virtual int FillOutputPortInformation(int port, vtkInformation* info) override;
-
 };
 
 #endif  // _VTK_CONTOURFORESTS_H

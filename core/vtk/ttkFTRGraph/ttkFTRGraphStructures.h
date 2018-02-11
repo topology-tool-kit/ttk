@@ -3,6 +3,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
+#include <vtkDataSet.h>
 
 #include "DataTypesFTR.h"
 #include "FTRCommon.h"
@@ -52,4 +53,24 @@ struct ArcData : public ObjectData {
 };
 
 struct VertData : public ObjectData {
+   vtkSmartPointer<vtkIntArray> ids;
+
+   explicit VertData(const ttk::ftr::idVertex nbVertices)
+   {
+      ids = allocArray<vtkIntArray>("Segmentation", nbVertices);
+   }
+
+   void setVertexInfo(const ttk::ftr::Graph& graph, const ttk::ftr::idVertex v)
+   {
+      if (graph.isVisited(v)) {
+         ids->SetTuple1(v, graph.getFirstVisit(v));
+      } else {
+         ids->SetTuple1(v, -1);
+      }
+   }
+
+   void addArrays(vtkDataSet* segmentation, ttk::ftr::Params params)
+   {
+      segmentation->GetPointData()->AddArray(ids);
+   }
 };

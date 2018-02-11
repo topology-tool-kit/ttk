@@ -27,8 +27,8 @@ namespace ttk
       // to use this structure
       struct TaskChunk
       {
-         idVertex nbElemt = 0;
-         idTask nbTasks = 0;
+         idVertex nbElemt   = 0;
+         idTask   nbTasks   = 0;
          idVertex grainSize = 0;
 
          explicit TaskChunk(const idVertex nbel) : nbElemt(nbel)

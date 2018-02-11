@@ -184,6 +184,11 @@ namespace ttk
          return this->begin() + nextId;
       }
 
+      const_iterator end() const
+      {
+         return this->begin() + nextId;
+      }
+
       const_iterator cend() const
       {
          return this->cbegin() + nextId;
@@ -193,6 +198,11 @@ namespace ttk
       typedef typename std::vector<type>::const_reverse_iterator const_riterator;
 
       riterator rbegin()
+      {
+         return this->rend() - (nextId - 1);
+      }
+
+      const_riterator rbegin() const
       {
          return this->rend() - (nextId - 1);
       }

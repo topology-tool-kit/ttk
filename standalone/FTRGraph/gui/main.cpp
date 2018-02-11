@@ -12,9 +12,9 @@ vtkUserInterface<ttkFTRGraph> program;
 class myKeyHandler : public ttkKeyHandler
 {
   public:
-   int OnKeyPress(vtkRenderWindowInteractor *interactor, string &key)
+   int OnKeyPress(vtkRenderWindowInteractor *interactor, std::string &key)
    {
-      stringstream msg;
+      std::stringstream msg;
       msg << "[myKeyHandler] The user pressed the key `" << key << "'." << endl;
       dMsg(cout, msg.str(), infoMsg);
 

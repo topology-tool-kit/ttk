@@ -17,12 +17,16 @@
 // base code includes
 #include <Triangulation.h>
 
+// local includes
 #include "DataTypesFTR.h"
 #include "DynamicGraph.h"
+#include "FTRCommon.h"
 #include "Graph.h"
 #include "Propagation.h"
 #include "Scalars.h"
-#include "FTRCommon.h"
+
+// c++ includes
+#include<set>
 
 namespace ttk
 {
@@ -34,14 +38,16 @@ namespace ttk
         private:
          // Exernal fields
          Params* const              params_;
-         Triangulation*             mesh_;
          Scalars<ScalarType>* const scalars_;
 
          const bool needDelete_;
 
          // Internal fields
-         Graph graph_;
+         Triangulation*           mesh_;
+         Graph                    graph_;
          DynamicGraph<ScalarType> dynGraph_;
+
+         AtomicVector<Propagation*> propagations_;
 
         public:
          FTRGraph(Params* const params, Triangulation* mesh, Scalars<ScalarType>* const scalars);
@@ -98,6 +104,8 @@ namespace ttk
 
             if (mesh_) {
                mesh_->preprocessVertexNeighbors();
+               mesh_->preprocessVertexTriangles();
+               mesh_->preprocessTriangleEdges();
             }
 
             return 0;
@@ -118,14 +126,14 @@ namespace ttk
          /// of the reeb graph
          void setThreadNumber(const idThread nb)
          {
-            params_->threadNumber_ = nb;
+            params_->threadNumber = nb;
          }
 
          /// Control the verbosity of the base code
          void setDebugLevel(const int lvl)
          {
             Debug::setDebugLevel(lvl);
-            params_->debugLevel_ = lvl;
+            params_->debugLevel = lvl;
          }
 
          /// Scalar field used to compute the Reeb Graph
@@ -151,16 +159,25 @@ namespace ttk
          /// Find the extrema from which the local propagations will start
          void leafSearch();
 
-         /// Swipe over the dataset, using Fibonacci Heap for the
-         /// propagation and Dynamic Graph to track the connected component
-         /// in oreder to construct the Graph
-         void swipe();
+         /// Launch the sweep algorithm, but adapted to growth
+         /// locally from each seed (min and/or max)
+         /// See: grwothFromSeed.
+         void sweepFrowSeeds();
 
          // Print function
 
-         void printGraph(const int lvl) const;
+         std::string printEdge(const orderedEdge& oEdge, const Propagation* const localProp) const;
 
-         void printTime(DebugTimer& timer, const string& msg, const int lvl) const;
+         std::string printEdge(const idEdge edgeId, const Propagation* const localProp) const;
+
+         std::string printTriangle(const orderedTriangle&   oTriangle,
+                              const Propagation* const localProp) const;
+
+         std::string printTriangle(const idCell cellId, const Propagation* const localProp) const;
+
+         void printGraph(const int verbosity) const;
+
+         void printTime(DebugTimer& timer, const std::string& msg, const int lvl) const;
 
          // Initialize functions (virtual inherit from Allocable)
          // called automatically by the build
@@ -169,8 +186,89 @@ namespace ttk
 
          void init() override;
 
-      };
+        private:
+         /// Local propagation for the vertex seed, using BFS with a priority queue
+         /// localPropagation.
+         /// This will process all the area corresponding to one connected component
+         /// of level set.
+         /// When a 2 Saddle is met, this function wait it has been completely visited
+         /// and then continue.
+         /// When a 1 Saddle is met, we split the local propagation with a BFS
+         /// to continue locally.
+         void growthFromSeed(const idVertex seed, Propagation* localPropagation);
 
+         /// visit the star of v and create two vector,
+         /// first one contains edges finishing at v (lower star)
+         /// second one contains edges starting at v (upper star)
+         std::pair<std::vector<idEdge>, std::vector<idEdge>> visitStar(
+             const Propagation* const localProp) const;
+
+         /// Consider edges ending at the vertex v, one by one,
+         /// and find their corresponding components in the current
+         /// preimage graph, each representing a component.
+         /// \ret the set of uniques representing components
+         std::set<DynGraphNode<ScalarType>*> lowerComps(const std::vector<idEdge>& finishingEdges);
+
+         /// Symetric to lowerComps
+         /// \ref lowerComps
+         std::set<DynGraphNode<ScalarType>*> upperComps(const std::vector<idEdge>& startingEdges);
+
+         /// update (locally) the preimage graph (dynGraph) from that
+         /// of immediately before f(v) to that of immediately after f(v).
+         /// (v is localGrowth->getCurVertex())
+         void updatePreimage(const Propagation* const localProp);
+
+         /// update the dynamicGraph by adding (if needed) a new edge corresponding to the
+         /// starting cell cellId
+         void updatePreimageStartCell(const orderedTriangle&   oTriangle,
+                                      const Propagation* const localProp);
+
+         /// update the dynamicGraph by moving (if needed) the corresponding to the
+         /// current visited cell cellId
+         void updatePreimageMiddleCell(const orderedTriangle&   oTriangle,
+                                       const Propagation* const localProp);
+
+         /// update the dynamicGraph by removing (if needed) the edge corresponding to the
+         /// last visit of the cell cellId
+         void updatePreimageEndCell(const orderedTriangle&   oTriangle,
+                                    const Propagation* const localProp);
+
+         /// update the skeleton structure
+         /// \params lowerComp set of uniq representant in the lower start of v
+         /// \params upperComp set of uniq representant in the upper start of v
+         /// \ret true if we are on a sddle
+         void updateReebGraph(const std::set<DynGraphNode<ScalarType>*>& lowerComp,
+                              const std::set<DynGraphNode<ScalarType>*>& upperComp,
+                              const Propagation* const localPropagation);
+
+         /// local growth replacing the global sort
+         void localGrowth(Propagation* const localProp);
+
+         // Check if the current vertex which is on a Join saddle come from the
+         // last growth touching this saddle
+         bool checkLast(const Propagation* const   localPropagation,
+                        const std::vector<idEdge>& lowerStarEdges);
+
+         /// Use a BFS to reconstruct the differnts propagations at a saddle
+         // split
+
+         // Tools
+
+         Propagation* newPropagation(const idVertex leaf);
+
+         /// get an edge with the "start" vertex in first position
+         /// The start vertex is the lowest according to localProp comparison
+         orderedEdge getOrderedEdge(const idEdge edgeId, const Propagation* const localProp) const;
+
+         /// get a triangle defined by its edges sorted and its id
+         orderedTriangle getOrderedTriangle(const idCell             cellId,
+                                            const Propagation* const localProp) const;
+
+         /// On a triangle, recover the position of the current vertex to classify the triangle
+         vertPosInTriangle getVertPosInTriangle(const orderedTriangle&   oTriangle,
+                                                const Propagation* const localProp) const;
+
+      };
    }  // namespace ftr
 }  // namespace ttk
 

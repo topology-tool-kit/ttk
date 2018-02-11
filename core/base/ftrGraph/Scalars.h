@@ -1,27 +1,11 @@
 #pragma once
 
 #include "DataTypesFTR.h"
+#include "FTRCommon.h"
 
 #include <iostream>
 #include <memory>
 #include <vector>
-
-#ifdef __APPLE__
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef _WIN32
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef __clang__
-#include <algorithm>
-#include <numeric>
-#else
-#include <parallel/algorithm>
-#endif
-#endif
-#endif
 
 #include <Debug.h>
 
@@ -37,7 +21,7 @@ namespace ttk
 
          inline bool operator<(const Vert<ScalarType>& v) const
          {
-            return value < v.value || (value == v.value && offset < v.offset);
+            return std::tie(value, offset) < std::tie(v.value, v.offset);
          }
       };
 
@@ -125,14 +109,18 @@ namespace ttk
          {
             // Create offset array if not given by user
             if (!externalOffsets_) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(static, size_ / threadNumber_)
+#endif
                for (idVertex i = 0; i < size_; i++) {
                   offsets_[i] = i;
                }
             }
 
-               // Copy everything in the main array
+            // Copy everything in the main array
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(static, size_ / threadNumber_)
+#endif
             for (idVertex i = 0; i < size_; i++) {
                vertices_[i].id     = i;
                vertices_[i].value  = values_[i];
@@ -142,21 +130,15 @@ namespace ttk
 
          void sort()
          {
-         // Sort the vertices array
-#ifdef TTK_ENABLE_OPENMP
-#ifdef __clang__
-            cout << "Caution, outside GCC, sequential sort" << endl;
-            std::sort(vertices_.begin(), vertices_.end());
-#else
-            __gnu_parallel::sort(vertices_.begin(), vertices_.end());
-#endif
-#else
-            std::sort(vertices_.begin(), vertices_.end());
-#endif
+            // Sort the vertices array
+            ::ttk::ftr::parallel_sort<decltype(vertices_.begin())>(vertices_.begin(),
+                                                                   vertices_.end());
 
             // Fill the mirror array, used for later comparisons
             DebugTimer tt;
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 10000)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) schedule(static, size_ / threadNumber_)
+#endif
             for (idVertex i = 0; i < size_; i++) {
                mirror_[vertices_[i].id] = i;
             }
@@ -170,9 +152,11 @@ namespace ttk
             // Recall: Equals values are distinguished using Simulation of Simplicity in the FTM
             // tree computation Note: Can we detect NaN using vtk ?
             if (std::numeric_limits<ScalarType>::has_quiet_NaN) {
-#pragma omp parallel for
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) schedule(static, size_ / threadNumber_)
+#endif
                for (idVertex i = 0; i < size_; i++) {
-                  if (isnan(values_[i])) {
+                  if (::std::isnan(values_[i])) {
                      values_[i] = 0;
                   }
                }
@@ -199,5 +183,5 @@ namespace ttk
             return mirror_[a] >= mirror_[b];
          }
       };
-   }
-}
+   }  // namespace ftr
+}  // namespace ttk

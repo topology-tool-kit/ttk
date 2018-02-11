@@ -29,14 +29,21 @@ namespace ftr
    using idEdge = int;
    /// \brief Cell index in vect_cellList_
    using idCell = int;
-   /// \brief id to an element of the graph, negative for Nodes.
-   using graphElmt = long int;
    /// \brief for task identifiers
    using idTask = idNode;
    /// \brief for threads identifiers
    using idThread = idNode;
    /// \brief for vertex up/down valence
-   using valence = unsigned char;
+   using valence = signed char;
+
+   /// \brief Edge represented by its 2 vertices, lower then upper, and its id.
+   using orderedEdge = std::tuple<idVertex, idVertex, idEdge>;
+
+   /// \brief position of a vertex in a trianlge
+   enum class vertPosInTriangle : char { Start = 0, Middle, End };
+   /// \brief Triangle represented by its 3 edges, the position of the current vert in it and its id
+   /// Edges are sorted by their starting vertex (first key) and ending vertex (second key)
+   using orderedTriangle = std::tuple<idEdge, idEdge, idEdge, idCell>;
 
    // For tasks:
    // Set using scalar value comparison
@@ -51,14 +58,13 @@ namespace ftr
    static const idVertex       nullVertex    = std::numeric_limits<idVertex>::max();
    static const idEdge         nullEdge      = std::numeric_limits<idEdge>::max();
    static const idCell         nullCell      = std::numeric_limits<idCell>::max();
-   static const graphElmt      nullGraphElmt = std::numeric_limits<graphElmt>::max();
 
    // Enum data
    // ----------
 
    enum class GraphComponent { Arc = -1, Local_minimum, Saddle1, Saddle2, Local_maximum };
 
-   enum class ArcType:char { Min_arc = 0, Max_arc, Saddle1_arc, Saddle2_arc, Saddle1_saddle2_arc };
+   enum class ArcType : char { Min_arc = 0, Max_arc, Saddle1_arc, Saddle2_arc, Saddle1_saddle2_arc };
 
    enum class NodeType { Local_minimum = 0, Saddle1, Saddle2, Degenerate, Local_maximum, Regular };
 }

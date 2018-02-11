@@ -13,6 +13,8 @@
 
 #include "FTRCommon.h"
 
+#include <Triangulation.h>
+
 #include <boost/heap/fibonacci_heap.hpp>
 
 namespace ttk
@@ -21,20 +23,29 @@ namespace ttk
    {
       using VertCompFN = std::function<bool(idVertex, idVertex)>;
 
-      class Propagation : public Allocable
+      class Propagation
       {
         private:
-         idVertex curVert_;
+         // cached extrema
+         idVertex   curVert_;
+         // comparison function
+         VertCompFN comp_;
          // priority queue
          boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation_;
 
         public:
          Propagation(idVertex startVert, VertCompFN vertComp)
-             : curVert_(startVert), propagation_(vertComp)
+             : curVert_(nullVertex), comp_(vertComp), propagation_(vertComp)
          {
+            propagation_.emplace(startVert);
          }
 
-         idVertex getNextMinVertex(void)
+         idVertex getCurVertex(void) const
+         {
+            return curVert_;
+         }
+
+         idVertex getNextVertex(void)
          {
             curVert_ = propagation_.top();
             propagation_.pop();
@@ -52,23 +63,31 @@ namespace ttk
             curVert_ = propagation_.top();
          }
 
-         bool empty()
+         bool empty() const
          {
             return propagation_.empty();
          }
 
+         /// This comparison is reversed to the internal one
+         /// because when we are growing, the natural order for the simplices
+         /// is reversed to the order of the priority queue:
+         /// We want the min to grow form lowest to highest
+         bool compare(idVertex a, idVertex b) const
+         {
+            return comp_(b,a);
+         }
+
          // DEBUG ONLY
-         bool find(idVertex v)
+
+         bool find(idVertex v) const
          {
             return std::find(propagation_.begin(), propagation_.end(), v) != propagation_.end();
          }
 
-         // Initialize functions
-         // --------------------
-
-         void alloc() override;
-
-         void init() override;
+         std::size_t size() const
+         {
+            return propagation_.size();
+         }
       };
    }
 }
