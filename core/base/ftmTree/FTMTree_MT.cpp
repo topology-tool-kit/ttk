@@ -1392,14 +1392,15 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
    const auto chunkSize     = getChunkSize(sizeBackBone, nbTasksThreads);
    const auto chunkNb       = getChunkCount(sizeBackBone, nbTasksThreads);
    // si pas efficace vecteur de la taille de node ici a la place de acc
-   idNode   lastVertInRange = 0;
-   idVertex acc             = 0;
    idVertex tot             = 0;
    for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(chunkId, acc, lastVertInRange) shared(trunkVerts, tot)
+#pragma omp task firstprivate(chunkId) shared(trunkVerts, tot)
 #endif
       {
+         idNode   lastVertInRange = 0;
+         idVertex acc             = 0;
+
          const idVertex lowerBound = begin + chunkId * chunkSize;
          const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
          for (idVertex v = lowerBound; v < upperBound; ++v) {
