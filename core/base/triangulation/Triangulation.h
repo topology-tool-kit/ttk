@@ -782,8 +782,7 @@ namespace ttk{
       
       /// Get the \p localTriangleId-th triangle id of the \p edgeId-th edge.
       /// 
-      /// Here the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
+      /// In 2D, this function is equivalent to getEdgeStar().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessEdgeTriangles() needs to be called
@@ -799,6 +798,7 @@ namespace ttk{
       /// \param triangleId Output global triangle identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getEdgeTriangleNumber()
+      /// \sa getEdgeStar()
       inline int getEdgeTriangle(const int &edgeId,
         const int &localTriangleId, int &triangleId) const{
          
@@ -806,7 +806,14 @@ namespace ttk{
         if(isEmptyCheck())
           return -1;
           
-        if(!abstractTriangulation_->hasPreprocessedEdgeTriangles()){
+        if(getDimensionality() == 1)
+          return -2;
+        
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedEdgeStars()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedEdgeTriangles()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "EdgeTriangle query without pre-process!"
@@ -818,14 +825,17 @@ namespace ttk{
           return -2;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getEdgeStar(
+            edgeId, localTriangleId, triangleId);
+
         return abstractTriangulation_->getEdgeTriangle(
           edgeId, localTriangleId, triangleId);
       }
       
       /// Get the number of triangles for the \p edgeId-th edge.
       /// 
-      /// Here the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
+      /// In 2D, this function is equivalent to getEdgeStarNumber().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessEdgeTriangles() needs to be called
@@ -836,12 +846,20 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param edgeId Input global edge identifier.
       /// \return Returns the number of edge triangles.
+      /// \sa getEdgeStarNumber
       inline int getEdgeTriangleNumber(const int &edgeId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        
+        if(getDimensionality() == 1)
+          return -2;
       
-        if(!abstractTriangulation_->hasPreprocessedEdgeTriangles()){
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedEdgeStars()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedEdgeTriangles()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "EdgeTriangleNumber query without pre-process!"
@@ -853,14 +871,16 @@ namespace ttk{
           return -2;
         }
 #endif
+        
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getEdgeStarNumber(edgeId);
+
         return abstractTriangulation_->getEdgeTriangleNumber(edgeId);
       }
       
       /// \warning
       /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
       /// DOING.
-      ///
-      /// Get the list of triangles for all edges.
       ///
       /// Here the notion of triangle only makes sense if the triangulation 
       /// has a dimension greater than 2 (otherwise, use the cell information).
@@ -872,6 +892,8 @@ namespace ttk{
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
       /// THIS IS USUALLY A BAD IDEA.
+      ///
+      /// In 2D, this function is equivalent to getVertexStars().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessEdgeTriangles() needs to be called
@@ -886,7 +908,14 @@ namespace ttk{
         if(isEmptyCheck())
           return NULL;
         
-        if(!abstractTriangulation_->hasPreprocessedEdgeTriangles()){
+        if(getDimensionality() == 1)
+          return NULL;
+        
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedEdgeStars()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedEdgeTriangles()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "EdgeTriangles query without pre-process!"
@@ -898,6 +927,10 @@ namespace ttk{
           return NULL;
         }
 #endif
+
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getEdgeStars();
+        
         return abstractTriangulation_->getEdgeTriangles();
       }
       
@@ -2010,8 +2043,7 @@ namespace ttk{
       /// Get the \p localTriangleId-th triangle id of the 
       /// \p vertexId-th vertex.
       /// 
-      /// Here the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
+      /// In 2D, this function is equivalent to getVertexStar().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessVertexTriangles() needs to be called
@@ -2027,8 +2059,7 @@ namespace ttk{
       /// \param triangleId Output global triangle identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getVertexTriangleNumber()
-      /// \warning This function is not implemented in this version of the API 
-      /// (it is a placeholder for a future version).
+      /// \sa getVertexStar()
       inline int getVertexTriangle(const int &vertexId,
         const int &localTriangleId, int &triangleId) const{
          
@@ -2036,7 +2067,14 @@ namespace ttk{
         if(isEmptyCheck())
           return -1;
           
-        if(!abstractTriangulation_->hasPreprocessedVertexTriangles()){
+        if(getDimensionality() == 1)
+          return -2;
+        
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedVertexStars()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedVertexTriangles()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "VertexTriangle query without pre-process!"
@@ -2048,14 +2086,17 @@ namespace ttk{
           return -2;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getVertexStar(
+            vertexId, localTriangleId, triangleId);
+
         return abstractTriangulation_->getVertexTriangle(
           vertexId, localTriangleId, triangleId);
       }
       
       /// Get the number of triangles for the \p vertexId-th vertex.
       /// 
-      /// Here the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
+      /// In 2D, this function is equivalent to getVertexStarNumber().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessVertexTriangles() needs to be called
@@ -2066,15 +2107,21 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param vertexId Input global vertex identifier.
       /// \return Returns the number of vertex triangles.
-      /// \warning This function is not implemented in this version of the API 
-      /// (it is a placeholder for a future version).
+      /// \sa getVertexStarNumber()
       inline int getVertexTriangleNumber(const int &vertexId) const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
-        if(!abstractTriangulation_->hasPreprocessedVertexTriangles()){
+        if(getDimensionality() == 1)
+          return -2;
+        
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedVertexStars()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedVertexTriangles()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "VertexTriangleNumber query without pre-process!"
@@ -2086,6 +2133,10 @@ namespace ttk{
           return -2;
         }
 #endif
+      
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getVertexStarNumber(vertexId);
+
         return abstractTriangulation_->getVertexTriangleNumber(vertexId);
       }
       
@@ -2095,9 +2146,6 @@ namespace ttk{
       ///
       /// Get the list of triangles for all vertices.
       ///
-      /// Here the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
-      ///
       /// The number of entries in this list is equal to the number of vertices.
       /// Each entry is a vector of identifiers whose size is equal to the 
       /// number of triangles for the corresponding vertex.
@@ -2105,6 +2153,8 @@ namespace ttk{
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
       /// THIS IS USUALLY A BAD IDEA.
+      ///
+      /// In 2D, this function is equivalent to getVertexStars().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessVertexTriangles() needs to be called
@@ -2114,15 +2164,21 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex triangle list.
-      /// \warning This function is not implemented in this version of the API 
-      /// (it is a placeholder for a future version).
+      /// \sa getVertexStars()
       inline const vector<vector<int> > *getVertexTriangles(){
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
-        if(!abstractTriangulation_->hasPreprocessedVertexTriangles()){
+        if(getDimensionality() == 1)
+          return NULL;
+        
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedVertexStars()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedVertexTriangles()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "VertexTriangles query without pre-process!"
@@ -2134,6 +2190,9 @@ namespace ttk{
           return NULL;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getVertexStars();
+
         return abstractTriangulation_->getVertexTriangles();
       }
       
@@ -2503,7 +2562,14 @@ namespace ttk{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        
+        if(getDimensionality() == 1)
+          return -2;
 #endif         
+        
+        if(getDimensionality() == 2){
+          return abstractTriangulation_->preprocessEdgeStars();
+        }
         
         return abstractTriangulation_->preprocessEdgeTriangles();
       }
@@ -2746,7 +2812,12 @@ namespace ttk{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        if(getDimensionality() == 1)
+          return -2;
 #endif        
+        if(getDimensionality() == 2){
+          return abstractTriangulation_->preprocessVertexStars();
+        }
         
         return abstractTriangulation_->preprocessVertexTriangles();
       }
