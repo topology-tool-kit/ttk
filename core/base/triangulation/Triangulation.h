@@ -882,8 +882,7 @@ namespace ttk{
       /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
       /// DOING.
       ///
-      /// Here the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
+      /// Get the list of triangles for all edges.
       ///
       /// The number of entries in this list is equal to the number of edges.
       /// Each entry is a vector of identifiers whose size is equal to the 
@@ -893,7 +892,7 @@ namespace ttk{
       /// list (which will be time and memory consuming). 
       /// THIS IS USUALLY A BAD IDEA.
       ///
-      /// In 2D, this function is equivalent to getVertexStars().
+      /// In 2D, this function is equivalent to getEdgeStars().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessEdgeTriangles() needs to be called
@@ -903,6 +902,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge triangle list.
+      /// \sa getEdgeStars
       inline const vector<vector<int> > *getEdgeTriangles(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
