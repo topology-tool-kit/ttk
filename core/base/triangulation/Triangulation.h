@@ -1044,8 +1044,7 @@ namespace ttk{
       
       /// Get the number of triangles in the triangulation.
       ///
-      /// Here the notion of triangle only makes sense if the triangulation has
-      /// a dimension greater than 2 (otherwise, use the cell information).
+      /// In 2D, this function is equivalent to getNumberOfCells().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangles() needs to be called
@@ -1055,13 +1054,18 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns the number of triangles.
+      /// \sa getNumberOfCells()
       inline int getNumberOfTriangles() const{
 #ifndef TTK_ENABLE_KAMIKAZE
         
         if(isEmptyCheck())
           return -1;
         
-        if(!abstractTriangulation_->hasPreprocessedTriangles()){
+        if(getDimensionality() == 1)
+          return -2;
+        
+        if((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedTriangles())){
           stringstream msg;
           msg << "[Triangulation] "
             << "NumberOfTriangles query without pre-process!"
@@ -1073,6 +1077,9 @@ namespace ttk{
           return -2;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getNumberOfCells();
+
         return abstractTriangulation_->getNumberOfTriangles();
       }
       
@@ -1133,8 +1140,7 @@ namespace ttk{
       
       /// Get the \p localEdgeId-th edge of the \p triangleId-th triangle.
       ///
-      /// Here the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
+      /// In 2D, this function is equivalent to getCellEdge().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangleEdges() needs to be called
@@ -1149,13 +1155,21 @@ namespace ttk{
       /// \param edgeId Output global edge identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getTriangleEdgeNumber()
+      /// \sa getCellEdge()
       inline int getTriangleEdge(const int &triangleId, 
         const int &localEdgeId, int &edgeId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
-          
-        if(!abstractTriangulation_->hasPreprocessedTriangleEdges()){
+        
+        if(getDimensionality() == 1)
+          return -2;
+        
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedCellEdges()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedTriangleEdges()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "TriangleEdge query without pre-process!"
@@ -1167,14 +1181,17 @@ namespace ttk{
           return -2;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getCellEdge(
+            triangleId, localEdgeId, edgeId);
+
         return abstractTriangulation_->getTriangleEdge(
           triangleId, localEdgeId, edgeId);
       }
       
       /// Get the number of edges of the \p triangleId-th triangle.
       ///
-      /// Here, the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
+      /// In 2D, this function is equivalent to getCellEdgeNumber().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangleEdges() needs to be called
@@ -1184,13 +1201,21 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \param triangleId Input global triangle identifier.
-      /// \return Returns the number of cells in the link of the triangle. 
+      /// \return Returns the number of cells in the link of the triangle.
+      /// \sa getCellEdgeNumber()
       inline int getTriangleEdgeNumber(const int &triangleId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
-        if(!abstractTriangulation_->hasPreprocessedTriangleEdges()){
+        if(getDimensionality() == 1)
+          return -2;
+        
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedCellEdges()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedTriangleEdges()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "TriangleEdgeNumber query without pre-process!"
@@ -1202,6 +1227,9 @@ namespace ttk{
           return -2;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getCellEdgeNumber(triangleId);
+
         return abstractTriangulation_->getTriangleEdgeNumber(triangleId);
       }
       
@@ -1211,9 +1239,6 @@ namespace ttk{
       ///
       /// Get the list of edges for all triangles.
       ///
-      /// Here the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
-      ///
       /// The number of entries in this list is equal to the number of 
       /// triangles. Each entry is a vector of identifiers representing the
       /// edges connected to the triangle (3).
@@ -1221,6 +1246,8 @@ namespace ttk{
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
       /// THIS IS USUALLY A BAD IDEA.
+      ///
+      /// In 2D, this function is equivalent to getCellEdges().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangleEdges() needs to be called
@@ -1230,12 +1257,20 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle edge list.
+      /// \sa getCellEdges()
       inline const vector<vector<int> > *getTriangleEdges(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
-        if(!abstractTriangulation_->hasPreprocessedTriangleEdges()){
+        if(getDimensionality() == 1)
+          return NULL;
+        
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedCellEdges()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedTriangleEdges()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "TriangleEdges query without pre-process!"
@@ -1247,6 +1282,9 @@ namespace ttk{
           return NULL;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getCellEdges();
+
         return abstractTriangulation_->getTriangleEdges();
       }
       
@@ -2596,7 +2634,13 @@ namespace ttk{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        
+        if(getDimensionality() == 1)
+          return -1;
 #endif    
+        
+        if(getDimensionality() == 2)
+          return 0;
         
         return abstractTriangulation_->preprocessTriangles();
       }
@@ -2623,7 +2667,13 @@ namespace ttk{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        
+        if(getDimensionality() == 1)
+          return -2;
 #endif 
+        
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->preprocessCellEdges();
         
         return abstractTriangulation_->preprocessTriangleEdges();
       }
