@@ -1291,9 +1291,6 @@ namespace ttk{
       /// Get the \p localLinkId-th simplex of the link of the \p triangleId-th 
       /// triangle.
       ///
-      /// Here, the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
-      ///
       /// The notion of triangle link only makes sense in 3D, where the output 
       /// \p linkId refers to a vertex identifier.
       ///
@@ -1339,7 +1336,7 @@ namespace ttk{
       /// triangle.
       ///
       /// The notion of triangle link only makes sense in 3D, where the number
-      /// vertices in the link will be returned.
+      /// of vertices in the link will be returned.
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangleLinks() needs to be called
@@ -1383,7 +1380,7 @@ namespace ttk{
       /// triangles.
       /// Each entry is a vector of identifiers representing a vertex.
       ///
-      /// The notion of triangle link only makes sense in 3D
+      /// The notion of triangle link only makes sense in 3D.
       ///
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
@@ -1423,11 +1420,8 @@ namespace ttk{
       /// Get the \p localStarId-th cell of the star of the \p triangleId-th 
       /// triangle.
       /// 
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
-      ///
-      /// Also, the notion of triangle only makes sense if the triangulation has
-      /// a dimension greater than 2 (otherwise, use the cell information).
+      /// The notion of triangle star only makes sense in 3D, where the output 
+      /// \p starId refers to a tetrahedron identifier.
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangleStars() needs to be called
@@ -1449,6 +1443,9 @@ namespace ttk{
         if(isEmptyCheck())
           return -1;
           
+        if(getDimensionality() != 3)
+          return -2;
+        
         if(!abstractTriangulation_->hasPreprocessedTriangleStars()){
           stringstream msg;
           msg << "[Triangulation] "
@@ -1467,11 +1464,8 @@ namespace ttk{
      
       /// Get the number of star cells for the \p triangleId-th triangle.
       ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
-      ///
-      /// Also,the notion of triangle only makes sense if the triangulation has 
-      /// a dimension greater than 2 (otherwise, use the cell information).
+      /// The notion of triangle star only makes sense in 3D, where the number
+      /// of tetrahedra in the star will be returned.
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangleStars() needs to be called
@@ -1486,6 +1480,9 @@ namespace ttk{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        
+        if(getDimensionality() != 3)
+          return -2;
         
         if(!abstractTriangulation_->hasPreprocessedTriangleStars()){
           stringstream msg;
@@ -1508,16 +1505,12 @@ namespace ttk{
       ///
       /// Get the list of star cell identifiers for all triangles.
       ///
-      /// Here the notion of cell refers to the simplicices of maximal 
-      /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
-      ///
-      /// Also, the notion of triangle only makes sense if the triangulation
-      /// has a dimension greater than 2 (otherwise, use the cell information).
-      ///
       /// The number of entries in this list is equal to the number of 
       /// triangles.
       /// Each entry is a vector of identifiers whose size is equal to the 
       /// number of star cells for the corresponding triangle.
+      ///
+      /// The notion of triangle star only makes sense in 3D.
       ///
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
@@ -1534,6 +1527,9 @@ namespace ttk{
       inline const vector<vector<int> > *getTriangleStars(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
+          return NULL;
+        
+        if(getDimensionality() != 3)
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedTriangleStars()){
@@ -2737,6 +2733,9 @@ namespace ttk{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        
+        if(getDimensionality() != 3)
+          return -2;
 #endif         
         
         return abstractTriangulation_->preprocessTriangleStars();
