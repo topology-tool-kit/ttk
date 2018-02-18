@@ -1294,7 +1294,8 @@ namespace ttk{
       /// Here, the notion of triangle only makes sense if the triangulation 
       /// has a dimension greater than 2 (otherwise, use the cell information).
       ///
-      /// In 3D, the output \p linkId refers to a vertex identifier.
+      /// The notion of triangle link only makes sense in 3D, where the output 
+      /// \p linkId refers to a vertex identifier.
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangleLinks() needs to be called
@@ -1315,6 +1316,9 @@ namespace ttk{
         if(isEmptyCheck())
           return -1;
           
+        if(getDimensionality() != 3)
+          return -2;
+        
         if(!abstractTriangulation_->hasPreprocessedTriangleLinks()){
           stringstream msg;
           msg << "[Triangulation] "
@@ -1334,10 +1338,8 @@ namespace ttk{
       /// Get the number of simplices in the link of the \p triangleId-th 
       /// triangle.
       ///
-      /// Here, the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
-      ///
-      /// In 3D, this will return the number of vertices in the link.
+      /// The notion of triangle link only makes sense in 3D, where the number
+      /// vertices in the link will be returned.
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangleLinks() needs to be called
@@ -1352,6 +1354,9 @@ namespace ttk{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        
+        if(getDimensionality() != 3)
+          return -2;
         
         if(!abstractTriangulation_->hasPreprocessedTriangleLinks()){
           stringstream msg;
@@ -1374,12 +1379,11 @@ namespace ttk{
       ///
       /// Get the list of link simplices for all triangles.
       ///
-      /// Here, the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
-      ///
       /// The number of entries in this list is equal to the number of 
       /// triangles.
       /// Each entry is a vector of identifiers representing a vertex.
+      ///
+      /// The notion of triangle link only makes sense in 3D
       ///
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
@@ -1396,6 +1400,9 @@ namespace ttk{
       inline const vector<vector<int> > *getTriangleLinks(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
+          return NULL;
+        
+        if(getDimensionality() != 3)
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedTriangleLinks()){
@@ -2700,6 +2707,9 @@ namespace ttk{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        
+        if(getDimensionality() != 3)
+          return -2;
 #endif 
         
         return abstractTriangulation_->preprocessTriangleLinks();
