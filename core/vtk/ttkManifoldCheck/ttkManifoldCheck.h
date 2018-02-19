@@ -8,7 +8,8 @@
 /// This filter performs a manifold check for each simplex, by counting the 
 /// number of connected components of link. On a d-dimensional triangulation, 
 /// this number should be equal to 1 for all but (d-1)-simplices, for which it 
-/// can be 1 (boundary simplices) or 2 (interior simplices).
+/// can be 1 (boundary simplices) or 2 (interior simplices). Other values 
+/// indicate a non-manifold simplex.
 ///
 /// The link component number is stored as an integer array for each type of 
 /// simplex. In practice, these arrays are both stored as (i) point data and 
@@ -28,13 +29,12 @@
 #pragma once
 
 // VTK includes -- to adapt
-#include                  <vtkCharArray.h>
+#include                  <vtkCellData.h>
 #include                  <vtkDataArray.h>
 #include                  <vtkDataSet.h>
 #include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkDoubleArray.h>
 #include                  <vtkFiltersCoreModule.h>
-#include                  <vtkFloatArray.h>
+#include                  <vtkGenericCell.h>
 #include                  <vtkInformation.h>
 #include                  <vtkIntArray.h>
 #include                  <vtkObjectFactory.h>

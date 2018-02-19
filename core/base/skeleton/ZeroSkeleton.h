@@ -8,8 +8,7 @@
 /// %ZeroSkeleton is a processing package that handles the 0-skeleton (vertices)
 /// of a triangulation.
 /// \sa Triangulation
-/// \sa vtkTriangulation
-/// \sa vtkZeroSkeleton
+/// \sa ttkTriangulation
 
 #ifndef _ZEROSKELETON_H
 #define _ZEROSKELETON_H

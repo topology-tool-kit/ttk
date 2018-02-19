@@ -1,7 +1,7 @@
-/// \author Your Name Here <Your Email Address Here>.
-/// \date The Date Here.
+/// \author Julien Tierny <julien.tierny@lip6.fr>.
+/// \date February 2018.
 ///
-/// \brief dummy GUI program example.
+/// \brief Manifold check GUI program example.
 
 // include the local headers
 #include                  <ttkManifoldCheck.h>
@@ -30,36 +30,12 @@ class myKeyHandler : public ttkKeyHandler{
 
 int main(int argc, char **argv) {
   
-  // TODO-1: 
-  // specify local parameters to the TTK module with default values.
-  bool someOption = false;
-  int someIntegerArgument = -1;
-  double someDoubleArgument = -1.0;
-  // end of TODO-1
 
-  // TODO-2:
-  // register these arguments to the command line parser
-  program.parser_.setArgument("D", &someDoubleArgument,
-    "Some optional double argument", true);
-  program.parser_.setArgument("I", &someIntegerArgument,
-    "Some optional integer argument", true);
-  program.parser_.setOption("O", &someOption,
-    "Some option to enable or disable");
-  // end of TODO-2
-  
   int ret = program.init(argc, argv);
  
   if(ret != 0)
     return ret;
 
-  // TODO-3:
-  // change here the arguments of the vtkWrapper that you want to update prior
-  // to execution.
-  program.ttkObject_->SetSomeIntegerArgument(someIntegerArgument);
-  program.ttkObject_->SetSomeDoubleArgument(someDoubleArgument);
-  program.ttkObject_->SetSomeOption(someOption);
-  // end of TODO-3
-  
   myKeyHandler myHandler;
   program.setKeyHandler(&myHandler); 
 

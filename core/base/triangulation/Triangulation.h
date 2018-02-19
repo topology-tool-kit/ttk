@@ -30,7 +30,7 @@
 /// \note
 /// Only pre-process the information you need! See the documentation further 
 /// down.
-/// \sa ttkTriangulation
+/// \sa tkTriangulation
 
 #ifndef _TRIANGULATION_H
 #define _TRIANGULATION_H

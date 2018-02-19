@@ -81,7 +81,7 @@ namespace ttk{
       /// call this function ONLY in the pre-processing steps of your program. 
       /// Note however, that your triangulation object must be valid when 
       /// calling this function (i.e. you should have filled it at this point, 
-      /// see the setInput*() functions of ttk::Triangulation). See vtkBlank 
+      /// see the setInput*() functions of ttk::Triangulation). See ttkBlank 
       /// for further examples.
       ///
       /// \param triangulation Pointer to a valid triangulation.
@@ -161,7 +161,7 @@ template <class dataType> int Blank::execute(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
-  for(int i = 0; i < (int) vertexNumber; i++){
+  for(int i = 0; i < vertexNumber; i++){
     // TODO-2
     // processing here!
     // end of TODO-2
