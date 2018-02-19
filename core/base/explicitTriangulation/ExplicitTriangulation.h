@@ -498,6 +498,7 @@ namespace ttk{
       }
       
       inline bool hasPreprocessedBoundaryEdges() const{
+        if(getDimensionality() == 1) return true;
         return (boundaryEdges_.size() != 0);
       }
       
