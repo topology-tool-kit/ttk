@@ -317,8 +317,7 @@ namespace ttk{
       /// Here the notion of cell refers to the simplicices of maximal 
       /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
       ///
-      /// Also, the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
+      /// In 2D, this function is equivalent to getCellNeighbor().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessCellTriangles() needs to be called
@@ -334,14 +333,22 @@ namespace ttk{
       /// \param triangleId Output global triangle identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getCellTriangleNumber()
+      /// \sa getCellNeighbor()
       inline int getCellTriangle(const int &cellId,
         const int &localTriangleId, int &triangleId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        
+        if(getDimensionality() == 1)
+          return -2;
           
-        if(!abstractTriangulation_->hasPreprocessedCellTriangles()){
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedCellNeighbors()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedCellTriangles()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "CellTriangle query without pre-process!"
@@ -353,6 +360,10 @@ namespace ttk{
           return -2;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getCellNeighbor(
+            cellId, localTriangleId, triangleId);
+
         return abstractTriangulation_->getCellTriangle(
           cellId, localTriangleId, triangleId);
       }
@@ -362,8 +373,7 @@ namespace ttk{
       /// Here the notion of cell refers to the simplicices of maximal 
       /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
       ///
-      /// Also, the notion of triangle only makes sense if the triangulation 
-      /// has a dimension greater than 2 (otherwise, use the cell information).
+      /// In 2D, this function is equivalent to getCellNeighborNumber().
       ///
       /// \pre For this function to behave correctly, 
       /// preprocessCellTriangles() needs to be called
@@ -374,12 +384,20 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param cellId Input global cell identifier.
       /// \return Returns the number of cell triangles.
+      /// \sa getCellNeighborNumber()
       inline int getCellTriangleNumber(const int &cellId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
         
-        if(!abstractTriangulation_->hasPreprocessedCellTriangles()){
+        if(getDimensionality() == 1)
+          return -2;
+        
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedCellNeighbors()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedCellTriangles()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "CellTriangleNumber query without pre-process!"
@@ -391,6 +409,9 @@ namespace ttk{
           return -2;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getCellNeighborNumber(cellId);
+
         return abstractTriangulation_->getCellTriangleNumber(cellId);
       }
       
@@ -414,6 +435,8 @@ namespace ttk{
       /// list (which will be time and memory consuming). 
       /// THIS IS USUALLY A BAD IDEA.
       ///
+      /// In 2D, this function is equivalent to getCellNeighbors().
+      ///
       /// \pre For this function to behave correctly, 
       /// preprocessCellTriangles() needs to be called
       /// on this object prior to any traversal, in a clearly distinct 
@@ -422,12 +445,20 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the cell triangle list.
+      /// \sa getCellNeighbors()
       inline const vector<vector<int> > *getCellTriangles(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
-        if(!abstractTriangulation_->hasPreprocessedCellTriangles()){
+        if(getDimensionality() == 1)
+          return NULL;
+        
+        if(((getDimensionality() == 2)
+          &&(!abstractTriangulation_->hasPreprocessedCellNeighbors()))
+          ||
+          ((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedCellTriangles()))){
           stringstream msg;
           msg << "[Triangulation] "
             << "CellTriangles query without pre-process!"
@@ -439,6 +470,9 @@ namespace ttk{
           return NULL;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getCellNeighbors();
+
         return abstractTriangulation_->getCellTriangles();
       }
       
@@ -1550,8 +1584,8 @@ namespace ttk{
       /// Get the \p localVertexId-th vertex identifier of the \p triangleId-th 
       /// triangle.
       ///
-      /// Here the notion of triangle only makes sense if the triangulation has 
-      /// a dimension greater than 2 (otherwise, use the cell information).
+      /// In 2D, this function is equivalent to getCellVertex().
+      ///
       /// \pre For this function to behave correctly, 
       /// preprocessTriangles() needs to be called
       /// on this object prior to any traversal, in a clearly distinct 
@@ -1563,14 +1597,19 @@ namespace ttk{
       /// \param localVertexId Input local vertex identifier (in [0, 2]).
       /// \param vertexId Output global vertex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
+      /// \sa getCellVertex()
       inline int getTriangleVertex(const int &triangleId,
         const int &localVertexId, int &vertexId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
-          
-        if(!abstractTriangulation_->hasPreprocessedTriangles()){
+        
+        if(getDimensionality() == 1)
+          return -2;
+        
+        if((getDimensionality() == 3)&&
+          (!abstractTriangulation_->hasPreprocessedTriangles())){
           stringstream msg;
           msg << "[Triangulation] "
             << "TriangleVertex query without pre-process!"
@@ -1582,6 +1621,10 @@ namespace ttk{
           return -2;
         }
 #endif
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->getCellVertex(
+            triangleId, localVertexId, vertexId);
+  
         return abstractTriangulation_->getTriangleVertex(
           triangleId, localVertexId, vertexId);
       }
@@ -2495,7 +2538,12 @@ namespace ttk{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
+        
+        if(getDimensionality() == 1)
+          return -2;
 #endif        
+        if(getDimensionality() == 2)
+          return abstractTriangulation_->preprocessCellNeighbors();
         
         return abstractTriangulation_->preprocessCellTriangles();
       }

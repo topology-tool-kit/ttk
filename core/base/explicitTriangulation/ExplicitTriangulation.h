@@ -502,6 +502,7 @@ namespace ttk{
       }
       
       inline bool hasPreprocessedBoundaryTriangles() const{
+        if(getDimensionality() == 2) return true;
         return (boundaryTriangles_.size() != 0);
       }
       
@@ -643,6 +644,9 @@ namespace ttk{
       }
       
       inline int preprocessBoundaryTriangles(){
+        
+        if(getDimensionality() == 2)
+          return 0;
         
         if((!boundaryTriangles_.empty())
           &&(boundaryTriangles_.size() == triangleList_.size())){
