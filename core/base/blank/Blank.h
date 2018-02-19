@@ -11,8 +11,7 @@
 /// \sa ttk::Triangulation
 /// \sa ttkBlank.cpp %for a usage example.
 
-#ifndef _BLANK_H
-#define _BLANK_H
+#pragma once
 
 // base code includes
 #include                  <Triangulation.h>
@@ -180,5 +179,3 @@ template <class dataType> int Blank::execute(
   
   return 0;
 }
-
-#endif // BLANK_H
