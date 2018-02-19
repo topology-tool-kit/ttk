@@ -1,15 +1,20 @@
 /// \ingroup base
 /// \class ttk::ManifoldCheck 
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \author Julien Tierny <julien.tierny@lip6.fr>
+/// \date February 2018.
 ///
-/// \brief TTK %manifoldCheck processing package.
+/// \brief TTK processing package for manifold checks.
 ///
-/// %ManifoldCheck is a TTK processing package that takes a scalar field on the input 
-/// and produces a scalar field on the output.
+/// This class performs a manifold check for each simplex, by counting the 
+/// number of connected components of link. On a d-dimensional triangulation, 
+/// this number should be equal to 1 for all but (d-1)-simplices, for which it 
+/// can be 1 (boundary simplices) or 2 (interior simplices).
+///
+/// The link component number is stored as an integer array for each type of 
+/// simplex.
 ///
 /// \sa ttk::Triangulation
-/// \sa vtkManifoldCheck.cpp %for a usage example.
+/// \sa ttkManifoldCheck.cpp %for a usage example.
 
 #ifndef _MANIFOLDCHECK_H
 #define _MANIFOLDCHECK_H

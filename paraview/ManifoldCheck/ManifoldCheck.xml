@@ -10,9 +10,12 @@
      class="ttkManifoldCheck" 
      label="TTK ManifoldCheck">
      <Documentation
-        long_help="TTK manifoldCheck plugin."
-        short_help="TTK manifoldCheck plugin.">
-          TTK manifoldCheck plugin documentation.
+        long_help="TTK plugin for manifold check."
+        short_help="TTK plugin for manifold check.">
+          This plugin performs a manifold check for each simplex, by counting 
+the number of connected components of link. On a d-dimensional triangulation, 
+this number should be equal to 1 for all but (d-1)-simplices, for which 
+it can be 1 (boundary simplices) or 2 (interior simplices).
      </Documentation>
      <InputProperty
         name="Input"
@@ -24,69 +27,11 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Input" function="FieldDataSelection" />
-        </InputArrayDomain>
         <Documentation>
           Data-set to process.
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty
-        name="ScalarField"
-        command="SetScalarField"
-        number_of_elements="1"
-        animateable="0"
-        label="Scalar Field"
-        >
-        <ArrayListDomain
-          name="array_list"
-          default_values="0">
-          <RequiredProperties>
-            <Property name="Input" function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Documentation>
-          Select the scalar field to process.
-        </Documentation>
-      </StringVectorProperty>
-      
-      <IntVectorProperty
-         name="IntegerArgument"
-         label="Output integer argument"
-         command="SetSomeIntegerArgument"
-         number_of_elements="1"
-         default_values="1" >
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Integer argument for the manifoldCheck filter.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <DoubleVectorProperty
-         name="DoubleArgument"
-         label="Output double argument"
-         command="SetSomeDoubleArgument"
-         number_of_elements="1"
-         default_values="1" >
-        <DoubleRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-          Double argument for the manifoldCheck filter.
-         </Documentation>
-      </DoubleVectorProperty>
-     
-       <IntVectorProperty
-         name="Option"
-         label="Some option"
-         command="SetSomeOption"
-         number_of_elements="1"
-         default_values="1">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Some option for the manifoldCheck filter.
-         </Documentation>
-      </IntVectorProperty>
-      
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -122,16 +67,6 @@
            Debug level.
          </Documentation>
       </IntVectorProperty>
-      
-      <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="ScalarField" />
-      </PropertyGroup>
-     
-      <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="IntegerArgument" />
-        <Property name="DoubleArgument" />
-        <Property name="Option" />
-      </PropertyGroup>
       
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />

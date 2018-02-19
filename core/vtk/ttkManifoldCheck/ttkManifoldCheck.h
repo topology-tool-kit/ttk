@@ -1,14 +1,22 @@
 /// \ingroup vtk
 /// \class ttkManifoldCheck
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \author Julien Tierny <julien.tierny@lip6.fr>
+/// \date February 2018.
 ///
-/// \brief TTK VTK-filter that wraps the manifoldCheck processing package.
+/// \brief TTK VTK-filter for manifold checks.
 ///
-/// VTK wrapping code for the @ManifoldCheck package.
+/// This filter performs a manifold check for each simplex, by counting the 
+/// number of connected components of link. On a d-dimensional triangulation, 
+/// this number should be equal to 1 for all but (d-1)-simplices, for which it 
+/// can be 1 (boundary simplices) or 2 (interior simplices).
+///
+/// The link component number is stored as an integer array for each type of 
+/// simplex. In practice, these arrays are both stored as (i) point data and 
+/// (ii) cell data, by considering the maximum value achieved by a co-face (i) 
+/// and by a vertex (ii) respectively.
 /// 
-/// \param Input Input scalar field (vtkDataSet)
-/// \param Output Output scalar field (vtkDataSet)
+/// \param Input Input data set (vtkDataSet)
+/// \param Output Output  field (vtkDataSet)
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the 
 /// sequence of calls SetInputData(), Update(), GetOutput()).
@@ -66,91 +74,13 @@ class ttkManifoldCheck
     }
     // end of default ttk setters
     
-        
-    // TODO-4
-    // set-getters macros to define from each variable you want to access from 
-    // the outside (in particular from paraview) - to adapt.
-    // Note that the XML file for the ParaView plug-in specification needs to be
-    // edited accordingly.
-    vtkSetMacro(SomeIntegerArgument, int);
-    vtkGetMacro(SomeIntegerArgument, int);
-   
-    vtkSetMacro(SomeDoubleArgument, double);
-    vtkGetMacro(SomeDoubleArgument, double);
-    
-    vtkSetMacro(SomeOption, bool);
-    vtkGetMacro(SomeOption, bool);
-    
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
-    // end of TODO-4
-
-    // TODO-2
-    // Over-ride the input types.
-    // By default, this filter has one input and one output, of the same type.
-    // Here, you can re-define the input types, on a per input basis.
-    // In this example, the first input type is forced to vtkUnstructuredGrid.
-    // The second input type is forced to vtkImageData.
-//     int FillInputPortInformation(int port, vtkInformation *info){
-//       
-//       switch(port){
-//         case 0:
-//           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); 
-//           break;
-//         case 1:
-//           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData"); 
-//           break;
-//         default:
-//           break;
-//       }
-//       
-//       return 1;
-//     }
-    // end of TODO-2
-    
-    // TODO-3
-    // Over-ride the output types.
-    // By default, this filter has one input and one output, of the same type.
-    // Here, you can re-define the output types, on a per output basis.
-    // In this example, the first output type is forced to vtkUnstructuredGrid.
-    // The second output type is forced to vtkImageData.
-//     int FillOutputPortInformation(int port, vtkInformation *info){
-//       
-//       switch(port){
-//         case 0:
-//           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); 
-//           break;
-//         case 1:
-//           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData"); 
-//           break;
-//         default:
-//           break;
-//       }
-//       
-//       return 1;
-//     }
-    // end of TODO-3
-    
     
   protected:
    
     ttkManifoldCheck(){
       
         // init
-      SomeIntegerArgument = -1;
-      SomeDoubleArgument = -1;
-      SomeOption = false;
-      outputScalarField_ = NULL;
-      
       UseAllCores = false;
-      
-      // TODO-1
-      // Specify the number of input and output ports.
-      // By default, this filter has one input and one output.
-      // In this example, we define 2 inputs and 2 outputs.
-//       SetNumberOfInputPorts(2);
-//       SetNumberOfOutputPorts(2);
-      // end of TODO-1
     }
     
     ~ttkManifoldCheck(){};
@@ -160,11 +90,9 @@ class ttkManifoldCheck
     
   private:
     
-    int                   SomeIntegerArgument;
-    double                SomeDoubleArgument;
-    bool                  SomeOption;
-    string                ScalarField;
-    vtkDataArray          *outputScalarField_;
-    ManifoldCheck                 manifoldCheck_;
+    vector<int>           vertexLinkComponentNumber_;
+    vector<int>           edgeLinkComponentNumber_;
+    vector<int>           triangleLinkComponentNumber_;
+    ManifoldCheck         manifoldCheck_;
     
 };
