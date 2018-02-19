@@ -2,6 +2,7 @@ ChangeLog
 =
 * ttk.git
 - Fixes for gcc 4
+- Improved triangulation consistency in 2D and 1D
 
 * 0.9.4
 - Windows support
