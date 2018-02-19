@@ -9,7 +9,7 @@
 /// and produces a scalar field on the output.
 ///
 /// \sa ttk::Triangulation
-/// \sa vtkBlank.cpp %for a usage example.
+/// \sa ttkBlank.cpp %for a usage example.
 
 #ifndef _BLANK_H
 #define _BLANK_H

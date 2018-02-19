@@ -8,8 +8,7 @@
 /// %TwoSkeleton is a processing package that handles the 2-skeleton (triangles)
 /// of a triangulation.
 /// \sa Triangulation
-/// \sa vtkTriangulation
-/// \sa vtkTwoSkeleton
+/// \sa ttkTriangulation
 
 #ifndef _TWOSKELETON_H
 #define _TWOSKELETON_H

@@ -10,7 +10,6 @@
 /// (in the sense of Discrete Morse Theory).
 ///
 /// \sa ttk::Triangulation
-/// \sa vtkDiscreteGradient.cpp %for a usage example.
 
 #ifndef _DISCRETEGRADIENT_H
 #define _DISCRETEGRADIENT_H

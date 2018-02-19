@@ -17,7 +17,7 @@
 /// Proc. of EuroVis 2014. \n
 /// Computer Graphics Forum, 2014.
 ///
-/// \sa vtkMandatoryCriticalPoints.cpp %for a usage example.
+/// \sa ttkMandatoryCriticalPoints.cpp %for a usage example.
 
 #ifndef _MANDATORYCRITICALPOINTS_H
 #define _MANDATORYCRITICALPOINTS_H

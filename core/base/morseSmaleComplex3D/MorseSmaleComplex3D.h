@@ -10,7 +10,7 @@
 /// and produces a scalar field on the output.
 ///
 /// \sa ttk::Triangulation
-/// \sa vtkMorseSmaleComplex3D.cpp %for a usage example.
+/// \sa ttkMorseSmaleComplex3D.cpp %for a usage example.
 
 #ifndef _MORSESMALECOMPLEX3D_H
 #define _MORSESMALECOMPLEX3D_H

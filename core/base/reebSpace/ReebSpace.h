@@ -24,7 +24,7 @@
 /// Proc. of IEEE VIS 2016.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2016.
 ///
-/// \sa vtkReebSpace.cpp %for a usage example.
+/// \sa ttkReebSpace.cpp %for a usage example.
 
 #ifndef _REEBSPACE_H
 #define _REEBSPACE_H

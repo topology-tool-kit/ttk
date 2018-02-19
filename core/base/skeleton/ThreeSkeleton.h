@@ -8,8 +8,7 @@
 /// %ThreeSkeleton is a processing package that handles the 3-skeleton 
 /// (tetrahedra) of a triangulation.
 /// \sa Triangulation
-/// \sa vtkTriangulation
-/// \sa vtkThreeSkeleton
+/// \sa ttkTriangulation
 
 #ifndef _THREESKELETON_H
 #define _THREESKELETON_H

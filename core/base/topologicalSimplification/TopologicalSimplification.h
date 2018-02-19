@@ -19,7 +19,7 @@
 /// Proc. of IEEE VIS 2012.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2012.
 ///
-/// \sa vtkTopologicalSimplification.cpp %for a usage example.
+/// \sa ttkTopologicalSimplification.cpp %for a usage example.
 
 #ifndef _TOPOLOGICALSIMPLIFICATION_H
 #define _TOPOLOGICALSIMPLIFICATION_H

@@ -11,7 +11,7 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 ///
-/// \sa vtkContourForests.cpp %for a usage example.
+/// \sa ttkContourForests.cpp %for a usage example.
 
 #ifndef FTMTREE_MT_TPL_H
 #define FTMTREE_MT_TPL_H

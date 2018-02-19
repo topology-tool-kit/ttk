@@ -9,7 +9,7 @@
 /// Given a list of sources, the package produces forward or backward integral
 /// lines along the edges of the input triangulation.
 ///
-/// \sa vtkIntegralLines.cpp %for a usage example.
+/// \sa ttkIntegralLines.cpp %for a usage example.
 
 #ifndef _DISCRETESTREAMLINE_H
 #define _DISCRETESTREAMLINE_H

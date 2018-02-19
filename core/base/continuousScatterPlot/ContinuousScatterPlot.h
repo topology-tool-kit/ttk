@@ -12,7 +12,7 @@
 /// Proc. of IEEE VIS 2008.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2008.
 ///
-/// \sa vtkContinuousScatterPlot.cpp %for a usage example.
+/// \sa ttkContinuousScatterPlot.cpp %for a usage example.
 
 #ifndef _CONTINUOUSSCATTERPLOT_H
 #define _CONTINUOUSSCATTERPLOT_H

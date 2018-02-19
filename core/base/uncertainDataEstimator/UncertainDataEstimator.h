@@ -7,7 +7,7 @@
 /// (represented by a list of scalar fields) and which computes various 
 /// vertexwise statistics (PDF estimation, bounds, moments, etc.)
 ///
-/// \sa vtkUncertainDataEstimator.cpp %for a usage example.
+/// \sa ttkUncertainDataEstimator.cpp %for a usage example.
 
 #ifndef _UNCERTAINDATAESTIMATOR_H
 #define _UNCERTAINDATAESTIMATOR_H

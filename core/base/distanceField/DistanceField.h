@@ -15,7 +15,7 @@
 /// Edsger W. Dijkstra \n
 /// Numerische Mathematik, 1959.
 /// 
-/// \sa vtkDistanceField.cpp %for a usage example.
+/// \sa ttkDistanceField.cpp %for a usage example.
 
 #ifndef _DISTANCEFIELD_H
 #define _DISTANCEFIELD_H

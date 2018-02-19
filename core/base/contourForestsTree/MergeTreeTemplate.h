@@ -16,7 +16,7 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 ///
-/// \sa vtkContourForests.cpp %for a usage example.
+/// \sa ttkContourForests.cpp %for a usage example.
 
 #ifndef MERGETREETEMPLATE_H
 #define MERGETREETEMPLATE_H

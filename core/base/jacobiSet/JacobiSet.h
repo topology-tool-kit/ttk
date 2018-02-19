@@ -19,7 +19,7 @@
 /// Herbert Edelsbrunner, John Harer \n
 /// Foundations of Computational Mathematics. Cambridge University Press, 2002.
 ///
-/// \sa vtkJacobiSet.cpp %for a usage example.
+/// \sa ttkJacobiSet.cpp %for a usage example.
 
 #ifndef _JACOBISET_H
 #define _JACOBISET_H

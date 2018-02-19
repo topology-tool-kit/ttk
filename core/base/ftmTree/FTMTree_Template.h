@@ -11,7 +11,7 @@
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
 ///
-/// \sa vtkFTMTree.cpp %for a usage example.
+/// \sa ttkFTMTree.cpp %for a usage example.
 
 #ifndef FTMTREE_TPL_H
 #define FTMTREE_TPL_H

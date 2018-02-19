@@ -13,7 +13,7 @@
 /// Computer Graphics Forum, 2012.
 ///
 /// \sa ttk::Triangulation
-/// \sa vtkMorseSmaleComplex.cpp %for a usage example.
+/// \sa ttkMorseSmaleComplex.cpp %for a usage example.
 
 #ifndef _MORSESMALECOMPLEX_H
 #define _MORSESMALECOMPLEX_H

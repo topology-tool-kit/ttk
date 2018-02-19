@@ -8,8 +8,7 @@
 /// %OneSkeleton is a processing package that handles the 1-skeleton (edges)
 /// of a triangulation.
 /// \sa Triangulation
-/// \sa vtkTriangulation
-/// \sa vtkOneSkeleton
+/// \sa ttkTriangulation
 
 #ifndef _ONESKELETON_H
 #define _ONESKELETON_H

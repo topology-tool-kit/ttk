@@ -12,7 +12,7 @@
 /// \param dataType Data type of the input scalar field (char, float, 
 /// etc.).
 ///
-/// \sa vtkScalarFieldSmoother.cpp %for a usage example.
+/// \sa ttkScalarFieldSmoother.cpp %for a usage example.
 
 #ifndef _SCALAR_FIELD_SMOOTHER_H
 #define _SCALAR_FIELD_SMOOTHER_H

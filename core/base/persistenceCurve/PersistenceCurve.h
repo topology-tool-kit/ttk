@@ -13,7 +13,7 @@
 /// These curves provide useful visual clues in order to fine-tune persistence
 /// simplification thresholds.
 ///
-/// \sa vtkPersistenceCurve.cpp %for a usage example.
+/// \sa ttkPersistenceCurve.cpp %for a usage example.
 
 #ifndef _PERSISTENCECURVE_H
 #define _PERSISTENCECURVE_H

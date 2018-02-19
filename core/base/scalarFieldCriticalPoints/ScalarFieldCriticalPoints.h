@@ -17,7 +17,7 @@
 /// Thomas Banchoff \n
 /// American Mathematical Monthly, 1970.
 ///
-/// \sa vtkScalarFieldCriticalPoints.cpp %for a usage example.
+/// \sa ttkScalarFieldCriticalPoints.cpp %for a usage example.
 
 #ifndef _SCALARFIELDCRITICALPOINTS_H
 #define _SCALARFIELDCRITICALPOINTS_H

@@ -12,7 +12,6 @@
 /// Hamish Carr, Jack Snoeyink, Ulrike Axen \n
 /// Proc. of ACM SODA 2000.
 ///
-/// \sa vtkContourTree.cpp %for a usage example
 
 #ifndef                 _CONTOUR_TREE_H
 #define                 _CONTOUR_TREE_H

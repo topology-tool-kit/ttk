@@ -25,7 +25,7 @@
 /// Herbert Edelsbrunner and John Harer \n
 /// American Mathematical Society, 2010
 ///
-/// \sa vtkPersistenceDiagram.cpp %for a usage example.
+/// \sa ttkPersistenceDiagram.cpp %for a usage example.
 
 #ifndef _PERSISTENCEDIAGRAM_H
 #define _PERSISTENCEDIAGRAM_H

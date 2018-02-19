@@ -10,7 +10,7 @@
 /// and produces a scalar field on the output.
 ///
 /// \sa ttk::Triangulation
-/// \sa vtkBottleneckDistance.cpp %for a usage example.
+/// \sa ttkBottleneckDistance.cpp %for a usage example.
 
 #ifndef _BOTTLENECKDISTANCE_H
 #define _BOTTLENECKDISTANCE_H

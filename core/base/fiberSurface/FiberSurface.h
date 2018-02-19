@@ -23,7 +23,7 @@
 /// \param dataTypeV Data type of the input second component field (char, float,
 /// etc.)
 ///
-/// \sa vtkFiberSurface.cpp %for a usage example.
+/// \sa ttkFiberSurface.cpp %for a usage example.
 
 #ifndef _FIBERSURFACE_H
 #define _FIBERSURFACE_H
