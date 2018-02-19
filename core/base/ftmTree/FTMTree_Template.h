@@ -18,6 +18,11 @@
 
 #include "FTMTree.h"
 
+// for std::isnan
+#include <cmath>
+// for std::numeric_limits
+#include <limits>
+
 // -------
 // PROCESS
 // -------
@@ -49,12 +54,12 @@ void ftm::FTMTree::build(void)
    // Recall: Equals values are distinguished using Simulation of Simplicity in the FTM tree
    // computation
    // Note: Can we detect NaN using vtk ?
-   if (std::numeric_limits<scalarType>::has_quiet_NaN) {
+   if (::std::numeric_limits<scalarType>::has_quiet_NaN) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
       for (idVertex i = 0; i < scalars_->size; i++) {
-         if (std::isnan((double) ((scalarType*)scalars_->values)[i])) {
+         if (::std::isnan((double)(((scalarType*)scalars_->values)[i])) {
             ((scalarType*)scalars_->values)[i] = 0;
          }
       }

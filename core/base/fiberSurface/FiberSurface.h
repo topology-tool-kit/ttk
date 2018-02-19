@@ -30,14 +30,20 @@
 
 // standard includes
 #ifdef __APPLE__
-#include <algorithm>
+# include <algorithm>
 #else
-#ifdef _WIN32
-#include <algorithm>
-#else
-#include <parallel/algorithm>
+# ifdef _WIN32
+#  include <algorithm>
+# else
+#  ifdef __clang__
+#   include <algorithm>
+#   include <numeric>
+#  else
+#   include <parallel/algorithm>
+#  endif
+# endif
 #endif
-#endif
+
 #include                  <queue>
 
 // base code includes
@@ -1667,7 +1673,7 @@ template <class dataTypeU, class dataTypeV>
   }
 #endif
    
-  finalize<dataTypeU, dataTypeV>(pointSnapping_, NULL, NULL, NULL);
+  finalize<dataTypeU, dataTypeV>(pointSnapping_, false, false, false);
     
   {
     stringstream msg;

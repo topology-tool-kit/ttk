@@ -43,7 +43,7 @@
 #include                <climits>
 #include                <dirent.h>
 #include                <iomanip>
-#include                <math.h>
+#include                <cmath>
 #include                <sys/stat.h>
 #include                <sys/time.h>
 #include                <sys/types.h>
