@@ -13,7 +13,7 @@ goto exit
 :patch
 %~d1
 cd %paraviewsrc%
-git apply %cdir%/ADF_internals.c.patch
+git apply --ignore-whitespace %cdir%/ADF_internals.c.patch
 cd %cdir%
 echo Finished patching.
 
