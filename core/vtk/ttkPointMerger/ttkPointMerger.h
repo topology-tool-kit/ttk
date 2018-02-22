@@ -1,14 +1,15 @@
 /// \ingroup vtk
 /// \class ttkPointMerger
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \author Julien Tierny <julien.tierny@lip6.fr>
+/// \date February 2018.
 ///
-/// \brief TTK VTK-filter that wraps the pointMerger processing package.
+/// \brief TTK VTK-filter for point merging.
 ///
-/// VTK wrapping code for the @PointMerger package.
+/// This filter merges the points of a mesh whose distance is lower than a user 
+/// defined threshold.
 /// 
-/// \param Input Input scalar field (vtkDataSet)
-/// \param Output Output scalar field (vtkDataSet)
+/// \param Input Input data set (vtkDataSet)
+/// \param Output Output data set (vtkDataSet)
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the 
 /// sequence of calls SetInputData(), Update(), GetOutput()).
@@ -16,7 +17,6 @@
 /// See the related ParaView example state files for usage examples within a 
 /// VTK pipeline.
 ///
-/// \sa ttk::PointMerger
 #pragma once
 
 // VTK includes -- to adapt
@@ -34,7 +34,6 @@
 #include                  <vtkSmartPointer.h>
 
 // ttk code includes
-#include                  <PointMerger.h>
 #include                  <ttkWrapper.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a 
@@ -67,90 +66,16 @@ class ttkPointMerger
     // end of default ttk setters
     
         
-    // TODO-4
-    // set-getters macros to define from each variable you want to access from 
-    // the outside (in particular from paraview) - to adapt.
-    // Note that the XML file for the ParaView plug-in specification needs to be
-    // edited accordingly.
-    vtkSetMacro(SomeIntegerArgument, int);
-    vtkGetMacro(SomeIntegerArgument, int);
-   
-    vtkSetMacro(SomeDoubleArgument, double);
-    vtkGetMacro(SomeDoubleArgument, double);
-    
-    vtkSetMacro(SomeOption, bool);
-    vtkGetMacro(SomeOption, bool);
-    
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
-    // end of TODO-4
-
-    // TODO-2
-    // Over-ride the input types.
-    // By default, this filter has one input and one output, of the same type.
-    // Here, you can re-define the input types, on a per input basis.
-    // In this example, the first input type is forced to vtkUnstructuredGrid.
-    // The second input type is forced to vtkImageData.
-//     int FillInputPortInformation(int port, vtkInformation *info){
-//       
-//       switch(port){
-//         case 0:
-//           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); 
-//           break;
-//         case 1:
-//           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData"); 
-//           break;
-//         default:
-//           break;
-//       }
-//       
-//       return 1;
-//     }
-    // end of TODO-2
-    
-    // TODO-3
-    // Over-ride the output types.
-    // By default, this filter has one input and one output, of the same type.
-    // Here, you can re-define the output types, on a per output basis.
-    // In this example, the first output type is forced to vtkUnstructuredGrid.
-    // The second output type is forced to vtkImageData.
-//     int FillOutputPortInformation(int port, vtkInformation *info){
-//       
-//       switch(port){
-//         case 0:
-//           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); 
-//           break;
-//         case 1:
-//           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData"); 
-//           break;
-//         default:
-//           break;
-//       }
-//       
-//       return 1;
-//     }
-    // end of TODO-3
+    vtkSetMacro(DistanceThreshold, double);
+    vtkGetMacro(DistanceThreshold, double);
     
     
   protected:
    
     ttkPointMerger(){
       
-        // init
-      SomeIntegerArgument = -1;
-      SomeDoubleArgument = -1;
-      SomeOption = false;
-      outputScalarField_ = NULL;
-      
-      UseAllCores = false;
-      
-      // TODO-1
-      // Specify the number of input and output ports.
-      // By default, this filter has one input and one output.
-      // In this example, we define 2 inputs and 2 outputs.
-//       SetNumberOfInputPorts(2);
-//       SetNumberOfOutputPorts(2);
-      // end of TODO-1
+      // init
+      DistanceThreshold = 0.0000001;
     }
     
     ~ttkPointMerger(){};
@@ -160,11 +85,6 @@ class ttkPointMerger
     
   private:
     
-    int                   SomeIntegerArgument;
-    double                SomeDoubleArgument;
-    bool                  SomeOption;
-    string                ScalarField;
-    vtkDataArray          *outputScalarField_;
-    PointMerger                 pointMerger_;
+    double                DistanceThreshold;
     
 };
