@@ -20,6 +20,7 @@
 #pragma once
 
 // VTK includes -- to adapt
+#include                  <vtkCellData.h>
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
 #include                  <vtkDataSet.h>
@@ -80,7 +81,7 @@ class ttkPointMerger
     ttkPointMerger(){
       
       // init
-      DistanceThreshold = 0.000001;
+      DistanceThreshold = 0.001;
       BoundaryOnly = true;
     }
     

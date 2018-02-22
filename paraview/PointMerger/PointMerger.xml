@@ -47,8 +47,8 @@ a user defined threshold.
          label="Distance threshold"
          command="SetDistanceThreshold"
          number_of_elements="1"
-         default_values="0.000001" >
-        <DoubleRangeDomain name="range" min="0" max="100" />
+         default_values="0.001" >
+        <DoubleRangeDomain name="range" min="0" max="1" />
          <Documentation>
           Distance threshold for point merging.
          </Documentation>

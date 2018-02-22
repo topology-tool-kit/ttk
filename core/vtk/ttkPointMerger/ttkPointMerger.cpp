@@ -108,18 +108,20 @@ int ttkPointMerger::doIt(
       }while(mergeMap[targetVertexId] != targetVertexId);
       mergeCount[targetVertexId]++;
       
-      vector<double> p0(3), p1(3);
-      input->GetPoint(i, p0.data());
-      input->GetPoint(targetVertexId, p1.data());
-      double distance = Geometry::distance(p0.data(), p1.data());
-      if((minMergeDistance[targetVertexId] == -1)
-        ||(distance < minMergeDistance[targetVertexId])){
-        minMergeDistance[targetVertexId] = distance;
-      }
-      if((maxMergeDistance[targetVertexId] == -1)
-        ||(distance > maxMergeDistance[targetVertexId])){
-        maxMergeDistance[targetVertexId] = distance;
+      if(i != targetVertexId){
+        vector<double> p0(3), p1(3);
+        input->GetPoint(i, p0.data());
+        input->GetPoint(targetVertexId, p1.data());
+        double distance = Geometry::distance(p0.data(), p1.data());
+        if((minMergeDistance[targetVertexId] == -1)
+          ||(distance < minMergeDistance[targetVertexId])){
+          minMergeDistance[targetVertexId] = distance;
         }
+        if((maxMergeDistance[targetVertexId] == -1)
+          ||(distance > maxMergeDistance[targetVertexId])){
+          maxMergeDistance[targetVertexId] = distance;
+        }
+      }
     }
     else{
       mergeMap[i] = i;
@@ -143,6 +145,23 @@ int ttkPointMerger::doIt(
   // now create the output
   vtkSmartPointer<vtkPoints> pointSet = vtkSmartPointer<vtkPoints>::New();
   pointSet->SetNumberOfPoints(vertexIdGen);
+  
+  vtkSmartPointer<vtkIntArray> mergeCountArray = 
+    vtkSmartPointer<vtkIntArray>::New();
+  mergeCountArray->SetNumberOfTuples(vertexIdGen);
+  mergeCountArray->SetName("VertexMergeCount");
+  
+  vtkSmartPointer<vtkDoubleArray> minDistanceArray = 
+    vtkSmartPointer<vtkDoubleArray>::New();
+  minDistanceArray->SetNumberOfTuples(vertexIdGen);
+  minDistanceArray->SetName("MinMergeDistance");
+  
+  
+  vtkSmartPointer<vtkDoubleArray> maxDistanceArray = 
+    vtkSmartPointer<vtkDoubleArray>::New();
+  maxDistanceArray->SetNumberOfTuples(vertexIdGen);
+  maxDistanceArray->SetName("MaxMergeDistance");
+  
   vector<vtkSmartPointer<vtkDoubleArray> > pointData;
   pointData.resize(input->GetPointData()->GetNumberOfArrays());
   for(int i = 0; i < (int) pointData.size(); i++){
@@ -160,10 +179,15 @@ int ttkPointMerger::doIt(
     vector<double> p(3);
     input->GetPoint(new2old[i], p.data());
     pointSet->SetPoint(i, p.data());
+    
+    mergeCountArray->SetTuple1(i, mergeCount[new2old[i]]);
+    minDistanceArray->SetTuple1(i, minMergeDistance[new2old[i]]);
+    maxDistanceArray->SetTuple1(i, maxMergeDistance[new2old[i]]);
+    
     for(int j = 0; j < (int) pointData.size(); j++){
       vector<double> data(pointData[j]->GetNumberOfComponents());
-      input->GetPointData()->GetArray(j)->GetTuple(new2old[i], p.data());
-      pointData[j]->SetTuple(i, p.data());
+      input->GetPointData()->GetArray(j)->GetTuple(new2old[i], data.data());
+      pointData[j]->SetTuple(i, data.data());
     }
   }
   
@@ -171,11 +195,20 @@ int ttkPointMerger::doIt(
   for(int i = 0; i < (int) pointData.size(); i++){
     output->GetPointData()->AddArray(pointData[i]);
   }
-  
-  /// TODO: add the merge stats
+  output->GetPointData()->AddArray(mergeCountArray);
+  output->GetPointData()->AddArray(minDistanceArray);
+  output->GetPointData()->AddArray(maxDistanceArray);
   
   // now do the cells
   output->Allocate();
+  vector<vtkSmartPointer<vtkDoubleArray> > cellData;
+  cellData.resize(input->GetCellData()->GetNumberOfArrays());
+  for(int i = 0; i < (int) cellData.size(); i++){
+    cellData[i] = vtkSmartPointer<vtkDoubleArray>::New();
+    cellData[i]->SetName(input->GetCellData()->GetArray(i)->GetName());
+    cellData[i]->SetNumberOfComponents(
+      input->GetCellData()->GetArray(i)->GetNumberOfComponents());
+  }
   for(int i = 0; i < input->GetNumberOfCells(); i++){
     
     vtkSmartPointer<vtkGenericCell> c = vtkSmartPointer<vtkGenericCell>::New();
@@ -201,20 +234,23 @@ int ttkPointMerger::doIt(
     for(int j = 0; j < (int) newVertexIds.size(); j++){
       idList->SetId(j, newVertexIds[j]);
     }
+    
+    vtkIdType cellId = -1;
+    
     if((c->GetCellDimension() == 1)&&(newVertexIds.size() == 2)){
-      output->InsertNextCell(VTK_LINE, idList);
+      cellId = output->InsertNextCell(VTK_LINE, idList);
     }
     if(c->GetCellDimension() == 2){
       if(newVertexIds.size() > 2){
-        output->InsertNextCell(VTK_POLYGON, idList);
+        cellId = output->InsertNextCell(VTK_POLYGON, idList);
       }
     }
     if(c->GetCellDimension() == 3){
       if(newVertexIds.size() == 4){
-        output->InsertNextCell(VTK_TETRA, idList);
+        cellId = output->InsertNextCell(VTK_TETRA, idList);
       }
       if(newVertexIds.size() == 8){
-        output->InsertNextCell(VTK_HEXAHEDRON, idList);
+        cellId = output->InsertNextCell(VTK_HEXAHEDRON, idList);
       }
       else{
         stringstream msg;
@@ -223,7 +259,18 @@ int ttkPointMerger::doIt(
         dMsg(cerr, msg.str(), Debug::infoMsg);
       }
     }
+    
+    if(cellId != -1){
+      // insert the cell data
+      for(int j = 0; j < (int) cellData.size(); j++){
+        vector<double> data(cellData[j]->GetNumberOfComponents());
+        input->GetCellData()->GetArray(j)->GetTuple(i, data.data());
+        cellData[j]->InsertNextTuple(data.data());
+      }
+    }
   }
+  for(int i = 0; i < (int) cellData.size(); i++)
+    output->GetCellData()->AddArray(cellData[i]);
   
   {
     stringstream msg;
