@@ -30,6 +30,18 @@ a user defined threshold.
         </Documentation>
       </InputProperty>
 
+      <IntVectorProperty
+        name="BoundaryOnly"
+        label="Boundary only"
+        command="SetBoundaryOnly"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Only merge points on the boundary.
+        </Documentation>
+      </IntVectorProperty>
+      
       <DoubleVectorProperty
          name="DistanceThreshold"
          label="Distance threshold"
@@ -41,6 +53,8 @@ a user defined threshold.
           Distance threshold for point merging.
          </Documentation>
       </DoubleVectorProperty>
+      
+      
      
       <IntVectorProperty
          name="UseAllCores"
@@ -79,6 +93,7 @@ a user defined threshold.
       </IntVectorProperty>
       
       <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="BoundaryOnly" />
         <Property name="DistanceThreshold" />
       </PropertyGroup>
      

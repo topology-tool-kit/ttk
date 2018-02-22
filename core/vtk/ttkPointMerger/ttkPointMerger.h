@@ -34,6 +34,7 @@
 #include                  <vtkSmartPointer.h>
 
 // ttk code includes
+#include                  <Geometry.h>
 #include                  <ttkWrapper.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a 
@@ -66,6 +67,9 @@ class ttkPointMerger
     // end of default ttk setters
     
         
+    vtkSetMacro(BoundaryOnly, bool);
+    vtkGetMacro(BoundaryOnly, bool);
+        
     vtkSetMacro(DistanceThreshold, double);
     vtkGetMacro(DistanceThreshold, double);
     
@@ -76,6 +80,7 @@ class ttkPointMerger
       
       // init
       DistanceThreshold = 0.0000001;
+      BoundaryOnly = true;
     }
     
     ~ttkPointMerger(){};
@@ -85,6 +90,7 @@ class ttkPointMerger
     
   private:
     
+    bool                  BoundaryOnly;
     double                DistanceThreshold;
     
 };

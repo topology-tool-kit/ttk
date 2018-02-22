@@ -25,9 +25,11 @@ class myKeyHandler : public ttkKeyHandler{
 
 int main(int argc, char **argv) {
   
+  bool boundaryOnly = true;
   double distanceThreshold = 0.000001;
 
-  program.parser_.setArgument("D", &distanceThreshold,
+  program.parser_.setOption("b", &boundaryOnly, "Boundary only");
+  program.parser_.setArgument("t", &distanceThreshold,
     "Distance threshold", true);
   
   int ret = program.init(argc, argv);
@@ -35,6 +37,7 @@ int main(int argc, char **argv) {
   if(ret != 0)
     return ret;
 
+  program.ttkObject_->SetBoundaryOnly(boundaryOnly);
   program.ttkObject_->SetDistanceThreshold(distanceThreshold);
   
   myKeyHandler myHandler;

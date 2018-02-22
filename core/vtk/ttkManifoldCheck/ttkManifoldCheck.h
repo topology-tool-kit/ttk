@@ -80,7 +80,7 @@ class ttkManifoldCheck
     ttkManifoldCheck(){
       
         // init
-      UseAllCores = false;
+      UseAllCores = true;
     }
     
     ~ttkManifoldCheck(){};
