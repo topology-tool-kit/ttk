@@ -27,6 +27,7 @@
 #include                  <vtkDoubleArray.h>
 #include                  <vtkFiltersCoreModule.h>
 #include                  <vtkFloatArray.h>
+#include                  <vtkGenericCell.h>
 #include                  <vtkInformation.h>
 #include                  <vtkIntArray.h>
 #include                  <vtkObjectFactory.h>
@@ -79,7 +80,7 @@ class ttkPointMerger
     ttkPointMerger(){
       
       // init
-      DistanceThreshold = 0.0000001;
+      DistanceThreshold = 0.000001;
       BoundaryOnly = true;
     }
     
