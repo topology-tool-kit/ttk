@@ -33,6 +33,10 @@ int ttkManifoldCheck::doIt(
     &triangleLinkComponentNumber_);
   manifoldCheck_.execute();
 
+  stringstream msg;
+  msg << "[ttkManifoldCheck] Preparing VTK output..." << endl;
+  dMsg(cout, msg.str(), Debug::timeMsg);
+  
   vtkSmartPointer<vtkIntArray> vertexPointArray = 
     vtkSmartPointer<vtkIntArray>::New();
   vertexPointArray->SetName("VertexLinkComponentNumber");
