@@ -9,7 +9,7 @@ if not exist %paraviewsrc% goto error
 %~d1
 cd %paraviewsrc%
 
-git apply %cdir%/paraview-msvc-CMakeLists.txt.patch
+git apply --ignore-whitespace %cdir%/paraview-msvc-CMakeLists.txt.patch
 
 cd %cdir%
 echo Finished patching.
