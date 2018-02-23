@@ -84,10 +84,22 @@ FTMTree_MT::~FTMTree_MT()
       mt_data_.visitOrder = nullptr;
    }
    if (mt_data_.ufs) {
+
+      sort(mt_data_.ufs->begin(), mt_data_.ufs->end());
+      auto it = unique(mt_data_.ufs->begin(), mt_data_.ufs->end());
+      mt_data_.ufs->resize(std::distance(mt_data_.ufs->begin(), it));
+      for (auto* addr : *mt_data_.ufs) if(addr) delete addr;
+
       delete mt_data_.ufs;
       mt_data_.ufs = nullptr;
    }
    if (mt_data_.propagation) {
+
+      sort(mt_data_.propagation->begin(), mt_data_.ufs->end());
+      auto it = unique(mt_data_.propagation->begin(), mt_data_.ufs->end());
+      mt_data_.propagation->resize(std::distance(mt_data_.ufs->begin(), it));
+      for (auto* addr : *mt_data_.propagation) if(addr) delete addr;
+
       delete mt_data_.propagation;
       mt_data_.propagation = nullptr;
    }
