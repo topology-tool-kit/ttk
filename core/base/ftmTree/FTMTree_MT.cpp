@@ -55,6 +55,30 @@ FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const
 
 FTMTree_MT::~FTMTree_MT()
 {
+
+   // remove data in arrays for merge trees
+   if (mt_data_.treeType < 2 && mt_data_.leaves && mt_data_.ufs) {
+      for (auto l : *mt_data_.leaves) {
+         delete (*mt_data_.ufs)[getNode(l)->getVertexId()]->getState(0);
+      }
+   }
+
+   if (mt_data_.ufs) {
+      sort(mt_data_.ufs->begin(), mt_data_.ufs->end());
+      auto it = unique(mt_data_.ufs->begin(), mt_data_.ufs->end());
+      mt_data_.ufs->resize(std::distance(mt_data_.ufs->begin(), it));
+      for (auto* addr : *mt_data_.ufs) if(addr) delete addr;
+   }
+
+   if (mt_data_.propagation) {
+      // Already cleaned by ufs
+      // sort(mt_data_.propagation->begin(), mt_data_.propagation->end());
+      // auto it = unique(mt_data_.propagation->begin(), mt_data_.propagation->end());
+      // mt_data_.propagation->resize(std::distance(mt_data_.propagation->begin(), it));
+      // for (auto* addr : *mt_data_.propagation) if(addr) delete addr;
+   }
+
+   // remove containers
    if (mt_data_.superArcs) {
       delete mt_data_.superArcs;
       mt_data_.superArcs = nullptr;
@@ -84,22 +108,10 @@ FTMTree_MT::~FTMTree_MT()
       mt_data_.visitOrder = nullptr;
    }
    if (mt_data_.ufs) {
-
-      sort(mt_data_.ufs->begin(), mt_data_.ufs->end());
-      auto it = unique(mt_data_.ufs->begin(), mt_data_.ufs->end());
-      mt_data_.ufs->resize(std::distance(mt_data_.ufs->begin(), it));
-      for (auto* addr : *mt_data_.ufs) if(addr) delete addr;
-
       delete mt_data_.ufs;
       mt_data_.ufs = nullptr;
    }
    if (mt_data_.propagation) {
-
-      sort(mt_data_.propagation->begin(), mt_data_.ufs->end());
-      auto it = unique(mt_data_.propagation->begin(), mt_data_.ufs->end());
-      mt_data_.propagation->resize(std::distance(mt_data_.ufs->begin(), it));
-      for (auto* addr : *mt_data_.propagation) if(addr) delete addr;
-
       delete mt_data_.propagation;
       mt_data_.propagation = nullptr;
    }
