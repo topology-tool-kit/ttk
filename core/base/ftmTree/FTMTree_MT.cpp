@@ -58,8 +58,13 @@ FTMTree_MT::~FTMTree_MT()
 
    // remove data in arrays for merge trees
    if (mt_data_.treeType < 2 && mt_data_.leaves && mt_data_.ufs) {
+      set<CurrentState*> deleted;
       for (auto l : *mt_data_.leaves) {
-         delete (*mt_data_.ufs)[getNode(l)->getVertexId()]->getState(0);
+         CurrentState *state = (*mt_data_.ufs)[getNode(l)->getVertexId()]->getState(0);
+         if (deleted.find(state) == deleted.end()) {
+            deleted.insert(state);
+            delete state;
+         }
       }
    }
 
