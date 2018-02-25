@@ -147,6 +147,17 @@ namespace ftm
       {
       }
 
+      CurrentState(VertCompFN vertComp)
+          : vertex(nullVertex), propagation(vertComp)
+      {
+         // will need to use setStartVert before use
+      }
+
+      void setStartVert(const idVertex v)
+      {
+         vertex = v;
+      }
+
       idVertex getNextMinVertex(void)
       {
           vertex = propagation.top();

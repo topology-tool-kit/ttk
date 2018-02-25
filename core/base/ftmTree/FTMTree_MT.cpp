@@ -44,6 +44,7 @@ FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const
    mt_data_.trunkSegments = nullptr;
    mt_data_.visitOrder    = nullptr;
    mt_data_.ufs           = nullptr;
+   mt_data_.states        = nullptr;
    mt_data_.propagation   = nullptr;
    mt_data_.valences      = nullptr;
    mt_data_.openedNodes   = nullptr;
@@ -56,18 +57,7 @@ FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const
 FTMTree_MT::~FTMTree_MT()
 {
 
-   // remove data in arrays for merge trees
-   if (mt_data_.treeType < 2 && mt_data_.leaves && mt_data_.ufs) {
-      set<CurrentState*> deleted;
-      for (auto l : *mt_data_.leaves) {
-         CurrentState *state = (*mt_data_.ufs)[getNode(l)->getVertexId()]->getState(0);
-         if (deleted.find(state) == deleted.end()) {
-            deleted.insert(state);
-            delete state;
-         }
-      }
-   }
-
+   // remove UF data structures
    if (mt_data_.ufs) {
       sort(mt_data_.ufs->begin(), mt_data_.ufs->end());
       auto it = unique(mt_data_.ufs->begin(), mt_data_.ufs->end());
@@ -75,13 +65,13 @@ FTMTree_MT::~FTMTree_MT()
       for (auto* addr : *mt_data_.ufs) if(addr) delete addr;
    }
 
-   if (mt_data_.propagation) {
-      // Already cleaned by ufs
-      // sort(mt_data_.propagation->begin(), mt_data_.propagation->end());
-      // auto it = unique(mt_data_.propagation->begin(), mt_data_.propagation->end());
-      // mt_data_.propagation->resize(std::distance(mt_data_.propagation->begin(), it));
-      // for (auto* addr : *mt_data_.propagation) if(addr) delete addr;
-   }
+   // if (mt_data_.propagation) {
+   //    Already cleaned by ufs
+   //    sort(mt_data_.propagation->begin(), mt_data_.propagation->end());
+   //    auto it = unique(mt_data_.propagation->begin(), mt_data_.propagation->end());
+   //    mt_data_.propagation->resize(std::distance(mt_data_.propagation->begin(), it));
+   //    for (auto* addr : *mt_data_.propagation) if(addr) delete addr;
+   // }
 
    // remove containers
    if (mt_data_.superArcs) {
@@ -116,6 +106,10 @@ FTMTree_MT::~FTMTree_MT()
       delete mt_data_.ufs;
       mt_data_.ufs = nullptr;
    }
+   if (mt_data_.states) {
+      delete mt_data_.states;
+      mt_data_.states = nullptr;
+   }
    if (mt_data_.propagation) {
       delete mt_data_.propagation;
       mt_data_.propagation = nullptr;
@@ -149,7 +143,9 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
    if (startUF->getNbStates()) {
       currentState = startUF->getFirstState();
    } else {
-      currentState = new CurrentState(startVert, comp_.vertHigher);
+      const std::size_t currentStateId = mt_data_.states->getNext();
+      currentState = &(*mt_data_.states)[currentStateId];
+      currentState->setStartVert(startVert);
       startUF->addState(currentState);
    }
 
@@ -747,6 +743,9 @@ void FTMTree_MT::leafGrowth()
    _launchGlobalTime.reStart();
 
    const auto &nbLeaves = mt_data_.leaves->size();
+
+   // memory allocation here
+   initVectStates(nbLeaves+2);
 
    // elevation: backbone only
    if (nbLeaves == 1) {
