@@ -4,6 +4,8 @@ ChangeLog
 - Fixes for gcc 4
 - Improved triangulation consistency in 2D and 1D
 - Manifold check module
+- Point merger
+- Minimalist OBJ writer
 
 * 0.9.4
 - Windows support
