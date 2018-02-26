@@ -21,4 +21,6 @@ FTMTree::FTMTree() : FTMTree_CT(new Params, nullptr, new Scalars)
 
 FTMTree::~FTMTree()
 {
+   delete params_;
+   delete scalars_;
 }
