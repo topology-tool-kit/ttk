@@ -77,7 +77,7 @@ namespace ftm
       {
 #ifndef TTK_ENABLE_KAMIKAZE
           if(id >= data_.states.size()){
-             std::cout << "AtomicUF :: getFirstState : " << id << " >= " << data_.states.size()
+             std::cout << "AtomicUF :: getState : " << id << " >= " << data_.states.size()
                        << std::endl;
           }
 #endif
@@ -131,7 +131,6 @@ namespace ftm
 
          for (valence i = 1; i < nbState; ++i) {
             s->merge(*data_.states[i]);
-            // delete data_.states[i];
          }
 
          data_.states.reset(1);
