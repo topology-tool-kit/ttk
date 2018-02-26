@@ -75,8 +75,9 @@ namespace ftm
       vector<idVertex>  *visitOrder;
       vector<list<vector<idVertex>>> *trunkSegments;
 
-      // uf
+      // Track informations
       vector<UF> *ufs, *propagation;
+      AtomicVector<CurrentState> *states;
       // valences
       vector<valence> *valences;
       // opened nodes
@@ -105,8 +106,6 @@ namespace ftm
       // local
       TreeData   mt_data_;
       Comparison comp_;
-
-      using sortedVertIt = vector<idVertex>::iterator;
 
      public:
 
@@ -221,6 +220,15 @@ namespace ftm
          initVector<UF>(mt_data_.propagation, nullptr);
          initVector<valence>(mt_data_.valences, 0);
          initVector<char>(mt_data_.openedNodes, 0);
+      }
+
+      void initVectStates(const idVertex nbLeaves)
+      {
+         if(!mt_data_.states) {
+            mt_data_.states = new AtomicVector<CurrentState>(nbLeaves, comp_.vertHigher);
+         }
+         mt_data_.states->clear();
+         mt_data_.states->reserve(nbLeaves);
       }
 
       // -------------------

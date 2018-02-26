@@ -73,6 +73,17 @@ namespace ftm
           return data_.states[0];
       }
 
+      inline CurrentState* getState(const std::size_t id)
+      {
+#ifndef TTK_ENABLE_KAMIKAZE
+          if(id >= data_.states.size()){
+             std::cout << "AtomicUF :: getState : " << id << " >= " << data_.states.size()
+                       << std::endl;
+          }
+#endif
+          return data_.states[id];
+      }
+
       inline AtomicVector<CurrentState *> &getStates(void)
       {
          return data_.states;
@@ -120,7 +131,6 @@ namespace ftm
 
          for (valence i = 1; i < nbState; ++i) {
             s->merge(*data_.states[i]);
-            delete data_.states[i];
          }
 
          data_.states.reset(1);
