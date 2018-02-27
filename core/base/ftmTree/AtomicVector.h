@@ -26,18 +26,21 @@ namespace ttk
    {
      private:
       std::size_t nextId;
+      // for initialization
+      const type defaultValue;
 
      public:
-      explicit AtomicVector(const std::size_t initSize = 1) : std::vector<type>(), nextId(0)
+      AtomicVector(const std::size_t initSize = 1, const type &dv = type{})
+          : std::vector<type>(), nextId(0), defaultValue{dv}
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!initSize) {
             std::cout << "Caution, Atomic vector need a non-0 init size !" << std::endl;
-            std::vector<type>::resize(initSize);
+            std::vector<type>::resize(1, defaultValue);
          } else
 #endif
          {
-            std::vector<type>::resize(initSize);
+            std::vector<type>::resize(initSize, defaultValue);
          }
       }
 
@@ -59,7 +62,9 @@ namespace ttk
       // STL
       // ---
 
-      void reserve(const std::size_t &newSize, const bool fromOther = false)
+      // If we do not want to use default constructor for elements
+      // pre-allocated
+      void reserve(const std::size_t &newSize)
       {
          if (newSize > std::vector<type>::size()) {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -69,19 +74,14 @@ namespace ttk
                // data race, we should not enter here
 #pragma omp critical(AtomicUFReserve)
                {
-                  // if (fromOther)
-                  //    std::cout << " a function in the class ";
-                  // std::cout << "call RE-Reserve in AtomicVector " << nextId;
-                  // std::cout << " ! Data Race may occurs ! " << typeid(this).name() << std::endl;
-
-                  std::vector<type>::resize(newSize);
+                  std::vector<type>::resize(newSize, defaultValue);
                }
 
             } else
 #endif
 #endif
             {
-               std::vector<type>::resize(newSize);
+               std::vector<type>::resize(newSize, defaultValue);
             }
          }
       }
@@ -101,7 +101,7 @@ namespace ttk
          // Remove old content
          std::size_t oldSize = std::vector<type>::size();
          std::vector<type>::clear();
-         reserve(oldSize, true);
+         reserve(oldSize);
       }
 
       std::size_t getNext(void)
@@ -113,7 +113,7 @@ namespace ttk
          resId = nextId++;
 
          if (nextId == std::vector<type>::size()) {
-            reserve(std::vector<type>::size() * 2, true);
+            reserve(std::vector<type>::size() * 2);
          }
 
          return resId;
