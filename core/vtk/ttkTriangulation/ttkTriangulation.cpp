@@ -217,9 +217,23 @@ int ttkTriangulation::setInputData(vtkDataSet* dataSet){
     ||(dataSet->GetDataObjectType() == TTK_UNSTRUCTURED_GRID)){
     
     if(((vtkUnstructuredGrid *) dataSet)->GetPoints()){
-      triangulation_->setInputPoints(dataSet->GetNumberOfPoints(),
-        (float *)
-        ((vtkUnstructuredGrid *) dataSet)->GetPoints()->GetVoidPointer(0));
+      if(((vtkUnstructuredGrid *) dataSet)->GetPoints()->GetDataType() 
+        == VTK_FLOAT){
+        triangulation_->setInputPoints(dataSet->GetNumberOfPoints(),
+          ((vtkUnstructuredGrid *) dataSet)->GetPoints()->GetVoidPointer(0));
+      }
+      else if(((vtkUnstructuredGrid *) dataSet)->GetPoints()->GetDataType() 
+        == VTK_DOUBLE){
+        triangulation_->setInputPoints(dataSet->GetNumberOfPoints(),
+          ((vtkUnstructuredGrid *) dataSet)->GetPoints()->GetVoidPointer(0),
+          true);
+      }
+      else{
+        stringstream msg;
+        msg << "[ttkTriangulation] Unsupported precision for input points!"
+          << endl;
+        dMsg(cerr, msg.str(), Debug::fatalMsg);
+      }
     }
     if(((vtkUnstructuredGrid *) dataSet)->GetCells()){
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
@@ -238,6 +252,23 @@ int ttkTriangulation::setInputData(vtkDataSet* dataSet){
     ||(dataSet->GetDataObjectType() == TTK_POLY_DATA)){
     
     if(((vtkPolyData *) dataSet)->GetPoints()){
+      if(((vtkPolyData *) dataSet)->GetPoints()->GetDataType() 
+        == VTK_FLOAT){
+        triangulation_->setInputPoints(dataSet->GetNumberOfPoints(),
+          ((vtkPolyData *) dataSet)->GetPoints()->GetVoidPointer(0));
+      }
+      else if(((vtkPolyData *) dataSet)->GetPoints()->GetDataType() 
+        == VTK_DOUBLE){
+        triangulation_->setInputPoints(dataSet->GetNumberOfPoints(),
+          ((vtkPolyData *) dataSet)->GetPoints()->GetVoidPointer(0),
+          true);
+      }
+      else{
+        stringstream msg;
+        msg << "[ttkTriangulation] Unsupported precision for input points!"
+          << endl;
+        dMsg(cerr, msg.str(), Debug::fatalMsg);
+      }
       triangulation_->setInputPoints(dataSet->GetNumberOfPoints(),
         (float *)
         ((vtkPolyData *) dataSet)->GetPoints()->GetVoidPointer(0));

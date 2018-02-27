@@ -437,9 +437,16 @@ namespace ttk{
           return -1;
 #endif
         
-        x = pointSet_[3*vertexId];
-        y = pointSet_[3*vertexId + 1];
-        z = pointSet_[3*vertexId + 2];
+        if(doublePrecision_){
+          x = ((double *) pointSet_)[3*vertexId];
+          y = ((double *) pointSet_)[3*vertexId + 1];
+          z = ((double *) pointSet_)[3*vertexId + 2];
+        }
+        else{
+          x = ((float *) pointSet_)[3*vertexId];
+          y = ((float *) pointSet_)[3*vertexId + 1];
+          z = ((float *) pointSet_)[3*vertexId + 2];
+        }
       
         return 0;
       }
@@ -1056,13 +1063,15 @@ namespace ttk{
         return 0;
       }
       
-      inline int setInputPoints(const int &pointNumber, const float *pointSet){
+      inline int setInputPoints(const int &pointNumber, const void *pointSet,
+        const double &doublePrecision = false){
         
         if(vertexNumber_)
           clear();
         
         vertexNumber_ = pointNumber;
         pointSet_ = pointSet;
+        doublePrecision_ = doublePrecision;
         return 0;
       }
 
@@ -1072,8 +1081,9 @@ namespace ttk{
     
       int clear();
       
+      bool                doublePrecision_;
       int                 cellNumber_, vertexNumber_;
-      const float         *pointSet_;
+      const void          *pointSet_;
       const long long int *cellArray_;
       
   };

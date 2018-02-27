@@ -3120,11 +3120,13 @@ namespace ttk{
       /// \warning If this ttk::Triangulation object is already representing a 
       /// valid triangulation, this information will be over-written (which 
       /// means that pre-processing functions should be called again).
-      inline int setInputPoints(const int &pointNumber, const float *pointSet){
+      inline int setInputPoints(const int &pointNumber, const void *pointSet,
+        const double &doublePrecision = false){
         
         abstractTriangulation_ = &explicitTriangulation_;
         gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-        return explicitTriangulation_.setInputPoints(pointNumber, pointSet);
+        return explicitTriangulation_.setInputPoints(
+          pointNumber, pointSet, doublePrecision);
       }
 
       /// Tune the number of active threads (default: number of logical cores)

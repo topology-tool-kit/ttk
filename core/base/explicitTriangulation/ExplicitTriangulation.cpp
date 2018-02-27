@@ -13,6 +13,7 @@ int ExplicitTriangulation::clear(){
   
   vertexNumber_ = 0;
   cellNumber_ = 0;
+  doublePrecision_ = false;
   
   {
     stringstream msg;
