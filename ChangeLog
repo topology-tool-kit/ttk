@@ -6,6 +6,7 @@ ChangeLog
 - Manifold check module
 - Point merger
 - Minimalist OBJ writer
+- Support for double and single precision for point coordinates
 
 * 0.9.4
 - Windows support

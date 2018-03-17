@@ -1064,7 +1064,7 @@ namespace ttk{
       }
       
       inline int setInputPoints(const int &pointNumber, const void *pointSet,
-        const double &doublePrecision = false){
+        const bool &doublePrecision = false){
         
         if(vertexNumber_)
           clear();
