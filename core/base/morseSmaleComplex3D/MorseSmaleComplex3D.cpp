@@ -45,7 +45,8 @@ int MorseSmaleComplex3D::getSeparatrices1(const vector<Cell>& criticalPoints,
         int tetraId;
         inputTriangulation_->getTriangleStar(saddle2.id_, j, tetraId);
 
-        vector<Cell> vpath{saddle2};
+        vector<Cell> vpath;
+        vpath.push_back(saddle2);
         discreteGradient_.getAscendingPath(Cell(3,tetraId), vpath);
 
         const Cell& lastCell=vpath.back();
@@ -68,7 +69,8 @@ int MorseSmaleComplex3D::getSeparatrices1(const vector<Cell>& criticalPoints,
         int vertexId;
         inputTriangulation_->getEdgeVertex(saddle1.id_, j, vertexId);
 
-        vector<Cell> vpath{saddle1};
+        vector<Cell> vpath;
+        vpath.push_back(saddle1);
         discreteGradient_.getDescendingPath(Cell(0,vertexId), vpath);
 
         const Cell& lastCell=vpath.back();

@@ -37,21 +37,27 @@ namespace ttk{
    * Basic concept of cell, so it must be able to identify any cell of any dimension.
    */
   struct Cell{
-    Cell():
+    explicit Cell():
       dim_{-1},
       id_{-1}
     {}
 
-    Cell(const int dim,
+    explicit Cell(const int dim,
         const int id):
       dim_{dim},
       id_{id}
     {}
 
-    Cell(const Cell& cell):
+    explicit Cell(const Cell& cell):
       dim_{cell.dim_},
       id_{cell.id_}
     {}
+
+    Cell& operator=(const Cell& cell){
+      dim_=cell.dim_;
+      id_=cell.id_;
+      return *this;
+    }
 
     int dim_;
     int id_;
@@ -62,12 +68,12 @@ namespace ttk{
    * the segment has been reversed or not.
    */
   struct Segment{
-    Segment():
+    explicit Segment():
       orientation_{},
       isValid_{}
     {}
 
-    Segment(const bool orientation,
+    explicit Segment(const bool orientation,
         const vector<Cell>& cells,
         const bool isValid):
       orientation_{orientation},
@@ -75,7 +81,7 @@ namespace ttk{
       isValid_{isValid}
     {}
 
-    Segment(const bool orientation,
+    explicit Segment(const bool orientation,
         vector<Cell>&& cells,
         const bool isValid):
       orientation_{orientation},
@@ -83,13 +89,13 @@ namespace ttk{
       isValid_{isValid}
     {}
 
-    Segment(const Segment& segment):
+    explicit Segment(const Segment& segment):
       orientation_{segment.orientation_},
       cells_{segment.cells_},
       isValid_{segment.isValid_}
     {}
 
-    Segment(Segment&& segment):
+    explicit Segment(Segment&& segment):
       orientation_{segment.orientation_},
       cells_{segment.cells_},
       isValid_{segment.isValid_}
@@ -123,7 +129,7 @@ namespace ttk{
    * Sequence of cells such that two consecutive cells differ in dimension by one.
    */
   struct VPath{
-    VPath():
+    explicit VPath():
       isValid_{},
       source_{-1},
       destination_{-1},
@@ -132,7 +138,7 @@ namespace ttk{
       persistence_{}
     {}
 
-    VPath(const bool isValid,
+    explicit VPath(const bool isValid,
         const int segmentId,
         const int source,
         const int destination,
@@ -149,7 +155,7 @@ namespace ttk{
       persistence_{persistence}
     {}
 
-    VPath(const bool isValid,
+    explicit VPath(const bool isValid,
         const vector<char>& states,
         const vector<int>& segments,
         const int source,
@@ -167,7 +173,7 @@ namespace ttk{
       persistence_{persistence}
     {}
 
-    VPath(const bool isValid,
+    explicit VPath(const bool isValid,
         vector<char>&& states,
         vector<int>&& segments,
         const int source,
@@ -185,7 +191,7 @@ namespace ttk{
       persistence_{persistence}
     {}
 
-    VPath(const VPath& vpath):
+    explicit VPath(const VPath& vpath):
       isValid_{vpath.isValid_},
       states_{vpath.states_},
       segments_{vpath.segments_},
@@ -196,7 +202,7 @@ namespace ttk{
       persistence_{vpath.persistence_}
     {}
 
-    VPath(VPath&& vpath):
+    explicit VPath(VPath&& vpath):
       isValid_{vpath.isValid_},
       states_{vpath.states_},
       segments_{vpath.segments_},
@@ -244,36 +250,36 @@ namespace ttk{
    * Limit point of integral lines in the gradient.
    */
   struct CriticalPoint{
-    CriticalPoint():
+    explicit CriticalPoint():
       numberOfSlots_{}
     {}
 
-    CriticalPoint(const Cell& cell):
+    explicit CriticalPoint(const Cell& cell):
       cell_{cell},
       numberOfSlots_{}
     {}
 
-    CriticalPoint(const Cell& cell,
+    explicit CriticalPoint(const Cell& cell,
         const vector<int>& vpaths):
       cell_{cell},
       vpaths_{vpaths},
       numberOfSlots_{}
     {}
 
-    CriticalPoint(const Cell& cell,
+    explicit CriticalPoint(const Cell& cell,
         vector<int>&& vpaths):
       cell_{cell},
       vpaths_{vpaths},
       numberOfSlots_{}
     {}
 
-    CriticalPoint(const CriticalPoint& criticalPoint):
+    explicit CriticalPoint(const CriticalPoint& criticalPoint):
       cell_{criticalPoint.cell_},
       vpaths_{criticalPoint.vpaths_},
       numberOfSlots_{criticalPoint.numberOfSlots_}
     {}
 
-    CriticalPoint(CriticalPoint&& criticalPoint):
+    explicit CriticalPoint(CriticalPoint&& criticalPoint):
       cell_{criticalPoint.cell_},
       vpaths_{criticalPoint.vpaths_},
       numberOfSlots_{criticalPoint.numberOfSlots_}
@@ -366,7 +372,7 @@ namespace ttk{
 
     public:
 
-      DiscreteGradient();
+      explicit DiscreteGradient();
       ~DiscreteGradient();
 
       /**

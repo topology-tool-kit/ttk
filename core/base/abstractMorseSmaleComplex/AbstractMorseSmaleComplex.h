@@ -33,7 +33,7 @@ namespace ttk{
       geometry_{}
     {}
 
-    // for just one segment :
+    // initialization with one segment :
     Separatrix(const bool isValid,
         const Cell& saddle,
         const Cell& extremum,
@@ -47,7 +47,7 @@ namespace ttk{
       geometry_.push_back(segmentGeometry);
     }
 
-    // for multiple segments :
+    // initialization with multiple segments :
     Separatrix(const bool isValid,
         const Cell& saddle,
         const Cell& extremum,
