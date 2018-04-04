@@ -655,6 +655,7 @@ namespace ttk{
        */
       template <typename dataType>
         int simplifySaddleMaximumConnections(const vector<pair<int,char>>& criticalPoints,
+            const vector<char>& isPL,
             const int iterationThreshold,
             const bool allowBoundary,
             const bool allowBruteForce);
@@ -705,6 +706,7 @@ namespace ttk{
        */
       template <typename dataType>
         int simplifySaddleSaddleConnections1(const vector<pair<int,char>>& criticalPoints,
+            const vector<char>& isPL,
             const int iterationThreshold,
             const bool allowBoundary,
             const bool allowBruteForce,
@@ -756,10 +758,17 @@ namespace ttk{
        */
       template <typename dataType>
         int simplifySaddleSaddleConnections2(const vector<pair<int,char>>& criticalPoints,
+            const vector<char>& isPL,
             const int iterationThreshold,
             const bool allowBoundary,
             const bool allowBruteForce,
             const bool returnSaddleConnectors);
+
+      /**
+       * Build the dense representation of the PL critical point list.
+       */
+      int getCriticalPointMap(const vector<pair<int,char>>& criticalPoints,
+          vector<char>& isPL);
 
       /**
        * Highest-level simplification function, manage all the simplification steps
@@ -789,6 +798,7 @@ namespace ttk{
         inputTriangulation_=data;
         if(inputTriangulation_){
           dimensionality_=inputTriangulation_->getCellVertexNumber(0)-1;
+          numberOfVertices_=inputTriangulation_->getNumberOfVertices();
 
           inputTriangulation_->preprocessBoundaryVertices();
           inputTriangulation_->preprocessBoundaryEdges();
@@ -810,6 +820,7 @@ namespace ttk{
             inputTriangulation_->preprocessCellTriangles();
           }
         }
+
         return 0;
       }
 
@@ -1040,6 +1051,7 @@ namespace ttk{
       double SaddleConnectorsPersistenceThreshold;
 
       int dimensionality_;
+      int numberOfVertices_;
       vector<vector<vector<int>>> gradient_;
       vector<int> dmtMax2PL_;
 
@@ -1872,10 +1884,8 @@ int DiscreteGradient::buildGradient(){
   }
 
   {
-    const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-
     stringstream msg;
-    msg << "[DiscreteGradient] Data-set (" << numberOfVertices
+    msg << "[DiscreteGradient] Data-set (" << numberOfVertices_
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
@@ -1897,10 +1907,8 @@ int DiscreteGradient::buildGradient2(){
     assignGradient2<dataType>(i, scalars, offsets, gradient_[i]);
 
   {
-    const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-
     stringstream msg;
-    msg << "[DiscreteGradient] Data-set (" << numberOfVertices
+    msg << "[DiscreteGradient] Data-set (" << numberOfVertices_
       << " points) post-processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
@@ -1922,10 +1930,8 @@ int DiscreteGradient::buildGradient3(){
     assignGradient3<dataType>(i, scalars, offsets, gradient_[i]);
 
   {
-    const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-
     stringstream msg;
-    msg << "[DiscreteGradient] Data-set (" << numberOfVertices
+    msg << "[DiscreteGradient] Data-set (" << numberOfVertices_
       << " points) post-processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
@@ -2017,8 +2023,6 @@ int DiscreteGradient::setAugmentedCriticalPoints(const vector<Cell>& criticalPoi
   const int numberOfDimensions=getNumberOfDimensions();
   vector<int> numberOfCriticalPointsByDimension(numberOfDimensions,0);
 
-  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-
   // for all critical cells
   const int numberOfCriticalPoints=criticalPoints.size();
   for(int i=0; i<numberOfCriticalPoints; ++i){
@@ -2055,13 +2059,13 @@ int DiscreteGradient::setAugmentedCriticalPoints(const vector<Cell>& criticalPoi
     int manifoldSize=0;
     if(cellDim==0){
       const int seedId=descendingManifold[cellId];
-      manifoldSize=std::count(descendingManifold, descendingManifold+numberOfVertices, seedId);
+      manifoldSize=std::count(descendingManifold, descendingManifold+numberOfVertices_, seedId);
     }
     else if(cellDim==dimensionality_){
       auto ite=std::find(maxSeeds.begin(), maxSeeds.end(), cellId);
       if(ite!=maxSeeds.end()){
         const int seedId=std::distance(maxSeeds.begin(), ite);
-        manifoldSize=std::count(ascendingManifold, ascendingManifold+numberOfVertices, seedId);
+        manifoldSize=std::count(ascendingManifold, ascendingManifold+numberOfVertices_, seedId);
       }
     }
     outputCriticalPoints_points_manifoldSize_->push_back(manifoldSize);
@@ -2871,27 +2875,19 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
 
 template <typename dataType>
 int DiscreteGradient::simplifySaddleMaximumConnections(const vector<pair<int,char>>& criticalPoints,
+    const vector<char>& isPL,
     const int iterationThreshold,
     const bool allowBoundary,
     const bool allowBruteForce){
   Timer t;
 
-  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-  vector<char> isPL(numberOfVertices, false);
-  for(pair<int,char> criticalPoint : criticalPoints){
-    const int criticalPointId=criticalPoint.first;
-    const char criticalPointType=criticalPoint.second;
-
-    isPL[criticalPointId]=criticalPointType;
-  }
-
   // Part 0 : get removable cells
   vector<char> isRemovableMaximum;
-  vector<int> pl2dmt_maximum(numberOfVertices, -1);
+  vector<int> pl2dmt_maximum(numberOfVertices_, -1);
   getRemovableMaxima<dataType>(criticalPoints, allowBoundary, isRemovableMaximum, pl2dmt_maximum);
 
   vector<char> isRemovableSaddle;
-  vector<int> pl2dmt_saddle(numberOfVertices, -1);
+  vector<int> pl2dmt_saddle(numberOfVertices_, -1);
   if(!allowBruteForce){
     if(dimensionality_==2)
       getRemovableSaddles1<dataType>(criticalPoints, allowBoundary, isRemovableSaddle, pl2dmt_saddle);
@@ -3436,28 +3432,20 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
 
 template <typename dataType>
 int DiscreteGradient::simplifySaddleSaddleConnections1(const vector<pair<int,char>>& criticalPoints,
+    const vector<char>& isPL,
     const int iterationThreshold,
     const bool allowBoundary,
     const bool allowBruteForce,
     const bool returnSaddleConnectors){
   Timer t;
 
-  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-  vector<char> isPL(numberOfVertices, false);
-  for(pair<int,char> criticalPoint : criticalPoints){
-    const int criticalPointId=criticalPoint.first;
-    const char criticalPointType=criticalPoint.second;
-
-    isPL[criticalPointId]=criticalPointType;
-  }
-
   // Part 0 : get removable cells
   vector<char> isRemovableSaddle1;
-  vector<int> pl2dmt_saddle1(numberOfVertices, -1);
+  vector<int> pl2dmt_saddle1(numberOfVertices_, -1);
   getRemovableSaddles1<dataType>(criticalPoints, allowBoundary, isRemovableSaddle1, pl2dmt_saddle1);
 
   vector<char> isRemovableSaddle2;
-  vector<int> pl2dmt_saddle2(numberOfVertices, -1);
+  vector<int> pl2dmt_saddle2(numberOfVertices_, -1);
   getRemovableSaddles2<dataType>(criticalPoints, allowBoundary, isRemovableSaddle2, pl2dmt_saddle2);
 
   // Part 1 : initialization
@@ -3999,29 +3987,23 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
 
 template <typename dataType>
 int DiscreteGradient::simplifySaddleSaddleConnections2(const vector<pair<int,char>>& criticalPoints,
+    const vector<char>& isPL,
     const int iterationThreshold,
     const bool allowBoundary,
     const bool allowBruteForce,
     const bool returnSaddleConnectors){
   Timer t;
 
-  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-  vector<char> isPL(numberOfVertices, false);
-  for(pair<int,char> criticalPoint : criticalPoints){
-    const int criticalPointId=criticalPoint.first;
-    const char criticalPointType=criticalPoint.second;
-
-    isPL[criticalPointId]=criticalPointType;
-  }
-
   // Part 0 : get removable cells
   vector<char> isRemovableSaddle1;
-  vector<int> pl2dmt_saddle1(numberOfVertices, -1);
-  getRemovableSaddles1<dataType>(criticalPoints, allowBoundary, isRemovableSaddle1, pl2dmt_saddle1);
+  vector<int> pl2dmt_saddle1(numberOfVertices_, -1);
+  getRemovableSaddles1<dataType>(criticalPoints, allowBoundary,
+      isRemovableSaddle1, pl2dmt_saddle1);
 
   vector<char> isRemovableSaddle2;
-  vector<int> pl2dmt_saddle2(numberOfVertices, -1);
-  getRemovableSaddles2<dataType>(criticalPoints, allowBoundary, isRemovableSaddle2, pl2dmt_saddle2);
+  vector<int> pl2dmt_saddle2(numberOfVertices_, -1);
+  getRemovableSaddles2<dataType>(criticalPoints, allowBoundary,
+      isRemovableSaddle2, pl2dmt_saddle2);
 
   // Part 1 : initialization
   vector<VPath> vpaths;
@@ -4073,22 +4055,35 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
   bool allowBruteForce=false;
   bool returnSaddleConnectors=false;
 
+  vector<char> isPL;
+  getCriticalPointMap(criticalPoints, isPL);
+
   if(ReverseSaddleMaximumConnection)
-    simplifySaddleMaximumConnections<dataType>(criticalPoints, IterationThreshold, allowBoundary, allowBruteForce);
+    simplifySaddleMaximumConnections<dataType>(criticalPoints, isPL,
+        IterationThreshold, allowBoundary, allowBruteForce);
 
   if(dimensionality_==3 and ReverseSaddleSaddleConnection){
-    simplifySaddleSaddleConnections1<dataType>(criticalPoints, IterationThreshold, allowBoundary, allowBruteForce, returnSaddleConnectors);
-    simplifySaddleSaddleConnections2<dataType>(criticalPoints, IterationThreshold, allowBoundary, allowBruteForce, returnSaddleConnectors);
+    simplifySaddleSaddleConnections1<dataType>(criticalPoints, isPL,
+        IterationThreshold, allowBoundary, allowBruteForce,
+        returnSaddleConnectors);
+    simplifySaddleSaddleConnections2<dataType>(criticalPoints, isPL,
+        IterationThreshold, allowBoundary, allowBruteForce,
+        returnSaddleConnectors);
   }
 
   allowBruteForce=true;
 
   if(ReverseSaddleMaximumConnection)
-    simplifySaddleMaximumConnections<dataType>(criticalPoints, IterationThreshold, allowBoundary, allowBruteForce);
+    simplifySaddleMaximumConnections<dataType>(criticalPoints, isPL,
+        IterationThreshold, allowBoundary, allowBruteForce);
 
   if(dimensionality_==3 and ReverseSaddleSaddleConnection){
-    simplifySaddleSaddleConnections1<dataType>(criticalPoints, IterationThreshold, allowBoundary, allowBruteForce, returnSaddleConnectors);
-    simplifySaddleSaddleConnections2<dataType>(criticalPoints, IterationThreshold, allowBoundary, allowBruteForce, returnSaddleConnectors);
+    simplifySaddleSaddleConnections1<dataType>(criticalPoints, isPL,
+        IterationThreshold, allowBoundary, allowBruteForce,
+        returnSaddleConnectors);
+    simplifySaddleSaddleConnections2<dataType>(criticalPoints, isPL,
+        IterationThreshold, allowBoundary, allowBruteForce,
+        returnSaddleConnectors);
   }
 
   if(dimensionality_==3 and ReverseSaddleMaximumConnection and ReverseSaddleSaddleConnection and ReturnSaddleConnectors){
@@ -4142,8 +4137,14 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
       cpset.push_back(make_pair((int)vertexId, getNodeType(tree,node)));
     }
 
-    simplifySaddleSaddleConnections1<dataType>(cpset, IterationThreshold, allowBoundary, allowBruteForce, returnSaddleConnectors);
-    simplifySaddleSaddleConnections2<dataType>(cpset, IterationThreshold, allowBoundary, allowBruteForce, returnSaddleConnectors);
+    getCriticalPointMap(cpset, isPL);
+
+    simplifySaddleSaddleConnections1<dataType>(cpset, isPL,
+        IterationThreshold, allowBoundary, allowBruteForce,
+        returnSaddleConnectors);
+    simplifySaddleSaddleConnections2<dataType>(cpset, isPL,
+        IterationThreshold, allowBoundary, allowBruteForce,
+        returnSaddleConnectors);
   }
 
   return 0;
@@ -4155,11 +4156,9 @@ int DiscreteGradient::reverseGradient(){
 
   // get the PL critical points
   if(ReverseSaddleMaximumConnection or ReverseSaddleSaddleConnection){
-    const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-
     const int* const offsets=static_cast<int*>(inputOffsets_);
-    vector<int> sosOffsets(numberOfVertices);
-    for(int i=0; i<numberOfVertices; ++i)
+    vector<int> sosOffsets(numberOfVertices_);
+    for(int i=0; i<numberOfVertices_; ++i)
       sosOffsets[i]=offsets[i];
 
     ScalarFieldCriticalPoints<dataType> scp;
@@ -4168,7 +4167,7 @@ int DiscreteGradient::reverseGradient(){
     scp.setThreadNumber(threadNumber_);
     scp.setDomainDimension(dimensionality_);
     scp.setScalarValues(inputScalarField_);
-    scp.setVertexNumber(numberOfVertices);
+    scp.setVertexNumber(numberOfVertices_);
     scp.setSosOffsets(&sosOffsets);
     scp.setupTriangulation(inputTriangulation_);
     scp.setOutput(&criticalPoints);

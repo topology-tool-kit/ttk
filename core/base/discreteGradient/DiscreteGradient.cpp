@@ -9,30 +9,31 @@ DiscreteGradient::DiscreteGradient():
   SaddleConnectorsPersistenceThreshold{0},
 
   dimensionality_{-1},
+  numberOfVertices_{0},
   gradient_{},
   dmtMax2PL_{},
 
-  inputScalarField_{},
-  inputOffsets_{},
-  inputTriangulation_{},
+  inputScalarField_{nullptr},
+  inputOffsets_{nullptr},
+  inputTriangulation_{nullptr},
 
-  outputCriticalPoints_numberOfPoints_{},
-  outputCriticalPoints_points_{},
-  outputCriticalPoints_points_cellDimensions_{},
-  outputCriticalPoints_points_cellIds_{},
-  outputCriticalPoints_points_cellScalars_{},
-  outputCriticalPoints_points_isOnBoundary_{},
-  outputCriticalPoints_points_PLVertexIdentifiers_{},
-  outputCriticalPoints_points_manifoldSize_{},
+  outputCriticalPoints_numberOfPoints_{nullptr},
+  outputCriticalPoints_points_{nullptr},
+  outputCriticalPoints_points_cellDimensions_{nullptr},
+  outputCriticalPoints_points_cellIds_{nullptr},
+  outputCriticalPoints_points_cellScalars_{nullptr},
+  outputCriticalPoints_points_isOnBoundary_{nullptr},
+  outputCriticalPoints_points_PLVertexIdentifiers_{nullptr},
+  outputCriticalPoints_points_manifoldSize_{nullptr},
 
-  outputGradientGlyphs_numberOfPoints_{},
-  outputGradientGlyphs_points_{},
-  outputGradientGlyphs_points_pairOrigins_{},
-  outputGradientGlyphs_numberOfCells_{},
-  outputGradientGlyphs_cells_{},
-  outputGradientGlyphs_cells_pairTypes_{},
+  outputGradientGlyphs_numberOfPoints_{nullptr},
+  outputGradientGlyphs_points_{nullptr},
+  outputGradientGlyphs_points_pairOrigins_{nullptr},
+  outputGradientGlyphs_numberOfCells_{nullptr},
+  outputGradientGlyphs_cells_{nullptr},
+  outputGradientGlyphs_cells_pairTypes_{nullptr},
 
-  outputPersistencePairs_{}
+  outputPersistencePairs_{nullptr}
 {}
 
 DiscreteGradient::~DiscreteGradient(){
@@ -868,6 +869,20 @@ int DiscreteGradient::getCellIncenter(const Cell& cell, float incenter[3]) const
   }
 
   return  0;
+}
+
+int DiscreteGradient::getCriticalPointMap(const vector<pair<int,char>>& criticalPoints,
+    vector<char>& isPL){
+  isPL.resize(numberOfVertices_);
+  std::fill(isPL.begin(), isPL.end(), 0);
+  for(pair<int,char> criticalPoint : criticalPoints){
+    const int criticalPointId=criticalPoint.first;
+    const char criticalPointType=criticalPoint.second;
+
+    isPL[criticalPointId]=criticalPointType;
+  }
+
+  return 0;
 }
 
 int DiscreteGradient::setGradientGlyphs() const{
