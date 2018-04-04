@@ -771,6 +771,12 @@ namespace ttk{
           vector<char>& isPL);
 
       /**
+       * Process the saddle connectors by increasing value of persistence until a given threshold is met.
+       */
+      template<typename dataType>
+        int filterSaddleConnectors(const bool allowBoundary);
+
+      /**
        * Highest-level simplification function, manage all the simplification steps
        * compliant to the critical points given bu the user.
        */
@@ -4050,10 +4056,75 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(const vector<pair<int,cha
 }
 
 template<typename dataType>
+int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
+  const bool allowBruteForce=false;
+  const bool returnSaddleConnectors=true;
+
+  // get the node type of a contour tree node (for compatibility with ScalarFieldCriticalPoints)
+  auto getNodeType=[&](const ftm::FTMTree_MT* tree, const ftm::Node* node){
+    const int upDegree   = node->getNumberOfUpSuperArcs();
+    const int downDegree = node->getNumberOfDownSuperArcs();
+    const int degree = upDegree + downDegree;
+
+    // saddle point
+    if (degree > 1) {
+      if (upDegree == 2 and downDegree == 1)
+        return 2;
+      else if (upDegree == 1 and downDegree == 2)
+        return 1;
+    }
+    // local extremum
+    else {
+      if (upDegree)
+        return 0;
+      else
+        return 3;
+    }
+
+    return -1;
+  };
+
+  vector<pair<int,char>> cpset;
+
+  int* const offsets=static_cast<int*>(inputOffsets_);
+  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+
+  ftm::FTMTree contourTree;
+  contourTree.setupTriangulation(inputTriangulation_, false);
+  contourTree.setVertexScalars(scalars);
+  contourTree.setTreeType(ftm::TreeType::Contour);
+  contourTree.setVertexSoSoffsets(offsets);
+  contourTree.setThreadNumber(threadNumber_);
+  contourTree.setSegmentation(false);
+  contourTree.build<dataType>();
+  ftm::FTMTree_MT* tree=contourTree.getTree(ftm::TreeType::Contour);
+
+  const ftm::idVertex numberOfNodes=tree->getNumberOfNodes();
+  for (ftm::idVertex nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
+    const ftm::Node* node = tree->getNode(nodeId);
+    const ftm::idVertex vertexId = node->getVertexId();
+
+    cpset.push_back(make_pair((int)vertexId, getNodeType(tree,node)));
+  }
+
+  vector<char> isPL;
+  getCriticalPointMap(cpset, isPL);
+
+  simplifySaddleSaddleConnections1<dataType>(cpset, isPL,
+      IterationThreshold, allowBoundary, allowBruteForce,
+      returnSaddleConnectors);
+  simplifySaddleSaddleConnections2<dataType>(cpset, isPL,
+      IterationThreshold, allowBoundary, allowBruteForce,
+      returnSaddleConnectors);
+
+  return 0;
+}
+
+template<typename dataType>
 int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoints){
   const bool allowBoundary=true;
+  const bool returnSaddleConnectors=false;
   bool allowBruteForce=false;
-  bool returnSaddleConnectors=false;
 
   vector<char> isPL;
   getCriticalPointMap(criticalPoints, isPL);
@@ -4086,66 +4157,8 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
         returnSaddleConnectors);
   }
 
-  if(dimensionality_==3 and ReverseSaddleMaximumConnection and ReverseSaddleSaddleConnection and ReturnSaddleConnectors){
-    allowBruteForce=false;
-    returnSaddleConnectors=true;
-
-    // get the node type of a contour tree node (for compatibility with ScalarFieldCriticalPoints)
-    auto getNodeType=[&](const ftm::FTMTree_MT* tree, const ftm::Node* node){
-      const int upDegree   = node->getNumberOfUpSuperArcs();
-      const int downDegree = node->getNumberOfDownSuperArcs();
-      const int degree = upDegree + downDegree;
-
-      // saddle point
-      if (degree > 1) {
-         if (upDegree == 2 and downDegree == 1)
-            return 2;
-         else if (upDegree == 1 and downDegree == 2)
-            return 1;
-      }
-      // local extremum
-      else {
-         if (upDegree)
-            return 0;
-         else
-            return 3;
-      }
-
-      return -1;
-    };
-
-    vector<pair<int,char>> cpset;
-
-    int* const offsets=static_cast<int*>(inputOffsets_);
-    const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-
-    ftm::FTMTree contourTree;
-    contourTree.setupTriangulation(inputTriangulation_, false);
-    contourTree.setVertexScalars(scalars);
-    contourTree.setTreeType(ftm::TreeType::Contour);
-    contourTree.setVertexSoSoffsets(offsets);
-    contourTree.setThreadNumber(threadNumber_);
-    contourTree.setSegmentation(false);
-    contourTree.build<dataType>();
-    ftm::FTMTree_MT* tree=contourTree.getTree(ftm::TreeType::Contour);
-
-    const ftm::idVertex numberOfNodes=tree->getNumberOfNodes();
-    for (ftm::idVertex nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
-      const ftm::Node* node = tree->getNode(nodeId);
-      const ftm::idVertex vertexId = node->getVertexId();
-
-      cpset.push_back(make_pair((int)vertexId, getNodeType(tree,node)));
-    }
-
-    getCriticalPointMap(cpset, isPL);
-
-    simplifySaddleSaddleConnections1<dataType>(cpset, isPL,
-        IterationThreshold, allowBoundary, allowBruteForce,
-        returnSaddleConnectors);
-    simplifySaddleSaddleConnections2<dataType>(cpset, isPL,
-        IterationThreshold, allowBoundary, allowBruteForce,
-        returnSaddleConnectors);
-  }
+  if(dimensionality_==3 and ReverseSaddleMaximumConnection and ReverseSaddleSaddleConnection and ReturnSaddleConnectors)
+    filterSaddleConnectors<dataType>(allowBoundary);
 
   return 0;
 }
