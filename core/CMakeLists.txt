@@ -65,11 +65,11 @@ if(TTK_BUILD_DOCUMENTATION)
 			${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/ttk.doxygen
 			WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 			COMMENT "Generating API documentation with Doxygen" VERBATIM)
-		install(DIRECTORY 
-			${CMAKE_CURRENT_BINARY_DIR}/../../doc/html DESTINATION 
+		install(DIRECTORY
+			${CMAKE_CURRENT_BINARY_DIR}/doc/html DESTINATION
 			${CMAKE_INSTALL_PREFIX}/share/doc/ttk)
 		install(DIRECTORY
-			${CMAKE_CURRENT_BINARY_DIR}/../../doc/img DESTINATION
+          ${CMAKE_SOURCE_DIR}/doc/img DESTINATION
 			${CMAKE_INSTALL_PREFIX}/share/doc/ttk)
 	endif()
 endif()
