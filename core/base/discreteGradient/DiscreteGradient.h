@@ -21,15 +21,13 @@
 #include<ScalarFieldCriticalPoints.h>
 #include<FTMTree.h>
 
-#include<queue>
 #include<algorithm>
 #include<set>
-#include<array>
 
 namespace ttk{
   /**
    * Type of the identifiers of the 2-separatrices.
-   * Must be the biggest integer type because it will provide more 2-separatrices.
+   * Must be the biggest integer type because it will provide identify 2-separatrices.
    */
   using wallId_t=unsigned long long int;
 
@@ -533,6 +531,8 @@ namespace ttk{
             vector<vector<int>>& gradient) const;
 
       /**
+       * Body of AssignGradient2 algorithm from "Parallel Computation of 3D Morse-Smale Complexes",
+       * N. Shivashankar and V. Natarajan.
        * Second pass of AssignGradient algorithm, minimize the number of unpaired cells.
        */
       template <typename dataType>
@@ -542,7 +542,8 @@ namespace ttk{
             vector<vector<int>>& gradient) const;
 
       /**
-       * New pass of AssignGradient, minimize the number of unpaired cells (3D triangulation only).
+       * Brand new pass on the discrete gradient designed specifically for this project,
+       * the goal is to minimize the number of unpaired cells further (3D triangulation only).
        */
       template <typename dataType>
         int assignGradient3(const int alphaDim,
@@ -778,7 +779,7 @@ namespace ttk{
 
       /**
        * Highest-level simplification function, manage all the simplification steps
-       * compliant to the critical points given bu the user.
+       * compliant to the critical points given by the user.
        */
       template<typename dataType>
         int reverseGradient(const vector<pair<int,char>>& criticalPoints);
@@ -1044,7 +1045,7 @@ namespace ttk{
             int* descendingManifold) const;
 
       /**
-       * Build the gradient glyphs representing the discrete vector field.
+       * Build the glyphs representing the discrete gradient vector field.
        */
       int setGradientGlyphs() const;
 
@@ -1271,8 +1272,8 @@ int DiscreteGradient::cellMax(const int cellDim,
   const int vertexNumber=cellDim+1;
 
   if(dimensionality_==2){
-    array<int,3> vsetA;
-    array<int,3> vsetB;
+    int vsetA[3];
+    int vsetB[3];
     const auto sosGreaterThan=[&scalars,&offsets](const int a, const int b){
       if(scalars[a] != scalars[b]) return scalars[a]>scalars[b];
       else return offsets[a]>offsets[b];
@@ -1299,16 +1300,16 @@ int DiscreteGradient::cellMax(const int cellDim,
       default: return -1;
     }
 
-    sort(vsetA.begin(),vsetA.begin()+vertexNumber,sosGreaterThan);
-    sort(vsetB.begin(),vsetB.begin()+vertexNumber,sosGreaterThan);
+    std::sort(vsetA, vsetA+vertexNumber, sosGreaterThan);
+    std::sort(vsetB, vsetB+vertexNumber, sosGreaterThan);
     for(int k=0; k<vertexNumber; ++k){
       if(vsetA[k]==vsetB[k]) continue;
       else return (isHigherThan<dataType>(vsetA[k], vsetB[k], scalars,offsets))? cellA : cellB;
     }
   }
   else if(dimensionality_==3){
-    array<int,4> vsetA;
-    array<int,4> vsetB;
+    int vsetA[4];
+    int vsetB[4];
     const auto sosGreaterThan=[&scalars,&offsets](const int a, const int b){
       if(scalars[a] != scalars[b]) return scalars[a]>scalars[b];
       else return offsets[a]>offsets[b];
@@ -1342,8 +1343,8 @@ int DiscreteGradient::cellMax(const int cellDim,
       default: return -1;
     }
 
-    sort(vsetA.begin(),vsetA.begin()+vertexNumber,sosGreaterThan);
-    sort(vsetB.begin(),vsetB.begin()+vertexNumber,sosGreaterThan);
+    std::sort(vsetA, vsetA+vertexNumber, sosGreaterThan);
+    std::sort(vsetB, vsetB+vertexNumber, sosGreaterThan);
     for(int k=0; k<vertexNumber; ++k){
       if(vsetA[k]==vsetB[k]) continue;
       else return (isHigherThan<dataType>(vsetA[k], vsetB[k], scalars,offsets)? cellA : cellB);
@@ -1362,8 +1363,8 @@ int DiscreteGradient::cellMin(const int cellDim,
   const int vertexNumber=cellDim+1;
 
   if(dimensionality_==2){
-    array<int,3> vsetA;
-    array<int,3> vsetB;
+    int vsetA[3];
+    int vsetB[3];
     const auto sosLowerThan=[&scalars,&offsets](const int a, const int b){
       if(scalars[a] != scalars[b]) return scalars[a]<scalars[b];
       else return offsets[a]<offsets[b];
@@ -1390,16 +1391,16 @@ int DiscreteGradient::cellMin(const int cellDim,
       default: return -1;
     }
 
-    sort(vsetA.begin(),vsetA.begin()+vertexNumber,sosLowerThan);
-    sort(vsetB.begin(),vsetB.begin()+vertexNumber,sosLowerThan);
+    std::sort(vsetA, vsetA+vertexNumber, sosLowerThan);
+    std::sort(vsetB, vsetB+vertexNumber, sosLowerThan);
     for(int k=0; k<vertexNumber; ++k){
       if(vsetA[k]==vsetB[k]) continue;
       else return (isLowerThan<dataType>(vsetA[k], vsetB[k], scalars,offsets))? cellA : cellB;
     }
   }
   else if(dimensionality_==3){
-    array<int,4> vsetA;
-    array<int,4> vsetB;
+    int vsetA[4];
+    int vsetB[4];
     const auto sosLowerThan=[&scalars,&offsets](const int a, const int b){
       if(scalars[a] != scalars[b]) return scalars[a]<scalars[b];
       else return offsets[a]<offsets[b];
@@ -1433,8 +1434,8 @@ int DiscreteGradient::cellMin(const int cellDim,
       default: return -1;
     }
 
-    sort(vsetA.begin(),vsetA.begin()+vertexNumber,sosLowerThan);
-    sort(vsetB.begin(),vsetB.begin()+vertexNumber,sosLowerThan);
+    std::sort(vsetA, vsetA+vertexNumber, sosLowerThan);
+    std::sort(vsetB, vsetB+vertexNumber, sosLowerThan);
     for(int k=0; k<vertexNumber; ++k){
       if(vsetA[k]==vsetB[k]) continue;
       else return (isLowerThan<dataType>(vsetA[k], vsetB[k], scalars,offsets))? cellA : cellB;
@@ -2102,7 +2103,7 @@ int DiscreteGradient::getRemovableMaxima(const vector<pair<int,char>>& criticalP
   isRemovableMaximum.resize(numberOfCells);
 
   dmtMax2PL_.resize(numberOfCells);
-  fill(dmtMax2PL_.begin(), dmtMax2PL_.end(), -1);
+  std::fill(dmtMax2PL_.begin(), dmtMax2PL_.end(), -1);
 
   // by default : maximum is removable
 #ifdef TTK_ENABLE_OPENMP

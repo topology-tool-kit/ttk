@@ -25,7 +25,7 @@ namespace ttk{
 
   struct Separatrix{
     // default :
-    Separatrix():
+    explicit Separatrix():
       isValid_{},
       source_{},
       destination_{},
@@ -34,7 +34,7 @@ namespace ttk{
     {}
 
     // initialization with one segment :
-    Separatrix(const bool isValid,
+    explicit Separatrix(const bool isValid,
         const Cell& saddle,
         const Cell& extremum,
         const bool isSegmentReversed,
@@ -48,7 +48,7 @@ namespace ttk{
     }
 
     // initialization with multiple segments :
-    Separatrix(const bool isValid,
+    explicit Separatrix(const bool isValid,
         const Cell& saddle,
         const Cell& extremum,
         const vector<char>& isReversed,
@@ -60,7 +60,7 @@ namespace ttk{
       geometry_{geometry}
     {}
 
-    Separatrix(const Separatrix& separatrix):
+    explicit Separatrix(const Separatrix& separatrix):
       isValid_{separatrix.isValid_},
       source_{separatrix.source_},
       destination_{separatrix.destination_},
@@ -68,7 +68,7 @@ namespace ttk{
       geometry_{separatrix.geometry_}
     {}
 
-    Separatrix(Separatrix&& separatrix):
+    explicit Separatrix(Separatrix&& separatrix):
       isValid_{separatrix.isValid_},
       source_{std::move(separatrix.source_)},
       destination_{std::move(separatrix.destination_)},
