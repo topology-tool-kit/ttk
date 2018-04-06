@@ -6,8 +6,9 @@
 ///
 /// \brief TTK %abstractMorseSmaleComplex processing package.
 ///
-/// %AbstractMorseSmaleComplex is a TTK processing package that takes a scalar field on the input
-/// and produces a scalar field on the output.
+/// %AbstractMorseSmaleComplex is a processing package managing
+/// the inputs, outputs and dependencies of the %MorseSmaleComplex2D
+/// and %MorseSmaleComplex3D packages.
 ///
 /// \sa ttk::Triangulation
 
@@ -23,6 +24,10 @@
 
 namespace ttk{
 
+  /**
+   * Utility class representing Ridge lines, Valley lines
+   * and Saddle connectors.
+   */
   struct Separatrix{
     // default :
     explicit Separatrix():
@@ -86,13 +91,39 @@ namespace ttk{
       return *this;
     }
 
+    /**
+     * Flag indicating if this separatrix can be processed.
+     */
     bool isValid_;
+
+    /**
+     * Source cell of the separatrix.
+     */
     Cell source_;
+
+    /**
+     * Destination cell of the separatrix.
+     */
     Cell destination_;
+
+    /**
+     * Container of flags, isReversed[i] indicates if the
+     * element stored at id=geometry_[i] can be reversed.
+     */
     vector<char> isReversed_;
+
+    /**
+     * Container of ids. Each id addresses a separate
+     * container corresponding to a dense representation
+     * of the geometry (i.e. separatricesGeometry).
+     */
     vector<int> geometry_;
   };
 
+  /**
+   * Parent class containing convenience functions shared between
+   * Morse-Smale Complex algorithms for 2D and 3D domains.
+   */
   class AbstractMorseSmaleComplex : public Debug{
 
     public:

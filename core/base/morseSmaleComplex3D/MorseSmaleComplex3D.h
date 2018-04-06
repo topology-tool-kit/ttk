@@ -20,6 +20,10 @@
 
 namespace ttk{
 
+  /**
+   * Class specialized in building the Morse-Smale complex
+   * of 3D triangulation.
+   */
   class MorseSmaleComplex3D : public AbstractMorseSmaleComplex{
 
     public:
@@ -83,11 +87,11 @@ namespace ttk{
       int setAscendingSegmentation(const vector<Cell>& criticalPoints,
           vector<int>& maxSeeds,
           int* const morseSmaleManifold,
-          int& numberOfMaxima);
+          int& numberOfMaxima) const;
 
       int setDescendingSegmentation(const vector<Cell>& criticalPoints,
           int* const morseSmaleManifold,
-          int& numberOfMinima);
+          int& numberOfMinima) const;
 
       int setFinalSegmentation(const int numberOfMaxima,
           const int numberOfMinima,

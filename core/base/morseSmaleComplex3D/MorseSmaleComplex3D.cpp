@@ -268,7 +268,7 @@ int MorseSmaleComplex3D::sortDualPolygonVertices(vector<int>& polygon) const{
 
 int MorseSmaleComplex3D::setDescendingSegmentation(const vector<Cell>& criticalPoints,
     int* const morseSmaleManifold,
-    int& numberOfMinima){
+    int& numberOfMinima) const{
   const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
   std::fill(morseSmaleManifold,morseSmaleManifold+numberOfVertices, -1);
 
@@ -329,7 +329,7 @@ int MorseSmaleComplex3D::setDescendingSegmentation(const vector<Cell>& criticalP
 int MorseSmaleComplex3D::setAscendingSegmentation(const vector<Cell>& criticalPoints,
     vector<int>& maxSeeds,
     int* const morseSmaleManifold,
-    int& numberOfMaxima){
+    int& numberOfMaxima) const{
   const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
   std::fill(morseSmaleManifold,morseSmaleManifold+numberOfVertices, -1);
 

@@ -77,8 +77,9 @@ int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet* input){
 #endif
 
   triangulation_->setWrapper(this);
-  morseSmaleComplex_.setWrapper(this);
+  // setupTriangulation() is called first to select the correct algorithm (2D or 3D)
   morseSmaleComplex_.setupTriangulation(triangulation_);
+  morseSmaleComplex_.setWrapper(this);
 
   if(triangulation_->isEmpty() or ttkTriangulation::hasChangedConnectivity(triangulation_, input, this)){
     hasUpdatedMesh_=true;

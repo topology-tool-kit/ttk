@@ -20,6 +20,10 @@
 
 namespace ttk{
 
+  /**
+   * Class specialized in building the Morse-Smale complex
+   * of 3D triangulation.
+   */
   class MorseSmaleComplex2D : public AbstractMorseSmaleComplex{
 
     public:
