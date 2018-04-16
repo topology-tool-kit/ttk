@@ -1,0 +1,155 @@
+--- a/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2018-04-16 15:17:15.577864114 +0200
++++ b/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2018-04-16 15:47:12.360499438 +0200
+@@ -11,7 +11,7 @@
+    </rect>
+   </property>
+   <property name="windowTitle">
+-   <string>ParaView Example Visualizations</string>
++   <string>TTK Example Visualizations</string>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="1" column="0" colspan="2">
+@@ -21,39 +21,6 @@
+      </property>
+     </widget>
+    </item>
+-   <item row="4" column="0">
+-    <widget class="QPushButton" name="HotGasAnalysisExampleButton">
+-     <property name="text">
+-      <string/>
+-     </property>
+-     <property name="icon">
+-      <iconset resource="../pqApplicationComponents.qrc">
+-       <normaloff>:/pqApplicationComponents/Thumbnails/HotGasAnalysisExample.png</normaloff>:/pqApplicationComponents/Thumbnails/HotGasAnalysisExample.png</iconset>
+-     </property>
+-     <property name="iconSize">
+-      <size>
+-       <width>300</width>
+-       <height>225</height>
+-      </size>
+-     </property>
+-     <property name="flat">
+-      <bool>true</bool>
+-     </property>
+-    </widget>
+-   </item>
+-   <item row="5" column="0">
+-    <widget class="QLabel" name="HotGasAnalysisExampleDescription">
+-     <property name="text">
+-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Data analysis of hot gas from Exodus II file&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+-     </property>
+-     <property name="alignment">
+-      <set>Qt::AlignHCenter|Qt::AlignTop</set>
+-     </property>
+-     <property name="wordWrap">
+-      <bool>true</bool>
+-     </property>
+-    </widget>
+-   </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLabel" name="titleLabel">
+      <property name="font">
+@@ -65,7 +32,7 @@
+       </font>
+      </property>
+      <property name="text">
+-      <string>ParaView Example Visualizations</string>
++      <string>TTK Example Visualizations</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+@@ -73,9 +40,9 @@
+     </widget>
+    </item>
+    <item row="5" column="1">
+-    <widget class="QLabel" name="WaveletExampleDescription">
++    <widget class="QLabel" name="Example3Description">
+      <property name="text">
+-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wavelet with volume rendering and contours&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
++      <string>Uncertain data example</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignHCenter|Qt::AlignTop</set>
+@@ -96,9 +63,9 @@
+     </widget>
+    </item>
+    <item row="3" column="1">
+-    <widget class="QLabel" name="DiskOutRefExampleDescription">
++    <widget class="QLabel" name="Example2Description">
+      <property name="text">
+-      <string>Exodus II file, Clip filter, Stream Tracer filter, Tube filter, Glyph filter</string>
++      <string>Bivariate scalar data example</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignHCenter|Qt::AlignTop</set>
+@@ -109,13 +76,13 @@
+     </widget>
+    </item>
+    <item row="4" column="1">
+-    <widget class="QPushButton" name="WaveletExampleButton">
++    <widget class="QPushButton" name="Example3Button">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="../pqApplicationComponents.qrc">
+-       <normaloff>:/pqApplicationComponents/Thumbnails/WaveletExample.png</normaloff>:/pqApplicationComponents/Thumbnails/WaveletExample.png</iconset>
++       <normaloff>:/pqApplicationComponents/Thumbnails/Example3.png</normaloff>:/pqApplicationComponents/Thumbnails/Example3.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+@@ -129,7 +96,7 @@
+     </widget>
+    </item>
+    <item row="3" column="0">
+-    <widget class="QLabel" name="CanExampleDescription">
++    <widget class="QLabel" name="Example1Description">
+      <property name="text">
+       <string>Exodus II file with timesteps, Clip filter</string>
+      </property>
+@@ -142,13 +109,13 @@
+     </widget>
+    </item>
+    <item row="2" column="1">
+-    <widget class="QPushButton" name="DiskOutRefExampleButton">
++    <widget class="QPushButton" name="Example2Button">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset>
+-       <normalon>:/pqApplicationComponents/Thumbnails/DiskOutRefExample.png</normalon>
++       <normalon>:/pqApplicationComponents/Thumbnails/Example2.png</normalon>
+       </iconset>
+      </property>
+      <property name="iconSize">
+@@ -163,13 +130,13 @@
+     </widget>
+    </item>
+    <item row="2" column="0">
+-    <widget class="QPushButton" name="CanExampleButton">
++    <widget class="QPushButton" name="Example1Button">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset>
+-       <normalon>:/pqApplicationComponents/Thumbnails/CanExample.png</normalon>
++       <normalon>:/pqApplicationComponents/Thumbnails/Example1.png</normalon>
+       </iconset>
+      </property>
+      <property name="iconSize">
+@@ -199,10 +166,9 @@
+   </layout>
+  </widget>
+  <tabstops>
+-  <tabstop>CanExampleButton</tabstop>
+-  <tabstop>DiskOutRefExampleButton</tabstop>
+-  <tabstop>HotGasAnalysisExampleButton</tabstop>
+-  <tabstop>WaveletExampleButton</tabstop>
++  <tabstop>Example1Button</tabstop>
++  <tabstop>Example2Button</tabstop>
++  <tabstop>Example3Button</tabstop>
+   <tabstop>buttonBox</tabstop>
+  </tabstops>
+  <resources>
