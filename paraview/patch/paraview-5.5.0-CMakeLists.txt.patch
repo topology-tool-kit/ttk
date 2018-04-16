@@ -1,0 +1,23 @@
+--- ../ParaView-v5.5.0.orig/Applications/ParaView/CMakeLists.txt	2018-04-16 15:17:15.477863967 +0200
++++ Applications/ParaView/CMakeLists.txt	2018-04-16 15:23:18.818396875 +0200
+@@ -57,9 +57,9 @@
+ set(SUPPORT_STATIC_PLUGINS TRUE)
+ 
+ if (PARAVIEW_VERSION_NICKNAME)
+-  set(title "ParaView ${PARAVIEW_VERSION_NICKNAME} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
++  set(title "TTK 0.9.5 - ParaView ${PARAVIEW_VERSION_NICKNAME} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
+ else()
+-  set(title "ParaView ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
++  set(title "TTK 0.9.5 - ParaView ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
+ endif()
+ 
+ #------------------------------------------------------------------------------
+@@ -67,7 +67,7 @@
+ build_paraview_client(paraview
+     APPLICATION_NAME "ParaView"
+     TITLE ${title}
+-    ORGANIZATION  "ParaView"
++    ORGANIZATION  "TTK"
+     VERSION_MAJOR ${PARAVIEW_VERSION_MAJOR}
+     VERSION_MINOR ${PARAVIEW_VERSION_MINOR}
+     VERSION_PATCH ${PARAVIEW_VERSION_PATCH}
