@@ -87,11 +87,11 @@
         label="Allow Second Pass"
         command="SetAllowSecondPass"
         number_of_elements="1"
-        default_values="0"
-        panel_visibility="default">
+        default_values="1"
+        panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Allow a second pass in the gradient algorithm.
+          Allow a second pass in the gradient reversal algorithm.
         </Documentation>
       </IntVectorProperty>
 
@@ -99,11 +99,11 @@
         label="Allow Third Pass"
         command="SetAllowThirdPass"
         number_of_elements="1"
-        default_values="0"
-        panel_visibility="default">
+        default_values="1"
+        panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Allow a second pass in the gradient algorithm.
+          Allow a third pass in the gradient reversal algorithm.
         </Documentation>
       </IntVectorProperty>
 
@@ -184,7 +184,7 @@
         command="SetIterationThreshold"
         number_of_elements="1"
         default_values="-1"
-        panel_visibility="default">
+        panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
         <Documentation>
           Iteration threshold.
