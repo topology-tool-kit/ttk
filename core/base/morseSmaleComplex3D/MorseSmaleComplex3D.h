@@ -83,22 +83,6 @@ namespace ttk{
       int setAscendingSeparatrices2(const vector<Separatrix>& separatrices,
           const vector<vector<Cell>>& separatricesGeometry,
           const vector<set<int>>& separatricesSaddles) const;
-
-      int setAscendingSegmentation(const vector<Cell>& criticalPoints,
-          vector<int>& maxSeeds,
-          int* const morseSmaleManifold,
-          int& numberOfMaxima) const;
-
-      int setDescendingSegmentation(const vector<Cell>& criticalPoints,
-          int* const morseSmaleManifold,
-          int& numberOfMinima) const;
-
-      int setFinalSegmentation(const int numberOfMaxima,
-          const int numberOfMinima,
-          const int* const ascendingManifold,
-          const int* const descendingManifold,
-          int* morseSmaleManifold) const;
-
   };
 }
 

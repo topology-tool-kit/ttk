@@ -1,16 +1,16 @@
 #include<AbstractMorseSmaleComplex.h>
 
 AbstractMorseSmaleComplex::AbstractMorseSmaleComplex():
-  ReverveSaddleMaximumConnection{},
-  ReverveSaddleSaddleConnection{},
-  ComputeAscendingSeparatrices1{},
-  ComputeDescendingSeparatrices1{},
-  ComputeSaddleConnectors{},
-  ComputeAscendingSeparatrices2{},
-  ComputeDescendingSeparatrices2{},
-  ComputeAscendingSegmentation{},
-  ComputeDescendingSegmentation{},
-  ComputeFinalSegmentation{},
+  ReverveSaddleMaximumConnection{true},
+  ReverveSaddleSaddleConnection{true},
+  ComputeAscendingSeparatrices1{true},
+  ComputeDescendingSeparatrices1{true},
+  ComputeSaddleConnectors{true},
+  ComputeAscendingSeparatrices2{false},
+  ComputeDescendingSeparatrices2{false},
+  ComputeAscendingSegmentation{true},
+  ComputeDescendingSegmentation{true},
+  ComputeFinalSegmentation{true},
 
   inputScalarField_{},
   inputTriangulation_{},
@@ -59,13 +59,190 @@ AbstractMorseSmaleComplex::AbstractMorseSmaleComplex():
 {
   discreteGradient_.setReverseSaddleMaximumConnection(true);
   discreteGradient_.setReverseSaddleSaddleConnection(true);
-  ComputeAscendingSeparatrices1 = true;
-  ComputeDescendingSeparatrices1 = true;
-  ComputeAscendingSegmentation = true;
-  ComputeDescendingSegmentation = true;
-  ComputeFinalSegmentation = true;
 }
 
 AbstractMorseSmaleComplex::~AbstractMorseSmaleComplex(){
 }
 
+int AbstractMorseSmaleComplex::setAscendingSegmentation(const vector<Cell>& criticalPoints,
+    vector<int>& maxSeeds,
+    int* const morseSmaleManifold,
+    int& numberOfMaxima) const{
+  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+  std::fill(morseSmaleManifold,morseSmaleManifold+numberOfVertices, -1);
+
+  const int numberOfCells=inputTriangulation_->getNumberOfCells();
+  vector<int> morseSmaleManifoldOnCells(numberOfCells, -1);
+  const int cellDim=inputTriangulation_->getDimensionality();
+
+  // get the seeds : maxima
+  const int numberOfCriticalPoints=criticalPoints.size();
+  for(int i=0; i<numberOfCriticalPoints; ++i){
+    const Cell& criticalPoint=criticalPoints[i];
+
+    if(criticalPoint.dim_==cellDim)
+      maxSeeds.push_back(criticalPoint.id_);
+  }
+  const int numberOfSeeds=maxSeeds.size();
+  numberOfMaxima=numberOfSeeds;
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i=0; i<numberOfSeeds; ++i){
+    queue<int> bfs;
+
+    // push the seed
+    {
+      const int seedId=maxSeeds[i];
+      bfs.push(seedId);
+    }
+
+    // BFS traversal
+    while(!bfs.empty()){
+      const int cofacetId=bfs.front();
+      bfs.pop();
+
+      if(morseSmaleManifoldOnCells[cofacetId]==-1){
+        morseSmaleManifoldOnCells[cofacetId]=i;
+
+        for(int j=0; j<(cellDim+1); ++j){
+          int facetId=-1;
+          if(cellDim==2)
+            inputTriangulation_->getCellEdge(cofacetId, j, facetId);
+          else if(cellDim==3)
+            inputTriangulation_->getCellTriangle(cofacetId, j, facetId);
+
+          int starNumber=0;
+          if(cellDim==2)
+            starNumber=inputTriangulation_->getEdgeStarNumber(facetId);
+          else if(cellDim==3)
+            starNumber=inputTriangulation_->getTriangleStarNumber(facetId);
+          for(int k=0; k<starNumber; ++k){
+            int neighborId=-1;
+            if(cellDim==2)
+              inputTriangulation_->getEdgeStar(facetId, k, neighborId);
+            else if(cellDim==3)
+              inputTriangulation_->getTriangleStar(facetId, k, neighborId);
+
+            const int pairedCellId=discreteGradient_.getPairedCell(Cell(cellDim, neighborId), true);
+
+            if(pairedCellId==facetId)
+              bfs.push(neighborId);
+          }
+        }
+      }
+    }
+  }
+
+  // put segmentation infos from cells to points
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i=0; i<numberOfVertices; ++i){
+    int starId;
+    inputTriangulation_->getVertexStar(i, 0, starId);
+    morseSmaleManifold[i]=morseSmaleManifoldOnCells[starId];
+  }
+
+  return 0;
+}
+
+int AbstractMorseSmaleComplex::setDescendingSegmentation(const vector<Cell>& criticalPoints,
+    int* const morseSmaleManifold,
+    int& numberOfMinima) const{
+  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+  std::fill(morseSmaleManifold,morseSmaleManifold+numberOfVertices, -1);
+
+  // get the seeds : minima
+  vector<int> seeds;
+  const int numberOfCriticalPoints=criticalPoints.size();
+  for(int i=0; i<numberOfCriticalPoints; ++i){
+    const Cell& criticalPoint=criticalPoints[i];
+
+    if(criticalPoint.dim_==0)
+      seeds.push_back(criticalPoint.id_);
+  }
+  const int numberOfSeeds=seeds.size();
+  numberOfMinima=numberOfSeeds;
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i=0; i<numberOfSeeds; ++i){
+    queue<int> bfs;
+
+    // push the seed
+    {
+      const int seedId=seeds[i];
+      bfs.push(seedId);
+    }
+
+    // BFS traversal
+    while(!bfs.empty()){
+      const int vertexId=bfs.front();
+      bfs.pop();
+
+      if(morseSmaleManifold[vertexId]==-1){
+        morseSmaleManifold[vertexId]=i;
+
+        const int edgeNumber=inputTriangulation_->getVertexEdgeNumber(vertexId);
+        for(int j=0; j<edgeNumber; ++j){
+          int edgeId;
+          inputTriangulation_->getVertexEdge(vertexId, j, edgeId);
+
+          for(int k=0; k<2; ++k){
+            int neighborId;
+            inputTriangulation_->getEdgeVertex(edgeId, k, neighborId);
+
+            const int pairedCellId=discreteGradient_.getPairedCell(Cell(0, neighborId));
+
+            if(pairedCellId==edgeId)
+              bfs.push(neighborId);
+          }
+        }
+      }
+    }
+  }
+
+  return 0;
+}
+
+int AbstractMorseSmaleComplex::setFinalSegmentation(const int numberOfMaxima,
+    const int numberOfMinima,
+    const int* const ascendingManifold,
+    const int* const descendingManifold,
+    int* const morseSmaleManifold) const{
+  vector<vector<pair<int,int>>> minTable(numberOfMinima);
+
+  int id{};
+  const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+  for(int i=0; i<numberOfVertices; ++i){
+    const int d=ascendingManifold[i];
+    const int a=descendingManifold[i];
+
+    if(a==-1 or d==-1){
+      morseSmaleManifold[i]=-1;
+      continue;
+    }
+
+    vector<pair<int,int>>& table=minTable[a];
+    int foundId=-1;
+    for(const pair<int,int>& p : table){
+      if(p.first == d)
+        foundId=p.second;
+    }
+
+    // add new association (a,d)
+    if(foundId==-1){
+      table.push_back(make_pair(d,id));
+      morseSmaleManifold[i]=id;
+      ++id;
+    }
+    // update to saved associationId
+    else
+      morseSmaleManifold[i]=foundId;
+  }
+
+  return 0;
+}

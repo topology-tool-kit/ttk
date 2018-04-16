@@ -22,7 +22,7 @@ namespace ttk{
 
   /**
    * Class specialized in building the Morse-Smale complex
-   * of 3D triangulation.
+   * of 2D triangulation.
    */
   class MorseSmaleComplex2D : public AbstractMorseSmaleComplex{
 
@@ -41,22 +41,6 @@ namespace ttk{
       template<typename dataType>
         int setSeparatrices(const vector<Separatrix>& separatrices,
             const vector<vector<Cell>>& separatricesGeometry) const;
-
-      int setAscendingSegmentation(const vector<Cell>& criticalPoints,
-          vector<int>& maxSeeds,
-          int* const morseSmaleManifold,
-          int& numberOfMinima) const;
-
-      int setDescendingSegmentation(const vector<Cell>& criticalPoints,
-          int* const morseSmaleManifold,
-          int& numberOfMinima) const;
-
-      int setFinalSegmentation(const int numberOfMaxima,
-          const int numberOfMinima,
-          const int* const ascendingManifold,
-          const int* const descendingManifold,
-          int* const morseSmaleManifold) const;
-
   };
 }
 

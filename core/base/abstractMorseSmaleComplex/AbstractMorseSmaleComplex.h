@@ -131,71 +131,131 @@ namespace ttk{
       AbstractMorseSmaleComplex();
       ~AbstractMorseSmaleComplex();
 
+      /**
+       * Set the threshold for the iterative gradient reversal process.
+       * Disable thresholding with -1 (default).
+       */
       int setIterationThreshold(const int iterationThreshold){
         discreteGradient_.setIterationThreshold(iterationThreshold);
         return 0;
       }
 
+      /**
+       * Enable/Disable gradient reversal of (saddle,...,maximum) vpaths
+       * (enabled by default).
+       */
       int setReverveSaddleMaximumConnection(const bool state){
         discreteGradient_.setReverseSaddleMaximumConnection(state);
         return 0;
       }
 
+      /**
+       * Enable/Disable gradient reversal of (saddle,...,saddle) vpaths
+       * (enabled by default).
+       */
       int setReverveSaddleSaddleConnection(const bool state){
         discreteGradient_.setReverseSaddleSaddleConnection(state);
         return 0;
       }
 
+      /**
+       * Enable/Disable computation of the geometrical embedding of
+       * the ascending manifolds of the critical points
+       * (enabled by default).
+       */
       int setComputeAscendingSeparatrices1(const bool state){
         ComputeAscendingSeparatrices1=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable computation of the geometrical embedding of
+       * the descending manifolds of the critical points
+       * (enabled by default).
+       */
       int setComputeDescendingSeparatrices1(const bool state){
         ComputeDescendingSeparatrices1=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable computation of the geometrical embedding of
+       * the visible saddle-connectors (enabled by default).
+       */
       int setComputeSaddleConnectors(const bool state){
         ComputeSaddleConnectors=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable computation of the geometrical embedding of
+       * the ascending 2-separatrices (disabled by default).
+       */
       int setComputeAscendingSeparatrices2(const bool state){
         ComputeAscendingSeparatrices2=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable computation of the geometrical embedding of
+       * the descending 2-separatrices (disabled by default).
+       */
       int setComputeDescendingSeparatrices2(const bool state){
         ComputeDescendingSeparatrices2=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable computation of the ascending manifold
+       * of the maxima (enabled by default).
+       */
       int setComputeAscendingSegmentation(const bool state){
         ComputeAscendingSegmentation=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable computation of the descending manifold
+       * of the minima (enabled by default).
+       */
       int setComputeDescendingSegmentation(const bool state){
         ComputeDescendingSegmentation=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable computation of the final combinatorial
+       * Morse-Smale Complex (segmentation as a field on vertices,
+       * enabled by default).
+       */
       int setComputeFinalSegmentation(const bool state){
         ComputeFinalSegmentation=state;
         return 0;
       }
 
+      /**
+       * Enable/Disable post-processing gradient reversal of
+       * the (saddle,...,saddle) vpaths under a given persistence
+       * threshold (disabled by default).
+       */
       int setReturnSaddleConnectors(const bool state){
         ReturnSaddleConnectors=state;
         return 0;
       }
 
+      /** Set the threshold value for post-processing of
+       * (saddle,...,saddle) vpaths gradient reversal
+       * (default value us 0.0).
+       */
       int setSaddleConnectorsPersistenceThreshold(const double threshold){
         SaddleConnectorsPersistenceThreshold=threshold;
         return 0;
       }
 
+      /**
+       * Set the input triangulation and preprocess the needed
+       * mesh traversal queries.
+       */
       inline int setupTriangulation(Triangulation* const data){
         inputTriangulation_=data;
         discreteGradient_.setupTriangulation(inputTriangulation_);
@@ -205,18 +265,28 @@ namespace ttk{
         return 0;
       }
 
+      /**
+       * Set the input scalar field associated on the points of the data set.
+       */
       inline int setInputScalarField(void* const data){
         inputScalarField_=data;
         discreteGradient_.setInputScalarField(inputScalarField_);
         return 0;
       }
 
+      /**
+       * Set the input offset field associated on the points of the data set
+       * (if none, identifiers are used instead).
+       */
       inline int setInputOffsets(void* const data){
         inputOffsets_=data;
         discreteGradient_.setInputOffsets(inputOffsets_);
         return 0;
       }
 
+      /**
+       * Set the output critical points data pointers.
+       */
       inline int setOutputCriticalPoints(int* const criticalPoints_numberOfPoints,
           vector<float>* const criticalPoints_points,
           vector<int>* const criticalPoints_points_cellDimensons,
@@ -236,6 +306,9 @@ namespace ttk{
         return 0;
       }
 
+      /**
+       * Set the data pointers to the output 1-separatrices.
+       */
       inline int setOutputSeparatrices1(int* const separatrices1_numberOfPoints,
           vector<float>* const separatrices1_points,
           vector<char>* const separatrices1_points_smoothingMask,
@@ -269,6 +342,9 @@ namespace ttk{
         return 0;
       }
 
+      /**
+       * Set the data pointers to the output 2-separatrices.
+       */
       inline int setOutputSeparatrices2(int* const separatrices2_numberOfPoints,
           vector<float>* const separatrices2_points,
           int* const separatrices2_numberOfCells,
@@ -294,6 +370,9 @@ namespace ttk{
         return 0;
       }
 
+      /**
+       * Set the data pointers to the output segmentation scalar fields.
+       */
       inline int setOutputMorseComplexes(void* const ascendingManifold,
           void* const descendingManifold,
           void* const morseSmaleManifold){
@@ -302,6 +381,31 @@ namespace ttk{
         outputMorseSmaleManifold_=morseSmaleManifold;
         return 0;
       }
+
+      /**
+       * Compute the ascending manifold of the maxima.
+       */
+      int setAscendingSegmentation(const vector<Cell>& criticalPoints,
+          vector<int>& maxSeeds,
+          int* const morseSmaleManifold,
+          int& numberOfMaxima) const;
+
+      /**
+       * Compute the descending manifold of the minima.
+       */
+      int setDescendingSegmentation(const vector<Cell>& criticalPoints,
+          int* const morseSmaleManifold,
+          int& numberOfMinima) const;
+
+      /**
+       * Compute the final combinatorial Morse-Smale complex
+       * segmentation.
+       */
+      int setFinalSegmentation(const int numberOfMaxima,
+          const int numberOfMinima,
+          const int* const ascendingManifold,
+          const int* const descendingManifold,
+          int* const morseSmaleManifold) const;
 
     protected:
 
