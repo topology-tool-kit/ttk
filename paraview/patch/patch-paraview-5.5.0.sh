@@ -73,7 +73,7 @@ cp TTK/Data/*png Qt/ApplicationComponents/Resources/Thumbnails/
 $PATCH_BIN CMakeLists.txt \
   < ${PATCH_DIR}/paraview-5.1.2-CMakeLists.txt.patch
 $PATCH_BIN Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc \
-  < ${PATCH_DIR}/paraview-5.2.0-pqApplicationComponents.qrc.patch
+  < ${PATCH_DIR}/paraview-5.5.0-pqApplicationComponents.qrc.patch
 $PATCH_BIN \
   Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui \
   < ${PATCH_DIR}/paraview-5.4.0-pqExampleVisualizationsDialog.ui.patch

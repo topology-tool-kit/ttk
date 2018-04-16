@@ -1,5 +1,5 @@
---- ../ParaView-v5.5.0.orig/Applications/ParaView/CMakeLists.txt	2018-04-16 15:17:15.477863967 +0200
-+++ Applications/ParaView/CMakeLists.txt	2018-04-16 15:23:18.818396875 +0200
+--- a/Applications/ParaView/CMakeLists.txt	2018-04-16 15:17:15.477863967 +0200
++++ b/Applications/ParaView/CMakeLists.txt	2018-04-16 15:23:18.818396875 +0200
 @@ -57,9 +57,9 @@
  set(SUPPORT_STATIC_PLUGINS TRUE)
  
