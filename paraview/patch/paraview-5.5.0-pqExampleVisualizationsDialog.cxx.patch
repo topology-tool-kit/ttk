@@ -1,5 +1,5 @@
---- ../ParaView-v5.5.0.orig/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx	2018-04-16 15:17:15.587864128 +0200
-+++ Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx	2018-04-16 15:52:55.271002381 +0200
+--- a/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx	2018-04-16 15:17:15.587864128 +0200
++++ b/Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx	2018-04-16 15:52:55.271002381 +0200
 @@ -19,13 +19,11 @@
    ui->setupUi(this);
  
