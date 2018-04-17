@@ -38,6 +38,7 @@ endfunction()
 find_package(ParaView REQUIRED)
 include(${PARAVIEW_USE_FILE})
 include_directories(${PARAVIEW_INCLUDE_DIRS})
+
 if (MSVC)
 set(TTK_INSTALL_PLUGIN_DIR
 	"$ENV{PARAVIEW_BIN}/plugins"
@@ -45,7 +46,7 @@ set(TTK_INSTALL_PLUGIN_DIR
 	"Directory where TTK ParaView plugins will be installed")
 else()
 set(TTK_INSTALL_PLUGIN_DIR
-	"${VTK_INSTALL_PREFIX}/lib/paraview-${PARAVIEW_VERSION_MAJOR}.${PARAVIEW_VERSION_MINOR}/plugins"
+	"${VTK_INSTALL_PREFIX}/lib/plugins"
 	CACHE PATH
 	"Directory where TTK ParaView plugins will be installed")
 endif()

@@ -1,5 +1,5 @@
 --- a/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2018-04-16 15:17:15.577864114 +0200
-+++ b/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2018-04-17 12:56:05.142162664 +0200
++++ b/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2018-04-17 13:33:48.095481716 +0200
 @@ -6,55 +6,22 @@
     <rect>
      <x>0</x>
@@ -7,7 +7,7 @@
 -    <width>682</width>
 -    <height>666</height>
 +    <width>996</width>
-+    <height>390</height>
++    <height>420</height>
     </rect>
    </property>
    <property name="windowTitle">
@@ -88,7 +88,7 @@
      </widget>
     </item>
 -   <item row="7" column="0" colspan="2">
-+   <item row="7" column="0" colspan="3">
++   <item row="8" column="0" colspan="3">
      <widget class="QDialogButtonBox" name="buttonBox">
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
