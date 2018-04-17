@@ -14,9 +14,9 @@
    height="1200"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
+   inkscape:version="0.92.2 5c3e80d, 2017-08-06"
    sodipodi:docname="splash.svg"
-   inkscape:export-filename="/home/julien/Pro/svn/lip6/github/tierny/private/ttk-tierny/doc/img/splash.png"
+   inkscape:export-filename="/home/julien/Pro/git/github/tierny/private/ttk/doc/img/splash.png"
    inkscape:export-xdpi="36"
    inkscape:export-ydpi="36">
   <defs
@@ -56,15 +56,15 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.35"
-     inkscape:cx="895.45283"
+     inkscape:cx="392.59569"
      inkscape:cy="548.24037"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1366"
-     inkscape:window-height="724"
-     inkscape:window-x="-2"
-     inkscape:window-y="21"
+     inkscape:window-width="2560"
+     inkscape:window-height="1392"
+     inkscape:window-x="0"
+     inkscape:window-y="22"
      inkscape:window-maximized="1"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -88,7 +88,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -115,31 +115,34 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot3850"
-       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+       style="font-style:normal;font-weight:normal;line-height:0.01%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
        transform="matrix(5.7479701,0,0,5.7479701,-1480.972,-4838.2752)"><flowRegion
-         id="flowRegion3852"><rect
+         id="flowRegion3852"
+         style="font-family:sans-serif"><rect
            id="rect3854"
            width="342.85715"
            height="101.42857"
            x="197.14285"
-           y="1008.5714" /></flowRegion><flowPara
+           y="1008.5714"
+           style="font-family:sans-serif" /></flowRegion><flowPara
          id="flowPara3856"
-         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Sans;-inkscape-font-specification:'Sans Bold Italic'">TTK<flowSpan
-   style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.48604774px;font-family:Sans;-inkscape-font-specification:'Sans Bold Italic'"
-   id="flowSpan3858">0.9.4</flowSpan></flowPara></flowRoot>    <flowRoot
+         style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:40px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'Sans Bold Italic'">TTK<flowSpan
+   style="font-style:italic;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:11.48604774px;font-family:sans-serif;-inkscape-font-specification:'Sans Bold Italic'"
+   id="flowSpan3858">0.9.5</flowSpan></flowPara></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot3850-8"
-       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:Sans;text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none"
+       style="font-style:normal;font-weight:normal;line-height:0.01%;font-family:sans-serif;text-align:end;letter-spacing:0px;word-spacing:0px;text-anchor:end;fill:#000000;fill-opacity:1;stroke:none"
        transform="matrix(1.1879331,0,0,1.1879331,-152.51063,-76.052054)"><flowRegion
-         id="flowRegion3852-1"><rect
+         id="flowRegion3852-1"
+         style="font-family:sans-serif"><rect
            id="rect3854-5"
            width="823.20734"
            height="91.682396"
            x="197.14285"
            y="1008.5714"
-           style="text-align:end;text-anchor:end" /></flowRegion><flowPara
+           style="font-family:sans-serif;text-align:end;text-anchor:end" /></flowRegion><flowPara
          id="flowPara3856-2"
-         style="font-style:normal;font-weight:bold;font-size:55.57675171px;-inkscape-font-specification:'Sans Bold';text-align:end;text-anchor:end">(c) 2018 </flowPara></flowRoot>    <g
+         style="font-style:normal;font-weight:bold;font-size:55.57675171px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'Sans Bold';text-align:end;text-anchor:end">(c) 2018 </flowPara></flowRoot>    <g
        id="g3021"
        transform="matrix(0.85798078,0,0,0.85798078,601.45311,151.10986)">
       <image
