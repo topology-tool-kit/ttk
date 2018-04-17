@@ -2135,6 +2135,8 @@ int DiscreteGradient::getRemovableMaxima(const vector<pair<int,char>>& criticalP
         }
       }
 
+      // a DMT-maximum in the star of only one PL-maximum cannot be removed
+      // and is automatically associated to it.
       if(numberOfMaxima==1){
         if(dmtMax2PL_[maximumId]==-1 and pl2dmt_maximum[criticalPointId]==-1){
           dmtMax2PL_[maximumId]=criticalPointId;
@@ -2888,7 +2890,8 @@ int DiscreteGradient::simplifySaddleMaximumConnections(const vector<pair<int,cha
     const bool allowBruteForce){
   Timer t;
 
-  // Part 0 : get removable cells
+  // Part 0 : select the cells to keep or remove (gradient
+  // is not modified).
   vector<char> isRemovableMaximum;
   vector<int> pl2dmt_maximum(numberOfVertices_, -1);
   getRemovableMaxima<dataType>(criticalPoints, allowBoundary, isRemovableMaximum, pl2dmt_maximum);
@@ -2902,7 +2905,8 @@ int DiscreteGradient::simplifySaddleMaximumConnections(const vector<pair<int,cha
       getRemovableSaddles2<dataType>(criticalPoints, allowBoundary, isRemovableSaddle, pl2dmt_saddle);
   }
 
-  // Part 1 : initialization
+  // Part 1 : build a virtual but complete MSC structure as
+  // initialization (gradient is not modified).
   vector<Segment> segments;
   vector<VPath> vpaths;
   vector<CriticalPoint> dmt_criticalPoints;
@@ -2913,12 +2917,15 @@ int DiscreteGradient::simplifySaddleMaximumConnections(const vector<pair<int,cha
       vpaths,
       dmt_criticalPoints);
 
-  // Part 2 : push the vpaths and order by persistence
+  // Part 2 : push the vpaths into a set to order them by persistence
+  // value - lower to higher (gradient is not modified).
   SaddleMaximumVPathComparator<dataType> cmp_f;
   set<pair<dataType,int>, SaddleMaximumVPathComparator<dataType>> S(cmp_f);
   orderSaddleMaximumConnections<dataType>(vpaths, S);
 
-  // Part 3 : process the vpaths
+  // Part 3 : iteratively process the vpaths, virtually reverse the
+  // selected vpath and update the structure accordingly (gradient is
+  // not modified).
   processSaddleMaximumConnections<dataType>(iterationThreshold,
       isPL,
       allowBoundary,
@@ -2930,7 +2937,9 @@ int DiscreteGradient::simplifySaddleMaximumConnections(const vector<pair<int,cha
       vpaths,
       dmt_criticalPoints);
 
-  // Part 4 : gradient reversal
+  // Part 4 : from the last version of the virtual MSC: use the
+  // informations stored in the virtual structure to actually
+  // reverse the vpaths in the gradient (gradient is modified).
   reverseSaddleMaximumConnections<dataType>(segments);
 
   {
@@ -4123,6 +4132,8 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
 
 template<typename dataType>
 int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoints){
+  Timer t;
+
   const bool allowBoundary=true;
   const bool returnSaddleConnectors=false;
   bool allowBruteForce=false;
@@ -4160,6 +4171,15 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
 
   if(dimensionality_==3 and ReverseSaddleMaximumConnection and ReverseSaddleSaddleConnection and ReturnSaddleConnectors)
     filterSaddleConnectors<dataType>(allowBoundary);
+
+  {
+    stringstream msg;
+    msg << "[DiscreteGradient] Gradient reversed in "
+      << t.getElapsedTime() << " s. (" << threadNumber_
+      << " thread(s))."
+      << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
 
   return 0;
 }

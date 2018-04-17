@@ -185,7 +185,7 @@ int MorseSmaleComplex2D::execute(){
   {
     const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
     stringstream msg;
-    msg << "[MorseSmaleComplex] Data-set (" << numberOfVertices
+    msg << "[MorseSmaleComplex2D] Data-set (" << numberOfVertices
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
