@@ -1,6 +1,13 @@
 --- a/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2018-04-16 15:17:15.577864114 +0200
-+++ b/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2018-04-16 15:47:12.360499438 +0200
-@@ -11,7 +11,7 @@
++++ b/Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui	2018-04-17 12:56:05.142162664 +0200
+@@ -6,55 +6,22 @@
+    <rect>
+     <x>0</x>
+     <y>0</y>
+-    <width>682</width>
+-    <height>666</height>
++    <width>996</width>
++    <height>390</height>
     </rect>
    </property>
    <property name="windowTitle">
@@ -8,8 +15,11 @@
 +   <string>TTK Example Visualizations</string>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0" colspan="2">
-@@ -21,39 +21,6 @@
+-   <item row="1" column="0" colspan="2">
++   <item row="1" column="0" colspan="3">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;Click on one of thumbnails below to load an example visualization&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
     </item>
@@ -46,10 +56,12 @@
 -     </property>
 -    </widget>
 -   </item>
-    <item row="0" column="0" colspan="2">
+-   <item row="0" column="0" colspan="2">
++   <item row="0" column="0" colspan="3">
      <widget class="QLabel" name="titleLabel">
       <property name="font">
-@@ -65,7 +32,7 @@
+       <font>
+@@ -65,17 +32,17 @@
        </font>
       </property>
       <property name="text">
@@ -58,11 +70,12 @@
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>
-@@ -73,9 +40,9 @@
+      </property>
      </widget>
     </item>
-    <item row="5" column="1">
+-   <item row="5" column="1">
 -    <widget class="QLabel" name="WaveletExampleDescription">
++   <item row="3" column="2">
 +    <widget class="QLabel" name="Example3Description">
       <property name="text">
 -      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Wavelet with volume rendering and contours&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -70,6 +83,15 @@
       </property>
       <property name="alignment">
        <set>Qt::AlignHCenter|Qt::AlignTop</set>
+@@ -85,7 +52,7 @@
+      </property>
+     </widget>
+    </item>
+-   <item row="7" column="0" colspan="2">
++   <item row="7" column="0" colspan="3">
+     <widget class="QDialogButtonBox" name="buttonBox">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
 @@ -96,9 +63,9 @@
      </widget>
     </item>
@@ -82,11 +104,13 @@
       </property>
       <property name="alignment">
        <set>Qt::AlignHCenter|Qt::AlignTop</set>
-@@ -109,13 +76,13 @@
+@@ -108,14 +75,14 @@
+      </property>
      </widget>
     </item>
-    <item row="4" column="1">
+-   <item row="4" column="1">
 -    <widget class="QPushButton" name="WaveletExampleButton">
++   <item row="2" column="2">
 +    <widget class="QPushButton" name="Example3Button">
       <property name="text">
        <string/>
@@ -98,15 +122,18 @@
       </property>
       <property name="iconSize">
        <size>
-@@ -129,7 +96,7 @@
+@@ -129,9 +96,9 @@
      </widget>
     </item>
     <item row="3" column="0">
 -    <widget class="QLabel" name="CanExampleDescription">
 +    <widget class="QLabel" name="Example1Description">
       <property name="text">
-       <string>Exodus II file with timesteps, Clip filter</string>
+-      <string>Exodus II file with timesteps, Clip filter</string>
++      <string>Scalar data example</string>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignHCenter|Qt::AlignTop</set>
 @@ -142,13 +109,13 @@
      </widget>
     </item>
