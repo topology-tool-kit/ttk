@@ -8,7 +8,7 @@ MorseSmaleComplex2D::MorseSmaleComplex2D():
 MorseSmaleComplex2D::~MorseSmaleComplex2D(){
 }
 
-int MorseSmaleComplex2D::getSeparatrices(const vector<Cell>& criticalPoints,
+int MorseSmaleComplex2D::getAscendingSeparatrices1(const vector<Cell>& criticalPoints,
     vector<Separatrix>& separatrices,
     vector<vector<Cell>>& separatricesGeometry) const{
 
@@ -36,7 +36,7 @@ int MorseSmaleComplex2D::getSeparatrices(const vector<Cell>& criticalPoints,
     const Cell& saddle=criticalPoints[saddleIndex];
 
     // add ascending vpaths
-    if(ComputeAscendingSeparatrices1){
+    {
       const int starNumber=inputTriangulation_->getEdgeStarNumber(saddle.id_);
       for(int j=0; j<starNumber; ++j){
         const int shift=j;
@@ -50,28 +50,6 @@ int MorseSmaleComplex2D::getSeparatrices(const vector<Cell>& criticalPoints,
 
         const Cell& lastCell=vpath.back();
         if(lastCell.dim_==2 and discreteGradient_.isCellCritical(lastCell)){
-          const int separatrixIndex=4*i+shift;
-
-          separatricesGeometry[separatrixIndex]=std::move(vpath);
-          separatrices[separatrixIndex]=std::move(Separatrix(true,saddle,lastCell,false,separatrixIndex));
-        }
-      }
-    }
-
-    // add descending vpaths
-    if(ComputeDescendingSeparatrices1){
-      for(int j=0; j<2; ++j){
-        const int shift=j+2;
-
-        int vertexId;
-        inputTriangulation_->getEdgeVertex(saddle.id_, j, vertexId);
-
-        vector<Cell> vpath;
-        vpath.push_back(saddle);
-        discreteGradient_.getDescendingPath(Cell(0,vertexId), vpath);
-
-        const Cell& lastCell=vpath.back();
-        if(lastCell.dim_==0 and discreteGradient_.isCellCritical(lastCell)){
           const int separatrixIndex=4*i+shift;
 
           separatricesGeometry[separatrixIndex]=std::move(vpath);

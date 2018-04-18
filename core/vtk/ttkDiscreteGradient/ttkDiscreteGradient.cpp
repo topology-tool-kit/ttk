@@ -207,9 +207,6 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
   discreteGradient_.setIterationThreshold(IterationThreshold);
   discreteGradient_.setReverseSaddleMaximumConnection(ReverseSaddleMaximumConnection);
   discreteGradient_.setReverseSaddleSaddleConnection(ReverseSaddleSaddleConnection);
-  discreteGradient_.setCollectPersistencePairs(false);
-  discreteGradient_.setReturnSaddleConnectors(false);
-  discreteGradient_.setWrapper(this);
   discreteGradient_.setInputScalarField(inputScalars_->GetVoidPointer(0));
   discreteGradient_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
 

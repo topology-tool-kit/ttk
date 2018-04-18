@@ -7,7 +7,7 @@ MorseSmaleComplex3D::MorseSmaleComplex3D():
 MorseSmaleComplex3D::~MorseSmaleComplex3D(){
 }
 
-int MorseSmaleComplex3D::getSeparatrices1(const vector<Cell>& criticalPoints,
+int MorseSmaleComplex3D::getAscendingSeparatrices1(const vector<Cell>& criticalPoints,
     vector<Separatrix>& separatrices,
     vector<vector<Cell>>& separatricesGeometry) const{
 
@@ -16,7 +16,7 @@ int MorseSmaleComplex3D::getSeparatrices1(const vector<Cell>& criticalPoints,
   for(int i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
-    if(criticalPoint.dim_==1 or criticalPoint.dim_==2)
+    if(criticalPoint.dim_==2)
       saddleIndexes.push_back(i);
   }
   const int numberOfSaddles=saddleIndexes.size();
@@ -35,7 +35,7 @@ int MorseSmaleComplex3D::getSeparatrices1(const vector<Cell>& criticalPoints,
     const Cell& saddle=criticalPoints[saddleIndex];
 
     // add ascending vpaths
-    if(ComputeAscendingSeparatrices1 and saddle.dim_==2){
+    {
       const Cell& saddle2=saddle;
 
       const int starNumber=inputTriangulation_->getTriangleStarNumber(saddle2.id_);
@@ -51,30 +51,6 @@ int MorseSmaleComplex3D::getSeparatrices1(const vector<Cell>& criticalPoints,
 
         const Cell& lastCell=vpath.back();
         if(lastCell.dim_==3 and discreteGradient_.isCellCritical(lastCell)){
-          const int separatrixIndex=4*i+shift;
-
-          separatricesGeometry[separatrixIndex]=std::move(vpath);
-          separatrices[separatrixIndex]=std::move(Separatrix(true,saddle,lastCell,false,separatrixIndex));
-        }
-      }
-    }
-
-    // add descending vpaths
-    if(ComputeDescendingSeparatrices1 and saddle.dim_==1){
-      const Cell& saddle1=saddle;
-
-      for(int j=0; j<2; ++j){
-        const int shift=j+2;
-
-        int vertexId;
-        inputTriangulation_->getEdgeVertex(saddle1.id_, j, vertexId);
-
-        vector<Cell> vpath;
-        vpath.push_back(saddle1);
-        discreteGradient_.getDescendingPath(Cell(0,vertexId), vpath);
-
-        const Cell& lastCell=vpath.back();
-        if(lastCell.dim_==0 and discreteGradient_.isCellCritical(lastCell)){
           const int separatrixIndex=4*i+shift;
 
           separatricesGeometry[separatrixIndex]=std::move(vpath);
