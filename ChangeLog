@@ -3,6 +3,7 @@ ChangeLog
 * ttk.git
 
 * 0.9.5
+- Updates for ParaView-5.5.0
 - Bug fixes
 - Fixes for gcc 4
 - Improved triangulation consistency in 2D and 1D
