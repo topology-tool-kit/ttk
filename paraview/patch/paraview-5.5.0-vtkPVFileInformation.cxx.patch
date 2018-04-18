@@ -1,0 +1,14 @@
+--- a/ParaViewCore/ClientServerCore/Default/vtkPVFileInformation.cxx	2018-04-16 15:17:15.517864026 +0200
++++ b/ParaViewCore/ClientServerCore/Default/vtkPVFileInformation.cxx	2018-04-18 12:17:02.925449414 +0200
+@@ -1226,6 +1226,11 @@
+     resource_dir = vtksys::SystemTools::CollapseFullPath(resource_dir);
+   }
+ 
++  vtkProcessModule* pm = vtkProcessModule::GetProcessModule();
++
++  if((pm)&&(prefixes.size()))
++    resource_dir = pm->GetSelfDir() + "/../" + prefixes[0];
++
+   return resource_dir;
+ }
+ 
