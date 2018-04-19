@@ -1,5 +1,5 @@
 @echo off
-echo Patching ParaView 5.4.1 sources
+echo Patching ParaView sources
 set cdir=%cd%
 set paraviewsrc=%1
 :loop
