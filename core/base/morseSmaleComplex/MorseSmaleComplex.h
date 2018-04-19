@@ -6,7 +6,12 @@
 ///
 /// \brief TTK processing package for the computation of Morse-Smale complexes.
 ///
-/// \b Related \b publication \n
+/// \b Related \b publications \n
+/// "The Topology ToolKit" \n
+/// Julien Tierny, Guillaume Favelier, Joshua Levine, Charles Gueunet, Michael
+/// Michaux \n
+/// IEEE Transactions on Visualization and Computer Graphics (Proc. of IEEE VIS
+/// 2017) \n
 /// "Parallel Computation of 3D Morse-Smale Complexes" \n
 /// Nithin Shivashankar, Vijay Natarajan \n
 /// Proc. of EuroVis 2012. \n
@@ -78,7 +83,7 @@
  * In order to build a valid discrete gradient you need to first set the data
  * pointers to the input scalar field, offset field and triangulation. You need
  * to set also the data pointers to the output critical points, 1-separatrices,
- * 2-separatrices and segmentation. Additionnal parameters can be configured
+ * 2-separatrices and segmentation. Additional parameters can be configured
  * like an iteration threshold, options to have PL-Compliant extrema and
  * saddles, an option to enable collecting of persistence pairs or
  * post-processing of the saddle-connectors. Note that they all have default
@@ -92,7 +97,8 @@
  * function if the input dataset is in the 3D domain.
  * Finally, you can apply reverseGradient() to auto-detect the PL critical
  * points and impose that the gradient is PL-Compliant (except on the
- * boundary).
+ * boundary). See the related publication "The Topology ToolKit" for further 
+ * details.
  * Examples of such usage of the DiscreteGradient class can be found in
  * the execute() function of the MorseSmaleComplex2D class and
  * MorseSmaleComplex3D class as these classes need to compute a discrete
