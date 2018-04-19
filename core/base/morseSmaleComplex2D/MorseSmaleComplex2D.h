@@ -20,6 +20,10 @@
 
 namespace ttk{
 
+  /**
+   * Class specialized in building the Morse-Smale complex
+   * of 2D triangulation.
+   */
   class MorseSmaleComplex2D : public AbstractMorseSmaleComplex{
 
     public:
@@ -27,122 +31,21 @@ namespace ttk{
       MorseSmaleComplex2D();
       ~MorseSmaleComplex2D();
 
+      /**
+       * Main function for computing the whole Morse-Smale complex.
+       */
       template<typename dataType>
         int execute();
 
-      int getSeparatrices(const vector<Cell>& criticalPoints,
+      /**
+       * Compute the descending 1-separatrices by reading into the discrete
+       * gradient.
+       */
+      int getAscendingSeparatrices1(const vector<Cell>& criticalPoints,
           vector<Separatrix>& separatrices,
           vector<vector<Cell>>& separatricesGeometry) const;
 
-      template<typename dataType>
-        int setSeparatrices(const vector<Separatrix>& separatrices,
-            const vector<vector<Cell>>& separatricesGeometry) const;
-
-      int setAscendingSegmentation(const vector<Cell>& criticalPoints,
-          vector<int>& maxSeeds,
-          int* const morseSmaleManifold,
-          int& numberOfMinima) const;
-
-      int setDescendingSegmentation(const vector<Cell>& criticalPoints,
-          int* const morseSmaleManifold,
-          int& numberOfMinima) const;
-
-      int setFinalSegmentation(const int numberOfMaxima,
-          const int numberOfMinima,
-          const int* const ascendingManifold,
-          const int* const descendingManifold,
-          int* const morseSmaleManifold) const;
-
   };
-}
-
-template<typename dataType>
-int MorseSmaleComplex2D::setSeparatrices(const vector<Separatrix>& separatrices,
-    const vector<vector<Cell>>& separatricesGeometry) const{
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-  vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMaxima=
-    static_cast<vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionMaxima_);
-  vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMinima=
-    static_cast<vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionMinima_);
-  vector<dataType>* outputSeparatrices1_cells_separatrixFunctionDiffs=
-    static_cast<vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionDiffs_);
-
-  (*outputSeparatrices1_numberOfPoints_)=0;
-  (*outputSeparatrices1_numberOfCells_)=0;
-
-  const int dimensionality=inputTriangulation_->getCellVertexNumber(0)-1;
-
-  int pointId{};
-  int cellId{};
-  int separatrixId{};
-  for(const Separatrix& separatrix : separatrices){
-    if(separatrix.isValid_){
-      const Cell& saddle=separatrix.source_;
-      const Cell& extremum=separatrix.destination_;
-
-      // get separatrix type
-      const char separatrixType=std::min(extremum.dim_, dimensionality-1);
-
-      // compute separatrix function diff
-      const dataType separatrixFunctionMaximum=std::max(discreteGradient_.scalarMax<dataType>(saddle, scalars),
-          discreteGradient_.scalarMax<dataType>(extremum, scalars));
-      const dataType separatrixFunctionMinimum=std::min(discreteGradient_.scalarMin<dataType>(saddle, scalars),
-          discreteGradient_.scalarMin<dataType>(extremum, scalars));
-      const dataType separatrixFunctionDiff=separatrixFunctionMaximum-separatrixFunctionMinimum;
-
-      // get boundary condition
-      const char isOnBoundary=(char)discreteGradient_.isBoundary(saddle) + (char)discreteGradient_.isBoundary(extremum);
-
-      for(const int geometryId : separatrix.geometry_){
-        int oldPointId=-1;
-        for(auto cellIte=separatricesGeometry[geometryId].begin(); cellIte!=separatricesGeometry[geometryId].end(); ++cellIte){
-          const Cell& cell=*cellIte;
-
-          float point[3];
-          discreteGradient_.getCellIncenter(cell, point);
-
-          outputSeparatrices1_points_->push_back(point[0]);
-          outputSeparatrices1_points_->push_back(point[1]);
-          outputSeparatrices1_points_->push_back(point[2]);
-
-          if(cellIte==separatricesGeometry[geometryId].begin() or
-              cellIte==separatricesGeometry[geometryId].end()-1)
-            outputSeparatrices1_points_smoothingMask_->push_back(0);
-          else
-            outputSeparatrices1_points_smoothingMask_->push_back(1);
-          outputSeparatrices1_points_cellDimensions_->push_back(cell.dim_);
-          outputSeparatrices1_points_cellIds_->push_back(cell.id_);
-
-          if(oldPointId!=-1){
-            outputSeparatrices1_cells_->push_back(2);
-            outputSeparatrices1_cells_->push_back(oldPointId);
-            outputSeparatrices1_cells_->push_back(pointId);
-
-            outputSeparatrices1_cells_sourceIds_->push_back(saddle.id_);
-            outputSeparatrices1_cells_destinationIds_->push_back(extremum.id_);
-            outputSeparatrices1_cells_separatrixIds_->push_back(separatrixId);
-            outputSeparatrices1_cells_separatrixTypes_->push_back(separatrixType);
-            outputSeparatrices1_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
-            outputSeparatrices1_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
-            outputSeparatrices1_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
-            outputSeparatrices1_cells_isOnBoundary_->push_back(isOnBoundary);
-
-            ++cellId;
-          }
-
-          oldPointId=pointId;
-          ++pointId;
-        }
-      }
-
-      ++separatrixId;
-    }
-  }
-
-  (*outputSeparatrices1_numberOfPoints_)=pointId;
-  (*outputSeparatrices1_numberOfCells_)=cellId;
-
-  return 0;
 }
 
 template<typename dataType>
@@ -153,8 +56,6 @@ int MorseSmaleComplex2D::execute(){
   int* descendingManifold=static_cast<int*>(outputDescendingManifold_);
   int* morseSmaleManifold=static_cast<int*>(outputMorseSmaleManifold_);
 
-  discreteGradient_.setDebugLevel(debugLevel_);
-  discreteGradient_.setThreadNumber(threadNumber_);
   discreteGradient_.buildGradient<dataType>();
   discreteGradient_.buildGradient2<dataType>();
   discreteGradient_.reverseGradient<dataType>();
@@ -163,12 +64,18 @@ int MorseSmaleComplex2D::execute(){
   discreteGradient_.getCriticalPoints(criticalPoints);
 
   // 1-separatrices
-  if(ComputeDescendingSeparatrices1 or ComputeAscendingSeparatrices1){
+  if(ComputeDescendingSeparatrices1){
     vector<Separatrix> separatrices;
     vector<vector<Cell>> separatricesGeometry;
+    getDescendingSeparatrices1(criticalPoints, separatrices, separatricesGeometry);
+    setSeparatrices1<dataType>(separatrices, separatricesGeometry);
+  }
 
-    getSeparatrices(criticalPoints, separatrices, separatricesGeometry);
-    setSeparatrices<dataType>(separatrices, separatricesGeometry);
+  if(ComputeAscendingSeparatrices1){
+    vector<Separatrix> separatrices;
+    vector<vector<Cell>> separatricesGeometry;
+    getAscendingSeparatrices1(criticalPoints, separatrices, separatricesGeometry);
+    setSeparatrices1<dataType>(separatrices, separatricesGeometry);
   }
 
   vector<int> maxSeeds;
@@ -197,7 +104,7 @@ int MorseSmaleComplex2D::execute(){
   {
     const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
     stringstream msg;
-    msg << "[MorseSmaleComplex] Data-set (" << numberOfVertices
+    msg << "[MorseSmaleComplex2D] Data-set (" << numberOfVertices
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."

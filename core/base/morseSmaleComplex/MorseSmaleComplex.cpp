@@ -1,10 +1,9 @@
 #include                  <MorseSmaleComplex.h>
 
 MorseSmaleComplex::MorseSmaleComplex():
-  AbstractMorseSmaleComplex(),
+  dimensionality_{},
   abstractMorseSmaleComplex_{}
-{
-}
+{}
 
 MorseSmaleComplex::~MorseSmaleComplex(){
 }
