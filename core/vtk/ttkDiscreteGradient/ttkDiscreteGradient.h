@@ -1,7 +1,7 @@
-/// \ingroup vtkWrappers
+/// \ingroup vtk
 /// \class ttkDiscreteGradient
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \author Guillaume Favelier <guillaume.favelier@sorbonne-universite.fr>
+/// \date April 2018.
 ///
 /// \brief TTK VTK-filter that wraps the discreteGradient processing package.
 ///
