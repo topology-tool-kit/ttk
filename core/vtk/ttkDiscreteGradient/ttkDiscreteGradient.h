@@ -20,10 +20,6 @@
 #ifndef _TTK_DISCRETEGRADIENT_H
 #define _TTK_DISCRETEGRADIENT_H
 
-// ttk code includes
-#include<DiscreteGradient.h>
-#include<ttkWrapper.h>
-
 // VTK includes
 #include<vtkCharArray.h>
 #include<vtkDataArray.h>
@@ -40,6 +36,10 @@
 #include<vtkSmartPointer.h>
 #include<vtkInformationVector.h>
 #include<vtkLine.h>
+
+// ttk code includes
+#include<DiscreteGradient.h>
+#include<ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkDiscreteGradient
