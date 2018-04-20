@@ -15,7 +15,12 @@
 #include <string>
 #include <vector>
 
-class ttkOBJWriter : public vtkDataSetWriter{
+#ifndef TTK_PLUGIN
+class VTKIOLEGACY_EXPORT ttkOBJWriter
+#else
+class ttkOBJWriter
+#endif
+  : public vtkDataSetWriter{
   
   public:
     

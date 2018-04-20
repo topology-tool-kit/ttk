@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include <vtkFiltersCoreModule.h>
 #include "vtkPoints.h"
 #include "vtkSmartPointer.h"
 #include "vtkUnstructuredGridAlgorithm.h"
@@ -17,7 +18,12 @@
 #include <string>
 #include <vector>
 
-class ttkOFFReader : public vtkUnstructuredGridAlgorithm
+#ifndef TTK_PLUGIN
+class VTKFILTERSCORE_EXPORT ttkOFFReader
+#else
+class ttkOFFReader 
+#endif
+  : public vtkUnstructuredGridAlgorithm
 {
   public:
    vtkTypeMacro(ttkOFFReader, vtkUnstructuredGridAlgorithm);

@@ -41,8 +41,12 @@
 #include<vtkInformationVector.h>
 #include<vtkLine.h>
 
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkDiscreteGradient
-: public vtkDataSetAlgorithm, public Wrapper{
+#else
+class ttkDiscreteGradient
+#endif
+  : public vtkDataSetAlgorithm, public Wrapper{
 
   public:
 
