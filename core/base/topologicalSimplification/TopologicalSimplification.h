@@ -298,7 +298,7 @@ int TopologicalSimplification::execute() const{
 #endif
   for(int k=0; k<vertexNumber_; ++k){
     scalars[k]=inputScalars[k];
-    if(std::isnan(scalars[k]))
+    if(std::isnan((double) scalars[k]))
       scalars[k] = 0;
 
     offsets[k]=inputOffsets[k];
