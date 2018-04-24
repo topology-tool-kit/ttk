@@ -36,7 +36,6 @@
   #define               round(x) OsCall::roundToNearestInt(x)
 #endif
   #define               srand48(seed) srand(seed)
-  #define               pow10(x) pow(10, x)
 #endif
 
 #ifdef __unix__
@@ -60,8 +59,9 @@
 #include                <sys/time.h>
 #include                <sys/types.h>
 #include                <unistd.h>
-#define                 pow10(x) pow(10, x)
 #endif
+
+#define               pow10(x) pow(10, x)
 
 //#define SINGLE_PRECISION  
 
