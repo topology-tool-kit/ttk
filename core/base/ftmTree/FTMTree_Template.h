@@ -59,7 +59,7 @@ void ftm::FTMTree::build(void)
 #pragma omp parallel for
 #endif
       for (idVertex i = 0; i < scalars_->size; i++) {
-         if (::std::isnan((double)(((scalarType*)scalars_->values)[i])) {
+         if (::std::isnan((double)(((scalarType*)scalars_->values)[i]))) {
             ((scalarType*)scalars_->values)[i] = 0;
          }
       }
