@@ -499,7 +499,11 @@ int AbstractMorseSmaleComplex::setSeparatrices1(const vector<Separatrix>& separa
 
   int pointId=(*outputSeparatrices1_numberOfPoints_);
   int cellId=(*outputSeparatrices1_numberOfCells_);
-  int separatrixId=separatrices.size();
+  int separatrixId=0;
+  if(outputSeparatrices1_cells_separatrixIds_->size()){
+    separatrixId=*std::max_element(outputSeparatrices1_cells_separatrixIds_->begin(),
+        outputSeparatrices1_cells_separatrixIds_->end())+1;
+  }
 
   const int dimensionality=inputTriangulation_->getCellVertexNumber(0)-1;
 

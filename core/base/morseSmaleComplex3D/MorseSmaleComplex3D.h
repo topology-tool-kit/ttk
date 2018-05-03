@@ -129,7 +129,11 @@ int MorseSmaleComplex3D::setSaddleConnectors(const vector<Separatrix>& separatri
 
   int pointId=(*outputSeparatrices1_numberOfPoints_);
   int cellId=(*outputSeparatrices1_numberOfCells_);
-  int separatrixId=separatrices.size();
+  int separatrixId=0;
+  if(outputSeparatrices1_cells_separatrixIds_->size()){
+    separatrixId=*std::max_element(outputSeparatrices1_cells_separatrixIds_->begin(),
+        outputSeparatrices1_cells_separatrixIds_->end())+1;
+  }
 
   for(const Separatrix& separatrix : separatrices){
     if(separatrix.isValid_){
@@ -214,7 +218,11 @@ int MorseSmaleComplex3D::setAscendingSeparatrices2(const vector<Separatrix>& sep
 
   int pointId=(*outputSeparatrices2_numberOfPoints_);
   int cellId=(*outputSeparatrices2_numberOfCells_);
-  int separatrixId=separatrices.size();
+  int separatrixId=0;
+  if(outputSeparatrices2_cells_separatrixIds_->size()){
+    separatrixId=*std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
+        outputSeparatrices2_cells_separatrixIds_->end())+1;
+  }
 
   const int numberOfCells=inputTriangulation_->getNumberOfCells();
   vector<int> isVisited(numberOfCells, -1);
@@ -320,7 +328,11 @@ int MorseSmaleComplex3D::setDescendingSeparatrices2(const vector<Separatrix>& se
 
   int pointId=(*outputSeparatrices2_numberOfPoints_);
   int cellId=(*outputSeparatrices2_numberOfCells_);
-  int separatrixId=separatrices.size();
+  int separatrixId=0;
+  if(outputSeparatrices2_cells_separatrixIds_->size()){
+    separatrixId=*std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
+        outputSeparatrices2_cells_separatrixIds_->end())+1;
+  }
 
   const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
   vector<int> isVisited(numberOfVertices, -1);
