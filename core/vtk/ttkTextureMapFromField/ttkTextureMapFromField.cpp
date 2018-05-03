@@ -148,7 +148,7 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
   for(int i = 0; i < threadNumber_; i++){
     delete coordinates[i];
   }
-  delete coordinates;
+  delete[] coordinates;
 
   {
     stringstream msg;
