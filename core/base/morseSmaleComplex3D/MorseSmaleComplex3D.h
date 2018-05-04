@@ -129,69 +129,77 @@ int MorseSmaleComplex3D::setSaddleConnectors(const vector<Separatrix>& separatri
 
   int pointId=(*outputSeparatrices1_numberOfPoints_);
   int cellId=(*outputSeparatrices1_numberOfCells_);
-  int separatrixId=separatrices.size();
+  int separatrixId=0;
+  if(outputSeparatrices1_cells_separatrixIds_->size()){
+    separatrixId=*std::max_element(outputSeparatrices1_cells_separatrixIds_->begin(),
+        outputSeparatrices1_cells_separatrixIds_->end())+1;
+  }
 
   for(const Separatrix& separatrix : separatrices){
-    if(separatrix.isValid_){
-      const Cell& saddle1=separatrix.source_;
-      const Cell& saddle2=separatrix.destination_;
+    if(!separatrix.isValid_) continue;
+    if(!separatrix.geometry_.size()) continue;
 
-      // get separatrix type : saddle-connector
-      const char separatrixType=1;
+    const Cell& saddle1=separatrix.source_;
+    const Cell& saddle2=separatrix.destination_;
 
-      // compute separatrix function diff
-      const dataType separatrixFunctionMaximum=std::max(discreteGradient_.scalarMax<dataType>(saddle1, scalars),
-          discreteGradient_.scalarMax<dataType>(saddle2, scalars));
-      const dataType separatrixFunctionMinimum=std::min(discreteGradient_.scalarMin<dataType>(saddle1, scalars),
-          discreteGradient_.scalarMin<dataType>(saddle2, scalars));
-      const dataType separatrixFunctionDiff=separatrixFunctionMaximum-separatrixFunctionMinimum;
+    // get separatrix type : saddle-connector
+    const char separatrixType=1;
 
-      // get boundary condition
-      const char isOnBoundary=(discreteGradient_.isBoundary(saddle1) and discreteGradient_.isBoundary(saddle2));
+    // compute separatrix function diff
+    const dataType separatrixFunctionMaximum=std::max(discreteGradient_.scalarMax<dataType>(saddle1, scalars),
+        discreteGradient_.scalarMax<dataType>(saddle2, scalars));
+    const dataType separatrixFunctionMinimum=std::min(discreteGradient_.scalarMin<dataType>(saddle1, scalars),
+        discreteGradient_.scalarMin<dataType>(saddle2, scalars));
+    const dataType separatrixFunctionDiff=separatrixFunctionMaximum-separatrixFunctionMinimum;
 
-      for(const int geometryId : separatrix.geometry_){
-        int oldPointId=-1;
-        for(auto cellIte=separatricesGeometry[geometryId].begin(); cellIte!=separatricesGeometry[geometryId].end(); ++cellIte){
-          const Cell& cell=*cellIte;
-          float point[3];
-          discreteGradient_.getCellIncenter(cell, point);
+    // get boundary condition
+    const char isOnBoundary=(discreteGradient_.isBoundary(saddle1) and discreteGradient_.isBoundary(saddle2));
 
-          outputSeparatrices1_points_->push_back(point[0]);
-          outputSeparatrices1_points_->push_back(point[1]);
-          outputSeparatrices1_points_->push_back(point[2]);
+    bool isFirst=true;
+    for(const int geometryId : separatrix.geometry_){
+      int oldPointId=-1;
+      for(auto cellIte=separatricesGeometry[geometryId].begin(); cellIte!=separatricesGeometry[geometryId].end(); ++cellIte){
+        const Cell& cell=*cellIte;
+        float point[3];
+        discreteGradient_.getCellIncenter(cell, point);
 
-          if(cellIte==separatricesGeometry[geometryId].begin() or
-              cellIte==separatricesGeometry[geometryId].end()-1)
-            outputSeparatrices1_points_smoothingMask_->push_back(0);
-          else
-            outputSeparatrices1_points_smoothingMask_->push_back(1);
-          outputSeparatrices1_points_cellDimensions_->push_back(cell.dim_);
-          outputSeparatrices1_points_cellIds_->push_back(cell.id_);
+        outputSeparatrices1_points_->push_back(point[0]);
+        outputSeparatrices1_points_->push_back(point[1]);
+        outputSeparatrices1_points_->push_back(point[2]);
 
-          if(oldPointId!=-1){
-            outputSeparatrices1_cells_->push_back(2);
-            outputSeparatrices1_cells_->push_back(oldPointId);
-            outputSeparatrices1_cells_->push_back(pointId);
+        if(cellIte==separatricesGeometry[geometryId].begin() or
+            cellIte==separatricesGeometry[geometryId].end()-1)
+          outputSeparatrices1_points_smoothingMask_->push_back(0);
+        else
+          outputSeparatrices1_points_smoothingMask_->push_back(1);
+        outputSeparatrices1_points_cellDimensions_->push_back(cell.dim_);
+        outputSeparatrices1_points_cellIds_->push_back(cell.id_);
 
-            outputSeparatrices1_cells_sourceIds_->push_back(saddle1.id_);
-            outputSeparatrices1_cells_destinationIds_->push_back(saddle2.id_);
-            outputSeparatrices1_cells_separatrixIds_->push_back(separatrixId);
-            outputSeparatrices1_cells_separatrixTypes_->push_back(separatrixType);
-            outputSeparatrices1_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
-            outputSeparatrices1_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
-            outputSeparatrices1_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
-            outputSeparatrices1_cells_isOnBoundary_->push_back(isOnBoundary);
+        if(oldPointId!=-1){
+          outputSeparatrices1_cells_->push_back(2);
+          outputSeparatrices1_cells_->push_back(oldPointId);
+          outputSeparatrices1_cells_->push_back(pointId);
 
-            ++cellId;
-          }
+          outputSeparatrices1_cells_sourceIds_->push_back(saddle1.id_);
+          outputSeparatrices1_cells_destinationIds_->push_back(saddle2.id_);
+          outputSeparatrices1_cells_separatrixIds_->push_back(separatrixId);
+          outputSeparatrices1_cells_separatrixTypes_->push_back(separatrixType);
+          outputSeparatrices1_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
+          outputSeparatrices1_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
+          outputSeparatrices1_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
+          outputSeparatrices1_cells_isOnBoundary_->push_back(isOnBoundary);
 
-          oldPointId=pointId;
-          ++pointId;
+          ++cellId;
+          isFirst=false;
         }
-      }
 
-      ++separatrixId;
+        oldPointId=pointId;
+        ++pointId;
+      }
     }
+
+    if(!isFirst)
+      ++separatrixId;
   }
 
   (*outputSeparatrices1_numberOfPoints_)=pointId;
@@ -214,90 +222,98 @@ int MorseSmaleComplex3D::setAscendingSeparatrices2(const vector<Separatrix>& sep
 
   int pointId=(*outputSeparatrices2_numberOfPoints_);
   int cellId=(*outputSeparatrices2_numberOfCells_);
-  int separatrixId=separatrices.size();
+  int separatrixId=0;
+  if(outputSeparatrices2_cells_separatrixIds_->size()){
+    separatrixId=*std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
+        outputSeparatrices2_cells_separatrixIds_->end())+1;
+  }
 
   const int numberOfCells=inputTriangulation_->getNumberOfCells();
   vector<int> isVisited(numberOfCells, -1);
 
-  int i=0;
-  for(const Separatrix& separatrix : separatrices){
-    if(separatrix.isValid_){
-      const Cell& saddle=separatrix.source_;
-      const char separatrixType=1;
-      const int saddleId=saddle.id_;
+  const int numberOfSeparatrices=separatrices.size();
+  for(int i=0; i<numberOfSeparatrices; ++i){
+    const Separatrix& separatrix=separatrices[i];
+    if(!separatrix.isValid_) continue;
+    if(!separatrix.geometry_.size()) continue;
 
-      const dataType separatrixFunctionMinimum=discreteGradient_.scalarMin<dataType>(saddle, scalars);
-      dataType separatrixFunctionMaximum{};
+    const Cell& saddle=separatrix.source_;
+    const char separatrixType=1;
+    const int saddleId=saddle.id_;
 
-      // get separatrix infos
-      char isOnBoundary{};
-      bool isFirst=true;
-      for(const int saddle2Id : separatricesSaddles[i]){
-        if(inputTriangulation_->isTriangleOnBoundary(saddle2Id))
-          ++isOnBoundary;
+    const dataType separatrixFunctionMinimum=discreteGradient_.scalarMin<dataType>(saddle, scalars);
+    dataType separatrixFunctionMaximum{};
 
-        if(isFirst){
-          separatrixFunctionMaximum=discreteGradient_.scalarMax<dataType>(Cell(2,saddle2Id), scalars);
+    // get separatrix infos
+    char isOnBoundary{};
+    bool isFirst=true;
+    for(const int saddle2Id : separatricesSaddles[i]){
+      if(inputTriangulation_->isTriangleOnBoundary(saddle2Id))
+        ++isOnBoundary;
+
+      if(isFirst){
+        separatrixFunctionMaximum=discreteGradient_.scalarMax<dataType>(Cell(2,saddle2Id), scalars);
+        isFirst=false;
+      }
+      else{
+        separatrixFunctionMaximum=std::max(separatrixFunctionMaximum,
+            discreteGradient_.scalarMax<dataType>(Cell(2,saddle2Id), scalars));
+      }
+    }
+
+    const dataType separatrixFunctionDiff=separatrixFunctionMaximum-separatrixFunctionMinimum;
+
+    isFirst=true;
+    for(const int geometryId : separatrix.geometry_){
+      for(const Cell& edge : separatricesGeometry[geometryId]){
+        const int edgeId=edge.id_;
+
+        // Transform to dual : edge -> polygon
+        vector<int> polygon;
+        getDualPolygon(edgeId, polygon);
+
+        const int vertexNumber=polygon.size();
+        if(vertexNumber>2){
+          sortDualPolygonVertices(polygon);
+
+          // add the polygon
+          outputSeparatrices2_cells_->push_back(vertexNumber);
+
+          float point[3];
+          for(int i=0; i<vertexNumber; ++i){
+            const int tetraId=polygon[i];
+            discreteGradient_.getCellIncenter(Cell(3,tetraId), point);
+
+            if(isVisited[tetraId]==-1){
+              outputSeparatrices2_points_->push_back(point[0]);
+              outputSeparatrices2_points_->push_back(point[1]);
+              outputSeparatrices2_points_->push_back(point[2]);
+
+              outputSeparatrices2_cells_->push_back(pointId);
+
+              isVisited[tetraId]=pointId;
+              ++pointId;
+            }
+            else
+              outputSeparatrices2_cells_->push_back(isVisited[tetraId]);
+          }
+
+          outputSeparatrices2_cells_sourceIds_->push_back(saddleId);
+          outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
+          outputSeparatrices2_cells_separatrixTypes_->push_back(separatrixType);
+          outputSeparatrices2_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
+          outputSeparatrices2_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
+          outputSeparatrices2_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
+          outputSeparatrices2_cells_isOnBoundary_->push_back(isOnBoundary);
+
+          ++cellId;
           isFirst=false;
         }
-        else{
-          separatrixFunctionMaximum=std::max(separatrixFunctionMaximum,
-              discreteGradient_.scalarMax<dataType>(Cell(2,saddle2Id), scalars));
-        }
       }
-
-      const dataType separatrixFunctionDiff=separatrixFunctionMaximum-separatrixFunctionMinimum;
-
-      for(const int geometryId : separatrix.geometry_){
-        for(const Cell& edge : separatricesGeometry[geometryId]){
-          const int edgeId=edge.id_;
-
-          // Transform to dual : edge -> polygon
-          vector<int> polygon;
-          getDualPolygon(edgeId, polygon);
-
-          const int vertexNumber=polygon.size();
-          if(vertexNumber>2){
-            sortDualPolygonVertices(polygon);
-
-            // add the polygon
-            outputSeparatrices2_cells_->push_back(vertexNumber);
-
-            float point[3];
-            for(int i=0; i<vertexNumber; ++i){
-              const int tetraId=polygon[i];
-              discreteGradient_.getCellIncenter(Cell(3,tetraId), point);
-
-              if(isVisited[tetraId]==-1){
-                outputSeparatrices2_points_->push_back(point[0]);
-                outputSeparatrices2_points_->push_back(point[1]);
-                outputSeparatrices2_points_->push_back(point[2]);
-
-                outputSeparatrices2_cells_->push_back(pointId);
-
-                isVisited[tetraId]=pointId;
-                ++pointId;
-              }
-              else
-                outputSeparatrices2_cells_->push_back(isVisited[tetraId]);
-            }
-
-            outputSeparatrices2_cells_sourceIds_->push_back(saddleId);
-            outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
-            outputSeparatrices2_cells_separatrixTypes_->push_back(separatrixType);
-            outputSeparatrices2_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
-            outputSeparatrices2_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
-            outputSeparatrices2_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
-            outputSeparatrices2_cells_isOnBoundary_->push_back(isOnBoundary);
-
-            ++cellId;
-          }
-        }
-      }
-
-      ++separatrixId;
     }
-    ++i;
+
+    if(!isFirst)
+      ++separatrixId;
   }
 
   (*outputSeparatrices2_numberOfPoints_)=pointId;
@@ -320,80 +336,88 @@ int MorseSmaleComplex3D::setDescendingSeparatrices2(const vector<Separatrix>& se
 
   int pointId=(*outputSeparatrices2_numberOfPoints_);
   int cellId=(*outputSeparatrices2_numberOfCells_);
-  int separatrixId=separatrices.size();
+  int separatrixId=0;
+  if(outputSeparatrices2_cells_separatrixIds_->size()){
+    separatrixId=*std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
+        outputSeparatrices2_cells_separatrixIds_->end())+1;
+  }
 
   const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
   vector<int> isVisited(numberOfVertices, -1);
 
-  int i=0;
-  for(const Separatrix& separatrix : separatrices){
-    if(separatrix.isValid_){
-      const Cell& saddle=separatrix.source_;
-      const char separatrixType=2;
-      const int saddleId=saddle.id_;
+  const int numberOfSeparatrices=separatrices.size();
+  for(int i=0; i<numberOfSeparatrices; ++i){
+    const Separatrix& separatrix=separatrices[i];
+    if(!separatrix.isValid_) continue;
+    if(!separatrix.geometry_.size()) continue;
 
-      const dataType separatrixFunctionMaximum=discreteGradient_.scalarMax<dataType>(saddle, scalars);
-      dataType separatrixFunctionMinimum{};
+    const Cell& saddle=separatrix.source_;
+    const char separatrixType=2;
+    const int saddleId=saddle.id_;
 
-      // get separatrix infos
-      char isOnBoundary{};
-      bool isFirst=true;
-      for(const int saddle1Id : separatricesSaddles[i]){
-        if(inputTriangulation_->isEdgeOnBoundary(saddle1Id))
-          ++isOnBoundary;
+    const dataType separatrixFunctionMaximum=discreteGradient_.scalarMax<dataType>(saddle, scalars);
+    dataType separatrixFunctionMinimum{};
 
-        if(isFirst){
-          separatrixFunctionMinimum=discreteGradient_.scalarMin<dataType>(Cell(1,saddle1Id), scalars);
-          isFirst=false;
-        }
-        else{
-          separatrixFunctionMinimum=std::min(separatrixFunctionMinimum,
-              discreteGradient_.scalarMin<dataType>(Cell(1,saddle1Id), scalars));
-        }
+    // get separatrix infos
+    char isOnBoundary{};
+    bool isFirst=true;
+    for(const int saddle1Id : separatricesSaddles[i]){
+      if(inputTriangulation_->isEdgeOnBoundary(saddle1Id))
+        ++isOnBoundary;
+
+      if(isFirst){
+        separatrixFunctionMinimum=discreteGradient_.scalarMin<dataType>(Cell(1,saddle1Id), scalars);
+        isFirst=false;
       }
-
-      const dataType separatrixFunctionDiff=separatrixFunctionMaximum-separatrixFunctionMinimum;
-
-      for(const int geometryId : separatrix.geometry_){
-        for(const Cell& cell : separatricesGeometry[geometryId]){
-          const int triangleId=cell.id_;
-
-          outputSeparatrices2_cells_->push_back(3);
-          float point[3];
-          for(int k=0; k<3; ++k){
-            int vertexId;
-            inputTriangulation_->getTriangleVertex(triangleId, k, vertexId);
-
-            if(isVisited[vertexId]==-1){
-              inputTriangulation_->getVertexPoint(vertexId, point[0], point[1], point[2]);
-
-              outputSeparatrices2_points_->push_back(point[0]);
-              outputSeparatrices2_points_->push_back(point[1]);
-              outputSeparatrices2_points_->push_back(point[2]);
-
-              outputSeparatrices2_cells_->push_back(pointId);
-
-              isVisited[vertexId]=pointId;
-              ++pointId;
-            }
-            else
-              outputSeparatrices2_cells_->push_back(isVisited[vertexId]);
-          }
-          outputSeparatrices2_cells_sourceIds_->push_back(saddleId);
-          outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
-          outputSeparatrices2_cells_separatrixTypes_->push_back(separatrixType);
-          outputSeparatrices2_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
-          outputSeparatrices2_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
-          outputSeparatrices2_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
-          outputSeparatrices2_cells_isOnBoundary_->push_back(isOnBoundary);
-
-          ++cellId;
-        }
+      else{
+        separatrixFunctionMinimum=std::min(separatrixFunctionMinimum,
+            discreteGradient_.scalarMin<dataType>(Cell(1,saddle1Id), scalars));
       }
-
-      ++separatrixId;
     }
-    ++i;
+
+    const dataType separatrixFunctionDiff=separatrixFunctionMaximum-separatrixFunctionMinimum;
+
+    isFirst=true;
+    for(const int geometryId : separatrix.geometry_){
+      for(const Cell& cell : separatricesGeometry[geometryId]){
+        const int triangleId=cell.id_;
+
+        outputSeparatrices2_cells_->push_back(3);
+        float point[3];
+        for(int k=0; k<3; ++k){
+          int vertexId;
+          inputTriangulation_->getTriangleVertex(triangleId, k, vertexId);
+
+          if(isVisited[vertexId]==-1){
+            inputTriangulation_->getVertexPoint(vertexId, point[0], point[1], point[2]);
+
+            outputSeparatrices2_points_->push_back(point[0]);
+            outputSeparatrices2_points_->push_back(point[1]);
+            outputSeparatrices2_points_->push_back(point[2]);
+
+            outputSeparatrices2_cells_->push_back(pointId);
+
+            isVisited[vertexId]=pointId;
+            ++pointId;
+          }
+          else
+            outputSeparatrices2_cells_->push_back(isVisited[vertexId]);
+        }
+        outputSeparatrices2_cells_sourceIds_->push_back(saddleId);
+        outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
+        outputSeparatrices2_cells_separatrixTypes_->push_back(separatrixType);
+        outputSeparatrices2_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
+        outputSeparatrices2_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
+        outputSeparatrices2_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
+        outputSeparatrices2_cells_isOnBoundary_->push_back(isOnBoundary);
+
+        ++cellId;
+        isFirst=false;
+      }
+    }
+
+    if(!isFirst)
+      ++separatrixId;
   }
 
   (*outputSeparatrices2_numberOfPoints_)=pointId;
