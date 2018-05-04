@@ -303,7 +303,7 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
 
   doIt(input, boundFields, probability, mean, numInputs);
 
-  delete input;
+  delete[] input;
 
   {
     stringstream msg;

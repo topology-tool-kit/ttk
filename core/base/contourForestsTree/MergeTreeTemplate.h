@@ -41,7 +41,12 @@ void MergeTree::sortInput(void)
       iota(sortedVect.begin(), sortedVect.end(), 0);
 
 #ifdef TTK_ENABLE_OPENMP
+# ifdef _GLIBCXX_PARALLEL_FEATURES_H
+      // ensure this namespace exists
       __gnu_parallel::sort(sortedVect.begin(), sortedVect.end(), indirect_sort);
+# else
+      sort(sortedVect.begin(), sortedVect.end(), indirect_sort);
+# endif
 #else
       sort(sortedVect.begin(), sortedVect.end(), indirect_sort);
 #endif
@@ -133,7 +138,11 @@ idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex posSeed
 // Sort nodes by vertex scalar
 //{
 #ifdef TTK_ENABLE_OPENMP
+# ifdef _GLIBCXX_PARALLEL_FEATURES_H
     __gnu_parallel::sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
+#else
+    sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
+#endif
 #else
     sort(sortedNodes.begin(), sortedNodes.end(), isLowerComp);
 #endif
@@ -176,7 +185,11 @@ idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex posSeed
     // IS SET STILL BETTER ? (parallel sort) TODO
 
 #ifdef TTK_ENABLE_OPENMP
+# ifdef _GLIBCXX_PARALLEL_FEATURES_H
         __gnu_parallel::sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
+# else
+        sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
+# endif
 #else
         sort(sortedPairs.begin(), sortedPairs.end(), pairComp);
 #endif

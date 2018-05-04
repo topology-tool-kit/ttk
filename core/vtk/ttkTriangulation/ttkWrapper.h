@@ -61,7 +61,7 @@
 #define TTK_OUTPUT_MANAGEMENT() \
   protected: \
     int RequestDataObject(vtkInformation *request, \
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector){\
+      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override {\
       \
       vtkDataSetAlgorithm::RequestDataObject(\
         request, inputVector, outputVector);\
@@ -93,7 +93,7 @@
       vector<vtkSmartPointer<ttkTriangulationFilter> > inputTriangulations_;\
       int RequestData(vtkInformation *request, \
         vtkInformationVector **inputVector, \
-        vtkInformationVector *outputVector){\
+        vtkInformationVector *outputVector) override {\
         \
         if((int) inputTriangulations_.size() != GetNumberOfInputPorts()){\
           inputTriangulations_.resize(GetNumberOfInputPorts());\
@@ -143,9 +143,9 @@
     private:\
       int doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs);\
       \
-      bool needsToAbort(){ return GetAbortExecute();};\
+      bool needsToAbort() override { return GetAbortExecute();};\
       \
-      int updateProgress(const float &progress) { \
+      int updateProgress(const float &progress) override { \
         UpdateProgress(progress);\
         return 0;\
       };\
@@ -172,16 +172,16 @@ class ttkTriangulationFilter
     ~ttkTriangulationFilter(){};
     
     int RequestData(vtkInformation *request, 
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
    
     int RequestDataObject(vtkInformation *request,
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
     
   private:
     
-    bool needsToAbort();
+    bool needsToAbort() override;
     
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
    
 };
 

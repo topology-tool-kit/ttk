@@ -18,7 +18,6 @@
 #include <vtkStructuredGrid.h>
 #include <vtkRectilinearGrid.h>
 #include <vtkImageData.h>
-#include <vtkHyperOctree.h>
 #include <vtkDataSet.h>
 // Readers
 #include <vtkImageReader2.h>
@@ -27,7 +26,6 @@
 #include <vtkXMLStructuredGridReader.h>
 #include <vtkXMLRectilinearGridReader.h>
 #include <vtkXMLImageDataReader.h>
-#include <vtkXMLHyperOctreeReader.h>
 #include <vtkDataSetReader.h>
 // Writers
 #include <vtkXMLUnstructuredGridWriter.h>
@@ -35,7 +33,6 @@
 #include <vtkXMLStructuredGridWriter.h>
 #include <vtkXMLRectilinearGridWriter.h>
 #include <vtkXMLImageDataWriter.h>
-#include <vtkXMLHyperOctreeWriter.h>
 #include <vtkDataSetWriter.h>
 // Array types
 #include <vtkFloatArray.h>

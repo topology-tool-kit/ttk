@@ -1,6 +1,8 @@
 // local includes
 #include                  <ttkUserInterfaceBase.h>
 
+#include <vtkTexture.h>
+
 vtkStandardNewMacro(ttkCustomInteractor);
 
 

@@ -366,7 +366,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
               pointCount++;
             }
             output->GetPointData()->AddArray(scalarArray);
-            delete value;
+            delete[] value;
           }
           break;
           
@@ -400,7 +400,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
               pointCount++;
             }
             output->GetPointData()->AddArray(scalarArray);
-            delete value;
+            delete[] value;
           }
           break;
           
@@ -433,7 +433,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
               pointCount++;
             }
             output->GetPointData()->AddArray(scalarArray);
-            delete value;
+            delete[] value;
           }
           break;
           
@@ -464,7 +464,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
               pointCount++;
             }
             output->GetPointData()->AddArray(scalarArray);
-            delete value;
+            delete[] value;
           }
           break;
           
@@ -497,7 +497,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
               pointCount++;
             }
             output->GetPointData()->AddArray(scalarArray);
-            delete value;
+            delete[] value;
           }
           break;
           

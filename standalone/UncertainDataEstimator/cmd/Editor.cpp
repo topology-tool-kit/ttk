@@ -257,9 +257,6 @@ int Editor::init(int &argc, char **argv){
   } else if(inputFormat_ == "vti") {
     outputBounds_ = vtkImageData::New();
     outputHistograms_ = vtkImageData::New();
-  } else if(inputFormat_ == "vto") {
-    outputBounds_ = vtkHyperOctree::New();
-    outputHistograms_ = vtkHyperOctree::New();
   }
 
   if(debugLevel_ > infoMsg) {
@@ -378,12 +375,6 @@ int Editor::loadData(const string &fileName) {
         input_ = NULL;
       }
       input_ = readXMLFile<vtkXMLImageDataReader>(fileName);
-    } else if (inputFormat_ == "vto") {
-      if(input_) {
-        input_->Delete();
-        input_ = NULL;
-      }
-      input_ = readXMLFile<vtkXMLHyperOctreeReader>(fileName);
     } else {
       stringstream msg;
       msg << "[Editor] File format " << inputFormat_ << " not supported" << endl;

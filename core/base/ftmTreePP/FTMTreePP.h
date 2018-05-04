@@ -140,7 +140,7 @@ void ftm::FTMTreePP::computePairs(ftm::FTMTree_MT* tree,
       return tree->getSuperArc(parentArc)->getUpNodeId();
    };
 
-   std::queue<idNode> toSee;
+   ::std::queue<idNode> toSee;
 
    // start at the leaves
    auto& vectLeaves = tree->getLeaves();

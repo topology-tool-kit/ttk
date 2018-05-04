@@ -56,10 +56,10 @@ class ttkBlank
     // default ttk setters
     vtkSetMacro(debugLevel_, int);
     
-    void SetThreadNumber(int threadNumber){\
-      ThreadNumber = threadNumber;\
-      SetThreads();\
-    }\
+    void SetThreadNumber(int threadNumber){
+      ThreadNumber = threadNumber;
+      SetThreads();
+    }
     void SetUseAllCores(bool onOff){
       UseAllCores = onOff;
       SetThreads();
@@ -91,7 +91,7 @@ class ttkBlank
     // Here, you can re-define the input types, on a per input basis.
     // In this example, the first input type is forced to vtkUnstructuredGrid.
     // The second input type is forced to vtkImageData.
-//     int FillInputPortInformation(int port, vtkInformation *info){
+//     int FillInputPortInformation(int port, vtkInformation *info) override {
 //       
 //       switch(port){
 //         case 0:
@@ -114,7 +114,7 @@ class ttkBlank
     // Here, you can re-define the output types, on a per output basis.
     // In this example, the first output type is forced to vtkUnstructuredGrid.
     // The second output type is forced to vtkImageData.
-//     int FillOutputPortInformation(int port, vtkInformation *info){
+//     int FillOutputPortInformation(int port, vtkInformation *info) override {
 //       
 //       switch(port){
 //         case 0:

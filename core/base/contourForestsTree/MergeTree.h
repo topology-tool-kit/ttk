@@ -30,7 +30,12 @@
 #  include <algorithm>
 #  include <numeric>
 # else
-#  include <parallel/algorithm>
+#  ifdef __clang__
+#   include <algorithm>
+#   include <numeric>
+#  else
+#   include <parallel/algorithm>
+#  endif
 # endif
 #endif
 

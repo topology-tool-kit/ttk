@@ -199,7 +199,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
               scalarArray->SetTuple(j, value);
             }
             output->GetPointData()->AddArray(scalarArray);
-            delete value;
+            delete[] value;
           }
           break;
           
@@ -218,7 +218,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
               scalarArray->SetTuple(j, value);
             }
             output->GetPointData()->AddArray(scalarArray);
-            delete value;
+            delete[] value;
           }
           break;
           
@@ -237,7 +237,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
               scalarArray->SetTuple(j, value);
             }
             output->GetPointData()->AddArray(scalarArray);
-            delete value;
+            delete[] value;
           }
           break;
           
@@ -256,7 +256,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
               scalarArray->SetTuple(j, value);
             }
             output->GetPointData()->AddArray(scalarArray);
-            delete value;
+            delete[] value;
           }
           break;
           
