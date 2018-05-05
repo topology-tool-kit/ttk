@@ -15,8 +15,6 @@
 // base code includes
 #include                  <Wrapper.h>
 
-using namespace ttk;
-
 namespace ttk{
   
   class AbstractTriangulation : public Wrapper{
