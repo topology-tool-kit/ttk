@@ -11,9 +11,13 @@ function(ttk_set_compile_options library)
 		target_compile_definitions(${library} PUBLIC TTK_ENABLE_KAMIKAZE)
 	endif()
 
-	if (TTK_ENABLE_CPU_OPTIMIZATION)
-		target_compile_options(${library} PRIVATE -march=native -O3)
-	endif()
+
+  string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
+  if (uppercase_CMAKE_BUILD_TYPE MATCHES RELEASE)
+    if (TTK_ENABLE_CPU_OPTIMIZATION)
+      target_compile_options(${library} PRIVATE -march=native -O3)
+    endif()
+  endif()
 
 	if (TTK_ENABLE_OPENMP)
 		target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
