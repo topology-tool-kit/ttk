@@ -46,7 +46,7 @@ class VTKFILTERSCORE_EXPORT ttkBlank
 #else
 class ttkBlank
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
     
@@ -81,8 +81,8 @@ class ttkBlank
     vtkSetMacro(SomeOption, bool);
     vtkGetMacro(SomeOption, bool);
     
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
     // end of TODO-4
 
     // TODO-2
@@ -163,8 +163,8 @@ class ttkBlank
     int                   SomeIntegerArgument;
     double                SomeDoubleArgument;
     bool                  SomeOption;
-    string                ScalarField;
+    std::string           ScalarField;
     vtkDataArray          *outputScalarField_;
-    Blank                 blank_;
+    ttk::Blank            blank_;
     
 };

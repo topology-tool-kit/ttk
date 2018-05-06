@@ -49,7 +49,7 @@ namespace ttk{
         return cellEdgeList_[cellId].size();
       }
       
-      inline const vector<vector<int> > *getCellEdges(){
+      inline const std::vector<std::vector<int> > *getCellEdges(){
         
         return &cellEdgeList_;
       }
@@ -75,7 +75,7 @@ namespace ttk{
         return cellNeighborList_[cellId].size();
       }
       
-      inline const vector<vector<int> > *getCellNeighbors() { 
+      inline const std::vector<std::vector<int> > *getCellNeighbors() { 
         return &cellNeighborList_;}
       
       inline int getCellTriangle(const int &cellId,
@@ -103,7 +103,7 @@ namespace ttk{
         return cellTriangleList_[cellId].size();
       }
       
-      inline const vector<vector<int> > *getCellTriangles(){
+      inline const std::vector<std::vector<int> > *getCellTriangles(){
         
         return &cellTriangleList_;
       }
@@ -140,7 +140,7 @@ namespace ttk{
         return -1;
       }
       
-      inline const vector<pair<int, int> > *getEdges() {
+      inline const std::vector<std::pair<int, int> > *getEdges() {
         return &edgeList_;
       }
       
@@ -165,7 +165,7 @@ namespace ttk{
         return edgeLinkList_[edgeId].size();
       }
       
-      inline const vector<vector<int> > *getEdgeLinks(){
+      inline const std::vector<std::vector<int> > *getEdgeLinks(){
         
         return &edgeLinkList_;
       }
@@ -191,7 +191,7 @@ namespace ttk{
         return edgeStarList_[edgeId].size();
       }
       
-      inline const vector<vector<int> > *getEdgeStars(){
+      inline const std::vector<std::vector<int> > *getEdgeStars(){
         return &edgeStarList_;
       }
       
@@ -221,7 +221,7 @@ namespace ttk{
         return edgeTriangleList_[edgeId].size();
       }
       
-      inline const vector<vector<int> > *getEdgeTriangles(){
+      inline const std::vector<std::vector<int> > *getEdgeTriangles(){
         
         return &edgeTriangleList_;
       }
@@ -253,7 +253,7 @@ namespace ttk{
       
       inline int getNumberOfVertices() const { return vertexNumber_;}
       
-      inline const vector<vector<int> > *getTriangles(){
+      inline const std::vector<std::vector<int> > *getTriangles(){
         return &triangleList_;
       }
       
@@ -282,7 +282,7 @@ namespace ttk{
         return triangleEdgeList_[triangleId].size();
       }
       
-      inline const vector<vector<int> > *getTriangleEdges(){
+      inline const std::vector<std::vector<int> > *getTriangleEdges(){
         
         return &triangleEdgeList_;
       }
@@ -308,7 +308,7 @@ namespace ttk{
         return triangleLinkList_[triangleId].size();
       }
       
-      inline const vector<vector<int> > *getTriangleLinks(){
+      inline const std::vector<std::vector<int> > *getTriangleLinks(){
         return &triangleLinkList_;
       }
       
@@ -333,7 +333,7 @@ namespace ttk{
         return triangleStarList_[triangleId].size();
       }
       
-      inline const vector<vector<int> > *getTriangleStars(){
+      inline const std::vector<std::vector<int> > *getTriangleStars(){
         return &triangleStarList_;
       }
       
@@ -372,7 +372,7 @@ namespace ttk{
         return vertexEdgeList_[vertexId].size();
       }
       
-      inline const vector<vector<int> > *getVertexEdges(){
+      inline const std::vector<std::vector<int> > *getVertexEdges(){
         return &vertexEdgeList_;
       }
       
@@ -400,7 +400,7 @@ namespace ttk{
         return vertexLinkList_[vertexId].size();
       }
       
-      inline const vector<vector<int> > *getVertexLinks(){
+      inline const std::vector<std::vector<int> > *getVertexLinks(){
         return &vertexLinkList_;
       }
       
@@ -425,7 +425,7 @@ namespace ttk{
         return vertexNeighborList_[vertexId].size();
       }
       
-      inline const vector<vector<int> > *getVertexNeighbors(){
+      inline const std::vector<std::vector<int> > *getVertexNeighbors(){
         return &vertexNeighborList_;
       }
       
@@ -472,7 +472,7 @@ namespace ttk{
         return vertexStarList_[vertexId].size();
       }
       
-      inline const vector<vector<int> > *getVertexStars(){
+      inline const std::vector<std::vector<int> > *getVertexStars(){
         return &vertexStarList_;
       }
       
@@ -499,7 +499,7 @@ namespace ttk{
         return vertexTriangleList_[vertexId].size();
       }
       
-      inline const vector<vector<int> > *getVertexTriangles(){
+      inline const std::vector<std::vector<int> > *getVertexTriangles(){
         
         return &vertexTriangleList_;
       }
@@ -640,11 +640,11 @@ namespace ttk{
         }
         else{
           // unsupported dimension
-          stringstream msg;
+          std::stringstream msg;
           msg << "[ExplicitTriangulation] Unsupported dimension for boundary "
             << "preprocessing."
-            << endl;
-          dMsg(cerr, msg.str(), infoMsg);
+            << std::endl;
+          dMsg(std::cerr, msg.str(), infoMsg);
           return -1;
         }
         
@@ -675,11 +675,11 @@ namespace ttk{
         }
         else{
           // unsupported dimension
-          stringstream msg;
+          std::stringstream msg;
           msg << "[ExplicitTriangulation] Unsupported dimension for boundary "
             << "preprocessing."
-            << endl;
-          dMsg(cerr, msg.str(), infoMsg);
+            << std::endl;
+          dMsg(std::cerr, msg.str(), infoMsg);
           return -1;
         }
        
@@ -722,11 +722,11 @@ namespace ttk{
         }
         else{
           // unsupported dimension
-          stringstream msg;
+          std::stringstream msg;
           msg << "[ExplicitTriangulation] Unsupported dimension for boundary "
             << "preprocessing."
-            << endl;
-          dMsg(cerr, msg.str(), infoMsg);
+            << std::endl;
+          dMsg(std::cerr, msg.str(), infoMsg);
           return -1;
         }
         
@@ -843,12 +843,12 @@ namespace ttk{
           }
           else{
             // unsupported dimension
-            stringstream msg;
+            std::stringstream msg;
             msg 
               << "[ExplicitTriangulation] Unsupported dimension for edge link "
               << "preprocessing."
-              << endl;
-            dMsg(cerr, msg.str(), infoMsg);
+              << std::endl;
+            dMsg(std::cerr, msg.str(), infoMsg);
             return -1;
           }
         }
@@ -1000,12 +1000,12 @@ namespace ttk{
           }
           else{
             // unsupported dimension
-            stringstream msg;
+            std::stringstream msg;
             msg 
               << "[ExplicitTriangulation] Unsupported dimension for vertex"
               << " link preprocessing."
-              << endl;
-            dMsg(cerr, msg.str(), infoMsg);
+              << std::endl;
+            dMsg(std::cerr, msg.str(), infoMsg);
             return -1;
           }
         }

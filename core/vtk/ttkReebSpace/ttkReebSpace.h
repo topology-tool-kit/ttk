@@ -73,7 +73,7 @@ class VTKFILTERSCORE_EXPORT ttkReebSpace
 #else
 class ttkReebSpace
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -95,11 +95,11 @@ class ttkReebSpace
     }
     // end of default ttk setters
     
-    vtkSetMacro(Ucomponent, string);
-    vtkGetMacro(Ucomponent, string);
+    vtkSetMacro(Ucomponent, std::string);
+    vtkGetMacro(Ucomponent, std::string);
     
-    vtkSetMacro(Vcomponent, string);
-    vtkGetMacro(Vcomponent, string);
+    vtkSetMacro(Vcomponent, std::string);
+    vtkGetMacro(Vcomponent, std::string);
    
     vtkSetMacro(UcomponentId, int);
     vtkGetMacro(UcomponentId, int);
@@ -114,11 +114,11 @@ class ttkReebSpace
     vtkGetMacro(UseOctreeAcceleration, bool);
     vtkSetMacro(UseOctreeAcceleration, bool);
     
-    vtkGetMacro(OffsetFieldU, string);
-    vtkSetMacro(OffsetFieldU, string);
+    vtkGetMacro(OffsetFieldU, std::string);
+    vtkSetMacro(OffsetFieldU, std::string);
     
-    vtkGetMacro(OffsetFieldV, string);
-    vtkSetMacro(OffsetFieldV, string);
+    vtkGetMacro(OffsetFieldV, std::string);
+    vtkSetMacro(OffsetFieldV, std::string);
     
     // 0-sheet options
     vtkGetMacro(ZeroSheetId, bool);
@@ -249,14 +249,14 @@ class ttkReebSpace
     bool                  UseOctreeAcceleration;
     int                   SimplificationCriterion;
     double                SimplificationThreshold;
-    string                Ucomponent, Vcomponent, OffsetFieldU, OffsetFieldV;
+    std::string                Ucomponent, Vcomponent, OffsetFieldU, OffsetFieldV;
    
     vtkDataArray          *uComponent_, *vComponent_,
                           *offsetFieldU_, *offsetFieldV_;
-    vector<int>           sosOffsetsU_, sosOffsetsV_;
+    std::vector<int>           sosOffsetsU_, sosOffsetsV_;
     
     // core data-structure
-    ReebSpace             reebSpace_;
+    ttk::ReebSpace             reebSpace_;
     
     // template base call 
     template <class dataTypeU, class dataTypeV> int baseCall(

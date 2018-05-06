@@ -37,7 +37,7 @@ class VTKFILTERSCORE_EXPORT ttkCellDataSelector
 #else
 class ttkCellDataSelector
 #endif
-: public vtkDataSetAlgorithm, public Wrapper{
+: public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
@@ -46,13 +46,13 @@ class ttkCellDataSelector
 
       // default ttk setters
       vtkSetMacro(debugLevel_, int);
-      vtkSetMacro(RegexpString, string);
+      vtkSetMacro(RegexpString, std::string);
 
     void SetThreads(){
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }
@@ -67,7 +67,7 @@ class ttkCellDataSelector
     }
     // end of default ttk setters
 
-    void SetScalarFields(string s){
+    void SetScalarFields(std::string s){
       ScalarFields.push_back(s);
       Modified();
     }
@@ -121,8 +121,8 @@ class ttkCellDataSelector
 
     bool UseAllCores;
     int ThreadNumber;
-    vector<string> ScalarFields;
-    string RegexpString;
+    std::vector<std::string> ScalarFields;
+    std::string RegexpString;
 
     int doIt(vtkDataSet *input, vtkDataSet *output);
     bool needsToAbort();

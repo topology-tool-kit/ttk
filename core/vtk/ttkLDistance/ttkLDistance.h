@@ -46,7 +46,7 @@ class VTKFILTERSCORE_EXPORT ttkLDistance
 #else
 class ttkLDistance
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper 
+  : public vtkDataSetAlgorithm, public ttk::Wrapper 
 {
 
   public:
@@ -71,11 +71,11 @@ class ttkLDistance
     
     // set-getters macros to define from each variable you want to access from 
     // the outside (in particular from paraview) - to adapt.
-    vtkSetMacro(ScalarField1, string);
-    vtkGetMacro(ScalarField1, string);
+    vtkSetMacro(ScalarField1, std::string);
+    vtkGetMacro(ScalarField1, std::string);
     
-    vtkSetMacro(ScalarField2, string);
-    vtkGetMacro(ScalarField2, string);
+    vtkSetMacro(ScalarField2, std::string);
+    vtkGetMacro(ScalarField2, std::string);
     
     vtkSetMacro(ScalarFieldId1, int);
     vtkGetMacro(ScalarFieldId1, int);
@@ -83,11 +83,11 @@ class ttkLDistance
     vtkSetMacro(ScalarFieldId2, int);
     vtkGetMacro(ScalarFieldId2, int);
 
-    vtkSetMacro(DistanceType, string);
-    vtkGetMacro(DistanceType, string);
+    vtkSetMacro(DistanceType, std::string);
+    vtkGetMacro(DistanceType, std::string);
 
-    vtkSetMacro(DistanceFieldName, string);
-    vtkGetMacro(DistanceFieldName, string);
+    vtkSetMacro(DistanceFieldName, std::string);
+    vtkGetMacro(DistanceFieldName, std::string);
 
     vtkGetMacro(result, double);
 
@@ -111,17 +111,17 @@ class ttkLDistance
     
   private:
     
-    string                DistanceType;
-    string                ScalarField1;
-    string				        ScalarField2;
+    std::string                DistanceType;
+    std::string                ScalarField1;
+    std::string				        ScalarField2;
     int                   ScalarFieldId1;
     int                   ScalarFieldId2;
-    string                DistanceFieldName;
+    std::string                DistanceFieldName;
     double                result;
 
     vtkSmartPointer<vtkDataArray>
                           outputScalarField_;
-    LDistance             lDistance_;
+    ttk::LDistance             lDistance_;
    
 };
 

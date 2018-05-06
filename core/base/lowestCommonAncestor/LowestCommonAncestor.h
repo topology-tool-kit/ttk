@@ -50,7 +50,7 @@ namespace ttk {
       }
     protected:
       int ancestor_;
-      vector<int> successor_;
+      std::vector<int> successor_;
     };
 
   public:
@@ -94,7 +94,7 @@ namespace ttk {
     inline int query(int i, int j) const {
       #ifndef TTK_ENABLE_KAMIKAZE
       if(nodeFirstAppearence_[i]>nodeFirstAppearence_[j]) {
-        swap(i,j);
+        std::swap(i,j);
       }
       #endif
       return
@@ -105,7 +105,7 @@ namespace ttk {
     int computeBlocs();
     int eulerianTransverse();
     int RMQuery(const int &i, const int &j) const;
-    inline unsigned int min_pos_3(const array<int,3> &triplet) const {
+    inline unsigned int min_pos_3(const std::array<int,3> &triplet) const {
       if (triplet[0] < triplet[1]) {
         if (triplet[0] < triplet[2]) {
           return 0;
@@ -124,27 +124,27 @@ namespace ttk {
 
   protected:
     /* Tree structure */
-    vector<Node>                    node_;
+    std::vector<Node>                    node_;
 
     /* Eulerian Transverse */
-    vector<int>                     nodeOrder_;
-    vector<int>                     nodeDepth_;
-    vector<int>                     nodeFirstAppearence_;
+    std::vector<int>                     nodeOrder_;
+    std::vector<int>                     nodeDepth_;
+    std::vector<int>                     nodeFirstAppearence_;
 
     /* Range Minimum Query */
     int                             blocSize_;
     // Boundaries of blocs
-    vector<pair<int,int> >          blocPartition_;
+    std::vector<std::pair<int,int> >          blocPartition_;
     // Min values
-    vector<int>                     blocMinimumValue_;
+    std::vector<int>                     blocMinimumValue_;
     // RMQ of the blocMinimumValue_ vector
     RangeMinimumQuery<int>          blocMinimumValueRMQ_;
     // Positions of min values
-    vector<int>                     blocMinimumPosition_;
+    std::vector<int>                     blocMinimumPosition_;
     // All queries for each possible bloc (positions)
-    vector<vector<vector<int> > >   normalizedBlocTable_;
+    std::vector<std::vector<std::vector<int> > >   normalizedBlocTable_;
     // Corresponding normalized bloc for each bloc of nodeDepth_
-    vector<int>                     blocToNormalizedBloc_;
+    std::vector<int>                     blocToNormalizedBloc_;
 
 
   };

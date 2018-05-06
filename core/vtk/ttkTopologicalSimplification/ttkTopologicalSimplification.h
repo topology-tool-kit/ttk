@@ -77,7 +77,7 @@ class VTKFILTERSCORE_EXPORT ttkTopologicalSimplification
 #else
 class ttkTopologicalSimplification
 #endif
-: public vtkDataSetAlgorithm, public Wrapper{
+: public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
     
@@ -96,8 +96,8 @@ class ttkTopologicalSimplification
       SetThreads();
     }
 
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
 
     vtkSetMacro(UseInputOffsetScalarField, int);
     vtkGetMacro(UseInputOffsetScalarField, int);
@@ -108,14 +108,14 @@ class ttkTopologicalSimplification
     vtkSetMacro(AddPerturbation, int);
     vtkGetMacro(AddPerturbation, int);
 
-    vtkSetMacro(InputOffsetScalarFieldName, string);
-    vtkGetMacro(InputOffsetScalarFieldName, string);
+    vtkSetMacro(InputOffsetScalarFieldName, std::string);
+    vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
-    vtkSetMacro(OutputOffsetScalarFieldName, string);
-    vtkGetMacro(OutputOffsetScalarFieldName, string);
+    vtkSetMacro(OutputOffsetScalarFieldName, std::string);
+    vtkGetMacro(OutputOffsetScalarFieldName, std::string);
 
-    vtkSetMacro(VertexIdentifierScalarField, string);
-    vtkGetMacro(VertexIdentifierScalarField, string);
+    vtkSetMacro(VertexIdentifierScalarField, std::string);
+    vtkGetMacro(VertexIdentifierScalarField, std::string);
 
     int getTriangulation(vtkDataSet* input);
     int getScalars(vtkDataSet* input);
@@ -137,17 +137,17 @@ class ttkTopologicalSimplification
   private:
    
     int ScalarFieldId;
-    string ScalarField;
-    string InputOffsetScalarFieldName;
-    string OutputOffsetScalarFieldName;
-    string VertexIdentifierScalarField;
+    std::string ScalarField;
+    std::string InputOffsetScalarFieldName;
+    std::string OutputOffsetScalarFieldName;
+    std::string VertexIdentifierScalarField;
     bool UseInputOffsetScalarField;
     bool ConsiderIdentifierAsBlackList;
     bool AddPerturbation;
     bool hasUpdatedMesh_;
 
-    TopologicalSimplification topologicalSimplification_;
-    Triangulation *triangulation_;
+    ttk::TopologicalSimplification topologicalSimplification_;
+    ttk::Triangulation *triangulation_;
     vtkDataArray* identifiers_;
     vtkDataArray* inputScalars_;
     vtkIntArray* offsets_;

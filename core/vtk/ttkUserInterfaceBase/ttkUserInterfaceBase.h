@@ -48,12 +48,12 @@ class ttkCustomInteractor : public vtkInteractorStyleTrackballCamera{
     ttkUserInterfaceBase  *userInterface_;  
 };
 
-class ttkKeyHandler : public Debug{
+class ttkKeyHandler : public ttk::Debug{
   
   public:
     
     virtual int OnKeyPress(
-      vtkRenderWindowInteractor *interactor, string &key) = 0;
+      vtkRenderWindowInteractor *interactor, std::string &key) = 0;
 };
 
 class VTKFILTERSCORE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
@@ -64,11 +64,11 @@ class VTKFILTERSCORE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
     
     ~ttkUserInterfaceBase();
    
-    int exportScene(const string &fileName = "output.wrl") const;
+    int exportScene(const std::string &fileName = "output.wrl") const;
     
     ttkKeyHandler* getKeyHandler() { return keyHandler_;};
 
-    int hideOutputs(const vector<int> &outputList){
+    int hideOutputs(const std::vector<int> &outputList){
 
       for(int i = 0; i < (int) outputList.size(); i++){
         bool isAlreadyIn = false;
@@ -103,18 +103,18 @@ class VTKFILTERSCORE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
   protected:
     
     bool                          hasTexture_, isUp_, repeat_, transparency_, fullscreen_;
-    vector<bool>                  visibleOutputs_;
-    vector<int>                   hiddenOutputs_;
+    std::vector<bool>                  visibleOutputs_;
+    std::vector<int>                   hiddenOutputs_;
     ttkKeyHandler                 *keyHandler_;
-    vector<vtkPolyData *>         surfaces_;
+    std::vector<vtkPolyData *>         surfaces_;
     vtkSmartPointer<ttkCustomInteractor>
                                   customInteractor_;
-    vector<vtkSmartPointer<vtkActor> >
+    std::vector<vtkSmartPointer<vtkActor> >
                                   mainActors_;
-    vector<vtkSmartPointer<vtkDataSetSurfaceFilter> >
+    std::vector<vtkSmartPointer<vtkDataSetSurfaceFilter> >
                                   boundaryFilters_;
     vtkSmartPointer<vtkPNGReader> pngReader_;
-    vector<vtkSmartPointer<vtkPolyDataMapper> >
+    std::vector<vtkSmartPointer<vtkPolyDataMapper> >
                                   boundaryMappers_;
     vtkSmartPointer<vtkRenderer>  renderer_;
     vtkSmartPointer<vtkRenderWindow>
@@ -122,7 +122,7 @@ class VTKFILTERSCORE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
     vtkSmartPointer<vtkRenderWindowInteractor>
                                   interactor_;
     vtkSmartPointer<vtkTexture>   texture_;
-    vector<vtkSmartPointer<ttkTextureMapFromField> >
+    std::vector<vtkSmartPointer<ttkTextureMapFromField> >
                                   textureMapFromFields_;
     
     int updateScalarFieldTexture();
@@ -141,7 +141,7 @@ template <class ttkModule>
     
     virtual int run(){
       
-      ttkObject_->setDebugLevel(globalDebugLevel_);
+      ttkObject_->setDebugLevel(ttk::globalDebugLevel_);
       ttkObject_->setThreadNumber(parser_.getThreadNumber());
       
       return ttkUserInterfaceBase::run();

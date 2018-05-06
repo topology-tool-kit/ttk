@@ -52,6 +52,9 @@
 #include                  <ttkUncertainDataEstimator.h>
 #include                  <UncertainDataEstimator.h>
 
+using namespace std;
+using namespace ttk;
+
 class Editor : public Debug{
 
   public:

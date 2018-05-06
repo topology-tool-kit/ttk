@@ -1,5 +1,8 @@
 #include                  <ttkRangePolygon.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkRangePolygon)
 
 ttkRangePolygon::ttkRangePolygon(){

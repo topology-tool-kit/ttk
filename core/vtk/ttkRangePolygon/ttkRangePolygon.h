@@ -72,7 +72,7 @@ class VTKFILTERSCORE_EXPORT ttkRangePolygon
 #else
 class ttkRangePolygon
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       

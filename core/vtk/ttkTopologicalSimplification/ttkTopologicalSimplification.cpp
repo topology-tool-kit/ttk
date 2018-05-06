@@ -1,5 +1,8 @@
 #include                  <ttkTopologicalSimplification.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkTopologicalSimplification)
 
   ttkTopologicalSimplification::ttkTopologicalSimplification():

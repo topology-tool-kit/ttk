@@ -22,6 +22,9 @@
  // base code includes
 #include <CommandLineParser.h>
 
+using namespace std;
+using namespace ttk;
+
 class Editor : public Debug
 {
   public:

@@ -63,7 +63,7 @@ class VTKFILTERSCORE_EXPORT ttkJacobiSet
 #else
 class ttkJacobiSet
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -87,11 +87,11 @@ class ttkJacobiSet
     
     // set-getters macros to define from each variable you want to access from 
     // the outside (in particular from paraview) - to adapt.
-    vtkSetMacro(Ucomponent, string);
-    vtkGetMacro(Ucomponent, string);
+    vtkSetMacro(Ucomponent, std::string);
+    vtkGetMacro(Ucomponent, std::string);
     
-    vtkSetMacro(Vcomponent, string);
-    vtkGetMacro(Vcomponent, string);
+    vtkSetMacro(Vcomponent, std::string);
+    vtkGetMacro(Vcomponent, std::string);
 
     vtkSetMacro(UcomponentId, int);
     vtkGetMacro(UcomponentId, int);
@@ -108,11 +108,11 @@ class ttkJacobiSet
     vtkGetMacro(PredefinedOffset, bool);
     vtkSetMacro(PredefinedOffset, bool);
     
-    vtkGetMacro(OffsetFieldU, string);
-    vtkSetMacro(OffsetFieldU, string);
+    vtkGetMacro(OffsetFieldU, std::string);
+    vtkSetMacro(OffsetFieldU, std::string);
     
-    vtkGetMacro(OffsetFieldV, string);
-    vtkSetMacro(OffsetFieldV, string);
+    vtkGetMacro(OffsetFieldV, std::string);
+    vtkSetMacro(OffsetFieldV, std::string);
     
     vtkSetMacro(EdgeIds, bool);
     vtkGetMacro(EdgeIds, bool);
@@ -139,15 +139,15 @@ class ttkJacobiSet
     bool                  PredefinedOffset;
     bool                  EdgeIds, VertexScalars;
     int                   UcomponentId, VcomponentId, UoffsetId, VoffsetId;
-    string                Ucomponent, Vcomponent, 
+    std::string                Ucomponent, Vcomponent, 
                           OffsetFieldU, OffsetFieldV;
-    vector<pair<int, int> > edgeList_;
+    std::vector<std::pair<int, int> > edgeList_;
     // for each edge, one skeleton of its triangle fan
-    vector<vector<pair<int, int> > > edgeFanLinkEdgeList_;
+    std::vector<std::vector<std::pair<int, int> > > edgeFanLinkEdgeList_;
     // for each edge, the one skeleton of its triangle fan
-    vector<vector<long long int> >  edgeFans_;
-    vector<pair<int, char> >        jacobiSet_;
-    vector<int>           sosOffsetsU_, sosOffsetsV_;
+    std::vector<std::vector<long long int> >  edgeFans_;
+    std::vector<std::pair<int, char> >        jacobiSet_;
+    std::vector<int>           sosOffsetsU_, sosOffsetsV_;
    
     template<class dataTypeU, class dataTypeV> int baseCall(
       vtkDataSet *input,

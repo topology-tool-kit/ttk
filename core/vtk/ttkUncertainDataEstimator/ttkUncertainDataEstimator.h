@@ -56,7 +56,7 @@ class VTKFILTERSCORE_EXPORT ttkUncertainDataEstimator
 #else
 class ttkUncertainDataEstimator
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
@@ -71,7 +71,7 @@ class ttkUncertainDataEstimator
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }
@@ -121,8 +121,8 @@ class ttkUncertainDataEstimator
       Modified();
     }
 
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
 
 
   protected:
@@ -142,7 +142,7 @@ class ttkUncertainDataEstimator
 
     bool                  UseAllCores;
     int                   ThreadNumber;
-    string                ScalarField;
+    std::string                ScalarField;
     bool                  computeLowerBound_;
     bool                  computeUpperBound_;
     int                   binCount_;

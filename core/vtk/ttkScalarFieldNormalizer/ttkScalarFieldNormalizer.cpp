@@ -1,5 +1,8 @@
 #include                  <ttkScalarFieldNormalizer.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkScalarFieldNormalizer)
 
 ttkScalarFieldNormalizer::ttkScalarFieldNormalizer(){

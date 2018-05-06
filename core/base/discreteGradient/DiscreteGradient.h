@@ -72,7 +72,7 @@ namespace ttk{
     {}
 
     explicit Segment(const bool orientation,
-        const vector<Cell>& cells,
+        const std::vector<Cell>& cells,
         const bool isValid):
       orientation_{orientation},
       cells_{cells},
@@ -80,7 +80,7 @@ namespace ttk{
     {}
 
     explicit Segment(const bool orientation,
-        vector<Cell>&& cells,
+        std::vector<Cell>&& cells,
         const bool isValid):
       orientation_{orientation},
       cells_{cells},
@@ -119,7 +119,7 @@ namespace ttk{
     }
 
     bool orientation_;
-    vector<Cell> cells_;
+    std::vector<Cell> cells_;
     bool isValid_;
   };
 
@@ -154,8 +154,8 @@ namespace ttk{
     {}
 
     explicit VPath(const bool isValid,
-        const vector<char>& states,
-        const vector<int>& segments,
+        const std::vector<char>& states,
+        const std::vector<int>& segments,
         const int source,
         const int destination,
         const int sourceSlot,
@@ -172,8 +172,8 @@ namespace ttk{
     {}
 
     explicit VPath(const bool isValid,
-        vector<char>&& states,
-        vector<int>&& segments,
+        std::vector<char>&& states,
+        std::vector<int>&& segments,
         const int source,
         const int destination,
         const int sourceSlot,
@@ -235,8 +235,8 @@ namespace ttk{
     }
 
     bool isValid_;
-    vector<char> states_;
-    vector<int> segments_;
+    std::vector<char> states_;
+    std::vector<int> segments_;
     int source_;
     int destination_;
     int sourceSlot_;
@@ -258,14 +258,14 @@ namespace ttk{
     {}
 
     explicit CriticalPoint(const Cell& cell,
-        const vector<int>& vpaths):
+        const std::vector<int>& vpaths):
       cell_{cell},
       vpaths_{vpaths},
       numberOfSlots_{}
     {}
 
     explicit CriticalPoint(const Cell& cell,
-        vector<int>&& vpaths):
+        std::vector<int>&& vpaths):
       cell_{cell},
       vpaths_{vpaths},
       numberOfSlots_{}
@@ -314,7 +314,7 @@ namespace ttk{
     }
 
     Cell cell_;
-    vector<int> vpaths_;
+    std::vector<int> vpaths_;
     int numberOfSlots_;
   };
 
@@ -323,7 +323,7 @@ namespace ttk{
    */
   template <typename dataType>
     struct SaddleMaximumVPathComparator{
-      bool operator()(const pair<dataType,int>& v1, const pair<dataType,int>& v2) const{
+      bool operator()(const std::pair<dataType,int>& v1, const std::pair<dataType,int>& v2) const{
         const dataType persistence1=v1.first;
         const dataType persistence2=v2.first;
 
@@ -343,15 +343,15 @@ namespace ttk{
    */
   template <typename dataType>
     struct SaddleSaddleVPathComparator{
-      bool operator()(const tuple<dataType,int,int>& v1, const tuple<dataType,int,int>& v2) const{
-        const dataType persistence1=get<0>(v1);
-        const dataType persistence2=get<0>(v2);
+      bool operator()(const std::tuple<dataType,int,int>& v1, const std::tuple<dataType,int,int>& v2) const{
+        const dataType persistence1=std::get<0>(v1);
+        const dataType persistence2=std::get<0>(v2);
 
-        const int vpathId1=get<1>(v1);
-        const int vpathId2=get<1>(v2);
+        const int vpathId1=std::get<1>(v1);
+        const int vpathId2=std::get<1>(v2);
 
-        const int saddleId1=get<2>(v1);
-        const int saddleId2=get<2>(v2);
+        const int saddleId1=std::get<2>(v1);
+        const int saddleId2=std::get<2>(v2);
 
         if(persistence1!=persistence2)
           return (persistence1<persistence2);
@@ -398,7 +398,8 @@ namespace ttk{
       }
 
       /**
-       * Enable/Disable collecting of persistence pairs during the simplification.
+       * Enable/Disable collecting of persistence pairs during the 
+simplification.
        */
       int setCollectPersistencePairs(const bool state){
         CollectPersistencePairs=state;
@@ -414,7 +415,8 @@ namespace ttk{
       }
 
       /**
-       * Set the persistence threshold value of the post-processing on the saddle-connectors.
+       * Set the persistence threshold value of the post-processing on the 
+saddle-connectors.
        */
       int setSaddleConnectorsPersistenceThreshold(const double threshold){
         SaddleConnectorsPersistenceThreshold=threshold;
@@ -425,31 +427,38 @@ namespace ttk{
        * Set the output data pointer to the container of the persistence pairs
        * (collecting of persistence pairs must be enabled).
        */
-      int setOutputPersistencePairs(vector<tuple<Cell,Cell>>* const data){
+      int setOutputPersistencePairs(std::vector<std::tuple<Cell,Cell>>* const 
+data){
         outputPersistencePairs_=data;
         return 0;
       }
 
       /**
-       * Return the scalar value of the point in the cell which has the highest function value.
+       * Return the scalar value of the point in the cell which has the highest 
+function value.
        */
       template <typename dataType>
-        dataType scalarMax(const Cell& cell, const dataType* const scalars) const;
+        dataType scalarMax(const Cell& cell, const dataType* const scalars) 
+const;
 
       /**
-       * Return the scalar value of the point in the cell which has the lowest function value.
+       * Return the scalar value of the point in the cell which has the lowest 
+function value.
        */
       template <typename dataType>
-        dataType scalarMin(const Cell& cell, const dataType* const scalars) const;
+        dataType scalarMin(const Cell& cell, const dataType* const scalars) 
+const;
 
       /**
        * Compute the difference of function values of a pair of cells.
        */
       template <typename dataType>
-        dataType getPersistence(const Cell& up, const Cell& down, const dataType* const scalars) const;
+        dataType getPersistence(const Cell& up, const Cell& down, const 
+dataType* const scalars) const;
 
       /**
-       * Comparator of vertices, return true if a vertex A is higher then a vertex B, false otherwise
+       * Comparator of vertices, return true if a vertex A is higher then a 
+vertex B, false otherwise
        * (support simulation of simplicity).
        */
       template <typename dataType>
@@ -459,7 +468,8 @@ namespace ttk{
             const int* const offsets) const;
 
       /**
-       * Comparator of vertices, return true if a vertex A is lower then a vertex B, false otherwise
+       * Comparator of vertices, return true if a vertex A is lower then a 
+vertex B, false otherwise
        * (support simulation of simplicity).
        */
       template <typename dataType>
@@ -469,7 +479,8 @@ namespace ttk{
             const int* const offsets) const;
 
       /**
-       * Comparator of cells, return the identifier of the cell which is higher in the lexicographic order
+       * Comparator of cells, return the identifier of the cell which is higher 
+in the lexicographic order
        * of their vertices.
        */
       template <typename dataType>
@@ -480,7 +491,8 @@ namespace ttk{
             const int* const offsets) const;
 
       /**
-       * Comparator of cells, return the identifier of the cell which is lower in the lexicographic order
+       * Comparator of cells, return the identifier of the cell which is lower 
+in the lexicographic order
        * of their vertices.
        */
       template <typename dataType>
@@ -502,7 +514,8 @@ namespace ttk{
             const int* const offsets) const;
 
       /**
-       * Slightly modified version of the G0 function, return the second highest facet.
+       * Slightly modified version of the G0 function, return the second highest 
+facet.
        */
       template <typename dataType>
         int g0_second(const int cellDim,
@@ -520,39 +533,46 @@ namespace ttk{
             const int* const offsets) const;
 
       /**
-       * Body of AssignGradient algorithm from "Parallel Computation of 3D Morse-Smale Complexes",
+       * Body of AssignGradient algorithm from "Parallel Computation of 3D 
+Morse-Smale Complexes",
        * N. Shivashankar and V. Natarajan.
-       * Compute the initial gradient field of the input scalar function for a given dimension.
+       * Compute the initial gradient field of the input scalar function for a 
+given dimension.
        */
       template <typename dataType>
         int assignGradient(const int alphaDim,
             const dataType* const scalars,
             const int* const offsets,
-            vector<vector<int>>& gradient) const;
+            std::vector<std::vector<int>>& gradient) const;
 
       /**
-       * Body of AssignGradient2 algorithm from "Parallel Computation of 3D Morse-Smale Complexes",
+       * Body of AssignGradient2 algorithm from "Parallel Computation of 3D 
+Morse-Smale Complexes",
        * N. Shivashankar and V. Natarajan.
-       * Second pass of AssignGradient algorithm, minimize the number of unpaired cells.
+       * Second pass of AssignGradient algorithm, minimize the number of 
+unpaired cells.
        */
       template <typename dataType>
         int assignGradient2(const int alphaDim,
             const dataType* const scalars,
             const int* const offsets,
-            vector<vector<int>>& gradient) const;
+            std::vector<std::vector<int>>& gradient) const;
 
       /**
-       * Brand new pass on the discrete gradient designed specifically for this project,
-       * the goal is to minimize the number of unpaired cells further (3D triangulation only).
+       * Brand new pass on the discrete gradient designed specifically for this 
+project,
+       * the goal is to minimize the number of unpaired cells further (3D 
+triangulation only).
        */
       template <typename dataType>
         int assignGradient3(const int alphaDim,
             const dataType* const scalars,
             const int* const offsets,
-            vector<vector<int>>& gradient) const;
+            std::vector<std::vector<int>>& gradient) const;
 
       /**
-       * Compute the initial gradient field of the input scalar function on the triangulation.
+       * Compute the initial gradient field of the input scalar function on the 
+triangulation.
        */
       template <typename dataType>
         int buildGradient();
@@ -565,7 +585,8 @@ namespace ttk{
         int buildGradient2();
 
       /**
-       * Minimize further the number of unpaired cells of any dimensions (3D triangulation only).
+       * Minimize further the number of unpaired cells of any dimensions (3D 
+triangulation only).
        * Assume that buildGradient2() has been called before.
        */
       template <typename dataType>
@@ -575,112 +596,130 @@ namespace ttk{
        * Get the list of maxima candidates for simplification.
        */
       template <typename dataType>
-        int getRemovableMaxima(const vector<pair<int,char>>& criticalPoints,
+        int getRemovableMaxima(const std::vector<std::pair<int,char>>& 
+criticalPoints,
             const bool allowBoundary,
-            vector<char>& isRemovableMaximum,
-            vector<int>& pl2dmt_maximum);
+            std::vector<char>& isRemovableMaximum,
+            std::vector<int>& pl2dmt_maximum);
 
       /**
        * Get the list of 1-saddles candidates for simplification.
        */
       template <typename dataType>
-        int getRemovableSaddles1(const vector<pair<int,char>>& criticalPoints,
+        int getRemovableSaddles1(const std::vector<std::pair<int,char>>& 
+criticalPoints,
             const bool allowBoundary,
-            vector<char>& isRemovableSaddle,
-            vector<int>& pl2dmt_saddle) const;
+            std::vector<char>& isRemovableSaddle,
+            std::vector<int>& pl2dmt_saddle) const;
 
       /**
        * Get the list of 2-saddles candidates for simplification.
        */
       template <typename dataType>
-        int getRemovableSaddles2(const vector<pair<int,char>>& criticalPoints,
+        int getRemovableSaddles2(const std::vector<std::pair<int,char>>& 
+criticalPoints,
             const bool allowBoundary,
-            vector<char>& isRemovableSaddle,
-            vector<int>& pl2dmt_saddle) const;
+            std::vector<char>& isRemovableSaddle,
+            std::vector<int>& pl2dmt_saddle) const;
 
       /**
-       * Create initial Morse-Smale Complex structure and initialize the (saddle,...,maximum)
+       * Create initial Morse-Smale Complex structure and initialize the 
+(saddle,...,maximum)
        * vpaths to the simplification process.
        */
       template <typename dataType>
-        int initializeSaddleMaximumConnections(vector<char>& isRemovableMaximum,
-            vector<char>& isRemovableSaddle,
+        int initializeSaddleMaximumConnections(std::vector<char>& 
+isRemovableMaximum,
+            std::vector<char>& isRemovableSaddle,
             const bool allowBruteForce,
-            vector<Segment>& segments,
-            vector<VPath>& vpaths,
-            vector<CriticalPoint>& criticalPoints) const;
+            std::vector<Segment>& segments,
+            std::vector<VPath>& vpaths,
+            std::vector<CriticalPoint>& criticalPoints) const;
 
       /**
        * Order the (saddle,...,maximum) vpaths by persistence value.
        */
       template <typename dataType>
-        int orderSaddleMaximumConnections(const vector<VPath>& vpaths,
-            set<pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S);
+        int orderSaddleMaximumConnections(const std::vector<VPath>& vpaths,
+            
+std::set<std::pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S);
 
       /**
-       * Compute simple algebra on the vpaths to minimize the number of gradient paths reversal.
-       * Two representations are available for the accumulation vector, a dense and a sparse one (default).
+       * Compute simple algebra on the vpaths to minimize the number of gradient 
+paths reversal.
+       * Two representations are available for the accumulation vector, a dense 
+and a sparse one (default).
        */
       template <typename dataType>
         int computeCoefficients(const bool isDense,
-            vector<char>& denseCoefficients,
-            vector<Segment>& segments,
+            std::vector<char>& denseCoefficients,
+            std::vector<Segment>& segments,
             const CriticalPoint& source,
             VPath& newVPath,
-            const vector<VPath>& vpaths) const;
+            const std::vector<VPath>& vpaths) const;
 
       /**
-       * Core of the simplification process, tag the (saddle,...,maximum) vpaths to be reversed.
+       * Core of the simplification process, tag the (saddle,...,maximum) vpaths 
+to be reversed.
        */
       template <typename dataType>
         int processSaddleMaximumConnections(const int iterationThreshold,
-            const vector<char>& isPL,
+            const std::vector<char>& isPL,
             const bool allowBoundary,
             const bool allowBruteForce,
-            set<pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S,
-            vector<int>& pl2dmt_saddle,
-            vector<int>& pl2dmt_maximum,
-            vector<Segment>& segments,
-            vector<VPath>& vpaths,
-            vector<CriticalPoint>& criticalPoints) const;
+            
+std::set<std::pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S,
+            std::vector<int>& pl2dmt_saddle,
+            std::vector<int>& pl2dmt_maximum,
+            std::vector<Segment>& segments,
+            std::vector<VPath>& vpaths,
+            std::vector<CriticalPoint>& criticalPoints) const;
 
       /**
-       * Actually reverse the so-tagged (saddle,...,maximum) vpaths to simplify the discrete gradient.
+       * Actually reverse the so-tagged (saddle,...,maximum) vpaths to simplify 
+the discrete gradient.
        * The gradient is modified during this step.
        */
       template <typename dataType>
-        int reverseSaddleMaximumConnections(const vector<Segment>& segments);
+        int reverseSaddleMaximumConnections(const std::vector<Segment>& 
+segments);
 
       /**
-       * High-level function that manages the global simplification of (saddle,...,maximum) vpaths.
+       * High-level function that manages the global simplification of 
+(saddle,...,maximum) vpaths.
        */
       template <typename dataType>
-        int simplifySaddleMaximumConnections(const vector<pair<int,char>>& criticalPoints,
-            const vector<char>& isPL,
+        int simplifySaddleMaximumConnections(const 
+std::vector<std::pair<int,char>>& criticalPoints,
+            const std::vector<char>& isPL,
             const int iterationThreshold,
             const bool allowBoundary,
             const bool allowBruteForce);
 
       /**
-       * Create initial Morse-Smale Complex structure and initialize the (2-saddle,...,1-saddle) vpaths
+       * Create initial Morse-Smale Complex structure and initialize the 
+(2-saddle,...,1-saddle) vpaths
        * to the simplification process.
        */
       template <typename dataType>
-        int initializeSaddleSaddleConnections1(const vector<char>& isRemovableSaddle1,
-            const vector<char>& isRemovableSaddle2,
+        int initializeSaddleSaddleConnections1(const std::vector<char>& 
+isRemovableSaddle1,
+            const std::vector<char>& isRemovableSaddle2,
             const bool allowBruteForce,
-            vector<VPath>& vpaths,
-            vector<CriticalPoint>& criticalPoints,
-            vector<int>& saddle1Index,
-            vector<int>& saddle2Index) const;
+            std::vector<VPath>& vpaths,
+            std::vector<CriticalPoint>& criticalPoints,
+            std::vector<int>& saddle1Index,
+            std::vector<int>& saddle2Index) const;
 
       /**
        * Order the (2-saddle,...,1-saddle) vpaths by persistence value.
        */
       template <typename dataType>
-        int orderSaddleSaddleConnections1(const vector<VPath>& vpaths,
-            vector<CriticalPoint>& criticalPoints,
-            set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S);
+        int orderSaddleSaddleConnections1(const std::vector<VPath>& vpaths,
+            std::vector<CriticalPoint>& criticalPoints,
+            
+std::set<std::tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& 
+S);
 
       /**
        * Core of the simplification process, modify the gradient and
@@ -688,51 +727,58 @@ namespace ttk{
        */
       template <typename dataType>
         int processSaddleSaddleConnections1(const int iterationThreshold,
-            const vector<char>& isPL,
+            const std::vector<char>& isPL,
             const bool allowBoundary,
             const bool allowBruteForce,
             const bool returnSaddleConnectors,
-            set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
-            vector<int>& pl2dmt_saddle1,
-            vector<int>& pl2dmt_saddle2,
-            vector<char>& isRemovableSaddle1,
-            vector<char>& isRemovableSaddle2,
-            vector<VPath>& vpaths,
-            vector<CriticalPoint>& criticalPoints,
-            vector<int>& saddle1Index,
-            vector<int>& saddle2Index);
+            
+std::set<std::tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
+            std::vector<int>& pl2dmt_saddle1,
+            std::vector<int>& pl2dmt_saddle2,
+            std::vector<char>& isRemovableSaddle1,
+            std::vector<char>& isRemovableSaddle2,
+            std::vector<VPath>& vpaths,
+            std::vector<CriticalPoint>& criticalPoints,
+            std::vector<int>& saddle1Index,
+            std::vector<int>& saddle2Index);
 
       /**
-       * High-level function that manages the global simplification of (2-saddle,...,1-saddle) vpaths.
+       * High-level function that manages the global simplification of 
+(2-saddle,...,1-saddle) vpaths.
        */
       template <typename dataType>
-        int simplifySaddleSaddleConnections1(const vector<pair<int,char>>& criticalPoints,
-            const vector<char>& isPL,
+        int simplifySaddleSaddleConnections1(const 
+std::vector<std::pair<int,char>>& criticalPoints,
+            const std::vector<char>& isPL,
             const int iterationThreshold,
             const bool allowBoundary,
             const bool allowBruteForce,
             const bool returnSaddleConnectors);
 
       /**
-       * Create initial Morse-Smale Complex structure and initialize the (1-saddle,...,2-saddle) vpaths
+       * Create initial Morse-Smale Complex structure and initialize the 
+(1-saddle,...,2-saddle) vpaths
        * to the simplification process.
        */
       template <typename dataType>
-        int initializeSaddleSaddleConnections2(const vector<char>& isRemovableSaddle1,
-            const vector<char>& isRemovableSaddle2,
+        int initializeSaddleSaddleConnections2(const std::vector<char>& 
+isRemovableSaddle1,
+            const std::vector<char>& isRemovableSaddle2,
             const bool allowBruteForce,
-            vector<VPath>& vpaths,
-            vector<CriticalPoint>& criticalPoints,
-            vector<int>& saddle1Index,
-            vector<int>& saddle2Index) const;
+            std::vector<VPath>& vpaths,
+            std::vector<CriticalPoint>& criticalPoints,
+            std::vector<int>& saddle1Index,
+            std::vector<int>& saddle2Index) const;
 
       /**
        * Order the (1-saddle,...,2-saddle) vpaths by persistence value.
        */
       template <typename dataType>
-        int orderSaddleSaddleConnections2(const vector<VPath>& vpaths,
-            vector<CriticalPoint>& criticalPoints,
-            set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S);
+        int orderSaddleSaddleConnections2(const std::vector<VPath>& vpaths,
+            std::vector<CriticalPoint>& criticalPoints,
+            
+std::set<std::tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& 
+S);
 
       /**
        * Core of the simplification process, modify the gradient and
@@ -740,26 +786,29 @@ namespace ttk{
        */
       template <typename dataType>
         int processSaddleSaddleConnections2(const int iterationThreshold,
-            const vector<char>& isPL,
+            const std::vector<char>& isPL,
             const bool allowBoundary,
             const bool allowBruteForce,
             const bool returnSaddleConnectors,
-            set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
-            vector<int>& pl2dmt_saddle1,
-            vector<int>& pl2dmt_saddle2,
-            vector<char>& isRemovableSaddle1,
-            vector<char>& isRemovableSaddle2,
-            vector<VPath>& vpaths,
-            vector<CriticalPoint>& criticalPoints,
-            vector<int>& saddle1Index,
-            vector<int>& saddle2Index);
+            
+std::set<std::tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
+            std::vector<int>& pl2dmt_saddle1,
+            std::vector<int>& pl2dmt_saddle2,
+            std::vector<char>& isRemovableSaddle1,
+            std::vector<char>& isRemovableSaddle2,
+            std::vector<VPath>& vpaths,
+            std::vector<CriticalPoint>& criticalPoints,
+            std::vector<int>& saddle1Index,
+            std::vector<int>& saddle2Index);
 
       /**
-       * High-level function that manages the global simplification of (1-saddle,...,2-saddle) vpaths.
+       * High-level function that manages the global simplification of 
+(1-saddle,...,2-saddle) vpaths.
        */
       template <typename dataType>
-        int simplifySaddleSaddleConnections2(const vector<pair<int,char>>& criticalPoints,
-            const vector<char>& isPL,
+        int simplifySaddleSaddleConnections2(const 
+std::vector<std::pair<int,char>>& criticalPoints,
+            const std::vector<char>& isPL,
             const int iterationThreshold,
             const bool allowBoundary,
             const bool allowBruteForce,
@@ -768,24 +817,29 @@ namespace ttk{
       /**
        * Build the dense representation of the PL critical point list.
        */
-      int getCriticalPointMap(const vector<pair<int,char>>& criticalPoints,
-          vector<char>& isPL);
+      int getCriticalPointMap(const std::vector<std::pair<int,char>>& 
+criticalPoints,
+          std::vector<char>& isPL);
 
       /**
-       * Process the saddle connectors by increasing value of persistence until a given threshold is met.
+       * Process the saddle connectors by increasing value of persistence until 
+a given threshold is met.
        */
       template<typename dataType>
         int filterSaddleConnectors(const bool allowBoundary);
 
       /**
-       * Highest-level simplification function, manage all the simplification steps
+       * Highest-level simplification function, manage all the simplification 
+steps
        * compliant to the critical points given by the user.
        */
       template<typename dataType>
-        int reverseGradient(const vector<pair<int,char>>& criticalPoints);
+        int reverseGradient(const std::vector<std::pair<int,char>>& 
+criticalPoints);
 
       /**
-       * Automatic detection of the PL critical points and simplification according to them.
+       * Automatic detection of the PL critical points and simplification 
+according to them.
        */
       template <typename dataType>
         int reverseGradient();
@@ -842,37 +896,46 @@ namespace ttk{
       /**
        * Set the output data pointer to the critical points.
        */
-      inline int setOutputCriticalPoints(int* const criticalPoints_numberOfPoints,
-          vector<float>* const criticalPoints_points,
-          vector<int>* const criticalPoints_points_cellDimensons,
-          vector<int>* const criticalPoints_points_cellIds,
+      inline int setOutputCriticalPoints(int* const 
+criticalPoints_numberOfPoints,
+          std::vector<float>* const criticalPoints_points,
+          std::vector<int>* const criticalPoints_points_cellDimensons,
+          std::vector<int>* const criticalPoints_points_cellIds,
           void* const criticalPoints_points_cellScalars,
-          vector<char>* const criticalPoints_points_isOnBoundary,
-          vector<int>* const criticalPoints_points_PLVertexIdentifiers,
-          vector<int>* const criticalPoints_points_manifoldSize){
+          std::vector<char>* const criticalPoints_points_isOnBoundary,
+          std::vector<int>* const criticalPoints_points_PLVertexIdentifiers,
+          std::vector<int>* const criticalPoints_points_manifoldSize){
         outputCriticalPoints_numberOfPoints_=criticalPoints_numberOfPoints;
         outputCriticalPoints_points_=criticalPoints_points;
-        outputCriticalPoints_points_cellDimensions_=criticalPoints_points_cellDimensons;
+        
+outputCriticalPoints_points_cellDimensions_=criticalPoints_points_cellDimensons;
         outputCriticalPoints_points_cellIds_=criticalPoints_points_cellIds;
-        outputCriticalPoints_points_cellScalars_=criticalPoints_points_cellScalars;
-        outputCriticalPoints_points_isOnBoundary_=criticalPoints_points_isOnBoundary;
-        outputCriticalPoints_points_PLVertexIdentifiers_=criticalPoints_points_PLVertexIdentifiers;
-        outputCriticalPoints_points_manifoldSize_=criticalPoints_points_manifoldSize;
+        
+outputCriticalPoints_points_cellScalars_=criticalPoints_points_cellScalars;
+        
+outputCriticalPoints_points_isOnBoundary_=criticalPoints_points_isOnBoundary;
+        
+outputCriticalPoints_points_PLVertexIdentifiers_=
+criticalPoints_points_PLVertexIdentifiers;
+        
+outputCriticalPoints_points_manifoldSize_=criticalPoints_points_manifoldSize;
         return 0;
       }
 
       /**
        * Set the output data pointer to the gradient glyphs.
        */
-      inline int setOutputGradientGlyphs(int* const gradientGlyphs_numberOfPoints,
-          vector<float>* const gradientGlyphs_points,
-          vector<int>* const gradientGlyphs_points_pairOrigins,
+      inline int setOutputGradientGlyphs(int* const 
+gradientGlyphs_numberOfPoints,
+          std::vector<float>* const gradientGlyphs_points,
+          std::vector<int>* const gradientGlyphs_points_pairOrigins,
           int* const gradientGlyphs_numberOfCells,
-          vector<int>* const gradientGlyphs_cells,
-          vector<int>* const gradientGlyphs_cells_pairTypes){
+          std::vector<int>* const gradientGlyphs_cells,
+          std::vector<int>* const gradientGlyphs_cells_pairTypes){
         outputGradientGlyphs_numberOfPoints_=gradientGlyphs_numberOfPoints;
         outputGradientGlyphs_points_=gradientGlyphs_points;
-        outputGradientGlyphs_points_pairOrigins_=gradientGlyphs_points_pairOrigins;
+        
+outputGradientGlyphs_points_pairOrigins_=gradientGlyphs_points_pairOrigins;
         outputGradientGlyphs_numberOfCells_=gradientGlyphs_numberOfCells;
         outputGradientGlyphs_cells_=gradientGlyphs_cells;
         outputGradientGlyphs_cells_pairTypes_=gradientGlyphs_cells_pairTypes;
@@ -885,7 +948,8 @@ namespace ttk{
       int getDimensionality() const;
 
       /**
-       * Get the number of dimensions available for the cells in the triangulation (equal to dimensionality+1).
+       * Get the number of dimensions available for the cells in the 
+triangulation (equal to dimensionality+1).
        */
       int getNumberOfDimensions() const;
 
@@ -895,27 +959,32 @@ namespace ttk{
       int getNumberOfCells(const int dimension) const;
 
       /**
-       * Return true if the given cell is a minimum regarding the discrete gradient, false otherwise.
+       * Return true if the given cell is a minimum regarding the discrete 
+gradient, false otherwise.
        */
       bool isMinimum(const Cell& cell) const;
 
       /**
-       * Return true if the given cell is a 1-saddle regarding the discrete gradient, false otherwise.
+       * Return true if the given cell is a 1-saddle regarding the discrete 
+gradient, false otherwise.
        */
       bool isSaddle1(const Cell& cell) const;
 
       /**
-       * Return true if the given cell is a 2-saddle regarding the discrete gradient, false otherwise.
+       * Return true if the given cell is a 2-saddle regarding the discrete 
+gradient, false otherwise.
        */
       bool isSaddle2(const Cell& cell) const;
 
       /**
-       * Return true if the given cell is a maximum regarding the discrete gradient, false otherwise.
+       * Return true if the given cell is a maximum regarding the discrete 
+gradient, false otherwise.
        */
       bool isMaximum(const Cell& cell) const;
 
       /**
-       * Return true if the given cell is a critical point regarding the discrete gradient, false otherwise.
+       * Return true if the given cell is a critical point regarding the 
+discrete gradient, false otherwise.
        */
       bool isCellCritical(const Cell& cell) const;
 
@@ -925,45 +994,48 @@ namespace ttk{
       bool isBoundary(const Cell& cell) const;
 
       /**
-       * Return the identifier of the cell paired to the cell given by the user in the gradient.
+       * Return the identifier of the cell paired to the cell given by the user 
+in the gradient.
        */
       int getPairedCell(const Cell& cell, bool isReverse=false) const;
 
       /**
        * Get the output critical points as a STL vector of cells.
        */
-      int getCriticalPoints(vector<Cell>& criticalPoints) const;
+      int getCriticalPoints(std::vector<Cell>& criticalPoints) const;
 
       /**
        * Return the VPath coming from the given cell.
        */
       int getAscendingPath(const Cell& cell,
-          vector<Cell>& vpath,
+          std::vector<Cell>& vpath,
           const bool enableCycleDetector=false) const;
 
       /**
        * Return the VPath terminating at the given cell.
        */
-      int getDescendingPath(const Cell& cell, vector<Cell>& vpath) const;
+      int getDescendingPath(const Cell& cell, std::vector<Cell>& vpath) const;
 
       /**
-       * Return the VPath terminating at the given 2-saddle restricted to the 2-separatrice of the 1-saddle.
+       * Return the VPath terminating at the given 2-saddle restricted to the 
+2-separatrice of the 1-saddle.
        */
       int getDescendingPathThroughWall(const wallId_t wallId,
           const Cell& saddle2,
           const Cell& saddle1,
-          const vector<wallId_t>& isVisited,
-          vector<Cell>* const vpath,
+          const std::vector<wallId_t>& isVisited,
+          std::vector<Cell>* const vpath,
           const bool enableCycleDetector=false) const;
 
       /**
-       * Return the VPath coming from the given 1-saddle restricted to the 2-separatrice of the 2-saddle.
+       * Return the VPath coming from the given 1-saddle restricted to the 
+2-separatrice of the 2-saddle.
        */
       bool getAscendingPathThroughWall(const wallId_t wallId,
           const Cell& saddle1,
           const Cell& saddle2,
-          const vector<wallId_t>& isVisited,
-          vector<Cell>* const vpath,
+          const std::vector<wallId_t>& isVisited,
+          std::vector<Cell>* const vpath,
           const bool enableCycleDetector=false) const;
 
       /**
@@ -971,33 +1043,33 @@ namespace ttk{
        */
       int getDescendingWall(const wallId_t wallId,
           const Cell& cell,
-          vector<wallId_t>& isVisited,
-          vector<Cell>* const wall=nullptr,
-          set<int>* const saddles=nullptr) const;
+          std::vector<wallId_t>& isVisited,
+          std::vector<Cell>* const wall=nullptr,
+          std::set<int>* const saddles=nullptr) const;
 
       /**
        * Return the 2-separatrice coming from the given 1-saddle.
        */
       int getAscendingWall(const wallId_t wallId,
           const Cell& cell,
-          vector<wallId_t>& isVisited,
-          vector<Cell>* const wall=nullptr,
-          set<int>* const saddles=nullptr) const;
+          std::vector<wallId_t>& isVisited,
+          std::vector<Cell>* const wall=nullptr,
+          std::set<int>* const saddles=nullptr) const;
 
       /**
        * Reverse the given ascending VPath.
        */
-      int reverseAscendingPath(const vector<Cell>& vpath);
+      int reverseAscendingPath(const std::vector<Cell>& vpath);
 
       /**
        * Reverse the given ascending VPath restricted on a 2-separatrice.
        */
-      int reverseAscendingPathOnWall(const vector<Cell>& vpath);
+      int reverseAscendingPathOnWall(const std::vector<Cell>& vpath);
 
       /**
        * Reverse the given descending VPath restricted on a 2-separatrice.
        */
-      int reverseDescendingPathOnWall(const vector<Cell>& vpath);
+      int reverseDescendingPathOnWall(const std::vector<Cell>& vpath);
 
       /**
        * Compute the barycenter of the points of the given edge identifier.
@@ -1010,7 +1082,8 @@ namespace ttk{
       int getTriangleIncenter(int triangleId, float incenter[3]) const;
 
       /**
-       * Compute the barycenter of the incenters of the triangles of the given tetra identifier.
+       * Compute the barycenter of the incenters of the triangles of the given 
+tetra identifier.
        */
       int getTetraIncenter(int tetraId, float incenter[3]) const;
 
@@ -1024,7 +1097,7 @@ namespace ttk{
        * The output data pointers are modified accordingly.
        */
       template <typename dataType>
-        int setCriticalPoints(const vector<Cell>& criticalPoints) const;
+        int setCriticalPoints(const std::vector<Cell>& criticalPoints) const;
 
       /**
        * Detect the critical points and build their geometric embedding.
@@ -1039,8 +1112,8 @@ namespace ttk{
        * The output data pointers are modified accordingly.
        */
       template <typename dataType>
-        int setAugmentedCriticalPoints(const vector<Cell>& criticalPoints,
-            vector<int>& maxSeeds,
+        int setAugmentedCriticalPoints(const std::vector<Cell>& criticalPoints,
+            std::vector<int>& maxSeeds,
             int* ascendingManifold,
             int* descendingManifold) const;
 
@@ -1059,35 +1132,36 @@ namespace ttk{
 
       int dimensionality_;
       int numberOfVertices_;
-      vector<vector<vector<int>>> gradient_;
-      vector<int> dmtMax2PL_;
+      std::vector<std::vector<std::vector<int>>> gradient_;
+      std::vector<int> dmtMax2PL_;
 
       void* inputScalarField_;
       void* inputOffsets_;
       Triangulation* inputTriangulation_;
 
       int* outputCriticalPoints_numberOfPoints_;
-      vector<float>* outputCriticalPoints_points_;
-      vector<int>* outputCriticalPoints_points_cellDimensions_;
-      vector<int>* outputCriticalPoints_points_cellIds_;
+      std::vector<float>* outputCriticalPoints_points_;
+      std::vector<int>* outputCriticalPoints_points_cellDimensions_;
+      std::vector<int>* outputCriticalPoints_points_cellIds_;
       void* outputCriticalPoints_points_cellScalars_;
-      vector<char>* outputCriticalPoints_points_isOnBoundary_;
-      vector<int>* outputCriticalPoints_points_PLVertexIdentifiers_;
-      vector<int>* outputCriticalPoints_points_manifoldSize_;
+      std::vector<char>* outputCriticalPoints_points_isOnBoundary_;
+      std::vector<int>* outputCriticalPoints_points_PLVertexIdentifiers_;
+      std::vector<int>* outputCriticalPoints_points_manifoldSize_;
 
       int* outputGradientGlyphs_numberOfPoints_;
-      vector<float>* outputGradientGlyphs_points_;
-      vector<int>* outputGradientGlyphs_points_pairOrigins_;
+      std::vector<float>* outputGradientGlyphs_points_;
+      std::vector<int>* outputGradientGlyphs_points_pairOrigins_;
       int* outputGradientGlyphs_numberOfCells_;
-      vector<int>* outputGradientGlyphs_cells_;
-      vector<int>* outputGradientGlyphs_cells_pairTypes_;
+      std::vector<int>* outputGradientGlyphs_cells_;
+      std::vector<int>* outputGradientGlyphs_cells_pairTypes_;
 
-      vector<tuple<Cell,Cell>>* outputPersistencePairs_;
+      std::vector<std::tuple<Cell,Cell>>* outputPersistencePairs_;
   };
 }
 
 template <typename dataType>
-dataType DiscreteGradient::scalarMax(const Cell& cell, const dataType* const scalars) const{
+dataType ttk::DiscreteGradient::scalarMax(const Cell& cell, const dataType* 
+const scalars) const{
   dataType scalar{};
 
   if(dimensionality_==2){
@@ -1164,7 +1238,8 @@ dataType DiscreteGradient::scalarMax(const Cell& cell, const dataType* const sca
 }
 
 template <typename dataType>
-dataType DiscreteGradient::scalarMin(const Cell& cell, const dataType* const scalars) const{
+dataType ttk::DiscreteGradient::scalarMin(const Cell& cell, const dataType* 
+const scalars) const{
   dataType scalar{};
 
   if(dimensionality_==2){
@@ -1241,30 +1316,34 @@ dataType DiscreteGradient::scalarMin(const Cell& cell, const dataType* const sca
 }
 
 template <typename dataType>
-dataType DiscreteGradient::getPersistence(const Cell& up, const Cell& down, const dataType* const scalars) const{
+dataType ttk::DiscreteGradient::getPersistence(const Cell& up, const Cell& 
+down, 
+const dataType* const scalars) const{
   return scalarMax<dataType>(up,scalars)-scalarMin<dataType>(down,scalars);
 }
 
 template <typename dataType>
-bool DiscreteGradient::isHigherThan(const int vertexA,
+bool ttk::DiscreteGradient::isHigherThan(const int vertexA,
     const int vertexB,
     const dataType* const scalars,
     const int* const offsets) const{
-  if(scalars[vertexA] != scalars[vertexB]) return scalars[vertexA]>scalars[vertexB];
+  if(scalars[vertexA] != scalars[vertexB]) return 
+scalars[vertexA]>scalars[vertexB];
   else return offsets[vertexA]>offsets[vertexB];
 }
 
 template <typename dataType>
-bool DiscreteGradient::isLowerThan(const int vertexA,
+bool ttk::DiscreteGradient::isLowerThan(const int vertexA,
     const int vertexB,
     const dataType* const scalars,
     const int* const offsets) const{
-  if(scalars[vertexA] != scalars[vertexB]) return scalars[vertexA]<scalars[vertexB];
+  if(scalars[vertexA] != scalars[vertexB]) return 
+scalars[vertexA]<scalars[vertexB];
   else return offsets[vertexA]<offsets[vertexB];
 }
 
 template <typename dataType>
-int DiscreteGradient::cellMax(const int cellDim,
+int ttk::DiscreteGradient::cellMax(const int cellDim,
     const int cellA,
     const int cellB,
     const dataType* const scalars,
@@ -1281,7 +1360,9 @@ int DiscreteGradient::cellMax(const int cellDim,
 
     switch(cellDim){
       case 0:
-        return (isHigherThan<dataType>(cellA, cellB, scalars, offsets))? cellA : cellB;
+        return (isHigherThan<dataType>(cellA, cellB, scalars, offsets))? cellA 
+: 
+cellB;
 
       case 1:
         for(int k=0; k<2; ++k){
@@ -1304,7 +1385,9 @@ int DiscreteGradient::cellMax(const int cellDim,
     std::sort(vsetB, vsetB+vertexNumber, sosGreaterThan);
     for(int k=0; k<vertexNumber; ++k){
       if(vsetA[k]==vsetB[k]) continue;
-      else return (isHigherThan<dataType>(vsetA[k], vsetB[k], scalars,offsets))? cellA : cellB;
+      else return (isHigherThan<dataType>(vsetA[k], vsetB[k], 
+scalars,offsets))? 
+cellA : cellB;
     }
   }
   else if(dimensionality_==3){
@@ -1317,7 +1400,8 @@ int DiscreteGradient::cellMax(const int cellDim,
 
     switch(cellDim){
       case 0:
-        return (isHigherThan<dataType>(cellA, cellB, scalars, offsets)? cellA : cellB);
+        return (isHigherThan<dataType>(cellA, cellB, scalars, offsets)? cellA : 
+cellB);
 
       case 1:
         for(int k=0; k<2; ++k){
@@ -1347,7 +1431,8 @@ int DiscreteGradient::cellMax(const int cellDim,
     std::sort(vsetB, vsetB+vertexNumber, sosGreaterThan);
     for(int k=0; k<vertexNumber; ++k){
       if(vsetA[k]==vsetB[k]) continue;
-      else return (isHigherThan<dataType>(vsetA[k], vsetB[k], scalars,offsets)? cellA : cellB);
+      else return (isHigherThan<dataType>(vsetA[k], vsetB[k], scalars,offsets)? 
+cellA : cellB);
     }
   }
 
@@ -1355,7 +1440,7 @@ int DiscreteGradient::cellMax(const int cellDim,
 }
 
 template <typename dataType>
-int DiscreteGradient::cellMin(const int cellDim,
+int ttk::DiscreteGradient::cellMin(const int cellDim,
     const int cellA,
     const int cellB,
     const dataType* const scalars,
@@ -1372,7 +1457,8 @@ int DiscreteGradient::cellMin(const int cellDim,
 
     switch(cellDim){
       case 0:
-        return (isLowerThan<dataType>(cellA, cellB, scalars, offsets))? cellA : cellB;
+        return (isLowerThan<dataType>(cellA, cellB, scalars, offsets))? cellA : 
+cellB;
 
       case 1:
         for(int k=0; k<2; ++k){
@@ -1395,7 +1481,8 @@ int DiscreteGradient::cellMin(const int cellDim,
     std::sort(vsetB, vsetB+vertexNumber, sosLowerThan);
     for(int k=0; k<vertexNumber; ++k){
       if(vsetA[k]==vsetB[k]) continue;
-      else return (isLowerThan<dataType>(vsetA[k], vsetB[k], scalars,offsets))? cellA : cellB;
+      else return (isLowerThan<dataType>(vsetA[k], vsetB[k], scalars,offsets))? 
+cellA : cellB;
     }
   }
   else if(dimensionality_==3){
@@ -1408,7 +1495,8 @@ int DiscreteGradient::cellMin(const int cellDim,
 
     switch(cellDim){
       case 0:
-        return (isLowerThan<dataType>(cellA, cellB, scalars, offsets))? cellA : cellB;
+        return (isLowerThan<dataType>(cellA, cellB, scalars, offsets))? cellA : 
+cellB;
 
       case 1:
         for(int k=0; k<2; ++k){
@@ -1438,7 +1526,8 @@ int DiscreteGradient::cellMin(const int cellDim,
     std::sort(vsetB, vsetB+vertexNumber, sosLowerThan);
     for(int k=0; k<vertexNumber; ++k){
       if(vsetA[k]==vsetB[k]) continue;
-      else return (isLowerThan<dataType>(vsetA[k], vsetB[k], scalars,offsets))? cellA : cellB;
+      else return (isLowerThan<dataType>(vsetA[k], vsetB[k], scalars,offsets))? 
+cellA : cellB;
     }
   }
 
@@ -1446,7 +1535,7 @@ int DiscreteGradient::cellMin(const int cellDim,
 }
 
 template <typename dataType>
-int DiscreteGradient::g0(const int cellDim,
+int ttk::DiscreteGradient::g0(const int cellDim,
     const int cellId,
     const dataType* const scalars,
     const int* const offsets) const{
@@ -1511,7 +1600,7 @@ int DiscreteGradient::g0(const int cellDim,
 }
 
 template <typename dataType>
-int DiscreteGradient::g0_second(const int cellDim,
+int ttk::DiscreteGradient::g0_second(const int cellDim,
     const int cellId,
     const dataType* const scalars,
     const int* const offsets) const{
@@ -1525,7 +1614,8 @@ int DiscreteGradient::g0_second(const int cellDim,
       case 1:
         inputTriangulation_->getEdgeVertex(cellId, 0, facets[0]);
         inputTriangulation_->getEdgeVertex(cellId, 1, facets[1]);
-        facetMaxSecond=cellMin<dataType>(0, facets[0], facets[1], scalars,offsets);
+        facetMaxSecond=cellMin<dataType>(0, facets[0], facets[1], 
+scalars,offsets);
         break;
 
       case 2:
@@ -1537,11 +1627,14 @@ int DiscreteGradient::g0_second(const int cellDim,
         facetMax=cellMax<dataType>(1, facets[2], facetMax, scalars,offsets);
 
         if(facetMax==facets[0])
-          facetMaxSecond=cellMax<dataType>(1, facets[1], facets[2], scalars,offsets);
+          facetMaxSecond=cellMax<dataType>(1, facets[1], facets[2], 
+scalars,offsets);
         else if(facetMax==facets[1])
-          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[2], scalars,offsets);
+          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[2], 
+scalars,offsets);
         else
-          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[1], scalars,offsets);
+          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[1], 
+scalars,offsets);
         break;
     }
   }
@@ -1552,7 +1645,8 @@ int DiscreteGradient::g0_second(const int cellDim,
       case 1:
         inputTriangulation_->getEdgeVertex(cellId, 0, facets[0]);
         inputTriangulation_->getEdgeVertex(cellId, 1, facets[1]);
-        facetMaxSecond=cellMin<dataType>(0, facets[0], facets[1], scalars,offsets);
+        facetMaxSecond=cellMin<dataType>(0, facets[0], facets[1], 
+scalars,offsets);
         break;
 
       case 2:
@@ -1564,11 +1658,14 @@ int DiscreteGradient::g0_second(const int cellDim,
         facetMax=cellMax<dataType>(1, facets[2], facetMax, scalars,offsets);
 
         if(facetMax==facets[0])
-          facetMaxSecond=cellMax<dataType>(1, facets[1], facets[2], scalars,offsets);
+          facetMaxSecond=cellMax<dataType>(1, facets[1], facets[2], 
+scalars,offsets);
         else if(facetMax==facets[1])
-          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[2], scalars,offsets);
+          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[2], 
+scalars,offsets);
         else
-          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[1], scalars,offsets);
+          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[1], 
+scalars,offsets);
         break;
 
       case 3:
@@ -1587,11 +1684,13 @@ int DiscreteGradient::g0_second(const int cellDim,
         }
 
         for(int i=2; i<4; i++){
-          if(facets[i]==cellMax<dataType>(2,facets[i],facetMax,scalars,offsets)){
+          
+if(facets[i]==cellMax<dataType>(2,facets[i],facetMax,scalars,offsets)){
             facetMaxSecond=facetMax;
             facetMax=facets[i];
           }
-          else if(facets[i]==cellMax<dataType>(2,facets[i],facetMaxSecond,scalars,offsets)){
+          else 
+if(facets[i]==cellMax<dataType>(2,facets[i],facetMaxSecond,scalars,offsets)){
             facetMaxSecond=facets[i];
           }
         }
@@ -1603,7 +1702,7 @@ int DiscreteGradient::g0_second(const int cellDim,
 }
 
 template <typename dataType>
-int DiscreteGradient::g0_third(const int cellDim,
+int ttk::DiscreteGradient::g0_third(const int cellDim,
     const int cellId,
     const dataType* const scalars,
     const int* const offsets) const{
@@ -1634,11 +1733,13 @@ int DiscreteGradient::g0_third(const int cellDim,
         facetMin=cellMin<dataType>(2,facets[0],facets[1],scalars,offsets);
 
         for(int i=2; i<4; i++){
-          if(facets[i]==cellMax<dataType>(2,facets[i],facetMax,scalars,offsets)){
+          
+if(facets[i]==cellMax<dataType>(2,facets[i],facetMax,scalars,offsets)){
             facetMaxSecond=facetMax;
             facetMax=facets[i];
           }
-          else if(facets[i]==cellMax<dataType>(2,facets[i],facetMaxSecond,scalars,offsets)){
+          else 
+if(facets[i]==cellMax<dataType>(2,facets[i],facetMaxSecond,scalars,offsets)){
             facetMaxSecond=facets[i];
           }
 
@@ -1646,7 +1747,8 @@ int DiscreteGradient::g0_third(const int cellDim,
         }
 
         for(int i=0; i<4; i++){
-          if(facets[i]!=facetMax and facets[i]!=facetMaxSecond and facets[i]!=facetMin){
+          if(facets[i]!=facetMax and facets[i]!=facetMaxSecond and 
+facets[i]!=facetMin){
             facetMaxThird=facets[i];
             break;
           }
@@ -1659,10 +1761,10 @@ int DiscreteGradient::g0_third(const int cellDim,
 }
 
 template <typename dataType>
-int DiscreteGradient::assignGradient(const int alphaDim,
+int ttk::DiscreteGradient::assignGradient(const int alphaDim,
     const dataType* const scalars,
     const int* const offsets,
-    vector<vector<int>>& gradient) const{
+    std::vector<std::vector<int>>& gradient) const{
   const int betaDim=alphaDim+1;
   const int alphaNumber=gradient[alphaDim].size();
 
@@ -1673,7 +1775,8 @@ int DiscreteGradient::assignGradient(const int alphaDim,
     for(int alpha=0; alpha<alphaNumber; ++alpha){
       int betaNumber{};
       switch(alphaDim){
-        case 0: betaNumber=inputTriangulation_->getVertexEdgeNumber(alpha); break;
+        case 0: betaNumber=inputTriangulation_->getVertexEdgeNumber(alpha); 
+break;
         case 1: betaNumber=inputTriangulation_->getEdgeStarNumber(alpha); break;
       }
       int gamma{-1};
@@ -1704,9 +1807,12 @@ int DiscreteGradient::assignGradient(const int alphaDim,
     for(int alpha=0; alpha<alphaNumber; ++alpha){
       int betaNumber{};
       switch(alphaDim){
-        case 0: betaNumber=inputTriangulation_->getVertexEdgeNumber(alpha); break;
-        case 1: betaNumber=inputTriangulation_->getEdgeTriangleNumber(alpha); break;
-        case 2: betaNumber=inputTriangulation_->getTriangleStarNumber(alpha); break;
+        case 0: betaNumber=inputTriangulation_->getVertexEdgeNumber(alpha); 
+break;
+        case 1: betaNumber=inputTriangulation_->getEdgeTriangleNumber(alpha); 
+break;
+        case 2: betaNumber=inputTriangulation_->getTriangleStarNumber(alpha); 
+break;
       }
       int gamma{-1};
       for(int k=0; k<betaNumber; ++k){
@@ -1735,10 +1841,10 @@ int DiscreteGradient::assignGradient(const int alphaDim,
 }
 
 template <typename dataType>
-int DiscreteGradient::assignGradient2(const int alphaDim,
+int ttk::DiscreteGradient::assignGradient2(const int alphaDim,
     const dataType* const scalars,
     const int* const offsets,
-    vector<vector<int>>& gradient) const{
+    std::vector<std::vector<int>>& gradient) const{
   if(alphaDim>0){
     const int betaDim=alphaDim+1;
     const int alphaNumber=gradient[alphaDim].size();
@@ -1752,7 +1858,8 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
         if(gradient[alphaDim][alpha]==-1){
           int betaNumber{};
           switch(alphaDim){
-            case 1: betaNumber=inputTriangulation_->getEdgeStarNumber(alpha); break;
+            case 1: betaNumber=inputTriangulation_->getEdgeStarNumber(alpha); 
+break;
           }
           int gamma{-1};
           for(int k=0; k<betaNumber; ++k){
@@ -1785,8 +1892,10 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
         if(gradient[alphaDim][alpha]==-1){
           int betaNumber{};
           switch(alphaDim){
-            case 1: betaNumber=inputTriangulation_->getEdgeTriangleNumber(alpha); break;
-            case 2: betaNumber=inputTriangulation_->getTriangleStarNumber(alpha); break;
+            case 1: 
+betaNumber=inputTriangulation_->getEdgeTriangleNumber(alpha); break;
+            case 2: 
+betaNumber=inputTriangulation_->getTriangleStarNumber(alpha); break;
           }
           int gamma{-1};
           for(int k=0; k<betaNumber; ++k){
@@ -1817,10 +1926,10 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
 }
 
 template <typename dataType>
-int DiscreteGradient::assignGradient3(const int alphaDim,
+int ttk::DiscreteGradient::assignGradient3(const int alphaDim,
     const dataType* const scalars,
     const int* const offsets,
-    vector<vector<int>>& gradient) const{
+    std::vector<std::vector<int>>& gradient) const{
   if(alphaDim>0){
     const int betaDim=alphaDim+1;
     const int alphaNumber=gradient[alphaDim].size();
@@ -1834,7 +1943,8 @@ int DiscreteGradient::assignGradient3(const int alphaDim,
         if(gradient[alphaDim][alpha]==-1){
           int betaNumber{};
           switch(alphaDim){
-            case 2: betaNumber=inputTriangulation_->getTriangleStarNumber(alpha); break;
+            case 2: 
+betaNumber=inputTriangulation_->getTriangleStarNumber(alpha); break;
           }
           int gamma{-1};
           for(int k=0; k<betaNumber; ++k){
@@ -1864,7 +1974,7 @@ int DiscreteGradient::assignGradient3(const int alphaDim,
 }
 
 template <typename dataType>
-int DiscreteGradient::buildGradient(){
+int ttk::DiscreteGradient::buildGradient(){
   Timer t;
 
   const int* const offsets=static_cast<int*>(inputOffsets_);
@@ -1873,7 +1983,7 @@ int DiscreteGradient::buildGradient(){
   const int numberOfDimensions=getNumberOfDimensions();
 
   // init number of cells by dimension
-  vector<int> numberOfCells(numberOfDimensions);
+  std::vector<int> numberOfCells(numberOfDimensions);
   for(int i=0; i<numberOfDimensions; ++i)
     numberOfCells[i]=getNumberOfCells(i);
 
@@ -1891,20 +2001,20 @@ int DiscreteGradient::buildGradient(){
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[DiscreteGradient] Data-set (" << numberOfVertices_
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::buildGradient2(){
+int ttk::DiscreteGradient::buildGradient2(){
   Timer t;
 
   const int* const offsets=static_cast<int*>(inputOffsets_);
@@ -1914,20 +2024,20 @@ int DiscreteGradient::buildGradient2(){
     assignGradient2<dataType>(i, scalars, offsets, gradient_[i]);
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[DiscreteGradient] Data-set (" << numberOfVertices_
       << " points) post-processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::buildGradient3(){
+int ttk::DiscreteGradient::buildGradient3(){
   Timer t;
 
   const int* const offsets=static_cast<int*>(inputOffsets_);
@@ -1937,28 +2047,30 @@ int DiscreteGradient::buildGradient3(){
     assignGradient3<dataType>(i, scalars, offsets, gradient_[i]);
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[DiscreteGradient] Data-set (" << numberOfVertices_
       << " points) post-processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::setCriticalPoints(const vector<Cell>& criticalPoints) const{
+int ttk::DiscreteGradient::setCriticalPoints(const std::vector<Cell>& 
+criticalPoints) const{
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-  vector<dataType>* outputCriticalPoints_points_cellScalars=
-    static_cast<vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
+  std::vector<dataType>* outputCriticalPoints_points_cellScalars=
+    
+static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
 
   (*outputCriticalPoints_numberOfPoints_)=0;
 
   const int numberOfDimensions=getNumberOfDimensions();
-  vector<int> numberOfCriticalPointsByDimension(numberOfDimensions,0);
+  std::vector<int> numberOfCriticalPointsByDimension(numberOfDimensions,0);
 
   // for all critical cells
   const int numberOfCriticalPoints=criticalPoints.size();
@@ -1986,7 +2098,8 @@ int DiscreteGradient::setCriticalPoints(const vector<Cell>& criticalPoints) cons
       if(cellDim==0)
         outputCriticalPoints_points_PLVertexIdentifiers_->push_back(cellId);
       else if(cellDim==dimensionality_)
-        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
+        
+outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
       else
         outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
     }
@@ -1997,18 +2110,20 @@ int DiscreteGradient::setCriticalPoints(const vector<Cell>& criticalPoints) cons
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     for(int i=0; i<numberOfDimensions; ++i)
-      msg << "[DiscreteGradient] " << numberOfCriticalPointsByDimension[i] << " " << i << "-cell(s)." << endl;
-    dMsg(cout, msg.str(), infoMsg);
+      msg << "[DiscreteGradient] " 
+        << numberOfCriticalPointsByDimension[i] << " " << i << "-cell(s)." 
+        << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::setCriticalPoints() const{
-  vector<Cell> criticalPoints;
+int ttk::DiscreteGradient::setCriticalPoints() const{
+  std::vector<Cell> criticalPoints;
   getCriticalPoints(criticalPoints);
 
   setCriticalPoints<dataType>(criticalPoints);
@@ -2017,18 +2132,20 @@ int DiscreteGradient::setCriticalPoints() const{
 }
 
 template <typename dataType>
-int DiscreteGradient::setAugmentedCriticalPoints(const vector<Cell>& criticalPoints,
-    vector<int>& maxSeeds,
+int ttk::DiscreteGradient::setAugmentedCriticalPoints(const std::vector<Cell>& 
+criticalPoints,
+    std::vector<int>& maxSeeds,
     int* ascendingManifold,
     int* descendingManifold) const{
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-  vector<dataType>* outputCriticalPoints_points_cellScalars=
-    static_cast<vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
+  std::vector<dataType>* outputCriticalPoints_points_cellScalars=
+    
+static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
 
   (*outputCriticalPoints_numberOfPoints_)=0;
 
   const int numberOfDimensions=getNumberOfDimensions();
-  vector<int> numberOfCriticalPointsByDimension(numberOfDimensions,0);
+  std::vector<int> numberOfCriticalPointsByDimension(numberOfDimensions,0);
 
   // for all critical cells
   const int numberOfCriticalPoints=criticalPoints.size();
@@ -2056,7 +2173,8 @@ int DiscreteGradient::setAugmentedCriticalPoints(const vector<Cell>& criticalPoi
       if(cellDim==0)
         outputCriticalPoints_points_PLVertexIdentifiers_->push_back(cellId);
       else if(cellDim==dimensionality_)
-        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
+        
+outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
       else
         outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
     }
@@ -2066,13 +2184,15 @@ int DiscreteGradient::setAugmentedCriticalPoints(const vector<Cell>& criticalPoi
     int manifoldSize=0;
     if(cellDim==0){
       const int seedId=descendingManifold[cellId];
-      manifoldSize=std::count(descendingManifold, descendingManifold+numberOfVertices_, seedId);
+      manifoldSize=std::count(descendingManifold, 
+descendingManifold+numberOfVertices_, seedId);
     }
     else if(cellDim==dimensionality_){
       auto ite=std::find(maxSeeds.begin(), maxSeeds.end(), cellId);
       if(ite!=maxSeeds.end()){
         const int seedId=std::distance(maxSeeds.begin(), ite);
-        manifoldSize=std::count(ascendingManifold, ascendingManifold+numberOfVertices_, seedId);
+        manifoldSize=std::count(ascendingManifold, 
+ascendingManifold+numberOfVertices_, seedId);
       }
     }
     outputCriticalPoints_points_manifoldSize_->push_back(manifoldSize);
@@ -2081,20 +2201,22 @@ int DiscreteGradient::setAugmentedCriticalPoints(const vector<Cell>& criticalPoi
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     for(int i=0; i<numberOfDimensions; ++i)
-      msg << "[DiscreteGradient] " << numberOfCriticalPointsByDimension[i] << " " << i << "-cell(s)." << endl;
-    dMsg(cout, msg.str(), infoMsg);
+      msg << "[DiscreteGradient] " << numberOfCriticalPointsByDimension[i] 
+        << " " << i << "-cell(s)." << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::getRemovableMaxima(const vector<pair<int,char>>& criticalPoints,
+int ttk::DiscreteGradient::getRemovableMaxima(const 
+std::vector<std::pair<int,char>>& criticalPoints,
     const bool allowBoundary,
-    vector<char>& isRemovableMaximum,
-    vector<int>& pl2dmt_maximum){
+    std::vector<char>& isRemovableMaximum,
+    std::vector<int>& pl2dmt_maximum){
   const int numberOfCriticalPoints=criticalPoints.size();
   const int numberOfCells=inputTriangulation_->getNumberOfCells();
   const int maximumDim=dimensionality_;
@@ -2115,16 +2237,18 @@ int DiscreteGradient::getRemovableMaxima(const vector<pair<int,char>>& criticalP
   }
 
   for(int i=0; i<numberOfCriticalPoints; ++i){
-    const pair<int,char>& criticalPoint=criticalPoints[i];
+    const std::pair<int,char>& criticalPoint=criticalPoints[i];
     const int criticalPointId=criticalPoint.first;
     const char criticalPointType=criticalPoint.second;
 
     if(criticalPointType==maximumDim){
-      if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
+      if(!allowBoundary and 
+inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
       int numberOfMaxima=0;
       int maximumId=-1;
-      const int starNumber=inputTriangulation_->getVertexStarNumber(criticalPointId);
+      const int 
+starNumber=inputTriangulation_->getVertexStarNumber(criticalPointId);
       for(int j=0; j<starNumber; ++j){
         int starId;
         inputTriangulation_->getVertexStar(criticalPointId, j, starId);
@@ -2151,14 +2275,15 @@ int DiscreteGradient::getRemovableMaxima(const vector<pair<int,char>>& criticalP
 }
 
 template <typename dataType>
-int DiscreteGradient::getRemovableSaddles1(const vector<pair<int,char>>& criticalPoints,
+int ttk::DiscreteGradient::getRemovableSaddles1(const 
+std::vector<std::pair<int,char>>& criticalPoints,
     const bool allowBoundary,
-    vector<char>& isRemovableSaddle,
-    vector<int>& pl2dmt_saddle) const{
+    std::vector<char>& isRemovableSaddle,
+    std::vector<int>& pl2dmt_saddle) const{
   const int numberOfEdges=inputTriangulation_->getNumberOfEdges();
   isRemovableSaddle.resize(numberOfEdges);
 
-  vector<char> dmt2PL(numberOfEdges, false);
+  std::vector<char> dmt2PL(numberOfEdges, false);
 
   // by default : 1-saddle is removable
 #ifdef TTK_ENABLE_OPENMP
@@ -2170,16 +2295,18 @@ int DiscreteGradient::getRemovableSaddles1(const vector<pair<int,char>>& critica
   }
 
   // is [edgeId] in star of PL-1saddle?
-  for(pair<int,char> criticalPoint : criticalPoints){
+  for(std::pair<int,char> criticalPoint : criticalPoints){
     const int criticalPointId=criticalPoint.first;
     const char criticalPointType=criticalPoint.second;
 
     if(criticalPointType==1){
-      if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
+      if(!allowBoundary and 
+inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
       int numberOfSaddles=0;
       int saddleId=-1;
-      const int edgeNumber=inputTriangulation_->getVertexEdgeNumber(criticalPointId);
+      const int 
+edgeNumber=inputTriangulation_->getVertexEdgeNumber(criticalPointId);
       for(int i=0; i<edgeNumber; ++i){
         int edgeId;
         inputTriangulation_->getVertexEdge(criticalPointId, i, edgeId);
@@ -2206,14 +2333,15 @@ int DiscreteGradient::getRemovableSaddles1(const vector<pair<int,char>>& critica
 }
 
 template <typename dataType>
-int DiscreteGradient::getRemovableSaddles2(const vector<pair<int,char>>& criticalPoints,
+int ttk::DiscreteGradient::getRemovableSaddles2(const 
+std::vector<std::pair<int,char>>& criticalPoints,
     const bool allowBoundary,
-    vector<char>& isRemovableSaddle,
-    vector<int>& pl2dmt_saddle) const{
+    std::vector<char>& isRemovableSaddle,
+    std::vector<int>& pl2dmt_saddle) const{
   const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
   isRemovableSaddle.resize(numberOfTriangles);
 
-  vector<char> dmt2PL(numberOfTriangles, false);
+  std::vector<char> dmt2PL(numberOfTriangles, false);
 
   // by default : 2-saddle is removable
 #ifdef TTK_ENABLE_OPENMP
@@ -2225,16 +2353,18 @@ int DiscreteGradient::getRemovableSaddles2(const vector<pair<int,char>>& critica
   }
 
   // is [triangleId] in star of PL-2saddle?
-  for(pair<int,char> criticalPoint : criticalPoints){
+  for(std::pair<int,char> criticalPoint : criticalPoints){
     const int criticalPointId=criticalPoint.first;
     const char criticalPointType=criticalPoint.second;
 
     if(criticalPointType==2){
-      if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
+      if(!allowBoundary and 
+inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
       int numberOfSaddles=0;
       int saddleId=-1;
-      const int triangleNumber=inputTriangulation_->getVertexTriangleNumber(criticalPointId);
+      const int 
+triangleNumber=inputTriangulation_->getVertexTriangleNumber(criticalPointId);
       for(int i=0; i<triangleNumber; ++i){
         int triangleId;
         inputTriangulation_->getVertexTriangle(criticalPointId, i, triangleId);
@@ -2261,8 +2391,10 @@ int DiscreteGradient::getRemovableSaddles2(const vector<pair<int,char>>& critica
 }
 
 template <typename dataType>
-int DiscreteGradient::orderSaddleMaximumConnections(const vector<VPath>& vpaths,
-    set<pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S){
+int ttk::DiscreteGradient::orderSaddleMaximumConnections(const 
+std::vector<VPath>& vpaths,
+    std::set<std::pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& 
+S){
   Timer t;
 
   const int numberOfVPaths=vpaths.size();
@@ -2270,25 +2402,26 @@ int DiscreteGradient::orderSaddleMaximumConnections(const vector<VPath>& vpaths,
     const VPath& vpath=vpaths[i];
 
     if(vpath.isValid_)
-      S.insert(make_pair(vpath.persistence_,i));
+      S.insert(std::make_pair(vpath.persistence_,i));
   }
 
   {
-    stringstream msg;
-    msg << "[DiscreteGradient]  Ordering of the vpaths :\t" << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[DiscreteGradient]  Ordering of the vpaths :\t" << 
+t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::computeCoefficients(const bool isDense,
-    vector<char>& denseCoefficients,
-    vector<Segment>& segments,
+int ttk::DiscreteGradient::computeCoefficients(const bool isDense,
+    std::vector<char>& denseCoefficients,
+    std::vector<Segment>& segments,
     const CriticalPoint& source,
     VPath& newVPath,
-    const vector<VPath>& vpaths) const{
+    const std::vector<VPath>& vpaths) const{
   if(isDense){
     const int numberOfSegments=segments.size();
     // apriori : the following will make only one allocation, the size is fixed
@@ -2336,7 +2469,7 @@ int DiscreteGradient::computeCoefficients(const bool isDense,
     }
   }
   else{
-    vector<pair<int,char>> sparseCoefficients;
+    std::vector<std::pair<int,char>> sparseCoefficients;
 
     // 1) initialize accumulator
     const int numberOfNewVPathSegments=newVPath.segments_.size();
@@ -2344,7 +2477,7 @@ int DiscreteGradient::computeCoefficients(const bool isDense,
       const int segmentId=newVPath.segments_[i];
       const char segmentState=newVPath.states_[i];
 
-      sparseCoefficients.push_back(make_pair(segmentId,segmentState));
+      sparseCoefficients.push_back(std::make_pair(segmentId,segmentState));
     }
 
     // 2) add source.vpaths.segments to accumulator
@@ -2371,7 +2504,8 @@ int DiscreteGradient::computeCoefficients(const bool isDense,
             }
           }
           if(!isIn)
-            sparseCoefficients.push_back(make_pair(segmentId,segmentState));
+            
+sparseCoefficients.push_back(std::make_pair(segmentId,segmentState));
         }
       }
     }
@@ -2384,7 +2518,8 @@ int DiscreteGradient::computeCoefficients(const bool isDense,
       const int segmentId=sparseCoefficients[i].first;
       const char segmentState=sparseCoefficients[i].second;
 
-      // apriori : sparseCoefficients store coefficient zero; we must remove them
+      // apriori : sparseCoefficients store coefficient zero; we must remove 
+      // them
       if(segmentState!=0){
         newVPath.states_.push_back(segmentState);
         newVPath.segments_.push_back(segmentId);
@@ -2396,7 +2531,8 @@ int DiscreteGradient::computeCoefficients(const bool isDense,
 }
 
 template <typename dataType>
-int DiscreteGradient::reverseSaddleMaximumConnections(const vector<Segment>& segments){
+int ttk::DiscreteGradient::reverseSaddleMaximumConnections(const 
+std::vector<Segment>& segments){
   Timer t;
 
   const int numberOfSegments=segments.size();
@@ -2408,21 +2544,24 @@ int DiscreteGradient::reverseSaddleMaximumConnections(const vector<Segment>& seg
   }
 
   {
-    stringstream msg;
-    msg << "[DiscreteGradient]  Gradient reversal step :\t" << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[DiscreteGradient]  Gradient reversal step :\t" << 
+t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::initializeSaddleMaximumConnections(vector<char>& isRemovableMaximum,
-    vector<char>& isRemovableSaddle,
+int 
+ttk::DiscreteGradient::initializeSaddleMaximumConnections(std::vector<char>& 
+isRemovableMaximum,
+    std::vector<char>& isRemovableSaddle,
     const bool allowBruteForce,
-    vector<Segment>& segments,
-    vector<VPath>& vpaths,
-    vector<CriticalPoint>& criticalPoints) const{
+    std::vector<Segment>& segments,
+    std::vector<VPath>& vpaths,
+    std::vector<CriticalPoint>& criticalPoints) const{
   Timer t;
 
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
@@ -2445,7 +2584,7 @@ int DiscreteGradient::initializeSaddleMaximumConnections(vector<char>& isRemovab
 
   // add the maxima to CriticalPointList and build MaxIndex
   const int numberOfMaximumCandidates=getNumberOfCells(maximumDim);
-  vector<int> maximumIndex(numberOfMaximumCandidates,-1);
+  std::vector<int> maximumIndex(numberOfMaximumCandidates,-1);
   for(int i=0; i<numberOfMaximumCandidates; ++i){
     if(isRemovableMaximum[i]){
       const Cell maximumCandidate(maximumDim, i);
@@ -2479,7 +2618,7 @@ int DiscreteGradient::initializeSaddleMaximumConnections(vector<char>& isRemovab
     else if(maximumDim==3)
       starNumber=inputTriangulation_->getTriangleStarNumber(saddleId);
 
-    vector<vector<Cell>> paths(starNumber);
+    std::vector<std::vector<Cell>> paths(starNumber);
     for(int j=0; j<starNumber; ++j){
       int starId;
       if(maximumDim==2)
@@ -2577,25 +2716,27 @@ int DiscreteGradient::initializeSaddleMaximumConnections(vector<char>& isRemovab
   }
 
   {
-    stringstream msg;
-    msg << "[DiscreteGradient]  Initialization step :\t" << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[DiscreteGradient]  Initialization step :\t" << t.getElapsedTime() 
+<< " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::processSaddleMaximumConnections(const int iterationThreshold,
-    const vector<char>& isPL,
+int ttk::DiscreteGradient::processSaddleMaximumConnections(const int 
+iterationThreshold,
+    const std::vector<char>& isPL,
     const bool allowBoundary,
     const bool allowBruteForce,
-    set<pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S,
-    vector<int>& pl2dmt_saddle,
-    vector<int>& pl2dmt_maximum,
-    vector<Segment>& segments,
-    vector<VPath>& vpaths,
-    vector<CriticalPoint>& criticalPoints) const{
+    std::set<std::pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S,
+    std::vector<int>& pl2dmt_saddle,
+    std::vector<int>& pl2dmt_maximum,
+    std::vector<Segment>& segments,
+    std::vector<VPath>& vpaths,
+    std::vector<CriticalPoint>& criticalPoints) const{
   Timer t;
 
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
@@ -2610,11 +2751,11 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
   const int maximumDim=dimensionality_;
   const int saddleDim=maximumDim-1;
 
-  vector<char> isRemovedSaddle(numberOfSaddleCandidates, false);
-  vector<char> isRemovedMaximum(numberOfMaximumCandidates, false);
+  std::vector<char> isRemovedSaddle(numberOfSaddleCandidates, false);
+  std::vector<char> isRemovedMaximum(numberOfMaximumCandidates, false);
 
   int numberOfIterations{};
-  vector<char> denseCoefficients;
+  std::vector<char> denseCoefficients;
   while(S.size()){
     if(iterationThreshold>=0 and numberOfIterations>=iterationThreshold) break;
 
@@ -2639,7 +2780,8 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
 
           if(isPL[vertexId]!=saddleDim) continue;
 
-          if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)){
+          if(!allowBoundary and 
+inputTriangulation_->isVertexOnBoundary(vertexId)){
             toRemoveSaddle=1;
             continue;
           }
@@ -2651,18 +2793,24 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
 
             int saddleCandidateNumber=0;
             if(dimensionality_==2)
-              saddleCandidateNumber=inputTriangulation_->getVertexEdgeNumber(pl_saddleId);
+              
+saddleCandidateNumber=inputTriangulation_->getVertexEdgeNumber(pl_saddleId);
             else if(dimensionality_==3)
-              saddleCandidateNumber=inputTriangulation_->getVertexTriangleNumber(pl_saddleId);
+              
+saddleCandidateNumber=inputTriangulation_->getVertexTriangleNumber(pl_saddleId);
 
             for(int j=0; j<saddleCandidateNumber; ++j){
               int saddleCandidateId=-1;
               if(dimensionality_==2)
-                inputTriangulation_->getVertexEdge(pl_saddleId, j, saddleCandidateId);
+                inputTriangulation_->getVertexEdge(pl_saddleId, j, 
+saddleCandidateId);
               else if(dimensionality_==3)
-                inputTriangulation_->getVertexTriangle(pl_saddleId, j, saddleCandidateId);
+                inputTriangulation_->getVertexTriangle(pl_saddleId, j, 
+saddleCandidateId);
 
-              if(saddleCandidateId!=dmt_saddleId and isCellCritical(Cell(saddleDim,saddleCandidateId)) and !isRemovedSaddle[saddleCandidateId])
+              if(saddleCandidateId!=dmt_saddleId and 
+isCellCritical(Cell(saddleDim,saddleCandidateId)) and 
+!isRemovedSaddle[saddleCandidateId])
                 ++numberOfRemainingSaddles;
             }
 
@@ -2707,7 +2855,8 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
 
           if(isPL[vertexId]!=maximumDim) continue;
 
-          if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)){
+          if(!allowBoundary and 
+inputTriangulation_->isVertexOnBoundary(vertexId)){
             toRemoveMaximum=1;
             continue;
           }
@@ -2716,11 +2865,13 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
             const int pl_maxId=vertexId;
 
             int numberOfRemainingMaxima=0;
-            const int starNumber=inputTriangulation_->getVertexStarNumber(pl_maxId);
+            const int 
+starNumber=inputTriangulation_->getVertexStarNumber(pl_maxId);
             for(int j=0; j<starNumber; ++j){
               int starId;
               inputTriangulation_->getVertexStar(pl_maxId, j, starId);
-              if(starId!=dmt_maxId and isMaximum(Cell(maximumDim,starId)) and !isRemovedMaximum[starId])
+              if(starId!=dmt_maxId and isMaximum(Cell(maximumDim,starId)) and 
+!isRemovedMaximum[starId])
                 ++numberOfRemainingMaxima;
             }
 
@@ -2754,7 +2905,8 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
 
     // sync removed-state
     if(vpath.isValid_){
-      if((toRemoveSaddle>=0 and toRemoveMaximum>0) or (toRemoveSaddle>0 and toRemoveMaximum>=0)){
+      if((toRemoveSaddle>=0 and toRemoveMaximum>0) or (toRemoveSaddle>0 and 
+toRemoveMaximum>=0)){
         const int sourceId=vpath.source_;
         const int dmt_saddleId=criticalPoints[sourceId].cell_.id_;
 
@@ -2824,7 +2976,8 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
           const int newSourceVPathId=newSource.vpaths_[j];
           VPath& newSourceVPath=vpaths[newSourceVPathId];
 
-          if(newSourceVPath.isValid_ and newSourceVPath.destination_==newDestinationId){
+          if(newSourceVPath.isValid_ and 
+newSourceVPath.destination_==newDestinationId){
             isDoubleConnected=true;
             newSourceVPath.invalidate();
             break;
@@ -2838,7 +2991,8 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
         }
 
         // compute final coefficients of newVPath with sparse representation
-        computeCoefficients<dataType>(false, denseCoefficients, segments, source, newVPath, vpaths);
+        computeCoefficients<dataType>(false, denseCoefficients, segments, 
+source, newVPath, vpaths);
 
         // update the destination of newVPath
         newVPath.destination_=newDestinationId;
@@ -2848,13 +3002,15 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
         newDestination.vpaths_.push_back(newVPathId);
 
         // erase newVPath
-        S.erase(make_pair(newVPath.persistence_,newVPathId));
+        S.erase(std::make_pair(newVPath.persistence_,newVPathId));
 
         // update persistence
-        newVPath.persistence_=getPersistence<dataType>(newDestination.cell_,newSource.cell_, scalars);
+        
+newVPath.persistence_=getPersistence<dataType>(newDestination.cell_,newSource.
+cell_, scalars);
 
         // repush newVPath to confirm update
-        S.insert(make_pair(newVPath.persistence_,newVPathId));
+        S.insert(std::make_pair(newVPath.persistence_,newVPathId));
       }
 
       // invalid source.vpaths
@@ -2874,17 +3030,19 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
   }
 
   {
-    stringstream msg;
-    msg << "[DiscreteGradient]  Processing of the vpaths :\t" << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[DiscreteGradient]  Processing of the vpaths :\t" << 
+t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::simplifySaddleMaximumConnections(const vector<pair<int,char>>& criticalPoints,
-    const vector<char>& isPL,
+int ttk::DiscreteGradient::simplifySaddleMaximumConnections(const 
+std::vector<std::pair<int,char>>& criticalPoints,
+    const std::vector<char>& isPL,
     const int iterationThreshold,
     const bool allowBoundary,
     const bool allowBruteForce){
@@ -2892,24 +3050,27 @@ int DiscreteGradient::simplifySaddleMaximumConnections(const vector<pair<int,cha
 
   // Part 0 : select the cells to keep or remove (gradient
   // is not modified).
-  vector<char> isRemovableMaximum;
-  vector<int> pl2dmt_maximum(numberOfVertices_, -1);
-  getRemovableMaxima<dataType>(criticalPoints, allowBoundary, isRemovableMaximum, pl2dmt_maximum);
+  std::vector<char> isRemovableMaximum;
+  std::vector<int> pl2dmt_maximum(numberOfVertices_, -1);
+  getRemovableMaxima<dataType>(criticalPoints, allowBoundary, 
+isRemovableMaximum, pl2dmt_maximum);
 
-  vector<char> isRemovableSaddle;
-  vector<int> pl2dmt_saddle(numberOfVertices_, -1);
+  std::vector<char> isRemovableSaddle;
+  std::vector<int> pl2dmt_saddle(numberOfVertices_, -1);
   if(!allowBruteForce){
     if(dimensionality_==2)
-      getRemovableSaddles1<dataType>(criticalPoints, allowBoundary, isRemovableSaddle, pl2dmt_saddle);
+      getRemovableSaddles1<dataType>(criticalPoints, allowBoundary, 
+isRemovableSaddle, pl2dmt_saddle);
     else if(dimensionality_==3)
-      getRemovableSaddles2<dataType>(criticalPoints, allowBoundary, isRemovableSaddle, pl2dmt_saddle);
+      getRemovableSaddles2<dataType>(criticalPoints, allowBoundary, 
+isRemovableSaddle, pl2dmt_saddle);
   }
 
   // Part 1 : build a virtual but complete MSC structure as
   // initialization (gradient is not modified).
-  vector<Segment> segments;
-  vector<VPath> vpaths;
-  vector<CriticalPoint> dmt_criticalPoints;
+  std::vector<Segment> segments;
+  std::vector<VPath> vpaths;
+  std::vector<CriticalPoint> dmt_criticalPoints;
   initializeSaddleMaximumConnections<dataType>(isRemovableMaximum,
       isRemovableSaddle,
       allowBruteForce,
@@ -2920,7 +3081,8 @@ int DiscreteGradient::simplifySaddleMaximumConnections(const vector<pair<int,cha
   // Part 2 : push the vpaths into a set to order them by persistence
   // value - lower to higher (gradient is not modified).
   SaddleMaximumVPathComparator<dataType> cmp_f;
-  set<pair<dataType,int>, SaddleMaximumVPathComparator<dataType>> S(cmp_f);
+  std::set<std::pair<dataType,int>, SaddleMaximumVPathComparator<dataType>> 
+S(cmp_f);
   orderSaddleMaximumConnections<dataType>(vpaths, S);
 
   // Part 3 : iteratively process the vpaths, virtually reverse the
@@ -2943,23 +3105,25 @@ int DiscreteGradient::simplifySaddleMaximumConnections(const vector<pair<int,cha
   reverseSaddleMaximumConnections<dataType>(segments);
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[DiscreteGradient] Saddle-Maximum pairs simplified in "
-      << t.getElapsedTime() << " s, "<< threadNumber_ << " thread(s)." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << t.getElapsedTime() << " s, "<< threadNumber_ << " thread(s)." << 
+std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isRemovableSaddle1,
-    const vector<char>& isRemovableSaddle2,
+int ttk::DiscreteGradient::initializeSaddleSaddleConnections1(const 
+std::vector<char>& isRemovableSaddle1,
+    const std::vector<char>& isRemovableSaddle2,
     const bool allowBruteForce,
-    vector<VPath>& vpaths,
-    vector<CriticalPoint>& criticalPoints,
-    vector<int>& saddle1Index,
-    vector<int>& saddle2Index) const{
+    std::vector<VPath>& vpaths,
+    std::vector<CriticalPoint>& criticalPoints,
+    std::vector<int>& saddle1Index,
+    std::vector<int>& saddle2Index) const{
   Timer t;
 
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
@@ -3001,13 +3165,13 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
   // Part 2 : update the structures
   // apriori: by default construction, the vpaths and segments are not valid
   wallId_t descendingWallId=1;
-  vector<wallId_t> isVisited(numberOfSaddle2Candidates, 0);
+  std::vector<wallId_t> isVisited(numberOfSaddle2Candidates, 0);
   for(int i=0; i<numberOf2Saddles; ++i){
     const int destinationIndex=i;
     CriticalPoint& destination=criticalPoints[destinationIndex];
     const Cell& saddle2=destination.cell_;
 
-    set<int> saddles1;
+    std::set<int> saddles1;
     const wallId_t savedDescendingWallId=descendingWallId;
     getDescendingWall(descendingWallId, saddle2, isVisited, nullptr, &saddles1);
     ++descendingWallId;
@@ -3017,8 +3181,10 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
 
       const Cell& saddle1=Cell(1,saddle1Id);
 
-      vector<Cell> path;
-      const bool isMultiConnected=getAscendingPathThroughWall(savedDescendingWallId, saddle1, saddle2, isVisited, &path);
+      std::vector<Cell> path;
+      const bool 
+isMultiConnected=getAscendingPathThroughWall(savedDescendingWallId, saddle1, 
+saddle2, isVisited, &path);
 
       if(!isMultiConnected){
         const int sourceIndex=saddle1Index[saddle1Id];
@@ -3029,8 +3195,11 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
         const int destinationSlot=destination.addSlot();
 
         // update vpath
-        const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
-        vpaths.push_back(VPath(true,-1,sourceIndex,destinationIndex,sourceSlot,destinationSlot,persistence));
+        const dataType persistence=getPersistence<dataType>(saddle2, saddle1, 
+scalars);
+        
+vpaths.push_back(VPath(true,-1,sourceIndex,destinationIndex,sourceSlot,
+destinationSlot,persistence));
       }
     }
   }
@@ -3068,18 +3237,22 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const vector<char>& isR
   }
 
   {
-    stringstream msg;
-    msg << "[DiscreteGradient]  Initialization step :\t" << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[DiscreteGradient]  Initialization step :\t" << t.getElapsedTime() 
+<< " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::orderSaddleSaddleConnections1(const vector<VPath>& vpaths,
-    vector<CriticalPoint>& criticalPoints,
-    set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S){
+int ttk::DiscreteGradient::orderSaddleSaddleConnections1(const 
+std::vector<VPath>& vpaths,
+    std::vector<CriticalPoint>& criticalPoints,
+    
+std::set<std::tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& 
+S){
   Timer t;
 
   const int numberOfVPaths=vpaths.size();
@@ -3088,34 +3261,37 @@ int DiscreteGradient::orderSaddleSaddleConnections1(const vector<VPath>& vpaths,
 
     if(vpath.isValid_){
       const int saddleId=criticalPoints[vpath.destination_].cell_.id_;
-      S.insert(make_tuple(vpath.persistence_,i,saddleId));
+      S.insert(std::make_tuple(vpath.persistence_,i,saddleId));
     }
   }
 
   {
-    stringstream msg;
-    msg << "[DiscreteGradient]  Ordering of the vpaths :\t" << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[DiscreteGradient]  Ordering of the vpaths :\t" << 
+t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThreshold,
-    const vector<char>& isPL,
+int ttk::DiscreteGradient::processSaddleSaddleConnections1(const int 
+iterationThreshold,
+    const std::vector<char>& isPL,
     const bool allowBoundary,
     const bool allowBruteForce,
     const bool returnSaddleConnectors,
-    set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
-    vector<int>& pl2dmt_saddle1,
-    vector<int>& pl2dmt_saddle2,
-    vector<char>& isRemovableSaddle1,
-    vector<char>& isRemovableSaddle2,
-    vector<VPath>& vpaths,
-    vector<CriticalPoint>& criticalPoints,
-    vector<int>& saddle1Index,
-    vector<int>& saddle2Index){
+    
+std::set<std::tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
+    std::vector<int>& pl2dmt_saddle1,
+    std::vector<int>& pl2dmt_saddle2,
+    std::vector<char>& isRemovableSaddle1,
+    std::vector<char>& isRemovableSaddle2,
+    std::vector<VPath>& vpaths,
+    std::vector<CriticalPoint>& criticalPoints,
+    std::vector<int>& saddle1Index,
+    std::vector<int>& saddle2Index){
   Timer t;
 
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
@@ -3124,14 +3300,14 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
   const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
   const int optimizedSize=std::max(numberOfEdges, numberOfTriangles);
   wallId_t wallId=1;
-  vector<wallId_t> isVisited(optimizedSize, 0);
+  std::vector<wallId_t> isVisited(optimizedSize, 0);
 
   int numberOfIterations{};
   while(!S.empty()){
     if(iterationThreshold>=0 and numberOfIterations>=iterationThreshold) break;
 
     auto ptr=S.begin();
-    const int vpathId=get<1>(*ptr);
+    const int vpathId=std::get<1>(*ptr);
     S.erase(ptr);
     VPath& vpath=vpaths[vpathId];
 
@@ -3144,7 +3320,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
       const Cell& minSaddle1=criticalPoints[vpath.source_].cell_;
       const Cell& minSaddle2=criticalPoints[vpath.destination_].cell_;
 
-      set<int> saddles1;
+      std::set<int> saddles1;
       const wallId_t savedWallId=wallId;
       getDescendingWall(wallId, minSaddle2, isVisited, nullptr, &saddles1);
       ++wallId;
@@ -3157,8 +3333,9 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
       }
 
       // check if there is multiple connections
-      vector<Cell> path;
-      const bool isMultiConnected=getAscendingPathThroughWall(savedWallId, minSaddle1, minSaddle2, isVisited, &path);
+      std::vector<Cell> path;
+      const bool isMultiConnected=getAscendingPathThroughWall(savedWallId, 
+minSaddle1, minSaddle2, isVisited, &path);
       if(isMultiConnected){
         ++numberOfIterations;
         continue;
@@ -3176,7 +3353,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
 
             if(isPL[vertexId]!=1) continue;
 
-            if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
+            if(!allowBoundary and 
+inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
 
             if(pl2dmt_saddle1[vertexId]==-1){
               const int pl_saddle1Id=vertexId;
@@ -3184,12 +3362,14 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
               int numberOfRemainingSaddles1=0;
 
               int savedId=-1;
-              const int edgeNumber=inputTriangulation_->getVertexEdgeNumber(pl_saddle1Id);
+              const int 
+edgeNumber=inputTriangulation_->getVertexEdgeNumber(pl_saddle1Id);
               for(int j=0; j<edgeNumber; ++j){
                 int edgeId;
                 inputTriangulation_->getVertexEdge(pl_saddle1Id, j, edgeId);
 
-                if(edgeId!=dmt_saddle1Id and isSaddle1(Cell(1,edgeId)) and isRemovableSaddle1[edgeId]){
+                if(edgeId!=dmt_saddle1Id and isSaddle1(Cell(1,edgeId)) and 
+isRemovableSaddle1[edgeId]){
                   ++numberOfRemainingSaddles1;
                   savedId=edgeId;
                 }
@@ -3230,7 +3410,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
 
             if(isPL[vertexId]!=2) continue;
 
-            if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
+            if(!allowBoundary and 
+inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
 
             if(pl2dmt_saddle2[vertexId]==-1){
               const int pl_saddle2Id=vertexId;
@@ -3238,12 +3419,15 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
               int numberOfRemainingSaddles2=0;
 
               int savedId=-1;
-              const int triangleNumber=inputTriangulation_->getVertexTriangleNumber(pl_saddle2Id);
+              const int 
+triangleNumber=inputTriangulation_->getVertexTriangleNumber(pl_saddle2Id);
               for(int j=0; j<triangleNumber; ++j){
                 int triangleId;
-                inputTriangulation_->getVertexTriangle(pl_saddle2Id, j, triangleId);
+                inputTriangulation_->getVertexTriangle(pl_saddle2Id, j, 
+triangleId);
 
-                if(triangleId!=dmt_saddle2Id and isSaddle2(Cell(2,triangleId)) and isRemovableSaddle2[triangleId]){
+                if(triangleId!=dmt_saddle2Id and isSaddle2(Cell(2,triangleId)) 
+and isRemovableSaddle2[triangleId]){
                   ++numberOfRemainingSaddles2;
                   savedId=triangleId;
                 }
@@ -3281,14 +3465,14 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
       if(CollectPersistencePairs and outputPersistencePairs_){
         const Cell& minSaddle1=criticalPoints[vpath.source_].cell_;
         const Cell& minSaddle2=criticalPoints[vpath.destination_].cell_;
-        outputPersistencePairs_->push_back(make_tuple(minSaddle1, minSaddle2));
+        outputPersistencePairs_->push_back(std::make_tuple(minSaddle1, minSaddle2));
       }
 
       const int sourceId=vpath.source_;
       const int destinationId=vpath.destination_;
 
       // invalidate vpaths connected to destination
-      vector<int> newSourceIds;
+      std::vector<int> newSourceIds;
       CriticalPoint& destination=criticalPoints[destinationId];
       for(const int destinationVPathId : destination.vpaths_){
         VPath& destinationVPath=vpaths[destinationVPathId];
@@ -3303,8 +3487,9 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
         }
       }
 
-      // invalidate vpaths connected to source and save the critical points to update
-      vector<int> newDestinationIds;
+      // invalidate vpaths connected to source and save the critical points to 
+      // update
+      std::vector<int> newDestinationIds;
       CriticalPoint& source=criticalPoints[sourceId];
       for(const int sourceVPathId : source.vpaths_){
         VPath& sourceVPath=vpaths[sourceVPathId];
@@ -3317,7 +3502,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
           CriticalPoint& newDestination=criticalPoints[newDestinationId];
           for(const int newDestinationVPathId : newDestination.vpaths_){
             VPath& newDestinationVPath=vpaths[newDestinationVPathId];
-            if(newDestinationVPath.isValid_ and newDestinationVPath.source_!=sourceId){
+            if(newDestinationVPath.isValid_ and 
+newDestinationVPath.source_!=sourceId){
 
               // clear vpath
               newDestinationVPath.invalidate();
@@ -3339,7 +3525,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
         CriticalPoint& newDestination=criticalPoints[newDestinationId];
         const Cell& saddle2=newDestination.cell_;
 
-        set<int> saddles1;
+        std::set<int> saddles1;
         const wallId_t savedWallId=wallId;
         getDescendingWall(wallId, saddle2, isVisited, nullptr, &saddles1);
         ++wallId;
@@ -3347,8 +3533,9 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
         for(const int saddle1Id : saddles1){
           const Cell saddle1(1,saddle1Id);
 
-          vector<Cell> path;
-          const bool isMultiConnected=getAscendingPathThroughWall(savedWallId, saddle1, saddle2, isVisited, &path);
+          std::vector<Cell> path;
+          const bool isMultiConnected=getAscendingPathThroughWall(savedWallId, 
+saddle1, saddle2, isVisited, &path);
           if(isMultiConnected)
             continue;
 
@@ -3368,15 +3555,17 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
 
           // update vpaths
           const int newVPathId=vpaths.size();
-          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
-          vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
+          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, 
+scalars);
+          
+vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
 
           // update criticalPoints
           newDestination.vpaths_.push_back(newVPathId);
           newSource.vpaths_.push_back(newVPathId);
 
           // update set
-          S.insert(make_tuple(persistence,newVPathId,newDestination.cell_.id_));
+          S.insert(std::make_tuple(persistence,newVPathId,newDestination.cell_.id_));
         }
       }
 
@@ -3385,7 +3574,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
         CriticalPoint& newSource=criticalPoints[newSourceId];
         const Cell& saddle1=newSource.cell_;
 
-        set<int> saddles2;
+        std::set<int> saddles2;
         const wallId_t savedWallId=wallId;
         getAscendingWall(wallId, saddle1, isVisited, nullptr, &saddles2);
         ++wallId;
@@ -3393,8 +3582,9 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
         for(const int saddle2Id : saddles2){
           const Cell saddle2(2,saddle2Id);
 
-          vector<Cell> path;
-          const bool isMultiConnected=getDescendingPathThroughWall(savedWallId, saddle2, saddle1, isVisited, &path);
+          std::vector<Cell> path;
+          const bool isMultiConnected=getDescendingPathThroughWall(savedWallId, 
+saddle2, saddle1, isVisited, &path);
           if(isMultiConnected)
             continue;
 
@@ -3411,7 +3601,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
           for(const int newDestinationVPathId : newDestination.vpaths_){
             const VPath& newDestinationVPath=vpaths[newDestinationVPathId];
 
-            if(newDestinationVPath.isValid_ and newDestinationVPath.source_==newSourceId){
+            if(newDestinationVPath.isValid_ and 
+newDestinationVPath.source_==newSourceId){
               alreadyExists=true;
               break;
             }
@@ -3422,15 +3613,17 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
 
           // update vpaths
           const int newVPathId=vpaths.size();
-          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
-          vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
+          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, 
+scalars);
+          
+vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
 
           // update criticalPoints
           newDestination.vpaths_.push_back(newVPathId);
           newSource.vpaths_.push_back(newVPathId);
 
           // update set
-          S.insert(make_tuple(persistence,newVPathId,newDestination.cell_.id_));
+          S.insert(std::make_tuple(persistence,newVPathId,newDestination.cell_.id_));
         }
       }
     }
@@ -3439,16 +3632,18 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int iterationThresho
   }
 
   {
-    stringstream msg;
-    msg << "[DiscreteGradient]  Processing of the vpaths :\t" << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[DiscreteGradient]  Processing of the vpaths :\t" << 
+t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::simplifySaddleSaddleConnections1(const vector<pair<int,char>>& criticalPoints,
-    const vector<char>& isPL,
+int ttk::DiscreteGradient::simplifySaddleSaddleConnections1(const 
+std::vector<std::pair<int,char>>& criticalPoints,
+    const std::vector<char>& isPL,
     const int iterationThreshold,
     const bool allowBoundary,
     const bool allowBruteForce,
@@ -3456,19 +3651,21 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(const vector<pair<int,cha
   Timer t;
 
   // Part 0 : get removable cells
-  vector<char> isRemovableSaddle1;
-  vector<int> pl2dmt_saddle1(numberOfVertices_, -1);
-  getRemovableSaddles1<dataType>(criticalPoints, allowBoundary, isRemovableSaddle1, pl2dmt_saddle1);
+  std::vector<char> isRemovableSaddle1;
+  std::vector<int> pl2dmt_saddle1(numberOfVertices_, -1);
+  getRemovableSaddles1<dataType>(criticalPoints, allowBoundary, 
+isRemovableSaddle1, pl2dmt_saddle1);
 
-  vector<char> isRemovableSaddle2;
-  vector<int> pl2dmt_saddle2(numberOfVertices_, -1);
-  getRemovableSaddles2<dataType>(criticalPoints, allowBoundary, isRemovableSaddle2, pl2dmt_saddle2);
+  std::vector<char> isRemovableSaddle2;
+  std::vector<int> pl2dmt_saddle2(numberOfVertices_, -1);
+  getRemovableSaddles2<dataType>(criticalPoints, allowBoundary, 
+isRemovableSaddle2, pl2dmt_saddle2);
 
   // Part 1 : initialization
-  vector<VPath> vpaths;
-  vector<CriticalPoint> dmt_criticalPoints;
-  vector<int> saddle1Index;
-  vector<int> saddle2Index;
+  std::vector<VPath> vpaths;
+  std::vector<CriticalPoint> dmt_criticalPoints;
+  std::vector<int> saddle1Index;
+  std::vector<int> saddle2Index;
   initializeSaddleSaddleConnections1<dataType>(isRemovableSaddle1,
       isRemovableSaddle2,
       allowBruteForce,
@@ -3479,7 +3676,8 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(const vector<pair<int,cha
 
   // Part 2 : push the vpaths and order by persistence
   SaddleSaddleVPathComparator<dataType> cmp_f;
-  set<tuple<dataType,int,int>, SaddleSaddleVPathComparator<dataType>> S(cmp_f);
+  std::set<std::tuple<dataType,int,int>, SaddleSaddleVPathComparator<dataType>> 
+S(cmp_f);
   orderSaddleSaddleConnections1<dataType>(vpaths, dmt_criticalPoints, S);
 
   // Part 3 : process the vpaths
@@ -3499,23 +3697,25 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(const vector<pair<int,cha
       saddle2Index);
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[DiscreteGradient] Saddle-Saddle pairs simplified in "
-      << t.getElapsedTime() << " s, "<< threadNumber_ << " thread(s)." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << t.getElapsedTime() << " s, "<< threadNumber_ << " thread(s)." << 
+std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isRemovableSaddle1,
-    const vector<char>& isRemovableSaddle2,
+int ttk::DiscreteGradient::initializeSaddleSaddleConnections2(const 
+std::vector<char>& isRemovableSaddle1,
+    const std::vector<char>& isRemovableSaddle2,
     const bool allowBruteForce,
-    vector<VPath>& vpaths,
-    vector<CriticalPoint>& criticalPoints,
-    vector<int>& saddle1Index,
-    vector<int>& saddle2Index) const{
+    std::vector<VPath>& vpaths,
+    std::vector<CriticalPoint>& criticalPoints,
+    std::vector<int>& saddle1Index,
+    std::vector<int>& saddle2Index) const{
     Timer t;
 
     const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
@@ -3557,13 +3757,13 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
     // Part 2 : update the structures
     // apriori: by default construction, the vpaths and segments are not valid
     wallId_t ascendingWallId=1;
-    vector<wallId_t> isVisited(numberOfSaddle1Candidates, 0);
+    std::vector<wallId_t> isVisited(numberOfSaddle1Candidates, 0);
     for(int i=0; i<numberOf1Saddles; ++i){
       const int sourceIndex=i;
       CriticalPoint& source=criticalPoints[sourceIndex];
       const Cell& saddle1=source.cell_;
 
-      set<int> saddles2;
+      std::set<int> saddles2;
       const wallId_t savedAscendingWallId=ascendingWallId;
       getAscendingWall(ascendingWallId, saddle1, isVisited, nullptr, &saddles2);
       ++ascendingWallId;
@@ -3573,8 +3773,10 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
 
         const Cell& saddle2=Cell(2,saddle2Id);
 
-        vector<Cell> path;
-        const bool isMultiConnected=getDescendingPathThroughWall(savedAscendingWallId, saddle2, saddle1, isVisited, &path);
+        std::vector<Cell> path;
+        const bool 
+isMultiConnected=getDescendingPathThroughWall(savedAscendingWallId, saddle2, 
+saddle1, isVisited, &path);
 
         if(!isMultiConnected){
           const int destinationIndex=saddle2Index[saddle2Id];
@@ -3585,8 +3787,11 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
           const int destinationSlot=destination.addSlot();
 
           // update vpath
-          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
-          vpaths.push_back(VPath(true,-1,sourceIndex,destinationIndex,sourceSlot,destinationSlot,persistence));
+          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, 
+scalars);
+          
+vpaths.push_back(VPath(true,-1,sourceIndex,destinationIndex,sourceSlot,
+destinationSlot,persistence));
         }
       }
     }
@@ -3624,17 +3829,22 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const vector<char>& isR
     }
 
     {
-      stringstream msg;
-      msg << "[DiscreteGradient]  Initialization step :\t" << t.getElapsedTime() << " s." << endl;
-      dMsg(cout, msg.str(), timeMsg);
+      std::stringstream msg;
+      msg << "[DiscreteGradient]  Initialization step :\t" << 
+t.getElapsedTime() 
+<< " s." << std::endl;
+      dMsg(std::cout, msg.str(), timeMsg);
     }
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::orderSaddleSaddleConnections2(const vector<VPath>& vpaths,
-    vector<CriticalPoint>& criticalPoints,
-    set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S){
+int ttk::DiscreteGradient::orderSaddleSaddleConnections2(const 
+std::vector<VPath>& vpaths,
+    std::vector<CriticalPoint>& criticalPoints,
+    
+std::set<std::tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& 
+S){
   Timer t;
 
   const int numberOfVPaths=vpaths.size();
@@ -3643,34 +3853,37 @@ int DiscreteGradient::orderSaddleSaddleConnections2(const vector<VPath>& vpaths,
 
     if(vpath.isValid_){
       const int saddleId=criticalPoints[vpath.source_].cell_.id_;
-      S.insert(make_tuple(vpath.persistence_,i,saddleId));
+      S.insert(std::make_tuple(vpath.persistence_,i,saddleId));
     }
   }
 
   {
-    stringstream msg;
-    msg << "[DiscreteGradient]  Ordering of the vpaths :\t" << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[DiscreteGradient]  Ordering of the vpaths :\t" << 
+t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThreshold,
-    const vector<char>& isPL,
+int ttk::DiscreteGradient::processSaddleSaddleConnections2(const int 
+iterationThreshold,
+    const std::vector<char>& isPL,
     const bool allowBoundary,
     const bool allowBruteForce,
     const bool returnSaddleConnectors,
-    set<tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
-    vector<int>& pl2dmt_saddle1,
-    vector<int>& pl2dmt_saddle2,
-    vector<char>& isRemovableSaddle1,
-    vector<char>& isRemovableSaddle2,
-    vector<VPath>& vpaths,
-    vector<CriticalPoint>& criticalPoints,
-    vector<int>& saddle1Index,
-    vector<int>& saddle2Index){
+    
+std::set<std::tuple<dataType,int,int>,SaddleSaddleVPathComparator<dataType>>& S,
+    std::vector<int>& pl2dmt_saddle1,
+    std::vector<int>& pl2dmt_saddle2,
+    std::vector<char>& isRemovableSaddle1,
+    std::vector<char>& isRemovableSaddle2,
+    std::vector<VPath>& vpaths,
+    std::vector<CriticalPoint>& criticalPoints,
+    std::vector<int>& saddle1Index,
+    std::vector<int>& saddle2Index){
   Timer t;
 
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
@@ -3679,14 +3892,14 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
   const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
   const int optimizedSize=std::max(numberOfEdges, numberOfTriangles);
   wallId_t wallId=1;
-  vector<wallId_t> isVisited(optimizedSize, 0);
+  std::vector<wallId_t> isVisited(optimizedSize, 0);
 
   int numberOfIterations{};
   while(!S.empty()){
     if(iterationThreshold>=0 and numberOfIterations>=iterationThreshold) break;
 
     auto ptr=S.begin();
-    const int vpathId=get<1>(*ptr);
+    const int vpathId=std::get<1>(*ptr);
     S.erase(ptr);
     VPath& vpath=vpaths[vpathId];
 
@@ -3699,7 +3912,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
       const Cell& minSaddle1=criticalPoints[vpath.source_].cell_;
       const Cell& minSaddle2=criticalPoints[vpath.destination_].cell_;
 
-      set<int> saddles2;
+      std::set<int> saddles2;
       const wallId_t savedWallId=wallId;
       getAscendingWall(wallId, minSaddle1, isVisited, nullptr, &saddles2);
       ++wallId;
@@ -3712,8 +3925,9 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
       }
 
       // check if there is multiple connections
-      vector<Cell> path;
-      const bool isMultiConnected=getDescendingPathThroughWall(savedWallId, minSaddle2, minSaddle1, isVisited, &path);
+      std::vector<Cell> path;
+      const bool isMultiConnected=getDescendingPathThroughWall(savedWallId, 
+minSaddle2, minSaddle1, isVisited, &path);
       if(isMultiConnected){
         ++numberOfIterations;
         continue;
@@ -3731,7 +3945,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
 
             if(isPL[vertexId]!=1) continue;
 
-            if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
+            if(!allowBoundary and 
+inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
 
             if(pl2dmt_saddle1[vertexId]==-1){
               const int pl_saddle1Id=vertexId;
@@ -3739,12 +3954,14 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
               int numberOfRemainingSaddles1=0;
 
               int savedId=-1;
-              const int edgeNumber=inputTriangulation_->getVertexEdgeNumber(pl_saddle1Id);
+              const int 
+edgeNumber=inputTriangulation_->getVertexEdgeNumber(pl_saddle1Id);
               for(int j=0; j<edgeNumber; ++j){
                 int edgeId;
                 inputTriangulation_->getVertexEdge(pl_saddle1Id, j, edgeId);
 
-                if(edgeId!=dmt_saddle1Id and isSaddle1(Cell(1,edgeId)) and isRemovableSaddle1[edgeId]){
+                if(edgeId!=dmt_saddle1Id and isSaddle1(Cell(1,edgeId)) and 
+isRemovableSaddle1[edgeId]){
                   ++numberOfRemainingSaddles1;
                   savedId=edgeId;
                 }
@@ -3785,7 +4002,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
 
             if(isPL[vertexId]!=2) continue;
 
-            if(!allowBoundary and inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
+            if(!allowBoundary and 
+inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
 
             if(pl2dmt_saddle2[vertexId]==-1){
               const int pl_saddle2Id=vertexId;
@@ -3793,12 +4011,15 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
               int numberOfRemainingSaddles2=0;
 
               int savedId=-1;
-              const int triangleNumber=inputTriangulation_->getVertexTriangleNumber(pl_saddle2Id);
+              const int 
+triangleNumber=inputTriangulation_->getVertexTriangleNumber(pl_saddle2Id);
               for(int j=0; j<triangleNumber; ++j){
                 int triangleId;
-                inputTriangulation_->getVertexTriangle(pl_saddle2Id, j, triangleId);
+                inputTriangulation_->getVertexTriangle(pl_saddle2Id, j, 
+triangleId);
 
-                if(triangleId!=dmt_saddle2Id and isSaddle2(Cell(2,triangleId)) and isRemovableSaddle2[triangleId]){
+                if(triangleId!=dmt_saddle2Id and isSaddle2(Cell(2,triangleId)) 
+and isRemovableSaddle2[triangleId]){
                   ++numberOfRemainingSaddles2;
                   savedId=triangleId;
                 }
@@ -3836,14 +4057,14 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
       if(CollectPersistencePairs and outputPersistencePairs_){
         const Cell& minSaddle1=criticalPoints[vpath.source_].cell_;
         const Cell& minSaddle2=criticalPoints[vpath.destination_].cell_;
-        outputPersistencePairs_->push_back(make_tuple(minSaddle1, minSaddle2));
+        outputPersistencePairs_->push_back(std::make_tuple(minSaddle1, minSaddle2));
       }
 
       const int sourceId=vpath.source_;
       const int destinationId=vpath.destination_;
 
       // invalidate vpaths connected to source
-      vector<int> newDestinationIds;
+      std::vector<int> newDestinationIds;
       CriticalPoint& source=criticalPoints[sourceId];
       for(const int sourceVPathId : source.vpaths_){
         VPath& sourceVPath=vpaths[sourceVPathId];
@@ -3858,8 +4079,9 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
         }
       }
 
-      // invalidate vpaths connected to destination and save the critical points to update
-      vector<int> newSourceIds;
+      // invalidate vpaths connected to destination and save the critical 
+      // points to update
+      std::vector<int> newSourceIds;
       CriticalPoint& destination=criticalPoints[destinationId];
       for(const int destinationVPathId : destination.vpaths_){
         VPath& destinationVPath=vpaths[destinationVPathId];
@@ -3872,7 +4094,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
           CriticalPoint& newSource=criticalPoints[newSourceId];
           for(const int newSourceVPathId : newSource.vpaths_){
             VPath& newSourceVPath=vpaths[newSourceVPathId];
-            if(newSourceVPath.isValid_ and newSourceVPath.destination_!=destinationId){
+            if(newSourceVPath.isValid_ and 
+newSourceVPath.destination_!=destinationId){
 
               // clear vpath
               newSourceVPath.invalidate();
@@ -3894,7 +4117,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
         CriticalPoint& newSource=criticalPoints[newSourceId];
         const Cell& saddle1=newSource.cell_;
 
-        set<int> saddles2;
+        std::set<int> saddles2;
         const wallId_t savedWallId=wallId;
         getAscendingWall(wallId, saddle1, isVisited, nullptr, &saddles2);
         ++wallId;
@@ -3902,7 +4125,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
         for(const int saddle2Id : saddles2){
           const Cell saddle2(2,saddle2Id);
 
-          const bool isMultiConnected=getDescendingPathThroughWall(savedWallId, saddle2, saddle1, isVisited, nullptr);
+          const bool isMultiConnected=getDescendingPathThroughWall(savedWallId, 
+saddle2, saddle1, isVisited, nullptr);
           if(isMultiConnected)
             continue;
 
@@ -3923,15 +4147,17 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
 
           // update vpaths
           const int newVPathId=vpaths.size();
-          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
-          vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
+          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, 
+scalars);
+          
+vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
 
           // update criticalPoints
           newDestination.vpaths_.push_back(newVPathId);
           newSource.vpaths_.push_back(newVPathId);
 
           // update set
-          S.insert(make_tuple(persistence,newVPathId,newSource.cell_.id_));
+          S.insert(std::make_tuple(persistence,newVPathId,newSource.cell_.id_));
         }
       }
 
@@ -3940,7 +4166,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
         CriticalPoint& newDestination=criticalPoints[newDestinationId];
         const Cell& saddle2=newDestination.cell_;
 
-        set<int> saddles1;
+        std::set<int> saddles1;
         const wallId_t savedWallId=wallId;
         getDescendingWall(wallId, saddle2, isVisited, nullptr, &saddles1);
         ++wallId;
@@ -3948,8 +4174,9 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
         for(const int saddle1Id : saddles1){
           const Cell saddle1(1,saddle1Id);
 
-          vector<Cell> path;
-          const bool isMultiConnected=getAscendingPathThroughWall(savedWallId, saddle1, saddle2, isVisited, &path);
+          std::vector<Cell> path;
+          const bool isMultiConnected=getAscendingPathThroughWall(savedWallId, 
+saddle1, saddle2, isVisited, &path);
           if(isMultiConnected)
             continue;
 
@@ -3965,7 +4192,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
           for(const int newSourceVPathId : newSource.vpaths_){
             const VPath& newSourceVPath=vpaths[newSourceVPathId];
 
-            if(newSourceVPath.isValid_ and newSourceVPath.destination_==newDestinationId){
+            if(newSourceVPath.isValid_ and 
+newSourceVPath.destination_==newDestinationId){
               alreadyExists=true;
               break;
             }
@@ -3976,15 +4204,17 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
 
           // update vpaths
           const int newVPathId=vpaths.size();
-          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, scalars);
-          vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
+          const dataType persistence=getPersistence<dataType>(saddle2, saddle1, 
+scalars);
+          
+vpaths.push_back(VPath(true,-1,newSourceId,newDestinationId,-1,-1,persistence));
 
           // update criticalPoints
           newDestination.vpaths_.push_back(newVPathId);
           newSource.vpaths_.push_back(newVPathId);
 
           // update set
-          S.insert(make_tuple(persistence,newVPathId,newSource.cell_.id_));
+          S.insert(std::make_tuple(persistence,newVPathId,newSource.cell_.id_));
         }
       }
     }
@@ -3993,17 +4223,19 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int iterationThresho
   }
 
   {
-    stringstream msg;
-    msg << "[DiscreteGradient]  Processing of the vpaths :\t" << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[DiscreteGradient]  Processing of the vpaths :\t" << 
+t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <typename dataType>
-int DiscreteGradient::simplifySaddleSaddleConnections2(const vector<pair<int,char>>& criticalPoints,
-    const vector<char>& isPL,
+int ttk::DiscreteGradient::simplifySaddleSaddleConnections2(const 
+std::vector<std::pair<int,char>>& criticalPoints,
+    const std::vector<char>& isPL,
     const int iterationThreshold,
     const bool allowBoundary,
     const bool allowBruteForce,
@@ -4011,21 +4243,21 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(const vector<pair<int,cha
   Timer t;
 
   // Part 0 : get removable cells
-  vector<char> isRemovableSaddle1;
-  vector<int> pl2dmt_saddle1(numberOfVertices_, -1);
+  std::vector<char> isRemovableSaddle1;
+  std::vector<int> pl2dmt_saddle1(numberOfVertices_, -1);
   getRemovableSaddles1<dataType>(criticalPoints, allowBoundary,
       isRemovableSaddle1, pl2dmt_saddle1);
 
-  vector<char> isRemovableSaddle2;
-  vector<int> pl2dmt_saddle2(numberOfVertices_, -1);
+  std::vector<char> isRemovableSaddle2;
+  std::vector<int> pl2dmt_saddle2(numberOfVertices_, -1);
   getRemovableSaddles2<dataType>(criticalPoints, allowBoundary,
       isRemovableSaddle2, pl2dmt_saddle2);
 
   // Part 1 : initialization
-  vector<VPath> vpaths;
-  vector<CriticalPoint> dmt_criticalPoints;
-  vector<int> saddle1Index;
-  vector<int> saddle2Index;
+  std::vector<VPath> vpaths;
+  std::vector<CriticalPoint> dmt_criticalPoints;
+  std::vector<int> saddle1Index;
+  std::vector<int> saddle2Index;
   initializeSaddleSaddleConnections2<dataType>(isRemovableSaddle1,
       isRemovableSaddle2,
       allowBruteForce,
@@ -4036,7 +4268,8 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(const vector<pair<int,cha
 
   // Part 2 : push the vpaths and order by persistence
   SaddleSaddleVPathComparator<dataType> cmp_f;
-  set<tuple<dataType,int,int>, SaddleSaddleVPathComparator<dataType>> S(cmp_f);
+  std::set<std::tuple<dataType,int,int>, SaddleSaddleVPathComparator<dataType>> 
+S(cmp_f);
   orderSaddleSaddleConnections2<dataType>(vpaths, dmt_criticalPoints, S);
 
   // Part 3 : process the vpaths
@@ -4056,21 +4289,23 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(const vector<pair<int,cha
       saddle2Index);
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[DiscreteGradient] Saddle-Saddle pairs simplified in "
-      << t.getElapsedTime() << " s, "<< threadNumber_ << " thread(s)." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << t.getElapsedTime() << " s, "<< threadNumber_ << " thread(s)." << 
+std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template<typename dataType>
-int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
+int ttk::DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
   const bool allowBruteForce=false;
   const bool returnSaddleConnectors=true;
 
-  // get the node type of a contour tree node (for compatibility with ScalarFieldCriticalPoints)
+  // get the node type of a contour tree node (for compatibility with 
+  // ScalarFieldCriticalPoints)
   auto getNodeType=[&](const ftm::FTMTree_MT* tree, const ftm::Node* node){
     const int upDegree   = node->getNumberOfUpSuperArcs();
     const int downDegree = node->getNumberOfDownSuperArcs();
@@ -4094,7 +4329,7 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
     return -1;
   };
 
-  vector<pair<int,char>> cpset;
+  std::vector<std::pair<int,char>> cpset;
 
   int* const offsets=static_cast<int*>(inputOffsets_);
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
@@ -4114,10 +4349,10 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
     const ftm::Node* node = tree->getNode(nodeId);
     const ftm::idVertex vertexId = node->getVertexId();
 
-    cpset.push_back(make_pair((int)vertexId, getNodeType(tree,node)));
+    cpset.push_back(std::make_pair((int)vertexId, getNodeType(tree,node)));
   }
 
-  vector<char> isPL;
+  std::vector<char> isPL;
   getCriticalPointMap(cpset, isPL);
 
   simplifySaddleSaddleConnections1<dataType>(cpset, isPL,
@@ -4131,14 +4366,15 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
 }
 
 template<typename dataType>
-int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoints){
+int ttk::DiscreteGradient::reverseGradient(const 
+std::vector<std::pair<int,char>>& criticalPoints){
   Timer t;
 
   const bool allowBoundary=true;
   const bool returnSaddleConnectors=false;
   bool allowBruteForce=false;
 
-  vector<char> isPL;
+  std::vector<char> isPL;
   getCriticalPointMap(criticalPoints, isPL);
 
   if(ReverseSaddleMaximumConnection)
@@ -4169,29 +4405,30 @@ int DiscreteGradient::reverseGradient(const vector<pair<int,char>>& criticalPoin
         returnSaddleConnectors);
   }
 
-  if(dimensionality_==3 and ReverseSaddleMaximumConnection and ReverseSaddleSaddleConnection and ReturnSaddleConnectors)
+  if(dimensionality_==3 and ReverseSaddleMaximumConnection and 
+ReverseSaddleSaddleConnection and ReturnSaddleConnectors)
     filterSaddleConnectors<dataType>(allowBoundary);
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[DiscreteGradient] Gradient reversed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template<typename dataType>
-int DiscreteGradient::reverseGradient(){
-  vector<pair<int,char>> criticalPoints;
+int ttk::DiscreteGradient::reverseGradient(){
+  std::vector<std::pair<int,char>> criticalPoints;
 
   // get the PL critical points
   if(ReverseSaddleMaximumConnection or ReverseSaddleSaddleConnection){
     const int* const offsets=static_cast<int*>(inputOffsets_);
-    vector<int> sosOffsets(numberOfVertices_);
+    std::vector<int> sosOffsets(numberOfVertices_);
     for(int i=0; i<numberOfVertices_; ++i)
       sosOffsets[i]=offsets[i];
 
@@ -4213,7 +4450,7 @@ int DiscreteGradient::reverseGradient(){
   {
     // foreach dimension
     const int numberOfDimensions=getNumberOfDimensions();
-    vector<int> numberOfDMTCriticalPointsByDimension(numberOfDimensions,0);
+    std::vector<int> numberOfDMTCriticalPointsByDimension(numberOfDimensions,0);
     for(int i=0; i<numberOfDimensions; ++i){
 
       // foreach cell of that dimension
@@ -4226,23 +4463,26 @@ int DiscreteGradient::reverseGradient(){
       }
     }
 
-    vector<int> numberOfPLInteriorCriticalPoints(numberOfDimensions,0);
-    for(pair<int,char> criticalPoint : criticalPoints){
+    std::vector<int> numberOfPLInteriorCriticalPoints(numberOfDimensions,0);
+    for(std::pair<int,char> criticalPoint : criticalPoints){
       const int criticalPointId=criticalPoint.first;
       const char criticalPointType=criticalPoint.second;
 
-      if(!inputTriangulation_->isVertexOnBoundary(criticalPointId) and criticalPointType!=-1)
+      if(!inputTriangulation_->isVertexOnBoundary(criticalPointId) and 
+criticalPointType!=-1)
         ++numberOfPLInteriorCriticalPoints[criticalPointType];
     }
 
     {
-      stringstream msg;
+      std::stringstream msg;
       for(int i=0; i<numberOfDimensions; ++i){
-        msg << "[DiscreteGradient] " << numberOfDMTCriticalPointsByDimension[i] << " " << i << "-cell(s)";
-        msg << " and " << numberOfPLInteriorCriticalPoints[i] << " interior PL." << endl;
+        msg << "[DiscreteGradient] " << numberOfDMTCriticalPointsByDimension[i] 
+<< " " << i << "-cell(s)";
+        msg << " and " << numberOfPLInteriorCriticalPoints[i] << " interior PL." 
+<< std::endl;
       }
 
-      dMsg(cout, msg.str(), infoMsg);
+      dMsg(std::cout, msg.str(), infoMsg);
     }
   }
 

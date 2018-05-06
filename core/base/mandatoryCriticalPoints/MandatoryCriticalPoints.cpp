@@ -1,5 +1,8 @@
 #include                  <MandatoryCriticalPoints.h>
 
+using namespace std;
+using namespace ttk;
+
 MandatoryCriticalPoints::MandatoryCriticalPoints() {
   inputUpperBoundField_ = NULL;
   inputLowerBoundField_ = NULL;

@@ -1,5 +1,8 @@
 #include                  <ttkScalarFieldCriticalPoints.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkScalarFieldCriticalPoints)
 
 ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints(){

@@ -1,5 +1,8 @@
 #include                  <TwoSkeleton.h>
 
+using namespace std;
+using namespace ttk;
+
 TwoSkeleton::TwoSkeleton(){
 
 }

@@ -74,7 +74,7 @@ class VTKFILTERSCORE_EXPORT ttkContourForests
 #else
 class ttkContourForests
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
     
     
   public:
@@ -93,14 +93,14 @@ class ttkContourForests
     void SetUseAllCores(bool onOff);
     // end of default ttk setters
 
-    vtkGetMacro(scalarField_, string);
-    void SetScalarField(string scalarField);
+    vtkGetMacro(scalarField_, std::string);
+    void SetScalarField(std::string scalarField);
 
     vtkGetMacro(useInputOffsetScalarField_, int);
     void SetUseInputOffsetScalarField(bool onOff);
 
-    vtkSetMacro(inputOffsetScalarFieldName_, string);
-    vtkGetMacro(inputOffsetScalarFieldName_, string);
+    vtkSetMacro(inputOffsetScalarFieldName_, std::string);
+    vtkGetMacro(inputOffsetScalarFieldName_, std::string);
 
     vtkSetMacro(InputOffsetFieldId, int);
     vtkGetMacro(InputOffsetFieldId, int);
@@ -141,8 +141,8 @@ class ttkContourForests
     // ContourForestsTree //
     void getTree();
     void updateTree();
-    NodeType getNodeType(int id);
-    NodeType getNodeType(int id, TreeType type, MergeTree* tree);
+    ttk::NodeType getNodeType(int id);
+    ttk::NodeType getNodeType(int id, ttk::TreeType type, ttk::MergeTree* tree);
     void getCriticalPoints();
     void clearTree();
 
@@ -151,8 +151,8 @@ class ttkContourForests
     void clearSkeleton();
     void getSkeletonNodes();
     void getSkeletonArcs();
-    int getSkeletonScalars(const vector<double>& scalars,
-        vector<vector<double> >& skeletonScalars) const;
+    int getSkeletonScalars(const std::vector<double>& scalars,
+        std::vector<std::vector<double> >& skeletonScalars) const;
 
     // Segmentation //
     void getSegmentation(vtkDataSet* input);
@@ -170,7 +170,7 @@ class ttkContourForests
    
     void SetThreads();
     
-    int doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs);
+    int doIt(std::vector<vtkDataSet *> &inputs, std::vector<vtkDataSet *> &outputs);
     
     bool needsToAbort();
       
@@ -183,11 +183,11 @@ class ttkContourForests
     int ThreadNumber;
     int FieldId;
     int InputOffsetFieldId;
-    string inputOffsetScalarFieldName_;
+    std::string inputOffsetScalarFieldName_;
     bool isLoaded_;
     bool lessPartition_;
-    MergeTree* tree_;
-    ContourForests* contourTree_;
+    ttk::MergeTree* tree_;
+    ttk::ContourForests* contourTree_;
     vtkPolyData* skeletonNodes_;
     vtkPolyData* skeletonArcs_;
     vtkDataSet* segmentation_;
@@ -200,8 +200,8 @@ class ttkContourForests
     bool useInputOffsetScalarField_;
     bool varyingMesh_;
     bool varyingDataValues_;
-    TreeType treeType_;
-    string scalarField_;
+    ttk::TreeType treeType_;
+    std::string scalarField_;
     bool showMin_;
     bool showMax_;
     bool showSaddle1_;
@@ -225,17 +225,17 @@ class ttkContourForests
     vtkDataArray* vtkInputScalars_;
     double deltaScalar_;
     unsigned int numberOfVertices_;
-    Triangulation *triangulation_;
-    vector<vector<int>>* vertexNeighbors_;
-    vector<int>* vertexSoSoffsets_;
-    vector<int>* criticalPoints_;
-    vector<double>* vertexScalars_;
-    vector<vector<double>>* inputScalars_;
-    vector<string>* inputScalarsName_;
+    ttk::Triangulation *triangulation_;
+    std::vector<std::vector<int>>* vertexNeighbors_;
+    std::vector<int>* vertexSoSoffsets_;
+    std::vector<int>* criticalPoints_;
+    std::vector<double>* vertexScalars_;
+    std::vector<std::vector<double>>* inputScalars_;
+    std::vector<std::string>* inputScalarsName_;
 
     // treeType, SuperArc, several vertices list.
-    vector<vector<vector<vector<int>>>>*    samples_;
-    vector<vector<vector<vector<double>>>>* barycenters_;
+    std::vector<std::vector<std::vector<std::vector<int>>>>*    samples_;
+    std::vector<std::vector<std::vector<std::vector<double>>>>* barycenters_;
 
 };
 

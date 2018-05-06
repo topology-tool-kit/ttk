@@ -67,9 +67,9 @@ namespace ttk{
           int             localId_, globalId_, polygonEdgeId_;
           // TODO also encode the vertex ids of the triangle of the input mesh
           // where this point has been computed (for constrained triangulation)
-          pair<int, int>  meshEdge_;
+          std::pair<int, int>  meshEdge_;
           double          p_[3], t_;
-          pair<double, double>
+          std::pair<double, double>
                           uv_;
       };
       
@@ -92,22 +92,23 @@ namespace ttk{
       
       template <class dataTypeU, class dataTypeV>
         inline int computeContour(
-          const pair<double, double> &rangePoint0,
-          const pair<double, double> &rangePoint1,
-          const vector<int> &seedTetList,
+          const std::pair<double, double> &rangePoint0,
+          const std::pair<double, double> &rangePoint1,
+          const std::vector<int> &seedTetList,
           const int &polygonEdgeId = 0) const;
           
       template <class dataTypeU, class dataTypeV>
         inline int computeContour(
-          const vector<pair<pair<double, double>, pair<double, double> > > 
+          const std::vector<std::pair<std::pair<double, double>, 
+std::pair<double, double> > > 
             &edgeList, 
-          const vector<int> &seedTetList,
-          const vector<int> *edgeIdList = NULL) const;
+          const std::vector<int> &seedTetList,
+          const std::vector<int> *edgeIdList = NULL) const;
      
       template <class dataTypeU, class dataTypeV>
         inline int computeSurface(
-          const pair<double, double> &rangePoint0,
-          const pair<double, double> &rangePoint1,
+          const std::pair<double, double> &rangePoint0,
+          const std::pair<double, double> &rangePoint1,
           const int &polygonEdgeId = 0) const;
           
       template <class dataTypeU, class dataTypeV>
@@ -117,8 +118,8 @@ namespace ttk{
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
       template <class dataTypeU, class dataTypeV>
         inline int computeSurfaceWithOctree(
-          const pair<double, double> &rangePoint0,
-          const pair<double, double> &rangePoint1,
+          const std::pair<double, double> &rangePoint0,
+          const std::pair<double, double> &rangePoint1,
           const int &polygonEdgeId) const;
 #endif
         
@@ -137,11 +138,11 @@ namespace ttk{
         
       template <class dataTypeU, class dataTypeV>
         inline int processTetrahedron(const int &tetId,
-          const pair<double, double> &rangePoint0, 
-          const pair<double, double> &rangePoint1,
+          const std::pair<double, double> &rangePoint0, 
+          const std::pair<double, double> &rangePoint1,
           const int &polygonEdgeId = 0) const;
               
-      inline int setGlobalVertexList(vector<Vertex> *globalList){
+      inline int setGlobalVertexList(std::vector<Vertex> *globalList){
         globalVertexList_ = globalList;
         return 0;
       }
@@ -174,8 +175,9 @@ namespace ttk{
         return 0;
       }
       
-      inline int setPolygon(const vector<pair<pair<double, double>, 
-        pair<double, double> > > *polygon){
+      inline int setPolygon(const std::vector<std::pair<std::pair<double, 
+double>, 
+        std::pair<double, double> > > *polygon){
         polygon_ = polygon;
         return 0;
       }
@@ -192,7 +194,8 @@ namespace ttk{
         return 0;
       }
       
-      inline int setTetNeighbors(const vector<vector<int> > *tetNeighbors){
+      inline int setTetNeighbors(const std::vector<std::vector<int> > 
+*tetNeighbors){
         tetNeighbors_ = tetNeighbors;
         return 0;
       }
@@ -203,7 +206,7 @@ namespace ttk{
       }
      
       inline int setTriangleList(const int &polygonEdgeId,
-        vector<Triangle> *triangleList){
+        std::vector<Triangle> *triangleList){
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if((polygonEdgeId >= 0)
@@ -226,7 +229,7 @@ namespace ttk{
       }
       
       inline int setVertexList(const int &polygonEdgeId,
-        vector<Vertex> *vertexList){
+        std::vector<Vertex> *vertexList){
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if((polygonEdgeId >= 0)
@@ -246,10 +249,10 @@ namespace ttk{
         int polygonEdgeId_;
         // use negative values for new vertices
         int vertexIds_[3];
-        pair<double, double> uv_[3];
+        std::pair<double, double> uv_[3];
         double t_[3];
         double p_[3][3];
-        pair<double, double> intersection_;
+        std::pair<double, double> intersection_;
       }IntersectionTriangle;
       
       template <class dataTypeU, class dataTypeV>
@@ -261,10 +264,10 @@ namespace ttk{
             const double &u1, const double &v1,
           const int &localEdgeId2, const double &t2,
             const double &u2, const double &v2,
-          vector<vector<double> > &basePoints,
-          vector<pair<double, double> > &basePointProections,
-          vector<double> &basePointParameterization,
-          vector<pair<int, int> > &baseEdges) const;
+          std::vector<std::vector<double> > &basePoints,
+          std::vector<std::pair<double, double> > &basePointProections,
+          std::vector<double> &basePointParameterization,
+          std::vector<std::pair<int, int> > &baseEdges) const;
         
       template <class dataTypeU, class dataTYpeV>
         inline int computeCase0(const int &polygonEdgeId, const int &tetId, 
@@ -312,58 +315,59 @@ namespace ttk{
             const double &u2, const double &v2) const;
             
       int computeTriangleFiber(const int &tetId, const int &triangleId,
-        const pair<double, double> &intersection,
-        const vector<vector<IntersectionTriangle> > &tetIntersections,
-        vector<double> &pA, vector<double> &pB, int &pivotVertexId,
+        const std::pair<double, double> &intersection,
+        const std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
+        std::vector<double> &pA, std::vector<double> &pB, int &pivotVertexId,
         bool &edgeFiber) const;
         
       int computeTriangleIntersection(
         const int &tetId, const int &triangleId0, const int &triangleId1,
         const int &polygonEdgeId0, const int &polygonEdgeId1,
-        const pair<double, double> &intersection,
+        const std::pair<double, double> &intersection,
         int &newVertexNumber, int &newTriangleNumber,
-        vector<vector<IntersectionTriangle> > &tetIntersections,
-        vector<vector<Vertex> > &tetNewVertices) const;
+        std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
+        std::vector<std::vector<Vertex> > &tetNewVertices) const;
             
       int computeTriangleIntersection(
         const int &tetId, const int &triangleId, const int &polygonEdgeId, 
-        const pair<double, double> &intersection,
-        const vector<double> &pA, const vector<double> &pB,
+        const std::pair<double, double> &intersection,
+        const std::vector<double> &pA, const std::vector<double> &pB,
         const int &pivotVertexId,
         int &newVertexNumber, int &newTriangleNumber,
-        vector<vector<IntersectionTriangle> > &tetIntersections,
-        vector<vector<Vertex> > &tetNewVertices) const;
+        std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
+        std::vector<std::vector<Vertex> > &tetNewVertices) const;
         
       int createNewIntersectionTriangle(
         const int &tetId, const int &triangleId,
         const int &vertexId0, const int &vertexId1, const int &vertexId2,
-        const vector<vector<Vertex> > &tetNewVertices,
+        const std::vector<std::vector<Vertex> > &tetNewVertices,
         int &newTriangleNumber,
-        vector<vector<IntersectionTriangle> > &tetIntersections,
-        const pair<double, double> *intersection = NULL) const;
+        std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
+        const std::pair<double, double> *intersection = NULL) const;
       
       int flipEdges() const;
       
-      int flipEdges(vector<pair<int, int> > &triangles) const;
+      int flipEdges(std::vector<std::pair<int, int> > &triangles) const;
         
       int getNumberOfCommonVertices(const int &tetId, 
         const int &triangleId0, const int &triangleId1,
-        const vector<vector<IntersectionTriangle> > &tetIntersections) const;
+        const std::vector<std::vector<IntersectionTriangle> > &tetIntersections) 
+const;
         
       int getTriangleRangeExtremities(const int &tetId, const int &triangleId,
-        const vector<vector<IntersectionTriangle> > &tetIntersections,
-        pair<double, double> &extremity0, 
-        pair<double, double> &extremity1) const;
+        const std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
+        std::pair<double, double> &extremity0, 
+        std::pair<double, double> &extremity1) const;
        
       bool hasDuplicatedVertices(
         const double *p0, const double *p1, const double *p2) const;
         
       int interpolateBasePoints(
-        const vector<double> &p0,
-        const pair<double, double> &uv0,
+        const std::vector<double> &p0,
+        const std::pair<double, double> &uv0,
         const double &t0,
-        const vector<double> &p1,
-        const pair<double, double> &uv1,
+        const std::vector<double> &p1,
+        const std::pair<double, double> &uv1,
         const double &t1,
         const double &t,
         Vertex &v) const;
@@ -371,7 +375,7 @@ namespace ttk{
       bool isEdgeAngleCollapsible(
         const int &source, const int &destination,
         const int &pivotVertexId, 
-        const vector<pair<int, int> > &starNeighbors) const;
+        const std::vector<std::pair<int, int> > &starNeighbors) const;
         
       bool isEdgeFlippable(
         const int &edgeVertexId0, const int &edgeVertexId1,
@@ -379,11 +383,11 @@ namespace ttk{
         
       inline bool isIntersectionTriangleColinear(
         const int &tetId, const int &triangleId,
-        const vector<vector<IntersectionTriangle> > &tetIntersections,
-        const vector<vector<Vertex> > &tetNewVertices,
+        const std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
+        const std::vector<std::vector<Vertex> > &tetNewVertices,
         const int &vertexId0, const int &vertexId1, const int &vertexId2) const{
         
-        vector<vector<double> > points(3);
+        std::vector<std::vector<double> > points(3);
         for(int i = 0; i < 3; i++){
           int vertexId = vertexId0;
           if(i == 1) vertexId = vertexId1;
@@ -414,15 +418,15 @@ namespace ttk{
       template <class dataTypeU, class dataTypeV>
         inline int remeshIntersections() const;
        
-      int snapToBasePoint(const vector<vector<double> > &basePoints,
-        const vector<pair<double, double> > &uv,
-        const vector<double> &t,
+      int snapToBasePoint(const std::vector<std::vector<double> > &basePoints,
+        const std::vector<std::pair<double, double> > &uv,
+        const std::vector<double> &t,
         Vertex &v) const;
         
       int snapVertexBarycentrics(const double &distanceThreshold) const;
       
       int snapVertexBarycentrics(const int &tetId,
-        const vector<pair<int, int> > &triangles,
+        const std::vector<std::pair<int, int> > &triangles,
         const double &distanceThreshold) const;
         
        
@@ -432,19 +436,20 @@ namespace ttk{
       const void          *uField_, *vField_;
       const float         *pointSet_;
       const long long int *tetList_;
-      const vector<vector<int> > 
+      const std::vector<std::vector<int> > 
                           *tetNeighbors_;
       int                 edgeImplicitEncoding_[12];
       
       double              edgeCollapseThreshold_, pointSnappingThreshold_;
      
-      const vector<pair<pair<double, double>, pair<double, double> > >
+      const std::vector<std::pair<std::pair<double, double>, std::pair<double, 
+double> > >
                           *polygon_;
       
-      vector<Vertex>      *globalVertexList_;
-      vector<vector<Vertex> *>
+      std::vector<Vertex>      *globalVertexList_;
+      std::vector<std::vector<Vertex> *>
                           polygonEdgeVertexLists_;
-      vector<vector<Triangle> *>
+      std::vector<std::vector<Triangle> *>
                           polygonEdgeTriangleLists_;
                           
       Triangulation       *triangulation_;
@@ -457,7 +462,7 @@ namespace ttk{
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::buildOctree(){
+  inline int ttk::FiberSurface::buildOctree(){
  
   if(!uField_)
     return -1;
@@ -487,17 +492,17 @@ template <class dataTypeU, class dataTypeV>
 #endif
 
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::computeBaseTriangle(const int &tetId, 
+  inline int ttk::FiberSurface::computeBaseTriangle(const int &tetId, 
     const int &localEdgeId0, const double &t0, 
       const double &u0, const double &v0, 
     const int &localEdgeId1, const double &t1, 
       const double &u1, const double &v1, 
     const int &localEdgeId2, const double &t2, 
       const double &u2, const double &v2, 
-    vector<vector<double> > &basePoints, 
-    vector<pair<double, double> > &basePointProjections, 
-    vector<double> &basePointParameterization,
-    vector<pair<int, int> > &baseEdges) const{
+    std::vector<std::vector<double> > &basePoints, 
+    std::vector<std::pair<double, double> > &basePointProjections, 
+    std::vector<double> &basePointParameterization,
+    std::vector<std::pair<int, int> > &baseEdges) const{
 
   basePoints.resize(3);
   basePointProjections.resize(3);
@@ -565,8 +570,8 @@ template <class dataTypeU, class dataTypeV>
         break;
     }
     
-    vector<double> baryCentrics;
-    vector<double> p0(2), p1(2), p(2);
+    std::vector<double> baryCentrics;
+    std::vector<double> p0(2), p1(2), p(2);
     p0[0] = ((dataTypeU *) uField_)[vertexId0];
     p0[1] = ((dataTypeV *) vField_)[vertexId0];
     p1[0] = ((dataTypeU *) uField_)[vertexId1];
@@ -602,10 +607,10 @@ template <class dataTypeU, class dataTypeV>
     }
     
     if(vertexId0 < vertexId1){
-      baseEdges[i] = pair<int, int>(vertexId0, vertexId1);
+      baseEdges[i] = std::pair<int, int>(vertexId0, vertexId1);
     }
     else{
-      baseEdges[i] = pair<int, int>(vertexId1, vertexId0);
+      baseEdges[i] = std::pair<int, int>(vertexId1, vertexId0);
     }
   }
 
@@ -613,7 +618,7 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template<class dataTypeU, class dataTypeV>
-  inline int FiberSurface::computeCase0( 
+  inline int ttk::FiberSurface::computeCase0( 
     const int &polygonEdgeId, const int &tetId, 
     const int &localEdgeId0, const double &t0,
       const double &u0, const double &v0, 
@@ -708,8 +713,8 @@ template<class dataTypeU, class dataTypeV>
         break;
     }
     
-    vector<double> baryCentrics;
-    vector<double> p0(2), p1(2), p(2);
+    std::vector<double> baryCentrics;
+    std::vector<double> p0(2), p1(2), p(2);
     p0[0] = ((dataTypeU *) uField_)[vertexId0];
     p0[1] = ((dataTypeV *) vField_)[vertexId0];
     p1[0] = ((dataTypeU *) uField_)[vertexId1];
@@ -744,10 +749,10 @@ template<class dataTypeU, class dataTypeV>
    
     if(vertexId0 < vertexId1)
       (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-        = pair<int, int>(vertexId0, vertexId1);
+        = std::pair<int, int>(vertexId0, vertexId1);
     else
       (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-        = pair<int, int>(vertexId1, vertexId0);
+        = std::pair<int, int>(vertexId1, vertexId0);
   }
 
   // return the number of created vertices
@@ -755,7 +760,7 @@ template<class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::computeCase1( 
+  inline int ttk::FiberSurface::computeCase1( 
     const int &polygonEdgeId, const int &tetId, 
     const int &localEdgeId0, const double &t0,
       const double &u0, const double &v0, 
@@ -773,7 +778,7 @@ template <class dataTypeU, class dataTypeV>
     (*polygonEdgeVertexLists_[polygonEdgeId])[
       vertexId + i].isIntersectionPoint_ = false;
     (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-      = pair<int, int>(-1, -1);
+      = std::pair<int, int>(-1, -1);
   }
   
   // alloc 3 more triangles
@@ -816,10 +821,10 @@ template <class dataTypeU, class dataTypeV>
   }
   
   // compute the base triangle vertices like in case 1
-  vector<vector<double> > basePoints(3);
-  vector<pair<double, double> > basePointProjections(3);
-  vector<double> basePointParameterization(3);
-  vector<pair<int, int> > baseEdges(3);
+  std::vector<std::vector<double> > basePoints(3);
+  std::vector<std::pair<double, double> > basePointProjections(3);
+  std::vector<double> basePointParameterization(3);
+  std::vector<std::pair<int, int> > baseEdges(3);
   
   computeBaseTriangle<dataTypeU, dataTypeV>(tetId,
     localEdgeId0, t0, u0, v0,
@@ -938,7 +943,7 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::computeCase2( 
+  inline int ttk::FiberSurface::computeCase2( 
     const int &polygonEdgeId, const int &tetId, 
     const int &localEdgeId0, const double &t0,
       const double &u0, const double &v0, 
@@ -956,7 +961,7 @@ template <class dataTypeU, class dataTypeV>
     (*polygonEdgeVertexLists_[polygonEdgeId])[
       vertexId + i].isIntersectionPoint_ = false;
     (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-      = pair<int, int>(-1, -1);
+      = std::pair<int, int>(-1, -1);
   }
   
   // alloc 2 more triangles
@@ -989,10 +994,10 @@ template <class dataTypeU, class dataTypeV>
   }
   
   // compute the base triangle vertices like in case 1
-  vector<vector<double> > basePoints(3);
-  vector<pair<double, double> > basePointProjections(3);
-  vector<double> basePointParameterization(3);
-  vector<pair<int, int> > baseEdges(3);
+  std::vector<std::vector<double> > basePoints(3);
+  std::vector<std::pair<double, double> > basePointProjections(3);
+  std::vector<double> basePointParameterization(3);
+  std::vector<std::pair<int, int> > baseEdges(3);
   
   computeBaseTriangle<dataTypeU, dataTypeV>(tetId,
     localEdgeId0, t0, u0, v0,
@@ -1113,7 +1118,7 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::computeCase3( 
+  inline int ttk::FiberSurface::computeCase3( 
     const int &polygonEdgeId, const int &tetId, 
     const int &localEdgeId0, const double &t0,
       const double &u0, const double &v0, 
@@ -1131,7 +1136,7 @@ template <class dataTypeU, class dataTypeV>
     (*polygonEdgeVertexLists_[polygonEdgeId])[
       vertexId + i].isIntersectionPoint_ = false;
     (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-      = pair<int, int>(-1, -1);
+      = std::pair<int, int>(-1, -1);
   }
   
   // alloc 1 more triangle
@@ -1152,10 +1157,10 @@ template <class dataTypeU, class dataTypeV>
     vertexId + 2;
   
   // compute the base triangle vertices like in case 1
-  vector<vector<double> > basePoints(3);
-  vector<pair<double, double> > basePointProjections(3);
-  vector<double> basePointParameterization(3);
-  vector<pair<int, int> > baseEdges(3);
+  std::vector<std::vector<double> > basePoints(3);
+  std::vector<std::pair<double, double> > basePointProjections(3);
+  std::vector<double> basePointParameterization(3);
+  std::vector<std::pair<int, int> > baseEdges(3);
   
   computeBaseTriangle<dataTypeU, dataTypeV>(tetId,
     localEdgeId0, t0, u0, v0,
@@ -1256,7 +1261,7 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::computeCase4( 
+  inline int ttk::FiberSurface::computeCase4( 
     const int &polygonEdgeId, const int &tetId, 
     const int &localEdgeId0, const double &t0,
       const double &u0, const double &v0, 
@@ -1274,7 +1279,7 @@ template <class dataTypeU, class dataTypeV>
     (*polygonEdgeVertexLists_[polygonEdgeId])[
       vertexId + i].isIntersectionPoint_ = false;
     (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-      = pair<int, int>(-1, -1);
+      = std::pair<int, int>(-1, -1);
   }
   
   // alloc 2 more triangles
@@ -1307,10 +1312,10 @@ template <class dataTypeU, class dataTypeV>
   }
   
   // compute the base triangle vertices like in case 1
-  vector<vector<double> > basePoints(3);
-  vector<pair<double, double> > basePointProjections(3);
-  vector<double> basePointParameterization(3);
-  vector<pair<int, int> > baseEdges(3);
+  std::vector<std::vector<double> > basePoints(3);
+  std::vector<std::pair<double, double> > basePointProjections(3);
+  std::vector<double> basePointParameterization(3);
+  std::vector<std::pair<int, int> > baseEdges(3);
   
   computeBaseTriangle<dataTypeU, dataTypeV>(tetId,
     localEdgeId0, t0, u0, v0,
@@ -1430,10 +1435,10 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::computeContour(
-    const pair<double, double> &rangePoint0,
-    const pair<double, double> &rangePoint1,
-    const vector<int> &seedTetList,
+  inline int ttk::FiberSurface::computeContour(
+    const std::pair<double, double> &rangePoint0,
+    const std::pair<double, double> &rangePoint1,
+    const std::vector<int> &seedTetList,
     const int &polygonEdgeId) const{
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -1449,8 +1454,8 @@ template <class dataTypeU, class dataTypeV>
     return -8;
 #endif
     
-  vector<bool> visitedTets(triangulation_->getNumberOfCells(), false);
-  queue<int> tetQueue;
+  std::vector<bool> visitedTets(triangulation_->getNumberOfCells(), false);
+  std::queue<int> tetQueue;
 
   // init the queue
   for(int i = 0; i < (int) seedTetList.size(); i++){
@@ -1491,10 +1496,12 @@ template <class dataTypeU, class dataTypeV>
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV> int FiberSurface::computeContour(
-  const vector<pair<pair<double, double>, pair<double, double> > > &edgeList, 
-  const vector<int> &seedTetList,
-  const vector<int> *edgeIdList) const{
+template <class dataTypeU, class dataTypeV> int 
+ttk::FiberSurface::computeContour(
+  const std::vector<std::pair<std::pair<double, double>, std::pair<double, 
+double> > > &edgeList, 
+  const std::vector<int> &seedTetList,
+  const std::vector<int> *edgeIdList) const{
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!tetNeighbors_)
@@ -1515,8 +1522,8 @@ template <class dataTypeU, class dataTypeV> int FiberSurface::computeContour(
     return -8;
 #endif
   
-  vector<bool> visitedTets(tetNumber_, false);
-  queue<int> tetQueue;
+  std::vector<bool> visitedTets(tetNumber_, false);
+  std::queue<int> tetQueue;
 
   // init the queue
   for(int i = 0; i < (int) seedTetList.size(); i++){
@@ -1532,7 +1539,7 @@ template <class dataTypeU, class dataTypeV> int FiberSurface::computeContour(
     
     if(!visitedTets[tetId]){
      
-      vector<vector<int> > threadedTetQueue(edgeList.size());
+      std::vector<std::vector<int> > threadedTetQueue(edgeList.size());
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
@@ -1575,9 +1582,9 @@ template <class dataTypeU, class dataTypeV> int FiberSurface::computeContour(
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::computeSurface(
-    const pair<double, double> &rangePoint0,
-    const pair<double, double> &rangePoint1,
+  inline int ttk::FiberSurface::computeSurface(
+    const std::pair<double, double> &rangePoint0,
+    const std::pair<double, double> &rangePoint1,
     const int &polygonEdgeId) const {
   
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -1616,7 +1623,7 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::computeSurface(){
+  inline int ttk::FiberSurface::computeSurface(){
     
 #ifndef TTK_ENABLE_KAMIKAZE
   if((!tetNumber_)&&(!triangulation_))
@@ -1676,12 +1683,12 @@ template <class dataTypeU, class dataTypeV>
   finalize<dataTypeU, dataTypeV>(pointSnapping_, false, false, false);
     
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[FiberSurface] FiberSurface extracted in "
       << t.getElapsedTime() << " s. (" << globalVertexList_->size()
       << " vertices, " << threadNumber_
-      << " thread(s))" << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << " thread(s))" << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   return 0;
@@ -1689,9 +1696,9 @@ template <class dataTypeU, class dataTypeV>
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::computeSurfaceWithOctree(
-    const pair<double, double> &rangePoint0,
-    const pair<double, double> &rangePoint1,
+  inline int ttk::FiberSurface::computeSurfaceWithOctree(
+    const std::pair<double, double> &rangePoint0,
+    const std::pair<double, double> &rangePoint1,
     const int &polygonEdgeId) const {
   
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -1711,7 +1718,7 @@ template <class dataTypeU, class dataTypeV>
     return -7;
 #endif
   
-  vector<int> tetList;
+  std::vector<int> tetList;
   octree_.rangeSegmentQuery(rangePoint0, rangePoint1, tetList);
 
 #ifdef TTK_ENABLE_OPENMP
@@ -1726,7 +1733,7 @@ template <class dataTypeU, class dataTypeV>
 }
 #endif
 
-template <class dataTypeU, class dataTypeV> int FiberSurface::finalize(
+template <class dataTypeU, class dataTypeV> int ttk::FiberSurface::finalize(
   const bool &mergeDuplicatedVertices,
   const bool &removeSmallEdges, 
   const bool &edgeFlips,
@@ -1790,9 +1797,9 @@ template <class dataTypeU, class dataTypeV> int FiberSurface::finalize(
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::processTetrahedron(const int &tetId,
-    const pair<double, double> &rangePoint0,
-    const pair<double, double> &rangePoint1,
+  inline int ttk::FiberSurface::processTetrahedron(const int &tetId,
+    const std::pair<double, double> &rangePoint0,
+    const std::pair<double, double> &rangePoint1,
     const int &polygonEdgeId) const{
 
   double rangeEdge[2];
@@ -1846,9 +1853,9 @@ template <class dataTypeU, class dataTypeV>
   if(!((upperNumber == 0)||(lowerNumber == 0))){
     
     // the fiber surface is passing through this tetrahedron.
-    vector<bool> lonelyVertex(4, false);
-    vector<int> triangleEdgeNumbers(2, 0);
-    vector<vector<int> > triangleEdges(2);
+    std::vector<bool> lonelyVertex(4, false);
+    std::vector<int> triangleEdgeNumbers(2, 0);
+    std::vector<std::vector<int> > triangleEdges(2);
     triangleEdges[0].resize(3, -1);
     triangleEdges[1].resize(3, -1);
     
@@ -1979,9 +1986,9 @@ template <class dataTypeU, class dataTypeV>
     // see if it lies in it (in between 0 and 1)
     // figure 7 of the paper
     double d0, d1;
-    pair<double, double> uv0, uv1;
-    vector<pair<double, double> > uv(3);
-    vector<double> t(3);
+    std::pair<double, double> uv0, uv1;
+    std::vector<std::pair<double, double> > uv(3);
+    std::vector<double> t(3);
     
     int createdVertices = 0;
     
@@ -2142,17 +2149,17 @@ template <class dataTypeU, class dataTypeV>
     // duplicate
     if((triangleEdges[1][0] != -1)&&(createdVertices > 3)){
       
-      vector<int> createdVertexList(createdVertices);
+      std::vector<int> createdVertexList(createdVertices);
       for(int i = 0; i < (int) createdVertices; i++){
         createdVertexList[i] = 
           polygonEdgeVertexLists_[polygonEdgeId]->size() - 1 - i;
       }
       
-      vector<bool> snappedVertices(createdVertices, false);
+      std::vector<bool> snappedVertices(createdVertices, false);
       
       for(int i = 0; i < createdVertices; i++){
         
-        vector<int> colinearVertices;
+        std::vector<int> colinearVertices;
         if(!snappedVertices[i]){
           colinearVertices.push_back(i);
           for(int j = 0; j < createdVertices; j++){
@@ -2175,7 +2182,7 @@ template <class dataTypeU, class dataTypeV>
           
           // we just need to find the pair of duplicates and snap both of 
           // them to another vertex
-          pair<int, int> minPair;
+          std::pair<int, int> minPair;
           double minDistance = -1;
           for(int j = 0; j < (int) colinearVertices.size(); j++){
             for(int k = 0; k < (int) colinearVertices.size(); k++){
@@ -2314,7 +2321,7 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int FiberSurface::remeshIntersections() const{
+  inline int ttk::FiberSurface::remeshIntersections() const{
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if((!tetNumber_)&&(!triangulation_))
@@ -2336,8 +2343,8 @@ template <class dataTypeU, class dataTypeV>
   // the topological aspect of the code is OK.
   // if any bug, it's very likely to be geometry accuracy related.
   
-  vector<vector<IntersectionTriangle> > tetIntersections(tetNumber_);
-  vector<vector<Vertex> > tetNewVertices(tetNumber_);
+  std::vector<std::vector<IntersectionTriangle> > tetIntersections(tetNumber_);
+  std::vector<std::vector<Vertex> > tetNewVertices(tetNumber_);
   
   // fill the information prior to the parallel pass
   for(int i = 0; i < (int) polygonEdgeTriangleLists_.size(); i++){
@@ -2371,7 +2378,7 @@ template <class dataTypeU, class dataTypeV>
     }
   }
   
-  vector<int> tetList;
+  std::vector<int> tetList;
   for(int i = 0; i < (int) tetIntersections.size(); i++){
     if(tetIntersections[i].size() > 1)
       tetList.push_back(i);
@@ -2392,13 +2399,13 @@ template <class dataTypeU, class dataTypeV>
     for(int j = 0; j < (int) tetIntersections[tetId].size(); j++){
     
       if(j > 1000){
-        stringstream msg;
-        msg << "[FiberSurface] Preventing an infinite loop!" << endl;
+        std::stringstream msg;
+        msg << "[FiberSurface] Preventing an infinite loop!" << std::endl;
         msg << "[FiberSurface] More than 1000 re-meshed triangles in tet #"
-          << tetId << " :(" << endl;
+          << tetId << " :(" << std::endl;
         msg << "[FiberSurface] Extra-thin triangles keep on intersecting?!"
-          << endl;
-        dMsg(cerr, msg.str(), infoMsg);
+          << std::endl;
+        dMsg(std::cerr, msg.str(), infoMsg);
         break;
       }
       
@@ -2416,19 +2423,19 @@ template <class dataTypeU, class dataTypeV>
           // per tet given a single edge). we don't need to re-mesh that.
           
           // grab the range projection for the triangle j
-          pair<double, double> edge0point0, edge0point1;
+          std::pair<double, double> edge0point0, edge0point1;
         
           getTriangleRangeExtremities(tetId, j, tetIntersections,
             edge0point0, edge0point1);
 
           // now do the same thing for the triangle k
-          pair<double, double> edge1point0, edge1point1;
+          std::pair<double, double> edge1point0, edge1point1;
          
           getTriangleRangeExtremities(tetId, k, tetIntersections,
             edge1point0, edge1point1);
           
           // compute the intersection
-          pair<double, double> intersection;
+          std::pair<double, double> intersection;
           bool hasIntersection = 
             Geometry::computeSegmentIntersection(
               edge0point0.first, edge0point0.second,

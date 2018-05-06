@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::MorseSmaleComplex3D
+/// \class ttk::MorseSmaleComplex3D::
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date February 2017.
@@ -42,12 +42,12 @@ namespace ttk{
        * contour tree.
        */
       template<typename dataType>
-        int computePersistencePairs(const vector<tuple<int, int, dataType>>& JTPairs,
-            const vector<tuple<int, int, dataType>>& STPairs,
-            vector<tuple<int,int,dataType>>& pl_saddleSaddlePairs);
+        int computePersistencePairs(const std::vector<std::tuple<int, int, dataType>>& JTPairs,
+            const std::vector<std::tuple<int, int, dataType>>& STPairs,
+            std::vector<std::tuple<int,int,dataType>>& pl_saddleSaddlePairs);
 
       template <typename dataType>
-        int setAugmentedCriticalPoints(const vector<Cell>& criticalPoints,
+        int setAugmentedCriticalPoints(const std::vector<Cell>& criticalPoints,
             int* ascendingManifold,
             int* descendingManifold) const;
 
@@ -55,77 +55,78 @@ namespace ttk{
        * Compute the descending 1-separatrices by reading into the discrete
        * gradient.
        */
-      int getAscendingSeparatrices1(const vector<Cell>& criticalPoints,
-          vector<Separatrix>& separatrices,
-          vector<vector<Cell>>& separatricesGeometry) const;
+      int getAscendingSeparatrices1(const std::vector<Cell>& criticalPoints,
+          std::vector<Separatrix>& separatrices,
+          std::vector<std::vector<Cell>>& separatricesGeometry) const;
 
       /**
        * Compute the saddle-connectors by reading into the discrete
        * gradient.
        */
-      int getSaddleConnectors(const vector<Cell>& criticalPoints,
-          vector<Separatrix>& separatrices,
-          vector<vector<Cell>>& separatricesGeometry) const;
+      int getSaddleConnectors(const std::vector<Cell>& criticalPoints,
+          std::vector<Separatrix>& separatrices,
+          std::vector<std::vector<Cell>>& separatricesGeometry) const;
 
       /**
        * Compute the geometrical embedding of the saddle-connectors.
        */
       template<typename dataType>
-      int setSaddleConnectors(const vector<Separatrix>& separatrices,
-          const vector<vector<Cell>>& separatricesGeometry) const;
+      int setSaddleConnectors(const std::vector<Separatrix>& separatrices,
+          const std::vector<std::vector<Cell>>& separatricesGeometry) const;
 
       /**
        * Compute the 2-separatrices by reading into the discrete
        * gradient from the maxima.
        */
-      int getDescendingSeparatrices2(const vector<Cell>& criticalPoints,
-          vector<Separatrix>& separatrices,
-          vector<vector<Cell>>& separatricesGeometry,
-          vector<set<int>>& separatricesSaddles) const;
+      int getDescendingSeparatrices2(const std::vector<Cell>& criticalPoints,
+          std::vector<Separatrix>& separatrices,
+          std::vector<std::vector<Cell>>& separatricesGeometry,
+          std::vector<std::set<int>>& separatricesSaddles) const;
 
       /**
        * Compute the geometrical embedding of the descending
        * 2-separatrices.
        */
       template<typename dataType>
-      int setDescendingSeparatrices2(const vector<Separatrix>& separatrices,
-          const vector<vector<Cell>>& separatricesGeometry,
-          const vector<set<int>>& separatricesSaddles) const;
+      int setDescendingSeparatrices2(const std::vector<Separatrix>& separatrices,
+          const std::vector<std::vector<Cell>>& separatricesGeometry,
+          const std::vector<std::set<int>>& separatricesSaddles) const;
 
-      int getDualPolygon(const int edgeId, vector<int>& polygon) const;
+      int getDualPolygon(const int edgeId, std::vector<int>& polygon) const;
 
-      int sortDualPolygonVertices(vector<int>& polygon) const;
+      int sortDualPolygonVertices(std::vector<int>& polygon) const;
 
       /**
        * Compute the 2-separatrices by reading into the discrete
        * gradient from the minima.
        */
-      int getAscendingSeparatrices2(const vector<Cell>& criticalPoints,
-          vector<Separatrix>& separatrices,
-          vector<vector<Cell>>& separatricesGeometry,
-          vector<set<int>>& separatricesSaddles) const;
+      int getAscendingSeparatrices2(const std::vector<Cell>& criticalPoints,
+          std::vector<Separatrix>& separatrices,
+          std::vector<std::vector<Cell>>& separatricesGeometry,
+          std::vector<std::set<int>>& separatricesSaddles) const;
 
       /**
        * Compute the geometrical embedding of the ascending
        * 2-separatrices.
        */
       template<typename dataType>
-      int setAscendingSeparatrices2(const vector<Separatrix>& separatrices,
-          const vector<vector<Cell>>& separatricesGeometry,
-          const vector<set<int>>& separatricesSaddles) const;
+      int setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
+          const std::vector<std::vector<Cell>>& separatricesGeometry,
+          const std::vector<std::set<int>>& separatricesSaddles) const;
   };
 }
 
 template<typename dataType>
-int MorseSmaleComplex3D::setSaddleConnectors(const vector<Separatrix>& separatrices,
-    const vector<vector<Cell>>& separatricesGeometry) const{
+int ttk::MorseSmaleComplex3D::setSaddleConnectors(const 
+std::vector<Separatrix>& separatrices,
+    const std::vector<std::vector<Cell>>& separatricesGeometry) const{
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-  vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMaxima=
-    static_cast<vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionMaxima_);
-  vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMinima=
-    static_cast<vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionMinima_);
-  vector<dataType>* outputSeparatrices1_cells_separatrixFunctionDiffs=
-    static_cast<vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionDiffs_);
+  std::vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMaxima=
+    static_cast<std::vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionMaxima_);
+  std::vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMinima=
+    static_cast<std::vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionMinima_);
+  std::vector<dataType>* outputSeparatrices1_cells_separatrixFunctionDiffs=
+    static_cast<std::vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionDiffs_);
 
   int pointId=(*outputSeparatrices1_numberOfPoints_);
   int cellId=(*outputSeparatrices1_numberOfCells_);
@@ -209,16 +210,16 @@ int MorseSmaleComplex3D::setSaddleConnectors(const vector<Separatrix>& separatri
 }
 
 template<typename dataType>
-int MorseSmaleComplex3D::setAscendingSeparatrices2(const vector<Separatrix>& separatrices,
-   const vector<vector<Cell>>& separatricesGeometry,
-   const vector<set<int>>& separatricesSaddles) const{
+int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
+   const std::vector<std::vector<Cell>>& separatricesGeometry,
+   const std::vector<std::set<int>>& separatricesSaddles) const{
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-  vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
-    static_cast<vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
-  vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMinima=
-    static_cast<vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMinima_);
-  vector<dataType>* outputSeparatrices2_cells_separatrixFunctionDiffs=
-    static_cast<vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionDiffs_);
+  std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
+    static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
+  std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMinima=
+    static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMinima_);
+  std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionDiffs=
+    static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionDiffs_);
 
   int pointId=(*outputSeparatrices2_numberOfPoints_);
   int cellId=(*outputSeparatrices2_numberOfCells_);
@@ -229,7 +230,7 @@ int MorseSmaleComplex3D::setAscendingSeparatrices2(const vector<Separatrix>& sep
   }
 
   const int numberOfCells=inputTriangulation_->getNumberOfCells();
-  vector<int> isVisited(numberOfCells, -1);
+  std::vector<int> isVisited(numberOfCells, -1);
 
   const int numberOfSeparatrices=separatrices.size();
   for(int i=0; i<numberOfSeparatrices; ++i){
@@ -269,7 +270,7 @@ int MorseSmaleComplex3D::setAscendingSeparatrices2(const vector<Separatrix>& sep
         const int edgeId=edge.id_;
 
         // Transform to dual : edge -> polygon
-        vector<int> polygon;
+        std::vector<int> polygon;
         getDualPolygon(edgeId, polygon);
 
         const int vertexNumber=polygon.size();
@@ -323,16 +324,16 @@ int MorseSmaleComplex3D::setAscendingSeparatrices2(const vector<Separatrix>& sep
 }
 
 template<typename dataType>
-int MorseSmaleComplex3D::setDescendingSeparatrices2(const vector<Separatrix>& separatrices,
-   const vector<vector<Cell>>& separatricesGeometry,
-   const vector<set<int>>& separatricesSaddles) const{
+int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(const std::vector<Separatrix>& separatrices,
+   const std::vector<std::vector<Cell>>& separatricesGeometry,
+   const std::vector<std::set<int>>& separatricesSaddles) const{
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-  vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
-    static_cast<vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
-  vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMinima=
-    static_cast<vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMinima_);
-  vector<dataType>* outputSeparatrices2_cells_separatrixFunctionDiffs=
-    static_cast<vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionDiffs_);
+  std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
+    static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
+  std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMinima=
+    static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMinima_);
+  std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionDiffs=
+    static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionDiffs_);
 
   int pointId=(*outputSeparatrices2_numberOfPoints_);
   int cellId=(*outputSeparatrices2_numberOfCells_);
@@ -343,7 +344,7 @@ int MorseSmaleComplex3D::setDescendingSeparatrices2(const vector<Separatrix>& se
   }
 
   const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-  vector<int> isVisited(numberOfVertices, -1);
+  std::vector<int> isVisited(numberOfVertices, -1);
 
   const int numberOfSeparatrices=separatrices.size();
   for(int i=0; i<numberOfSeparatrices; ++i){
@@ -427,7 +428,7 @@ int MorseSmaleComplex3D::setDescendingSeparatrices2(const vector<Separatrix>& se
 }
 
 template<typename dataType>
-int MorseSmaleComplex3D::execute(){
+int ttk::MorseSmaleComplex3D::execute(){
   Timer t;
 
   int* ascendingManifold=static_cast<int*>(outputAscendingManifold_);
@@ -439,50 +440,50 @@ int MorseSmaleComplex3D::execute(){
   discreteGradient_.buildGradient3<dataType>();
   discreteGradient_.reverseGradient<dataType>();
 
-  vector<Cell> criticalPoints;
+  std::vector<Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
 
   // 1-separatrices
   if(ComputeDescendingSeparatrices1){
-    vector<Separatrix> separatrices;
-    vector<vector<Cell>> separatricesGeometry;
+    std::vector<Separatrix> separatrices;
+    std::vector<std::vector<Cell>> separatricesGeometry;
     getDescendingSeparatrices1(criticalPoints, separatrices, separatricesGeometry);
     setSeparatrices1<dataType>(separatrices, separatricesGeometry);
   }
 
   if(ComputeAscendingSeparatrices1){
-    vector<Separatrix> separatrices;
-    vector<vector<Cell>> separatricesGeometry;
+    std::vector<Separatrix> separatrices;
+    std::vector<std::vector<Cell>> separatricesGeometry;
     getAscendingSeparatrices1(criticalPoints, separatrices, separatricesGeometry);
     setSeparatrices1<dataType>(separatrices, separatricesGeometry);
   }
 
   // saddle-connectors
   if(ComputeSaddleConnectors){
-    vector<Separatrix> separatrices;
-    vector<vector<Cell>> separatricesGeometry;
+    std::vector<Separatrix> separatrices;
+    std::vector<std::vector<Cell>> separatricesGeometry;
     getSaddleConnectors(criticalPoints, separatrices, separatricesGeometry);
     setSaddleConnectors<dataType>(separatrices, separatricesGeometry);
   }
 
   // 2-separatrices
   if(ComputeDescendingSeparatrices2){
-    vector<Separatrix> separatrices;
-    vector<vector<Cell>> separatricesGeometry;
-    vector<set<int>> separatricesSaddles;
+    std::vector<Separatrix> separatrices;
+    std::vector<std::vector<Cell>> separatricesGeometry;
+    std::vector<std::set<int>> separatricesSaddles;
     getDescendingSeparatrices2(criticalPoints, separatrices, separatricesGeometry, separatricesSaddles);
     setDescendingSeparatrices2<dataType>(separatrices, separatricesGeometry, separatricesSaddles);
   }
 
   if(ComputeAscendingSeparatrices2){
-    vector<Separatrix> separatrices;
-    vector<vector<Cell>> separatricesGeometry;
-    vector<set<int>> separatricesSaddles;
+    std::vector<Separatrix> separatrices;
+    std::vector<std::vector<Cell>> separatricesGeometry;
+    std::vector<std::set<int>> separatricesSaddles;
     getAscendingSeparatrices2(criticalPoints, separatrices, separatricesGeometry, separatricesSaddles);
     setAscendingSeparatrices2<dataType>(separatrices, separatricesGeometry, separatricesSaddles);
   }
 
-  vector<int> maxSeeds;
+  std::vector<int> maxSeeds;
   {
     int numberOfMaxima{};
     int numberOfMinima{};
@@ -507,30 +508,30 @@ int MorseSmaleComplex3D::execute(){
 
   {
     const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-    stringstream msg;
+    std::stringstream msg;
     msg << "[MorseSmaleComplex3D] Data-set (" << numberOfVertices
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template<typename dataType>
-int MorseSmaleComplex3D::computePersistencePairs(const vector<tuple<int, int, dataType>>& JTPairs,
-    const vector<tuple<int, int, dataType>>& STPairs,
-    vector<tuple<int,int,dataType>>& pl_saddleSaddlePairs){
+int ttk::MorseSmaleComplex3D::computePersistencePairs(const std::vector<std::tuple<int, int, dataType>>& JTPairs,
+    const std::vector<std::tuple<int, int, dataType>>& STPairs,
+    std::vector<std::tuple<int,int,dataType>>& pl_saddleSaddlePairs){
   dataType* scalars=static_cast<dataType*>(inputScalarField_);
   const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
 
   // get original list of critical points
-  vector<pair<int,char>> pl_criticalPoints;
+  std::vector<std::pair<int,char>> pl_criticalPoints;
   {
     const int* const offsets=static_cast<int*>(inputOffsets_);
-    vector<int> sosOffsets(numberOfVertices);
+    std::vector<int> sosOffsets(numberOfVertices);
     for(int i=0; i<numberOfVertices; ++i)
       sosOffsets[i]=offsets[i];
 
@@ -549,24 +550,24 @@ int MorseSmaleComplex3D::computePersistencePairs(const vector<tuple<int, int, da
   }
 
   // build accepting list
-  vector<char> isAccepted(numberOfVertices, false);
+  std::vector<char> isAccepted(numberOfVertices, false);
   for(const auto& i : JTPairs){
-    const int v0=get<0>(i);
-    const int v1=get<1>(i);
+    const int v0=std::get<0>(i);
+    const int v1=std::get<1>(i);
     isAccepted[v0]=true;
     isAccepted[v1]=true;
   }
   for(const auto& i : STPairs){
-    const int v0=get<0>(i);
-    const int v1=get<1>(i);
+    const int v0=std::get<0>(i);
+    const int v1=std::get<1>(i);
     isAccepted[v0]=true;
     isAccepted[v1]=true;
   }
 
   // filter the critical points according to the filtering list and boundary condition
-  vector<char> isSaddle1(numberOfVertices, false);
-  vector<char> isSaddle2(numberOfVertices, false);
-  vector<pair<int,char>> pl_filteredCriticalPoints;
+  std::vector<char> isSaddle1(numberOfVertices, false);
+  std::vector<char> isSaddle2(numberOfVertices, false);
+  std::vector<std::pair<int,char>> pl_filteredCriticalPoints;
   for(const auto& i : pl_criticalPoints){
     const int vertexId=i.first;
     const char type=i.second;
@@ -585,7 +586,7 @@ int MorseSmaleComplex3D::computePersistencePairs(const vector<tuple<int, int, da
     }
   }
 
-  vector<tuple<Cell,Cell>> dmt_pairs;
+  std::vector<std::tuple<Cell,Cell>> dmt_pairs;
   {
     // simplify to be PL-conformant
     discreteGradient_.setDebugLevel(debugLevel_);
@@ -607,8 +608,8 @@ int MorseSmaleComplex3D::computePersistencePairs(const vector<tuple<int, int, da
 
   // transform DMT pairs into PL pairs
   for(const auto& i : dmt_pairs){
-    const Cell& saddle1=get<0>(i);
-    const Cell& saddle2=get<1>(i);
+    const Cell& saddle1=std::get<0>(i);
+    const Cell& saddle2=std::get<1>(i);
 
     int v0=-1;
     for(int j=0; j<2; ++j){
@@ -662,7 +663,7 @@ int MorseSmaleComplex3D::computePersistencePairs(const vector<tuple<int, int, da
 
     if(v0!=-1 and v1!=-1 and persistence>=0){
       if(!inputTriangulation_->isVertexOnBoundary(v0) or !inputTriangulation_->isVertexOnBoundary(v1)){
-        pl_saddleSaddlePairs.push_back(make_tuple(v0,v1,persistence));
+        pl_saddleSaddlePairs.push_back(std::make_tuple(v0,v1,persistence));
       }
     }
   }

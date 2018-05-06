@@ -33,7 +33,7 @@ namespace ttk {
       ~LDistance();
 
       template <class dataType>
-        int execute(const string &distanceType);
+        int execute(const std::string &distanceType);
     
       template <class dataType>
         int computeLn(dataType *input1, dataType *input2, dataType *output,
@@ -101,8 +101,8 @@ namespace ttk {
 }
 
 // template functions
-template <class dataType> int LDistance::execute(
-  const string &distanceType)
+template <class dataType> int ttk::LDistance::execute(
+  const std::string &distanceType)
 {
   
   Timer t;
@@ -131,19 +131,19 @@ template <class dataType> int LDistance::execute(
   }
    
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[LDistance] Data-set (" << vertexNumber
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   return status;
 }
 
-template <class dataType> int LDistance::computeLn(
+template <class dataType> int ttk::LDistance::computeLn(
   dataType *input1, dataType *input2, 
   dataType *output, 
   const int n,
@@ -173,15 +173,15 @@ template <class dataType> int LDistance::computeLn(
   // Affect result.
   result = (double) sum;
   {
-    stringstream msg;
-    msg << "[LDistance] Distance: " << result << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[LDistance] Distance: " << result << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   return 0;
 }
   
-template <class dataType> int LDistance::computeLinf(
+template <class dataType> int ttk::LDistance::computeLinf(
   dataType *input1, dataType *input2, 
   dataType *output,
   const int vertexNumber) 
@@ -206,9 +206,9 @@ template <class dataType> int LDistance::computeLinf(
   // Affect result.
   result = (double) maxValue;
   {
-    stringstream msg;
-    msg << "[LDistance] Distance: " << result << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[LDistance] Distance: " << result << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   return 0;

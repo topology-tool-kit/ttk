@@ -23,10 +23,10 @@ namespace ttk {
   class RangeMinimumQuery : public Debug {
   public:
     RangeMinimumQuery();
-    RangeMinimumQuery(vector<DataType> &input);
+    RangeMinimumQuery(std::vector<DataType> &input);
     ~RangeMinimumQuery();
 
-    inline void setVector(vector<DataType> &input) {
+    inline void setVector(std::vector<DataType> &input) {
       input_ = input.data();
       input_end_ = input.data()+input.size();
     }
@@ -40,7 +40,7 @@ namespace ttk {
     DataType                *input_end_;
 
     // Sparse Table
-    vector<vector<int> >    table_;
+    std::vector<std::vector<int> >    table_;
 
   };
 
@@ -51,22 +51,23 @@ namespace ttk {
 
 // Constructors
 template<class DataType>
-RangeMinimumQuery<DataType>::RangeMinimumQuery() {
+ttk::RangeMinimumQuery<DataType>::RangeMinimumQuery() {
   input_ = nullptr;
   input_end_ = nullptr;
 }
 template<class DataType>
-RangeMinimumQuery<DataType>::RangeMinimumQuery(vector<DataType> &input) {
+ttk::RangeMinimumQuery<DataType>::RangeMinimumQuery(std::vector<DataType> 
+&input) {
   setVector(input);
 }
 
 // Destructor
 template<class DataType>
-RangeMinimumQuery<DataType>::~RangeMinimumQuery(){};
+ttk::RangeMinimumQuery<DataType>::~RangeMinimumQuery(){};
 
 // Preprocessing
 template<class DataType>
-int RangeMinimumQuery<DataType>::preprocess(const bool silent) {
+int ttk::RangeMinimumQuery<DataType>::preprocess(const bool silent) {
 
   Timer t;
 
@@ -97,21 +98,21 @@ int RangeMinimumQuery<DataType>::preprocess(const bool silent) {
   }
   // Debug messages
   if(!silent && (debugLevel_ > timeMsg)) {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[RangeMinimumQuery] Preprocessed queries in "
-      << t.getElapsedTime() << "s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << t.getElapsedTime() << "s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   return 0;
 }
 
 template<class DataType>
-int RangeMinimumQuery<DataType>::query(int i, int j) const {
+int ttk::RangeMinimumQuery<DataType>::query(int i, int j) const {
 
   #ifndef TTK_ENABLE_KAMIKAZE
   // i must be lower or equal to j, else swap values
   if(i>j) {
-    swap(i,j);
+    std::swap(i,j);
   }
   #endif
 

@@ -1,5 +1,8 @@
 #include                  <AbstractTriangulation.h>
 
+using namespace std;
+using namespace ttk;
+
 AbstractTriangulation::AbstractTriangulation(){
   
   clear();

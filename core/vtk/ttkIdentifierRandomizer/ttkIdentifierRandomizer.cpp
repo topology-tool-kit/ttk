@@ -1,5 +1,8 @@
 #include                  <ttkIdentifierRandomizer.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkIdentifierRandomizer)
 
 int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs, 

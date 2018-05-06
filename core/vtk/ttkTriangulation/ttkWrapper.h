@@ -76,7 +76,7 @@
         \
         if(output){\
           \
-          string dataType = output->GetClassName();\
+          std::string dataType = output->GetClassName();\
           \
           TTK_UNSTRUCTURED_GRID_NEW(i, outputInformation, dataType);\
           \
@@ -90,7 +90,7 @@
       
 #define TTK_PIPELINE_REQUEST() \
     protected:\
-      vector<vtkSmartPointer<ttkTriangulationFilter> > inputTriangulations_;\
+      std::vector<vtkSmartPointer<ttkTriangulationFilter> > inputTriangulations_;\
       int RequestData(vtkInformation *request, \
         vtkInformationVector **inputVector, \
         vtkInformationVector *outputVector) override {\
@@ -103,8 +103,8 @@
           }\
         }\
         \
-        vector<vtkDataSet *> inputs(GetNumberOfInputPorts(), NULL);\
-        vector<vtkDataSet *> outputs(GetNumberOfOutputPorts(), NULL);\
+        std::vector<vtkDataSet *> inputs(GetNumberOfInputPorts(), NULL);\
+        std::vector<vtkDataSet *> outputs(GetNumberOfOutputPorts(), NULL);\
         \
         for(int i = 0; i < GetNumberOfInputPorts(); i++){\
           vtkDataSet *input = vtkDataSet::GetData(inputVector[i]);\
@@ -136,12 +136,12 @@
         if(!UseAllCores)\
           threadNumber_ = ThreadNumber;\
         else{\
-          threadNumber_ = OsCall::getNumberOfCores();\
+          threadNumber_ = ttk::OsCall::getNumberOfCores();\
         }\
         Modified();\
       }\
     private:\
-      int doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs);\
+      int doIt(std::vector<vtkDataSet *> &inputs, std::vector<vtkDataSet *> &outputs);\
       \
       bool needsToAbort() override { return GetAbortExecute();};\
       \
@@ -158,7 +158,7 @@ class VTKFILTERSCORE_EXPORT ttkTriangulationFilter
 #else
 class ttkTriangulationFilter
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       

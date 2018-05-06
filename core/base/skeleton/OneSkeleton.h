@@ -31,45 +31,48 @@ namespace ttk{
 
       /// Compute the link of each edge of a 2D triangulation (unspecified 
       /// behavior if the input mesh is not a valid triangulation).
-      /// \param edgeList List of edges. The size of this vector 
+      /// \param edgeList List of edges. The size of this std::vector 
       /// should be equal to the number of edges in the triangulation. Each
-      /// entry is a pair of vertex identifiers.
-      /// \param edgeStars List of edge stars. The size of this vector should be
-      /// equal to the number of edges. Each entry is a vector of triangle
+      /// entry is a std::pair of vertex identifiers.
+      /// \param edgeStars List of edge stars. The size of this std::vector 
+      /// should be
+      /// equal to the number of edges. Each entry is a std::vector of triangle
       /// identifiers.
       /// \param cellArray Pointer to a contiguous array of cells. Each entry 
       /// starts by the number of vertices in the cell, followed by the vertex
       /// identifiers of the cell.
-      /// \param edgeLinks Output edge links. The size of this vector 
+      /// \param edgeLinks Output edge links. The size of this std::vector 
       /// will be equal to the number of edges in the triangulation. Each 
-      /// entry will be a vector listing the vertices in the link of the 
+      /// entry will be a std::vector listing the vertices in the link of the 
       /// corresponding vertex.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildEdgeLinks(const vector<pair<int, int> > &edgeList,
-        const vector<vector<int> > &edgeStars,
+      int buildEdgeLinks(const std::vector<std::pair<int, int> > &edgeList,
+        const std::vector<std::vector<int> > &edgeStars,
         const long long int *cellArray,
-        vector<vector<int> > &edgeLinks) const;
+        std::vector<std::vector<int> > &edgeLinks) const;
       
       /// Compute the link of each edge of a 3D triangulation (unspecified 
       /// behavior if the input mesh is not a valid triangulation).
-      /// \param edgeList List of edges. The size of this vector 
+      /// \param edgeList List of edges. The size of this std::vector 
       /// should be equal to the number of edges in the triangulation. Each
-      /// entry is a pair of vertex identifiers.
-      /// \param edgeStars List of edge stars. The size of this vector should be
-      /// equal to the number of edges. Each entry is a vector of tetrahedron
+      /// entry is a std::pair of vertex identifiers.
+      /// \param edgeStars List of edge stars. The size of this std::vector 
+      /// should be
+      /// equal to the number of edges. Each entry is a std::vector of 
+      /// tetrahedron
       /// identifiers.
-      /// \param cellEdges List of celle edges. The size of this vector 
+      /// \param cellEdges List of celle edges. The size of this std::vector 
       /// should be equal to the number of tetrahedra in the triangulation. Each
-      /// entry is a vector of edge identifiers.
-      /// \param edgeLinks Output edge links. The size of this vector 
+      /// entry is a std::vector of edge identifiers.
+      /// \param edgeLinks Output edge links. The size of this std::vector 
       /// will be equal to the number of edges in the triangulation. Each 
-      /// entry will be a vector listing the vertices in the link of the 
+      /// entry will be a std::vector listing the vertices in the link of the 
       /// corresponding vertex.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildEdgeLinks(const vector<pair<int, int> > &edgeList,
-        const vector<vector<int> > &edgeStars,
-        const vector<vector<int> > &cellEdges,
-        vector<vector<int> > &edgeLinks) const;
+      int buildEdgeLinks(const std::vector<std::pair<int, int> > &edgeList,
+        const std::vector<std::vector<int> > &edgeStars,
+        const std::vector<std::vector<int> > &cellEdges,
+        std::vector<std::vector<int> > &edgeLinks) const;
       
       /// Compute the list of edges of a valid triangulation.
       /// \param vertexNumber Number of vertices in the triangulation.
@@ -78,22 +81,25 @@ namespace ttk{
       /// \param cellArray Pointer to a contiguous array of cells. Each entry 
       /// starts by the number of vertices in the cell, followed by the vertex
       /// identifiers of the cell.
-      /// \param edgeList Output edge list (each entry is an ordered pair of 
+      /// \param edgeList Output edge list (each entry is an ordered std::pair 
+      /// of 
       /// vertex identifiers).
       /// \return Returns 0 upon success, negative values otherwise.
       int buildEdgeList(const int &vertexNumber, const int &cellNumber, 
         const long long int *cellArray,
-        vector<pair<int, int> > &edgeList) const;
+        std::vector<std::pair<int, int> > &edgeList) const;
       
       /// Compute the list of edges of multiple triangulations.
       /// \param cellArrays Vector of cells. For each triangulation, each entry
       /// starts by the number of vertices in the cell, followed by the vertex
       /// identifiers of the cell.
-      /// \param edgeList Output edge list (each entry is an ordered pair of 
+      /// \param edgeList Output edge list (each entry is an ordered std::pair 
+      //  of 
       /// vertex identifiers).
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildEdgeLists(const vector<vector<long long int> >  &cellArrays,
-        vector<vector<pair<int, int> > > &edgeLists) const;
+      int buildEdgeLists(
+        const std::vector<std::vector<long long int> >  &cellArrays,
+        std::vector<std::vector<std::pair<int, int> > > &edgeLists) const;
       
           
       /// Compute the 3-star of all the edges of a triangulation (for each
@@ -104,32 +110,38 @@ namespace ttk{
       /// \param cellArray Pointer to a contiguous array of cells. Each entry 
       /// starts by the number of vertices in the cell, followed by the vertex
       /// identifiers of the cell.
-      /// \param starList Output list of 3-stars. The size of this vector will
+      /// \param starList Output list of 3-stars. The size of this std::vector 
+      /// will
       /// be equal to the number of edges in the mesh. Each entry stores a 
-      /// vector that lists the identifiers of all 3-dimensional cells 
+      /// std::vector that lists the identifiers of all 3-dimensional cells 
       /// connected to the entry's edge.
       /// \param edgeList Optional list of edges. If NULL, the function will 
       /// compute this list anyway and free the related memory upon return.
-      /// If not NULL but pointing to an empty vector, the function will fill 
-      /// this empty vector (useful if this list needs to be used later on by 
-      /// the calling program). If not NULL but pointing to a non-empty vector,
-      /// this function will use this vector as internal edge list. If this 
-      /// vector is not empty but incorrect, the behavior is unspecified.
+      /// If not NULL but pointing to an empty std::vector, the function will 
+      /// fill 
+      /// this empty std::vector (useful if this list needs to be used later on 
+      /// by 
+      /// the calling program). If not NULL but pointing to a non-empty 
+      /// std::vector,
+      /// this function will use this std::vector as internal edge list. If 
+      /// this 
+      /// std::vector is not empty but incorrect, the behavior is unspecified.
       /// \param vertexStars Optional list of vertex stars (list of 
       /// 3-dimensional cells connected to each vertex). If NULL, the 
       /// function will compute this list anyway and free the related memory
-      /// upon return. If not NULL but pointing to an empty vector, the 
-      /// function will fill this empty vector (useful if this list needs 
+      /// upon return. If not NULL but pointing to an empty std::vector, the 
+      /// function will fill this empty std::vector (useful if this list needs 
       /// to be used later on by the calling program). If not NULL but pointing
-      /// to a non-empty vector, this function will use this vector as internal 
-      /// vertex star list. If this vector is not empty but incorrect, the 
+      /// to a non-empty std::vector, this function will use this std::vector as 
+      /// internal 
+      /// vertex star list. If this std::vector is not empty but incorrect, the 
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildEdgeStars(const int &vertexNumber, const int &cellNumber,
         const long long int *cellArray,
-        vector<vector<int> > &starList,
-        vector<pair<int, int> > *edgeList = NULL,
-        vector<vector<int> > *vertexStars = NULL) const;
+        std::vector<std::vector<int> > &starList,
+        std::vector<std::pair<int, int> > *edgeList = NULL,
+        std::vector<std::vector<int> > *vertexStars = NULL) const;
       
       /// Compute the list of edges of a sub-portion of a valid triangulation.
       /// \param cellNumber Number of maximum-dimensional cells in the 
@@ -138,12 +150,13 @@ namespace ttk{
       /// \param cellArray Pointer to a contiguous array of cells. Each entry 
       /// starts by the number of vertices in the cell, followed by the vertex
       /// identifiers of the cell.
-      /// \param edgeList Output edge list (each entry is an ordered pair of 
+      /// \param edgeList Output edge list (each entry is an ordered std::pair 
+      /// of 
       /// vertex identifiers).
       /// \return Returns 0 upon success, negative values otherwise.
       int buildEdgeSubList(
         const int &cellNumber, const long long int *cellArray,
-        vector<pair<int, int> > &edgeList) const;
+        std::vector<std::pair<int, int> > &edgeList) const;
         
       
     protected:

@@ -48,7 +48,7 @@ class VTKFILTERSCORE_EXPORT ttkPointMerger
 #else
 class ttkPointMerger
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
     

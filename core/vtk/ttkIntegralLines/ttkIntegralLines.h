@@ -54,7 +54,7 @@ class VTKFILTERSCORE_EXPORT ttkIntegralLines
 #else
 class ttkIntegralLines
 #endif
-: public vtkDataSetAlgorithm, public Wrapper{
+: public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
@@ -74,8 +74,8 @@ class ttkIntegralLines
       SetThreads();
     }
 
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
 
     vtkGetMacro(Direction, int);
     vtkSetMacro(Direction, int);
@@ -83,20 +83,20 @@ class ttkIntegralLines
     vtkSetMacro(OutputScalarFieldType, int);
     vtkGetMacro(OutputScalarFieldType, int);
 
-    vtkSetMacro(VertexIdentifierScalarFieldName, string);
-    vtkGetMacro(VertexIdentifierScalarFieldName, string);
+    vtkSetMacro(VertexIdentifierScalarFieldName, std::string);
+    vtkGetMacro(VertexIdentifierScalarFieldName, std::string);
 
     vtkSetMacro(UseOffsetScalarField, int);
     vtkGetMacro(UseOffsetScalarField, int);
 
-    vtkSetMacro(OffsetScalarFieldName, string);
-    vtkGetMacro(OffsetScalarFieldName, string);
+    vtkSetMacro(OffsetScalarFieldName, std::string);
+    vtkGetMacro(OffsetScalarFieldName, std::string);
 
     int getTriangulation(vtkDataSet* input);
     int getScalars(vtkDataSet* input);
     int getOffsets(vtkDataSet* input);
     int getIdentifiers(vtkPointSet* input);
-    int getTrajectories(vtkDataSet* input, vector<vector<int>>& trajectories, vtkUnstructuredGrid* output);
+    int getTrajectories(vtkDataSet* input, std::vector<std::vector<int>>& trajectories, vtkUnstructuredGrid* output);
 
   protected:
 
@@ -111,15 +111,15 @@ class ttkIntegralLines
   private:
 
     bool hasUpdatedMesh_;
-    string ScalarField;
+    std::string ScalarField;
     int Direction;
     int OutputScalarFieldType;
-    string VertexIdentifierScalarFieldName;
+    std::string VertexIdentifierScalarFieldName;
     int UseOffsetScalarField;
-    string OffsetScalarFieldName;
+    std::string OffsetScalarFieldName;
 
-    Triangulation *triangulation_;
-    IntegralLines integralLines_;
+    ttk::Triangulation *triangulation_;
+    ttk::IntegralLines integralLines_;
     vtkDataArray* inputScalars_;
     vtkDataArray* offsets_;
     vtkDataArray* inputOffsets_;

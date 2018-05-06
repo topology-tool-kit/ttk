@@ -59,7 +59,7 @@ class VTKFILTERSCORE_EXPORT ttkContinuousScatterPlot
 #else
 class ttkContinuousScatterPlot
 #endif
-: public vtkDataSetAlgorithm, public Wrapper{
+: public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
@@ -79,11 +79,11 @@ class ttkContinuousScatterPlot
       SetThreads();
     }
 
-    vtkSetMacro(ScalarField1, string);
-    vtkGetMacro(ScalarField1, string);
+    vtkSetMacro(ScalarField1, std::string);
+    vtkGetMacro(ScalarField1, std::string);
 
-    vtkSetMacro(ScalarField2, string);
-    vtkGetMacro(ScalarField2, string);
+    vtkSetMacro(ScalarField2, std::string);
+    vtkGetMacro(ScalarField2, std::string);
 
     vtkSetMacro(UcomponentId, int);
     vtkGetMacro(UcomponentId, int);
@@ -134,16 +134,16 @@ class ttkContinuousScatterPlot
     bool ProjectImageSupport;
     int ScatterplotResolution[3];
     int UcomponentId, VcomponentId;
-    string ScalarField1;
-    string ScalarField2;
+    std::string ScalarField1;
+    std::string ScalarField2;
 
     vtkDataArray* inputScalars1_;
     vtkDataArray* inputScalars2_;
     double scalarMin_[2];
     double scalarMax_[2];
-    vector<vector<double>> density_;
-    vector<vector<char>> validPointMask_;
-    Triangulation *triangulation_;
+    std::vector<std::vector<double>> density_;
+    std::vector<std::vector<char>> validPointMask_;
+    ttk::Triangulation *triangulation_;
 
     // output
     vtkSmartPointer<vtkUnstructuredGrid> vtu_;

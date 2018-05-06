@@ -7,6 +7,9 @@
 #include                  <ttkPersistenceDiagram.h>
 #include                  <ttkUserInterfaceBase.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkUserInterface<ttkPersistenceDiagram> program;
 
 int main(int argc, char **argv) {

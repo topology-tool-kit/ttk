@@ -34,9 +34,6 @@
 #include                <string>
 #include                <vector>
 
-
-using namespace std;
-
 namespace ttk{
 
   extern bool welcomeMsg_;
@@ -74,14 +71,14 @@ namespace ttk{
       /// \param debugLevel Priority of the message.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa msg(), err()
-      virtual int dMsg(ostream &stream, string msg, 
+      virtual int dMsg(std::ostream &stream, std::string msg, 
         const int &debugLevel = infoMsg) const;
       
       /// Wrapper for dMsg() that sends a debug message to the standard error
       /// output stream.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa dMsg(), msg()
-      int err(const string msg, const int &debugLevel = fatalMsg) const;
+      int err(const std::string msg, const int &debugLevel = fatalMsg) const;
      
       int getThreadNumber() const { return threadNumber_;};
 
@@ -120,8 +117,6 @@ namespace ttk{
       Wrapper                 *wrapper_;
   };
 }
-
-using namespace ttk;
 
 #include                <Os.h>
 

@@ -7,6 +7,9 @@
 
 #include "MergeTree.h"
 
+using namespace std;
+using namespace ttk;
+
 // Constructors & destructors
 
 MergeTree::MergeTree(Params *const params, Triangulation *mesh, Scalars *const scalars,

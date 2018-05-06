@@ -1,7 +1,9 @@
 #include                  <JacobiSet.h>
 
+
+
 template <class dataTypeU, class dataTypeV> 
-  JacobiSet<dataTypeU, dataTypeV>::JacobiSet(){
+  ttk::JacobiSet<dataTypeU, dataTypeV>::JacobiSet(){
 
   vertexNumber_ = 0;
   
@@ -20,16 +22,16 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV> 
-  JacobiSet<dataTypeU, dataTypeV>::~JacobiSet(){
+  ttk::JacobiSet<dataTypeU, dataTypeV>::~JacobiSet(){
   
 }
 
 template <class dataTypeU, class dataTypeV> 
-  int JacobiSet<dataTypeU, dataTypeV>::connectivityPreprocessing(
-    const vector<vector<int> > &edgeStarList,
-    vector<vector<pair<int, int> > > &edgeFanLinkEdgeLists,
-    vector<vector<long long int> > &edgeFans,
-    vector<int> &sosOffsets) const{
+  int ttk::JacobiSet<dataTypeU, dataTypeV>::connectivityPreprocessing(
+    const std::vector<std::vector<int> > &edgeStarList,
+    std::vector<std::vector<std::pair<int, int> > > &edgeFanLinkEdgeLists,
+    std::vector<std::vector<long long int> > &edgeFans,
+    std::vector<int> &sosOffsets) const{
 
   Timer t;
  
@@ -67,20 +69,20 @@ template <class dataTypeU, class dataTypeV>
     }
   }
   
-  vector<ZeroSkeleton> threadedLinkers(threadNumber_);
-  vector<vector<long long int> > threadedLinks(threadNumber_);
+  std::vector<ZeroSkeleton> threadedLinkers(threadNumber_);
+  std::vector<std::vector<long long int> > threadedLinks(threadNumber_);
   for(int i = 0; i < threadNumber_; i++){
     threadedLinkers[i].setDebugLevel(debugLevel_);
     threadedLinkers[i].setThreadNumber(1);
   }
   
-  vector<OneSkeleton> threadedEdgeListers(threadNumber_);
+  std::vector<OneSkeleton> threadedEdgeListers(threadNumber_);
   for(int i = 0; i < threadNumber_; i++){
     threadedEdgeListers[i].setDebugLevel(debugLevel_);
     threadedEdgeListers[i].setThreadNumber(1);
   }
  
-  vector<vector<int> > threadedTriangleIds(threadNumber_);
+  std::vector<std::vector<int> > threadedTriangleIds(threadNumber_);
   for(int i = 0; i < (int) threadedTriangleIds.size(); i++){
     threadedTriangleIds[i].resize(4);
     threadedTriangleIds[i][0] = 3;
@@ -173,20 +175,20 @@ template <class dataTypeU, class dataTypeV>
 #endif
   
   {
-    stringstream msg;
-    msg << "[JacobiSet] Edge-fans computed in "
+    std::stringstream msg;
+    msg << "[ttk::JacobiSet] Edge-fans computed in "
       << t.getElapsedTime() << " s. ("
       << edgeList_->size()
-      << " edges)" << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+      << " edges)" << std::endl;
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
   
   return 0;
 }
 
 template <class dataTypeU, class dataTypeV> 
-  int JacobiSet<dataTypeU, dataTypeV>::execute(
-    vector<pair<int, char> > &jacobiSet){
+  int ttk::JacobiSet<dataTypeU, dataTypeV>::execute(
+    std::vector<std::pair<int, char> > &jacobiSet){
 
   Timer t;
   
@@ -236,7 +238,7 @@ template <class dataTypeU, class dataTypeV>
  
   int edgeNumber = triangulation_->getNumberOfEdges();
   
-  vector<vector<pair<int, char> > > threadedCriticalTypes(threadNumber_);
+  std::vector<std::vector<std::pair<int, char> > > threadedCriticalTypes(threadNumber_);
   
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -251,7 +253,7 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
       threadId = omp_get_thread_num();
 #endif
-      threadedCriticalTypes[threadId].push_back(pair<int, char>(i, type));
+      threadedCriticalTypes[threadId].push_back(std::pair<int, char>(i, type));
     }
   }
   
@@ -284,41 +286,42 @@ template <class dataTypeU, class dataTypeV>
     }
     
     {
-      stringstream msg;
-      msg << "[JacobiSet] Minimum edges: " << minimumNumber << endl;
-      msg << "[JacobiSet] Saddle edges: " << saddleNumber << endl;
-      msg << "[JacobiSet] Maximum edges: " << maximumNumber << endl;
-      msg << "[JacobiSet] Multi-saddle edges: " << monkeySaddleNumber << endl;
-      dMsg(cout, msg.str(), Debug::infoMsg);
+      std::stringstream msg;
+      msg << "[ttk::JacobiSet] Minimum edges: " << minimumNumber << std::endl;
+      msg << "[ttk::JacobiSet] Saddle edges: " << saddleNumber << std::endl;
+      msg << "[ttk::JacobiSet] Maximum edges: " << maximumNumber << std::endl;
+      msg << "[ttk::JacobiSet] Multi-saddle edges: " << monkeySaddleNumber << 
+std::endl;
+      dMsg(std::cout, msg.str(), Debug::infoMsg);
     }
   }
   
   {
-    stringstream msg;
-    msg << "[JacobiSet] Data-set (" << edgeNumber
+    std::stringstream msg;
+    msg << "[ttk::JacobiSet] Data-set (" << edgeNumber
       << " edges) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    msg << "[JacobiSet] Jacobi edge rate: "
+      << std::endl;
+    msg << "[ttk::JacobiSet] Jacobi edge rate: "
       << 100*(jacobiSet.size()/((double) edgeNumber))
-      << "%" << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << "%" << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   return 0;
 }
 
 template <class dataTypeU, class dataTypeV> 
-  int JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
-    vector<pair<int, char> > &jacobiSet){
+  int ttk::JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
+    std::vector<std::pair<int, char> > &jacobiSet){
 
   Timer t;
  
   {
-    stringstream msg;
-    msg << "[JacobiSet] Using legacy implementation..." << endl;
-    dMsg(cout, msg.str(), Debug::infoMsg);
+    std::stringstream msg;
+    msg << "[ttk::JacobiSet] Using legacy implementation..." << std::endl;
+    dMsg(std::cout, msg.str(), Debug::infoMsg);
   }
   
   // check the consistency of the variables -- to adapt
@@ -349,12 +352,12 @@ template <class dataTypeU, class dataTypeV>
   // distance fields (not really memory efficient)
   // for each thread
   //      for each vertex: distance field map
-  vector<vector<double> > threadedDistanceField(threadNumber_);
+  std::vector<std::vector<double> > threadedDistanceField(threadNumber_);
   for(int i = 0; i < (int) threadedDistanceField.size(); i++){
     threadedDistanceField[i].resize(vertexNumber_);
   }
   
-  vector<ScalarFieldCriticalPoints<double> > 
+  std::vector<ScalarFieldCriticalPoints<double> > 
     threadedCriticalPoints(threadNumber_);
   for(int i = 0; i < threadNumber_; i++){
     threadedCriticalPoints[i].setDomainDimension(2);
@@ -364,7 +367,7 @@ template <class dataTypeU, class dataTypeV>
     threadedCriticalPoints[i].setSosOffsets(sosOffsetsU_);
   }
 
-  vector<vector<pair<int, char> > > threadedCriticalTypes(threadNumber_);
+  std::vector<std::vector<std::pair<int, char> > > threadedCriticalTypes(threadNumber_);
 
 #ifdef TTK_ENABLE_OPENMP
   omp_lock_t writeLock;
@@ -435,7 +438,7 @@ template <class dataTypeU, class dataTypeV>
         
       if(type != -2){
         // -2: regular vertex
-        threadedCriticalTypes[threadId].push_back(pair<int, char>(i, type));
+        threadedCriticalTypes[threadId].push_back(std::pair<int, char>(i, type));
       }
       
       // update the progress bar of the wrapping code -- to adapt
@@ -490,33 +493,34 @@ template <class dataTypeU, class dataTypeV>
     }
     
     {
-      stringstream msg;
-      msg << "[JacobiSet] Minimum edges: " << minimumNumber << endl;
-      msg << "[JacobiSet] Saddle edges: " << saddleNumber << endl;
-      msg << "[JacobiSet] Maximum edges: " << maximumNumber << endl;
-      msg << "[JacobiSet] Multi-saddle edges: " << monkeySaddleNumber << endl;
-      dMsg(cout, msg.str(), Debug::infoMsg);
+      std::stringstream msg;
+      msg << "[ttk::JacobiSet] Minimum edges: " << minimumNumber << std::endl;
+      msg << "[ttk::JacobiSet] Saddle edges: " << saddleNumber << std::endl;
+      msg << "[ttk::JacobiSet] Maximum edges: " << maximumNumber << std::endl;
+      msg << "[ttk::JacobiSet] Multi-saddle edges: " << monkeySaddleNumber << 
+std::endl;
+      dMsg(std::cout, msg.str(), Debug::infoMsg);
     }
   }
   
   {
-    stringstream msg;
-    msg << "[JacobiSet] Data-set (" << edgeList_->size()
+    std::stringstream msg;
+    msg << "[ttk::JacobiSet] Data-set (" << edgeList_->size()
       << " edges) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    msg << "[JacobiSet] Jacobi edge rate: "
+      << std::endl;
+    msg << "[ttk::JacobiSet] Jacobi edge rate: "
       << 100*(jacobiSet.size()/((double) edgeList_->size()))
-      << "%" << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << "%" << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   return 0;
 }
 
 template <class dataTypeU, class dataTypeV> 
-  char JacobiSet<dataTypeU, dataTypeV>::getCriticalType(const int &edgeId){
+  char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(const int &edgeId){
   
   dataTypeU *uField = (dataTypeU *) uField_;
   dataTypeV *vField = (dataTypeV *) vField_;
@@ -542,7 +546,7 @@ template <class dataTypeU, class dataTypeV>
   rangeNormal[1] = rangeEdge[0];
   
   int starNumber = triangulation_->getEdgeStarNumber(edgeId);
-  vector<int> lowerNeighbors, upperNeighbors;
+  std::vector<int> lowerNeighbors, upperNeighbors;
   
   int neighborNumber = 0;
   
@@ -642,11 +646,11 @@ template <class dataTypeU, class dataTypeV>
               upperNeighbors.push_back(vertexId);
             }
             else{
-              stringstream msg;
-              msg << 
-                "[JacobiSet] Inconsistent (non-bijective?) offsets for vertex #"
-                << vertexId << endl;
-              dMsg(cerr, msg.str(), Debug::infoMsg);
+              std::stringstream msg;
+              msg << "[ttk::JacobiSet] "
+                << "Inconsistent (non-bijective?) offsets for vertex #"
+                << vertexId << std::endl;
+              dMsg(std::cerr, msg.str(), Debug::infoMsg);
             }
           }
         }
@@ -670,10 +674,10 @@ template <class dataTypeU, class dataTypeV>
   }
   
   // let's check the connectivity now
-  vector<UnionFind> lowerSeeds(lowerNeighbors.size());
-  vector<UnionFind *> lowerList(lowerNeighbors.size());
-  vector<UnionFind> upperSeeds(upperNeighbors.size());
-  vector<UnionFind *> upperList(upperNeighbors.size());
+  std::vector<UnionFind> lowerSeeds(lowerNeighbors.size());
+  std::vector<UnionFind *> lowerList(lowerNeighbors.size());
+  std::vector<UnionFind> upperSeeds(upperNeighbors.size());
+  std::vector<UnionFind *> upperList(upperNeighbors.size());
   
   for(int i = 0; i < (int) lowerSeeds.size(); i++){
     lowerList[i] = &(lowerSeeds[i]);
@@ -714,8 +718,8 @@ template <class dataTypeU, class dataTypeV>
               }
             }
             
-            vector<int> *neighbors = &lowerNeighbors;
-            vector<UnionFind *> *seeds = &lowerList;
+            std::vector<int> *neighbors = &lowerNeighbors;
+            std::vector<UnionFind *> *seeds = &lowerList;
             
             if(!lower0){
               neighbors = &upperNeighbors;
@@ -754,7 +758,7 @@ template <class dataTypeU, class dataTypeV>
   for(int i = 0; i < (int) upperList.size(); i++)
     upperList[i] = upperList[i]->find();
   
-  vector<UnionFind *>::iterator it;
+  std::vector<UnionFind *>::iterator it;
   sort(lowerList.begin(), lowerList.end());
   it = unique(lowerList.begin(), lowerList.end());
   lowerList.resize(distance(lowerList.begin(), it));
@@ -770,7 +774,7 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV> 
-  int JacobiSet<dataTypeU, dataTypeV>::perturbate(
+  int ttk::JacobiSet<dataTypeU, dataTypeV>::perturbate(
     const dataTypeU &uEpsilon, const dataTypeV &vEpsilon) const{
       
 #ifndef TTK_ENABLE_KAMIKAZE

@@ -41,7 +41,7 @@ class VTKFILTERSCORE_EXPORT ttkSphereFromPoint
 #else
 class ttkSphereFromPoint
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -57,7 +57,7 @@ class ttkSphereFromPoint
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }
@@ -113,11 +113,11 @@ class ttkSphereFromPoint
     double                Radius;
    
     vtkAppendPolyData     *masterAppender_;
-    vector<vtkAppendPolyData *>     
+    std::vector<vtkAppendPolyData *>     
                           appenderList_;
-    vector<vtkSphereSource *>
+    std::vector<vtkSphereSource *>
                           sphereList_;
-    vector<vector<vtkDataArray *> >
+    std::vector<std::vector<vtkDataArray *> >
                           dataArrayList_;
     
     // base code features

@@ -25,8 +25,6 @@
 #include                <set>
 #include                <vector>
 
-using namespace std;
-
 namespace ttk{
 
   class SubLevelSetTree;
@@ -67,10 +65,10 @@ namespace ttk{
     inline void appendRegularNode(const int &nodeId){ 
       regularNodeList_.push_back(nodeId);}; 
 
-    inline void appendBarycenter(const vector<double>& barycenter){
+    inline void appendBarycenter(const std::vector<double>& barycenter){
       barycenterList_.push_back(barycenter);};
 
-    inline void appendSample(const vector<int>& sample){
+    inline void appendSample(const std::vector<int>& sample){
       sampleList_.push_back(sample);};
 
     inline int getNumberOfRegularNodes() const{
@@ -83,11 +81,13 @@ namespace ttk{
       return (int) sampleList_.size();};
 
     inline int getRegularNodeId(const int &arcNodeId) const{
-      if((arcNodeId < 0)||(((unsigned int) arcNodeId) >=  regularNodeList_.size()))
+      if((arcNodeId < 0)||(((unsigned int) arcNodeId) >=  
+regularNodeList_.size()))
 	return -1;
       return regularNodeList_[arcNodeId];};
 
-    inline void getBarycenter(const int& id, vector<double>& barycenter) const{
+    inline void getBarycenter(const int& id, std::vector<double>& barycenter) 
+const{
       for(unsigned int k=0; k<3; ++k)
 	barycenter[k]=barycenterList_[id][k];};
 
@@ -95,7 +95,7 @@ namespace ttk{
       for(unsigned int k=0; k<3; ++k)
 	barycenter[k]=barycenterList_[id][k];};
 
-    inline void getSample(const int& id, vector<int>& sample) const{
+    inline void getSample(const int& id, std::vector<int>& sample) const{
       sample=sampleList_[id];};
 
     inline void clearBarycenters(){
@@ -109,21 +109,21 @@ namespace ttk{
     
     inline bool isPruned() const{ return pruned_;};
 
-    void smooth(const vector<Node>& nodeList,
-		const vector<vector<double> >* vertexPositions,
+    void smooth(const std::vector<Node>& nodeList,
+		const std::vector<std::vector<double> >* vertexPositions,
 		bool order=true);
 
-    void sortRegularNodes(const vector<double>* vertexScalars,
-			  const vector<int>* vertexOffsets,
-			  const vector<Node>* nodeList,
+    void sortRegularNodes(const std::vector<double>* vertexScalars,
+			  const std::vector<int>* vertexOffsets,
+			  const std::vector<Node>* nodeList,
 			  bool order=true);
 
   protected:
 
     bool                        pruned_;
-    vector<int>                 regularNodeList_;
-    vector<vector<double> >     barycenterList_;
-    vector<vector<int> >        sampleList_;
+    std::vector<int>                 regularNodeList_;
+    std::vector<std::vector<double> >     barycenterList_;
+    std::vector<std::vector<int> >        sampleList_;
   };
 
   class Node : virtual public Debug{
@@ -207,8 +207,8 @@ namespace ttk{
     int                         vertexId_;
     bool                        pruned_;
     double                      layoutX_, layoutY_;
-    vector<int>                 downArcList_, upArcList_;
-    vector<int>                 downSuperArcList_, upSuperArcList_;
+    std::vector<int>                 downArcList_, upArcList_;
+    std::vector<int>                 downSuperArcList_, upSuperArcList_;
   };
 
   class ContourTreeSimplificationMetric : virtual public Debug{
@@ -219,7 +219,7 @@ namespace ttk{
       
     virtual double computeSuperArcMetric(
 					 const int &downVertexId, const int &upVertexId,
-					 const vector<int> &interiorNodeIds) = 0;
+					 const std::vector<int> &interiorNodeIds) = 0;
         
   protected:
       
@@ -232,7 +232,7 @@ namespace ttk{
       
     double computeSuperArcMetric(
 				 const int &downVertexId, const int &upVertexId,
-				 const vector<int> &interiorNodeIds);
+				 const std::vector<int> &interiorNodeIds);
   };
   
   class SubLevelSetTree : virtual public Debug{
@@ -248,12 +248,12 @@ namespace ttk{
     // the output list is sorted in ascending (respectively descending)
     // order of function value for the merge tree (respectively for the split
     // tree)
-    int buildExtremumList(vector<int> &extremumList, 
+    int buildExtremumList(std::vector<int> &extremumList, 
 			  const bool &isSubLevelSet = true);
 
     bool buildPlanarLayout(const double &scaleX, const double &scaleY);
       
-    int buildSaddleList(vector<int> &vertexList) const;
+    int buildSaddleList(std::vector<int> &vertexList) const;
       
     int clearArc(const int &vertexId0, const int &vertexId1);
 
@@ -261,19 +261,20 @@ namespace ttk{
 
     int clearRoot(const int &vertexId);
 
-    int exportPersistenceCurve(const string &fileName = "output.plot") const;
+    int exportPersistenceCurve(const std::string &fileName = "output.plot") 
+const;
       
     int exportPersistenceDiagram(
-				 const string &fileName = "output.plot") const;
+				 const std::string &fileName = "output.plot") const;
       
-    int exportToSvg(const string &fileName,
+    int exportToSvg(const std::string &fileName,
 		    const double &scaleX = 1, const double &scaleY = 1);
       
-    int exportToVtk(const string &fileName,
+    int exportToVtk(const std::string &fileName,
 		    // fixes a bug in paraview, the voxel size of the cube file format is 
 		    // not taken into account...
-		    const vector<float> *origin = NULL,
-		    const vector<float> *voxelSize = NULL);
+		    const std::vector<float> *origin = NULL,
+		    const std::vector<float> *voxelSize = NULL);
       
     int flush();
 
@@ -282,7 +283,7 @@ namespace ttk{
       return &(arcList_[arcId]);};
       
     // this list is sorted only if buildExtremumList has been called before.
-    inline const vector<int>* getExtremumList() const{
+    inline const std::vector<int>* getExtremumList() const{
       if(minimumList_)
 	return minimumList_;
       return maximumList_;
@@ -333,18 +334,21 @@ namespace ttk{
 
     inline int getNumberOfNodes() const { return (int) nodeList_.size();};
 
-    int getPersistenceDiagram(vector<pair<double,double>> &diagram,
-			      vector<pair<pair<int,int>,double>>* pairs=nullptr) const;
+    int getPersistenceDiagram(std::vector<std::pair<double,double>> &diagram,
+      std::vector<std::pair<std::pair<int,int>,double>> *pairs=nullptr) const;
     
-    // vector:
-    // - vertex pair:
+    // std::vector:
+    // - vertex std::pair:
     //   - extremum vertex Id (first.first)
-    //   - paired saddle Id (first.second)
+    //   - std::paired saddle Id (first.second)
     // - persistence (second)
-    virtual int getPersistencePairs(vector<pair<pair<int,int>,double>>& pairs) const;
+    virtual int 
+      getPersistencePairs(
+        std::vector<std::pair<std::pair<int,int>,double>>& pairs) const;
       
-    int getPersistencePlot(vector<pair<double,int>> &plot,
-			   vector<pair<pair<int,int>,double>>* persistencePairs=nullptr) const;
+    int getPersistencePlot(std::vector<std::pair<double,int>> &plot,
+			   std::vector<std::pair<std::pair<int,int>,double>>* 
+persistencePairs=nullptr) const;
       
     inline const SuperArc* getSuperArc(const int &superArcId) const{
       if((superArcId < 0)||(superArcId >= (int) superArcList_.size())) 
@@ -411,12 +415,12 @@ namespace ttk{
     int moveRegularNode(const Node *n, const Node *oldDown, const Node *oldUp, 
 			const Node *newDown, const Node *newUp);
 
-    int print(ostream &stream, const int &debugLevel) const; 
+    int print(std::ostream &stream, const int &debugLevel) const; 
 
-    inline void setMaximumList(vector<int> &maximumList){
+    inline void setMaximumList(std::vector<int> &maximumList){
       maximumList_ = &(maximumList);};
 
-    inline void setMinimumList(vector<int> &minimumList){
+    inline void setMinimumList(std::vector<int> &minimumList){
       minimumList_ = &(minimumList);};
 
     inline void setNumberOfVertices(const int &vertexNumber){
@@ -429,11 +433,12 @@ namespace ttk{
       triangulation_=triangulation;
     }
     
-    inline void setVertexPositions(vector<vector<double> > *vertexPositions){
+    inline void setVertexPositions(std::vector<std::vector<double> > 
+*vertexPositions){
       vertexPositions_ = vertexPositions;
     };
         
-    inline void setVertexScalars(const vector<real> *const vertexScalars){
+    inline void setVertexScalars(const std::vector<real> *const vertexScalars){
       vertexScalars_ = vertexScalars;
       minScalar_ = 0, maxScalar_ = 0;
       for(int i = 0; i < (int) vertexScalars_->size(); i++){
@@ -446,7 +451,7 @@ namespace ttk{
       }
     };
 
-    inline void setVertexSoSoffsets(vector<int> *vertexSoSoffsets){
+    inline void setVertexSoSoffsets(std::vector<int> *vertexSoSoffsets){
       vertexSoSoffsets_ = vertexSoSoffsets;};
 
     virtual int simplify(const double &simplificationThreshold,
@@ -455,8 +460,8 @@ namespace ttk{
     int sample(unsigned int samplingLevel=3);        
     int computeBarycenters();
 
-    int getSkeletonScalars(const vector<double>& scalars,
-			   vector<vector<double> >& skeletonScalars) const;
+    int getSkeletonScalars(const std::vector<double>& scalars,
+			   std::vector<std::vector<double> >& skeletonScalars) const;
     virtual int computeSkeleton(unsigned int arcResolution=3);
     virtual int smoothSkeleton(unsigned int skeletonSmoothing);
     virtual int clearSkeleton();
@@ -468,17 +473,17 @@ namespace ttk{
 
     int closeSuperArc(const int &superArcId, const int &nodeId);
 
-    int exportNodeColorToVtk(const int &nodeId, ofstream &o);
+    int exportNodeColorToVtk(const int &nodeId, std::ofstream &o);
       
     int exportNodePosToVtk(const int &nodeId, const int &pointId,
-			   vector<int> &vertexIds, 
-			   const vector<float> *origin, const vector<float> *voxelSize,
-			   ofstream &o);
+			   std::vector<int> &vertexIds, 
+			   const std::vector<float> *origin, const std::vector<float> *voxelSize,
+			   std::ofstream &o);
       
     int exportArcPosToVtk(const int &arcId, const int &pointId,
-			  vector<int> &vertexIds, 
-			  const vector<float> *origin, const vector<float> *voxelSize,
-			  ofstream &o);
+			  std::vector<int> &vertexIds, 
+			  const std::vector<float> *origin, const std::vector<float> *voxelSize,
+			  std::ofstream &o);
       
     int makeArc(const int &nodeId0, const int &nodeId1);
 
@@ -489,16 +494,16 @@ namespace ttk{
     int                         vertexNumber_;
     bool                        maintainRegularVertices_;
     double                      minScalar_, maxScalar_;
-    const vector<real>          *vertexScalars_;
-    vector<int>                 *vertexSoSoffsets_;
+    const std::vector<real>          *vertexScalars_;
+    std::vector<int>                 *vertexSoSoffsets_;
     Triangulation               *triangulation_;
-    vector<int>                 *minimumList_, *maximumList_;
-    vector<Node>                nodeList_, originalNodeList_;
-    vector<Arc>                 arcList_;
-    vector<SuperArc>            superArcList_, originalSuperArcList_;
-    vector<int>                 vertex2node_, 
+    std::vector<int>                 *minimumList_, *maximumList_;
+    std::vector<Node>                nodeList_, originalNodeList_;
+    std::vector<Arc>                 arcList_;
+    std::vector<SuperArc>            superArcList_, originalSuperArcList_;
+    std::vector<int>                 vertex2node_, 
       vertex2superArc_,vertex2superArcNode_;
-    vector<vector<double> >     *vertexPositions_;
+    std::vector<std::vector<double> >     *vertexPositions_;
     bool isSkeletonComputed_;
   };
 
@@ -512,19 +517,25 @@ namespace ttk{
     inline const SubLevelSetTree* getMergeTree() const{
       return &mergeTree_;};
     
-    int getPersistencePairs(vector<pair<pair<int,int>,double>>* pairs,
-			    vector<pair<pair<int,int>,double>>* mergePairs=nullptr,
-			    vector<pair<pair<int,int>,double>>* splitPairs=nullptr) const;
+    int getPersistencePairs(std::vector<std::pair<std::pair<int,int>,double>>* 
+pairs,
+			    std::vector<std::pair<std::pair<int,int>,double>>* mergePairs=nullptr,
+			    std::vector<std::pair<std::pair<int,int>,double>>* splitPairs=nullptr) 
+const;
 
-    int getPersistencePlot(vector<pair<double,int>> &plot,
-			   vector<pair<pair<int,int>,double>>* mergePairs=nullptr,
-			   vector<pair<pair<int,int>,double>>* splitPairs=nullptr,
-			   vector<pair<pair<int,int>,double>>* pairs=nullptr) const;
+    int getPersistencePlot(std::vector<std::pair<double,int>> &plot,
+			   std::vector<std::pair<std::pair<int,int>,double>>* mergePairs=nullptr,
+			   std::vector<std::pair<std::pair<int,int>,double>>* splitPairs=nullptr,
+			   std::vector<std::pair<std::pair<int,int>,double>>* pairs=nullptr) 
+const;
     
-    int getPersistenceDiagram(vector<pair<double, double> > &diagram,
-			      vector<pair<pair<int,int>,double>>* mergePairs=nullptr,
-			      vector<pair<pair<int,int>,double>>* splitPairs=nullptr,
-			      vector<pair<pair<int,int>,double>>* pairs=nullptr) const;
+    int getPersistenceDiagram(std::vector<std::pair<double, double> > &diagram,
+			      std::vector<std::pair<std::pair<int,int>,double>>* 
+mergePairs=nullptr,
+			      std::vector<std::pair<std::pair<int,int>,double>>* 
+splitPairs=nullptr,
+			      std::vector<std::pair<std::pair<int,int>,double>>* pairs=nullptr) 
+const;
     
     inline const SubLevelSetTree* getSplitTree() const{
       return &splitTree_;};
@@ -535,10 +546,11 @@ namespace ttk{
       return 0;
     }
         
-    int setVertexNeighbors(const vector<vector<int> > *vertexNeighbors);
+    int setVertexNeighbors(const std::vector<std::vector<int> > 
+*vertexNeighbors);
 
     int setVertexNeighbors(const int &vertexId,
-			   const vector<int> &neighborList);
+			   const std::vector<int> &neighborList);
 
     int computeSkeleton(unsigned int arcResolution=3);
     int smoothSkeleton(unsigned int skeletonSmoothing);

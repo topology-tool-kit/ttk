@@ -24,8 +24,6 @@
 #include "DataTypes.h"
 #include "Structures.h"
 
-using namespace std;
-
 namespace ttk
 {
 namespace ftm
@@ -36,13 +34,14 @@ namespace ftm
    class Segment
    {
      private:
-      vector<idVertex> vertices_;
+      std::vector<idVertex> vertices_;
 
      public:
       Segment(idVertex size);
 
       void sort(const Scalars* s);
-      void createFromList(const Scalars* s, list<vector<idVertex>>& regularsList, const bool reverse);
+      void createFromList(const Scalars* s, 
+        std::list<std::vector<idVertex>>& regularsList, const bool reverse);
 
       segm_const_it begin(void) const;
       segm_const_it end(void) const;
@@ -58,7 +57,7 @@ namespace ftm
    class Segments
    {
      private:
-      vector<Segment> segments_;
+      std::vector<Segment> segments_;
 
      public:
       Segments();
@@ -66,13 +65,13 @@ namespace ftm
       Segments(const Segment&) = delete;
 
       // add one vertex
-      tuple<segm_it, segm_it> addLateSimpleSegment(idVertex v);
+      std::tuple<segm_it, segm_it> addLateSimpleSegment(idVertex v);
 
       // sort all segment (in parallel?)
       void sortAll(const Scalars* s);
 
       // callable once
-      void resize(const vector<idVertex>& sizes);
+      void resize(const std::vector<idVertex>& sizes);
 
       // vector like
       idSegment size(void) const;
@@ -81,16 +80,17 @@ namespace ftm
       const Segment& operator[](const size_t& idx) const;
 
       // print
-      inline string print(void) const
+      inline std::string print(void) const
       {
-         stringstream res;
-         res << "{" << endl;
+         std::stringstream res;
+         res << "{" << std::endl;
          for (const auto& s : segments_) {
             if (s.size()) {
-               res << s[0] << " " << s[s.size() - 1] << " : " << s.size() << endl;
+               res << s[0] << " " << s[s.size() - 1] << " : " << s.size() 
+                << std::endl;
             }
          }
-         res << "}" << endl;
+         res << "}" << std::endl;
          return res.str();
       }
 
@@ -102,9 +102,9 @@ namespace ftm
      private:
       // list of segment composing this segmentation and for each segment
       // the begin and the end inside it (as a segment may be subdivided)
-      list<Region> segmentsIn_;
+      std::list<Region> segmentsIn_;
       // when and how to compact ?
-      vector<idVertex> segmentation_;
+      std::vector<idVertex> segmentation_;
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // true if the segmentation have been sent to the segmentation_ vector
@@ -118,13 +118,14 @@ namespace ftm
       ArcRegion(const segm_it& begin, const segm_it& end);
 
       // vertex used for the split (not in segmentation anymore), remaining region
-      tuple<idVertex, ArcRegion> splitFront(idVertex v, const Scalars* s);
+      std::tuple<idVertex, ArcRegion> splitFront(idVertex v, const Scalars* s);
 
       // vertex used for the split (not in segmentation anymore), remaining region
-      tuple<idVertex, ArcRegion> splitBack(idVertex v, const Scalars* s);
+      std::tuple<idVertex, ArcRegion> splitBack(idVertex v, const Scalars* s);
 
       idVertex findBelow(idVertex v, const Scalars* s,
-                         const vector<idCorresp>& vert2treeOther = vector<idCorresp>()) const;
+        const std::vector<idCorresp>& 
+          vert2treeOther = std::vector<idCorresp>()) const;
 
       void concat(const segm_it& begin, const segm_it& end);
 
@@ -156,9 +157,9 @@ namespace ftm
          return res;
       }
 
-      inline string print(void) const
+      inline std::string print(void) const
       {
-         stringstream res;
+         std::stringstream res;
          res << "{";
          for (const auto& reg : segmentsIn_) {
             res << " " << *reg.segmentBegin;
@@ -199,7 +200,9 @@ namespace ftm
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!segmented_)
-            cerr << "Needs to create segmentation before getting segmentation" << endl;
+            std::cerr 
+              << "Needs to create segmentation before getting segmentation" 
+              << std::endl;
 #endif
          return segmentation_[v];
       }
@@ -208,7 +211,9 @@ namespace ftm
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!segmented_)
-            cerr << "Needs to create segmentation before getting segmentation" << endl;
+            std::cerr 
+              << "Needs to create segmentation before getting segmentation" 
+              << std::endl;
 #endif
          return segmentation_[v];
       }

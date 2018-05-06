@@ -1,5 +1,8 @@
 #include                  <ttkMandatoryCriticalPoints.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkMandatoryCriticalPoints)
 
 ttkMandatoryCriticalPoints::ttkMandatoryCriticalPoints(){

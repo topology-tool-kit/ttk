@@ -1,5 +1,8 @@
 #include                  <ttkFiberSurface.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkFiberSurface)
 
 ttkFiberSurface::ttkFiberSurface(){

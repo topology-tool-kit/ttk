@@ -41,15 +41,15 @@ namespace ttk{
        * Compute the descending 1-separatrices by reading into the discrete
        * gradient.
        */
-      int getAscendingSeparatrices1(const vector<Cell>& criticalPoints,
-          vector<Separatrix>& separatrices,
-          vector<vector<Cell>>& separatricesGeometry) const;
+      int getAscendingSeparatrices1(const std::vector<Cell>& criticalPoints,
+          std::vector<Separatrix>& separatrices,
+          std::vector<std::vector<Cell>>& separatricesGeometry) const;
 
   };
 }
 
 template<typename dataType>
-int MorseSmaleComplex2D::execute(){
+int ttk::MorseSmaleComplex2D::execute(){
   Timer t;
 
   int* ascendingManifold=static_cast<int*>(outputAscendingManifold_);
@@ -60,25 +60,25 @@ int MorseSmaleComplex2D::execute(){
   discreteGradient_.buildGradient2<dataType>();
   discreteGradient_.reverseGradient<dataType>();
 
-  vector<Cell> criticalPoints;
+  std::vector<Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
 
   // 1-separatrices
   if(ComputeDescendingSeparatrices1){
-    vector<Separatrix> separatrices;
-    vector<vector<Cell>> separatricesGeometry;
+    std::vector<Separatrix> separatrices;
+    std::vector<std::vector<Cell>> separatricesGeometry;
     getDescendingSeparatrices1(criticalPoints, separatrices, separatricesGeometry);
     setSeparatrices1<dataType>(separatrices, separatricesGeometry);
   }
 
   if(ComputeAscendingSeparatrices1){
-    vector<Separatrix> separatrices;
-    vector<vector<Cell>> separatricesGeometry;
+    std::vector<Separatrix> separatrices;
+    std::vector<std::vector<Cell>> separatricesGeometry;
     getAscendingSeparatrices1(criticalPoints, separatrices, separatricesGeometry);
     setSeparatrices1<dataType>(separatrices, separatricesGeometry);
   }
 
-  vector<int> maxSeeds;
+  std::vector<int> maxSeeds;
   {
     int numberOfMaxima{};
     int numberOfMinima{};
@@ -103,13 +103,13 @@ int MorseSmaleComplex2D::execute(){
 
   {
     const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
-    stringstream msg;
+    std::stringstream msg;
     msg << "[MorseSmaleComplex2D] Data-set (" << numberOfVertices
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;

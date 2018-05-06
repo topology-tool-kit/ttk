@@ -54,7 +54,7 @@ namespace ttk
       // Regular nodes in this arc
       // Vector for initialisation only (mergetree::build & simplify)
       // Use vertList and sizeVertList_ to acces Arc's vertices after combine
-      vector<pair<idVertex, bool>> vertices_;
+      std::vector<std::pair<idVertex, bool>> vertices_;
       // initialized with vertices_.data() and vertices_.size()
       // these two variable allow to split the segmentation when
       // inserting node in the arc without moving memory
@@ -72,7 +72,7 @@ namespace ttk
       // we mark as masqed vertices that are in the arc we added in CT
       // and also in the staying arc to avoid duplicate.
       // _/!\_ used at combine time => create this array using sizeVertList_
-      pair<idVertex, bool> *vertList_;
+      std::pair<idVertex, bool> *vertList_;
       // The size of *vertList_
       idVertex sizeVertList_;
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -84,8 +84,10 @@ namespace ttk
       // CONSTRUCT
       // -----------------
       // {
-      SuperArc(const idNode &d, const idNode &u, const bool overB, const bool overA,
-               const unsigned char &ctd = 0, const unsigned char &ctu = 0, const size_t &resv = 0ul,
+      SuperArc(const idNode &d, const idNode &u, const bool overB, const bool 
+overA,
+               const unsigned char &ctd = 0, const unsigned char &ctu = 0, 
+const size_t &resv = 0ul,
                const ComponentState &state = ComponentState::Visible)
           : downNodeId_(d),
             upNodeId_(u),
@@ -269,7 +271,7 @@ namespace ttk
          return vertList_[v].second;
       }
 
-      // The vector
+      // The std::vector
 
       inline idVertex getSegmentationSize(void) const
       {
@@ -277,14 +279,14 @@ namespace ttk
       }
 
       // not const for sort in simplify
-      inline vector<pair<idVertex, bool>> &getSegmentation(void)
+      inline std::vector<std::pair<idVertex, bool>> &getSegmentation(void)
       {
          return vertices_;
       }
 
       // The array
 
-      inline pair<idVertex, bool> *getVertList()
+      inline std::pair<idVertex, bool> *getVertList()
       {
          if (sizeVertList_ == -1) {
             vertList_     = vertices_.data();
@@ -307,7 +309,7 @@ namespace ttk
          vertList_[v].second = true;
       }
 
-      inline void setVertList(pair<idVertex, bool> *vl)
+      inline void setVertList(std::pair<idVertex, bool> *vl)
       {
          vertList_ = vl;
       }
@@ -320,7 +322,8 @@ namespace ttk
       // append regular nodes :
 
       // From array : alloc should be already done
-      inline void appendVertLists(list<pair<idVertex, bool> *> vertLists, list<idVertex> vertSizes,
+      inline void appendVertLists(std::list<std::pair<idVertex, bool> *> 
+vertLists, std::list<idVertex> vertSizes,
                                   const idVertex &totalSize)
       {
          // size local
@@ -331,7 +334,8 @@ namespace ttk
          newSize += totalSize;
 
          // alloc
-         pair<idVertex, bool> *tmpVert = new pair<idVertex, bool>[newSize];
+         std::pair<idVertex, bool> *tmpVert = new std::pair<idVertex, 
+bool>[newSize];
          idVertex pos = 0;
 
          // values local
@@ -340,7 +344,7 @@ namespace ttk
          }
 
          // values added
-         for (pair<idVertex, bool>* vertices : vertLists) {
+         for (std::pair<idVertex, bool>* vertices : vertLists) {
             const idVertex& size = vertSizes.front();
             vertSizes.pop_front();
             for (idVertex i = 0; i < size; ++i) {
@@ -353,17 +357,20 @@ namespace ttk
          sizeVertList_ = newSize;
       }
 
-      // From array : alloc should be already done (chck boundary no kamikaze only)
-      inline int addSegmentationGlobal(const pair<idVertex, bool> *arr, const idVertex &size)
+      // From array : alloc should be already done (chck boundary no kamikaze 
+      // only)
+      inline int addSegmentationGlobal(const std::pair<idVertex, bool> *arr, 
+const idVertex &size)
       {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-          //cout << "size " << sizeVertList_ << " add " << size << " on " << allocSgm_ << endl;
+        //cout << "size " << sizeVertList_ << " add " << size << " on " << 
+        // allocSgm_ << std::endl;
          if (sizeVertList_ + size >= allocSgm_) {
-            cerr << "SEGMENTATION SIZE PROBLEM :" << endl;
-            cerr << "alloc : " << allocSgm_ << endl;
-            cerr << "size : " << sizeVertList_ << endl;
-            cerr << "add : " << size << endl;
+            std::cerr << "SEGMENTATION SIZE PROBLEM :" << std::endl;
+            std::cerr << "alloc : " << allocSgm_ << std::endl;
+            std::cerr << "size : " << sizeVertList_ << std::endl;
+            std::cerr << "add : " << size << std::endl;
             // gdb
             return 1;
          }
@@ -378,22 +385,26 @@ namespace ttk
          return 0;
       }
 
-      // from vector
-      inline void appendSegmentation(const vector<pair<idVertex, bool>> &other)
+      // from std::vector
+      inline void appendSegmentation(const std::vector<std::pair<idVertex, 
+bool>> &other)
       {
          vertices_.insert(vertices_.end(), other.begin(), other.end());
       }
 
-      // from vector with a move
-      inline void setVertices(vector<pair<idVertex, bool>>::iterator &a,
-                              vector<pair<idVertex, bool>>::iterator  b)
+      // from std::vector with a move
+      inline void setVertices(std::vector<std::pair<idVertex, bool>>::iterator 
+&a,
+                              std::vector<std::pair<idVertex, bool>>::iterator  
+b)
       {
-         vertices_.insert(vertices_.end(), make_move_iterator(a), make_move_iterator(b));
+         vertices_.insert(vertices_.end(), make_move_iterator(a), 
+make_move_iterator(b));
       }
 
       // add one vertex, alloc should be already done
       inline void addSegmentationGlobal(const idVertex &v){
-          vertList_[sizeVertList_++] = make_pair(v, false);
+          vertList_[sizeVertList_++] = std::make_pair(v, false);
       }
 
       // }
@@ -404,10 +415,12 @@ namespace ttk
       // ----------
       // {
       // Trick
-      // During simplification we use sizeVertList to keep the number of vertices that will merge in
+      // During simplification we use sizeVertList to keep the number of 
+      // vertices that will merge in
       // materArc
-      // Doing so we ensure we have only one reserve on the vector
-      // At the end, we set sizeVertList_ back to minus one for normal utilisation.
+      // Doing so we ensure we have only one reserve on the std::vector
+      // At the end, we set sizeVertList_ back to minus one for normal 
+      // utilisation.
 
       inline void addFuturReserve(const idVertex &nb)
       {
@@ -417,7 +430,7 @@ namespace ttk
 
       inline void makeAllocGlobal(const idVertex& size)
       {
-         vertList_     = new pair<idVertex, bool>[size];
+         vertList_     = new std::pair<idVertex, bool>[size];
          sizeVertList_ = 0;
 #ifndef TTK_ENABLE_KAMIKAZE
          allocSgm_     = size;

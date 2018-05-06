@@ -371,13 +371,13 @@ namespace ttk{
       }
 
       inline int setOutputCriticalPoints(int* const criticalPoints_numberOfPoints,
-          vector<float>* const criticalPoints_points,
-          vector<int>* const criticalPoints_points_cellDimensons,
-          vector<int>* const criticalPoints_points_cellIds,
+          std::vector<float>* const criticalPoints_points,
+          std::vector<int>* const criticalPoints_points_cellDimensons,
+          std::vector<int>* const criticalPoints_points_cellIds,
           void* const criticalPoints_points_cellScalars,
-          vector<char>* const criticalPoints_points_isOnBoundary,
-          vector<int>* const criticalPoints_points_PLVertexIdentifiers,
-          vector<int>* const criticalPoints_points_manifoldSize){
+          std::vector<char>* const criticalPoints_points_isOnBoundary,
+          std::vector<int>* const criticalPoints_points_PLVertexIdentifiers,
+          std::vector<int>* const criticalPoints_points_manifoldSize){
 #ifdef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
@@ -396,20 +396,20 @@ namespace ttk{
       }
 
       inline int setOutputSeparatrices1(int* const separatrices1_numberOfPoints,
-          vector<float>* const separatrices1_points,
-          vector<char>* const separatrices1_points_smoothingMask,
-          vector<int>* const separatrices1_points_cellDimensions,
-          vector<int>* const separatrices1_points_cellIds,
+          std::vector<float>* const separatrices1_points,
+          std::vector<char>* const separatrices1_points_smoothingMask,
+          std::vector<int>* const separatrices1_points_cellDimensions,
+          std::vector<int>* const separatrices1_points_cellIds,
           int* const separatrices1_numberOfCells,
-          vector<int>* const separatrices1_cells,
-          vector<int>* const separatrices1_cells_sourceIds,
-          vector<int>* const separatrices1_cells_destinationIds,
-          vector<int>* const separatrices1_cells_separatrixIds,
-          vector<char>* const separatrices1_cells_separatrixTypes,
+          std::vector<int>* const separatrices1_cells,
+          std::vector<int>* const separatrices1_cells_sourceIds,
+          std::vector<int>* const separatrices1_cells_destinationIds,
+          std::vector<int>* const separatrices1_cells_separatrixIds,
+          std::vector<char>* const separatrices1_cells_separatrixTypes,
           void* const separatrices1_cells_separatrixFunctionMaxima,
           void* const separatrices1_cells_separatrixFunctionMinima,
           void* const separatrices1_cells_separatrixFunctionDiffs,
-          vector<char>* const separatrices1_cells_isOnBoundary){
+          std::vector<char>* const separatrices1_cells_isOnBoundary){
 #ifdef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
@@ -435,16 +435,16 @@ namespace ttk{
       }
 
       inline int setOutputSeparatrices2(int* const separatrices2_numberOfPoints,
-          vector<float>* const separatrices2_points,
+          std::vector<float>* const separatrices2_points,
           int* const separatrices2_numberOfCells,
-          vector<int>* const separatrices2_cells,
-          vector<int>* const separatrices2_cells_sourceIds,
-          vector<int>* const separatrices2_cells_separatrixIds,
-          vector<char>* const separatrices2_cells_separatrixTypes,
+          std::vector<int>* const separatrices2_cells,
+          std::vector<int>* const separatrices2_cells_sourceIds,
+          std::vector<int>* const separatrices2_cells_separatrixIds,
+          std::vector<char>* const separatrices2_cells_separatrixTypes,
           void* const separatrices2_cells_separatrixFunctionMaxima,
           void* const separatrices2_cells_separatrixFunctionMinima,
           void* const separatrices2_cells_separatrixFunctionDiffs,
-          vector<char>* const separatrices2_cells_isOnBoundary){
+          std::vector<char>* const separatrices2_cells_isOnBoundary){
 #ifdef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;

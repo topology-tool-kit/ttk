@@ -1,5 +1,8 @@
 #include                  <UncertainDataEstimator.h>
 
+using namespace std;
+using namespace ttk;
+
 UncertainDataEstimator::UncertainDataEstimator(){
 
   inputData_ = NULL;

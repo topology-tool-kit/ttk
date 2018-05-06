@@ -1,5 +1,8 @@
 #include<ttkDistanceField.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkDistanceField)
 
   ttkDistanceField::ttkDistanceField():

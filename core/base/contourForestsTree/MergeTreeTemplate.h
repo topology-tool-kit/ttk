@@ -86,20 +86,22 @@ idEdge MergeTree::localSimplify(const idVertex &posSeed0, const idVertex &posSee
     // -----------------
     // {
 
-    vector<tuple<idVertex, idVertex, scalarType, bool>> pairs;
+    std::vector<std::tuple<idVertex, idVertex, scalarType, bool>> pairs;
     computePersistencePairs<scalarType>(pairs);
 
     if (DEBUG) {
-       cout << "pairs : ( threshold : " << params_->simplifyThreshold << "  )" << endl;
+       std::cout << "pairs : ( threshold : " << params_->simplifyThreshold 
+        << " )" << std::endl;
        for (const auto &p : pairs) {
-          const idVertex &  thisOriginVert = get<0>(p);
-          const idVertex &  thisEndVert    = get<1>(p);
-          const scalarType &thisPersist    = get<2>(p);
-          const bool        thisNeedUp     = get<3>(p);
-          cout << thisOriginVert << " - " << thisEndVert << " : " << thisPersist;
-          cout << " ( " << thisNeedUp << " )" << endl;
+          const idVertex &  thisOriginVert = std::get<0>(p);
+          const idVertex &  thisEndVert    = std::get<1>(p);
+          const scalarType &thisPersist    = std::get<2>(p);
+          const bool        thisNeedUp     = std::get<3>(p);
+          std::cout << thisOriginVert << " - " << thisEndVert << " : " << 
+thisPersist;
+          std::cout << " ( " << thisNeedUp << " )" << std::endl;
        }
-       cout << endl;
+       std::cout << std::endl;
     }
 
     // }
@@ -114,7 +116,8 @@ idEdge MergeTree::localSimplify(const idVertex &posSeed0, const idVertex &posSee
 }
 
 template <typename scalarType>
-idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex posSeed1)
+idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex 
+posSeed1)
 {
 
     // if null threshold, leave
@@ -133,7 +136,7 @@ idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex posSeed
 
     const auto nbNode = getNumberOfNodes();
 
-    vector<idNode> sortedNodes(nbNode);
+    std::vector<idNode> sortedNodes(nbNode);
     iota(sortedNodes.begin(), sortedNodes.end(), 0);
 // Sort nodes by vertex scalar
 //{
@@ -155,8 +158,8 @@ idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex posSeed
     //{
 
     // origin, end, persistance, needToGoUp
-    vector<tuple<idVertex, idVertex, scalarType,bool>> pairsJT;
-    vector<tuple<idVertex, idVertex, scalarType,bool>> pairsST;
+    std::vector<std::tuple<idVertex, idVertex, scalarType,bool>> pairsJT;
+    std::vector<std::tuple<idVertex, idVertex, scalarType,bool>> pairsST;
 
     recoverMTPairs<scalarType>(sortedNodes, pairsJT, pairsST);
 
@@ -166,13 +169,15 @@ idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex posSeed
     //---------------------
     //{
 
-    auto pairComp = [](const tuple<idVertex, idVertex, scalarType, bool> &a,
-                       const tuple<idVertex, idVertex, scalarType, bool> &b) {
+    auto pairComp = [](const std::tuple<idVertex, idVertex, scalarType, bool> 
+&a,
+                       const std::tuple<idVertex, idVertex, scalarType, bool> 
+&b) {
        // sort by persistence
-       return get<2>(a) < get<2>(b);
+       return std::get<2>(a) < std::get<2>(b);
     };
 
-    vector<tuple<idVertex, idVertex, scalarType, bool>> sortedPairs;
+    std::vector<std::tuple<idVertex, idVertex, scalarType, bool>> sortedPairs;
     size_t sizePJT = pairsJT.size(), sizePST = pairsST.size();
 
     sortedPairs.reserve(sizePJT + sizePST);
@@ -211,22 +216,25 @@ idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex posSeed
 template <typename scalarType>
 idEdge MergeTree::simplifyTree(
     const idVertex &posSeed0, const idVertex &posSeed1,
-    const vector<tuple<idVertex, idVertex, scalarType, bool>> &sortedPairs)
+    const std::vector<std::tuple<idVertex, idVertex, scalarType, bool>> 
+&sortedPairs)
 {
    const auto nbNode = getNumberOfNodes();
    const auto nbArcs = getNumberOfSuperArcs();
    // Retain the relation between merge coming from st, jt
    // also retain info about what we keep
-   vector<ExtendedUnionFind *> subtreeUF(nbNode, nullptr);
+   std::vector<ExtendedUnionFind *> subtreeUF(nbNode, nullptr);
 
    // nb arc seen below / above this node
-   vector<pair<idSuperArc, idSuperArc>> valenceOffset(nbNode, make_pair(0,0));
+   std::vector<std::pair<idSuperArc, idSuperArc>> valenceOffset(nbNode, 
+std::make_pair(0,0));
    idEdge nbPairMerged = 0;
 
    const bool DEBUG = false;
 
    if (DEBUG) {
-      cout << "Imapct simplify on tree btwn : " << posSeed0 << " and " << posSeed1 << endl;
+      std::cout << "Imapct simplify on tree btwn : " << posSeed0 << " and " << 
+posSeed1 << std::endl;
    }
 
    //----------
@@ -234,14 +242,15 @@ idEdge MergeTree::simplifyTree(
    //-----------
    //{
 
-   queue<tuple<idNode,bool>> node2see;
+   std::queue<std::tuple<idNode,bool>> node2see;
 
    // Add the origin of all pairs that need to merge
    for (const auto & pp : sortedPairs) {
-      if (get<2>(pp) < params_->simplifyThreshold ) {
-         const idVertex &thisOriginVert = get<0>(pp);
-         const idVertex &thisEndVert    = get<1>(pp);
-         const idNode &  thisOriginId   = getCorrespondingNodeId(thisOriginVert);
+      if (std::get<2>(pp) < params_->simplifyThreshold ) {
+         const idVertex &thisOriginVert = std::get<0>(pp);
+         const idVertex &thisEndVert    = std::get<1>(pp);
+         const idNode &  thisOriginId   = 
+getCorrespondingNodeId(thisOriginVert);
 
          if (scalars_->mirrorVertices[thisOriginVert] <= posSeed0 ||
              scalars_->mirrorVertices[thisOriginVert] >= posSeed1 ||
@@ -250,11 +259,11 @@ idEdge MergeTree::simplifyTree(
             continue;
          }
 
-         node2see.emplace(thisOriginId, get<3>(pp));
+         node2see.emplace(thisOriginId, std::get<3>(pp));
          subtreeUF[thisOriginId] = new ExtendedUnionFind(0);
          ++nbPairMerged;
          if(DEBUG){
-            cout << "willSee " << printNode(thisOriginId) << endl;
+            std::cout << "willSee " << printNode(thisOriginId) << std::endl;
          }
       } else break;
    }
@@ -266,16 +275,18 @@ idEdge MergeTree::simplifyTree(
    //  Data is positive : Receptacle Arc id
    //--
    // Use the queue to mark Arc that will be merged and UF to identify
-   // subtree. When a node have only one way out : enqueue it to continue travresall
+   // subtree. When a node have only one way out : enqueue it to continue 
+   //travresall
    while (!node2see.empty()) {
        idNode curNodeId;
        bool needToGoUp; // identify up/down traversall
 
-       tie(curNodeId, needToGoUp) = node2see.front(); // should have only one arc valid to take
+       std::tie(curNodeId, needToGoUp) = node2see.front(); 
+       // should have only one arc valid to take
        node2see.pop();
 
        if (DEBUG) {
-           cout << "process : " << printNode(curNodeId) << endl;
+           std::cout << "process : " << printNode(curNodeId) << std::endl;
        }
 
        // Here we take the only available arc :
@@ -296,31 +307,38 @@ idEdge MergeTree::simplifyTree(
 
        markThisArc(subtreeUF, curNodeId, mergingArcId, parentNodeId);
 
-       // if we have processed all but one arc of this node, we nee to continue traversall
+       // if we have processed all but one arc of this node, we nee to continue 
+       // traversall
        // throug it
-       if (valenceOffset[parentNodeId].first + valenceOffset[parentNodeId].second + 1 ==
+       if (valenceOffset[parentNodeId].first + 
+valenceOffset[parentNodeId].second + 1 ==
            getNode(parentNodeId)->getValence()) {
            // only one way out, is it up ?
-           node2see.emplace(parentNodeId, valenceOffset[parentNodeId].second + 1 ==
-                                              getNode(parentNodeId)->getUpValence());
+           node2see.emplace(parentNodeId, valenceOffset[parentNodeId].second + 
+1 ==
+                                              
+getNode(parentNodeId)->getUpValence());
            if(DEBUG){
-               cout << " add to see " << printNode(parentNodeId) << endl;
+               std::cout << " add to see " << printNode(parentNodeId) << 
+std::endl;
            }
        }
    } // end while node2see
 
-   // for each node valenceOffset is the number of arc attached to this node that will merge
+   // for each node valenceOffset is the number of arc attached to this node 
+   // that will merge
 
    // Debug print
    if (DEBUG) {
-      cout << "node subtrees before creating receptarc " << endl;
+      std::cout << "node subtrees before creating receptarc " << std::endl;
       for (idNode nid = 0; nid < nbNode; nid++) {
          if (subtreeUF[nid]) {
-            cout << "node " << getNode(nid)->getVertexId() << " is in subtree rooted :";
+            std::cout << "node " << getNode(nid)->getVertexId() 
+              << " is in subtree rooted :";
             const idNode &root = -subtreeUF[nid]->find()->getData() - 1;
-            cout << getNode(root)->getVertexId();
+            std::cout << getNode(root)->getVertexId();
             const idVertex &segmSize = subtreeUF[nid]->find()->getOrigin();
-            cout << " with segmentation of " << segmSize << endl;
+            std::cout << " with segmentation of " << segmSize << std::endl;
          }
       }
    }
@@ -333,10 +351,11 @@ idEdge MergeTree::simplifyTree(
 
    // Add the origin of all pairs that need to merge
    for (const auto & pp : sortedPairs) {
-      if (get<2>(pp) < params_->simplifyThreshold ) {
-         const idVertex &thisOriginVert = get<0>(pp);
-         const idVertex &thisEndVert    = get<1>(pp);
-         const idNode &  thisOriginId   = getCorrespondingNodeId(thisOriginVert);
+      if (std::get<2>(pp) < params_->simplifyThreshold ) {
+         const idVertex &thisOriginVert = std::get<0>(pp);
+         const idVertex &thisEndVert    = std::get<1>(pp);
+         const idNode &  thisOriginId   = 
+getCorrespondingNodeId(thisOriginVert);
          //const idNode &  thisEndId      = getCorrespondingNode(thisEndVert);
 
          if (scalars_->mirrorVertices[thisOriginVert] <= posSeed0 ||
@@ -348,20 +367,27 @@ idEdge MergeTree::simplifyTree(
 
          if (subtreeUF[thisOriginId]->find()->getData() < 0) {
             // create receptarc
-            const idNode &subtreeRoot = -subtreeUF[thisOriginId]->find()->getData() - 1;
+            const idNode &subtreeRoot = 
+-subtreeUF[thisOriginId]->find()->getData() - 1;
             // The id of the next arc to be created : NOT PARALLEL
             const idSuperArc receptArcId = treeData_.superArcs.size();
             // down , up, segmentation size
             // create the receptacle arc and merge arc not in sub-tree in it
-            const tuple<idNode, idNode, idVertex> &receptArc =
-                createReceptArc(subtreeRoot, receptArcId, subtreeUF, valenceOffset);
+            const std::tuple<idNode, idNode, idVertex> &receptArc =
+                createReceptArc(subtreeRoot, receptArcId, subtreeUF, 
+valenceOffset);
 
             // make superArc and do the makeAlloc on it
             const bool overlapB =
-                scalars_->mirrorVertices[getNode(get<0>(receptArc))->getVertexId()] < posSeed0;
+                
+scalars_->mirrorVertices[getNode(std::get<0>(receptArc))->getVertexId()] < 
+posSeed0;
             const bool overlapA =
-                scalars_->mirrorVertices[getNode(get<1>(receptArc))->getVertexId()] >= posSeed1;
-            const idSuperArc na = makeSuperArc(get<0>(receptArc), get<1>(receptArc), overlapB, overlapA, nullptr, -1);
+                
+scalars_->mirrorVertices[getNode(std::get<1>(receptArc))->getVertexId()] >= 
+posSeed1;
+            const idSuperArc na = makeSuperArc(std::get<0>(receptArc), 
+std::get<1>(receptArc), overlapB, overlapA, nullptr, -1);
 
             if(overlapB){
                 treeData_.arcsCrossingBelow.emplace_back(na);
@@ -372,11 +398,11 @@ idEdge MergeTree::simplifyTree(
             }
 
             subtreeUF[thisOriginId]->find()->setData(receptArcId);
-            getSuperArc(receptArcId)->makeAllocGlobal(get<2>(receptArc));
+            getSuperArc(receptArcId)->makeAllocGlobal(std::get<2>(receptArc));
 
             if (DEBUG) {
-               cout << "create arc : " << printArc(receptArcId)
-                    << " with segm : " << get<2>(receptArc) << endl;
+               std::cout << "create arc : " << printArc(receptArcId)
+                    << " with segm : " << std::get<2>(receptArc) << std::endl;
             }
          }
       } else break;
@@ -388,20 +414,25 @@ idEdge MergeTree::simplifyTree(
    //-----------
    //{
 
-   // The merge is done after because we don't want to forget arcs parallel to the recept'arc
+   // The merge is done after because we don't want to forget arcs parallel to 
+   // the recept'arc
    // but we cannot make the difference before the former are created
 
-   // nbArcs is before the insertion of receptarcs so they will no be crossed here
+   // nbArcs is before the insertion of receptarcs so they will no be crossed 
+   // here
    for (idSuperArc arc = 0; arc < nbArcs; arc++) {
 
        if(getSuperArc(arc)->isMerged()){
-          const idSuperArc &receptacleArcId = getSuperArc(arc)->getReplacantArcId();
+          const idSuperArc &receptacleArcId = 
+getSuperArc(arc)->getReplacantArcId();
           // take care of connectivity
           mergeArc(arc, receptacleArcId);
           if(DEBUG){
-            cout << " parallel merge in " << printArc(receptacleArcId) << endl;
-            cout << " arc " << printArc(arc) << " size : " << getSuperArc(arc)->getVertSize()
-                 << endl;
+            std::cout << " parallel merge in " << printArc(receptacleArcId) << 
+std::endl;
+            std::cout << " arc " << printArc(arc) << " size : " << 
+getSuperArc(arc)->getVertSize()
+                 << std::endl;
           }
           getSuperArc(receptacleArcId)
               ->addSegmentationGlobal(getSuperArc(arc)->getVertList(),
@@ -416,25 +447,30 @@ idEdge MergeTree::simplifyTree(
           if (subtreeUF[downNode] && subtreeUF[upNode] &&
               subtreeUF[downNode]->find() != subtreeUF[upNode]->find()) {
              if (DEBUG) {
-                cout << "Arc between 2 degenerate with mergin " << printArc(arc) << endl;
-                cout << "below recept : " << printArc(subtreeUF[downNode]->find()->getData());
-                cout << endl;
-                cout << "Above recept : " << printArc(subtreeUF[upNode]->find()->getData()) << endl;
-                cout << endl;
+                std::cout << "Arc between 2 degenerate with mergin " << 
+printArc(arc) << std::endl;
+                std::cout << "below recept : " << 
+printArc(subtreeUF[downNode]->find()->getData());
+                std::cout << std::endl;
+                std::cout << "Above recept : " << 
+printArc(subtreeUF[upNode]->find()->getData()) << std::endl;
+                std::cout << std::endl;
              }
 
              continue;
           }
 
           ExtendedUnionFind *curUF =
-              (subtreeUF[upNode]) ? subtreeUF[upNode]->find() : subtreeUF[downNode]->find();
+              (subtreeUF[upNode]) ? subtreeUF[upNode]->find() : 
+subtreeUF[downNode]->find();
 
           const idSuperArc &receptacleArcId = curUF->getData();
 
           if(DEBUG){
-             cout << "merge in " << printArc(receptacleArcId) << endl;
-             cout << "  arc " << printArc(arc) << " size : " << getSuperArc(arc)->getVertSize();
-             cout << endl;
+             std::cout << "merge in " << printArc(receptacleArcId) << std::endl;
+             std::cout << "  arc " << printArc(arc) << " size : " << 
+getSuperArc(arc)->getVertSize();
+             std::cout << std::endl;
           }
 
           getSuperArc(arc)->merge(receptacleArcId);
@@ -443,8 +479,12 @@ idEdge MergeTree::simplifyTree(
                  ->addSegmentationGlobal(getSuperArc(arc)->getVertList(),
                                          getSuperArc(arc)->getVertSize());
 
-             getSuperArc(receptacleArcId)->addSegmentationGlobal(getNode(downNode)->getVertexId());
-             getSuperArc(receptacleArcId)->addSegmentationGlobal(getNode(upNode)->getVertexId());
+             
+getSuperArc(receptacleArcId)->addSegmentationGlobal(getNode(downNode)->
+getVertexId());
+             
+getSuperArc(receptacleArcId)->addSegmentationGlobal(getNode(upNode)->getVertexId
+());
           }
 
           // Tree topology
@@ -469,7 +509,8 @@ idEdge MergeTree::simplifyTree(
 // Persistence
 
 template <typename scalarType>
-int MergeTree::computePersistencePairs(vector<tuple<idVertex, idVertex, scalarType>> &pairs)
+int MergeTree::computePersistencePairs(std::vector<std::tuple<idVertex, 
+idVertex, scalarType>> &pairs)
 {
 #ifndef TTK_ENABLE_KAMIKAZE
    if (!getNumberOfSuperArcs()) {
@@ -487,9 +528,9 @@ int MergeTree::computePersistencePairs(vector<tuple<idVertex, idVertex, scalarTy
       addPair<scalarType>(pairs, curVert, termVert);
    }
 
-   auto pair_sort = [](const tuple<idVertex, idVertex, scalarType> &a,
-                       const tuple<idVertex, idVertex, scalarType> &b) {
-      return get<2>(a) < get<2>(b);
+   auto pair_sort = [](const std::tuple<idVertex, idVertex, scalarType> &a,
+                       const std::tuple<idVertex, idVertex, scalarType> &b) {
+      return std::get<2>(a) < std::get<2>(b);
    };
 
    sort(pairs.begin(), pairs.end(), pair_sort);
@@ -498,7 +539,8 @@ int MergeTree::computePersistencePairs(vector<tuple<idVertex, idVertex, scalarTy
 }
 
 template <typename scalarType>
-int MergeTree::computePersistencePairs(vector<tuple<idVertex, idVertex, scalarType,bool>> &pairs)
+int MergeTree::computePersistencePairs(std::vector<std::tuple<idVertex, 
+idVertex, scalarType,bool>> &pairs)
 {
     // Need to be called on MergeTree, not ContourTree
 
@@ -508,7 +550,9 @@ int MergeTree::computePersistencePairs(vector<tuple<idVertex, idVertex, scalarTy
    }
 
    if (treeData_.treeType == TreeType::Contour) {
-      cout << "WARNING, computePersistencePairs is made to be called on Join or Split Tree" << endl;
+      std::cout 
+        << "WARNING, computePersistencePairs is made to be called on "
+        << "Join or Split Tree" << std::endl;
    }
 #endif
 
@@ -519,12 +563,15 @@ int MergeTree::computePersistencePairs(vector<tuple<idVertex, idVertex, scalarTy
       idVertex curVert  = curNode->getVertexId();
       idVertex termVert = getNode(curNode->getTerminaison())->getVertexId();
 
-      addPair<scalarType>(pairs, curVert, termVert, treeData_.treeType == TreeType::Join);
+      addPair<scalarType>(pairs, curVert, termVert, treeData_.treeType == 
+TreeType::Join);
    }
 
-   auto pair_sort = [](const tuple<idVertex, idVertex, scalarType, bool> &a,
-                       const tuple<idVertex, idVertex, scalarType, bool> &b) {
-      return get<2>(a) < get<2>(b);
+   auto pair_sort = [](const std::tuple<idVertex, idVertex, scalarType, bool> 
+&a,
+                       const std::tuple<idVertex, idVertex, scalarType, bool> 
+&b) {
+      return std::get<2>(a) < std::get<2>(b);
    };
 
    sort(pairs.begin(), pairs.end(), pair_sort);
@@ -534,13 +581,14 @@ int MergeTree::computePersistencePairs(vector<tuple<idVertex, idVertex, scalarTy
 
 template <typename scalarType>
 void MergeTree::recoverMTPairs(
-    const vector<idNode> &sortedNodes, vector<tuple<idVertex, idVertex, scalarType, bool>> &pairsJT,
-    vector<tuple<idVertex, idVertex, scalarType, bool>> &pairsST)
+    const std::vector<idNode> &sortedNodes, std::vector<std::tuple<idVertex, 
+idVertex, scalarType, bool>> &pairsJT,
+    std::vector<std::tuple<idVertex, idVertex, scalarType, bool>> &pairsST)
 {
     const auto nbNode = getNumberOfNodes();
 
-    vector<ExtendedUnionFind *> vect_JoinUF(nbNode, nullptr);
-    vector<ExtendedUnionFind *> vect_SplitUF(nbNode, nullptr);
+    std::vector<ExtendedUnionFind *> vect_JoinUF(nbNode, nullptr);
+    std::vector<ExtendedUnionFind *> vect_SplitUF(nbNode, nullptr);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel sections num_threads(2)
@@ -552,7 +600,7 @@ void MergeTree::recoverMTPairs(
        {
           pairsJT.reserve(treeData_.leaves.size());
           // For the biggest pair of the component
-          map<idVertex, idVertex> pendingMinMax;
+          std::map<idVertex, idVertex> pendingMinMax;
 
           for (auto it = sortedNodes.cbegin(); it != sortedNodes.cend(); ++it) {
              const idNode &  n = *it;
@@ -563,16 +611,18 @@ void MergeTree::recoverMTPairs(
 
              if (nbDown == 0) {
                 // leaf
-                vect_JoinUF[n] = new ExtendedUnionFind(getNode(n)->getVertexId());
+                vect_JoinUF[n] = new 
+ExtendedUnionFind(getNode(n)->getVertexId());
                 vect_JoinUF[n]->setOrigin(v);
-                //cout << " jt origin : " << v << endl;
+                //std::cout << " jt origin : " << v << std::endl;
              } else {
                 // first descendant
                 const idSuperArc   firstSaId = getNode(n)->getDownSuperArcId(0);
                 const SuperArc *   firstSA   = getSuperArc(firstSaId);
                 const idNode &firstChildNodeId = firstSA->getDownNodeId();
 
-                ExtendedUnionFind *merge     = vect_JoinUF[firstChildNodeId]->find();
+                ExtendedUnionFind *merge     = 
+vect_JoinUF[firstChildNodeId]->find();
                 idVertex           further   = merge->getOrigin();
                 idSuperArc         furtherI  = 0;
 
@@ -597,7 +647,8 @@ void MergeTree::recoverMTPairs(
                 if (nbDown > 1) {
                    // close finish pair and make union
                    for (idSuperArc ni = 0; ni < nbDown; ++ni) {
-                      const idSuperArc curSaId = getNode(n)->getDownSuperArcId(ni);
+                      const idSuperArc curSaId = 
+getNode(n)->getDownSuperArcId(ni);
                       const SuperArc * curSA   = getSuperArc(curSaId);
                       const idNode &   neigh   = curSA->getDownNodeId();
 
@@ -608,14 +659,17 @@ void MergeTree::recoverMTPairs(
                       ExtendedUnionFind *neighUF = vect_JoinUF[neigh]->find();
 
                       if (ni != furtherI) {  // keep the more persitent pair
-                         addPair<scalarType>(pairsJT, neighUF->getOrigin(), v, true);
+                         addPair<scalarType>(pairsJT, neighUF->getOrigin(), v, 
+true);
                          pendingMinMax.erase(neighUF->getOrigin());
 
-                         // cout << " jt make pair : " << neighUF->getOrigin() << " - " << v <<
-                         // endl;
+                         // std::cout << " jt make pair : " << 
+                         // neighUF->getOrigin() << " - " << v <<
+                         // std::endl;
                       }
 
-                      ExtendedUnionFind::makeUnion(merge, neighUF)->setOrigin(further);
+                      ExtendedUnionFind::makeUnion(merge, 
+neighUF)->setOrigin(further);
                    }
                 }
 
@@ -624,7 +678,8 @@ void MergeTree::recoverMTPairs(
 
                 if(!nbUp){
                    // potential close of the component
-                   //cout << "pending for " << further << " is " << v << endl;
+                   //std::cout << "pending for " << further << " is " << v << 
+                  // std::endl;
                    pendingMinMax[further] = v;
                 }
              }
@@ -633,8 +688,10 @@ void MergeTree::recoverMTPairs(
           // Add the pending biggest pair of each component
           for (const auto & pair_vert : pendingMinMax) {
               if (isCorrespondingNode(pair_vert.second)) {
-                 //cout << " add : " << pair_vert.first << " - " << pair_vert.second << endl;
-                 addPair<scalarType>(pairsJT, pair_vert.first, pair_vert.second, true);
+                 //std::cout << " add : " << pair_vert.first << " - " << 
+                  // pair_vert.second << std::endl;
+                 addPair<scalarType>(pairsJT, pair_vert.first, 
+pair_vert.second, true);
               }
           }
        } // end para section
@@ -645,9 +702,10 @@ void MergeTree::recoverMTPairs(
        {
           pairsST.reserve(treeData_.leaves.size());
           // For the biggest pair of the component
-          map<idVertex, idVertex> pendingMinMax;
+          std::map<idVertex, idVertex> pendingMinMax;
 
-          for (auto it = sortedNodes.crbegin(); it != sortedNodes.crend(); ++it) {
+          for (auto it = sortedNodes.crbegin(); it != sortedNodes.crend(); 
+++it) {
              const idNode &  n = *it;
              const idVertex &v = getNode(n)->getVertexId();
 
@@ -656,16 +714,18 @@ void MergeTree::recoverMTPairs(
 
              if (nbUp  == 0) {
                 // leaf
-                vect_SplitUF[n] = new ExtendedUnionFind(getNode(n)->getVertexId());
+                vect_SplitUF[n] = new 
+ExtendedUnionFind(getNode(n)->getVertexId());
                 vect_SplitUF[n]->setOrigin(v);
-                //cout << " st origin : " << v << endl;
+                //std::cout << " st origin : " << v << std::endl;
              } else {
                 // first descendant
                 const idSuperArc   firstSaId = getNode(n)->getUpSuperArcId(0);
                 const SuperArc *   firstSA   = getSuperArc(firstSaId);
                 const idNode &firstChildNodeId = firstSA->getUpNodeId();
 
-                ExtendedUnionFind *merge     = vect_SplitUF[firstChildNodeId]->find();
+                ExtendedUnionFind *merge     = 
+vect_SplitUF[firstChildNodeId]->find();
                 idVertex           further   = merge->getOrigin();
                 idSuperArc         furtherI  = 0;
 
@@ -681,7 +741,8 @@ void MergeTree::recoverMTPairs(
                    if (neigh == n)
                       continue;
 
-                   //cout << "visit neighbor : " << ni << " which is " << getNode(neigh)->getVertexId() << endl;
+                   //std::cout << "visit neighbor : " << ni << " which is " << 
+                    // getNode(neigh)->getVertexId() << std::endl;
 
                    ExtendedUnionFind *neighUF = vect_SplitUF[neigh]->find();
 
@@ -694,7 +755,8 @@ void MergeTree::recoverMTPairs(
                 if (nbUp > 1) {
                    // close finsh pair and make union
                    for (idSuperArc ni = 0; ni < nbUp; ++ni) {
-                      const idSuperArc curSaId = getNode(n)->getUpSuperArcId(ni);
+                      const idSuperArc curSaId = 
+getNode(n)->getUpSuperArcId(ni);
                       const SuperArc * curSA   = getSuperArc(curSaId);
                       const idNode &   neigh   = curSA->getUpNodeId();
 
@@ -705,16 +767,21 @@ void MergeTree::recoverMTPairs(
                       ExtendedUnionFind *neighUF = vect_SplitUF[neigh]->find();
 
                       if(ni != furtherI){
-                         addPair<scalarType>(pairsST, neighUF->getOrigin(), v, false);
+                         addPair<scalarType>(pairsST, neighUF->getOrigin(), v, 
+false);
 
                          pendingMinMax.erase(neighUF->getOrigin());
 
-                         //cout << " st make pair : " << neighUF->getOrigin() << " - " << v
-                              //<< " for neighbor " << getNode(neigh)->getVertexId() << endl;
+                         //std::cout << " st make pair : " << 
+                         // neighUF->getOrigin() << " - " << v
+                              //<< " for neighbor " << 
+                         // getNode(neigh)->getVertexId() << std::endl;
                       }
 
-                      ExtendedUnionFind::makeUnion(merge, neighUF)->setOrigin(further);
-                      // Re-visit after merge lead to add the most persistant pair....
+                      ExtendedUnionFind::makeUnion(merge, 
+neighUF)->setOrigin(further);
+                      // Re-visit after merge lead to add the most persistant 
+                      // pair....
                    }
                 }
                 merge->find()->setOrigin(further);
@@ -729,7 +796,8 @@ void MergeTree::recoverMTPairs(
 
           // Add the pending biggest pair of each component
           for (const auto & pair_vert : pendingMinMax) {
-             addPair<scalarType>(pairsST, pair_vert.first, pair_vert.second, false);
+             addPair<scalarType>(pairsST, pair_vert.first, pair_vert.second, 
+false);
           }
        } // end para section
     } // end para
@@ -740,11 +808,14 @@ void MergeTree::recoverMTPairs(
 // {
 
 template <typename scalarType>
-void MergeTree::addPair(vector<tuple<idVertex, idVertex, scalarType, bool>> &pairs,
-                        const idVertex &orig, const idVertex &term, const bool goUp)
+void MergeTree::addPair(std::vector<std::tuple<idVertex, idVertex, scalarType, 
+bool>> &pairs,
+                        const idVertex &orig, const idVertex &term, const bool 
+goUp)
 {
    if (params_->simplifyMethod == SimplifMethod::Persist) {
-      pairs.emplace_back(orig, term, fabs(getValue<scalarType>(orig) - getValue<scalarType>(term)),
+      pairs.emplace_back(orig, term, fabs(getValue<scalarType>(orig) - 
+getValue<scalarType>(term)),
                          goUp);
    } else if (params_->simplifyMethod == SimplifMethod::Span) {
       float coordOrig[3], coordTerm[3], span;
@@ -756,11 +827,13 @@ void MergeTree::addPair(vector<tuple<idVertex, idVertex, scalarType, bool>> &pai
 }
 
 template <typename scalarType>
-void MergeTree::addPair(vector<tuple<idVertex, idVertex, scalarType>> &pairs,
+void MergeTree::addPair(std::vector<std::tuple<idVertex, idVertex, scalarType>> 
+&pairs,
                         const idVertex &orig, const idVertex &term)
 {
    if (params_->simplifyMethod == SimplifMethod::Persist) {
-      pairs.emplace_back(orig, term, fabs(getValue<scalarType>(orig) - getValue<scalarType>(term)));
+      pairs.emplace_back(orig, term, fabs(getValue<scalarType>(orig) - 
+getValue<scalarType>(term)));
    } else if (params_->simplifyMethod == SimplifMethod::Span) {
       float coordOrig[3], coordTerm[3], span;
       mesh_->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);

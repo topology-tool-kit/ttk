@@ -46,7 +46,7 @@ class VTKFILTERSCORE_EXPORT ttkDiscreteGradient
 #else
 class ttkDiscreteGradient
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
@@ -68,14 +68,14 @@ class ttkDiscreteGradient
     }
     // end of default ttk setters
 
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
 
     vtkSetMacro(UseInputOffsetScalarField, int);
     vtkGetMacro(UseInputOffsetScalarField, int);
 
-    vtkSetMacro(InputOffsetScalarFieldName, string);
-    vtkGetMacro(InputOffsetScalarFieldName, string);
+    vtkSetMacro(InputOffsetScalarFieldName, std::string);
+    vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
     vtkSetMacro(ReverseSaddleMaximumConnection, int);
     vtkGetMacro(ReverseSaddleMaximumConnection, int);
@@ -117,8 +117,8 @@ class ttkDiscreteGradient
 
   private:
 
-    string ScalarField;
-    string InputOffsetScalarFieldName;
+    std::string ScalarField;
+    std::string InputOffsetScalarFieldName;
     bool UseInputOffsetScalarField;
     bool ReverseSaddleMaximumConnection;
     bool ReverseSaddleSaddleConnection;
@@ -129,8 +129,8 @@ class ttkDiscreteGradient
     int ScalarFieldId;
     int OffsetFieldId;
 
-    Triangulation* triangulation_;
-    DiscreteGradient discreteGradient_;
+    ttk::Triangulation* triangulation_;
+    ttk::DiscreteGradient discreteGradient_;
     vtkDataArray* inputScalars_;
     vtkIntArray* offsets_;
     vtkDataArray* inputOffsets_;

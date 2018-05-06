@@ -1,5 +1,8 @@
 #include                  <ttkJacobiSet.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkJacobiSet)
 
 ttkJacobiSet::ttkJacobiSet(){

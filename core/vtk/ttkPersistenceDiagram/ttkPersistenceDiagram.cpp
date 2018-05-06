@@ -1,5 +1,8 @@
 #include <ttkPersistenceDiagram.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkPersistenceDiagram)
 
   ttkPersistenceDiagram::ttkPersistenceDiagram():

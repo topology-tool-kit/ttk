@@ -1,5 +1,8 @@
 #include                  <ttkSphereFromPoint.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkSphereFromPoint)
 
 ttkSphereFromPoint::ttkSphereFromPoint(){

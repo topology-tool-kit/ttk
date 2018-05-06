@@ -1,5 +1,8 @@
 #include <ScalarFieldSmoother.h>
 
+using namespace std;
+using namespace ttk;
+
 ScalarFieldSmoother::ScalarFieldSmoother(){
    inputData_       = nullptr;
    outputData_      = nullptr;

@@ -1,5 +1,8 @@
 #include                  <ttkContinuousScatterPlot.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkContinuousScatterPlot)
 
 ttkContinuousScatterPlot::ttkContinuousScatterPlot():

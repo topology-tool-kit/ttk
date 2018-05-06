@@ -69,8 +69,8 @@ namespace ttk{
       return 0;
     }
 
-    pair<dataType,dataType> getRange() const {
-      pair<dataType,dataType> range;
+    std::pair<dataType,dataType> getRange() const {
+      std::pair<dataType,dataType> range;
       range.first = getRangeMin();
       range.second = getRangeMax();
       return range;
@@ -126,8 +126,8 @@ namespace ttk{
 
   protected:
     int numberOfVertices_;
-    vector<dataType> upperBound_;
-    vector<dataType> lowerBound_;
+    std::vector<dataType> upperBound_;
+    std::vector<dataType> lowerBound_;
   };
 
   class PDFHistograms : public Debug {
@@ -196,7 +196,7 @@ namespace ttk{
       }
     }
 
-    void getVertexHistogram(const unsigned int vertexId, vector<double> &histogram) const {
+    void getVertexHistogram(const unsigned int vertexId, std::vector<double> &histogram) const {
       histogram.resize(numberOfBins_);
       if(vertexId < numberOfVertices_) {
         #ifdef TTK_ENABLE_OPENMP
@@ -254,14 +254,14 @@ namespace ttk{
     }
 
   protected:
-    vector<double>            binValue_;
-    vector<vector<double> >   probability_;
+    std::vector<double>            binValue_;
+    std::vector<std::vector<double> >   probability_;
     unsigned int              numberOfBins_;
     unsigned int              numberOfInputs_;
     unsigned int              numberOfVertices_;
     double                    rangeMin_;
     double                    rangeMax_;
-    // vector<int> selection_; // TODO : selection support
+    // std::vector<int> selection_; // TODO : selection support
   };
 
   class UncertainDataEstimator : public Debug{
@@ -390,13 +390,13 @@ namespace ttk{
       int                   vertexNumber_;
       int                   numberOfInputs_;
       int                   binCount_;
-      double                *binValues_; //TODO : vector<double>
+      double                *binValues_; //TODO : std::vector<double>
       bool                  computeLowerBound_;
       bool                  computeUpperBound_;
-      void                  **inputData_; //TODO : vector<void*>
+      void                  **inputData_; //TODO : std::vector<void*>
       void                  *outputLowerBoundField_;
       void                  *outputUpperBoundField_;
-      void                  **outputProbability_; //TODO : vector<void*>
+      void                  **outputProbability_; //TODO : std::vector<void*>
       void                  *outputMeanField_;
   };
 }
@@ -405,7 +405,7 @@ namespace ttk{
 // #include                  <UncertainDataEstimator.cpp>
 
 // template functions
-template <class dataType> int UncertainDataEstimator::execute() const{
+template <class dataType> int ttk::UncertainDataEstimator::execute() const{
 
   Timer t;
 
@@ -547,13 +547,13 @@ template <class dataType> int UncertainDataEstimator::execute() const{
 #endif
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[UncertainDataEstimator] Data-set (" << vertexNumber_
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;

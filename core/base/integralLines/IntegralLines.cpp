@@ -1,5 +1,8 @@
 #include                  <IntegralLines.h>
 
+using namespace std;
+using namespace ttk;
+
 IntegralLines::IntegralLines():
   vertexNumber_{},
   seedNumber_{},

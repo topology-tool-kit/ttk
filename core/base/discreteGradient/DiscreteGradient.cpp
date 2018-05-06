@@ -1,5 +1,8 @@
 #include                  <DiscreteGradient.h>
 
+using namespace std;
+using namespace ttk;
+
 DiscreteGradient::DiscreteGradient():
   IterationThreshold{-1},
   ReverseSaddleMaximumConnection{false},

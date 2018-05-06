@@ -50,11 +50,15 @@ int ContourForests::build()
 
    if (params_->debugLevel >= 2) {
       // print params:
-      cout << "threads :" << static_cast<unsigned>(parallelParams_.nbThreads) << endl;
-      cout << "partitions : " <<static_cast<unsigned>(parallelParams_.nbPartitions) << endl;
+      std::cout << "threads :" << 
+static_cast<unsigned>(parallelParams_.nbThreads) << std::endl;
+      std::cout << "partitions : " 
+<<static_cast<unsigned>(parallelParams_.nbPartitions) << std::endl;
       if(params_->simplifyThreshold){
-         cout << "simplify method : " << params_->simplifyMethod << endl;
-         cout << "simplify thresh.: " << params_->simplifyThreshold << endl;
+         std::cout << "simplify method : " << params_->simplifyMethod << 
+std::endl;
+         std::cout << "simplify thresh.: " << params_->simplifyThreshold << 
+std::endl;
       }
    }
    printDebug(timerTOTAL, "Initialization                   ");
@@ -76,9 +80,9 @@ int ContourForests::build()
    initOverlap();
    if(params_->debugLevel > 3){
         for (idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
-            cout << "interface : " << static_cast<unsigned>(i);
-            cout << " seed : " << parallelData_.interfaces[i].getSeed();
-            cout << endl;
+            std::cout << "interface : " << static_cast<unsigned>(i);
+            std::cout << " seed : " << parallelData_.interfaces[i].getSeed();
+            std::cout << std::endl;
         }
    }
    printDebug(timerInitOverlap, "Interface and overlap init.      ");
@@ -88,10 +92,13 @@ int ContourForests::build()
    // -----------------------
 
    DebugTimer timerAllocPara;
-   // Union find vector for each partition
-   vector<vector<ExtendedUnionFind *>> vect_baseUF_JT(parallelParams_.nbPartitions),
-                                       vect_baseUF_ST(parallelParams_.nbPartitions);
-   const idVertex &resSize = (scalars_->size / parallelParams_.nbPartitions) / 10;
+   // Union find std::vector for each partition
+   std::vector<std::vector<ExtendedUnionFind *>> 
+vect_baseUF_JT(parallelParams_.nbPartitions),
+                                       
+vect_baseUF_ST(parallelParams_.nbPartitions);
+   const idVertex &resSize = (scalars_->size / parallelParams_.nbPartitions) / 
+10;
 
    parallelData_.trees.clear();
    parallelData_.trees.reserve(parallelParams_.nbPartitions);
@@ -102,7 +109,8 @@ int ContourForests::build()
    }
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(parallelParams_.nbPartitions) schedule(static)
+#pragma omp parallel for num_threads(parallelParams_.nbPartitions) \
+schedule(static)
 #endif
    for (idPartition tree = 0; tree < parallelParams_.nbPartitions; ++tree) {
       // Tree array initialization
@@ -131,17 +139,17 @@ int ContourForests::build()
    if (params_->debugLevel >= 4) {
       if (params_->treeType == TreeType::Contour) {
          for (idPartition i = 0; i < parallelParams_.nbPartitions; i++) {
-            cout << i << " :" << endl;
+            std::cout << i << " :" << std::endl;
             parallelData_.trees[i].printTree2();
-            cout << "-----" << endl;
+            std::cout << "-----" << std::endl;
          }
        } else {
           for (idPartition i = 0; i < parallelParams_.nbPartitions; i++) {
-             cout << i << " jt:" << endl;
+             std::cout << i << " jt:" << std::endl;
              parallelData_.trees[i].jt_->printTree2();
-             cout << i << " st:" << endl;
+             std::cout << i << " st:" << std::endl;
              parallelData_.trees[i].st_->printTree2();
-             cout << "-----" << endl;
+             std::cout << "-----" << std::endl;
          }
        }
    }
@@ -153,10 +161,12 @@ int ContourForests::build()
    // --------------------
 
    DebugTimer timerZip;
-   if (parallelParams_.partitionNum == -1 && parallelParams_.nbPartitions > 1 ) {
+   if (parallelParams_.partitionNum == -1 && parallelParams_.nbPartitions > 1 ) 
+{
       stitch();
       for (idPartition p = 0; p < parallelParams_.nbPartitions; ++p) {
-         parallelData_.trees[p].parallelInitNodeValence(parallelParams_.nbThreads);
+         
+parallelData_.trees[p].parallelInitNodeValence(parallelParams_.nbThreads);
       }
    }
 
@@ -210,13 +220,14 @@ int ContourForests::build()
    // Simplification step
    // -------------------
 
-   if (params_->treeType == TreeType::Contour && parallelParams_.partitionNum == -1 &&
+   if (params_->treeType == TreeType::Contour && parallelParams_.partitionNum 
+== -1 &&
        params_->simplifyThreshold) {
       DebugTimer timerGlobalSimplify;
       idEdge simplifed = globalSimplify<scalarType>(-1, nullVertex);
       if(params_->debugLevel >=1){
          printDebug(timerGlobalSimplify, "Simplify Contour tree            ");
-         cout << " ( " << simplifed << " pairs merged )" << endl;
+         std::cout << " ( " << simplifed << " pairs merged )" << std::endl;
       }
    }
 
@@ -230,17 +241,19 @@ int ContourForests::build()
         if(params_->treeType == TreeType::Contour)
            printTree2();
         else {
-           cout << "JT :" << endl;
+           std::cout << "JT :" << std::endl;
            jt_->printTree2();
-           cout << "ST :" << endl;
+           std::cout << "ST :" << std::endl;
            st_->printTree2();
         }
     } else if (params_->debugLevel > 2) {
         if(params_->treeType == TreeType::Contour)
-           cout << "max node : " << getNumberOfNodes() << endl;
+           std::cout << "max node : " << getNumberOfNodes() << std::endl;
         else {
-            cout << "JT max node : " << jt_->getNumberOfNodes() << endl;
-            cout << "ST max node : " << st_->getNumberOfNodes() << endl;
+            std::cout << "JT max node : " << jt_->getNumberOfNodes() << 
+std::endl;
+            std::cout << "ST max node : " << st_->getNumberOfNodes() << 
+std::endl;
         }
     }
 
@@ -259,22 +272,24 @@ int ContourForests::build()
          parallelData_.trees[tree].st_->treeData_.nodes.shrink_to_fit();
          parallelData_.trees[tree].st_->treeData_.superArcs.shrink_to_fit();
       }
-      // Not while arc segmentation depends on vector in partitions
+      // Not while arc segmentation depends on std::vector in partitions
       //parallelData_.interfaces.clear();
       //parallelData_.trees.clear();
    }
 
-   cout << "Tree computed ..." << endl;
+   std::cout << "Tree computed ..." << std::endl;
 
    return 0;
 }
 
 template <typename scalarType>
-int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_baseUF_JT,
-                                  vector<vector<ExtendedUnionFind *>> &vect_baseUF_ST)
+int ContourForests::parallelBuild(std::vector<std::vector<ExtendedUnionFind *>> 
+&vect_baseUF_JT,
+                                  std::vector<std::vector<ExtendedUnionFind *>> 
+&vect_baseUF_ST)
 {
-   vector<float> timeSimplify(parallelParams_.nbPartitions, 0);
-   vector<float> speedProcess(parallelParams_.nbPartitions*2, 0);
+   std::vector<float> timeSimplify(parallelParams_.nbPartitions, 0);
+   std::vector<float> speedProcess(parallelParams_.nbPartitions*2, 0);
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
    idEdge nbPairMerged = 0;
 #endif
@@ -283,9 +298,10 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
    omp_set_nested(1);
 #endif
 
-//cout << "NO PARALLEL DEBUG MODE" << endl;
+//std::cout << "NO PARALLEL DEBUG MODE" << std::endl;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(parallelParams_.nbPartitions) schedule(static)
+#pragma omp parallel for num_threads(parallelParams_.nbPartitions) \
+schedule(static)
 #endif
    for (idPartition i = 0; i < parallelParams_.nbPartitions; ++i) {
       DebugTimer timerMergeTree;
@@ -294,19 +310,23 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
       // Skip partition that are not asked to compute if needed
       // ------------------------------------------------------
 
-      if (parallelParams_.partitionNum != -1 && parallelParams_.partitionNum != i)
+      if (parallelParams_.partitionNum != -1 && parallelParams_.partitionNum != 
+i)
          continue;
 
       // ------------------------------------------------------
       // Retrieve boundary & overlap list for current partition
       // ------------------------------------------------------
 
-      tuple<idVertex, idVertex> rangeJT = getJTRange(i);
-      tuple<idVertex, idVertex> rangeST = getSTRange(i);
-      tuple<idVertex, idVertex> seedsPos = getSeedsPos(i);
-      tuple<vector<idVertex>, vector<idVertex>> overlaps = getOverlaps(i);
-      const idVertex &partitionSize = abs(get<0>(rangeJT) - get<1>(rangeJT)) +
-                                      get<0>(overlaps).size() + get<1>(overlaps).size();
+      std::tuple<idVertex, idVertex> rangeJT = getJTRange(i);
+      std::tuple<idVertex, idVertex> rangeST = getSTRange(i);
+      std::tuple<idVertex, idVertex> seedsPos = getSeedsPos(i);
+      std::tuple<std::vector<idVertex>, std::vector<idVertex>> overlaps = 
+getOverlaps(i);
+      const idVertex &partitionSize = abs(std::get<0>(rangeJT) - 
+std::get<1>(rangeJT)) +
+                                      std::get<0>(overlaps).size() + 
+std::get<1>(overlaps).size();
 
       // ---------------
       // Build JT and ST
@@ -329,17 +349,18 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
                 DebugTimer timerSimplify;
                 DebugTimer timerBuild;
                 parallelData_.trees[i].getJoinTree()->build(vect_baseUF_JT[i],
-                        get<0>(overlaps), get<1>(overlaps),
-                        get<0>(rangeJT), get<1>(rangeJT),
-                        get<0>(seedsPos), get<1>(seedsPos)
+                        std::get<0>(overlaps), std::get<1>(overlaps),
+                        std::get<0>(rangeJT), std::get<1>(rangeJT),
+                        std::get<0>(seedsPos), std::get<1>(seedsPos)
                         );
                 speedProcess[i] = partitionSize / timerBuild.getElapsedTime();
 
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
                 timerSimplify.reStart();
                 const idEdge tmpMerge =
-                    parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
-                            get<0>(seedsPos), get<1>(seedsPos));
+                    
+parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
+                            std::get<0>(seedsPos), std::get<1>(seedsPos));
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
 #endif
@@ -363,9 +384,9 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
                 DebugTimer timerSimplify;
                 DebugTimer timerBuild;
                 parallelData_.trees[i].getSplitTree()->build(vect_baseUF_ST[i],
-                        get<1>(overlaps), get<0>(overlaps),
-                        get<0>(rangeST), get<1>(rangeST),
-                        get<0>(seedsPos), get<1>(seedsPos)
+                        std::get<1>(overlaps), std::get<0>(overlaps),
+                        std::get<0>(rangeST), std::get<1>(rangeST),
+                        std::get<0>(seedsPos), std::get<1>(seedsPos)
                         );
                 speedProcess[parallelParams_.nbPartitions + i] =
                     partitionSize / timerBuild.getElapsedTime();
@@ -373,8 +394,9 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
                 timerSimplify.reStart();
                 const idEdge tmpMerge =
-                    parallelData_.trees[i].getSplitTree()->localSimplify<scalarType>(
-                            get<0>(seedsPos), get<1>(seedsPos));
+                    
+parallelData_.trees[i].getSplitTree()->localSimplify<scalarType>(
+                            std::get<0>(seedsPos), std::get<1>(seedsPos));
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
 #endif
@@ -391,20 +413,23 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
       }
 
       {
-         stringstream mt;
+         std::stringstream mt;
          mt << "[ParallelBuild] Merge Tree " << static_cast<unsigned>(i)
-            << " constructed in : " << timerMergeTree.getElapsedTime() << endl;
-         dMsg(cout, mt.str(), infoMsg);
+            << " constructed in : " << timerMergeTree.getElapsedTime() << 
+std::endl;
+         dMsg(std::cout, mt.str(), infoMsg);
       }
 
       // Update segmentation of each arc if needed
-      if ( params_->simplifyThreshold || params_->treeType != TreeType::Contour){
+      if ( params_->simplifyThreshold || params_->treeType != 
+TreeType::Contour){
          DebugTimer timerUpdateSegm;
          parallelData_.trees[i].getJoinTree()->updateSegmentation();
          parallelData_.trees[i].getSplitTree()->updateSegmentation();
 
          if (params_->debugLevel >= 3) {
-            cout << "Local MT : updated in " << timerUpdateSegm.getElapsedTime() << endl;
+            std::cout << "Local MT : updated in " << 
+timerUpdateSegm.getElapsedTime() << std::endl;
          }
       }
 
@@ -423,29 +448,32 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
          // Maintain this traversal order for good insertion
          for (idNode t = 0; t < st->getNumberOfNodes(); ++t) {
             if (!st->getNode(t)->isHidden()) {
-               // cout << "insert in jt : " << st->getNode(t)->getVertexId() << endl;
+               // std::cout << "insert in jt : " << 
+               // st->getNode(t)->getVertexId() << std::endl;
                jt->insertNode(st->getNode(t), true);
             }
          }
          // and vice versa
          for (idNode t = 0; t < jt->getNumberOfNodes(); ++t) {
             if (!jt->getNode(t)->isHidden()) {
-               // cout << "insert in st : " << jt->getNode(t)->getVertexId() << endl;
+               // std::cout << "insert in st : " << 
+                // jt->getNode(t)->getVertexId() << std::endl;
                st->insertNode(jt->getNode(t), true);
             }
          }
 
          // debug print current JT / ST
          if (params_->debugLevel >= 6) {
-            cout << "Local JT :" << endl;
+            std::cout << "Local JT :" << std::endl;
             parallelData_.trees[i].getJoinTree()->printTree2();
-            cout << "Local ST :" << endl;
+            std::cout << "Local ST :" << std::endl;
             parallelData_.trees[i].getSplitTree()->printTree2();
-            cout << "combine" << endl;
+            std::cout << "combine" << std::endl;
          }
 
          // Combine, destroy JT and ST to compute CT
-         parallelData_.trees[i].combine(get<0>(seedsPos), get<1>(seedsPos));
+         parallelData_.trees[i].combine(std::get<0>(seedsPos), 
+std::get<1>(seedsPos));
          parallelData_.trees[i].updateSegmentation();
 
          if (params_->debugLevel > 2) {
@@ -458,11 +486,11 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
          }
       } else {
          if (params_->debugLevel >= 6) {
-            cout << "Local JT :" << endl;
+            std::cout << "Local JT :" << std::endl;
             parallelData_.trees[i].getJoinTree()->printTree2();
-            cout << "Local ST :" << endl;
+            std::cout << "Local ST :" << std::endl;
             parallelData_.trees[i].getSplitTree()->printTree2();
-            cout << "combine" << endl;
+            std::cout << "combine" << std::endl;
          }
       }
    }
@@ -474,18 +502,23 @@ int ContourForests::parallelBuild(vector<vector<ExtendedUnionFind *>> &vect_base
    if(params_->debugLevel > 2) {
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
       if (params_->simplifyThreshold) {
-         auto  maxSimplifIt = max_element(timeSimplify.cbegin(), timeSimplify.cend());
+         auto  maxSimplifIt = max_element(timeSimplify.cbegin(), 
+timeSimplify.cend());
          float maxSimplif   = *maxSimplifIt;
-         cout << "Local simplification maximum time :                         " << maxSimplif;
-         cout << " ( " << nbPairMerged << " pairs merged )" << endl;
+         std::cout 
+          << "Local simplification maximum time :" 
+          << maxSimplif;
+         std::cout << " ( " << nbPairMerged << " pairs merged )" << std::endl;
       }
 #endif
-      auto maxProcSpeed = max_element(speedProcess.cbegin(), speedProcess.cend());
-      auto minProcSpeed = min_element(speedProcess.cbegin(), speedProcess.cend());
-      cout << "process speed : ";
-      cout << " min is " << *minProcSpeed << " vert/sec";
-      cout << " max is " << *maxProcSpeed << " vert/sec";
-      cout << endl;
+      auto maxProcSpeed = max_element(speedProcess.cbegin(), 
+speedProcess.cend());
+      auto minProcSpeed = min_element(speedProcess.cbegin(), 
+speedProcess.cend());
+      std::cout << "process speed : ";
+      std::cout << " min is " << *minProcSpeed << " vert/sec";
+      std::cout << " max is " << *maxProcSpeed << " vert/sec";
+      std::cout << std::endl;
    }
 
    return 0;

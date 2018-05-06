@@ -1,5 +1,8 @@
 #include                  <ttkWrapper.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkTriangulationFilter) // constructor
   ttkTriangulationFilter::ttkTriangulationFilter(){
 

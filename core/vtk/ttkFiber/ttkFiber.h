@@ -48,7 +48,7 @@ class VTKFILTERSCORE_EXPORT ttkFiber
 #else
 class ttkFiber
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -63,7 +63,7 @@ class ttkFiber
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }
@@ -79,14 +79,14 @@ class ttkFiber
     }
     // end of default ttk setters
     
-    vtkGetMacro(Ucomponent, string);
-    vtkSetMacro(Ucomponent, string);
+    vtkGetMacro(Ucomponent, std::string);
+    vtkSetMacro(Ucomponent, std::string);
     
     vtkGetMacro(Uvalue, double);
     vtkSetMacro(Uvalue, double);
     
-    vtkGetMacro(Vcomponent, string);
-    vtkSetMacro(Vcomponent, string);
+    vtkGetMacro(Vcomponent, std::string);
+    vtkSetMacro(Vcomponent, std::string);
     
     vtkGetMacro(Vvalue, double);
     vtkSetMacro(Vvalue, double);
@@ -112,7 +112,7 @@ class ttkFiber
     int                   ThreadNumber;
     
     double                Uvalue, Vvalue;
-    string                Ucomponent, Vcomponent;
+    std::string                Ucomponent, Vcomponent;
     
     // base code features
     int doIt(vtkDataSet *input, vtkPolyData *output);

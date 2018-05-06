@@ -1,5 +1,8 @@
 #include                  "ttkLDistance.h"
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkLDistance)
   
 int ttkLDistance::doIt(

@@ -1,7 +1,7 @@
 #include                  <ScalarFieldCriticalPoints.h>
 
 template <class dataType> 
-  ScalarFieldCriticalPoints<dataType>::ScalarFieldCriticalPoints(){
+  ttk::ScalarFieldCriticalPoints<dataType>::ScalarFieldCriticalPoints(){
 
   
   dimension_ = 0;
@@ -16,11 +16,12 @@ template <class dataType>
 }
 
 template <class dataType> 
-  ScalarFieldCriticalPoints<dataType>::~ScalarFieldCriticalPoints(){
+  ttk::ScalarFieldCriticalPoints<dataType>::~ScalarFieldCriticalPoints(){
   
 }
 
-template <class dataType> int ScalarFieldCriticalPoints<dataType>::execute(){
+template <class dataType> int 
+ttk::ScalarFieldCriticalPoints<dataType>::execute(){
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -52,17 +53,17 @@ template <class dataType> int ScalarFieldCriticalPoints<dataType>::execute(){
       (*sosOffsets_)[i] = i;
       
     {
-      stringstream msg;
+      std::stringstream msg;
       msg << 
         "[ScalarFieldCriticalPoints] Offset pre-processing done in "
-        << preProcess.getElapsedTime() << " s. Go!" << endl;
-      dMsg(cout, msg.str(), timeMsg);
+        << preProcess.getElapsedTime() << " s. Go!" << std::endl;
+      dMsg(std::cout, msg.str(), timeMsg);
     }
   }
   
   Timer t;
   
-  vector<char> vertexTypes(vertexNumber_);
+  std::vector<char> vertexTypes(vertexNumber_);
  
   if(triangulation_){
 #ifdef TTK_ENABLE_OPENMP
@@ -139,38 +140,40 @@ template <class dataType> int ScalarFieldCriticalPoints<dataType>::execute(){
     }
     
     {
-      stringstream msg;
+      std::stringstream msg;
       msg << "[ScalarFieldCriticalPoints] " << minimumNumber << " minima."
-        << endl;
+        << std::endl;
       if(dimension_ == 3){
         msg << "[ScalarFieldCriticalPoints] " << oneSaddleNumber
-          << " 1-saddle(s)." << endl;
+          << " 1-saddle(s)." << std::endl;
         msg << "[ScalarFieldCriticalPoints] " << twoSaddleNumber
-          << " 2-saddle(s)." << endl;
+          << " 2-saddle(s)." << std::endl;
       }
       if(dimension_ == 2){
         msg << "[ScalarFieldCriticalPoints] " << saddleNumber
-          << " saddle(s)." << endl;
+          << " saddle(s)." << std::endl;
       }
       msg << "[ScalarFieldCriticalPoints] " << monkeySaddleNumber
-        << " multi-saddle(s)." << endl;
+        << " multi-saddle(s)." << std::endl;
       msg << "[ScalarFieldCriticalPoints] " << maximumNumber
-        << " maxima." << endl;
+        << " maxima." << std::endl;
         
-//       msg << "[ScalarFieldCriticalPoints] Euler characteristic approximation:";
+//       msg << "[ScalarFieldCriticalPoints] Euler characteristic 
+// approximation:";
 //       if(monkeySaddleNumber){
 //         msg << " approximation";
 //       }
 //       msg << ": ";
 //       if(dimension_ == 3){
 //         msg 
-//           << minimumNumber - oneSaddleNumber + twoSaddleNumber - maximumNumber;
+//           << minimumNumber - oneSaddleNumber + twoSaddleNumber - 
+// maximumNumber;
 //       }
 //       if(dimension_ == 2){
 //         msg << minimumNumber - saddleNumber + maximumNumber;
 //       }
-//       msg << endl;
-      dMsg(cout, msg.str(), Debug::infoMsg);
+//       msg << std::endl;
+      dMsg(std::cout, msg.str(), Debug::infoMsg);
     }
   }
   
@@ -178,29 +181,29 @@ template <class dataType> int ScalarFieldCriticalPoints<dataType>::execute(){
   criticalPoints_->clear();
   for(int i = 0; i < vertexNumber_; i++){
     if(vertexTypes[i] != -2){
-      criticalPoints_->push_back(pair<int, char>(i, vertexTypes[i]));
+      criticalPoints_->push_back(std::pair<int, char>(i, vertexTypes[i]));
     }
   }
   
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ScalarFieldCriticalPoints] Data-set (" << vertexNumber_
       << " vertices) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), 2);
+      << std::endl;
+    dMsg(std::cout, msg.str(), 2);
   }
   
   return 0;
 }
 
-template <class dataType> char ScalarFieldCriticalPoints<dataType>
+template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   ::getCriticalType(const int &vertexId, 
     Triangulation *triangulation) const{
      
   int neighborNumber = triangulation->getVertexNeighborNumber(vertexId);
-  vector<int> lowerNeighbors, upperNeighbors;
+  std::vector<int> lowerNeighbors, upperNeighbors;
   
   for(int i = 0; i < neighborNumber; i++){
     int neighborId = 0;
@@ -233,10 +236,10 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
   }
   
   // now do the actual work
-  vector<UnionFind> lowerSeeds(lowerNeighbors.size());
-  vector<UnionFind *> lowerList(lowerNeighbors.size());
-  vector<UnionFind> upperSeeds(upperNeighbors.size());
-  vector<UnionFind *> upperList(upperNeighbors.size());
+  std::vector<UnionFind> lowerSeeds(lowerNeighbors.size());
+  std::vector<UnionFind *> lowerList(lowerNeighbors.size());
+  std::vector<UnionFind> upperSeeds(upperNeighbors.size());
+  std::vector<UnionFind *> upperList(upperNeighbors.size());
   
   for(int i = 0; i < (int) lowerSeeds.size(); i++){
     lowerList[i] = &(lowerSeeds[i]);
@@ -275,8 +278,8 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
               (*sosOffsets_)[neighborId1], scalarValues_[neighborId1],
               (*sosOffsets_)[vertexId], scalarValues_[vertexId]);
             
-            vector<int> *neighbors = &lowerNeighbors;
-            vector<UnionFind *> *seeds = &lowerList;
+            std::vector<int> *neighbors = &lowerNeighbors;
+            std::vector<UnionFind *> *seeds = &lowerList;
             
             if(!lower0){
               neighbors = &upperNeighbors;
@@ -314,7 +317,7 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
   for(int i = 0; i < (int) upperList.size(); i++)
     upperList[i] = upperList[i]->find();
   
-  vector<UnionFind *>::iterator it;
+  std::vector<UnionFind *>::iterator it;
   sort(lowerList.begin(), lowerList.end());
   it = unique(lowerList.begin(), lowerList.end());
   lowerList.resize(distance(lowerList.begin(), it));
@@ -324,12 +327,12 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
   upperList.resize(distance(upperList.begin(), it));
   
   if(debugLevel_ >= Debug::advancedInfoMsg){
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ScalarFieldCriticalPoints] Vertex #" << vertexId
       << ": lowerLink-#CC=" << lowerList.size() 
-      << " upperLink-#CC=" << upperList.size() << endl;
+      << " upperLink-#CC=" << upperList.size() << std::endl;
       
-    dMsg(cout, msg.str(), Debug::advancedInfoMsg);
+    dMsg(std::cout, msg.str(), Debug::advancedInfoMsg);
   }
   
   if((lowerList.size() == 1)&&(upperList.size() == 1))
@@ -370,12 +373,12 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
   return -2;  
 }
 
-template <class dataType> char ScalarFieldCriticalPoints<dataType>
+template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   ::getCriticalType(const int &vertexId, 
-    const vector<pair<int, int> > &vertexLink) const{
+    const std::vector<std::pair<int, int> > &vertexLink) const{
 
-  map<int, int> global2LowerLink, global2UpperLink;
-  map<int, int>::iterator neighborIt;
+  std::map<int, int> global2LowerLink, global2UpperLink;
+  std::map<int, int>::iterator neighborIt;
   
   int lowerCount = 0, upperCount = 0;
   
@@ -441,14 +444,14 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
   }
   
   if(debugLevel_ >= Debug::advancedInfoMsg){
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ScalarFieldCriticalPoints] Vertex #" << vertexId 
-      << " lower link (" << lowerCount << " vertices)" << endl;;
+      << " lower link (" << lowerCount << " vertices)" << std::endl;;
     
     msg << "[ScalarFieldCriticalPoints] Vertex #" << vertexId 
-      << " upper link (" << upperCount << " vertices)" << endl;
+      << " upper link (" << upperCount << " vertices)" << std::endl;
     
-    dMsg(cout, msg.str(), Debug::advancedInfoMsg);
+    dMsg(std::cout, msg.str(), Debug::advancedInfoMsg);
   }
   
   if(!lowerCount){
@@ -465,10 +468,10 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
   // now enumerate the connected components of the lower and upper links
   // NOTE: a breadth first search might be faster than a UF
   // if so, one would need the one-skeleton data structure, not the edge list
-  vector<UnionFind> lowerSeeds(lowerCount);
-  vector<UnionFind> upperSeeds(upperCount);
-  vector<UnionFind *> lowerList(lowerCount);
-  vector<UnionFind *> upperList(upperCount);
+  std::vector<UnionFind> lowerSeeds(lowerCount);
+  std::vector<UnionFind> upperSeeds(upperCount);
+  std::vector<UnionFind *> lowerList(lowerCount);
+  std::vector<UnionFind *> upperList(upperCount);
   for(int i = 0; i < (int) lowerList.size(); i++)
     lowerList[i] = &(lowerSeeds[i]);
   for(int i = 0; i < (int) upperList.size(); i++)
@@ -487,8 +490,8 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
       (*sosOffsets_)[vertexId], scalarValues_[vertexId]))){
       
       // both vertices are lower, let's add that edge and update the UF
-      map<int, int>::iterator n0It = global2LowerLink.find(neighborId0);
-      map<int, int>::iterator n1It = global2LowerLink.find(neighborId1);
+      std::map<int, int>::iterator n0It = global2LowerLink.find(neighborId0);
+      std::map<int, int>::iterator n1It = global2LowerLink.find(neighborId1);
     
       lowerList[n0It->second] = 
         makeUnion(lowerList[n0It->second], lowerList[n1It->second]);
@@ -503,8 +506,8 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
       (*sosOffsets_)[vertexId], scalarValues_[vertexId]))){
       
       // both vertices are lower, let's add that edge and update the UF
-      map<int, int>::iterator n0It = global2UpperLink.find(neighborId0);
-      map<int, int>::iterator n1It = global2UpperLink.find(neighborId1);
+      std::map<int, int>::iterator n0It = global2UpperLink.find(neighborId0);
+      std::map<int, int>::iterator n1It = global2UpperLink.find(neighborId1);
     
       upperList[n0It->second] = 
         makeUnion(upperList[n0It->second], upperList[n1It->second]);
@@ -513,7 +516,7 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
   }
   
   // let's remove duplicates
-  vector<UnionFind *>::iterator it;
+  std::vector<UnionFind *>::iterator it;
   // update the UFs if necessary
   for(int i = 0; i < (int) lowerList.size(); i++)
     lowerList[i] = lowerList[i]->find();
@@ -529,12 +532,12 @@ template <class dataType> char ScalarFieldCriticalPoints<dataType>
   upperList.resize(distance(upperList.begin(), it));
   
   if(debugLevel_ >= Debug::advancedInfoMsg){
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ScalarFieldCriticalPoints] Vertex #" << vertexId
       << ": lowerLink-#CC=" << lowerList.size() 
-      << " upperLink-#CC=" << upperList.size() << endl;
+      << " upperLink-#CC=" << upperList.size() << std::endl;
       
-    dMsg(cout, msg.str(), Debug::advancedInfoMsg);
+    dMsg(std::cout, msg.str(), Debug::advancedInfoMsg);
   }
   
   if((lowerList.size() == 1)&&(upperList.size() == 1))

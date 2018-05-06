@@ -1,5 +1,8 @@
 #include                  <ttkFiber.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkFiber)
 
 ttkFiber::ttkFiber(){

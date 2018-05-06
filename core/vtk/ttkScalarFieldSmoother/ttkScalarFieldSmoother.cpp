@@ -1,5 +1,8 @@
 #include                  <ttkScalarFieldSmoother.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkScalarFieldSmoother)
 
 ttkScalarFieldSmoother::ttkScalarFieldSmoother(){

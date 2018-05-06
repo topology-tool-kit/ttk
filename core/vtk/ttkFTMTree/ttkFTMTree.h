@@ -30,9 +30,9 @@
 #include<ttkFTMStructures.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
+class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public ttk::Wrapper
 #else
-class ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
+class ttkFTMTree : public vtkDataSetAlgorithm, public ttk::Wrapper
 #endif
 {
   public:
@@ -56,14 +56,14 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
    }
    // end of default ttk setters
 
-   vtkSetMacro(ScalarField, string);
-   vtkGetMacro(ScalarField, string);
+   vtkSetMacro(ScalarField, std::string);
+   vtkGetMacro(ScalarField, std::string);
 
    vtkSetMacro(UseInputOffsetScalarField, int);
    vtkGetMacro(UseInputOffsetScalarField, int);
 
-   vtkSetMacro(InputOffsetScalarFieldName, string);
-   vtkGetMacro(InputOffsetScalarFieldName, string);
+   vtkSetMacro(InputOffsetScalarFieldName, std::string);
+   vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
    vtkSetMacro(ScalarFieldId, int);
    vtkGetMacro(ScalarFieldId, int);
@@ -74,11 +74,11 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
    // Parameters uses a structure, we can't use vtkMacro on them
    void SetTreeType(const int type)
    {
-       params_.treeType = (ftm::TreeType)type;
+       params_.treeType = (ttk::ftm::TreeType)type;
        Modified();
    }
 
-   ftm::TreeType GetTreeType(void) const
+   ttk::ftm::TreeType GetTreeType(void) const
    {
        return params_.treeType;
    }
@@ -133,13 +133,13 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
 
    int getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes);
 
-   int addDirectSkeletonArc(const ftm::idSuperArc arcId, const int cc, vtkPoints* points,
+   int addDirectSkeletonArc(const ttk::ftm::idSuperArc arcId, const int cc, vtkPoints* points,
                             vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
 
-   int addSampledSkeletonArc(const ftm::idSuperArc arcId, const int cc, vtkPoints* points,
+   int addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId, const int cc, vtkPoints* points,
                              vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
 
-   int addCompleteSkeletonArc(const ftm::idSuperArc arcId, const int cc, vtkPoints* points,
+   int addCompleteSkeletonArc(const ttk::ftm::idSuperArc arcId, const int cc, vtkPoints* points,
                               vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
 
    int getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs);
@@ -148,7 +148,7 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
    void printCSVStats();
-   void printCSVTree(const ftm::FTMTree_MT* const tree) const;
+   void printCSVTree(const ttk::ftm::FTMTree_MT* const tree) const;
 #endif
 
   protected:
@@ -164,20 +164,20 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public Wrapper
 
   private:
 
-   string ScalarField;
+   std::string ScalarField;
    bool   UseInputOffsetScalarField;
-   string InputOffsetScalarFieldName;
+   std::string InputOffsetScalarFieldName;
    int    ScalarFieldId;
    int    OffsetFieldId;
 
-   ftm::Params params_;
+   ttk::ftm::Params params_;
 
    int                            nbCC_;
-   vector<vtkDataSet*>            connected_components_;
-   vector<Triangulation*>         triangulation_;
-   vector<LocalFTM>               ftmTree_;
-   vector<vtkDataArray*>          inputScalars_;
-   vector<vector<ftm::idVertex>>  offsets_;
+   std::vector<vtkDataSet*>            connected_components_;
+   std::vector<ttk::Triangulation*>         triangulation_;
+   std::vector<LocalFTM>               ftmTree_;
+   std::vector<vtkDataArray*>          inputScalars_;
+   std::vector<std::vector<ttk::ftm::idVertex>>  offsets_;
 
    bool                   hasUpdatedMesh_;
 };

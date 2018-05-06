@@ -1,5 +1,8 @@
 #include                  <ttkWRLExporter.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkPolyData *ttkWRLExporterPolyData_ = NULL;
 
 // Over-ride the appropriate functions of the vtkVRMLExporter class.

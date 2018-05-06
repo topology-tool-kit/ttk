@@ -83,7 +83,7 @@ class VTKFILTERSCORE_EXPORT ttkMandatoryCriticalPoints
 #else
 class ttkMandatoryCriticalPoints
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
@@ -95,7 +95,7 @@ class ttkMandatoryCriticalPoints
     // void buildMandatorySplitTree(vtkUnstructuredGrid *outputSplitTree);
 
     int buildVtkTree(vtkUnstructuredGrid *outputTree, 
-      MandatoryCriticalPoints::TreeType treeType);
+      ttk::MandatoryCriticalPoints::TreeType treeType);
 
     void SetDebugLevel(int debugLevel) {
       if(debugLevel != debugLevel_) {
@@ -117,7 +117,7 @@ class ttkMandatoryCriticalPoints
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
       computeAll_ = true;
@@ -142,7 +142,7 @@ class ttkMandatoryCriticalPoints
       Modified();
     }
 
-    void SetUpperBoundFieldName(string name) {
+    void SetUpperBoundFieldName(std::string name) {
       upperBoundFiledName_ = name;
       Modified();
     }
@@ -152,7 +152,7 @@ class ttkMandatoryCriticalPoints
       Modified();
     }
 
-    void SetLowerBoundFieldName(string name) {
+    void SetLowerBoundFieldName(std::string name) {
       lowerBoundFieldName_ = name;
       Modified();
     }
@@ -223,15 +223,15 @@ class ttkMandatoryCriticalPoints
 
   private:
 
-    MandatoryCriticalPoints mandatoryCriticalPoints_;
+    ttk::MandatoryCriticalPoints mandatoryCriticalPoints_;
 
     unsigned long int     inputMTime_;
     bool                  computeAll_;
 
     bool                  UseAllCores;
     int                   ThreadNumber, lowerBoundId, upperBoundId;
-    string                upperBoundFiledName_;
-    string                lowerBoundFieldName_;
+    std::string                upperBoundFiledName_;
+    std::string                lowerBoundFieldName_;
     vtkIntArray           *outputMandatoryMinimum_;
     vtkIntArray           *outputMandatoryJoinSaddle_;
     vtkIntArray           *outputMandatorySplitSaddle_;
@@ -239,7 +239,7 @@ class ttkMandatoryCriticalPoints
 
     // Join Trees
     vtkPoints             *mandatoryJoinTreePoints_;
-    vector<vtkIdList *>   mandatoryJoinTreeEdge_;
+    std::vector<vtkIdList *>   mandatoryJoinTreeEdge_;
     vtkIntArray  *mdtJoinTreePointType_;
     vtkDoubleArray        *mdtJoinTreePointLowInterval_;
     vtkDoubleArray        *mdtJoinTreePointUpInterval_;
@@ -247,7 +247,7 @@ class ttkMandatoryCriticalPoints
     vtkIntArray           *mdtJoinTreeEdgeSwitchable_;
     // Split Tree
     vtkPoints             *mandatorySplitTreePoints_;
-    vector<vtkIdList *>   mandatorySplitTreeEdge_;
+    std::vector<vtkIdList *>   mandatorySplitTreeEdge_;
     vtkIntArray  *mdtSplitTreePointType_;
     vtkDoubleArray        *mdtSplitTreePointLowInterval_;
     vtkDoubleArray        *mdtSplitTreePointUpInterval_;
@@ -272,12 +272,12 @@ class ttkMandatoryCriticalPoints
     bool computeSplitSaddleOutput_;
     bool computeMaximumOutput_;
 
-    Triangulation      *triangulation_;
+    ttk::Triangulation      *triangulation_;
 
     float memoryUsage_;
 
     // base code features
-    int doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs);
+    int doIt(std::vector<vtkDataSet *> &inputs, std::vector<vtkDataSet *> &outputs);
 
     bool needsToAbort();
 

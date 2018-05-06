@@ -60,7 +60,7 @@ class VTKFILTERSCORE_EXPORT ttkMorseSmaleComplex
 #else
 class ttkMorseSmaleComplex
 #endif
-: public vtkDataSetAlgorithm, public Wrapper{
+: public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
@@ -82,8 +82,8 @@ class ttkMorseSmaleComplex
     }
     // end of default ttk setters
 
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
 
     vtkSetMacro(ScalarFieldId, int);
     vtkGetMacro(ScalarFieldId, int);
@@ -94,8 +94,8 @@ class ttkMorseSmaleComplex
     vtkSetMacro(UseInputOffsetScalarField, int);
     vtkGetMacro(UseInputOffsetScalarField, int);
 
-    vtkSetMacro(InputOffsetScalarFieldName, string);
-    vtkGetMacro(InputOffsetScalarFieldName, string);
+    vtkSetMacro(InputOffsetScalarFieldName, std::string);
+    vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
     vtkSetMacro(IterationThreshold, int);
     vtkGetMacro(IterationThreshold, int);
@@ -151,8 +151,8 @@ class ttkMorseSmaleComplex
     virtual int FillOutputPortInformation(int port, vtkInformation* info);
 
   private:
-    string ScalarField;
-    string InputOffsetScalarFieldName;
+    std::string ScalarField;
+    std::string InputOffsetScalarFieldName;
     bool UseInputOffsetScalarField;
     int IterationThreshold;
     bool ReverseSaddleMaximumConnection;
@@ -170,8 +170,8 @@ class ttkMorseSmaleComplex
     int ReturnSaddleConnectors;
     double SaddleConnectorsPersistenceThreshold;
 
-    MorseSmaleComplex morseSmaleComplex_;
-    Triangulation *triangulation_;
+    ttk::MorseSmaleComplex morseSmaleComplex_;
+    ttk::Triangulation *triangulation_;
     vtkIntArray* defaultOffsets_;
     bool hasUpdatedMesh_;
 };

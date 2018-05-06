@@ -1,5 +1,8 @@
 #include                  <ttkManifoldCheck.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkManifoldCheck)
 
 int ttkManifoldCheck::doIt(

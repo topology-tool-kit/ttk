@@ -1,5 +1,8 @@
 #include "ttkContourForests.h"
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkContourForests);
 
 ttkContourForests::ttkContourForests()

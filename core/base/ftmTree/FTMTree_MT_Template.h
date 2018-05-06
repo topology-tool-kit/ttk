@@ -31,7 +31,7 @@ void ftm::FTMTree_MT::sortInput(void)
 
    auto *sortedVect = scalars_->sortedVertices.get();
    if (sortedVect == nullptr) {
-      sortedVect = new vector<idVertex>(0);
+      sortedVect = new std::vector<idVertex>(0);
       scalars_->sortedVertices.reset(sortedVect);
    } else {
       sortedVect->clear();
@@ -48,7 +48,7 @@ void ftm::FTMTree_MT::sortInput(void)
 
 #ifdef TTK_ENABLE_OPENMP
 # ifdef __clang__
-   cout << "Caution, outside GCC, sequential sort" << endl;
+   std::cout << "Caution, outside GCC, sequential sort" << std::endl;
    std::sort(sortedVect->begin(), sortedVect->end(), indirect_sort);
 # else
    __gnu_parallel::sort(sortedVect->begin(), sortedVect->end(), indirect_sort);
@@ -59,7 +59,7 @@ void ftm::FTMTree_MT::sortInput(void)
 
    auto *mirrorVert = scalars_->mirrorVertices.get();
    if (mirrorVert == nullptr) {
-      mirrorVert = new vector<idVertex>(0);
+      mirrorVert = new std::vector<idVertex>(0);
       scalars_->mirrorVertices.reset(mirrorVert);
    } else {
       mirrorVert->clear();

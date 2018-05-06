@@ -24,12 +24,10 @@
 #include "DeprecatedDataTypes.h"
 #include "DeprecatedStructures.h"
 
-using namespace std;
-
 namespace ttk
 {
 
-  // one segment: like a vector<vertex>
+  // one segment: like a std::vector<vertex>
   class Segment
   {
     public:
@@ -39,7 +37,7 @@ namespace ttk
 
      void sort(const Scalars* s);
 
-     // vector like
+     // std::vector like
      void emplace_back(const idVertex& v);
      void clear(void);
      void norm_next(segmentIterator& it);
@@ -52,11 +50,11 @@ namespace ttk
      sorted_iterator send(void);
 
     private:
-     vector<vertex> vertices_;
+     std::vector<vertex> vertices_;
      bool           ascendingOrder_;
   };
 
-  // All the segments of the mesh, like a vector<Segment>
+  // All the segments of the mesh, like a std::vector<Segment>
   class Segments
   {
     public:
@@ -66,7 +64,7 @@ namespace ttk
      const Segment& operator[](size_t idx) const;
 
     private:
-     vector<Segment> segments_;
+     std::vector<Segment> segments_;
   };
 
   // The segmentation of one arc is a list of segment
@@ -79,15 +77,15 @@ namespace ttk
      // During combinaison: concat some segmentations
      void addSegment(const segmentIterator& begin, const segmentIterator& end);
 
-     // Put all segments in one vector in the arc
+     // Put all segments in one std::vector in the arc
      void createSegmentation(const idSuperArc& thisArc);
 
     private:
      // list of segment composing this segmentation and for each segment
      // the begin and the end inside it (as a segment may be subdivided)
-     forward_list<Region> segmentsIn_;
+     std::forward_list<Region> segmentsIn_;
      // when and how to compact ?
-     vector<vertex> segmentation_;  // idVertex only ?
+     std::vector<vertex> segmentation_;  // idVertex only ?
   };
 }
 

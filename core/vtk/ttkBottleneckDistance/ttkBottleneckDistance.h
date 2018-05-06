@@ -44,7 +44,7 @@ class VTKFILTERSCORE_EXPORT ttkBottleneckDistance
 #else
 class ttkBottleneckDistance
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper
+  : public vtkDataSetAlgorithm, public ttk::Wrapper
 {
 
   public:
@@ -76,8 +76,8 @@ class ttkBottleneckDistance
     vtkSetMacro(UsePersistenceMetric, int);
     vtkGetMacro(UsePersistenceMetric, int);
 
-    vtkSetMacro(WassersteinMetric, string);
-    vtkGetMacro(WassersteinMetric, string);
+    vtkSetMacro(WassersteinMetric, std::string);
+    vtkGetMacro(WassersteinMetric, std::string);
 
     vtkSetMacro(UseGeometricSpacing, int);
     vtkGetMacro(UseGeometricSpacing, int);
@@ -122,24 +122,24 @@ class ttkBottleneckDistance
 
     template <typename dataType>
     int getPersistenceDiagram(
-      vector<diagramTuple>* diagram,
+      std::vector<diagramTuple>* diagram,
       vtkUnstructuredGrid *CTPersistenceDiagram_,
       const double spacing,
       const int diagramNumber);
 
     template <typename dataType>
     int augmentPersistenceDiagrams(
-      const vector<diagramTuple>* diagram1,
-      const vector<diagramTuple>* diagram2,
-      const vector<matchingTuple>* matchings,
+      const std::vector<diagramTuple>* diagram1,
+      const std::vector<diagramTuple>* diagram2,
+      const std::vector<matchingTuple>* matchings,
       vtkUnstructuredGrid *CTPersistenceDiagram1_,
       vtkUnstructuredGrid *CTPersistenceDiagram2_);
 
     template <typename dataType>
     int getMatchingMesh(
-      const vector<diagramTuple>* diagram1,
-      const vector<diagramTuple>* diagram2,
-      const vector<matchingTuple>* matchings,
+      const std::vector<diagramTuple>* diagram1,
+      const std::vector<diagramTuple>* diagram2,
+      const std::vector<matchingTuple>* matchings,
       const bool useGeometricSpacing,
       const double spacing);
 
@@ -178,7 +178,7 @@ class ttkBottleneckDistance
     double                Spacing;
     double                Alpha;
 
-    string                WassersteinMetric;
+    std::string                WassersteinMetric;
     bool                  UsePersistenceMetric;
     bool                  UseGeometricSpacing;
     double                result;
@@ -187,13 +187,13 @@ class ttkBottleneckDistance
     vtkUnstructuredGrid*  CTPersistenceDiagram2_;
     vtkUnstructuredGrid*  CTPersistenceDiagram3_;
 
-    BottleneckDistance    bottleneckDistance_;
+    ttk::BottleneckDistance    bottleneckDistance_;
     
 };
 
 template <typename dataType>
 int ttkBottleneckDistance::getPersistenceDiagram(
-  vector<diagramTuple>* diagram,
+  std::vector<diagramTuple>* diagram,
   vtkUnstructuredGrid *CTPersistenceDiagram_,
   const double spacing,
   const int diagramNumber)
@@ -271,7 +271,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
                       (dataType) deathScalars->GetValue(2*i+1);
 
     if (pairIdentifier != -1 && pairIdentifier < pairingsSize)
-      diagram->at(pairIdentifier) = make_tuple(
+      diagram->at(pairIdentifier) = std::make_tuple(
         vertexId1, (BNodeType) nodeType1,
         vertexId2, (BNodeType) nodeType2,
         (dataType) persistence,
@@ -283,10 +283,10 @@ int ttkBottleneckDistance::getPersistenceDiagram(
     if (pairIdentifier >= pairingsSize) {
       nbNonCompact++;
       if (nbNonCompact == 0) {
-        stringstream msg;
+        std::stringstream msg;
         msg << "[TTKBottleneckDistance] Diagram pair identifiers "
             << "must be compact (not exceed the diagram size). "
-            << endl;
+            << std::endl;
         dMsg(std::cout, msg.str(), timeMsg);
       }
     }
@@ -294,10 +294,10 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 
   if (nbNonCompact > 0) {
     {
-      stringstream msg;
+      std::stringstream msg;
       msg << "[TTKBottleneckDistance] Missed "
           << nbNonCompact << " pairs due to non-compactness."
-          << endl;
+          << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
     }
   }
@@ -308,9 +308,9 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 
 template <typename dataType>
 int ttkBottleneckDistance::augmentPersistenceDiagrams(
-  const vector<diagramTuple>* diagram1,
-  const vector<diagramTuple>* diagram2,
-  const vector<matchingTuple>* matchings,
+  const std::vector<diagramTuple>* diagram1,
+  const std::vector<diagramTuple>* diagram2,
+  const std::vector<matchingTuple>* matchings,
   vtkUnstructuredGrid *CTPersistenceDiagram1_,
   vtkUnstructuredGrid *CTPersistenceDiagram2_)
 {
@@ -352,8 +352,8 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
     int pairingIndex = 0;
     for (BIdVertex i = 0; i < matchingsSize; ++i) {
       matchingTuple t = matchings->at(i);
-      ids[0] = get<0>(t);
-      ids[1] = get<1>(t);
+      ids[0] = std::get<0>(t);
+      ids[1] = std::get<1>(t);
       matchingIdentifiers1->InsertTuple1(ids[0], pairingIndex);
       matchingIdentifiers2->InsertTuple1(ids[1], pairingIndex);
       pairingIndex++;
@@ -368,9 +368,9 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
 
 template <typename dataType>
 int ttkBottleneckDistance::getMatchingMesh(
-    const vector<diagramTuple>* diagram1,
-    const vector<diagramTuple>* diagram2,
-    const vector<matchingTuple>* matchings,
+    const std::vector<diagramTuple>* diagram1,
+    const std::vector<diagramTuple>* diagram2,
+    const std::vector<matchingTuple>* matchings,
     const bool useGeometricSpacing,
     const double spacing)
 {
@@ -395,8 +395,8 @@ int ttkBottleneckDistance::getMatchingMesh(
       vtkIdType ids[2];
 
       matchingTuple t = matchings->at(i);
-      int n1 = get<0>(t);
-      int n2 = get<1>(t);
+      int n1 = std::get<0>(t);
+      int n2 = std::get<1>(t);
 
       diagramTuple tuple1 = diagram1->at(n1);
       diagramTuple tuple2 = diagram2->at(n2);
@@ -404,40 +404,40 @@ int ttkBottleneckDistance::getMatchingMesh(
       double x1, y1, z1, x2, y2, z2;
 
       if (Is3D) {
-        x1 = (get<7>(tuple1) + get<11>(tuple1))/2;
-        y1 = (get<8>(tuple1) + get<12>(tuple1))/2;
-        z1 = (get<9>(tuple1) + get<13>(tuple1))/2;
+        x1 = (std::get<7>(tuple1) + std::get<11>(tuple1))/2;
+        y1 = (std::get<8>(tuple1) + std::get<12>(tuple1))/2;
+        z1 = (std::get<9>(tuple1) + std::get<13>(tuple1))/2;
       } else {
-        BNodeType t11 = get<1>(tuple1);
-        BNodeType t12 = get<3>(tuple1);
+        BNodeType t11 = std::get<1>(tuple1);
+        BNodeType t12 = std::get<3>(tuple1);
         bool t11Max = t11 == BLocalMin || t11 == BLocalMax;
         bool t12Max = t12 == BLocalMin || t12 == BLocalMax;
-        x1 = t12Max ? get<11>(tuple1) : t11Max ? get<7>(tuple1) :
-             (get<7>(tuple1) + get<11>(tuple1))/2;
-        y1 = t12Max ? get<12>(tuple1) : t11Max ? get<8>(tuple1) :
-             (get<8>(tuple1) + get<12>(tuple1))/2;
-        z1 = t12Max ? get<13>(tuple1) : t11Max ? get<9>(tuple1) :
-             (get<9>(tuple1) + get<13>(tuple1))/2;
+        x1 = t12Max ? std::get<11>(tuple1) : t11Max ? std::get<7>(tuple1) :
+             (std::get<7>(tuple1) + std::get<11>(tuple1))/2;
+        y1 = t12Max ? std::get<12>(tuple1) : t11Max ? std::get<8>(tuple1) :
+             (std::get<8>(tuple1) + std::get<12>(tuple1))/2;
+        z1 = t12Max ? std::get<13>(tuple1) : t11Max ? std::get<9>(tuple1) :
+             (std::get<9>(tuple1) + std::get<13>(tuple1))/2;
       }
       points->InsertNextPoint(x1, y1, z1);
 
       if (Is3D) {
-        x2 = (get<7>(tuple2) + get<11>(tuple2))/2;
-        y2 = (get<8>(tuple2) + get<12>(tuple2))/2;
-        z2 = (get<9>(tuple2) + get<13>(tuple2))/2;
+        x2 = (std::get<7>(tuple2) + std::get<11>(tuple2))/2;
+        y2 = (std::get<8>(tuple2) + std::get<12>(tuple2))/2;
+        z2 = (std::get<9>(tuple2) + std::get<13>(tuple2))/2;
         if (useGeometricSpacing) z2 += spacing;
       } else {
-        BNodeType t21 = get<1>(tuple2);
-        BNodeType t22 = get<3>(tuple2);
+        BNodeType t21 = std::get<1>(tuple2);
+        BNodeType t22 = std::get<3>(tuple2);
         bool t21Max = t21 == BLocalMin || t21 == BLocalMax;
         bool t22Max = t22 == BLocalMin || t22 == BLocalMax;
 
-        x2 = t22Max ? get<11>(tuple2) : t21Max ? get<7>(tuple2) :
-             (get<7>(tuple2) + get<11>(tuple2))/2;
-        y2 = t22Max ? get<12>(tuple2) : t21Max ? get<8>(tuple2) :
-             (get<8>(tuple2) + get<12>(tuple2))/2;
-        z2 = t22Max ? get<13>(tuple2) : t21Max ? get<9>(tuple2) :
-             (get<9>(tuple2) + get<13>(tuple2))/2;
+        x2 = t22Max ? std::get<11>(tuple2) : t21Max ? std::get<7>(tuple2) :
+             (std::get<7>(tuple2) + std::get<11>(tuple2))/2;
+        y2 = t22Max ? std::get<12>(tuple2) : t21Max ? std::get<8>(tuple2) :
+             (std::get<8>(tuple2) + std::get<12>(tuple2))/2;
+        z2 = t22Max ? std::get<13>(tuple2) : t21Max ? std::get<9>(tuple2) :
+             (std::get<9>(tuple2) + std::get<13>(tuple2))/2;
       }
       points->InsertNextPoint(x2, y2, z2);
 
@@ -446,7 +446,7 @@ int ttkBottleneckDistance::getMatchingMesh(
 
       persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
 
-      persistenceScalars->InsertTuple1(i, get<2>(t));
+      persistenceScalars->InsertTuple1(i, std::get<2>(t));
       matchingIdScalars->InsertTuple1(i, i);
 
     }

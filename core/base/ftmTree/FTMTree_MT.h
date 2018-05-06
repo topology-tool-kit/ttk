@@ -68,23 +68,23 @@ namespace ftm
       AtomicVector<SuperArc> *superArcs;
       AtomicVector<Node> *    nodes;
       AtomicVector<idNode> *  roots;
-      vector<idNode> *        leaves;
+      std::vector<idNode> *        leaves;
 
       // vertex 2 node / superarc
-      vector<idCorresp> *vert2tree;
-      vector<idVertex>  *visitOrder;
-      vector<list<vector<idVertex>>> *trunkSegments;
+      std::vector<idCorresp> *vert2tree;
+      std::vector<idVertex>  *visitOrder;
+      std::vector<std::list<std::vector<idVertex>>> *trunkSegments;
 
       // Track informations
-      vector<UF> *ufs, *propagation;
+      std::vector<UF> *ufs, *propagation;
       AtomicVector<CurrentState> *states;
       // valences
-      vector<valence> *valences;
+      std::vector<valence> *valences;
       // opened nodes
-      vector<char> *openedNodes;
+      std::vector<char> *openedNodes;
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-      vector<ActiveTask> *activeTasksStats;
+      std::vector<ActiveTask> *activeTasksStats;
 #endif
 
       // current nb of tasks
@@ -192,7 +192,7 @@ namespace ftm
          createVector<idCorresp>(mt_data_.vert2tree);
          mt_data_.vert2tree->resize(scalars_->size);
 
-         createVector<list<vector<idVertex>>>(mt_data_.trunkSegments);
+         createVector<std::list<std::vector<idVertex>>>(mt_data_.trunkSegments);
 
          createVector<idVertex>(mt_data_.visitOrder);
          mt_data_.visitOrder->resize(scalars_->size);
@@ -248,7 +248,7 @@ namespace ftm
 
       void arcGrowth(const idVertex startVert, const idVertex orig);
 
-      tuple<bool, bool> propage(CurrentState &currentState, UF curUF);
+      std::tuple<bool, bool> propage(CurrentState &currentState, UF curUF);
 
       void closeAndMergeOnSaddle(idVertex saddleVert);
 
@@ -258,12 +258,12 @@ namespace ftm
 
       idVertex trunk(const bool ct);
 
-      virtual idVertex trunkSegmentation(const vector<idVertex> &pendingNodesVerts,
+      virtual idVertex trunkSegmentation(const std::vector<idVertex> &pendingNodesVerts,
                                          const idVertex begin,
                                          const idVertex stop);
 
       // fill treedata_.trunkSegments
-      idVertex trunkCTSegmentation(const vector<idVertex> &pendingNodesVerts,
+      idVertex trunkCTSegmentation(const std::vector<idVertex> &pendingNodesVerts,
                                    const idVertex begin,
                                    const idVertex stop);
 
@@ -371,8 +371,8 @@ namespace ftm
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if ((size_t)i >= mt_data_.superArcs->size()) {
-            cout << "[Merge Tree] get superArc on bad id :" << i;
-            cout << " / " << mt_data_.superArcs->size() << endl;
+            std::cout << "[Merge Tree] get superArc on bad id :" << i;
+            std::cout << " / " << mt_data_.superArcs->size() << std::endl;
             return nullptr;
          }
 #endif
@@ -383,8 +383,8 @@ namespace ftm
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if ((size_t)i >= mt_data_.superArcs->size()) {
-            cout << "[Merge Tree] get superArc on bad id :" << i;
-            cout << " / " << mt_data_.superArcs->size() << endl;
+            std::cout << "[Merge Tree] get superArc on bad id :" << i;
+            std::cout << " / " << mt_data_.superArcs->size() << std::endl;
             return nullptr;
          }
 #endif
@@ -415,7 +415,7 @@ namespace ftm
          return mt_data_.leaves->size();
       }
 
-      inline const vector<idNode> &getLeaves(void) const
+      inline const std::vector<idNode> &getLeaves(void) const
       {
          // break encapsulation...
          return (*mt_data_.leaves);
@@ -425,8 +425,8 @@ namespace ftm
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if ((size_t)id > (mt_data_.leaves->size())) {
-            stringstream msg;
-            msg << "[MergTree] getLeaves out of bounds : " << id << endl;
+            std::stringstream msg;
+            msg << "[MergTree] getLeaves out of bounds : " << id << std::endl;
             err(msg.str(), fatalMsg);
             return (*mt_data_.leaves)[0];
          }
@@ -434,7 +434,7 @@ namespace ftm
          return (*mt_data_.leaves)[id];
       }
 
-      inline const vector<idNode> &getRoots(void) const
+      inline const std::vector<idNode> &getRoots(void) const
       {
          // break encapsulation...
          return (*mt_data_.roots);
@@ -481,10 +481,10 @@ namespace ftm
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!isCorrespondingNode(val)) {
-            stringstream debug;
+            std::stringstream debug;
             debug << "[FTMTree_MT] : getCorrespondingNode, ";
             debug << "Vertex :" << val << " is not a node :";
-            debug << (*mt_data_.vert2tree)[val] << endl;
+            debug << (*mt_data_.vert2tree)[val] << std::endl;
             err(debug.str(), fatalMsg);
          }
 #endif
@@ -495,10 +495,10 @@ namespace ftm
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!isCorrespondingArc(val)) {
-            stringstream debug;
+            std::stringstream debug;
             debug << "[FTMTree_MT] : getCorrespondingSuperArcId, ";
             debug << "Vertex :" << val << " is not on an arc :";
-            debug << (*mt_data_.vert2tree)[val] << endl;
+            debug << (*mt_data_.vert2tree)[val] << std::endl;
             err(debug.str(), fatalMsg);
          }
 #endif
@@ -554,7 +554,7 @@ namespace ftm
 
       // Nodes
 
-      vector<idNode> sortedNodes(const bool parallel = false);
+      std::vector<idNode> sortedNodes(const bool parallel = false);
 
       void sortLeaves(const bool parallel = false);
 
@@ -594,15 +594,15 @@ namespace ftm
       void move(FTMTree_MT *mt);
 
       // Print
-      string printArc(idSuperArc a);
+      std::string printArc(idSuperArc a);
 
-      string printNode(idNode n);
+      std::string printNode(idNode n);
 
       void printTree2(void);
 
       void printParams(void) const;
 
-      int printTime(DebugTimer &t, const string &s, idVertex nbScalars = -1,
+      int printTime(DebugTimer &t, const std::string &s, idVertex nbScalars = -1,
                     const int debugLevel = 2) const;
 
      protected:
@@ -611,11 +611,11 @@ namespace ftm
       // Tools
       // -----
 
-      idNode getVertInRange(const vector<idVertex> &range,
+      idNode getVertInRange(const std::vector<idVertex> &range,
                             const idVertex v,
                             const idNode last = 0) const;
 
-      tuple<idVertex, idVertex> getBoundsFromVerts(const vector<idVertex> &nodes) const;
+      std::tuple<idVertex, idVertex> getBoundsFromVerts(const std::vector<idVertex> &nodes) const;
 
       idSuperArc upArcFromVert(const idVertex v)
       {
@@ -632,7 +632,7 @@ namespace ftm
          // Release mode
          static const idVertex minWorks = 10000;
 #endif
-         return max(minWorks, 1 + (s / (nbtasks * threadNumber_)));
+         return std::max(minWorks, 1 + (s / (nbtasks * threadNumber_)));
       }
 
       inline idVertex getChunkCount(const idVertex nbVerts = -1, const idVertex nbTasks = 100) const
@@ -699,10 +699,10 @@ namespace ftm
       }
 
       template <typename type>
-      void createVector(vector<type> *&ptr)
+      void createVector(std::vector<type> *&ptr)
       {
          if(!ptr)
-            ptr = new vector<type>;
+            ptr = new std::vector<type>;
          ptr->clear();
       }
 
@@ -715,7 +715,7 @@ namespace ftm
       }
 
       template <typename type>
-      void initVector(vector<type> *&vect, const type val)
+      void initVector(std::vector<type> *&vect, const type val)
       {
          int s = vect->size();
 #ifdef TTK_ENABLE_OPENMP
@@ -728,8 +728,8 @@ namespace ftm
 
    };
 
-   ostream &operator<<(ostream &o, Node const &n);
-   ostream &operator<<(ostream &o, SuperArc const &a);
+   std::ostream &operator<<(std::ostream &o, Node const &n);
+   std::ostream &operator<<(std::ostream &o, SuperArc const &a);
 
 #include <FTMTree_MT_Template.h>
 

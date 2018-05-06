@@ -78,12 +78,12 @@ namespace ttk{
         return 0;
       }
 
-      inline int setOutputDensity(vector<vector<double>>* density){
+      inline int setOutputDensity(std::vector<std::vector<double>>* density){
         density_=density;
         return 0;
       }
 
-      inline int setOutputMask(vector<vector<char>>* mask){
+      inline int setOutputMask(std::vector<std::vector<char>>* mask){
         validPointMask_=mask;
         return 0;
       }
@@ -99,13 +99,13 @@ namespace ttk{
       void* inputScalarField2_;
       double* scalarMin_;
       double* scalarMax_;
-      vector<vector<double>>* density_;
-      vector<vector<char>>* validPointMask_;
+      std::vector<std::vector<double>>* density_;
+      std::vector<std::vector<char>>* validPointMask_;
   };
 }
 
 template<typename dataType1, typename dataType2>
-int ContinuousScatterPlot::execute() const{
+  int ttk::ContinuousScatterPlot::execute() const{
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField1_) return -1;
   if(!inputScalarField2_) return -2;
@@ -113,12 +113,12 @@ int ContinuousScatterPlot::execute() const{
   if(!density_) return -4;
 
   if(triangulation_->getNumberOfCells()<=0){
-    cerr << "[ContinuousScatterPlot] Error : no cells." << endl;
+    std::cerr << "[ContinuousScatterPlot] Error : no cells." << std::endl;
     return -5;
   }
 
   if(triangulation_->getCellVertexNumber(0) != 4){
-    cerr << "[ContinuousScatterPlot] Error : no tetrahedra."  << endl;
+    std::cerr << "[ContinuousScatterPlot] Error : no tetrahedra."  << std::endl;
     return -6;
   }
 #endif
@@ -134,7 +134,8 @@ int ContinuousScatterPlot::execute() const{
   // rendering helpers:
   // constant ray direction (ortho)
   const double d[3]{0,0,-1};
-  const double delta[2]{scalarMax_[0]-scalarMin_[0],scalarMax_[1]-scalarMin_[1]};
+  const double 
+delta[2]{scalarMax_[0]-scalarMin_[0],scalarMax_[1]-scalarMin_[1]};
   const double sampling[2]{delta[0]/resolutions_[0],delta[1]/resolutions_[1]};
   const double epsilon{0.000001};
 
@@ -160,7 +161,8 @@ int ContinuousScatterPlot::execute() const{
       data[k][1]=scalars2[vertex[k]];
       data[k][2]=0;
 
-      if(withDummyValue_ and (data[k][0]==dummyValue_ or data[k][1]==dummyValue_)){
+      if(withDummyValue_ and (data[k][0]==dummyValue_ or 
+data[k][1]==dummyValue_)){
         isDummy=true;
         break;
       }
@@ -176,7 +178,9 @@ int ContinuousScatterPlot::execute() const{
         localScalarMax[1]=data[k][1];
 
       // get positions
-      triangulation_->getVertexPoint(vertex[k],position[k][0],position[k][1],position[k][2]);
+      
+triangulation_->getVertexPoint(vertex[k],position[k][0],position[k][1],position[
+k][2]);
     }
     if(isDummy) continue;
 
@@ -261,16 +265,17 @@ int ContinuousScatterPlot::execute() const{
 
     // projection:
     double density{};
-    vector<vector<int>> triangles;
+    std::vector<std::vector<int>> triangles;
     double imaginaryPosition[3]{};
-    vector<int> triangle(3);
+    std::vector<int> triangle(3);
     // class 0
     if(isInTriangle){
       // mass density
       double massDensity{};
       {
         double A;
-        Geometry::computeTriangleArea(data[index[0]],data[index[1]],data[index[2]],A);
+        
+Geometry::computeTriangleArea(data[index[0]],data[index[1]],data[index[2]],A);
         double invA=1.0/A;
         if(A == 0.){
           invA=0.0;
@@ -278,9 +283,15 @@ int ContinuousScatterPlot::execute() const{
         }
 
         double alpha, beta, gamma;
-        Geometry::computeTriangleArea(data[index[1]],data[index[2]],data[index[3]],alpha);
-        Geometry::computeTriangleArea(data[index[0]],data[index[2]],data[index[3]],beta);
-        Geometry::computeTriangleArea(data[index[0]],data[index[1]],data[index[3]],gamma);
+        
+Geometry::computeTriangleArea(data[index[1]],data[index[2]],data[index[3]],alpha
+);
+        
+Geometry::computeTriangleArea(data[index[0]],data[index[2]],data[index[3]],beta)
+;
+        
+Geometry::computeTriangleArea(data[index[0]],data[index[1]],data[index[3]],gamma
+);
 
         alpha*=invA;
         beta*=invA;
@@ -290,12 +301,14 @@ int ContinuousScatterPlot::execute() const{
         double p1[3];
         for(int k=0; k<3; ++k){
           p0[k]=position[index[3]][k];
-          p1[k]=alpha*position[index[0]][k]+beta*position[index[1]][k]+gamma*position[index[2]][k];
+          
+p1[k]=alpha*position[index[0]][k]+beta*position[index[1]][k]+gamma*position[
+index[2]][k];
         }
         massDensity=Geometry::distance(p0,p1);
       }
 
-      if(isLimit) density=numeric_limits<decltype(density)>::max();
+      if(isLimit) density=std::numeric_limits<decltype(density)>::max();
       else density=massDensity/volume;
 
       triangle[0]=vertex[index[3]];
@@ -359,12 +372,14 @@ int ContinuousScatterPlot::execute() const{
       double p0[3];
       double p1[3];
       for(int k=0; k<3; ++k){
-        p0[k]=position[index[0]][k]+r0*(position[index[1]][k]-position[index[0]][k]);
-        p1[k]=position[index[2]][k]+r1*(position[index[3]][k]-position[index[2]][k]);
+        
+p0[k]=position[index[0]][k]+r0*(position[index[1]][k]-position[index[0]][k]);
+        
+p1[k]=position[index[2]][k]+r1*(position[index[3]][k]-position[index[2]][k]);
       }
       massDensity=Geometry::distance(p0,p1);
 
-      if(isLimit) density=numeric_limits<decltype(density)>::max();
+      if(isLimit) density=std::numeric_limits<decltype(density)>::max();
       else density=massDensity/volume;
 
       imaginaryPosition[0]=p[0];
@@ -391,7 +406,8 @@ int ContinuousScatterPlot::execute() const{
     }
 
     // rendering:
-    // "Fast, Minimum Storage Ray/Triangle Intersection", Tomas Moller & Ben Trumbore
+    // "Fast, Minimum Storage Ray/Triangle Intersection", Tomas Moller & Ben 
+    // Trumbore
     {
       const int minI=floor((localScalarMin[0]-scalarMin_[0])/sampling[0]);
       const int minJ=floor((localScalarMin[1]-scalarMin_[1])/sampling[1]);
@@ -401,7 +417,8 @@ int ContinuousScatterPlot::execute() const{
       for(int i=minI; i<maxI; ++i){
         for(int j=minJ; j<maxJ; ++j){
           // set ray origin
-          const double o[3]{scalarMin_[0]+i*sampling[0],scalarMin_[1]+j*sampling[1],1};
+          const double 
+o[3]{scalarMin_[0]+i*sampling[0],scalarMin_[1]+j*sampling[1],1};
           for(unsigned int k=0; k<triangles.size(); ++k){
             const auto& triangle=triangles[k];
 
@@ -417,8 +434,10 @@ int ContinuousScatterPlot::execute() const{
             }
             p0[2]=0;
 
-            const double p1[3]{(double)scalars1[triangle[1]],(double)scalars2[triangle[1]],0};
-            const double p2[3]{(double)scalars1[triangle[2]],(double)scalars2[triangle[2]],0};
+            const double 
+p1[3]{(double)scalars1[triangle[1]],(double)scalars2[triangle[1]],0};
+            const double 
+p2[3]{(double)scalars1[triangle[2]],(double)scalars2[triangle[2]],0};
             const double e1[3]{p1[0]-p0[0],p1[1]-p0[1],0};
             const double e2[3]{p2[0]-p0[0],p2[1]-p0[1],0};
 
@@ -466,13 +485,13 @@ int ContinuousScatterPlot::execute() const{
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ContinuousScatterPlot] Data-set (" << numberOfCells
       << " tetrahedra) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;

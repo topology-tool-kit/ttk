@@ -2,6 +2,9 @@
 #include                  <ZeroSkeleton.h>
 
 
+using namespace std;
+using namespace ttk;
+
 ZeroSkeleton::ZeroSkeleton(){
 
 }

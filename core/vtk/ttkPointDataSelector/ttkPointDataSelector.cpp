@@ -1,6 +1,9 @@
 #include <ttkPointDataSelector.h>
 #include <regex>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkPointDataSelector)
 
   // transmit abort signals

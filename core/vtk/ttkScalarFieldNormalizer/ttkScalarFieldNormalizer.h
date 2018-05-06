@@ -46,7 +46,7 @@ class VTKFILTERSCORE_EXPORT ttkScalarFieldNormalizer
 #else
 class ttkScalarFieldNormalizer
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -61,7 +61,7 @@ class ttkScalarFieldNormalizer
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }
@@ -79,8 +79,8 @@ class ttkScalarFieldNormalizer
     
     // set-getters macros to define from each variable you want to access from 
     // the outside (in particular from paraview) - to adapt.
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
 
     
   protected:
@@ -99,7 +99,7 @@ class ttkScalarFieldNormalizer
     
     bool                  UseAllCores;
     int                   ThreadNumber;
-    string                ScalarField;
+    std::string                ScalarField;
     vtkDataArray          *outputScalarField_;
     
     // base code features

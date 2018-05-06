@@ -1,5 +1,8 @@
 #include                  "LDistance.h"
 
+using namespace std;
+using namespace ttk;
+
 LDistance::LDistance() {
 
   inputData1_ = NULL;

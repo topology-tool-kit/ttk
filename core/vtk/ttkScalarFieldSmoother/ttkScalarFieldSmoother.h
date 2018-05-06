@@ -46,7 +46,7 @@ class VTKFILTERSCORE_EXPORT ttkScalarFieldSmoother
 #else
 class ttkScalarFieldSmoother
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -80,11 +80,11 @@ class ttkScalarFieldSmoother
     vtkSetMacro(UseInputMask, bool);
     vtkGetMacro(UseInputMask, bool);
     
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
 
-    vtkSetMacro(InputMask, string);
-    vtkGetMacro(InputMask, string);
+    vtkSetMacro(InputMask, std::string);
+    vtkGetMacro(InputMask, std::string);
 
     
     
@@ -103,10 +103,10 @@ class ttkScalarFieldSmoother
     int                   ScalarFieldIdentifier;
     int                   MaskIdentifier;
     bool                  UseInputMask;
-    string                ScalarField;
-    string                InputMask;
+    std::string                ScalarField;
+    std::string                InputMask;
     vtkDataArray          *outputScalarField_;
-    ScalarFieldSmoother   smoother_;
+    ttk::ScalarFieldSmoother   smoother_;
     
 };
 

@@ -44,7 +44,7 @@ class VTKFILTERSCORE_EXPORT ttkTextureMapFromField
 #else
 class ttkTextureMapFromField
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -59,7 +59,7 @@ class ttkTextureMapFromField
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }
@@ -87,11 +87,11 @@ class ttkTextureMapFromField
     vtkSetMacro(RepeatVTexture, bool);
     vtkGetMacro(RepeatVTexture, bool);
     
-    vtkSetMacro(UComponent, string);
-    vtkGetMacro(UComponent, string);
+    vtkSetMacro(UComponent, std::string);
+    vtkGetMacro(UComponent, std::string);
 
-    vtkSetMacro(VComponent, string);
-    vtkGetMacro(VComponent, string);
+    vtkSetMacro(VComponent, std::string);
+    vtkGetMacro(VComponent, std::string);
     
     
   protected:
@@ -110,7 +110,7 @@ class ttkTextureMapFromField
     int                   ThreadNumber;
     bool                  OnlyUComponent, OnlyVComponent,
                           RepeatUTexture, RepeatVTexture;
-    string                UComponent, VComponent;
+    std::string                UComponent, VComponent;
     vtkFloatArray         *textureCoordinates_;
     
     // base code features

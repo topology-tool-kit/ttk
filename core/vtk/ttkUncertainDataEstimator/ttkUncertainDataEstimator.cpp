@@ -1,5 +1,8 @@
 #include                  <ttkUncertainDataEstimator.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkUncertainDataEstimator)
 
 ttkUncertainDataEstimator::ttkUncertainDataEstimator(){

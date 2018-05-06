@@ -13,6 +13,9 @@
 
 #include "FTMTreePP.h"
 
+using namespace std;
+using namespace ttk;
+
 using namespace ftm;
 
 FTMTreePP::FTMTreePP() : FTMTree()

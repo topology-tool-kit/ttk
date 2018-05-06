@@ -43,7 +43,7 @@ class VTKFILTERSCORE_EXPORT ttkGeometrySmoother
 #else
 class ttkGeometrySmoother
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -74,8 +74,8 @@ class ttkGeometrySmoother
     vtkSetMacro(UseInputMask, bool);
     vtkGetMacro(UseInputMask, bool);
     
-    vtkSetMacro(InputMask, string);
-    vtkGetMacro(InputMask, string);
+    vtkSetMacro(InputMask, std::string);
+    vtkGetMacro(InputMask, std::string);
     
   protected:
     
@@ -91,9 +91,9 @@ class ttkGeometrySmoother
     int                   NumberOfIterations;
     int                   MaskIdentifier;
     bool                  UseInputMask;
-    string                InputMask;
+    std::string                InputMask;
     
-    ScalarFieldSmoother   smoother_;
+    ttk::ScalarFieldSmoother   smoother_;
   
 };
 

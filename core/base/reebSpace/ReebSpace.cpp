@@ -1,6 +1,7 @@
 #include                  <ReebSpace.h>
 
-
+using namespace std;
+using namespace ttk;
 
 ReebSpace::ReebSpace(){
 

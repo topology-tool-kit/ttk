@@ -43,13 +43,13 @@ namespace ttk{
       
       int flush();
         
-      int getTet2NodeMap(vector<int> &map, 
+      int getTet2NodeMap(std::vector<int> &map, 
         const bool &forSegmentation = false) const;
       
       int rangeSegmentQuery(
-        const pair<double, double> &p0,
-        const pair<double, double> &p1,
-        vector<int> &cellList) const;
+        const std::pair<double, double> &p0,
+        const std::pair<double, double> &p1,
+        std::vector<int> &cellList) const;
       
       inline void setCellList(const long long int *cellList){
         cellList_ = cellList;
@@ -88,40 +88,40 @@ namespace ttk{
         vertexNumber_ = vertexNumber;
       }
       
-      int stats(ostream &stream);
+      int stats(std::ostream &stream);
       
-      int statNode(const int &nodeId, ostream &stream);
+      int statNode(const int &nodeId, std::ostream &stream);
       
     protected:
    
       class OctreeNode{
        
         public:
-          pair<pair<double, double>, pair<double, double> >
+          std::pair<std::pair<double, double>, std::pair<double, double> >
                           rangeBox_;
-          vector<int>     cellList_;
-          vector<int>     childList_;
-          vector<pair<float, float> > 
+          std::vector<int>     cellList_;
+          std::vector<int>     childList_;
+          std::vector<std::pair<float, float> > 
                           domainBox_;
       };
       
       template <class dataTypeU, class dataTypeV>
-        int buildNode(const vector<int> &cellList, 
-          const vector<pair<float, float> > &domainBox,
-          const pair<pair<double, double>, pair<double, double> >
+        int buildNode(const std::vector<int> &cellList, 
+          const std::vector<std::pair<float, float> > &domainBox,
+          const std::pair<std::pair<double, double>, std::pair<double, double> >
             &rangeBox, int &nodeId);
       
       int rangeSegmentQuery(
-        const pair<double, double> &p0,
-        const pair<double, double> &p1,
+        const std::pair<double, double> &p0,
+        const std::pair<double, double> &p1,
         const int &nodeId,
-        vector<int> &cellList) const;
+        std::vector<int> &cellList) const;
       
       bool segmentIntersection(
-        const pair<double, double> &p0,
-        const pair<double, double> &p1,
-        const pair<double, double> &q0,
-        const pair<double, double> &q1) const;
+        const std::pair<double, double> &p0,
+        const std::pair<double, double> &p1,
+        const std::pair<double, double> &q0,
+        const std::pair<double, double> &q1) const;
       
       const void          *u_;
       const void          *v_;
@@ -134,10 +134,11 @@ namespace ttk{
       int                 cellNumber_, vertexNumber_, 
                           leafMinimumCellNumber_, rootId_;
       mutable int         queryResultNumber_;
-      vector<OctreeNode>  nodeList_;
-      vector<vector<pair<float, float> > > 
+      std::vector<OctreeNode>  nodeList_;
+      std::vector<std::vector<std::pair<float, float> > > 
                           cellDomainBox_;
-      vector<pair<pair<double, double>, pair<double, double> > >
+      std::vector<std::pair<std::pair<double, double>, std::pair<double, double> 
+> >
                           cellRangeBox_;
       const Triangulation *triangulation_;
   };
@@ -147,7 +148,7 @@ namespace ttk{
 // #include                  <RangeDrivenOctree.cpp>
 
 template <class dataTypeU, class dataTypeV> 
-  int RangeDrivenOctree::build(){
+  int ttk::RangeDrivenOctree::build(){
  
   Timer t;
   Memory m;
@@ -163,7 +164,7 @@ template <class dataTypeU, class dataTypeV>
     vertexNumber_ = triangulation_->getNumberOfVertices();
   }
   
-  cellDomainBox_.resize(cellNumber_, vector<pair<float, float> >(3));
+  cellDomainBox_.resize(cellNumber_, std::vector<std::pair<float, float> >(3));
   
   cellRangeBox_.resize(cellNumber_);
 
@@ -248,13 +249,13 @@ template <class dataTypeU, class dataTypeV>
     }
   }
 
-  vector<int> domain(cellNumber_);
+  std::vector<int> domain(cellNumber_);
   for(int i = 0; i < cellNumber_; i++)
     domain[i] = i;
   
   // get global bBoxes
-  vector<pair<float, float> > domainBox(3);
-  pair<pair<double, double>, pair<double, double> > rangeBox;
+  std::vector<std::pair<float, float> > domainBox(3);
+  std::pair<std::pair<double, double>, std::pair<double, double> > rangeBox;
   
   for(int i = 0; i < vertexNumber_; i++){
     
@@ -311,39 +312,40 @@ template <class dataTypeU, class dataTypeV>
   leafMinimumDomainVolumeRatio_ = (1.0/((float)cellNumber_))/2.0;
   
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[RangeDrivenOctree] Range area ratio: "
       << leafMinimumRangeAreaRatio_
-      << endl;
-    dMsg(cout, msg.str(), 4);
+      << std::endl;
+    dMsg(std::cout, msg.str(), 4);
   }
   buildNode<dataTypeU, dataTypeV>(domain, domainBox, rangeBox, rootId_);
  
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[RangeDrivenOctree] Octree built in "
-      << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), 2);
+      << t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), 2);
   }
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[RangeDrivenOctree] Memory: "
-      << m.getElapsedUsage() << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
+      << m.getElapsedUsage() << " MB." << std::endl;
+    dMsg(std::cout, msg.str(), memoryMsg);
   }
   
   // debug
-//   stats(cout);
+//   stats(std::cout);
   // end of debug
   
   return 0;    
 }
 
 template <class dataTypeU, class dataTypeV> 
-  int RangeDrivenOctree::buildNode(
-    const vector<int> &cellList,
-    const vector<pair<float, float> > &domainBox,
-    const pair<pair<double, double>, pair<double, double> > &rangeBox, 
+  int ttk::RangeDrivenOctree::buildNode(
+    const std::vector<int> &cellList,
+    const std::vector<std::pair<float, float> > &domainBox,
+    const std::pair<std::pair<double, double>, std::pair<double, double> > 
+&rangeBox, 
     int &nodeId){
 
   nodeId = nodeList_.size();
@@ -366,13 +368,14 @@ template <class dataTypeU, class dataTypeV>
     
     nodeList_.back().childList_.resize(8);
   
-    vector<vector<pair<float, float> > > childDomainBox(8);
+    std::vector<std::vector<std::pair<float, float> > > childDomainBox(8);
     for(int i = 0; i < (int) childDomainBox.size(); i++){
       childDomainBox[i].resize(3);
     }
-    vector<pair<pair<dataTypeU, dataTypeU>, pair<dataTypeV, dataTypeV> > > 
+    std::vector<std::pair<std::pair<dataTypeU, dataTypeU>, std::pair<dataTypeV, 
+dataTypeV> > > 
       childRangeBox(8);
-    vector<vector<int> > childCellList(8);
+    std::vector<std::vector<int> > childCellList(8);
 
     float midX = domainBox[0].first 
       + (domainBox[0].second - domainBox[0].first)/2.0;

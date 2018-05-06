@@ -54,7 +54,7 @@ class VTKFILTERSCORE_EXPORT ttkManifoldCheck
 #else
 class ttkManifoldCheck
 #endif
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
     
@@ -90,9 +90,9 @@ class ttkManifoldCheck
     
   private:
     
-    vector<int>           vertexLinkComponentNumber_;
-    vector<int>           edgeLinkComponentNumber_;
-    vector<int>           triangleLinkComponentNumber_;
-    ManifoldCheck         manifoldCheck_;
+    std::vector<int>           vertexLinkComponentNumber_;
+    std::vector<int>           edgeLinkComponentNumber_;
+    std::vector<int>           triangleLinkComponentNumber_;
+    ttk::ManifoldCheck         manifoldCheck_;
     
 };

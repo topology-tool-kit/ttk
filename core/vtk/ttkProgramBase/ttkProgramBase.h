@@ -27,7 +27,8 @@
 #include                  <ProgramBase.h>
 #include                  <ttkWrapper.h>
 
-class VTKFILTERSCORE_EXPORT ttkProgramBase : public ProgramBase {
+class VTKFILTERSCORE_EXPORT ttkProgramBase 
+  : public ttk::ProgramBase {
 
   public:
       
@@ -71,23 +72,23 @@ class VTKFILTERSCORE_EXPORT ttkProgramBase : public ProgramBase {
 
   protected:
     
-    vector<vtkDataSet *>          inputs_;
-    vector<vtkSmartPointer<vtkXMLImageDataReader>>
+    std::vector<vtkDataSet *>          inputs_;
+    std::vector<vtkSmartPointer<vtkXMLImageDataReader>>
                                   imageDataReaders_;
-    vector<vtkSmartPointer<vtkXMLPolyDataReader> >
+    std::vector<vtkSmartPointer<vtkXMLPolyDataReader> >
                                   polyDataReaders_;
-    vector<vtkSmartPointer<vtkXMLUnstructuredGridReader> >
+    std::vector<vtkSmartPointer<vtkXMLUnstructuredGridReader> >
                                   unstructuredGridReaders_;
     vtkDataSetAlgorithm           *vtkWrapper_;
                                   
         
     template <class vtkReaderClass>
       int load(
-        const string &fileName,
-        vector<vtkSmartPointer<vtkReaderClass>> &readerList);
+        const std::string &fileName,
+        std::vector<vtkSmartPointer<vtkReaderClass>> &readerList);
         
     /// Load a sequence of input data-sets.
-    virtual int load(const vector<string> &inputPaths);
+    virtual int load(const std::vector<std::string> &inputPaths);
     
     template <class vtkWriterClass>
       int save(const int &outputPortId) const;
@@ -107,7 +108,7 @@ template <class ttkModule>
     
     virtual int run(){
       
-      ttkObject_->setDebugLevel(globalDebugLevel_);
+      ttkObject_->setDebugLevel(ttk::globalDebugLevel_);
       ttkObject_->setThreadNumber(parser_.getThreadNumber());
       
       return ttkProgramBase::run();
@@ -123,7 +124,7 @@ template <class vtkWriterClass>
   if(!vtkWrapper_)
     return -1;
     
-  string extension;
+  std::string extension;
   
   if((vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType() 
     == VTK_IMAGE_DATA)
@@ -146,7 +147,7 @@ template <class vtkWriterClass>
     extension = "vtu";
   }
   
-  stringstream fileName;
+  std::stringstream fileName;
   fileName << outputPath_
     << "_port#" << outputPortId << "." << extension;
   
@@ -154,10 +155,10 @@ template <class vtkWriterClass>
     vtkSmartPointer<vtkWriterClass>::New();
   writer->SetFileName(fileName.str().data());
   writer->SetInputData(vtkWrapper_->GetOutput(outputPortId));
-  stringstream msg;
+  std::stringstream msg;
   msg << "[ttkProgramBase] Saving output file `" 
-    << fileName.str() << "'..." << endl;
-  dMsg(cout, msg.str(), Debug::infoMsg);
+    << fileName.str() << "'..." << std::endl;
+  dMsg(std::cout, msg.str(), Debug::infoMsg);
   
   writer->Write();
     
@@ -165,8 +166,8 @@ template <class vtkWriterClass>
 }
 
 template < class vtkReaderClass> 
-  int ttkProgramBase::load(const string &fileName,
-    vector<vtkSmartPointer<vtkReaderClass> > &readerList){
+  int ttkProgramBase::load(const std::string &fileName,
+    std::vector<vtkSmartPointer<vtkReaderClass> > &readerList){
    
   readerList.resize(readerList.size() + 1);
   readerList.back() = vtkSmartPointer<vtkReaderClass>::New();
@@ -175,12 +176,12 @@ template < class vtkReaderClass>
   
   // handle debug messages
   {
-    stringstream msg;
-    msg << "[ttkProgramBase] Reading input data..." << endl;
-    // choose where to display this message (cout, cerr, a file)
+    std::stringstream msg;
+    msg << "[ttkProgramBase] Reading input data..." << std::endl;
+    // choose where to display this message (std::cout, std::cerr, a file)
     // choose the priority of this message (1, nearly always displayed, 
     // higher values mean lower priorities)
-    dMsg(cout, msg.str(), 1);
+    dMsg(std::cout, msg.str(), 1);
   }
   
   readerList.back()->Update();
@@ -196,13 +197,13 @@ template < class vtkReaderClass>
     return -3;
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ttkProgramBase]   done! (read " 
       << inputs_.back()->GetNumberOfPoints()
       << " vertices, "
       << inputs_.back()->GetNumberOfCells() 
-      << " cells)" << endl;
-    dMsg(cout, msg.str(), Debug::infoMsg);
+      << " cells)" << std::endl;
+    dMsg(std::cout, msg.str(), Debug::infoMsg);
   }
 
   return 0;

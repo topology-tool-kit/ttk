@@ -7,6 +7,9 @@
 #include                  <ttkReebSpace.h>
 #include                  <ttkUserInterfaceBase.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkUserInterface<ttkReebSpace> program;
 
 int main(int argc, char **argv) {

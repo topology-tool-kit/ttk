@@ -72,7 +72,8 @@ namespace ttk
       // {
 
       // Tree with global data and partition number
-      MergeTree(Params *const params, Triangulation *mesh, Scalars *const scalars, TreeType type,
+      MergeTree(Params *const params, Triangulation *mesh, Scalars *const 
+scalars, TreeType type,
                 idPartition part = nullPartition);
 
       virtual ~MergeTree();
@@ -91,7 +92,7 @@ namespace ttk
       /// \brief init Simulation of Simplicity datastructure if not set
       void initSoS(void)
       {
-         vector<idVertex> &sosVect = scalars_->sosOffsets;
+         std::vector<idVertex> &sosVect = scalars_->sosOffsets;
          if (!sosVect.size()) {
             sosVect.resize(scalars_->size);
             iota(sosVect.begin(), sosVect.end(), 0);
@@ -105,7 +106,7 @@ namespace ttk
       }
 
       /// \brief if sortedVertices_ is null, define and fill it
-      /// Also fill the mirror vector
+      /// Also fill the mirror std::vector
       template <typename scalarType>
       void sortInput(void);
 
@@ -147,10 +148,12 @@ namespace ttk
 
       inline void setSimplificationMethod(const int &local_simplifyMethod)
       {
-         params_->simplifyMethod = static_cast<SimplifMethod>(local_simplifyMethod);
+         params_->simplifyMethod = 
+static_cast<SimplifMethod>(local_simplifyMethod);
       }
 
-      inline void setSimplificationThreshold(const double &local_simplificationThreshold)
+      inline void setSimplificationThreshold(const double 
+&local_simplificationThreshold)
       {
          params_->simplifyThreshold = local_simplificationThreshold;
       }
@@ -160,7 +163,8 @@ namespace ttk
         scalars_->values = local_scalars;
       }
 
-      inline void setupTriangulation(Triangulation* m, const bool preproc = true)
+      inline void setupTriangulation(Triangulation* m, const bool preproc = 
+true)
       {
         mesh_ = m;
         if (mesh_ && preproc) {
@@ -198,7 +202,7 @@ namespace ttk
       // offset
       // .....................{
 
-      inline void setVertexSoSoffsets(const vector<idVertex>& offsets)
+      inline void setVertexSoSoffsets(const std::vector<idVertex>& offsets)
       {
         scalars_->sosOffsets = offsets;
       }
@@ -223,7 +227,7 @@ namespace ttk
          return visibleArc;
       }
 
-      inline const vector<SuperArc> &getSuperArc(void) const
+      inline const std::vector<SuperArc> &getSuperArc(void) const
       {
          // break encapsulation...
          return treeData_.superArcs;
@@ -233,8 +237,8 @@ namespace ttk
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if ((size_t)i >= treeData_.superArcs.size()) {
-            cout << "[Merge Tree] get superArc on bad id :" << i;
-            cout << " / " << treeData_.superArcs.size() << endl;
+            std::cout << "[Merge Tree] get superArc on bad id :" << i;
+            std::cout << " / " << treeData_.superArcs.size() << std::endl;
             return nullptr;
          }
 #endif
@@ -271,7 +275,7 @@ namespace ttk
          return treeData_.nodes.size();
       }
 
-      inline const vector<Node>& getNodes(void) const
+      inline const std::vector<Node>& getNodes(void) const
       {
          // break encapsulation...
          return treeData_.nodes;
@@ -291,7 +295,7 @@ namespace ttk
          return treeData_.leaves.size();
       }
 
-      inline const vector<idNode>& getLeaves(void) const
+      inline const std::vector<idNode>& getLeaves(void) const
       {
           // break encapsulation...
          return treeData_.leaves;
@@ -301,8 +305,8 @@ namespace ttk
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if ((id < 0) || (size_t)id > (treeData_.leaves.size())) {
-            stringstream msg;
-            msg << "[MergTree] getLeaves out of bounds : " << id << endl;
+            std::stringstream msg;
+            msg << "[MergTree] getLeaves out of bounds : " << id << std::endl;
             err(msg.str(), fatalMsg);
             return treeData_.leaves[0];
          }
@@ -310,7 +314,7 @@ namespace ttk
          return treeData_.leaves[id];
       }
 
-      inline const vector<idNode>& getRoots(void) const
+      inline const std::vector<idNode>& getRoots(void) const
       {
           // break encapsulation...
          return treeData_.roots;
@@ -359,10 +363,10 @@ namespace ttk
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!isCorrespondingNode(val)) {
-            stringstream debug;
+            std::stringstream debug;
             debug << "[MergeTree] : getCorrespondingNode, ";
             debug << "Vertex :" << val << " is not a node :";
-            debug <<  treeData_.vert2tree[val] << endl;
+            debug <<  treeData_.vert2tree[val] << std::endl;
             err(debug.str(), fatalMsg);
          }
 #endif
@@ -373,10 +377,10 @@ namespace ttk
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!isCorrespondingArc(val)) {
-            stringstream debug;
+            std::stringstream debug;
             debug << "[MergeTree] : getCorrespondingSuperArcId, ";
             debug << "Vertex :" << val << " is not on an arc :";
-            debug <<  treeData_.vert2tree[val] << endl;
+            debug <<  treeData_.vert2tree[val] << std::endl;
             err(debug.str(), fatalMsg);
          }
 #endif
@@ -401,12 +405,14 @@ namespace ttk
       // Update vertex info
       // ................................{
 
-      inline void updateCorrespondingArc(const idVertex &arc, const idSuperArc &val)
+      inline void updateCorrespondingArc(const idVertex &arc, const idSuperArc 
+&val)
       {
          treeData_.vert2tree[arc] = val;
       }
 
-      inline void updateCorrespondingNode(const idVertex &vert, const idNode &val)
+      inline void updateCorrespondingNode(const idVertex &vert, const idNode 
+&val)
       {
          treeData_.vert2tree[vert] = idNode2corr(val);
       }
@@ -435,12 +441,16 @@ namespace ttk
       // ..........................{
 
       // Merge tree processing of a vertex during build
-      void processVertex(const idVertex &vertex, vector<ExtendedUnionFind *> &vect_baseUF,
-                         const bool overlapB, const bool overlapA, DebugTimer &begin);
+      void processVertex(const idVertex &vertex, std::vector<ExtendedUnionFind 
+*> &vect_baseUF,
+                         const bool overlapB, const bool overlapA, DebugTimer 
+&begin);
 
       /// \brief Compute the merge tree using Carr's algorithm
-      int build(vector<ExtendedUnionFind *> &vect_baseUF, const vector<idVertex> &overlapBefore,
-                const vector<idVertex> &overlapAfter, idVertex start, idVertex end,
+      int build(std::vector<ExtendedUnionFind *> &vect_baseUF, const 
+std::vector<idVertex> &overlapBefore,
+                const std::vector<idVertex> &overlapAfter, idVertex start, 
+idVertex end,
                 const idVertex &posSeed0, const idVertex &posSeed1);
 
       // }
@@ -455,31 +465,38 @@ namespace ttk
       template <typename scalarType>
       idEdge globalSimplify(const idVertex posSeed0, const idVertex posSeed1);
 
-      // Having sorted pairs, simplify the current tree
+      // Having sorted std::pairs, simplify the current tree
       // in accordance with threashol, between the two seeds.
       template <typename scalarType>
       idEdge simplifyTree(const idVertex &posSeed0, const idVertex &posSeed1,
-                          const vector<tuple<idVertex, idVertex, scalarType, bool>> &sortedPairs);
+                          const std::vector<std::tuple<idVertex, idVertex, 
+scalarType, bool>> &sortedPairs);
 
       // add this arc in the subtree which is in the parentNode
-      void markThisArc(vector<ExtendedUnionFind *> &ufArray, const idNode &curNodeId,
-                       const idSuperArc &mergingArcId, const idNode &parentNodeId);
+      void markThisArc(std::vector<ExtendedUnionFind *> &ufArray, const idNode 
+&curNodeId,
+                       const idSuperArc &mergingArcId, const idNode 
+&parentNodeId);
       // }
       // PersistencePairs
       // ...........................{
 
       template <typename scalarType>
-      int computePersistencePairs(vector<tuple<idVertex, idVertex, scalarType>> &pairs);
+      int computePersistencePairs(std::vector<std::tuple<idVertex, idVertex, 
+scalarType>> &pairs);
 
       template <typename scalarType>
-      int computePersistencePairs(vector<tuple<idVertex, idVertex, scalarType, bool>> &pairs);
+      int computePersistencePairs(std::vector<std::tuple<idVertex, idVertex, 
+scalarType, bool>> &pairs);
 
-      // Construct abstract JT / ST on a CT and fill pairs in accordance.
+      // Construct abstract JT / ST on a CT and fill std::pairs in accordance.
       // used for global simplification
       template <typename scalarType>
-      void recoverMTPairs(const vector<idNode> &sortedNodes,
-                          vector<tuple<idVertex, idVertex, scalarType, bool>> &pairsJT,
-                          vector<tuple<idVertex, idVertex, scalarType, bool>> &pairsST);
+      void recoverMTPairs(const std::vector<idNode> &sortedNodes,
+                          std::vector<std::tuple<idVertex, idVertex, 
+scalarType, bool>> &pairsJT,
+                          std::vector<std::tuple<idVertex, idVertex, 
+scalarType, bool>> &pairsST);
 
       // }
 
@@ -492,13 +509,17 @@ namespace ttk
       // SuperArcs
       // .......................{
 
-      idSuperArc openSuperArc(const idNode &downNodeId, const bool overlapB, const bool overlapA);
+      idSuperArc openSuperArc(const idNode &downNodeId, const bool overlapB, 
+const bool overlapA);
 
-      idSuperArc makeSuperArc(const idNode &downNodeId, const idNode &upNodeId, const bool overlapB,
-                              const bool overlapA, pair<idVertex, bool> *vertexList = nullptr,
+      idSuperArc makeSuperArc(const idNode &downNodeId, const idNode &upNodeId, 
+const bool overlapB,
+                              const bool overlapA, std::pair<idVertex, bool> 
+*vertexList = nullptr,
                               idVertex vertexSize = -1);
 
-      void closeSuperArc(const idSuperArc &superArcId, const idNode &upNodeId, const bool overlapB,
+      void closeSuperArc(const idSuperArc &superArcId, const idNode &upNodeId, 
+const bool overlapB,
                          const bool overlapA);
 
       void hideArc(const idSuperArc &sa);
@@ -506,13 +527,16 @@ namespace ttk
       void mergeArc(const idSuperArc &sa, const idSuperArc &recept,
                     const bool changeConnectivity = true);
 
-      idVertex insertNodeAboveSeed(const idSuperArc &arc, const pair<idVertex, bool> &seed);
+      idVertex insertNodeAboveSeed(const idSuperArc &arc, const 
+std::pair<idVertex, bool> &seed);
 
-      idVertex getVertBelowSeed(const idSuperArc &arc, const pair<idVertex, bool> &seed,
-                                const vector<idCorresp> &vert2treeOther);
+      idVertex getVertBelowSeed(const idSuperArc &arc, const 
+std::pair<idVertex, bool> &seed,
+                                const std::vector<idCorresp> &vert2treeOther);
 
       // is there an external arc linkind node with treeNode in tree
-      bool alreadyExtLinked(const idNode &node, const idPartition &tree, const idNode &treeNode);
+      bool alreadyExtLinked(const idNode &node, const idPartition &tree, const 
+idNode &treeNode);
 
       idSuperArc getNumberOfExternalDownArcs(const idNode &node);
 
@@ -531,7 +555,8 @@ namespace ttk
       // Nodes
       // ...........................{
 
-      idNode makeNode(const idVertex &vertexId, const idVertex &linked = nullVertex);
+      idNode makeNode(const idVertex &vertexId, const idVertex &linked = 
+nullVertex);
 
       idNode makeNode(const Node *const n, const idVertex &linked = nullVertex);
 
@@ -545,18 +570,19 @@ namespace ttk
 
       idNode getParent(const idNode &n);
 
-      void delNode(const idNode &node, const pair<idVertex, bool> *mv = nullptr,
+      void delNode(const idNode &node, const std::pair<idVertex, bool> *mv = 
+nullptr,
                    const idVertex &nbm = 0);
 
       void hideNode(const idNode &node);
 
-      // For persistance pair on CT
+      // For persistance std::pair on CT
       // these function allow to make a JT / ST od the CT
-      vector<idNode> getNodeNeighbors(const idNode &node);
+      std::vector<idNode> getNodeNeighbors(const idNode &node);
 
-      vector<idNode> getNodeUpNeighbors(const idNode &n);
+      std::vector<idNode> getNodeUpNeighbors(const idNode &n);
 
-      vector<idNode> getNodeDownNeighbors(const idNode &n);
+      std::vector<idNode> getNodeDownNeighbors(const idNode &n);
 
       // Remove part not in partition
 
@@ -564,7 +590,8 @@ namespace ttk
 
       void hideAndClearArcsBelow(const idNode &baseNode, const idVertex &seed);
 
-      idSuperArc hideAndClearLeadingTo(const idNode &baseNode, const idVertex &v);
+      idSuperArc hideAndClearLeadingTo(const idNode &baseNode, const idVertex 
+&v);
 
       // }
       // Update informations
@@ -588,10 +615,10 @@ namespace ttk
       // Print
       void printTree2(void);
 
-      string printArc(const idSuperArc &a)
+      std::string printArc(const idSuperArc &a)
       {
          const SuperArc *sa = getSuperArc(a);
-         stringstream    res;
+         std::stringstream    res;
          res << a << ": ";
          if (sa->getDownCT() == treeData_.partition)
             res << getNode(sa->getDownNodeId())->getVertexId() << " -- ";
@@ -607,10 +634,10 @@ namespace ttk
          return res.str();
       }
 
-      string printNode(const idNode &n)
+      std::string printNode(const idNode &n)
       {
          const Node *node = getNode(n);
-         stringstream res;
+         std::stringstream res;
          res << n << " : (";
          res << node->getVertexId() << ") / ";
 
@@ -690,32 +717,40 @@ namespace ttk
       template <typename scalarType>
       inline bool isLower(const idVertex &a, const idVertex &b) const
       {
-         return ((scalarType *)scalars_->values)[a] < ((scalarType *)scalars_->values)[b] ||
-                (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
+         return ((scalarType *)scalars_->values)[a] < ((scalarType 
+*)scalars_->values)[b] ||
+                (((scalarType *)scalars_->values)[a] == ((scalarType 
+*)scalars_->values)[b] &&
                  scalars_->sosOffsets[a] < scalars_->sosOffsets[b]);
       }
 
       template <typename scalarType>
       inline bool isHigher(const idVertex &a, const idVertex &b) const
       {
-         return ((scalarType *)scalars_->values)[a] > ((scalarType *)scalars_->values)[b] ||
-                (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
+         return ((scalarType *)scalars_->values)[a] > ((scalarType 
+*)scalars_->values)[b] ||
+                (((scalarType *)scalars_->values)[a] == ((scalarType 
+*)scalars_->values)[b] &&
                  scalars_->sosOffsets[a] > scalars_->sosOffsets[b]);
       }
 
       template <typename scalarType>
       inline bool isEqLower(const idVertex &a, const idVertex &b) const
       {
-         return ((scalarType *)scalars_->values)[a] < ((scalarType *)scalars_->values)[b] ||
-                (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
+         return ((scalarType *)scalars_->values)[a] < ((scalarType 
+*)scalars_->values)[b] ||
+                (((scalarType *)scalars_->values)[a] == ((scalarType 
+*)scalars_->values)[b] &&
                  scalars_->sosOffsets[a] <= scalars_->sosOffsets[b]);
       }
 
       template <typename scalarType>
       inline bool isEqHigher(const idVertex &a, const idVertex &b) const
       {
-         return ((scalarType *)scalars_->values)[a] > ((scalarType *)scalars_->values)[b] ||
-                (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
+         return ((scalarType *)scalars_->values)[a] > ((scalarType 
+*)scalars_->values)[b] ||
+                (((scalarType *)scalars_->values)[a] == ((scalarType 
+*)scalars_->values)[b] &&
                  scalars_->sosOffsets[a] >= scalars_->sosOffsets[b]);
       }
 
@@ -726,59 +761,68 @@ namespace ttk
       // {
 
       // preserve = do no hide it.
-      void hideAndMerge(const idSuperArc &mergingArcId, const idSuperArc &receptacleArcId,
+      void hideAndMerge(const idSuperArc &mergingArcId, const idSuperArc 
+&receptacleArcId,
                         const bool preserveDownNode = false);
 
-      // Use BFS from root to find down and up of the receptarc (maintaining segmentation information)
-      tuple<idNode, idNode, idVertex> createReceptArc(
-          const idNode &root, const idSuperArc &receptArcId, vector<ExtendedUnionFind *> &arrayUF,
-          const vector<pair<idSuperArc, idSuperArc>> &valenceOffsets);
+      // Use BFS from root to find down and up of the receptarc (maintaining 
+      // segmentation information)
+      std::tuple<idNode, idNode, idVertex> createReceptArc(
+          const idNode &root, const idSuperArc &receptArcId, 
+std::vector<ExtendedUnionFind *> &arrayUF,
+          const std::vector<std::pair<idSuperArc, idSuperArc>> &valenceOffsets);
 
       // during this BFS nodes should have only one arc up/down : find it :
-      idSuperArc newUpArc(const idNode &curNodeId, vector<ExtendedUnionFind *> &ufArray);
+      idSuperArc newUpArc(const idNode &curNodeId, 
+std::vector<ExtendedUnionFind *> &ufArray);
 
-      idSuperArc newDownArc(const idNode &curNodeId, vector<ExtendedUnionFind *> &ufArray);
+      idSuperArc newDownArc(const idNode &curNodeId, 
+std::vector<ExtendedUnionFind *> &ufArray);
 
       // }
       // --------------
       // Tool
       // --------------
       // {
-      // create a pair with relative order : child vertex first
+      // create a std::pair with relative order : child vertex first
 
-      inline pair<idVertex, idVertex> reorderEdgeRel(const pair<idVertex, idVertex> &vert)
+      inline std::pair<idVertex, idVertex> reorderEdgeRel(const 
+std::pair<idVertex, idVertex> &vert)
       {
          if (treeData_.treeType == TreeType::Split) {
             if (isHigher(vert.first, vert.second)) {
                return vert;
             }
 
-            return make_pair(vert.second, vert.first);
+            return std::make_pair(vert.second, vert.first);
          }  // else
 
          if (isLower(vert.first, vert.second))
             return vert;
 
-         return make_pair(vert.second, vert.first);
+         return std::make_pair(vert.second, vert.first);
       }
 
       bool verifyTree(void);
 
-      // Create a pair with the value corresponding to the simplification method
+      // Create a std::pair with the value corresponding to the simplification 
+      // method
 
       template <typename scalarType>
-      void addPair(vector<tuple<idVertex, idVertex, scalarType, bool>> &pairs, const idVertex &orig,
+      void addPair(std::vector<std::tuple<idVertex, idVertex, scalarType, 
+bool>> &pairs, const idVertex &orig,
                    const idVertex &term, const bool goUp);
 
       template <typename scalarType>
-      void addPair(vector<tuple<idVertex, idVertex, scalarType>> &pairs, const idVertex &orig,
+      void addPair(std::vector<std::tuple<idVertex, idVertex, scalarType>> 
+&pairs, const idVertex &orig,
                    const idVertex &term);
 
       // }
    };
 
-   ostream &operator<<(ostream &o, Node const &n);
-   ostream &operator<<(ostream &o, SuperArc const &a);
+   std::ostream &operator<<(std::ostream &o, Node const &n);
+   std::ostream &operator<<(std::ostream &o, SuperArc const &a);
 
 #include <MergeTreeTemplate.h>
 }

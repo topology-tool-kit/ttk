@@ -1,5 +1,8 @@
 #include                  <ttkMeshSubdivision.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkMeshSubdivision)
 
 ttkMeshSubdivision::ttkMeshSubdivision(){

@@ -7,6 +7,9 @@
 #include                  <ttkPointMerger.h>
 #include                  <ttkUserInterfaceBase.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkUserInterface<ttkPointMerger> program;
 
 class myKeyHandler : public ttkKeyHandler{

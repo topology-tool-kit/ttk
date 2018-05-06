@@ -58,7 +58,7 @@ class VTKFILTERSCORE_EXPORT ttkDistanceField
 #else
 class ttkDistanceField
 #endif
-: public vtkDataSetAlgorithm, public Wrapper{
+: public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
@@ -81,11 +81,11 @@ class ttkDistanceField
     vtkSetMacro(OutputScalarFieldType, int);
     vtkGetMacro(OutputScalarFieldType, int);
 
-    vtkSetMacro(OutputScalarFieldName, string);
-    vtkGetMacro(OutputScalarFieldName, string);
+    vtkSetMacro(OutputScalarFieldName, std::string);
+    vtkGetMacro(OutputScalarFieldName, std::string);
 
-    vtkSetMacro(VertexIdentifierScalarFieldName, string);
-    vtkGetMacro(VertexIdentifierScalarFieldName, string);
+    vtkSetMacro(VertexIdentifierScalarFieldName, std::string);
+    vtkGetMacro(VertexIdentifierScalarFieldName, std::string);
 
     int getTriangulation(vtkDataSet* input);
     int getIdentifiers(vtkDataSet* input);
@@ -103,13 +103,13 @@ class ttkDistanceField
     
   private:
 
-    string ScalarField;
+    std::string ScalarField;
     int OutputScalarFieldType;
-    string OutputScalarFieldName;
-    string VertexIdentifierScalarFieldName;
+    std::string OutputScalarFieldName;
+    std::string VertexIdentifierScalarFieldName;
 
-    DistanceField distanceField_;
-    Triangulation *triangulation_;
+    ttk::DistanceField distanceField_;
+    ttk::Triangulation *triangulation_;
     vtkDataArray* identifiers_;
 
 };

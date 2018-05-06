@@ -16,17 +16,17 @@
 #define _BOTTLENECKDISTANCE_H
 
 #ifndef diagramTuple
-#define diagramTuple tuple<ftm::idVertex, ftm::NodeType, ftm::idVertex, \
-  ftm::NodeType, dataType, ftm::idVertex, \
+#define diagramTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, ttk::ftm::idVertex, \
+  ttk::ftm::NodeType, dataType, ttk::ftm::idVertex, \
   dataType, float, float, float, dataType, float, float, float>
 #endif
 #ifndef BNodeType
-#define BNodeType ftm::NodeType
-#define BLocalMax ftm::NodeType::Local_maximum
-#define BLocalMin ftm::NodeType::Local_minimum
-#define BSaddle1  ftm::NodeType::Saddle1
-#define BSaddle2  ftm::NodeType::Saddle2
-#define BIdVertex ftm::idVertex
+#define BNodeType ttk::ftm::NodeType
+#define BLocalMax ttk::ftm::NodeType::Local_maximum
+#define BLocalMin ttk::ftm::NodeType::Local_minimum
+#define BSaddle1  ttk::ftm::NodeType::Saddle1
+#define BSaddle2  ttk::ftm::NodeType::Saddle2
+#define BIdVertex ttk::ftm::idVertex
 #endif
 
 // base code includes
@@ -67,7 +67,7 @@ namespace ttk {
         return 0;
       }
 
-      inline int setWasserstein(const string &wasserstein) {
+      inline int setWasserstein(const std::string &wasserstein) {
         wasserstein_ = wasserstein;
         return 0;
       }
@@ -94,53 +94,53 @@ namespace ttk {
       void                      *matchings_; // ids from CT1 to CT2
       void                      *distance_;
 
-      string                    wasserstein_;
+      std::string                    wasserstein_;
     
   private:
 
     template <typename dataType>
     int computeBottleneck(
-      const vector<diagramTuple> *CTDiagram1,
-      const vector<diagramTuple> *CTDiagram2,
-      vector<matchingTuple> *matchings,
+      const std::vector<diagramTuple> *CTDiagram1,
+      const std::vector<diagramTuple> *CTDiagram2,
+      std::vector<matchingTuple> *matchings,
       bool usePersistenceMetric,
       double alpha);
 
     template <typename dataType>
     bool isValidMatching(
-      const vector<matchingTuple>* matchings,
+      const std::vector<matchingTuple>* matchings,
       dataType thresholdMin) const;
 
     template <typename dataType>
     double computeGeometricalRange(
-      const vector<diagramTuple> *CTDiagram1,
-      const vector<diagramTuple> *CTDiagram2,
+      const std::vector<diagramTuple> *CTDiagram1,
+      const std::vector<diagramTuple> *CTDiagram2,
       int d1Size,
       int d2Size) const;
 
     template <typename dataType>
     double computeMinimumRelevantPersistence(
-      const vector<diagramTuple> *CTDiagram1,
-      const vector<diagramTuple> *CTDiagram2,
+      const std::vector<diagramTuple> *CTDiagram1,
+      const std::vector<diagramTuple> *CTDiagram2,
       int d1Size,
       int d2Size) const;
 
     template <typename dataType>
     void computeMinMaxSaddleNumberAndMapping(
-      const vector<diagramTuple> *CTDiagram,
+      const std::vector<diagramTuple> *CTDiagram,
       int dSize,
       int &nbMin,
       int &nbMax,
       int &nbSaddle,
-      vector<int> *minMap,
-      vector<int> *maxMap,
-      vector<int> *sadMap,
+      std::vector<int> *minMap,
+      std::vector<int> *maxMap,
+      std::vector<int> *sadMap,
       dataType zeroThresh);
 
     template <typename dataType>
     void buildCostMatrices(
-      const vector<diagramTuple> *CTDiagram1,
-      const vector<diagramTuple> *CTDiagram2,
+      const std::vector<diagramTuple> *CTDiagram1,
+      const std::vector<diagramTuple> *CTDiagram2,
       int d1Size,
       int d2Size,
       std::function<dataType (const diagramTuple, const diagramTuple)>& distanceFunction,
@@ -169,7 +169,7 @@ namespace ttk {
 
     template <typename dataType>
     void iterateSolving(
-      vector<matchingTuple> *matchings,
+      std::vector<matchingTuple> *matchings,
       dataType threshold,
       int nbRow,
       int nbCol,
@@ -182,7 +182,7 @@ namespace ttk {
       int nbRow,
       int nbCol,
       dataType **matrix,
-      vector<matchingTuple> *matchings,
+      std::vector<matchingTuple> *matchings,
       Munkres *solver);
 
     template <typename dataType>
@@ -190,15 +190,15 @@ namespace ttk {
       int nbRow,
       int nbCol,
       dataType **matrix,
-      vector<matchingTuple> *matchings,
+      std::vector<matchingTuple> *matchings,
       Munkres *solver);
 
     template <typename dataType>
     dataType buildMappings(
-      vector<matchingTuple> inputMatchings,
-      vector<matchingTuple> *outputMatchings,
-      vector<int> map1,
-      vector<int> map2,
+      std::vector<matchingTuple> inputMatchings,
+      std::vector<matchingTuple> *outputMatchings,
+      std::vector<int> map1,
+      std::vector<int> map2,
       int wasserstein);
 
   };

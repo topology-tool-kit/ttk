@@ -105,14 +105,14 @@ namespace ttk{
           ||
           ((getDimensionality() > 1)&&
           (!abstractTriangulation_->hasPreprocessedCellEdges()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "CellEdge query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessCellEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -150,14 +150,14 @@ namespace ttk{
           ||
           ((getDimensionality() > 1)&&
           (!abstractTriangulation_->hasPreprocessedCellEdges()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "CellEdgeNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessCellEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -177,7 +177,7 @@ namespace ttk{
       /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
       ///
       /// The number of entries in this list is equal to the number of cells.
-      /// Each entry is a vector of identifiers whose size is equal to the 
+      /// Each entry is a std::vector of identifiers whose size is equal to the 
       /// number of edges for the corresponding cell.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -195,7 +195,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the cell edge list.
       /// \sa getCellNeighbors()
-      inline const vector<vector<int> > *getCellEdges(){
+      inline const std::vector<std::vector<int> > *getCellEdges(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -205,14 +205,14 @@ namespace ttk{
           ||
           ((getDimensionality() > 1)&&
           (!abstractTriangulation_->hasPreprocessedCellEdges()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "CellEdges query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessCellEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -249,14 +249,14 @@ namespace ttk{
           return -1;
         
         if(!abstractTriangulation_->hasPreprocessedCellNeighbors()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "CellNeighbor query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessCellNeighbors() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -285,14 +285,14 @@ namespace ttk{
           return -1;
         
         if(!abstractTriangulation_->hasPreprocessedCellNeighbors()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "CellNeighborNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessCellNeighbors() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -309,7 +309,7 @@ namespace ttk{
       /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
       ///
       /// The number of entries in this list is equal to the number of cells.
-      /// Each entry is a vector of identifiers whose size is equal to the 
+      /// Each entry is a std::vector of identifiers whose size is equal to the 
       /// number of neighbor cells for the corresponding cell.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -324,20 +324,20 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the cell neighbor list.
-      inline const vector<vector<int> > *getCellNeighbors(){
+      inline const std::vector<std::vector<int> > *getCellNeighbors(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedCellNeighbors()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "CellNeighbors query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessCellNeighbors() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -381,14 +381,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedCellTriangles()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "CellTriangle query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessCellTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -430,14 +430,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedCellTriangles()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "CellTriangleNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessCellTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -460,7 +460,7 @@ namespace ttk{
       /// has a dimension greater than 2 (otherwise, use the cell information).
       ///
       /// The number of entries in this list is equal to the number of cells.
-      /// Each entry is a vector of identifiers whose size is equal to the 
+      /// Each entry is a std::vector of identifiers whose size is equal to the 
       /// number of triangles for the corresponding cell.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -478,7 +478,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the cell triangle list.
       /// \sa getCellNeighbors()
-      inline const vector<vector<int> > *getCellTriangles(){
+      inline const std::vector<std::vector<int> > *getCellTriangles(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -491,14 +491,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedCellTriangles()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "CellTriangles query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessCellTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -567,7 +567,7 @@ namespace ttk{
       /// dimension greater than 1 (otherwise, use the cell information).
       ///
       /// The number of entries in this list is equal to the number of edges.
-      /// Each entry is a pair of vertex identifiers.
+      /// Each entry is a std::pair of vertex identifiers.
       ///
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
@@ -581,7 +581,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge list.
-      inline const vector<pair<int, int> > *getEdges(){
+      inline const std::vector<std::pair<int, int> > *getEdges(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -590,14 +590,14 @@ namespace ttk{
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedEdges()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "Edges query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -633,14 +633,14 @@ namespace ttk{
           return -2;
         
         if(!abstractTriangulation_->hasPreprocessedEdgeLinks()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "EdgeLink query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdgeLinks() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -671,14 +671,14 @@ namespace ttk{
           return -2;
         
         if(!abstractTriangulation_->hasPreprocessedEdgeLinks()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "EdgeLinkNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdgeLinks() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -692,7 +692,8 @@ namespace ttk{
       /// Get the list of link simplices for all edges.
       ///
       /// The number of entries in this list is equal to the number of edges.
-      /// Each entry is a vector of identifiers representing vertices in 2D and
+      /// Each entry is a std::vector of identifiers representing vertices in 
+      /// 2D and
       /// edges in 3D. It returns NULL in 1D.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -707,7 +708,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge link list.
-      inline const vector<vector<int> > *getEdgeLinks(){
+      inline const std::vector<std::vector<int> > *getEdgeLinks(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -716,14 +717,14 @@ namespace ttk{
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedEdgeLinks()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "EdgeLinks query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdgeLinks() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -762,14 +763,14 @@ namespace ttk{
           return -2;
         
         if(!abstractTriangulation_->hasPreprocessedEdgeStars()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "EdgeStar query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdgeStars() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -803,14 +804,14 @@ namespace ttk{
           return -2;
         
         if(!abstractTriangulation_->hasPreprocessedEdgeStars()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "EdgeStarNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdgeStars() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -830,7 +831,7 @@ namespace ttk{
       /// dimension greater than 1 (otherwise, use the cell information).
       ///
       /// The number of entries in this list is equal to the number of edges.
-      /// Each entry is a vector of identifiers whose size is equal to the 
+      /// Each entry is a std::vector of identifiers whose size is equal to the 
       /// number of star cells for the corresponding edge.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -845,7 +846,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge star list.
-      inline const vector<vector<int> > *getEdgeStars(){
+      inline const std::vector<std::vector<int> > *getEdgeStars(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -854,14 +855,14 @@ namespace ttk{
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedEdgeStars()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "EdgeStars query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdgeStars() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -902,14 +903,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedEdgeTriangles()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "EdgeTriangle query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdgeTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -948,14 +949,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedEdgeTriangles()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "EdgeTriangleNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdgeTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -973,7 +974,7 @@ namespace ttk{
       /// Get the list of triangles for all edges.
       ///
       /// The number of entries in this list is equal to the number of edges.
-      /// Each entry is a vector of identifiers whose size is equal to the 
+      /// Each entry is a std::vector of identifiers whose size is equal to the 
       /// number of triangles for the corresponding edge.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -991,7 +992,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge triangle list.
       /// \sa getEdgeStars
-      inline const vector<vector<int> > *getEdgeTriangles(){
+      inline const std::vector<std::vector<int> > *getEdgeTriangles(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1004,14 +1005,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedEdgeTriangles()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "EdgeTriangles query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdgeTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -1047,14 +1048,14 @@ namespace ttk{
         
         if((getDimensionality() != 1)
           &&(!abstractTriangulation_->hasPreprocessedEdges())){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "EdgeVertex query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1069,10 +1070,11 @@ namespace ttk{
       /// Get the dimensions of the grid if the current object is the implicit
       /// triangulation of a regular grid.
       /// \param dimensions Vector that will be filled with the dimensions of 
-      /// the grid. This vector has 3 entries (first: x, second: y, third: z).
+      /// the grid. This std::vector has 3 entries (first: x, second: y, 
+      /// third: z).
       /// \return Returns 0 upon success, negative values otherwise (for 
       /// instance, if the object is not representing a regular grid).
-      inline int getGridDimensions(vector<int> &dimensions){
+      inline int getGridDimensions(std::vector<int> &dimensions){
         
         if((gridDimensions_[0] == -1)
           &&(gridDimensions_[1] == -1)
@@ -1123,14 +1125,14 @@ namespace ttk{
         
         if((getDimensionality() != 1)
           &&(!abstractTriangulation_->hasPreprocessedEdges())){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "NumberOfEdges query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1164,14 +1166,14 @@ namespace ttk{
         
         if((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedTriangles())){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "NumberOfTriangles query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1203,7 +1205,7 @@ namespace ttk{
       ///
       /// The number of entries in this list is equal to the number of 
       /// triangles.
-      /// Each entry is a vector of vertex identifiers.
+      /// Each entry is a std::vector of vertex identifiers.
       ///
       /// In implicit mode, this function will force the creation of such a 
       /// list (which will be time and memory consuming). 
@@ -1216,20 +1218,20 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle list.
-      inline const vector<vector<int> > *getTriangles(){
+      inline const std::vector<std::vector<int> > *getTriangles(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedTriangles()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "Triangles query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -1268,14 +1270,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedTriangleEdges()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "TriangleEdge query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangleEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1314,14 +1316,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedTriangleEdges()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "TriangleEdgeNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangleEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1338,7 +1340,7 @@ namespace ttk{
       /// Get the list of edges for all triangles.
       ///
       /// The number of entries in this list is equal to the number of 
-      /// triangles. Each entry is a vector of identifiers representing the
+      /// triangles. Each entry is a std::vector of identifiers representing the
       /// edges connected to the triangle (3).
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -1356,7 +1358,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle edge list.
       /// \sa getCellEdges()
-      inline const vector<vector<int> > *getTriangleEdges(){
+      inline const std::vector<std::vector<int> > *getTriangleEdges(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1369,14 +1371,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedTriangleEdges()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "TriangleEdges query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangleEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -1415,14 +1417,14 @@ namespace ttk{
           return -2;
         
         if(!abstractTriangulation_->hasPreprocessedTriangleLinks()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "TriangleLink query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangleLinks() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -1;
         }
 #endif
@@ -1454,14 +1456,14 @@ namespace ttk{
           return -2;
         
         if(!abstractTriangulation_->hasPreprocessedTriangleLinks()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "TriangleLinkNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangleLinks() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1476,7 +1478,7 @@ namespace ttk{
       ///
       /// The number of entries in this list is equal to the number of 
       /// triangles.
-      /// Each entry is a vector of identifiers representing a vertex.
+      /// Each entry is a std::vector of identifiers representing a vertex.
       ///
       /// The notion of triangle link only makes sense in 3D.
       ///
@@ -1492,7 +1494,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle link list.
-      inline const vector<vector<int> > *getTriangleLinks(){
+      inline const std::vector<std::vector<int> > *getTriangleLinks(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1501,14 +1503,14 @@ namespace ttk{
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedTriangleLinks()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "TriangleLinks query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangleLinks() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -1545,14 +1547,14 @@ namespace ttk{
           return -2;
         
         if(!abstractTriangulation_->hasPreprocessedTriangleStars()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "TriangleStar query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangleStars() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1583,14 +1585,14 @@ namespace ttk{
           return -2;
         
         if(!abstractTriangulation_->hasPreprocessedTriangleStars()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "TriangleStarNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangleStars() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1605,7 +1607,7 @@ namespace ttk{
       ///
       /// The number of entries in this list is equal to the number of 
       /// triangles.
-      /// Each entry is a vector of identifiers whose size is equal to the 
+      /// Each entry is a std::vector of identifiers whose size is equal to the 
       /// number of star cells for the corresponding triangle.
       ///
       /// The notion of triangle star only makes sense in 3D.
@@ -1622,7 +1624,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle star list.
-      inline const vector<vector<int> > *getTriangleStars(){
+      inline const std::vector<std::vector<int> > *getTriangleStars(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1631,14 +1633,14 @@ namespace ttk{
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedTriangleStars()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "TriangleStars query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangleStars() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -1674,14 +1676,14 @@ namespace ttk{
         
         if((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedTriangles())){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "TriangleVertex query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1725,14 +1727,14 @@ namespace ttk{
           ||
           ((getDimensionality() > 1)&&
           (!abstractTriangulation_->hasPreprocessedVertexEdges()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexEdge query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1768,14 +1770,14 @@ namespace ttk{
           ||
           ((getDimensionality() > 1)&&
           (!abstractTriangulation_->hasPreprocessedVertexEdges()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexEdgeNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1793,7 +1795,7 @@ namespace ttk{
       ///
       /// The number of entries in this list is equal to the number of 
       /// vertices.
-      /// Each entry is a vector of identifiers whose size is equal to the 
+      /// Each entry is a std::vector of identifiers whose size is equal to the 
       /// number of edges connected to the corresponding vertex.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -1811,7 +1813,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex edge list.
       /// \sa getVertexStars()
-      inline const vector<vector<int> > *getVertexEdges(){
+      inline const std::vector<std::vector<int> > *getVertexEdges(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1821,14 +1823,14 @@ namespace ttk{
           ||
           ((getDimensionality() > 1)&&
           (!abstractTriangulation_->hasPreprocessedVertexEdges()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexEdges query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -1865,14 +1867,14 @@ namespace ttk{
           return -1;
           
         if(!abstractTriangulation_->hasPreprocessedVertexLinks()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexLink query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexLinks() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1901,14 +1903,14 @@ namespace ttk{
           return -1;
         
         if(!abstractTriangulation_->hasPreprocessedVertexLinks()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexLinkNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexLinks() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -1923,7 +1925,8 @@ namespace ttk{
       ///
       /// The number of entries in this list is equal to the number of 
       /// vertices.
-      /// Each entry is a vector of identifiers representing edges in 2D and 
+      /// Each entry is a std::vector of identifiers representing edges in 2D 
+      /// and 
       /// triangles in 3D.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -1938,21 +1941,21 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex link list.
-      inline const vector<vector<int> > *getVertexLinks(){
+      inline const std::vector<std::vector<int> > *getVertexLinks(){
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedVertexLinks()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexLinks query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexLinks() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -1983,14 +1986,14 @@ namespace ttk{
           return -1;
           
         if(!abstractTriangulation_->hasPreprocessedVertexNeighbors()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexNeighbor query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexNeighbors() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -2016,14 +2019,14 @@ namespace ttk{
           return -1;
         
         if(!abstractTriangulation_->hasPreprocessedVertexNeighbors()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexNeighborNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexNeighbors() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif     
@@ -2038,7 +2041,7 @@ namespace ttk{
       ///
       /// The number of entries in this list is equal to the number of 
       /// vertices.
-      /// Each entry is a vector of identifiers whose size is equal to the 
+      /// Each entry is a std::vector of identifiers whose size is equal to the 
       /// number of vertex neighbors for the corresponding vertex.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -2053,20 +2056,20 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex neighbor list.
-      inline const vector<vector<int> > *getVertexNeighbors(){
+      inline const std::vector<std::vector<int> > *getVertexNeighbors(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedVertexNeighbors()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexNeighbors query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexNeighbors() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif 
@@ -2117,14 +2120,14 @@ namespace ttk{
           return -1;
           
         if(!abstractTriangulation_->hasPreprocessedVertexStars()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexStar query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexStar() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif          
@@ -2152,14 +2155,14 @@ namespace ttk{
           return -1;
       
         if(!abstractTriangulation_->hasPreprocessedVertexStars()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexStarNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexStars() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -2176,7 +2179,7 @@ namespace ttk{
       /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
       ///
       /// The number of entries in this list is equal to the number of vertices.
-      /// Each entry is a vector of identifiers whose size is equal to the 
+      /// Each entry is a std::vector of identifiers whose size is equal to the 
       /// number of star cells for the corresponding vertex.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -2191,20 +2194,20 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex star list.
-      inline const vector<vector<int> > *getVertexStars(){
+      inline const std::vector<std::vector<int> > *getVertexStars(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
         
         if(!abstractTriangulation_->hasPreprocessedVertexStars()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexStars query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexStars() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif         
@@ -2246,14 +2249,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedVertexTriangles()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexTriangle query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -2293,14 +2296,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedVertexTriangles()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexTriangleNumber query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return -2;
         }
 #endif
@@ -2318,7 +2321,7 @@ namespace ttk{
       /// Get the list of triangles for all vertices.
       ///
       /// The number of entries in this list is equal to the number of vertices.
-      /// Each entry is a vector of identifiers whose size is equal to the 
+      /// Each entry is a std::vector of identifiers whose size is equal to the 
       /// number of triangles for the corresponding vertex.
       ///
       /// In implicit mode, this function will force the creation of such a 
@@ -2336,7 +2339,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex triangle list.
       /// \sa getVertexStars()
-      inline const vector<vector<int> > *getVertexTriangles(){
+      inline const std::vector<std::vector<int> > *getVertexTriangles(){
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -2350,14 +2353,14 @@ namespace ttk{
           ||
           ((getDimensionality() == 3)&&
           (!abstractTriangulation_->hasPreprocessedVertexTriangles()))){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "VertexTriangles query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessVertexTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return NULL;
         }
 #endif
@@ -2392,14 +2395,14 @@ namespace ttk{
           return false;
         
         if(!abstractTriangulation_->hasPreprocessedBoundaryEdges()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "BoundaryEdge query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessBoundaryEdges() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return false;
         }
 #endif
@@ -2438,14 +2441,14 @@ namespace ttk{
           return false;
         
         if(!abstractTriangulation_->hasPreprocessedBoundaryTriangles()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "BoundaryTriangle query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessBoundaryTriangles() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return false;
         }
 #endif
@@ -2475,14 +2478,14 @@ namespace ttk{
           return false;
         
         if(!abstractTriangulation_->hasPreprocessedBoundaryVertices()){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] "
             << "BoundaryVertex query without pre-process!"
-            << endl;
+            << std::endl;
           msg << "[Triangulation] "
             << "Please call preprocessBoundaryVertices() in a"
-            << " pre-process." << endl;
-          dMsg(cerr, msg.str(), Debug::fatalMsg);
+            << " pre-process." << std::endl;
+          dMsg(std::cerr, msg.str(), Debug::fatalMsg);
           return false;
         }
 #endif
@@ -3149,10 +3152,10 @@ namespace ttk{
    
       inline bool isEmptyCheck() const{
         if(!abstractTriangulation_){
-          stringstream msg;
+          std::stringstream msg;
           msg << "[Triangulation] Trying to access an empty data-structure!"
-            << endl;
-          dMsg(cerr, msg.str(), fatalMsg);
+            << std::endl;
+          dMsg(std::cerr, msg.str(), fatalMsg);
           return true;
         }
         return false;

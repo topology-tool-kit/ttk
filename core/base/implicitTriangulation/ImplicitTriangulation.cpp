@@ -1,5 +1,8 @@
 #include                  <ImplicitTriangulation.h>
 
+using namespace std;
+using namespace ttk;
+
 ImplicitTriangulation::ImplicitTriangulation():
   dimensionality_{-1},
   cellNumber_{},

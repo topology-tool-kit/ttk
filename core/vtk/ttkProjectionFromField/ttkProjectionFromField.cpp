@@ -1,5 +1,8 @@
 #include                  <ttkProjectionFromField.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkProjectionFromField)
 
 ttkProjectionFromField::ttkProjectionFromField(){

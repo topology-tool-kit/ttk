@@ -61,8 +61,8 @@ namespace ttk{
           int             vertexId_, pruned_;
           // 0: extrema-sheet, 1: saddle-sheet
           char            type_;
-          vector<int>     sheet1List_;
-          vector<int>     sheet3List_;
+          std::vector<int>     sheet1List_;
+          std::vector<int>     sheet3List_;
       };
       
       class Sheet1{
@@ -70,13 +70,13 @@ namespace ttk{
         public:
        
           bool            hasSaddleEdges_, pruned_;
-          vector<int>     edgeList_;
+          std::vector<int>     edgeList_;
           // 0: extrema-sheet, 1: saddle-sheet (can be inferred by the number
           // of 2-sheets attached to it?)
-          vector<int>     sheet0List_;
+          std::vector<int>     sheet0List_;
           // NB: the corresponding 2-sheet should have the same global 
           // indentifier.
-          vector<int>     sheet3List_;
+          std::vector<int>     sheet3List_;
       };
       
       class Sheet2{
@@ -89,11 +89,11 @@ namespace ttk{
           // this is how coincident point will be merged afterwards
           // this list is meant to be temporary. after the merge, we'll use a 
           // global list
-          vector<vector<FiberSurface::Vertex> >
+          std::vector<std::vector<FiberSurface::Vertex> >
                           vertexList_;
-          vector<vector<FiberSurface::Triangle> >
+          std::vector<std::vector<FiberSurface::Triangle> >
                           triangleList_;
-          vector<int>     sheet3List_;
+          std::vector<int>     sheet3List_;
       };
       
       class Sheet3{
@@ -103,13 +103,13 @@ namespace ttk{
           int             Id_, simplificationId_, preMerger_;
           bool            pruned_;
           double          domainVolume_, rangeArea_, hyperVolume_;
-          vector<int>     vertexList_;
-          vector<int>     tetList_;
-          vector<int>     sheet0List_;
-          vector<int>     sheet1List_;
-          vector<int>     sheet2List_;
-          vector<int>     sheet3List_;
-          vector<int>     preMergedSheets_;
+          std::vector<int>     vertexList_;
+          std::vector<int>     tetList_;
+          std::vector<int>     sheet0List_;
+          std::vector<int>     sheet1List_;
+          std::vector<int>     sheet2List_;
+          std::vector<int>     sheet3List_;
+          std::vector<int>     preMergedSheets_;
       };
       
       ReebSpace();
@@ -160,27 +160,27 @@ namespace ttk{
         return &(currentData_.sheet3List_[sheetId]);
       }
       
-      inline const vector<int>* get0sheetSegmentation() const{
+      inline const std::vector<int>* get0sheetSegmentation() const{
         return &currentData_.vertex2sheet0_;
       }
       
-      const vector<int>* get1sheetSegmentation() const{
+      const std::vector<int>* get1sheetSegmentation() const{
         return &currentData_.edge2sheet1_;
       }
      
-      const vector<int>* get3sheetVertexSegmentation() const{
+      const std::vector<int>* get3sheetVertexSegmentation() const{
         return &currentData_.vertex2sheet3_;
       }
       
-      const vector<int>* get3sheetTetSegmentation() const{
+      const std::vector<int>* get3sheetTetSegmentation() const{
         return &currentData_.tet2sheet3_;
       }
      
-      const vector<int>* getEdgeTypes() const{
+      const std::vector<int>* getEdgeTypes() const{
         return &currentData_.edgeTypes_;
       }
      
-      inline const vector<FiberSurface::Vertex>* 
+      inline const std::vector<FiberSurface::Vertex>* 
         getFiberSurfaceVertices() const{
         return &(fiberSurfaceVertexList_);
       }
@@ -196,11 +196,11 @@ namespace ttk{
         return currentData_.sheet2List_.size();
       }
      
-//       inline vector<long long int>* getSheetTriangulationCells(){
+//       inline std::vector<long long int>* getSheetTriangulationCells(){
 //         return &sheet3cells_;
 //       }
 //      
-//       inline vector<float>* getSheetTriangulationPoints(){
+//       inline std::vector<float>* getSheetTriangulationPoints(){
 //         return &sheet3points_;
 //       }
      
@@ -237,12 +237,12 @@ namespace ttk{
         return false;
       }
       
-      inline int setSosOffsetsU(vector<int> *sosOffsetsU){
+      inline int setSosOffsetsU(std::vector<int> *sosOffsetsU){
         sosOffsetsU_ = sosOffsetsU;
         return 0;
       }
       
-      inline int setSosOffsetsV(vector<int> *sosOffsetsV){
+      inline int setSosOffsetsV(std::vector<int> *sosOffsetsV){
         sosOffsetsV_ = sosOffsetsV;
         return 0;
       }
@@ -306,23 +306,23 @@ namespace ttk{
     
       class ReebSpaceData;
       
-      int compute1sheetsOnly(const vector<pair<int, char> > &jacobiSet,
-        vector<pair<int, int> > &jacobiSetClassification);
+      int compute1sheetsOnly(const std::vector<std::pair<int, char> > &jacobiSet,
+        std::vector<std::pair<int, int> > &jacobiSetClassification);
       
-      int compute1sheets(const vector<pair<int, char> > &jacobiSet,
-        vector<pair<int, int> > &jacobiSetClassification);
+      int compute1sheets(const std::vector<std::pair<int, char> > &jacobiSet,
+        std::vector<std::pair<int, int> > &jacobiSetClassification);
       
       template <class dataTypeU, class dataTypeV>
         inline int compute2sheets(
-          const vector<pair<int, int> > &jacobiEdges);
+          const std::vector<std::pair<int, int> > &jacobiEdges);
         
       template <class dataTypeU, class dataTypeV>
         inline int compute2sheetChambers();
       
       int compute3sheet(const int &vertexId, 
-        const vector<vector<vector<int> > > &tetTriangles);
+        const std::vector<std::vector<std::vector<int> > > &tetTriangles);
       
-      int compute3sheets(vector<vector<vector<int> > > &tetTriangles);
+      int compute3sheets(std::vector<std::vector<std::vector<int> > > &tetTriangles);
         
       template <class dataTypeU, class dataTypeV>
         inline int computeGeometricalMeasures(Sheet3 &sheet);
@@ -368,7 +368,7 @@ namespace ttk{
       
       int prepareSimplification();
      
-      int printConnectivity(ostream &stream, const ReebSpaceData &data) const;
+      int printConnectivity(std::ostream &stream, const ReebSpaceData &data) const;
       
       int simplifySheets(const double &simplificationThreshold,
         const SimplificationCriterion &simplificationCriterion);
@@ -377,8 +377,8 @@ namespace ttk{
         const SimplificationCriterion &simplificationCriterion);
       
 //       int triangulateTetrahedron(const int &tetId,
-//         const vector<vector<int> > &triangles,
-//         vector<long long int> &outputTets);
+//         const std::vector<std::vector<int> > &triangles,
+//         std::vector<long long int> &outputTets);
 //       
 //       int triangulateThreeSheets();
       
@@ -386,7 +386,7 @@ namespace ttk{
       double                totalArea_, totalVolume_, totalHyperVolume_;
       
       const void            *uField_, *vField_;
-      vector<int>           *sosOffsetsU_, *sosOffsetsV_;
+      std::vector<int>           *sosOffsetsU_, *sosOffsetsV_;
       
       // output segmentation 
       class ReebSpaceData{
@@ -397,20 +397,20 @@ namespace ttk{
                               simplificationCriterion_;
           double              simplificationThreshold_;
          
-          vector<int>           edge2sheet1_;
-          vector<int>           edgeTypes_;
-          vector<int>           tet2sheet3_;
-          vector<int>           vertex2sheet0_;
-          vector<int>           vertex2sheet3_;
+          std::vector<int>           edge2sheet1_;
+          std::vector<int>           edgeTypes_;
+          std::vector<int>           tet2sheet3_;
+          std::vector<int>           vertex2sheet0_;
+          std::vector<int>           vertex2sheet3_;
           
           // structure
-          vector<Sheet0>        sheet0List_;
-          vector<Sheet1>        sheet1List_;
-          vector<Sheet2>        sheet2List_;
-          vector<Sheet3>        sheet3List_;
+          std::vector<Sheet0>        sheet0List_;
+          std::vector<Sheet1>        sheet1List_;
+          std::vector<Sheet2>        sheet2List_;
+          std::vector<Sheet3>        sheet3List_;
           
-//         vector<float>         sheet3points_;
-//         vector<long long int> sheet3cells_;
+//         std::vector<float>         sheet3points_;
+//         std::vector<long long int> sheet3cells_;
       };
       
       bool                  hasConnectedSheets_, 
@@ -419,12 +419,12 @@ namespace ttk{
       ReebSpaceData         originalData_, currentData_; 
       
       // information that does not get simplified
-      vector<pair<int, char> >
+      std::vector<std::pair<int, char> >
                             jacobiSetEdges_;
-      vector<int>           jacobi2edges_;
+      std::vector<int>           jacobi2edges_;
       
       FiberSurface          fiberSurface_;
-      vector<FiberSurface::Vertex>
+      std::vector<FiberSurface::Vertex>
                             fiberSurfaceVertexList_;
                             
       Triangulation         *triangulation_;
@@ -435,7 +435,7 @@ namespace ttk{
 // #include                  <ReebSpace.cpp>
 
 template <class dataTypeU, class dataTypeV> 
-  inline int ReebSpace::execute(){
+  inline int ttk::ReebSpace::execute(){
 
   flush();
   
@@ -453,7 +453,7 @@ template <class dataTypeU, class dataTypeV>
   
   // 2) compute the list saddle 1-sheets
   // + list of saddle 0-sheets
-  vector<pair<int, int> > jacobiSetClassification;
+  std::vector<std::pair<int, int> > jacobiSetClassification;
   compute1sheetsOnly(
     jacobiSetEdges_, jacobiSetClassification);
   // at this stage, jacobiSetClassification contains the list of saddle edges 
@@ -462,17 +462,17 @@ template <class dataTypeU, class dataTypeV>
   compute2sheets<dataTypeU, dataTypeV>(jacobiSetClassification);
 //   compute2sheetChambers<dataTypeU, dataTypeV>();
   
-  vector<vector<vector<int> > > tetTriangles;
+  std::vector<std::vector<std::vector<int> > > tetTriangles;
   compute3sheets(tetTriangles);
   
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ReebSpace] Data-set (" << vertexNumber_
       << " points) processed in "
       << t.getElapsedTime() << " s. TOTAL (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   // post-process for further interaction
@@ -495,11 +495,11 @@ template <class dataTypeU, class dataTypeV>
     }
     
     {
-      stringstream msg;
+      std::stringstream msg;
       msg << "[ReebSpace] Geometrical measures computed in "
         << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))" << endl;
-      dMsg(cout, msg.str(), timeMsg);
+        << " thread(s))" << std::endl;
+      dMsg(std::cout, msg.str(), timeMsg);
     }
   }
   
@@ -511,8 +511,8 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int ReebSpace::compute2sheets(
-    const vector<pair<int, int> > &jacobiEdges){
+  inline int ttk::ReebSpace::compute2sheets(
+    const std::vector<std::pair<int, int> > &jacobiEdges){
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_)
@@ -546,7 +546,7 @@ template <class dataTypeU, class dataTypeV>
   
   fiberSurface_.setPolygonEdgeNumber(jacobiEdges.size());
  
-  vector<int> edge2polygonEdgeId(edgeNumber_, -1);
+  std::vector<int> edge2polygonEdgeId(edgeNumber_, -1);
   jacobi2edges_.resize(jacobiEdges.size());
   
   for(int i = 0; i < (int) jacobiEdges.size(); i++){
@@ -585,7 +585,7 @@ template <class dataTypeU, class dataTypeV>
     
     int edgeId = jacobiEdges[i].first;
     
-    pair<double, double> rangePoint0, rangePoint1;
+    std::pair<double, double> rangePoint0, rangePoint1;
     
     int vertexId0 = -1, vertexId1 = -1;
     triangulation_->getEdgeVertex(edgeId, 0, vertexId0);
@@ -598,7 +598,7 @@ template <class dataTypeU, class dataTypeV>
     rangePoint1.second = ((dataTypeV *) vField_)[vertexId1];
       
     if(originalData_.edgeTypes_[edgeId] == 1){
-      vector<int> edgeSeeds(triangulation_->getEdgeStarNumber(edgeId), -1);
+      std::vector<int> edgeSeeds(triangulation_->getEdgeStarNumber(edgeId), -1);
       for(int j = 0; j < (int) edgeSeeds.size(); j++){
         triangulation_->getEdgeStar(edgeId, j, edgeSeeds[j]);
       }
@@ -633,10 +633,11 @@ template <class dataTypeU, class dataTypeV>
 //     
 //     int sheet1Id = originalData_.sheet2List_[i].sheet1Id_;
 //     
-//     vector<bool> inList(tetNumber_, false);
-//     vector<int> seedList;
-//     vector<pair<pair<double, double>, pair<double, double> > > edgeList;
-//     vector<int> jacobiEdgeIdList;
+//     std::vector<bool> inList(tetNumber_, false);
+//     std::vector<int> seedList;
+//     std::vector<std::pair<std::pair<double, double>, std::pair<double, 
+//      double> > > edgeList;
+//     std::vector<int> jacobiEdgeIdList;
 //     
 //     for(int j = 0; 
 //       j < (int) originalData_.sheet1List_[sheet1Id].edgeList_.size(); j++){
@@ -677,18 +678,18 @@ template <class dataTypeU, class dataTypeV>
 //   }
   
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ReebSpace] Fiber surfaces computed in "
       << t.getElapsedTime()
-      << " s. overall (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << " s. overall (" << threadNumber_ << " thread(s))." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int ReebSpace::compute2sheetChambers(){
+  inline int ttk::ReebSpace::compute2sheetChambers(){
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_)
@@ -696,10 +697,10 @@ template <class dataTypeU, class dataTypeV>
 #endif
  
   {
-    stringstream msg;
-    msg << "[ReebSpace] Computing chambers' pre-images." << endl;
-    msg << "[ReebSpace] This will take a LONG time." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[ReebSpace] Computing chambers' pre-images." << std::endl;
+    msg << "[ReebSpace] This will take a LONG time." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   Timer t;
@@ -741,7 +742,7 @@ template <class dataTypeU, class dataTypeV>
     
     int edgeId = i;
     
-    pair<double, double> rangePoint0, rangePoint1;
+    std::pair<double, double> rangePoint0, rangePoint1;
     
     int vertexId0 = -1, vertexId1 = -1;
     triangulation_->getEdgeVertex(edgeId, 0, vertexId0);
@@ -762,18 +763,18 @@ template <class dataTypeU, class dataTypeV>
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ReebSpace] Chambers pre-image boundaries computed in "
       << t.getElapsedTime()
-      << " s. overall (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << " s. overall (" << threadNumber_ << " thread(s))." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   return 0;
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int ReebSpace::computeGeometricalMeasures(Sheet3 &sheet){
+  inline int ttk::ReebSpace::computeGeometricalMeasures(Sheet3 &sheet){
 
   sheet.domainVolume_ = 0;
   sheet.rangeArea_ = 0;
@@ -782,8 +783,8 @@ template <class dataTypeU, class dataTypeV>
   for(int i = 0; i < (int) sheet.tetList_.size(); i++){
     
     int tetId = sheet.tetList_[i];
-    vector<pair<double, double> > domainBox, rangeBox;
-    vector<vector<float> > domainPoints(4), rangePoints(4);
+    std::vector<std::pair<double, double> > domainBox, rangeBox;
+    std::vector<std::vector<float> > domainPoints(4), rangePoints(4);
     
     for(int j = 0; j < 4; j++){
       domainPoints[j].resize(3);
@@ -824,7 +825,7 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int ReebSpace::perturbate(
+  inline int ttk::ReebSpace::perturbate(
     const dataTypeU &uEpsilon, const dataTypeV &vEpsilon) const{
 
   JacobiSet<dataTypeU, dataTypeV> jacobiSet;
@@ -837,7 +838,7 @@ template <class dataTypeU, class dataTypeV>
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int ReebSpace::simplify(const double &simplificationThreshold, 
+  inline int ttk::ReebSpace::simplify(const double &simplificationThreshold, 
     const SimplificationCriterion &criterion){
 
   if((totalArea_ == -1)||(totalVolume_ == -1)||(totalHyperVolume_ == -1)){
@@ -859,11 +860,11 @@ template <class dataTypeU, class dataTypeV>
     }
     
     {
-      stringstream msg;
+      std::stringstream msg;
       msg << "[ReebSpace] Geometrical measures computed in "
         << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))" << endl;
-      dMsg(cout, msg.str(), timeMsg);
+        << " thread(s))" << std::endl;
+      dMsg(std::cout, msg.str(), timeMsg);
     }
   }
   
@@ -873,7 +874,7 @@ template <class dataTypeU, class dataTypeV>
   }
   
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ReebSpace] Simplifying with criterion ";
     switch(criterion){
       case domainVolume:
@@ -886,8 +887,8 @@ template <class dataTypeU, class dataTypeV>
         msg << "'HyperVolume'";
         break;
     }
-    msg << " at threshold " << simplificationThreshold << "." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    msg << " at threshold " << simplificationThreshold << "." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   if(!((criterion == currentData_.simplificationCriterion_)

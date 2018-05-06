@@ -131,7 +131,7 @@ namespace ttk{
 // #include                  <Blank.cpp>
 
 // template functions
-template <class dataType> int Blank::execute(
+template <class dataType> int ttk::Blank::execute(
   const int &argument) const{
 
   Timer t;
@@ -168,13 +168,13 @@ template <class dataType> int Blank::execute(
   }
    
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[Blank] Data-set (" << vertexNumber
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   return 0;

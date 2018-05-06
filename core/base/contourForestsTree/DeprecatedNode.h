@@ -124,8 +124,8 @@ namespace ttk
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if ((neighborId < 0) || ((size_t)neighborId >= vect_downSuperArcList_.size())) {
-            cerr << "[Merge Tree:Node] get down on bad neighbor !";
-            cerr << endl;
+            std::cerr << "[Merge Tree:Node] get down on bad neighbor !";
+            std::cerr << std::endl;
             return 0;
          }
 #endif
@@ -136,8 +136,9 @@ namespace ttk
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (neighborId >= vect_upSuperArcList_.size()) {
-            cerr << "[MergeTree:Node] No SuperArc to access " << static_cast<unsigned>(neighborId);
-            cerr << endl;
+            std::cerr << "[MergeTree:Node] No SuperArc to access " 
+              << static_cast<unsigned>(neighborId);
+            std::cerr << std::endl;
          }
 #endif
          if (vect_upSuperArcList_.size() == 0) {

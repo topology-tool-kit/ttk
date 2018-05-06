@@ -1,5 +1,8 @@
 #include                  <TopologicalSimplification.h>
 
+using namespace std;
+using namespace ttk;
+
 TopologicalSimplification::TopologicalSimplification():
   triangulation_{},
   vertexNumber_{},

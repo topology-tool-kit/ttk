@@ -45,7 +45,7 @@ class VTKFILTERSCORE_EXPORT ttkCellDataConverter
 #else
 class ttkCellDataConverter
 #endif
-: public vtkDataSetAlgorithm, public Wrapper{
+: public vtkDataSetAlgorithm, public ttk::Wrapper{
 
 enum SupportedType{
 Double=0,
@@ -67,7 +67,7 @@ Double=0,
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }
@@ -83,8 +83,8 @@ Double=0,
     }
     // end of default ttk setters
     
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
 
     void SetOutputType(int outputType){
       OutputType = outputType;
@@ -112,7 +112,7 @@ Double=0,
     
     bool UseAllCores;
     int ThreadNumber;
-    string ScalarField;
+    std::string ScalarField;
     int OutputType;
     bool UseNormalization;
     

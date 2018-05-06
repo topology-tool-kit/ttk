@@ -1,5 +1,8 @@
 #include                  <ManifoldCheck.h>
 
+using namespace std;
+using namespace ttk;
+
 ManifoldCheck::ManifoldCheck(){
 
   triangulation_ = NULL;

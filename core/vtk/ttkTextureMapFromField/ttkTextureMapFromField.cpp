@@ -1,5 +1,8 @@
 #include                  <ttkTextureMapFromField.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkTextureMapFromField)
 
 ttkTextureMapFromField::ttkTextureMapFromField(){

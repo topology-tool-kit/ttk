@@ -1,5 +1,8 @@
 #include                  "ttkBottleneckDistance.h"
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkBottleneckDistance)
 
 #ifndef macroDiagramTuple

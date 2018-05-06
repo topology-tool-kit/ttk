@@ -4,7 +4,7 @@
 /// \date February 2016.
 /// 
 /// \brief Minimalist class that handles simple geometric computations 
-/// (operations on vectors, barycentric coordinates, etc.).
+/// (operations on std::vectors, barycentric coordinates, etc.).
 ///
 #ifndef                 _GEOMETRY_H
 #define                 _GEOMETRY_H
@@ -22,7 +22,7 @@ namespace ttk{
       
       virtual ~Geometry();
      
-      /// Compute the angle between two vectors
+      /// Compute the angle between two std::vectors
       /// \param vA0 xyz coordinates of vA's origin
       /// \param vA1 xyz coordinates of vA's destination
       /// \param vB0 xyz coordinates of vB's origin
@@ -31,17 +31,18 @@ namespace ttk{
         const double *vA0, const double *vA1, 
         const double *vB0, const double *vB1);
       
-      /// Check if two 3D vectors vA and vB are colinear.
+      /// Check if two 3D std::vectors vA and vB are colinear.
       /// \param vA0 xyz coordinates of vA's origin
       /// \param vA1 xyz coordinates of vA's destination
       /// \param vB0 xyz coordinates of vB's origin
       /// \param vB1 xyz coordinates of vB's destination
-      /// \param coefficients Optional output vector of colinearity 
+      /// \param coefficients Optional output std::vector of colinearity 
       /// coefficients.
-      /// \returns Returns true if the vectors are colinear, false otherwise.
+      /// \returns Returns true if the std::vectors are colinear, false 
+      /// otherwise.
       static bool areVectorsColinear(const double *vA0, const double *vA1,
         const double *vB0, const double *vB1, 
-        vector<double> *coefficients = NULL, 
+        std::vector<double> *coefficients = NULL, 
         const double *tolerance = NULL);
       
       /// Compute the barycentric coordinates of point \p p with regard to the 
@@ -56,7 +57,7 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       static int computeBarycentricCoordinates(
         const double *p0, const double *p1, const double *p,
-        vector<double> &baryCentrics, const int &dimension = 3);
+        std::vector<double> &baryCentrics, const int &dimension = 3);
       
       /// Compute the barycentric coordinates of point \p xyz with regard to
       /// the edge defined by the points \p xy0 and \p xy1.
@@ -73,7 +74,7 @@ namespace ttk{
         const double &x0, const double &y0,
         const double &x1, const double &y1,
         const double &x, const double &y,
-        vector<double> &baryCentrics);
+        std::vector<double> &baryCentrics);
       
       /// Compute the barycentric coordinates of point \p p with regard to the 
       /// triangle defined by the 3D points \p p0, \p p1, and \p p2.
@@ -87,7 +88,7 @@ namespace ttk{
       static int computeBarycentricCoordinates(
         const double *p0, const double *p1, const double *p2,
         const double *p,
-        vector<double> &baryCentrics);
+        std::vector<double> &baryCentrics);
       
       /// Compute the barycentric coordinates of point \p p with regard to the 
       /// triangle defined by the points \p p0, \p p1, and \p p2.
@@ -102,7 +103,7 @@ namespace ttk{
       static int computeBarycentricCoordinates(
         const float *p0, const float *p1, const float *p2,
         const float *p,
-        vector<double> &baryCentrics);
+        std::vector<double> &baryCentrics);
       
       /// Compute the intersection between two 2D segments AB and CD.
       /// \param xA x coordinate of the first vertex of the first segment (AB)
@@ -128,7 +129,7 @@ namespace ttk{
       /// \param angles Angles (p0p1, p1p2) (p1p2, p2p0) (p2p0, p0p1)
       static int computeTriangleAngles(
         const double *p0, const double *p1, const double *p2,
-        vector<double> &angles);
+        std::vector<double> &angles);
       
       /// Compute the area of a 3D triangle.
       /// \param p0 xyz coordinates of the first vertex of the triangle 
@@ -140,7 +141,7 @@ namespace ttk{
         const double *p0, const double *p1, const double *p2,
         double &area);
       
-      /// Compute the cross product of two 3D vectors
+      /// Compute the cross product of two 3D std::vectors
       /// \param vA0 xyz coordinates of vA's origin
       /// \param vA1 xyz coordinates of vA's destination
       /// \param vB0 xyz coordinates of vB's origin
@@ -150,11 +151,11 @@ namespace ttk{
       static int crossProduct(
         const double *vA0, const double *vA1, 
         const double *vB0, const double *vB1,
-        vector<double> &crossProduct);
+        std::vector<double> &crossProduct);
 
-			/// Compute the cross product of two 3D vectors
-      /// \param vA xyz coordinates of vA vector
-      /// \param vB xyz coordinates of vB vector
+			/// Compute the cross product of two 3D std::vectors
+      /// \param vA xyz coordinates of vA std::vector
+      /// \param vB xyz coordinates of vB std::vector
       /// \param vC Output cross product.
       /// \return Returns 0 upon success, negative values otherwise.
 			static int crossProduct(const double *vA, const double *vB,
@@ -176,7 +177,7 @@ namespace ttk{
       static double distance(const float *p0, const float *p1,
         const int &dimension = 3);
       
-      /// Compute the dot product of two 3D vectors
+      /// Compute the dot product of two 3D std::vectors
       /// \param vA0 xyz coordinates of vA's origin
       /// \param vA1 xyz coordinates of vA's destination
       /// \param vB0 xyz coordinates of vB's origin
@@ -186,21 +187,23 @@ namespace ttk{
         const double *vA0, const double *vA1, 
         const double *vB0, const double *vB1);
 
-			/// Compute the dot product of two 3D vectors
-      /// \param vA0 xyz coordinates of vA vector
-      /// \param vB0 xyz coordinates of vB vector
+			/// Compute the dot product of two 3D std::vectors
+      /// \param vA0 xyz coordinates of vA std::vector
+      /// \param vB0 xyz coordinates of vB std::vector
       /// \return Returns Output dot product
 			static double dotProduct(const double *vA,
 					const double *vB);
     
       /// Compute the bounding box of a point set.
-      /// \param points Vector of points. Each entry is a vector whose size is 
+      /// \param points Vector of points. Each entry is a std::vector whose size 
+      /// is 
       /// equal to the dimension of the space embedding the points.
-      /// \param bBox Output bounding box. The number of entries in this vector
+      /// \param bBox Output bounding box. The number of entries in this 
+      /// std::vector
       /// is equal to the dimension of the space embedding the points.
       /// \return Returns 0 upon success, negative values otherwise.
-      static int getBoundingBox(const vector<vector<float> > &points,
-        vector<pair<double, double>> &bBox);
+      static int getBoundingBox(const std::vector<std::vector<float> > &points,
+        std::vector<std::pair<double, double>> &bBox);
       
       /// Check if the point \p p is inside the triangle (\p p0, \p p1, \p p2).
       /// \param p0 xyz coordinates of the first vertex of the triangle 
@@ -252,14 +255,14 @@ namespace ttk{
         const double *p0, const double *p1, const double *p2, 
         const double *tolerance = NULL);
       
-      /// Compute the magnitude of a 3D vector \p v.
-      /// \param v xyz coordinates of the input vector.
+      /// Compute the magnitude of a 3D std::vector \p v.
+      /// \param v xyz coordinates of the input std::vector.
       /// \return Returns the magnitude upon success, negative values otherwise.
       static double magnitude(const double *v);
       
-      /// Compute the magnitude of a 3D vector.
-      /// \param o xyz coordinates of the vector's origin
-      /// \param d xyz coordinates of the vector's destination
+      /// Compute the magnitude of a 3D std::vector.
+      /// \param o xyz coordinates of the std::vector's origin
+      /// \param d xyz coordinates of the std::vector's destination
       static double magnitude(const double *o, const double *d);
       
     protected:

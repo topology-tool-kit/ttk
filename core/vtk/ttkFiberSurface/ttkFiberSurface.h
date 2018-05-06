@@ -64,7 +64,7 @@ class VTKFILTERSCORE_EXPORT ttkFiberSurface
 #else
 class ttkFiberSurface
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -86,17 +86,17 @@ class ttkFiberSurface
     }
     // end of default ttk setters
     
-    vtkGetMacro(DataUcomponent, string);
-    vtkSetMacro(DataUcomponent, string);
+    vtkGetMacro(DataUcomponent, std::string);
+    vtkSetMacro(DataUcomponent, std::string);
     
-    vtkGetMacro(DataVcomponent, string);
-    vtkSetMacro(DataVcomponent, string);
+    vtkGetMacro(DataVcomponent, std::string);
+    vtkSetMacro(DataVcomponent, std::string);
     
-    vtkGetMacro(PolygonUcomponent, string);
-    vtkSetMacro(PolygonUcomponent, string);
+    vtkGetMacro(PolygonUcomponent, std::string);
+    vtkSetMacro(PolygonUcomponent, std::string);
     
-    vtkGetMacro(PolygonVcomponent, string);
-    vtkSetMacro(PolygonVcomponent, string);
+    vtkGetMacro(PolygonVcomponent, std::string);
+    vtkSetMacro(PolygonVcomponent, std::string);
     
     vtkGetMacro(RangeCoordinates, bool);
     vtkSetMacro(RangeCoordinates, bool);
@@ -161,22 +161,22 @@ class ttkFiberSurface
     
     double                PointMergeDistanceThreshold;
     
-    string                DataUcomponent, DataVcomponent,
+    std::string                DataUcomponent, DataVcomponent,
                           PolygonUcomponent, PolygonVcomponent;
 
     // NOTE: we assume here that this guy is small and that making a copy from
     // VTK is not an issue.
-    vector<pair<pair<double, double>, pair<double, double> > >
+    std::vector<std::pair<std::pair<double, double>, std::pair<double, double> > >
                           inputPolygon_;
                           
-    vector<FiberSurface::Vertex>
+    std::vector<ttk::FiberSurface::Vertex>
                           outputVertexList_;
-    vector<vector<FiberSurface::Vertex> > 
+    std::vector<std::vector<ttk::FiberSurface::Vertex> > 
                           threadedVertexList_;
-    vector<vector<FiberSurface::Triangle> >
+    std::vector<std::vector<ttk::FiberSurface::Triangle> >
                           threadedTriangleList_;
     
-    FiberSurface          fiberSurface_;
+    ttk::FiberSurface          fiberSurface_;
                           
 };
 

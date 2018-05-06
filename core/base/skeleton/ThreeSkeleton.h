@@ -38,32 +38,38 @@ namespace ttk{
       /// \param cellArray Pointer to a contiguous array of cells. Each entry 
       /// starts by the number of vertices in the cell, followed by the vertex
       /// identifiers of the cell.
-      /// \param cellEdges Output edge lists. The size of this vector 
+      /// \param cellEdges Output edge lists. The size of this std::vector 
       /// will be equal to the number of cells in the mesh. Each entry will be
-      /// a vector listing the edge identifiers of the entry's cell's 
+      /// a std::vector listing the edge identifiers of the entry's cell's 
       /// edges.
       /// \param edgeList Optional list of edges. If NULL, the function will 
       /// compute this list anyway and free the related memory upon return.
-      /// If not NULL but pointing to an empty vector, the function will fill
-      /// this empty vector (useful if this list needs to be used later on by 
-      /// the calling program). If not NULL but pointing to a non-empty vector, 
-      /// this function will use this vector as internal edge list. If this 
-      /// vector is not empty but incorrect, the behavior is unspecified.
+      /// If not NULL but pointing to an empty std::vector, the function will 
+      /// fill
+      /// this empty std::vector (useful if this list needs to be used later on 
+      /// by 
+      /// the calling program). If not NULL but pointing to a non-empty 
+      /// std::vector, 
+      /// this function will use this std::vector as internal edge list. If 
+      /// this 
+      /// std::vector is not empty but incorrect, the behavior is unspecified.
       /// \param vertexEdges Optional list of edges for each vertex. If NULL, 
       /// the function will compute this list anyway and free the related 
-      /// memory upon return. If not NULL but pointing to an empty vector, 
-      /// the function will fill this empty vector (useful if this list needs to
+      /// memory upon return. If not NULL but pointing to an empty std::vector, 
+      /// the function will fill this empty std::vector (useful if this list 
+      /// needs to
       /// be used later on by the calling program). If not NULL but pointing to 
-      /// a non-empty vector, this function will use this vector as internal 
-      /// vertex edge list. If this vector is not empty but incorrect, the 
+      /// a non-empty std::vector, this function will use this std::vector as 
+      /// internal 
+      /// vertex edge list. If this std::vector is not empty but incorrect, the 
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildCellEdges(const int &vertexNumber,
         const int &cellNumber, 
         const long long int *cellArray,
-        vector<vector<int> > &cellEdges,
-        vector<pair<int, int> > *edgeList = NULL,
-        vector<vector<int> > *vertexEdges = NULL) const ;
+        std::vector<std::vector<int> > &cellEdges,
+        std::vector<std::pair<int, int> > *edgeList = NULL,
+        std::vector<std::vector<int> > *vertexEdges = NULL) const ;
       
       /// Compute the list of cell-neighbors of each cell of a triangulation 
       /// (unspecified behavior if the input mesh is not a triangulation).
@@ -76,25 +82,28 @@ namespace ttk{
       /// \param cellArray Pointer to a contiguous array of cells. Each entry 
       /// starts by the number of vertices in the cell, followed by the vertex
       /// identifiers of the cell.
-      /// \param cellNeighbors Output neighbor list. The size of this vector 
+      /// \param cellNeighbors Output neighbor list. The size of this 
+      /// std::vector 
       /// will be equal to the number of cells in the mesh. Each entry will be
-      /// a vector listing the cell identifiers of the entry's cell's 
+      /// a std::vector listing the cell identifiers of the entry's cell's 
       /// neighbors.
       /// \param triangleStars Optional list of triangle stars (list of 
       /// 3-dimensional cells connected to each triangle). If NULL, the 
       /// function will compute this list anyway and free the related memory
-      /// upon return. If not NULL but pointing to an empty vector, the 
-      /// function will fill this empty vector (useful if this list needs 
+      /// upon return. If not NULL but pointing to an empty std::vector, the 
+      /// function will fill this empty std::vector (useful if this list needs 
       /// to be used later on by the calling program). If not NULL but pointing
-      /// to a non-empty vector, this function will use this vector as internal 
-      /// triangle star list. If this vector is not empty but incorrect, the 
+      /// to a non-empty std::vector, this function will use this std::vector as 
+      /// internal 
+      /// triangle star list. If this std::vector is not empty but incorrect, 
+      /// the 
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildCellNeighborsFromTriangles(const int &vertexNumber, 
         const int &cellNumber,
         const long long int *cellArray,
-        vector<vector<int> > &cellNeighbors,
-        vector<vector<int> > *triangleStars = NULL) const;
+        std::vector<std::vector<int> > &cellNeighbors,
+        std::vector<std::vector<int> > *triangleStars = NULL) const;
 
       /// Compute the list of cell-neighbors of each cell of a triangulation 
       /// (unspecified behavior if the input mesh is not a triangulation).
@@ -104,25 +113,27 @@ namespace ttk{
       /// \param cellArray Pointer to a contiguous array of cells. Each entry 
       /// starts by the number of vertices in the cell, followed by the vertex
       /// identifiers of the cell.
-      /// \param cellNeighbors Output neighbor list. The size of this vector 
+      /// \param cellNeighbors Output neighbor list. The size of this 
+      /// std::vector 
       /// will be equal to the number of cells in the mesh. Each entry will be
-      /// a vector listing the cell identifiers of the entry's cell's 
+      /// a std::vector listing the cell identifiers of the entry's cell's 
       /// neighbors.
       /// \param vertexStars Optional list of vertex stars (list of 
       /// 3-dimensional cells connected to each vertex). If NULL, the 
       /// function will compute this list anyway and free the related memory
-      /// upon return. If not NULL but pointing to an empty vector, the 
-      /// function will fill this empty vector (useful if this list needs 
+      /// upon return. If not NULL but pointing to an empty std::vector, the 
+      /// function will fill this empty std::vector (useful if this list needs 
       /// to be used later on by the calling program). If not NULL but pointing
-      /// to a non-empty vector, this function will use this vector as internal 
-      /// vertex star list. If this vector is not empty but incorrect, the 
+      /// to a non-empty std::vector, this function will use this std::vector as 
+      /// internal 
+      /// vertex star list. If this std::vector is not empty but incorrect, the 
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildCellNeighborsFromVertices(const int &vertexNumber, 
         const int &cellNumber,
         const long long int *cellArray,
-        vector<vector<int> > &cellNeighbors,
-        vector<vector<int> > *vertexStars = NULL) const;
+        std::vector<std::vector<int> > &cellNeighbors,
+        std::vector<std::vector<int> > *vertexStars = NULL) const;
         
     protected:
     

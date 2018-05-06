@@ -1,5 +1,8 @@
 #include<MorseSmaleComplex3D.h>
 
+using namespace std;
+using namespace ttk;
+
 MorseSmaleComplex3D::MorseSmaleComplex3D():
   AbstractMorseSmaleComplex()
 {}

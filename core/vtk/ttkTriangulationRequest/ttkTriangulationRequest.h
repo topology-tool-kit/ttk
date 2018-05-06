@@ -43,7 +43,7 @@ class VTKFILTERSCORE_EXPORT ttkTriangulationRequest
 #else
 class ttkTriangulationRequest
 #endif
-: public vtkDataSetAlgorithm, public Wrapper{
+: public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 

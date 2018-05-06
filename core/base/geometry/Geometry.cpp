@@ -3,6 +3,9 @@
 // TODO:
 // for faster computations, remove all pow10
 
+using namespace std;
+using namespace ttk;
+
 Geometry::Geometry(){ 
   
 }

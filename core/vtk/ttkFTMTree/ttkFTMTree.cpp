@@ -5,6 +5,9 @@
 #include <vtkDataObject.h>
 #include <vtkThreshold.h>
 
+using namespace std;
+using namespace ttk;
+
 using namespace ftm;
 
 vtkStandardNewMacro(ttkFTMTree);

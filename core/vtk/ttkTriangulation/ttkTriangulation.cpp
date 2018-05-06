@@ -1,6 +1,9 @@
 #include                  <ttkWrapper.h>
 #include                  <ttkTriangulation.h>
 
+using namespace std;
+using namespace ttk;
+
 ttkTriangulation::ttkTriangulation(){
   
   inputDataSet_ = NULL;

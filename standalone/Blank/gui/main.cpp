@@ -7,6 +7,9 @@
 #include                  <ttkBlank.h>
 #include                  <ttkUserInterfaceBase.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkUserInterface<ttkBlank> program;
 
 class myKeyHandler : public ttkKeyHandler{

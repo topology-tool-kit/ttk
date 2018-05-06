@@ -9,6 +9,9 @@
 
 vtkUserInterface<ttkFTMTree> program;
 
+using namespace std;
+using namespace ttk;
+
 int main(int argc, char **argv)
 {
    // specify local parameters to the TTK module with default values.

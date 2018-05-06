@@ -35,8 +35,8 @@ namespace ttk
    struct Scalars {
       idVertex         size;
       void*            values;
-      vector<idVertex> sosOffsets;
-      vector<idVertex> sortedVertices, mirrorVertices;
+      std::vector<idVertex> sosOffsets;
+      std::vector<idVertex> sortedVertices, mirrorVertices;
 
       // Need vertices to be sorted : use mirrorVertices.
 
@@ -65,15 +65,15 @@ namespace ttk
       idPartition partition;
 
       // components : tree / nodes / extrema
-      vector<SuperArc> superArcs;
-      vector<Node>     nodes;
-      vector<idNode>   leaves, roots;
+      std::vector<SuperArc> superArcs;
+      std::vector<Node>     nodes;
+      std::vector<idNode>   leaves, roots;
 
       // arc crossing an interface (one can be in both)
-      vector<idSuperArc> arcsCrossingBelow, arcsCrossingAbove;
+      std::vector<idSuperArc> arcsCrossingBelow, arcsCrossingAbove;
 
       // vertex 2 node / superarc
-      vector<idCorresp> vert2tree;
+      std::vector<idCorresp> vert2tree;
    };
 
    // info on one vertex and CT arc in wich it is
@@ -82,8 +82,8 @@ namespace ttk
       idSuperArc ctArc;
    };
 
-   using segmentIterator = vector<vertex>::iterator;
-   using segmentRevIterator = vector<vertex>::reverse_iterator;
+   using segmentIterator = std::vector<vertex>::iterator;
+   using segmentRevIterator = std::vector<vertex>::reverse_iterator;
 
    // If we want to cross a Segment in the sorted order,
    // wich is form the end to the beginning in the case of Split Tree,
@@ -91,19 +91,21 @@ namespace ttk
    class sorted_iterator : public segmentIterator
    {
      public:
-      sorted_iterator(segmentIterator base) : segmentIterator(base), forward_(true)
+      sorted_iterator(segmentIterator base) : segmentIterator(base), 
+forward_(true)
       {
       }
-      sorted_iterator(segmentRevIterator base) : segmentIterator(base.base()), forward_(false)
+      sorted_iterator(segmentRevIterator base) : segmentIterator(base.base()), 
+forward_(false)
       {
       }
 
       const sorted_iterator& operator++()
       {
          if (forward_) {
-            vector<vertex>::iterator::operator++();
+            std::vector<vertex>::iterator::operator++();
          } else {
-            vector<vertex>::iterator::operator--();
+            std::vector<vertex>::iterator::operator--();
          }
 
          return *this;

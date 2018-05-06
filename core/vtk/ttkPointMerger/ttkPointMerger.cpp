@@ -1,5 +1,8 @@
 #include                  <ttkPointMerger.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkPointMerger)
 
 int ttkPointMerger::doIt(

@@ -7,6 +7,9 @@
 #include                  <ttkBottleneckDistance.h>
 #include                  <ttkUserInterfaceBase.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkUserInterface<ttkBottleneckDistance> program;
 
 class myKeyHandler : public ttkKeyHandler{

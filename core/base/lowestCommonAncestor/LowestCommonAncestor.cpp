@@ -1,5 +1,8 @@
 #include <LowestCommonAncestor.h>
 
+using namespace std;
+using namespace ttk;
+
 int LowestCommonAncestor::preprocess() {
 
   Timer t;

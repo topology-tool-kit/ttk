@@ -77,7 +77,7 @@ namespace ttk{
 }
 
 // template functions
-template <class dataType> int ScalarFieldSmoother::smooth(
+template <class dataType> int ttk::ScalarFieldSmoother::smooth(
   const int &numberOfIterations) const{
 
   Timer t;
@@ -97,7 +97,7 @@ template <class dataType> int ScalarFieldSmoother::smooth(
   
   int vertexNumber = triangulation_->getNumberOfVertices();
   
-  vector<dataType> tmpData(vertexNumber*dimensionNumber_, 0);
+  std::vector<dataType> tmpData(vertexNumber*dimensionNumber_, 0);
   
   dataType *outputData = (dataType *) outputData_;
   dataType *inputData = (dataType *) inputData_;
@@ -174,13 +174,13 @@ template <class dataType> int ScalarFieldSmoother::smooth(
   }
   
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ScalarFieldSmoother] Data-set (" << vertexNumber
       << " points) smoothed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   
   return 0;

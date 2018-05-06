@@ -1,5 +1,8 @@
 #include                  <ttkComponentSize.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkComponentSize)
 
 ttkComponentSize::ttkComponentSize(){

@@ -54,7 +54,7 @@ namespace ttk{
         Triangulation *triangulation) const;
       
       char getCriticalType(const int &vertexId, 
-        const vector<pair<int, int> > &vertexLinkEdgeList) const;
+        const std::vector<std::pair<int, int> > &vertexLinkEdgeList) const;
       
       static bool isSosHigherThan(const int &offset0, const dataType &value0,
         const int &offset1, const dataType &value1){
@@ -75,7 +75,7 @@ namespace ttk{
         return 0;
       }
       
-      int setOutput(vector<pair<int, char> > *criticalPoints){
+      int setOutput(std::vector<std::pair<int, char> > *criticalPoints){
         
         criticalPoints_ = criticalPoints;
         
@@ -102,7 +102,7 @@ namespace ttk{
         return 0;
       }
       
-      int setSosOffsets(vector<int> *offsets){
+      int setSosOffsets(std::vector<int> *offsets){
         
         sosOffsets_ = offsets;
         
@@ -110,7 +110,7 @@ namespace ttk{
       }
       
       int setVertexLinkEdgeLists(
-        const vector<vector<pair<int, int> > > *edgeList){
+        const std::vector<std::vector<std::pair<int, int> > > *edgeList){
         
         vertexLinkEdgeLists_ = edgeList;
         
@@ -130,10 +130,10 @@ namespace ttk{
       
       int                   dimension_, vertexNumber_;
       const dataType        *scalarValues_;
-      const vector<vector<pair<int, int> > > *vertexLinkEdgeLists_;
-      vector<pair<int, char> > *criticalPoints_;
-      vector<int>           *sosOffsets_;
-      vector<int>           localSosOffSets_;
+      const std::vector<std::vector<std::pair<int, int> > > *vertexLinkEdgeLists_;
+      std::vector<std::pair<int, char> > *criticalPoints_;
+      std::vector<int>           *sosOffsets_;
+      std::vector<int>           localSosOffSets_;
       Triangulation         *triangulation_;
   };
 }

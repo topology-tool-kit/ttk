@@ -3,6 +3,9 @@
 #include <vtkPointData.h>
 #include <vtkCharArray.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkGeometrySmoother)
 
 ttkGeometrySmoother::ttkGeometrySmoother(){

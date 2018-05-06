@@ -182,9 +182,9 @@ namespace ftm
          region_.concat(s.region_);
       }
 
-      inline void concat(tuple<segm_it, segm_it> its)
+      inline void concat(std::tuple<segm_it, segm_it> its)
       {
-         region_.concat(get<0>(its), get<1>(its));
+         region_.concat(std::get<0>(its), std::get<1>(its));
       }
 
       // prerequisite for the following segmentation functions
@@ -194,12 +194,12 @@ namespace ftm
       }
 
       // Direct read access to the list of region
-      const list<Region> &getRegions(void) const
+      const std::list<Region> &getRegions(void) const
       {
          return region_.getRegions();
       }
 
-      list<Region> &getRegions(void)
+      std::list<Region> &getRegions(void)
       {
          return region_.getRegions();
       }
@@ -227,12 +227,12 @@ namespace ftm
          return region_.size();
       }
 
-      vector<idVertex>::iterator begin(void)
+      std::vector<idVertex>::iterator begin(void)
       {
          return region_.begin();
       }
 
-      vector<idVertex>::iterator end(void)
+      std::vector<idVertex>::iterator end(void)
       {
          return region_.end();
       }
@@ -262,19 +262,19 @@ namespace ftm
       // process segmentation
 
       // keep the front segmentation, return the back
-      tuple<idVertex, ArcRegion> splitFront(idVertex v, const Scalars *s)
+      std::tuple<idVertex, ArcRegion> splitFront(idVertex v, const Scalars *s)
       {
          return region_.splitFront(v, s);
       }
 
       // Keep the back, return the front
-      tuple<idVertex, ArcRegion> splitBack(idVertex v, const Scalars *s)
+      std::tuple<idVertex, ArcRegion> splitBack(idVertex v, const Scalars *s)
       {
          return region_.splitBack(v, s);
       }
 
       idVertex findBelow(idVertex v, const Scalars *s,
-                         const vector<idCorresp> &vert2treeOther = vector<idCorresp>()) const
+                         const std::vector<idCorresp> &vert2treeOther = std::vector<idCorresp>()) const
       {
          return region_.findBelow(v, s, vert2treeOther);
       }
@@ -284,7 +284,7 @@ namespace ftm
          return region_.merge(s.region_);
       }
 
-      string printReg(void) const
+      std::string printReg(void) const
       {
          return region_.print();
       }

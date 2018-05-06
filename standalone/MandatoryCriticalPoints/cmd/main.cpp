@@ -7,6 +7,9 @@
 #include                  <ttkMandatoryCriticalPoints.h>
 #include                  <ttkProgramBase.h>
 
+using namespace std;
+using namespace ttk;
+
 template <class vtkWriterClass>
   int save(vtkDataSet *dataSet, stringstream &fileName){
 

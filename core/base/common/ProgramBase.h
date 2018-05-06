@@ -34,7 +34,7 @@ namespace ttk{
         if(!ttkModule_)
           return -1;
         
-        vector<string> inputPaths;
+        std::vector<std::string> inputPaths;
 
         parser_.setArgument("i", &inputPaths,
           "Input data-sets (*.vti, *vtu, *vtp)");
@@ -79,7 +79,7 @@ namespace ttk{
       
     protected:
       
-      string                        outputPath_;
+      std::string                        outputPath_;
       
       Debug                         *ttkModule_;
      
@@ -87,7 +87,7 @@ namespace ttk{
       virtual int execute() = 0;
       
       /// Load a sequence of input data-sets.
-      virtual int load(const vector<string> &inputPaths) = 0;
+      virtual int load(const std::vector<std::string> &inputPaths) = 0;
       
   };
   

@@ -1,5 +1,7 @@
 #include                  <OneSkeleton.h>
 
+using namespace std;
+using namespace ttk;
 
 OneSkeleton::OneSkeleton(){
 

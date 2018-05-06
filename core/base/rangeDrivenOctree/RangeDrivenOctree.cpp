@@ -4,6 +4,9 @@
 
 #include                  <RangeDrivenOctree.h>
 
+using namespace std;
+using namespace ttk;
+
 RangeDrivenOctree::RangeDrivenOctree(){
 
   cellList_ = NULL;

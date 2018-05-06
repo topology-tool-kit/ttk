@@ -48,7 +48,7 @@ class VTKFILTERSCORE_EXPORT ttkComponentSize
 #else
 class ttkComponentSize
 #endif 
-  : public vtkPointSetAlgorithm, public Wrapper{
+  : public vtkPointSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -63,7 +63,7 @@ class ttkComponentSize
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }

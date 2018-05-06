@@ -3,6 +3,9 @@
 
 #include <vtkTexture.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkCustomInteractor);
 
 

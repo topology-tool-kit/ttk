@@ -94,7 +94,7 @@ namespace ttk{
 }
 
 template <typename dataType>
-dataType DistanceField::getDistance(const int a, const int b) const{
+dataType ttk::DistanceField::getDistance(const int a, const int b) const{
   float p0[3];
   triangulation_->getVertexPoint(a,p0[0],p0[1],p0[2]);
   float p1[3];
@@ -103,7 +103,7 @@ dataType DistanceField::getDistance(const int a, const int b) const{
 }
 
 template <typename dataType>
-int DistanceField::execute() const{
+int ttk::DistanceField::execute() const{
   int* identifiers=static_cast<int*>(vertexIdentifierScalarFieldPointer_);
   dataType* dist=static_cast<dataType*>(outputScalarFieldPointer_);
   int* origin=static_cast<int*>(outputIdentifiers_);
@@ -111,35 +111,36 @@ int DistanceField::execute() const{
 
   Timer t;
 
-  fill(dist,dist+vertexNumber_,numeric_limits<dataType>::max());
-  fill(origin,origin+vertexNumber_,-1);
+  std::fill(dist,dist+vertexNumber_,std::numeric_limits<dataType>::max());
+  std::fill(origin,origin+vertexNumber_,-1);
 
   // get the sources
-  set<int> isSource;
+  std::set<int> isSource;
   for(int k=0; k<sourceNumber_; ++k)
     isSource.insert(identifiers[k]);
-  vector<int> sources;
+  std::vector<int> sources;
   for(auto s : isSource)
     sources.push_back(s);
   isSource.clear();
 
   // comparison lambda
-  auto cmp=[](const pair<dataType,int>& a, const pair<dataType,int>& b){
+  auto cmp=[](const std::pair<dataType,int>& a, const std::pair<dataType,int>& 
+b){
     if(a.first != b.first) return a.first<b.first;
     else return a.second<b.second;
   };
 
   // prepare output
-  vector<vector<dataType>> scalars(sources.size());
+  std::vector<std::vector<dataType>> scalars(sources.size());
   for(auto& k : scalars)
-    k.resize(vertexNumber_, numeric_limits<dataType>::max());
+    k.resize(vertexNumber_, std::numeric_limits<dataType>::max());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i=0; i< (int) sources.size(); ++i){
-    vector<bool> visited(vertexNumber_,false);
-    set<pair<dataType,int>,decltype(cmp)> S(cmp);
+    std::vector<bool> visited(vertexNumber_,false);
+    std::set<std::pair<dataType,int>,decltype(cmp)> S(cmp);
 
     {
       const int s=sources[i];
@@ -194,13 +195,13 @@ int DistanceField::execute() const{
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[DistanceField] Data-set (" << vertexNumber_
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;

@@ -1,5 +1,8 @@
 #include                  <FiberSurface.h>
 
+using namespace std;
+using namespace ttk;
+
 struct _fiberSurfaceVertexCmpX{
   
   bool operator()(

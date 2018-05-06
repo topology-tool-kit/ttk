@@ -1,5 +1,8 @@
 #include                  <ttkIdentifiers.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkIdentifiers)
 
 ttkIdentifiers::ttkIdentifiers(){

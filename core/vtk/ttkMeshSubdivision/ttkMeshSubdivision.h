@@ -61,7 +61,7 @@ class VTKFILTERSCORE_EXPORT ttkMeshSubdivision
 #else
 class ttkMeshSubdivision
 #endif 
-  : public vtkUnstructuredGridAlgorithm, public Wrapper{
+  : public vtkUnstructuredGridAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -76,7 +76,7 @@ class ttkMeshSubdivision
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }

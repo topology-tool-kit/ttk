@@ -1,5 +1,8 @@
 #include                  <ttkBlank.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkBlank)
 
 int ttkBlank::doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs){

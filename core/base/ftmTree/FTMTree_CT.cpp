@@ -16,6 +16,9 @@
 
 #include "FTMTree_CT.h"
 
+using namespace std;
+using namespace ttk;
+
 using namespace ftm;
 
 FTMTree_CT::FTMTree_CT(Params *const params, Triangulation *mesh, Scalars *const scalars)

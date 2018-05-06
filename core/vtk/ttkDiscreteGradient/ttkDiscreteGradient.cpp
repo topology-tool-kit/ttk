@@ -1,5 +1,8 @@
 #include<ttkDiscreteGradient.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkDiscreteGradient)
 
   ttkDiscreteGradient::ttkDiscreteGradient():

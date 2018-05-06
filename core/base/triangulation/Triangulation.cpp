@@ -1,5 +1,8 @@
 #include                  <Triangulation.h>
 
+using namespace std;
+using namespace ttk;
+
 Triangulation::Triangulation(){
 
   debugLevel_ = 0;

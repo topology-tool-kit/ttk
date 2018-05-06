@@ -57,7 +57,7 @@ class VTKFILTERSCORE_EXPORT ttkScalarFieldCriticalPoints
 #else
 class ttkScalarFieldCriticalPoints
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -79,8 +79,8 @@ class ttkScalarFieldCriticalPoints
     }
     // end of default ttk setters
     
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
 
     vtkSetMacro(ScalarFieldId, int);
     vtkGetMacro(ScalarFieldId, int);
@@ -100,8 +100,8 @@ class ttkScalarFieldCriticalPoints
     vtkGetMacro(PredefinedOffset, bool);
     vtkSetMacro(PredefinedOffset, bool);
     
-    vtkGetMacro(OffsetField, string);
-    vtkSetMacro(OffsetField, string);
+    vtkGetMacro(OffsetField, std::string);
+    vtkSetMacro(OffsetField, std::string);
     
     int FillOutputPortInformation(int port, vtkInformation *info){
       info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); 
@@ -122,10 +122,10 @@ class ttkScalarFieldCriticalPoints
     bool                  PredefinedOffset;
     int                   ScalarFieldId, OffsetFieldId;
     bool                  VertexIds, VertexScalars, VertexBoundary;
-    string                ScalarField, OffsetField;
-    vector<vector<pair<int, int> > > vertexLinkEdgeList_;
-    vector<pair<int, char> > criticalPoints_;
-    vector<int>           sosOffsets_;
+    std::string                ScalarField, OffsetField;
+    std::vector<std::vector<std::pair<int, int> > > vertexLinkEdgeList_;
+    std::vector<std::pair<int, char> > criticalPoints_;
+    std::vector<int>           sosOffsets_;
     
    
 };

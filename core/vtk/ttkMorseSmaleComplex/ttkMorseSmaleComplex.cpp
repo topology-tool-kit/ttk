@@ -1,5 +1,8 @@
 #include                  <ttkMorseSmaleComplex.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkMorseSmaleComplex)
 
   ttkMorseSmaleComplex::ttkMorseSmaleComplex():

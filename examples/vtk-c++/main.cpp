@@ -33,7 +33,7 @@ int main(int argc, char **argv){
 
   ttk::CommandLineParser parser;
   
-  string inputFilePath;
+  std::string inputFilePath;
   
   parser.setArgument("i", &inputFilePath, "Path to input VTU file");
   parser.parse(argc, argv);

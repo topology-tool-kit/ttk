@@ -44,7 +44,7 @@ class VTKFILTERSCORE_EXPORT ttkIdentifierRandomizer
 #else
 class ttkIdentifierRandomizer
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
     
@@ -65,8 +65,8 @@ class ttkIdentifierRandomizer
     // end of default ttk setters
     
         
-    vtkSetMacro(ScalarField, string);
-    vtkGetMacro(ScalarField, string);
+    vtkSetMacro(ScalarField, std::string);
+    vtkGetMacro(ScalarField, std::string);
 
   protected:
    
@@ -89,7 +89,7 @@ class ttkIdentifierRandomizer
     
   private:
     
-    string                ScalarField;
+    std::string                ScalarField;
     vtkDataArray          *outputScalarField_;
     
 };

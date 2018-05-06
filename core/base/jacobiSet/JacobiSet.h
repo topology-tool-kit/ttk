@@ -41,30 +41,30 @@ namespace ttk{
       
       ~JacobiSet();
 
-      int connectivityPreprocessing(const vector<vector<int> > &edgeStarList,
-        vector<vector<pair<int, int> > > &edgeFanLinkEdgeLists,
-        vector<vector<long long int> > &edgeFans,
-        vector<int> &sosOffsets) const;
+      int connectivityPreprocessing(const std::vector<std::vector<int> > &edgeStarList,
+        std::vector<std::vector<std::pair<int, int> > > &edgeFanLinkEdgeLists,
+        std::vector<std::vector<long long int> > &edgeFans,
+        std::vector<int> &sosOffsets) const;
       
-      int execute(vector<pair<int, char> > &jacobiSet);
+      int execute(std::vector<std::pair<int, char> > &jacobiSet);
     
       char getCriticalType(const int &edgeId);
       
       int perturbate(const dataTypeU &uEpsilon = pow(10, -DBL_DIG),
         const dataTypeV &vEpsilon = pow(10, -DBL_DIG)) const;
       
-      int setEdgeFans(const vector<vector<long long int> > *edgeFans){
+      int setEdgeFans(const std::vector<std::vector<long long int> > *edgeFans){
         edgeFans_ = edgeFans;
         return 0;
       }
       
       int setEdgeFanLinkEdgeList(
-        const vector<vector<pair<int, int> > > *edgeFanLinkEdgeLists){
+        const std::vector<std::vector<std::pair<int, int> > > *edgeFanLinkEdgeLists){
         edgeFanLinkEdgeLists_ = edgeFanLinkEdgeLists;
         return 0;
       }
       
-      int setEdgeList(const vector<pair<int, int> > *edgeList){
+      int setEdgeList(const std::vector<std::pair<int, int> > *edgeList){
         edgeList_ = edgeList;
         return 0;
       }
@@ -76,17 +76,17 @@ namespace ttk{
         return 0;
       }
       
-      int setSosOffsets(vector<int> *sosOffsets){
+      int setSosOffsets(std::vector<int> *sosOffsets){
         // legacy API
         return setSosOffsetsU(sosOffsets);
       }
       
-      int setSosOffsetsU(vector<int> *sosOffsets){
+      int setSosOffsetsU(std::vector<int> *sosOffsets){
         sosOffsetsU_ = sosOffsets;
         return 0;
       }
       
-      int setSosOffsetsV(vector<int> *sosOffsets){
+      int setSosOffsetsV(std::vector<int> *sosOffsets){
         sosOffsetsV_ = sosOffsets;
         return 0;
       }
@@ -118,18 +118,18 @@ namespace ttk{
       
     protected:
     
-      int executeLegacy(vector<pair<int, char> > &jacobiSet);
+      int executeLegacy(std::vector<std::pair<int, char> > &jacobiSet);
       
       int                   vertexNumber_;
       const long long int   *tetList_;
       const void            *uField_, *vField_;
-      const vector<pair<int, int> > *edgeList_;
+      const std::vector<std::pair<int, int> > *edgeList_;
       // for each edge, one skeleton of its triangle fan
-      const vector<vector<pair<int, int> > > *edgeFanLinkEdgeLists_;
+      const std::vector<std::vector<std::pair<int, int> > > *edgeFanLinkEdgeLists_;
       // for each edge, the one skeleton of its triangle fan
-      const vector<vector<long long int> > *edgeFans_;
-      vector<int>           *sosOffsetsU_, *sosOffsetsV_;
-      vector<int>           localSosOffsetsU_, localSosOffsetsV_;
+      const std::vector<std::vector<long long int> > *edgeFans_;
+      std::vector<int>           *sosOffsetsU_, *sosOffsetsV_;
+      std::vector<int>           localSosOffsetsU_, localSosOffsetsV_;
       Triangulation         *triangulation_;
   };
 }

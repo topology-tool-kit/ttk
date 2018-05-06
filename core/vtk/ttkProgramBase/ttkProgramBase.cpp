@@ -1,5 +1,8 @@
 #include                <ttkProgramBase.h>
 
+using namespace std;
+using namespace ttk;
+
 int ttkProgramBase::execute(){
 
   if(!vtkWrapper_)

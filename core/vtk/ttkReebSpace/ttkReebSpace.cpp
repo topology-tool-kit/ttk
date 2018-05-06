@@ -1,5 +1,8 @@
 #include                  <ttkReebSpace.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkReebSpace)
 
 ttkReebSpace::ttkReebSpace(){

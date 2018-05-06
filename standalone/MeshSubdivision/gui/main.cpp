@@ -7,6 +7,9 @@
 #include                  <ttkMeshSubdivision.h>
 #include                  <ttkUserInterfaceBase.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkUserInterface<ttkMeshSubdivision> program;
 
 int main(int argc, char **argv) {

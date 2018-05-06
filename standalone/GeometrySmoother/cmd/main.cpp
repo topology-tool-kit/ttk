@@ -8,6 +8,9 @@
 #include                  <ScalarFieldSmoother.h>
 #include                  <ProgramBase.h>
 
+using namespace std;
+using namespace ttk;
+
 int                       iterationNumber_ = 1;
 
 template <class ttkModule>

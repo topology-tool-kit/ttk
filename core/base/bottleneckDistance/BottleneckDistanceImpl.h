@@ -1,30 +1,29 @@
 #ifndef _BOTTLENECKDISTANCEIMPL_H
 #define _BOTTLENECKDISTANCEIMPL_H
 
-using namespace std;
-
 template <typename dataType>
-int BottleneckDistance::execute(
+int ttk::BottleneckDistance::execute(
   const bool usePersistenceMetric,
   const double alpha)
 {
   Timer t;
 
   this->computeBottleneck(
-    static_cast<const vector<diagramTuple>*> (outputCT1_),
-    static_cast<const vector<diagramTuple>*> (outputCT2_),
-    static_cast<vector<matchingTuple>*> (matchings_),
+    static_cast<const std::vector<diagramTuple>*> (outputCT1_),
+    static_cast<const std::vector<diagramTuple>*> (outputCT2_),
+    static_cast<std::vector<matchingTuple>*> (matchings_),
     usePersistenceMetric,
     alpha);
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[BottleneckDistance] Data-set processed in "
         << t.getElapsedTime() << " s. (" << threadNumber_
         << " thread(s))."
-        << endl;
-    msg << "[BottleneckDistance] distance = " << *(dataType*) distance_ << endl;
-    // Using std:: with cout for CLion parser.
+        << std::endl;
+    msg << "[BottleneckDistance] distance = " << *(dataType*) distance_ << 
+std::endl;
+    // Using std:: with std::cout for CLion parser.
     dMsg(std::cout, msg.str(), timeMsg);
   }
 
@@ -32,66 +31,68 @@ int BottleneckDistance::execute(
 }
 
 template <typename dataType>
-double BottleneckDistance::computeGeometricalRange(
-  const vector<diagramTuple> *CTDiagram1,
-  const vector<diagramTuple> *CTDiagram2,
+double ttk::BottleneckDistance::computeGeometricalRange(
+  const std::vector<diagramTuple> *CTDiagram1,
+  const std::vector<diagramTuple> *CTDiagram2,
   const int d1Size,
   const int d2Size) const
 {
   float minX1, maxX1, minY1, maxY1, minZ1, maxZ1;
   float minX2, maxX2, minY2, maxY2, minZ2, maxZ2;
   float minX, minY, minZ, maxX, maxY, maxZ;
-  minX1 = minY1 = minZ1 = minX2 = minY2 = minZ2 = numeric_limits<float>::max();
-  maxX1 = maxY1 = maxZ1 = maxX2 = maxY2 = maxZ2 = numeric_limits<float>::min();
+  minX1 = minY1 = minZ1 = minX2 = minY2 = minZ2 
+    = std::numeric_limits<float>::max();
+  maxX1 = maxY1 = maxZ1 = maxX2 = maxY2 = maxZ2 
+    = std::numeric_limits<float>::min();
 
   for (int i = 0; i < d1Size; ++i) {
     diagramTuple t = CTDiagram1->at(i);
-    float xa = get<7>(t), ya = get<8>(t), za = get<9>(t);
-    float xb = get<11>(t), yb = get<12>(t), zb = get<13>(t);
-    minX1 = min(min(minX1, xa), xb);
-    minY1 = min(min(minY1, ya), yb);
-    minZ1 = min(min(minZ1, za), zb);
-    maxX1 = max(max(maxX1, xa), xb);
-    maxY1 = max(max(maxY1, ya), yb);
-    maxZ1 = max(max(maxZ1, za), zb);
+    float xa = std::get<7>(t), ya = std::get<8>(t), za = std::get<9>(t);
+    float xb = std::get<11>(t), yb = std::get<12>(t), zb = std::get<13>(t);
+    minX1 = std::min(std::min(minX1, xa), xb);
+    minY1 = std::min(std::min(minY1, ya), yb);
+    minZ1 = std::min(std::min(minZ1, za), zb);
+    maxX1 = std::max(std::max(maxX1, xa), xb);
+    maxY1 = std::max(std::max(maxY1, ya), yb);
+    maxZ1 = std::max(std::max(maxZ1, za), zb);
   }
 
   for (int i = 0; i < d2Size; ++i) {
     diagramTuple t = CTDiagram2->at(i);
-    float xa = get<7>(t), ya = get<8>(t), za = get<9>(t);
-    float xb = get<11>(t), yb = get<12>(t), zb = get<13>(t);
-    minX2 = min(min(minX2, xa), xb);
-    minY2 = min(min(minY2, ya), yb);
-    minZ2 = min(min(minZ2, za), zb);
-    maxX2 = max(max(maxX2, xa), xb);
-    maxY2 = max(max(maxY2, ya), yb);
-    maxZ2 = max(max(maxZ2, za), zb);
+    float xa = std::get<7>(t), ya = std::get<8>(t), za = std::get<9>(t);
+    float xb = std::get<11>(t), yb = std::get<12>(t), zb = std::get<13>(t);
+    minX2 = std::min(std::min(minX2, xa), xb);
+    minY2 = std::min(std::min(minY2, ya), yb);
+    minZ2 = std::min(std::min(minZ2, za), zb);
+    maxX2 = std::max(std::max(maxX2, xa), xb);
+    maxY2 = std::max(std::max(maxY2, ya), yb);
+    maxZ2 = std::max(std::max(maxZ2, za), zb);
   }
 
-  minX = min(minX1, minX2); maxX = max(maxX1, maxX2);
-  minY = min(minY1, minY2); maxY = max(maxY1, maxY2);
-  minZ = min(minZ1, minZ2); maxZ = max(maxZ1, maxZ2);
+  minX = std::min(minX1, minX2); maxX = std::max(maxX1, maxX2);
+  minY = std::min(minY1, minY2); maxY = std::max(maxY1, maxY2);
+  minZ = std::min(minZ1, minZ2); maxZ = std::max(maxZ1, maxZ2);
 
   return sqrt(
       pow(maxX - minX, 2) + pow(maxY - minY, 2) + pow(maxZ - minZ, 2));
 }
 
 template <typename dataType>
-double BottleneckDistance::computeMinimumRelevantPersistence(
-  const vector<diagramTuple> *CTDiagram1,
-  const vector<diagramTuple> *CTDiagram2,
+double ttk::BottleneckDistance::computeMinimumRelevantPersistence(
+  const std::vector<diagramTuple> *CTDiagram1,
+  const std::vector<diagramTuple> *CTDiagram2,
   const int d1Size,
   const int d2Size) const
 {
-  vector<dataType> toSort;
+  std::vector<dataType> toSort;
   for (int i = 0; i < d1Size; ++i) {
     diagramTuple t = CTDiagram1->at(i);
-    dataType persistence = abs<dataType>(get<4>(t));
+    dataType persistence = abs<dataType>(std::get<4>(t));
     toSort.push_back(persistence);
   }
   for (int i = 0; i < d2Size; ++i) {
     diagramTuple t = CTDiagram2->at(i);
-    dataType persistence = abs<dataType>(get<4>(t));
+    dataType persistence = abs<dataType>(std::get<4>(t));
     toSort.push_back(persistence);
   }
   sort(toSort.begin(), toSort.end());
@@ -108,22 +109,22 @@ double BottleneckDistance::computeMinimumRelevantPersistence(
 }
 
 template <typename dataType>
-void BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
-  const vector<diagramTuple > *CTDiagram,
+void ttk::BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
+  const std::vector<diagramTuple > *CTDiagram,
   int dSize,
   int &nbMin,
   int &nbMax,
   int &nbSaddle,
-  vector<int> *minMap,
-  vector<int> *maxMap,
-  vector<int> *sadMap,
+  std::vector<int> *minMap,
+  std::vector<int> *maxMap,
+  std::vector<int> *sadMap,
   const dataType zeroThresh)
 {
   for (int i = 0; i < dSize; ++i) {
     diagramTuple t = CTDiagram->at(i);
-    BNodeType nt1 = get<1>(t);
-    BNodeType nt2 = get<3>(t);
-    dataType dt = get<4>(t);
+    BNodeType nt1 = std::get<1>(t);
+    BNodeType nt2 = std::get<3>(t);
+    dataType dt = std::get<4>(t);
     if (abs<dataType>(dt) < zeroThresh) continue;
 
     if (nt1 == BLocalMin && nt2 == BLocalMax) {
@@ -149,13 +150,14 @@ void BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
 }
 
 template <typename dataType>
-void BottleneckDistance::buildCostMatrices(
-  const vector<diagramTuple> *CTDiagram1,
-  const vector<diagramTuple> *CTDiagram2,
+void ttk::BottleneckDistance::buildCostMatrices(
+  const std::vector<diagramTuple> *CTDiagram1,
+  const std::vector<diagramTuple> *CTDiagram2,
   const int d1Size,
   const int d2Size,
-  function<dataType (const diagramTuple, const diagramTuple)>& distanceFunction,
-  function<dataType (const diagramTuple)>& diagonalDistanceFunction,
+  std::function<dataType (
+    const diagramTuple, const diagramTuple)>& distanceFunction,
+    std::function<dataType (const diagramTuple)>& diagonalDistanceFunction,
   const double zeroThresh,
   dataType **minMatrix,
   dataType **maxMatrix,
@@ -169,10 +171,10 @@ void BottleneckDistance::buildCostMatrices(
   for (int i = 0; i < d1Size; ++i)
   {
     diagramTuple t1 = CTDiagram1->at(i);
-    if (abs<dataType>(get<4>(t1)) < zeroThresh) continue;
+    if (abs<dataType>(std::get<4>(t1)) < zeroThresh) continue;
 
-    BNodeType t11 = get<1>(t1);
-    BNodeType t13 = get<3>(t1);
+    BNodeType t11 = std::get<1>(t1);
+    BNodeType t13 = std::get<3>(t1);
     bool isMin1 = (t11 == BLocalMin || t13 == BLocalMin);
     bool isMax1 = (t11 == BLocalMax || t13 == BLocalMax);
     bool isSad1 = (t11 == BSaddle1 && t13 == BSaddle2) ||
@@ -189,10 +191,10 @@ void BottleneckDistance::buildCostMatrices(
     for (int j = 0; j < d2Size; ++j)
     {
       diagramTuple t2 = CTDiagram2->at(j);
-      if (abs<dataType>(get<4>(t2)) < zeroThresh) continue;
+      if (abs<dataType>(std::get<4>(t2)) < zeroThresh) continue;
 
-      BNodeType t21 = get<1>(t2);
-      BNodeType t23 = get<3>(t2);
+      BNodeType t21 = std::get<1>(t2);
+      BNodeType t23 = std::get<3>(t2);
       bool isMin2 = (t21 == BLocalMin || t23 == BLocalMin);
       bool isMax2 = (t21 == BLocalMax || t23 == BLocalMax);
       bool isSad2 = (t21 == BSaddle1 && t23 == BSaddle2) ||
@@ -231,10 +233,10 @@ void BottleneckDistance::buildCostMatrices(
   // Last row: match remaining J components with diagonal.
   for (int j = 0; j < d2Size; ++j) {
     diagramTuple t2 = CTDiagram2->at(j);
-    if (abs<dataType>(get<4>(t2)) < zeroThresh) continue;
+    if (abs<dataType>(std::get<4>(t2)) < zeroThresh) continue;
 
-    BNodeType t21 = get<1>(t2);
-    BNodeType t23 = get<3>(t2);
+    BNodeType t21 = std::get<1>(t2);
+    BNodeType t23 = std::get<3>(t2);
     bool isMin2 = (t21 == BLocalMin || t23 == BLocalMin);
     bool isMax2 = (t21 == BLocalMax || t23 == BLocalMax);
     bool isSad2 = (t21 == BSaddle1 && t23 == BSaddle2) ||
@@ -251,23 +253,23 @@ void BottleneckDistance::buildCostMatrices(
   }
 
   // Last cell
-  minMatrix[minI][minJ] = numeric_limits<dataType>::max();
-  maxMatrix[maxI][maxJ] = numeric_limits<dataType>::max();
-  sadMatrix[sadI][sadJ] = numeric_limits<dataType>::max();
+  minMatrix[minI][minJ] = std::numeric_limits<dataType>::max();
+  maxMatrix[maxI][maxJ] = std::numeric_limits<dataType>::max();
+  sadMatrix[sadI][sadJ] = std::numeric_limits<dataType>::max();
 }
 
 template <typename dataType>
-dataType BottleneckDistance::findInitialThreshold(
+dataType ttk::BottleneckDistance::findInitialThreshold(
   const int nbRow,
   const int nbCol,
   const dataType **matrix) const
 {
   dataType col, row;
-  vector<dataType> rowCols(0);
+  std::vector<dataType> rowCols(0);
   for (int i = 0; i < nbRow; ++i) {
     row = matrix[i][0];
     for (int j = 1; j < nbCol; ++j) {
-      row = min(row, matrix[i][j]);
+      row = std::min(row, matrix[i][j]);
     }
     rowCols.push_back(row);
   }
@@ -275,20 +277,20 @@ dataType BottleneckDistance::findInitialThreshold(
   for (int j = 0; j < nbCol; ++j) {
     col = matrix[0][j];
     for (int i = 0; i < nbRow; ++i) {
-      col = min(col, matrix[i][j]);
+      col = std::min(col, matrix[i][j]);
     }
     rowCols.push_back(col);
   }
 
   dataType threshold = rowCols.size() > 0 ? rowCols.at(0) : 0;
   for (int i = 1, s = (int) rowCols.size(); i < s; ++i)
-    threshold = max(threshold, rowCols.at(i));
+    threshold = std::max(threshold, rowCols.at(i));
 
   return threshold;
 }
 
 template <typename dataType>
-void BottleneckDistance::filterFromThreshold(
+void ttk::BottleneckDistance::filterFromThreshold(
   const dataType threshold,
   const int nbRow,
   const int nbCol,
@@ -298,27 +300,28 @@ void BottleneckDistance::filterFromThreshold(
   for (int i = 0; i < nbRow; ++i)
     for (int j = 0; j < nbCol; ++j)
       bottleneckMatrix[i][j] =
-        matrix[i][j] > threshold ? numeric_limits<dataType>::max() : matrix[i][j];
+        matrix[i][j] > threshold ? std::numeric_limits<dataType>::max() : 
+matrix[i][j];
 }
 
 template <typename dataType>
-bool BottleneckDistance::isValidMatching(
-  const vector<matchingTuple>* matchings,
+bool ttk::BottleneckDistance::isValidMatching(
+  const std::vector<matchingTuple>* matchings,
   const dataType thresholdMin) const
 {
   for (int i = 0, s = matchings->size(); i < s; ++i) {
     matchingTuple t = matchings->at(i);
     // Safe enough (matrix minima are substracted as a first
     // Munkres step, but numeric_limits should be high enough)
-    if (get<2>(t) > thresholdMin)
+    if (std::get<2>(t) > thresholdMin)
       return false;
   }
   return true;
 }
 
 template <typename dataType>
-void BottleneckDistance::iterateSolving(
-  vector<matchingTuple>* matchings,
+void ttk::BottleneckDistance::iterateSolving(
+  std::vector<matchingTuple>* matchings,
   const dataType threshold,
   const int nbRow,
   const int nbCol,
@@ -331,15 +334,17 @@ void BottleneckDistance::iterateSolving(
 
   dataType adaptiveThreshold = threshold;
 
-  // Check assignment maximum (infty => restart Munkres with a higher - next - threshold).
+  // Check assignment maximum (infty => restart Munkres with a higher - next - 
+  // threshold).
   int minIter = 2;
-  while (!this->isValidMatching(const_cast<const vector<matchingTuple>* >(matchings), adaptiveThreshold)
+  while (!this->isValidMatching(const_cast<const std::vector<matchingTuple>* 
+>(matchings), adaptiveThreshold)
          && minIter <= nbRow * nbCol)
   {
     matchings->clear();
 
     // Find next threshold.
-    dataType newThreshold = numeric_limits<dataType>::max();
+    dataType newThreshold = std::numeric_limits<dataType>::max();
     for (int i = 0; i < nbRow; ++i) {
       for (int j = 0; j < nbCol; ++j) {
         dataType e = matrix[i][j];
@@ -353,7 +358,7 @@ void BottleneckDistance::iterateSolving(
       for (int j = 0; j < nbCol; ++j) {
         dataType e = matrix[i][j];
         bottleneckMatrix[i][j] =
-          (e > adaptiveThreshold) ? numeric_limits<dataType>::max() : e;
+          (e > adaptiveThreshold) ? std::numeric_limits<dataType>::max() : e;
       }
     }
 
@@ -364,11 +369,11 @@ void BottleneckDistance::iterateSolving(
 }
 
 template <typename dataType>
-void BottleneckDistance::solvePWasserstein(
+void ttk::BottleneckDistance::solvePWasserstein(
   const int nbRow,
   const int nbCol,
   dataType **matrix,
-  vector<matchingTuple> *matchings,
+  std::vector<matchingTuple> *matchings,
   Munkres *solver)
 {
   solver->setInput(nbRow+1, nbCol+1, (void*) matrix);
@@ -377,11 +382,11 @@ void BottleneckDistance::solvePWasserstein(
 }
 
 template <typename dataType>
-void BottleneckDistance::solveInfinityWasserstein(
+void ttk::BottleneckDistance::solveInfinityWasserstein(
   const int nbRow,
   const int nbCol,
   dataType **matrix,
-  vector<matchingTuple> *matchings,
+  std::vector<matchingTuple> *matchings,
   Munkres *solver)
 {
   // Cf. "A New Algorithm for Solving Linear Bottleneck Assignment Problem"
@@ -415,33 +420,33 @@ void BottleneckDistance::solveInfinityWasserstein(
 }
 
 template <typename dataType>
-dataType BottleneckDistance::buildMappings(
-  const vector<matchingTuple> inputMatchings,
-  vector<matchingTuple> *outputMatchings,
-  const vector<int> map1,
-  const vector<int> map2,
+dataType ttk::BottleneckDistance::buildMappings(
+  const std::vector<matchingTuple> inputMatchings,
+  std::vector<matchingTuple> *outputMatchings,
+  const std::vector<int> map1,
+  const std::vector<int> map2,
   int wasserstein)
 {
   dataType addedPersistence = 0;
   for (int i = 0, s = (int) inputMatchings.size(); i < s; ++i) {
     matchingTuple t = inputMatchings.at(i);
-    dataType val = abs<dataType>(get<2>(t));
+    dataType val = abs<dataType>(std::get<2>(t));
 
-    if (get<0>(t) >= (int) map1.size()) {
+    if (std::get<0>(t) >= (int) map1.size()) {
       addedPersistence =
         (wasserstein > 0 ?
         addedPersistence + pow(val, wasserstein) :
-        max(val, addedPersistence));
+        std::max(val, addedPersistence));
     }
-    else if (get<1>(t) >= (int) map2.size()) {
+    else if (std::get<1>(t) >= (int) map2.size()) {
       addedPersistence =
         (wasserstein > 0 ?
         addedPersistence + pow(val, wasserstein) :
-        max(val, addedPersistence));
+        std::max(val, addedPersistence));
     } else {
       // Using std:: and casting for CLion parser.
       outputMatchings->push_back(
-        std::make_tuple(map1.at(get<0>(t)), map2.at(get<1>(t)), val)
+        std::make_tuple(map1.at(std::get<0>(t)), map2.at(std::get<1>(t)), val)
       );
     }
   }

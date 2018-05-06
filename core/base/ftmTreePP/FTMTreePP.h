@@ -23,24 +23,24 @@ namespace ttk
       class FTMTreePP : public FTMTree
       {
         private:
-         vector<AtomicUF*> nodesUF_;
+         std::vector<AtomicUF*> nodesUF_;
 
         public:
          FTMTreePP();
          virtual ~FTMTreePP();
 
          template <typename scalarType>
-         void computePersistencePairs(vector<tuple<idVertex, idVertex, scalarType>>& pairs,
+         void computePersistencePairs(std::vector<std::tuple<idVertex, idVertex, scalarType>>& pairs,
                                       const bool jt);
 
         protected:
          template <typename scalarType>
          void computePairs(ftm::FTMTree_MT* tree,
-                           vector<tuple<idVertex, idVertex, scalarType>>& pairs);
+                           std::vector<std::tuple<idVertex, idVertex, scalarType>>& pairs);
 
          template <typename scalarType>
          void sortPairs(ftm::FTMTree_MT* tree,
-                        vector<tuple<idVertex, idVertex, scalarType>>& pairs);
+                        std::vector<std::tuple<idVertex, idVertex, scalarType>>& pairs);
 
          void addPendingNode(const idNode parentNode, const idNode toAdd)
          {
@@ -78,7 +78,7 @@ namespace ttk
 
          template <typename scalarType>
          void createPairs(const idNode current,
-                          vector<tuple<idVertex, idVertex, scalarType>>& pairs,
+                          std::vector<std::tuple<idVertex, idVertex, scalarType>>& pairs,
                           ftm::FTMTree_MT* tree,
                           const idVertex   mp)
          {
@@ -105,7 +105,9 @@ namespace ttk
 }
 
 template <typename scalarType>
-void ftm::FTMTreePP::computePersistencePairs(vector<tuple<idVertex, idVertex, scalarType>>& pairs,
+void 
+ttk::ftm::FTMTreePP::computePersistencePairs(std::vector<std::tuple<
+idVertex, idVertex, scalarType>>& pairs,
                                              const bool jt)
 {
    ftm::FTMTree_MT* tree = jt ? getJoinTree() : getSplitTree();
@@ -132,8 +134,9 @@ void ftm::FTMTreePP::computePersistencePairs(vector<tuple<idVertex, idVertex, sc
 }
 
 template <typename scalarType>
-void ftm::FTMTreePP::computePairs(ftm::FTMTree_MT* tree,
-                                  vector<tuple<idVertex, idVertex, scalarType>>& pairs)
+void ttk::ftm::FTMTreePP::computePairs(ftm::FTMTree_MT* tree,
+                                  std::vector<std::tuple<idVertex, idVertex, 
+scalarType>>& pairs)
 {
    auto getParentNode = [&](const idNode current) {
       const idSuperArc parentArc = tree->getNode(current)->getUpSuperArcId(0);
@@ -163,8 +166,10 @@ void ftm::FTMTreePP::computePairs(ftm::FTMTree_MT* tree,
       const idNode parentNode = getParentNode(current);
       addPendingNode(parentNode, current);
 
-      if (countPendingNode(parentNode) == tree->getNode(parentNode)->getNumberOfDownSuperArcs()) {
-         const idVertex mostPersist = getMostPersistVert<scalarType>(parentNode, tree);
+      if (countPendingNode(parentNode) == 
+tree->getNode(parentNode)->getNumberOfDownSuperArcs()) {
+         const idVertex mostPersist = getMostPersistVert<scalarType>(parentNode, 
+tree);
          createPairs<scalarType>(parentNode, pairs, tree, mostPersist);
          nodesUF_[parentNode]->find()->setExtrema(mostPersist);
          toSee.push(parentNode);
@@ -173,12 +178,13 @@ void ftm::FTMTreePP::computePairs(ftm::FTMTree_MT* tree,
 }
 
 template <typename scalarType>
-void ftm::FTMTreePP::sortPairs(ftm::FTMTree_MT* tree,
-                               vector<tuple<idVertex, idVertex, scalarType>>& pairs)
+void ttk::ftm::FTMTreePP::sortPairs(ftm::FTMTree_MT* tree,
+                               std::vector<std::tuple<idVertex, idVertex, 
+scalarType>>& pairs)
 {
-   auto comp = [&](const tuple<idVertex, idVertex, scalarType> a,
-                   const tuple<idVertex, idVertex, scalarType> b) {
-       return get<2>(a) < get<2>(b);
+   auto comp = [&](const std::tuple<idVertex, idVertex, scalarType> a,
+                   const std::tuple<idVertex, idVertex, scalarType> b) {
+       return std::get<2>(a) < std::get<2>(b);
    };
 
    sort(pairs.begin(), pairs.end(), comp);

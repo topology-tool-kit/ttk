@@ -8,6 +8,9 @@
 // include the local headers
 #include                  "Editor.h"
 
+using namespace std;
+using namespace ttk;
+
 int main(int argc, char **argv) {
 
   // init editor

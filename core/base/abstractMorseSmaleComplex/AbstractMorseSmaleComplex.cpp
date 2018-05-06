@@ -1,5 +1,8 @@
 #include<AbstractMorseSmaleComplex.h>
 
+using namespace std;
+using namespace ttk;
+
 AbstractMorseSmaleComplex::AbstractMorseSmaleComplex():
   ReverveSaddleMaximumConnection{true},
   ReverveSaddleSaddleConnection{true},

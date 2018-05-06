@@ -1,5 +1,8 @@
 #include                  <ContinuousScatterPlot.h>
 
+using namespace std;
+using namespace ttk;
+
 ContinuousScatterPlot::ContinuousScatterPlot():
   vertexNumber_{},
   triangulation_{},

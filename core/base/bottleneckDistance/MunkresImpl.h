@@ -2,13 +2,11 @@
 #define _MUNKRESIMPL_H
 
 #ifndef matchingTuple
-#define matchingTuple tuple<ftm::idVertex, ftm::idVertex, dataType>
+#define matchingTuple std::tuple<ftm::idVertex, ftm::idVertex, dataType>
 #endif
 
-using namespace std;
-
 template <typename dataType>
-int Munkres::run(vector<matchingTuple> *matchings)
+int ttk::Munkres::run(std::vector<matchingTuple> *matchings)
 {
   int step = 1;
   int iter = 0;
@@ -22,17 +20,17 @@ int Munkres::run(vector<matchingTuple> *matchings)
   {
     ++ iter;
     {
-      stringstream msg;
+      std::stringstream msg;
       msg << "[BottleneckDistence] Munkres step " << step << ", Iteration "
-          << iter << " in " << t.getElapsedTime() << endl;
+          << iter << " in " << t.getElapsedTime() << std::endl;
       dMsg(std::cout, msg.str(), advancedInfoMsg);
     }
 
     if (iter > 20 && (iter % (int) std::round((double) maxIter / 5.0) == 0)) {
-      stringstream msg;
+      std::stringstream msg;
       double progress = std::round(100.0 * (double) iter / (double) maxIter);
       msg << "[BottleneckDistance] Munkres progress " << progress
-          << "%" << endl;
+          << "%" << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
     }
 
@@ -41,9 +39,10 @@ int Munkres::run(vector<matchingTuple> *matchings)
       showMaskMatrix();
 
       {
-        stringstream msg;
-        msg << "[BottleneckDistance] Munkres failed to converge after " << (maxIter)
-            << " iterations. Aborting." << endl;
+        std::stringstream msg;
+        msg << "[BottleneckDistance] Munkres failed to converge after " << 
+(maxIter)
+            << " iterations. Aborting." << std::endl;
         dMsg(std::cout, msg.str(), timeMsg);
       }
 
@@ -91,7 +90,7 @@ int Munkres::run(vector<matchingTuple> *matchings)
 
 // Substract minimum value in every row.
 template <typename dataType>
-int Munkres::stepOne(int& step) {
+int ttk::Munkres::stepOne(int& step) {
   double minInRow;
   auto** C = (dataType**) Cptr;
 
@@ -112,7 +111,7 @@ int Munkres::stepOne(int& step) {
 // Find a zero in the matrix,
 // star it if it is the only one in its row and col.
 template <typename dataType>
-int Munkres::stepTwo(int& step) {
+int ttk::Munkres::stepTwo(int& step) {
   auto** C = (dataType**) Cptr;
 
   for (int r = 0; r < rowSize; ++r)
@@ -120,7 +119,8 @@ int Munkres::stepTwo(int& step) {
       // TODO Weakness: == 0. criterium
       if (C[r][c] == 0. && !rowCover[r] && !colCover[c]) {
         M[r][c] = 1;
-        // [CORE] Important! here diagonal values shouldn't be discarded in rowCover.
+        // [CORE] Important! here diagonal values shouldn't be discarded in 
+        // rowCover.
         rowCover[r] = true;
         colCover[c] = true;
       }
@@ -138,7 +138,7 @@ int Munkres::stepTwo(int& step) {
 // If all columns are starred (1 star only per column is possible)
 // then the algorithm is terminated.
 template <typename dataType>
-int Munkres::stepThree(int& step) {
+int ttk::Munkres::stepThree(int& step) {
   // [CORE] Important! Here, matchings to the diagonal are accounted for.
   for (int r = 0; r < rowSize; ++r)
     for (int c = 0; c < colSize; ++c)
@@ -162,7 +162,7 @@ int Munkres::stepThree(int& step) {
 // Repeat until there are no uncovered zero left
 // Save smallest uncovered value then -> step 6
 template <typename dataType>
-int Munkres::stepFour(int& step) {
+int ttk::Munkres::stepFour(int& step) {
   int row = -1;
   int col = -1;
   bool done = false;
@@ -196,7 +196,7 @@ int Munkres::stepFour(int& step) {
 }
 
 template <typename dataType>
-int Munkres::findStarInRow(int row) {
+int ttk::Munkres::findStarInRow(int row) {
   int col = -1;
   for (int c = 0; c < colSize; ++c)
     if (M[row][c] == 1) col = c;
@@ -204,7 +204,7 @@ int Munkres::findStarInRow(int row) {
 }
 
 template <typename dataType>
-int Munkres::findZero(int& row, int& col) {
+int ttk::Munkres::findZero(int& row, int& col) {
   auto** C = (dataType**) Cptr;
 
   row = -1;
@@ -223,7 +223,7 @@ int Munkres::findZero(int& row, int& col) {
     }
   }
 
-  stringstream msg;
+  std::stringstream msg;
   msg << "[Munkres] Zero not found" << std::endl;
   dMsg(std::cout, msg.str(), advancedInfoMsg);
 
@@ -239,7 +239,7 @@ int Munkres::findZero(int& row, int& col) {
 // in the series,
 // erase all primes, uncover every line, return to step 3.
 template <typename dataType>
-int Munkres::stepFive(int& step) {
+int ttk::Munkres::stepFive(int& step) {
   {
     int r = -1;
     int c = -1;
@@ -289,7 +289,7 @@ int Munkres::stepFive(int& step) {
 }
 
 template <typename dataType>
-int Munkres::findStarInCol(int col, int& row) {
+int ttk::Munkres::findStarInCol(int col, int& row) {
   row = -1;
   for (int r = 0; r < rowSize; ++r)
     if (M[r][col] == 1) row = r;
@@ -298,7 +298,7 @@ int Munkres::findStarInCol(int col, int& row) {
 }
 
 template <typename dataType>
-int Munkres::findPrimeInRow(int row, int& col) {
+int ttk::Munkres::findPrimeInRow(int row, int& col) {
   for (int c = 0; c < colSize; ++c)
     if (M[row][c] == 2) col = c;
 
@@ -309,7 +309,7 @@ int Munkres::findPrimeInRow(int row, int& col) {
 // substract it from every element of each uncovered col.
 // Return to step 4 without altering any stars/primes/covers.
 template <typename dataType>
-int Munkres::stepSix(int& step) {
+int ttk::Munkres::stepSix(int& step) {
   auto** C = (dataType**) Cptr;
 
   dataType min = std::numeric_limits<dataType>::max();
@@ -337,15 +337,15 @@ int Munkres::stepSix(int& step) {
 }
 
 template <typename dataType>
-int Munkres::stepSeven(int& step) {
-  stringstream msg;
-  msg << "[Munkres] Step 7 over." << endl;
+int ttk::Munkres::stepSeven(int& step) {
+  std::stringstream msg;
+  msg << "[Munkres] Step 7 over." << std::endl;
   dMsg(std::cout, msg.str(), advancedInfoMsg);
   return 0;
 }
 
 template<typename dataType>
-int Munkres::affect(vector<matchingTuple> *matchings) {
+int ttk::Munkres::affect(std::vector<matchingTuple> *matchings) {
 
   auto** C = (dataType**) C_orig;
   int nbC = colSize;
@@ -356,7 +356,7 @@ int Munkres::affect(vector<matchingTuple> *matchings) {
   for (int r = 0; r < nbR; ++r)
     for (int c = 0; c < nbC; ++c)
       if (M[r][c] == 1) {
-        matchingTuple t = make_tuple(r, c, C[r][c]);
+        matchingTuple t = std::make_tuple(r, c, C[r][c]);
         matchings->push_back(t);
       }
 
@@ -364,7 +364,7 @@ int Munkres::affect(vector<matchingTuple> *matchings) {
 }
 
 template<typename dataType>
-int Munkres::computeAffectationCost() {
+int ttk::Munkres::computeAffectationCost() {
 
   auto** C = (dataType**) C_orig;
   int nbC = colSize;
@@ -377,8 +377,8 @@ int Munkres::computeAffectationCost() {
         total += C[r][c];
       }
 
-  stringstream msg;
-  msg << "[Munkres] Total cost = " << total << endl;
+  std::stringstream msg;
+  msg << "[Munkres] Total cost = " << total << std::endl;
   dMsg(std::cout, msg.str(), timeMsg);
 
   return 0;

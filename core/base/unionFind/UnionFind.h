@@ -13,8 +13,6 @@
 #include                <algorithm>
 #include                <vector>
 
-using namespace std;
-
 namespace ttk{
 
   class UnionFind : virtual public Debug{
@@ -44,7 +42,7 @@ namespace ttk{
       
       static inline UnionFind* makeUnion(UnionFind *uf0, UnionFind *uf1);
       
-      static inline UnionFind* makeUnion(vector<UnionFind *> &sets);
+      static inline UnionFind* makeUnion(std::vector<UnionFind *> &sets);
       
       inline void setParent(UnionFind *parent){ parent_ = parent;};
       
@@ -106,7 +104,7 @@ namespace ttk{
     return NULL;
   }
   
-  static inline UnionFind* makeUnion(vector<UnionFind *> &sets){
+  static inline UnionFind* makeUnion(std::vector<UnionFind *> &sets){
     
     UnionFind *n = NULL;
     

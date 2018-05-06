@@ -10,8 +10,12 @@
 
 #include "ContourForestsTree.h"
 
-ContourForestsTree::ContourForestsTree(Params *const params, Triangulation *mesh,
-                                       Scalars *const scalars, idPartition part)
+using namespace std;
+using namespace ttk;
+
+ContourForestsTree::ContourForestsTree(
+  Params *const params, Triangulation *mesh,
+  Scalars *const scalars, idPartition part)
     : MergeTree(params, mesh, scalars, TreeType::Contour, part),
       jt_(new MergeTree(params, mesh, scalars, TreeType::Join, part)),
       st_(new MergeTree(params, mesh, scalars, TreeType::Split, part))

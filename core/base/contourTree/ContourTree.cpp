@@ -1,6 +1,9 @@
 #include                <ContourTree.h>
 #include    <iomanip>
 
+using namespace std;
+using namespace ttk;
+
 struct MyCmp{
   const vector<double>* vertexScalars_;
   const vector<int>* vertexOffsets_;

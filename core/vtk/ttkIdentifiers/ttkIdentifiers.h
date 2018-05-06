@@ -45,7 +45,7 @@ class VTKFILTERSCORE_EXPORT ttkIdentifiers
 #else
 class ttkIdentifiers
 #endif 
-  : public vtkDataSetAlgorithm, public Wrapper{
+  : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -53,11 +53,11 @@ class ttkIdentifiers
     
     vtkTypeMacro(ttkIdentifiers, vtkDataSetAlgorithm);
 
-    vtkSetMacro(CellFieldName, string);
-    vtkGetMacro(CellFieldName, string);
+    vtkSetMacro(CellFieldName, std::string);
+    vtkGetMacro(CellFieldName, std::string);
 
-    vtkSetMacro(VertexFieldName, string);
-    vtkGetMacro(VertexFieldName, string);
+    vtkSetMacro(VertexFieldName, std::string);
+    vtkGetMacro(VertexFieldName, std::string);
 
     // default ttk setters
     vtkSetMacro(debugLevel_, int);
@@ -66,7 +66,7 @@ class ttkIdentifiers
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }
@@ -97,7 +97,7 @@ class ttkIdentifiers
     
     bool                  UseAllCores;
     int                   ThreadNumber;
-    string                CellFieldName, VertexFieldName;
+    std::string                CellFieldName, VertexFieldName;
     
     // base code features
     int doIt(vtkDataSet *input, vtkDataSet *output);

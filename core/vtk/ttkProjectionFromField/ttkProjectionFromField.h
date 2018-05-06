@@ -40,7 +40,7 @@ class VTKFILTERSCORE_EXPORT ttkProjectionFromField
 #else
 class ttkProjectionFromField
 #endif
-  : public vtkPointSetAlgorithm, public Wrapper{
+  : public vtkPointSetAlgorithm, public ttk::Wrapper{
 
   public:
       
@@ -55,7 +55,7 @@ class ttkProjectionFromField
       if(!UseAllCores)
         threadNumber_ = ThreadNumber;
       else{
-        threadNumber_ = OsCall::getNumberOfCores();
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
       }
       Modified();
     }
@@ -71,11 +71,11 @@ class ttkProjectionFromField
     }
     // end of default ttk setters
     
-    vtkSetMacro(UComponent, string);
-    vtkGetMacro(UComponent, string);
+    vtkSetMacro(UComponent, std::string);
+    vtkGetMacro(UComponent, std::string);
 
-    vtkSetMacro(VComponent, string);
-    vtkGetMacro(VComponent, string);
+    vtkSetMacro(VComponent, std::string);
+    vtkGetMacro(VComponent, std::string);
     
     vtkSetMacro(UseTextureCoordinates, bool);
     vtkGetMacro(UseTextureCoordinates, bool);
@@ -96,7 +96,7 @@ class ttkProjectionFromField
     bool                  UseAllCores;
     int                   ThreadNumber;
     bool                  UseTextureCoordinates;
-    string                UComponent, VComponent;
+    std::string                UComponent, VComponent;
     vtkSmartPointer<vtkPoints> pointSet_;
     
     // base code features

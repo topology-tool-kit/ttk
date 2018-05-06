@@ -1,5 +1,8 @@
 #include                  <ttkPointDataConverter.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkPointDataConverter)
 
 ttkPointDataConverter::ttkPointDataConverter(){

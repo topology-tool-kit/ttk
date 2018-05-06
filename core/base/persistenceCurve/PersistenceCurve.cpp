@@ -1,5 +1,8 @@
 #include                  <PersistenceCurve.h>
 
+using namespace std;
+using namespace ttk;
+
 PersistenceCurve::PersistenceCurve():
   ComputeSaddleConnectors{},
 

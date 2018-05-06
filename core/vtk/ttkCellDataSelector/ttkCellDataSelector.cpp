@@ -1,6 +1,9 @@
 #include <ttkCellDataSelector.h>
 #include <regex>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkCellDataSelector)
 
   // transmit abort signals

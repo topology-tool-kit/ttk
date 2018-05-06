@@ -10,6 +10,9 @@
 
 #include "ContourForests.h"
 
+using namespace std;
+using namespace ttk;
+
 Interface::Interface(const idVertex &seed) : seed_(seed)
 {
 }

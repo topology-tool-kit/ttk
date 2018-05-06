@@ -25,47 +25,47 @@
 #include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
 
-int load(const string &inputPath, 
-  vector<float> &pointSet,
-  vector<long long int> &triangleSet){
+int load(const std::string &inputPath, 
+  std::vector<float> &pointSet,
+  std::vector<long long int> &triangleSet){
  
   // load some terrain from some OFF file.
 
   if(inputPath.empty())
     return -1;
  
-  Debug d;
+  ttk::Debug d;
   
   {
-    stringstream msg;
-    msg << "[main::load] Reading input mesh..." << endl;
-    // choose where to display this message (cout, cerr, a file)
+    std::stringstream msg;
+    msg << "[main::load] Reading input mesh..." << std::endl;
+    // choose where to display this message (std::cout, std::cerr, a file)
     // choose the priority of this message (1, nearly always displayed, 
     // higher values mean lower priorities)
-    d.dMsg(cout, msg.str(), d.timeMsg);
+    d.dMsg(std::cout, msg.str(), d.timeMsg);
   }
   
   int vertexNumber = 0, triangleNumber = 0;
-  string keyword;
+  std::string keyword;
   
-  ifstream f(inputPath.data(), ios::in);
+  std::ifstream f(inputPath.data(), std::ios::in);
   
   if(!f){
-    stringstream msg;
+    std::stringstream msg;
     msg << "[main::load] Cannot open file `" 
-      << inputPath << "'!" << endl;
-    d.dMsg(cerr, msg.str(), d.fatalMsg);
+      << inputPath << "'!" << std::endl;
+    d.dMsg(std::cerr, msg.str(), d.fatalMsg);
     return -1;
   }
   
   f >> keyword;
   
   if(keyword != "OFF"){
-    stringstream msg;
+    std::stringstream msg;
     msg << "[main::load] Input OFF file `" 
       << inputPath << "' seems invalid :(" 
-      << endl;
-    d.dMsg(cerr, msg.str(), d.fatalMsg);
+      << std::endl;
+    d.dMsg(std::cerr, msg.str(), d.fatalMsg);
     return -2;
   }
   
@@ -87,47 +87,47 @@ int load(const string &inputPath,
   f.close();
     
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[main::load]   done! (read " 
       << vertexNumber
       << " vertices, "
       << triangleNumber
-      << " triangles)" << endl;
-    d.dMsg(cout, msg.str(), d.timeMsg);
+      << " triangles)" << std::endl;
+    d.dMsg(std::cout, msg.str(), d.timeMsg);
   }
   
   return 0;
 }
 
-int save(const vector<float> &pointSet,
-  const vector<long long int> &triangleSet,
-  const string &outputPath){
+int save(const std::vector<float> &pointSet,
+  const std::vector<long long int> &triangleSet,
+  const std::string &outputPath){
   
   // save the simplified terrain in some OFF file
-  Debug d;
+  ttk::Debug d;
   
-  string fileName(outputPath);
+  std::string fileName(outputPath);
   
-  ofstream f(fileName.data(), ios::out);
+  std::ofstream f(fileName.data(), std::ios::out);
   
   if(!f){
-    stringstream msg;
+    std::stringstream msg;
     msg 
       << "[main::save] Could not write output file `" 
-      << fileName << "'!" << endl;
-    d.dMsg(cerr, msg.str(), d.fatalMsg);
+      << fileName << "'!" << std::endl;
+    d.dMsg(std::cerr, msg.str(), d.fatalMsg);
     return -1;
   }
   
-  f << "OFF" << endl;
-  f << pointSet.size()/3 << " " << triangleSet.size()/4 << " 0" << endl;
+  f << "OFF" << std::endl;
+  f << pointSet.size()/3 << " " << triangleSet.size()/4 << " 0" << std::endl;
   
   for(int i = 0; i < (int) pointSet.size()/3; i++){
     for(int j = 0; j < 3; j++){
       f << pointSet[3*i + j];
       f << " ";
     }
-    f << endl;
+    f << std::endl;
   }
   
   for(int i = 0; i < (int) triangleSet.size()/4; i++){
@@ -135,7 +135,7 @@ int save(const vector<float> &pointSet,
       f << triangleSet[4*i + j];
       f << " ";
     }
-    f << endl;
+    f << std::endl;
   }
   
   f.close();
@@ -145,7 +145,7 @@ int save(const vector<float> &pointSet,
 
 int main(int argc, char **argv) {
 
-  string inputFilePath;
+  std::string inputFilePath;
   ttk::CommandLineParser parser;
   
   // register the arguments to the command line parser
@@ -153,8 +153,8 @@ int main(int argc, char **argv) {
   // parse
   parser.parse(argc, argv);
   
-  vector<float> pointSet;
-  vector<long long int> triangleSet;
+  std::vector<float> pointSet;
+  std::vector<long long int> triangleSet;
   ttk::Triangulation triangulation;
 
   // load the input
@@ -165,8 +165,8 @@ int main(int argc, char **argv) {
   // NOW, do the TTK processing
   
   // computing some elevation
-  vector<float> height(pointSet.size()/3);
-  vector<int> offsets(height.size());
+  std::vector<float> height(pointSet.size()/3);
+  std::vector<int> offsets(height.size());
   int vertexId = 0;
   // use the z-coordinate here
   for(int i = 2; i < (int) pointSet.size(); i+=3){
@@ -177,7 +177,7 @@ int main(int argc, char **argv) {
   
   // 2. computing the persistence curve
   ttk::PersistenceCurve curve;
-  vector<pair<float, ftm::idVertex> > outputCurve;
+  std::vector<std::pair<float, ttk::ftm::idVertex> > outputCurve;
   curve.setupTriangulation(&triangulation);
   curve.setInputScalars(height.data());
   curve.setInputOffsets(offsets.data());
@@ -186,8 +186,8 @@ int main(int argc, char **argv) {
   
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
-  vector<tuple<ftm::idVertex, ftm::NodeType, 
-    ftm::idVertex, ftm::NodeType, float, ftm::idVertex> >
+  std::vector<std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, 
+    ttk::ftm::idVertex, ttk::ftm::NodeType, float, ttk::ftm::idVertex> >
     diagramOutput;
   diagram.setupTriangulation(&triangulation);
   diagram.setInputScalars(height.data());
@@ -196,14 +196,14 @@ int main(int argc, char **argv) {
   diagram.execute<float>();
   
   // 4. selecting the critical point pairs
-  vector<float> simplifiedHeight = height;
-  vector<int> authorizedCriticalPoints, simplifiedOffsets = offsets;
+  std::vector<float> simplifiedHeight = height;
+  std::vector<int> authorizedCriticalPoints, simplifiedOffsets = offsets;
   for(int i = 0; i < (int) diagramOutput.size(); i++){
-    double persistence = get<4>(diagramOutput[i]);
+    double persistence = std::get<4>(diagramOutput[i]);
     if(persistence > 0.2){
       // 5. selecting the most persistent pairs
-      authorizedCriticalPoints.push_back(get<0>(diagramOutput[i]));
-      authorizedCriticalPoints.push_back(get<2>(diagramOutput[i]));
+      authorizedCriticalPoints.push_back(std::get<0>(diagramOutput[i]));
+      authorizedCriticalPoints.push_back(std::get<2>(diagramOutput[i]));
     }
   }
   
@@ -229,31 +229,31 @@ int main(int argc, char **argv) {
   ttk::MorseSmaleComplex morseSmaleComplex;
   // critical points
   int criticalPoints_numberOfPoints;
-  vector<float> criticalPoints_points;
-  vector<int> criticalPoints_points_cellDimensions;
-  vector<int> criticalPoints_points_cellIds;
-  vector<char> criticalPoints_points_isOnBoundary;
-  vector<float> criticalPoints_points_cellScalars;
-  vector<int> criticalPoints_points_PLVertexIdentifiers;
-  vector<int> criticalPoints_points_manifoldSize;
+  std::vector<float> criticalPoints_points;
+  std::vector<int> criticalPoints_points_cellDimensions;
+  std::vector<int> criticalPoints_points_cellIds;
+  std::vector<char> criticalPoints_points_isOnBoundary;
+  std::vector<float> criticalPoints_points_cellScalars;
+  std::vector<int> criticalPoints_points_PLVertexIdentifiers;
+  std::vector<int> criticalPoints_points_manifoldSize;
   // 1-separatrices
   int separatrices1_numberOfPoints;
-  vector<float> separatrices1_points;
-  vector<char> separatrices1_points_smoothingMask;
-  vector<int> separatrices1_points_cellDimensions;
-  vector<int> separatrices1_points_cellIds;
+  std::vector<float> separatrices1_points;
+  std::vector<char> separatrices1_points_smoothingMask;
+  std::vector<int> separatrices1_points_cellDimensions;
+  std::vector<int> separatrices1_points_cellIds;
   int separatrices1_numberOfCells{};
-  vector<int> separatrices1_cells;
-  vector<int> separatrices1_cells_sourceIds;
-  vector<int> separatrices1_cells_destinationIds;
-  vector<int> separatrices1_cells_separatrixIds;
-  vector<char> separatrices1_cells_separatrixTypes;
-  vector<char> separatrices1_cells_isOnBoundary;
-  vector<float> separatrices1_cells_separatrixFunctionMaxima;
-  vector<float> separatrices1_cells_separatrixFunctionMinima;
-  vector<float> separatrices1_cells_separatrixFunctionDiffs;
+  std::vector<int> separatrices1_cells;
+  std::vector<int> separatrices1_cells_sourceIds;
+  std::vector<int> separatrices1_cells_destinationIds;
+  std::vector<int> separatrices1_cells_separatrixIds;
+  std::vector<char> separatrices1_cells_separatrixTypes;
+  std::vector<char> separatrices1_cells_isOnBoundary;
+  std::vector<float> separatrices1_cells_separatrixFunctionMaxima;
+  std::vector<float> separatrices1_cells_separatrixFunctionMinima;
+  std::vector<float> separatrices1_cells_separatrixFunctionDiffs;
   // segmentation 
-  vector<int> 
+  std::vector<int> 
     ascendingSegmentation(triangulation.getNumberOfVertices(), -1),
     descendingSegmentation(triangulation.getNumberOfVertices(), -1), 
     mscSegmentation(triangulation.getNumberOfVertices(), -1);

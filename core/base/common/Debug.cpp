@@ -4,6 +4,9 @@ bool ttk::welcomeMsg_ = true;
 bool ttk::goodbyeMsg_ = true;
 int ttk::globalDebugLevel_ = -INT_MAX;
 
+using namespace std;
+using namespace ttk;
+
 Debug::Debug() { 
   
   threadNumber_ = 1;

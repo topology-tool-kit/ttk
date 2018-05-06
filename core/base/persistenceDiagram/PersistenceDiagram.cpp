@@ -1,5 +1,8 @@
 #include<PersistenceDiagram.h>
 
+using namespace std;
+using namespace ttk;
+
 using namespace ftm;
 
 PersistenceDiagram::PersistenceDiagram():

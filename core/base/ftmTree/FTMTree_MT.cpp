@@ -26,6 +26,9 @@
 #define HIGHER
 #endif
 
+using namespace std;
+using namespace ttk;
+
 using namespace ftm;
 
 DebugTimer _launchGlobalTime;

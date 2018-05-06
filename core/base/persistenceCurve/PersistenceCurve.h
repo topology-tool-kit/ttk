@@ -39,8 +39,8 @@ namespace ttk{
       }
 
       template <typename scalarType>
-        int computePersistencePlot(const vector<tuple<ftm::idVertex, ftm::idVertex, scalarType>>& pairs,
-            vector<pair<scalarType, ftm::idVertex>> &plot) const;
+        int computePersistencePlot(const std::vector<std::tuple<ftm::idVertex, ftm::idVertex, scalarType>>& pairs,
+            std::vector<std::pair<scalarType, ftm::idVertex>> &plot) const;
 
       template <class scalarType>
         int execute() const;
@@ -101,16 +101,18 @@ namespace ttk{
 }
 
 template <typename scalarType>
-int PersistenceCurve::computePersistencePlot(const vector<tuple<ftm::idVertex, ftm::idVertex, scalarType>>& pairs,
-    vector<pair<scalarType, ftm::idVertex>> &plot) const{
+int ttk::PersistenceCurve::computePersistencePlot(const 
+std::vector<std::tuple<ftm::idVertex, ftm::idVertex, scalarType>>& pairs,
+    std::vector<std::pair<scalarType, ftm::idVertex>> &plot) const{
 
   ftm::idVertex nbElmnt = pairs.size();
   plot.resize(nbElmnt);
 
   // build curve
-  const scalarType epsilon=static_cast<scalarType>(pow(10, -REAL_SIGNIFICANT_DIGITS));
+  const scalarType epsilon=static_cast<scalarType>(pow(10, 
+-REAL_SIGNIFICANT_DIGITS));
   for (ftm::idVertex i = 0; i < nbElmnt; ++i) {
-    plot[i].first  = std::max(get<2>(pairs[i]), epsilon);
+    plot[i].first  = std::max(std::get<2>(pairs[i]), epsilon);
     plot[i].second = pairs.size() - i;
   }
 
@@ -118,17 +120,17 @@ int PersistenceCurve::computePersistencePlot(const vector<tuple<ftm::idVertex, f
 }
 
 template <typename scalarType>
-int PersistenceCurve::execute() const{
+int ttk::PersistenceCurve::execute() const{
   // get data
-  vector<pair<scalarType, ftm::idVertex>>& JTPlot  = *static_cast<vector<pair<scalarType, ftm::idVertex>>*>(JTPlot_);
-  vector<pair<scalarType, ftm::idVertex>>& STPlot  = *static_cast<vector<pair<scalarType, ftm::idVertex>>*>(STPlot_);
-  vector<pair<scalarType, ftm::idVertex>>& MSCPlot = *static_cast<vector<pair<scalarType, ftm::idVertex>>*>(MSCPlot_);
-  vector<pair<scalarType, ftm::idVertex>>& CTPlot  = *static_cast<vector<pair<scalarType, ftm::idVertex>>*>(CTPlot_);
+  std::vector<std::pair<scalarType, ftm::idVertex>>& JTPlot  = *static_cast<std::vector<std::pair<scalarType, ftm::idVertex>>*>(JTPlot_);
+  std::vector<std::pair<scalarType, ftm::idVertex>>& STPlot  = *static_cast<std::vector<std::pair<scalarType, ftm::idVertex>>*>(STPlot_);
+  std::vector<std::pair<scalarType, ftm::idVertex>>& MSCPlot = *static_cast<std::vector<std::pair<scalarType, ftm::idVertex>>*>(MSCPlot_);
+  std::vector<std::pair<scalarType, ftm::idVertex>>& CTPlot  = *static_cast<std::vector<std::pair<scalarType, ftm::idVertex>>*>(CTPlot_);
   int* offsets                                     = static_cast<int*>(inputOffsets_);
 
   const ftm::idVertex numberOfVertices=triangulation_->getNumberOfVertices();
   // convert offsets into a valid format for contour tree
-  vector<ftm::idVertex> voffsets(numberOfVertices);
+  std::vector<ftm::idVertex> voffsets(numberOfVertices);
   std::copy(offsets,offsets+numberOfVertices,voffsets.begin());
 
   // get contour tree
@@ -142,25 +144,25 @@ int PersistenceCurve::execute() const{
   contourTree.build<scalarType>();
 
   // get persistence pairs
-  vector<tuple<ftm::idVertex, ftm::idVertex, scalarType>> JTPairs;
-  vector<tuple<ftm::idVertex, ftm::idVertex, scalarType>> STPairs;
+  std::vector<std::tuple<ftm::idVertex, ftm::idVertex, scalarType>> JTPairs;
+  std::vector<std::tuple<ftm::idVertex, ftm::idVertex, scalarType>> STPairs;
   contourTree.computePersistencePairs<scalarType>(JTPairs, true);
   contourTree.computePersistencePairs<scalarType>(STPairs, false);
 
   // merge pairs
-  vector<tuple<ftm::idVertex, ftm::idVertex, scalarType>> CTPairs(JTPairs.size() + STPairs.size());
+  std::vector<std::tuple<ftm::idVertex, ftm::idVertex, scalarType>> CTPairs(JTPairs.size() + STPairs.size());
   std::copy(JTPairs.begin(), JTPairs.end(), CTPairs.begin());
   std::copy(STPairs.begin(), STPairs.end(), CTPairs.begin() + JTPairs.size());
   {
-    auto cmp=[](const tuple<ftm::idVertex,ftm::idVertex,scalarType>& a,
-        const tuple<ftm::idVertex,ftm::idVertex,scalarType>& b){
-      return get<2>(a) < get<2>(b);
+    auto cmp=[](const std::tuple<ftm::idVertex,ftm::idVertex,scalarType>& a,
+        const std::tuple<ftm::idVertex,ftm::idVertex,scalarType>& b){
+      return std::get<2>(a) < std::get<2>(b);
     };
     std::sort(CTPairs.begin(), CTPairs.end(), cmp);
   }
 
   // get the saddle-saddle pairs
-  vector<tuple<int,int,scalarType>> pl_saddleSaddlePairs;
+  std::vector<std::tuple<int,int,scalarType>> pl_saddleSaddlePairs;
   const int dimensionality=triangulation_->getDimensionality();
   if(dimensionality==3 and ComputeSaddleConnectors){
     MorseSmaleComplex3D morseSmaleComplex;
@@ -173,9 +175,9 @@ int PersistenceCurve::execute() const{
 
     // sort the saddle-saddle pairs by persistence value and compute curve
     {
-       auto cmp = [](const tuple<ftm::idVertex, ftm::idVertex, scalarType>& a,
-                     const tuple<ftm::idVertex, ftm::idVertex, scalarType>& b) {
-          return get<2>(a) < get<2>(b);
+       auto cmp = [](const std::tuple<ftm::idVertex, ftm::idVertex, scalarType>& a,
+                     const std::tuple<ftm::idVertex, ftm::idVertex, scalarType>& b) {
+          return std::get<2>(a) < std::get<2>(b);
        };
        std::sort(pl_saddleSaddlePairs.begin(), pl_saddleSaddlePairs.end(), cmp);
     }

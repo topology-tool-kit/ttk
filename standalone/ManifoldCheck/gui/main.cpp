@@ -7,6 +7,9 @@
 #include                  <ttkManifoldCheck.h>
 #include                  <ttkUserInterfaceBase.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkUserInterface<ttkManifoldCheck> program;
 
 class myKeyHandler : public ttkKeyHandler{

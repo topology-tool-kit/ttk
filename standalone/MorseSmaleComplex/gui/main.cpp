@@ -7,6 +7,9 @@
 #include                  <ttkMorseSmaleComplex.h>
 #include                  <ttkUserInterfaceBase.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkUserInterface<ttkMorseSmaleComplex> program;
 
 class myKeyHandler : public ttkKeyHandler{

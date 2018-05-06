@@ -6,7 +6,7 @@
 #define _MUNKRES_H
 
 #ifndef matchingTuple
-#define matchingTuple tuple<ftm::idVertex, ftm::idVertex, dataType>
+#define matchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, dataType>
 #endif
 
 #include <cmath>
@@ -27,7 +27,7 @@ namespace ttk {
       ~Munkres() {};
 
       template <typename dataType>
-      int run(vector<matchingTuple> *matchings);
+      int run(std::vector<matchingTuple> *matchings);
 
       template<typename dataType>
       inline void clear() {
@@ -95,30 +95,30 @@ namespace ttk {
       template<typename dataType>
       inline void showCostMatrix() {
         auto** C = (dataType**) Cptr;
-        stringstream msg;
+        std::stringstream msg;
         for (int r = 0; r < rowSize; ++r) {
-          msg << endl << "  ";
+          msg << std::endl << "  ";
           for (int c = 0; c < colSize; ++c)
             msg << std::scientific << C[r][c] << " ";
         }
 
-        msg << endl;
+        msg << std::endl;
         dMsg(std::cout, msg.str(), advancedInfoMsg);
       }
 
       inline void showMaskMatrix() {
-        stringstream msg;
-        msg << endl << "     ";
+        std::stringstream msg;
+        msg << std::endl << "     ";
         for (int c = 0; c < colSize; ++c) {
           msg << colCover[c] << "  ";
         }
         for (int r = 0; r < rowSize; ++r) {
-          msg << endl << "  " << rowCover[r] << "  ";
+          msg << std::endl << "  " << rowCover[r] << "  ";
           for (int c = 0; c < colSize; ++c)
             msg << M[r][c] << "  ";
         }
 
-        msg << endl;
+        msg << std::endl;
         dMsg(std::cout, msg.str(), advancedInfoMsg);
       }
 
@@ -170,7 +170,7 @@ namespace ttk {
       int stepSeven(int& step);
 
       template <typename dataType>
-      int affect(vector<matchingTuple> *matchings);
+      int affect(std::vector<matchingTuple> *matchings);
 
       template <typename dataType>
       int computeAffectationCost();

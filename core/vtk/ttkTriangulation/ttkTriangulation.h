@@ -65,9 +65,9 @@
 #include                  <vtkUnstructuredGrid.h>
 
 #ifndef TTK_PLUGIN
-class VTKCOMMONDATAMODEL_EXPORT ttkTriangulation : public Debug {
+class VTKCOMMONDATAMODEL_EXPORT ttkTriangulation : public ttk::Debug {
 #else
-class ttkTriangulation : public Debug {
+class ttkTriangulation : public ttk::Debug {
 #endif
 
   public:
@@ -84,7 +84,7 @@ class ttkTriangulation : public Debug {
     /// \return  Returns a pointer to a valid ttk::Triangulation object upon 
     /// success, NULL otherwise.
     /// \sa ttk::Triangulation
-    Triangulation* getTriangulation(){ return triangulation_;};
+    ttk::Triangulation* getTriangulation(){ return triangulation_;};
     
     /// Retrieves a pointer to a ttk::Triangulation object from a vtkDataSet.
     /// \warning This function will return a non null pointer if and only if
@@ -98,7 +98,7 @@ class ttkTriangulation : public Debug {
     /// \sa ttk::Triangulation
     /// \sa ttkWrapper
     /// \sa ttkTriangulationFilter
-    static Triangulation* getTriangulation(vtkDataSet *dataSet);
+    static ttk::Triangulation* getTriangulation(vtkDataSet *dataSet);
     
     /// Translates the current triangulation into a vtkUnstructuredGrid object.
     /// This function, used in conjunction with a vtkXMLUnstructuredGridWriter
@@ -123,7 +123,7 @@ class ttkTriangulation : public Debug {
     /// \sa ttkFTMTree
     /// \sa vtkMorseSmaleComplex
     /// \sa vtkReebSpace
-    static bool hasChangedConnectivity(Triangulation *triangulation,
+    static bool hasChangedConnectivity(ttk::Triangulation *triangulation,
       vtkDataSet *dataSet, vtkObject *callingObject);
     
     /// Specify the input VTK object representing a triangulation or a regular 
@@ -159,7 +159,7 @@ class ttkTriangulation : public Debug {
     vtkSmartPointer<vtkUnstructuredGrid>
                           vtkUnstructuredGrid_;
                           
-    Triangulation         *triangulation_;
+    ttk::Triangulation         *triangulation_;
     
   private:
     

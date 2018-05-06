@@ -7,6 +7,9 @@
 #include                  <ttkLDistance.h>
 #include                  <ttkUserInterfaceBase.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkUserInterface<ttkLDistance> program;
 
 constexpr unsigned int str2int(const char* str, int h = 0) 

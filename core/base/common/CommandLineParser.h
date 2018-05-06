@@ -32,7 +32,7 @@ namespace ttk{
             isSet_ = false;
           };
                   
-          int print(stringstream &s) const{
+          int print(std::stringstream &s) const{
             s << "[CommandLine]   ";
             if((isAnOption_)||(isOptional_)){
               s << "[";
@@ -83,7 +83,7 @@ namespace ttk{
             if((isAnOption_)||(isOptional_)){
               s << "]";
             }
-            s << endl;
+            s << std::endl;
             
             return 0;
           };
@@ -92,13 +92,13 @@ namespace ttk{
           bool              *boolValue_;
           int               *intValue_;
           double            *doubleValue_;
-          string            *stringValue_;
-          vector<int>       *intValueList_;
-          vector<double>    *doubleValueList_;
-          vector<string>    *stringValueList_;
+          std::string            *stringValue_;
+          std::vector<int>       *intValueList_;
+          std::vector<double>    *doubleValueList_;
+          std::vector<std::string> *stringValueList_;
           
-          string            key_;
-          string            description_;
+          std::string            key_;
+          std::string            description_;
       };
       
       CommandLineParser(){
@@ -114,18 +114,18 @@ namespace ttk{
        
         for(int i = 0; i < argc; i++){
           
-          if((string(argv[i]) == "-h")||(string(argv[i]) == "--help")){
+          if((std::string(argv[i]) == "-h")||(std::string(argv[i]) == "--help")){
             printUsage(argv[0]);
           }
           
           for(int j = 0; j < (int) arguments_.size(); j++){
             
             if(!arguments_[j].isAnOption_){
-              if((string(argv[i]) == "-" + arguments_[j].key_)
+              if((std::string(argv[i]) == "-" + arguments_[j].key_)
                 &&(i + 1 < argc)){
               
                 if(arguments_[j].stringValue_){
-                  // let's process a string
+                  // let's process a std::string
                   (*arguments_[j].stringValue_) = argv[i + 1];
                   arguments_[j].isSet_ = true;
                 }
@@ -134,24 +134,24 @@ namespace ttk{
                   arguments_[j].isSet_ = true;
                 }
                 else if(arguments_[j].intValue_){
-                  stringstream s(argv[i + 1]);
+                  std::stringstream s(argv[i + 1]);
                   s >> *(arguments_[j].intValue_);
                   arguments_[j].isSet_ = true;
                 }
                 else if(arguments_[j].intValueList_){
-                  stringstream s(argv[i + 1]);
+                  std::stringstream s(argv[i + 1]);
                   arguments_[j].intValueList_->resize(
                     arguments_[j].intValueList_->size() + 1);
                   s >> arguments_[j].intValueList_->back();
                   arguments_[j].isSet_ = true;
                 }
                 else if(arguments_[j].doubleValue_){
-                  stringstream s(argv[i + 1]);
+                  std::stringstream s(argv[i + 1]);
                   s >> *(arguments_[j].doubleValue_);
                   arguments_[j].isSet_ = true;
                 }
                 else if(arguments_[j].doubleValueList_){
-                  stringstream s(argv[i + 1]);
+                  std::stringstream s(argv[i + 1]);
                   arguments_[j].doubleValueList_->resize(
                     arguments_[j].doubleValueList_->size() + 1);
                   s >> arguments_[j].doubleValueList_->back();
@@ -160,7 +160,7 @@ namespace ttk{
               }
             }
             else{
-              if(string(argv[i]) == "-" + arguments_[j].key_){
+              if(std::string(argv[i]) == "-" + arguments_[j].key_){
                 *(arguments_[j].boolValue_) = !(*(arguments_[j].boolValue_));
               }
             }
@@ -171,10 +171,10 @@ namespace ttk{
         for(int i = 0; i < (int) arguments_.size(); i++){
           if(!arguments_[i].isOptional_){
             if(!arguments_[i].isSet_){
-              stringstream msg;
-              msg << "[CommandLine] Missing mandatory argument:" << endl;
+              std::stringstream msg;
+              msg << "[CommandLine] Missing mandatory argument:" << std::endl;
               arguments_[i].print(msg);
-              dMsg(cerr, msg.str(), 1);
+              dMsg(std::cerr, msg.str(), 1);
               printUsage(argv[0]);
             }
           }
@@ -183,9 +183,9 @@ namespace ttk{
         return 0;
       };
       
-      int printArgs(ostream &o = cout) const{
+      int printArgs(std::ostream &o = std::cout) const{
         
-        o << "[CommandLine] Options and arguments:" << endl;
+        o << "[CommandLine] Options and arguments:" << std::endl;
         for(int i = 0; i < (int) arguments_.size(); i++){
           o << "[CommandLine]   -" << arguments_[i].key_;
           o << ": ";
@@ -259,39 +259,39 @@ namespace ttk{
             }
           } 
           
-          o << endl;
+          o << std::endl;
         }
         
         return 0;
       }
       
-      int printUsage(const string &binPath) const {
+      int printUsage(const std::string &binPath) const {
         
-        stringstream msg;
-        msg << "[CommandLine]" << endl;
-        msg << "[CommandLine] Usage:" << endl;
-        msg << "[CommandLine]   " << binPath << endl;
-        msg << "[CommandLine] Argument(s):" << endl;
+        std::stringstream msg;
+        msg << "[CommandLine]" << std::endl;
+        msg << "[CommandLine] Usage:" << std::endl;
+        msg << "[CommandLine]   " << binPath << std::endl;
+        msg << "[CommandLine] Argument(s):" << std::endl;
         for(int i = 0; i < (int) arguments_.size(); i++){
           if(!arguments_[i].isAnOption_){
             arguments_[i].print(msg);
           }
         }
-        msg << "[CommandLine] Option(s):" << endl;
+        msg << "[CommandLine] Option(s):" << std::endl;
         for(int i = 0; i < (int) arguments_.size(); i++){
           if(arguments_[i].isAnOption_){
             arguments_[i].print(msg);
           }
         }
         
-        dMsg(cerr, msg.str(), 1);
+        dMsg(std::cerr, msg.str(), 1);
         
         exit(0);
         return 0;
       };
       
-      int setOption(const string &key, bool *value,
-        const string &description = ""){
+      int setOption(const std::string &key, bool *value,
+        const std::string &description = ""){
         
         if(!value)
           return -1;
@@ -306,8 +306,8 @@ namespace ttk{
         return 0;
       };
       
-      int setArgument(const string &key, double *value, 
-        const string &description = "",
+      int setArgument(const std::string &key, double *value, 
+        const std::string &description = "",
         const bool &optional = false){
         
         if(!value)
@@ -323,8 +323,8 @@ namespace ttk{
         return 0;
       };
       
-      int setArgument(const string &key, vector<double> *value, 
-        const string &description = "",
+      int setArgument(const std::string &key, std::vector<double> *value, 
+        const std::string &description = "",
         const bool &optional = false){
      
         if(!value)
@@ -340,8 +340,8 @@ namespace ttk{
         return 0;
       };
       
-      inline int setArgument(const string &key, int *value, 
-        const string &description = "",
+      inline int setArgument(const std::string &key, int *value, 
+        const std::string &description = "",
         const bool &optional = false){
         
         if(!value)
@@ -357,8 +357,8 @@ namespace ttk{
         return 0;
       };
       
-      int setArgument(const string &key, vector<int> *value, 
-        const string &description = "",
+      int setArgument(const std::string &key, std::vector<int> *value, 
+        const std::string &description = "",
         const bool &optional = false){
      
         if(!value)
@@ -374,8 +374,8 @@ namespace ttk{
         return 0;
       };
       
-      int setArgument(const string &key, string *value, 
-        const string &description = "",
+      int setArgument(const std::string &key, std::string *value, 
+        const std::string &description = "",
         const bool &optional = false){
         
         if(!value)
@@ -391,8 +391,8 @@ namespace ttk{
         return 0;
       };
       
-      int setArgument(const string &key, vector<string> *value, 
-        const string &description = "",
+      int setArgument(const std::string &key, std::vector<std::string> *value, 
+        const std::string &description = "",
         const bool &optional = false){
      
         if(!value)
@@ -411,7 +411,7 @@ namespace ttk{
       
     protected:
       
-      vector<CommandLineArgument>
+      std::vector<CommandLineArgument>
                         arguments_;
   };
 }

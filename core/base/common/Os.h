@@ -88,8 +88,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-using namespace std;
-
 namespace ttk{
  
 #ifdef SINGLE_PRECISION
@@ -103,7 +101,7 @@ namespace ttk{
     
     public:
       
-      inline static int getCurrentDirectory(string &directoryPath){
+      inline static int getCurrentDirectory(std::string &directoryPath){
         #ifdef _WIN32
           directoryPath = _getcwd(NULL, 0);
         #else
@@ -118,10 +116,10 @@ namespace ttk{
         #ifdef __linux__
           // horrible hack since getrusage() doesn't seem to work well under 
           // linux
-          stringstream procFileName;
+          std::stringstream procFileName;
           procFileName << "/proc/" << getpid() << "/statm";
           
-          ifstream procFile(procFileName.str().data(), ios::in);
+          std::ifstream procFile(procFileName.str().data(), std::ios::in);
           if(procFile){
             float memoryUsage;
             procFile >> memoryUsage;
@@ -163,10 +161,10 @@ namespace ttk{
         #endif
       };
       
-      inline static vector<string> listFilesInDirectory(
-        const string &directoryName, const string &extension){
+      inline static std::vector<std::string> listFilesInDirectory(
+        const std::string &directoryName, const std::string &extension){
         
-        vector< string > filesInDir;
+        std::vector<std::string> filesInDir;
         #ifdef _WIN32
           WIN32_FIND_DATA FindFileData;
           char* buffer;
@@ -179,36 +177,36 @@ namespace ttk{
           
           HANDLE hFind = FindFirstFile(directoryName.data(), &FindFileData);
           if(hFind == INVALID_HANDLE_VALUE){
-            stringstream msg;
+            std::stringstream msg;
             msg << "[Os] Could not open directory `" 
-              << directoryName << "'. Error: "<< GetLastError() << endl;
+              << directoryName << "'. Error: "<< GetLastError() << std::endl;
             Debug d;
-            d.dMsg(cerr, msg.str(), 0);
+            d.dMsg(std::cerr, msg.str(), 0);
           } 
           else{
-            string entryExtension(FindFileData.cFileName);
+            std::string entryExtension(FindFileData.cFileName);
             entryExtension = 
               entryExtension.substr(entryExtension.find_last_of('.') + 1);
             
             if(entryExtension == extension)
-              filesInDir.push_back(string(FindFileData.cFileName));
-            string dir = directoryName;
+              filesInDir.push_back(std::string(FindFileData.cFileName));
+            std::string dir = directoryName;
             dir.resize(dir.size()-1);
             while(FindNextFile(hFind, &FindFileData)){
               if(extension.size()){
-                string entryExtension(FindFileData.cFileName);
+                std::string entryExtension(FindFileData.cFileName);
                 entryExtension = entryExtension.substr(
                   entryExtension.find_last_of('.') + 1);
                 if(entryExtension == extension)
                   filesInDir.push_back(dir 
-                    + string(FindFileData.cFileName));
+                    + std::string(FindFileData.cFileName));
               }
               else{
-                if((string(FindFileData.cFileName) != ".")
-                  &&(string(FindFileData.cFileName) != "..")){
+                if((std::string(FindFileData.cFileName) != ".")
+                  &&(std::string(FindFileData.cFileName) != "..")){
                   filesInDir.push_back(directoryName
                     + "/"
-                    + string(FindFileData.cFileName));  
+                    + std::string(FindFileData.cFileName));  
                 }
               }
             }
@@ -217,31 +215,31 @@ namespace ttk{
         #else 
           DIR *d = opendir((directoryName + "/").data());
           if(!d){
-            stringstream msg;
+            std::stringstream msg;
             msg 
               << "[Os] Could not open directory `" 
-              << directoryName << "'..." << endl;
+              << directoryName << "'..." << std::endl;
             Debug d;
-            d.dMsg(cerr, msg.str(), 0);
+            d.dMsg(std::cerr, msg.str(), 0);
           } 
           else{
             struct dirent *dirEntry;
             while((dirEntry = readdir(d)) != NULL){
               if(extension.size()){
-                string entryExtension(dirEntry->d_name);
+                std::string entryExtension(dirEntry->d_name);
                 entryExtension = 
                   entryExtension.substr(entryExtension.find_last_of('.') + 1);
                 if(entryExtension == extension)
                   filesInDir.push_back(directoryName 
                     + "/" 
-                    + string(dirEntry->d_name));
+                    + std::string(dirEntry->d_name));
               }
               else{
-                if((string(dirEntry->d_name) != ".")
-                  &&(string(dirEntry->d_name) != ".."))
+                if((std::string(dirEntry->d_name) != ".")
+                  &&(std::string(dirEntry->d_name) != ".."))
                   filesInDir.push_back(directoryName 
                     + "/"
-                    + string(dirEntry->d_name));
+                    + std::string(dirEntry->d_name));
               }
             }
           }
@@ -253,7 +251,7 @@ namespace ttk{
         return filesInDir;
       }
      
-      inline static int mkDir(const string &directoryName){ 
+      inline static int mkDir(const std::string &directoryName){ 
         #ifdef _WIN32
           return _mkdir(directoryName.data()); 
         #else 
@@ -271,22 +269,22 @@ namespace ttk{
             return (int)lowerBound;
       };
      
-      inline static int rmDir(const string &directoryName){ 
+      inline static int rmDir(const std::string &directoryName){ 
         #ifdef _WIN32
           // NOTE:
           // the directory will be deleted with this call
           // only if it's empty...
           return _rmdir(directoryName.data()); 
         #else 
-          stringstream cmd;
+          std::stringstream cmd;
           cmd << "rm -R " << directoryName << " 2> /dev/null";
           return system(cmd.str().data()); 
         #endif
       }
       
-      inline static int rmFile(const string &fileName){
+      inline static int rmFile(const std::string &fileName){
         
-        stringstream cmd;
+        std::stringstream cmd;
         
         #ifdef _WIN32
           cmd << "del";

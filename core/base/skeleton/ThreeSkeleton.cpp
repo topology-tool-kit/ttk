@@ -1,5 +1,8 @@
 #include                  <ThreeSkeleton.h>
 
+using namespace std;
+using namespace ttk;
+
 ThreeSkeleton::ThreeSkeleton(){
 
 }

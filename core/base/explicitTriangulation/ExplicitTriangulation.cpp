@@ -1,5 +1,8 @@
 #include                  <ExplicitTriangulation.h>
 
+using namespace std;
+using namespace ttk;
+
 ExplicitTriangulation::ExplicitTriangulation(){
 
   clear();

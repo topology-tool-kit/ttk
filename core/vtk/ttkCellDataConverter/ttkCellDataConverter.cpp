@@ -1,5 +1,8 @@
 #include                  <ttkCellDataConverter.h>
 
+using namespace std;
+using namespace ttk;
+
 vtkStandardNewMacro(ttkCellDataConverter)
 
 ttkCellDataConverter::ttkCellDataConverter(){

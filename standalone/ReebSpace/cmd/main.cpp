@@ -7,6 +7,9 @@
 #include                  <ttkReebSpace.h>
 #include                  <ttkProgramBase.h>
 
+using namespace std;
+using namespace ttk;
+
 int main(int argc, char **argv) {
 
   // init editor

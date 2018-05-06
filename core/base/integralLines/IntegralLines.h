@@ -94,7 +94,7 @@ namespace ttk{
         return 0;
       }
 
-      inline int setOutputTrajectories(vector<vector<int>>* trajectories){
+      inline int setOutputTrajectories(std::vector<std::vector<int>>* trajectories){
         outputTrajectories_=trajectories;
         return 0;
       }
@@ -108,24 +108,24 @@ namespace ttk{
       void* inputScalarField_;
       void* inputOffsets_;
       void* vertexIdentifierScalarField_;
-      vector<vector<int>>* outputTrajectories_;
+      std::vector<std::vector<int>>* outputTrajectories_;
   };
 }
 
 template<typename dataType>
-int IntegralLines::execute() const{
+int ttk::IntegralLines::execute() const{
   int* offsets=static_cast<int*>(inputOffsets_);
   int* identifiers=static_cast<int*>(vertexIdentifierScalarField_);
   dataType* scalars=static_cast<dataType*>(inputScalarField_);
-  vector<vector<int>>* trajectories=outputTrajectories_;
+  std::vector<std::vector<int>>* trajectories=outputTrajectories_;
 
   Timer t;
 
   // get the seeds
-  unordered_set<int> isSeed;
+  std::unordered_set<int> isSeed;
   for(int k=0; k<seedNumber_; ++k)
     isSeed.insert(identifiers[k]);
-  vector<int> seeds;
+  std::vector<int> seeds;
   for(auto k : isSeed)
     seeds.push_back(k);
   isSeed.clear();
@@ -138,7 +138,7 @@ int IntegralLines::execute() const{
     bool isMax{};
     while(!isMax){
       int vnext{-1};
-      float fnext=numeric_limits<float>::min();
+      float fnext=std::numeric_limits<float>::min();
       int neighborNumber=triangulation_->getVertexNeighborNumber(v);
       bool isLocalMax=true;
       bool isLocalMin=true;
@@ -149,7 +149,8 @@ int IntegralLines::execute() const{
         if(scalars[n]<=scalars[v]) isLocalMax=false;
         if(scalars[n]>=scalars[v]) isLocalMin=false;
 
-        if((direction_==static_cast<int>(Direction::Forward)) xor (scalars[n]<scalars[v])){
+        if((direction_==static_cast<int>(Direction::Forward)) xor 
+(scalars[n]<scalars[v])){
           const float f=getGradient<dataType>(v,n,scalars);
           if(f>fnext){
             vnext=n;
@@ -166,7 +167,8 @@ int IntegralLines::execute() const{
 
           if(scalars[n]==scalars[v]){
             const int o=offsets[n];
-            if((direction_==static_cast<int>(Direction::Forward)) xor (o<offsets[v])){
+            if((direction_==static_cast<int>(Direction::Forward)) xor 
+(o<offsets[v])){
               if(o>onext){
                 vnext=n;
                 onext=o;
@@ -185,32 +187,32 @@ int IntegralLines::execute() const{
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[IntegralLines] Data-set (" << vertexNumber_
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
 template<typename dataType, class Compare>
-int IntegralLines::execute(Compare cmp) const{
+int ttk::IntegralLines::execute(Compare cmp) const{
   int* offsets=static_cast<int*>(inputOffsets_);
   int* identifiers=static_cast<int*>(vertexIdentifierScalarField_);
   dataType* scalars=static_cast<dataType*>(inputScalarField_);
-  vector<vector<int>>* trajectories=outputTrajectories_;
+  std::vector<std::vector<int>>* trajectories=outputTrajectories_;
 
   Timer t;
 
   // get the seeds
-  unordered_set<int> isSeed;
+  std::unordered_set<int> isSeed;
   for(int k=0; k<seedNumber_; ++k)
     isSeed.insert(identifiers[k]);
-  vector<int> seeds;
+  std::vector<int> seeds;
   for(auto k : isSeed)
     seeds.push_back(k);
   isSeed.clear();
@@ -223,7 +225,7 @@ int IntegralLines::execute(Compare cmp) const{
     bool isMax{};
     while(!isMax){
       int vnext{-1};
-      float fnext=numeric_limits<float>::min();
+      float fnext=std::numeric_limits<float>::min();
       int neighborNumber=triangulation_->getVertexNeighborNumber(v);
       bool isLocalMax=true;
       bool isLocalMin=true;
@@ -272,13 +274,13 @@ int IntegralLines::execute(Compare cmp) const{
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[IntegralLines] Data-set (" << vertexNumber_
       << " points) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
-      << endl;
-    dMsg(cout, msg.str(), timeMsg);
+      << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
