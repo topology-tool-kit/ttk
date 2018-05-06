@@ -5,8 +5,11 @@ ChangeLog
 * 0.9.5
 - Updates for ParaView-5.5.0
 - Bug fixes
+- Removed global namespace usage in headers
 - Fixes for gcc 4
+- Fixes for clang
 - Improved triangulation consistency in 2D and 1D
+- Improved consistency in morse-smale complex computation
 - Manifold check module
 - Point merger
 - Minimalist OBJ writer
