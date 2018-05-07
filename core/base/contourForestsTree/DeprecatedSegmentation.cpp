@@ -7,6 +7,8 @@
 
 #include "DeprecatedSegmentation.h"
 
+#include <algorithm>
+
 using namespace std;
 using namespace ttk;
 

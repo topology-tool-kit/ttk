@@ -1,5 +1,7 @@
 #include                <Geometry.h>
 
+#include <algorithm>
+
 // TODO:
 // for faster computations, remove all pow10
 
