@@ -901,7 +901,12 @@ int ttk::MorseSmaleComplex3D::execute(){
     std::vector<std::vector<Cell>> separatricesGeometry;
     std::vector<std::set<int>> separatricesSaddles;
     getDescendingSeparatrices2(criticalPoints, separatrices, separatricesGeometry, separatricesSaddles);
-    omp_setDescendingSeparatrices2<dataType>(separatrices, separatricesGeometry, separatricesSaddles);
+#ifdef TTK_ENABLE_OPENMP
+    if(PrioritizeSpeedOverMemory)
+      omp_setDescendingSeparatrices2<dataType>(separatrices, separatricesGeometry, separatricesSaddles);
+    else
+#endif
+    setDescendingSeparatrices2<dataType>(separatrices, separatricesGeometry, separatricesSaddles);
 
     {
       std::stringstream msg;
@@ -918,7 +923,12 @@ int ttk::MorseSmaleComplex3D::execute(){
     std::vector<std::vector<Cell>> separatricesGeometry;
     std::vector<std::set<int>> separatricesSaddles;
     getAscendingSeparatrices2(criticalPoints, separatrices, separatricesGeometry, separatricesSaddles);
-    omp_setAscendingSeparatrices2<dataType>(separatrices, separatricesGeometry, separatricesSaddles);
+#ifdef TTK_ENABLE_OPENMP
+    if(PrioritizeSpeedOverMemory)
+      omp_setAscendingSeparatrices2<dataType>(separatrices, separatricesGeometry, separatricesSaddles);
+    else
+#endif
+    setAscendingSeparatrices2<dataType>(separatrices, separatricesGeometry, separatricesSaddles);
 
     {
       std::stringstream msg;
@@ -945,7 +955,7 @@ int ttk::MorseSmaleComplex3D::execute(){
     if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation)
       setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold, descendingManifold, morseSmaleManifold);
 
-    {
+    if(ComputeAscendingSegmentation or ComputeDescendingSegmentation or ComputeFinalSegmentation){
       std::stringstream msg;
       msg << "[MorseSmaleComplex3D] Segmentation computed in "
         << tmp.getElapsedTime() << " s."

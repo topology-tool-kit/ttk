@@ -14,6 +14,8 @@ AbstractMorseSmaleComplex::AbstractMorseSmaleComplex():
   ComputeAscendingSegmentation{true},
   ComputeDescendingSegmentation{true},
   ComputeFinalSegmentation{true},
+  ReturnSaddleConnectors{false},
+  PrioritizeSpeedOverMemory{false},
 
   inputScalarField_{},
   inputTriangulation_{},

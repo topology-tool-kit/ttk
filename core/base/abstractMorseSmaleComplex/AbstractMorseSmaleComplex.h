@@ -243,12 +243,23 @@ namespace ttk{
         return 0;
       }
 
-      /** Set the threshold value for post-processing of
+      /**
+       * Set the threshold value for post-processing of
        * (saddle,...,saddle) vpaths gradient reversal
        * (default value us 0.0).
        */
       int setSaddleConnectorsPersistenceThreshold(const double threshold){
         SaddleConnectorsPersistenceThreshold=threshold;
+        return 0;
+      }
+
+      /**
+       * Enable/Disable compromise on memory allowing
+       * computation the geometry of the 2-separatrices
+       * in parallel.
+       */
+      int setPrioritizeSpeedOverMemory(const bool state){
+        PrioritizeSpeedOverMemory=state;
         return 0;
       }
 
@@ -436,6 +447,7 @@ namespace ttk{
       bool ComputeFinalSegmentation;
       bool ReturnSaddleConnectors;
       double SaddleConnectorsPersistenceThreshold;
+      bool PrioritizeSpeedOverMemory;
 
       DiscreteGradient discreteGradient_;
 
