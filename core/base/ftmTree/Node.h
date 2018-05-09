@@ -16,7 +16,7 @@
 #include <Debug.h>
 #include <functional>
 
-#include "DataTypes.h"
+#include "FTMTree_DataTypes.h"
 
 namespace ttk
 {

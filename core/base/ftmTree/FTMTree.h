@@ -21,7 +21,7 @@
 #include <Wrapper.h>
 
 #include "FTMTree_CT.h"
-#include "DataTypes.h"
+#include "FTMTree_DataTypes.h"
 
 namespace ttk
 {

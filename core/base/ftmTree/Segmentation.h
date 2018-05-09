@@ -21,7 +21,7 @@
 #include <tuple>
 #include <vector>
 
-#include "DataTypes.h"
+#include "FTMTree_DataTypes.h"
 #include "Structures.h"
 
 namespace ttk

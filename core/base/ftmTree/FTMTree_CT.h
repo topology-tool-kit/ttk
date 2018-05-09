@@ -23,7 +23,7 @@
 #include <Triangulation.h>
 #include <Wrapper.h>
 
-#include "DataTypes.h"
+#include "FTMTree_DataTypes.h"
 #include "FTMTree_MT.h"
 
 namespace ttk
