@@ -340,6 +340,9 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   morseSmaleComplex_.setSaddleConnectorsPersistenceThreshold(
       SaddleConnectorsPersistenceThreshold);
 
+  morseSmaleComplex_.setPrioritizeSpeedOverMemory(
+      PrioritizeSpeedOverMemory);
+
   morseSmaleComplex_.setInputScalarField(inputScalars->GetVoidPointer(0));
   morseSmaleComplex_.setInputOffsets(inputOffsets->GetVoidPointer(0));
 

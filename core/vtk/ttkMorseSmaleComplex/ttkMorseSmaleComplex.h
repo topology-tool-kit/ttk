@@ -136,6 +136,9 @@ class ttkMorseSmaleComplex
     vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
     vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
+    vtkSetMacro(PrioritizeSpeedOverMemory, int);
+    vtkGetMacro(PrioritizeSpeedOverMemory, int);
+
     int setupTriangulation(vtkDataSet* input);
     vtkDataArray* getScalars(vtkDataSet* input);
     vtkDataArray* getOffsets(vtkDataSet* input);
@@ -169,6 +172,7 @@ class ttkMorseSmaleComplex
     int OffsetFieldId;
     int ReturnSaddleConnectors;
     double SaddleConnectorsPersistenceThreshold;
+    bool PrioritizeSpeedOverMemory;
 
     ttk::MorseSmaleComplex morseSmaleComplex_;
     ttk::Triangulation *triangulation_;

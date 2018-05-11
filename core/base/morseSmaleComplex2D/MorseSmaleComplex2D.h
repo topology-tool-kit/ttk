@@ -65,21 +65,41 @@ int ttk::MorseSmaleComplex2D::execute(){
 
   // 1-separatrices
   if(ComputeDescendingSeparatrices1){
+    Timer tmp;
     std::vector<Separatrix> separatrices;
     std::vector<std::vector<Cell>> separatricesGeometry;
     getDescendingSeparatrices1(criticalPoints, separatrices, separatricesGeometry);
     setSeparatrices1<dataType>(separatrices, separatricesGeometry);
+
+    {
+      std::stringstream msg;
+      msg << "[MorseSmaleComplex3D] Descending 1-separatrices computed in "
+        << tmp.getElapsedTime() << " s."
+        << std::endl;
+      dMsg(std::cout, msg.str(), timeMsg);
+    }
   }
 
   if(ComputeAscendingSeparatrices1){
+    Timer tmp;
     std::vector<Separatrix> separatrices;
     std::vector<std::vector<Cell>> separatricesGeometry;
     getAscendingSeparatrices1(criticalPoints, separatrices, separatricesGeometry);
     setSeparatrices1<dataType>(separatrices, separatricesGeometry);
+
+    {
+      std::stringstream msg;
+      msg << "[MorseSmaleComplex3D] Ascending 1-separatrices computed in "
+        << tmp.getElapsedTime() << " s."
+        << std::endl;
+      dMsg(std::cout, msg.str(), timeMsg);
+    }
   }
 
   std::vector<int> maxSeeds;
   {
+    Timer tmp;
+
     int numberOfMaxima{};
     int numberOfMinima{};
 
@@ -91,6 +111,14 @@ int ttk::MorseSmaleComplex2D::execute(){
 
     if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation)
       setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold, descendingManifold, morseSmaleManifold);
+
+    {
+      std::stringstream msg;
+      msg << "[MorseSmaleComplex3D] Segmentation computed in "
+        << tmp.getElapsedTime() << " s."
+        << std::endl;
+      dMsg(std::cout, msg.str(), timeMsg);
+    }
   }
 
   if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
