@@ -240,15 +240,17 @@ namespace ttk{
        */
       int setReturnSaddleConnectors(const bool state){
         ReturnSaddleConnectors=state;
+        discreteGradient_.setReturnSaddleConnectors(state);
         return 0;
       }
 
       /** Set the threshold value for post-processing of
        * (saddle,...,saddle) vpaths gradient reversal
-       * (default value us 0.0).
+       * (default value is 0.0).
        */
       int setSaddleConnectorsPersistenceThreshold(const double threshold){
         SaddleConnectorsPersistenceThreshold=threshold;
+        discreteGradient_.setSaddleConnectorsPersistenceThreshold(threshold);
         return 0;
       }
 
