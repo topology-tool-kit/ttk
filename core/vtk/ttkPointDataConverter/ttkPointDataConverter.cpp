@@ -1,5 +1,9 @@
 #include                  <ttkPointDataConverter.h>
 
+#ifdef _WIN32
+#include<ciso646>
+#endif
+
 using namespace std;
 using namespace ttk;
 
