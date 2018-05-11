@@ -130,10 +130,11 @@ namespace ttk
          }
 
          /// Control the verbosity of the base code
-         void setDebugLevel(const int lvl)
+         virtual int setDebugLevel(const int& lvl) override
          {
             Debug::setDebugLevel(lvl);
             params_->debugLevel = lvl;
+            return 0;
          }
 
          /// Scalar field used to compute the Reeb Graph
@@ -164,16 +165,16 @@ namespace ttk
          /// See: grwothFromSeed.
          void sweepFrowSeeds();
 
-         // Print function
+         // Print function (FTRGraphPrint)
 
-         std::string printEdge(const orderedEdge& oEdge, const Propagation* const localProp) const;
+         std::string printEdge(const orderedEdge& oEdge, const Propagation* const localPropagation) const;
 
-         std::string printEdge(const idEdge edgeId, const Propagation* const localProp) const;
+         std::string printEdge(const idEdge edgeId, const Propagation* const localPropagation) const;
 
          std::string printTriangle(const orderedTriangle&   oTriangle,
-                              const Propagation* const localProp) const;
+                              const Propagation* const localPropagation) const;
 
-         std::string printTriangle(const idCell cellId, const Propagation* const localProp) const;
+         std::string printTriangle(const idCell cellId, const Propagation* const localPropagation) const;
 
          void printGraph(const int verbosity) const;
 
@@ -186,7 +187,7 @@ namespace ttk
 
          void init() override;
 
-        private:
+        private: // FTRGraphPrivate
          /// Local propagation for the vertex seed, using BFS with a priority queue
          /// localPropagation.
          /// This will process all the area corresponding to one connected component
@@ -201,7 +202,7 @@ namespace ttk
          /// first one contains edges finishing at v (lower star)
          /// second one contains edges starting at v (upper star)
          std::pair<std::vector<idEdge>, std::vector<idEdge>> visitStar(
-             const Propagation* const localProp) const;
+             const Propagation* const localPropagation) const;
 
          /// Consider edges ending at the vertex v, one by one,
          /// and find their corresponding components in the current
@@ -216,22 +217,22 @@ namespace ttk
          /// update (locally) the preimage graph (dynGraph) from that
          /// of immediately before f(v) to that of immediately after f(v).
          /// (v is localGrowth->getCurVertex())
-         void updatePreimage(const Propagation* const localProp);
+         void updatePreimage(const Propagation* const localPropagation);
 
          /// update the dynamicGraph by adding (if needed) a new edge corresponding to the
          /// starting cell cellId
          void updatePreimageStartCell(const orderedTriangle&   oTriangle,
-                                      const Propagation* const localProp);
+                                      const Propagation* const localPropagation);
 
          /// update the dynamicGraph by moving (if needed) the corresponding to the
          /// current visited cell cellId
          void updatePreimageMiddleCell(const orderedTriangle&   oTriangle,
-                                       const Propagation* const localProp);
+                                       const Propagation* const localPropagation);
 
          /// update the dynamicGraph by removing (if needed) the edge corresponding to the
          /// last visit of the cell cellId
          void updatePreimageEndCell(const orderedTriangle&   oTriangle,
-                                    const Propagation* const localProp);
+                                    const Propagation* const localPropagation);
 
          /// update the skeleton structure
          /// \params lowerComp set of uniq representant in the lower start of v
@@ -242,31 +243,40 @@ namespace ttk
                               const Propagation* const localPropagation);
 
          /// local growth replacing the global sort
-         void localGrowth(Propagation* const localProp);
+         void localGrowth(Propagation* const localPropagation);
 
          // Check if the current vertex which is on a Join saddle come from the
          // last growth touching this saddle
-         bool checkLast(const Propagation* const   localPropagation,
+         bool checkLast(const idSuperArc currentArc, const Propagation* const localPropagation,
                         const std::vector<idEdge>& lowerStarEdges);
 
+         // At a join saddle, merge local propagations coming here
+         // and close remiang opened arcs.
+         void mergeAtSaddle(const idNode saddleId);
+
+         // At a split saddle, break the localProagation into pieces
+         // corresponding to each upper CC.
+         std::vector<Propagation*> splitAtSaddle(const idNode saddleId);
+
+         // BFS RElated: (FTRGraphBFS)
          /// Use a BFS to reconstruct the differnts propagations at a saddle
-         // split
 
          // Tools
 
+         // Create a new propagation starting at leaf
          Propagation* newPropagation(const idVertex leaf);
 
          /// get an edge with the "start" vertex in first position
-         /// The start vertex is the lowest according to localProp comparison
-         orderedEdge getOrderedEdge(const idEdge edgeId, const Propagation* const localProp) const;
+         /// The start vertex is the lowest according to localPropagation comparison
+         orderedEdge getOrderedEdge(const idEdge edgeId, const Propagation* const localPropagation) const;
 
          /// get a triangle defined by its edges sorted and its id
          orderedTriangle getOrderedTriangle(const idCell             cellId,
-                                            const Propagation* const localProp) const;
+                                            const Propagation* const localPropagation) const;
 
          /// On a triangle, recover the position of the current vertex to classify the triangle
          vertPosInTriangle getVertPosInTriangle(const orderedTriangle&   oTriangle,
-                                                const Propagation* const localProp) const;
+                                                const Propagation* const localPropagation) const;
 
       };
    }  // namespace ftr
@@ -274,5 +284,8 @@ namespace ttk
 
 // Implementation
 #include "FTRGraph_Template.h"
+#include "FTRGraphBFS_Template.h"
+#include "FTRGraphPrint_Template.h"
+#include "FTRGraphPrivate_Template.h"
 
 #endif  // FTRGRAPH_H

@@ -96,7 +96,7 @@ namespace ttk
 #ifdef _GLIBCXX_PARALLEL_FEATURES_H
          ::__gnu_parallel::sort(begin, end);
 #else
-         cout << "Caution, sequential sort" << endl;
+         std::cout << "Caution, sequential sort" << std::endl;
          ::std::sort(begin, end);
 #endif
 #else
@@ -112,7 +112,7 @@ namespace ttk
 #ifdef _GLIBCXX_PARALLEL_FEATURES_H
          ::__gnu_parallel::sort(begin, end, comp);
 #else
-         cout << "Caution, sequential sort" << endl;
+         std::cout << "Caution, sequential sort" << std::endl;
          ::std::sort(begin, end, comp);
 #endif
 #else

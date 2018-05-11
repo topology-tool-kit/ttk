@@ -1,0 +1,354 @@
+#ifndef FTRGRAPHPRIVATE_TEMPLATE_H
+#define FTRGRAPHPRIVATE_TEMPLATE_H
+
+#include "FTRGraph.h"
+
+namespace ttk
+{
+   namespace ftr
+   {
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::growthFromSeed(const idVertex seed, Propagation* localPropagation)
+      {
+         // skeleton
+         const idNode     downNode   = graph_.makeNode(seed);
+         const idSuperArc currentArc = graph_.openArc(downNode, localPropagation);
+         std::cout << "open arc " << graph_.printArc(currentArc) << std::endl;
+
+         // topology
+         bool isLast       = false;
+         bool isJoinSaddle = false, isSplitSaddle = false;
+
+         // containers
+         std::vector<idEdge>                 lowerStarEdges, upperStarEdges;
+         std::set<DynGraphNode<ScalarType>*> lowerComp, upperComp;
+
+         while (!isJoinSaddle && !isSplitSaddle && !localPropagation->empty()) {
+            localPropagation->getNextVertex();
+
+            std::cout << "vert " << localPropagation->getCurVertex() << std::endl;
+
+            // Debug print
+            if (graph_.isVisited(localPropagation->getCurVertex())) {
+               const auto vv = localPropagation->getCurVertex();
+               std::cout << "Revisit: " << vv << " : " << graph_.getFirstVisit(vv) << std::endl;
+            }
+            // Mark this vertex with the current growth
+            graph_.visit(localPropagation->getCurVertex(), currentArc);
+
+            lowerStarEdges.clear();
+            upperStarEdges.clear();
+            std::tie(lowerStarEdges, upperStarEdges) = visitStar(localPropagation);
+
+            lowerComp = lowerComps(lowerStarEdges);
+            if(lowerComp.size() > 1){
+               isJoinSaddle = true;
+            }
+
+            if (isJoinSaddle) {
+               isLast = checkLast(currentArc, localPropagation, lowerStarEdges);
+               std::cout << "isLast: " << isLast << std::endl;
+               // If the current growth reaches a saddle and is not the last
+               // reaching this saddle, it just stops here.
+               if (!isLast)
+                  return;
+            }
+
+            updatePreimage(localPropagation);
+
+            upperComp = upperComps(upperStarEdges);
+            if (upperComp.size() > 1) {
+               isSplitSaddle = true;
+            }
+
+            // add upper star for futur visit
+            localGrowth(localPropagation);
+         }
+
+         // // Debug
+         // std::cout << "find saddle " << isJoinSaddle << std::endl;
+         // const Propagation* const tmpProp = localPropagation;
+         // dynGraph_.print([&, tmpProp](std::size_t t) { return printEdge(t, tmpProp); });
+
+         // Skeleton
+         const idVertex upVert = localPropagation->getCurVertex(); // keep before merge
+         const idNode upNode = graph_.makeNode(upVert);
+         graph_.closeArc(currentArc, upNode);
+         std::cout << "close arc " << graph_.printArc(currentArc) << std::endl;
+
+         // Data
+         if (isJoinSaddle || isSplitSaddle) {
+            // if any saddle, we update the skeleton
+            updateReebGraph(lowerComp, upperComp, localPropagation);
+         }
+
+         if (isJoinSaddle) {  // && isLast already implied
+            mergeAtSaddle(upNode);
+         }
+
+         if (isSplitSaddle) {
+            std::vector<Propagation*> newProps = splitAtSaddle(upNode);
+            for (Propagation* newLocalProp : newProps) {
+               growthFromSeed(upVert, newLocalProp);
+            }
+         } else {
+            // recursive call
+           growthFromSeed(upVert, localPropagation);
+         }
+      }
+
+      template <typename ScalarType>
+      std::pair<std::vector<idEdge>, std::vector<idEdge>> FTRGraph<ScalarType>::visitStar(
+          const Propagation* const localPropagation) const
+      {
+         // TODO re-use the same vectors per thread
+         std::vector<idEdge> lowerStar, upperStar;
+
+         const idEdge nbAdjEdges = mesh_->getVertexEdgeNumber(localPropagation->getCurVertex());
+         lowerStar.reserve(nbAdjEdges);
+         upperStar.reserve(nbAdjEdges);
+
+         for (idEdge e = 0; e < nbAdjEdges; ++e) {
+            idEdge edgeId;
+            mesh_->getVertexEdge(localPropagation->getCurVertex(), e, edgeId);
+            idVertex edgeLowerVert, edgeUpperVert;
+            std::tie(edgeLowerVert, edgeUpperVert, std::ignore) =
+                getOrderedEdge(edgeId, localPropagation);
+            if (edgeLowerVert == localPropagation->getCurVertex()) {
+               upperStar.emplace_back(edgeId);
+            } else {
+               lowerStar.emplace_back(edgeId);
+            }
+         }
+
+         return {lowerStar, upperStar};
+      }
+
+      template <typename ScalarType>
+      std::set<DynGraphNode<ScalarType>*> FTRGraph<ScalarType>::lowerComps(
+          const std::vector<idEdge>& finishingEdges)
+      {
+         return dynGraph_.findRoot(finishingEdges);
+      }
+
+      template <typename ScalarType>
+      std::set<DynGraphNode<ScalarType>*> FTRGraph<ScalarType>::upperComps(
+          const std::vector<idEdge>& startingEdges)
+      {
+         return dynGraph_.findRoot(startingEdges);
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::updatePreimage(const Propagation* const localPropagation)
+      {
+         const idCell nbAdjTriangles =
+             mesh_->getVertexTriangleNumber(localPropagation->getCurVertex());
+
+         for (idCell t = 0; t < nbAdjTriangles; ++t) {
+            // Classify current cell
+            idCell curTriangleid;
+            mesh_->getVertexTriangle(localPropagation->getCurVertex(), t, curTriangleid);
+
+            orderedTriangle   oTriangle  = getOrderedTriangle(curTriangleid, localPropagation);
+            vertPosInTriangle curVertPos = getVertPosInTriangle(oTriangle, localPropagation);
+
+            // std::cout << "v" << localPropagation->getCurVertex() << " : "
+            //           << printTriangle(oTriangle, localPropagation) << std::endl;
+
+            // Update DynGraph
+            // We can have an end pos on an unvisited triangle
+            // in case of saddle points
+            switch (curVertPos) {
+               case vertPosInTriangle::Start:
+                  updatePreimageStartCell(oTriangle, localPropagation);
+                  break;
+               case vertPosInTriangle::Middle:
+                  updatePreimageMiddleCell(oTriangle, localPropagation);
+                  break;
+               case vertPosInTriangle::End:
+                  updatePreimageEndCell(oTriangle, localPropagation);
+                  break;
+               default:
+                  std::cout << "[FTR]: update preimage error, unknown vertPos type" << std::endl;
+                  break;
+            }
+         }
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::updatePreimageStartCell(const orderedTriangle&   oTriangle,
+                                                         const Propagation* const localPropagation)
+      {
+         dynGraph_.insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), 0);
+         // std::cout << "start add edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+         // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::updatePreimageMiddleCell(const orderedTriangle&   oTriangle,
+                                                          const Propagation* const localPropagation)
+      {
+         // Check if exist ?
+         // If not, the triangle will be visited again once a merge have occured.
+         // So we do not add the edge now
+         const int t = dynGraph_.removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
+         if (t) {
+            // std::cout << "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+
+            dynGraph_.insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), 0);
+            // std::cout << " with edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+         }
+         // else {
+            // std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+         // }
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::updatePreimageEndCell(const orderedTriangle&   oTriangle,
+                                                       const Propagation* const localPropagation)
+      {
+         // const int t =
+         dynGraph_.removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
+         // if (t) {
+            // std::cout << "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+         // } else {
+            // std::cout << "end not found edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+         // }
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::updateReebGraph(
+          const std::set<DynGraphNode<ScalarType>*>& lowerComp,
+          const std::set<DynGraphNode<ScalarType>*>& upperComp,
+          const Propagation* const                   localPropagation)
+      {
+         graph_.makeNode(localPropagation->getCurVertex());
+         // Use lower comp to recover arcs coming here
+
+         if (lowerComp.size() > 1) {
+            std::cout << "join" << std::endl;
+         }
+
+         if (upperComp.size() > 1) {
+            std::cout << "split" << std::endl;
+         }
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::localGrowth(Propagation* const localPropagation)
+      {
+         const idVertex nbNeigh = mesh_->getVertexNeighborNumber(localPropagation->getCurVertex());
+         for (idVertex n = 0; n < nbNeigh; ++n) {
+            idVertex neighId;
+            mesh_->getVertexNeighbor(localPropagation->getCurVertex(), n, neighId);
+            if (localPropagation->compare(localPropagation->getCurVertex(), neighId)) {
+               localPropagation->addNewVertex(neighId);
+            }
+         }
+      }
+
+      template <typename ScalarType>
+      bool FTRGraph<ScalarType>::checkLast(const idSuperArc           currentArc,
+                                           const Propagation* const   localPropagation,
+                                           const std::vector<idEdge>& lowerStarEdges)
+      {
+         // ref DynGraph from arc ?
+         // WARNING this vertion only works in sequential
+         // TODO: find a way to make this work in parallel
+         idVertex isLast = true;
+         for (const idEdge e : lowerStarEdges) {
+            isLast &= !dynGraph_.isDisconnected(e);
+         }
+         return isLast;
+      }
+
+      template<typename ScalarType>
+      void FTRGraph<ScalarType>::mergeAtSaddle(const idNode saddleId)
+      {
+         graph_.mergeAtSaddle(saddleId);
+      }
+
+      template<typename ScalarType>
+      std::vector<Propagation*> FTRGraph<ScalarType>::splitAtSaddle(const idNode saddleId)
+      {
+        std::vector<Propagation*> newLocalProps;
+
+        // find seeds
+
+        return newLocalProps;
+      }
+
+      /// Tools
+
+      template <typename ScalarType>
+      Propagation* FTRGraph<ScalarType>::newPropagation(const idVertex leaf)
+      {
+         auto compare_fun = [&](idVertex a, idVertex b) { return scalars_->isHigher(a, b); };
+         Propagation* localPropagation(new Propagation(leaf, compare_fun));
+         const auto propId = propagations_.getNext();
+         propagations_[propId] = localPropagation;
+         return localPropagation;
+      }
+
+      template <typename ScalarType>
+      orderedEdge FTRGraph<ScalarType>::getOrderedEdge(const idEdge             edgeId,
+                                                       const Propagation* const localPropagation) const
+      {
+         idVertex edge0Vert, edge1Vert;
+         mesh_->getEdgeVertex(edgeId, 0, edge0Vert);
+         mesh_->getEdgeVertex(edgeId, 1, edge1Vert);
+
+         if (localPropagation->compare(edge0Vert, edge1Vert)) {
+            return {edge0Vert, edge1Vert, edgeId};
+         } else {
+            return {edge1Vert, edge0Vert, edgeId};
+         }
+      }
+
+      template <typename ScalarType>
+      orderedTriangle FTRGraph<ScalarType>::getOrderedTriangle(
+          const idCell cellId, const Propagation* const localPropagation) const
+      {
+         idEdge edges[3];
+         mesh_->getTriangleEdge(cellId, 0, edges[0]);
+         mesh_->getTriangleEdge(cellId, 1, edges[1]);
+         mesh_->getTriangleEdge(cellId, 2, edges[2]);
+
+         orderedEdge oEdges[3];
+         oEdges[0] = getOrderedEdge(edges[0], localPropagation);
+         oEdges[1] = getOrderedEdge(edges[1], localPropagation);
+         oEdges[2] = getOrderedEdge(edges[2], localPropagation);
+
+         auto compareOEdges = [localPropagation](const orderedEdge& a, const orderedEdge& b) {
+            return localPropagation->compare(std::get<0>(a), std::get<0>(b)) ||
+                   (std::get<0>(a) == std::get<0>(b) &&
+                    localPropagation->compare(std::get<1>(a), std::get<1>(b)));
+         };
+
+         std::sort(begin(oEdges), end(oEdges), compareOEdges);
+
+         return {std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), std::get<2>(oEdges[2]), cellId};
+      }
+
+      template <typename ScalarType>
+      vertPosInTriangle FTRGraph<ScalarType>::getVertPosInTriangle(
+          const orderedTriangle& oTriangle, const Propagation* const localPropagation) const
+      {
+         orderedEdge firstEdge = getOrderedEdge(std::get<0>(oTriangle), localPropagation);
+         if (std::get<0>(firstEdge) == localPropagation->getCurVertex()) {
+            return vertPosInTriangle::Start;
+         } else if (std::get<1>(firstEdge) == localPropagation->getCurVertex()) {
+            return vertPosInTriangle::Middle;
+         } else {
+            return vertPosInTriangle::End;
+         }
+      }
+   }
+}
+
+#endif /* end of include guard: FTRGRAPHPRIVATE_TEMPLATE_H */
