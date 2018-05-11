@@ -221,6 +221,7 @@ template<typename dataType>
 int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
    const std::vector<std::vector<Cell>>& separatricesGeometry,
    const std::vector<std::set<int>>& separatricesSaddles) const{
+
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
@@ -371,7 +372,7 @@ int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(const std::vector<Se
     outputSeparatrices2_cells_separatrixFunctionMinima->resize(oldFieldSize+totalNumberOfCells);
     outputSeparatrices2_cells_separatrixFunctionDiffs->resize(oldFieldSize+totalNumberOfCells);
     outputSeparatrices2_cells_isOnBoundary_->resize(oldFieldSize+totalNumberOfCells);
-// #pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_)
     for(int i=0; i<threadNumber_; ++i){
       // reduce: points
       const int tmp_npoints=separatrices2_points[i].size();
@@ -422,6 +423,7 @@ template<typename dataType>
 int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
    const std::vector<std::vector<Cell>>& separatricesGeometry,
    const std::vector<std::set<int>>& separatricesSaddles) const{
+
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);

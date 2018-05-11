@@ -131,9 +131,6 @@ int MorseSmaleComplex3D::getAscendingSeparatrices2(const vector<Cell>& criticalP
   vector<wallId_t> isVisited(numberOfEdges, 0);
 
   // apriori: by default construction, the separatrices are not valid
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
   for(int i=0; i<numberOfSaddles; ++i){
     const int saddleIndex=saddleIndexes[i];
     const Cell& saddle1=criticalPoints[saddleIndex];
@@ -174,9 +171,6 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(const vector<Cell>& critical
   vector<wallId_t> isVisited(numberOfTriangles, 0);
 
   // apriori: by default construction, the separatrices are not valid
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
   for(int i=0; i<numberOfSaddles; ++i){
     const int saddleIndex=saddleIndexes[i];
     const Cell& saddle2=criticalPoints[saddleIndex];
