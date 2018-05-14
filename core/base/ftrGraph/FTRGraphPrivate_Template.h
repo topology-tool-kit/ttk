@@ -75,6 +75,7 @@ namespace ttk
          const idNode upNode = graph_.makeNode(upVert);
          graph_.closeArc(currentArc, upNode);
          std::cout << "close arc " << graph_.printArc(currentArc) << std::endl;
+         std::cout << lowerComp.size() << " {} " << upperComp.size() << std::endl;
 
          // Data
          if (isJoinSaddle || isSplitSaddle) {
@@ -87,7 +88,8 @@ namespace ttk
          }
 
          if (isSplitSaddle) {
-            std::vector<Propagation*> newProps = splitAtSaddle(upNode);
+            std::cout << "split at saddle" << std::endl;
+            std::vector<Propagation*> newProps = splitAtSaddle(localPropagation);
             for (Propagation* newLocalProp : newProps) {
                growthFromSeed(upVert, newLocalProp);
             }
@@ -274,13 +276,99 @@ namespace ttk
       }
 
       template<typename ScalarType>
-      std::vector<Propagation*> FTRGraph<ScalarType>::splitAtSaddle(const idNode saddleId)
+      std::vector<Propagation*> FTRGraph<ScalarType>::splitAtSaddle(const Propagation* const localProp)
       {
         std::vector<Propagation*> newLocalProps;
+        const idVertex curVert = localProp->getCurVertex();
 
-        // find seeds
+        // find seeds (triangles)
+        std::set<idCell> triangleSeeds = upCCtriangleSeeds(curVert, localProp);
+
+        const idCell nbSeed = triangleSeeds.size();
+        newLocalProps.reserve(nbSeed);
+
+        // BFS to add vertices in the current propagation for each seed
+        for(const idCell curSeed : triangleSeeds) {
+           Propagation* curProp = newPropagation(curVert);
+           newLocalProps.emplace_back(curProp);
+           // fill curProp using a BFS on the current seed
+        }
 
         return newLocalProps;
+      }
+
+      template <typename ScalarType>
+      std::set<idCell> FTRGraph<ScalarType>::upCCtriangleSeeds(const idVertex           v,
+                                                               const Propagation* const localProp)
+      {
+         std::vector<idCell> triangles;
+         std::vector<valence> cc;
+         // all triangle in eighborhood
+         const idCell nbTriNeigh = mesh_->getVertexTriangleNumber(v);
+         triangles.reserve(nbTriNeigh);
+         for(idCell t = 0; t < nbTriNeigh; ++t) {
+            idCell neighTriangle;
+            mesh_->getVertexTriangle(v, t, neighTriangle);
+            const orderedTriangle oNeighTriangle = getOrderedTriangle(neighTriangle, localProp);
+            // only if v is not the highest point
+            if (getVertPosInTriangle(oNeighTriangle, localProp) != vertPosInTriangle::End) {
+               triangles.emplace_back(neighTriangle);
+            }
+         }
+         const idCell nbTriStar = triangles.size();
+         cc.resize(nbTriStar, -1);
+
+         // keep only seeds
+         for (idCell t = 0; t < nbTriStar; ++t) {
+            bfsSeed(t, t, triangles, cc, localProp);
+         }
+
+         for (idCell t = 0; t < nbTriStar; ++t) {
+            std::cout << triangles[t] << " :: " << static_cast<unsigned>(cc[t]) << std::endl;
+         }
+
+         std::set<idCell> seeds;
+         // TODO fill
+         return seeds;
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::bfsSeed(const std::size_t idt, const valence idcc,
+                                         std::vector<idCell>& triangles, std::vector<valence>& cc,
+                                         const Propagation* const localProp)
+      {
+         const idCell   curTri  = triangles[idt];
+         const idVertex curVert = localProp->getCurVertex();
+         if (cc[idt] == -1){
+            cc[idt] = idcc;
+
+            // for each edge
+            idEdge nbEdges = mesh_->getTriangleEdgeNumber(curTri);
+            // sould be 3
+            for (idEdge en = 0; en < nbEdges; ++en) {
+               idEdge edge;
+               mesh_->getTriangleEdge(curTri, en, edge);
+               idVertex e0, e1;
+               mesh_->getEdgeVertex(edge, 0, e0);
+               mesh_->getEdgeVertex(edge, 1, e1);
+               // if edge crossed by the value
+               if(localProp->compare(curVert, e0) != localProp->compare(curVert, e1)){
+               // for traingles attached to this edge
+                  idCell nbTri = mesh_->getEdgeTriangleNumber(edge);
+                  for (idCell tn = 0; tn < nbTri; ++tn) {
+                     idCell neighTriangle;
+                     mesh_->getEdgeTriangle(edge, tn, neighTriangle);
+                     if (neighTriangle == curTri) {
+                        continue;
+                     }
+                     const auto it = std::find(triangles.cbegin(), triangles.cend(), neighTriangle);
+                     if (it != triangles.cend()) {
+                        bfsSeed(std::distance(triangles.cbegin(), it), idcc, triangles, cc, localProp);
+                     }
+                  }
+               }
+            }
+         }
       }
 
       /// Tools
@@ -290,7 +378,7 @@ namespace ttk
       {
          auto compare_fun = [&](idVertex a, idVertex b) { return scalars_->isHigher(a, b); };
          Propagation* localPropagation(new Propagation(leaf, compare_fun));
-         const auto propId = propagations_.getNext();
+         const auto   propId   = propagations_.getNext();
          propagations_[propId] = localPropagation;
          return localPropagation;
       }

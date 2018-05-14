@@ -106,6 +106,7 @@ namespace ttk
                mesh_->preprocessVertexNeighbors();
                mesh_->preprocessVertexTriangles();
                mesh_->preprocessTriangleEdges();
+               mesh_->preprocessEdgeTriangles();
             }
 
             return 0;
@@ -255,11 +256,14 @@ namespace ttk
          void mergeAtSaddle(const idNode saddleId);
 
          // At a split saddle, break the localProagation into pieces
-         // corresponding to each upper CC.
-         std::vector<Propagation*> splitAtSaddle(const idNode saddleId);
+         // corresponding to each upper CC (use BFS)
+         std::vector<Propagation*> splitAtSaddle(const Propagation* const localProp);
 
-         // BFS RElated: (FTRGraphBFS)
-         /// Use a BFS to reconstruct the differnts propagations at a saddle
+         // Retrun one triangle by upper CC of the vertex v
+         std::set<idCell> upCCtriangleSeeds(const idVertex v, const Propagation* const localProp);
+
+         void bfsSeed(const std::size_t idt, const valence idcc, std::vector<idCell>& triangles,
+                      std::vector<valence>& cc, const Propagation* const localProp);
 
          // Tools
 
