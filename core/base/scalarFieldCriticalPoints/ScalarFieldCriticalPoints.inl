@@ -1,3 +1,6 @@
+#ifndef SCALARFIELDCRITICALPOINTS_INL
+#define SCALARFIELDCRITICALPOINTS_INL
+
 #include                  <ScalarFieldCriticalPoints.h>
 
 template <class dataType> 
@@ -179,9 +182,10 @@ ttk::ScalarFieldCriticalPoints<dataType>::execute(){
   
   // prepare the output
   criticalPoints_->clear();
+  criticalPoints_->reserve(vertexNumber_);
   for(int i = 0; i < vertexNumber_; i++){
     if(vertexTypes[i] != -2){
-      criticalPoints_->push_back(std::pair<int, char>(i, vertexTypes[i]));
+      criticalPoints_->emplace_back(i, vertexTypes[i]);
     }
   }
   
@@ -577,3 +581,5 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   // -2: regular points
   return -2;
 }
+
+#endif /* end of include guard: SCALARFIELDCRITICALPOINTS_INL */
