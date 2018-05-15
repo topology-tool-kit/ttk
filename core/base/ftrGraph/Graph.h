@@ -39,8 +39,8 @@ namespace ttk
          AtomicVector<Node>     nodes_;
          AtomicVector<SuperArc> arcs_;
 
-         std::vector<std::forward_list<idSuperArc>> segmentation_;
-         std::vector<valence>                     valences_;
+         std::vector<std::forward_list<idSegmentation>> segmentation_;
+         std::vector<valence>                           valences_;
 
         public:
          Graph();
@@ -94,27 +94,68 @@ namespace ttk
             return !segmentation_[v].empty();
          }
 
-         void visit(const idVertex v, const idSuperArc id)
+         void visit(const idVertex v, const idSegmentation id, bool regular = true)
          {
-            segmentation_[v].emplace_front(id);
+            if (regular) {
+               segmentation_[v].emplace_front(id);
+            } else {
+               segmentation_[v].emplace_front(-id-1);
+            }
          }
 
-         const std::forward_list<idSuperArc> visit(const idVertex v) const
+         const std::forward_list<idSegmentation> visit(const idVertex v) const
          {
             return segmentation_[v];
          }
 
          bool hasVisited(const idVertex v, const idSuperArc id) const
          {
-            for(const idSuperArc tmp :  segmentation_[v]){
-               if (tmp == id) return true;
+            for(const idSegmentation tmp :  segmentation_[v]){
+               if (tmp == (idSegmentation)id) {
+                  return true;
+               }
             }
             return false;
          }
 
-         idSuperArc getFirstVisit(const idVertex v) const
+         bool isNode(const idVertex v) const
          {
-            return segmentation_[v].front();
+            for (const idSegmentation tmp : segmentation_[v]) {
+               if (tmp < 0) {
+                  return true;
+               }
+            }
+            return false;
+         }
+
+         bool isNode(const idVertex v, const idNode id) const
+         {
+            for(const idSegmentation tmp :  segmentation_[v]){
+               if ((-tmp - 1) == (idSegmentation)id) {
+                  return true;
+               }
+            }
+            return false;
+         }
+
+         idNode getNodeId(const idVertex v) const
+         {
+            for (const idSegmentation tmp : segmentation_[v]) {
+               if (tmp < 0) {
+                  return -tmp - 1;
+               }
+            }
+            return nullNode;
+         }
+
+         idSuperArc getFirstArcId(const idVertex v) const
+         {
+            for (const idSegmentation tmp : segmentation_[v]) {
+               if (tmp >= 0) {
+                  return tmp;
+               }
+            }
+            return nullSuperArc;
          }
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -151,8 +192,13 @@ namespace ttk
 
          idNode makeNode(const idVertex v)
          {
+            if (isNode(v)) {
+               return getNodeId(v);
+            }
+
             const idNode newNode = nodes_.getNext();
             nodes_[newNode].setVerterIdentifier(v);
+            visit(v, newNode, false);
             return newNode;
          }
 
@@ -201,10 +247,15 @@ namespace ttk
                std::cerr << saddleVert << std::endl;
             }
 #endif
-            const idSuperArc firstArc  = getFirstVisit(saddleVert);
+            const idSuperArc firstArc  = getFirstArcId(saddleVert);
             Propagation*     firstProp = getArc(firstArc).getPropagation();
-            for (const idSuperArc a : visit(saddleVert)) {
-               Propagation* lowerProp = getArc(a).getPropagation();
+            for (const idSegmentation id : visit(saddleVert)) {
+               if (id < 0) {
+                  // its a node id
+                  continue;
+               }
+               const idSuperArc a         = id;
+               Propagation*     lowerProp = getArc(a).getPropagation();
                if (firstProp != lowerProp) {
                   firstProp->merge(*lowerProp);
                   closeArc(a, saddleId);
@@ -221,6 +272,8 @@ namespace ttk
          std::string printArc(const idSuperArc arcId) const;
 
          std::string printNode(const idNode nodeId) const;
+
+         std::string printVisit(const idVertex v) const;
 
          // Initialize functions
          // --------------------

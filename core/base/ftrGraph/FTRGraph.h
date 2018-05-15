@@ -262,8 +262,16 @@ namespace ttk
          // Retrun one triangle by upper CC of the vertex v
          std::set<idCell> upCCtriangleSeeds(const idVertex v, const Propagation* const localProp);
 
+         // bfs on triangles/edges in the neighborhood of the saddle to mark
+         // each cc with a distinct identifier.
          void bfsSeed(const std::size_t idt, const valence idcc, std::vector<idCell>& triangles,
                       std::vector<valence>& cc, const Propagation* const localProp);
+
+         // bfs on triangles/edges crossing the level set at saddle, starting
+         // at seed. upper vertices encountred are added to newLocalProp
+         void bfsPropagation(const idVertex saddle, const idCell seed,
+                             Propagation* const newLocalProp, std::set<idCell>& visitedCells,
+                             std::set<idVertex>& addedVertices);
 
          // Tools
 

@@ -61,7 +61,8 @@ void Graph::alloc()
 
 void Graph::init()
 {
-   fillVector<std::forward_list<idSuperArc>>(segmentation_, std::forward_list<idSuperArc>{});
+   fillVector<std::forward_list<idSegmentation>>(segmentation_,
+                                                 std::forward_list<idSegmentation>{});
    fillVector<valence>(valences_, -1);
 }
 
@@ -102,6 +103,16 @@ std::string Graph::printNode(const idNode nodeId) const
       res << " " << nodes_[nodeId].getUpArc(i);
    }
    res << "]";
+   return res.str();
+}
+
+
+std::string Graph::printVisit(const idVertex v) const
+{
+   std::stringstream res;
+   for (const idSegmentation tmp : segmentation_[v]) {
+      res << " " << tmp;
+   }
    return res.str();
 }
 

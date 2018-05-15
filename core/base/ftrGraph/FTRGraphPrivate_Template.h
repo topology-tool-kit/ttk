@@ -31,7 +31,7 @@ namespace ttk
             // Debug print
             if (graph_.isVisited(localPropagation->getCurVertex())) {
                const auto vv = localPropagation->getCurVertex();
-               std::cout << "Revisit: " << vv << " : " << graph_.getFirstVisit(vv) << std::endl;
+               std::cout << "Revisit: " << vv << " : " << graph_.printVisit(vv) << std::endl;
             }
             // Mark this vertex with the current growth
             graph_.visit(localPropagation->getCurVertex(), currentArc);
@@ -47,7 +47,7 @@ namespace ttk
 
             if (isJoinSaddle) {
                isLast = checkLast(currentArc, localPropagation, lowerStarEdges);
-               std::cout << "isLast: " << isLast << std::endl;
+               std::cout << "Join, isLast: " << isLast << std::endl;
                // If the current growth reaches a saddle and is not the last
                // reaching this saddle, it just stops here.
                if (!isLast)
@@ -58,6 +58,7 @@ namespace ttk
 
             upperComp = upperComps(upperStarEdges);
             if (upperComp.size() > 1) {
+            std::cout << "Split" << std::endl;
                isSplitSaddle = true;
             }
 
@@ -75,20 +76,20 @@ namespace ttk
          const idNode upNode = graph_.makeNode(upVert);
          graph_.closeArc(currentArc, upNode);
          std::cout << "close arc " << graph_.printArc(currentArc) << std::endl;
-         std::cout << lowerComp.size() << " {} " << upperComp.size() << std::endl;
 
          // Data
          if (isJoinSaddle || isSplitSaddle) {
             // if any saddle, we update the skeleton
+            // TODO keep ?
             updateReebGraph(lowerComp, upperComp, localPropagation);
          }
 
          if (isJoinSaddle) {  // && isLast already implied
+            updatePreimage(localPropagation);
             mergeAtSaddle(upNode);
          }
 
          if (isSplitSaddle) {
-            std::cout << "split at saddle" << std::endl;
             std::vector<Propagation*> newProps = splitAtSaddle(localPropagation);
             for (Propagation* newLocalProp : newProps) {
                growthFromSeed(upVert, newLocalProp);
@@ -229,7 +230,6 @@ namespace ttk
           const std::set<DynGraphNode<ScalarType>*>& upperComp,
           const Propagation* const                   localPropagation)
       {
-         graph_.makeNode(localPropagation->getCurVertex());
          // Use lower comp to recover arcs coming here
 
          if (lowerComp.size() > 1) {
@@ -292,6 +292,9 @@ namespace ttk
            Propagation* curProp = newPropagation(curVert);
            newLocalProps.emplace_back(curProp);
            // fill curProp using a BFS on the current seed
+           std::set<idCell>   visitedCells;
+           std::set<idVertex> addedVertices;
+           bfsPropagation(curVert, curSeed, curProp, visitedCells, addedVertices);
         }
 
         return newLocalProps;
@@ -318,17 +321,20 @@ namespace ttk
          const idCell nbTriStar = triangles.size();
          cc.resize(nbTriStar, -1);
 
-         // keep only seeds
+         // mark CC
          for (idCell t = 0; t < nbTriStar; ++t) {
             bfsSeed(t, t, triangles, cc, localProp);
          }
 
-         for (idCell t = 0; t < nbTriStar; ++t) {
-            std::cout << triangles[t] << " :: " << static_cast<unsigned>(cc[t]) << std::endl;
-         }
-
+         // keep seeds only
          std::set<idCell> seeds;
-         // TODO fill
+         std::set<valence> seenCC;
+         for (idCell t = 0; t < nbTriStar; ++t) {
+            if (seenCC.find(cc[t]) == end(seenCC)) {
+               seenCC.emplace(cc[t]);
+               seeds.emplace(triangles[t]);
+            }
+         }
          return seeds;
       }
 
@@ -348,12 +354,12 @@ namespace ttk
             for (idEdge en = 0; en < nbEdges; ++en) {
                idEdge edge;
                mesh_->getTriangleEdge(curTri, en, edge);
-               idVertex e0, e1;
-               mesh_->getEdgeVertex(edge, 0, e0);
-               mesh_->getEdgeVertex(edge, 1, e1);
+               idVertex v0, v1;
+               mesh_->getEdgeVertex(edge, 0, v0);
+               mesh_->getEdgeVertex(edge, 1, v1);
                // if edge crossed by the value
-               if(localProp->compare(curVert, e0) != localProp->compare(curVert, e1)){
-               // for traingles attached to this edge
+               if(localProp->compare(curVert, v0) != localProp->compare(curVert, v1)){
+                  // for traingles attached to this edge
                   idCell nbTri = mesh_->getEdgeTriangleNumber(edge);
                   for (idCell tn = 0; tn < nbTri; ++tn) {
                      idCell neighTriangle;
@@ -366,6 +372,54 @@ namespace ttk
                         bfsSeed(std::distance(triangles.cbegin(), it), idcc, triangles, cc, localProp);
                      }
                   }
+               }
+            }
+         }
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::bfsPropagation(const idVertex saddle, const idCell seed,
+                                                Propagation* const  newLocalProp,
+                                                std::set<idCell>&   visitedCells,
+                                                std::set<idVertex>& addedVertices)
+      {
+         if (visitedCells.find(seed) == end(visitedCells)) {
+            visitedCells.emplace(seed);
+            idEdge nbEdges = mesh_->getTriangleEdgeNumber(seed);
+            for(idEdge en = 0; en < nbEdges; ++en) {
+               idEdge edge;
+               mesh_->getTriangleEdge(seed, en, edge);
+               idVertex v0, v1;
+               mesh_->getEdgeVertex(edge, 0, v0);
+               mesh_->getEdgeVertex(edge, 1, v1);
+               bool comp0 = newLocalProp->compare(saddle, v0);
+               bool comp1 = newLocalProp->compare(saddle, v1);
+               // crossing edge
+               if (comp0 != comp1) {
+                  // Add in propagation
+                  if(comp0) {
+                     if (!graph_.isVisited(v0) && addedVertices.find(v0) == end(addedVertices)) {
+                        addedVertices.emplace(v0);
+                        newLocalProp->addNewVertex(v0);
+                     }
+                  } else {
+                     if (!graph_.isVisited(v1) && addedVertices.find(v1) == end(addedVertices)) {
+                        addedVertices.emplace(v1);
+                        newLocalProp->addNewVertex(v1);
+                     }
+                  }
+                  // Recursively continue BFS
+                  idCell nbTri = mesh_->getEdgeTriangleNumber(edge);
+                  for (idCell tn = 0; tn < nbTri; ++tn) {
+                     idCell neighTriangle;
+                     mesh_->getEdgeTriangle(edge, tn, neighTriangle);
+                     if (neighTriangle == seed) {
+                        continue;
+                     }
+
+                     bfsPropagation(saddle, neighTriangle, newLocalProp, visitedCells, addedVertices);
+                  }
+
                }
             }
          }

@@ -153,7 +153,6 @@ namespace ttk
                   // v is a minimum, add it to the leaves
                   if (isMinV) {
                      graph_.addLeaf(v);
-                     graph_.makeNode(v);
                   }
                }
             }  // end task

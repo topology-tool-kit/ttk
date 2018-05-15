@@ -35,6 +35,8 @@ namespace ftr
    using idThread = idNode;
    /// \brief for vertex up/down valence
    using valence = signed char;
+   /// \brief retains history
+   using idSegmentation = long int;
 
    /// \brief Edge represented by its 2 vertices, lower then upper, and its id.
    using orderedEdge = std::tuple<idVertex, idVertex, idEdge>;
@@ -58,6 +60,7 @@ namespace ftr
    static const idVertex       nullVertex    = std::numeric_limits<idVertex>::max();
    static const idEdge         nullEdge      = std::numeric_limits<idEdge>::max();
    static const idCell         nullCell      = std::numeric_limits<idCell>::max();
+   static const idSegmentation nullSegment   = std::numeric_limits<idSegmentation>::max();
 
    // Enum data
    // ----------
