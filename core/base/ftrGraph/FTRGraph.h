@@ -48,6 +48,7 @@ namespace ttk
          DynamicGraph<ScalarType> dynGraph_;
 
          AtomicVector<Propagation*> propagations_;
+         std::vector<UnionFind*>    toVisit_;
 
         public:
          FTRGraph(Params* const params, Triangulation* mesh, Scalars<ScalarType>* const scalars);

@@ -191,6 +191,7 @@ namespace ttk
          dynGraph_.alloc();
 
          propagations_.reserve(scalars_->getSize());
+         toVisit_.resize(scalars_->getSize());
       }
 
       template <typename ScalarType>
@@ -200,6 +201,8 @@ namespace ttk
          scalars_->init();
          graph_.init();
          dynGraph_.init();
+
+         fillVector<UnionFind*>(toVisit_, nullptr);
       }
 
    }  // namespace ftr

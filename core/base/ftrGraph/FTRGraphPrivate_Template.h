@@ -26,8 +26,8 @@ namespace ttk
          while (!isJoinSaddle && !isSplitSaddle && !localPropagation->empty()) {
             localPropagation->getNextVertex();
 
-            std::cout << "vert " << localPropagation->getCurVertex() << std::endl;
 
+            std::cout << "visit " << localPropagation->getCurVertex() << " : " << currentArc << std::endl;
             // Debug print
             if (graph_.isVisited(localPropagation->getCurVertex())) {
                const auto vv = localPropagation->getCurVertex();
@@ -62,8 +62,10 @@ namespace ttk
                isSplitSaddle = true;
             }
 
-            // add upper star for futur visit
-            localGrowth(localPropagation);
+            if (!isJoinSaddle || isSplitSaddle) {
+               // add upper star for futur visit
+               localGrowth(localPropagation);
+            }
          }
 
          // // Debug
@@ -85,6 +87,7 @@ namespace ttk
          }
 
          if (isJoinSaddle) {  // && isLast already implied
+            localGrowth(localPropagation);
             updatePreimage(localPropagation);
             mergeAtSaddle(upNode);
          }
@@ -203,25 +206,25 @@ namespace ttk
             // std::cout << " with edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
             // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          }
-         // else {
+         else {
             // std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
             // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
-         // }
+         }
       }
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::updatePreimageEndCell(const orderedTriangle&   oTriangle,
                                                        const Propagation* const localPropagation)
       {
-         // const int t =
+         const int t =
          dynGraph_.removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
-         // if (t) {
+         if (t) {
             // std::cout << "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
             // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
-         // } else {
+         } else {
             // std::cout << "end not found edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
             // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
-         // }
+         }
       }
 
       template <typename ScalarType>
@@ -249,7 +252,12 @@ namespace ttk
             idVertex neighId;
             mesh_->getVertexNeighbor(localPropagation->getCurVertex(), n, neighId);
             if (localPropagation->compare(localPropagation->getCurVertex(), neighId)) {
-               localPropagation->addNewVertex(neighId);
+               if (!toVisit_[neighId] || toVisit_[neighId]->find() != localPropagation->getRpz()) {
+                  localPropagation->addNewVertex(neighId);
+                  toVisit_[neighId] = localPropagation->getRpz();
+                  std::cout << " will see " << neighId << " from " << localPropagation->getCurVertex() << std::endl;
+                  std::cout << "TODO dale with UF in splitAtSaddle" << std::endl;
+               }
             }
          }
       }
