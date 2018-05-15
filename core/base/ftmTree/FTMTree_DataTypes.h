@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::DataTypes
+/// \class ttk::ftm::DataTypes
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date June 2016.
 ///
