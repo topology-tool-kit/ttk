@@ -97,6 +97,7 @@ namespace ttk
             for (Propagation* newLocalProp : newProps) {
                growthFromSeed(upVert, newLocalProp);
             }
+            // dynGraph_.print();
          } else {
             // recursive call
            growthFromSeed(upVert, localPropagation);
@@ -158,8 +159,8 @@ namespace ttk
             orderedTriangle   oTriangle  = getOrderedTriangle(curTriangleid, localPropagation);
             vertPosInTriangle curVertPos = getVertPosInTriangle(oTriangle, localPropagation);
 
-            // std::cout << "v" << localPropagation->getCurVertex() << " : "
-            //           << printTriangle(oTriangle, localPropagation) << std::endl;
+            std::cout << "update preimage at v" << localPropagation->getCurVertex() << " : "
+                      << printTriangle(oTriangle, localPropagation) << std::endl;
 
             // Update DynGraph
             // We can have an end pos on an unvisited triangle
@@ -186,8 +187,9 @@ namespace ttk
                                                          const Propagation* const localPropagation)
       {
          dynGraph_.insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), 0);
-         // std::cout << "start add edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-         // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+
+         std::cout << "start add edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+         std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
       }
 
       template <typename ScalarType>
@@ -199,16 +201,17 @@ namespace ttk
          // So we do not add the edge now
          const int t = dynGraph_.removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
          if (t) {
-            // std::cout << "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+            std::cout << "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
 
             dynGraph_.insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), 0);
-            // std::cout << " with edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+
+            std::cout << " with edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          }
          else {
-            // std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+            std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
          }
       }
 
@@ -219,11 +222,11 @@ namespace ttk
          const int t =
          dynGraph_.removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
          if (t) {
-            // std::cout << "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            std::cout << "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          } else {
-            // std::cout << "end not found edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            std::cout << "end not found edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          }
       }
 
@@ -256,7 +259,6 @@ namespace ttk
                   localPropagation->addNewVertex(neighId);
                   toVisit_[neighId] = localPropagation->getRpz();
                   std::cout << " will see " << neighId << " from " << localPropagation->getCurVertex() << std::endl;
-                  std::cout << "TODO dale with UF in splitAtSaddle" << std::endl;
                }
             }
          }
@@ -303,6 +305,8 @@ namespace ttk
            std::set<idCell>   visitedCells;
            std::set<idVertex> addedVertices;
            bfsPropagation(curVert, curSeed, curProp, visitedCells, addedVertices);
+           // remove the already processed first vertex
+           curProp->getNextVertex();
         }
 
         return newLocalProps;
@@ -409,11 +413,15 @@ namespace ttk
                      if (!graph_.isVisited(v0) && addedVertices.find(v0) == end(addedVertices)) {
                         addedVertices.emplace(v0);
                         newLocalProp->addNewVertex(v0);
+                        // disconnect lower component, may create duplicate
+                        // TODO: check if needed as all these vertices are lower
+                        // toVisit_[v1] = newLocalProp->getRpz();
                      }
                   } else {
                      if (!graph_.isVisited(v1) && addedVertices.find(v1) == end(addedVertices)) {
                         addedVertices.emplace(v1);
                         newLocalProp->addNewVertex(v1);
+                        // toVisit_[v0] = newLocalProp->getRpz();
                      }
                   }
                   // Recursively continue BFS
