@@ -237,12 +237,9 @@ namespace ttk
                                     const Propagation* const localPropagation);
 
          /// update the skeleton structure
-         /// \params lowerComp set of uniq representant in the lower start of v
-         /// \params upperComp set of uniq representant in the upper start of v
-         /// \ret true if we are on a sddle
-         void updateReebGraph(const std::set<DynGraphNode<ScalarType>*>& lowerComp,
-                              const std::set<DynGraphNode<ScalarType>*>& upperComp,
-                              const Propagation* const localPropagation);
+         /// \ret the nodeId of the current saddle/max
+         idNode updateReebGraph(const idSuperArc         currentArc,
+                                const Propagation* const localPropagation);
 
          /// local growth replacing the global sort
          void localGrowth(Propagation* const localPropagation);

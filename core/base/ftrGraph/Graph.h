@@ -69,6 +69,11 @@ namespace ttk
             return nodes_.size();
          }
 
+         idNode getNumberOfArcs(void) const
+         {
+            return arcs_.size();
+         }
+
          idNode getNumberOfLeaves(void) const
          {
             return leaves_.size();
@@ -84,7 +89,17 @@ namespace ttk
            return nodes_[id];
          }
 
+         Node& getNode(const idNode id)
+         {
+           return nodes_[id];
+         }
+
          const SuperArc& getArc(const idSuperArc id) const
+         {
+            return arcs_[id];
+         }
+
+         SuperArc& getArc(const idSuperArc id)
          {
             return arcs_[id];
          }
@@ -225,44 +240,28 @@ namespace ttk
          // Process
          // -------
 
+         // sort leaves vector by scalar value,
+         // can be done in parallel
          template<typename ScalarType>
          void sortLeaves(const Scalars<ScalarType>* s, const bool parallel = false){
             auto compare_fun = [&](idVertex a, idVertex b) { return s->isLower(a, b); };
             if(parallel){
                ::ttk::ftr::parallel_sort<decltype(leaves_.begin()), idVertex>(
-                   leaves_.begin(), leaves_.end(), compare_fun);
+                                                                     leaves_.begin(),
+                                                                     leaves_.end(),
+                                                                     compare_fun);
             } else {
-               ::ttk::ftr::sort<decltype(leaves_.begin()), idVertex>(leaves_.begin(), leaves_.end(),
+               ::ttk::ftr::sort<decltype(leaves_.begin()), idVertex>(leaves_.begin(),
+                                                                     leaves_.end(),
                                                                      compare_fun);
             }
          }
 
-         // Merge porpagations and close arcs at a saddle
-         void mergeAtSaddle(const idNode saddleId)
-         {
-            const idVertex saddleVert = getNode(saddleId).getVertexIdentifier();
-#ifndef TTK_ENABLE_KAMIKAZE
-            if (getNbVisit(saddleVert) < 2) {
-               std::cerr << "[FTR Graph]: merge on saddle having less than 2 visits:";
-               std::cerr << saddleVert << std::endl;
-            }
-#endif
-            const idSuperArc firstArc  = getFirstArcId(saddleVert);
-            Propagation*     firstProp = getArc(firstArc).getPropagation();
-            for (const idSegmentation id : visit(saddleVert)) {
-               if (id < 0) {
-                  // its a node id
-                  continue;
-               }
-               const idSuperArc a         = id;
-               Propagation*     lowerProp = getArc(a).getPropagation();
-               if (firstProp != lowerProp) {
-                  firstProp->merge(*lowerProp);
-                  closeArc(a, saddleId);
-                  std::cout << "close " << printArc(a) << std::endl;
-               }
-            }
-         }
+         // Merge porpagations under a join saddle point
+         void mergeAtSaddle(const idNode saddleId);
+
+         // Link nodes to arcs when arc are completely created
+         void arcs2nodes(void);
 
          // Tools
          // -----

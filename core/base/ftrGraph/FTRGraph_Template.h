@@ -106,8 +106,13 @@ namespace ttk
                printTime(timeSwipe, "[FTR Graph]: sweepFrowSeeds time: ", timeMsg);
             }
          }
-         // Debug
-         // dynGraph_.test();
+         printTime(timeBuild, "[FTR Graph]: build time: ", timeMsg);
+
+         // post-process
+         graph_.arcs2nodes();
+
+         // Debug print
+         printGraph(3);
 
          // Message user
          {
@@ -116,7 +121,7 @@ namespace ttk
                 << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << std::endl;
             dMsg(std::cout, msg.str(), timeMsg);
          }
-      }  // namespace ttk
+      }
 
       // protected
 
@@ -179,8 +184,6 @@ namespace ttk
             // process
             growthFromSeed(corLeaf, localPropagation);
          }
-
-         printGraph(3);
       }
 
       template <typename ScalarType>

@@ -16,7 +16,7 @@ namespace ttk
          std::cout << "open arc " << graph_.printArc(currentArc) << std::endl;
 
          // topology
-         bool isLast       = false;
+         bool isJoinSadlleLast       = false;
          bool isJoinSaddle = false, isSplitSaddle = false;
 
          // containers
@@ -46,12 +46,12 @@ namespace ttk
             }
 
             if (isJoinSaddle) {
-               isLast = checkLast(currentArc, localPropagation, lowerStarEdges);
-               std::cout << "Join, isLast: " << isLast << std::endl;
+               isJoinSadlleLast = checkLast(currentArc, localPropagation, lowerStarEdges);
+               std::cout << "Join, isJoinSadlleLast: " << isJoinSadlleLast << std::endl;
                // If the current growth reaches a saddle and is not the last
                // reaching this saddle, it just stops here.
-               if (!isLast)
-                  return;
+               if (!isJoinSadlleLast)
+                  break;
             }
 
             updatePreimage(localPropagation);
@@ -68,25 +68,13 @@ namespace ttk
             }
          }
 
-         // // Debug
-         // std::cout << "find saddle " << isJoinSaddle << std::endl;
-         // const Propagation* const tmpProp = localPropagation;
-         // dynGraph_.print([&, tmpProp](std::size_t t) { return printEdge(t, tmpProp); });
+         // if we stop, create/recover the critical point
+         const idVertex upVert = localPropagation->getCurVertex();
+         const idNode   upNode = updateReebGraph(currentArc, localPropagation);
 
-         // Skeleton
-         const idVertex upVert = localPropagation->getCurVertex(); // keep before merge
-         const idNode upNode = graph_.makeNode(upVert);
-         graph_.closeArc(currentArc, upNode);
-         std::cout << "close arc " << graph_.printArc(currentArc) << std::endl;
+         // Saddle case
 
-         // Data
-         if (isJoinSaddle || isSplitSaddle) {
-            // if any saddle, we update the skeleton
-            // TODO keep ?
-            updateReebGraph(lowerComp, upperComp, localPropagation);
-         }
-
-         if (isJoinSaddle) {  // && isLast already implied
+         if (isJoinSadlleLast) {
             localGrowth(localPropagation);
             updatePreimage(localPropagation);
             mergeAtSaddle(upNode);
@@ -98,7 +86,7 @@ namespace ttk
                growthFromSeed(upVert, newLocalProp);
             }
             // dynGraph_.print();
-         } else {
+         } else if (isJoinSadlleLast) {
             // recursive call
            growthFromSeed(upVert, localPropagation);
          }
@@ -159,8 +147,8 @@ namespace ttk
             orderedTriangle   oTriangle  = getOrderedTriangle(curTriangleid, localPropagation);
             vertPosInTriangle curVertPos = getVertPosInTriangle(oTriangle, localPropagation);
 
-            std::cout << "update preimage at v" << localPropagation->getCurVertex() << " : "
-                      << printTriangle(oTriangle, localPropagation) << std::endl;
+            // std::cout << "update preimage at v" << localPropagation->getCurVertex() << " : "
+            //           << printTriangle(oTriangle, localPropagation) << std::endl;
 
             // Update DynGraph
             // We can have an end pos on an unvisited triangle
@@ -188,8 +176,8 @@ namespace ttk
       {
          dynGraph_.insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), 0);
 
-         std::cout << "start add edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-         std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+         // std::cout << "start add edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+         // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
       }
 
       template <typename ScalarType>
@@ -201,17 +189,17 @@ namespace ttk
          // So we do not add the edge now
          const int t = dynGraph_.removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
          if (t) {
-            std::cout << "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+            // std::cout << "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
 
             dynGraph_.insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), 0);
 
-            std::cout << " with edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            // std::cout << " with edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          }
          else {
-            std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+            // std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
          }
       }
 
@@ -222,29 +210,25 @@ namespace ttk
          const int t =
          dynGraph_.removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
          if (t) {
-            std::cout << "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            // std::cout << "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          } else {
-            std::cout << "end not found edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            // std::cout << "end not found edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          }
       }
 
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::updateReebGraph(
-          const std::set<DynGraphNode<ScalarType>*>& lowerComp,
-          const std::set<DynGraphNode<ScalarType>*>& upperComp,
-          const Propagation* const                   localPropagation)
+      idNode FTRGraph<ScalarType>::updateReebGraph(const idSuperArc         currentArc,
+                                                 const Propagation* const localPropagation)
       {
-         // Use lower comp to recover arcs coming here
+         const idVertex upVert = localPropagation->getCurVertex(); // keep before merge
+         const idNode upNode = graph_.makeNode(upVert);
+         graph_.closeArc(currentArc, upNode);
 
-         if (lowerComp.size() > 1) {
-            std::cout << "join" << std::endl;
-         }
+         std::cout << "close arc " << graph_.printArc(currentArc) << std::endl;
 
-         if (upperComp.size() > 1) {
-            std::cout << "split" << std::endl;
-         }
+         return upNode;
       }
 
       template <typename ScalarType>
@@ -258,7 +242,6 @@ namespace ttk
                if (!toVisit_[neighId] || toVisit_[neighId]->find() != localPropagation->getRpz()) {
                   localPropagation->addNewVertex(neighId);
                   toVisit_[neighId] = localPropagation->getRpz();
-                  std::cout << " will see " << neighId << " from " << localPropagation->getCurVertex() << std::endl;
                }
             }
          }
@@ -272,11 +255,11 @@ namespace ttk
          // ref DynGraph from arc ?
          // WARNING this vertion only works in sequential
          // TODO: find a way to make this work in parallel
-         idVertex isLast = true;
+         bool isJoinSadlleLast = true;
          for (const idEdge e : lowerStarEdges) {
-            isLast &= !dynGraph_.isDisconnected(e);
+            isJoinSadlleLast &= !dynGraph_.isDisconnected(e);
          }
-         return isLast;
+         return isJoinSadlleLast;
       }
 
       template<typename ScalarType>

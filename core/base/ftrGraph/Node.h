@@ -45,6 +45,11 @@ namespace ttk
              vertexIdentifier_ = v;
           }
 
+          void reserveUpArc(const idSuperArc nbUpArc)
+          {
+             upArcsIds_.reserve(nbUpArc);
+          }
+
           idSuperArc getNbUpArcs(void) const
           {
              return upArcsIds_.size();
@@ -55,6 +60,16 @@ namespace ttk
              return upArcsIds_[index];
           }
 
+          void addUpArc(const idSuperArc arcId)
+          {
+             upArcsIds_.emplace_back(arcId);
+          }
+
+          void reserveDownArc(const idSuperArc nbDownArcs)
+          {
+             downArcsIds_.reserve(nbDownArcs);
+          }
+
           idSuperArc getNbDownArcs(void) const
           {
              return downArcsIds_.size();
@@ -63,6 +78,11 @@ namespace ttk
           idSuperArc getDownArc(const idSuperArc index) const
           {
              return downArcsIds_[index];
+          }
+
+          void addDownArc(const idSuperArc arcId)
+          {
+             downArcsIds_.emplace_back(arcId);
           }
       };
 

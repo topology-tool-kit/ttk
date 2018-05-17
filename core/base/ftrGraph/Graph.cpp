@@ -14,6 +14,62 @@ Graph::~Graph()
 {
 }
 
+void Graph::mergeAtSaddle(const idNode saddleId)
+{
+   const idVertex saddleVert = getNode(saddleId).getVertexIdentifier();
+#ifndef TTK_ENABLE_KAMIKAZE
+   if (getNbVisit(saddleVert) < 2) {
+      std::cerr << "[FTR Graph]: merge on saddle having less than 2 visits:";
+      std::cerr << saddleVert << std::endl;
+   }
+#endif
+   const idSuperArc firstArc  = getFirstArcId(saddleVert);
+   Propagation*     firstProp = getArc(firstArc).getPropagation();
+   for (const idSegmentation id : visit(saddleVert)) {
+      if (id < 0) {
+         // its a node id
+         continue;
+      }
+      const idSuperArc a         = id;
+      Propagation*     lowerProp = getArc(a).getPropagation();
+      if (firstProp != lowerProp) {
+         firstProp->merge(*lowerProp);
+         closeArc(a, saddleId);
+         std::cout << "close " << printArc(a) << std::endl;
+      }
+   }
+}
+
+void Graph::arcs2nodes(void)
+{
+   const idSuperArc nbArcs = getNumberOfArcs();
+   const idNode nbNodes    = getNumberOfNodes();
+
+   // reserve good size
+   std::vector<valence> upVal(nbNodes, 0), downVal(nbNodes, 0);
+   // count
+   for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
+      const idNode upNodeId = getArc(arcId).getUpNodeId();
+      ++downVal[upNodeId];
+      const idNode downNodeId = getArc(arcId).getDownNodeId();
+      ++upVal[downNodeId];
+   }
+   // alloc
+   for(idNode nodeId = 0; nodeId < nbNodes; ++nodeId) {
+      getNode(nodeId).reserveUpArc(upVal[nodeId]);
+      getNode(nodeId).reserveDownArc(downVal[nodeId]);
+   }
+
+   // set the id
+   for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
+      const idNode upNodeId = getArc(arcId).getUpNodeId();
+      getNode(upNodeId).addDownArc(arcId);
+      cout << "add " << arcId << " to " << upNodeId << endl;
+      const idNode downNodeId = getArc(arcId).getDownNodeId();
+      getNode(downNodeId).addUpArc(arcId);
+   }
+}
+
 void Graph::print(const int verbosity) const
 {
    if (verbosity >= 1) {
@@ -44,29 +100,6 @@ void Graph::print(const int verbosity) const
       }
    }
 }
-
-void Graph::alloc()
-{
-#ifndef TTK_ENABLE_KAMIKAZE
-   if (nbVerts_ == nullVertex) {
-      cout << "[FTR Graph]: ERROR, setNumberOfVertices not called before alloc in Graph" << endl;
-   }
-#endif
-   leaves_.reserve(nbVerts_/3);
-   nodes_.reserve(nbVerts_/2);
-   arcs_.reserve(nbVerts_/2);
-   segmentation_.resize(nbVerts_);
-   valences_.resize(nbVerts_);
-}
-
-void Graph::init()
-{
-   fillVector<std::forward_list<idSegmentation>>(segmentation_,
-                                                 std::forward_list<idSegmentation>{});
-   fillVector<valence>(valences_, -1);
-}
-
-// private
 
 std::string Graph::printArc(const idSuperArc arcId) const
 {
@@ -115,4 +148,26 @@ std::string Graph::printVisit(const idVertex v) const
    }
    return res.str();
 }
+
+void Graph::alloc()
+{
+#ifndef TTK_ENABLE_KAMIKAZE
+   if (nbVerts_ == nullVertex) {
+      cout << "[FTR Graph]: ERROR, setNumberOfVertices not called before alloc in Graph" << endl;
+   }
+#endif
+   leaves_.reserve(nbVerts_/3);
+   nodes_.reserve(nbVerts_/2);
+   arcs_.reserve(nbVerts_/2);
+   segmentation_.resize(nbVerts_);
+   valences_.resize(nbVerts_);
+}
+
+void Graph::init()
+{
+   fillVector<std::forward_list<idSegmentation>>(segmentation_,
+                                                 std::forward_list<idSegmentation>{});
+   fillVector<valence>(valences_, -1);
+}
+
 

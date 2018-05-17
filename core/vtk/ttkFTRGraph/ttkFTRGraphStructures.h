@@ -50,6 +50,13 @@ struct NodeData : public ObjectData {
 };
 
 struct ArcData : public ObjectData {
+   vtkSmartPointer<vtkIntArray> ids;
+   std::map<ttk::ftr::idVertex, vtkIdType> points;
+
+   explicit ArcData(const ttk::ftr::idSuperArc nbArcs)
+   {
+      ids = allocArray<vtkIntArray>("ArcId", nbArcs);
+   }
 };
 
 struct VertData : public ObjectData {

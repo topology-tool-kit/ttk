@@ -227,6 +227,43 @@ int ttkFTRGraph::getSegmentation(const ttk::ftr::Graph& graph, vtkDataSet* outpu
 
 int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonArcs)
 {
+   const idSuperArc nbArcs = graph.getNumberOfArcs();
+
+   ArcData arcData(nbArcs);
+   vtkSmartPointer<vtkUnstructuredGrid> arcs   = vtkSmartPointer<vtkUnstructuredGrid>::New();
+   vtkSmartPointer<vtkPoints>           points = vtkSmartPointer<vtkPoints>::New();
+
+   float pointCoord[3];
+
+   for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
+      const idNode upNodeId   = graph.getArc(arcId).getUpNodeId();
+      const idNode downNodeId = graph.getArc(arcId).getDownNodeId();
+
+      const idVertex upVertId   = graph.getNode(upNodeId).getVertexIdentifier();
+      const idVertex downVertId = graph.getNode(downNodeId).getVertexIdentifier();
+
+      vtkIdType pointIds[2];
+      if(arcData.points.count(upVertId)){
+         pointIds[1] = arcData.points[upVertId];
+      } else {
+         triangulation_->getVertexPoint(upVertId, pointCoord[0], pointCoord[1], pointCoord[2]);
+         pointIds[1] = points->InsertNextPoint(pointCoord);
+         arcData.points.emplace(upVertId, pointIds[1]);
+      }
+      if(arcData.points.count(downVertId)){
+         pointIds[0] = arcData.points[downVertId];
+      } else {
+         triangulation_->getVertexPoint(downVertId, pointCoord[0], pointCoord[1], pointCoord[2]);
+         pointIds[0] = points->InsertNextPoint(pointCoord);
+         arcData.points.emplace(downVertId, pointIds[0]);
+      }
+
+      vtkIdType nextCell = arcs->InsertNextCell(VTK_LINE, 2, pointIds);
+   }
+
+   arcs->SetPoints(points);
+   outputSkeletonArcs->ShallowCopy(arcs);
+
    return 0;
 }
 
@@ -238,13 +275,13 @@ int ttkFTRGraph::getSkeletonNodes(const Graph& graph, vtkUnstructuredGrid* outpu
    vtkSmartPointer<vtkUnstructuredGrid> nodes  = vtkSmartPointer<vtkUnstructuredGrid>::New();
    vtkSmartPointer<vtkPoints>           points = vtkSmartPointer<vtkPoints>::New();
 
-   for (idNode i = 0; i < nbNodes; i++) {
-      const ttk::ftr::idVertex vertId = graph.getNode(i).getVertexIdentifier();
-      float point[3];
+   for (idNode nodeId = 0; nodeId < nbNodes; nodeId++) {
+      const ttk::ftr::idVertex vertId = graph.getNode(nodeId).getVertexIdentifier();
+      float                    point[3];
       triangulation_->getVertexPoint(vertId, point[0], point[1], point[2]);
       points->InsertNextPoint(point);
 
-      nodeData.addNode(graph, i);
+      nodeData.addNode(graph, nodeId);
    }
 
    nodes->SetPoints(points);
