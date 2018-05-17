@@ -143,6 +143,16 @@ namespace ttk
             return false;
          }
 
+         bool isArc(const idVertex v) const
+         {
+            for (const idSegmentation tmp : segmentation_[v]) {
+               if (tmp >= 0) {
+                  return true;
+               }
+            }
+            return false;
+         }
+
          bool isNode(const idVertex v, const idNode id) const
          {
             for(const idSegmentation tmp :  segmentation_[v]){

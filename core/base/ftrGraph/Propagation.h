@@ -68,7 +68,6 @@ namespace ttk
          void merge(Propagation& other)
          {
             propagation_.merge(other.propagation_);
-            curVert_ = propagation_.top();
             rpz_ = makeUnion(rpz_, other.rpz_);
          }
 

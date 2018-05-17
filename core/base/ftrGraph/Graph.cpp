@@ -25,6 +25,7 @@ void Graph::mergeAtSaddle(const idNode saddleId)
 #endif
    const idSuperArc firstArc  = getFirstArcId(saddleVert);
    Propagation*     firstProp = getArc(firstArc).getPropagation();
+   std::cout << "first porp cur : " << firstProp->getCurVertex() << std::endl;
    for (const idSegmentation id : visit(saddleVert)) {
       if (id < 0) {
          // its a node id
@@ -32,8 +33,10 @@ void Graph::mergeAtSaddle(const idNode saddleId)
       }
       const idSuperArc a         = id;
       Propagation*     lowerProp = getArc(a).getPropagation();
-      if (firstProp != lowerProp) {
+      if (firstProp->getRpz() != lowerProp->getRpz()) {
+         std::cout << "other prop cur : " << lowerProp->getCurVertex() << std::endl;
          firstProp->merge(*lowerProp);
+         std::cout << "new prop cur " << firstProp->getCurVertex() << std::endl;
          closeArc(a, saddleId);
          std::cout << "close " << printArc(a) << std::endl;
       }

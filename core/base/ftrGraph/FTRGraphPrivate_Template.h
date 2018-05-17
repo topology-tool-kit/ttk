@@ -58,8 +58,11 @@ namespace ttk
 
             upperComp = upperComps(upperStarEdges);
             if (upperComp.size() > 1) {
-            std::cout << "Split" << std::endl;
+               std::cout << "Split" << std::endl;
                isSplitSaddle = true;
+               if(localPropagation->getCurVertex() == 7){
+                  dynGraph_.print();
+               }
             }
 
             if (!isJoinSaddle || isSplitSaddle) {
@@ -174,10 +177,15 @@ namespace ttk
       void FTRGraph<ScalarType>::updatePreimageStartCell(const orderedTriangle&   oTriangle,
                                                          const Propagation* const localPropagation)
       {
-         dynGraph_.insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), 0);
+         bool t = dynGraph_.insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), 0);
 
-         // std::cout << "start add edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-         // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+         if (t) {
+            std::cout << "start add edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+         } else {
+            std::cout << "no need to create edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+         }
       }
 
       template <typename ScalarType>
@@ -189,18 +197,19 @@ namespace ttk
          // So we do not add the edge now
          const int t = dynGraph_.removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
          if (t) {
-            // std::cout << "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+            std::cout << "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
 
-            dynGraph_.insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), 0);
-
-            // std::cout << " with edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          }
          else {
-            // std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+            std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
          }
+
+         dynGraph_.insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), 0);
+
+         std::cout << " new edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+         std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
       }
 
       template <typename ScalarType>
@@ -210,17 +219,17 @@ namespace ttk
          const int t =
          dynGraph_.removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
          if (t) {
-            // std::cout << "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            std::cout << "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          } else {
-            // std::cout << "end not found edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            std::cout << "end not found edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          }
       }
 
       template <typename ScalarType>
       idNode FTRGraph<ScalarType>::updateReebGraph(const idSuperArc         currentArc,
-                                                 const Propagation* const localPropagation)
+                                                   const Propagation* const localPropagation)
       {
          const idVertex upVert = localPropagation->getCurVertex(); // keep before merge
          const idNode upNode = graph_.makeNode(upVert);
@@ -252,14 +261,53 @@ namespace ttk
                                            const Propagation* const   localPropagation,
                                            const std::vector<idEdge>& lowerStarEdges)
       {
-         // ref DynGraph from arc ?
-         // WARNING this vertion only works in sequential
-         // TODO: find a way to make this work in parallel
-         bool isJoinSadlleLast = true;
-         for (const idEdge e : lowerStarEdges) {
-            isJoinSadlleLast &= !dynGraph_.isDisconnected(e);
+
+         const idVertex curSaddle = localPropagation->getCurVertex();
+         const idVertex nbNeigh   = mesh_->getVertexNeighborNumber(curSaddle);
+         UnionFind*     rpz       = localPropagation->getRpz();
+
+         valence decr = 0;
+         for(idVertex nid = 0; nid < nbNeigh; ++nid) {
+            idVertex neighId;
+            mesh_->getVertexNeighbor(curSaddle, nid, neighId);
+
+            if (localPropagation->compare(neighId, curSaddle)) {
+               if (!graph_.isArc(neighId)) {
+                  continue;
+               }
+               const idSuperArc oneLowerArc = graph_.getFirstArcId(neighId);
+               UnionFind*       otherRpz    = graph_.getArc(oneLowerArc).getPropagation()->getRpz();
+
+               if (otherRpz == rpz) {
+                  ++decr;
+               }
+            }
          }
-         return isJoinSadlleLast;
+
+         valence oldVal = 0;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic capture
+#endif
+         {
+            oldVal = graph_.val(curSaddle);
+            graph_.val(curSaddle) -= decr;
+         }
+
+         if (oldVal == -1) {
+            // First task to touch this saddle, compute the valence
+            idVertex totalVal = lowerStarEdges.size();
+            valence newVal = 0;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic capture
+#endif
+            {
+               newVal = graph_.val(curSaddle);
+               graph_.val(curSaddle) += (totalVal + 1);
+            }
+            oldVal = decr + newVal + (totalVal + 1);
+         }
+
+         return oldVal == decr;
       }
 
       template<typename ScalarType>
@@ -271,28 +319,33 @@ namespace ttk
       template<typename ScalarType>
       std::vector<Propagation*> FTRGraph<ScalarType>::splitAtSaddle(const Propagation* const localProp)
       {
-        std::vector<Propagation*> newLocalProps;
-        const idVertex curVert = localProp->getCurVertex();
+         std::vector<Propagation*> newLocalProps;
+         const idVertex            curVert = localProp->getCurVertex();
 
-        // find seeds (triangles)
-        std::set<idCell> triangleSeeds = upCCtriangleSeeds(curVert, localProp);
+         // find seeds (triangles)
+         std::set<idCell> triangleSeeds = upCCtriangleSeeds(curVert, localProp);
 
-        const idCell nbSeed = triangleSeeds.size();
-        newLocalProps.reserve(nbSeed);
+         std::cout << "For split " << curVert << std::endl;
+         for (const idCell t : triangleSeeds) {
+            std::cout << "seed triangle " << printTriangle(t, localProp) << std::endl;
+         }
 
-        // BFS to add vertices in the current propagation for each seed
-        for(const idCell curSeed : triangleSeeds) {
-           Propagation* curProp = newPropagation(curVert);
-           newLocalProps.emplace_back(curProp);
-           // fill curProp using a BFS on the current seed
-           std::set<idCell>   visitedCells;
-           std::set<idVertex> addedVertices;
-           bfsPropagation(curVert, curSeed, curProp, visitedCells, addedVertices);
-           // remove the already processed first vertex
-           curProp->getNextVertex();
-        }
+         const idCell nbSeed = triangleSeeds.size();
+         newLocalProps.reserve(nbSeed);
 
-        return newLocalProps;
+         // BFS to add vertices in the current propagation for each seed
+         for (const idCell curSeed : triangleSeeds) {
+            Propagation* curProp = newPropagation(curVert);
+            newLocalProps.emplace_back(curProp);
+            // fill curProp using a BFS on the current seed
+            std::set<idCell>   visitedCells;
+            std::set<idVertex> addedVertices;
+            bfsPropagation(curVert, curSeed, curProp, visitedCells, addedVertices);
+            // remove the already processed first vertex
+            curProp->getNextVertex();
+         }
+
+         return newLocalProps;
       }
 
       template <typename ScalarType>
@@ -311,6 +364,9 @@ namespace ttk
             // only if v is not the highest point
             if (getVertPosInTriangle(oNeighTriangle, localProp) != vertPosInTriangle::End) {
                triangles.emplace_back(neighTriangle);
+               std::cout << "ok neigh triangle " << printTriangle(neighTriangle, localProp) << std::endl;
+            } else {
+               std::cout << "ko neigh triangle " << printTriangle(neighTriangle, localProp) << std::endl;
             }
          }
          const idCell nbTriStar = triangles.size();
