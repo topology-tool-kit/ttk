@@ -176,7 +176,7 @@ template <class dataTypeU, class dataTypeV>
   
   {
     std::stringstream msg;
-    msg << "[ttk::JacobiSet] Edge-fans computed in "
+    msg << "[JacobiSet] Edge-fans computed in "
       << t.getElapsedTime() << " s. ("
       << edgeList_->size()
       << " edges)" << std::endl;
@@ -287,10 +287,10 @@ template <class dataTypeU, class dataTypeV>
     
     {
       std::stringstream msg;
-      msg << "[ttk::JacobiSet] Minimum edges: " << minimumNumber << std::endl;
-      msg << "[ttk::JacobiSet] Saddle edges: " << saddleNumber << std::endl;
-      msg << "[ttk::JacobiSet] Maximum edges: " << maximumNumber << std::endl;
-      msg << "[ttk::JacobiSet] Multi-saddle edges: " << monkeySaddleNumber << 
+      msg << "[JacobiSet] Minimum edges: " << minimumNumber << std::endl;
+      msg << "[JacobiSet] Saddle edges: " << saddleNumber << std::endl;
+      msg << "[JacobiSet] Maximum edges: " << maximumNumber << std::endl;
+      msg << "[JacobiSet] Multi-saddle edges: " << monkeySaddleNumber << 
 std::endl;
       dMsg(std::cout, msg.str(), Debug::infoMsg);
     }
@@ -298,12 +298,12 @@ std::endl;
   
   {
     std::stringstream msg;
-    msg << "[ttk::JacobiSet] Data-set (" << edgeNumber
+    msg << "[JacobiSet] Data-set (" << edgeNumber
       << " edges) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
       << std::endl;
-    msg << "[ttk::JacobiSet] Jacobi edge rate: "
+    msg << "[JacobiSet] Jacobi edge rate: "
       << 100*(jacobiSet.size()/((double) edgeNumber))
       << "%" << std::endl;
     dMsg(std::cout, msg.str(), timeMsg);
@@ -320,7 +320,7 @@ template <class dataTypeU, class dataTypeV>
  
   {
     std::stringstream msg;
-    msg << "[ttk::JacobiSet] Using legacy implementation..." << std::endl;
+    msg << "[JacobiSet] Using legacy implementation..." << std::endl;
     dMsg(std::cout, msg.str(), Debug::infoMsg);
   }
   
@@ -494,10 +494,10 @@ template <class dataTypeU, class dataTypeV>
     
     {
       std::stringstream msg;
-      msg << "[ttk::JacobiSet] Minimum edges: " << minimumNumber << std::endl;
-      msg << "[ttk::JacobiSet] Saddle edges: " << saddleNumber << std::endl;
-      msg << "[ttk::JacobiSet] Maximum edges: " << maximumNumber << std::endl;
-      msg << "[ttk::JacobiSet] Multi-saddle edges: " << monkeySaddleNumber << 
+      msg << "[JacobiSet] Minimum edges: " << minimumNumber << std::endl;
+      msg << "[JacobiSet] Saddle edges: " << saddleNumber << std::endl;
+      msg << "[JacobiSet] Maximum edges: " << maximumNumber << std::endl;
+      msg << "[JacobiSet] Multi-saddle edges: " << monkeySaddleNumber << 
 std::endl;
       dMsg(std::cout, msg.str(), Debug::infoMsg);
     }
@@ -505,12 +505,12 @@ std::endl;
   
   {
     std::stringstream msg;
-    msg << "[ttk::JacobiSet] Data-set (" << edgeList_->size()
+    msg << "[JacobiSet] Data-set (" << edgeList_->size()
       << " edges) processed in "
       << t.getElapsedTime() << " s. (" << threadNumber_
       << " thread(s))."
       << std::endl;
-    msg << "[ttk::JacobiSet] Jacobi edge rate: "
+    msg << "[JacobiSet] Jacobi edge rate: "
       << 100*(jacobiSet.size()/((double) edgeList_->size()))
       << "%" << std::endl;
     dMsg(std::cout, msg.str(), timeMsg);
@@ -647,7 +647,7 @@ template <class dataTypeU, class dataTypeV>
             }
             else{
               std::stringstream msg;
-              msg << "[ttk::JacobiSet] "
+              msg << "[JacobiSet] "
                 << "Inconsistent (non-bijective?) offsets for vertex #"
                 << vertexId << std::endl;
               dMsg(std::cerr, msg.str(), Debug::infoMsg);
