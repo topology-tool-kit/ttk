@@ -91,10 +91,12 @@ namespace ttk{
       int setDescendingSeparatrices2(const std::vector<Separatrix>& separatrices,
           const std::vector<std::vector<Cell>>& separatricesGeometry,
           const std::vector<std::set<int>>& separatricesSaddles) const;
+#ifdef TTK_ENABLE_OPENMP      
       template<typename dataType>
         int omp_setDescendingSeparatrices2(const std::vector<Separatrix>& separatrices,
             const std::vector<std::vector<Cell>>& separatricesGeometry,
             const std::vector<std::set<int>>& separatricesSaddles) const;
+#endif
 
       int getDualPolygon(const int edgeId, std::vector<int>& polygon) const;
 
@@ -117,10 +119,13 @@ namespace ttk{
       int setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
           const std::vector<std::vector<Cell>>& separatricesGeometry,
           const std::vector<std::set<int>>& separatricesSaddles) const;
+
+#ifdef TTK_ENABLE_OPENMP      
       template<typename dataType>
         int omp_setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
             const std::vector<std::vector<Cell>>& separatricesGeometry,
             const std::vector<std::set<int>>& separatricesSaddles) const;
+#endif      
   };
 }
 
@@ -217,6 +222,7 @@ std::vector<Separatrix>& separatrices,
   return 0;
 }
 
+#ifdef TTK_ENABLE_OPENMP      
 template<typename dataType>
 int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
    const std::vector<std::vector<Cell>>& separatricesGeometry,
@@ -418,6 +424,7 @@ int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(const std::vector<Se
 
   return 0;
 }
+#endif
 
 template<typename dataType>
 int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
@@ -534,6 +541,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(const std::vector<Separa
   return 0;
 }
 
+#ifdef TTK_ENABLE_OPENMP      
 template<typename dataType>
 int ttk::MorseSmaleComplex3D::omp_setDescendingSeparatrices2(const std::vector<Separatrix>& separatrices,
     const std::vector<std::vector<Cell>>& separatricesGeometry,
@@ -725,6 +733,7 @@ int ttk::MorseSmaleComplex3D::omp_setDescendingSeparatrices2(const std::vector<S
 
   return 0;
 }
+#endif
 
 template<typename dataType>
 int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(const std::vector<Separatrix>& separatrices,
