@@ -22,7 +22,7 @@ function(ttk_set_compile_options library)
 	if (TTK_ENABLE_OPENMP)
 		target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
 		target_compile_options(${library} PUBLIC ${OpenMP_CXX_FLAGS})
-		target_link_libraries(${library} PUBLIC ${OpenMP_CXX_FLAGS})
+		target_link_libraries(${library} PUBLIC ${OpenMP_CXX_LIBRARIES})
 	endif()
 
 	if (TTK_ENABLE_MPI)
