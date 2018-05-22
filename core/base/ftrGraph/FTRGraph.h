@@ -43,9 +43,9 @@ namespace ttk
          const bool needDelete_;
 
          // Internal fields
-         Triangulation*           mesh_;
-         Graph                    graph_;
-         DynamicGraph<ScalarType> dynGraph_;
+         Triangulation*         mesh_;
+         Graph                  graph_;
+         DynamicGraph<idVertex> dynGraph_;
 
          AtomicVector<Propagation*> propagations_;
          std::vector<UnionFind*>    toVisit_;
@@ -210,11 +210,11 @@ namespace ttk
          /// and find their corresponding components in the current
          /// preimage graph, each representing a component.
          /// \ret the set of uniques representing components
-         std::set<DynGraphNode<ScalarType>*> lowerComps(const std::vector<idEdge>& finishingEdges);
+         std::set<DynGraphNode<idVertex>*> lowerComps(const std::vector<idEdge>& finishingEdges);
 
          /// Symetric to lowerComps
          /// \ref lowerComps
-         std::set<DynGraphNode<ScalarType>*> upperComps(const std::vector<idEdge>& startingEdges);
+         std::set<DynGraphNode<idVertex>*> upperComps(const std::vector<idEdge>& startingEdges);
 
          /// update (locally) the preimage graph (dynGraph) from that
          /// of immediately before f(v) to that of immediately after f(v).
@@ -275,6 +275,11 @@ namespace ttk
 
          // Create a new propagation starting at leaf
          Propagation* newPropagation(const idVertex leaf);
+
+         // Compute the wieght of the edge in the dyngraph between e1 and e2.
+         // This weight is the min value of the two endpoints, we use the mirror array (int)
+         idVertex getWeight(const orderedEdge& e1, const orderedEdge& e2,
+                            const Propagation* const localPropagation);
 
          /// get an edge with the "start" vertex in first position
          /// The start vertex is the lowest according to localPropagation comparison

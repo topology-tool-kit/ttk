@@ -23,16 +23,16 @@ namespace ttk
 {
    namespace ftr
    {
-      template<typename ScalarType>
+      template<typename Type>
       struct DynGraphNode;
 
       using idRoot = int;
 
-      template <typename ScalarType>
+      template <typename Type>
       class DynamicGraph : public Allocable
       {
         private:
-         std::vector<DynGraphNode<ScalarType>> nodes_;
+         std::vector<DynGraphNode<Type>> nodes_;
 
         public:
          DynamicGraph();
@@ -59,19 +59,19 @@ namespace ttk
          // -------------------
 
          /// \brief get the node with the id: nid
-         DynGraphNode<ScalarType>* getNode(const std::size_t nid)
+         DynGraphNode<Type>* getNode(const std::size_t nid)
          {
             return &nodes_[nid];
          }
 
          /// \brief get the id of the node: node
-         std::size_t getNodeId(DynGraphNode<ScalarType>* node)
+         std::size_t getNodeId(DynGraphNode<Type>* node)
          {
             return std::distance(nodes_, node);
          }
 
          // check wether or not this node is connected to others
-         bool isDisconnected(const DynGraphNode<ScalarType>* const node) const
+         bool isDisconnected(const DynGraphNode<Type>* const node) const
          {
             return !node->hasParent();
          }
@@ -83,13 +83,13 @@ namespace ttk
          }
 
          /// \brief recover the root of a node
-         DynGraphNode<ScalarType>* findRoot(const DynGraphNode<ScalarType>* const node)
+         DynGraphNode<Type>* findRoot(const DynGraphNode<Type>* const node)
          {
             return node->findRoot();
          }
 
          /// \brief recover the root of a node using its id
-         DynGraphNode<ScalarType>* findRoot(const std::size_t nid)
+         DynGraphNode<Type>* findRoot(const std::size_t nid)
          {
             return findRoot(getNode(nid));
          }
@@ -97,10 +97,10 @@ namespace ttk
          /// \brief recover the root of several nodes once, using
          /// brace initializers style: findRoot({n1,n2})
          /// duplicate are removed by the std::set
-         std::set<DynGraphNode<ScalarType>*> findRoot(
-             std::initializer_list<DynGraphNode<ScalarType>*> nodes)
+         std::set<DynGraphNode<Type>*> findRoot(
+             std::initializer_list<DynGraphNode<Type>*> nodes)
          {
-            std::set<DynGraphNode<ScalarType>*> roots;
+            std::set<DynGraphNode<Type>*> roots;
             for(auto* n : nodes) {
                roots.emplace(findRoot(n));
             }
@@ -108,9 +108,9 @@ namespace ttk
          }
 
          /// \brief findRoot but using ids of the nodes
-         std::set<DynGraphNode<ScalarType>*> findRoot(std::initializer_list<std::size_t> nodesIds)
+         std::set<DynGraphNode<Type>*> findRoot(std::initializer_list<std::size_t> nodesIds)
          {
-            std::set<DynGraphNode<ScalarType>*> roots;
+            std::set<DynGraphNode<Type>*> roots;
             for(auto n : nodesIds) {
                roots.emplace(findRoot(n));
             }
@@ -119,9 +119,9 @@ namespace ttk
 
          /// \brief findRoot but using ids of the nodes in a vector
          template<typename type>
-         std::set<DynGraphNode<ScalarType>*> findRoot(const std::vector<type>& nodesids)
+         std::set<DynGraphNode<Type>*> findRoot(const std::vector<type>& nodesids)
          {
-            std::set<DynGraphNode<ScalarType>*> roots;
+            std::set<DynGraphNode<Type>*> roots;
             for(auto n : nodesids) {
                roots.emplace(findRoot(n));
             }
@@ -130,7 +130,7 @@ namespace ttk
 
 
          /// \brief count the number of connected component in a list of nodes
-         std::size_t getNbCC(std::initializer_list<DynGraphNode<ScalarType>*> nodes)
+         std::size_t getNbCC(std::initializer_list<DynGraphNode<Type>*> nodes)
          {
             return findRoot(nodes).size();
          }
@@ -143,20 +143,20 @@ namespace ttk
 
 
          /// \ret true if we have merged two tree, false if it was just an intern operation
-         bool insertEdge(DynGraphNode<ScalarType>* const n1, DynGraphNode<ScalarType>* const n2,
-                         const ScalarType w)
+         bool insertEdge(DynGraphNode<Type>* const n1, DynGraphNode<Type>* const n2,
+                         const Type w)
          {
            return n1->insertEdge(n2, w);
          }
 
          /// inert or replace existing edge between n1 and n2
-         bool insertEdge(const std::size_t n1, const std::size_t n2, const ScalarType w)
+         bool insertEdge(const std::size_t n1, const std::size_t n2, const Type w)
          {
             return insertEdge(getNode(n1), getNode(n2), w);
          }
 
          /// remove the link btwn n and its parent
-         void removeEdge(DynGraphNode<ScalarType>* const n)
+         void removeEdge(DynGraphNode<Type>* const n)
          {
             n->removeEdge();
          }
@@ -169,7 +169,7 @@ namespace ttk
 
          /// remove the edge btwn n1 and n2
          /// \ret 0 if not an edge
-         int removeEdge(DynGraphNode<ScalarType>* const n1, DynGraphNode<ScalarType>* const n2);
+         int removeEdge(DynGraphNode<Type>* const n1, DynGraphNode<Type>* const n2);
 
          /// remove the edge btwn n1 and n2
          /// \ret 0 if not an edge
@@ -189,10 +189,10 @@ namespace ttk
 
       /// \brief class representing a node
       /// of a tree and the link to its parent if not the root
-      template<typename ScalarType>
+      template<typename Type>
       struct DynGraphNode {
          DynGraphNode* parent_;
-         ScalarType    weight_;
+         Type          weight_;
          idNode        nbChilds_;
 
          explicit DynGraphNode() : parent_(nullptr), weight_(0), nbChilds_(0)
@@ -215,7 +215,7 @@ namespace ttk
          // Accessor functions
          // ------------------
 
-         ScalarType getWeight(void) const
+         Type getWeight(void) const
          {
             return weight_;
          }
@@ -243,11 +243,11 @@ namespace ttk
          /// Get representative node and kepp track of
          /// the node with the min weight on the path
          /// \ret tuple<root, node with min weight>
-         std::tuple<DynGraphNode<ScalarType>*, DynGraphNode<ScalarType>*> findMinWeightRoot() const;
+         std::tuple<DynGraphNode<Type>*, DynGraphNode<Type>*> findMinWeightRoot() const;
 
          /// Create a new edge between this node and the node n
          /// \ret true if we have merged two tree, false if it was just an intern operation
-         bool insertEdge(DynGraphNode* const n, const ScalarType weight);
+         bool insertEdge(DynGraphNode* const n, const Type weight);
 
          /// Remove the link between this node and its parent, thus makeing a new root
          void removeEdge(void);
