@@ -174,7 +174,6 @@ namespace ttk
          if(!parent_) return;
 
          DynGraphNode<Type>* curNode      = this;
-         Type                curWeight    = curNode->weight_;
 
          DynGraphNode<Type>* parentNode   = curNode->parent_;
          Type                parentWeight = curNode->weight_;
@@ -240,7 +239,6 @@ namespace ttk
             parent_ = n;
             weight_ = weight;
             n->nbChilds_++;
-            std::cout << ")) merge trees" << std::endl;
             return true;
          }
 
@@ -257,9 +255,6 @@ namespace ttk
             // remove old
             std::get<1>(nNodes)->parent_->nbChilds_--;
             std::get<1>(nNodes)->parent_ = 0;
-            std::cout << ")) replace arc" << std::endl;
-         } else {
-            std::cout << ")) nothing" << std::endl;
          }
 
          return false;

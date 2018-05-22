@@ -181,6 +181,10 @@ namespace ttk
             // initialize structure
             const idVertex corLeaf          = graph_.getLeaf(i);
             Propagation*   localPropagation = newPropagation(corLeaf);
+            // avoid duplicate for the leaf vertex
+            localPropagation->getNextVertex();
+            updatePreimage(localPropagation);
+            localGrowth(localPropagation);
             // process
             growthFromSeed(corLeaf, localPropagation);
          }

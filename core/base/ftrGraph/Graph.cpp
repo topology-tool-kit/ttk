@@ -34,8 +34,6 @@ void Graph::mergeAtSaddle(const idNode saddleId)
       Propagation*     lowerProp = getArc(a).getPropagation();
       if (firstProp->getRpz() != lowerProp->getRpz()) {
          firstProp->merge(*lowerProp);
-         closeArc(a, saddleId);
-         std::cout << "close " << printArc(a) << std::endl;
       }
    }
 }
@@ -64,7 +62,6 @@ void Graph::arcs2nodes(void)
    for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
       const idNode upNodeId = getArc(arcId).getUpNodeId();
       getNode(upNodeId).addDownArc(arcId);
-      cout << "add " << arcId << " to " << upNodeId << endl;
       const idNode downNodeId = getArc(arcId).getDownNodeId();
       getNode(downNodeId).addUpArc(arcId);
    }

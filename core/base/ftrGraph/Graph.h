@@ -133,6 +133,16 @@ namespace ttk
             return false;
          }
 
+         bool hasVisited(const idVertex v, const UnionFind* const rpz) const
+         {
+            for(const idSegmentation tmp :  segmentation_[v]){
+               if (tmp >= 0 && getArc(tmp).getPropagation()->getRpz() == rpz) {
+                  return true;
+               }
+            }
+            return false;
+         }
+
          bool isNode(const idVertex v) const
          {
             for (const idSegmentation tmp : segmentation_[v]) {
