@@ -27,6 +27,10 @@ namespace ttk
          while (!isJoinSaddle && !isSplitSaddle && !localPropagation->empty()) {
             localPropagation->getNextVertex();
 
+            if (graph_.hasVisited(localPropagation->getCurVertex(), currentArc)) {
+               continue;
+            }
+
             // Mark this vertex with the current growth
             graph_.visit(localPropagation->getCurVertex(), currentArc);
 
@@ -45,7 +49,7 @@ namespace ttk
 
             if (isJoinSaddle) {
                isJoinSadlleLast = checkLast(currentArc, localPropagation, lowerStarEdges);
-               std::cout << "Join, isJoinSadlleLast: " << isJoinSadlleLast << std::endl;
+               std::cout << "Join " << lowerComp.size() << " isJoinSadlleLast: " << isJoinSadlleLast << std::endl;
                // If the current growth reaches a saddle and is not the last
                // reaching this saddle, it just stops here.
                if (!isJoinSadlleLast)
