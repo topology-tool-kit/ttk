@@ -72,6 +72,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
+#endif
   for(int i = 0; i < output->GetNumberOfPoints(); i++){
     
     double regionId = 0;
@@ -79,7 +80,6 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
     
     vertexNumbers_->SetTuple1(i, vertexNumbers[(int) regionId]);
   }
-#endif
   output->GetPointData()->AddArray(vertexNumbers_);
   
 #ifdef TTK_ENABLE_OPENMP
@@ -100,6 +100,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
+#endif
   for(int i = 0; i < output->GetNumberOfCells(); i++){
     
     double regionId = 0;
@@ -107,7 +108,6 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
     
     cellNumbers_->SetTuple1(i, cellNumbers[(int) regionId]);
   }
-#endif
   output->GetCellData()->AddArray(cellNumbers_);
   
   {
