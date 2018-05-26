@@ -242,6 +242,7 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGr
       const idVertex upVertId   = graph.getNode(upNodeId).getVertexIdentifier();
       const idVertex downVertId = graph.getNode(downNodeId).getVertexIdentifier();
 
+      // Mesh skeleton
       vtkIdType pointIds[2];
       if(arcData.points.count(upVertId)){
          pointIds[1] = arcData.points[upVertId];
@@ -257,10 +258,13 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGr
          pointIds[0] = points->InsertNextPoint(pointCoord);
          arcData.points.emplace(downVertId, pointIds[0]);
       }
+      vtkIdType nextCellId = arcs->InsertNextCell(VTK_LINE, 2, pointIds);
 
-      vtkIdType nextCell = arcs->InsertNextCell(VTK_LINE, 2, pointIds);
+      // Scalar arrays
+      arcData.setArcInfo(graph, arcId, nextCellId);
    }
 
+   arcData.addArrays(arcs, params_);
    arcs->SetPoints(points);
    outputSkeletonArcs->ShallowCopy(arcs);
 

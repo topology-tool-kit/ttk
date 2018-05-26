@@ -1,9 +1,11 @@
 #pragma once
 
-#include <vtkSmartPointer.h>
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
-#include <vtkDataSet.h>
+#include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
 #include "DataTypesFTR.h"
 #include "FTRCommon.h"
@@ -57,6 +59,17 @@ struct ArcData : public ObjectData {
    {
       ids = allocArray<vtkIntArray>("ArcId", nbArcs);
    }
+
+   void setArcInfo(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc a,
+                   const vtkIdType skeletonCell)
+   {
+      ids->SetTuple1(skeletonCell, a);
+   }
+
+   void addArrays(vtkUnstructuredGrid* arcs, ttk::ftr::Params params)
+   {
+       arcs->GetCellData()->SetScalars(ids);
+   }
 };
 
 struct VertData : public ObjectData {
@@ -78,6 +91,6 @@ struct VertData : public ObjectData {
 
    void addArrays(vtkDataSet* segmentation, ttk::ftr::Params params)
    {
-      segmentation->GetPointData()->AddArray(ids);
+      segmentation->GetPointData()->SetScalars(ids);
    }
 };

@@ -278,10 +278,6 @@ namespace ttk
          const idVertex   nbNeigh   = mesh_->getVertexNeighborNumber(curSaddle);
          const UnionFind* rpz       = localPropagation->getRpz();
 
-         if(curSaddle == 3) {
-            volatile int t = 0;
-         }
-
          valence decr = 0;
          for(idVertex nid = 0; nid < nbNeigh; ++nid) {
             idVertex neighId;
