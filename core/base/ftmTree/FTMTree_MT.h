@@ -731,9 +731,10 @@ namespace ftm
    std::ostream &operator<<(std::ostream &o, Node const &n);
    std::ostream &operator<<(std::ostream &o, SuperArc const &a);
 
-#include <FTMTree_MT_Template.h>
 
 }
 }
+
+#include <FTMTree_MT_Template.h>
 
 #endif /* end of include guard: MERGETREE_H */
