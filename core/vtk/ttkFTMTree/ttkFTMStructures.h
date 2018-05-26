@@ -175,7 +175,7 @@ struct ArcData : public WrapperData {
       const size_t nbCells  = skeletonArcs->GetNumberOfCells();
 
       cell_ids->SetNumberOfTuples(nbCells);
-      skeletonArcs->GetCellData()->AddArray(cell_ids);
+      skeletonArcs->GetCellData()->SetScalars(cell_ids);
 
       if (params.advStats) {
          if (params.segm) {
@@ -264,7 +264,7 @@ struct NodeData : public WrapperData{
    {
       pointData->AddArray(ids);
       pointData->AddArray(vertIds);
-      pointData->AddArray(type);
+      pointData->SetScalars(type);
       if (params.advStats) {
          if (params.segm) {
             pointData->AddArray(regionSize);
@@ -437,7 +437,7 @@ struct VertData: public WrapperData {
       if (!params.segm)
          return;
 
-      pointData->AddArray(ids);
+      pointData->SetScalars(ids);
 
       if (params.advStats) {
          pointData->AddArray(sizeRegion);
