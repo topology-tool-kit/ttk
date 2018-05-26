@@ -159,8 +159,8 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public ttk::Wrapper
 
    void identify(vtkDataSet* ds) const;
 
-   virtual int FillInputPortInformation(int port, vtkInformation* info);
-   virtual int FillOutputPortInformation(int port, vtkInformation* info);
+   virtual int FillInputPortInformation(int port, vtkInformation* info) override;
+   virtual int FillOutputPortInformation(int port, vtkInformation* info) override;
 
   private:
 

@@ -68,7 +68,7 @@ namespace ftm
       AtomicVector<SuperArc> *superArcs;
       AtomicVector<Node> *    nodes;
       AtomicVector<idNode> *  roots;
-      std::vector<idNode> *        leaves;
+      std::vector<idNode> *   leaves;
 
       // vertex 2 node / superarc
       std::vector<idCorresp> *vert2tree;
