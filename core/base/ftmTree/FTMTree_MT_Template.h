@@ -24,6 +24,11 @@
 // Init
 // ----
 
+namespace ttk
+{
+namespace ftm
+{
+
 template <typename scalarType>
 void ftm::FTMTree_MT::sortInput(void)
 {
@@ -75,6 +80,8 @@ void ftm::FTMTree_MT::sortInput(void)
    }
 }
 
+}
+}
 // Process
 
 #endif /* end of include guard: FTMTREE_MT_TPL_H */

@@ -68,7 +68,7 @@ namespace ftm
       AtomicVector<SuperArc> *superArcs;
       AtomicVector<Node> *    nodes;
       AtomicVector<idNode> *  roots;
-      std::vector<idNode> *        leaves;
+      std::vector<idNode> *   leaves;
 
       // vertex 2 node / superarc
       std::vector<idCorresp> *vert2tree;
@@ -731,9 +731,10 @@ namespace ftm
    std::ostream &operator<<(std::ostream &o, Node const &n);
    std::ostream &operator<<(std::ostream &o, SuperArc const &a);
 
-#include <FTMTree_MT_Template.h>
 
 }
 }
+
+#include <FTMTree_MT_Template.h>
 
 #endif /* end of include guard: MERGETREE_H */

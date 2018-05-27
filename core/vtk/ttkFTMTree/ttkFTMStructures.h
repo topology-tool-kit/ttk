@@ -20,9 +20,8 @@ struct LocalFTM {
 };
 
 struct WrapperData {
-   template<typename vtkArrayType>
-   inline vtkSmartPointer<vtkArrayType> initArray(const char* fieldName, size_t 
-nbElmnt)
+   template <typename vtkArrayType>
+   inline vtkSmartPointer<vtkArrayType> initArray(const char* fieldName, size_t nbElmnt)
    {
       vtkSmartPointer<vtkArrayType> arr = vtkSmartPointer<vtkArrayType>::New();
       arr->SetName(fieldName);
@@ -38,15 +37,15 @@ nbElmnt)
       return arr;
    }
 
-   inline static ttk::ftm::NodeType getNodeType(ttk::ftm::FTMTree_MT& tree, 
-const ttk::ftm::idNode nodeId,
-                                           ttk::ftm::Params params)
+   inline static ttk::ftm::NodeType getNodeType(ttk::ftm::FTMTree_MT&  tree,
+                                                const ttk::ftm::idNode nodeId,
+                                                ttk::ftm::Params       params)
    {
       const ttk::ftm::Node* node = tree.getNode(nodeId);
       int upDegree{};
       int downDegree{};
-      if (params.treeType == ttk::ftm::TreeType::Join or params.treeType == 
-ttk::ftm::TreeType::Contour) {
+      if (params.treeType == ttk::ftm::TreeType::Join or
+          params.treeType == ttk::ftm::TreeType::Contour) {
          upDegree   = node->getNumberOfUpSuperArcs();
          downDegree = node->getNumberOfDownSuperArcs();
       } else {
@@ -96,15 +95,13 @@ struct ArcData : public WrapperData {
          nbArcs += tree->getNumberOfSuperArcs();
          nbNodes += tree->getNumberOfNodes();
          samplePoints += params.samplingLvl >= 0
-                             ? tree->getNumberOfNodes() + (nbArcs * 
-params.samplingLvl)
+                             ? tree->getNumberOfNodes() + (nbArcs * params.samplingLvl)
                              : tree->getNumberOfVertices();
          nbVerts += tree->getNumberOfVertices();
       }
 
       point_ids.resize(nbVerts, ttk::ftm::nullVertex);
-      cell_ids          = initArray<vtkIntArray>("SegmentationId", 
-samplePoints);
+      cell_ids          = initArray<vtkIntArray>("SegmentationId", samplePoints);
       point_regularMask = initArray<vtkCharArray>("RegularMask", samplePoints);
       point_scalar      = initArray<vtkFloatArray>("Scalar", samplePoints);
 
@@ -123,8 +120,7 @@ samplePoints);
       return point_ids[vertId] != ttk::ftm::nullVertex;
    }
 
-   inline void addPoint(const ttk::ftm::idVertex globalId, const vtkIdType id, 
-const float scalar,
+   inline void addPoint(const ttk::ftm::idVertex globalId, const vtkIdType id, const float scalar,
                         const bool reg)
    {
       point_ids[globalId] = id;
@@ -137,10 +133,9 @@ const float scalar,
       point_regularMask->SetTuple1(id, reg);
    }
 
-   inline void fillArrayCell(const vtkIdType pos, const ttk::ftm::idSuperArc 
-arcId, LocalFTM& ftmTree,
-                             ttk::Triangulation* triangulation, ttk::ftm::Params 
-params)
+   inline void fillArrayCell(const vtkIdType pos, const ttk::ftm::idSuperArc arcId,
+                             LocalFTM& ftmTree, ttk::Triangulation* triangulation,
+                             ttk::ftm::Params params)
    {
       const ttk::ftm::idNode idOffset = ftmTree.offset;
       ttk::ftm::FTMTree_MT*  tree     = ftmTree.tree.getTree(params.treeType);
@@ -159,35 +154,28 @@ params)
 
          float               downPoints[3];
          const ttk::ftm::idVertex downNodeId   = tree->getLowerNodeId(arc);
-         const ttk::ftm::idVertex downVertexId = 
-tree->getNode(downNodeId)->getVertexId();
-         triangulation->getVertexPoint(downVertexId, downPoints[0], 
-downPoints[1], downPoints[2]);
+         const ttk::ftm::idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
+         triangulation->getVertexPoint(downVertexId, downPoints[0], downPoints[1], downPoints[2]);
 
          float               upPoints[3];
          const ttk::ftm::idVertex upNodeId   = tree->getUpperNodeId(arc);
-         const ttk::ftm::idVertex upVertexId = 
-tree->getNode(upNodeId)->getVertexId();
-         triangulation->getVertexPoint(upVertexId, upPoints[0], upPoints[1], 
-upPoints[2]);
+         const ttk::ftm::idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
+         triangulation->getVertexPoint(upVertexId, upPoints[0], upPoints[1], upPoints[2]);
 
-         cell_spanArcs->SetTuple1(pos, ttk::Geometry::distance(downPoints, 
-upPoints));
+         cell_spanArcs->SetTuple1(pos, ttk::Geometry::distance(downPoints, upPoints));
       }
    }
 
-   inline void addArray(vtkUnstructuredGrid* skeletonArcs, ttk::ftm::Params 
-params)
+   inline void addArray(vtkUnstructuredGrid* skeletonArcs, ttk::ftm::Params params)
    {
-      // Some arcs might have been less sampled than the desired value, if they 
-      // have not enought
-      // regular vertices. Here we ensur that we will no keep noise in these 
-      // arrays.
+      // Some arcs might have been less sampled than the desired value, if they
+      // have not enought regular vertices. Here we ensur that we will no keep
+      // noise in these arrays.
       const size_t nbPoints = skeletonArcs->GetNumberOfPoints();
       const size_t nbCells  = skeletonArcs->GetNumberOfCells();
 
       cell_ids->SetNumberOfTuples(nbCells);
-      skeletonArcs->GetCellData()->AddArray(cell_ids);
+      skeletonArcs->GetCellData()->SetScalars(cell_ids);
 
       if (params.advStats) {
          if (params.segm) {
@@ -236,23 +224,19 @@ struct NodeData : public WrapperData{
       return 0;
    }
 
-   inline void fillArrayPoint(vtkIdType arrIdx, const ttk::ftm::idNode nodeId, 
-LocalFTM& ftmTree,
-                              vtkDataArray* idMapper, ttk::Triangulation* 
-triangulation,
+   inline void fillArrayPoint(vtkIdType arrIdx, const ttk::ftm::idNode nodeId, LocalFTM& ftmTree,
+                              vtkDataArray* idMapper, ttk::Triangulation* triangulation,
                               ttk::ftm::Params params)
    {
       const ttk::ftm::idNode   idOffset   = ftmTree.offset;
-      ttk::ftm::FTMTree_MT*    tree       = 
-ftmTree.tree.getTree(params.treeType);
+      ttk::ftm::FTMTree_MT*    tree       = ftmTree.tree.getTree(params.treeType);
       const ttk::ftm::Node*    node       = tree->getNode(nodeId);
       const ttk::ftm::idVertex l_vertexId = node->getVertexId();
       const ttk::ftm::idVertex g_vertexId = idMapper->GetTuple1(l_vertexId);
 
       ids->SetTuple1(arrIdx, idOffset + nodeId);
       vertIds->SetTuple1(arrIdx, g_vertexId);
-      type->SetTuple1(arrIdx, static_cast<int>(getNodeType(*tree, nodeId, 
-params)));
+      type->SetTuple1(arrIdx, static_cast<int>(getNodeType(*tree, nodeId, params)));
 
       if (params.advStats) {
          ttk::ftm::idSuperArc saId = getAdjSa(node);
@@ -264,20 +248,15 @@ params)));
 
          float               downPoints[3];
          const ttk::ftm::idVertex downNodeId   = tree->getLowerNodeId(arc);
-         const ttk::ftm::idVertex downVertexId = 
-tree->getNode(downNodeId)->getVertexId();
-         triangulation->getVertexPoint(downVertexId, downPoints[0], 
-downPoints[1], downPoints[2]);
+         const ttk::ftm::idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
+         triangulation->getVertexPoint(downVertexId, downPoints[0], downPoints[1], downPoints[2]);
 
          float               upPoints[3];
          const ttk::ftm::idVertex upNodeId   = tree->getUpperNodeId(arc);
-         const ttk::ftm::idVertex upVertexId = 
-tree->getNode(upNodeId)->getVertexId();
-         triangulation->getVertexPoint(upVertexId, upPoints[0], upPoints[1], 
-upPoints[2]);
+         const ttk::ftm::idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
+         triangulation->getVertexPoint(upVertexId, upPoints[0], upPoints[1], upPoints[2]);
 
-         regionSpan->SetTuple1(arrIdx, ttk::Geometry::distance(downPoints, 
-upPoints));
+         regionSpan->SetTuple1(arrIdx, ttk::Geometry::distance(downPoints, upPoints));
       }
    }
 
@@ -285,7 +264,7 @@ upPoints));
    {
       pointData->AddArray(ids);
       pointData->AddArray(vertIds);
-      pointData->AddArray(type);
+      pointData->SetScalars(type);
       if (params.advStats) {
          if (params.segm) {
             pointData->AddArray(regionSize);
@@ -316,8 +295,9 @@ upPoints));
       }
 
       // Empty node
-      std::cerr << "[ttkFTMTree]: node without arcs:" << node->getVertexId() << 
-std::endl;
+#ifndef TTK_ENABLE_KAMIKAZE
+      std::cerr << "[ttkFTMTree]: node without arcs:" << node->getVertexId() << std::endl;
+#endif
       return ttk::ftm::nullSuperArc;
    }
 };
@@ -351,9 +331,9 @@ struct VertData: public WrapperData {
       return 0;
    }
 
-   void fillArrayPoint(const ttk::ftm::idSuperArc arcId, LocalFTM& l_tree, 
-ttk::Triangulation* triangulation,
-                       vtkDataArray* idMapper, ttk::ftm::Params params)
+   void fillArrayPoint(const ttk::ftm::idSuperArc arcId, LocalFTM& l_tree,
+                       ttk::Triangulation* triangulation, vtkDataArray* idMapper,
+                       ttk::ftm::Params params)
    {
       if (!params.segm)
          return;
@@ -366,47 +346,54 @@ ttk::Triangulation* triangulation,
       const ttk::ftm::Node*    upNode       = tree->getNode(upNodeId);
       const ttk::ftm::idVertex l_upVertexId = upNode->getVertexId();
       const ttk::ftm::idVertex g_upVertexId = idMapper->GetTuple1(l_upVertexId);
-      const ttk::ftm::NodeType upNodeType   = getNodeType(*tree, upNodeId, 
-params);
+      const ttk::ftm::NodeType upNodeType   = getNodeType(*tree, upNodeId, params);
       float               coordUp[3];
-      triangulation->getVertexPoint(l_upVertexId, coordUp[0], coordUp[1], 
-coordUp[2]);
+      triangulation->getVertexPoint(l_upVertexId, coordUp[0], coordUp[1], coordUp[2]);
 
       const ttk::ftm::idNode   downNodeId     = arc->getDownNodeId();
       const ttk::ftm::Node*    downNode       = tree->getNode(downNodeId);
       const int           l_downVertexId = downNode->getVertexId();
       const int           g_downVertexId = idMapper->GetTuple1(l_downVertexId);
-      const ttk::ftm::NodeType downNodeType   = getNodeType(*tree, downNodeId, 
-params);
+      const ttk::ftm::NodeType downNodeType   = getNodeType(*tree, downNodeId, params);
       float               coordDown[3];
-      triangulation->getVertexPoint(l_downVertexId, coordDown[0], coordDown[1], 
-coordDown[2]);
+      triangulation->getVertexPoint(l_downVertexId, coordDown[0], coordDown[1], coordDown[2]);
 
-      const int    regionSize = 
-tree->getSuperArc(arcId)->getNumberOfRegularNodes();
+      const int    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
       const double regionSpan = ttk::Geometry::distance(coordUp, coordDown);
 
       ttk::ftm::idSuperArc nid = arc->getNormalizedId();
 
       ttk::ftm::ArcType regionType;
       // RegionType
-      if (upNodeType == ttk::ftm::NodeType::Local_minimum && downNodeType == 
-ttk::ftm::NodeType::Local_maximum)
+      if (upNodeType == ttk::ftm::NodeType::Local_minimum &&
+          downNodeType == ttk::ftm::NodeType::Local_maximum)
+      {
          regionType = ttk::ftm::ArcType::Min_arc;
-      else if (upNodeType == ttk::ftm::NodeType::Local_minimum || downNodeType 
-== ttk::ftm::NodeType::Local_minimum)
+      }
+      else if (upNodeType == ttk::ftm::NodeType::Local_minimum ||
+               downNodeType == ttk::ftm::NodeType::Local_minimum)
+      {
          regionType = ttk::ftm::ArcType::Min_arc;
-      else if (upNodeType == ttk::ftm::NodeType::Local_maximum || downNodeType 
-== ttk::ftm::NodeType::Local_maximum)
+      }
+      else if (upNodeType == ttk::ftm::NodeType::Local_maximum ||
+               downNodeType == ttk::ftm::NodeType::Local_maximum)
+      {
          regionType = ttk::ftm::ArcType::Max_arc;
-      else if (upNodeType == ttk::ftm::NodeType::Saddle1 && downNodeType == 
-ttk::ftm::NodeType::Saddle1)
+      }
+      else if (upNodeType == ttk::ftm::NodeType::Saddle1 &&
+               downNodeType == ttk::ftm::NodeType::Saddle1)
+      {
          regionType = ttk::ftm::ArcType::Saddle1_arc;
-      else if (upNodeType == ttk::ftm::NodeType::Saddle2 && downNodeType == 
-ttk::ftm::NodeType::Saddle2)
+      }
+      else if (upNodeType == ttk::ftm::NodeType::Saddle2 &&
+               downNodeType == ttk::ftm::NodeType::Saddle2)
+      {
          regionType = ttk::ftm::ArcType::Saddle2_arc;
+      }
       else
+      {
          regionType = ttk::ftm::ArcType::Saddle1_saddle2_arc;
+      }
 
       // fill extrema and regular verts of this arc
 
@@ -450,7 +437,7 @@ ttk::ftm::NodeType::Saddle2)
       if (!params.segm)
          return;
 
-      pointData->AddArray(ids);
+      pointData->SetScalars(ids);
 
       if (params.advStats) {
          pointData->AddArray(sizeRegion);
