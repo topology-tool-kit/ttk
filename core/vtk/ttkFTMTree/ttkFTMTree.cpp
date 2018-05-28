@@ -513,6 +513,7 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
 
    NodeData nodeData;
    nodeData.init(ftmTree_, params_);
+   nodeData.setScalarType(inputScalars_[0]->GetDataType());
 
    for (int cc = 0; cc < nbCC_; cc++) {
       FTMTree_MT* tree = ftmTree_[cc].tree.getTree(GetTreeType());
