@@ -76,10 +76,12 @@ struct WrapperData {
 };
 
 struct ArcData : public WrapperData {
-   std::vector<vtkIdType>               point_ids;
+   std::vector<vtkIdType>          point_ids;
    vtkSmartPointer<vtkCharArray>   point_regularMask;
    vtkSmartPointer<vtkFloatArray>  point_scalar;
    vtkSmartPointer<vtkIntArray>    cell_ids;
+   vtkSmartPointer<vtkIntArray>    cell_upNode;
+   vtkSmartPointer<vtkIntArray>    cell_downNode;
    vtkSmartPointer<vtkIntArray>    cell_sizeArcs;
    vtkSmartPointer<vtkDoubleArray> cell_spanArcs;
 
@@ -102,6 +104,8 @@ struct ArcData : public WrapperData {
 
       point_ids.resize(nbVerts, ttk::ftm::nullVertex);
       cell_ids          = initArray<vtkIntArray>("SegmentationId", samplePoints);
+      cell_upNode       = initArray<vtkIntArray>("upNodeId", samplePoints);
+      cell_downNode     = initArray<vtkIntArray>("downNodeId", samplePoints);
       point_regularMask = initArray<vtkCharArray>("RegularMask", samplePoints);
       point_scalar      = initArray<vtkFloatArray>("Scalar", samplePoints);
 
@@ -147,6 +151,9 @@ struct ArcData : public WrapperData {
          cell_ids->SetTuple1(pos, idOffset + arcId);
       }
 
+      cell_upNode->SetTuple1(pos, arc->getUpNodeId());
+      cell_downNode->SetTuple1(pos, arc->getDownNodeId());
+
       if (params.advStats) {
          if (params.segm) {
             cell_sizeArcs->SetTuple1(pos, tree->getArcSize(arcId));
@@ -177,6 +184,11 @@ struct ArcData : public WrapperData {
       cell_ids->SetNumberOfTuples(nbCells);
       skeletonArcs->GetCellData()->SetScalars(cell_ids);
 
+      cell_upNode->SetNumberOfTuples(nbCells);
+      cell_downNode->SetNumberOfTuples(nbCells);
+      skeletonArcs->GetCellData()->AddArray(cell_upNode);
+      skeletonArcs->GetCellData()->AddArray(cell_downNode);
+
       if (params.advStats) {
          if (params.segm) {
             cell_sizeArcs->SetNumberOfTuples(nbCells);
@@ -196,11 +208,13 @@ struct ArcData : public WrapperData {
 };
 
 struct NodeData : public WrapperData{
-   vtkSmartPointer<vtkIntArray> ids;
-   vtkSmartPointer<vtkIntArray> vertIds;
-   vtkSmartPointer<vtkIntArray> type;
-   vtkSmartPointer<vtkIntArray> regionSize;
-   vtkSmartPointer<vtkIntArray> regionSpan;
+   vtkSmartPointer<vtkIntArray>   ids;
+   vtkSmartPointer<vtkFloatArray> scalars;
+   vtkSmartPointer<vtkIntArray>   vertIds;
+   vtkSmartPointer<vtkIntArray>   type;
+   vtkSmartPointer<vtkIntArray>   regionSize;
+   vtkSmartPointer<vtkIntArray>   regionSpan;
+   int scalarType;
 
    inline int init(std::vector<LocalFTM>& ftmTree, ttk::ftm::Params params)
    {
@@ -211,6 +225,7 @@ struct NodeData : public WrapperData{
       }
 
       ids     = initArray<vtkIntArray>("NodeId", numberOfNodes);
+      scalars = initArray<vtkFloatArray>("Scalar", numberOfNodes);
       vertIds = initArray<vtkIntArray>("VertexId", numberOfNodes);
       type    = initArray<vtkIntArray>("NodeType", numberOfNodes);
 
@@ -224,6 +239,11 @@ struct NodeData : public WrapperData{
       return 0;
    }
 
+   void setScalarType(const int s)
+   {
+      scalarType = s;
+   }
+
    inline void fillArrayPoint(vtkIdType arrIdx, const ttk::ftm::idNode nodeId, LocalFTM& ftmTree,
                               vtkDataArray* idMapper, ttk::Triangulation* triangulation,
                               ttk::ftm::Params params)
@@ -231,10 +251,17 @@ struct NodeData : public WrapperData{
       const ttk::ftm::idNode   idOffset   = ftmTree.offset;
       ttk::ftm::FTMTree_MT*    tree       = ftmTree.tree.getTree(params.treeType);
       const ttk::ftm::Node*    node       = tree->getNode(nodeId);
+      // local (per cc) id
       const ttk::ftm::idVertex l_vertexId = node->getVertexId();
+      // global id
       const ttk::ftm::idVertex g_vertexId = idMapper->GetTuple1(l_vertexId);
+      float cellScalar;
+      switch (scalarType) {
+         vtkTemplateMacro({ cellScalar = (float)tree->getValue<VTK_TT>(l_vertexId); });
+      }
 
       ids->SetTuple1(arrIdx, idOffset + nodeId);
+      scalars->SetTuple1(arrIdx, cellScalar);
       vertIds->SetTuple1(arrIdx, g_vertexId);
       type->SetTuple1(arrIdx, static_cast<int>(getNodeType(*tree, nodeId, params)));
 
@@ -263,6 +290,7 @@ struct NodeData : public WrapperData{
    inline void addArray(vtkPointData* pointData, ttk::ftm::Params params)
    {
       pointData->AddArray(ids);
+      pointData->AddArray(scalars);
       pointData->AddArray(vertIds);
       pointData->SetScalars(type);
       if (params.advStats) {
