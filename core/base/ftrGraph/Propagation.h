@@ -37,9 +37,10 @@ namespace ttk
          UnionFind* rpz_;
 
         public:
-         Propagation(idVertex startVert, VertCompFN vertComp)
-             : curVert_(nullVertex), comp_(vertComp), propagation_(vertComp), rpz_(new UnionFind)
+         Propagation(idVertex startVert, VertCompFN vertComp, UnionFind* uf = nullptr)
+             : curVert_(nullVertex), comp_(vertComp), propagation_(vertComp)
          {
+            rpz_ = (uf) ? uf : new UnionFind;
             propagation_.emplace(startVert);
          }
 

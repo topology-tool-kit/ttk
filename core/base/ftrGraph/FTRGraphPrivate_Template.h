@@ -336,7 +336,7 @@ namespace ttk
 
          // BFS to add vertices in the current propagation for each seed
          for (const idCell curSeed : triangleSeeds) {
-            Propagation* curProp = newPropagation(curVert);
+            Propagation* curProp = newPropagation(curVert, localProp->getRpz());
             newLocalProps.emplace_back(curProp);
             // fill curProp using a BFS on the current seed
             std::set<idCell>   visitedCells;
@@ -390,10 +390,10 @@ namespace ttk
       /// Tools
 
       template <typename ScalarType>
-      Propagation* FTRGraph<ScalarType>::newPropagation(const idVertex leaf)
+      Propagation* FTRGraph<ScalarType>::newPropagation(const idVertex leaf, UnionFind* rpz)
       {
          auto compare_fun = [&](idVertex a, idVertex b) { return scalars_->isHigher(a, b); };
-         Propagation* localPropagation(new Propagation(leaf, compare_fun));
+         Propagation* localPropagation(new Propagation(leaf, compare_fun, rpz));
          const auto   propId   = propagations_.getNext();
          propagations_[propId] = localPropagation;
          return localPropagation;

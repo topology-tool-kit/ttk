@@ -274,7 +274,8 @@ namespace ttk
          // Tools
 
          // Create a new propagation starting at leaf
-         Propagation* newPropagation(const idVertex leaf);
+         // use rpz as representant for new uf if not nullptr
+         Propagation* newPropagation(const idVertex leaf, UnionFind* rpz = nullptr);
 
          // Compute the wieght of the edge in the dyngraph between e1 and e2.
          // This weight is the min value of the two endpoints, we use the mirror array (int)

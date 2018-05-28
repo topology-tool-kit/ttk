@@ -53,6 +53,7 @@ namespace ttk
                                                 std::set<idCell>&   visitedCells,
                                                 std::set<idVertex>& addedVertices)
       {
+         // TODO remove the set, only use toVisit_
          if (visitedCells.find(seed) == end(visitedCells)) {
             visitedCells.emplace(seed);
             idEdge nbEdges = mesh_->getTriangleEdgeNumber(seed);
@@ -68,17 +69,14 @@ namespace ttk
                if (comp0 != comp1) {
                   // Add in propagation
                   if(comp0) {
-                     if (!graph_.isVisited(v0) && addedVertices.find(v0) == end(addedVertices)) {
+                     if (addedVertices.find(v0) == end(addedVertices)) {
                         addedVertices.emplace(v0);
                         newLocalProp->addNewVertex(v0);
-                        toVisit_[v0] = newLocalProp->getRpz();
-                        // TODO remove the set, only use toVisit_
                      }
                   } else {
-                     if (!graph_.isVisited(v1) && addedVertices.find(v1) == end(addedVertices)) {
+                     if (addedVertices.find(v1) == end(addedVertices)) {
                         addedVertices.emplace(v1);
                         newLocalProp->addNewVertex(v1);
-                        toVisit_[v1] = newLocalProp->getRpz();
                      }
                   }
                   // Recursively continue BFS
