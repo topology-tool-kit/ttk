@@ -26,17 +26,17 @@ namespace ttk
 
          while (!isJoinSaddle && !isSplitSaddle && !localPropagation->empty()) {
             localPropagation->getNextVertex();
+            const idVertex curVert = localPropagation->getCurVertex();
 
-            if (graph_.hasVisited(localPropagation->getCurVertex(), currentArc)) {
+            if (graph_.hasVisited(curVert, currentArc)) {
                continue;
             }
 
             // Mark this vertex with the current growth
-            graph_.visit(localPropagation->getCurVertex(), currentArc);
+            graph_.visit(curVert, currentArc);
 
             // Debug print
-            std::cout << "visit: " << localPropagation->getCurVertex() << " : "
-                      << graph_.printVisit(localPropagation->getCurVertex()) << std::endl;
+            std::cout << "visit: " << curVert << " : " << graph_.printVisit(curVert) << std::endl;
 
             lowerStarEdges.clear();
             upperStarEdges.clear();
@@ -209,9 +209,9 @@ namespace ttk
             // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
          }
 
-         const orderedEdge e0 = getOrderedEdge(std::get<0>(oTriangle), localPropagation);
          const orderedEdge e1 = getOrderedEdge(std::get<1>(oTriangle), localPropagation);
-         const idVertex    w  = getWeight(e0, e1, localPropagation);
+         const orderedEdge e2 = getOrderedEdge(std::get<2>(oTriangle), localPropagation);
+         const idVertex    w  = getWeight(e1, e2, localPropagation);
          const int u = dynGraph_.insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w);
 
          if (u) {

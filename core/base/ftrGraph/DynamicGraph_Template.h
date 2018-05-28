@@ -55,13 +55,15 @@ namespace ttk
 
          for(const auto& node : nodes_) {
             if (node.parent_) {
-               cout << "id: " << &node - &nodes_[0] << " weight: " << (float)node.weight_;
+               cout << "id: " << &node - &nodes_[0];
                if (node.parent_) {
                   cout << ", parent: " << node.parent_ - &nodes_[0];
                } else {
                   cout << ", parent: X";
                }
-               cout << " root: " << findRoot(&node) - &nodes_[0] << endl;
+               cout << " root: " << findRoot(&node) - &nodes_[0];
+               cout << " weight: " << (float)node.weight_;
+               cout << " nb childs " << static_cast<unsigned>(node.nbChilds_) << endl;
             }
          }
       }
@@ -245,12 +247,12 @@ namespace ttk
          // here the nodes are in the same tree
 
          if (weight > std::get<1>(nNodes)->weight_) {
-            // We need replace this edge by the new one as the current weight is higher
+            // We need replace the min edge by the new one as the current weight is higher
 
             // add arc
-            parent_ = n;
-            weight_ = weight;
-            n->nbChilds_++;
+            parent_ = std::get<1>(nNodes);
+            weight_ = std::get<1>(nNodes)->weight_;
+            std::get<1>(nNodes)->nbChilds_++;
 
             // remove old
             std::get<1>(nNodes)->parent_->nbChilds_--;
