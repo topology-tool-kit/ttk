@@ -11,11 +11,14 @@ function(ttk_set_compile_options library)
 		target_compile_definitions(${library} PUBLIC TTK_ENABLE_KAMIKAZE)
 	endif()
 
-   if (TTK_ENABLE_CPU_OPTIMIZATION)
-      target_compile_options(${library} PRIVATE $<$<CONFIG:Release>:-march=native -O3 -Wfatal-errors>)
-   endif()
+  if(NOT MSVC)
+    if (TTK_ENABLE_CPU_OPTIMIZATION)
+      target_compile_options(${library} 
+        PRIVATE $<$<CONFIG:Release>:-march=native -O3 -Wfatal-errors>)
+    endif()
 
-  target_compile_options(${library} PRIVATE $<$<CONFIG:Debug>:-O0 -g -pg>)
+    target_compile_options(${library} PRIVATE $<$<CONFIG:Debug>:-O0 -g -pg>)
+  endif()
 
 	if (TTK_ENABLE_OPENMP)
 		target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
