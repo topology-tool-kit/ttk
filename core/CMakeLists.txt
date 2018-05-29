@@ -19,6 +19,10 @@ function(ttk_set_compile_options library)
     endif()
   endif()
 
+  if (uppercase_CMAKE_BUILD_TYPE MATCHES DEBUG)
+     target_compile_options(${library} PRIVATE -O0 -g -pg)
+  endif()
+
 	if (TTK_ENABLE_OPENMP)
 		target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
 		target_compile_options(${library} PUBLIC ${OpenMP_CXX_FLAGS})
