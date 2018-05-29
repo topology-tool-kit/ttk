@@ -211,6 +211,8 @@ namespace ttk
          else {
             std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
             std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+
+            std::cout << dynGraph_.print() << std::endl;
          }
 
          const orderedEdge e1 = getOrderedEdge(std::get<1>(oTriangle), localPropagation);
@@ -236,11 +238,11 @@ namespace ttk
          const int t =
          dynGraph_.removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
          if (t) {
-            // std::cout << "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            std::cout << "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          } else {
-            // std::cout << "end not found edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            std::cout << "end not found edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          }
       }
 
