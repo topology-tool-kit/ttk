@@ -38,6 +38,10 @@ namespace ttk
             // Debug print
             std::cout << "visit: " << curVert << " : " << graph_.printVisit(curVert) << std::endl;
 
+            if (curVert == 16) {
+               std::cout << "details" << std::endl;
+            }
+
             lowerStarEdges.clear();
             upperStarEdges.clear();
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localPropagation);
@@ -86,7 +90,7 @@ namespace ttk
             for (Propagation* newLocalProp : newProps) {
                growthFromSeed(upVert, newLocalProp);
             }
-            // dynGraph_.print();
+            // std::cout << dynGraph_.print() << std::endl;
          } else if (isJoinSadlleLast) {
             // recursive call
            growthFromSeed(upVert, localPropagation);
@@ -181,13 +185,13 @@ namespace ttk
          bool t = dynGraph_.insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), w);
 
          if (t) {
-            // std::cout << "start add edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+            std::cout << "start add edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
          } else {
-            // std::cout << "no need to create edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+            std::cout << "no need to create edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
 
-            // dynGraph_.print();
+            std::cout << dynGraph_.print() << std::endl;
          }
       }
 
@@ -200,13 +204,13 @@ namespace ttk
          // So we do not add the edge now
          const int t = dynGraph_.removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
          if (t) {
-            // std::cout << "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+            std::cout << "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
 
          }
          else {
-            // std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
+            std::cout << "mid no found edge: " << printEdge(std::get<0>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl;
          }
 
          const orderedEdge e1 = getOrderedEdge(std::get<1>(oTriangle), localPropagation);
@@ -215,13 +219,13 @@ namespace ttk
          const int u = dynGraph_.insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w);
 
          if (u) {
-            // std::cout << " new edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            std::cout << " new edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
          } else {
-            // std::cout << "no need to create edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
-            // std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
+            std::cout << "no need to create edge: " << printEdge(std::get<1>(oTriangle), localPropagation);
+            std::cout << " :: " << printEdge(std::get<2>(oTriangle), localPropagation) << std::endl;
 
-            // dynGraph_.print();
+            std::cout << dynGraph_.print() << std::endl;
          }
       }
 

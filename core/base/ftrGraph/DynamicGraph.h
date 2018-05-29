@@ -180,9 +180,9 @@ namespace ttk
 
          // Debug
 
-         void print(void);
+         std::string print(void);
 
-         void print(std::function<std::string(std::size_t)>);
+         std::string print(std::function<std::string(std::size_t)>);
 
          void test(void);
       };

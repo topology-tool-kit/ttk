@@ -3,6 +3,9 @@
 
 #include "DynamicGraph.h"
 
+#include<sstream>
+
+
 namespace ttk
 {
    namespace ftr
@@ -49,42 +52,48 @@ namespace ttk
       }
 
       template <typename Type>
-      void DynamicGraph<Type>::print(void)
+      std::string DynamicGraph<Type>::print(void)
       {
          using namespace std;
 
+         stringstream res;
+
          for(const auto& node : nodes_) {
             if (node.parent_) {
-               cout << "id: " << &node - &nodes_[0];
+               res << "id: " << &node - &nodes_[0];
                if (node.parent_) {
-                  cout << ", parent: " << node.parent_ - &nodes_[0];
+                  res << ", parent: " << node.parent_ - &nodes_[0];
                } else {
-                  cout << ", parent: X";
+                  res << ", parent: X";
                }
-               cout << " root: " << findRoot(&node) - &nodes_[0];
-               cout << " weight: " << (float)node.weight_;
-               cout << " nb childs " << static_cast<unsigned>(node.nbChilds_) << endl;
+               res << " root: " << findRoot(&node) - &nodes_[0];
+               res << " weight: " << (float)node.weight_;
+               res << " nb childs " << static_cast<unsigned>(node.nbChilds_);
             }
          }
+         return res.str();
       }
 
       template <typename Type>
-      void DynamicGraph<Type>::print(std::function<std::string(std::size_t)> printFunction)
+      std::string DynamicGraph<Type>::print(std::function<std::string(std::size_t)> printFunction)
       {
          using namespace std;
 
+         stringstream res;
+
          for(const auto& node : nodes_) {
             if (node.parent_) {
-               cout << "id: " << printFunction(&node - &nodes_[0])
+               res << "id: " << printFunction(&node - &nodes_[0])
                     << " weight: " << (float)node.weight_;
                if (node.parent_) {
-                  cout << ", parent: " << printFunction(node.parent_ - &nodes_[0]);
+                  res << ", parent: " << printFunction(node.parent_ - &nodes_[0]);
                } else {
-                  cout << ", parent: X";
+                  res << ", parent: X";
                }
-               cout << " root: " << printFunction(findRoot(&node) - &nodes_[0]) << endl;
+               res << " root: " << printFunction(findRoot(&node) - &nodes_[0]);
             }
          }
+         return res.str();
       }
 
       template <typename Type>
@@ -165,7 +174,7 @@ namespace ttk
             std::cerr << testGraph.getNbCC({n1, n2, n3, n4}) << " != 1 " << std::endl;
          }
 
-         testGraph.print();
+         std::cout << testGraph.print() << std::endl;
       }
 
       // DynGraphNode ----------------------------------
