@@ -61,14 +61,14 @@ int AbstractTriangulation::clear(){
   return 0;
 }
 
-template <class itemType> int AbstractTriangulation::tableTableFootprint(
+template <class itemType> size_t AbstractTriangulation::tableTableFootprint(
   const vector<vector<itemType> > &table,
   const string tableName,
   stringstream *msg) const{
   
-  int localByteNumber = 0;
+  size_t localByteNumber = 0;
   
-  for(int i = 0; i < (int) table.size(); i++){
+  for(size_t i = 0; i < table.size(); i++){
     localByteNumber += table[i].size()*sizeof(itemType);
   }
 
@@ -80,9 +80,9 @@ template <class itemType> int AbstractTriangulation::tableTableFootprint(
   return localByteNumber;
 }
 
-int AbstractTriangulation::footprint() const{
+size_t AbstractTriangulation::footprint() const{
 
-  int size = sizeof(*this);
+  size_t size = sizeof(*this);
   stringstream msg;
   
   size += tableFootprint<bool>(boundaryEdges_, "boundaryEdges_", &msg);
