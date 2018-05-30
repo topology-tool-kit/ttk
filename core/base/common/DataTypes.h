@@ -12,11 +12,15 @@ namespace ttk{
   /// \brief Identifier type for vertices.
   using VertexId = long long int;
 
+  /// \brief Identifier type for simplices of the link (can be
+  /// a EdgeId or a TriangleId).
+  using LinkId = long long int;
+
   /// \brief Identifier type for edges.
-  using EdgeId = long long int;
+  using EdgeId = LinkId;
 
   /// \brief Identifier type for triangles (3D only).
-  using TriangleId = long long int;
+  using TriangleId = LinkId;
 
   /// \brief Identifier type for cells.
   /// Here the notion of cell refers to the simplices of maximal
