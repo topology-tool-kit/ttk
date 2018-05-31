@@ -7,55 +7,12 @@ namespace ttk
 {
    namespace ftr
    {
-
-      template <typename ScalarType>
-      void FTRGraph<ScalarType>::bfsSeed(const std::size_t idt, const valence idcc,
-                                         std::vector<idCell>& triangles, std::vector<valence>& cc,
-                                         const Propagation* const localProp)
-      {
-         const idCell   curTri  = triangles[idt];
-         const idVertex curVert = localProp->getCurVertex();
-         if (cc[idt] == -1){
-            cc[idt] = idcc;
-
-            // for each edge
-            idEdge nbEdges = mesh_->getTriangleEdgeNumber(curTri);
-            // sould be 3
-            for (idEdge en = 0; en < nbEdges; ++en) {
-               idEdge edge;
-               mesh_->getTriangleEdge(curTri, en, edge);
-               idVertex v0, v1;
-               mesh_->getEdgeVertex(edge, 0, v0);
-               mesh_->getEdgeVertex(edge, 1, v1);
-               // if edge crossed by the value
-               if(localProp->compare(curVert, v0) != localProp->compare(curVert, v1)){
-                  // for traingles attached to this edge
-                  idCell nbTri = mesh_->getEdgeTriangleNumber(edge);
-                  for (idCell tn = 0; tn < nbTri; ++tn) {
-                     idCell neighTriangle;
-                     mesh_->getEdgeTriangle(edge, tn, neighTriangle);
-                     if (neighTriangle == curTri) {
-                        continue;
-                     }
-                     const auto it = std::find(triangles.cbegin(), triangles.cend(), neighTriangle);
-                     if (it != triangles.cend()) {
-                        bfsSeed(std::distance(triangles.cbegin(), it), idcc, triangles, cc, localProp);
-                     }
-                  }
-               }
-            }
-         }
-      }
-
       template <typename ScalarType>
       void FTRGraph<ScalarType>::bfsPropagation(const idVertex saddle, const idCell seed,
-                                                Propagation* const  newLocalProp,
-                                                std::set<idCell>&   visitedCells,
-                                                std::set<idVertex>& addedVertices)
+                                                Propagation* const newLocalProp, const int bfsId)
       {
-         // TODO remove the set, only use toVisit_
-         if (visitedCells.find(seed) == end(visitedCells)) {
-            visitedCells.emplace(seed);
+         if (bfsCells_[seed] != bfsId) {
+            bfsCells_[seed] = bfsId;
             idEdge nbEdges = mesh_->getTriangleEdgeNumber(seed);
             for(idEdge en = 0; en < nbEdges; ++en) {
                idEdge edge;
@@ -69,13 +26,13 @@ namespace ttk
                if (comp0 != comp1) {
                   // Add in propagation
                   if(comp0) {
-                     if (addedVertices.find(v0) == end(addedVertices)) {
-                        addedVertices.emplace(v0);
+                     if (bfsVerts_[v0] != bfsId) {
+                        bfsVerts_[v0] = bfsId;
                         newLocalProp->addNewVertex(v0);
                      }
                   } else {
-                     if (addedVertices.find(v1) == end(addedVertices)) {
-                        addedVertices.emplace(v1);
+                     if (bfsVerts_[v1] != bfsId) {
+                        bfsVerts_[v1] = bfsId;
                         newLocalProp->addNewVertex(v1);
                      }
                   }
@@ -87,8 +44,7 @@ namespace ttk
                      if (neighTriangle == seed) {
                         continue;
                      }
-
-                     bfsPropagation(saddle, neighTriangle, newLocalProp, visitedCells, addedVertices);
+                     bfsPropagation(saddle, neighTriangle, newLocalProp, bfsId);
                   }
 
                }

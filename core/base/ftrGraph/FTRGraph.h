@@ -47,8 +47,14 @@ namespace ttk
          Graph                  graph_;
          DynamicGraph<idVertex> dynGraph_;
 
+         // local growth
          AtomicVector<Propagation*> propagations_;
          std::vector<UnionFind*>    toVisit_;
+
+         // BFS
+         std::vector<idCell>   bfsCells_;
+         std::vector<idVertex> bfsVerts_;
+         idCell                bfsId_;
 
         public:
          FTRGraph(Params* const params, Triangulation* mesh, Scalars<ScalarType>* const scalars);
@@ -129,6 +135,8 @@ namespace ttk
          void setThreadNumber(const idThread nb)
          {
             params_->threadNumber = nb;
+            // Security, but do not rely on this one
+            threadNumber_ = nb;
          }
 
          /// Control the verbosity of the base code
@@ -268,8 +276,7 @@ namespace ttk
          // bfs on triangles/edges crossing the level set at saddle, starting
          // at seed. upper vertices encountred are added to newLocalProp
          void bfsPropagation(const idVertex saddle, const idCell seed,
-                             Propagation* const newLocalProp, std::set<idCell>& visitedCells,
-                             std::set<idVertex>& addedVertices);
+                             Propagation* const newLocalProp, const int bfsId);
 
          // Tools
 

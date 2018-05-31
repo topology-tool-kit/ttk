@@ -14,14 +14,15 @@ namespace ttk
           : params_(new Params),
             scalars_(new Scalars<ScalarType>),
             needDelete_(true),
-            mesh_(nullptr)
+            mesh_(nullptr),
+            bfsId_(0)
       {
       }
 
       template <typename ScalarType>
       FTRGraph<ScalarType>::FTRGraph(Params* const params, Triangulation* mesh,
                                      Scalars<ScalarType>* const scalars)
-          : params_(params), scalars_(scalars), needDelete_(false), mesh_(mesh)
+          : params_(params), scalars_(scalars), needDelete_(false), mesh_(mesh), bfsId_(0)
       {
       }
 
@@ -60,7 +61,7 @@ namespace ttk
          // init some values
 
 #ifdef TTK_ENABLE_OPENMP
-         omp_set_num_threads(threadNumber_);
+         omp_set_num_threads(params_->threadNumber);
          omp_set_nested(1);
 #endif
 
@@ -118,7 +119,7 @@ namespace ttk
          {
             std::stringstream msg;
             msg << "[FTR Graph] Data-set (" << vertexNumber << " points) processed in "
-                << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << std::endl;
+                << t.getElapsedTime() << " s. (" << params_->threadNumber << " thread(s))." << std::endl;
             dMsg(std::cout, msg.str(), timeMsg);
          }
       }
@@ -174,19 +175,29 @@ namespace ttk
          const idNode nbSeed = graph_.getNumberOfLeaves();
          graph_.sortLeaves<ScalarType>(scalars_);
 
-         for (idNode i = 0; i < nbSeed; i++) {
-            // TODO
-            // #pragma omp task
-
-            // initialize structure
-            const idVertex corLeaf          = graph_.getLeaf(i);
-            Propagation*   localPropagation = newPropagation(corLeaf);
-            // avoid duplicate for the leaf vertex
-            localPropagation->getNextVertex();
-            updatePreimage(localPropagation);
-            localGrowth(localPropagation);
-            // process
-            growthFromSeed(corLeaf, localPropagation);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel num_threads(params_->threadNumber)
+#endif
+         {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp single nowait
+#endif
+            {
+               for (idNode i = 0; i < nbSeed; i++) {
+                  // initialize structure
+                  const idVertex corLeaf          = graph_.getLeaf(i);
+                  Propagation*   localPropagation = newPropagation(corLeaf);
+                  // avoid duplicate for the leaf vertex
+                  localPropagation->getNextVertex();
+                  updatePreimage(localPropagation);
+                  localGrowth(localPropagation);
+                  // process
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task untied if(params_->threadNumber > 1)
+#endif
+                  growthFromSeed(corLeaf, localPropagation);
+               }
+            }
          }
       }
 
@@ -197,8 +208,10 @@ namespace ttk
          graph_.alloc();
          dynGraph_.alloc();
 
-         propagations_.reserve(scalars_->getSize());
-         toVisit_.resize(scalars_->getSize());
+         propagations_.reserve(mesh_->getNumberOfVertices());
+         toVisit_.resize(mesh_->getNumberOfVertices());
+         bfsCells_.resize(mesh_->getNumberOfCells());
+         bfsVerts_.resize(mesh_->getNumberOfVertices());
       }
 
       template <typename ScalarType>
@@ -210,6 +223,8 @@ namespace ttk
          dynGraph_.init();
 
          fillVector<UnionFind*>(toVisit_, nullptr);
+         fillVector<idCell>(bfsCells_, nullCell);
+         fillVector<idVertex>(bfsVerts_, nullVertex);
       }
 
    }  // namespace ftr
