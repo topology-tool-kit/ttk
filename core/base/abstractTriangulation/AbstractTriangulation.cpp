@@ -91,52 +91,52 @@ size_t AbstractTriangulation::footprint() const{
   
   size += tableFootprint<bool>(boundaryVertices_, "boundaryVertices_", &msg);
   
-  size += tableTableFootprint<int>(cellEdgeList_, "cellEdgeList_", &msg);
+  size += tableTableFootprint<SimplexId>(cellEdgeList_, "cellEdgeList_", &msg);
   
   size += 
-    tableTableFootprint<int>(cellNeighborList_, "cellNeighborList_", &msg);
+    tableTableFootprint<SimplexId>(cellNeighborList_, "cellNeighborList_", &msg);
     
   size +=
-    tableTableFootprint<int>(cellTriangleList_, "cellTriangleList_", &msg);
+    tableTableFootprint<SimplexId>(cellTriangleList_, "cellTriangleList_", &msg);
  
   size +=
-    tableTableFootprint<int>(edgeLinkList_, "edgeLinkList_", &msg);
+    tableTableFootprint<SimplexId>(edgeLinkList_, "edgeLinkList_", &msg);
  
   size +=
-    tableFootprint<pair<int, int>>(edgeList_, "edgeList_", &msg);
+    tableFootprint<pair<SimplexId, SimplexId>>(edgeList_, "edgeList_", &msg);
     
   size += 
-    tableTableFootprint<int>(edgeStarList_, "edgeStarList_", &msg);
+    tableTableFootprint<SimplexId>(edgeStarList_, "edgeStarList_", &msg);
     
   size +=
-    tableTableFootprint<int>(edgeTriangleList_, "edgeTriangleList_", &msg);
+    tableTableFootprint<SimplexId>(edgeTriangleList_, "edgeTriangleList_", &msg);
     
   size +=
-    tableTableFootprint<int>(triangleList_, "triangleList_", &msg);
+    tableTableFootprint<SimplexId>(triangleList_, "triangleList_", &msg);
     
   size +=
-    tableTableFootprint<int>(triangleEdgeList_, "triangleEdgeList_", &msg);
+    tableTableFootprint<SimplexId>(triangleEdgeList_, "triangleEdgeList_", &msg);
   
   size +=
-    tableTableFootprint<int>(triangleLinkList_, "triangleLinkList_", &msg);
+    tableTableFootprint<SimplexId>(triangleLinkList_, "triangleLinkList_", &msg);
     
   size +=
-    tableTableFootprint<int>(triangleStarList_, "triangleStarList_", &msg);
+    tableTableFootprint<SimplexId>(triangleStarList_, "triangleStarList_", &msg);
     
   size +=
-    tableTableFootprint<int>(vertexEdgeList_, "vertexEdgeList_", &msg);
+    tableTableFootprint<SimplexId>(vertexEdgeList_, "vertexEdgeList_", &msg);
   
   size +=
-    tableTableFootprint<int>(vertexLinkList_, "vertexLinkList_", &msg);
+    tableTableFootprint<SimplexId>(vertexLinkList_, "vertexLinkList_", &msg);
     
   size +=
-    tableTableFootprint<int>(vertexNeighborList_, "vertexNeighborList_", &msg);
+    tableTableFootprint<SimplexId>(vertexNeighborList_, "vertexNeighborList_", &msg);
     
   size +=
-    tableTableFootprint<int>(vertexStarList_, "vertexStarList_", &msg);
+    tableTableFootprint<SimplexId>(vertexStarList_, "vertexStarList_", &msg);
     
   size +=
-    tableTableFootprint<int>(vertexTriangleList_, "vertexTriangleList_", &msg);
+    tableTableFootprint<SimplexId>(vertexTriangleList_, "vertexTriangleList_", &msg);
     
   msg << "[AbstractTriangulation] Total footprint: "
     << (size/1024)/1024 << " MB." << endl;

@@ -14,6 +14,7 @@
 
 // base code includes
 #include                  <Wrapper.h>
+#include                  <DataTypes.h>
 
 namespace ttk{
   
@@ -104,7 +105,7 @@ namespace ttk{
       virtual int getTriangleLink(const SimplexId &triangleId, 
         const int &localLinkId, SimplexId &linkId) const = 0;
         
-      virtual Simplex getTriangleLinkNumber(const SimplexId &triangleId) const = 0;
+      virtual SimplexId getTriangleLinkNumber(const SimplexId &triangleId) const = 0;
       
       virtual const std::vector<std::vector<SimplexId> > *getTriangleLinks() = 0;
       
