@@ -331,7 +331,8 @@ namespace ttk
             mesh_->getVertexTriangle(curVert, t, neighTriangle);
             const orderedTriangle oNeighTriangle = getOrderedTriangle(neighTriangle, localProp);
             // only if curVert is not the highest point
-            if (getVertPosInTriangle(oNeighTriangle, localProp) != vertPosInTriangle::End) {
+            if (bfsCells_[neighTriangle] != bfsId &&
+                getVertPosInTriangle(oNeighTriangle, localProp) != vertPosInTriangle::End) {
                // BFS to add vertices in the current propagation for each seed
                Propagation* curProp = newPropagation(curVert, localProp->getRpz());
                newLocalProps.emplace_back(curProp);

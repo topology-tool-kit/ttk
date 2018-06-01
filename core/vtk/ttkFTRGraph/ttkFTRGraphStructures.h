@@ -37,7 +37,7 @@ struct NodeData : public ObjectData {
 
    explicit NodeData(const ttk::ftr::idVertex nbNodes)
    {
-      ids = allocArray<vtkIntArray>("NodeId", nbNodes);
+      ids = allocArray<vtkIntArray>("VertexId", nbNodes);
    }
 
    void addNode(const ttk::ftr::Graph& graph, const ttk::ftr::idNode n)
