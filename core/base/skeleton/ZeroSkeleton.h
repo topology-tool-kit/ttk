@@ -37,9 +37,9 @@ namespace ttk{
       /// be a std::vector listing the identifiers of the edges connected to the
       /// entry's vertex.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildVertexEdges(const int &vertexNumber,
-        const std::vector<std::pair<int, int> > &edgeList,
-        std::vector<std::vector<int> > &vertexEdges) const;
+      int buildVertexEdges(const SimplexId &vertexNumber,
+        const std::vector<std::pair<SimplexId, SimplexId> > &edgeList,
+        std::vector<std::vector<SimplexId> > &vertexEdges) const;
       
       /// Compute the link of a single vertex of a triangulation (unspecified 
       /// behavior if the input mesh is not a valid triangulation).
@@ -54,9 +54,9 @@ namespace ttk{
       /// simplex of the link, the number of vertices in the simplex (triangles:
       /// 3, edges: 2) followed by the corresponding vertex identifiers.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildVertexLink(const int &vertexId, const int &cellNumber, 
-        const long long int *cellArray,
-        std::vector<long long int> &vertexLink) const;
+      int buildVertexLink(const SimplexId &vertexId, const SimplexId &cellNumber, 
+        const SimplexId *cellArray,
+        std::vector<SimplexId> &vertexLink) const;
       
       /// Compute the link of each vertex of a triangulation (unspecified 
       /// behavior if the input mesh is not a valid triangulation).
@@ -85,10 +85,10 @@ namespace ttk{
       /// vertex star list. If this std::vector is not empty but incorrect, the 
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildVertexLinks(const int &vertexNumber, const int &cellNumber, 
-        const long long int *cellArray,
-        std::vector<std::vector<long long int > > &vertexLinks,
-        std::vector<std::vector<int> > *vertexStars = NULL) const;
+      int buildVertexLinks(const SimplexId &vertexNumber, const SimplexId &cellNumber, 
+        const SimplexId *cellArray,
+        std::vector<std::vector<SimplexId> > &vertexLinks,
+        std::vector<std::vector<SimplexId> > *vertexStars = NULL) const;
      
       /// Compute the link of each vertex of a 2D triangulation (unspecified 
       /// behavior if the input mesh is not a valid triangulation).
@@ -104,10 +104,10 @@ namespace ttk{
       /// entry will be a std::vector listing the edges in the link of the 
       /// corresponding vertex.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildVertexLinks(const std::vector<std::vector<int> > &vertexStars, 
-        const std::vector<std::vector<int> > &cellEdges,
-        const std::vector<std::pair<int, int> > &edgeList,
-        std::vector<std::vector<int> > &vertexLinks) const;
+      int buildVertexLinks(const std::vector<std::vector<SimplexId> > &vertexStars, 
+        const std::vector<std::vector<SimplexId> > &cellEdges,
+        const std::vector<std::pair<SimplexId, SimplexId> > &edgeList,
+        std::vector<std::vector<SimplexId> > &vertexLinks) const;
         
       /// Compute the link of each vertex of a 3D triangulation (unspecified 
       /// behavior if the input mesh is not a valid triangulation).
@@ -124,10 +124,10 @@ namespace ttk{
       /// entry will be a std::vector listing the triangles in the link of the 
       /// corresponding vertex.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildVertexLinks(const std::vector<std::vector<int> > &vertexStars, 
-        const std::vector<std::vector<int> > &cellTriangles,
-        const std::vector<std::vector<int> > &triangleList,
-        std::vector<std::vector<int> > &vertexLinks) const;
+      int buildVertexLinks(const std::vector<std::vector<SimplexId> > &vertexStars, 
+        const std::vector<std::vector<SimplexId> > &cellTriangles,
+        const std::vector<std::vector<SimplexId> > &triangleList,
+        std::vector<std::vector<SimplexId> > &vertexLinks) const;
         
       /// Compute the list of neighbors of each vertex of a triangulation.
       /// Unspecified behavior if the input mesh is not a valid triangulation).
@@ -154,10 +154,10 @@ namespace ttk{
       /// this 
       /// std::vector is not empty but incorrect, the behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildVertexNeighbors(const int &vertexNumber, const int &cellNumber, 
-        const long long int *cellArray,
-        std::vector<std::vector<int> > &vertexNeighbors,
-        std::vector<std::pair<int, int> > *edgeList = NULL) const;
+      int buildVertexNeighbors(const SimplexId &vertexNumber, const SimplexId &cellNumber, 
+        const SimplexId *cellArray,
+        std::vector<std::vector<SimplexId> > &vertexNeighbors,
+        std::vector<std::pair<SimplexId, SimplexId> > *edgeList = NULL) const;
         
         
       /// Compute the star of each vertex of a triangulation. Unspecified 
@@ -174,9 +174,9 @@ namespace ttk{
       /// cells 
       /// (3D: tetrahedra, 2D: triangles, etc.) connected to the entry's vertex.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildVertexStars(const int &vertexNumber, const int &cellNumber, 
-        const long long int *cellArray,
-        std::vector<std::vector<int> > &vertexStars) const;
+      int buildVertexStars(const SimplexId &vertexNumber, const SimplexId &cellNumber, 
+        const SimplexId *cellArray,
+        std::vector<std::vector<SimplexId> > &vertexStars) const;
       
     protected:
     
