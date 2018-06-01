@@ -86,7 +86,7 @@ int ttk::MorseSmaleComplex2D::execute(){
 
     {
       std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Descending 1-separatrices computed in "
+      msg << "[MorseSmaleComplex2D] Descending 1-separatrices computed in "
         << tmp.getElapsedTime() << " s."
         << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
@@ -102,7 +102,7 @@ int ttk::MorseSmaleComplex2D::execute(){
 
     {
       std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Ascending 1-separatrices computed in "
+      msg << "[MorseSmaleComplex2D] Ascending 1-separatrices computed in "
         << tmp.getElapsedTime() << " s."
         << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
@@ -146,9 +146,9 @@ int ttk::MorseSmaleComplex2D::execute(){
       setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold, descendingManifold, morseSmaleManifold);
     }
 
-    {
+    if(ComputeAscendingSegmentation or ComputeDescendingSegmentation or ComputeFinalSegmentation){
       std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Segmentation computed in "
+      msg << "[MorseSmaleComplex2D] Segmentation computed in "
         << tmp.getElapsedTime() << " s."
         << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);

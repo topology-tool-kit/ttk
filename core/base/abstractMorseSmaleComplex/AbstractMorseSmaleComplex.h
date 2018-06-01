@@ -508,7 +508,7 @@ namespace ttk{
 
 template<typename dataType>
 int ttk::AbstractMorseSmaleComplex::setSeparatrices1(const 
-std::vector<Separatrix>& separatrices,
+    std::vector<Separatrix>& separatrices,
     const std::vector<std::vector<Cell>>& separatricesGeometry) const{
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!outputSeparatrices1_numberOfPoints_){

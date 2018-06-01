@@ -68,7 +68,13 @@ namespace ttk{
           std::vector<std::vector<Cell>>& separatricesGeometry) const;
 
       /**
-       * Compute the geometrical embedding of the saddle-connectors.
+       * Compute the geometrical embedding of the saddle-connectors. This
+       * function needs the following internal pointers to be set:
+       * outputSeparatrices1_numberOfPoints_
+       * outputSeparatrices1_points_
+       * outputSeparatrices1_numberOfCells_
+       * outputSeparatrices1_cells_
+       * inputScalarField_
        */
       template<typename dataType>
       int setSaddleConnectors(const std::vector<Separatrix>& separatrices,
@@ -131,8 +137,30 @@ namespace ttk{
 
 template<typename dataType>
 int ttk::MorseSmaleComplex3D::setSaddleConnectors(const 
-std::vector<Separatrix>& separatrices,
+    std::vector<Separatrix>& separatrices,
     const std::vector<std::vector<Cell>>& separatricesGeometry) const{
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!outputSeparatrices1_numberOfPoints_){
+    std::cerr << "[MorseSmaleComplex3D] 1-separatrices pointer to numberOfPoints is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices1_points_){
+    std::cerr << "[MorseSmaleComplex3D] 1-separatrices pointer to points is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices1_numberOfCells_){
+    std::cerr << "[MorseSmaleComplex3D] 1-separatrices pointer to numberOfCells is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices1_cells_){
+    std::cerr << "[MorseSmaleComplex3D] 1-separatrices pointer to cells is null." << std::endl;
+    return -1;
+  }
+  if(!inputScalarField_){
+    std::cerr << "[MorseSmaleComplex3D] 1-separatrices pointer to the input scalar field is null." << std::endl;
+    return -1;
+  }
+#endif
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionMaxima_);
@@ -181,27 +209,39 @@ std::vector<Separatrix>& separatrices,
         outputSeparatrices1_points_->push_back(point[1]);
         outputSeparatrices1_points_->push_back(point[2]);
 
-        if(cellIte==separatricesGeometry[geometryId].begin() or
-            cellIte==separatricesGeometry[geometryId].end()-1)
-          outputSeparatrices1_points_smoothingMask_->push_back(0);
-        else
-          outputSeparatrices1_points_smoothingMask_->push_back(1);
-        outputSeparatrices1_points_cellDimensions_->push_back(cell.dim_);
-        outputSeparatrices1_points_cellIds_->push_back(cell.id_);
+        if(outputSeparatrices1_points_smoothingMask_){
+          if(cellIte==separatricesGeometry[geometryId].begin() or
+              cellIte==separatricesGeometry[geometryId].end()-1)
+            outputSeparatrices1_points_smoothingMask_->push_back(0);
+          else
+            outputSeparatrices1_points_smoothingMask_->push_back(1);
+        }
+        if(outputSeparatrices1_points_cellDimensions_)
+          outputSeparatrices1_points_cellDimensions_->push_back(cell.dim_);
+        if(outputSeparatrices1_points_cellIds_)
+          outputSeparatrices1_points_cellIds_->push_back(cell.id_);
 
         if(oldPointId!=-1){
           outputSeparatrices1_cells_->push_back(2);
           outputSeparatrices1_cells_->push_back(oldPointId);
           outputSeparatrices1_cells_->push_back(pointId);
 
-          outputSeparatrices1_cells_sourceIds_->push_back(saddle1.id_);
-          outputSeparatrices1_cells_destinationIds_->push_back(saddle2.id_);
-          outputSeparatrices1_cells_separatrixIds_->push_back(separatrixId);
-          outputSeparatrices1_cells_separatrixTypes_->push_back(separatrixType);
-          outputSeparatrices1_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
-          outputSeparatrices1_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
-          outputSeparatrices1_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
-          outputSeparatrices1_cells_isOnBoundary_->push_back(isOnBoundary);
+          if(outputSeparatrices1_cells_sourceIds_)
+            outputSeparatrices1_cells_sourceIds_->push_back(saddle1.id_);
+          if(outputSeparatrices1_cells_destinationIds_)
+            outputSeparatrices1_cells_destinationIds_->push_back(saddle2.id_);
+          if(outputSeparatrices1_cells_separatrixIds_)
+            outputSeparatrices1_cells_separatrixIds_->push_back(separatrixId);
+          if(outputSeparatrices1_cells_separatrixTypes_)
+            outputSeparatrices1_cells_separatrixTypes_->push_back(separatrixType);
+          if(outputSeparatrices1_cells_separatrixFunctionMaxima)
+            outputSeparatrices1_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
+          if(outputSeparatrices1_cells_separatrixFunctionMinima)
+            outputSeparatrices1_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
+          if(outputSeparatrices1_cells_separatrixFunctionDiffs)
+            outputSeparatrices1_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
+          if(outputSeparatrices1_cells_isOnBoundary_)
+            outputSeparatrices1_cells_isOnBoundary_->push_back(isOnBoundary);
 
           ++cellId;
           isFirst=false;
@@ -841,8 +881,21 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(const std::vector<Separ
 
 template<typename dataType>
 int ttk::MorseSmaleComplex3D::execute(){
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputScalarField_){
+    std::cerr << "[MorseSmaleComplex3D] Error: input scalar field pointer is null." << std::endl;
+    return -1;
+  }
+
+  if(!inputOffsets_){
+    std::cerr << "[MorseSmaleComplex3D] Error: input offset field pointer is null." << std::endl;
+    return -1;
+  }
+#endif
   Timer t;
 
+  // nullptr_t is implicitly convertible and comparable to any pointer type
+  // or pointer-to-member type.
   int* ascendingManifold=static_cast<int*>(outputAscendingManifold_);
   int* descendingManifold=static_cast<int*>(outputDescendingManifold_);
   int* morseSmaleManifold=static_cast<int*>(outputMorseSmaleManifold_);
@@ -957,14 +1010,35 @@ int ttk::MorseSmaleComplex3D::execute(){
     int numberOfMaxima{};
     int numberOfMinima{};
 
-    if(ComputeAscendingSegmentation)
+    if(ComputeAscendingSegmentation){
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!ascendingManifold){
+        std::cerr << "[MorseSmaleComplex3D] Error: output ascending segmentation pointer is null." << std::endl;
+        return -1;
+      }
+#endif
       setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold, numberOfMaxima);
+    }
 
-    if(ComputeDescendingSegmentation)
+    if(ComputeDescendingSegmentation){
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!descendingManifold){
+        std::cerr << "[MorseSmaleComplex3D] Error: output descending segmentation pointer is null." << std::endl;
+        return -1;
+      }
+#endif
       setDescendingSegmentation(criticalPoints, descendingManifold, numberOfMinima);
+    }
 
-    if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation)
+    if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation){
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!ascendingManifold or !descendingManifold or !morseSmaleManifold){
+        std::cerr << "[MorseSmaleComplex3D] Error: output segmentation pointer is null." << std::endl;
+        return -1;
+      }
+#endif
       setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold, descendingManifold, morseSmaleManifold);
+    }
 
     if(ComputeAscendingSegmentation or ComputeDescendingSegmentation or ComputeFinalSegmentation){
       std::stringstream msg;
