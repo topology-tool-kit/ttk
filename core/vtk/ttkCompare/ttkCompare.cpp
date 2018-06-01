@@ -27,10 +27,10 @@ vtkStandardNewMacro(ttkCompare)
    output->ShallowCopy(input1);
 
    // Store difference for mesh
-   vtkSmartPointer<vtkCharArray> diffVerts =
-       createVTKArray<vtkCharArray>("VerticesDiff", triangulation1->getNumberOfVertices());
-   vtkSmartPointer<vtkCharArray> diffCells =
-       createVTKArray<vtkCharArray>("CellsDiff", triangulation1->getNumberOfCells());
+   vtkSmartPointer<vtkUnsignedCharArray> diffVerts =
+       createVTKArray<vtkUnsignedCharArray>("VerticesDiff", triangulation1->getNumberOfVertices());
+   vtkSmartPointer<vtkUnsignedCharArray> diffCells =
+       createVTKArray<vtkUnsignedCharArray>("CellsDiff", triangulation1->getNumberOfCells());
    compare_.setVertsArray(diffVerts->GetVoidPointer(0));
    compare_.setCellsArray(diffCells->GetVoidPointer(0));
 
@@ -64,7 +64,7 @@ vtkStandardNewMacro(ttkCompare)
    // if (!outputScalarField_) {
    //    switch (inputScalarField->GetDataType()) {
    //       case VTK_CHAR:
-   //          outputScalarField_ = vtkCharArray::New();
+   //          outputScalarField_ = vtkUnsignedCharArray::New();
    //          break;
 
    //       case VTK_DOUBLE:

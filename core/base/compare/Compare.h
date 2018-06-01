@@ -26,7 +26,7 @@ namespace ttk
       Triangulation *       mesh1_, *mesh2_;
       std::vector<idVertex> vertMapperM1toM2_;
       std::vector<idCell>   cellMapperM1toM2_;
-      char *                diffVerts_, *diffCells_;
+      unsigned char *       diffVerts_, *diffCells_;
 
      public:
       Compare();
@@ -42,18 +42,17 @@ namespace ttk
 
       void setVertsArray(void *arr)
       {
-         diffVerts_ = (char *)arr;
+         diffVerts_ = (unsigned char *)arr;
       }
 
       void setCellsArray(void *arr)
       {
-         diffCells_ = (char *)arr;
+         diffCells_ = (unsigned char *)arr;
       }
 
       void computeMeshDiff(void);
 
      private:
-
       // fill  vertMapperM1toM2_ and diffVerts_ accordingly
       void computeVertsDiff(void);
 
