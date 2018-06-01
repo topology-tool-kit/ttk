@@ -64,12 +64,12 @@ namespace ttk{
       /// vertex edge list. If this std::vector is not empty but incorrect, the 
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildCellEdges(const int &vertexNumber,
-        const int &cellNumber, 
-        const long long int *cellArray,
-        std::vector<std::vector<int> > &cellEdges,
-        std::vector<std::pair<int, int> > *edgeList = NULL,
-        std::vector<std::vector<int> > *vertexEdges = NULL) const ;
+      int buildCellEdges(const SimplexId &vertexNumber,
+        const SimplexId &cellNumber, 
+        const SimplexId *cellArray,
+        std::vector<std::vector<SimplexId> > &cellEdges,
+        std::vector<std::pair<SimplexId, SimplexId> > *edgeList = NULL,
+        std::vector<std::vector<SimplexId> > *vertexEdges = NULL) const ;
       
       /// Compute the list of cell-neighbors of each cell of a triangulation 
       /// (unspecified behavior if the input mesh is not a triangulation).
@@ -99,11 +99,11 @@ namespace ttk{
       /// the 
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildCellNeighborsFromTriangles(const int &vertexNumber, 
-        const int &cellNumber,
-        const long long int *cellArray,
-        std::vector<std::vector<int> > &cellNeighbors,
-        std::vector<std::vector<int> > *triangleStars = NULL) const;
+      int buildCellNeighborsFromTriangles(const SimplexId &vertexNumber, 
+        const SimplexId &cellNumber,
+        const SimplexId *cellArray,
+        std::vector<std::vector<SimplexId> > &cellNeighbors,
+        std::vector<std::vector<SimplexId> > *triangleStars = NULL) const;
 
       /// Compute the list of cell-neighbors of each cell of a triangulation 
       /// (unspecified behavior if the input mesh is not a triangulation).
@@ -129,11 +129,11 @@ namespace ttk{
       /// vertex star list. If this std::vector is not empty but incorrect, the 
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildCellNeighborsFromVertices(const int &vertexNumber, 
-        const int &cellNumber,
-        const long long int *cellArray,
-        std::vector<std::vector<int> > &cellNeighbors,
-        std::vector<std::vector<int> > *vertexStars = NULL) const;
+      int buildCellNeighborsFromVertices(const SimplexId &vertexNumber, 
+        const SimplexId &cellNumber,
+        const SimplexId *cellArray,
+        std::vector<std::vector<SimplexId> > &cellNeighbors,
+        std::vector<std::vector<SimplexId> > *vertexStars = NULL) const;
         
     protected:
     
