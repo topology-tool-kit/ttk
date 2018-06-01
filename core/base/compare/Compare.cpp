@@ -54,7 +54,9 @@ void Compare::computeVertsDiff(void)
    const idVertex nbVerts2 = mesh2_->getNumberOfVertices();
 
    vertMapperM1toM2_.resize(nbVerts1);
-#pragma parallel omp for num_thread(threadNumber_)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
    for (idVertex i = 0; i < nbVerts1; ++i) {
       vertMapperM1toM2_[i] = -1;
       diffVerts_[i]        = 1;
@@ -68,7 +70,9 @@ void Compare::computeVertsDiff(void)
       posVertsM2.emplace(posV, v2);
    }
    // match vertices from mesh1 (fill vertMapperM1toM2_)
-#pragma parallel omp for num_thread(threadNumber_)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
    for (idVertex v1 = 0; v1 < nbVerts1; ++v1) {
       ComparableVector<float> posV(3);
       mesh1_->getVertexPoint(v1, posV[0], posV[1], posV[2]);
@@ -91,7 +95,9 @@ void Compare::computeCellDiff(void)
    const idCell nbCells2 = mesh2_->getNumberOfCells();
 
    cellMapperM1toM2_.resize(nbCells1);
-#pragma parallel omp for num_thread(threadNumber_)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
    for (idCell i = 0; i < nbCells1; ++i) {
       cellMapperM1toM2_[i] = -1;
       diffCells_[i]        = 1;
@@ -112,7 +118,9 @@ void Compare::computeCellDiff(void)
       vertListCellsM2.emplace(vertsC, c2);
    }
    // match cells from mesh1 (fill cellMapperM1toM2_)
-#pragma parallel omp for num_thread(threadNumber_)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
    for(idCell c1 = 0; c1 < nbCells1; ++c1) {
       bool                       nextCell = false;
       const idVertex             nbVerts  = mesh1_->getCellVertexNumber(c1);
