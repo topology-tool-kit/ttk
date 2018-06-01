@@ -40,71 +40,57 @@ vtkStandardNewMacro(ttkCompare)
    output->GetCellData()->AddArray(diffCells);
 
    if (!meshOnly) {
-      std::cout << "Scalar difference not supported yet" << std::endl;
+      const int nbVertsArray = input1->GetPointData()->GetNumberOfArrays();
+      const int nbCellsArray = input1->GetCellData()->GetNumberOfArrays();
+
+      // Remove other scalars to replace these arrays with their compared counterpart
+      for(int va = 0; va < nbVertsArray; ++va) {
+         output->GetPointData()->RemoveArray(0);
+      }
+      for(int ca = 0; ca < nbCellsArray; ++ca) {
+         output->GetCellData()->RemoveArray(0);
+      }
+
+      // Compute the difference for each array
+      for(int va = 0; va < nbVertsArray; ++va) {
+         vtkDataArray *inputScalarField1 = nullptr;
+         vtkDataArray *inputScalarField2 = nullptr;
+         inputScalarField1               = input1->GetPointData()->GetArray(va);
+         inputScalarField2 = input2->GetPointData()->GetArray(inputScalarField1->GetName());
+         if (!inputScalarField1 || !inputScalarField2 ||
+             inputScalarField1->GetNumberOfComponents() > 1 ||
+             inputScalarField2->GetNumberOfComponents() > 1) {
+            continue;
+         }
+         switch (inputScalarField1->GetDataType()) {
+            vtkTemplateMacro({
+               compare_.computeVertDiff<VTK_TT>(inputScalarField1->GetVoidPointer(0),
+                                                  inputScalarField2->GetVoidPointer(0));
+            });
+         }
+         output->GetPointData()->AddArray(inputScalarField1);
+      }
+
+      // Compute the difference for each array
+      for (int va = 0; va < nbCellsArray; ++va) {
+         vtkDataArray *inputScalarField1 = nullptr;
+         vtkDataArray *inputScalarField2 = nullptr;
+         inputScalarField1               = input1->GetCellData()->GetArray(va);
+         inputScalarField2 = input2->GetCellData()->GetArray(inputScalarField1->GetName());
+         if (!inputScalarField1 || !inputScalarField2 ||
+             inputScalarField1->GetNumberOfComponents() > 1 ||
+             inputScalarField2->GetNumberOfComponents() > 1) {
+            continue;
+         }
+         switch (inputScalarField1->GetDataType()) {
+            vtkTemplateMacro({
+               compare_.computeCellDiff<VTK_TT>(inputScalarField1->GetVoidPointer(0),
+                                                inputScalarField2->GetVoidPointer(0));
+            });
+         }
+         output->GetCellData()->AddArray(inputScalarField1);
+      }
    }
-
-   // TODO for each scalar (vert and cells)
-
-   // in the following, the target scalar field of the input1 is replaced in the
-   // variable 'output' with the result of the computation.
-   // if your wrapper produces an output of the same type of the input1, you
-   // should proceed in the same way.
-   // vtkDataArray *inputScalarField = NULL;
-
-   // if (ScalarField.length()) {
-   //    inputScalarField = input1->GetPointData()->GetArray(ScalarField.data());
-   // } else {
-   //    inputScalarField = input1->GetPointData()->GetArray(0);
-   // }
-   // TODO remove the array from output
-
-   // if (!inputScalarField)
-   //    return -2;
-
-   // allocate the memory for the output scalar field
-   // if (!outputScalarField_) {
-   //    switch (inputScalarField->GetDataType()) {
-   //       case VTK_CHAR:
-   //          outputScalarField_ = vtkUnsignedCharArray::New();
-   //          break;
-
-   //       case VTK_DOUBLE:
-   //          outputScalarField_ = vtkDoubleArray::New();
-   //          break;
-
-   //       case VTK_FLOAT:
-   //          outputScalarField_ = vtkFloatArray::New();
-   //          break;
-
-   //       case VTK_INT:
-   //          outputScalarField_ = vtkIntArray::New();
-   //          break;
-
-   //          stringstream msg;
-   //          msg << "[ttkCompare] Unsupported data type :(" << endl;
-   //          dMsg(cerr, msg.str(), fatalMsg);
-   //    }
-   // }
-   // outputScalarField_->SetNumberOfTuples(input1->GetNumberOfPoints());
-   // outputScalarField_->SetName(inputScalarField->GetName());
-
-   // on the output, replace the field array by a pointer to its processed
-   // version
-   // if (ScalarField.length()) {
-   //    output->GetPointData()->RemoveArray(ScalarField.data());
-   // } else {
-   //    output->GetPointData()->RemoveArray(0);
-   // }
-   // output->GetPointData()->AddArray(outputScalarField_);
-
-   // calling the executing package
-   // switch (inputScalarField->GetDataType()) {
-   //    vtkTemplateMacro({
-   //       compare_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
-   //       compare_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
-   //       compare_.execute<VTK_TT>(SomeIntegerArgument);
-   //    });
-   // }
 
    {
       stringstream msg;

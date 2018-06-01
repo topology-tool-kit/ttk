@@ -54,6 +54,12 @@ namespace ttk
 
       int computeMeshDiff(void);
 
+      template <typename Type>
+      int computeVertDiff(void *const scalArray1, void *const scalArray2);
+
+      template <typename Type>
+      int computeCellDiff(void *const scalArray1, void *const scalArray2);
+
      private:
       // fill  vertMapperM1toM2_ and diffVerts_ accordingly
       void computeVertsDiff(void);
@@ -62,5 +68,7 @@ namespace ttk
       // Nees vertMapperM1toM2_ to be filled
       void computeCellDiff(void);
    };
+
 }  // namespace ttk
 
+#include "Compare_Template.h"

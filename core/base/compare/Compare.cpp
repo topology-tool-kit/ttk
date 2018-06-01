@@ -88,7 +88,7 @@ void Compare::computeVertsDiff(void)
 void Compare::computeCellDiff(void)
 {
    if (vertMapperM1toM2_.empty()) {
-      std::cerr << "[Compare] coputeCellDiff needs vertMapper to be filled" << std::endl;
+      std::cerr << "[Compare] comuteCellDiff needs vertMapper to be filled" << std::endl;
    }
 
    const idCell nbCells1 = mesh1_->getNumberOfCells();
