@@ -15,7 +15,9 @@ int main(int argc, char **argv)
    vtkProgram<ttkCompare> program;
 
    bool meshOnly = false;
-   program.parser_.setOption("m", &meshOnly, "Some option to enable or disable");
+   bool diffCode = false;
+   program.parser_.setOption("m", &meshOnly, "Only compare mesh, no scalars");
+   program.parser_.setOption("d", &diffCode, "simply return 0 if data sets are equals");
 
    int ret = 0;
    ret     = program.init(argc, argv);
@@ -30,7 +32,11 @@ int main(int argc, char **argv)
    if (ret != 0)
       return ret;
 
-   ret = program.save();
+   if (diffCode) {
+      ret = program.ttkObject_->getDiffCode();
+   } else {
+      ret = program.save();
+   }
 
    return ret;
 }

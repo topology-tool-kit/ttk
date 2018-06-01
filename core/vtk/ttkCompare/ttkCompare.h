@@ -49,8 +49,8 @@ class ttkCompare
    static ttkCompare *New();
    vtkTypeMacro(ttkCompare, vtkDataSetAlgorithm)
 
-       // default ttk setters
-       vtkSetMacro(debugLevel_, int);
+   // default ttk setters
+   vtkSetMacro(debugLevel_, int);
 
    void SetThreadNumber(int threadNumber)
    {
@@ -68,28 +68,10 @@ class ttkCompare
    vtkSetMacro(meshOnly, bool);
    vtkGetMacro(meshOnly, bool);
 
-   // TODO-2
-   // Over-ride the input types.
-   // By default, this filter has one input and one output, of the same type.
-   // Here, you can re-define the input types, on a per input basis.
-   // In this example, the first input type is forced to vtkUnstructuredGrid.
-   // The second input type is forced to vtkImageData.
-   //     int FillInputPortInformation(int port, vtkInformation *info) override {
-   //
-   //       switch(port){
-   //         case 0:
-   //           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-   //           break;
-   //         case 1:
-   //           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
-   //           break;
-   //         default:
-   //           break;
-   //       }
-   //
-   //       return 1;
-   //     }
-   // end of TODO-2
+   int getDiffCode(void) const
+   {
+      return diffReturn_;
+   }
 
   protected:
    ttkCompare()
@@ -115,6 +97,7 @@ class ttkCompare
   private:
    // if true, do not check point/cell data
    bool         meshOnly;
+   int          diffReturn_;
    ttk::Compare compare_;
 };
 

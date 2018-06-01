@@ -34,7 +34,7 @@ vtkStandardNewMacro(ttkCompare)
    compare_.setVertsArray(diffVerts->GetVoidPointer(0));
    compare_.setCellsArray(diffCells->GetVoidPointer(0));
 
-   compare_.computeMeshDiff();
+   diffReturn_ = compare_.computeMeshDiff();
 
    output->GetPointData()->SetScalars(diffVerts);
    output->GetCellData()->AddArray(diffCells);
@@ -56,6 +56,7 @@ vtkStandardNewMacro(ttkCompare)
    // } else {
    //    inputScalarField = input1->GetPointData()->GetArray(0);
    // }
+   // TODO remove the array from output
 
    // if (!inputScalarField)
    //    return -2;

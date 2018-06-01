@@ -28,6 +28,8 @@ namespace ttk
       std::vector<idCell>   cellMapperM1toM2_;
       unsigned char *       diffVerts_, *diffCells_;
 
+      bool hasDiffVerts_, hasDiffCells_;
+
      public:
       Compare();
 
@@ -50,7 +52,7 @@ namespace ttk
          diffCells_ = (unsigned char *)arr;
       }
 
-      void computeMeshDiff(void);
+      int computeMeshDiff(void);
 
      private:
       // fill  vertMapperM1toM2_ and diffVerts_ accordingly

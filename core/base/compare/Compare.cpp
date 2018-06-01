@@ -6,7 +6,13 @@
 using namespace std;
 using namespace ttk;
 
-Compare::Compare() : mesh1_{nullptr}, mesh2_{nullptr}, diffVerts_{nullptr}, diffCells_{nullptr}
+Compare::Compare()
+    : mesh1_{nullptr},
+      mesh2_{nullptr},
+      diffVerts_{nullptr},
+      diffCells_{nullptr},
+      hasDiffVerts_{false},
+      hasDiffCells_{false}
 {
 }
 
@@ -14,26 +20,39 @@ Compare::~Compare()
 {
 }
 
-void Compare::computeMeshDiff()
+int Compare::computeMeshDiff()
 {
    if (!diffVerts_) {
       cerr << "[Compare]: needs and array of nb verts char using setVertsArray" << endl;
-      return;
+      return -1;
    }
 
    if (!diffCells_) {
       cerr << "[Compare]: needs and array of nb cells char using setCellsArray" << endl;
-      return;
+      return -1;
    }
 
    computeVertsDiff();
    computeCellDiff();
+
+   const idVertex nbVerts1 = mesh1_->getNumberOfVertices();
+   const idVertex nbVerts2 = mesh2_->getNumberOfVertices();
+   if (nbVerts1 != nbVerts2 || hasDiffVerts_)
+      return 1;
+
+   const idCell nbCells1 = mesh1_->getNumberOfCells();
+   const idCell nbCells2 = mesh2_->getNumberOfCells();
+   if (nbCells1 != nbCells2 || hasDiffVerts_)
+      return 2;
+
+   return 0;
 }
 
 void Compare::computeVertsDiff(void)
 {
    const idVertex nbVerts1 = mesh1_->getNumberOfVertices();
    const idVertex nbVerts2 = mesh2_->getNumberOfVertices();
+
    vertMapperM1toM2_.resize(nbVerts1);
 #pragma parallel omp for num_thread(threadNumber_)
    for (idVertex i = 0; i < nbVerts1; ++i) {
@@ -56,6 +75,8 @@ void Compare::computeVertsDiff(void)
       if (posVertsM2.count(posV)) {
          vertMapperM1toM2_[v1] = posVertsM2[posV];
          diffVerts_[v1]        = 0;
+      } else {
+         hasDiffVerts_ = true;
       }
    }
 }
@@ -108,12 +129,15 @@ void Compare::computeCellDiff(void)
          vertsC.emplace_back(vertMapperM1toM2_[v1Id]);
       }
       if (nextCell) {
+         hasDiffCells_ = true;
          continue;
       }
       std::sort(vertsC.begin(), vertsC.end());
       if (vertListCellsM2.count(vertsC)) {
          cellMapperM1toM2_[c1] = vertListCellsM2[vertsC];
          diffCells_[c1]        = 0;
+      } else {
+         hasDiffCells_ = true;
       }
    }
 }
