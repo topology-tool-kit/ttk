@@ -236,6 +236,8 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGr
    float pointCoord[3];
 
    for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
+      if (!graph.getArc(arcId).isVisible()) continue;
+
       const idNode upNodeId   = graph.getArc(arcId).getUpNodeId();
       const idNode downNodeId = graph.getArc(arcId).getDownNodeId();
 

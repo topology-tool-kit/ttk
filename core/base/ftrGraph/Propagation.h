@@ -31,14 +31,16 @@ namespace ttk
          idVertex   curVert_;
          // comparison function
          VertCompFN comp_;
+         // come from min/max leaf
+         bool goUp_;
          // priority queue
          boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation_;
          // representant
          UnionFind* rpz_;
 
         public:
-         Propagation(idVertex startVert, VertCompFN vertComp, UnionFind* uf = nullptr)
-             : curVert_(nullVertex), comp_(vertComp), propagation_(vertComp)
+         Propagation(idVertex startVert, VertCompFN vertComp, bool up, UnionFind* uf = nullptr)
+             : curVert_(nullVertex), comp_(vertComp), goUp_(up), propagation_(vertComp)
          {
             rpz_ = (uf) ? uf : new UnionFind;
             propagation_.emplace(startVert);
@@ -77,6 +79,11 @@ namespace ttk
             return propagation_.empty();
          }
 
+         void clear(void)
+         {
+            propagation_.clear();
+         }
+
          /// This comparison is reversed to the internal one
          /// because when we are growing, the natural order for the simplices
          /// is reversed to the order of the priority queue:
@@ -84,6 +91,17 @@ namespace ttk
          bool compare(idVertex a, idVertex b) const
          {
             return comp_(b,a);
+         }
+
+         // true if propagation initiated form a min leaf
+         bool goUp(void) const
+         {
+            return goUp_;
+         }
+
+         bool goDown(void) const
+         {
+            return !goUp_;
          }
 
          // DEBUG ONLY

@@ -58,6 +58,7 @@ namespace ttk
 
          stringstream res;
 
+         res << " nb nodes : " << nodes_.size() << std::endl;
          for(const auto& node : nodes_) {
             if (node.parent_) {
                res << "id: " << &node - &nodes_[0];

@@ -24,7 +24,7 @@ namespace ttk
                bool comp1 = newLocalProp->compare(saddle, v1);
                // crossing edge
                if (comp0 != comp1) {
-                  // Add in propagation
+                  // Add the lower one in propagation
                   if(comp0) {
                      if (bfsVerts_[v0] != bfsId) {
                         bfsVerts_[v0] = bfsId;

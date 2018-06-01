@@ -257,6 +257,9 @@ namespace ttk
          bool checkLast(const idSuperArc currentArc, const Propagation* const localPropagation,
                         const std::vector<idEdge>& lowerStarEdges);
 
+         // Check if neigh is linked to an arc having saddle in one of its boundary node
+         bool checkAlreayAttached(const idVertex saddle, const idVertex neigh);
+
          // At a join saddle, merge local propagations coming here
          // and close remiang opened arcs.
          void mergeAtSaddle(const idNode saddleId);
@@ -282,7 +285,8 @@ namespace ttk
 
          // Create a new propagation starting at leaf
          // use rpz as representant for new uf if not nullptr
-         Propagation* newPropagation(const idVertex leaf, UnionFind* rpz = nullptr);
+         Propagation* newPropagation(const idVertex leaf, const bool fromMax,
+                                     UnionFind* rpz = nullptr);
 
          // Compute the wieght of the edge in the dyngraph between e1 and e2.
          // This weight is the min value of the two endpoints, we use the mirror array (int)
@@ -301,6 +305,9 @@ namespace ttk
          vertPosInTriangle getVertPosInTriangle(const orderedTriangle&   oTriangle,
                                                 const Propagation* const localPropagation) const;
 
+         // get the higher vertex: get<1>(get<1>(oTriangle)
+         idVertex getEndVertexInTriangle(const orderedTriangle&   oTriangle,
+                                         const Propagation* const localPropagation) const;
       };
    }  // namespace ftr
 }  // namespace ttk

@@ -32,10 +32,10 @@ namespace ttk
          idNode upNodeId_;
          idNode downNodeId_;
          Propagation* propagation_;
-         // TODO Charles: segmentation
+         bool visible_;
 
         public:
-         SuperArc() : upNodeId_(nullNode), downNodeId_(nullNode), propagation_(nullptr)
+         SuperArc() : upNodeId_(nullNode), downNodeId_(nullNode), propagation_(nullptr), visible_(true)
          {
          }
 
@@ -89,6 +89,16 @@ namespace ttk
          void setPropagation(Propagation* const prop)
          {
             propagation_ = prop;
+         }
+
+         void hide(void)
+         {
+            visible_ = false;
+         }
+
+         bool isVisible(void) const
+         {
+            return visible_;
          }
       };
    }

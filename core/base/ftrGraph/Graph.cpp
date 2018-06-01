@@ -47,6 +47,7 @@ void Graph::arcs2nodes(void)
    std::vector<valence> upVal(nbNodes, 0), downVal(nbNodes, 0);
    // count
    for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
+      if(!getArc(arcId).isVisible()) continue;
       const idNode upNodeId = getArc(arcId).getUpNodeId();
       ++downVal[upNodeId];
       const idNode downNodeId = getArc(arcId).getDownNodeId();
@@ -60,6 +61,7 @@ void Graph::arcs2nodes(void)
 
    // set the id
    for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
+      if(!getArc(arcId).isVisible()) continue;
       const idNode upNodeId = getArc(arcId).getUpNodeId();
       getNode(upNodeId).addDownArc(arcId);
       const idNode downNodeId = getArc(arcId).getDownNodeId();
@@ -78,8 +80,8 @@ void Graph::print(const int verbosity) const
 
    if(verbosity >= 2) {
       cout << "Leaves: " << endl;
-      for (const idVertex v : leaves_) {
-         cout << v << " ";
+      for (const auto v : leaves_) {
+         cout << get<0>(v) << " ";
       }
       cout << endl;
    }
@@ -101,7 +103,11 @@ void Graph::print(const int verbosity) const
 std::string Graph::printArc(const idSuperArc arcId) const
 {
    std::stringstream res;
-   res << "a" << arcId << ":(";
+   res << "a" << arcId << ":";
+   if (!arcs_[arcId].isVisible()) {
+      res << "hidden";
+   }
+   res << "(";
    const idNode did = arcs_[arcId].getDownNodeId();
    const idNode uid = arcs_[arcId].getUpNodeId();
    if (did != nullNode){

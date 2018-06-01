@@ -144,21 +144,24 @@ namespace ttk
 
                for (idVertex v = lowerBound; v < upperBound; ++v) {
                   const valence vNeighNumber = mesh_->getVertexNeighborNumber(v);
-                  bool          isMinV       = true;
+                  // TODO duplicate arcs when both are enabled
+                  bool isMax = true;
+                  bool isMin = false;
 
                   for (valence n = 0; n < vNeighNumber; ++n) {
                      idVertex neigh;
                      mesh_->getVertexNeighbor(v, n, neigh);
 
-                     if (scalars_->isLower(neigh, v)) {
-                        isMinV = false;
-                        break;
+                     if (scalars_->isHigher(neigh, v)) {
+                        isMax = false;
+                     } else {
+                        isMin = false;
                      }
                   }
 
                   // v is a minimum, add it to the leaves
-                  if (isMinV) {
-                     graph_.addLeaf(v);
+                  if (isMin || isMax) {
+                     graph_.addLeaf(v, isMin);
                   }
                }
             }  // end task
@@ -173,7 +176,8 @@ namespace ttk
       void FTRGraph<ScalarType>::sweepFrowSeeds()
       {
          const idNode nbSeed = graph_.getNumberOfLeaves();
-         graph_.sortLeaves<ScalarType>(scalars_);
+         // graph_.sortLeaves<ScalarType>(scalars_);
+         graph_.shuffleLeaves<ScalarType>(scalars_);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(params_->threadNumber)
@@ -186,14 +190,15 @@ namespace ttk
                for (idNode i = 0; i < nbSeed; i++) {
                   // initialize structure
                   const idVertex corLeaf          = graph_.getLeaf(i);
-                  Propagation*   localPropagation = newPropagation(corLeaf);
+                  const bool     fromMin          = graph_.isLeafFromMin(i);
+                  Propagation*   localPropagation = newPropagation(corLeaf, fromMin);
                   // avoid duplicate for the leaf vertex
                   localPropagation->getNextVertex();
                   updatePreimage(localPropagation);
                   localGrowth(localPropagation);
                   // process
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(params_->threadNumber > 1)
+#pragma omp task untied
 #endif
                   growthFromSeed(corLeaf, localPropagation);
                }

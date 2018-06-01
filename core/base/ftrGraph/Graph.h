@@ -35,9 +35,9 @@ namespace ttk
       class Graph : public Allocable
       {
         private:
-         AtomicVector<idVertex> leaves_;
-         AtomicVector<Node>     nodes_;
-         AtomicVector<SuperArc> arcs_;
+         AtomicVector<std::tuple<idVertex, bool>> leaves_;
+         AtomicVector<Node>                       nodes_;
+         AtomicVector<SuperArc>                   arcs_;
 
          std::vector<std::forward_list<idSegmentation>> segmentation_;
          std::vector<valence>                           valences_;
@@ -81,7 +81,12 @@ namespace ttk
 
          idVertex getLeaf(const idNode id) const
          {
-            return leaves_[id];
+            return std::get<0>(leaves_[id]);
+         }
+
+         bool isLeafFromMin(const idNode id) const
+         {
+            return std::get<1>(leaves_[id]);
          }
 
          const Node& getNode(const idNode id) const
@@ -220,9 +225,9 @@ namespace ttk
          // Build structure
          // ---------------
 
-         void addLeaf(const idVertex v)
+         void addLeaf(const idVertex v, bool isMax)
          {
-            leaves_.emplace_back(v);
+            leaves_.emplace_back({v, isMax});
          }
 
          idNode makeNode(const idVertex v)
@@ -264,17 +269,26 @@ namespace ttk
          // can be done in parallel
          template<typename ScalarType>
          void sortLeaves(const Scalars<ScalarType>* s, const bool parallel = false){
-            auto compare_fun = [&](idVertex a, idVertex b) { return s->isLower(a, b); };
+            auto compare_fun = [&](std::tuple<idVertex, bool> a, std::tuple<idVertex, bool> b) {
+               return s->isLower(std::get<0>(a), std::get<0>(b));
+            };
             if(parallel){
-               ::ttk::ftr::parallel_sort<decltype(leaves_.begin()), idVertex>(
-                                                                     leaves_.begin(),
-                                                                     leaves_.end(),
-                                                                     compare_fun);
+               ::ttk::ftr::parallel_sort<decltype(leaves_.begin()), std::tuple<idVertex, bool>>(
+                   leaves_.begin(), leaves_.end(), compare_fun);
             } else {
-               ::ttk::ftr::sort<decltype(leaves_.begin()), idVertex>(leaves_.begin(),
-                                                                     leaves_.end(),
-                                                                     compare_fun);
+               ::ttk::ftr::sort<decltype(leaves_.begin()), std::tuple<idVertex, bool>>(
+                   leaves_.begin(), leaves_.end(), compare_fun);
             }
+         }
+
+         template<typename ScalarType>
+         void shuffleLeaves(const Scalars<ScalarType>* s)
+         {
+            auto compare_fun = [&](std::tuple<idVertex, bool> a, std::tuple<idVertex, bool> b) {
+               return s->isLower(std::get<0>(a), std::get<0>(b));
+            };
+
+            std::random_shuffle(leaves_.begin(), leaves_.end());
          }
 
          // Merge porpagations under a join saddle point
