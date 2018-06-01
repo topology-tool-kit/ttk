@@ -46,10 +46,10 @@ namespace ttk{
       /// entry will be a std::vector listing the vertices in the link of the 
       /// corresponding vertex.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildEdgeLinks(const std::vector<std::pair<int, int> > &edgeList,
-        const std::vector<std::vector<int> > &edgeStars,
-        const long long int *cellArray,
-        std::vector<std::vector<int> > &edgeLinks) const;
+      int buildEdgeLinks(const std::vector<std::pair<SimplexId, SimplexId> > &edgeList,
+        const std::vector<std::vector<SimplexId> > &edgeStars,
+        const SimplexId *cellArray,
+        std::vector<std::vector<SimplexId> > &edgeLinks) const;
       
       /// Compute the link of each edge of a 3D triangulation (unspecified 
       /// behavior if the input mesh is not a valid triangulation).
@@ -69,10 +69,10 @@ namespace ttk{
       /// entry will be a std::vector listing the vertices in the link of the 
       /// corresponding vertex.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildEdgeLinks(const std::vector<std::pair<int, int> > &edgeList,
-        const std::vector<std::vector<int> > &edgeStars,
-        const std::vector<std::vector<int> > &cellEdges,
-        std::vector<std::vector<int> > &edgeLinks) const;
+      int buildEdgeLinks(const std::vector<std::pair<SimplexId, SimplexId> > &edgeList,
+        const std::vector<std::vector<SimplexId> > &edgeStars,
+        const std::vector<std::vector<SimplexId> > &cellEdges,
+        std::vector<std::vector<SimplexId> > &edgeLinks) const;
       
       /// Compute the list of edges of a valid triangulation.
       /// \param vertexNumber Number of vertices in the triangulation.
@@ -85,9 +85,9 @@ namespace ttk{
       /// of 
       /// vertex identifiers).
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildEdgeList(const int &vertexNumber, const int &cellNumber, 
-        const long long int *cellArray,
-        std::vector<std::pair<int, int> > &edgeList) const;
+      int buildEdgeList(const SimplexId &vertexNumber, const SimplexId &cellNumber, 
+        const SimplexId *cellArray,
+        std::vector<std::pair<SimplexId, SimplexId> > &edgeList) const;
       
       /// Compute the list of edges of multiple triangulations.
       /// \param cellArrays Vector of cells. For each triangulation, each entry
@@ -98,8 +98,8 @@ namespace ttk{
       /// vertex identifiers).
       /// \return Returns 0 upon success, negative values otherwise.
       int buildEdgeLists(
-        const std::vector<std::vector<long long int> >  &cellArrays,
-        std::vector<std::vector<std::pair<int, int> > > &edgeLists) const;
+        const std::vector<std::vector<SimplexId> >  &cellArrays,
+        std::vector<std::vector<std::pair<SimplexId, SimplexId> > > &edgeLists) const;
       
           
       /// Compute the 3-star of all the edges of a triangulation (for each
@@ -137,11 +137,11 @@ namespace ttk{
       /// vertex star list. If this std::vector is not empty but incorrect, the 
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
-      int buildEdgeStars(const int &vertexNumber, const int &cellNumber,
-        const long long int *cellArray,
-        std::vector<std::vector<int> > &starList,
-        std::vector<std::pair<int, int> > *edgeList = NULL,
-        std::vector<std::vector<int> > *vertexStars = NULL) const;
+      int buildEdgeStars(const SimplexId &vertexNumber, const SimplexId &cellNumber,
+        const SimplexId *cellArray,
+        std::vector<std::vector<SimplexId> > &starList,
+        std::vector<std::pair<SimplexId, SimplexId> > *edgeList = NULL,
+        std::vector<std::vector<SimplexId> > *vertexStars = NULL) const;
       
       /// Compute the list of edges of a sub-portion of a valid triangulation.
       /// \param cellNumber Number of maximum-dimensional cells in the 
@@ -155,8 +155,8 @@ namespace ttk{
       /// vertex identifiers).
       /// \return Returns 0 upon success, negative values otherwise.
       int buildEdgeSubList(
-        const int &cellNumber, const long long int *cellArray,
-        std::vector<std::pair<int, int> > &edgeList) const;
+        const SimplexId &cellNumber, const SimplexId *cellArray,
+        std::vector<std::pair<SimplexId, SimplexId> > &edgeList) const;
         
       
     protected:
