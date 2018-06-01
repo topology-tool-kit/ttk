@@ -4,19 +4,21 @@ using namespace std;
 using namespace ttk;
 
 AbstractMorseSmaleComplex::AbstractMorseSmaleComplex():
-  ReverveSaddleMaximumConnection{true},
-  ReverveSaddleSaddleConnection{true},
-  ComputeAscendingSeparatrices1{true},
-  ComputeDescendingSeparatrices1{true},
-  ComputeSaddleConnectors{true},
+  // all options are disabled by default
+  ReverveSaddleMaximumConnection{false},
+  ReverveSaddleSaddleConnection{false},
+  ComputeAscendingSeparatrices1{false},
+  ComputeDescendingSeparatrices1{false},
+  ComputeSaddleConnectors{false},
   ComputeAscendingSeparatrices2{false},
   ComputeDescendingSeparatrices2{false},
-  ComputeAscendingSegmentation{true},
-  ComputeDescendingSegmentation{true},
-  ComputeFinalSegmentation{true},
+  ComputeAscendingSegmentation{false},
+  ComputeDescendingSegmentation{false},
+  ComputeFinalSegmentation{false},
   ReturnSaddleConnectors{false},
   PrioritizeSpeedOverMemory{false},
 
+  // other class members are value-initialized
   inputScalarField_{},
   inputTriangulation_{},
   inputOffsets_{},

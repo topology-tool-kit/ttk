@@ -50,8 +50,21 @@ namespace ttk{
 
 template<typename dataType>
 int ttk::MorseSmaleComplex2D::execute(){
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputScalarField_){
+    std::cerr << "[MorseSmaleComplex2D] Error: input scalar field pointer is null." << std::endl;
+    return -1;
+  }
+
+  if(!inputOffsets_){
+    std::cerr << "[MorseSmaleComplex2D] Error: input offset field pointer is null." << std::endl;
+    return -1;
+  }
+#endif
   Timer t;
 
+  // nullptr_t is implicitly convertible and comparable to any pointer type
+  // or pointer-to-member type.
   int* ascendingManifold=static_cast<int*>(outputAscendingManifold_);
   int* descendingManifold=static_cast<int*>(outputDescendingManifold_);
   int* morseSmaleManifold=static_cast<int*>(outputMorseSmaleManifold_);
@@ -103,14 +116,35 @@ int ttk::MorseSmaleComplex2D::execute(){
     int numberOfMaxima{};
     int numberOfMinima{};
 
-    if(ComputeAscendingSegmentation)
+    if(ComputeAscendingSegmentation){
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!ascendingManifold){
+        std::cerr << "[MorseSmaleComplex2D] Error: output ascending segmentation pointer is null." << std::endl;
+        return -1;
+      }
+#endif
       setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold, numberOfMaxima);
+    }
 
-    if(ComputeDescendingSegmentation)
+    if(ComputeDescendingSegmentation){
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!descendingManifold){
+        std::cerr << "[MorseSmaleComplex2D] Error: output descending segmentation pointer is null." << std::endl;
+        return -1;
+      }
+#endif
       setDescendingSegmentation(criticalPoints, descendingManifold, numberOfMinima);
+    }
 
-    if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation)
+    if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation){
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!ascendingManifold or !descendingManifold or !morseSmaleManifold){
+        std::cerr << "[MorseSmaleComplex2D] Error: output segmentation pointer is null." << std::endl;
+        return -1;
+      }
+#endif
       setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold, descendingManifold, morseSmaleManifold);
+    }
 
     {
       std::stringstream msg;
