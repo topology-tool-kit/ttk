@@ -33,7 +33,7 @@ int main(int argc, char **argv)
       return ret;
 
    if (diffCode) {
-      ret = program.ttkObject_->getDiffCode();
+      ret = program.ttkObject_->getDiffBFlag();
    } else {
       ret = program.save();
    }

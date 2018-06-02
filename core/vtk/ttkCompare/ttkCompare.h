@@ -45,8 +45,14 @@ class ttkCompare
     : public vtkDataSetAlgorithm,
       public ttk::Wrapper
 {
+  private:
+   // if true, do not check point/cell data
+   bool                meshOnly;
+   int                 diffBFlag_;
+   ttk::Compare        compare_;
+
   public:
-   static ttkCompare *New();
+   static ttkCompare* New();
    vtkTypeMacro(ttkCompare, vtkDataSetAlgorithm)
 
    // default ttk setters
@@ -68,9 +74,17 @@ class ttkCompare
    vtkSetMacro(meshOnly, bool);
    vtkGetMacro(meshOnly, bool);
 
-   int getDiffCode(void) const
+   // return the bit flag corresponding to the diff
+   // 0 : same,
+   // 1 : difference.
+   //
+   // first bit: vertices
+   // second bit: cell
+   // third bit: vertices scalars
+   // fourth bit: cells scalars
+   int getDiffBFlag(void) const
    {
-      return diffReturn_;
+      return diffBFlag_;
    }
 
   protected:
@@ -79,6 +93,7 @@ class ttkCompare
       // init
       meshOnly    = false;
       UseAllCores = false;
+      diffBFlag_  = 0;
 
       SetNumberOfInputPorts(2);
    }
@@ -87,22 +102,25 @@ class ttkCompare
 
    TTK_SETUP();
 
+  private:
+   void computeMeshDiff(vtkDataSet* input1, vtkDataSet* input2, vtkDataSet* output);
+
+   void computeVertsDiff(vtkDataSet* input1, vtkDataSet* input2, vtkDataSet* output);
+
+   void computeCellsDiff(vtkDataSet* input1, vtkDataSet* input2, vtkDataSet* output);
+
+   void addFlagFieldData(vtkDataSet* output);
+
    // Tools
 
    template <typename VTKArrayType>
-   vtkSmartPointer<VTKArrayType> createVTKArray(const char *      name,
+   vtkSmartPointer<VTKArrayType> createVTKArray(const char*       name,
                                                 const std::size_t size,
                                                 const char        nbEl = 1);
-
-  private:
-   // if true, do not check point/cell data
-   bool         meshOnly;
-   int          diffReturn_;
-   ttk::Compare compare_;
 };
 
 template <typename VTKArrayType>
-vtkSmartPointer<VTKArrayType> ttkCompare::createVTKArray(const char *      name,
+vtkSmartPointer<VTKArrayType> ttkCompare::createVTKArray(const char*       name,
                                                          const std::size_t size,
                                                          const char        nbEl)
 {

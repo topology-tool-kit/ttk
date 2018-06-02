@@ -41,26 +41,29 @@ namespace ttk
       }
 
       // return 0 if mesh are the same,
-      // return 1 if vertices differs
-      // return 2 if cells differs
-      int computeMeshDiff(unsigned char* const vertArr, unsigned char* const cellArr);
+      // return 1<<0 if vertices differs
+      // return 1<<1 if cells differs
+      int computeMeshDiff(unsigned char *const vertArr, unsigned char *const cellArr);
 
       // return 0 if scalars are the same (use mesh1 to mesh2 mapper)
-      // return 1 if there is a differemce
+      // return 1<<2 if there is a differemce
       // fill scalArray1 with 0 for identical scalars and 1 when differences
       template <typename Type>
       int computeVertDiff(void *const scalArray1, void *const scalArray2);
 
+      // return 0 if scalars are the same (use mesh1 to mesh2 mapper)
+      // return 1<<3 if there is a differemce
+      // fill scalArray1 with 0 for identical scalars and 1 when differences
       template <typename Type>
       int computeCellDiff(void *const scalArray1, void *const scalArray2);
 
      private:
       // fill  vertMapperM1toM2_ and vertArr accordingly
-      bool computeVertsDiff(unsigned char* const vertArr);
+      bool computeMeshVertsDiff(unsigned char *const vertArr);
 
       // fill cellMapperM1toM2_ and cellArr accordingly
       // Nees vertMapperM1toM2_ to be filled
-      bool computeCellDiff(unsigned char* const cellArr);
+      bool computeMeshCellsDiff(unsigned char *const cellArr);
    };
 
 }  // namespace ttk

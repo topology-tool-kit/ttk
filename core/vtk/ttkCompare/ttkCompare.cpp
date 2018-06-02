@@ -5,9 +5,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkCompare)
+vtkStandardNewMacro(ttkCompare);
 
-    int ttkCompare::doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs)
+int ttkCompare::doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs)
 {
    Memory m;
 
@@ -24,74 +24,34 @@ vtkStandardNewMacro(ttkCompare)
    compare_.setWrapper(this);
 
    vtkDataSet *output = outputs[0];
-   output->ShallowCopy(input1);
+   if (meshOnly){
+      output->ShallowCopy(input1);
+   } else {
+      // We override existing arrays
+      output->DeepCopy(input1);
+   }
 
-   // Store difference for mesh
-   vtkSmartPointer<vtkUnsignedCharArray> diffVerts =
-       createVTKArray<vtkUnsignedCharArray>("VerticesDiff", triangulation1->getNumberOfVertices());
-   vtkSmartPointer<vtkUnsignedCharArray> diffCells =
-       createVTKArray<vtkUnsignedCharArray>("CellsDiff", triangulation1->getNumberOfCells());
+   // clean data
+   diffBFlag_  = 0;
 
-   unsigned char* vertArr = (unsigned char*)diffVerts->GetVoidPointer(0);
-   unsigned char* cellArr = (unsigned char*)diffCells->GetVoidPointer(0);
-
-   diffReturn_ = compare_.computeMeshDiff(vertArr, cellArr);
-
-   output->GetPointData()->SetScalars(diffVerts);
-   output->GetCellData()->AddArray(diffCells);
+   // computation
+   computeMeshDiff(input1, input2, output);
 
    if (!meshOnly) {
+      computeVertsDiff(input1, input2, output);
+      computeCellsDiff(input1, input2, output);
+   } else {
       const int nbVertsArray = input1->GetPointData()->GetNumberOfArrays();
-      const int nbCellsArray = input1->GetCellData()->GetNumberOfArrays();
-
-      // Remove other scalars to replace these arrays with their compared counterpart
-      for(int va = 0; va < nbVertsArray; ++va) {
+      for (int va = 0; va < nbVertsArray; ++va) {
          output->GetPointData()->RemoveArray(0);
       }
-      for(int ca = 0; ca < nbCellsArray; ++ca) {
+      const int nbCellsArray = input1->GetCellData()->GetNumberOfArrays();
+      for (int ca = 0; ca < nbCellsArray; ++ca) {
          output->GetCellData()->RemoveArray(0);
       }
-
-      // Compute the difference for each array
-      for(int va = 0; va < nbVertsArray; ++va) {
-         vtkDataArray *inputScalarField1 = nullptr;
-         vtkDataArray *inputScalarField2 = nullptr;
-         inputScalarField1               = input1->GetPointData()->GetArray(va);
-         inputScalarField2 = input2->GetPointData()->GetArray(inputScalarField1->GetName());
-         if (!inputScalarField1 || !inputScalarField2 ||
-             inputScalarField1->GetNumberOfComponents() > 1 ||
-             inputScalarField2->GetNumberOfComponents() > 1) {
-            continue;
-         }
-         switch (inputScalarField1->GetDataType()) {
-            vtkTemplateMacro({
-               compare_.computeVertDiff<VTK_TT>(inputScalarField1->GetVoidPointer(0),
-                                                  inputScalarField2->GetVoidPointer(0));
-            });
-         }
-         output->GetPointData()->AddArray(inputScalarField1);
-      }
-
-      // Compute the difference for each array
-      for (int va = 0; va < nbCellsArray; ++va) {
-         vtkDataArray *inputScalarField1 = nullptr;
-         vtkDataArray *inputScalarField2 = nullptr;
-         inputScalarField1               = input1->GetCellData()->GetArray(va);
-         inputScalarField2 = input2->GetCellData()->GetArray(inputScalarField1->GetName());
-         if (!inputScalarField1 || !inputScalarField2 ||
-             inputScalarField1->GetNumberOfComponents() > 1 ||
-             inputScalarField2->GetNumberOfComponents() > 1) {
-            continue;
-         }
-         switch (inputScalarField1->GetDataType()) {
-            vtkTemplateMacro({
-               compare_.computeCellDiff<VTK_TT>(inputScalarField1->GetVoidPointer(0),
-                                                inputScalarField2->GetVoidPointer(0));
-            });
-         }
-         output->GetCellData()->AddArray(inputScalarField1);
-      }
    }
+
+   addFlagFieldData(output);
 
    {
       stringstream msg;
@@ -102,3 +62,80 @@ vtkStandardNewMacro(ttkCompare)
    return 0;
 }
 
+// Private
+
+void ttkCompare::computeMeshDiff(vtkDataSet *input1, vtkDataSet* input2, vtkDataSet *output)
+{
+   Triangulation *triangulation1 = ttkTriangulation::getTriangulation(input1);
+   vtkSmartPointer<vtkUnsignedCharArray> diffVerts =
+       createVTKArray<vtkUnsignedCharArray>("VerticesDiff", triangulation1->getNumberOfVertices());
+   vtkSmartPointer<vtkUnsignedCharArray> diffCells =
+       createVTKArray<vtkUnsignedCharArray>("CellsDiff", triangulation1->getNumberOfCells());
+
+   unsigned char *vertArr = (unsigned char *)diffVerts->GetVoidPointer(0);
+   unsigned char *cellArr = (unsigned char *)diffCells->GetVoidPointer(0);
+
+   diffBFlag_ = diffBFlag_ | compare_.computeMeshDiff(vertArr, cellArr);
+
+   output->GetPointData()->SetScalars(diffVerts);
+   output->GetCellData()->AddArray(diffCells);
+}
+
+void ttkCompare::computeVertsDiff(vtkDataSet *input1, vtkDataSet* input2, vtkDataSet *output)
+{
+   const int nbVertsArray = output->GetPointData()->GetNumberOfArrays();
+   // Compute the difference for each vertex array
+   for (int va = 0; va < nbVertsArray; ++va) {
+      vtkDataArray *inputScalarField1 = output->GetPointData()->GetArray(va);
+      vtkDataArray *inputScalarField2 =
+          input2->GetPointData()->GetArray(inputScalarField1->GetName());
+      if (!inputScalarField1 || !inputScalarField2 ||
+          inputScalarField1->GetNumberOfComponents() > 1 ||
+          inputScalarField2->GetNumberOfComponents() > 1) {
+         continue;
+      }
+      switch (inputScalarField1->GetDataType()) {
+         vtkTemplateMacro({
+            diffBFlag_ =
+                diffBFlag_ | compare_.computeVertDiff<VTK_TT>(inputScalarField1->GetVoidPointer(0),
+                                                              inputScalarField2->GetVoidPointer(0));
+         });
+      }
+      output->GetPointData()->AddArray(inputScalarField1);
+   }
+}
+
+void ttkCompare::computeCellsDiff(vtkDataSet *input1, vtkDataSet* input2, vtkDataSet *output)
+{
+   const int nbCellsArray = output->GetCellData()->GetNumberOfArrays();
+   // Compute the difference for each cell array
+   for (int va = 0; va < nbCellsArray; ++va) {
+      vtkDataArray *inputScalarField1 = output->GetCellData()->GetArray(va);
+      vtkDataArray *inputScalarField2 =
+          input2->GetCellData()->GetArray(inputScalarField1->GetName());
+      if (!inputScalarField1 || !inputScalarField2 ||
+          inputScalarField1->GetNumberOfComponents() > 1 ||
+          inputScalarField2->GetNumberOfComponents() > 1) {
+         continue;
+      }
+      switch (inputScalarField1->GetDataType()) {
+         vtkTemplateMacro({
+            diffBFlag_ =
+                diffBFlag_ | compare_.computeCellDiff<VTK_TT>(inputScalarField1->GetVoidPointer(0),
+                                                              inputScalarField2->GetVoidPointer(0));
+         });
+      }
+      output->GetCellData()->AddArray(inputScalarField1);
+   }
+}
+
+void ttkCompare::addFlagFieldData(vtkDataSet *output)
+{
+   vtkSmartPointer<vtkUnsignedCharArray> bitFlagArray =
+       createVTKArray<vtkUnsignedCharArray>("Compare", 1);
+   if (debugLevel_ > 1) {
+      std::cout << "[ttkCompare]: diff flag is " << diffBFlag_ << std::endl;
+   }
+   bitFlagArray->SetTuple1(0, diffBFlag_);
+   output->GetFieldData()->AddArray(bitFlagArray);
+}

@@ -26,25 +26,27 @@ int Compare::computeMeshDiff(unsigned char* const vertArr, unsigned char* const 
       return -1;
    }
 
-   const bool hasDiffVerts = computeVertsDiff(vertArr);
-   const bool hasDiffCells = computeCellDiff(cellArr);
+   int returnCode = 0;
+
+   const bool hasDiffVerts = computeMeshVertsDiff(vertArr);
+   const bool hasDiffCells = computeMeshCellsDiff(cellArr);
 
    const idVertex nbVerts1 = mesh1_->getNumberOfVertices();
    const idVertex nbVerts2 = mesh2_->getNumberOfVertices();
    if (nbVerts1 != nbVerts2 || hasDiffVerts)
-      return 1;
+      returnCode = returnCode | 1 << 0;
 
    const idCell nbCells1 = mesh1_->getNumberOfCells();
    const idCell nbCells2 = mesh2_->getNumberOfCells();
    if (nbCells1 != nbCells2 || hasDiffCells)
-      return 2;
+      returnCode = returnCode | 1 << 1;
 
-   return 0;
+   return returnCode;
 }
 
 // Private
 
-bool Compare::computeVertsDiff(unsigned char* const vertArr)
+bool Compare::computeMeshVertsDiff(unsigned char* const vertArr)
 {
    bool           hasDiffVerts = false;
    const idVertex nbVerts1     = mesh1_->getNumberOfVertices();
@@ -86,7 +88,7 @@ bool Compare::computeVertsDiff(unsigned char* const vertArr)
    return hasDiffVerts;
 }
 
-bool Compare::computeCellDiff(unsigned char* const cellArr)
+bool Compare::computeMeshCellsDiff(unsigned char* const cellArr)
 {
    if (vertMapperM1toM2_.empty()) {
       std::cerr << "[Compare] comuteCellDiff needs vertMapper to be filled" << std::endl;

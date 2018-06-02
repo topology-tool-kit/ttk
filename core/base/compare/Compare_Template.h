@@ -14,6 +14,7 @@ namespace ttk
 
       Type*          inputArray1 = (Type*)scalArray1;
       Type*          inputArray2 = (Type*)scalArray2;
+      int            returnCode  = 0;
       const idVertex nbVerts1    = mesh1_->getNumberOfVertices();
       const idVertex nbVerts2    = mesh2_->getNumberOfVertices();
 #ifdef TTK_ENABLE_OPENMP
@@ -21,14 +22,15 @@ namespace ttk
 #endif
       for (idVertex i = 0; i < nbVerts1; ++i) {
          const idVertex posInM2 = vertMapperM1toM2_[i];
-         if (posInM2 < 0 || posInM2 >= nbVerts2 || inputArray2[posInM2] != inputArray1[i]) {
-            inputArray1[i] = 1;
-         } else {
+         if (posInM2 >= 0 && posInM2 < nbVerts2 && inputArray2[posInM2] == inputArray1[i]) {
             inputArray1[i] = 0;
+         } else {
+            inputArray1[i] = 1;
+            returnCode     = 1 << 2;
          }
       }
 
-      return 0;
+      return returnCode;
    }
 
    template <typename Type>
@@ -38,8 +40,9 @@ namespace ttk
          std::cerr << "[Compare] comuteCellDiff needs cellMapper to be filled" << std::endl;
       }
 
-      Type*          inputArray1 = (Type*)scalArray1;
-      Type*          inputArray2 = (Type*)scalArray2;
+      Type*        inputArray1 = (Type*)scalArray1;
+      Type*        inputArray2 = (Type*)scalArray2;
+      int          returnCode  = 0;
       const idCell nbCells1    = mesh1_->getNumberOfCells();
       const idCell nbCells2    = mesh2_->getNumberOfCells();
 #ifdef TTK_ENABLE_OPENMP
@@ -47,15 +50,16 @@ namespace ttk
 #endif
       for (idCell i = 0; i < nbCells1; ++i) {
          const idCell posInM2 = cellMapperM1toM2_[i];
-         if (posInM2 < 0 || posInM2 >= nbCells2 || inputArray2[posInM2] != inputArray1[i]) {
-            inputArray1[i] = 1;
-         } else {
+         if (posInM2 >= 0 && posInM2 < nbCells2 && inputArray2[posInM2] == inputArray1[i]) {
             inputArray1[i] = 0;
+         } else {
+            inputArray1[i] = 1;
+            returnCode     = 1 << 3;
          }
       }
 
-      return 0;
+      return returnCode;
    }
-}
+}  // namespace ttk
 
 #endif /* end of include guard: COMPARE_TEMPLATE_H */
