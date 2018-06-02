@@ -255,7 +255,7 @@ struct NodeData : public WrapperData{
       const ttk::ftm::idVertex l_vertexId = node->getVertexId();
       // global id
       const ttk::ftm::idVertex g_vertexId = idMapper->GetTuple1(l_vertexId);
-      float cellScalar;
+      float cellScalar = 0;
       switch (scalarType) {
          vtkTemplateMacro({ cellScalar = (float)tree->getValue<VTK_TT>(l_vertexId); });
       }
