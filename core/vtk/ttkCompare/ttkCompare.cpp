@@ -31,10 +31,11 @@ vtkStandardNewMacro(ttkCompare)
        createVTKArray<vtkUnsignedCharArray>("VerticesDiff", triangulation1->getNumberOfVertices());
    vtkSmartPointer<vtkUnsignedCharArray> diffCells =
        createVTKArray<vtkUnsignedCharArray>("CellsDiff", triangulation1->getNumberOfCells());
-   compare_.setVertsArray(diffVerts->GetVoidPointer(0));
-   compare_.setCellsArray(diffCells->GetVoidPointer(0));
 
-   diffReturn_ = compare_.computeMeshDiff();
+   unsigned char* vertArr = (unsigned char*)diffVerts->GetVoidPointer(0);
+   unsigned char* cellArr = (unsigned char*)diffCells->GetVoidPointer(0);
+
+   diffReturn_ = compare_.computeMeshDiff(vertArr, cellArr);
 
    output->GetPointData()->SetScalars(diffVerts);
    output->GetCellData()->AddArray(diffCells);

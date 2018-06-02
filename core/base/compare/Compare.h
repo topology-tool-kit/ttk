@@ -11,7 +11,8 @@
 /// \sa ttk::Triangulation
 /// \sa ttkCompare.cpp %for a usage example.
 
-#pragma once
+#ifndef COMPARE_H
+#define COMPARE_H
 
 #include <Triangulation.h>
 #include <Wrapper.h>
@@ -26,9 +27,6 @@ namespace ttk
       Triangulation *       mesh1_, *mesh2_;
       std::vector<idVertex> vertMapperM1toM2_;
       std::vector<idCell>   cellMapperM1toM2_;
-      unsigned char *       diffVerts_, *diffCells_;
-
-      bool hasDiffVerts_, hasDiffCells_;
 
      public:
       Compare();
@@ -42,18 +40,14 @@ namespace ttk
          return 0;
       }
 
-      void setVertsArray(void *arr)
-      {
-         diffVerts_ = (unsigned char *)arr;
-      }
+      // return 0 if mesh are the same,
+      // return 1 if vertices differs
+      // return 2 if cells differs
+      int computeMeshDiff(unsigned char* const vertArr, unsigned char* const cellArr);
 
-      void setCellsArray(void *arr)
-      {
-         diffCells_ = (unsigned char *)arr;
-      }
-
-      int computeMeshDiff(void);
-
+      // return 0 if scalars are the same (use mesh1 to mesh2 mapper)
+      // return 1 if there is a differemce
+      // fill scalArray1 with 0 for identical scalars and 1 when differences
       template <typename Type>
       int computeVertDiff(void *const scalArray1, void *const scalArray2);
 
@@ -61,14 +55,16 @@ namespace ttk
       int computeCellDiff(void *const scalArray1, void *const scalArray2);
 
      private:
-      // fill  vertMapperM1toM2_ and diffVerts_ accordingly
-      void computeVertsDiff(void);
+      // fill  vertMapperM1toM2_ and vertArr accordingly
+      bool computeVertsDiff(unsigned char* const vertArr);
 
-      // fill cellMapperM1toM2_ and diffCells_ accordingly
+      // fill cellMapperM1toM2_ and cellArr accordingly
       // Nees vertMapperM1toM2_ to be filled
-      void computeCellDiff(void);
+      bool computeCellDiff(unsigned char* const cellArr);
    };
 
 }  // namespace ttk
 
 #include "Compare_Template.h"
+
+#endif /* end of include guard: COMPARE_H */

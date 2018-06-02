@@ -6,13 +6,7 @@
 using namespace std;
 using namespace ttk;
 
-Compare::Compare()
-    : mesh1_{nullptr},
-      mesh2_{nullptr},
-      diffVerts_{nullptr},
-      diffCells_{nullptr},
-      hasDiffVerts_{false},
-      hasDiffCells_{false}
+Compare::Compare() : mesh1_{nullptr}, mesh2_{nullptr}
 {
 }
 
@@ -20,46 +14,50 @@ Compare::~Compare()
 {
 }
 
-int Compare::computeMeshDiff()
+int Compare::computeMeshDiff(unsigned char* const vertArr, unsigned char* const cellArr)
 {
-   if (!diffVerts_) {
+   if (!vertArr) {
       cerr << "[Compare]: needs and array of nb verts char using setVertsArray" << endl;
       return -1;
    }
 
-   if (!diffCells_) {
+   if (!cellArr) {
       cerr << "[Compare]: needs and array of nb cells char using setCellsArray" << endl;
       return -1;
    }
 
-   computeVertsDiff();
-   computeCellDiff();
+   const bool hasDiffVerts = computeVertsDiff(vertArr);
+   const bool hasDiffCells = computeCellDiff(cellArr);
 
    const idVertex nbVerts1 = mesh1_->getNumberOfVertices();
    const idVertex nbVerts2 = mesh2_->getNumberOfVertices();
-   if (nbVerts1 != nbVerts2 || hasDiffVerts_)
+   if (nbVerts1 != nbVerts2 || hasDiffVerts)
       return 1;
 
    const idCell nbCells1 = mesh1_->getNumberOfCells();
    const idCell nbCells2 = mesh2_->getNumberOfCells();
-   if (nbCells1 != nbCells2 || hasDiffVerts_)
+   if (nbCells1 != nbCells2 || hasDiffCells)
       return 2;
 
    return 0;
 }
 
-void Compare::computeVertsDiff(void)
-{
-   const idVertex nbVerts1 = mesh1_->getNumberOfVertices();
-   const idVertex nbVerts2 = mesh2_->getNumberOfVertices();
+// Private
 
+bool Compare::computeVertsDiff(unsigned char* const vertArr)
+{
+   bool           hasDiffVerts = false;
+   const idVertex nbVerts1     = mesh1_->getNumberOfVertices();
+   const idVertex nbVerts2     = mesh2_->getNumberOfVertices();
+
+   // init all arrays
    vertMapperM1toM2_.resize(nbVerts1);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
    for (idVertex i = 0; i < nbVerts1; ++i) {
       vertMapperM1toM2_[i] = -1;
-      diffVerts_[i]        = 1;
+      vertArr[i]           = 1;
    }
 
    // Retains all vertices positions for mesh2
@@ -69,6 +67,7 @@ void Compare::computeVertsDiff(void)
       mesh2_->getVertexPoint(v2, posV[0], posV[1], posV[2]);
       posVertsM2.emplace(posV, v2);
    }
+
    // match vertices from mesh1 (fill vertMapperM1toM2_)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -78,29 +77,34 @@ void Compare::computeVertsDiff(void)
       mesh1_->getVertexPoint(v1, posV[0], posV[1], posV[2]);
       if (posVertsM2.count(posV)) {
          vertMapperM1toM2_[v1] = posVertsM2[posV];
-         diffVerts_[v1]        = 0;
+         vertArr[v1]           = 0;
       } else {
-         hasDiffVerts_ = true;
+         hasDiffVerts = true;
       }
    }
+
+   return hasDiffVerts;
 }
 
-void Compare::computeCellDiff(void)
+bool Compare::computeCellDiff(unsigned char* const cellArr)
 {
    if (vertMapperM1toM2_.empty()) {
       std::cerr << "[Compare] comuteCellDiff needs vertMapper to be filled" << std::endl;
+      return true;
    }
 
-   const idCell nbCells1 = mesh1_->getNumberOfCells();
-   const idCell nbCells2 = mesh2_->getNumberOfCells();
+   bool         hasDiffCells = false;
+   const idCell nbCells1     = mesh1_->getNumberOfCells();
+   const idCell nbCells2     = mesh2_->getNumberOfCells();
 
+   // init all arrays
    cellMapperM1toM2_.resize(nbCells1);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
    for (idCell i = 0; i < nbCells1; ++i) {
       cellMapperM1toM2_[i] = -1;
-      diffCells_[i]        = 1;
+      cellArr[i]           = 1;
    }
 
    // for cells of mesh1, retains their list of vertices using mesh1 vertices
@@ -121,7 +125,7 @@ void Compare::computeCellDiff(void)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-   for(idCell c1 = 0; c1 < nbCells1; ++c1) {
+   for (idCell c1 = 0; c1 < nbCells1; ++c1) {
       bool                       nextCell = false;
       const idVertex             nbVerts  = mesh1_->getCellVertexNumber(c1);
       ComparableVector<idVertex> vertsC;
@@ -129,7 +133,7 @@ void Compare::computeCellDiff(void)
       for (idVertex v = 0; v < nbVerts; ++v) {
          idVertex v1Id;
          mesh1_->getCellVertex(c1, v, v1Id);
-         if(vertMapperM1toM2_[v1Id] == -1){
+         if (vertMapperM1toM2_[v1Id] == -1) {
             // this vertex of mesh1 doen not exists in mesh2
             nextCell = true;
             break;
@@ -137,16 +141,18 @@ void Compare::computeCellDiff(void)
          vertsC.emplace_back(vertMapperM1toM2_[v1Id]);
       }
       if (nextCell) {
-         hasDiffCells_ = true;
+         hasDiffCells = true;
          continue;
       }
       std::sort(vertsC.begin(), vertsC.end());
       if (vertListCellsM2.count(vertsC)) {
          cellMapperM1toM2_[c1] = vertListCellsM2[vertsC];
-         diffCells_[c1]        = 0;
+         cellArr[c1]           = 0;
       } else {
-         hasDiffCells_ = true;
+         hasDiffCells = true;
       }
    }
+
+   return hasDiffCells;
 }
 
