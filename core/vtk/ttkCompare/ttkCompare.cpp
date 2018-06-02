@@ -40,15 +40,6 @@ int ttkCompare::doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs
    if (!meshOnly) {
       computeVertsDiff(input1, input2, output);
       computeCellsDiff(input1, input2, output);
-   } else {
-      const int nbVertsArray = input1->GetPointData()->GetNumberOfArrays();
-      for (int va = 0; va < nbVertsArray; ++va) {
-         output->GetPointData()->RemoveArray(0);
-      }
-      const int nbCellsArray = input1->GetCellData()->GetNumberOfArrays();
-      for (int ca = 0; ca < nbCellsArray; ++ca) {
-         output->GetCellData()->RemoveArray(0);
-      }
    }
 
    addFlagFieldData(output);
