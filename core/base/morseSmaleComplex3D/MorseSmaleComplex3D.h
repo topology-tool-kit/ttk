@@ -91,7 +91,13 @@ namespace ttk{
 
       /**
        * Compute the geometrical embedding of the descending
-       * 2-separatrices.
+       * 2-separatrices. This function needs the following
+       * internal pointers to be set:
+       * outputSeparatrices2_numberOfPoints_
+       * outputSeparatrices2_points_
+       * outputSeparatrices2_numberOfCells_
+       * outputSeparatrices2_cells_
+       * inputScalarField_
        */
       template<typename dataType>
       int setDescendingSeparatrices2(const std::vector<Separatrix>& separatrices,
@@ -119,7 +125,13 @@ namespace ttk{
 
       /**
        * Compute the geometrical embedding of the ascending
-       * 2-separatrices.
+       * 2-separatrices. This function needs the following
+       * internal pointers to be set:
+       * outputSeparatrices2_numberOfPoints_
+       * outputSeparatrices2_points_
+       * outputSeparatrices2_numberOfCells_
+       * outputSeparatrices2_cells_
+       * inputScalarField_
        */
       template<typename dataType>
       int setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
@@ -172,7 +184,8 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(const
   int pointId=(*outputSeparatrices1_numberOfPoints_);
   int cellId=(*outputSeparatrices1_numberOfCells_);
   int separatrixId=0;
-  if(outputSeparatrices1_cells_separatrixIds_->size()){
+  if(outputSeparatrices1_cells_separatrixIds_ and
+      outputSeparatrices1_cells_separatrixIds_->size()){
     separatrixId=*std::max_element(outputSeparatrices1_cells_separatrixIds_->begin(),
         outputSeparatrices1_cells_separatrixIds_->end())+1;
   }
@@ -267,6 +280,28 @@ template<typename dataType>
 int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
    const std::vector<std::vector<Cell>>& separatricesGeometry,
    const std::vector<std::set<int>>& separatricesSaddles) const{
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!outputSeparatrices2_numberOfPoints_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to numberOfPoints is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_points_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to points is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_numberOfCells_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to numberOfCells is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_cells_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to cells is null." << std::endl;
+    return -1;
+  }
+  if(!inputScalarField_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to the input scalar field is null." << std::endl;
+    return -1;
+  }
+#endif
 
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
@@ -278,7 +313,8 @@ int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(const std::vector<Se
 
   int pointId=(*outputSeparatrices2_numberOfPoints_);
   int separatrixId=0;
-  if(outputSeparatrices2_cells_separatrixIds_->size()){
+  if(outputSeparatrices2_cells_separatrixIds_ and
+      outputSeparatrices2_cells_separatrixIds_->size()){
     separatrixId=*std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
         outputSeparatrices2_cells_separatrixIds_->end())+1;
   }
@@ -357,13 +393,20 @@ int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(const std::vector<Se
             ++numberOfPoints[threadId];
           }
 
-          separatrices2_cells_sourceIds[threadId].push_back(saddleId);
-          separatrices2_cells_separatrixIds[threadId].push_back(separatrixIds[threadId]);
-          separatrices2_cells_separatrixTypes[threadId].push_back(separatrixType);
-          separatrices2_cells_separatrixFunctionMaxima[threadId].push_back(separatrixFunctionMaximum);
-          separatrices2_cells_separatrixFunctionMinima[threadId].push_back(separatrixFunctionMinimum);
-          separatrices2_cells_separatrixFunctionDiffs[threadId].push_back(separatrixFunctionDiff);
-          separatrices2_cells_isOnBoundary[threadId].push_back(isOnBoundary);
+          if(outputSeparatrices2_cells_sourceIds_)
+            separatrices2_cells_sourceIds[threadId].push_back(saddleId);
+          if(outputSeparatrices2_cells_separatrixIds_)
+            separatrices2_cells_separatrixIds[threadId].push_back(separatrixIds[threadId]);
+          if(outputSeparatrices2_cells_separatrixTypes_)
+            separatrices2_cells_separatrixTypes[threadId].push_back(separatrixType);
+          if(outputSeparatrices2_cells_separatrixFunctionMaxima)
+            separatrices2_cells_separatrixFunctionMaxima[threadId].push_back(separatrixFunctionMaximum);
+          if(outputSeparatrices2_cells_separatrixFunctionMinima)
+            separatrices2_cells_separatrixFunctionMinima[threadId].push_back(separatrixFunctionMinimum);
+          if(outputSeparatrices2_cells_separatrixFunctionDiffs)
+            separatrices2_cells_separatrixFunctionDiffs[threadId].push_back(separatrixFunctionDiff);
+          if(outputSeparatrices2_cells_isOnBoundary_)
+            separatrices2_cells_isOnBoundary[threadId].push_back(isOnBoundary);
           ++numberOfCells[threadId];
 
           isFirst=false;
@@ -411,13 +454,20 @@ int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(const std::vector<Se
 
     outputSeparatrices2_points_->resize(oldPointSize+npoints);
     outputSeparatrices2_cells_->resize(oldCellSize+ncells);
-    outputSeparatrices2_cells_sourceIds_->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_separatrixIds_->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_separatrixTypes_->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_separatrixFunctionMaxima->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_separatrixFunctionMinima->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_separatrixFunctionDiffs->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_isOnBoundary_->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_sourceIds_)
+      outputSeparatrices2_cells_sourceIds_->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_separatrixIds_)
+      outputSeparatrices2_cells_separatrixIds_->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_separatrixTypes_)
+      outputSeparatrices2_cells_separatrixTypes_->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_separatrixFunctionMaxima)
+      outputSeparatrices2_cells_separatrixFunctionMaxima->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_separatrixFunctionMinima)
+      outputSeparatrices2_cells_separatrixFunctionMinima->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_separatrixFunctionDiffs)
+      outputSeparatrices2_cells_separatrixFunctionDiffs->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_isOnBoundary_)
+      outputSeparatrices2_cells_isOnBoundary_->resize(oldFieldSize+totalNumberOfCells);
 #pragma omp parallel for num_threads(threadNumber_)
     for(int i=0; i<threadNumber_; ++i){
       // reduce: points
@@ -441,20 +491,27 @@ int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(const std::vector<Se
 
       // reduce: fields
       for(int j=0; j<numberOfCells[i]; ++j){
-        (*outputSeparatrices2_cells_sourceIds_)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_sourceIds[i][j];
-        (*outputSeparatrices2_cells_separatrixIds_)[oldFieldSize+offsetNCells[i]+j]=
-          offsetSeparatrixIds[i]+separatrices2_cells_separatrixIds[i][j];
-        (*outputSeparatrices2_cells_separatrixTypes_)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_separatrixTypes[i][j];
-        (*outputSeparatrices2_cells_separatrixFunctionMaxima)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_separatrixFunctionMaxima[i][j];
-        (*outputSeparatrices2_cells_separatrixFunctionMinima)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_separatrixFunctionMinima[i][j];
-        (*outputSeparatrices2_cells_separatrixFunctionDiffs)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_separatrixFunctionDiffs[i][j];
-        (*outputSeparatrices2_cells_isOnBoundary_)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_isOnBoundary[i][j];
+        if(outputSeparatrices2_cells_sourceIds_)
+          (*outputSeparatrices2_cells_sourceIds_)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_sourceIds[i][j];
+        if(outputSeparatrices2_cells_separatrixIds_)
+          (*outputSeparatrices2_cells_separatrixIds_)[oldFieldSize+offsetNCells[i]+j]=
+            offsetSeparatrixIds[i]+separatrices2_cells_separatrixIds[i][j];
+        if(outputSeparatrices2_cells_separatrixTypes_)
+          (*outputSeparatrices2_cells_separatrixTypes_)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_separatrixTypes[i][j];
+        if(outputSeparatrices2_cells_separatrixFunctionMaxima)
+          (*outputSeparatrices2_cells_separatrixFunctionMaxima)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_separatrixFunctionMaxima[i][j];
+        if(outputSeparatrices2_cells_separatrixFunctionMinima)
+          (*outputSeparatrices2_cells_separatrixFunctionMinima)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_separatrixFunctionMinima[i][j];
+        if(outputSeparatrices2_cells_separatrixFunctionDiffs)
+          (*outputSeparatrices2_cells_separatrixFunctionDiffs)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_separatrixFunctionDiffs[i][j];
+        if(outputSeparatrices2_cells_isOnBoundary_)
+          (*outputSeparatrices2_cells_isOnBoundary_)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_isOnBoundary[i][j];
       }
     }
   }
@@ -470,6 +527,28 @@ template<typename dataType>
 int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(const std::vector<Separatrix>& separatrices,
    const std::vector<std::vector<Cell>>& separatricesGeometry,
    const std::vector<std::set<int>>& separatricesSaddles) const{
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!outputSeparatrices2_numberOfPoints_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to numberOfPoints is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_points_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to points is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_numberOfCells_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to numberOfCells is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_cells_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to cells is null." << std::endl;
+    return -1;
+  }
+  if(!inputScalarField_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to the input scalar field is null." << std::endl;
+    return -1;
+  }
+#endif
 
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
@@ -482,7 +561,8 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(const std::vector<Separa
   int pointId=(*outputSeparatrices2_numberOfPoints_);
   int cellId=(*outputSeparatrices2_numberOfCells_);
   int separatrixId=0;
-  if(outputSeparatrices2_cells_separatrixIds_->size()){
+  if(outputSeparatrices2_cells_separatrixIds_ and
+      outputSeparatrices2_cells_separatrixIds_->size()){
     separatrixId=*std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
         outputSeparatrices2_cells_separatrixIds_->end())+1;
   }
@@ -557,13 +637,20 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(const std::vector<Separa
               outputSeparatrices2_cells_->push_back(isVisited[tetraId]);
           }
 
-          outputSeparatrices2_cells_sourceIds_->push_back(saddleId);
-          outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
-          outputSeparatrices2_cells_separatrixTypes_->push_back(separatrixType);
-          outputSeparatrices2_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
-          outputSeparatrices2_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
-          outputSeparatrices2_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
-          outputSeparatrices2_cells_isOnBoundary_->push_back(isOnBoundary);
+          if(outputSeparatrices2_cells_sourceIds_)
+            outputSeparatrices2_cells_sourceIds_->push_back(saddleId);
+          if(outputSeparatrices2_cells_separatrixIds_)
+            outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
+          if(outputSeparatrices2_cells_separatrixTypes_)
+            outputSeparatrices2_cells_separatrixTypes_->push_back(separatrixType);
+          if(outputSeparatrices2_cells_separatrixFunctionMaxima)
+            outputSeparatrices2_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
+          if(outputSeparatrices2_cells_separatrixFunctionMinima)
+            outputSeparatrices2_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
+          if(outputSeparatrices2_cells_separatrixFunctionDiffs)
+            outputSeparatrices2_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
+          if(outputSeparatrices2_cells_isOnBoundary_)
+            outputSeparatrices2_cells_isOnBoundary_->push_back(isOnBoundary);
 
           ++cellId;
           isFirst=false;
@@ -586,6 +673,28 @@ template<typename dataType>
 int ttk::MorseSmaleComplex3D::omp_setDescendingSeparatrices2(const std::vector<Separatrix>& separatrices,
     const std::vector<std::vector<Cell>>& separatricesGeometry,
     const std::vector<std::set<int>>& separatricesSaddles) const{
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!outputSeparatrices2_numberOfPoints_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to numberOfPoints is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_points_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to points is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_numberOfCells_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to numberOfCells is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_cells_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to cells is null." << std::endl;
+    return -1;
+  }
+  if(!inputScalarField_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to the input scalar field is null." << std::endl;
+    return -1;
+  }
+#endif
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
@@ -596,7 +705,8 @@ int ttk::MorseSmaleComplex3D::omp_setDescendingSeparatrices2(const std::vector<S
 
   int pointId=(*outputSeparatrices2_numberOfPoints_);
   int separatrixId=0;
-  if(outputSeparatrices2_cells_separatrixIds_->size()){
+  if(outputSeparatrices2_cells_separatrixIds_ and
+      outputSeparatrices2_cells_separatrixIds_->size()){
     separatrixId=*std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
         outputSeparatrices2_cells_separatrixIds_->end())+1;
   }
@@ -667,13 +777,20 @@ int ttk::MorseSmaleComplex3D::omp_setDescendingSeparatrices2(const std::vector<S
           ++numberOfPoints[threadId];
         }
 
-        separatrices2_cells_sourceIds[threadId].push_back(saddleId);
-        separatrices2_cells_separatrixIds[threadId].push_back(separatrixIds[threadId]);
-        separatrices2_cells_separatrixTypes[threadId].push_back(separatrixType);
-        separatrices2_cells_separatrixFunctionMaxima[threadId].push_back(separatrixFunctionMaximum);
-        separatrices2_cells_separatrixFunctionMinima[threadId].push_back(separatrixFunctionMinimum);
-        separatrices2_cells_separatrixFunctionDiffs[threadId].push_back(separatrixFunctionDiff);
-        separatrices2_cells_isOnBoundary[threadId].push_back(isOnBoundary);
+        if(outputSeparatrices2_cells_sourceIds_)
+          separatrices2_cells_sourceIds[threadId].push_back(saddleId);
+        if(outputSeparatrices2_cells_separatrixIds_)
+          separatrices2_cells_separatrixIds[threadId].push_back(separatrixIds[threadId]);
+        if(outputSeparatrices2_cells_separatrixTypes_)
+          separatrices2_cells_separatrixTypes[threadId].push_back(separatrixType);
+        if(outputSeparatrices2_cells_separatrixFunctionMaxima)
+          separatrices2_cells_separatrixFunctionMaxima[threadId].push_back(separatrixFunctionMaximum);
+        if(outputSeparatrices2_cells_separatrixFunctionMinima)
+          separatrices2_cells_separatrixFunctionMinima[threadId].push_back(separatrixFunctionMinimum);
+        if(outputSeparatrices2_cells_separatrixFunctionDiffs)
+          separatrices2_cells_separatrixFunctionDiffs[threadId].push_back(separatrixFunctionDiff);
+        if(outputSeparatrices2_cells_isOnBoundary_)
+          separatrices2_cells_isOnBoundary[threadId].push_back(isOnBoundary);
         ++numberOfCells[threadId];
 
         isFirst=false;
@@ -720,13 +837,20 @@ int ttk::MorseSmaleComplex3D::omp_setDescendingSeparatrices2(const std::vector<S
 
     outputSeparatrices2_points_->resize(oldPointSize+npoints);
     outputSeparatrices2_cells_->resize(oldCellSize+ncells);
-    outputSeparatrices2_cells_sourceIds_->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_separatrixIds_->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_separatrixTypes_->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_separatrixFunctionMaxima->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_separatrixFunctionMinima->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_separatrixFunctionDiffs->resize(oldFieldSize+totalNumberOfCells);
-    outputSeparatrices2_cells_isOnBoundary_->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_sourceIds_)
+      outputSeparatrices2_cells_sourceIds_->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_separatrixIds_)
+      outputSeparatrices2_cells_separatrixIds_->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_separatrixTypes_)
+      outputSeparatrices2_cells_separatrixTypes_->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_separatrixFunctionMaxima)
+      outputSeparatrices2_cells_separatrixFunctionMaxima->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_separatrixFunctionMinima)
+      outputSeparatrices2_cells_separatrixFunctionMinima->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_separatrixFunctionDiffs)
+      outputSeparatrices2_cells_separatrixFunctionDiffs->resize(oldFieldSize+totalNumberOfCells);
+    if(outputSeparatrices2_cells_isOnBoundary_)
+      outputSeparatrices2_cells_isOnBoundary_->resize(oldFieldSize+totalNumberOfCells);
 #pragma omp parallel for num_threads(threadNumber_)
     for(int i=0; i<threadNumber_; ++i){
       // reduce: points
@@ -750,20 +874,27 @@ int ttk::MorseSmaleComplex3D::omp_setDescendingSeparatrices2(const std::vector<S
 
       // reduce: fields
       for(int j=0; j<numberOfCells[i]; ++j){
-        (*outputSeparatrices2_cells_sourceIds_)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_sourceIds[i][j];
-        (*outputSeparatrices2_cells_separatrixIds_)[oldFieldSize+offsetNCells[i]+j]=
-          offsetSeparatrixIds[i]+separatrices2_cells_separatrixIds[i][j];
-        (*outputSeparatrices2_cells_separatrixTypes_)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_separatrixTypes[i][j];
-        (*outputSeparatrices2_cells_separatrixFunctionMaxima)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_separatrixFunctionMaxima[i][j];
-        (*outputSeparatrices2_cells_separatrixFunctionMinima)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_separatrixFunctionMinima[i][j];
-        (*outputSeparatrices2_cells_separatrixFunctionDiffs)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_separatrixFunctionDiffs[i][j];
-        (*outputSeparatrices2_cells_isOnBoundary_)[oldFieldSize+offsetNCells[i]+j]=
-          separatrices2_cells_isOnBoundary[i][j];
+        if(outputSeparatrices2_cells_sourceIds_)
+          (*outputSeparatrices2_cells_sourceIds_)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_sourceIds[i][j];
+        if(outputSeparatrices2_cells_separatrixIds_)
+          (*outputSeparatrices2_cells_separatrixIds_)[oldFieldSize+offsetNCells[i]+j]=
+            offsetSeparatrixIds[i]+separatrices2_cells_separatrixIds[i][j];
+        if(outputSeparatrices2_cells_separatrixTypes_)
+          (*outputSeparatrices2_cells_separatrixTypes_)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_separatrixTypes[i][j];
+        if(outputSeparatrices2_cells_separatrixFunctionMaxima)
+          (*outputSeparatrices2_cells_separatrixFunctionMaxima)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_separatrixFunctionMaxima[i][j];
+        if(outputSeparatrices2_cells_separatrixFunctionMinima)
+          (*outputSeparatrices2_cells_separatrixFunctionMinima)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_separatrixFunctionMinima[i][j];
+        if(outputSeparatrices2_cells_separatrixFunctionDiffs)
+          (*outputSeparatrices2_cells_separatrixFunctionDiffs)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_separatrixFunctionDiffs[i][j];
+        if(outputSeparatrices2_cells_isOnBoundary_)
+          (*outputSeparatrices2_cells_isOnBoundary_)[oldFieldSize+offsetNCells[i]+j]=
+            separatrices2_cells_isOnBoundary[i][j];
       }
     }
   }
@@ -779,6 +910,28 @@ template<typename dataType>
 int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(const std::vector<Separatrix>& separatrices,
    const std::vector<std::vector<Cell>>& separatricesGeometry,
    const std::vector<std::set<int>>& separatricesSaddles) const{
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!outputSeparatrices2_numberOfPoints_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to numberOfPoints is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_points_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to points is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_numberOfCells_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to numberOfCells is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices2_cells_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to cells is null." << std::endl;
+    return -1;
+  }
+  if(!inputScalarField_){
+    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to the input scalar field is null." << std::endl;
+    return -1;
+  }
+#endif
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
@@ -790,7 +943,8 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(const std::vector<Separ
   int pointId=(*outputSeparatrices2_numberOfPoints_);
   int cellId=(*outputSeparatrices2_numberOfCells_);
   int separatrixId=0;
-  if(outputSeparatrices2_cells_separatrixIds_->size()){
+  if(outputSeparatrices2_cells_separatrixIds_ and
+      outputSeparatrices2_cells_separatrixIds_->size()){
     separatrixId=*std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
         outputSeparatrices2_cells_separatrixIds_->end())+1;
   }
@@ -856,13 +1010,20 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(const std::vector<Separ
           else
             outputSeparatrices2_cells_->push_back(isVisited[vertexId]);
         }
-        outputSeparatrices2_cells_sourceIds_->push_back(saddleId);
-        outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
-        outputSeparatrices2_cells_separatrixTypes_->push_back(separatrixType);
-        outputSeparatrices2_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
-        outputSeparatrices2_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
-        outputSeparatrices2_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
-        outputSeparatrices2_cells_isOnBoundary_->push_back(isOnBoundary);
+        if(outputSeparatrices2_cells_sourceIds_)
+          outputSeparatrices2_cells_sourceIds_->push_back(saddleId);
+        if(outputSeparatrices2_cells_separatrixIds_)
+          outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
+        if(outputSeparatrices2_cells_separatrixTypes_)
+          outputSeparatrices2_cells_separatrixTypes_->push_back(separatrixType);
+        if(outputSeparatrices2_cells_separatrixFunctionMaxima)
+          outputSeparatrices2_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
+        if(outputSeparatrices2_cells_separatrixFunctionMinima)
+          outputSeparatrices2_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
+        if(outputSeparatrices2_cells_separatrixFunctionDiffs)
+          outputSeparatrices2_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
+        if(outputSeparatrices2_cells_isOnBoundary_)
+          outputSeparatrices2_cells_isOnBoundary_->push_back(isOnBoundary);
 
         ++cellId;
         isFirst=false;

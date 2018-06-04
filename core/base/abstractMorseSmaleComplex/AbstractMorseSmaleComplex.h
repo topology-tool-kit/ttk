@@ -543,7 +543,8 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(const
   int pointId=(*outputSeparatrices1_numberOfPoints_);
   int cellId=(*outputSeparatrices1_numberOfCells_);
   int separatrixId=0;
-  if(outputSeparatrices1_cells_separatrixIds_->size()){
+  if(outputSeparatrices1_cells_separatrixIds_ and 
+      outputSeparatrices1_cells_separatrixIds_->size()){
     separatrixId=*std::max_element(outputSeparatrices1_cells_separatrixIds_->begin(),
         outputSeparatrices1_cells_separatrixIds_->end())+1;
   }
