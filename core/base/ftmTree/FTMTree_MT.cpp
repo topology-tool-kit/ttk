@@ -213,6 +213,9 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
 
          // If last close all and merge
          if (isLast) {
+             // finish works here
+            closeAndMergeOnSaddle(currentVert);
+
             // last task detection
             idNode remainingTasks;
 #ifdef TTK_ENABLE_OPENMP
@@ -223,9 +226,6 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
                 // only backbone remaining
                 return;
             }
-
-             // finish works here
-            closeAndMergeOnSaddle(currentVert);
 
             // made a node on this vertex
 #ifdef TTK_ENABLE_OPENMP
@@ -1021,10 +1021,20 @@ string FTMTree_MT::printArc(idSuperArc a)
 {
    const SuperArc *sa = getSuperArc(a);
    stringstream    res;
+   const idVertex dv = getNode(sa->getDownNodeId())->getVertexId();
+   const idVertex uv = getNode(sa->getUpNodeId())->getVertexId();
    res << a;
    res << " : ";
-   res << getNode(sa->getDownNodeId())->getVertexId() << " -- ";
-   res << getNode(sa->getUpNodeId())->getVertexId();
+   if (dv != nullVertex) {
+      res << dv << " -- ";
+   } else {
+      res << "XX -- ";
+   }
+   if (uv != nullVertex) {
+      res << uv;
+   } else {
+      res << "XX";
+   }
 
    res.seekg(0, ios::end);
    while (res.tellg() < 25) {
@@ -1162,7 +1172,7 @@ void FTMTree_MT::printTree2()
 tuple<bool, bool> FTMTree_MT::propage(CurrentState &currentState, UF curUF)
 {
    bool        becameSaddle = false, isLast = false;
-   const auto &nbNeigh = mesh_->getVertexNeighborNumber(currentState.vertex);
+   const auto  nbNeigh = mesh_->getVertexNeighborNumber(currentState.vertex);
    valence decr = 0;
 
    // once for all
