@@ -1096,8 +1096,8 @@ tetra identifier.
        * Build the geometric embedding of the given STL vector of cells.
        * The output data pointers are modified accordingly. This
        * function needs the following internal pointers to be set:
-       * outputSeparatrices1_numberOfPoints_
-       * outputSeparatrices1_points_
+       * outputCriticalPoints_numberOfPoints_
+       * outputCriticalPoints_points_
        * inputScalarField_
        */
       template <typename dataType>
@@ -1115,8 +1115,8 @@ tetra identifier.
        * global information as scalar fields.
        * The output data pointers are modified accordingly. This
        * function needs the following internal pointers to be set:
-       * outputSeparatrices1_numberOfPoints_
-       * outputSeparatrices1_points_
+       * outputCriticalPoints_numberOfPoints_
+       * outputCriticalPoints_points_
        * inputScalarField_
        */
       template <typename dataType>
