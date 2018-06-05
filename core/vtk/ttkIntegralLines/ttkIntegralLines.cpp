@@ -16,6 +16,7 @@ vtkStandardNewMacro(ttkIntegralLines)
   triangulation_ = NULL;
   
   OffsetScalarFieldName = "OutputOffsetScalarField";
+  UseOffsetScalarField = false;
 }
 
 ttkIntegralLines::~ttkIntegralLines(){

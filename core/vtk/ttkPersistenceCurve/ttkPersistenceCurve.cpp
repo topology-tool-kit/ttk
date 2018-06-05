@@ -24,6 +24,7 @@ vtkStandardNewMacro(ttkPersistenceCurve)
   triangulation_ = NULL;
   ScalarFieldId = 0;
   InputOffsetScalarFieldName = "OutputOffsetScalarField";
+  UseInputOffsetScalarField = false;
 
   inputTriangulation_ = vtkSmartPointer<ttkTriangulationFilter>::New();
 }

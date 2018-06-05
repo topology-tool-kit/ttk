@@ -20,6 +20,7 @@ vtkStandardNewMacro(ttkPersistenceDiagram)
   OffsetFieldId = -1;
   ComputeSaddleConnectors = false;
   InputOffsetScalarFieldName = "OutputOffsetScalarField";
+  UseInputOffsetScalarField = false;
   ShowInsideDomain = false;
   computeDiagram_= true;
 
