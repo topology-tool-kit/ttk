@@ -1239,8 +1239,9 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   }
 
   // morse complexes
-  outputMorseComplexes->ShallowCopy(input);
   if(ComputeAscendingSegmentation or ComputeDescendingSegmentation){
+    outputMorseComplexes->ShallowCopy(input);
+
     vtkPointData* pointData=outputMorseComplexes->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pointData){
