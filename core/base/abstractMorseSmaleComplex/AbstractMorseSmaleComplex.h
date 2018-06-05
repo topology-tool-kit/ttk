@@ -142,7 +142,7 @@ namespace ttk{
 
       /**
        * Enable/Disable gradient reversal of (saddle,...,maximum) vpaths
-       * (enabled by default).
+       * (disabled by default).
        */
       int setReverveSaddleMaximumConnection(const bool state){
         discreteGradient_.setReverseSaddleMaximumConnection(state);
@@ -151,7 +151,7 @@ namespace ttk{
 
       /**
        * Enable/Disable gradient reversal of (saddle,...,saddle) vpaths
-       * (enabled by default).
+       * (disabled by default).
        */
       int setReverveSaddleSaddleConnection(const bool state){
         discreteGradient_.setReverseSaddleSaddleConnection(state);
@@ -160,8 +160,17 @@ namespace ttk{
 
       /**
        * Enable/Disable computation of the geometrical embedding of
+       * the critical points (disabled by default).
+       */
+      int setComputeCriticalPoints(const bool state){
+        ComputeCriticalPoints=state;
+        return 0;
+      }
+
+      /**
+       * Enable/Disable computation of the geometrical embedding of
        * the ascending manifolds of the critical points
-       * (enabled by default).
+       * (disabled by default).
        */
       int setComputeAscendingSeparatrices1(const bool state){
         ComputeAscendingSeparatrices1=state;
@@ -171,7 +180,7 @@ namespace ttk{
       /**
        * Enable/Disable computation of the geometrical embedding of
        * the descending manifolds of the critical points
-       * (enabled by default).
+       * (disabled by default).
        */
       int setComputeDescendingSeparatrices1(const bool state){
         ComputeDescendingSeparatrices1=state;
@@ -180,7 +189,7 @@ namespace ttk{
 
       /**
        * Enable/Disable computation of the geometrical embedding of
-       * the visible saddle-connectors (enabled by default).
+       * the visible saddle-connectors (disabled by default).
        */
       int setComputeSaddleConnectors(const bool state){
         ComputeSaddleConnectors=state;
@@ -207,7 +216,7 @@ namespace ttk{
 
       /**
        * Enable/Disable computation of the ascending manifold
-       * of the maxima (enabled by default).
+       * of the maxima (disabled by default).
        */
       int setComputeAscendingSegmentation(const bool state){
         ComputeAscendingSegmentation=state;
@@ -216,7 +225,7 @@ namespace ttk{
 
       /**
        * Enable/Disable computation of the descending manifold
-       * of the minima (enabled by default).
+       * of the minima (disabled by default).
        */
       int setComputeDescendingSegmentation(const bool state){
         ComputeDescendingSegmentation=state;
@@ -226,7 +235,7 @@ namespace ttk{
       /**
        * Enable/Disable computation of the final combinatorial
        * Morse-Smale Complex (segmentation as a field on vertices,
-       * enabled by default).
+       * disabled by default).
        */
       int setComputeFinalSegmentation(const bool state){
         ComputeFinalSegmentation=state;
@@ -445,6 +454,7 @@ namespace ttk{
 
       bool ReverveSaddleMaximumConnection;
       bool ReverveSaddleSaddleConnection;
+      bool ComputeCriticalPoints;
       bool ComputeAscendingSeparatrices1;
       bool ComputeDescendingSeparatrices1;
       bool ComputeSaddleConnectors;

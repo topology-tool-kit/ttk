@@ -155,13 +155,15 @@ int ttk::MorseSmaleComplex2D::execute(){
     }
   }
 
-  if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
-    discreteGradient_.setAugmentedCriticalPoints<dataType>(criticalPoints,
-        maxSeeds,
-        ascendingManifold,
-        descendingManifold);
-  else
-    discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
+  if(ComputeCriticalPoints){
+    if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
+      discreteGradient_.setAugmentedCriticalPoints<dataType>(criticalPoints,
+          maxSeeds,
+          ascendingManifold,
+          descendingManifold);
+    else
+      discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
+  }
 
   {
     const int numberOfVertices=inputTriangulation_->getNumberOfVertices();

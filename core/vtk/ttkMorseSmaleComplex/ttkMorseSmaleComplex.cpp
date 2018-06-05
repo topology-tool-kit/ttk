@@ -315,6 +315,9 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   morseSmaleComplex_.setReverseSaddleSaddleConnection(
       ReverseSaddleSaddleConnection);
 
+  morseSmaleComplex_.setComputeCriticalPoints(
+      ComputeCriticalPoints);
+
   morseSmaleComplex_.setComputeAscendingSeparatrices1(
       ComputeAscendingSeparatrices1);
 
