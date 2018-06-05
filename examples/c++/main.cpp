@@ -200,7 +200,7 @@ int main(int argc, char **argv) {
   std::vector<int> authorizedCriticalPoints, simplifiedOffsets = offsets;
   for(int i = 0; i < (int) diagramOutput.size(); i++){
     double persistence = std::get<4>(diagramOutput[i]);
-    if(persistence > 0.2){
+    if(persistence > 0.05){
       // 5. selecting the most persistent pairs
       authorizedCriticalPoints.push_back(std::get<0>(diagramOutput[i]));
       authorizedCriticalPoints.push_back(std::get<2>(diagramOutput[i]));
