@@ -157,7 +157,7 @@ int ImplicitTriangulation::setInputGrid(const float &xOrigin, const float &yOrig
 int ImplicitTriangulation::checkAcceleration(){
   isAccelerated_=false;
 
-  unsigned int msb[3];
+  unsigned long long int msb[3];
   if(dimensionality_==3){
     bool allDimensionsArePowerOfTwo=true;
     for(int k=0; k<3; ++k)
@@ -193,7 +193,7 @@ int ImplicitTriangulation::checkAcceleration(){
   return 0;
 }
 
-bool ImplicitTriangulation::isPowerOfTwo(unsigned int v, unsigned int& r){
+bool ImplicitTriangulation::isPowerOfTwo(unsigned long long int v, unsigned long long int& r){
   if(v && !(v & (v-1))){
     r=0;
     while(v >>=1)

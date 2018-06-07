@@ -241,7 +241,7 @@ SimplexId &triangleId) const;
 
       // acceleration functions
       int checkAcceleration();
-      bool isPowerOfTwo(unsigned int v, unsigned int& r);
+      bool isPowerOfTwo(unsigned long long int v, unsigned long long int& r);
 
       //\cond
       // 2D //
