@@ -189,7 +189,7 @@ int TwoSkeleton::buildEdgeTriangles(const SimplexId &vertexNumber,
   oneSkeleton.setThreadNumber(threadNumber_);
   
   // now do the pre-computation
-  if(localEdgeList->empty(){
+  if(localEdgeList->empty()){
     oneSkeleton.buildEdgeList(vertexNumber, cellNumber, cellArray, 
       (*localEdgeList));
   }
