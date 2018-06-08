@@ -1074,7 +1074,7 @@ namespace ttk{
       /// third: z).
       /// \return Returns 0 upon success, negative values otherwise (for 
       /// instance, if the object is not representing a regular grid).
-      inline int getGridDimensions(std::vector<SimplexId> &dimensions){
+      inline int getGridDimensions(std::vector<int> &dimensions){
         
         if((gridDimensions_[0] == -1)
           &&(gridDimensions_[1] == -1)
@@ -3161,7 +3161,7 @@ namespace ttk{
         return false;
       }
       
-      SimplexId           gridDimensions_[3];
+      int           gridDimensions_[3];
       
       AbstractTriangulation
                           *abstractTriangulation_;

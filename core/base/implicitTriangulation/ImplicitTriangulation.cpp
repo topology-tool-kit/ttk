@@ -18,7 +18,7 @@ ImplicitTriangulation::~ImplicitTriangulation(){
 
 int ImplicitTriangulation::setInputGrid(const float &xOrigin, const float &yOrigin, const float &zOrigin,
     const float &xSpacing, const float &ySpacing, const float &zSpacing,
-    const SimplexId &xDim, const SimplexId &yDim, const SimplexId &zDim){
+    const int &xDim, const int &yDim, const int &zDim){
   
   // Dimensionality //
   if(xDim<1 or yDim<1 or zDim<1)
