@@ -85,6 +85,9 @@ class ttkBottleneckDistance
     vtkSetMacro(Spacing, double);
     vtkGetMacro(Spacing, double);
 
+    vtkSetMacro(Method, std::string);
+    vtkGetMacro(Method, std::string);
+
     vtkGetMacro(result, double);
 
     // Override input types.
@@ -157,8 +160,9 @@ class ttkBottleneckDistance
       // inputs
       UsePersistenceMetric = false;
       UseGeometricSpacing = false;
-      UseOutputMatching = false;
-      WassersteinMetric = "1";
+
+      WassersteinMetric = "2";
+      Method = "Munkres";
       Alpha = 1.0;
       Spacing = 1.0;
 
@@ -180,6 +184,7 @@ class ttkBottleneckDistance
     bool                  Is3D;
     double                Spacing;
     double                Alpha;
+    std::string           Method;
 
     std::string                WassersteinMetric;
     bool                  UsePersistenceMetric;
