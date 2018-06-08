@@ -34,6 +34,7 @@
 #include                  <Wrapper.h>
 #include                  <PersistenceDiagram.h>
 #include                  <Munkres.h>
+#include                  <Auction.h>
 
 #include                  <string>
 #include                  <tuple>
@@ -72,6 +73,11 @@ namespace ttk {
         return 0;
       }
 
+      inline int setMethod(const std::string &method){
+    	  method_ = method;
+    	  return 0;
+      }
+
       template <typename dataType>
       dataType getDistance() {
         return *static_cast<dataType*> (distance_);
@@ -95,6 +101,7 @@ namespace ttk {
       void                      *distance_;
 
       std::string                    wasserstein_;
+      std::string                    method_;
     
   private:
 
@@ -105,6 +112,12 @@ namespace ttk {
       std::vector<matchingTuple> *matchings,
       bool usePersistenceMetric,
       double alpha);
+
+    template <typename dataType>
+	int computeAuction(
+		const std::vector<diagramTuple> *CTDiagram1,
+		const std::vector<diagramTuple> *CTDiagram2,
+		std::vector<matchingTuple> *matchings);
 
     template <typename dataType>
     bool isValidMatching(
@@ -184,6 +197,14 @@ namespace ttk {
       dataType **matrix,
       std::vector<matchingTuple> *matchings,
       Munkres *solver);
+
+    template <typename dataType>
+        void solveAuctionPWasserstein(
+          int nbRow,
+          int nbCol,
+          dataType **matrix,
+          std::vector<matchingTuple> *matchings,
+          Auction<dataType> *solver);
 
     template <typename dataType>
     void solveInfinityWasserstein(

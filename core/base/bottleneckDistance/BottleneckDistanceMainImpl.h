@@ -34,6 +34,7 @@ int ttk::BottleneckDistance::computeBottleneck(
   // Check user parameters.
   const double geometricalFactor = (alpha < 0.0 || alpha > 1.0) ? 1.0 : alpha;
   const int wasserstein = (wasserstein_ == "inf") ? -1 : stoi(wasserstein_);
+  const std::string method = method_;
   if (wasserstein < 0 && wasserstein != -1) return -4;
 
   // Needed for distance computation.
@@ -97,7 +98,7 @@ int ttk::BottleneckDistance::computeBottleneck(
            ? pow(x, wasserstein) + pow(y, wasserstein)  // Wasserstein
            : std::max(x, y) // Bottleneck
           );
-        return geometricalFactor * val + (1.0 - geometricalFactor) * dist;
+        return geometricalFactor * pow(val, 1.0/wasserstein) + (1.0 - geometricalFactor) * dist;
       };
 
   std::function<dataType (const diagramTuple)>
@@ -118,21 +119,20 @@ int ttk::BottleneckDistance::computeBottleneck(
 
 
   if (wasserstein > 0) {
+	if (nbRowMin > 0 && nbColMin > 0) {
+	  dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
+	  this->solvePWasserstein(nbRowMin, nbColMin, minMatrix, &minMatchings, &solverMin);
+	}
 
-    if (nbRowMin > 0 && nbColMin > 0) {
-      dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
-      this->solvePWasserstein(nbRowMin, nbColMin, minMatrix, &minMatchings, &solverMin);
-    }
+	if (nbRowMax > 0 && nbColMax > 0) {
+	  dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
+	  this->solvePWasserstein(nbRowMax, nbColMax, maxMatrix, &maxMatchings, &solverMax);
+	}
 
-    if (nbRowMax > 0 && nbColMax > 0) {
-      dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
-      this->solvePWasserstein(nbRowMax, nbColMax, maxMatrix, &maxMatchings, &solverMax);
-    }
-
-    if (nbRowSad > 0 && nbColSad > 0) {
-      dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
-      this->solvePWasserstein(nbRowSad, nbColSad, sadMatrix, &sadMatchings, &solverSad);
-    }
+	if (nbRowSad > 0 && nbColSad > 0) {
+	  dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
+	  this->solvePWasserstein(nbRowSad, nbColSad, sadMatrix, &sadMatchings, &solverSad);
+	}
 
   } else {
 
@@ -190,14 +190,14 @@ int ttk::BottleneckDistance::computeBottleneck(
 
     paired1[i] = true;
     paired2[j] = true;
-    dataType linfty = std::max(abs<dataType>(x), abs<dataType>(y));
+    //dataType linfty = std::max(abs<dataType>(x), abs<dataType>(y));
+	dataType linfty = pow(abs<dataType>(x), wasserstein) +  pow(abs<dataType>(y), wasserstein);
     if (wasserstein > 0) {
       d += pow(linfty, wasserstein);
     } else {
       d = std::max(d, linfty);
     }
-  }
-
+  }  
   d = wasserstein > 0
       ? pow(d + addedMaxPersistence + addedMinPersistence + addedSadPersistence, (1.0 / (double) wasserstein))
       : std::max(d, std::max(addedMaxPersistence, std::max(addedMinPersistence, addedSadPersistence)));
@@ -212,5 +212,152 @@ int ttk::BottleneckDistance::computeBottleneck(
   distance_ = (void*)(distance);
   return 0;
 }
+
+
+
+
+template <typename dataType>
+int ttk::BottleneckDistance::computeAuction(
+  const std::vector<diagramTuple> *CTDiagram1,
+  const std::vector<diagramTuple> *CTDiagram2,
+  std::vector<matchingTuple> *matchings)
+{
+	const int wasserstein = (wasserstein_ == "inf") ? -1 : stoi(wasserstein_);
+	auto* distance = new dataType;
+	
+	const int d1Size = (int) CTDiagram1->size();
+	const int d2Size = (int) CTDiagram2->size();
+	const dataType zeroThresh = this->computeMinimumRelevantPersistence(CTDiagram1, CTDiagram2, d1Size, d2Size);
+	
+	std::vector<diagramTuple> D1Min, D1Sad, D1Max, D2Min, D2Sad, D2Max;
+	std::vector<int> D1Min_idx, D1Sad_idx, D1Max_idx, D2Min_idx, D2Sad_idx, D2Max_idx;
+	// Creating the subdiagrams for the three types of pairs
+	// Creating a table to identify for each of these subdiagram point, its corresponding point in the original diagram
+	for(int i=0; i < (int) CTDiagram1->size(); ++i){
+		diagramTuple t = CTDiagram1->at(i);
+		BNodeType nt1 = std::get<1>(t);
+		BNodeType nt2 = std::get<3>(t);
+		dataType dt = std::get<4>(t);
+		if (abs<dataType>(dt) < zeroThresh) continue;
+
+		if (nt1 == BLocalMin && nt2 == BLocalMax) {
+			D1Max.push_back(t);
+			D1Max_idx.push_back(i);
+		}
+		else {
+			if (nt1 == BLocalMax || nt2 == BLocalMax) {
+				D1Max.push_back(t);
+				D1Max_idx.push_back(i);
+			}
+			if (nt1 == BLocalMin || nt2 == BLocalMin) {
+				D1Min.push_back(t);
+				D1Min_idx.push_back(i);
+			}
+			if ((nt1 == BSaddle1 && nt2 == BSaddle2)
+				|| (nt1 == BSaddle2 && nt2 == BSaddle1)) {
+				D1Sad.push_back(t);
+				D1Sad_idx.push_back(i);
+			}
+		}
+	}
+	
+	for(int i=0; i < (int) CTDiagram2->size(); ++i){
+		diagramTuple t = CTDiagram2->at(i);
+		BNodeType nt1 = std::get<1>(t);
+		BNodeType nt2 = std::get<3>(t);
+		dataType dt = std::get<4>(t);
+		if (abs<dataType>(dt) < zeroThresh) continue;
+
+		if (nt1 == BLocalMin && nt2 == BLocalMax) {
+			D2Max.push_back(t);
+			D2Max_idx.push_back(i);
+		}
+		else {
+			if (nt1 == BLocalMax || nt2 == BLocalMax) {
+				D2Max.push_back(t);
+				D2Max_idx.push_back(i);
+			}
+			if (nt1 == BLocalMin || nt2 == BLocalMin) {
+				D2Min.push_back(t);
+				D2Min_idx.push_back(i);
+			}
+			if ((nt1 == BSaddle1 && nt2 == BSaddle2)
+				|| (nt1 == BSaddle2 && nt2 == BSaddle1)) {
+				D2Sad.push_back(t);
+				D2Sad_idx.push_back(i);
+			}
+		}
+	}
+      
+	
+	std::vector<matchingTuple> minMatchings;
+	std::vector<matchingTuple> maxMatchings;
+	std::vector<matchingTuple> sadMatchings;
+	dataType d = 0;
+	if(D1Min.size()+D2Min.size()>0){
+		Auction<dataType> auctionMin(wasserstein);
+		dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
+		auctionMin.BuildAuctionDiagrams(D1Min, D2Min);
+		dataType cost = auctionMin.run(&minMatchings);
+		std::stringstream msg;
+		msg << "[Auction] Total cost = " << cost << std::endl;
+		dMsg(std::cout, msg.str(), timeMsg);
+		d += cost;
+	}
+	
+	if(D1Sad.size()+D2Sad.size()>0){
+		Auction<dataType> auctionSad(wasserstein);
+		dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
+		auctionSad.BuildAuctionDiagrams(D1Sad, D2Sad);
+		dataType cost = auctionSad.run(&sadMatchings);
+		std::stringstream msg;
+		msg << "[Auction] Total cost = " << cost << std::endl;
+		dMsg(std::cout, msg.str(), timeMsg);
+		d += cost;
+	}
+	
+	if(D1Max.size()+D2Max.size()>0){
+		Auction<dataType> auctionMax(wasserstein);
+		dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
+		auctionMax.BuildAuctionDiagrams(D1Max, D2Max);
+		dataType cost = auctionMax.run(&maxMatchings);
+		std::stringstream msg;
+		msg << "[Auction] Total cost = " << cost << std::endl;
+		dMsg(std::cout, msg.str(), timeMsg);
+		d += cost;
+	}
+	
+	// Construct the matching vectors as the concatenation of all three matchings
+	for(int k=0; k < (int) minMatchings.size(); k++){
+		matchingTuple t = minMatchings[k];
+		int i = std::get<0>(t);
+		int j = std::get<1>(t);
+		dataType cost = std::get<2>(t);
+		matchings->push_back(std::make_tuple(D1Min_idx[i], D2Min_idx[j], cost));
+	}
+	
+	for(int k=0; k < (int) maxMatchings.size(); k++){
+		matchingTuple t = maxMatchings[k];
+		int i = std::get<0>(t);
+		int j = std::get<1>(t);
+		dataType cost = std::get<2>(t);
+		matchings->push_back(std::make_tuple(D1Max_idx[i], D2Max_idx[j], cost));
+	}
+	
+	for(int k=0; k < (int) sadMatchings.size(); k++){
+		matchingTuple t = sadMatchings[k];
+		int i = std::get<0>(t);
+		int j = std::get<1>(t);
+		dataType cost = std::get<2>(t);
+		matchings->push_back(std::make_tuple(D1Sad_idx[i], D2Sad_idx[j], cost));
+		
+	}
+	
+	
+	*distance = pow(d, (1.0 / (double) wasserstein));
+	distance_ = (void*)(distance);
+	return 0;
+  }
+
 
 #endif

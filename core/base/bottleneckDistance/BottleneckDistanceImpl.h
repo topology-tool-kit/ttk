@@ -7,13 +7,20 @@ int ttk::BottleneckDistance::execute(
   const double alpha)
 {
   Timer t;
-
-  this->computeBottleneck(
-    static_cast<const std::vector<diagramTuple>*> (outputCT1_),
-    static_cast<const std::vector<diagramTuple>*> (outputCT2_),
-    static_cast<std::vector<matchingTuple>*> (matchings_),
-    usePersistenceMetric,
-    alpha);
+  if (this->method_=="Auction"){
+	  this->computeAuction(
+		static_cast<const std::vector<diagramTuple>*> (outputCT1_),
+		static_cast<const std::vector<diagramTuple>*> (outputCT2_),
+		static_cast<std::vector<matchingTuple>*> (matchings_));
+  }
+  else{
+	  this->computeBottleneck(
+	  		static_cast<const std::vector<diagramTuple>*> (outputCT1_),
+	  		static_cast<const std::vector<diagramTuple>*> (outputCT2_),
+	  		static_cast<std::vector<matchingTuple>*> (matchings_),
+	  		usePersistenceMetric,
+	  		alpha);
+  }
 
   {
     std::stringstream msg;
@@ -380,6 +387,20 @@ void ttk::BottleneckDistance::solvePWasserstein(
   solver->run<dataType>(matchings);
   solver->clearMatrix<dataType>();
 }
+
+
+template <typename dataType>
+void ttk::BottleneckDistance::solveAuctionPWasserstein(
+  const int nbRow,
+  const int nbCol,
+  dataType **matrix,
+  std::vector<matchingTuple> *matchings,
+  Auction<dataType> *solver)
+{
+  solver->setInput(nbRow+1, nbCol+1, (void*) matrix);
+  solver->run(matchings);
+}
+
 
 template <typename dataType>
 void ttk::BottleneckDistance::solveInfinityWasserstein(
