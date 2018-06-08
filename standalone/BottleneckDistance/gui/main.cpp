@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
   double alpha = 1.0;
   double spacing = 5.0;
   bool useMatchingMesh;
+  std::string method = "Munkres";
 
   bool persistence = false;
 
@@ -48,6 +49,7 @@ int main(int argc, char **argv) {
 
   program.parser_.setOption("m", &useMatchingMesh, "Use matching mesh.");
   program.parser_.setOption("p", &persistence, "Use persistence metric");
+  program.parser_.setArgument("meth", &method, "Method to use for the matching");
 
   int ret = program.init(argc, argv);
   if (ret != 0) return ret;
@@ -57,6 +59,7 @@ int main(int argc, char **argv) {
   program.ttkObject_->SetUseOutputMatching(useMatchingMesh);
   program.ttkObject_->SetAlpha(alpha);
   program.ttkObject_->SetSpacing(spacing);
+  program.ttkObject_->SetMethod(method);
 
   myKeyHandler myHandler;
   program.setKeyHandler(&myHandler); 
