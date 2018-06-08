@@ -73,8 +73,18 @@ namespace ttk {
         return 0;
       }
 
-      inline int setMethod(const std::string &method){
+      /*inline int setMethod(const std::string &method){
     	  method_ = method;
+    	  return 0;
+      }*/
+      
+      inline int setMethod(const int &method){
+		  if(method==1){
+			  method_="Munkres";
+		  }
+		  else if(method==2){
+			  method_="Auction";
+		  }
     	  return 0;
       }
 

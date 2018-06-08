@@ -65,7 +65,7 @@ int ttkBottleneckDistance::doIt(
 
       string wassersteinMetric = WassersteinMetric;
       bottleneckDistance_.setWasserstein(wassersteinMetric);
-      string method=Method;
+      int method=Method;
       bottleneckDistance_.setMethod(method);
 
       // Empty matchings.

@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
   double alpha = 1.0;
   double spacing = 5.0;
   bool useMatchingMesh;
-  std::string method = "Munkres";
+  int method = 1;
 
   bool persistence = false;
 
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 
   program.parser_.setOption("m", &useMatchingMesh, "Use matching mesh.");
   program.parser_.setOption("p", &persistence, "Use persistence metric");
-  program.parser_.setArgument("meth", &method, "Method to use for the matching");
+  program.parser_.setArgument("meth", &method, "Method to use for the matching (1 for Munkres, 2 for Auction)");
 
   int ret = program.init(argc, argv);
   if (ret != 0) return ret;

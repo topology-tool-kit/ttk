@@ -72,17 +72,25 @@ computation (type "inf" for the Bottleneck distance).
       </StringVectorProperty>
 
 
-     <StringVectorProperty
-          name="method"
-          label="method for the auction"
+     <IntVectorProperty
+          name="Method"
+          label="Method for the auction"
           command="SetMethod"
           number_of_elements="1"
-          default_values="Munkres" >
+          default_values="1" >
+		 <EnumerationDomain name="enum">
+          <Entry value="1" text="Exact Munkres Algorithm"/>
+          <Entry value="2" text="Approximate Auction Algorithm"/>
+        </EnumerationDomain>
         <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance 
-computation (type "inf" for the Bottleneck distance).
+          Type of algorithm for the computation of the matching. 
+		  Either the exact Munkres algorithm or the Approximate Auction
+		  Algorithm.
+		  The Auction algorithm is computationally less expensive than 
+		  the Munkres Algorithm.
         </Documentation>
-      </StringVectorProperty>
+      </IntVectorProperty>
+	  
 
       <DoubleVectorProperty
           name="alpha"
