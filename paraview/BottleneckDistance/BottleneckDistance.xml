@@ -71,6 +71,19 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
 
+
+     <StringVectorProperty
+          name="method"
+          label="method for the auction"
+          command="SetMethod"
+          number_of_elements="1"
+          default_values="Munkres" >
+        <Documentation>
+          Value of the parameter p for the Wp (p-th Wasserstein) distance 
+computation (type "inf" for the Bottleneck distance).
+        </Documentation>
+      </StringVectorProperty>
+
       <DoubleVectorProperty
           name="alpha"
           label="Diagram blending"
