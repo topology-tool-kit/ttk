@@ -33,6 +33,9 @@ namespace ttk
          idNode downNodeId_;
          Propagation* propagation_;
          bool visible_;
+#ifndef NDEBUG
+         bool fromUp_;
+#endif
 
         public:
          SuperArc() : upNodeId_(nullNode), downNodeId_(nullNode), propagation_(nullptr), visible_(true)
@@ -100,6 +103,18 @@ namespace ttk
          {
             return visible_;
          }
+
+#ifndef NDEBUG
+         void setFromUp(bool up)
+         {
+            fromUp_ = up;
+         }
+
+         bool getFromUp(void) const
+         {
+            return fromUp_;
+         }
+#endif
       };
    }
 }

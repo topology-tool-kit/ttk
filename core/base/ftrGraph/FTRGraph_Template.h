@@ -69,7 +69,8 @@ namespace ttk
          int vertexNumber = mesh_->getNumberOfVertices();
          scalars_->setSize(vertexNumber);
          graph_.setNumberOfVertices(vertexNumber);
-         dynGraph_.setNumberOfNodes(mesh_->getNumberOfEdges());
+         std::get<0>(dynGraph_).setNumberOfNodes(mesh_->getNumberOfEdges());
+         std::get<1>(dynGraph_).setNumberOfNodes(mesh_->getNumberOfEdges());
 
          params_->printSelf();
 
@@ -88,14 +89,15 @@ namespace ttk
 
          // Build the graph
 
+
          DebugTimer timeBuild;
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(params_->threadNumber)
+// #pragma omp parallel num_threads(params_->threadNumber)
 #endif
          {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp single nowait
+// #pragma omp single nowait
 #endif
              {
                DebugTimer timeLeafSearch;
@@ -113,7 +115,7 @@ namespace ttk
          graph_.arcs2nodes();
 
          // Debug print
-         printGraph(3);
+         printGraph(params_->debugLevel);
 
          // Message user
          {
@@ -144,9 +146,8 @@ namespace ttk
 
                for (idVertex v = lowerBound; v < upperBound; ++v) {
                   const valence vNeighNumber = mesh_->getVertexNeighborNumber(v);
-                  // TODO duplicate arcs when both are enabled
                   bool isMax = true;
-                  bool isMin = false;
+                  bool isMin = true;
 
                   for (valence n = 0; n < vNeighNumber; ++n) {
                      idVertex neigh;
@@ -179,30 +180,20 @@ namespace ttk
          // graph_.sortLeaves<ScalarType>(scalars_);
          graph_.shuffleLeaves<ScalarType>(scalars_);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(params_->threadNumber)
-#endif
-         {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp single nowait
-#endif
-            {
-               for (idNode i = 0; i < nbSeed; i++) {
-                  // initialize structure
-                  const idVertex corLeaf          = graph_.getLeaf(i);
-                  const bool     fromMin          = graph_.isLeafFromMin(i);
-                  Propagation*   localPropagation = newPropagation(corLeaf, fromMin);
-                  // avoid duplicate for the leaf vertex
-                  localPropagation->getNextVertex();
-                  updatePreimage(localPropagation);
-                  localGrowth(localPropagation);
-                  // process
+         for (idNode i = 0; i < nbSeed; i++) {
+            // initialize structure
+            const idVertex corLeaf          = graph_.getLeaf(i);
+            const bool     fromMin          = graph_.isLeafFromMin(i);
+            Propagation*   localPropagation = newPropagation(corLeaf, fromMin);
+            // get the first vertex
+            localPropagation->nextVertex();
+            updatePreimage(localPropagation);
+            localGrowth(localPropagation);
+            // process
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task untied
 #endif
-                  growthFromSeed(corLeaf, localPropagation);
-               }
-            }
+            growthFromSeed(corLeaf, localPropagation);
          }
       }
 
@@ -211,11 +202,12 @@ namespace ttk
       {
          scalars_->alloc();
          graph_.alloc();
-         dynGraph_.alloc();
+         std::get<0>(dynGraph_).alloc();
+         std::get<1>(dynGraph_).alloc();
 
          propagations_.reserve(mesh_->getNumberOfVertices());
          toVisit_.resize(mesh_->getNumberOfVertices());
-         bfsCells_.resize(mesh_->getNumberOfCells());
+         bfsCells_.resize(mesh_->getNumberOfTriangles());
          bfsVerts_.resize(mesh_->getNumberOfVertices());
       }
 
@@ -225,7 +217,8 @@ namespace ttk
          scalars_->removeNaN();
          scalars_->init();
          graph_.init();
-         dynGraph_.init();
+         std::get<0>(dynGraph_).init();
+         std::get<1>(dynGraph_).init();
 
          fillVector<UnionFind*>(toVisit_, nullptr);
          fillVector<idCell>(bfsCells_, nullCell);

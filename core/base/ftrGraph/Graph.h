@@ -40,7 +40,7 @@ namespace ttk
          AtomicVector<SuperArc>                   arcs_;
 
          std::vector<std::forward_list<idSegmentation>> segmentation_;
-         std::vector<valence>                           valences_;
+         std::vector<valence>                           valDown_, valUp_;
 
         public:
          Graph();
@@ -54,7 +54,8 @@ namespace ttk
                nodes_        = std::move(other.nodes_);
                arcs_         = std::move(other.arcs_);
                segmentation_ = std::move(other.segmentation_);
-               valences_     = std::move(other.valences_);
+               valDown_      = std::move(other.valDown_);
+               valUp_        = std::move(other.valUp_);
             }
             return *this;
          }
@@ -211,15 +212,25 @@ namespace ttk
          }
 #endif
 
-         // direct access for openmp
-         const valence& val(const idVertex v) const
+         // direct access for openmp capture
+         const valence& valUp(const idVertex v) const
          {
-            return valences_[v];
+            return valUp_[v];
          }
 
-         valence& val(const idVertex v)
+         valence& valUp(const idVertex v)
          {
-            return valences_[v];
+            return valUp_[v];
+         }
+
+         const valence& valDown(const idVertex v) const
+         {
+            return valDown_[v];
+         }
+
+         valence& valDown(const idVertex v)
+         {
+            return valDown_[v];
          }
 
          // Build structure

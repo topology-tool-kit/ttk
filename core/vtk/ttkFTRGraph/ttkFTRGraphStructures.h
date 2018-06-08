@@ -3,6 +3,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 #include <vtkIntArray.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
@@ -53,22 +54,34 @@ struct NodeData : public ObjectData {
 
 struct ArcData : public ObjectData {
    vtkSmartPointer<vtkIntArray> ids;
+#ifndef NDEBUG
+   vtkSmartPointer<vtkUnsignedCharArray> fromUp;
+#endif
    std::map<ttk::ftr::idVertex, vtkIdType> points;
 
    explicit ArcData(const ttk::ftr::idSuperArc nbArcs)
    {
       ids = allocArray<vtkIntArray>("ArcId", nbArcs);
+#ifndef NDEBUG
+      fromUp = allocArray<vtkUnsignedCharArray>("growUp", nbArcs);
+#endif
    }
 
    void setArcInfo(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc a,
                    const vtkIdType skeletonCell)
    {
       ids->SetTuple1(skeletonCell, a);
+#ifndef NDEBUG
+      fromUp->SetTuple1(skeletonCell, graph.getArc(a).getFromUp());
+#endif
    }
 
    void addArrays(vtkUnstructuredGrid* arcs, ttk::ftr::Params params)
    {
        arcs->GetCellData()->SetScalars(ids);
+#ifndef NDEBUG
+      arcs->GetCellData()->AddArray(fromUp);
+#endif
    }
 };
 

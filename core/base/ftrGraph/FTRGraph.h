@@ -45,7 +45,10 @@ namespace ttk
          // Internal fields
          Triangulation*         mesh_;
          Graph                  graph_;
-         DynamicGraph<idVertex> dynGraph_;
+         // one graph for propagation strating from minima and going up
+         // and a second one for propagation starting at maxima and going down
+         // TODO could change the compariton fonction used here instead of tricking getWeight
+         std::tuple<DynamicGraph<idVertex>, DynamicGraph<idVertex>> dynGraph_;
 
          // local growth
          AtomicVector<Propagation*> propagations_;
@@ -114,6 +117,7 @@ namespace ttk
                mesh_->preprocessVertexTriangles();
                mesh_->preprocessTriangleEdges();
                mesh_->preprocessEdgeTriangles();
+               mesh_->preprocessTriangles();
             }
 
             return 0;
@@ -161,6 +165,24 @@ namespace ttk
          void setVertexSoSoffsets(idVertex* sos)
          {
             scalars_->setOffsets(sos);
+         }
+
+         DynamicGraph<idVertex>& dynGraph(const Propagation* const lp)
+         {
+            if(lp->goUp()){
+               return std::get<0>(dynGraph_);
+            } else {
+               return std::get<1>(dynGraph_);
+            }
+         }
+
+         DynamicGraph<idVertex>& dynGraph(const bool goUp)
+         {
+            if(goUp){
+               return std::get<0>(dynGraph_);
+            } else {
+               return std::get<1>(dynGraph_);
+            }
          }
 
         protected:
@@ -218,11 +240,13 @@ namespace ttk
          /// and find their corresponding components in the current
          /// preimage graph, each representing a component.
          /// \ret the set of uniques representing components
-         std::set<DynGraphNode<idVertex>*> lowerComps(const std::vector<idEdge>& finishingEdges);
+         std::set<DynGraphNode<idVertex>*> lowerComps(const std::vector<idEdge>& finishingEdges,
+                                                      const Propagation* const   localProp);
 
          /// Symetric to lowerComps
          /// \ref lowerComps
-         std::set<DynGraphNode<idVertex>*> upperComps(const std::vector<idEdge>& startingEdges);
+         std::set<DynGraphNode<idVertex>*> upperComps(const std::vector<idEdge>& startingEdges,
+                                                      const Propagation* const   localProp);
 
          /// update (locally) the preimage graph (dynGraph) from that
          /// of immediately before f(v) to that of immediately after f(v).
@@ -258,7 +282,7 @@ namespace ttk
                         const std::vector<idEdge>& lowerStarEdges);
 
          // Check if neigh is linked to an arc having saddle in one of its boundary node
-         bool checkAlreayAttached(const idVertex saddle, const idVertex neigh);
+         bool checkAlreayAttached(const idVertex saddle, const idVertex neigh, const Propagation* const localProag);
 
          // At a join saddle, merge local propagations coming here
          // and close remiang opened arcs.

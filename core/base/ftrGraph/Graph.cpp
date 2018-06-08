@@ -78,7 +78,7 @@ void Graph::print(const int verbosity) const
       cout << "arcs: " << arcs_.size() << endl;
    }
 
-   if(verbosity >= 2) {
+   if(verbosity >= 3) {
       cout << "Leaves: " << endl;
       for (const auto v : leaves_) {
          cout << get<0>(v) << " ";
@@ -86,7 +86,7 @@ void Graph::print(const int verbosity) const
       cout << endl;
    }
 
-   if(verbosity >= 3) {
+   if(verbosity >= 4) {
       cout << "Nodes:" << endl;
       const idNode nbn = nodes_.size();
       for(idNode i = 0; i < nbn; ++i) {
@@ -163,14 +163,16 @@ void Graph::alloc()
    nodes_.reserve(nbVerts_/2);
    arcs_.reserve(nbVerts_/2);
    segmentation_.resize(nbVerts_);
-   valences_.resize(nbVerts_);
+   valUp_.resize(nbVerts_);
+   valDown_.resize(nbVerts_);
 }
 
 void Graph::init()
 {
    fillVector<std::forward_list<idSegmentation>>(segmentation_,
                                                  std::forward_list<idSegmentation>{});
-   fillVector<valence>(valences_, -1);
+   fillVector<valence>(valUp_, -1);
+   fillVector<valence>(valDown_, -1);
 }
 
 

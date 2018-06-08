@@ -27,7 +27,7 @@ namespace ttk
       class Propagation
       {
         private:
-         // cached extrema
+         // cached extrema: propagation_.top() will be the next one
          idVertex   curVert_;
          // comparison function
          VertCompFN comp_;
@@ -56,11 +56,22 @@ namespace ttk
             return rpz_->find();
          }
 
-         idVertex getNextVertex(void)
+         idVertex nextVertex(void)
          {
             curVert_ = propagation_.top();
             propagation_.pop();
             return curVert_;
+         }
+
+         idVertex getNextVertex(void) const
+         {
+#ifndef TTK_ENABLE_KAMIKAZE
+            if (propagation_.empty()) {
+               std::cerr << "[FTR]: Propagation get next on empty structure" << std::endl;
+               return nullVertex;
+            }
+#endif
+            return propagation_.top();
          }
 
          void addNewVertex(const idVertex v)
@@ -115,6 +126,20 @@ namespace ttk
          {
             return propagation_.size();
          }
+
+#ifndef NDEBUG
+         std::string print() const
+         {
+            std::stringstream res;
+            boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> tmp(propagation_);
+            res << "localProp " << curVert_ << " : ";
+            while(!tmp.empty()){
+               res << tmp.top() << " ";
+               tmp.pop();
+            }
+            return res.str();
+         }
+#endif
       };
    }
 }
