@@ -182,7 +182,7 @@ int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId, const int cc, vtkP
       nextPointId = arcData.point_ids[g_upVertexId];
    }
 
-   int       c = 0;
+   idVertex  c = 0;
    float     sum[3]{0, 0, 0};
    for (const idVertex vertexId : *arc) {
       triangulation_[cc]->getVertexPoint(vertexId, point[0], point[1], point[2]);
@@ -374,7 +374,7 @@ int ttkFTMTree::getOffsets()
          inputOffsets =
              connected_components_[cc]->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
          offsets_[cc].resize(numberOfVertices);
-         for (int i = 0; i < numberOfVertices; i++) {
+         for (idVertex i = 0; i < numberOfVertices; i++) {
             offsets_[cc][i] = inputOffsets->GetTuple1(i);
          }
       } else {
@@ -479,7 +479,7 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs)
 #endif
 
       for (idVertex arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
-         const int numberOfRegularNodes = tree->getArcSize(arcId);
+         const idVertex numberOfRegularNodes = tree->getArcSize(arcId);
          if (numberOfRegularNodes > 0 and samplingLevel > 0) {
             addSampledSkeletonArc(arcId, cc, points, skeletonArcs, arcData);
          } else if (samplingLevel == -1) {
@@ -656,7 +656,7 @@ void ttkFTMTree::identify(vtkDataSet* ds) const
    identifiers->SetNumberOfComponents(1);
    identifiers->SetNumberOfTuples(nbPoints);
 
-   for (int i = 0; i < nbPoints; i++) {
+   for (vtkIdType i = 0; i < nbPoints; i++) {
       identifiers->SetTuple1(i, i);
    }
 

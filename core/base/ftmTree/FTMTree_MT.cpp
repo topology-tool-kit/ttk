@@ -340,7 +340,7 @@ void FTMTree_MT::buildSegmentation()
            const idSuperArc lowerBound = arcChunkId*arcChunkSize;
            const idSuperArc upperBound = min(nbArcs, (arcChunkId+1)*arcChunkSize );
            for (idSuperArc a = lowerBound; a < upperBound; ++a) {
-              sizes[a] = max(0, (*mt_data_.superArcs)[a].getNbVertSeen() - 1);
+              sizes[a] = max((idVertex)0, (*mt_data_.superArcs)[a].getNbVertSeen() - 1);
            }
        }
    }
@@ -1287,7 +1287,7 @@ idVertex FTMTree_MT::trunk(const bool ct)
    const auto &     nbScalars = scalars_->size;
 
    //trunkVerts
-  trunkVerts.reserve(max(10, nbScalars / 500));
+  trunkVerts.reserve(max((idVertex)10, nbScalars / 500));
    for (idVertex v = 0; v < nbScalars; ++v) {
        if((*mt_data_.openedNodes)[v]){
           trunkVerts.emplace_back(v);

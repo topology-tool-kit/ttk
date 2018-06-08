@@ -15,6 +15,7 @@
 #ifndef DATATYPES_FTM_H
 #define DATATYPES_FTM_H
 
+#include <DataTypes.h>
 #include <functional>
 #include <limits>
 #include <set>
@@ -32,11 +33,11 @@ namespace ftm
    /// \brief Node index in vect_nodes_
    using idNode = unsigned int;
    /// \brief Vertex index in scalars_
-   using idVertex = int;
+   using idVertex = SimplexId;
    /// \brief Edge index in vect_edgeList_
-   using idEdge = int;
+   using idEdge = SimplexId;
    /// \brief Cell index in vect_cellList_
-   using idCell = int;
+   using idCell = SimplexId;
 
    /// \brief type used to recover Node/Arc in vert2tree SIGNED ONLY
    // Warning, in long long int the max super arc is -1, might not be able to deal with
@@ -53,10 +54,10 @@ namespace ftm
    using ufDataType = long int;
 
    /// \brief manage number of threads
-   using idThread = unsigned char;
+   using idThread = ThreadId;
 
    /// \brief for task identifiers
-   using idTask = idNode;
+   using idTask = TaskId;
 
    /// \brief for vertex up/down valence
    using valence = unsigned char;
