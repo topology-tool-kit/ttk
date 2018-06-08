@@ -1,8 +1,8 @@
-ChangeLog
+## TTK - ChangeLog
 =
-* ttk.git
+### ttk.git
 
-* 0.9.5
+### 0.9.5
 - Updates for ParaView-5.5.0
 - Bug fixes
 - Removed global namespace usage in headers
@@ -15,13 +15,13 @@ ChangeLog
 - Minimalist OBJ writer
 - Support for double and single precision for point coordinates
 
-* 0.9.4
+### 0.9.4
 - Windows support
 - OFF reader/writer
 - Field selector
 - Bug fixes
 
-* 0.9.3
+### 0.9.3
 - Updates for ParaView-5.4.1
 - New cmake structure, find_package(TTKBase) find_package(TTKVTK) now available
 - New simple python, vtk-c++ and plain c++ examples (TTK companion paper teaser)
@@ -35,7 +35,7 @@ ChangeLog
 - bug fixes in TopologicalSimplification
 - code cleaning
 
-* 0.9.2
+### 0.9.2
 - Updates for ParaView-5.4.0
 - New naming convention for vtkWrappers (name conflicts under MacOs)
 - TriangulationRequest module (to locally inspect triangulations in ParaView)
@@ -44,7 +44,7 @@ ChangeLog
 - removed legacy CMake options
 - minor bug fixes
 
-* 0.9.1
+### 0.9.1
 - latest triangulation API
 - improved module handling scripts
 - build fixes (in response to early user feedback)
