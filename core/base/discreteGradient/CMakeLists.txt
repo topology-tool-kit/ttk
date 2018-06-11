@@ -1,5 +1,5 @@
 ttk_add_base_library(discreteGradient
 	SOURCES DiscreteGradient.cpp
-	HEADERS DiscreteGradient.h
+	HEADERS DiscreteGradient.h DiscreteGradient_Template.h
 	LINK triangulation geometry scalarFieldCriticalPoints ftmTree)
 
