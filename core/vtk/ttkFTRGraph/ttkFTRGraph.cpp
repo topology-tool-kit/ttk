@@ -228,8 +228,9 @@ int ttkFTRGraph::getSegmentation(const ttk::ftr::Graph& graph, vtkDataSet* outpu
 int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonArcs)
 {
    const idSuperArc nbArcs = graph.getNumberOfArcs();
+   const idSuperArc nbVisArcs = graph.getNumberOfVisibleArcs();
 
-   ArcData arcData(nbArcs);
+   ArcData arcData(nbVisArcs);
    vtkSmartPointer<vtkUnstructuredGrid> arcs   = vtkSmartPointer<vtkUnstructuredGrid>::New();
    vtkSmartPointer<vtkPoints>           points = vtkSmartPointer<vtkPoints>::New();
 

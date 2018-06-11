@@ -152,6 +152,25 @@ std::string Graph::printVisit(const idVertex v) const
    return res.str();
 }
 
+// DEBUG function
+
+std::string Graph::printVisit() const
+{
+   std::stringstream res;
+   res << " nb visits : ";
+   for (const auto& l : segmentation_) {
+      int s = 0;
+      for (const auto v : l) {
+         std::ignore = v;
+         ++s;
+      }
+      res << " " << s;
+   }
+   return res.str();
+}
+
+// initialization
+
 void Graph::alloc()
 {
 #ifndef TTK_ENABLE_KAMIKAZE

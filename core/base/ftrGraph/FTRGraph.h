@@ -56,8 +56,8 @@ namespace ttk
 
          // BFS
          std::vector<idCell>   bfsCells_;
+         std::vector<idEdge>   bfsEdges_;
          std::vector<idVertex> bfsVerts_;
-         idCell                bfsId_;
 
         public:
          FTRGraph(Params* const params, Triangulation* mesh, Scalars<ScalarType>* const scalars);
@@ -302,8 +302,15 @@ namespace ttk
 
          // bfs on triangles/edges crossing the level set at saddle, starting
          // at seed. upper vertices encountred are added to newLocalProp
+         // : saddle is the starting saddle,
+         // : seed is at first call the first triangle of this bfs (will change
+         // during recursive call)
+         // : propagation is the propagation to fill with upper vertcices of
+         // visited edges i
+         // : arc is the arc id used to marks the segmentation of lower
+         // vertices of visited edges (it has newLocalProp associated
          void bfsPropagation(const idVertex saddle, const idCell seed,
-                             Propagation* const newLocalProp, const int bfsId);
+                             Propagation* const newLocalProp, const idSuperArc arc);
 
          // Tools
 

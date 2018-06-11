@@ -14,15 +14,14 @@ namespace ttk
           : params_(new Params),
             scalars_(new Scalars<ScalarType>),
             needDelete_(true),
-            mesh_(nullptr),
-            bfsId_(0)
+            mesh_(nullptr)
       {
       }
 
       template <typename ScalarType>
       FTRGraph<ScalarType>::FTRGraph(Params* const params, Triangulation* mesh,
                                      Scalars<ScalarType>* const scalars)
-          : params_(params), scalars_(scalars), needDelete_(false), mesh_(mesh), bfsId_(0)
+          : params_(params), scalars_(scalars), needDelete_(false), mesh_(mesh)
       {
       }
 
@@ -117,6 +116,8 @@ namespace ttk
          // Debug print
          printGraph(params_->debugLevel);
 
+         std::cout << graph_.printVisit() << std::endl;
+
          // Message user
          {
             std::stringstream msg;
@@ -208,6 +209,7 @@ namespace ttk
          propagations_.reserve(mesh_->getNumberOfVertices());
          toVisit_.resize(mesh_->getNumberOfVertices());
          bfsCells_.resize(mesh_->getNumberOfTriangles());
+         bfsEdges_.resize(mesh_->getNumberOfEdges());
          bfsVerts_.resize(mesh_->getNumberOfVertices());
       }
 
@@ -222,6 +224,7 @@ namespace ttk
 
          fillVector<UnionFind*>(toVisit_, nullptr);
          fillVector<idCell>(bfsCells_, nullCell);
+         fillVector<idEdge>(bfsEdges_, nullEdge);
          fillVector<idVertex>(bfsVerts_, nullVertex);
       }
 

@@ -70,9 +70,19 @@ namespace ttk
             return nodes_.size();
          }
 
-         idNode getNumberOfArcs(void) const
+         idSuperArc getNumberOfArcs(void) const
          {
             return arcs_.size();
+         }
+
+         idSuperArc getNumberOfVisibleArcs(void) const
+         {
+            idSuperArc res = 0;
+            for (const auto& arc : arcs_) {
+               if (arc.isVisible())
+                  ++res;
+            }
+            return res;
          }
 
          idNode getNumberOfLeaves(void) const
@@ -273,6 +283,14 @@ namespace ttk
             arcs_.emplace_back(SuperArc{downId, upId});
          }
 
+         idSuperArc makeHiddenArc(Propagation* const lp)
+         {
+            idSuperArc newArc = arcs_.getNext();
+            arcs_[newArc].hide();
+            arcs_[newArc].setPropagation(lp);
+            return newArc;
+         }
+
          // Process
          // -------
 
@@ -295,10 +313,6 @@ namespace ttk
          template<typename ScalarType>
          void shuffleLeaves(const Scalars<ScalarType>* s)
          {
-            auto compare_fun = [&](std::tuple<idVertex, bool> a, std::tuple<idVertex, bool> b) {
-               return s->isLower(std::get<0>(a), std::get<0>(b));
-            };
-
             std::random_shuffle(leaves_.begin(), leaves_.end());
          }
 
@@ -318,6 +332,9 @@ namespace ttk
          std::string printNode(const idNode nodeId) const;
 
          std::string printVisit(const idVertex v) const;
+
+         // DEBUG function
+         std::string printVisit() const;
 
          // Initialize functions
          // --------------------
