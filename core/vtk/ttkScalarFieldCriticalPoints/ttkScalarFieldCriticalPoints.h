@@ -123,9 +123,9 @@ class ttkScalarFieldCriticalPoints
     int                   ScalarFieldId, OffsetFieldId;
     bool                  VertexIds, VertexScalars, VertexBoundary;
     std::string                ScalarField, OffsetField;
-    std::vector<std::vector<std::pair<int, int> > > vertexLinkEdgeList_;
-    std::vector<std::pair<int, char> > criticalPoints_;
-    std::vector<int>           sosOffsets_;
+    std::vector<std::vector<std::pair<ttk::SimplexId, ttk::SimplexId> > > vertexLinkEdgeList_;
+    std::vector<std::pair<ttk::SimplexId, char> > criticalPoints_;
+    std::vector<ttk::SimplexId>           sosOffsets_;
     
    
 };
