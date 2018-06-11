@@ -8,14 +8,6 @@ using namespace std;
 using namespace ttk;
 
 Debug::Debug() { 
-  
-  threadNumber_ = 1;
-  lastObject_ = false;
-#ifdef TTK_ENABLE_OPENMP
-  threadNumber_ = omp_get_num_procs();
-#endif
-  wrapper_ = NULL;
- 
   debugLevel_ = infoMsg;
   
   // avoid warnings
@@ -79,10 +71,3 @@ int Debug::setDebugLevel(const int &debugLevel){
   return 0;
 }
 
-int Debug::setWrapper(const Wrapper *wrapper){
-  
-  wrapper_ = (Wrapper *) wrapper;
-  setDebugLevel(((Debug *) wrapper)->debugLevel_);
-  setThreadNumber(((Debug *) wrapper)->threadNumber_);
-  return 0;
-}

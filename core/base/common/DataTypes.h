@@ -5,8 +5,8 @@
 ///
 ///\brief TTK base package defining the standard types.
 
-#ifndef DATATYPES_H
-#define DATATYPES_H
+#ifndef _DATATYPES_H
+#define _DATATYPES_H
 
 namespace ttk{
   /// \brief Identifier type for simplices of any dimension.
@@ -19,4 +19,4 @@ namespace ttk{
   using TaskId = int;
 }
 
-#endif // DATATYPES_H
+#endif // _DATATYPES_H

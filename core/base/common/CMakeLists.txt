@@ -1,5 +1,5 @@
 ttk_add_base_library(common
-	SOURCES Debug.cpp Os.cpp
-	HEADERS CommandLineParser.h Debug.h
-			Os.h ProgramBase.h Wrapper.h)
+    SOURCES BaseClass.cpp Debug.cpp Os.cpp
+    HEADERS BaseClass.h CommandLineParser.h Debug.h
+            DataTypes.h Os.h ProgramBase.h Wrapper.h)
 

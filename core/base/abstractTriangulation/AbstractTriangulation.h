@@ -14,7 +14,6 @@
 
 // base code includes
 #include                  <Wrapper.h>
-#include                  <DataTypes.h>
 
 namespace ttk{
   
