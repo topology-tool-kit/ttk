@@ -65,8 +65,7 @@ int ttkBottleneckDistance::doIt(
 
       string wassersteinMetric = WassersteinMetric;
       bottleneckDistance_.setWasserstein(wassersteinMetric);
-      int method=Method;
-      bottleneckDistance_.setMethod(method);
+      bottleneckDistance_.setMethod(Method);
 
       // Empty matchings.
       vector<macroMatchingTuple>* matchings = new vector<macroMatchingTuple>();
