@@ -492,10 +492,47 @@ namespace ttk
                     localPropagation->compare(std::get<1>(a), std::get<1>(b)));
          };
 
-         // TODO a la mano
-         std::sort(begin(oEdges), end(oEdges), compareOEdges);
+         if (compareOEdges(oEdges[0], oEdges[1])) {
+            // 1 2 3
+            // 1 3 2
+            // 2 3 1
 
-         return {std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), std::get<2>(oEdges[2]), cellId};
+            if (compareOEdges(oEdges[1], oEdges[2])) {
+               // 1 2 3
+               return {std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), std::get<2>(oEdges[2]),
+                       cellId};
+            }
+            // 1 3 2
+            // 2 3 1
+
+            if (compareOEdges(oEdges[0], oEdges[2])) {
+               // 1 3 2
+               return {std::get<2>(oEdges[0]), std::get<2>(oEdges[2]), std::get<2>(oEdges[1]), cellId};
+            }
+
+            // 2 3 1
+            return {std::get<2>(oEdges[2]), std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), cellId};
+         }
+
+         // 2 1 3
+         // 3 2 1
+         // 3 1 2
+
+         if(compareOEdges(oEdges[0], oEdges[2])) {
+            // 2 1 3
+            return {std::get<2>(oEdges[1]), std::get<2>(oEdges[0]), std::get<2>(oEdges[2]), cellId};
+         }
+
+         // 3 2 1
+         // 3 1 2
+
+         if(compareOEdges(oEdges[1], oEdges[2])) {
+            // 3 1 2
+            return {std::get<2>(oEdges[1]), std::get<2>(oEdges[2]), std::get<2>(oEdges[0]), cellId};
+         }
+
+         // 3 2 1
+         return {std::get<2>(oEdges[2]), std::get<2>(oEdges[1]), std::get<2>(oEdges[0]), cellId};
       }
 
       template <typename ScalarType>
