@@ -41,7 +41,7 @@ namespace ttk{
         id_{-1} {}
 
       explicit Cell(const int dim,
-                    const int id) :
+                    const SimplexId id) :
         dim_{dim},
         id_{id} {}
 
@@ -56,7 +56,7 @@ namespace ttk{
       }
 
       int dim_;
-      int id_;
+      SimplexId id_;
     };
 
     /**
@@ -304,7 +304,8 @@ namespace ttk{
      */
     template<typename dataType>
     struct SaddleMaximumVPathComparator {
-      bool operator()(const std::pair<dataType, int> &v1, const std::pair<dataType, int> &v2) const {
+      bool operator()(const std::pair<dataType, int> &v1,
+                      const std::pair<dataType, int> &v2) const {
         const dataType persistence1 = v1.first;
         const dataType persistence2 = v2.first;
 
@@ -324,15 +325,16 @@ namespace ttk{
      */
     template<typename dataType>
     struct SaddleSaddleVPathComparator {
-      bool operator()(const std::tuple<dataType, int, int> &v1, const std::tuple<dataType, int, int> &v2) const {
+      bool operator()(const std::tuple<dataType, int, SimplexId> &v1,
+                      const std::tuple<dataType, int, SimplexId> &v2) const {
         const dataType persistence1 = std::get<0>(v1);
         const dataType persistence2 = std::get<0>(v2);
 
         const int vpathId1 = std::get<1>(v1);
         const int vpathId2 = std::get<1>(v2);
 
-        const int saddleId1 = std::get<2>(v1);
-        const int saddleId2 = std::get<2>(v2);
+        const SimplexId saddleId1 = std::get<2>(v1);
+        const SimplexId saddleId2 = std::get<2>(v2);
 
         if (persistence1 != persistence2)
           return (persistence1 < persistence2);
@@ -444,10 +446,10 @@ vertex B, false otherwise
        * (support simulation of simplicity).
        */
       template<typename dataType>
-      bool isHigherThan(const int vertexA,
-                        const int vertexB,
+      bool isHigherThan(const SimplexId vertexA,
+                        const SimplexId vertexB,
                         const dataType *const scalars,
-                        const int *const offsets) const;
+                        const SimplexId *const offsets) const;
 
       /**
        * Comparator of vertices, return true if a vertex A is lower then a 
@@ -455,10 +457,10 @@ vertex B, false otherwise
        * (support simulation of simplicity).
        */
       template<typename dataType>
-      bool isLowerThan(const int vertexA,
-                       const int vertexB,
+      bool isLowerThan(const SimplexId vertexA,
+                       const SimplexId vertexB,
                        const dataType *const scalars,
-                       const int *const offsets) const;
+                       const SimplexId *const offsets) const;
 
       /**
        * Comparator of cells, return the identifier of the cell which is higher 
@@ -467,10 +469,10 @@ in the lexicographic order
        */
       template<typename dataType>
       int cellMax(const int cellDim,
-                  const int cellA,
-                  const int cellB,
+                  const SimplexId cellA,
+                  const SimplexId cellB,
                   const dataType *const scalars,
-                  const int *const offsets) const;
+                  const SimplexId *const offsets) const;
 
       /**
        * Comparator of cells, return the identifier of the cell which is lower 
@@ -479,10 +481,10 @@ in the lexicographic order
        */
       template<typename dataType>
       int cellMin(const int cellDim,
-                  const int cellA,
-                  const int cellB,
+                  const SimplexId cellA,
+                  const SimplexId cellB,
                   const dataType *const scalars,
-                  const int *const offsets) const;
+                  const SimplexId *const offsets) const;
 
       /**
        * G0 function from "Parallel Computation of 3D Morse-Smale Complexes",
@@ -491,9 +493,9 @@ in the lexicographic order
        */
       template<typename dataType>
       int g0(const int cellDim,
-             const int cellId,
+             const SimplexId cellId,
              const dataType *const scalars,
-             const int *const offsets) const;
+             const SimplexId *const offsets) const;
 
       /**
        * Slightly modified version of the G0 function, return the second highest 
@@ -501,18 +503,18 @@ facet.
        */
       template<typename dataType>
       int g0_second(const int cellDim,
-                    const int cellId,
+                    const SimplexId cellId,
                     const dataType *const scalars,
-                    const int *const offsets) const;
+                    const SimplexId *const offsets) const;
 
       /**
        * Modified version of the G0 function, return the third highest facet.
        */
       template<typename dataType>
       int g0_third(const int cellDim,
-                   const int cellId,
+                   const SimplexId cellId,
                    const dataType *const scalars,
-                   const int *const offsets) const;
+                   const SimplexId *const offsets) const;
 
       /**
        * Body of AssignGradient algorithm from "Parallel Computation of 3D 
@@ -524,8 +526,8 @@ given dimension.
       template<typename dataType>
       int assignGradient(const int alphaDim,
                          const dataType *const scalars,
-                         const int *const offsets,
-                         std::vector<std::vector<int>> &gradient) const;
+                         const SimplexId *const offsets,
+                         std::vector<std::vector<SimplexId>> &gradient) const;
 
       /**
        * Body of AssignGradient2 algorithm from "Parallel Computation of 3D 
@@ -537,8 +539,8 @@ unpaired cells.
       template<typename dataType>
       int assignGradient2(const int alphaDim,
                           const dataType *const scalars,
-                          const int *const offsets,
-                          std::vector<std::vector<int>> &gradient) const;
+                          const SimplexId *const offsets,
+                          std::vector<std::vector<SimplexId>> &gradient) const;
 
       /**
        * Brand new pass on the discrete gradient designed specifically for this 
@@ -549,8 +551,8 @@ triangulation only).
       template<typename dataType>
       int assignGradient3(const int alphaDim,
                           const dataType *const scalars,
-                          const int *const offsets,
-                          std::vector<std::vector<int>> &gradient) const;
+                          const SimplexId *const offsets,
+                          std::vector<std::vector<SimplexId>> &gradient) const;
 
       /**
        * Compute the initial gradient field of the input scalar function on the 
@@ -578,31 +580,31 @@ triangulation only).
        * Get the list of maxima candidates for simplification.
        */
       template<typename dataType>
-      int getRemovableMaxima(const std::vector<std::pair<int, char>> &
+      int getRemovableMaxima(const std::vector<std::pair<SimplexId, char>> &
       criticalPoints,
                              const bool allowBoundary,
                              std::vector<char> &isRemovableMaximum,
-                             std::vector<int> &pl2dmt_maximum);
+                             std::vector<SimplexId> &pl2dmt_maximum);
 
       /**
        * Get the list of 1-saddles candidates for simplification.
        */
       template<typename dataType>
-      int getRemovableSaddles1(const std::vector<std::pair<int, char>> &
+      int getRemovableSaddles1(const std::vector<std::pair<SimplexId, char>> &
       criticalPoints,
                                const bool allowBoundary,
                                std::vector<char> &isRemovableSaddle,
-                               std::vector<int> &pl2dmt_saddle) const;
+                               std::vector<SimplexId> &pl2dmt_saddle) const;
 
       /**
        * Get the list of 2-saddles candidates for simplification.
        */
       template<typename dataType>
-      int getRemovableSaddles2(const std::vector<std::pair<int, char>> &
+      int getRemovableSaddles2(const std::vector<std::pair<SimplexId, char>> &
       criticalPoints,
                                const bool allowBoundary,
                                std::vector<char> &isRemovableSaddle,
-                               std::vector<int> &pl2dmt_saddle) const;
+                               std::vector<SimplexId> &pl2dmt_saddle) const;
 
       /**
        * Create initial Morse-Smale Complex structure and initialize the 
@@ -649,10 +651,9 @@ to be reversed.
                                           const std::vector<char> &isPL,
                                           const bool allowBoundary,
                                           const bool allowBruteForce,
-
                                           std::set<std::pair<dataType, int>, SaddleMaximumVPathComparator<dataType>> &S,
-                                          std::vector<int> &pl2dmt_saddle,
-                                          std::vector<int> &pl2dmt_maximum,
+                                          std::vector<SimplexId> &pl2dmt_saddle,
+                                          std::vector<SimplexId> &pl2dmt_maximum,
                                           std::vector<Segment> &segments,
                                           std::vector<VPath> &vpaths,
                                           std::vector<CriticalPoint> &criticalPoints) const;
@@ -672,7 +673,7 @@ the discrete gradient.
        */
       template<typename dataType>
       int simplifySaddleMaximumConnections(const
-                                           std::vector<std::pair<int, char>> &criticalPoints,
+                                           std::vector<std::pair<SimplexId, char>> &criticalPoints,
                                            const std::vector<char> &isPL,
                                            const int iterationThreshold,
                                            const bool allowBoundary,
@@ -699,9 +700,8 @@ the discrete gradient.
       template<typename dataType>
       int orderSaddleSaddleConnections1(const std::vector<VPath> &vpaths,
                                         std::vector<CriticalPoint> &criticalPoints,
-
-                                        std::set<std::tuple<dataType, int, int>, SaddleSaddleVPathComparator<dataType>> &
-                                        S);
+                                        std::set<std::tuple<dataType, int, SimplexId>,
+                                          SaddleSaddleVPathComparator<dataType>> &S);
 
       /**
        * Core of the simplification process, modify the gradient and
@@ -714,9 +714,10 @@ the discrete gradient.
                                           const bool allowBruteForce,
                                           const bool returnSaddleConnectors,
 
-                                          std::set<std::tuple<dataType, int, int>, SaddleSaddleVPathComparator<dataType>> &S,
-                                          std::vector<int> &pl2dmt_saddle1,
-                                          std::vector<int> &pl2dmt_saddle2,
+                                          std::set<std::tuple<dataType, int, SimplexId>,
+                                            SaddleSaddleVPathComparator<dataType>> &S,
+                                          std::vector<SimplexId> &pl2dmt_saddle1,
+                                          std::vector<SimplexId> &pl2dmt_saddle2,
                                           std::vector<char> &isRemovableSaddle1,
                                           std::vector<char> &isRemovableSaddle2,
                                           std::vector<VPath> &vpaths,
@@ -730,7 +731,7 @@ the discrete gradient.
        */
       template<typename dataType>
       int simplifySaddleSaddleConnections1(const
-                                           std::vector<std::pair<int, char>> &criticalPoints,
+                                           std::vector<std::pair<SimplexId, char>> &criticalPoints,
                                            const std::vector<char> &isPL,
                                            const int iterationThreshold,
                                            const bool allowBoundary,
@@ -758,9 +759,8 @@ the discrete gradient.
       template<typename dataType>
       int orderSaddleSaddleConnections2(const std::vector<VPath> &vpaths,
                                         std::vector<CriticalPoint> &criticalPoints,
-
-                                        std::set<std::tuple<dataType, int, int>, SaddleSaddleVPathComparator<dataType>> &
-                                        S);
+                                        std::set<std::tuple<dataType, int, SimplexId>,
+                                          SaddleSaddleVPathComparator<dataType>> &S);
 
       /**
        * Core of the simplification process, modify the gradient and
@@ -772,10 +772,10 @@ the discrete gradient.
                                           const bool allowBoundary,
                                           const bool allowBruteForce,
                                           const bool returnSaddleConnectors,
-
-                                          std::set<std::tuple<dataType, int, int>, SaddleSaddleVPathComparator<dataType>> &S,
-                                          std::vector<int> &pl2dmt_saddle1,
-                                          std::vector<int> &pl2dmt_saddle2,
+                                          std::set<std::tuple<dataType, int, SimplexId>,
+                                            SaddleSaddleVPathComparator<dataType>> &S,
+                                          std::vector<SimplexId> &pl2dmt_saddle1,
+                                          std::vector<SimplexId> &pl2dmt_saddle2,
                                           std::vector<char> &isRemovableSaddle1,
                                           std::vector<char> &isRemovableSaddle2,
                                           std::vector<VPath> &vpaths,
@@ -789,7 +789,7 @@ the discrete gradient.
        */
       template<typename dataType>
       int simplifySaddleSaddleConnections2(const
-                                           std::vector<std::pair<int, char>> &criticalPoints,
+                                           std::vector<std::pair<SimplexId, char>> &criticalPoints,
                                            const std::vector<char> &isPL,
                                            const int iterationThreshold,
                                            const bool allowBoundary,
@@ -799,7 +799,7 @@ the discrete gradient.
       /**
        * Build the dense representation of the PL critical point list.
        */
-      int getCriticalPointMap(const std::vector<std::pair<int, char>> &
+      int getCriticalPointMap(const std::vector<std::pair<SimplexId, char>> &
       criticalPoints,
                               std::vector<char> &isPL);
 
@@ -816,7 +816,7 @@ steps
        * compliant to the critical points given by the user.
        */
       template<typename dataType>
-      int reverseGradient(const std::vector<std::pair<int, char>> &
+      int reverseGradient(const std::vector<std::pair<SimplexId, char>> &
       criticalPoints);
 
       /**
@@ -881,11 +881,11 @@ according to them.
       criticalPoints_numberOfPoints,
                                          std::vector<float> *const criticalPoints_points,
                                          std::vector<int> *const criticalPoints_points_cellDimensons,
-                                         std::vector<int> *const criticalPoints_points_cellIds,
+                                         std::vector<SimplexId> *const criticalPoints_points_cellIds,
                                          void *const criticalPoints_points_cellScalars,
                                          std::vector<char> *const criticalPoints_points_isOnBoundary,
-                                         std::vector<int> *const criticalPoints_points_PLVertexIdentifiers,
-                                         std::vector<int> *const criticalPoints_points_manifoldSize) {
+                                         std::vector<SimplexId> *const criticalPoints_points_PLVertexIdentifiers,
+                                         std::vector<SimplexId> *const criticalPoints_points_manifoldSize) {
         outputCriticalPoints_numberOfPoints_ = criticalPoints_numberOfPoints;
         outputCriticalPoints_points_ = criticalPoints_points;
 
@@ -1026,7 +1026,7 @@ in the gradient.
                             const Cell &cell,
                             std::vector<wallId_t> &isVisited,
                             std::vector<Cell> *const wall = nullptr,
-                            std::set<int> *const saddles = nullptr) const;
+                            std::set<SimplexId> *const saddles = nullptr) const;
 
       /**
        * Return the 2-separatrice coming from the given 1-saddle.
@@ -1035,7 +1035,7 @@ in the gradient.
                            const Cell &cell,
                            std::vector<wallId_t> &isVisited,
                            std::vector<Cell> *const wall = nullptr,
-                           std::set<int> *const saddles = nullptr) const;
+                           std::set<SimplexId> *const saddles = nullptr) const;
 
       /**
        * Reverse the given ascending VPath.
@@ -1055,18 +1055,18 @@ in the gradient.
       /**
        * Compute the barycenter of the points of the given edge identifier.
        */
-      int getEdgeIncenter(int edgeId, float incenter[3]) const;
+      int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const;
 
       /**
        * Compute the incenter of the points of the given triangle identifier.
        */
-      int getTriangleIncenter(int triangleId, float incenter[3]) const;
+      int getTriangleIncenter(SimplexId triangleId, float incenter[3]) const;
 
       /**
        * Compute the barycenter of the incenters of the triangles of the given 
 tetra identifier.
        */
-      int getTetraIncenter(int tetraId, float incenter[3]) const;
+      int getTetraIncenter(SimplexId tetraId, float incenter[3]) const;
 
       /**
        * Compute the geometric barycenter of a given cell.
@@ -1094,9 +1094,9 @@ tetra identifier.
        */
       template<typename dataType>
       int setAugmentedCriticalPoints(const std::vector<Cell> &criticalPoints,
-                                     std::vector<int> &maxSeeds,
-                                     int *ascendingManifold,
-                                     int *descendingManifold) const;
+                                     std::vector<SimplexId> &maxSeeds,
+                                     SimplexId *ascendingManifold,
+                                     SimplexId *descendingManifold) const;
 
       /**
        * Build the glyphs representing the discrete gradient vector field.
@@ -1112,8 +1112,8 @@ tetra identifier.
       double SaddleConnectorsPersistenceThreshold;
 
       int dimensionality_;
-      int numberOfVertices_;
-      std::vector<std::vector<std::vector<int>>> gradient_;
+      SimplexId numberOfVertices_;
+      std::vector<std::vector<std::vector<SimplexId>>> gradient_;
       std::vector<int> dmtMax2PL_;
 
       void *inputScalarField_;
@@ -1123,11 +1123,11 @@ tetra identifier.
       int *outputCriticalPoints_numberOfPoints_;
       std::vector<float> *outputCriticalPoints_points_;
       std::vector<int> *outputCriticalPoints_points_cellDimensions_;
-      std::vector<int> *outputCriticalPoints_points_cellIds_;
+      std::vector<SimplexId> *outputCriticalPoints_points_cellIds_;
       void *outputCriticalPoints_points_cellScalars_;
       std::vector<char> *outputCriticalPoints_points_isOnBoundary_;
-      std::vector<int> *outputCriticalPoints_points_PLVertexIdentifiers_;
-      std::vector<int> *outputCriticalPoints_points_manifoldSize_;
+      std::vector<SimplexId> *outputCriticalPoints_points_PLVertexIdentifiers_;
+      std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_;
 
       int *outputGradientGlyphs_numberOfPoints_;
       std::vector<float> *outputGradientGlyphs_points_;
