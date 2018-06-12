@@ -185,14 +185,32 @@ namespace ttk{
 	
 	template<typename dataType>
 	void KDTree< dataType>::updateWeight(dataType new_weight){
-		// TODO
-		return;
+		weight_ = new_weight;
+		updateMinSubweight();
 	}
 	
 	template<typename dataType>
 	void KDTree<dataType>::updateMinSubweight(){
-		// TODO
-		return;
+		dataType new_min_subweight;
+		if(this->isLeaf()){
+			new_min_subweight = weight_;
+		}
+		else if(!left_){
+			new_min_subweight = std::min(right_->min_subweights_, weight_);
+		}
+		else if(!right_){
+			new_min_subweight = std::min(left_->min_subweights_, weight_);
+		}
+		else{
+			new_min_subweight = std::min( std::min(left_->min_subweights_, right_->min_subweights_), weight_);
+		}
+		
+		if(new_min_subweight != min_subweights_){
+			min_subweights_ = new_min_subweight;
+			if(!this->isRoot()){
+				parent_->updateMinSubweight();
+			}
+		}
 	}
 	
 	
