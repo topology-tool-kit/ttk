@@ -26,6 +26,17 @@ namespace ttk{
   {
 	
 	public:
+		KDTree(){
+			left_ = nullptr;
+			right_ = nullptr;
+			parent_ = nullptr;
+			
+			coords_number_ = 0;
+			p_ = 2;
+			include_weights_ = false;
+		}
+		
+		
 		
 		KDTree(bool include_weights, int p){
 			left_ = nullptr;
@@ -53,9 +64,10 @@ namespace ttk{
 			delete left_;
 			delete right_;
 		}
+
 		
 		void build(dataType* coordinates, const int& ptNumber, const int& dimension);
-		void buildRecursive(dataType* coordinates, std::vector<int>& indexes, const int& ptNumber, const int& dimension, KDTree<dataType>* parent);
+		void buildRecursive(dataType* coordinates, std::vector<int> indexes, const int& ptNumber, const int& dimension, KDTree<dataType>* parent);
 		void updateWeight(dataType new_weight);
 		void updateMinSubweight(); 
 		std::vector<int> getKClosest(int k, std::vector<dataType>& coordinates);
@@ -88,16 +100,16 @@ namespace ttk{
 		
 		// First, perform a argsort on the data
 		// initialize original index locations
-		std::vector<int> idx(ptNumber * dimension);
-		for(int i=0; i<ptNumber*dimension; i++){
+		std::vector<int> idx(ptNumber);
+		for(int i=0; i<ptNumber; i++){
 			idx[i] = i;
 		}
 		// sort indexes based on comparing values in coordinates
-		sort(idx.begin(), idx.end(), [&](int i1, int i2) {return *(data + dimension*i1+coords_number_) < *(data + dimension*i2+coords_number_);});
-		
-		int median_idx = idx[(int) (ptNumber-1)/2];
+		sort(idx.begin(), idx.end(), [&](int i1, int i2) {return data[dimension*i1+coords_number_] < data[dimension*i2+coords_number_];});
+		int median_loc = (int) (ptNumber-1)/2;
+		int median_idx = idx[median_loc];
 		for(int axis=0; axis<dimension; axis++){
-			coordinates_.push_back(*(data + dimension*median_idx + axis) ); 
+			coordinates_.push_back(data[dimension*median_idx + axis]); 
 		}
 		weight_ = 0;
 		min_subweights_ = 0;
@@ -106,9 +118,9 @@ namespace ttk{
 		
 		if(idx.size()>1){
 			// Build left leaf
-			int idx_left[median_idx];
-			for(int i=0; i<median_idx; i++){
-				idx_left[i] = idx[i];
+			std::vector<int> idx_left;
+			for(int i=0; i<median_loc; i++){
+				idx_left.push_back(idx[i]);
 			}
 			
 			KDTree left = KDTree(this, (coords_number_+1)%dimension, true);
@@ -118,9 +130,9 @@ namespace ttk{
 		
 		if(idx.size()>0){
 			// Build right leaf
-			int idx_right[ptNumber - median_idx - 1];
-			for(int i=0; i<ptNumber - median_idx - 1; i++){
-				idx_right[i] = idx[i + median_idx + 1];
+			std::vector<int> idx_right(ptNumber - median_loc - 1);
+			for(int i=0; i<ptNumber - median_loc - 1; i++){
+				idx_right[i] = idx[i + median_loc + 1];
 			}
 			KDTree right = KDTree(this, (coords_number_+1)%dimension, false);
 			right.buildRecursive(data, idx_right, ptNumber, dimension, this);
@@ -131,41 +143,42 @@ namespace ttk{
 	}
   
 	template<typename dataType>
-	void KDTree<dataType>::buildRecursive(dataType* data, std::vector<int>& idx, const int& ptNumber, const int& dimension, KDTree<dataType>* parent){
+	void KDTree<dataType>::buildRecursive(dataType* data, std::vector<int> idx_side, const int& ptNumber, const int& dimension, KDTree<dataType>* parent){
 		
 		// First, perform a argsort on the data
-		sort(idx.begin(), idx.end(), [&](int i1, int i2) {return *(data + dimension*idx[i1] + coords_number_) < *(data + dimension*idx[i2] + coords_number_);});
-		int median_idx = idx[(int) (idx.size()+1)/2];
+		sort(idx_side.begin(), idx_side.end(), [&](int i1, int i2) {return data[dimension*i1 + coords_number_] < data[dimension*i2 + coords_number_]; });
+		int median_loc = (int) (idx_side.size()-1)/2;
+		int median_idx = idx_side[median_loc];
 		
 		for(int axis=0; axis<dimension; axis++){
-			coordinates_.push_back(*(data + dimension*median_idx + axis) ); 
+			coordinates_.push_back(data[dimension*median_idx + axis]); 
 		}
 		weight_ = 0;
 		min_subweights_ = 0;
 		id_ = median_idx;
 		parent_ = parent;
 		
-		if(idx.size()>1){
+		if(idx_side.size()>2){
 			// Build left leaf
-			int idx_left[median_idx];
-			for(int i=0; i<median_idx; i++){
-				idx_left[i] = idx[i];
+			std::vector<int> idx_left(median_loc);
+			for(int i=0; i<median_loc; i++){
+				idx_left[i] = idx_side[i];
 			}
 			
-			KDTree left = KDTree(this, (coords_number_+1)%dimension, true);
-			left.buildRecursive(data, idx_left, ptNumber, dimension, this);
-			left_ = &left;
+			KDTree* left = new KDTree(this, (coords_number_+1)%dimension, true);
+			left->buildRecursive(data, idx_left, ptNumber, dimension, this);
+			left_ = left;
 		}
 		
-		if(idx.size()>0){
+		if(idx_side.size()>1){
 			// Build right leaf
-			int idx_right[ptNumber - median_idx - 1];
-			for(int i=0; i<ptNumber - median_idx - 1; i++){
-				idx_right[i] = idx[i + median_idx + 1];
+			std::vector<int> idx_right(idx_side.size() - median_loc-1);
+			for(unsigned int i=0; i<idx_side.size() - median_loc-1; i++){
+				idx_right[i] = idx_side[i + median_loc + 1];
 			}
-			KDTree right = KDTree(this, (coords_number_+1)%dimension, false);
-			right.buildRecursive(data, idx_right, ptNumber, dimension, this);
-			right_ = &right;
+			KDTree* right = new KDTree(this, (coords_number_+1)%dimension, false);
+			right->buildRecursive(data, idx_right, ptNumber, dimension, this);
+			right_ = right;
 		}
 		return;
 	}

@@ -22,6 +22,7 @@
 #include <Debug.h>
 #include <PersistenceDiagram.h>
 #include <AuctionActor.h>
+#include <KDTree.h>
 
 namespace ttk {
     
@@ -63,8 +64,8 @@ namespace ttk {
 				b.setPositionInAuction(bidders_.size());
 				bidders_.addBidder(b);
 			}
+			this->buildKDTree();
 		}
-		
 		
 		void setBidders(std::vector<diagramTuple> diagram1){
 			int d1Size = (int) diagram1.size();
@@ -87,7 +88,23 @@ namespace ttk {
 				goods_.addGood(g);
 			}	
 			n_goods_ = goods_.size();
-		}		
+		}
+		
+		
+		void buildKDTree(){
+			kdt_ = new KDTree<dataType>(true, wasserstein_);
+			const int dimension = 2;
+			std::vector<dataType> coordinates(goods_.size()*dimension);
+			int counter = 0;
+			for(int i=0; i<goods_.size(); i++){
+				Good<dataType>& g = goods_.get(i);
+				coordinates[counter*dimension] = g.x_;
+				coordinates[counter*dimension + 1] = g.y_;
+			}
+			
+			kdt_->build(coordinates.data(), goods_.size(), dimension);
+			
+		}
 		
 		void setEpsilon(dataType epsilon){
 			epsilon_ = epsilon;
@@ -137,7 +154,7 @@ namespace ttk {
 		
 		dataType getMatchingDistance(){
 			dataType d = 0;
-			for(int i; i<bidders_.size(); i++){
+			for(int i=0; i<bidders_.size(); i++){
 				Bidder<dataType>& b = bidders_.get(i);
 				d += b.cost(b.getProperty(), wasserstein_); 
 			}
@@ -177,6 +194,8 @@ namespace ttk {
 		
 		dataType epsilon_;
 		dataType delta_lim_;
+		
+		KDTree<dataType>* kdt_;
   };
 }
 
