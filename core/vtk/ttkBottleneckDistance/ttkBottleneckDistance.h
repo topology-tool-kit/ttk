@@ -69,6 +69,9 @@ class ttkBottleneckDistance
     
     vtkSetMacro(Alpha, double);
     vtkGetMacro(Alpha, double);
+	
+	vtkSetMacro(Delta_lim, double);
+    vtkGetMacro(Delta_lim, double);
 
     vtkSetMacro(UseOutputMatching, int);
     vtkGetMacro(UseOutputMatching, int);
@@ -162,7 +165,8 @@ class ttkBottleneckDistance
       UseGeometricSpacing = false;
 
       WassersteinMetric = "2";
-      Method = 1;   // 1 For munkres algorithm, 2 for Auction Algorithm
+      Method = 1;           // 1 For munkres algorithm, 2 for Auction Algorithm
+      // Delta_lim = 0.01;     // Relative precision for Auction algorithm
       Alpha = 1.0;
       Spacing = 1.0;
 
@@ -185,6 +189,7 @@ class ttkBottleneckDistance
     double                Spacing;
     double                Alpha;
     int 	              Method;
+	double	              Delta_lim;
 
     std::string                WassersteinMetric;
     bool                  UsePersistenceMetric;

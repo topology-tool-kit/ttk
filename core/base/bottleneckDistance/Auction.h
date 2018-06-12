@@ -32,12 +32,13 @@ namespace ttk {
 
     public:
 
-		Auction(int wasserstein) {
+		Auction(int wasserstein, double geometricalFactor, double delta_lim) {
             n_bidders_ = 0;
             n_goods_ = 0;
 			epsilon_ = 1;
 			wasserstein_ = wasserstein;
-			delta_lim_ = 0.01;
+			delta_lim_ = delta_lim;
+			geometricalFactor_ = geometricalFactor;
         };
 		~Auction() {};
 
@@ -156,7 +157,7 @@ namespace ttk {
 			dataType d = 0;
 			for(int i=0; i<bidders_.size(); i++){
 				Bidder<dataType>& b = bidders_.get(i);
-				d += b.cost(b.getProperty(), wasserstein_); 
+				d += b.cost(b.getProperty(), wasserstein_, geometricalFactor_); 
 			}
 			return d;
 		}
@@ -193,7 +194,8 @@ namespace ttk {
 		int n_goods_;
 		
 		dataType epsilon_;
-		dataType delta_lim_;
+		double delta_lim_;
+		double geometricalFactor_;
 		
 		KDTree<dataType>* kdt_;
   };

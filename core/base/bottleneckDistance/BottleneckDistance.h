@@ -72,12 +72,12 @@ namespace ttk {
         wasserstein_ = wasserstein;
         return 0;
       }
-
-      /*inline int setMethod(const std::string &method){
-    	  method_ = method;
-    	  return 0;
-      }*/
       
+      inline int setDelta_lim(double delta_lim){
+		  delta_lim_ = delta_lim;
+		  return 0;
+	  }
+     
       inline int setMethod(const int &method){
 		  if(method==1){
 			  method_="Munkres";
@@ -109,6 +109,8 @@ namespace ttk {
       void                      *outputCT2_;
       void                      *matchings_; // ids from CT1 to CT2
       void                      *distance_;
+	  
+	  double						 delta_lim_;
 
       std::string                    wasserstein_;
       std::string                    method_;
@@ -127,7 +129,9 @@ namespace ttk {
 	int computeAuction(
 		const std::vector<diagramTuple> *CTDiagram1,
 		const std::vector<diagramTuple> *CTDiagram2,
-		std::vector<matchingTuple> *matchings);
+		std::vector<matchingTuple> *matchings,
+		double alpha,
+		double delta_lim);
 
     template <typename dataType>
     bool isValidMatching(

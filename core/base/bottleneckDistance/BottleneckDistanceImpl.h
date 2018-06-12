@@ -11,7 +11,9 @@ int ttk::BottleneckDistance::execute(
 	  this->computeAuction(
 		static_cast<const std::vector<diagramTuple>*> (outputCT1_),
 		static_cast<const std::vector<diagramTuple>*> (outputCT2_),
-		static_cast<std::vector<matchingTuple>*> (matchings_));
+		static_cast<std::vector<matchingTuple>*> (matchings_),
+		alpha,
+		delta_lim_);
   }
   else{
 	  this->computeBottleneck(

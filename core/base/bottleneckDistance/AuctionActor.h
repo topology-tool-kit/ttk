@@ -27,11 +27,15 @@ namespace ttk{
 		dataType x_;
 		dataType y_;
 		int id_;
+		dataType coords_x_, coords_y_, coords_z_;
 		
 		AuctionActor() {
 			id_ = 0;
 			x_= 0;
 			y_= 0;
+			coords_x_ = 0;
+			coords_y_ = 0;
+			coords_z_ = 0;
 			is_diagonal_ = false;
 		}
 		
@@ -40,11 +44,16 @@ namespace ttk{
 			x_ = x;
 			y_ = y;
 			is_diagonal_ = is_diagonal;
+			
+			coords_x_ = 0;
+			coords_y_ = 0;
+			coords_z_ = 0;
 		}
 		~AuctionActor() {};
 		
 		
 		void SetCoordinates(dataType x, dataType y);
+		void SetCriticalCoordinates(dataType coords_x, dataType coords_y, dataType coords_z);
 		void projectOnDiagonal();
 		int getId();
 		dataType getPersistence();
@@ -55,9 +64,9 @@ namespace ttk{
 			return (var >= 0) ? var : -var;
 		}
 		
-		dataType cost(AuctionActor& g, int wasserstein);
+		dataType cost(AuctionActor& g, int wasserstein, double geometricalFactor);
 		
-		inline dataType cost(AuctionActor* g, int wasserstein);
+		inline dataType cost(AuctionActor* g, int wasserstein, double geometricalFactor);
 		
 	protected:
 		bool is_diagonal_;
@@ -74,6 +83,13 @@ namespace ttk{
 	void AuctionActor<dataType>::SetCoordinates(dataType x, dataType y){
 		x_ = x;
 		y_ = y;
+	}
+	
+	template<typename dataType>
+	void AuctionActor<dataType>::SetCriticalCoordinates(dataType coords_x, dataType coords_y, dataType coords_z){
+		coords_x_ = coords_x;
+		coords_y_ = coords_y;
+		coords_z_ = coords_z;
 	}
 	
 	template<typename dataType>
@@ -95,18 +111,25 @@ namespace ttk{
 	}
 	
 	template<typename dataType>
-	dataType AuctionActor<dataType>::cost(AuctionActor& g, int wasserstein){
+	dataType AuctionActor<dataType>::cost(AuctionActor& g, int wasserstein, double geometricalFactor){
 		if(is_diagonal_ && g.isDiagonal()){
 			return 0;
 		}
-		else{
+		else if(is_diagonal_ || g.isDiagonal()){
 			return pow(abs<dataType>(x_ - g.x_) , wasserstein) + pow(abs<dataType>(y_ - g.y_), wasserstein);
+		}
+		else{
+			return pow(geometricalFactor, wasserstein) * (pow(abs<dataType>(x_ - g.x_) , wasserstein) + pow(abs<dataType>(y_ - g.y_), wasserstein)) + 
+					pow(1 - geometricalFactor, wasserstein) * (pow(abs<dataType>(coords_x_ - g.coords_x_) , wasserstein) + 
+					pow(abs<dataType>(coords_y_ - g.coords_y_) , wasserstein) + 
+					pow(abs<dataType>(coords_z_ - g.coords_z_) , wasserstein));
+			
 		}
 	}
 	
 	template<typename dataType>
-	dataType AuctionActor<dataType>::cost(AuctionActor* g, int wasserstein){
-		return this->cost(*g, wasserstein);
+	dataType AuctionActor<dataType>::cost(AuctionActor* g, int wasserstein, double geometricalFactor){
+		return this->cost(*g, wasserstein, geometricalFactor);
 	}
 
 	
@@ -127,6 +150,12 @@ namespace ttk{
 			dataType x = std::get<6>(tuple);
 			dataType y = std::get<10>(tuple);
 			this->SetCoordinates(x, y);
+			
+			dataType coords_x = (std::get<7>(tuple)+std::get<11>(tuple))/2;
+			dataType coords_y = (std::get<8>(tuple)+std::get<12>(tuple))/2;
+			dataType coords_z = (std::get<9>(tuple)+std::get<13>(tuple))/2;
+			this->SetCriticalCoordinates(coords_x, coords_y, coords_z);
+			
 			if(x==y){AuctionActor<dataType>::is_diagonal_=true;}
 			else{AuctionActor<dataType>::is_diagonal_=false;}
             price_ = 0;
@@ -220,6 +249,12 @@ namespace ttk{
 			dataType x = std::get<6>(tuple);
 			dataType y = std::get<10>(tuple);
 			this->SetCoordinates(x, y);
+			
+			dataType coords_x = (std::get<7>(tuple)+std::get<11>(tuple))/2;
+			dataType coords_y = (std::get<8>(tuple)+std::get<12>(tuple))/2;
+			dataType coords_z = (std::get<9>(tuple)+std::get<13>(tuple))/2;
+			this->SetCriticalCoordinates(coords_x, coords_y, coords_z);
+			
 			if(x==y){
 				AuctionActor<dataType>::is_diagonal_=true;
 			}
@@ -234,7 +269,7 @@ namespace ttk{
 		~Bidder() {}
 
 		Good<dataType>* getProperty();
-		int runBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon);
+		int runBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor);
 		void setDiagonalPrice(dataType price);
 		void setPricePaid(dataType price);
         void setProperty(Good<dataType>* g);
@@ -263,14 +298,14 @@ namespace ttk{
 	
 	
 	template<typename dataType>
-	int Bidder<dataType>::runBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon){
+	int Bidder<dataType>::runBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor){
 		//TODO Adjust for goodDiagrams with only one point...
 		dataType best_val = std::numeric_limits<dataType>::lowest();   //Higher than sqrt(2)*100 times the closest good
 		dataType second_val = std::numeric_limits<dataType>::lowest();
 		Good<dataType>* best_good = nullptr;
 		for(int i=0; i<goods.size(); i++){
 			Good<dataType>& g = goods.get(i);
-			dataType val = -this->cost(g, wasserstein);
+			dataType val = -this->cost(g, wasserstein, geometricalFactor);
 			val -= g.getPrice();
 			if(val>best_val){
 				second_val = best_val;
@@ -283,7 +318,7 @@ namespace ttk{
 		}
 		// And now check for the corresponding twin bidder
 		Good<dataType>& g = diagonalGood;
-		dataType val = -this->cost(g, wasserstein);
+		dataType val = -this->cost(g, wasserstein, geometricalFactor);
 		val -= g.getPrice();
 		if(val>best_val){
 			second_val = best_val;

@@ -220,8 +220,12 @@ template <typename dataType>
 int ttk::BottleneckDistance::computeAuction(
   const std::vector<diagramTuple> *CTDiagram1,
   const std::vector<diagramTuple> *CTDiagram2,
-  std::vector<matchingTuple> *matchings)
+  std::vector<matchingTuple> *matchings,
+  const double alpha,
+  const double delta_lim
+)
 {
+	const double geometricalFactor = (alpha < 0.0 || alpha > 1.0) ? 1.0 : alpha;
 	const int wasserstein = (wasserstein_ == "inf") ? -1 : stoi(wasserstein_);
 	auto* distance = new dataType;
 	
@@ -295,7 +299,7 @@ int ttk::BottleneckDistance::computeAuction(
 	std::vector<matchingTuple> sadMatchings;
 	dataType d = 0;
 	if(D1Min.size()+D2Min.size()>0){
-		Auction<dataType> auctionMin(wasserstein);
+		Auction<dataType> auctionMin(wasserstein, geometricalFactor, delta_lim);
 		dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
 		auctionMin.BuildAuctionDiagrams(D1Min, D2Min);
 		dataType cost = auctionMin.run(&minMatchings);
@@ -306,7 +310,7 @@ int ttk::BottleneckDistance::computeAuction(
 	}
 	
 	if(D1Sad.size()+D2Sad.size()>0){
-		Auction<dataType> auctionSad(wasserstein);
+		Auction<dataType> auctionSad(wasserstein, geometricalFactor, delta_lim);
 		dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
 		auctionSad.BuildAuctionDiagrams(D1Sad, D2Sad);
 		dataType cost = auctionSad.run(&sadMatchings);
@@ -317,7 +321,7 @@ int ttk::BottleneckDistance::computeAuction(
 	}
 	
 	if(D1Max.size()+D2Max.size()>0){
-		Auction<dataType> auctionMax(wasserstein);
+		Auction<dataType> auctionMax(wasserstein, geometricalFactor, delta_lim);
 		dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
 		auctionMax.BuildAuctionDiagrams(D1Max, D2Max);
 		dataType cost = auctionMax.run(&maxMatchings);

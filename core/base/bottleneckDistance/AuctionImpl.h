@@ -21,7 +21,7 @@ dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 			GoodDiagram<dataType>& all_goods = b.isDiagonal() ? diagonal_goods_ : goods_;
 			Good<dataType>& diagonal_good = b.id_>=0 ? diagonal_goods_.get(b.id_) : goods_.get(-b.id_-1);
 
-			int idx_reassigned = b.runBidding(all_goods, diagonal_good, wasserstein_, epsilon_);
+			int idx_reassigned = b.runBidding(all_goods, diagonal_good, wasserstein_, epsilon_, geometricalFactor_);
 			if(idx_reassigned>=0){
 				Bidder<dataType>& reassigned = bidders_.get(idx_reassigned);
 				reassigned.setProperty(NULL);
@@ -35,7 +35,7 @@ dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 	for (int i=0; i<bidders_.size(); i++){
 		Bidder<dataType> b = bidders_.get(i);
 		if(b.getPositionInAuction()>=0 && !b.isDiagonal()){
-			dataType cost = b.cost(b.getProperty(), wasserstein_);
+			dataType cost = b.cost(b.getProperty(), wasserstein_, geometricalFactor_);
 			int good_id = b.getProperty()->id_;
 			if(good_id>-1){
 				matchingTuple t = std::make_tuple(i, good_id, cost);
