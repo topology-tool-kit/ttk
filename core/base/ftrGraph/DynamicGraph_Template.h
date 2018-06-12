@@ -69,6 +69,7 @@ namespace ttk
                }
                res << " root: " << findRoot(&node) - &nodes_[0];
                res << " weight: " << (float)node.weight_;
+               res << " oArc: " << node.corArc_;
                res << " nb childs " << static_cast<unsigned>(node.nbChilds_) << endl;
             }
          }
@@ -209,6 +210,9 @@ namespace ttk
                gParentWeight = gParentNode->weight_;
                gParentNode = gParentNode->parent_;
             } else{
+               // keep same arc than the current root
+               // if cur > this ?
+               corArc_ = curNode->corArc_;
                break;
             }
          }
@@ -222,6 +226,20 @@ namespace ttk
             curNode = curNode->parent_;
          }
          return curNode;
+      }
+
+      template <typename Type>
+      idSuperArc DynGraphNode<Type>::findRootArc(void) const
+      {
+         DynGraphNode* rootNode = findRoot();
+         return rootNode->corArc_;
+      }
+
+      template <typename Type>
+      void DynGraphNode<Type>::setRootArc(const idSuperArc arcId)
+      {
+         DynGraphNode* rootNode = findRoot();
+         rootNode->corArc_ = arcId;
       }
 
       template <typename Type>
@@ -251,6 +269,7 @@ namespace ttk
             parent_ = n;
             weight_ = weight;
             n->nbChilds_++;
+            n->corArc_ = corArc_;
             return true;
          }
 

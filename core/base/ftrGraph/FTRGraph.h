@@ -114,6 +114,7 @@ namespace ttk
 
             if (mesh_) {
                mesh_->preprocessVertexNeighbors();
+               mesh_->preprocessVertexEdges();
                mesh_->preprocessVertexTriangles();
                mesh_->preprocessTriangleEdges();
                mesh_->preprocessEdgeTriangles();
@@ -228,7 +229,8 @@ namespace ttk
          /// and then continue.
          /// When a 1 Saddle is met, we split the local propagation with a BFS
          /// to continue locally.
-         void growthFromSeed(const idVertex seed, Propagation* localPropagation);
+         /// if arc is supplied, this arc will be used for the growth
+         void growthFromSeed(const idVertex seed, Propagation* localPropagation, const idSuperArc arcId = nullSuperArc);
 
          /// visit the star of v and create two vector,
          /// first one contains edges finishing at v (lower star)
@@ -251,22 +253,26 @@ namespace ttk
          /// update (locally) the preimage graph (dynGraph) from that
          /// of immediately before f(v) to that of immediately after f(v).
          /// (v is localGrowth->getCurVertex())
-         void updatePreimage(const Propagation* const localPropagation);
+         // this update is made using the arc: curArc
+         void updatePreimage(const Propagation* const localPropagation, const idSuperArc curArc);
 
          /// update the dynamicGraph by adding (if needed) a new edge corresponding to the
          /// starting cell cellId
          void updatePreimageStartCell(const orderedTriangle&   oTriangle,
-                                      const Propagation* const localPropagation);
+                                      const Propagation* const localPropagation,
+                                      const idSuperArc         curArc);
 
          /// update the dynamicGraph by moving (if needed) the corresponding to the
          /// current visited cell cellId
          void updatePreimageMiddleCell(const orderedTriangle&   oTriangle,
-                                       const Propagation* const localPropagation);
+                                       const Propagation* const localPropagation,
+                                       const idSuperArc         curArc);
 
          /// update the dynamicGraph by removing (if needed) the edge corresponding to the
          /// last visit of the cell cellId
          void updatePreimageEndCell(const orderedTriangle&   oTriangle,
-                                    const Propagation* const localPropagation);
+                                    const Propagation* const localPropagation,
+                                    const idSuperArc         curArc);
 
          /// update the skeleton structure
          /// \ret the nodeId of the current saddle/max

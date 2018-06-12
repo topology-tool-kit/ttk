@@ -64,10 +64,25 @@ namespace ttk
             return &nodes_[nid];
          }
 
+         const DynGraphNode<Type>* getNode(const std::size_t nid) const
+         {
+            return &nodes_[nid];
+         }
+
          /// \brief get the id of the node: node
          std::size_t getNodeId(DynGraphNode<Type>* node)
          {
             return std::distance(nodes_, node);
+         }
+
+         void setSubtreeArc(const std::size_t nid, const idSuperArc arc)
+         {
+            getNode(nid)->setRootArc(arc);
+         }
+
+         idSuperArc getSubtreeArc(const std::size_t nid) const
+         {
+            return getNode(nid)->findRootArc();
          }
 
          // check wether or not this node is connected to others
@@ -195,7 +210,9 @@ namespace ttk
          Type          weight_;
          idNode        nbChilds_;
 
-         explicit DynGraphNode() : parent_(nullptr), weight_(0), nbChilds_(0)
+         idSuperArc    corArc_;
+
+         explicit DynGraphNode() : parent_(nullptr), weight_(0), nbChilds_(0), corArc_(nullSuperArc)
          {
          }
 
@@ -239,6 +256,11 @@ namespace ttk
 
          /// Get representative node
          DynGraphNode* findRoot(void) const;
+
+         /// Get the arcs corresponding to this subtree
+         idSuperArc findRootArc(void) const;
+
+         void setRootArc(const idSuperArc arcId);
 
          /// Get representative node and kepp track of
          /// the node with the min weight on the path

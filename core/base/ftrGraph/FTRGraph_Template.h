@@ -64,19 +64,12 @@ namespace ttk
          omp_set_nested(1);
 #endif
 
-         // set size for allocation / init
-         int vertexNumber = mesh_->getNumberOfVertices();
-         scalars_->setSize(vertexNumber);
-         graph_.setNumberOfVertices(vertexNumber);
-         std::get<0>(dynGraph_).setNumberOfNodes(mesh_->getNumberOfEdges());
-         std::get<1>(dynGraph_).setNumberOfNodes(mesh_->getNumberOfEdges());
-
-         params_->printSelf();
-
          // Precompute
          DebugTimer timeAlloc;
          alloc();
          printTime(timeAlloc, "[FTR Graph]: alloc time: ", infoMsg);
+
+         params_->printSelf();
 
          DebugTimer timeInit;
          init();
@@ -116,13 +109,14 @@ namespace ttk
          // Debug print
          printGraph(params_->debugLevel);
 
-         std::cout << graph_.printVisit() << std::endl;
+         // std::cout << graph_.printVisit() << std::endl;
 
          // Message user
          {
             std::stringstream msg;
-            msg << "[FTR Graph] Data-set (" << vertexNumber << " points) processed in "
-                << t.getElapsedTime() << " s. (" << params_->threadNumber << " thread(s))." << std::endl;
+            msg << "[FTR Graph] Data-set (" << mesh_->getNumberOfVertices()
+                << " points) processed in " << t.getElapsedTime() << " s. ("
+                << params_->threadNumber << " thread(s))." << std::endl;
             dMsg(std::cout, msg.str(), timeMsg);
          }
       }
@@ -186,10 +180,6 @@ namespace ttk
             const idVertex corLeaf          = graph_.getLeaf(i);
             const bool     fromMin          = graph_.isLeafFromMin(i);
             Propagation*   localPropagation = newPropagation(corLeaf, fromMin);
-            // get the first vertex
-            localPropagation->nextVertex();
-            updatePreimage(localPropagation);
-            localGrowth(localPropagation);
             // process
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task untied
@@ -201,8 +191,15 @@ namespace ttk
       template <typename ScalarType>
       void FTRGraph<ScalarType>::alloc()
       {
+
+         scalars_->setSize(mesh_->getNumberOfVertices());
          scalars_->alloc();
+
+         graph_.setNumberOfVertices(mesh_->getNumberOfVertices());
          graph_.alloc();
+
+         std::get<0>(dynGraph_).setNumberOfNodes(mesh_->getNumberOfEdges());
+         std::get<1>(dynGraph_).setNumberOfNodes(mesh_->getNumberOfEdges());
          std::get<0>(dynGraph_).alloc();
          std::get<1>(dynGraph_).alloc();
 
