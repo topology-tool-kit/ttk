@@ -17,7 +17,7 @@
 #include<DiscreteGradient.h>
 
 template <typename dataType>
-dataType DiscreteGradient::scalarMax(const dcg::Cell& cell, const dataType*
+dataType DiscreteGradient::scalarMax(const Cell& cell, const dataType*
 const scalars) const{
   dataType scalar{};
 
@@ -95,7 +95,7 @@ const scalars) const{
 }
 
 template <typename dataType>
-dataType DiscreteGradient::scalarMin(const dcg::Cell& cell, const dataType*
+dataType DiscreteGradient::scalarMin(const Cell& cell, const dataType*
 const scalars) const{
   dataType scalar{};
 
@@ -173,7 +173,7 @@ const scalars) const{
 }
 
 template <typename dataType>
-dataType DiscreteGradient::getPersistence(const dcg::Cell& up, const dcg::Cell&
+dataType DiscreteGradient::getPersistence(const Cell& up, const Cell&
 down,
                                           const dataType* const scalars) const{
   return scalarMax<dataType>(up,scalars)-scalarMin<dataType>(down,scalars);
