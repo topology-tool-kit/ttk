@@ -190,21 +190,21 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   // critical points
-  int criticalPoints_numberOfPoints{};
+  SimplexId criticalPoints_numberOfPoints{};
   vector<float> criticalPoints_points;
-  vector<int> criticalPoints_points_cellDimensions;
+  vector<char> criticalPoints_points_cellDimensions;
   vector<SimplexId> criticalPoints_points_cellIds;
   vector<char> criticalPoints_points_isOnBoundary;
   vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
   vector<SimplexId> criticalPoints_points_manifoldSize;
 
   // gradient pairs
-  int gradientGlyphs_numberOfPoints{};
+  SimplexId gradientGlyphs_numberOfPoints{};
   vector<float> gradientGlyphs_points;
-  vector<int> gradientGlyphs_points_pairOrigins;
-  int gradientGlyphs_numberOfCells{};
-  vector<int> gradientGlyphs_cells;
-  vector<int> gradientGlyphs_cells_pairTypes;
+  vector<char> gradientGlyphs_points_pairOrigins;
+  SimplexId gradientGlyphs_numberOfCells{};
+  vector<SimplexId> gradientGlyphs_cells;
+  vector<char> gradientGlyphs_cells_pairTypes;
 
   // baseCode processing
   discreteGradient_.setWrapper(this);
@@ -275,7 +275,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
               return -12;
             }
 
-            vtkSmartPointer<vtkIntArray> cellDimensions=vtkSmartPointer<vtkIntArray>::New();
+            vtkSmartPointer<vtkCharArray> cellDimensions=vtkSmartPointer<vtkCharArray>::New();
             if(!cellDimensions){
               cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
               return -13;
@@ -317,7 +317,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             PLVertexIdentifiers->SetNumberOfComponents(1);
             PLVertexIdentifiers->SetName("VertexIdentifier");
 
-            for(int i=0; i<criticalPoints_numberOfPoints; ++i){
+            for(SimplexId i=0; i<criticalPoints_numberOfPoints; ++i){
               points->InsertNextPoint(criticalPoints_points[3*i],
                   criticalPoints_points[3*i+1],
                   criticalPoints_points[3*i+2]);
@@ -375,7 +375,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
 
-            vtkSmartPointer<vtkIntArray> cellDimensions=vtkSmartPointer<vtkIntArray>::New();
+            vtkSmartPointer<vtkCharArray> cellDimensions=vtkSmartPointer<vtkCharArray>::New();
             cellDimensions->SetNumberOfComponents(1);
             cellDimensions->SetName("CellDimension");
 
@@ -396,7 +396,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             PLVertexIdentifiers->SetNumberOfComponents(1);
             PLVertexIdentifiers->SetName("VertexIdentifier");
 
-            for(int i=0; i<criticalPoints_numberOfPoints; ++i){
+            for(SimplexId i=0; i<criticalPoints_numberOfPoints; ++i){
               points->InsertNextPoint(criticalPoints_points[3*i],
                   criticalPoints_points[3*i+1],
                   criticalPoints_points[3*i+2]);
@@ -434,7 +434,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     }
 #endif
 
-    vtkSmartPointer<vtkIntArray> pairOrigins=vtkSmartPointer<vtkIntArray>::New();
+    vtkSmartPointer<vtkCharArray> pairOrigins=vtkSmartPointer<vtkCharArray>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pairOrigins){
       cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
@@ -444,7 +444,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     pairOrigins->SetNumberOfComponents(1);
     pairOrigins->SetName("PairOrigin");
 
-    vtkSmartPointer<vtkIntArray> pairTypes=vtkSmartPointer<vtkIntArray>::New();
+    vtkSmartPointer<vtkCharArray> pairTypes=vtkSmartPointer<vtkCharArray>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pairTypes){
       cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
@@ -454,7 +454,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     pairTypes->SetNumberOfComponents(1);
     pairTypes->SetName("PairType");
 
-    for(int i=0; i<gradientGlyphs_numberOfPoints; ++i){
+    for(SimplexId i=0; i<gradientGlyphs_numberOfPoints; ++i){
       points->InsertNextPoint(gradientGlyphs_points[3*i],
           gradientGlyphs_points[3*i+1],
           gradientGlyphs_points[3*i+2]);
@@ -464,8 +464,8 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     outputGradientGlyphs->SetPoints(points);
 
     outputGradientGlyphs->Allocate(gradientGlyphs_numberOfCells);
-    int ptr{};
-    for(int i=0; i<gradientGlyphs_numberOfCells; ++i){
+    SimplexId ptr{};
+    for(SimplexId i=0; i<gradientGlyphs_numberOfCells; ++i){
       vtkIdType line[2];
       line[0]=gradientGlyphs_cells[ptr+1];
       line[1]=gradientGlyphs_cells[ptr+2];
