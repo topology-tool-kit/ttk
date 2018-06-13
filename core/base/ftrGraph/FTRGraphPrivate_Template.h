@@ -4,8 +4,8 @@
 #include "FTRGraph.h"
 
 // Skeleton + propagation
-// #define DEBUG_1(msg) std::cout msg
-#define DEBUG_1(msg)
+#define DEBUG_1(msg) std::cout msg
+// #define DEBUG_1(msg)
 
 // Dynamic graph structure
 // #define DEBUG_2(msg) std::cout msg
@@ -19,7 +19,9 @@ namespace ttk
       void FTRGraph<ScalarType>::growthFromSeed(const idVertex seed, Propagation* localPropagation, const idSuperArc arcId)
       {
          DEBUG_1(<< "Start " << seed << " go up " << localPropagation->goUp() << std::endl);
+#ifndef NDEBUG
          DEBUG_1(<< localPropagation->getRpz() << " " << localPropagation->print() << std::endl);
+#endif
 
          // Check if next vertex is already visited by an arc coming here
          const bool alreadyAttached =
@@ -51,6 +53,7 @@ namespace ttk
 
             // Avoid revisiting things processed by this CC
             if (!graph_.isNode(curVert) && graph_.hasVisited(curVert, localPropagation->getRpz())) {
+               DEBUG_1(<< "already seen " << curVert << std::endl);
                continue;
             }
 
@@ -99,14 +102,16 @@ namespace ttk
 
          if (isJoinSadlleLast) {
             localGrowth(localPropagation);
-            mergeAtSaddle(upNode);
+            mergeAtSaddle(upNode, localPropagation);
          }
 
          if (isSplitSaddle) {
             splitAtSaddle(localPropagation);
          } else if (isJoinSadlleLast) {
             // recursive call
-           growthFromSeed(upVert, localPropagation);
+            const idNode     downNode = graph_.getNodeId(upVert);
+            const idSuperArc newArc   = graph_.openArc(downNode, localPropagation);
+            growthFromSeed(upVert, localPropagation, newArc);
          }
       }
 
@@ -327,7 +332,16 @@ namespace ttk
             idEdge edgeId;
             mesh_->getVertexEdge(curSaddle, nid, edgeId);
 
-            std::cout << " | " << dynGraph(localPropagation).getSubtreeArc(edgeId) << std::endl;
+           idVertex v0;
+           idVertex v1;
+           mesh_->getEdgeVertex(edgeId, 0, v0);
+           mesh_->getEdgeVertex(edgeId, 1, v1);
+
+           const idVertex other = (v0 == curSaddle) ? v1 : v0;
+
+           if (localPropagation->compare(other, curSaddle)) {
+              std::cout << " | " << dynGraph(localPropagation).getSubtreeArc(edgeId) << std::endl;
+           }
          }
 
 
@@ -337,8 +351,8 @@ namespace ttk
 #pragma omp atomic capture
 #endif
             {
-               oldVal = graph_.valDown(curSaddle);
-               graph_.valDown(curSaddle) -= decr;
+               oldVal = graph_.valDown_[curSaddle];
+               graph_.valDown_[curSaddle] -= decr;
             }
 
          } else {
@@ -346,8 +360,8 @@ namespace ttk
 #pragma omp atomic capture
 #endif
             {
-               oldVal = graph_.valUp(curSaddle);
-               graph_.valUp(curSaddle) -= decr;
+               oldVal = graph_.valUp_[curSaddle];
+               graph_.valUp_[curSaddle] -= decr;
             }
          }
 
@@ -360,16 +374,16 @@ namespace ttk
 #pragma omp atomic capture
 #endif
                {
-                  newVal = graph_.valDown(curSaddle);
-                  graph_.valDown(curSaddle) += (totalVal + 1);
+                  newVal = graph_.valDown_[curSaddle];
+                  graph_.valDown_[curSaddle] += (totalVal + 1);
                }
             } else {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
 #endif
                {
-                  newVal = graph_.valUp(curSaddle);
-                  graph_.valUp(curSaddle) += (totalVal + 1);
+                  newVal = graph_.valUp_[curSaddle];
+                  graph_.valUp_[curSaddle] += (totalVal + 1);
                }
             }
             oldVal = decr + newVal + (totalVal + 1);
@@ -386,6 +400,10 @@ namespace ttk
             if(s >= 0) {
                if (graph_.getArc(s).getUpNodeId() == checkNode) {
                   const idNode downNode = graph_.getArc(s).getDownNodeId();
+                  if (downNode == nullNode) {
+                     std::cout << "encounter null down node " << graph_.printArc(s) << std::endl;
+                     continue;
+                  }
                   if (localProp->compare(saddle, graph_.getNode(downNode).getVertexIdentifier())) {
                      return true;
                   }
@@ -395,17 +413,22 @@ namespace ttk
          return false;
       }
 
-      template<typename ScalarType>
-      void FTRGraph<ScalarType>::mergeAtSaddle(const idNode saddleId)
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::mergeAtSaddle(const idNode saddleId, Propagation* localProp)
       {
          graph_.mergeAtSaddle(saddleId);
+         const idVertex saddleVert = graph_.getNode(saddleId).getVertexIdentifier();
+         localProp->removeDuplicates(saddleVert);
       }
 
-      template<typename ScalarType>
+      template <typename ScalarType>
       void FTRGraph<ScalarType>::splitAtSaddle(const Propagation* const localProp)
       {
          const idVertex curVert = localProp->getCurVertex();
          const idNode   curNode = graph_.getNodeId(curVert);
+
+         std::vector<std::tuple<idSuperArc, Propagation*>> bfsResults;
+         bfsResults.reserve(4);
 
          const idCell nbTriNeigh = mesh_->getVertexTriangleNumber(curVert);
          for(idCell t = 0; t < nbTriNeigh; ++t) {
@@ -420,6 +443,8 @@ namespace ttk
                const bool     alreadyAttached = checkAlreayAttached(curVert, endTri, localProp);
                if(alreadyAttached) continue;
 
+               DEBUG_1(<< "split " << curVert << " at " << printTriangle(oNeighTriangle, localProp)) << std::endl;
+
                // BFS to add vertices in the current propagation for each seed
                // and its corresponfing arc
                Propagation* curProp = newPropagation(curVert, localProp->goUp()/*, localProp->getRpz()*/);
@@ -429,11 +454,17 @@ namespace ttk
                bfsPropagation(curVert, neighTriangle, curProp, newArc);
                // remove the already processed first vertex
                curProp->nextVertex();
+               curProp->removeDuplicates(curVert);
                if(!curProp->empty()) {
-                  growthFromSeed(curVert, curProp, newArc);
+                  bfsResults.emplace_back(std::make_tuple(newArc, curProp));
+               } else {
+                  graph_.getArc(newArc).hide();
                }
             }
          }
+
+         for (auto& bfsRes : bfsResults)
+            growthFromSeed(curVert, std::get<1>(bfsRes), std::get<0>(bfsRes));
       }
 
       /// Tools
@@ -484,9 +515,9 @@ namespace ttk
          mesh_->getEdgeVertex(edgeId, 1, edge1Vert);
 
          if (localPropagation->compare(edge0Vert, edge1Vert)) {
-            return {edge0Vert, edge1Vert, edgeId};
+            return std::make_tuple(edge0Vert, edge1Vert, edgeId);
          } else {
-            return {edge1Vert, edge0Vert, edgeId};
+            return std::make_tuple(edge1Vert, edge0Vert, edgeId);
          }
       }
 
@@ -517,19 +548,18 @@ namespace ttk
 
             if (compareOEdges(oEdges[1], oEdges[2])) {
                // 1 2 3
-               return {std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), std::get<2>(oEdges[2]),
-                       cellId};
+               return std::make_tuple(std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), std::get<2>(oEdges[2]), cellId);
             }
             // 1 3 2
             // 2 3 1
 
             if (compareOEdges(oEdges[0], oEdges[2])) {
                // 1 3 2
-               return {std::get<2>(oEdges[0]), std::get<2>(oEdges[2]), std::get<2>(oEdges[1]), cellId};
+               return std::make_tuple(std::get<2>(oEdges[0]), std::get<2>(oEdges[2]), std::get<2>(oEdges[1]), cellId);
             }
 
             // 2 3 1
-            return {std::get<2>(oEdges[2]), std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), cellId};
+            return std::make_tuple(std::get<2>(oEdges[2]), std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), cellId);
          }
 
          // 2 1 3
@@ -538,7 +568,7 @@ namespace ttk
 
          if(compareOEdges(oEdges[0], oEdges[2])) {
             // 2 1 3
-            return {std::get<2>(oEdges[1]), std::get<2>(oEdges[0]), std::get<2>(oEdges[2]), cellId};
+            return std::make_tuple(std::get<2>(oEdges[1]), std::get<2>(oEdges[0]), std::get<2>(oEdges[2]), cellId);
          }
 
          // 3 2 1
@@ -546,11 +576,11 @@ namespace ttk
 
          if(compareOEdges(oEdges[1], oEdges[2])) {
             // 3 1 2
-            return {std::get<2>(oEdges[1]), std::get<2>(oEdges[2]), std::get<2>(oEdges[0]), cellId};
+            return std::make_tuple(std::get<2>(oEdges[1]), std::get<2>(oEdges[2]), std::get<2>(oEdges[0]), cellId);
          }
 
          // 3 2 1
-         return {std::get<2>(oEdges[2]), std::get<2>(oEdges[1]), std::get<2>(oEdges[0]), cellId};
+         return std::make_tuple(std::get<2>(oEdges[2]), std::get<2>(oEdges[1]), std::get<2>(oEdges[0]), cellId);
       }
 
       template <typename ScalarType>

@@ -40,9 +40,12 @@ namespace ttk
          AtomicVector<SuperArc>                   arcs_;
 
          std::vector<std::forward_list<idSegmentation>> segmentation_;
-         std::vector<valence>                           valDown_, valUp_;
 
         public:
+
+         // For openmp capture, we need direct access...
+         std::vector<valence> valDown_, valUp_;
+
          Graph();
          Graph(Graph&& other)      = default;
          Graph(const Graph& other) = delete;
@@ -248,7 +251,7 @@ namespace ttk
 
          void addLeaf(const idVertex v, bool isMax)
          {
-            leaves_.emplace_back({v, isMax});
+            leaves_.emplace_back(std::make_tuple(v, isMax));
          }
 
          idNode makeNode(const idVertex v)
@@ -320,12 +323,12 @@ namespace ttk
          void mergeAtSaddle(const idNode saddleId);
 
          // Link nodes to arcs when arc are completely created
-         void arcs2nodes(void);
+         void arcs2nodes(VertCompFN comp);
 
          // Tools
          // -----
 
-         void print(const int verbosity) const;
+         std::string print(const int verbosity) const;
 
          std::string printArc(const idSuperArc arcId) const;
 

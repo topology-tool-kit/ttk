@@ -35,20 +35,24 @@ struct ObjectData {
 
 struct NodeData : public ObjectData {
    vtkSmartPointer<vtkIntArray> ids;
+   vtkSmartPointer<vtkIntArray> types;
 
    explicit NodeData(const ttk::ftr::idVertex nbNodes)
    {
-      ids = allocArray<vtkIntArray>("VertexId", nbNodes);
+      ids   = allocArray<vtkIntArray>("VertexId", nbNodes);
+      types = allocArray<vtkIntArray>("NodeType", nbNodes);
    }
 
    void addNode(const ttk::ftr::Graph& graph, const ttk::ftr::idNode n)
    {
       ids->SetTuple1(n, graph.getNode(n).getVertexIdentifier());
+      types->SetTuple1(n, (double)graph.getNode(n).getType());
    }
 
    void addArrays(vtkPointData* pointData, ttk::ftr::Params params)
    {
       pointData->AddArray(ids);
+      pointData->SetScalars(types);
    }
 };
 

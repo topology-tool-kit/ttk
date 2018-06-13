@@ -242,6 +242,14 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGr
       const idNode upNodeId   = graph.getArc(arcId).getUpNodeId();
       const idNode downNodeId = graph.getArc(arcId).getDownNodeId();
 
+#ifndef TTK_ENABLE_KAMIKAZE
+      if (upNodeId == nullNode || downNodeId == nullNode) {
+         std::cout << "NULL NODES IN SKELETON " << graph.printArc(arcId) << std::endl;
+         // exit(2);
+         continue;
+      }
+#endif
+
       const idVertex upVertId   = graph.getNode(upNodeId).getVertexIdentifier();
       const idVertex downVertId = graph.getNode(downNodeId).getVertexIdentifier();
 

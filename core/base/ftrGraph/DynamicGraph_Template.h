@@ -69,8 +69,9 @@ namespace ttk
                }
                res << " root: " << findRoot(&node) - &nodes_[0];
                res << " weight: " << (float)node.weight_;
+               res << " nb childs " << static_cast<unsigned>(node.nbChilds_);
                res << " oArc: " << node.corArc_;
-               res << " nb childs " << static_cast<unsigned>(node.nbChilds_) << endl;
+               res << endl;
             }
          }
          return res.str();

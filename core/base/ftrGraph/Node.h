@@ -45,6 +45,41 @@ namespace ttk
              vertexIdentifier_ = v;
           }
 
+          ftr::NodeType getType() const {
+             const valence upVal   = upArcsIds_.size();
+             const valence downVal = downArcsIds_.size();
+
+             switch (upVal) {
+                case 0:
+                   if (downVal == 1) {
+                      return ftr::NodeType::Local_minimum;
+                   }
+                case 1:
+                   if(downVal == 1) {
+                      return ftr::NodeType::Regular;
+                   }
+                   if (downVal == 2) {
+                      return ftr::NodeType::Saddle2;
+                   }
+             }
+
+             switch (downVal) {
+                case 0:
+                   if(upVal == 1) {
+                      return ftr::NodeType::Local_maximum;
+                   }
+                case 1:
+                   if (upVal == 1) {
+                      return ftr::NodeType::Regular;
+                   }
+                   if (upVal == 2) {
+                      return ftr::NodeType::Saddle1;
+                   }
+             }
+
+             return ftr::NodeType::Degenerate;
+          }
+
           void reserveUpArc(const idSuperArc nbUpArc)
           {
              upArcsIds_.reserve(nbUpArc);

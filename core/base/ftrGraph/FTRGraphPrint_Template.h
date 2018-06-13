@@ -56,7 +56,7 @@ namespace ttk
       template <typename ScalarType>
       void FTRGraph<ScalarType>::printGraph(const int verbosity) const
       {
-         graph_.print(verbosity);
+         std::cout << graph_.print(verbosity) << std::endl;
       }
 
       template <typename ScalarType>

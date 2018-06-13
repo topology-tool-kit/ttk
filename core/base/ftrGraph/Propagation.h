@@ -74,6 +74,12 @@ namespace ttk
             return propagation_.top();
          }
 
+         void removeDuplicates(const idVertex d) {
+            while (propagation_.top() == d){
+               propagation_.pop();
+            }
+         }
+
          void addNewVertex(const idVertex v)
          {
             propagation_.emplace(v);

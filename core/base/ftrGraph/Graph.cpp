@@ -38,19 +38,54 @@ void Graph::mergeAtSaddle(const idNode saddleId)
    }
 }
 
-void Graph::arcs2nodes(void)
+void Graph::arcs2nodes(VertCompFN comp)
 {
    const idSuperArc nbArcs = getNumberOfArcs();
    const idNode nbNodes    = getNumberOfNodes();
+
+   // fix up down
+   for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
+      if(!getArc(arcId).isVisible()) continue;
+
+      const idNode upNodeId   = getArc(arcId).getUpNodeId();
+      const idNode downNodeId = getArc(arcId).getDownNodeId();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if (upNodeId == nullNode || downNodeId == nullNode) {
+         continue;
+      }
+#endif
+
+      const idVertex upVertId   = getNode(upNodeId).getVertexIdentifier();
+      const idVertex downVertId = getNode(downNodeId).getVertexIdentifier();
+
+
+      if(comp(upVertId, downVertId)){
+         getArc(arcId).setUpNodeId(downNodeId);
+         getArc(arcId).setDownNodeId(upNodeId);
+      } else {
+         getArc(arcId).setUpNodeId(upNodeId);
+         getArc(arcId).setDownNodeId(downNodeId);
+      }
+
+   }
 
    // reserve good size
    std::vector<valence> upVal(nbNodes, 0), downVal(nbNodes, 0);
    // count
    for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
       if(!getArc(arcId).isVisible()) continue;
+
       const idNode upNodeId = getArc(arcId).getUpNodeId();
-      ++downVal[upNodeId];
       const idNode downNodeId = getArc(arcId).getDownNodeId();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if (upNodeId == nullNode || downNodeId == nullNode) {
+         continue;
+      }
+#endif
+
+      ++downVal[upNodeId];
       ++upVal[downNodeId];
    }
    // alloc
@@ -62,42 +97,52 @@ void Graph::arcs2nodes(void)
    // set the id
    for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
       if(!getArc(arcId).isVisible()) continue;
+
       const idNode upNodeId = getArc(arcId).getUpNodeId();
-      getNode(upNodeId).addDownArc(arcId);
       const idNode downNodeId = getArc(arcId).getDownNodeId();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if (upNodeId == nullNode || downNodeId == nullNode) {
+         continue;
+      }
+#endif
+
+      getNode(upNodeId).addDownArc(arcId);
       getNode(downNodeId).addUpArc(arcId);
    }
 }
 
-void Graph::print(const int verbosity) const
+std::string Graph::print(const int verbosity) const
 {
+   stringstream res;
    if (verbosity >= 1) {
-      cout << "Graph:" << endl;
-      cout << "leaves: " << leaves_.size() << endl;
-      cout << "nodes: " << nodes_.size() << endl;
-      cout << "arcs: " << arcs_.size() << endl;
+      res << "Graph:" << endl;
+      res << "leaves: " << leaves_.size() << endl;
+      res << "nodes: " << nodes_.size() << endl;
+      res << "arcs: " << arcs_.size() << endl;
    }
 
    if(verbosity >= 3) {
-      cout << "Leaves: " << endl;
+      res << "Leaves: " << endl;
       for (const auto v : leaves_) {
-         cout << get<0>(v) << " ";
+         res << get<0>(v) << " ";
       }
-      cout << endl;
+      res << endl;
    }
 
    if(verbosity >= 4) {
-      cout << "Nodes:" << endl;
+      res << "Nodes:" << endl;
       const idNode nbn = nodes_.size();
       for(idNode i = 0; i < nbn; ++i) {
-         cout << printNode(i) << endl;
+         res << printNode(i) << endl;
       }
-      cout << "Arcs:" << endl;
+      res << "Arcs:" << endl;
       const idSuperArc nba = arcs_.size();
       for(idSuperArc i = 0; i < nba; ++i) {
-         cout << printArc(i) << endl;
+         res << printArc(i) << endl;
       }
    }
+   return res.str();
 }
 
 std::string Graph::printArc(const idSuperArc arcId) const

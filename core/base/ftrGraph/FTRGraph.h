@@ -27,6 +27,8 @@
 
 // c++ includes
 #include<set>
+#include<tuple>
+
 
 namespace ttk
 {
@@ -292,7 +294,8 @@ namespace ttk
 
          // At a join saddle, merge local propagations coming here
          // and close remiang opened arcs.
-         void mergeAtSaddle(const idNode saddleId);
+         // Remove duplicate on the saddleVertex (only)
+         void mergeAtSaddle(const idNode saddleId, Propagation* localProp);
 
          // At a split saddle, break the localProagation into pieces
          // corresponding to each upper CC (use BFS) and launch

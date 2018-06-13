@@ -103,13 +103,15 @@ namespace ttk
          }
          printTime(timeBuild, "[FTR Graph]: build time: ", timeMsg);
 
+         printGraph(5);
+
          // post-process
-         graph_.arcs2nodes();
+         graph_.arcs2nodes([&](const idVertex a, const idVertex b){return scalars_->isLower(a,b);});
 
          // Debug print
-         printGraph(params_->debugLevel);
+         // printGraph(params_->debugLevel);
 
-         // std::cout << graph_.printVisit() << std::endl;
+         std::cout << graph_.printVisit() << std::endl;
 
          // Message user
          {
