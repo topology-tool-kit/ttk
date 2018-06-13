@@ -295,8 +295,9 @@ namespace ttk
          void mergeAtSaddle(const idNode saddleId);
 
          // At a split saddle, break the localProagation into pieces
-         // corresponding to each upper CC (use BFS)
-         std::vector<Propagation*> splitAtSaddle(const Propagation* const localProp);
+         // corresponding to each upper CC (use BFS) and launch
+         // new localGrowth for each
+         void splitAtSaddle(const Propagation* const localProp);
 
          // Retrun one triangle by upper CC of the vertex v
          std::set<idCell> upCCtriangleSeeds(const idVertex v, const Propagation* const localProp);

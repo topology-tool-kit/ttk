@@ -4,12 +4,12 @@
 #include "FTRGraph.h"
 
 // Skeleton + propagation
-#define DEBUG_1(msg) std::cout msg
-// #define DEBUG_1(msg)
+// #define DEBUG_1(msg) std::cout msg
+#define DEBUG_1(msg)
 
 // Dynamic graph structure
-#define DEBUG_2(msg) std::cout msg
-// #define DEBUG_2(msg)
+// #define DEBUG_2(msg) std::cout msg
+#define DEBUG_2(msg)
 
 namespace ttk
 {
@@ -103,12 +103,7 @@ namespace ttk
          }
 
          if (isSplitSaddle) {
-            std::vector<Propagation*> newProps = splitAtSaddle(localPropagation);
-            for (Propagation* newLocalProp : newProps) {
-               if (!newLocalProp->empty()) {
-                  growthFromSeed(upVert, newLocalProp);
-               }
-            }
+            splitAtSaddle(localPropagation);
          } else if (isJoinSadlleLast) {
             // recursive call
            growthFromSeed(upVert, localPropagation);
@@ -407,12 +402,11 @@ namespace ttk
       }
 
       template<typename ScalarType>
-      std::vector<Propagation*> FTRGraph<ScalarType>::splitAtSaddle(const Propagation* const localProp)
+      void FTRGraph<ScalarType>::splitAtSaddle(const Propagation* const localProp)
       {
-         std::vector<Propagation*> newLocalProps;
-         const idVertex            curVert = localProp->getCurVertex();
+         const idVertex curVert = localProp->getCurVertex();
+         const idNode   curNode = graph_.getNodeId(curVert);
 
-         newLocalProps.reserve(4);
          const idCell nbTriNeigh = mesh_->getVertexTriangleNumber(curVert);
          for(idCell t = 0; t < nbTriNeigh; ++t) {
             idCell neighTriangle;
@@ -427,19 +421,19 @@ namespace ttk
                if(alreadyAttached) continue;
 
                // BFS to add vertices in the current propagation for each seed
+               // and its corresponfing arc
                Propagation* curProp = newPropagation(curVert, localProp->goUp()/*, localProp->getRpz()*/);
-               newLocalProps.emplace_back(curProp);
-               // False arc, only used to maintain the history in terms of UF while
-               // doing the BFS
-               const idSuperArc arcForUf = graph_.makeHiddenArc(curProp);
+               const idSuperArc newArc = graph_.openArc(curNode, curProp);
+
                // fill curProp using a BFS on the current seed
-               bfsPropagation(curVert, neighTriangle, curProp, arcForUf);
+               bfsPropagation(curVert, neighTriangle, curProp, newArc);
                // remove the already processed first vertex
                curProp->nextVertex();
+               if(!curProp->empty()) {
+                  growthFromSeed(curVert, curProp, newArc);
+               }
             }
          }
-
-         return newLocalProps;
       }
 
       /// Tools
