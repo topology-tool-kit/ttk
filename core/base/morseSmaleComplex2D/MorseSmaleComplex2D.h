@@ -56,6 +56,8 @@ int ttk::MorseSmaleComplex2D::execute(){
   int* descendingManifold=static_cast<int*>(outputDescendingManifold_);
   int* morseSmaleManifold=static_cast<int*>(outputMorseSmaleManifold_);
 
+  discreteGradient_.setThreadNumber(threadNumber_);
+  discreteGradient_.setDebugLevel(debugLevel_);
   discreteGradient_.buildGradient<dataType>();
   discreteGradient_.buildGradient2<dataType>();
   discreteGradient_.reverseGradient<dataType>();
