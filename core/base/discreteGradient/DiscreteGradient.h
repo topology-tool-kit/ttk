@@ -1939,7 +1939,7 @@ int ttk::DiscreteGradient::assignGradient(const int alphaDim,
           const int triangleNumber = inputTriangulation_->getEdgeTriangleNumber(alpha);
           for (int k = 0; k < triangleNumber; ++k) {
             int starId;
-            inputTriangulation_->getEdgeStar(alpha, k, starId);
+            inputTriangulation_->getEdgeTriangle(alpha, k, starId);
 
             int vertexId;
             inputTriangulation_->getTriangleVertex(starId, 0, vertexId);
