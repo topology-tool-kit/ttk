@@ -20,8 +20,16 @@ dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 			
 			GoodDiagram<dataType>& all_goods = b.isDiagonal() ? diagonal_goods_ : goods_;
 			Good<dataType>& diagonal_good = b.id_>=0 ? diagonal_goods_.get(b.id_) : goods_.get(-b.id_-1);
-
-			int idx_reassigned = b.runBidding(all_goods, diagonal_good, wasserstein_, epsilon_, geometricalFactor_);
+			
+			int idx_reassigned;
+			if(b.isDiagonal()){
+				idx_reassigned = b.runBidding(all_goods, diagonal_good, wasserstein_, epsilon_, geometricalFactor_, correspondance_kdt_map_);
+			}
+			else{
+				// We can use the kd-tree to speed up the search
+				idx_reassigned = b.runBidding(all_goods, diagonal_good, wasserstein_, epsilon_, geometricalFactor_, kdt_);
+			}
+			
 			if(idx_reassigned>=0){
 				Bidder<dataType>& reassigned = bidders_.get(idx_reassigned);
 				reassigned.setProperty(NULL);
@@ -34,17 +42,25 @@ dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 	dataType wassersteinDistance = 0;
 	for (int i=0; i<bidders_.size(); i++){
 		Bidder<dataType> b = bidders_.get(i);
-		if(b.getPositionInAuction()>=0 && !b.isDiagonal()){
-			dataType cost = b.cost(b.getProperty(), wasserstein_, geometricalFactor_);
+		if(!b.isDiagonal()){
 			int good_id = b.getProperty()->id_;
+			dataType cost;
+			
 			if(good_id>-1){
+				// good is not diagonal
+				cost = b.cost(b.getProperty(), wasserstein_, geometricalFactor_);
 				matchingTuple t = std::make_tuple(i, good_id, cost);
 				matchings->push_back(t);
-			wassersteinDistance += cost;
 			}
+			else{
+				cost = pow(abs<dataType>((b.x_-b.y_)/2), wasserstein_);
+			}
+			wassersteinDistance += cost;
 		}
 		else{
-			wassersteinDistance += pow(abs<dataType>((b.x_-b.y_)/2), wasserstein_);
+			// b is diagonal
+			Good<dataType> g = *b.getProperty();
+			wassersteinDistance += pow(abs<dataType>((g.x_-g.y_)/2), wasserstein_);
 		}
 	}
 	return wassersteinDistance;

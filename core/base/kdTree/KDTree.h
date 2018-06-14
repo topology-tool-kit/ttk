@@ -26,6 +26,8 @@ namespace ttk{
   {
 	
 	public:
+		int id_;			   // ID of the object saved here. The whole object is not kept in the KDTree
+							   // Users should keep track of them in a table for instance
 		KDTree(){
 			left_ = nullptr;
 			right_ = nullptr;
@@ -66,21 +68,33 @@ namespace ttk{
 		}
 
 		
-		void build(dataType* coordinates, const int& ptNumber, const int& dimension);
-		void buildRecursive(dataType* coordinates, std::vector<int> indexes, const int& ptNumber, const int& dimension, KDTree<dataType>* parent);
+		std::vector<KDTree<dataType>*> build(dataType* coordinates, const int& ptNumber, const int& dimension);
+		void buildRecursive(dataType* coordinates, std::vector<int> indexes, const int& ptNumber, const int& dimension, KDTree<dataType>* parent, std::vector<KDTree<dataType>*>& correspondance_map);
 		void updateWeight(dataType new_weight);
 		void updateMinSubweight(); 
-		std::vector<int> getKClosest(int k, std::vector<dataType>& coordinates);
+		void getKClosest(const unsigned int k, const std::vector<dataType>& coordinates, std::vector<KDTree<dataType>*>& neighbours, std::vector<dataType>& costs);
+		void recursiveGetKClosest(const unsigned int k, const std::vector<dataType>& coordinates, std::vector<KDTree<dataType>*>& neighbours, std::vector<dataType>& costs);
+		
+		dataType cost(const std::vector<dataType>& coordinates);
+		dataType distanceToBox(KDTree<dataType>* subtree, const std::vector<dataType>& coordinates);
+		std::vector<dataType> getCoordinates();
+		dataType getWeight();
+		dataType getMinSubWeight();
+
 		
 		bool isLeaf();
 		bool isRoot();
+		
+		template<typename type>
+		inline static type abs(const type var) {
+			return (var > 0) ? var : -var;
+		}
 		
 	protected:
 		KDTree* left_;		   // Lower half for the coordinate specified    
 		KDTree* right_;		   // Higher half
 		KDTree* parent_;
-		int id_;			   // ID of the object saved here. The whole object is not kept in the KDTree
-							   // Users should keep track of them in a table for instance
+
 		bool is_left_;		   // Boolean indicating if the current node is a left node of its parent
 		int coords_number_;    // Indicates according to which coordinate the tree splits its elements
 		
@@ -92,14 +106,35 @@ namespace ttk{
 		dataType weight_;
 		dataType min_subweights_;
 		std::vector<dataType> coordinates_;
+		std::vector<dataType> coords_min_;
+		std::vector<dataType> coords_max_;
 		
 	};
+	
+	template<typename dataType>
+	std::vector<dataType> KDTree<dataType>::getCoordinates(){
+		return coordinates_;
+	}
+	
+	template<typename dataType>
+	dataType KDTree<dataType>::getWeight(){
+		return weight_;
+	}
+	
+	template<typename dataType>
+	dataType KDTree<dataType>::getMinSubWeight(){
+		return min_subweights_;
+	}
   
 	template<typename dataType>
-	void KDTree<dataType>::build(dataType* data, const int& ptNumber, const int& dimension){
-		
+	std::vector<KDTree<dataType>*> KDTree<dataType>::build(dataType* data, const int& ptNumber, const int& dimension){
+		std::vector<KDTree<dataType>*> correspondance_map(ptNumber);
 		// First, perform a argsort on the data
 		// initialize original index locations
+		for(int axis = 0; axis<dimension; axis++){
+			coords_min_.push_back(std::numeric_limits<dataType>::lowest());
+			coords_max_.push_back(std::numeric_limits<dataType>::max());
+		}
 		std::vector<int> idx(ptNumber);
 		for(int i=0; i<ptNumber; i++){
 			idx[i] = i;
@@ -108,6 +143,8 @@ namespace ttk{
 		sort(idx.begin(), idx.end(), [&](int i1, int i2) {return data[dimension*i1+coords_number_] < data[dimension*i2+coords_number_];});
 		int median_loc = (int) (ptNumber-1)/2;
 		int median_idx = idx[median_loc];
+		correspondance_map[median_idx] = this;
+		
 		for(int axis=0; axis<dimension; axis++){
 			coordinates_.push_back(data[dimension*median_idx + axis]); 
 		}
@@ -123,9 +160,9 @@ namespace ttk{
 				idx_left.push_back(idx[i]);
 			}
 			
-			KDTree left = KDTree(this, (coords_number_+1)%dimension, true);
-			left.buildRecursive(data, idx_left, ptNumber, dimension, this);
-			left_ = &left;
+			KDTree* left = new KDTree(this, (coords_number_+1)%dimension, true);
+			left->buildRecursive(data, idx_left, ptNumber, dimension, this, correspondance_map);
+			left_ = left;
 		}
 		
 		if(idx.size()>0){
@@ -134,29 +171,42 @@ namespace ttk{
 			for(int i=0; i<ptNumber - median_loc - 1; i++){
 				idx_right[i] = idx[i + median_loc + 1];
 			}
-			KDTree right = KDTree(this, (coords_number_+1)%dimension, false);
-			right.buildRecursive(data, idx_right, ptNumber, dimension, this);
-			right_ = &right;
+			KDTree* right = new KDTree(this, (coords_number_+1)%dimension, false);
+			right->buildRecursive(data, idx_right, ptNumber, dimension, this, correspondance_map);
+			right_ = right;
 		}
 
-		return ;
+		return correspondance_map;
 	}
   
 	template<typename dataType>
-	void KDTree<dataType>::buildRecursive(dataType* data, std::vector<int> idx_side, const int& ptNumber, const int& dimension, KDTree<dataType>* parent){
+	void KDTree<dataType>::buildRecursive(dataType* data, std::vector<int> idx_side, const int& ptNumber, const int& dimension, KDTree<dataType>* parent, std::vector<KDTree<dataType>*>& correspondance_map){
 		
 		// First, perform a argsort on the data
 		sort(idx_side.begin(), idx_side.end(), [&](int i1, int i2) {return data[dimension*i1 + coords_number_] < data[dimension*i2 + coords_number_]; });
 		int median_loc = (int) (idx_side.size()-1)/2;
 		int median_idx = idx_side[median_loc];
+		correspondance_map[median_idx] = this;
 		
 		for(int axis=0; axis<dimension; axis++){
-			coordinates_.push_back(data[dimension*median_idx + axis]); 
+			coordinates_.push_back(data[dimension*median_idx + axis]);
 		}
 		weight_ = 0;
 		min_subweights_ = 0;
 		id_ = median_idx;
 		parent_ = parent;
+		
+		// Create bounding box
+		for(int axis = 0; axis<dimension; axis++){
+			coords_min_.push_back(parent_->coords_min_[axis]);
+			coords_max_.push_back(parent_->coords_max_[axis]);
+		}
+		if(parent_->is_left_ && !parent->isRoot()){
+			coords_max_[parent_->coords_number_] = parent_->coordinates_[parent_->coords_number_];
+		}
+		else if(!parent_->is_left_ && !parent->isRoot()){
+			coords_min_[parent_->coords_number_] = parent_->coordinates_[parent_->coords_number_];
+		}
 		
 		if(idx_side.size()>2){
 			// Build left leaf
@@ -166,7 +216,7 @@ namespace ttk{
 			}
 			
 			KDTree* left = new KDTree(this, (coords_number_+1)%dimension, true);
-			left->buildRecursive(data, idx_left, ptNumber, dimension, this);
+			left->buildRecursive(data, idx_left, ptNumber, dimension, this, correspondance_map);
 			left_ = left;
 		}
 		
@@ -177,7 +227,7 @@ namespace ttk{
 				idx_right[i] = idx_side[i + median_loc + 1];
 			}
 			KDTree* right = new KDTree(this, (coords_number_+1)%dimension, false);
-			right->buildRecursive(data, idx_right, ptNumber, dimension, this);
+			right->buildRecursive(data, idx_right, ptNumber, dimension, this, correspondance_map);
 			right_ = right;
 		}
 		return;
@@ -215,12 +265,96 @@ namespace ttk{
 	
 	
 	template<typename dataType>
-	std::vector<int> KDTree<dataType>::getKClosest(int k, std::vector<dataType>& coordinates){
-		//TODO
-		std::vector<int> neighbours;
-		return neighbours;
+	void KDTree<dataType>::getKClosest(const unsigned int k, const std::vector<dataType>& coordinates, std::vector<KDTree<dataType>*>& neighbours, std::vector<dataType>& costs){
+		if(this->isLeaf()){
+			dataType cost = this->cost(coordinates);
+			neighbours.push_back(this);
+			costs.push_back(cost);
+		}
+		else{
+			this->recursiveGetKClosest(k, coordinates, neighbours, costs);
+		}
+		//TODO sort neighbours and costs !
+		return;
 	}
 	
+	
+	template<typename dataType>
+	void KDTree<dataType>::recursiveGetKClosest(const unsigned int k, const std::vector<dataType>& coordinates, std::vector<KDTree<dataType>*>& neighbours, std::vector<dataType>& costs){
+		// 1- Look wether or not to include the current point in the nearest neighbours
+		dataType cost = this->cost(coordinates);
+		cost += weight_;
+		
+		if(costs.size()<k){
+			neighbours.push_back(this);
+			costs.push_back(cost);
+		}
+		else{
+			// 1.1- Find the most costly amongst neighbours
+			std::vector<int> idx(k);
+			for(unsigned int i=0; i<k; i++){
+				idx[i] = i;
+			}
+			int idx_max_cost = *std::max_element(idx.begin(), idx.end(), [&costs](int& a, int& b){return costs[a] < costs[b];});
+			dataType max_cost = costs[idx_max_cost];
+
+			// 1.2- If the current KDTree is less costly, put it in the neighbours and update costs.
+			if(cost < max_cost){
+				costs[idx_max_cost] = cost;
+				neighbours[idx_max_cost] = this;
+			}
+		}
+		
+		// 2- Recursively visit KDTrees that are worth it
+		if(left_){
+			dataType max_cost = *std::max_element(costs.begin(), costs.end());
+			dataType& min_subweight = left_->min_subweights_;
+			dataType d_min = this->distanceToBox(left_, coordinates);
+			if(true || costs.size()<k || d_min+min_subweight < max_cost){
+				// 2.2- It is possible that there exists a point in this subtree that is less
+				// costly than max_cost
+				left_->recursiveGetKClosest(k, coordinates, neighbours, costs);
+			}
+		}
+		
+		if(right_){
+			dataType max_cost = *std::max_element(costs.begin(), costs.end());
+			dataType& min_subweight = right_->min_subweights_;
+			dataType d_min = this->distanceToBox(right_, coordinates);
+			if(true || costs.size()<k || d_min+min_subweight<max_cost){
+				// 2.2- It is possible that there exists a point in this subtree that is less
+				// costly than max_cost
+				right_->recursiveGetKClosest(k, coordinates, neighbours, costs);
+			}
+		}
+		return;
+	}
+	
+	
+	template<typename dataType>
+	dataType KDTree<dataType>::cost(const std::vector<dataType>& coordinates){
+		dataType cost=0;
+		for(unsigned int i=0; i<coordinates.size(); i++){
+			cost += pow(abs(coordinates[i]-coordinates_[i]), p_);
+		}
+		return cost;
+	}
+	
+	
+	template<typename dataType>
+	dataType KDTree<dataType>::distanceToBox(KDTree<dataType>* subtree, const std::vector<dataType>& coordinates){
+		dataType d_min = 0;
+		for(unsigned int axis =0; axis<coordinates.size(); axis++){
+			if(subtree->coords_min_[axis]>coordinates[axis]){
+				d_min += pow(subtree->coords_min_[axis]-coordinates[axis], p_);
+			}
+			else if(subtree->coords_max_[axis]<coordinates[axis]){
+				d_min += pow(coordinates[axis]-subtree->coords_max_[axis], p_);
+			}
+		}
+		return d_min;
+	}
+
 	
 	
 	template<typename dataType>

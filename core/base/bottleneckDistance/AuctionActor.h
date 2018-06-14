@@ -11,6 +11,7 @@
 #include <iostream>
 #include <Debug.h>
 #include <PersistenceDiagram.h>
+#include <KDTree.h>
 
 
 namespace ttk{
@@ -269,7 +270,8 @@ namespace ttk{
 		~Bidder() {}
 
 		Good<dataType>* getProperty();
-		int runBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor);
+		int runBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor, std::vector<KDTree<dataType>*> correspondance_kdt_map);
+		int runBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor, KDTree<dataType>* kdt);
 		void setDiagonalPrice(dataType price);
 		void setPricePaid(dataType price);
         void setProperty(Good<dataType>* g);
@@ -298,9 +300,9 @@ namespace ttk{
 	
 	
 	template<typename dataType>
-	int Bidder<dataType>::runBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor){
+	int Bidder<dataType>::runBidding(GoodDiagram<dataType>& goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, std::vector<KDTree<dataType>*> correspondance_kdt_map){
 		//TODO Adjust for goodDiagrams with only one point...
-		dataType best_val = std::numeric_limits<dataType>::lowest();   //Higher than sqrt(2)*100 times the closest good
+		dataType best_val = std::numeric_limits<dataType>::lowest();
 		dataType second_val = std::numeric_limits<dataType>::lowest();
 		Good<dataType>* best_good = nullptr;
 		for(int i=0; i<goods.size(); i++){
@@ -317,13 +319,15 @@ namespace ttk{
 			}
 		}
 		// And now check for the corresponding twin bidder
-		Good<dataType>& g = diagonalGood;
+		bool is_twin=false;
+		Good<dataType>& g = twinGood;
 		dataType val = -this->cost(g, wasserstein, geometricalFactor);
 		val -= g.getPrice();
 		if(val>best_val){
 			second_val = best_val;
 			best_val = val;
 			best_good = &g;
+			is_twin = true;
 		}
 		else if(val>second_val){
 			second_val=val;
@@ -338,6 +342,64 @@ namespace ttk{
 		// Assign best_good to bidder and unassign the previous owner of best_good if need be
 		int idx_reassigned = best_good->getOwner();
 		best_good->assign(this->position_in_auction_, new_price);
+		if(is_twin){
+			// Update weight in KDTree if the closest good is in it
+			correspondance_kdt_map[best_good->id_]->updateWeight(new_price);
+		}
+		return idx_reassigned;
+	}
+	
+	template<typename dataType>
+	int Bidder<dataType>::runBidding(GoodDiagram<dataType>& goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, KDTree<dataType>* kdt){
+		//TODO Adjust for goodDiagrams with only one point...		
+		std::vector<KDTree<dataType>*> neighbours;
+		std::vector<dataType> costs;
+		
+		std::vector<dataType> coordinates;
+		coordinates.push_back(this->x_);
+		coordinates.push_back(this->y_);
+		
+		kdt->getKClosest(2, coordinates, neighbours, costs);
+		std::vector<int> idx(2);
+		idx[0] = 0;
+		idx[1] = 1;
+		sort(idx.begin(), idx.end(), [&costs](int& a, int& b){return costs[a] < costs[b];});
+		
+		KDTree<dataType>* closest_kdt = neighbours[idx[0]];
+		Good<dataType>* best_good = &goods.get(closest_kdt->id_);
+		// Value is defined as the opposite of cost (each bidder aims at maximizing it)
+		dataType best_val = -costs[idx[0]];
+		dataType second_val = -costs[idx[1]];
+		
+		// And now check for the corresponding twin bidder
+		bool diagonal_chosen = false;
+		Good<dataType>& g = twinGood;
+		dataType val = -this->cost(g, wasserstein, geometricalFactor);
+		val -= g.getPrice();
+		if(val>best_val){
+			second_val = best_val;
+			best_val = val;
+			best_good = &g;
+			diagonal_chosen = true;
+		}
+		else if(val>second_val){
+			second_val=val;
+		}
+
+		dataType old_price = best_good->getPrice();
+		dataType new_price = old_price + best_val-second_val + epsilon;
+		// Assign bidder to best_good
+		this->setProperty(best_good);
+		this->setPricePaid(new_price);
+		
+		// Assign best_good to bidder and unassign the previous owner of best_good if need be
+		int idx_reassigned = best_good->getOwner();
+		best_good->assign(this->position_in_auction_, new_price);
+		
+		// Update the price in the KDTree
+		if(!diagonal_chosen){
+			closest_kdt->updateWeight(new_price);
+		}
 		return idx_reassigned;
 	}
 

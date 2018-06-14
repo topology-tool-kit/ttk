@@ -31,7 +31,7 @@ namespace ttk {
   {
 
     public:
-
+		std::vector<KDTree<dataType>*> correspondance_kdt_map_;
 		Auction(int wasserstein, double geometricalFactor, double delta_lim) {
             n_bidders_ = 0;
             n_goods_ = 0;
@@ -93,18 +93,17 @@ namespace ttk {
 		
 		
 		void buildKDTree(){
+			Timer t;
 			kdt_ = new KDTree<dataType>(true, wasserstein_);
 			const int dimension = 2;
-			std::vector<dataType> coordinates(goods_.size()*dimension);
-			int counter = 0;
+			std::vector<dataType> coordinates;
 			for(int i=0; i<goods_.size(); i++){
 				Good<dataType>& g = goods_.get(i);
-				coordinates[counter*dimension] = g.x_;
-				coordinates[counter*dimension + 1] = g.y_;
+				coordinates.push_back(g.x_);
+				coordinates.push_back(g.y_);
 			}
-			
-			kdt_->build(coordinates.data(), goods_.size(), dimension);
-			
+			correspondance_kdt_map_ = kdt_->build(coordinates.data(), goods_.size(), dimension);
+			std::cout<<"[Building KD-Tree] Time elapsed : " << t.getElapsedTime() << " s."<<std::endl;
 		}
 		
 		void setEpsilon(dataType epsilon){
