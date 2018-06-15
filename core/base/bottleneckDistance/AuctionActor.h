@@ -356,8 +356,13 @@ namespace ttk{
 		std::vector<dataType> costs;
 		
 		std::vector<dataType> coordinates;
-		coordinates.push_back(this->x_);
-		coordinates.push_back(this->y_);
+		coordinates.push_back(geometricalFactor*this->x_);
+		coordinates.push_back(geometricalFactor*this->y_);
+		if(geometricalFactor<1){
+			coordinates.push_back((1-geometricalFactor)*this->coords_x_);
+			coordinates.push_back((1-geometricalFactor)*this->coords_y_);
+			coordinates.push_back((1-geometricalFactor)*this->coords_z_);
+		}
 		
 		kdt->getKClosest(2, coordinates, neighbours, costs);
 		std::vector<int> idx(2);

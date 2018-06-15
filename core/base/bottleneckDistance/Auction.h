@@ -99,8 +99,13 @@ namespace ttk {
 			std::vector<dataType> coordinates;
 			for(int i=0; i<goods_.size(); i++){
 				Good<dataType>& g = goods_.get(i);
-				coordinates.push_back(g.x_);
-				coordinates.push_back(g.y_);
+				coordinates.push_back(geometricalFactor_*g.x_);
+				coordinates.push_back(geometricalFactor_*g.y_);
+				if(geometricalFactor_<1){
+					coordinates.push_back((1-geometricalFactor_)*g.coords_x_);
+					coordinates.push_back((1-geometricalFactor_)*g.coords_y_);
+					coordinates.push_back((1-geometricalFactor_)*g.coords_z_);
+				}
 			}
 			correspondance_kdt_map_ = kdt_->build(coordinates.data(), goods_.size(), dimension);
 			std::cout<<"[Building KD-Tree] Time elapsed : " << t.getElapsedTime() << " s."<<std::endl;

@@ -26,8 +26,14 @@ namespace ttk{
   {
 	
 	public:
+		KDTree* left_;		   // Lower half for the coordinate specified    
+		KDTree* right_;		   // Higher half
+		KDTree* parent_;
 		int id_;			   // ID of the object saved here. The whole object is not kept in the KDTree
 							   // Users should keep track of them in a table for instance
+		std::vector<dataType> coordinates_;
+		std::vector<dataType> coords_min_;
+		std::vector<dataType> coords_max_;
 		KDTree(){
 			left_ = nullptr;
 			right_ = nullptr;
@@ -60,6 +66,7 @@ namespace ttk{
 			coords_number_ = coords_number;
 			p_ = father->p_;
 			include_weights_ = father->include_weights_;
+			is_left_ = is_left;
 		}
 		
 		~KDTree(){
@@ -91,10 +98,6 @@ namespace ttk{
 		}
 		
 	protected:
-		KDTree* left_;		   // Lower half for the coordinate specified    
-		KDTree* right_;		   // Higher half
-		KDTree* parent_;
-
 		bool is_left_;		   // Boolean indicating if the current node is a left node of its parent
 		int coords_number_;    // Indicates according to which coordinate the tree splits its elements
 		
@@ -105,9 +108,6 @@ namespace ttk{
 		
 		dataType weight_;
 		dataType min_subweights_;
-		std::vector<dataType> coordinates_;
-		std::vector<dataType> coords_min_;
-		std::vector<dataType> coords_max_;
 		
 	};
 	
@@ -201,10 +201,10 @@ namespace ttk{
 			coords_min_.push_back(parent_->coords_min_[axis]);
 			coords_max_.push_back(parent_->coords_max_[axis]);
 		}
-		if(parent_->is_left_ && !parent->isRoot()){
+		if(is_left_ && !this->isRoot()){
 			coords_max_[parent_->coords_number_] = parent_->coordinates_[parent_->coords_number_];
 		}
-		else if(!parent_->is_left_ && !parent->isRoot()){
+		else if(!is_left_ && !this->isRoot()){
 			coords_min_[parent_->coords_number_] = parent_->coordinates_[parent_->coords_number_];
 		}
 		
@@ -266,6 +266,10 @@ namespace ttk{
 	
 	template<typename dataType>
 	void KDTree<dataType>::getKClosest(const unsigned int k, const std::vector<dataType>& coordinates, std::vector<KDTree<dataType>*>& neighbours, std::vector<dataType>& costs){
+		/// Puts the k closest points to the given coordinates in the "neighbours" vector
+		/// along with their costs in the "costs" vector
+		/// The output is not sorted, if you are interested in the k nearest neighbours in the order, 
+		/// will need to sort them according to their cost.
 		if(this->isLeaf()){
 			dataType cost = this->cost(coordinates);
 			neighbours.push_back(this);
@@ -310,7 +314,7 @@ namespace ttk{
 			dataType max_cost = *std::max_element(costs.begin(), costs.end());
 			dataType& min_subweight = left_->min_subweights_;
 			dataType d_min = this->distanceToBox(left_, coordinates);
-			if(true || costs.size()<k || d_min+min_subweight < max_cost){
+			if(costs.size()<k || d_min+min_subweight < max_cost){
 				// 2.2- It is possible that there exists a point in this subtree that is less
 				// costly than max_cost
 				left_->recursiveGetKClosest(k, coordinates, neighbours, costs);
@@ -321,7 +325,7 @@ namespace ttk{
 			dataType max_cost = *std::max_element(costs.begin(), costs.end());
 			dataType& min_subweight = right_->min_subweights_;
 			dataType d_min = this->distanceToBox(right_, coordinates);
-			if(true || costs.size()<k || d_min+min_subweight<max_cost){
+			if(costs.size()<k || d_min+min_subweight < max_cost){
 				// 2.2- It is possible that there exists a point in this subtree that is less
 				// costly than max_cost
 				right_->recursiveGetKClosest(k, coordinates, neighbours, costs);
@@ -367,5 +371,6 @@ namespace ttk{
 		return parent_==nullptr;
 	}
 }
+
 
 #endif
