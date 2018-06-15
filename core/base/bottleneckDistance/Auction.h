@@ -31,6 +31,7 @@ namespace ttk {
   {
 
     public:
+		KDTree<dataType>* kdt_;
 		std::vector<KDTree<dataType>*> correspondance_kdt_map_;
 		Auction(int wasserstein, double geometricalFactor, double delta_lim) {
             n_bidders_ = 0;
@@ -46,6 +47,7 @@ namespace ttk {
 
 		
 		void BuildAuctionDiagrams(std::vector<diagramTuple> diagram1, std::vector<diagramTuple> diagram2){
+			Timer t;
 			n_bidders_ = diagram1.size();
 			n_goods_ = diagram2.size();
 			this->setBidders(diagram1);
@@ -66,6 +68,7 @@ namespace ttk {
 				bidders_.addBidder(b);
 			}
 			this->buildKDTree();
+			std::cout<<"[Initialize auction] Time elapsed : " << t.getElapsedTime() << " s."<<std::endl;
 		}
 		
 		void setBidders(std::vector<diagramTuple> diagram1){
@@ -95,7 +98,7 @@ namespace ttk {
 		void buildKDTree(){
 			Timer t;
 			kdt_ = new KDTree<dataType>(true, wasserstein_);
-			const int dimension = 2;
+			const int dimension = geometricalFactor_ >= 1 ? 2 : 5;
 			std::vector<dataType> coordinates;
 			for(int i=0; i<goods_.size(); i++){
 				Good<dataType>& g = goods_.get(i);
@@ -201,7 +204,7 @@ namespace ttk {
 		double delta_lim_;
 		double geometricalFactor_;
 		
-		KDTree<dataType>* kdt_;
+		//KDTree<dataType>* kdt_;
   };
 }
 

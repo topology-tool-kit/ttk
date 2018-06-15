@@ -34,6 +34,8 @@ namespace ttk{
 		std::vector<dataType> coordinates_;
 		std::vector<dataType> coords_min_;
 		std::vector<dataType> coords_max_;
+		
+		
 		KDTree(){
 			left_ = nullptr;
 			right_ = nullptr;

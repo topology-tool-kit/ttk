@@ -299,6 +299,7 @@ int ttk::BottleneckDistance::computeAuction(
 	std::vector<matchingTuple> sadMatchings;
 	dataType d = 0;
 	if(D1Min.size()+D2Min.size()>0){
+		std::cout<< "..."<<std::endl;
 		Auction<dataType> auctionMin(wasserstein, geometricalFactor, delta_lim);
 		dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
 		auctionMin.BuildAuctionDiagrams(D1Min, D2Min);
@@ -310,6 +311,7 @@ int ttk::BottleneckDistance::computeAuction(
 	}
 	
 	if(D1Sad.size()+D2Sad.size()>0){
+		std::cout<< "..."<<std::endl;
 		Auction<dataType> auctionSad(wasserstein, geometricalFactor, delta_lim);
 		dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
 		auctionSad.BuildAuctionDiagrams(D1Sad, D2Sad);
@@ -321,6 +323,7 @@ int ttk::BottleneckDistance::computeAuction(
 	}
 	
 	if(D1Max.size()+D2Max.size()>0){
+		std::cout<< "..."<<std::endl;
 		Auction<dataType> auctionMax(wasserstein, geometricalFactor, delta_lim);
 		dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
 		auctionMax.BuildAuctionDiagrams(D1Max, D2Max);

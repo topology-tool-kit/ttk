@@ -53,8 +53,8 @@ namespace ttk{
 		~AuctionActor() {};
 		
 		
-		void SetCoordinates(dataType x, dataType y);
-		void SetCriticalCoordinates(dataType coords_x, dataType coords_y, dataType coords_z);
+		void SetCoordinates(dataType& x, dataType& y);
+		void SetCriticalCoordinates(dataType& coords_x, dataType& coords_y, dataType& coords_z);
 		void projectOnDiagonal();
 		int getId();
 		dataType getPersistence();
@@ -65,9 +65,9 @@ namespace ttk{
 			return (var >= 0) ? var : -var;
 		}
 		
-		dataType cost(AuctionActor& g, int wasserstein, double geometricalFactor);
+		dataType cost(AuctionActor& g, int& wasserstein, double& geometricalFactor);
 		
-		inline dataType cost(AuctionActor* g, int wasserstein, double geometricalFactor);
+		inline dataType cost(AuctionActor* g, int& wasserstein, double& geometricalFactor);
 		
 	protected:
 		bool is_diagonal_;
@@ -81,13 +81,13 @@ namespace ttk{
 	}
   
 	template<typename dataType>
-	void AuctionActor<dataType>::SetCoordinates(dataType x, dataType y){
+	void AuctionActor<dataType>::SetCoordinates(dataType& x, dataType& y){
 		x_ = x;
 		y_ = y;
 	}
 	
 	template<typename dataType>
-	void AuctionActor<dataType>::SetCriticalCoordinates(dataType coords_x, dataType coords_y, dataType coords_z){
+	void AuctionActor<dataType>::SetCriticalCoordinates(dataType& coords_x, dataType& coords_y, dataType& coords_z){
 		coords_x_ = coords_x;
 		coords_y_ = coords_y;
 		coords_z_ = coords_z;
@@ -112,7 +112,7 @@ namespace ttk{
 	}
 	
 	template<typename dataType>
-	dataType AuctionActor<dataType>::cost(AuctionActor& g, int wasserstein, double geometricalFactor){
+	dataType AuctionActor<dataType>::cost(AuctionActor& g, int& wasserstein, double& geometricalFactor){
 		if(is_diagonal_ && g.isDiagonal()){
 			return 0;
 		}
@@ -129,7 +129,7 @@ namespace ttk{
 	}
 	
 	template<typename dataType>
-	dataType AuctionActor<dataType>::cost(AuctionActor* g, int wasserstein, double geometricalFactor){
+	dataType AuctionActor<dataType>::cost(AuctionActor* g, int& wasserstein, double& geometricalFactor){
 		return this->cost(*g, wasserstein, geometricalFactor);
 	}
 
@@ -145,7 +145,7 @@ namespace ttk{
 			 price_ = 0;
          }
          
-         Good(diagramTuple tuple, int id) : AuctionActor<dataType>(){
+         Good(diagramTuple& tuple, int id) : AuctionActor<dataType>(){
 			AuctionActor<dataType>::id_ = id;
 			
 			dataType x = std::get<6>(tuple);
@@ -202,9 +202,9 @@ namespace ttk{
 			GoodDiagram() {};
 			~GoodDiagram() {};
 			
-			void addGood(Good<dataType> g);
+			void addGood(Good<dataType>& g);
 			Good<dataType>& get(int idx);
-			void set(Good<dataType> g, int idx); 
+			void set(Good<dataType>& g, int idx); 
 			
 			inline int size(){
 				return goods_.size(); 
@@ -216,7 +216,7 @@ namespace ttk{
 
 
 	template<typename dataType>
-	void GoodDiagram<dataType>::addGood(Good<dataType> g){
+	void GoodDiagram<dataType>::addGood(Good<dataType>& g){
 		goods_.push_back(g);
 	}
 
@@ -226,7 +226,7 @@ namespace ttk{
 	}  
 	
 	template<typename dataType>
-	void GoodDiagram<dataType>::set(Good<dataType> g, int idx){
+	void GoodDiagram<dataType>::set(Good<dataType>& g, int idx){
 		goods_[idx] = g;
 	}  
   
@@ -245,7 +245,7 @@ namespace ttk{
 			 property_ = NULL;
          }
          
-		Bidder(diagramTuple tuple, int id) : AuctionActor<dataType>()  {
+		Bidder(diagramTuple& tuple, int id) : AuctionActor<dataType>()  {
 			AuctionActor<dataType>::id_ = id;
 			dataType x = std::get<6>(tuple);
 			dataType y = std::get<10>(tuple);
@@ -351,7 +351,7 @@ namespace ttk{
 	
 	template<typename dataType>
 	int Bidder<dataType>::runBidding(GoodDiagram<dataType>& goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, KDTree<dataType>* kdt){
-		//TODO Adjust for goodDiagrams with only one point...		
+		//TODO Adjust for goodDiagrams with only one point...
 		std::vector<KDTree<dataType>*> neighbours;
 		std::vector<dataType> costs;
 		
@@ -447,7 +447,7 @@ namespace ttk{
 	BidderDiagram() {};
 	~BidderDiagram() {};
       
-	inline void addBidder(Bidder<dataType> b){
+	inline void addBidder(Bidder<dataType>& b){
 		bidders_.push_back(b);
 	}
 	  
