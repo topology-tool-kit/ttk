@@ -851,7 +851,6 @@ int ttk::MorseSmaleComplex3D::execute(){
   discreteGradient_.setDebugLevel(debugLevel_);
   discreteGradient_.buildGradient<dataType>();
   discreteGradient_.buildGradient2<dataType>();
-  discreteGradient_.buildGradient3<dataType>();
   discreteGradient_.reverseGradient<dataType>();
 
   std::vector<Cell> criticalPoints;
