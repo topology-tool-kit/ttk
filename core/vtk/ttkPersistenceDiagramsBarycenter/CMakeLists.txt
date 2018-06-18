@@ -1,0 +1,4 @@
+ttk_add_vtk_library(ttkPersistenceDiagramsBarycenter
+	SOURCES ttkPersistenceDiagramsBarycenter.cpp
+	HEADERS ttkPersistenceDiagramsBarycenter.h
+	LINK persistenceDiagramsBarycenter ttkTriangulation)
