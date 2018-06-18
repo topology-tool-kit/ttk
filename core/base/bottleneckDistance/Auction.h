@@ -23,8 +23,17 @@
 #include <PersistenceDiagram.h>
 #include <AuctionActor.h>
 #include <KDTree.h>
+#include <queue>
 
 namespace ttk {
+  template<typename dataType>
+  struct Compare {
+	constexpr bool operator()(std::pair<int, dataType> const & a,
+								std::pair<int, dataType> const & b) const noexcept
+    { return a.second > b.second;}
+  };
+	
+	
     
   template<typename dataType>
   class Auction : public Debug
@@ -58,6 +67,8 @@ namespace ttk {
 				Good<dataType> g = Good<dataType>(b.x_, b.y_, true, -b.id_-1);
 				g.projectOnDiagonal();
 				diagonal_goods_.addGood(g);
+				std::pair<int, dataType> pair = std::make_pair(i, 0);
+				diagonal_queue_.push(pair);
 			}
 			for(int i=0; i < n_goods_; i++){
 				//Add diagonal bidders
@@ -195,6 +206,7 @@ namespace ttk {
 		BidderDiagram<dataType>  bidders_;
 		GoodDiagram<dataType>  goods_;
 		GoodDiagram<dataType> diagonal_goods_;
+		std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>> diagonal_queue_;
 		std::list<int> unassignedBidders_;
 		
 		int n_bidders_;

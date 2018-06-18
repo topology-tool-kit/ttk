@@ -34,6 +34,7 @@ namespace ttk{
 		std::vector<dataType> coordinates_;
 		std::vector<dataType> coords_min_;
 		std::vector<dataType> coords_max_;
+		int level_;
 		
 		
 		KDTree(){
@@ -154,6 +155,7 @@ namespace ttk{
 		min_subweights_ = 0;
 		id_ = median_idx;
 		parent_ = nullptr;
+		level_ = 0;
 		
 		if(idx.size()>1){
 			// Build left leaf
@@ -197,6 +199,7 @@ namespace ttk{
 		min_subweights_ = 0;
 		id_ = median_idx;
 		parent_ = parent;
+		level_ = parent->level_ +1;
 		
 		// Create bounding box
 		for(int axis = 0; axis<dimension; axis++){
@@ -313,23 +316,33 @@ namespace ttk{
 		
 		// 2- Recursively visit KDTrees that are worth it
 		if(left_){
-			dataType max_cost = *std::max_element(costs.begin(), costs.end());
-			dataType& min_subweight = left_->min_subweights_;
-			dataType d_min = this->distanceToBox(left_, coordinates);
-			if(costs.size()<k || d_min+min_subweight < max_cost){
-				// 2.2- It is possible that there exists a point in this subtree that is less
-				// costly than max_cost
+			if(level_<5){
+				dataType max_cost = *std::max_element(costs.begin(), costs.end());
+				dataType& min_subweight = left_->min_subweights_;
+				dataType d_min = this->distanceToBox(left_, coordinates);
+				if(costs.size()<k || d_min+min_subweight < max_cost){
+					// 2.2- It is possible that there exists a point in this subtree that is less
+					// costly than max_cost
+					left_->recursiveGetKClosest(k, coordinates, neighbours, costs);
+				}
+			}
+			else{
 				left_->recursiveGetKClosest(k, coordinates, neighbours, costs);
 			}
 		}
 		
 		if(right_){
-			dataType max_cost = *std::max_element(costs.begin(), costs.end());
-			dataType& min_subweight = right_->min_subweights_;
-			dataType d_min = this->distanceToBox(right_, coordinates);
-			if(costs.size()<k || d_min+min_subweight < max_cost){
-				// 2.2- It is possible that there exists a point in this subtree that is less
-				// costly than max_cost
+			if(level_<5){
+				dataType max_cost = *std::max_element(costs.begin(), costs.end());
+				dataType& min_subweight = right_->min_subweights_;
+				dataType d_min = this->distanceToBox(right_, coordinates);
+				if(costs.size()<k || d_min+min_subweight < max_cost){
+					// 2.2- It is possible that there exists a point in this subtree that is less
+					// costly than max_cost
+					right_->recursiveGetKClosest(k, coordinates, neighbours, costs);
+				}
+			}
+			else{
 				right_->recursiveGetKClosest(k, coordinates, neighbours, costs);
 			}
 		}

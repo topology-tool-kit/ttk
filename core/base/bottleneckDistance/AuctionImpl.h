@@ -9,7 +9,8 @@ template <typename dataType>
 dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 {	
 	int n_biddings = 0;
-	double t_biddings = 0;
+	double t_biddings_off = 0;
+	double t_biddings_on = 0;
 	dataType delta = 5;
 	while(delta>delta_lim_){
 		epsilon_ /= 5;
@@ -22,18 +23,23 @@ dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 			unassignedBidders_.pop_front();
 			
 			GoodDiagram<dataType>& all_goods = b.isDiagonal() ? diagonal_goods_ : goods_;
-			Good<dataType>& diagonal_good = b.id_>=0 ? diagonal_goods_.get(b.id_) : goods_.get(-b.id_-1);
+			Good<dataType>& twin_good = b.id_>=0 ? diagonal_goods_.get(b.id_) : goods_.get(-b.id_-1);
 			
 			int idx_reassigned;
-			Timer t;
 			if(b.isDiagonal()){
-				idx_reassigned = b.runBidding(all_goods, diagonal_good, wasserstein_, epsilon_, geometricalFactor_, correspondance_kdt_map_);
+				Timer t;
+				idx_reassigned = b.runDiagonalKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, correspondance_kdt_map_, diagonal_queue_);
+				//idx_reassigned = b.runDiagonalBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, diagonal_queue_);
+				t_biddings_on += t.getElapsedTime();
 			}
 			else{
+				Timer t;
 				// We can use the kd-tree to speed up the search
-				idx_reassigned = b.runBidding(all_goods, diagonal_good, wasserstein_, epsilon_, geometricalFactor_, kdt_);
+				idx_reassigned = b.runKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, kdt_);
+				//idx_reassigned = b.runBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_);
+				t_biddings_off += t.getElapsedTime();
 			}
-			t_biddings += t.getElapsedTime();
+			
 			
 			if(idx_reassigned>=0){
 				Bidder<dataType>& reassigned = bidders_.get(idx_reassigned);
@@ -44,7 +50,8 @@ dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 		delta = this->getRelativePrecision();
 	}
 	std::cout<<"Number of biddings : " << n_biddings <<std::endl;
-	std::cout<<"[Biddings time] Time elapsed : " << t_biddings << " s."<<std::endl;
+	std::cout<<"[Biddings time] Time elapsed off-diagonal : " << t_biddings_off << " s."<<std::endl;
+	std::cout<<"[Biddings time] Time elapsed on-diagonal : " << t_biddings_on << " s."<<std::endl;
 	dataType wassersteinDistance = 0;
 	for (int i=0; i<bidders_.size(); i++){
 		Bidder<dataType>& b = bidders_.get(i);
