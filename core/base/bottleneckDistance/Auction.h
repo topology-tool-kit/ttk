@@ -53,6 +53,7 @@ namespace ttk {
         };
 		~Auction() {};
 
+		void runAuctionRound(int& n_biddings);
 		dataType run(std::vector<matchingTuple> *matchings);
 
 		
