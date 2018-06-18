@@ -28,15 +28,23 @@ dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 			int idx_reassigned;
 			if(b.isDiagonal()){
 				Timer t;
-				idx_reassigned = b.runDiagonalKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, correspondance_kdt_map_, diagonal_queue_);
-				//idx_reassigned = b.runDiagonalBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, diagonal_queue_);
+				if(use_kdt_){
+					idx_reassigned = b.runDiagonalKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, correspondance_kdt_map_, diagonal_queue_);
+				}
+				else{
+					idx_reassigned = b.runDiagonalBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, diagonal_queue_);
+				}
 				t_biddings_on += t.getElapsedTime();
 			}
 			else{
 				Timer t;
-				// We can use the kd-tree to speed up the search
-				idx_reassigned = b.runKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, kdt_);
-				//idx_reassigned = b.runBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_);
+				if(use_kdt_){
+					// We can use the kd-tree to speed up the search
+					idx_reassigned = b.runKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, kdt_);
+				}
+				else{
+					idx_reassigned = b.runBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_);
+				}
 				t_biddings_off += t.getElapsedTime();
 			}
 			

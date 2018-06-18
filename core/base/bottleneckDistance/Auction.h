@@ -42,13 +42,14 @@ namespace ttk {
     public:
 		KDTree<dataType>* kdt_;
 		std::vector<KDTree<dataType>*> correspondance_kdt_map_;
-		Auction(int wasserstein, double geometricalFactor, double delta_lim) {
+		Auction(int wasserstein, double geometricalFactor, double delta_lim, bool use_kdTree=true) {
             n_bidders_ = 0;
             n_goods_ = 0;
 			epsilon_ = 1;
 			wasserstein_ = wasserstein;
 			delta_lim_ = delta_lim;
 			geometricalFactor_ = geometricalFactor;
+			use_kdt_ = use_kdTree;
         };
 		~Auction() {};
 
@@ -215,6 +216,7 @@ namespace ttk {
 		dataType epsilon_;
 		double delta_lim_;
 		double geometricalFactor_;
+		bool use_kdt_;
 		
 		//KDTree<dataType>* kdt_;
   };
