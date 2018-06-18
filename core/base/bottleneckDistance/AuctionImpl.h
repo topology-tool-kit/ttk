@@ -47,18 +47,8 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings)
 
 
 template <typename dataType>
-dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
-{	
-	int n_biddings = 0;
-	dataType delta = 5;
-	while(delta>delta_lim_){
-		epsilon_ /= 5;
-		this->buildUnassignedBidders();
-		this->reinitializeGoods();
-		this->runAuctionRound(n_biddings);
-		delta = this->getRelativePrecision();
-	}
-	std::cout<<"Number of biddings : " << n_biddings <<std::endl;
+dataType ttk::Auction<dataType>::getMatchingsAndDistance(std::vector<matchingTuple> *matchings)
+{
 	dataType wassersteinDistance = 0;
 	for (int i=0; i<bidders_.size(); i++){
 		Bidder<dataType>& b = bidders_.get(i);
@@ -83,6 +73,24 @@ dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 			wassersteinDistance += pow(abs<dataType>((g.x_-g.y_)/2), wasserstein_);
 		}
 	}
+	return wassersteinDistance;
+}
+
+
+template <typename dataType>
+dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
+{	
+	int n_biddings = 0;
+	dataType delta = 5;
+	while(delta>delta_lim_){
+		epsilon_ /= 5;
+		this->buildUnassignedBidders();
+		this->reinitializeGoods();
+		this->runAuctionRound(n_biddings);
+		delta = this->getRelativePrecision();
+	}
+	std::cout<<"Number of biddings : " << n_biddings <<std::endl;
+	dataType wassersteinDistance = this->getMatchingsAndDistance(matchings);
 	return wassersteinDistance;
 }
 #endif
