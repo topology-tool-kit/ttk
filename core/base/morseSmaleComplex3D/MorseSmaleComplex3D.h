@@ -849,8 +849,20 @@ int ttk::MorseSmaleComplex3D::execute(){
 
   discreteGradient_.setThreadNumber(threadNumber_);
   discreteGradient_.setDebugLevel(debugLevel_);
-  discreteGradient_.buildGradient<dataType>();
-  discreteGradient_.buildGradient2<dataType>();
+  {
+    Timer tmp;
+    discreteGradient_.buildGradient<dataType>();
+    discreteGradient_.buildGradient2<dataType>();
+    discreteGradient_.buildGradient3<dataType>();
+
+    {
+      std::stringstream msg;
+      msg << "[MorseSmaleComplex3D] Discrete gradient overall computed in "
+        << tmp.getElapsedTime() << " s."
+        << std::endl;
+      dMsg(std::cout, msg.str(), timeMsg);
+    }
+  }
   discreteGradient_.reverseGradient<dataType>();
 
   std::vector<Cell> criticalPoints;
