@@ -277,12 +277,6 @@ namespace ttk{
       template <class dataType>
         int execute() const;
 
-      /// Pass a pointer to an input array representing a scalarfield.
-      /// The array is expected to be correctly allocated. idx in [0,numberOfInputs_[
-      /// \param idx Index of the input scalar field.
-      /// \param data Pointer to the data array.
-      /// \return Returns 0 upon success, negative values otherwise.
-      /// \sa setNumberOfInputs() and setVertexNumber().
       inline int setInputDataPointer(int idx, void *data){
         if(idx < numberOfInputs_){
           inputData_[idx] = data;
@@ -293,79 +287,14 @@ namespace ttk{
         return 0;
       }
 
-      /// Pass a pointer to an output array representing the lower bound scalar field.
-      /// The array is expected to be correctly allocated.
-      /// \param data Pointer to the data array.
-      /// \return Returns 0 upon success, negative values otherwise.
-      /// \sa setVertexNumber()
-      inline int setOutputLowerBoundField(void *data){
-        outputLowerBoundField_ = data;
-        return 0;
-      }
-
-      /// Pass a pointer to an output array representing the upper bound scalar field.
-      /// The array is expected to be correctly allocated.
-      /// \param data Pointer to the data array.
-      /// \return Returns 0 upon success, negative values otherwise.
-      /// \sa setVertexNumber()
-      inline int setOutputUpperBoundField(void *data){
-        outputUpperBoundField_ = data;
-        return 0;
-      }
-
-      inline int setOutputProbability(int idx, void *data){
-        if(idx < binCount_){
-          outputProbability_[idx] = data;
-        }
-
-        return 0;
-      }
-
-      inline int setOutputMeanField(void *data) {
-        outputMeanField_ = data;
-        return 0;
-      }
 
 
-      inline int setComputeLowerBound(const bool &state){
-        computeLowerBound_ = state;
-        return 0;
-      }
-
-
-      inline int setComputeUpperBound(const bool &state){
-        computeUpperBound_ = state;
-        return 0;
-      }
-
-
-      /// Set the number of vertices in the scalar field.
-      /// \param vertexNumber Number of vertices in the data-set.
-      /// \return Returns 0 upon success, negative values otherwise.
       inline int setVertexNumber(const int &vertexNumber){
         vertexNumber_ = vertexNumber;
         return 0;
       }
 
-      inline int setBinCount(const int &binCount){
-        binCount_ = binCount;
-        if(outputProbability_)
-          free(outputProbability_);
-        outputProbability_ = (void **) malloc(binCount*sizeof(void *));
-        for(int b=0 ; b<binCount ; b++)
-          outputProbability_[b] = NULL;
 
-        if(binValues_)
-          free(binValues_);
-        binValues_ = (double *) malloc(binCount*sizeof(double));
-
-        return 0;
-      }
-
-
-      /// Set the number of input scalar fields
-      /// \param numberOfInputs Number of input scalar fields.
-      /// \return Returns 0 upon success, negative values otherwise
       inline int setNumberOfInputs(int numberOfInputs){
         numberOfInputs_ = numberOfInputs;
         if(inputData_)
@@ -378,26 +307,14 @@ namespace ttk{
       }
 
 
-      inline double getBinValue(int b){
-        if(b<binCount_)
-          return binValues_[b];
-        return 0.0;
-      }
 
 
     protected:
 
       int                   vertexNumber_;
       int                   numberOfInputs_;
-      int                   binCount_;
-      double                *binValues_; //TODO : std::vector<double>
-      bool                  computeLowerBound_;
-      bool                  computeUpperBound_;
       void                  **inputData_; //TODO : std::vector<void*>
-      void                  *outputLowerBoundField_;
-      void                  *outputUpperBoundField_;
-      void                  **outputProbability_; //TODO : std::vector<void*>
-      void                  *outputMeanField_;
+
   };
 }
 
@@ -407,156 +324,28 @@ namespace ttk{
 // template functions
 template <class dataType> int ttk::PersistenceDiagramsBarycenter::execute() const{
 
-  Timer t;
+	Timer t;
+	
+		
+	for(int i=0; i<numberOfInputs_; i++){
+		std::cout << i <<std::endl;
+	}
+	/*for(int i=0; i<numberOfInputs_; i++){
+		dataType* x = static_cast<dataType*>(inputData_[i]);
+		std::cout << x[0] <<std::endl;
+	}*/
+	
+	{
+	std::stringstream msg;
+	msg << "[PersistenceDiagramsBarycenter] Data-set (" << vertexNumber_
+		<< " points) processed in "
+		<< t.getElapsedTime() << " s. (" << threadNumber_
+		<< " thread(s))."
+		<< std::endl;
+	dMsg(std::cout, msg.str(), timeMsg);
+	}
 
-  // Check the consistency of the variables
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!numberOfInputs_)
-    return -1;
-  if(!vertexNumber_)
-    return -2;
-  if(!inputData_)
-    return -3;
-
-  for(int i=0 ; i<numberOfInputs_ ; i++){
-      if(!inputData_[i])
-        return -4;
-    }
-  if(!outputLowerBoundField_)
-    return -5;
-  if(!outputUpperBoundField_)
-    return -6;
-#endif
-
-  int count = 0;
-
-  // Pointers type casting
-  dataType *outputLowerBoundField = (dataType *) outputLowerBoundField_;
-  dataType *outputUpperBoundField = (dataType *) outputUpperBoundField_;
-  double **outputProbability = (double **) outputProbability_;
-  dataType **inputData = (dataType **) inputData_;
-  double *outputMeanField = static_cast<double*>(outputMeanField_);
-
-
-#ifdef TTK_ENABLE_OPENMP
-  omp_lock_t writeLock;
-  omp_init_lock(&writeLock);
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-
-  for(int v = 0; v < (int) vertexNumber_; v++){
-
-    // Avoid any processing if the abort signal is sent
-    if((!wrapper_)||((wrapper_)&&(!wrapper_->needsToAbort()))){
-
-      // For the lower bound scalar field
-      if(computeLowerBound_){
-        // Initialisation : values of the first input
-        outputLowerBoundField[v] = inputData[0][v];
-        // Loop over the inputs
-        for(int inp=1 ; inp < numberOfInputs_ ; inp++){
-          // Minimum value
-          if(computeLowerBound_)
-            if(inputData[inp][v] < outputLowerBoundField[v])
-              outputLowerBoundField[v] = inputData[inp][v];
-        }
-      }
-
-      // For the upper bound scalar field
-      if(computeUpperBound_){
-        // Initialisation : values of the first input
-        outputUpperBoundField[v] = inputData[0][v];
-        // Loop over the inputs
-        for(int inp=1 ; inp < numberOfInputs_ ; inp++){
-          // Maximum value
-          if(computeUpperBound_)
-            if(inputData[inp][v] > outputUpperBoundField[v])
-              outputUpperBoundField[v] = inputData[inp][v];
-        }
-      }
-
-      // Update the progress bar of the wrapping code -- to adapt
-      if(debugLevel_ > advancedInfoMsg){
-#ifdef TTK_ENABLE_OPENMP
-        omp_set_lock(&writeLock);
-#endif
-        if((wrapper_)
-          &&(!(count % ((vertexNumber_)/10)))){
-          wrapper_->updateProgress((count + 1.0)
-            /vertexNumber_);
-        }
-
-        count++;
-#ifdef TTK_ENABLE_OPENMP
-        omp_unset_lock(&writeLock);
-#endif
-      }
-    }
-  }
-
-
-  // Histogram
-  if(computeUpperBound_ && computeLowerBound_){
-    // Range
-    double range[2];
-    range[0] = outputLowerBoundField[0];
-    range[1] = outputUpperBoundField[0];
-
-    for(int v=0 ; v<vertexNumber_ ; v++){
-      if(outputLowerBoundField[v] < range[0])
-        range[0] = outputLowerBoundField[v];
-      if(outputUpperBoundField[v] > range[1])
-        range[1] = outputUpperBoundField[v];
-    }
-
-    // Interval between bins
-    double dx = (range[1]-range[0]) / (double)binCount_;
-
-    // Bin values
-    for(int b=0 ; b<binCount_ ; b++){
-      binValues_[b] = range[0]+(dx/2.0) + (double)b * dx;
-    }
-
-    int idx;
-    double increment = 1.0 / (double)numberOfInputs_;
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for private(idx) num_threads(threadNumber_)
-#endif
-    for(int v=0 ; v<vertexNumber_ ; v++){
-      for(int i=0 ; i<numberOfInputs_ ; i++){
-        idx = (unsigned int) floor((inputData[i][v]-range[0])*binCount_/(range[1]-range[0]));
-        idx = (idx==binCount_) ? binCount_-1 : idx;
-        outputProbability[idx][v] += increment;
-      }
-    }
-  }
-
-  // Mean field
-  for(int v=0 ; v<vertexNumber_ ; v++) {
-    double sum = 0.0;
-    for(int i=0 ; i<numberOfInputs_ ; i++) {
-      sum += static_cast<double>(inputData[i][v]);
-    }
-    outputMeanField[v] = sum / static_cast<double>(numberOfInputs_);
-  }
-
-
-
-#ifdef TTK_ENABLE_OPENMP
-  omp_destroy_lock(&writeLock);
-#endif
-
-  {
-    std::stringstream msg;
-    msg << "[PersistenceDiagramsBarycenter] Data-set (" << vertexNumber_
-      << " points) processed in "
-      << t.getElapsedTime() << " s. (" << threadNumber_
-      << " thread(s))."
-      << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
-
-  return 0;
+	return 0;
 }
 
 #endif // PERSISTENCEDIAGRAMSBARYCENTER_H

@@ -7,265 +7,93 @@ vtkStandardNewMacro(ttkPersistenceDiagramsBarycenter)
 
 ttkPersistenceDiagramsBarycenter::ttkPersistenceDiagramsBarycenter(){
 
-  // init
-  outputLowerBoundScalarField_ = NULL;
-  outputUpperBoundScalarField_ = NULL;
-  outputProbabilityScalarField_ = NULL;
-  outputMeanField_ = NULL;
-
   UseAllCores = false;
 
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);
 }
 
-ttkPersistenceDiagramsBarycenter::~ttkPersistenceDiagramsBarycenter(){
-
-  if(outputLowerBoundScalarField_)
-    outputLowerBoundScalarField_->Delete();
-  if(outputUpperBoundScalarField_)
-    outputUpperBoundScalarField_->Delete();
-  if(outputProbabilityScalarField_){
-    for(int b=0 ; b<allocatedBinCount_ ; b++){
-      outputProbabilityScalarField_[b]->Delete();
-    }
-    free(outputProbabilityScalarField_);
-  }
-  if(outputMeanField_) {
-    outputMeanField_->Delete();
-  }
-}
+ttkPersistenceDiagramsBarycenter::~ttkPersistenceDiagramsBarycenter(){}
 
 
 // transmit abort signals -- to copy paste in other wrappers
 bool ttkPersistenceDiagramsBarycenter::needsToAbort(){
-  return GetAbortExecute();
+	return GetAbortExecute();
 }
 
 // transmit progress status -- to copy paste in other wrappers
 int ttkPersistenceDiagramsBarycenter::updateProgress(const float &progress){
+	{
+		stringstream msg;
+		msg << "[ttkPersistenceDiagramsBarycenter] " << progress*100
+			<< "% processed...." << endl;
+		dMsg(cout, msg.str(), advancedInfoMsg);
+	}
 
-  {
-    stringstream msg;
-    msg << "[ttkPersistenceDiagramsBarycenter] " << progress*100
-      << "% processed...." << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
-  }
-
-  UpdateProgress(progress);
-  return 0;
+	UpdateProgress(progress);
+	return 0;
 }
 
 
 
-int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet **input, vtkDataSet *outputBoundFields, vtkDataSet *outputProbability, vtkDataSet *outputMean, int numInputs){
+int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, int numInputs){
 
+	std::cout<<"Hello world ! " << std::endl;
 
-  // Use a pointer-base copy for the input data
-  outputBoundFields->ShallowCopy(input[0]);
-  outputProbability->ShallowCopy(input[0]);
-  outputMean->ShallowCopy(input[0]);
+	// Use a pointer-base copy for the input data
+	/*outputBoundFields->ShallowCopy(input[0]);
+	outputProbability->ShallowCopy(input[0]);
+	outputMean->ShallowCopy(input[0]);*/
 
-  // Get arrays from input datas
-  //vtkDataArray* inputScalarField[numInputs] = { NULL };
-  vector<vtkDataArray*> inputScalarField(numInputs);
-  for(int i=0 ; i<numInputs ; i++){
-    if(ScalarField.length()){
-      inputScalarField[i] = input[i]->GetPointData()->GetArray(ScalarField.data());
-    }
-    else{
-      inputScalarField[i] = input[i]->GetPointData()->GetArray(0);
-    }
-    // Check if inputs have the same data type and the same number of points
-    if(inputScalarField[i]->GetDataType() != inputScalarField[0]->GetDataType()){
-      stringstream msg;
-      msg << "[ttkPersistenceDiagramsBarycenter] Inputs of different data types." << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
-      return -3;
-      }
-    if(inputScalarField[i]->GetNumberOfTuples() != inputScalarField[0]->GetNumberOfTuples()){
-      stringstream msg;
-      msg << "[ttkPersistenceDiagramsBarycenter] Inputs with different number of points." << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
-      return -2;
-      }
-    // Check if all the inputs are here
-    if(!inputScalarField[i])
-      return -1;
-  }
+	// Get arrays from input datas
+	//vtkDataArray* inputScalarField[numInputs] = { NULL };
+	vector<vtkDataArray*> inputScalarField(numInputs);
+	for(int i=0 ; i<numInputs ; i++){
+		if(ScalarField.length()){
+			inputScalarField[i] = input[i]->GetPointData()->GetArray(ScalarField.data());
+		}
+		else{
+			inputScalarField[i] = input[i]->GetPointData()->GetArray(0);
+		}
+		// Check if inputs have the same data type and the same number of points
+		if(inputScalarField[i]->GetDataType() != inputScalarField[0]->GetDataType()){
+			stringstream msg;
+			msg << "[ttkPersistenceDiagramsBarycenter] Inputs of different data types." << endl;
+			dMsg(cerr, msg.str(), fatalMsg);
+			return -3;
+		}
+		if(inputScalarField[i]->GetNumberOfTuples() != inputScalarField[0]->GetNumberOfTuples()){
+			stringstream msg;
+			msg << "[ttkPersistenceDiagramsBarycenter] Inputs with different number of points." << endl;
+			dMsg(cerr, msg.str(), fatalMsg);
+			return -2;
+		}
+		// Check if all the inputs are here
+		if(!inputScalarField[i]){
+			return -1;
+		}
+	}
 
-  // Allocate the memory for the output bound scalar fields
-  if(!outputLowerBoundScalarField_
-     && !outputUpperBoundScalarField_){
-    switch(inputScalarField[0]->GetDataType()){
-
-      case VTK_CHAR:
-        outputLowerBoundScalarField_ = vtkCharArray::New();
-        outputUpperBoundScalarField_ = vtkCharArray::New();
-        break;
-
-      case VTK_DOUBLE:
-        outputLowerBoundScalarField_ = vtkDoubleArray::New();
-        outputUpperBoundScalarField_ = vtkDoubleArray::New();
-        break;
-
-      case VTK_FLOAT:
-        outputLowerBoundScalarField_ = vtkFloatArray::New();
-        outputUpperBoundScalarField_ = vtkFloatArray::New();
-        break;
-
-      case VTK_INT:
-        outputLowerBoundScalarField_ = vtkIntArray::New();
-        outputUpperBoundScalarField_ = vtkIntArray::New();
-        break;
-
-      stringstream msg;
-      msg << "[ttkPersistenceDiagramsBarycenter] Unsupported data type :(" << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
-    }
-    outputLowerBoundScalarField_->SetName("lowerBoundField");
-    outputUpperBoundScalarField_->SetName("upperBoundField");
-  }
-
-
-
-  // Allocate the memory for the output probability scalar fields
-  // Delete existing arrays
-  cout << "Bin Count = " << binCount_ << endl;
-  if(outputProbabilityScalarField_){
-    for(int b=0 ; b<allocatedBinCount_ ; b++){
-      outputProbabilityScalarField_[b]->Delete();
-    }
-    free(outputProbabilityScalarField_);
-  }
-  // Allocate array of vtkDoubleArray*
-  outputProbabilityScalarField_ = (vtkDoubleArray **) malloc(binCount_*sizeof(vtkDoubleArray *));
-  allocatedBinCount_ = binCount_;
-  // Delete the pointer to the input field
-  if(ScalarField.length()){
-    outputProbability->GetPointData()->RemoveArray(ScalarField.data());
-  }
-  else{
-    outputProbability->GetPointData()->RemoveArray(0);
-  }
-  // Create DoubleArray objects and link them to the data set
-  for(int b=0 ; b<binCount_ ; b++)
-  {
-    outputProbabilityScalarField_[b] = vtkDoubleArray::New();
-    outputProbabilityScalarField_[b]->SetNumberOfTuples(input[0]->GetNumberOfPoints());
-    outputProbability->GetPointData()->AddArray(outputProbabilityScalarField_[b]);
-    outputProbabilityScalarField_[b]->FillComponent(0,0.);
-  }
-
-  // Mean field data set
-  // Remove Arrays
-  int numberOfArrays = outputMean->GetPointData()->GetNumberOfArrays();
-  for(int i=0 ; i<numberOfArrays ; i++) {
-    outputMean->GetPointData()->RemoveArray(outputMean->GetPointData()->GetArrayName(i));
-  }
-  // Allocate new array
-  if(!outputMeanField_) {
-    outputMeanField_ = vtkDoubleArray::New();
-    outputMeanField_->SetNumberOfTuples(input[0]->GetNumberOfPoints());
-    outputMeanField_->SetName("meanField");
-    outputMeanField_->FillComponent(0, 0.0);
-  }
-  outputMean->GetPointData()->AddArray(outputMeanField_);
-
-
-  // On the output, replace the field array by a pointer to its processed version
-  if(ScalarField.length()){
-    outputBoundFields->GetPointData()->RemoveArray(ScalarField.data());
-  }
-  else{
-    outputBoundFields->GetPointData()->RemoveArray(0);
-  }
-
-  // Resize arrays and add them in the output if required
-  if(computeLowerBound_){
-    outputLowerBoundScalarField_->SetNumberOfTuples(input[0]->GetNumberOfPoints());
-    outputBoundFields->GetPointData()->AddArray(outputLowerBoundScalarField_);
-  }
-  else{
-    outputLowerBoundScalarField_->SetNumberOfTuples(0);
-  }
-
-  if(computeUpperBound_){
-    outputUpperBoundScalarField_->SetNumberOfTuples(input[0]->GetNumberOfPoints());
-    outputBoundFields->GetPointData()->AddArray(outputUpperBoundScalarField_);
-  }
-  else{
-    outputUpperBoundScalarField_->SetNumberOfTuples(0);
-  }
-
-
+	std::cout<<"Hello world2 ! " << std::endl;
   // Calling the executing package
-  switch(inputScalarField[0]->GetDataType()){
+	switch(inputScalarField[0]->GetDataType()){
 
-    vtkTemplateMacro(
-    {
-      PersistenceDiagramsBarycenter persistenceDiagramsBarycenter;
-      persistenceDiagramsBarycenter.setWrapper(this);
- 
-      persistenceDiagramsBarycenter.setVertexNumber(
-        outputBoundFields->GetNumberOfPoints());
+		vtkTemplateMacro(
+		{
+			PersistenceDiagramsBarycenter persistenceDiagramsBarycenter;
+			persistenceDiagramsBarycenter.setWrapper(this);
 
-      persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
-      for (int i = 0; i<numInputs; i++) {
-        persistenceDiagramsBarycenter.setInputDataPointer(i, 
-        inputScalarField[i]->GetVoidPointer(0));
-      }
+			persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
+			for (int i = 0; i<numInputs; i++) {
+				persistenceDiagramsBarycenter.setInputDataPointer(i, 
+				inputScalarField[i]->GetVoidPointer(0));
+			}
 
-      persistenceDiagramsBarycenter.setComputeLowerBound(computeLowerBound_);
-      persistenceDiagramsBarycenter.setComputeUpperBound(computeUpperBound_);
-
-    
-      persistenceDiagramsBarycenter.setOutputLowerBoundField(
-        outputLowerBoundScalarField_->GetVoidPointer(0));
-        
-      persistenceDiagramsBarycenter.setOutputUpperBoundField(
-        outputUpperBoundScalarField_->GetVoidPointer(0));
-
-      persistenceDiagramsBarycenter.setOutputMeanField(
-        outputMeanField_->GetVoidPointer(0));
-
-      persistenceDiagramsBarycenter.setBinCount(binCount_);
-      for (int b = 0; b<binCount_; b++) {
-        persistenceDiagramsBarycenter.setOutputProbability(b, 
-          outputProbabilityScalarField_[b]->GetVoidPointer(0));
-      }
-
-      persistenceDiagramsBarycenter.execute<VTK_TT>();
-
-      for (int b = 0; b<binCount_; b++) {
-        stringstream name;
-        name << setprecision(8) << persistenceDiagramsBarycenter.getBinValue(b);
-        outputProbabilityScalarField_[b]->SetName(name.str().c_str());
-      }
-    }
-    );
-  }
+			persistenceDiagramsBarycenter.execute<VTK_TT>();
+		});
+	}
 
   return 0;
-}
-
-
-
-int ttkPersistenceDiagramsBarycenter::FillInputPortInformation(int port, vtkInformation *info){
-  if(!this->Superclass::FillInputPortInformation(port, info)){
-    return 0;
-  }
-  info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
-  return 1;
-}
-
-int ttkPersistenceDiagramsBarycenter::FillOutputPortInformation(int port, vtkInformation *info){
-  if(!this->Superclass::FillOutputPortInformation(port, info)){
-    return 0;
-  }
-  if(port==0 || port==1 || port==3)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-  return 1;
 }
 
 
@@ -273,9 +101,10 @@ int ttkPersistenceDiagramsBarycenter::FillOutputPortInformation(int port, vtkInf
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
 int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
   vtkInformationVector **inputVector, vtkInformationVector *outputVector){
-
+	std::cout<<"Hello world ? " << std::endl;
   Memory m;
 
+  /*
   // Output pointers informations
   vtkInformation* outInfo;
   // Unified bound fields
@@ -286,8 +115,10 @@ int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
   vtkDataSet *probability = vtkDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
   // Mean field
   outInfo = outputVector->GetInformationObject(2);
-  vtkDataSet *mean = vtkDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
-
+  vtkDataSet *mean = vtkDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));*/
+  
+  
+  std::cout<<"Hello world2 ? " << std::endl;
 
   // Number of input files
   int numInputs = inputVector[0]->GetNumberOfInformationObjects();
@@ -304,7 +135,7 @@ int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
     input[i] = vtkDataSet::GetData(inputVector[0], i);
   }
 
-  doIt(input, boundFields, probability, mean, numInputs);
+  doIt(input, numInputs);
 
   delete[] input;
 

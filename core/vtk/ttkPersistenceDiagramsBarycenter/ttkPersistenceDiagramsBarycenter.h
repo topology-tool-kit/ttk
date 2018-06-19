@@ -90,37 +90,6 @@ class ttkPersistenceDiagramsBarycenter
     // set-getters macros to define from each variable you want to access from
     // the outside (in particular from paraview) - to adapt.
 
-    void ComputeLowerBound(bool state){
-      computeLowerBound_ = state;
-    }
-
-    void ComputeUpperBound(bool state){
-      computeUpperBound_ = state;
-    }
-
-    void BoundToCompute(int value){
-      switch(value){
-        case 0:
-          ComputeLowerBound(true);
-          ComputeUpperBound(true);
-          break;
-        case 1:
-          ComputeLowerBound(true);
-          ComputeUpperBound(false);
-          break;
-        case 2:
-          ComputeLowerBound(false);
-          ComputeUpperBound(true);
-          break;
-      }
-      Modified();
-    }
-
-    void BinCount(int binCount){
-      binCount_ = binCount;
-      Modified();
-    }
-
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
 
@@ -131,9 +100,6 @@ class ttkPersistenceDiagramsBarycenter
 
     ~ttkPersistenceDiagramsBarycenter();
 
-    int FillInputPortInformation(int port, vtkInformation *info);
-    int FillOutputPortInformation(int port, vtkInformation *info);
-
     int RequestData(vtkInformation *request,
       vtkInformationVector **inputVector, vtkInformationVector *outputVector);
 
@@ -143,20 +109,9 @@ class ttkPersistenceDiagramsBarycenter
     bool                  UseAllCores;
     int                   ThreadNumber;
     std::string                ScalarField;
-    bool                  computeLowerBound_;
-    bool                  computeUpperBound_;
-    int                   binCount_;
-    int                   allocatedBinCount_;
-    vtkDataArray          *outputLowerBoundScalarField_;
-    vtkDataArray          *outputUpperBoundScalarField_;
-    vtkDoubleArray        **outputProbabilityScalarField_;
-    vtkDoubleArray        *outputMeanField_;
 
     // base code features
     int doIt(vtkDataSet **input,
-             vtkDataSet *outputBoundFields,
-             vtkDataSet *ouputProbability,
-             vtkDataSet *outputMean,
              int numInputs);
 
     bool needsToAbort();
