@@ -986,6 +986,7 @@ gradient, false otherwise.
        * Return true if the given cell is a critical point regarding the 
 discrete gradient, false otherwise.
        */
+      bool isCellCritical(const int cellDim, const int cellId) const;
       bool isCellCritical(const Cell& cell) const;
 
       /**
@@ -1899,20 +1900,10 @@ int ttk::DiscreteGradient::assignGradient(const int alphaDim,
 
           int vertexId;
           inputTriangulation_->getEdgeVertex(edgeId, 0, vertexId);
-          if (vertexId != alpha and sosLowerThan(vertexId, alpha)) {
-            if(minVertexId==-1){
-              minEdgeId = edgeId;
-              minVertexId = vertexId;
-            }
-            else if(sosLowerThan(vertexId,minVertexId)){
-              minEdgeId = edgeId;
-              minVertexId = vertexId;
-            }
-            continue;
-          }
+          if(vertexId == alpha)
+            inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
 
-          inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
-          if (vertexId != alpha and sosLowerThan(vertexId, alpha)) {
+          if (sosLowerThan(vertexId, alpha)) {
             if(minVertexId==-1){
               minEdgeId = edgeId;
               minVertexId = vertexId;
@@ -1921,7 +1912,6 @@ int ttk::DiscreteGradient::assignGradient(const int alphaDim,
               minEdgeId = edgeId;
               minVertexId = vertexId;
             }
-            continue;
           }
         }
         gamma = minEdgeId;
@@ -1940,23 +1930,12 @@ int ttk::DiscreteGradient::assignGradient(const int alphaDim,
 
           int vertexId;
           inputTriangulation_->getTriangleVertex(starId, 0, vertexId);
-          if (vertexId != v0 and vertexId != v1 and
-              sosLowerThan(vertexId,v0) and
-              sosLowerThan(vertexId,v1)) {
-            if (minVertexId == -1) {
-              minTriangleId = starId;
-              minVertexId = vertexId;
-            }
-            else if(sosLowerThan(vertexId,minVertexId)){
-              minTriangleId = starId;
-              minVertexId = vertexId;
-            }
-            continue;
-          }
+          if(vertexId == v0 or vertexId == v1)
+            inputTriangulation_->getTriangleVertex(starId, 1, vertexId);
+          if(vertexId == v0 or vertexId == v1)
+            inputTriangulation_->getTriangleVertex(starId, 2, vertexId);
 
-          inputTriangulation_->getTriangleVertex(starId, 1, vertexId);
-          if (vertexId != v0 and vertexId != v1 and
-              sosLowerThan(vertexId,v0) and
+          if (sosLowerThan(vertexId,v0) and
               sosLowerThan(vertexId,v1)) {
             if (minVertexId == -1) {
               minTriangleId = starId;
@@ -1966,22 +1945,6 @@ int ttk::DiscreteGradient::assignGradient(const int alphaDim,
               minTriangleId = starId;
               minVertexId = vertexId;
             }
-            continue;
-          }
-
-          inputTriangulation_->getTriangleVertex(starId, 2, vertexId);
-          if (vertexId != v0 and vertexId != v1 and
-              sosLowerThan(vertexId,v0) and
-              sosLowerThan(vertexId,v1)) {
-            if (minVertexId == -1) {
-              minTriangleId = starId;
-              minVertexId = vertexId;
-            }
-            else if(sosLowerThan(vertexId,minVertexId)){
-              minTriangleId = starId;
-              minVertexId = vertexId;
-            }
-            continue;
           }
         }
         gamma = minTriangleId;
@@ -2002,24 +1965,14 @@ int ttk::DiscreteGradient::assignGradient(const int alphaDim,
 
           int vertexId;
           inputTriangulation_->getCellVertex(starId, 0, vertexId);
-          if (vertexId != v0 and vertexId != v1 and vertexId != v2 and
-              sosLowerThan(vertexId,v0) and
-              sosLowerThan(vertexId,v1) and
-              sosLowerThan(vertexId,v2)) {
-            if (minVertexId == -1) {
-              minStarId = starId;
-              minVertexId = vertexId;
-            }
-            else if(sosLowerThan(vertexId,minVertexId)){
-              minStarId = starId;
-              minVertexId = vertexId;
-            }
-            continue;
-          }
+          if (vertexId == v0 or vertexId == v1 or vertexId == v2)
+            inputTriangulation_->getCellVertex(starId, 1, vertexId);
+          if (vertexId == v0 or vertexId == v1 or vertexId == v2)
+            inputTriangulation_->getCellVertex(starId, 2, vertexId);
+          if (vertexId == v0 or vertexId == v1 or vertexId == v2)
+            inputTriangulation_->getCellVertex(starId, 3, vertexId);
 
-          inputTriangulation_->getCellVertex(starId, 1, vertexId);
-          if (vertexId != v0 and vertexId != v1 and vertexId != v2 and
-              sosLowerThan(vertexId,v0) and
+          if (sosLowerThan(vertexId,v0) and
               sosLowerThan(vertexId,v1) and
               sosLowerThan(vertexId,v2)) {
             if (minVertexId == -1) {
@@ -2030,39 +1983,6 @@ int ttk::DiscreteGradient::assignGradient(const int alphaDim,
               minStarId = starId;
               minVertexId = vertexId;
             }
-            continue;
-          }
-
-          inputTriangulation_->getCellVertex(starId, 2, vertexId);
-          if (vertexId != v0 and vertexId != v1 and vertexId != v2 and
-              sosLowerThan(vertexId,v0) and
-              sosLowerThan(vertexId,v1) and
-              sosLowerThan(vertexId,v2)) {
-            if (minVertexId == -1) {
-              minStarId = starId;
-              minVertexId = vertexId;
-            }
-            else if(sosLowerThan(vertexId,minVertexId)){
-              minStarId = starId;
-              minVertexId = vertexId;
-            }
-            continue;
-          }
-
-          inputTriangulation_->getCellVertex(starId, 3, vertexId);
-          if (vertexId != v0 and vertexId != v1 and vertexId != v2 and
-              sosLowerThan(vertexId,v0) and
-              sosLowerThan(vertexId,v1) and
-              sosLowerThan(vertexId,v2)) {
-            if (minVertexId == -1) {
-              minStarId = starId;
-              minVertexId = vertexId;
-            }
-            else if(sosLowerThan(vertexId,minVertexId)){
-              minStarId = starId;
-              minVertexId = vertexId;
-            }
-            continue;
           }
         }
         gamma = minStarId;
@@ -2096,9 +2016,7 @@ int ttk::DiscreteGradient::assignGradient2(const int alphaDim,
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(int alpha=0; alpha<alphaNumber; ++alpha){
-        // alpha must be unpaired
-        if(gradient_[alphaDim-1][alphaDim][alpha]!=-1) continue;
-        if(gradient_[alphaDim][alphaDim][alpha]!=-1) continue;
+        if(!isCellCritical(alphaDim,alpha)) continue;
 
         int gamma{-1};
 
@@ -2114,20 +2032,17 @@ int ttk::DiscreteGradient::assignGradient2(const int alphaDim,
           int starId;
           inputTriangulation_->getEdgeStar(alpha,k,starId); break;
 
-          if(gradient[betaDim][starId] == -1){
-            // unassigned triangle
+          if(isCellCritical(betaDim,starId)){
             int vertexId;
             inputTriangulation_->getCellVertex(starId, 0, vertexId);
             if(vertexId == v0 or vertexId == v1)
               inputTriangulation_->getCellVertex(starId, 1, vertexId);
             if(vertexId == v0 or vertexId == v1)
               inputTriangulation_->getCellVertex(starId, 2, vertexId);
-            
-            if(
-              (sosLowerThan(vertexId,v0) and sosLowerThan(v1, vertexId))
-              or
-              (sosLowerThan(vertexId,v1) and sosLowerThan(v0, vertexId))
-              ){
+
+            if((sosLowerThan(vertexId,v0) and sosLowerThan(v1, vertexId))
+                or
+                (sosLowerThan(vertexId,v1) and sosLowerThan(v0, vertexId))){
               if (minVertexId == -1) {
                 minStarId = starId;
                 minVertexId = vertexId;
@@ -2149,16 +2064,13 @@ int ttk::DiscreteGradient::assignGradient2(const int alphaDim,
     }
     else if(dimensionality_==3){
 #ifdef TTK_ENABLE_OPENMP
-// # pragma omp parallel for num_threads(threadNumber_)
+# pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(int alpha=0; alpha<alphaNumber; ++alpha){
-        // alpha must be unpaired
-        if(gradient_[alphaDim-1][alphaDim][alpha]!=-1) continue;
-        if(gradient_[alphaDim][alphaDim][alpha]!=-1) continue;
+        if(!isCellCritical(alphaDim,alpha)) continue;
 
         int gamma{-1};
 
-        
         if(alphaDim==1){
           int v0;
           int v1;
@@ -2168,31 +2080,21 @@ int ttk::DiscreteGradient::assignGradient2(const int alphaDim,
           int minTriangleId{-1};
           int minVertexId{-1};
           const int triangleNumber=inputTriangulation_->getEdgeTriangleNumber(alpha);
-          printf("edge #%d %d [%f] %d [%f] %d triangles to test\n", alpha,
-            v0, scalars[v0],
-            v1, scalars[v1], triangleNumber);
           for(int k=0; k<triangleNumber; ++k){
             int triangleId;
             inputTriangulation_->getEdgeTriangle(alpha,k,triangleId);
-            
-            if(gradient[betaDim][triangleId] == -1){
-              // unassigned triangle
 
+            if(isCellCritical(betaDim,triangleId)){
               int vertexId;
               inputTriangulation_->getTriangleVertex(triangleId, 0, vertexId);
               if(vertexId == v0 or vertexId == v1)
                 inputTriangulation_->getTriangleVertex(triangleId, 1, vertexId);
               if(vertexId == v0 or vertexId == v1)
                 inputTriangulation_->getTriangleVertex(triangleId, 2, vertexId);
-              
-              printf("\tis %d [%f] candidate (<0)?", 
-                vertexId, scalars[vertexId]);
-              if(
-                (sosLowerThan(vertexId,v0) and sosLowerThan(v1, vertexId))
-                or
-                (sosLowerThan(vertexId,v1) and sosLowerThan(v0, vertexId))
-                ){
-                printf(" yes!");
+
+              if((sosLowerThan(vertexId,v0) and sosLowerThan(v1, vertexId))
+                  or
+                  (sosLowerThan(vertexId,v1) and sosLowerThan(v0, vertexId))){
                 if (minVertexId == -1) {
                   minTriangleId = triangleId;
                   minVertexId = vertexId;
@@ -2202,15 +2104,9 @@ int ttk::DiscreteGradient::assignGradient2(const int alphaDim,
                   minVertexId = vertexId;
                 }
               }
-              else{
-                printf(" NOT ASSIGNED!");
-              }
-              printf("\n");
             }
           }
           gamma=minTriangleId;
-          printf("\tminNeighbor: t=%d, v=%d, f=%f\n",
-            minTriangleId, minVertexId, scalars[minVertexId]);
         }
         else if(alphaDim==2){
           int v0;
@@ -2220,47 +2116,28 @@ int ttk::DiscreteGradient::assignGradient2(const int alphaDim,
           inputTriangulation_->getTriangleVertex(alpha, 1, v1);
           inputTriangulation_->getTriangleVertex(alpha, 2, v2);
 
-          int va = -1, vb = -1, vc = - 1;
-          
-          if(sosLowerThan(v0, v1) and sosLowerThan(v0, v2))
-            va = v0;
-          if(sosLowerThan(v1, v0) and sosLowerThan(v1, v2))
-            va = v1;
-          if(sosLowerThan(v2, v1) and sosLowerThan(v2, v0))
-            va = v2;
-          
+          int vb{-1};
           if((sosLowerThan(v1, v0) and sosLowerThan(v0, v2))
-            or
-            (sosLowerThan(v2, v0) and sosLowerThan(v0, v1)))
+              or
+              (sosLowerThan(v2, v0) and sosLowerThan(v0, v1)))
             vb=v0;
           else if((sosLowerThan(v0, v1) and sosLowerThan(v1, v2))
-            or
-            (sosLowerThan(v2, v1) and sosLowerThan(v1, v0)))
+              or
+              (sosLowerThan(v2, v1) and sosLowerThan(v1, v0)))
             vb=v1;
           else if((sosLowerThan(v1, v2) and sosLowerThan(v2, v0))
-            or
-            (sosLowerThan(v0, v2) and sosLowerThan(v2, v1)))
+              or
+              (sosLowerThan(v0, v2) and sosLowerThan(v2, v1)))
             vb=v2;
 
-          if((v0 != va) and (v0 != vb))
-            vc = v0;
-          if((v1 != va) and (v1 != vb))
-            vc = v1;
-          if((v2 != va) and (v2 != vb))
-            vc = v2;
-          
           int minStarId{-1};
           int minVertexId{-1};
           const int starNumber=inputTriangulation_->getTriangleStarNumber(alpha);
-         
           for(int k=0; k<starNumber; ++k){
             int starId;
             inputTriangulation_->getTriangleStar(alpha, k, starId);
 
-            Cell c(betaDim, starId);
-            if(isCellCritical(c)){
-              // unassigned tet
-              
+            if(isCellCritical(betaDim, starId)){
               int vertexId;
               inputTriangulation_->getCellVertex(starId, 0, vertexId);
               if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
@@ -2269,11 +2146,8 @@ int ttk::DiscreteGradient::assignGradient2(const int alphaDim,
                 inputTriangulation_->getCellVertex(starId, 2, vertexId);
               if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
                 inputTriangulation_->getCellVertex(starId, 3, vertexId);
-              
-              if(sosLowerThan(vertexId, va)
-                and sosLowerThan(vertexId, vb)
-                and sosLowerThan(vc, vertexId)){
-                
+
+              if(sosLowerThan(vertexId, vb)){
                 if (minVertexId == -1) {
                   minStarId = starId;
                   minVertexId = vertexId;
@@ -2318,9 +2192,7 @@ int ttk::DiscreteGradient::assignGradient3(const int alphaDim,
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(int alpha=0; alpha<alphaNumber; ++alpha){
-        // alpha must be unpaired
-        if(gradient_[alphaDim-1][alphaDim][alpha]!=-1) continue;
-        if(gradient_[alphaDim][alphaDim][alpha]!=-1) continue;
+        if(!isCellCritical(alphaDim,alpha)) continue;
 
         int gamma{-1};
 
@@ -2346,25 +2218,26 @@ int ttk::DiscreteGradient::assignGradient3(const int alphaDim,
           int starId;
           inputTriangulation_->getTriangleStar(alpha, k, starId);
 
-          int vertexId;
-          inputTriangulation_->getCellVertex(starId, 0, vertexId);
-          if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
-            inputTriangulation_->getCellVertex(starId, 1, vertexId);
-          if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
-            inputTriangulation_->getCellVertex(starId, 2, vertexId);
-          if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
-            inputTriangulation_->getCellVertex(starId, 3, vertexId);
-          
-          if(sosLowerThan(vertexId,vmax)) {
-            if (minVertexId == -1) {
-              minStarId = starId;
-              minVertexId = vertexId;
+          if(isCellCritical(betaDim,starId)){
+            int vertexId;
+            inputTriangulation_->getCellVertex(starId, 0, vertexId);
+            if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
+              inputTriangulation_->getCellVertex(starId, 1, vertexId);
+            if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
+              inputTriangulation_->getCellVertex(starId, 2, vertexId);
+            if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
+              inputTriangulation_->getCellVertex(starId, 3, vertexId);
+
+            if(sosLowerThan(vertexId,vmax)) {
+              if (minVertexId == -1) {
+                minStarId = starId;
+                minVertexId = vertexId;
+              }
+              else if(sosLowerThan(vertexId,minVertexId)){
+                minStarId = starId;
+                minVertexId = vertexId;
+              }
             }
-            else if(sosLowerThan(vertexId,minVertexId)){
-              minStarId = starId;
-              minVertexId = vertexId;
-            }
-            continue;
           }
         }
         gamma=minStarId;
