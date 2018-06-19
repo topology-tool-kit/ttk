@@ -446,7 +446,7 @@ namespace ttk{
 			
 			dataType queue_weight = top_pair.second;
 			Good<dataType>* good = &goods.get(top_pair.first);
-			if(good->getPrice()!=queue_weight){
+			if(good->getPrice()>queue_weight){
 				// If the weight in the priority queue is not the good one, update it
 				std::get<1>(top_pair) = good->getPrice();
 				diagonal_queue.push(top_pair);
@@ -462,7 +462,7 @@ namespace ttk{
 			second_pair = diagonal_queue.top();
 			dataType queue_weight = second_pair.second;
 			Good<dataType>* good = &goods.get(second_pair.first);
-			if(good->getPrice()!=queue_weight){
+			if(good->getPrice()>queue_weight){
 				// If the weight in the priority queue is not the good one, update it
 				diagonal_queue.pop();
 				std::get<1>(second_pair) = good->getPrice();

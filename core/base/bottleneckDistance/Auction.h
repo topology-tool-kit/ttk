@@ -42,6 +42,7 @@ namespace ttk {
     public:
 		KDTree<dataType>* kdt_;
 		std::vector<KDTree<dataType>*> correspondance_kdt_map_;
+		
 		Auction(int wasserstein, double geometricalFactor, double delta_lim, bool use_kdTree=true) {
             n_bidders_ = 0;
             n_goods_ = 0;

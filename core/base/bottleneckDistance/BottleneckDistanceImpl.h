@@ -106,7 +106,7 @@ double ttk::BottleneckDistance::computeMinimumRelevantPersistence(
   }
   sort(toSort.begin(), toSort.end());
   double epsilon = 0.0000001;
-  int largeSize = 2000;
+  int largeSize = 20000;
   dataType zeroThresh = (dataType) epsilon;
   if (d1Size + d2Size > largeSize + 1) {
     zeroThresh = toSort.at(d1Size + d2Size - largeSize);
