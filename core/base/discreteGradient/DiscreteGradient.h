@@ -610,7 +610,7 @@ criticalPoints,
 criticalPoints,
             const bool allowBoundary,
             std::vector<char>& isRemovableSaddle,
-            std::vector<int>& pl2dmt_saddle) const;
+            std::vector<int>& pl2dmt_saddle);
 
       /**
        * Get the list of 2-saddles candidates for simplification.
@@ -620,7 +620,7 @@ criticalPoints,
 criticalPoints,
             const bool allowBoundary,
             std::vector<char>& isRemovableSaddle,
-            std::vector<int>& pl2dmt_saddle) const;
+            std::vector<int>& pl2dmt_saddle);
 
       /**
        * Create initial Morse-Smale Complex structure and initialize the 
@@ -1135,6 +1135,8 @@ tetra identifier.
       int numberOfVertices_;
       std::vector<std::vector<std::vector<int>>> gradient_;
       std::vector<int> dmtMax2PL_;
+      std::vector<int> dmt1Saddle2PL_;
+      std::vector<int> dmt2Saddle2PL_;
 
       void* inputScalarField_;
       void* inputOffsets_;
@@ -2268,6 +2270,8 @@ int ttk::DiscreteGradient::buildGradient(){
     numberOfCells[i]=getNumberOfCells(i);
 
   dmtMax2PL_.clear();
+  dmt1Saddle2PL_.clear();
+  dmt2Saddle2PL_.clear();
   gradient_.clear();
   gradient_.resize(dimensionality_);
   for(int i=0; i<dimensionality_; ++i){
@@ -2390,10 +2394,11 @@ static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
       if(cellDim==0)
         outputCriticalPoints_points_PLVertexIdentifiers_->push_back(cellId);
       else if(cellDim==dimensionality_)
-        
-outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
-      else
-        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
+        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
+      else if(cellDim==1)
+        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmt1Saddle2PL_[cellId]);
+      else if(cellDim==2)
+        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmt2Saddle2PL_[cellId]);
     }
     else
       outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
@@ -2571,11 +2576,12 @@ int ttk::DiscreteGradient::getRemovableSaddles1(const
 std::vector<std::pair<int,char>>& criticalPoints,
     const bool allowBoundary,
     std::vector<char>& isRemovableSaddle,
-    std::vector<int>& pl2dmt_saddle) const{
+    std::vector<int>& pl2dmt_saddle){
   const int numberOfEdges=inputTriangulation_->getNumberOfEdges();
   isRemovableSaddle.resize(numberOfEdges);
 
-  std::vector<char> dmt2PL(numberOfEdges, false);
+  dmt1Saddle2PL_.resize(numberOfEdges);
+  std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
   // by default : 1-saddle is removable
 #ifdef TTK_ENABLE_OPENMP
@@ -2604,7 +2610,7 @@ edgeNumber=inputTriangulation_->getVertexEdgeNumber(criticalPointId);
         inputTriangulation_->getVertexEdge(criticalPointId, i, edgeId);
         const Cell saddleCandidate(1, edgeId);
 
-        if(isSaddle1(saddleCandidate) and !dmt2PL[edgeId]){
+        if(isSaddle1(saddleCandidate) and dmt1Saddle2PL_[edgeId]==-1){
           saddleId=edgeId;
           ++numberOfSaddles;
         }
@@ -2612,8 +2618,8 @@ edgeNumber=inputTriangulation_->getVertexEdgeNumber(criticalPointId);
 
       // only one DMT-1saddle in the star so this one is non-removable
       if(numberOfSaddles==1){
-        if(!dmt2PL[saddleId] and pl2dmt_saddle[criticalPointId]==-1){
-          dmt2PL[saddleId]=true;
+        if(dmt1Saddle2PL_[saddleId]==-1 and pl2dmt_saddle[criticalPointId]==-1){
+          dmt1Saddle2PL_[saddleId]=criticalPointId;
           pl2dmt_saddle[criticalPointId]=saddleId;
           isRemovableSaddle[saddleId]=false;
         }
@@ -2629,11 +2635,12 @@ int ttk::DiscreteGradient::getRemovableSaddles2(const
 std::vector<std::pair<int,char>>& criticalPoints,
     const bool allowBoundary,
     std::vector<char>& isRemovableSaddle,
-    std::vector<int>& pl2dmt_saddle) const{
+    std::vector<int>& pl2dmt_saddle){
   const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
   isRemovableSaddle.resize(numberOfTriangles);
 
-  std::vector<char> dmt2PL(numberOfTriangles, false);
+  dmt2Saddle2PL_.resize(numberOfTriangles);
+  std::fill(dmt2Saddle2PL_.begin(), dmt2Saddle2PL_.end(), -1);
 
   // by default : 2-saddle is removable
 #ifdef TTK_ENABLE_OPENMP
@@ -2662,7 +2669,7 @@ triangleNumber=inputTriangulation_->getVertexTriangleNumber(criticalPointId);
         inputTriangulation_->getVertexTriangle(criticalPointId, i, triangleId);
         const Cell saddleCandidate(2, triangleId);
 
-        if(isSaddle2(saddleCandidate) and !dmt2PL[triangleId]){
+        if(isSaddle2(saddleCandidate) and dmt2Saddle2PL_[triangleId]==-1){
           saddleId=triangleId;
           ++numberOfSaddles;
         }
@@ -2670,8 +2677,8 @@ triangleNumber=inputTriangulation_->getVertexTriangleNumber(criticalPointId);
 
       // only one DMT-2saddle in the star so this one is non-removable
       if(numberOfSaddles==1){
-        if(dmt2PL[saddleId]==false and pl2dmt_saddle[criticalPointId]==-1){
-          dmt2PL[saddleId]=true;
+        if(dmt2Saddle2PL_[saddleId]==-1 and pl2dmt_saddle[criticalPointId]==-1){
+          dmt2Saddle2PL_[saddleId]=criticalPointId;
           pl2dmt_saddle[criticalPointId]=saddleId;
           isRemovableSaddle[saddleId]=false;
         }
