@@ -121,43 +121,46 @@ bool DiscreteGradient::isMaximum(const Cell& cell) const{
   return false;
 }
 
-bool DiscreteGradient::isCellCritical(const Cell& cell) const{
+bool DiscreteGradient::isCellCritical(const int cellDim, const simplexId_t cellId) const{
   if(dimensionality_==2){
-    switch(cell.dim_){
+    switch(cellDim){
       case 0:
-        return (gradient_[0][0][cell.id_]==-1);
+        return (gradient_[0][0][cellId]==-1);
         break;
 
       case 1:
-        return (gradient_[0][1][cell.id_]==-1 and gradient_[1][1][cell.id_]==-1);
+        return (gradient_[0][1][cellId]==-1 and gradient_[1][1][cellId]==-1);
         break;
 
       case 2:
-        return (gradient_[1][2][cell.id_]==-1);
+        return (gradient_[1][2][cellId]==-1);
         break;
     }
   }
   else if(dimensionality_==3){
-    switch(cell.dim_){
+    switch(cellDim){
       case 0:
-        return (gradient_[0][0][cell.id_]==-1);
+        return (gradient_[0][0][cellId]==-1);
         break;
 
       case 1:
-        return (gradient_[0][1][cell.id_]==-1 and gradient_[1][1][cell.id_]==-1);
+        return (gradient_[0][1][cellId]==-1 and gradient_[1][1][cellId]==-1);
         break;
 
       case 2:
-        return (gradient_[1][2][cell.id_]==-1 and gradient_[2][2][cell.id_]==-1);
+        return (gradient_[1][2][cellId]==-1 and gradient_[2][2][cellId]==-1);
         break;
 
       case 3:
-        return (gradient_[2][3][cell.id_]==-1);
+        return (gradient_[2][3][cellId]==-1);
         break;
     }
   }
-
   return false;
+}
+
+bool DiscreteGradient::isCellCritical(const Cell& cell) const{
+  return isCellCritical(cell.dim_, cell.id_);
 }
 
 bool DiscreteGradient::isBoundary(const Cell& cell) const{
@@ -267,7 +270,7 @@ int DiscreteGradient::getCriticalPoints(vector<Cell>& criticalPoints) const{
       const Cell cell(i,j);
 
       if(isCellCritical(cell))
-        criticalPoints.push_back(std::move(cell));
+        criticalPoints.push_back(cell);
     }
   }
 

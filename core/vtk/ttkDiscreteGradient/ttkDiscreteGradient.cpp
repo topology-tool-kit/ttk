@@ -17,6 +17,7 @@ vtkStandardNewMacro(ttkDiscreteGradient)
     AllowSecondPass{},
     AllowThirdPass{},
     ComputeGradientGlyphs{},
+    IterationThreshold{-1},
     ScalarFieldId{},
     OffsetFieldId{},
 

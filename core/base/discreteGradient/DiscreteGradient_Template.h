@@ -600,77 +600,194 @@ int DiscreteGradient::g0_third(const int cellDim,
 
 template <typename dataType>
 int DiscreteGradient::assignGradient(const int alphaDim,
-                                     const dataType* const scalars,
-                                     const simplexId_t* const offsets,
-                                     std::vector<std::vector<simplexId_t>>& gradient) const{
+    const dataType* const scalars,
+    const simplexId_t* const offsets,
+    std::vector<std::vector<simplexId_t>>& gradient) const{
   const int betaDim=alphaDim+1;
   const simplexId_t alphaNumber=gradient[alphaDim].size();
+
+  const auto sosLowerThan=[&scalars,&offsets](const simplexId_t a,const simplexId_t b){
+    if(scalars[a] != scalars[b]) return scalars[a]<scalars[b];
+    else return offsets[a]<offsets[b];
+  };
 
   if(dimensionality_==2){
 #ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(simplexId_t alpha=0; alpha<alphaNumber; ++alpha){
-      simplexId_t betaNumber{};
-      switch(alphaDim){
-        case 0: betaNumber=inputTriangulation_->getVertexEdgeNumber(alpha);
-          break;
-        case 1: betaNumber=inputTriangulation_->getEdgeStarNumber(alpha); break;
-      }
       simplexId_t gamma{-1};
-      for(simplexId_t k=0; k<betaNumber; ++k){
-        simplexId_t beta;
-        switch(alphaDim){
-          case 0: inputTriangulation_->getVertexEdge(alpha,k,beta); break;
-          case 1: inputTriangulation_->getEdgeStar(alpha,k,beta); break;
+      if (alphaDim == 0) {
+        simplexId_t minEdgeId{-1};
+        simplexId_t minVertexId{-1};
+        const simplexId_t edgeNumber = inputTriangulation_->getVertexEdgeNumber(alpha);
+        for (simplexId_t k=0; k<edgeNumber; ++k) {
+          simplexId_t edgeId;
+          inputTriangulation_->getVertexEdge(alpha, k, edgeId);
+
+          simplexId_t vertexId;
+          inputTriangulation_->getEdgeVertex(edgeId, 0, vertexId);
+          if(vertexId == alpha)
+            inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
+
+          if(sosLowerThan(vertexId, alpha)){
+            if(minVertexId==-1){
+              minEdgeId = edgeId;
+              minVertexId = vertexId;
+            }
+            else if(sosLowerThan(vertexId,minVertexId)){
+              minEdgeId = edgeId;
+              minVertexId = vertexId;
+            }
+          }
         }
-        // take beta such that alpha is the highest facet of beta
-        if(alpha==g0<dataType>(betaDim,beta,scalars,offsets)){
-          if(gamma==-1)
-            gamma=beta;
-          else
-            gamma=cellMin<dataType>(betaDim,beta,gamma,scalars,offsets);
+        gamma = minEdgeId;
+      } else if (alphaDim == 1) {
+        simplexId_t v0;
+        simplexId_t v1;
+        inputTriangulation_->getEdgeVertex(alpha, 0, v0);
+        inputTriangulation_->getEdgeVertex(alpha, 1, v1);
+
+        simplexId_t minStarId{-1};
+        simplexId_t minVertexId{-1};
+        const simplexId_t starNumber = inputTriangulation_->getEdgeStarNumber(alpha);
+        for (simplexId_t k = 0; k < starNumber; ++k) {
+          simplexId_t starId;
+          inputTriangulation_->getEdgeStar(alpha, k, starId);
+
+          simplexId_t vertexId;
+          inputTriangulation_->getCellVertex(starId, 0, vertexId);
+          if(vertexId == v0 or vertexId == v1)
+            inputTriangulation_->getCellVertex(starId, 1, vertexId);
+          if(vertexId == v0 or vertexId == v1)
+            inputTriangulation_->getCellVertex(starId, 2, vertexId);
+
+          if (sosLowerThan(vertexId,v0) and sosLowerThan(vertexId,v1)){
+            if (minVertexId == -1) {
+              minStarId = starId;
+              minVertexId = vertexId;
+            }
+            else if(sosLowerThan(vertexId,minVertexId)){
+              minStarId = starId;
+              minVertexId = vertexId;
+            }
+          }
         }
+        gamma = minStarId;
       }
-      if(gamma!=-1){
-        gradient[alphaDim][alpha]=gamma;
-        gradient[betaDim][gamma]=alpha;
+
+      if (gamma != -1) {
+        gradient[alphaDim][alpha] = gamma;
+        gradient[betaDim][gamma] = alpha;
       }
     }
   }
-  else if(dimensionality_==3){
+  else if(dimensionality_==3) {
 #ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(simplexId_t alpha=0; alpha<alphaNumber; ++alpha){
-      simplexId_t betaNumber{};
-      switch(alphaDim){
-        case 0: betaNumber=inputTriangulation_->getVertexEdgeNumber(alpha);
-          break;
-        case 1: betaNumber=inputTriangulation_->getEdgeTriangleNumber(alpha);
-          break;
-        case 2: betaNumber=inputTriangulation_->getTriangleStarNumber(alpha);
-          break;
-      }
+    for (simplexId_t alpha = 0; alpha < alphaNumber; ++alpha) {
       simplexId_t gamma{-1};
-      for(simplexId_t k=0; k<betaNumber; ++k){
-        simplexId_t beta;
-        switch(alphaDim){
-          case 0: inputTriangulation_->getVertexEdge(alpha,k,beta); break;
-          case 1: inputTriangulation_->getEdgeTriangle(alpha,k,beta); break;
-          case 2: inputTriangulation_->getTriangleStar(alpha,k,beta); break;
+      if (alphaDim == 0) {
+        simplexId_t minEdgeId{-1};
+        simplexId_t minVertexId{-1};
+        const simplexId_t edgeNumber = inputTriangulation_->getVertexEdgeNumber(alpha);
+        for (simplexId_t k = 0; k < edgeNumber; ++k) {
+          simplexId_t edgeId;
+          inputTriangulation_->getVertexEdge(alpha, k, edgeId);
+
+          simplexId_t vertexId;
+          inputTriangulation_->getEdgeVertex(edgeId, 0, vertexId);
+          if(vertexId == alpha)
+            inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
+
+          if (sosLowerThan(vertexId, alpha)) {
+            if(minVertexId==-1){
+              minEdgeId = edgeId;
+              minVertexId = vertexId;
+            }
+            else if(sosLowerThan(vertexId,minVertexId)){
+              minEdgeId = edgeId;
+              minVertexId = vertexId;
+            }
+          }
         }
-        // take beta such that alpha is the highest facet of beta
-        if(alpha==g0<dataType>(betaDim,beta,scalars,offsets)){
-          if(gamma==-1)
-            gamma=beta;
-          else
-            gamma=cellMin<dataType>(betaDim,beta,gamma,scalars,offsets);
+        gamma = minEdgeId;
+      } else if (alphaDim == 1) {
+        simplexId_t v0;
+        simplexId_t v1;
+        inputTriangulation_->getEdgeVertex(alpha, 0, v0);
+        inputTriangulation_->getEdgeVertex(alpha, 1, v1);
+
+        simplexId_t minTriangleId{-1};
+        simplexId_t minVertexId{-1};
+        const simplexId_t triangleNumber = inputTriangulation_->getEdgeTriangleNumber(alpha);
+        for (simplexId_t k = 0; k < triangleNumber; ++k) {
+          simplexId_t starId;
+          inputTriangulation_->getEdgeTriangle(alpha, k, starId);
+
+          simplexId_t vertexId;
+          inputTriangulation_->getTriangleVertex(starId, 0, vertexId);
+          if(vertexId == v0 or vertexId == v1)
+            inputTriangulation_->getTriangleVertex(starId, 1, vertexId);
+          if(vertexId == v0 or vertexId == v1)
+            inputTriangulation_->getTriangleVertex(starId, 2, vertexId);
+
+          if (sosLowerThan(vertexId,v0) and
+              sosLowerThan(vertexId,v1)) {
+            if (minVertexId == -1) {
+              minTriangleId = starId;
+              minVertexId = vertexId;
+            }
+            else if(sosLowerThan(vertexId,minVertexId)){
+              minTriangleId = starId;
+              minVertexId = vertexId;
+            }
+          }
         }
+        gamma = minTriangleId;
+      } else if (alphaDim == 2) {
+        simplexId_t v0;
+        simplexId_t v1;
+        simplexId_t v2;
+        inputTriangulation_->getTriangleVertex(alpha, 0, v0);
+        inputTriangulation_->getTriangleVertex(alpha, 1, v1);
+        inputTriangulation_->getTriangleVertex(alpha, 2, v2);
+
+        simplexId_t minStarId{-1};
+        simplexId_t minVertexId{-1};
+        const simplexId_t starNumber = inputTriangulation_->getTriangleStarNumber(alpha);
+        for (simplexId_t k = 0; k < starNumber; ++k) {
+          simplexId_t starId;
+          inputTriangulation_->getTriangleStar(alpha, k, starId);
+
+          simplexId_t vertexId;
+          inputTriangulation_->getCellVertex(starId, 0, vertexId);
+          if (vertexId == v0 or vertexId == v1 or vertexId == v2)
+            inputTriangulation_->getCellVertex(starId, 1, vertexId);
+          if (vertexId == v0 or vertexId == v1 or vertexId == v2)
+            inputTriangulation_->getCellVertex(starId, 2, vertexId);
+          if (vertexId == v0 or vertexId == v1 or vertexId == v2)
+            inputTriangulation_->getCellVertex(starId, 3, vertexId);
+
+          if (sosLowerThan(vertexId,v0) and
+              sosLowerThan(vertexId,v1) and
+              sosLowerThan(vertexId,v2)) {
+            if (minVertexId == -1) {
+              minStarId = starId;
+              minVertexId = vertexId;
+            }
+            else if(sosLowerThan(vertexId,minVertexId)){
+              minStarId = starId;
+              minVertexId = vertexId;
+            }
+          }
+        }
+        gamma = minStarId;
       }
-      if(gamma!=-1){
-        gradient[alphaDim][alpha]=gamma;
-        gradient[betaDim][gamma]=alpha;
+      if (gamma != -1) {
+        gradient[alphaDim][alpha] = gamma;
+        gradient[betaDim][gamma] = alpha;
       }
     }
   }
@@ -680,44 +797,66 @@ int DiscreteGradient::assignGradient(const int alphaDim,
 
 template <typename dataType>
 int DiscreteGradient::assignGradient2(const int alphaDim,
-                                      const dataType* const scalars,
-                                      const simplexId_t* const offsets,
-                                      std::vector<std::vector<simplexId_t>>& gradient) const{
+    const dataType* const scalars,
+    const simplexId_t* const offsets,
+    std::vector<std::vector<simplexId_t>>& gradient) const{
   if(alphaDim>0){
     const int betaDim=alphaDim+1;
     const simplexId_t alphaNumber=gradient[alphaDim].size();
+
+    const auto sosLowerThan=[&scalars,&offsets](const simplexId_t a, const simplexId_t b){
+      if(scalars[a] != scalars[b]) return scalars[a]<scalars[b];
+      else return offsets[a]<offsets[b];
+    };
 
     if(dimensionality_==2){
 #ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(simplexId_t alpha=0; alpha<alphaNumber; ++alpha){
-        // alpha must be unpaired
-        if(gradient[alphaDim][alpha]==-1){
-          simplexId_t betaNumber{};
-          switch(alphaDim){
-            case 1: betaNumber=inputTriangulation_->getEdgeStarNumber(alpha);
-              break;
-          }
-          simplexId_t gamma{-1};
-          for(simplexId_t k=0; k<betaNumber; ++k){
-            simplexId_t beta;
-            switch(alphaDim){
-              case 1: inputTriangulation_->getEdgeStar(alpha,k,beta); break;
-            }
-            // take beta such that alpha is the second highest facet of beta
-            if(alpha==g0_second<dataType>(betaDim,beta,scalars,offsets)){
-              if(gamma==-1)
-                gamma=beta;
-              else
-                gamma=cellMin<dataType>(betaDim,beta,gamma,scalars,offsets);
-            }
-          }
+        if(!isCellCritical(alphaDim,alpha)) continue;
 
-          if(gamma!=-1 and gradient[betaDim][gamma]==-1){
-            gradient[alphaDim][alpha]=gamma;
-            gradient[betaDim][gamma]=alpha;
+        simplexId_t gamma{-1};
+
+        simplexId_t v0;
+        simplexId_t v1;
+        inputTriangulation_->getEdgeVertex(alpha, 0, v0);
+        inputTriangulation_->getEdgeVertex(alpha, 1, v1);
+
+        simplexId_t minStarId{-1};
+        simplexId_t minVertexId{-1};
+        const simplexId_t starNumber=inputTriangulation_->getEdgeStarNumber(alpha);
+        for(simplexId_t k=0; k<starNumber; ++k){
+          simplexId_t starId;
+          inputTriangulation_->getEdgeStar(alpha,k,starId); break;
+
+          if(isCellCritical(betaDim,starId)){
+            simplexId_t vertexId;
+            inputTriangulation_->getCellVertex(starId, 0, vertexId);
+            if(vertexId == v0 or vertexId == v1)
+              inputTriangulation_->getCellVertex(starId, 1, vertexId);
+            if(vertexId == v0 or vertexId == v1)
+              inputTriangulation_->getCellVertex(starId, 2, vertexId);
+
+            if((sosLowerThan(vertexId,v0) and sosLowerThan(v1, vertexId))
+                or
+                (sosLowerThan(vertexId,v1) and sosLowerThan(v0, vertexId))){
+              if (minVertexId == -1) {
+                minStarId = starId;
+                minVertexId = vertexId;
+              }
+              else if(sosLowerThan(vertexId,minVertexId)){
+                minStarId = starId;
+                minVertexId = vertexId;
+              }
+            }
           }
+        }
+        gamma=minStarId;
+
+        if(gamma!=-1){
+          gradient[alphaDim][alpha]=gamma;
+          gradient[betaDim][gamma]=alpha;
         }
       }
     }
@@ -726,35 +865,104 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(simplexId_t alpha=0; alpha<alphaNumber; ++alpha){
-        // alpha must be unpaired
-        if(gradient[alphaDim][alpha]==-1){
-          simplexId_t betaNumber{};
-          switch(alphaDim){
-            case 1:
-              betaNumber=inputTriangulation_->getEdgeTriangleNumber(alpha); break;
-            case 2:
-              betaNumber=inputTriangulation_->getTriangleStarNumber(alpha); break;
-          }
-          simplexId_t gamma{-1};
-          for(simplexId_t k=0; k<betaNumber; ++k){
-            simplexId_t beta;
-            switch(alphaDim){
-              case 1: inputTriangulation_->getEdgeTriangle(alpha,k,beta); break;
-              case 2: inputTriangulation_->getTriangleStar(alpha,k,beta); break;
-            }
-            // take beta such that alpha is the second highest facet of beta
-            if(alpha==g0_second<dataType>(betaDim,beta,scalars,offsets)){
-              if(gamma==-1)
-                gamma=beta;
-              else
-                gamma=cellMin<dataType>(betaDim,beta,gamma,scalars,offsets);
-            }
-          }
+        if(!isCellCritical(alphaDim,alpha)) continue;
 
-          if(gamma!=-1 and gradient[betaDim][gamma]==-1){
-            gradient[alphaDim][alpha]=gamma;
-            gradient[betaDim][gamma]=alpha;
+        simplexId_t gamma{-1};
+
+        if(alphaDim==1){
+          simplexId_t v0;
+          simplexId_t v1;
+          inputTriangulation_->getEdgeVertex(alpha, 0, v0);
+          inputTriangulation_->getEdgeVertex(alpha, 1, v1);
+
+          simplexId_t minTriangleId{-1};
+          simplexId_t minVertexId{-1};
+          const simplexId_t triangleNumber=inputTriangulation_->getEdgeTriangleNumber(alpha);
+          for(simplexId_t k=0; k<triangleNumber; ++k){
+            simplexId_t triangleId;
+            inputTriangulation_->getEdgeTriangle(alpha,k,triangleId);
+
+            if(isCellCritical(betaDim,triangleId)){
+              simplexId_t vertexId;
+              inputTriangulation_->getTriangleVertex(triangleId, 0, vertexId);
+              if(vertexId == v0 or vertexId == v1)
+                inputTriangulation_->getTriangleVertex(triangleId, 1, vertexId);
+              if(vertexId == v0 or vertexId == v1)
+                inputTriangulation_->getTriangleVertex(triangleId, 2, vertexId);
+
+              if((sosLowerThan(vertexId,v0) and sosLowerThan(v1, vertexId))
+                  or
+                  (sosLowerThan(vertexId,v1) and sosLowerThan(v0, vertexId))){
+                if (minVertexId == -1) {
+                  minTriangleId = triangleId;
+                  minVertexId = vertexId;
+                }
+                else if(sosLowerThan(vertexId,minVertexId)){
+                  minTriangleId = triangleId;
+                  minVertexId = vertexId;
+                }
+              }
+            }
           }
+          gamma=minTriangleId;
+        }
+        else if(alphaDim==2){
+          simplexId_t v0;
+          simplexId_t v1;
+          simplexId_t v2;
+          inputTriangulation_->getTriangleVertex(alpha, 0, v0);
+          inputTriangulation_->getTriangleVertex(alpha, 1, v1);
+          inputTriangulation_->getTriangleVertex(alpha, 2, v2);
+
+          simplexId_t vb{-1};
+          if((sosLowerThan(v1, v0) and sosLowerThan(v0, v2))
+              or
+              (sosLowerThan(v2, v0) and sosLowerThan(v0, v1)))
+            vb=v0;
+          else if((sosLowerThan(v0, v1) and sosLowerThan(v1, v2))
+              or
+              (sosLowerThan(v2, v1) and sosLowerThan(v1, v0)))
+            vb=v1;
+          else if((sosLowerThan(v1, v2) and sosLowerThan(v2, v0))
+              or
+              (sosLowerThan(v0, v2) and sosLowerThan(v2, v1)))
+            vb=v2;
+
+          simplexId_t minStarId{-1};
+          simplexId_t minVertexId{-1};
+          const simplexId_t starNumber=inputTriangulation_->getTriangleStarNumber(alpha);
+          for(simplexId_t k=0; k<starNumber; ++k){
+            simplexId_t starId;
+            inputTriangulation_->getTriangleStar(alpha, k, starId);
+
+            if(isCellCritical(betaDim, starId)){
+              simplexId_t vertexId;
+              inputTriangulation_->getCellVertex(starId, 0, vertexId);
+              if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
+                inputTriangulation_->getCellVertex(starId, 1, vertexId);
+              if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
+                inputTriangulation_->getCellVertex(starId, 2, vertexId);
+              if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
+                inputTriangulation_->getCellVertex(starId, 3, vertexId);
+
+              if(sosLowerThan(vertexId, vb)){
+                if (minVertexId == -1) {
+                  minStarId = starId;
+                  minVertexId = vertexId;
+                }
+                else if(sosLowerThan(vertexId,minVertexId)){
+                  minStarId = starId;
+                  minVertexId = vertexId;
+                }
+              }
+            }
+          }
+          gamma=minStarId;
+        }
+
+        if(gamma!=-1){
+          gradient[alphaDim][alpha]=gamma;
+          gradient[betaDim][gamma]=alpha;
         }
       }
     }
@@ -765,44 +973,76 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
 
 template <typename dataType>
 int DiscreteGradient::assignGradient3(const int alphaDim,
-                                      const dataType* const scalars,
-                                      const simplexId_t* const offsets,
-                                      std::vector<std::vector<simplexId_t>>& gradient) const{
+    const dataType* const scalars,
+    const simplexId_t* const offsets,
+    std::vector<std::vector<simplexId_t>>& gradient) const{
   if(alphaDim>0){
     const int betaDim=alphaDim+1;
     const simplexId_t alphaNumber=gradient[alphaDim].size();
+
+    const auto sosLowerThan=[&scalars,&offsets](const simplexId_t a, const simplexId_t b){
+      if(scalars[a] != scalars[b]) return scalars[a]<scalars[b];
+      else return offsets[a]<offsets[b];
+    };
 
     if(dimensionality_==3){
 #ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
       for(simplexId_t alpha=0; alpha<alphaNumber; ++alpha){
-        // alpha must be unpaired
-        if(gradient[alphaDim][alpha]==-1){
-          simplexId_t betaNumber{};
-          switch(alphaDim){
-            case 2:
-              betaNumber=inputTriangulation_->getTriangleStarNumber(alpha); break;
-          }
-          simplexId_t gamma{-1};
-          for(simplexId_t k=0; k<betaNumber; ++k){
-            simplexId_t beta;
-            switch(alphaDim){
-              case 2: inputTriangulation_->getTriangleStar(alpha,k,beta); break;
-            }
-            // take beta such that alpha is the second highest facet of beta
-            if(alpha==g0_third<dataType>(betaDim,beta,scalars,offsets)){
-              if(gamma==-1)
-                gamma=beta;
-              else
-                gamma=cellMin<dataType>(betaDim,beta,gamma,scalars,offsets);
-            }
-          }
+        if(!isCellCritical(alphaDim,alpha)) continue;
 
-          if(gamma!=-1 and gradient[betaDim][gamma]==-1){
-            gradient[alphaDim][alpha]=gamma;
-            gradient[betaDim][gamma]=alpha;
+        simplexId_t gamma{-1};
+
+        simplexId_t v0;
+        simplexId_t v1;
+        simplexId_t v2;
+        inputTriangulation_->getTriangleVertex(alpha, 0, v0);
+        inputTriangulation_->getTriangleVertex(alpha, 1, v1);
+        inputTriangulation_->getTriangleVertex(alpha, 2, v2);
+
+        simplexId_t vmax=-1;
+        if(sosLowerThan(v1, v0) and sosLowerThan(v2, v0))
+          vmax=v0;
+        else if(sosLowerThan(v0, v1) and sosLowerThan(v2, v1))
+          vmax=v1;
+        else if(sosLowerThan(v0, v2) and sosLowerThan(v1, v2))
+          vmax=v2;
+
+        simplexId_t minStarId{-1};
+        simplexId_t minVertexId{-1};
+        const simplexId_t starNumber=inputTriangulation_->getTriangleStarNumber(alpha);
+        for(simplexId_t k=0; k<starNumber; ++k){
+          simplexId_t starId;
+          inputTriangulation_->getTriangleStar(alpha, k, starId);
+
+          if(isCellCritical(betaDim,starId)){
+            simplexId_t vertexId;
+            inputTriangulation_->getCellVertex(starId, 0, vertexId);
+            if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
+              inputTriangulation_->getCellVertex(starId, 1, vertexId);
+            if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
+              inputTriangulation_->getCellVertex(starId, 2, vertexId);
+            if((vertexId == v0) or (vertexId == v1) or (vertexId == v2))
+              inputTriangulation_->getCellVertex(starId, 3, vertexId);
+
+            if(sosLowerThan(vertexId,vmax)) {
+              if (minVertexId == -1) {
+                minStarId = starId;
+                minVertexId = vertexId;
+              }
+              else if(sosLowerThan(vertexId,minVertexId)){
+                minStarId = starId;
+                minVertexId = vertexId;
+              }
+            }
           }
+        }
+        gamma=minStarId;
+
+        if(gamma!=-1){
+          gradient[alphaDim][alpha]=gamma;
+          gradient[betaDim][gamma]=alpha;
         }
       }
     }

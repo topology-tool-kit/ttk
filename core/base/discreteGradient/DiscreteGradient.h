@@ -955,7 +955,8 @@ gradient, false otherwise.
        * Return true if the given cell is a critical point regarding the 
 discrete gradient, false otherwise.
        */
-      bool isCellCritical(const Cell &cell) const;
+      bool isCellCritical(const int cellDim, const simplexId_t cellId) const;
+      bool isCellCritical(const Cell& cell) const;
 
       /**
        * Return true if the given cell is at boundary, false otherwise.
