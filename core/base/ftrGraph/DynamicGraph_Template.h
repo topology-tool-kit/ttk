@@ -58,9 +58,8 @@ namespace ttk
 
          stringstream res;
 
-         res << " nb nodes : " << nodes_.size() << std::endl;
          for(const auto& node : nodes_) {
-            if (node.parent_) {
+            if (1 or node.parent_) {
                res << "id: " << &node - &nodes_[0];
                if (node.parent_) {
                   res << ", parent: " << node.parent_ - &nodes_[0];
@@ -70,7 +69,7 @@ namespace ttk
                res << " root: " << findRoot(&node) - &nodes_[0];
                res << " weight: " << (float)node.weight_;
                res << " nb childs " << static_cast<unsigned>(node.nbChilds_);
-               res << " oArc: " << node.corArc_;
+               res << " oArc: " << node.findRootArc();
                res << endl;
             }
          }

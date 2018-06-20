@@ -38,14 +38,12 @@ namespace ttk
                         bfsVerts_[v0] = saddle;
                         newLocalProp->addNewVertex(v0);
                      }
-                     graph_.visit(v1, arc);
                      DEBUG_3(<< "process " << printEdge(edge, newLocalProp) << " with " << arc << " : " << newLocalProp->getRpz() << std::endl);
                   } else {
                      if (bfsVerts_[v1] != saddle) {
                         bfsVerts_[v1] = saddle;
                         newLocalProp->addNewVertex(v1);
                      }
-                     graph_.visit(v0, arc);
                      DEBUG_3(<< "process " << printEdge(edge, newLocalProp) << " with " << arc << " : " << newLocalProp->getRpz() << std::endl);
                   }
                   // Recursively continue BFS

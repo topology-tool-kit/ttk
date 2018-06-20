@@ -202,14 +202,14 @@ std::string Graph::printVisit(const idVertex v) const
 std::string Graph::printVisit() const
 {
    std::stringstream res;
-   res << " nb visits : ";
+   res << "Segmentation: " << std::endl;
+   int s = 0;
    for (const auto& l : segmentation_) {
-      int s = 0;
+      res << s++ << " : ";
       for (const auto v : l) {
-         std::ignore = v;
-         ++s;
+         res << " " << v;
       }
-      res << " " << s;
+      res << std::endl;
    }
    return res.str();
 }

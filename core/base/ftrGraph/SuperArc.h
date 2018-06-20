@@ -48,12 +48,7 @@ namespace ttk
 
          idNode getUpNodeId(void) const
          {
-#ifndef TTK_ENABLE_KAMIKAZE
-            if(upNodeId_ == nullNode)
-            {
-               std::cerr << "[FTR Graph]: Arc have null up node" << std::endl;
-            }
-#endif
+            // Caution. can be nullNode
             return upNodeId_;
          }
 

@@ -244,7 +244,7 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGr
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if (upNodeId == nullNode || downNodeId == nullNode) {
-         std::cout << "NULL NODES IN SKELETON " << graph.printArc(arcId) << std::endl;
+         std::cerr << "NULL NODES IN SKELETON " << graph.printArc(arcId) << std::endl;
          // exit(2);
          continue;
       }

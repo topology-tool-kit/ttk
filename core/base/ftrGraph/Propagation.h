@@ -75,7 +75,7 @@ namespace ttk
          }
 
          void removeDuplicates(const idVertex d) {
-            while (propagation_.top() == d){
+            while (!propagation_.empty() && propagation_.top() == d) {
                propagation_.pop();
             }
          }

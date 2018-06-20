@@ -77,7 +77,7 @@ namespace ttk
 
          void setSubtreeArc(const std::size_t nid, const idSuperArc arc)
          {
-            getNode(nid)->setRootArc(arc);
+            getNode(nid)->findRoot()->setRootArc(arc);
          }
 
          idSuperArc getSubtreeArc(const std::size_t nid) const

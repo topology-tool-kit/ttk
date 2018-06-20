@@ -162,6 +162,21 @@ namespace ttk
             return false;
          }
 
+         bool hasArcEndingHere(const idVertex saddle, const idVertex regular, VertCompFN comp) const
+         {
+            const idNode lookupNode = getNodeId(saddle);
+            for(const idSegmentation tmp :  segmentation_[regular]){
+               if (tmp >= 0 && getArc(tmp).getUpNodeId() == lookupNode) {
+                  const idNode downNodeId = getArc(tmp).getDownNodeId();
+                  const idVertex downVert = getNode(downNodeId).getVertexIdentifier();
+                  if (comp(saddle, downVert)) {
+                     return true;
+                  }
+               }
+            }
+            return false;
+         }
+
          bool isNode(const idVertex v) const
          {
             for (const idSegmentation tmp : segmentation_[v]) {

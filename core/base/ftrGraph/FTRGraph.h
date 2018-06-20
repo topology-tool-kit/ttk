@@ -276,6 +276,14 @@ namespace ttk
                                     const Propagation* const localPropagation,
                                     const idSuperArc         curArc);
 
+         /// update the current arc of the dynGraph subtree of seed with curArc (on the component going through neigEdge)
+         void updateDynGraphCurArc(const idVertex seed, const idEdge neigEdge,
+                                   const idSuperArc curArc, const Propagation* const localProp);
+
+         /// update the current arc of the dynGraph subtree of seed with curArc (all edges crossing the level set)
+         void updateDynGraphCurArc(const idVertex seed, const idSuperArc curArc,
+                                   const Propagation* const localProp);
+
          /// update the skeleton structure
          /// \ret the nodeId of the current saddle/max
          idNode updateReebGraph(const idSuperArc         currentArc,
@@ -289,15 +297,19 @@ namespace ttk
          bool checkLast(const idSuperArc currentArc, const Propagation* const localPropagation,
                         const std::vector<idEdge>& lowerStarEdges);
 
-         // Check if neigh is linked to an arc having saddle in one of its boundary node
-         bool checkAlreayAttached(const idVertex saddle, const idVertex neigh, const Propagation* const localProag);
+         // Check if neigh is linked to an arc having saddle in one of its boundary node, using the edge btwn saddle and neigh
+         bool checkOppositeDGForArc(const idVertex saddle, const idVertex neigh, const Propagation* const localProp);
+
+         // check if regular vertex is visited by an arc ending a saddle coming from the opposite direction
+         bool checkSegmentationForArc(const idVertex saddle, const idVertex regular,
+                                      const Propagation* const localProp);
 
          // At a join saddle, merge local propagations coming here
          // and close remiang opened arcs.
          // Remove duplicate on the saddleVertex (only)
          void mergeAtSaddle(const idNode saddleId, Propagation* localProp);
 
-         // At a split saddle, break the localProagation into pieces
+         // At a split saddle, break the localPropagation into pieces
          // corresponding to each upper CC (use BFS) and launch
          // new localGrowth for each
          void splitAtSaddle(const Propagation* const localProp);
@@ -349,6 +361,9 @@ namespace ttk
          // get the higher vertex: get<1>(get<1>(oTriangle)
          idVertex getEndVertexInTriangle(const orderedTriangle&   oTriangle,
                                          const Propagation* const localPropagation) const;
+
+         // get edge in orderer triangle between v0 and v1
+         idEdge getEdgeFromOTri(const orderedTriangle oTri, const idVertex v0, const idVertex v1);
       };
    }  // namespace ftr
 }  // namespace ttk
