@@ -42,25 +42,6 @@ See also MandatoryCriticalPoints.
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty
-        name="Scalar Field"
-        command="SetScalarField"
-        number_of_elements="1"
-        animateable="0"
-        label="Scalar Field"
-        >
-        <ArrayListDomain
-          name="array_list"
-          default_values="0">
-          <RequiredProperties>
-            <Property name="Input" function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Documentation>
-          Select the scalar field to process.
-        </Documentation>
-      </StringVectorProperty>
-
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
