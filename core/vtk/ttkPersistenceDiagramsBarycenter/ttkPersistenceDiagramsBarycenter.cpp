@@ -60,10 +60,7 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, int numInputs){
 
 	std::cout<<"Hello world2 ! " << std::endl;
   // Calling the executing package
-	PersistenceDiagramsBarycenter persistenceDiagramsBarycenter;
-	persistenceDiagramsBarycenter.setWrapper(this);
-
-	persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
+	
 	std::cout<<"Entering switch... " << std::endl;
 	
 	int dataType = inputDiagram[0]->GetCellData()->GetArray("Persistence")->GetDataType();
@@ -73,7 +70,10 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, int numInputs){
 
 		vtkTemplateMacro((
 		{
-			
+			PersistenceDiagramsBarycenter<VTK_TT> persistenceDiagramsBarycenter;
+			persistenceDiagramsBarycenter.setWrapper(this);
+
+			persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
 			for (int i = 0; i<numInputs; i++) {
 				std::cout<< "Creating diagram "<< i<<std::endl;
 				double Spacing = i;
@@ -83,7 +83,7 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, int numInputs){
 				persistenceDiagramsBarycenter.setDiagram(i, (void*) CTDiagram);
 			}
 
-			persistenceDiagramsBarycenter.execute<VTK_TT>();
+			persistenceDiagramsBarycenter.execute();
 		}
 		));
 	}

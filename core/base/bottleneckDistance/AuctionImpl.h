@@ -7,7 +7,7 @@
 
 
 template <typename dataType>
-void ttk::Auction<dataType>::runAuctionRound(int& n_biddings)
+void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_index)
 {
 	while(unassignedBidders_.size()>0){
 		n_biddings ++;
@@ -17,11 +17,10 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings)
 		
 		GoodDiagram<dataType>& all_goods = b.isDiagonal() ? diagonal_goods_ : goods_;
 		Good<dataType>& twin_good = b.id_>=0 ? diagonal_goods_.get(b.id_) : goods_.get(-b.id_-1);
-		
 		int idx_reassigned;
 		if(b.isDiagonal()){
 			if(use_kdt_){
-				idx_reassigned = b.runDiagonalKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, correspondance_kdt_map_, diagonal_queue_);
+				idx_reassigned = b.runDiagonalKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, correspondance_kdt_map_, diagonal_queue_, kdt_index);
 			}
 			else{
 				idx_reassigned = b.runDiagonalBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, diagonal_queue_);
@@ -30,7 +29,7 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings)
 		else{
 			if(use_kdt_){
 				// We can use the kd-tree to speed up the search
-				idx_reassigned = b.runKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, kdt_);
+				idx_reassigned = b.runKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, kdt_, kdt_index);
 			}
 			else{
 				idx_reassigned = b.runBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_);
@@ -80,6 +79,7 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(std::vector<matchingTup
 template <typename dataType>
 dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 {	
+	initializeEpsilon();
 	int n_biddings = 0;
 	dataType delta = 5;
 	while(delta>delta_lim_){

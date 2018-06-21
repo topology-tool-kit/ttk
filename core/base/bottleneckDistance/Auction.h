@@ -52,9 +52,50 @@ namespace ttk {
 			geometricalFactor_ = geometricalFactor;
 			use_kdt_ = use_kdTree;
         };
+		
+		
+		Auction(BidderDiagram<dataType>& bidders, GoodDiagram<dataType>& goods, int wasserstein, double geometricalFactor, double delta_lim, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>& correspondance_kdt_map, bool use_kdTree=true) {
+			bidders_ = bidders;
+			goods_ = goods;
+			
+            n_bidders_ = bidders.size();
+            n_goods_ = goods.size();
+			
+			std::cout<< "Number of bidders : "<< n_bidders_<<std::endl;
+			for(int i=0; i < n_bidders_; i++){
+				//Add diagonal goods
+				Bidder<dataType>& b = bidders_.get(i);
+				Good<dataType> g = Good<dataType>(b.x_, b.y_, true, -b.id_-1);
+				g.projectOnDiagonal();
+				diagonal_goods_.addGood(g);
+				std::pair<int, dataType> pair = std::make_pair(i, g.getPrice());
+				diagonal_queue_.push(pair);
+			}
+			for(int i=0; i < n_goods_; i++){
+				//Add diagonal bidders
+				Good<dataType>& g = goods_.get(i);
+				Bidder<dataType> b = Bidder<dataType>(g.x_, g.y_, true, -g.id_-1);
+				b.projectOnDiagonal();
+				b.setPositionInAuction(bidders_.size());
+				bidders_.addBidder(b);
+			}
+			
+			epsilon_ = 1;
+			wasserstein_ = wasserstein;
+			delta_lim_ = delta_lim;
+			geometricalFactor_ = geometricalFactor;
+			
+			use_kdt_ = use_kdTree;
+			if(use_kdt_) {
+				kdt_ = kdt;
+				correspondance_kdt_map_ = correspondance_kdt_map;
+			}
+        };
+		
+		
 		~Auction() {};
 
-		void runAuctionRound(int& n_biddings);
+		void runAuctionRound(int& n_biddings, const int kdt_index=0);
 		dataType getMatchingsAndDistance(std::vector<matchingTuple> *matchings);
 		dataType run(std::vector<matchingTuple> *matchings);
 
@@ -71,7 +112,7 @@ namespace ttk {
 				Good<dataType> g = Good<dataType>(b.x_, b.y_, true, -b.id_-1);
 				g.projectOnDiagonal();
 				diagonal_goods_.addGood(g);
-				std::pair<int, dataType> pair = std::make_pair(i, 0);
+				std::pair<int, dataType> pair = std::make_pair(i, g.getPrice());
 				diagonal_queue_.push(pair);
 			}
 			for(int i=0; i < n_goods_; i++){
@@ -150,7 +191,7 @@ namespace ttk {
 					max_persistence = persistence;
 				}
 			}
-			this.epsilon = 5/4 * pow(max_persistence, wasserstein_);
+			this->epsilon_ = 5/4 * pow(max_persistence, wasserstein_);
 		}
 		
 		
