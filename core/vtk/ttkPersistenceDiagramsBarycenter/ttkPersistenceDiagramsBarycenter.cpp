@@ -16,12 +16,11 @@ using namespace ttk;
 vtkStandardNewMacro(ttkPersistenceDiagramsBarycenter)
 
 ttkPersistenceDiagramsBarycenter::ttkPersistenceDiagramsBarycenter(){
-  std::cout<<"Hello world ... " << std::endl;
   UseAllCores = false;
+  WassersteinMetric = "2";
 
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);
-  std::cout<<"Hello world2 ... " << std::endl;
 }
 
 ttkPersistenceDiagramsBarycenter::~ttkPersistenceDiagramsBarycenter(){}
@@ -48,20 +47,13 @@ int ttkPersistenceDiagramsBarycenter::updateProgress(const float &progress){
 
 
 int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, int numInputs){
-
-	std::cout<<"Hello world ! " << std::endl;
-
 	// Get arrays from input datas
 	//vtkDataArray* inputDiagram[numInputs] = { NULL };
 	vector<vtkUnstructuredGrid*> inputDiagram(numInputs);
 	for(int i=0 ; i<numInputs ; i++){
 		inputDiagram[i] = vtkUnstructuredGrid::SafeDownCast(input[i]);
 	}
-
-	std::cout<<"Hello world2 ! " << std::endl;
   // Calling the executing package
-	
-	std::cout<<"Entering switch... " << std::endl;
 	
 	int dataType = inputDiagram[0]->GetCellData()->GetArray("Persistence")->GetDataType();
 	
@@ -72,10 +64,12 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, int numInputs){
 		{
 			PersistenceDiagramsBarycenter<VTK_TT> persistenceDiagramsBarycenter;
 			persistenceDiagramsBarycenter.setWrapper(this);
+			
+			string wassersteinMetric = WassersteinMetric;
+			persistenceDiagramsBarycenter.setWasserstein(wassersteinMetric);
 
 			persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
 			for (int i = 0; i<numInputs; i++) {
-				std::cout<< "Creating diagram "<< i<<std::endl;
 				double Spacing = i;
 				std::vector<macroDiagramTuple>* CTDiagram = new vector<macroDiagramTuple>();
 				getPersistenceDiagram<VTK_TT>(CTDiagram, inputDiagram[i], Spacing, 0);
@@ -113,16 +107,12 @@ int ttkPersistenceDiagramsBarycenter::FillOutputPortInformation(int port, vtkInf
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
 int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
   vtkInformationVector **inputVector, vtkInformationVector *outputVector){
-	std::cout<<"Hello world ? " << std::endl;
   Memory m;
   
-  std::cout<<"Hello world2 ? " << std::endl;
-
   // Number of input files
   int numInputs = inputVector[0]->GetNumberOfInformationObjects();
   {
     stringstream msg;
-    msg << "[ttkPersistenceDiagramsBarycenter] Number of inputs: " << numInputs << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
 

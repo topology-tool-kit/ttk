@@ -95,6 +95,9 @@ class ttkPersistenceDiagramsBarycenter
 
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
+	
+	vtkSetMacro(WassersteinMetric, std::string);
+    vtkGetMacro(WassersteinMetric, std::string);
 
 
   protected:
@@ -123,6 +126,7 @@ class ttkPersistenceDiagramsBarycenter
     bool                  UseAllCores;
     int                   ThreadNumber;
     std::string                ScalarField;
+	std::string                WassersteinMetric;
 
     // base code features
     int doIt(vtkDataSet **input,

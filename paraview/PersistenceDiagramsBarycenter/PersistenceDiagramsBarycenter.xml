@@ -42,6 +42,19 @@ See also MandatoryCriticalPoints.
         </Documentation>
       </InputProperty>
 
+	   <StringVectorProperty
+          name="n"
+          label="p parameter"
+          command="SetWassersteinMetric"
+          number_of_elements="1"
+          default_values="1" >
+        <Documentation>
+          Value of the parameter p for the Wp (p-th Wasserstein) distance 
+computation (type "inf" for the Bottleneck distance).
+        </Documentation>
+      </StringVectorProperty>
+	  
+	  
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"

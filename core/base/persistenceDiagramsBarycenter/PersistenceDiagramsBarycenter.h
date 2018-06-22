@@ -65,9 +65,10 @@ namespace ttk{
 			
 		void setBidderDiagrams();
 		void setInitialBarycenter();
+		dataType getMaxPersistence();
 		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> getKDTree();
 		void updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings, dataType& max_shift, dataType& average_shift);
-			
+		
 		bool is_matching_stable();
 			
 		dataType getEpsilon(dataType rho);
@@ -93,6 +94,10 @@ namespace ttk{
 			inputData_[i] = NULL;
 			}
 			return 0;
+		}
+		
+		inline void setWasserstein(const std::string &wasserstein){
+			wasserstein_ = (wasserstein == "inf") ? -1 : stoi(wasserstein);
 		}
 		
 		template<typename type>
