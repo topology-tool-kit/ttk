@@ -46,7 +46,7 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_inde
 
 
 template <typename dataType>
-dataType ttk::Auction<dataType>::getMatchingsAndDistance(std::vector<matchingTuple> *matchings)
+dataType ttk::Auction<dataType>::getMatchingsAndDistance(std::vector<matchingTuple> *matchings, bool get_diagonal_matches)
 {
 	dataType wassersteinDistance = 0;
 	for (int i=0; i<bidders_.size(); i++){
@@ -63,13 +63,22 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(std::vector<matchingTup
 			}
 			else{
 				cost = pow(abs<dataType>((b.x_-b.y_)/2), wasserstein_);
+				if(get_diagonal_matches){
+					matchingTuple t = std::make_tuple(i, good_id, cost);
+					matchings->push_back(t);
+				}
 			}
 			wassersteinDistance += cost;
 		}
 		else{
 			// b is diagonal
 			Good<dataType> g = *b.getProperty();
-			wassersteinDistance += pow(abs<dataType>((g.x_-g.y_)/2), wasserstein_);
+			dataType cost = pow(abs<dataType>((g.x_-g.y_)/2), wasserstein_);
+			wassersteinDistance += cost;
+			if(get_diagonal_matches){
+				matchingTuple t = std::make_tuple(b.id_, g.id_, cost);
+				matchings->push_back(t);
+			}
 		}
 	}
 	return wassersteinDistance;
