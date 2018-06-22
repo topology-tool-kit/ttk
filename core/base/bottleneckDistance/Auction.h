@@ -54,14 +54,13 @@ namespace ttk {
         };
 		
 		
-		Auction(BidderDiagram<dataType>& bidders, GoodDiagram<dataType>& goods, int wasserstein, double geometricalFactor, double delta_lim, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>& correspondance_kdt_map, bool use_kdTree=true) {
+		Auction(BidderDiagram<dataType>& bidders, GoodDiagram<dataType>& goods, int wasserstein, double geometricalFactor, double delta_lim, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>& correspondance_kdt_map, dataType epsilon, bool use_kdTree=true) {
 			bidders_ = bidders;
 			goods_ = goods;
 			
             n_bidders_ = bidders.size();
             n_goods_ = goods.size();
 			
-			std::cout<< "Number of bidders : "<< n_bidders_<<std::endl;
 			for(int i=0; i < n_bidders_; i++){
 				//Add diagonal goods
 				Bidder<dataType>& b = bidders_.get(i);
@@ -80,7 +79,7 @@ namespace ttk {
 				bidders_.addBidder(b);
 			}
 			
-			epsilon_ = 1;
+			epsilon_ = epsilon;
 			wasserstein_ = wasserstein;
 			delta_lim_ = delta_lim;
 			geometricalFactor_ = geometricalFactor;
