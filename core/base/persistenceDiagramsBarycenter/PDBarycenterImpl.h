@@ -13,33 +13,42 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 	{
 	this->setBidderDiagrams();
 	this->setInitialBarycenter();
-	
-	std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair = this->getKDTree();
-	KDTree<dataType>* kdt = pair.first;
-	std::vector<KDTree<dataType>*>& correspondance_kdt_map = pair.second;
-	
-	std::vector<std::vector<matchingTuple>> all_matchings;
-	dataType total_costs = 0;
-	for(int i=0; i<numberOfInputs_; i++){
-		Auction<dataType> auction = Auction<dataType>(bidder_diagrams_[i], barycenter_goods_[i], wasserstein_, geometrical_factor_, 0.01, kdt, correspondance_kdt_map);
-		std::cout<< "Barycenter size : "<< barycenter_goods_[i].size() << std::endl;
-		int n_biddings = 0;
-		auction.buildUnassignedBidders();
-		auction.reinitializeGoods();
-		auction.runAuctionRound(n_biddings, i);
-		std::vector<matchingTuple> matchings;
-		dataType cost = auction.getMatchingsAndDistance(&matchings, true);
-		all_matchings.push_back(matchings);
-		total_costs += cost;
-	}
-	
-
-	dataType max_shift = 0;
-	dataType average_shift =0;
-	updateBarycenter(all_matchings, max_shift, average_shift);
 	std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
-	delete kdt;
+	dataType max_persistence = getMaxPersistence();
+	dataType epsilon = getEpsilon(max_persistence);
 	
+	bool converged = false;
+	while(!converged){
+		std::cout<< "epsilon : "<< epsilon << std::endl;
+		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair = this->getKDTree();
+		KDTree<dataType>* kdt = pair.first;
+		std::vector<KDTree<dataType>*>& correspondance_kdt_map = pair.second;
+		
+		std::vector<std::vector<matchingTuple>> all_matchings;
+		dataType total_cost = 0;
+		for(int i=0; i<numberOfInputs_; i++){
+			Auction<dataType> auction = Auction<dataType>(bidder_diagrams_[i], barycenter_goods_[i], wasserstein_, geometrical_factor_, 0.01, kdt, correspondance_kdt_map, epsilon);
+			int n_biddings = 0;
+			auction.buildUnassignedBidders();
+			auction.reinitializeGoods();
+			auction.runAuctionRound(n_biddings, i);
+			std::vector<matchingTuple> matchings;
+			dataType cost = auction.getMatchingsAndDistance(&matchings, true);
+			all_matchings.push_back(matchings);
+			total_cost += cost;
+		}
+		std::cout<< "Barycenter cost : "<< total_cost << std::endl;
+
+		dataType max_shift = 0;
+		dataType average_shift =0;
+		updateBarycenter(all_matchings, max_shift, average_shift);
+		std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
+		delete kdt;
+		epsilon /= 5;
+		converged = (epsilon<0.0001*getEpsilon(max_persistence));
+		std::cout<< "converged : "<< converged << std::endl;
+	}
+		
 	
 	std::stringstream msg;
 	msg << "[PersistenceDiagramsBarycenter] processed in "
@@ -65,9 +74,9 @@ void PersistenceDiagramsBarycenter<dataType>::updateBarycenter(std::vector<std::
 	unsigned int n_goods = barycenter_goods_[0].size();
 	unsigned int n_diagrams = bidder_diagrams_.size();
 	
-	std::vector<int> count_diag_matchings(n_goods);     // Number of diagonal matchings for each point of the barycenter
-	std::vector<int> x(n_goods);
-	std::vector<int> y(n_goods);
+	std::vector<unsigned int> count_diag_matchings(n_goods);     // Number of diagonal matchings for each point of the barycenter
+	std::vector<dataType> x(n_goods);
+	std::vector<dataType> y(n_goods);
 	for(unsigned int i=0; i<n_goods; i++){
 		count_diag_matchings[i] = 0;
 		x[i] = 0;
@@ -163,7 +172,6 @@ void PersistenceDiagramsBarycenter<dataType>::updateBarycenter(std::vector<std::
 		int count = 0;
 		GoodDiagram<dataType> new_barycenter;
 		for(unsigned int i=0; i<barycenter_goods_[j].size(); i++){
-			std::cout<< "Barycenter " << j<< " has size : " <<barycenter_goods_[j].size() <<std::endl;
 			Good<dataType>& g = barycenter_goods_[j].get(i);
 			if(g.id_!=-1){
 				g.id_ = count;
@@ -204,6 +212,24 @@ void PersistenceDiagramsBarycenter<dataType>::setBidderDiagrams(){
 		bidder_diagrams_.push_back(bidders);
 	}
 	return;
+}
+
+
+template <typename dataType>
+dataType PersistenceDiagramsBarycenter<dataType>::getMaxPersistence(){
+	dataType max_persistence = 0;
+	for(int i=0; i<numberOfInputs_; i++){
+		BidderDiagram<dataType>& D = bidder_diagrams_[i];
+		for(unsigned int j=0; j<D.size(); j++){
+			//Add bidder to bidders
+			Bidder<dataType>& b = D.get(j);
+			dataType persistence = b.getPersistence();
+			if(persistence>max_persistence){
+				max_persistence = persistence;
+			}
+		}
+	}
+	return max_persistence;
 }
 
 
