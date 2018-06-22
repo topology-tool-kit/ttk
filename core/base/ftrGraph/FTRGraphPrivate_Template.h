@@ -36,8 +36,8 @@ namespace ttk
          bool isJoinSaddle = false, isSplitSaddle = false;
 
          // containers
-         std::vector<idEdge>               lowerStarEdges, upperStarEdges;
-         std::set<DynGraphNode<idVertex>*> lowerComp, upperComp;
+         std::vector<idEdge>                  lowerStarEdges, upperStarEdges;
+         std::vector<DynGraphNode<idVertex>*> lowerComp, upperComp;
 
          while (!isJoinSaddle && !isSplitSaddle && !localPropagation->empty()) {
             localPropagation->nextVertex();
@@ -116,6 +116,11 @@ namespace ttk
             const idNode     downNode = graph_.getNodeId(upVert);
             const idSuperArc newArc   = graph_.openArc(downNode, localPropagation);
             updateDynGraphCurArc(upVert, newArc, localPropagation);
+            graph_.visit(upVert, newArc);
+            DEBUG_1(<< "visit m: " << upVert << " with " << newArc << std::endl);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task priority(5)
+#endif
             growthFromSeed(upVert, localPropagation, newArc);
          }
       }
@@ -148,14 +153,14 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      std::set<DynGraphNode<idVertex>*> FTRGraph<ScalarType>::lowerComps(
+      std::vector<DynGraphNode<idVertex>*> FTRGraph<ScalarType>::lowerComps(
           const std::vector<idEdge>& finishingEdges, const Propagation* const localProp)
       {
          return dynGraph(localProp).findRoot(finishingEdges);
       }
 
       template <typename ScalarType>
-      std::set<DynGraphNode<idVertex>*> FTRGraph<ScalarType>::upperComps(
+      std::vector<DynGraphNode<idVertex>*> FTRGraph<ScalarType>::upperComps(
           const std::vector<idEdge>& startingEdges, const Propagation* const localProp)
       {
          return dynGraph(localProp).findRoot(startingEdges);
@@ -206,6 +211,7 @@ namespace ttk
          const idVertex    w  = getWeight(e0, e1, localPropagation);
          bool t = dynGraph(localPropagation).insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), w);
 
+         dynGraph(localPropagation).setSubtreeArc(std::get<0>(oTriangle), curArc);
          dynGraph(localPropagation).setSubtreeArc(std::get<1>(oTriangle), curArc);
 
          if (t) {
@@ -228,6 +234,8 @@ namespace ttk
          // So we do not add the edge now
          const int t = dynGraph(localPropagation).removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
 
+         dynGraph(localPropagation).setSubtreeArc(std::get<0>(oTriangle), curArc);
+
          if (t) {
             DEBUG_2(<< "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation));
             DEBUG_2(<< " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl);
@@ -242,6 +250,8 @@ namespace ttk
          const orderedEdge e2 = getOrderedEdge(std::get<2>(oTriangle), localPropagation);
          const idVertex    w  = getWeight(e1, e2, localPropagation);
          const int u = dynGraph(localPropagation).insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w);
+
+         dynGraph(localPropagation).setSubtreeArc(std::get<1>(oTriangle), curArc);
          dynGraph(localPropagation).setSubtreeArc(std::get<2>(oTriangle), curArc);
 
          if (u) {
@@ -260,6 +270,9 @@ namespace ttk
                                                        const idSuperArc         curArc)
       {
          const int t = dynGraph(localPropagation).removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
+
+         dynGraph(localPropagation).setSubtreeArc(std::get<2>(oTriangle), curArc);
+         dynGraph(localPropagation).setSubtreeArc(std::get<1>(oTriangle), curArc);
 
          if (t) {
             DEBUG_2(<< "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation));
@@ -320,6 +333,11 @@ namespace ttk
          graph_.closeArc(currentArc, upNode);
 
          DEBUG_1(<< "close arc " << graph_.printArc(currentArc) << std::endl);
+
+         // To investigate
+         if (graph_.getArc(currentArc).getDownNodeId() == graph_.getArc(currentArc).getUpNodeId()) {
+            graph_.getArc(currentArc).hide();
+         }
 
          return upNode;
       }
@@ -419,9 +437,10 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      bool FTRGraph<ScalarType>::checkOppositeDGForArc(const idVertex saddle, const idVertex neigh, const Propagation* const localProp)
+      bool FTRGraph<ScalarType>::checkOppositeDGForArc(const idVertex saddle, const idVertex neigh,
+                                                       const Propagation* const localProp)
       {
-         const idNode checkNode = graph_.getNodeId(saddle);
+         const idNode checkNode  = graph_.getNodeId(saddle);
          const idEdge nbAdjEdges = mesh_->getVertexEdgeNumber(saddle);
 
          for (idEdge e = 0; e < nbAdjEdges; ++e) {
@@ -439,7 +458,7 @@ namespace ttk
                      return true;
                   }
                }
-               break;
+               // break;
             }
          }
 
@@ -460,9 +479,13 @@ namespace ttk
       template <typename ScalarType>
       void FTRGraph<ScalarType>::mergeAtSaddle(const idNode saddleId, Propagation* localProp)
       {
-         graph_.mergeAtSaddle(saddleId);
+         auto comp = [localProp](const idVertex a, const idVertex b) {
+            return localProp->compare(a, b);
+         };
+
+         graph_.mergeAtSaddle(saddleId, localProp);
          const idVertex saddleVert = graph_.getNode(saddleId).getVertexIdentifier();
-         localProp->removeDuplicates(saddleVert);
+         localProp->removeBelow(saddleVert, comp);
       }
 
       template <typename ScalarType>
@@ -512,8 +535,17 @@ namespace ttk
             }
          }
 
-         for (auto& bfsRes : bfsResults)
-            growthFromSeed(curVert, std::get<1>(bfsRes), std::get<0>(bfsRes));
+         for (auto& bfsRes : bfsResults) {
+            const auto arc  = std::get<0>(bfsRes);
+            const auto prop = std::get<1>(bfsRes);
+            graph_.visit(curVert, arc);
+            DEBUG_1(<< "visit s: " << curVert << " with " << arc << std::endl);
+            // why is the firstprivate required here ?
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task firstprivate(curVert, prop, arc) priority(2)
+#endif
+            growthFromSeed(curVert, prop, arc);
+         }
       }
 
       /// Tools
@@ -599,6 +631,7 @@ namespace ttk
                // 1 2 3
                return std::make_tuple(std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), std::get<2>(oEdges[2]), cellId);
             }
+
             // 1 3 2
             // 2 3 1
 

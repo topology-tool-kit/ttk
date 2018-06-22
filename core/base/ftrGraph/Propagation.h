@@ -1,5 +1,5 @@
-/// \ingroup base
 /// \class ttk::ftr::Propagation
+/// \ingroup base
 /// \author Gueunet Charles <charles.gueunet+ttk@gmail.com>
 /// \date 2018-01-15
 ///
@@ -76,6 +76,14 @@ namespace ttk
 
          void removeDuplicates(const idVertex d) {
             while (!propagation_.empty() && propagation_.top() == d) {
+               std::cout << "duplicate removed" << std::endl;
+               propagation_.pop();
+            }
+         }
+
+         void removeBelow(const idVertex d, VertCompFN comp) {
+            while (!propagation_.empty() && comp(propagation_.top(), d)) {
+               std::cout << "remove : " << propagation_.top() << std::endl;
                propagation_.pop();
             }
          }
@@ -87,6 +95,7 @@ namespace ttk
 
          void merge(Propagation& other)
          {
+            if (&other == this) return;
             propagation_.merge(other.propagation_);
             rpz_ = makeUnion(rpz_, other.rpz_);
          }

@@ -7,6 +7,20 @@ namespace ttk
 {
    namespace ftr
    {
+
+      template <typename ScalarType>
+      std::string FTRGraph<ScalarType>::printMesh(void) const
+      {
+         std::stringstream res;
+
+         res << "cells     : " << mesh_->getNumberOfCells() << std::endl;
+         res << "triangles : " << mesh_->getNumberOfTriangles() << std::endl;
+         res << "edges     : " << mesh_->getNumberOfEdges() << std::endl;
+         res << "vertices  : " << mesh_->getNumberOfVertices() << std::endl;
+
+         return res.str();
+      }
+
       template <typename ScalarType>
       std::string FTRGraph<ScalarType>::printEdge(const orderedEdge&       oEdge,
                                                   const Propagation* const localPropagation) const

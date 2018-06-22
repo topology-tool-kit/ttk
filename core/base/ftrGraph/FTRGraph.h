@@ -202,6 +202,8 @@ namespace ttk
 
          // Print function (FTRGraphPrint)
 
+         std::string printMesh(void) const;
+
          std::string printEdge(const orderedEdge& oEdge, const Propagation* const localPropagation) const;
 
          std::string printEdge(const idEdge edgeId, const Propagation* const localPropagation) const;
@@ -244,13 +246,13 @@ namespace ttk
          /// and find their corresponding components in the current
          /// preimage graph, each representing a component.
          /// \ret the set of uniques representing components
-         std::set<DynGraphNode<idVertex>*> lowerComps(const std::vector<idEdge>& finishingEdges,
-                                                      const Propagation* const   localProp);
+         std::vector<DynGraphNode<idVertex>*> lowerComps(const std::vector<idEdge>& finishingEdges,
+                                                         const Propagation* const   localProp);
 
          /// Symetric to lowerComps
          /// \ref lowerComps
-         std::set<DynGraphNode<idVertex>*> upperComps(const std::vector<idEdge>& startingEdges,
-                                                      const Propagation* const   localProp);
+         std::vector<DynGraphNode<idVertex>*> upperComps(const std::vector<idEdge>& startingEdges,
+                                                         const Propagation* const   localProp);
 
          /// update (locally) the preimage graph (dynGraph) from that
          /// of immediately before f(v) to that of immediately after f(v).

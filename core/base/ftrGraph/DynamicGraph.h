@@ -111,35 +111,46 @@ namespace ttk
 
          /// \brief recover the root of several nodes once, using
          /// brace initializers style: findRoot({n1,n2})
-         /// duplicate are removed by the std::set
-         std::set<DynGraphNode<Type>*> findRoot(
+         std::vector<DynGraphNode<Type>*> findRoot(
              std::initializer_list<DynGraphNode<Type>*> nodes)
          {
-            std::set<DynGraphNode<Type>*> roots;
+            std::vector<DynGraphNode<Type>*> roots;
+            roots.reserve(nodes.size());
             for(auto* n : nodes) {
-               roots.emplace(findRoot(n));
+               roots.emplace_back(findRoot(n));
             }
+            std::sort(roots.begin(), roots.end());
+            const auto it = std::unique(roots.begin(), roots.end());
+            roots.erase(it, roots.end());
             return roots;
          }
 
          /// \brief findRoot but using ids of the nodes
-         std::set<DynGraphNode<Type>*> findRoot(std::initializer_list<std::size_t> nodesIds)
+         std::vector<DynGraphNode<Type>*> findRoot(std::initializer_list<std::size_t> nodesIds)
          {
-            std::set<DynGraphNode<Type>*> roots;
+            std::vector<DynGraphNode<Type>*> roots;
+            roots.reserve(nodesIds.size());
             for(auto n : nodesIds) {
-               roots.emplace(findRoot(n));
+               roots.emplace_back(findRoot(n));
             }
+            std::sort(roots.begin(), roots.end());
+            const auto it = std::unique(roots.begin(), roots.end());
+            roots.erase(it, roots.end());
             return roots;
          }
 
          /// \brief findRoot but using ids of the nodes in a vector
          template<typename type>
-         std::set<DynGraphNode<Type>*> findRoot(const std::vector<type>& nodesids)
+         std::vector<DynGraphNode<Type>*> findRoot(const std::vector<type>& nodesIds)
          {
-            std::set<DynGraphNode<Type>*> roots;
-            for(auto n : nodesids) {
-               roots.emplace(findRoot(n));
+            std::vector<DynGraphNode<Type>*> roots;
+            roots.reserve(nodesIds.size());
+            for(auto n : nodesIds) {
+               roots.emplace_back(findRoot(n));
             }
+            std::sort(roots.begin(), roots.end());
+            const auto it = std::unique(roots.begin(), roots.end());
+            roots.erase(it, roots.end());
             return roots;
          }
 

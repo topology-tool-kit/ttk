@@ -14,7 +14,7 @@ Graph::~Graph()
 {
 }
 
-void Graph::mergeAtSaddle(const idNode saddleId)
+void Graph::mergeAtSaddle(const idNode saddleId, Propagation* const localProp)
 {
    const idVertex saddleVert = getNode(saddleId).getVertexIdentifier();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -23,8 +23,7 @@ void Graph::mergeAtSaddle(const idNode saddleId)
       std::cerr << saddleVert << std::endl;
    }
 #endif
-   const idSuperArc firstArc  = getFirstArcId(saddleVert);
-   Propagation*     firstProp = getArc(firstArc).getPropagation();
+
    for (const idSegmentation id : visit(saddleVert)) {
       if (id < 0) {
          // its a node id
@@ -32,8 +31,8 @@ void Graph::mergeAtSaddle(const idNode saddleId)
       }
       const idSuperArc a         = id;
       Propagation*     lowerProp = getArc(a).getPropagation();
-      if (firstProp->getRpz() != lowerProp->getRpz()) {
-         firstProp->merge(*lowerProp);
+      if (lowerProp->goUp() == localProp->goUp()) {
+         localProp->merge(*lowerProp);
       }
    }
 }

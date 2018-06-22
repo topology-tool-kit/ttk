@@ -75,6 +75,8 @@ namespace ttk
          init();
          printTime(timeInit, "[FTR Graph]: init time: ", infoMsg);
 
+         std::cout << printMesh() << std::endl;
+
          DebugTimer timeSort;
          scalars_->sort();
          printTime(timeSort, "[FTR Graph]: sort time: ", infoMsg);
@@ -85,11 +87,11 @@ namespace ttk
          DebugTimer timeBuild;
 
 #ifdef TTK_ENABLE_OPENMP
-// #pragma omp parallel num_threads(params_->threadNumber)
+#pragma omp parallel num_threads(1)
 #endif
          {
 #ifdef TTK_ENABLE_OPENMP
-// #pragma omp single nowait
+#pragma omp single nowait
 #endif
              {
                DebugTimer timeLeafSearch;
@@ -175,17 +177,21 @@ namespace ttk
          const idNode nbSeed = graph_.getNumberOfLeaves();
          // graph_.sortLeaves<ScalarType>(scalars_);
          graph_.shuffleLeaves<ScalarType>(scalars_);
-
-         for (idNode i = 0; i < nbSeed; i++) {
-            // initialize structure
-            const idVertex corLeaf          = graph_.getLeaf(i);
-            const bool     fromMin          = graph_.isLeafFromMin(i);
-            Propagation*   localPropagation = newPropagation(corLeaf, fromMin);
-            // process
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied
+#pragma omp taskgroup
 #endif
-            growthFromSeed(corLeaf, localPropagation);
+         {
+            for (idNode i = 0; i < nbSeed; i++) {
+               // initialize structure
+               const idVertex corLeaf          = graph_.getLeaf(i);
+               const bool     fromMin          = graph_.isLeafFromMin(i);
+               Propagation*   localPropagation = newPropagation(corLeaf, fromMin);
+               // process
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task priority(15)
+#endif
+               growthFromSeed(corLeaf, localPropagation);
+            }
          }
       }
 
