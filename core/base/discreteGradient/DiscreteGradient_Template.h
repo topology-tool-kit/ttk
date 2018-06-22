@@ -1080,11 +1080,23 @@ int DiscreteGradient::buildGradient(){
 
   {
     std::stringstream msg;
-    msg << "[DiscreteGradient] Data-set (" << numberOfVertices_
-        << " points) processed in "
-        << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))."
-        << std::endl;
+    msg << "[DiscreteGradient] Data-set: "
+      << numberOfVertices_ << " v., "
+      << inputTriangulation_->getNumberOfEdges() << " e.";
+    if(inputTriangulation_->getDimensionality() == 3){
+      msg << ", " << inputTriangulation_->getNumberOfTriangles()
+        << " t., " << inputTriangulation_->getNumberOfCells() 
+        << " T." << std::endl;
+    }
+    else if(inputTriangulation_->getDimensionality() == 2){
+      msg << ", " << inputTriangulation_->getNumberOfCells()
+        << " t." << std::endl;
+    }
+
+    msg << "[DiscreteGradient] Processed in "
+      << t.getElapsedTime() << " s. (" << threadNumber_
+      << " thread(s))."
+      << std::endl;
     dMsg(std::cout, msg.str(), timeMsg);
   }
 
