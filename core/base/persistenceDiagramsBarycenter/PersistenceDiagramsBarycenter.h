@@ -37,6 +37,7 @@
 #include                  <PersistenceDiagram.h>
 #include 				  <Auction.h>
 #include 				  <KDTree.h>
+#include 				  <limits>
 
 using namespace std;
 using namespace ttk;
@@ -65,9 +66,9 @@ namespace ttk{
 		void setBidderDiagrams();
 		void setInitialBarycenter();
 		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> getKDTree();
+		void updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings, dataType& max_shift, dataType& average_shift);
 			
 		bool is_matching_stable();
-			
 			
 		dataType getEpsilon(dataType rho);
 		dataType getRho(dataType epsilon);
@@ -93,7 +94,11 @@ namespace ttk{
 			}
 			return 0;
 		}
-
+		
+		template<typename type>
+		static type abs(const type var) {
+			return (var >= 0) ? var : -var;
+		}
 
 
 

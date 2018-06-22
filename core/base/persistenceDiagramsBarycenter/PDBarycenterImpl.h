@@ -10,46 +10,37 @@ template <typename dataType>
 int PersistenceDiagramsBarycenter<dataType>::execute(){
 
 	Timer t;
-	{		
+	{
 	this->setBidderDiagrams();
 	this->setInitialBarycenter();
 	
 	std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair = this->getKDTree();
-	std::cout<<"kdt built"<<std::endl;
 	KDTree<dataType>* kdt = pair.first;
-	std::cout<<kdt->id_<<std::endl;
-	std::cout<<kdt->left_->id_<<std::endl;
 	std::vector<KDTree<dataType>*>& correspondance_kdt_map = pair.second;
 	
-
+	std::vector<std::vector<matchingTuple>> all_matchings;
+	dataType total_costs = 0;
 	for(int i=0; i<numberOfInputs_; i++){
-		std::cout<<"Building Auction..."<<std::endl;
 		Auction<dataType> auction = Auction<dataType>(bidder_diagrams_[i], barycenter_goods_[i], wasserstein_, geometrical_factor_, 0.01, kdt, correspondance_kdt_map);
+		std::cout<< "Barycenter size : "<< barycenter_goods_[i].size() << std::endl;
 		int n_biddings = 0;
-		std::cout<<"Building unassigned bidders"<<std::endl;
 		auction.buildUnassignedBidders();
-		std::cout<<"Initializing goods"<<std::endl;
 		auction.reinitializeGoods();
-		std::cout<<"Running Auction..."<<std::endl;
 		auction.runAuctionRound(n_biddings, i);
-		std::cout<<"Auction round finished in " << n_biddings <<" biddings"<<std::endl;
 		std::vector<matchingTuple> matchings;
-		dataType cost = auction.getMatchingsAndDistance(&matchings);
-		std::cout<<"cost = " << cost <<std::endl;
+		dataType cost = auction.getMatchingsAndDistance(&matchings, true);
+		all_matchings.push_back(matchings);
+		total_costs += cost;
 	}
-	delete kdt;
+	
 
+	dataType max_shift = 0;
+	dataType average_shift =0;
+	updateBarycenter(all_matchings, max_shift, average_shift);
+	std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
+	delete kdt;
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-		
 	std::stringstream msg;
 	msg << "[PersistenceDiagramsBarycenter] processed in "
 		<< t.getElapsedTime() << " s. (" << threadNumber_
@@ -67,8 +58,123 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 
 
 
-
-
+template <typename dataType>
+void PersistenceDiagramsBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings, dataType& max_shift, dataType& average_shift){
+	
+	// 1. Initialize variables used in the sequel
+	unsigned int n_goods = barycenter_goods_[0].size();
+	unsigned int n_diagrams = bidder_diagrams_.size();
+	
+	std::vector<int> count_diag_matchings(n_goods);     // Number of diagonal matchings for each point of the barycenter
+	std::vector<int> x(n_goods);
+	std::vector<int> y(n_goods);
+	for(unsigned int i=0; i<n_goods; i++){
+		count_diag_matchings[i] = 0;
+		x[i] = 0;
+		y[i] = 0;
+	}
+	std::vector<dataType> min_prices(n_diagrams);
+	for(unsigned int j=0; j<n_diagrams; j++){
+		min_prices[j] = std::numeric_limits<dataType>::max();
+	}
+	
+	std::vector<Bidder<dataType>*> points_to_append;  //Will collect bidders linked to diagonal
+	
+	// 2. Preprocess the matchings
+	for(unsigned int j=0; j<matchings.size(); j++){
+		for(unsigned int i=0; i<matchings[j].size(); i++){
+			int bidder_id = std::get<0>(matchings[j][i]);
+			int good_id = std::get<1>(matchings[j][i]);
+			if(good_id<0 && bidder_id>=0){
+				// Future new barycenter points
+				points_to_append.push_back(&bidder_diagrams_[j].get(bidder_id));
+			}
+			else if(good_id>=0 && bidder_id>=0){
+				// Update coordinates (to be divided by the number of diagrams later on)
+				x[good_id] += bidder_diagrams_[j].get(bidder_id).x_;
+				y[good_id] += bidder_diagrams_[j].get(bidder_id).y_;
+			}
+			else if(good_id>=0 && bidder_id<0){
+				// Counting the number of times this point is linked to the diagonal
+				count_diag_matchings[good_id] = count_diag_matchings[good_id] + 1;
+			}
+		}
+	}
+	
+	// 3. Update the previous points of the barycenter
+	for(unsigned int i=0; i<n_goods; i++){
+		if(count_diag_matchings[i]<n_diagrams){
+			// Barycenter point i is matched at least to one off-diagonal bidder
+			// 3.1 Compute the arithmetic mean of off-diagonal bidders linked to it
+			dataType x_bar = x[i]/(n_diagrams - count_diag_matchings[i]);
+			dataType y_bar = y[i]/(n_diagrams - count_diag_matchings[i]);
+			// 3.2 Compute the new coordinates of the point (the more linked to the diagonal it was, the closer to the diagonal it'll be)
+			dataType new_x = ( (n_diagrams - count_diag_matchings[i])*x_bar  + count_diag_matchings[i]*(x_bar+y_bar)/2 )/n_diagrams;
+			dataType new_y = ( (n_diagrams - count_diag_matchings[i])*y_bar  + count_diag_matchings[i]*(x_bar+y_bar)/2 )/n_diagrams;
+			// 3.3 Compute and store how much the point has shifted
+			dataType dx = barycenter_goods_[0].get(i).x_ - new_x;
+			dataType dy = barycenter_goods_[0].get(i).y_ - new_y;
+			dataType shift = pow(abs(dx), wasserstein_) + pow(abs(dy), wasserstein_);
+			average_shift += shift/n_goods;
+			if(shift>max_shift){
+				max_shift = shift;
+			}
+			// 3.4 Update the position of the point
+			for(unsigned int j=0; j<n_diagrams; j++){
+				barycenter_goods_[j].get(i).SetCoordinates(new_x, new_y);
+				if(barycenter_goods_[j].get(i).getPrice()<min_prices[j]){
+					min_prices[j] = barycenter_goods_[j].get(i).getPrice();
+				}
+			}
+			// TODO Reintitialize/play with prices here if you wish
+		}
+	}
+	
+	// 4. Delete off-diagonal barycenter points not linked to any
+	// off-diagonal bidder
+	for(unsigned int i=0; i<n_goods; i++){
+		if(count_diag_matchings[i] == n_diagrams){
+			dataType shift = barycenter_goods_[0].get(i).getPersistence() / pow(2, 1./wasserstein_);
+			average_shift += shift/n_goods;
+			if(shift>max_shift){
+				max_shift = shift;
+			}
+			for(unsigned int j=0; j<n_diagrams; j++){
+				barycenter_goods_[j].get(i).id_ = -1;
+			}
+		}
+	}
+	
+	// 5. Append the new points to the barycenter
+	for(unsigned int k=0; k<points_to_append.size(); k++){
+		Bidder<dataType>* b = points_to_append[k];
+		dataType x = b->x_ + (n_diagrams -1)*(b->x_+b->y_)/(2 * n_diagrams); 
+		dataType y = b->y_ + (n_diagrams -1)*(b->x_+b->y_)/(2 * n_diagrams); 
+		for(unsigned int j=0; j<n_diagrams; j++){
+			Good<dataType> g = Good<dataType>(x, y, false, barycenter_goods_[j].size());
+			g.setPrice(min_prices[j]);
+			barycenter_goods_[j].addGood(g);
+		}
+	}
+	
+	// 6. Finally, recreate barycenter_goods via copy :/
+	// TODO avoid all these copies of goods
+	for(unsigned int j=0; j<n_diagrams; j++){
+		int count = 0;
+		GoodDiagram<dataType> new_barycenter;
+		for(unsigned int i=0; i<barycenter_goods_[j].size(); i++){
+			std::cout<< "Barycenter " << j<< " has size : " <<barycenter_goods_[j].size() <<std::endl;
+			Good<dataType>& g = barycenter_goods_[j].get(i);
+			if(g.id_!=-1){
+				g.id_ = count;
+				new_barycenter.addGood(g);
+				count ++;
+			}
+		}
+		barycenter_goods_[j] = new_barycenter;
+	}
+	return;
+}
 
 
 
@@ -103,7 +209,9 @@ void PersistenceDiagramsBarycenter<dataType>::setBidderDiagrams(){
 
 template <typename dataType>
 void PersistenceDiagramsBarycenter<dataType>::setInitialBarycenter(){
-	int random_idx = rand() % numberOfInputs_;
+	//int random_idx = rand() % numberOfInputs_;
+	std::cout << "BEWARE, initial barycenter is not chosen randomly..."<< std::endl;
+	int random_idx = 0;
 	std::vector<diagramTuple>* CTDiagram = static_cast<std::vector<diagramTuple>*>(inputData_[random_idx]);
 	
 	for(int i=0; i<numberOfInputs_; i++){
