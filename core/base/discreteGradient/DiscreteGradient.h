@@ -673,7 +673,7 @@ std::set<std::pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S,
             std::vector<int>& pl2dmt_maximum,
             std::vector<Segment>& segments,
             std::vector<VPath>& vpaths,
-            std::vector<CriticalPoint>& criticalPoints) const;
+            std::vector<CriticalPoint>& criticalPoints);
 
       /**
        * Actually reverse the so-tagged (saddle,...,maximum) vpaths to simplify 
@@ -3035,7 +3035,7 @@ iterationThreshold,
     std::vector<int>& pl2dmt_maximum,
     std::vector<Segment>& segments,
     std::vector<VPath>& vpaths,
-    std::vector<CriticalPoint>& criticalPoints) const{
+    std::vector<CriticalPoint>& criticalPoints){
   Timer t;
 
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
@@ -3115,6 +3115,7 @@ isCellCritical(Cell(saddleDim,saddleCandidateId)) and
 
             if(!numberOfRemainingSaddles){
               pl2dmt_saddle[vertexId]=dmt_saddleId;
+              dmt1Saddle2PL_[dmt_saddleId]=vertexId;
               vpath.invalidate();
               toRemoveSaddle=-1;
               break;
@@ -3176,6 +3177,7 @@ starNumber=inputTriangulation_->getVertexStarNumber(pl_maxId);
 
             if(!numberOfRemainingMaxima){
               pl2dmt_maximum[vertexId]=dmt_maxId;
+              dmtMax2PL_[dmt_maxId]=vertexId;
               vpath.invalidate();
               toRemoveMaximum=-1;
               break;
@@ -3677,6 +3679,7 @@ isRemovableSaddle1[edgeId]){
               if(numberOfRemainingSaddles1==0){
                 isRemovableSaddle1[dmt_saddle1Id]=false;
                 pl2dmt_saddle1[vertexId]=dmt_saddle1Id;
+                dmt1Saddle2PL_[dmt_saddle1Id]=vertexId;
                 vpath.invalidate();
                 break;
               }
@@ -3684,6 +3687,7 @@ isRemovableSaddle1[edgeId]){
                 isRemovableSaddle1[dmt_saddle1Id]=false;
                 isRemovableSaddle1[savedId]=false;
                 pl2dmt_saddle1[vertexId]=savedId;
+                dmt1Saddle2PL_[savedId]=vertexId;
                 break;
               }
             }
@@ -3735,6 +3739,7 @@ and isRemovableSaddle2[triangleId]){
               if(numberOfRemainingSaddles2==0){
                 isRemovableSaddle2[dmt_saddle2Id]=false;
                 pl2dmt_saddle2[vertexId]=dmt_saddle2Id;
+                dmt2Saddle2PL_[dmt_saddle2Id]=vertexId;
                 vpath.invalidate();
                 break;
               }
@@ -3742,6 +3747,7 @@ and isRemovableSaddle2[triangleId]){
                 isRemovableSaddle2[dmt_saddle2Id]=false;
                 isRemovableSaddle2[savedId]=false;
                 pl2dmt_saddle2[vertexId]=savedId;
+                dmt2Saddle2PL_[savedId]=vertexId;
                 break;
               }
             }
@@ -4675,6 +4681,12 @@ std::vector<std::pair<int,char>>& criticalPoints){
 
   std::vector<char> isPL;
   getCriticalPointMap(criticalPoints, isPL);
+
+  if(dimensionality_==2)
+    dmt1Saddle2PL_.resize(inputTriangulation_->getNumberOfEdges());
+  if(dimensionality_==3)
+    dmt1Saddle2PL_.resize(inputTriangulation_->getNumberOfTriangles());
+  std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
   if(ReverseSaddleMaximumConnection)
     simplifySaddleMaximumConnections<dataType>(criticalPoints, isPL,
