@@ -3115,7 +3115,10 @@ isCellCritical(Cell(saddleDim,saddleCandidateId)) and
 
             if(!numberOfRemainingSaddles){
               pl2dmt_saddle[vertexId]=dmt_saddleId;
-              dmt1Saddle2PL_[dmt_saddleId]=vertexId;
+              if(dimensionality_==2)
+                dmt1Saddle2PL_[dmt_saddleId]=vertexId;
+              else if(dimensionality_==2)
+                dmt2Saddle2PL_[dmt_saddleId]=vertexId;
               vpath.invalidate();
               toRemoveSaddle=-1;
               break;
@@ -4682,10 +4685,7 @@ std::vector<std::pair<int,char>>& criticalPoints){
   std::vector<char> isPL;
   getCriticalPointMap(criticalPoints, isPL);
 
-  if(dimensionality_==2)
-    dmt1Saddle2PL_.resize(inputTriangulation_->getNumberOfEdges());
-  if(dimensionality_==3)
-    dmt1Saddle2PL_.resize(inputTriangulation_->getNumberOfTriangles());
+  dmt1Saddle2PL_.resize(inputTriangulation_->getNumberOfEdges());
   std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
   if(ReverseSaddleMaximumConnection)
