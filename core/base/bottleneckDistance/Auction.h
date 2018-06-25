@@ -54,7 +54,7 @@ namespace ttk {
         };
 		
 		
-		Auction(BidderDiagram<dataType>& bidders, GoodDiagram<dataType>& goods, int wasserstein, double geometricalFactor, double delta_lim, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>& correspondance_kdt_map, dataType epsilon, bool use_kdTree=true) {
+		Auction(BidderDiagram<dataType>& bidders, GoodDiagram<dataType>& goods, int wasserstein, double geometricalFactor, double delta_lim, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>& correspondance_kdt_map, dataType epsilon, dataType initial_diag_price=0, bool use_kdTree=true) {
 			bidders_ = bidders;
 			goods_ = goods;
 			
@@ -66,6 +66,7 @@ namespace ttk {
 				Bidder<dataType>& b = bidders_.get(i);
 				Good<dataType> g = Good<dataType>(b.x_, b.y_, true, -b.id_-1);
 				g.projectOnDiagonal();
+				g.setPrice(initial_diag_price);
 				diagonal_goods_.addGood(g);
 				std::pair<int, dataType> pair = std::make_pair(i, g.getPrice());
 				diagonal_queue_.push(pair);
@@ -237,6 +238,17 @@ namespace ttk {
 			else{
 				return pow(d/denominator, 1/((float)wasserstein_)) - 1;
 			}
+		}
+		
+		dataType getMinimalDiagonalPrice(){
+			dataType min_price = std::numeric_limits<dataType>::max();
+			for(int i=0; i<diagonal_goods_.size(); i++){
+				dataType price = diagonal_goods_.get(i).getPrice();
+				if(price<min_price){
+					min_price = price;
+				}
+			}
+			return min_price;
 		}
 		
 		

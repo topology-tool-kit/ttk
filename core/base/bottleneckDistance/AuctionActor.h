@@ -109,7 +109,7 @@ namespace ttk{
 	
 	template<typename dataType>
 	bool AuctionActor<dataType>::isDiagonal(){
-		return (is_diagonal_ || (x_==y_));
+		return (is_diagonal_);
 	}
 	
 	template<typename dataType>
