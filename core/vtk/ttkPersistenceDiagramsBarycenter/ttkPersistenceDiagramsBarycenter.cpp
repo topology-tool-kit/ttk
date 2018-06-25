@@ -18,6 +18,7 @@ vtkStandardNewMacro(ttkPersistenceDiagramsBarycenter)
 ttkPersistenceDiagramsBarycenter::ttkPersistenceDiagramsBarycenter(){
   UseAllCores = false;
   WassersteinMetric = "2";
+  UseOutputMatching = true;
 
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);

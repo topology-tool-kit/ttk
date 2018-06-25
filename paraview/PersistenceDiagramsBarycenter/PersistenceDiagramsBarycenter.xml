@@ -78,6 +78,20 @@ computation (type "inf" for the Bottleneck distance).
           Thread number.
          </Documentation>
       </IntVectorProperty>
+	  
+	  <IntVectorProperty
+        name="Output matchings"
+        command="SetUseOutputMatching"
+        label="Display the matchings with line segments"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Display the matching between pairs of the persistence diagrams with 
+line segments in 3D.
+        </Documentation>
+      </IntVectorProperty>
 
       <IntVectorProperty
          name="DebugLevel"
