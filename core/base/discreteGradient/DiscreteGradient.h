@@ -610,7 +610,7 @@ criticalPoints,
 criticalPoints,
             const bool allowBoundary,
             std::vector<char>& isRemovableSaddle,
-            std::vector<int>& pl2dmt_saddle) const;
+            std::vector<int>& pl2dmt_saddle);
 
       /**
        * Get the list of 2-saddles candidates for simplification.
@@ -620,7 +620,7 @@ criticalPoints,
 criticalPoints,
             const bool allowBoundary,
             std::vector<char>& isRemovableSaddle,
-            std::vector<int>& pl2dmt_saddle) const;
+            std::vector<int>& pl2dmt_saddle);
 
       /**
        * Create initial Morse-Smale Complex structure and initialize the 
@@ -673,7 +673,7 @@ std::set<std::pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>& S,
             std::vector<int>& pl2dmt_maximum,
             std::vector<Segment>& segments,
             std::vector<VPath>& vpaths,
-            std::vector<CriticalPoint>& criticalPoints) const;
+            std::vector<CriticalPoint>& criticalPoints);
 
       /**
        * Actually reverse the so-tagged (saddle,...,maximum) vpaths to simplify 
@@ -1135,6 +1135,8 @@ tetra identifier.
       int numberOfVertices_;
       std::vector<std::vector<std::vector<int>>> gradient_;
       std::vector<int> dmtMax2PL_;
+      std::vector<int> dmt1Saddle2PL_;
+      std::vector<int> dmt2Saddle2PL_;
 
       void* inputScalarField_;
       void* inputOffsets_;
@@ -2268,6 +2270,8 @@ int ttk::DiscreteGradient::buildGradient(){
     numberOfCells[i]=getNumberOfCells(i);
 
   dmtMax2PL_.clear();
+  dmt1Saddle2PL_.clear();
+  dmt2Saddle2PL_.clear();
   gradient_.clear();
   gradient_.resize(dimensionality_);
   for(int i=0; i<dimensionality_; ++i){
@@ -2355,9 +2359,14 @@ template <typename dataType>
 int ttk::DiscreteGradient::setCriticalPoints(const std::vector<Cell>& 
 criticalPoints) const{
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const int* const offsets=static_cast<int*>(inputOffsets_);
   std::vector<dataType>* outputCriticalPoints_points_cellScalars=
-    
 static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
+
+  const auto sosGreaterThan=[&scalars,&offsets](const int a, const int b){
+    if(scalars[a] != scalars[b]) return scalars[a]>scalars[b];
+    else return offsets[a]>offsets[b];
+  };
 
   (*outputCriticalPoints_numberOfPoints_)=0;
 
@@ -2386,17 +2395,56 @@ static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
     outputCriticalPoints_points_cellIds_->push_back(cellId);
     outputCriticalPoints_points_cellScalars->push_back(scalar);
     outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
+    int vertexId=-1;
     if(dmtMax2PL_.size()){
       if(cellDim==0)
-        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(cellId);
+        vertexId=cellId;
       else if(cellDim==dimensionality_)
-        
-outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
-      else
-        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
+        vertexId=dmtMax2PL_[cellId];
     }
-    else
-      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
+
+    if(dmt1Saddle2PL_.size() and cellDim==1){
+      vertexId=dmt1Saddle2PL_[cellId];
+
+      if(vertexId==-1){
+        int v0;
+        int v1;
+        inputTriangulation_->getEdgeVertex(cellId, 0, v0);
+        inputTriangulation_->getEdgeVertex(cellId, 1, v1);
+
+        if(sosGreaterThan(v0,v1))
+          vertexId=v0;
+        else
+          vertexId=v1;
+      }
+    }
+    if(dmt2Saddle2PL_.size() and cellDim==2){
+      vertexId=dmt2Saddle2PL_[cellId];
+
+      if(vertexId==-1){
+        int v0;
+        int v1;
+        int v2;
+        if(dimensionality_==2){
+          inputTriangulation_->getCellVertex(cellId, 0, v0);
+          inputTriangulation_->getCellVertex(cellId, 1, v1);
+          inputTriangulation_->getCellVertex(cellId, 2, v2);
+        }
+        else if(dimensionality_==3){
+          inputTriangulation_->getTriangleVertex(cellId, 0, v0);
+          inputTriangulation_->getTriangleVertex(cellId, 1, v1);
+          inputTriangulation_->getTriangleVertex(cellId, 2, v2);
+        }
+        if(sosGreaterThan(v0,v1) and sosGreaterThan(v0,v2))
+          vertexId=v0;
+        else if(sosGreaterThan(v1,v0) and sosGreaterThan(v1,v2))
+          vertexId=v1;
+        else
+          vertexId=v2;
+      }
+    }
+
+    outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertexId);
 
     (*outputCriticalPoints_numberOfPoints_)++;
   }
@@ -2571,11 +2619,12 @@ int ttk::DiscreteGradient::getRemovableSaddles1(const
 std::vector<std::pair<int,char>>& criticalPoints,
     const bool allowBoundary,
     std::vector<char>& isRemovableSaddle,
-    std::vector<int>& pl2dmt_saddle) const{
+    std::vector<int>& pl2dmt_saddle){
   const int numberOfEdges=inputTriangulation_->getNumberOfEdges();
   isRemovableSaddle.resize(numberOfEdges);
 
-  std::vector<char> dmt2PL(numberOfEdges, false);
+  dmt1Saddle2PL_.resize(numberOfEdges);
+  std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
   // by default : 1-saddle is removable
 #ifdef TTK_ENABLE_OPENMP
@@ -2604,7 +2653,7 @@ edgeNumber=inputTriangulation_->getVertexEdgeNumber(criticalPointId);
         inputTriangulation_->getVertexEdge(criticalPointId, i, edgeId);
         const Cell saddleCandidate(1, edgeId);
 
-        if(isSaddle1(saddleCandidate) and !dmt2PL[edgeId]){
+        if(isSaddle1(saddleCandidate) and dmt1Saddle2PL_[edgeId]==-1){
           saddleId=edgeId;
           ++numberOfSaddles;
         }
@@ -2612,8 +2661,8 @@ edgeNumber=inputTriangulation_->getVertexEdgeNumber(criticalPointId);
 
       // only one DMT-1saddle in the star so this one is non-removable
       if(numberOfSaddles==1){
-        if(!dmt2PL[saddleId] and pl2dmt_saddle[criticalPointId]==-1){
-          dmt2PL[saddleId]=true;
+        if(dmt1Saddle2PL_[saddleId]==-1 and pl2dmt_saddle[criticalPointId]==-1){
+          dmt1Saddle2PL_[saddleId]=criticalPointId;
           pl2dmt_saddle[criticalPointId]=saddleId;
           isRemovableSaddle[saddleId]=false;
         }
@@ -2629,11 +2678,12 @@ int ttk::DiscreteGradient::getRemovableSaddles2(const
 std::vector<std::pair<int,char>>& criticalPoints,
     const bool allowBoundary,
     std::vector<char>& isRemovableSaddle,
-    std::vector<int>& pl2dmt_saddle) const{
+    std::vector<int>& pl2dmt_saddle){
   const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
   isRemovableSaddle.resize(numberOfTriangles);
 
-  std::vector<char> dmt2PL(numberOfTriangles, false);
+  dmt2Saddle2PL_.resize(numberOfTriangles);
+  std::fill(dmt2Saddle2PL_.begin(), dmt2Saddle2PL_.end(), -1);
 
   // by default : 2-saddle is removable
 #ifdef TTK_ENABLE_OPENMP
@@ -2662,7 +2712,7 @@ triangleNumber=inputTriangulation_->getVertexTriangleNumber(criticalPointId);
         inputTriangulation_->getVertexTriangle(criticalPointId, i, triangleId);
         const Cell saddleCandidate(2, triangleId);
 
-        if(isSaddle2(saddleCandidate) and !dmt2PL[triangleId]){
+        if(isSaddle2(saddleCandidate) and dmt2Saddle2PL_[triangleId]==-1){
           saddleId=triangleId;
           ++numberOfSaddles;
         }
@@ -2670,8 +2720,8 @@ triangleNumber=inputTriangulation_->getVertexTriangleNumber(criticalPointId);
 
       // only one DMT-2saddle in the star so this one is non-removable
       if(numberOfSaddles==1){
-        if(dmt2PL[saddleId]==false and pl2dmt_saddle[criticalPointId]==-1){
-          dmt2PL[saddleId]=true;
+        if(dmt2Saddle2PL_[saddleId]==-1 and pl2dmt_saddle[criticalPointId]==-1){
+          dmt2Saddle2PL_[saddleId]=criticalPointId;
           pl2dmt_saddle[criticalPointId]=saddleId;
           isRemovableSaddle[saddleId]=false;
         }
@@ -3028,7 +3078,7 @@ iterationThreshold,
     std::vector<int>& pl2dmt_maximum,
     std::vector<Segment>& segments,
     std::vector<VPath>& vpaths,
-    std::vector<CriticalPoint>& criticalPoints) const{
+    std::vector<CriticalPoint>& criticalPoints){
   Timer t;
 
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
@@ -3108,6 +3158,10 @@ isCellCritical(Cell(saddleDim,saddleCandidateId)) and
 
             if(!numberOfRemainingSaddles){
               pl2dmt_saddle[vertexId]=dmt_saddleId;
+              if(dimensionality_==2)
+                dmt1Saddle2PL_[dmt_saddleId]=vertexId;
+              else if(dimensionality_==2)
+                dmt2Saddle2PL_[dmt_saddleId]=vertexId;
               vpath.invalidate();
               toRemoveSaddle=-1;
               break;
@@ -3169,6 +3223,7 @@ starNumber=inputTriangulation_->getVertexStarNumber(pl_maxId);
 
             if(!numberOfRemainingMaxima){
               pl2dmt_maximum[vertexId]=dmt_maxId;
+              dmtMax2PL_[dmt_maxId]=vertexId;
               vpath.invalidate();
               toRemoveMaximum=-1;
               break;
@@ -3670,6 +3725,7 @@ isRemovableSaddle1[edgeId]){
               if(numberOfRemainingSaddles1==0){
                 isRemovableSaddle1[dmt_saddle1Id]=false;
                 pl2dmt_saddle1[vertexId]=dmt_saddle1Id;
+                dmt1Saddle2PL_[dmt_saddle1Id]=vertexId;
                 vpath.invalidate();
                 break;
               }
@@ -3677,6 +3733,7 @@ isRemovableSaddle1[edgeId]){
                 isRemovableSaddle1[dmt_saddle1Id]=false;
                 isRemovableSaddle1[savedId]=false;
                 pl2dmt_saddle1[vertexId]=savedId;
+                dmt1Saddle2PL_[savedId]=vertexId;
                 break;
               }
             }
@@ -3728,6 +3785,7 @@ and isRemovableSaddle2[triangleId]){
               if(numberOfRemainingSaddles2==0){
                 isRemovableSaddle2[dmt_saddle2Id]=false;
                 pl2dmt_saddle2[vertexId]=dmt_saddle2Id;
+                dmt2Saddle2PL_[dmt_saddle2Id]=vertexId;
                 vpath.invalidate();
                 break;
               }
@@ -3735,6 +3793,7 @@ and isRemovableSaddle2[triangleId]){
                 isRemovableSaddle2[dmt_saddle2Id]=false;
                 isRemovableSaddle2[savedId]=false;
                 pl2dmt_saddle2[vertexId]=savedId;
+                dmt2Saddle2PL_[savedId]=vertexId;
                 break;
               }
             }
@@ -4668,6 +4727,9 @@ std::vector<std::pair<int,char>>& criticalPoints){
 
   std::vector<char> isPL;
   getCriticalPointMap(criticalPoints, isPL);
+
+  dmt1Saddle2PL_.resize(inputTriangulation_->getNumberOfEdges());
+  std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
   if(ReverseSaddleMaximumConnection)
     simplifySaddleMaximumConnections<dataType>(criticalPoints, isPL,
