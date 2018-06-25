@@ -2359,9 +2359,14 @@ template <typename dataType>
 int ttk::DiscreteGradient::setCriticalPoints(const std::vector<Cell>& 
 criticalPoints) const{
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const int* const offsets=static_cast<int*>(inputOffsets_);
   std::vector<dataType>* outputCriticalPoints_points_cellScalars=
-    
 static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
+
+  const auto sosGreaterThan=[&scalars,&offsets](const int a, const int b){
+    if(scalars[a] != scalars[b]) return scalars[a]>scalars[b];
+    else return offsets[a]>offsets[b];
+  };
 
   (*outputCriticalPoints_numberOfPoints_)=0;
 
@@ -2390,18 +2395,56 @@ static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
     outputCriticalPoints_points_cellIds_->push_back(cellId);
     outputCriticalPoints_points_cellScalars->push_back(scalar);
     outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
+    int vertexId=-1;
     if(dmtMax2PL_.size()){
       if(cellDim==0)
-        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(cellId);
+        vertexId=cellId;
       else if(cellDim==dimensionality_)
-        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
-      else if(cellDim==1)
-        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmt1Saddle2PL_[cellId]);
-      else if(cellDim==2)
-        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmt2Saddle2PL_[cellId]);
+        vertexId=dmtMax2PL_[cellId];
     }
-    else
-      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
+
+    if(dmt1Saddle2PL_.size() and cellDim==1){
+      vertexId=dmt1Saddle2PL_[cellId];
+
+      if(vertexId==-1){
+        int v0;
+        int v1;
+        inputTriangulation_->getEdgeVertex(cellId, 0, v0);
+        inputTriangulation_->getEdgeVertex(cellId, 1, v1);
+
+        if(sosGreaterThan(v0,v1))
+          vertexId=v0;
+        else
+          vertexId=v1;
+      }
+    }
+    if(dmt2Saddle2PL_.size() and cellDim==2){
+      vertexId=dmt2Saddle2PL_[cellId];
+
+      if(vertexId==-1){
+        int v0;
+        int v1;
+        int v2;
+        if(dimensionality_==2){
+          inputTriangulation_->getCellVertex(cellId, 0, v0);
+          inputTriangulation_->getCellVertex(cellId, 1, v1);
+          inputTriangulation_->getCellVertex(cellId, 2, v2);
+        }
+        else if(dimensionality_==3){
+          inputTriangulation_->getTriangleVertex(cellId, 0, v0);
+          inputTriangulation_->getTriangleVertex(cellId, 1, v1);
+          inputTriangulation_->getTriangleVertex(cellId, 2, v2);
+        }
+        if(sosGreaterThan(v0,v1) and sosGreaterThan(v0,v2))
+          vertexId=v0;
+        else if(sosGreaterThan(v1,v0) and sosGreaterThan(v1,v2))
+          vertexId=v1;
+        else
+          vertexId=v2;
+      }
+    }
+
+    outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertexId);
 
     (*outputCriticalPoints_numberOfPoints_)++;
   }
