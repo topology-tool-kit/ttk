@@ -292,48 +292,68 @@ int ttk::BottleneckDistance::computeAuction(
 			}
 		}
 	}
-      
+	
 	
 	std::vector<matchingTuple> minMatchings;
 	std::vector<matchingTuple> maxMatchings;
 	std::vector<matchingTuple> sadMatchings;
 	dataType d = 0;
-	if(D1Min.size()+D2Min.size()>0){
-		std::cout<< "..."<<std::endl;
-		Auction<dataType> auctionMin(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
-		dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
-		auctionMin.BuildAuctionDiagrams(D1Min, D2Min);
-		dataType cost = auctionMin.run(&minMatchings);
-		std::stringstream msg;
-		msg << "[Auction] Total cost = " << cost << std::endl;
-		dMsg(std::cout, msg.str(), timeMsg);
-		d += cost;
-	}
 	
-	if(D1Sad.size()+D2Sad.size()>0){
-		std::cout<< "..."<<std::endl;
-		Auction<dataType> auctionSad(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
-		dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
-		auctionSad.BuildAuctionDiagrams(D1Sad, D2Sad);
-		dataType cost = auctionSad.run(&sadMatchings);
-		std::stringstream msg;
-		msg << "[Auction] Total cost = " << cost << std::endl;
-		dMsg(std::cout, msg.str(), timeMsg);
-		d += cost;
+	#ifdef TTK_ENABLE_OPENMP
+	#pragma omp parallel sections
+	#endif
+	{
+		#ifdef TTK_ENABLE_OPENMP
+		#pragma omp section
+		#endif
+		{
+			if(D1Min.size()+D2Min.size()>0){
+				std::cout<< "..."<<std::endl;
+				Auction<dataType> auctionMin(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
+				dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
+				auctionMin.BuildAuctionDiagrams(D1Min, D2Min);
+				dataType cost = auctionMin.run(&minMatchings);
+				std::stringstream msg;
+				msg << "[Auction] Total cost = " << cost << std::endl;
+				dMsg(std::cout, msg.str(), timeMsg);
+				d += cost;
+			}
+		}
+		
+		#ifdef TTK_ENABLE_OPENMP
+		#pragma omp section
+		#endif
+		{
+			if(D1Sad.size()+D2Sad.size()>0){
+				std::cout<< "..."<<std::endl;
+				Auction<dataType> auctionSad(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
+				dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
+				auctionSad.BuildAuctionDiagrams(D1Sad, D2Sad);
+				dataType cost = auctionSad.run(&sadMatchings);
+				std::stringstream msg;
+				msg << "[Auction] Total cost = " << cost << std::endl;
+				dMsg(std::cout, msg.str(), timeMsg);
+				d += cost;
+			}
+		}
+		
+		#ifdef TTK_ENABLE_OPENMP
+		#pragma omp section
+		#endif
+		{
+			if(D1Max.size()+D2Max.size()>0){
+				std::cout<< "..."<<std::endl;
+				Auction<dataType> auctionMax(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
+				dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
+				auctionMax.BuildAuctionDiagrams(D1Max, D2Max);
+				dataType cost = auctionMax.run(&maxMatchings);
+				std::stringstream msg;
+				msg << "[Auction] Total cost = " << cost << std::endl;
+				dMsg(std::cout, msg.str(), timeMsg);
+				d += cost;
+			}
+		}
 	}
-	
-	if(D1Max.size()+D2Max.size()>0){
-		std::cout<< "..."<<std::endl;
-		Auction<dataType> auctionMax(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
-		dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
-		auctionMax.BuildAuctionDiagrams(D1Max, D2Max);
-		dataType cost = auctionMax.run(&maxMatchings);
-		std::stringstream msg;
-		msg << "[Auction] Total cost = " << cost << std::endl;
-		dMsg(std::cout, msg.str(), timeMsg);
-		d += cost;
-	}
-	
 	// Construct the matching vectors as the concatenation of all three matchings
 	for(int k=0; k < (int) minMatchings.size(); k++){
 		matchingTuple t = minMatchings[k];
