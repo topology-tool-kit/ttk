@@ -74,7 +74,7 @@ computation (type "inf" for the Bottleneck distance).
 	  
 	   <DoubleVectorProperty
           name="PersistencePercentage"
-          label="Percentage of maximal persistence kept"
+          label="Percentage of Maximal Persistence kept"
           command="SetPersistencePercentage"
           number_of_elements="1"
           default_values="0.01"
@@ -82,7 +82,8 @@ computation (type "inf" for the Bottleneck distance).
           >
         <Documentation>
           Relative persistence threshold used to select pairs of persistence for the Auction. 
-		  Set to 0 to keep all persistence pairs.
+		  Set to 0 to keep all persistence pairs, set to p (lower than 1) to keep only pairs with persistence higher
+		  than p x max_persistence.
         </Documentation>
       </DoubleVectorProperty>
 
