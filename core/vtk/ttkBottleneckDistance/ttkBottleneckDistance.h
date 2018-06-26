@@ -72,9 +72,15 @@ class ttkBottleneckDistance
 	
 	vtkSetMacro(Delta_lim, double);
     vtkGetMacro(Delta_lim, double);
+	
+	vtkSetMacro(PersistencePercentage, double);
+    vtkGetMacro(PersistencePercentage, double);
 
     vtkSetMacro(UseOutputMatching, int);
     vtkGetMacro(UseOutputMatching, int);
+	
+	vtkSetMacro(UseKDTree, int);
+    vtkGetMacro(UseKDTree, int);
 
     vtkSetMacro(UsePersistenceMetric, int);
     vtkGetMacro(UsePersistenceMetric, int);
@@ -186,10 +192,12 @@ class ttkBottleneckDistance
 
     bool                  UseOutputMatching;
     bool                  Is3D;
+	bool 				  UseKDTree;
     double                Spacing;
     double                Alpha;
     int 	              Method;
 	double	              Delta_lim;
+	double	              PersistencePercentage;
 
     std::string                WassersteinMetric;
     bool                  UsePersistenceMetric;

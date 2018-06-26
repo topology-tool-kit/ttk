@@ -70,6 +70,21 @@
 computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
+	  
+	  
+	   <DoubleVectorProperty
+          name="PersistencePercentage"
+          label="Percentage of maximal persistence kept"
+          command="SetPersistencePercentage"
+          number_of_elements="1"
+          default_values="0.01"
+          panel_visibility="advanced"
+          >
+        <Documentation>
+          Relative persistence threshold used to select pairs of persistence for the Auction. 
+		  Set to 0 to keep all persistence pairs.
+        </Documentation>
+      </DoubleVectorProperty>
 
 
      <IntVectorProperty
@@ -126,6 +141,21 @@ Threshold.
         </Documentation>
       </DoubleVectorProperty>
 
+	  
+	  <IntVectorProperty
+        name="Use KDTree"
+        command="SetUseKDTree"
+        label="UseKDTree"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+         Set to 1 in order to use a KDTree as an accelerating structure (only available for the auction mode,
+		 will not affect the Munkres mode)
+        </Documentation>
+      </IntVectorProperty>
+	  
 	  
       <IntVectorProperty
         name="Output matchings"

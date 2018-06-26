@@ -73,6 +73,16 @@ namespace ttk {
         return 0;
       }
       
+      inline int setPersistencePercentage(double persistence_percentage) {
+        persistence_percentage_ = persistence_percentage;
+        return 0;
+      }
+      
+      inline int setUseKDTree(int use_kdtree){
+		  use_kdtree_ = (use_kdtree>0);
+		  return 0;
+	  }
+      
       inline int setDelta_lim(double delta_lim){
 		  delta_lim_ = delta_lim;
 		  return 0;
@@ -111,6 +121,8 @@ namespace ttk {
       void                      *distance_;
 	  
 	  double						 delta_lim_;
+	  double						 persistence_percentage_;
+	  bool 							 use_kdtree_;
 
       std::string                    wasserstein_;
       std::string                    method_;

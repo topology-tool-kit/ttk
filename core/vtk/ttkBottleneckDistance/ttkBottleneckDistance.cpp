@@ -67,6 +67,8 @@ int ttkBottleneckDistance::doIt(
       bottleneckDistance_.setWasserstein(wassersteinMetric);
       bottleneckDistance_.setMethod(Method);
 	  bottleneckDistance_.setDelta_lim(Delta_lim);
+	  bottleneckDistance_.setPersistencePercentage(PersistencePercentage);
+	  bottleneckDistance_.setUseKDTree(UseKDTree);
 
       // Empty matchings.
       vector<macroMatchingTuple>* matchings = new vector<macroMatchingTuple>();

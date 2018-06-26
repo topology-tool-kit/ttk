@@ -94,25 +94,31 @@ double ttk::BottleneckDistance::computeMinimumRelevantPersistence(
   const int d2Size) const
 {
   std::vector<dataType> toSort;
+  dataType max_persistence = std::numeric_limits<dataType>::lowest();
   for (int i = 0; i < d1Size; ++i) {
     diagramTuple t = CTDiagram1->at(i);
     dataType persistence = abs<dataType>(std::get<4>(t));
-    toSort.push_back(persistence);
+	//toSort.push_back(persistence);
+	if(persistence>max_persistence){
+		max_persistence = persistence;
+	}
   }
-  for (int i = 0; i < d2Size; ++i) {
+  /*for (int i = 0; i < d2Size; ++i) {
     diagramTuple t = CTDiagram2->at(i);
     dataType persistence = abs<dataType>(std::get<4>(t));
     toSort.push_back(persistence);
   }
   sort(toSort.begin(), toSort.end());
+  
+  int largeSize = 20000;*/
   double epsilon = 0.0000001;
-  int largeSize = 20000;
-  dataType zeroThresh = (dataType) epsilon;
-  if (d1Size + d2Size > largeSize + 1) {
+  dataType zeroThresh = max_persistence * persistence_percentage_;
+  /*if (d1Size + d2Size > largeSize + 1) {
     zeroThresh = toSort.at(d1Size + d2Size - largeSize);
     if (toSort.at(d1Size + d2Size - (largeSize+1)) == zeroThresh)
       zeroThresh += (dataType) epsilon;
-  }
+  }*/
+  
   if (zeroThresh < epsilon) zeroThresh = epsilon;
   return zeroThresh;
 }
