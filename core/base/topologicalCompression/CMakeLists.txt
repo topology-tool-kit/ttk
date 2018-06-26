@@ -1,0 +1,4 @@
+ttk_add_base_library(topologicalCompression
+	SOURCES TopologicalCompression.cpp
+	HEADERS TopologicalCompression.h PersistenceDiagramCompression.h OtherCompression.h
+	LINK triangulation persistenceDiagram topologicalSimplification)

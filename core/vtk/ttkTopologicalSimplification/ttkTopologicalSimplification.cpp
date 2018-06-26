@@ -16,6 +16,8 @@ vtkStandardNewMacro(ttkTopologicalSimplification)
   triangulation_ = NULL;
 
   ScalarFieldId = 0;
+  UseInputOffsetScalarField = false;
+  AddPerturbation = false;
   OutputOffsetScalarFieldName = "OutputOffsetScalarField";
   VertexIdentifierScalarField = "VertexIdentifier";
   ConsiderIdentifierAsBlackList = false;

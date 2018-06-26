@@ -42,7 +42,7 @@ criticalPointPairs.ThresholdRange = [-0.1, 999999]
 # 5. selecting the most persistent pairs
 persistentPairs = Threshold(criticalPointPairs)
 persistentPairs.Scalars = ['CELLS', 'Persistence']
-persistentPairs.ThresholdRange = [1.0, 999999]
+persistentPairs.ThresholdRange = [0.05, 999999]
 
 # 6. simplifying the input data to remove non-persistent pairs
 topologicalSimplification = TTKTopologicalSimplification(

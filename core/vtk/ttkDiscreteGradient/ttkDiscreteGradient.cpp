@@ -17,7 +17,7 @@ vtkStandardNewMacro(ttkDiscreteGradient)
     AllowThirdPass{},
     ComputeGradientGlyphs{},
     ScalarFieldId{},
-    OffsetFieldId{},
+    OffsetFieldId{-1},
 
     triangulation_{},
     inputScalars_{},

@@ -67,7 +67,7 @@ int main(int argc, char **argv){
   persistentPairs->SetInputConnection(criticalPairs->GetOutputPort());
   persistentPairs->SetInputArrayToProcess(0, 0, 0,
     vtkDataObject::FIELD_ASSOCIATION_CELLS, "Persistence");
-  persistentPairs->ThresholdBetween(1.0, 999999);
+  persistentPairs->ThresholdBetween(0.05, 999999);
   
   // 6. simplifying the input data to remove non-persistent pairs
   vtkSmartPointer<ttkTopologicalSimplification> topologicalSimplification =
