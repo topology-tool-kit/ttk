@@ -18,6 +18,7 @@ namespace ttk{
 		PDBarycenter(){
 			wasserstein_ = 2;
 			geometrical_factor_ = 1;
+			threadNumber_ = 1;
 		};
 
 		~PDBarycenter(){};
@@ -61,6 +62,10 @@ namespace ttk{
 			wasserstein_ = wasserstein;
 		}
 		
+		inline void setThreadNumber(const int &threadNumber){
+			threadNumber_ = threadNumber;
+		}
+		
 		template<typename type>
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;
@@ -74,6 +79,7 @@ namespace ttk{
 	  
       int                   numberOfInputs_;
       void**                inputData_; //TODO : std::vector<void*>
+      int                   threadNumber_;
       
       int points_added_;
 	  int points_deleted_;

@@ -121,6 +121,9 @@ namespace ttk{
   
 template <typename dataType> 
 int PersistenceDiagramsBarycenter<dataType>::execute(){
+	Timer t;
+	{
+	
 	std::vector<std::vector<diagramTuple>*> data_min(numberOfInputs_);
 	std::vector<std::vector<diagramTuple>*> data_sad(numberOfInputs_);
 	std::vector<std::vector<diagramTuple>*> data_max(numberOfInputs_);
@@ -175,7 +178,7 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 		}
 	}
 	
-	omp_set_num_threads(threadNumber_);
+	/*omp_set_num_threads(1);
 	#ifdef TTK_ENABLE_OPENMP
 	#pragma omp parallel sections
 	#endif
@@ -183,10 +186,11 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 		#ifdef TTK_ENABLE_OPENMP
 		#pragma omp section
 		#endif
-		{
+		{*/
 			if(do_min){
 				std::cout << "Computing Minima barycenter..."<<std::endl;
 				PDBarycenter<dataType> bary_min = PDBarycenter<dataType>();
+				bary_min.setThreadNumber(threadNumber_);
 				bary_min.setWasserstein(wasserstein_);
 				bary_min.setNumberOfInputs(numberOfInputs_);
 				for(int i=0; i<numberOfInputs_; i++){
@@ -194,15 +198,16 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 				}
 				bary_min.execute();
 			}
-		}
+		/*}
 		
 		#ifdef TTK_ENABLE_OPENMP
 		#pragma omp section
 		#endif
-		{
+		{*/
 			if(do_sad){
 				std::cout << "Computing Saddles barycenter..."<<std::endl;
 				PDBarycenter<dataType> bary_sad = PDBarycenter<dataType>();
+				bary_sad.setThreadNumber(threadNumber_);
 				bary_sad.setWasserstein(wasserstein_);
 				bary_sad.setNumberOfInputs(numberOfInputs_);
 				for(int i=0; i<numberOfInputs_; i++){
@@ -210,15 +215,16 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 				}
 				bary_sad.execute();
 			}
-		}
+		/*}
 		
 		#ifdef TTK_ENABLE_OPENMP
 		#pragma omp section
 		#endif
-		{
+		{*/
 			if(do_max){
 				std::cout << "Computing Maxima barycenter..."<<std::endl;
 				PDBarycenter<dataType> bary_max = PDBarycenter<dataType>();
+				bary_max.setThreadNumber(threadNumber_);
 				bary_max.setWasserstein(wasserstein_);
 				bary_max.setNumberOfInputs(numberOfInputs_);
 				for(int i=0; i<numberOfInputs_; i++){
@@ -226,8 +232,8 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 				}
 				bary_max.execute();
 			}
-		}
-	}
+		//}
+	//}
 	
 	for(int i=0; i<numberOfInputs_; i++){
 		delete data_min[i];
@@ -235,6 +241,13 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 		delete data_max[i];
 	}
 	
+	std::stringstream msg;
+	msg << "[PersistenceDiagramsBarycenter] processed in "
+		<< t.getElapsedTime() << " s. (" << threadNumber_
+		<< " thread(s))."
+		<< std::endl;
+	dMsg(std::cout, msg.str(), timeMsg);
+	}
 	
 	
 	return 0;

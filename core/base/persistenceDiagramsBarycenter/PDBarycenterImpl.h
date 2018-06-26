@@ -14,8 +14,7 @@ using namespace ttk;
 template <typename dataType>
 int PDBarycenter<dataType>::execute(){
 
-	Timer t;
-	{
+	
 	std::vector<std::vector<matchingTuple>> previous_matchings;
 		
 	this->setBidderDiagrams();
@@ -40,7 +39,7 @@ int PDBarycenter<dataType>::execute(){
 		KDTree<dataType>* kdt = pair.first;
 		std::vector<KDTree<dataType>*>& correspondance_kdt_map = pair.second;
 		
-		std::vector<std::vector<matchingTuple>> all_matchings;
+		std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
 		std::vector<int> sizes(numberOfInputs_);
 		for(int i=0; i<numberOfInputs_; i++){
 			sizes[i] = bidder_diagrams_[i].size();
@@ -48,6 +47,10 @@ int PDBarycenter<dataType>::execute(){
 		
 		
 		dataType total_cost = 0;
+		omp_set_num_threads(threadNumber_);
+		#ifdef TTK_ENABLE_OPENMP
+		#pragma omp parallel for schedule(dynamic, 1)
+		#endif
 		for(int i=0; i<numberOfInputs_; i++){
 			Auction<dataType> auction = Auction<dataType>(&bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_, geometrical_factor_, 0.01, kdt, correspondance_kdt_map, epsilon, min_diag_price[i]);
 			int n_biddings = 0;
@@ -59,7 +62,7 @@ int PDBarycenter<dataType>::execute(){
 			min_diag_price[i] = auction.getMinimalDiagonalPrice();
 			std::vector<matchingTuple> matchings;
 			dataType cost = auction.getMatchingsAndDistance(&matchings, true);
-			all_matchings.push_back(matchings);
+			all_matchings[i] = matchings;
 			total_cost += cost;
 			std::cout<< "Barycenter cost for diagram " << i <<" : "<< cost << std::endl;
 			std::cout<< "Number of biddings : " << n_biddings << std::endl;
@@ -89,15 +92,6 @@ int PDBarycenter<dataType>::execute(){
 		
 		previous_matchings = all_matchings;
 		previous_cost = total_cost;
-	}
-		
-	
-	std::stringstream msg;
-	msg << "[PersistenceDiagramsBarycenter] processed in "
-		<< t.getElapsedTime() << " s. (" << threadNumber_
-		<< " thread(s))."
-		<< std::endl;
-	dMsg(std::cout, msg.str(), timeMsg);
 	}
 
 	return 0;
