@@ -228,7 +228,7 @@ int main(int argc, char **argv) {
   // 7. computing the Morse-Smale complex
   ttk::MorseSmaleComplex morseSmaleComplex;
   // critical points
-  int criticalPoints_numberOfPoints;
+  int criticalPoints_numberOfPoints{};
   std::vector<float> criticalPoints_points;
   std::vector<int> criticalPoints_points_cellDimensions;
   std::vector<int> criticalPoints_points_cellIds;
@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
   std::vector<int> criticalPoints_points_PLVertexIdentifiers;
   std::vector<int> criticalPoints_points_manifoldSize;
   // 1-separatrices
-  int separatrices1_numberOfPoints;
+  int separatrices1_numberOfPoints{};
   std::vector<float> separatrices1_points;
   std::vector<char> separatrices1_points_smoothingMask;
   std::vector<int> separatrices1_points_cellDimensions;

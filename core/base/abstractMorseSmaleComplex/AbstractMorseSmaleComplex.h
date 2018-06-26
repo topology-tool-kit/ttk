@@ -160,15 +160,6 @@ namespace ttk{
 
       /**
        * Enable/Disable computation of the geometrical embedding of
-       * the critical points (disabled by default).
-       */
-      int setComputeCriticalPoints(const bool state){
-        ComputeCriticalPoints=state;
-        return 0;
-      }
-
-      /**
-       * Enable/Disable computation of the geometrical embedding of
        * the ascending manifolds of the critical points
        * (disabled by default).
        */
@@ -211,34 +202,6 @@ namespace ttk{
        */
       int setComputeDescendingSeparatrices2(const bool state){
         ComputeDescendingSeparatrices2=state;
-        return 0;
-      }
-
-      /**
-       * Enable/Disable computation of the ascending manifold
-       * of the maxima (disabled by default).
-       */
-      int setComputeAscendingSegmentation(const bool state){
-        ComputeAscendingSegmentation=state;
-        return 0;
-      }
-
-      /**
-       * Enable/Disable computation of the descending manifold
-       * of the minima (disabled by default).
-       */
-      int setComputeDescendingSegmentation(const bool state){
-        ComputeDescendingSegmentation=state;
-        return 0;
-      }
-
-      /**
-       * Enable/Disable computation of the final combinatorial
-       * Morse-Smale Complex (segmentation as a field on vertices,
-       * disabled by default).
-       */
-      int setComputeFinalSegmentation(const bool state){
-        ComputeFinalSegmentation=state;
         return 0;
       }
 
@@ -317,6 +280,14 @@ namespace ttk{
           std::vector<char>* const criticalPoints_points_isOnBoundary,
           std::vector<int>* const criticalPoints_points_PLVertexIdentifiers,
           std::vector<int>* criticalPoints_points_manifoldSize){
+        outputCriticalPoints_numberOfPoints_=criticalPoints_numberOfPoints;
+        outputCriticalPoints_points_=criticalPoints_points;
+        outputCriticalPoints_points_cellDimensions_=criticalPoints_points_cellDimensons;
+        outputCriticalPoints_points_cellIds_=criticalPoints_points_cellIds;
+        outputCriticalPoints_points_cellScalars_=criticalPoints_points_cellScalars;
+        outputCriticalPoints_points_isOnBoundary_=criticalPoints_points_isOnBoundary;
+        outputCriticalPoints_points_PLVertexIdentifiers_=criticalPoints_points_PLVertexIdentifiers;
+        outputCriticalPoints_points_manifoldSize_=criticalPoints_points_manifoldSize;
         discreteGradient_.setOutputCriticalPoints(criticalPoints_numberOfPoints,
             criticalPoints_points,
             criticalPoints_points_cellDimensons,
@@ -454,15 +425,11 @@ namespace ttk{
 
       bool ReverveSaddleMaximumConnection;
       bool ReverveSaddleSaddleConnection;
-      bool ComputeCriticalPoints;
       bool ComputeAscendingSeparatrices1;
       bool ComputeDescendingSeparatrices1;
       bool ComputeSaddleConnectors;
       bool ComputeAscendingSeparatrices2;
       bool ComputeDescendingSeparatrices2;
-      bool ComputeAscendingSegmentation;
-      bool ComputeDescendingSegmentation;
-      bool ComputeFinalSegmentation;
       bool ReturnSaddleConnectors;
       double SaddleConnectorsPersistenceThreshold;
       bool PrioritizeSpeedOverMemory;

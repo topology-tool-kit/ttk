@@ -129,37 +129,16 @@ int ttk::MorseSmaleComplex2D::execute(){
     int numberOfMaxima{};
     int numberOfMinima{};
 
-    if(ComputeAscendingSegmentation){
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!ascendingManifold){
-        std::cerr << "[MorseSmaleComplex2D] Error: output ascending segmentation pointer is null." << std::endl;
-        return -1;
-      }
-#endif
+    if(ascendingManifold)
       setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold, numberOfMaxima);
-    }
 
-    if(ComputeDescendingSegmentation){
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!descendingManifold){
-        std::cerr << "[MorseSmaleComplex2D] Error: output descending segmentation pointer is null." << std::endl;
-        return -1;
-      }
-#endif
+    if(descendingManifold)
       setDescendingSegmentation(criticalPoints, descendingManifold, numberOfMinima);
-    }
 
-    if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation){
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!ascendingManifold or !descendingManifold or !morseSmaleManifold){
-        std::cerr << "[MorseSmaleComplex2D] Error: output segmentation pointer is null." << std::endl;
-        return -1;
-      }
-#endif
+    if(ascendingManifold and descendingManifold and morseSmaleManifold)
       setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold, descendingManifold, morseSmaleManifold);
-    }
 
-    if(ComputeAscendingSegmentation or ComputeDescendingSegmentation or ComputeFinalSegmentation){
+    if(ascendingManifold or descendingManifold){
       std::stringstream msg;
       msg << "[MorseSmaleComplex2D] Segmentation computed in "
         << tmp.getElapsedTime() << " s."
@@ -168,8 +147,8 @@ int ttk::MorseSmaleComplex2D::execute(){
     }
   }
 
-  if(ComputeCriticalPoints){
-    if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
+  if(outputCriticalPoints_numberOfPoints_ and outputCriticalPoints_points_){
+    if(ascendingManifold and descendingManifold)
       discreteGradient_.setAugmentedCriticalPoints<dataType>(criticalPoints,
           maxSeeds,
           ascendingManifold,

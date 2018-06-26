@@ -7,15 +7,11 @@ AbstractMorseSmaleComplex::AbstractMorseSmaleComplex():
   // all options are disabled by default
   ReverveSaddleMaximumConnection{false},
   ReverveSaddleSaddleConnection{false},
-  ComputeCriticalPoints{false},
-  ComputeAscendingSeparatrices1{false},
-  ComputeDescendingSeparatrices1{false},
+  ComputeAscendingSeparatrices1{true},
+  ComputeDescendingSeparatrices1{true},
   ComputeSaddleConnectors{false},
   ComputeAscendingSeparatrices2{false},
   ComputeDescendingSeparatrices2{false},
-  ComputeAscendingSegmentation{false},
-  ComputeDescendingSegmentation{false},
-  ComputeFinalSegmentation{false},
   ReturnSaddleConnectors{false},
   PrioritizeSpeedOverMemory{false},
 

@@ -213,15 +213,6 @@ namespace ttk{
         return abstractMorseSmaleComplex_->setReverveSaddleSaddleConnection(state);
       }
 
-      int setComputeCriticalPoints(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
-        if(!abstractMorseSmaleComplex_){
-          return -1;
-        }
-#endif
-        return abstractMorseSmaleComplex_->setComputeCriticalPoints(state);
-      }
-
       int setComputeAscendingSeparatrices1(const bool state){
 #ifdef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
@@ -265,33 +256,6 @@ namespace ttk{
         }
 #endif
         return abstractMorseSmaleComplex_->setComputeDescendingSeparatrices2(state);
-      }
-
-      int setComputeAscendingSegmentation(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
-        if(!abstractMorseSmaleComplex_){
-          return -1;
-        }
-#endif
-        return abstractMorseSmaleComplex_->setComputeAscendingSegmentation(state);
-      }
-
-      int setComputeDescendingSegmentation(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
-        if(!abstractMorseSmaleComplex_){
-          return -1;
-        }
-#endif
-        return abstractMorseSmaleComplex_->setComputeDescendingSegmentation(state);
-      }
-
-      int setComputeFinalSegmentation(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
-        if(!abstractMorseSmaleComplex_){
-          return -1;
-        }
-#endif
-        return abstractMorseSmaleComplex_->setComputeFinalSegmentation(state);
       }
 
       int setReturnSaddleConnectors(const bool state){
