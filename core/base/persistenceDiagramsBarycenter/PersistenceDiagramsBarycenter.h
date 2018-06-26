@@ -54,6 +54,7 @@ namespace ttk{
 			geometrical_factor_ = 1;
 			inputData_ = NULL;
 			numberOfInputs_ = 0;
+			threadNumber_ = 1;
 		};
 
 		~PersistenceDiagramsBarycenter(){
@@ -89,6 +90,10 @@ namespace ttk{
 			wasserstein_ = (wasserstein == "inf") ? -1 : stoi(wasserstein);
 		}
 		
+		inline void setThreadNumber(const int &ThreadNumber){
+			threadNumber_ = ThreadNumber;
+		}
+		
 		template<typename type>
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;
@@ -102,6 +107,7 @@ namespace ttk{
 	  
       int                   numberOfInputs_;
       void**                inputData_; //TODO : std::vector<void*>
+      int 					threadNumber_;
       
       int points_added_;
 	  int points_deleted_;
@@ -169,37 +175,58 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 		}
 	}
 	
-	if(do_min){
-		std::cout << "Computing Minima barycenter..."<<std::endl;
-		PDBarycenter<dataType> bary_min = PDBarycenter<dataType>();
-		bary_min.setWasserstein(wasserstein_);
-		bary_min.setNumberOfInputs(numberOfInputs_);
-		for(int i=0; i<numberOfInputs_; i++){
-			bary_min.setDiagram(i, data_min[i]);
+	omp_set_num_threads(threadNumber_);
+	#ifdef TTK_ENABLE_OPENMP
+	#pragma omp parallel sections
+	#endif
+	{
+		#ifdef TTK_ENABLE_OPENMP
+		#pragma omp section
+		#endif
+		{
+			if(do_min){
+				std::cout << "Computing Minima barycenter..."<<std::endl;
+				PDBarycenter<dataType> bary_min = PDBarycenter<dataType>();
+				bary_min.setWasserstein(wasserstein_);
+				bary_min.setNumberOfInputs(numberOfInputs_);
+				for(int i=0; i<numberOfInputs_; i++){
+					bary_min.setDiagram(i, data_min[i]);
+				}
+				bary_min.execute();
+			}
 		}
-		bary_min.execute();
-	}
-	
-	if(do_sad){
-		std::cout << "Computing Saddles barycenter..."<<std::endl;
-		PDBarycenter<dataType> bary_sad = PDBarycenter<dataType>();
-		bary_sad.setWasserstein(wasserstein_);
-		bary_sad.setNumberOfInputs(numberOfInputs_);
-		for(int i=0; i<numberOfInputs_; i++){
-			bary_sad.setDiagram(i, data_sad[i]);
+		
+		#ifdef TTK_ENABLE_OPENMP
+		#pragma omp section
+		#endif
+		{
+			if(do_sad){
+				std::cout << "Computing Saddles barycenter..."<<std::endl;
+				PDBarycenter<dataType> bary_sad = PDBarycenter<dataType>();
+				bary_sad.setWasserstein(wasserstein_);
+				bary_sad.setNumberOfInputs(numberOfInputs_);
+				for(int i=0; i<numberOfInputs_; i++){
+					bary_sad.setDiagram(i, data_sad[i]);
+				}
+				bary_sad.execute();
+			}
 		}
-		bary_sad.execute();
-	}
-	
-	if(do_max){
-		std::cout << "Computing Maxima barycenter..."<<std::endl;
-		PDBarycenter<dataType> bary_max = PDBarycenter<dataType>();
-		bary_max.setWasserstein(wasserstein_);
-		bary_max.setNumberOfInputs(numberOfInputs_);
-		for(int i=0; i<numberOfInputs_; i++){
-			bary_max.setDiagram(i, data_max[i]);
+		
+		#ifdef TTK_ENABLE_OPENMP
+		#pragma omp section
+		#endif
+		{
+			if(do_max){
+				std::cout << "Computing Maxima barycenter..."<<std::endl;
+				PDBarycenter<dataType> bary_max = PDBarycenter<dataType>();
+				bary_max.setWasserstein(wasserstein_);
+				bary_max.setNumberOfInputs(numberOfInputs_);
+				for(int i=0; i<numberOfInputs_; i++){
+					bary_max.setDiagram(i, data_max[i]);
+				}
+				bary_max.execute();
+			}
 		}
-		bary_max.execute();
 	}
 	
 	for(int i=0; i<numberOfInputs_; i++){

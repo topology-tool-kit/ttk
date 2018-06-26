@@ -79,10 +79,10 @@ class ttkPersistenceDiagramsBarycenter
       Modified();
     }
 
-    void SetThreadNumber(int threadNumber){
+    /*void SetThreadNumber(int threadNumber){
       ThreadNumber = threadNumber;
       SetThreads();
-    }
+    }*/
 
     void SetUseAllCores(bool onOff){
       UseAllCores = onOff;
@@ -101,6 +101,9 @@ class ttkPersistenceDiagramsBarycenter
 	
 	vtkSetMacro(UseOutputMatching, int);
     vtkGetMacro(UseOutputMatching, int);
+	
+	vtkSetMacro(ThreadNumber, int);
+    vtkGetMacro(ThreadNumber, int);
 
 
   protected:

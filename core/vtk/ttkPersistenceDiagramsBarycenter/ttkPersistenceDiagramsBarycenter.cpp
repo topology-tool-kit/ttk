@@ -22,6 +22,7 @@ ttkPersistenceDiagramsBarycenter::ttkPersistenceDiagramsBarycenter(){
 
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);
+  
 }
 
 ttkPersistenceDiagramsBarycenter::~ttkPersistenceDiagramsBarycenter(){}
@@ -70,6 +71,7 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, int numInputs){
 			persistenceDiagramsBarycenter.setWasserstein(wassersteinMetric);
 
 			persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
+			persistenceDiagramsBarycenter.setThreadNumber(ThreadNumber);
 			for (int i = 0; i<numInputs; i++) {
 				double Spacing = i;
 				std::vector<macroDiagramTuple>* CTDiagram = new vector<macroDiagramTuple>();
