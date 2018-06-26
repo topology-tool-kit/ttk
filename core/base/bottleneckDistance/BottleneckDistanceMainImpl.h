@@ -308,13 +308,12 @@ int ttk::BottleneckDistance::computeAuction(
 		#endif
 		{
 			if(D1Min.size()+D2Min.size()>0){
-				std::cout<< "..."<<std::endl;
 				Auction<dataType> auctionMin(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
 				dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
 				auctionMin.BuildAuctionDiagrams(D1Min, D2Min);
 				dataType cost = auctionMin.run(&minMatchings);
 				std::stringstream msg;
-				msg << "[Auction] Total cost = " << cost << std::endl;
+				msg << "[Auction] Total cost for minima = " << cost << std::endl;
 				dMsg(std::cout, msg.str(), timeMsg);
 				d += cost;
 			}
@@ -325,13 +324,12 @@ int ttk::BottleneckDistance::computeAuction(
 		#endif
 		{
 			if(D1Sad.size()+D2Sad.size()>0){
-				std::cout<< "..."<<std::endl;
 				Auction<dataType> auctionSad(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
 				dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
 				auctionSad.BuildAuctionDiagrams(D1Sad, D2Sad);
 				dataType cost = auctionSad.run(&sadMatchings);
 				std::stringstream msg;
-				msg << "[Auction] Total cost = " << cost << std::endl;
+				msg << "[Auction] Total cost for saddles = " << cost << std::endl;
 				dMsg(std::cout, msg.str(), timeMsg);
 				d += cost;
 			}
@@ -342,13 +340,12 @@ int ttk::BottleneckDistance::computeAuction(
 		#endif
 		{
 			if(D1Max.size()+D2Max.size()>0){
-				std::cout<< "..."<<std::endl;
 				Auction<dataType> auctionMax(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
 				dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
 				auctionMax.BuildAuctionDiagrams(D1Max, D2Max);
 				dataType cost = auctionMax.run(&maxMatchings);
 				std::stringstream msg;
-				msg << "[Auction] Total cost = " << cost << std::endl;
+				msg << "[Auction] Total cost for maxima = " << cost << std::endl;
 				dMsg(std::cout, msg.str(), timeMsg);
 				d += cost;
 			}

@@ -141,7 +141,6 @@ namespace ttk {
 				bidders_->addBidder(b);
 			}
 			this->buildKDTree();
-			std::cout<<"[Initialize auction] Time elapsed : " << t.getElapsedTime() << " s."<<std::endl;
 		}
 		
 		void setBidders(std::vector<diagramTuple> diagram1){
@@ -184,7 +183,6 @@ namespace ttk {
 				}
 			}
 			correspondance_kdt_map_ = kdt_->build(coordinates.data(), goods_->size(), dimension);
-			std::cout<<"[Building KD-Tree] Time elapsed : " << t.getElapsedTime() << " s."<<std::endl;
 		}
 		
 		void setEpsilon(dataType epsilon){
