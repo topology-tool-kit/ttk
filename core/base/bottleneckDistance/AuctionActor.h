@@ -201,6 +201,7 @@ namespace ttk{
 
 		public:
 			GoodDiagram() {};
+			
 			~GoodDiagram() {};
 			
 			void addGood(Good<dataType>& g);
@@ -237,6 +238,9 @@ namespace ttk{
   class Bidder : public AuctionActor<dataType>
   {
      public:
+		 dataType diagonal_price_;
+		 
+		 
          Bidder() {
 		};
          Bidder(dataType x, dataType y, bool is_diagonal, int id) : AuctionActor<dataType>(x, y, is_diagonal, id)
@@ -271,12 +275,12 @@ namespace ttk{
 		~Bidder() {}
 		
 		// Off-diagonal Bidding (with or without the use of a KD-Tree
-		int runBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor);
-		int runKDTBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor, KDTree<dataType>* kdt, const int kdt_index=0);
+		int runBidding(GoodDiagram<dataType>* goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor);
+		int runKDTBidding(GoodDiagram<dataType>* goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor, KDTree<dataType>* kdt, const int kdt_index=0);
 		
 		// Diagonal Bidding (with or without the use of a KD-Tree
-		int runDiagonalBidding(GoodDiagram<dataType>& goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>>& diagonal_queue);
-		int runDiagonalKDTBidding(GoodDiagram<dataType>& goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor, std::vector<KDTree<dataType>*>& correspondance_kdt_map, std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>>& diagonal_queue, const int kdt_index=0);
+		int runDiagonalBidding(GoodDiagram<dataType>* goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>>& diagonal_queue);
+		int runDiagonalKDTBidding(GoodDiagram<dataType>* goods, Good<dataType>& diagonalGood, int wasserstein, dataType epsilon, double geometricalFactor, std::vector<KDTree<dataType>*>& correspondance_kdt_map, std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>>& diagonal_queue, const int kdt_index=0);
 		
 		// Utility wrapper functions
 		Good<dataType>* getProperty();
@@ -290,7 +294,6 @@ namespace ttk{
      protected:
 		bool is_diagonal_;
 		dataType price_paid_;
-		dataType diagonal_price_;
 		Good<dataType>* property_;
 		
 	private:
@@ -308,13 +311,13 @@ namespace ttk{
 	
 	
 	template<typename dataType>
-	int Bidder<dataType>::runBidding(GoodDiagram<dataType>& goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor){
+	int Bidder<dataType>::runBidding(GoodDiagram<dataType>* goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor){
 		//TODO Adjust for goodDiagrams with only one point...
 		dataType best_val = std::numeric_limits<dataType>::lowest();
 		dataType second_val = std::numeric_limits<dataType>::lowest();
 		Good<dataType>* best_good = nullptr;
-		for(int i=0; i<goods.size(); i++){
-			Good<dataType>& g = goods.get(i);
+		for(int i=0; i<goods->size(); i++){
+			Good<dataType>& g = goods->get(i);
 			dataType val = -this->cost(g, wasserstein, geometricalFactor);
 			val -= g.getPrice();
 			if(val>best_val){
@@ -353,7 +356,7 @@ namespace ttk{
 	
 	
 	template<typename dataType>
-	int Bidder<dataType>::runDiagonalBidding(GoodDiagram<dataType>& goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>>& diagonal_queue){
+	int Bidder<dataType>::runDiagonalBidding(GoodDiagram<dataType>* goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>>& diagonal_queue){
 		//TODO Adjust for goodDiagrams with only one point...
 		
 		// First, find the lowest and second lowest weights for diagonal goods
@@ -367,7 +370,7 @@ namespace ttk{
 			diagonal_queue.pop();
 			
 			dataType queue_weight = top_pair.second;
-			Good<dataType>* good = &goods.get(top_pair.first);
+			Good<dataType>* good = &(goods->get(top_pair.first));
 			if(good->getPrice()>queue_weight){
 				// If the weight in the priority queue is not the good one, update it
 				diagonal_queue.push(top_pair);
@@ -382,7 +385,7 @@ namespace ttk{
 		while(!updated_second_pair){
 			second_pair = diagonal_queue.top();
 			dataType queue_weight = second_pair.second;
-			Good<dataType>* good = &goods.get(second_pair.first);
+			Good<dataType>* good = &(goods->get(second_pair.first));
 			if(good->getPrice()!=queue_weight){
 				// If the weight in the priority queue is not the good one, update it
 				diagonal_queue.pop();
@@ -395,7 +398,7 @@ namespace ttk{
 		}
 		dataType best_val = -best_pair.second;
 		dataType second_val = -second_pair.second;
-		Good<dataType>* best_good = &goods.get(best_pair.first);
+		Good<dataType>* best_good = &(goods->get(best_pair.first));
 
 		// And now check for the corresponding twin bidder
 		bool is_twin=false;
@@ -430,7 +433,7 @@ namespace ttk{
 	
 	
 	template<typename dataType>
-	int Bidder<dataType>::runDiagonalKDTBidding(GoodDiagram<dataType>& goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, std::vector<KDTree<dataType>*>& correspondance_kdt_map, std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>>& diagonal_queue, const int kdt_index){
+	int Bidder<dataType>::runDiagonalKDTBidding(GoodDiagram<dataType>* goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, std::vector<KDTree<dataType>*>& correspondance_kdt_map, std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>>& diagonal_queue, const int kdt_index){
 		/// Runs bidding of a diagonal bidder 
 		//TODO Adjust for goodDiagrams with only one point...
 		
@@ -445,7 +448,7 @@ namespace ttk{
 			diagonal_queue.pop();
 			
 			dataType queue_weight = top_pair.second;
-			Good<dataType>* good = &goods.get(top_pair.first);
+			Good<dataType>* good = &(goods->get(top_pair.first));
 			if(good->getPrice()>queue_weight){
 				// If the weight in the priority queue is not the good one, update it
 				std::get<1>(top_pair) = good->getPrice();
@@ -461,7 +464,7 @@ namespace ttk{
 		while(!updated_second_pair){
 			second_pair = diagonal_queue.top();
 			dataType queue_weight = second_pair.second;
-			Good<dataType>* good = &goods.get(second_pair.first);
+			Good<dataType>* good = &(goods->get(second_pair.first));
 			if(good->getPrice()>queue_weight){
 				// If the weight in the priority queue is not the good one, update it
 				diagonal_queue.pop();
@@ -474,7 +477,7 @@ namespace ttk{
 		}
 		dataType best_val = -best_pair.second;
 		dataType second_val = -second_pair.second;
-		Good<dataType>* best_good = &goods.get(best_pair.first);
+		Good<dataType>* best_good = &(goods->get(best_pair.first));
 
 		// And now check for the corresponding twin bidder
 		bool is_twin=false;
@@ -515,7 +518,7 @@ namespace ttk{
 	
 	
 	template<typename dataType>
-	int Bidder<dataType>::runKDTBidding(GoodDiagram<dataType>& goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, KDTree<dataType>* kdt, const int kdt_index){
+	int Bidder<dataType>::runKDTBidding(GoodDiagram<dataType>* goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, KDTree<dataType>* kdt, const int kdt_index){
 		/// Runs bidding of a non-diagonal bidder 
 		//TODO Adjust for goodDiagrams with only one point...
 		std::vector<KDTree<dataType>*> neighbours;
@@ -536,7 +539,7 @@ namespace ttk{
 		sort(idx.begin(), idx.end(), [&costs](int& a, int& b){return costs[a] < costs[b];});
 		
 		KDTree<dataType>* closest_kdt = neighbours[idx[0]];
-		Good<dataType>* best_good = &goods.get(closest_kdt->id_);
+		Good<dataType>* best_good = &(goods->get(closest_kdt->id_));
 		// Value is defined as the opposite of cost (each bidder aims at maximizing it)
 		dataType best_val = -costs[idx[0]];
 		dataType second_val = -costs[idx[1]];
@@ -606,7 +609,10 @@ namespace ttk{
   class BidderDiagram{
    
   public:
+	std::vector<Bidder<dataType>> bidders_;
+	  
 	BidderDiagram() {};
+	
 	~BidderDiagram() {};
       
 	inline void addBidder(Bidder<dataType>& b){
@@ -620,9 +626,7 @@ namespace ttk{
 	inline Bidder<dataType>& get(int idx){
 		return bidders_[idx];
 	}  
-	  
-  private:
-      std::vector<Bidder<dataType>> bidders_;
+      
   };
 
 

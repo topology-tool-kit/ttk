@@ -67,7 +67,7 @@ namespace ttk{
 		void setInitialBarycenter();
 		dataType getMaxPersistence();
 		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> getKDTree();
-		void updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings, dataType& max_shift, dataType& average_shift);
+		dataType updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings);
 		bool hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings, std::vector<std::vector<matchingTuple>>& previous_matchings);
 		
 		bool is_matching_stable();
