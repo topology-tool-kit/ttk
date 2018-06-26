@@ -1,13 +1,18 @@
 #ifndef _PDBARYCENTERIMPL_H
 #define _PDBARYCENTERIMPL_H
 
+#define BLocalMax ttk::ftm::NodeType::Local_maximum
+#define BLocalMin ttk::ftm::NodeType::Local_minimum
+#define BSaddle1  ttk::ftm::NodeType::Saddle1
+#define BSaddle2  ttk::ftm::NodeType::Saddle2
+
 #include <stdlib.h>     /* srand, rand */
 #include <cmath>
 
 using namespace ttk;
 
 template <typename dataType>
-int PersistenceDiagramsBarycenter<dataType>::execute(){
+int PDBarycenter<dataType>::execute(){
 
 	Timer t;
 	{
@@ -102,7 +107,7 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 
 
 template <typename dataType>
-bool PersistenceDiagramsBarycenter<dataType>::hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings, std::vector<std::vector<matchingTuple>>& previous_matchings){
+bool PDBarycenter<dataType>::hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings, std::vector<std::vector<matchingTuple>>& previous_matchings){
 	if(points_added_>0 || points_deleted_>0 || previous_matchings.size()==0){
 		return false;
 	}
@@ -122,7 +127,7 @@ bool PersistenceDiagramsBarycenter<dataType>::hasBarycenterConverged(std::vector
 
 
 template <typename dataType>
-dataType PersistenceDiagramsBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings){
+dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings){
 	
 	// 1. Initialize variables used in the sequel
 	unsigned int n_goods = barycenter_goods_[0].size();
@@ -242,19 +247,19 @@ dataType PersistenceDiagramsBarycenter<dataType>::updateBarycenter(std::vector<s
 
 
 template <typename dataType>
-dataType PersistenceDiagramsBarycenter<dataType>::getEpsilon(dataType rho){
+dataType PDBarycenter<dataType>::getEpsilon(dataType rho){
 	return pow(rho, 2)/8;
 }
 
 template <typename dataType>
-dataType PersistenceDiagramsBarycenter<dataType>::getRho(dataType epsilon){
+dataType PDBarycenter<dataType>::getRho(dataType epsilon){
 	return std::sqrt(8*epsilon);
 }
 
 
 
 template <typename dataType>
-void PersistenceDiagramsBarycenter<dataType>::setBidderDiagrams(){
+void PDBarycenter<dataType>::setBidderDiagrams(){
 	for(int i=0; i<numberOfInputs_; i++){
 		std::vector<diagramTuple>* CTDiagram = static_cast<std::vector<diagramTuple>*>(inputData_[i]);
 		BidderDiagram<dataType> bidders;
@@ -271,7 +276,7 @@ void PersistenceDiagramsBarycenter<dataType>::setBidderDiagrams(){
 
 
 template <typename dataType>
-dataType PersistenceDiagramsBarycenter<dataType>::getMaxPersistence(){
+dataType PDBarycenter<dataType>::getMaxPersistence(){
 	dataType max_persistence = 0;
 	for(int i=0; i<numberOfInputs_; i++){
 		BidderDiagram<dataType>& D = bidder_diagrams_[i];
@@ -289,7 +294,7 @@ dataType PersistenceDiagramsBarycenter<dataType>::getMaxPersistence(){
 
 
 template <typename dataType>
-void PersistenceDiagramsBarycenter<dataType>::setInitialBarycenter(){
+void PDBarycenter<dataType>::setInitialBarycenter(){
 	//int random_idx = rand() % numberOfInputs_;
 	std::cout << "BEWARE, initial barycenter is not chosen randomly..."<< std::endl;
 	int random_idx = 0;
@@ -308,7 +313,7 @@ void PersistenceDiagramsBarycenter<dataType>::setInitialBarycenter(){
 
 
 template <typename dataType>
-std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> PersistenceDiagramsBarycenter<dataType>::getKDTree(){
+std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> PDBarycenter<dataType>::getKDTree(){
 	Timer t;
 	KDTree<dataType>* kdt = new KDTree<dataType>(true, wasserstein_);
 	
