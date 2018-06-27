@@ -23,7 +23,7 @@ int ttkBottleneckDistance::doIt(
   // Prepare IO
   vtkDataSet *input1 = inputs[0];
   vtkDataSet *input2 = inputs[1];
-	vtkDataSet *output1 = outputs[0];
+  vtkDataSet *output1 = outputs[0];
   vtkDataSet *output2 = outputs[1];
   vtkDataSet *output3 = outputs[2];
 
