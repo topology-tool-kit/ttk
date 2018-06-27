@@ -79,9 +79,9 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 				
 				persistenceDiagramsBarycenter.setDiagram(i, (void*) CTDiagram);
 			}
-			vector<macroDiagramTuple> barycenter;
+			std::vector<macroDiagramTuple> barycenter;
 			persistenceDiagramsBarycenter.execute(&barycenter);
-			//outputBarycenter = vtkUnstructuredGrid::SafeDownCast(&barycenter);
+			outputBarycenter->ShallowCopy(createPersistenceDiagram<VTK_TT>(&barycenter));
 		}
 		));
 	}
@@ -136,10 +136,18 @@ int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
   outInfo = outputVector->GetInformationObject(0);
   vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(outInfo);*/
   
-  vtkUnstructuredGrid *outputBarycenter ;;
-  doIt(input, outputBarycenter, numInputs);
+  vtkInformation* outInfo;
+  outInfo = outputVector->GetInformationObject(0);
+  vtkDataSet *output1 = vtkDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(output1);
   
-  //outputCT1->ShallowCopy(outputBarycenter);
+  doIt(input, outputCT1, numInputs);
+  
+  
+  
+  
+  /*vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(output1);
+  outputCT1->ShallowCopy(outputBarycenter);*/
 
   delete[] input;
 

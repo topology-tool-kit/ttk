@@ -49,6 +49,7 @@
 // ttk code includes
 #include                  <PersistenceDiagramsBarycenter.h>
 #include                  <Wrapper.h>
+#include                  <ttkWrapper.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
@@ -118,6 +119,9 @@ class ttkPersistenceDiagramsBarycenter
       vtkUnstructuredGrid *CTPersistenceDiagram_,
       const double spacing,
       const int diagramNumber);
+	
+	template<typename dataType>
+	vtkSmartPointer<vtkUnstructuredGrid> createPersistenceDiagram(const std::vector<diagramTuple>* diagram);
 
 	
 	int FillInputPortInformation(int port, vtkInformation *info);
@@ -260,5 +264,42 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
 
   return 0;
 }
+
+
+template <typename dataType>
+vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPersistenceDiagram(
+    const std::vector<diagramTuple>* diagram)
+{
+	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
+	vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
+		vtkSmartPointer<vtkUnstructuredGrid>::New();
+
+ 
+	for (unsigned int i = 0; i < diagram->size(); ++i) {
+		vtkIdType ids[2];
+		diagramTuple t = diagram->at(i);
+		double x1 = std::get<6>(t);
+		double y1 = x1;
+		double z1 = 0;
+		
+		double x2 = std::get<6>(t);
+		double y2 = std::get<10>(t);
+		double z2 = 0;
+		
+		points->InsertNextPoint(x1, y1, z1);
+		points->InsertNextPoint(x2, y2, z2);
+		
+		ids[0] = 2*i;
+		ids[1] = 2*i+1;
+		
+		persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
+    }
+    
+  persistenceDiagram->SetPoints(points);
+
+  return persistenceDiagram;
+}
+
 
 #endif // _TTK_PERSISTENCEDIAGRAMSBARYCENTER_H
