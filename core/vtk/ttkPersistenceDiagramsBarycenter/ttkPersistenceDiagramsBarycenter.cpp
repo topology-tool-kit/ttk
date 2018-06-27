@@ -79,7 +79,7 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 				
 				persistenceDiagramsBarycenter.setDiagram(i, (void*) CTDiagram);
 			}
-			std::vector<macroDiagramTuple> barycenter;
+			vector<macroDiagramTuple> barycenter;
 			persistenceDiagramsBarycenter.execute(&barycenter);
 			//outputBarycenter = vtkUnstructuredGrid::SafeDownCast(&barycenter);
 		}
