@@ -96,50 +96,49 @@ if(TTK_BUILD_DOCUMENTATION)
 	endif()
 endif()
 
-option(TTK_ENABLE_ZLIB "Enable Zlib support" ON)
-if(TTK_ENABLE_ZLIB)
-	find_package(ZLIB)
-	if(NOT ZLIB_INCLUDE_DIR)
-		option(TTK_ENABLE_ZLIB "Enable Zlib support" OFF)
-		message(WARNING "Zlib not found, disabling Zlib support in TTK.")
-	endif()
+
+find_package(ZLIB)
+if(NOT ZLIB_INCLUDE_DIR)
+  option(TTK_ENABLE_ZLIB "Enable Zlib support" OFF)
+  message(WARNING "Zlib not found, disabling Zlib support in TTK.")
+else()
+  option(TTK_ENABLE_ZLIB "Enable Zlib support" ON)
 endif()
 
-option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
-if(TTK_ENABLE_ZFP)
-	# START_FINDZFP
-	find_path(ZFP_INCLUDE_DIR zfp.h
-			PATHS
-			$ENV{ZFP_ROOT_DIR}/include
-			/opt/zfp/include)
-	set(ZFP_NAMES ${ZFP_NAMES} zfp)
-	find_library(ZFP_LIBRARY
-			NAMES ${ZFP_NAMES}
-			PATHS $ENV{ZFP_ROOT_DIR}/lib /opt/zfp/lib)
-	if (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
-		set(ZFP_LIBRARIES ${ZFP_LIBRARY})
-		set(ZFP_FOUND "YES")
-	else (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
-		set(ZFP_FOUND "NO")
-	endif (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
-	if (ZFP_FOUND)
-		if (NOT ZFP_FIND_QUIETLY)
-			message(STATUS "Found ZFP: ${ZFP_LIBRARIES}")
-		endif (NOT ZFP_FIND_QUIETLY)
-	else (ZFP_FOUND)
-		if (ZFP_FIND_REQUIRED)
-			message(FATAL_ERROR "Could not find ZFP library...")
-		endif (ZFP_FIND_REQUIRED)
-	endif (ZFP_FOUND)
-	mark_as_advanced(
-			ZFP_LIBRARY
-			ZFP_INCLUDE_DIR)
-	# END_FINDZFP
-	if (ZFP_FOUND)
-	else()
-		option(TTK_ENABLE_ZFP "Enable ZFP support" OFF)
-		message(WARNING "ZFP not found, disabling ZFP support in TTK!")
-	endif()
+
+# START_FINDZFP
+find_path(ZFP_INCLUDE_DIR zfp.h
+    PATHS
+    $ENV{ZFP_ROOT_DIR}/include
+    /opt/zfp/include)
+set(ZFP_NAMES ${ZFP_NAMES} zfp)
+find_library(ZFP_LIBRARY
+    NAMES ${ZFP_NAMES}
+    PATHS $ENV{ZFP_ROOT_DIR}/lib /opt/zfp/lib)
+if (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
+  set(ZFP_LIBRARIES ${ZFP_LIBRARY})
+  set(ZFP_FOUND "YES")
+else (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
+  set(ZFP_FOUND "NO")
+endif (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
+if (ZFP_FOUND)
+  if (NOT ZFP_FIND_QUIETLY)
+    message(STATUS "Found ZFP: ${ZFP_LIBRARIES}")
+  endif (NOT ZFP_FIND_QUIETLY)
+else (ZFP_FOUND)
+  if (ZFP_FIND_REQUIRED)
+    message(FATAL_ERROR "Could not find ZFP library...")
+  endif (ZFP_FIND_REQUIRED)
+endif (ZFP_FOUND)
+mark_as_advanced(
+    ZFP_LIBRARY
+    ZFP_INCLUDE_DIR)
+# END_FINDZFP
+if (ZFP_FOUND)
+  option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
+else()
+  option(TTK_ENABLE_ZFP "Enable ZFP support" OFF)
+  message(WARNING "ZFP not found, disabling ZFP support in TTK!")
 endif()
 
 if (NOT APPLE)
