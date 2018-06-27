@@ -48,7 +48,7 @@ int ttkPersistenceDiagramsBarycenter::updateProgress(const float &progress){
 
 
 
-int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, int numInputs){
+int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGrid *outputBarycenter, int numInputs){
 	// Get arrays from input datas
 	//vtkDataArray* inputDiagram[numInputs] = { NULL };
 	vector<vtkUnstructuredGrid*> inputDiagram(numInputs);
@@ -79,8 +79,9 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, int numInputs){
 				
 				persistenceDiagramsBarycenter.setDiagram(i, (void*) CTDiagram);
 			}
-
-			persistenceDiagramsBarycenter.execute();
+			std::vector<macroDiagramTuple> barycenter;
+			persistenceDiagramsBarycenter.execute(&barycenter);
+			//outputBarycenter = vtkUnstructuredGrid::SafeDownCast(&barycenter);
 		}
 		));
 	}
@@ -128,8 +129,17 @@ int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
 		std::cout<<"No data in input["<<i<<"]"<<std::endl;
 	}
   }
-
-  doIt(input, numInputs);
+  
+  // TODO Set output
+  
+  /*vtkInformation* outInfo;
+  outInfo = outputVector->GetInformationObject(0);
+  vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(outInfo);*/
+  
+  vtkUnstructuredGrid *outputBarycenter ;;
+  doIt(input, outputBarycenter, numInputs);
+  
+  //outputCT1->ShallowCopy(outputBarycenter);
 
   delete[] input;
 

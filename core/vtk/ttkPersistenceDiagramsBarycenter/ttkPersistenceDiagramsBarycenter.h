@@ -137,6 +137,7 @@ class ttkPersistenceDiagramsBarycenter
 
     // base code features
     int doIt(vtkDataSet **input,
+			 vtkUnstructuredGrid *outputBarycenter,
              int numInputs);
 
     bool needsToAbort();
