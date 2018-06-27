@@ -119,7 +119,7 @@ namespace ttk
             graph_.visit(upVert, newArc);
             DEBUG_1(<< "visit m: " << upVert << " with " << newArc << std::endl);
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task priority(5)
+#pragma omp task priority(5) if(upVert % 4 == 0)
 #endif
             growthFromSeed(upVert, localPropagation, newArc);
          }
@@ -132,16 +132,15 @@ namespace ttk
          // TODO re-use the same vectors per thread
          std::vector<idEdge> lowerStar, upperStar;
 
-         const idEdge nbAdjEdges = mesh_->getVertexEdgeNumber(localPropagation->getCurVertex());
+         const idEdge nbAdjEdges = mesh_.getVertexEdgeNumber(localPropagation->getCurVertex());
          lowerStar.reserve(nbAdjEdges);
          upperStar.reserve(nbAdjEdges);
 
          for (idEdge e = 0; e < nbAdjEdges; ++e) {
             idEdge edgeId;
-            mesh_->getVertexEdge(localPropagation->getCurVertex(), e, edgeId);
+            mesh_.getVertexEdge(localPropagation->getCurVertex(), e, edgeId);
             idVertex edgeLowerVert, edgeUpperVert;
-            std::tie(edgeLowerVert, edgeUpperVert, std::ignore) =
-                getOrderedEdge(edgeId, localPropagation);
+            std::tie(edgeLowerVert, edgeUpperVert) = mesh_.getOrderedEdge(edgeId, localPropagation->goUp());
             if (edgeLowerVert == localPropagation->getCurVertex()) {
                upperStar.emplace_back(edgeId);
             } else {
@@ -171,14 +170,14 @@ namespace ttk
                                                 const idSuperArc         curArc)
       {
          const idCell nbAdjTriangles =
-             mesh_->getVertexTriangleNumber(localPropagation->getCurVertex());
+             mesh_.getVertexTriangleNumber(localPropagation->getCurVertex());
 
          for (idCell t = 0; t < nbAdjTriangles; ++t) {
             // Classify current cell
             idCell curTriangleid;
-            mesh_->getVertexTriangle(localPropagation->getCurVertex(), t, curTriangleid);
+            mesh_.getVertexTriangle(localPropagation->getCurVertex(), t, curTriangleid);
 
-            orderedTriangle   oTriangle  = getOrderedTriangle(curTriangleid, localPropagation);
+            orderedTriangle   oTriangle  = mesh_.getOrderedTriangle(curTriangleid, localPropagation->goUp());
             vertPosInTriangle curVertPos = getVertPosInTriangle(oTriangle, localPropagation);
 
             // Update DynGraph
@@ -206,8 +205,8 @@ namespace ttk
                                                          const Propagation* const localPropagation,
                                                          const idSuperArc         curArc)
       {
-         const orderedEdge e0 = getOrderedEdge(std::get<0>(oTriangle), localPropagation);
-         const orderedEdge e1 = getOrderedEdge(std::get<1>(oTriangle), localPropagation);
+         const orderedEdge e0 = mesh_.getOrderedEdge(std::get<0>(oTriangle), localPropagation->goUp());
+         const orderedEdge e1 = mesh_.getOrderedEdge(std::get<1>(oTriangle), localPropagation->goUp());
          const idVertex    w  = getWeight(e0, e1, localPropagation);
          bool t = dynGraph(localPropagation).insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), w);
 
@@ -246,8 +245,8 @@ namespace ttk
             DEBUG_2(<< dynGraph(localPropagation).print() << std::endl);
          }
 
-         const orderedEdge e1 = getOrderedEdge(std::get<1>(oTriangle), localPropagation);
-         const orderedEdge e2 = getOrderedEdge(std::get<2>(oTriangle), localPropagation);
+         const orderedEdge e1 = mesh_.getOrderedEdge(std::get<1>(oTriangle), localPropagation->goUp());
+         const orderedEdge e2 = mesh_.getOrderedEdge(std::get<2>(oTriangle), localPropagation->goUp());
          const idVertex    w  = getWeight(e1, e2, localPropagation);
          const int u = dynGraph(localPropagation).insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w);
 
@@ -290,8 +289,8 @@ namespace ttk
       {
          idVertex v0;
          idVertex v1;
-         mesh_->getEdgeVertex(neigEdge, 0, v0);
-         mesh_->getEdgeVertex(neigEdge, 1, v1);
+         mesh_.getEdgeVertex(neigEdge, 0, v0);
+         mesh_.getEdgeVertex(neigEdge, 1, v1);
 
          const idVertex other = (v0 == seed) ? v1 : v0;
 
@@ -303,18 +302,19 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::updateDynGraphCurArc(const idVertex seed, const idSuperArc curArc, const Propagation* const localProp)
+      void FTRGraph<ScalarType>::updateDynGraphCurArc(const idVertex seed, const idSuperArc curArc,
+                                                      const Propagation* const localProp)
       {
 
-         const idVertex nbEdgesNeigh = mesh_->getVertexEdgeNumber(seed);
+         const idVertex nbEdgesNeigh = mesh_.getVertexEdgeNumber(seed);
          for(idVertex nid = 0; nid < nbEdgesNeigh; ++nid) {
             idEdge edgeId;
-            mesh_->getVertexEdge(seed, nid, edgeId);
+            mesh_.getVertexEdge(seed, nid, edgeId);
 
             idVertex v0;
             idVertex v1;
-            mesh_->getEdgeVertex(edgeId, 0, v0);
-            mesh_->getEdgeVertex(edgeId, 1, v1);
+            mesh_.getEdgeVertex(edgeId, 0, v0);
+            mesh_.getEdgeVertex(edgeId, 1, v1);
 
             const idVertex other = (v0 == seed) ? v1 : v0;
 
@@ -345,10 +345,10 @@ namespace ttk
       template <typename ScalarType>
       void FTRGraph<ScalarType>::localGrowth(Propagation* const localPropagation)
       {
-         const idVertex nbNeigh = mesh_->getVertexNeighborNumber(localPropagation->getCurVertex());
+         const idVertex nbNeigh = mesh_.getVertexNeighborNumber(localPropagation->getCurVertex());
          for (idVertex n = 0; n < nbNeigh; ++n) {
             idVertex neighId;
-            mesh_->getVertexNeighbor(localPropagation->getCurVertex(), n, neighId);
+            mesh_.getVertexNeighbor(localPropagation->getCurVertex(), n, neighId);
             if (localPropagation->compare(localPropagation->getCurVertex(), neighId)) {
                if (!toVisit_[neighId] || toVisit_[neighId]->find() != localPropagation->getRpz()) {
                   localPropagation->addNewVertex(neighId);
@@ -367,15 +367,15 @@ namespace ttk
          valence decr = 0;
 
          // TODO use LowerStar edge instead of crossing all you dumb foolish stupid moron
-         const idVertex nbEdgesNeigh = mesh_->getVertexEdgeNumber(curSaddle);
+         const idVertex nbEdgesNeigh = mesh_.getVertexEdgeNumber(curSaddle);
          for(idVertex nid = 0; nid < nbEdgesNeigh; ++nid) {
             idEdge edgeId;
-            mesh_->getVertexEdge(curSaddle, nid, edgeId);
+            mesh_.getVertexEdge(curSaddle, nid, edgeId);
 
            idVertex v0;
            idVertex v1;
-           mesh_->getEdgeVertex(edgeId, 0, v0);
-           mesh_->getEdgeVertex(edgeId, 1, v1);
+           mesh_.getEdgeVertex(edgeId, 0, v0);
+           mesh_.getEdgeVertex(edgeId, 1, v1);
 
            const idVertex other = (v0 == curSaddle) ? v1 : v0;
 
@@ -441,13 +441,13 @@ namespace ttk
                                                        const Propagation* const localProp)
       {
          const idNode checkNode  = graph_.getNodeId(saddle);
-         const idEdge nbAdjEdges = mesh_->getVertexEdgeNumber(saddle);
+         const idEdge nbAdjEdges = mesh_.getVertexEdgeNumber(saddle);
 
          for (idEdge e = 0; e < nbAdjEdges; ++e) {
             idEdge edgeId;
-            mesh_->getVertexEdge(saddle, e, edgeId);
+            mesh_.getVertexEdge(saddle, e, edgeId);
             idVertex edgeLowerVert, edgeUpperVert;
-            std::tie(edgeLowerVert, edgeUpperVert, std::ignore) = getOrderedEdge(edgeId, localProp);
+            std::tie(edgeLowerVert, edgeUpperVert) = mesh_.getOrderedEdge(edgeId, localProp->goUp());
             if (edgeUpperVert == neigh || edgeLowerVert == neigh) {
                // curedge is the one between the two vertices
                // WARNING: Check the opposite prop here, In parallel ??
@@ -497,11 +497,11 @@ namespace ttk
          std::vector<std::tuple<idSuperArc, Propagation*>> bfsResults;
          bfsResults.reserve(4);
 
-         const idCell nbTriNeigh = mesh_->getVertexTriangleNumber(curVert);
+         const idCell nbTriNeigh = mesh_.getVertexTriangleNumber(curVert);
          for(idCell t = 0; t < nbTriNeigh; ++t) {
             idCell neighTriangle;
-            mesh_->getVertexTriangle(curVert, t, neighTriangle);
-            const orderedTriangle oNeighTriangle = getOrderedTriangle(neighTriangle, localProp);
+            mesh_.getVertexTriangle(curVert, t, neighTriangle);
+            const orderedTriangle oNeighTriangle = mesh_.getOrderedTriangle(neighTriangle, localProp->goUp());
             // only if curVert is not the highest point
             if (bfsCells_[neighTriangle] != curVert &&
                 getVertPosInTriangle(oNeighTriangle, localProp) != vertPosInTriangle::End) {
@@ -542,7 +542,7 @@ namespace ttk
             DEBUG_1(<< "visit s: " << curVert << " with " << arc << std::endl);
             // why is the firstprivate required here ?
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(curVert, prop, arc) priority(2)
+#pragma omp task firstprivate(curVert, prop, arc) priority(2) if (curVert % 4 == 0)
 #endif
             growthFromSeed(curVert, prop, arc);
          }
@@ -588,88 +588,10 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      orderedEdge FTRGraph<ScalarType>::getOrderedEdge(const idEdge             edgeId,
-                                                       const Propagation* const localPropagation) const
-      {
-         idVertex edge0Vert, edge1Vert;
-         mesh_->getEdgeVertex(edgeId, 0, edge0Vert);
-         mesh_->getEdgeVertex(edgeId, 1, edge1Vert);
-
-         if (localPropagation->compare(edge0Vert, edge1Vert)) {
-            return std::make_tuple(edge0Vert, edge1Vert, edgeId);
-         } else {
-            return std::make_tuple(edge1Vert, edge0Vert, edgeId);
-         }
-      }
-
-      template <typename ScalarType>
-      orderedTriangle FTRGraph<ScalarType>::getOrderedTriangle(
-          const idCell cellId, const Propagation* const localPropagation) const
-      {
-         idEdge edges[3];
-         mesh_->getTriangleEdge(cellId, 0, edges[0]);
-         mesh_->getTriangleEdge(cellId, 1, edges[1]);
-         mesh_->getTriangleEdge(cellId, 2, edges[2]);
-
-         orderedEdge oEdges[3];
-         oEdges[0] = getOrderedEdge(edges[0], localPropagation);
-         oEdges[1] = getOrderedEdge(edges[1], localPropagation);
-         oEdges[2] = getOrderedEdge(edges[2], localPropagation);
-
-         auto compareOEdges = [localPropagation](const orderedEdge& a, const orderedEdge& b) {
-            return localPropagation->compare(std::get<0>(a), std::get<0>(b)) ||
-                   (std::get<0>(a) == std::get<0>(b) &&
-                    localPropagation->compare(std::get<1>(a), std::get<1>(b)));
-         };
-
-         if (compareOEdges(oEdges[0], oEdges[1])) {
-            // 1 2 3
-            // 1 3 2
-            // 2 3 1
-
-            if (compareOEdges(oEdges[1], oEdges[2])) {
-               // 1 2 3
-               return std::make_tuple(std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), std::get<2>(oEdges[2]), cellId);
-            }
-
-            // 1 3 2
-            // 2 3 1
-
-            if (compareOEdges(oEdges[0], oEdges[2])) {
-               // 1 3 2
-               return std::make_tuple(std::get<2>(oEdges[0]), std::get<2>(oEdges[2]), std::get<2>(oEdges[1]), cellId);
-            }
-
-            // 2 3 1
-            return std::make_tuple(std::get<2>(oEdges[2]), std::get<2>(oEdges[0]), std::get<2>(oEdges[1]), cellId);
-         }
-
-         // 2 1 3
-         // 3 2 1
-         // 3 1 2
-
-         if(compareOEdges(oEdges[0], oEdges[2])) {
-            // 2 1 3
-            return std::make_tuple(std::get<2>(oEdges[1]), std::get<2>(oEdges[0]), std::get<2>(oEdges[2]), cellId);
-         }
-
-         // 3 2 1
-         // 3 1 2
-
-         if(compareOEdges(oEdges[1], oEdges[2])) {
-            // 3 1 2
-            return std::make_tuple(std::get<2>(oEdges[1]), std::get<2>(oEdges[2]), std::get<2>(oEdges[0]), cellId);
-         }
-
-         // 3 2 1
-         return std::make_tuple(std::get<2>(oEdges[2]), std::get<2>(oEdges[1]), std::get<2>(oEdges[0]), cellId);
-      }
-
-      template <typename ScalarType>
       vertPosInTriangle FTRGraph<ScalarType>::getVertPosInTriangle(
           const orderedTriangle& oTriangle, const Propagation* const localPropagation) const
       {
-         orderedEdge firstEdge = getOrderedEdge(std::get<0>(oTriangle), localPropagation);
+         orderedEdge firstEdge = mesh_.getOrderedEdge(std::get<0>(oTriangle), localPropagation->goUp());
          if (std::get<0>(firstEdge) == localPropagation->getCurVertex()) {
             return vertPosInTriangle::Start;
          } else if (std::get<1>(firstEdge) == localPropagation->getCurVertex()) {
@@ -683,7 +605,7 @@ namespace ttk
       idVertex FTRGraph<ScalarType>::getEndVertexInTriangle(
           const orderedTriangle& oTriangle, const Propagation* const localPropagation) const
       {
-         const orderedEdge& higherEdge = getOrderedEdge(std::get<1>(oTriangle), localPropagation);
+         const orderedEdge& higherEdge = mesh_.getOrderedEdge(std::get<1>(oTriangle), localPropagation->goUp());
          return std::get<1>(higherEdge);
       }
 
@@ -692,21 +614,21 @@ namespace ttk
       {
          idVertex edge0Vert, edge1Vert;
 
-         mesh_->getEdgeVertex(std::get<0>(oTri), 0, edge0Vert);
-         mesh_->getEdgeVertex(std::get<0>(oTri), 1, edge1Vert);
+         mesh_.getEdgeVertex(std::get<0>(oTri), 0, edge0Vert);
+         mesh_.getEdgeVertex(std::get<0>(oTri), 1, edge1Vert);
          if ((edge0Vert == v0 && edge1Vert == v1) || (edge0Vert == v1 && edge1Vert == v0)) {
             return std::get<0>(oTri);
          }
 
-         mesh_->getEdgeVertex(std::get<1>(oTri), 0, edge0Vert);
-         mesh_->getEdgeVertex(std::get<1>(oTri), 1, edge1Vert);
+         mesh_.getEdgeVertex(std::get<1>(oTri), 0, edge0Vert);
+         mesh_.getEdgeVertex(std::get<1>(oTri), 1, edge1Vert);
          if ((edge0Vert == v0 && edge1Vert == v1) || (edge0Vert == v1 && edge1Vert == v0)) {
             return std::get<1>(oTri);
          }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-         mesh_->getEdgeVertex(std::get<2>(oTri), 0, edge0Vert);
-         mesh_->getEdgeVertex(std::get<2>(oTri), 1, edge1Vert);
+         mesh_.getEdgeVertex(std::get<2>(oTri), 0, edge0Vert);
+         mesh_.getEdgeVertex(std::get<2>(oTri), 1, edge1Vert);
          if ((edge0Vert == v0 && edge1Vert == v1) || (edge0Vert == v1 && edge1Vert == v0)) {
             return std::get<2>(oTri);
          }

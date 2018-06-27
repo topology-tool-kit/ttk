@@ -22,6 +22,7 @@
 #include "DynamicGraph.h"
 #include "FTRCommon.h"
 #include "Graph.h"
+#include "Mesh.h"
 #include "Propagation.h"
 #include "Scalars.h"
 
@@ -45,14 +46,14 @@ namespace ttk
          const bool needDelete_;
 
          // Internal fields
-         Triangulation*         mesh_;
-         Graph                  graph_;
+         Graph graph_;
+         Mesh  mesh_;
          // one graph for propagation strating from minima and going up
          // and a second one for propagation starting at maxima and going down
          // TODO could change the compariton fonction used here instead of tricking getWeight
          std::tuple<DynamicGraph<idVertex>, DynamicGraph<idVertex>> dynGraph_;
-
          // local growth
+
          AtomicVector<Propagation*> propagations_;
          std::vector<UnionFind*>    toVisit_;
 
@@ -112,15 +113,10 @@ namespace ttk
          // function.
          inline int setupTriangulation(Triangulation *triangulation)
          {
-            mesh_ = triangulation;
+            mesh_.setTriangulation(triangulation);
 
-            if (mesh_) {
-               mesh_->preprocessVertexNeighbors();
-               mesh_->preprocessVertexEdges();
-               mesh_->preprocessVertexTriangles();
-               mesh_->preprocessTriangleEdges();
-               mesh_->preprocessEdgeTriangles();
-               mesh_->preprocessTriangles();
+            if (triangulation) {
+               mesh_.preprocess();
             }
 
             return 0;
@@ -204,12 +200,7 @@ namespace ttk
 
          std::string printMesh(void) const;
 
-         std::string printEdge(const orderedEdge& oEdge, const Propagation* const localPropagation) const;
-
          std::string printEdge(const idEdge edgeId, const Propagation* const localPropagation) const;
-
-         std::string printTriangle(const orderedTriangle&   oTriangle,
-                              const Propagation* const localPropagation) const;
 
          std::string printTriangle(const idCell cellId, const Propagation* const localPropagation) const;
 
@@ -348,13 +339,7 @@ namespace ttk
          idVertex getWeight(const orderedEdge& e1, const orderedEdge& e2,
                             const Propagation* const localPropagation);
 
-         /// get an edge with the "start" vertex in first position
-         /// The start vertex is the lowest according to localPropagation comparison
-         orderedEdge getOrderedEdge(const idEdge edgeId, const Propagation* const localPropagation) const;
-
-         /// get a triangle defined by its edges sorted and its id
-         orderedTriangle getOrderedTriangle(const idCell             cellId,
-                                            const Propagation* const localPropagation) const;
+         // DEPRECATED
 
          /// On a triangle, recover the position of the current vertex to classify the triangle
          vertPosInTriangle getVertPosInTriangle(const orderedTriangle&   oTriangle,

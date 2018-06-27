@@ -38,14 +38,15 @@ namespace ftr
    /// \brief retains history
    using idSegmentation = long int;
 
-   /// \brief Edge represented by its 2 vertices, lower then upper, and its id.
-   using orderedEdge = std::tuple<idVertex, idVertex, idEdge>;
+   /// \brief Edge represented by its 2 vertices, lower then upper
+   using orderedEdge = std::tuple<idVertex, idVertex>;
+
+   /// \brief Triangle represented by its 3 edges
+   /// Edges are sorted by their starting vertex (see orderedEdge)
+   using orderedTriangle = std::tuple<idEdge, idEdge, idEdge>;
 
    /// \brief position of a vertex in a trianlge
    enum class vertPosInTriangle : char { Start = 0, Middle, End };
-   /// \brief Triangle represented by its 3 edges, the position of the current vert in it and its id
-   /// Edges are sorted by their starting vertex (first key) and ending vertex (second key)
-   using orderedTriangle = std::tuple<idEdge, idEdge, idEdge, idCell>;
 
    // For tasks:
    // Set using scalar value comparison

@@ -13,15 +13,14 @@ namespace ttk
       FTRGraph<ScalarType>::FTRGraph()
           : params_(new Params),
             scalars_(new Scalars<ScalarType>),
-            needDelete_(true),
-            mesh_(nullptr)
+            needDelete_(true)
       {
       }
 
       template <typename ScalarType>
       FTRGraph<ScalarType>::FTRGraph(Params* const params, Triangulation* mesh,
                                      Scalars<ScalarType>* const scalars)
-          : params_(params), scalars_(scalars), needDelete_(false), mesh_(mesh)
+          : params_(params), scalars_(scalars), needDelete_(false)
       {
       }
 
@@ -44,10 +43,6 @@ namespace ttk
          Timer t;
 
 #ifndef TTK_ENABLE_KAMIKAZE
-         if (!mesh_) {
-            std::cerr << "[FTR Graph]: no mesh input" << std::endl;
-            return;
-         }
          if (!scalars_) {
             std::cerr << "[FTR Graph]: no scalars given" << std::endl;
             return;
@@ -80,6 +75,12 @@ namespace ttk
          DebugTimer timeSort;
          scalars_->sort();
          printTime(timeSort, "[FTR Graph]: sort time: ", infoMsg);
+
+         DebugTimer timePreSortSimplices;
+         mesh_.preSortEdges([&](const idVertex a, const idVertex b) { return scalars_->isLower(a, b); });
+         mesh_.preSortTriangles([&](const idVertex a, const idVertex b) { return scalars_->isLower(a, b); });
+         printTime(timePreSortSimplices, "[FTR Graph]: simplices sort time: ", infoMsg);
+
 
          // Build the graph
 
@@ -117,7 +118,7 @@ namespace ttk
          // Message user
          {
             std::stringstream msg;
-            msg << "[FTR Graph] Data-set (" << mesh_->getNumberOfVertices()
+            msg << "[FTR Graph] Data-set (" << mesh_.getNumberOfVertices()
                 << " points) processed in " << t.getElapsedTime() << " s. ("
                 << params_->threadNumber << " thread(s))." << std::endl;
             dMsg(std::cout, msg.str(), timeMsg);
@@ -143,13 +144,13 @@ namespace ttk
                    Tasks::getEnd(leafChunkId, std::get<0>(leafChunk), scalars_->getSize());
 
                for (idVertex v = lowerBound; v < upperBound; ++v) {
-                  const valence vNeighNumber = mesh_->getVertexNeighborNumber(v);
+                  const valence vNeighNumber = mesh_.getVertexNeighborNumber(v);
                   bool isMax = true;
                   bool isMin = true;
 
                   for (valence n = 0; n < vNeighNumber; ++n) {
                      idVertex neigh;
-                     mesh_->getVertexNeighbor(v, n, neigh);
+                     mesh_.getVertexNeighbor(v, n, neigh);
 
                      if (scalars_->isHigher(neigh, v)) {
                         isMax = false;
@@ -198,23 +199,25 @@ namespace ttk
       template <typename ScalarType>
       void FTRGraph<ScalarType>::alloc()
       {
+         mesh_.alloc();
 
-         scalars_->setSize(mesh_->getNumberOfVertices());
+         scalars_->setSize(mesh_.getNumberOfVertices());
          scalars_->alloc();
 
-         graph_.setNumberOfVertices(mesh_->getNumberOfVertices());
+         graph_.setNumberOfVertices(mesh_.getNumberOfVertices());
          graph_.alloc();
 
-         std::get<0>(dynGraph_).setNumberOfNodes(mesh_->getNumberOfEdges());
-         std::get<1>(dynGraph_).setNumberOfNodes(mesh_->getNumberOfEdges());
+
+         std::get<0>(dynGraph_).setNumberOfNodes(mesh_.getNumberOfEdges());
+         std::get<1>(dynGraph_).setNumberOfNodes(mesh_.getNumberOfEdges());
          std::get<0>(dynGraph_).alloc();
          std::get<1>(dynGraph_).alloc();
 
-         propagations_.reserve(mesh_->getNumberOfVertices());
-         toVisit_.resize(mesh_->getNumberOfVertices());
-         bfsCells_.resize(mesh_->getNumberOfTriangles());
-         bfsEdges_.resize(mesh_->getNumberOfEdges());
-         bfsVerts_.resize(mesh_->getNumberOfVertices());
+         propagations_.reserve(mesh_.getNumberOfVertices());
+         toVisit_.resize(mesh_.getNumberOfVertices());
+         bfsCells_.resize(mesh_.getNumberOfTriangles());
+         bfsEdges_.resize(mesh_.getNumberOfEdges());
+         bfsVerts_.resize(mesh_.getNumberOfVertices());
       }
 
       template <typename ScalarType>
