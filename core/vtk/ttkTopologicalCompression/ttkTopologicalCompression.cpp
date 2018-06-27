@@ -78,20 +78,21 @@ int ttkTopologicalCompression::doIt(
   outputScalarField_->SetNumberOfTuples(vertexNumber);
   outputScalarField_->SetName(inputScalarField->GetName());
 
+  topologicalCompression_.setCompressionType(CompressionType);
+  topologicalCompression_.setInputDataPointer(
+    inputScalarField->GetVoidPointer(0));
+  topologicalCompression_.setSQ(SQMethod);
+  topologicalCompression_.setUseTopologicalSimplification(
+    UseTopologicalSimplification);
+  topologicalCompression_.setSubdivide(!Subdivide);
+  topologicalCompression_.setOutputDataPointer(
+    outputScalarField_->GetVoidPointer(0));
+  topologicalCompression_.setMaximumError(MaximumError);
+  
   // Call TopologicalCompression
   switch (inputScalarField->GetDataType()) {
-    vtkTemplateMacro((
-      {
-        topologicalCompression_.setCompressionType(CompressionType);
-        topologicalCompression_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
-        topologicalCompression_.setSQ(SQMethod);
-        topologicalCompression_.setUseTopologicalSimplification(UseTopologicalSimplification);
-        topologicalCompression_.setSubdivide(!Subdivide);
-        topologicalCompression_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
-        topologicalCompression_.setMaximumError(MaximumError);
-        topologicalCompression_.execute<VTK_TT>(Tolerance);
-      }
-    ));
+    vtkTemplateMacro(
+        topologicalCompression_.execute<VTK_TT>(Tolerance));
     default: break;
   }
 
