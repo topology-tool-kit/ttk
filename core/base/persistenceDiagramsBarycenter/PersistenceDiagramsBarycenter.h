@@ -63,7 +63,7 @@ namespace ttk{
 		};
 
 
-		int execute();
+		int execute(std::vector<diagramTuple>* barycenter);
 			
 		inline int setDiagram(int idx, void* data){
 			if(idx < numberOfInputs_){
@@ -120,7 +120,7 @@ namespace ttk{
   
   
 template <typename dataType> 
-int PersistenceDiagramsBarycenter<dataType>::execute(){
+int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* barycenter){
 	Timer t;
 	{
 	
@@ -178,6 +178,12 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 		}
 	}
 	
+	std::vector<diagramTuple> barycenter_min;
+	std::vector<diagramTuple> barycenter_sad;
+	std::vector<diagramTuple> barycenter_max;
+	
+	std::vector<std::vector<matchingTuple>> matching_min, matching_sad, matching_max;
+	
 	/*omp_set_num_threads(1);
 	#ifdef TTK_ENABLE_OPENMP
 	#pragma omp parallel sections
@@ -193,10 +199,11 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 				bary_min.setThreadNumber(threadNumber_);
 				bary_min.setWasserstein(wasserstein_);
 				bary_min.setNumberOfInputs(numberOfInputs_);
+				bary_min.setDiagramType(0);
 				for(int i=0; i<numberOfInputs_; i++){
 					bary_min.setDiagram(i, data_min[i]);
 				}
-				bary_min.execute();
+				matching_min = bary_min.execute(barycenter_min);
 			}
 		/*}
 		
@@ -210,10 +217,11 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 				bary_sad.setThreadNumber(threadNumber_);
 				bary_sad.setWasserstein(wasserstein_);
 				bary_sad.setNumberOfInputs(numberOfInputs_);
+				bary_sad.setDiagramType(1);
 				for(int i=0; i<numberOfInputs_; i++){
 					bary_sad.setDiagram(i, data_sad[i]);
 				}
-				bary_sad.execute();
+				matching_sad = bary_sad.execute(barycenter_sad);
 			}
 		/*}
 		
@@ -227,13 +235,66 @@ int PersistenceDiagramsBarycenter<dataType>::execute(){
 				bary_max.setThreadNumber(threadNumber_);
 				bary_max.setWasserstein(wasserstein_);
 				bary_max.setNumberOfInputs(numberOfInputs_);
+				bary_max.setDiagramType(2);
 				for(int i=0; i<numberOfInputs_; i++){
 					bary_max.setDiagram(i, data_max[i]);
 				}
-				bary_max.execute();
+				matching_max = bary_max.execute(barycenter_max);
 			}
 		//}
 	//}
+	std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
+	
+	
+	// Reconstruct matchings
+	for(int i=0; i<numberOfInputs_; i++){
+		
+		if(do_min){
+			for(unsigned int j=0; j<matching_min[i].size(); j++){
+				matchingTuple t = matching_min[i][j];
+				int bidder_id = std::get<0>(t);
+				std::get<0>(t) = data_min_idx[i][bidder_id];
+				// TODO Handle the good_id + output barycenter
+				all_matchings[i].push_back(t);
+			}
+		}
+		
+		if(do_sad){
+			for(unsigned int j=0; j<matching_sad[i].size(); j++){
+				matchingTuple t = matching_sad[i][j];
+				int bidder_id = std::get<0>(t);
+				std::get<0>(t) = data_sad_idx[i][bidder_id];
+				// TODO Handle the good_id + output barycenter
+				all_matchings[i].push_back(t);
+			}
+		}
+		
+		if(do_max){
+			for(unsigned int j=0; j<matching_max[i].size(); j++){
+				matchingTuple t = matching_max[i][j];
+				int bidder_id = std::get<0>(t);
+				std::get<0>(t) = data_max_idx[i][bidder_id];
+				// TODO Handle the good_id + output barycenter
+				all_matchings[i].push_back(t);
+			}
+		}
+	}
+	// Reconstruct barcenter
+	for(unsigned int j=0; j<barycenter_min.size(); j++){
+		diagramTuple dt = barycenter_min[j];
+		barycenter->push_back(dt);
+	}
+	for(unsigned int j=0; j<barycenter_sad.size(); j++){
+		diagramTuple dt = barycenter_sad[j];
+		std::get<5>(dt) = barycenter->size();
+		barycenter->push_back(dt);
+	}
+	for(unsigned int j=0; j<barycenter_max.size(); j++){
+		diagramTuple dt = barycenter_max[j];
+		std::get<5>(dt) = barycenter->size();
+		barycenter->push_back(dt);
+	}
+	
 	
 	for(int i=0; i<numberOfInputs_; i++){
 		delete data_min[i];

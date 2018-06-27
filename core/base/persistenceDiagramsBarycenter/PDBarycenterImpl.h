@@ -12,7 +12,7 @@
 using namespace ttk;
 
 template <typename dataType>
-int PDBarycenter<dataType>::execute(){
+std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vector<diagramTuple>& barycenter){
 
 	
 	std::vector<std::vector<matchingTuple>> previous_matchings;
@@ -90,11 +90,17 @@ int PDBarycenter<dataType>::execute(){
 		
 		converged =  (epsilon < 0.0001 * epsilon_0) && (hasBarycenterConverged(all_matchings, previous_matchings) || total_cost>=previous_cost );
 		
-		previous_matchings = all_matchings;
+		previous_matchings = std::move(all_matchings);
 		previous_cost = total_cost;
 	}
 
-	return 0;
+	for(int j=0; j<barycenter_goods_[0].size(); j++){
+		Good<dataType>& g = barycenter_goods_[0].get(j);
+		diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_, g.getPersistence(), j, g.x_, 0,0,0, g.y_, 0,0,0);
+		barycenter.push_back(t);
+	}
+		
+	return previous_matchings;
 }
 
 

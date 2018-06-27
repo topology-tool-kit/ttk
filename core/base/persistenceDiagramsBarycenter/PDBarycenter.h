@@ -24,7 +24,7 @@ namespace ttk{
 		~PDBarycenter(){};
 
 
-		int execute();
+		std::vector<std::vector<matchingTuple>> execute(std::vector<diagramTuple>& barycenter);
 			
 		void setBidderDiagrams();
 		void setInitialBarycenter();
@@ -66,6 +66,22 @@ namespace ttk{
 			threadNumber_ = threadNumber;
 		}
 		
+		inline void setDiagramType(const int &diagramType){
+			diagramType_ = diagramType;
+			if(diagramType_==0){
+				nt1_ = BLocalMin;
+				nt2_ = BSaddle1;
+			}
+			else if(diagramType_==1){
+				nt1_ = BSaddle1;
+				nt2_ = BSaddle2;
+			}
+			else{
+				nt1_ = BSaddle2;
+				nt2_ = BLocalMax;
+			}
+		}
+		
 		template<typename type>
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;
@@ -76,6 +92,9 @@ namespace ttk{
     protected:
 	  int 					wasserstein_;
 	  double                geometrical_factor_;
+	  int					diagramType_;
+	  BNodeType 			nt1_;
+	  BNodeType 			nt2_;
 	  
       int                   numberOfInputs_;
       void**                inputData_; //TODO : std::vector<void*>
