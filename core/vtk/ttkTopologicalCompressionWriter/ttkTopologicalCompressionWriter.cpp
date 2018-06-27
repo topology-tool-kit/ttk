@@ -88,7 +88,7 @@ void ttkTopologicalCompressionWriter::PerformCompression(
   topologicalCompression.setOutputDataPointer(outputScalarField->GetVoidPointer(0));
   topologicalCompression.setMaximumError(MaximumError);
   switch (inputScalarField->GetDataType()) {
-    vtkTemplateMacro(({ topologicalCompression.execute<VTK_TT>(Tolerance); }));
+    vtkTemplateMacro(topologicalCompression.execute<VTK_TT>(Tolerance));
     default:
     {
       ttk::Debug d;
