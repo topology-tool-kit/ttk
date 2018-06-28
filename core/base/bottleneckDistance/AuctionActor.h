@@ -380,24 +380,27 @@ namespace ttk{
 				best_pair = top_pair;
 			}
 		}
-		bool updated_second_pair = false;
+		
 		std::pair<int, dataType> second_pair;
-		while(!updated_second_pair){
-			second_pair = diagonal_queue.top();
-			dataType queue_weight = second_pair.second;
-			Good<dataType>* good = &(goods->get(second_pair.first));
-			if(good->getPrice()!=queue_weight){
-				// If the weight in the priority queue is not the good one, update it
-				diagonal_queue.pop();
-				std::get<1>(second_pair) = good->getPrice();
-				diagonal_queue.push(second_pair);
-			}
-			else{
-				updated_second_pair = true;
+		if(diagonal_queue.size()>0){
+			bool updated_second_pair = false;
+			while(!updated_second_pair){
+				second_pair = diagonal_queue.top();
+				dataType queue_weight = second_pair.second;
+				Good<dataType>* good = &(goods->get(second_pair.first));
+				if(good->getPrice()!=queue_weight){
+					// If the weight in the priority queue is not the good one, update it
+					diagonal_queue.pop();
+					std::get<1>(second_pair) = good->getPrice();
+					diagonal_queue.push(second_pair);
+				}
+				else{
+					updated_second_pair = true;
+				}
 			}
 		}
 		dataType best_val = -best_pair.second;
-		dataType second_val = -second_pair.second;
+		dataType second_val = diagonal_queue.size()>0? -second_pair.second : best_val;
 		Good<dataType>* best_good = &(goods->get(best_pair.first));
 
 		// And now check for the corresponding twin bidder
@@ -459,24 +462,27 @@ namespace ttk{
 				best_pair = top_pair;
 			}
 		}
-		bool updated_second_pair = false;
+		
 		std::pair<int, dataType> second_pair;
-		while(!updated_second_pair){
-			second_pair = diagonal_queue.top();
-			dataType queue_weight = second_pair.second;
-			Good<dataType>* good = &(goods->get(second_pair.first));
-			if(good->getPrice()>queue_weight){
-				// If the weight in the priority queue is not the good one, update it
-				diagonal_queue.pop();
-				std::get<1>(second_pair) = good->getPrice();
-				diagonal_queue.push(second_pair);
-			}
-			else{
-				updated_second_pair = true;
+		if(diagonal_queue.size()>0){
+			bool updated_second_pair = false;
+			while(!updated_second_pair){
+				second_pair = diagonal_queue.top();
+				dataType queue_weight = second_pair.second;
+				Good<dataType>* good = &(goods->get(second_pair.first));
+				if(good->getPrice()>queue_weight){
+					// If the weight in the priority queue is not the good one, update it
+					diagonal_queue.pop();
+					std::get<1>(second_pair) = good->getPrice();
+					diagonal_queue.push(second_pair);
+				}
+				else{
+					updated_second_pair = true;
+				}
 			}
 		}
 		dataType best_val = -best_pair.second;
-		dataType second_val = -second_pair.second;
+		dataType second_val = diagonal_queue.size()>0? -second_pair.second : best_val;
 		Good<dataType>* best_good = &(goods->get(best_pair.first));
 
 		// And now check for the corresponding twin bidder
@@ -533,16 +539,28 @@ namespace ttk{
 			coordinates.push_back((1-geometricalFactor)*this->coords_z_);
 		}
 		kdt->getKClosest(2, coordinates, neighbours, costs, kdt_index);
-		std::vector<int> idx(2);
-		idx[0] = 0;
-		idx[1] = 1;
-		sort(idx.begin(), idx.end(), [&costs](int& a, int& b){return costs[a] < costs[b];});
-		
-		KDTree<dataType>* closest_kdt = neighbours[idx[0]];
-		Good<dataType>* best_good = &(goods->get(closest_kdt->id_));
-		// Value is defined as the opposite of cost (each bidder aims at maximizing it)
-		dataType best_val = -costs[idx[0]];
-		dataType second_val = -costs[idx[1]];
+		dataType best_val, second_val;
+		KDTree<dataType>* closest_kdt;
+		Good<dataType>* best_good;
+		if(costs.size()==2){
+			std::vector<int> idx(2);
+			idx[0] = 0;
+			idx[1] = 1;
+			sort(idx.begin(), idx.end(), [&costs](int& a, int& b){return costs[a] < costs[b];});
+			
+			closest_kdt = neighbours[idx[0]];
+			best_good = &(goods->get(closest_kdt->id_));
+			// Value is defined as the opposite of cost (each bidder aims at maximizing it)
+			best_val = -costs[idx[0]];
+			second_val = -costs[idx[1]];
+		}
+		else{
+			// If the kdtree contains only one point
+			closest_kdt = neighbours[0];
+			best_good = &(goods->get(closest_kdt->id_));
+			best_val = -costs[0];
+			second_val = best_val;
+		}
 		
 		// And now check for the corresponding twin bidder
 		bool twin_chosen = false;

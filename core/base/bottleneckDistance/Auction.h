@@ -24,6 +24,9 @@
 #include <AuctionActor.h>
 #include <KDTree.h>
 #include <queue>
+#include <unordered_map>
+#include <utility> 
+
 
 namespace ttk {
   template<typename dataType>

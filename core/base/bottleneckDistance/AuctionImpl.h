@@ -11,8 +11,8 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_inde
 {
 	while(unassignedBidders_.size()>0){
 		n_biddings ++;
-		int idx = unassignedBidders_.front();
-		Bidder<dataType>& b = bidders_->get(idx);
+		int pos = unassignedBidders_.front();
+		Bidder<dataType>& b = bidders_->get(pos);
 		unassignedBidders_.pop_front();
 		
 		GoodDiagram<dataType>* all_goods = b.isDiagonal() ? diagonal_goods_ : goods_;
