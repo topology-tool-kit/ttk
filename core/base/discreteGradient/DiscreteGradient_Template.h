@@ -1568,12 +1568,12 @@ int DiscreteGradient::getRemovableSaddles2(const
 template <typename dataType>
 int DiscreteGradient::orderSaddleMaximumConnections(const
                                                     std::vector<VPath>& vpaths,
-                                                    std::set<std::pair<dataType,int>,SaddleMaximumVPathComparator<dataType>>&
+                                                    std::set<std::pair<dataType,vpathId_t>,SaddleMaximumVPathComparator<dataType>>&
                                                     S){
   Timer t;
 
-  const int numberOfVPaths=vpaths.size();
-  for(int i=0; i<numberOfVPaths; ++i){
+  const vpathId_t numberOfVPaths=vpaths.size();
+  for(vpathId_t i=0; i<numberOfVPaths; ++i){
     const VPath& vpath=vpaths[i];
 
     if(vpath.isValid_)
@@ -1598,31 +1598,31 @@ int DiscreteGradient::computeCoefficients(const bool isDense,
                                           VPath& newVPath,
                                           const std::vector<VPath>& vpaths) const{
   if(isDense){
-    const int numberOfSegments=segments.size();
+    const segmentId_t numberOfSegments=segments.size();
     // apriori : the following will make only one allocation, the size is fixed
     denseCoefficients.resize(numberOfSegments);
 
     std::fill(denseCoefficients.begin(), denseCoefficients.end(), 0);
 
     // 1) initialize accumulator
-    const int numberOfNewVPathSegments=newVPath.segments_.size();
-    for(int i=0; i<numberOfNewVPathSegments; ++i){
-      const int segmentId=newVPath.segments_[i];
+    const segmentId_t numberOfNewVPathSegments=newVPath.segments_.size();
+    for(segmentId_t i=0; i<numberOfNewVPathSegments; ++i){
+      const segmentId_t segmentId=newVPath.segments_[i];
       const char segmentState=newVPath.states_[i];
 
       denseCoefficients[segmentId]=segmentState;
     }
 
     // 2) add source.vpaths.segments to accumulator
-    const int numberOfSourceVPaths=source.vpaths_.size();
-    for(int i=0; i<numberOfSourceVPaths; ++i){
-      const int sourceVPathId=source.vpaths_[i];
+    const vpathId_t numberOfSourceVPaths=source.vpaths_.size();
+    for(vpathId_t i=0; i<numberOfSourceVPaths; ++i){
+      const vpathId_t sourceVPathId=source.vpaths_[i];
       const VPath& sourceVPath=vpaths[sourceVPathId];
 
       if(sourceVPath.isValid_){
-        const int numberOfSourceVPathSegments=sourceVPath.segments_.size();
-        for(int j=0; j<numberOfSourceVPathSegments; ++j){
-          const int segmentId=sourceVPath.segments_[j];
+        const segmentId_t numberOfSourceVPathSegments=sourceVPath.segments_.size();
+        for(segmentId_t j=0; j<numberOfSourceVPathSegments; ++j){
+          const segmentId_t segmentId=sourceVPath.segments_[j];
           const char segmentState=sourceVPath.states_[j];
 
           denseCoefficients[segmentId]+=segmentState;
@@ -1633,8 +1633,8 @@ int DiscreteGradient::computeCoefficients(const bool isDense,
     // 3) update newVPath to the result of accumulation
     newVPath.states_.clear();
     newVPath.segments_.clear();
-    for(int i=0; i<numberOfSegments; ++i){
-      const int segmentId=i;
+    for(segmentId_t i=0; i<numberOfSegments; ++i){
+      const segmentId_t segmentId=i;
       const char segmentState=denseCoefficients[segmentId];
 
       if(segmentState!=0){
@@ -1644,33 +1644,33 @@ int DiscreteGradient::computeCoefficients(const bool isDense,
     }
   }
   else{
-    std::vector<std::pair<int,char>> sparseCoefficients;
+    std::vector<std::pair<segmentId_t,char>> sparseCoefficients;
 
     // 1) initialize accumulator
-    const int numberOfNewVPathSegments=newVPath.segments_.size();
-    for(int i=0; i<numberOfNewVPathSegments; ++i){
-      const int segmentId=newVPath.segments_[i];
+    const segmentId_t numberOfNewVPathSegments=newVPath.segments_.size();
+    for(segmentId_t i=0; i<numberOfNewVPathSegments; ++i){
+      const segmentId_t segmentId=newVPath.segments_[i];
       const char segmentState=newVPath.states_[i];
 
       sparseCoefficients.push_back(std::make_pair(segmentId,segmentState));
     }
 
     // 2) add source.vpaths.segments to accumulator
-    const int numberOfSourceVPaths=source.vpaths_.size();
-    for(int i=0; i<numberOfSourceVPaths; ++i){
-      const int sourceVPathId=source.vpaths_[i];
+    const vpathId_t numberOfSourceVPaths=source.vpaths_.size();
+    for(vpathId_t i=0; i<numberOfSourceVPaths; ++i){
+      const vpathId_t sourceVPathId=source.vpaths_[i];
       const VPath& sourceVPath=vpaths[sourceVPathId];
 
       if(sourceVPath.isValid_){
-        const int numberOfSourceVPathSegments=sourceVPath.segments_.size();
-        for(int j=0; j<numberOfSourceVPathSegments; ++j){
-          const int segmentId=sourceVPath.segments_[j];
+        const segmentId_t numberOfSourceVPathSegments=sourceVPath.segments_.size();
+        for(segmentId_t j=0; j<numberOfSourceVPathSegments; ++j){
+          const segmentId_t segmentId=sourceVPath.segments_[j];
           const char segmentState=sourceVPath.states_[j];
 
           bool isIn=false;
-          const int sparseCoefficientsSize=sparseCoefficients.size();
-          for(int k=0; k<sparseCoefficientsSize; ++k){
-            const int savedSegmentId=sparseCoefficients[k].first;
+          const segmentId_t sparseCoefficientsSize=sparseCoefficients.size();
+          for(segmentId_t k=0; k<sparseCoefficientsSize; ++k){
+            const segmentId_t savedSegmentId=sparseCoefficients[k].first;
             const char savedSegmentState=sparseCoefficients[k].second;
 
             if(segmentId==savedSegmentId){
@@ -1687,9 +1687,9 @@ int DiscreteGradient::computeCoefficients(const bool isDense,
     // 3) update newVPath to the result of accumulation
     newVPath.states_.clear();
     newVPath.segments_.clear();
-    const int sparseCoefficientsSize=sparseCoefficients.size();
-    for(int i=0; i<sparseCoefficientsSize; ++i){
-      const int segmentId=sparseCoefficients[i].first;
+    const segmentId_t sparseCoefficientsSize=sparseCoefficients.size();
+    for(segmentId_t i=0; i<sparseCoefficientsSize; ++i){
+      const segmentId_t segmentId=sparseCoefficients[i].first;
       const char segmentState=sparseCoefficients[i].second;
 
       // apriori : sparseCoefficients store coefficient zero; we must remove
@@ -1709,9 +1709,9 @@ int DiscreteGradient::reverseSaddleMaximumConnections(const
                                                       std::vector<Segment>& segments){
   Timer t;
 
-  const int numberOfSegments=segments.size();
+  const segmentId_t numberOfSegments=segments.size();
 
-  for(int i=0; i<numberOfSegments; ++i){
+  for(segmentId_t i=0; i<numberOfSegments; ++i){
     const Segment& segment=segments[i];
     if(segment.isValid_ and segment.orientation_==false)
       reverseAscendingPath(segment.cells_);
@@ -1770,7 +1770,7 @@ isRemovableMaximum,
     }
   }
 
-  const int numberOfVPaths=2*numberOfSaddles;
+  const vpathId_t numberOfVPaths=2*numberOfSaddles;
   vpaths.resize(numberOfVPaths);
   segments.resize(numberOfVPaths);
 
@@ -1834,11 +1834,11 @@ isRemovableMaximum,
         CriticalPoint& destination=criticalPoints[destinationIndex];
 
         // update source and destination
-        const int sourceSlot=source.omp_addSlot();
-        const int destinationSlot=destination.omp_addSlot();
+        const vpathId_t sourceSlot=source.omp_addSlot();
+        const vpathId_t destinationSlot=destination.omp_addSlot();
 
         // update vpath
-        const int vpathIndex=2*sourceIndex+shift;
+        const simplexId_t vpathIndex=2*sourceIndex+shift;
         VPath& vpath=vpaths[vpathIndex];
         vpath.source_=sourceIndex;
         vpath.destination_=destinationIndex;
@@ -1863,7 +1863,7 @@ isRemovableMaximum,
   for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
     CriticalPoint& cp=criticalPoints[i];
 
-    const int numberOfSlots=cp.numberOfSlots_;
+    const vpathId_t numberOfSlots=cp.numberOfSlots_;
     cp.vpaths_.resize(numberOfSlots);
     cp.numberOfSlots_=0;
   }
@@ -1871,15 +1871,15 @@ isRemovableMaximum,
 #ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i=0; i<numberOfVPaths; ++i){
+  for(vpathId_t i=0; i<numberOfVPaths; ++i){
     const VPath& vpath=vpaths[i];
 
     if(vpath.isValid_){
       const simplexId_t sourceIndex=vpath.source_;
       const simplexId_t destinationIndex=vpath.destination_;
 
-      const int sourceSlot=vpath.sourceSlot_;
-      const int destinationSlot=vpath.destinationSlot_;
+      const vpathId_t sourceSlot=vpath.sourceSlot_;
+      const vpathId_t destinationSlot=vpath.destinationSlot_;
 
       CriticalPoint& source=criticalPoints[sourceIndex];
       CriticalPoint& destination=criticalPoints[destinationIndex];
@@ -1904,7 +1904,7 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
                                                       const std::vector<char>& isPL,
                                                       const bool allowBoundary,
                                                       const bool allowBruteForce,
-                                                      std::set<std::pair<dataType,int>,
+                                                      std::set<std::pair<dataType,vpathId_t>,
                                                        SaddleMaximumVPathComparator<dataType>>& S,
                                                       std::vector<simplexId_t>& pl2dmt_saddle,
                                                       std::vector<simplexId_t>& pl2dmt_maximum,
@@ -1934,7 +1934,7 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
     if(iterationThreshold>=0 and numberOfIterations>=iterationThreshold) break;
 
     auto ptr=S.begin();
-    const int vpathId=ptr->second;
+    const vpathId_t vpathId=ptr->second;
     S.erase(ptr);
     VPath& vpath=vpaths[vpathId];
 
@@ -2097,9 +2097,9 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
 
     if(vpath.isValid_){
       // all segments of the selected vpath are reversed
-      const int numberOfVPathSegments=vpath.segments_.size();
-      for(int i=0; i<numberOfVPathSegments; ++i){
-        const int segmentId=vpath.segments_[i];
+      const segmentId_t numberOfVPathSegments=vpath.segments_.size();
+      for(segmentId_t i=0; i<numberOfVPathSegments; ++i){
+        const segmentId_t segmentId=vpath.segments_[i];
         Segment& segment=segments[segmentId];
 
         segment.orientation_=!segment.orientation_;
@@ -2107,15 +2107,15 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
       }
 
       // search new destination for newVPath
-      int newDestinationId=-1;
+      simplexId_t newDestinationId=-1;
       const simplexId_t sourceId=vpath.source_;
       const simplexId_t destinationId=vpath.destination_;
       CriticalPoint& source=criticalPoints[sourceId];
       CriticalPoint& destination=criticalPoints[destinationId];
-      const int numberOfSourceVPaths=source.vpaths_.size();
-      const int numberOfDestinationVPaths=destination.vpaths_.size();
-      for(int i=0; i<numberOfSourceVPaths; ++i){
-        const int sourceVPathId=source.vpaths_[i];
+      const vpathId_t numberOfSourceVPaths=source.vpaths_.size();
+      const vpathId_t numberOfDestinationVPaths=destination.vpaths_.size();
+      for(vpathId_t i=0; i<numberOfSourceVPaths; ++i){
+        const vpathId_t sourceVPathId=source.vpaths_[i];
         const VPath& sourceVPath=vpaths[sourceVPathId];
 
         if(sourceVPath.isValid_ and sourceVPath.destination_!=destinationId){
@@ -2130,9 +2130,9 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
         vpath.invalidate();
 
       // update destination.vpaths
-      for(int i=0; i<numberOfDestinationVPaths; ++i){
+      for(vpathId_t i=0; i<numberOfDestinationVPaths; ++i){
         // newVPath = destination.vpath
-        const int newVPathId=destination.vpaths_[i];
+        const vpathId_t newVPathId=destination.vpaths_[i];
         VPath& newVPath=vpaths[newVPathId];
 
         if(newVPathId==vpathId) continue;
@@ -2148,9 +2148,9 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
         const simplexId_t newSourceId=newVPath.source_;
         CriticalPoint& newSource=criticalPoints[newSourceId];
         bool isDoubleConnected=false;
-        const int numberOfNewSourceVPaths=newSource.vpaths_.size();
-        for(int j=0; j<numberOfNewSourceVPaths; ++j){
-          const int newSourceVPathId=newSource.vpaths_[j];
+        const vpathId_t numberOfNewSourceVPaths=newSource.vpaths_.size();
+        for(vpathId_t j=0; j<numberOfNewSourceVPaths; ++j){
+          const vpathId_t newSourceVPathId=newSource.vpaths_[j];
           VPath& newSourceVPath=vpaths[newSourceVPathId];
 
           if(newSourceVPath.isValid_ and
@@ -2190,8 +2190,8 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
       }
 
       // invalid source.vpaths
-      for(int i=0; i<numberOfSourceVPaths; ++i){
-        const int sourceVPathId=source.vpaths_[i];
+      for(vpathId_t i=0; i<numberOfSourceVPaths; ++i){
+        const vpathId_t sourceVPathId=source.vpaths_[i];
         VPath& sourceVPath=vpaths[sourceVPathId];
 
         sourceVPath.invalidate();
@@ -2257,7 +2257,7 @@ int DiscreteGradient::simplifySaddleMaximumConnections(const
   // Part 2 : push the vpaths into a set to order them by persistence
   // value - lower to higher (gradient is not modified).
   SaddleMaximumVPathComparator<dataType> cmp_f;
-  std::set<std::pair<dataType,int>, SaddleMaximumVPathComparator<dataType>>
+  std::set<std::pair<dataType,vpathId_t>, SaddleMaximumVPathComparator<dataType>>
     S(cmp_f);
   orderSaddleMaximumConnections<dataType>(vpaths, S);
 
@@ -2367,8 +2367,8 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const
         CriticalPoint& source=criticalPoints[sourceIndex];
 
         // update source and destination
-        const int sourceSlot=source.addSlot();
-        const int destinationSlot=destination.addSlot();
+        const vpathId_t sourceSlot=source.addSlot();
+        const vpathId_t destinationSlot=destination.addSlot();
 
         // update vpath
         const dataType persistence=getPersistence<dataType>(saddle2, saddle1,
@@ -2385,24 +2385,24 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const
   for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
     CriticalPoint& cp=criticalPoints[i];
 
-    const int numberOfSlots=cp.numberOfSlots_;
+    const vpathId_t numberOfSlots=cp.numberOfSlots_;
     cp.vpaths_.resize(numberOfSlots);
     cp.numberOfSlots_=0;
   }
 
-  const int numberOfVPaths=vpaths.size();
+  const vpathId_t numberOfVPaths=vpaths.size();
 #ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i=0; i<numberOfVPaths; ++i){
+  for(vpathId_t i=0; i<numberOfVPaths; ++i){
     const VPath& vpath=vpaths[i];
 
     if(vpath.isValid_){
       const simplexId_t sourceIndex=vpath.source_;
       const simplexId_t destinationIndex=vpath.destination_;
 
-      const int sourceSlot=vpath.sourceSlot_;
-      const int destinationSlot=vpath.destinationSlot_;
+      const vpathId_t sourceSlot=vpath.sourceSlot_;
+      const vpathId_t destinationSlot=vpath.destinationSlot_;
 
       CriticalPoint& source=criticalPoints[sourceIndex];
       CriticalPoint& destination=criticalPoints[destinationIndex];
@@ -2426,12 +2426,12 @@ template <typename dataType>
 int DiscreteGradient::orderSaddleSaddleConnections1(const
                                                     std::vector<VPath>& vpaths,
                                                     std::vector<CriticalPoint>& criticalPoints,
-                                                    std::set<std::tuple<dataType,int,simplexId_t>,
+                                                    std::set<std::tuple<dataType,vpathId_t,simplexId_t>,
                                                       SaddleSaddleVPathComparator<dataType>> &S){
   Timer t;
 
-  const int numberOfVPaths=vpaths.size();
-  for(int i=0; i<numberOfVPaths; ++i){
+  const vpathId_t numberOfVPaths=vpaths.size();
+  for(vpathId_t i=0; i<numberOfVPaths; ++i){
     const VPath& vpath=vpaths[i];
 
     if(vpath.isValid_){
@@ -2457,7 +2457,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int
                                                       const bool allowBoundary,
                                                       const bool allowBruteForce,
                                                       const bool returnSaddleConnectors,
-                                                      std::set<std::tuple<dataType,int,simplexId_t>,
+                                                      std::set<std::tuple<dataType,vpathId_t,simplexId_t>,
                                                         SaddleSaddleVPathComparator<dataType>>& S,
                                                       std::vector<simplexId_t>& pl2dmt_saddle1,
                                                       std::vector<simplexId_t>& pl2dmt_saddle2,
@@ -2482,7 +2482,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int
     if(iterationThreshold>=0 and numberOfIterations>=iterationThreshold) break;
 
     auto ptr=S.begin();
-    const int vpathId=std::get<1>(*ptr);
+    const vpathId_t vpathId=std::get<1>(*ptr);
     S.erase(ptr);
     VPath& vpath=vpaths[vpathId];
 
@@ -2733,7 +2733,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int
           CriticalPoint& newSource=criticalPoints[newSourceId];
 
           // update vpaths
-          const int newVPathId=vpaths.size();
+          const vpathId_t newVPathId=vpaths.size();
           const dataType persistence=getPersistence<dataType>(saddle2, saddle1,
                                                               scalars);
 
@@ -2791,7 +2791,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int
             continue;
 
           // update vpaths
-          const int newVPathId=vpaths.size();
+          const vpathId_t newVPathId=vpaths.size();
           const dataType persistence=getPersistence<dataType>(saddle2, saddle1,
                                                               scalars);
 
@@ -2855,7 +2855,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(const
 
   // Part 2 : push the vpaths and order by persistence
   SaddleSaddleVPathComparator<dataType> cmp_f;
-  std::set<std::tuple<dataType,int,simplexId_t>, SaddleSaddleVPathComparator<dataType>>
+  std::set<std::tuple<dataType,vpathId_t,simplexId_t>, SaddleSaddleVPathComparator<dataType>>
     S(cmp_f);
   orderSaddleSaddleConnections1<dataType>(vpaths, dmt_criticalPoints, S);
 
@@ -2962,8 +2962,8 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const
         CriticalPoint& destination=criticalPoints[destinationIndex];
 
         // update source and destination
-        const int sourceSlot=source.addSlot();
-        const int destinationSlot=destination.addSlot();
+        const vpathId_t sourceSlot=source.addSlot();
+        const vpathId_t destinationSlot=destination.addSlot();
 
         // update vpath
         const dataType persistence=getPersistence<dataType>(saddle2, saddle1,
@@ -2980,24 +2980,24 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const
   for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
     CriticalPoint& cp=criticalPoints[i];
 
-    const int numberOfSlots=cp.numberOfSlots_;
+    const vpathId_t numberOfSlots=cp.numberOfSlots_;
     cp.vpaths_.resize(numberOfSlots);
     cp.numberOfSlots_=0;
   }
 
-  const int numberOfVPaths=vpaths.size();
+  const vpathId_t numberOfVPaths=vpaths.size();
 #ifdef TTK_ENABLE_OPENMP
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i=0; i<numberOfVPaths; ++i){
+  for(vpathId_t i=0; i<numberOfVPaths; ++i){
     const VPath& vpath=vpaths[i];
 
     if(vpath.isValid_){
       const simplexId_t sourceIndex=vpath.source_;
       const simplexId_t destinationIndex=vpath.destination_;
 
-      const int sourceSlot=vpath.sourceSlot_;
-      const int destinationSlot=vpath.destinationSlot_;
+      const vpathId_t sourceSlot=vpath.sourceSlot_;
+      const vpathId_t destinationSlot=vpath.destinationSlot_;
 
       CriticalPoint& source=criticalPoints[sourceIndex];
       CriticalPoint& destination=criticalPoints[destinationIndex];
@@ -3021,12 +3021,12 @@ template <typename dataType>
 int DiscreteGradient::orderSaddleSaddleConnections2(const
                                                     std::vector<VPath>& vpaths,
                                                     std::vector<CriticalPoint>& criticalPoints,
-                                                    std::set<std::tuple<dataType,int,simplexId_t>,
+                                                    std::set<std::tuple<dataType,vpathId_t,simplexId_t>,
                                                       SaddleSaddleVPathComparator<dataType>> &S){
   Timer t;
 
-  const int numberOfVPaths=vpaths.size();
-  for(int i=0; i<numberOfVPaths; ++i){
+  const vpathId_t numberOfVPaths=vpaths.size();
+  for(vpathId_t i=0; i<numberOfVPaths; ++i){
     const VPath& vpath=vpaths[i];
 
     if(vpath.isValid_){
@@ -3052,7 +3052,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int
                                                       const bool allowBoundary,
                                                       const bool allowBruteForce,
                                                       const bool returnSaddleConnectors,
-                                                      std::set<std::tuple<dataType,int,simplexId_t>,
+                                                      std::set<std::tuple<dataType,vpathId_t,simplexId_t>,
                                                         SaddleSaddleVPathComparator<dataType>>& S,
                                                       std::vector<simplexId_t>& pl2dmt_saddle1,
                                                       std::vector<simplexId_t>& pl2dmt_saddle2,
@@ -3077,7 +3077,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int
     if(iterationThreshold>=0 and numberOfIterations>=iterationThreshold) break;
 
     auto ptr=S.begin();
-    const int vpathId=std::get<1>(*ptr);
+    const vpathId_t vpathId=std::get<1>(*ptr);
     S.erase(ptr);
     VPath& vpath=vpaths[vpathId];
 
@@ -3326,7 +3326,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int
           CriticalPoint& newDestination=criticalPoints[newDestinationId];
 
           // update vpaths
-          const int newVPathId=vpaths.size();
+          const vpathId_t newVPathId=vpaths.size();
           const dataType persistence=getPersistence<dataType>(saddle2, saddle1,
                                                               scalars);
 
@@ -3383,7 +3383,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int
             continue;
 
           // update vpaths
-          const int newVPathId=vpaths.size();
+          const vpathId_t newVPathId=vpaths.size();
           const dataType persistence=getPersistence<dataType>(saddle2, saddle1,
                                                               scalars);
 
@@ -3448,7 +3448,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(const
 
   // Part 2 : push the vpaths and order by persistence
   SaddleSaddleVPathComparator<dataType> cmp_f;
-  std::set<std::tuple<dataType,int,simplexId_t>, SaddleSaddleVPathComparator<dataType>>
+  std::set<std::tuple<dataType,vpathId_t,simplexId_t>, SaddleSaddleVPathComparator<dataType>>
     S(cmp_f);
   orderSaddleSaddleConnections2<dataType>(vpaths, dmt_criticalPoints, S);
 

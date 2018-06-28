@@ -32,6 +32,8 @@ namespace ttk{
      */
     using wallId_t=unsigned long long int;
     using simplexId_t=SimplexId;
+    using vpathId_t=SimplexId;
+    using segmentId_t=SimplexId;
 
     /**
      * Basic concept of cell, so it must be able to identify any cell of any dimension.
@@ -130,11 +132,11 @@ namespace ttk{
         persistence_{} {}
 
       explicit VPath(const bool isValid,
-                     const int segmentId,
-                     const int source,
-                     const int destination,
-                     const int sourceSlot,
-                     const int destinationSlot,
+                     const segmentId_t segmentId,
+                     const simplexId_t source,
+                     const simplexId_t destination,
+                     const vpathId_t sourceSlot,
+                     const vpathId_t destinationSlot,
                      const double persistence) :
         isValid_{isValid},
         states_{1},
@@ -147,11 +149,11 @@ namespace ttk{
 
       explicit VPath(const bool isValid,
                      const std::vector<char> &states,
-                     const std::vector<int> &segments,
-                     const int source,
-                     const int destination,
-                     const int sourceSlot,
-                     const int destinationSlot,
+                     const std::vector<segmentId_t> &segments,
+                     const simplexId_t source,
+                     const simplexId_t destination,
+                     const vpathId_t sourceSlot,
+                     const vpathId_t destinationSlot,
                      const double persistence) :
         isValid_{isValid},
         states_{states},
@@ -164,11 +166,11 @@ namespace ttk{
 
       explicit VPath(const bool isValid,
                      std::vector<char> &&states,
-                     std::vector<int> &&segments,
-                     const int source,
-                     const int destination,
-                     const int sourceSlot,
-                     const int destinationSlot,
+                     std::vector<segmentId_t> &&segments,
+                     const simplexId_t source,
+                     const simplexId_t destination,
+                     const vpathId_t sourceSlot,
+                     const vpathId_t destinationSlot,
                      const double persistence) :
         isValid_{isValid},
         states_{states},
@@ -224,11 +226,11 @@ namespace ttk{
 
       bool isValid_;
       std::vector<char> states_;
-      std::vector<int> segments_;
-      int source_;
-      int destination_;
-      int sourceSlot_;
-      int destinationSlot_;
+      std::vector<segmentId_t> segments_;
+      simplexId_t source_;
+      simplexId_t destination_;
+      vpathId_t sourceSlot_;
+      vpathId_t destinationSlot_;
       double persistence_;
     };
 
@@ -244,13 +246,13 @@ namespace ttk{
         numberOfSlots_{} {}
 
       explicit CriticalPoint(const Cell &cell,
-                             const std::vector<int> &vpaths) :
+                             const std::vector<vpathId_t> &vpaths) :
         cell_{cell},
         vpaths_{vpaths},
         numberOfSlots_{} {}
 
       explicit CriticalPoint(const Cell &cell,
-                             std::vector<int> &&vpaths) :
+                             std::vector<vpathId_t> &&vpaths) :
         cell_{cell},
         vpaths_{vpaths},
         numberOfSlots_{} {}
@@ -268,8 +270,8 @@ namespace ttk{
       /**
        * Increase the connectivity of the critical point with openmp acceleration if enabled.
        */
-      int omp_addSlot() {
-        int numberOfSlots = 0;
+      vpathId_t omp_addSlot() {
+        vpathId_t numberOfSlots = 0;
 
 #ifdef TTK_ENABLE_OPENMP
 # pragma omp atomic capture
@@ -282,7 +284,7 @@ namespace ttk{
       /**
        * Increase the connectivity of the critical point.
        */
-      int addSlot() {
+      vpathId_t addSlot() {
         return (numberOfSlots_++);
       }
 
@@ -296,8 +298,8 @@ namespace ttk{
       }
 
       Cell cell_;
-      std::vector<int> vpaths_;
-      int numberOfSlots_;
+      std::vector<vpathId_t> vpaths_;
+      vpathId_t numberOfSlots_;
     };
 
     /**
@@ -305,13 +307,13 @@ namespace ttk{
      */
     template<typename dataType>
     struct SaddleMaximumVPathComparator {
-      bool operator()(const std::pair<dataType, int> &v1,
-                      const std::pair<dataType, int> &v2) const {
+      bool operator()(const std::pair<dataType, vpathId_t> &v1,
+                      const std::pair<dataType, vpathId_t> &v2) const {
         const dataType persistence1 = v1.first;
         const dataType persistence2 = v2.first;
 
-        const int vpathId1 = v1.second;
-        const int vpathId2 = v2.second;
+        const vpathId_t vpathId1 = v1.second;
+        const vpathId_t vpathId2 = v2.second;
 
         if (persistence1 != persistence2)
           return (persistence1 < persistence2);
@@ -326,13 +328,13 @@ namespace ttk{
      */
     template<typename dataType>
     struct SaddleSaddleVPathComparator {
-      bool operator()(const std::tuple<dataType, int, simplexId_t> &v1,
-                      const std::tuple<dataType, int, simplexId_t> &v2) const {
+      bool operator()(const std::tuple<dataType, vpathId_t, simplexId_t> &v1,
+                      const std::tuple<dataType, vpathId_t, simplexId_t> &v2) const {
         const dataType persistence1 = std::get<0>(v1);
         const dataType persistence2 = std::get<0>(v2);
 
-        const int vpathId1 = std::get<1>(v1);
-        const int vpathId2 = std::get<1>(v2);
+        const vpathId_t vpathId1 = std::get<1>(v1);
+        const vpathId_t vpathId2 = std::get<1>(v2);
 
         const simplexId_t saddleId1 = std::get<2>(v1);
         const simplexId_t saddleId2 = std::get<2>(v2);
@@ -622,7 +624,7 @@ triangulation only).
        */
       template<typename dataType>
       int orderSaddleMaximumConnections(const std::vector<VPath> &vpaths,
-                                        std::set<std::pair<dataType, int>,
+                                        std::set<std::pair<dataType, vpathId_t>,
                                           SaddleMaximumVPathComparator<dataType>> &S);
 
       /**
@@ -648,7 +650,7 @@ to be reversed.
                                           const std::vector<char> &isPL,
                                           const bool allowBoundary,
                                           const bool allowBruteForce,
-                                          std::set<std::pair<dataType, int>,
+                                          std::set<std::pair<dataType, vpathId_t>,
                                             SaddleMaximumVPathComparator<dataType>> &S,
                                           std::vector<simplexId_t> &pl2dmt_saddle,
                                           std::vector<simplexId_t> &pl2dmt_maximum,
@@ -696,7 +698,7 @@ the discrete gradient.
       template<typename dataType>
       int orderSaddleSaddleConnections1(const std::vector<VPath> &vpaths,
                                         std::vector<CriticalPoint> &criticalPoints,
-                                        std::set<std::tuple<dataType, int, simplexId_t>,
+                                        std::set<std::tuple<dataType, vpathId_t, simplexId_t>,
                                           SaddleSaddleVPathComparator<dataType>> &S);
 
       /**
@@ -709,7 +711,7 @@ the discrete gradient.
                                           const bool allowBoundary,
                                           const bool allowBruteForce,
                                           const bool returnSaddleConnectors,
-                                          std::set<std::tuple<dataType, int, simplexId_t>,
+                                          std::set<std::tuple<dataType, vpathId_t, simplexId_t>,
                                             SaddleSaddleVPathComparator<dataType>> &S,
                                           std::vector<simplexId_t> &pl2dmt_saddle1,
                                           std::vector<simplexId_t> &pl2dmt_saddle2,
@@ -752,7 +754,7 @@ the discrete gradient.
       template<typename dataType>
       int orderSaddleSaddleConnections2(const std::vector<VPath> &vpaths,
                                         std::vector<CriticalPoint> &criticalPoints,
-                                        std::set<std::tuple<dataType, int, simplexId_t>,
+                                        std::set<std::tuple<dataType, vpathId_t, simplexId_t>,
                                           SaddleSaddleVPathComparator<dataType>> &S);
 
       /**
@@ -765,7 +767,7 @@ the discrete gradient.
                                           const bool allowBoundary,
                                           const bool allowBruteForce,
                                           const bool returnSaddleConnectors,
-                                          std::set<std::tuple<dataType, int, simplexId_t>,
+                                          std::set<std::tuple<dataType, vpathId_t, simplexId_t>,
                                             SaddleSaddleVPathComparator<dataType>> &S,
                                           std::vector<simplexId_t> &pl2dmt_saddle1,
                                           std::vector<simplexId_t> &pl2dmt_saddle2,
