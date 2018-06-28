@@ -593,7 +593,7 @@ triangulation only).
       int getRemovableSaddles1(const std::vector<std::pair<simplexId_t, char>> &criticalPoints,
                                const bool allowBoundary,
                                std::vector<char> &isRemovableSaddle,
-                               std::vector<simplexId_t> &pl2dmt_saddle) const;
+                               std::vector<simplexId_t> &pl2dmt_saddle);
 
       /**
        * Get the list of 2-saddles candidates for simplification.
@@ -602,7 +602,7 @@ triangulation only).
       int getRemovableSaddles2(const std::vector<std::pair<simplexId_t, char>> &criticalPoints,
                                const bool allowBoundary,
                                std::vector<char> &isRemovableSaddle,
-                               std::vector<simplexId_t> &pl2dmt_saddle) const;
+                               std::vector<simplexId_t> &pl2dmt_saddle);
 
       /**
        * Create initial Morse-Smale Complex structure and initialize the 
@@ -654,7 +654,7 @@ to be reversed.
                                           std::vector<simplexId_t> &pl2dmt_maximum,
                                           std::vector<Segment> &segments,
                                           std::vector<VPath> &vpaths,
-                                          std::vector<CriticalPoint> &criticalPoints) const;
+                                          std::vector<CriticalPoint> &criticalPoints);
 
       /**
        * Actually reverse the so-tagged (saddle,...,maximum) vpaths to simplify 
@@ -1104,6 +1104,8 @@ tetra identifier.
       simplexId_t numberOfVertices_;
       std::vector<std::vector<std::vector<simplexId_t>>> gradient_;
       std::vector<simplexId_t> dmtMax2PL_;
+      std::vector<simplexId_t> dmt1Saddle2PL_;
+      std::vector<simplexId_t> dmt2Saddle2PL_;
 
       void *inputScalarField_;
       void *inputOffsets_;
@@ -1126,7 +1128,7 @@ tetra identifier.
       std::vector<char> *outputGradientGlyphs_cells_pairTypes_;
 
       std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_;
-    };
+  };
 
 #include<DiscreteGradient_Template.h>
   }

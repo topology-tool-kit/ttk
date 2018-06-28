@@ -19,7 +19,7 @@ vtkStandardNewMacro(ttkDiscreteGradient)
     ComputeGradientGlyphs{},
     IterationThreshold{-1},
     ScalarFieldId{},
-    OffsetFieldId{},
+    OffsetFieldId{-1},
 
     triangulation_{},
     inputScalars_{},

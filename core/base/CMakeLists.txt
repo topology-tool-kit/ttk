@@ -83,6 +83,17 @@ function(ttk_add_base_template_library library)
 		target_link_libraries(${library} INTERFACE ${MPI_CXX_LIBRARIES})
 	endif()
 
+  if (TTK_ENABLE_ZFP)
+		target_compile_definitions(${library} INTERFACE TTK_ENABLE_ZFP)
+		target_include_directories(${library} INTERFACE ${ZFP_INCLUDE_DIR})
+	endif()
+	
+	if (TTK_ENABLE_ZLIB)
+		target_compile_definitions(${library} INTERFACE TTK_ENABLE_ZLIB)
+		target_include_directories(${library} INTERFACE ${ZLIB_INCLUDE_DIR})
+	endif()
+
+	
 	install(TARGETS ${library}
 		EXPORT TTKBaseConfig
 		RUNTIME DESTINATION bin/ttk

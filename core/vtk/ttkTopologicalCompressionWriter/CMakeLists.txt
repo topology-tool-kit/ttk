@@ -1,0 +1,4 @@
+ttk_add_vtk_library(ttkTopologicalCompressionWriter
+	SOURCES ttkTopologicalCompressionWriter.cpp
+  	HEADERS ttkTopologicalCompressionWriter.h
+	LINK ttkTriangulation topologicalCompression)

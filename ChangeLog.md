@@ -2,6 +2,12 @@
 =
 ### ttk.git
 
+### 0.9.6
+- Fixed major performance bug with discrete gradient (thanks to Attila Gyulassy)
+- TDA aware compression (with ZLIB and ZFP support)
+- Various bug fixes
+- Improved examples
+
 ### 0.9.5
 - Updates for ParaView-5.5.0
 - Bug fixes

@@ -1,0 +1,195 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="writers">
+    <WriterProxy
+        name="TopologicalCompressionWriter"
+        class="ttkTopologicalCompressionWriter"
+        label="TTKTopologicalCompressionWriter">
+
+      <Documentation
+          long_help="TTK topologicalCompressionWriter plugin."
+          short_help="TTK topologicalCompressionWriter plugin.">
+        TTK topologicalCompression plugin documentation.
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkImageData"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+          name="ScalarField"
+          command="SetScalarField"
+          number_of_elements="1"
+          animateable="0"
+          label="Scalar Field">
+        <ArrayListDomain
+            name="array_list"
+            default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty
+        name="FileName"
+        command="SetFileName"
+        number_of_elements="1">
+        <FileListDomain name="files"/>
+        <Documentation>
+          This property specifies the file name for the OFF writer.
+        </Documentation>
+      </StringVectorProperty>
+      
+      <IntVectorProperty
+        name="CompressionType"
+        label="Compression type"
+        command="SetCompressionType"
+        number_of_elements="1"
+        default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Driven by persistence diagram"/>
+        </EnumerationDomain>
+        <Documentation>
+          Compression Type. 
+        </Documentation>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+          name="Tolerance"
+          command="SetTolerance"
+          label="Topological loss (persistence percentage)"
+          number_of_elements="1"
+          default_values="10">
+        <Documentation>
+          Topological loss expressed as a persistence threshold (normalized
+            between 0 and 100).
+        </Documentation>
+        <DoubleRangeDomain name="range" min="1" max="100" />
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+        name="Subdivide"
+        label="Enable maximum pointwise error control"
+        command="SetSubdivide"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Enable maximum pointwise error control.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <DoubleVectorProperty
+        name="MaximumError"
+        command="SetMaximumError"
+        label="Maximum pointwise error (percentage)"
+        number_of_elements="1"
+        default_values="10">
+        <Documentation>
+          Set the maximum allowed pointwise error (in percentage of the 
+            function span).
+        </Documentation>
+        <DoubleRangeDomain name="range" min="1" max="100" />
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+              name="ZFPBitBudget"
+              label="ZFP bit budget (extra)"
+              command="SetZFPBitBudget"
+              number_of_elements="1"
+              default_values="0">
+        <IntRangeDomain name="range" min="0" max="64" />
+        <Documentation>
+          Additionally compress the data with ZFP for improved geometrical
+            quality (number of bits per vertex).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+              name="ZFPOnly"
+              label="Use ZFP compressor only (no topological compression)"
+              command="SetZFPOnly"
+              number_of_elements="1"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use ZFP only.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="UseTopologicalSimplification"
+        label="Simplify at compression (slower)"
+        command="SetUseTopologicalSimplification"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Enable topological simplification at compression time (higher 
+          compression factors, slower compression time).
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+        name="SQMethod"
+        command="SetSQMethodPV"
+        animateable="0"
+        label="Use SQ compressor only (no topological compression)"
+        panel_visibility="advanced">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="No SQ (topological compression)."/>
+          <Entry value="1" text="Range-based SQ (lowest quality, faster)."/>
+          <Entry value="2" text="Domain-based SQ (highest quality, slower)."/>
+        </EnumerationDomain>
+        <Documentation>
+          Use SQ instead of topological compression.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input">
+        <Property name="ScalarField" />
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Output">
+        <Property name="FileName" />
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="double_range"
+        label="Topology aware compression">
+        <Property name="CompressionType" />
+        <Property name="Tolerance" />
+        <Property name="Subdivide" />
+        <Property name="MaximumError" />
+        <Property name="ZFPBitBudget" />
+        <Property name="ZFPOnly" />
+        <Property name="UseTopologicalSimplification" />
+        <Property name="SQMethod" />
+      </PropertyGroup>
+
+      <Hints>
+        <Property name="Input" show="0"/>
+        <Property name="FileName" show="1"/>
+        <WriterFactory extensions="ttk"
+          file_description="Topology ToolKit Compressed Image Data" />
+      </Hints>
+    </WriterProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
