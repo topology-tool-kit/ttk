@@ -379,14 +379,14 @@ namespace ttk{
         return 0;
       }
 
-      inline int setOutputCriticalPoints(int* const criticalPoints_numberOfPoints,
+      inline int setOutputCriticalPoints(dcg::simplexId_t* const criticalPoints_numberOfPoints,
           std::vector<float>* const criticalPoints_points,
-          std::vector<int>* const criticalPoints_points_cellDimensons,
-          std::vector<int>* const criticalPoints_points_cellIds,
+          std::vector<char>* const criticalPoints_points_cellDimensons,
+          std::vector<dcg::simplexId_t>* const criticalPoints_points_cellIds,
           void* const criticalPoints_points_cellScalars,
           std::vector<char>* const criticalPoints_points_isOnBoundary,
-          std::vector<int>* const criticalPoints_points_PLVertexIdentifiers,
-          std::vector<int>* const criticalPoints_points_manifoldSize){
+          std::vector<dcg::simplexId_t>* const criticalPoints_points_PLVertexIdentifiers,
+          std::vector<dcg::simplexId_t>* const criticalPoints_points_manifoldSize){
 #ifdef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
@@ -404,16 +404,16 @@ namespace ttk{
         return 0;
       }
 
-      inline int setOutputSeparatrices1(int* const separatrices1_numberOfPoints,
+      inline int setOutputSeparatrices1(dcg::simplexId_t* const separatrices1_numberOfPoints,
           std::vector<float>* const separatrices1_points,
           std::vector<char>* const separatrices1_points_smoothingMask,
-          std::vector<int>* const separatrices1_points_cellDimensions,
-          std::vector<int>* const separatrices1_points_cellIds,
-          int* const separatrices1_numberOfCells,
-          std::vector<int>* const separatrices1_cells,
-          std::vector<int>* const separatrices1_cells_sourceIds,
-          std::vector<int>* const separatrices1_cells_destinationIds,
-          std::vector<int>* const separatrices1_cells_separatrixIds,
+          std::vector<char>* const separatrices1_points_cellDimensions,
+          std::vector<dcg::simplexId_t>* const separatrices1_points_cellIds,
+          dcg::simplexId_t* const separatrices1_numberOfCells,
+          std::vector<dcg::simplexId_t>* const separatrices1_cells,
+          std::vector<dcg::simplexId_t>* const separatrices1_cells_sourceIds,
+          std::vector<dcg::simplexId_t>* const separatrices1_cells_destinationIds,
+          std::vector<dcg::simplexId_t>* const separatrices1_cells_separatrixIds,
           std::vector<char>* const separatrices1_cells_separatrixTypes,
           void* const separatrices1_cells_separatrixFunctionMaxima,
           void* const separatrices1_cells_separatrixFunctionMinima,
@@ -443,12 +443,12 @@ namespace ttk{
         return 0;
       }
 
-      inline int setOutputSeparatrices2(int* const separatrices2_numberOfPoints,
+      inline int setOutputSeparatrices2(dcg::simplexId_t* const separatrices2_numberOfPoints,
           std::vector<float>* const separatrices2_points,
-          int* const separatrices2_numberOfCells,
-          std::vector<int>* const separatrices2_cells,
-          std::vector<int>* const separatrices2_cells_sourceIds,
-          std::vector<int>* const separatrices2_cells_separatrixIds,
+          dcg::simplexId_t* const separatrices2_numberOfCells,
+          std::vector<dcg::simplexId_t>* const separatrices2_cells,
+          std::vector<dcg::simplexId_t>* const separatrices2_cells_sourceIds,
+          std::vector<dcg::simplexId_t>* const separatrices2_cells_separatrixIds,
           std::vector<char>* const separatrices2_cells_separatrixTypes,
           void* const separatrices2_cells_separatrixFunctionMaxima,
           void* const separatrices2_cells_separatrixFunctionMinima,
