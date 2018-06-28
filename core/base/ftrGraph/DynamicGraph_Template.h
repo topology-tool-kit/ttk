@@ -259,17 +259,17 @@ namespace ttk
       }
 
       template<typename Type>
-      bool DynGraphNode<Type>::insertEdge(DynGraphNode<Type>* const n, const Type weight)
+      bool DynGraphNode<Type>::insertEdge(DynGraphNode<Type>* const n, const Type weight, const idSuperArc corArc)
       {
          evert();
          auto nNodes = n->findMinWeightRoot();
 
          if (std::get<0>(nNodes) != this) {
             // The two nodes are in two different trees
-            parent_ = n;
-            weight_ = weight;
+            parent_    = n;
+            weight_    = weight;
+            n->corArc_ = corArc;
             n->nbChilds_++;
-            n->corArc_ = corArc_;
             return true;
          }
 
@@ -279,13 +279,16 @@ namespace ttk
             // We need replace the min edge by the new one as the current weight is higher
 
             // add arc (Parsa like)
-            parent_ = n;
-            weight_ = weight;
+            parent_    = n;
+            weight_    = weight;
             n->nbChilds_++;
 
             // remove old
             std::get<1>(nNodes)->parent_->nbChilds_--;
             std::get<1>(nNodes)->parent_ = 0;
+            std::get<1>(nNodes)->corArc_ = corArc;
+         } else {
+            corArc_ = corArc;
          }
 
          return false;

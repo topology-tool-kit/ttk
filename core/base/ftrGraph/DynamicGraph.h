@@ -169,16 +169,17 @@ namespace ttk
 
 
          /// \ret true if we have merged two tree, false if it was just an intern operation
-         bool insertEdge(DynGraphNode<Type>* const n1, DynGraphNode<Type>* const n2,
-                         const Type w)
+         bool insertEdge(DynGraphNode<Type>* const n1, DynGraphNode<Type>* const n2, const Type w,
+                         const idSuperArc corArc)
          {
-           return n1->insertEdge(n2, w);
+           return n1->insertEdge(n2, w, corArc);
          }
 
          /// inert or replace existing edge between n1 and n2
-         bool insertEdge(const std::size_t n1, const std::size_t n2, const Type w)
+         bool insertEdge(const std::size_t n1, const std::size_t n2, const Type w,
+                         const idSuperArc corArc)
          {
-            return insertEdge(getNode(n1), getNode(n2), w);
+            return insertEdge(getNode(n1), getNode(n2), w, corArc);
          }
 
          /// remove the link btwn n and its parent
@@ -280,7 +281,7 @@ namespace ttk
 
          /// Create a new edge between this node and the node n
          /// \ret true if we have merged two tree, false if it was just an intern operation
-         bool insertEdge(DynGraphNode* const n, const Type weight);
+         bool insertEdge(DynGraphNode* const n, const Type weight, const idSuperArc corArc);
 
          /// Remove the link between this node and its parent, thus makeing a new root
          void removeEdge(void);

@@ -4,19 +4,26 @@
 #include "FTRGraph.h"
 
 // Skeleton + propagation
-// #define DEBUG_1(msg) std::cout msg
+#ifndef NDEBUG
+#define DEBUG_1(msg) std::cout msg
+#else
 #define DEBUG_1(msg)
+#endif
 
 // Dynamic graph structure
-// #define DEBUG_2(msg) std::cout msg
+#ifndef NDEBUG
+#define DEBUG_2(msg) std::cout msg
+#else
 #define DEBUG_2(msg)
+#endif
 
 namespace ttk
 {
    namespace ftr
    {
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::growthFromSeed(const idVertex seed, Propagation* localPropagation, const idSuperArc arcId)
+      void FTRGraph<ScalarType>::growthFromSeed(const idVertex seed, Propagation* localPropagation,
+                                                const idSuperArc arcId)
       {
          DEBUG_1(<< "Start " << seed << " go up " << localPropagation->goUp() << std::endl);
 #ifndef NDEBUG
@@ -119,7 +126,7 @@ namespace ttk
             graph_.visit(upVert, newArc);
             DEBUG_1(<< "visit m: " << upVert << " with " << newArc << std::endl);
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task priority(5) if(upVert % 4 == 0)
+#pragma omp task priority(5)
 #endif
             growthFromSeed(upVert, localPropagation, newArc);
          }
@@ -208,10 +215,7 @@ namespace ttk
          const orderedEdge e0 = mesh_.getOrderedEdge(std::get<0>(oTriangle), localPropagation->goUp());
          const orderedEdge e1 = mesh_.getOrderedEdge(std::get<1>(oTriangle), localPropagation->goUp());
          const idVertex    w  = getWeight(e0, e1, localPropagation);
-         bool t = dynGraph(localPropagation).insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), w);
-
-         dynGraph(localPropagation).setSubtreeArc(std::get<0>(oTriangle), curArc);
-         dynGraph(localPropagation).setSubtreeArc(std::get<1>(oTriangle), curArc);
+         bool t = dynGraph(localPropagation).insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), w, curArc);
 
          if (t) {
             DEBUG_2(<< "start add edge: " << printEdge(std::get<0>(oTriangle), localPropagation));
@@ -233,8 +237,6 @@ namespace ttk
          // So we do not add the edge now
          const int t = dynGraph(localPropagation).removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
 
-         dynGraph(localPropagation).setSubtreeArc(std::get<0>(oTriangle), curArc);
-
          if (t) {
             DEBUG_2(<< "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation));
             DEBUG_2(<< " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl);
@@ -248,10 +250,7 @@ namespace ttk
          const orderedEdge e1 = mesh_.getOrderedEdge(std::get<1>(oTriangle), localPropagation->goUp());
          const orderedEdge e2 = mesh_.getOrderedEdge(std::get<2>(oTriangle), localPropagation->goUp());
          const idVertex    w  = getWeight(e1, e2, localPropagation);
-         const int u = dynGraph(localPropagation).insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w);
-
-         dynGraph(localPropagation).setSubtreeArc(std::get<1>(oTriangle), curArc);
-         dynGraph(localPropagation).setSubtreeArc(std::get<2>(oTriangle), curArc);
+         const int u = dynGraph(localPropagation).insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w, curArc);
 
          if (u) {
             DEBUG_2(<< " new edge: " << printEdge(std::get<1>(oTriangle), localPropagation));
@@ -269,9 +268,6 @@ namespace ttk
                                                        const idSuperArc         curArc)
       {
          const int t = dynGraph(localPropagation).removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
-
-         dynGraph(localPropagation).setSubtreeArc(std::get<2>(oTriangle), curArc);
-         dynGraph(localPropagation).setSubtreeArc(std::get<1>(oTriangle), curArc);
 
          if (t) {
             DEBUG_2(<< "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation));
@@ -542,7 +538,7 @@ namespace ttk
             DEBUG_1(<< "visit s: " << curVert << " with " << arc << std::endl);
             // why is the firstprivate required here ?
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(curVert, prop, arc) priority(2) if (curVert % 4 == 0)
+#pragma omp task firstprivate(curVert, prop, arc) priority(2)
 #endif
             growthFromSeed(curVert, prop, arc);
          }
