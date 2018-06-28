@@ -33,7 +33,7 @@ namespace ttk {
 		parent_ = nullptr;
 		level_ = 0;
 		
-		if(idx.size()>1){
+		if(idx.size()>2){
 			// Build left leaf
 			std::vector<int> idx_left;
 			for(int i=0; i<median_loc; i++){
@@ -45,7 +45,7 @@ namespace ttk {
 			left_ = left;
 		}
 		
-		if(idx.size()>0){
+		if(idx.size()>1){
 			// Build right leaf
 			std::vector<int> idx_right(ptNumber - median_loc - 1);
 			for(int i=0; i<ptNumber - median_loc - 1; i++){
