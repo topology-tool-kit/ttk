@@ -36,6 +36,9 @@ namespace ttk{
 		std::vector<dataType> coords_max_;
 		int level_;
 		
+		std::vector<dataType> weight_;
+		std::vector<dataType> min_subweights_;
+		
 		
 		KDTree(){
 			left_ = nullptr;
@@ -113,8 +116,7 @@ namespace ttk{
 		bool include_weights_;   // Wether or not the KDTree should include weights that add up 
 							   // to distance for the computation of nearest neighbours
 		
-		std::vector<dataType> weight_;
-		std::vector<dataType> min_subweights_;
+		
 		
 	};
 	
@@ -163,7 +165,7 @@ namespace ttk{
 		parent_ = nullptr;
 		level_ = 0;
 		
-		if(idx.size()>1){
+		if(idx.size()>2){
 			// Build left leaf
 			std::vector<int> idx_left;
 			for(int i=0; i<median_loc; i++){
@@ -175,7 +177,7 @@ namespace ttk{
 			left_ = left;
 		}
 		
-		if(idx.size()>0){
+		if(idx.size()>1){
 			// Build right leaf
 			std::vector<int> idx_right(ptNumber - median_loc - 1);
 			for(int i=0; i<ptNumber - median_loc - 1; i++){
