@@ -14,7 +14,6 @@
 #include "FTRCommon.h"
 
 #include <Triangulation.h>
-#include <UnionFind.h>
 
 #include <boost/heap/fibonacci_heap.hpp>
 
@@ -35,14 +34,13 @@ namespace ttk
          bool goUp_;
          // priority queue
          boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation_;
-         // representant
-         UnionFind* rpz_;
+         // representant (first vertex)
+         idVertex rpz_;
 
         public:
-         Propagation(idVertex startVert, VertCompFN vertComp, bool up, UnionFind* uf = nullptr)
-             : curVert_(nullVertex), comp_(vertComp), goUp_(up), propagation_(vertComp)
+         Propagation(idVertex startVert, VertCompFN vertComp, bool up)
+             : curVert_(nullVertex), comp_(vertComp), goUp_(up), propagation_(vertComp), rpz_(startVert)
          {
-            rpz_ = (uf) ? uf : new UnionFind;
             propagation_.emplace(startVert);
          }
 
@@ -51,9 +49,9 @@ namespace ttk
             return curVert_;
          }
 
-         UnionFind* getRpz(void) const
+         idVertex getRpz(void) const
          {
-            return rpz_->find();
+            return rpz_;
          }
 
          idVertex nextVertex(void)
@@ -97,7 +95,6 @@ namespace ttk
          {
             if (&other == this) return;
             propagation_.merge(other.propagation_);
-            rpz_ = makeUnion(rpz_, other.rpz_);
          }
 
          bool empty() const

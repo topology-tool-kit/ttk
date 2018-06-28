@@ -346,7 +346,7 @@ namespace ttk
             idVertex neighId;
             mesh_.getVertexNeighbor(localPropagation->getCurVertex(), n, neighId);
             if (localPropagation->compare(localPropagation->getCurVertex(), neighId)) {
-               if (!toVisit_[neighId] || toVisit_[neighId]->find() != localPropagation->getRpz()) {
+               if (!toVisit_[neighId] || toVisit_[neighId] != localPropagation->getRpz()) {
                   localPropagation->addNewVertex(neighId);
                   toVisit_[neighId] = localPropagation->getRpz();
                }
@@ -547,16 +547,15 @@ namespace ttk
       /// Tools
 
       template <typename ScalarType>
-      Propagation* FTRGraph<ScalarType>::newPropagation(const idVertex leaf, const bool fromMin,
-                                                        UnionFind* rpz)
+      Propagation* FTRGraph<ScalarType>::newPropagation(const idVertex leaf, const bool fromMin)
       {
          Propagation* localPropagation;
          if (fromMin) {
             auto compare_max_fun = [&](idVertex a, idVertex b) { return scalars_->isHigher(a, b); };
-            localPropagation = new Propagation(leaf, compare_max_fun, fromMin, rpz);
+            localPropagation = new Propagation(leaf, compare_max_fun, fromMin);
          } else {
             auto compare_min_fun = [&](idVertex a, idVertex b) { return scalars_->isLower(a, b); };
-            localPropagation = new Propagation(leaf, compare_min_fun, fromMin, rpz);
+            localPropagation = new Propagation(leaf, compare_min_fun, fromMin);
          }
          const auto   propId   = propagations_.getNext();
          propagations_[propId] = localPropagation;

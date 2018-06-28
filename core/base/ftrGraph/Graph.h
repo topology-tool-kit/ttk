@@ -152,7 +152,7 @@ namespace ttk
             return false;
          }
 
-         bool hasVisited(const idVertex v, const UnionFind* const rpz) const
+         bool hasVisited(const idVertex v, const idVertex rpz) const
          {
             for(const idSegmentation tmp :  segmentation_[v]){
                if (tmp >= 0 && getArc(tmp).getPropagation()->getRpz() == rpz) {

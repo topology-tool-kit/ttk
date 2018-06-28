@@ -55,7 +55,7 @@ namespace ttk
          // local growth
 
          AtomicVector<Propagation*> propagations_;
-         std::vector<UnionFind*>    toVisit_;
+         std::vector<idVertex>      toVisit_;
 
          // BFS
          std::vector<idCell>   bfsCells_;
@@ -331,8 +331,7 @@ namespace ttk
 
          // Create a new propagation starting at leaf
          // use rpz as representant for new uf if not nullptr
-         Propagation* newPropagation(const idVertex leaf, const bool fromMax,
-                                     UnionFind* rpz = nullptr);
+         Propagation* newPropagation(const idVertex leaf, const bool fromMax);
 
          // Compute the wieght of the edge in the dyngraph between e1 and e2.
          // This weight is the min value of the two endpoints, we use the mirror array (int)

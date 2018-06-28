@@ -229,9 +229,9 @@ namespace ttk
          std::get<0>(dynGraph_).init();
          std::get<1>(dynGraph_).init();
 
-         fillVector<UnionFind*>(toVisit_, nullptr);
-         fillVector<idCell>(bfsCells_, nullCell);
-         fillVector<idEdge>(bfsEdges_, nullEdge);
+         fillVector<idVertex>(toVisit_ , nullVertex);
+         fillVector<idCell>(bfsCells_  , nullCell);
+         fillVector<idEdge>(bfsEdges_  , nullEdge);
          fillVector<idVertex>(bfsVerts_, nullVertex);
       }
 
