@@ -95,7 +95,7 @@ template <class dataType> int ttk::ScalarFieldSmoother::smooth(
 
   int count = 0;
   
-  int vertexNumber = triangulation_->getNumberOfVertices();
+  SimplexId vertexNumber = triangulation_->getNumberOfVertices();
   
   std::vector<dataType> tmpData(vertexNumber*dimensionNumber_, 0);
   
@@ -103,7 +103,7 @@ template <class dataType> int ttk::ScalarFieldSmoother::smooth(
   dataType *inputData = (dataType *) inputData_;
   
   // init the output
-  for(int i = 0; i < vertexNumber; i++){
+  for(SimplexId i = 0; i < vertexNumber; i++){
     for(int j = 0; j < dimensionNumber_; j++){
       outputData[dimensionNumber_*i + j] = inputData[dimensionNumber_*i + j];
     }
@@ -115,7 +115,7 @@ template <class dataType> int ttk::ScalarFieldSmoother::smooth(
     omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
-    for(int i = 0; i < vertexNumber; i++){
+    for(SimplexId i = 0; i < vertexNumber; i++){
     
       // avoid to process masked vertices
       if(mask_ != nullptr && mask_[i] == 0) continue;
@@ -126,9 +126,9 @@ template <class dataType> int ttk::ScalarFieldSmoother::smooth(
         for(int j = 0; j < dimensionNumber_; j++){
           tmpData[dimensionNumber_*i + j] = 0;
           
-          int neighborNumber = triangulation_->getVertexNeighborNumber(i);
-          for(int k = 0; k < (int) neighborNumber; k++){
-            int neighborId = -1;
+          SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(i);
+          for(SimplexId k = 0; k < neighborNumber; k++){
+            SimplexId neighborId = -1;
             triangulation_->getVertexNeighbor(i, k, neighborId);
             tmpData[dimensionNumber_*i + j]
               += outputData[dimensionNumber_*(neighborId) + j];
@@ -157,7 +157,7 @@ template <class dataType> int ttk::ScalarFieldSmoother::smooth(
    
     if(numberOfIterations){
       // assign the tmpData back to the output
-      for(int i = 0; i < vertexNumber; i++){
+      for(SimplexId i = 0; i < vertexNumber; i++){
         for(int j = 0; j < dimensionNumber_; j++){
            // only set value for unmasked points
            if (mask_ == nullptr || mask_[i] != 0)
