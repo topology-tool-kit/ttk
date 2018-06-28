@@ -27,7 +27,8 @@ namespace ttk{
 		std::vector<std::vector<matchingTuple>> execute(std::vector<diagramTuple>& barycenter);
 			
 		void setBidderDiagrams();
-		void setInitialBarycenter();
+		void enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence);
+		void setInitialBarycenter(dataType min_persistence);
 		dataType getMaxPersistence();
 		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> getKDTree();
 		dataType updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings);
@@ -106,6 +107,8 @@ namespace ttk{
       std::vector<std::vector<dataType>>      all_matchings_;
  	  std::vector<std::vector<dataType>>      all_old_matchings_;
       std::vector<BidderDiagram<dataType>>    bidder_diagrams_;
+	  std::vector<BidderDiagram<dataType>>    current_bidder_diagrams_;
+	  std::vector<std::vector<int>>           current_bidder_ids_;
       std::vector<GoodDiagram<dataType>>	  barycenter_goods_;
   };
 }
