@@ -222,9 +222,9 @@ void Graph::alloc()
       cout << "[FTR Graph]: ERROR, setNumberOfVertices not called before alloc in Graph" << endl;
    }
 #endif
-   leaves_.reserve(nbVerts_/3);
-   nodes_.reserve(nbVerts_/2);
-   arcs_.reserve(nbVerts_/2);
+   leaves_.reserve(nbVerts_/2);
+   nodes_.reserve(nbVerts_);
+   arcs_.reserve(nbVerts_);
    segmentation_.resize(nbVerts_);
    valUp_.resize(nbVerts_);
    valDown_.resize(nbVerts_);

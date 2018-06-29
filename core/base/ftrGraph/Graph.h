@@ -131,9 +131,15 @@ namespace ttk
          void visit(const idVertex v, const idSegmentation id, bool regular = true)
          {
             if (regular) {
-               segmentation_[v].emplace_front(id);
+#pragma omp critical
+               {
+                  segmentation_[v].emplace_front(id);
+               }
             } else {
-               segmentation_[v].emplace_front(-id-1);
+#pragma omp critical
+               {
+                  segmentation_[v].emplace_front(-id-1);
+               }
             }
          }
 
@@ -155,7 +161,8 @@ namespace ttk
          bool hasVisited(const idVertex v, const idVertex rpz) const
          {
             for(const idSegmentation tmp :  segmentation_[v]){
-               if (tmp >= 0 && getArc(tmp).getPropagation()->getRpz() == rpz) {
+               if (tmp >= 0 && getArc(tmp).getPropagation() &&
+                   getArc(tmp).getPropagation()->getRpz() == rpz) {
                   return true;
                }
             }

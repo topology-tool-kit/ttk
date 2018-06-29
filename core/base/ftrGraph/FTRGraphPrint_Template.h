@@ -49,9 +49,9 @@ namespace ttk
 
          res << "t" << cellId << ":";
          res << "{";
-         res << " " << printEdge(e0, localPropagation);
-         res << " " << printEdge(e1, localPropagation);
-         res << " " << printEdge(e2, localPropagation);
+         res << " " << printEdge(std::get<0>(oTriangle), localPropagation);
+         res << " " << printEdge(std::get<1>(oTriangle), localPropagation);
+         res << " " << printEdge(std::get<2>(oTriangle), localPropagation);
          res << " }";
          return res.str();
       }

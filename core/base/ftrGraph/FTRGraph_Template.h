@@ -88,7 +88,7 @@ namespace ttk
          DebugTimer timeBuild;
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(1)
+#pragma omp parallel num_threads(params_->threadNumber)
 #endif
          {
 #ifdef TTK_ENABLE_OPENMP
@@ -113,7 +113,7 @@ namespace ttk
          // Debug print
          printGraph(params_->debugLevel);
 
-         // std::cout << graph_.printVisit() << std::endl;
+         std::cout << graph_.printVisit() << std::endl;
 
          // Message user
          {
@@ -145,7 +145,7 @@ namespace ttk
 
                for (idVertex v = lowerBound; v < upperBound; ++v) {
                   const valence vNeighNumber = mesh_.getVertexNeighborNumber(v);
-                  bool isMax = true;
+                  bool isMax = false;
                   bool isMin = true;
 
                   for (valence n = 0; n < vNeighNumber; ++n) {

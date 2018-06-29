@@ -12,7 +12,8 @@
 
 // Dynamic graph structure
 #ifndef NDEBUG
-#define DEBUG_2(msg) std::cout msg
+// #define DEBUG_2(msg) std::cout msg
+#define DEBUG_2(msg)
 #else
 #define DEBUG_2(msg)
 #endif
@@ -179,6 +180,8 @@ namespace ttk
          const idCell nbAdjTriangles =
              mesh_.getVertexTriangleNumber(localPropagation->getCurVertex());
 
+         DEBUG_1(<< "update preimage " << localPropagation->getCurVertex());
+
          for (idCell t = 0; t < nbAdjTriangles; ++t) {
             // Classify current cell
             idCell curTriangleid;
@@ -237,6 +240,10 @@ namespace ttk
          // So we do not add the edge now
          const int t = dynGraph(localPropagation).removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
 
+         // keep history inside the dyngraph structure
+         dynGraph(localPropagation).setSubtreeArc(std::get<0>(oTriangle), curArc);
+         dynGraph(localPropagation).setSubtreeArc(std::get<1>(oTriangle), curArc);
+
          if (t) {
             DEBUG_2(<< "mid replace edge: " << printEdge(std::get<0>(oTriangle), localPropagation));
             DEBUG_2(<< " :: " << printEdge(std::get<1>(oTriangle), localPropagation) << std::endl);
@@ -268,6 +275,9 @@ namespace ttk
                                                        const idSuperArc         curArc)
       {
          const int t = dynGraph(localPropagation).removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
+
+         dynGraph(localPropagation).setSubtreeArc(std::get<1>(oTriangle), curArc);
+         dynGraph(localPropagation).setSubtreeArc(std::get<2>(oTriangle), curArc);
 
          if (t) {
             DEBUG_2(<< "end remove edge: " << printEdge(std::get<1>(oTriangle), localPropagation));
@@ -378,8 +388,10 @@ namespace ttk
            if (localPropagation->compare(other, curSaddle)) {
               const idSuperArc edgeArc = dynGraph(localPropagation).getSubtreeArc(edgeId);
               if (edgeArc == currentArc) {
-                 DEBUG_1(<< " decrement " << curSaddle << std::endl);
                  ++decr;
+                 DEBUG_1(<< printEdge(edgeId, localPropagation) << " decrement " << static_cast<unsigned>(decr) << " " << curSaddle << std::endl);
+              } else {
+                 DEBUG_1(<< printEdge(edgeId, localPropagation) << " no decrement " << edgeArc << std::endl);
               }
            }
          }
@@ -507,7 +519,7 @@ namespace ttk
                if (alreadyAttached)
                   continue;
 
-               DEBUG_1(<< "split " << curVert << " at " << printTriangle(oNeighTriangle, localProp) << std::endl);
+               DEBUG_1(<< "split " << curVert << " at " << printTriangle(neighTriangle, localProp) << std::endl);
 
                // BFS to add vertices in the current propagation for each seed
                // and its corresponfing arc
