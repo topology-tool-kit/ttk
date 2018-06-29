@@ -286,12 +286,12 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 	}
 	for(unsigned int j=0; j<barycenter_sad.size(); j++){
 		diagramTuple dt = barycenter_sad[j];
-		std::get<5>(dt) = barycenter->size();
+		//std::get<5>(dt) = barycenter->size();
 		barycenter->push_back(dt);
 	}
 	for(unsigned int j=0; j<barycenter_max.size(); j++){
 		diagramTuple dt = barycenter_max[j];
-		std::get<5>(dt) = barycenter->size();
+		//std::get<5>(dt) = barycenter->size();
 		barycenter->push_back(dt);
 	}
 	

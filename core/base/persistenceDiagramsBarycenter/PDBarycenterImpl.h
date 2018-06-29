@@ -60,10 +60,10 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		
 		dataType total_cost = 0;
 		
-		/*#ifdef TTK_ENABLE_OPENMP
+		#ifdef TTK_ENABLE_OPENMP
 		omp_set_num_threads(threadNumber_);
 		#pragma omp parallel for schedule(dynamic, 1)
-		#endif*/
+		#endif
 		for(int i=0; i<numberOfInputs_; i++){
 			Auction<dataType> auction = Auction<dataType>(&current_bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_, geometrical_factor_, 0.01, kdt, correspondance_kdt_map, epsilon, min_diag_price[i]);
 			int n_biddings = 0;
@@ -110,7 +110,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 
 	for(int j=0; j<barycenter_goods_[0].size(); j++){
 		Good<dataType>& g = barycenter_goods_[0].get(j);
-		diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_, g.getPersistence(), j, g.x_, 0,0,0, g.y_, 0,0,0);
+		diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_, g.getPersistence(), diagramType_, g.x_, 0,0,0, g.y_, 0,0,0);
 		barycenter.push_back(t);
 	}
 		

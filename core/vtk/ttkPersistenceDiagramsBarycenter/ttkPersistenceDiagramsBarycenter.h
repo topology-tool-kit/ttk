@@ -28,6 +28,11 @@
 #define _TTK_PERSISTENCEDIAGRAMSBARYCENTER_H
 
 
+#define BLocalMax ttk::ftm::NodeType::Local_maximum
+#define BLocalMin ttk::ftm::NodeType::Local_minimum
+#define BSaddle1  ttk::ftm::NodeType::Saddle1
+#define BSaddle2  ttk::ftm::NodeType::Saddle2
+
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
@@ -274,8 +279,24 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 
 	vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
 		vtkSmartPointer<vtkUnstructuredGrid>::New();
+		
+	vtkSmartPointer<vtkIntArray> nodeType =
+		vtkSmartPointer<vtkIntArray>::New();
+	nodeType->SetName("nodeType");
+		
+	vtkSmartPointer<vtkDoubleArray> persistenceScalars =
+		vtkSmartPointer<vtkDoubleArray>::New();
+	persistenceScalars->SetName("Persistence");
+	
+	vtkSmartPointer<vtkIntArray> pairType =
+		vtkSmartPointer<vtkIntArray>::New();
+	pairType->SetName("pairType");
 
  
+	const int minIndex          = 0;
+	const int saddleSaddleIndex = 1;
+	const int maxIndex          = 2;
+
 	for (unsigned int i = 0; i < diagram->size(); ++i) {
 		vtkIdType ids[2];
 		diagramTuple t = diagram->at(i);
@@ -287,16 +308,74 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 		double y2 = std::get<10>(t);
 		double z2 = 0;
 		
+		
+		
 		points->InsertNextPoint(x1, y1, z1);
+		const ttk::ftm::NodeType n1Type = std::get<1>(t);
+		switch (n1Type) {
+			case BLocalMin:
+				nodeType->InsertTuple1(2*i, 0);
+				break;
+
+			case BSaddle1:
+				nodeType->InsertTuple1(2*i, 1);
+				break;
+				
+			case BSaddle2:
+				nodeType->InsertTuple1(2*i, 2);
+				break;
+
+			case BLocalMax:
+				nodeType->InsertTuple1(2*i, 3);
+				break;
+		}
 		points->InsertNextPoint(x2, y2, z2);
+		
+		const ttk::ftm::NodeType n2Type = std::get<3>(t);
+		switch (n2Type) {
+			case BLocalMin:
+				nodeType->InsertTuple1(2*i+1, 0);
+				break;
+
+			case BSaddle1:
+				nodeType->InsertTuple1(2*i+1, 1);
+				break;
+				
+			case BSaddle2:
+				nodeType->InsertTuple1(2*i+1, 2);
+				break;
+
+			case BLocalMax:
+				nodeType->InsertTuple1(2*i+1, 3);
+				break;
+		}
 		
 		ids[0] = 2*i;
 		ids[1] = 2*i+1;
 		
 		persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
+		persistenceScalars->InsertTuple1(i, y2-x2);
+		const ttk::ftm::idVertex type = std::get<5>(t);
+		switch (type) {
+			case 0:
+				pairType->InsertTuple1(i, 0);
+				break;
+
+			case 1:
+				pairType->InsertTuple1(i, 1);
+				break;
+
+			case 2:
+				pairType->InsertTuple1(i, 2);
+				break;
+		}
     }
     
   persistenceDiagram->SetPoints(points);
+  persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
+  persistenceDiagram->GetCellData()->AddArray(pairType);
+  persistenceDiagram->GetPointData()->AddArray(nodeType);
+  
 
   return persistenceDiagram;
 }
