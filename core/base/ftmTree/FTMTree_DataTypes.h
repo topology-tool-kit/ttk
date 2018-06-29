@@ -48,7 +48,7 @@ namespace ftm
    using idSegment = idSuperArc;
 
    /// \brief type use to store threads related numbers
-   using numThread = unsigned char;
+   using numThread = ThreadId;
 
    /// \brief type stored by UnionFind
    using ufDataType = long int;

@@ -20,6 +20,7 @@
 #ifndef DATATYPES_H
 #define DATATYPES_H
 
+#include <DataTypes.h>
 #include <tuple>
 #include <limits>
 
@@ -34,11 +35,11 @@ namespace ttk
    /// \brief Node index in vect_nodes_
    using idNode = unsigned int;
    /// \brief Vertex index in scalars_
-   using idVertex = int;
+   using idVertex = SimplexId;
    /// \brief Edge index in vect_edgeList_
-   using idEdge = int;
+   using idEdge = SimplexId;
    /// \brief Cell index in vect_cellList_
-   using idCell = int;
+   using idCell = SimplexId;
 
    /// \brief type used to recover Node/Arc in vert2tree SIGNED ONLY
    // Warning, in long long int the max super arc is -1, might not be able to deal with
@@ -49,7 +50,7 @@ namespace ttk
    using idSegment = idSuperArc;
 
    /// \brief type use to store threads related numbers
-   using numThread = unsigned char;
+   using numThread = ThreadId;
    /// \brief index of the interface/partition in vect_interfaces_
    using idInterface = numThread;
    using idPartition = numThread;

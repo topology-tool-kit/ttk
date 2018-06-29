@@ -818,7 +818,7 @@ idNode MergeTree::makeNode(const Node *const n, const idVertex &term)
 }
 
 void MergeTree::delNode(const idNode &node, const pair<idVertex, bool> *markVertices,
-                        const int &nbMark)
+                        const idVertex &nbMark)
 {
    Node *mainNode = getNode(node);
 
