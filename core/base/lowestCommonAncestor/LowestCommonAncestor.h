@@ -92,11 +92,9 @@ namespace ttk {
     /// Get the id of the lowest common ancestor of i and j.
     /// \pre preprocess() must have been called after the last change in the tree.
     inline int query(int i, int j) const {
-      #ifndef TTK_ENABLE_KAMIKAZE
       if(nodeFirstAppearence_[i]>nodeFirstAppearence_[j]) {
         std::swap(i,j);
       }
-      #endif
       return
         nodeOrder_[RMQuery(nodeFirstAppearence_[i], nodeFirstAppearence_[j])];
     }
