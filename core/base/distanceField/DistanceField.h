@@ -39,17 +39,17 @@ namespace ttk{
       ~DistanceField();
 
       template <typename dataType>
-        dataType getDistance(const int a, const int b) const;
+        dataType getDistance(const SimplexId a, const SimplexId b) const;
 
       template <typename dataType>
         int execute() const;
 
-      inline int setVertexNumber(int vertexNumber){
+      inline int setVertexNumber(SimplexId vertexNumber){
         vertexNumber_=vertexNumber;
         return 0;
       }
 
-      inline int setSourceNumber(int sourceNumber){
+      inline int setSourceNumber(SimplexId sourceNumber){
         sourceNumber_=sourceNumber;
         return 0;
       }
@@ -83,8 +83,8 @@ namespace ttk{
       }
 
     protected:
-      int vertexNumber_;
-      int sourceNumber_;
+      SimplexId vertexNumber_;
+      SimplexId sourceNumber_;
       Triangulation* triangulation_;
       void* vertexIdentifierScalarFieldPointer_;
       void* outputScalarFieldPointer_;
@@ -94,7 +94,7 @@ namespace ttk{
 }
 
 template <typename dataType>
-dataType ttk::DistanceField::getDistance(const int a, const int b) const{
+dataType ttk::DistanceField::getDistance(const SimplexId a, const SimplexId b) const{
   float p0[3];
   triangulation_->getVertexPoint(a,p0[0],p0[1],p0[2]);
   float p1[3];
@@ -104,10 +104,10 @@ dataType ttk::DistanceField::getDistance(const int a, const int b) const{
 
 template <typename dataType>
 int ttk::DistanceField::execute() const{
-  int* identifiers=static_cast<int*>(vertexIdentifierScalarFieldPointer_);
+  SimplexId* identifiers=static_cast<SimplexId*>(vertexIdentifierScalarFieldPointer_);
   dataType* dist=static_cast<dataType*>(outputScalarFieldPointer_);
-  int* origin=static_cast<int*>(outputIdentifiers_);
-  int* seg=static_cast<int*>(outputSegmentation_);
+  SimplexId* origin=static_cast<SimplexId*>(outputIdentifiers_);
+  SimplexId* seg=static_cast<SimplexId*>(outputSegmentation_);
 
   Timer t;
 
@@ -115,16 +115,16 @@ int ttk::DistanceField::execute() const{
   std::fill(origin,origin+vertexNumber_,-1);
 
   // get the sources
-  std::set<int> isSource;
-  for(int k=0; k<sourceNumber_; ++k)
+  std::set<SimplexId> isSource;
+  for(SimplexId k=0; k<sourceNumber_; ++k)
     isSource.insert(identifiers[k]);
-  std::vector<int> sources;
+  std::vector<SimplexId> sources;
   for(auto s : isSource)
     sources.push_back(s);
   isSource.clear();
 
   // comparison lambda
-  auto cmp=[](const std::pair<dataType,int>& a, const std::pair<dataType,int>& 
+  auto cmp=[](const std::pair<dataType,SimplexId>& a, const std::pair<dataType,SimplexId>& 
 b){
     if(a.first != b.first) return a.first<b.first;
     else return a.second<b.second;
@@ -138,18 +138,18 @@ b){
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i=0; i< (int) sources.size(); ++i){
+  for(SimplexId i=0; i< (SimplexId) sources.size(); ++i){
     std::vector<bool> visited(vertexNumber_,false);
-    std::set<std::pair<dataType,int>,decltype(cmp)> S(cmp);
+    std::set<std::pair<dataType,SimplexId>,decltype(cmp)> S(cmp);
 
     {
-      const int s=sources[i];
+      const SimplexId s=sources[i];
       scalars[i][s]=0;
       visited[s]=true;
 
-      const int neighborNumber=triangulation_->getVertexNeighborNumber(s);
-      for(int k=0; k<neighborNumber; ++k){
-        int neighbor;
+      const SimplexId neighborNumber=triangulation_->getVertexNeighborNumber(s);
+      for(SimplexId k=0; k<neighborNumber; ++k){
+        SimplexId neighbor;
         triangulation_->getVertexNeighbor(s,k,neighbor);
         if(!visited[neighbor]){
           scalars[i][neighbor]=getDistance<dataType>(s,neighbor);
@@ -160,13 +160,13 @@ b){
 
     while(!S.empty()){
       auto it=S.begin();
-      const int vertex=it->second;
+      const SimplexId vertex=it->second;
 
       if(!visited[vertex]){
         const dataType vertexScalar=scalars[i][vertex];
-        const int neighborNumber=triangulation_->getVertexNeighborNumber(vertex);
-        for(int k=0; k<neighborNumber; ++k){
-          int neighbor;
+        const SimplexId neighborNumber=triangulation_->getVertexNeighborNumber(vertex);
+        for(SimplexId k=0; k<neighborNumber; ++k){
+          SimplexId neighbor;
           triangulation_->getVertexNeighbor(vertex,k,neighbor);
 
           const dataType delta=getDistance<dataType>(vertex,neighbor);
@@ -184,8 +184,8 @@ b){
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int k=0; k<vertexNumber_; ++k){
-    for(unsigned int i=0; i<sources.size(); ++i){
+  for(SimplexId k=0; k<vertexNumber_; ++k){
+    for(SimplexId i=0; i<(SimplexId)sources.size(); ++i){
       if(i==0 or dist[k]>scalars[i][k]){
         dist[k]=scalars[i][k];
         origin[k]=sources[i];
