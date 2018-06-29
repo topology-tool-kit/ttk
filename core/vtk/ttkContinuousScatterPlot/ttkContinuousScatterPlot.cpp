@@ -131,7 +131,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  int numberOfPixels=ScatterplotResolution[0]*ScatterplotResolution[1];
+  SimplexId numberOfPixels=ScatterplotResolution[0]*ScatterplotResolution[1];
 #ifndef TTK_ENABLE_KAMIKAZE
   // no pixels
   if(!numberOfPixels){
@@ -144,12 +144,12 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   density_.resize(ScatterplotResolution[0]);
   validPointMask_.clear();
   validPointMask_.resize(ScatterplotResolution[0]);
-  for(int k=0; k<ScatterplotResolution[0]; ++k){
+  for(SimplexId k=0; k<ScatterplotResolution[0]; ++k){
     density_[k].resize(ScatterplotResolution[1],0.0);
     validPointMask_[k].resize(ScatterplotResolution[1],0);
   }
 
-  int numberOfPoints=input->GetNumberOfPoints();
+  SimplexId numberOfPoints=input->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   // no points
   if(!numberOfPoints){
@@ -157,7 +157,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
     return -4;
   }
 #endif
-  for(int k=0; k<numberOfPoints; ++k){
+  for(SimplexId k=0; k<numberOfPoints; ++k){
     double d1=inputScalars1_->GetTuple1(k);
     double d2=inputScalars2_->GetTuple1(k);
 
@@ -351,10 +351,10 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   pts_ = vtkSmartPointer<vtkPoints>::New();
   pts_->SetNumberOfPoints(numberOfPixels);
 
-  int id{};
+  SimplexId id{};
   vtkIdType ids[3];
-  for(int i=0; i<ScatterplotResolution[0]; i++){
-    for(int j=0; j<ScatterplotResolution[1]; j++){
+  for(SimplexId i=0; i<ScatterplotResolution[0]; i++){
+    for(SimplexId j=0; j<ScatterplotResolution[1]; j++){
       // positions:
       double x=imageMin[0]+i*imageDelta[0];
       double y=imageMin[1]+j*imageDelta[1];
