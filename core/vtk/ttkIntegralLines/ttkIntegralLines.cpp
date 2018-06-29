@@ -106,12 +106,12 @@ int ttkIntegralLines::getOffsets(vtkDataSet* input){
     if(!offsets_){
       const int numberOfPoints=input->GetNumberOfPoints();
 
-      offsets_=vtkIntArray::New();
+      offsets_=vtkIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfPoints);
       offsets_->SetName("OffsetScalarField");
 
-      for(int i=0; i<numberOfPoints; ++i)
+      for(SimplexId i=0; i<numberOfPoints; ++i)
         offsets_->SetTuple1(i,i);
     }
 
@@ -145,7 +145,7 @@ int ttkIntegralLines::getIdentifiers(vtkPointSet* input){
 }
 
 int ttkIntegralLines::getTrajectories(vtkDataSet* input,
-    vector<vector<int>>& trajectories,
+    vector<vector<SimplexId>>& trajectories,
     vtkUnstructuredGrid* output){
   vtkSmartPointer<vtkUnstructuredGrid> ug=vtkSmartPointer<vtkUnstructuredGrid>::New();
   vtkSmartPointer<vtkPoints> pts=vtkSmartPointer<vtkPoints>::New();
@@ -174,9 +174,9 @@ int ttkIntegralLines::getTrajectories(vtkDataSet* input,
   float p0[3];
   float p1[3];
   vtkIdType ids[2];
-  for(unsigned int i=0; i<trajectories.size(); ++i){
+  for(SimplexId i=0; i<(SimplexId)trajectories.size(); ++i){
     if(trajectories[i].size()){
-      int vertex=trajectories[i][0];
+      SimplexId vertex=trajectories[i][0];
       // init
       triangulation_->getVertexPoint(vertex,p0[0],p0[1],p0[2]);
       ids[0]=pts->InsertNextPoint(p0);
@@ -187,7 +187,7 @@ int ttkIntegralLines::getTrajectories(vtkDataSet* input,
       for(unsigned int k=0; k<scalarArrays.size(); ++k)
         inputScalars[k]->InsertNextTuple1(scalarArrays[k]->GetTuple1(vertex));
 
-      for(unsigned int j=1; j<trajectories[i].size(); ++j){
+      for(SimplexId j=1; j<(SimplexId)trajectories[i].size(); ++j){
         vertex=trajectories[i][j];
         triangulation_->getVertexPoint(vertex,p1[0],p1[1],p1[2]);
         ids[1]=pts->InsertNextPoint(p1);
@@ -266,7 +266,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const int numberOfPointsInDomain=domain->GetNumberOfPoints();
+  const SimplexId numberOfPointsInDomain=domain->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   // no points.
   if(numberOfPointsInDomain<=0){
@@ -275,7 +275,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const int numberOfPointsInSeeds=seeds->GetNumberOfPoints();
+  const SimplexId numberOfPointsInSeeds=seeds->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   // no points.
   if(numberOfPointsInSeeds<=0){
@@ -284,7 +284,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  vector<vector<int>> trajectories;
+  vector<vector<SimplexId>> trajectories;
 
   integralLines_.setVertexNumber(numberOfPointsInDomain);
   integralLines_.setSeedNumber(numberOfPointsInSeeds);

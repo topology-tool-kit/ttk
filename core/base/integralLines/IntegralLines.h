@@ -36,7 +36,7 @@ namespace ttk{
       ~IntegralLines();
 
       template<typename dataType>
-        inline float getDistance(const int& a, const int& b) const{
+        inline float getDistance(const SimplexId& a, const SimplexId& b) const{
           float p0[3];
           triangulation_->getVertexPoint(a,p0[0],p0[1],p0[2]);
           float p1[3];
@@ -46,7 +46,7 @@ namespace ttk{
         }
 
       template<typename dataType>
-        inline float getGradient(const int& a, const int& b, dataType* scalars) const{
+        inline float getGradient(const SimplexId& a, const SimplexId& b, dataType* scalars) const{
           return fabs(scalars[b]-scalars[a])/getDistance<dataType>(a,b);
         }
 
@@ -56,12 +56,12 @@ namespace ttk{
       template<typename dataType, class Compare>
         int execute(Compare cmp) const;
 
-      inline int setVertexNumber(const int &vertexNumber){
+      inline int setVertexNumber(const SimplexId &vertexNumber){
         vertexNumber_=vertexNumber;
         return 0;
       }
 
-      inline int setSeedNumber(const int &seedNumber){
+      inline int setSeedNumber(const SimplexId &seedNumber){
         seedNumber_=seedNumber;
         return 0;
       }
@@ -94,56 +94,56 @@ namespace ttk{
         return 0;
       }
 
-      inline int setOutputTrajectories(std::vector<std::vector<int>>* trajectories){
+      inline int setOutputTrajectories(std::vector<std::vector<SimplexId>>* trajectories){
         outputTrajectories_=trajectories;
         return 0;
       }
 
     protected:
 
-      int vertexNumber_;
-      int seedNumber_;
+      SimplexId vertexNumber_;
+      SimplexId seedNumber_;
       int direction_;
       Triangulation* triangulation_;
       void* inputScalarField_;
       void* inputOffsets_;
       void* vertexIdentifierScalarField_;
-      std::vector<std::vector<int>>* outputTrajectories_;
+      std::vector<std::vector<SimplexId>>* outputTrajectories_;
   };
 }
 
 template<typename dataType>
 int ttk::IntegralLines::execute() const{
-  int* offsets=static_cast<int*>(inputOffsets_);
-  int* identifiers=static_cast<int*>(vertexIdentifierScalarField_);
+  SimplexId* offsets=static_cast<SimplexId*>(inputOffsets_);
+  SimplexId* identifiers=static_cast<SimplexId*>(vertexIdentifierScalarField_);
   dataType* scalars=static_cast<dataType*>(inputScalarField_);
-  std::vector<std::vector<int>>* trajectories=outputTrajectories_;
+  std::vector<std::vector<SimplexId>>* trajectories=outputTrajectories_;
 
   Timer t;
 
   // get the seeds
-  std::unordered_set<int> isSeed;
-  for(int k=0; k<seedNumber_; ++k)
+  std::unordered_set<SimplexId> isSeed;
+  for(SimplexId k=0; k<seedNumber_; ++k)
     isSeed.insert(identifiers[k]);
-  std::vector<int> seeds;
+  std::vector<SimplexId> seeds;
   for(auto k : isSeed)
     seeds.push_back(k);
   isSeed.clear();
 
   trajectories->resize(seeds.size());
-  for(unsigned int i=0; i<seeds.size(); ++i){
-    int v{seeds[i]};
+  for(SimplexId i=0; i<(SimplexId)seeds.size(); ++i){
+    SimplexId v{seeds[i]};
     (*trajectories)[i].push_back(v);
 
     bool isMax{};
     while(!isMax){
-      int vnext{-1};
+      SimplexId vnext{-1};
       float fnext=std::numeric_limits<float>::min();
-      int neighborNumber=triangulation_->getVertexNeighborNumber(v);
+      SimplexId neighborNumber=triangulation_->getVertexNeighborNumber(v);
       bool isLocalMax=true;
       bool isLocalMin=true;
-      for(int k=0; k<neighborNumber; ++k){
-        int n;
+      for(SimplexId k=0; k<neighborNumber; ++k){
+        SimplexId n;
         triangulation_->getVertexNeighbor(v,k,n);
 
         if(scalars[n]<=scalars[v]) isLocalMax=false;
@@ -160,13 +160,13 @@ int ttk::IntegralLines::execute() const{
       }
 
       if(vnext==-1 and !isLocalMax and !isLocalMin){
-        int onext=-1;
-        for(int k=0; k<neighborNumber; ++k){
-          int n;
+        SimplexId onext=-1;
+        for(SimplexId k=0; k<neighborNumber; ++k){
+          SimplexId n;
           triangulation_->getVertexNeighbor(v,k,n);
 
           if(scalars[n]==scalars[v]){
-            const int o=offsets[n];
+            const SimplexId o=offsets[n];
             if((direction_==static_cast<int>(Direction::Forward)) xor 
 (o<offsets[v])){
               if(o>onext){
@@ -201,36 +201,36 @@ int ttk::IntegralLines::execute() const{
 
 template<typename dataType, class Compare>
 int ttk::IntegralLines::execute(Compare cmp) const{
-  int* offsets=static_cast<int*>(inputOffsets_);
-  int* identifiers=static_cast<int*>(vertexIdentifierScalarField_);
+  SimplexId* offsets=static_cast<SimplexId*>(inputOffsets_);
+  SimplexId* identifiers=static_cast<SimplexId*>(vertexIdentifierScalarField_);
   dataType* scalars=static_cast<dataType*>(inputScalarField_);
-  std::vector<std::vector<int>>* trajectories=outputTrajectories_;
+  std::vector<std::vector<SimplexId>>* trajectories=outputTrajectories_;
 
   Timer t;
 
   // get the seeds
-  std::unordered_set<int> isSeed;
-  for(int k=0; k<seedNumber_; ++k)
+  std::unordered_set<SimplexId> isSeed;
+  for(SimplexId k=0; k<seedNumber_; ++k)
     isSeed.insert(identifiers[k]);
-  std::vector<int> seeds;
+  std::vector<SimplexId> seeds;
   for(auto k : isSeed)
     seeds.push_back(k);
   isSeed.clear();
 
   trajectories->resize(seeds.size());
-  for(unsigned int i=0; i<seeds.size(); ++i){
-    int v{seeds[i]};
+  for(SimplexId i=0; i<(SimplexId)seeds.size(); ++i){
+    SimplexId v{seeds[i]};
     (*trajectories)[i].push_back(v);
 
     bool isMax{};
     while(!isMax){
-      int vnext{-1};
+      SimplexId vnext{-1};
       float fnext=std::numeric_limits<float>::min();
-      int neighborNumber=triangulation_->getVertexNeighborNumber(v);
+      SimplexId neighborNumber=triangulation_->getVertexNeighborNumber(v);
       bool isLocalMax=true;
       bool isLocalMin=true;
-      for(int k=0; k<neighborNumber; ++k){
-        int n;
+      for(SimplexId k=0; k<neighborNumber; ++k){
+        SimplexId n;
         triangulation_->getVertexNeighbor(v,k,n);
 
         if(scalars[n]<=scalars[v]) isLocalMax=false;
@@ -246,13 +246,13 @@ int ttk::IntegralLines::execute(Compare cmp) const{
       }
 
       if(vnext==-1 and !isLocalMax and !isLocalMin){
-        int onext=-1;
-        for(int k=0; k<neighborNumber; ++k){
-          int n;
+        SimplexId onext=-1;
+        for(SimplexId k=0; k<neighborNumber; ++k){
+          SimplexId n;
           triangulation_->getVertexNeighbor(v,k,n);
 
           if(scalars[n]==scalars[v]){
-            const int o=offsets[n];
+            const SimplexId o=offsets[n];
             if((direction_==static_cast<int>(Direction::Forward)) xor (o<offsets[v])){
               if(o>onext){
                 vnext=n;
