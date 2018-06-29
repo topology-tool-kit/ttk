@@ -44,10 +44,10 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
   // not produce an output of the type of the input.
   output->ShallowCopy(input);
   
-  vtkSmartPointer<vtkIntArray> vertexIdentifiers 
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> cellIdentifiers
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> vertexIdentifiers 
+    = vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> cellIdentifiers
+    = vtkSmartPointer<vtkIdTypeArray>::New();
     
   vertexIdentifiers->SetName(VertexFieldName.data());
   vertexIdentifiers->SetNumberOfComponents(1);
