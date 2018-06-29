@@ -232,8 +232,8 @@ void Graph::alloc()
 
 void Graph::init()
 {
-   fillVector<std::forward_list<idSegmentation>>(segmentation_,
-                                                 std::forward_list<idSegmentation>{});
+   // Consider max valence is 10
+   fillVector<AtomicVector<idSegmentation>>(segmentation_, AtomicVector<idSegmentation>(10));
    fillVector<valence>(valUp_, -1);
    fillVector<valence>(valDown_, -1);
 }

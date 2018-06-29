@@ -24,7 +24,6 @@
 #include<iostream>
 #endif
 
-#include <forward_list>
 #include <vector>
 
 namespace ttk
@@ -39,7 +38,7 @@ namespace ttk
          AtomicVector<Node>                       nodes_;
          AtomicVector<SuperArc>                   arcs_;
 
-         std::vector<std::forward_list<idSegmentation>> segmentation_;
+         std::vector<AtomicVector<idSegmentation>> segmentation_;
 
         public:
 
@@ -131,19 +130,13 @@ namespace ttk
          void visit(const idVertex v, const idSegmentation id, bool regular = true)
          {
             if (regular) {
-#pragma omp critical
-               {
-                  segmentation_[v].emplace_front(id);
-               }
+               segmentation_[v].emplace_back(id);
             } else {
-#pragma omp critical
-               {
-                  segmentation_[v].emplace_front(-id-1);
-               }
+               segmentation_[v].emplace_back(-id-1);
             }
          }
 
-         const std::forward_list<idSegmentation> visit(const idVertex v) const
+         const AtomicVector<idSegmentation> visit(const idVertex v) const
          {
             return segmentation_[v];
          }

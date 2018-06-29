@@ -113,7 +113,7 @@ namespace ttk
          // Debug print
          printGraph(params_->debugLevel);
 
-         std::cout << graph_.printVisit() << std::endl;
+         // std::cout << graph_.printVisit() << std::endl;
 
          // Message user
          {
