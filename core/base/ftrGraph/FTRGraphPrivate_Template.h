@@ -5,8 +5,8 @@
 
 // Skeleton + propagation
 #ifndef NDEBUG
-// #define DEBUG_1(msg) std::cout msg
-#define DEBUG_1(msg)
+#define DEBUG_1(msg) std::cout msg
+// #define DEBUG_1(msg)
 #else
 #define DEBUG_1(msg)
 #endif
@@ -63,10 +63,6 @@ namespace ttk
                graph_.visit(curVert, currentArc);
                DEBUG_1(<< "visit r: " << curVert << std::endl);
             } else {
-               if (graph_.isNode(curVert)) {
-                  graph_.visit(curVert, currentArc);
-                  DEBUG_1(<< "visit n: " << curVert << std::endl);
-               }
                // Caution: crossing tasks can leads to revisit legally
                if (checkSegmentationForArc(seed, curVert, localPropagation)){
                   DEBUG_1(<< "Dismiss current : " << graph_.printArc(currentArc) << std::endl);
@@ -85,6 +81,8 @@ namespace ttk
             }
 
             if (isJoinSaddle) {
+               graph_.visit(curVert, currentArc);
+               DEBUG_1(<< "visit n: " << curVert << std::endl);
                isJoinSadlleLast = checkLast(currentArc, localPropagation, lowerStarEdges);
                DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
                // If the current growth reaches a saddle and is not the last
@@ -97,6 +95,10 @@ namespace ttk
 
             upperComp = upperComps(upperStarEdges, localPropagation);
             if (upperComp.size() > 1) {
+               if (!isJoinSaddle) {
+                  graph_.visit(curVert, currentArc);
+                  DEBUG_1(<< "visit n: " << curVert << std::endl);
+               }
                DEBUG_1(<< ": is split" << std::endl);
                isSplitSaddle = true;
             }
@@ -181,7 +183,7 @@ namespace ttk
          const idCell nbAdjTriangles =
              mesh_.getVertexTriangleNumber(localPropagation->getCurVertex());
 
-         DEBUG_1(<< "update preimage " << localPropagation->getCurVertex());
+         DEBUG_1(<< "update preimage " << localPropagation->getCurVertex() << std::endl);
 
          for (idCell t = 0; t < nbAdjTriangles; ++t) {
             // Classify current cell

@@ -25,14 +25,12 @@ void Graph::mergeAtSaddle(const idNode saddleId, Propagation* const localProp)
 #endif
 
    for (const idSegmentation id : visit(saddleVert)) {
-      if (id < 0) {
-         // its a node id
-         continue;
-      }
-      const idSuperArc a         = id;
-      Propagation*     lowerProp = getArc(a).getPropagation();
-      if (lowerProp->goUp() == localProp->goUp()) {
-         localProp->merge(*lowerProp);
+      if (id >= 0) {
+         Propagation* lowerProp = getArc(id).getPropagation();
+         if (lowerProp->goUp() == localProp->goUp()) {
+            std::cout << "merge " << lowerProp->getRpz() << " into " << saddleVert << std::endl;
+            localProp->merge(*lowerProp);
+         }
       }
    }
 }
