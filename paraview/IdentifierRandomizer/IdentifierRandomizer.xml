@@ -41,7 +41,6 @@
         >
         <ArrayListDomain
           name="array_list"
-          data_type="VTK_INT"
           default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />
