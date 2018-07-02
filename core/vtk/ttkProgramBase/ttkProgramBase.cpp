@@ -63,20 +63,20 @@ int ttkProgramBase::save() const{
     
     if(vtkWrapper_->GetOutput(i)){
   
-      if((vtkWrapper_->GetOutput(i)->GetDataObjectType() == VTK_IMAGE_DATA)
-        ||(vtkWrapper_->GetOutput(i)->GetDataObjectType() == TTK_IMAGE_DATA)){
+      if((vtkWrapper_->GetOutput(i)->GetDataObjectType() == VTK_IMAGE_DATA)){
+//         ||(vtkWrapper_->GetOutput(i)->GetDataObjectType() == TTK_IMAGE_DATA)){
         save<vtkXMLImageDataWriter>(i);
       }
       
-      if((vtkWrapper_->GetOutput(i)->GetDataObjectType() == VTK_POLY_DATA)
-        ||(vtkWrapper_->GetOutput(i)->GetDataObjectType() == TTK_POLY_DATA)){
+      if((vtkWrapper_->GetOutput(i)->GetDataObjectType() == VTK_POLY_DATA)){
+//         ||(vtkWrapper_->GetOutput(i)->GetDataObjectType() == TTK_POLY_DATA)){
         save<vtkXMLPolyDataWriter>(i);
       }
       
       if((vtkWrapper_->GetOutput(i)->GetDataObjectType() 
-        == VTK_UNSTRUCTURED_GRID)
-        ||(vtkWrapper_->GetOutput(i)->GetDataObjectType() ==
-          TTK_UNSTRUCTURED_GRID)){
+        == VTK_UNSTRUCTURED_GRID)){
+//         ||(vtkWrapper_->GetOutput(i)->GetDataObjectType() ==
+//           TTK_UNSTRUCTURED_GRID)){
         save<vtkXMLUnstructuredGridWriter>(i);
       }
     }

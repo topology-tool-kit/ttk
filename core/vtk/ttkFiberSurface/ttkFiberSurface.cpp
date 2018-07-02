@@ -98,9 +98,9 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   }
  
   if(!((input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
-    ||(input->GetDataObjectType() == TTK_UNSTRUCTURED_GRID)
-    ||(input->GetDataObjectType() == VTK_IMAGE_DATA)
-    ||(input->GetDataObjectType() == TTK_IMAGE_DATA))){
+//     ||(input->GetDataObjectType() == TTK_UNSTRUCTURED_GRID)
+    ||(input->GetDataObjectType() == VTK_IMAGE_DATA))){
+//     ||(input->GetDataObjectType() == TTK_IMAGE_DATA))){
     stringstream msg;
     msg << "[ttkFiberSurface] Error5: Unsupported VTK data-structure ("
       << input->GetDataObjectType() << ")" << endl;

@@ -127,23 +127,23 @@ template <class vtkWriterClass>
   std::string extension;
   
   if((vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType() 
-    == VTK_IMAGE_DATA)
-    ||(vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType()
-      == TTK_IMAGE_DATA)){
+    == VTK_IMAGE_DATA)){
+//     ||(vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType()
+//       == TTK_IMAGE_DATA)){
     extension = "vti";
   }
   
   if((vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType() 
-    == VTK_POLY_DATA)
-    ||(vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType()
-      == TTK_POLY_DATA)){
+    == VTK_POLY_DATA)){
+//     ||(vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType()
+//       == TTK_POLY_DATA)){
     extension = "vtp";
   }
   
   if((vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType() 
-    == VTK_UNSTRUCTURED_GRID)
-    ||(vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType()
-      == TTK_UNSTRUCTURED_GRID)){
+    == VTK_UNSTRUCTURED_GRID)){
+//     ||(vtkWrapper_->GetOutput(outputPortId)->GetDataObjectType()
+//       == TTK_UNSTRUCTURED_GRID)){
     extension = "vtu";
   }
   

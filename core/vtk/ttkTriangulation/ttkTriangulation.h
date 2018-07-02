@@ -198,8 +198,6 @@ class ttkTriangulation : public ttk::Debug {
     } \
   public:\
 
-#define TTK_UNSTRUCTURED_GRID (INT_MAX - VTK_UNSTRUCTURED_GRID)
-
 #ifndef TTK_PLUGIN
 class VTKCOMMONDATAMODEL_EXPORT ttkUnstructuredGrid :
 #else
@@ -216,8 +214,6 @@ class ttkUnstructuredGrid :
 
     void DeepCopy(vtkDataObject *other);
 
-    int GetDataObjectType(){return TTK_UNSTRUCTURED_GRID;};
-    
     void ShallowCopy(vtkDataObject *other);
     
   protected:
@@ -227,8 +223,6 @@ class ttkUnstructuredGrid :
     ~ttkUnstructuredGrid();
     
 };
-
-#define TTK_IMAGE_DATA (INT_MAX - VTK_IMAGE_DATA)
 
 #ifndef TTK_PLUGIN
 class VTKCOMMONDATAMODEL_EXPORT ttkImageData :
@@ -246,8 +240,6 @@ class ttkImageData :
 
     void DeepCopy(vtkDataObject *other);
 
-    int GetDataObjectType(){return TTK_IMAGE_DATA;};
-    
     void ShallowCopy(vtkDataObject *other);
     
   protected:
@@ -257,8 +249,6 @@ class ttkImageData :
     ~ttkImageData();
     
 };
-
-#define TTK_POLY_DATA (INT_MAX - VTK_POLY_DATA)
 
 #ifndef TTK_PLUGIN
 class VTKCOMMONDATAMODEL_EXPORT ttkPolyData :
@@ -276,8 +266,6 @@ class ttkPolyData :
 
     void DeepCopy(vtkDataObject *other);
 
-    int GetDataObjectType(){return TTK_POLY_DATA;};
-    
     void ShallowCopy(vtkDataObject *other);
     
   protected:
