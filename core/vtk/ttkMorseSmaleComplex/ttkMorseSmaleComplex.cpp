@@ -347,7 +347,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
     ascendingManifoldPtr=ascendingManifold->GetVoidPointer(0);
   if(ComputeDescendingSegmentation)
     descendingManifoldPtr=descendingManifold->GetVoidPointer(0);
-  if(ComputeFinalSegmentation)
+  if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation)
     morseSmaleManifoldPtr=morseSmaleManifold->GetVoidPointer(0);
 
   morseSmaleComplex_.setOutputMorseComplexes(
@@ -381,6 +381,17 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           &criticalPoints_points_isOnBoundary,
           &criticalPoints_points_PLVertexIdentifiers,
           &criticalPoints_points_manifoldSize);
+      }
+      else{
+      morseSmaleComplex_.setOutputCriticalPoints(
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr);
       }
 
 
@@ -894,6 +905,17 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           &criticalPoints_points_PLVertexIdentifiers,
           &criticalPoints_points_manifoldSize);
       }
+      else{
+      morseSmaleComplex_.setOutputCriticalPoints(
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr,
+          nullptr);
+      }
 
 
       morseSmaleComplex_.setOutputSeparatrices1(
@@ -1260,7 +1282,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
       pointData->AddArray(descendingManifold);
     if(ComputeAscendingSegmentation)
       pointData->AddArray(ascendingManifold);
-    if(ComputeFinalSegmentation)
+    if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation)
       pointData->AddArray(morseSmaleManifold);
   }
 
