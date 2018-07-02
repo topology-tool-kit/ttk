@@ -1,5 +1,4 @@
 #include <ttkTopologicalCompressionReader.h>
-#include <zlib.h>
 
 vtkStandardNewMacro(ttkTopologicalCompressionReader);
 

@@ -239,7 +239,8 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       // This data set may have several connected components,
       // we need to apply the FTM Tree for each one of these components
       // We then reconstruct the global tree using an offest mecanism
-      vtkSmartPointer<vtkUnstructuredGrid> input = vtkSmartPointer<vtkUnstructuredGrid>::New();
+      vtkSmartPointer<ttkUnstructuredGrid> input = 
+        vtkSmartPointer<ttkUnstructuredGrid>::New();
       input->ShallowCopy(inputs[0]);
       identify(input);
 
