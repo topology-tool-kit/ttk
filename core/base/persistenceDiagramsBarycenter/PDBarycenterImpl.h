@@ -103,7 +103,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		delete kdt;
 		//epsilon /= 5;
 		dataType eps_candidate = getEpsilon(pow(max_shift, 1./wasserstein_));
-		dataType eps_candidate_2 = epsilon/5.0;
+		dataType eps_candidate_2 = ((double)epsilon)/5.0;
+		
 		if(eps_candidate<epsilon){
 			epsilon = eps_candidate;
 		}
@@ -288,12 +289,12 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 
 template <typename dataType>
 dataType PDBarycenter<dataType>::getEpsilon(dataType rho){
-	return pow(rho, 2)/8;
+	return pow(rho, 2)/8.0;
 }
 
 template <typename dataType>
 dataType PDBarycenter<dataType>::getRho(dataType epsilon){
-	return std::sqrt(8*epsilon);
+	return std::sqrt(8.0*epsilon);
 }
 
 
@@ -346,7 +347,7 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 		sort(idx[i].begin(), idx[i].end(), [&persistences](int& a, int& b){return persistences[a] > persistences[b];});
 		int size =  candidates_to_be_added[i].size();
 		if(size>=max_points_to_add){
-			dataType last_persistence_added = candidates_to_be_added[i][idx[i][max_points_to_add-1]];
+			dataType last_persistence_added = persistences[idx[i][max_points_to_add-1]];
 			if(last_persistence_added>new_min_persistence){
 				new_min_persistence = last_persistence_added;
 			}
