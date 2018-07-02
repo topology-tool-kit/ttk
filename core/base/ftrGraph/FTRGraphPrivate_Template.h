@@ -5,7 +5,8 @@
 
 // Skeleton + propagation
 #ifndef NDEBUG
-#define DEBUG_1(msg) std::cout msg
+// #define DEBUG_1(msg) std::cout msg
+#define DEBUG_1(msg)
 #else
 #define DEBUG_1(msg)
 #endif
@@ -41,7 +42,7 @@ namespace ttk
 
          // topology
          bool isJoinSadlleLast = false;
-         bool isJoinSaddle = false, isSplitSaddle = false;
+         bool isJoinSaddle     = false, isSplitSaddle = false;
 
          // containers
          std::vector<idEdge>                  lowerStarEdges, upperStarEdges;

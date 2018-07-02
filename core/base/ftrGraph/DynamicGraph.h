@@ -220,11 +220,10 @@ namespace ttk
       struct DynGraphNode {
          DynGraphNode* parent_;
          Type          weight_;
-         idNode        nbChilds_;
 
          idSuperArc    corArc_;
 
-         explicit DynGraphNode() : parent_(nullptr), weight_(0), nbChilds_(0), corArc_(nullSuperArc)
+         explicit DynGraphNode() : parent_(nullptr), weight_(0), corArc_(nullSuperArc)
          {
          }
 
@@ -237,7 +236,6 @@ namespace ttk
          {
             parent_   = other.parent_;
             weight_   = other.weight_;
-            nbChilds_ = other.nbChilds_;
             return *this;
          }
 
@@ -247,11 +245,6 @@ namespace ttk
          Type getWeight(void) const
          {
             return weight_;
-         }
-
-         idNode getNbChilds(void) const
-         {
-            return nbChilds_;
          }
 
          bool hasParent(void) const

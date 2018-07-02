@@ -68,7 +68,6 @@ namespace ttk
                }
                res << " root: " << findRoot(&node) - &nodes_[0];
                res << " weight: " << (float)node.weight_;
-               res << " nb childs " << static_cast<unsigned>(node.nbChilds_);
                res << " oArc: " << node.findRootArc();
                res << endl;
             }
@@ -194,7 +193,6 @@ namespace ttk
          DynGraphNode<Type>* gParentNode   = parentNode->parent_;
          Type                gParentWeight = parentNode->weight_;
 
-         curNode->nbChilds_++;
          curNode->parent_ = nullptr;
 
          // Reverse all the node until the root
@@ -269,7 +267,6 @@ namespace ttk
             parent_    = n;
             weight_    = weight;
             n->corArc_ = corArc;
-            n->nbChilds_++;
             return true;
          }
 
@@ -281,10 +278,8 @@ namespace ttk
             // add arc (Parsa like)
             parent_    = n;
             weight_    = weight;
-            n->nbChilds_++;
 
             // remove old
-            std::get<1>(nNodes)->parent_->nbChilds_--;
             std::get<1>(nNodes)->parent_ = 0;
             std::get<1>(nNodes)->corArc_ = corArc;
          } else {
@@ -304,7 +299,6 @@ namespace ttk
          }
 #endif
 
-         parent_->nbChilds_--;
          parent_ = nullptr;
       }
 

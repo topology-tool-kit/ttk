@@ -66,7 +66,6 @@ void Graph::arcs2nodes(VertCompFN comp)
          getArc(arcId).setUpNodeId(upNodeId);
          getArc(arcId).setDownNodeId(downNodeId);
       }
-
    }
 
    // reserve good size
