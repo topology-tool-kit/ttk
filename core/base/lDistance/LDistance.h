@@ -37,11 +37,11 @@ namespace ttk {
     
       template <class dataType>
         int computeLn(dataType *input1, dataType *input2, dataType *output,
-          const int n, const int vertexNumber);
+          const int n, const ttk::SimplexId vertexNumber);
       
       template <class dataType>
         int computeLinf(dataType *input1, dataType *input2, dataType *output,
-           const int vertexNumber);
+           const ttk::SimplexId vertexNumber);
     
       /// Pass a pointer to an input array representing a scalarfield.
       /// The expected format for the array is the following:
@@ -76,7 +76,7 @@ namespace ttk {
         return 0;
       }
 
-      inline int setNumberOfPoints(long numberOfPoints) {
+      inline int setNumberOfPoints(ttk::SimplexId numberOfPoints) {
         numberOfPoints_ = numberOfPoints;
         return 0;
       }
@@ -96,7 +96,7 @@ namespace ttk {
                             *inputData2_,
                             *outputData_;
       double                result;
-      long                  numberOfPoints_;
+      ttk::SimplexId                  numberOfPoints_;
   };
 }
 
@@ -118,7 +118,7 @@ template <class dataType> int ttk::LDistance::execute(
   dataType *inputData1 = (dataType *) inputData1_;
   dataType *inputData2 = (dataType *) inputData2_;
   
-  int vertexNumber = (int) numberOfPoints_;
+  ttk::SimplexId vertexNumber = numberOfPoints_;
 
   if (distanceType == "inf") {
     status = computeLinf(inputData1, inputData2, outputData, vertexNumber);
@@ -147,7 +147,7 @@ template <class dataType> int ttk::LDistance::computeLn(
   dataType *input1, dataType *input2, 
   dataType *output, 
   const int n,
-  const int vertexNumber) 
+  const ttk::SimplexId vertexNumber) 
 {
   dataType sum = 0;
   
@@ -155,7 +155,7 @@ template <class dataType> int ttk::LDistance::computeLn(
   #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel for num_threads(threadNumber_) reduction(+:sum)
   #endif
-  for (int i = 0; i < vertexNumber; ++i) {
+  for (ttk::SimplexId i = 0; i < vertexNumber; ++i) {
     const dataType diff =  abs_diff<dataType>(input1[i], input2[i]);
     const dataType power = pow(diff, (double)n);
     
@@ -184,7 +184,7 @@ template <class dataType> int ttk::LDistance::computeLn(
 template <class dataType> int ttk::LDistance::computeLinf(
   dataType *input1, dataType *input2, 
   dataType *output,
-  const int vertexNumber) 
+  const ttk::SimplexId vertexNumber) 
 {
   if (vertexNumber < 1) return 0;
   
@@ -194,7 +194,7 @@ template <class dataType> int ttk::LDistance::computeLinf(
   #ifdef TTK_ENABLE_OPENMP
   #pragma omp parallel for num_threads(threadNumber_) reduction(max:maxValue)
   #endif
-  for (int i = 1; i < vertexNumber; ++i) {
+  for (ttk::SimplexId i = 1; i < vertexNumber; ++i) {
     const dataType iter = abs_diff<dataType>(input1[i], input2[i]);
     if (iter > maxValue) maxValue = iter;
     
