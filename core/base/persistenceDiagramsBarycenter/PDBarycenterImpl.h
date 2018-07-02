@@ -52,9 +52,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		dataType rho = getRho(epsilon);
 		if(use_progressive_ && n_iterations>1 && min_persistence>rho){
 			epsilon = getEpsilon(min_persistence);
-			// TODO Solve this issue : epsilon gets huge after (before ?) enriching diagrams
 			min_persistence = this->enrichCurrentBidderDiagrams(min_persistence, rho);
-			// TODO Some diagrams get more points than possible...
 			// TODO : enrich diagrams, add diagonal price to new bidders !!!!
 			
 			// TODO Enrich barycenter using median diagonal and off-diagonal prices

@@ -312,7 +312,6 @@ namespace ttk{
 	
 	template<typename dataType>
 	int Bidder<dataType>::runBidding(GoodDiagram<dataType>* goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor){
-		//TODO Adjust for goodDiagrams with only one point...
 		dataType best_val = std::numeric_limits<dataType>::lowest();
 		dataType second_val = std::numeric_limits<dataType>::lowest();
 		Good<dataType>* best_good = nullptr;
@@ -357,7 +356,6 @@ namespace ttk{
 	
 	template<typename dataType>
 	int Bidder<dataType>::runDiagonalBidding(GoodDiagram<dataType>* goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>>& diagonal_queue){
-		//TODO Adjust for goodDiagrams with only one point...
 		
 		// First, find the lowest and second lowest weights for diagonal goods
 		// Take this time to update the weights in the priority queue of the goods tested.
@@ -447,7 +445,6 @@ namespace ttk{
 	template<typename dataType>
 	int Bidder<dataType>::runDiagonalKDTBidding(GoodDiagram<dataType>* goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, std::vector<KDTree<dataType>*>& correspondance_kdt_map, std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>>& diagonal_queue, const int kdt_index){
 		/// Runs bidding of a diagonal bidder 
-		//TODO Adjust for goodDiagrams with only one point...
 		
 		// First, find the lowest and second lowest weights for diagonal goods
 		// Take this time to update the weights in the priority queue of the goods tested.
@@ -544,7 +541,6 @@ namespace ttk{
 	template<typename dataType>
 	int Bidder<dataType>::runKDTBidding(GoodDiagram<dataType>* goods, Good<dataType>& twinGood, int wasserstein, dataType epsilon, double geometricalFactor, KDTree<dataType>* kdt, const int kdt_index){
 		/// Runs bidding of a non-diagonal bidder 
-		//TODO Adjust for goodDiagrams with only one point...
 		std::vector<KDTree<dataType>*> neighbours;
 		std::vector<dataType> costs;
 		
