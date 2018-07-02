@@ -364,20 +364,23 @@ namespace ttk{
 		// It is not necessary to update weights for all diagonal bidders in the pririty queue
 		// since weights can only increase and we are interested only in the lowest ones
 		bool updated_top_pair = false;     // Boolean which equals true iff the top pair in the priority queue is given the good price
+		bool non_empty_goods = diagonal_queue.size()>0;
 		std::pair<int, dataType> best_pair;
-		while(!updated_top_pair){
-			std::pair<int, dataType> top_pair = diagonal_queue.top();
-			diagonal_queue.pop();
-			
-			dataType queue_weight = top_pair.second;
-			Good<dataType>* good = &(goods->get(top_pair.first));
-			if(good->getPrice()>queue_weight){
-				// If the weight in the priority queue is not the good one, update it
-				diagonal_queue.push(top_pair);
-			}
-			else{
-				updated_top_pair = true;
-				best_pair = top_pair;
+		if(non_empty_goods){
+			while(!updated_top_pair){
+				std::pair<int, dataType> top_pair = diagonal_queue.top();
+				diagonal_queue.pop();
+				
+				dataType queue_weight = top_pair.second;
+				Good<dataType>* good = &(goods->get(top_pair.first));
+				if(good->getPrice()>queue_weight){
+					// If the weight in the priority queue is not the good one, update it
+					diagonal_queue.push(top_pair);
+				}
+				else{
+					updated_top_pair = true;
+					best_pair = top_pair;
+				}
 			}
 		}
 		
@@ -399,10 +402,16 @@ namespace ttk{
 				}
 			}
 		}
-		dataType best_val = -best_pair.second;
-		dataType second_val = diagonal_queue.size()>0? -second_pair.second : best_val;
-		Good<dataType>* best_good = &(goods->get(best_pair.first));
-
+		
+		Good<dataType>* best_good;
+		dataType best_val = 0;
+		dataType second_val = 0;
+		if(non_empty_goods){
+			best_val = -best_pair.second;
+			second_val = diagonal_queue.size()>0? -second_pair.second : best_val;
+			best_good = &(goods->get(best_pair.first));
+		}
+		
 		// And now check for the corresponding twin bidder
 		bool is_twin=false;
 		Good<dataType>& g = twinGood;
@@ -445,21 +454,24 @@ namespace ttk{
 		// It is not necessary to update weights for all diagonal bidders in the pririty queue
 		// since weights can only increase and we are interested only in the lowest ones
 		bool updated_top_pair = false;     // Boolean which equals true iff the top pair in the priority queue is given the good price
+		bool non_empty_goods = diagonal_queue.size()>0;
 		std::pair<int, dataType> best_pair;
-		while(!updated_top_pair){
-			std::pair<int, dataType> top_pair = diagonal_queue.top();
-			diagonal_queue.pop();
-			
-			dataType queue_weight = top_pair.second;
-			Good<dataType>* good = &(goods->get(top_pair.first));
-			if(good->getPrice()>queue_weight){
-				// If the weight in the priority queue is not the good one, update it
-				std::get<1>(top_pair) = good->getPrice();
-				diagonal_queue.push(top_pair);
-			}
-			else{
-				updated_top_pair = true;
-				best_pair = top_pair;
+		if(non_empty_goods){
+			while(!updated_top_pair){
+				std::pair<int, dataType> top_pair = diagonal_queue.top();
+				diagonal_queue.pop();
+				
+				dataType queue_weight = top_pair.second;
+				Good<dataType>* good = &(goods->get(top_pair.first));
+				if(good->getPrice()>queue_weight){
+					// If the weight in the priority queue is not the good one, update it
+					std::get<1>(top_pair) = good->getPrice();
+					diagonal_queue.push(top_pair);
+				}
+				else{
+					updated_top_pair = true;
+					best_pair = top_pair;
+				}
 			}
 		}
 		
@@ -481,9 +493,15 @@ namespace ttk{
 				}
 			}
 		}
-		dataType best_val = -best_pair.second;
-		dataType second_val = diagonal_queue.size()>0? -second_pair.second : best_val;
-		Good<dataType>* best_good = &(goods->get(best_pair.first));
+		
+		Good<dataType>* best_good;
+		dataType best_val = 0;
+		dataType second_val = 0;
+		if(non_empty_goods){
+			best_val = -best_pair.second;
+			second_val = diagonal_queue.size()>0? -second_pair.second : best_val;
+			best_good = &(goods->get(best_pair.first));
+		}
 
 		// And now check for the corresponding twin bidder
 		bool is_twin=false;
