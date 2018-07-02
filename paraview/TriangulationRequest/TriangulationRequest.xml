@@ -46,9 +46,9 @@
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty name="SimplexId"
+      <IntVectorProperty name="SimplexIdentifier"
         label="Simplex identifier"
-        command="SetSimplexId"
+        command="SetSimplexIdentifier"
         number_of_elements="1"
         default_values="0"
         panel_visibility="default">
@@ -113,7 +113,7 @@
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="SimplexType" />
-        <Property name="SimplexId" />
+        <Property name="SimplexIdentifier" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
