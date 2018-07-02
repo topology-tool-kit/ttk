@@ -31,17 +31,17 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		min_persistence = 0;
 	}
 	dataType previous_min_persistence=min_persistence;
+	std::vector<dataType> min_diag_price(numberOfInputs_);
+	for(int i=0; i<numberOfInputs_; i++){
+		min_diag_price[i] = 0;
+	}	
 	
-	this->enrichCurrentBidderDiagrams(2*max_persistence, min_persistence);
+	this->enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price);
 	this->setInitialBarycenter(min_persistence);
 	std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 	
 	
 	dataType previous_cost = std::numeric_limits<dataType>::max();
-	std::vector<dataType> min_diag_price(numberOfInputs_);
-	for(int i=0; i<numberOfInputs_; i++){
-		min_diag_price[i] = 0;
-	}		
 	int n_iterations = 0;
 	
 	bool converged = false;
@@ -52,7 +52,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		dataType rho = getRho(epsilon);
 		if(use_progressive_ && n_iterations>1 && min_persistence>rho){
 			epsilon = getEpsilon(min_persistence);
-			min_persistence = this->enrichCurrentBidderDiagrams(min_persistence, rho);
+			min_persistence = this->enrichCurrentBidderDiagrams(min_persistence, rho, min_diag_price);
 			// TODO : enrich diagrams, add diagonal price to new bidders !!!!
 			
 			// TODO Enrich barycenter using median diagonal and off-diagonal prices
@@ -318,7 +318,7 @@ void PDBarycenter<dataType>::setBidderDiagrams(){
 
 
 template <typename dataType>
-dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence){
+dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence, std::vector<dataType> initial_diagonal_prices){
 	dataType new_min_persistence = min_persistence;
 	int max_diagram_size=0;
 	for(int i=0; i<numberOfInputs_; i++){
@@ -360,6 +360,7 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 			if(b.getPersistence()>=new_min_persistence){
 				b.id_ = current_bidder_diagrams_[i].size();
 				b.setPositionInAuction(current_bidder_diagrams_[i].size());
+				b.setDiagonalPrice(initial_diagonal_prices[i]);
 				current_bidder_diagrams_[i].addBidder(b);
 				
 				// b.id_ --> position of b in current_bidder_diagrams_[i]
@@ -411,10 +412,14 @@ dataType PDBarycenter<dataType>::getLowestPersistence(){
 
 template <typename dataType>
 void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence){
-	//int random_idx = rand() % numberOfInputs_;
-	std::cout << "BEWARE, initial barycenter is not chosen randomly..."<< std::endl;
-	int random_idx = 0;
-	std::vector<diagramTuple>* CTDiagram = static_cast<std::vector<diagramTuple>*>(inputData_[random_idx]);
+	int size =0;
+	int random_idx;
+	std::vector<diagramTuple>* CTDiagram;
+	while(size==0){
+		random_idx = rand() % numberOfInputs_;
+		CTDiagram = static_cast<std::vector<diagramTuple>*>(inputData_[random_idx]);
+		size = CTDiagram->size();
+	}
 	
 	for(int i=0; i<numberOfInputs_; i++){
 		GoodDiagram<dataType> goods;

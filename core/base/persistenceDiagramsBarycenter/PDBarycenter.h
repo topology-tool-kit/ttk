@@ -29,7 +29,7 @@ namespace ttk{
 		std::vector<std::vector<matchingTuple>> execute(std::vector<diagramTuple>& barycenter);
 			
 		void setBidderDiagrams();
-		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence);
+		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence, std::vector<dataType> initial_diagonal_prices);
 		void setInitialBarycenter(dataType min_persistence);
 		dataType getMaxPersistence();
 		dataType getLowestPersistence();
