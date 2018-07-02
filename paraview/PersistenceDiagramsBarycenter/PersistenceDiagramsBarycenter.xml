@@ -47,12 +47,45 @@ See also MandatoryCriticalPoints.
           label="p parameter"
           command="SetWassersteinMetric"
           number_of_elements="1"
-          default_values="1" >
+          default_values="2" >
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance 
 computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
+	  
+	  
+	  <IntVectorProperty
+        name="UseProgressive"
+        command="SetUseProgressive"
+        label="Compute Progressive Barycenter"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          If set to true, the barycenter is computed progressively (starting with most persistent pairs).
+		  The option may turn useful coupled with Time Limit since the Barycenter will be computed with only a portion of the 
+		  input points if computation time gets too important.
+        </Documentation>
+      </IntVectorProperty>
+	  
+	  
+	  <DoubleVectorProperty
+          name="TimeLimit"
+          label="Maximal computation time (s)"
+          command="SetTimeLimit"
+          number_of_elements="1"
+          default_values="3600"
+          panel_visibility="advanced"
+          >
+        <Documentation>
+          Maximal time of computation for the computation of the barycenter.
+		  Since Min/Saddle, Saddle/Saddle and Saddle/Max pairs are treated separatly, the actual computation time could be 
+		  three times the decided limit.
+		  A low value of Time Limit will yield approximate results. Use with caution.
+        </Documentation>
+      </DoubleVectorProperty>
 	  
 	  
       <IntVectorProperty

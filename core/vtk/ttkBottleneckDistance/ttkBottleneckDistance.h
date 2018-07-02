@@ -93,6 +93,12 @@ class ttkBottleneckDistance
 
     vtkSetMacro(Spacing, double);
     vtkGetMacro(Spacing, double);
+	
+	vtkSetMacro(UseProgressive, int);
+    vtkGetMacro(UseProgressive, int);
+
+    vtkSetMacro(TimeLimit, double);
+    vtkGetMacro(TimeLimit, double);
 
     vtkSetMacro(Method, int);
     vtkGetMacro(Method, int);
@@ -198,6 +204,8 @@ class ttkBottleneckDistance
     int 	              Method;
 	double	              Delta_lim;
 	double	              PersistencePercentage;
+	bool	              UseProgressive;
+	double	              TimeLimit;
 
     std::string                WassersteinMetric;
     bool                  UsePersistenceMetric;

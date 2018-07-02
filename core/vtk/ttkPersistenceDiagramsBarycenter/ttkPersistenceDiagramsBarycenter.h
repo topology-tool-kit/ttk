@@ -105,6 +105,12 @@ class ttkPersistenceDiagramsBarycenter
 	vtkSetMacro(WassersteinMetric, std::string);
     vtkGetMacro(WassersteinMetric, std::string);
 	
+	vtkSetMacro(UseProgressive, int);
+    vtkGetMacro(UseProgressive, int);
+
+    vtkSetMacro(TimeLimit, double);
+    vtkGetMacro(TimeLimit, double);
+	
 	vtkSetMacro(UseOutputMatching, int);
     vtkGetMacro(UseOutputMatching, int);
 	
@@ -143,6 +149,9 @@ class ttkPersistenceDiagramsBarycenter
 	bool                   UseOutputMatching;
     std::string                ScalarField;
 	std::string                WassersteinMetric;
+	
+	bool	              UseProgressive;
+	double	              TimeLimit;
 
     // base code features
     int doIt(vtkDataSet **input,
@@ -291,11 +300,6 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 	vtkSmartPointer<vtkIntArray> pairType =
 		vtkSmartPointer<vtkIntArray>::New();
 	pairType->SetName("pairType");
-
- 
-	const int minIndex          = 0;
-	const int saddleSaddleIndex = 1;
-	const int maxIndex          = 2;
 
 	for (unsigned int i = 0; i < diagram->size(); ++i) {
 		vtkIdType ids[2];

@@ -19,6 +19,8 @@ namespace ttk{
 			wasserstein_ = 2;
 			geometrical_factor_ = 1;
 			threadNumber_ = 1;
+			use_progressive_ = true;
+			time_limit_ = std::numeric_limits<double>::max();
 		};
 
 		~PDBarycenter(){};
@@ -27,9 +29,10 @@ namespace ttk{
 		std::vector<std::vector<matchingTuple>> execute(std::vector<diagramTuple>& barycenter);
 			
 		void setBidderDiagrams();
-		void enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence);
+		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence);
 		void setInitialBarycenter(dataType min_persistence);
 		dataType getMaxPersistence();
+		dataType getLowestPersistence();
 		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> getKDTree();
 		dataType updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings);
 		bool hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings, std::vector<std::vector<matchingTuple>>& previous_matchings);
@@ -67,6 +70,14 @@ namespace ttk{
 			threadNumber_ = threadNumber;
 		}
 		
+		inline void setUseProgressive(const bool use_progressive){
+			use_progressive_ = use_progressive;
+		}
+		
+		inline void setTimeLimit(const double time_limit){
+			time_limit_ = time_limit;
+		}
+		
 		inline void setDiagramType(const int &diagramType){
 			diagramType_ = diagramType;
 			if(diagramType_==0){
@@ -100,6 +111,8 @@ namespace ttk{
       int                   numberOfInputs_;
       void**                inputData_; //TODO : std::vector<void*>
       int                   threadNumber_;
+	  bool                  use_progressive_;
+	  double                time_limit_;
       
       int points_added_;
 	  int points_deleted_;

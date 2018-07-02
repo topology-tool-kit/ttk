@@ -13,16 +13,24 @@ using namespace ttk;
 
 template <typename dataType>
 std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vector<diagramTuple>& barycenter){
-
+	double total_time = 0;
 	
 	std::vector<std::vector<matchingTuple>> previous_matchings;
 		
 	this->setBidderDiagrams();
 	
 	dataType max_persistence = getMaxPersistence();
+	dataType lowest_persistence = getLowestPersistence();
 	dataType epsilon_0 = getEpsilon(max_persistence);
 	dataType epsilon = epsilon_0;
-	dataType min_persistence = max_persistence/2.;
+	dataType min_persistence;
+	if(use_progressive_){
+		min_persistence = max_persistence/2.;
+	}
+	else{
+		min_persistence = 0;
+	}
+	dataType previous_min_persistence=min_persistence;
 	
 	this->enrichCurrentBidderDiagrams(2*max_persistence, min_persistence);
 	this->setInitialBarycenter(min_persistence);
@@ -38,12 +46,17 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 	
 	bool converged = false;
 	while(!converged){
+		Timer t;
+		{
 		n_iterations += 1;
 		dataType rho = getRho(epsilon);
-		if(n_iterations>1 && min_persistence>rho){
-			this->enrichCurrentBidderDiagrams(min_persistence, rho);
+		if(use_progressive_ && n_iterations>1 && min_persistence>rho){
 			epsilon = getEpsilon(min_persistence);
-			min_persistence = rho;
+			// TODO Solve this issue : epsilon gets huge after (before ?) enriching diagrams
+			min_persistence = this->enrichCurrentBidderDiagrams(min_persistence, rho);
+			// TODO Some diagrams get more points than possible...
+			// TODO : enrich diagrams, add diagonal price to new bidders !!!!
+			
 			// TODO Enrich barycenter using median diagonal and off-diagonal prices
 		}
 		std::cout<< "epsilon : "<< epsilon << std::endl;
@@ -90,7 +103,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		delete kdt;
 		//epsilon /= 5;
 		dataType eps_candidate = getEpsilon(pow(max_shift, 1./wasserstein_));
-		dataType eps_candidate_2 = epsilon/5;
+		dataType eps_candidate_2 = epsilon/5.0;
 		if(eps_candidate<epsilon){
 			epsilon = eps_candidate;
 		}
@@ -101,11 +114,22 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 			epsilon = epsilon_0/n_iterations;
 		}
 		
-		converged =  (epsilon < 0.0001 * epsilon_0) && (hasBarycenterConverged(all_matchings, previous_matchings) || total_cost>=previous_cost );
+		converged = (previous_min_persistence<=lowest_persistence || !use_progressive_) && \
+					(epsilon < 0.0001 * epsilon_0 || use_progressive_) && \
+					(hasBarycenterConverged(all_matchings, previous_matchings) || total_cost>=previous_cost );
 		
 		previous_matchings = std::move(all_matchings);
+		previous_min_persistence = min_persistence;
 		// TODO Correct matchings !
 		previous_cost = total_cost;
+		}
+		total_time += t.getElapsedTime();
+		if(total_time>0.1*time_limit_){
+			setUseProgressive(false);
+		}
+		if(total_time>time_limit_){
+			converged=true;
+		}
 	}
 
 	for(int j=0; j<barycenter_goods_[0].size(); j++){
@@ -295,21 +319,57 @@ void PDBarycenter<dataType>::setBidderDiagrams(){
 
 
 template <typename dataType>
-void PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence){
+dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence){
+	dataType new_min_persistence = min_persistence;
+	int max_diagram_size=0;
 	for(int i=0; i<numberOfInputs_; i++){
+		if(current_bidder_diagrams_[i].size()>max_diagram_size){
+			max_diagram_size = current_bidder_diagrams_[i].size();
+		}
+	}
+	int max_points_to_add = 10 + (int) (max_diagram_size/10);
+	
+	std::vector<std::vector<int>> candidates_to_be_added(numberOfInputs_);
+	std::vector<std::vector<int>> idx(numberOfInputs_);
+	for(int i=0; i<numberOfInputs_; i++){
+		
+		std::vector<dataType> persistences;
 		for(int j=0; j<bidder_diagrams_[i].size(); j++){
 			Bidder<dataType> b = bidder_diagrams_[i].get(j);
 			dataType persistence = b.getPersistence();
 			if(persistence>=min_persistence && persistence<previous_min_persistence){
+				candidates_to_be_added[i].push_back(j);
+				idx[i].push_back(idx[i].size());
+				persistences.push_back(persistence);
+			}
+		}
+		sort(idx[i].begin(), idx[i].end(), [&persistences](int& a, int& b){return persistences[a] > persistences[b];});
+		int size =  candidates_to_be_added[i].size();
+		if(size>=max_points_to_add){
+			dataType last_persistence_added = candidates_to_be_added[i][idx[i][max_points_to_add-1]];
+			if(last_persistence_added>new_min_persistence){
+				new_min_persistence = last_persistence_added;
+			}
+		}
+
+	}
+		
+	for(int i=0; i<numberOfInputs_; i++){
+		int size =  candidates_to_be_added[i].size();
+		for(int j=0; j<std::min(max_points_to_add, size); j++){
+			Bidder<dataType> b = bidder_diagrams_[i].get(candidates_to_be_added[i][idx[i][j]]);
+			if(b.getPersistence()>=new_min_persistence){
 				b.id_ = current_bidder_diagrams_[i].size();
 				b.setPositionInAuction(current_bidder_diagrams_[i].size());
 				current_bidder_diagrams_[i].addBidder(b);
 				
 				// b.id_ --> position of b in current_bidder_diagrams_[i]
-				current_bidder_ids_[i][j] = current_bidder_diagrams_[i].size()-1;
+				current_bidder_ids_[i][candidates_to_be_added[i][idx[i][j]]] = current_bidder_diagrams_[i].size()-1;
 			}
 		}
+		std::cout<< " Diagram " << i << " size : " << current_bidder_diagrams_[i].size() << std::endl;
 	}
+	return new_min_persistence;
 }
 
 
@@ -329,6 +389,24 @@ dataType PDBarycenter<dataType>::getMaxPersistence(){
 		}
 	}
 	return max_persistence;
+}
+
+
+template <typename dataType>
+dataType PDBarycenter<dataType>::getLowestPersistence(){
+	dataType lowest_persistence = std::numeric_limits<dataType>::max();
+	for(int i=0; i<numberOfInputs_; i++){
+		BidderDiagram<dataType>& D = bidder_diagrams_[i];
+		for(int j=0; j<D.size(); j++){
+			//Add bidder to bidders
+			Bidder<dataType>& b = D.get(j);
+			dataType persistence = b.getPersistence();
+			if(persistence<lowest_persistence && persistence>0){
+				lowest_persistence = persistence;
+			}
+		}
+	}
+	return lowest_persistence;
 }
 
 

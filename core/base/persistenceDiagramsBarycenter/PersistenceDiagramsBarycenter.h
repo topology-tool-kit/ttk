@@ -94,6 +94,14 @@ namespace ttk{
 			threadNumber_ = ThreadNumber;
 		}
 		
+		inline void setUseProgressive(const bool use_progressive){
+			use_progressive_ = use_progressive;
+		}
+		
+		inline void setTimeLimit(const double time_limit){
+			time_limit_ = time_limit;
+		}
+		
 		template<typename type>
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;
@@ -108,6 +116,9 @@ namespace ttk{
       int                   numberOfInputs_;
       void**                inputData_; //TODO : std::vector<void*>
       int 					threadNumber_;
+	  bool                  use_progressive_;
+	  double                time_limit_;
+      
       
       int points_added_;
 	  int points_deleted_;
@@ -149,30 +160,31 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 			BNodeType nt1 = std::get<1>(t);
 			BNodeType nt2 = std::get<3>(t);
 			
-			//dataType dt = std::get<4>(t);
+			dataType dt = std::get<4>(t);
 			//if (abs<dataType>(dt) < zeroThresh) continue;
-
-			if (nt1 == BLocalMin && nt2 == BLocalMax) {
-				data_max[i]->push_back(t);
-				data_max_idx[i].push_back(j);
-				do_max = true;
-			}
-			else {
-				if (nt1 == BLocalMax || nt2 == BLocalMax) {
+			if(dt>0){
+				if (nt1 == BLocalMin && nt2 == BLocalMax) {
 					data_max[i]->push_back(t);
 					data_max_idx[i].push_back(j);
 					do_max = true;
 				}
-				if (nt1 == BLocalMin || nt2 == BLocalMin) {
-					data_min[i]->push_back(t);
-					data_min_idx[i].push_back(j);
-					do_min = true;
-				}
-				if ((nt1 == BSaddle1 && nt2 == BSaddle2)
-					|| (nt1 == BSaddle2 && nt2 == BSaddle1)) {
-					data_sad[i]->push_back(t);
-					data_sad_idx[i].push_back(j);
-					do_sad = true;
+				else {
+					if (nt1 == BLocalMax || nt2 == BLocalMax) {
+						data_max[i]->push_back(t);
+						data_max_idx[i].push_back(j);
+						do_max = true;
+					}
+					if (nt1 == BLocalMin || nt2 == BLocalMin) {
+						data_min[i]->push_back(t);
+						data_min_idx[i].push_back(j);
+						do_min = true;
+					}
+					if ((nt1 == BSaddle1 && nt2 == BSaddle2)
+						|| (nt1 == BSaddle2 && nt2 == BSaddle1)) {
+						data_sad[i]->push_back(t);
+						data_sad_idx[i].push_back(j);
+						do_sad = true;
+					}
 				}
 			}
 		}
@@ -200,6 +212,8 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 				bary_min.setWasserstein(wasserstein_);
 				bary_min.setNumberOfInputs(numberOfInputs_);
 				bary_min.setDiagramType(0);
+				bary_min.setUseProgressive(use_progressive_);
+				bary_min.setTimeLimit(time_limit_);
 				for(int i=0; i<numberOfInputs_; i++){
 					bary_min.setDiagram(i, data_min[i]);
 				}
@@ -218,6 +232,8 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 				bary_sad.setWasserstein(wasserstein_);
 				bary_sad.setNumberOfInputs(numberOfInputs_);
 				bary_sad.setDiagramType(1);
+				bary_sad.setUseProgressive(use_progressive_);
+				bary_sad.setTimeLimit(time_limit_);
 				for(int i=0; i<numberOfInputs_; i++){
 					bary_sad.setDiagram(i, data_sad[i]);
 				}
@@ -236,6 +252,8 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 				bary_max.setWasserstein(wasserstein_);
 				bary_max.setNumberOfInputs(numberOfInputs_);
 				bary_max.setDiagramType(2);
+				bary_max.setUseProgressive(use_progressive_);
+				bary_max.setTimeLimit(time_limit_);
 				for(int i=0; i<numberOfInputs_; i++){
 					bary_max.setDiagram(i, data_max[i]);
 				}

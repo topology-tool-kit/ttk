@@ -71,6 +71,8 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 			persistenceDiagramsBarycenter.setWasserstein(wassersteinMetric);
 
 			persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
+			persistenceDiagramsBarycenter.setTimeLimit(TimeLimit);
+			persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
 			persistenceDiagramsBarycenter.setThreadNumber(ThreadNumber);
 			for (int i = 0; i<numInputs; i++) {
 				double Spacing = i;
