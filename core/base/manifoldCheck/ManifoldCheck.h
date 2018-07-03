@@ -38,20 +38,20 @@ namespace ttk{
       int execute() const;
     
       /// Register the output vector for vertex link component number
-      inline int setVertexLinkComponentNumberVector(std::vector<int> *vertexVector){
+      inline int setVertexLinkComponentNumberVector(std::vector<ttk::SimplexId> *vertexVector){
         vertexLinkComponentNumber_ = vertexVector;
         return 0;
       }
       
       /// Register the output vector for edge link component number
-      inline int setEdgeLinkComponentNumberVector(std::vector<int> *edgeVector){
+      inline int setEdgeLinkComponentNumberVector(std::vector<ttk::SimplexId> *edgeVector){
         edgeLinkComponentNumber_ = edgeVector;
         return 0;
       }
       
       /// Register the output vector for triangle link component number
       inline int setTriangleLinkComponentNumberVector(
-        std::vector<int> *triangleVector){
+        std::vector<ttk::SimplexId> *triangleVector){
         triangleLinkComponentNumber_ = triangleVector;
         return 0;
       }
@@ -89,13 +89,13 @@ namespace ttk{
     
     protected:
       
-      int vertexManifoldCheck(const int &vertexId) const;
+      int vertexManifoldCheck(const ttk::SimplexId &vertexId) const;
       
-      int edgeManifoldCheck(const int &edgeId) const;
+      int edgeManifoldCheck(const ttk::SimplexId &edgeId) const;
       
-      std::vector<int>           *vertexLinkComponentNumber_;
-      std::vector<int>           *edgeLinkComponentNumber_;
-      std::vector<int>           *triangleLinkComponentNumber_;
+      std::vector<ttk::SimplexId>           *vertexLinkComponentNumber_;
+      std::vector<ttk::SimplexId>           *edgeLinkComponentNumber_;
+      std::vector<ttk::SimplexId>           *triangleLinkComponentNumber_;
       Triangulation         *triangulation_;
   };
 }

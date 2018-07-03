@@ -37,6 +37,7 @@
 #include                  <vtkGenericCell.h>
 #include                  <vtkInformation.h>
 #include                  <vtkIntArray.h>
+#include                  <vtkIdTypeArray.h>
 #include                  <vtkObjectFactory.h>
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
@@ -90,9 +91,9 @@ class ttkManifoldCheck
     
   private:
     
-    std::vector<int>           vertexLinkComponentNumber_;
-    std::vector<int>           edgeLinkComponentNumber_;
-    std::vector<int>           triangleLinkComponentNumber_;
+    std::vector<ttk::SimplexId>           vertexLinkComponentNumber_;
+    std::vector<ttk::SimplexId>           edgeLinkComponentNumber_;
+    std::vector<ttk::SimplexId>           triangleLinkComponentNumber_;
     ttk::ManifoldCheck         manifoldCheck_;
     
 };
