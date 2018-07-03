@@ -85,20 +85,20 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
   inputScalarFieldV->GetRange(vRange);
  
   double **coordinates = new double*[threadNumber_];
-  for(int i = 0; i < threadNumber_; i++){
+  for(ThreadId i = 0; i < threadNumber_; i++){
     coordinates[i] = new double[2];
   }
 
-  int count = 0;
+  SimplexId count = 0;
   
 #ifdef TTK_ENABLE_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < output->GetNumberOfPoints(); i++){
+  for(SimplexId i = 0; i < output->GetNumberOfPoints(); i++){
     
-    int threadId = 0;
+    ThreadId threadId = 0;
     
 #ifdef TTK_ENABLE_OPENMP
     threadId = omp_get_thread_num();
@@ -148,7 +148,7 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
   
   output->GetPointData()->SetTCoords(textureCoordinates_);
  
-  for(int i = 0; i < threadNumber_; i++){
+  for(ThreadId i = 0; i < threadNumber_; i++){
     delete coordinates[i];
   }
   delete[] coordinates;
