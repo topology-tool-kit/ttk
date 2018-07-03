@@ -101,7 +101,7 @@ Computer Graphics Forum, 2012.
         panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Documentation.
+           Documentation.
         </Documentation>
       </IntVectorProperty>
 
@@ -113,9 +113,21 @@ Computer Graphics Forum, 2012.
         panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Documentation.
+           Documentation.
         </Documentation>
       </IntVectorProperty>
+
+       <IntVectorProperty name="ComputeCriticalPoints"
+         label="Critical Points"
+         command="SetComputeCriticalPoints"
+         number_of_elements="1"
+         default_values="1"
+         panel_visibility="default">
+         <BooleanDomain name="bool"/>
+         <Documentation>
+           Documentation.
+         </Documentation>
+       </IntVectorProperty> 
 
        <IntVectorProperty name="ComputeAscendingSeparatrices1"
          label="Ascending 1-Separatrices"
@@ -307,6 +319,7 @@ Computer Graphics Forum, 2012.
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="ReverseSaddleMaximumConnection"/>
         <Property name="ReverseSaddleSaddleConnection"/>
+        <Property name="ComputeCriticalPoints"/>
         <Property name="ComputeAscendingSeparatrices1"/>
         <Property name="ComputeDescendingSeparatrices1"/>
         <Property name="ComputeSaddleConnectors"/>

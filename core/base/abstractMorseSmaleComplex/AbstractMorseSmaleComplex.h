@@ -142,7 +142,7 @@ namespace ttk{
 
       /**
        * Enable/Disable gradient reversal of (saddle,...,maximum) vpaths
-       * (enabled by default).
+       * (disabled by default).
        */
       int setReverveSaddleMaximumConnection(const bool state){
         discreteGradient_.setReverseSaddleMaximumConnection(state);
@@ -151,7 +151,7 @@ namespace ttk{
 
       /**
        * Enable/Disable gradient reversal of (saddle,...,saddle) vpaths
-       * (enabled by default).
+       * (disabled by default).
        */
       int setReverveSaddleSaddleConnection(const bool state){
         discreteGradient_.setReverseSaddleSaddleConnection(state);
@@ -161,7 +161,7 @@ namespace ttk{
       /**
        * Enable/Disable computation of the geometrical embedding of
        * the ascending manifolds of the critical points
-       * (enabled by default).
+       * (disabled by default).
        */
       int setComputeAscendingSeparatrices1(const bool state){
         ComputeAscendingSeparatrices1=state;
@@ -171,7 +171,7 @@ namespace ttk{
       /**
        * Enable/Disable computation of the geometrical embedding of
        * the descending manifolds of the critical points
-       * (enabled by default).
+       * (disabled by default).
        */
       int setComputeDescendingSeparatrices1(const bool state){
         ComputeDescendingSeparatrices1=state;
@@ -180,7 +180,7 @@ namespace ttk{
 
       /**
        * Enable/Disable computation of the geometrical embedding of
-       * the visible saddle-connectors (enabled by default).
+       * the visible saddle-connectors (disabled by default).
        */
       int setComputeSaddleConnectors(const bool state){
         ComputeSaddleConnectors=state;
@@ -202,34 +202,6 @@ namespace ttk{
        */
       int setComputeDescendingSeparatrices2(const bool state){
         ComputeDescendingSeparatrices2=state;
-        return 0;
-      }
-
-      /**
-       * Enable/Disable computation of the ascending manifold
-       * of the maxima (enabled by default).
-       */
-      int setComputeAscendingSegmentation(const bool state){
-        ComputeAscendingSegmentation=state;
-        return 0;
-      }
-
-      /**
-       * Enable/Disable computation of the descending manifold
-       * of the minima (enabled by default).
-       */
-      int setComputeDescendingSegmentation(const bool state){
-        ComputeDescendingSegmentation=state;
-        return 0;
-      }
-
-      /**
-       * Enable/Disable computation of the final combinatorial
-       * Morse-Smale Complex (segmentation as a field on vertices,
-       * enabled by default).
-       */
-      int setComputeFinalSegmentation(const bool state){
-        ComputeFinalSegmentation=state;
         return 0;
       }
 
@@ -308,6 +280,14 @@ namespace ttk{
           std::vector<char>* const criticalPoints_points_isOnBoundary,
           std::vector<int>* const criticalPoints_points_PLVertexIdentifiers,
           std::vector<int>* criticalPoints_points_manifoldSize){
+        outputCriticalPoints_numberOfPoints_=criticalPoints_numberOfPoints;
+        outputCriticalPoints_points_=criticalPoints_points;
+        outputCriticalPoints_points_cellDimensions_=criticalPoints_points_cellDimensons;
+        outputCriticalPoints_points_cellIds_=criticalPoints_points_cellIds;
+        outputCriticalPoints_points_cellScalars_=criticalPoints_points_cellScalars;
+        outputCriticalPoints_points_isOnBoundary_=criticalPoints_points_isOnBoundary;
+        outputCriticalPoints_points_PLVertexIdentifiers_=criticalPoints_points_PLVertexIdentifiers;
+        outputCriticalPoints_points_manifoldSize_=criticalPoints_points_manifoldSize;
         discreteGradient_.setOutputCriticalPoints(criticalPoints_numberOfPoints,
             criticalPoints_points,
             criticalPoints_points_cellDimensons,
@@ -404,7 +384,13 @@ namespace ttk{
           std::vector<std::vector<Cell>>& separatricesGeometry) const;
 
       /**
-       * Compute the geometrical embedding of the 1-separatrices.
+       * Compute the geometrical embedding of the 1-separatrices. This
+       * function needs the following internal pointers to be set:
+       * outputSeparatrices1_numberOfPoints_
+       * outputSeparatrices1_points_
+       * outputSeparatrices1_numberOfCells_
+       * outputSeparatrices1_cells_
+       * inputScalarField_
        */
       template<typename dataType>
       int setSeparatrices1(const std::vector<Separatrix>& separatrices,
@@ -444,9 +430,6 @@ namespace ttk{
       bool ComputeSaddleConnectors;
       bool ComputeAscendingSeparatrices2;
       bool ComputeDescendingSeparatrices2;
-      bool ComputeAscendingSegmentation;
-      bool ComputeDescendingSegmentation;
-      bool ComputeFinalSegmentation;
       bool ReturnSaddleConnectors;
       double SaddleConnectorsPersistenceThreshold;
       bool PrioritizeSpeedOverMemory;
@@ -502,8 +485,30 @@ namespace ttk{
 
 template<typename dataType>
 int ttk::AbstractMorseSmaleComplex::setSeparatrices1(const 
-std::vector<Separatrix>& separatrices,
+    std::vector<Separatrix>& separatrices,
     const std::vector<std::vector<Cell>>& separatricesGeometry) const{
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!outputSeparatrices1_numberOfPoints_){
+    std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to numberOfPoints is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices1_points_){
+    std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to points is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices1_numberOfCells_){
+    std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to numberOfCells is null." << std::endl;
+    return -1;
+  }
+  if(!outputSeparatrices1_cells_){
+    std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to cells is null." << std::endl;
+    return -1;
+  }
+  if(!inputScalarField_){
+    std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to the input scalar field is null." << std::endl;
+    return -1;
+  }
+#endif
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionMaxima_);
@@ -515,7 +520,8 @@ std::vector<Separatrix>& separatrices,
   int pointId=(*outputSeparatrices1_numberOfPoints_);
   int cellId=(*outputSeparatrices1_numberOfCells_);
   int separatrixId=0;
-  if(outputSeparatrices1_cells_separatrixIds_->size()){
+  if(outputSeparatrices1_cells_separatrixIds_ and 
+      outputSeparatrices1_cells_separatrixIds_->size()){
     separatrixId=*std::max_element(outputSeparatrices1_cells_separatrixIds_->begin(),
         outputSeparatrices1_cells_separatrixIds_->end())+1;
   }
@@ -555,27 +561,41 @@ std::vector<Separatrix>& separatrices,
         outputSeparatrices1_points_->push_back(point[1]);
         outputSeparatrices1_points_->push_back(point[2]);
 
-        if(cellIte==separatricesGeometry[geometryId].begin() or
-            cellIte==separatricesGeometry[geometryId].end()-1)
-          outputSeparatrices1_points_smoothingMask_->push_back(0);
-        else
-          outputSeparatrices1_points_smoothingMask_->push_back(1);
-        outputSeparatrices1_points_cellDimensions_->push_back(cell.dim_);
-        outputSeparatrices1_points_cellIds_->push_back(cell.id_);
+        if(outputSeparatrices1_points_smoothingMask_){
+          if(cellIte==separatricesGeometry[geometryId].begin() or
+              cellIte==separatricesGeometry[geometryId].end()-1)
+            outputSeparatrices1_points_smoothingMask_->push_back(0);
+          else
+            outputSeparatrices1_points_smoothingMask_->push_back(1);
+        }
+
+        if(outputSeparatrices1_points_cellDimensions_)
+          outputSeparatrices1_points_cellDimensions_->push_back(cell.dim_);
+
+        if(outputSeparatrices1_points_cellIds_)
+          outputSeparatrices1_points_cellIds_->push_back(cell.id_);
 
         if(oldPointId!=-1){
           outputSeparatrices1_cells_->push_back(2);
           outputSeparatrices1_cells_->push_back(oldPointId);
           outputSeparatrices1_cells_->push_back(pointId);
 
-          outputSeparatrices1_cells_sourceIds_->push_back(saddle.id_);
-          outputSeparatrices1_cells_destinationIds_->push_back(extremum.id_);
-          outputSeparatrices1_cells_separatrixIds_->push_back(separatrixId);
-          outputSeparatrices1_cells_separatrixTypes_->push_back(separatrixType);
-          outputSeparatrices1_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
-          outputSeparatrices1_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
-          outputSeparatrices1_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
-          outputSeparatrices1_cells_isOnBoundary_->push_back(isOnBoundary);
+          if(outputSeparatrices1_cells_sourceIds_)
+            outputSeparatrices1_cells_sourceIds_->push_back(saddle.id_);
+          if(outputSeparatrices1_cells_destinationIds_)
+            outputSeparatrices1_cells_destinationIds_->push_back(extremum.id_);
+          if(outputSeparatrices1_cells_separatrixIds_)
+            outputSeparatrices1_cells_separatrixIds_->push_back(separatrixId);
+          if(outputSeparatrices1_cells_separatrixTypes_)
+            outputSeparatrices1_cells_separatrixTypes_->push_back(separatrixType);
+          if(outputSeparatrices1_cells_separatrixFunctionMaxima)
+            outputSeparatrices1_cells_separatrixFunctionMaxima->push_back(separatrixFunctionMaximum);
+          if(outputSeparatrices1_cells_separatrixFunctionMinima)
+            outputSeparatrices1_cells_separatrixFunctionMinima->push_back(separatrixFunctionMinimum);
+          if(outputSeparatrices1_cells_separatrixFunctionDiffs)
+            outputSeparatrices1_cells_separatrixFunctionDiffs->push_back(separatrixFunctionDiff);
+          if(outputSeparatrices1_cells_isOnBoundary_)
+            outputSeparatrices1_cells_isOnBoundary_->push_back(isOnBoundary);
 
           ++cellId;
           isFirst=false;

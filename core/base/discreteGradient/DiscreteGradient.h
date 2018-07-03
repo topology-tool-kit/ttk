@@ -1095,7 +1095,11 @@ tetra identifier.
 
       /**
        * Build the geometric embedding of the given STL vector of cells.
-       * The output data pointers are modified accordingly.
+       * The output data pointers are modified accordingly. This
+       * function needs the following internal pointers to be set:
+       * outputCriticalPoints_numberOfPoints_
+       * outputCriticalPoints_points_
+       * inputScalarField_
        */
       template <typename dataType>
         int setCriticalPoints(const std::vector<Cell>& criticalPoints) const;
@@ -1110,7 +1114,11 @@ tetra identifier.
       /**
        * Build the geometric embedding of the given STL vector of cells and add
        * global information as scalar fields.
-       * The output data pointers are modified accordingly.
+       * The output data pointers are modified accordingly. This
+       * function needs the following internal pointers to be set:
+       * outputCriticalPoints_numberOfPoints_
+       * outputCriticalPoints_points_
+       * inputScalarField_
        */
       template <typename dataType>
         int setAugmentedCriticalPoints(const std::vector<Cell>& criticalPoints,
@@ -2358,6 +2366,20 @@ int ttk::DiscreteGradient::buildGradient3(){
 template <typename dataType>
 int ttk::DiscreteGradient::setCriticalPoints(const std::vector<Cell>& 
 criticalPoints) const{
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!outputCriticalPoints_numberOfPoints_){
+    std::cerr << "[DiscreteGradient] critical points' pointer to numberOfPoints is null." << std::endl;
+    return -1;
+  }
+  if(!outputCriticalPoints_points_){
+    std::cerr << "[DiscreteGradient] critical points' pointer to points is null." << std::endl;
+    return -1;
+  }
+  if(!inputScalarField_){
+    std::cerr << "[DiscreteGradient] critical points' pointer to the input scalar field is null." << std::endl;
+    return -1;
+  }
+#endif
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
   const int* const offsets=static_cast<int*>(inputOffsets_);
   std::vector<dataType>* outputCriticalPoints_points_cellScalars=
@@ -2391,60 +2413,66 @@ static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
     outputCriticalPoints_points_->push_back(incenter[1]);
     outputCriticalPoints_points_->push_back(incenter[2]);
 
-    outputCriticalPoints_points_cellDimensions_->push_back(cellDim);
-    outputCriticalPoints_points_cellIds_->push_back(cellId);
-    outputCriticalPoints_points_cellScalars->push_back(scalar);
-    outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
-    int vertexId=-1;
-    if(dmtMax2PL_.size()){
-      if(cellDim==0)
-        vertexId=cellId;
-      else if(cellDim==dimensionality_)
-        vertexId=dmtMax2PL_[cellId];
-    }
-
-    if(dmt1Saddle2PL_.size() and cellDim==1){
-      vertexId=dmt1Saddle2PL_[cellId];
-
-      if(vertexId==-1){
-        int v0;
-        int v1;
-        inputTriangulation_->getEdgeVertex(cellId, 0, v0);
-        inputTriangulation_->getEdgeVertex(cellId, 1, v1);
-
-        if(sosGreaterThan(v0,v1))
-          vertexId=v0;
-        else
-          vertexId=v1;
+    if(outputCriticalPoints_points_cellDimensions_)
+      outputCriticalPoints_points_cellDimensions_->push_back(cellDim);
+    if(outputCriticalPoints_points_cellIds_)
+      outputCriticalPoints_points_cellIds_->push_back(cellId);
+    if(outputCriticalPoints_points_cellScalars)
+      outputCriticalPoints_points_cellScalars->push_back(scalar);
+    if(outputCriticalPoints_points_isOnBoundary_)
+      outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
+    if(outputCriticalPoints_points_PLVertexIdentifiers_){
+      int vertexId=-1;
+      if(dmtMax2PL_.size()){
+        if(cellDim==0)
+          vertexId=cellId;
+        else if(cellDim==dimensionality_)
+          vertexId=dmtMax2PL_[cellId];
       }
-    }
-    if(dmt2Saddle2PL_.size() and cellDim==2){
-      vertexId=dmt2Saddle2PL_[cellId];
 
-      if(vertexId==-1){
-        int v0;
-        int v1;
-        int v2;
-        if(dimensionality_==2){
-          inputTriangulation_->getCellVertex(cellId, 0, v0);
-          inputTriangulation_->getCellVertex(cellId, 1, v1);
-          inputTriangulation_->getCellVertex(cellId, 2, v2);
+      if(dmt1Saddle2PL_.size() and cellDim==1){
+        vertexId=dmt1Saddle2PL_[cellId];
+
+        if(vertexId==-1){
+          int v0;
+          int v1;
+          inputTriangulation_->getEdgeVertex(cellId, 0, v0);
+          inputTriangulation_->getEdgeVertex(cellId, 1, v1);
+
+          if(sosGreaterThan(v0,v1))
+            vertexId=v0;
+          else
+            vertexId=v1;
         }
-        else if(dimensionality_==3){
-          inputTriangulation_->getTriangleVertex(cellId, 0, v0);
-          inputTriangulation_->getTriangleVertex(cellId, 1, v1);
-          inputTriangulation_->getTriangleVertex(cellId, 2, v2);
-        }
-        if(sosGreaterThan(v0,v1) and sosGreaterThan(v0,v2))
-          vertexId=v0;
-        else if(sosGreaterThan(v1,v0) and sosGreaterThan(v1,v2))
-          vertexId=v1;
-        else
-          vertexId=v2;
       }
-    }
+      if(dmt2Saddle2PL_.size() and cellDim==2){
+        vertexId=dmt2Saddle2PL_[cellId];
 
-    outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertexId);
+        if(vertexId==-1){
+          int v0;
+          int v1;
+          int v2;
+          if(dimensionality_==2){
+            inputTriangulation_->getCellVertex(cellId, 0, v0);
+            inputTriangulation_->getCellVertex(cellId, 1, v1);
+            inputTriangulation_->getCellVertex(cellId, 2, v2);
+          }
+          else if(dimensionality_==3){
+            inputTriangulation_->getTriangleVertex(cellId, 0, v0);
+            inputTriangulation_->getTriangleVertex(cellId, 1, v1);
+            inputTriangulation_->getTriangleVertex(cellId, 2, v2);
+          }
+          if(sosGreaterThan(v0,v1) and sosGreaterThan(v0,v2))
+            vertexId=v0;
+          else if(sosGreaterThan(v1,v0) and sosGreaterThan(v1,v2))
+            vertexId=v1;
+          else
+            vertexId=v2;
+        }
+      }
+
+      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertexId);
+    }
 
     (*outputCriticalPoints_numberOfPoints_)++;
   }
@@ -2477,6 +2505,20 @@ criticalPoints,
     std::vector<int>& maxSeeds,
     int* ascendingManifold,
     int* descendingManifold) const{
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!outputCriticalPoints_numberOfPoints_){
+    std::cerr << "[DiscreteGradient] critical points' pointer to numberOfPoints is null." << std::endl;
+    return -1;
+  }
+  if(!outputCriticalPoints_points_){
+    std::cerr << "[DiscreteGradient] critical points' pointer to points is null." << std::endl;
+    return -1;
+  }
+  if(!inputScalarField_){
+    std::cerr << "[DiscreteGradient] critical points' pointer to the input scalar field is null." << std::endl;
+    return -1;
+  }
+#endif
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<dataType>* outputCriticalPoints_points_cellScalars=
     
@@ -2505,37 +2547,45 @@ static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
     outputCriticalPoints_points_->push_back(incenter[1]);
     outputCriticalPoints_points_->push_back(incenter[2]);
 
-    outputCriticalPoints_points_cellDimensions_->push_back(cellDim);
-    outputCriticalPoints_points_cellIds_->push_back(cellId);
-    outputCriticalPoints_points_cellScalars->push_back(scalar);
-    outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
-    if(dmtMax2PL_.size()){
-      if(cellDim==0)
-        outputCriticalPoints_points_PLVertexIdentifiers_->push_back(cellId);
-      else if(cellDim==dimensionality_)
-        
-outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
+    if(outputCriticalPoints_points_cellDimensions_)
+      outputCriticalPoints_points_cellDimensions_->push_back(cellDim);
+    if(outputCriticalPoints_points_cellIds_)
+      outputCriticalPoints_points_cellIds_->push_back(cellId);
+    if(outputCriticalPoints_points_cellScalars)
+      outputCriticalPoints_points_cellScalars->push_back(scalar);
+    if(outputCriticalPoints_points_isOnBoundary_)
+      outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
+    if(outputCriticalPoints_points_PLVertexIdentifiers_){
+      if(dmtMax2PL_.size()){
+        if(cellDim==0)
+          outputCriticalPoints_points_PLVertexIdentifiers_->push_back(cellId);
+        else if(cellDim==dimensionality_)
+
+          outputCriticalPoints_points_PLVertexIdentifiers_->push_back(dmtMax2PL_[cellId]);
+        else
+          outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
+      }
       else
         outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
     }
-    else
-      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(-1);
 
-    int manifoldSize=0;
-    if(cellDim==0){
-      const int seedId=descendingManifold[cellId];
-      manifoldSize=std::count(descendingManifold, 
-descendingManifold+numberOfVertices_, seedId);
-    }
-    else if(cellDim==dimensionality_){
-      auto ite=std::find(maxSeeds.begin(), maxSeeds.end(), cellId);
-      if(ite!=maxSeeds.end()){
-        const int seedId=std::distance(maxSeeds.begin(), ite);
-        manifoldSize=std::count(ascendingManifold, 
-ascendingManifold+numberOfVertices_, seedId);
+    if(outputCriticalPoints_points_manifoldSize_){
+      int manifoldSize=0;
+      if(cellDim==0){
+        const int seedId=descendingManifold[cellId];
+        manifoldSize=std::count(descendingManifold, 
+            descendingManifold+numberOfVertices_, seedId);
       }
+      else if(cellDim==dimensionality_){
+        auto ite=std::find(maxSeeds.begin(), maxSeeds.end(), cellId);
+        if(ite!=maxSeeds.end()){
+          const int seedId=std::distance(maxSeeds.begin(), ite);
+          manifoldSize=std::count(ascendingManifold, 
+              ascendingManifold+numberOfVertices_, seedId);
+        }
+      }
+      outputCriticalPoints_points_manifoldSize_->push_back(manifoldSize);
     }
-    outputCriticalPoints_points_manifoldSize_->push_back(manifoldSize);
 
     (*outputCriticalPoints_numberOfPoints_)++;
   }
