@@ -41,30 +41,30 @@ namespace ttk{
       
       ~JacobiSet();
 
-      int connectivityPreprocessing(const std::vector<std::vector<int> > &edgeStarList,
-        std::vector<std::vector<std::pair<int, int> > > &edgeFanLinkEdgeLists,
-        std::vector<std::vector<long long int> > &edgeFans,
-        std::vector<int> &sosOffsets) const;
+      int connectivityPreprocessing(const std::vector<std::vector<SimplexId> > &edgeStarList,
+        std::vector<std::vector<std::pair<SimplexId, SimplexId> > > &edgeFanLinkEdgeLists,
+        std::vector<std::vector<SimplexId> > &edgeFans,
+        std::vector<SimplexId> &sosOffsets) const;
       
-      int execute(std::vector<std::pair<int, char> > &jacobiSet);
+      int execute(std::vector<std::pair<SimplexId, char> > &jacobiSet);
     
-      char getCriticalType(const int &edgeId);
+      char getCriticalType(const SimplexId &edgeId);
       
       int perturbate(const dataTypeU &uEpsilon = pow(10, -DBL_DIG),
         const dataTypeV &vEpsilon = pow(10, -DBL_DIG)) const;
       
-      int setEdgeFans(const std::vector<std::vector<long long int> > *edgeFans){
+      int setEdgeFans(const std::vector<std::vector<SimplexId> > *edgeFans){
         edgeFans_ = edgeFans;
         return 0;
       }
       
       int setEdgeFanLinkEdgeList(
-        const std::vector<std::vector<std::pair<int, int> > > *edgeFanLinkEdgeLists){
+        const std::vector<std::vector<std::pair<SimplexId, SimplexId> > > *edgeFanLinkEdgeLists){
         edgeFanLinkEdgeLists_ = edgeFanLinkEdgeLists;
         return 0;
       }
       
-      int setEdgeList(const std::vector<std::pair<int, int> > *edgeList){
+      int setEdgeList(const std::vector<std::pair<SimplexId, SimplexId> > *edgeList){
         edgeList_ = edgeList;
         return 0;
       }
@@ -76,29 +76,29 @@ namespace ttk{
         return 0;
       }
       
-      int setSosOffsets(std::vector<int> *sosOffsets){
+      int setSosOffsets(std::vector<SimplexId> *sosOffsets){
         // legacy API
         return setSosOffsetsU(sosOffsets);
       }
       
-      int setSosOffsetsU(std::vector<int> *sosOffsets){
+      int setSosOffsetsU(std::vector<SimplexId> *sosOffsets){
         sosOffsetsU_ = sosOffsets;
         return 0;
       }
       
-      int setSosOffsetsV(std::vector<int> *sosOffsets){
+      int setSosOffsetsV(std::vector<SimplexId> *sosOffsets){
         sosOffsetsV_ = sosOffsets;
         return 0;
       }
 
       // NOTE: here it's not clear how vtk builds vtkIdType 
       // to check on bigger data-sets
-      int setTetList(const long long int *tetList){
+      int setTetList(const SimplexId *tetList){
         tetList_ = tetList;
         return 0;
       }
       
-      int setVertexNumber(const int &vertexNumber){
+      int setVertexNumber(const SimplexId &vertexNumber){
         vertexNumber_ = vertexNumber;
         return 0;
       }
@@ -118,18 +118,18 @@ namespace ttk{
       
     protected:
     
-      int executeLegacy(std::vector<std::pair<int, char> > &jacobiSet);
+      int executeLegacy(std::vector<std::pair<SimplexId, char> > &jacobiSet);
       
-      int                   vertexNumber_;
-      const long long int   *tetList_;
+      SimplexId                   vertexNumber_;
+      const SimplexId   *tetList_;
       const void            *uField_, *vField_;
-      const std::vector<std::pair<int, int> > *edgeList_;
+      const std::vector<std::pair<SimplexId, SimplexId> > *edgeList_;
       // for each edge, one skeleton of its triangle fan
-      const std::vector<std::vector<std::pair<int, int> > > *edgeFanLinkEdgeLists_;
+      const std::vector<std::vector<std::pair<SimplexId, SimplexId> > > *edgeFanLinkEdgeLists_;
       // for each edge, the one skeleton of its triangle fan
-      const std::vector<std::vector<long long int> > *edgeFans_;
-      std::vector<int>           *sosOffsetsU_, *sosOffsetsV_;
-      std::vector<int>           localSosOffsetsU_, localSosOffsetsV_;
+      const std::vector<std::vector<SimplexId> > *edgeFans_;
+      std::vector<SimplexId>           *sosOffsetsU_, *sosOffsetsV_;
+      std::vector<SimplexId>           localSosOffsetsU_, localSosOffsetsV_;
       Triangulation         *triangulation_;
   };
 }

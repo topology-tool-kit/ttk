@@ -141,13 +141,13 @@ class ttkJacobiSet
     int                   UcomponentId, VcomponentId, UoffsetId, VoffsetId;
     std::string                Ucomponent, Vcomponent, 
                           OffsetFieldU, OffsetFieldV;
-    std::vector<std::pair<int, int> > edgeList_;
+    std::vector<std::pair<ttk::SimplexId, ttk::SimplexId> > edgeList_;
     // for each edge, one skeleton of its triangle fan
-    std::vector<std::vector<std::pair<int, int> > > edgeFanLinkEdgeList_;
+    std::vector<std::vector<std::pair<ttk::SimplexId, ttk::SimplexId> > > edgeFanLinkEdgeList_;
     // for each edge, the one skeleton of its triangle fan
-    std::vector<std::vector<long long int> >  edgeFans_;
-    std::vector<std::pair<int, char> >        jacobiSet_;
-    std::vector<int>           sosOffsetsU_, sosOffsetsV_;
+    std::vector<std::vector<ttk::SimplexId> >  edgeFans_;
+    std::vector<std::pair<ttk::SimplexId, char> >        jacobiSet_;
+    std::vector<ttk::SimplexId>           sosOffsetsU_, sosOffsetsV_;
    
     template<class dataTypeU, class dataTypeV> int baseCall(
       vtkDataSet *input,
