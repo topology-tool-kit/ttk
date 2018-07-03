@@ -40,19 +40,19 @@ int RangeDrivenOctree::flush(){
 }
 
 int RangeDrivenOctree::getTet2NodeMap(
-  vector<int> &map, const bool &forSegmentation) const{
+  vector<SimplexId> &map, const bool &forSegmentation) const{
 
-  vector<int> randomMap;
+  vector<SimplexId> randomMap;
   if(forSegmentation){
     randomMap.resize(nodeList_.size());
-    for(int i = 0; i < (int) randomMap.size(); i++){
+    for(SimplexId i = 0; i < (SimplexId) randomMap.size(); i++){
       randomMap[i] = rand()%(randomMap.size());
     }
   }
   
   map.resize(cellNumber_);
-  for(int i = 0; i < (int) nodeList_.size(); i++){
-    for(int j = 0; j < (int) nodeList_[i].cellList_.size(); j++){
+  for(SimplexId i = 0; i < (SimplexId) nodeList_.size(); i++){
+    for(SimplexId j = 0; j < (SimplexId) nodeList_[i].cellList_.size(); j++){
       if(forSegmentation){
        map[nodeList_[i].cellList_[j]] = randomMap[i]; 
       }
@@ -68,14 +68,14 @@ int RangeDrivenOctree::getTet2NodeMap(
 int RangeDrivenOctree::rangeSegmentQuery(
   const pair<double, double> &p0,
   const pair<double, double> &p1,
-  vector<int> &cellList) const{
+  vector<SimplexId> &cellList) const{
 
   Timer t;
   
   queryResultNumber_ = 0;
   cellList.clear();
   
-  int ret = rangeSegmentQuery(p0, p1, rootId_, cellList);
+  SimplexId ret = rangeSegmentQuery(p0, p1, rootId_, cellList);
   
   {
     stringstream msg;
@@ -92,8 +92,8 @@ int RangeDrivenOctree::rangeSegmentQuery(
 int RangeDrivenOctree::rangeSegmentQuery(
   const pair<double, double> &p0,
   const pair<double, double> &p1,
-  const int &nodeId,
-  vector<int> &cellList) const{
+  const SimplexId &nodeId,
+  vector<SimplexId> &cellList) const{
 
   // check for intersection for each segment of the range bounding box 
   pair<double, double> q0, q1;
@@ -107,7 +107,7 @@ int RangeDrivenOctree::rangeSegmentQuery(
   
   if(segmentIntersection(p0, p1, q0, q1)){
     if(nodeList_[nodeId].childList_.size()){
-      for(int i = 0; i < (int) nodeList_[nodeId].childList_.size(); i++){
+      for(SimplexId i = 0; i < (SimplexId) nodeList_[nodeId].childList_.size(); i++){
         rangeSegmentQuery(p0, p1, nodeList_[nodeId].childList_[i], cellList);
       }
       return 0;
@@ -139,7 +139,7 @@ int RangeDrivenOctree::rangeSegmentQuery(
   
   if(segmentIntersection(p0, p1, q0, q1)){
     if(nodeList_[nodeId].childList_.size()){
-      for(int i = 0; i < (int) nodeList_[nodeId].childList_.size(); i++){
+      for(SimplexId i = 0; i < (SimplexId) nodeList_[nodeId].childList_.size(); i++){
         rangeSegmentQuery(p0, p1, nodeList_[nodeId].childList_[i], cellList);
       }
       return 0;
@@ -171,7 +171,7 @@ int RangeDrivenOctree::rangeSegmentQuery(
   
   if(segmentIntersection(p0, p1, q0, q1)){
     if(nodeList_[nodeId].childList_.size()){
-      for(int i = 0; i < (int) nodeList_[nodeId].childList_.size(); i++){
+      for(SimplexId i = 0; i < (SimplexId) nodeList_[nodeId].childList_.size(); i++){
         rangeSegmentQuery(p0, p1, nodeList_[nodeId].childList_[i], cellList);
       }
       return 0;
@@ -203,7 +203,7 @@ int RangeDrivenOctree::rangeSegmentQuery(
   
   if(segmentIntersection(p0, p1, q0, q1)){
     if(nodeList_[nodeId].childList_.size()){
-      for(int i = 0; i < (int) nodeList_[nodeId].childList_.size(); i++){
+      for(SimplexId i = 0; i < (SimplexId) nodeList_[nodeId].childList_.size(); i++){
         rangeSegmentQuery(p0, p1, nodeList_[nodeId].childList_[i], cellList);
       }
       return 0;
@@ -234,7 +234,7 @@ int RangeDrivenOctree::rangeSegmentQuery(
     
     // p0 is in there
     if(nodeList_[nodeId].childList_.size()){
-      for(int i = 0; i < (int) nodeList_[nodeId].childList_.size(); i++){
+      for(SimplexId i = 0; i < (SimplexId) nodeList_[nodeId].childList_.size(); i++){
         rangeSegmentQuery(p0, p1, nodeList_[nodeId].childList_[i], cellList);
       }
       return 0;
@@ -263,7 +263,7 @@ int RangeDrivenOctree::rangeSegmentQuery(
     
     // p1 is in there
     if(nodeList_[nodeId].childList_.size()){
-      for(int i = 0; i < (int) nodeList_[nodeId].childList_.size(); i++){
+      for(SimplexId i = 0; i < (SimplexId) nodeList_[nodeId].childList_.size(); i++){
         rangeSegmentQuery(p0, p1, nodeList_[nodeId].childList_[i], cellList);
       }
       return 0;
@@ -289,7 +289,7 @@ int RangeDrivenOctree::rangeSegmentQuery(
   return 0;
 }
 
-int RangeDrivenOctree::statNode(const int &nodeId,
+int RangeDrivenOctree::statNode(const SimplexId &nodeId,
   ostream &stream){
 
   stream << "[RangeDrivenOctree]" << endl;
@@ -330,12 +330,12 @@ int RangeDrivenOctree::statNode(const int &nodeId,
 
 int RangeDrivenOctree::stats(ostream &stream){
   
-  int leafNumber = 0, nonEmptyLeafNumber = 0,
+  SimplexId leafNumber = 0, nonEmptyLeafNumber = 0,
       minCellNumber = -1, maxCellNumber = -1, storedCellNumber = 0;
   float averageCellNumber = 0;
-  int maxCellId = 0;
+  SimplexId maxCellId = 0;
 
-  for(int i = 0; i < (int) nodeList_.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) nodeList_.size(); i++){
     if(!nodeList_[i].childList_.size()){
       // leaf
       leafNumber++;
@@ -345,10 +345,10 @@ int RangeDrivenOctree::stats(ostream &stream){
         
         averageCellNumber += nodeList_[i].cellList_.size();
         if((minCellNumber == -1)
-          ||((int) nodeList_[i].cellList_.size() < minCellNumber))
+          ||((SimplexId) nodeList_[i].cellList_.size() < minCellNumber))
           minCellNumber = nodeList_[i].cellList_.size();
         if((maxCellNumber == -1)
-          ||((int) nodeList_[i].cellList_.size() > maxCellNumber)){
+          ||((SimplexId) nodeList_[i].cellList_.size() > maxCellNumber)){
           maxCellNumber = nodeList_[i].cellList_.size();
           maxCellId = i;
         }
@@ -375,7 +375,7 @@ int RangeDrivenOctree::stats(ostream &stream){
   stream << "[RangeDrivenOctree] Max-cell nodeId: " << maxCellId << endl;
  
   if(debugLevel_ > 5){
-    for(int i = 0; i < (int) nodeList_.size(); i++){
+    for(SimplexId i = 0; i < (SimplexId) nodeList_.size(); i++){
       if(nodeList_[i].cellList_.size())
         statNode(i, stream);
     }
