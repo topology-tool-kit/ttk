@@ -58,11 +58,11 @@ namespace ttk{
         
         public: 
           
-          int             vertexId_, pruned_;
+          SimplexId             vertexId_, pruned_;
           // 0: extrema-sheet, 1: saddle-sheet
           char            type_;
-          std::vector<int>     sheet1List_;
-          std::vector<int>     sheet3List_;
+          std::vector<SimplexId>     sheet1List_;
+          std::vector<SimplexId>     sheet3List_;
       };
       
       class Sheet1{
@@ -70,13 +70,13 @@ namespace ttk{
         public:
        
           bool            hasSaddleEdges_, pruned_;
-          std::vector<int>     edgeList_;
+          std::vector<SimplexId>     edgeList_;
           // 0: extrema-sheet, 1: saddle-sheet (can be inferred by the number
           // of 2-sheets attached to it?)
-          std::vector<int>     sheet0List_;
+          std::vector<SimplexId>     sheet0List_;
           // NB: the corresponding 2-sheet should have the same global 
           // indentifier.
-          std::vector<int>     sheet3List_;
+          std::vector<SimplexId>     sheet3List_;
       };
       
       class Sheet2{
@@ -84,7 +84,7 @@ namespace ttk{
         public:
         
           bool            pruned_;
-          int             sheet1Id_;
+          SimplexId             sheet1Id_;
           // for each point, x, y, z coordinates
           // this is how coincident point will be merged afterwards
           // this list is meant to be temporary. after the merge, we'll use a 
@@ -93,23 +93,23 @@ namespace ttk{
                           vertexList_;
           std::vector<std::vector<FiberSurface::Triangle> >
                           triangleList_;
-          std::vector<int>     sheet3List_;
+          std::vector<SimplexId>     sheet3List_;
       };
       
       class Sheet3{
         
         public:
         
-          int             Id_, simplificationId_, preMerger_;
+          SimplexId             Id_, simplificationId_, preMerger_;
           bool            pruned_;
           double          domainVolume_, rangeArea_, hyperVolume_;
-          std::vector<int>     vertexList_;
-          std::vector<int>     tetList_;
-          std::vector<int>     sheet0List_;
-          std::vector<int>     sheet1List_;
-          std::vector<int>     sheet2List_;
-          std::vector<int>     sheet3List_;
-          std::vector<int>     preMergedSheets_;
+          std::vector<SimplexId>     vertexList_;
+          std::vector<SimplexId>     tetList_;
+          std::vector<SimplexId>     sheet0List_;
+          std::vector<SimplexId>     sheet1List_;
+          std::vector<SimplexId>     sheet2List_;
+          std::vector<SimplexId>     sheet3List_;
+          std::vector<SimplexId>     preMergedSheets_;
       };
       
       ReebSpace();
@@ -122,19 +122,19 @@ namespace ttk{
           
       template <class dataTypeU, class dataTypeV> inline int execute();
       
-      inline const Sheet0* get0sheet(const int &sheetId) const{
+      inline const Sheet0* get0sheet(const SimplexId &sheetId) const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((sheetId < 0)||(sheetId >= (int) currentData_.sheet0List_.size()))
+        if((sheetId < 0)||(sheetId >= (SimplexId) currentData_.sheet0List_.size()))
           return NULL;
 #endif
         
         return &(currentData_.sheet0List_[sheetId]);
       }
       
-      inline const Sheet1* get1sheet(const int &sheetId) const{
+      inline const Sheet1* get1sheet(const SimplexId &sheetId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((sheetId < 0)||(sheetId >= (int) currentData_.sheet1List_.size()))
+        if((sheetId < 0)||(sheetId >= (SimplexId) currentData_.sheet1List_.size()))
           return NULL;
 #endif
         
@@ -142,41 +142,41 @@ namespace ttk{
       }
       
       // warning, these are the originals
-      inline const Sheet2* get2sheet(const int &sheetId) const{
+      inline const Sheet2* get2sheet(const SimplexId &sheetId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((sheetId < 0)||(sheetId >= (int) originalData_.sheet2List_.size()))
+        if((sheetId < 0)||(sheetId >= (SimplexId) originalData_.sheet2List_.size()))
           return NULL;
 #endif
         
         return &(originalData_.sheet2List_[sheetId]);
       }
       
-      inline const Sheet3* get3sheet(const int &sheetId) const{
+      inline const Sheet3* get3sheet(const SimplexId &sheetId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((sheetId < 0)||(sheetId >= (int) currentData_.sheet3List_.size()))
+        if((sheetId < 0)||(sheetId >= (SimplexId) currentData_.sheet3List_.size()))
           return NULL;
 #endif
         
         return &(currentData_.sheet3List_[sheetId]);
       }
       
-      inline const std::vector<int>* get0sheetSegmentation() const{
+      inline const std::vector<SimplexId>* get0sheetSegmentation() const{
         return &currentData_.vertex2sheet0_;
       }
       
-      const std::vector<int>* get1sheetSegmentation() const{
+      const std::vector<SimplexId>* get1sheetSegmentation() const{
         return &currentData_.edge2sheet1_;
       }
      
-      const std::vector<int>* get3sheetVertexSegmentation() const{
+      const std::vector<SimplexId>* get3sheetVertexSegmentation() const{
         return &currentData_.vertex2sheet3_;
       }
       
-      const std::vector<int>* get3sheetTetSegmentation() const{
+      const std::vector<SimplexId>* get3sheetTetSegmentation() const{
         return &currentData_.tet2sheet3_;
       }
      
-      const std::vector<int>* getEdgeTypes() const{
+      const std::vector<SimplexId>* getEdgeTypes() const{
         return &currentData_.edgeTypes_;
       }
      
@@ -185,14 +185,14 @@ namespace ttk{
         return &(fiberSurfaceVertexList_);
       }
       
-      inline int getJacobi2Edge(const int &jacobiEdgeId) const{
+      inline int getJacobi2Edge(const SimplexId &jacobiEdgeId) const{
         if((jacobiEdgeId < 0)
-          ||(jacobiEdgeId >= (int) jacobi2edges_.size()))
+          ||(jacobiEdgeId >= (SimplexId) jacobi2edges_.size()))
           return -1;
         return jacobi2edges_[jacobiEdgeId];
       }
       
-      inline int getNumberOf2sheets() const {
+      inline SimplexId getNumberOf2sheets() const {
         return currentData_.sheet2List_.size();
       }
      
@@ -237,17 +237,17 @@ namespace ttk{
         return false;
       }
       
-      inline int setSosOffsetsU(std::vector<int> *sosOffsetsU){
+      inline int setSosOffsetsU(std::vector<SimplexId> *sosOffsetsU){
         sosOffsetsU_ = sosOffsetsU;
         return 0;
       }
       
-      inline int setSosOffsetsV(std::vector<int> *sosOffsetsV){
+      inline int setSosOffsetsV(std::vector<SimplexId> *sosOffsetsV){
         sosOffsetsV_ = sosOffsetsV;
         return 0;
       }
 
-      inline int setTetNumber(const int &tetNumber){
+      inline int setTetNumber(const SimplexId &tetNumber){
         tetNumber_ = tetNumber;
         return 0;
       }
@@ -255,7 +255,7 @@ namespace ttk{
       /// Set the number of vertices in the scalar field.
       /// \param vertexNumber Number of vertices in the data-set.
       /// \return Returns 0 upon success, negative values otherwise. 
-      int setVertexNumber(const int &vertexNumber){
+      int setVertexNumber(const SimplexId &vertexNumber){
         vertexNumber_ = vertexNumber;
         return 0;
       }
@@ -306,65 +306,65 @@ namespace ttk{
     
       class ReebSpaceData;
       
-      int compute1sheetsOnly(const std::vector<std::pair<int, char> > &jacobiSet,
-        std::vector<std::pair<int, int> > &jacobiSetClassification);
+      int compute1sheetsOnly(const std::vector<std::pair<SimplexId, char> > &jacobiSet,
+        std::vector<std::pair<SimplexId, SimplexId> > &jacobiSetClassification);
       
-      int compute1sheets(const std::vector<std::pair<int, char> > &jacobiSet,
-        std::vector<std::pair<int, int> > &jacobiSetClassification);
+      int compute1sheets(const std::vector<std::pair<SimplexId, char> > &jacobiSet,
+        std::vector<std::pair<SimplexId, SimplexId> > &jacobiSetClassification);
       
       template <class dataTypeU, class dataTypeV>
         inline int compute2sheets(
-          const std::vector<std::pair<int, int> > &jacobiEdges);
+          const std::vector<std::pair<SimplexId, SimplexId> > &jacobiEdges);
         
       template <class dataTypeU, class dataTypeV>
         inline int compute2sheetChambers();
       
-      int compute3sheet(const int &vertexId, 
-        const std::vector<std::vector<std::vector<int> > > &tetTriangles);
+      int compute3sheet(const SimplexId &vertexId, 
+        const std::vector<std::vector<std::vector<SimplexId> > > &tetTriangles);
       
-      int compute3sheets(std::vector<std::vector<std::vector<int> > > &tetTriangles);
+      int compute3sheets(std::vector<std::vector<std::vector<SimplexId> > > &tetTriangles);
         
       template <class dataTypeU, class dataTypeV>
         inline int computeGeometricalMeasures(Sheet3 &sheet);
       
       int connect3sheetTo0sheet(
         ReebSpaceData &data,
-        const int &sheet3Id, const int &sheet0Id);
+        const SimplexId &sheet3Id, const SimplexId &sheet0Id);
        
       int connect3sheetTo1sheet(
         ReebSpaceData &data,
-        const int &sheet3Id, const int &sheet1Id);
+        const SimplexId &sheet3Id, const SimplexId &sheet1Id);
       
       int connect3sheetTo2sheet(
         ReebSpaceData &data,
-        const int &sheet3Id, const int &sheet2Id);
+        const SimplexId &sheet3Id, const SimplexId &sheet2Id);
       
       int connect3sheetTo3sheet(
         ReebSpaceData &data,
-        const int &sheet3Id, const int &otherSheet3Id);
+        const SimplexId &sheet3Id, const SimplexId &otherSheet3Id);
       
       int connectSheets();
         
       int disconnect1sheetFrom0sheet(ReebSpaceData &data,
-        const int &sheet1Id, const int &sheet0Id, const int &biggerId);
+        const SimplexId &sheet1Id, const SimplexId &sheet0Id, const SimplexId &biggerId);
       
       int disconnect3sheetFrom0sheet(ReebSpaceData &data,
-        const int &sheet3Id, const int &sheet0Id);
+        const SimplexId &sheet3Id, const SimplexId &sheet0Id);
       
       int disconnect3sheetFrom1sheet(ReebSpaceData &data,
-        const int &sheet3Id, const int &sheet1Id, const int &biggerId);
+        const SimplexId &sheet3Id, const SimplexId &sheet1Id, const SimplexId &biggerId);
       
       int disconnect3sheetFrom2sheet(ReebSpaceData &data,
-        const int &sheet3Id, const int &sheet2Id);
+        const SimplexId &sheet3Id, const SimplexId &sheet2Id);
       
       int disconnect3sheetFrom3sheet(ReebSpaceData &data,
-        const int &sheet3Id, const int &other3SheetId);
+        const SimplexId &sheet3Id, const SimplexId &other3SheetId);
       
       int flush();
       
-      int mergeSheets(const int &smallerId, const int &biggerId);
+      int mergeSheets(const SimplexId &smallerId, const SimplexId &biggerId);
       
-      int preMergeSheets(const int &sheetId0, const int &sheetId1);
+      int preMergeSheets(const SimplexId &sheetId0, const SimplexId &sheetId1);
       
       int prepareSimplification();
      
@@ -373,7 +373,7 @@ namespace ttk{
       int simplifySheets(const double &simplificationThreshold,
         const SimplificationCriterion &simplificationCriterion);
      
-      int simplifySheet(const int &sheetId, 
+      int simplifySheet(const SimplexId &sheetId, 
         const SimplificationCriterion &simplificationCriterion);
       
 //       int triangulateTetrahedron(const int &tetId,
@@ -382,11 +382,11 @@ namespace ttk{
 //       
 //       int triangulateThreeSheets();
       
-      int                   vertexNumber_, edgeNumber_, tetNumber_;
+      SimplexId                   vertexNumber_, edgeNumber_, tetNumber_;
       double                totalArea_, totalVolume_, totalHyperVolume_;
       
       const void            *uField_, *vField_;
-      std::vector<int>           *sosOffsetsU_, *sosOffsetsV_;
+      std::vector<SimplexId>           *sosOffsetsU_, *sosOffsetsV_;
       
       // output segmentation 
       class ReebSpaceData{
@@ -397,11 +397,11 @@ namespace ttk{
                               simplificationCriterion_;
           double              simplificationThreshold_;
          
-          std::vector<int>           edge2sheet1_;
-          std::vector<int>           edgeTypes_;
-          std::vector<int>           tet2sheet3_;
-          std::vector<int>           vertex2sheet0_;
-          std::vector<int>           vertex2sheet3_;
+          std::vector<SimplexId>           edge2sheet1_;
+          std::vector<SimplexId>           edgeTypes_;
+          std::vector<SimplexId>           tet2sheet3_;
+          std::vector<SimplexId>           vertex2sheet0_;
+          std::vector<SimplexId>           vertex2sheet3_;
           
           // structure
           std::vector<Sheet0>        sheet0List_;
@@ -419,9 +419,9 @@ namespace ttk{
       ReebSpaceData         originalData_, currentData_; 
       
       // information that does not get simplified
-      std::vector<std::pair<int, char> >
+      std::vector<std::pair<SimplexId, char> >
                             jacobiSetEdges_;
-      std::vector<int>           jacobi2edges_;
+      std::vector<SimplexId>           jacobi2edges_;
       
       FiberSurface          fiberSurface_;
       std::vector<FiberSurface::Vertex>
@@ -453,7 +453,7 @@ template <class dataTypeU, class dataTypeV>
   
   // 2) compute the list saddle 1-sheets
   // + list of saddle 0-sheets
-  std::vector<std::pair<int, int> > jacobiSetClassification;
+  std::vector<std::pair<SimplexId, SimplexId> > jacobiSetClassification;
   compute1sheetsOnly(
     jacobiSetEdges_, jacobiSetClassification);
   // at this stage, jacobiSetClassification contains the list of saddle edges 
@@ -462,7 +462,7 @@ template <class dataTypeU, class dataTypeV>
   compute2sheets<dataTypeU, dataTypeV>(jacobiSetClassification);
 //   compute2sheetChambers<dataTypeU, dataTypeV>();
   
-  std::vector<std::vector<std::vector<int> > > tetTriangles;
+  std::vector<std::vector<std::vector<SimplexId> > > tetTriangles;
   compute3sheets(tetTriangles);
   
   {
@@ -483,12 +483,12 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(int i = 0; i < (int) originalData_.sheet3List_.size(); i++){
+    for(SimplexId i = 0; i < (SimplexId) originalData_.sheet3List_.size(); i++){
       computeGeometricalMeasures<dataTypeU, dataTypeV>(
         originalData_.sheet3List_[i]);
     }
     
-    for(int i = 0; i < (int) originalData_.sheet3List_.size(); i++){
+    for(SimplexId i = 0; i < (SimplexId) originalData_.sheet3List_.size(); i++){
       totalArea_ += originalData_.sheet3List_[i].rangeArea_;
       totalVolume_ += originalData_.sheet3List_[i].domainVolume_;
       totalHyperVolume_ += originalData_.sheet3List_[i].hyperVolume_;
@@ -512,7 +512,7 @@ template <class dataTypeU, class dataTypeV>
 
 template <class dataTypeU, class dataTypeV>
   inline int ttk::ReebSpace::compute2sheets(
-    const std::vector<std::pair<int, int> > &jacobiEdges){
+    const std::vector<std::pair<SimplexId, SimplexId> > &jacobiEdges){
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_)
@@ -523,7 +523,7 @@ template <class dataTypeU, class dataTypeV>
   
   // at this point, they have exactly the same size
   originalData_.sheet2List_.resize(originalData_.sheet1List_.size());
-  for(int i = 0; i < (int) originalData_.sheet2List_.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) originalData_.sheet2List_.size(); i++){
     originalData_.sheet2List_[i].sheet1Id_ = i;
     originalData_.sheet2List_[i].pruned_ = false;
     originalData_.sheet2List_[i].vertexList_.resize(
@@ -532,8 +532,8 @@ template <class dataTypeU, class dataTypeV>
     originalData_.sheet2List_[i].triangleList_.resize(
       originalData_.sheet1List_[
         originalData_.sheet2List_[i].sheet1Id_].edgeList_.size());
-    for(int j = 0; 
-      j < (int) originalData_.sheet2List_[i].vertexList_.size(); j++){
+    for(SimplexId j = 0; 
+      j < (SimplexId) originalData_.sheet2List_[i].vertexList_.size(); j++){
       originalData_.sheet2List_[i].vertexList_[j].clear();
       originalData_.sheet2List_[i].triangleList_[j].clear();
     }
@@ -546,12 +546,12 @@ template <class dataTypeU, class dataTypeV>
   
   fiberSurface_.setPolygonEdgeNumber(jacobiEdges.size());
  
-  std::vector<int> edge2polygonEdgeId(edgeNumber_, -1);
+  std::vector<SimplexId> edge2polygonEdgeId(edgeNumber_, -1);
   jacobi2edges_.resize(jacobiEdges.size());
   
-  for(int i = 0; i < (int) jacobiEdges.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) jacobiEdges.size(); i++){
     
-    int edgeId = jacobiEdges[i].first;
+    SimplexId edgeId = jacobiEdges[i].first;
     
     edge2polygonEdgeId[edgeId] = i;
     jacobi2edges_[i] = edgeId; 
@@ -560,13 +560,13 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < (int) originalData_.sheet2List_.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) originalData_.sheet2List_.size(); i++){
     
-    for(int j = 0; 
-      j < (int) originalData_.sheet1List_[
+    for(SimplexId j = 0; 
+      j < (SimplexId) originalData_.sheet1List_[
         originalData_.sheet2List_[i].sheet1Id_].edgeList_.size(); j++){
      
-      int edgeId = originalData_.sheet1List_[
+      SimplexId edgeId = originalData_.sheet1List_[
         originalData_.sheet2List_[i].sheet1Id_].edgeList_[j];
         
       fiberSurface_.setTriangleList(
@@ -581,13 +581,13 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < (int) jacobiEdges.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) jacobiEdges.size(); i++){
     
-    int edgeId = jacobiEdges[i].first;
+    SimplexId edgeId = jacobiEdges[i].first;
     
     std::pair<double, double> rangePoint0, rangePoint1;
     
-    int vertexId0 = -1, vertexId1 = -1;
+    SimplexId vertexId0 = -1, vertexId1 = -1;
     triangulation_->getEdgeVertex(edgeId, 0, vertexId0);
     triangulation_->getEdgeVertex(edgeId, 1, vertexId1);
     
@@ -598,8 +598,8 @@ template <class dataTypeU, class dataTypeV>
     rangePoint1.second = ((dataTypeV *) vField_)[vertexId1];
       
     if(originalData_.edgeTypes_[edgeId] == 1){
-      std::vector<int> edgeSeeds(triangulation_->getEdgeStarNumber(edgeId), -1);
-      for(int j = 0; j < (int) edgeSeeds.size(); j++){
+      std::vector<SimplexId> edgeSeeds(triangulation_->getEdgeStarNumber(edgeId), -1);
+      for(SimplexId j = 0; j < (SimplexId) edgeSeeds.size(); j++){
         triangulation_->getEdgeStar(edgeId, j, edgeSeeds[j]);
       }
       
@@ -707,7 +707,7 @@ template <class dataTypeU, class dataTypeV>
   
   // at this point, they have exactly the same size
   originalData_.sheet2List_.resize(threadNumber_);
-  for(int i = 0; i < (int) originalData_.sheet2List_.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) originalData_.sheet2List_.size(); i++){
     originalData_.sheet2List_[i].sheet1Id_ = i;
     originalData_.sheet2List_[i].pruned_ = false;
     originalData_.sheet2List_[i].vertexList_.resize(1);
@@ -721,7 +721,7 @@ template <class dataTypeU, class dataTypeV>
   fiberSurface_.setTetNumber(tetNumber_);
   fiberSurface_.setPolygonEdgeNumber(threadNumber_);
   
-  for(int i = 0; i < (int) originalData_.sheet2List_.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) originalData_.sheet2List_.size(); i++){
     
     fiberSurface_.setTriangleList(i, 
       &(originalData_.sheet2List_[i].triangleList_[0]));
@@ -732,19 +732,19 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < (int) edgeNumber_; i++){
+  for(SimplexId i = 0; i < (SimplexId) edgeNumber_; i++){
 
  #ifdef TTK_ENABLE_OPENMP
-    int threadId = omp_get_thread_num();
+    ThreadId threadId = omp_get_thread_num();
  #else
-    int threadId = 0;
+    ThreadId threadId = 0;
  #endif
     
-    int edgeId = i;
+    SimplexId edgeId = i;
     
     std::pair<double, double> rangePoint0, rangePoint1;
     
-    int vertexId0 = -1, vertexId1 = -1;
+    SimplexId vertexId0 = -1, vertexId1 = -1;
     triangulation_->getEdgeVertex(edgeId, 0, vertexId0);
     triangulation_->getEdgeVertex(edgeId, 1, vertexId1);
     
@@ -780,9 +780,9 @@ template <class dataTypeU, class dataTypeV>
   sheet.rangeArea_ = 0;
   sheet.hyperVolume_ = 0;
   
-  for(int i = 0; i < (int) sheet.tetList_.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) sheet.tetList_.size(); i++){
     
-    int tetId = sheet.tetList_[i];
+    SimplexId tetId = sheet.tetList_[i];
     std::vector<std::pair<double, double> > domainBox, rangeBox;
     std::vector<std::vector<float> > domainPoints(4), rangePoints(4);
     
@@ -790,7 +790,7 @@ template <class dataTypeU, class dataTypeV>
       domainPoints[j].resize(3);
       rangePoints[j].resize(2);
       
-      int vertexId = -1;
+      SimplexId vertexId = -1;
       triangulation_->getCellVertex(tetId, j, vertexId);
       
       triangulation_->getVertexPoint(vertexId,
@@ -848,12 +848,12 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(int i = 0; i < (int) originalData_.sheet3List_.size(); i++){
+    for(SimplexId i = 0; i < (SimplexId) originalData_.sheet3List_.size(); i++){
       computeGeometricalMeasures<dataTypeU, dataTypeV>(
         originalData_.sheet3List_[i]);
     }
     
-    for(int i = 0; i < (int) originalData_.sheet3List_.size(); i++){
+    for(SimplexId i = 0; i < (SimplexId) originalData_.sheet3List_.size(); i++){
       totalArea_ += originalData_.sheet3List_[i].rangeArea_;
       totalVolume_ += originalData_.sheet3List_[i].domainVolume_;
       totalHyperVolume_ += originalData_.sheet3List_[i].hyperVolume_;
