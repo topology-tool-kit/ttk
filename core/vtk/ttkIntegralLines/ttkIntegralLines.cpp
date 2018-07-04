@@ -104,7 +104,7 @@ int ttkIntegralLines::getOffsets(vtkDataSet* input){
     }
 
     if(!offsets_){
-      const int numberOfPoints=input->GetNumberOfPoints();
+      const SimplexId numberOfPoints=input->GetNumberOfPoints();
 
       offsets_=vtkIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);

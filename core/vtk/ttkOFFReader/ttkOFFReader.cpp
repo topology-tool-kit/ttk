@@ -66,7 +66,7 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
       return -2;
    }
 
-   int         curLine;
+   vtkIdType         curLine;
    std::string line;
 
    // init values
@@ -86,7 +86,7 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
 
    // allocation verts
    vertScalars_.resize(nbVertsData_);
-   for (int i = 0; i < nbVertsData_; i++) {
+   for (vtkIdType i = 0; i < nbVertsData_; i++) {
       vertScalars_[i] = vtkSmartPointer<vtkDoubleArray>::New();
       vertScalars_[i]->SetNumberOfComponents(1);
       vertScalars_[i]->SetNumberOfTuples(nbVerts_);
@@ -112,7 +112,7 @@ int ttkOFFReader::RequestData(vtkInformation *       request,
 
    // allocation cells
    cellScalars_.resize(nbCellsData_);
-   for (int i = 0; i < nbCellsData_; i++) {
+   for (vtkIdType i = 0; i < nbCellsData_; i++) {
       cellScalars_[i] = vtkSmartPointer<vtkDoubleArray>::New();
       cellScalars_[i]->SetNumberOfComponents(1);
       cellScalars_[i]->SetNumberOfTuples(nbCells_);
@@ -183,7 +183,7 @@ int ttkOFFReader::countCellsData(std::string line)
    return nbFields - sizeCell;
 }
 
-int ttkOFFReader::processLineVert(int curLine, std::string &line)
+int ttkOFFReader::processLineVert(vtkIdType curLine, std::string &line)
 {
    double             x, y, z;
    std::istringstream ss(line);
@@ -194,7 +194,7 @@ int ttkOFFReader::processLineVert(int curLine, std::string &line)
    points_->InsertNextPoint(x, y, z);
 
    // Scalars data
-   for (int i = 0; i < nbVertsData_; i++) {
+   for (vtkIdType i = 0; i < nbVertsData_; i++) {
       double scalar;
       ss >> scalar;
       vertScalars_[i]->SetTuple1(curLine, scalar);
@@ -203,14 +203,14 @@ int ttkOFFReader::processLineVert(int curLine, std::string &line)
    return ++curLine;
 }
 
-int ttkOFFReader::processLineCell(int curLine, std::string &line)
+int ttkOFFReader::processLineCell(vtkIdType curLine, std::string &line)
 {
    int                        nbCellVerts;
    vtkSmartPointer<vtkIdList> cellVerts = vtkSmartPointer<vtkIdList>::New();
    std::istringstream ss(line);
    ss >> nbCellVerts;
    for (int j = 0; j < nbCellVerts; j++) {
-      int id;
+      vtkIdType id;
       ss >> id;
       cellVerts->InsertNextId(id);
    }
@@ -231,7 +231,7 @@ int ttkOFFReader::processLineCell(int curLine, std::string &line)
    }
 
    // Scalars data
-   for (int i = 0; i < nbCellsData_; i++) {
+   for (vtkIdType i = 0; i < nbCellsData_; i++) {
       double scalar;
       ss >> scalar;
       // Currline is after having read all the vertices

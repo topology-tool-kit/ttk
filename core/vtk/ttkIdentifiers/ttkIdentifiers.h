@@ -96,7 +96,7 @@ class ttkIdentifiers
   private:
     
     bool                  UseAllCores;
-    int                   ThreadNumber;
+    ttk::ThreadId                   ThreadNumber;
     std::string                CellFieldName, VertexFieldName;
     
     // base code features

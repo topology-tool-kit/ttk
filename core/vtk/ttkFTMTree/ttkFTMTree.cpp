@@ -388,7 +388,7 @@ int ttkFTMTree::getOffsets()
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
-            for (int i = 0; i < numberOfVertices; i++) {
+            for (idVertex i = 0; i < numberOfVertices; i++) {
                offsets_[cc][i] = i;
             }
          }

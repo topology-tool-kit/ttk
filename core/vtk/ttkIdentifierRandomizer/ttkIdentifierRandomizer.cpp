@@ -124,7 +124,7 @@ int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
     inputScalarField->GetTuple(i, &inputIdentifier);
     
     bool isIn = false;
-    for(SimplexId   j = 0; j < (int) identifierMap.size(); j++){
+    for(SimplexId   j = 0; j < (SimplexId) identifierMap.size(); j++){
       if(identifierMap[j].first == inputIdentifier){
         isIn = true;
         break;

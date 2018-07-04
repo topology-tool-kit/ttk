@@ -76,7 +76,7 @@ int ttkDiscreteGradient::setupTriangulation(vtkDataSet* input){
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangulation_->isEmpty()){
-    cerr << "[vtkIntegralLines] Error : vtkTriangulation allocation problem." << endl;
+    cerr << "[ttkDiscreteGradient] Error : vtkTriangulation allocation problem." << endl;
     return -1;
   }
 #endif
@@ -278,7 +278,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkCharArray> cellDimensions=vtkSmartPointer<vtkCharArray>::New();
             if(!cellDimensions){
-              cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
+              cerr << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem." << endl;
               return -13;
             }
             cellDimensions->SetNumberOfComponents(1);
@@ -286,7 +286,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
             vtkSmartPointer<vtkIdTypeArray> cellIds=vtkSmartPointer<vtkIdTypeArray>::New();
             if(!cellIds){
-              cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
+              cerr << "[ttkDiscreteGradient] Error : vtkIdTypeArray allocation problem." << endl;
               return -14;
             }
             cellIds->SetNumberOfComponents(1);
@@ -311,7 +311,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             vtkSmartPointer<vtkIdTypeArray> PLVertexIdentifiers=
               vtkSmartPointer<vtkIdTypeArray>::New();
             if(!PLVertexIdentifiers){
-              cerr << "[ttkMorseSmaleComplex] Error : vtkIntArray allocation "
+              cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation "
                 << "problem." << endl;
               return -10;
             }
@@ -438,7 +438,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     vtkSmartPointer<vtkCharArray> pairOrigins=vtkSmartPointer<vtkCharArray>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pairOrigins){
-      cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
+      cerr << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem." << endl;
       return -19;
     }
 #endif
@@ -448,7 +448,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     vtkSmartPointer<vtkCharArray> pairTypes=vtkSmartPointer<vtkCharArray>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pairTypes){
-      cerr << "[ttkDiscreteGradient] Error : vtkIntArray allocation problem." << endl;
+      cerr << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem." << endl;
       return -20;
     }
 #endif

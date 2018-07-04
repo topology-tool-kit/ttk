@@ -79,7 +79,7 @@ void ttkOFFWriter::WriteData(){
     << dataSet->GetNumberOfCells() << " 0" << endl;
     
   double p[3];
-  for(int i = 0; i < dataSet->GetNumberOfPoints(); i++){
+  for(vtkIdType i = 0; i < dataSet->GetNumberOfPoints(); i++){
     dataSet->GetPoint(i, p);
     (*Stream) << p[0] << " " << p[1] << " " << p[2] << " ";
    
@@ -95,7 +95,7 @@ void ttkOFFWriter::WriteData(){
     (*Stream) << endl;
   }
   
-  for(int i = 0; i < dataSet->GetNumberOfCells(); i++){
+  for(vtkIdType i = 0; i < dataSet->GetNumberOfCells(); i++){
     vtkCell *c = dataSet->GetCell(i);
    
     (*Stream) << c->GetNumberOfPoints() << " ";

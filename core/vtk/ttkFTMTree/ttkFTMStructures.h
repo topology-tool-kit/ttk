@@ -380,13 +380,13 @@ struct VertData: public WrapperData {
 
       const ttk::ftm::idNode   downNodeId     = arc->getDownNodeId();
       const ttk::ftm::Node*    downNode       = tree->getNode(downNodeId);
-      const int           l_downVertexId = downNode->getVertexId();
-      const int           g_downVertexId = idMapper->GetTuple1(l_downVertexId);
+      const ttk::ftm::idVertex           l_downVertexId = downNode->getVertexId();
+      const ttk::ftm::idVertex           g_downVertexId = idMapper->GetTuple1(l_downVertexId);
       const ttk::ftm::NodeType downNodeType   = getNodeType(*tree, downNodeId, params);
       float               coordDown[3];
       triangulation->getVertexPoint(l_downVertexId, coordDown[0], coordDown[1], coordDown[2]);
 
-      const int    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
+      const ttk::ftm::idVertex    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
       const double regionSpan = ttk::Geometry::distance(coordUp, coordDown);
 
       ttk::ftm::idSuperArc nid = arc->getNormalizedId();

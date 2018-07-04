@@ -117,7 +117,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
   // make this function thread-safe
   input->GetPoint(0, p[0].data());
   
-  int count = 0;
+  vtkIdType count = 0;
   
 #ifdef TTK_ENABLE_OPENMP
   omp_lock_t writeLock;

@@ -44,16 +44,16 @@ class ttkOFFReader
 
    int countVertsData(std::string line);
    int countCellsData(std::string line);
-   int processLineVert(int curLine, std::string &line);
-   int processLineCell(int curLine, std::string &line);
+   int processLineVert(vtkIdType curLine, std::string &line);
+   int processLineCell(vtkIdType curLine, std::string &line);
 
   private:
    ttkOFFReader(const ttkOFFReader &) = delete;
    void operator=(const ttkOFFReader &) = delete;
 
    char *FileName;
-   int  nbVerts_, nbCells_;
-   int   nbVertsData_, nbCellsData_;
+   vtkIdType  nbVerts_, nbCells_;
+   vtkIdType   nbVertsData_, nbCellsData_;
 
    vtkSmartPointer<vtkUnstructuredGrid>         mesh_;
    vtkSmartPointer<vtkPoints>                   points_;
