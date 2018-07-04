@@ -141,7 +141,7 @@ class ttkUncertainDataEstimator
   private:
 
     bool                  UseAllCores;
-    int                   ThreadNumber;
+    ttk::ThreadId                   ThreadNumber;
     std::string                ScalarField;
     bool                  computeLowerBound_;
     bool                  computeUpperBound_;
