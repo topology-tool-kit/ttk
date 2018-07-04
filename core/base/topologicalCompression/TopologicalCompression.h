@@ -70,10 +70,10 @@ class TopologicalCompression : public Debug
     // Persistence compression methods.
     template <class dataType>
     int computePersistencePairs(
-      std::vector<std::tuple<idVertex, idVertex, dataType> > &JTPairs,
-      std::vector<std::tuple<idVertex, idVertex, dataType> > &STPairs,
+      std::vector<std::tuple<SimplexId, SimplexId, dataType> > &JTPairs,
+      std::vector<std::tuple<SimplexId, SimplexId, dataType> > &STPairs,
       dataType* inputScalars_,
-      int* inputOffsets);
+      SimplexId* inputOffsets);
     template <typename dataType>
     int compressForPersistenceDiagram(
       int vertexNumber,
