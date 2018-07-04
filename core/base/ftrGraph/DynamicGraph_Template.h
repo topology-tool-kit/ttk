@@ -197,7 +197,7 @@ namespace ttk
 
          // Reverse all the node until the root
          while (true) {
-            parentNode->parent_  = curNode;
+            parentNode->parent_ = curNode;
             parentNode->weight_ = parentWeight;
 
             curNode      = parentNode;
@@ -206,7 +206,7 @@ namespace ttk
 
             if (gParentNode) {
                gParentWeight = gParentNode->weight_;
-               gParentNode = gParentNode->parent_;
+               gParentNode   = gParentNode->parent_;
             } else{
                // keep same arc than the current root
                // if cur > this ?
@@ -276,8 +276,8 @@ namespace ttk
             // We need replace the min edge by the new one as the current weight is higher
 
             // add arc (Parsa like)
-            parent_    = n;
-            weight_    = weight;
+            parent_ = n;
+            weight_ = weight;
 
             // remove old
             std::get<1>(nNodes)->parent_ = 0;

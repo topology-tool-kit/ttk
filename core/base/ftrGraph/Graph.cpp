@@ -28,7 +28,6 @@ void Graph::mergeAtSaddle(const idNode saddleId, Propagation* const localProp)
       if (id >= 0) {
          Propagation* lowerProp = getArc(id).getPropagation();
          if (lowerProp->goUp() == localProp->goUp()) {
-            std::cout << "merge " << lowerProp->getRpz() << " into " << saddleVert << std::endl;
             localProp->merge(*lowerProp);
          }
       }

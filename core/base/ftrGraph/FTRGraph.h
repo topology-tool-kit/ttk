@@ -200,9 +200,9 @@ namespace ttk
 
          std::string printMesh(void) const;
 
-         std::string printEdge(const idEdge edgeId, const Propagation* const localPropagation) const;
+         std::string printEdge(const idEdge edgeId, const Propagation* const localProp) const;
 
-         std::string printTriangle(const idCell cellId, const Propagation* const localPropagation) const;
+         std::string printTriangle(const idCell cellId, const Propagation* const localProp) const;
 
          void printGraph(const int verbosity) const;
 
@@ -217,7 +217,7 @@ namespace ttk
 
         private: // FTRGraphPrivate
          /// Local propagation for the vertex seed, using BFS with a priority queue
-         /// localPropagation.
+         /// localProp.
          /// This will process all the area corresponding to one connected component
          /// of level set.
          /// When a 2 Saddle is met, this function wait it has been completely visited
@@ -225,13 +225,13 @@ namespace ttk
          /// When a 1 Saddle is met, we split the local propagation with a BFS
          /// to continue locally.
          /// if arc is supplied, this arc will be used for the growth
-         void growthFromSeed(const idVertex seed, Propagation* localPropagation, const idSuperArc arcId = nullSuperArc);
+         void growthFromSeed(const idVertex seed, Propagation* localProp, const idSuperArc arcId = nullSuperArc);
 
          /// visit the star of v and create two vector,
          /// first one contains edges finishing at v (lower star)
          /// second one contains edges starting at v (upper star)
          std::pair<std::vector<idEdge>, std::vector<idEdge>> visitStar(
-             const Propagation* const localPropagation) const;
+             const Propagation* const localProp) const;
 
          /// Consider edges ending at the vertex v, one by one,
          /// and find their corresponding components in the current
@@ -249,24 +249,24 @@ namespace ttk
          /// of immediately before f(v) to that of immediately after f(v).
          /// (v is localGrowth->getCurVertex())
          // this update is made using the arc: curArc
-         void updatePreimage(const Propagation* const localPropagation, const idSuperArc curArc);
+         void updatePreimage(const Propagation* const localProp, const idSuperArc curArc);
 
          /// update the dynamicGraph by adding (if needed) a new edge corresponding to the
          /// starting cell cellId
          void updatePreimageStartCell(const orderedTriangle&   oTriangle,
-                                      const Propagation* const localPropagation,
+                                      const Propagation* const localProp,
                                       const idSuperArc         curArc);
 
          /// update the dynamicGraph by moving (if needed) the corresponding to the
          /// current visited cell cellId
          void updatePreimageMiddleCell(const orderedTriangle&   oTriangle,
-                                       const Propagation* const localPropagation,
+                                       const Propagation* const localProp,
                                        const idSuperArc         curArc);
 
          /// update the dynamicGraph by removing (if needed) the edge corresponding to the
          /// last visit of the cell cellId
          void updatePreimageEndCell(const orderedTriangle&   oTriangle,
-                                    const Propagation* const localPropagation,
+                                    const Propagation* const localProp,
                                     const idSuperArc         curArc);
 
          /// update the current arc of the dynGraph subtree of seed with curArc (on the component going through neigEdge)
@@ -280,18 +280,19 @@ namespace ttk
          /// update the skeleton structure
          /// \ret the nodeId of the current saddle/max
          idNode updateReebGraph(const idSuperArc         currentArc,
-                                const Propagation* const localPropagation);
+                                const Propagation* const localProp);
 
          /// local growth replacing the global sort
-         void localGrowth(Propagation* const localPropagation);
+         void localGrowth(Propagation* const localProp);
 
          // Check if the current vertex which is on a Join saddle come from the
          // last growth touching this saddle
-         bool checkLast(const idSuperArc currentArc, const Propagation* const localPropagation,
+         bool checkLast(const idSuperArc currentArc, const Propagation* const localProp,
                         const std::vector<idEdge>& lowerStarEdges);
 
          // Check if neigh is linked to an arc having saddle in one of its boundary node, using the edge btwn saddle and neigh
-         bool checkOppositeDGForArc(const idVertex saddle, const idVertex neigh, const Propagation* const localProp);
+         bool checkOppositeDGForArc(const idVertex saddle, const idVertex neigh,
+                                    Propagation* const localProp);
 
          // check if regular vertex is visited by an arc ending a saddle coming from the opposite direction
          bool checkSegmentationForArc(const idVertex saddle, const idVertex regular,
@@ -302,10 +303,10 @@ namespace ttk
          // Remove duplicate on the saddleVertex (only)
          void mergeAtSaddle(const idNode saddleId, Propagation* localProp);
 
-         // At a split saddle, break the localPropagation into pieces
+         // At a split saddle, break the localProp into pieces
          // corresponding to each upper CC (use BFS) and launch
          // new localGrowth for each
-         void splitAtSaddle(const Propagation* const localProp);
+         void splitAtSaddle(Propagation* const localProp);
 
          // Retrun one triangle by upper CC of the vertex v
          std::set<idCell> upCCtriangleSeeds(const idVertex v, const Propagation* const localProp);
@@ -336,17 +337,17 @@ namespace ttk
          // Compute the wieght of the edge in the dyngraph between e1 and e2.
          // This weight is the min value of the two endpoints, we use the mirror array (int)
          idVertex getWeight(const orderedEdge& e1, const orderedEdge& e2,
-                            const Propagation* const localPropagation);
+                            const Propagation* const localProp);
 
          // DEPRECATED
 
          /// On a triangle, recover the position of the current vertex to classify the triangle
          vertPosInTriangle getVertPosInTriangle(const orderedTriangle&   oTriangle,
-                                                const Propagation* const localPropagation) const;
+                                                const Propagation* const localProp) const;
 
          // get the higher vertex: get<1>(get<1>(oTriangle)
          idVertex getEndVertexInTriangle(const orderedTriangle&   oTriangle,
-                                         const Propagation* const localPropagation) const;
+                                         const Propagation* const localProp) const;
 
          // get edge in orderer triangle between v0 and v1
          idEdge getEdgeFromOTri(const orderedTriangle oTri, const idVertex v0, const idVertex v1);

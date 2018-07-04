@@ -262,8 +262,15 @@ namespace ttk
          /// Get representative node
          DynGraphNode* findRoot(void) const;
 
-         /// Get the arcs corresponding to this subtree
+         /// Get the arcs corresponding to this subtree:
+         /// find the root before
          idSuperArc findRootArc(void) const;
+
+         /// Get the arcs corresponding to this subtree
+         idSuperArc getCorArc() const
+         {
+            return corArc_;
+         }
 
          void setRootArc(const idSuperArc arcId);
 

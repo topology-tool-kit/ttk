@@ -9,3 +9,17 @@ ttk_add_base_library(ftrGraph
 
 target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})
 
+if(OPENMP_FOUND)
+   option(TTK_ENABLE_FTR_PRIORITY "Gives tasks priority, high perf improvement" OFF)
+
+   if (OpenMP_CXX_VERSION_MAJOR GREATER_EQUAL 4 AND OpenMP_CXX_VERSION_MINOR GREATER_EQUAL 5)
+      set(TTK_ENABLE_FTR_PRIORITY ON CACHE BOOL "Enable priorities on opnemp tasks" FORCE)
+   endif()
+
+   mark_as_advanced(TTK_ENABLE_FTR_PRIORITY)
+
+   if (TTK_ENABLE_FTR_PRIORITY)
+      target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_PRIORITY)
+   endif()
+endif()
+

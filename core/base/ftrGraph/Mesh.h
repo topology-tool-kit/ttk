@@ -194,7 +194,11 @@ namespace ttk
 
           orderedEdge getOrderedEdge(const idEdge e, const bool increasingOrder) const;
 
+          void  getOrderedEdge(const idEdge e, const bool increasingOrder, orderedEdge& oEdge) const;
+
           orderedTriangle getOrderedTriangle(const idCell t, const bool increasingOrder) const;
+
+          void getOrderedTriangle(const idCell t, const bool increasingOrder, orderedTriangle& oTri) const;
 
          private:
           bool compareEdges(const idEdge e0, const idEdge e1, VertCompFN lowerThan) const;

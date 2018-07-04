@@ -5,6 +5,12 @@
 #include "Propagation.h"
 #include "Tasks.h"
 
+#ifdef TTK_ENABLE_KAMIKAZE
+#define OPTIONAL_PRIORITY(value) priority(value)
+#else
+#define OPTIONAL_PRIORITY(value)
+#endif
+
 namespace ttk
 {
    namespace ftr
@@ -57,6 +63,13 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
          omp_set_num_threads(params_->threadNumber);
          omp_set_nested(1);
+#ifdef TTK_ENABLE_FTR_PRIORITY
+         if(omp_get_max_task_priority() < PriorityLevel::Max) {
+            std::cout << "[FTR]: Max priority is " << omp_get_max_task_priority();
+            std::cout << ", you need to set it at last : " << PriorityLevel::Max << std::endl;
+            std::cout << "  you can use $OMP_MAX_TASK_PRIORITY" << std::endl;
+         }
+#endif
 #endif
 
          // Precompute
@@ -189,7 +202,7 @@ namespace ttk
                Propagation*   localPropagation = newPropagation(corLeaf, fromMin);
                // process
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task priority(15)
+#pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Higher)
 #endif
                growthFromSeed(corLeaf, localPropagation);
             }

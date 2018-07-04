@@ -26,14 +26,17 @@ namespace ttk
       class Propagation
       {
         private:
-         // cached extrema: propagation_.top() will be the next one
-         idVertex   curVert_;
+         // cache current simplex
+         idVertex        curVert_;
+
          // comparison function
          VertCompFN comp_;
          // come from min/max leaf
          bool goUp_;
+
          // priority queue
          boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation_;
+
          // representant (first vertex)
          idVertex rpz_;
 

@@ -19,30 +19,6 @@ void Mesh::preSortEdges(VertCompFN lowerThan)
    }
 }
 
-bool Mesh::compareEdges(const idEdge e0, const idEdge e1, VertCompFN lowerThan) const
-{
-   idVertex e0v0, e0v1;
-   if(edgesSortId_[e0] == 0) {
-      getEdgeVertex(e0, 0, e0v0);
-      getEdgeVertex(e0, 1, e0v1);
-   } else {
-      getEdgeVertex(e0, 1, e0v0);
-      getEdgeVertex(e0, 0, e0v1);
-   }
-
-   idVertex e1v0, e1v1;
-   if(edgesSortId_[e1] == 0) {
-      getEdgeVertex(e1, 0, e1v0);
-      getEdgeVertex(e1, 1, e1v1);
-   } else {
-      getEdgeVertex(e1, 1, e1v0);
-      getEdgeVertex(e1, 0, e1v1);
-   }
-
-   if (e0v0 == e1v0) return lowerThan(e0v1, e1v1);
-   return lowerThan(e0v0, e1v0);
-}
-
 void Mesh::preSortTriangles(VertCompFN lowerThan)
 {
    // require edges to be already sorted
@@ -102,6 +78,19 @@ orderedEdge Mesh::getOrderedEdge(const idEdge e, const bool increasingOrder) con
    }
 }
 
+void Mesh::getOrderedEdge(const idEdge e, const bool increasingOrder, orderedEdge& oEdge) const
+{
+   idVertex v0, v1;
+   tri_->getEdgeVertex(e, 0, v0);
+   tri_->getEdgeVertex(e, 1, v1);
+   if (edgesSortId_[e] == increasingOrder) {
+      std::get<0>(oEdge) = v0;
+      std::get<1>(oEdge) = v1;
+   } else {
+      std::get<0>(oEdge) = v1;
+      std::get<1>(oEdge) = v0;
+   }
+}
 orderedTriangle Mesh::getOrderedTriangle(const idCell ti, const bool increasingOrder) const
 {
    idEdge e0, e1, e2;
@@ -141,5 +130,119 @@ orderedTriangle Mesh::getOrderedTriangle(const idCell ti, const bool increasingO
 #endif
 
    return std::make_tuple(nullEdge, nullEdge, nullEdge);
+}
+
+void Mesh::getOrderedTriangle(const idCell ti, const bool increasingOrder, orderedTriangle& oTriangle) const
+{
+   idEdge e0, e1, e2;
+   getTriangleEdge(ti, 0, e0);
+   getTriangleEdge(ti, 1, e1);
+   getTriangleEdge(ti, 2, e2);
+
+   switch (trianglesSortId_[ti]) {
+      case 0:
+         if (increasingOrder) {
+            std::get<0>(oTriangle) = e0;
+            std::get<1>(oTriangle) = e1;
+            std::get<2>(oTriangle) = e2;
+         } else {
+            std::get<0>(oTriangle) = e2;
+            std::get<1>(oTriangle) = e1;
+            std::get<2>(oTriangle) = e0;
+         }
+         break;
+
+      case 1:
+         if (increasingOrder) {
+            std::get<0>(oTriangle) = e0;
+            std::get<1>(oTriangle) = e2;
+            std::get<2>(oTriangle) = e1;
+         } else {
+            std::get<0>(oTriangle) = e1;
+            std::get<1>(oTriangle) = e2;
+            std::get<2>(oTriangle) = e0;
+         }
+         break;
+
+      case 2:
+         if (increasingOrder) {
+            std::get<0>(oTriangle) = e1;
+            std::get<1>(oTriangle) = e0;
+            std::get<2>(oTriangle) = e2;
+         } else {
+            std::get<0>(oTriangle) = e2;
+            std::get<1>(oTriangle) = e0;
+            std::get<2>(oTriangle) = e1;
+         }
+         break;
+
+      case 3:
+         if (increasingOrder) {
+            std::get<0>(oTriangle) = e2;
+            std::get<1>(oTriangle) = e0;
+            std::get<2>(oTriangle) = e1;
+         } else {
+            std::get<0>(oTriangle) = e1;
+            std::get<1>(oTriangle) = e0;
+            std::get<2>(oTriangle) = e2;
+         }
+         break;
+
+      case 4:
+         if (increasingOrder) {
+            std::get<0>(oTriangle) = e1;
+            std::get<1>(oTriangle) = e2;
+            std::get<2>(oTriangle) = e0;
+         } else {
+            std::get<0>(oTriangle) = e0;
+            std::get<1>(oTriangle) = e2;
+            std::get<2>(oTriangle) = e1;
+         }
+         break;
+
+      case 5:
+         if (increasingOrder) {
+            std::get<0>(oTriangle) = e2;
+            std::get<1>(oTriangle) = e1;
+            std::get<2>(oTriangle) = e0;
+         } else {
+            std::get<0>(oTriangle) = e0;
+            std::get<1>(oTriangle) = e1;
+            std::get<2>(oTriangle) = e2;
+         }
+         break;
+      default:
+#ifndef TTK_ENABLE_KAMIKAZE
+         std::cerr << "[Mesh]: error, unknownk case in triangleSortId_ : "
+            << static_cast<unsigned>(trianglesSortId_[ti]) << " at " << ti << std::endl;
+#endif
+         break;
+   }
+
+}
+// tools
+
+bool Mesh::compareEdges(const idEdge e0, const idEdge e1, VertCompFN lowerThan) const
+{
+   idVertex e0v0, e0v1;
+   if(edgesSortId_[e0] == 0) {
+      getEdgeVertex(e0, 0, e0v0);
+      getEdgeVertex(e0, 1, e0v1);
+   } else {
+      getEdgeVertex(e0, 1, e0v0);
+      getEdgeVertex(e0, 0, e0v1);
+   }
+
+   idVertex e1v0, e1v1;
+   if(edgesSortId_[e1] == 0) {
+      getEdgeVertex(e1, 0, e1v0);
+      getEdgeVertex(e1, 1, e1v1);
+   } else {
+      getEdgeVertex(e1, 1, e1v0);
+      getEdgeVertex(e1, 0, e1v1);
+   }
+
+   if (e0v0 == e1v0) return lowerThan(e0v1, e1v1);
+   return lowerThan(e0v0, e1v0);
 }
 
