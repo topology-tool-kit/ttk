@@ -2,6 +2,7 @@
 
 using namespace std;
 using namespace ttk;
+using namespace dcg;
 
 vtkStandardNewMacro(ttkPersistenceDiagram)
 
@@ -124,13 +125,13 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
     }
 
     if(!offsets_){
-      const int numberOfVertices=input->GetNumberOfPoints();
+      const SimplexId numberOfVertices=input->GetNumberOfPoints();
 
-      offsets_=vtkIntArray::New();
+      offsets_=vtkIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName("OffsetScalarField");
-      for(int i=0; i<numberOfVertices; ++i)
+      for(SimplexId i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
     }
 

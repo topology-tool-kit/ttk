@@ -18,7 +18,7 @@ PersistenceDiagram::~PersistenceDiagram(){
 
 NodeType PersistenceDiagram::getNodeType(FTMTree_MT* tree,
                                          TreeType    treeType,
-                                         const int   vertexId) const
+                                         const SimplexId   vertexId) const
 {
    const Node* node = tree->vertex2Node(vertexId);
    int         upDegree{};
