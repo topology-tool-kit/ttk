@@ -124,7 +124,7 @@ class ttkPersistenceCurve
   private:
 
     bool UseAllCores;
-    int ThreadNumber;
+    ttk::ThreadId ThreadNumber;
     int ScalarFieldId;
     std::string ScalarField;
     std::string InputOffsetScalarFieldName;
@@ -138,7 +138,7 @@ class ttkPersistenceCurve
     vtkTable* MSCPersistenceCurve_;
     vtkTable* STPersistenceCurve_;
     vtkTable* CTPersistenceCurve_;
-    vtkIntArray* offsets_;
+    vtkIdTypeArray* offsets_;
     vtkDataArray* inputOffsets_;
     bool varyingMesh_;
     vtkSmartPointer<ttkTriangulationFilter> inputTriangulation_;
@@ -160,8 +160,8 @@ int ttkPersistenceCurve::getPersistenceCurve(ttk::ftm::TreeType treeType,
 
   vtkSmartPointer<vtkArrayType> persistenceScalars = 
     vtkSmartPointer<vtkArrayType>::New();
-  vtkSmartPointer<vtkIntArray> numberOfPairsScalars = 
-    vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> numberOfPairsScalars = 
+    vtkSmartPointer<vtkIdTypeArray>::New();
 
   switch(treeType){
     case ttk::ftm::TreeType::Join:
@@ -223,8 +223,8 @@ int ttkPersistenceCurve::getMSCPersistenceCurve(
 
   vtkSmartPointer<vtkArrayType> persistenceScalars = 
     vtkSmartPointer<vtkArrayType>::New();
-  vtkSmartPointer<vtkIntArray> numberOfPairsScalars = 
-    vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> numberOfPairsScalars = 
+    vtkSmartPointer<vtkIdTypeArray>::New();
 
   persistenceScalars->SetName("Persistence (saddle-saddle pairs)");
   numberOfPairsScalars->SetName("Number Of Pairs (saddle-saddle pairs)");
