@@ -48,7 +48,7 @@ int ttkPersistenceDiagramsBarycenter::updateProgress(const float &progress){
 
 
 
-int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGrid *outputBarycenter, int numInputs){
+int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGrid *outputBarycenter, vtkUnstructuredGrid *outputMatchings, vtkUnstructuredGrid *outputDiagrams, int numInputs){
 	// Get arrays from input datas
 	//vtkDataArray* inputDiagram[numInputs] = { NULL };
 	vector<vtkUnstructuredGrid*> inputDiagram(numInputs);
@@ -74,16 +74,22 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 			persistenceDiagramsBarycenter.setTimeLimit(TimeLimit);
 			persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
 			persistenceDiagramsBarycenter.setThreadNumber(ThreadNumber);
+			
+			std::vector<std::vector<macroDiagramTuple>*> all_CTDiagrams(numInputs);
 			for (int i = 0; i<numInputs; i++) {
-				double Spacing = i;
+				double Spacing = 0;
 				std::vector<macroDiagramTuple>* CTDiagram = new vector<macroDiagramTuple>();
 				getPersistenceDiagram<VTK_TT>(CTDiagram, inputDiagram[i], Spacing, 0);
 				
 				persistenceDiagramsBarycenter.setDiagram(i, (void*) CTDiagram);
+				all_CTDiagrams[i] = CTDiagram;
 			}
 			std::vector<macroDiagramTuple> barycenter;
-			persistenceDiagramsBarycenter.execute(&barycenter);
+			std::vector<std::vector<macroMatchingTuple>> matchings = persistenceDiagramsBarycenter.execute(&barycenter);
+			
 			outputBarycenter->ShallowCopy(createPersistenceDiagram<VTK_TT>(&barycenter));
+			outputMatchings->ShallowCopy(createMatchings(&matchings, &barycenter, all_CTDiagrams));
+			outputDiagrams->ShallowCopy(createOutputDiagrams(all_CTDiagrams));
 		}
 		));
 	}
@@ -138,12 +144,24 @@ int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
   outInfo = outputVector->GetInformationObject(0);
   vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(outInfo);*/
   
-  vtkInformation* outInfo;
-  outInfo = outputVector->GetInformationObject(0);
-  vtkDataSet *output1 = vtkDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkInformation* outInfo1;
+  outInfo1 = outputVector->GetInformationObject(0);
+  vtkDataSet *output1 = vtkDataSet::SafeDownCast(outInfo1->Get(vtkDataObject::DATA_OBJECT()));
   vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(output1);
   
-  doIt(input, outputCT1, numInputs);
+  vtkInformation* outInfo2;
+  outInfo2 = outputVector->GetInformationObject(1);
+  vtkDataSet *output2 = vtkDataSet::SafeDownCast(outInfo2->Get(vtkDataObject::DATA_OBJECT()));
+  vtkUnstructuredGrid *matchings = vtkUnstructuredGrid::SafeDownCast(output2);
+  
+  vtkInformation* outInfo3;
+  outInfo3 = outputVector->GetInformationObject(2);
+  vtkDataSet *output3 = vtkDataSet::SafeDownCast(outInfo3->Get(vtkDataObject::DATA_OBJECT()));
+  vtkUnstructuredGrid *outputDiagrams = vtkUnstructuredGrid::SafeDownCast(output3);
+  
+  
+  
+  doIt(input, outputCT1, matchings, outputDiagrams, numInputs);
   
   
   

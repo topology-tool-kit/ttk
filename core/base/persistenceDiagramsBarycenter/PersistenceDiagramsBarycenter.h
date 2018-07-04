@@ -63,7 +63,7 @@ namespace ttk{
 		};
 
 
-		int execute(std::vector<diagramTuple>* barycenter);
+		std::vector<std::vector<matchingTuple>> execute(std::vector<diagramTuple>* barycenter);
 			
 		inline int setDiagram(int idx, void* data){
 			if(idx < numberOfInputs_){
@@ -131,7 +131,7 @@ namespace ttk{
   
   
 template <typename dataType> 
-int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* barycenter){
+std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* barycenter){
 	Timer t;
 	{
 	
@@ -142,6 +142,8 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 	std::vector<std::vector<int>> data_min_idx(numberOfInputs_);
 	std::vector<std::vector<int>> data_sad_idx(numberOfInputs_);
 	std::vector<std::vector<int>> data_max_idx(numberOfInputs_);
+	
+	std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
 	
 	bool do_min = false;
 	bool do_sad = false;
@@ -261,8 +263,6 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 			}
 		//}
 	//}
-	std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
-	
 	
 	// Reconstruct matchings
 	for(int i=0; i<numberOfInputs_; i++){
@@ -272,7 +272,6 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 				matchingTuple t = matching_min[i][j];
 				int bidder_id = std::get<0>(t);
 				std::get<0>(t) = data_min_idx[i][bidder_id];
-				// TODO Handle the good_id + output barycenter
 				all_matchings[i].push_back(t);
 			}
 		}
@@ -282,7 +281,7 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 				matchingTuple t = matching_sad[i][j];
 				int bidder_id = std::get<0>(t);
 				std::get<0>(t) = data_sad_idx[i][bidder_id];
-				// TODO Handle the good_id + output barycenter
+				std::get<1>(t) = std::get<1>(t) + barycenter_min.size();
 				all_matchings[i].push_back(t);
 			}
 		}
@@ -292,7 +291,7 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 				matchingTuple t = matching_max[i][j];
 				int bidder_id = std::get<0>(t);
 				std::get<0>(t) = data_max_idx[i][bidder_id];
-				// TODO Handle the good_id + output barycenter
+				std::get<1>(t) = std::get<1>(t) + barycenter_min.size() + barycenter_sad.size();
 				all_matchings[i].push_back(t);
 			}
 		}
@@ -326,10 +325,9 @@ int PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* 
 		<< " thread(s))."
 		<< std::endl;
 	dMsg(std::cout, msg.str(), timeMsg);
+	return all_matchings;
 	}
 	
-	
-	return 0;
 }
 
 }

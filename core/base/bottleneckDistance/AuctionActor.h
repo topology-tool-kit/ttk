@@ -425,6 +425,9 @@ namespace ttk{
 			else if(val>second_val){
 				second_val=val;
 			}
+			else if(diagonal_queue.size()==0){
+				second_val = val;
+			}
 		}
 		else{
 			best_val = val;
@@ -525,6 +528,9 @@ namespace ttk{
 			else if(val>second_val){
 				second_val=val;
 			}
+			else if(diagonal_queue.size()==0){
+				second_val = val;
+			}
 		}
 		else{
 			best_val = val;
@@ -535,6 +541,10 @@ namespace ttk{
 
 		dataType old_price = best_good->getPrice();
 		dataType new_price = old_price + best_val-second_val + epsilon;
+		if(new_price>1000000){
+			// Useless line, just for debug
+			this->setPricePaid(new_price);
+		}
 		// Assign bidder to best_good
 		this->setProperty(best_good);
 		this->setPricePaid(new_price);
@@ -550,8 +560,10 @@ namespace ttk{
 			}
 		}
 		else{
-			std::get<1>(best_pair) = new_price;
-			diagonal_queue.push(best_pair);
+			if(non_empty_goods){
+				std::get<1>(best_pair) = new_price;
+				diagonal_queue.push(best_pair);
+			}
 		}
 		return idx_reassigned;
 	}

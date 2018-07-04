@@ -266,6 +266,9 @@ namespace ttk {
 		}
 		
 		dataType getMinimalDiagonalPrice(){
+			if(diagonal_goods_->size()==0){
+				return 0;
+			}
 			dataType min_price = std::numeric_limits<dataType>::max();
 			for(int i=0; i<diagonal_goods_->size(); i++){
 				dataType price = diagonal_goods_->get(i).getPrice();

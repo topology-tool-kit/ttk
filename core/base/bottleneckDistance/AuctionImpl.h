@@ -35,7 +35,9 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_inde
 				idx_reassigned = b.runBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_);
 			}
 		}
-		
+		if(n_bidders_==1){
+			std::cout<< n_biddings << ", " <<idx_reassigned<< ", " << b.getProperty()->id_ << ", " <<b.getProperty()->getPrice() << std::endl;
+		}
 		if(idx_reassigned>=0){
 			Bidder<dataType>& reassigned = bidders_->get(idx_reassigned);
 			reassigned.setProperty(NULL);
