@@ -82,8 +82,6 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output){
   if(!inputScalarField)
     return -1;
 
-  auto InputType=inputScalarField->GetDataType();
-
   bool oldUseNormalization{UseNormalization};
   if(OutputType==SupportedType::Float or OutputType==SupportedType::Double)
     UseNormalization=false;

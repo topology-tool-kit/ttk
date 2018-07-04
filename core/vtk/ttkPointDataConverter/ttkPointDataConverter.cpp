@@ -80,8 +80,6 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output){
     inputScalarField=input->GetPointData()->GetArray(0);
   if(!inputScalarField) return -1;
 
-  auto InputType=inputScalarField->GetDataType();
-
   bool oldUseNormalization{UseNormalization};
   if(OutputType==SupportedType::Float or OutputType==SupportedType::Double)
     UseNormalization=false;

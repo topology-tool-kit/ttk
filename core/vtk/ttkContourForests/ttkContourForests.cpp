@@ -458,14 +458,14 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
       }
       else{
         vertexSoSoffsets_->resize(offsets->GetNumberOfTuples());
-        for (SimplexId i = 0; i < vertexSoSoffsets_->size(); ++i){
+        for (SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_->size(); ++i){
           (*vertexSoSoffsets_)[i] = offsets->GetTuple1(i);
         }
       }
     }
     if(vertexSoSoffsets_->empty()){
       vertexSoSoffsets_->resize(numberOfVertices_);
-      for (SimplexId i = 0; i < vertexSoSoffsets_->size(); ++i){
+      for (SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_->size(); ++i){
         (*vertexSoSoffsets_)[i] = i;
       }
     }
@@ -546,7 +546,7 @@ void ttkContourForests::getSkeletonArcs()
   SimplexId       currentZone = 0;
   SimplexId       regionId;
 
-  for (SimplexId i = 0; i < tree_->getNumberOfSuperArcs(); ++i) {
+  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
     a = tree_->getSuperArc(i);
 
     if (a->isVisible()) {
@@ -795,7 +795,7 @@ int ttkContourForests::getSkeletonScalars(const vector<double>& scalars,
   SimplexId nodeMinVId;
   SimplexId nodeMaxVId;
   const SuperArc* a;
-  for (SimplexId i = 0; i < tree_->getNumberOfSuperArcs(); ++i) {
+  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
     a = tree_->getSuperArc(i);
 
     if (!a->isPruned()) {
@@ -985,7 +985,7 @@ void ttkContourForests::getCriticalPoints()
   //const int nbVert = triangulation_->getNumberOfOriginalVertices();
 
   // looking for critical points
-  for (SimplexId i = 0; i < tree_->getNumberOfSuperArcs(); ++i) {
+  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
     auto a = tree_->getSuperArc(i);
 
     if (!a->isPruned()) {
@@ -1021,7 +1021,7 @@ int ttkContourForests::sample(unsigned int samplingLevel)
   vector<vector<SimplexId>> sampleList(samplingLevel);
 
   SuperArc* a;
-  for (SimplexId i = 0; i < tree_->getNumberOfSuperArcs(); ++i) {
+  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
     a = tree_->getSuperArc(i);
 
     if (!a->isPruned()) {
@@ -1068,7 +1068,7 @@ int ttkContourForests::sample(unsigned int samplingLevel)
         }
 
         // update the arc
-        for (SimplexId j = 0; j < sampleList.size(); ++j)
+        for (SimplexId j = 0; j < (SimplexId)sampleList.size(); ++j)
           (*samples_)[static_cast<int>(treeType_)][i].push_back(sampleList[j]);
       }
     }
@@ -1085,16 +1085,16 @@ int ttkContourForests::computeBarycenters()
   SimplexId vertexId;
 
   const SuperArc* a;
-  for (SimplexId i = 0; i < tree_->getNumberOfSuperArcs(); ++i) {
+  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
     a = tree_->getSuperArc(i);
     if (!a->isPruned()) {
-      for (SimplexId j = 0; j < (*samples_)[static_cast<int>(treeType_)][i].size(); ++j) {
+      for (SimplexId j = 0; j < (SimplexId)(*samples_)[static_cast<int>(treeType_)][i].size(); ++j) {
         vector<SimplexId>& sample = (*samples_)[static_cast<int>(treeType_)][i][j];
 
         for (unsigned int k = 0; k < 3; ++k)
           barycenter[k] = 0;
 
-        for (SimplexId k = 0; k < sample.size(); ++k) {
+        for (SimplexId k = 0; k < (SimplexId)sample.size(); ++k) {
           vertexId = sample[k];
 
           float pt[3];
@@ -1131,7 +1131,7 @@ void ttkContourForests::computeSkeleton(unsigned int arcRes)
 void ttkContourForests::smoothSkeleton(unsigned int skeletonSmoothing)
 {
   for (unsigned int i = 0; i < skeletonSmoothing; i++) {
-    for (SimplexId j = 0; j < tree_->getNumberOfSuperArcs(); j++) {
+    for (SimplexId j = 0; j < (SimplexId)tree_->getNumberOfSuperArcs(); j++) {
       if (!tree_->getSuperArc(j)->isPruned()) {
         smooth(j, !(treeType_ == TreeType::Split));
       }
@@ -1263,7 +1263,7 @@ void ttkContourForests::getSegmentation(vtkDataSet* input)
   }
 
   // nodes
-  for (SimplexId it = 0; it < criticalPoints_->size(); ++it) {
+  for (SimplexId it = 0; it < (SimplexId)criticalPoints_->size(); ++it) {
     SimplexId nodeId   = (*criticalPoints_)[it];
     SimplexId vertexId = tree_->getNode(nodeId)->getVertexId();
 
@@ -1273,7 +1273,7 @@ void ttkContourForests::getSegmentation(vtkDataSet* input)
   }
 
   // arcs
-  for (SimplexId i = 0; i < tree_->getNumberOfSuperArcs(); ++i) {
+  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
     auto a = tree_->getSuperArc(i);
     if (a->isVisible()) {
       SimplexId      upNodeId   = tree_->getSuperArc(i)->getUpNodeId();
