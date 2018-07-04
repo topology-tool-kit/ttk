@@ -32,7 +32,8 @@ int ttk::TopologicalCompression::CompressWithZFP(
 }
 
 int ttk::TopologicalCompression::compressZFPInternal(
-    double* array, int nx, int ny, int nz, double rate, bool decompress, FILE *file)
+    double* array, int nx, int ny, int nz, double rate,
+    bool decompress, FILE *file)
 {
   int status = 0;    // return value: 0 = success
   zfp_type type;     // array scalar type
@@ -43,9 +44,36 @@ int ttk::TopologicalCompression::compressZFPInternal(
   bitstream* stream; // bit stream to write to or read from
   size_t zfpsize;    // byte size of compressed stream
 
+  int n1 = 0;
+  int n2 = 0;
+  bool is2D = nx == 1 || ny == 1 || nz == 1;
+  if (is2D)
+  {
+    if (nx + ny == 2 || ny + nz == 2 || nx + nz == 2)
+    {
+      fprintf(stderr, "One-dimensional arrays not supported.\n");
+      return 0;
+    }
+
+    n1 = nx != 1 ? nx : ny;
+    n2 = nx != 1 && ny != 1 ?  ny : nz;
+  }
+
   // allocate meta data for the 3D array a[nz][ny][nx]
   type = zfp_type_double;
-  field = zfp_field_3d(array, type, nx, ny, nz);
+
+  if (is2D)
+  {
+    field = zfp_field_2d(array, type,
+                         (unsigned int) n1,
+                         (unsigned int) n2);
+  } else
+  {
+    field = zfp_field_3d(array, type,
+                         (unsigned int) nx,
+                         (unsigned int) ny,
+                         (unsigned int) nz);
+  }
 
   // allocate meta data for a compressed stream
   zfp = zfp_stream_open(NULL);
