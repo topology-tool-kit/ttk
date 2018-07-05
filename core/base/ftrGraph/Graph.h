@@ -151,7 +151,7 @@ namespace ttk
             return false;
          }
 
-         bool hasVisited(const idVertex v, const idVertex rpz) const
+         bool haveSeen(const idVertex v, const idSuperArc rpz) const
          {
             for(const idSegmentation tmp :  segmentation_[v]){
                if (tmp >= 0 && getArc(tmp).getPropagation() &&

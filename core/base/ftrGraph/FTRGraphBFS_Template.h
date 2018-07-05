@@ -58,10 +58,20 @@ namespace ttk
                   }
 
                }
-            }
-         }
+            } // end for
+         } // end if
       }
 
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::splitPropagationAtSaddle(
+          Propagation* localProp, std::map<idSuperArc, Propagation*> newProps)
+      {
+         while(!localProp->empty()){
+            const idVertex v = localProp->getCurVertex();
+            localProp->nextVertex();
+
+         }
+      }
    }
 }
 

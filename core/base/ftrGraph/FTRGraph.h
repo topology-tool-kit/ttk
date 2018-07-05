@@ -55,7 +55,7 @@ namespace ttk
          // local growth
 
          AtomicVector<Propagation*> propagations_;
-         std::vector<idVertex>      toVisit_;
+         std::vector<idSuperArc>    toVisit_;
 
          // BFS
          std::vector<idCell>   bfsCells_;
@@ -308,6 +308,11 @@ namespace ttk
          // new localGrowth for each
          void splitAtSaddle(Propagation* const localProp);
 
+         // decant local prop into the different connected component created at a split saddle.
+         // Use the dynGraph to identify them.
+         void splitPropagationAtSaddle(Propagation*                       localProp,
+                                       std::map<idSuperArc, Propagation*> newProps);
+
          // Retrun one triangle by upper CC of the vertex v
          std::set<idCell> upCCtriangleSeeds(const idVertex v, const Propagation* const localProp);
 
@@ -331,7 +336,6 @@ namespace ttk
          // Tools
 
          // Create a new propagation starting at leaf
-         // use rpz as representant for new uf if not nullptr
          Propagation* newPropagation(const idVertex leaf, const bool fromMax);
 
          // Compute the wieght of the edge in the dyngraph between e1 and e2.

@@ -119,6 +119,8 @@ namespace ttk
          }
          printTime(timeBuild, "[FTR Graph]: build time: ", timeMsg);
 
+         // Debug
+         printGraph(4);
 
          // post-process
          graph_.arcs2nodes([&](const idVertex a, const idVertex b){return scalars_->isLower(a,b);});
@@ -197,14 +199,16 @@ namespace ttk
          {
             for (idNode i = 0; i < nbSeed; i++) {
                // initialize structure
-               const idVertex corLeaf          = graph_.getLeaf(i);
-               const bool     fromMin          = graph_.isLeafFromMin(i);
-               Propagation*   localPropagation = newPropagation(corLeaf, fromMin);
+               const idVertex   corLeaf          = graph_.getLeaf(i);
+               const bool       fromMin          = graph_.isLeafFromMin(i);
+               Propagation*     localPropagation = newPropagation(corLeaf, fromMin);
+               const idSuperArc newArc = graph_.openArc(graph_.makeNode(corLeaf), localPropagation);
+               localPropagation->setRpz(newArc);
                // process
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Higher)
 #endif
-               growthFromSeed(corLeaf, localPropagation);
+               growthFromSeed(corLeaf, localPropagation, newArc);
             }
          }
       }
@@ -242,9 +246,9 @@ namespace ttk
          std::get<0>(dynGraph_).init();
          std::get<1>(dynGraph_).init();
 
-         fillVector<idVertex>(toVisit_ , nullVertex);
-         fillVector<idCell>(bfsCells_  , nullCell);
-         fillVector<idEdge>(bfsEdges_  , nullEdge);
+         fillVector<idSuperArc>(toVisit_, nullSuperArc);
+         fillVector<idCell>(bfsCells_, nullCell);
+         fillVector<idEdge>(bfsEdges_, nullEdge);
          fillVector<idVertex>(bfsVerts_, nullVertex);
       }
 

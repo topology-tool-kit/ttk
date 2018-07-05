@@ -38,11 +38,15 @@ namespace ttk
          boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation_;
 
          // representant (first vertex)
-         idVertex rpz_;
+         idSuperArc rpz_;
 
         public:
          Propagation(idVertex startVert, VertCompFN vertComp, bool up)
-             : curVert_(nullVertex), comp_(vertComp), goUp_(up), propagation_(vertComp), rpz_(startVert)
+             : curVert_(nullVertex),
+               comp_(vertComp),
+               goUp_(up),
+               propagation_(vertComp),
+               rpz_(nullSuperArc)
          {
             propagation_.emplace(startVert);
          }
@@ -52,7 +56,12 @@ namespace ttk
             return curVert_;
          }
 
-         idVertex getRpz(void) const
+         void setRpz(decltype(rpz_) rpz)
+         {
+            rpz_ = rpz;
+         }
+
+         decltype(rpz_) getRpz(void) const
          {
             return rpz_;
          }
@@ -60,7 +69,8 @@ namespace ttk
          idVertex nextVertex(void)
          {
             curVert_ = propagation_.top();
-            propagation_.pop();
+            // propagation_.pop();
+            removeDuplicates(curVert_);
             return curVert_;
          }
 

@@ -151,15 +151,15 @@ std::string Graph::printArc(const idSuperArc arcId) const
    const idNode did = arcs_[arcId].getDownNodeId();
    const idNode uid = arcs_[arcId].getUpNodeId();
    if (did != nullNode){
-      res << nodes_[did].getVertexIdentifier();
+      res << did << ":" << nodes_[did].getVertexIdentifier();
    } else {
-      res << "X";
+      res << did << ":X";
    }
    res << " - ";
    if (uid != nullNode){
-      res << nodes_[uid].getVertexIdentifier();
+      res << uid << ":" << nodes_[uid].getVertexIdentifier();
    } else {
-      res << "X";
+      res << uid << ":X";
    }
    res << ")";
    return res.str();
