@@ -303,10 +303,12 @@ namespace ttk
          // Remove duplicate on the saddleVertex (only)
          void mergeAtSaddle(const idNode saddleId, Propagation* localProp);
 
-         // At a split saddle, break the localProp into pieces
-         // corresponding to each upper CC (use BFS) and launch
-         // new localGrowth for each
-         void splitAtSaddle(Propagation* const localProp);
+         // At a split saddle, break the localProp into pieces corresponding to
+         // each upper CC (use the localProp and DynGraph) and launch new
+         // localGrowth for each.
+         // use upperComp for connected component recovery
+         void splitAtSaddle(Propagation* const                          localProp,
+                            const std::vector<DynGraphNode<idVertex>*>& upperComp);
 
          // decant local prop into the different connected component created at a split saddle.
          // Use the dynGraph to identify them.
