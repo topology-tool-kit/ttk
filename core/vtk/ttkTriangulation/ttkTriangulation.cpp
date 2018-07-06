@@ -34,20 +34,13 @@ int ttkTriangulation::deepCopy(vtkDataObject *other){
   
   allocate();
  
-  if(other->GetDataObjectType() == TTK_UNSTRUCTURED_GRID){
+  ttkTriangulation *otherTriangulation = 
+    dynamic_cast<ttkTriangulation *>(other);
+  
+  if(otherTriangulation){
+    // the other object has already been enhanced 
     // copy the triangulation object from the other
-    (*triangulation_) = 
-      *(((ttkUnstructuredGrid *) other)->triangulation_);
-  }
-  else if(other->GetDataObjectType() == TTK_IMAGE_DATA){
-    // copy the triangulation object from the other
-    (*triangulation_) = 
-      *(((ttkImageData *) other)->triangulation_);
-  }
-  else if(other->GetDataObjectType() == TTK_POLY_DATA){
-    // copy the triangulation object from the other
-    (*triangulation_) = 
-      *(((ttkPolyData *) other)->triangulation_);
+    (*triangulation_) = *(otherTriangulation->triangulation_);
   }
   
   // populate the data-structure
@@ -66,17 +59,11 @@ Triangulation* ttkTriangulation::getTriangulation(vtkDataSet *other){
 
   string dataType = other->GetClassName();
   
-  if((dataType == "ttkUnstructuredGrid")
-    ||(dataType == "vtkUnstructuredGrid")){
-    return ((ttkUnstructuredGrid *) other)->getTriangulation();
-  }
-  else if((dataType == "ttkImageData")
-    ||(dataType == "vtkImageData")){
-    return ((ttkImageData *) other)->getTriangulation();
-  }
-  else if((dataType == "ttkPolyData")
-    ||(dataType == "vtkPolyData")){
-    return ((ttkPolyData *) other)->getTriangulation();
+  ttkTriangulation *otherTriangulation = 
+    dynamic_cast<ttkTriangulation *>(other);
+  
+  if(otherTriangulation){
+    return otherTriangulation->getTriangulation();
   }
   else{
     Debug d;
@@ -96,9 +83,7 @@ vtkUnstructuredGrid* ttkTriangulation::getVtkUnstructuredGrid(){
     return NULL;
   
   if((inputDataSet_->GetDataObjectType() == VTK_IMAGE_DATA)
-    ||(inputDataSet_->GetDataObjectType() == TTK_IMAGE_DATA)
-    ||(inputDataSet_->GetDataObjectType() == VTK_POLY_DATA)
-    ||(inputDataSet_->GetDataObjectType() == TTK_POLY_DATA)){
+    ||(inputDataSet_->GetDataObjectType() == VTK_POLY_DATA)){
  
     Timer t;
   
@@ -144,8 +129,7 @@ vtkUnstructuredGrid* ttkTriangulation::getVtkUnstructuredGrid(){
       dMsg(cout, msg.str(), timeMsg);
     }
   }
-  else if((inputDataSet_->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
-    ||(inputDataSet_->GetDataObjectType() == TTK_UNSTRUCTURED_GRID)){
+  else if((inputDataSet_->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)){
     return vtkUnstructuredGrid::SafeDownCast(inputDataSet_);
   }
   else{
@@ -175,18 +159,15 @@ bool ttkTriangulation::hasChangedConnectivity(
     return false;
 #endif
     
-  if((dataSet->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
-    ||(dataSet->GetDataObjectType() == TTK_UNSTRUCTURED_GRID)){
+  if((dataSet->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)){
     return (((vtkUnstructuredGrid *) dataSet)->GetCells()->GetMTime() 
       > callingObject->GetMTime());
   }
-  else if((dataSet->GetDataObjectType() == VTK_POLY_DATA)
-    ||(dataSet->GetDataObjectType() == TTK_POLY_DATA)){
+  else if((dataSet->GetDataObjectType() == VTK_POLY_DATA)){
     return (((vtkPolyData *) dataSet)->GetPolys()->GetMTime() 
       > callingObject->GetMTime());
   }
-  else if((dataSet->GetDataObjectType() == VTK_IMAGE_DATA)
-    ||(dataSet->GetDataObjectType() == TTK_IMAGE_DATA)){
+  else if((dataSet->GetDataObjectType() == VTK_IMAGE_DATA)){
     
     int vtkDimensions[3];
     vector<int> ttkDimensions;
@@ -216,8 +197,7 @@ int ttkTriangulation::setInputData(vtkDataSet* dataSet){
     allocate();
   }
   
-  if((dataSet->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
-    ||(dataSet->GetDataObjectType() == TTK_UNSTRUCTURED_GRID)){
+  if((dataSet->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)){
     
     if(((vtkUnstructuredGrid *) dataSet)->GetPoints()){
       if(((vtkUnstructuredGrid *) dataSet)->GetPoints()->GetDataType() 
@@ -251,8 +231,7 @@ int ttkTriangulation::setInputData(vtkDataSet* dataSet){
     }
     inputDataSet_ = dataSet;
   }
-  else if((dataSet->GetDataObjectType() == VTK_POLY_DATA)
-    ||(dataSet->GetDataObjectType() == TTK_POLY_DATA)){
+  else if((dataSet->GetDataObjectType() == VTK_POLY_DATA)){
     
     if(((vtkPolyData *) dataSet)->GetPoints()){
       if(((vtkPolyData *) dataSet)->GetPoints()->GetDataType() 
@@ -289,8 +268,7 @@ int ttkTriangulation::setInputData(vtkDataSet* dataSet){
     }
     inputDataSet_ = dataSet;
   }
-  else if((dataSet->GetDataObjectType() == VTK_IMAGE_DATA)
-    ||(dataSet->GetDataObjectType() == TTK_IMAGE_DATA)){
+  else if((dataSet->GetDataObjectType() == VTK_IMAGE_DATA)){
     vtkImageData *imageData = (vtkImageData *) dataSet;
 
     int extents[6];
@@ -337,19 +315,12 @@ int ttkTriangulation::shallowCopy(vtkDataObject *other){
   triangulation_ = NULL;
   
   if((other)&&(((vtkDataSet *) other)->GetNumberOfPoints())){
-    if(other->GetDataObjectType() == TTK_UNSTRUCTURED_GRID){
-      triangulation_ = 
-        ((ttkUnstructuredGrid *) other)->triangulation_;
-      hasAllocated_ = false;
-    }
-    else if(other->GetDataObjectType() == TTK_IMAGE_DATA){
-      triangulation_ = 
-        ((ttkImageData *) other)->triangulation_;
-      hasAllocated_ = false;
-    }
-    else if(other->GetDataObjectType() == TTK_POLY_DATA){
-      triangulation_ = 
-        ((ttkPolyData *) other)->triangulation_;
+    
+    ttkTriangulation *otherTriangulation = 
+      dynamic_cast<ttkTriangulation *>(other);
+    
+    if(otherTriangulation){
+      triangulation_ = otherTriangulation->triangulation_;
       hasAllocated_ = false;
     }
     else{

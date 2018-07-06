@@ -1066,7 +1066,11 @@ tetra identifier.
 
       /**
        * Build the geometric embedding of the given STL vector of cells.
-       * The output data pointers are modified accordingly.
+       * The output data pointers are modified accordingly. This
+       * function needs the following internal pointers to be set:
+       * outputCriticalPoints_numberOfPoints_
+       * outputCriticalPoints_points_
+       * inputScalarField_
        */
       template<typename dataType>
       int setCriticalPoints(const std::vector<Cell> &criticalPoints) const;
@@ -1081,7 +1085,11 @@ tetra identifier.
       /**
        * Build the geometric embedding of the given STL vector of cells and add
        * global information as scalar fields.
-       * The output data pointers are modified accordingly.
+       * The output data pointers are modified accordingly. This
+       * function needs the following internal pointers to be set:
+       * outputCriticalPoints_numberOfPoints_
+       * outputCriticalPoints_points_
+       * inputScalarField_
        */
       template<typename dataType>
       int setAugmentedCriticalPoints(const std::vector<Cell> &criticalPoints,

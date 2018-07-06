@@ -5,19 +5,18 @@ using namespace ttk;
 using namespace dcg;
 
 AbstractMorseSmaleComplex::AbstractMorseSmaleComplex():
-  ReverveSaddleMaximumConnection{true},
-  ReverveSaddleSaddleConnection{true},
+  // all options are disabled by default
+  ReverveSaddleMaximumConnection{false},
+  ReverveSaddleSaddleConnection{false},
   ComputeAscendingSeparatrices1{true},
   ComputeDescendingSeparatrices1{true},
-  ComputeSaddleConnectors{true},
+  ComputeSaddleConnectors{false},
   ComputeAscendingSeparatrices2{false},
   ComputeDescendingSeparatrices2{false},
-  ComputeAscendingSegmentation{true},
-  ComputeDescendingSegmentation{true},
-  ComputeFinalSegmentation{true},
   ReturnSaddleConnectors{false},
   PrioritizeSpeedOverMemory{false},
 
+  // other class members are value-initialized
   inputScalarField_{},
   inputTriangulation_{},
   inputOffsets_{},

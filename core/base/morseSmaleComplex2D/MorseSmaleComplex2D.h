@@ -50,8 +50,21 @@ namespace ttk{
 
 template<typename dataType>
 int ttk::MorseSmaleComplex2D::execute(){
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputScalarField_){
+    std::cerr << "[MorseSmaleComplex2D] Error: input scalar field pointer is null." << std::endl;
+    return -1;
+  }
+
+  if(!inputOffsets_){
+    std::cerr << "[MorseSmaleComplex2D] Error: input offset field pointer is null." << std::endl;
+    return -1;
+  }
+#endif
   Timer t;
 
+  // nullptr_t is implicitly convertible and comparable to any pointer type
+  // or pointer-to-member type.
   dcg::simplexId_t* ascendingManifold=static_cast<dcg::simplexId_t*>(outputAscendingManifold_);
   dcg::simplexId_t* descendingManifold=static_cast<dcg::simplexId_t*>(outputDescendingManifold_);
   dcg::simplexId_t* morseSmaleManifold=static_cast<dcg::simplexId_t*>(outputMorseSmaleManifold_);
@@ -86,7 +99,7 @@ int ttk::MorseSmaleComplex2D::execute(){
 
     {
       std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Descending 1-separatrices computed in "
+      msg << "[MorseSmaleComplex2D] Descending 1-separatrices computed in "
         << tmp.getElapsedTime() << " s."
         << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
@@ -102,7 +115,7 @@ int ttk::MorseSmaleComplex2D::execute(){
 
     {
       std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Ascending 1-separatrices computed in "
+      msg << "[MorseSmaleComplex2D] Ascending 1-separatrices computed in "
         << tmp.getElapsedTime() << " s."
         << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
@@ -116,31 +129,33 @@ int ttk::MorseSmaleComplex2D::execute(){
     dcg::simplexId_t numberOfMaxima{};
     dcg::simplexId_t numberOfMinima{};
 
-    if(ComputeAscendingSegmentation)
+    if(ascendingManifold)
       setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold, numberOfMaxima);
 
-    if(ComputeDescendingSegmentation)
+    if(descendingManifold)
       setDescendingSegmentation(criticalPoints, descendingManifold, numberOfMinima);
 
-    if(ComputeAscendingSegmentation and ComputeDescendingSegmentation and ComputeFinalSegmentation)
+    if(ascendingManifold and descendingManifold and morseSmaleManifold)
       setFinalSegmentation(numberOfMaxima, numberOfMinima, ascendingManifold, descendingManifold, morseSmaleManifold);
 
-    {
+    if(ascendingManifold or descendingManifold){
       std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Segmentation computed in "
+      msg << "[MorseSmaleComplex2D] Segmentation computed in "
         << tmp.getElapsedTime() << " s."
         << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
     }
   }
 
-  if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
-    discreteGradient_.setAugmentedCriticalPoints<dataType>(criticalPoints,
-        maxSeeds,
-        ascendingManifold,
-        descendingManifold);
-  else
-    discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
+  if(outputCriticalPoints_numberOfPoints_ and outputCriticalPoints_points_){
+    if(ascendingManifold and descendingManifold)
+      discreteGradient_.setAugmentedCriticalPoints<dataType>(criticalPoints,
+          maxSeeds,
+          ascendingManifold,
+          descendingManifold);
+    else
+      discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
+  }
 
   {
     const dcg::simplexId_t numberOfVertices=inputTriangulation_->getNumberOfVertices();

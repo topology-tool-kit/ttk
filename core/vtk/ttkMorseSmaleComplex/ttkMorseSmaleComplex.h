@@ -106,6 +106,9 @@ class ttkMorseSmaleComplex
     vtkSetMacro(ReverseSaddleSaddleConnection, int);
     vtkGetMacro(ReverseSaddleSaddleConnection, int);
 
+    vtkSetMacro(ComputeCriticalPoints, int);
+    vtkGetMacro(ComputeCriticalPoints, int);
+
     vtkSetMacro(ComputeAscendingSeparatrices1, int);
     vtkGetMacro(ComputeAscendingSeparatrices1, int);
 
@@ -160,6 +163,7 @@ class ttkMorseSmaleComplex
     int IterationThreshold;
     bool ReverseSaddleMaximumConnection;
     bool ReverseSaddleSaddleConnection;
+    bool ComputeCriticalPoints;
     bool ComputeAscendingSeparatrices1;
     bool ComputeDescendingSeparatrices1;
     bool ComputeSaddleConnectors;
