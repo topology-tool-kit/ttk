@@ -199,6 +199,10 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output){
       case VTK_INT:
         outputScalarField_ = vtkIntArray::New();
         break;
+
+      case VTK_ID_TYPE:
+        outputScalarField_ = vtkIdTypeArray::New();
+        break;
         
       stringstream msg;
       msg << "[ttkScalarFieldNormalizer] Unsupported data type :(" << endl;

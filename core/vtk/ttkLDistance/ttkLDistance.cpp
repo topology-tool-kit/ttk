@@ -54,6 +54,8 @@ int ttkLDistance::doIt(
         break;
       case VTK_INT:    outputScalarField_ = vtkSmartPointer<vtkIntArray>::New();
         break;
+      case VTK_ID_TYPE:    outputScalarField_ = vtkSmartPointer<vtkIdTypeArray>::New();
+        break;
       default:
         {
           stringstream msg;

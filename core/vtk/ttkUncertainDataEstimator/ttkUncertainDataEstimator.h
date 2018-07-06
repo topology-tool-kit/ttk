@@ -38,6 +38,7 @@
 #include                  <vtkInformation.h>
 #include                  <vtkInformationVector.h>
 #include                  <vtkIntArray.h>
+#include                  <vtkIdTypeArray.h>
 #include                  <vtkObjectFactory.h>
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>

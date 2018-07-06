@@ -223,6 +223,10 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
       break;
 
     case VTK_INT:
+      outputScalars=vtkIntArray::New();
+      break;
+
+    case VTK_ID_TYPE:
       outputScalars=vtkIdTypeArray::New();
       break;
 

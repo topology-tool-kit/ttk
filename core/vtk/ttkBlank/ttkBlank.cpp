@@ -60,6 +60,10 @@ int ttkBlank::doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs){
       case VTK_INT:
         outputScalarField_ = vtkIntArray::New();
         break;
+
+      case VTK_ID_TYPE:
+        outputScalarField_ = vtkIdTypeArray::New();
+        break;
         
       stringstream msg;
       msg << "[ttkBlank] Unsupported data type :(" << endl;

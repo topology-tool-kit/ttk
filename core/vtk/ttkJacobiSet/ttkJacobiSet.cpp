@@ -220,6 +220,24 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 #endif
       }
       break;
+
+    case VTK_ID_TYPE:
+      switch(vComponent->GetDataType()){
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<vtkIdType, VTK_TT>(input, uComponent, vComponent);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<vtkIdType COMMA VTK_TT>(input, uComponent, vComponent);
+		  }
+		  );
+#endif
+      }
+      break;
       
     case VTK_UNSIGNED_CHAR:
       switch(vComponent->GetDataType()){
@@ -444,6 +462,37 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
           {
             vtkSmartPointer<vtkIntArray> scalarArray = 
               vtkSmartPointer<vtkIntArray>::New();
+            scalarArray->SetNumberOfComponents(
+              scalarField->GetNumberOfComponents());
+            scalarArray->SetNumberOfTuples(2*jacobiSet_.size());
+            scalarArray->SetName(scalarField->GetName());
+            
+            double *value = new double[scalarField->GetNumberOfComponents()];
+            pointCount = 0;
+            for(SimplexId j = 0; j < (SimplexId) jacobiSet_.size(); j++){
+              
+              SimplexId edgeId = jacobiSet_[j].first;
+              SimplexId vertexId0 = -1, vertexId1 = -1;
+              triangulation->getEdgeVertex(edgeId, 0, vertexId0);
+              triangulation->getEdgeVertex(edgeId, 1, vertexId1);
+              
+              scalarField->GetTuple(vertexId0, value);
+              scalarArray->SetTuple(pointCount, value);
+              pointCount++;
+              
+              scalarField->GetTuple(vertexId1, value);
+              scalarArray->SetTuple(pointCount, value);
+              pointCount++;
+            }
+            output->GetPointData()->AddArray(scalarArray);
+            delete[] value;
+          }
+          break;
+
+        case VTK_ID_TYPE:
+          {
+            vtkSmartPointer<vtkIdTypeArray> scalarArray = 
+              vtkSmartPointer<vtkIdTypeArray>::New();
             scalarArray->SetNumberOfComponents(
               scalarField->GetNumberOfComponents());
             scalarArray->SetNumberOfTuples(2*jacobiSet_.size());

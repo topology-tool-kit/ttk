@@ -237,6 +237,15 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #endif
       }
       break;
+    case VTK_ID_TYPE:
+      switch(inputScalars2_->GetDataType()){
+#ifndef _MSC_VER
+		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<vtkIdType,VTK_TT>(); }));
+#else
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<vtkIdType COMMA VTK_TT>(); });
+#endif
+      }
+      break;
     case VTK_UNSIGNED_INT:
       switch(inputScalars2_->GetDataType()){
 #ifndef _MSC_VER

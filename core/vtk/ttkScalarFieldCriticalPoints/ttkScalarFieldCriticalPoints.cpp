@@ -262,6 +262,25 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
             delete[] value;
           }
           break;
+
+        case VTK_ID_TYPE:
+          {
+            vtkSmartPointer<vtkIdTypeArray> scalarArray = 
+              vtkSmartPointer<vtkIdTypeArray>::New();
+            scalarArray->SetNumberOfComponents(
+              scalarField->GetNumberOfComponents());
+            scalarArray->SetNumberOfTuples(criticalPoints_.size());
+            scalarArray->SetName(scalarField->GetName());
+            double *value = new double[scalarField->GetNumberOfComponents()];
+            for(SimplexId j = 0; j < (SimplexId) criticalPoints_.size(); j++){
+              scalarField->GetTuple(
+                criticalPoints_[j].first, value);
+              scalarArray->SetTuple(j, value);
+            }
+            output->GetPointData()->AddArray(scalarArray);
+            delete[] value;
+          }
+          break;
           
         default:
           {

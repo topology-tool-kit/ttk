@@ -316,6 +316,40 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
       }
       
       break;
+
+    case VTK_ID_TYPE:
+      
+      switch(dataVfield->GetDataType()){
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
+			  if (RangeOctree)
+			  fiberSurface_.buildOctree<vtkIdType, VTK_TT>();
+#endif
+		  fiberSurface_.computeSurface<vtkIdType, VTK_TT>();
+		  }
+		  ));
+#else
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
+		  vtkTemplateMacro(
+		  {
+			  if (RangeOctree)
+			  fiberSurface_.buildOctree<vtkIdType COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<vtkIdType COMMA VTK_TT>();
+		  }
+		  );
+#else
+		  vtkTemplateMacro(
+		  {
+			  fiberSurface_.computeSurface<vtkIdType COMMA VTK_TT>();
+		  }
+		  );
+#endif
+#endif
+      }
+      
+      break;
       
     case VTK_UNSIGNED_CHAR:
       

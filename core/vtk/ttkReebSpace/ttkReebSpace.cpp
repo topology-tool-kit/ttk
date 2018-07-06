@@ -305,6 +305,28 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 #endif
       }
       break;
+
+    case VTK_ID_TYPE:
+      switch(vComponent_->GetDataType()){
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+			  baseCall<vtkIdType, VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  ));
+#else
+		  vtkTemplateMacro(
+		  {
+			  baseCall<vtkIdType COMMA VTK_TT>(input,
+			  uComponent_, offsetFieldU_,
+			  vComponent_, offsetFieldV_);
+		  }
+		  );
+#endif
+      }
+      break;
       
     case VTK_UNSIGNED_CHAR:
       switch(vComponent_->GetDataType()){
