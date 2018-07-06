@@ -7,7 +7,7 @@
 /// and more (data segmentation, topological simplification, persistence 
 /// diagrams, persistence curves, etc.).
 ///
-/// \warning Warning: SimplexId (large large datasets). This class builds and runs
+/// \warning SimplexId (large large datasets). This class builds and runs
 /// with the new triangulation API (SimplexId) but may need adjustments when addressing
 /// more than integers (large datasets).
 ///

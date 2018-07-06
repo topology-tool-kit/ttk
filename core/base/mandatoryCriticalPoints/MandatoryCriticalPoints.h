@@ -11,7 +11,7 @@
 /// fields defined on PL (nD) manifolds. The input uncertain data is represented
 /// by reliable bound fields for each vertex.
 ///
-/// \warning Warning: SimplexId (large large datasets). This class builds and runs
+/// \warning SimplexId (large large datasets). This class builds and runs
 /// with the new triangulation API (SimplexId) but may need adjustments when addressing
 /// more than integers (large datasets).
 ///
