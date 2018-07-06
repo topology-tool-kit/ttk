@@ -41,7 +41,11 @@
 #include                  <fstream>
 #include                  <limits.h>
 
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkTopologicalCompressionReader
+#else
+class ttkTopologicalCompressionReader
+#endif
   : public vtkImageAlgorithm
 {
 

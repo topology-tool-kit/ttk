@@ -1,4 +1,4 @@
-#include                  "ttkTopologicalCompressionWriter.h"
+#include <ttkTopologicalCompressionWriter.h>
 
 vtkStandardNewMacro(ttkTopologicalCompressionWriter);
 
