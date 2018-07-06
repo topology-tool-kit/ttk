@@ -82,7 +82,7 @@
                 <ArrayListDomain
                     name="array_list"
                     default_values="0"
-                    data_type="VTK_INT">
+                    data_type="VTK_ID_TYPE">
                     <RequiredProperties>
                         <Property name="Input" function="Input" />
                     </RequiredProperties>
