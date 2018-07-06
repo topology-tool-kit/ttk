@@ -80,38 +80,76 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output){
     inputScalarField=input->GetPointData()->GetArray(0);
   if(!inputScalarField) return -1;
 
+  auto InputType=inputScalarField->GetDataType();
+
   bool oldUseNormalization{UseNormalization};
   if(OutputType==SupportedType::Float or OutputType==SupportedType::Double)
     UseNormalization=false;
 
-  switch(inputScalarField->GetDataType()){
-#ifndef _MSC_VER
-    vtkTemplateMacro(({
+  if(InputType==VTK_DOUBLE){
     if(OutputType==SupportedType::Float)
-      convert<VTK_TT,float,vtkFloatArray>(inputScalarField,output);
+      convert<double,float,vtkFloatArray>(inputScalarField,output);
     else if(OutputType==SupportedType::Int)
-      convert<VTK_TT,int,vtkIntArray>(inputScalarField,output);
-    else if(OutputType==SupportedType::IdType)
-      convert<VTK_TT,vtkIdType,vtkIdTypeArray>(inputScalarField,output);
+      convert<double,int,vtkIntArray>(inputScalarField,output);
     else if(OutputType==SupportedType::UnsignedShort)
-      convert<VTK_TT,unsigned short,vtkUnsignedShortArray>(inputScalarField,output);
+      convert<double,unsigned short,vtkUnsignedShortArray>(inputScalarField,output);
     else if(OutputType==SupportedType::UnsignedChar)
-      convert<VTK_TT,unsigned char,vtkUnsignedCharArray>(inputScalarField,output);
-        }));
-#else
-    vtkTemplateMacro({
-    if(OutputType==SupportedType::Float)
-      convert<VTK_TT,float,vtkFloatArray>(inputScalarField,output);
+      convert<double,unsigned char,vtkUnsignedCharArray>(inputScalarField,output);
+  }
+  else if(InputType==VTK_FLOAT){
+    if(OutputType==SupportedType::Double)
+      convert<float,double,vtkDoubleArray>(inputScalarField,output);
     else if(OutputType==SupportedType::Int)
-      convert<VTK_TT,int,vtkIntArray>(inputScalarField,output);
-    else if(OutputType==SupportedType::IdType)
-      convert<VTK_TT,vtkIdType,vtkIdTypeArray>(inputScalarField,output);
+      convert<float,int,vtkIntArray>(inputScalarField,output);
     else if(OutputType==SupportedType::UnsignedShort)
-      convert<VTK_TT,unsigned short,vtkUnsignedShortArray>(inputScalarField,output);
+      convert<float,unsigned short,vtkUnsignedShortArray>(inputScalarField,output);
     else if(OutputType==SupportedType::UnsignedChar)
-      convert<VTK_TT,unsigned char,vtkUnsignedCharArray>(inputScalarField,output);
-        });
-#endif
+      convert<float,unsigned char,vtkUnsignedCharArray>(inputScalarField,output);
+  }
+  else if(InputType==VTK_INT){
+    if(OutputType==SupportedType::Double)
+      convert<int,double,vtkDoubleArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::Float)
+      convert<int,float,vtkFloatArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::UnsignedShort)
+      convert<int,unsigned short,vtkUnsignedShortArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::UnsignedChar)
+      convert<int,unsigned char,vtkUnsignedCharArray>(inputScalarField,output);
+  }
+  else if(InputType==VTK_ID_TYPE){
+    if(OutputType==SupportedType::Double)
+      convert<vtkIdType,double,vtkDoubleArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::Float)
+      convert<vtkIdType,float,vtkFloatArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::UnsignedShort)
+      convert<vtkIdType,unsigned short,vtkUnsignedShortArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::UnsignedChar)
+      convert<vtkIdType,unsigned char,vtkUnsignedCharArray>(inputScalarField,output);
+  }
+  else if(InputType==VTK_UNSIGNED_SHORT){
+    if(OutputType==SupportedType::Double)
+      convert<unsigned short,double,vtkDoubleArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::Float)
+      convert<unsigned short,float,vtkFloatArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::Int)
+      convert<unsigned short,int,vtkIntArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::UnsignedChar)
+      convert<unsigned short,unsigned char,vtkUnsignedCharArray>(inputScalarField,output);
+  }
+  else if(InputType==VTK_UNSIGNED_CHAR){
+    if(OutputType==SupportedType::Double)
+      convert<unsigned char,double,vtkDoubleArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::Float)
+      convert<unsigned char,float,vtkFloatArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::Int)
+      convert<unsigned char,int,vtkIntArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::UnsignedShort)
+      convert<unsigned char,unsigned short,vtkUnsignedShortArray>(inputScalarField,output);
+  }
+  else{
+    stringstream msg;
+    msg << "[ttkCellDataConverter] Unsupported data type :(" << endl;
+    dMsg(cerr, msg.str(), fatalMsg);
   }
 
   UseNormalization=oldUseNormalization;
