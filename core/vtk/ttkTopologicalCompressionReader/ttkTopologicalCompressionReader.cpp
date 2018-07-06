@@ -87,6 +87,7 @@ int ttkTopologicalCompressionReader::RequestData(
   fp = fopen(FileName, "rb"); // binary mode
   if (fp == nullptr) { return 1; }
 
+  topologicalCompression.setFileName(FileName);
   topologicalCompression.ReadMetaData<double>(fp);
   DataScalarType = topologicalCompression.getDataScalarType();
   for (int i = 0; i < 3; ++i) {
