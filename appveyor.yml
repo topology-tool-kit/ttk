@@ -66,7 +66,6 @@ before_build:
       exit 1
     )
   
-build_script:
   - cd "%APPVEYOR_BUILD_FOLDER%" & mkdir build & cd build
   # Fetch ExternalData. (Retried up to 3 times if network errors occured)
   - cmake -G"%CTEST_CMAKE_GENERATOR%" -DVTK_DIR="%VTK_BINARY_DIR%" "%APPVEYOR_BUILD_FOLDER%" -DBoost_INCLUDE_DIR="%BOOST_SOURCE_DIR%" -DTTK_BUILD_PARAVIEW_PLUGINS=OFF
