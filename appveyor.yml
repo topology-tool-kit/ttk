@@ -50,7 +50,7 @@ before_build:
   # Checkout Boost source tree
   - if not exist "%BOOST_SOURCE_DIR%" (
       cd C:/projects/ &
-      bitsadmin.exe /transfer "NAME" https://github.com/boostorg/boost/archive/boost-1.65.0.zip boost-1.65.0.zip &
+      bitsadmin.exe /transfer "NAME" https://github.com/boostorg/boost/archive/boost-1.65.0.zip C:/projects/ &
       unzip boost-1.65.0.zip
     )
   # Checkout VTK source tree
