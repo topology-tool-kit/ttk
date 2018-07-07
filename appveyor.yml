@@ -46,7 +46,7 @@ cache:
 build:
   parallel: true
   verbosity: minimal
-  project: INSTALL
+  project: ttk.sln
 
 before_build:
   # Checkout Boost source tree
