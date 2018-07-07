@@ -50,7 +50,8 @@ before_build:
   # Checkout Boost source tree
   - if not exist "%BOOST_SOURCE_DIR%" (
       cd C:/projects/ &
-      wget https://github.com/boostorg/boost/archive/boost-1.65.0.zip &
+      import-module bitstransfer &
+      Start-BitsTransfer https://github.com/boostorg/boost/archive/boost-1.65.0.zip boost-1.65.0.zip &
       unzip boost-1.65.0.zip
     )
   # Checkout VTK source tree
