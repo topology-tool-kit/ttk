@@ -19,6 +19,10 @@ function(ttk_set_compile_options library)
 
     target_compile_options(${library} PRIVATE $<$<CONFIG:Debug>:-O0 -g -pg>)
   endif()
+  if(MSVC)
+    # disable warnings
+    target_compile_options(${library} PRIVATE $<$<CONFIG:Release>:/wd1234)
+  endif()
 
 	if (TTK_ENABLE_OPENMP)
 		target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
