@@ -50,10 +50,10 @@ before_build:
   # Checkout Boost source tree
   - if not exist "%BOOST_SOURCE_DIR%" (
       cd C:/projects/ &
-      git clone --recursive --branch %BOOST_VERSION% https://github.com/boostorg/boost.git Boost 
-      cd Boost
-      git checkout master
-      .\bootstrap
+      git clone --recursive --branch %BOOST_VERSION% https://github.com/boostorg/boost.git Boost &
+      cd Boost &
+      git checkout master &
+      .\bootstrap &
       .\b2 headers
     )
   # Checkout VTK source tree
