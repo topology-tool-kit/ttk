@@ -1,23 +1,23 @@
 version: 2
 jobs:
   build-and-test:
-    working_directory: ~/RTK-build
+    working_directory: ~/TTK-build
     docker:
-      - image: insighttoolkit/module-ci:latest
+      - image: visualizationtoolkit/module-ci:latest
     steps:
       - checkout:
-          path: ~/RTK
+          path: ~/TTK
       - run:
           name: Build and Test
           no_output_timeout: 1.0h
           command: |
             ctest -j 2 -VV -C Release \
-              -S ~/RTK/cmake/ci_ctest.config \
+              -S ~/TTK/cmake/ci_ctest.config \
               -D GENERATOR="Unix Makefiles" \
-              -D SRC_DIR="~/RTK" \
-              -D BIN_DIR="~/RTK-build" \
+              -D SRC_DIR="~/TTK" \
+              -D BIN_DIR="~/TTK-build" \
               -D CONFIG_TYPE="MinSizeRel" \
-              -D ITK_DIR="~/ITK-build" \
+              -D VTK_DIR="~/VTK-build" \
               -D SITE="CircleCI" \
               -D BRANCH_NAME="${CIRCLE_BRANCH}" \
               -D PULL_REQUEST_NUMBER="${CIRCLE_PR_NUMBER}" \
