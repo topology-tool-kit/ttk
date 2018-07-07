@@ -21,7 +21,7 @@ function(ttk_set_compile_options library)
   endif()
   if(MSVC)
     # disable warnings
-    target_compile_options(${library} PUBLIC /wd4005 /wd4996)
+    target_compile_options(${library} PUBLIC /wd4005 /wd4996 /wd4628 /wd4820 /wd4514 /wd4710)
   endif()
 
 	if (TTK_ENABLE_OPENMP)
