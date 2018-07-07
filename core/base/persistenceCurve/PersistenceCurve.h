@@ -126,7 +126,7 @@ int ttk::PersistenceCurve::execute() const{
   std::vector<std::pair<scalarType, ftm::idVertex>>& STPlot  = *static_cast<std::vector<std::pair<scalarType, ftm::idVertex>>*>(STPlot_);
   std::vector<std::pair<scalarType, ftm::idVertex>>& MSCPlot = *static_cast<std::vector<std::pair<scalarType, ftm::idVertex>>*>(MSCPlot_);
   std::vector<std::pair<scalarType, ftm::idVertex>>& CTPlot  = *static_cast<std::vector<std::pair<scalarType, ftm::idVertex>>*>(CTPlot_);
-  int* offsets                                     = static_cast<int*>(inputOffsets_);
+  SimplexId* offsets                                     = static_cast<SimplexId*>(inputOffsets_);
 
   const ftm::idVertex numberOfVertices=triangulation_->getNumberOfVertices();
   // convert offsets into a valid format for contour tree
@@ -162,7 +162,7 @@ int ttk::PersistenceCurve::execute() const{
   }
 
   // get the saddle-saddle pairs
-  std::vector<std::tuple<int,int,scalarType>> pl_saddleSaddlePairs;
+  std::vector<std::tuple<SimplexId,SimplexId,scalarType>> pl_saddleSaddlePairs;
   const int dimensionality=triangulation_->getDimensionality();
   if(dimensionality==3 and ComputeSaddleConnectors){
     MorseSmaleComplex3D morseSmaleComplex;

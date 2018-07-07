@@ -48,7 +48,7 @@ int ttkScalarFieldNormalizer::normalize(
     return -2;
   
   double min = 0, max = 0;
-  for(int i = 0; i < input->GetNumberOfTuples(); i++){
+  for(SimplexId i = 0; i < input->GetNumberOfTuples(); i++){
     
     double value = input->GetTuple1(i);
     
@@ -60,7 +60,7 @@ int ttkScalarFieldNormalizer::normalize(
     }
   }
   
-  for(int i = 0; i < input->GetNumberOfTuples(); i++){
+  for(SimplexId i = 0; i < input->GetNumberOfTuples(); i++){
     double value = input->GetTuple1(i);
     
     value = (value - min)/(max - min) + pow10(-FLT_DIG);
@@ -198,6 +198,10 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output){
        
       case VTK_INT:
         outputScalarField_ = vtkIntArray::New();
+        break;
+
+      case VTK_ID_TYPE:
+        outputScalarField_ = vtkIdTypeArray::New();
         break;
         
       stringstream msg;

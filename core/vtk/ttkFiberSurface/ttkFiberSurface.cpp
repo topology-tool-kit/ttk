@@ -153,12 +153,12 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   long long extra_pt = *pt;
   const long long int *cellArray = &extra_pt;
 #endif
-  int cellNumber = polygon->GetNumberOfCells();
+  SimplexId cellNumber = polygon->GetNumberOfCells();
 
-  int vertexId0, vertexId1;
+  SimplexId vertexId0, vertexId1;
   pair<pair<double, double>, pair<double, double> > rangeEdge;
 
-  for(int i = 0; i < cellNumber; i++){
+  for(SimplexId i = 0; i < cellNumber; i++){
 
     vertexId0 = cellArray[3*i + 1];
     vertexId1 = cellArray[3*i + 2];
@@ -172,7 +172,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     inputPolygon_.push_back(rangeEdge);
   }
   
-  for(int i = 0; i < (int) threadedTriangleList_.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) threadedTriangleList_.size(); i++){
     threadedTriangleList_[i].clear();
     fiberSurface_.setTriangleList(i, &(threadedTriangleList_[i]));
     threadedVertexList_[i].clear();
@@ -316,6 +316,40 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
       }
       
       break;
+
+    case VTK_ID_TYPE:
+      
+      switch(dataVfield->GetDataType()){
+#ifndef _MSC_VER
+		  vtkTemplateMacro((
+		  {
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
+			  if (RangeOctree)
+			  fiberSurface_.buildOctree<vtkIdType, VTK_TT>();
+#endif
+		  fiberSurface_.computeSurface<vtkIdType, VTK_TT>();
+		  }
+		  ));
+#else
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
+		  vtkTemplateMacro(
+		  {
+			  if (RangeOctree)
+			  fiberSurface_.buildOctree<vtkIdType COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<vtkIdType COMMA VTK_TT>();
+		  }
+		  );
+#else
+		  vtkTemplateMacro(
+		  {
+			  fiberSurface_.computeSurface<vtkIdType COMMA VTK_TT>();
+		  }
+		  );
+#endif
+#endif
+      }
+      
+      break;
       
     case VTK_UNSIGNED_CHAR:
       
@@ -390,9 +424,9 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   // NOTE: right now, there is a copy of the output data. this is no good.
   // to fix.
   
-  int triangleNumber = 0;
+  SimplexId triangleNumber = 0;
   
-  for(int i = 0; i < (int) threadedTriangleList_.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) threadedTriangleList_.size(); i++){
     triangleNumber += threadedTriangleList_[i].size();
   }
   
@@ -406,12 +440,12 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     vtkSmartPointer<vtkDoubleArray>::New();
   vtkSmartPointer<vtkCellArray> outputTriangleList = 
     vtkSmartPointer<vtkCellArray>::New();
-  vtkSmartPointer<vtkIntArray> outputEdgeIds = 
-    vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> outputTetIds = 
-    vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> outputCaseIds = 
-    vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> outputEdgeIds = 
+    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> outputTetIds = 
+    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> outputCaseIds = 
+    vtkSmartPointer<vtkIdTypeArray>::New();
     
   if(RangeCoordinates){
     outputU->SetName(DataUcomponent.data());
@@ -432,7 +466,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < (int) outputVertexList_.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) outputVertexList_.size(); i++){
     outputVertexList->SetPoint(i, 
       outputVertexList_[i].p_[0], 
       outputVertexList_[i].p_[1], 
@@ -479,8 +513,8 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   idList->SetNumberOfIds(3);
   
   triangleNumber = 0;
-  for(int i = 0; i < (int) threadedTriangleList_.size(); i++){
-    for(int j = 0; j < (int) threadedTriangleList_[i].size(); j++){
+  for(SimplexId i = 0; i < (SimplexId) threadedTriangleList_.size(); i++){
+    for(SimplexId j = 0; j < (SimplexId) threadedTriangleList_[i].size(); j++){
       for(int k = 0; k < 3; k++){
         idList->SetId(k, threadedTriangleList_[i][j].vertexIds_[k]);
       }

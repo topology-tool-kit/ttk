@@ -102,7 +102,7 @@ Foundations of Computational Mathematics. Cambridge University Press, 2002.
         >
         <ArrayListDomain
           name="array_list"
-          data_type="VTK_INT"
+          data_type="VTK_ID_TYPE"
           default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />
@@ -123,7 +123,7 @@ u-coordinate (used to disambiguate collinear edges).
         >
         <ArrayListDomain
           name="array_list"
-          data_type="VTK_INT"
+          data_type="VTK_ID_TYPE"
           default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />

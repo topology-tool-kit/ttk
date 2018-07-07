@@ -25,6 +25,7 @@
 #include                  <vtkDoubleArray.h>
 #include                  <vtkFiltersCoreModule.h>
 #include                  <vtkFloatArray.h>
+#include                  <vtkIdTypeArray.h>
 #include                  <vtkInformation.h>
 #include                  <vtkIntArray.h>
 #include                  <vtkObjectFactory.h>

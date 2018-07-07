@@ -87,7 +87,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const int numberOfPointsInDomain=domain->GetNumberOfPoints();
+  const SimplexId numberOfPointsInDomain=domain->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInDomain){
     cerr << "[ttkDistanceField] Error : domain has no points." << endl;
@@ -95,7 +95,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const int numberOfPointsInSources=sources->GetNumberOfPoints();
+  const SimplexId numberOfPointsInSources=sources->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInSources){
     cerr << "[ttkDistanceField] Error : sources have no points." << endl;
@@ -103,7 +103,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  vtkSmartPointer<vtkIntArray> origin=vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> origin=vtkSmartPointer<vtkIdTypeArray>::New();
   if(origin){
     origin->SetNumberOfComponents(1);
     origin->SetNumberOfTuples(numberOfPointsInDomain);
@@ -111,12 +111,12 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{
-    cerr << "[ttkDistanceField] Error : vtkIntArray allocation problem." << endl;
+    cerr << "[ttkDistanceField] Error : vtkIdTypeArray allocation problem." << endl;
     return -5;
   }
 #endif
 
-  vtkSmartPointer<vtkIntArray> seg=vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> seg=vtkSmartPointer<vtkIdTypeArray>::New();
   if(seg){
     seg->SetNumberOfComponents(1);
     seg->SetNumberOfTuples(numberOfPointsInDomain);
@@ -124,7 +124,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{
-    cerr << "[ttkDistanceField] Error : vtkIntArray allocation problem." << endl;
+    cerr << "[ttkDistanceField] Error : vtkIdTypeArray allocation problem." << endl;
     return -6;
   }
 #endif

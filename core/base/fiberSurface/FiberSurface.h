@@ -64,10 +64,10 @@ namespace ttk{
       
         public:
           bool            isBasePoint_, isIntersectionPoint_;
-          int             localId_, globalId_, polygonEdgeId_;
+          SimplexId             localId_, globalId_, polygonEdgeId_;
           // TODO also encode the vertex ids of the triangle of the input mesh
           // where this point has been computed (for constrained triangulation)
-          std::pair<int, int>  meshEdge_;
+          std::pair<SimplexId, SimplexId>  meshEdge_;
           double          p_[3], t_;
           std::pair<double, double>
                           uv_;
@@ -77,7 +77,7 @@ namespace ttk{
         
         public:
           
-          int             vertexIds_[3], tetId_, caseId_, 
+          SimplexId             vertexIds_[3], tetId_, caseId_, 
           polygonEdgeId_; 
       };
       
@@ -94,22 +94,22 @@ namespace ttk{
         inline int computeContour(
           const std::pair<double, double> &rangePoint0,
           const std::pair<double, double> &rangePoint1,
-          const std::vector<int> &seedTetList,
-          const int &polygonEdgeId = 0) const;
+          const std::vector<SimplexId> &seedTetList,
+          const SimplexId &polygonEdgeId = 0) const;
           
       template <class dataTypeU, class dataTypeV>
         inline int computeContour(
           const std::vector<std::pair<std::pair<double, double>, 
 std::pair<double, double> > > 
             &edgeList, 
-          const std::vector<int> &seedTetList,
-          const std::vector<int> *edgeIdList = NULL) const;
+          const std::vector<SimplexId> &seedTetList,
+          const std::vector<SimplexId> *edgeIdList = NULL) const;
      
       template <class dataTypeU, class dataTypeV>
         inline int computeSurface(
           const std::pair<double, double> &rangePoint0,
           const std::pair<double, double> &rangePoint1,
-          const int &polygonEdgeId = 0) const;
+          const SimplexId &polygonEdgeId = 0) const;
           
       template <class dataTypeU, class dataTypeV>
         inline int computeSurface();
@@ -120,7 +120,7 @@ std::pair<double, double> > >
         inline int computeSurfaceWithOctree(
           const std::pair<double, double> &rangePoint0,
           const std::pair<double, double> &rangePoint1,
-          const int &polygonEdgeId) const;
+          const SimplexId &polygonEdgeId) const;
 #endif
         
       template <class dataTypeU, class dataTypeV>
@@ -137,10 +137,10 @@ std::pair<double, double> > >
 #endif
         
       template <class dataTypeU, class dataTypeV>
-        inline int processTetrahedron(const int &tetId,
+        inline int processTetrahedron(const SimplexId &tetId,
           const std::pair<double, double> &rangePoint0, 
           const std::pair<double, double> &rangePoint1,
-          const int &polygonEdgeId = 0) const;
+          const SimplexId &polygonEdgeId = 0) const;
               
       inline int setGlobalVertexList(std::vector<Vertex> *globalList){
         globalVertexList_ = globalList;
@@ -165,7 +165,7 @@ std::pair<double, double> > >
         return 0;
       }
       
-      inline int setPointNumber(const int &number){
+      inline int setPointNumber(const SimplexId &number){
         pointNumber_ = number;
         return 0;
       }
@@ -182,35 +182,35 @@ double>,
         return 0;
       }
        
-      inline int setPolygonEdgeNumber(const int &polygonEdgeNumber){
+      inline int setPolygonEdgeNumber(const SimplexId &polygonEdgeNumber){
         polygonEdgeNumber_ = polygonEdgeNumber;
         polygonEdgeVertexLists_.resize(polygonEdgeNumber, NULL);
         polygonEdgeTriangleLists_.resize(polygonEdgeNumber, NULL);
         return 0;
       }
       
-      inline int setTetList(const long long int *tetList){
+      inline int setTetList(const SimplexId *tetList){
         tetList_ = tetList;
         return 0;
       }
       
-      inline int setTetNeighbors(const std::vector<std::vector<int> > 
+      inline int setTetNeighbors(const std::vector<std::vector<SimplexId> > 
 *tetNeighbors){
         tetNeighbors_ = tetNeighbors;
         return 0;
       }
             
-      inline int setTetNumber(const int &tetNumber){
+      inline int setTetNumber(const SimplexId &tetNumber){
         tetNumber_ = tetNumber;
         return 0;
       }
      
-      inline int setTriangleList(const int &polygonEdgeId,
+      inline int setTriangleList(const SimplexId &polygonEdgeId,
         std::vector<Triangle> *triangleList){
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if((polygonEdgeId >= 0)
-          &&(polygonEdgeId < (int) polygonEdgeTriangleLists_.size()))
+          &&(polygonEdgeId < (SimplexId) polygonEdgeTriangleLists_.size()))
 #endif
           polygonEdgeTriangleLists_[polygonEdgeId] = triangleList;
         
@@ -228,12 +228,12 @@ double>,
         return 0;
       }
       
-      inline int setVertexList(const int &polygonEdgeId,
+      inline int setVertexList(const SimplexId &polygonEdgeId,
         std::vector<Vertex> *vertexList){
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if((polygonEdgeId >= 0)
-          &&(polygonEdgeId < (int) polygonEdgeVertexLists_.size()))
+          &&(polygonEdgeId < (SimplexId) polygonEdgeVertexLists_.size()))
 #endif
           polygonEdgeVertexLists_[polygonEdgeId] = vertexList;
         
@@ -243,12 +243,12 @@ double>,
     protected:
       
       typedef struct _intersectionTriangle{
-        int caseId_;
+        SimplexId caseId_;
         // use negative values for new triangles
-        int triangleId_;
-        int polygonEdgeId_;
+        SimplexId triangleId_;
+        SimplexId polygonEdgeId_;
         // use negative values for new vertices
-        int vertexIds_[3];
+        SimplexId vertexIds_[3];
         std::pair<double, double> uv_[3];
         double t_[3];
         double p_[3][3];
@@ -257,104 +257,104 @@ double>,
       
       template <class dataTypeU, class dataTypeV>
         inline int computeBaseTriangle(
-          const int &tetId, 
-          const int &localEdgeId0, const double &t0,
+          const SimplexId &tetId, 
+          const SimplexId &localEdgeId0, const double &t0,
             const double &u0, const double &v0,
-          const int &localEdgeId1, const double &t1,
+          const SimplexId &localEdgeId1, const double &t1,
             const double &u1, const double &v1,
-          const int &localEdgeId2, const double &t2,
+          const SimplexId &localEdgeId2, const double &t2,
             const double &u2, const double &v2,
           std::vector<std::vector<double> > &basePoints,
           std::vector<std::pair<double, double> > &basePointProections,
           std::vector<double> &basePointParameterization,
-          std::vector<std::pair<int, int> > &baseEdges) const;
+          std::vector<std::pair<SimplexId, SimplexId> > &baseEdges) const;
         
       template <class dataTypeU, class dataTYpeV>
-        inline int computeCase0(const int &polygonEdgeId, const int &tetId, 
-          const int &localEdgeId0, const double &t0,
+        inline int computeCase0(const SimplexId &polygonEdgeId, const SimplexId &tetId, 
+          const SimplexId &localEdgeId0, const double &t0,
             const double &u0, const double &v0,
-          const int &localEdgeId1, const double &t1,
+          const SimplexId &localEdgeId1, const double &t1,
             const double &u1, const double &v1,
-          const int &localEdgeId2, const double &t2,
+          const SimplexId &localEdgeId2, const double &t2,
             const double &u2, const double &v2) const;
         
       template <class dataTypeU, class dataTYpeV>
-        inline int computeCase1(const int &polygonEdgeId, const int &tetId, 
-          const int &localEdgeId0, const double &t0,
+        inline int computeCase1(const SimplexId &polygonEdgeId, const SimplexId &tetId, 
+          const SimplexId &localEdgeId0, const double &t0,
             const double &u0, const double &v0,
-          const int &localEdgeId1, const double &t1,
+          const SimplexId &localEdgeId1, const double &t1,
             const double &u1, const double &v1,
-          const int &localEdgeId2, const double &t2,
+          const SimplexId &localEdgeId2, const double &t2,
             const double &u2, const double &v2) const;
         
       template <class dataTypeU, class dataTYpeV>
-        inline int computeCase2(const int &polygonEdgeId, const int &tetId, 
-          const int &localEdgeId0, const double &t0,
+        inline int computeCase2(const SimplexId &polygonEdgeId, const SimplexId &tetId, 
+          const SimplexId &localEdgeId0, const double &t0,
             const double &u0, const double &v0,
-          const int &localEdgeId1, const double &t1,
+          const SimplexId &localEdgeId1, const double &t1,
             const double &u1, const double &v1,
-          const int &localEdgeId2, const double &t2,
+          const SimplexId &localEdgeId2, const double &t2,
             const double &u2, const double &v2) const;
         
       template <class dataTypeU, class dataTYpeV>
-        inline int computeCase3(const int &polygonEdgeId, const int &tetId, 
-          const int &localEdgeId0, const double &t0,
+        inline int computeCase3(const SimplexId &polygonEdgeId, const SimplexId &tetId, 
+          const SimplexId &localEdgeId0, const double &t0,
             const double &u0, const double &v0,
-          const int &localEdgeId1, const double &t1,
+          const SimplexId &localEdgeId1, const double &t1,
             const double &u1, const double &v1,
-          const int &localEdgeId2, const double &t2,
+          const SimplexId &localEdgeId2, const double &t2,
             const double &u2, const double &v2) const;
         
       template <class dataTypeU, class dataTYpeV>
-        inline int computeCase4(const int &polygonEdgeId, const int &tetId, 
-          const int &localEdgeId0, const double &t0,
+        inline int computeCase4(const SimplexId &polygonEdgeId, const SimplexId &tetId, 
+          const SimplexId &localEdgeId0, const double &t0,
             const double &u0, const double &v0,
-          const int &localEdgeId1, const double &t1,
+          const SimplexId &localEdgeId1, const double &t1,
             const double &u1, const double &v1,
-          const int &localEdgeId2, const double &t2,
+          const SimplexId &localEdgeId2, const double &t2,
             const double &u2, const double &v2) const;
             
-      int computeTriangleFiber(const int &tetId, const int &triangleId,
+      int computeTriangleFiber(const SimplexId &tetId, const SimplexId &triangleId,
         const std::pair<double, double> &intersection,
         const std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
-        std::vector<double> &pA, std::vector<double> &pB, int &pivotVertexId,
+        std::vector<double> &pA, std::vector<double> &pB, SimplexId &pivotVertexId,
         bool &edgeFiber) const;
         
       int computeTriangleIntersection(
-        const int &tetId, const int &triangleId0, const int &triangleId1,
-        const int &polygonEdgeId0, const int &polygonEdgeId1,
+        const SimplexId &tetId, const SimplexId &triangleId0, const SimplexId &triangleId1,
+        const SimplexId &polygonEdgeId0, const SimplexId &polygonEdgeId1,
         const std::pair<double, double> &intersection,
-        int &newVertexNumber, int &newTriangleNumber,
+        SimplexId &newVertexNumber, SimplexId &newTriangleNumber,
         std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
         std::vector<std::vector<Vertex> > &tetNewVertices) const;
             
       int computeTriangleIntersection(
-        const int &tetId, const int &triangleId, const int &polygonEdgeId, 
+        const SimplexId &tetId, const SimplexId &triangleId, const SimplexId &polygonEdgeId, 
         const std::pair<double, double> &intersection,
         const std::vector<double> &pA, const std::vector<double> &pB,
-        const int &pivotVertexId,
-        int &newVertexNumber, int &newTriangleNumber,
+        const SimplexId &pivotVertexId,
+        SimplexId &newVertexNumber, SimplexId &newTriangleNumber,
         std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
         std::vector<std::vector<Vertex> > &tetNewVertices) const;
         
       int createNewIntersectionTriangle(
-        const int &tetId, const int &triangleId,
-        const int &vertexId0, const int &vertexId1, const int &vertexId2,
+        const SimplexId &tetId, const SimplexId &triangleId,
+        const SimplexId &vertexId0, const SimplexId &vertexId1, const SimplexId &vertexId2,
         const std::vector<std::vector<Vertex> > &tetNewVertices,
-        int &newTriangleNumber,
+        SimplexId &newTriangleNumber,
         std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
         const std::pair<double, double> *intersection = NULL) const;
       
       int flipEdges() const;
       
-      int flipEdges(std::vector<std::pair<int, int> > &triangles) const;
+      int flipEdges(std::vector<std::pair<SimplexId, SimplexId> > &triangles) const;
         
-      int getNumberOfCommonVertices(const int &tetId, 
-        const int &triangleId0, const int &triangleId1,
+      int getNumberOfCommonVertices(const SimplexId &tetId, 
+        const SimplexId &triangleId0, const SimplexId &triangleId1,
         const std::vector<std::vector<IntersectionTriangle> > &tetIntersections) 
 const;
         
-      int getTriangleRangeExtremities(const int &tetId, const int &triangleId,
+      int getTriangleRangeExtremities(const SimplexId &tetId, const SimplexId &triangleId,
         const std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
         std::pair<double, double> &extremity0, 
         std::pair<double, double> &extremity1) const;
@@ -373,23 +373,23 @@ const;
         Vertex &v) const;
         
       bool isEdgeAngleCollapsible(
-        const int &source, const int &destination,
-        const int &pivotVertexId, 
-        const std::vector<std::pair<int, int> > &starNeighbors) const;
+        const SimplexId &source, const SimplexId &destination,
+        const SimplexId &pivotVertexId, 
+        const std::vector<std::pair<SimplexId, SimplexId> > &starNeighbors) const;
         
       bool isEdgeFlippable(
-        const int &edgeVertexId0, const int &edgeVertexId1,
-        const int &otherVertexId0, const int &otherVertexId1) const;
+        const SimplexId &edgeVertexId0, const SimplexId &edgeVertexId1,
+        const SimplexId &otherVertexId0, const SimplexId &otherVertexId1) const;
         
       inline bool isIntersectionTriangleColinear(
-        const int &tetId, const int &triangleId,
+        const SimplexId &tetId, const SimplexId &triangleId,
         const std::vector<std::vector<IntersectionTriangle> > &tetIntersections,
         const std::vector<std::vector<Vertex> > &tetNewVertices,
-        const int &vertexId0, const int &vertexId1, const int &vertexId2) const{
+        const SimplexId &vertexId0, const SimplexId &vertexId1, const SimplexId &vertexId2) const{
         
         std::vector<std::vector<double> > points(3);
         for(int i = 0; i < 3; i++){
-          int vertexId = vertexId0;
+          SimplexId vertexId = vertexId0;
           if(i == 1) vertexId = vertexId1;
           if(i == 2) vertexId = vertexId2;
           
@@ -425,20 +425,20 @@ const;
         
       int snapVertexBarycentrics(const double &distanceThreshold) const;
       
-      int snapVertexBarycentrics(const int &tetId,
-        const std::vector<std::pair<int, int> > &triangles,
+      int snapVertexBarycentrics(const SimplexId &tetId,
+        const std::vector<std::pair<SimplexId, SimplexId> > &triangles,
         const double &distanceThreshold) const;
         
        
       bool                pointSnapping_;
         
-      int                 pointNumber_, tetNumber_, polygonEdgeNumber_;
+      SimplexId                 pointNumber_, tetNumber_, polygonEdgeNumber_;
       const void          *uField_, *vField_;
       const float         *pointSet_;
-      const long long int *tetList_;
-      const std::vector<std::vector<int> > 
+      const SimplexId *tetList_;
+      const std::vector<std::vector<SimplexId> > 
                           *tetNeighbors_;
-      int                 edgeImplicitEncoding_[12];
+      SimplexId                 edgeImplicitEncoding_[12];
       
       double              edgeCollapseThreshold_, pointSnappingThreshold_;
      
@@ -492,17 +492,17 @@ template <class dataTypeU, class dataTypeV>
 #endif
 
 template <class dataTypeU, class dataTypeV>
-  inline int ttk::FiberSurface::computeBaseTriangle(const int &tetId, 
-    const int &localEdgeId0, const double &t0, 
+  inline int ttk::FiberSurface::computeBaseTriangle(const SimplexId &tetId, 
+    const SimplexId &localEdgeId0, const double &t0, 
       const double &u0, const double &v0, 
-    const int &localEdgeId1, const double &t1, 
+    const SimplexId &localEdgeId1, const double &t1, 
       const double &u1, const double &v1, 
-    const int &localEdgeId2, const double &t2, 
+    const SimplexId &localEdgeId2, const double &t2, 
       const double &u2, const double &v2, 
     std::vector<std::vector<double> > &basePoints, 
     std::vector<std::pair<double, double> > &basePointProjections, 
     std::vector<double> &basePointParameterization,
-    std::vector<std::pair<int, int> > &baseEdges) const{
+    std::vector<std::pair<SimplexId, SimplexId> > &baseEdges) const{
 
   basePoints.resize(3);
   basePointProjections.resize(3);
@@ -511,7 +511,7 @@ template <class dataTypeU, class dataTypeV>
     
   for(int i = 0; i < 3; i++){
   
-    int vertexId0 = 0, vertexId1 = 0;
+    SimplexId vertexId0 = 0, vertexId1 = 0;
     
     switch(i){
       
@@ -607,10 +607,10 @@ template <class dataTypeU, class dataTypeV>
     }
     
     if(vertexId0 < vertexId1){
-      baseEdges[i] = std::pair<int, int>(vertexId0, vertexId1);
+      baseEdges[i] = std::pair<SimplexId, SimplexId>(vertexId0, vertexId1);
     }
     else{
-      baseEdges[i] = std::pair<int, int>(vertexId1, vertexId0);
+      baseEdges[i] = std::pair<SimplexId, SimplexId>(vertexId1, vertexId0);
     }
   }
 
@@ -619,16 +619,16 @@ template <class dataTypeU, class dataTypeV>
 
 template<class dataTypeU, class dataTypeV>
   inline int ttk::FiberSurface::computeCase0( 
-    const int &polygonEdgeId, const int &tetId, 
-    const int &localEdgeId0, const double &t0,
+    const SimplexId &polygonEdgeId, const SimplexId &tetId, 
+    const SimplexId &localEdgeId0, const double &t0,
       const double &u0, const double &v0, 
-    const int &localEdgeId1, const double &t1,
+    const SimplexId &localEdgeId1, const double &t1,
       const double &u1, const double &v1, 
-    const int &localEdgeId2, const double &t2,
+    const SimplexId &localEdgeId2, const double &t2,
       const double &u2, const double &v2) const{
 
   // that one's easy, make just one triangle 
-  int vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
+  SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
   
   // alloc 1 more triangle
   (*polygonEdgeTriangleLists_[polygonEdgeId]).resize(
@@ -655,7 +655,7 @@ template<class dataTypeU, class dataTypeV>
   // get the vertex coordinates
   for(int i = 0; i < 3; i++){
     
-    int vertexId0 = 0, vertexId1 = 0;
+    SimplexId vertexId0 = 0, vertexId1 = 0;
     
     switch(i){
       case 0:
@@ -749,10 +749,10 @@ template<class dataTypeU, class dataTypeV>
    
     if(vertexId0 < vertexId1)
       (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-        = std::pair<int, int>(vertexId0, vertexId1);
+        = std::pair<SimplexId, SimplexId>(vertexId0, vertexId1);
     else
       (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-        = std::pair<int, int>(vertexId1, vertexId0);
+        = std::pair<SimplexId, SimplexId>(vertexId1, vertexId0);
   }
 
   // return the number of created vertices
@@ -761,15 +761,15 @@ template<class dataTypeU, class dataTypeV>
 
 template <class dataTypeU, class dataTypeV>
   inline int ttk::FiberSurface::computeCase1( 
-    const int &polygonEdgeId, const int &tetId, 
-    const int &localEdgeId0, const double &t0,
+    const SimplexId &polygonEdgeId, const SimplexId &tetId, 
+    const SimplexId &localEdgeId0, const double &t0,
       const double &u0, const double &v0, 
-    const int &localEdgeId1, const double &t1,
+    const SimplexId &localEdgeId1, const double &t1,
       const double &u1, const double &v1, 
-    const int &localEdgeId2, const double &t2,
+    const SimplexId &localEdgeId2, const double &t2,
       const double &u2, const double &v2) const{
  
-  int vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
+  SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
     
   // alloc 5 more vertices
   (*polygonEdgeVertexLists_[polygonEdgeId]).resize(vertexId + 5);
@@ -778,11 +778,11 @@ template <class dataTypeU, class dataTypeV>
     (*polygonEdgeVertexLists_[polygonEdgeId])[
       vertexId + i].isIntersectionPoint_ = false;
     (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-      = std::pair<int, int>(-1, -1);
+      = std::pair<SimplexId, SimplexId>(-1, -1);
   }
   
   // alloc 3 more triangles
-  int triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
+  SimplexId triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
   (*polygonEdgeTriangleLists_[polygonEdgeId]).resize(triangleId + 3);
   
   for(int i = 0; i < 3; i++){
@@ -824,7 +824,7 @@ template <class dataTypeU, class dataTypeV>
   std::vector<std::vector<double> > basePoints(3);
   std::vector<std::pair<double, double> > basePointProjections(3);
   std::vector<double> basePointParameterization(3);
-  std::vector<std::pair<int, int> > baseEdges(3);
+  std::vector<std::pair<SimplexId, SimplexId> > baseEdges(3);
   
   computeBaseTriangle<dataTypeU, dataTypeV>(tetId,
     localEdgeId0, t0, u0, v0,
@@ -833,7 +833,7 @@ template <class dataTypeU, class dataTypeV>
     basePoints, basePointProjections, basePointParameterization, baseEdges);
   
   // find the pivot vertex for this case
-  int pivotVertexId = -1;
+  SimplexId pivotVertexId = -1;
 
   if((t0 >= 0)&&(t0 <= 1)){
     pivotVertexId = 0;
@@ -848,7 +848,7 @@ template <class dataTypeU, class dataTypeV>
   // now get the vertex coordinates
   for(int i = 0; i < 5; i++){
     
-    int vertexId0, vertexId1;
+    SimplexId vertexId0, vertexId1;
     double t;
     
     if(!i){
@@ -944,15 +944,15 @@ template <class dataTypeU, class dataTypeV>
 
 template <class dataTypeU, class dataTypeV>
   inline int ttk::FiberSurface::computeCase2( 
-    const int &polygonEdgeId, const int &tetId, 
-    const int &localEdgeId0, const double &t0,
+    const SimplexId &polygonEdgeId, const SimplexId &tetId, 
+    const SimplexId &localEdgeId0, const double &t0,
       const double &u0, const double &v0, 
-    const int &localEdgeId1, const double &t1,
+    const SimplexId &localEdgeId1, const double &t1,
       const double &u1, const double &v1, 
-    const int &localEdgeId2, const double &t2,
+    const SimplexId &localEdgeId2, const double &t2,
       const double &u2, const double &v2) const{
  
-  int vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
+  SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
     
   // alloc 4 more vertices
   (*polygonEdgeVertexLists_[polygonEdgeId]).resize(vertexId + 4);
@@ -961,11 +961,11 @@ template <class dataTypeU, class dataTypeV>
     (*polygonEdgeVertexLists_[polygonEdgeId])[
       vertexId + i].isIntersectionPoint_ = false;
     (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-      = std::pair<int, int>(-1, -1);
+      = std::pair<SimplexId, SimplexId>(-1, -1);
   }
   
   // alloc 2 more triangles
-  int triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
+  SimplexId triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
   (*polygonEdgeTriangleLists_[polygonEdgeId]).resize(triangleId + 2);
   
   for(int i = 0; i < 2; i++){
@@ -997,7 +997,7 @@ template <class dataTypeU, class dataTypeV>
   std::vector<std::vector<double> > basePoints(3);
   std::vector<std::pair<double, double> > basePointProjections(3);
   std::vector<double> basePointParameterization(3);
-  std::vector<std::pair<int, int> > baseEdges(3);
+  std::vector<std::pair<SimplexId, SimplexId> > baseEdges(3);
   
   computeBaseTriangle<dataTypeU, dataTypeV>(tetId,
     localEdgeId0, t0, u0, v0,
@@ -1007,7 +1007,7 @@ template <class dataTypeU, class dataTypeV>
   
   // find the pivot for this case
   bool isPivotPositive = false;
-  int pivotVertexId = -1;
+  SimplexId pivotVertexId = -1;
   
   if(((t0 < 0)&&((t1 < 0)||(t2 < 0)))
     ||((t1 < 0)&&((t0 < 0)||(t2 < 0)))
@@ -1042,7 +1042,7 @@ template <class dataTypeU, class dataTypeV>
   // now get the vertex coordinates
   for(int i = 0; i < 4; i++){
     
-    int vertexId0, vertexId1;
+    SimplexId vertexId0, vertexId1;
     double t;
     
     switch(i){
@@ -1119,15 +1119,15 @@ template <class dataTypeU, class dataTypeV>
 
 template <class dataTypeU, class dataTypeV>
   inline int ttk::FiberSurface::computeCase3( 
-    const int &polygonEdgeId, const int &tetId, 
-    const int &localEdgeId0, const double &t0,
+    const SimplexId &polygonEdgeId, const SimplexId &tetId, 
+    const SimplexId &localEdgeId0, const double &t0,
       const double &u0, const double &v0, 
-    const int &localEdgeId1, const double &t1,
+    const SimplexId &localEdgeId1, const double &t1,
       const double &u1, const double &v1, 
-    const int &localEdgeId2, const double &t2,
+    const SimplexId &localEdgeId2, const double &t2,
       const double &u2, const double &v2) const{
  
-  int vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
+  SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
     
   // alloc 3 more vertices
   (*polygonEdgeVertexLists_[polygonEdgeId]).resize(vertexId + 3);
@@ -1136,11 +1136,11 @@ template <class dataTypeU, class dataTypeV>
     (*polygonEdgeVertexLists_[polygonEdgeId])[
       vertexId + i].isIntersectionPoint_ = false;
     (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-      = std::pair<int, int>(-1, -1);
+      = std::pair<SimplexId, SimplexId>(-1, -1);
   }
   
   // alloc 1 more triangle
-  int triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
+  SimplexId triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
   (*polygonEdgeTriangleLists_[polygonEdgeId]).resize(triangleId + 1);
   
   
@@ -1160,7 +1160,7 @@ template <class dataTypeU, class dataTypeV>
   std::vector<std::vector<double> > basePoints(3);
   std::vector<std::pair<double, double> > basePointProjections(3);
   std::vector<double> basePointParameterization(3);
-  std::vector<std::pair<int, int> > baseEdges(3);
+  std::vector<std::pair<SimplexId, SimplexId> > baseEdges(3);
   
   computeBaseTriangle<dataTypeU, dataTypeV>(tetId,
     localEdgeId0, t0, u0, v0,
@@ -1170,7 +1170,7 @@ template <class dataTypeU, class dataTypeV>
   
   // now find the pivot
   bool isPivotPositive = false;
-  int pivotVertexId = -1;
+  SimplexId pivotVertexId = -1;
   
   if((t0 <= 1)&&(t0 >= 0)){
     pivotVertexId = 0;
@@ -1197,7 +1197,7 @@ template <class dataTypeU, class dataTypeV>
   // now get the vertex coordinates
   for(int i = 0; i < 3; i++){
     
-    int vertexId0, vertexId1;
+    SimplexId vertexId0, vertexId1;
     double t;
     
     if(!i){
@@ -1262,15 +1262,15 @@ template <class dataTypeU, class dataTypeV>
 
 template <class dataTypeU, class dataTypeV>
   inline int ttk::FiberSurface::computeCase4( 
-    const int &polygonEdgeId, const int &tetId, 
-    const int &localEdgeId0, const double &t0,
+    const SimplexId &polygonEdgeId, const SimplexId &tetId, 
+    const SimplexId &localEdgeId0, const double &t0,
       const double &u0, const double &v0, 
-    const int &localEdgeId1, const double &t1,
+    const SimplexId &localEdgeId1, const double &t1,
       const double &u1, const double &v1, 
-    const int &localEdgeId2, const double &t2,
+    const SimplexId &localEdgeId2, const double &t2,
       const double &u2, const double &v2) const{
 
-  int vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
+  SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
     
   // alloc 4 more vertices
   (*polygonEdgeVertexLists_[polygonEdgeId]).resize(vertexId + 4);
@@ -1279,11 +1279,11 @@ template <class dataTypeU, class dataTypeV>
     (*polygonEdgeVertexLists_[polygonEdgeId])[
       vertexId + i].isIntersectionPoint_ = false;
     (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].meshEdge_ 
-      = std::pair<int, int>(-1, -1);
+      = std::pair<SimplexId, SimplexId>(-1, -1);
   }
   
   // alloc 2 more triangles
-  int triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
+  SimplexId triangleId = (*polygonEdgeTriangleLists_[polygonEdgeId]).size();
   (*polygonEdgeTriangleLists_[polygonEdgeId]).resize(triangleId + 2);
   
   for(int i = 0; i < 2; i++){
@@ -1315,7 +1315,7 @@ template <class dataTypeU, class dataTypeV>
   std::vector<std::vector<double> > basePoints(3);
   std::vector<std::pair<double, double> > basePointProjections(3);
   std::vector<double> basePointParameterization(3);
-  std::vector<std::pair<int, int> > baseEdges(3);
+  std::vector<std::pair<SimplexId, SimplexId> > baseEdges(3);
   
   computeBaseTriangle<dataTypeU, dataTypeV>(tetId,
     localEdgeId0, t0, u0, v0,
@@ -1325,7 +1325,7 @@ template <class dataTypeU, class dataTypeV>
  
   // find the pivot vertex for this case
   bool isPivotPositive = false;
-  int pivotVertexId = -1;
+  SimplexId pivotVertexId = -1;
   
   if(t0 > 1){
     pivotVertexId = 0;
@@ -1356,7 +1356,7 @@ template <class dataTypeU, class dataTypeV>
   // now get the vertex coordinates depending on the case
   for(int i = 0; i < 4; i++){
     
-    int vertexId0, vertexId1;
+    SimplexId vertexId0, vertexId1;
     double t;
     
     if(i < 2){
@@ -1438,8 +1438,8 @@ template <class dataTypeU, class dataTypeV>
   inline int ttk::FiberSurface::computeContour(
     const std::pair<double, double> &rangePoint0,
     const std::pair<double, double> &rangePoint1,
-    const std::vector<int> &seedTetList,
-    const int &polygonEdgeId) const{
+    const std::vector<SimplexId> &seedTetList,
+    const SimplexId &polygonEdgeId) const{
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!uField_)
@@ -1455,18 +1455,18 @@ template <class dataTypeU, class dataTypeV>
 #endif
     
   std::vector<bool> visitedTets(triangulation_->getNumberOfCells(), false);
-  std::queue<int> tetQueue;
+  std::queue<SimplexId> tetQueue;
 
   // init the queue
-  for(int i = 0; i < (int) seedTetList.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) seedTetList.size(); i++){
     tetQueue.push(seedTetList[i]);
   }
   
-  int createdVertices = 0;
+  SimplexId createdVertices = 0;
   
   do{
     
-    int tetId = tetQueue.front();
+    SimplexId tetId = tetQueue.front();
     tetQueue.pop();
     
     if(!visitedTets[tetId]){
@@ -1476,11 +1476,11 @@ template <class dataTypeU, class dataTypeV>
       
       if(createdVertices){
         // only propagate if we created a triangle
-        int tetNeighborNumber = triangulation_->getCellNeighborNumber(tetId);
+        SimplexId tetNeighborNumber = triangulation_->getCellNeighborNumber(tetId);
         
-        for(int i = 0; i < tetNeighborNumber; i++){
+        for(SimplexId i = 0; i < tetNeighborNumber; i++){
           
-          int neighborId = -1;
+          SimplexId neighborId = -1;
           triangulation_->getCellNeighbor(tetId, i, neighborId);
           
           if(!visitedTets[neighborId])
@@ -1500,8 +1500,8 @@ template <class dataTypeU, class dataTypeV> int
 ttk::FiberSurface::computeContour(
   const std::vector<std::pair<std::pair<double, double>, std::pair<double, 
 double> > > &edgeList, 
-  const std::vector<int> &seedTetList,
-  const std::vector<int> *edgeIdList) const{
+  const std::vector<SimplexId> &seedTetList,
+  const std::vector<SimplexId> *edgeIdList) const{
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!tetNeighbors_)
@@ -1523,29 +1523,29 @@ double> > > &edgeList,
 #endif
   
   std::vector<bool> visitedTets(tetNumber_, false);
-  std::queue<int> tetQueue;
+  std::queue<SimplexId> tetQueue;
 
   // init the queue
-  for(int i = 0; i < (int) seedTetList.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) seedTetList.size(); i++){
     tetQueue.push(seedTetList[i]);
   }
   
-  int createdVertices = 0;
+  SimplexId createdVertices = 0;
   
   do{
     
-    int tetId = tetQueue.front();
+    SimplexId tetId = tetQueue.front();
     tetQueue.pop();
     
     if(!visitedTets[tetId]){
      
-      std::vector<std::vector<int> > threadedTetQueue(edgeList.size());
+      std::vector<std::vector<SimplexId> > threadedTetQueue(edgeList.size());
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-      for(int i = 0; i < (int) edgeList.size(); i++){
+      for(SimplexId i = 0; i < (SimplexId) edgeList.size(); i++){
     
-        int polygonEdgeId = 0;
+        SimplexId polygonEdgeId = 0;
         
         if(edgeIdList){
           polygonEdgeId = (*edgeIdList)[i];
@@ -1559,7 +1559,7 @@ double> > > &edgeList,
         
         if(createdVertices){
           // only propagate if we created a triangle
-          for(int j = 0; j < (int) (*tetNeighbors_)[tetId].size(); j++){
+          for(SimplexId j = 0; j < (SimplexId) (*tetNeighbors_)[tetId].size(); j++){
             if(!visitedTets[(*tetNeighbors_)[tetId][j]]){
               threadedTetQueue[i].push_back((*tetNeighbors_)[tetId][j]);
             }
@@ -1569,8 +1569,8 @@ double> > > &edgeList,
       
       visitedTets[tetId] = true;
       
-      for(int i = 0; i < (int) threadedTetQueue.size(); i++){
-        for(int j = 0; j < (int) threadedTetQueue[i].size(); j++){
+      for(SimplexId i = 0; i < (SimplexId) threadedTetQueue.size(); i++){
+        for(SimplexId j = 0; j < (SimplexId) threadedTetQueue[i].size(); j++){
           tetQueue.push(threadedTetQueue[i][j]);
         }
       }
@@ -1585,7 +1585,7 @@ template <class dataTypeU, class dataTypeV>
   inline int ttk::FiberSurface::computeSurface(
     const std::pair<double, double> &rangePoint0,
     const std::pair<double, double> &rangePoint1,
-    const int &polygonEdgeId) const {
+    const SimplexId &polygonEdgeId) const {
   
 #ifndef TTK_ENABLE_KAMIKAZE
   if((!tetNumber_)&&(!triangulation_))
@@ -1604,7 +1604,7 @@ template <class dataTypeU, class dataTypeV>
     return -7;
 #endif
   
-  int tetNumber = tetNumber_;
+  SimplexId tetNumber = tetNumber_;
   
   if(triangulation_){
     tetNumber = triangulation_->getNumberOfCells();
@@ -1613,7 +1613,7 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < tetNumber; i++){
+  for(SimplexId i = 0; i < tetNumber; i++){
     
     processTetrahedron<dataTypeU, dataTypeV>(
       i, rangePoint0, rangePoint1, polygonEdgeId);
@@ -1638,7 +1638,7 @@ template <class dataTypeU, class dataTypeV>
     return -5;
   if(!polygon_)
     return -6;
-  if(polygonEdgeNumber_ != (int) polygon_->size())
+  if(polygonEdgeNumber_ != (SimplexId) polygon_->size())
     return -7;
   if(!globalVertexList_)
     return -8;
@@ -1652,7 +1652,7 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(int i = 0; i < polygonEdgeNumber_; i++){
+    for(SimplexId i = 0; i < polygonEdgeNumber_; i++){
       
       computeSurfaceWithOctree<dataTypeU, dataTypeV>(
         (*polygon_)[i].first, (*polygon_)[i].second, i);
@@ -1663,7 +1663,7 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(int i = 0; i < polygonEdgeNumber_; i++){
+    for(SimplexId i = 0; i < polygonEdgeNumber_; i++){
       computeSurface<dataTypeU, dataTypeV>(
         (*polygon_)[i].first, (*polygon_)[i].second, i);
     }
@@ -1673,7 +1673,7 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < polygonEdgeNumber_; i++){
+  for(SimplexId i = 0; i < polygonEdgeNumber_; i++){
     
     computeSurface<dataTypeU, dataTypeV>(
       (*polygon_)[i].first, (*polygon_)[i].second, i);
@@ -1699,7 +1699,7 @@ template <class dataTypeU, class dataTypeV>
   inline int ttk::FiberSurface::computeSurfaceWithOctree(
     const std::pair<double, double> &rangePoint0,
     const std::pair<double, double> &rangePoint1,
-    const int &polygonEdgeId) const {
+    const SimplexId &polygonEdgeId) const {
   
 #ifndef TTK_ENABLE_KAMIKAZE
   if((!tetNumber_)&&(!triangulation_))
@@ -1718,13 +1718,13 @@ template <class dataTypeU, class dataTypeV>
     return -7;
 #endif
   
-  std::vector<int> tetList;
+  std::vector<SimplexId> tetList;
   octree_.rangeSegmentQuery(rangePoint0, rangePoint1, tetList);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < (int) tetList.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) tetList.size(); i++){
     processTetrahedron<dataTypeU, dataTypeV>(
       tetList[i], rangePoint0, rangePoint1, polygonEdgeId);
   }
@@ -1740,15 +1740,15 @@ template <class dataTypeU, class dataTypeV> int ttk::FiberSurface::finalize(
   const bool &intersectionRemesh){
    
   // make only one vertex list
-  int fiberSurfaceVertexNumber = 0;
-  for(int i = 0; i < (int) polygonEdgeVertexLists_.size(); i++){
+  SimplexId fiberSurfaceVertexNumber = 0;
+  for(SimplexId i = 0; i < (SimplexId) polygonEdgeVertexLists_.size(); i++){
     fiberSurfaceVertexNumber += (*polygonEdgeVertexLists_[i]).size();
   }
   
   (*globalVertexList_).resize(fiberSurfaceVertexNumber);
   fiberSurfaceVertexNumber = 0;
-  for(int i = 0; i < (int) polygonEdgeVertexLists_.size(); i++){
-    for(int j = 0; j < (int) polygonEdgeVertexLists_[i]->size(); j++){
+  for(SimplexId i = 0; i < (SimplexId) polygonEdgeVertexLists_.size(); i++){
+    for(SimplexId j = 0; j < (SimplexId) polygonEdgeVertexLists_[i]->size(); j++){
       (*polygonEdgeVertexLists_[i])[j].polygonEdgeId_ = i;
       (*polygonEdgeVertexLists_[i])[j].localId_ = j;
       (*polygonEdgeVertexLists_[i])[j].globalId_ = fiberSurfaceVertexNumber;
@@ -1757,8 +1757,8 @@ template <class dataTypeU, class dataTypeV> int ttk::FiberSurface::finalize(
       fiberSurfaceVertexNumber++;
     }
   }
-  for(int i = 0; i < (int) polygonEdgeTriangleLists_.size(); i++){
-    for(int j = 0; j < (int) polygonEdgeTriangleLists_[i]->size(); j++){
+  for(SimplexId i = 0; i < (SimplexId) polygonEdgeTriangleLists_.size(); i++){
+    for(SimplexId j = 0; j < (SimplexId) polygonEdgeTriangleLists_[i]->size(); j++){
       for(int k = 0; k < 3; k++){
         (*polygonEdgeTriangleLists_[i])[j].vertexIds_[k] = 
           (*polygonEdgeVertexLists_[i])[
@@ -1789,7 +1789,7 @@ template <class dataTypeU, class dataTypeV> int ttk::FiberSurface::finalize(
     mergeEdges(edgeCollapseThreshold_);
   
   // now we can release the memory for the threaded vertices
-  for(int i = 0; i < (int) polygonEdgeVertexLists_.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) polygonEdgeVertexLists_.size(); i++){
     polygonEdgeVertexLists_[i]->clear();
   }
   
@@ -1797,10 +1797,10 @@ template <class dataTypeU, class dataTypeV> int ttk::FiberSurface::finalize(
 }
 
 template <class dataTypeU, class dataTypeV>
-  inline int ttk::FiberSurface::processTetrahedron(const int &tetId,
+  inline int ttk::FiberSurface::processTetrahedron(const SimplexId &tetId,
     const std::pair<double, double> &rangePoint0,
     const std::pair<double, double> &rangePoint1,
-    const int &polygonEdgeId) const{
+    const SimplexId &polygonEdgeId) const{
 
   double rangeEdge[2];
   rangeEdge[0] = rangePoint0.first - rangePoint1.first;
@@ -1811,13 +1811,13 @@ template <class dataTypeU, class dataTypeV>
   rangeNormal[1] = rangeEdge[0];
   
   // 1. compute the distance to the range line carrying the saddleEdge
-  int upperNumber = 0;
-  int lowerNumber = 0;
-  int equalVertexLocalId = -1;
+  SimplexId upperNumber = 0;
+  SimplexId lowerNumber = 0;
+  SimplexId equalVertexLocalId = -1;
   double d[4];
   for(int i = 0; i < 4; i++){
     
-    int vertexId = 0;
+    SimplexId vertexId = 0;
     if(!triangulation_){
       vertexId = tetList_[5*tetId + 1 + i];
     }
@@ -1854,8 +1854,8 @@ template <class dataTypeU, class dataTypeV>
     
     // the fiber surface is passing through this tetrahedron.
     std::vector<bool> lonelyVertex(4, false);
-    std::vector<int> triangleEdgeNumbers(2, 0);
-    std::vector<std::vector<int> > triangleEdges(2);
+    std::vector<SimplexId> triangleEdgeNumbers(2, 0);
+    std::vector<std::vector<SimplexId> > triangleEdges(2);
     triangleEdges[0].resize(3, -1);
     triangleEdges[1].resize(3, -1);
     
@@ -1866,12 +1866,12 @@ template <class dataTypeU, class dataTypeV>
     // 3: 3-1 [order!]
     // 4: 2-1 [order!]
     // 5: 2-3
-    int edgeCounter = 0;
+    SimplexId edgeCounter = 0;
     for(int i = 0; i < 4; i++){
       
-      int jStart = i + 1;
-      int jEnd = 4;
-      int jStep = 1;
+      SimplexId jStart = i + 1;
+      SimplexId jEnd = 4;
+      SimplexId jStep = 1;
       
       if(i == 1){
         // special ordering here 
@@ -1882,7 +1882,7 @@ template <class dataTypeU, class dataTypeV>
         jStep = -1;
       }
       
-      for(int j = jStart; j != jEnd; j += jStep){
+      for(SimplexId j = jStart; j != jEnd; j += jStep){
         
         if(((d[i] > 0)&&(d[j] < 0))||((d[i] < 0)&&(d[j] > 0))){
           
@@ -1924,7 +1924,7 @@ template <class dataTypeU, class dataTypeV>
         // 0/5
         // 1/3
         // 2/4
-        int forbiddenEdge = -1;
+        SimplexId forbiddenEdge = -1;
         switch(triangleEdges[1][0]){
           case 0:
             forbiddenEdge = 5;
@@ -1945,7 +1945,7 @@ template <class dataTypeU, class dataTypeV>
             forbiddenEdge = 0;
             break;
         }
-        for(int i = 0; i < (int) triangleEdges[0].size(); i++){
+        for(SimplexId i = 0; i < (SimplexId) triangleEdges[0].size(); i++){
           if(triangleEdges[0][i] != forbiddenEdge){
             if(triangleEdges[1][1] != -1){
               triangleEdges[1][2] = triangleEdges[0][i];
@@ -1990,19 +1990,19 @@ template <class dataTypeU, class dataTypeV>
     std::vector<std::pair<double, double> > uv(3);
     std::vector<double> t(3);
     
-    int createdVertices = 0;
+    SimplexId createdVertices = 0;
     
     for(int i = 0; i < 2; i++){
       if(triangleEdges[i][0] != -1){
         // this is a valid triangle, let's go ahead.
         
-        int lowerVertexNumber = 0;
-        int upperVertexNumber = 0;
-        int greyVertexNumber = 0;
+        SimplexId lowerVertexNumber = 0;
+        SimplexId upperVertexNumber = 0;
+        SimplexId greyVertexNumber = 0;
         // iterate over the edges and compute the edge intersection (range)
-        for(int j = 0; j < (int) triangleEdges[i].size(); j++){
+        for(SimplexId j = 0; j < (SimplexId) triangleEdges[i].size(); j++){
           
-          int vertexId0 = 0, vertexId1 = 0;
+          SimplexId vertexId0 = 0, vertexId1 = 0;
           if(triangulation_){
             triangulation_->getCellVertex(tetId, 
               edgeImplicitEncoding_[2*triangleEdges[i][j]],
@@ -2018,7 +2018,7 @@ template <class dataTypeU, class dataTypeV>
               5*tetId + 1 + edgeImplicitEncoding_[2*triangleEdges[i][j] + 1]];
           }
           
-          if((j < (int) triangleEdges[i].size() - 1)
+          if((j < (SimplexId) triangleEdges[i].size() - 1)
             &&(triangleEdges[i][j] == triangleEdges[i][j + 1])){
             
             // special case of a jacobi edge
@@ -2149,20 +2149,20 @@ template <class dataTypeU, class dataTypeV>
     // duplicate
     if((triangleEdges[1][0] != -1)&&(createdVertices > 3)){
       
-      std::vector<int> createdVertexList(createdVertices);
-      for(int i = 0; i < (int) createdVertices; i++){
+      std::vector<SimplexId> createdVertexList(createdVertices);
+      for(SimplexId i = 0; i < (SimplexId) createdVertices; i++){
         createdVertexList[i] = 
           polygonEdgeVertexLists_[polygonEdgeId]->size() - 1 - i;
       }
       
       std::vector<bool> snappedVertices(createdVertices, false);
       
-      for(int i = 0; i < createdVertices; i++){
+      for(SimplexId i = 0; i < createdVertices; i++){
         
-        std::vector<int> colinearVertices;
+        std::vector<SimplexId> colinearVertices;
         if(!snappedVertices[i]){
           colinearVertices.push_back(i);
-          for(int j = 0; j < createdVertices; j++){
+          for(SimplexId j = 0; j < createdVertices; j++){
             if((i != j)&&(!snappedVertices[j])){
               // not the same vertex
               // not snapped already
@@ -2182,10 +2182,10 @@ template <class dataTypeU, class dataTypeV>
           
           // we just need to find the pair of duplicates and snap both of 
           // them to another vertex
-          std::pair<int, int> minPair;
+          std::pair<SimplexId, SimplexId> minPair;
           double minDistance = -1;
-          for(int j = 0; j < (int) colinearVertices.size(); j++){
-            for(int k = 0; k < (int) colinearVertices.size(); k++){
+          for(SimplexId j = 0; j < (SimplexId) colinearVertices.size(); j++){
+            for(SimplexId k = 0; k < (SimplexId) colinearVertices.size(); k++){
               if(j != k){
                 
                 double distance = Geometry::distance(
@@ -2218,7 +2218,7 @@ template <class dataTypeU, class dataTypeV>
           if((minDistance != -1)&&(minDistance < pow10(-DBL_DIG))){
 //           if((minDistance != -1)&&(minDistance < pointSnappingThreshold_)){
             // snap them to another colinear vertex 
-            for(int j = 0; j < (int) colinearVertices.size(); j++){
+            for(SimplexId j = 0; j < (SimplexId) colinearVertices.size(); j++){
               if((j != minPair.first)&&(j != minPair.second)){
                 // snap minPair.first to j
                 
@@ -2347,10 +2347,10 @@ template <class dataTypeU, class dataTypeV>
   std::vector<std::vector<Vertex> > tetNewVertices(tetNumber_);
   
   // fill the information prior to the parallel pass
-  for(int i = 0; i < (int) polygonEdgeTriangleLists_.size(); i++){
-    for(int j = 0; j < (int) polygonEdgeTriangleLists_[i]->size(); j++){
+  for(SimplexId i = 0; i < (SimplexId) polygonEdgeTriangleLists_.size(); i++){
+    for(SimplexId j = 0; j < (SimplexId) polygonEdgeTriangleLists_[i]->size(); j++){
       
-      int tetId = (*polygonEdgeTriangleLists_[i])[j].tetId_;
+      SimplexId tetId = (*polygonEdgeTriangleLists_[i])[j].tetId_;
 
       tetIntersections[tetId].resize(tetIntersections[tetId].size() + 1);
       
@@ -2378,8 +2378,8 @@ template <class dataTypeU, class dataTypeV>
     }
   }
   
-  std::vector<int> tetList;
-  for(int i = 0; i < (int) tetIntersections.size(); i++){
+  std::vector<SimplexId> tetList;
+  for(SimplexId i = 0; i < (SimplexId) tetIntersections.size(); i++){
     if(tetIntersections[i].size() > 1)
       tetList.push_back(i);
   }
@@ -2387,16 +2387,16 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < (int) tetList.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) tetList.size(); i++){
    
-    int tetId = tetList[i];
+    SimplexId tetId = tetList[i];
     
     // pre-process by merging nearby vertices...?
     
-    int newTriangleNumber = 1;
-    int newVertexNumber = 1;
+    SimplexId newTriangleNumber = 1;
+    SimplexId newVertexNumber = 1;
     
-    for(int j = 0; j < (int) tetIntersections[tetId].size(); j++){
+    for(SimplexId j = 0; j < (SimplexId) tetIntersections[tetId].size(); j++){
     
       if(j > 1000){
         std::stringstream msg;
@@ -2411,12 +2411,12 @@ template <class dataTypeU, class dataTypeV>
       
       // if we re-mesh, we add new triangles at the end of the list.
       // there's no need to check intersections with those.
-      int originalTriangleNumber = (int) tetIntersections[tetId].size();
+      SimplexId originalTriangleNumber = (SimplexId) tetIntersections[tetId].size();
       
-      for(int k = 0; k < originalTriangleNumber; k++){
+      for(SimplexId k = 0; k < originalTriangleNumber; k++){
         
-        int polygonEdgeId0 = tetIntersections[tetId][j].polygonEdgeId_;
-        int polygonEdgeId1 = tetIntersections[tetId][k].polygonEdgeId_;
+        SimplexId polygonEdgeId0 = tetIntersections[tetId][j].polygonEdgeId_;
+        SimplexId polygonEdgeId1 = tetIntersections[tetId][k].polygonEdgeId_;
         
         if((j != k)&&(polygonEdgeId0 != polygonEdgeId1)){
           // cases 3, 4 and 6 of the fiber surface table (multiple triangle 
@@ -2467,24 +2467,24 @@ template <class dataTypeU, class dataTypeV>
   }
   
   // now copy the new vertices
-  for(int i = 0; i < (int) tetNewVertices.size(); i++){
-    for(int j = 0; j < (int) tetNewVertices[i].size(); j++){
+  for(SimplexId i = 0; i < (SimplexId) tetNewVertices.size(); i++){
+    for(SimplexId j = 0; j < (SimplexId) tetNewVertices[i].size(); j++){
       
-      int localId = (*globalVertexList_).size();
+      SimplexId localId = (*globalVertexList_).size();
       tetNewVertices[i][j].localId_ = localId;
       (*globalVertexList_).push_back(tetNewVertices[i][j]);
     }
   }
   
-  for(int i = 0; i < (int) tetIntersections.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) tetIntersections.size(); i++){
     
-    for(int j = 0; j < (int) tetIntersections[i].size(); j++){
+    for(SimplexId j = 0; j < (SimplexId) tetIntersections[i].size(); j++){
       
       if(((tetIntersections[i][j].intersection_.first != -DBL_MAX)
         &&(tetIntersections[i][j].intersection_.second != -DBL_MAX))
         ||(tetIntersections[i][j].triangleId_ < 0)){
 
-        int triangleId = tetIntersections[i][j].triangleId_;
+        SimplexId triangleId = tetIntersections[i][j].triangleId_;
       
         if(triangleId < 0){
           
@@ -2503,7 +2503,7 @@ template <class dataTypeU, class dataTypeV>
         
         for(int k = 0; k < 3; k++){
           
-          int vertexId = tetIntersections[i][j].vertexIds_[k];
+          SimplexId vertexId = tetIntersections[i][j].vertexIds_[k];
           
           if(vertexId < 0){
             // newly created vertex

@@ -53,7 +53,7 @@ int ttkPointDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
            if(arr) outputPointData->AddArray(arr);
         }
      }
-  } catch (std::regex_error) {
+  } catch (std::regex_error&) {
      vtkWarningMacro("[ttkPointDataSelector]: Bad regexp.");
   }
 

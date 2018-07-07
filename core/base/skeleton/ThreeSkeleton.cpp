@@ -11,12 +11,12 @@ ThreeSkeleton::~ThreeSkeleton(){
   
 }
 
-int ThreeSkeleton::buildCellEdges(const int &vertexNumber,
-  const int &cellNumber, 
-  const long long int *cellArray,
-  vector<vector<int> > &cellEdges, 
-  vector<pair<int, int> > *edgeList,
-  vector<vector<int> > *vertexEdges) const{
+int ThreeSkeleton::buildCellEdges(const SimplexId &vertexNumber,
+  const SimplexId &cellNumber, 
+  const SimplexId *cellArray,
+  vector<vector<SimplexId> > &cellEdges, 
+  vector<pair<SimplexId, SimplexId> > *edgeList,
+  vector<vector<SimplexId> > *vertexEdges) const{
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexNumber <= 0)
@@ -30,11 +30,11 @@ int ThreeSkeleton::buildCellEdges(const int &vertexNumber,
   Timer t;
   
   bool localEdgeListAlloc = false, localVertexEdgesAlloc = false;
-  vector<pair<int, int> > *localEdgeList = edgeList;
-  vector<vector<int> > *localVertexEdges = vertexEdges;
+  vector<pair<SimplexId, SimplexId> > *localEdgeList = edgeList;
+  vector<vector<SimplexId> > *localVertexEdges = vertexEdges;
   
   if(!localEdgeList){
-    localEdgeList = new vector<pair<int, int> >();
+    localEdgeList = new vector<pair<SimplexId, SimplexId> >();
     localEdgeListAlloc = true;
   }
   
@@ -48,7 +48,7 @@ int ThreeSkeleton::buildCellEdges(const int &vertexNumber,
   }
   
   if(!localVertexEdges){
-    localVertexEdges = new vector<vector<int> >();
+    localVertexEdges = new vector<vector<SimplexId> >();
     localVertexEdgesAlloc = true;
   }
   
@@ -62,7 +62,7 @@ int ThreeSkeleton::buildCellEdges(const int &vertexNumber,
   }
   
   cellEdges.resize(cellNumber);
-  for(int i = 0; i < (int) cellEdges.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) cellEdges.size(); i++){
     // optimized for tet meshes
     cellEdges[i].reserve(6);
   }
@@ -74,22 +74,22 @@ int ThreeSkeleton::buildCellEdges(const int &vertexNumber,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < cellNumber; i++){
+  for(SimplexId i = 0; i < cellNumber; i++){
     
-    int cellId = (vertexPerCell+1)*i;
+    SimplexId cellId = (vertexPerCell+1)*i;
     
-    for(int j = 0; j < vertexPerCell; j++){
+    for(SimplexId j = 0; j < vertexPerCell; j++){
       
-      for(int k = j + 1; k < vertexPerCell; k++){
+      for(SimplexId k = j + 1; k < vertexPerCell; k++){
         
-        int vertexId0 = cellArray[cellId + 1 + j];
-        int vertexId1 = cellArray[cellId + 1 + k];
+        SimplexId vertexId0 = cellArray[cellId + 1 + j];
+        SimplexId vertexId1 = cellArray[cellId + 1 + k];
         
         // loop around the edges of vertexId0 in search of vertexId1
-        int edgeId = -1;
-        for(int l = 0; l < (int) (*localVertexEdges)[vertexId0].size(); l++){
+        SimplexId edgeId = -1;
+        for(SimplexId l = 0; l < (SimplexId) (*localVertexEdges)[vertexId0].size(); l++){
           
-          int localEdgeId = (*localVertexEdges)[vertexId0][l];
+          SimplexId localEdgeId = (*localVertexEdges)[vertexId0][l];
           if(((*localEdgeList)[localEdgeId].first == vertexId1)
             ||((*localEdgeList)[localEdgeId].second == vertexId1)){
             edgeId = localEdgeId;
@@ -121,17 +121,17 @@ int ThreeSkeleton::buildCellEdges(const int &vertexNumber,
 }
 
 
-int ThreeSkeleton::buildCellNeighborsFromTriangles(const int &vertexNumber, 
-  const int &cellNumber, const long long int *cellArray, 
-  vector<vector<int> > &cellNeighbors,
-  vector<vector<int> > *triangleStars) const {
+int ThreeSkeleton::buildCellNeighborsFromTriangles(const SimplexId &vertexNumber, 
+  const SimplexId &cellNumber, const SimplexId *cellArray, 
+  vector<vector<SimplexId> > &cellNeighbors,
+  vector<vector<SimplexId> > *triangleStars) const {
 
   Timer t;
     
   bool localTriangleStarsAlloc = false;
-  vector<vector<int> > *localTriangleStars = triangleStars;
+  vector<vector<SimplexId> > *localTriangleStars = triangleStars;
   if(!localTriangleStars){
-    localTriangleStars = new vector<vector<int> >();
+    localTriangleStars = new vector<vector<SimplexId> >();
     localTriangleStarsAlloc = true;
   }
   
@@ -144,20 +144,20 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(const int &vertexNumber,
       localTriangleStars);
   }
   
-  int vertexPerCell = cellArray[0];
+  SimplexId vertexPerCell = cellArray[0];
   
   cellNeighbors.resize(cellNumber);
-  for(int i = 0; i < (int) cellNeighbors.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) cellNeighbors.size(); i++){
     cellNeighbors[i].reserve(vertexPerCell);
   }
   
   // NOTE: not efficient so far in parallel
-  int oldThreadNumber = threadNumber_;
+  ThreadId oldThreadNumber = threadNumber_;
   threadNumber_ = 1;
   
   if(threadNumber_ == 1){
   
-    for(int i = 0; i < (int) localTriangleStars->size(); i++){
+    for(SimplexId i = 0; i < (SimplexId) localTriangleStars->size(); i++){
       
       if((*localTriangleStars)[i].size() == 2){
         
@@ -172,20 +172,20 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(const int &vertexNumber,
   }
   else{
     
-    vector<vector<vector<int> > > threadedCellNeighbors(threadNumber_);
+    vector<vector<vector<SimplexId> > > threadedCellNeighbors(threadNumber_);
     
-    for(int i = 0; i < threadNumber_; i++){
+    for(ThreadId i = 0; i < threadNumber_; i++){
       threadedCellNeighbors[i].resize(cellNumber);
-      for(int j = 0; j < (int) threadedCellNeighbors[i].size(); j++)
+      for(SimplexId j = 0; j < (SimplexId) threadedCellNeighbors[i].size(); j++)
         threadedCellNeighbors[i][j].reserve(4);
     }
     
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(int i = 0; i < (int) (*localTriangleStars).size(); i++){
+    for(SimplexId i = 0; i < (SimplexId) (*localTriangleStars).size(); i++){
       
-      int threadId = 0;
+      ThreadId threadId = 0;
 #ifdef TTK_ENABLE_OPENMP
       threadId = omp_get_thread_num();
 #endif
@@ -205,10 +205,10 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(const int &vertexNumber,
     }
     
     // now merge things
-    for(int i = 0; i < threadNumber_; i++){
-      for(int j = 0; j < (int) threadedCellNeighbors[i].size(); j++){
+    for(ThreadId i = 0; i < threadNumber_; i++){
+      for(SimplexId j = 0; j < (SimplexId) threadedCellNeighbors[i].size(); j++){
         
-        for(int k = 0; k < (int) threadedCellNeighbors[i][j].size(); k++){
+        for(SimplexId k = 0; k < (SimplexId) threadedCellNeighbors[i][j].size(); k++){
           cellNeighbors[j].push_back( 
             threadedCellNeighbors[i][j][k]);
         }
@@ -251,9 +251,9 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(const int &vertexNumber,
 }
 
 int ThreeSkeleton::buildCellNeighborsFromVertices(
-  const int &vertexNumber, 
-  const int &cellNumber, const long long int *cellArray, 
-  vector<vector<int> > &cellNeighbors, vector<vector<int> > *vertexStars) const{
+  const SimplexId &vertexNumber, 
+  const SimplexId &cellNumber, const SimplexId *cellArray, 
+  vector<vector<SimplexId> > &cellNeighbors, vector<vector<SimplexId> > *vertexStars) const{
 
   if(cellArray[0] == 3){
     
@@ -276,10 +276,10 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
   Timer t;
     
   bool localVertexStarsAlloc = false;
-  vector<vector<int> > *localVertexStars = vertexStars;
+  vector<vector<SimplexId> > *localVertexStars = vertexStars;
   
   if(!localVertexStars){
-    localVertexStars = new vector<vector<int> >();
+    localVertexStars = new vector<vector<SimplexId> >();
     localVertexStarsAlloc = true;
   }
   
@@ -295,37 +295,37 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
   int vertexPerCell = cellArray[0];
   
   cellNeighbors.resize(cellNumber);
-  for(int i = 0; i < (int) cellNeighbors.size(); i++)
+  for(SimplexId i = 0; i < (SimplexId) cellNeighbors.size(); i++)
     cellNeighbors[i].reserve(vertexPerCell);
  
   // pre-sort vertex stars
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < vertexNumber; i++)
+  for(SimplexId i = 0; i < vertexNumber; i++)
     sort((*localVertexStars)[i].begin(), (*localVertexStars)[i].end());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif  
-  for(int i = 0; i < cellNumber; i++){
+  for(SimplexId i = 0; i < cellNumber; i++){
     
     // go triangle by triangle
-    for(int j = 0; j < vertexPerCell; j++){
+    for(SimplexId j = 0; j < vertexPerCell; j++){
      
-      int v0 = cellArray[(vertexPerCell + 1)*i + 1 + (j)%vertexPerCell];
-      int v1 = cellArray[(vertexPerCell + 1)*i + 1 + (j + 1)%vertexPerCell];
-      int v2 = cellArray[(vertexPerCell + 1)*i + 1 + (j + 2)%vertexPerCell];
+      SimplexId v0 = cellArray[(vertexPerCell + 1)*i + 1 + (j)%vertexPerCell];
+      SimplexId v1 = cellArray[(vertexPerCell + 1)*i + 1 + (j + 1)%vertexPerCell];
+      SimplexId v2 = cellArray[(vertexPerCell + 1)*i + 1 + (j + 2)%vertexPerCell];
         
       // perform an intersection of the 3 (sorted) star lists
-      int pos0 = 0, pos1 = 0, pos2 = 0;
-      int intersection = -1;
+      SimplexId pos0 = 0, pos1 = 0, pos2 = 0;
+      SimplexId intersection = -1;
       
-      while((pos0 < (int) (*localVertexStars)[v0].size())
-        &&(pos1 < (int) (*localVertexStars)[v1].size())
-        &&(pos2 < (int) (*localVertexStars)[v2].size())){
+      while((pos0 < (SimplexId) (*localVertexStars)[v0].size())
+        &&(pos1 < (SimplexId) (*localVertexStars)[v1].size())
+        &&(pos2 < (SimplexId) (*localVertexStars)[v2].size())){
         
-        int biggest = (*localVertexStars)[v0][pos0];
+        SimplexId biggest = (*localVertexStars)[v0][pos0];
         if((*localVertexStars)[v1][pos1] > biggest){
           biggest = (*localVertexStars)[v1][pos1];
         }
@@ -333,7 +333,7 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
           biggest = (*localVertexStars)[v2][pos2];
         }
         
-        for(int l = pos0; l < (int) (*localVertexStars)[v0].size(); l++){
+        for(SimplexId l = pos0; l < (SimplexId) (*localVertexStars)[v0].size(); l++){
           if((*localVertexStars)[v0][l] < biggest){
             pos0++;
           }
@@ -341,7 +341,7 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
             break;
           }
         }
-        for(int l = pos1; l < (int) (*localVertexStars)[v1].size(); l++){
+        for(SimplexId l = pos1; l < (SimplexId) (*localVertexStars)[v1].size(); l++){
           if((*localVertexStars)[v1][l] < biggest){
             pos1++;
           }
@@ -349,7 +349,7 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
             break;
           }
         }
-        for(int l = pos2; l < (int) (*localVertexStars)[v2].size(); l++){
+        for(SimplexId l = pos2; l < (SimplexId) (*localVertexStars)[v2].size(); l++){
           if((*localVertexStars)[v2][l] < biggest){
             pos2++;
           }

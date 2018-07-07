@@ -108,9 +108,9 @@ int MandatoryCriticalPoints::buildSubTrees(){
   for(int i=0 ; i<vertexNumber_ ; i++){
     bool isLowerMin = true;
     bool isUpperMax = true;
-    int neighborNumber = triangulation_->getVertexNeighborNumber(i);
-    for(int j=0 ; j<neighborNumber ; j++){
-      int neighborId;
+    SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(i);
+    for(SimplexId j=0 ; j<neighborNumber ; j++){
+      SimplexId neighborId;
       triangulation_->getVertexNeighbor(i,j,neighborId);
       if( (lowerVertexScalars_[neighborId] < lowerVertexScalars_[i])
       || ((lowerVertexScalars_[neighborId] == lowerVertexScalars_[i])
@@ -810,7 +810,7 @@ int MandatoryCriticalPoints::computeSaddleComponent(const int &componentId,
   componentVertexList->clear();
 
   vector<bool> isVisited(vertexNumber_, false);
-  queue<int> idQueue;
+  queue<SimplexId> idQueue;
   idQueue.push(seedVertexId);
 
   while(!(idQueue.empty())) {
@@ -830,9 +830,9 @@ int MandatoryCriticalPoints::computeSaddleComponent(const int &componentId,
         && (lowerValue<upInterval) )) {
         componentVertexList->push_back(vertexId);
         // Neighbors
-        int neighborNumber = triangulation_->getVertexNeighborNumber(vertexId);
-        for(int i=0 ; i<neighborNumber ; i++) {
-          int neighborVertexId;
+        SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(vertexId);
+        for(SimplexId i=0 ; i<neighborNumber ; i++) {
+          SimplexId neighborVertexId;
           triangulation_->getVertexNeighbor(vertexId, i, neighborVertexId);
           idQueue.push(neighborVertexId);
         }

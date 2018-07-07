@@ -38,7 +38,7 @@ template<typename A, typename B, typename C>
 int ttkPointDataConverter::convert(vtkDataArray* inputData, vtkDataSet* output){
   A* input_ptr=static_cast<A*>(inputData->GetVoidPointer(0));
   int n=inputData->GetNumberOfComponents();
-  int N=inputData->GetNumberOfTuples();
+  vtkIdType N=inputData->GetNumberOfTuples();
   B* output_ptr=new B[N*n];
 
   if(UseNormalization){
@@ -47,7 +47,7 @@ int ttkPointDataConverter::convert(vtkDataArray* inputData, vtkDataSet* output){
     for(int k=0; k<n; ++k){
       double* input_limits=inputData->GetRange(k);
       
-      for(int i=0; i<N; ++i){
+      for(vtkIdType i=0; i<N; ++i){
 	double d=(double)input_ptr[i*n+k];
 	d=(d-input_limits[0])/(input_limits[1]-input_limits[0]);
 	d=d*(type_max-type_min)+type_min;
@@ -56,7 +56,7 @@ int ttkPointDataConverter::convert(vtkDataArray* inputData, vtkDataSet* output){
     }
   }
   else
-    for(int i=0; i<N*n; ++i) output_ptr[i]=(B)input_ptr[i];
+    for(vtkIdType i=0; i<N*n; ++i) output_ptr[i]=(B)input_ptr[i];
     
   vtkSmartPointer<C> outputData=vtkSmartPointer<C>::New();
   outputData->SetName(ScalarField.data());
@@ -85,7 +85,7 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output){
   bool oldUseNormalization{UseNormalization};
   if(OutputType==SupportedType::Float or OutputType==SupportedType::Double)
     UseNormalization=false;
-  
+
   if(InputType==VTK_DOUBLE){
     if(OutputType==SupportedType::Float)
       convert<double,float,vtkFloatArray>(inputScalarField,output);
@@ -116,6 +116,16 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output){
     else if(OutputType==SupportedType::UnsignedChar)
       convert<int,unsigned char,vtkUnsignedCharArray>(inputScalarField,output);
   }
+  else if(InputType==VTK_ID_TYPE){
+    if(OutputType==SupportedType::Double)
+      convert<vtkIdType,double,vtkDoubleArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::Float)
+      convert<vtkIdType,float,vtkFloatArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::UnsignedShort)
+      convert<vtkIdType,unsigned short,vtkUnsignedShortArray>(inputScalarField,output);
+    else if(OutputType==SupportedType::UnsignedChar)
+      convert<vtkIdType,unsigned char,vtkUnsignedCharArray>(inputScalarField,output);
+  }
   else if(InputType==VTK_UNSIGNED_SHORT){
     if(OutputType==SupportedType::Double)
       convert<unsigned short,double,vtkDoubleArray>(inputScalarField,output);
@@ -138,7 +148,7 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output){
   }
   else{
     stringstream msg;
-    msg << "[vtkCellDataConverter] Unsupported data type :(" << endl;
+    msg << "[ttkCellDataConverter] Unsupported data type :(" << endl;
     dMsg(cerr, msg.str(), fatalMsg);
   }
 

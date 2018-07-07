@@ -44,7 +44,7 @@
 
 #include "AtomicUF.h"
 #include "AtomicVector.h"
-#include "DataTypes.h"
+#include "FTMTree_DataTypes.h"
 #include "Node.h"
 #include "Structures.h"
 #include "SuperArc.h"

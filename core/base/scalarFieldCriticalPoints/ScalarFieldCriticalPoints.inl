@@ -49,10 +49,10 @@ ttk::ScalarFieldCriticalPoints<dataType>::execute(){
     // let's use our own local copy
     sosOffsets_ = &localSosOffSets_;
   }
-  if((int) sosOffsets_->size() != vertexNumber_){
+  if((SimplexId) sosOffsets_->size() != vertexNumber_){
     Timer preProcess;
     sosOffsets_->resize(vertexNumber_);
-    for(int i = 0; i < vertexNumber_; i++)
+    for(SimplexId i = 0; i < vertexNumber_; i++)
       (*sosOffsets_)[i] = i;
       
     {
@@ -72,7 +72,7 @@ ttk::ScalarFieldCriticalPoints<dataType>::execute(){
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
-    for(int i = 0; i < (int) vertexNumber_; i++){
+    for(SimplexId i = 0; i < (SimplexId) vertexNumber_; i++){
     
       vertexTypes[i] = getCriticalType(i, triangulation_);
     }
@@ -82,19 +82,19 @@ ttk::ScalarFieldCriticalPoints<dataType>::execute(){
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
-    for(int i = 0; i < (int) vertexNumber_; i++){
+    for(SimplexId i = 0; i < (SimplexId) vertexNumber_; i++){
     
       vertexTypes[i] = getCriticalType(i, (*vertexLinkEdgeLists_)[i]);
     }
   }
    
-  int minimumNumber = 0, maximumNumber = 0, saddleNumber = 0,
+  SimplexId minimumNumber = 0, maximumNumber = 0, saddleNumber = 0,
     oneSaddleNumber = 0, twoSaddleNumber = 0, monkeySaddleNumber = 0;
  
   // debug msg
   if(debugLevel_ >= Debug::infoMsg){
     if(dimension_ == 3){
-      for(int i = 0; i < vertexNumber_; i++){
+      for(SimplexId i = 0; i < vertexNumber_; i++){
         switch(vertexTypes[i]){
           
           case 0:
@@ -120,7 +120,7 @@ ttk::ScalarFieldCriticalPoints<dataType>::execute(){
       }
     }
     else if(dimension_ == 2){
-      for(int i = 0; i < vertexNumber_; i++){
+      for(SimplexId i = 0; i < vertexNumber_; i++){
         switch(vertexTypes[i]){
           
           case 0:
@@ -183,7 +183,7 @@ ttk::ScalarFieldCriticalPoints<dataType>::execute(){
   // prepare the output
   criticalPoints_->clear();
   criticalPoints_->reserve(vertexNumber_);
-  for(int i = 0; i < vertexNumber_; i++){
+  for(SimplexId i = 0; i < vertexNumber_; i++){
     if(vertexTypes[i] != -2){
       criticalPoints_->emplace_back(i, vertexTypes[i]);
     }
@@ -203,14 +203,14 @@ ttk::ScalarFieldCriticalPoints<dataType>::execute(){
 }
 
 template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
-  ::getCriticalType(const int &vertexId, 
+  ::getCriticalType(const SimplexId &vertexId,
     Triangulation *triangulation) const{
      
-  int neighborNumber = triangulation->getVertexNeighborNumber(vertexId);
-  std::vector<int> lowerNeighbors, upperNeighbors;
+  SimplexId neighborNumber = triangulation->getVertexNeighborNumber(vertexId);
+  std::vector<SimplexId> lowerNeighbors, upperNeighbors;
   
-  for(int i = 0; i < neighborNumber; i++){
-    int neighborId = 0;
+  for(SimplexId i = 0; i < neighborNumber; i++){
+    SimplexId neighborId = 0;
     triangulation->getVertexNeighbor(vertexId, i, neighborId);
     
     if(isSosLowerThan(
@@ -245,22 +245,22 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   std::vector<UnionFind> upperSeeds(upperNeighbors.size());
   std::vector<UnionFind *> upperList(upperNeighbors.size());
   
-  for(int i = 0; i < (int) lowerSeeds.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) lowerSeeds.size(); i++){
     lowerList[i] = &(lowerSeeds[i]);
   }
-  for(int i = 0; i < (int) upperSeeds.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) upperSeeds.size(); i++){
     upperList[i] = &(upperSeeds[i]);
   }
   
-  int vertexStarSize = triangulation->getVertexStarNumber(vertexId);
+  SimplexId vertexStarSize = triangulation->getVertexStarNumber(vertexId);
   
-  for(int i = 0; i < vertexStarSize; i++){
-    int cellId = 0;
+  for(SimplexId i = 0; i < vertexStarSize; i++){
+    SimplexId cellId = 0;
     triangulation->getVertexStar(vertexId, i, cellId);
     
-    int cellSize = triangulation->getCellVertexNumber(cellId);
-    for(int j = 0; j < cellSize; j++){
-      int neighborId0 = -1;
+    SimplexId cellSize = triangulation->getCellVertexNumber(cellId);
+    for(SimplexId j = 0; j < cellSize; j++){
+      SimplexId neighborId0 = -1;
       triangulation->getCellVertex(cellId, j, neighborId0);
       
       if(neighborId0 != vertexId){
@@ -271,9 +271,9 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
           (*sosOffsets_)[vertexId], scalarValues_[vertexId]);
         
         // connect it to everybody except himself and vertexId
-        for(int k = j + 1; k < cellSize; k++){
+        for(SimplexId k = j + 1; k < cellSize; k++){
          
-          int neighborId1 = -1;
+          SimplexId neighborId1 = -1;
           triangulation->getCellVertex(cellId, k, neighborId1);
           
           if((neighborId1 != neighborId0)&&(neighborId1 != vertexId)){
@@ -282,7 +282,7 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
               (*sosOffsets_)[neighborId1], scalarValues_[neighborId1],
               (*sosOffsets_)[vertexId], scalarValues_[vertexId]);
             
-            std::vector<int> *neighbors = &lowerNeighbors;
+            std::vector<SimplexId > *neighbors = &lowerNeighbors;
             std::vector<UnionFind *> *seeds = &lowerList;
             
             if(!lower0){
@@ -292,8 +292,8 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
             
             if(lower0 == lower1){
               // connect their union-find sets!
-              int lowerId0 = -1, lowerId1 = -1;
-              for(int l = 0; l < (int) neighbors->size(); l++){
+              SimplexId lowerId0 = -1, lowerId1 = -1;
+              for(SimplexId l = 0; l < (SimplexId) neighbors->size(); l++){
                 if((*neighbors)[l] == neighborId0){
                   lowerId0 = l;
                 }
@@ -316,9 +316,9 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   // let's remove duplicates now
   
   // update the UF if necessary
-  for(int i = 0; i < (int) lowerList.size(); i++)
+  for(SimplexId i = 0; i < (SimplexId) lowerList.size(); i++)
     lowerList[i] = lowerList[i]->find();
-  for(int i = 0; i < (int) upperList.size(); i++)
+  for(SimplexId i = 0; i < (SimplexId) upperList.size(); i++)
     upperList[i] = upperList[i]->find();
   
   std::vector<UnionFind *>::iterator it;
@@ -378,17 +378,17 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
 }
 
 template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
-  ::getCriticalType(const int &vertexId, 
-    const std::vector<std::pair<int, int> > &vertexLink) const{
+  ::getCriticalType(const SimplexId &vertexId,
+    const std::vector<std::pair<SimplexId, SimplexId> > &vertexLink) const{
 
-  std::map<int, int> global2LowerLink, global2UpperLink;
-  std::map<int, int>::iterator neighborIt;
+  std::map<SimplexId, SimplexId> global2LowerLink, global2UpperLink;
+  std::map<SimplexId, SimplexId>::iterator neighborIt;
   
-  int lowerCount = 0, upperCount = 0;
+  SimplexId lowerCount = 0, upperCount = 0;
   
-  for(int i = 0; i < (int) vertexLink.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) vertexLink.size(); i++){
     
-    int neighborId = vertexLink[i].first;
+    SimplexId neighborId = vertexLink[i].first;
    
     // first vertex
     // lower link search
@@ -476,15 +476,15 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   std::vector<UnionFind> upperSeeds(upperCount);
   std::vector<UnionFind *> lowerList(lowerCount);
   std::vector<UnionFind *> upperList(upperCount);
-  for(int i = 0; i < (int) lowerList.size(); i++)
+  for(SimplexId i = 0; i < (SimplexId) lowerList.size(); i++)
     lowerList[i] = &(lowerSeeds[i]);
-  for(int i = 0; i < (int) upperList.size(); i++)
+  for(SimplexId i = 0; i < (SimplexId) upperList.size(); i++)
     upperList[i] = &(upperSeeds[i]);
   
-  for(int i = 0; i < (int) vertexLink.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) vertexLink.size(); i++){
     
-    int neighborId0 = vertexLink[i].first;
-    int neighborId1 = vertexLink[i].second;
+    SimplexId neighborId0 = vertexLink[i].first;
+    SimplexId neighborId1 = vertexLink[i].second;
     
     // process the lower link
     if((isSosLowerThan((*sosOffsets_)[neighborId0], scalarValues_[neighborId0],
@@ -494,8 +494,8 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
       (*sosOffsets_)[vertexId], scalarValues_[vertexId]))){
       
       // both vertices are lower, let's add that edge and update the UF
-      std::map<int, int>::iterator n0It = global2LowerLink.find(neighborId0);
-      std::map<int, int>::iterator n1It = global2LowerLink.find(neighborId1);
+      std::map<SimplexId, SimplexId>::iterator n0It = global2LowerLink.find(neighborId0);
+      std::map<SimplexId, SimplexId>::iterator n1It = global2LowerLink.find(neighborId1);
     
       lowerList[n0It->second] = 
         makeUnion(lowerList[n0It->second], lowerList[n1It->second]);
@@ -510,8 +510,8 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
       (*sosOffsets_)[vertexId], scalarValues_[vertexId]))){
       
       // both vertices are lower, let's add that edge and update the UF
-      std::map<int, int>::iterator n0It = global2UpperLink.find(neighborId0);
-      std::map<int, int>::iterator n1It = global2UpperLink.find(neighborId1);
+      std::map<SimplexId, SimplexId>::iterator n0It = global2UpperLink.find(neighborId0);
+      std::map<SimplexId, SimplexId>::iterator n1It = global2UpperLink.find(neighborId1);
     
       upperList[n0It->second] = 
         makeUnion(upperList[n0It->second], upperList[n1It->second]);
@@ -522,9 +522,9 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   // let's remove duplicates
   std::vector<UnionFind *>::iterator it;
   // update the UFs if necessary
-  for(int i = 0; i < (int) lowerList.size(); i++)
+  for(SimplexId i = 0; i < (SimplexId) lowerList.size(); i++)
     lowerList[i] = lowerList[i]->find();
-  for(int i = 0; i < (int) upperList.size(); i++)
+  for(SimplexId i = 0; i < (SimplexId) upperList.size(); i++)
     upperList[i] = upperList[i]->find();
   
   sort(lowerList.begin(), lowerList.end());

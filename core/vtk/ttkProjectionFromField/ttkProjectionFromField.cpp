@@ -79,21 +79,21 @@ int ttkProjectionFromField::doIt(vtkPointSet *input, vtkPointSet *output){
   }
   
   vector<vector<double> > points(threadNumber_);
-  for(int i = 0; i < threadNumber_; i++){
+  for(ThreadId i = 0; i < threadNumber_; i++){
     points[i].resize(3);
     points[i][2] = 0;
   }
   
-  int count = 0;
+  SimplexId count = 0;
   
 #ifdef TTK_ENABLE_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < input->GetNumberOfPoints(); i++){
+  for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++){
     
-    int threadId = 0;
+    ThreadId threadId = 0;
     
 #ifdef TTK_ENABLE_OPENMP
     threadId = omp_get_thread_num();

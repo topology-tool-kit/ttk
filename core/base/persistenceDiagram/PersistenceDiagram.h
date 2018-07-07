@@ -52,7 +52,7 @@ namespace ttk{
 
       ftm::NodeType getNodeType(ftm::FTMTree_MT* tree,
                                 ftm::TreeType    treeType,
-                                const int        vertexId) const;
+                                const SimplexId        vertexId) const;
 
       template <typename scalarType>
       int sortPersistenceDiagram(std::vector<std::tuple<ftm::idVertex,
@@ -62,7 +62,7 @@ namespace ttk{
                                               scalarType,
                                               ftm::idVertex>>& diagram,
                                               scalarType* scalars,
-                                              int* offsets) const;
+                                              SimplexId* offsets) const;
 
       template <typename scalarType>
       int computeCTPersistenceDiagram(
@@ -79,7 +79,7 @@ namespace ttk{
       template <class scalarType>
         int execute() const;
 
-      inline int setDMTPairs(std::vector<std::tuple<Cell,Cell>>* data){
+      inline int setDMTPairs(std::vector<std::tuple<dcg::Cell,dcg::Cell>>* data){
         dmt_pairs=data;
         return 0;
       }
@@ -112,7 +112,7 @@ namespace ttk{
 
     protected:
 
-      std::vector<std::tuple<Cell,Cell>>* dmt_pairs;
+      std::vector<std::tuple<dcg::Cell,dcg::Cell>>* dmt_pairs;
 
       bool ComputeSaddleConnectors;
 
@@ -129,7 +129,7 @@ int ttk::PersistenceDiagram::sortPersistenceDiagram(
 std::vector<std::tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,
 scalarType,ftm::idVertex>>& diagram,
     scalarType* scalars,
-    int* offsets) const{
+    SimplexId* offsets) const{
   auto cmp=[scalars, offsets](const 
 std::tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,
 ftm::idVertex>& a,
@@ -202,7 +202,7 @@ int ttk::PersistenceDiagram::execute() const{
   std::vector<std::tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>>& CTDiagram=
     *static_cast<std::vector<std::tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>>*>(CTDiagram_);
   scalarType* scalars=static_cast<scalarType*>(inputScalars_);
-  int* offsets=static_cast<int*>(inputOffsets_);
+  SimplexId* offsets=static_cast<SimplexId*>(inputOffsets_);
 
   const ftm::idVertex numberOfVertices=triangulation_->getNumberOfVertices();
   // convert offsets into a valid format for contour forests
@@ -251,7 +251,7 @@ int ttk::PersistenceDiagram::execute() const{
   }
 
   // get the saddle-saddle pairs
-  std::vector<std::tuple<int,int,scalarType>> pl_saddleSaddlePairs;
+  std::vector<std::tuple<SimplexId,SimplexId,scalarType>> pl_saddleSaddlePairs;
   const int dimensionality=triangulation_->getDimensionality();
   if(dimensionality==3 and ComputeSaddleConnectors){
     MorseSmaleComplex3D morseSmaleComplex;

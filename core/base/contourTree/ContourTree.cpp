@@ -218,7 +218,7 @@ int SubLevelSetTree::build(){
   vector<UnionFind *>   starSets;
   vector<bool>          visitedVertices(vertexNumber_, false);
 
-  int vertexId = -1, nId = -1;
+  SimplexId vertexId = -1, nId = -1;
   UnionFind *seed = NULL, *firstUf = NULL;
 
   const vector<int> *extremumList = NULL;
@@ -276,8 +276,8 @@ int SubLevelSetTree::build(){
     merge = false;
     firstUf = NULL;
 
-    int neighborNumber=triangulation_->getVertexNeighborNumber(vertexId);
-    for(int i = 0; i <neighborNumber; i++){
+    SimplexId neighborNumber=triangulation_->getVertexNeighborNumber(vertexId);
+    for(SimplexId i = 0; i <neighborNumber; i++){
       triangulation_->getVertexNeighbor(vertexId,i,nId);
 
       if(vertexSeeds[nId]){
@@ -1234,12 +1234,12 @@ int SubLevelSetTree::buildExtremumList(vector<int> &extremumList,
   
   vector<pair<bool, pair<double, pair<int, int> > > > tmpList;
 
-  for(int i = 0; i <triangulation_->getNumberOfVertices(); i++){
+  for(SimplexId i = 0; i <triangulation_->getNumberOfVertices(); i++){
     
     bool isExtremum = true;
-    int neighborNumber=triangulation_->getVertexNeighborNumber(i);
-    for(int j = 0; j <neighborNumber; j++){
-      int otherId;
+    SimplexId neighborNumber=triangulation_->getVertexNeighborNumber(i);
+    for(SimplexId j = 0; j <neighborNumber; j++){
+      SimplexId otherId;
       triangulation_->getVertexNeighbor(i,j,otherId);
      
       if(isSubLevelSet){
@@ -2441,9 +2441,9 @@ int ContourTree::build(){
   for(int i = 0; i < vertexNumber_; i++){
       
     bool isMin = true, isMax = true;
-    int neighborNumber=triangulation_->getVertexNeighborNumber(i);
-    for(int j = 0; j <neighborNumber; j++){
-      int nId;
+    SimplexId neighborNumber=triangulation_->getVertexNeighborNumber(i);
+    for(SimplexId j = 0; j <neighborNumber; j++){
+      SimplexId nId;
       triangulation_->getVertexNeighbor(i,j,nId);
 
       if(((*vertexScalars_)[nId] > (*vertexScalars_)[i])

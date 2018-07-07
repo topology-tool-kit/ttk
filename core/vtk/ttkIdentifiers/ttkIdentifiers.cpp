@@ -44,10 +44,10 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
   // not produce an output of the type of the input.
   output->ShallowCopy(input);
   
-  vtkSmartPointer<vtkIntArray> vertexIdentifiers 
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> cellIdentifiers
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> vertexIdentifiers 
+    = vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> cellIdentifiers
+    = vtkSmartPointer<vtkIdTypeArray>::New();
     
   vertexIdentifiers->SetName(VertexFieldName.data());
   vertexIdentifiers->SetNumberOfComponents(1);
@@ -57,9 +57,9 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
   cellIdentifiers->SetNumberOfComponents(1);
   cellIdentifiers->SetNumberOfTuples(input->GetNumberOfCells()); 
   
-  int vertexNumber = input->GetNumberOfPoints();
-  int cellNumber = input->GetNumberOfCells();
-  int count = 0;
+  SimplexId vertexNumber = input->GetNumberOfPoints();
+  SimplexId cellNumber = input->GetNumberOfCells();
+  SimplexId count = 0;
 
 //   // see also vtkOriginalCellIds
 //   vtkDataArray *original = 
@@ -74,7 +74,7 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
-  for(int i = 0; i < vertexNumber; i++){
+  for(SimplexId i = 0; i < vertexNumber; i++){
     // avoid any processing if the abort signal is sent
     if((!wrapper_)||((wrapper_)&&(!wrapper_->needsToAbort()))){
 
@@ -102,7 +102,7 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
-  for(int i = 0; i < cellNumber; i++){
+  for(SimplexId i = 0; i < cellNumber; i++){
     // avoid any processing if the abort signal is sent
     if((!wrapper_)||((wrapper_)&&(!wrapper_->needsToAbort()))){
 

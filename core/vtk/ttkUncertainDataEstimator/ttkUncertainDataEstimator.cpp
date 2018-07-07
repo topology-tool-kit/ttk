@@ -119,6 +119,11 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input, vtkDataSet *outputBoundF
         outputUpperBoundScalarField_ = vtkIntArray::New();
         break;
 
+      case VTK_ID_TYPE:
+        outputLowerBoundScalarField_ = vtkIdTypeArray::New();
+        outputUpperBoundScalarField_ = vtkIdTypeArray::New();
+        break;
+
       stringstream msg;
       msg << "[ttkUncertainDataEstimator] Unsupported data type :(" << endl;
       dMsg(cerr, msg.str(), fatalMsg);

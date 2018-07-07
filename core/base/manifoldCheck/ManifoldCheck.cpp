@@ -15,26 +15,26 @@ ManifoldCheck::~ManifoldCheck(){
   
 }
 
-int ManifoldCheck::vertexManifoldCheck(const int &vertexId) const{
+int ManifoldCheck::vertexManifoldCheck(const SimplexId &vertexId) const{
   
-  int linkSize = triangulation_->getVertexLinkNumber(vertexId);
+  SimplexId linkSize = triangulation_->getVertexLinkNumber(vertexId);
 
   if(triangulation_->getDimensionality() == 1)
     return linkSize;
   
-  vector<int> linkNeighbors;
+  vector<SimplexId> linkNeighbors;
   
-  for(int i = 0; i < linkSize; i++){
-    int linkId = -1;
+  for(SimplexId i = 0; i < linkSize; i++){
+    SimplexId linkId = -1;
     triangulation_->getVertexLink(vertexId, i, linkId);
     
     bool isIn = false;
-    int neighborId = -1;
+    SimplexId neighborId = -1;
     
     if(triangulation_->getDimensionality() == 2){
       triangulation_->getEdgeVertex(linkId, 0, neighborId);
       isIn = false;
-      for(int j = 0; j < (int) linkNeighbors.size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
         if(linkNeighbors[j] == neighborId){
           isIn = true;
           break;
@@ -45,7 +45,7 @@ int ManifoldCheck::vertexManifoldCheck(const int &vertexId) const{
       
       triangulation_->getEdgeVertex(linkId, 1, neighborId);
       isIn = false;
-      for(int j = 0; j < (int) linkNeighbors.size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
         if(linkNeighbors[j] == neighborId){
           isIn = true;
           break;
@@ -57,7 +57,7 @@ int ManifoldCheck::vertexManifoldCheck(const int &vertexId) const{
     if(triangulation_->getDimensionality() == 3){
       triangulation_->getTriangleVertex(linkId, 0, neighborId);
       isIn = false;
-      for(int j = 0; j < (int) linkNeighbors.size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
         if(linkNeighbors[j] == neighborId){
           isIn = true;
           break;
@@ -68,7 +68,7 @@ int ManifoldCheck::vertexManifoldCheck(const int &vertexId) const{
       
       triangulation_->getTriangleVertex(linkId, 1, neighborId);
       isIn = false;
-      for(int j = 0; j < (int) linkNeighbors.size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
         if(linkNeighbors[j] == neighborId){
           isIn = true;
           break;
@@ -79,7 +79,7 @@ int ManifoldCheck::vertexManifoldCheck(const int &vertexId) const{
       
       triangulation_->getTriangleVertex(linkId, 2, neighborId);
       isIn = false;
-      for(int j = 0; j < (int) linkNeighbors.size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
         if(linkNeighbors[j] == neighborId){
           isIn = true;
           break;
@@ -93,30 +93,30 @@ int ManifoldCheck::vertexManifoldCheck(const int &vertexId) const{
   vector<UnionFind> seeds(linkNeighbors.size());
   vector<UnionFind *> seedList(linkNeighbors.size());
   
-  for(int i = 0; i < (int) seeds.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) seeds.size(); i++){
     seedList[i] = &(seeds[i]);
   }
   
-  for(int i = 0; i < (int) linkSize; i++){
+  for(SimplexId i = 0; i < (SimplexId) linkSize; i++){
     
-    int linkId = -1;
+    SimplexId linkId = -1;
     triangulation_->getVertexLink(vertexId, i, linkId);
     
-    int neighborId0 = -1, neighborId1 = -1, neighborId2 = -1;
-    int uf0 = -1, uf1 = -1, uf2 = -1;
+    SimplexId neighborId0 = -1, neighborId1 = -1, neighborId2 = -1;
+    SimplexId uf0 = -1, uf1 = -1, uf2 = -1;
     
     if(triangulation_->getDimensionality() == 2){
       triangulation_->getEdgeVertex(linkId, 0, neighborId0);
       triangulation_->getEdgeVertex(linkId, 1, neighborId1);
       
       // connect the two uf together
-      for(int j = 0; j < (int) linkNeighbors.size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
         if(linkNeighbors[j] == neighborId0){
           uf0 = j;
           break;
         }
       }
-      for(int j = 0; j < (int) linkNeighbors.size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
         if(linkNeighbors[j] == neighborId1){
           uf1 = j;
           break;
@@ -133,19 +133,19 @@ int ManifoldCheck::vertexManifoldCheck(const int &vertexId) const{
       triangulation_->getTriangleVertex(linkId, 2, neighborId2);
       
       // connect the two uf together
-      for(int j = 0; j < (int) linkNeighbors.size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
         if(linkNeighbors[j] == neighborId0){
           uf0 = j;
           break;
         }
       }
-      for(int j = 0; j < (int) linkNeighbors.size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
         if(linkNeighbors[j] == neighborId1){
           uf1 = j;
           break;
         }
       }
-      for(int j = 0; j < (int) linkNeighbors.size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
         if(linkNeighbors[j] == neighborId2){
           uf2 = j;
           break;
@@ -162,7 +162,7 @@ int ManifoldCheck::vertexManifoldCheck(const int &vertexId) const{
   // let's remove duplicates now
   
   // update the UF if necessary
-  for(int i = 0; i < (int) seedList.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) seedList.size(); i++){
     seedList[i] = seedList[i]->find();
   }
   
@@ -171,28 +171,28 @@ int ManifoldCheck::vertexManifoldCheck(const int &vertexId) const{
   it = unique(seedList.begin(), seedList.end());
   seedList.resize(distance(seedList.begin(), it));
   
-  return (int) seedList.size();
+  return (SimplexId) seedList.size();
 }
 
-int ManifoldCheck::edgeManifoldCheck(const int &edgeId) const{
+int ManifoldCheck::edgeManifoldCheck(const SimplexId &edgeId) const{
   
-  int linkSize = triangulation_->getEdgeLinkNumber(edgeId);
+  SimplexId linkSize = triangulation_->getEdgeLinkNumber(edgeId);
   
   if(triangulation_->getDimensionality() == 2)
     return linkSize;
   
-  vector<int> linkNeighbors;
+  vector<SimplexId> linkNeighbors;
   
-  for(int i = 0; i < linkSize; i++){
-    int linkId = -1;
+  for(SimplexId i = 0; i < linkSize; i++){
+    SimplexId linkId = -1;
     triangulation_->getEdgeLink(edgeId, i, linkId);
     
     bool isIn = false;
-    int neighborId = -1;
+    SimplexId neighborId = -1;
     
     triangulation_->getEdgeVertex(linkId, 0, neighborId);
     isIn = false;
-    for(int j = 0; j < (int) linkNeighbors.size(); j++){
+    for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
       if(linkNeighbors[j] == neighborId){
         isIn = true;
         break;
@@ -203,7 +203,7 @@ int ManifoldCheck::edgeManifoldCheck(const int &edgeId) const{
     
     triangulation_->getEdgeVertex(linkId, 1, neighborId);
     isIn = false;
-    for(int j = 0; j < (int) linkNeighbors.size(); j++){
+    for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
       if(linkNeighbors[j] == neighborId){
         isIn = true;
         break;
@@ -216,29 +216,29 @@ int ManifoldCheck::edgeManifoldCheck(const int &edgeId) const{
   vector<UnionFind> seeds(linkNeighbors.size());
   vector<UnionFind *> seedList(linkNeighbors.size());
   
-  for(int i = 0; i < (int) seeds.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) seeds.size(); i++){
     seedList[i] = &(seeds[i]);
   }
   
-  for(int i = 0; i < (int) linkSize; i++){
+  for(SimplexId i = 0; i < (SimplexId) linkSize; i++){
     
-    int linkId = -1;
+    SimplexId linkId = -1;
     triangulation_->getEdgeLink(edgeId, i, linkId);
     
-    int neighborId0 = -1, neighborId1 = -1;
-    int uf0 = -1, uf1 = -1;
+    SimplexId neighborId0 = -1, neighborId1 = -1;
+    SimplexId uf0 = -1, uf1 = -1;
     
     triangulation_->getEdgeVertex(linkId, 0, neighborId0);
     triangulation_->getEdgeVertex(linkId, 1, neighborId1);
     
     // connect the two uf together
-    for(int j = 0; j < (int) linkNeighbors.size(); j++){
+    for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
       if(linkNeighbors[j] == neighborId0){
         uf0 = j;
         break;
       }
     }
-    for(int j = 0; j < (int) linkNeighbors.size(); j++){
+    for(SimplexId j = 0; j < (SimplexId) linkNeighbors.size(); j++){
       if(linkNeighbors[j] == neighborId1){
         uf1 = j;
         break;
@@ -252,7 +252,7 @@ int ManifoldCheck::edgeManifoldCheck(const int &edgeId) const{
   // let's remove duplicates now
   
   // update the UF if necessary
-  for(int i = 0; i < (int) seedList.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) seedList.size(); i++){
     seedList[i] = seedList[i]->find();
   }
   
@@ -261,7 +261,7 @@ int ManifoldCheck::edgeManifoldCheck(const int &edgeId) const{
   it = unique(seedList.begin(), seedList.end());
   seedList.resize(distance(seedList.begin(), it));
   
-  return (int) seedList.size();
+  return (SimplexId) seedList.size();
 }
 
 int ManifoldCheck::execute() const{
@@ -274,7 +274,7 @@ int ManifoldCheck::execute() const{
       return -1;
     #endif
     
-    int vertexNumber =  triangulation_->getNumberOfVertices();
+    SimplexId vertexNumber =  triangulation_->getNumberOfVertices();
     
     if(vertexLinkComponentNumber_){
       
@@ -283,7 +283,7 @@ int ManifoldCheck::execute() const{
       #ifdef TTK_ENABLE_OPENMP
       #pragma omp parallel for num_threads(threadNumber_) 
       #endif
-      for(int i = 0; i < vertexNumber; i++){
+      for(SimplexId i = 0; i < vertexNumber; i++){
         (*vertexLinkComponentNumber_)[i] = vertexManifoldCheck(i);
       }
     }
@@ -291,13 +291,13 @@ int ManifoldCheck::execute() const{
     if((edgeLinkComponentNumber_)
       &&(triangulation_->getDimensionality() >= 2)){
     
-      int edgeNumber = triangulation_->getNumberOfEdges();
+      SimplexId edgeNumber = triangulation_->getNumberOfEdges();
       edgeLinkComponentNumber_->resize(edgeNumber);
     
       #ifdef TTK_ENABLE_OPENMP
       #pragma omp parallel for num_threads(threadNumber_) 
       #endif
-      for(int i = 0; i < edgeNumber; i++){
+      for(SimplexId i = 0; i < edgeNumber; i++){
         (*edgeLinkComponentNumber_)[i] = edgeManifoldCheck(i);
       }
     }
@@ -305,13 +305,13 @@ int ManifoldCheck::execute() const{
     if((triangleLinkComponentNumber_)
       &&(triangulation_->getDimensionality() == 3)){
       
-      int triangleNumber = triangulation_->getNumberOfTriangles();
+      SimplexId triangleNumber = triangulation_->getNumberOfTriangles();
       triangleLinkComponentNumber_->resize(triangleNumber);
       
       #ifdef TTK_ENABLE_OPENMP
       #pragma omp parallel for num_threads(threadNumber_) 
       #endif
-      for(int i = 0; i < triangleNumber; i++){
+      for(SimplexId i = 0; i < triangleNumber; i++){
         (*triangleLinkComponentNumber_)[i] =
           triangulation_->getTriangleLinkNumber(i);
       }

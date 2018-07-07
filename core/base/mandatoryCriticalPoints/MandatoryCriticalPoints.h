@@ -11,6 +11,10 @@
 /// fields defined on PL (nD) manifolds. The input uncertain data is represented
 /// by reliable bound fields for each vertex.
 ///
+/// \warning SimplexId (large large datasets). This class builds and runs
+/// with the new triangulation API (SimplexId) but may need adjustments when addressing
+/// more than integers (large datasets).
+///
 /// \b Related \b publication \n
 /// "Mandatory Critical Points of 2D Uncertain Scalar Fields" \n
 /// David Guenther, Joseph Salmon, Julien Tierny \n

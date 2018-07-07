@@ -28,7 +28,7 @@
 #include                  <vtkDataSetAlgorithm.h>
 #include                  <vtkFiltersCoreModule.h>
 #include                  <vtkInformation.h>
-#include                  <vtkIntArray.h>
+#include                  <vtkIdTypeArray.h>
 #include                  <vtkObjectFactory.h>
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
@@ -96,7 +96,7 @@ class ttkIdentifiers
   private:
     
     bool                  UseAllCores;
-    int                   ThreadNumber;
+    ttk::ThreadId                   ThreadNumber;
     std::string                CellFieldName, VertexFieldName;
     
     // base code features

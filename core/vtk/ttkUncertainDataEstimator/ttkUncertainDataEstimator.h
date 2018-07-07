@@ -38,6 +38,7 @@
 #include                  <vtkInformation.h>
 #include                  <vtkInformationVector.h>
 #include                  <vtkIntArray.h>
+#include                  <vtkIdTypeArray.h>
 #include                  <vtkObjectFactory.h>
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
@@ -141,7 +142,7 @@ class ttkUncertainDataEstimator
   private:
 
     bool                  UseAllCores;
-    int                   ThreadNumber;
+    ttk::ThreadId                   ThreadNumber;
     std::string                ScalarField;
     bool                  computeLowerBound_;
     bool                  computeUpperBound_;

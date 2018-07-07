@@ -18,7 +18,7 @@
 
 #include <Debug.h>
 
-#include "DataTypes.h"
+#include "FTMTree_DataTypes.h"
 #include "Segmentation.h"
 #include "Structures.h"
 

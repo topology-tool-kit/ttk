@@ -94,7 +94,7 @@ class ttkProjectionFromField
   private:
     
     bool                  UseAllCores;
-    int                   ThreadNumber;
+    ttk::ThreadId                   ThreadNumber;
     bool                  UseTextureCoordinates;
     std::string                UComponent, VComponent;
     vtkSmartPointer<vtkPoints> pointSet_;

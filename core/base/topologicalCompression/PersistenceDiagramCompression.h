@@ -308,9 +308,9 @@ int ttk::TopologicalCompression::PerformSimplification(
     array[id] = val;
 
     // Smoothe neighborhood (along with offsets).
-    int neighborNumber = triangulation_->getVertexNeighborNumber(id);
-    for(int j = 0; j < neighborNumber; ++j) {
-      int neighbor;
+    SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(id);
+    for(SimplexId j = 0; j < neighborNumber; ++j) {
+      SimplexId neighbor;
       triangulation_->getVertexNeighbor(id, j, neighbor);
 
       if (type == 1) { // Local_maximum.
@@ -432,14 +432,14 @@ void ttk::TopologicalCompression::CropIntervals(
 
 template <typename dataType>
 int ttk::TopologicalCompression::computePersistencePairs(
-  std::vector<std::tuple<idVertex, idVertex, dataType> > &JTPairs,
-  std::vector<std::tuple<idVertex, idVertex, dataType> > &STPairs,
+  std::vector<std::tuple<SimplexId, SimplexId, dataType> > &JTPairs,
+  std::vector<std::tuple<SimplexId, SimplexId, dataType> > &STPairs,
   dataType* inputScalars_,
-  int* inputOffsets)
+  SimplexId* inputOffsets)
 {
   // Compute offsets
   const idVertex numberOfVertices = triangulation_->getNumberOfVertices();
-  std::vector<idVertex> voffsets((unsigned long) numberOfVertices);
+  std::vector<SimplexId> voffsets((unsigned long) numberOfVertices);
   std::copy(inputOffsets, inputOffsets+numberOfVertices, voffsets.begin());
 
   // Get contour tree
@@ -467,7 +467,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   ttk::Timer t;
   ttk::Timer t1;
 
-  std::vector<int> inputOffsets(vertexNumber);
+  std::vector<SimplexId> inputOffsets(vertexNumber);
   for (int i = 0; i < vertexNumber; ++i)
     inputOffsets[i] = i;
 
@@ -520,8 +520,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   if (strcmp(sq, "") == 0 && !zfpOnly_) {
     // No SQ: perform topological control
 
-    std::vector<std::tuple<idVertex, idVertex, dataType>> JTPairs;
-    std::vector<std::tuple<idVertex, idVertex, dataType>> STPairs;
+    std::vector<std::tuple<SimplexId, SimplexId, dataType>> JTPairs;
+    std::vector<std::tuple<SimplexId, SimplexId, dataType>> STPairs;
     computePersistencePairs<dataType>(JTPairs, STPairs, inputData, inputOffsets.data());
 
     {
@@ -549,8 +549,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
     // Join
     for (int i = 0; i < nbJ; ++i) {
-      int cp1 = std::get<0>(JTPairs[i]);
-      int cp2 = std::get<1>(JTPairs[i]);
+      SimplexId cp1 = std::get<0>(JTPairs[i]);
+      SimplexId cp2 = std::get<1>(JTPairs[i]);
       dataType idt1 = inputData[cp1];
       dataType idt2 = inputData[cp2];
       dataType p1 = std::max(idt2, idt1) - std::min(idt2, idt1);
@@ -594,8 +594,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     // Split
     for (int i = nbJ; i < nbJ + nbS; ++i) {
       int si = i - nbJ;
-      int cp1 = std::get<0>(STPairs[si]);
-      int cp2 = std::get<1>(STPairs[si]);
+      SimplexId cp1 = std::get<0>(STPairs[si]);
+      SimplexId cp2 = std::get<1>(STPairs[si]);
       dataType idt1 = inputData[cp1];
       dataType idt2 = inputData[cp2];
       dataType p1 = std::max(idt2, idt1) - std::min(idt2, idt1);
@@ -968,9 +968,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         }
 
         // Get neighbors.
-        int neighborNumber = triangulation_->getVertexNeighborNumber(vertex);
-        for(int j = 0; j < neighborNumber; ++j) {
-          int neighbor;
+        SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(vertex);
+        for(SimplexId j = 0; j < neighborNumber; ++j) {
+          SimplexId neighbor;
           triangulation_->getVertexNeighbor(vertex, j, neighbor);
 
           // Add current neighbor to processing stack.
@@ -1003,7 +1003,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   // 7. [ZFP]: max constraints, min constraints
   if (!sqDomain && !sqRange && !zfpOnly_) {
     for (int i = 0; i < nbCrit; ++i) {
-      int id = simplifiedConstraints[i];
+      SimplexId id = simplifiedConstraints[i];
       dataType val = inputData[id];
       int type = topologicalSimplification.getCriticalType(id, inputData, inputOffsets.data());
       if (type == -1 // Local_minimum

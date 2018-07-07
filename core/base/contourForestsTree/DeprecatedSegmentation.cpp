@@ -46,7 +46,7 @@ void Segment::sort(const Scalars* s)
 
 void Segment::emplace_back(const idVertex& v)
 {
-   vertices_.emplace_back(vertex{v, nullVertex});
+   vertices_.emplace_back(vertex{v, nullSuperArc});
 }
 
 void Segment::clear(void)

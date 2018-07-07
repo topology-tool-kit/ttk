@@ -32,6 +32,7 @@
 #include                  <vtkFloatArray.h>
 #include                  <vtkInformation.h>
 #include                  <vtkIntArray.h>
+#include                  <vtkIdTypeArray.h>
 #include                  <vtkObjectFactory.h>
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
@@ -52,6 +53,7 @@ enum SupportedType{
 Double=0,
   Float,
   Int,
+  IdType,
   UnsignedShort,
   UnsignedChar,
   };

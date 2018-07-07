@@ -81,8 +81,8 @@ class ttkTriangulationRequest
     vtkSetMacro(SimplexType, int);
     vtkGetMacro(SimplexType, int);
 
-    vtkSetMacro(SimplexId, int);
-    vtkGetMacro(SimplexId, int);
+    vtkSetMacro(SimplexIdentifier, int);
+    vtkGetMacro(SimplexIdentifier, int);
 
     vtkSetMacro(RequestType, int);
     vtkGetMacro(RequestType, int);
@@ -120,7 +120,7 @@ class ttkTriangulationRequest
     ttkTriangulationRequest(){
       UseAllCores=false;
       SimplexType=0;
-      SimplexId=0;
+      SimplexIdentifier=0;
       RequestType=0;
 
       SetNumberOfInputPorts(1);
@@ -134,7 +134,7 @@ class ttkTriangulationRequest
   private:
 
     int SimplexType;
-    int SimplexId;
+    int SimplexIdentifier;
     int RequestType;
 
 };

@@ -2,6 +2,7 @@
 
 using namespace std;
 using namespace ttk;
+using namespace dcg;
 
 MorseSmaleComplex3D::MorseSmaleComplex3D():
   AbstractMorseSmaleComplex()
@@ -14,18 +15,18 @@ int MorseSmaleComplex3D::getAscendingSeparatrices1(const vector<Cell>& criticalP
     vector<Separatrix>& separatrices,
     vector<vector<Cell>>& separatricesGeometry) const{
 
-  vector<int> saddleIndexes;
-  const int numberOfCriticalPoints=criticalPoints.size();
-  for(int i=0; i<numberOfCriticalPoints; ++i){
+  vector<simplexId_t> saddleIndexes;
+  const simplexId_t numberOfCriticalPoints=criticalPoints.size();
+  for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
     if(criticalPoint.dim_==2)
       saddleIndexes.push_back(i);
   }
-  const int numberOfSaddles=saddleIndexes.size();
+  const simplexId_t numberOfSaddles=saddleIndexes.size();
 
   // estimation of the number of separatrices, apriori : numberOfAscendingPaths=2, numberOfDescendingPaths=2
-  const int numberOfSeparatrices=4*numberOfSaddles;
+  const simplexId_t numberOfSeparatrices=4*numberOfSaddles;
   separatrices.resize(numberOfSeparatrices);
   separatricesGeometry.resize(numberOfSeparatrices);
 
@@ -33,19 +34,19 @@ int MorseSmaleComplex3D::getAscendingSeparatrices1(const vector<Cell>& criticalP
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i=0; i<numberOfSaddles; ++i){
-    const int saddleIndex=saddleIndexes[i];
+  for(simplexId_t i=0; i<numberOfSaddles; ++i){
+    const simplexId_t saddleIndex=saddleIndexes[i];
     const Cell& saddle=criticalPoints[saddleIndex];
 
     // add ascending vpaths
     {
       const Cell& saddle2=saddle;
 
-      const int starNumber=inputTriangulation_->getTriangleStarNumber(saddle2.id_);
-      for(int j=0; j<starNumber; ++j){
-        const int shift=j;
+      const simplexId_t starNumber=inputTriangulation_->getTriangleStarNumber(saddle2.id_);
+      for(simplexId_t j=0; j<starNumber; ++j){
+        const simplexId_t shift=j;
 
-        int tetraId;
+        simplexId_t tetraId;
         inputTriangulation_->getTriangleStar(saddle2.id_, j, tetraId);
 
         vector<Cell> vpath;
@@ -54,7 +55,7 @@ int MorseSmaleComplex3D::getAscendingSeparatrices1(const vector<Cell>& criticalP
 
         const Cell& lastCell=vpath.back();
         if(lastCell.dim_==3 and discreteGradient_.isCellCritical(lastCell)){
-          const int separatrixIndex=4*i+shift;
+          const simplexId_t separatrixIndex=4*i+shift;
 
           separatricesGeometry[separatrixIndex]=std::move(vpath);
           separatrices[separatrixIndex]=std::move(Separatrix(true,saddle,lastCell,false,separatrixIndex));
@@ -70,23 +71,23 @@ int MorseSmaleComplex3D::getSaddleConnectors(const vector<Cell>& criticalPoints,
     vector<Separatrix>& separatrices,
     vector<vector<Cell>>& separatricesGeometry) const{
 
-  const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
-  int descendingWallId=1;
+  const simplexId_t numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
+  wallId_t descendingWallId=1;
   vector<wallId_t> isVisited(numberOfTriangles, 0);
 
-  const int numberOfCriticalPoints=criticalPoints.size();
-  for(int i=0; i<numberOfCriticalPoints; ++i){
+  const simplexId_t numberOfCriticalPoints=criticalPoints.size();
+  for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
     if(criticalPoint.dim_==2){
       const Cell& saddle2=criticalPoint;
 
-      set<int> saddles1;
-      const int savedDescendingWallId=descendingWallId;
+      set<simplexId_t> saddles1;
+      const wallId_t savedDescendingWallId=descendingWallId;
       discreteGradient_.getDescendingWall(descendingWallId, saddle2, isVisited, nullptr, &saddles1);
       ++descendingWallId;
 
-      for(const int saddle1Id : saddles1){
+      for(const simplexId_t saddle1Id : saddles1){
         const Cell& saddle1=Cell(1,saddle1Id);
 
         vector<Cell> vpath;
@@ -94,7 +95,7 @@ int MorseSmaleComplex3D::getSaddleConnectors(const vector<Cell>& criticalPoints,
 
         const Cell& lastCell=vpath.back();
         if(!isMultiConnected and lastCell.dim_==saddle2.dim_ and lastCell.id_==saddle2.id_){
-          const int separatrixIndex=separatrices.size();
+          const simplexId_t separatrixIndex=separatrices.size();
           separatricesGeometry.push_back(std::move(vpath));
           separatrices.push_back(std::move(Separatrix(true,saddle1,saddle2,false,separatrixIndex)));
         }
@@ -108,31 +109,31 @@ int MorseSmaleComplex3D::getSaddleConnectors(const vector<Cell>& criticalPoints,
 int MorseSmaleComplex3D::getAscendingSeparatrices2(const vector<Cell>& criticalPoints,
     vector<Separatrix>& separatrices,
     vector<vector<Cell>>& separatricesGeometry,
-    vector<set<int>>& separatricesSaddles) const{
+    vector<set<simplexId_t>>& separatricesSaddles) const{
   const Cell emptyCell;
 
-  vector<int> saddleIndexes;
-  const int numberOfCriticalPoints=criticalPoints.size();
-  for(int i=0; i<numberOfCriticalPoints; ++i){
+  vector<simplexId_t> saddleIndexes;
+  const simplexId_t numberOfCriticalPoints=criticalPoints.size();
+  for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
     if(criticalPoint.dim_==1)
       saddleIndexes.push_back(i);
   }
-  const int numberOfSaddles=saddleIndexes.size();
+  const simplexId_t numberOfSaddles=saddleIndexes.size();
 
   // estimation of the number of separatrices, apriori : numberOfWalls = numberOfSaddles
-  const int numberOfSeparatrices=numberOfSaddles;
+  const simplexId_t numberOfSeparatrices=numberOfSaddles;
   separatrices.resize(numberOfSeparatrices);
   separatricesGeometry.resize(numberOfSeparatrices);
   separatricesSaddles.resize(numberOfSeparatrices);
 
-  const int numberOfEdges=inputTriangulation_->getNumberOfEdges();
+  const simplexId_t numberOfEdges=inputTriangulation_->getNumberOfEdges();
   vector<wallId_t> isVisited(numberOfEdges, 0);
 
   // apriori: by default construction, the separatrices are not valid
-  for(int i=0; i<numberOfSaddles; ++i){
-    const int saddleIndex=saddleIndexes[i];
+  for(simplexId_t i=0; i<numberOfSaddles; ++i){
+    const simplexId_t saddleIndex=saddleIndexes[i];
     const Cell& saddle1=criticalPoints[saddleIndex];
 
     vector<Cell> wall;
@@ -148,31 +149,31 @@ int MorseSmaleComplex3D::getAscendingSeparatrices2(const vector<Cell>& criticalP
 int MorseSmaleComplex3D::getDescendingSeparatrices2(const vector<Cell>& criticalPoints,
     vector<Separatrix>& separatrices,
     vector<vector<Cell>>& separatricesGeometry,
-    vector<set<int>>& separatricesSaddles) const{
+    vector<set<simplexId_t>>& separatricesSaddles) const{
   const Cell emptyCell;
 
-  vector<int> saddleIndexes;
-  const int numberOfCriticalPoints=criticalPoints.size();
-  for(int i=0; i<numberOfCriticalPoints; ++i){
+  vector<simplexId_t> saddleIndexes;
+  const simplexId_t numberOfCriticalPoints=criticalPoints.size();
+  for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
     if(criticalPoint.dim_==2)
       saddleIndexes.push_back(i);
   }
-  const int numberOfSaddles=saddleIndexes.size();
+  const simplexId_t numberOfSaddles=saddleIndexes.size();
 
   // estimation of the number of separatrices, apriori : numberOfWalls = numberOfSaddles
-  const int numberOfSeparatrices=numberOfSaddles;
+  const simplexId_t numberOfSeparatrices=numberOfSaddles;
   separatrices.resize(numberOfSeparatrices);
   separatricesGeometry.resize(numberOfSeparatrices);
   separatricesSaddles.resize(numberOfSeparatrices);
 
-  const int numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
+  const simplexId_t numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
   vector<wallId_t> isVisited(numberOfTriangles, 0);
 
   // apriori: by default construction, the separatrices are not valid
-  for(int i=0; i<numberOfSaddles; ++i){
-    const int saddleIndex=saddleIndexes[i];
+  for(simplexId_t i=0; i<numberOfSaddles; ++i){
+    const simplexId_t saddleIndex=saddleIndexes[i];
     const Cell& saddle2=criticalPoints[saddleIndex];
 
     vector<Cell> wall;
@@ -185,14 +186,14 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(const vector<Cell>& critical
   return 0;
 }
 
-int MorseSmaleComplex3D::getDualPolygon(const int edgeId, vector<int>& polygon) const{
+int MorseSmaleComplex3D::getDualPolygon(const simplexId_t edgeId, vector<simplexId_t>& polygon) const{
   // primal: star of edgeId -> dual: vertices of polygon
 
   // get the vertices of the polygon
-  const int starNumber=inputTriangulation_->getEdgeStarNumber(edgeId);
+  const simplexId_t starNumber=inputTriangulation_->getEdgeStarNumber(edgeId);
   polygon.resize(starNumber);
-  for(int i=0; i<starNumber; ++i){
-    int starId;
+  for(simplexId_t i=0; i<starNumber; ++i){
+    simplexId_t starId;
     inputTriangulation_->getEdgeStar(edgeId, i, starId);
 
     polygon[i]=starId;
@@ -201,22 +202,22 @@ int MorseSmaleComplex3D::getDualPolygon(const int edgeId, vector<int>& polygon) 
   return 0;
 }
 
-int MorseSmaleComplex3D::sortDualPolygonVertices(vector<int>& polygon) const{
+int MorseSmaleComplex3D::sortDualPolygonVertices(vector<simplexId_t>& polygon) const{
   // sort the vertices of the polygon to be clockwise
-  const int vertexNumber=polygon.size();
-  for(int i=1; i<vertexNumber; ++i){
-    const int previousId=polygon[i-1];
+  const simplexId_t vertexNumber=polygon.size();
+  for(simplexId_t i=1; i<vertexNumber; ++i){
+    const simplexId_t previousId=polygon[i-1];
 
     // find neighbor of previous one
     bool isFound=false;
-    int index=-1;
-    for(int j=i; j<vertexNumber; j++){
-      const int currentId=polygon[j];
+    simplexId_t index=-1;
+    for(simplexId_t j=i; j<vertexNumber; j++){
+      const simplexId_t currentId=polygon[j];
 
       // check if current is the neighbor
-      const int neighborNumber=inputTriangulation_->getCellNeighborNumber(previousId);
-      for(int k=0; k<neighborNumber; ++k){
-        int neighborId;
+      const simplexId_t neighborNumber=inputTriangulation_->getCellNeighborNumber(previousId);
+      for(simplexId_t k=0; k<neighborNumber; ++k){
+        simplexId_t neighborId;
         inputTriangulation_->getCellNeighbor(previousId, k, neighborId);
 
         if(neighborId==currentId){
@@ -230,7 +231,7 @@ int MorseSmaleComplex3D::sortDualPolygonVertices(vector<int>& polygon) const{
 
     // swap foundId and currentId
     if(isFound){
-      const int tmpId=polygon[index];
+      const simplexId_t tmpId=polygon[index];
       polygon[index]=polygon[i];
       polygon[i]=tmpId;
     }

@@ -54,7 +54,7 @@ int ttkRangePolygon::processPoints(vtkUnstructuredGrid *input,
   vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
   idList->SetNumberOfIds(2);
   
-  for(int i = 0; i < input->GetNumberOfPoints(); i++){
+  for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++){
     if(i){
       idList->SetId(0, i - 1);
       idList->SetId(1, i);

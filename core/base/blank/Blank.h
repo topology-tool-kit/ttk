@@ -59,7 +59,7 @@ namespace ttk{
       /// <vertex0-component0> <vertex0-component1> ... <vertex0-componentN>
       /// <vertex1-component0> <vertex1-component1> ... <vertex1-componentN>
       /// <vertexM-component0> <vertexM-component1> ... <vertexM-componentN>.
-      /// The array is expected to be correctly allocated. 
+      /// The array is expected to be correctly allocated.
       /// \param data Pointer to the data array.
       /// \return Returns 0 upon success, negative values otherwise. 
       /// \sa setVertexNumber() and setDimensionNumber().
@@ -149,10 +149,10 @@ template <class dataType> int ttk::Blank::execute(
   dataType *outputData = (dataType *) outputData_;
   dataType *inputData = (dataType *) inputData_;
   
-  int vertexNumber = triangulation_->getNumberOfVertices();
+  SimplexId vertexNumber = triangulation_->getNumberOfVertices();
 
   // init the output -- to adapt
-  for(int i = 0; i < vertexNumber; i++){
+  for(SimplexId i = 0; i < vertexNumber; i++){
     outputData[i] = inputData[i];
   }
   
@@ -161,7 +161,7 @@ template <class dataType> int ttk::Blank::execute(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
-  for(int i = 0; i < vertexNumber; i++){
+  for(SimplexId i = 0; i < vertexNumber; i++){
     // TODO-2
     // processing here!
     // end of TODO-2

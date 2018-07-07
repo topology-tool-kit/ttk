@@ -23,26 +23,21 @@
 #ifndef                 _DEBUG_H
 #define                 _DEBUG_H
 
-#ifdef TTK_ENABLE_OPENMP
-  #include              <omp.h>
-#endif
-
 #include                <cerrno>
 #include                <fstream>
 #include                <iostream>
 #include                <sstream>
 #include                <string>
 #include                <vector>
+#include                <BaseClass.h>
 
 namespace ttk{
 
   extern bool welcomeMsg_;
   extern bool goodbyeMsg_;
   extern int globalDebugLevel_;
- 
-  class Wrapper;
-  
-  class Debug{
+
+  class Debug: public BaseClass{
     
     public:
       
@@ -79,8 +74,6 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa dMsg(), msg()
       int err(const std::string msg, const int &debugLevel = fatalMsg) const;
-     
-      int getThreadNumber() const { return threadNumber_;};
 
       /// Wrapper for dMsg() that sends a debug message to the standard 
       /// output stream.
@@ -92,29 +85,9 @@ namespace ttk{
       /// globalDebugLevel_ will over-ride this setting if it has a lower value.
       /// \return Returns 0 upon success, negative values otherwise.
       virtual int setDebugLevel(const int &debugLevel);
-      
-      int setThreadNumber(const int threadNumber){
-        
-        threadNumber_ = threadNumber;
-        return 0;
-      }
-      
-      /// Specify a pointer to a calling object that wraps the current class 
-      /// deriving from ttk::Debug.
-      /// 
-      /// This function is useful to pass the execution context (debug level,
-      /// number of threads, etc.) from a wrapper to a base object.
-      /// \param wrapper Pointer to the wrapping object.
-      /// \return Returns 0 upon success, negative values otherwise.
-      /// \sa vtkBlank
-      int setWrapper(const Wrapper *wrapper);
-      
-      
+
     protected:
-      
-      bool                    lastObject_;
-      mutable int             debugLevel_, threadNumber_;
-      Wrapper                 *wrapper_;
+      mutable int             debugLevel_;
   };
 }
 

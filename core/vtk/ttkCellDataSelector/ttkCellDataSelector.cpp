@@ -53,7 +53,7 @@ int ttkCellDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
            if (arr) outputCellData->AddArray(arr);
         }
      }
-  } catch (std::regex_error) {
+  } catch (std::regex_error&) {
      vtkWarningMacro("[ttkCellDataSelector]: Bad regexp.");
   }
 

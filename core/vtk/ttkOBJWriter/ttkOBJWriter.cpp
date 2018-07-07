@@ -75,12 +75,12 @@ void ttkOBJWriter::WriteData(){
   }
   
   double p[3];
-  for(int i = 0; i < dataSet->GetNumberOfPoints(); i++){
+  for(vtkIdType i = 0; i < dataSet->GetNumberOfPoints(); i++){
     dataSet->GetPoint(i, p);
     (*Stream) << "v " <<  p[0] << " " << p[1] << " " << p[2] << " " << endl;
   }
   
-  for(int i = 0; i < dataSet->GetNumberOfCells(); i++){
+  for(vtkIdType i = 0; i < dataSet->GetNumberOfCells(); i++){
     vtkCell *c = dataSet->GetCell(i);
    
     (*Stream) << "f ";

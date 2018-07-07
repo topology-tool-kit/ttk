@@ -60,8 +60,9 @@ scalar fields (for instance, from double to float).
           <Entry value="0" text="Double"/>
 	  <Entry value="1" text="Float"/>
 	  <Entry value="2" text="Int"/>
-	  <Entry value="3" text="Unsigned Short"/>
-	  <Entry value="4" text="Unsigned Char"/>
+	  <Entry value="3" text="IdType"/>
+	  <Entry value="4" text="Unsigned Short"/>
+	  <Entry value="5" text="Unsigned Char"/>
 	</EnumerationDomain>
 	<Documentation>
     Data output type.

@@ -130,9 +130,9 @@ class ttkDiscreteGradient
     int OffsetFieldId;
 
     ttk::Triangulation* triangulation_;
-    ttk::DiscreteGradient discreteGradient_;
+    ttk::dcg::DiscreteGradient discreteGradient_;
     vtkDataArray* inputScalars_;
-    vtkIntArray* offsets_;
+    vtkIdTypeArray* offsets_;
     vtkDataArray* inputOffsets_;
     bool hasUpdatedMesh_;
 };

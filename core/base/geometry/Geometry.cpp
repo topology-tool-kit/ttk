@@ -399,7 +399,7 @@ int Geometry::getBoundingBox(const vector<vector<float> > &points,
   
   bBox.resize(dimension);
   
-  for(int i = 0; i < (int) points.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) points.size(); i++){
       
     if(!i){
       for(int j = 0; j < dimension; j++){

@@ -150,7 +150,7 @@ class ttkTopologicalSimplification
     ttk::Triangulation *triangulation_;
     vtkDataArray* identifiers_;
     vtkDataArray* inputScalars_;
-    vtkIntArray* offsets_;
+    vtkIdTypeArray* offsets_;
     vtkDataArray* inputOffsets_;
 
 };

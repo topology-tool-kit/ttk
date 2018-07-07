@@ -91,26 +91,26 @@ vtkUnstructuredGrid* ttkTriangulation::getVtkUnstructuredGrid(){
     vtkPoints_ = vtkSmartPointer<vtkPoints>::New();
   
     // here we need to create an explicit representation of the triangulation
-    int vertexNumber = triangulation_->getNumberOfVertices();
+    SimplexId vertexNumber = triangulation_->getNumberOfVertices();
     vtkPoints_->SetNumberOfPoints(vertexNumber);
     
     float p[3];
-    for(int i = 0; i < vertexNumber; i++){
+    for(SimplexId i = 0; i < vertexNumber; i++){
       triangulation_->getVertexPoint(i, p[0], p[1], p[2]);
       vtkPoints_->SetPoint(i, p[0], p[1], p[2]);
     }
     
     vtkUnstructuredGrid_->SetPoints(vtkPoints_);
     
-    int cellNumber = triangulation_->getNumberOfCells();
+    SimplexId cellNumber = triangulation_->getNumberOfCells();
     int dimensionality = triangulation_->getDimensionality();
     vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
     idList->SetNumberOfIds(dimensionality + 1);
     
     
-    for(int i = 0; i < cellNumber; i++){
+    for(SimplexId i = 0; i < cellNumber; i++){
       for(int j = 0; j <= dimensionality; j++){
-        int vertexId = -1;
+        SimplexId vertexId = -1;
         triangulation_->getCellVertex(i, j, vertexId);
         idList->SetId(j, vertexId);
       }

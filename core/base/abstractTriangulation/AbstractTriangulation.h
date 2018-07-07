@@ -28,133 +28,133 @@ namespace ttk{
 
       virtual int clear();
       
-      virtual int footprint() const;
+      virtual size_t footprint() const;
       
-      virtual int getCellEdge(const int &cellId, 
-        const int &localEdgeId, int &edgeId) const = 0;
+      virtual int getCellEdge(const SimplexId &cellId, 
+        const int &localEdgeId, SimplexId &edgeId) const = 0;
         
-      virtual int getCellEdgeNumber(const int &cellId) const = 0;
+      virtual SimplexId getCellEdgeNumber(const SimplexId &cellId) const = 0;
       
-      virtual const std::vector<std::vector<int> > *getCellEdges() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getCellEdges() = 0;
       
-      virtual int getCellNeighbor(const int &cellId,
-        const int &localNeighborId, int &neighborId) const = 0;
+      virtual int getCellNeighbor(const SimplexId &cellId,
+        const int &localNeighborId, SimplexId &neighborId) const = 0;
         
-      virtual int getCellNeighborNumber(const int &cellId) const = 0;
+      virtual SimplexId getCellNeighborNumber(const SimplexId &cellId) const = 0;
       
-      virtual const std::vector<std::vector<int> > *getCellNeighbors() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getCellNeighbors() = 0;
       
-      virtual int getCellTriangle(const int &cellId, 
-        const int &localTriangleId, int &triangleId) const = 0;
+      virtual int getCellTriangle(const SimplexId &cellId, 
+        const int &localTriangleId, SimplexId &triangleId) const = 0;
         
-      virtual int getCellTriangleNumber(const int &cellId) const = 0;
+      virtual SimplexId getCellTriangleNumber(const SimplexId &cellId) const = 0;
         
-      virtual const std::vector<std::vector<int> > *getCellTriangles() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getCellTriangles() = 0;
       
-      virtual int getCellVertex(const int &cellId,
-        const int &localVertexId, int &vertexId) const = 0;
+      virtual int getCellVertex(const SimplexId &cellId,
+        const int &localVertexId, SimplexId &vertexId) const = 0;
     
-      virtual int getCellVertexNumber(const int &cellId) const = 0;
+      virtual SimplexId getCellVertexNumber(const SimplexId &cellId) const = 0;
         
       virtual int getDimensionality() const = 0;
       
-      virtual const std::vector<std::pair<int, int> > *getEdges() = 0;
+      virtual const std::vector<std::pair<SimplexId, SimplexId> > *getEdges() = 0;
         
-      virtual int getEdgeLink(const int &edgeId, 
-        const int &localLinkId, int &linkId) const = 0;
+      virtual int getEdgeLink(const SimplexId &edgeId, 
+        const int &localLinkId, SimplexId &linkId) const = 0;
         
-      virtual int getEdgeLinkNumber(const int &edgeId) const = 0;
+      virtual SimplexId getEdgeLinkNumber(const SimplexId &edgeId) const = 0;
       
-      virtual const std::vector<std::vector<int> > *getEdgeLinks() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getEdgeLinks() = 0;
       
-      virtual int getEdgeStar(const int &edgeId, 
-        const int &localStarId, int &starId) const = 0;
+      virtual int getEdgeStar(const SimplexId &edgeId, 
+        const int &localStarId, SimplexId &starId) const = 0;
         
-      virtual int getEdgeStarNumber(const int &edgeId) const = 0;
+      virtual SimplexId getEdgeStarNumber(const SimplexId &edgeId) const = 0;
       
-      virtual const std::vector<std::vector<int> > *getEdgeStars() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getEdgeStars() = 0;
      
-      virtual int getEdgeTriangle(const int &edgeId, 
-        const int &localTriangleId, int &triangleId) const = 0;
+      virtual int getEdgeTriangle(const SimplexId &edgeId, 
+        const int &localTriangleId, SimplexId &triangleId) const = 0;
         
-      virtual int getEdgeTriangleNumber(const int &edgeId) const = 0;
+      virtual SimplexId getEdgeTriangleNumber(const SimplexId &edgeId) const = 0;
         
-      virtual const std::vector<std::vector<int> > *getEdgeTriangles() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getEdgeTriangles() = 0;
       
-      virtual int getEdgeVertex(const int &edgeId, 
-        const int &localVertexId, int &vertexId) const = 0;
+      virtual int getEdgeVertex(const SimplexId &edgeId, 
+        const int &localVertexId, SimplexId &vertexId) const = 0;
       
-      virtual int getNumberOfCells() const = 0;
+      virtual SimplexId getNumberOfCells() const = 0;
       
-      virtual int getNumberOfEdges() const = 0;
+      virtual SimplexId getNumberOfEdges() const = 0;
       
-      virtual int getNumberOfTriangles() const = 0;
+      virtual SimplexId getNumberOfTriangles() const = 0;
       
-      virtual int getNumberOfVertices() const = 0;
+      virtual SimplexId getNumberOfVertices() const = 0;
       
-      virtual const std::vector<std::vector<int> > *getTriangles() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getTriangles() = 0;
       
-      virtual int getTriangleEdge(const int &triangleId,
-        const int &localEdgeId, int &edgeId) const = 0;
+      virtual int getTriangleEdge(const SimplexId &triangleId,
+        const int &localEdgeId, SimplexId &edgeId) const = 0;
       
-      virtual int getTriangleEdgeNumber(const int &triangleId) const = 0;
+      virtual SimplexId getTriangleEdgeNumber(const SimplexId &triangleId) const = 0;
       
-      virtual const std::vector<std::vector<int> > *getTriangleEdges() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getTriangleEdges() = 0;
       
-      virtual int getTriangleLink(const int &triangleId, 
-        const int &localLinkId, int &linkId) const = 0;
+      virtual int getTriangleLink(const SimplexId &triangleId, 
+        const int &localLinkId, SimplexId &linkId) const = 0;
         
-      virtual int getTriangleLinkNumber(const int &triangleId) const = 0;
+      virtual SimplexId getTriangleLinkNumber(const SimplexId &triangleId) const = 0;
       
-      virtual const std::vector<std::vector<int> > *getTriangleLinks() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getTriangleLinks() = 0;
       
-      virtual int getTriangleStar(const int &triangleId,
-        const int &localStarId, int &starId) const = 0;  
+      virtual int getTriangleStar(const SimplexId &triangleId,
+        const int &localStarId, SimplexId &starId) const = 0;  
         
-      virtual int getTriangleStarNumber(const int &triangleId) const = 0;
+      virtual SimplexId getTriangleStarNumber(const SimplexId &triangleId) const = 0;
       
-      virtual const std::vector<std::vector<int> > *getTriangleStars() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getTriangleStars() = 0;
       
-      virtual int getTriangleVertex(const int &triangleId,
-        const int &localVertexId, int &vertexId) const = 0;
+      virtual int getTriangleVertex(const SimplexId &triangleId,
+        const int &localVertexId, SimplexId &vertexId) const = 0;
       
-      virtual int getVertexEdge(const int &vertexId, 
-        const int &localEdgeId, int &edgeId) const = 0;
+      virtual int getVertexEdge(const SimplexId &vertexId, 
+        const int &localEdgeId, SimplexId &edgeId) const = 0;
         
-      virtual int getVertexEdgeNumber(const int &vertexId) const = 0;
+      virtual SimplexId getVertexEdgeNumber(const SimplexId &vertexId) const = 0;
       
-      virtual const std::vector<std::vector<int> > *getVertexEdges() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getVertexEdges() = 0;
       
-      virtual int getVertexLink(const int &vertexId, 
-        const int &localLinkId, int &linkId) const = 0;
+      virtual int getVertexLink(const SimplexId &vertexId, 
+        const int &localLinkId, SimplexId &linkId) const = 0;
         
-      virtual int getVertexLinkNumber(const int &vertexId) const = 0;
+      virtual SimplexId getVertexLinkNumber(const SimplexId &vertexId) const = 0;
       
-      virtual const std::vector<std::vector<int> > *getVertexLinks() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getVertexLinks() = 0;
       
-      virtual int getVertexNeighbor(const int &vertexId, 
-        const int &localNeighborId, int &neighborId) const = 0;
+      virtual int getVertexNeighbor(const SimplexId &vertexId, 
+        const int &localNeighborId, SimplexId &neighborId) const = 0;
         
-      virtual int getVertexNeighborNumber(const int &vertexId) const = 0;
+      virtual SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const = 0;
       
-      virtual const std::vector<std::vector<int> > *getVertexNeighbors() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getVertexNeighbors() = 0;
       
-      virtual int getVertexPoint(const int &vertexId,
+      virtual int getVertexPoint(const SimplexId &vertexId,
         float &x, float &y, float &z) const = 0;
         
-      virtual int getVertexStar(const int &vertexId, const int &localStarId,
-        int &starId) const = 0;
+      virtual int getVertexStar(const SimplexId &vertexId, const int &localStarId,
+        SimplexId &starId) const = 0;
         
-      virtual int getVertexStarNumber(const int &vertexId) const = 0;
+      virtual SimplexId getVertexStarNumber(const SimplexId &vertexId) const = 0;
         
-      virtual const std::vector<std::vector<int> > *getVertexStars() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getVertexStars() = 0;
       
-      virtual int getVertexTriangle(const int &vertexId, 
-        const int &localTriangleId, int &triangleId) const = 0;
+      virtual int getVertexTriangle(const SimplexId &vertexId, 
+        const int &localTriangleId, SimplexId &triangleId) const = 0;
         
-      virtual int getVertexTriangleNumber(const int &vertexId) const = 0;
+      virtual SimplexId getVertexTriangleNumber(const SimplexId &vertexId) const = 0;
         
-      virtual const std::vector<std::vector<int> > *getVertexTriangles() = 0;
+      virtual const std::vector<std::vector<SimplexId> > *getVertexTriangles() = 0;
         
       virtual inline bool hasPreprocessedBoundaryEdges() const{
         return hasPreprocessedBoundaryEdges_;
@@ -232,13 +232,13 @@ namespace ttk{
         return hasPreprocessedVertexTriangles_;
       }
       
-      virtual bool isEdgeOnBoundary(const int &edgeId) const = 0;
+      virtual bool isEdgeOnBoundary(const SimplexId &edgeId) const = 0;
         
       virtual bool isEmpty() const = 0;
       
-      virtual bool isTriangleOnBoundary(const int &triangleId) const = 0;
+      virtual bool isTriangleOnBoundary(const SimplexId &triangleId) const = 0;
       
-      virtual bool isVertexOnBoundary(const int &vertexId) const = 0;
+      virtual bool isVertexOnBoundary(const SimplexId &vertexId) const = 0;
 
       virtual int preprocessBoundaryEdges(){
         preprocessEdges();
@@ -355,7 +355,7 @@ namespace ttk{
       bool needsToAbort(){ return false;};
       
       template <class itemType>
-        int tableFootprint(const std::vector<itemType> &table,
+        size_t tableFootprint(const std::vector<itemType> &table,
           const std::string tableName = "", 
           std::stringstream *msg = NULL) const{
         
@@ -368,7 +368,7 @@ namespace ttk{
       }
       
       template <class itemType>
-        int tableTableFootprint(
+        size_t tableTableFootprint(
           const std::vector<std::vector<itemType> > &table,
           const std::string tableName = "", 
           std::stringstream *msg = NULL) const;
@@ -395,40 +395,40 @@ namespace ttk{
                           hasPreprocessedVertexStars_,
                           hasPreprocessedVertexTriangles_;
       
-      std::vector<bool>        boundaryEdges_,
+      std::vector<bool>   boundaryEdges_,
                           boundaryTriangles_,
                           boundaryVertices_;
-      std::vector<std::vector<int> > 
+      std::vector<std::vector<SimplexId> > 
                           cellEdgeList_;
-      std::vector<std::vector<int> >
+      std::vector<std::vector<SimplexId> >
                           cellNeighborList_;
-      std::vector<std::vector<int> > 
+      std::vector<std::vector<SimplexId> > 
                           cellTriangleList_;
-      std::vector<std::vector<int> >
+      std::vector<std::vector<SimplexId> >
                           edgeLinkList_;
-      std::vector<std::pair<int, int> >
+      std::vector<std::pair<SimplexId, SimplexId> >
                           edgeList_;
-      std::vector<std::vector<int> >
+      std::vector<std::vector<SimplexId> >
                           edgeStarList_;
-      std::vector<std::vector<int> >
+      std::vector<std::vector<SimplexId> >
                           edgeTriangleList_;
-      std::vector<std::vector<int> >
+      std::vector<std::vector<SimplexId> >
                           triangleList_;
-      std::vector<std::vector<int> > 
+      std::vector<std::vector<SimplexId> > 
                           triangleEdgeList_;
-      std::vector<std::vector<int> >
+      std::vector<std::vector<SimplexId> >
                           triangleLinkList_;
-      std::vector<std::vector<int> >
+      std::vector<std::vector<SimplexId> >
                           triangleStarList_;
-      std::vector<std::vector<int> > 
+      std::vector<std::vector<SimplexId> > 
                           vertexEdgeList_;
-      std::vector<std::vector<int> >
+      std::vector<std::vector<SimplexId> >
                           vertexLinkList_;
-      std::vector<std::vector<int> > 
+      std::vector<std::vector<SimplexId> > 
                           vertexNeighborList_;
-      std::vector<std::vector<int> >
+      std::vector<std::vector<SimplexId> >
                           vertexStarList_;
-      std::vector<std::vector<int> >
+      std::vector<std::vector<SimplexId> >
                           vertexTriangleList_;
   };
 }

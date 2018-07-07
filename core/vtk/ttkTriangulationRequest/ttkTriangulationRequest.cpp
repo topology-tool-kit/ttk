@@ -25,12 +25,12 @@ vtkStandardNewMacro(ttkTriangulationRequest)
     vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkUnstructuredGrid> cells=vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-    const int numberOfVertices=triangulation->getNumberOfVertices();
+    const SimplexId numberOfVertices=triangulation->getNumberOfVertices();
     vector<vtkIdType> isVisited(numberOfVertices, -1);
 
     cells->Allocate();
 
-    auto addVertex=[&](const int vertexId){
+    auto addVertex=[&](const SimplexId vertexId){
       if(vertexId==-1) return vtkIdType(-1);
 
       float p[3];
@@ -38,14 +38,14 @@ vtkStandardNewMacro(ttkTriangulationRequest)
       return points->InsertNextPoint(p);
     };
 
-    auto addEdge=[&](const int edgeId){
+    auto addEdge=[&](const SimplexId edgeId){
       vtkIdType pointIds[2];
-      int vertexIds[2];
+      SimplexId vertexIds[2];
 
       for(int i=0; i<2; ++i){
         triangulation->getEdgeVertex(edgeId, i, vertexIds[i]);
 
-        const int vertexId=vertexIds[i];
+        const SimplexId vertexId=vertexIds[i];
         if(vertexId==-1) return -1;
 
         if(isVisited[vertexId]==-1){
@@ -61,9 +61,9 @@ vtkStandardNewMacro(ttkTriangulationRequest)
       return 0;
     };
 
-    auto addTriangle=[&](const int triangleId){
+    auto addTriangle=[&](const SimplexId triangleId){
       vtkIdType pointIds[3];
-      int vertexIds[3];
+      SimplexId vertexIds[3];
 
       for(int i=0; i<3; ++i){
         if(dimensionality==3)
@@ -71,7 +71,7 @@ vtkStandardNewMacro(ttkTriangulationRequest)
         else
           triangulation->getCellVertex(triangleId, i, vertexIds[i]);
 
-        const int vertexId=vertexIds[i];
+        const SimplexId vertexId=vertexIds[i];
         if(vertexId==-1) return -1;
 
         if(isVisited[vertexId]==-1){
@@ -87,14 +87,14 @@ vtkStandardNewMacro(ttkTriangulationRequest)
       return 0;
     };
 
-    auto addTetra=[&](const int tetraId){
+    auto addTetra=[&](const SimplexId tetraId){
       vtkIdType pointIds[4];
-      int vertexIds[4];
+      SimplexId vertexIds[4];
 
       for(int i=0; i<4; ++i){
         triangulation->getCellVertex(tetraId, i, vertexIds[i]);
 
-        const int vertexId=vertexIds[i];
+        const SimplexId vertexId=vertexIds[i];
         if(vertexId==-1) return -1;
 
         if(isVisited[vertexId]==-1){
@@ -110,37 +110,37 @@ vtkStandardNewMacro(ttkTriangulationRequest)
       return 0;
     };
 
-    auto addStar=[&](const int starId){
+    auto addStar=[&](const SimplexId starId){
       if(dimensionality==2)
         addTriangle(starId);
       else if(dimensionality==3)
         addTetra(starId);
     };
 
-    // do minimum preprocess and put watchdog on SimplexId
+    // do minimum preprocess and put watchdog on SimplexIdentifier
     switch(simplexType){
       case Vertex:
-        if(SimplexId<0 or SimplexId>=numberOfVertices) return -1;
+        if(SimplexIdentifier<0 or SimplexIdentifier>=numberOfVertices) return -1;
         break;
 
       case Edge:
         triangulation->preprocessEdges();
-        if(SimplexId<0 or SimplexId>=triangulation->getNumberOfEdges()) return -1;
+        if(SimplexIdentifier<0 or SimplexIdentifier>=triangulation->getNumberOfEdges()) return -1;
         break;
 
       case Triangle:
         if(dimensionality==2){
-          if(SimplexId<0 or SimplexId>=triangulation->getNumberOfCells()) return -1;
+          if(SimplexIdentifier<0 or SimplexIdentifier>=triangulation->getNumberOfCells()) return -1;
         }
         else if(dimensionality==3){
           triangulation->preprocessTriangles();
-          if(SimplexId<0 or SimplexId>=triangulation->getNumberOfTriangles()) return -1;
+          if(SimplexIdentifier<0 or SimplexIdentifier>=triangulation->getNumberOfTriangles()) return -1;
         }
         break;
 
       case Tetra:
         if(dimensionality==3)
-          if(SimplexId<0 or SimplexId>=triangulation->getNumberOfCells()) return -1;
+          if(SimplexIdentifier<0 or SimplexIdentifier>=triangulation->getNumberOfCells()) return -1;
         break;
     }
 
@@ -148,20 +148,20 @@ vtkStandardNewMacro(ttkTriangulationRequest)
       case ComputeSimplex:
         switch(simplexType){
           case Vertex:
-            addVertex(SimplexId);
+            addVertex(SimplexIdentifier);
             break;
 
           case Edge:
-            addEdge(SimplexId);
+            addEdge(SimplexIdentifier);
             break;
 
           case Triangle:
-            addTriangle(SimplexId);
+            addTriangle(SimplexIdentifier);
             break;
 
           case Tetra:
             if(dimensionality==3)
-              addTetra(SimplexId);
+              addTetra(SimplexIdentifier);
             break;
         }
         break;
@@ -173,8 +173,8 @@ vtkStandardNewMacro(ttkTriangulationRequest)
 
           case Edge:
             for(int i=0; i<2; ++i){
-              int vertexId;
-              triangulation->getEdgeVertex(SimplexId, i, vertexId);
+              SimplexId vertexId;
+              triangulation->getEdgeVertex(SimplexIdentifier, i, vertexId);
               addVertex(vertexId);
             }
             break;
@@ -183,16 +183,16 @@ vtkStandardNewMacro(ttkTriangulationRequest)
             if(dimensionality==2){
               triangulation->preprocessCellEdges();
               for(int i=0; i<3; ++i){
-                int edgeId;
-                triangulation->getCellEdge(SimplexId, i, edgeId);
+                SimplexId edgeId;
+                triangulation->getCellEdge(SimplexIdentifier, i, edgeId);
                 addEdge(edgeId);
               }
             }
             else if(dimensionality==3){
               triangulation->preprocessTriangleEdges();
               for(int i=0; i<3; ++i){
-                int edgeId;
-                triangulation->getTriangleEdge(SimplexId, i, edgeId);
+                SimplexId edgeId;
+                triangulation->getTriangleEdge(SimplexIdentifier, i, edgeId);
                 addEdge(edgeId);
               }
             }
@@ -202,8 +202,8 @@ vtkStandardNewMacro(ttkTriangulationRequest)
             if(dimensionality==3){
               triangulation->preprocessCellTriangles();
               for(int i=0; i<4; ++i){
-                int triangleId;
-                triangulation->getCellTriangle(SimplexId, i, triangleId);
+                SimplexId triangleId;
+                triangulation->getCellTriangle(SimplexIdentifier, i, triangleId);
                 addTriangle(triangleId);
               }
             }
@@ -216,10 +216,10 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Vertex:
             triangulation->preprocessVertexEdges();
             {
-              const int edgeNumber=triangulation->getVertexEdgeNumber(SimplexId);
-              for(int i=0; i<edgeNumber; ++i){
-                int edgeId;
-                triangulation->getVertexEdge(SimplexId, i, edgeId);
+              const SimplexId edgeNumber=triangulation->getVertexEdgeNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<edgeNumber; ++i){
+                SimplexId edgeId;
+                triangulation->getVertexEdge(SimplexIdentifier, i, edgeId);
                 addEdge(edgeId);
               }
             }
@@ -228,19 +228,19 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Edge:
             if(dimensionality==2){
               triangulation->preprocessEdgeStars();
-              const int starNumber=triangulation->getEdgeStarNumber(SimplexId);
-              for(int i=0; i<starNumber; ++i){
-                int starId;
-                triangulation->getEdgeStar(SimplexId, i, starId);
+              const SimplexId starNumber=triangulation->getEdgeStarNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<starNumber; ++i){
+                SimplexId starId;
+                triangulation->getEdgeStar(SimplexIdentifier, i, starId);
                 addStar(starId);
               }
             }
             else if(dimensionality==3){
               triangulation->preprocessEdgeTriangles();
-              const int triangleNumber=triangulation->getEdgeTriangleNumber(SimplexId);
-              for(int i=0; i<triangleNumber; ++i){
-                int triangleId;
-                triangulation->getEdgeTriangle(SimplexId, i, triangleId);
+              const SimplexId triangleNumber=triangulation->getEdgeTriangleNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<triangleNumber; ++i){
+                SimplexId triangleId;
+                triangulation->getEdgeTriangle(SimplexIdentifier, i, triangleId);
                 addTriangle(triangleId);
               }
             }
@@ -249,10 +249,10 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Triangle:
             if(dimensionality==3){
               triangulation->preprocessTriangleStars();
-              const int starNumber=triangulation->getTriangleStarNumber(SimplexId);
-              for(int i=0; i<starNumber; ++i){
-                int starId;
-                triangulation->getTriangleStar(SimplexId, i, starId);
+              const SimplexId starNumber=triangulation->getTriangleStarNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<starNumber; ++i){
+                SimplexId starId;
+                triangulation->getTriangleStar(SimplexIdentifier, i, starId);
                 addStar(starId);
               }
             }
@@ -268,10 +268,10 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Vertex:
             triangulation->preprocessVertexStars();
             {
-              const int starNumber=triangulation->getVertexStarNumber(SimplexId);
-              for(int i=0; i<starNumber; ++i){
-                int starId;
-                triangulation->getVertexStar(SimplexId, i, starId);
+              const SimplexId starNumber=triangulation->getVertexStarNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<starNumber; ++i){
+                SimplexId starId;
+                triangulation->getVertexStar(SimplexIdentifier, i, starId);
                 addStar(starId);
               }
             }
@@ -280,10 +280,10 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Edge:
             triangulation->preprocessEdgeStars();
             {
-              const int starNumber=triangulation->getEdgeStarNumber(SimplexId);
-              for(int i=0; i<starNumber; ++i){
-                int starId;
-                triangulation->getEdgeStar(SimplexId, i, starId);
+              const SimplexId starNumber=triangulation->getEdgeStarNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<starNumber; ++i){
+                SimplexId starId;
+                triangulation->getEdgeStar(SimplexIdentifier, i, starId);
                 addStar(starId);
               }
             }
@@ -292,10 +292,10 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Triangle:
             if(dimensionality==3){
               triangulation->preprocessTriangleStars();
-              const int starNumber=triangulation->getTriangleStarNumber(SimplexId);
-              for(int i=0; i<starNumber; ++i){
-                int starId;
-                triangulation->getTriangleStar(SimplexId, i, starId);
+              const SimplexId starNumber=triangulation->getTriangleStarNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<starNumber; ++i){
+                SimplexId starId;
+                triangulation->getTriangleStar(SimplexIdentifier, i, starId);
                 addStar(starId);
               }
             }
@@ -311,19 +311,19 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Vertex:
             triangulation->preprocessVertexLinks();
             if(dimensionality==2){
-              const int linkNumber=triangulation->getVertexLinkNumber(SimplexId);
-              for(int i=0; i<linkNumber; ++i){
-                int linkId;
-                triangulation->getVertexLink(SimplexId, i, linkId);
+              const SimplexId linkNumber=triangulation->getVertexLinkNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<linkNumber; ++i){
+                SimplexId linkId;
+                triangulation->getVertexLink(SimplexIdentifier, i, linkId);
                 addEdge(linkId);
               }
             }
             else if(dimensionality==3){
               triangulation->preprocessVertexTriangles();
-              const int linkNumber=triangulation->getVertexLinkNumber(SimplexId);
-              for(int i=0; i<linkNumber; ++i){
-                int linkId;
-                triangulation->getVertexLink(SimplexId, i, linkId);
+              const SimplexId linkNumber=triangulation->getVertexLinkNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<linkNumber; ++i){
+                SimplexId linkId;
+                triangulation->getVertexLink(SimplexIdentifier, i, linkId);
                 addTriangle(linkId);
               }
             }
@@ -332,18 +332,18 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Edge:
             triangulation->preprocessEdgeLinks();
             if(dimensionality==2){
-              const int linkNumber=triangulation->getEdgeLinkNumber(SimplexId);
-              for(int i=0; i<linkNumber; ++i){
-                int linkId;
-                triangulation->getEdgeLink(SimplexId, i, linkId);
+              const SimplexId linkNumber=triangulation->getEdgeLinkNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<linkNumber; ++i){
+                SimplexId linkId;
+                triangulation->getEdgeLink(SimplexIdentifier, i, linkId);
                 addVertex(linkId);
               }
             }
             else if(dimensionality==3){
-              const int linkNumber=triangulation->getEdgeLinkNumber(SimplexId);
-              for(int i=0; i<linkNumber; ++i){
-                int linkId;
-                triangulation->getEdgeLink(SimplexId, i, linkId);
+              const SimplexId linkNumber=triangulation->getEdgeLinkNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<linkNumber; ++i){
+                SimplexId linkId;
+                triangulation->getEdgeLink(SimplexIdentifier, i, linkId);
                 addEdge(linkId);
               }
             }
@@ -352,10 +352,10 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Triangle:
             if(dimensionality==3){
               triangulation->preprocessTriangleLinks();
-              const int linkNumber=triangulation->getTriangleLinkNumber(SimplexId);
-              for(int i=0; i<linkNumber; ++i){
-                int linkId;
-                triangulation->getTriangleLink(SimplexId, i, linkId);
+              const SimplexId linkNumber=triangulation->getTriangleLinkNumber(SimplexIdentifier);
+              for(SimplexId i=0; i<linkNumber; ++i){
+                SimplexId linkId;
+                triangulation->getTriangleLink(SimplexIdentifier, i, linkId);
                 addVertex(linkId);
               }
             }

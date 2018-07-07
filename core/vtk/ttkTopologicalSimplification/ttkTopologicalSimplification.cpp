@@ -118,13 +118,13 @@ int ttkTopologicalSimplification::getOffsets(vtkDataSet* input){
     }
 
     if(!offsets_){
-      const int numberOfVertices=input->GetNumberOfPoints();
+      const SimplexId numberOfVertices=input->GetNumberOfPoints();
 
-      offsets_=vtkIntArray::New();
+      offsets_=vtkIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName("OffsetsScalarField");
-      for(int i=0; i<numberOfVertices; ++i)
+      for(SimplexId i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
     }
 
@@ -184,7 +184,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const int numberOfVertices=domain->GetNumberOfPoints();
+  const SimplexId numberOfVertices=domain->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(numberOfVertices<=0){
     cerr << "[ttkTopologicalSimplification] Error : domain has no points." << endl;
@@ -199,7 +199,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  vtkSmartPointer<vtkIntArray> outputOffsets=vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIdTypeArray> outputOffsets=vtkSmartPointer<vtkIdTypeArray>::New();
   if(outputOffsets){
     outputOffsets->SetNumberOfComponents(1);
     outputOffsets->SetNumberOfTuples(numberOfVertices);
@@ -207,7 +207,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{
-    cerr << "[ttkTopologicalSimplification] Error : vtkIntArray allocation problem." << endl;
+    cerr << "[ttkTopologicalSimplification] Error : vtkIdTypeArray allocation problem." << endl;
     return -7;
   }
 #endif
@@ -224,6 +224,10 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
 
     case VTK_INT:
       outputScalars=vtkIntArray::New();
+      break;
+
+    case VTK_ID_TYPE:
+      outputScalars=vtkIdTypeArray::New();
       break;
 
     case VTK_SHORT:
@@ -259,7 +263,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const int numberOfConstraints=constraints->GetNumberOfPoints();
+  const SimplexId numberOfConstraints=constraints->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(numberOfConstraints<=0){
     cerr << "[ttkTopologicalSimplification] Error : input has no constraints." << endl;

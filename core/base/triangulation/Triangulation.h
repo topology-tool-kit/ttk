@@ -63,7 +63,7 @@ namespace ttk{
       
       /// Computes and displays the memory footprint of the data-structure.
       /// \return Returns 0 upon success, negative values otherwise.
-      inline int footprint() const {
+      inline size_t footprint() const {
         
         if(abstractTriangulation_){
           return abstractTriangulation_->footprint();
@@ -93,8 +93,8 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getCellEdgeNumber()
       /// \sa getCellNeighbor()
-      inline int getCellEdge(const int &cellId,
-        const int &localEdgeId, int &edgeId) const{
+      inline int getCellEdge(const SimplexId &cellId,
+        const int &localEdgeId, SimplexId &edgeId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -140,7 +140,7 @@ namespace ttk{
       /// \param cellId Input global cell identifier.
       /// \return Returns the number of cell edges.
       /// \sa getCellNeighborNumber()
-      inline int getCellEdgeNumber(const int &cellId) const{
+      inline SimplexId getCellEdgeNumber(const SimplexId &cellId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -195,7 +195,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the cell edge list.
       /// \sa getCellNeighbors()
-      inline const std::vector<std::vector<int> > *getCellEdges(){
+      inline const std::vector<std::vector<SimplexId> > *getCellEdges(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -241,8 +241,8 @@ namespace ttk{
       /// \param neighborId Output global neighbor cell identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getCellNeighborNumber()
-      inline int getCellNeighbor(const int &cellId,
-        const int &localNeighborId, int &neighborId) const{
+      inline int getCellNeighbor(const SimplexId &cellId,
+        const int &localNeighborId, SimplexId &neighborId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -278,7 +278,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param cellId Input global cell identifier.
       /// \return Returns the number of cell neighbors.
-      inline int getCellNeighborNumber(const int &cellId) const{
+      inline SimplexId getCellNeighborNumber(const SimplexId &cellId) const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -324,7 +324,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the cell neighbor list.
-      inline const std::vector<std::vector<int> > *getCellNeighbors(){
+      inline const std::vector<std::vector<SimplexId> > *getCellNeighbors(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -366,8 +366,8 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getCellTriangleNumber()
       /// \sa getCellNeighbor()
-      inline int getCellTriangle(const int &cellId,
-        const int &localTriangleId, int &triangleId) const{
+      inline int getCellTriangle(const SimplexId &cellId,
+        const int &localTriangleId, SimplexId &triangleId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -417,7 +417,7 @@ namespace ttk{
       /// \param cellId Input global cell identifier.
       /// \return Returns the number of cell triangles.
       /// \sa getCellNeighborNumber()
-      inline int getCellTriangleNumber(const int &cellId) const{
+      inline SimplexId getCellTriangleNumber(const SimplexId &cellId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -478,7 +478,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the cell triangle list.
       /// \sa getCellNeighbors()
-      inline const std::vector<std::vector<int> > *getCellTriangles(){
+      inline const std::vector<std::vector<SimplexId> > *getCellTriangles(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -519,8 +519,8 @@ namespace ttk{
       /// \param vertexId Ouput global vertex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getCellVertexNumber()
-      inline int getCellVertex(const int &cellId,
-        const int &localVertexId, int &vertexId) const{
+      inline int getCellVertex(const SimplexId &cellId,
+        const int &localVertexId, SimplexId &vertexId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -537,7 +537,7 @@ namespace ttk{
       /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
       /// \param cellId Input global cell identifier.
       /// \returns Number of vertices in the cell.
-      inline int getCellVertexNumber(const int &cellId) const{
+      inline SimplexId getCellVertexNumber(const SimplexId &cellId) const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -581,7 +581,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge list.
-      inline const std::vector<std::pair<int, int> > *getEdges(){
+      inline const std::vector<std::pair<SimplexId, SimplexId> > *getEdges(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -623,8 +623,8 @@ namespace ttk{
       /// \param linkId Output link simplex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getEdgeLinkNumber()
-      inline int getEdgeLink(const int &edgeId, 
-        const int &localLinkId, int &linkId) const{
+      inline int getEdgeLink(const SimplexId &edgeId, 
+        const int &localLinkId, SimplexId &linkId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -662,7 +662,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param edgeId Input global edge identifier.
       /// \return Returns the number of cells in the link of the edge. 
-      inline int getEdgeLinkNumber(const int &edgeId) const{
+      inline SimplexId getEdgeLinkNumber(const SimplexId &edgeId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -708,7 +708,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge link list.
-      inline const std::vector<std::vector<int> > *getEdgeLinks(){
+      inline const std::vector<std::vector<SimplexId> > *getEdgeLinks(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -753,8 +753,8 @@ namespace ttk{
       /// \param starId Output global star cell identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getEdgeStarNumber()
-      inline int getEdgeStar(const int &edgeId,
-        const int &localStarId, int &starId) const{
+      inline int getEdgeStar(const SimplexId &edgeId,
+        const int &localStarId, SimplexId &starId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -795,7 +795,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param edgeId Input global edge identifier
       /// \return Returns the number of star cells.
-      inline int getEdgeStarNumber(const int &edgeId) const{
+      inline SimplexId getEdgeStarNumber(const SimplexId &edgeId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -846,7 +846,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge star list.
-      inline const std::vector<std::vector<int> > *getEdgeStars(){
+      inline const std::vector<std::vector<SimplexId> > *getEdgeStars(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -888,8 +888,8 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getEdgeTriangleNumber()
       /// \sa getEdgeStar()
-      inline int getEdgeTriangle(const int &edgeId,
-        const int &localTriangleId, int &triangleId) const{
+      inline int getEdgeTriangle(const SimplexId &edgeId,
+        const int &localTriangleId, SimplexId &triangleId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -936,7 +936,7 @@ namespace ttk{
       /// \param edgeId Input global edge identifier.
       /// \return Returns the number of edge triangles.
       /// \sa getEdgeStarNumber
-      inline int getEdgeTriangleNumber(const int &edgeId) const{
+      inline SimplexId getEdgeTriangleNumber(const SimplexId &edgeId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -992,7 +992,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the edge triangle list.
       /// \sa getEdgeStars
-      inline const std::vector<std::vector<int> > *getEdgeTriangles(){
+      inline const std::vector<std::vector<SimplexId> > *getEdgeTriangles(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1040,8 +1040,8 @@ namespace ttk{
       /// \param vertexId Output global vertex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getCellVertex()
-      inline int getEdgeVertex(const int &edgeId, 
-        const int &localVertexId, int &vertexId) const{
+      inline int getEdgeVertex(const SimplexId &edgeId, 
+        const int &localVertexId, SimplexId &vertexId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -1095,7 +1095,7 @@ namespace ttk{
       /// Here the notion of cell refers to the simplicices of maximal 
       /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
       /// \return Returns the number of cells.
-      inline int getNumberOfCells() const{
+      inline SimplexId getNumberOfCells() const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -1118,7 +1118,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns the number of edges.
       /// \sa getNumberOfCells()
-      inline int getNumberOfEdges() const{
+      inline SimplexId getNumberOfEdges() const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -1155,7 +1155,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns the number of triangles.
       /// \sa getNumberOfCells()
-      inline int getNumberOfTriangles() const{
+      inline SimplexId getNumberOfTriangles() const{
 #ifndef TTK_ENABLE_KAMIKAZE
         
         if(isEmptyCheck())
@@ -1185,7 +1185,7 @@ namespace ttk{
       
       /// Get the number of vertices in the triangulation.
       /// \return Returns the number of vertices.
-      inline int getNumberOfVertices() const{
+      inline SimplexId getNumberOfVertices() const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -1218,7 +1218,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle list.
-      inline const std::vector<std::vector<int> > *getTriangles(){
+      inline const std::vector<std::vector<SimplexId> > *getTriangles(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1256,8 +1256,8 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getTriangleEdgeNumber()
       /// \sa getCellEdge()
-      inline int getTriangleEdge(const int &triangleId, 
-        const int &localEdgeId, int &edgeId) const{
+      inline int getTriangleEdge(const SimplexId &triangleId, 
+        const int &localEdgeId, SimplexId &edgeId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -1303,7 +1303,7 @@ namespace ttk{
       /// \param triangleId Input global triangle identifier.
       /// \return Returns the number of cells in the link of the triangle.
       /// \sa getCellEdgeNumber()
-      inline int getTriangleEdgeNumber(const int &triangleId) const{
+      inline SimplexId getTriangleEdgeNumber(const SimplexId &triangleId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -1358,7 +1358,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle edge list.
       /// \sa getCellEdges()
-      inline const std::vector<std::vector<int> > *getTriangleEdges(){
+      inline const std::vector<std::vector<SimplexId> > *getTriangleEdges(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1407,8 +1407,8 @@ namespace ttk{
       /// \param linkId Output link simplex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getTriangleLinkNumber()
-      inline int getTriangleLink(const int &triangleId, 
-        const int &localLinkId, int &linkId) const{
+      inline int getTriangleLink(const SimplexId &triangleId, 
+        const int &localLinkId, SimplexId &linkId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -1447,7 +1447,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param triangleId Input global triangle identifier.
       /// \return Returns the number of simplices in the link of the triangle. 
-      inline int getTriangleLinkNumber(const int &triangleId) const{
+      inline SimplexId getTriangleLinkNumber(const SimplexId &triangleId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -1494,7 +1494,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle link list.
-      inline const std::vector<std::vector<int> > *getTriangleLinks(){
+      inline const std::vector<std::vector<SimplexId> > *getTriangleLinks(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1537,8 +1537,8 @@ namespace ttk{
       /// \param starId Output global star cell identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getTriangleStarNumber()
-      inline int getTriangleStar(const int &triangleId,
-        const int &localStarId, int &starId) const{
+      inline int getTriangleStar(const SimplexId &triangleId,
+        const int &localStarId, SimplexId &starId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -1576,7 +1576,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param triangleId Input global triangle identifier.
       /// \return Returns the number of star cells.
-      inline int getTriangleStarNumber(const int &triangleId) const{
+      inline SimplexId getTriangleStarNumber(const SimplexId &triangleId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -1624,7 +1624,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the triangle star list.
-      inline const std::vector<std::vector<int> > *getTriangleStars(){
+      inline const std::vector<std::vector<SimplexId> > *getTriangleStars(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1664,8 +1664,8 @@ namespace ttk{
       /// \param vertexId Output global vertex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getCellVertex()
-      inline int getTriangleVertex(const int &triangleId,
-        const int &localVertexId, int &vertexId) const{
+      inline int getTriangleVertex(const SimplexId &triangleId,
+        const int &localVertexId, SimplexId &vertexId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -1715,8 +1715,8 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getVertexEdgeNumber()
       /// \sa getVertexStar()
-      inline int getVertexEdge(const int &vertexId, 
-        const int &localEdgeId, int &edgeId) const{
+      inline int getVertexEdge(const SimplexId &vertexId, 
+        const int &localEdgeId, SimplexId &edgeId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -1760,7 +1760,7 @@ namespace ttk{
       /// \param vertexId Input global vertex identifier.
       /// \return Returns the number of edges connected to the vertex.
       /// \sa getVertexStarNumber()
-      inline int getVertexEdgeNumber(const int &vertexId) const{
+      inline SimplexId getVertexEdgeNumber(const SimplexId &vertexId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -1813,7 +1813,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex edge list.
       /// \sa getVertexStars()
-      inline const std::vector<std::vector<int> > *getVertexEdges(){
+      inline const std::vector<std::vector<SimplexId> > *getVertexEdges(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -1859,8 +1859,8 @@ namespace ttk{
       /// \param linkId Output link simplex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getVertexLinkNumber()
-      inline int getVertexLink(const int &vertexId, 
-        const int &localLinkId, int &linkId) const{
+      inline int getVertexLink(const SimplexId &vertexId, 
+        const int &localLinkId, SimplexId &linkId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -1896,7 +1896,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param vertexId Input global vertex identifier.
       /// \return Returns the number of cells in the link of the vertex. 
-      inline int getVertexLinkNumber(const int &vertexId) const{
+      inline SimplexId getVertexLinkNumber(const SimplexId &vertexId) const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -1941,7 +1941,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex link list.
-      inline const std::vector<std::vector<int> > *getVertexLinks(){
+      inline const std::vector<std::vector<SimplexId> > *getVertexLinks(){
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -1978,8 +1978,8 @@ namespace ttk{
       /// \param neighborId Output global neighbor vertex identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getVertexNeighborNumber()
-      inline int getVertexNeighbor(const int &vertexId, 
-        const int &localNeighborId, int &neighborId) const{
+      inline int getVertexNeighbor(const SimplexId &vertexId, 
+        const int &localNeighborId, SimplexId &neighborId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -2012,7 +2012,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param vertexId Input global vertex identifier.
       /// \return Returns the number vertex neighbors.
-      inline int getVertexNeighborNumber(const int &vertexId) const{
+      inline SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -2056,7 +2056,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex neighbor list.
-      inline const std::vector<std::vector<int> > *getVertexNeighbors(){
+      inline const std::vector<std::vector<SimplexId> > *getVertexNeighbors(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -2082,7 +2082,7 @@ namespace ttk{
       /// \param y Output y coordinate.
       /// \param z Output z coordinate.
       /// \return Returns 0 upon success, negative values otherwise.
-      inline int getVertexPoint(const int &vertexId, 
+      inline int getVertexPoint(const SimplexId &vertexId, 
         float &x, float &y, float &z) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -2112,8 +2112,8 @@ namespace ttk{
       /// \param starId Output global star cell identifier.
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getVertexStarNumber()
-      inline int getVertexStar(const int &vertexId, 
-        const int &localStarId, int &starId) const{
+      inline int getVertexStar(const SimplexId &vertexId, 
+        const int &localStarId, SimplexId &starId) const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -2149,7 +2149,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param vertexId Input global vertex identifier
       /// \return Returns the number of star cells.
-      inline int getVertexStarNumber(const int &vertexId) const{
+      inline SimplexId getVertexStarNumber(const SimplexId &vertexId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return -1;
@@ -2194,7 +2194,7 @@ namespace ttk{
       /// \note It is recommended to exclude such a pre-processing step 
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex star list.
-      inline const std::vector<std::vector<int> > *getVertexStars(){
+      inline const std::vector<std::vector<SimplexId> > *getVertexStars(){
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return NULL;
@@ -2234,8 +2234,8 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       /// \sa getVertexTriangleNumber()
       /// \sa getVertexStar()
-      inline int getVertexTriangle(const int &vertexId,
-        const int &localTriangleId, int &triangleId) const{
+      inline int getVertexTriangle(const SimplexId &vertexId,
+        const int &localTriangleId, SimplexId &triangleId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -2282,7 +2282,7 @@ namespace ttk{
       /// \param vertexId Input global vertex identifier.
       /// \return Returns the number of vertex triangles.
       /// \sa getVertexStarNumber()
-      inline int getVertexTriangleNumber(const int &vertexId) const{
+      inline SimplexId getVertexTriangleNumber(const SimplexId &vertexId) const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -2339,7 +2339,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \return Returns a pointer to the vertex triangle list.
       /// \sa getVertexStars()
-      inline const std::vector<std::vector<int> > *getVertexTriangles(){
+      inline const std::vector<std::vector<SimplexId> > *getVertexTriangles(){
         
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
@@ -2389,7 +2389,7 @@ namespace ttk{
       /// from any time performance measurement.
       /// \param edgeId Input global edge identifier.
       /// \return Returns true if the edge is on the boundary, false otherwise.
-      inline bool isEdgeOnBoundary(const int &edgeId) const{
+      inline bool isEdgeOnBoundary(const SimplexId &edgeId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return false;
@@ -2435,7 +2435,7 @@ namespace ttk{
       /// \param triangleId Input global triangle identifier.
       /// \return Returns true if the triangle is on the boundary, false 
       /// otherwise.
-      inline bool isTriangleOnBoundary(const int &triangleId) const{
+      inline bool isTriangleOnBoundary(const SimplexId &triangleId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return false;
@@ -2472,7 +2472,7 @@ namespace ttk{
       /// \param vertexId Input global vertex identifier.
       /// \return Returns true if the vertex is on the boundary, false 
       /// otherwise.
-      inline bool isVertexOnBoundary(const int &vertexId) const{
+      inline bool isVertexOnBoundary(const SimplexId &vertexId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
         if(isEmptyCheck())
           return false;
@@ -3060,8 +3060,8 @@ namespace ttk{
       /// \warning If this ttk::Triangulation object is already representing a 
       /// valid triangulation, this information will be over-written (which 
       /// means that pre-processing functions should be called again).
-      inline int setInputCells(const int &cellNumber,
-        const long long int *cellArray){
+      inline int setInputCells(const SimplexId &cellNumber,
+        const SimplexId *cellArray){
         
         abstractTriangulation_ = &explicitTriangulation_;
         gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
@@ -3092,7 +3092,7 @@ namespace ttk{
       inline int setInputGrid(
         const float &xOrigin, const float &yOrigin, const float &zOrigin,
         const float &xSpacing, const float &ySpacing, const float &zSpacing,
-        const int &xDim, const int &yDim, const int &zDim){
+        const SimplexId &xDim, const SimplexId &yDim, const SimplexId &zDim){
       
         abstractTriangulation_ = &implicitTriangulation_;
         
@@ -3123,7 +3123,7 @@ namespace ttk{
       /// \warning If this ttk::Triangulation object is already representing a 
       /// valid triangulation, this information will be over-written (which 
       /// means that pre-processing functions should be called again).
-      inline int setInputPoints(const int &pointNumber, const void *pointSet,
+      inline int setInputPoints(const SimplexId &pointNumber, const void *pointSet,
         const bool &doublePrecision = false){
         
         abstractTriangulation_ = &explicitTriangulation_;
@@ -3133,7 +3133,7 @@ namespace ttk{
       }
 
       /// Tune the number of active threads (default: number of logical cores)
-      inline int setThreadNumber(const int &threadNumber){
+      inline int setThreadNumber(const ThreadId &threadNumber){
         explicitTriangulation_.setThreadNumber(threadNumber);
         implicitTriangulation_.setThreadNumber(threadNumber);
         threadNumber_ = threadNumber;
@@ -3161,7 +3161,7 @@ namespace ttk{
         return false;
       }
       
-      int                 gridDimensions_[3];
+      int           gridDimensions_[3];
       
       AbstractTriangulation
                           *abstractTriangulation_;

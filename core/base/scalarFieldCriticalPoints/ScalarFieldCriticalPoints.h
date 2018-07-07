@@ -45,25 +45,25 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       int execute();
       
-      char getCriticalType(const int &vertexId) const{
+      char getCriticalType(const SimplexId &vertexId) const{
         
         return getCriticalType(vertexId, triangulation_);
       }
 
-      char getCriticalType(const int &vertexId, 
+      char getCriticalType(const SimplexId &vertexId,
         Triangulation *triangulation) const;
       
-      char getCriticalType(const int &vertexId, 
-        const std::vector<std::pair<int, int> > &vertexLinkEdgeList) const;
+      char getCriticalType(const SimplexId &vertexId,
+        const std::vector<std::pair<SimplexId, SimplexId> > &vertexLinkEdgeList) const;
       
-      static bool isSosHigherThan(const int &offset0, const dataType &value0,
-        const int &offset1, const dataType &value1){
+      static bool isSosHigherThan(const SimplexId &offset0, const dataType &value0,
+        const SimplexId &offset1, const dataType &value1){
         
         return ((value0 > value1)||((value0 == value1)&&(offset0 > offset1)));
       }
       
-      static bool isSosLowerThan(const int &offset0, const dataType &value0,
-        const int &offset1, const dataType &value1){
+      static bool isSosLowerThan(const SimplexId &offset0, const dataType &value0,
+        const SimplexId &offset1, const dataType &value1){
         
         return ((value0 < value1)||((value0 == value1)&&(offset0 < offset1)));
       }
@@ -75,7 +75,7 @@ namespace ttk{
         return 0;
       }
       
-      int setOutput(std::vector<std::pair<int, char> > *criticalPoints){
+      int setOutput(std::vector<std::pair<SimplexId, char> > *criticalPoints){
         
         criticalPoints_ = criticalPoints;
         
@@ -102,7 +102,7 @@ namespace ttk{
         return 0;
       }
       
-      int setSosOffsets(std::vector<int> *offsets){
+      int setSosOffsets(std::vector<SimplexId> *offsets){
         
         sosOffsets_ = offsets;
         
@@ -110,7 +110,7 @@ namespace ttk{
       }
       
       int setVertexLinkEdgeLists(
-        const std::vector<std::vector<std::pair<int, int> > > *edgeList){
+        const std::vector<std::vector<std::pair<SimplexId, SimplexId> > > *edgeList){
         
         vertexLinkEdgeLists_ = edgeList;
         
@@ -120,7 +120,7 @@ namespace ttk{
       /// Set the number of vertices in the scalar field.
       /// \param vertexNumber Number of vertices in the data-set.
       /// \return Returns 0 upon success, negative values otherwise. 
-      int setVertexNumber(const int &vertexNumber){
+      int setVertexNumber(const SimplexId &vertexNumber){
         vertexNumber_ = vertexNumber;
         return 0;
       }
@@ -128,12 +128,13 @@ namespace ttk{
       
     protected:
       
-      int                   dimension_, vertexNumber_;
+      int                   dimension_;
+      SimplexId             vertexNumber_;
       const dataType        *scalarValues_;
-      const std::vector<std::vector<std::pair<int, int> > > *vertexLinkEdgeLists_;
-      std::vector<std::pair<int, char> > *criticalPoints_;
-      std::vector<int>           *sosOffsets_;
-      std::vector<int>           localSosOffSets_;
+      const std::vector<std::vector<std::pair<SimplexId, SimplexId> > > *vertexLinkEdgeLists_;
+      std::vector<std::pair<SimplexId, char> > *criticalPoints_;
+      std::vector<SimplexId>           *sosOffsets_;
+      std::vector<SimplexId>           localSosOffSets_;
       Triangulation         *triangulation_;
   };
 }

@@ -41,9 +41,9 @@ namespace ttk{
        * Compute the descending 1-separatrices by reading into the discrete
        * gradient.
        */
-      int getAscendingSeparatrices1(const std::vector<Cell>& criticalPoints,
+      int getAscendingSeparatrices1(const std::vector<dcg::Cell>& criticalPoints,
           std::vector<Separatrix>& separatrices,
-          std::vector<std::vector<Cell>>& separatricesGeometry) const;
+          std::vector<std::vector<dcg::Cell>>& separatricesGeometry) const;
 
   };
 }
@@ -65,9 +65,9 @@ int ttk::MorseSmaleComplex2D::execute(){
 
   // nullptr_t is implicitly convertible and comparable to any pointer type
   // or pointer-to-member type.
-  int* ascendingManifold=static_cast<int*>(outputAscendingManifold_);
-  int* descendingManifold=static_cast<int*>(outputDescendingManifold_);
-  int* morseSmaleManifold=static_cast<int*>(outputMorseSmaleManifold_);
+  dcg::simplexId_t* ascendingManifold=static_cast<dcg::simplexId_t*>(outputAscendingManifold_);
+  dcg::simplexId_t* descendingManifold=static_cast<dcg::simplexId_t*>(outputDescendingManifold_);
+  dcg::simplexId_t* morseSmaleManifold=static_cast<dcg::simplexId_t*>(outputMorseSmaleManifold_);
 
   discreteGradient_.setThreadNumber(threadNumber_);
   discreteGradient_.setDebugLevel(debugLevel_);
@@ -86,14 +86,14 @@ int ttk::MorseSmaleComplex2D::execute(){
   }
   discreteGradient_.reverseGradient<dataType>();
 
-  std::vector<Cell> criticalPoints;
+  std::vector<dcg::Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
 
   // 1-separatrices
   if(ComputeDescendingSeparatrices1){
     Timer tmp;
     std::vector<Separatrix> separatrices;
-    std::vector<std::vector<Cell>> separatricesGeometry;
+    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
     getDescendingSeparatrices1(criticalPoints, separatrices, separatricesGeometry);
     setSeparatrices1<dataType>(separatrices, separatricesGeometry);
 
@@ -109,7 +109,7 @@ int ttk::MorseSmaleComplex2D::execute(){
   if(ComputeAscendingSeparatrices1){
     Timer tmp;
     std::vector<Separatrix> separatrices;
-    std::vector<std::vector<Cell>> separatricesGeometry;
+    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
     getAscendingSeparatrices1(criticalPoints, separatrices, separatricesGeometry);
     setSeparatrices1<dataType>(separatrices, separatricesGeometry);
 
@@ -122,12 +122,12 @@ int ttk::MorseSmaleComplex2D::execute(){
     }
   }
 
-  std::vector<int> maxSeeds;
+  std::vector<dcg::simplexId_t> maxSeeds;
   {
     Timer tmp;
 
-    int numberOfMaxima{};
-    int numberOfMinima{};
+    dcg::simplexId_t numberOfMaxima{};
+    dcg::simplexId_t numberOfMinima{};
 
     if(ascendingManifold)
       setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold, numberOfMaxima);
@@ -158,7 +158,7 @@ int ttk::MorseSmaleComplex2D::execute(){
   }
 
   {
-    const int numberOfVertices=inputTriangulation_->getNumberOfVertices();
+    const dcg::simplexId_t numberOfVertices=inputTriangulation_->getNumberOfVertices();
     std::stringstream msg;
     msg << "[MorseSmaleComplex2D] Data-set (" << numberOfVertices
       << " points) processed in "

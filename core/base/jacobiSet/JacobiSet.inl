@@ -28,10 +28,10 @@ template <class dataTypeU, class dataTypeV>
 
 template <class dataTypeU, class dataTypeV> 
   int ttk::JacobiSet<dataTypeU, dataTypeV>::connectivityPreprocessing(
-    const std::vector<std::vector<int> > &edgeStarList,
-    std::vector<std::vector<std::pair<int, int> > > &edgeFanLinkEdgeLists,
-    std::vector<std::vector<long long int> > &edgeFans,
-    std::vector<int> &sosOffsets) const{
+    const std::vector<std::vector<SimplexId> > &edgeStarList,
+    std::vector<std::vector<std::pair<SimplexId, SimplexId> > > &edgeFanLinkEdgeLists,
+    std::vector<std::vector<SimplexId> > &edgeFans,
+    std::vector<SimplexId> &sosOffsets) const{
 
   Timer t;
  
@@ -49,7 +49,7 @@ template <class dataTypeU, class dataTypeV>
 
   edgeFanLinkEdgeLists.resize(edgeList_->size());
   
-  int count = 0;
+  SimplexId count = 0;
 
   // edge triangle fans [each thread writes in a different spot]
   //    for each edge
@@ -57,33 +57,33 @@ template <class dataTypeU, class dataTypeV>
   //        list of vertices
   edgeFans.resize(edgeList_->size());
   // pre-allocate memory
-  for(int i = 0; i < (int) edgeFans.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) edgeFans.size(); i++){
     // we store 4 integers per triangle per edge
     edgeFans[i].resize(edgeStarList[i].size()*4);
   }
  
   if(!sosOffsets.size()){
     sosOffsets.resize(vertexNumber_);
-    for(int i = 0; i < vertexNumber_; i++){
+    for(SimplexId i = 0; i < vertexNumber_; i++){
       sosOffsets[i] = i;
     }
   }
   
   std::vector<ZeroSkeleton> threadedLinkers(threadNumber_);
-  std::vector<std::vector<long long int> > threadedLinks(threadNumber_);
-  for(int i = 0; i < threadNumber_; i++){
+  std::vector<std::vector<SimplexId> > threadedLinks(threadNumber_);
+  for(ThreadId i = 0; i < threadNumber_; i++){
     threadedLinkers[i].setDebugLevel(debugLevel_);
     threadedLinkers[i].setThreadNumber(1);
   }
   
   std::vector<OneSkeleton> threadedEdgeListers(threadNumber_);
-  for(int i = 0; i < threadNumber_; i++){
+  for(ThreadId i = 0; i < threadNumber_; i++){
     threadedEdgeListers[i].setDebugLevel(debugLevel_);
     threadedEdgeListers[i].setThreadNumber(1);
   }
  
-  std::vector<std::vector<int> > threadedTriangleIds(threadNumber_);
-  for(int i = 0; i < (int) threadedTriangleIds.size(); i++){
+  std::vector<std::vector<SimplexId> > threadedTriangleIds(threadNumber_);
+  for(SimplexId i = 0; i < (SimplexId) threadedTriangleIds.size(); i++){
     threadedTriangleIds[i].resize(4);
     threadedTriangleIds[i][0] = 3;
   }
@@ -93,25 +93,25 @@ template <class dataTypeU, class dataTypeV>
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
-  for(int i = 0; i < (int) edgeList_->size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) edgeList_->size(); i++){
 
     // avoid any processing if the abort signal is sent
     if((!wrapper_)||((wrapper_)&&(!wrapper_->needsToAbort()))){
 
-      int threadId = 0;
+      ThreadId threadId = 0;
 #ifdef TTK_ENABLE_OPENMP
       threadId = omp_get_thread_num();
 #endif
       
       // processing here!
-      int pivotVertexId = (*edgeList_)[i].first;
-      int otherExtremityId = (*edgeList_)[i].second;
+      SimplexId pivotVertexId = (*edgeList_)[i].first;
+      SimplexId otherExtremityId = (*edgeList_)[i].second;
       
       // A) compute triangle fans
       // format: #vertices, id0, id1, id2, etc.
-      for(int j = 0; j < (int) edgeStarList[i].size(); j++){
+      for(SimplexId j = 0; j < (SimplexId) edgeStarList[i].size(); j++){
         
-        int tetId = edgeStarList[i][j];
+        SimplexId tetId = edgeStarList[i][j];
         
         // loop over the tet's triangles and add that to the list
         // no need for check, only one triangle verifies this and two tets
@@ -132,7 +132,7 @@ template <class dataTypeU, class dataTypeV>
           }
           
           if((hasPivotVertex)&&(!hasOtherExtremity)){
-            for(int l = 0; l < (int) threadedTriangleIds[threadId].size(); l++){
+            for(SimplexId l = 0; l < (SimplexId) threadedTriangleIds[threadId].size(); l++){
               edgeFans[i][j*4 + l] = 
                 threadedTriangleIds[threadId][l];
             }
@@ -188,7 +188,7 @@ template <class dataTypeU, class dataTypeV>
 
 template <class dataTypeU, class dataTypeV> 
   int ttk::JacobiSet<dataTypeU, dataTypeV>::execute(
-    std::vector<std::pair<int, char> > &jacobiSet){
+    std::vector<std::pair<SimplexId, char> > &jacobiSet){
 
   Timer t;
   
@@ -206,17 +206,17 @@ template <class dataTypeU, class dataTypeV>
     return -3;
 #endif
 
-  int vertexNumber = triangulation_->getNumberOfVertices();
+  SimplexId vertexNumber = triangulation_->getNumberOfVertices();
   
   if(!sosOffsetsU_){
     // let's use our own local copy
     sosOffsetsU_ = &localSosOffsetsU_;
   }
 
-  if(vertexNumber != (int) sosOffsetsU_->size()){
+  if(vertexNumber != (SimplexId) sosOffsetsU_->size()){
     
     sosOffsetsU_->resize(vertexNumber);
-    for(int i = 0; i < vertexNumber; i++){
+    for(SimplexId i = 0; i < vertexNumber; i++){
       (*sosOffsetsU_)[i] = i;
     }
   }
@@ -226,49 +226,49 @@ template <class dataTypeU, class dataTypeV>
     sosOffsetsV_ = &localSosOffsetsV_;
   }
 
-  if(vertexNumber != (int) sosOffsetsV_->size()){
+  if(vertexNumber != (SimplexId) sosOffsetsV_->size()){
     
     sosOffsetsV_->resize(vertexNumber);
-    for(int i = 0; i < vertexNumber; i++){
+    for(SimplexId i = 0; i < vertexNumber; i++){
       (*sosOffsetsV_)[i] = vertexNumber - i;
     }
   }
   
   jacobiSet.clear();
  
-  int edgeNumber = triangulation_->getNumberOfEdges();
+  SimplexId edgeNumber = triangulation_->getNumberOfEdges();
   
-  std::vector<std::vector<std::pair<int, char> > > threadedCriticalTypes(threadNumber_);
+  std::vector<std::vector<std::pair<SimplexId, char> > > threadedCriticalTypes(threadNumber_);
   
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < edgeNumber; i++){
+  for(SimplexId i = 0; i < edgeNumber; i++){
     
     char type = getCriticalType(i);
     
     if(type != -2){
       // -2: regular vertex
-      int threadId = 0;
+      ThreadId threadId = 0;
 #ifdef TTK_ENABLE_OPENMP
       threadId = omp_get_thread_num();
 #endif
-      threadedCriticalTypes[threadId].push_back(std::pair<int, char>(i, type));
+      threadedCriticalTypes[threadId].push_back(std::pair<SimplexId, char>(i, type));
     }
   }
   
   // now merge the threaded lists
-  for(int i = 0; i < threadNumber_; i++){
-    for(int j = 0; j < (int) threadedCriticalTypes[i].size(); j++){
+  for(SimplexId i = 0; i < threadNumber_; i++){
+    for(SimplexId j = 0; j < (SimplexId) threadedCriticalTypes[i].size(); j++){
       jacobiSet.push_back(threadedCriticalTypes[i][j]);
     }
   }
   
   if(debugLevel_ >= Debug::infoMsg){
-    int minimumNumber = 0, saddleNumber = 0, maximumNumber = 0, 
+    SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0, 
       monkeySaddleNumber = 0;
       
-    for(int i = 0; i < (int) jacobiSet.size(); i++){
+    for(SimplexId i = 0; i < (SimplexId) jacobiSet.size(); i++){
       switch(jacobiSet[i].second){
         case 0:
           minimumNumber++;
@@ -314,7 +314,7 @@ std::endl;
 
 template <class dataTypeU, class dataTypeV> 
   int ttk::JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
-    std::vector<std::pair<int, char> > &jacobiSet){
+    std::vector<std::pair<SimplexId, char> > &jacobiSet){
 
   Timer t;
  
@@ -342,7 +342,7 @@ template <class dataTypeU, class dataTypeV>
     return -7;
 #endif
 
-  int count = 0;
+  SimplexId count = 0;
   
   jacobiSet.clear();
   
@@ -353,13 +353,13 @@ template <class dataTypeU, class dataTypeV>
   // for each thread
   //      for each vertex: distance field map
   std::vector<std::vector<double> > threadedDistanceField(threadNumber_);
-  for(int i = 0; i < (int) threadedDistanceField.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) threadedDistanceField.size(); i++){
     threadedDistanceField[i].resize(vertexNumber_);
   }
   
   std::vector<ScalarFieldCriticalPoints<double> > 
     threadedCriticalPoints(threadNumber_);
-  for(int i = 0; i < threadNumber_; i++){
+  for(ThreadId i = 0; i < threadNumber_; i++){
     threadedCriticalPoints[i].setDomainDimension(2);
     threadedCriticalPoints[i].setScalarValues(
       threadedDistanceField[i].data());
@@ -367,26 +367,26 @@ template <class dataTypeU, class dataTypeV>
     threadedCriticalPoints[i].setSosOffsets(sosOffsetsU_);
   }
 
-  std::vector<std::vector<std::pair<int, char> > > threadedCriticalTypes(threadNumber_);
+  std::vector<std::vector<std::pair<SimplexId, char> > > threadedCriticalTypes(threadNumber_);
 
 #ifdef TTK_ENABLE_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
-  for(int i = 0; i < (int) edgeList_->size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) edgeList_->size(); i++){
 
     // avoid any processing if the abort signal is sent
     if((!wrapper_)||((wrapper_)&&(!wrapper_->needsToAbort()))){
 
-      int threadId = 0;
+      ThreadId threadId = 0;
 #ifdef TTK_ENABLE_OPENMP
       threadId = omp_get_thread_num();
 #endif
       
       // processing here!
-      int pivotVertexId = (*edgeList_)[i].first;
-      int otherExtremityId = (*edgeList_)[i].second;
+      SimplexId pivotVertexId = (*edgeList_)[i].first;
+      SimplexId otherExtremityId = (*edgeList_)[i].second;
      
       // A) compute the distance field
       double projectedPivotVertex[2];
@@ -405,10 +405,10 @@ template <class dataTypeU, class dataTypeV>
       rangeNormal[0] = -rangeEdge[1];
       rangeNormal[1] = rangeEdge[0];
       
-      for(int j = 0; j < (int) (*edgeFans_)[i].size()/4; j++){
+      for(SimplexId j = 0; j < (SimplexId) (*edgeFans_)[i].size()/4; j++){
         for(int k = 0; k < 3; k++){
           
-          int vertexId = (*edgeFans_)[i][j*4 + 1 + k];
+          SimplexId vertexId = (*edgeFans_)[i][j*4 + 1 + k];
           
           // we can compute the distance field (in the rage)
           double projectedVertex[2];
@@ -438,7 +438,7 @@ template <class dataTypeU, class dataTypeV>
         
       if(type != -2){
         // -2: regular vertex
-        threadedCriticalTypes[threadId].push_back(std::pair<int, char>(i, type));
+        threadedCriticalTypes[threadId].push_back(std::pair<SimplexId, char>(i, type));
       }
       
       // update the progress bar of the wrapping code -- to adapt
@@ -461,8 +461,8 @@ template <class dataTypeU, class dataTypeV>
   }
   
   // now merge the threaded lists
-  for(int i = 0; i < threadNumber_; i++){
-    for(int j = 0; j < (int) threadedCriticalTypes[i].size(); j++){
+  for(ThreadId i = 0; i < threadNumber_; i++){
+    for(SimplexId j = 0; j < (SimplexId) threadedCriticalTypes[i].size(); j++){
       jacobiSet.push_back(threadedCriticalTypes[i][j]);
     }
   }
@@ -472,10 +472,10 @@ template <class dataTypeU, class dataTypeV>
 #endif
  
   if(debugLevel_ >= Debug::infoMsg){
-    int minimumNumber = 0, saddleNumber = 0, maximumNumber = 0, 
+    SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0, 
       monkeySaddleNumber = 0;
       
-    for(int i = 0; i < (int) jacobiSet.size(); i++){
+    for(SimplexId i = 0; i < (SimplexId) jacobiSet.size(); i++){
       switch(jacobiSet[i].second){
         case 0:
           minimumNumber++;
@@ -520,12 +520,12 @@ std::endl;
 }
 
 template <class dataTypeU, class dataTypeV> 
-  char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(const int &edgeId){
+  char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(const SimplexId &edgeId){
   
   dataTypeU *uField = (dataTypeU *) uField_;
   dataTypeV *vField = (dataTypeV *) vField_;
   
-  int vertexId0 = -1, vertexId1 = -1;
+  SimplexId vertexId0 = -1, vertexId1 = -1;
   triangulation_->getEdgeVertex(edgeId, 0, vertexId0);
   triangulation_->getEdgeVertex(edgeId, 1, vertexId1);
   
@@ -545,25 +545,25 @@ template <class dataTypeU, class dataTypeV>
   rangeNormal[0] = -rangeEdge[1];
   rangeNormal[1] = rangeEdge[0];
   
-  int starNumber = triangulation_->getEdgeStarNumber(edgeId);
-  std::vector<int> lowerNeighbors, upperNeighbors;
+  SimplexId starNumber = triangulation_->getEdgeStarNumber(edgeId);
+  std::vector<SimplexId> lowerNeighbors, upperNeighbors;
   
-  int neighborNumber = 0;
+  SimplexId neighborNumber = 0;
   
-  for(int i = 0; i < starNumber; i++){
+  for(SimplexId i = 0; i < starNumber; i++){
     
-    int tetId = -1;
+    SimplexId tetId = -1;
     triangulation_->getEdgeStar(edgeId, i, tetId);
     
-    int vertexNumber = triangulation_->getCellVertexNumber(tetId);
-    for(int j = 0; j < vertexNumber; j++){
-      int vertexId = -1;
+    SimplexId vertexNumber = triangulation_->getCellVertexNumber(tetId);
+    for(SimplexId j = 0; j < vertexNumber; j++){
+      SimplexId vertexId = -1;
       triangulation_->getCellVertex(tetId, j, vertexId);
       
       if((vertexId != -1)&&(vertexId != vertexId0)&&(vertexId != vertexId1)){
         // new neighbor
         bool isIn = false;
-        for(int k = 0; k < (int) lowerNeighbors.size(); k++){
+        for(SimplexId k = 0; k < (SimplexId) lowerNeighbors.size(); k++){
           if(vertexId == lowerNeighbors[k]){
             isIn = true;
             break;
@@ -571,7 +571,7 @@ template <class dataTypeU, class dataTypeV>
         }
         
         if(!isIn){
-          for(int k = 0; k < (int) upperNeighbors.size(); k++){
+          for(SimplexId k = 0; k < (SimplexId) upperNeighbors.size(); k++){
             if(vertexId == upperNeighbors[k]){
               isIn = true;
               break;
@@ -659,7 +659,7 @@ template <class dataTypeU, class dataTypeV>
   }
   
   // at this point, we know if each vertex of the edge link is higher or not.
-  if((int) (lowerNeighbors.size() + upperNeighbors.size()) != neighborNumber){
+  if((SimplexId) (lowerNeighbors.size() + upperNeighbors.size()) != neighborNumber){
     // Inconsistent offsets (cf above error message)
     return -2;
   }
@@ -679,46 +679,46 @@ template <class dataTypeU, class dataTypeV>
   std::vector<UnionFind> upperSeeds(upperNeighbors.size());
   std::vector<UnionFind *> upperList(upperNeighbors.size());
   
-  for(int i = 0; i < (int) lowerSeeds.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) lowerSeeds.size(); i++){
     lowerList[i] = &(lowerSeeds[i]);
   }
-  for(int i = 0; i < (int) upperSeeds.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId) upperSeeds.size(); i++){
     upperList[i] = &(upperSeeds[i]);
   }
   
-  for(int i = 0; i < starNumber; i++){
+  for(SimplexId i = 0; i < starNumber; i++){
     
-    int tetId = -1;
+    SimplexId tetId = -1;
     triangulation_->getEdgeStar(edgeId, i, tetId);
     
-    int vertexNumber = triangulation_->getCellVertexNumber(tetId);
-    for(int j = 0; j < vertexNumber; j++){
-      int edgeVertexId0 = -1;
+    SimplexId vertexNumber = triangulation_->getCellVertexNumber(tetId);
+    for(SimplexId j = 0; j < vertexNumber; j++){
+      SimplexId edgeVertexId0 = -1;
       triangulation_->getCellVertex(tetId, j, edgeVertexId0);
       if((edgeVertexId0 != vertexId0)&&(edgeVertexId0 != vertexId1)){
-        for(int k = j + 1; k < vertexNumber; k++){
-          int edgeVertexId1 = -1;
+        for(SimplexId k = j + 1; k < vertexNumber; k++){
+          SimplexId edgeVertexId1 = -1;
           triangulation_->getCellVertex(tetId, k, edgeVertexId1);
           if((edgeVertexId1 != vertexId0)&&(edgeVertexId1 != vertexId1)){
             // processing the edge (edgeVertexId0, edgeVertexId1)
             
             // we need to find out if they're lower or not
             bool lower0 = false;
-            for(int l = 0; l < (int) lowerNeighbors.size(); l++){
+            for(SimplexId l = 0; l < (SimplexId) lowerNeighbors.size(); l++){
               if(lowerNeighbors[l] == edgeVertexId0){
                 lower0 = true;
                 break;
               }
             }
             bool lower1 = false;
-            for(int l = 0; l < (int) lowerNeighbors.size(); l++){
+            for(SimplexId l = 0; l < (SimplexId) lowerNeighbors.size(); l++){
               if(lowerNeighbors[l] == edgeVertexId1){
                 lower1 = true;
                 break;
               }
             }
             
-            std::vector<int> *neighbors = &lowerNeighbors;
+            std::vector<SimplexId> *neighbors = &lowerNeighbors;
             std::vector<UnionFind *> *seeds = &lowerList;
             
             if(!lower0){
@@ -728,8 +728,8 @@ template <class dataTypeU, class dataTypeV>
             
             if(lower0 == lower1){
               // connect their union-find sets!
-              int lowerId0 = -1, lowerId1 = -1;
-              for(int l = 0; l < (int) neighbors->size(); l++){
+              SimplexId lowerId0 = -1, lowerId1 = -1;
+              for(SimplexId l = 0; l < (SimplexId) neighbors->size(); l++){
                 if((*neighbors)[l] == edgeVertexId0){
                   lowerId0 = l;
                 }
@@ -753,9 +753,9 @@ template <class dataTypeU, class dataTypeV>
   }
   
   // update the UF if necessary
-  for(int i = 0; i < (int) lowerList.size(); i++)
+  for(SimplexId i = 0; i < (SimplexId) lowerList.size(); i++)
     lowerList[i] = lowerList[i]->find();
-  for(int i = 0; i < (int) upperList.size(); i++)
+  for(SimplexId i = 0; i < (SimplexId) upperList.size(); i++)
     upperList[i] = upperList[i]->find();
   
   std::vector<UnionFind *>::iterator it;
@@ -792,7 +792,7 @@ template <class dataTypeU, class dataTypeV>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int i = 0; i < vertexNumber_; i++){
+  for(SimplexId i = 0; i < vertexNumber_; i++){
     // simulation of simplicity in 2 dimensions, need to use degree 2 polynoms
     
     uField[i] += i*uEpsilon;

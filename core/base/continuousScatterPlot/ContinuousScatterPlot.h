@@ -34,7 +34,7 @@ namespace ttk{
       template<typename dataType1, typename dataType2>
         int execute() const;
 
-      inline int setVertexNumber(const int& vertexNumber){
+      inline int setVertexNumber(const SimplexId& vertexNumber){
         vertexNumber_=vertexNumber;
         return 0;
       }
@@ -52,7 +52,7 @@ namespace ttk{
         return 0;
       }
 
-      inline int setResolutions(const int& resolutionX, const int& resolutionY){
+      inline int setResolutions(const SimplexId& resolutionX, const SimplexId& resolutionY){
         resolutions_[0]=resolutionX;
         resolutions_[1]=resolutionY;
         return 0;
@@ -90,11 +90,11 @@ namespace ttk{
 
     protected:
 
-      int vertexNumber_;
+      SimplexId vertexNumber_;
       Triangulation* triangulation_;
       bool withDummyValue_;
       double dummyValue_;
-      int resolutions_[2];
+      SimplexId resolutions_[2];
       void* inputScalarField1_;
       void* inputScalarField2_;
       double* scalarMin_;
@@ -129,7 +129,7 @@ template<typename dataType1, typename dataType2>
   Timer t;
 
   // helpers:
-  const int numberOfCells=triangulation_->getNumberOfCells();
+  const SimplexId numberOfCells=triangulation_->getNumberOfCells();
 
   // rendering helpers:
   // constant ray direction (ortho)
@@ -142,11 +142,11 @@ delta[2]{scalarMax_[0]-scalarMin_[0],scalarMax_[1]-scalarMin_[1]};
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(int cell=0; cell<numberOfCells; ++cell){
+  for(SimplexId cell=0; cell<numberOfCells; ++cell){
     bool isDummy{};
 
     // get tetrahedron info
-    int vertex[4];
+    SimplexId vertex[4];
     double data[4][3];
     float position[4][3];
     double localScalarMin[2]{};
@@ -265,9 +265,9 @@ k][2]);
 
     // projection:
     double density{};
-    std::vector<std::vector<int>> triangles;
+    std::vector<std::vector<SimplexId>> triangles;
     double imaginaryPosition[3]{};
-    std::vector<int> triangle(3);
+    std::vector<SimplexId> triangle(3);
     // class 0
     if(isInTriangle){
       // mass density
@@ -409,13 +409,13 @@ p1[k]=position[index[2]][k]+r1*(position[index[3]][k]-position[index[2]][k]);
     // "Fast, Minimum Storage Ray/Triangle Intersection", Tomas Moller & Ben 
     // Trumbore
     {
-      const int minI=floor((localScalarMin[0]-scalarMin_[0])/sampling[0]);
-      const int minJ=floor((localScalarMin[1]-scalarMin_[1])/sampling[1]);
-      const int maxI=ceil((localScalarMax[0]-scalarMin_[0])/sampling[0]);
-      const int maxJ=ceil((localScalarMax[1]-scalarMin_[1])/sampling[1]);
+      const SimplexId minI=floor((localScalarMin[0]-scalarMin_[0])/sampling[0]);
+      const SimplexId minJ=floor((localScalarMin[1]-scalarMin_[1])/sampling[1]);
+      const SimplexId maxI=ceil((localScalarMax[0]-scalarMin_[0])/sampling[0]);
+      const SimplexId maxJ=ceil((localScalarMax[1]-scalarMin_[1])/sampling[1]);
 
-      for(int i=minI; i<maxI; ++i){
-        for(int j=minJ; j<maxJ; ++j){
+      for(SimplexId i=minI; i<maxI; ++i){
+        for(SimplexId j=minJ; j<maxJ; ++j){
           // set ray origin
           const double 
 o[3]{scalarMin_[0]+i*sampling[0],scalarMin_[1]+j*sampling[1],1};
