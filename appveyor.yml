@@ -53,8 +53,8 @@ before_build:
       git clone --recursive --branch %BOOST_VERSION% https://github.com/boostorg/boost.git Boost &
       cd Boost &
       git checkout master &
-      .\bootstrap &
-      .\b2 headers
+      ./bootstrap.sh &
+      ./b2 headers
     )
   # Checkout VTK source tree
   - if not exist "%VTK_SOURCE_DIR%" (
