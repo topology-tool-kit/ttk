@@ -133,6 +133,11 @@ class TopologicalCompression : public Debug
       return 0;
     }
 
+    inline int setFileName(char *fn) {
+      fileName = fn;
+      return 0;
+    }
+
     inline int setupTriangulation(Triangulation *triangulation)
     {
       triangulation_ = triangulation;
@@ -429,6 +434,7 @@ class TopologicalCompression : public Debug
     std::vector<int>            decompressedOffsets_;
     std::vector<int>            compressedOffsets_;
     int                         vertexNumberRead_;
+    char                        *fileName;
 };
 
 // End namespace ttk.
@@ -515,7 +521,16 @@ int ttk::TopologicalCompression::WriteToFile(
   std::vector<char> bbuf(totalSize);
   char *buf = bbuf.data();
   size_t len = (size_t) totalSize;
+
+  #ifndef _MSC_VER
   FILE *fm = fmemopen(buf, len, "r+");
+  #else
+  std::stringstream str;
+  str << fileName << ".temp";
+  const std::string s = str.str();
+  const char* ffn = s.c_str();
+  FILE *fm = fopen(ffn, "wb");
+  #endif
 
   // [->fm] Encode, lossless compress and write topology.
   if (!(zfpOnly)) {
@@ -544,6 +559,13 @@ int ttk::TopologicalCompression::WriteToFile(
     status = WriteOtherGeometry<double>(fm);
 
   fclose(fm); // !Close stream to write changes!
+  #ifdef _MSC_VER
+  fm = fopen(ffn, "rb");
+  fread(buf, len, sizeof(char), fm);
+  fclose(fm);
+  remove(ffn);
+  #endif
+
   if (status == 0) {
     {
       std::stringstream msg;
@@ -765,7 +787,19 @@ int ttk::TopologicalCompression::ReadFromFile(
 
   // [fm->] Read data.
   char *buf = reinterpret_cast<char*>(dest);
+
+  #ifndef _MSC_VER
   FILE *fm = fmemopen(buf, destLen, "r+");
+  #else
+  std::stringstream str;
+  str << fileName << ".temp";
+  const std::string s = str.str();
+  const char* ffn = s.c_str();
+  FILE *ftemp = fopen(ffn, "wb");
+  fwrite(buf, destLen, sizeof(char), ftemp);
+  fclose(ftemp);
+  FILE *fm = fopen(ffn, "rb");
+  #endif
 
   // Do read topology.
   if (!(zfpOnly_)) {
@@ -790,6 +824,9 @@ int ttk::TopologicalCompression::ReadFromFile(
     status = ReadOtherGeometry<double>(fm);
 
   fclose(fm);
+  #ifdef _MSC_VER
+  remove(ffn);
+  #endif
   fclose(fp);
 
   if (status == 0) {

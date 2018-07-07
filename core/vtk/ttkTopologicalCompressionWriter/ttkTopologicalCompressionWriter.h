@@ -35,7 +35,11 @@
 #include                  <fstream>
 #include                  <limits.h>
 
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkTopologicalCompressionWriter
+#else
+class ttkTopologicalCompressionWriter
+#endif
     : public vtkWriter
 {
 

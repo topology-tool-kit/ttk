@@ -45,7 +45,11 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK 
 // class your wrapper should inherit.
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkTopologicalCompression 
+#else
+class ttkTopologicalCompression
+#endif
   : public vtkDataSetAlgorithm, public ttk::Wrapper
 {
 
