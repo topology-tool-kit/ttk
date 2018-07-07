@@ -50,7 +50,7 @@ before_build:
   # Checkout Boost source tree
   - if not exist "%BOOST_SOURCE_DIR%" (
       cd C:/projects/ &
-      it clone --depth 1 --branch %BOOST_VERSION% https://github.com/boostorg/boost.git Boost 
+      git clone --depth 1 --branch %BOOST_VERSION% https://github.com/boostorg/boost.git Boost 
     )
   # Checkout VTK source tree
   - if not exist "%VTK_SOURCE_DIR%" (
