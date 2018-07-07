@@ -24,7 +24,7 @@ environment:
   VTK_SOURCE_DIR: "C:/projects/VTK"
   VTK_BINARY_DIR: "C:/projects/VTK-build"
   BOOST_VERSION: boost-1.65.0
-  BOOST_SOURCE_DIR: "C:/projects/Boost/boost-boost-1.65.0"
+  BOOST_SOURCE_DIR: "C:/projects/boost_1_67_0"
   BUILD_TYPE: Release
   CTEST_SOURCE_DIRECTORY: "%APPVEYOR_BUILD_FOLDER%"
   CTEST_BINARY_DIRECTORY: "%APPVEYOR_BUILD_FOLDER%/build"
@@ -50,8 +50,8 @@ before_build:
   # Checkout Boost source tree
   - if not exist "%BOOST_SOURCE_DIR%" (
       cd C:/projects/ &
-      bitsadmin.exe /transfer "NAME" https://github.com/boostorg/boost/archive/boost-1.65.0.zip C:/projects/ &
-      unzip boost-1.65.0.zip
+      bitsadmin.exe /transfer boostDownload /download /priority normal  https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.zip C:/projects/boost_1_67_0.zip &
+      unzip boost_1_67_0.zip
     )
   # Checkout VTK source tree
   - if not exist "%VTK_SOURCE_DIR%" (
