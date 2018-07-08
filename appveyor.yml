@@ -63,7 +63,7 @@ before_build:
   # Build VTK
   - if not exist "%VTK_BINARY_DIR%" (
       cd C:/projects/ &
-      mkdir "%VTK_BINARY_DIR%" & cd "%VTK_BINARY_DIR%" & cmake -G "%GENERATOR%" -DBUILD_TESTING:BOOL=OFF ../VTK & cmake --build . --config %BUILD_TYPE% &
+      mkdir "%VTK_BINARY_DIR%" & cd "%VTK_BINARY_DIR%" & cmake -G "%GENERATOR%" -DBUILD_TESTING:BOOL=OFF ../VTK -DCMAKE_CONFIGURATION_TYPES=%BUILD_TYPE% & cmake --build . --config %BUILD_TYPE% &
       exit 1
     )
   
