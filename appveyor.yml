@@ -41,7 +41,7 @@ cache:
   # Caching VTK source and build tree
   - '%BOOST_SOURCE_DIR%'
   - '%VTK_SOURCE_DIR%'
-#  - '%VTK_BINARY_DIR%'
+  - '%VTK_BINARY_DIR%'
 
 build:
   parallel: true
