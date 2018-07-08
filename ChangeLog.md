@@ -5,6 +5,7 @@
 ### 0.9.6
 - Fixed major performance bug with discrete gradient (thanks to Attila Gyulassy)
 - TDA aware compression (with ZLIB and ZFP support)
+- New flexible addressing scheme (up to long long int) for extreme size datasets
 - Various bug fixes
 - Improved examples
 
