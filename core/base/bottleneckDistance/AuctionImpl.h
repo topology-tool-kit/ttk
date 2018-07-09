@@ -17,6 +17,7 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_inde
 		
 		GoodDiagram<dataType>* all_goods = b.isDiagonal() ? diagonal_goods_ : goods_;
 		Good<dataType>& twin_good = b.id_>=0 ? diagonal_goods_->get(b.id_) : goods_->get(-b.id_-1);
+		//dataType eps = epsilon_*(1+0.05*n_biddings/bidders_->size());
 		int idx_reassigned;
 		if(b.isDiagonal()){
 			if(use_kdt_){
@@ -35,9 +36,10 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_inde
 				idx_reassigned = b.runBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_);
 			}
 		}
-		if(n_bidders_==1){
-			std::cout<< n_biddings << ", " <<idx_reassigned<< ", " << b.getProperty()->id_ << ", " <<b.getProperty()->getPrice() << std::endl;
-		}
+		/*if(n_biddings>-1){
+			std::cout.precision(10);
+			std::cout<< n_biddings << ", out : " <<idx_reassigned<< ", " << b.id_ << "->" << b.getProperty()->id_ << ", distance : "<< b.cost(b.getProperty(), wasserstein_, geometricalFactor_) << ", price : " <<b.getProperty()->getPrice() << ", diagonal ? " << b.isDiagonal() << ", "<< b.getProperty()->isDiagonal() << std::endl;
+		}*/
 		if(idx_reassigned>=0){
 			Bidder<dataType>& reassigned = bidders_->get(idx_reassigned);
 			reassigned.setProperty(NULL);
@@ -64,6 +66,9 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(std::vector<matchingTup
 				matchings->push_back(t);
 			}
 			else{
+				if(!b.getProperty()->isDiagonal()){
+					std::cout<< "Huho" <<std::endl;
+				}
 				cost = 2*pow(abs<dataType>((b.y_-b.x_)/2), wasserstein_);
 				if(get_diagonal_matches){
 					matchingTuple t = std::make_tuple(i, good_id, cost);

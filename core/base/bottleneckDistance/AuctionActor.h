@@ -56,6 +56,7 @@ namespace ttk{
 		
 		void SetCoordinates(dataType& x, dataType& y);
 		void SetCriticalCoordinates(dataType& coords_x, dataType& coords_y, dataType& coords_z);
+		std::tuple<dataType, dataType, dataType> GetCriticalCoordinates();
 		void projectOnDiagonal();
 		int getId();
 		dataType getPersistence();
@@ -92,6 +93,11 @@ namespace ttk{
 		coords_x_ = coords_x;
 		coords_y_ = coords_y;
 		coords_z_ = coords_z;
+	}
+	
+	template<typename dataType>
+	std::tuple<dataType, dataType, dataType> AuctionActor<dataType>::GetCriticalCoordinates(){
+		return std::make_tuple(coords_x_, coords_y_, coords_z_);
 	}
 	
 	template<typename dataType>
@@ -144,6 +150,8 @@ namespace ttk{
 		 {
 			 owner_= -1;
 			 price_ = 0;
+			 AuctionActor<dataType>::is_diagonal_ = is_diagonal;
+			 AuctionActor<dataType>::id_ = id;
          }
          
          Good(diagramTuple& tuple, int id) : AuctionActor<dataType>(){
@@ -248,6 +256,8 @@ namespace ttk{
              price_paid_ = 0;
              diagonal_price_ = 0;
 			 property_ = NULL;
+			 AuctionActor<dataType>::is_diagonal_ = is_diagonal;
+			 AuctionActor<dataType>::id_ = id;
          }
          
 		Bidder(diagramTuple& tuple, int id) : AuctionActor<dataType>()  {
@@ -541,10 +551,7 @@ namespace ttk{
 
 		dataType old_price = best_good->getPrice();
 		dataType new_price = old_price + best_val-second_val + epsilon;
-		if(new_price>1000000){
-			// Useless line, just for debug
-			this->setPricePaid(new_price);
-		}
+
 		// Assign bidder to best_good
 		this->setProperty(best_good);
 		this->setPricePaid(new_price);

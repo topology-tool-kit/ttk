@@ -74,6 +74,7 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 			persistenceDiagramsBarycenter.setTimeLimit(TimeLimit);
 			persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
 			persistenceDiagramsBarycenter.setThreadNumber(ThreadNumber);
+			persistenceDiagramsBarycenter.setAlpha(Alpha);
 			
 			std::vector<std::vector<macroDiagramTuple>*> all_CTDiagrams(numInputs);
 			for (int i = 0; i<numInputs; i++) {

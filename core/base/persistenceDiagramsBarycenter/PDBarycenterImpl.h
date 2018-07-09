@@ -54,7 +54,11 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		n_iterations += 1;
 		dataType rho = getRho(epsilon);
 		if(use_progressive_ && n_iterations>1 && min_persistence>rho){
-			epsilon = getEpsilon(min_persistence);
+			dataType epsilon_candidate = getEpsilon(min_persistence);
+			if(epsilon_candidate>epsilon){
+				// Should always be the case
+				epsilon = epsilon_candidate;
+			}
 			min_persistence = this->enrichCurrentBidderDiagrams(min_persistence, rho, min_diag_price, min_points_to_add);
 			
 			// TODO Enrich barycenter using median diagonal and off-diagonal prices
@@ -92,7 +96,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 			total_cost += cost;
 			std::cout<< "Barycenter cost for diagram " << i <<" : "<< cost << std::endl;
 			std::cout<< "Number of biddings : " << n_biddings << std::endl;
-			// Resizes the diagram which was enrich during the auction 
+			// Resizes the diagram which was enrich with diagonal bidders during the auction 
 			// TODO do this inside the auction !
 			current_bidder_diagrams_[i].bidders_.resize(sizes[i]);
 		}
@@ -107,12 +111,10 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 			dataType max_shift = updateBarycenter(all_matchings);
 			std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 		
-			dataType eps_candidate = getEpsilon(pow(max_shift, 1./wasserstein_));
+			dataType eps_candidate = 4 * getEpsilon(pow(max_shift, 1./wasserstein_));
 			dataType eps_candidate_2 = ((double)epsilon)/5.0;
 			
-			if(eps_candidate<epsilon){
-				epsilon = eps_candidate;
-			}
+			epsilon = eps_candidate;
 			if(eps_candidate_2>epsilon){
 				epsilon = eps_candidate_2;
 			}
@@ -212,10 +214,16 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 	std::vector<unsigned int> count_diag_matchings(n_goods);     // Number of diagonal matchings for each point of the barycenter
 	std::vector<dataType> x(n_goods);
 	std::vector<dataType> y(n_goods);
+	std::vector<dataType> crit_coords_x(n_goods);
+	std::vector<dataType> crit_coords_y(n_goods);
+	std::vector<dataType> crit_coords_z(n_goods);
 	for(unsigned int i=0; i<n_goods; i++){
 		count_diag_matchings[i] = 0;
 		x[i] = 0;
 		y[i] = 0;
+		crit_coords_x[i] = 0;
+		crit_coords_y[i] = 0;
+		crit_coords_z[i] = 0;
 	}
 	std::vector<dataType> min_prices(n_diagrams);
 	for(unsigned int j=0; j<n_diagrams; j++){
@@ -229,8 +237,6 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 			int bidder_id = std::get<0>(matchings[j][i]);
 			int good_id = std::get<1>(matchings[j][i]);
 			
-			//int pos = current_bidder_ids_[j][bidder_id];
-			
 			if(good_id<0 && bidder_id>=0){
 				// Future new barycenter point
 				points_to_append.push_back(&current_bidder_diagrams_[j].get(bidder_id));
@@ -239,9 +245,15 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 				// Update coordinates (to be divided by the number of diagrams later on)
 				x[good_id] += current_bidder_diagrams_[j].get(bidder_id).x_;
 				y[good_id] += current_bidder_diagrams_[j].get(bidder_id).y_;
+				if(geometrical_factor_<1){
+					std::tuple<dataType, dataType, dataType> critical_coordinates = current_bidder_diagrams_[j].get(bidder_id).GetCriticalCoordinates();
+					crit_coords_x[good_id] += std::get<0>(critical_coordinates);
+					crit_coords_y[good_id] += std::get<1>(critical_coordinates);
+					crit_coords_z[good_id] += std::get<2>(critical_coordinates);
+				}
 			}
 			else if(good_id>=0 && bidder_id<0){
-				// Counting the number of times this point is linked to the diagonal
+				// Counting the number of times this barycenter point is linked to the diagonal
 				count_diag_matchings[good_id] = count_diag_matchings[good_id] + 1;
 			}
 		}
@@ -257,7 +269,13 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 			// 3.2 Compute the new coordinates of the point (the more linked to the diagonal it was, the closer to the diagonal it'll be)
 			dataType new_x = ( (double)(n_diagrams - count_diag_matchings[i])*x_bar  + (double)count_diag_matchings[i]*(x_bar+y_bar)/2. )/(double)n_diagrams;
 			dataType new_y = ( (double)(n_diagrams - count_diag_matchings[i])*y_bar  + (double)count_diag_matchings[i]*(x_bar+y_bar)/2. )/(double)n_diagrams;
+			//TODO Weight by persistence
+			dataType new_crit_coord_x = crit_coords_x[i]/(double)(n_diagrams - count_diag_matchings[i]);
+			dataType new_crit_coord_y = crit_coords_y[i]/(double)(n_diagrams - count_diag_matchings[i]);
+			dataType new_crit_coord_z = crit_coords_z[i]/(double)(n_diagrams - count_diag_matchings[i]);
+			
 			// 3.3 Compute and store how much the point has shifted
+			// TODO adjust shift with geometrical_factor_
 			dataType dx = barycenter_goods_[0].get(i).x_ - new_x;
 			dataType dy = barycenter_goods_[0].get(i).y_ - new_y;
 			dataType shift = pow(abs(dx), wasserstein_) + pow(abs(dy), wasserstein_);
@@ -267,6 +285,9 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 			// 3.4 Update the position of the point
 			for(unsigned int j=0; j<n_diagrams; j++){
 				barycenter_goods_[j].get(i).SetCoordinates(new_x, new_y);
+				if(geometrical_factor_<1){
+					barycenter_goods_[j].get(i).SetCriticalCoordinates(new_crit_coord_x, new_crit_coord_y, new_crit_coord_z);
+				}
 				if(barycenter_goods_[j].get(i).getPrice()<min_prices[j]){
 					min_prices[j] = barycenter_goods_[j].get(i).getPrice();
 				}
@@ -280,7 +301,7 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 	for(unsigned int i=0; i<n_goods; i++){
 		if(count_diag_matchings[i] == n_diagrams){
 			points_deleted_ += 1;
-			dataType shift = pow(barycenter_goods_[0].get(i).getPersistence() / pow(2, 1./wasserstein_), wasserstein_);
+			dataType shift = 2*pow(barycenter_goods_[0].get(i).getPersistence() / 2., wasserstein_);
 			if(shift>max_shift){
 				max_shift = shift;
 			}
@@ -296,10 +317,18 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 		Bidder<dataType>* b = points_to_append[k];
 		dataType x = (b->x_ + (n_diagrams -1)*(b->x_+b->y_)/2.)/(n_diagrams); 
 		dataType y = (b->y_ + (n_diagrams -1)*(b->x_+b->y_)/2.)/(n_diagrams); 
+		std::tuple<dataType, dataType, dataType> critical_coordinates = b->GetCriticalCoordinates();
 		for(unsigned int j=0; j<n_diagrams; j++){
 			Good<dataType> g = Good<dataType>(x, y, false, barycenter_goods_[j].size());
 			g.setPrice(min_prices[j]);
+			if(geometrical_factor_<1){
+				g.SetCriticalCoordinates( std::get<0>(critical_coordinates), std::get<1>(critical_coordinates), std::get<2>(critical_coordinates) );
+			}
 			barycenter_goods_[j].addGood(g);
+			dataType shift = 2*pow(barycenter_goods_[j].get(g.id_).getPersistence() / 2., wasserstein_);
+			if(shift>max_shift){
+				max_shift = shift;
+			}
 		}
 	}	
 	
@@ -364,6 +393,7 @@ void PDBarycenter<dataType>::setBidderDiagrams(){
 template <typename dataType>
 dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence, std::vector<dataType> initial_diagonal_prices, int min_points_to_add){
 	dataType new_min_persistence = min_persistence;
+	// 1. Get size of the largest current diagram, deduce the maximal number of points to append
 	int max_diagram_size=0;
 	for(int i=0; i<numberOfInputs_; i++){
 		if(current_bidder_diagrams_[i].size()>max_diagram_size){
@@ -372,6 +402,7 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 	}
 	int max_points_to_add = std::max(min_points_to_add, min_points_to_add + (int) (max_diagram_size/10));
 	
+	// 2. Get which points can be added, deduce the new minimal persistence
 	std::vector<std::vector<int>> candidates_to_be_added(numberOfInputs_);
 	std::vector<std::vector<int>> idx(numberOfInputs_);
 	for(int i=0; i<numberOfInputs_; i++){
@@ -394,9 +425,9 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 				new_min_persistence = last_persistence_added;
 			}
 		}
-
 	}
-		
+	
+	// 3. Add the points to the current diagrams
 	for(int i=0; i<numberOfInputs_; i++){
 		int size =  candidates_to_be_added[i].size();
 		for(int j=0; j<std::min(max_points_to_add, size); j++){
@@ -475,7 +506,7 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence){
 					count ++;
 				}
 			}
-			if(barycenter_goods_.size()<i+1){
+			if(barycenter_goods_.size()<(unsigned int)(i+1)){
 				barycenter_goods_.push_back(goods);
 			}
 			else{
@@ -516,6 +547,8 @@ std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> PDBarycenter<dataTy
 			weights[idx].push_back(g.getPrice());
 		}
 	}
+	// Correspondance map : position in barycenter_goods_ --> KDT node
+	
 	std::vector<KDTree<dataType>*> correspondance_kdt_map = kdt->build(coordinates.data(), barycenter_goods_[0].size(), dimension, weights, barycenter_goods_.size());
 	std::cout<<"[Building KD-Tree] Time elapsed : " << t.getElapsedTime() << " s."<<std::endl;
 	return std::make_pair(kdt, correspondance_kdt_map);

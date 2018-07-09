@@ -99,6 +99,25 @@ computation (type "inf" for the Bottleneck distance).
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
+	  
+	  
+      <DoubleVectorProperty
+          name="Alpha"
+          label="Diagram blending"
+          command="SetAlpha"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced"
+          >
+        <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
+        <Documentation>
+          Blending coefficient for the cost evaluation of each critical point  
+matching. By default (1), only distances  in 
+the persistence diagrams are considered between matched critical points. When 
+set to 0, only distances in the original 3D domain are considered 
+between matched critical points.
+        </Documentation>
+      </DoubleVectorProperty>
 
       <IntVectorProperty
          name="ThreadNumber"

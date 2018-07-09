@@ -116,6 +116,10 @@ class ttkPersistenceDiagramsBarycenter
 	
 	vtkSetMacro(ThreadNumber, int);
     vtkGetMacro(ThreadNumber, int);
+	
+	vtkSetMacro(Alpha, double);
+    vtkGetMacro(Alpha, double);
+
 
 
   protected:
@@ -152,7 +156,8 @@ class ttkPersistenceDiagramsBarycenter
 
     bool                  UseAllCores;
     int                   ThreadNumber;
-	bool                   UseOutputMatching;
+	bool                  UseOutputMatching;
+	double                Alpha;
     std::string                ScalarField;
 	std::string                WassersteinMetric;
 	
@@ -308,6 +313,11 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 	vtkSmartPointer<vtkIntArray> pairType =
 		vtkSmartPointer<vtkIntArray>::New();
 	pairType->SetName("pairType");
+	
+	vtkSmartPointer<vtkFloatArray> coordsScalars=
+		vtkSmartPointer<vtkFloatArray>::New();
+	coordsScalars->SetNumberOfComponents(3);
+	coordsScalars->SetName("Coordinates");
 
 	for (unsigned int i = 0; i < diagram->size(); ++i) {
 		vtkIdType ids[2];
@@ -316,13 +326,23 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 		double y1 = x1;
 		double z1 = 0;
 		
+		float coords1[3];
+		coords1[0] = std::get<7>(t);
+		coords1[1] = std::get<8>(t);
+		coords1[2] = std::get<9>(t);
+		
 		double x2 = std::get<6>(t);
 		double y2 = std::get<10>(t);
 		double z2 = 0;
 		
+		float coords2[3];
+		coords2[0] = std::get<11>(t);
+		coords2[1] = std::get<12>(t);
+		coords2[2] = std::get<13>(t);
 		
 		
 		points->InsertNextPoint(x1, y1, z1);
+		coordsScalars->InsertTuple3(2*i, coords1[0], coords1[1], coords1[2]);
 		const ttk::ftm::NodeType n1Type = std::get<1>(t);
 		switch (n1Type) {
 			case BLocalMin:
@@ -344,6 +364,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 				nodeType->InsertTuple1(2*i, 0);
 		}
 		points->InsertNextPoint(x2, y2, z2);
+		coordsScalars->InsertTuple3(2*i+1, coords2[0], coords2[1], coords2[2]);
 		
 		const ttk::ftm::NodeType n2Type = std::get<3>(t);
 		switch (n2Type) {
@@ -387,15 +408,15 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 			default:
 				pairType->InsertTuple1(i, 0);
 		}
-    }
+	}
     
-  persistenceDiagram->SetPoints(points);
-  persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
-  persistenceDiagram->GetCellData()->AddArray(pairType);
-  persistenceDiagram->GetPointData()->AddArray(nodeType);
-  
+	persistenceDiagram->SetPoints(points);
+	persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
+	persistenceDiagram->GetCellData()->AddArray(pairType);
+	persistenceDiagram->GetPointData()->AddArray(nodeType);
+	persistenceDiagram->GetPointData()->AddArray(coordsScalars);
 
-  return persistenceDiagram;
+	return persistenceDiagram;
 }
 
 
@@ -431,6 +452,11 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createOut
 		vtkSmartPointer<vtkIntArray>::New();
 	pairType->SetName("pairType");
 	
+	vtkSmartPointer<vtkFloatArray> coordsScalars=
+		vtkSmartPointer<vtkFloatArray>::New();
+	coordsScalars->SetNumberOfComponents(3);
+	coordsScalars->SetName("Coordinates");
+	
 	
 	int count = 0;
 	for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j){
@@ -444,13 +470,24 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createOut
 			double y1 = x1;
 			double z1 = 1;  // Change 1 to j if you want to isolate the diagrams
 			
+			float coords1[3];
+			coords1[0] = std::get<7>(t);
+			coords1[1] = std::get<8>(t);
+			coords1[2] = std::get<9>(t);
+			
 			double x2 = std::get<6>(t);
 			double y2 = std::get<10>(t);
-			double z2 = 1;  // Change 1 to j if you want to isolate the diagrams
+			double z2 = 1;  // Change 1 to j if you want to isolate the 
+			
+			float coords2[3];
+			coords2[0] = std::get<11>(t);
+			coords2[1] = std::get<12>(t);
+			coords2[2] = std::get<13>(t);
 			
 			idOfPair->InsertTuple1(count, i);
 			
 			points->InsertNextPoint(x1, y1, z1);
+			coordsScalars->InsertTuple3(2*count, coords1[0], coords1[1], coords1[2]);
 			idOfDiagramPoint->InsertTuple1(2*count, j);
 			const ttk::ftm::NodeType n1Type = std::get<1>(t);
 			switch (n1Type) {
@@ -472,7 +509,9 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createOut
 				default:
 					nodeType->InsertTuple1(2*count, 0);
 			}
+			
 			points->InsertNextPoint(x2, y2, z2);
+			coordsScalars->InsertTuple3(2*count+1, coords2[0], coords2[1], coords2[2]);
 			idOfDiagramPoint->InsertTuple1(2*count+1, j);
 			const ttk::ftm::NodeType n2Type = std::get<3>(t);
 			switch (n2Type) {
@@ -527,6 +566,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createOut
 	persistenceDiagram->GetCellData()->AddArray(pairType);
 	persistenceDiagram->GetCellData()->AddArray(idOfPair);
 	persistenceDiagram->GetPointData()->AddArray(nodeType);
+	persistenceDiagram->GetPointData()->AddArray(coordsScalars);
 	persistenceDiagram->GetPointData()->AddArray(idOfDiagramPoint);
 	persistenceDiagram->GetPointData()->AddArray(persistenceScalarsPoint);
 	

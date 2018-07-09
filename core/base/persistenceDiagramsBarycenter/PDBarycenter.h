@@ -80,6 +80,10 @@ namespace ttk{
 			time_limit_ = time_limit;
 		}
 		
+		inline void setGeometricalFactor(const double geometrical_factor){
+			geometrical_factor_ = geometrical_factor;
+		}
+		
 		inline void setDiagramType(const int &diagramType){
 			diagramType_ = diagramType;
 			if(diagramType_==0){

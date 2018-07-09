@@ -98,6 +98,10 @@ namespace ttk{
 			use_progressive_ = use_progressive;
 		}
 		
+		inline void setAlpha(const double alpha){
+			alpha_ = alpha;
+		}
+		
 		inline void setTimeLimit(const double time_limit){
 			time_limit_ = time_limit;
 		}
@@ -117,6 +121,7 @@ namespace ttk{
       void**                inputData_; //TODO : std::vector<void*>
       int 					threadNumber_;
 	  bool                  use_progressive_;
+	  double                alpha_;
 	  double                time_limit_;
       
       
@@ -216,6 +221,7 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 				bary_min.setDiagramType(0);
 				bary_min.setUseProgressive(use_progressive_);
 				bary_min.setTimeLimit(time_limit_);
+				bary_min.setGeometricalFactor(alpha_);
 				for(int i=0; i<numberOfInputs_; i++){
 					bary_min.setDiagram(i, data_min[i]);
 				}
@@ -236,6 +242,7 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 				bary_sad.setDiagramType(1);
 				bary_sad.setUseProgressive(use_progressive_);
 				bary_sad.setTimeLimit(time_limit_);
+				bary_sad.setGeometricalFactor(alpha_);
 				for(int i=0; i<numberOfInputs_; i++){
 					bary_sad.setDiagram(i, data_sad[i]);
 				}
@@ -256,6 +263,7 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 				bary_max.setDiagramType(2);
 				bary_max.setUseProgressive(use_progressive_);
 				bary_max.setTimeLimit(time_limit_);
+				bary_max.setGeometricalFactor(alpha_);
 				for(int i=0; i<numberOfInputs_; i++){
 					bary_max.setDiagram(i, data_max[i]);
 				}
@@ -303,15 +311,59 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 	}
 	for(unsigned int j=0; j<barycenter_sad.size(); j++){
 		diagramTuple dt = barycenter_sad[j];
-		//std::get<5>(dt) = barycenter->size();
 		barycenter->push_back(dt);
 	}
 	for(unsigned int j=0; j<barycenter_max.size(); j++){
 		diagramTuple dt = barycenter_max[j];
-		//std::get<5>(dt) = barycenter->size();
 		barycenter->push_back(dt);
 	}
 	
+	// Recreate 3D critical coordinates of barycentric points
+	std::vector<int> number_of_matchings_for_point(barycenter->size());
+	std::vector<float> cords_x1(barycenter->size());
+	std::vector<float> cords_y1(barycenter->size());
+	std::vector<float> cords_z1(barycenter->size());
+	std::vector<float> cords_x2(barycenter->size());
+	std::vector<float> cords_y2(barycenter->size());
+	std::vector<float> cords_z2(barycenter->size());
+	for(unsigned i=0; i<barycenter->size(); i++){
+		number_of_matchings_for_point[i] = 0;
+		cords_x1[i] = 0;
+		cords_y1[i] = 0;
+		cords_z1[i] = 0;
+		cords_x2[i] = 0;
+		cords_y2[i] = 0;
+		cords_z2[i] = 0;
+	}
+	
+	for(unsigned i=0; i<all_matchings.size(); i++){
+		std::vector<diagramTuple>* CTDiagram = static_cast<std::vector<diagramTuple>*>(inputData_[i]);
+		for(unsigned j=0; j<all_matchings[i].size(); j++){
+			matchingTuple t = all_matchings[i][j];
+			int bidder_id = std::get<0>(t);
+			int bary_id = std::get<1>(t);
+			
+			diagramTuple &bidder = CTDiagram->at(bidder_id);
+			number_of_matchings_for_point[bary_id] +=1;
+			cords_x1[bary_id] += std::get<7>(bidder);
+			cords_y1[bary_id] += std::get<8>(bidder);
+			cords_z1[bary_id] += std::get<9>(bidder);
+			cords_x2[bary_id] += std::get<11>(bidder);
+			cords_y2[bary_id] += std::get<12>(bidder);
+			cords_z2[bary_id] += std::get<13>(bidder);
+		}
+	}
+	
+	for(unsigned i=0; i<barycenter->size(); i++){
+		if(number_of_matchings_for_point[i]>0){
+			std::get<7>(barycenter->at(i)) = cords_x1[i] / number_of_matchings_for_point[i];
+			std::get<8>(barycenter->at(i)) = cords_y1[i] / number_of_matchings_for_point[i];
+			std::get<9>(barycenter->at(i)) = cords_z1[i] / number_of_matchings_for_point[i];
+			std::get<11>(barycenter->at(i)) = cords_x2[i] / number_of_matchings_for_point[i];
+			std::get<12>(barycenter->at(i)) = cords_y2[i] / number_of_matchings_for_point[i];
+			std::get<13>(barycenter->at(i)) = cords_z2[i] / number_of_matchings_for_point[i];
+		}
+	}
 	
 	for(int i=0; i<numberOfInputs_; i++){
 		delete data_min[i];
