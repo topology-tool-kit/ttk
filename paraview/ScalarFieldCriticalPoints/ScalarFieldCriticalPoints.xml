@@ -83,7 +83,6 @@ American Mathematical Monthly, 1970.
         >
         <ArrayListDomain
           name="array_list"
-          data_type="VTK_ID_TYPE"
           default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />

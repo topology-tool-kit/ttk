@@ -83,7 +83,7 @@ Computer Graphics Forum, 2012.
         <ArrayListDomain
           name="array_list"
           default_values="0"
-          data_type="VTK_ID_TYPE">
+          >
           <RequiredProperties>
             <Property name="Input" function="Input" />
           </RequiredProperties>
