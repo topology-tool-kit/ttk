@@ -8,6 +8,7 @@
 - New flexible addressing scheme (up to long long int) for extreme size datasets
 - Various bug fixes
 - Improved examples
+- Basic windows continuous integration support
 
 ### 0.9.5
 - Updates for ParaView-5.5.0
