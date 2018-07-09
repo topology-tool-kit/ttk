@@ -45,7 +45,7 @@ cache:
 
 build:
   parallel: true
-  verbosity: quiet
+  verbosity: minimal
   project: C:/projects/ttk/build/ttk.sln
 
 before_build:
