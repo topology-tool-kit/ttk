@@ -136,14 +136,18 @@ class ttkPersistenceDiagramsBarycenter
       const int diagramNumber);
 	
 	template<typename dataType>
-	vtkSmartPointer<vtkUnstructuredGrid> createPersistenceDiagram(const std::vector<diagramTuple>* diagram);
+	vtkSmartPointer<vtkUnstructuredGrid> createPersistenceDiagram(
+    const std::vector<diagramTuple>* diagram);
 	
 	template<typename dataType>
-	vtkSmartPointer<vtkUnstructuredGrid> createOutputDiagrams(std::vector<std::vector<diagramTuple>*> &all_CTDiagrams);
+	vtkSmartPointer<vtkUnstructuredGrid> createOutputDiagrams(
+    std::vector<std::vector<diagramTuple>> &all_CTDiagrams);
 	
 	template<typename dataType>
 	vtkSmartPointer<vtkUnstructuredGrid> createMatchings(
-		const std::vector<std::vector<matchingTuple>> *matchings, const std::vector<diagramTuple>* barycenter, std::vector<std::vector<diagramTuple>*> &all_CTDiagrams);
+		const std::vector<std::vector<matchingTuple>> *matchings, 
+    const std::vector<diagramTuple>* barycenter, 
+    std::vector<std::vector<diagramTuple>> &all_CTDiagrams);
 	
 	int FillInputPortInformation(int port, vtkInformation *info);
     int FillOutputPortInformation(int port, vtkInformation *info);
@@ -421,7 +425,9 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 
 
 template <typename dataType>
-vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createOutputDiagrams(std::vector<std::vector<diagramTuple>*> &all_CTDiagrams)
+vtkSmartPointer<vtkUnstructuredGrid>
+  ttkPersistenceDiagramsBarycenter::createOutputDiagrams(
+    std::vector<std::vector<diagramTuple> > &all_CTDiagrams)
 {
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 	
@@ -460,7 +466,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createOut
 	
 	int count = 0;
 	for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j){
-		std::vector<diagramTuple> *diagram = all_CTDiagrams[j];
+		std::vector<diagramTuple> *diagram = &(all_CTDiagrams[j]);
 		
 		// First, add diagram points to the global input diagram
 		for (unsigned int i = 0; i < diagram->size(); ++i) {
@@ -576,8 +582,11 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createOut
 
 
 template <typename dataType>
-vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createMatchings(
-    const std::vector<std::vector<matchingTuple>> *matchings, const std::vector<diagramTuple>* barycenter, std::vector<std::vector<diagramTuple>*> &all_CTDiagrams)
+vtkSmartPointer<vtkUnstructuredGrid> 
+  ttkPersistenceDiagramsBarycenter::createMatchings(
+    const std::vector<std::vector<matchingTuple>> *matchings, 
+    const std::vector<diagramTuple>* barycenter, 
+    std::vector<std::vector<diagramTuple>> &all_CTDiagrams)
 {	
 	vtkSmartPointer<vtkPoints> matchingPoints = vtkSmartPointer<vtkPoints>::New();
 	
@@ -602,7 +611,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createMat
 	
 	int count=0;
 	for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j){
-		std::vector<diagramTuple> *diagram = all_CTDiagrams[j];
+		std::vector<diagramTuple> *diagram = &(all_CTDiagrams[j]);
 		std::vector<matchingTuple> matchings_j = matchings->at(j);
 
 		

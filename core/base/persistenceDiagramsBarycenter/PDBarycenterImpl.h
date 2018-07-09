@@ -366,12 +366,28 @@ dataType PDBarycenter<dataType>::getRho(dataType epsilon){
 
 template <typename dataType>
 void PDBarycenter<dataType>::setBidderDiagrams(){
+  
+  std::vector<std::vector<diagramTuple> > *intermediateDiagrams = 
+    (std::vector<std::vector<diagramTuple> > *) inputData_;
+  
 	for(int i=0; i<numberOfInputs_; i++){
-		std::vector<diagramTuple>* CTDiagram = static_cast<std::vector<diagramTuple>*>(inputData_[i]);
-		BidderDiagram<dataType> bidders;
+		std::vector<diagramTuple> *CTDiagram = &((*intermediateDiagrams)[i]);
+		
+    BidderDiagram<dataType> bidders;
 		for(unsigned int j=0; j<CTDiagram->size(); j++){
 			//Add bidder to bidders
-			Bidder<dataType> b = Bidder<dataType>((*CTDiagram)[j], j);
+      Bidder<dataType> b((*CTDiagram)[j], j);
+      printf("\tconstructed bidder %f %f to DIAGRAM #%d [size: %d]\n", 
+             b.x_, b.y_, i, (*intermediateDiagrams)[i].size());
+      printf("\t\tobtained from v%d-t%d-v%d-t%d %f %f %f\n",
+        std::get<0>((*CTDiagram)[j]),
+        std::get<1>((*CTDiagram)[j]),
+        std::get<2>((*CTDiagram)[j]),
+        std::get<3>((*CTDiagram)[j]),
+        std::get<4>((*CTDiagram)[j]),
+        std::get<6>((*CTDiagram)[j]),
+        std::get<10>((*CTDiagram)[j]));
+// 			Bidder<dataType> b = Bidder<dataType>((*CTDiagram)[j], j);
 			b.setPositionInAuction(bidders.size());
 			bidders.addBidder(b);
 			if(b.isDiagonal() || b.x_==b.y_){
@@ -392,8 +408,11 @@ void PDBarycenter<dataType>::setBidderDiagrams(){
 
 template <typename dataType>
 dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence, std::vector<dataType> initial_diagonal_prices, int min_points_to_add){
-	dataType new_min_persistence = min_persistence;
-	// 1. Get size of the largest current diagram, deduce the maximal number of points to append
+	
+  dataType new_min_persistence = min_persistence;
+	
+  // 1. Get size of the largest current diagram, deduce the maximal number of 
+  // points to append
 	int max_diagram_size=0;
 	for(int i=0; i<numberOfInputs_; i++){
 		if(current_bidder_diagrams_[i].size()>max_diagram_size){
@@ -417,7 +436,10 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 				persistences.push_back(persistence);
 			}
 		}
-		sort(idx[i].begin(), idx[i].end(), [&persistences](int& a, int& b){return persistences[a] > persistences[b];});
+		sort(idx[i].begin(), idx[i].end(), [&persistences](int& a, int& b){
+      return ((persistences[a] > persistences[b])
+      ||((persistences[a] == persistences[b])&&(a > b)));
+    });
 		int size =  candidates_to_be_added[i].size();
 		if(size>=max_points_to_add){
 			dataType last_persistence_added = persistences[idx[i][max_points_to_add-1]];
@@ -437,6 +459,7 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 				b.setPositionInAuction(current_bidder_diagrams_[i].size());
 				b.setDiagonalPrice(initial_diagonal_prices[i]);
 				current_bidder_diagrams_[i].addBidder(b);
+        printf("\tadding bidder %f %f\n", b.x_, b.y_);
 				
 				// b.id_ --> position of b in current_bidder_diagrams_[i]
 				current_bidder_ids_[i][candidates_to_be_added[i][idx[i][j]]] = current_bidder_diagrams_[i].size()-1;
@@ -491,7 +514,7 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence){
 	int random_idx;
 	std::vector<diagramTuple>* CTDiagram;
 	while(size==0){
-		random_idx = rand() % numberOfInputs_;
+		random_idx = 0; //rand() % numberOfInputs_;
 		CTDiagram = static_cast<std::vector<diagramTuple>*>(inputData_[random_idx]);
 		size = CTDiagram->size();
 		

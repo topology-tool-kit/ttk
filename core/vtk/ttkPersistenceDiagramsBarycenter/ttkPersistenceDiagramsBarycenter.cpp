@@ -76,21 +76,23 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 			persistenceDiagramsBarycenter.setThreadNumber(ThreadNumber);
 			persistenceDiagramsBarycenter.setAlpha(Alpha);
 			
-			std::vector<std::vector<macroDiagramTuple>*> all_CTDiagrams(numInputs);
-			for (int i = 0; i<numInputs; i++) {
-				double Spacing = 0;
-				std::vector<macroDiagramTuple>* CTDiagram = new vector<macroDiagramTuple>();
-				getPersistenceDiagram<VTK_TT>(CTDiagram, inputDiagram[i], Spacing, 0);
-				
-				persistenceDiagramsBarycenter.setDiagram(i, (void*) CTDiagram);
-				all_CTDiagrams[i] = CTDiagram;
-			}
+      std::vector<std::vector<macroDiagramTuple> > 
+        intermediateDiagrams(numInputs);
+      for(int i = 0; i < numInputs; i++){
+        double Spacing = 0;
+        getPersistenceDiagram<VTK_TT>(
+          &(intermediateDiagrams[i]), inputDiagram[i], Spacing, 0);
+        persistenceDiagramsBarycenter.setDiagram(i, 
+          (void*) &(intermediateDiagrams[i]));
+      }
+			
 			std::vector<macroDiagramTuple> barycenter;
 			std::vector<std::vector<macroMatchingTuple>> matchings = persistenceDiagramsBarycenter.execute(&barycenter);
 			
 			outputBarycenter->ShallowCopy(createPersistenceDiagram<VTK_TT>(&barycenter));
-			outputMatchings->ShallowCopy(createMatchings(&matchings, &barycenter, all_CTDiagrams));
-			outputDiagrams->ShallowCopy(createOutputDiagrams(all_CTDiagrams));
+			outputMatchings->ShallowCopy(createMatchings(&matchings, &barycenter, 
+        intermediateDiagrams));
+			outputDiagrams->ShallowCopy(createOutputDiagrams(intermediateDiagrams));
 		}
 		));
 	}

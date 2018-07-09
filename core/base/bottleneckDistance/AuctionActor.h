@@ -271,7 +271,7 @@ namespace ttk{
 			dataType coords_z = (std::get<9>(tuple)+std::get<13>(tuple))/2;
 			this->SetCriticalCoordinates(coords_x, coords_y, coords_z);
 			
-			if(x==y){
+			if(fabs(x-y) < pow(10, -12)){
 				AuctionActor<dataType>::is_diagonal_=true;
 			}
 			else{
