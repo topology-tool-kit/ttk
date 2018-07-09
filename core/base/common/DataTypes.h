@@ -10,7 +10,10 @@
 
 namespace ttk{
   /// \brief Identifier type for simplices of any dimension.
-  using SimplexId = long long int;
+  using LongSimplexId = long long int;
+
+  /// \brief Identifier type for simplices of any dimension.
+  using SimplexId = int;
 
   /// \brief Identifier type for threads (i.e. with OpenMP).
   using ThreadId = int;

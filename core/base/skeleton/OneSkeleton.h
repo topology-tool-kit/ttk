@@ -48,7 +48,7 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       int buildEdgeLinks(const std::vector<std::pair<SimplexId, SimplexId> > &edgeList,
         const std::vector<std::vector<SimplexId> > &edgeStars,
-        const SimplexId *cellArray,
+        const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &edgeLinks) const;
       
       /// Compute the link of each edge of a 3D triangulation (unspecified 
@@ -86,7 +86,7 @@ namespace ttk{
       /// vertex identifiers).
       /// \return Returns 0 upon success, negative values otherwise.
       int buildEdgeList(const SimplexId &vertexNumber, const SimplexId &cellNumber, 
-        const SimplexId *cellArray,
+        const LongSimplexId *cellArray,
         std::vector<std::pair<SimplexId, SimplexId> > &edgeList) const;
       
       /// Compute the list of edges of multiple triangulations.
@@ -98,7 +98,7 @@ namespace ttk{
       /// vertex identifiers).
       /// \return Returns 0 upon success, negative values otherwise.
       int buildEdgeLists(
-        const std::vector<std::vector<SimplexId> >  &cellArrays,
+        const std::vector<std::vector<LongSimplexId> >  &cellArrays,
         std::vector<std::vector<std::pair<SimplexId, SimplexId> > > &edgeLists) const;
       
           
@@ -138,7 +138,7 @@ namespace ttk{
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildEdgeStars(const SimplexId &vertexNumber, const SimplexId &cellNumber,
-        const SimplexId *cellArray,
+        const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &starList,
         std::vector<std::pair<SimplexId, SimplexId> > *edgeList = NULL,
         std::vector<std::vector<SimplexId> > *vertexStars = NULL) const;
@@ -155,7 +155,7 @@ namespace ttk{
       /// vertex identifiers).
       /// \return Returns 0 upon success, negative values otherwise.
       int buildEdgeSubList(
-        const SimplexId &cellNumber, const SimplexId *cellArray,
+        const SimplexId &cellNumber, const LongSimplexId *cellArray,
         std::vector<std::pair<SimplexId, SimplexId> > &edgeList) const;
         
       

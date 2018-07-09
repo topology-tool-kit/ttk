@@ -13,7 +13,7 @@ ThreeSkeleton::~ThreeSkeleton(){
 
 int ThreeSkeleton::buildCellEdges(const SimplexId &vertexNumber,
   const SimplexId &cellNumber, 
-  const SimplexId *cellArray,
+  const LongSimplexId *cellArray,
   vector<vector<SimplexId> > &cellEdges, 
   vector<pair<SimplexId, SimplexId> > *edgeList,
   vector<vector<SimplexId> > *vertexEdges) const{
@@ -122,7 +122,7 @@ int ThreeSkeleton::buildCellEdges(const SimplexId &vertexNumber,
 
 
 int ThreeSkeleton::buildCellNeighborsFromTriangles(const SimplexId &vertexNumber, 
-  const SimplexId &cellNumber, const SimplexId *cellArray, 
+  const SimplexId &cellNumber, const LongSimplexId *cellArray, 
   vector<vector<SimplexId> > &cellNeighbors,
   vector<vector<SimplexId> > *triangleStars) const {
 
@@ -252,7 +252,7 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(const SimplexId &vertexNumber
 
 int ThreeSkeleton::buildCellNeighborsFromVertices(
   const SimplexId &vertexNumber, 
-  const SimplexId &cellNumber, const SimplexId *cellArray, 
+  const SimplexId &cellNumber, const LongSimplexId *cellArray, 
   vector<vector<SimplexId> > &cellNeighbors, vector<vector<SimplexId> > *vertexStars) const{
 
   if(cellArray[0] == 3){
