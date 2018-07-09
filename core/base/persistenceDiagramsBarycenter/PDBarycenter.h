@@ -45,22 +45,26 @@ namespace ttk{
 		dataType getRho(dataType epsilon);
 			
 			
-		inline int setDiagram(int idx, void* data){
-			if(idx < numberOfInputs_){
-			inputData_[idx] = data;
-			}
-			else{
-			return -1;
-			}
-			return 0;
-		}
+// 		inline int setDiagram(int idx, void* data){
+// 			if(idx < numberOfInputs_){
+// 			inputData_[idx] = data;
+// 			}
+// 			else{
+// 			return -1;
+// 			}
+// 			return 0;
+// 		}
+    inline int setDiagrams(std::vector<std::vector<diagramTuple> > *data){
+      inputDiagrams_ = data;
+      return 0;
+    }
 
 		inline int setNumberOfInputs(int numberOfInputs){
 			numberOfInputs_ = numberOfInputs;
-			inputData_ = (void **) malloc(numberOfInputs*sizeof(void *));
-			for(int i=0 ; i<numberOfInputs ; i++){
-				inputData_[i] = NULL;
-			}
+// 			inputData_ = (void **) malloc(numberOfInputs*sizeof(void *));
+// 			for(int i=0 ; i<numberOfInputs ; i++){
+// 				inputData_[i] = NULL;
+// 			}
 			return 0;
 		}
 		
@@ -115,10 +119,10 @@ namespace ttk{
 	  BNodeType 			nt2_;
 	  
       int                   numberOfInputs_;
-      void**                inputData_; //TODO : std::vector<void*>
       int                   threadNumber_;
 	  bool                  use_progressive_;
 	  double                time_limit_;
+    std::vector<std::vector<diagramTuple>> *inputDiagrams_;
       
       int points_added_;
 	  int points_deleted_;

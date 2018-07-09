@@ -367,18 +367,15 @@ dataType PDBarycenter<dataType>::getRho(dataType epsilon){
 template <typename dataType>
 void PDBarycenter<dataType>::setBidderDiagrams(){
   
-  std::vector<std::vector<diagramTuple> > *intermediateDiagrams = 
-    (std::vector<std::vector<diagramTuple> > *) inputData_;
-  
 	for(int i=0; i<numberOfInputs_; i++){
-		std::vector<diagramTuple> *CTDiagram = &((*intermediateDiagrams)[i]);
+		std::vector<diagramTuple> *CTDiagram = &((*inputDiagrams_)[i]);
 		
     BidderDiagram<dataType> bidders;
 		for(unsigned int j=0; j<CTDiagram->size(); j++){
 			//Add bidder to bidders
       Bidder<dataType> b((*CTDiagram)[j], j);
       printf("\tconstructed bidder %f %f to DIAGRAM #%d [size: %d]\n", 
-             b.x_, b.y_, i, (*intermediateDiagrams)[i].size());
+             b.x_, b.y_, i, (*inputDiagrams_)[i].size());
       printf("\t\tobtained from v%d-t%d-v%d-t%d %f %f %f\n",
         std::get<0>((*CTDiagram)[j]),
         std::get<1>((*CTDiagram)[j]),
@@ -515,7 +512,7 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence){
 	std::vector<diagramTuple>* CTDiagram;
 	while(size==0){
 		random_idx = 0; //rand() % numberOfInputs_;
-		CTDiagram = static_cast<std::vector<diagramTuple>*>(inputData_[random_idx]);
+		CTDiagram = &((*inputDiagrams_)[random_idx]);
 		size = CTDiagram->size();
 		
 		for(int i=0; i<numberOfInputs_; i++){

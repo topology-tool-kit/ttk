@@ -63,26 +63,32 @@ namespace ttk{
 		};
 
 
-		std::vector<std::vector<matchingTuple>> execute(std::vector<diagramTuple>* barycenter);
+		std::vector<std::vector<matchingTuple> >& 
+      execute(std::vector<diagramTuple>* barycenter);
 			
-		inline int setDiagram(int idx, void* data){
-			if(idx < numberOfInputs_){
-			inputData_[idx] = data;
-			}
-			else{
-			return -1;
-			}
-			return 0;
-		}
+// 		inline int setDiagram(int idx, void* data){
+// 			if(idx < numberOfInputs_){
+// 			inputData_[idx] = data;
+// 			}
+// 			else{
+// 			return -1;
+// 			}
+// 			return 0;
+// 		}
+		inline int setDiagrams(void *data){
+      inputData_ = data;
+      printf("\tretrieved address: %d\n", (void *) inputData_);
+      return 0;
+    }
 
 		inline int setNumberOfInputs(int numberOfInputs){
 			numberOfInputs_ = numberOfInputs;
-			if(inputData_)
-			free(inputData_);
-			inputData_ = (void **) malloc(numberOfInputs*sizeof(void *));
-			for(int i=0 ; i<numberOfInputs ; i++){
-			inputData_[i] = NULL;
-			}
+// 			if(inputData_)
+// 			free(inputData_);
+// 			inputData_ = (void **) malloc(numberOfInputs*sizeof(void *));
+// 			for(int i=0 ; i<numberOfInputs ; i++){
+// 			inputData_[i] = NULL;
+// 			}
 			return 0;
 		}
 		
@@ -118,7 +124,7 @@ namespace ttk{
 	  double                geometrical_factor_; // TODO include it in barycenter
 	  
       int                   numberOfInputs_;
-      void**                inputData_; //TODO : std::vector<void*>
+      void*                inputData_; //TODO : std::vector<void*>
       int 					threadNumber_;
 	  bool                  use_progressive_;
 	  double                alpha_;
@@ -136,13 +142,23 @@ namespace ttk{
   
   
 template <typename dataType> 
-std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>::execute(std::vector<diagramTuple>* barycenter){
+  std::vector<std::vector<matchingTuple>>& 
+    PersistenceDiagramsBarycenter<dataType>::execute(
+      std::vector<diagramTuple>* barycenter){
 	Timer t;
 	{
+  
+  printf("input address at execute level: %d\n", (void *) inputData_);
+    
+  std::vector<std::vector<diagramTuple> > *intermediateDiagrams = 
+    (std::vector<std::vector<diagramTuple> > *) inputData_;
+    
+  printf("input address at execute level: %d [%d]\n", (void *) inputData_,
+    intermediateDiagrams);
 	
-	std::vector<std::vector<diagramTuple>*> data_min(numberOfInputs_);
-	std::vector<std::vector<diagramTuple>*> data_sad(numberOfInputs_);
-	std::vector<std::vector<diagramTuple>*> data_max(numberOfInputs_);
+	std::vector<std::vector<diagramTuple> > data_min(numberOfInputs_);
+	std::vector<std::vector<diagramTuple> > data_sad(numberOfInputs_);
+	std::vector<std::vector<diagramTuple> > data_max(numberOfInputs_);
 	
 	std::vector<std::vector<int>> data_min_idx(numberOfInputs_);
 	std::vector<std::vector<int>> data_sad_idx(numberOfInputs_);
@@ -156,10 +172,7 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 	
 	// Create diagrams for min, saddle and max persistence pairs
 	for(int i=0; i<numberOfInputs_; i++){
-		data_min[i] = new std::vector<diagramTuple>;
-		data_sad[i] = new std::vector<diagramTuple>;
-		data_max[i] = new std::vector<diagramTuple>;
-		std::vector<diagramTuple>* CTDiagram = static_cast<std::vector<diagramTuple>*>(inputData_[i]);
+    std::vector<diagramTuple>* CTDiagram = &((*intermediateDiagrams)[i]);
 		
 		for(int j=0; j<(int) CTDiagram->size(); ++j){
 			diagramTuple t = CTDiagram->at(j);
@@ -171,24 +184,24 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 			//if (abs<dataType>(dt) < zeroThresh) continue;
 			if(dt>0){
 				if (nt1 == BLocalMin && nt2 == BLocalMax) {
-					data_max[i]->push_back(t);
+					data_max[i].push_back(t);
 					data_max_idx[i].push_back(j);
 					do_max = true;
 				}
 				else {
 					if (nt1 == BLocalMax || nt2 == BLocalMax) {
-						data_max[i]->push_back(t);
+						data_max[i].push_back(t);
 						data_max_idx[i].push_back(j);
 						do_max = true;
 					}
 					if (nt1 == BLocalMin || nt2 == BLocalMin) {
-						data_min[i]->push_back(t);
+						data_min[i].push_back(t);
 						data_min_idx[i].push_back(j);
 						do_min = true;
 					}
 					if ((nt1 == BSaddle1 && nt2 == BSaddle2)
 						|| (nt1 == BSaddle2 && nt2 == BSaddle1)) {
-						data_sad[i]->push_back(t);
+						data_sad[i].push_back(t);
 						data_sad_idx[i].push_back(j);
 						do_sad = true;
 					}
@@ -201,7 +214,8 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 	std::vector<diagramTuple> barycenter_sad;
 	std::vector<diagramTuple> barycenter_max;
 	
-	std::vector<std::vector<matchingTuple>> matching_min, matching_sad, matching_max;
+	std::vector<std::vector<matchingTuple>> 
+    matching_min, matching_sad, matching_max;
 	
 	/*omp_set_num_threads(1);
 	#ifdef TTK_ENABLE_OPENMP
@@ -222,9 +236,7 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 				bary_min.setUseProgressive(use_progressive_);
 				bary_min.setTimeLimit(time_limit_);
 				bary_min.setGeometricalFactor(alpha_);
-				for(int i=0; i<numberOfInputs_; i++){
-					bary_min.setDiagram(i, data_min[i]);
-				}
+        bary_min.setDiagrams(&data_min);
 				matching_min = bary_min.execute(barycenter_min);
 			}
 		/*}
@@ -243,9 +255,7 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 				bary_sad.setUseProgressive(use_progressive_);
 				bary_sad.setTimeLimit(time_limit_);
 				bary_sad.setGeometricalFactor(alpha_);
-				for(int i=0; i<numberOfInputs_; i++){
-					bary_sad.setDiagram(i, data_sad[i]);
-				}
+        bary_sad.setDiagrams(&data_sad);
 				matching_sad = bary_sad.execute(barycenter_sad);
 			}
 		/*}
@@ -264,9 +274,7 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 				bary_max.setUseProgressive(use_progressive_);
 				bary_max.setTimeLimit(time_limit_);
 				bary_max.setGeometricalFactor(alpha_);
-				for(int i=0; i<numberOfInputs_; i++){
-					bary_max.setDiagram(i, data_max[i]);
-				}
+        bary_max.setDiagrams(&data_max);
 				matching_max = bary_max.execute(barycenter_max);
 			}
 		//}
@@ -337,7 +345,7 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 	}
 	
 	for(unsigned i=0; i<all_matchings.size(); i++){
-		std::vector<diagramTuple>* CTDiagram = static_cast<std::vector<diagramTuple>*>(inputData_[i]);
+    std::vector<diagramTuple>* CTDiagram = &((*intermediateDiagrams)[i]);
 		for(unsigned j=0; j<all_matchings[i].size(); j++){
 			matchingTuple t = all_matchings[i][j];
 			int bidder_id = std::get<0>(t);
@@ -365,11 +373,11 @@ std::vector<std::vector<matchingTuple>> PersistenceDiagramsBarycenter<dataType>:
 		}
 	}
 	
-	for(int i=0; i<numberOfInputs_; i++){
-		delete data_min[i];
-		delete data_sad[i];
-		delete data_max[i];
-	}
+// 	for(int i=0; i<numberOfInputs_; i++){
+// 		delete data_min[i];
+// 		delete data_sad[i];
+// 		delete data_max[i];
+// 	}
 	
 	std::stringstream msg;
 	msg << "[PersistenceDiagramsBarycenter] processed in "
