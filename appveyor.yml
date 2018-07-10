@@ -20,7 +20,7 @@ platform:
 environment:
   # Environment variables
   APPVEYOR_SAVE_CACHE_ON_ERROR: true
-  VTK_VERSION: v8.1.1
+  VTK_VERSION: v8.1.0
   VTK_SOURCE_DIR: "C:/projects/VTK"
   VTK_BINARY_DIR: "C:/projects/VTK-build"
   BOOST_VERSION: boost-1.65.0
