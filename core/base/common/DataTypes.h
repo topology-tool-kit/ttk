@@ -13,7 +13,11 @@ namespace ttk{
   using LongSimplexId = long long int;
 
   /// \brief Identifier type for simplices of any dimension.
+#ifdef TTK_USE_64BIT_IDS
+  using SimplexId = long long int;
+#else
   using SimplexId = int;
+#endif
 
   /// \brief Identifier type for threads (i.e. with OpenMP).
   using ThreadId = int;
