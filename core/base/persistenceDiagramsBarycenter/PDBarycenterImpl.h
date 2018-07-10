@@ -111,7 +111,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 			dataType max_shift = updateBarycenter(all_matchings);
 			std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 		
-			dataType eps_candidate = 4 * getEpsilon(pow(max_shift, 1./wasserstein_));
+			dataType eps_candidate = getEpsilon(pow(max_shift, 1./wasserstein_));
 			dataType eps_candidate_2 = ((double)epsilon)/5.0;
 			
 			epsilon = eps_candidate;
@@ -126,11 +126,14 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 						(epsilon < 0.0001 * epsilon_0 || use_progressive_) && \
 						(hasBarycenterConverged(all_matchings, previous_matchings) || total_cost>=previous_cost );
 			
-			previous_matchings = std::move(all_matchings);
-			previous_min_persistence = min_persistence;
-			previous_cost = total_cost;
 		}
-		}
+		
+		previous_matchings = std::move(all_matchings);
+		previous_min_persistence = min_persistence;
+		previous_cost = total_cost;
+		
+		}  // End of timer
+		
 		total_time += t.getElapsedTime();
 		if(total_time>0.1*time_limit_){
 			setUseProgressive(false);
@@ -337,7 +340,7 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 		int count = 0;
 		GoodDiagram<dataType> new_barycenter;
 		for(int i=0; i<barycenter_goods_[j].size(); i++){
-			Good<dataType>& g = barycenter_goods_[j].get(i);
+			Good<dataType> g = barycenter_goods_[j].get(i).copy();
 			if(g.id_!=-1){
 				g.id_ = count;
 				new_barycenter.addGood(g);
@@ -374,7 +377,7 @@ void PDBarycenter<dataType>::setBidderDiagrams(){
 		for(unsigned int j=0; j<CTDiagram->size(); j++){
 			//Add bidder to bidders
       Bidder<dataType> b((*CTDiagram)[j], j);
-      printf("\tconstructed bidder %f %f to DIAGRAM #%d [size: %d]\n", 
+      /*printf("\tconstructed bidder %f %f to DIAGRAM #%d [size: %d]\n", 
              b.x_, b.y_, i, (*inputDiagrams_)[i].size());
       printf("\t\tobtained from v%d-t%d-v%d-t%d %f %f %f\n",
         std::get<0>((*CTDiagram)[j]),
@@ -383,7 +386,7 @@ void PDBarycenter<dataType>::setBidderDiagrams(){
         std::get<3>((*CTDiagram)[j]),
         std::get<4>((*CTDiagram)[j]),
         std::get<6>((*CTDiagram)[j]),
-        std::get<10>((*CTDiagram)[j]));
+        std::get<10>((*CTDiagram)[j]));**/
 // 			Bidder<dataType> b = Bidder<dataType>((*CTDiagram)[j], j);
 			b.setPositionInAuction(bidders.size());
 			bidders.addBidder(b);
@@ -511,7 +514,7 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence){
 	int random_idx;
 	std::vector<diagramTuple>* CTDiagram;
 	while(size==0){
-		random_idx = 0; //rand() % numberOfInputs_;
+		random_idx = rand() % numberOfInputs_;
 		CTDiagram = &((*inputDiagrams_)[random_idx]);
 		size = CTDiagram->size();
 		

@@ -195,6 +195,20 @@ namespace ttk{
 			owner_ = idx;
 		}
          
+		inline Good<dataType> copy(){
+			Good<dataType> g = Good<dataType>();
+			g.id_ = this->id_;
+			
+			g.SetCoordinates(this->x_, this->y_);
+			g.SetCriticalCoordinates(this->coords_x_, this->coords_y_, this->coords_z_);
+			
+			g.is_diagonal_=this->is_diagonal_;
+			
+            g.price_ = this->price_;
+			g.owner_ = this->owner_;
+			return g;
+		}
+         
      protected:
          dataType price_;
 		 // Position in Auction.bidders_ of the owner of this good.

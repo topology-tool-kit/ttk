@@ -300,7 +300,8 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
 template <typename dataType>
 vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPersistenceDiagram(
     const std::vector<diagramTuple>* diagram)
-{
+{	
+	printf("Creating vtk Diagram");
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
 	vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
@@ -429,6 +430,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
   ttkPersistenceDiagramsBarycenter::createOutputDiagrams(
     std::vector<std::vector<diagramTuple> > &all_CTDiagrams)
 {
+	printf("Creating vtk Outputs");
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 	
 	vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
@@ -588,6 +590,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
     const std::vector<diagramTuple>* barycenter, 
     std::vector<std::vector<diagramTuple>> &all_CTDiagrams)
 {	
+	printf("Creating vtk Matching");
 	vtkSmartPointer<vtkPoints> matchingPoints = vtkSmartPointer<vtkPoints>::New();
 	
 	vtkSmartPointer<vtkUnstructuredGrid> matchingMesh =

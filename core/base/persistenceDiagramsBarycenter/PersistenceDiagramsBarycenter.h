@@ -57,15 +57,12 @@ namespace ttk{
 			threadNumber_ = 1;
 		};
 
-		~PersistenceDiagramsBarycenter(){
-			if(inputData_)
-				free(inputData_);
-		};
+		~PersistenceDiagramsBarycenter(){};
 
 
-		std::vector<std::vector<matchingTuple> >& 
+	std::vector<std::vector<matchingTuple> > 
       execute(std::vector<diagramTuple>* barycenter);
-			
+
 // 		inline int setDiagram(int idx, void* data){
 // 			if(idx < numberOfInputs_){
 // 			inputData_[idx] = data;
@@ -142,7 +139,7 @@ namespace ttk{
   
   
 template <typename dataType> 
-  std::vector<std::vector<matchingTuple>>& 
+  std::vector<std::vector<matchingTuple>> 
     PersistenceDiagramsBarycenter<dataType>::execute(
       std::vector<diagramTuple>* barycenter){
 	Timer t;
