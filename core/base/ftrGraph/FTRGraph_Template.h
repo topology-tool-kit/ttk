@@ -160,7 +160,7 @@ namespace ttk
 
                for (idVertex v = lowerBound; v < upperBound; ++v) {
                   const valence vNeighNumber = mesh_.getVertexNeighborNumber(v);
-                  bool isMax = false;
+                  bool isMax = true;
                   bool isMin = true;
 
                   for (valence n = 0; n < vNeighNumber; ++n) {
