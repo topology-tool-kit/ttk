@@ -106,11 +106,14 @@ int ttkIntegralLines::getOffsets(vtkDataSet* input){
     if(!offsets_){
       const SimplexId numberOfPoints=input->GetNumberOfPoints();
 
+#ifdef TTK_USE_64BIT_IDS
       offsets_=vtkIdTypeArray::New();
+#else
+      offsets_=vtkIntArray::New();
+#endif
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfPoints);
       offsets_->SetName("OffsetScalarField");
-
       for(SimplexId i=0; i<numberOfPoints; ++i)
         offsets_->SetTuple1(i,i);
     }
@@ -296,12 +299,13 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
     identifiers_->GetVoidPointer(0));
   integralLines_.setOutputTrajectories(&trajectories);
   
-  switch(inputScalars_->GetDataType()){
-    vtkTemplateMacro(
+  switch(vtkTemplate2PackMacro(inputScalars_->GetDataType(),
+        inputOffsets_->GetDataType())){
+    vtkTemplate2Macro((
       { 
-        ret = integralLines_.execute<VTK_TT>(); 
+        ret = integralLines_.execute<VTK_T1,VTK_T2>(); 
       }
-    );
+    ));
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode

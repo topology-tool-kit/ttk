@@ -50,10 +50,10 @@ namespace ttk{
           return fabs(scalars[b]-scalars[a])/getDistance<dataType>(a,b);
         }
 
-      template<typename dataType>
+      template<typename dataType, typename idType>
         int execute() const;
 
-      template<typename dataType, class Compare>
+      template<typename dataType, typename idType, class Compare>
         int execute(Compare cmp) const;
 
       inline int setVertexNumber(const SimplexId &vertexNumber){
@@ -112,9 +112,9 @@ namespace ttk{
   };
 }
 
-template<typename dataType>
+template<typename dataType, typename idType>
 int ttk::IntegralLines::execute() const{
-  SimplexId* offsets=static_cast<SimplexId*>(inputOffsets_);
+  idType* offsets=static_cast<idType*>(inputOffsets_);
   SimplexId* identifiers=static_cast<SimplexId*>(vertexIdentifierScalarField_);
   dataType* scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<std::vector<SimplexId>>* trajectories=outputTrajectories_;
@@ -199,9 +199,9 @@ int ttk::IntegralLines::execute() const{
   return 0;
 }
 
-template<typename dataType, class Compare>
+template<typename dataType, typename idType, class Compare>
 int ttk::IntegralLines::execute(Compare cmp) const{
-  SimplexId* offsets=static_cast<SimplexId*>(inputOffsets_);
+  idType* offsets=static_cast<idType*>(inputOffsets_);
   SimplexId* identifiers=static_cast<SimplexId*>(vertexIdentifierScalarField_);
   dataType* scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<std::vector<SimplexId>>* trajectories=outputTrajectories_;
