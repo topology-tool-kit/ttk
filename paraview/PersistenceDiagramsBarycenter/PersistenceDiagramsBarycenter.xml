@@ -166,9 +166,9 @@ line segments in 3D.
 
 
 
-      <OutputPort name="Bound Fields" index="0" id="port0" />
-      <OutputPort name="Probabilities" index="1" id="port1" />
-      <OutputPort name="MeanField" index="2" id="port2" />
+      <OutputPort name="Barycenter" index="0" id="port0" />
+      <OutputPort name="Matchings" index="1" id="port1" />
+      <OutputPort name="Initial Diagrams" index="2" id="port2" />
 
       <Hints>
         <ShowInMenu category="TTK - Uncertain Scalar Data" />
