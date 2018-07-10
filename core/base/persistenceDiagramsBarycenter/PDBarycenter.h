@@ -21,6 +21,7 @@ namespace ttk{
 			threadNumber_ = 1;
 			use_progressive_ = true;
 			time_limit_ = std::numeric_limits<double>::max();
+			epsilon_min_ = 1e-5;
 		};
 
 		~PDBarycenter(){};
@@ -29,10 +30,11 @@ namespace ttk{
 		std::vector<std::vector<matchingTuple>> execute(std::vector<diagramTuple>& barycenter);
 			
 		void setBidderDiagrams();
-		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence, std::vector<dataType> initial_diagonal_prices, int min_points_to_add);
+		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence, std::vector<dataType> initial_diagonal_prices, std::vector<dataType> initial_prices, int min_points_to_add, bool add_points_to_barycenter=true);
 		void setInitialBarycenter(dataType min_persistence);
 		dataType getMaxPersistence();
 		dataType getLowestPersistence();
+		dataType getMinimalPrice(int i);
 		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> getKDTree();
 		dataType updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings);
 		bool hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings, std::vector<std::vector<matchingTuple>>& previous_matchings);
@@ -122,7 +124,8 @@ namespace ttk{
       int                   threadNumber_;
 	  bool                  use_progressive_;
 	  double                time_limit_;
-    std::vector<std::vector<diagramTuple>> *inputDiagrams_;
+	  float                 epsilon_min_;
+	  std::vector<std::vector<diagramTuple>> *inputDiagrams_;
       
       int points_added_;
 	  int points_deleted_;
