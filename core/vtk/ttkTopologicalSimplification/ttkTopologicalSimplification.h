@@ -66,6 +66,7 @@
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
 
+
 // ttk code includes
 #include                  <TopologicalSimplification.h>
 #include                  <ttkWrapper.h>
@@ -150,7 +151,11 @@ class ttkTopologicalSimplification
     ttk::Triangulation *triangulation_;
     vtkDataArray* identifiers_;
     vtkDataArray* inputScalars_;
+#ifdef TTK_USE_64BIT_IDS
     vtkIdTypeArray* offsets_;
+#else
+    vtkIntArray* offsets_;
+#endif
     vtkDataArray* inputOffsets_;
 
 };

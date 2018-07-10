@@ -120,7 +120,11 @@ int ttkTopologicalSimplification::getOffsets(vtkDataSet* input){
     if(!offsets_){
       const SimplexId numberOfVertices=input->GetNumberOfPoints();
 
+#ifdef TTK_USE_64BIT_IDS
       offsets_=vtkIdTypeArray::New();
+#else
+      offsets_=vtkIntArray::New();
+#endif
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName("OffsetsScalarField");
@@ -199,7 +203,11 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
+#ifdef TTK_USE_64BIT_IDS
   vtkSmartPointer<vtkIdTypeArray> outputOffsets=vtkSmartPointer<vtkIdTypeArray>::New();
+#else
+  vtkSmartPointer<vtkIntArray> outputOffsets=vtkSmartPointer<vtkIntArray>::New();
+#endif
   if(outputOffsets){
     outputOffsets->SetNumberOfComponents(1);
     outputOffsets->SetNumberOfTuples(numberOfVertices);
@@ -290,16 +298,22 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   topologicalSimplification_.setOutputOffsetScalarFieldPointer(
     outputOffsets->GetVoidPointer(0));
 
-  switch(inputScalars_->GetDataType()){
-    vtkTemplateMacro({ 
-      ret = topologicalSimplification_.execute<VTK_TT>(); 
-    });
+#ifdef TTK_ENABLE_KAMIKAZE
+  if(identifiers_->GetDataType() != inputOffsets_->GetDataType()){
+    cerr << "[ttkTopologicalSimplification] Error : type of identifiers and offsets are different." << endl;
+    return -11;
+  }
+#endif
+
+  switch(vtkTemplate2PackMacro(inputScalars_->GetDataType(),
+        identifiers_->GetDataType())){
+    vtkTemplate2Macro(({ret=topologicalSimplification_.execute<VTK_T1,VTK_T2>();}));
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(ret){
     cerr << "[ttkTopologicalSimplification] TopologicalSimplification.execute() error code : " << ret << endl;
-    return -11;
+    return -12;
   }
 #endif
 
