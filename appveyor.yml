@@ -25,13 +25,13 @@ environment:
   VTK_BINARY_DIR: "C:/projects/VTK-build"
   BOOST_VERSION: boost-1.65.0
   BOOST_SOURCE_DIR: "C:/projects/boost_1_67_0"
-  BUILD_TYPE: Release
+  BUILD_TYPE: Debug
   CTEST_SOURCE_DIRECTORY: "%APPVEYOR_BUILD_FOLDER%"
   CTEST_BINARY_DIRECTORY: "%APPVEYOR_BUILD_FOLDER%/build"
   CTEST_CMAKE_GENERATOR: "Visual Studio 14 2015 Win64"
   CTEST_TEST_TIMEOUT: "300"
-  CTEST_BUILD_CONFIGURATION: Release
-  CTEST_CONFIGURATION_TYPE: Release
+  CTEST_BUILD_CONFIGURATION: Debug
+  CTEST_CONFIGURATION_TYPE: Debug
 
   # Build matrix. (defines different configuration for multiple jobs)
   matrix:
@@ -41,7 +41,7 @@ cache:
   # Caching VTK source and build tree
   - '%BOOST_SOURCE_DIR%'
   - '%VTK_SOURCE_DIR%'
-#  - '%VTK_BINARY_DIR%'
+  - '%VTK_BINARY_DIR%'
 
 build:
   parallel: true
