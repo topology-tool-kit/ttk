@@ -62,44 +62,6 @@ namespace ttk
          } // end if
       }
 
-      template <typename ScalarType>
-      void FTRGraph<ScalarType>::splitPropagationAtSaddle(
-          Propagation* localProp, std::map<idSuperArc, Propagation*> newProps)
-      {
-         bool stop = localProp->empty();
-         while (!stop) {
-            const idVertex curVert = localProp->getCurVertex();
-            if(localProp->empty()){
-               stop = true;
-            } else {
-               localProp->nextVertex();
-            }
-
-            const idVertex nbNeigh = mesh_.getVertexEdgeNumber(curVert);
-            for(idVertex n = 0; n < nbNeigh; ++n) {
-               idVertex neigh;
-               mesh_.getVertexEdge(curVert, n, neigh);
-
-               idVertex v0;
-               idVertex v1;
-               mesh_.getEdgeVertex(neigh, 0, v0);
-               mesh_.getEdgeVertex(neigh, 1, v1);
-
-               const idVertex other = (v0 == curVert) ? v1 : v0;
-               if(localProp->compare(other, curVert)) {
-                  const idSuperArc corArc = dynGraph(localProp).getNode(neigh)->findRootArc();
-
-                  if (newProps.count(corArc) == 0) {
-                     continue;
-                  }
-                  Propagation* curProp = newProps[corArc];
-                  curProp->addNewVertex(curVert);
-                  toVisit_[curVert] = curProp->getRpz();
-                  break;
-               }
-            }
-         }
-      }
    }
 }
 

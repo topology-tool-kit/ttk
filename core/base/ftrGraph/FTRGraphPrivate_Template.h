@@ -135,7 +135,7 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Min)
 #endif
-            splitAtSaddle(localProp, upperComp);
+            splitAtSaddle(localProp);
          } else if (isJoinSadlleLast) {
             // recursive call
             const idNode     downNode = graph_.getNodeId(upVert);
@@ -535,38 +535,59 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::splitAtSaddle(
-          Propagation* const localProp, const std::vector<DynGraphNode<idVertex>*>& upperComp)
+      void FTRGraph<ScalarType>::splitAtSaddle(Propagation* const localProp)
       {
          const idVertex curVert = localProp->getCurVertex();
          const idNode   curNode = graph_.getNodeId(curVert);
 
-         std::map<idSuperArc, Propagation*> newProps;
+         std::vector<std::tuple<idSuperArc, Propagation*>> bfsResults;
+         bfsResults.reserve(4);
+         const idCell nbTriNeigh = mesh_.getVertexTriangleNumber(curVert);
+         for(idCell t = 0; t < nbTriNeigh; ++t) {
+            idCell neighTriangle;
+            mesh_.getVertexTriangle(curVert, t, neighTriangle);
+            const orderedTriangle oNeighTriangle =
+                mesh_.getOrderedTriangle(neighTriangle, localProp->goUp());
+            // only if curVert is not the highest point
+            if (bfsCells_[neighTriangle] != curVert &&
+                getVertPosInTriangle(oNeighTriangle, localProp) != vertPosInTriangle::End) {
+               const idVertex endTri          = getEndVertexInTriangle(oNeighTriangle, localProp);
+               const bool     alreadyAttached = checkOppositeDGForArc(curVert, endTri, localProp);
+               if (alreadyAttached)
+                  continue;
 
-         for (auto* dgNode : upperComp) {
-            Propagation*     newProp = newPropagation(curVert, localProp->goUp());
-            const idSuperArc newArc  = graph_.openArc(curNode, newProp);
-            // TODO for the first one keep the same rpz to limit the number of re-visit
-            newProp->setRpz(newArc);
-            newProp->addNewVertex(curVert);
+               DEBUG_1(<< "split " << curVert << " at " << printTriangle(neighTriangle, localProp)
+                       << std::endl);
 
-            dgNode->setRootArc(newArc);
-            newProps.emplace(newArc, newProp);
+               // BFS to add vertices in the current propagation for each seed
+               // and its corresponfing arc
+               Propagation*     newProp = newPropagation(curVert, localProp->goUp());
+               const idSuperArc newArc  = graph_.openArc(curNode, newProp);
+               // the first one keep the same rpz to limit the number of re-visit
+               newProp->setRpz(t == 0 ? localProp->getRpz() : newArc);
+
+               // give this arc to the DG component
+               const idEdge crossedEdge = getEdgeFromOTri(oNeighTriangle, curVert, endTri);
+               updateDynGraphCurArc(curVert, crossedEdge, newArc, newProp);
+
+               // fill newProp using a BFS on the current seed
+               bfsPropagation(curVert, neighTriangle, newProp, newArc);
+               // remove the already processed first vertex
+               newProp->nextVertex();
+               newProp->removeDuplicates(curVert);
+               if (!newProp->empty()) {
+                  bfsResults.emplace_back(std::make_tuple(newArc, newProp));
+               } else {
+                  graph_.getArc(newArc).hide();
+               }
+            }
          }
 
-         localProp->nextVertex();
-
-         // made to replace the BFS, use localProp and DynGraph
-         splitPropagationAtSaddle(localProp, newProps);
-         // TODO : check precomputSimplices for triangulation
-         // TODO remove bfs arrays
-
          // one growth per connected components
-         for (auto& bfsRes : newProps) {
+         for (auto& bfsRes : bfsResults) {
             const auto arc  = std::get<0>(bfsRes);
             const auto prop = std::get<1>(bfsRes);
             graph_.visit(curVert, arc);
-            prop->nextVertex();
             DEBUG_1(<< "visit s: " << curVert << " with " << arc << std::endl);
             // why is the firstprivate required here ?
 #ifdef TTK_ENABLE_OPENMP
