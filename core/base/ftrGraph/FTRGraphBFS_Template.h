@@ -66,9 +66,14 @@ namespace ttk
       void FTRGraph<ScalarType>::splitPropagationAtSaddle(
           Propagation* localProp, std::map<idSuperArc, Propagation*> newProps)
       {
-         while(!localProp->empty()){
+         bool stop = localProp->empty();
+         while (!stop) {
             const idVertex curVert = localProp->getCurVertex();
-            localProp->nextVertex();
+            if(localProp->empty()){
+               stop = true;
+            } else {
+               localProp->nextVertex();
+            }
 
             const idVertex nbNeigh = mesh_.getVertexEdgeNumber(curVert);
             for(idVertex n = 0; n < nbNeigh; ++n) {
@@ -83,17 +88,13 @@ namespace ttk
                const idVertex other = (v0 == curVert) ? v1 : v0;
                if(localProp->compare(other, curVert)) {
                   const idSuperArc corArc = dynGraph(localProp).getNode(neigh)->findRootArc();
-#ifndef TTK_ENABLE_KAMIKAZE
+
                   if (newProps.count(corArc) == 0) {
-                     std::cout << "prop not found for arc " << corArc << " edge " << v0 << " " << v1
-                               << std::endl;
                      continue;
                   }
-#endif
                   Propagation* curProp = newProps[corArc];
                   curProp->addNewVertex(curVert);
                   toVisit_[curVert] = curProp->getRpz();
-                  std::cout << "++ " << curVert << " arc " << corArc << std::endl;
                   break;
                }
             }

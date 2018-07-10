@@ -120,7 +120,7 @@ namespace ttk
          printTime(timeBuild, "[FTR Graph]: build time: ", timeMsg);
 
          // Debug
-         printGraph(4);
+         // printGraph(4);
 
          // post-process
          graph_.arcs2nodes([&](const idVertex a, const idVertex b){return scalars_->isLower(a,b);});

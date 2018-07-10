@@ -568,7 +568,6 @@ namespace ttk
             graph_.visit(curVert, arc);
             prop->nextVertex();
             DEBUG_1(<< "visit s: " << curVert << " with " << arc << std::endl);
-            std::cout << "will launch " << prop->print() << std::endl;
             // why is the firstprivate required here ?
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(curVert, prop, arc) OPTIONAL_PRIORITY(PriorityLevel::Low)
