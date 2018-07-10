@@ -59,6 +59,8 @@ function(ttk_add_base_template_library library)
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/base>)
 
+  target_include_directories(${library} INTERFACE ${Boost_INCLUDE_DIR})
+		
 	if (TTK_ENABLE_KAMIKAZE)
 		target_compile_definitions(${library} INTERFACE TTK_ENABLE_KAMIKAZE)
 	endif()
