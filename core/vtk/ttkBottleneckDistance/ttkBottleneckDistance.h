@@ -198,17 +198,29 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   const double spacing,
   const int diagramNumber)
 {
+#ifdef TTK_USE_64BIT_IDS
   vtkIdTypeArray* vertexIdentifierScalars =
     vtkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("VertexIdentifier"));
+#else
+  vtkIntArray* vertexIdentifierScalars =
+    vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
+      GetPointData()->GetArray("VertexIdentifier"));
+#endif
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("NodeType"));
 
+#ifdef TTK_USE_64BIT_IDS
   vtkIdTypeArray* pairIdentifierScalars =
     vtkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
       GetCellData()->GetArray("PairIdentifier"));
+#else
+  vtkIntArray* pairIdentifierScalars =
+    vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
+      GetCellData()->GetArray("PairIdentifier"));
+#endif
 
   vtkIntArray* extremumIndexScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
