@@ -164,8 +164,13 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
   
   if(VertexIds){
+#ifdef TTK_USE_64BIT_IDS
     vtkSmartPointer<vtkIdTypeArray> vertexIds =
       vtkSmartPointer<vtkIdTypeArray>::New();
+#else
+    vtkSmartPointer<vtkIntArray> vertexIds =
+      vtkSmartPointer<vtkIntArray>::New();
+#endif
     vertexIds->SetNumberOfComponents(1);
     vertexIds->SetNumberOfTuples(criticalPoints_.size());
     vertexIds->SetName("VertexIdentifiers");
