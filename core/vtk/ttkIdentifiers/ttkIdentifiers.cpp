@@ -43,11 +43,18 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
   output->ShallowCopy(input);
-  
+ 
+#ifdef TTK_USE_64BIT_IDS
   vtkSmartPointer<vtkIdTypeArray> vertexIdentifiers 
     = vtkSmartPointer<vtkIdTypeArray>::New();
   vtkSmartPointer<vtkIdTypeArray> cellIdentifiers
     = vtkSmartPointer<vtkIdTypeArray>::New();
+#else
+  vtkSmartPointer<vtkIntArray> vertexIdentifiers 
+    = vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIntArray> cellIdentifiers
+    = vtkSmartPointer<vtkIntArray>::New();
+#endif
     
   vertexIdentifiers->SetName(VertexFieldName.data());
   vertexIdentifiers->SetNumberOfComponents(1);

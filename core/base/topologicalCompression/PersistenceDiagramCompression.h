@@ -343,7 +343,7 @@ int ttk::TopologicalCompression::PerformSimplification(
   topologicalSimplification.setOutputOffsetScalarFieldPointer(decompressedOffsets_.data());
   topologicalSimplification.setVertexIdentifierScalarFieldPointer(critConstraints.data());
   topologicalSimplification.setConstraintNumber(nbConstraints);
-  status = topologicalSimplification.execute<double>();
+  status = topologicalSimplification.execute<double,int>();
 
   return status;
 }
@@ -449,7 +449,7 @@ int ttk::TopologicalCompression::computePersistencePairs(
   ftmTreePP.setTreeType(ftm::TreeType::Join_Split);
   ftmTreePP.setVertexSoSoffsets(voffsets.data());
   ftmTreePP.setThreadNumber(threadNumber_);
-  ftmTreePP.build<dataType>();
+  ftmTreePP.build<dataType,SimplexId>();
   ftmTreePP.setSegmentation(false);
   ftmTreePP.computePersistencePairs<dataType>(JTPairs, true);
   ftmTreePP.computePersistencePairs<dataType>(STPairs, false);
@@ -667,7 +667,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       topologicalSimplification.setVertexIdentifierScalarFieldPointer(simplifiedConstraints.data());
       topologicalSimplification.setConstraintNumber(nbCrit);
       int status = 0;
-      status = topologicalSimplification.execute<dataType>();
+      status = topologicalSimplification.execute<dataType,SimplexId>();
       if (status != 0) {
         return status;
       }

@@ -28,6 +28,7 @@
 #include                  <vtkDataSetAlgorithm.h>
 #include                  <vtkFiltersCoreModule.h>
 #include                  <vtkInformation.h>
+#include                  <vtkIntArray.h>
 #include                  <vtkIdTypeArray.h>
 #include                  <vtkObjectFactory.h>
 #include                  <vtkPointData.h>
