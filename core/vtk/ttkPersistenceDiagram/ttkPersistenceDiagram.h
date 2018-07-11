@@ -199,7 +199,7 @@ class ttkPersistenceDiagram
     ttk::Triangulation *triangulation_;
     vtkDataArray* inputScalars_;
     vtkUnstructuredGrid* CTPersistenceDiagram_;
-    vtkIdTypeArray* offsets_;
+    vtkDataArray* offsets_;
     vtkDataArray* inputOffsets_;
     bool varyingMesh_;
     int ScalarFieldId, OffsetFieldId;

@@ -76,7 +76,7 @@ namespace ttk{
                        ftm::idVertex>>& diagram,
           scalarType*                   scalars) const;
 
-      template <class scalarType>
+      template <class scalarType, typename idType>
         int execute() const;
 
       inline int setDMTPairs(std::vector<std::tuple<dcg::Cell,dcg::Cell>>* data){
@@ -196,7 +196,7 @@ ftm::TreeType::Split, v0);
    return 0;
 }
 
-template <typename scalarType>
+template <typename scalarType, typename idType>
 int ttk::PersistenceDiagram::execute() const{
   // get data
   std::vector<std::tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,scalarType,ftm::idVertex>>& CTDiagram=
@@ -217,7 +217,7 @@ int ttk::PersistenceDiagram::execute() const{
   contourTree.setVertexSoSoffsets(voffsets.data());
   contourTree.setThreadNumber(threadNumber_);
   contourTree.setSegmentation(false);
-  contourTree.build<scalarType>();
+  contourTree.build<scalarType,idType>();
 
   // get persistence pairs
   std::vector<std::tuple<ftm::idVertex, ftm::idVertex, scalarType>> JTPairs;
@@ -260,7 +260,7 @@ int ttk::PersistenceDiagram::execute() const{
     morseSmaleComplex.setupTriangulation(triangulation_);
     morseSmaleComplex.setInputScalarField(inputScalars_);
     morseSmaleComplex.setInputOffsets(inputOffsets_);
-    morseSmaleComplex.computePersistencePairs<scalarType>(JTPairs, STPairs, pl_saddleSaddlePairs);
+    morseSmaleComplex.computePersistencePairs<scalarType,idType>(JTPairs, STPairs, pl_saddleSaddlePairs);
   }
 
   // get persistence diagrams

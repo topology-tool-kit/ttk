@@ -127,7 +127,11 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
     if(!offsets_){
       const SimplexId numberOfVertices=input->GetNumberOfPoints();
 
+#ifdef TTK_USE_64BIT_IDS
       offsets_=vtkIdTypeArray::New();
+#else
+      offsets_=vtkIntArray::New();
+#endif
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName("OffsetScalarField");
@@ -214,14 +218,15 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   persistenceDiagram_.setInputScalars(inputScalars_->GetVoidPointer(0));
   persistenceDiagram_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
   persistenceDiagram_.setComputeSaddleConnectors(ComputeSaddleConnectors);
-  switch(inputScalars_->GetDataType()){
+  switch(vtkTemplate2PackMacro(inputScalars_->GetDataType(),
+        inputOffsets_->GetDataType())){
 #ifndef _MSC_VER
-	  vtkTemplateMacro(({
+	  vtkTemplate2Macro(({
 		  using tuple_t = tuple<ftm::idVertex,
 		  ftm::NodeType,
 		  ftm::idVertex,
 		  ftm::NodeType,
-		  VTK_TT,
+		  VTK_T1,
 		  ftm::idVertex>;
 
 	  if (CTDiagram_ and computeDiagram_) {
@@ -238,7 +243,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-		  ret = persistenceDiagram_.execute<VTK_TT>();
+		  ret = persistenceDiagram_.execute<VTK_T1,VTK_T2>();
 #ifndef TTK_ENABLE_KAMIKAZE
 		  if (ret) {
 			  cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
@@ -249,9 +254,9 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  }
 
 	  if (ShowInsideDomain)
-		  ret = getPersistenceDiagramInsideDomain<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
+		  ret = getPersistenceDiagramInsideDomain<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
 	  else
-		  ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
+		  ret = getPersistenceDiagram<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
 #ifndef TTK_ENABLE_KAMIKAZE
 	  if (ret) {
 		  cerr << "[ttkPersistenceDiagram] Error : "
@@ -262,12 +267,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  }));
 #else
 #ifndef TTK_ENABLE_KAMIKAZE
-	  vtkTemplateMacro({
+	  vtkTemplate2Macro(({
 		  using tuple_t = tuple<ftm::idVertex COMMA
 		  ftm::NodeType COMMA
 		  ftm::idVertex COMMA
 		  ftm::NodeType COMMA
-		  VTK_TT COMMA
+		  VTK_T1 COMMA
 		  ftm::idVertex>;
 
 	  if (CTDiagram_ and computeDiagram_) {
@@ -284,7 +289,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-		  ret = persistenceDiagram_.execute<VTK_TT>();
+		  ret = persistenceDiagram_.execute<VTK_T1,VTK_T2>();
 		  if (ret) {
 			  cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
 				  << "error code : " << ret << endl;
@@ -293,22 +298,22 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  }
 
 	  if (ShowInsideDomain)
-		  ret = getPersistenceDiagramInsideDomain<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
+		  ret = getPersistenceDiagramInsideDomain<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
 	  else
-		  ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
+		  ret = getPersistenceDiagram<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
 	  if (ret) {
 		  cerr << "[ttkPersistenceDiagram] Error : "
 			  << "build of contour tree persistence diagram has failed." << endl;
 		  return -5;
 	  }
-	  });
+	  }));
 #else
-	  vtkTemplateMacro({
+	  vtkTemplate2Macro(({
 		  using tuple_t = tuple<ftm::idVertex COMMA
 		  ftm::NodeType COMMA
 		  ftm::idVertex COMMA
 		  ftm::NodeType COMMA
-		  VTK_TT COMMA
+		  VTK_T1 COMMA
 		  ftm::idVertex>;
 
 	  if (CTDiagram_ and computeDiagram_) {
@@ -325,14 +330,14 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-		  ret = persistenceDiagram_.execute<VTK_TT>();
+		  ret = persistenceDiagram_.execute<VTK_T1,VTK_T2>();
 	  }
 
 	  if (ShowInsideDomain)
-		  ret = getPersistenceDiagramInsideDomain<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
+		  ret = getPersistenceDiagramInsideDomain<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
 	  else
-		  ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
-	  });
+		  ret = getPersistenceDiagram<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
+	  }));
 #endif
 #endif
   }
