@@ -177,7 +177,7 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public ttk::Wrapper
    std::vector<ttk::Triangulation*>         triangulation_;
    std::vector<LocalFTM>               ftmTree_;
    std::vector<vtkDataArray*>          inputScalars_;
-   std::vector<std::vector<ttk::ftm::idVertex>>  offsets_;
+   std::vector<std::vector<ttk::SimplexId>>  offsets_;
 
    bool                   hasUpdatedMesh_;
 };

@@ -76,13 +76,20 @@ struct WrapperData {
 };
 
 struct ArcData : public WrapperData {
-   std::vector<vtkIdType>          point_ids;
+   std::vector<ttk::SimplexId>          point_ids;
    vtkSmartPointer<vtkCharArray>   point_regularMask;
    vtkSmartPointer<vtkFloatArray>  point_scalar;
+#ifdef TTK_USE_64BIT_IDS
    vtkSmartPointer<vtkIdTypeArray>    cell_ids;
    vtkSmartPointer<vtkIdTypeArray>    cell_upNode;
    vtkSmartPointer<vtkIdTypeArray>    cell_downNode;
    vtkSmartPointer<vtkIdTypeArray>    cell_sizeArcs;
+#else
+   vtkSmartPointer<vtkIntArray>    cell_ids;
+   vtkSmartPointer<vtkIntArray>    cell_upNode;
+   vtkSmartPointer<vtkIntArray>    cell_downNode;
+   vtkSmartPointer<vtkIntArray>    cell_sizeArcs;
+#endif
    vtkSmartPointer<vtkDoubleArray> cell_spanArcs;
 
    inline int init(std::vector<LocalFTM>& ftmTree, ttk::ftm::Params params)
@@ -103,15 +110,25 @@ struct ArcData : public WrapperData {
       }
 
       point_ids.resize(nbVerts, ttk::ftm::nullVertex);
+#ifdef TTK_USE_64BIT_IDS
       cell_ids          = initArray<vtkIdTypeArray>("SegmentationId", samplePoints);
       cell_upNode       = initArray<vtkIdTypeArray>("upNodeId", samplePoints);
       cell_downNode     = initArray<vtkIdTypeArray>("downNodeId", samplePoints);
+#else
+      cell_ids          = initArray<vtkIntArray>("SegmentationId", samplePoints);
+      cell_upNode       = initArray<vtkIntArray>("upNodeId", samplePoints);
+      cell_downNode     = initArray<vtkIntArray>("downNodeId", samplePoints);
+#endif
       point_regularMask = initArray<vtkCharArray>("RegularMask", samplePoints);
       point_scalar      = initArray<vtkFloatArray>("Scalar", samplePoints);
 
       if (params.advStats) {
          if (params.segm) {
+#ifdef TTK_USE_64BIT_IDS
             cell_sizeArcs = initArray<vtkIdTypeArray>("RegionSize", samplePoints);
+#else
+            cell_sizeArcs = initArray<vtkIntArray>("RegionSize", samplePoints);
+#endif
          }
          cell_spanArcs = initArray<vtkDoubleArray>("RegionSpan", samplePoints);
       }
@@ -124,20 +141,20 @@ struct ArcData : public WrapperData {
       return point_ids[vertId] != ttk::ftm::nullVertex;
    }
 
-   inline void addPoint(const ttk::ftm::idVertex globalId, const vtkIdType id, const float scalar,
+   inline void addPoint(const ttk::ftm::idVertex globalId, const ttk::SimplexId id, const float scalar,
                         const bool reg)
    {
       point_ids[globalId] = id;
       setPoint(id, scalar, reg);
    }
 
-   inline void setPoint(const vtkIdType id, const float scalar, const bool reg)
+   inline void setPoint(const ttk::SimplexId id, const float scalar, const bool reg)
    {
       point_scalar->SetTuple1(id, scalar);
       point_regularMask->SetTuple1(id, reg);
    }
 
-   inline void fillArrayCell(const vtkIdType pos, const ttk::ftm::idSuperArc arcId,
+   inline void fillArrayCell(const ttk::SimplexId pos, const ttk::ftm::idSuperArc arcId,
                              LocalFTM& ftmTree, ttk::Triangulation* triangulation,
                              ttk::ftm::Params params)
    {
@@ -208,12 +225,19 @@ struct ArcData : public WrapperData {
 };
 
 struct NodeData : public WrapperData{
+#ifdef TTK_USE_64BIT_IDS
    vtkSmartPointer<vtkIdTypeArray>   ids;
-   vtkSmartPointer<vtkFloatArray> scalars;
    vtkSmartPointer<vtkIdTypeArray>   vertIds;
-   vtkSmartPointer<vtkIntArray>   type;
    vtkSmartPointer<vtkIdTypeArray>   regionSize;
    vtkSmartPointer<vtkIdTypeArray>   regionSpan;
+#else
+   vtkSmartPointer<vtkIntArray>   ids;
+   vtkSmartPointer<vtkIntArray>   vertIds;
+   vtkSmartPointer<vtkIntArray>   regionSize;
+   vtkSmartPointer<vtkIntArray>   regionSpan;
+#endif
+   vtkSmartPointer<vtkFloatArray> scalars;
+   vtkSmartPointer<vtkIntArray>   type;
    int scalarType;
 
    inline int init(std::vector<LocalFTM>& ftmTree, ttk::ftm::Params params)
@@ -224,16 +248,29 @@ struct NodeData : public WrapperData{
          numberOfNodes += tree->getNumberOfNodes();
       }
 
+#ifdef TTK_USE_64BIT_IDS
       ids     = initArray<vtkIdTypeArray>("NodeId", numberOfNodes);
-      scalars = initArray<vtkFloatArray>("Scalar", numberOfNodes);
       vertIds = initArray<vtkIdTypeArray>("VertexId", numberOfNodes);
+#else
+      ids     = initArray<vtkIntArray>("NodeId", numberOfNodes);
+      vertIds = initArray<vtkIntArray>("VertexId", numberOfNodes);
+#endif
       type    = initArray<vtkIntArray>("NodeType", numberOfNodes);
+      scalars = initArray<vtkFloatArray>("Scalar", numberOfNodes);
 
       if (params.advStats) {
          if (params.segm) {
+#ifdef TTK_USE_64BIT_IDS
             regionSize = initArray<vtkIdTypeArray>("RegionSize", numberOfNodes);
+#else
+            regionSize = initArray<vtkIntArray>("RegionSize", numberOfNodes);
+#endif
          }
+#ifdef TTK_USE_64BIT_IDS
          regionSpan = initArray<vtkIdTypeArray>("RegionSpan", numberOfNodes);
+#else
+         regionSpan = initArray<vtkIntArray>("RegionSpan", numberOfNodes);
+#endif
       }
 
       return 0;
@@ -244,7 +281,7 @@ struct NodeData : public WrapperData{
       scalarType = s;
    }
 
-   inline void fillArrayPoint(vtkIdType arrIdx, const ttk::ftm::idNode nodeId, LocalFTM& ftmTree,
+   inline void fillArrayPoint(ttk::SimplexId arrIdx, const ttk::ftm::idNode nodeId, LocalFTM& ftmTree,
                               vtkDataArray* idMapper, ttk::Triangulation* triangulation,
                               ttk::ftm::Params params)
    {
@@ -331,8 +368,13 @@ struct NodeData : public WrapperData{
 };
 
 struct VertData: public WrapperData {
+#ifdef TTK_USE_64BIT_IDS
    vtkSmartPointer<vtkIdTypeArray>    ids;
    vtkSmartPointer<vtkIdTypeArray>    sizeRegion;
+#else
+   vtkSmartPointer<vtkIntArray>    ids;
+   vtkSmartPointer<vtkIntArray>    sizeRegion;
+#endif
    vtkSmartPointer<vtkDoubleArray> spanRegion;
    vtkSmartPointer<vtkCharArray>   typeRegion;
 
@@ -348,11 +390,19 @@ struct VertData: public WrapperData {
          numberOfVertices += tree->getNumberOfVertices();
       }
 
+#ifdef TTK_USE_64BIT_IDS
       ids        = initArray<vtkIdTypeArray>("SegmentationId", numberOfVertices);
+#else
+      ids        = initArray<vtkIntArray>("SegmentationId", numberOfVertices);
+#endif
       typeRegion = initArray<vtkCharArray>("RegionType", numberOfVertices);
 
       if (params.advStats) {
+#ifdef TTK_USE_64BIT_IDS
          sizeRegion = initArray<vtkIdTypeArray>("RegionSize", numberOfVertices);
+#else
+         sizeRegion = initArray<vtkIntArray>("RegionSize", numberOfVertices);
+#endif
          spanRegion = initArray<vtkDoubleArray>("RegionSpan", numberOfVertices);
       }
 

@@ -651,7 +651,11 @@ ttkFTMTree::~ttkFTMTree()
 
 void ttkFTMTree::identify(vtkDataSet* ds) const
 {
+#ifdef TTK_USE_64BIT_IDS
    vtkSmartPointer<vtkIdTypeArray> identifiers=vtkSmartPointer<vtkIdTypeArray>::New();
+#else
+   vtkSmartPointer<vtkIntArray> identifiers=vtkSmartPointer<vtkIntArray>::New();
+#endif
    const vtkIdType nbPoints = ds->GetNumberOfPoints();
    identifiers->SetName("VertexIdentifier");
    identifiers->SetNumberOfComponents(1);
