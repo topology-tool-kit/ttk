@@ -40,16 +40,26 @@ int ttkManifoldCheck::doIt(
   msg << "[ttkManifoldCheck] Preparing VTK output..." << endl;
   dMsg(cout, msg.str(), Debug::timeMsg);
   
+#ifdef TTK_USE_64BIT_IDS
   vtkSmartPointer<vtkIdTypeArray> vertexPointArray = 
     vtkSmartPointer<vtkIdTypeArray>::New();
+#else
+  vtkSmartPointer<vtkIntArray> vertexPointArray = 
+    vtkSmartPointer<vtkIntArray>::New();
+#endif
   vertexPointArray->SetName("VertexLinkComponentNumber");
   vertexPointArray->SetNumberOfTuples(output->GetNumberOfPoints());
   for(SimplexId i = 0; i < (SimplexId) vertexLinkComponentNumber_.size(); i++)
     vertexPointArray->SetTuple1(i, vertexLinkComponentNumber_[i]);
   output->GetPointData()->AddArray(vertexPointArray);
-  
+ 
+#ifdef TTK_USE_64BIT_IDS
   vtkSmartPointer<vtkIdTypeArray> vertexCellArray = 
     vtkSmartPointer<vtkIdTypeArray>::New();
+#else
+  vtkSmartPointer<vtkIntArray> vertexCellArray = 
+    vtkSmartPointer<vtkIntArray>::New();
+#endif
   vertexCellArray->SetName("VertexLinkComponentNumber");
   vertexCellArray->SetNumberOfTuples(output->GetNumberOfCells());
   
@@ -68,16 +78,26 @@ int ttkManifoldCheck::doIt(
   output->GetCellData()->AddArray(vertexCellArray);
 
   // edges
+#ifdef TTK_USE_64BIT_IDS
   vtkSmartPointer<vtkIdTypeArray> edgePointArray = 
     vtkSmartPointer<vtkIdTypeArray>::New();
+#else
+  vtkSmartPointer<vtkIntArray> edgePointArray = 
+    vtkSmartPointer<vtkIntArray>::New();
+#endif
   edgePointArray->SetName("EdgeLinkComponentNumber");
   edgePointArray->SetNumberOfTuples(output->GetNumberOfPoints());
   for(SimplexId i = 0; i < edgePointArray->GetNumberOfTuples(); i++){
     edgePointArray->SetTuple1(i, 0);
   }
-  
+ 
+#ifdef TTK_USE_64BIT_IDS
   vtkSmartPointer<vtkIdTypeArray> edgeCellArray = 
     vtkSmartPointer<vtkIdTypeArray>::New();
+#else
+  vtkSmartPointer<vtkIntArray> edgeCellArray = 
+    vtkSmartPointer<vtkIntArray>::New();
+#endif
   edgeCellArray->SetName("EdgeLinkComponentNumber");
   edgeCellArray->SetNumberOfTuples(output->GetNumberOfCells());
   for(SimplexId i = 0; i < edgeCellArray->GetNumberOfTuples(); i++){
@@ -148,16 +168,26 @@ int ttkManifoldCheck::doIt(
   
   
   // triangles
+#ifdef TTK_USE_64BIT_IDS
   vtkSmartPointer<vtkIdTypeArray> trianglePointArray = 
     vtkSmartPointer<vtkIdTypeArray>::New();
+#else
+  vtkSmartPointer<vtkIntArray> trianglePointArray = 
+    vtkSmartPointer<vtkIntArray>::New();
+#endif
   trianglePointArray->SetName("TriangleLinkComponentNumber");
   trianglePointArray->SetNumberOfTuples(output->GetNumberOfPoints());
   for(SimplexId i = 0; i < trianglePointArray->GetNumberOfTuples(); i++){
     trianglePointArray->SetTuple1(i, 0);
   }
   
+#ifdef TTK_USE_64BIT_IDS
   vtkSmartPointer<vtkIdTypeArray> triangleCellArray = 
   vtkSmartPointer<vtkIdTypeArray>::New();
+#else
+  vtkSmartPointer<vtkIntArray> triangleCellArray = 
+  vtkSmartPointer<vtkIntArray>::New();
+#endif
   triangleCellArray->SetName("TriangleLinkComponentNumber");
   triangleCellArray->SetNumberOfTuples(output->GetNumberOfCells());
   for(SimplexId i = 0; i < triangleCellArray->GetNumberOfTuples(); i++){
