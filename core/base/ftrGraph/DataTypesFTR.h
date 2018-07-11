@@ -30,7 +30,7 @@ namespace ftr
    /// \brief Cell index in vect_cellList_
    using idCell = int;
    /// \brief for task identifiers
-   using idTask = idNode;
+   using idPropagation = idNode;
    /// \brief for threads identifiers
    using idThread = idNode;
    /// \brief for vertex up/down valence
@@ -61,6 +61,7 @@ namespace ftr
    static const idVertex       nullVertex    = std::numeric_limits<idVertex>::max();
    static const idEdge         nullEdge      = std::numeric_limits<idEdge>::max();
    static const idCell         nullCell      = std::numeric_limits<idCell>::max();
+   static const idPropagation  nullProp      = std::numeric_limits<idPropagation>::max();
    static const idSegmentation nullSegment   = std::numeric_limits<idSegmentation>::max();
 
    // Enum data

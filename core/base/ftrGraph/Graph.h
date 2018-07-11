@@ -141,21 +141,10 @@ namespace ttk
             return segmentation_[v];
          }
 
-         bool hasVisited(const idVertex v, const idSuperArc id) const
+         bool hasArc(const idVertex v, const idSuperArc id) const
          {
             for(const idSegmentation tmp :  segmentation_[v]){
                if (tmp == (idSegmentation)id) {
-                  return true;
-               }
-            }
-            return false;
-         }
-
-         bool haveSeen(const idVertex v, const idSuperArc rpz) const
-         {
-            for(const idSegmentation tmp :  segmentation_[v]){
-               if (tmp >= 0 && getArc(tmp).getPropagation() &&
-                   getArc(tmp).getPropagation()->getRpz() == rpz) {
                   return true;
                }
             }

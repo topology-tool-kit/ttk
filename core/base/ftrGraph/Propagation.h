@@ -37,8 +37,8 @@ namespace ttk
          // priority queue
          boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation_;
 
-         // representant (first vertex)
-         idSuperArc rpz_;
+         // representant (pos in array)
+         idPropagation id_;
 
         public:
          Propagation(idVertex startVert, VertCompFN vertComp, bool up)
@@ -46,7 +46,7 @@ namespace ttk
                comp_(vertComp),
                goUp_(up),
                propagation_(vertComp),
-               rpz_(nullSuperArc)
+               id_(nullProp)
          {
             propagation_.emplace(startVert);
          }
@@ -56,14 +56,14 @@ namespace ttk
             return curVert_;
          }
 
-         void setRpz(decltype(rpz_) rpz)
+         void setId(decltype(id_) id)
          {
-            rpz_ = rpz;
+            id_ = id;
          }
 
-         decltype(rpz_) getRpz(void) const
+         decltype(id_) getId(void) const
          {
-            return rpz_;
+            return id_;
          }
 
          idVertex nextVertex(void)

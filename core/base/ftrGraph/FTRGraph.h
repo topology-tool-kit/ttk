@@ -18,23 +18,31 @@
 #include <Triangulation.h>
 
 // local includes
+#include "AtomicVector.h"
 #include "DataTypesFTR.h"
 #include "DynamicGraph.h"
 #include "FTRCommon.h"
 #include "Graph.h"
 #include "Mesh.h"
 #include "Propagation.h"
+#include "Propagations.h"
 #include "Scalars.h"
 
 // c++ includes
 #include<set>
 #include<tuple>
 
-
 namespace ttk
 {
    namespace ftr
    {
+
+      struct DynGraphs
+      {
+         // one going up, one going down
+         DynamicGraph<idVertex> up, down;
+      };
+
       template<typename ScalarType>
       class FTRGraph : virtual public Debug, public Allocable
       {
@@ -43,21 +51,16 @@ namespace ttk
          Params* const              params_;
          Scalars<ScalarType>* const scalars_;
 
+         // if yes, also delete params_ and scalars as we have created them
          const bool needDelete_;
 
          // Internal fields
-         Graph graph_;
-         Mesh  mesh_;
-         // one graph for propagation strating from minima and going up
-         // and a second one for propagation starting at maxima and going down
-         // TODO could change the compariton fonction used here instead of tricking getWeight
-         std::tuple<DynamicGraph<idVertex>, DynamicGraph<idVertex>> dynGraph_;
-         // local growth
+         Graph        graph_;
+         Mesh         mesh_;
+         Propagations propagations_;
+         DynGraphs    dynGraphs_;
 
-         AtomicVector<Propagation*> propagations_;
-         std::vector<idSuperArc>    toVisit_;
-
-         // BFS
+         // BFS history arrays
          std::vector<idCell>   bfsCells_;
          std::vector<idEdge>   bfsEdges_;
          std::vector<idVertex> bfsVerts_;
@@ -169,18 +172,18 @@ namespace ttk
          DynamicGraph<idVertex>& dynGraph(const Propagation* const lp)
          {
             if(lp->goUp()){
-               return std::get<0>(dynGraph_);
+               return dynGraphs_.up;
             } else {
-               return std::get<1>(dynGraph_);
+               return dynGraphs_.down;
             }
          }
 
          DynamicGraph<idVertex>& dynGraph(const bool goUp)
          {
             if(goUp){
-               return std::get<0>(dynGraph_);
+               return dynGraphs_.up;
             } else {
-               return std::get<1>(dynGraph_);
+               return dynGraphs_.down;
             }
          }
 
@@ -215,7 +218,7 @@ namespace ttk
 
          void init() override;
 
-        private: // FTRGraphPrivate
+        private:
          /// Local propagation for the vertex seed, using BFS with a priority queue
          /// localProp.
          /// This will process all the area corresponding to one connected component
@@ -338,6 +341,7 @@ namespace ttk
                             const Propagation* const localProp);
 
          // DEPRECATED
+         // TODO move in Mesh if not already done
 
          /// On a triangle, recover the position of the current vertex to classify the triangle
          vertPosInTriangle getVertPosInTriangle(const orderedTriangle&   oTriangle,

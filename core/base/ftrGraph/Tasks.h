@@ -27,9 +27,9 @@ namespace ttk
       // to use this structure
       struct TaskChunk
       {
-         idVertex nbElemt   = 0;
-         idTask   nbTasks   = 0;
-         idVertex grainSize = 0;
+         idVertex      nbElemt   = 0;
+         idPropagation nbTasks   = 0;
+         idVertex      grainSize = 0;
 
          explicit TaskChunk(const idVertex nbel) : nbElemt(nbel)
          {
@@ -45,7 +45,7 @@ namespace ttk
          /// in chunk of grainSize elements OR in nbTasks chunks
          /// \pre nbElemt is the number of element to visit and
          /// ONLY ONE of nbTasks or grainSize should be set.
-         static std::tuple<idVertex,idTask> getChunk(const TaskChunk& params)
+         static std::tuple<idVertex, idPropagation> getChunk(const TaskChunk& params)
          {
 #ifndef TTK_ENABLE_KAMIKAZE
             if (!params.nbElemt) {
@@ -60,16 +60,21 @@ namespace ttk
 #endif
             const idVertex grainSize =
                 (params.grainSize) ? params.grainSize : params.nbElemt / params.nbTasks;
-            const idTask nbTasks = params.nbElemt / grainSize + (params.nbElemt % grainSize != 0);
+            const idPropagation nbTasks =
+                params.nbElemt / grainSize + (params.nbElemt % grainSize != 0);
 
             return std::make_tuple(grainSize, nbTasks);
          }
 
-         static idVertex getBegin(const idTask chunkId, const idVertex grainSize, const idVertex offset = 0) {
+         static idVertex getBegin(const idPropagation chunkId, const idVertex grainSize,
+                                  const idVertex offset = 0)
+         {
             return offset +  grainSize * chunkId;
          }
 
-         static idVertex getEnd(const idTask chunkId, const idVertex grainSize, const idVertex maxEnd = nullVertex) {
+         static idVertex getEnd(const idPropagation chunkId, const idVertex grainSize,
+                                const idVertex maxEnd = nullVertex)
+         {
             const idVertex computedEnd = grainSize * (chunkId + 1);
             return std::min(maxEnd, computedEnd);
          }

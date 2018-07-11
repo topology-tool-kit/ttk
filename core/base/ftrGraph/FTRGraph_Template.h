@@ -37,10 +37,6 @@ namespace ttk
             delete params_;
             delete scalars_;
          }
-
-         for (Propagation* p : propagations_) {
-            delete p;
-         }
       }
 
       template <typename ScalarType>
@@ -149,7 +145,7 @@ namespace ttk
          leafChunkParams.grainSize = 10000;
          auto leafChunk            = Tasks::getChunk(leafChunkParams);
 
-         for (idTask leafChunkId = 0; leafChunkId < std::get<1>(leafChunk); ++leafChunkId) {
+         for (idPropagation leafChunkId = 0; leafChunkId < std::get<1>(leafChunk); ++leafChunkId) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(leafChunkId)
 #endif
@@ -160,7 +156,7 @@ namespace ttk
 
                for (idVertex v = lowerBound; v < upperBound; ++v) {
                   const valence vNeighNumber = mesh_.getVertexNeighborNumber(v);
-                  bool isMax = true;
+                  bool isMax = false;
                   bool isMin = true;
 
                   for (valence n = 0; n < vNeighNumber; ++n) {
@@ -203,7 +199,6 @@ namespace ttk
                const bool       fromMin          = graph_.isLeafFromMin(i);
                Propagation*     localPropagation = newPropagation(corLeaf, fromMin);
                const idSuperArc newArc = graph_.openArc(graph_.makeNode(corLeaf), localPropagation);
-               localPropagation->setRpz(newArc);
                // process
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Higher)
@@ -224,14 +219,15 @@ namespace ttk
          graph_.setNumberOfVertices(mesh_.getNumberOfVertices());
          graph_.alloc();
 
+         propagations_.setNumberOfVertices(mesh_.getNumberOfVertices());
+         propagations_.alloc();
 
-         std::get<0>(dynGraph_).setNumberOfNodes(mesh_.getNumberOfEdges());
-         std::get<1>(dynGraph_).setNumberOfNodes(mesh_.getNumberOfEdges());
-         std::get<0>(dynGraph_).alloc();
-         std::get<1>(dynGraph_).alloc();
+         dynGraphs_.up.setNumberOfNodes(mesh_.getNumberOfEdges());
+         dynGraphs_.up.alloc();
 
-         propagations_.reserve(mesh_.getNumberOfVertices());
-         toVisit_.resize(mesh_.getNumberOfVertices());
+         dynGraphs_.down.setNumberOfNodes(mesh_.getNumberOfEdges());
+         dynGraphs_.down.alloc();
+
          bfsCells_.resize(mesh_.getNumberOfTriangles());
          bfsEdges_.resize(mesh_.getNumberOfEdges());
          bfsVerts_.resize(mesh_.getNumberOfVertices());
@@ -243,10 +239,10 @@ namespace ttk
          scalars_->removeNaN();
          scalars_->init();
          graph_.init();
-         std::get<0>(dynGraph_).init();
-         std::get<1>(dynGraph_).init();
+         propagations_.init();
+         dynGraphs_.up.init();
+         dynGraphs_.down.init();
 
-         fillVector<idSuperArc>(toVisit_, nullSuperArc);
          fillVector<idCell>(bfsCells_, nullCell);
          fillVector<idEdge>(bfsEdges_, nullEdge);
          fillVector<idVertex>(bfsVerts_, nullVertex);

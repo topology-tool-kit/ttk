@@ -36,7 +36,7 @@ namespace ttk
       {
          DEBUG_1(<< "Start " << seed << " go up " << localProp->goUp() << std::endl);
 #ifndef NDEBUG
-         DEBUG_1(<< localProp->getRpz() << " " << localProp->print() << std::endl);
+         DEBUG_1(<< localProp->getId() << " " << localProp->print() << std::endl);
 #endif
 
          // skeleton
@@ -60,18 +60,18 @@ namespace ttk
             localProp->nextVertex();
             const idVertex curVert = localProp->getCurVertex();
 
-            // Avoid revisiting things processed by this CC
-            if (!graph_.isNode(curVert) && graph_.haveSeen(curVert, localProp->getRpz())) {
-               DEBUG_1(<< "already seen " << curVert << " " << localProp->getRpz() << std::endl);
+            // Check history for visit (quick test)
+            if (!graph_.isNode(curVert) && propagations_.hasVisited(curVert, localProp)) {
+               DEBUG_1(<< "already seen " << curVert << " " << localProp->getId() << std::endl);
                continue;
             }
 
             // Caution: crossing tasks can leads to revisit legally
-            if (graph_.isArc(curVert) && checkSegmentationForArc(seed, curVert, localProp)) {
-               DEBUG_1(<< "Dismiss current : " << graph_.printArc(currentArc) << std::endl);
-               graph_.getArc(currentArc).hide();
-               return;
-            }
+            // if (graph_.isArc(curVert) && checkSegmentationForArc(seed, curVert, localProp)) {
+            //    DEBUG_1(<< "Dismiss current : " << graph_.printArc(currentArc) << std::endl);
+            //    graph_.getArc(currentArc).hide();
+            //    return;
+            // }
 
             lowerStarEdges.clear();
             upperStarEdges.clear();
@@ -79,15 +79,15 @@ namespace ttk
 
             lowerComp = lowerComps(lowerStarEdges, localProp);
             if(lowerComp.size() > 1){
+               // This task will stop here
                isJoinSaddle = true;
+            } else if (lowerComp.size() /* == 1 */) {
+               // recover the arc of this non join saddle. A same propagation
+               // can deal with several arc after a split saddle where no BFS
+               // where made
+               currentArc = lowerComp[0]->getCorArc();
+               DEBUG_1(<< "arc: " << lowerComp[0]->getCorArc() << " v " << curVert << std::endl);
             }
-            // else if (lowerComp.size() /* == 1 */) {
-            //    // recover the arc of this non join saddle. A same propagation
-            //    // can deal with several arc after a split saddle where no BFS
-            //    // where made
-            //    currentArc = lowerComp[0]->getCorArc();
-            //    DEBUG_1(<< "arc: " << lowerComp[0]->getCorArc() << " v " << curVert << std::endl);
-            // }
 
             graph_.visit(curVert, currentArc);
             DEBUG_1(<< "visit n: " << curVert << std::endl);
@@ -388,15 +388,16 @@ namespace ttk
       template <typename ScalarType>
       void FTRGraph<ScalarType>::localGrowth(Propagation* const localProp)
       {
+         const idVertex curVert = localProp->getCurVertex();
          const idVertex nbNeigh = mesh_.getVertexNeighborNumber(localProp->getCurVertex());
          for (idVertex n = 0; n < nbNeigh; ++n) {
             idVertex neighId;
-            mesh_.getVertexNeighbor(localProp->getCurVertex(), n, neighId);
-            if (localProp->compare(localProp->getCurVertex(), neighId)) {
-               if (toVisit_[neighId] != localProp->getRpz()) {
+            mesh_.getVertexNeighbor(curVert, n, neighId);
+            if (localProp->compare(curVert, neighId)) {
+               if (!propagations_.willVisit(neighId, localProp)) {
                   localProp->addNewVertex(neighId);
-                  toVisit_[neighId] = localProp->getRpz();
-                  // DEBUG_1(<< " + " << neighId << std::endl);
+                  propagations_.toVisit(neighId, localProp);
+                  DEBUG_1(<< " + " << neighId << std::endl);
                }
             }
          }
@@ -563,8 +564,6 @@ namespace ttk
                // and its corresponfing arc
                Propagation*     newProp = newPropagation(curVert, localProp->goUp());
                const idSuperArc newArc  = graph_.openArc(curNode, newProp);
-               // the first one keep the same rpz to limit the number of re-visit
-               newProp->setRpz(t == 0 ? localProp->getRpz() : newArc);
 
                // give this arc to the DG component
                const idEdge crossedEdge = getEdgeFromOTri(oNeighTriangle, curVert, endTri);
@@ -602,17 +601,12 @@ namespace ttk
       template <typename ScalarType>
       Propagation* FTRGraph<ScalarType>::newPropagation(const idVertex leaf, const bool fromMin)
       {
-         Propagation* localProp;
-         if (fromMin) {
-            auto compare_max_fun = [&](idVertex a, idVertex b) { return scalars_->isHigher(a, b); };
-            localProp            = new Propagation(leaf, compare_max_fun, fromMin);
-         } else {
-            auto compare_min_fun = [&](idVertex a, idVertex b) { return scalars_->isLower(a, b); };
-            localProp            = new Propagation(leaf, compare_min_fun, fromMin);
-         }
-         const auto propId     = propagations_.getNext();
-         propagations_[propId] = localProp;
-         return localProp;
+         VertCompFN comp;
+         if (fromMin)
+            comp = [&](idVertex a, idVertex b) { return scalars_->isHigher(a, b); };
+         else
+            comp = [&](idVertex a, idVertex b) { return scalars_->isLower(a, b); };
+         return propagations_.newPropagation(leaf, comp, fromMin);
       }
 
       template <typename ScalarType>
