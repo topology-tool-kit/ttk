@@ -27,7 +27,7 @@
 // PROCESS
 // -------
 
-template <typename scalarType>
+  template <typename scalarType,typename idType>
 void ftm::FTMTree::build(void)
 {
    // -----
@@ -116,8 +116,8 @@ void ftm::FTMTree::build(void)
    // for fast comparison
    // and regions / segmentation
    DebugTimer sortTime;
-   initSoS();
-   sortInput<scalarType>();
+   initSoS<idType>();
+   sortInput<scalarType,idType>();
    printTime(sortTime, "[FTM] sort step", -1, 3);
 
    // -----

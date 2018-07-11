@@ -29,7 +29,7 @@ namespace ttk
 namespace ftm
 {
 
-template <typename scalarType>
+template <typename scalarType, typename idType>
 void ftm::FTMTree_MT::sortInput(void)
 {
    const auto &nbVertices = scalars_->size;
@@ -42,7 +42,7 @@ void ftm::FTMTree_MT::sortInput(void)
       sortedVect->clear();
    }
 
-   auto indirect_sort = [&](const size_t &a, const size_t &b) { return isLower<scalarType>(a, b); };
+   auto indirect_sort = [&](const size_t &a, const size_t &b) { return isLower<scalarType,idType>(a, b); };
 
    sortedVect->resize(nbVertices, 0);
    std::iota(sortedVect->begin(), sortedVect->end(), 0);

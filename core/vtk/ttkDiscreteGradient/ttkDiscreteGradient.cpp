@@ -137,7 +137,11 @@ int ttkDiscreteGradient::getOffsets(vtkDataSet* input){
     if(!offsets_){
       const vtkIdType numberOfVertices=input->GetNumberOfPoints();
 
+#ifdef TTK_ENABLE_LARGE_DATASETS
       offsets_=vtkIdTypeArray::New();
+#else
+      offsets_=vtkIntArray::New();
+#endif
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName("OffsetsScalarField");
@@ -224,10 +228,11 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
   const int dimensionality=triangulation_->getDimensionality();
 
-  switch(inputScalars_->GetDataType()){
+  switch(vtkTemplate2PackMacro(inputScalars_->GetDataType(),
+        inputOffsets_->GetDataType())){
 #ifndef TTK_ENABLE_KAMIKAZE
-    vtkTemplateMacro({
-          vector<VTK_TT> criticalPoints_points_cellScalars;
+    vtkTemplate2Macro(({
+          vector<VTK_T1> criticalPoints_points_cellScalars;
 
           discreteGradient_.setOutputCriticalPoints(&criticalPoints_numberOfPoints,
               &criticalPoints_points,
@@ -238,14 +243,14 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
               &criticalPoints_points_PLVertexIdentifiers,
               &criticalPoints_points_manifoldSize);
 
-          ret=discreteGradient_.buildGradient<VTK_TT>();
+          ret=discreteGradient_.buildGradient<VTK_T1,VTK_T2>();
           if(ret){
           cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient() error code : " << ret << endl;
           return -8;
           }
 
           if(AllowSecondPass){
-            ret=discreteGradient_.buildGradient2<VTK_TT>();
+            ret=discreteGradient_.buildGradient2<VTK_T1,VTK_T2>();
             if(ret){
               cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient2() error code : " << ret << endl;
               return -9;
@@ -253,14 +258,14 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
           }
 
           if(dimensionality==3 and AllowThirdPass){
-            ret=discreteGradient_.buildGradient3<VTK_TT>();
+            ret=discreteGradient_.buildGradient3<VTK_T1,VTK_T2>();
             if(ret){
               cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient2() error code : " << ret << endl;
               return -10;
             }
           }
 
-          ret=discreteGradient_.reverseGradient<VTK_TT>();
+          ret=discreteGradient_.reverseGradient<VTK_T1,VTK_T2>();
           if(ret){
             cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.reverseGradient() error code : " << ret << endl;
             return -11;
@@ -268,7 +273,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
           // critical points
           {
-            discreteGradient_.setCriticalPoints<VTK_TT>();
+            discreteGradient_.setCriticalPoints<VTK_T1,VTK_T2>();
 
             vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
             if(!points){
@@ -344,10 +349,10 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             pointData->AddArray(PLVertexIdentifiers);
           }
 
-    });
+    }));
 #else
-    vtkTemplateMacro({
-          vector<VTK_TT> criticalPoints_points_cellScalars;
+    vtkTemplate2Macro(({
+          vector<VTK_T1> criticalPoints_points_cellScalars;
 
           discreteGradient_.setOutputCriticalPoints(&criticalPoints_numberOfPoints,
               &criticalPoints_points,
@@ -358,21 +363,21 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
               &criticalPoints_points_PLVertexIdentifiers,
               &criticalPoints_points_manifoldSize);
 
-          ret=discreteGradient_.buildGradient<VTK_TT>();
+          ret=discreteGradient_.buildGradient<VTK_T1,VTK_T2>();
 
           if(AllowSecondPass){
-            ret=discreteGradient_.buildGradient2<VTK_TT>();
+            ret=discreteGradient_.buildGradient2<VTK_T1,VTK_T2>();
           }
 
           if(dimensionality==3 and AllowThirdPass){
-            ret=discreteGradient_.buildGradient3<VTK_TT>();
+            ret=discreteGradient_.buildGradient3<VTK_T1,VTK_T2>();
           }
 
-          discreteGradient_.reverseGradient<VTK_TT>();
+          discreteGradient_.reverseGradient<VTK_T1,VTK_T2>();
 
           // critical points
           {
-            discreteGradient_.setCriticalPoints<VTK_TT>();
+            discreteGradient_.setCriticalPoints<VTK_T1,VTK_T2>();
 
             vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
 
@@ -419,7 +424,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             pointData->AddArray(PLVertexIdentifiers);
           }
 
-    });
+    }));
 #endif
   }
 

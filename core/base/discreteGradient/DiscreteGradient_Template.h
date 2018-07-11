@@ -178,429 +178,10 @@ dataType DiscreteGradient::getPersistence(const Cell& up, const Cell& down,
   return scalarMax<dataType>(up,scalars)-scalarMin<dataType>(down,scalars);
 }
 
-template <typename dataType>
-bool DiscreteGradient::isHigherThan(const simplexId_t vertexA,
-                                    const simplexId_t vertexB,
-                                    const dataType* const scalars,
-                                    const simplexId_t* const offsets) const{
-  if(scalars[vertexA] != scalars[vertexB]) return
-      scalars[vertexA]>scalars[vertexB];
-  else return offsets[vertexA]>offsets[vertexB];
-}
-
-template <typename dataType>
-bool DiscreteGradient::isLowerThan(const simplexId_t vertexA,
-                                   const simplexId_t vertexB,
-                                   const dataType* const scalars,
-                                   const simplexId_t* const offsets) const{
-  if(scalars[vertexA] != scalars[vertexB]) return
-      scalars[vertexA]<scalars[vertexB];
-  else return offsets[vertexA]<offsets[vertexB];
-}
-
-template <typename dataType>
-int DiscreteGradient::cellMax(const int cellDim,
-                              const simplexId_t cellA,
-                              const simplexId_t cellB,
-                              const dataType* const scalars,
-                              const simplexId_t* const offsets) const{
-  const int vertexNumber=cellDim+1;
-  simplexId_t vsetA[4];
-  simplexId_t vsetB[4];
-
-  const auto sosGreaterThan=[&scalars,&offsets](const simplexId_t a, const simplexId_t b){
-    if(scalars[a] != scalars[b]) return scalars[a]>scalars[b];
-    else return offsets[a]>offsets[b];
-  };
-
-  if(dimensionality_==2){
-    switch(cellDim){
-      case 0:
-        return (isHigherThan<dataType>(cellA, cellB, scalars, offsets))? cellA
-                                                                       :
-               cellB;
-
-      case 1:
-        for(int k=0; k<2; ++k){
-          inputTriangulation_->getEdgeVertex(cellA, k, vsetA[k]);
-          inputTriangulation_->getEdgeVertex(cellB, k, vsetB[k]);
-        }
-        break;
-
-      case 2:
-        for(int k=0; k<3; ++k){
-          inputTriangulation_->getCellVertex(cellA, k, vsetA[k]);
-          inputTriangulation_->getCellVertex(cellB, k, vsetB[k]);
-        }
-        break;
-
-      default: return -1;
-    }
-
-    std::sort(vsetA, vsetA+vertexNumber, sosGreaterThan);
-    std::sort(vsetB, vsetB+vertexNumber, sosGreaterThan);
-    for(int k=0; k<vertexNumber; ++k){
-      if(vsetA[k]==vsetB[k]) continue;
-      else return (isHigherThan<dataType>(vsetA[k], vsetB[k],
-                                          scalars,offsets))?
-                  cellA : cellB;
-    }
-  }
-  else if(dimensionality_==3){
-    switch(cellDim){
-      case 0:
-        return (isHigherThan<dataType>(cellA, cellB, scalars, offsets)? cellA :
-                cellB);
-
-      case 1:
-        for(int k=0; k<2; ++k){
-          inputTriangulation_->getEdgeVertex(cellA, k, vsetA[k]);
-          inputTriangulation_->getEdgeVertex(cellB, k, vsetB[k]);
-        }
-        break;
-
-      case 2:
-        for(int k=0; k<3; ++k){
-          inputTriangulation_->getTriangleVertex(cellA, k, vsetA[k]);
-          inputTriangulation_->getTriangleVertex(cellB, k, vsetB[k]);
-        }
-        break;
-
-      case 3:
-        for(int k=0; k<4; ++k){
-          inputTriangulation_->getCellVertex(cellA, k, vsetA[k]);
-          inputTriangulation_->getCellVertex(cellB, k, vsetB[k]);
-        }
-        break;
-
-      default: return -1;
-    }
-
-    std::sort(vsetA, vsetA+vertexNumber, sosGreaterThan);
-    std::sort(vsetB, vsetB+vertexNumber, sosGreaterThan);
-    for(int k=0; k<vertexNumber; ++k){
-      if(vsetA[k]==vsetB[k]) continue;
-      else return (isHigherThan<dataType>(vsetA[k], vsetB[k], scalars,offsets)?
-                   cellA : cellB);
-    }
-  }
-
-  return -1;
-}
-
-template <typename dataType>
-int DiscreteGradient::cellMin(const int cellDim,
-                              const simplexId_t cellA,
-                              const simplexId_t cellB,
-                              const dataType* const scalars,
-                              const simplexId_t* const offsets) const{
-  const int vertexNumber=cellDim+1;
-  simplexId_t vsetA[4];
-  simplexId_t vsetB[4];
-
-  const auto sosLowerThan=[&scalars,&offsets](const simplexId_t a, const simplexId_t b){
-    if(scalars[a] != scalars[b]) return scalars[a]<scalars[b];
-    else return offsets[a]<offsets[b];
-  };
-
-  if(dimensionality_==2){
-    switch(cellDim){
-      case 0:
-        return (isLowerThan<dataType>(cellA, cellB, scalars, offsets))? cellA :
-               cellB;
-
-      case 1:
-        for(int k=0; k<2; ++k){
-          inputTriangulation_->getEdgeVertex(cellA, k, vsetA[k]);
-          inputTriangulation_->getEdgeVertex(cellB, k, vsetB[k]);
-        }
-        break;
-
-      case 2:
-        for(int k=0; k<3; ++k){
-          inputTriangulation_->getCellVertex(cellA, k, vsetA[k]);
-          inputTriangulation_->getCellVertex(cellB, k, vsetB[k]);
-        }
-        break;
-
-      default: return -1;
-    }
-
-    std::sort(vsetA, vsetA+vertexNumber, sosLowerThan);
-    std::sort(vsetB, vsetB+vertexNumber, sosLowerThan);
-    for(int k=0; k<vertexNumber; ++k){
-      if(vsetA[k]==vsetB[k]) continue;
-      else return (isLowerThan<dataType>(vsetA[k], vsetB[k], scalars,offsets))?
-                  cellA : cellB;
-    }
-  }
-  else if(dimensionality_==3){
-    switch(cellDim){
-      case 0:
-        return (isLowerThan<dataType>(cellA, cellB, scalars, offsets))? cellA :
-               cellB;
-
-      case 1:
-        for(int k=0; k<2; ++k){
-          inputTriangulation_->getEdgeVertex(cellA, k, vsetA[k]);
-          inputTriangulation_->getEdgeVertex(cellB, k, vsetB[k]);
-        }
-        break;
-
-      case 2:
-        for(int k=0; k<3; ++k){
-          inputTriangulation_->getTriangleVertex(cellA, k, vsetA[k]);
-          inputTriangulation_->getTriangleVertex(cellB, k, vsetB[k]);
-        }
-        break;
-
-      case 3:
-        for(int k=0; k<4; ++k){
-          inputTriangulation_->getCellVertex(cellA, k, vsetA[k]);
-          inputTriangulation_->getCellVertex(cellB, k, vsetB[k]);
-        }
-        break;
-
-      default: return -1;
-    }
-
-    std::sort(vsetA, vsetA+vertexNumber, sosLowerThan);
-    std::sort(vsetB, vsetB+vertexNumber, sosLowerThan);
-    for(int k=0; k<vertexNumber; ++k){
-      if(vsetA[k]==vsetB[k]) continue;
-      else return (isLowerThan<dataType>(vsetA[k], vsetB[k], scalars,offsets))?
-                  cellA : cellB;
-    }
-  }
-
-  return -1;
-}
-
-template <typename dataType>
-int DiscreteGradient::g0(const int cellDim,
-                         const simplexId_t cellId,
-                         const dataType* const scalars,
-                         const simplexId_t* const offsets) const{
-  simplexId_t facet0;
-  simplexId_t facet1;
-  simplexId_t facetMax{-1};
-
-  if(dimensionality_==2){
-    switch(cellDim){
-      case 1:
-        inputTriangulation_->getEdgeVertex(cellId, 0, facet0);
-        inputTriangulation_->getEdgeVertex(cellId, 1, facet1);
-        facetMax=cellMax<dataType>(0, facet0, facet1, scalars,offsets);
-        break;
-
-      case 2:
-        inputTriangulation_->getCellEdge(cellId,0,facet0);
-        inputTriangulation_->getCellEdge(cellId,1,facet1);
-        facetMax=cellMax<dataType>(1, facet0, facet1, scalars,offsets);
-
-        inputTriangulation_->getCellEdge(cellId,2,facet0);
-        facetMax=cellMax<dataType>(1, facet0, facetMax, scalars,offsets);
-        break;
-
-      default: return -1;
-    }
-  }
-  else if(dimensionality_==3){
-    switch(cellDim){
-      case 1:
-        inputTriangulation_->getEdgeVertex(cellId, 0, facet0);
-        inputTriangulation_->getEdgeVertex(cellId, 1, facet1);
-        facetMax=cellMax<dataType>(0, facet0, facet1, scalars,offsets);
-        break;
-
-      case 2:
-        inputTriangulation_->getTriangleEdge(cellId,0,facet0);
-        inputTriangulation_->getTriangleEdge(cellId,1,facet1);
-        facetMax=cellMax<dataType>(1, facet0, facet1, scalars,offsets);
-
-        inputTriangulation_->getTriangleEdge(cellId,2,facet0);
-        facetMax=cellMax<dataType>(1, facet0, facetMax, scalars,offsets);
-        break;
-
-      case 3:
-        inputTriangulation_->getCellTriangle(cellId,0,facet0);
-        inputTriangulation_->getCellTriangle(cellId,1,facet1);
-        facetMax=cellMax<dataType>(2, facet0, facet1, scalars,offsets);
-
-        inputTriangulation_->getCellTriangle(cellId,2,facet0);
-        facetMax=cellMax<dataType>(2, facet0, facetMax, scalars,offsets);
-
-        inputTriangulation_->getCellTriangle(cellId,3,facet0);
-        facetMax=cellMax<dataType>(2, facet0, facetMax, scalars,offsets);
-        break;
-
-      default: return -1;
-    }
-  }
-
-  return facetMax;
-}
-
-template <typename dataType>
-int DiscreteGradient::g0_second(const int cellDim,
-                                const simplexId_t cellId,
-                                const dataType* const scalars,
-                                const simplexId_t* const offsets) const{
-  simplexId_t facetMax{-1};
-  simplexId_t facetMaxSecond{-1};
-  simplexId_t facets[4];
-
-  if(dimensionality_==2){
-    switch(cellDim){
-      case 1:
-        inputTriangulation_->getEdgeVertex(cellId, 0, facets[0]);
-        inputTriangulation_->getEdgeVertex(cellId, 1, facets[1]);
-        facetMaxSecond=cellMin<dataType>(0, facets[0], facets[1],
-                                         scalars,offsets);
-        break;
-
-      case 2:
-        inputTriangulation_->getCellEdge(cellId,0,facets[0]);
-        inputTriangulation_->getCellEdge(cellId,1,facets[1]);
-        facetMax=cellMax<dataType>(1, facets[0], facets[1], scalars,offsets);
-
-        inputTriangulation_->getCellEdge(cellId,2,facets[2]);
-        facetMax=cellMax<dataType>(1, facets[2], facetMax, scalars,offsets);
-
-        if(facetMax==facets[0])
-          facetMaxSecond=cellMax<dataType>(1, facets[1], facets[2],
-                                           scalars,offsets);
-        else if(facetMax==facets[1])
-          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[2],
-                                           scalars,offsets);
-        else
-          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[1],
-                                           scalars,offsets);
-        break;
-    }
-  }
-  else if(dimensionality_==3){
-    switch(cellDim){
-      case 1:
-        inputTriangulation_->getEdgeVertex(cellId, 0, facets[0]);
-        inputTriangulation_->getEdgeVertex(cellId, 1, facets[1]);
-        facetMaxSecond=cellMin<dataType>(0, facets[0], facets[1],
-                                         scalars,offsets);
-        break;
-
-      case 2:
-        inputTriangulation_->getTriangleEdge(cellId,0,facets[0]);
-        inputTriangulation_->getTriangleEdge(cellId,1,facets[1]);
-        facetMax=cellMax<dataType>(1, facets[0], facets[1], scalars,offsets);
-
-        inputTriangulation_->getTriangleEdge(cellId,2,facets[2]);
-        facetMax=cellMax<dataType>(1, facets[2], facetMax, scalars,offsets);
-
-        if(facetMax==facets[0])
-          facetMaxSecond=cellMax<dataType>(1, facets[1], facets[2],
-                                           scalars,offsets);
-        else if(facetMax==facets[1])
-          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[2],
-                                           scalars,offsets);
-        else
-          facetMaxSecond=cellMax<dataType>(1, facets[0], facets[1],
-                                           scalars,offsets);
-        break;
-
-      case 3:
-        inputTriangulation_->getCellTriangle(cellId,0,facets[0]);
-        inputTriangulation_->getCellTriangle(cellId,1,facets[1]);
-        inputTriangulation_->getCellTriangle(cellId,2,facets[2]);
-        inputTriangulation_->getCellTriangle(cellId,3,facets[3]);
-
-        if(facets[0]==cellMax<dataType>(2,facets[0],facets[1],scalars,offsets)){
-          facetMax=facets[0];
-          facetMaxSecond=facets[1];
-        }
-        else{
-          facetMax=facets[1];
-          facetMaxSecond=facets[0];
-        }
-
-        for(int i=2; i<4; i++){
-          if(facets[i]==cellMax<dataType>(2,facets[i],facetMax,scalars,offsets)){
-            facetMaxSecond=facetMax;
-            facetMax=facets[i];
-          }
-          else
-          if(facets[i]==cellMax<dataType>(2,facets[i],facetMaxSecond,scalars,offsets)){
-            facetMaxSecond=facets[i];
-          }
-        }
-        break;
-    }
-  }
-
-  return facetMaxSecond;
-}
-
-template <typename dataType>
-int DiscreteGradient::g0_third(const int cellDim,
-                               const simplexId_t cellId,
-                               const dataType* const scalars,
-                               const simplexId_t* const offsets) const{
-  simplexId_t facetMaxThird{-1};
-
-  if(dimensionality_==3){
-    simplexId_t facetMax{-1};
-    simplexId_t facetMaxSecond{-1};
-    simplexId_t facetMin{-1};
-    simplexId_t facets[4];
-
-    switch(cellDim){
-      case 3:
-        inputTriangulation_->getCellTriangle(cellId,0,facets[0]);
-        inputTriangulation_->getCellTriangle(cellId,1,facets[1]);
-        inputTriangulation_->getCellTriangle(cellId,2,facets[2]);
-        inputTriangulation_->getCellTriangle(cellId,3,facets[3]);
-
-        if(facets[0]==cellMax<dataType>(2,facets[0],facets[1],scalars,offsets)){
-          facetMax=facets[0];
-          facetMaxSecond=facets[1];
-        }
-        else{
-          facetMax=facets[1];
-          facetMaxSecond=facets[0];
-        }
-
-        facetMin=cellMin<dataType>(2,facets[0],facets[1],scalars,offsets);
-
-        for(int i=2; i<4; i++){
-          if(facets[i]==cellMax<dataType>(2,facets[i],facetMax,scalars,offsets)){
-            facetMaxSecond=facetMax;
-            facetMax=facets[i];
-          }
-          else
-          if(facets[i]==cellMax<dataType>(2,facets[i],facetMaxSecond,scalars,offsets)){
-            facetMaxSecond=facets[i];
-          }
-
-          facetMin=cellMin<dataType>(2,facets[i],facetMin,scalars,offsets);
-        }
-
-        for(int i=0; i<4; i++){
-          if(facets[i]!=facetMax and facets[i]!=facetMaxSecond and
-             facets[i]!=facetMin){
-            facetMaxThird=facets[i];
-            break;
-          }
-        }
-        break;
-    }
-  }
-
-  return facetMaxThird;
-}
-
-template <typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient(const int alphaDim,
     const dataType* const scalars,
-    const simplexId_t* const offsets,
+    const idType* const offsets,
     std::vector<std::vector<simplexId_t>>& gradient) const{
   const int betaDim=alphaDim+1;
   const simplexId_t alphaNumber=gradient[alphaDim].size();
@@ -794,10 +375,10 @@ int DiscreteGradient::assignGradient(const int alphaDim,
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient2(const int alphaDim,
     const dataType* const scalars,
-    const simplexId_t* const offsets,
+    const idType* const offsets,
     std::vector<std::vector<simplexId_t>>& gradient) const{
   if(alphaDim>0){
     const int betaDim=alphaDim+1;
@@ -970,10 +551,10 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient3(const int alphaDim,
     const dataType* const scalars,
-    const simplexId_t* const offsets,
+    const idType* const offsets,
     std::vector<std::vector<simplexId_t>>& gradient) const{
   if(alphaDim>0){
     const int betaDim=alphaDim+1;
@@ -1050,11 +631,11 @@ int DiscreteGradient::assignGradient3(const int alphaDim,
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::buildGradient(){
   Timer t;
 
-  const simplexId_t* const offsets=static_cast<simplexId_t*>(inputOffsets_);
+  const idType* const offsets=static_cast<idType*>(inputOffsets_);
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
 
   const int numberOfDimensions=getNumberOfDimensions();
@@ -1076,7 +657,7 @@ int DiscreteGradient::buildGradient(){
     gradient_[i][i+1].resize(numberOfCells[i+1], -1);
 
     // compute gradient pairs
-    assignGradient<dataType>(i, scalars, offsets, gradient_[i]);
+    assignGradient<dataType,idType>(i, scalars, offsets, gradient_[i]);
   }
 
   {
@@ -1104,15 +685,15 @@ int DiscreteGradient::buildGradient(){
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::buildGradient2(){
   Timer t;
 
-  const simplexId_t* const offsets=static_cast<simplexId_t*>(inputOffsets_);
+  const idType* const offsets=static_cast<idType*>(inputOffsets_);
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
 
   for(int i=1; i<dimensionality_; ++i)
-    assignGradient2<dataType>(i, scalars, offsets, gradient_[i]);
+    assignGradient2<dataType,idType>(i, scalars, offsets, gradient_[i]);
 
   {
     std::stringstream msg;
@@ -1127,15 +708,15 @@ int DiscreteGradient::buildGradient2(){
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::buildGradient3(){
   Timer t;
 
-  const simplexId_t* const offsets=static_cast<simplexId_t*>(inputOffsets_);
+  const idType* const offsets=static_cast<idType*>(inputOffsets_);
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
 
   for(int i=2; i<dimensionality_; ++i)
-    assignGradient3<dataType>(i, scalars, offsets, gradient_[i]);
+    assignGradient3<dataType,idType>(i, scalars, offsets, gradient_[i]);
 
   {
     std::stringstream msg;
@@ -1150,7 +731,7 @@ int DiscreteGradient::buildGradient3(){
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::setCriticalPoints(const std::vector<Cell>&
 criticalPoints) const{
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -1168,7 +749,7 @@ criticalPoints) const{
   }
 #endif
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-  const simplexId_t* const offsets=static_cast<simplexId_t*>(inputOffsets_);
+  const idType* const offsets=static_cast<idType*>(inputOffsets_);
   std::vector<dataType>* outputCriticalPoints_points_cellScalars=
     static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
 
@@ -1276,23 +857,23 @@ criticalPoints) const{
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::setCriticalPoints() const{
   std::vector<Cell> criticalPoints;
   getCriticalPoints(criticalPoints);
 
-  setCriticalPoints<dataType>(criticalPoints);
+  setCriticalPoints<dataType,idType>(criticalPoints);
 
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::setAugmentedCriticalPoints(const std::vector<Cell>& criticalPoints,
                                                  std::vector<simplexId_t>& maxSeeds,
                                                  simplexId_t* ascendingManifold,
                                                  simplexId_t* descendingManifold) const{
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-  const simplexId_t* const offsets=static_cast<simplexId_t*>(inputOffsets_);
+  const idType* const offsets=static_cast<idType*>(inputOffsets_);
   std::vector<dataType>* outputCriticalPoints_points_cellScalars=
     static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
   (*outputCriticalPoints_numberOfPoints_)=0;
@@ -1443,9 +1024,9 @@ int DiscreteGradient::getRemovableMaxima(const std::vector<std::pair<simplexId_t
   for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
     const std::pair<simplexId_t,char>& criticalPoint=criticalPoints[i];
     const simplexId_t criticalPointId=criticalPoint.first;
-    const char criticalPointType=criticalPoint.second;
+    const char criticalPoidType=criticalPoint.second;
 
-    if(criticalPointType==maximumDim){
+    if(criticalPoidType==maximumDim){
       if(!allowBoundary and
          inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
@@ -1501,9 +1082,9 @@ int DiscreteGradient::getRemovableSaddles1(const std::vector<std::pair<simplexId
   // is [edgeId] in star of PL-1saddle?
   for(auto& criticalPoint : criticalPoints){
     const simplexId_t criticalPointId=criticalPoint.first;
-    const char criticalPointType=criticalPoint.second;
+    const char criticalPoidType=criticalPoint.second;
 
-    if(criticalPointType==1){
+    if(criticalPoidType==1){
       if(!allowBoundary and
          inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
@@ -1560,9 +1141,9 @@ int DiscreteGradient::getRemovableSaddles2(const
   // is [triangleId] in star of PL-2saddle?
   for(auto& criticalPoint : criticalPoints){
     const simplexId_t criticalPointId=criticalPoint.first;
-    const char criticalPointType=criticalPoint.second;
+    const char criticalPoidType=criticalPoint.second;
 
-    if(criticalPointType==2){
+    if(criticalPoidType==2){
       if(!allowBoundary and
          inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
@@ -3509,7 +3090,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(const
   return 0;
 }
 
-template<typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
   const bool allowBruteForce=false;
   const bool returnSaddleConnectors=true;
@@ -3541,7 +3122,7 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
 
   std::vector<std::pair<simplexId_t,char>> cpset;
 
-  simplexId_t* const offsets=static_cast<simplexId_t*>(inputOffsets_);
+  idType* const offsets=static_cast<idType*>(inputOffsets_);
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
 
   ftm::FTMTree contourTree;
@@ -3551,7 +3132,7 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
   contourTree.setVertexSoSoffsets(offsets);
   contourTree.setThreadNumber(threadNumber_);
   contourTree.setSegmentation(false);
-  contourTree.build<dataType>();
+  contourTree.build<dataType,simplexId_t>();
   ftm::FTMTree_MT* tree=contourTree.getTree(ftm::TreeType::Contour);
 
   const ftm::idVertex numberOfNodes=tree->getNumberOfNodes();
@@ -3575,7 +3156,7 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
   return 0;
 }
 
-template<typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::reverseGradient(const
                                       std::vector<std::pair<simplexId_t,char>>& criticalPoints){
   Timer t;
@@ -3620,7 +3201,7 @@ int DiscreteGradient::reverseGradient(const
 
   if(dimensionality_==3 and ReverseSaddleMaximumConnection and
      ReverseSaddleSaddleConnection and ReturnSaddleConnectors)
-    filterSaddleConnectors<dataType>(allowBoundary);
+    filterSaddleConnectors<dataType, idType>(allowBoundary);
 
   {
     std::stringstream msg;
@@ -3634,13 +3215,13 @@ int DiscreteGradient::reverseGradient(const
   return 0;
 }
 
-template<typename dataType>
+template <typename dataType, typename idType>
 int DiscreteGradient::reverseGradient(){
   std::vector<std::pair<simplexId_t,char>> criticalPoints;
 
   // get the PL critical points
   if(ReverseSaddleMaximumConnection or ReverseSaddleSaddleConnection){
-    const simplexId_t* const offsets=static_cast<simplexId_t*>(inputOffsets_);
+    const idType* const offsets=static_cast<idType*>(inputOffsets_);
     std::vector<simplexId_t> sosOffsets(numberOfVertices_);
     for(simplexId_t i=0; i<numberOfVertices_; ++i)
       sosOffsets[i]=offsets[i];
@@ -3679,11 +3260,11 @@ int DiscreteGradient::reverseGradient(){
     std::vector<simplexId_t> numberOfPLInteriorCriticalPoints(numberOfDimensions,0);
     for(auto& criticalPoint : criticalPoints){
       const simplexId_t criticalPointId=criticalPoint.first;
-      const char criticalPointType=criticalPoint.second;
+      const char criticalPoidType=criticalPoint.second;
 
       if(!inputTriangulation_->isVertexOnBoundary(criticalPointId) and
-         criticalPointType!=-1)
-        ++numberOfPLInteriorCriticalPoints[criticalPointType];
+         criticalPoidType!=-1)
+        ++numberOfPLInteriorCriticalPoints[criticalPoidType];
     }
 
     {
@@ -3699,7 +3280,7 @@ int DiscreteGradient::reverseGradient(){
     }
   }
 
-  reverseGradient<dataType>(criticalPoints);
+  reverseGradient<dataType,idType>(criticalPoints);
 
   return 0;
 }

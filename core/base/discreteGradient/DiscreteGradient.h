@@ -444,92 +444,16 @@ function value.
       dataType *const scalars) const;
 
       /**
-       * Comparator of vertices, return true if a vertex A is higher then a 
-vertex B, false otherwise
-       * (support simulation of simplicity).
-       */
-      template<typename dataType>
-      bool isHigherThan(const simplexId_t vertexA,
-                        const simplexId_t vertexB,
-                        const dataType *const scalars,
-                        const simplexId_t *const offsets) const;
-
-      /**
-       * Comparator of vertices, return true if a vertex A is lower then a 
-vertex B, false otherwise
-       * (support simulation of simplicity).
-       */
-      template<typename dataType>
-      bool isLowerThan(const simplexId_t vertexA,
-                       const simplexId_t vertexB,
-                       const dataType *const scalars,
-                       const simplexId_t *const offsets) const;
-
-      /**
-       * Comparator of cells, return the identifier of the cell which is higher 
-in the lexicographic order
-       * of their vertices.
-       */
-      template<typename dataType>
-      int cellMax(const int cellDim,
-                  const simplexId_t cellA,
-                  const simplexId_t cellB,
-                  const dataType *const scalars,
-                  const simplexId_t *const offsets) const;
-
-      /**
-       * Comparator of cells, return the identifier of the cell which is lower 
-in the lexicographic order
-       * of their vertices.
-       */
-      template<typename dataType>
-      int cellMin(const int cellDim,
-                  const simplexId_t cellA,
-                  const simplexId_t cellB,
-                  const dataType *const scalars,
-                  const simplexId_t *const offsets) const;
-
-      /**
-       * G0 function from "Parallel Computation of 3D Morse-Smale Complexes",
-       * N. Shivashankar and V. Natarajan.
-       * Return the highest facet of a given cell.
-       */
-      template<typename dataType>
-      int g0(const int cellDim,
-             const simplexId_t cellId,
-             const dataType *const scalars,
-             const simplexId_t *const offsets) const;
-
-      /**
-       * Slightly modified version of the G0 function, return the second highest 
-facet.
-       */
-      template<typename dataType>
-      int g0_second(const int cellDim,
-                    const simplexId_t cellId,
-                    const dataType *const scalars,
-                    const simplexId_t *const offsets) const;
-
-      /**
-       * Modified version of the G0 function, return the third highest facet.
-       */
-      template<typename dataType>
-      int g0_third(const int cellDim,
-                   const simplexId_t cellId,
-                   const dataType *const scalars,
-                   const simplexId_t *const offsets) const;
-
-      /**
        * Body of AssignGradient algorithm from "Parallel Computation of 3D 
 Morse-Smale Complexes",
        * N. Shivashankar and V. Natarajan.
        * Compute the initial gradient field of the input scalar function for a 
 given dimension.
        */
-      template<typename dataType>
+      template<typename dataType, typename intType>
       int assignGradient(const int alphaDim,
                          const dataType *const scalars,
-                         const simplexId_t *const offsets,
+                         const intType *const offsets,
                          std::vector<std::vector<simplexId_t>> &gradient) const;
 
       /**
@@ -539,10 +463,10 @@ Morse-Smale Complexes",
        * Second pass of AssignGradient algorithm, minimize the number of 
 unpaired cells.
        */
-      template<typename dataType>
+      template<typename dataType, typename intType>
       int assignGradient2(const int alphaDim,
                           const dataType *const scalars,
-                          const simplexId_t *const offsets,
+                          const intType *const offsets,
                           std::vector<std::vector<simplexId_t>> &gradient) const;
 
       /**
@@ -551,24 +475,24 @@ project,
        * the goal is to minimize the number of unpaired cells further (3D 
 triangulation only).
        */
-      template<typename dataType>
+      template<typename dataType, typename intType>
       int assignGradient3(const int alphaDim,
                           const dataType *const scalars,
-                          const simplexId_t *const offsets,
+                          const intType *const offsets,
                           std::vector<std::vector<simplexId_t>> &gradient) const;
 
       /**
        * Compute the initial gradient field of the input scalar function on the 
 triangulation.
        */
-      template<typename dataType>
+      template<typename dataType, typename intType>
       int buildGradient();
 
       /**
        * Minimize the number of unpaired cells of any dimensions.
        * Assume that buildGradient() has been called before.
        */
-      template<typename dataType>
+      template<typename dataType, typename intType>
       int buildGradient2();
 
       /**
@@ -576,7 +500,7 @@ triangulation.
 triangulation only).
        * Assume that buildGradient2() has been called before.
        */
-      template<typename dataType>
+      template<typename dataType, typename intType>
       int buildGradient3();
 
       /**
@@ -800,7 +724,7 @@ the discrete gradient.
        * Process the saddle connectors by increasing value of persistence until 
 a given threshold is met.
        */
-      template<typename dataType>
+      template <typename dataType, typename intType>
       int filterSaddleConnectors(const bool allowBoundary);
 
       /**
@@ -808,14 +732,14 @@ a given threshold is met.
 steps
        * compliant to the critical points given by the user.
        */
-      template<typename dataType>
+      template <typename dataType, typename intType>
       int reverseGradient(const std::vector<std::pair<simplexId_t, char>> &criticalPoints);
 
       /**
        * Automatic detection of the PL critical points and simplification 
 according to them.
        */
-      template<typename dataType>
+      template <typename dataType, typename intType>
       int reverseGradient();
 
       /**
@@ -1072,14 +996,14 @@ tetra identifier.
        * outputCriticalPoints_points_
        * inputScalarField_
        */
-      template<typename dataType>
+      template <typename dataType, typename intType>
       int setCriticalPoints(const std::vector<Cell> &criticalPoints) const;
 
       /**
        * Detect the critical points and build their geometric embedding.
        * The output data pointers are modified accordingly.
        */
-      template<typename dataType>
+      template <typename dataType, typename intType>
       int setCriticalPoints() const;
 
       /**
@@ -1091,7 +1015,7 @@ tetra identifier.
        * outputCriticalPoints_points_
        * inputScalarField_
        */
-      template<typename dataType>
+      template <typename dataType, typename intType>
       int setAugmentedCriticalPoints(const std::vector<Cell> &criticalPoints,
                                      std::vector<simplexId_t> &maxSeeds,
                                      simplexId_t *ascendingManifold,

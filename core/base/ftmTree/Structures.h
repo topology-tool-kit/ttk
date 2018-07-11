@@ -47,7 +47,7 @@ namespace ftm
    struct Scalars {
       idVertex  size;
       void*     values;
-      idVertex* offsets;
+      void*     offsets;
 
       std::shared_ptr<std::vector<idVertex>> sortedVertices, mirrorVertices;
 
