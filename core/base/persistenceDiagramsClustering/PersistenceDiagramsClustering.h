@@ -37,6 +37,8 @@
 #include                  <PersistenceDiagram.h>
 #include 				  <PersistenceDiagramsBarycenter.h>
 #include 				  <limits>
+#include 				  <PDClusteringImpl.h>
+#include				  <PDClustering.h>
 
 
 using namespace std;
@@ -110,7 +112,7 @@ namespace ttk{
 	  double                geometrical_factor_; // TODO include it in barycenter
 	  
       int                   numberOfInputs_;
-      void*                inputData_; //TODO : std::vector<void*>
+      void*                 inputData_; //TODO : std::vector<void*>
       int 					threadNumber_;
 	  bool                  use_progressive_;
 	  double                alpha_;
@@ -191,8 +193,21 @@ template <typename dataType>
 		}
 	}
 	
+	PDClustering<dataType> KMeans = PDClustering<dataType>();
+	KMeans.setWasserstein(wasserstein_);
+	KMeans.setThreadNumber(threadNumber_);
+	KMeans.setUseProgressive(use_progressive_);
+	KMeans.setAccelerated(false);
+	KMeans.setUseKDTree(true);
+	KMeans.setTimeLimit(time_limit_);
+	KMeans.setGeometricalFactor(geometrical_factor_);
+	KMeans.setK(2);
 	
-
+	KMeans.setDiagrams(&data_min, &data_sad, &data_max);
+	KMeans.setDos(do_min, do_sad, do_max);
+	KMeans.execute();
+	
+	
 	
 	std::stringstream msg;
 	msg << "[PersistenceDiagramsClustering] processed in "
@@ -206,11 +221,5 @@ template <typename dataType>
 }
 
 }
-  
 
-
-// if the package is a pure template class, uncomment the following line
-
-#include <PDClusteringImpl.h>
-#include <PDClustering.h>
 #endif 
