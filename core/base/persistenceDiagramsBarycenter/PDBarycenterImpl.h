@@ -485,7 +485,7 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 					for(int k=0; k<numberOfInputs_; k++){
 						Good<dataType> g = Good<dataType>(b.x_, b.y_, false, barycenter_goods_[k].size());
 						g.setPrice(initial_off_diagonal_prices[k]);
-						g.SetCriticalCoordinates(g.coords_x_, g.coords_y_, g.coords_z_);
+						g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
 						barycenter_goods_[k].addGood(g);
 					}
 				}
