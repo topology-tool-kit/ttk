@@ -23,21 +23,24 @@ dataType PDClustering<dataType>::getMostPersistent(int id_of_diagram, int diagra
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> D1, BidderDiagram<dataType> D2, dataType delta_lim=0.0001){
-	//TODO
-	return 0;
+dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim=0.0001){
+	GoodDiagram<dataType> D2_bis = diagramToCentroid(D2);
+	return computeDistance(D1, D2_bis, delta_lim);
 }
 
 template <typename dataType>
 dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim=0.0001){
-	//TODO
-	return 0;
+	std::vector<matchingTuple> matchings;
+	D2 = centroidWithZeroPrices(D2);
+	Auction<dataType> auction(wasserstein_, geometricalFactor_, delta_lim, use_kdtree_);
+	auction.BuildAuctionDiagrams(D1, D2);
+	dataType cost = auction.run(&matchings);
+	return cost;
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::computeDistance(GoodDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim=0.0001){
-	//TODO
-	return 0;
+dataType PDClustering<dataType>::computeDistance(GoodDiagram<dataType>& D1, GoodDiagram<dataType>& D2, dataType delta_lim=0.0001){
+	return computeDistance(D2, D1, delta_lim);
 }
 
 
