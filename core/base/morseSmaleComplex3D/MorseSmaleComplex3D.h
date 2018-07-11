@@ -41,7 +41,7 @@ namespace ttk{
        * Compute the (saddle1, saddle2) pairs not detected by the
        * contour tree.
        */
-      template<typename dataType>
+      template<typename dataType, typename idType>
         int computePersistencePairs(const std::vector<std::tuple<dcg::simplexId_t, dcg::simplexId_t, dataType>>& JTPairs,
             const std::vector<std::tuple<dcg::simplexId_t, dcg::simplexId_t, dataType>>& STPairs,
             std::vector<std::tuple<dcg::simplexId_t, dcg::simplexId_t, dataType>>& pl_saddleSaddlePairs);
@@ -1228,7 +1228,7 @@ int ttk::MorseSmaleComplex3D::execute(){
   return 0;
 }
 
-template<typename dataType>
+template<typename dataType, typename idType>
 int ttk::MorseSmaleComplex3D::computePersistencePairs(const std::vector<std::tuple<dcg::simplexId_t, dcg::simplexId_t, dataType>>& JTPairs,
     const std::vector<std::tuple<dcg::simplexId_t, dcg::simplexId_t, dataType>>& STPairs,
     std::vector<std::tuple<dcg::simplexId_t,dcg::simplexId_t,dataType>>& pl_saddleSaddlePairs){
@@ -1302,16 +1302,16 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(const std::vector<std::tup
     discreteGradient_.setReverseSaddleMaximumConnection(true);
     discreteGradient_.setReverseSaddleSaddleConnection(true);
     discreteGradient_.setCollectPersistencePairs(false);
-    discreteGradient_.buildGradient<dataType>();
-    discreteGradient_.buildGradient2<dataType>();
-    discreteGradient_.buildGradient3<dataType>();
-    discreteGradient_.reverseGradient<dataType>(pl_criticalPoints);
+    discreteGradient_.buildGradient<dataType,idType>();
+    discreteGradient_.buildGradient2<dataType,idType>();
+    discreteGradient_.buildGradient3<dataType,idType>();
+    discreteGradient_.reverseGradient<dataType,idType>(pl_criticalPoints);
 
     // collect saddle-saddle connections
     discreteGradient_.setReverseSaddleMaximumConnection(true);
     discreteGradient_.setCollectPersistencePairs(true);
     discreteGradient_.setOutputPersistencePairs(&dmt_pairs);
-    discreteGradient_.reverseGradient<dataType>(pl_filteredCriticalPoints);
+    discreteGradient_.reverseGradient<dataType,idType>(pl_filteredCriticalPoints);
   }
 
   // transform DMT pairs into PL pairs

@@ -138,7 +138,7 @@ class ttkPersistenceCurve
     vtkTable* MSCPersistenceCurve_;
     vtkTable* STPersistenceCurve_;
     vtkTable* CTPersistenceCurve_;
-    vtkIdTypeArray* offsets_;
+    vtkDataArray* offsets_;
     vtkDataArray* inputOffsets_;
     bool varyingMesh_;
     vtkSmartPointer<ttkTriangulationFilter> inputTriangulation_;

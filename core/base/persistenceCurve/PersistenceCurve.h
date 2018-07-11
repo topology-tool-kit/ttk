@@ -42,7 +42,7 @@ namespace ttk{
         int computePersistencePlot(const std::vector<std::tuple<ftm::idVertex, ftm::idVertex, scalarType>>& pairs,
             std::vector<std::pair<scalarType, ftm::idVertex>> &plot) const;
 
-      template <class scalarType>
+      template <typename scalarType, typename idType>
         int execute() const;
 
       inline int setupTriangulation(Triangulation* data){
@@ -119,7 +119,7 @@ std::vector<std::tuple<ftm::idVertex, ftm::idVertex, scalarType>>& pairs,
   return 0;
 }
 
-template <typename scalarType>
+template <typename scalarType, typename idType>
 int ttk::PersistenceCurve::execute() const{
   // get data
   std::vector<std::pair<scalarType, ftm::idVertex>>& JTPlot  = *static_cast<std::vector<std::pair<scalarType, ftm::idVertex>>*>(JTPlot_);
@@ -141,7 +141,7 @@ int ttk::PersistenceCurve::execute() const{
   contourTree.setVertexSoSoffsets(voffsets.data());
   contourTree.setSegmentation(false);
   contourTree.setThreadNumber(threadNumber_);
-  contourTree.build<scalarType>();
+  contourTree.build<scalarType,idType>();
 
   // get persistence pairs
   std::vector<std::tuple<ftm::idVertex, ftm::idVertex, scalarType>> JTPairs;
@@ -171,7 +171,7 @@ int ttk::PersistenceCurve::execute() const{
     morseSmaleComplex.setupTriangulation(triangulation_);
     morseSmaleComplex.setInputScalarField(inputScalars_);
     morseSmaleComplex.setInputOffsets(inputOffsets_);
-    morseSmaleComplex.computePersistencePairs<scalarType>(JTPairs, STPairs, pl_saddleSaddlePairs);
+    morseSmaleComplex.computePersistencePairs<scalarType,idType>(JTPairs, STPairs, pl_saddleSaddlePairs);
 
     // sort the saddle-saddle pairs by persistence value and compute curve
     {
