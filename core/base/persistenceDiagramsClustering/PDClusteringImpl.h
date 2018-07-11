@@ -1,5 +1,5 @@
-#ifndef _PDBARYCENTERIMPL_H
-#define _PDBARYCENTERIMPL_H
+#ifndef _PDCLUSTERINGIMPL_H
+#define _PDCLUSTERINGIMPL_H
 
 #define BLocalMax ttk::ftm::NodeType::Local_maximum
 #define BLocalMin ttk::ftm::NodeType::Local_minimum
@@ -8,6 +8,12 @@
 
 #include <stdlib.h>     /* srand, rand */
 #include <cmath>
+#include <PDClustering.h>
+
+#include <random>
+#include <algorithm>
+#include <iterator>
+#include <iostream>
 
 using namespace ttk;
 
@@ -24,23 +30,23 @@ dataType PDClustering<dataType>::getMostPersistent(int id_of_diagram, int diagra
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim=0.0001){
+dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim){
 	GoodDiagram<dataType> D2_bis = diagramToCentroid(D2);
 	return computeDistance(D1, D2_bis, delta_lim);
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim=0.0001){
+dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim){
 	std::vector<matchingTuple> matchings;
 	D2 = centroidWithZeroPrices(D2);
-	Auction<dataType> auction(wasserstein_, geometricalFactor_, delta_lim, use_kdtree_);
+	Auction<dataType> auction(wasserstein_, geometrical_factor_, delta_lim, use_kdtree_);
 	auction.BuildAuctionDiagrams(D1, D2);
 	dataType cost = auction.run(&matchings);
 	return cost;
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::computeDistance(GoodDiagram<dataType>& D1, GoodDiagram<dataType>& D2, dataType delta_lim=0.0001){
+dataType PDClustering<dataType>::computeDistance(GoodDiagram<dataType>& D1, GoodDiagram<dataType>& D2, dataType delta_lim){
 	return computeDistance(D2, D1, delta_lim);
 }
 
@@ -75,9 +81,9 @@ GoodDiagram<dataType> PDClustering<dataType>::diagramToCentroid(BidderDiagram<da
 	for(int i=0; i<diagram.size(); i++){
 		Bidder<dataType> b = diagram.get(i);
 		
-		Good<dataType> g = Good<dataType>(b.x_, b.y_, b.is_diagonal_, BD.size());
+		Good<dataType> g = Good<dataType>(b.x_, b.y_, b.is_diagonal_, GD.size());
 		g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-		BD.addGood(g);
+		GD.addGood(g);
 	}
 	return GD;
 }
@@ -101,13 +107,13 @@ void PDClustering<dataType>::initializeCentroids(){
 	std::shuffle(idx.begin(), idx.end(), g);
 	
 	for(int c=0; c<k_; c++){
-		if(do_min_;){
+		if(do_min_){
 			GoodDiagram<dataType> centroid_min = diagramToCentroid(bidder_diagrams_min_[idx[c]]);
 			centroids_min_.push_back(centroid_min);
 		}
 		if(do_sad_){
-			GoodDiagram<dataType> centroid_sad = diagramToCentroid(bidder_diagrams_sad_[idx[c]]);
-			centroids_sad_.push_back(centroid_sad);
+			GoodDiagram<dataType> centroid_sad = diagramToCentroid(bidder_diagrams_saddle_[idx[c]]);
+			centroids_saddle_.push_back(centroid_sad);
 		}
 		if(do_max_){
 			GoodDiagram<dataType> centroid_max = diagramToCentroid(bidder_diagrams_max_[idx[c]]);
@@ -165,7 +171,7 @@ void PDClustering<dataType>::invertClusters(){
 	for(int c=0; c<k_; ++c){
 		for(int j=0; j<clustering_[c].size(); ++j){
 			int idx = clustering_[c][j];
-			inv_clustering_[idx] c;
+			inv_clustering_[idx] = c;
 		}
 	}
 	

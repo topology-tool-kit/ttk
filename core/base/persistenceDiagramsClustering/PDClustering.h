@@ -1,5 +1,5 @@
-#ifndef _PDBARYCENTER_H
-#define _PDBARYCENTER_H
+#ifndef _PDCLUSTERING_H
+#define _PDCLUSTERING_H
 
 #include 				  <Auction.h>
 #include 				  <KDTree.h>
@@ -31,9 +31,9 @@ namespace ttk{
 		
 		dataType getMostPersistent(int id_of_diagram, int diagram_type);
 		
-		dataType computeDistance(BidderDiagram<dataType> D1, BidderDiagram<dataType> D2, dataType delta_lim=0.0001);
+		dataType computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim=0.0001);
 		dataType computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim=0.0001);
-		dataType computeDistance(GoodDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim=0.0001);
+		dataType computeDistance(GoodDiagram<dataType>& D1, GoodDiagram<dataType>& D2, dataType delta_lim=0.0001);
 			
 		GoodDiagram<dataType> centroidWithZeroPrices(GoodDiagram<dataType> centroid);
 		BidderDiagram<dataType> centroidToDiagram(GoodDiagram<dataType> centroid);
@@ -66,6 +66,7 @@ namespace ttk{
 			do_min_ = doMin;
 			do_sad_ = doSad;
 			do_max_ = doMax;
+			return 0;
 		}
 
 		inline int setNumberOfInputs(int numberOfInputs){
@@ -73,8 +74,9 @@ namespace ttk{
 			return 0;
 		}
 		
-		inline setK(const int k){
+		inline int setK(const int k){
 			k_ = k;
+			return 0;
 		}
 		
 		
@@ -88,6 +90,10 @@ namespace ttk{
 		
 		inline void setUseProgressive(const bool use_progressive){
 			use_progressive_ = use_progressive;
+		}
+		
+		inline void setUseKDTree(const bool use_kdtree){
+			use_kdtree_ = use_kdtree;
 		}
 		
 		inline void setAccelerated(const bool use_accelerated){
@@ -119,6 +125,7 @@ namespace ttk{
       int                   threadNumber_;
 	  bool                  use_progressive_;
 	  bool                  use_accelerated_;
+	  bool                  use_kdtree_;
 	  double                time_limit_;
 	  
 	  dataType              epsilon_min_;
