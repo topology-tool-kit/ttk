@@ -348,15 +348,17 @@ namespace ftm
          return (((scalarType *)scalars_->values))[idNode];
       }
 
-      inline void setVertexScalars(void *vals)
+      template <typename scalarType>
+      inline void setVertexScalars(scalarType *vals)
       {
-         scalars_->values = vals;
+         scalars_->values = (void*)vals;
       }
 
       // offset
-      inline void setVertexSoSoffsets(void *sos)
+      template <typename idType>
+      inline void setVertexSoSoffsets(idType *sos)
       {
-         scalars_->offsets = sos;
+         scalars_->offsets = (void*)sos;
       }
 
       // arcs

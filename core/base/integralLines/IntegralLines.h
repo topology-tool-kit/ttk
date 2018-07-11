@@ -160,15 +160,14 @@ int ttk::IntegralLines::execute() const{
       }
 
       if(vnext==-1 and !isLocalMax and !isLocalMin){
-        SimplexId onext=-1;
+        idType onext=-1;
         for(SimplexId k=0; k<neighborNumber; ++k){
           SimplexId n;
           triangulation_->getVertexNeighbor(v,k,n);
 
           if(scalars[n]==scalars[v]){
-            const SimplexId o=offsets[n];
-            if((direction_==static_cast<int>(Direction::Forward)) xor 
-(o<offsets[v])){
+            const idType o=offsets[n];
+            if((direction_==static_cast<int>(Direction::Forward)) xor (o<offsets[v])){
               if(o>onext){
                 vnext=n;
                 onext=o;
