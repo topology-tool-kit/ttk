@@ -38,8 +38,8 @@
 /// \sa ttk::FiberSurface
 /// \sa vtkRangePolygon
 
-#ifndef _TTK_RANGEPOLYGON_H
-#define _TTK_RANGEPOLYGON_H
+#ifndef _TTK_FIBERSURFACE_H
+#define _TTK_FIBERSURFACE_H
 
 // VTK includes -- to adapt
 #include                  <vtkCellArray.h>
