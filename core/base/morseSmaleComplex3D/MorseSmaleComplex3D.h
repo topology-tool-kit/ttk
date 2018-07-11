@@ -34,7 +34,7 @@ namespace ttk{
       /**
        * Main function for computing the whole Morse-Smale complex.
        */
-      template<typename dataType>
+      template<typename dataType, typename idtype>
         int execute();
 
       /**
@@ -1042,7 +1042,7 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(const std::vector<Separ
   return 0;
 }
 
-template<typename dataType>
+template<typename dataType, typename idType>
 int ttk::MorseSmaleComplex3D::execute(){
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField_){
@@ -1067,9 +1067,9 @@ int ttk::MorseSmaleComplex3D::execute(){
   discreteGradient_.setDebugLevel(debugLevel_);
   {
     Timer tmp;
-    discreteGradient_.buildGradient<dataType>();
-    discreteGradient_.buildGradient2<dataType>();
-    discreteGradient_.buildGradient3<dataType>();
+    discreteGradient_.buildGradient<dataType,idType>();
+    discreteGradient_.buildGradient2<dataType,idType>();
+    discreteGradient_.buildGradient3<dataType,idType>();
 
     {
       std::stringstream msg;
@@ -1079,7 +1079,7 @@ int ttk::MorseSmaleComplex3D::execute(){
       dMsg(std::cout, msg.str(), timeMsg);
     }
   }
-  discreteGradient_.reverseGradient<dataType>();
+  discreteGradient_.reverseGradient<dataType,idType>();
 
   std::vector<dcg::Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
@@ -1206,12 +1206,12 @@ int ttk::MorseSmaleComplex3D::execute(){
 
   if(outputCriticalPoints_numberOfPoints_ and outputSeparatrices1_points_){
     if(ascendingManifold and descendingManifold)
-      discreteGradient_.setAugmentedCriticalPoints<dataType>(criticalPoints,
+      discreteGradient_.setAugmentedCriticalPoints<dataType,idType>(criticalPoints,
           maxSeeds,
           ascendingManifold,
           descendingManifold);
     else
-      discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
+      discreteGradient_.setCriticalPoints<dataType,idType>(criticalPoints);
   }
 
   {

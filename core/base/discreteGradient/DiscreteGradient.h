@@ -450,10 +450,10 @@ Morse-Smale Complexes",
        * Compute the initial gradient field of the input scalar function for a 
 given dimension.
        */
-      template<typename dataType, typename intType>
+      template<typename dataType, typename idType>
       int assignGradient(const int alphaDim,
                          const dataType *const scalars,
-                         const intType *const offsets,
+                         const idType *const offsets,
                          std::vector<std::vector<simplexId_t>> &gradient) const;
 
       /**
@@ -463,10 +463,10 @@ Morse-Smale Complexes",
        * Second pass of AssignGradient algorithm, minimize the number of 
 unpaired cells.
        */
-      template<typename dataType, typename intType>
+      template<typename dataType, typename idType>
       int assignGradient2(const int alphaDim,
                           const dataType *const scalars,
-                          const intType *const offsets,
+                          const idType *const offsets,
                           std::vector<std::vector<simplexId_t>> &gradient) const;
 
       /**
@@ -475,24 +475,24 @@ project,
        * the goal is to minimize the number of unpaired cells further (3D 
 triangulation only).
        */
-      template<typename dataType, typename intType>
+      template<typename dataType, typename idType>
       int assignGradient3(const int alphaDim,
                           const dataType *const scalars,
-                          const intType *const offsets,
+                          const idType *const offsets,
                           std::vector<std::vector<simplexId_t>> &gradient) const;
 
       /**
        * Compute the initial gradient field of the input scalar function on the 
 triangulation.
        */
-      template<typename dataType, typename intType>
+      template<typename dataType, typename idType>
       int buildGradient();
 
       /**
        * Minimize the number of unpaired cells of any dimensions.
        * Assume that buildGradient() has been called before.
        */
-      template<typename dataType, typename intType>
+      template<typename dataType, typename idType>
       int buildGradient2();
 
       /**
@@ -500,7 +500,7 @@ triangulation.
 triangulation only).
        * Assume that buildGradient2() has been called before.
        */
-      template<typename dataType, typename intType>
+      template<typename dataType, typename idType>
       int buildGradient3();
 
       /**
@@ -724,7 +724,7 @@ the discrete gradient.
        * Process the saddle connectors by increasing value of persistence until 
 a given threshold is met.
        */
-      template <typename dataType, typename intType>
+      template <typename dataType, typename idType>
       int filterSaddleConnectors(const bool allowBoundary);
 
       /**
@@ -732,14 +732,14 @@ a given threshold is met.
 steps
        * compliant to the critical points given by the user.
        */
-      template <typename dataType, typename intType>
+      template <typename dataType, typename idType>
       int reverseGradient(const std::vector<std::pair<simplexId_t, char>> &criticalPoints);
 
       /**
        * Automatic detection of the PL critical points and simplification 
 according to them.
        */
-      template <typename dataType, typename intType>
+      template <typename dataType, typename idType>
       int reverseGradient();
 
       /**
@@ -996,14 +996,14 @@ tetra identifier.
        * outputCriticalPoints_points_
        * inputScalarField_
        */
-      template <typename dataType, typename intType>
+      template <typename dataType, typename idType>
       int setCriticalPoints(const std::vector<Cell> &criticalPoints) const;
 
       /**
        * Detect the critical points and build their geometric embedding.
        * The output data pointers are modified accordingly.
        */
-      template <typename dataType, typename intType>
+      template <typename dataType, typename idType>
       int setCriticalPoints() const;
 
       /**
@@ -1015,7 +1015,7 @@ tetra identifier.
        * outputCriticalPoints_points_
        * inputScalarField_
        */
-      template <typename dataType, typename intType>
+      template <typename dataType, typename idType>
       int setAugmentedCriticalPoints(const std::vector<Cell> &criticalPoints,
                                      std::vector<simplexId_t> &maxSeeds,
                                      simplexId_t *ascendingManifold,

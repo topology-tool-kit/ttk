@@ -462,15 +462,15 @@ namespace ttk{
         return 0;
       }
 
-      template<typename dataType>
+      template<typename dataType, typename idType>
         int execute(){
           switch(dimensionality_){
             case 2:
-              morseSmaleComplex2D_.execute<dataType>();
+              morseSmaleComplex2D_.execute<dataType,idType>();
               break;
 
             case 3:
-              morseSmaleComplex3D_.execute<dataType>();
+              morseSmaleComplex3D_.execute<dataType,idType>();
               break;
           }
           return 0;

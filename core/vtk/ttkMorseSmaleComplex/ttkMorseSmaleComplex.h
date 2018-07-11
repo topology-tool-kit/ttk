@@ -180,7 +180,7 @@ class ttkMorseSmaleComplex
 
     ttk::MorseSmaleComplex morseSmaleComplex_;
     ttk::Triangulation *triangulation_;
-    vtkIdTypeArray* defaultOffsets_;
+    vtkDataArray* defaultOffsets_;
     bool hasUpdatedMesh_;
 };
 

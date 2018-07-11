@@ -158,7 +158,11 @@ vtkDataArray* ttkMorseSmaleComplex::getOffsets(vtkDataSet* input){
     if(!defaultOffsets_){
       const simplexId_t numberOfVertices=input->GetNumberOfPoints();
 
+#ifdef TTK_USE_64BIT_IDS
       defaultOffsets_=vtkIdTypeArray::New();
+#else
+      defaultOffsets_=vtkIntArray::New();
+#endif
       defaultOffsets_->SetNumberOfComponents(1);
       defaultOffsets_->SetNumberOfTuples(numberOfVertices);
       defaultOffsets_->SetName("OffsetsScalarField");
@@ -356,21 +360,22 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
       descendingManifoldPtr,
       morseSmaleManifoldPtr);
 
-  switch(inputScalars->GetDataType()){
+  switch(vtkTemplate2PackMacro(inputScalars->GetDataType(),
+        inputOffsets->GetDataType())){
 #ifndef TTK_ENABLE_KAMIKAZE
-    vtkTemplateMacro({
+    vtkTemplate2Macro(({
       // critical points
-      vector<VTK_TT> criticalPoints_points_cellScalars;
+      vector<VTK_T1> criticalPoints_points_cellScalars;
 
       // 1-separatrices
-      vector<VTK_TT> separatrices1_cells_separatrixFunctionMaxima;
-      vector<VTK_TT> separatrices1_cells_separatrixFunctionMinima;
-      vector<VTK_TT> separatrices1_cells_separatrixFunctionDiffs;
+      vector<VTK_T1> separatrices1_cells_separatrixFunctionMaxima;
+      vector<VTK_T1> separatrices1_cells_separatrixFunctionMinima;
+      vector<VTK_T1> separatrices1_cells_separatrixFunctionDiffs;
 
       // 2-separatrices
-      vector<VTK_TT> separatrices2_cells_separatrixFunctionMaxima;
-      vector<VTK_TT> separatrices2_cells_separatrixFunctionMinima;
-      vector<VTK_TT> separatrices2_cells_separatrixFunctionDiffs;
+      vector<VTK_T1> separatrices2_cells_separatrixFunctionMaxima;
+      vector<VTK_T1> separatrices2_cells_separatrixFunctionMinima;
+      vector<VTK_T1> separatrices2_cells_separatrixFunctionDiffs;
 
       if(ComputeCriticalPoints){
       morseSmaleComplex_.setOutputCriticalPoints(
@@ -427,7 +432,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         &separatrices2_cells_separatrixFunctionDiffs,
         &separatrices2_cells_isOnBoundary);
 
-      ret = morseSmaleComplex_.execute<VTK_TT>();
+      ret = morseSmaleComplex_.execute<VTK_T1,VTK_T2>();
       if (ret) {
         cerr
           << "[ttkMorseSmaleComplex] Error : MorseSmaleComplex.execute() "
@@ -879,21 +884,21 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         cellData->AddArray(separatrixFunctionDiffs);
         cellData->AddArray(isOnBoundary);
       }
-    });
+    }));
   #else
-    vtkTemplateMacro({
+    vtkTemplate2Macro(({
       // critical points
-      vector<VTK_TT> criticalPoints_points_cellScalars;
+      vector<VTK_T1> criticalPoints_points_cellScalars;
 
       // 1-separatrices
-      vector<VTK_TT> separatrices1_cells_separatrixFunctionMaxima;
-      vector<VTK_TT> separatrices1_cells_separatrixFunctionMinima;
-      vector<VTK_TT> separatrices1_cells_separatrixFunctionDiffs;
+      vector<VTK_T1> separatrices1_cells_separatrixFunctionMaxima;
+      vector<VTK_T1> separatrices1_cells_separatrixFunctionMinima;
+      vector<VTK_T1> separatrices1_cells_separatrixFunctionDiffs;
 
       // 2-separatrices
-      vector<VTK_TT> separatrices2_cells_separatrixFunctionMaxima;
-      vector<VTK_TT> separatrices2_cells_separatrixFunctionMinima;
-      vector<VTK_TT> separatrices2_cells_separatrixFunctionDiffs;
+      vector<VTK_T1> separatrices2_cells_separatrixFunctionMaxima;
+      vector<VTK_T1> separatrices2_cells_separatrixFunctionMinima;
+      vector<VTK_T1> separatrices2_cells_separatrixFunctionDiffs;
 
       if(ComputeCriticalPoints){
       morseSmaleComplex_.setOutputCriticalPoints(
@@ -950,7 +955,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         &separatrices2_cells_separatrixFunctionDiffs,
         &separatrices2_cells_isOnBoundary);
 
-      morseSmaleComplex_.execute<VTK_TT>();
+      morseSmaleComplex_.execute<VTK_T1,VTK_T2>();
 
       // critical points
       {
@@ -1262,7 +1267,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         cellData->AddArray(separatrixFunctionDiffs);
         cellData->AddArray(isOnBoundary);
       }
-    });
+    }));
 #endif
   }
 
