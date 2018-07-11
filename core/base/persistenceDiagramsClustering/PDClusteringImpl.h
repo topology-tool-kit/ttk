@@ -13,6 +13,7 @@ using namespace ttk;
 
 template <typename dataType>
 int PDClustering<dataType>::execute(){
+	// TODO
 	return 0;
 }
 
@@ -151,14 +152,44 @@ void PDClustering<dataType>::updateClusters(){
 
 template <typename dataType>
 void PDClustering<dataType>::invertClusters(){
-	//TODO
-	return ;
+	/// Converts the clustering (vector of vector of diagram's id) into
+	/// a vector of size numberOfInputs_ containg the cluster of each input diagram. 
+	
+	// Initializes clusters with -1
+	inv_clustering_ = std::vector<int>(numberOfInputs_);
+	for(int i=0; i<numberOfInputs_; ++i){
+		inv_clustering_[i] = -1;
+	}
+	
+	// Fill in the clusters
+	for(int c=0; c<k_; ++c){
+		for(int j=0; j<clustering_[c].size(); ++j){
+			int idx = clustering_[c][j];
+			inv_clustering_[idx] c;
+		}
+	}
+	
+	// Check if a diagram was left without cluster
+	for(int i=0; i<numberOfInputs_; ++i){
+		if(inv_clustering_[i] == -1){
+			std::cout<< " Problem in invertClusters()... \n Diagram " << i << " was left with no cluster attached to it... " << std::endl;
+		}
+	}
 }
 
 template <typename dataType>
 void PDClustering<dataType>::invertInverseClusters(){
-	//TODO
-	return ;
+	clustering_ = std::vector<std::vector<int>>(k_);
+	for(int i=0; i<numberOfInputs_; ++i){
+		clustering_[inv_clustering_[i]] = i;
+	}
+	
+	// Check if a cluster was left without diagram
+	for(int c=0; c<k_; ++c){
+		if(clustering_[c].size() == 0){
+			std::cout<< " Problem in invertInverseClusters()... \n Cluster " << c << " was left with no diagram attached to it... " << std::endl;
+		}
+	}
 }
 
 
