@@ -296,7 +296,7 @@ namespace ttk
 
          // Check if the current vertex which is on a Join saddle come from the
          // last growth touching this saddle
-         bool checkLast(const idSuperArc currentArc, const Propagation* const localProp,
+         bool checkLast(const idSuperArc currentArc, Propagation* const localProp,
                         const std::vector<idEdge>& lowerStarEdges);
 
          // Check if neigh is linked to an arc having saddle in one of its boundary node, using the

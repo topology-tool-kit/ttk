@@ -31,7 +31,7 @@ namespace ttk
          idPropagation nbTasks   = 0;
          idVertex      grainSize = 0;
 
-         explicit TaskChunk(const idVertex nbel) : nbElemt(nbel)
+         explicit TaskChunk(const idVertex nbel) : nbElemt{nbel}
          {
          }
       };

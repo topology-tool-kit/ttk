@@ -110,7 +110,7 @@ namespace ttk
                // We have reached an opposite leaf
                const idNode upNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, upNode);
-               std::cout << "close arc max " << graph_.printArc(currentArc) << std::endl;
+               DEBUG_1(<< "close arc max " << graph_.printArc(currentArc) << std::endl);
             }
          }
 
@@ -121,10 +121,23 @@ namespace ttk
 
          // At saddle: join or split or both
 
+         idSuperArc joinNewArc;
          // arriving at a join
          if (isJoinSadlleLast) {
             localGrowth(localProp);
             mergeAtSaddle(upNode, localProp, lowerComp);
+            const idNode     downNode = graph_.getNodeId(upVert);
+            joinNewArc   = graph_.openArc(downNode, localProp);
+            updatePreimage(localProp, joinNewArc);
+            graph_.visit(upVert, joinNewArc);
+            upperComp = upperComps(upperStarEdges, localProp);
+            if (upperComp.size() > 1) {
+               DEBUG_1(<< ": is split" << std::endl);
+               DEBUG_1(<< localProp->print() << std::endl);
+               isSplitSaddle = true;
+               // will be replaced be new arcs of the split
+               graph_.getArc(joinNewArc).hide();
+            }
          }
 
          // starting from the saddle
@@ -132,11 +145,7 @@ namespace ttk
             if (!isJoinSaddle) {
                // only one arc coming here
                graph_.closeArc(currentArc, upNode);
-               std::cout << "close arc split " << graph_.printArc(currentArc) << std::endl;
-            } else {
-               // update preimage, we don't care about the superArc as it will
-               // be overriten just after
-               updatePreimage(localProp, nullSuperArc);
+               DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
             }
             const bool withBFS = false;
             if (withBFS) {
@@ -149,15 +158,10 @@ namespace ttk
             }
          } else if (isJoinSadlleLast) {
             // recursive call
-            const idNode     downNode = graph_.getNodeId(upVert);
-            const idSuperArc newArc   = graph_.openArc(downNode, localProp);
-            updatePreimage(localProp, newArc);
-            graph_.visit(upVert, newArc);
-            DEBUG_1(<< "visit m: " << upVert << " with " << newArc << std::endl);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
 #endif
-            growthFromSeed(upVert, localProp, newArc);
+            growthFromSeed(upVert, localProp, joinNewArc);
          }
       }
 
@@ -349,9 +353,6 @@ namespace ttk
 
          if (localProp->compare(seed, other)) {
             dynGraph(localProp).setSubtreeArc(neigEdge, curArc);
-         } else {
-            // TODO remove along with the if test if never seen
-            std::cout << "not updated DG " << seed << " for arc " << graph_.printArc(curArc) << std::endl;
          }
       }
 
@@ -401,12 +402,14 @@ namespace ttk
 
       template <typename ScalarType>
       bool FTRGraph<ScalarType>::checkLast(const idSuperArc           currentArc,
-                                           const Propagation* const   localProp,
+                                           Propagation* const         localProp,
                                            const std::vector<idEdge>& lowerStarEdges)
       {
-         const idVertex      curSaddle = localProp->getCurVertex();
-         const idPropagation curId     = localProp->getId();
-         valence             decr      = 0;
+         const idVertex curSaddle = localProp->getCurVertex();
+         UnionFind*     curId     = localProp->getId();
+         valence        decr      = 0;
+
+          DEBUG_1(<< "Check last on " << curSaddle << " id " << curId << std::endl);
 
          // NOTE:
          // Using propagation id allows to decrement by the number of time this propagation
@@ -416,7 +419,7 @@ namespace ttk
            const idSuperArc    edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
            if (edgeArc == nullSuperArc) // ignore unseen
               continue;
-           const idPropagation tmpId  = graph_.getArc(edgeArc).getPropagation()->getId();
+           UnionFind* tmpId  = graph_.getArc(edgeArc).getPropagation()->getId();
            if (tmpId == curId) {
               ++decr;
               DEBUG_1(<< printEdge(edgeId, localProp) << " decrement " << static_cast<unsigned>(decr) << " " << curSaddle << std::endl);
@@ -518,9 +521,6 @@ namespace ttk
           const std::vector<DynGraphNode<idVertex>*>& lowerComp)
       {
 
-         std::cout << " merge at saddle id " << saddleId << " vs " << localProp->getCurVertex()
-                   << std::endl;
-
 #ifndef TTK_ENABLE_KAMIKAZE
          if (lowerComp.size() < 2) {
             std::cerr << "[FTR]: merge at saddle with only one lower CC" << std::endl;
@@ -532,8 +532,12 @@ namespace ttk
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
             localProp->merge(*graph_.getArc(endingArc).getPropagation());
-            std::cout << "Close arc join " << graph_.printArc(endingArc) << " at "
-                      << graph_.printNode(saddleId) << std::endl;
+            // graph_.getArc(endingArc).setPropagation(localProp);
+            // NOTE: when merging update the ID of the old propagation to the new
+            // its a bit like union find but better.
+            // for other component after a split, update the ID for chaekLast detection
+            graph_.getArc(endingArc).getPropagation()->mergeId(localProp->getId());
+            DEBUG_1(<< "Close arc join " << graph_.printArc(endingArc) << std::endl);
          }
 
          // const idVertex saddleVert = graph_.getNode(saddleId).getVertexIdentifier();
@@ -611,6 +615,10 @@ namespace ttk
          for (auto* dgNode : upperComp) {
             const idSuperArc newArc = graph_.openArc(curNode, localProp);
             dgNode->setRootArc(newArc);
+
+            DEBUG_1(<< "set root arc " << newArc << " at ");
+            DEBUG_1(<< printEdge(dynGraphs_.up.getNodeId(dgNode), localProp));
+            DEBUG_1(<< " id " << localProp->getId() << std::endl);
          }
 
 #ifdef TTK_ENABLE_OPENMP

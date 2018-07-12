@@ -72,7 +72,7 @@ namespace ttk
          /// \brief get the id of the node: node
          std::size_t getNodeId(DynGraphNode<Type>* node)
          {
-            return std::distance(nodes_, node);
+            return std::distance(&(nodes_[0]), node);
          }
 
          void setSubtreeArc(const std::size_t nid, const idSuperArc arc)

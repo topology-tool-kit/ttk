@@ -11,10 +11,14 @@
 
 #pragma once
 
+// local include
 #include "FTRCommon.h"
 
+// base code includes
 #include <Triangulation.h>
+#include <UnionFind.h>
 
+// library include
 #include <boost/heap/fibonacci_heap.hpp>
 
 namespace ttk
@@ -38,15 +42,15 @@ namespace ttk
          boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation_;
 
          // representant (pos in array)
-         idPropagation id_;
+         UnionFind id_;
 
         public:
          Propagation(idVertex startVert, VertCompFN vertComp, bool up)
-             : curVert_(nullVertex),
-               comp_(vertComp),
-               goUp_(up),
-               propagation_(vertComp),
-               id_(nullProp)
+             : curVert_{nullVertex},
+               comp_{vertComp},
+               goUp_{up},
+               propagation_{vertComp},
+               id_{}
          {
             propagation_.emplace(startVert);
          }
@@ -56,20 +60,19 @@ namespace ttk
             return curVert_;
          }
 
-         void setId(decltype(id_) id)
+         void mergeId(UnionFind* id)
          {
-            id_ = id;
+            makeUnion(&id_, id);
          }
 
-         decltype(id_) getId(void) const
+         UnionFind* getId(void)
          {
-            return id_;
+            return id_.find();
          }
 
          idVertex nextVertex(void)
          {
             curVert_ = propagation_.top();
-            // propagation_.pop();
             removeDuplicates(curVert_);
             return curVert_;
          }
@@ -93,7 +96,6 @@ namespace ttk
 
          void removeBelow(const idVertex d, VertCompFN comp) {
             while (!propagation_.empty() && comp(propagation_.top(), d)) {
-               std::cout << "remove : " << propagation_.top() << std::endl;
                propagation_.pop();
             }
          }

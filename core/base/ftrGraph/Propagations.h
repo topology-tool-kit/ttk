@@ -24,10 +24,16 @@ namespace ttk
 {
    namespace ftr
    {
+      struct Visit
+      {
+         Propagation* prop;
+         bool         done;
+      };
+
       class Propagations : public Allocable
       {
          AtomicVector<Propagation*>  propagations_;
-         std::vector<idSegmentation> visits_;
+         std::vector<Visit>          visits_;
 
         public:
 
@@ -47,7 +53,7 @@ namespace ttk
          void init() override
          {
             fillVector<Propagation*>(propagations_, nullptr);
-            fillVector<idSegmentation>(visits_, nullSegment);
+            fillVector<Visit>(visits_, {nullptr, false});
          }
 
          // newPropagation
@@ -57,32 +63,33 @@ namespace ttk
          // Create a new propagation starting at leaf
          Propagation* newPropagation(const idVertex leaf, VertCompFN comp, const bool fromMin)
          {
-            Propagation* localProp  = new Propagation(leaf, comp, fromMin);
-            const auto   propId     = propagations_.getNext();
-            propagations_[propId]   = localProp;
-            localProp->setId(propId);
+            Propagation* localProp = new Propagation(leaf, comp, fromMin);
+            const auto   propId    = propagations_.getNext();
+            propagations_[propId]  = localProp;
             return localProp;
          }
 
-         void toVisit(const idVertex v, const Propagation* const prop) {
-            visits_[v] = prop->getId();
+         void toVisit(const idVertex v, Propagation* const prop) {
+            visits_[v].prop = prop;
          }
 
-         void visit(const idVertex v, const Propagation* const prop) {
-            visits_[v] = (-1 * prop->getId()) - 1;
+         void visit(const idVertex v, Propagation* const prop)
+         {
+            visits_[v].prop = prop;
+            visits_[v].done = true;
          }
 
          bool willVisit(const idVertex v, const Propagation* const prop) const
          {
-            return visits_[v] == prop->getId();
+            return visits_[v].prop == prop;
          }
 
          bool hasVisited(const idVertex v, const Propagation* const prop) const
          {
-            return visits_[v] == (-1 * prop->getId()) - 1;
+            return visits_[v].prop == prop && visits_[v].done;
          }
 
-         idSegmentation visit(const idVertex v) const
+         Visit visit(const idVertex v) const
          {
              return visits_[v];
          }

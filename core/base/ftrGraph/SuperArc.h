@@ -38,11 +38,11 @@ namespace ttk
 #endif
 
         public:
-         SuperArc() : upNodeId_(nullNode), downNodeId_(nullNode), propagation_(nullptr), visible_(true)
+         SuperArc() : upNodeId_{nullNode}, downNodeId_{nullNode}, propagation_{nullptr}, visible_{true}
          {
          }
 
-         SuperArc(const idNode down, const idNode up) : upNodeId_(up), downNodeId_(down)
+         SuperArc(const idNode down, const idNode up) : upNodeId_{up}, downNodeId_{down}
          {
          }
 
