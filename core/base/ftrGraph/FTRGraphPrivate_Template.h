@@ -32,20 +32,11 @@ namespace ttk
    {
       template <typename ScalarType>
       void FTRGraph<ScalarType>::growthFromSeed(const idVertex seed, Propagation* localProp,
-                                                const idSuperArc arcId)
+                                                idSuperArc currentArc)
       {
          DEBUG_1(<< "Start " << seed << " go up " << localProp->goUp() << std::endl);
 #ifndef NDEBUG
          DEBUG_1(<< localProp->getId() << " " << localProp->print() << std::endl);
-#endif
-
-         // skeleton
-         const idNode downNode = graph_.makeNode(seed);
-         idSuperArc   currentArc =
-             (arcId != nullSuperArc) ? arcId : graph_.openArc(downNode, localProp);
-
-#ifndef NDEBUG
-         graph_.getArc(currentArc).setFromUp(localProp->goUp());
 #endif
 
          // topology
@@ -87,18 +78,17 @@ namespace ttk
                // where made
                currentArc = lowerComp[0]->getCorArc();
                DEBUG_1(<< "arc: " << lowerComp[0]->getCorArc() << " v " << curVert << std::endl);
-            }
 
-            graph_.visit(curVert, currentArc);
-            DEBUG_1(<< "visit n: " << curVert << std::endl);
+               graph_.visit(curVert, currentArc);
+               DEBUG_1(<< "visit n: " << curVert << std::endl);
+            }
 
             if (isJoinSaddle) {
                isJoinSadlleLast = checkLast(currentArc, localProp, lowerStarEdges);
                DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
-               // If the current growth reaches a saddle and is not the last
-               // reaching this saddle, it just stops here.
-               if (!isJoinSadlleLast)
-                  break;
+               // We stop here in the join case as we will update preimage
+               // only after have processed arcs on the last join
+               break;
             }
 
             updatePreimage(localProp, currentArc);
@@ -114,33 +104,54 @@ namespace ttk
                isSplitSaddle = true;
             }
 
-            if (!isJoinSaddle || isSplitSaddle) {
-               // add upper star for futur visit
-               localGrowth(localProp);
+            // add upper star for futur visit
+            bool seenAbove = localGrowth(localProp);
+            if (!seenAbove) {
+               // We have reached an opposite leaf
+               const idNode upNode = graph_.makeNode(curVert);
+               graph_.closeArc(currentArc, upNode);
+               std::cout << "close arc max " << graph_.printArc(currentArc) << std::endl;
             }
          }
 
-         // if we stop, create/recover the critical point
+         // get the corresponging critical point on which
+         // the propagation has stopped (join, split, max)
          const idVertex upVert = localProp->getCurVertex();
-         const idNode   upNode = updateReebGraph(currentArc, localProp);
+         const idNode   upNode = graph_.makeNode(upVert);
 
-         // Saddle case
+         // At saddle: join or split or both
 
+         // arriving at a join
          if (isJoinSadlleLast) {
             localGrowth(localProp);
-            mergeAtSaddle(upNode, localProp);
+            mergeAtSaddle(upNode, localProp, lowerComp);
          }
 
+         // starting from the saddle
          if (isSplitSaddle) {
+            if (!isJoinSaddle) {
+               // only one arc coming here
+               graph_.closeArc(currentArc, upNode);
+               std::cout << "close arc split " << graph_.printArc(currentArc) << std::endl;
+            } else {
+               // update preimage, we don't care about the superArc as it will
+               // be overriten just after
+               updatePreimage(localProp, nullSuperArc);
+            }
+            const bool withBFS = false;
+            if (withBFS) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Min)
 #endif
-            splitAtSaddle(localProp);
+               splitAtSaddleBFS(localProp);
+            } else {
+               splitAtSaddle(localProp, upperComp);
+            }
          } else if (isJoinSadlleLast) {
             // recursive call
             const idNode     downNode = graph_.getNodeId(upVert);
             const idSuperArc newArc   = graph_.openArc(downNode, localProp);
-            updateDynGraphCurArc(upVert, newArc, localProp);
+            updatePreimage(localProp, newArc);
             graph_.visit(upVert, newArc);
             DEBUG_1(<< "visit m: " << upVert << " with " << newArc << std::endl);
 #ifdef TTK_ENABLE_OPENMP
@@ -368,32 +379,16 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      idNode FTRGraph<ScalarType>::updateReebGraph(const idSuperArc         currentArc,
-                                                   const Propagation* const localProp)
+      bool FTRGraph<ScalarType>::localGrowth(Propagation* const localProp)
       {
-         const idVertex upVert = localProp->getCurVertex(); // keep before merge
-         const idNode upNode = graph_.makeNode(upVert);
-         graph_.closeArc(currentArc, upNode);
-
-         DEBUG_1(<< "close arc " << graph_.printArc(currentArc) << std::endl);
-
-         // To investigate
-         if (graph_.getArc(currentArc).getDownNodeId() == graph_.getArc(currentArc).getUpNodeId()) {
-            graph_.getArc(currentArc).hide();
-         }
-
-         return upNode;
-      }
-
-      template <typename ScalarType>
-      void FTRGraph<ScalarType>::localGrowth(Propagation* const localProp)
-      {
+         bool seenAbove = false;
          const idVertex curVert = localProp->getCurVertex();
          const idVertex nbNeigh = mesh_.getVertexNeighborNumber(localProp->getCurVertex());
          for (idVertex n = 0; n < nbNeigh; ++n) {
             idVertex neighId;
             mesh_.getVertexNeighbor(curVert, n, neighId);
             if (localProp->compare(curVert, neighId)) {
+               seenAbove = true;
                if (!propagations_.willVisit(neighId, localProp)) {
                   localProp->addNewVertex(neighId);
                   propagations_.toVisit(neighId, localProp);
@@ -401,6 +396,7 @@ namespace ttk
                }
             }
          }
+         return seenAbove;
       }
 
       template <typename ScalarType>
@@ -408,33 +404,26 @@ namespace ttk
                                            const Propagation* const   localProp,
                                            const std::vector<idEdge>& lowerStarEdges)
       {
-         const idVertex   curSaddle = localProp->getCurVertex();
-         valence decr = 0;
+         const idVertex      curSaddle = localProp->getCurVertex();
+         const idPropagation curId     = localProp->getId();
+         valence             decr      = 0;
 
-         // TODO use LowerStar edge instead of crossing all you dumb foolish stupid moron
-         const idVertex nbEdgesNeigh = mesh_.getVertexEdgeNumber(curSaddle);
-         for(idVertex nid = 0; nid < nbEdgesNeigh; ++nid) {
-            idEdge edgeId;
-            mesh_.getVertexEdge(curSaddle, nid, edgeId);
-
-           idVertex v0;
-           idVertex v1;
-           mesh_.getEdgeVertex(edgeId, 0, v0);
-           mesh_.getEdgeVertex(edgeId, 1, v1);
-
-           const idVertex other = (v0 == curSaddle) ? v1 : v0;
-
-           if (localProp->compare(other, curSaddle)) {
-              const idSuperArc edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
-              if (edgeArc == currentArc) {
-                 ++decr;
-                 DEBUG_1(<< printEdge(edgeId, localProp) << " decrement " << static_cast<unsigned>(decr) << " " << curSaddle << std::endl);
-              } else {
-                 DEBUG_1(<< printEdge(edgeId, localProp) << " no decrement " << edgeArc << std::endl);
-              }
+         // NOTE:
+         // Using propagation id allows to decrement by the number of time this propagation
+         // has reached the saddle, even if the propagation take care of several of these arcs
+         // (after a Hole-split).
+         for(idEdge edgeId : lowerStarEdges) {
+           const idSuperArc    edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
+           if (edgeArc == nullSuperArc) // ignore unseen
+              continue;
+           const idPropagation tmpId  = graph_.getArc(edgeArc).getPropagation()->getId();
+           if (tmpId == curId) {
+              ++decr;
+              DEBUG_1(<< printEdge(edgeId, localProp) << " decrement " << static_cast<unsigned>(decr) << " " << curSaddle << std::endl);
+           } else {
+              DEBUG_1(<< printEdge(edgeId, localProp) << " no decrement " << edgeArc << std::endl);
            }
          }
-
 
          valence oldVal = 0;
          if (localProp->goUp()) {
@@ -524,19 +513,35 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::mergeAtSaddle(const idNode saddleId, Propagation* localProp)
+      void FTRGraph<ScalarType>::mergeAtSaddle(
+          const idNode saddleId, Propagation* localProp,
+          const std::vector<DynGraphNode<idVertex>*>& lowerComp)
       {
-         auto comp = [localProp](const idVertex a, const idVertex b) {
-            return localProp->compare(a, b);
-         };
 
-         graph_.mergeAtSaddle(saddleId, localProp);
-         const idVertex saddleVert = graph_.getNode(saddleId).getVertexIdentifier();
-         localProp->removeBelow(saddleVert, comp);
+         std::cout << " merge at saddle id " << saddleId << " vs " << localProp->getCurVertex()
+                   << std::endl;
+
+#ifndef TTK_ENABLE_KAMIKAZE
+         if (lowerComp.size() < 2) {
+            std::cerr << "[FTR]: merge at saddle with only one lower CC" << std::endl;
+         }
+#endif
+
+         for(auto* dgNode : lowerComp) {
+            // read in the history
+            const idSuperArc endingArc = dgNode->getCorArc();
+            graph_.closeArc(endingArc, saddleId);
+            localProp->merge(*graph_.getArc(endingArc).getPropagation());
+            std::cout << "Close arc join " << graph_.printArc(endingArc) << " at "
+                      << graph_.printNode(saddleId) << std::endl;
+         }
+
+         // const idVertex saddleVert = graph_.getNode(saddleId).getVertexIdentifier();
+         // localProp->removeBelow(saddleVert, comp);
       }
 
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::splitAtSaddle(Propagation* const localProp)
+      void FTRGraph<ScalarType>::splitAtSaddleBFS(Propagation* const localProp)
       {
          const idVertex curVert = localProp->getCurVertex();
          const idNode   curNode = graph_.getNodeId(curVert);
@@ -594,6 +599,24 @@ namespace ttk
 #endif
             growthFromSeed(curVert, prop, arc);
          }
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::splitAtSaddle(
+          Propagation* const localProp, const std::vector<DynGraphNode<idVertex>*>& upperComp)
+      {
+         const idVertex curVert = localProp->getCurVertex();
+         const idNode   curNode = graph_.getNodeId(curVert);
+
+         for (auto* dgNode : upperComp) {
+            const idSuperArc newArc = graph_.openArc(curNode, localProp);
+            dgNode->setRootArc(newArc);
+         }
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task firstprivate(curVert, localProp) OPTIONAL_PRIORITY(PriorityLevel::Average)
+#endif
+            growthFromSeed(curVert, localProp);
       }
 
       /// Tools

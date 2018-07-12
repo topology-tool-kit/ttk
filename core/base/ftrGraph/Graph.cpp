@@ -14,26 +14,6 @@ Graph::~Graph()
 {
 }
 
-void Graph::mergeAtSaddle(const idNode saddleId, Propagation* const localProp)
-{
-   const idVertex saddleVert = getNode(saddleId).getVertexIdentifier();
-#ifndef TTK_ENABLE_KAMIKAZE
-   if (getNbVisit(saddleVert) < 2) {
-      std::cerr << "[FTR Graph]: merge on saddle having less than 2 visits:";
-      std::cerr << saddleVert << std::endl;
-   }
-#endif
-
-   for (const idSegmentation id : visit(saddleVert)) {
-      if (id >= 0) {
-         Propagation* lowerProp = getArc(id).getPropagation();
-         if (lowerProp->goUp() == localProp->goUp()) {
-            localProp->merge(*lowerProp);
-         }
-      }
-   }
-}
-
 void Graph::arcs2nodes(VertCompFN comp)
 {
    const idSuperArc nbArcs = getNumberOfArcs();

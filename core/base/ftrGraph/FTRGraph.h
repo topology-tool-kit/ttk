@@ -228,7 +228,8 @@ namespace ttk
          /// When a 1 Saddle is met, we split the local propagation with a BFS
          /// to continue locally.
          /// if arc is supplied, this arc will be used for the growth
-         void growthFromSeed(const idVertex seed, Propagation* localProp, const idSuperArc arcId = nullSuperArc);
+         void growthFromSeed(const idVertex seed, Propagation* localProp,
+                             idSuperArc currentArc = nullSuperArc);
 
          /// visit the star of v and create two vector,
          /// first one contains edges finishing at v (lower star)
@@ -272,11 +273,13 @@ namespace ttk
                                     const Propagation* const localProp,
                                     const idSuperArc         curArc);
 
-         /// update the current arc of the dynGraph subtree of seed with curArc (on the component going through neigEdge)
+         /// update the current arc of the dynGraph subtree of seed with curArc (on the component
+         /// going through neigEdge)
          void updateDynGraphCurArc(const idVertex seed, const idEdge neigEdge,
                                    const idSuperArc curArc, const Propagation* const localProp);
 
-         /// update the current arc of the dynGraph subtree of seed with curArc (all edges crossing the level set)
+         /// update the current arc of the dynGraph subtree of seed with curArc (all edges crossing
+         /// the level set)
          void updateDynGraphCurArc(const idVertex seed, const idSuperArc curArc,
                                    const Propagation* const localProp);
 
@@ -286,29 +289,41 @@ namespace ttk
                                 const Propagation* const localProp);
 
          /// local growth replacing the global sort
-         void localGrowth(Propagation* const localProp);
+         /// Add vertices above the current one in the propagation,
+         /// return true if vertices aboves the current one have been found.
+         /// Note, these vertices may not have been added if already marked as in the propagation.
+         bool localGrowth(Propagation* const localProp);
 
          // Check if the current vertex which is on a Join saddle come from the
          // last growth touching this saddle
          bool checkLast(const idSuperArc currentArc, const Propagation* const localProp,
                         const std::vector<idEdge>& lowerStarEdges);
 
-         // Check if neigh is linked to an arc having saddle in one of its boundary node, using the edge btwn saddle and neigh
+         // Check if neigh is linked to an arc having saddle in one of its boundary node, using the
+         // edge btwn saddle and neigh
          bool checkOppositeDGForArc(const idVertex saddle, const idVertex neigh,
                                     Propagation* const localProp);
 
-         // check if regular vertex is visited by an arc ending a saddle coming from the opposite direction
+         // check if regular vertex is visited by an arc ending a saddle coming from the opposite
+         // direction
          bool checkSegmentationForArc(const idVertex saddle, const idVertex regular,
                                       const Propagation* const localProp);
 
          // At a join saddle, merge local propagations coming here
          // and close remiang opened arcs.
          // Remove duplicate on the saddleVertex (only)
-         void mergeAtSaddle(const idNode saddleId, Propagation* localProp);
+         void mergeAtSaddle(const idNode saddleId, Propagation* localProp,
+                            const std::vector<DynGraphNode<idVertex>*>& lowerComp);
 
-         // At a split saddle, break the localProp into pieces corresponding to
-         // each upper CC (with a BFS) and launch new localGrowth for each.
-         void splitAtSaddle(Propagation* const localProp);
+         // At a split saddle, assign new arcs at each CC in the DynGraph,
+         // compute the new localPropagation for each using a BFS
+         // and launch the new propagation.
+         void splitAtSaddleBFS(Propagation* const localProp);
+
+         // At a split saddle, assign new arcs at each CC in the DynGraph,
+         // and launch a new propagation taking care of these arcs simultaneously
+         void splitAtSaddle(Propagation* const                          localProp,
+                            const std::vector<DynGraphNode<idVertex>*>& upperComp);
 
          // Retrun one triangle by upper CC of the vertex v
          std::set<idCell> upCCtriangleSeeds(const idVertex v, const Propagation* const localProp);

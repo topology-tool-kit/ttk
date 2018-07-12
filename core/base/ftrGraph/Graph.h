@@ -277,6 +277,11 @@ namespace ttk
              if (p) {
                 arcs_[newArc].setPropagation(p);
              }
+#ifndef TTK_ENABLE_KAMIKAZE
+             else {
+                std::cout << "NULL PROP IN ARC " << static_cast<unsigned>(newArc) << std::endl;
+             }
+#endif
              return newArc;
          }
 
@@ -322,10 +327,6 @@ namespace ttk
          {
             std::random_shuffle(leaves_.begin(), leaves_.end());
          }
-
-         // Merge porpagations under a join saddle point inside the given prop
-         // Only concern propagation growing in the same direction
-         void mergeAtSaddle(const idNode saddleId, Propagation* const localProp);
 
          // Link nodes to arcs when arc are completely created
          void arcs2nodes(VertCompFN comp);
