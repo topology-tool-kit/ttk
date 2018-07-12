@@ -120,8 +120,37 @@ namespace ttk {
 		dataType run(std::vector<matchingTuple> *matchings);
 
 		
+		void BuildAuctionDiagrams(BidderDiagram<dataType> *BD, GoodDiagram<dataType> *GD){
+			n_bidders_ = BD->size();
+			n_goods_ = GD->size();
+			
+			delete_bidders_ = false;
+			bidders_ = BD;
+			goods_ = GD;
+			
+			for(int i=0; i < n_bidders_; i++){
+				//Add diagonal goods
+				Bidder<dataType>& b = bidders_->get(i);
+				Good<dataType> g = Good<dataType>(b.x_, b.y_, true, -b.id_-1);
+				g.projectOnDiagonal();
+				diagonal_goods_->addGood(g);
+				std::pair<int, dataType> pair = std::make_pair(i, g.getPrice());
+				diagonal_queue_.push(pair);
+			}
+			for(int i=0; i < n_goods_; i++){
+				//Add diagonal bidders
+				Good<dataType>& g = goods_->get(i);
+				Bidder<dataType> b = Bidder<dataType>(g.x_, g.y_, true, -g.id_-1);
+				b.projectOnDiagonal();
+				b.setPositionInAuction(bidders_->size());
+				bidders_->addBidder(b);
+			}
+			use_kdt_ = true;
+			this->buildKDTree();
+		}
+		
+		
 		void BuildAuctionDiagrams(std::vector<diagramTuple> diagram1, std::vector<diagramTuple> diagram2){
-			Timer t;
 			n_bidders_ = diagram1.size();
 			n_goods_ = diagram2.size();
 			this->setBidders(diagram1);
