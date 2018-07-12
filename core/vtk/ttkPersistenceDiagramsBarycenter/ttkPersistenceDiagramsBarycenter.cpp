@@ -85,18 +85,16 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 //         persistenceDiagramsBarycenter.setDiagram(i, 
 //           (void*) &(intermediateDiagrams[i]));
       }
-      printf("vtk input address: %d\n", (void *) &intermediateDiagrams);
       persistenceDiagramsBarycenter.setDiagrams((void *) &intermediateDiagrams);
       
 			
 			std::vector<macroDiagramTuple> barycenter;
-      printf("vtk input address2: %d\n", (void *) &intermediateDiagrams);
 			std::vector<std::vector<macroMatchingTuple>> matchings = 
-        persistenceDiagramsBarycenter.execute(&barycenter);
+				persistenceDiagramsBarycenter.execute(&barycenter);
 			
 			outputBarycenter->ShallowCopy(createPersistenceDiagram<VTK_TT>(&barycenter));
 			outputMatchings->ShallowCopy(createMatchings(&matchings, &barycenter, 
-        intermediateDiagrams));
+				intermediateDiagrams));
 			outputDiagrams->ShallowCopy(createOutputDiagrams(intermediateDiagrams));
 		}
 		));
