@@ -7,7 +7,10 @@
 function(ttk_set_compile_options library)
 	target_compile_options(${library} PRIVATE -Wall)
 
-	target_include_directories(${library} PUBLIC ${Boost_INCLUDE_DIR})
+	if(Boost_FOUND)
+    target_include_directories(${library} PUBLIC ${Boost_INCLUDE_DIR})
+    target_link_libraries(${library} PUBLIC boost_system)
+	endif()
 	
 	if (TTK_ENABLE_KAMIKAZE)
 		target_compile_definitions(${library} PUBLIC TTK_ENABLE_KAMIKAZE)
@@ -102,7 +105,7 @@ if(TTK_BUILD_DOCUMENTATION)
 	endif()
 endif()
 
-find_package(Boost REQUIRED)
+find_package(Boost COMPONENTS system REQUIRED)
 
 find_package(ZLIB)
 if(NOT ZLIB_INCLUDE_DIR)
