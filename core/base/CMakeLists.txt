@@ -61,7 +61,7 @@ function(ttk_add_base_template_library library)
 
   if(Boost_FOUND)
     target_include_directories(${library} INTERFACE ${Boost_INCLUDE_DIR})
-    target_link_libraries(${library} INTERFACE boost_system)
+    target_link_libraries(${library} INTERFACE ${Boost_LIBRARIES})
   endif()
 		
 	if (TTK_ENABLE_KAMIKAZE)
