@@ -1,17 +1,6 @@
 /// \ingroup base
 /// \class ttk::BottleneckDistance 
 /// \author Maxime Soler <soler.maxime@total.com>
-/// \date The Date Here.
-///
-/// \brief TTK %bottleneckDistance processing package.
-///
-/// %BottleneckDistance is a TTK processing package that 
-/// takes a scalar field on the input 
-/// and produces a scalar field on the output.
-///
-/// \sa ttk::Triangulation
-/// \sa ttkBottleneckDistance.cpp %for a usage example.
-
 #ifndef _BOTTLENECKDISTANCE_H
 #define _BOTTLENECKDISTANCE_H
 
@@ -34,6 +23,7 @@
 #include                  <Wrapper.h>
 #include                  <PersistenceDiagram.h>
 #include                  <Munkres.h>
+#include                  <GabowTarjan.h>
 
 #include                  <string>
 #include                  <tuple>
@@ -43,73 +33,113 @@ namespace ttk {
 
   class BottleneckDistance : public Debug {
 
-    public:
-        
-      BottleneckDistance():wasserstein_("inf") {};
-      
-      ~BottleneckDistance() {};
+  public:
 
-      template <typename dataType>
-      int execute(bool usePersistenceMetric, double alpha);
+    BottleneckDistance():
+      wasserstein_("inf"),
+      pvAlgorithm_(-1),
+      zeroThreshold_(0),
+      px_(0),
+      py_(0),
+      pz_(0),
+      pe_(0),
+      ps_(0)
+    {};
 
-      inline int setCTDiagram1(void *diagram) {
-        outputCT1_ = diagram;
-        return 0;
-      }
+    ~BottleneckDistance() {};
 
-      inline int setCTDiagram2(void *diagram) {
-        outputCT2_ = diagram;
-        return 0;
-      }
+    template <typename dataType>
+    int execute(bool usePersistenceMetric, double alpha, bool is3D);
 
-      inline int setOutputMatchings(void* matchings) {
-        matchings_ = matchings;
-        return 0;
-      }
+    inline int setPersistencePercentThreshold(double t) {
+      zeroThreshold_ = t;
+      return 0;
+    }
 
-      inline int setWasserstein(const std::string &wasserstein) {
-        wasserstein_ = wasserstein;
-        return 0;
-      }
+    inline int setPX(double px) { px_ = px; return 0; }
+    inline int setPY(double py) { py_ = py; return 0; }
+    inline int setPZ(double pz) { pz_ = pz; return 0; }
+    inline int setPE(double pe) { pe_ = pe; return 0; }
+    inline int setPS(double ps) { ps_ = ps; return 0; }
 
-      template <typename dataType>
-      dataType getDistance() {
-        return *static_cast<dataType*> (distance_);
-      }
+    inline int setCTDiagram1(void *diagram) {
+      outputCT1_ = diagram;
+      return 0;
+    }
 
-      template<typename type>
-      static type abs(const type var) {
-        return (var >= 0) ? var : -var;
-      }
+    inline int setCTDiagram2(void *diagram) {
+      outputCT2_ = diagram;
+      return 0;
+    }
 
-      template<typename type>
-      static type abs_diff(const type var1, const type var2) {
-        return (var1 > var2) ? var1 - var2 : var2 - var1;
-      }
-    
-    protected:
-    
-      void                      *outputCT1_;
-      void                      *outputCT2_;
-      void                      *matchings_; // ids from CT1 to CT2
-      void                      *distance_;
+    inline int setOutputMatchings(void* matchings) {
+      matchings_ = matchings;
+      return 0;
+    }
 
-      std::string                    wasserstein_;
-    
+    inline int setAlgorithm(const std::string &algorithm) {
+      algorithm_ = algorithm;
+      return 0;
+    }
+
+    inline int setPVAlgorithm(const int algorithm) {
+      pvAlgorithm_ = algorithm;
+      return 0;
+    }
+
+    inline int setWasserstein(const std::string &wasserstein) {
+      wasserstein_ = wasserstein;
+      return 0;
+    }
+
+    inline void message(const char* s)
+    {
+      std::stringstream msg;
+      msg << s << std::endl;
+      dMsg(std::cout, msg.str(), timeMsg);
+    }
+
+    template <typename dataType>
+    dataType getDistance() {
+      return *static_cast<dataType*> (distance_);
+    }
+
+    template<typename type>
+    static type abs(const type var) {
+      return (var >= 0) ? var : -var;
+    }
+
+    template<typename type>
+    static type abs_diff(const type var1, const type var2) {
+      return (var1 > var2) ? var1 - var2 : var2 - var1;
+    }
+
+  protected:
+
+    void                      *outputCT1_;
+    void                      *outputCT2_;
+    void                      *matchings_; // ids from CT1 to CT2
+    void                      *distance_;
+
+    std::string                    wasserstein_;
+    std::string                    algorithm_;
+    int                       pvAlgorithm_;
+    double                    zeroThreshold_;
+    double                    px_;
+    double                    py_;
+    double                    pz_;
+    double                    pe_;
+    double                    ps_;
+
   private:
 
     template <typename dataType>
     int computeBottleneck(
-      const std::vector<diagramTuple> *CTDiagram1,
-      const std::vector<diagramTuple> *CTDiagram2,
+      const std::vector<diagramTuple> *d1,
+      const std::vector<diagramTuple> *d2,
       std::vector<matchingTuple> *matchings,
       bool usePersistenceMetric,
       double alpha);
-
-    template <typename dataType>
-    bool isValidMatching(
-      const std::vector<matchingTuple>* matchings,
-      dataType thresholdMin) const;
 
     template <typename dataType>
     double computeGeometricalRange(
@@ -146,42 +176,19 @@ namespace ttk {
       std::function<dataType (const diagramTuple, const diagramTuple)>& distanceFunction,
       std::function<dataType (const diagramTuple)>& diagonalDistanceFunction,
       double zeroThresh,
-      dataType **minMatrix,
-      dataType **maxMatrix,
-      dataType **sadMatrix
-    );
-
-    template <typename dataType>
-    dataType findInitialThreshold(
-      int nbRow,
-      int nbCol,
-      const dataType **matrix
-    ) const;
-
-    template <typename dataType>
-    void filterFromThreshold(
-      dataType threshold,
-      int nbRow,
-      int nbCol,
-      const dataType **matrix,
-      dataType **bottleneckMatrix
-    );
-
-    template <typename dataType>
-    void iterateSolving(
-      std::vector<matchingTuple> *matchings,
-      dataType threshold,
-      int nbRow,
-      int nbCol,
-      const dataType **matrix,
-      dataType **bottleneckMatrix,
-      Munkres *solver);
+      std::vector<std::vector<dataType>>& minMatrix,
+      std::vector<std::vector<dataType>>& maxMatrix,
+      std::vector<std::vector<dataType>>& sadMatrix,
+      bool reverseMin,
+      bool reverseMax,
+      bool reverseSad,
+      int wasserstein);
 
     template <typename dataType>
     void solvePWasserstein(
       int nbRow,
       int nbCol,
-      dataType **matrix,
+      std::vector<std::vector<dataType>> matrix,
       std::vector<matchingTuple> *matchings,
       Munkres *solver);
 
@@ -189,23 +196,27 @@ namespace ttk {
     void solveInfinityWasserstein(
       int nbRow,
       int nbCol,
-      dataType **matrix,
+      int nbRowToCut,
+      int nbColToCut,
+      std::vector<std::vector<dataType>> matrix,
       std::vector<matchingTuple> *matchings,
-      Munkres *solver);
+      GabowTarjan *solver);
 
     template <typename dataType>
     dataType buildMappings(
       std::vector<matchingTuple> inputMatchings,
+      bool transposeGlobal,
+      bool transposeLocal,
       std::vector<matchingTuple> *outputMatchings,
-      std::vector<int> map1,
-      std::vector<int> map2,
+      std::vector<int> m1,
+      std::vector<int> m2,
       int wasserstein);
-
   };
 
-}
-
+// Include in namespace ttk
 #include <BottleneckDistanceImpl.h>
 #include <BottleneckDistanceMainImpl.h>
+
+}
 
 #endif // _H

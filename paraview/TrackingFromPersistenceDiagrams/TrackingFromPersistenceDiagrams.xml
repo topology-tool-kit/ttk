@@ -6,28 +6,32 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-    name="BottleneckDistance"
-    class="ttkBottleneckDistance"
-    label="TTK BottleneckDistance"
-    >
+    name="TrackingFromPersistenceDiagrams"
+    class="ttkTrackingFromPersistenceDiagrams"
+    label="TTK TrackingFromPersistenceDiagrams">
       <Documentation
-      long_help="TTK bottleneckDistance plugin."
-      short_help="TTK bottleneckDistance plugin.">
-        TTK bottleneckDistance plugin documentation.
+      long_help="TTK plugin that takes an input time-varying data set (represented
+by a list of scalar fields) and which computes a tracking mesh."
+      short_help="TTK plugin that takes an input time-varying data set (represented
+        by a list of scalar fields) and which computes a tracking mesh.">
+        TTK plugin that takes an input ensemble data set (represented
+        by a list of scalar fields) and which computes various vertexwise statistics
+        (PDF estimation, bounds, moments, etc.).
+
+        See also MandatoryCriticalPoints.
       </Documentation>
 
+      <!-- Inputs -->
       <InputProperty
-      name="Input1"
-      port_index="0"
-      label="Smallest persistence diagram"
-      command="SetInputConnection"
-      >
+      name="Input"
+      command="AddInputConnection"
+      multiple_input="1">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
+          <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars" number_of_components="1">
           <Property name="Input" function="FieldDataSelection" />
@@ -36,59 +40,6 @@
           Data-set to process.
         </Documentation>
       </InputProperty>
-
-      <InputProperty
-      name="Input2"
-      port_index="1"
-      label="Largest persistence diagram"
-      command="SetInputConnection">
-        <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
-        </ProxyGroupDomain>
-        <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
-        </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Input" function="FieldDataSelection" />
-        </InputArrayDomain>
-        <Documentation>
-          Data-set to process.
-        </Documentation>
-      </InputProperty>
-
-
-
-      <StringVectorProperty
-      name="n"
-      label="p parameter"
-      command="SetWassersteinMetric"
-      number_of_elements="1"
-      default_values="1" >
-        <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance
-          computation (type "inf" for the Bottleneck distance).
-        </Documentation>
-      </StringVectorProperty>
-
-      <IntVectorProperty
-      name="Assignment method"
-      label="Assignment method"
-      command="SetPVAlgorithm"
-      number_of_elements="1"
-      default_values="0" >
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="ttk: pMunkres (Wasserstein), Gabow-Tarjan (Bottleneck)"/>
-          <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/>
-          <Entry value="2" text="geometric: Auction (Wasserstein), augmenting paths (Bottleneck)"/>
-          <Entry value="3" text="parallel: Soler-Tierny-Munkres (Wasserstein only)"/>
-          <Entry value="4" text="bench: dummy bench (wasserstein only)"/>
-        </EnumerationDomain>
-        <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance
-          computation (type "inf" for the Bottleneck distance).
-        </Documentation>
-      </IntVectorProperty>
 
       <!-- Persistence filtering options -->
       <DoubleVectorProperty
@@ -101,23 +52,6 @@
           Maximum error threshold.
         </Documentation>
         <DoubleRangeDomain name="range" min="0" max="100" />
-      </DoubleVectorProperty>
-
-      <DoubleVectorProperty
-      name="alpha"
-      label="Diagram blending"
-      command="SetAlpha"
-      number_of_elements="1"
-      default_values="1"
-      panel_visibility="advanced">
-        <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
-        <Documentation>
-          Blending coefficient for the cost evaluation of each critical point
-          matching. By default (1), only distances  in
-          the persistence diagrams are considered between matched critical points. When
-          set to 0, only distances in the original 3D domain are considered
-          between matched critical points.
-        </Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -159,8 +93,7 @@
       command="SetPY"
       number_of_elements="1"
       default_values="1"
-      panel_visibility="advanced"
-      >
+      panel_visibility="advanced">
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
         <Documentation>Scaling for py.</Documentation>
       </DoubleVectorProperty>
@@ -176,19 +109,50 @@
         <Documentation>Scaling for pz.</Documentation>
       </DoubleVectorProperty>
 
-      <IntVectorProperty
-      name="Output matchings"
-      command="SetUseOutputMatching"
-      label="Display the matchings with line segments"
+      <!-- Bottleneck options -->
+      <StringVectorProperty
+      name="n"
+      label="p parameter"
+      command="SetWassersteinMetric"
       number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
+      default_values="1">
         <Documentation>
-          Display the matching between pairs of the persistence diagrams with
-          line segments in 3D.
+          Value of the parameter p for the Wp (p-th Wasserstein) distance
+          computation (type "inf" for the Bottleneck distance).
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+      name="Assignment method"
+      label="Assignment method"
+      command="SetPVAlgorithm"
+      number_of_elements="1"
+      default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="ttk: pMunkres (Wasserstein), Gabow-Tarjan (Bottleneck)"/>
+          <!--<Entry value="2" text="geometric: Auction (Wasserstein), augmenting paths (Bottleneck)"/>-->
+        </EnumerationDomain>
+        <Documentation>
+          Method for computing matchings.
         </Documentation>
       </IntVectorProperty>
+
+      <DoubleVectorProperty
+      name="alpha"
+      label="Diagram blending"
+      command="SetAlpha"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
+        <Documentation>
+          Blending coefficient for the cost evaluation of each critical point
+          matching. By default (1), only distances  in
+          the persistence diagrams are considered between matched critical points. When
+          set to 0, only distances in the original 3D domain are considered
+          between matched critical points.
+        </Documentation>
+      </DoubleVectorProperty>
 
       <DoubleVectorProperty
       name="spacing"
@@ -219,9 +183,9 @@
       </IntVectorProperty>
 
       <IntVectorProperty
-      name="Use 5D"
+      name="Use auction"
       command="SetIs3D"
-      label="Use 5D"
+      label="Use auction"
       number_of_elements="1"
       default_values="0"
       panel_visibility="advanced">
@@ -231,6 +195,43 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+      name="Do post-proc"
+      command="SetDoPostProc"
+      label="Do post-proc"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Do post-processing.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+      name="Post-proc threshold"
+      label="Split-Merge threshold"
+      command="SetPostProcThresh"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <Documentation>
+          Threshold for merging/splitting trajectories in
+          connected components array.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="n" />
+        <Property name="alpha" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="spacing" />
+        <Property name="Use spacing" />
+      </PropertyGroup>
+
+      <!-- TTK internals -->
       <IntVectorProperty
       name="UseAllCores"
       label="Use All Cores"
@@ -267,30 +268,17 @@
         </Documentation>
       </IntVectorProperty>
 
-      <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="n" />
-        <Property name="alpha" />
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="Output matchings" />
-        <Property name="spacing" />
-        <Property name="Use spacing" />
-        <Property name="Use 5D" />
-      </PropertyGroup>
-
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
 
-      <OutputPort name="Persistence Diagram 1" index="0" id="port1"/>
-      <OutputPort name="Persistence Diagram 2" index="1" id="port2"/>
+      <!-- Outputs -->
       <OutputPort name="Persistence Mesh" index="2" id="port3"/>
 
       <Hints>
-        <ShowInMenu category="TTK - Scalar Data" />
+        <ShowInMenu category="TTK - Uncertain Scalar Data" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>

@@ -20,194 +20,200 @@ namespace ttk {
   class Munkres : public Debug
   {
 
-    public:
+  public:
 
-      Munkres() {};
+    Munkres() {};
 
-      ~Munkres() {};
+    ~Munkres() {};
 
-      template <typename dataType>
-      int run(std::vector<matchingTuple> *matchings);
+    template <typename dataType>
+    int run(std::vector<matchingTuple> *matchings);
 
-      template<typename dataType>
-      inline void clear() {
-        if (C_orig != nullptr) {
-          for (int r = 0, rS0 = rowSize; r < rS0; ++r)
-            delete[] ((dataType**)C_orig)[r];
-          delete[] ((dataType**)C_orig);
-          C_orig = nullptr;
-        }
+    template<typename dataType>
+    inline void clear() {
+      pathCount = 0;
+      rowSize = 0;
+      colSize = 0;
+      createdZeros.clear();
+    }
 
-        if (M != nullptr) {
-          for (int r = 0, rS0 = rowSize; r < rS0; ++r)
-            delete[] M[r];
-          delete[] M;
-          M = nullptr;
-        }
+    template<typename dataType>
+    inline void clearMatrix() {
+      std::vector<std::vector<dataType>> C = *((std::vector<std::vector<dataType>>*) Cptr);
+      for (int r = 0, rS0 = rowSize; r < rS0; ++r)
+        for (int c = 0, cS0 = colSize; c < cS0; ++c)
+          C[r][c] = 0.0;
+    }
 
-        if (path != nullptr) {
-          for (int p = 0, nbp = pathCount; p < nbp; ++p)
-            delete[] path[p];
-          delete[] path;
-          path = nullptr;
-        }
+    inline int setInput(int rowSize_, int colSize_, void* C_)
+    {
+      rowSize = rowSize_;
+      colSize = colSize_;
 
-        delete[] colCover;
-        delete[] rowCover;
+      createdZeros.clear();
 
-        pathCount = 0;
-        rowSize = 0;
-        colSize = 0;
-      }
+      Cptr = C_;
 
-      template<typename dataType>
-      inline void clearMatrix() {
-        if (Cptr != nullptr) {
-          for (int r = 0, rS0 = rowSize; r < rS0; ++r)
-            delete[] ((dataType**)Cptr)[r];
-          delete[] ((dataType**)Cptr);
-          Cptr = nullptr;
-        }
-      }
+      auto r = (unsigned long) rowSize_;
+      auto c = (unsigned long) colSize_;
 
-      inline int setInput(int rowSize_, int colSize_, void* C_) {
-        rowSize = rowSize_;
-        colSize = colSize_;
-        Cptr = C_;
+      rowCover.resize(r);
+      colCover.resize(c);
 
-        rowCover = new bool[rowSize_];
-        colCover = new bool[colSize_];
+      rowLimitsMinus.resize(r);
+      rowLimitsPlus.resize(r);
+      colLimitsMinus.resize(c);
+      colLimitsPlus.resize(c);
 
-        M = new int*[rowSize_];
-        for (int r = 0; r < rowSize_; ++r)
-          M[r] = new int[colSize_];
+      M.resize(r);
+      for (int row = 0; row < rowSize_; ++row)
+        M[row].resize(c);
 
-        int nbPaths = 1 + colSize_ + rowSize_;
-        path = new int*[nbPaths];
-        for (int p = 0; p < nbPaths; ++p)
-          path[p] = new int[2];
+      int nbPaths = 1 + colSize_ + rowSize_;
+      path.resize((unsigned long) nbPaths);
+      for (int p = 0; p < nbPaths; ++p)
+        path[p].resize(2);
 
-        resetMasks();
+      resetMasks();
 
-        return 0;
-      }
+      return 0;
+    }
 
-      template<typename dataType>
-      inline void showCostMatrix() {
-        auto** C = (dataType**) Cptr;
-        std::stringstream msg;
-        for (int r = 0; r < rowSize; ++r) {
-          msg << std::endl << "  ";
-          for (int c = 0; c < colSize; ++c)
-            msg << std::scientific << C[r][c] << " ";
-        }
-
-        msg << std::endl;
-        dMsg(std::cout, msg.str(), advancedInfoMsg);
-      }
-
-      inline void showMaskMatrix() {
-        std::stringstream msg;
-        msg << std::endl << "     ";
-        for (int c = 0; c < colSize; ++c) {
-          msg << colCover[c] << "  ";
-        }
-        for (int r = 0; r < rowSize; ++r) {
-          msg << std::endl << "  " << rowCover[r] << "  ";
-          for (int c = 0; c < colSize; ++c)
-            msg << M[r][c] << "  ";
-        }
-
-        msg << std::endl;
-        dMsg(std::cout, msg.str(), advancedInfoMsg);
-      }
-
-    private:
-
-      void      *Cptr;
-      void      *C_orig;
-
-      int       **M;
-      bool      *rowCover;
-      bool      *colCover;
-
-      int       **path;
-      int       pathRow0;
-      int       pathCol0;
-      int       pathCount = 0;
-
-      int       rowSize = 0;
-      int       colSize = 0;
-
-      // internal methods
-      template <typename dataType>
-      int stepOne(int& step);
-
-      template <typename dataType>
-      int stepTwo(int& step);
-
-      template <typename dataType>
-      int stepThree(int& step);
-
-      template <typename dataType>
-      int stepFour(int& step);
-      template <typename dataType>
-      int findZero(int& row, int& col);
-      template <typename dataType>
-      int findStarInRow(int row);
-
-      template <typename dataType>
-      int stepFive(int& step);
-      template <typename dataType>
-      int findStarInCol(int col, int& row);
-      template <typename dataType>
-      int findPrimeInRow(int row, int& col);
-
-      template <typename dataType>
-      int stepSix(int& step);
-
-      template <typename dataType>
-      int stepSeven(int& step);
-
-      template <typename dataType>
-      int affect(std::vector<matchingTuple> *matchings);
-
-      template <typename dataType>
-      int computeAffectationCost();
-
-      inline int resetMasks()
-      {
-        for (int r = 0; r < rowSize; ++r) {
-          rowCover[r] = false;
-          for (int c = 0; c < colSize; ++c)
-            M[r][c] = 0;
-        }
+    template<typename dataType>
+    inline void showCostMatrix() {
+      auto C = (std::vector<std::vector<dataType>>*) Cptr;
+      std::stringstream msg;
+      for (int r = 0; r < rowSize; ++r) {
+        msg << std::endl << "  ";
         for (int c = 0; c < colSize; ++c)
-          colCover[c] = false;
-        return 0;
+          msg << std::fixed << std::setprecision(3) << (*C)[r][c] << " ";
       }
 
-      template<typename dataType>
-      inline int copyInputMatrix() {
+      msg << std::endl;
+      dMsg(std::cout, msg.str(), infoMsg);
+    }
 
-        auto** C = (dataType**) Cptr;
-        int rS = rowSize;
-        int cS = colSize;
-        auto** C_orig_ = new dataType*[rS];
-        for (int r = 0; r < rS; ++r)
-        {
-          C_orig_[r] = new dataType[cS];
-          for (int c = 0; c < cS; ++c)
-            C_orig_[r][c] = C[r][c];
-        }
-        C_orig = (void*) C_orig_;
-        return 0;
+    inline void showMaskMatrix() {
+      std::stringstream msg;
+      msg << std::endl << "   | ";
+      for (int c = 0; c < colSize; ++c) {
+        msg << colCover[c] << "  ";
       }
+      msg << std::endl << "   | ";;
+      for (int c = 0; c < colSize; ++c) {
+        msg << "---";
+      }
+      msg << std::endl;
+      for (int r = 0; r < rowSize; ++r) {
+        msg << " " << rowCover[r] << " | ";
+        for (int c = 0; c < colSize; ++c)
+          msg << M[r][c] << "  ";
+        msg << std::endl;
+      }
+      msg << std::endl;
+      dMsg(std::cout, msg.str(), infoMsg);
+    }
+
+  private:
+
+    void                          *Cptr;
+
+    std::vector<std::vector<int>> M;
+    std::vector<bool>             rowCover;
+    std::vector<bool>             colCover;
+
+    std::vector<int>              rowLimitsMinus;
+    std::vector<int>              rowLimitsPlus;
+    std::vector<int>              colLimitsMinus;
+    std::vector<int>              colLimitsPlus;
+
+    std::vector<std::vector<int>> path;
+    std::vector<std::pair<int, int>> createdZeros;
+
+    int       pathRow0;
+    int       pathCol0;
+    int       pathCount = 0;
+
+    int       rowSize = 0;
+    int       colSize = 0;
+
+    // internal methods
+    template <typename dataType>
+    int stepOne(int& step);
+
+    template <typename dataType>
+    int stepTwo(int& step);
+
+    template <typename dataType>
+    int stepThree(int& step);
+
+    template <typename dataType>
+    int stepFour(int& step);
+    template <typename dataType>
+    int findZero(int& row, int& col);
+    template <typename dataType>
+    int findStarInRow(int row);
+
+    template <typename dataType>
+    int stepFive(int& step);
+    template <typename dataType>
+    int findStarInCol(int col);
+    template <typename dataType>
+    int findPrimeInRow(int row);
+
+    template <typename dataType>
+    int stepSix(int& step);
+
+    template <typename dataType>
+    int stepSeven(int& step);
+
+    template <typename dataType>
+    int affect(
+        std::vector<matchingTuple> *matchings,
+        std::vector<std::vector<dataType>> C);
+
+    template <typename dataType>
+    int computeAffectationCost(
+        std::vector<std::vector<dataType>> C);
+
+    template <typename dataType>
+    inline bool isZero(dataType t) {
+      // return std::abs((double) t) < 1e-15;
+      return t == 0.;
+    }
+
+    inline int resetMasks()
+    {
+      for (int r = 0; r < rowSize; ++r) {
+        rowCover[r] = false;
+        for (int c = 0; c < colSize; ++c)
+          M[r][c] = 0;
+      }
+      for (int c = 0; c < colSize; ++c)
+        colCover[c] = false;
+      return 0;
+    }
+
+    template<typename dataType>
+    inline int copyInputMatrix(
+        std::vector<std::vector<dataType>>& saveInput)
+    {
+      auto C = (std::vector<std::vector<dataType>>*) Cptr;
+      int rS = rowSize;
+      int cS = colSize;
+
+      for (int r = 0; r < rS; ++r)
+        for (int c = 0; c < cS; ++c)
+          saveInput[r][c] = (*C)[r][c];
+
+      return 0;
+    }
 
   };
 
-}
-
+// Include in namespace ttk
 #include <MunkresImpl.h>
+
+}
 
 #endif

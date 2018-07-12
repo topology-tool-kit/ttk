@@ -19,6 +19,10 @@
 /// \sa ttk::BottleneckDistance
 #pragma once
 
+// TTK includes
+#include                  <BottleneckDistance.h>
+#include                  <ttkWrapper.h>
+
 // VTK includes
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
@@ -35,161 +39,305 @@
 #include                  <vtkUnstructuredGrid.h>
 #include                  <vtkCellData.h>
 
-// TTK includes
-#include                  <BottleneckDistance.h>
-#include                  <ttkWrapper.h>
+// Misc.
+#include <random>
+#include <cstdlib>
+#include <ctime>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkBottleneckDistance
 #else
 class ttkBottleneckDistance
 #endif
-  : public vtkDataSetAlgorithm, public ttk::Wrapper
+    : public vtkDataSetAlgorithm, public ttk::Wrapper
 {
 
-  public:
-      
-    static ttkBottleneckDistance* New();
-    
-    vtkTypeMacro(ttkBottleneckDistance, vtkDataSetAlgorithm);
-    
-    // Default ttk setters
-    vtkSetMacro(debugLevel_, int);
-    
-    void SetThreadNumber(int threadNumber) {
-      ThreadNumber = threadNumber;
-      SetThreads();
-    }   
-    
-    void SetUseAllCores(bool onOff) {
-      UseAllCores = onOff;
-      SetThreads();
+public:
+
+  static ttkBottleneckDistance* New();
+
+vtkTypeMacro(ttkBottleneckDistance, vtkDataSetAlgorithm);
+
+  // Default ttk setters
+  vtkSetMacro(debugLevel_, int);
+
+  void SetThreadNumber(int threadNumber) {
+    ThreadNumber = threadNumber;
+    SetThreads();
+  }
+
+  void SetUseAllCores(bool onOff) {
+    UseAllCores = onOff;
+    SetThreads();
+  }
+  // end of default ttk setters
+
+  vtkSetMacro(Alpha, double);
+  vtkGetMacro(Alpha, double);
+
+  vtkSetMacro(Tolerance, double);
+  vtkGetMacro(Tolerance, double);
+
+  vtkSetMacro(PX, double);
+  vtkGetMacro(PX, double);
+
+  vtkSetMacro(PY, double);
+  vtkGetMacro(PY, double);
+
+  vtkSetMacro(PZ, double);
+  vtkGetMacro(PZ, double);
+
+  vtkSetMacro(PE, double);
+  vtkGetMacro(PE, double);
+
+  vtkSetMacro(PS, double);
+  vtkGetMacro(PS, double);
+
+  vtkSetMacro(UseOutputMatching, int);
+  vtkGetMacro(UseOutputMatching, int);
+
+  vtkSetMacro(BenchmarkSize, int);
+  vtkGetMacro(BenchmarkSize, int);
+
+  vtkSetMacro(UsePersistenceMetric, int);
+  vtkGetMacro(UsePersistenceMetric, int);
+
+  vtkSetMacro(WassersteinMetric, std::string);
+  vtkGetMacro(WassersteinMetric, std::string);
+
+  vtkSetMacro(DistanceAlgorithm, std::string);
+  vtkGetMacro(DistanceAlgorithm, std::string);
+
+  vtkSetMacro(PVAlgorithm, int);
+  vtkGetMacro(PVAlgorithm, int);
+
+  vtkSetMacro(UseGeometricSpacing, int);
+  vtkGetMacro(UseGeometricSpacing, int);
+
+  vtkSetMacro(Is3D, int);
+  vtkGetMacro(Is3D, int);
+
+  vtkSetMacro(Spacing, double);
+  vtkGetMacro(Spacing, double);
+
+  vtkGetMacro(result, double);
+
+  // Override input types.
+  int FillInputPortInformation(int port, vtkInformation *info) {
+    switch (port) {
+      case 0:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        break;
+      case 1:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        break;
+      default:
+        break;
     }
-    // end of default ttk setters
-    
-    vtkSetMacro(Alpha, double);
-    vtkGetMacro(Alpha, double);
+    return 1;
+  }
 
-    vtkSetMacro(UseOutputMatching, int);
-    vtkGetMacro(UseOutputMatching, int);
-
-    vtkSetMacro(UsePersistenceMetric, int);
-    vtkGetMacro(UsePersistenceMetric, int);
-
-    vtkSetMacro(WassersteinMetric, std::string);
-    vtkGetMacro(WassersteinMetric, std::string);
-
-    vtkSetMacro(UseGeometricSpacing, int);
-    vtkGetMacro(UseGeometricSpacing, int);
-
-    vtkSetMacro(Spacing, double);
-    vtkGetMacro(Spacing, double);
-
-    vtkGetMacro(result, double);
-
-    // Override input types.
-    int FillInputPortInformation(int port, vtkInformation *info) {
-      switch (port) {
-       case 0:
-         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-         break;
-       case 1:
-         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-       break;
-       default:		   
-         break;
-      }
-      return 1;
+  // Override output types.
+  int FillOutputPortInformation(int port, vtkInformation *info) {
+    switch (port) {
+      case 0:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        break;
+      case 1:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        break;
+      case 2:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        break;
+      default:
+        break;
     }
+    return 1;
+  }
 
-    // Override output types.
-    int FillOutputPortInformation(int port, vtkInformation *info) {
-      switch (port) {
-        case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); 
-          break;
-        case 1:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-          break;
-        case 2:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-          break;
-        default:
-          break;
-      }
-      return 1;
-    }
-
-    template <typename dataType>
-    int getPersistenceDiagram(
+  template <typename dataType>
+  int getPersistenceDiagram(
       std::vector<diagramTuple>* diagram,
       vtkUnstructuredGrid *CTPersistenceDiagram_,
-      const double spacing,
-      const int diagramNumber);
+      double spacing,
+      int diagramNumber);
 
-    template <typename dataType>
-    int augmentPersistenceDiagrams(
+  template <typename dataType>
+  int generatePersistenceDiagram(
+      std::vector<diagramTuple>* diagram,
+      int size);
+
+  template <typename dataType>
+  int augmentPersistenceDiagrams(
       const std::vector<diagramTuple>* diagram1,
       const std::vector<diagramTuple>* diagram2,
       const std::vector<matchingTuple>* matchings,
       vtkUnstructuredGrid *CTPersistenceDiagram1_,
       vtkUnstructuredGrid *CTPersistenceDiagram2_);
 
-    template <typename dataType>
-    int getMatchingMesh(
+  template <typename dataType>
+  int getMatchingMesh(
       const std::vector<diagramTuple>* diagram1,
       const std::vector<diagramTuple>* diagram2,
       const std::vector<matchingTuple>* matchings,
-      const bool useGeometricSpacing,
-      const double spacing);
+      bool useGeometricSpacing,
+      double spacing);
 
-  protected:
-   
-    ttkBottleneckDistance() {
-      
-      // settings
-      UseAllCores = false;
-      SetNumberOfInputPorts(2);
-      SetNumberOfOutputPorts(3);
+  int doBenchmark();
 
-      // inputs
-      UsePersistenceMetric = false;
-      UseGeometricSpacing = false;
-      WassersteinMetric = "2";
-      Alpha = 1.0;
-      Spacing = 0.0;
+protected:
 
-      // outputs
-      result = -1.;
-      CTPersistenceDiagram3_ = vtkUnstructuredGrid::New();
-    }
-    
-    ~ttkBottleneckDistance() {
-      if(CTPersistenceDiagram3_)
-        CTPersistenceDiagram3_->Delete();
-    };
-    
-    TTK_SETUP();
-    
-  private:
+  ttkBottleneckDistance()
+  {
+    // settings
+    UseAllCores = false;
+    SetNumberOfInputPorts(2);
+    SetNumberOfOutputPorts(3);
 
-    bool                  UseOutputMatching;
-    bool                  Is3D;
-    double                Spacing;
-    double                Alpha;
+    // inputs
+    BenchmarkSize = -1;
+    UsePersistenceMetric = false;
+    UseGeometricSpacing = false;
+    WassersteinMetric = "2";
+    Alpha = 1.0;
+    Tolerance = 1.0;
+    PX = 1;
+    PY = 1;
+    PZ = 1;
+    PE = 1;
+    PS = 1;
+    Spacing = 0.0;
+    Is3D = false;
+    PVAlgorithm = -1;
 
-    std::string                WassersteinMetric;
-    bool                  UsePersistenceMetric;
-    bool                  UseGeometricSpacing;
-    double                result;
+    // outputs
+    result = -1.;
+    CTPersistenceDiagram3_ = vtkUnstructuredGrid::New();
+  }
 
-    vtkUnstructuredGrid*  CTPersistenceDiagram1_;
-    vtkUnstructuredGrid*  CTPersistenceDiagram2_;
-    vtkUnstructuredGrid*  CTPersistenceDiagram3_;
+  ~ttkBottleneckDistance() {
+    if (CTPersistenceDiagram3_)
+      CTPersistenceDiagram3_->Delete();
+  };
 
-    ttk::BottleneckDistance    bottleneckDistance_;
-    
+TTK_SETUP();
+
+private:
+
+  int                     BenchmarkSize;
+
+  bool                    UseOutputMatching;
+  bool                    Is3D;
+  double                  Spacing;
+  double                  Alpha;
+  double                  Tolerance;
+  double                  PX;
+  double                  PY;
+  double                  PZ;
+  double                  PE;
+  double                  PS;
+
+  std::string             DistanceAlgorithm;
+
+  std::string             WassersteinMetric;
+  bool                    UsePersistenceMetric;
+  bool                    UseGeometricSpacing;
+  int                     PVAlgorithm;
+  double                  result;
+
+  vtkUnstructuredGrid*    CTPersistenceDiagram1_;
+  vtkUnstructuredGrid*    CTPersistenceDiagram2_;
+  vtkUnstructuredGrid*    CTPersistenceDiagram3_;
+
+  ttk::BottleneckDistance bottleneckDistance_;
 };
+
+template <typename dataType>
+int ttkBottleneckDistance::generatePersistenceDiagram(
+    std::vector<diagramTuple>* diagram,
+    const int size)
+{
+//  srand(time(NULL));
+  int vertexId1 = 1;
+  int vertexId2 = 2;
+
+  // diagram->resize(size);
+  //diagram->push_back(std::make_tuple(
+  //    0, BLocalMin,
+  //    1, BLocalMax,
+  //    1.0,
+  //    2,
+  //    0.0, 0.0001, 0.0001, 0.0,
+  //    1.0, 0.0001, 1.0, 0.0
+  //));
+
+  std::default_random_engine generator1 (1998985);
+  std::default_random_engine generator2 (8584584);
+  std::uniform_real_distribution<> dis1(0.0, 1.0);
+  std::uniform_real_distribution<> dis2(0.0, 1.0);
+
+  for (int i = 1; i < size; ++i) {
+    int r0 = 2; // (rand() % 3);
+    float r1 = 0.001f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX); // (float) dis1(generator1); // static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    float r2 = 0.001f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX); // (float) dis2(generator2); // static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    // r2 *= 0.1f;
+
+    // BLocalMin BSaddle1 BSaddle2 BLocalMax
+    int pairType = r0; // (0/min, 1/saddle, 2/max)
+    BNodeType nodeType1; //
+    BNodeType nodeType2; //
+    switch (pairType) {
+      // case 0:
+      //   nodeType1 = BLocalMin;
+      //   nodeType2 = BSaddle1;
+      //   break;
+      // case 1:
+      //   nodeType1 = BSaddle1;
+      //   nodeType2 = BSaddle2;
+      //   break;
+      case 2: default:
+        nodeType1 = BSaddle2;
+        nodeType2 = BLocalMax;
+        break;
+      // default:
+      //   nodeType1 = (BNodeType) -1;
+      //   nodeType2 = (BNodeType) -1;
+    }
+
+    float x1 = 0.5f * r1;
+    float y1 = x1;
+    float z1 = 0.f;
+
+    float x2 = x1;
+    float y2 = x1 + 0.5f * r2; // x1 + rand(0.5)
+    float z2 = 0.f; // 0
+
+    auto value1 = (dataType) x1;
+    auto value2 = (dataType) y2;
+
+    dataType persistence = y2 - x1;
+
+    diagram->push_back(std::make_tuple(
+        vertexId1, nodeType1,
+        vertexId2, nodeType2,
+        persistence,
+        pairType,
+        value1, x1, y1, z1,
+        value2, x2, y2, z2
+    ));
+
+    vertexId1++;
+    vertexId2++;
+  }
+
+  sort(diagram->begin(), diagram->end(),
+       [](const diagramTuple & a, const diagramTuple & b) -> bool
+       {
+         return std::get<6>(a) < std::get<6>(b);
+       });
+
+  return 0;
+}
 
 template <typename dataType>
 int ttkBottleneckDistance::getPersistenceDiagram(
@@ -198,16 +346,16 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   const double spacing,
   const int diagramNumber)
 {
-  vtkIdTypeArray* vertexIdentifierScalars =
-    vtkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
+  vtkIntArray* vertexIdentifierScalars =
+    vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("VertexIdentifier"));
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("NodeType"));
 
-  vtkIdTypeArray* pairIdentifierScalars =
-    vtkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
+  vtkIntArray* pairIdentifierScalars =
+    vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
       GetCellData()->GetArray("PairIdentifier"));
 
   vtkIntArray* extremumIndexScalars =
@@ -231,7 +379,8 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   auto s = (float) 0.0;
 
   if (!deathScalars != !birthScalars) return -2;
-  Is3D = !(!deathScalars && !birthScalars);
+  bool is3D = !(!deathScalars && !birthScalars);
+  if (Is3D && !is3D) Is3D = false;
   if (!Is3D && diagramNumber == 1) s = (float) spacing;
 
   if (pairingsSize < 1 || !vertexIdentifierScalars
@@ -302,6 +451,11 @@ int ttkBottleneckDistance::getPersistenceDiagram(
     }
   }
 
+  sort(diagram->begin(), diagram->end(),
+    [](const diagramTuple & a, const diagramTuple & b) -> bool
+    {
+      return std::get<6>(a) < std::get<6>(b);
+    });
 
   return 0;
 }
@@ -331,6 +485,8 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
     vtkIdType ids[2];
     matchingIdentifiers1->SetNumberOfComponents(1);
     matchingIdentifiers2->SetNumberOfComponents(1);
+    matchingIdentifiers1->SetNumberOfTuples(diagramSize1);
+    matchingIdentifiers2->SetNumberOfTuples(diagramSize2);
 
     // Unaffected by default
     for (BIdVertex i = 0; i < diagramSize1; ++i)
@@ -403,7 +559,8 @@ int ttkBottleneckDistance::getMatchingMesh(
 
       double x1, y1, z1, x2, y2, z2;
 
-      if (Is3D) {
+      bool linkMiddles = false;
+      if (linkMiddles) {
         x1 = (std::get<7>(tuple1) + std::get<11>(tuple1))/2;
         y1 = (std::get<8>(tuple1) + std::get<12>(tuple1))/2;
         z1 = (std::get<9>(tuple1) + std::get<13>(tuple1))/2;
@@ -421,7 +578,7 @@ int ttkBottleneckDistance::getMatchingMesh(
       }
       points->InsertNextPoint(x1, y1, z1);
 
-      if (Is3D) {
+      if (linkMiddles) {
         x2 = (std::get<7>(tuple2) + std::get<11>(tuple2))/2;
         y2 = (std::get<8>(tuple2) + std::get<12>(tuple2))/2;
         z2 = (std::get<9>(tuple2) + std::get<13>(tuple2))/2;
@@ -441,16 +598,14 @@ int ttkBottleneckDistance::getMatchingMesh(
       }
       points->InsertNextPoint(x2, y2, z2);
 
-      ids[0] = 2*i;
-      ids[1] = 2*i+1;
+      ids[0] = 2 * i;
+      ids[1] = 2 * i + 1;
 
       persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
 
       persistenceScalars->InsertTuple1(i, std::get<2>(t));
       matchingIdScalars->InsertTuple1(i, i);
-
     }
-
   }
 
   persistenceDiagram->SetPoints(points);
