@@ -46,8 +46,6 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 	this->setInitialBarycenter(min_persistence);
 	std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 	
-	
-	dataType previous_cost = std::numeric_limits<dataType>::max();
 	int n_iterations = 0;
 	
 	bool converged = false;
@@ -64,7 +62,9 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 				epsilon = epsilon_candidate;
 			}
 			min_persistence = this->enrichCurrentBidderDiagrams(min_persistence, rho, min_diag_price, min_price, min_points_to_add);
-			
+			if(min_persistence<lowest_persistence){
+				use_progressive_=false;
+			}
 			// TODO Enrich barycenter using median diagonal and off-diagonal prices
 		}
 		if(epsilon<epsilon_min_){
@@ -131,11 +131,11 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 				epsilon = epsilon_0/n_iterations;
 			}
 			
-			if(min_cost>total_cost){
+			if(!use_progressive_ && min_cost>total_cost){
 				min_cost = total_cost;
 				last_min_cost_obtained = 0;
 			}
-			else{
+			else if(!use_progressive_){
 				last_min_cost_obtained += 1;
 			}
 			
@@ -145,9 +145,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		}
 		
 		previous_matchings = std::move(all_matchings);
-		previous_min_persistence = min_persistence;
-		previous_cost = total_cost;
-		
+		previous_min_persistence = min_persistence;		
 		
 		}  // End of timer
 		

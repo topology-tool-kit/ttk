@@ -73,9 +73,8 @@ namespace ttk{
 // 			return 0;
 // 		}
 		inline int setDiagrams(void *data){
-      inputData_ = data;
-      printf("\tretrieved address: %d\n", (void *) inputData_);
-      return 0;
+		inputData_ = data;
+		return 0;
     }
 
 		inline int setNumberOfInputs(int numberOfInputs){
@@ -144,14 +143,8 @@ template <typename dataType>
       std::vector<diagramTuple>* barycenter){
 	Timer t;
 	{
-  
-  printf("input address at execute level: %d\n", (void *) inputData_);
-    
-  std::vector<std::vector<diagramTuple> > *intermediateDiagrams = 
-    (std::vector<std::vector<diagramTuple> > *) inputData_;
-    
-  printf("input address at execute level: %d [%d]\n", (void *) inputData_,
-    intermediateDiagrams);
+	std::vector<std::vector<diagramTuple> > *intermediateDiagrams = 
+		(std::vector<std::vector<diagramTuple> > *) inputData_;
 	
 	std::vector<std::vector<diagramTuple> > data_min(numberOfInputs_);
 	std::vector<std::vector<diagramTuple> > data_sad(numberOfInputs_);
