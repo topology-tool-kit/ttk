@@ -196,11 +196,13 @@ template <typename dataType>
 	PDClustering<dataType> KMeans = PDClustering<dataType>();
 	KMeans.setWasserstein(wasserstein_);
 	KMeans.setThreadNumber(threadNumber_);
+	KMeans.setNumberOfInputs(numberOfInputs_);
 	KMeans.setUseProgressive(use_progressive_);
-	KMeans.setAccelerated(false);
+	KMeans.setAccelerated(true);
 	KMeans.setUseKDTree(true);
 	KMeans.setTimeLimit(time_limit_);
 	KMeans.setGeometricalFactor(geometrical_factor_);
+	KMeans.setKMeanspp(true);
 	KMeans.setK(2);
 	
 	KMeans.setDiagrams(&data_min, &data_sad, &data_max);

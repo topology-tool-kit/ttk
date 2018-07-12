@@ -38,14 +38,16 @@ namespace ttk{
 		GoodDiagram<dataType> centroidWithZeroPrices(GoodDiagram<dataType> centroid);
 		BidderDiagram<dataType> centroidToDiagram(GoodDiagram<dataType> centroid);
 		GoodDiagram<dataType> diagramToCentroid(BidderDiagram<dataType> diagram);
+		BidderDiagram<dataType> diagramWithZeroPrices(BidderDiagram<dataType> diagram);
 		
+		void setBidderDiagrams();
 		void initializeEmptyClusters();
 		void initializeCentroids();
 		void initializeCentroidsKMeanspp();
 		void initializeAcceleratedKMeans();
 		
 		std::vector<std::vector<dataType>> getDistanceMatrix();
-		std::vector<std::vector<dataType>> getCentroidDistanceMatrix();
+		void getCentroidDistanceMatrix();
 		
 		void updateClusters();
 		void invertClusters();
@@ -92,6 +94,10 @@ namespace ttk{
 			use_progressive_ = use_progressive;
 		}
 		
+		inline void setKMeanspp(const bool use_kmeanspp){
+			use_kmeanspp_ = use_kmeanspp;
+		}
+		
 		inline void setUseKDTree(const bool use_kdtree){
 			use_kdtree_ = use_kdtree;
 		}
@@ -106,6 +112,16 @@ namespace ttk{
 		
 		inline void setGeometricalFactor(const double geometrical_factor){
 			geometrical_factor_ = geometrical_factor;
+		}
+		
+		inline void printClustering(){
+			for(int c=0; c<k_; ++c){
+				std::cout<<"Cluster "<< c << " : [";
+				for(unsigned int idx=0; idx<clustering_[c].size(); ++idx){
+					std::cout<< clustering_[c][idx]<< ", ";
+				}
+				std::cout << "]" <<std::endl;
+			}
 		}
 		
 	
@@ -125,6 +141,7 @@ namespace ttk{
       int                   threadNumber_;
 	  bool                  use_progressive_;
 	  bool                  use_accelerated_;
+	  bool                  use_kmeanspp_;
 	  bool                  use_kdtree_;
 	  double                time_limit_;
 	  
