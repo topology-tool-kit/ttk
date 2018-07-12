@@ -105,8 +105,10 @@ if(TTK_BUILD_DOCUMENTATION)
 	endif()
 endif()
 
-find_package(Boost REQUIRED)
 find_package(Boost COMPONENTS system)
+if(NOT Boost_FOUND)
+  find_package(Boost REQUIRED)
+endif()
 
 find_package(ZLIB)
 if(NOT ZLIB_INCLUDE_DIR)
