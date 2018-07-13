@@ -12,11 +12,15 @@
 
 #pragma once
 
+
+// core includes
 #include <Triangulation.h>
 
+// local includes
 #include "DataTypesFTR.h"
 #include "FTRCommon.h"
 
+// c++ includes
 #include <vector>
 
 namespace ttk

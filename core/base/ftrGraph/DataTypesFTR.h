@@ -9,6 +9,10 @@
 
 #pragma once
 
+// core includes
+#include <DataTypes.h>
+
+// c++ incldues
 #include <functional>
 #include <limits>
 
@@ -24,11 +28,11 @@ namespace ftr
    /// \brief Node index in vect_nodes_
    using idNode = unsigned int;
    /// \brief Vertex index in scalars_
-   using idVertex = int;
+   using idVertex = SimplexId;
    /// \brief Edge index in vect_edgeList_
-   using idEdge = int;
+   using idEdge = SimplexId;
    /// \brief Cell index in vect_cellList_
-   using idCell = int;
+   using idCell = SimplexId;
    /// \brief for task identifiers
    using idPropagation = idNode;
    /// \brief for threads identifiers
