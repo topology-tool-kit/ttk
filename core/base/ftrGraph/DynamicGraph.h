@@ -85,6 +85,11 @@ namespace ttk
             return getNode(nid)->findRootArc();
          }
 
+         idSuperArc getCorArc(const std::size_t nid) const
+         {
+            return getNode(nid)->getCorArc();
+         }
+
          // check wether or not this node is connected to others
          bool isDisconnected(const DynGraphNode<Type>* const node) const
          {

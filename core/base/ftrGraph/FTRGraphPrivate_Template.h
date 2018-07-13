@@ -416,6 +416,7 @@ namespace ttk
          // has reached the saddle, even if the propagation take care of several of these arcs
          // (after a Hole-split).
          for(idEdge edgeId : lowerStarEdges) {
+           // const idSuperArc    edgeArc = dynGraph(localProp).getCorArc(edgeId);
            const idSuperArc    edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
            if (edgeArc == nullSuperArc) // ignore unseen
               continue;
@@ -490,6 +491,7 @@ namespace ttk
             if (edgeUpperVert == neigh || edgeLowerVert == neigh) {
                // curedge is the one between the two vertices
                // WARNING: Check the opposite prop here, In parallel ??
+               // const idSuperArc rpzArc = dynGraph(!localProp->goUp()).getCorArc(edgeId);
                const idSuperArc rpzArc = dynGraph(!localProp->goUp()).getSubtreeArc(edgeId);
                if (rpzArc != nullSuperArc && graph_.getArc(rpzArc).getUpNodeId() == checkNode) {
                   const idNode downNode = graph_.getArc(rpzArc).getDownNodeId();

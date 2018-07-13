@@ -86,6 +86,8 @@ namespace ttk
 
          bool hasVisited(const idVertex v, const Propagation* const prop) const
          {
+            // return visits_[v].prop->getId() == prop->getId() && visits_[v].done;
+            // more revisit but no UF traversal. No perf impact noticed
             return visits_[v].prop == prop && visits_[v].done;
          }
 
