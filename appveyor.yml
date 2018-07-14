@@ -61,7 +61,7 @@ before_build:
       git clone --depth 1 --branch %VTK_VERSION% https://github.com/Kitware/VTK.git VTK
     )
   # Build VTK
- - if not exist "%VTK_BINARY_DIR%" (
+  - if not exist "%VTK_BINARY_DIR%" (
       cd C:/projects/ &
       mkdir "%VTK_BINARY_DIR%" & cd "%VTK_BINARY_DIR%" & cmake -G "%GENERATOR%" -DBUILD_TESTING:BOOL=OFF -DVTK_Group_StandAlone=ON -DHDF5_ENABLE_DIRECT_VFD=OFF -DHDF5_ENABLE_EMBEDDED_LIBINFO=OFF -DHDF5_USE_FOLDERS=OFF -DVTK_USE_X=OFF ../VTK & cmake --build . --config %BUILD_TYPE% --target INSTALL 
     )
