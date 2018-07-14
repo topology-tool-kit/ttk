@@ -59,7 +59,7 @@ before_build:
 #  - if not exist "%VTK_SOURCE_DIR%" (
 #      cd C:/projects/ &
 #      git clone --depth 1 --branch %VTK_VERSION% https://github.com/Kitware/VTK.git VTK
-    )
+#    )
   # Build VTK
 #  - if not exist "%VTK_BINARY_DIR%" (
 #      cd C:/projects/ &
