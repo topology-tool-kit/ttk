@@ -21,3 +21,9 @@ if(OPENMP_FOUND)
    endif()
 endif()
 
+option (TTK_ENABLE_FTR_STATS "print propagations death time" OFF)
+mark_as_advanced(TTK_ENABLE_FTR_STATS)
+if(TTK_ENABLE_FTR_STATS)
+   target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_STATS)
+endif()
+

@@ -111,6 +111,17 @@ namespace ttk
                const idNode upNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, upNode);
                DEBUG_1(<< "close arc max " << graph_.printArc(currentArc) << std::endl);
+#ifdef TTK_ENABLE_FTR_STATS
+               if (localProp->empty()) {
+                  idVertex curProp;
+#pragma omp atomic capture
+                  {
+                     curProp = nbProp_;
+                     nbProp_--;
+                  }
+                  propTimes_[curProp - 1] = sweepStart_.getElapsedTime();
+               }
+#endif
             }
          }
 
@@ -139,6 +150,19 @@ namespace ttk
                graph_.getArc(joinNewArc).hide();
             }
          }
+
+#ifdef TTK_ENABLE_FTR_STATS
+         if (isJoinSaddle && !isJoinSadlleLast) {
+            // This propagation is dying here
+            idVertex curProp;
+#pragma omp atomic capture
+            {
+               curProp = nbProp_;
+               nbProp_--;
+            }
+            propTimes_[curProp - 1] = sweepStart_.getElapsedTime();
+         }
+#endif
 
          // starting from the saddle
          if (isSplitSaddle) {

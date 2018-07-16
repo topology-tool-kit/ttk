@@ -65,6 +65,13 @@ namespace ttk
          std::vector<idEdge>   bfsEdges_;
          std::vector<idVertex> bfsVerts_;
 
+#ifdef TTK_ENABLE_FTR_STATS
+         // Stats
+         DebugTimer         sweepStart_;
+         std::vector<float> propTimes_;
+         idVertex           nbProp_;
+#endif
+
         public:
          FTRGraph(Params* const params, Triangulation* mesh, Scalars<ScalarType>* const scalars);
          FTRGraph();

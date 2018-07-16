@@ -5,6 +5,10 @@
 #include "Propagation.h"
 #include "Tasks.h"
 
+#ifdef TTK_ENABLE_FTR_STATS
+#include <iterator>
+#endif
+
 #ifdef TTK_ENABLE_KAMIKAZE
 #define OPTIONAL_PRIORITY(value) priority(value)
 #else
@@ -118,6 +122,13 @@ namespace ttk
          // Debug
          // printGraph(4);
 
+
+#ifdef TTK_ENABLE_FTR_STATS
+         std::cout << "propTimes_ :" << std::endl;
+         copy(propTimes_.crbegin(),propTimes_.crend(),std::ostream_iterator<float>(std::cout," "));
+         std::cout << std::endl;
+#endif
+
          // post-process
          graph_.arcs2nodes([&](const idVertex a, const idVertex b){return scalars_->isLower(a,b);});
 
@@ -180,6 +191,11 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
+#ifdef TTK_ENABLE_FTR_STATS
+         // Stats
+         nbProp_ = graph_.getNumberOfLeaves();
+         propTimes_.resize(nbProp_);
+#endif
          std::cout << "find: " << graph_.getNumberOfLeaves() << " leaves" << std::endl;
       }
 
@@ -187,8 +203,12 @@ namespace ttk
       void FTRGraph<ScalarType>::sweepFrowSeeds()
       {
          const idNode nbSeed = graph_.getNumberOfLeaves();
-         // graph_.sortLeaves<ScalarType>(scalars_);
+         // used to interleave min and max
+         // Note: useless if only start for min or max
          graph_.shuffleLeaves<ScalarType>(scalars_);
+#ifdef TTK_ENABLE_FTR_STATS
+         sweepStart_.reStart();
+#endif
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskgroup
 #endif
@@ -246,6 +266,11 @@ namespace ttk
          fillVector<idCell>(bfsCells_, nullCell);
          fillVector<idEdge>(bfsEdges_, nullEdge);
          fillVector<idVertex>(bfsVerts_, nullVertex);
+
+         // Stats
+#ifdef TTK_ENABLE_FTR_STATS
+         fillVector<float>(propTimes_, 0);
+#endif
       }
 
    }  // namespace ftr
