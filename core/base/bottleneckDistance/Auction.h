@@ -308,6 +308,10 @@ namespace ttk {
 			return min_price;
 		}
 		
+		void setEpsilonconst (dataType epsilon){
+			epsilon_ = epsilon;
+		}
+		
 		
 		template<typename type>
 		static type abs(const type var) {
