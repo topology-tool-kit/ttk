@@ -160,7 +160,7 @@ dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType>* D1, Go
 	int size1 = D1->size();
 	auction.BuildAuctionDiagrams(D1, D2);
 	dataType cost = auction.run(&matchings);
-	// Diagonal Points were added in the original diagram. We need to remove them.
+	// Diagonal Points were added in the original diagram. The following line removes them.
 	D1->bidders_.resize(size1);
 	return cost;
 }
@@ -796,7 +796,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 			barycenter_computer.setThreadNumber(threadNumber_);
 			barycenter_computer.setWasserstein(wasserstein_);
 			barycenter_computer.setNumberOfInputs(diagrams_c_sad.size());
-			barycenter_computer.setDiagramType(0);
+			barycenter_computer.setDiagramType(1);
 			barycenter_computer.setUseProgressive(false);
 			barycenter_computer.setGeometricalFactor(geometrical_factor_);
 			
@@ -857,7 +857,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 			barycenter_computer.setThreadNumber(threadNumber_);
 			barycenter_computer.setWasserstein(wasserstein_);
 			barycenter_computer.setNumberOfInputs(diagrams_c_max.size());
-			barycenter_computer.setDiagramType(0);
+			barycenter_computer.setDiagramType(2);
 			barycenter_computer.setUseProgressive(false);
 			barycenter_computer.setGeometricalFactor(geometrical_factor_);
 			
