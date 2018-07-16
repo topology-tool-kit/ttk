@@ -9,7 +9,7 @@
 #include <iterator>
 #endif
 
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifdef TTK_ENABLE_FTR_PRIORITY
 #define OPTIONAL_PRIORITY(value) priority(value)
 #else
 #define OPTIONAL_PRIORITY(value)
@@ -119,23 +119,22 @@ namespace ttk
          }
          printTime(timeBuild, "[FTR Graph]: build time: ", timeMsg);
 
-         // Debug
-         // printGraph(4);
-
-
 #ifdef TTK_ENABLE_FTR_STATS
          std::cout << "propTimes_ :" << std::endl;
          copy(propTimes_.crbegin(),propTimes_.crend(),std::ostream_iterator<float>(std::cout," "));
          std::cout << std::endl;
 #endif
 
+         // Debug print
+         // std::cout << graph_.printVisit() << std::endl;
+         // printGraph(4);
+
          // post-process
          graph_.arcs2nodes([&](const idVertex a, const idVertex b){return scalars_->isLower(a,b);});
 
          // Debug print
-         printGraph(params_->debugLevel);
-
          // std::cout << graph_.printVisit() << std::endl;
+         // printGraph(params_->debugLevel);
 
          // Message user
          {
@@ -219,6 +218,7 @@ namespace ttk
                const bool       fromMin          = graph_.isLeafFromMin(i);
                Propagation*     localPropagation = newPropagation(corLeaf, fromMin);
                const idSuperArc newArc = graph_.openArc(graph_.makeNode(corLeaf), localPropagation);
+               graph_.visit(corLeaf, newArc);
                // process
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Higher)

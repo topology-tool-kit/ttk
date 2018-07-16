@@ -9,14 +9,16 @@
 ///
 /// \sa ttk::FTRGraph
 
-#pragma once
+#ifndef PROPAGATION_H
+#define PROPAGATION_H
+
 
 // local include
 #include "FTRCommon.h"
+#include "AtomicUF.h"
 
 // base code includes
 #include <Triangulation.h>
-#include <UnionFind.h>
 
 // library include
 #include <boost/heap/fibonacci_heap.hpp>
@@ -42,7 +44,7 @@ namespace ttk
          boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation_;
 
          // representant (pos in array)
-         UnionFind id_;
+         AtomicUF id_;
 
         public:
          Propagation(idVertex startVert, VertCompFN vertComp, bool up)
@@ -50,22 +52,19 @@ namespace ttk
                comp_{vertComp},
                goUp_{up},
                propagation_{vertComp},
-               id_{}
+               id_{this}
          {
             propagation_.emplace(startVert);
          }
+
+         Propagation(const Propagation& other) = delete;
 
          idVertex getCurVertex(void) const
          {
             return curVert_;
          }
 
-         void mergeId(UnionFind* id)
-         {
-            makeUnion(&id_, id);
-         }
-
-         UnionFind* getId(void)
+         AtomicUF* getId(void)
          {
             return id_.find();
          }
@@ -109,6 +108,9 @@ namespace ttk
          {
             if (&other == this) return;
             propagation_.merge(other.propagation_);
+            AtomicUF::makeUnion(&id_, &other.id_);
+            // TODO once after all the merge ?
+            id_.find()->setPropagation(this);
          }
 
          bool empty() const
@@ -169,3 +171,5 @@ namespace ttk
       };
    }
 }
+
+#endif /* end of include guard: PROPAGATION_H */

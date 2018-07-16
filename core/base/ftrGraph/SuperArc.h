@@ -12,10 +12,12 @@
 
 #pragma once
 
+// local includes
+#include "AtomicUF.h"
 #include "DataTypesFTR.h"
-#include "Propagation.h"
 #include "Scalars.h"
 
+// c++ includes
 #ifndef TTK_ENABLE_KAMIKAZE
 #include<iostream>
 #endif
@@ -31,14 +33,14 @@ namespace ttk
         private:
          idNode upNodeId_;
          idNode downNodeId_;
-         Propagation* propagation_;
+         AtomicUF* ufProp_;
          bool visible_;
 #ifndef NDEBUG
          bool fromUp_;
 #endif
 
         public:
-         SuperArc() : upNodeId_{nullNode}, downNodeId_{nullNode}, propagation_{nullptr}, visible_{true}
+         SuperArc() : upNodeId_{nullNode}, downNodeId_{nullNode}, ufProp_{nullptr}, visible_{true}
          {
          }
 
@@ -76,17 +78,17 @@ namespace ttk
          Propagation* getPropagation(void) const
          {
 #ifndef TTK_ENABLE_KAMIKAZE
-            if(!propagation_)
+            if(!ufProp_)
             {
-               std::cerr << "[FTR Graph]: Arc have null propagation" << std::endl;
+               std::cerr << "[FTR Graph]: Arc have null UF propagation" << std::endl;
             }
 #endif
-            return propagation_;
+            return ufProp_->find()->getPropagation();
          }
 
-         void setPropagation(Propagation* const prop)
+         void setUfProp(AtomicUF* const UFprop)
          {
-            propagation_ = prop;
+            ufProp_ = UFprop;
          }
 
          void hide(void)

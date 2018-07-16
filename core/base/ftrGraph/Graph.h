@@ -275,7 +275,7 @@ namespace ttk
              idSuperArc newArc = arcs_.getNext();
              arcs_[newArc].setDownNodeId(downId);
              if (p) {
-                arcs_[newArc].setPropagation(p);
+                arcs_[newArc].setUfProp(p->getId());
              }
 #ifndef TTK_ENABLE_KAMIKAZE
              else {
@@ -299,7 +299,7 @@ namespace ttk
          {
             idSuperArc newArc = arcs_.getNext();
             arcs_[newArc].hide();
-            arcs_[newArc].setPropagation(lp);
+            arcs_[newArc].setUfProp(lp->getId());
             return newArc;
          }
 

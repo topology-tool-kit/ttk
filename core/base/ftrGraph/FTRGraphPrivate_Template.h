@@ -9,7 +9,8 @@
 #define DEBUG_1(msg) std::cout msg
 // #define DEBUG_1(msg)
 #else
-#define DEBUG_1(msg)
+// #define DEBUG_1(msg)
+#define DEBUG_1(msg) std::cout msg
 #endif
 
 // Dynamic graph structure
@@ -18,12 +19,6 @@
 #define DEBUG_2(msg)
 #else
 #define DEBUG_2(msg)
-#endif
-
-#ifdef TTK_ENABLE_KAMIKAZE
-#define OPTIONAL_PRIORITY(value) priority(value)
-#else
-#define OPTIONAL_PRIORITY(value)
 #endif
 
 namespace ttk
@@ -36,7 +31,7 @@ namespace ttk
       {
          DEBUG_1(<< "Start " << seed << " go up " << localProp->goUp() << std::endl);
 #ifndef NDEBUG
-         DEBUG_1(<< localProp->getId() << " " << localProp->print() << std::endl);
+         DEBUG_1(<< localProp << " id " << localProp->getId() << " " << localProp->print() << std::endl);
 #endif
 
          // topology
@@ -52,7 +47,7 @@ namespace ttk
             const idVertex curVert = localProp->getCurVertex();
 
             // Check history for visit (quick test)
-            if (!graph_.isNode(curVert) && propagations_.hasVisited(curVert, localProp)) {
+            if (propagations_.hasVisited(curVert, localProp)) {
                DEBUG_1(<< "already seen " << curVert << " " << localProp->getId() << std::endl);
                continue;
             }
@@ -100,7 +95,9 @@ namespace ttk
                   DEBUG_1(<< "visit n: " << curVert << std::endl);
                }
                DEBUG_1(<< ": is split" << std::endl);
-               DEBUG_1(<< localProp->print() << std::endl);
+#ifndef NDEBUG
+               DEBUG_1(<< localProp << " : " << localProp->print() << std::endl);
+#endif
                isSplitSaddle = true;
             }
 
@@ -137,14 +134,16 @@ namespace ttk
          if (isJoinSadlleLast) {
             localGrowth(localProp);
             mergeAtSaddle(upNode, localProp, lowerComp);
-            const idNode     downNode = graph_.getNodeId(upVert);
-            joinNewArc   = graph_.openArc(downNode, localProp);
+            const idNode downNode = graph_.getNodeId(upVert);
+            joinNewArc            = graph_.openArc(downNode, localProp);
             updatePreimage(localProp, joinNewArc);
             graph_.visit(upVert, joinNewArc);
             upperComp = upperComps(upperStarEdges, localProp);
             if (upperComp.size() > 1) {
                DEBUG_1(<< ": is split" << std::endl);
-               DEBUG_1(<< localProp->print() << std::endl);
+#ifndef NDEBUG
+               DEBUG_1(<< localProp << " : " << localProp->print() << std::endl);
+#endif
                isSplitSaddle = true;
                // will be replaced be new arcs of the split
                graph_.getArc(joinNewArc).hide();
@@ -430,7 +429,7 @@ namespace ttk
                                            const std::vector<idEdge>& lowerStarEdges)
       {
          const idVertex curSaddle = localProp->getCurVertex();
-         UnionFind*     curId     = localProp->getId();
+         AtomicUF*      curId     = localProp->getId();
          valence        decr      = 0;
 
           DEBUG_1(<< "Check last on " << curSaddle << " id " << curId << std::endl);
@@ -444,7 +443,7 @@ namespace ttk
            const idSuperArc    edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
            if (edgeArc == nullSuperArc) // ignore unseen
               continue;
-           UnionFind* tmpId  = graph_.getArc(edgeArc).getPropagation()->getId();
+           AtomicUF* tmpId = graph_.getArc(edgeArc).getPropagation()->getId();
            if (tmpId == curId) {
               ++decr;
               DEBUG_1(<< printEdge(edgeId, localProp) << " decrement " << static_cast<unsigned>(decr) << " " << curSaddle << std::endl);
@@ -553,21 +552,19 @@ namespace ttk
          }
 #endif
 
+         DEBUG_1(<< " merge in " << graph_.getNode(saddleId).getVertexIdentifier() << std::endl);
+
          for(auto* dgNode : lowerComp) {
             // read in the history
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
-            localProp->merge(*graph_.getArc(endingArc).getPropagation());
-            // graph_.getArc(endingArc).setPropagation(localProp);
-            // NOTE: when merging update the ID of the old propagation to the new
-            // its a bit like union find but better.
-            // for other component after a split, update the ID for chaekLast detection
-            graph_.getArc(endingArc).getPropagation()->mergeId(localProp->getId());
             DEBUG_1(<< "Close arc join " << graph_.printArc(endingArc) << std::endl);
+            localProp->merge(*graph_.getArc(endingArc).getPropagation());
          }
 
-         // const idVertex saddleVert = graph_.getNode(saddleId).getVertexIdentifier();
-         // localProp->removeBelow(saddleVert, comp);
+#ifndef NDEBUG
+         DEBUG_1(<< " result " << localProp << " : " << localProp->print() << std::endl);
+#endif
       }
 
       template <typename ScalarType>

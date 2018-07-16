@@ -3,7 +3,7 @@ ttk_add_base_library(ftrGraph
    HEADERS AtomicVector.h FTRGraph.h FTRGraph_Template.h FTRGraphBFS_Template.h
            FTRGraphPrint_Template.h FTRGraphPrivate_Template.h DynamicGraph.h
            Mesh.h Propagation.h Propagations.h Scalars.h
-           LINK triangulation unionFind)
+           LINK triangulation)
 
 target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})
 
