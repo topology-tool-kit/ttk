@@ -82,33 +82,9 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 			sizes[i] = current_bidder_diagrams_[i].size();
 		}
 		
-		
 		dataType total_cost = 0;
-		
-		#ifdef TTK_ENABLE_OPENMP
-		omp_set_num_threads(threadNumber_);
-		#pragma omp parallel for schedule(dynamic, 1)
-		#endif
-		for(int i=0; i<numberOfInputs_; i++){
-			Auction<dataType> auction = Auction<dataType>(&current_bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_, geometrical_factor_, 0.01, kdt, correspondance_kdt_map, epsilon, min_diag_price[i]);
-			int n_biddings = 0;
-			auction.buildUnassignedBidders();
-			auction.reinitializeGoods();
-			auction.runAuctionRound(n_biddings, i);
-			auction.updateDiagonalPrices();
-			
-			min_diag_price[i] = auction.getMinimalDiagonalPrice();
-			min_price[i] = getMinimalPrice(i);
-			std::vector<matchingTuple> matchings;
-			dataType cost = auction.getMatchingsAndDistance(&matchings, true);
-			all_matchings[i] = matchings;
-			total_cost += cost;
-			std::cout<< "Barycenter cost for diagram " << i <<" : "<< cost << std::endl;
-			std::cout<< "Number of biddings : " << n_biddings << std::endl;
-			// Resizes the diagram which was enrich with diagonal bidders during the auction 
-			// TODO do this inside the auction !
-			current_bidder_diagrams_[i].bidders_.resize(sizes[i]);
-		}
+		runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
+					&min_diag_price,  &min_price, &all_matchings);
 		std::cout<< "Barycenter cost : "<< total_cost << std::endl;
 		delete kdt;
 		
@@ -169,6 +145,42 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 	return corrected_matchings;
 }
 
+
+
+template <typename dataType>
+void PDBarycenter<dataType>::runMatching(dataType* total_cost, 
+										dataType epsilon,
+										std::vector<int> sizes,
+										KDTree<dataType>* kdt, 
+										std::vector<KDTree<dataType>*>* correspondance_kdt_map, 
+										std::vector<dataType>* min_diag_price, 
+										std::vector<dataType>* min_price,
+										std::vector<std::vector<matchingTuple>>* all_matchings){
+	#ifdef TTK_ENABLE_OPENMP
+	omp_set_num_threads(threadNumber_);
+	#pragma omp parallel for schedule(dynamic, 1)
+	#endif
+	for(int i=0; i<numberOfInputs_; i++){
+		Auction<dataType> auction = Auction<dataType>(&current_bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_, geometrical_factor_, 0.01, kdt, *correspondance_kdt_map, epsilon, (*min_diag_price)[i]);
+		int n_biddings = 0;
+		auction.buildUnassignedBidders();
+		auction.reinitializeGoods();
+		auction.runAuctionRound(n_biddings, i);
+		auction.updateDiagonalPrices();
+		
+		min_diag_price->at(i) = auction.getMinimalDiagonalPrice();
+		min_price->at(i) = getMinimalPrice(i);
+		std::vector<matchingTuple> matchings;
+		dataType cost = auction.getMatchingsAndDistance(&matchings, true);
+		all_matchings->at(i) = matchings;
+		(*total_cost) += cost;
+		//std::cout<< "Barycenter cost for diagram " << i <<" : "<< cost << std::endl;
+		//std::cout<< "Number of biddings : " << n_biddings << std::endl;
+		// Resizes the diagram which was enrich with diagonal bidders during the auction 
+		// TODO do this inside the auction !
+		current_bidder_diagrams_[i].bidders_.resize(sizes[i]);
+	}
+}
 
 
 template <typename dataType>
@@ -391,18 +403,8 @@ void PDBarycenter<dataType>::setBidderDiagrams(){
     BidderDiagram<dataType> bidders;
 		for(unsigned int j=0; j<CTDiagram->size(); j++){
 			//Add bidder to bidders
-      Bidder<dataType> b((*CTDiagram)[j], j);
-      /*printf("\tconstructed bidder %f %f to DIAGRAM #%d [size: %d]\n", 
-             b.x_, b.y_, i, (*inputDiagrams_)[i].size());
-      printf("\t\tobtained from v%d-t%d-v%d-t%d %f %f %f\n",
-        std::get<0>((*CTDiagram)[j]),
-        std::get<1>((*CTDiagram)[j]),
-        std::get<2>((*CTDiagram)[j]),
-        std::get<3>((*CTDiagram)[j]),
-        std::get<4>((*CTDiagram)[j]),
-        std::get<6>((*CTDiagram)[j]),
-        std::get<10>((*CTDiagram)[j]));**/
-// 			Bidder<dataType> b = Bidder<dataType>((*CTDiagram)[j], j);
+			Bidder<dataType> b((*CTDiagram)[j], j);
+
 			b.setPositionInAuction(bidders.size());
 			bidders.addBidder(b);
 			if(b.isDiagonal() || b.x_==b.y_){

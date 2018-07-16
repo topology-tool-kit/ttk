@@ -100,6 +100,18 @@ namespace ttk{
 			time_limit_ = time_limit;
 		}
 		
+		inline void setUseKmeansppInit(const bool UseKmeansppInit){
+			use_kmeanspp_ = UseKmeansppInit;
+		}
+		
+		inline void setUseAccelerated(const bool UseAccelerated){
+			use_accelerated_ = UseAccelerated;
+		}
+		
+		inline void setNumberOfClusters(const int NumberOfClusters){
+			n_clusters_ = NumberOfClusters;
+		}
+		
 		template<typename type>
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;
@@ -110,14 +122,16 @@ namespace ttk{
     protected:
 	  int 					wasserstein_;
 	  double                geometrical_factor_; // TODO include it in barycenter
+	  int 					n_clusters_;
 	  
       int                   numberOfInputs_;
       void*                 inputData_; //TODO : std::vector<void*>
       int 					threadNumber_;
 	  bool                  use_progressive_;
+	  bool                  use_accelerated_;
+	  bool                  use_kmeanspp_;
 	  double                alpha_;
 	  double                time_limit_;
-      
       
       int points_added_;
 	  int points_deleted_;
@@ -198,12 +212,12 @@ template <typename dataType>
 	KMeans.setThreadNumber(threadNumber_);
 	KMeans.setNumberOfInputs(numberOfInputs_);
 	KMeans.setUseProgressive(use_progressive_);
-	KMeans.setAccelerated(true);
+	KMeans.setAccelerated(use_accelerated_);
 	KMeans.setUseKDTree(true);
 	KMeans.setTimeLimit(time_limit_);
 	KMeans.setGeometricalFactor(geometrical_factor_);
-	KMeans.setKMeanspp(true);
-	KMeans.setK(2);
+	KMeans.setKMeanspp(use_kmeanspp_);
+	KMeans.setK(n_clusters_);
 	
 	KMeans.setDiagrams(&data_min, &data_sad, &data_max);
 	KMeans.setDos(do_min, do_sad, do_max);

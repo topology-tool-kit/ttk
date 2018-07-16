@@ -33,6 +33,7 @@ namespace ttk{
 		
 		dataType computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim=0.0001);
 		dataType computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim=0.0001);
+		dataType computeDistance(BidderDiagram<dataType>* D1, GoodDiagram<dataType>* D2, dataType delta_lim=0.0001);
 		dataType computeDistance(GoodDiagram<dataType>& D1, GoodDiagram<dataType>& D2, dataType delta_lim=0.0001);
 			
 		GoodDiagram<dataType> centroidWithZeroPrices(GoodDiagram<dataType> centroid);
@@ -54,7 +55,7 @@ namespace ttk{
 		void invertInverseClusters();
 		
 		void acceleratedUpdateClusters();
-		void updateCentroidsPosition();
+		dataType updateCentroidsPosition();
 		
 		
 		inline int setDiagrams(std::vector<std::vector<diagramTuple> > *data_min, std::vector<std::vector<diagramTuple> > *data_saddle, std::vector<std::vector<diagramTuple> > *data_max){
@@ -147,6 +148,7 @@ namespace ttk{
 	  
 	  dataType              epsilon_min_;
 	  dataType              epsilon_;
+	  dataType              cost_;
 	  
 	  std::vector<std::vector<diagramTuple>> *inputDiagramsMin_;
 	  std::vector<std::vector<diagramTuple>> *inputDiagramsSaddle_;
@@ -171,12 +173,14 @@ namespace ttk{
 	  std::vector<GoodDiagram<dataType>>	  centroids_with_price_max_;
 	  
 	  std::vector<std::vector<int>>           clustering_;
+	  std::vector<std::vector<int>>           old_clustering_;
 	  std::vector<int>                        inv_clustering_;
 	  
 	  std::vector<bool>                       r_;
 	  std::vector<dataType>                   u_;
 	  std::vector<std::vector<dataType>>      l_;
 	  std::vector<std::vector<dataType>>      d_;
+	  int                                     n_iterations_;
   };
 }
 

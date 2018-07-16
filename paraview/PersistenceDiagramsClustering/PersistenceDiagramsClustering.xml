@@ -41,6 +41,18 @@ See also MandatoryCriticalPoints.
           Data-set to process.
         </Documentation>
       </InputProperty>
+	  
+	  
+	  <IntVectorProperty
+          name="NumberOfClusters"
+          label="Number of clusters"
+          command="SetNumberOfClusters"
+          number_of_elements="1"
+          default_values="2" >
+        <Documentation>
+          Number of clusters to compute.
+        </Documentation>
+      </IntVectorProperty>
 
 	   <StringVectorProperty
           name="n"
@@ -87,6 +99,32 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </DoubleVectorProperty>
 	  
+	  <IntVectorProperty
+         name="UseAccelerated"
+         label="Use Accelerated KMeans"
+         command="SetUseAccelerated"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Whether or not to use the triangular inequality too fasten the computation of the 
+		  clustering. If activated, the option saves time. However it may lead to slightly 
+		  inaccurate classification due to the approximations made during the computation of distance.
+         </Documentation>
+      </IntVectorProperty>
+	  
+	  <IntVectorProperty
+         name="UseKmeansppInit"
+         label="KMeanspp Initialization"
+         command="SetUseKmeansppInit"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          If activated, the clustering is initialized cleverly. The option may avoid local minima at the cost
+		  of some initial computations proportionnal to the product of the number of clusters and the number of diagrams.
+         </Documentation>
+      </IntVectorProperty>
 	  
       <IntVectorProperty
          name="UseAllCores"

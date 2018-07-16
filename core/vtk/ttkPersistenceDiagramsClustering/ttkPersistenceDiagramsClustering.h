@@ -120,6 +120,14 @@ class ttkPersistenceDiagramsClustering
 	vtkSetMacro(Alpha, double);
     vtkGetMacro(Alpha, double);
 
+	vtkSetMacro(NumberOfClusters, int);
+	vtkGetMacro(NumberOfClusters, int);
+	
+	vtkSetMacro(UseAccelerated, bool);
+	vtkGetMacro(UseAccelerated, bool);
+	
+	vtkSetMacro(UseKmeansppInit, bool);
+	vtkGetMacro(UseKmeansppInit, bool);
 
 
   protected:
@@ -148,6 +156,11 @@ class ttkPersistenceDiagramsClustering
     int                   ThreadNumber;
 	bool                  UseOutputMatching;
 	double                Alpha;
+	
+	int 				  NumberOfClusters;
+	bool 				  UseAccelerated;
+	bool 				  UseKmeansppInit;
+	
     std::string                ScalarField;
 	std::string                WassersteinMetric;
 	

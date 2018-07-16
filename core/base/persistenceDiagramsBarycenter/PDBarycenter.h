@@ -36,6 +36,7 @@ namespace ttk{
 		dataType getLowestPersistence();
 		dataType getMinimalPrice(int i);
 		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> getKDTree();
+		void runMatching(dataType* total_cost, dataType epsilon, std::vector<int> sizes, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>* correspondance_kdt_map, std::vector<dataType>* min_diag_price, 	std::vector<dataType>* min_price, std::vector<std::vector<matchingTuple>>* all_matchings);
 		dataType updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings);
 		bool hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings, std::vector<std::vector<matchingTuple>>& previous_matchings);
 		std::vector<std::vector<matchingTuple>> correctMatchings(std::vector<std::vector<matchingTuple>> previous_matchings);
@@ -56,17 +57,13 @@ namespace ttk{
 // 			}
 // 			return 0;
 // 		}
-    inline int setDiagrams(std::vector<std::vector<diagramTuple> > *data){
-      inputDiagrams_ = data;
-      return 0;
-    }
+		inline int setDiagrams(std::vector<std::vector<diagramTuple> > *data){
+			inputDiagrams_ = data;
+			return 0;
+		}
 
 		inline int setNumberOfInputs(int numberOfInputs){
 			numberOfInputs_ = numberOfInputs;
-// 			inputData_ = (void **) malloc(numberOfInputs*sizeof(void *));
-// 			for(int i=0 ; i<numberOfInputs ; i++){
-// 				inputData_[i] = NULL;
-// 			}
 			return 0;
 		}
 		
@@ -88,6 +85,22 @@ namespace ttk{
 		
 		inline void setGeometricalFactor(const double geometrical_factor){
 			geometrical_factor_ = geometrical_factor;
+		}
+		
+		inline void setCurrentBidders(std::vector<BidderDiagram<dataType>>& diagrams){
+			current_bidder_diagrams_ = diagrams;
+		}
+		
+		inline void setCurrentBarycenter(std::vector<GoodDiagram<dataType>>& barycenters){
+			barycenter_goods_ = barycenters;
+		}
+		
+		inline std::vector<BidderDiagram<dataType>>& getCurrentBidders(){
+			return current_bidder_diagrams_;
+		}
+		
+		inline std::vector<GoodDiagram<dataType>>& getCurrentBarycenter(){
+			return barycenter_goods_;
 		}
 		
 		inline void setDiagramType(const int &diagramType){

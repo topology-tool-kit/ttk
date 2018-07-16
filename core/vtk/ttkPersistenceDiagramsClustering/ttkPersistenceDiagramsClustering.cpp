@@ -77,6 +77,9 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 			persistenceDiagramsClustering.setUseProgressive(UseProgressive);
 			persistenceDiagramsClustering.setThreadNumber(ThreadNumber);
 			persistenceDiagramsClustering.setAlpha(Alpha);
+			persistenceDiagramsClustering.setNumberOfClusters(NumberOfClusters);
+			persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
+			persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
 			
 			std::vector<std::vector<macroDiagramTuple> > 
 				intermediateDiagrams(numInputs);
@@ -140,22 +143,6 @@ int ttkPersistenceDiagramsClustering::RequestData(vtkInformation *request,
   }
   
   // TODO Set output
-  
-  /*vtkInformation* outInfo1;
-  outInfo1 = outputVector->GetInformationObject(0);
-  vtkDataSet *output1 = vtkDataSet::SafeDownCast(outInfo1->Get(vtkDataObject::DATA_OBJECT()));
-  vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(output1);
-  
-  vtkInformation* outInfo2;
-  outInfo2 = outputVector->GetInformationObject(1);
-  vtkDataSet *output2 = vtkDataSet::SafeDownCast(outInfo2->Get(vtkDataObject::DATA_OBJECT()));
-  vtkUnstructuredGrid *matchings = vtkUnstructuredGrid::SafeDownCast(output2);
-  
-  vtkInformation* outInfo3;
-  outInfo3 = outputVector->GetInformationObject(2);
-  vtkDataSet *output3 = vtkDataSet::SafeDownCast(outInfo3->Get(vtkDataObject::DATA_OBJECT()));
-  vtkUnstructuredGrid *outputDiagrams = vtkUnstructuredGrid::SafeDownCast(output3);*/
-  std::cout << "Launching doIt" << std::endl;
   doIt(input, numInputs);
 
   delete[] input;
