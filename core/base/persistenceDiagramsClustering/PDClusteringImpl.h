@@ -279,7 +279,8 @@ void PDClustering<dataType>::initializeCentroidsKMeanspp(){
 		std::vector<dataType> min_distance_to_centroid(numberOfInputs_);
 		std::vector<dataType> probabilities(numberOfInputs_);
 		dataType maximal_distance = 0;
-		int candidate_centroid = -1;
+		// Uncomment for a deterministic algorithm
+		//int candidate_centroid = -1;
 		for(int i=0; i<numberOfInputs_; i++){
 			min_distance_to_centroid[i] = std::numeric_limits<dataType>::max();
 			if(std::find(indexes_clusters.begin(), indexes_clusters.end(), i) != indexes_clusters.end()){
@@ -307,14 +308,14 @@ void PDClustering<dataType>::initializeCentroidsKMeanspp(){
 			}
 			probabilities[i] = pow(min_distance_to_centroid[i], 2);
 			
-			// The following block is usefull in case of need for a deterministic algoritm
-			if(min_distance_to_centroid[i]>maximal_distance){
+			// The following block is useful in case of need for a deterministic algoritm
+			/*if(min_distance_to_centroid[i]>maximal_distance){
 				maximal_distance = min_distance_to_centroid[i];
 				candidate_centroid = i;
-			}
+			}*/
 			
 		}
-		// Comment the following two lines to make it deterministic
+		// Comment the following four lines to make it deterministic
 		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::discrete_distribution<int> distribution (probabilities.begin(),probabilities.end());
