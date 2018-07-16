@@ -18,6 +18,14 @@
 #include                  <Wrapper.h>
 #include                  <ttkTriangulation.h>
 
+#ifdef TTK_USE_64BIT_IDS
+using ttkIdType = vtkIdType;
+using ttkIdTypeArray = vtkIdTypeArray;
+#else
+using ttkIdType = int;
+using ttkIdTypeArray = vtkIntArray;
+#endif
+
 // Macros for vtkWrappers
 #define TTK_POLY_DATA_NEW(i, ouputInformation, dataTYpe)\
   if(dataType == "vtkPolyData"){\
