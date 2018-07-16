@@ -106,11 +106,7 @@ int ttkIntegralLines::getOffsets(vtkDataSet* input){
     if(!offsets_){
       const ttkIdType numberOfPoints=input->GetNumberOfPoints();
 
-#ifdef TTK_USE_64BIT_IDS
       offsets_=ttkIdTypeArray::New();
-#else
-      offsets_=vtkIntArray::New();
-#endif
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfPoints);
       offsets_->SetName("OffsetScalarField");

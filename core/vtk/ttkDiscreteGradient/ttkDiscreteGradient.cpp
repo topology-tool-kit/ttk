@@ -137,11 +137,7 @@ int ttkDiscreteGradient::getOffsets(vtkDataSet* input){
     if(!offsets_){
       const ttkIdType numberOfVertices=input->GetNumberOfPoints();
 
-#ifdef TTK_ENABLE_LARGE_DATASETS
       offsets_=ttkIdTypeArray::New();
-#else
-      offsets_=vtkIntArray::New();
-#endif
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName("OffsetsScalarField");
