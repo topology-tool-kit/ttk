@@ -29,7 +29,7 @@ namespace ttk{
 
 		int execute();
 		
-		dataType getMostPersistent(int id_of_diagram, int diagram_type);
+		dataType getMostPersistent();
 		
 		dataType computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim=0.0001);
 		dataType computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim=0.0001);

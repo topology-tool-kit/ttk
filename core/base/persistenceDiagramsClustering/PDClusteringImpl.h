@@ -25,7 +25,7 @@ int PDClustering<dataType>::execute(){
 	setBidderDiagrams();
 	cost_ = std::numeric_limits<dataType>::max();
 	dataType min_cost = std::numeric_limits<dataType>::max();
-	epsilon_ = 5;   // TODO Adapt this....
+	epsilon_ = pow(getMostPersistent(), 2)/8.;
 	dataType epsilon0 = epsilon_;
 	
 	if(use_kmeanspp_){
@@ -96,9 +96,44 @@ int PDClustering<dataType>::execute(){
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::getMostPersistent(int id_of_diagram, int diagram_type){
-	//TODO
-	return 0;
+dataType PDClustering<dataType>::getMostPersistent(){
+	dataType max_persistence = 0;
+	if(do_min_){
+		for(unsigned int i=0; i< bidder_diagrams_min_.size(); ++i){
+			for(int j=0; j< bidder_diagrams_min_[i].size(); ++j){
+				Bidder<dataType> b = bidder_diagrams_min_[i].get(j);
+				dataType persistence = b.getPersistence();
+				if(persistence>max_persistence){
+					max_persistence = persistence; 
+				}
+			}
+		}
+	}
+	
+	if(do_sad_){
+		for(unsigned int i=0; i< bidder_diagrams_saddle_.size(); ++i){
+			for(int j=0; j< bidder_diagrams_saddle_[i].size(); ++j){
+				Bidder<dataType> b = bidder_diagrams_saddle_[i].get(j);
+				dataType persistence = b.getPersistence();
+				if(persistence>max_persistence){
+					max_persistence = persistence; 
+				}
+			}
+		}
+	}
+	
+	if(do_max_){
+		for(unsigned int i=0; i< bidder_diagrams_max_.size(); ++i){
+			for(int j=0; j< bidder_diagrams_max_[i].size(); ++j){
+				Bidder<dataType> b = bidder_diagrams_max_[i].get(j);
+				dataType persistence = b.getPersistence();
+				if(persistence>max_persistence){
+					max_persistence = persistence; 
+				}
+			}
+		}
+	}
+	return max_persistence;
 }
 
 template <typename dataType>
@@ -242,6 +277,7 @@ void PDClustering<dataType>::initializeCentroidsKMeanspp(){
 	
 	while((int) indexes_clusters.size()<k_){
 		std::vector<dataType> min_distance_to_centroid(numberOfInputs_);
+		std::vector<dataType> probabilities(numberOfInputs_);
 		dataType maximal_distance = 0;
 		int candidate_centroid = -1;
 		for(int i=0; i<numberOfInputs_; i++){
@@ -269,12 +305,20 @@ void PDClustering<dataType>::initializeCentroidsKMeanspp(){
 					}
 				}
 			}
+			probabilities[i] = pow(min_distance_to_centroid[i], 2);
+			// Uncomment the following to make it deterministic
+			/*
 			if(min_distance_to_centroid[i]>maximal_distance){
-				// TODO Make it probabilistic !
 				maximal_distance = min_distance_to_centroid[i];
 				candidate_centroid = i;
-			}
+			}*/
 		}
+		// Copmment the following two lines to make it deterministic
+		std::random_device rd;
+		std::mt19937 gen(rd());
+		std::discrete_distribution<int> distribution (probabilities.begin(),probabilities.end());
+		candidate_centroid = distribution(gen);
+		
 		indexes_clusters.push_back(candidate_centroid);
 		if(do_min_){
 			GoodDiagram<dataType> centroid_min = diagramToCentroid(bidder_diagrams_min_[candidate_centroid]);
