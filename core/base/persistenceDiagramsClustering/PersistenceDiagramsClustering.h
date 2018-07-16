@@ -52,7 +52,6 @@ namespace ttk{
 
 		PersistenceDiagramsClustering(){
 			wasserstein_ = 2;
-			geometrical_factor_ = 1;
 			inputData_ = NULL;
 			numberOfInputs_ = 0;
 			threadNumber_ = 1;
@@ -121,7 +120,6 @@ namespace ttk{
 
     protected:
 	  int 					wasserstein_;
-	  double                geometrical_factor_; // TODO include it in barycenter
 	  int 					n_clusters_;
 	  
       int                   numberOfInputs_;
@@ -215,7 +213,7 @@ template <typename dataType>
 	KMeans.setAccelerated(use_accelerated_);
 	KMeans.setUseKDTree(true);
 	KMeans.setTimeLimit(time_limit_);
-	KMeans.setGeometricalFactor(geometrical_factor_);
+	KMeans.setGeometricalFactor(alpha_);
 	KMeans.setKMeanspp(use_kmeanspp_);
 	KMeans.setK(n_clusters_);
 	
