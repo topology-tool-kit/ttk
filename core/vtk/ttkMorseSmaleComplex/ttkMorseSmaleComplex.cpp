@@ -1219,7 +1219,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           const int vertexNumber = separatrices2_cells[ptr];
 
           if (vertexNumber == 3) {
-            ttkIdType triangle[3];
+            vtkIdType triangle[3];
             triangle[0] = separatrices2_cells[ptr + 1];
             triangle[1] = separatrices2_cells[ptr + 2];
             triangle[2] = separatrices2_cells[ptr + 3];
@@ -1228,7 +1228,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
               VTK_TRIANGLE, vertexNumber, triangle);
           }
           else {
-            ttkIdType ids[16];
+            vtkIdType ids[16];
             for (int j = 1; j <= vertexNumber; ++j)
               ids[j - 1] = separatrices2_cells[ptr + j];
 
