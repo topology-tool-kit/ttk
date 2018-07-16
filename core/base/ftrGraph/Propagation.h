@@ -155,19 +155,22 @@ namespace ttk
             return propagation_.size();
          }
 
-#ifndef NDEBUG
          std::string print() const
          {
             std::stringstream res;
+            res << this << " localProp " << curVert_ << " : ";
+#ifndef NDEBUG
+            // only if perf are not important: copy
             boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> tmp(propagation_);
-            res << "localProp " << curVert_ << " : ";
             while(!tmp.empty()){
                res << tmp.top() << " ";
                tmp.pop();
             }
+#else
+            res << "...";
+#endif
             return res.str();
          }
-#endif
       };
    }
 }

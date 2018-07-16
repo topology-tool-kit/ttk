@@ -30,9 +30,7 @@ namespace ttk
                                                 idSuperArc currentArc)
       {
          DEBUG_1(<< "Start " << seed << " go up " << localProp->goUp() << std::endl);
-#ifndef NDEBUG
-         DEBUG_1(<< localProp << " id " << localProp->getId() << " " << localProp->print() << std::endl);
-#endif
+         DEBUG_1(<< localProp->print() << " id " << localProp->getId() << std::endl);
 
          // topology
          bool isJoinSadlleLast = false;
@@ -94,10 +92,7 @@ namespace ttk
                   graph_.visit(curVert, currentArc);
                   DEBUG_1(<< "visit n: " << curVert << std::endl);
                }
-               DEBUG_1(<< ": is split" << std::endl);
-#ifndef NDEBUG
-               DEBUG_1(<< localProp << " : " << localProp->print() << std::endl);
-#endif
+               DEBUG_1(<< ": is split : " << localProp->print() << std::endl);
                isSplitSaddle = true;
             }
 
@@ -140,10 +135,7 @@ namespace ttk
             graph_.visit(upVert, joinNewArc);
             upperComp = upperComps(upperStarEdges, localProp);
             if (upperComp.size() > 1) {
-               DEBUG_1(<< ": is split" << std::endl);
-#ifndef NDEBUG
-               DEBUG_1(<< localProp << " : " << localProp->print() << std::endl);
-#endif
+               DEBUG_1(<< ": is split : " << localProp->print() << std::endl);
                isSplitSaddle = true;
                // will be replaced be new arcs of the split
                graph_.getArc(joinNewArc).hide();
@@ -558,13 +550,11 @@ namespace ttk
             // read in the history
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
-            DEBUG_1(<< "Close arc join " << graph_.printArc(endingArc) << std::endl);
-            localProp->merge(*graph_.getArc(endingArc).getPropagation());
+            Propagation * arcProp =  graph_.getArc(endingArc).getPropagation();
+            DEBUG_1(<< "merge " << graph_.printArc(endingArc) << " prop " << arcProp << std::endl);
+            localProp->merge(*arcProp);
          }
-
-#ifndef NDEBUG
-         DEBUG_1(<< " result " << localProp << " : " << localProp->print() << std::endl);
-#endif
+         DEBUG_1(<< " result " << localProp->print() << std::endl);
       }
 
       template <typename ScalarType>
