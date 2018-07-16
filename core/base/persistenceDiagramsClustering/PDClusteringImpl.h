@@ -306,14 +306,15 @@ void PDClustering<dataType>::initializeCentroidsKMeanspp(){
 				}
 			}
 			probabilities[i] = pow(min_distance_to_centroid[i], 2);
-			// Uncomment the following to make it deterministic
-			/*
+			
+			// The following block is usefull in case of need for a deterministic algoritm
 			if(min_distance_to_centroid[i]>maximal_distance){
 				maximal_distance = min_distance_to_centroid[i];
 				candidate_centroid = i;
-			}*/
+			}
+			
 		}
-		// Copmment the following two lines to make it deterministic
+		// Comment the following two lines to make it deterministic
 		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::discrete_distribution<int> distribution (probabilities.begin(),probabilities.end());
