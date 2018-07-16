@@ -1,4 +1,4 @@
 ttk_add_vtk_library(ttkProjectionFromField
 	SOURCES ttkProjectionFromField.cpp
 	HEADERS ttkProjectionFromField.h
-	LINK common)
+	LINK common ttkTriangulation)

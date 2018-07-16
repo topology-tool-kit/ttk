@@ -141,8 +141,8 @@ class ttkContourForests
     // ContourForestsTree //
     void getTree();
     void updateTree();
-    ttk::NodeType getNodeType(ttk::SimplexId id);
-    ttk::NodeType getNodeType(ttk::SimplexId id, ttk::TreeType type, ttk::MergeTree* tree);
+    ttk::NodeType getNodeType(ttkIdType id);
+    ttk::NodeType getNodeType(ttkIdType id, ttk::TreeType type, ttk::MergeTree* tree);
     void getCriticalPoints();
     void clearTree();
 
@@ -163,7 +163,7 @@ class ttkContourForests
     int computeBarycenters();
     void computeSkeleton(unsigned int arcRes);
     void smoothSkeleton(unsigned int skeletonSmoothing);
-    void smooth(const ttk::SimplexId idArc, bool order);
+    void smooth(const ttkIdType idArc, bool order);
 
     TTK_PIPELINE_REQUEST();
     TTK_OUTPUT_MANAGEMENT();
@@ -224,17 +224,17 @@ class ttkContourForests
     // Convenient storage //
     vtkDataArray* vtkInputScalars_;
     double deltaScalar_;
-    ttk::SimplexId numberOfVertices_;
+    ttkIdType numberOfVertices_;
     ttk::Triangulation *triangulation_;
-    std::vector<std::vector<ttk::SimplexId>>* vertexNeighbors_;
-    std::vector<ttk::SimplexId>* vertexSoSoffsets_;
-    std::vector<ttk::SimplexId>* criticalPoints_;
+    std::vector<std::vector<ttkIdType>>* vertexNeighbors_;
+    std::vector<ttkIdType>* vertexSoSoffsets_;
+    std::vector<ttkIdType>* criticalPoints_;
     std::vector<double>* vertexScalars_;
     std::vector<std::vector<double>>* inputScalars_;
     std::vector<std::string>* inputScalarsName_;
 
     // treeType, SuperArc, several vertices list.
-    std::vector<std::vector<std::vector<std::vector<ttk::SimplexId>>>>*    samples_;
+    std::vector<std::vector<std::vector<std::vector<ttkIdType>>>>*    samples_;
     std::vector<std::vector<std::vector<std::vector<double>>>>* barycenters_;
 
 };

@@ -37,11 +37,11 @@ int ttkPointMerger::doIt(
   
 
   
-  SimplexId vertexNumber = input->GetNumberOfPoints();
-  vector<SimplexId> candidateVertices;
+  ttkIdType vertexNumber = input->GetNumberOfPoints();
+  vector<ttkIdType> candidateVertices;
   
   if(BoundaryOnly){
-    for(SimplexId i = 0; i < vertexNumber; i++){
+    for(ttkIdType i = 0; i < vertexNumber; i++){
       if(triangulation->isVertexOnBoundary(i)){
         candidateVertices.push_back(i);
       }
@@ -49,11 +49,11 @@ int ttkPointMerger::doIt(
   }
   else{
     candidateVertices.resize(vertexNumber);
-    for(SimplexId i = 0; i < vertexNumber; i++)
+    for(ttkIdType i = 0; i < vertexNumber; i++)
       candidateVertices[i] = i;
   }
   
-  vector<vector<SimplexId> > closePoints(vertexNumber);
+  vector<vector<ttkIdType> > closePoints(vertexNumber);
   
   {
     stringstream msg;
@@ -65,17 +65,17 @@ int ttkPointMerger::doIt(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId) candidateVertices.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) candidateVertices.size(); i++){
     double distance = -1;
     vector<double> p0(3);
     
-    SimplexId vertexId0 = candidateVertices[i];
+    ttkIdType vertexId0 = candidateVertices[i];
     
     input->GetPoint(vertexId0, p0.data());
-    for(SimplexId j = 0; j < (SimplexId) candidateVertices.size(); j++){
+    for(ttkIdType j = 0; j < (ttkIdType) candidateVertices.size(); j++){
       if(i != j){
         vector<double> p1(3);
-        SimplexId vertexId1 = candidateVertices[j];
+        ttkIdType vertexId1 = candidateVertices[j];
         input->GetPoint(vertexId1, p1.data());
         distance = Geometry::distance(p0.data(), p1.data());
         if(distance < DistanceThreshold){
@@ -93,16 +93,16 @@ int ttkPointMerger::doIt(
   
   vector<double> minMergeDistance(vertexNumber, -1);
   vector<double> maxMergeDistance(vertexNumber, -1);
-  vector<SimplexId> mergeCount(vertexNumber, 0);
-  vector<SimplexId> mergeMap(vertexNumber, -1);
+  vector<ttkIdType> mergeCount(vertexNumber, 0);
+  vector<ttkIdType> mergeMap(vertexNumber, -1);
   
-  for(SimplexId i = 0; i < vertexNumber; i++){
+  for(ttkIdType i = 0; i < vertexNumber; i++){
     if(closePoints[i].size()){
       
-      SimplexId targetVertexId = i;
+      ttkIdType targetVertexId = i;
       do{
-        SimplexId nextTargetVertexId = targetVertexId;
-        for(SimplexId j = 0; j < (SimplexId) closePoints[targetVertexId].size(); j++){
+        ttkIdType nextTargetVertexId = targetVertexId;
+        for(ttkIdType j = 0; j < (ttkIdType) closePoints[targetVertexId].size(); j++){
           if(closePoints[targetVertexId][j] < nextTargetVertexId)
             nextTargetVertexId = closePoints[targetVertexId][j];
         }
@@ -131,10 +131,10 @@ int ttkPointMerger::doIt(
     }
   }
 
-  SimplexId vertexIdGen = 0;
-  vector<SimplexId> old2new(vertexNumber, 0);
-  vector<SimplexId> new2old;
-  for(SimplexId i = 0; i < vertexNumber; i++){
+  ttkIdType vertexIdGen = 0;
+  vector<ttkIdType> old2new(vertexNumber, 0);
+  vector<ttkIdType> new2old;
+  for(ttkIdType i = 0; i < vertexNumber; i++){
     if(mergeMap[i] == i){
       old2new[i] = vertexIdGen;
       vertexIdGen++;
@@ -178,7 +178,7 @@ int ttkPointMerger::doIt(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < vertexIdGen; i++){
+  for(ttkIdType i = 0; i < vertexIdGen; i++){
     vector<double> p(3);
     input->GetPoint(new2old[i], p.data());
     pointSet->SetPoint(i, p.data());
@@ -212,16 +212,16 @@ int ttkPointMerger::doIt(
     cellData[i]->SetNumberOfComponents(
       input->GetCellData()->GetArray(i)->GetNumberOfComponents());
   }
-  for(SimplexId i = 0; i < input->GetNumberOfCells(); i++){
+  for(ttkIdType i = 0; i < input->GetNumberOfCells(); i++){
     
     vtkSmartPointer<vtkGenericCell> c = vtkSmartPointer<vtkGenericCell>::New();
     input->GetCell(i, c);
     
-    vector<SimplexId> newVertexIds;
+    vector<ttkIdType> newVertexIds;
     for(int j = 0; j < c->GetNumberOfPoints(); j++){
-      SimplexId vertexId = old2new[c->GetPointId(j)];
+      ttkIdType vertexId = old2new[c->GetPointId(j)];
       bool isIn = false;
-      for(SimplexId k = 0; k < (SimplexId) newVertexIds.size(); k++){
+      for(ttkIdType k = 0; k < (ttkIdType) newVertexIds.size(); k++){
         if(newVertexIds[k] == vertexId){
           isIn = true;
           break;
@@ -234,7 +234,7 @@ int ttkPointMerger::doIt(
     
     vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
     idList->SetNumberOfIds(newVertexIds.size());
-    for(SimplexId j = 0; j < (SimplexId) newVertexIds.size(); j++){
+    for(ttkIdType j = 0; j < (ttkIdType) newVertexIds.size(); j++){
       idList->SetId(j, newVertexIds[j]);
     }
     

@@ -57,13 +57,13 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < output->GetNumberOfPoints(); i++){
+  for(ttkIdType i = 0; i < output->GetNumberOfPoints(); i++){
     
     double regionId = 0;
     
     vertexIds->GetTuple(i, &regionId);
     
-    vertexNumbers[(SimplexId) regionId]++;
+    vertexNumbers[(ttkIdType) regionId]++;
   }
   
   vertexNumbers_->SetNumberOfTuples(output->GetNumberOfPoints());
@@ -73,25 +73,25 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < output->GetNumberOfPoints(); i++){
+  for(ttkIdType i = 0; i < output->GetNumberOfPoints(); i++){
     
     double regionId = 0;
     vertexIds->GetTuple(i, &regionId);
     
-    vertexNumbers_->SetTuple1(i, vertexNumbers[(SimplexId) regionId]);
+    vertexNumbers_->SetTuple1(i, vertexNumbers[(ttkIdType) regionId]);
   }
   output->GetPointData()->AddArray(vertexNumbers_);
   
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < output->GetNumberOfCells(); i++){
+  for(ttkIdType i = 0; i < output->GetNumberOfCells(); i++){
     
     double regionId = 0;
     
     cellIds->GetTuple(i, &regionId);
     
-    cellNumbers[(SimplexId) regionId]++;
+    cellNumbers[(ttkIdType) regionId]++;
   }
   
   cellNumbers_->SetNumberOfTuples(output->GetNumberOfCells());
@@ -101,12 +101,12 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output){
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < output->GetNumberOfCells(); i++){
+  for(ttkIdType i = 0; i < output->GetNumberOfCells(); i++){
     
     double regionId = 0;
     cellIds->GetTuple(i, &regionId);
     
-    cellNumbers_->SetTuple1(i, cellNumbers[(SimplexId) regionId]);
+    cellNumbers_->SetTuple1(i, cellNumbers[(ttkIdType) regionId]);
   }
   output->GetCellData()->AddArray(cellNumbers_);
   

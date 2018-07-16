@@ -147,7 +147,7 @@ class ttkPersistenceDiagram
 
     template <typename scalarType>
       int setPersistenceDiagramInfo(ttk::ftm::idVertex id,
-          vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars,
+          vtkSmartPointer<ttkIdTypeArray> vertexIdentifierScalars,
           vtkSmartPointer<vtkIntArray> nodeTypeScalars,
           vtkSmartPointer<vtkFloatArray> coordsScalars,
           const std::vector<std::tuple<ttk::ftm::idVertex,ttk::ftm::NodeType,ttk::ftm::idVertex,ttk::ftm::NodeType,
@@ -162,7 +162,7 @@ class ttkPersistenceDiagram
 
     template <typename scalarType>
       int setPersistenceDiagramInfoInsideDomain(ttk::ftm::idVertex id,
-          vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars,
+          vtkSmartPointer<ttkIdTypeArray> vertexIdentifierScalars,
           vtkSmartPointer<vtkIntArray> nodeTypeScalars,
           vtkDataArray* birthScalars,
           vtkDataArray* deathScalars,
@@ -210,7 +210,7 @@ class ttkPersistenceDiagram
 
 template <typename scalarType>
 int ttkPersistenceDiagram::setPersistenceDiagramInfo(ttk::ftm::idVertex id,
-    vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars,
+    vtkSmartPointer<ttkIdTypeArray> vertexIdentifierScalars,
     vtkSmartPointer<vtkIntArray> nodeTypeScalars,
     vtkSmartPointer<vtkFloatArray> coordsScalars,
     const std::vector<std::tuple<ttk::ftm::idVertex,ttk::ftm::NodeType,ttk::ftm::idVertex,ttk::ftm::NodeType,
@@ -256,8 +256,8 @@ int ttkPersistenceDiagram::getPersistenceDiagram(ttk::ftm::TreeType treeType,
   vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram=
     vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-  vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars=
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> vertexIdentifierScalars=
+    vtkSmartPointer<ttkIdTypeArray>::New();
   vertexIdentifierScalars->SetNumberOfComponents(1);
   vertexIdentifierScalars->SetName("VertexIdentifier");
 
@@ -266,8 +266,8 @@ int ttkPersistenceDiagram::getPersistenceDiagram(ttk::ftm::TreeType treeType,
   nodeTypeScalars->SetNumberOfComponents(1);
   nodeTypeScalars->SetName("NodeType");
 
-  vtkSmartPointer<vtkIdTypeArray> pairIdentifierScalars=
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> pairIdentifierScalars=
+    vtkSmartPointer<ttkIdTypeArray>::New();
   pairIdentifierScalars->SetNumberOfComponents(1);
   pairIdentifierScalars->SetName("PairIdentifier");
 
@@ -352,7 +352,7 @@ points, ids);
 
 template <typename scalarType>
 int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(ttk::ftm::idVertex id,
-    vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars,
+    vtkSmartPointer<ttkIdTypeArray> vertexIdentifierScalars,
     vtkSmartPointer<vtkIntArray> nodeTypeScalars,
     vtkDataArray* birthScalars,
     vtkDataArray* deathScalars,
@@ -402,8 +402,8 @@ ttk::ftm::idVertex, ttk::ftm::NodeType, scalarType,
    vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
        vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-   vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars = 
-vtkSmartPointer<vtkIdTypeArray>::New();
+   vtkSmartPointer<ttkIdTypeArray> vertexIdentifierScalars = 
+vtkSmartPointer<ttkIdTypeArray>::New();
    vertexIdentifierScalars->SetNumberOfComponents(1);
    vertexIdentifierScalars->SetName("VertexIdentifier");
 
@@ -412,8 +412,8 @@ vtkSmartPointer<vtkIntArray>::New();
    nodeTypeScalars->SetNumberOfComponents(1);
    nodeTypeScalars->SetName("NodeType");
 
-   vtkSmartPointer<vtkIdTypeArray> pairIdentifierScalars = 
-vtkSmartPointer<vtkIdTypeArray>::New();
+   vtkSmartPointer<ttkIdTypeArray> pairIdentifierScalars = 
+vtkSmartPointer<ttkIdTypeArray>::New();
    pairIdentifierScalars->SetNumberOfComponents(1);
    pairIdentifierScalars->SetName("PairIdentifier");
 

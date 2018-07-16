@@ -145,17 +145,13 @@ int ttkPersistenceCurve::getOffsets(vtkDataSet* input){
     }
 
     if(!offsets_){
-      const SimplexId numberOfVertices=input->GetNumberOfPoints();
+      const ttkIdType numberOfVertices=input->GetNumberOfPoints();
 
-#ifdef TTK_USE_64BIT_IDS
-      offsets_=vtkIdTypeArray::New();
-#else
-      offsets_=vtkIntArray::New();
-#endif
+      offsets_=ttkIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName("OffsetScalarField");
-      for(SimplexId i=0; i<numberOfVertices; ++i)
+      for(ttkIdType i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
     }
 

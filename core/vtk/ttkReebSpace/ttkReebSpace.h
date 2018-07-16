@@ -253,7 +253,7 @@ class ttkReebSpace
    
     vtkDataArray          *uComponent_, *vComponent_,
                           *offsetFieldU_, *offsetFieldV_;
-    std::vector<ttk::SimplexId>           sosOffsetsU_, sosOffsetsV_;
+    std::vector<ttkIdType>           sosOffsetsU_, sosOffsetsV_;
     
     // core data-structure
     ttk::ReebSpace             reebSpace_;

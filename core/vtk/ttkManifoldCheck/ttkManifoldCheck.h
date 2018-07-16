@@ -91,9 +91,9 @@ class ttkManifoldCheck
     
   private:
     
-    std::vector<ttk::SimplexId>           vertexLinkComponentNumber_;
-    std::vector<ttk::SimplexId>           edgeLinkComponentNumber_;
-    std::vector<ttk::SimplexId>           triangleLinkComponentNumber_;
+    std::vector<ttkIdType>           vertexLinkComponentNumber_;
+    std::vector<ttkIdType>           edgeLinkComponentNumber_;
+    std::vector<ttkIdType>           triangleLinkComponentNumber_;
     ttk::ManifoldCheck         manifoldCheck_;
     
 };

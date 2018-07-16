@@ -89,14 +89,14 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
     coordinates[i] = new double[2];
   }
 
-  SimplexId count = 0;
+  ttkIdType count = 0;
   
 #ifdef TTK_ENABLE_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < output->GetNumberOfPoints(); i++){
+  for(ttkIdType i = 0; i < output->GetNumberOfPoints(); i++){
     
     ThreadId threadId = 0;
     

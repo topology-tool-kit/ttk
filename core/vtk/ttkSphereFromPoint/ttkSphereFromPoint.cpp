@@ -25,16 +25,16 @@ ttkSphereFromPoint::~ttkSphereFromPoint(){
   if(masterAppender_)
     masterAppender_->Delete();
 
-  for(vtkIdType i = 0; i < (vtkIdType) appenderList_.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) appenderList_.size(); i++){
     appenderList_[i]->Delete();
   }
   
-  for(vtkIdType i = 0; i < (vtkIdType) sphereList_.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) sphereList_.size(); i++){
     sphereList_[i]->Delete();
   }
  
-  for(vtkIdType i = 0; i < (vtkIdType) dataArrayList_.size(); i++){
-    for(vtkIdType j = 0; j < (vtkIdType) dataArrayList_[i].size(); j++){
+  for(ttkIdType i = 0; i < (ttkIdType) dataArrayList_.size(); i++){
+    for(ttkIdType j = 0; j < (ttkIdType) dataArrayList_[i].size(); j++){
       dataArrayList_[i][j]->Delete();
     }
   }
@@ -69,36 +69,36 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
     masterAppender_ = NULL;
   }
 
-  for(vtkIdType i = 0; i < (vtkIdType) appenderList_.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) appenderList_.size(); i++){
     appenderList_[i]->Delete();
   }
  
   masterAppender_ = vtkAppendPolyData::New();
   appenderList_.resize(threadNumber_);
-  for(vtkIdType i = 0; i < (vtkIdType) appenderList_.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) appenderList_.size(); i++){
     appenderList_[i] = vtkAppendPolyData::New();
   }
   
-  if((vtkIdType) sphereList_.size() > input->GetNumberOfPoints()){
-    for(vtkIdType i = input->GetNumberOfPoints(); i < (vtkIdType) sphereList_.size(); i++){
+  if((ttkIdType) sphereList_.size() > input->GetNumberOfPoints()){
+    for(ttkIdType i = input->GetNumberOfPoints(); i < (ttkIdType) sphereList_.size(); i++){
       sphereList_[i]->Delete();
     }
     
     sphereList_.resize(input->GetNumberOfPoints());
   }
-  else if((vtkIdType) sphereList_.size() < input->GetNumberOfPoints()){
-    vtkIdType oldSize = sphereList_.size();
+  else if((ttkIdType) sphereList_.size() < input->GetNumberOfPoints()){
+    ttkIdType oldSize = sphereList_.size();
     
     sphereList_.resize(input->GetNumberOfPoints());
     
-    for(vtkIdType i = oldSize; i < (vtkIdType) sphereList_.size(); i++){
+    for(ttkIdType i = oldSize; i < (ttkIdType) sphereList_.size(); i++){
       sphereList_[i] = vtkSphereSource::New();
     }
   }
   
   if(dataArrayList_.size()){
-    for(vtkIdType i = 0; i < (vtkIdType) dataArrayList_.size(); i++){
-      for(vtkIdType j = 0; j < (vtkIdType) dataArrayList_[i].size(); j++){
+    for(ttkIdType i = 0; i < (ttkIdType) dataArrayList_.size(); i++){
+      for(ttkIdType j = 0; j < (ttkIdType) dataArrayList_[i].size(); j++){
         dataArrayList_[i][j]->Delete();
       }
       dataArrayList_[i].clear();
@@ -108,7 +108,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
   
   vector<vector<double> > p(threadNumber_);
   
-  for(vtkIdType i = 0; i < (vtkIdType) p.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) p.size(); i++){
     p[i].resize(3);
   }
 
@@ -117,14 +117,14 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
   // make this function thread-safe
   input->GetPoint(0, p[0].data());
   
-  vtkIdType count = 0;
+  ttkIdType count = 0;
   
 #ifdef TTK_ENABLE_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(vtkIdType i = 0; i < input->GetNumberOfPoints(); i++){
+  for(ttkIdType i = 0; i < input->GetNumberOfPoints(); i++){
     
     if(!needsToAbort()){
     
@@ -154,7 +154,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
       vtkPolyData *sphereSurface = sphereList_[i]->GetOutput();
       
       // copy the data values
-      for(vtkIdType j = 0; j < input->GetPointData()->GetNumberOfArrays(); j++){
+      for(ttkIdType j = 0; j < input->GetPointData()->GetNumberOfArrays(); j++){
         
         vtkDataArray *array = input->GetPointData()->GetArray(j);
         
@@ -173,7 +173,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
                 charArray->SetName(array->GetName());
                 charArray->SetNumberOfTuples(
                   sphereSurface->GetNumberOfPoints());
-                for(vtkIdType k = 0; k < sphereSurface->GetNumberOfPoints(); k++){
+                for(ttkIdType k = 0; k < sphereSurface->GetNumberOfPoints(); k++){
                   charArray->SetTuple(k, &value);
                 }
                 sphereSurface->GetPointData()->AddArray(charArray);
@@ -190,7 +190,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
                 doubleArray->SetName(array->GetName());
                 doubleArray->SetNumberOfTuples(
                   sphereSurface->GetNumberOfPoints());
-                for(vtkIdType k = 0; k < sphereSurface->GetNumberOfPoints(); k++){
+                for(ttkIdType k = 0; k < sphereSurface->GetNumberOfPoints(); k++){
                   doubleArray->SetTuple(k, &value);
                 }
                 sphereSurface->GetPointData()->AddArray(doubleArray);
@@ -207,7 +207,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
                 floatArray->SetName(array->GetName());
                 floatArray->SetNumberOfTuples(
                   sphereSurface->GetNumberOfPoints());
-                for(vtkIdType k = 0; k < sphereSurface->GetNumberOfPoints(); k++){
+                for(ttkIdType k = 0; k < sphereSurface->GetNumberOfPoints(); k++){
                   floatArray->SetTuple(k, &value);
                 }
                 sphereSurface->GetPointData()->AddArray(floatArray);
@@ -224,7 +224,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
                 intArray->SetName(array->GetName());
                 intArray->SetNumberOfTuples(
                   sphereSurface->GetNumberOfPoints());
-                for(vtkIdType k = 0; k < sphereSurface->GetNumberOfPoints(); k++){
+                for(ttkIdType k = 0; k < sphereSurface->GetNumberOfPoints(); k++){
                   intArray->SetTuple(k, &value);
                 }
                 sphereSurface->GetPointData()->AddArray(intArray);
@@ -241,7 +241,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
                 intArray->SetName(array->GetName());
                 intArray->SetNumberOfTuples(
                   sphereSurface->GetNumberOfPoints());
-                for(vtkIdType k = 0; k < sphereSurface->GetNumberOfPoints(); k++){
+                for(ttkIdType k = 0; k < sphereSurface->GetNumberOfPoints(); k++){
                   intArray->SetTuple(k, &value);
                 }
                 sphereSurface->GetPointData()->AddArray(intArray);
@@ -285,7 +285,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
     }
   }
  
-  for(vtkIdType i = 0; i < (vtkIdType) appenderList_.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) appenderList_.size(); i++){
     if(appenderList_[i]->GetInput())
       masterAppender_->AddInputConnection(
         appenderList_[i]->GetOutputPort());

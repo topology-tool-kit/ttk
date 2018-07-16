@@ -160,8 +160,8 @@ int ttkPersistenceCurve::getPersistenceCurve(ttk::ftm::TreeType treeType,
 
   vtkSmartPointer<vtkArrayType> persistenceScalars = 
     vtkSmartPointer<vtkArrayType>::New();
-  vtkSmartPointer<vtkIdTypeArray> numberOfPairsScalars = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> numberOfPairsScalars = 
+    vtkSmartPointer<ttkIdTypeArray>::New();
 
   switch(treeType){
     case ttk::ftm::TreeType::Join:
@@ -223,8 +223,8 @@ int ttkPersistenceCurve::getMSCPersistenceCurve(
 
   vtkSmartPointer<vtkArrayType> persistenceScalars = 
     vtkSmartPointer<vtkArrayType>::New();
-  vtkSmartPointer<vtkIdTypeArray> numberOfPairsScalars = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> numberOfPairsScalars = 
+    vtkSmartPointer<ttkIdTypeArray>::New();
 
   persistenceScalars->SetName("Persistence (saddle-saddle pairs)");
   numberOfPairsScalars->SetName("Number Of Pairs (saddle-saddle pairs)");

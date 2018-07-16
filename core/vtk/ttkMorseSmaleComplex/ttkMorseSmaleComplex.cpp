@@ -158,11 +158,7 @@ vtkDataArray* ttkMorseSmaleComplex::getOffsets(vtkDataSet* input){
     if(!defaultOffsets_){
       const simplexId_t numberOfVertices=input->GetNumberOfPoints();
 
-#ifdef TTK_USE_64BIT_IDS
-      defaultOffsets_=vtkIdTypeArray::New();
-#else
-      defaultOffsets_=vtkIntArray::New();
-#endif
+      defaultOffsets_=ttkIdTypeArray::New();
       defaultOffsets_->SetNumberOfComponents(1);
       defaultOffsets_->SetNumberOfTuples(numberOfVertices);
       defaultOffsets_->SetName("OffsetsScalarField");
@@ -274,11 +270,11 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  vtkSmartPointer<vtkIdTypeArray> 
-    ascendingManifold=vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> 
+    ascendingManifold=vtkSmartPointer<ttkIdTypeArray>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!ascendingManifold){
-    cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation problem." << 
+    cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation problem." << 
       endl;
     return -1;
   }
@@ -287,11 +283,11 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   ascendingManifold->SetNumberOfTuples(numberOfVertices);
   ascendingManifold->SetName("AscendingManifold");
 
-  vtkSmartPointer<vtkIdTypeArray> 
-    descendingManifold=vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> 
+    descendingManifold=vtkSmartPointer<ttkIdTypeArray>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!descendingManifold){
-    cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation problem." << 
+    cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation problem." << 
       endl;
     return -1;
   }
@@ -300,11 +296,11 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   descendingManifold->SetNumberOfTuples(numberOfVertices);
   descendingManifold->SetName("DescendingManifold");
 
-  vtkSmartPointer<vtkIdTypeArray> 
-    morseSmaleManifold=vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> 
+    morseSmaleManifold=vtkSmartPointer<ttkIdTypeArray>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!morseSmaleManifold){
-    cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation problem." << 
+    cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation problem." << 
       endl;
     return -1;
   }
@@ -459,10 +455,10 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         cellDimensions->SetNumberOfComponents(1);
         cellDimensions->SetName("CellDimension");
 
-        vtkSmartPointer<vtkIdTypeArray> cellIds =
-          vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray> cellIds =
+          vtkSmartPointer<ttkIdTypeArray>::New();
         if (!cellIds) {
-          cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation "
+          cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation "
             << "problem." << endl;
           return -1;
         }
@@ -488,20 +484,20 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         isOnBoundary->SetNumberOfComponents(1);
         isOnBoundary->SetName("IsOnBoundary");
 
-        vtkSmartPointer<vtkIdTypeArray> PLVertexIdentifiers =
-          vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray> PLVertexIdentifiers =
+          vtkSmartPointer<ttkIdTypeArray>::New();
         if (!PLVertexIdentifiers) {
-          cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation "
+          cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation "
             << "problem." << endl;
           return -1;
         }
         PLVertexIdentifiers->SetNumberOfComponents(1);
         PLVertexIdentifiers->SetName("VertexIdentifier");
 
-        vtkSmartPointer<vtkIdTypeArray> manifoldSizeScalars = 
-          vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray> manifoldSizeScalars = 
+          vtkSmartPointer<ttkIdTypeArray>::New();
         if (!manifoldSizeScalars) {
-          cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation "
+          cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation "
             << "problem." << endl;
           return -1;
         }
@@ -578,40 +574,40 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         cellDimensions->SetNumberOfComponents(1);
         cellDimensions->SetName("CellDimension");
 
-        vtkSmartPointer<vtkIdTypeArray>
-          cellIds = vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray>
+          cellIds = vtkSmartPointer<ttkIdTypeArray>::New();
         if (!cellIds) {
-          cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation "
+          cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation "
             << "problem." << endl;
           return -1;
         }
         cellIds->SetNumberOfComponents(1);
         cellIds->SetName("CellId");
 
-        vtkSmartPointer<vtkIdTypeArray>
-          sourceIds = vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray>
+          sourceIds = vtkSmartPointer<ttkIdTypeArray>::New();
         if (!sourceIds) {
-          cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation "
+          cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation "
             << "problem." << endl;
           return -1;
         }
         sourceIds->SetNumberOfComponents(1);
         sourceIds->SetName("SourceId");
 
-        vtkSmartPointer<vtkIdTypeArray>
-          destinationIds = vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray>
+          destinationIds = vtkSmartPointer<ttkIdTypeArray>::New();
         if (!destinationIds) {
-          cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation "
+          cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation "
             << "problem." << endl;
           return -1;
         }
         destinationIds->SetNumberOfComponents(1);
         destinationIds->SetName("DestinationId");
 
-        vtkSmartPointer<vtkIdTypeArray>
-          separatrixIds = vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray>
+          separatrixIds = vtkSmartPointer<ttkIdTypeArray>::New();
         if (!separatrixIds) {
-          cerr << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation "
+          cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation "
             << "problem." << endl;
           return -1;
         }
@@ -751,22 +747,22 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           return -1;
         }
 
-        vtkSmartPointer<vtkIdTypeArray> sourceIds = 
-          vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray> sourceIds = 
+          vtkSmartPointer<ttkIdTypeArray>::New();
         if (!sourceIds) {
           cerr 
-            << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation problem."
+            << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation problem."
             << endl;
           return -1;
         }
         sourceIds->SetNumberOfComponents(1);
         sourceIds->SetName("SourceId");
 
-        vtkSmartPointer<vtkIdTypeArray> separatrixIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray> separatrixIds = 
+    vtkSmartPointer<ttkIdTypeArray>::New();
         if (!separatrixIds) {
           cerr 
-            << "[ttkMorseSmaleComplex] Error : vtkIdTypeArray allocation problem."
+            << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation problem."
             << endl;
           return -1;
         }
@@ -967,8 +963,8 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         cellDimensions->SetNumberOfComponents(1);
         cellDimensions->SetName("CellDimension");
 
-        vtkSmartPointer<vtkIdTypeArray> cellIds =
-          vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray> cellIds =
+          vtkSmartPointer<ttkIdTypeArray>::New();
 
         cellIds->SetNumberOfComponents(1);
         cellIds->SetName("CellId");
@@ -984,14 +980,14 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         isOnBoundary->SetNumberOfComponents(1);
         isOnBoundary->SetName("IsOnBoundary");
 
-        vtkSmartPointer<vtkIdTypeArray> PLVertexIdentifiers =
-          vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray> PLVertexIdentifiers =
+          vtkSmartPointer<ttkIdTypeArray>::New();
 
         PLVertexIdentifiers->SetNumberOfComponents(1);
         PLVertexIdentifiers->SetName("VertexIdentifier");
 
-        vtkSmartPointer<vtkIdTypeArray> manifoldSizeScalars = 
-          vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray> manifoldSizeScalars = 
+          vtkSmartPointer<ttkIdTypeArray>::New();
 
         manifoldSizeScalars->SetNumberOfComponents(1);
         manifoldSizeScalars->SetName("ManifoldSize");
@@ -1049,26 +1045,26 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         cellDimensions->SetNumberOfComponents(1);
         cellDimensions->SetName("CellDimension");
 
-        vtkSmartPointer<vtkIdTypeArray>
-          cellIds = vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray>
+          cellIds = vtkSmartPointer<ttkIdTypeArray>::New();
 
         cellIds->SetNumberOfComponents(1);
         cellIds->SetName("CellId");
 
-        vtkSmartPointer<vtkIdTypeArray>
-          sourceIds = vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray>
+          sourceIds = vtkSmartPointer<ttkIdTypeArray>::New();
 
         sourceIds->SetNumberOfComponents(1);
         sourceIds->SetName("SourceId");
 
-        vtkSmartPointer<vtkIdTypeArray>
-          destinationIds = vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray>
+          destinationIds = vtkSmartPointer<ttkIdTypeArray>::New();
 
         destinationIds->SetNumberOfComponents(1);
         destinationIds->SetName("DestinationId");
 
-        vtkSmartPointer<vtkIdTypeArray>
-          separatrixIds = vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray>
+          separatrixIds = vtkSmartPointer<ttkIdTypeArray>::New();
 
         separatrixIds->SetNumberOfComponents(1);
         separatrixIds->SetName("SeparatrixId");
@@ -1171,14 +1167,14 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         ComputeDescendingSeparatrices2)) {
         vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
-        vtkSmartPointer<vtkIdTypeArray> sourceIds = 
-          vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray> sourceIds = 
+          vtkSmartPointer<ttkIdTypeArray>::New();
 
         sourceIds->SetNumberOfComponents(1);
         sourceIds->SetName("SourceId");
 
-        vtkSmartPointer<vtkIdTypeArray> separatrixIds = 
-          vtkSmartPointer<vtkIdTypeArray>::New();
+        vtkSmartPointer<ttkIdTypeArray> separatrixIds = 
+          vtkSmartPointer<ttkIdTypeArray>::New();
 
         separatrixIds->SetNumberOfComponents(1);
         separatrixIds->SetName("SeparatrixId");
@@ -1223,7 +1219,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           const int vertexNumber = separatrices2_cells[ptr];
 
           if (vertexNumber == 3) {
-            vtkIdType triangle[3];
+            ttkIdType triangle[3];
             triangle[0] = separatrices2_cells[ptr + 1];
             triangle[1] = separatrices2_cells[ptr + 2];
             triangle[2] = separatrices2_cells[ptr + 3];
@@ -1232,7 +1228,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
               VTK_TRIANGLE, vertexNumber, triangle);
           }
           else {
-            vtkIdType ids[16];
+            ttkIdType ids[16];
             for (int j = 1; j <= vertexNumber; ++j)
               ids[j - 1] = separatrices2_cells[ptr + j];
 
