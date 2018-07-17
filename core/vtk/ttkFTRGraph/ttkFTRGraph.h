@@ -50,6 +50,7 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
    std::vector<ttk::ftr::idVertex> offsets_;
 
    bool hasUpdatedMesh_;
+   bool Dummy;
 
   public:
    static ttkFTRGraph* New();
@@ -86,6 +87,8 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
 
    vtkSetMacro(OffsetFieldId, int);
    vtkGetMacro(OffsetFieldId, int);
+
+   vtkSetMacro(Dummy, bool);
 
    void SetWithSegmentation(const bool segm)
    {
