@@ -6,11 +6,11 @@
 
 // Skeleton + propagation
 #ifndef NDEBUG
-#define DEBUG_1(msg) std::cout msg
-// #define DEBUG_1(msg)
+// #define DEBUG_1(msg) std::cout msg
+#define DEBUG_1(msg)
 #else
-// #define DEBUG_1(msg)
-#define DEBUG_1(msg) std::cout msg
+#define DEBUG_1(msg)
+// #define DEBUG_1(msg) std::cout msg
 #endif
 
 // Dynamic graph structure
@@ -127,6 +127,12 @@ namespace ttk
          idSuperArc joinNewArc;
          // arriving at a join
          if (isJoinSadlleLast) {
+            // ensure we have the good values here, even if other tasks were doing stuff
+            {
+               // here to solve a 1 over thousands execution bug
+               std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
+               lowerComp = lowerComps(lowerStarEdges, localProp);
+            }
             localGrowth(localProp);
             mergeAtSaddle(upNode, localProp, lowerComp);
             const idNode downNode = graph_.getNodeId(upVert);
@@ -431,8 +437,8 @@ namespace ttk
          // has reached the saddle, even if the propagation take care of several of these arcs
          // (after a Hole-split).
          for(idEdge edgeId : lowerStarEdges) {
-           // const idSuperArc    edgeArc = dynGraph(localProp).getCorArc(edgeId);
-           const idSuperArc    edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
+            // lowerStarEdge already conatins roots
+           const idSuperArc    edgeArc = dynGraph(localProp).getCorArc(edgeId);
            if (edgeArc == nullSuperArc) // ignore unseen
               continue;
            AtomicUF* tmpId = graph_.getArc(edgeArc).getPropagation()->getId();
@@ -506,8 +512,8 @@ namespace ttk
             if (edgeUpperVert == neigh || edgeLowerVert == neigh) {
                // curedge is the one between the two vertices
                // WARNING: Check the opposite prop here, In parallel ??
-               // const idSuperArc rpzArc = dynGraph(!localProp->goUp()).getCorArc(edgeId);
-               const idSuperArc rpzArc = dynGraph(!localProp->goUp()).getSubtreeArc(edgeId);
+               const idSuperArc rpzArc = dynGraph(!localProp->goUp()).getCorArc(edgeId);
+               // const idSuperArc rpzArc = dynGraph(!localProp->goUp()).getSubtreeArc(edgeId);
                if (rpzArc != nullSuperArc && graph_.getArc(rpzArc).getUpNodeId() == checkNode) {
                   const idNode downNode = graph_.getArc(rpzArc).getDownNodeId();
                   if (localProp->compare(saddle, graph_.getNode(downNode).getVertexIdentifier())) {
@@ -547,7 +553,7 @@ namespace ttk
          DEBUG_1(<< " merge in " << graph_.getNode(saddleId).getVertexIdentifier() << std::endl);
 
          for(auto* dgNode : lowerComp) {
-            // read in the history
+            // read in the history (lower comp already contains roots)
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
             Propagation * arcProp =  graph_.getArc(endingArc).getPropagation();

@@ -160,19 +160,6 @@ namespace ttk
          }
 
 
-         /// \brief count the number of connected component in a list of nodes
-         std::size_t getNbCC(std::initializer_list<DynGraphNode<Type>*> nodes)
-         {
-            return findRoot(nodes).size();
-         }
-
-         /// \brief count the number of connected component in a list of nodes using ids
-         std::size_t getNbCC(std::initializer_list<std::size_t> nodesIds)
-         {
-            return findRoot(nodesIds).size();
-         }
-
-
          /// \ret true if we have merged two tree, false if it was just an intern operation
          bool insertEdge(DynGraphNode<Type>* const n1, DynGraphNode<Type>* const n2, const Type w,
                          const idSuperArc corArc)
@@ -217,6 +204,79 @@ namespace ttk
          std::string print(std::function<std::string(std::size_t)>);
 
          void test(void);
+      };
+
+      // Same as dynamic graph but keep the number of subtrees at any time
+      // CAREFULL: this number is not protected for parallel modification, and this
+      // class is not made for parallel acess.
+      template<typename Type>
+      class LocalForest: public DynamicGraph<Type>
+      {
+         std::size_t nbCC_;
+         using super = DynamicGraph<Type>;
+
+         public:
+
+         void setNumberOfNodes(const std::size_t nbNodes)
+         {
+            super::setNumberOfNodes(nbNodes);
+            nbCC_ = nbNodes;
+         }
+
+         /// \ret true if we have merged two tree, false if it was just an intern operation
+         bool insertEdge(DynGraphNode<Type>* const n1, DynGraphNode<Type>* const n2, const Type w,
+                         const idSuperArc corArc)
+         {
+            bool connect = super::insertEdge(n1, n2, w, corArc);
+            if(connect) --nbCC_;
+            return connect;
+         }
+
+         /// inert or replace existing edge between n1 and n2
+         bool insertEdge(const std::size_t n1, const std::size_t n2, const Type w,
+                         const idSuperArc corArc)
+         {
+            bool connect = super::insertEdge(n1, n2, w, corArc);
+            if(connect) --nbCC_;
+            return connect;
+         }
+
+         /// remove the link btwn n and its parent
+         void removeEdge(DynGraphNode<Type>* const n)
+         {
+            super::removeEdge(n);
+            ++nbCC_;
+         }
+
+         /// remove the link btwn n and its parent
+         void removeEdge(const std::size_t nid)
+         {
+            super::removeEdge(nid);
+            ++nbCC_;
+         }
+
+         /// remove the edge btwn n1 and n2
+         /// \ret 0 if not an edge
+         int removeEdge(DynGraphNode<Type>* const n1, DynGraphNode<Type>* const n2) {
+            int ret = super::removeEdge(n1, n2);
+            if(ret) ++nbCC_;
+            return ret;
+         }
+
+         /// remove the edge btwn n1 and n2
+         /// \ret 0 if not an edge
+         int removeEdge(const std::size_t nid1, const std::size_t nid2)
+         {
+            int ret = super::removeEdge(nid1, nid2);
+            if(ret) ++nbCC_;
+            return ret;
+         }
+
+         /// \brief count the number of connected component in a list of nodes
+         std::size_t getNbCC() const
+         {
+            return nbCC_;
+         }
       };
 
       /// \brief class representing a node

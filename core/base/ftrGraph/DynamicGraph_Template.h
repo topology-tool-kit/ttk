@@ -35,8 +35,7 @@ namespace ttk
       }
 
       template <typename Type>
-      int DynamicGraph<Type>::removeEdge(DynGraphNode<Type>* const n1,
-                                               DynGraphNode<Type>* const n2)
+      int DynamicGraph<Type>::removeEdge(DynGraphNode<Type>* const n1, DynGraphNode<Type>* const n2)
       {
          if (n1->parent_ == n2) {
             removeEdge(n1);
@@ -219,11 +218,18 @@ namespace ttk
       template <typename Type>
       DynGraphNode<Type>* DynGraphNode<Type>::findRoot(void) const
       {
+         // the lastNode trick is used so we are sure to have a non null
+         // return even if another thread is touching these nodes.
          DynGraphNode* curNode = const_cast<DynGraphNode<Type>*>(this);
-         while (curNode->parent_ != nullptr) {
+         DynGraphNode* lastNode = curNode;
+         while (curNode != nullptr) {
+            lastNode = curNode;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic read
+#endif
             curNode = curNode->parent_;
          }
-         return curNode;
+         return lastNode;
       }
 
       template <typename Type>
