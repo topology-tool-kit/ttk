@@ -65,9 +65,9 @@ int ttk::MorseSmaleComplex2D::execute(){
 
   // nullptr_t is implicitly convertible and comparable to any pointer type
   // or pointer-to-member type.
-  dcg::simplexId_t* ascendingManifold=static_cast<dcg::simplexId_t*>(outputAscendingManifold_);
-  dcg::simplexId_t* descendingManifold=static_cast<dcg::simplexId_t*>(outputDescendingManifold_);
-  dcg::simplexId_t* morseSmaleManifold=static_cast<dcg::simplexId_t*>(outputMorseSmaleManifold_);
+  SimplexId* ascendingManifold=static_cast<SimplexId*>(outputAscendingManifold_);
+  SimplexId* descendingManifold=static_cast<SimplexId*>(outputDescendingManifold_);
+  SimplexId* morseSmaleManifold=static_cast<SimplexId*>(outputMorseSmaleManifold_);
 
   discreteGradient_.setThreadNumber(threadNumber_);
   discreteGradient_.setDebugLevel(debugLevel_);
@@ -122,12 +122,12 @@ int ttk::MorseSmaleComplex2D::execute(){
     }
   }
 
-  std::vector<dcg::simplexId_t> maxSeeds;
+  std::vector<SimplexId> maxSeeds;
   {
     Timer tmp;
 
-    dcg::simplexId_t numberOfMaxima{};
-    dcg::simplexId_t numberOfMinima{};
+    SimplexId numberOfMaxima{};
+    SimplexId numberOfMinima{};
 
     if(ascendingManifold)
       setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold, numberOfMaxima);
@@ -158,7 +158,7 @@ int ttk::MorseSmaleComplex2D::execute(){
   }
 
   {
-    const dcg::simplexId_t numberOfVertices=inputTriangulation_->getNumberOfVertices();
+    const SimplexId numberOfVertices=inputTriangulation_->getNumberOfVertices();
     std::stringstream msg;
     msg << "[MorseSmaleComplex2D] Data-set (" << numberOfVertices
       << " points) processed in "

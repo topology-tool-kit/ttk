@@ -73,18 +73,18 @@ int AbstractMorseSmaleComplex::getDescendingSeparatrices1(const vector<Cell>& cr
     vector<Separatrix>& separatrices,
     vector<vector<Cell>>& separatricesGeometry) const{
 
-  vector<simplexId_t> saddleIndexes;
-  const simplexId_t numberOfCriticalPoints=criticalPoints.size();
-  for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
+  vector<SimplexId> saddleIndexes;
+  const SimplexId numberOfCriticalPoints=criticalPoints.size();
+  for(SimplexId i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
     if(criticalPoint.dim_==1)
       saddleIndexes.push_back(i);
   }
-  const simplexId_t numberOfSaddles=saddleIndexes.size();
+  const SimplexId numberOfSaddles=saddleIndexes.size();
 
   // estimation of the number of separatrices, apriori : numberOfAscendingPaths=2, numberOfDescendingPaths=2
-  const simplexId_t numberOfSeparatrices=4*numberOfSaddles;
+  const SimplexId numberOfSeparatrices=4*numberOfSaddles;
   separatrices.resize(numberOfSeparatrices);
   separatricesGeometry.resize(numberOfSeparatrices);
 
@@ -92,8 +92,8 @@ int AbstractMorseSmaleComplex::getDescendingSeparatrices1(const vector<Cell>& cr
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(simplexId_t i=0; i<numberOfSaddles; ++i){
-    const simplexId_t saddleIndex=saddleIndexes[i];
+  for(SimplexId i=0; i<numberOfSaddles; ++i){
+    const SimplexId saddleIndex=saddleIndexes[i];
     const Cell& saddle=criticalPoints[saddleIndex];
 
     // add descending vpaths
@@ -103,7 +103,7 @@ int AbstractMorseSmaleComplex::getDescendingSeparatrices1(const vector<Cell>& cr
       for(int j=0; j<2; ++j){
         const int shift=j+2;
 
-        simplexId_t vertexId;
+        SimplexId vertexId;
         inputTriangulation_->getEdgeVertex(saddle1.id_, j, vertexId);
 
         vector<Cell> vpath;
@@ -112,7 +112,7 @@ int AbstractMorseSmaleComplex::getDescendingSeparatrices1(const vector<Cell>& cr
 
         const Cell& lastCell=vpath.back();
         if(lastCell.dim_==0 and discreteGradient_.isCellCritical(lastCell)){
-          const simplexId_t separatrixIndex=4*i+shift;
+          const SimplexId separatrixIndex=4*i+shift;
 
           separatricesGeometry[separatrixIndex]=std::move(vpath);
           separatrices[separatrixIndex]=std::move(Separatrix(true,saddle,lastCell,false,separatrixIndex));
@@ -125,67 +125,67 @@ int AbstractMorseSmaleComplex::getDescendingSeparatrices1(const vector<Cell>& cr
 }
 
 int AbstractMorseSmaleComplex::setAscendingSegmentation(const vector<Cell>& criticalPoints,
-    vector<simplexId_t>& maxSeeds,
-    simplexId_t* const morseSmaleManifold,
-    simplexId_t& numberOfMaxima) const{
-  const simplexId_t numberOfVertices=inputTriangulation_->getNumberOfVertices();
+    vector<SimplexId>& maxSeeds,
+    SimplexId* const morseSmaleManifold,
+    SimplexId& numberOfMaxima) const{
+  const SimplexId numberOfVertices=inputTriangulation_->getNumberOfVertices();
   std::fill(morseSmaleManifold,morseSmaleManifold+numberOfVertices, -1);
 
-  const simplexId_t numberOfCells=inputTriangulation_->getNumberOfCells();
-  vector<simplexId_t> morseSmaleManifoldOnCells(numberOfCells, -1);
+  const SimplexId numberOfCells=inputTriangulation_->getNumberOfCells();
+  vector<SimplexId> morseSmaleManifoldOnCells(numberOfCells, -1);
   const int cellDim=inputTriangulation_->getDimensionality();
 
   // get the seeds : maxima
-  const simplexId_t numberOfCriticalPoints=criticalPoints.size();
-  for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
+  const SimplexId numberOfCriticalPoints=criticalPoints.size();
+  for(SimplexId i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
     if(criticalPoint.dim_==cellDim)
       maxSeeds.push_back(criticalPoint.id_);
   }
-  const simplexId_t numberOfSeeds=maxSeeds.size();
+  const SimplexId numberOfSeeds=maxSeeds.size();
   numberOfMaxima=numberOfSeeds;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(simplexId_t i=0; i<numberOfSeeds; ++i){
-    queue<simplexId_t> bfs;
+  for(SimplexId i=0; i<numberOfSeeds; ++i){
+    queue<SimplexId> bfs;
 
     // push the seed
     {
-      const simplexId_t seedId=maxSeeds[i];
+      const SimplexId seedId=maxSeeds[i];
       bfs.push(seedId);
     }
 
     // BFS traversal
     while(!bfs.empty()){
-      const simplexId_t cofacetId=bfs.front();
+      const SimplexId cofacetId=bfs.front();
       bfs.pop();
 
       if(morseSmaleManifoldOnCells[cofacetId]==-1){
         morseSmaleManifoldOnCells[cofacetId]=i;
 
         for(int j=0; j<(cellDim+1); ++j){
-          simplexId_t facetId=-1;
+          SimplexId facetId=-1;
           if(cellDim==2)
             inputTriangulation_->getCellEdge(cofacetId, j, facetId);
           else if(cellDim==3)
             inputTriangulation_->getCellTriangle(cofacetId, j, facetId);
 
-          simplexId_t starNumber=0;
+          SimplexId starNumber=0;
           if(cellDim==2)
             starNumber=inputTriangulation_->getEdgeStarNumber(facetId);
           else if(cellDim==3)
             starNumber=inputTriangulation_->getTriangleStarNumber(facetId);
-          for(simplexId_t k=0; k<starNumber; ++k){
-            simplexId_t neighborId=-1;
+          for(SimplexId k=0; k<starNumber; ++k){
+            SimplexId neighborId=-1;
             if(cellDim==2)
               inputTriangulation_->getEdgeStar(facetId, k, neighborId);
             else if(cellDim==3)
               inputTriangulation_->getTriangleStar(facetId, k, neighborId);
 
-            const simplexId_t pairedCellId=discreteGradient_.getPairedCell(Cell(cellDim, neighborId), true);
+            const SimplexId pairedCellId=discreteGradient_.getPairedCell(Cell(cellDim, neighborId), true);
 
             if(pairedCellId==facetId)
               bfs.push(neighborId);
@@ -199,8 +199,8 @@ int AbstractMorseSmaleComplex::setAscendingSegmentation(const vector<Cell>& crit
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(simplexId_t i=0; i<numberOfVertices; ++i){
-    simplexId_t starId;
+  for(SimplexId i=0; i<numberOfVertices; ++i){
+    SimplexId starId;
     inputTriangulation_->getVertexStar(i, 0, starId);
     morseSmaleManifold[i]=morseSmaleManifoldOnCells[starId];
   }
@@ -209,53 +209,53 @@ int AbstractMorseSmaleComplex::setAscendingSegmentation(const vector<Cell>& crit
 }
 
 int AbstractMorseSmaleComplex::setDescendingSegmentation(const vector<Cell>& criticalPoints,
-    simplexId_t* const morseSmaleManifold,
-    simplexId_t& numberOfMinima) const{
-  const simplexId_t numberOfVertices=inputTriangulation_->getNumberOfVertices();
+    SimplexId* const morseSmaleManifold,
+    SimplexId& numberOfMinima) const{
+  const SimplexId numberOfVertices=inputTriangulation_->getNumberOfVertices();
   std::fill(morseSmaleManifold,morseSmaleManifold+numberOfVertices, -1);
 
   // get the seeds : minima
-  vector<simplexId_t> seeds;
-  const simplexId_t numberOfCriticalPoints=criticalPoints.size();
-  for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
+  vector<SimplexId> seeds;
+  const SimplexId numberOfCriticalPoints=criticalPoints.size();
+  for(SimplexId i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
     if(criticalPoint.dim_==0)
       seeds.push_back(criticalPoint.id_);
   }
-  const simplexId_t numberOfSeeds=seeds.size();
+  const SimplexId numberOfSeeds=seeds.size();
   numberOfMinima=numberOfSeeds;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(simplexId_t i=0; i<numberOfSeeds; ++i){
-    queue<simplexId_t> bfs;
+  for(SimplexId i=0; i<numberOfSeeds; ++i){
+    queue<SimplexId> bfs;
 
     // push the seed
     {
-      const simplexId_t seedId=seeds[i];
+      const SimplexId seedId=seeds[i];
       bfs.push(seedId);
     }
 
     // BFS traversal
     while(!bfs.empty()){
-      const simplexId_t vertexId=bfs.front();
+      const SimplexId vertexId=bfs.front();
       bfs.pop();
 
       if(morseSmaleManifold[vertexId]==-1){
         morseSmaleManifold[vertexId]=i;
 
-        const simplexId_t edgeNumber=inputTriangulation_->getVertexEdgeNumber(vertexId);
-        for(simplexId_t j=0; j<edgeNumber; ++j){
-          simplexId_t edgeId;
+        const SimplexId edgeNumber=inputTriangulation_->getVertexEdgeNumber(vertexId);
+        for(SimplexId j=0; j<edgeNumber; ++j){
+          SimplexId edgeId;
           inputTriangulation_->getVertexEdge(vertexId, j, edgeId);
 
           for(int k=0; k<2; ++k){
-            simplexId_t neighborId;
+            SimplexId neighborId;
             inputTriangulation_->getEdgeVertex(edgeId, k, neighborId);
 
-            const simplexId_t pairedCellId=discreteGradient_.getPairedCell(Cell(0, neighborId));
+            const SimplexId pairedCellId=discreteGradient_.getPairedCell(Cell(0, neighborId));
 
             if(pairedCellId==edgeId)
               bfs.push(neighborId);
@@ -268,27 +268,27 @@ int AbstractMorseSmaleComplex::setDescendingSegmentation(const vector<Cell>& cri
   return 0;
 }
 
-int AbstractMorseSmaleComplex::setFinalSegmentation(const simplexId_t numberOfMaxima,
-    const simplexId_t numberOfMinima,
-    const simplexId_t* const ascendingManifold,
-    const simplexId_t* const descendingManifold,
-    simplexId_t* const morseSmaleManifold) const{
-  vector<vector<pair<simplexId_t,simplexId_t>>> minTable(numberOfMinima);
+int AbstractMorseSmaleComplex::setFinalSegmentation(const SimplexId numberOfMaxima,
+    const SimplexId numberOfMinima,
+    const SimplexId* const ascendingManifold,
+    const SimplexId* const descendingManifold,
+    SimplexId* const morseSmaleManifold) const{
+  vector<vector<pair<SimplexId,SimplexId>>> minTable(numberOfMinima);
 
-  simplexId_t id{};
-  const simplexId_t numberOfVertices=inputTriangulation_->getNumberOfVertices();
-  for(simplexId_t i=0; i<numberOfVertices; ++i){
-    const simplexId_t d=ascendingManifold[i];
-    const simplexId_t a=descendingManifold[i];
+  SimplexId id{};
+  const SimplexId numberOfVertices=inputTriangulation_->getNumberOfVertices();
+  for(SimplexId i=0; i<numberOfVertices; ++i){
+    const SimplexId d=ascendingManifold[i];
+    const SimplexId a=descendingManifold[i];
 
     if(a==-1 or d==-1){
       morseSmaleManifold[i]=-1;
       continue;
     }
 
-    vector<pair<simplexId_t,simplexId_t>>& table=minTable[a];
-    simplexId_t foundId=-1;
-    for(const pair<simplexId_t,simplexId_t>& p : table){
+    vector<pair<SimplexId,SimplexId>>& table=minTable[a];
+    SimplexId foundId=-1;
+    for(const pair<SimplexId,SimplexId>& p : table){
       if(p.first == d)
         foundId=p.second;
     }
