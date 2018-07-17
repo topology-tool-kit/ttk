@@ -8,7 +8,7 @@
 template <typename dataType>
 int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
   std::vector<std::tuple<double, int>>& mapping,
-  std::vector<std::tuple<idVertex, double, int>>& criticalConstraints,
+  std::vector<std::tuple<int, double, int>>& criticalConstraints,
   bool zfpOnly,
   int nbSegments,
   int nbVertices,
@@ -438,7 +438,7 @@ int ttk::TopologicalCompression::computePersistencePairs(
   SimplexId* inputOffsets)
 {
   // Compute offsets
-  const idVertex numberOfVertices = triangulation_->getNumberOfVertices();
+  const SimplexId numberOfVertices = triangulation_->getNumberOfVertices();
   std::vector<SimplexId> voffsets((unsigned long) numberOfVertices);
   std::copy(inputOffsets, inputOffsets+numberOfVertices, voffsets.begin());
 
@@ -472,7 +472,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     inputOffsets[i] = i;
 
   // 1. Compute persistence pairs.
-  std::vector<std::tuple<dataType, idVertex>> topoIndices;
+  std::vector<std::tuple<dataType, int>> topoIndices;
 
   // Compute global min & max
   dataType iter;
@@ -705,11 +705,11 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
   // 3. Subdivision and attribution of a topological index
 
-  auto cmp = [](const std::tuple<dataType, idVertex>& a,
-                const std::tuple<dataType, idVertex>& b)
+  auto cmp = [](const std::tuple<dataType, int>& a,
+                const std::tuple<dataType, int>& b)
   { return std::get<0>(a) < std::get<0>(b); };
   std::sort(topoIndices.begin(), topoIndices.end(), cmp);
-  std::vector<std::tuple<dataType, idVertex>> segments;
+  std::vector<std::tuple<dataType, int>> segments;
   // ith rank = ith segment (from bottom)
   // 0: value
   // 1: critical point index or -1 if !critical
@@ -733,7 +733,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       }
 
       dataType v1 = std::get<0>(topoIndices[i + 1]);
-      idVertex i1 = std::get<1>(topoIndices[i + 1]);
+      int i1 = std::get<1>(topoIndices[i + 1]);
       auto diff = (double) (v1 - v0);
 
       if (diff == 0) continue;
@@ -744,8 +744,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         double nbSegments = std::ceil(diff / maxError);
         for (int j = 0, nbs = (int) nbSegments; j < nbs; ++j) {
           dataType sample = v0 + j * maxError;
-          idVertex idVertex1 = i1;
-          segments.push_back(std::make_tuple(sample, idVertex1));
+          int int1 = i1;
+          segments.push_back(std::make_tuple(sample, int1));
         }
       }
     }
@@ -774,7 +774,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
                                std::make_tuple(scalar, -1), cmp);
 
     if (it != end) {
-      std::tuple<dataType, idVertex> tt = *it;
+      std::tuple<dataType, int> tt = *it;
       int j = it - begin;
       int last = (int) segments.size() - 1;
       if (j < last) {

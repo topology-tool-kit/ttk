@@ -57,8 +57,6 @@ enum class CompressionType { PersistenceDiagram = 0, Other = 1 };
 class TopologicalCompression : public Debug
 {
 
-  using idVertex = int;
-
   public:
 
     // Base code methods.
@@ -161,7 +159,7 @@ class TopologicalCompression : public Debug
       return mapping_;
     }
 
-    inline std::vector<std::tuple<idVertex, double, int>>& getCriticalConstraints() {
+    inline std::vector<std::tuple<int, double, int>>& getCriticalConstraints() {
       return criticalConstraints_;
     }
 
@@ -349,7 +347,7 @@ class TopologicalCompression : public Debug
     template <typename dataType>
     int ComputeTotalSizeForPersistenceDiagram(
       std::vector<std::tuple<double, int>>& mapping,
-      std::vector<std::tuple<idVertex, double, int>>& criticalConstraints,
+      std::vector<std::tuple<int, double, int>>& criticalConstraints,
       bool zfpOnly,
       int nbSegments,
       int nbVertices,
@@ -424,7 +422,7 @@ class TopologicalCompression : public Debug
     // Persistence compression.
     std::vector<int>                                segmentation_;
     std::vector<std::tuple<double, int>>            mapping_;
-    std::vector<std::tuple<idVertex, double, int>>  criticalConstraints_;
+    std::vector<std::tuple<int, double, int>>  criticalConstraints_;
 
     // IO.
     int                         nbVertices;
