@@ -156,13 +156,13 @@ int ttkPersistenceDiagram::deleteDiagram(){
     switch(inputScalars_->GetDataType()){
 #ifndef _MSC_VER
 		vtkTemplateMacro(({
-			using tuple_t = tuple<SimplexId,ftm::NodeType,SimplexId,ftm::NodeType,VTK_TT,SimplexId>;
+			using tuple_t = tuple<ttkIdType,ftm::NodeType,ttkIdType,ftm::NodeType,VTK_TT,ttkIdType>;
 		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
 		delete CTDiagram;
 		}));
 #else
 		vtkTemplateMacro({
-			using tuple_t = tuple<SimplexId COMMA ftm::NodeType COMMA SimplexId COMMA ftm::NodeType COMMA VTK_TT COMMA SimplexId>;
+			using tuple_t = tuple<ttkIdType COMMA ftm::NodeType COMMA ttkIdType COMMA ftm::NodeType COMMA VTK_TT COMMA ttkIdType>;
 		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
 		delete CTDiagram;
 		});
@@ -218,12 +218,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
         inputOffsets_->GetDataType())){
 #ifndef _MSC_VER
 	  vtkTemplate2Macro(({
-		  using tuple_t = tuple<SimplexId,
+		  using tuple_t = tuple<ttkIdType,
 		  ftm::NodeType,
-		  SimplexId,
+		  ttkIdType,
 		  ftm::NodeType,
 		  VTK_T1,
-		  SimplexId>;
+		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;
@@ -264,12 +264,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #else
 #ifndef TTK_ENABLE_KAMIKAZE
 	  vtkTemplate2Macro(({
-		  using tuple_t = tuple<SimplexId COMMA
+		  using tuple_t = tuple<ttkIdType COMMA
 		  ftm::NodeType COMMA
-		  SimplexId COMMA
+		  ttkIdType COMMA
 		  ftm::NodeType COMMA
 		  VTK_T1 COMMA
-		  SimplexId>;
+		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;
@@ -305,12 +305,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  }));
 #else
 	  vtkTemplate2Macro(({
-		  using tuple_t = tuple<SimplexId COMMA
+		  using tuple_t = tuple<ttkIdType COMMA
 		  ftm::NodeType COMMA
-		  SimplexId COMMA
+		  ttkIdType COMMA
 		  ftm::NodeType COMMA
 		  VTK_T1 COMMA
-		  SimplexId>;
+		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;

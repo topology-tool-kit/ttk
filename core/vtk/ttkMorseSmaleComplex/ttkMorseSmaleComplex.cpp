@@ -156,13 +156,13 @@ vtkDataArray* ttkMorseSmaleComplex::getOffsets(vtkDataSet* input){
     }
 
     if(!defaultOffsets_){
-      const SimplexId numberOfVertices=input->GetNumberOfPoints();
+      const ttkIdType numberOfVertices=input->GetNumberOfPoints();
 
       defaultOffsets_=ttkIdTypeArray::New();
       defaultOffsets_->SetNumberOfComponents(1);
       defaultOffsets_->SetNumberOfTuples(numberOfVertices);
       defaultOffsets_->SetName("OffsetsScalarField");
-      for(SimplexId i=0; i<numberOfVertices; ++i)
+      for(ttkIdType i=0; i<numberOfVertices; ++i)
         defaultOffsets_->SetTuple1(i,i);
     }
 
@@ -227,42 +227,42 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   }
 
   // critical points
-  SimplexId criticalPoints_numberOfPoints{};
+  ttkIdType criticalPoints_numberOfPoints{};
   vector<float> criticalPoints_points;
   vector<char> criticalPoints_points_cellDimensions;
-  vector<SimplexId> criticalPoints_points_cellIds;
+  vector<ttkIdType> criticalPoints_points_cellIds;
   vector<char> criticalPoints_points_isOnBoundary;
-  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
-  vector<SimplexId> criticalPoints_points_manifoldSize;
+  vector<ttkIdType> criticalPoints_points_PLVertexIdentifiers;
+  vector<ttkIdType> criticalPoints_points_manifoldSize;
 
   // 1-separatrices
-  SimplexId separatrices1_numberOfPoints{};
+  ttkIdType separatrices1_numberOfPoints{};
   vector<float> separatrices1_points;
   vector<char> separatrices1_points_smoothingMask;
   vector<char> separatrices1_points_cellDimensions;
-  vector<SimplexId> separatrices1_points_cellIds;
-  SimplexId separatrices1_numberOfCells{};
-  vector<SimplexId> separatrices1_cells;
-  vector<SimplexId> separatrices1_cells_sourceIds;
-  vector<SimplexId> separatrices1_cells_destinationIds;
-  vector<SimplexId> separatrices1_cells_separatrixIds;
+  vector<ttkIdType> separatrices1_points_cellIds;
+  ttkIdType separatrices1_numberOfCells{};
+  vector<ttkIdType> separatrices1_cells;
+  vector<ttkIdType> separatrices1_cells_sourceIds;
+  vector<ttkIdType> separatrices1_cells_destinationIds;
+  vector<ttkIdType> separatrices1_cells_separatrixIds;
   vector<char> separatrices1_cells_separatrixTypes;
   vector<char> separatrices1_cells_isOnBoundary;
 
   // 2-separatrices
-  SimplexId separatrices2_numberOfPoints{};
+  ttkIdType separatrices2_numberOfPoints{};
   vector<float> separatrices2_points;
-  SimplexId separatrices2_numberOfCells{};
-  vector<SimplexId> separatrices2_cells;
-  vector<SimplexId> separatrices2_cells_sourceIds;
-  vector<SimplexId> separatrices2_cells_separatrixIds;
+  ttkIdType separatrices2_numberOfCells{};
+  vector<ttkIdType> separatrices2_cells;
+  vector<ttkIdType> separatrices2_cells_sourceIds;
+  vector<ttkIdType> separatrices2_cells_separatrixIds;
   vector<char> separatrices2_cells_separatrixTypes;
   vector<char> separatrices2_cells_isOnBoundary;
 
   const int dimensionality=triangulation_->getCellVertexNumber(0)-1;
 
   // morse complexes
-  const SimplexId numberOfVertices=triangulation_->getNumberOfVertices();
+  const ttkIdType numberOfVertices=triangulation_->getNumberOfVertices();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfVertices){
     cerr << "[ttkMorseSmaleComplex] Error : input has no vertices." << endl;
@@ -504,7 +504,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         manifoldSizeScalars->SetNumberOfComponents(1);
         manifoldSizeScalars->SetName("ManifoldSize");
 
-        for (SimplexId i = 0; i<criticalPoints_numberOfPoints; ++i) {
+        for (ttkIdType i = 0; i<criticalPoints_numberOfPoints; ++i) {
           points->InsertNextPoint(criticalPoints_points[3 * i],
             criticalPoints_points[3 * i + 1],
             criticalPoints_points[3 * i + 2]);
@@ -661,7 +661,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         isOnBoundary->SetNumberOfComponents(1);
         isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
 
-        for (SimplexId i = 0; i<separatrices1_numberOfPoints; ++i) {
+        for (ttkIdType i = 0; i<separatrices1_numberOfPoints; ++i) {
           points->InsertNextPoint(separatrices1_points[3 * i],
             separatrices1_points[3 * i + 1],
             separatrices1_points[3 * i + 2]);
@@ -676,8 +676,8 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         outputSeparatrices1->SetPoints(points);
 
         outputSeparatrices1->Allocate(separatrices1_numberOfCells);
-        SimplexId ptr{};
-        for (SimplexId i = 0; i<separatrices1_numberOfCells; ++i) {
+        ttkIdType ptr{};
+        for (ttkIdType i = 0; i<separatrices1_numberOfCells; ++i) {
           vtkIdType line[2];
           line[0] = separatrices1_cells[ptr + 1];
           line[1] = separatrices1_cells[ptr + 2];
@@ -818,7 +818,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         isOnBoundary->SetNumberOfComponents(1);
         isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
 
-        for (SimplexId i = 0; i<separatrices2_numberOfPoints; ++i) {
+        for (ttkIdType i = 0; i<separatrices2_numberOfPoints; ++i) {
           points->InsertNextPoint(separatrices2_points[3 * i],
             separatrices2_points[3 * i + 1],
             separatrices2_points[3 * i + 2]);
@@ -826,8 +826,8 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         outputSeparatrices2->SetPoints(points);
 
         outputSeparatrices2->Allocate(separatrices2_numberOfCells);
-        SimplexId ptr{};
-        for (SimplexId i = 0; i<separatrices2_numberOfCells; ++i) {
+        ttkIdType ptr{};
+        for (ttkIdType i = 0; i<separatrices2_numberOfCells; ++i) {
           const int vertexNumber = separatrices2_cells[ptr];
 
           if (vertexNumber == 3) {
@@ -992,7 +992,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         manifoldSizeScalars->SetNumberOfComponents(1);
         manifoldSizeScalars->SetName("ManifoldSize");
 
-        for (SimplexId i = 0; i<criticalPoints_numberOfPoints; ++i) {
+        for (ttkIdType i = 0; i<criticalPoints_numberOfPoints; ++i) {
           points->InsertNextPoint(criticalPoints_points[3 * i],
             criticalPoints_points[3 * i + 1],
             criticalPoints_points[3 * i + 2]);
@@ -1096,7 +1096,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         isOnBoundary->SetNumberOfComponents(1);
         isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
 
-        for (SimplexId i = 0; i<separatrices1_numberOfPoints; ++i) {
+        for (ttkIdType i = 0; i<separatrices1_numberOfPoints; ++i) {
           points->InsertNextPoint(separatrices1_points[3 * i],
             separatrices1_points[3 * i + 1],
             separatrices1_points[3 * i + 2]);
@@ -1112,8 +1112,8 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         outputSeparatrices1->SetPoints(points);
 
         outputSeparatrices1->Allocate(separatrices1_numberOfCells);
-        SimplexId ptr{};
-        for (SimplexId i = 0; i<separatrices1_numberOfCells; ++i) {
+        ttkIdType ptr{};
+        for (ttkIdType i = 0; i<separatrices1_numberOfCells; ++i) {
           vtkIdType line[2];
           line[0] = separatrices1_cells[ptr + 1];
           line[1] = separatrices1_cells[ptr + 2];
@@ -1206,7 +1206,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         isOnBoundary->SetNumberOfComponents(1);
         isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
 
-        for (SimplexId i = 0; i<separatrices2_numberOfPoints; ++i) {
+        for (ttkIdType i = 0; i<separatrices2_numberOfPoints; ++i) {
           points->InsertNextPoint(separatrices2_points[3 * i],
             separatrices2_points[3 * i + 1],
             separatrices2_points[3 * i + 2]);
@@ -1214,8 +1214,8 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         outputSeparatrices2->SetPoints(points);
 
         outputSeparatrices2->Allocate(separatrices2_numberOfCells);
-        SimplexId ptr{};
-        for (SimplexId i = 0; i<separatrices2_numberOfCells; ++i) {
+        ttkIdType ptr{};
+        for (ttkIdType i = 0; i<separatrices2_numberOfCells; ++i) {
           const int vertexNumber = separatrices2_cells[ptr];
 
           if (vertexNumber == 3) {
