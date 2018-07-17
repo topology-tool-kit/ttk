@@ -365,6 +365,10 @@ namespace ttk{
 			second_val=val;
 		}
 
+		if(second_val==std::numeric_limits<dataType>::lowest()){
+			// There is only one acceptable good for the bidder
+			second_val=best_val;
+		}
 		dataType old_price = best_good->getPrice();
 		dataType new_price = old_price + best_val-second_val + epsilon;
 		// Assign bidder to best_good
@@ -460,6 +464,10 @@ namespace ttk{
 			second_val = best_val;
 		}
 
+		if(second_val==std::numeric_limits<dataType>::lowest()){
+			// There is only one acceptable good for the bidder
+			second_val=best_val;
+		}
 		dataType old_price = best_good->getPrice();
 		dataType new_price = old_price + best_val-second_val + epsilon;
 		// Assign bidder to best_good
@@ -563,6 +571,10 @@ namespace ttk{
 			second_val = best_val;
 		}
 
+		if(second_val==std::numeric_limits<dataType>::lowest()){
+			// There is only one acceptable good for the bidder
+			second_val=best_val;
+		}
 		dataType old_price = best_good->getPrice();
 		dataType new_price = old_price + best_val-second_val + epsilon;
 
@@ -642,6 +654,11 @@ namespace ttk{
 		}
 		else if(val>second_val){
 			second_val=val;
+		}
+		
+		if(second_val==std::numeric_limits<dataType>::lowest()){
+			// There is only one acceptable good for the bidder
+			second_val=best_val;
 		}
 		dataType old_price = best_good->getPrice();
 		dataType new_price = old_price + best_val-second_val + epsilon;

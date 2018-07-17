@@ -30,15 +30,29 @@ namespace ttk{
 		std::vector<std::vector<matchingTuple>> execute(std::vector<diagramTuple>& barycenter);
 			
 		void setBidderDiagrams();
-		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence, std::vector<dataType> initial_diagonal_prices, std::vector<dataType> initial_prices, int min_points_to_add, bool add_points_to_barycenter=true);
+		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence,
+											 dataType min_persistence,
+											 std::vector<dataType> initial_diagonal_prices, 
+											 std::vector<dataType> initial_prices, 
+											 int min_points_to_add, 
+											 bool add_points_to_barycenter=true);
 		void setInitialBarycenter(dataType min_persistence);
 		dataType getMaxPersistence();
 		dataType getLowestPersistence();
 		dataType getMinimalPrice(int i);
 		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> getKDTree();
-		void runMatching(dataType* total_cost, dataType epsilon, std::vector<int> sizes, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>* correspondance_kdt_map, std::vector<dataType>* min_diag_price, 	std::vector<dataType>* min_price, std::vector<std::vector<matchingTuple>>* all_matchings);
+		void runMatching(dataType* total_cost,
+						 dataType epsilon,
+						 std::vector<int> sizes,
+						 KDTree<dataType>* kdt, 
+						 std::vector<KDTree<dataType>*>* correspondance_kdt_map, 
+						 std::vector<dataType>* min_diag_price, 
+						 std::vector<dataType>* min_price, 
+						 std::vector<std::vector<matchingTuple>>* all_matchings, 
+						 bool use_kdt);
 		dataType updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings);
-		bool hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings, std::vector<std::vector<matchingTuple>>& previous_matchings);
+		bool hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings, 
+									std::vector<std::vector<matchingTuple>>& previous_matchings);
 		std::vector<std::vector<matchingTuple>> correctMatchings(std::vector<std::vector<matchingTuple>> previous_matchings);
 		
 		

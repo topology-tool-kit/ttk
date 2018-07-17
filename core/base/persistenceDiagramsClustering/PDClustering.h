@@ -30,6 +30,8 @@ namespace ttk{
 		int execute();
 		
 		dataType getMostPersistent();
+		dataType getLessPersistent();
+		std::vector<std::vector<dataType>> getMinDiagonalPrices();
 		
 		dataType computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim=0.0001);
 		dataType computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim=0.0001);
@@ -46,6 +48,8 @@ namespace ttk{
 		void initializeCentroids();
 		void initializeCentroidsKMeanspp();
 		void initializeAcceleratedKMeans();
+		
+		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence, std::vector<std::vector<dataType>> initial_diagonal_prices, int min_points_to_add);
 		
 		std::vector<std::vector<dataType>> getDistanceMatrix();
 		void getCentroidDistanceMatrix();

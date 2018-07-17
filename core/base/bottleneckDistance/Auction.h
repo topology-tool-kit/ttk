@@ -99,7 +99,7 @@ namespace ttk {
 			delta_lim_ = delta_lim;
 			geometricalFactor_ = geometricalFactor;
 			
-			use_kdt_ = use_kdTree;
+			use_kdt_ = (use_kdTree && goods_->size()>0);
 			if(use_kdt_) {
 				kdt_ = kdt;
 				correspondance_kdt_map_ = correspondance_kdt_map;
@@ -145,8 +145,13 @@ namespace ttk {
 				b.setPositionInAuction(bidders_->size());
 				bidders_->addBidder(b);
 			}
-			use_kdt_ = true;
-			this->buildKDTree();
+			if(goods_->size()>0){
+				use_kdt_ = true;
+				this->buildKDTree();
+			}
+			else{
+				use_kdt_=false;
+			}
 		}
 		
 		
@@ -172,7 +177,13 @@ namespace ttk {
 				b.setPositionInAuction(bidders_->size());
 				bidders_->addBidder(b);
 			}
-			this->buildKDTree();
+			if(bidders_->size()>0){
+				use_kdt_ = true;
+				this->buildKDTree();
+			}
+			else{
+				use_kdt_=false;
+			}
 		}
 		
 		void setBidders(std::vector<diagramTuple> diagram1){

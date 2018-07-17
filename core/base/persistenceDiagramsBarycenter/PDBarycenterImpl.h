@@ -72,7 +72,14 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 			converged = true;
 		}
 		std::cout<< "epsilon : "<< epsilon << std::endl;
-		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair = this->getKDTree();
+		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair;
+		bool use_kdt = false;
+		// If the barycenter is empty, do not compute the kdt (or it will crash :/)
+		// TODO Fix KDTree to handle empty inputs...
+		if(barycenter_goods_[0].size()>0){
+			pair = this->getKDTree();
+			use_kdt = true;
+		}
 		KDTree<dataType>* kdt = pair.first;
 		std::vector<KDTree<dataType>*>& correspondance_kdt_map = pair.second;
 		
@@ -84,7 +91,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		
 		dataType total_cost = 0;
 		runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
-					&min_diag_price,  &min_price, &all_matchings);
+					&min_diag_price,  &min_price, &all_matchings, use_kdt);
 		std::cout<< "Barycenter cost : "<< total_cost << std::endl;
 		delete kdt;
 		
@@ -155,13 +162,15 @@ void PDBarycenter<dataType>::runMatching(dataType* total_cost,
 										std::vector<KDTree<dataType>*>* correspondance_kdt_map, 
 										std::vector<dataType>* min_diag_price, 
 										std::vector<dataType>* min_price,
-										std::vector<std::vector<matchingTuple>>* all_matchings){
+										std::vector<std::vector<matchingTuple>>* all_matchings,
+										bool use_kdt
+										){
 	#ifdef TTK_ENABLE_OPENMP
 	omp_set_num_threads(threadNumber_);
 	#pragma omp parallel for schedule(dynamic, 1)
 	#endif
 	for(int i=0; i<numberOfInputs_; i++){
-		Auction<dataType> auction = Auction<dataType>(&current_bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_, geometrical_factor_, 0.01, kdt, *correspondance_kdt_map, epsilon, (*min_diag_price)[i]);
+		Auction<dataType> auction = Auction<dataType>(&current_bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_, geometrical_factor_, 0.01, kdt, *correspondance_kdt_map, epsilon, (*min_diag_price)[i], use_kdt);
 		int n_biddings = 0;
 		auction.buildUnassignedBidders();
 		auction.reinitializeGoods();
