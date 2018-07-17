@@ -32,10 +32,10 @@ namespace ttk
       int rank_;
       ExtendedUnionFind *parent_;
       ufDataType data_;
-      idVertex origin_;
+      SimplexId origin_;
 
      public:
-      inline ExtendedUnionFind(const idVertex &origin)
+      inline ExtendedUnionFind(const SimplexId &origin)
       {
          rank_      = 0;
          parent_    = this;
@@ -56,7 +56,7 @@ namespace ttk
          data_ = d;
       }
 
-      inline void setOrigin(const idVertex &origin)
+      inline void setOrigin(const SimplexId &origin)
       {
          origin_ = origin;
       }
@@ -66,7 +66,7 @@ namespace ttk
          return data_;
       }
 
-      inline const idVertex &getOrigin(void) const
+      inline const SimplexId &getOrigin(void) const
       {
          return origin_;
       }

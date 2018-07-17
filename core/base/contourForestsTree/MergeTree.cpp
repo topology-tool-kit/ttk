@@ -32,9 +32,9 @@ MergeTree::~MergeTree()
 
 
 int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
-                     const vector<idVertex> &overlapBefore, const vector<idVertex> &overlapAfter,
-                     idVertex start, idVertex end, const idVertex &posSeed0,
-                     const idVertex &posSeed1)
+                     const vector<SimplexId> &overlapBefore, const vector<SimplexId> &overlapAfter,
+                     SimplexId start, SimplexId end, const SimplexId &posSeed0,
+                     const SimplexId &posSeed1)
 {
    // idea, work on the neighbohood instead of working on the node itsef.
    // Need lower / higher star construction.
@@ -51,23 +51,23 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
    // -----------------
    // {
 
-   idVertex sortedNode;
-   const idVertex step = (treeData_.treeType == TreeType::Join) ? 1 : -1;
+   SimplexId sortedNode;
+   const SimplexId step = (treeData_.treeType == TreeType::Join) ? 1 : -1;
 
    // main
-   const idVertex mainStart = start;
-   const idVertex mainEnd   = end;
+   const SimplexId mainStart = start;
+   const SimplexId mainEnd   = end;
 
    const bool isJT = treeData_.treeType == TreeType::Join;
    // else Split Tree, can't be called on ContourTree
 
    // overlap before
-   const idVertex beforeStart = (isJT) ? 0 : overlapBefore.size() - 1;
-   const idVertex beforeEnd   = (isJT) ? overlapBefore.size() : -1;
+   const SimplexId beforeStart = (isJT) ? 0 : overlapBefore.size() - 1;
+   const SimplexId beforeEnd   = (isJT) ? overlapBefore.size() : -1;
 
    // overlap after
-   const idVertex afterStart = (isJT) ? 0 : overlapAfter.size() - 1;
-   const idVertex afterEnd   = (isJT) ? overlapAfter.size() : -1;
+   const SimplexId afterStart = (isJT) ? 0 : overlapAfter.size() - 1;
+   const SimplexId afterEnd   = (isJT) ? overlapAfter.size() : -1;
 
    // print debug
    if(params_->debugLevel >= 3){
@@ -96,7 +96,7 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
 
    // for each vertex of our triangulation
    for (sortedNode = beforeStart; sortedNode != beforeEnd; sortedNode += step) {
-      const idVertex currentVertex = overlapBefore[sortedNode];
+      const SimplexId currentVertex = overlapBefore[sortedNode];
       const bool overlapB = isJT;
       const bool overlapA = !isJT;
       processVertex(currentVertex, vect_baseUF, overlapB, overlapA, timerBegin);
@@ -110,7 +110,7 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
 
    // for each vertex of our triangulation
    for (sortedNode = mainStart; sortedNode != mainEnd; sortedNode += step) {
-      const idVertex currentVertex = scalars_->sortedVertices[sortedNode];
+      const SimplexId currentVertex = scalars_->sortedVertices[sortedNode];
       processVertex(currentVertex, vect_baseUF, false, false, timerBegin);
    }  // foreach node
 
@@ -122,7 +122,7 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
 
    // for each vertex of our triangulation
    for (sortedNode = afterStart; sortedNode != afterEnd; sortedNode += step) {
-      const idVertex currentVertex = overlapAfter[sortedNode];
+      const SimplexId currentVertex = overlapAfter[sortedNode];
       const bool overlapB = !isJT;
       const bool overlapA = isJT;
       processVertex(currentVertex, vect_baseUF, overlapB, overlapA, timerBegin);
@@ -139,7 +139,7 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
    // More efficient that using nullity of the neighborhood
    // to detect extrema of the opponent tree
    idNode     rootNode;
-   idVertex   corrVertex, origin;
+   SimplexId   corrVertex, origin;
    idSuperArc tmp_sa;
 
    // It can't be more connected component that leaves so test for each leaves (even virtual
@@ -202,23 +202,23 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
    return 0;
 }
 
-void MergeTree::processVertex(const idVertex &             currentVertex,
+void MergeTree::processVertex(const SimplexId &             currentVertex,
                               vector<ExtendedUnionFind *> &vect_baseUF, const bool overlapB,
                               const bool overlapA, DebugTimer &begin)
 {
    vector<ExtendedUnionFind *> vect_neighUF;
    ExtendedUnionFind *         seed = nullptr, *tmpseed;
 
-   idVertex    neighSize;
-   const idVertex neighborNumber = mesh_->getVertexNeighborNumber(currentVertex);
+   SimplexId    neighSize;
+   const SimplexId neighborNumber = mesh_->getVertexNeighborNumber(currentVertex);
    const bool isJT = treeData_.treeType == TreeType::Join;
 
    idSuperArc currentArc;
    idNode     closingNode, currentNode;
-   idVertex   neighbor;
+   SimplexId   neighbor;
 
    // Check UF in neighborhood
-   for (idVertex n = 0; n < neighborNumber; ++n) {
+   for (SimplexId n = 0; n < neighborNumber; ++n) {
       mesh_->getVertexNeighbor(currentVertex, n, neighbor);
       // if the vertex is out: consider it null
       tmpseed = vect_baseUF[neighbor];
@@ -238,7 +238,7 @@ void MergeTree::processVertex(const idVertex &             currentVertex,
 
    (neighSize = vect_neighUF.size());
 
-   // idVertex test = 1;
+   // SimplexId test = 1;
    // if (currentVertex == test)
    // cout << test << " : " << vect_neighUF.size() << " " << vect_interfaceUF.size() << endl;
    // Make output
@@ -277,7 +277,7 @@ void MergeTree::processVertex(const idVertex &             currentVertex,
       closingNode = makeNode(currentVertex);
       currentArc  = openSuperArc(closingNode, overlapB, overlapA);
 
-      idVertex farOrigin = vect_neighUF[0]->find()->getOrigin();
+      SimplexId farOrigin = vect_neighUF[0]->find()->getOrigin();
 
       // close each SuperArc finishing here
       for (auto *neigh : vect_neighUF) {
@@ -332,11 +332,11 @@ void MergeTree::processVertex(const idVertex &             currentVertex,
 
 void MergeTree::updateSegmentation()
 {
-   auto compL = [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
+   auto compL = [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {
       return isLower(a.first, b.first);
    };
 
-   auto compH = [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
+   auto compH = [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {
       return isHigher(a.first, b.first);
    };
 
@@ -354,8 +354,8 @@ void MergeTree::updateSegmentation()
              continue;
 
          sort(segmentation, segmentation + segmSize, compH);
-         for (idVertex i = 0; i < segmSize; i++) {
-            const idVertex &vert = segmentation[i].first;
+         for (SimplexId i = 0; i < segmSize; i++) {
+            const SimplexId &vert = segmentation[i].first;
             updateCorrespondingArc(vert, sa);
          }
       }
@@ -372,8 +372,8 @@ void MergeTree::updateSegmentation()
              continue;
 
          sort(segmentation, segmentation + segmSize, compL);
-         for (idVertex i = 0; i < segmSize; i++) {
-            const idVertex &vert = segmentation[i].first;
+         for (SimplexId i = 0; i < segmSize; i++) {
+            const SimplexId &vert = segmentation[i].first;
             if (!segmentation[i].second) {
                updateCorrespondingArc(vert, sa);
             }
@@ -392,11 +392,11 @@ void MergeTree::updateSegmentation()
 void MergeTree::parallelUpdateSegmentation(const bool ct)
 {
     // REMOVE THIS FUNCTION AND USE BOOL
-   auto compL = [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
+   auto compL = [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {
       return isLower(a.first, b.first);
    };
 
-   auto compH = [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
+   auto compH = [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {
       return isHigher(a.first, b.first);
    };
 
@@ -417,8 +417,8 @@ void MergeTree::parallelUpdateSegmentation(const bool ct)
              continue;
 
          sort(segmentation, segmentation + segmSize, compH);
-         for (idVertex i = 0; i < segmSize; i++) {
-            const idVertex &vert = segmentation[i].first;
+         for (SimplexId i = 0; i < segmSize; i++) {
+            const SimplexId &vert = segmentation[i].first;
             updateCorrespondingArc(vert, sa);
          }
       }
@@ -438,8 +438,8 @@ void MergeTree::parallelUpdateSegmentation(const bool ct)
              continue;
 
          sort(segmentation, segmentation + segmSize, compL);
-         for (idVertex i = 0; i < segmSize; i++) {
-            const idVertex &vert = segmentation[i].first;
+         for (SimplexId i = 0; i < segmSize; i++) {
+            const SimplexId &vert = segmentation[i].first;
             if (!segmentation[i].second) {
                updateCorrespondingArc(vert, sa);
             }
@@ -514,7 +514,7 @@ idSuperArc MergeTree::openSuperArc(const idNode &downNodeId, const bool overlapB
 
 idSuperArc MergeTree::makeSuperArc(const idNode &downNodeId, const idNode &upNodeId,
                                    const bool overlapB, const bool overlapA,
-                                   pair<idVertex, bool> *vertexList, idVertex vertexSize)
+                                   pair<SimplexId, bool> *vertexList, SimplexId vertexSize)
 {
    idSuperArc newSuperArcId = (idSuperArc)treeData_.superArcs.size();
 
@@ -575,15 +575,15 @@ void MergeTree::closeSuperArc(const idSuperArc &superArcId, const idNode &upNode
    }
 }
 
-idVertex MergeTree::insertNodeAboveSeed(const idSuperArc &arc,
-                                              const pair<idVertex, bool> &seed)
+SimplexId MergeTree::insertNodeAboveSeed(const idSuperArc &arc,
+                                              const pair<SimplexId, bool> &seed)
 {
-   auto isLowerComp = [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
+   auto isLowerComp = [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {
       return isLower(a.first, b.first);
    };
 
    SuperArc *crossing = getSuperArc(arc);
-   idVertex  stitchVert;
+   SimplexId  stitchVert;
    // get stitching node
    const auto &vertList = crossing->getVertList();
    const auto &vertSize = crossing->getVertSize();
@@ -618,15 +618,15 @@ idVertex MergeTree::insertNodeAboveSeed(const idSuperArc &arc,
    return stitchVert;
 }
 
-idVertex MergeTree::getVertBelowSeed(const idSuperArc &arc, const pair<idVertex, bool> &seed,
+SimplexId MergeTree::getVertBelowSeed(const idSuperArc &arc, const pair<SimplexId, bool> &seed,
                                            const vector<idCorresp> &vert2treeOther)
 {
-   auto isLowerComp = [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
+   auto isLowerComp = [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {
       return isLower(a.first, b.first);
    };
 
    SuperArc *crossing = getSuperArc(arc);
-   idVertex  stitchVert;
+   SimplexId  stitchVert;
    // get stitching node
    const auto &vertList = crossing->getVertList();
    const auto &vertSize = crossing->getVertSize();
@@ -791,7 +791,7 @@ void MergeTree::hideNode(const idNode &node)
 
 // Nodes
 
-idNode MergeTree::makeNode(const idVertex &vertexId, const idVertex &term)
+idNode MergeTree::makeNode(const SimplexId &vertexId, const SimplexId &term)
 {
 #ifndef TTK_ENABLE_KAMIKAZE
    if (vertexId < 0 || vertexId >= scalars_->size) {
@@ -805,20 +805,20 @@ idNode MergeTree::makeNode(const idVertex &vertexId, const idVertex &term)
       return getCorrespondingNodeId(vertexId);
    }
 
-   idVertex size_base = (idVertex)treeData_.nodes.size();
+   SimplexId size_base = (SimplexId)treeData_.nodes.size();
    treeData_.nodes.emplace_back(vertexId, term);
    updateCorrespondingNode(vertexId, size_base);
 
    return size_base;
 }
 
-idNode MergeTree::makeNode(const Node *const n, const idVertex &term)
+idNode MergeTree::makeNode(const Node *const n, const SimplexId &term)
 {
    return makeNode(n->getVertexId(), term);
 }
 
-void MergeTree::delNode(const idNode &node, const pair<idVertex, bool> *markVertices,
-                        const idVertex &nbMark)
+void MergeTree::delNode(const idNode &node, const pair<SimplexId, bool> *markVertices,
+                        const SimplexId &nbMark)
 {
    Node *mainNode = getNode(node);
 
@@ -880,8 +880,8 @@ void MergeTree::delNode(const idNode &node, const pair<idVertex, bool> *markVert
                                                         treeData_.superArcs[upArc].getVertSize());
                // mark removed ones (passed as parameter of this function)
                // the markVertices is sorted in reverse order as it come form the other tree
-               idVertex acc = -1;
-               for (idVertex i = nbMark - 1; i >= 0; --i) {
+               SimplexId acc = -1;
+               for (SimplexId i = nbMark - 1; i >= 0; --i) {
                   if (!treeData_.superArcs[downArc].getVertSize())
                      break;
                   while (treeData_.superArcs[downArc].getRegularNodeId(++acc) !=
@@ -904,13 +904,13 @@ void MergeTree::delNode(const idNode &node, const pair<idVertex, bool> *markVert
                const auto *upSegm   = treeData_.superArcs[upArc].getVertList();
                const auto *downSegm = treeData_.superArcs[downArc].getVertList();
 
-               pair<idVertex, bool> *newSegmentation = new pair<idVertex, bool>[upSize + downSize];
+               pair<SimplexId, bool> *newSegmentation = new pair<SimplexId, bool>[upSize + downSize];
 
-               for (idVertex i = 0; i < downSize; i++) {
+               for (SimplexId i = 0; i < downSize; i++) {
                   newSegmentation[i] = downSegm[i];
                }
 
-               for (idVertex i = 0; i < upSize; i++) {
+               for (SimplexId i = 0; i < upSize; i++) {
                   newSegmentation[i + downSize] = upSegm[i];
                }
 
@@ -968,7 +968,7 @@ idSuperArc MergeTree::insertNode(Node *node, const bool segment)
 
    idNode     upNodeId, newNodeId;
    idSuperArc currentSA, newSA;
-   idVertex   origin;
+   SimplexId   origin;
 
    // Create new node
    currentSA = getCorrespondingSuperArcId(node->getVertexId());
@@ -992,20 +992,20 @@ idSuperArc MergeTree::insertNode(Node *node, const bool segment)
       // cut the vertex list at the node position and
       // give each arc its part.
       SuperArc *tmpSA = getSuperArc(currentSA);
-      pair<idVertex, bool> *newNodePosPtr =
+      pair<SimplexId, bool> *newNodePosPtr =
           (treeData_.treeType == TreeType::Split)
               ? lower_bound(tmpSA->getVertList(), tmpSA->getVertList() + tmpSA->getVertSize(),
                             make_pair(node->getVertexId(), false),
-                            [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
+                            [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {
                                return isHigher(a.first, b.first);
                             })
               : lower_bound(tmpSA->getVertList(), tmpSA->getVertList() + tmpSA->getVertSize(),
                             make_pair(node->getVertexId(), false),
-                            [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
+                            [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {
                                return isLower(a.first, b.first);
                             });
 
-      idVertex newNodePos = newNodePosPtr - tmpSA->getVertList();
+      SimplexId newNodePos = newNodePosPtr - tmpSA->getVertList();
 
       getSuperArc(newSA)->setVertList(newNodePosPtr);
       getSuperArc(newSA)->setVertSize(tmpSA->getVertSize() - newNodePos);
@@ -1036,7 +1036,7 @@ idSuperArc MergeTree::reverseInsertNode(Node *node, const bool segment)
 
    idNode     downNodeId, newNodeId;
    idSuperArc currentSA, newSA;
-   idVertex   origin;
+   SimplexId   origin;
 
    // Create new node
    currentSA  = getCorrespondingSuperArcId(node->getVertexId());
@@ -1062,20 +1062,20 @@ idSuperArc MergeTree::reverseInsertNode(Node *node, const bool segment)
       // cut the vertex list at the node position and
       // give each arc its part.
       SuperArc *tmpSA = getSuperArc(currentSA);
-      pair<idVertex, bool> *newNodePosPtr =
+      pair<SimplexId, bool> *newNodePosPtr =
           (treeData_.treeType == TreeType::Split)
               ? lower_bound(tmpSA->getVertList(), tmpSA->getVertList() + tmpSA->getVertSize(),
                             make_pair(node->getVertexId(), false),
-                            [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
+                            [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {
                                return isHigher(a.first, b.first);
                             })
               : lower_bound(tmpSA->getVertList(), tmpSA->getVertList() + tmpSA->getVertSize(),
                             make_pair(node->getVertexId(), false),
-                            [&](const pair<idVertex, bool> &a, const pair<idVertex, bool> &b) {
+                            [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {
                                return isLower(a.first, b.first);
                             });
 
-      idVertex newNodePos = newNodePosPtr - tmpSA->getVertList();
+      SimplexId newNodePos = newNodePosPtr - tmpSA->getVertList();
 
       getSuperArc(newSA)->setVertList(tmpSA->getVertList());
       getSuperArc(newSA)->setVertSize(newNodePos);
@@ -1114,7 +1114,7 @@ vector<idNode> MergeTree::getNodeNeighbors(const idNode &n)
 
    vector<idNode> res(nbDown + nbUp);
 
-   idVertex currentPos = 0;
+   SimplexId currentPos = 0;
 
    // Nodes below
    for (idSuperArc i = 0; i < nbDown; i++) {
@@ -1186,7 +1186,7 @@ void MergeTree::hideAndClearArcsAbove(const idNode &baseNode)
    getNode(baseNode)->clearUpSuperArcs();
 }
 
-void MergeTree::hideAndClearArcsBelow(const idNode &baseNode, const idVertex &seed)
+void MergeTree::hideAndClearArcsBelow(const idNode &baseNode, const SimplexId &seed)
 {
    const idSuperArc nbArc = getNode(baseNode)->getNumberOfDownSuperArcs();
    for (idSuperArc i = 0; i < nbArc; ++i) {
@@ -1208,7 +1208,7 @@ void MergeTree::hideAndClearArcsBelow(const idNode &baseNode, const idVertex &se
 }
 
 // add a from parameter
-idSuperArc MergeTree::hideAndClearLeadingTo(const idNode &baseNode, const idVertex &v)
+idSuperArc MergeTree::hideAndClearLeadingTo(const idNode &baseNode, const SimplexId &v)
 {
     if(isCorrespondingNode(v)){
         const auto nbDown = getNode(baseNode)->getNumberOfDownSuperArcs();
@@ -1424,7 +1424,7 @@ idSuperArc MergeTree::newDownArc(const idNode &               curNodeId,
     return keepArc;
 }
 
-tuple<idNode, idNode, idVertex> MergeTree::createReceptArc(
+tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
     const idNode &root, const idSuperArc &receptacleArcId, vector<ExtendedUnionFind *> &ufArray,
     const vector<pair<idSuperArc, idSuperArc>> &valenceOffsets)
 {
@@ -1442,7 +1442,7 @@ tuple<idNode, idNode, idVertex> MergeTree::createReceptArc(
    }
 
    // descend in the tree until valence is not 2
-   idVertex segmentationSize = ufRoot->find()->getOrigin();
+   SimplexId segmentationSize = ufRoot->find()->getOrigin();
    //cout << "init size " << segmentationSize << endl;
 
     // We need a valence of 2 (we don't want to cross a futur saddle
@@ -1690,8 +1690,8 @@ bool MergeTree::verifyTree(void)
           if (!arc.isVisible())
              continue;
 
-          const idVertex segmSize = arc.getVertSize();
-          const pair<idVertex, bool> *segmVect = arc.getVertList();
+          const SimplexId segmSize = arc.getVertSize();
+          const pair<SimplexId, bool> *segmVect = arc.getVertList();
 
           if (segmSize && !segmVect) {
              res = false;
@@ -1701,7 +1701,7 @@ bool MergeTree::verifyTree(void)
              cout << " and a null list" << endl;
          }
 
-         for (idVertex v = 0; v < segmSize; v++) {
+         for (SimplexId v = 0; v < segmSize; v++) {
              if(!segmVect[v].second) {
                 segmSeen.at(segmVect[v].first) = true;
              }
@@ -1716,7 +1716,7 @@ bool MergeTree::verifyTree(void)
       }
 
       cout << "Segm missing : ";
-      for (idVertex v = 0; v < nbVert; v++) {
+      for (SimplexId v = 0; v < nbVert; v++) {
           if(!segmSeen[v]) {
              res = false;
              cout << v << ", ";

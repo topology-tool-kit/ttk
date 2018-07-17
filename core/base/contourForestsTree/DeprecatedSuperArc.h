@@ -44,7 +44,7 @@ namespace ttk
       // Keep th last vertex seen by this arc
       // After the build a a merge tree, a close step is
       // done, using this field to close each root arc
-      idVertex lastVisited_;
+      SimplexId lastVisited_;
       // Stat of this arc, if replaced...
       ComponentState state_;
       // ... use this field to know by wich other arc.
@@ -54,7 +54,7 @@ namespace ttk
       // Regular nodes in this arc
       // Vector for initialisation only (mergetree::build & simplify)
       // Use vertList and sizeVertList_ to acces Arc's vertices after combine
-      std::vector<std::pair<idVertex, bool>> vertices_;
+      std::vector<std::pair<SimplexId, bool>> vertices_;
       // initialized with vertices_.data() and vertices_.size()
       // these two variable allow to split the segmentation when
       // inserting node in the arc without moving memory
@@ -72,12 +72,12 @@ namespace ttk
       // we mark as masqed vertices that are in the arc we added in CT
       // and also in the staying arc to avoid duplicate.
       // _/!\_ used at combine time => create this array using sizeVertList_
-      std::pair<idVertex, bool> *vertList_;
+      std::pair<SimplexId, bool> *vertList_;
       // The size of *vertList_
-      idVertex sizeVertList_;
+      SimplexId sizeVertList_;
 #ifndef TTK_ENABLE_KAMIKAZE
       // add a size verification for global simplify step
-      idVertex allocSgm_=-1;
+      SimplexId allocSgm_=-1;
 #endif
 
      public:
@@ -186,12 +186,12 @@ const size_t &resv = 0ul,
       // last vertex seen
       // .................................{
 
-      inline const idVertex &getLastVisited(void) const
+      inline const SimplexId &getLastVisited(void) const
       {
          return lastVisited_;
       }
 
-      inline void setLastVisited(const idVertex &vertId)
+      inline void setLastVisited(const SimplexId &vertId)
       {
          lastVisited_ = vertId;
          vertices_.emplace_back(vertId, false);
@@ -256,37 +256,37 @@ const size_t &resv = 0ul,
       // regular nodes (segmentation)
       // .................................{
 
-      inline idVertex getNumberOfRegularNodes(void)
+      inline SimplexId getNumberOfRegularNodes(void)
       {
          return getVertSize();
       }
 
-      inline const idVertex &getRegularNodeId(const idVertex &idx)
+      inline const SimplexId &getRegularNodeId(const SimplexId &idx)
       {
          return getVertList()[idx].first;
       }
 
-      inline bool isMasqued(const idVertex &v) const
+      inline bool isMasqued(const SimplexId &v) const
       {
          return vertList_[v].second;
       }
 
       // The std::vector
 
-      inline idVertex getSegmentationSize(void) const
+      inline SimplexId getSegmentationSize(void) const
       {
          return vertices_.size();
       }
 
       // not const for sort in simplify
-      inline std::vector<std::pair<idVertex, bool>> &getSegmentation(void)
+      inline std::vector<std::pair<SimplexId, bool>> &getSegmentation(void)
       {
          return vertices_;
       }
 
       // The array
 
-      inline std::pair<idVertex, bool> *getVertList()
+      inline std::pair<SimplexId, bool> *getVertList()
       {
          if (sizeVertList_ == -1) {
             vertList_     = vertices_.data();
@@ -295,7 +295,7 @@ const size_t &resv = 0ul,
          return vertList_;
       }
 
-      inline const idVertex &getVertSize()
+      inline const SimplexId &getVertSize()
       {
          if (sizeVertList_ == -1) {
             vertList_     = vertices_.data();
@@ -304,17 +304,17 @@ const size_t &resv = 0ul,
          return sizeVertList_;
       }
 
-      inline void setMasqued(const idVertex &v)
+      inline void setMasqued(const SimplexId &v)
       {
          vertList_[v].second = true;
       }
 
-      inline void setVertList(std::pair<idVertex, bool> *vl)
+      inline void setVertList(std::pair<SimplexId, bool> *vl)
       {
          vertList_ = vl;
       }
 
-      inline void setVertSize(const idVertex &s)
+      inline void setVertSize(const SimplexId &s)
       {
          sizeVertList_ = s;
       }
@@ -322,32 +322,32 @@ const size_t &resv = 0ul,
       // append regular nodes :
 
       // From array : alloc should be already done
-      inline void appendVertLists(std::list<std::pair<idVertex, bool> *> 
-vertLists, std::list<idVertex> vertSizes,
-                                  const idVertex &totalSize)
+      inline void appendVertLists(std::list<std::pair<SimplexId, bool> *> 
+vertLists, std::list<SimplexId> vertSizes,
+                                  const SimplexId &totalSize)
       {
          // size local
-         idVertex newSize = sizeVertList_;
+         SimplexId newSize = sizeVertList_;
          if(newSize == -1) newSize = 0;
 
          // size added
          newSize += totalSize;
 
          // alloc
-         std::pair<idVertex, bool> *tmpVert = new std::pair<idVertex, 
+         std::pair<SimplexId, bool> *tmpVert = new std::pair<SimplexId, 
 bool>[newSize];
-         idVertex pos = 0;
+         SimplexId pos = 0;
 
          // values local
-         for (idVertex i = 0; i < sizeVertList_; ++i) {
+         for (SimplexId i = 0; i < sizeVertList_; ++i) {
             tmpVert[pos++] = vertList_[i];
          }
 
          // values added
-         for (std::pair<idVertex, bool>* vertices : vertLists) {
-            const idVertex& size = vertSizes.front();
+         for (std::pair<SimplexId, bool>* vertices : vertLists) {
+            const SimplexId& size = vertSizes.front();
             vertSizes.pop_front();
-            for (idVertex i = 0; i < size; ++i) {
+            for (SimplexId i = 0; i < size; ++i) {
                tmpVert[pos++] = vertices[i];
             }
          }
@@ -359,8 +359,8 @@ bool>[newSize];
 
       // From array : alloc should be already done (chck boundary no kamikaze 
       // only)
-      inline int addSegmentationGlobal(const std::pair<idVertex, bool> *arr, 
-const idVertex &size)
+      inline int addSegmentationGlobal(const std::pair<SimplexId, bool> *arr, 
+const SimplexId &size)
       {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -376,7 +376,7 @@ const idVertex &size)
          }
 #endif
 
-         for (idVertex v = 0; v < size; v++) {
+         for (SimplexId v = 0; v < size; v++) {
              if(!arr[v].second) {
                 vertList_[sizeVertList_++] = arr[v];
              }
@@ -386,16 +386,16 @@ const idVertex &size)
       }
 
       // from std::vector
-      inline void appendSegmentation(const std::vector<std::pair<idVertex, 
+      inline void appendSegmentation(const std::vector<std::pair<SimplexId, 
 bool>> &other)
       {
          vertices_.insert(vertices_.end(), other.begin(), other.end());
       }
 
       // from std::vector with a move
-      inline void setVertices(std::vector<std::pair<idVertex, bool>>::iterator 
+      inline void setVertices(std::vector<std::pair<SimplexId, bool>>::iterator 
 &a,
-                              std::vector<std::pair<idVertex, bool>>::iterator  
+                              std::vector<std::pair<SimplexId, bool>>::iterator  
 b)
       {
          vertices_.insert(vertices_.end(), make_move_iterator(a), 
@@ -403,7 +403,7 @@ make_move_iterator(b));
       }
 
       // add one vertex, alloc should be already done
-      inline void addSegmentationGlobal(const idVertex &v){
+      inline void addSegmentationGlobal(const SimplexId &v){
           vertList_[sizeVertList_++] = std::make_pair(v, false);
       }
 
@@ -422,15 +422,15 @@ make_move_iterator(b));
       // At the end, we set sizeVertList_ back to minus one for normal 
       // utilisation.
 
-      inline void addFuturReserve(const idVertex &nb)
+      inline void addFuturReserve(const SimplexId &nb)
       {
          sizeVertList_ += nb;
          // We have an offset of -1 due to the initial value of sizeVertList_
       }
 
-      inline void makeAllocGlobal(const idVertex& size)
+      inline void makeAllocGlobal(const SimplexId& size)
       {
-         vertList_     = new std::pair<idVertex, bool>[size];
+         vertList_     = new std::pair<SimplexId, bool>[size];
          sizeVertList_ = 0;
 #ifndef TTK_ENABLE_KAMIKAZE
          allocSgm_     = size;

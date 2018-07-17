@@ -33,85 +33,85 @@ namespace ttk
    {
      private:
       // same size : number of conn. components.
-      idVertex seed_;
+      SimplexId seed_;
 
       // Overlap
-      std::vector<idVertex> lowerOverlap_;
-      std::vector<idVertex> upperOverlap_;
+      std::vector<SimplexId> lowerOverlap_;
+      std::vector<SimplexId> upperOverlap_;
 
      public:
-      Interface(const idVertex &seed);
+      Interface(const SimplexId &seed);
 
       // Getter & Setter
       // {
 
-      inline const idVertex &getSeed(void) const
+      inline const SimplexId &getSeed(void) const
       {
          return seed_;
       }
 
-      inline std::vector<idVertex> &getUpper(void)
+      inline std::vector<SimplexId> &getUpper(void)
       {
          return upperOverlap_;
       }
 
-      inline std::vector<idVertex> &getLower(void)
+      inline std::vector<SimplexId> &getLower(void)
       {
          return lowerOverlap_;
       }
-      inline idVertex getNbUpper(void) const
+      inline SimplexId getNbUpper(void) const
       {
          return upperOverlap_.size();
       }
 
-      inline idVertex getNbLower(void) const
+      inline SimplexId getNbLower(void) const
       {
          return lowerOverlap_.size();
       }
 
-      inline void setSeed(const idVertex &local_seed)
+      inline void setSeed(const SimplexId &local_seed)
       {
          seed_ = local_seed;
       }
 
-      inline void addUpper(const idVertex &lb)
+      inline void addUpper(const SimplexId &lb)
       {
          upperOverlap_.emplace_back(lb);
       }
 
-      inline void addLower(const idVertex &lb)
+      inline void addLower(const SimplexId &lb)
       {
          lowerOverlap_.emplace_back(lb);
       }
 
-      inline void upReserve(const idVertex &u)
+      inline void upReserve(const SimplexId &u)
       {
           upperOverlap_.reserve(u);
       }
 
-      inline void loReserve(const idVertex &l)
+      inline void loReserve(const SimplexId &l)
       {
         lowerOverlap_.reserve(l);
       }
 
-      inline void appendUpper(const std::vector<idVertex> &vertices)
+      inline void appendUpper(const std::vector<SimplexId> &vertices)
       {
          upperOverlap_.insert(upperOverlap_.end(), vertices.cbegin(), 
 vertices.cend());
       }
 
-      inline void appendLower(const std::vector<idVertex> &vertices)
+      inline void appendLower(const std::vector<SimplexId> &vertices)
       {
          lowerOverlap_.insert(lowerOverlap_.end(), vertices.cbegin(), 
 vertices.cend());
       }
 
-      inline void swapUpper(std::vector<idVertex> &verts)
+      inline void swapUpper(std::vector<SimplexId> &verts)
       {
          upperOverlap_.swap(verts);
       }
 
-      inline void swapLower(std::vector<idVertex> &verts)
+      inline void swapLower(std::vector<SimplexId> &verts)
       {
          lowerOverlap_.swap(verts);
       }
@@ -172,15 +172,15 @@ vertices.cend());
 
       // range of partitions, position of seeds , ...
 
-      inline std::tuple<idVertex, idVertex> getJTRange(const idPartition& i) 
+      inline std::tuple<SimplexId, SimplexId> getJTRange(const idPartition& i) 
 const
       {
-         const idVertex &start = (i == 0)
+         const SimplexId &start = (i == 0)
                                    ? 0
                                    : 
 scalars_->mirrorVertices[parallelData_.interfaces[i - 1].getSeed()];
 
-         const idVertex &end   = (i == parallelParams_.nbInterfaces)
+         const SimplexId &end   = (i == parallelParams_.nbInterfaces)
                                    ? scalars_->size
                                    : 
 scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()];
@@ -188,15 +188,15 @@ scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()];
          return std::make_tuple(start, end);
       }
 
-      inline std::tuple<idVertex, idVertex> getSTRange(const idPartition& i) 
+      inline std::tuple<SimplexId, SimplexId> getSTRange(const idPartition& i) 
 const
       {
-         const idVertex &start = (i == parallelParams_.nbInterfaces)
+         const SimplexId &start = (i == parallelParams_.nbInterfaces)
                                    ? scalars_->size -1
                                    : 
 scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()] -1;
 
-         const idVertex &end   = (i == 0)
+         const SimplexId &end   = (i == 0)
                                    ? -1
                                    : 
 scalars_->mirrorVertices[parallelData_.interfaces[i-1].getSeed()] -1;
@@ -204,15 +204,15 @@ scalars_->mirrorVertices[parallelData_.interfaces[i-1].getSeed()] -1;
          return std::make_tuple(start, end);
       }
 
-      inline std::tuple<idVertex, idVertex> getSeedsPos(const idPartition &i) 
+      inline std::tuple<SimplexId, SimplexId> getSeedsPos(const idPartition &i) 
 const
       {
-         const idVertex &seed0 = (i == 0)
+         const SimplexId &seed0 = (i == 0)
                                    ? -1
                                    : 
 scalars_->mirrorVertices[parallelData_.interfaces[i-1].getSeed()];
 
-         const idVertex &seed1 = (i == parallelParams_.nbInterfaces)
+         const SimplexId &seed1 = (i == parallelParams_.nbInterfaces)
                                    ? nullVertex
                                    : 
 scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()];
@@ -220,22 +220,22 @@ scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()];
          return std::make_tuple(seed0, seed1);
       }
 
-      inline std::tuple<std::vector<idVertex>, std::vector<idVertex>> 
+      inline std::tuple<std::vector<SimplexId>, std::vector<SimplexId>> 
 getOverlaps(const idPartition &i)
       {
-         const std::vector<idVertex> &lower = (i == 0)
-                                   ? std::vector<idVertex>()
+         const std::vector<SimplexId> &lower = (i == 0)
+                                   ? std::vector<SimplexId>()
                                    : parallelData_.interfaces[i-1].getLower();
 
-         const std::vector<idVertex> &upper = (i == 
+         const std::vector<SimplexId> &upper = (i == 
 parallelParams_.nbInterfaces)
-                                   ? std::vector<idVertex>()
+                                   ? std::vector<SimplexId>()
                                    : parallelData_.interfaces[i].getUpper();
 
          return std::make_tuple(lower, upper);
       }
 
-      idPartition vertex2partition(const idVertex &v);
+      idPartition vertex2partition(const SimplexId &v);
 
       // }
 

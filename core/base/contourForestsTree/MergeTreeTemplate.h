@@ -58,7 +58,7 @@ void MergeTree::sortInput(void)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
-      for (idVertex i = 0; i < nbVertices; i++) {
+      for (SimplexId i = 0; i < nbVertices; i++) {
          scalars_->mirrorVertices[sortedVect[i]] = i;
       }
    }
@@ -71,7 +71,7 @@ void MergeTree::sortInput(void)
 // Simplify
 
 template <typename scalarType>
-idEdge MergeTree::localSimplify(const idVertex &posSeed0, const idVertex &posSeed1)
+SimplexId MergeTree::localSimplify(const SimplexId &posSeed0, const SimplexId &posSeed1)
 {
 
     // if null threshold, leave
@@ -86,15 +86,15 @@ idEdge MergeTree::localSimplify(const idVertex &posSeed0, const idVertex &posSee
     // -----------------
     // {
 
-    std::vector<std::tuple<idVertex, idVertex, scalarType, bool>> pairs;
+    std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> pairs;
     computePersistencePairs<scalarType>(pairs);
 
     if (DEBUG) {
        std::cout << "pairs : ( threshold : " << params_->simplifyThreshold 
         << " )" << std::endl;
        for (const auto &p : pairs) {
-          const idVertex &  thisOriginVert = std::get<0>(p);
-          const idVertex &  thisEndVert    = std::get<1>(p);
+          const SimplexId &  thisOriginVert = std::get<0>(p);
+          const SimplexId &  thisEndVert    = std::get<1>(p);
           const scalarType &thisPersist    = std::get<2>(p);
           const bool        thisNeedUp     = std::get<3>(p);
           std::cout << thisOriginVert << " - " << thisEndVert << " : " << 
@@ -116,7 +116,7 @@ thisPersist;
 }
 
 template <typename scalarType>
-idEdge MergeTree::globalSimplify(const idVertex posSeed0, const idVertex 
+SimplexId MergeTree::globalSimplify(const SimplexId posSeed0, const SimplexId 
 posSeed1)
 {
 
@@ -158,8 +158,8 @@ posSeed1)
     //{
 
     // origin, end, persistance, needToGoUp
-    std::vector<std::tuple<idVertex, idVertex, scalarType,bool>> pairsJT;
-    std::vector<std::tuple<idVertex, idVertex, scalarType,bool>> pairsST;
+    std::vector<std::tuple<SimplexId, SimplexId, scalarType,bool>> pairsJT;
+    std::vector<std::tuple<SimplexId, SimplexId, scalarType,bool>> pairsST;
 
     recoverMTPairs<scalarType>(sortedNodes, pairsJT, pairsST);
 
@@ -169,15 +169,15 @@ posSeed1)
     //---------------------
     //{
 
-    auto pairComp = [](const std::tuple<idVertex, idVertex, scalarType, bool> 
+    auto pairComp = [](const std::tuple<SimplexId, SimplexId, scalarType, bool> 
 &a,
-                       const std::tuple<idVertex, idVertex, scalarType, bool> 
+                       const std::tuple<SimplexId, SimplexId, scalarType, bool> 
 &b) {
        // sort by persistence
        return std::get<2>(a) < std::get<2>(b);
     };
 
-    std::vector<std::tuple<idVertex, idVertex, scalarType, bool>> sortedPairs;
+    std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> sortedPairs;
     size_t sizePJT = pairsJT.size(), sizePST = pairsST.size();
 
     sortedPairs.reserve(sizePJT + sizePST);
@@ -214,9 +214,9 @@ posSeed1)
 }
 
 template <typename scalarType>
-idEdge MergeTree::simplifyTree(
-    const idVertex &posSeed0, const idVertex &posSeed1,
-    const std::vector<std::tuple<idVertex, idVertex, scalarType, bool>> 
+SimplexId MergeTree::simplifyTree(
+    const SimplexId &posSeed0, const SimplexId &posSeed1,
+    const std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> 
 &sortedPairs)
 {
    const auto nbNode = getNumberOfNodes();
@@ -228,7 +228,7 @@ idEdge MergeTree::simplifyTree(
    // nb arc seen below / above this node
    std::vector<std::pair<idSuperArc, idSuperArc>> valenceOffset(nbNode, 
 std::make_pair(0,0));
-   idEdge nbPairMerged = 0;
+   SimplexId nbPairMerged = 0;
 
    const bool DEBUG = false;
 
@@ -247,8 +247,8 @@ posSeed1 << std::endl;
    // Add the origin of all pairs that need to merge
    for (const auto & pp : sortedPairs) {
       if (std::get<2>(pp) < params_->simplifyThreshold ) {
-         const idVertex &thisOriginVert = std::get<0>(pp);
-         const idVertex &thisEndVert    = std::get<1>(pp);
+         const SimplexId &thisOriginVert = std::get<0>(pp);
+         const SimplexId &thisEndVert    = std::get<1>(pp);
          const idNode &  thisOriginId   = 
 getCorrespondingNodeId(thisOriginVert);
 
@@ -337,7 +337,7 @@ std::endl;
               << " is in subtree rooted :";
             const idNode &root = -subtreeUF[nid]->find()->getData() - 1;
             std::cout << getNode(root)->getVertexId();
-            const idVertex &segmSize = subtreeUF[nid]->find()->getOrigin();
+            const SimplexId &segmSize = subtreeUF[nid]->find()->getOrigin();
             std::cout << " with segmentation of " << segmSize << std::endl;
          }
       }
@@ -352,8 +352,8 @@ std::endl;
    // Add the origin of all pairs that need to merge
    for (const auto & pp : sortedPairs) {
       if (std::get<2>(pp) < params_->simplifyThreshold ) {
-         const idVertex &thisOriginVert = std::get<0>(pp);
-         const idVertex &thisEndVert    = std::get<1>(pp);
+         const SimplexId &thisOriginVert = std::get<0>(pp);
+         const SimplexId &thisEndVert    = std::get<1>(pp);
          const idNode &  thisOriginId   = 
 getCorrespondingNodeId(thisOriginVert);
          //const idNode &  thisEndId      = getCorrespondingNode(thisEndVert);
@@ -373,7 +373,7 @@ getCorrespondingNodeId(thisOriginVert);
             const idSuperArc receptArcId = treeData_.superArcs.size();
             // down , up, segmentation size
             // create the receptacle arc and merge arc not in sub-tree in it
-            const std::tuple<idNode, idNode, idVertex> &receptArc =
+            const std::tuple<idNode, idNode, SimplexId> &receptArc =
                 createReceptArc(subtreeRoot, receptArcId, subtreeUF, 
 valenceOffset);
 
@@ -509,8 +509,8 @@ getSuperArc(receptacleArcId)->addSegmentationGlobal(getNode(upNode)->getVertexId
 // Persistence
 
 template <typename scalarType>
-int MergeTree::computePersistencePairs(std::vector<std::tuple<idVertex, 
-idVertex, scalarType>> &pairs)
+int MergeTree::computePersistencePairs(std::vector<std::tuple<SimplexId, 
+SimplexId, scalarType>> &pairs)
 {
 #ifndef TTK_ENABLE_KAMIKAZE
    if (!getNumberOfSuperArcs()) {
@@ -522,14 +522,14 @@ idVertex, scalarType>> &pairs)
 
    for (const idNode &leave : treeData_.leaves) {
       Node *   curNode  = getNode(leave);
-      idVertex curVert  = curNode->getVertexId();
-      idVertex termVert = getNode(curNode->getTerminaison())->getVertexId();
+      SimplexId curVert  = curNode->getVertexId();
+      SimplexId termVert = getNode(curNode->getTerminaison())->getVertexId();
 
       addPair<scalarType>(pairs, curVert, termVert);
    }
 
-   auto pair_sort = [](const std::tuple<idVertex, idVertex, scalarType> &a,
-                       const std::tuple<idVertex, idVertex, scalarType> &b) {
+   auto pair_sort = [](const std::tuple<SimplexId, SimplexId, scalarType> &a,
+                       const std::tuple<SimplexId, SimplexId, scalarType> &b) {
       return std::get<2>(a) < std::get<2>(b);
    };
 
@@ -539,8 +539,8 @@ idVertex, scalarType>> &pairs)
 }
 
 template <typename scalarType>
-int MergeTree::computePersistencePairs(std::vector<std::tuple<idVertex, 
-idVertex, scalarType,bool>> &pairs)
+int MergeTree::computePersistencePairs(std::vector<std::tuple<SimplexId, 
+SimplexId, scalarType,bool>> &pairs)
 {
     // Need to be called on MergeTree, not ContourTree
 
@@ -560,16 +560,16 @@ idVertex, scalarType,bool>> &pairs)
 
    for (const idNode &leave : treeData_.leaves) {
       Node *   curNode  = getNode(leave);
-      idVertex curVert  = curNode->getVertexId();
-      idVertex termVert = getNode(curNode->getTerminaison())->getVertexId();
+      SimplexId curVert  = curNode->getVertexId();
+      SimplexId termVert = getNode(curNode->getTerminaison())->getVertexId();
 
       addPair<scalarType>(pairs, curVert, termVert, treeData_.treeType == 
 TreeType::Join);
    }
 
-   auto pair_sort = [](const std::tuple<idVertex, idVertex, scalarType, bool> 
+   auto pair_sort = [](const std::tuple<SimplexId, SimplexId, scalarType, bool> 
 &a,
-                       const std::tuple<idVertex, idVertex, scalarType, bool> 
+                       const std::tuple<SimplexId, SimplexId, scalarType, bool> 
 &b) {
       return std::get<2>(a) < std::get<2>(b);
    };
@@ -581,9 +581,9 @@ TreeType::Join);
 
 template <typename scalarType>
 void MergeTree::recoverMTPairs(
-    const std::vector<idNode> &sortedNodes, std::vector<std::tuple<idVertex, 
-idVertex, scalarType, bool>> &pairsJT,
-    std::vector<std::tuple<idVertex, idVertex, scalarType, bool>> &pairsST)
+    const std::vector<idNode> &sortedNodes, std::vector<std::tuple<SimplexId, 
+SimplexId, scalarType, bool>> &pairsJT,
+    std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairsST)
 {
     const auto nbNode = getNumberOfNodes();
 
@@ -600,11 +600,11 @@ idVertex, scalarType, bool>> &pairsJT,
        {
           pairsJT.reserve(treeData_.leaves.size());
           // For the biggest pair of the component
-          std::map<idVertex, idVertex> pendingMinMax;
+          std::map<SimplexId, SimplexId> pendingMinMax;
 
           for (auto it = sortedNodes.cbegin(); it != sortedNodes.cend(); ++it) {
              const idNode &  n = *it;
-             const idVertex &v = getNode(n)->getVertexId();
+             const SimplexId &v = getNode(n)->getVertexId();
 
              const auto &nbUp = getNode(n)->getNumberOfUpSuperArcs();
              const auto &nbDown = getNode(n)->getNumberOfDownSuperArcs();
@@ -623,7 +623,7 @@ ExtendedUnionFind(getNode(n)->getVertexId());
 
                 ExtendedUnionFind *merge     = 
 vect_JoinUF[firstChildNodeId]->find();
-                idVertex           further   = merge->getOrigin();
+                SimplexId           further   = merge->getOrigin();
                 idSuperArc         furtherI  = 0;
 
                 // Find the most persistant way
@@ -702,12 +702,12 @@ pair_vert.second, true);
        {
           pairsST.reserve(treeData_.leaves.size());
           // For the biggest pair of the component
-          std::map<idVertex, idVertex> pendingMinMax;
+          std::map<SimplexId, SimplexId> pendingMinMax;
 
           for (auto it = sortedNodes.crbegin(); it != sortedNodes.crend(); 
 ++it) {
              const idNode &  n = *it;
-             const idVertex &v = getNode(n)->getVertexId();
+             const SimplexId &v = getNode(n)->getVertexId();
 
              const auto &nbUp = getNode(n)->getNumberOfUpSuperArcs();
              const auto &nbDown = getNode(n)->getNumberOfDownSuperArcs();
@@ -726,7 +726,7 @@ ExtendedUnionFind(getNode(n)->getVertexId());
 
                 ExtendedUnionFind *merge     = 
 vect_SplitUF[firstChildNodeId]->find();
-                idVertex           further   = merge->getOrigin();
+                SimplexId           further   = merge->getOrigin();
                 idSuperArc         furtherI  = 0;
 
                 for (idSuperArc ni = 1; ni < nbUp; ++ni) {
@@ -808,9 +808,9 @@ false);
 // {
 
 template <typename scalarType>
-void MergeTree::addPair(std::vector<std::tuple<idVertex, idVertex, scalarType, 
+void MergeTree::addPair(std::vector<std::tuple<SimplexId, SimplexId, scalarType, 
 bool>> &pairs,
-                        const idVertex &orig, const idVertex &term, const bool 
+                        const SimplexId &orig, const SimplexId &term, const bool 
 goUp)
 {
    if (params_->simplifyMethod == SimplifMethod::Persist) {
@@ -827,9 +827,9 @@ getValue<scalarType>(term)),
 }
 
 template <typename scalarType>
-void MergeTree::addPair(std::vector<std::tuple<idVertex, idVertex, scalarType>> 
+void MergeTree::addPair(std::vector<std::tuple<SimplexId, SimplexId, scalarType>> 
 &pairs,
-                        const idVertex &orig, const idVertex &term)
+                        const SimplexId &orig, const SimplexId &term)
 {
    if (params_->simplifyMethod == SimplifMethod::Persist) {
       pairs.emplace_back(orig, term, fabs(getValue<scalarType>(orig) - 
