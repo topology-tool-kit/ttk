@@ -29,28 +29,28 @@ namespace ttk
 namespace ftm
 {
 
-   // one segment: like a vector<idVertex>
+   // one segment: like a vector<SimplexId>
    // have a fixed size
    class Segment
    {
      private:
-      std::vector<idVertex> vertices_;
+      std::vector<SimplexId> vertices_;
 
      public:
-      Segment(idVertex size);
+      Segment(SimplexId size);
 
       void sort(const Scalars* s);
       void createFromList(const Scalars* s, 
-        std::list<std::vector<idVertex>>& regularsList, const bool reverse);
+        std::list<std::vector<SimplexId>>& regularsList, const bool reverse);
 
       segm_const_it begin(void) const;
       segm_const_it end(void) const;
       segm_it       begin(void);
       segm_it       end(void);
-      idVertex      size(void) const;
+      SimplexId      size(void) const;
 
-      idVertex operator[](const size_t& idx) const;
-      idVertex& operator[](const size_t& idx);
+      SimplexId operator[](const size_t& idx) const;
+      SimplexId& operator[](const size_t& idx);
    };
 
    // All the segments of the mesh, like a vector<Segment>
@@ -65,13 +65,13 @@ namespace ftm
       Segments(const Segment&) = delete;
 
       // add one vertex
-      std::tuple<segm_it, segm_it> addLateSimpleSegment(idVertex v);
+      std::tuple<segm_it, segm_it> addLateSimpleSegment(SimplexId v);
 
       // sort all segment (in parallel?)
       void sortAll(const Scalars* s);
 
       // callable once
-      void resize(const std::vector<idVertex>& sizes);
+      void resize(const std::vector<SimplexId>& sizes);
 
       // vector like
       idSegment size(void) const;
@@ -104,7 +104,7 @@ namespace ftm
       // the begin and the end inside it (as a segment may be subdivided)
       std::list<Region> segmentsIn_;
       // when and how to compact ?
-      std::vector<idVertex> segmentation_;
+      std::vector<SimplexId> segmentation_;
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // true if the segmentation have been sent to the segmentation_ vector
@@ -118,12 +118,12 @@ namespace ftm
       ArcRegion(const segm_it& begin, const segm_it& end);
 
       // vertex used for the split (not in segmentation anymore), remaining region
-      std::tuple<idVertex, ArcRegion> splitFront(idVertex v, const Scalars* s);
+      std::tuple<SimplexId, ArcRegion> splitFront(SimplexId v, const Scalars* s);
 
       // vertex used for the split (not in segmentation anymore), remaining region
-      std::tuple<idVertex, ArcRegion> splitBack(idVertex v, const Scalars* s);
+      std::tuple<SimplexId, ArcRegion> splitBack(SimplexId v, const Scalars* s);
 
-      idVertex findBelow(idVertex v, const Scalars* s,
+      SimplexId findBelow(SimplexId v, const Scalars* s,
         const std::vector<idCorresp>& 
           vert2treeOther = std::vector<idCorresp>()) const;
 
@@ -148,7 +148,7 @@ namespace ftm
       // a segment can contain vertices for several arcs
       void createSegmentation(const Scalars* s);
 
-      inline idVertex count(void) const
+      inline SimplexId count(void) const
       {
          size_t res = 0;
          for (const auto& reg : segmentsIn_) {
@@ -187,7 +187,7 @@ namespace ftm
 
       // vector like manip
 
-      inline idVertex size(void) const
+      inline SimplexId size(void) const
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!segmented_)
@@ -196,7 +196,7 @@ namespace ftm
          return segmentation_.size();
       }
 
-      idVertex operator[](idVertex v) const
+      SimplexId operator[](SimplexId v) const
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!segmented_)
@@ -207,7 +207,7 @@ namespace ftm
          return segmentation_[v];
       }
 
-      idVertex& operator[](idVertex v)
+      SimplexId& operator[](SimplexId v)
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!segmented_)

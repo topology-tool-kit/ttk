@@ -115,11 +115,11 @@ class ttkPersistenceCurve
 
     template <typename vtkArrayType, typename scalarType>
       int getPersistenceCurve(ttk::ftm::TreeType treeType, 
-        const std::vector<std::pair<scalarType, ttk::ftm::idVertex>>& plot);
+        const std::vector<std::pair<scalarType, ttk::SimplexId>>& plot);
 
     template <typename vtkArrayType, typename scalarType>
       int getMSCPersistenceCurve(
-        const std::vector<std::pair<scalarType, ttk::ftm::idVertex>>& plot);
+        const std::vector<std::pair<scalarType, ttk::SimplexId>>& plot);
 
   private:
 
@@ -155,8 +155,8 @@ class ttkPersistenceCurve
 
 template <typename vtkArrayType, typename scalarType>
 int ttkPersistenceCurve::getPersistenceCurve(ttk::ftm::TreeType treeType, 
-  const std::vector<std::pair<scalarType, ttk::ftm::idVertex>>& plot){
-  const ttk::ftm::idVertex numberOfPairs = plot.size();
+  const std::vector<std::pair<scalarType, ttk::SimplexId>>& plot){
+  const ttk::SimplexId numberOfPairs = plot.size();
 
   vtkSmartPointer<vtkArrayType> persistenceScalars = 
     vtkSmartPointer<vtkArrayType>::New();
@@ -189,7 +189,7 @@ int ttkPersistenceCurve::getPersistenceCurve(ttk::ftm::TreeType treeType,
     numberOfPairsScalars->SetNumberOfTuples(numberOfPairs);
     persistenceCurve->SetNumberOfRows(numberOfPairs);
 
-    for (ttk::ftm::idVertex i = 0; i < numberOfPairs; ++i) {
+    for (ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
       persistenceScalars->SetTuple1(i, plot[i].first);
       numberOfPairsScalars->SetTuple1(i, plot[i].second);
     }
@@ -218,8 +218,8 @@ int ttkPersistenceCurve::getPersistenceCurve(ttk::ftm::TreeType treeType,
 
 template <typename vtkArrayType, typename scalarType>
 int ttkPersistenceCurve::getMSCPersistenceCurve(
-  const std::vector<std::pair<scalarType, ttk::ftm::idVertex>>& plot){
-  const ttk::ftm::idVertex numberOfPairs = plot.size();
+  const std::vector<std::pair<scalarType, ttk::SimplexId>>& plot){
+  const ttk::SimplexId numberOfPairs = plot.size();
 
   vtkSmartPointer<vtkArrayType> persistenceScalars = 
     vtkSmartPointer<vtkArrayType>::New();
@@ -236,7 +236,7 @@ int ttkPersistenceCurve::getMSCPersistenceCurve(
     numberOfPairsScalars->SetNumberOfTuples(numberOfPairs);
     persistenceCurve->SetNumberOfRows(numberOfPairs);
 
-    for (ttk::ftm::idVertex i = 0; i < numberOfPairs; ++i) {
+    for (ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
       persistenceScalars->SetTuple1(i, plot[i].first);
       numberOfPairsScalars->SetTuple1(i, plot[i].second);
     }

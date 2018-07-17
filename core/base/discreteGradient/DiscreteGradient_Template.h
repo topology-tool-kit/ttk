@@ -3135,10 +3135,10 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
   contourTree.build<dataType,SimplexId>();
   ftm::FTMTree_MT* tree=contourTree.getTree(ftm::TreeType::Contour);
 
-  const ftm::idVertex numberOfNodes=tree->getNumberOfNodes();
-  for (ftm::idVertex nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
+  const SimplexId numberOfNodes=tree->getNumberOfNodes();
+  for (SimplexId nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
     const ftm::Node* node = tree->getNode(nodeId);
-    const ftm::idVertex vertexId = node->getVertexId();
+    const SimplexId vertexId = node->getVertexId();
 
     cpset.push_back(std::make_pair(vertexId, getNodeType(tree,node)));
   }

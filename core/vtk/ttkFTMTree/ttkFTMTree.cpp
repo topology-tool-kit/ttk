@@ -44,9 +44,9 @@ int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId, const int cc
    float         point[3];
    vtkIdType     pointIds[2];
 
-   const idVertex downNodeId     = tree->getLowerNodeId(arc);
-   const idVertex l_downVertexId = tree->getNode(downNodeId)->getVertexId();
-   const idVertex g_downVertexId = idMapper->GetTuple1(l_downVertexId);
+   const SimplexId downNodeId     = tree->getLowerNodeId(arc);
+   const SimplexId l_downVertexId = tree->getNode(downNodeId)->getVertexId();
+   const SimplexId g_downVertexId = idMapper->GetTuple1(l_downVertexId);
    triangulation_[cc]->getVertexPoint(l_downVertexId, point[0], point[1], point[2]);
    const double scalarMin = inputScalars_[cc]->GetTuple1(l_downVertexId);
 
@@ -61,7 +61,7 @@ int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId, const int cc
 
    pointIds[0] = nextPointId;
 
-   for (const idVertex vertexId : *arc) {
+   for (const SimplexId vertexId : *arc) {
       triangulation_[cc]->getVertexPoint(vertexId, point[0], point[1], point[2]);
       pointIds[1] = points->InsertNextPoint(point);
       const double scalar = inputScalars_[cc]->GetTuple1(vertexId);
@@ -73,9 +73,9 @@ int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId, const int cc
       pointIds[0] = pointIds[1];
    }
 
-   const idVertex upNodeId     = tree->getUpperNodeId(arc);
-   const idVertex l_upVertexId = tree->getNode(upNodeId)->getVertexId();
-   const idVertex g_upVertexId = idMapper->GetTuple1(l_upVertexId);
+   const SimplexId upNodeId     = tree->getUpperNodeId(arc);
+   const SimplexId l_upVertexId = tree->getNode(upNodeId)->getVertexId();
+   const SimplexId g_upVertexId = idMapper->GetTuple1(l_upVertexId);
    triangulation_[cc]->getVertexPoint(l_upVertexId, point[0], point[1], point[2]);
    const double scalarMax = inputScalars_[cc]->GetTuple1(l_upVertexId);
 
@@ -104,9 +104,9 @@ int ttkFTMTree::addDirectSkeletonArc(const idSuperArc arcId, const int cc, vtkPo
    float     point[3];
    vtkIdType pointIds[2];
 
-   const idVertex downNodeId     = tree->getLowerNodeId(arc);
-   const idVertex l_downVertexId = tree->getNode(downNodeId)->getVertexId();
-   const idVertex g_downVertexId = idMapper->GetTuple1(l_downVertexId);
+   const SimplexId downNodeId     = tree->getLowerNodeId(arc);
+   const SimplexId l_downVertexId = tree->getNode(downNodeId)->getVertexId();
+   const SimplexId g_downVertexId = idMapper->GetTuple1(l_downVertexId);
    triangulation_[cc]->getVertexPoint(l_downVertexId, point[0], point[1], point[2]);
    const double scalarMin = inputScalars_[cc]->GetTuple1(l_downVertexId);
    // Get or create first point of the arc
@@ -118,9 +118,9 @@ int ttkFTMTree::addDirectSkeletonArc(const idSuperArc arcId, const int cc, vtkPo
       pointIds[0] = arcData.point_ids[g_downVertexId];
    }
 
-   const idVertex upNodeId     = tree->getUpperNodeId(arc);
-   const idVertex l_upVertexId = tree->getNode(upNodeId)->getVertexId();
-   const idVertex g_upVertexId = idMapper->GetTuple1(l_upVertexId);
+   const SimplexId upNodeId     = tree->getUpperNodeId(arc);
+   const SimplexId l_upVertexId = tree->getNode(upNodeId)->getVertexId();
+   const SimplexId g_upVertexId = idMapper->GetTuple1(l_upVertexId);
    triangulation_[cc]->getVertexPoint(l_upVertexId, point[0], point[1], point[2]);
    const double scalarMax = inputScalars_[cc]->GetTuple1(l_upVertexId);
    // Get or create last point of the arc
@@ -147,9 +147,9 @@ int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId, const int cc, vtkP
    float     point[3];
    vtkIdType pointIds[2];
 
-   const idVertex downNodeId     = tree->getLowerNodeId(arc);
-   const idVertex l_downVertexId = tree->getNode(downNodeId)->getVertexId();
-   const idVertex g_downVertexId = idMapper->GetTuple1(l_downVertexId);
+   const SimplexId downNodeId     = tree->getLowerNodeId(arc);
+   const SimplexId l_downVertexId = tree->getNode(downNodeId)->getVertexId();
+   const SimplexId g_downVertexId = idMapper->GetTuple1(l_downVertexId);
    triangulation_[cc]->getVertexPoint(l_downVertexId, point[0], point[1], point[2]);
    const double scalarMin = inputScalars_[cc]->GetTuple1(l_downVertexId);
 
@@ -164,9 +164,9 @@ int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId, const int cc, vtkP
 
    pointIds[0] = nextPointId;
 
-   const idVertex upNodeId     = tree->getUpperNodeId(arc);
-   const idVertex l_upVertexId = tree->getNode(upNodeId)->getVertexId();
-   const idVertex g_upVertexId = idMapper->GetTuple1(l_upVertexId);
+   const SimplexId upNodeId     = tree->getUpperNodeId(arc);
+   const SimplexId l_upVertexId = tree->getNode(upNodeId)->getVertexId();
+   const SimplexId g_upVertexId = idMapper->GetTuple1(l_upVertexId);
    triangulation_[cc]->getVertexPoint(l_upVertexId, point[0], point[1], point[2]);
    const double scalarMax = inputScalars_[cc]->GetTuple1(l_upVertexId);
 
@@ -182,9 +182,9 @@ int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId, const int cc, vtkP
       nextPointId = arcData.point_ids[g_upVertexId];
    }
 
-   idVertex  c = 0;
+   SimplexId  c = 0;
    float     sum[3]{0, 0, 0};
-   for (const idVertex vertexId : *arc) {
+   for (const SimplexId vertexId : *arc) {
       triangulation_[cc]->getVertexPoint(vertexId, point[0], point[1], point[2]);
       const double scalarVertex = inputScalars_[cc]->GetTuple1(vertexId);
 
@@ -369,13 +369,13 @@ int ttkFTMTree::getOffsets()
          }
       }
 
-      const idVertex numberOfVertices = connected_components_[cc]->GetNumberOfPoints();
+      const SimplexId numberOfVertices = connected_components_[cc]->GetNumberOfPoints();
 
       if (UseInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
          inputOffsets =
              connected_components_[cc]->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
          offsets_[cc].resize(numberOfVertices);
-         for (idVertex i = 0; i < numberOfVertices; i++) {
+         for (SimplexId i = 0; i < numberOfVertices; i++) {
             offsets_[cc][i] = inputOffsets->GetTuple1(i);
          }
       } else {
@@ -389,7 +389,7 @@ int ttkFTMTree::getOffsets()
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
-            for (idVertex i = 0; i < numberOfVertices; i++) {
+            for (SimplexId i = 0; i < numberOfVertices; i++) {
                offsets_[cc][i] = i;
             }
          }
@@ -471,7 +471,7 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs)
    for (int cc = 0; cc < nbCC_; cc++) {
       FTMTree_MT* tree = ftmTree_[cc].tree.getTree(GetTreeType());
 
-      const idVertex numberOfSuperArcs = tree->getNumberOfSuperArcs();
+      const SimplexId numberOfSuperArcs = tree->getNumberOfSuperArcs();
 #ifndef TTK_ENABLE_KAMIKAZE
       if (!numberOfSuperArcs) {
          cerr << "[ttkFTMTree] Error : tree has no super arcs." << endl;
@@ -479,8 +479,8 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs)
       }
 #endif
 
-      for (idVertex arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
-         const idVertex numberOfRegularNodes = tree->getArcSize(arcId);
+      for (SimplexId arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
+         const SimplexId numberOfRegularNodes = tree->getArcSize(arcId);
          if (numberOfRegularNodes > 0 and samplingLevel > 0) {
             addSampledSkeletonArc(arcId, cc, points, skeletonArcs, arcData);
          } else if (samplingLevel == -1) {
@@ -495,8 +495,8 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs)
    arcData.addArray(skeletonArcs, params_);
    outputSkeletonArcs->ShallowCopy(skeletonArcs);
 
-  // const idVertex p_size = points->GetNumberOfPoints();
-  // const idVertex s_size = tree->getNumberOfVertices();
+  // const SimplexId p_size = points->GetNumberOfPoints();
+  // const SimplexId s_size = tree->getNumberOfVertices();
   // cout << "arcs points " << p_size << endl;
   // cout << "scal points " << s_size << endl;
   // cout << "nb arcs     " << tree->getNumberOfSuperArcs()<< endl;
@@ -537,7 +537,7 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
             return -7;
          }
 #endif
-         const idVertex local_vertId  = node->getVertexId();
+         const SimplexId local_vertId  = node->getVertexId();
          float          point[3];
          triangulation_[cc]->getVertexPoint(local_vertId, point[0], point[1], point[2]);
          const ttkIdType nextPoint = points->InsertNextPoint(point);

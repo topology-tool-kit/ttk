@@ -210,10 +210,10 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
         inputOffsets_->GetDataType())){
 #ifndef _MSC_VER
 	  vtkTemplate2Macro(({
-		  vector<pair<VTK_T1, idVertex>> JTPlot;
-	  vector<pair<VTK_T1, idVertex>> STPlot;
-	  vector<pair<VTK_T1, idVertex>> MSCPlot;
-	  vector<pair<VTK_T1, idVertex>> CTPlot;
+		  vector<pair<VTK_T1, SimplexId>> JTPlot;
+	  vector<pair<VTK_T1, SimplexId>> STPlot;
+	  vector<pair<VTK_T1, SimplexId>> MSCPlot;
+	  vector<pair<VTK_T1, SimplexId>> CTPlot;
 
 	  persistenceCurve_.setOutputJTPlot(&JTPlot);
 	  persistenceCurve_.setOutputMSCPlot(&MSCPlot);
@@ -269,10 +269,10 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 #else
 #ifndef TTK_ENABLE_KAMIKAZE
 	  vtkTemplate2Macro(({
-		  vector<pair<VTK_T1 COMMA idVertex>> JTPlot;
-	  vector<pair<VTK_T1 COMMA idVertex>> STPlot;
-	  vector<pair<VTK_T1 COMMA idVertex>> MSCPlot;
-	  vector<pair<VTK_T1 COMMA idVertex>> CTPlot;
+		  vector<pair<VTK_T1 COMMA SimplexId>> JTPlot;
+	  vector<pair<VTK_T1 COMMA SimplexId>> STPlot;
+	  vector<pair<VTK_T1 COMMA SimplexId>> MSCPlot;
+	  vector<pair<VTK_T1 COMMA SimplexId>> CTPlot;
 
 	  persistenceCurve_.setOutputJTPlot(&JTPlot);
 	  persistenceCurve_.setOutputMSCPlot(&MSCPlot);
@@ -317,10 +317,10 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 	  }));
 #else
 	  vtkTemplate2Macro(({
-		  vector<pair<VTK_T1 COMMA idVertex>> JTPlot;
-	  vector<pair<VTK_T1 COMMA idVertex>> STPlot;
-	  vector<pair<VTK_T1 COMMA idVertex>> MSCPlot;
-	  vector<pair<VTK_T1 COMMA idVertex>> CTPlot;
+		  vector<pair<VTK_T1 COMMA SimplexId>> JTPlot;
+	  vector<pair<VTK_T1 COMMA SimplexId>> STPlot;
+	  vector<pair<VTK_T1 COMMA SimplexId>> MSCPlot;
+	  vector<pair<VTK_T1 COMMA SimplexId>> CTPlot;
 
 	  persistenceCurve_.setOutputJTPlot(&JTPlot);
 	  persistenceCurve_.setOutputMSCPlot(&MSCPlot);

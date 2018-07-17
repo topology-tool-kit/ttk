@@ -72,8 +72,8 @@ namespace ftm
 
       // vertex 2 node / superarc
       std::vector<idCorresp> *vert2tree;
-      std::vector<idVertex>  *visitOrder;
-      std::vector<std::list<std::vector<idVertex>>> *trunkSegments;
+      std::vector<SimplexId>  *visitOrder;
+      std::vector<std::list<std::vector<SimplexId>>> *trunkSegments;
 
       // Track informations
       std::vector<UF> *ufs, *propagation;
@@ -136,7 +136,7 @@ namespace ftm
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
-            for (idVertex i = 0; i < scalars_->size; i++) {
+            for (SimplexId i = 0; i < scalars_->size; i++) {
                ((idType *)scalars_->offsets)[i] = i;
             }
          }
@@ -146,23 +146,23 @@ namespace ftm
       void initComp(void)
       {
          if (isST()) {
-            comp_.vertLower = [this](const idVertex a, const idVertex b) -> bool {
+            comp_.vertLower = [this](const SimplexId a, const SimplexId b) -> bool {
                return this->scalars_->isHigher(a, b);
             };
-            comp_.vertHigher = [this](const idVertex a, const idVertex b) -> bool {
+            comp_.vertHigher = [this](const SimplexId a, const SimplexId b) -> bool {
                return this->scalars_->isLower(a, b);
             };
          } else {
-            comp_.vertLower = [this](const idVertex a, const idVertex b) -> bool {
+            comp_.vertLower = [this](const SimplexId a, const SimplexId b) -> bool {
                return this->scalars_->isLower(a, b);
             };
-            comp_.vertHigher = [this](const idVertex a, const idVertex b) -> bool {
+            comp_.vertHigher = [this](const SimplexId a, const SimplexId b) -> bool {
                return this->scalars_->isHigher(a, b);
             };
          }
       }
 
-      bool compLower(const idVertex a, const idVertex b)
+      bool compLower(const SimplexId a, const SimplexId b)
       {
          return comp_.vertLower(a, b);
       }
@@ -193,9 +193,9 @@ namespace ftm
          createVector<idCorresp>(mt_data_.vert2tree);
          mt_data_.vert2tree->resize(scalars_->size);
 
-         createVector<std::list<std::vector<idVertex>>>(mt_data_.trunkSegments);
+         createVector<std::list<std::vector<SimplexId>>>(mt_data_.trunkSegments);
 
-         createVector<idVertex>(mt_data_.visitOrder);
+         createVector<SimplexId>(mt_data_.visitOrder);
          mt_data_.visitOrder->resize(scalars_->size);
 
          createVector<UF>(mt_data_.ufs);
@@ -216,14 +216,14 @@ namespace ftm
       void makeInit(void)
       {
          initVector<idCorresp>(mt_data_.vert2tree, nullCorresp);
-         initVector<idVertex>(mt_data_.visitOrder, nullVertex);
+         initVector<SimplexId>(mt_data_.visitOrder, nullVertex);
          initVector<UF>(mt_data_.ufs, nullptr);
          initVector<UF>(mt_data_.propagation, nullptr);
          initVector<valence>(mt_data_.valences, 0);
          initVector<char>(mt_data_.openedNodes, 0);
       }
 
-      void initVectStates(const idVertex nbLeaves)
+      void initVectStates(const SimplexId nbLeaves)
       {
          if(!mt_data_.states) {
             mt_data_.states = new AtomicVector<CurrentState>(nbLeaves, comp_.vertHigher);
@@ -247,26 +247,26 @@ namespace ftm
 
       void leafGrowth();
 
-      void arcGrowth(const idVertex startVert, const idVertex orig);
+      void arcGrowth(const SimplexId startVert, const SimplexId orig);
 
       std::tuple<bool, bool> propage(CurrentState &currentState, UF curUF);
 
-      void closeAndMergeOnSaddle(idVertex saddleVert);
+      void closeAndMergeOnSaddle(SimplexId saddleVert);
 
-      void closeOnBackBone(idVertex saddleVert);
+      void closeOnBackBone(SimplexId saddleVert);
 
       void closeArcsUF(idNode closeNode, UF uf);
 
-      idVertex trunk(const bool ct);
+      SimplexId trunk(const bool ct);
 
-      virtual idVertex trunkSegmentation(const std::vector<idVertex> &pendingNodesVerts,
-                                         const idVertex begin,
-                                         const idVertex stop);
+      virtual SimplexId trunkSegmentation(const std::vector<SimplexId> &pendingNodesVerts,
+                                         const SimplexId begin,
+                                         const SimplexId stop);
 
       // fill treedata_.trunkSegments
-      idVertex trunkCTSegmentation(const std::vector<idVertex> &pendingNodesVerts,
-                                   const idVertex begin,
-                                   const idVertex stop);
+      SimplexId trunkCTSegmentation(const std::vector<SimplexId> &pendingNodesVerts,
+                                   const SimplexId begin,
+                                   const SimplexId stop);
 
       // segmentation
 
@@ -291,7 +291,7 @@ namespace ftm
       }
 #endif
 
-      inline idVertex getArcSize(const idSuperArc arcId)
+      inline SimplexId getArcSize(const idSuperArc arcId)
       {
           return getSuperArc(arcId)->size();
       }
@@ -343,7 +343,7 @@ namespace ftm
       // scalar
 
       template <typename scalarType>
-      inline const scalarType &getValue(idVertex idNode) const
+      inline const scalarType &getValue(SimplexId idNode) const
       {
          return (((scalarType *)scalars_->values))[idNode];
       }
@@ -404,7 +404,7 @@ namespace ftm
          return &((*mt_data_.nodes)[nodeId]);
       }
 
-      inline void setValence(const idVertex v, const idVertex val)
+      inline void setValence(const SimplexId v, const SimplexId val)
       {
           (*mt_data_.valences)[v] = val;
       }
@@ -443,7 +443,7 @@ namespace ftm
 
       // vertices
 
-      inline idVertex getNumberOfVertices(void) const
+      inline SimplexId getNumberOfVertices(void) const
       {
          return scalars_->size;
       }
@@ -461,24 +461,24 @@ namespace ftm
 
       // test vertex correpondance
 
-      inline bool isCorrespondingArc(const idVertex val) const
+      inline bool isCorrespondingArc(const SimplexId val) const
       {
          return !isCorrespondingNull(val) && (*mt_data_.vert2tree)[val] >= 0;
       }
 
-      inline bool isCorrespondingNode(const idVertex val) const
+      inline bool isCorrespondingNode(const SimplexId val) const
       {
          return (*mt_data_.vert2tree)[val] < 0;
       }
 
-      inline bool isCorrespondingNull(const idVertex val) const
+      inline bool isCorrespondingNull(const SimplexId val) const
       {
          return (*mt_data_.vert2tree)[val] == nullCorresp;
       }
 
       // Get vertex info
 
-      inline idNode getCorrespondingNodeId(const idVertex val) const
+      inline idNode getCorrespondingNodeId(const SimplexId val) const
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!isCorrespondingNode(val)) {
@@ -492,7 +492,7 @@ namespace ftm
          return corr2idNode(val);
       }
 
-      inline idSuperArc getCorrespondingSuperArcId(const idVertex val) const
+      inline idSuperArc getCorrespondingSuperArcId(const SimplexId val) const
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!isCorrespondingArc(val)) {
@@ -508,12 +508,12 @@ namespace ftm
 
       // Get corresponding elemnt
 
-      inline SuperArc *vertex2SuperArc(const idVertex vert)
+      inline SuperArc *vertex2SuperArc(const SimplexId vert)
       {
          return &((*mt_data_.superArcs)[getCorrespondingSuperArcId(vert)]);
       }
 
-      inline Node *vertex2Node(const idVertex vert)
+      inline Node *vertex2Node(const SimplexId vert)
       {
          return &((*mt_data_.nodes)[getCorrespondingNodeId(vert)]);
       }
@@ -521,12 +521,12 @@ namespace ftm
       // Update vertex info
 
 
-      inline void updateCorrespondingArc(const idVertex vert, const idSuperArc arc)
+      inline void updateCorrespondingArc(const SimplexId vert, const idSuperArc arc)
       {
          (*mt_data_.vert2tree)[vert] = arc;
       }
 
-      inline void updateCorrespondingNode(const idVertex vert, const idNode node)
+      inline void updateCorrespondingNode(const SimplexId vert, const idNode node)
       {
          (*mt_data_.vert2tree)[vert] = idNode2corr(node);
       }
@@ -559,9 +559,9 @@ namespace ftm
 
       void sortLeaves(const bool parallel = false);
 
-      idNode makeNode(idVertex vertexId, idVertex linked = nullVertex);
+      idNode makeNode(SimplexId vertexId, SimplexId linked = nullVertex);
 
-      idNode makeNode(const Node *const n, idVertex linked = nullVertex);
+      idNode makeNode(const Node *const n, SimplexId linked = nullVertex);
 
       idSuperArc insertNode(Node *node, const bool segm = true);
 
@@ -603,7 +603,7 @@ namespace ftm
 
       void printParams(void) const;
 
-      int printTime(DebugTimer &t, const std::string &s, idVertex nbScalars = -1,
+      int printTime(DebugTimer &t, const std::string &s, SimplexId nbScalars = -1,
                     const int debugLevel = 2) const;
 
      protected:
@@ -612,33 +612,33 @@ namespace ftm
       // Tools
       // -----
 
-      idNode getVertInRange(const std::vector<idVertex> &range,
-                            const idVertex v,
+      idNode getVertInRange(const std::vector<SimplexId> &range,
+                            const SimplexId v,
                             const idNode last = 0) const;
 
-      std::tuple<idVertex, idVertex> getBoundsFromVerts(const std::vector<idVertex> &nodes) const;
+      std::tuple<SimplexId, SimplexId> getBoundsFromVerts(const std::vector<SimplexId> &nodes) const;
 
-      idSuperArc upArcFromVert(const idVertex v)
+      idSuperArc upArcFromVert(const SimplexId v)
       {
          return getNode(getCorrespondingNodeId(v))->getUpSuperArcId(0);
       }
 
-      inline idVertex getChunkSize(const idVertex nbVerts = -1, const idVertex nbtasks = 100) const
+      inline SimplexId getChunkSize(const SimplexId nbVerts = -1, const SimplexId nbtasks = 100) const
       {
-         const idVertex s = (nbVerts == -1) ? scalars_->size : nbVerts;
+         const SimplexId s = (nbVerts == -1) ? scalars_->size : nbVerts;
 #ifndef NDEBUG
          // Debug mode
-         static const idVertex minWorks = 1;
+         static const SimplexId minWorks = 1;
 #else
          // Release mode
-         static const idVertex minWorks = 10000;
+         static const SimplexId minWorks = 10000;
 #endif
          return std::max(minWorks, 1 + (s / (nbtasks * threadNumber_)));
       }
 
-      inline idVertex getChunkCount(const idVertex nbVerts = -1, const idVertex nbTasks = 100) const
+      inline SimplexId getChunkCount(const SimplexId nbVerts = -1, const SimplexId nbTasks = 100) const
       {
-         const idVertex s = (nbVerts == -1) ? scalars_->size : nbVerts;
+         const SimplexId s = (nbVerts == -1) ? scalars_->size : nbVerts;
          return 1 + (s / getChunkSize(s, nbTasks));
       }
 
@@ -668,7 +668,7 @@ namespace ftm
       // Compare using the scalar array : only for sort step
 
       template <typename scalarType,typename idType>
-      inline bool isLower(idVertex a, idVertex b) const
+      inline bool isLower(SimplexId a, SimplexId b) const
       {
          return ((scalarType *)scalars_->values)[a] < ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
@@ -676,7 +676,7 @@ namespace ftm
       }
 
       template <typename scalarType,typename idType>
-      inline bool isHigher(idVertex a, idVertex b) const
+      inline bool isHigher(SimplexId a, SimplexId b) const
       {
          return ((scalarType *)scalars_->values)[a] > ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
@@ -684,7 +684,7 @@ namespace ftm
       }
 
       template <typename scalarType,typename idType>
-      inline bool isEqLower(idVertex a, idVertex b) const
+      inline bool isEqLower(SimplexId a, SimplexId b) const
       {
          return ((scalarType *)scalars_->values)[a] < ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&
@@ -692,7 +692,7 @@ namespace ftm
       }
 
       template <typename scalarType,typename idType>
-      inline bool isEqHigher(idVertex a, idVertex b) const
+      inline bool isEqHigher(SimplexId a, SimplexId b) const
       {
          return ((scalarType *)scalars_->values)[a] > ((scalarType *)scalars_->values)[b] ||
                 (((scalarType *)scalars_->values)[a] == ((scalarType *)scalars_->values)[b] &&

@@ -30,17 +30,17 @@ namespace ttk
          virtual ~FTMTreePP();
 
          template <typename scalarType>
-         void computePersistencePairs(std::vector<std::tuple<idVertex, idVertex, scalarType>>& pairs,
+         void computePersistencePairs(std::vector<std::tuple<SimplexId, SimplexId, scalarType>>& pairs,
                                       const bool jt);
 
         protected:
          template <typename scalarType>
          void computePairs(ftm::FTMTree_MT* tree,
-                           std::vector<std::tuple<idVertex, idVertex, scalarType>>& pairs);
+                           std::vector<std::tuple<SimplexId, SimplexId, scalarType>>& pairs);
 
          template <typename scalarType>
          void sortPairs(ftm::FTMTree_MT* tree,
-                        std::vector<std::tuple<idVertex, idVertex, scalarType>>& pairs);
+                        std::vector<std::tuple<SimplexId, SimplexId, scalarType>>& pairs);
 
          void addPendingNode(const idNode parentNode, const idNode toAdd)
          {
@@ -56,13 +56,13 @@ namespace ttk
 
 
          template <typename scalarType>
-         idVertex getMostPersistVert(const idNode current, ftm::FTMTree_MT* tree)
+         SimplexId getMostPersistVert(const idNode current, ftm::FTMTree_MT* tree)
          {
-            idVertex  minVert = tree->getNode(current)->getVertexId();
+            SimplexId  minVert = tree->getNode(current)->getVertexId();
             AtomicUF* uf      = nodesUF_[current]->find();
 
             for (const auto nodeid : uf->getOpenedArcs()) {
-               const idVertex vtmp = nodesUF_[nodeid]->find()->getExtrema();
+               const SimplexId vtmp = nodesUF_[nodeid]->find()->getExtrema();
                if (tree->compLower(vtmp, minVert)) {
                   minVert = vtmp;
                }
@@ -78,16 +78,16 @@ namespace ttk
 
          template <typename scalarType>
          void createPairs(const idNode current,
-                          std::vector<std::tuple<idVertex, idVertex, scalarType>>& pairs,
+                          std::vector<std::tuple<SimplexId, SimplexId, scalarType>>& pairs,
                           ftm::FTMTree_MT* tree,
-                          const idVertex   mp)
+                          const SimplexId   mp)
          {
             AtomicUF*        uf      = nodesUF_[current]->find();
-            const idVertex   curVert = tree->getNode(current)->getVertexId();
+            const SimplexId   curVert = tree->getNode(current)->getVertexId();
             const scalarType curVal  = getValue<scalarType>(curVert);
 
             for (const auto nodeid : uf->getOpenedArcs()) {
-               const idVertex tmpVert = nodesUF_[nodeid]->find()->getExtrema();
+               const SimplexId tmpVert = nodesUF_[nodeid]->find()->getExtrema();
                AtomicUF::makeUnion(uf, nodesUF_[nodeid]);
                if (tmpVert != mp) {
                   const scalarType tmpVal = getValue<scalarType>(tmpVert);
@@ -107,7 +107,7 @@ namespace ttk
 template <typename scalarType>
 void 
 ttk::ftm::FTMTreePP::computePersistencePairs(std::vector<std::tuple<
-idVertex, idVertex, scalarType>>& pairs,
+SimplexId, SimplexId, scalarType>>& pairs,
                                              const bool jt)
 {
    ftm::FTMTree_MT* tree = jt ? getJoinTree() : getSplitTree();
@@ -135,7 +135,7 @@ idVertex, idVertex, scalarType>>& pairs,
 
 template <typename scalarType>
 void ttk::ftm::FTMTreePP::computePairs(ftm::FTMTree_MT* tree,
-                                  std::vector<std::tuple<idVertex, idVertex, 
+                                  std::vector<std::tuple<SimplexId, SimplexId, 
 scalarType>>& pairs)
 {
    auto getParentNode = [&](const idNode current) {
@@ -168,7 +168,7 @@ scalarType>>& pairs)
 
       if (countPendingNode(parentNode) == 
 tree->getNode(parentNode)->getNumberOfDownSuperArcs()) {
-         const idVertex mostPersist = getMostPersistVert<scalarType>(parentNode, 
+         const SimplexId mostPersist = getMostPersistVert<scalarType>(parentNode, 
 tree);
          createPairs<scalarType>(parentNode, pairs, tree, mostPersist);
          nodesUF_[parentNode]->find()->setExtrema(mostPersist);
@@ -179,11 +179,11 @@ tree);
 
 template <typename scalarType>
 void ttk::ftm::FTMTreePP::sortPairs(ftm::FTMTree_MT* tree,
-                               std::vector<std::tuple<idVertex, idVertex, 
+                               std::vector<std::tuple<SimplexId, SimplexId, 
 scalarType>>& pairs)
 {
-   auto comp = [&](const std::tuple<idVertex, idVertex, scalarType> a,
-                   const std::tuple<idVertex, idVertex, scalarType> b) {
+   auto comp = [&](const std::tuple<SimplexId, SimplexId, scalarType> a,
+                   const std::tuple<SimplexId, SimplexId, scalarType> b) {
        return std::get<2>(a) < std::get<2>(b);
    };
 

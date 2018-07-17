@@ -156,13 +156,13 @@ int ttkPersistenceDiagram::deleteDiagram(){
     switch(inputScalars_->GetDataType()){
 #ifndef _MSC_VER
 		vtkTemplateMacro(({
-			using tuple_t = tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,VTK_TT,ftm::idVertex>;
+			using tuple_t = tuple<SimplexId,ftm::NodeType,SimplexId,ftm::NodeType,VTK_TT,SimplexId>;
 		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
 		delete CTDiagram;
 		}));
 #else
 		vtkTemplateMacro({
-			using tuple_t = tuple<ftm::idVertex COMMA ftm::NodeType COMMA ftm::idVertex COMMA ftm::NodeType COMMA VTK_TT COMMA ftm::idVertex>;
+			using tuple_t = tuple<SimplexId COMMA ftm::NodeType COMMA SimplexId COMMA ftm::NodeType COMMA VTK_TT COMMA SimplexId>;
 		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
 		delete CTDiagram;
 		});
@@ -218,12 +218,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
         inputOffsets_->GetDataType())){
 #ifndef _MSC_VER
 	  vtkTemplate2Macro(({
-		  using tuple_t = tuple<ftm::idVertex,
+		  using tuple_t = tuple<SimplexId,
 		  ftm::NodeType,
-		  ftm::idVertex,
+		  SimplexId,
 		  ftm::NodeType,
 		  VTK_T1,
-		  ftm::idVertex>;
+		  SimplexId>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;
@@ -264,12 +264,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #else
 #ifndef TTK_ENABLE_KAMIKAZE
 	  vtkTemplate2Macro(({
-		  using tuple_t = tuple<ftm::idVertex COMMA
+		  using tuple_t = tuple<SimplexId COMMA
 		  ftm::NodeType COMMA
-		  ftm::idVertex COMMA
+		  SimplexId COMMA
 		  ftm::NodeType COMMA
 		  VTK_T1 COMMA
-		  ftm::idVertex>;
+		  SimplexId>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;
@@ -305,12 +305,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  }));
 #else
 	  vtkTemplate2Macro(({
-		  using tuple_t = tuple<ftm::idVertex COMMA
+		  using tuple_t = tuple<SimplexId COMMA
 		  ftm::NodeType COMMA
-		  ftm::idVertex COMMA
+		  SimplexId COMMA
 		  ftm::NodeType COMMA
 		  VTK_T1 COMMA
-		  ftm::idVertex>;
+		  SimplexId>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;

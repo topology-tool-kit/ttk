@@ -90,7 +90,7 @@ struct ArcData : public WrapperData {
       ttk::ftm::idSuperArc nbArcs       = 0;
       ttk::ftm::idSuperArc nbNodes      = 0;
       ttk::ftm::idSuperArc samplePoints = 0;
-      ttk::ftm::idVertex   nbVerts      = 0;
+      ttk::SimplexId   nbVerts      = 0;
 
       for (auto& t : ftmTree) {
          ttk::ftm::FTMTree_MT* tree = t.tree.getTree(params.treeType);
@@ -119,12 +119,12 @@ struct ArcData : public WrapperData {
       return 0;
    }
 
-   inline bool hasPoint(const ttk::ftm::idVertex vertId)
+   inline bool hasPoint(const ttk::SimplexId vertId)
    {
       return point_ids[vertId] != ttk::ftm::nullVertex;
    }
 
-   inline void addPoint(const ttk::ftm::idVertex globalId, const ttkIdType id, const float scalar,
+   inline void addPoint(const ttk::SimplexId globalId, const ttkIdType id, const float scalar,
                         const bool reg)
    {
       point_ids[globalId] = id;
@@ -160,13 +160,13 @@ struct ArcData : public WrapperData {
          }
 
          float               downPoints[3];
-         const ttk::ftm::idVertex downNodeId   = tree->getLowerNodeId(arc);
-         const ttk::ftm::idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
+         const ttk::SimplexId downNodeId   = tree->getLowerNodeId(arc);
+         const ttk::SimplexId downVertexId = tree->getNode(downNodeId)->getVertexId();
          triangulation->getVertexPoint(downVertexId, downPoints[0], downPoints[1], downPoints[2]);
 
          float               upPoints[3];
-         const ttk::ftm::idVertex upNodeId   = tree->getUpperNodeId(arc);
-         const ttk::ftm::idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
+         const ttk::SimplexId upNodeId   = tree->getUpperNodeId(arc);
+         const ttk::SimplexId upVertexId = tree->getNode(upNodeId)->getVertexId();
          triangulation->getVertexPoint(upVertexId, upPoints[0], upPoints[1], upPoints[2]);
 
          cell_spanArcs->SetTuple1(pos, ttk::Geometry::distance(downPoints, upPoints));
@@ -252,9 +252,9 @@ struct NodeData : public WrapperData{
       ttk::ftm::FTMTree_MT*    tree       = ftmTree.tree.getTree(params.treeType);
       const ttk::ftm::Node*    node       = tree->getNode(nodeId);
       // local (per cc) id
-      const ttk::ftm::idVertex l_vertexId = node->getVertexId();
+      const ttk::SimplexId l_vertexId = node->getVertexId();
       // global id
-      const ttk::ftm::idVertex g_vertexId = idMapper->GetTuple1(l_vertexId);
+      const ttk::SimplexId g_vertexId = idMapper->GetTuple1(l_vertexId);
       float cellScalar = 0;
       switch (scalarType) {
          vtkTemplateMacro({ cellScalar = (float)tree->getValue<VTK_TT>(l_vertexId); });
@@ -274,13 +274,13 @@ struct NodeData : public WrapperData{
          ttk::ftm::SuperArc* arc = tree->getSuperArc(saId);
 
          float               downPoints[3];
-         const ttk::ftm::idVertex downNodeId   = tree->getLowerNodeId(arc);
-         const ttk::ftm::idVertex downVertexId = tree->getNode(downNodeId)->getVertexId();
+         const ttk::SimplexId downNodeId   = tree->getLowerNodeId(arc);
+         const ttk::SimplexId downVertexId = tree->getNode(downNodeId)->getVertexId();
          triangulation->getVertexPoint(downVertexId, downPoints[0], downPoints[1], downPoints[2]);
 
          float               upPoints[3];
-         const ttk::ftm::idVertex upNodeId   = tree->getUpperNodeId(arc);
-         const ttk::ftm::idVertex upVertexId = tree->getNode(upNodeId)->getVertexId();
+         const ttk::SimplexId upNodeId   = tree->getUpperNodeId(arc);
+         const ttk::SimplexId upVertexId = tree->getNode(upNodeId)->getVertexId();
          triangulation->getVertexPoint(upVertexId, upPoints[0], upPoints[1], upPoints[2]);
 
          regionSpan->SetTuple1(arrIdx, ttk::Geometry::distance(downPoints, upPoints));
@@ -341,7 +341,7 @@ struct VertData: public WrapperData {
       if (!params.segm)
          return 0;
 
-      ttk::ftm::idVertex numberOfVertices = 0;
+      ttk::SimplexId numberOfVertices = 0;
 
       for (auto& t : ftmTrees) {
          ttk::ftm::FTMTree_MT* tree = t.tree.getTree(params.treeType);
@@ -372,21 +372,21 @@ struct VertData: public WrapperData {
 
       const ttk::ftm::idNode   upNodeId     = arc->getUpNodeId();
       const ttk::ftm::Node*    upNode       = tree->getNode(upNodeId);
-      const ttk::ftm::idVertex l_upVertexId = upNode->getVertexId();
-      const ttk::ftm::idVertex g_upVertexId = idMapper->GetTuple1(l_upVertexId);
+      const ttk::SimplexId l_upVertexId = upNode->getVertexId();
+      const ttk::SimplexId g_upVertexId = idMapper->GetTuple1(l_upVertexId);
       const ttk::ftm::NodeType upNodeType   = getNodeType(*tree, upNodeId, params);
       float               coordUp[3];
       triangulation->getVertexPoint(l_upVertexId, coordUp[0], coordUp[1], coordUp[2]);
 
       const ttk::ftm::idNode   downNodeId     = arc->getDownNodeId();
       const ttk::ftm::Node*    downNode       = tree->getNode(downNodeId);
-      const ttk::ftm::idVertex           l_downVertexId = downNode->getVertexId();
-      const ttk::ftm::idVertex           g_downVertexId = idMapper->GetTuple1(l_downVertexId);
+      const ttk::SimplexId           l_downVertexId = downNode->getVertexId();
+      const ttk::SimplexId           g_downVertexId = idMapper->GetTuple1(l_downVertexId);
       const ttk::ftm::NodeType downNodeType   = getNodeType(*tree, downNodeId, params);
       float               coordDown[3];
       triangulation->getVertexPoint(l_downVertexId, coordDown[0], coordDown[1], coordDown[2]);
 
-      const ttk::ftm::idVertex    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
+      const ttk::SimplexId    regionSize = tree->getSuperArc(arcId)->getNumberOfRegularNodes();
       const double regionSpan = ttk::Geometry::distance(coordUp, coordDown);
 
       ttk::ftm::idSuperArc nid = arc->getNormalizedId();
@@ -444,8 +444,8 @@ struct VertData: public WrapperData {
       typeRegion->SetTuple1(g_downVertexId , static_cast<char>(regionType));
 
       // regular nodes
-      for (const ttk::ftm::idVertex l_vertexId : *arc) {
-         const ttk::ftm::idVertex g_vertexId = idMapper->GetTuple1(l_vertexId);
+      for (const ttk::SimplexId l_vertexId : *arc) {
+         const ttk::SimplexId g_vertexId = idMapper->GetTuple1(l_vertexId);
          if (params.normalize) {
             ids->SetTuple1(g_vertexId, idOffset + nid);
          } else {
