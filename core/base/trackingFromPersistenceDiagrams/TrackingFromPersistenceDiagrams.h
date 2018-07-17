@@ -1,54 +1,68 @@
 /// \ingroup base
-/// \class ttk::FeatureTracking
+/// \class ttk::TrackingFromPersistenceDiagrams
 /// \author Maxime Soler <soler.maxime@total.com>
 /// \date August 2018.
 
-#ifndef _FEATURETRACKING_H
-#define _FEATURETRACKING_H
-
-#ifndef diagramTuple
-#define diagramTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, ttk::ftm::idVertex, \
-  ttk::ftm::NodeType, double, ttk::ftm::idVertex, \
-  double, float, float, float, double, float, float, float>
-#endif
-
-#ifndef matchingTuple
-#define matchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, double>
-#endif
-
-#ifndef trackingTuple
-#define trackingTuple std::tuple<int, int, std::vector<ttk::ftm::idVertex>>
-#endif
-// start ts, end ts or -1, list of indices for every ts
-
-#ifndef BNodeType
-#define BNodeType ttk::ftm::NodeType
-#define BLocalMax ttk::ftm::NodeType::Local_maximum
-#define BLocalMin ttk::ftm::NodeType::Local_minimum
-#define BSaddle1  ttk::ftm::NodeType::Saddle1
-#define BSaddle2  ttk::ftm::NodeType::Saddle2
-#define BIdVertex ttk::ftm::idVertex
-#endif
+#ifndef _TRACKINGFROMP_H
+#define _TRACKINGFROMP_H
 
 // base code includes
 #include                  <Wrapper.h>
 #include                  <PersistenceDiagram.h>
+#include                  <BottleneckDistance.h>
 
 namespace ttk
 {
 
-  class FeatureTracking : public Debug {
+  class TrackingFromFields : public Debug {
+
+    using dataType = double;
 
     public:
 
-      FeatureTracking();
+      TrackingFromFields();
 
-      ~FeatureTracking();
+      ~TrackingFromFields();
 
       /// Execute the package.
       /// \return Returns 0 upon success, negative values otherwise.
       template <class dataType>
       int execute();
+
+      int performSingleMatching(
+        int i,
+        std::vector<std::vector<diagramTuple>*>* inputPersistenceDiagrams,
+        std::vector<std::vector<matchingTuple>*>* outputMatchings,
+        std::string algorithm,
+        std::string wasserstein,
+        double tolerance,
+        bool is3D,
+        double alpha,
+        double px, double py, double pz, double ps, double pe,
+        const ttk::Wrapper *wrapper);
+
+      int performMatchings(
+        int numInputs,
+        std::vector<std::vector<diagramTuple>*>* inputPersistenceDiagrams,
+        std::vector<std::vector<matchingTuple>*>* outputMatchings,
+        std::string algorithm,
+        std::string wasserstein,
+        double tolerance,
+        bool is3D,
+        double alpha,
+        double px, double py, double pz, double ps, double pe,
+        const ttk::Wrapper *wrapper);
+
+      int performTracking(
+        std::vector<std::vector<diagramTuple>*>* allDiagrams,
+        std::vector<std::vector<matchingTuple>*>* allMatchings,
+        std::vector<trackingTuple>* trackings);
+
+      int performPostProcess(
+        std::vector<std::vector<diagramTuple>*>* allDiagrams,
+        std::vector<trackingTuple>* trackings,
+        std::vector<std::set<int>>* trackingTupleToMerged,
+        double postProcThresh);
 
       /// Pass a pointer to an input array representing a scalarfield.
       /// The array is expected to be correctly allocated. idx in [0,numberOfInputs_[
@@ -81,7 +95,7 @@ namespace ttk
 
 // template functions
 template <class dataType>
-int ttk::FeatureTracking::execute()
+int ttk::TrackingFromFields::execute()
 {
   ttk::Timer t;
 
@@ -110,4 +124,4 @@ int ttk::FeatureTracking::execute()
   return 0;
 }
 
-#endif // FEATURETRACKING_H
+#endif // _TRACKINGFROMP_H

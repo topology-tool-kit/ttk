@@ -254,8 +254,8 @@ private:
 
 template <typename dataType>
 int ttkBottleneckDistance::generatePersistenceDiagram(
-    std::vector<diagramTuple>* diagram,
-    const int size)
+  std::vector<diagramTuple>* diagram,
+  const int size)
 {
 //  srand(time(NULL));
   int vertexId1 = 1;
@@ -331,10 +331,10 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
   }
 
   sort(diagram->begin(), diagram->end(),
-       [](const diagramTuple & a, const diagramTuple & b) -> bool
-       {
-         return std::get<6>(a) < std::get<6>(b);
-       });
+    [](const diagramTuple & a, const diagramTuple & b) -> bool
+    {
+      return std::get<6>(a) < std::get<6>(b);
+    });
 
   return 0;
 }
@@ -388,7 +388,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
       || !persistenceScalars || !extremumIndexScalars || !points)
     return -2;
 
-  diagram->resize(pairingsSize);
+  diagram->resize((unsigned long) pairingsSize);
   int nbNonCompact = 0;
 
   for (int i = 0; i < pairingsSize; ++i) {
@@ -469,9 +469,9 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
   vtkUnstructuredGrid *CTPersistenceDiagram2_)
 {
 
-  BIdVertex diagramSize1 = diagram1->size();
-  BIdVertex diagramSize2 = diagram2->size();
-  BIdVertex matchingsSize = matchings->size();
+  BIdVertex diagramSize1 = (BIdVertex) diagram1->size();
+  BIdVertex diagramSize2 = (BIdVertex) diagram2->size();
+  BIdVertex matchingsSize = (BIdVertex) matchings->size();
 
   vtkSmartPointer<vtkIntArray> matchingIdentifiers1 =
     vtkSmartPointer<vtkIntArray>::New();
@@ -507,7 +507,7 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
     // Affect bottleneck matchings
     int pairingIndex = 0;
     for (BIdVertex i = 0; i < matchingsSize; ++i) {
-      matchingTuple t = matchings->at(i);
+      matchingTuple t = matchings->at((unsigned long) i);
       ids[0] = std::get<0>(t);
       ids[1] = std::get<1>(t);
       matchingIdentifiers1->InsertTuple1(ids[0], pairingIndex);
@@ -542,7 +542,7 @@ int ttkBottleneckDistance::getMatchingMesh(
       vtkSmartPointer<vtkIntArray>::New();
   matchingIdScalars->SetName("MatchingIdentifier");
 
-  BIdVertex matchingsSize = matchings->size();
+  BIdVertex matchingsSize = (BIdVertex) matchings->size();
 
   // Build matchings.
   if (matchingsSize > 0) {
@@ -550,9 +550,9 @@ int ttkBottleneckDistance::getMatchingMesh(
     for (BIdVertex i = 0; i < matchingsSize; ++i) {
       vtkIdType ids[2];
 
-      matchingTuple t = matchings->at(i);
-      int n1 = std::get<0>(t);
-      int n2 = std::get<1>(t);
+      matchingTuple t = matchings->at((unsigned long) i);
+      int n1 = (int) std::get<0>(t);
+      int n2 = (int) std::get<1>(t);
 
       diagramTuple tuple1 = diagram1->at(n1);
       diagramTuple tuple2 = diagram2->at(n2);

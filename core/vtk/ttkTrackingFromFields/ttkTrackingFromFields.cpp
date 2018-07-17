@@ -124,7 +124,7 @@ int ttkTrackingFromFields::doIt(
     }
   }
 
-  int res;
+  int res = 0;
   if (useTTKMethod)
     res = trackWithPersistenceMatching(
         input, output, inputScalarFields);
@@ -148,7 +148,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
   // 1. get persistence diagrams.
   std::vector<vtkUnstructuredGrid*> persistenceDiagrams(fieldNumber);
-  #pragma omp parallel for num_threads(ThreadNumber)
+  // #pragma omp parallel for num_threads(ThreadNumber)
   for (int i = 0; i < (int) fieldNumber; ++i)
   {
     ttkPersistenceDiagram *ttkPD = ttkPersistenceDiagram::New();

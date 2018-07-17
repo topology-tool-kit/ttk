@@ -19,8 +19,6 @@ int BottleneckDistance::computeBottleneck(
     const bool usePersistenceMetric,
     const double alpha)
 {
-  auto* distance = new dataType;
-
   int d1Size = (int) d1->size();
   int d2Size = (int) d2->size();
 
@@ -112,7 +110,7 @@ int BottleneckDistance::computeBottleneck(
             py * pow((/*std::get<8>(a)+*/std::get<12>(a))/*/2*/ - (/*std::get<8>(b)+*/std::get<12>(b))/*/2*/, 2) +
             pz * pow((/*std::get<9>(a)+*/std::get<13>(a))/*/2*/ - (/*std::get<9>(b)+*/std::get<13>(b))/*/2*/, 2)
         );
-//        dist /= maxDistance;
+        //dist /= maxDistance;
         double infDistance = std::max(x, y);
         double val = geometricalFactor * infDistance + (1.0 - geometricalFactor) * dist;
         val = wasserstein > 1 ? pow(val, wasserstein) : val;
@@ -180,27 +178,27 @@ int BottleneckDistance::computeBottleneck(
     if (nbRowMin > 0 && nbColMin > 0) {
       GabowTarjan solverMin;
       dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
-      this->solveInfinityWasserstein(minRowColMin, maxRowColMin,
-                                     nbRowMin, nbColMin,
-                                     minMatrix, &minMatchings, &solverMin);
+      this->solveInfinityWasserstein(
+        minRowColMin, maxRowColMin, nbRowMin, nbColMin,
+        minMatrix, &minMatchings, &solverMin);
     }
 
     // Launch solving for maxima.
     if (nbRowMax > 0 && nbColMax > 0) {
       GabowTarjan solverMax;
       dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
-      this->solveInfinityWasserstein(minRowColMax, maxRowColMax,
-                                     nbRowMax, nbColMax,
-                                     maxMatrix, &maxMatchings, &solverMax);
+      this->solveInfinityWasserstein(
+        minRowColMax, maxRowColMax, nbRowMax, nbColMax,
+        maxMatrix, &maxMatchings, &solverMax);
     }
 
     // Launch solving for saddles.
     if (nbRowSad > 0 && nbColSad > 0) {
       GabowTarjan solverSad;
       dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
-      this->solveInfinityWasserstein(minRowColSad, maxRowColSad,
-                                     nbRowSad, nbColSad,
-                                     sadMatrix, &sadMatchings, &solverSad);
+      this->solveInfinityWasserstein(
+        minRowColSad, maxRowColSad, nbRowSad, nbColSad,
+        sadMatrix, &sadMatchings, &solverSad);
     }
   }
 
@@ -210,18 +208,18 @@ int BottleneckDistance::computeBottleneck(
   // Begin cost computation for unpaired vertices.
   // std::cout << "Min" << std::endl;
   dataType addedMinPersistence = this->buildMappings<dataType>(
-      minMatchings, transposeOriginal, transposeMin,
-      matchings, minMap1, minMap2, wasserstein);
+    minMatchings, transposeOriginal, transposeMin,
+    matchings, minMap1, minMap2, wasserstein);
 
   // std::cout << "Max" << std::endl;
   dataType addedMaxPersistence = this->buildMappings<dataType>(
-      maxMatchings, transposeOriginal, transposeMax,
-      matchings, maxMap1, maxMap2, wasserstein);
+    maxMatchings, transposeOriginal, transposeMax,
+    matchings, maxMap1, maxMap2, wasserstein);
 
   // std::cout << "Sad" << std::endl;
   dataType addedSadPersistence = this->buildMappings<dataType>(
-      sadMatchings, transposeOriginal, transposeSad,
-      matchings, sadMap1, sadMap2, wasserstein);
+    sadMatchings, transposeOriginal, transposeSad,
+    matchings, sadMap1, sadMap2, wasserstein);
 
   // TODO [HIGH] do that for embeddings
   // Recompute matching weights for user-friendly distance.
@@ -252,7 +250,7 @@ int BottleneckDistance::computeBottleneck(
       ++numberOfMismatches;
 
     dataType partialDistance = distanceFunction(t1, t2);
-//        wasserstein > 0 ? pow(lInf, wasserstein) : std::max(d, lInf);
+    //wasserstein > 0 ? pow(lInf, wasserstein) : std::max(d, lInf);
 
     if (wasserstein > 0) d += partialDistance;
     else d = partialDistance;
@@ -275,10 +273,10 @@ int BottleneckDistance::computeBottleneck(
         << addedMaxPersistence << "), diagMin("
         << addedMinPersistence << "), diagSad("
         << addedSadPersistence << "), affAll(" << affectationD << "), res(" << d << ")" << std::endl;
-
     dMsg(std::cout, msg.str(), timeMsg);
   }
 
+  dataType* distance = new dataType;
   *distance = d;
   distance_ = (void*) (distance);
   return 0;

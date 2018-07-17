@@ -1,4 +1,4 @@
 ttk_add_vtk_library(ttkTrackingFromFields
   SOURCES ttkTrackingFromFields.cpp
   HEADERS ttkTrackingFromFields.h
-  LINK ttkFTMTree ttkPersistenceDiagram ttkBottleneckDistance ttkTrackingFromPersistenceDiagrams)
+  LINK ttkTriangulation trackingFromFields trackingFromPersistenceDiagrams ttkFTMTree ttkPersistenceDiagram ttkBottleneckDistance ttkTrackingFromPersistenceDiagrams)

@@ -1,9 +1,9 @@
-#ifndef _TTK_FEATURETRACKING_H
-#define _TTK_FEATURETRACKING_H
+#ifndef _TTK_TRACKINGFROMP_H
+#define _TTK_TRACKINGFROMP_H
 
 #include                  <tuple>
 
-#include                  <FeatureTracking.h>
+#include                  "../../base/trackingFromPersistenceDiagrams/TrackingFromPersistenceDiagrams.h"
 #include                  <Wrapper.h>
 
 #include                  <vtkCharArray.h>
@@ -119,10 +119,9 @@ class ttkTrackingFromPersistenceDiagrams
     int RequestData(vtkInformation *request,
       vtkInformationVector **inputVector, vtkInformationVector *outputVector);
 
-
   private:
 
-    // Bottleneck config.
+    // Input bottleneck config.
     bool                  UseGeometricSpacing;
     bool                  Is3D;
     bool                  DoPostProc;
@@ -151,6 +150,7 @@ class ttkTrackingFromPersistenceDiagrams
 
     int updateProgress(const float &progress);
 
+    ttk::TrackingFromFields tracking_;
 };
 
-#endif // _TTK_FEATURETRACKING_H
+#endif // _TTK_TRACKINGFROMP_H

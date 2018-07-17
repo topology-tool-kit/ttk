@@ -9,6 +9,16 @@
   ttk::ftm::NodeType, dataType, ttk::ftm::idVertex, \
   dataType, float, float, float, dataType, float, float, float>
 #endif
+
+#ifndef matchingTuple
+#define matchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, double>
+#endif
+
+#ifndef trackingTuple
+#define trackingTuple std::tuple<int, int, std::vector<ttk::ftm::idVertex>>
+#endif
+// start ts, end ts or -1, list of indices for every ts
+
 #ifndef BNodeType
 #define BNodeType ttk::ftm::NodeType
 #define BLocalMax ttk::ftm::NodeType::Local_maximum

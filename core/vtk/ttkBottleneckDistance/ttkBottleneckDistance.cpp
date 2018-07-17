@@ -1,28 +1,13 @@
 #include                  "ttkBottleneckDistance.h"
 
-using namespace std;
-using namespace ttk;
-
 vtkStandardNewMacro(ttkBottleneckDistance)
-
-#ifndef macroDiagramTuple
-#define macroDiagramTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, ttk::ftm::idVertex, \
-  ttk::ftm::NodeType, double, ttk::ftm::idVertex, \
-  double, float, float, float, double, float, float, float>
-#endif
-#ifndef macroMatchingTuple
-#define macroMatchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, double>
-#endif
-#ifndef benchDiagramTuple
-#define benchDiagramTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, ttk::ftm::idVertex, \
-  ttk::ftm::NodeType, double, ttk::ftm::idVertex, \
-  double, float, float, float, double, float, float, float>
-#endif
 
 int ttkBottleneckDistance::doBenchmark()
 {
-  std::vector<benchDiagramTuple>* CTDiagram1 = new std::vector<benchDiagramTuple>();
-  std::vector<benchDiagramTuple>* CTDiagram2 = new std::vector<benchDiagramTuple>();
+  using dataType = double;
+
+  std::vector<diagramTuple>* CTDiagram1 = new std::vector<diagramTuple>();
+  std::vector<diagramTuple>* CTDiagram2 = new std::vector<diagramTuple>();
 
   int benchmarkSize = BenchmarkSize;
   int status = 0;
@@ -49,13 +34,13 @@ int ttkBottleneckDistance::doBenchmark()
   bottleneckDistance_.setThreadNumber(ThreadNumber);
 
   // Empty matchings.
-  std::vector<benchDiagramTuple>* matchings = new std::vector<benchDiagramTuple>();
+  std::vector<diagramTuple>* matchings = new std::vector<diagramTuple>();
   bottleneckDistance_.setOutputMatchings(matchings);
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;
   double alpha = Alpha;
-  status = bottleneckDistance_.execute<double>(usePersistenceMetric, alpha, Is3D);
+  status = bottleneckDistance_.execute<dataType>(usePersistenceMetric, alpha, Is3D);
 
   if (status != 0) { return status; }
 
@@ -66,6 +51,7 @@ int ttkBottleneckDistance::doIt(
     std::vector<vtkDataSet *> &inputs,
     std::vector<vtkDataSet *> &outputs)
 {
+  using dataType = double;
 
   int benchmarkSize = BenchmarkSize;
   bool benchmark = benchmarkSize > 0;
@@ -108,15 +94,18 @@ int ttkBottleneckDistance::doIt(
 
 //  switch (dataType1) {
 //    vtkTemplateMacro(({
-  std::vector<macroDiagramTuple>* CTDiagram1 = new std::vector<macroDiagramTuple>();
+  // TODO template my methods
+  std::vector<diagramTuple>* CTDiagram1 = new std::vector<diagramTuple>();
 
-  std::vector<macroDiagramTuple>* CTDiagram2 = new std::vector<macroDiagramTuple>();
+  std::vector<diagramTuple>* CTDiagram2 = new std::vector<diagramTuple>();
 
-  status = getPersistenceDiagram<double>(
+  status = getPersistenceDiagram<dataType>(
       CTDiagram1, CTPersistenceDiagram1_, Spacing, 0);
+  if (status < 0) {return -2;}
 
-  status = getPersistenceDiagram<double>(
+  status = getPersistenceDiagram<dataType>(
       CTDiagram2, CTPersistenceDiagram2_, Spacing, 1);
+  if (status < 0) {return -2;}
 
   bottleneckDistance_.setCTDiagram1(CTDiagram1);
   bottleneckDistance_.setCTDiagram2(CTDiagram2);
@@ -129,16 +118,16 @@ int ttkBottleneckDistance::doIt(
   bottleneckDistance_.setPVAlgorithm(pvAlgorithm);
 
   // Empty matchings.
-  std::vector<macroMatchingTuple>* matchings = new std::vector<macroMatchingTuple>();
+  std::vector<matchingTuple>* matchings = new std::vector<matchingTuple>();
   bottleneckDistance_.setOutputMatchings(matchings);
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;
   double alpha = Alpha;
-  status = bottleneckDistance_.execute<double>(usePersistenceMetric, alpha, Is3D);
+  status = bottleneckDistance_.execute<dataType>(usePersistenceMetric, alpha, Is3D);
 
   // Apply results to outputs 0 and 1.
-  status = augmentPersistenceDiagrams<double>(
+  status = augmentPersistenceDiagrams<dataType>(
       CTDiagram1,
       CTDiagram2,
       matchings,
@@ -150,7 +139,7 @@ int ttkBottleneckDistance::doIt(
 
   // Apply results to output 2.
   if (useOutputMatching) {
-    status = getMatchingMesh<double>(
+    status = getMatchingMesh<dataType>(
         CTDiagram1, CTDiagram2, matchings,
         useGeometricSpacing, Spacing);
   }
