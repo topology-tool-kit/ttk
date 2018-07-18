@@ -3,7 +3,7 @@
 
 #include                  <tuple>
 
-#include                  "../../base/trackingFromPersistenceDiagrams/TrackingFromPersistenceDiagrams.h"
+#include                  <TrackingFromPersistenceDiagrams.h>
 #include                  <Wrapper.h>
 
 #include                  <vtkCharArray.h>
@@ -150,7 +150,7 @@ class ttkTrackingFromPersistenceDiagrams
 
     int updateProgress(const float &progress);
 
-    ttk::TrackingFromFields tracking_;
+    ttk::TrackingFromPersistenceDiagrams tracking_;
 };
 
 #endif // _TTK_TRACKINGFROMP_H

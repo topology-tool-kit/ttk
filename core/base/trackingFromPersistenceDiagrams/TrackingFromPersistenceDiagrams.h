@@ -14,15 +14,15 @@
 namespace ttk
 {
 
-  class TrackingFromFields : public Debug {
+  class TrackingFromPersistenceDiagrams : public Debug {
 
     using dataType = double;
 
     public:
 
-      TrackingFromFields();
+      TrackingFromPersistenceDiagrams();
 
-      ~TrackingFromFields();
+      ~TrackingFromPersistenceDiagrams();
 
       /// Execute the package.
       /// \return Returns 0 upon success, negative values otherwise.
@@ -95,7 +95,7 @@ namespace ttk
 
 // template functions
 template <class dataType>
-int ttk::TrackingFromFields::execute()
+int ttk::TrackingFromPersistenceDiagrams::execute()
 {
   ttk::Timer t;
 

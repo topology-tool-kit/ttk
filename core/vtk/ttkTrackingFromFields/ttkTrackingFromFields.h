@@ -27,7 +27,8 @@
 #include                  <ttkBottleneckDistance.h>
 #include                  <ttkPersistenceDiagram.h>
 #include                  <ttkFTMTree.h>
-#include                  <ttkTrackingFromPersistenceDiagrams.h>
+#include                  <TrackingFromPersistenceDiagrams.h>
+#include                  <TrackingFromFields.h>
 
 #include                  <algorithm>
 #include                  <string>
@@ -184,6 +185,8 @@ class ttkTrackingFromFields
 
     ttk::Triangulation    *internalTriangulation_;
     ttkTriangulation      triangulation_;
+    ttk::TrackingFromFields trackingF_;
+    ttk::TrackingFromPersistenceDiagrams tracking_;
 
     int trackWithPersistenceMatching(
         vtkDataSet *input,

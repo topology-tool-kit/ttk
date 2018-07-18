@@ -1,18 +1,18 @@
 #include                  <TrackingFromPersistenceDiagrams.h>
 
-ttk::TrackingFromFields::TrackingFromFields()
+ttk::TrackingFromPersistenceDiagrams::TrackingFromPersistenceDiagrams()
 {
   inputData_ = nullptr;
   numberOfInputs_ = 0;
 }
 
-ttk::TrackingFromFields::~TrackingFromFields()
+ttk::TrackingFromPersistenceDiagrams::~TrackingFromPersistenceDiagrams()
 {
   if (inputData_)
     free(inputData_);
 }
 
-int ttk::TrackingFromFields::performSingleMatching(
+int ttk::TrackingFromPersistenceDiagrams::performSingleMatching(
   int i,
   std::vector<std::vector<diagramTuple>*>* inputPersistenceDiagrams,
   std::vector<std::vector<matchingTuple>*>* outputMatchings,
@@ -43,7 +43,7 @@ int ttk::TrackingFromFields::performSingleMatching(
   return 0;
 }
 
-int ttk::TrackingFromFields::performMatchings(
+int ttk::TrackingFromPersistenceDiagrams::performMatchings(
   int numInputs,
   std::vector<std::vector<diagramTuple>*>* inputPersistenceDiagrams,
   std::vector<std::vector<matchingTuple>*>* outputMatchings,
@@ -78,7 +78,7 @@ int ttk::TrackingFromFields::performMatchings(
   return 0;
 }
 
-int ttk::TrackingFromFields::performTracking(
+int ttk::TrackingFromPersistenceDiagrams::performTracking(
   std::vector<std::vector<diagramTuple>*>* allDiagrams,
   std::vector<std::vector<matchingTuple>*>* allMatchings,
   std::vector<trackingTuple>* trackings)
@@ -88,9 +88,6 @@ int ttk::TrackingFromFields::performTracking(
 
   for (int in = 1; in < numPersistenceDiagramsInput - 1; ++in)
   {
-    // auto *diagram1 = allDiagrams->at((unsigned long) in - 1);
-    // auto *diagram2 = allDiagrams->at((unsigned long) in);
-
     std::vector<matchingTuple> *matchings1 = allMatchings->at((unsigned long) in - 1);
     std::vector<matchingTuple> *matchings2 = allMatchings->at((unsigned long) in);
 
@@ -175,7 +172,7 @@ int ttk::TrackingFromFields::performTracking(
   return 0;
 }
 
-int ttk::TrackingFromFields::performPostProcess(
+int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
   std::vector<std::vector<diagramTuple>*>* allDiagrams,
   std::vector<trackingTuple>* trackings,
   std::vector<std::set<int>>* trackingTupleToMerged,

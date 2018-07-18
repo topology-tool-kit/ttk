@@ -2,4 +2,4 @@ ttk_add_paraview_plugin(ttkTrackingFromFields
   SOURCES ${VTKWRAPPER_DIR}/ttkTrackingFromFields/ttkTrackingFromFields.cpp
   PLUGIN_VERSION 1.0
   PLUGIN_XML TrackingFromFields.xml
-  LINK common ttkTriangulation ttkPersistenceDiagram ttkBottleneckDistance ttkTrackingFromPersistenceDiagrams ttkFTMTree)
+  LINK common trackingFromFields ftmTree persistenceDiagram triangulation ttkTriangulation ttkPersistenceDiagram ttkBottleneckDistance ttkTrackingFromPersistenceDiagrams ttkFTMTree)
