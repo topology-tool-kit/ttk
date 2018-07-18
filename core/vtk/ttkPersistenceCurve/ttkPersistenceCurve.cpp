@@ -23,7 +23,8 @@ vtkStandardNewMacro(ttkPersistenceCurve)
   
   triangulation_ = NULL;
   ScalarFieldId = 0;
-  InputOffsetScalarFieldName = "OutputOffsetScalarField";
+  OffsetFieldId = -1;
+  InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
   UseInputOffsetScalarField = false;
 
   inputTriangulation_ = vtkSmartPointer<ttkTriangulationFilter>::New();
@@ -135,9 +136,22 @@ int ttkPersistenceCurve::getTriangulation(vtkDataSet* input){
 }
 
 int ttkPersistenceCurve::getOffsets(vtkDataSet* input){
-  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length())
-    inputOffsets_ =
+  if(OffsetFieldId != -1){
+    inputOffsets_ = input->GetPointData()->GetArray(OffsetFieldId);
+    if(inputOffsets_){
+      InputOffsetScalarFieldName = inputOffsets_->GetName();
+      UseInputOffsetScalarField = true;
+    }
+  }
+
+  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length()){
+    inputOffsets_=
       input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
+  }
+  else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+    inputOffsets_=
+      input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
+  }
   else{
     if(varyingMesh_ and offsets_){
       offsets_->Delete();

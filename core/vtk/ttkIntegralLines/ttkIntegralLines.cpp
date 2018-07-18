@@ -14,8 +14,9 @@ vtkStandardNewMacro(ttkIntegralLines)
 {
   SetNumberOfInputPorts(2);
   triangulation_ = NULL;
-  
-  OffsetScalarFieldName = "OutputOffsetScalarField";
+
+  OffsetScalarFieldId = -1;
+  OffsetScalarFieldName = ttk::OffsetScalarFieldName;
   UseOffsetScalarField = false;
 }
 
@@ -95,6 +96,12 @@ int ttkIntegralLines::getScalars(vtkDataSet* input){
 int ttkIntegralLines::getOffsets(vtkDataSet* input){
   if(UseOffsetScalarField and OffsetScalarFieldName.length()){
     inputOffsets_=input->GetPointData()->GetArray(OffsetScalarFieldName.data());
+  }
+  else if(OffsetScalarFieldId!=-1 and input->GetPointData()->GetArray(OffsetScalarFieldId)){
+    inputOffsets_=input->GetPointData()->GetArray(OffsetScalarFieldId);
+  }
+  else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+    inputOffsets_=input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
   }
   else{
     if(hasUpdatedMesh_ and offsets_){

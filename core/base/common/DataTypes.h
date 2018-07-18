@@ -24,6 +24,9 @@ namespace ttk{
 
   /// \brief Identifier type for tasks (i.e. with OpenMP).
   using TaskId = int;
+
+  /// default name for offset scalar field
+  const char OffsetScalarFieldName[]="OffsetScalarField";
 }
 
 #endif // _DATATYPES_H

@@ -126,6 +126,7 @@ class ttkPersistenceCurve
     bool UseAllCores;
     ttk::ThreadId ThreadNumber;
     int ScalarFieldId;
+    int OffsetFieldId;
     std::string ScalarField;
     std::string InputOffsetScalarFieldName;
     bool UseInputOffsetScalarField;

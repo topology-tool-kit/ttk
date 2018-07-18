@@ -16,12 +16,13 @@ vtkStandardNewMacro(ttkTopologicalSimplification)
   triangulation_ = NULL;
 
   ScalarFieldId = 0;
+  OffsetFieldId = -1;
   UseInputOffsetScalarField = false;
   AddPerturbation = false;
-  OutputOffsetScalarFieldName = "OutputOffsetScalarField";
+  OutputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
   VertexIdentifierScalarField = "VertexIdentifier";
   ConsiderIdentifierAsBlackList = false;
-  InputOffsetScalarFieldName = "OutputOffsetScalarField";
+  InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
 }
 
 ttkTopologicalSimplification::~ttkTopologicalSimplification(){
@@ -108,8 +109,15 @@ int ttkTopologicalSimplification::getIdentifiers(vtkPointSet* input){
 }
 
 int ttkTopologicalSimplification::getOffsets(vtkDataSet* input){
-  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length())
+  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length()){
     inputOffsets_=input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
+  }
+  else if(OffsetFieldId!=-1 and input->GetPointData()->GetArray(OffsetFieldId)){
+    inputOffsets_=input->GetPointData()->GetArray(OffsetFieldId);
+  }
+  else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+    inputOffsets_=input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
+  }
   else{
     if(hasUpdatedMesh_ and offsets_){
       offsets_->Delete();
@@ -192,12 +200,8 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(OutputOffsetScalarFieldName.length()<=0){
-    cerr << "[ttkTopologicalSimplification] Error : output offset scalar field has no name." << endl;
-    return -6;
-  }
-#endif
+  if(OutputOffsetScalarFieldName.length()<=0)
+    OutputOffsetScalarFieldName=ttk::OffsetScalarFieldName;
 
   vtkSmartPointer<ttkIdTypeArray> outputOffsets=vtkSmartPointer<ttkIdTypeArray>::New();
   if(outputOffsets){

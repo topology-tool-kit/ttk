@@ -115,6 +115,7 @@ class ttkIntegralLines
     int Direction;
     int OutputScalarFieldType;
     std::string VertexIdentifierScalarFieldName;
+    int OffsetScalarFieldId;
     int UseOffsetScalarField;
     std::string OffsetScalarFieldName;
 

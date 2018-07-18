@@ -9,7 +9,7 @@ ttkContourForests::ttkContourForests()
   :  // Base //
     FieldId{0},
     InputOffsetFieldId{-1},
-    inputOffsetScalarFieldName_{"OutputOffsetScalarField"},
+    inputOffsetScalarFieldName_{ttk::OffsetScalarFieldName},
     isLoaded_{},
     lessPartition_{true},
     tree_{},
@@ -447,6 +447,25 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
 
       auto offsets =
         input->GetPointData()->GetArray(inputOffsetScalarFieldName_.data());
+
+      if(offsets->GetNumberOfTuples() != numberOfVertices_){
+        stringstream msg;
+        msg << "[ttkContourForests] Mesh and offset sizes do not match :("
+          << endl;
+        msg << "[ttkContourForests] Using default offset field instead..."
+          << endl;
+        dMsg(cerr, msg.str(), Debug::infoMsg);
+      }
+      else{
+        vertexSoSoffsets_->resize(offsets->GetNumberOfTuples());
+        for (ttkIdType i = 0; i < (ttkIdType)vertexSoSoffsets_->size(); ++i){
+          (*vertexSoSoffsets_)[i] = offsets->GetTuple1(i);
+        }
+      }
+    }
+    else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+      auto offsets =
+        input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
 
       if(offsets->GetNumberOfTuples() != numberOfVertices_){
         stringstream msg;

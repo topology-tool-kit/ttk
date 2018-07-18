@@ -138,6 +138,7 @@ class ttkTopologicalSimplification
   private:
    
     int ScalarFieldId;
+    int OffsetFieldId;
     std::string ScalarField;
     std::string InputOffsetScalarFieldName;
     std::string OutputOffsetScalarFieldName;

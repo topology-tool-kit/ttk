@@ -15,7 +15,7 @@ ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints(){
 
   ScalarFieldId = 0;
   OffsetFieldId = -1;
-  OffsetField = "OutputOffsetScalarField";
+  OffsetField = ttk::OffsetScalarFieldName;
 }
 
 ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints(){
@@ -82,6 +82,17 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
         offset = offsetField->GetTuple1(i);
         sosOffsets_[i] = offset;
       }
+    }
+  }
+  else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+    offsetField = input->GetPointData()->GetArray(OffsetScalarFieldName);
+
+    // not good... in the future, we want to use the pointer itself...
+    sosOffsets_.resize(offsetField->GetNumberOfTuples());
+    for(ttkIdType i = 0; i < offsetField->GetNumberOfTuples(); i++){
+      ttkIdType offset = 0;
+      offset = offsetField->GetTuple1(i);
+      sosOffsets_[i] = offset;
     }
   }
   

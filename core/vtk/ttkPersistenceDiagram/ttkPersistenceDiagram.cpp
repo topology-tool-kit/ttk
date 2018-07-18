@@ -20,7 +20,7 @@ vtkStandardNewMacro(ttkPersistenceDiagram)
   ScalarFieldId = 0;
   OffsetFieldId = -1;
   ComputeSaddleConnectors = false;
-  InputOffsetScalarFieldName = "OutputOffsetScalarField";
+  InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
   UseInputOffsetScalarField = false;
   ShowInsideDomain = false;
   computeDiagram_= true;
@@ -106,7 +106,6 @@ int ttkPersistenceDiagram::getTriangulation(vtkDataSet* input){
 }
 
 int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
-
   if(OffsetFieldId != -1){
     inputOffsets_ = input->GetPointData()->GetArray(OffsetFieldId);
     if(inputOffsets_){
@@ -115,9 +114,14 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
     }
   }
 
-  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length())
+  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length()){
     inputOffsets_=
       input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
+  }
+  else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+    inputOffsets_=
+      input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
+  }
   else{
     if(varyingMesh_ and offsets_){
       offsets_->Delete();
