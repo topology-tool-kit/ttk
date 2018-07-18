@@ -786,8 +786,8 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 		for(int idx : clustering_[c]){
 			int number_of_points = 0;
 			// Find the position of diagrams[idx] in old cluster c
-			vector<int>::iterator i = find (old_clustering_[c].begin(), old_clustering_[c].end (), idx);
-			int pos = (i!=old_clustering_[c].end()) ? -1 : distance (old_clustering_[c].begin(), i);
+			vector<int>::iterator i = std::find(old_clustering_[c].begin(), old_clustering_[c].end (), idx);
+			int pos = (i==old_clustering_[c].end()) ? -1 : std::distance(old_clustering_[c].begin(), i);
 			if(pos>=0){
 				// Diagram was already linked to this centroid before
 				if(do_min_){
