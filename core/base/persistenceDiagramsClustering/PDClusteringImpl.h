@@ -99,6 +99,7 @@ int PDClustering<dataType>::execute(){
 					// Should always be the case except if min_persistence is equal to zero
 					epsilon_ = epsilon_candidate;
 				}
+				min_diag_price = getMinDiagonalPrices();
 				min_persistence = enrichCurrentBidderDiagrams(min_persistence, rho, min_diag_price, min_points_to_add);
 				if(min_persistence<lowest_persistence){
 					use_progressive_=false;
@@ -225,7 +226,7 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinDiagonalPrices(
 			min_prices[0].push_back(std::numeric_limits<dataType>::max());
 			for(int j=0; j< current_bidder_diagrams_min_[i].size(); ++j){
 				Bidder<dataType> b = current_bidder_diagrams_min_[i].get(j);
-				dataType price = b.getDiagonalPrice();
+				dataType price = b.diagonal_price_;
 				if(price<min_prices[0][i]){
 					min_prices[0][i] = price; 
 				}
@@ -235,10 +236,10 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinDiagonalPrices(
 	
 	if(do_sad_){
 		for(unsigned int i=0; i< bidder_diagrams_saddle_.size(); ++i){
-			min_prices[1][i].push_back(std::numeric_limits<dataType>::max());
+			min_prices[1].push_back(std::numeric_limits<dataType>::max());
 			for(int j=0; j< current_bidder_diagrams_saddle_[i].size(); ++j){
 				Bidder<dataType> b = current_bidder_diagrams_saddle_[i].get(j);
-				dataType price = b.getDiagonalPrice();
+				dataType price = b.diagonal_price_;
 				if(price<min_prices[1][i]){
 					min_prices[1][i] = price; 
 				}
@@ -248,16 +249,18 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinDiagonalPrices(
 	
 	if(do_max_){
 		for(unsigned int i=0; i< current_bidder_diagrams_max_.size(); ++i){
-			min_prices[2][i].push_back(std::numeric_limits<dataType>::max());
+			min_prices[2].push_back(std::numeric_limits<dataType>::max());
 			for(int j=0; j< current_bidder_diagrams_max_[i].size(); ++j){
 				Bidder<dataType> b = current_bidder_diagrams_max_[i].get(j);
-				dataType price = b.getDiagonalPrice();
+				dataType price = b.diagonal_price_;
 				if(price<min_prices[2][i]){
 					min_prices[2][i] = price; 
 				}
 			}
 		}
+		std::cout<< "Min diagonal price for saddle-max pairs : " << min_prices[2][0]<<", "<< min_prices[2][1] << ", "<< min_prices[2][2]<<", "<< min_prices[2][3] <<  std::endl;
 	}
+	
 	return min_prices;
 }
 
