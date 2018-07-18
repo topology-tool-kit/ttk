@@ -378,6 +378,13 @@ int ttkFTMTree::getOffsets()
          for (ttkIdType i = 0; i < numberOfVertices; i++) {
             offsets_[cc][i] = inputOffsets->GetTuple1(i);
          }
+      } else if(connected_components_[cc]->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
+         inputOffsets =
+             connected_components_[cc]->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
+         offsets_[cc].resize(numberOfVertices);
+         for (ttkIdType i = 0; i < numberOfVertices; i++) {
+            offsets_[cc][i] = inputOffsets->GetTuple1(i);
+         }
       } else {
          if (hasUpdatedMesh_ and offsets_[cc].size()) {
             // don't keep an out-dated offset array
@@ -632,7 +639,7 @@ int ttkFTMTree::setupTriangulation()
 ttkFTMTree::ttkFTMTree()
     : ScalarField{},
       UseInputOffsetScalarField{},
-      InputOffsetScalarFieldName{},
+      InputOffsetScalarFieldName{ttk::OffsetScalarFieldName},
       ScalarFieldId{},
       OffsetFieldId{-1},
       params_{},

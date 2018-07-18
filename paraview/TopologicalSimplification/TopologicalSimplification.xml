@@ -100,7 +100,8 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
          command="SetUseInputOffsetScalarField"
          label="Use Input Offset Field"
          number_of_elements="1"
-         default_values="1">
+         panel_visibility="advanced"
+         default_values="0">
         <BooleanDomain name="bool"/>
          <Documentation>
           Use an input offset field (to disambiguate flat plateaus).
@@ -114,6 +115,7 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
         default_values="OutputOffsetScalarField"
         number_of_elements="1"
         animateable="0"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
@@ -179,7 +181,7 @@ offset field for flat plateau disambiguation).
 				command="SetOutputOffsetScalarFieldName"
 				label="Output Offset Scalar Field"
 				number_of_elements="1"
-				default_values="OutputOffsetScalarField">
+                panel_visibility="advanced">
         <Documentation>
           Select the name of the output offset field.
         </Documentation>

@@ -65,7 +65,8 @@ American Mathematical Monthly, 1970.
         label="Use Input Offset Field"
         command="SetPredefinedOffset"
         number_of_elements="1"
-        default_values="1">
+        panel_visibility="advanced"
+        default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
           Check this box if one of the input scalar fields needs to be 
@@ -79,7 +80,7 @@ American Mathematical Monthly, 1970.
         number_of_elements="1"
         animateable="0"
         label="Input Offset field"
-        default_values="OutputOffsetScalarField"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"

@@ -122,7 +122,7 @@ sources if necessary to create such an identifier field).
         label="Use Input Offset Field"
         command="SetUseOffsetScalarField"
         number_of_elements="1"
-        default_values="1">
+        default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
           Use an input offset field (to disambiguate flat plateaus).

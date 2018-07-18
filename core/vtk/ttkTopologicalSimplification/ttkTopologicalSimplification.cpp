@@ -131,7 +131,7 @@ int ttkTopologicalSimplification::getOffsets(vtkDataSet* input){
       offsets_=ttkIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
-      offsets_->SetName("OffsetsScalarField");
+      offsets_->SetName(ttk::OffsetScalarFieldName);
       for(ttkIdType i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
     }

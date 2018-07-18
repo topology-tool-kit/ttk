@@ -126,8 +126,14 @@ int ttkDiscreteGradient::getOffsets(vtkDataSet* input){
     }
   }
 
-  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length())
-    inputOffsets_=input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
+  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length()){
+    inputOffsets_=
+      input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
+  }
+  else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+    inputOffsets_=
+      input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
+  }
   else{
     if(hasUpdatedMesh_ and offsets_){
       offsets_->Delete();
@@ -140,7 +146,7 @@ int ttkDiscreteGradient::getOffsets(vtkDataSet* input){
       offsets_=ttkIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
-      offsets_->SetName("OffsetsScalarField");
+      offsets_->SetName(ttk::OffsetScalarFieldName);
       for(ttkIdType i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
     }

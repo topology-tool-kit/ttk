@@ -165,7 +165,7 @@ vtkDataArray* ttkMorseSmaleComplex::getOffsets(vtkDataSet* input){
       defaultOffsets_=ttkIdTypeArray::New();
       defaultOffsets_->SetNumberOfComponents(1);
       defaultOffsets_->SetNumberOfTuples(numberOfVertices);
-      defaultOffsets_->SetName("OffsetsScalarField");
+      defaultOffsets_->SetName(ttk::OffsetScalarFieldName);
       for(ttkIdType i=0; i<numberOfVertices; ++i)
         defaultOffsets_->SetTuple1(i,i);
     }

@@ -26,7 +26,7 @@ namespace ttk{
   using TaskId = int;
 
   /// default name for offset scalar field
-  const char OffsetScalarFieldName[]="OffsetScalarField";
+  const char OffsetScalarFieldName[]="ttkOffsetScalarField";
 }
 
 #endif // _DATATYPES_H

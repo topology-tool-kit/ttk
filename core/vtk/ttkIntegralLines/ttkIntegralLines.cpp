@@ -116,7 +116,7 @@ int ttkIntegralLines::getOffsets(vtkDataSet* input){
       offsets_=ttkIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfPoints);
-      offsets_->SetName("OffsetScalarField");
+      offsets_->SetName(ttk::OffsetScalarFieldName);
       for(ttkIdType i=0; i<numberOfPoints; ++i)
         offsets_->SetTuple1(i,i);
     }
