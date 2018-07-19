@@ -27,10 +27,10 @@ int ttkTrackingFromFields::doIt(
   vtkDataSet *input = inputs[0];
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
 
-  triangulation_.setWrapper(this);
-  triangulation_.setInputData(input);
+  // triangulation_.setWrapper(this);
+  // triangulation_.setInputData(input);
   internalTriangulation_ = ttkTriangulation::getTriangulation(input);
-  internalTriangulation_->preprocessVertexNeighbors();
+  internalTriangulation_->setWrapper(this);
 
   // Test validity of datasets (must present the same number of points).
   if (!input)
@@ -168,7 +168,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   auto persistenceDiagrams = new std::vector<std::vector<diagramTuple>*>(fieldNumber);
 //  std::vector<vtkUnstructuredGrid*> persistenceDiagrams(fieldNumber);
 
-  trackingF_.performDiagramComputation((int) fieldNumber, persistenceDiagrams);
+  trackingF_.performDiagramComputation((int) fieldNumber, persistenceDiagrams, this);
 
   // 2. call feature tracking with threshold.
   auto outputMatchings =

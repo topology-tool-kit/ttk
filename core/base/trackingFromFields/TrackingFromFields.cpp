@@ -8,13 +8,17 @@ ttk::TrackingFromFields::~TrackingFromFields()
 
 int ttk::TrackingFromFields::performDiagramComputation(
   int fieldNumber,
-  std::vector<std::vector<diagramTuple>*>* persistenceDiagrams)
+  std::vector<std::vector<diagramTuple>*>* persistenceDiagrams,
+  const ttk::Wrapper *wrapper)
 {
 
   for (int i = 0; i < fieldNumber; ++i)
   {
     ttk::PersistenceDiagram persistenceDiagram_;
+    persistenceDiagram_.setWrapper(wrapper);
     persistenceDiagram_.setupTriangulation(triangulation_);
+//    persistenceDiagram_.setThreadNumber(1);
+//    persistenceDiagram_.setDebugLevel(ttk::Debug::advancedInfoMsg);
       // should have been done before
 
     std::vector<std::tuple<ttk::dcg::Cell,ttk::dcg::Cell>> dmt_pairs;

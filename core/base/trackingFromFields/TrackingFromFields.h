@@ -31,7 +31,8 @@ namespace ttk
 
       int performDiagramComputation(
         int fieldNumber,
-        std::vector<std::vector<diagramTuple>*>* persistenceDiagrams);
+        std::vector<std::vector<diagramTuple>*>* persistenceDiagrams,
+        const ttk::Wrapper *wrapper);
 
       /// Pass a pointer to an input array representing a scalarfield.
       /// The array is expected to be correctly allocated. idx in [0,numberOfInputs_[
