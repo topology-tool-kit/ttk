@@ -146,7 +146,7 @@ namespace ttk {
 				bidders_->addBidder(b);
 			}
 			if(goods_->size()>0){
-				use_kdt_ = true;
+				use_kdt_ = use_kdt_;
 				this->buildKDTree();
 			}
 			else{
