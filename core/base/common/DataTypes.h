@@ -27,6 +27,10 @@ namespace ttk{
 
   /// default name for offset scalar field
   const char OffsetScalarFieldName[]="ttkOffsetScalarField";
+
+  /// default name for bivariate offset fields
+  const char OffsetFieldUName[]="ttkOffsetFieldU";
+  const char OffsetFieldVName[]="ttkOffsetFieldV";
 }
 
 #endif // _DATATYPES_H

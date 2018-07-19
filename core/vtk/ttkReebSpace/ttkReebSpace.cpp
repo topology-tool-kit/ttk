@@ -214,6 +214,26 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
       }
     }
   }
+  else{
+    if(input->GetPointData()->GetArray(ttk::OffsetFieldUName)){
+      offsetFieldU_ = input->GetPointData()->GetArray(ttk::OffsetFieldUName);
+      if(offsetFieldU_){
+        sosOffsetsU_.resize(offsetFieldU_->GetNumberOfTuples());
+        for(ttkIdType i = 0; i < offsetFieldU_->GetNumberOfTuples(); i++){
+          sosOffsetsU_[i] = offsetFieldU_->GetTuple1(i);
+        }
+      }
+    }
+    if(input->GetPointData()->GetArray(ttk::OffsetFieldVName)){
+      offsetFieldV_ = input->GetPointData()->GetArray(ttk::OffsetFieldVName);
+      if(offsetFieldV_){
+        sosOffsetsV_.resize(offsetFieldV_->GetNumberOfTuples());
+        for(ttkIdType i = 0; i < offsetFieldV_->GetNumberOfTuples(); i++){
+          sosOffsetsV_[i] = offsetFieldV_->GetTuple1(i);
+        }
+      }
+    }
+  }
   
   // set the Reeb space functor
   switch(uComponent_->GetDataType()){
