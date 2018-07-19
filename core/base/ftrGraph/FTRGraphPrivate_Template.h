@@ -1,8 +1,13 @@
 #ifndef FTRGRAPHPRIVATE_TEMPLATE_H
 #define FTRGRAPHPRIVATE_TEMPLATE_H
 
+// local includes
 #include "FTRGraph.h"
 #include "Tasks.h"
+
+// c++ incldues
+#include <forward_list>
+#include <unordered_map>
 
 // Skeleton + propagation
 #ifndef NDEBUG
@@ -187,6 +192,175 @@ namespace ttk
       }
 
       template <typename ScalarType>
+      void FTRGraph<ScalarType>::growthFromSeedWithLazy(const idVertex seed, Propagation* localProp,
+                                                        idSuperArc currentArc)
+      {
+
+         DEBUG_1(<< "Start " << seed << " go up " << localProp->goUp() << std::endl);
+         DEBUG_1(<< localProp->print() << " id " << localProp->getId() << std::endl);
+
+         // topology
+         bool isJoinSadlleLast = false;
+         bool isJoinSaddle     = false, isSplitSaddle = false;
+
+         // containers
+         // vitsit
+         std::vector<idEdge>                  lowerStarEdges, upperStarEdges;
+         std::vector<DynGraphNode<idVertex>*> lowerComp, upperComp;
+         // connectivity
+         std::forward_list<idVertex> addLazy, delLazy;
+
+         while (!isJoinSaddle && !isSplitSaddle && !localProp->empty()) {
+            localProp->nextVertex();
+            const idVertex curVert = localProp->getCurVertex();
+
+            // Check history for visit (quick test)
+            if (propagations_.hasVisited(curVert, localProp)) {
+               DEBUG_1(<< "already seen " << curVert << " " << localProp->getId() << std::endl);
+               continue;
+            }
+
+            lowerStarEdges.clear();
+            upperStarEdges.clear();
+            std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
+
+            if(valences_.lower[curVert] < 2 && valences_.upper[curVert] < 2) {
+               // Lazy eval on this vertex, we simulate the DG modifications
+               // call visitStart to get involved vertices,
+               // Recover the current arc: how ? DG s not available here. See parsa code :(
+               // call lazyUpdatePreimage to impact lazy lists
+            } else {
+               // NOTE: Apply modif
+               // Don;t forget to remove links in delLazy that would already be in the DG.
+            }
+
+            // TODO replace, we do not want the global DG here
+            lowerComp = lowerComps(lowerStarEdges, localProp);
+            if(lowerComp.size() > 1){
+               // This task will stop here
+               isJoinSaddle = true;
+            } else if (lowerComp.size() /* == 1 */) {
+               // recover the arc of this non join saddle. A same propagation
+               // can deal with several arc after a split saddle where no BFS
+               // where made
+               currentArc = lowerComp[0]->getCorArc();
+               DEBUG_1(<< "arc: " << lowerComp[0]->getCorArc() << " v " << curVert << std::endl);
+
+               graph_.visit(curVert, currentArc);
+               DEBUG_1(<< "visit n: " << curVert << std::endl);
+            }
+
+            if (isJoinSaddle) {
+               isJoinSadlleLast = checkLast(currentArc, localProp, lowerStarEdges);
+               DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
+               // We stop here in the join case as we will update preimage
+               // only after have processed arcs on the last join
+               break;
+            }
+
+            updatePreimage(localProp, currentArc);
+
+            upperComp = upperComps(upperStarEdges, localProp);
+            if (upperComp.size() > 1) {
+               if (!isJoinSaddle) {
+                  graph_.visit(curVert, currentArc);
+                  DEBUG_1(<< "visit n: " << curVert << std::endl);
+               }
+               DEBUG_1(<< ": is split : " << localProp->print() << std::endl);
+               isSplitSaddle = true;
+            }
+
+            // add upper star for futur visit
+            bool seenAbove = localGrowth(localProp);
+            if (!seenAbove) {
+               // We have reached an opposite leaf
+               const idNode upNode = graph_.makeNode(curVert);
+               graph_.closeArc(currentArc, upNode);
+               DEBUG_1(<< "close arc max " << graph_.printArc(currentArc) << std::endl);
+#ifdef TTK_ENABLE_FTR_STATS
+               if (localProp->empty()) {
+                  idVertex curProp;
+#pragma omp atomic capture
+                  {
+                     curProp = nbProp_;
+                     nbProp_--;
+                  }
+                  propTimes_[curProp - 1] = sweepStart_.getElapsedTime();
+               }
+#endif
+            }
+         }
+
+         // get the corresponging critical point on which
+         // the propagation has stopped (join, split, max)
+         const idVertex upVert = localProp->getCurVertex();
+         const idNode   upNode = graph_.makeNode(upVert);
+
+         // At saddle: join or split or both
+
+         idSuperArc joinNewArc;
+         // arriving at a join
+         if (isJoinSadlleLast) {
+            // ensure we have the good values here, even if other tasks were doing stuff
+            {
+               // here to solve a 1 over thousands execution bug
+               std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
+               lowerComp = lowerComps(lowerStarEdges, localProp);
+            }
+            localGrowth(localProp);
+            mergeAtSaddle(upNode, localProp, lowerComp);
+            const idNode downNode = graph_.getNodeId(upVert);
+            joinNewArc            = graph_.openArc(downNode, localProp);
+            updatePreimage(localProp, joinNewArc);
+            graph_.visit(upVert, joinNewArc);
+            upperComp = upperComps(upperStarEdges, localProp);
+            if (upperComp.size() > 1) {
+               DEBUG_1(<< ": is split : " << localProp->print() << std::endl);
+               isSplitSaddle = true;
+               // will be replaced be new arcs of the split
+               graph_.getArc(joinNewArc).hide();
+            }
+         }
+
+#ifdef TTK_ENABLE_FTR_STATS
+         if (isJoinSaddle && !isJoinSadlleLast) {
+            // This propagation is dying here
+            idVertex curProp;
+#pragma omp atomic capture
+            {
+               curProp = nbProp_;
+               nbProp_--;
+            }
+            propTimes_[curProp - 1] = sweepStart_.getElapsedTime();
+         }
+#endif
+
+         // starting from the saddle
+         if (isSplitSaddle) {
+            if (!isJoinSaddle) {
+               // only one arc coming here
+               graph_.closeArc(currentArc, upNode);
+               DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
+            }
+            const bool withBFS = false;
+            if (withBFS) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Min)
+#endif
+               splitAtSaddleBFS(localProp);
+            } else {
+               splitAtSaddle(localProp, upperComp);
+            }
+         } else if (isJoinSadlleLast) {
+            // recursive call
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
+#endif
+            growthFromSeed(upVert, localProp, joinNewArc);
+         }
+      }
+
+      template <typename ScalarType>
       std::pair<std::vector<idEdge>, std::vector<idEdge>> FTRGraph<ScalarType>::visitStar(
           const Propagation* const localProp) const
       {
@@ -224,6 +398,85 @@ namespace ttk
           const std::vector<idEdge>& startingEdges, const Propagation* const localProp)
       {
          return dynGraph(localProp).findRoot(startingEdges);
+      }
+
+      template <typename ScalarType>
+      std::pair<valence, valence> FTRGraph<ScalarType>::getLinkNbCC(const idVertex curVert,
+                                                                    LocalForests&  localForests,
+                                                                    VertCompFN     comp)
+      {
+         // TODO >> Put this in a precompute step parallel on all vertices.
+         // Fill a isJoinRegular/isSplitRegular vector the implement lazy evaluation
+         // traduce idEdge to an id in the localForest to keep a small local forest
+         std::unordered_map<idEdge, std::size_t> mapNeighDown, mapNeighUp;
+         std::size_t nextId = 0;
+
+         localForests.up.reset();
+         localForests.down.reset();
+         const idVertex oldUpCC   = localForests.up.getNbCC();
+         const idVertex oldDownCC = localForests.down.getNbCC();
+         const idCell   nbTri     = mesh_.getVertexTriangleNumber(curVert);
+         for(idCell t = 0; t < nbTri; ++t) {
+            idCell curTri;
+            mesh_.getVertexTriangle(curVert, t, curTri);
+            // edges found, max 2 per triangles.
+            std::size_t downSide[2], upSide[2];
+            unsigned char curDownSide = 0, curUpSide = 0;
+            for(idVertex v = 0; v < 3; ++v) {
+               idEdge triEdge;
+               mesh_.getTriangleEdge(curTri, v, triEdge);
+               idVertex v0, v1;
+               mesh_.getEdgeVertex(triEdge, 0, v0);
+               mesh_.getEdgeVertex(triEdge, 1, v1);
+
+               // only consider the edges in the star
+               if(v0 == curVert) {
+                  if (comp(curVert, v1)) {
+                     if (mapNeighUp.count(triEdge)) {
+                        upSide[curUpSide++] = mapNeighUp[triEdge];
+                     } else {
+                        upSide[curUpSide++] = nextId;
+                        mapNeighUp[triEdge] = nextId++;
+                     }
+                  } else {
+                     if (mapNeighDown.count(triEdge)) {
+                        downSide[curDownSide++] = mapNeighDown[triEdge];
+                     } else {
+                        downSide[curDownSide++] = nextId;
+                        mapNeighDown[triEdge] = nextId++;
+                     }
+                  }
+               } else if (v1 == curVert) {
+                  if (comp(curVert, v0)) {
+                     if (mapNeighUp.count(triEdge)) {
+                        upSide[curUpSide++] = mapNeighUp[triEdge];
+                     } else {
+                        upSide[curUpSide++] = nextId;
+                        mapNeighUp[triEdge] = nextId++;
+                     }
+                  } else {
+                     if (mapNeighDown.count(triEdge)) {
+                        downSide[curDownSide++] = mapNeighDown[triEdge];
+                     } else {
+                        downSide[curDownSide++] = nextId;
+                        mapNeighDown[triEdge] = nextId++;
+                     }
+                  }
+               }
+            }
+
+            // if both edges of the triangle were up or down, we add a link btwn them
+            // This is how the number of component is reduced
+            if(curDownSide == 2) {
+               localForests.down.insertEdge(downSide[0], downSide[1], 0, nullSuperArc);
+            } else if (curUpSide == 2) {
+               localForests.up.insertEdge(upSide[0], upSide[1], 0, nullSuperArc);
+            }
+         }
+
+         const valence down = mapNeighDown.size() - (oldDownCC - localForests.down.getNbCC());
+         const valence up = mapNeighUp.size() - (oldUpCC - localForests.up.getNbCC());
+         return {down,up};
       }
 
       template <typename ScalarType>
@@ -275,13 +528,9 @@ namespace ttk
          const idVertex    w  = getWeight(e0, e1, localProp);
 
          bool t;
-         // if (!dynGraph(localProp).getNode(std::get<0>(oTriangle))->hasParent()) {
-         //    t = dynGraph(localProp).insertEdge(std::get<0>(oTriangle), std::get<1>(oTriangle), w,
-         //                                       curArc);
-         // } else {
-            t = dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<0>(oTriangle), w,
-                                               curArc);
-         // }
+         // this order for history
+         t = dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<0>(oTriangle), w,
+                                            curArc);
 
          if (t) {
             DEBUG_2(<< "start add edge: " << printEdge(std::get<0>(oTriangle), localProp));
@@ -322,14 +571,9 @@ namespace ttk
          const idVertex    w  = getWeight(e1, e2, localProp);
 
          bool u;
-         // limit the number of evert
-         // if (!dynGraph(localProp).getNode(std::get<2>(oTriangle))->hasParent()) {
-         //    u = dynGraph(localProp).insertEdge(std::get<2>(oTriangle), std::get<1>(oTriangle), w,
-         //                                       curArc);
-         // } else {
-            u = dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w,
-                                               curArc);
-         // }
+         // this order for history
+         u = dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w,
+                                            curArc);
 
          if (u) {
             DEBUG_2(<< " new edge: " << printEdge(std::get<1>(oTriangle), localProp));

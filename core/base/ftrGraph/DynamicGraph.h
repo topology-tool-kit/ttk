@@ -31,7 +31,7 @@ namespace ttk
       template <typename Type>
       class DynamicGraph : public Allocable
       {
-        private:
+        protected:
          std::vector<DynGraphNode<Type>> nodes_;
 
         public:
@@ -221,6 +221,22 @@ namespace ttk
          {
             super::setNumberOfNodes(nbNodes);
             nbCC_ = nbNodes;
+         }
+
+         void setNbCC(const std::size_t nb)
+         {
+            // usefull if the forest is willingly larger than the real number of nodes
+            nbCC_ = nb;
+         }
+
+         void reset()
+         {
+            for (auto& node : this->nodes_) {
+               node.parent_ = nullptr;
+               node.weight_ = 0;
+               std::ignore = node;
+            }
+            nbCC_ = this->nodes_.size();
          }
 
          /// \ret true if we have merged two tree, false if it was just an intern operation

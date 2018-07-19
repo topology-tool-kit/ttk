@@ -108,9 +108,13 @@ namespace ttk
 #pragma omp single nowait
 #endif
              {
-               DebugTimer timeLeafSearch;
-               leafSearch();
-               printTime(timeLeafSearch, "[FTR Graph]: leaf search time: ", timeMsg);
+               // DebugTimer timeLeafSearch;
+               // leafSearch();
+               // printTime(timeLeafSearch, "[FTR Graph]: leaf search time: ", timeMsg);
+
+               DebugTimer timeCritSearch;
+               criticalSearch();
+               printTime(timeCritSearch, "[FTR Graph]: crit classify time ", timeMsg);
 
                DebugTimer timeSwipe;
                sweepFrowSeeds();
@@ -199,6 +203,60 @@ namespace ttk
       }
 
       template <typename ScalarType>
+      void FTRGraph<ScalarType>::criticalSearch()
+      {
+         const bool addMin = true;
+         const bool addMax = false;
+
+         TaskChunk leafChunkParams(scalars_->getSize());
+         leafChunkParams.grainSize = 10000;
+         auto leafChunk            = Tasks::getChunk(leafChunkParams);
+
+         auto comp = [&](const idVertex a, const idVertex b) { return scalars_->isLower(a, b); };
+
+         for (idPropagation leafChunkId = 0; leafChunkId < std::get<1>(leafChunk); ++leafChunkId) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task firstprivate(leafChunkId)
+#endif
+            {
+               const idVertex lowerBound = Tasks::getBegin(leafChunkId, std::get<0>(leafChunk));
+               const idVertex upperBound =
+                   Tasks::getEnd(leafChunkId, std::get<0>(leafChunk), scalars_->getSize());
+
+               // each task uses its local forests
+               LocalForests localForests;
+               localForests.up.setNumberOfNodes(18);
+               localForests.up.init();
+               localForests.up.alloc();
+               localForests.down.setNumberOfNodes(18);
+               localForests.down.init();
+               localForests.down.alloc();
+
+               for (idVertex v = lowerBound; v < upperBound; ++v) {
+                  std::tie(valences_.lower[v], valences_.upper[v]) = getLinkNbCC(v, localForests, comp);
+
+                  // leaf cases
+                  if(addMin && valences_.lower[v] == 0) {
+                     graph_.addLeaf(v, true);
+                  }
+                  if(addMax && valences_.upper[v] == 0) {
+                     graph_.addLeaf(v, false);
+                  }
+               }
+            }  // end task
+         }
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp taskwait
+#endif
+#ifdef TTK_ENABLE_FTR_STATS
+         // Stats
+         nbProp_ = graph_.getNumberOfLeaves();
+         propTimes_.resize(nbProp_);
+#endif
+         std::cout << "find: " << graph_.getNumberOfLeaves() << " leaves" << std::endl;
+      }
+
+      template <typename ScalarType>
       void FTRGraph<ScalarType>::sweepFrowSeeds()
       {
          const idNode nbSeed = graph_.getNumberOfLeaves();
@@ -223,7 +281,7 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Higher)
 #endif
-               growthFromSeed(corLeaf, localPropagation, newArc);
+               growthFromSeedWithLazy(corLeaf, localPropagation, newArc);
             }
          }
       }
@@ -247,6 +305,9 @@ namespace ttk
 
          dynGraphs_.down.setNumberOfNodes(mesh_.getNumberOfEdges());
          dynGraphs_.down.alloc();
+
+         valences_.lower.resize(mesh_.getNumberOfVertices());
+         valences_.upper.resize(mesh_.getNumberOfVertices());
 
          bfsCells_.resize(mesh_.getNumberOfTriangles());
          bfsEdges_.resize(mesh_.getNumberOfEdges());

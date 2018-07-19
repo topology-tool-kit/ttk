@@ -29,8 +29,8 @@
 #include "Scalars.h"
 
 // c++ includes
-#include<set>
-#include<tuple>
+#include <set>
+#include <tuple>
 
 namespace ttk
 {
@@ -41,6 +41,17 @@ namespace ttk
       {
          // one going up, one going down
          DynamicGraph<idVertex> up, down;
+      };
+
+      struct Valences
+      {
+         std::vector<valence> lower, upper;
+      };
+
+      struct LocalForests
+      {
+         // one for upper link, one for lower link
+         LocalForest<idVertex> up, down;
       };
 
       template<typename ScalarType>
@@ -59,6 +70,7 @@ namespace ttk
          Mesh         mesh_;
          Propagations propagations_;
          DynGraphs    dynGraphs_;
+         Valences     valences_;
 
          // BFS history arrays
          std::vector<idCell>   bfsCells_;
@@ -201,6 +213,10 @@ namespace ttk
          /// Find the extrema from which the local propagations will start
          void leafSearch();
 
+         // classify critical points, marks saddle in join/split vectors
+         // and add min/max or both as leaves.
+         void criticalSearch();
+
          /// Launch the sweep algorithm, but adapted to growth
          /// locally from each seed (min and/or max)
          /// See: grwothFromSeed.
@@ -238,6 +254,12 @@ namespace ttk
          void growthFromSeed(const idVertex seed, Propagation* localProp,
                              idSuperArc currentArc = nullSuperArc);
 
+         // Same as growthFromSeed but use an insertion/deletion list add lazyness on DynGraph
+         // insertions / deleteion.
+         // Needs to locally check the neighborhood of each vertex in counterpart
+         void growthFromSeedWithLazy(const idVertex seed, Propagation* localProp,
+                                     idSuperArc currentArc = nullSuperArc);
+
          /// visit the star of v and create two vector,
          /// first one contains edges finishing at v (lower star)
          /// second one contains edges starting at v (upper star)
@@ -255,6 +277,12 @@ namespace ttk
          /// \ref lowerComps
          std::vector<DynGraphNode<idVertex>*> upperComps(const std::vector<idEdge>& startingEdges,
                                                          const Propagation* const   localProp);
+
+         // visit these edges neighborhood to understand the local connectivity
+         // return the number of component in lower/upper link
+         std::pair<valence, valence> getLinkNbCC(const idVertex curVert,
+                                                 LocalForests&  localForests,
+                                                 VertCompFN     comp);
 
          /// update (locally) the preimage graph (dynGraph) from that
          /// of immediately before f(v) to that of immediately after f(v).
