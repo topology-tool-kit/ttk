@@ -54,7 +54,15 @@ namespace ftr
 
    // For tasks:
    // Set using scalar value comparison
-   using VertCompFN     = std::function<bool(idVertex, idVertex)>;
+   using VertCompFN = std::function<bool(const idVertex, const idVertex)>;
+   using linkEdge   = std::pair<idEdge, idEdge>;
+
+   // all null values are dealt with using the maximum of the type
+   // WHEN C++14 will be used
+   // TODO
+   // template <typename T>
+   // static const T null = std::numeric_limits<T>::max();
+   // nullVertex become: null<idVertex>
 
    // Special values for types
    // --------------------------
@@ -67,6 +75,8 @@ namespace ftr
    static const idCell         nullCell      = std::numeric_limits<idCell>::max();
    static const idPropagation  nullProp      = std::numeric_limits<idPropagation>::max();
    static const idSegmentation nullSegment   = std::numeric_limits<idSegmentation>::max();
+
+   static const linkEdge nullLink = std::make_pair(nullEdge, nullEdge);
 
    // Enum data
    // ----------

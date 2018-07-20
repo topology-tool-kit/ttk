@@ -220,6 +220,7 @@ void Mesh::getOrderedTriangle(const idCell ti, const bool increasingOrder, order
    }
 
 }
+
 // tools
 
 bool Mesh::compareEdges(const idEdge e0, const idEdge e1, VertCompFN lowerThan) const
@@ -244,5 +245,13 @@ bool Mesh::compareEdges(const idEdge e0, const idEdge e1, VertCompFN lowerThan) 
 
    if (e0v0 == e1v0) return lowerThan(e0v1, e1v1);
    return lowerThan(e0v0, e1v0);
+}
+
+bool Mesh::compareLinks(const linkEdge& l0, const linkEdge& l1, VertCompFN lowerThan) const
+{
+   if (std::get<0>(l0) == std::get<0>(l1)) {
+      return compareEdges(std::get<1>(l0), std::get<1>(l1), lowerThan);
+   }
+   return compareEdges(std::get<0>(l0), std::get<0>(l1), lowerThan);
 }
 

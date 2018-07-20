@@ -308,6 +308,35 @@ namespace ttk
                                     const Propagation* const localProp,
                                     const idSuperArc         curArc);
 
+         // like updatePreimage but only impacte the lazy list in propagation
+         // and not the global DG
+         void lazyUpdatePreimage(Propagation* const localProp, const idSuperArc curArc);
+
+         // updatePreimageStart but in lazy, impact lazy lists and not the DG
+         void updateLazyStart(const orderedTriangle& oTriangle,
+                              Propagation* const     localProp,
+                              const idSuperArc       curArc);
+
+         // updatePreimageMiddle but in lazy, impact lazy lists and not the DG
+         void updateLazyMiddle(const orderedTriangle& oTriangle,
+                               Propagation* const     localProp,
+                               const idSuperArc       curArc);
+
+         // updatePreimageEnd but in lazy, impact lazy lists and not the DG
+         void updateLazyEnd(const orderedTriangle& oTriangle,
+                            Propagation* const     localProp,
+                            const idSuperArc       curArc);
+
+         // impacte the global DG
+         void updateLazyAdd(const Propagation* const                localProp,
+                            const std::tuple<linkEdge, idSuperArc>& add);
+
+         void updateLazyDel(const Propagation* const                localProp,
+                            const std::tuple<linkEdge, idSuperArc>& add);
+
+         // aply modifications from lazy lists to the global DG
+         void lazyApply(Propagation* const locapProp);
+
          /// update the current arc of the dynGraph subtree of seed with curArc (on the component
          /// going through neigEdge)
          void updateDynGraphCurArc(const idVertex seed, const idEdge neigEdge,

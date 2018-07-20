@@ -6,7 +6,6 @@
 #include "Tasks.h"
 
 // c++ incldues
-#include <forward_list>
 #include <unordered_map>
 
 // Skeleton + propagation
@@ -207,8 +206,6 @@ namespace ttk
          // vitsit
          std::vector<idEdge>                  lowerStarEdges, upperStarEdges;
          std::vector<DynGraphNode<idVertex>*> lowerComp, upperComp;
-         // connectivity
-         std::forward_list<idVertex> addLazy, delLazy;
 
          while (!isJoinSaddle && !isSplitSaddle && !localProp->empty()) {
             localProp->nextVertex();
@@ -224,51 +221,30 @@ namespace ttk
             upperStarEdges.clear();
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
 
-            if(valences_.lower[curVert] < 2 && valences_.upper[curVert] < 2) {
-               // Lazy eval on this vertex, we simulate the DG modifications
-               // call visitStart to get involved vertices,
-               // Recover the current arc: how ? DG s not available here. See parsa code :(
-               // call lazyUpdatePreimage to impact lazy lists
-            } else {
-               // NOTE: Apply modif
-               // Don;t forget to remove links in delLazy that would already be in the DG.
-            }
-
-            // TODO replace, we do not want the global DG here
-            lowerComp = lowerComps(lowerStarEdges, localProp);
-            if(lowerComp.size() > 1){
-               // This task will stop here
-               isJoinSaddle = true;
-            } else if (lowerComp.size() /* == 1 */) {
-               // recover the arc of this non join saddle. A same propagation
-               // can deal with several arc after a split saddle where no BFS
-               // where made
-               currentArc = lowerComp[0]->getCorArc();
-               DEBUG_1(<< "arc: " << lowerComp[0]->getCorArc() << " v " << curVert << std::endl);
-
-               graph_.visit(curVert, currentArc);
-               DEBUG_1(<< "visit n: " << curVert << std::endl);
-            }
-
-            if (isJoinSaddle) {
-               isJoinSadlleLast = checkLast(currentArc, localProp, lowerStarEdges);
-               DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
-               // We stop here in the join case as we will update preimage
-               // only after have processed arcs on the last join
-               break;
-            }
-
-            updatePreimage(localProp, currentArc);
-
-            upperComp = upperComps(upperStarEdges, localProp);
-            if (upperComp.size() > 1) {
-               if (!isJoinSaddle) {
-                  graph_.visit(curVert, currentArc);
-                  DEBUG_1(<< "visit n: " << curVert << std::endl);
+            isJoinSaddle  = valences_.lower[curVert] > 1;
+            isSplitSaddle = valences_.upper[curVert] > 1;
+            if (!isJoinSaddle && !isSplitSaddle) {
+               if(lowerStarEdges.size()) {
+                  // not a min nor a saddle: 1 CC below
+                  currentArc = dynGraph(localProp).getCorArc(lowerStarEdges[0]);
                }
-               DEBUG_1(<< ": is split : " << localProp->print() << std::endl);
-               isSplitSaddle = true;
+               for (const idEdge dgNode : upperStarEdges) {
+                  dynGraph(localProp).setSubtreeArc(dgNode, currentArc);
+               }
+
+               std::cout << curVert << " arc is " << currentArc << std::endl;
+               lazyUpdatePreimage(localProp, currentArc);
+            } else {
+               // process lazy
+               std::cout << curVert << " is not regular" << std::endl;
+               // sort both list
+               // for each:
+               // if del < add: delete in real RG
+               // if add < del: add in real RG
+               // else: drop both, computation avoided
+               lazyApply(localProp);
             }
+
 
             // add upper star for futur visit
             bool seenAbove = localGrowth(localProp);
@@ -405,9 +381,7 @@ namespace ttk
                                                                     LocalForests&  localForests,
                                                                     VertCompFN     comp)
       {
-         // TODO >> Put this in a precompute step parallel on all vertices.
-         // Fill a isJoinRegular/isSplitRegular vector the implement lazy evaluation
-         // traduce idEdge to an id in the localForest to keep a small local forest
+         // traduce edge id in a local id for the forests
          std::unordered_map<idEdge, std::size_t> mapNeighDown, mapNeighUp;
          std::size_t nextId = 0;
 
@@ -443,7 +417,7 @@ namespace ttk
                         downSide[curDownSide++] = mapNeighDown[triEdge];
                      } else {
                         downSide[curDownSide++] = nextId;
-                        mapNeighDown[triEdge] = nextId++;
+                        mapNeighDown[triEdge]   = nextId++;
                      }
                   }
                } else if (v1 == curVert) {
@@ -459,7 +433,7 @@ namespace ttk
                         downSide[curDownSide++] = mapNeighDown[triEdge];
                      } else {
                         downSide[curDownSide++] = nextId;
-                        mapNeighDown[triEdge] = nextId++;
+                        mapNeighDown[triEdge]   = nextId++;
                      }
                   }
                }
@@ -622,10 +596,143 @@ namespace ttk
       }
 
       template <typename ScalarType>
+      void FTRGraph<ScalarType>::lazyUpdatePreimage(Propagation* const localProp,
+                                                    const idSuperArc   curArc)
+      {
+         const idCell nbAdjTriangles =
+             mesh_.getVertexTriangleNumber(localProp->getCurVertex());
+
+         DEBUG_1(<< "lazy update preimage " << localProp->getCurVertex() << std::endl);
+
+         orderedTriangle oTriangle;
+
+         for (idCell t = 0; t < nbAdjTriangles; ++t) {
+            // Classify current cell
+            idCell curTriangleid;
+            mesh_.getVertexTriangle(localProp->getCurVertex(), t, curTriangleid);
+
+            mesh_.getOrderedTriangle(curTriangleid, localProp->goUp(), oTriangle);
+            vertPosInTriangle curVertPos = getVertPosInTriangle(oTriangle, localProp);
+
+            // Update DynGraph
+            // We can have an end pos on an unvisited triangle
+            // in case of saddle points
+            switch (curVertPos) {
+               case vertPosInTriangle::Start:
+                  updateLazyStart(oTriangle, localProp, curArc);
+                  break;
+               case vertPosInTriangle::Middle:
+                  updateLazyMiddle(oTriangle, localProp, curArc);
+                  break;
+               case vertPosInTriangle::End:
+                  updateLazyEnd(oTriangle, localProp, curArc);
+                  break;
+               default:
+                  std::cout << "[FTR]: lazy update preimage error, unknown vertPos type" << std::endl;
+                  break;
+            }
+         }
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::updateLazyStart(const orderedTriangle& oTriangle,
+                                                 Propagation* const     localProp,
+                                                 const idSuperArc       curArc)
+      {
+         localProp->lazyAdd(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::updateLazyMiddle(const orderedTriangle& oTriangle,
+                                                  Propagation* const     localProp,
+                                                  const idSuperArc       curArc)
+      {
+         localProp->lazyDel(std::get<0>(oTriangle), std::get<1>(oTriangle));
+         localProp->lazyAdd(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::updateLazyEnd(const orderedTriangle& oTriangle,
+                                               Propagation* const     localProp,
+                                               const idSuperArc       curArc)
+      {
+         localProp->lazyDel(std::get<1>(oTriangle), std::get<2>(oTriangle));
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::updateLazyAdd(const Propagation* const                localProp,
+                                               const std::tuple<linkEdge, idSuperArc>& add)
+      {
+         const linkEdge    curLink = std::get<0>(add);
+         const orderedEdge e0      = mesh_.getOrderedEdge(std::get<0>(curLink), localProp->goUp());
+         const orderedEdge e1      = mesh_.getOrderedEdge(std::get<1>(curLink), localProp->goUp());
+         const idVertex    w       = getWeight(e0, e1, localProp);
+         bool              t;
+         t = dynGraph(localProp).insertEdge(std::get<1>(curLink), std::get<0>(curLink), w,
+                                            std::get<1>(add));
+         if (t) {
+            DEBUG_2(<< "start add edge: " << printEdge(std::get<0>(curLink), localProp));
+            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
+         } else {
+            DEBUG_2(<< "start no need to create edge: "
+                    << printEdge(std::get<0>(curLink), localProp));
+            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
+            DEBUG_2(<< dynGraph(localProp).print() << std::endl);
+         }
+      }
+
+      template <typename ScalarType>
+      void FTRGraph<ScalarType>::updateLazyDel(const Propagation* const                localProp,
+                                               const std::tuple<linkEdge, idSuperArc>& del)
+      {
+         const linkEdge    curLink = std::get<0>(del);
+         const int t = dynGraph(localProp).removeEdge(std::get<0>(curLink), std::get<1>(curLink));
+
+         // keep history inside the dyngraph structure
+         dynGraph(localProp).setSubtreeArc(std::get<0>(curLink), std::get<1>(del));
+         dynGraph(localProp).setSubtreeArc(std::get<1>(curLink), std::get<1>(del));
+
+         if (t) {
+            DEBUG_2(<< "mid replace edge: " << printEdge(std::get<0>(curLink), localProp));
+            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
+         }
+         else {
+            DEBUG_2(<< "mid no found edge: " << printEdge(std::get<0>(curLink), localProp));
+            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
+            DEBUG_2(<< dynGraph(localProp).print() << std::endl);
+         }
+      }
+
+      template<typename ScalarType>
+      void FTRGraph<ScalarType>::lazyApply(Propagation* const localProp)
+      {
+         localProp->sortLazyLists();
+         auto comp = [localProp](const idVertex a, const idVertex b) {
+            return localProp->compare(a, b);
+         };
+
+         auto add = localProp->lazyAddNext();
+         auto del = localProp->lazyDelNext();
+         while (std::get<0>(add) != nullLink || std::get<0>(del) != nullLink) {
+            if (std::get<0>(del) == nullLink || mesh_.compareLinks(std::get<0>(del), std::get<0>(add), comp)) {
+               updateLazyAdd(localProp, add);
+               add = localProp->lazyAddNext();
+            } else if (std::get<0>(add) == nullLink || mesh_.compareLinks(std::get<0>(add), std::get<0>(del), comp)) {
+               updateLazyDel(localProp, del);
+               del = localProp->lazyDelNext();
+            } else {
+               // same arc in both list, should be added and removed so we jus ignore it
+               // (add and del cant be null both of them at the same time)
+               add = localProp->lazyAddNext();
+               del = localProp->lazyDelNext();
+            }
+         }
+      }
+
+      template <typename ScalarType>
       void FTRGraph<ScalarType>::updateDynGraphCurArc(const idVertex seed, const idSuperArc curArc,
                                                       const Propagation* const localProp)
       {
-
          const idVertex nbEdgesNeigh = mesh_.getVertexEdgeNumber(seed);
          for(idVertex nid = 0; nid < nbEdgesNeigh; ++nid) {
             idEdge edgeId;

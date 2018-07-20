@@ -23,12 +23,13 @@
 // library include
 #include <boost/heap/fibonacci_heap.hpp>
 
+// C++ includes
+#include <deque>
+
 namespace ttk
 {
    namespace ftr
    {
-      using VertCompFN = std::function<bool(idVertex, idVertex)>;
-
       class Propagation
       {
         private:
@@ -40,11 +41,17 @@ namespace ttk
          // come from min/max leaf
          bool goUp_;
 
-         // priority queue
+         // priority deque
          boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation_;
 
          // representant (pos in array)
          AtomicUF id_;
+
+         // Lazyness: do not impact the global DG
+         // contains DG link between to node, lowest first
+         // (see edge comparison from Parsa's paper)
+         // along with the arc that visit this linkEdge
+         std::deque<std::tuple<linkEdge, idSuperArc>> lazyAdd_, lazyDel_;
 
         public:
          Propagation(idVertex startVert, VertCompFN vertComp, bool up)
@@ -127,7 +134,7 @@ namespace ttk
          /// because when we are growing, the natural order for the simplices
          /// is reversed to the order of the priority queue:
          /// We want the min to grow form lowest to highest
-         bool compare(idVertex a, idVertex b) const
+         bool compare(const idVertex a, const idVertex b) const
          {
             return comp_(b,a);
          }
@@ -141,6 +148,64 @@ namespace ttk
          bool goDown(void) const
          {
             return !goUp_;
+         }
+
+         void lazyAdd(const idEdge e0, const idEdge e1, const idSuperArc a)
+         {
+            lazyAdd_.emplace_back(std::make_tuple(std::make_pair(e0, e1), a));
+         }
+
+         void lazyDel(const idEdge e0, const idEdge e1)
+         {
+            // here the arc would be a non sense.
+            lazyDel_.emplace_back(std::make_tuple(std::make_pair(e0, e1), nullSuperArc));
+         }
+
+         void sortLazyLists(void)
+         {
+            // use natural order on ids, this has no topological or scalar
+            // meaning but allows to traver both list at the same time
+            std::sort(lazyAdd_.begin(), lazyAdd_.end());
+            std::sort(lazyDel_.begin(), lazyDel_.end());
+         }
+
+         // return the head of lazyAdd / lazyDel (or a null link if empty)
+         // would have used std::optional if possible
+         std::tuple<linkEdge, idSuperArc> lazyAddNext()
+         {
+            if (lazyAdd_.empty()) {
+               return  std::make_tuple(nullLink, nullSuperArc);
+            } else {
+               std::tuple<linkEdge, idSuperArc> add = lazyAdd_.front();
+               lazyAdd_.pop_front();
+               return add;
+            }
+         }
+
+         std::tuple<linkEdge, idSuperArc> lazyDelNext()
+         {
+            if (lazyDel_.empty()) {
+               return std::make_tuple(nullLink, nullSuperArc);
+            } else {
+               std::tuple<linkEdge, idSuperArc> del = lazyDel_.front();
+               lazyDel_.pop_front();
+               return del;
+            }
+         }
+
+         bool lazyListsEmpty()
+         {
+            return lazyAdd_.empty() && lazyDel_.empty();
+         }
+
+         const decltype(lazyAdd_)& addEach() const
+         {
+            return lazyAdd_;
+         }
+
+         const decltype(lazyDel_)& delEach() const
+         {
+            return lazyDel_;
          }
 
          // DEBUG ONLY
