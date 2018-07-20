@@ -371,6 +371,10 @@ namespace ttk{
 		}
 		dataType old_price = best_good->getPrice();
 		dataType new_price = old_price + best_val-second_val + epsilon;
+		if(new_price>std::numeric_limits<dataType>::max()/2){
+			new_price = old_price+epsilon;
+			std::cout<< "Huho 376"<<std::endl;
+		}
 		// Assign bidder to best_good
 		this->setProperty(best_good);
 		this->setPricePaid(new_price);
@@ -400,7 +404,8 @@ namespace ttk{
 				dataType queue_weight = top_pair.second;
 				Good<dataType>* good = &(goods->get(top_pair.first));
 				if(good->getPrice()>queue_weight){
-					// If the weight in the priority queue is not the good one, update it
+					// If the weight in the priority queue is not the good one, update 
+					std::get<1>(top_pair) = good->getPrice();
 					diagonal_queue.push(top_pair);
 				}
 				else{
@@ -467,9 +472,14 @@ namespace ttk{
 		if(second_val==std::numeric_limits<dataType>::lowest()){
 			// There is only one acceptable good for the bidder
 			second_val=best_val;
+			std::cout<< "Huho 474"<<std::endl;
 		}
 		dataType old_price = best_good->getPrice();
 		dataType new_price = old_price + best_val-second_val + epsilon;
+		if(new_price>std::numeric_limits<dataType>::max()/2){
+			new_price = old_price+epsilon;
+		}
+		
 		// Assign bidder to best_good
 		this->setProperty(best_good);
 		this->setPricePaid(new_price);
@@ -577,6 +587,10 @@ namespace ttk{
 		}
 		dataType old_price = best_good->getPrice();
 		dataType new_price = old_price + best_val-second_val + epsilon;
+		if(new_price>std::numeric_limits<dataType>::max()/2){
+			new_price = old_price+epsilon;
+			std::cout<< "Huho 592"<<std::endl;
+		}
 
 		// Assign bidder to best_good
 		this->setProperty(best_good);
@@ -662,6 +676,10 @@ namespace ttk{
 		}
 		dataType old_price = best_good->getPrice();
 		dataType new_price = old_price + best_val-second_val + epsilon;
+		if(new_price>std::numeric_limits<dataType>::max()/2){
+			new_price = old_price+epsilon;
+			std::cout<< "Huho 681"<<std::endl;
+		}
 		// Assign bidder to best_good
 		this->setProperty(best_good);
 		this->setPricePaid(new_price);

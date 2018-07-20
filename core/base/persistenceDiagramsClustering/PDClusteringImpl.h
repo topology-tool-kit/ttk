@@ -45,10 +45,10 @@ int PDClustering<dataType>::execute(){
 	else{
 		min_points_to_add = std::numeric_limits<int>::max();
 	}
-	std::vector<std::vector<dataType>> min_diag_price(numberOfInputs_);
+	std::vector<std::vector<dataType>> min_diag_price(3);
 	for(int c=0; c<3; ++c){
 		for(int i=0; i<numberOfInputs_; i++){
-			min_diag_price[i].push_back(0);
+			min_diag_price[c].push_back(0);
 		}
 	}
 	min_persistence = enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price, min_points_to_add);
@@ -231,6 +231,9 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinDiagonalPrices(
 					min_prices[0][i] = price; 
 				}
 			}
+			if(min_prices[0][i]==std::numeric_limits<dataType>::max()){
+				min_prices[0][i] = 0;
+			}
 		}
 	}
 	
@@ -243,6 +246,9 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinDiagonalPrices(
 				if(price<min_prices[1][i]){
 					min_prices[1][i] = price; 
 				}
+			}
+			if(min_prices[1][i] == std::numeric_limits<dataType>::max()){
+				min_prices[1][i] = 0;
 			}
 		}
 	}
@@ -257,10 +263,11 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinDiagonalPrices(
 					min_prices[2][i] = price; 
 				}
 			}
+			if(min_prices[2][i] == std::numeric_limits<dataType>::max()){
+				min_prices[2][i] = 0;
+			}
 		}
-		std::cout<< "Min diagonal price for saddle-max pairs : " << min_prices[2][0]<<", "<< min_prices[2][1] << ", "<< min_prices[2][2]<<", "<< min_prices[2][3] <<  std::endl;
 	}
-	
 	return min_prices;
 }
 
