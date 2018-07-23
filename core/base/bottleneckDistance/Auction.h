@@ -118,6 +118,7 @@ namespace ttk {
 		void runAuctionRound(int& n_biddings, const int kdt_index=0);
 		dataType getMatchingsAndDistance(std::vector<matchingTuple> *matchings, bool get_diagonal_matches=false);
 		dataType run(std::vector<matchingTuple> *matchings);
+		dataType getMaximalPrice();
 
 		
 		void BuildAuctionDiagrams(BidderDiagram<dataType> *BD, GoodDiagram<dataType> *GD){

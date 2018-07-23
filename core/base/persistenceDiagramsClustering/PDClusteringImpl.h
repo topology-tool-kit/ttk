@@ -231,7 +231,7 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinDiagonalPrices(
 					min_prices[0][i] = price; 
 				}
 			}
-			if(min_prices[0][i]==std::numeric_limits<dataType>::max()){
+			if(min_prices[0][i]>=std::numeric_limits<dataType>::max()/2.){
 				min_prices[0][i] = 0;
 			}
 		}
@@ -247,7 +247,7 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinDiagonalPrices(
 					min_prices[1][i] = price; 
 				}
 			}
-			if(min_prices[1][i] == std::numeric_limits<dataType>::max()){
+			if(min_prices[1][i] >= std::numeric_limits<dataType>::max()/2.){
 				min_prices[1][i] = 0;
 			}
 		}
@@ -263,7 +263,7 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinDiagonalPrices(
 					min_prices[2][i] = price; 
 				}
 			}
-			if(min_prices[2][i] == std::numeric_limits<dataType>::max()){
+			if(min_prices[2][i] >= std::numeric_limits<dataType>::max()/2.){
 				min_prices[2][i] = 0;
 			}
 		}

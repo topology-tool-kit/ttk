@@ -9,6 +9,11 @@
 template <typename dataType>
 void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_index)
 {
+	dataType max_price = getMaximalPrice();
+	if(epsilon_<1e-6*max_price){
+		// Risks of floating point limits reached...
+		epsilon_ = 1e-6*max_price;
+	}
 	while(unassignedBidders_.size()>0){
 		n_biddings ++;
 		int pos = unassignedBidders_.front();
@@ -46,6 +51,30 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_inde
 			unassignedBidders_.push_back(idx_reassigned);
 		}
 	}
+}
+
+
+template <typename dataType>
+dataType ttk::Auction<dataType>::getMaximalPrice()
+{
+	dataType max_price = 0;
+	for(int i=0; i<goods_->size(); ++i){
+		Good<dataType>& g = goods_->get(i);
+		dataType price = g.getPrice();
+		if(price>max_price){
+			max_price = price;
+		}
+	}
+	
+	for(int i=0; i<diagonal_goods_->size(); ++i){
+		Good<dataType>& g = diagonal_goods_->get(i);
+		dataType price = g.getPrice();
+		if(price>max_price){
+			max_price = price;
+		}
+	}
+	
+	return max_price;
 }
 
 
