@@ -232,17 +232,18 @@ namespace ttk
                   dynGraph(localProp).setSubtreeArc(dgNode, currentArc);
                }
 
-               std::cout << curVert << " arc is " << currentArc << std::endl;
                lazyUpdatePreimage(localProp, currentArc);
             } else {
                // process lazy
-               std::cout << curVert << " is not regular" << std::endl;
                // sort both list
                // for each:
                // if del < add: delete in real RG
                // if add < del: add in real RG
                // else: drop both, computation avoided
                lazyApply(localProp);
+               lowerComp = lowerComps(lowerStarEdges, localProp);
+               std::cout << curVert << " lc size is: " << lowerComp.size() << std::endl;
+               std::cout << dynGraph(localProp).print() << std::endl;
             }
 
 

@@ -255,3 +255,16 @@ bool Mesh::compareLinks(const linkEdge& l0, const linkEdge& l1, VertCompFN lower
    return compareEdges(std::get<0>(l0), std::get<0>(l1), lowerThan);
 }
 
+std::string Mesh::printEdges(void) const
+{
+   std::stringstream res;
+   res << " edges: " << std::endl;
+   for(idEdge i = 0; i < nbEdges_; ++i) {
+      idVertex v0, v1;
+      getEdgeVertex(i, 0, v0);
+      getEdgeVertex(i, 1, v1);
+      res << i << " : " << v0 << " " << v1 << std::endl;
+   }
+
+   return res.str();
+}

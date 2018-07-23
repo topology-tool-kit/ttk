@@ -207,6 +207,10 @@ namespace ttk
           bool compareEdges(const idEdge e0, const idEdge e1, VertCompFN lowerThan) const;
 
           bool compareLinks(const linkEdge& l0, const linkEdge& l1, VertCompFN lowerTan) const;
+
+          // tools
+
+          std::string printEdges(void) const;
       };
    }
 }
