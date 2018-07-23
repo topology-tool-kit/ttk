@@ -75,6 +75,9 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 			persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
 			persistenceDiagramsBarycenter.setThreadNumber(ThreadNumber);
 			persistenceDiagramsBarycenter.setAlpha(Alpha);
+			persistenceDiagramsBarycenter.setReinitPrices(ReinitPrices);
+			persistenceDiagramsBarycenter.setEpsilonDecreases(EpsilonDecreases);
+			persistenceDiagramsBarycenter.setEarlyStoppage(EarlyStoppage);
 			
       std::vector<std::vector<macroDiagramTuple> > 
         intermediateDiagrams(numInputs);

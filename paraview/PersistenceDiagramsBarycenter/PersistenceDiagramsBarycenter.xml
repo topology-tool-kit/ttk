@@ -100,6 +100,42 @@ computation (type "inf" for the Bottleneck distance).
          </Documentation>
       </IntVectorProperty>
 	  
+	  <IntVectorProperty
+         name="EarlyStoppage"
+         label="EarlyStoppage"
+         command="SetEarlyStoppage"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use all available cores.
+         </Documentation>
+      </IntVectorProperty>
+	  
+	  <IntVectorProperty
+         name="ReinitPrices"
+         label="ReinitPrices"
+         command="SetReinitPrices"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use all available cores.
+         </Documentation>
+      </IntVectorProperty>
+	  
+	  <IntVectorProperty
+         name="EpsilonDecreases"
+         label="EpsilonDecreases"
+         command="SetEpsilonDecreases"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use all available cores.
+         </Documentation>
+      </IntVectorProperty>
+	  
 	  
       <DoubleVectorProperty
           name="Alpha"

@@ -114,6 +114,15 @@ class ttkPersistenceDiagramsBarycenter
 	vtkSetMacro(UseOutputMatching, int);
     vtkGetMacro(UseOutputMatching, int);
 	
+	vtkSetMacro(ReinitPrices, int);
+    vtkGetMacro(ReinitPrices, int);
+	
+	vtkSetMacro(EpsilonDecreases, int);
+    vtkGetMacro(EpsilonDecreases, int);
+	
+	vtkSetMacro(EarlyStoppage, int);
+    vtkGetMacro(EarlyStoppage, int);
+	
 	vtkSetMacro(ThreadNumber, int);
     vtkGetMacro(ThreadNumber, int);
 	
@@ -167,6 +176,10 @@ class ttkPersistenceDiagramsBarycenter
 	
 	bool	              UseProgressive;
 	double	              TimeLimit;
+	
+	bool ReinitPrices;
+	bool EarlyStoppage;
+	bool EpsilonDecreases;
 
     // base code features
     int doIt(vtkDataSet **input,
