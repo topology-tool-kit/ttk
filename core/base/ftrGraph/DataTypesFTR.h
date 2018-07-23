@@ -55,7 +55,9 @@ namespace ftr
    // For tasks:
    // Set using scalar value comparison
    using VertCompFN = std::function<bool(const idVertex, const idVertex)>;
+   using EdgeCompFN = std::function<bool(const idEdge, const idEdge)>;
    using linkEdge   = std::pair<idEdge, idEdge>;
+   using LinkCompFN = std::function<bool(const linkEdge&, const linkEdge&)>;
 
    // all null values are dealt with using the maximum of the type
    // WHEN C++14 will be used

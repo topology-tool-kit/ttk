@@ -161,12 +161,15 @@ namespace ttk
             lazyDel_.emplace_back(std::make_tuple(std::make_pair(e0, e1), nullSuperArc));
          }
 
-         void sortLazyLists(void)
+         void sortLazyLists(LinkCompFN comp)
          {
-            // use natural order on ids, this has no topological or scalar
-            // meaning but allows to traver both list at the same time
-            std::sort(lazyAdd_.begin(), lazyAdd_.end());
-            std::sort(lazyDel_.begin(), lazyDel_.end());
+            auto updateComp = [comp](const std::tuple<linkEdge, idSuperArc>& a,
+                                     const std::tuple<linkEdge, idSuperArc>& b) {
+               return comp(std::get<0>(a), std::get<0>(b));
+            };
+            std::sort(lazyAdd_.begin(), lazyAdd_.end(), updateComp);
+            std::sort(lazyDel_.begin(), lazyDel_.end(), updateComp);
+            // TODO maybe we could use only one list for both?
          }
 
          // return the head of lazyAdd / lazyDel (or a null link if empty)

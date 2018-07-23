@@ -284,6 +284,7 @@ namespace ttk
             // add arc (Parsa like)
             parent_ = n;
             weight_ = weight;
+            // corArc_ = corArc;
 
             // remove old
             std::get<1>(nNodes)->parent_ = 0;

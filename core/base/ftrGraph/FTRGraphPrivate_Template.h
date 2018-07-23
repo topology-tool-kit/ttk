@@ -224,7 +224,8 @@ namespace ttk
             if (!isJoinSaddle && !isSplitSaddle) {
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
-                  currentArc = dynGraph(localProp).getCorArc(lowerStarEdges[0]);
+                  currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
+                  std::cout << "cur arc " << currentArc << " from " << lowerStarEdges[0] << std::endl;
                }
                for (const idEdge dgNode : upperStarEdges) {
                   dynGraph(localProp).setSubtreeArc(dgNode, currentArc);
@@ -242,6 +243,7 @@ namespace ttk
                lazyApply(localProp);
                // lowerComp = lowerComps(lowerStarEdges, localProp);
                if (isJoinSaddle) {
+                  std::cout << dynGraph(localProp).print() << std::endl;
                   isJoinSadlleLast = checkLast(currentArc, localProp, lowerStarEdges);
                   DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
                   // We stop here in the join case as we will update preimage
@@ -292,6 +294,7 @@ namespace ttk
                // lowerComp = lowerComps(lowerStarEdges, localProp);
             }
             localGrowth(localProp);
+            lowerComp = lowerComps(lowerStarEdges, localProp);
             mergeAtSaddle(upNode, localProp, lowerComp);
             const idNode downNode = graph_.getNodeId(upVert);
             joinNewArc            = graph_.openArc(downNode, localProp);
@@ -339,7 +342,7 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
 #endif
-            growthFromSeed(upVert, localProp, joinNewArc);
+            growthFromSeedWithLazy(upVert, localProp, joinNewArc);
          }
       }
 
@@ -678,13 +681,12 @@ namespace ttk
          t = dynGraph(localProp).insertEdge(std::get<1>(curLink), std::get<0>(curLink), w,
                                             std::get<1>(add));
          if (t) {
-            DEBUG_2(<< "start add edge: " << printEdge(std::get<0>(curLink), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
+            DEBUG_1(<< "start add edge: " << printEdge(std::get<0>(curLink), localProp));
+            DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << " w " << w << " arc " << std::get<1>(add) << std::endl);
          } else {
-            DEBUG_2(<< "start no need to create edge: "
+            DEBUG_1(<< "start no need to create edge: "
                     << printEdge(std::get<0>(curLink), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
-            DEBUG_2(<< dynGraph(localProp).print() << std::endl);
+            DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
          }
       }
 
@@ -692,7 +694,7 @@ namespace ttk
       void FTRGraph<ScalarType>::updateLazyDel(const Propagation* const                localProp,
                                                const std::tuple<linkEdge, idSuperArc>& del)
       {
-         const linkEdge    curLink = std::get<0>(del);
+         const linkEdge curLink = std::get<0>(del);
          const int t = dynGraph(localProp).removeEdge(std::get<0>(curLink), std::get<1>(curLink));
 
          // keep history inside the dyngraph structure
@@ -700,33 +702,42 @@ namespace ttk
          dynGraph(localProp).setSubtreeArc(std::get<1>(curLink), std::get<1>(del));
 
          if (t) {
-            DEBUG_2(<< "mid replace edge: " << printEdge(std::get<0>(curLink), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
+            DEBUG_1(<< "mid del edge: " << printEdge(std::get<0>(curLink), localProp));
+            DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
          }
          else {
-            DEBUG_2(<< "mid no found edge: " << printEdge(std::get<0>(curLink), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
-            DEBUG_2(<< dynGraph(localProp).print() << std::endl);
+            DEBUG_1(<< "mid no found edge: " << printEdge(std::get<0>(curLink), localProp));
+            DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
          }
       }
 
       template<typename ScalarType>
       void FTRGraph<ScalarType>::lazyApply(Propagation* const localProp)
       {
-         localProp->sortLazyLists();
          auto comp = [localProp](const idVertex a, const idVertex b) {
             return localProp->compare(a, b);
          };
 
+         auto compEdges = [&, comp](const linkEdge& a, const linkEdge& b) {
+            return mesh_.compareLinks(a, b, comp);
+         };
+
+         // use a real sort to avoid problem linked to the tree structure of the DG
+         // + also look at the Weight bug
+         localProp->sortLazyLists(compEdges);
+
          auto add = localProp->lazyAddNext();
          auto del = localProp->lazyDelNext();
          while (std::get<0>(add) != nullLink || std::get<0>(del) != nullLink) {
-            if (std::get<0>(del) == nullLink || mesh_.compareLinks(std::get<0>(del), std::get<0>(add), comp)) {
+            if(std::get<0>(del) == nullLink) {
                updateLazyAdd(localProp, add);
                add = localProp->lazyAddNext();
-            } else if (std::get<0>(add) == nullLink || mesh_.compareLinks(std::get<0>(add), std::get<0>(del), comp)) {
+            } else if (std::get<0>(add) == nullLink || mesh_.compareLinks(std::get<0>(del), std::get<0>(add), comp)) {
                updateLazyDel(localProp, del);
                del = localProp->lazyDelNext();
+            } else if (mesh_.compareLinks(std::get<0>(add), std::get<0>(del), comp)) {
+               updateLazyAdd(localProp, add);
+               add = localProp->lazyAddNext();
             } else {
                // same arc in both list, should be added and removed so we jus ignore it
                // (add and del cant be null both of them at the same time)
@@ -772,7 +783,7 @@ namespace ttk
                if (!propagations_.willVisit(neighId, localProp)) {
                   localProp->addNewVertex(neighId);
                   propagations_.toVisit(neighId, localProp);
-                  DEBUG_1(<< " + " << neighId << std::endl);
+                  // DEBUG_1(<< " + " << neighId << std::endl);
                }
             }
          }
@@ -796,7 +807,7 @@ namespace ttk
          // (after a Hole-split).
          for(idEdge edgeId : lowerStarEdges) {
             // lowerStarEdge already conatins roots
-           const idSuperArc    edgeArc = dynGraph(localProp).getCorArc(edgeId);
+           const idSuperArc    edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
            if (edgeArc == nullSuperArc) // ignore unseen
               continue;
            AtomicUF* tmpId = graph_.getArc(edgeArc).getPropagation()->getId();
@@ -1001,7 +1012,7 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(curVert, localProp) OPTIONAL_PRIORITY(PriorityLevel::Average)
 #endif
-            growthFromSeed(curVert, localProp);
+            growthFromSeedWithLazy(curVert, localProp);
       }
 
       /// Tools
