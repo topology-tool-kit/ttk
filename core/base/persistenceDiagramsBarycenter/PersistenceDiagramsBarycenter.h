@@ -112,6 +112,19 @@ namespace ttk{
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;
 		}
+		
+		
+		inline void setReinitPrices(const bool reinit_prices){
+			reinit_prices_ = reinit_prices;
+		}
+		
+		inline void setEpsilonDecreases(const bool epsilon_decreases){
+			epsilon_decreases_ = epsilon_decreases;
+		}
+		
+		inline void setEarlyStoppage(const bool early_stoppage){
+			early_stoppage_ = early_stoppage;
+		}
 
 
 
@@ -134,6 +147,10 @@ namespace ttk{
  	  std::vector<std::vector<dataType>>      all_old_matchings_;
       std::vector<BidderDiagram<dataType>>    bidder_diagrams_;
       std::vector<GoodDiagram<dataType>>	  barycenter_goods_;
+	  
+	  bool reinit_prices_;
+	  bool epsilon_decreases_;
+	  bool early_stoppage_;
   };
   
   
@@ -226,6 +243,9 @@ template <typename dataType>
 				bary_min.setUseProgressive(use_progressive_);
 				bary_min.setTimeLimit(time_limit_);
 				bary_min.setGeometricalFactor(alpha_);
+				bary_min.setEarlyStoppage(early_stoppage_);
+				bary_min.setEpsilonDecreases(epsilon_decreases_);
+				bary_min.setReinitPrices(reinit_prices_);
         bary_min.setDiagrams(&data_min);
 				matching_min = bary_min.execute(barycenter_min);
 			}
@@ -245,6 +265,9 @@ template <typename dataType>
 				bary_sad.setUseProgressive(use_progressive_);
 				bary_sad.setTimeLimit(time_limit_);
 				bary_sad.setGeometricalFactor(alpha_);
+				bary_sad.setEarlyStoppage(early_stoppage_);
+				bary_sad.setEpsilonDecreases(epsilon_decreases_);
+				bary_sad.setReinitPrices(reinit_prices_);
         bary_sad.setDiagrams(&data_sad);
 				matching_sad = bary_sad.execute(barycenter_sad);
 			}
@@ -264,6 +287,9 @@ template <typename dataType>
 				bary_max.setUseProgressive(use_progressive_);
 				bary_max.setTimeLimit(time_limit_);
 				bary_max.setGeometricalFactor(alpha_);
+				bary_max.setEarlyStoppage(early_stoppage_);
+				bary_max.setEpsilonDecreases(epsilon_decreases_);
+				bary_max.setReinitPrices(reinit_prices_);
         bary_max.setDiagrams(&data_max);
 				matching_max = bary_max.execute(barycenter_max);
 			}

@@ -22,6 +22,9 @@ namespace ttk{
 			use_progressive_ = true;
 			time_limit_ = std::numeric_limits<double>::max();
 			epsilon_min_ = 1e-5;
+			reinit_prices_=true;
+			epsilon_decreases_=true;
+			early_stoppage_=true;
 		};
 
 		~PDBarycenter(){};
@@ -117,6 +120,19 @@ namespace ttk{
 			return barycenter_goods_;
 		}
 		
+		inline void setReinitPrices(const bool reinit_prices){
+			reinit_prices_ = reinit_prices;
+		}
+		
+		inline void setEpsilonDecreases(const bool epsilon_decreases){
+			epsilon_decreases_ = epsilon_decreases;
+		}
+		
+		inline void setEarlyStoppage(const bool early_stoppage){
+			early_stoppage_ = early_stoppage;
+		}
+
+		
 		inline void setDiagramType(const int &diagramType){
 			diagramType_ = diagramType;
 			if(diagramType_==0){
@@ -163,6 +179,10 @@ namespace ttk{
 	  std::vector<BidderDiagram<dataType>>    current_bidder_diagrams_;
 	  std::vector<std::vector<int>>           current_bidder_ids_;
       std::vector<GoodDiagram<dataType>>	  barycenter_goods_;
+	  
+	  bool reinit_prices_;
+	  bool epsilon_decreases_;
+	  bool early_stoppage_;
   };
 }
 

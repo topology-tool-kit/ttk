@@ -22,6 +22,10 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 	dataType max_persistence = getMaxPersistence();
 	dataType lowest_persistence = getLowestPersistence();
 	dataType epsilon_0 = getEpsilon(max_persistence);
+	
+	if(!epsilon_decreases_){
+		epsilon_0 = 2e-5;
+	}
 	dataType epsilon = epsilon_0;
 	dataType min_persistence;
 	dataType min_cost = std::numeric_limits<dataType>::max();
@@ -55,7 +59,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		{
 		n_iterations += 1;
 		dataType rho = getRho(epsilon);
-		if(use_progressive_ && n_iterations>1 && min_persistence>rho){
+		if(use_progressive_ && n_iterations>1 && min_persistence>rho && epsilon_decreases_){
 			dataType epsilon_candidate = getEpsilon(min_persistence);
 			if(epsilon_candidate>epsilon){
 				// Should always be the case
@@ -90,8 +94,27 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		}
 		
 		dataType total_cost = 0;
-		runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
-					&min_diag_price,  &min_price, &all_matchings, use_kdt);
+		if(!epsilon_decreases_){
+			epsilon = epsilon_0;
+			runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
+						&min_diag_price,  &min_price, &all_matchings, use_kdt);
+			
+		}
+		else if(!early_stoppage_ && epsilon_decreases_){
+			std::cout << "epsilon = "<< epsilon << std::endl;
+			epsilon = epsilon_0;
+			while(epsilon>epsilon_min_){
+				runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
+							&min_diag_price,  &min_price, &all_matchings, use_kdt);
+				epsilon = epsilon/5.;
+				std::cout << "epsilon = "<< epsilon << std::endl;
+			}
+			epsilon = epsilon_0;
+		}
+		else{
+			runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
+							&min_diag_price,  &min_price, &all_matchings, use_kdt);
+		}
 		std::cout<< "Barycenter cost : "<< total_cost << std::endl;
 		delete kdt;
 		
@@ -102,16 +125,17 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		if(!finished){
 			dataType max_shift = updateBarycenter(all_matchings);
 			std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
-		
-			dataType eps_candidate = getEpsilon(pow(max_shift, 1./wasserstein_));
-			dataType eps_candidate_2 = ((double)epsilon)/5.0;
-			
-			epsilon = eps_candidate;
-			if(eps_candidate_2>epsilon){
-				epsilon = eps_candidate_2;
-			}
-			if(epsilon>epsilon_0/n_iterations){
-				epsilon = epsilon_0/n_iterations;
+			if(epsilon_decreases_){
+				dataType eps_candidate = getEpsilon(pow(max_shift, 1./wasserstein_));
+				dataType eps_candidate_2 = ((double)epsilon)/5.0;
+				
+				epsilon = eps_candidate;
+				if(eps_candidate_2>epsilon){
+					epsilon = eps_candidate_2;
+				}
+				if(epsilon>epsilon_0/n_iterations){
+					epsilon = epsilon_0/n_iterations;
+				}
 			}
 			
 			if(!use_progressive_ && min_cost>total_cost){
@@ -138,6 +162,19 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		}
 		if(total_time>time_limit_){
 			converged=true;
+		}
+		
+		if(!reinit_prices_){
+			for(unsigned int i=0; i<barycenter_goods_.size(); ++i){
+				for(int j=0; j<barycenter_goods_[i].size(); ++j){
+					barycenter_goods_[i].get(j).setPrice(0);
+				}
+			}
+			for(unsigned int i=0; i<current_bidder_diagrams_.size(); ++i){
+				for(int j=0; j<current_bidder_diagrams_[i].size(); ++j){
+					current_bidder_diagrams_[i].get(j).setDiagonalPrice(0);
+				}
+			}
 		}
 	}
 
@@ -334,6 +371,11 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 			// TODO Reinitialize/play with prices here if you wish
 		}
 	}
+	for(unsigned int j=0; j<n_diagrams; j++){
+		if(min_prices[j]>=std::numeric_limits<dataType>::max()){
+			min_prices[j] = 0;
+		}
+	}
 	
 	// 4. Delete off-diagonal barycenter points not linked to any
 	// off-diagonal bidder
@@ -527,7 +569,7 @@ dataType PDBarycenter<dataType>::getMaxPersistence(){
 
 template <typename dataType>
 dataType PDBarycenter<dataType>::getMinimalPrice(int i){
-	dataType min_price = std::numeric_limits<dataType>::max();;
+	dataType min_price = std::numeric_limits<dataType>::max();
 	
 	GoodDiagram<dataType>& D = barycenter_goods_[i];
 	for(int j=0; j<D.size(); j++){
@@ -536,6 +578,9 @@ dataType PDBarycenter<dataType>::getMinimalPrice(int i){
 		if(price<min_price){
 			min_price = price;
 		}
+	}
+	if(min_price>=std::numeric_limits<dataType>::max()){
+		return 0;
 	}
 	return min_price;
 }
@@ -554,6 +599,9 @@ dataType PDBarycenter<dataType>::getLowestPersistence(){
 				lowest_persistence = persistence;
 			}
 		}
+	}
+	if(lowest_persistence>=std::numeric_limits<dataType>::max()){
+		return 0;
 	}
 	return lowest_persistence;
 }
