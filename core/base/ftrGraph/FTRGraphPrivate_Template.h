@@ -219,13 +219,11 @@ namespace ttk
             upperStarEdges.clear();
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
 
-            isJoinSaddle  = valences_.lower[curVert] > 1;
-            isSplitSaddle = valences_.upper[curVert] > 1;
-            if (!isJoinSaddle && !isSplitSaddle) {
+            if (valences_.lower[curVert] < 2 && valences_.upper[curVert] < 2) {
+               // simple reeb regular, lazyness
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
-                  std::cout << "cur arc " << currentArc << " from " << lowerStarEdges[0] << std::endl;
                }
                for (const idEdge dgNode : upperStarEdges) {
                   dynGraph(localProp).setSubtreeArc(dgNode, currentArc);
@@ -241,11 +239,10 @@ namespace ttk
                // if add < del: add in real RG
                // else: drop both, computation avoided
                lazyApply(localProp);
-               // lowerComp = lowerComps(lowerStarEdges, localProp);
-               if (isJoinSaddle) {
-                  std::cout << dynGraph(localProp).print() << std::endl;
+               lowerComp = lowerComps(lowerStarEdges, localProp);
+               if (lowerComp.size() > 1) {
+                  isJoinSaddle = true;
                   isJoinSadlleLast = checkLast(currentArc, localProp, lowerStarEdges);
-                  DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
                   // We stop here in the join case as we will update preimage
                   // only after have processed arcs on the last join
                   break;
@@ -253,6 +250,11 @@ namespace ttk
                   graph_.visit(curVert, currentArc);
                }
                updatePreimage(localProp, currentArc);
+
+               upperComp = upperComps(upperStarEdges, localProp);
+               if (upperComp.size() > 1) {
+                  isSplitSaddle = true;
+               }
             }
 
 
@@ -277,6 +279,12 @@ namespace ttk
             }
          } // end propagation while
 
+         if (isJoinSaddle) {
+            DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
+         }
+         if (isSplitSaddle) {
+            DEBUG_1(<< ": is split " << std::endl);
+         }
          // get the corresponging critical point on which
          // the propagation has stopped (join, split, max)
          const idVertex upVert = localProp->getCurVertex();
@@ -294,7 +302,6 @@ namespace ttk
                // lowerComp = lowerComps(lowerStarEdges, localProp);
             }
             localGrowth(localProp);
-            lowerComp = lowerComps(lowerStarEdges, localProp);
             mergeAtSaddle(upNode, localProp, lowerComp);
             const idNode downNode = graph_.getNodeId(upVert);
             joinNewArc            = graph_.openArc(downNode, localProp);
@@ -321,7 +328,7 @@ namespace ttk
 #endif
 
          // starting from the saddle
-         if (isSplitSaddle) {
+         if (isSplitSaddle && (!isJoinSaddle || isJoinSadlleLast)) {
             if (!isJoinSaddle) {
                // only one arc coming here
                graph_.closeArc(currentArc, upNode);
@@ -334,7 +341,6 @@ namespace ttk
 #endif
                splitAtSaddleBFS(localProp);
             } else {
-               upperComp = upperComps(upperStarEdges, localProp);
                splitAtSaddle(localProp, upperComp);
             }
          } else if (isJoinSadlleLast) {
@@ -612,8 +618,6 @@ namespace ttk
          const idCell nbAdjTriangles =
              mesh_.getVertexTriangleNumber(localProp->getCurVertex());
 
-         DEBUG_1(<< "lazy update preimage " << localProp->getCurVertex() << std::endl);
-
          orderedTriangle oTriangle;
 
          for (idCell t = 0; t < nbAdjTriangles; ++t) {
@@ -685,8 +689,8 @@ namespace ttk
             DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << " w " << w << " arc " << std::get<1>(add) << std::endl);
          } else {
             DEBUG_1(<< "start no need to create edge: "
-                    << printEdge(std::get<0>(curLink), localProp));
-            DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
+                    << printEdge(std::get<0>(curLink), localProp) << std::endl);
+            // DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
          }
       }
 
@@ -721,6 +725,8 @@ namespace ttk
          auto compEdges = [&, comp](const linkEdge& a, const linkEdge& b) {
             return mesh_.compareLinks(a, b, comp);
          };
+
+         DEBUG_1(<< "lazy apply " << localProp->getCurVertex() << std::endl);
 
          // use a real sort to avoid problem linked to the tree structure of the DG
          // + also look at the Weight bug
