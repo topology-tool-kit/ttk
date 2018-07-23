@@ -10,8 +10,8 @@
 
 // Skeleton + propagation
 #ifndef NDEBUG
-// #define DEBUG_1(msg) std::cout msg
-#define DEBUG_1(msg)
+#define DEBUG_1(msg) std::cout msg
+// #define DEBUG_1(msg)
 #else
 #define DEBUG_1(msg)
 // #define DEBUG_1(msg) std::cout msg
@@ -74,10 +74,8 @@ namespace ttk
                // can deal with several arc after a split saddle where no BFS
                // where made
                currentArc = lowerComp[0]->getCorArc();
-               DEBUG_1(<< "arc: " << lowerComp[0]->getCorArc() << " v " << curVert << std::endl);
-
                graph_.visit(curVert, currentArc);
-               DEBUG_1(<< "visit n: " << curVert << std::endl);
+               DEBUG_1(<< "visit n: " << curVert << " arc " << currentArc << std::endl);
             }
 
             if (isJoinSaddle) {
@@ -119,7 +117,7 @@ namespace ttk
                }
 #endif
             }
-         }
+         } // end propagation while
 
          // get the corresponging critical point on which
          // the propagation has stopped (join, split, max)
@@ -231,7 +229,8 @@ namespace ttk
                for (const idEdge dgNode : upperStarEdges) {
                   dynGraph(localProp).setSubtreeArc(dgNode, currentArc);
                }
-
+               graph_.visit(curVert, currentArc);
+               DEBUG_1(<< "visit n: " << curVert << " arc " << currentArc << std::endl);
                lazyUpdatePreimage(localProp, currentArc);
             } else {
                // process lazy
@@ -241,9 +240,17 @@ namespace ttk
                // if add < del: add in real RG
                // else: drop both, computation avoided
                lazyApply(localProp);
-               lowerComp = lowerComps(lowerStarEdges, localProp);
-               std::cout << curVert << " lc size is: " << lowerComp.size() << std::endl;
-               std::cout << dynGraph(localProp).print() << std::endl;
+               // lowerComp = lowerComps(lowerStarEdges, localProp);
+               if (isJoinSaddle) {
+                  isJoinSadlleLast = checkLast(currentArc, localProp, lowerStarEdges);
+                  DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
+                  // We stop here in the join case as we will update preimage
+                  // only after have processed arcs on the last join
+                  break;
+               } else {
+                  graph_.visit(curVert, currentArc);
+               }
+               updatePreimage(localProp, currentArc);
             }
 
 
@@ -266,7 +273,7 @@ namespace ttk
                }
 #endif
             }
-         }
+         } // end propagation while
 
          // get the corresponging critical point on which
          // the propagation has stopped (join, split, max)
@@ -280,9 +287,9 @@ namespace ttk
          if (isJoinSadlleLast) {
             // ensure we have the good values here, even if other tasks were doing stuff
             {
-               // here to solve a 1 over thousands execution bug
-               std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
-               lowerComp = lowerComps(lowerStarEdges, localProp);
+               // here to solve a 1 over thousands execution bug in parallel
+               // std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
+               // lowerComp = lowerComps(lowerStarEdges, localProp);
             }
             localGrowth(localProp);
             mergeAtSaddle(upNode, localProp, lowerComp);
@@ -290,10 +297,8 @@ namespace ttk
             joinNewArc            = graph_.openArc(downNode, localProp);
             updatePreimage(localProp, joinNewArc);
             graph_.visit(upVert, joinNewArc);
-            upperComp = upperComps(upperStarEdges, localProp);
-            if (upperComp.size() > 1) {
-               DEBUG_1(<< ": is split : " << localProp->print() << std::endl);
-               isSplitSaddle = true;
+            if (isSplitSaddle) {
+               DEBUG_1(<< ": is joina & split : " << localProp->print() << std::endl);
                // will be replaced be new arcs of the split
                graph_.getArc(joinNewArc).hide();
             }
@@ -326,6 +331,7 @@ namespace ttk
 #endif
                splitAtSaddleBFS(localProp);
             } else {
+               upperComp = upperComps(upperStarEdges, localProp);
                splitAtSaddle(localProp, upperComp);
             }
          } else if (isJoinSadlleLast) {
