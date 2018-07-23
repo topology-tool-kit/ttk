@@ -371,7 +371,7 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 		}
 	}
 	for(unsigned int j=0; j<n_diagrams; j++){
-		if(min_prices[j]>=std::numeric_limits<dataType>::max()){
+		if(min_prices[j]>=std::numeric_limits<dataType>::max()/2.){
 			min_prices[j] = 0;
 		}
 	}
@@ -571,6 +571,9 @@ dataType PDBarycenter<dataType>::getMinimalPrice(int i){
 	dataType min_price = std::numeric_limits<dataType>::max();
 	
 	GoodDiagram<dataType>& D = barycenter_goods_[i];
+	if(D.size() ==0){
+		return 0;
+	}
 	for(int j=0; j<D.size(); j++){
 		Good<dataType>& b = D.get(j);
 		dataType price = b.getPrice();
@@ -578,7 +581,7 @@ dataType PDBarycenter<dataType>::getMinimalPrice(int i){
 			min_price = price;
 		}
 	}
-	if(min_price>=std::numeric_limits<dataType>::max()){
+	if(min_price>=std::numeric_limits<dataType>::max()/2.){
 		return 0;
 	}
 	return min_price;
@@ -599,7 +602,7 @@ dataType PDBarycenter<dataType>::getLowestPersistence(){
 			}
 		}
 	}
-	if(lowest_persistence>=std::numeric_limits<dataType>::max()){
+	if(lowest_persistence>=std::numeric_limits<dataType>::max()/2.){
 		return 0;
 	}
 	return lowest_persistence;

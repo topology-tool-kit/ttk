@@ -10,9 +10,10 @@ template <typename dataType>
 void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_index)
 {
 	dataType max_price = getMaximalPrice();
-	if(epsilon_<1e-6*max_price){
+	dataType epsilon = epsilon_;
+	if(epsilon_ < 1e-6*max_price){
 		// Risks of floating point limits reached...
-		epsilon_ = 1e-6*max_price;
+		epsilon = 1e-6*max_price;
 	}
 	while(unassignedBidders_.size()>0){
 		n_biddings ++;
@@ -26,19 +27,19 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_inde
 		int idx_reassigned;
 		if(b.isDiagonal()){
 			if(use_kdt_){
-				idx_reassigned = b.runDiagonalKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, correspondance_kdt_map_, diagonal_queue_, kdt_index);
+				idx_reassigned = b.runDiagonalKDTBidding(all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_, correspondance_kdt_map_, diagonal_queue_, kdt_index);
 			}
 			else{
-				idx_reassigned = b.runDiagonalBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, diagonal_queue_);
+				idx_reassigned = b.runDiagonalBidding(all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_, diagonal_queue_);
 			}
 		}
 		else{
 			if(use_kdt_){
 				// We can use the kd-tree to speed up the search
-				idx_reassigned = b.runKDTBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_, kdt_, kdt_index);
+				idx_reassigned = b.runKDTBidding(all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_, kdt_, kdt_index);
 			}
 			else{
-				idx_reassigned = b.runBidding(all_goods, twin_good, wasserstein_, epsilon_, geometricalFactor_);
+				idx_reassigned = b.runBidding(all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_);
 			}
 		}
 		/*if(n_biddings>-1){
