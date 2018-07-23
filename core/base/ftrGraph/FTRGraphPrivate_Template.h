@@ -220,6 +220,7 @@ namespace ttk
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
 
             if (valences_.lower[curVert] < 2 && valences_.upper[curVert] < 2) {
+
                // simple reeb regular, lazyness
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
@@ -243,14 +244,12 @@ namespace ttk
                if (lowerComp.size() > 1) {
                   isJoinSaddle = true;
                   isJoinSadlleLast = checkLast(currentArc, localProp, lowerStarEdges);
-                  // We stop here in the join case as we will update preimage
-                  // only after have processed arcs on the last join
                   break;
                } else {
+                  currentArc = lowerComp[0]->getCorArc();
                   graph_.visit(curVert, currentArc);
                }
                updatePreimage(localProp, currentArc);
-
                upperComp = upperComps(upperStarEdges, localProp);
                if (upperComp.size() > 1) {
                   isSplitSaddle = true;
@@ -305,9 +304,11 @@ namespace ttk
             mergeAtSaddle(upNode, localProp, lowerComp);
             const idNode downNode = graph_.getNodeId(upVert);
             joinNewArc            = graph_.openArc(downNode, localProp);
-            updatePreimage(localProp, joinNewArc);
             graph_.visit(upVert, joinNewArc);
-            if (isSplitSaddle) {
+            updatePreimage(localProp, joinNewArc);
+            upperComp = upperComps(upperStarEdges, localProp);
+            if (upperComp.size() > 1) {
+               isSplitSaddle = true;
                DEBUG_1(<< ": is joina & split : " << localProp->print() << std::endl);
                // will be replaced be new arcs of the split
                graph_.getArc(joinNewArc).hide();
@@ -702,16 +703,16 @@ namespace ttk
          const int t = dynGraph(localProp).removeEdge(std::get<0>(curLink), std::get<1>(curLink));
 
          // keep history inside the dyngraph structure
-         dynGraph(localProp).setSubtreeArc(std::get<0>(curLink), std::get<1>(del));
-         dynGraph(localProp).setSubtreeArc(std::get<1>(curLink), std::get<1>(del));
+         // dynGraph(localProp).setSubtreeArc(std::get<0>(curLink), std::get<1>(del));
+         // dynGraph(localProp).setSubtreeArc(std::get<1>(curLink), std::get<1>(del));
 
          if (t) {
             DEBUG_1(<< "mid del edge: " << printEdge(std::get<0>(curLink), localProp));
-            DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
+            DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << " : " << std::get<1>(del) << std::endl);
          }
          else {
             DEBUG_1(<< "mid no found edge: " << printEdge(std::get<0>(curLink), localProp));
-            DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
+            DEBUG_1(<< " :: " << printEdge(std::get<1>(curLink), localProp) << " : " << std::get<1>(del) << std::endl);
          }
       }
 

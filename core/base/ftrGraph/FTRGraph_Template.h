@@ -84,7 +84,7 @@ namespace ttk
          printTime(timeInit, "[FTR Graph]: init time: ", infoMsg);
 
          std::cout << printMesh() << std::endl;
-         std::cout << mesh_.printEdges() << std::endl;
+         // std::cout << mesh_.printEdges() << std::endl;
 
          DebugTimer timeSort;
          scalars_->sort();
@@ -226,10 +226,10 @@ namespace ttk
 
                // each task uses its local forests
                LocalForests localForests;
-               localForests.up.setNumberOfNodes(18);
+               localForests.up.setNumberOfNodes(30);
                localForests.up.init();
                localForests.up.alloc();
-               localForests.down.setNumberOfNodes(18);
+               localForests.down.setNumberOfNodes(30);
                localForests.down.init();
                localForests.down.alloc();
 
