@@ -96,6 +96,7 @@ ProjectionFromField, RangePolygon.
         label="Use Input Offset Field"
         command="SetPredefinedOffset"
         number_of_elements="1"
+        panel_visibility="advanced"
         default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>

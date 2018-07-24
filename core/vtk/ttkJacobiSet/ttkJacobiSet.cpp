@@ -71,6 +71,18 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
         jacobiSet.setSosOffsetsU(&sosOffsetsU_);
       }
     }
+    else if(input->GetPointData()->GetArray(ttk::OffsetFieldUName)){
+      offsetFieldU = input->GetPointData()->GetArray(ttk::OffsetFieldUName);
+      
+      if(offsetFieldU){
+        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
+        for(ttkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++){
+          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
+        }
+        
+        jacobiSet.setSosOffsetsU(&sosOffsetsU_);
+      }
+    }
     if(OffsetFieldV.length()){
       
       offsetFieldV = input->GetPointData()->GetArray(OffsetFieldV.data());
@@ -86,6 +98,18 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
     }
     else if(VoffsetId != -1){
       offsetFieldV = input->GetPointData()->GetArray(VoffsetId);
+
+      if(offsetFieldV){
+        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
+        for(ttkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++){
+          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
+        }
+        
+        jacobiSet.setSosOffsetsV(&sosOffsetsV_);
+      }
+    }
+    else if(input->GetPointData()->GetArray(ttk::OffsetFieldVName)){
+      offsetFieldV = input->GetPointData()->GetArray(ttk::OffsetFieldVName);
 
       if(offsetFieldV){
         sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
