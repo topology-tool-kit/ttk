@@ -723,15 +723,15 @@ namespace ttk
             return localProp->compare(a, b);
          };
 
-         auto compEdges = [&, comp](const linkEdge& a, const linkEdge& b) {
-            return mesh_.compareLinks(a, b, comp);
-         };
+         // auto compEdges = [&, comp](const linkEdge& a, const linkEdge& b) {
+         //    return mesh_.compareLinks(a, b, comp);
+         // };
 
          DEBUG_1(<< "lazy apply " << localProp->getCurVertex() << std::endl);
 
          // use a real sort to avoid problem linked to the tree structure of the DG
          // + also look at the Weight bug
-         localProp->sortLazyLists(compEdges);
+         // localProp->sortLazyLists(compEdges);
 
          auto add = localProp->lazyAddNext();
          auto del = localProp->lazyDelNext();
