@@ -115,7 +115,7 @@ int PDClustering<dataType>::execute(){
 				updateClusters();
 			}
 			
-			if(cost_<min_cost && n_iterations_>1){
+			if(cost_<min_cost && n_iterations_>2){
 				min_cost=cost_;
 			}
 			else if(n_iterations_>2 && epsilon_<epsilon0/500.){

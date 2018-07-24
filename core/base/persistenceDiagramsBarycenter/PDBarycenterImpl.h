@@ -137,7 +137,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 				}
 			}
 			
-			if(!use_progressive_ && min_cost>total_cost){
+			if(!use_progressive_ && min_cost>total_cost && n_iterations>2){
 				min_cost = total_cost;
 				last_min_cost_obtained = 0;
 			}
