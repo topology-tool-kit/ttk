@@ -80,6 +80,11 @@ namespace ttk
             getNode(nid)->findRoot()->setRootArc(arc);
          }
 
+         void setCorArc(const std::size_t nid, idSuperArc arc)
+         {
+            getNode(nid)->setRootArc(arc);
+         }
+
          idSuperArc getSubtreeArc(const std::size_t nid) const
          {
             return getNode(nid)->findRootArc();

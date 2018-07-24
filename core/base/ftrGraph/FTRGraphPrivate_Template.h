@@ -227,7 +227,7 @@ namespace ttk
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
                }
                for (const idEdge dgNode : upperStarEdges) {
-                  dynGraph(localProp).setSubtreeArc(dgNode, currentArc);
+                  dynGraph(localProp).setCorArc(dgNode, currentArc);
                }
                graph_.visit(curVert, currentArc);
                DEBUG_1(<< "visit n: " << curVert << " arc " << currentArc << std::endl);
@@ -814,7 +814,7 @@ namespace ttk
          // (after a Hole-split).
          for(idEdge edgeId : lowerStarEdges) {
             // lowerStarEdge already conatins roots
-           const idSuperArc    edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
+           const idSuperArc    edgeArc = dynGraph(localProp).getCorArc(edgeId);
            if (edgeArc == nullSuperArc) // ignore unseen
               continue;
            AtomicUF* tmpId = graph_.getArc(edgeArc).getPropagation()->getId();
@@ -996,7 +996,7 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(curVert, prop, arc) OPTIONAL_PRIORITY(PriorityLevel::Low)
 #endif
-            growthFromSeed(curVert, prop, arc);
+            growthFromSeedWithLazy(curVert, prop, arc);
          }
       }
 
