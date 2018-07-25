@@ -282,7 +282,7 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Higher)
 #endif
-               growthFromSeedWithLazy(corLeaf, localPropagation, newArc);
+               growthFromSeed(corLeaf, localPropagation, newArc);
             }
          }
       }

@@ -251,12 +251,7 @@ namespace ttk
          /// When a 1 Saddle is met, we split the local propagation with a BFS
          /// to continue locally.
          /// if arc is supplied, this arc will be used for the growth
-         void growthFromSeed(const idVertex seed, Propagation* localProp,
-                             idSuperArc currentArc = nullSuperArc);
-
-         // Same as growthFromSeed but use an insertion/deletion list add lazyness on DynGraph
-         // insertions / deleteion.
-         // Needs to locally check the neighborhood of each vertex in counterpart
+         /// NOTE: use an insertion/deletion list to add lazyness on DynGraph
          void growthFromSeedWithLazy(const idVertex seed, Propagation* localProp,
                                      idSuperArc currentArc = nullSuperArc);
 
