@@ -118,7 +118,8 @@ namespace ttk
                printTime(timeCritSearch, "[FTR Graph]: crit classify time ", timeMsg);
 
                DebugTimer timeSwipe;
-               sweepFrowSeeds();
+               // sweepFrowSeeds();
+               sweepSequential();
                printTime(timeSwipe, "[FTR Graph]: sweepFrowSeeds time: ", timeMsg);
             }
          }
@@ -138,8 +139,8 @@ namespace ttk
          graph_.arcs2nodes([&](const idVertex a, const idVertex b){return scalars_->isLower(a,b);});
 
          // Debug print
-         // std::cout << graph_.printVisit() << std::endl;
-         // printGraph(params_->debugLevel);
+         std::cout << graph_.printVisit() << std::endl;
+         printGraph(params_->debugLevel);
 
          // Message user
          {
@@ -285,6 +286,13 @@ namespace ttk
                growthFromSeed(corLeaf, localPropagation, newArc);
             }
          }
+      }
+
+
+      template<typename ScalarType>
+      void FTRGraph<ScalarType>::sweepSequential()
+      {
+         growthSequential(0, mesh_.getNumberOfVertices());
       }
 
       template <typename ScalarType>

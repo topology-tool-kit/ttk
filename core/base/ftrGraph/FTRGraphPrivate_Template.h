@@ -30,10 +30,9 @@ namespace ttk
    namespace ftr
    {
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::growthFromSeedWithLazy(const idVertex seed, Propagation* localProp,
-                                                        idSuperArc currentArc)
+      void FTRGraph<ScalarType>::growthFromSeed(const idVertex seed, Propagation* localProp,
+                                                idSuperArc currentArc)
       {
-
          DEBUG_1(<< "Start " << seed << " go up " << localProp->goUp() << std::endl);
          DEBUG_1(<< localProp->print() << " id " << localProp->getId() << std::endl);
 
@@ -190,7 +189,65 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
 #endif
-            growthFromSeedWithLazy(upVert, localProp, joinNewArc);
+            growthFromSeed(upVert, localProp, joinNewArc);
+         }
+      }
+
+      template<typename ScalarType>
+      void FTRGraph<ScalarType>::growthSequential(const idVertex begin, const idVertex stop)
+      {
+         std::vector<idEdge>                  lowerStarEdges, upperStarEdges;
+         std::vector<DynGraphNode<idVertex>*> lowerComp, upperComp;
+
+         // TODO add lazyness!
+         // NOTE: Lazyness is propagation scope and not per arc
+
+         const bool     fromMin         = begin < stop;
+         Propagation*   mockPropagation = newPropagation(scalars_->getSortedVert(begin), fromMin);
+         const idVertex incr            = fromMin ? 1 : -1;
+         for (idVertex idv = begin; idv < stop; idv = idv + incr) {
+            const idVertex v = scalars_->getSortedVert(idv);
+            mockPropagation->setCurvert(v);  // never use Fibo Heap here
+
+            idSuperArc arc = nullSuperArc;
+            bool isJoin = false;
+            lowerStarEdges.clear();
+            upperStarEdges.clear();
+            std::tie(lowerStarEdges, upperStarEdges) = visitStar(mockPropagation);
+            lowerComp                                = lowerComps(lowerStarEdges, mockPropagation);
+            if (!lowerComp.size()) { // min
+               const idNode minNode = graph_.makeNode(v);
+               arc                  = graph_.openArc(minNode, mockPropagation);
+               DEBUG_1(<< v << " min arc " << arc << std::endl);
+            } else if (lowerComp.size() < 2) { // regular
+               arc = lowerComp[0]->getCorArc();
+            } else { // join saddle
+               const idNode sadNode = graph_.makeNode(v);
+               arc                  = graph_.openArc(sadNode, mockPropagation);
+               DEBUG_1(<< v << " join arc " << arc << std::endl);
+               mergeAtSaddle(sadNode, lowerComp);
+               isJoin = true;
+            }
+
+            DEBUG_1(<< v << " arc " << arc << std::endl);
+            graph_.visit(v, arc);
+            updatePreimage(mockPropagation, arc);
+
+            upperComp = upperComps(upperStarEdges, mockPropagation);
+            if(!upperComp.size()) {
+               const idNode maxNode = graph_.makeNode(v);
+               graph_.closeArc(arc, maxNode);
+               DEBUG_1(<< v << "max arc close " << graph_.printArc(arc) << std::endl);
+            } else if (upperComp.size() < 2) {
+               // 1 cc above
+            } else {
+               if (!isJoin) {
+                  const idNode splitNode = graph_.makeNode(v);
+                  graph_.closeArc(arc, splitNode);
+                  DEBUG_1(<< v << "split arc close " << graph_.printArc(arc) << std::endl);
+               }
+               splitAtSaddle(mockPropagation, upperComp, false);
+            }
          }
       }
 
@@ -781,6 +838,24 @@ namespace ttk
       }
 
       template <typename ScalarType>
+      void FTRGraph<ScalarType>::mergeAtSaddle(
+          const idNode saddleId, const std::vector<DynGraphNode<idVertex>*>& lowerComp)
+      {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+         if (lowerComp.size() < 2) {
+            std::cerr << "[FTR]: merge at saddle with only one lower CC" << std::endl;
+         }
+#endif
+
+         for(auto* dgNode : lowerComp) {
+            const idSuperArc endingArc = dgNode->getCorArc();
+            graph_.closeArc(endingArc, saddleId);
+            DEBUG_1(<< "close " << graph_.printArc(endingArc) << std::endl);
+         }
+      }
+
+      template <typename ScalarType>
       void FTRGraph<ScalarType>::splitAtSaddleBFS(Propagation* const localProp)
       {
          const idVertex curVert = localProp->getCurVertex();
@@ -837,13 +912,13 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(curVert, prop, arc) OPTIONAL_PRIORITY(PriorityLevel::Low)
 #endif
-            growthFromSeedWithLazy(curVert, prop, arc);
+            growthFromSeed(curVert, prop, arc);
          }
       }
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::splitAtSaddle(
-          Propagation* const localProp, const std::vector<DynGraphNode<idVertex>*>& upperComp)
+          Propagation* const localProp, const std::vector<DynGraphNode<idVertex>*>& upperComp, const bool startGrowth)
       {
          const idVertex curVert = localProp->getCurVertex();
          const idNode   curNode = graph_.getNodeId(curVert);
@@ -857,10 +932,12 @@ namespace ttk
             DEBUG_1(<< " id " << localProp->getId() << std::endl);
          }
 
+         if (startGrowth) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(curVert, localProp) OPTIONAL_PRIORITY(PriorityLevel::Average)
 #endif
-            growthFromSeedWithLazy(curVert, localProp);
+            growthFromSeed(curVert, localProp);
+         }
       }
 
       /// Tools

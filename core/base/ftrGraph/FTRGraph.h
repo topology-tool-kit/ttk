@@ -222,6 +222,9 @@ namespace ttk
          /// See: grwothFromSeed.
          void sweepFrowSeeds();
 
+         // launch a sequential sweep on the whole mesh.
+         void sweepSequential();
+
          // Print function (FTRGraphPrint)
 
          std::string printMesh(void) const;
@@ -252,8 +255,12 @@ namespace ttk
          /// to continue locally.
          /// if arc is supplied, this arc will be used for the growth
          /// NOTE: use an insertion/deletion list to add lazyness on DynGraph
-         void growthFromSeedWithLazy(const idVertex seed, Propagation* localProp,
-                                     idSuperArc currentArc = nullSuperArc);
+         void growthFromSeed(const idVertex seed, Propagation* localProp,
+                             idSuperArc currentArc = nullSuperArc);
+
+         // growth like in the original algorithm by maintaining one dynamic graph.
+         // the direction of the growth: increasing scalar value.
+         void growthSequential(const idVertex begin, const idVertex stop);
 
          /// visit the star of v and create two vector,
          /// first one contains edges finishing at v (lower star)
@@ -374,6 +381,11 @@ namespace ttk
          void mergeAtSaddle(const idNode saddleId, Propagation* localProp,
                             const std::vector<DynGraphNode<idVertex>*>& lowerComp);
 
+         // At a join saddle, close onped arcs only
+         // do not touch local propagations
+         void mergeAtSaddle(const idNode                                saddleId,
+                            const std::vector<DynGraphNode<idVertex>*>& lowerComp);
+
          // At a split saddle, assign new arcs at each CC in the DynGraph,
          // compute the new localPropagation for each using a BFS
          // and launch the new propagation.
@@ -382,7 +394,8 @@ namespace ttk
          // At a split saddle, assign new arcs at each CC in the DynGraph,
          // and launch a new propagation taking care of these arcs simultaneously
          void splitAtSaddle(Propagation* const                          localProp,
-                            const std::vector<DynGraphNode<idVertex>*>& upperComp);
+                            const std::vector<DynGraphNode<idVertex>*>& upperComp,
+                            const bool                                  startGrowth = true);
 
          // Retrun one triangle by upper CC of the vertex v
          std::set<idCell> upCCtriangleSeeds(const idVertex v, const Propagation* const localProp);
