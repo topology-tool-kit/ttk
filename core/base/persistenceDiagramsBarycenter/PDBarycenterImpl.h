@@ -146,7 +146,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 			}
 			
 			converged = (previous_min_persistence<=lowest_persistence || !use_progressive_) && \
-						(hasBarycenterConverged(all_matchings, previous_matchings) || last_min_cost_obtained>1 );
+						(last_min_cost_obtained>1 );
 			
 		}
 		
@@ -174,6 +174,10 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 					current_bidder_diagrams_[i].get(j).setDiagonalPrice(0);
 				}
 			}
+			for(int i=0; i<numberOfInputs_; i++){
+				min_diag_price[i] = 0;
+				min_price[i] = 0;
+			}	
 		}
 	}
 
