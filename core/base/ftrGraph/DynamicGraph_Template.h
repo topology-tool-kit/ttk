@@ -179,8 +179,7 @@ namespace ttk
       template <typename Type>
       void DynGraphNode<Type>::setRootArc(const idSuperArc arcId)
       {
-         DynGraphNode* rootNode = findRoot();
-         rootNode->corArc_ = arcId;
+         corArc_ = arcId;
       }
 
       template <typename Type>
