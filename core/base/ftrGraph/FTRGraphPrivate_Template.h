@@ -241,7 +241,9 @@ namespace ttk
             } else if (upperComp.size() < 2) {
                // 1 cc above
             } else {
-               if (!isJoin) {
+               if (isJoin) {
+                  graph_.getArc(arc).hide();
+               } else {
                   const idNode splitNode = graph_.makeNode(v);
                   graph_.closeArc(arc, splitNode);
                   DEBUG_1(<< v << "split arc close " << graph_.printArc(arc) << std::endl);
@@ -442,8 +444,8 @@ namespace ttk
          const int t = dynGraph(localProp).removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
 
          // keep history inside the dyngraph structure
-         dynGraph(localProp).setSubtreeArc(std::get<0>(oTriangle), curArc);
-         dynGraph(localProp).setSubtreeArc(std::get<1>(oTriangle), curArc);
+         dynGraph(localProp).setCorArc(std::get<0>(oTriangle), curArc);
+         // dynGraph(localProp).setCorArc(std::get<1>(oTriangle), curArc);
 
          if (t) {
             DEBUG_2(<< "mid replace edge: " << printEdge(std::get<0>(oTriangle), localProp));
@@ -481,8 +483,8 @@ namespace ttk
       {
          const int t = dynGraph(localProp).removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
 
-         dynGraph(localProp).setSubtreeArc(std::get<1>(oTriangle), curArc);
-         dynGraph(localProp).setSubtreeArc(std::get<2>(oTriangle), curArc);
+         dynGraph(localProp).setCorArc(std::get<1>(oTriangle), curArc);
+         // dynGraph(localProp).setCorArc(std::get<2>(oTriangle), curArc);
 
          if (t) {
             DEBUG_2(<< "end remove edge: " << printEdge(std::get<1>(oTriangle), localProp));

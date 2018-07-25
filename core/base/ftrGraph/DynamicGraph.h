@@ -208,6 +208,8 @@ namespace ttk
 
          std::string print(std::function<std::string(std::size_t)>);
 
+         std::string printNbCC(void);
+
          void test(void);
       };
 

@@ -96,85 +96,22 @@ namespace ttk
          return res.str();
       }
 
-      template <typename Type>
-      void DynamicGraph<Type>::test(void)
+      template<typename Type>
+      std::string DynamicGraph<Type>::printNbCC(void)
       {
-         DynamicGraph testGraph;
-         testGraph.setNumberOfNodes(4);
-         testGraph.alloc();
-         testGraph.init();
-
-         DynGraphNode<Type>* n1 = testGraph.getNode(0);
-         DynGraphNode<Type>* n2 = testGraph.getNode(1);
-
-         if(testGraph.getNbCC({n1,n2}) != 2){
-            std::cerr << "[Dynamic Graph]: bad initial number of CC in test ";
-            std::cerr << testGraph.getNbCC({n1, n2}) << " != 2 " << std::endl;
+         using namespace std;
+         stringstream res;
+         std::vector<DynGraphNode<Type>*> roots;
+         roots.reserve(nodes_.size());
+         for (const auto& n : nodes_) {
+            roots.emplace_back(n.findRoot());
          }
-
-         testGraph.insertEdge(n1, n2, 0);
-
-         // 1 -> 2
-
-         if (testGraph.getNbCC({n1, n2}) != 1) {
-            std::cerr << "[Dynamic Graph]: bad number of CC after insert edge ";
-            std::cerr << testGraph.getNbCC({n1, n2}) << " != 1 " << std::endl;
-         }
-
-         DynGraphNode<Type>* n3 = testGraph.getNode(2);
-         DynGraphNode<Type>* n4 = testGraph.getNode(3);
-
-         testGraph.insertEdge(n3, n4, 0);
-
-         // 1 -> 2
-         // 3 -> 4
-
-         if (testGraph.getNbCC({n1, n2, n3, n4}) != 2) {
-            std::cerr << "[Dynamic Graph]: bad number of CC after insert edge (2) ";
-            std::cerr << testGraph.getNbCC({n1, n2, n3, n4}) << " != 2 " << std::endl;
-         }
-
-         testGraph.insertEdge(n2, n3, 0);
-
-         // 1 -> 2 -> 3 -> 4
-
-         if (testGraph.getNbCC({n1, n2, n3, n4}) != 1) {
-            std::cerr << "[Dynamic Graph]: bad number of CC after insert edge (3) ";
-            std::cerr << testGraph.getNbCC({n1, n2, n3, n4}) << " != 1 " << std::endl;
-         }
-
-         testGraph.removeEdge(n1);
-
-         // 1
-         // 2 -> 3 -> 4
-
-         if (testGraph.getNbCC({n1, n2, n3, n4}) != 2) {
-            std::cerr << "[Dynamic Graph]: bad number of CC after remove edge ";
-            std::cerr << testGraph.getNbCC({n1, n2, n3, n4}) << " != 2 " << std::endl;
-         }
-
-         // replace existing
-         testGraph.insertEdge(n2, n4, 1);
-
-         // 1
-         // 3 -> 2 -> 4
-
-         if (testGraph.getNbCC({n1, n2, n3, n4}) != 2) {
-            std::cerr << "[Dynamic Graph]: bad number of CC after replace edge ";
-            std::cerr << testGraph.getNbCC({n1, n2, n3, n4}) << " != 2 " << std::endl;
-         }
-
-         testGraph.insertEdge(n1, n4, 0);
-
-         // 3 -> 2 -> 4
-         //      1 _/
-
-         if (testGraph.getNbCC({n1, n2, n3, n4}) != 1) {
-            std::cerr << "[Dynamic Graph]: bad number of CC after insert edge 4 ";
-            std::cerr << testGraph.getNbCC({n1, n2, n3, n4}) << " != 1 " << std::endl;
-         }
-
-         std::cout << testGraph.print() << std::endl;
+         std::sort(roots.begin(), roots.end());
+         const auto it = std::unique(roots.begin(), roots.end());
+         roots.erase(it, roots.end());
+         res << "nb nodes " << nodes_.size() << std::endl;
+         res << "nb cc " << roots.size() << std::endl;
+         return res.str();
       }
 
       // DynGraphNode ----------------------------------

@@ -139,8 +139,9 @@ namespace ttk
          graph_.arcs2nodes([&](const idVertex a, const idVertex b){return scalars_->isLower(a,b);});
 
          // Debug print
-         std::cout << graph_.printVisit() << std::endl;
-         printGraph(params_->debugLevel);
+         // std::cout << graph_.printVisit() << std::endl;
+         // printGraph(params_->debugLevel);
+         std::cout << dynGraphs_.up.printNbCC() << std::endl;
 
          // Message user
          {
