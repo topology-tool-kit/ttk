@@ -133,7 +133,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 					epsilon = eps_candidate_2;
 				}
 				if(epsilon>epsilon_0/n_iterations){
-					epsilon = epsilon_0/n_iterations;
+					epsilon = epsilon_0/pow(n_iterations, 2);
 				}
 			}
 			
@@ -146,7 +146,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 			}
 			
 			converged = (previous_min_persistence<=lowest_persistence || !use_progressive_) && \
-						(last_min_cost_obtained>1 );
+						(last_min_cost_obtained>1 && (!epsilon_decreases_ || epsilon<epsilon0/1000. || epsilon<epsilon_min_);
 			
 		}
 		
