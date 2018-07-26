@@ -123,9 +123,13 @@ namespace ttk{
 			for(int c=0; c<k_; ++c){
 				std::cout<<"Cluster "<< c << " : [";
 				for(unsigned int idx=0; idx<clustering_[c].size(); ++idx){
-					std::cout<< clustering_[c][idx]<< ", ";
+					if(idx==clustering_[c].size()){
+						std::cout<< clustering_[c][idx]<< "]" <<std::endl;
+					}
+					else{
+						std::cout<< clustering_[c][idx]<< ", ";
+					}
 				}
-				std::cout << "]" <<std::endl;
 			}
 		}
 		
