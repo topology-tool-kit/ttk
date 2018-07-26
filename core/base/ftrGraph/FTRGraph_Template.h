@@ -118,8 +118,8 @@ namespace ttk
                printTime(timeCritSearch, "[FTR Graph]: crit classify time ", timeMsg);
 
                DebugTimer timeSwipe;
-               // sweepFrowSeeds();
-               sweepSequential();
+               sweepFrowSeeds();
+               // sweepSequential();
                printTime(timeSwipe, "[FTR Graph]: sweepFrowSeeds time: ", timeMsg);
             }
          }
@@ -319,9 +319,9 @@ namespace ttk
          valences_.lower.resize(mesh_.getNumberOfVertices());
          valences_.upper.resize(mesh_.getNumberOfVertices());
 
-         bfsCells_.resize(mesh_.getNumberOfTriangles());
-         bfsEdges_.resize(mesh_.getNumberOfEdges());
-         bfsVerts_.resize(mesh_.getNumberOfVertices());
+         // bfsCells_.resize(mesh_.getNumberOfTriangles());
+         // bfsEdges_.resize(mesh_.getNumberOfEdges());
+         // bfsVerts_.resize(mesh_.getNumberOfVertices());
       }
 
       template <typename ScalarType>
@@ -334,9 +334,9 @@ namespace ttk
          dynGraphs_.up.init();
          dynGraphs_.down.init();
 
-         fillVector<idCell>(bfsCells_, nullCell);
-         fillVector<idEdge>(bfsEdges_, nullEdge);
-         fillVector<idVertex>(bfsVerts_, nullVertex);
+         // fillVector<idCell>(bfsCells_, nullCell);
+         // fillVector<idEdge>(bfsEdges_, nullEdge);
+         // fillVector<idVertex>(bfsVerts_, nullVertex);
 
          // Stats
 #ifdef TTK_ENABLE_FTR_STATS

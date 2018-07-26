@@ -30,6 +30,10 @@ namespace ttk
 {
    namespace ftr
    {
+      struct segmInfo {
+         AtomicVector<idSegmentation> history;
+         unsigned int up : 1;
+      };
 
       class Graph : public Allocable
       {
