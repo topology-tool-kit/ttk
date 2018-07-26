@@ -303,7 +303,14 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
 
   switch(vtkTemplate2PackMacro(inputScalars_->GetDataType(),
         identifiers_->GetDataType())){
+#ifdef _MSC_VER
+#define COMMA ,
+#endif
+#ifndef _MSC_VER
     vtkTemplate2Macro(({ret=topologicalSimplification_.execute<VTK_T1,VTK_T2>();}));
+#else
+    vtkTemplate2Macro({ret=topologicalSimplification_.execute<VTK_T1 COMMA VTK_T2>();});
+#endif
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
