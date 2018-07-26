@@ -811,7 +811,8 @@ namespace ttk
          auto comp = [localProp](const idVertex a, const idVertex b) {
             return localProp->compare(a, b);
          };
-         return graph_.hasArcEndingHere(saddle, regular, comp);
+         std::cout << "TODO check segm for arc, use propagation visit" << std::endl;
+         return false;
       }
 
       template <typename ScalarType>

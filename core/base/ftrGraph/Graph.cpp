@@ -166,9 +166,10 @@ std::string Graph::printNode(const idNode nodeId) const
 std::string Graph::printVisit(const idVertex v) const
 {
    std::stringstream res;
-   for (const idSegmentation tmp : segmentation_[v]) {
-      res << " " << tmp;
-   }
+   if (isArc(v))
+      res << "a: " << getArcId(v);
+   if (isNode(v))
+      res << "n: " << getNodeId(v);
    return res.str();
 }
 
@@ -178,12 +179,9 @@ std::string Graph::printVisit() const
 {
    std::stringstream res;
    res << "Segmentation: " << std::endl;
-   int s = 0;
-   for (const auto& l : segmentation_) {
-      res << s++ << " : ";
-      for (const auto v : l) {
-         res << " " << v;
-      }
+   for (idVertex s = 0; s < nbVerts_; ++s) {
+      res << s << " : ";
+      res << printVisit(s);
       res << std::endl;
    }
    return res.str();
@@ -209,7 +207,7 @@ void Graph::alloc()
 void Graph::init()
 {
    // Consider max valence is 10
-   fillVector<AtomicVector<idSegmentation>>(segmentation_, AtomicVector<idSegmentation>(10));
+   fillVector<SegmInfo>(segmentation_, SegmInfo{});
    fillVector<valence>(valUp_, -1);
    fillVector<valence>(valDown_, -1);
 }

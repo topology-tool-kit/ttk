@@ -100,7 +100,7 @@ struct VertData : public ObjectData {
    void setVertexInfo(const ttk::ftr::Graph& graph, const ttk::ftr::idVertex v)
    {
       if (graph.isVisited(v)) {
-         ids->SetTuple1(v, graph.getFirstArcId(v));
+         ids->SetTuple1(v, graph.getArcId(v));
       } else {
          ids->SetTuple1(v, -1);
       }

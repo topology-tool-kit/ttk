@@ -30,9 +30,9 @@ namespace ttk
 {
    namespace ftr
    {
-      struct segmInfo {
-         AtomicVector<idSegmentation> history;
-         unsigned int up : 1;
+      struct SegmInfo {
+         idNode     corNode = nullNode;
+         idSuperArc corArc  = nullSuperArc;
       };
 
       class Graph : public Allocable
@@ -42,7 +42,7 @@ namespace ttk
          AtomicVector<Node>                       nodes_;
          AtomicVector<SuperArc>                   arcs_;
 
-         std::vector<AtomicVector<idSegmentation>> segmentation_;
+         std::vector<SegmInfo> segmentation_;
 
         public:
 
@@ -128,110 +128,56 @@ namespace ttk
 
          bool isVisited(const idVertex v) const
          {
-            return !segmentation_[v].empty();
+            return segmentation_[v].corArc != nullSuperArc || segmentation_[v].corNode != nullNode;
          }
 
-         void visit(const idVertex v, const idSegmentation id, bool regular = true)
+         void visit(const idVertex v, const idSegmentation id, bool isArc = true)
          {
-            if (regular) {
-               segmentation_[v].emplace_back(id);
+            if (isArc) {
+               if (segmentation_[v].corArc == nullSuperArc) {
+                  segmentation_[v].corArc = id;
+               }
             } else {
-               segmentation_[v].emplace_back(-id-1);
-            }
-         }
-
-         const AtomicVector<idSegmentation> visit(const idVertex v) const
-         {
-            return segmentation_[v];
-         }
-
-         bool hasArc(const idVertex v, const idSuperArc id) const
-         {
-            for(const idSegmentation tmp :  segmentation_[v]){
-               if (tmp == (idSegmentation)id) {
-                  return true;
+               if (segmentation_[v].corNode == nullNode){
+                  segmentation_[v].corNode = id;
                }
             }
-            return false;
          }
 
-         bool hasArcEndingHere(const idVertex saddle, const idVertex regular, VertCompFN comp) const
+         std::tuple<idNode,idSuperArc> visit(const idVertex v) const
          {
-            const idNode lookupNode = getNodeId(saddle);
-            for(const idSegmentation tmp :  segmentation_[regular]){
-               if (tmp >= 0 && getArc(tmp).getUpNodeId() == lookupNode) {
-                  const idNode downNodeId = getArc(tmp).getDownNodeId();
-                  const idVertex downVert = getNode(downNodeId).getVertexIdentifier();
-                  if (comp(saddle, downVert)) {
-                     return true;
-                  }
-               }
-            }
-            return false;
-         }
-
-         bool isNode(const idVertex v) const
-         {
-            for (const idSegmentation tmp : segmentation_[v]) {
-               if (tmp < 0) {
-                  return true;
-               }
-            }
-            return false;
+            return {segmentation_[v].corNode, segmentation_[v].corArc};
          }
 
          bool isArc(const idVertex v) const
          {
-            for (const idSegmentation tmp : segmentation_[v]) {
-               if (tmp >= 0) {
-                  return true;
-               }
-            }
-            return false;
+            return segmentation_[v].corArc != nullSuperArc;
+         }
+
+         bool isArc(const idVertex v, const idSuperArc id) const
+         {
+            return segmentation_[v].corArc == id;
+         }
+
+         bool isNode(const idVertex v) const
+         {
+            return segmentation_[v].corNode != nullNode;
          }
 
          bool isNode(const idVertex v, const idNode id) const
          {
-            for(const idSegmentation tmp :  segmentation_[v]){
-               if ((-tmp - 1) == (idSegmentation)id) {
-                  return true;
-               }
-            }
-            return false;
+            return segmentation_[v].corNode != id;
          }
 
          idNode getNodeId(const idVertex v) const
          {
-            for (const idSegmentation tmp : segmentation_[v]) {
-               if (tmp < 0) {
-                  return -tmp - 1;
-               }
-            }
-            return nullNode;
+            return segmentation_[v].corNode;
          }
 
-         idSuperArc getFirstArcId(const idVertex v) const
+         idSuperArc getArcId(const idVertex v) const
          {
-            for (const idSegmentation tmp : segmentation_[v]) {
-               if (tmp >= 0) {
-                  return tmp;
-               }
-            }
-            return nullSuperArc;
+            return segmentation_[v].corArc;
          }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-         valence getNbVisit(const idVertex v) const
-         {
-            // Debug only, costly
-            valence s = 0;
-            for(const idSuperArc tmp :  segmentation_[v]){
-               std::ignore = tmp;
-               ++s;
-            }
-            return s;
-         }
-#endif
 
          // direct access for openmp capture
          const valence& valUp(const idVertex v) const
