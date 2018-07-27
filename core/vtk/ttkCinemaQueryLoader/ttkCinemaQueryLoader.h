@@ -22,9 +22,10 @@
 #include                  <vtkTable.h>
 #include                  <vtkImageData.h>
 
-#include                  <vtkImageAlgorithm.h>
+#include                  <vtkMultiBlockDataSetAlgorithm.h>
 #include                  <vtkFiltersCoreModule.h>
 #include                  <vtkInformation.h>
+#include                  <vtkMultiBlockDataSet.h>
 
 // ttk code includes
 #include                  <ttkWrapper.h>
@@ -38,12 +39,12 @@ class VTKFILTERSCORE_EXPORT ttkCinemaQueryLoader
 #else
 class ttkCinemaQueryLoader
 #endif
-  : public vtkImageAlgorithm, public ttk::Wrapper{
+  : public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
     static ttkCinemaQueryLoader* New();
-    vtkTypeMacro(ttkCinemaQueryLoader, vtkImageAlgorithm)
+    vtkTypeMacro(ttkCinemaQueryLoader, vtkMultiBlockDataSetAlgorithm)
 
     // default ttk setters
     vtkSetMacro(debugLevel_, int);
@@ -87,7 +88,7 @@ class ttkCinemaQueryLoader
     int FillOutputPortInformation(int port, vtkInformation *info) override {
       switch(port){
         case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
+          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
           break;
         default:
           break;
@@ -113,7 +114,7 @@ class ttkCinemaQueryLoader
 
     // TTK_SETUP();
     int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
-    int RequestInformation (vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+    // int RequestInformation (vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
 
     bool UseAllCores;
     int ThreadNumber;

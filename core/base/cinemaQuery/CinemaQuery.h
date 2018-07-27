@@ -44,6 +44,8 @@ namespace ttk{
         for(string::iterator it = input.begin(); it != input.end(); ++it) {
           if(*it == ' ') {
             resultString += "%20";
+          } else if(*it == '%'){
+            resultString += "%25";
           } else {
             resultString += *it;
           }
@@ -60,6 +62,14 @@ namespace ttk{
         string ip = serverAddress.substr(0,serverAddress.find_last_of(":"));
         string port = serverAddress.substr(serverAddress.find_last_of(":")+1);
 
+        {
+            std::stringstream msg;
+            msg << "[CinemaQuery] Server: "
+                << serverAddress << endl
+                << "[CinemaQuery]  Query: " << sqlQuery << endl;
+            dMsg(std::cout, msg.str(), timeMsg);
+        }
+
         boost::asio::ip::tcp::endpoint endpoint(
             boost::asio::ip::address::from_string( ip ),
             stoi(port)
@@ -71,8 +81,6 @@ namespace ttk{
           cout << "Connection Error: ";
           cout << ec.message() << endl;
           //TODO error handling in paraview
-        } else {
-          cout << "Successfully connected to Server!" << endl;
         }
 
         // create requestQuery
@@ -97,7 +105,6 @@ namespace ttk{
         // Check that response is Valid.
         istream response_stream(&response);
 
-        cout<<"1"<<endl;
         // response_stream = HTTP/1.1 200 OK
         string http_version;
         response_stream >> http_version;
@@ -115,18 +122,15 @@ namespace ttk{
           return "ERROR";
           //TODO error handling in paraview
         }
-        cout<<"2"<<endl;
 
         boost::system::error_code error;
         while (boost::asio::read(socket, response, boost::asio::transfer_at_least(1), error)){
         //   cout << "Query Successful" << endl;
         }
-        cout<<"3"<<endl;
 
         if (error != boost::asio::error::eof) {
           throw boost::system::system_error(error);
         }
-        cout<<"4"<<endl;
 
         //Convert streambuffer to string
         //Creates String with elements from first element to last element of buffer
@@ -171,17 +175,19 @@ namespace ttk{
       };
 
       inline vector<vector<string>> parseQueryResults(istringstream &input) const{
-        // Root Node
-        pt::ptree root;
+
+        vector<vector<string>> matrix;
+        if(input.str().length()==0)
+            return matrix;
 
         // Fill ptree with the input
+        pt::ptree root;
         pt::read_json(*&input, root);
 
         pt::ptree children = root.get_child("");
 
         // create result matrix
         int no_of_rows = children.size();
-
         int no_of_cols=0;
         vector<string> colNames;
         for (const auto& kv : children) {
@@ -194,7 +200,6 @@ namespace ttk{
         }
 
         string initial_value = string("NULL");
-        vector<vector<string>> matrix;
 
         matrix.resize(no_of_rows+1, vector<string>(no_of_cols, initial_value));
         for(int i=0; i < no_of_cols; i++) {
@@ -213,6 +218,7 @@ namespace ttk{
           }
           rowCount++;
         }
+
         return matrix;
       }
 
@@ -225,7 +231,7 @@ namespace ttk{
 template <class dataType> vector<vector<string>> ttk::CinemaQuery::execute(
   const string &serverAddress, const string &sqlQuery) const{
 
-    cout<<serverAddress << " " << sqlQuery << endl;
+    Timer t;
 
     string resultJson = ttk::CinemaQuery::queryDataBase(serverAddress, sqlQuery);
 
@@ -241,6 +247,18 @@ template <class dataType> vector<vector<string>> ttk::CinemaQuery::execute(
     istringstream streamQueryResult(resultJson);
 
     vector<vector<string>> resultMartix = parseQueryResults(streamQueryResult);
+
+    int n = resultMartix.size()>1 ? resultMartix.size()-1 : 0;
+    int m = n>0 ? resultMartix[0].size() : 0;
+
+    {
+        std::stringstream msg;
+        msg << "[CinemaQuery] ("<< n << ","<<m<<") tuples fetched in "
+            << t.getElapsedTime() << " s."
+            << endl;
+        dMsg(std::cout, msg.str(), timeMsg);
+    }
+
     return resultMartix;
 }
 
