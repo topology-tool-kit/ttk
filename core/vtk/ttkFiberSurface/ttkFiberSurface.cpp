@@ -22,9 +22,6 @@ ttkFiberSurface::ttkFiberSurface(){
 
 ttkFiberSurface::~ttkFiberSurface(){
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
   
@@ -200,14 +197,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<char COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<char COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<char TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<char TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<char COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<char TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -234,14 +231,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<double COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<double COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<double TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<double TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<double COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<double TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -268,14 +265,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<float COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<float COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<float TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<float TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<float COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<float TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -302,14 +299,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<int COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<int COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<int TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<int TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<int COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<int TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -336,14 +333,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<vtkIdType COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<vtkIdType COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<vtkIdType TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<vtkIdType TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<vtkIdType COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<vtkIdType TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -370,14 +367,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<unsigned char COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<unsigned char COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<unsigned char TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<unsigned char TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<unsigned char COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<unsigned char TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -404,14 +401,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<unsigned short COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<unsigned short COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<unsigned short TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<unsigned short TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<unsigned short COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<unsigned short TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif

@@ -108,9 +108,6 @@ int ttkContinuousScatterPlot::getTriangulation(vtkDataSet* input){
   
   return 0;
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
   
@@ -205,7 +202,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<char,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<char COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<char TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -214,7 +211,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<unsigned char,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned char COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned char TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -223,7 +220,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<short,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<short COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<short TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -232,7 +229,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<unsigned short,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned short COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned short TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -241,7 +238,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<int,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<int COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<int TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -250,7 +247,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<vtkIdType,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<vtkIdType COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<vtkIdType TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -259,7 +256,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<unsigned int,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned int COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned int TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -268,7 +265,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<float,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<float COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<float TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -277,7 +274,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<double,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<double COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<double TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;

@@ -239,9 +239,6 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
   const int dimensionality=triangulation_->getDimensionality();
 
   switch(inputScalars_->GetDataType()){
-#ifdef _MSC_VER
-#define COMMA ,
-#endif
 #ifndef _MSC_VER
     vtkTemplateMacro(({
           vector<VTK_TT> criticalPoints_points_cellScalars;
@@ -414,9 +411,9 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
               &criticalPoints_points_manifoldSize);
 
           if(inputOffsets_->GetDataType()==VTK_INT)
-          ret=discreteGradient_.buildGradient<VTK_TT COMMA int>();
+          ret=discreteGradient_.buildGradient<VTK_TT TTK_COMMA int>();
           if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-          ret=discreteGradient_.buildGradient<VTK_TT COMMA vtkIdType>();
+          ret=discreteGradient_.buildGradient<VTK_TT TTK_COMMA vtkIdType>();
           if(ret){
           cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient() error code : " << ret << endl;
           return -1;
@@ -424,9 +421,9 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
           if(AllowSecondPass){
             if(inputOffsets_->GetDataType()==VTK_INT)
-              ret=discreteGradient_.buildGradient2<VTK_TT COMMA int>();
+              ret=discreteGradient_.buildGradient2<VTK_TT TTK_COMMA int>();
             if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-              ret=discreteGradient_.buildGradient2<VTK_TT COMMA vtkIdType>();
+              ret=discreteGradient_.buildGradient2<VTK_TT TTK_COMMA vtkIdType>();
             if(ret){
               cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient2() error code : " << ret << endl;
               return -1;
@@ -435,9 +432,9 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
           if(dimensionality==3 and AllowThirdPass){
             if(inputOffsets_->GetDataType()==VTK_INT)
-              ret=discreteGradient_.buildGradient3<VTK_TT COMMA int>();
+              ret=discreteGradient_.buildGradient3<VTK_TT TTK_COMMA int>();
             if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-              ret=discreteGradient_.buildGradient3<VTK_TT COMMA vtkIdType>();
+              ret=discreteGradient_.buildGradient3<VTK_TT TTK_COMMA vtkIdType>();
             if(ret){
               cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient2() error code : " << ret << endl;
               return -1;
@@ -445,9 +442,9 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
           }
 
           if(inputOffsets_->GetDataType()==VTK_INT)
-            ret=discreteGradient_.reverseGradient<VTK_TT COMMA int>();
+            ret=discreteGradient_.reverseGradient<VTK_TT TTK_COMMA int>();
           if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-            ret=discreteGradient_.reverseGradient<VTK_TT COMMA vtkIdType>();
+            ret=discreteGradient_.reverseGradient<VTK_TT TTK_COMMA vtkIdType>();
           if(ret){
             cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.reverseGradient() error code : " << ret << endl;
             return -1;
@@ -456,9 +453,9 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
           // critical points
           {
             if(inputOffsets_->GetDataType()==VTK_INT)
-              discreteGradient_.setCriticalPoints<VTK_TT COMMA int>();
+              discreteGradient_.setCriticalPoints<VTK_TT TTK_COMMA int>();
             if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-              discreteGradient_.setCriticalPoints<VTK_TT COMMA vtkIdType>();
+              discreteGradient_.setCriticalPoints<VTK_TT TTK_COMMA vtkIdType>();
 
             vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
             if(!points){
@@ -549,35 +546,35 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
               &criticalPoints_points_manifoldSize);
 
           if(inputOffsets_->GetDataType()==VTK_INT)
-          ret=discreteGradient_.buildGradient<VTK_TT COMMA int>();
+          ret=discreteGradient_.buildGradient<VTK_TT TTK_COMMA int>();
           if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-          ret=discreteGradient_.buildGradient<VTK_TT COMMA vtkIdType>();
+          ret=discreteGradient_.buildGradient<VTK_TT TTK_COMMA vtkIdType>();
 
           if(AllowSecondPass){
           if(inputOffsets_->GetDataType()==VTK_INT)
-          ret=discreteGradient_.buildGradient2<VTK_TT COMMA int>();
+          ret=discreteGradient_.buildGradient2<VTK_TT TTK_COMMA int>();
           if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-            ret=discreteGradient_.buildGradient2<VTK_TT COMMA vtkIdType>();
+            ret=discreteGradient_.buildGradient2<VTK_TT TTK_COMMA vtkIdType>();
           }
 
           if(dimensionality==3 and AllowThirdPass){
             if(inputOffsets_->GetDataType()==VTK_INT)
-              ret=discreteGradient_.buildGradient3<VTK_TT COMMA int>();
+              ret=discreteGradient_.buildGradient3<VTK_TT TTK_COMMA int>();
             if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-              ret=discreteGradient_.buildGradient3<VTK_TT COMMA vtkIdType>();
+              ret=discreteGradient_.buildGradient3<VTK_TT TTK_COMMA vtkIdType>();
           }
 
           if(inputOffsets_->GetDataType()==VTK_INT)
-            discreteGradient_.reverseGradient<VTK_TT COMMA int>();
+            discreteGradient_.reverseGradient<VTK_TT TTK_COMMA int>();
           if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-            discreteGradient_.reverseGradient<VTK_TT COMMA vtkIdType>();
+            discreteGradient_.reverseGradient<VTK_TT TTK_COMMA vtkIdType>();
 
           // critical points
           {
             if(inputOffsets_->GetDataType()==VTK_INT)
-              discreteGradient_.setCriticalPoints<VTK_TT COMMA int>();
+              discreteGradient_.setCriticalPoints<VTK_TT TTK_COMMA int>();
             if(inputOffsets_->GetDataType()==VTK_INT)
-              discreteGradient_.setCriticalPoints<VTK_TT COMMA vtkIdType>();
+              discreteGradient_.setCriticalPoints<VTK_TT TTK_COMMA vtkIdType>();
 
             vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
 

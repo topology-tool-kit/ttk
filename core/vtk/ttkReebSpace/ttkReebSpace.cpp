@@ -127,9 +127,6 @@ template<class dataTypeU, class dataTypeV> int ttkReebSpace::baseCall(
  
   return 0;
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
 
@@ -253,7 +250,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<char COMMA VTK_TT>(input,
+			  baseCall<char TTK_COMMA VTK_TT>(input,
 			  uComponent_, offsetFieldU_,
 			  vComponent_, offsetFieldV_);
 		  }
@@ -275,7 +272,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<double COMMA VTK_TT>(input,
+			  baseCall<double TTK_COMMA VTK_TT>(input,
 			  uComponent_, offsetFieldU_,
 			  vComponent_, offsetFieldV_);
 		  }
@@ -297,7 +294,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<float COMMA VTK_TT>(input,
+			  baseCall<float TTK_COMMA VTK_TT>(input,
 			  uComponent_, offsetFieldU_,
 			  vComponent_, offsetFieldV_);
 		  }
@@ -319,7 +316,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<int COMMA VTK_TT>(input,
+			  baseCall<int TTK_COMMA VTK_TT>(input,
 			  uComponent_, offsetFieldU_,
 			  vComponent_, offsetFieldV_);
 		  }
@@ -341,7 +338,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<vtkIdType COMMA VTK_TT>(input,
+			  baseCall<vtkIdType TTK_COMMA VTK_TT>(input,
 			  uComponent_, offsetFieldU_,
 			  vComponent_, offsetFieldV_);
 		  }
@@ -363,7 +360,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<unsigned char COMMA VTK_TT>(input,
+			  baseCall<unsigned char TTK_COMMA VTK_TT>(input,
 			  uComponent_, offsetFieldU_,
 			  vComponent_, offsetFieldV_);
 		  }
@@ -385,7 +382,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<unsigned short COMMA VTK_TT>(input,
+			  baseCall<unsigned short TTK_COMMA VTK_TT>(input,
 			  uComponent_, offsetFieldU_,
 			  vComponent_, offsetFieldV_);
 		  }

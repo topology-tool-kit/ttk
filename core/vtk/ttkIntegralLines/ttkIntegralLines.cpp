@@ -312,9 +312,6 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   integralLines_.setOutputTrajectories(&trajectories);
   
   switch(inputScalars_->GetDataType()){
-#ifdef _MSC_VER
-#define COMMA ,
-#endif
 #ifndef _MSC_VER
     vtkTemplateMacro(({
       if(inputOffsets_->GetDataType()==VTK_INT)
@@ -325,9 +322,9 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
 #else
     vtkTemplateMacro({
       if(inputOffsets_->GetDataType()==VTK_INT)
-      ret = integralLines_.execute<VTK_TT COMMA int>();
+      ret = integralLines_.execute<VTK_TT TTK_COMMA int>();
       if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-      ret = integralLines_.execute<VTK_TT COMMA vtkIdType>();
+      ret = integralLines_.execute<VTK_TT TTK_COMMA vtkIdType>();
       });
 #endif
   }

@@ -156,9 +156,6 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
 
   return 0;
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkPersistenceDiagram::deleteDiagram(){
   if(CTDiagram_ and inputScalars_){
     switch(inputScalars_->GetDataType()){
@@ -170,7 +167,7 @@ int ttkPersistenceDiagram::deleteDiagram(){
 		}));
 #else
 		vtkTemplateMacro({
-			using tuple_t = tuple<ttkIdType COMMA ftm::NodeType COMMA ttkIdType COMMA ftm::NodeType COMMA VTK_TT COMMA ttkIdType>;
+			using tuple_t = tuple<ttkIdType TTK_COMMA ftm::NodeType TTK_COMMA ttkIdType TTK_COMMA ftm::NodeType TTK_COMMA VTK_TT TTK_COMMA ttkIdType>;
 		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
 		delete CTDiagram;
 		});
@@ -278,11 +275,11 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #else
 #ifndef TTK_ENABLE_KAMIKAZE
 	  vtkTemplateMacro({
-		  using tuple_t = tuple<ttkIdType COMMA
-		  ftm::NodeType COMMA
-		  ttkIdType COMMA
-		  ftm::NodeType COMMA
-		  VTK_TT COMMA
+		  using tuple_t = tuple<ttkIdType TTK_COMMA
+		  ftm::NodeType TTK_COMMA
+		  ttkIdType TTK_COMMA
+		  ftm::NodeType TTK_COMMA
+		  VTK_TT TTK_COMMA
 		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
@@ -300,9 +297,9 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
           if(inputOffsets_->GetDataType()==VTK_INT)
-            ret = persistenceDiagram_.execute<VTK_TT COMMA int>();
+            ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA int>();
           if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-            ret = persistenceDiagram_.execute<VTK_TT COMMA vtkIdType>();
+            ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA vtkIdType>();
 		  if (ret) {
 			  cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
 				  << "error code : " << ret << endl;
@@ -322,11 +319,11 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  });
 #else
 	  vtkTemplateMacro({
-		  using tuple_t = tuple<ttkIdType COMMA
-		  ftm::NodeType COMMA
-		  ttkIdType COMMA
-		  ftm::NodeType COMMA
-		  VTK_TT COMMA
+		  using tuple_t = tuple<ttkIdType TTK_COMMA
+		  ftm::NodeType TTK_COMMA
+		  ttkIdType TTK_COMMA
+		  ftm::NodeType TTK_COMMA
+		  VTK_TT TTK_COMMA
 		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
@@ -344,9 +341,9 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
           if(inputOffsets_->GetDataType()==VTK_INT)
-            ret = persistenceDiagram_.execute<VTK_TT COMMA int>();
+            ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA int>();
           if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-            ret = persistenceDiagram_.execute<VTK_TT COMMA vtkIdType>();
+            ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA vtkIdType>();
 	  }
 
 	  if (ShowInsideDomain)

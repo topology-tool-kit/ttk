@@ -369,9 +369,6 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
       morseSmaleManifoldPtr);
 
   switch(inputScalars->GetDataType()){
-#ifdef _MSC_VER
-#define COMMA ,
-#endif
 #ifndef _MSC_VER
     vtkTemplateMacro(({
       // critical points
@@ -1029,9 +1026,9 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         &separatrices2_cells_isOnBoundary);
 
       if(inputOffsets->GetDataType()==VTK_INT)
-        ret = morseSmaleComplex_.execute<VTK_TT COMMA int>();
+        ret = morseSmaleComplex_.execute<VTK_TT TTK_COMMA int>();
       if(inputOffsets->GetDataType()==VTK_ID_TYPE)
-        ret = morseSmaleComplex_.execute<VTK_TT COMMA vtkIdType>();
+        ret = morseSmaleComplex_.execute<VTK_TT TTK_COMMA vtkIdType>();
       if (ret) {
         cerr
           << "[ttkMorseSmaleComplex] Error : MorseSmaleComplex.execute() "
@@ -1555,9 +1552,9 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         &separatrices2_cells_isOnBoundary);
 
       if(inputOffsets->GetDataType()==VTK_INT)
-        morseSmaleComplex_.execute<VTK_TT COMMA int>();
+        morseSmaleComplex_.execute<VTK_TT TTK_COMMA int>();
       if(inputOffsets->GetDataType()==VTK_ID_TYPE)
-        morseSmaleComplex_.execute<VTK_TT COMMA vtkIdType>();
+        morseSmaleComplex_.execute<VTK_TT TTK_COMMA vtkIdType>();
 
       // critical points
       {

@@ -26,6 +26,8 @@ using ttkIdType = int;
 using ttkIdTypeArray = vtkIntArray;
 #endif
 
+#define TTK_COMMA ,
+
 // Macros for vtkWrappers
 #define TTK_POLY_DATA_NEW(i, ouputInformation, dataTYpe)\
   if(dataType == "vtkPolyData"){\

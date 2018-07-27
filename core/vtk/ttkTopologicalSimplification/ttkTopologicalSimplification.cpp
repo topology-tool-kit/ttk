@@ -312,9 +312,6 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   switch(inputScalars_->GetDataType()){
-#ifdef _MSC_VER
-#define COMMA ,
-#endif
 #ifndef _MSC_VER
     vtkTemplateMacro(({
           if(inputOffsets_->GetDataType()==VTK_INT)
@@ -325,9 +322,9 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
 #else
     vtkTemplateMacro({
         if(inputOffsets_->GetDataType()==VTK_INT)
-        ret=topologicalSimplification_.execute<VTK_TT COMMA int>();
+        ret=topologicalSimplification_.execute<VTK_TT TTK_COMMA int>();
         if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-        ret=topologicalSimplification_.execute<VTK_TT COMMA vtkIdType>();
+        ret=topologicalSimplification_.execute<VTK_TT TTK_COMMA vtkIdType>();
         });
 #endif
   }
