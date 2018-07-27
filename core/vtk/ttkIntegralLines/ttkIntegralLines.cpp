@@ -262,6 +262,12 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
     return -3;
   }
 #endif
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(inputOffsets_->GetDataType()!=VTK_INT and inputOffsets_->GetDataType()!=VTK_ID_TYPE){
+    cerr << "[ttkIntegralLines] Error : input offset field type not supported." << endl;
+    return -1;
+  }
+#endif
 
   ret=getIdentifiers(seeds);
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -302,13 +308,25 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
     identifiers_->GetVoidPointer(0));
   integralLines_.setOutputTrajectories(&trajectories);
   
-  switch(vtkTemplate2PackMacro(inputScalars_->GetDataType(),
-        inputOffsets_->GetDataType())){
-    vtkTemplate2Macro((
-      { 
-        ret = integralLines_.execute<VTK_T1,VTK_T2>(); 
-      }
-    ));
+  switch(inputScalars_->GetDataType()){
+#ifdef _MSC_VER
+#define COMMA ,
+#endif
+#ifndef _MSC_VER
+    vtkTemplateMacro(({
+      if(inputOffsets_->GetDataType()==VTK_INT)
+      ret = integralLines_.execute<VTK_TT,int>();
+      if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+      ret = integralLines_.execute<VTK_TT,vtkIdType>();
+      }));
+#else
+    vtkTemplateMacro({
+      if(inputOffsets_->GetDataType()==VTK_INT)
+      ret = integralLines_.execute<VTK_TT COMMA int>();
+      if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+      ret = integralLines_.execute<VTK_TT COMMA vtkIdType>();
+      });
+#endif
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
