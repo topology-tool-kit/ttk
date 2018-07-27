@@ -61,8 +61,8 @@ Computer Graphics Forum, 2012.
       </StringVectorProperty>
 
       <IntVectorProperty
-        name="UseInputOffsetScalarField"
-        command="SetUseInputOffsetScalarField"
+        name="ForceInputOffsetScalarField"
+        command="SetForceInputOffsetScalarField"
         label="Use Input Offset Field"
         number_of_elements="1"
         panel_visibility="advanced"
@@ -314,7 +314,7 @@ Computer Graphics Forum, 2012.
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField" />
-        <Property name="UseInputOffsetScalarField"/>
+        <Property name="ForceInputOffsetScalarField"/>
         <Property name="InputOffsetScalarFieldName"/>
       </PropertyGroup>
 

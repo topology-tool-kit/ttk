@@ -148,16 +148,19 @@ class ttkBottleneckDistance
     ttkBottleneckDistance() {
       
       // settings
-      UseAllCores = false;
+      UseAllCores = true;
+      ThreadNumber = 1;
+      debugLevel_ = 3;
       SetNumberOfInputPorts(2);
       SetNumberOfOutputPorts(3);
 
       // inputs
       UsePersistenceMetric = false;
       UseGeometricSpacing = false;
-      WassersteinMetric = "2";
+      UseOutputMatching = false;
+      WassersteinMetric = "1";
       Alpha = 1.0;
-      Spacing = 0.0;
+      Spacing = 1.0;
 
       // outputs
       result = -1.;

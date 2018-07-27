@@ -63,7 +63,7 @@ American Mathematical Monthly, 1970.
      
       <IntVectorProperty name="With predefined offset"
         label="Use Input Offset Field"
-        command="SetPredefinedOffset"
+        command="SetForceInputOffsetScalarField"
         number_of_elements="1"
         panel_visibility="advanced"
         default_values="0">

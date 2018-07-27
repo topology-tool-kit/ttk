@@ -105,7 +105,10 @@ class ttkPointDataSelector
   protected:
 
     ttkPointDataSelector(){
-      UseAllCores = false;
+      UseAllCores = true;
+      ThreadNumber = 1;
+      debugLevel_ = 3;
+      RegexpString = "*";
 
       SetNumberOfInputPorts(1);
       SetNumberOfOutputPorts(1);

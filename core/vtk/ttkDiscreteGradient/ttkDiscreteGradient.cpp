@@ -7,16 +7,16 @@ using namespace dcg;
 vtkStandardNewMacro(ttkDiscreteGradient)
 
   ttkDiscreteGradient::ttkDiscreteGradient():
-    UseAllCores{},
-    ThreadNumber{},
+    UseAllCores{true},
+    ThreadNumber{1},
     ScalarField{},
     InputOffsetScalarFieldName{},
-    ForceInputOffsetScalarField{},
-    ReverseSaddleMaximumConnection{},
-    ReverseSaddleSaddleConnection{},
-    AllowSecondPass{},
-    AllowThirdPass{},
-    ComputeGradientGlyphs{},
+    ForceInputOffsetScalarField{false},
+    ReverseSaddleMaximumConnection{true},
+    ReverseSaddleSaddleConnection{true},
+    AllowSecondPass{true},
+    AllowThirdPass{true},
+    ComputeGradientGlyphs{true},
     IterationThreshold{-1},
     ScalarFieldId{},
     OffsetFieldId{-1},
@@ -27,6 +27,7 @@ vtkStandardNewMacro(ttkDiscreteGradient)
     inputOffsets_{},
     hasUpdatedMesh_{}
 {
+  debugLevel_ = 3;
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(2);
 }

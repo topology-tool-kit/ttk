@@ -14,7 +14,10 @@ ttkGeometrySmoother::ttkGeometrySmoother(){
   NumberOfIterations = 1;
   MaskIdentifier = 0;
   UseInputMask = false;
-  InputMask = "";
+  InputMask = "MaskField";
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkGeometrySmoother::~ttkGeometrySmoother(){

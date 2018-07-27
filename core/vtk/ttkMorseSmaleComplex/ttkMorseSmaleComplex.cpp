@@ -17,8 +17,8 @@ vtkStandardNewMacro(ttkMorseSmaleComplex)
     ComputeAscendingSeparatrices1{true},
     ComputeDescendingSeparatrices1{true},
     ComputeSaddleConnectors{true},
-    ComputeAscendingSeparatrices2{true},
-    ComputeDescendingSeparatrices2{true},
+    ComputeAscendingSeparatrices2{false},
+    ComputeDescendingSeparatrices2{false},
     ComputeAscendingSegmentation{true},
     ComputeDescendingSegmentation{true},
     ComputeFinalSegmentation{true},
@@ -26,11 +26,15 @@ vtkStandardNewMacro(ttkMorseSmaleComplex)
     OffsetFieldId{-1},
     ReturnSaddleConnectors{false},
     SaddleConnectorsPersistenceThreshold{0},
+    PrioritizeSpeedOverMemory{false},
 
     triangulation_{},
     defaultOffsets_{},
     hasUpdatedMesh_{}
 {
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(4);
 }

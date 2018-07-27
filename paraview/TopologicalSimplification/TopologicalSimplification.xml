@@ -96,8 +96,8 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
       </StringVectorProperty>
 
       <IntVectorProperty
-         name="UseInputOffsetScalarField"
-         command="SetUseInputOffsetScalarField"
+         name="ForceInputOffsetScalarField"
+         command="SetForceInputOffsetScalarField"
          label="Use Input Offset Field"
          number_of_elements="1"
          panel_visibility="advanced"
@@ -233,7 +233,7 @@ offset field for flat plateau disambiguation).
 			<PropertyGroup panel_widget="Line" label="Input options">
 				<Property name="ScalarField"/>
 				<Property name="VertexIdentifierScalarField"/>
-				<Property name="UseInputOffsetScalarField"/>
+				<Property name="ForceInputOffsetScalarField"/>
 				<Property name="InputOffsetScalarFieldName"/>
 				<Property name="VertexIdentifierScalarField"/>
 				<Property name="ConsiderIdentifierAsBlackList"/>

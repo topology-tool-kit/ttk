@@ -6,6 +6,9 @@ using namespace ttk;
 vtkStandardNewMacro(ttkProjectionFromField)
 
 ttkProjectionFromField::ttkProjectionFromField(){
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 
   // init
   pointSet_ = vtkSmartPointer<vtkPoints>::New();

@@ -10,6 +10,9 @@ ttkIdentifiers::ttkIdentifiers(){
   // init
   CellFieldName = "CellIdentifiers";
   VertexFieldName = "VertexIdentifiers";
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkIdentifiers::~ttkIdentifiers(){

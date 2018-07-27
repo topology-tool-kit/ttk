@@ -6,15 +6,16 @@ using namespace ttk;
 vtkStandardNewMacro(ttkFiberSurface)
 
 ttkFiberSurface::ttkFiberSurface(){
-
-  UseAllCores = false;
-  RangeCoordinates = false;
-  EdgeParameterization = false;
-  EdgeIds = false;
-  TetIds = false;
-  CaseIds = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
+  RangeCoordinates = true;
+  EdgeParameterization = true;
+  EdgeIds = true;
+  TetIds = true;
+  CaseIds = true;
   PointMerge = false;
-  RangeOctree = false;
+  RangeOctree = true;
   PointMergeDistanceThreshold = 0.000001;
   SetNumberOfInputPorts(2);
 }

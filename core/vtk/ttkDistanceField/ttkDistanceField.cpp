@@ -8,6 +8,11 @@ vtkStandardNewMacro(ttkDistanceField)
   ttkDistanceField::ttkDistanceField():
     identifiers_{}
 {
+  OutputScalarFieldType = 0;
+  OutputScalarFieldName = "OutputDistanceField";
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
   SetNumberOfInputPorts(2);
   
   triangulation_ = NULL;

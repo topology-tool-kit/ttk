@@ -62,6 +62,16 @@ ttkContourForests::ttkContourForests()
   contourTree_->setWrapper(this);
   contourTree_->setDebugLevel(debugLevel_);
   UseAllCores = false;
+  useInputOffsetScalarField_ = false;
+  SetTreeType(2);
+  arcResolution_ = 20;
+  skeletonSmoothing_ = 15;
+  lessPartition_ = 1;
+  partitionNum_ = -1;
+
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 
   // VTK Interface //
   SetNumberOfInputPorts(1);

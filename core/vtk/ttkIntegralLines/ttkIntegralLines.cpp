@@ -12,12 +12,16 @@ vtkStandardNewMacro(ttkIntegralLines)
     inputOffsets_{nullptr},
     identifiers_{nullptr}
 {
+  Direction = 0;
   SetNumberOfInputPorts(2);
   triangulation_ = NULL;
 
   OffsetScalarFieldId = -1;
   OffsetScalarFieldName = ttk::OffsetScalarFieldName;
   ForceInputOffsetScalarField = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkIntegralLines::~ttkIntegralLines(){

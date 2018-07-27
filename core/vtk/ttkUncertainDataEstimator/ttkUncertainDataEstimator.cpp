@@ -6,6 +6,8 @@ using namespace ttk;
 vtkStandardNewMacro(ttkUncertainDataEstimator)
 
 ttkUncertainDataEstimator::ttkUncertainDataEstimator(){
+  BoundToCompute(0);
+  BinCount(10);
 
   // init
   outputLowerBoundScalarField_ = NULL;
@@ -13,7 +15,9 @@ ttkUncertainDataEstimator::ttkUncertainDataEstimator(){
   outputProbabilityScalarField_ = NULL;
   outputMeanField_ = NULL;
 
-  UseAllCores = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);

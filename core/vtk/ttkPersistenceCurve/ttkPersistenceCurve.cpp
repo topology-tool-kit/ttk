@@ -26,6 +26,10 @@ vtkStandardNewMacro(ttkPersistenceCurve)
   OffsetFieldId = -1;
   InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
   ForceInputOffsetScalarField = false;
+  ComputeSaddleConnectors = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 
   inputTriangulation_ = vtkSmartPointer<ttkTriangulationFilter>::New();
 }

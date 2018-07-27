@@ -13,6 +13,10 @@ ttkTextureMapFromField::ttkTextureMapFromField(){
   
   RepeatUTexture = RepeatVTexture = false;
   textureCoordinates_ = NULL;
+
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkTextureMapFromField::~ttkTextureMapFromField(){

@@ -12,7 +12,12 @@ ttkScalarFieldSmoother::ttkScalarFieldSmoother(){
   ScalarFieldIdentifier = 0;
   MaskIdentifier = 0;
   UseInputMask = false;
+  InputMask = "MaskField";
   outputScalarField_ = NULL;
+
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
   
 }
 

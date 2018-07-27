@@ -6,8 +6,12 @@ using namespace ttk;
 vtkStandardNewMacro(ttkFiber)
 
 ttkFiber::ttkFiber(){
+  Uvalue = 0;
+  Vvalue = 0;
 
-  UseAllCores = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkFiber::~ttkFiber(){

@@ -645,7 +645,7 @@ int ttkFTMTree::setupTriangulation()
 
 ttkFTMTree::ttkFTMTree()
     : ScalarField{},
-      ForceInputOffsetScalarField{},
+      ForceInputOffsetScalarField{false},
       InputOffsetScalarFieldName{ttk::OffsetScalarFieldName},
       ScalarFieldId{},
       OffsetFieldId{-1},
@@ -655,8 +655,14 @@ ttkFTMTree::ttkFTMTree()
       offsets_{},
       hasUpdatedMesh_{}
 {
+  SetSuperArcSamplingLevel(0);
+  SetWithNormalize(true);
+  SetWithAdvStats(true);
    SetNumberOfInputPorts(1);
    SetNumberOfOutputPorts(3);
+   UseAllCores = true;
+   ThreadNumber = 1;
+   debugLevel_ = 3;
 }
 
 ttkFTMTree::~ttkFTMTree()

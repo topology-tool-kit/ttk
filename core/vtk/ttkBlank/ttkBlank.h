@@ -137,12 +137,14 @@ class ttkBlank
     ttkBlank(){
       
         // init
-      SomeIntegerArgument = -1;
-      SomeDoubleArgument = -1;
-      SomeOption = false;
+      SomeIntegerArgument = 1;
+      SomeDoubleArgument = 1;
+      SomeOption = true;
       outputScalarField_ = NULL;
       
-      UseAllCores = false;
+      UseAllCores = true;
+      ThreadNumber = 1;
+      debugLevel_ = 3;
       
       // TODO-1
       // Specify the number of input and output ports.

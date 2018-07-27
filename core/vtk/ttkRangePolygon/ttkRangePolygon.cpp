@@ -7,9 +7,11 @@ vtkStandardNewMacro(ttkRangePolygon)
 
 ttkRangePolygon::ttkRangePolygon(){
 
-  ClosedLoop = true;
+  ClosedLoop = false;
   NumberOfIterations = 0;
-  UseAllCores = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkRangePolygon::~ttkRangePolygon(){

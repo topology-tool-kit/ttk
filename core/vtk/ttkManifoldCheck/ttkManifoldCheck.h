@@ -82,6 +82,8 @@ class ttkManifoldCheck
       
         // init
       UseAllCores = true;
+      ThreadNumber = 1;
+      debugLevel_ = 3;
     }
     
     ~ttkManifoldCheck(){};

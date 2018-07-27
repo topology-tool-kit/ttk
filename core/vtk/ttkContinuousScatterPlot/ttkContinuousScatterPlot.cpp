@@ -11,11 +11,19 @@ ttkContinuousScatterPlot::ttkContinuousScatterPlot():
 {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(1);
+  ScatterplotResolution[0]=1920;
+  ScatterplotResolution[1]=1080;
+  ScatterplotResolution[2]=0;
 
   ProjectImageSupport = true;
+  WithDummyValue = false;
+  DummyValue = 0;
   UcomponentId = 0;
   VcomponentId = 1;
   triangulation_ = NULL;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ =3;
 }
 
 ttkContinuousScatterPlot::~ttkContinuousScatterPlot(){

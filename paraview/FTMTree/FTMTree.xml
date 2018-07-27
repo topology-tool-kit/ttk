@@ -61,8 +61,8 @@
             </StringVectorProperty>
 
             <IntVectorProperty
-                name="UseInputOffsetScalarField"
-                command="SetUseInputOffsetScalarField"
+                name="ForceInputOffsetScalarField"
+                command="SetForceInputOffsetScalarField"
                 label="Use Input Offset Scalar Field"
                 number_of_elements="1"
                 default_values="0">
@@ -184,7 +184,7 @@ between nodes, ...)
 
             <PropertyGroup panel_widget="Line" label="Input options">
                 <Property name="Scalar Field"/>
-                <Property name="UseInputOffsetScalarField"/>
+                <Property name="ForceInputOffsetScalarField"/>
                 <Property name="InputOffsetScalarFieldName"/>
             </PropertyGroup>
 

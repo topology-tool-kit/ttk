@@ -6,6 +6,7 @@ using namespace ttk;
 vtkStandardNewMacro(ttkJacobiSet)
 
 ttkJacobiSet::ttkJacobiSet(){
+  ForceInputOffsetScalarField = false;
 
   // init
   UcomponentId = 0;
@@ -14,8 +15,11 @@ ttkJacobiSet::ttkJacobiSet(){
   UoffsetId = -1;
   VoffsetId = -1;
 
-  EdgeIds = true;
-  VertexScalars = true;
+  EdgeIds = false;
+  VertexScalars = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkJacobiSet::~ttkJacobiSet(){
