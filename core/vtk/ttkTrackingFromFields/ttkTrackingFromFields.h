@@ -24,9 +24,8 @@
 #include                  <vtkCellType.h>
 #include                  <vtkCellData.h>
 
-#include                  <ttkBottleneckDistance.h>
-#include                  <ttkPersistenceDiagram.h>
-#include                  <ttkFTMTree.h>
+#include                  <ttkTrackingFromPersistenceDiagrams.h>
+
 #include                  <TrackingFromPersistenceDiagrams.h>
 #include                  <TrackingFromFields.h>
 

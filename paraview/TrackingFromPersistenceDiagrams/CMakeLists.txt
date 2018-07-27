@@ -2,4 +2,4 @@ ttk_add_paraview_plugin(ttkTrackingFromPersistenceDiagrams
   SOURCES ${VTKWRAPPER_DIR}/ttkTrackingFromPersistenceDiagrams/ttkTrackingFromPersistenceDiagrams.cpp
   PLUGIN_VERSION 1.0
   PLUGIN_XML TrackingFromPersistenceDiagrams.xml
-  LINK common trackingFromPersistenceDiagrams triangulation ttkTriangulation trackingFromPersistenceDiagrams ttkBottleneckDistance)
+  LINK trackingFromPersistenceDiagrams ttkBottleneckDistance)

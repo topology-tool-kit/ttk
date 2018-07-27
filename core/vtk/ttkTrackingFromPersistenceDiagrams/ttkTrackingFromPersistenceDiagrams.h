@@ -37,6 +37,8 @@ class ttkTrackingFromPersistenceDiagrams
 
   public:
 
+    using dataType = double;
+
     static ttkTrackingFromPersistenceDiagrams* New();
 
     vtkTypeMacro(ttkTrackingFromPersistenceDiagrams, vtkDataSetAlgorithm);
@@ -106,6 +108,23 @@ class ttkTrackingFromPersistenceDiagrams
 
     vtkSetMacro(PostProcThresh, double);
     vtkGetMacro(PostProcThresh, double);
+
+    static int buildMesh(
+      std::vector<trackingTuple>& trackings,
+      std::vector<std::vector<matchingTuple>*>*& outputMatchings,
+      std::vector<std::vector<diagramTuple>*>*& inputPersistenceDiagrams,
+      bool useGeometricSpacing,
+      double spacing,
+      bool doPostProc,
+      std::vector<std::set<int>>*& trackingTupleToMerged,
+      vtkSmartPointer<vtkPoints>& points,
+      vtkSmartPointer<vtkUnstructuredGrid>& persistenceDiagram,
+      vtkSmartPointer<vtkDoubleArray>& persistenceScalars,
+      vtkSmartPointer<vtkDoubleArray>& valueScalars,
+      vtkSmartPointer<vtkIntArray>& matchingIdScalars,
+      vtkSmartPointer<vtkIntArray>& timeScalars,
+      vtkSmartPointer<vtkIntArray>& componentIds,
+      vtkSmartPointer<vtkIntArray>& pointTypeScalars);
 
   protected:
 

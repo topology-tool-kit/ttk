@@ -2,6 +2,8 @@
 
 vtkStandardNewMacro(ttkTrackingFromPersistenceDiagrams)
 
+using dataType = double;
+
 ttkTrackingFromPersistenceDiagrams::ttkTrackingFromPersistenceDiagrams()
 {
   outputMesh_ = nullptr;
@@ -231,6 +233,40 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
   // Col = (id in pd 2, arrival point id)
 
   // Build mesh.
+  buildMesh(
+    trackings,
+    outputMatchings,
+    inputPersistenceDiagrams,
+    useGeometricSpacing, spacing, DoPostProc,
+    trackingTupleToMerged,
+    points, persistenceDiagram,
+    persistenceScalars, valueScalars, matchingIdScalars, timeScalars, componentIds, pointTypeScalars);
+
+  outputMesh_->ShallowCopy(persistenceDiagram);
+  outputMesh->ShallowCopy(outputMesh_);
+
+  delete outputPersistenceDiagrams;
+
+  return 0;
+}
+
+int ttkTrackingFromPersistenceDiagrams::buildMesh(
+  std::vector<trackingTuple>& trackings,
+  std::vector<std::vector<matchingTuple>*>*& outputMatchings,
+  std::vector<std::vector<diagramTuple>*>*& inputPersistenceDiagrams,
+  bool useGeometricSpacing,
+  double spacing,
+  bool DoPostProc,
+  std::vector<std::set<int>>*& trackingTupleToMerged,
+  vtkSmartPointer<vtkPoints>& points,
+  vtkSmartPointer<vtkUnstructuredGrid>& persistenceDiagram,
+  vtkSmartPointer<vtkDoubleArray>& persistenceScalars,
+  vtkSmartPointer<vtkDoubleArray>& valueScalars,
+  vtkSmartPointer<vtkIntArray>& matchingIdScalars,
+  vtkSmartPointer<vtkIntArray>& timeScalars,
+  vtkSmartPointer<vtkIntArray>& componentIds,
+  vtkSmartPointer<vtkIntArray>& pointTypeScalars)
+{
   int currentVertex = 0;
   for (unsigned int k = 0; k < trackings.size(); ++k) {
     trackingTuple tt = trackings.at((unsigned long) k);
@@ -395,12 +431,6 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
   persistenceDiagram->GetPointData()->AddArray(timeScalars);
   persistenceDiagram->GetPointData()->AddArray(componentIds);
   persistenceDiagram->GetPointData()->AddArray(pointTypeScalars);
-
-  outputMesh_->ShallowCopy(persistenceDiagram);
-  outputMesh->ShallowCopy(outputMesh_);
-
-  std::cout << "Coucou, j'ai tout changé." << std::endl;
-  delete outputPersistenceDiagrams;
 
   return 0;
 }
