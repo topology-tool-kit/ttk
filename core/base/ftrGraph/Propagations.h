@@ -30,10 +30,16 @@ namespace ttk
          bool         done;
       };
 
+      struct Visits
+      {
+         std::vector<Visit> up, down;
+      };
+
+      // Split in one up one down ?
       class Propagations : public Allocable
       {
          AtomicVector<Propagation*>  propagations_;
-         std::vector<Visit>          visits_;
+         Visits                      visits_;
 
         public:
 
@@ -47,13 +53,15 @@ namespace ttk
          void alloc() override
          {
             propagations_.reserve(nbVerts_);
-            visits_.resize(nbVerts_);
+            visits_.down.resize(nbVerts_);
+            visits_.up.resize(nbVerts_);
          }
 
          void init() override
          {
             fillVector<Propagation*>(propagations_, nullptr);
-            fillVector<Visit>(visits_, {nullptr, false});
+            fillVector<Visit>(visits_.down, {nullptr, false});
+            fillVector<Visit>(visits_.up, {nullptr, false});
          }
 
          // newPropagation
@@ -70,30 +78,63 @@ namespace ttk
          }
 
          void toVisit(const idVertex v, Propagation* const prop) {
-            visits_[v].prop = prop;
+            if (prop->goUp()) {
+               visits_.up[v].prop = prop;
+            } else {
+               visits_.down[v].prop = prop;
+            }
          }
 
          void visit(const idVertex v, Propagation* const prop)
          {
-            visits_[v].prop = prop;
-            visits_[v].done = true;
+            if (prop->goUp()) {
+               visits_.up[v].prop = prop;
+               visits_.up[v].done = true;
+            } else {
+               visits_.down[v].prop = prop;
+               visits_.down[v].done = true;
+            }
          }
 
          bool willVisit(const idVertex v, const Propagation* const prop) const
          {
-            return visits_[v].prop == prop;
+            if (prop->goUp()) {
+               return visits_.up[v].prop == prop;
+            } else {
+               return visits_.down[v].prop == prop;
+            }
          }
 
-         bool hasVisited(const idVertex v, const Propagation* const prop) const
+         bool hasVisited(const idVertex v, Propagation* const prop) const
          {
-            // return visits_[v].prop->getId() == prop->getId() && visits_[v].done;
+            // return visits_[v].prop && visits_[v].prop->getId() == prop->getId() && visits_[v].done;
             // more revisit but no UF traversal. No perf impact noticed
-            return visits_[v].prop == prop && visits_[v].done;
+            if (prop->goUp()) {
+               return visits_.up[v].prop == prop && visits_.up[v].done;
+            } else {
+               return visits_.down[v].prop == prop && visits_.down[v].done;
+            }
          }
 
-         Visit visit(const idVertex v) const
+         // check if the opposite propagation already processed this vertex (done)
+         // TODO: improve by accepting vertices planned to be visited (not the .done)
+         bool hasVisitedOpposite(const idVertex v, Propagation* const prop) const
          {
-             return visits_[v];
+            // reversed
+            if (!prop->goUp()) {
+               return visits_.up[v].done;
+            } else {
+               return visits_.down[v].done;
+            }
+         }
+
+         Visit visit(const idVertex v, const Propagation* const prop) const
+         {
+            if (prop->goUp()){
+               return visits_.up[v];
+            }else {
+               return visits_.down[v];
+            }
          }
       };
    }

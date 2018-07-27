@@ -278,6 +278,11 @@ namespace ttk
             std::random_shuffle(leaves_.begin(), leaves_.end());
          }
 
+         // some arc may be pending due to symbolic merge during computation
+         // if tasks from both min and max.
+         // here we replace them by one consistent arc
+         void mergeArcs(VertCompFN comp);
+
          // Link nodes to arcs when arc are completely created
          void arcs2nodes(VertCompFN comp);
 
@@ -302,6 +307,14 @@ namespace ttk
 
          void init() override;
 
+        private:
+
+         // tools
+
+         // ensure that main arc have valid up/down node even if the merge of
+         // the two arc occured during the computation, leaving some unfinished
+         // arcs.
+         void consolidateArc(const idSuperArc mainArc, const idSuperArc mergedArc, VertCompFN comp);
       };
 
    }

@@ -1,6 +1,7 @@
 #include "Graph.h"
 
-#include<iostream>
+#include <iostream>
+#include <unordered_map>
 
 using namespace std;
 using namespace ttk;
@@ -12,6 +13,49 @@ Graph::Graph()
 
 Graph::~Graph()
 {
+}
+
+void Graph::mergeArcs(VertCompFN comp)
+{
+   std::unordered_map<idSuperArc,idSuperArc> mapArcs;
+   const idSuperArc nbArcs = arcs_.size();
+   for (idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
+      const SuperArc& arc = getArc(arcId);
+      if (arc.merged()) {
+         const idSuperArc target = arc.mergedIn();
+         if (mapArcs.count(target) == 0) {
+            mapArcs[arcId] = target;
+            consolidateArc(target, arcId, comp);
+         }
+      }
+   }
+}
+
+void Graph::consolidateArc(const idSuperArc mainArc, const idSuperArc mergedArc, VertCompFN comp)
+{
+   const idNode mainDown   = getArc(mainArc).getDownNodeId();
+   const idNode mergedDown = getArc(mergedArc).getDownNodeId();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+   if(mainDown == nullNode || mergedDown == nullNode) {
+      std::cout << "[Graph]: consolidate error, arc have a null down node" << std::endl;
+   }
+#endif
+
+   std::cout << "arc before " << printArc(mainArc) << std::endl;
+
+   const idVertex vMainDown = getNode(mainDown).getVertexIdentifier();
+   const idVertex vMergedDown = getNode(mergedDown).getVertexIdentifier();
+   if(comp(vMainDown, vMergedDown)){
+      // getArc(mainArc).setDownNodeId(mainDown); // already the case
+      getArc(mainArc).setUpNodeId(mergedDown);
+   } else {
+      getArc(mainArc).setDownNodeId(mergedDown);
+      getArc(mainArc).setUpNodeId(mainDown);
+   }
+   getArc(mainArc).restore();
+
+   std::cout << "arc after " << printArc(mainArc) << std::endl;
 }
 
 void Graph::arcs2nodes(VertCompFN comp)
@@ -73,7 +117,7 @@ void Graph::arcs2nodes(VertCompFN comp)
    for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
       if(!getArc(arcId).isVisible()) continue;
 
-      const idNode upNodeId = getArc(arcId).getUpNodeId();
+      const idNode upNodeId   = getArc(arcId).getUpNodeId();
       const idNode downNodeId = getArc(arcId).getDownNodeId();
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -125,7 +169,10 @@ std::string Graph::printArc(const idSuperArc arcId) const
    std::stringstream res;
    res << "a" << arcId << ":";
    if (!arcs_[arcId].isVisible()) {
-      res << "hidden";
+      res << " hidden ";
+   }
+   if (arcs_[arcId].merged()) {
+       res << " merged in " << arcs_[arcId].mergedIn();
    }
    res << "(";
    const idNode did = arcs_[arcId].getDownNodeId();
@@ -167,9 +214,9 @@ std::string Graph::printVisit(const idVertex v) const
 {
    std::stringstream res;
    if (isArc(v))
-      res << "a: " << getArcId(v);
+      res << " a: " << getArcId(v);
    if (isNode(v))
-      res << "n: " << getNodeId(v);
+      res << " n: " << getNodeId(v);
    return res.str();
 }
 

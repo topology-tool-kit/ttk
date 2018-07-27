@@ -10,7 +10,8 @@
 ///
 /// \sa ttk::FTRGraph
 
-#pragma once
+#ifndef FTR_SUPERARC_H
+#define FTR_SUPERARC_H
 
 // local includes
 #include "AtomicUF.h"
@@ -35,16 +36,21 @@ namespace ttk
          idNode downNodeId_;
          AtomicUF* ufProp_;
          bool visible_;
+         idSuperArc merged_;
 #ifndef NDEBUG
          bool fromUp_;
 #endif
 
         public:
-         SuperArc() : upNodeId_{nullNode}, downNodeId_{nullNode}, ufProp_{nullptr}, visible_{true}
-         {
-         }
-
-         SuperArc(const idNode down, const idNode up) : upNodeId_{up}, downNodeId_{down}
+         SuperArc(const idNode down = nullNode, const idNode up = nullNode)
+             : upNodeId_{up},
+               downNodeId_{down},
+               ufProp_{nullptr},
+               visible_{true},
+               merged_{nullSuperArc}
+#ifndef NDEBUG
+              ,fromUp_{false}
+#endif
          {
          }
 
@@ -101,6 +107,30 @@ namespace ttk
             return visible_;
          }
 
+         void merge(const idSuperArc arc)
+         {
+            if (merged_ == nullSuperArc) {
+               merged_ = arc;
+               hide();
+            }
+         }
+
+         bool merged(void) const
+         {
+            return merged_ != nullSuperArc;
+         }
+
+         idSuperArc mergedIn(void) const
+         {
+            return merged_;
+         }
+
+         void restore(void)
+         {
+            visible_ = true;
+            merged_ = nullSuperArc;
+         }
+
 #ifndef NDEBUG
          void setFromUp(bool up)
          {
@@ -116,3 +146,4 @@ namespace ttk
    }
 }
 
+#endif /* end of include guard: FTR_SUPERARC_H */

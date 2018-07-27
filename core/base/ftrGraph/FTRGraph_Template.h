@@ -95,9 +95,7 @@ namespace ttk
          mesh_.preSortTriangles([&](const idVertex a, const idVertex b) { return scalars_->isLower(a, b); });
          printTime(timePreSortSimplices, "[FTR Graph]: simplices sort time: ", infoMsg);
 
-
          // Build the graph
-
 
          DebugTimer timeBuild;
 
@@ -136,12 +134,15 @@ namespace ttk
          // printGraph(4);
 
          // post-process
-         graph_.arcs2nodes([&](const idVertex a, const idVertex b){return scalars_->isLower(a,b);});
+         graph_.mergeArcs(
+             [&](const idVertex a, const idVertex b) { return scalars_->isLower(a, b); });
+         graph_.arcs2nodes(
+             [&](const idVertex a, const idVertex b) { return scalars_->isLower(a, b); });
 
          // Debug print
          // std::cout << graph_.printVisit() << std::endl;
-         // printGraph(params_->debugLevel);
-         std::cout << dynGraphs_.up.printNbCC() << std::endl;
+         // printGraph(4);
+         // std::cout << dynGraphs_.up.printNbCC() << std::endl;
 
          // Message user
          {

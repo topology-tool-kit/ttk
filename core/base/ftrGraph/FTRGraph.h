@@ -365,16 +365,6 @@ namespace ttk
          bool checkLast(const idSuperArc currentArc, Propagation* const localProp,
                         const std::vector<idEdge>& lowerStarEdges);
 
-         // Check if neigh is linked to an arc having saddle in one of its boundary node, using the
-         // edge btwn saddle and neigh
-         bool checkOppositeDGForArc(const idVertex saddle, const idVertex neigh,
-                                    Propagation* const localProp);
-
-         // check if regular vertex is visited by an arc ending a saddle coming from the opposite
-         // direction
-         bool checkSegmentationForArc(const idVertex saddle, const idVertex regular,
-                                      const Propagation* const localProp);
-
          // At a join saddle, merge local propagations coming here
          // and close remiang opened arcs.
          // Remove duplicate on the saddleVertex (only)
