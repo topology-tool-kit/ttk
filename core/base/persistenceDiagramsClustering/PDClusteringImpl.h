@@ -53,7 +53,6 @@ int PDClustering<dataType>::execute(){
 	}
 	min_persistence = enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price, min_points_to_add);
 	
-	
 	// Initializing centroids and clusters
 	if(use_kmeanspp_){
 		initializeCentroidsKMeanspp();

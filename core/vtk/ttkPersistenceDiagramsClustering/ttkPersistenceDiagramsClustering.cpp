@@ -51,9 +51,8 @@ int ttkPersistenceDiagramsClustering::updateProgress(const float &progress){
 int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 	// Get arrays from input datas
 	//vtkDataArray* inputDiagram[numInputs] = { NULL };
-	std::cout<< "Entering DoIt" << std::endl;
 	vector<vtkUnstructuredGrid*> inputDiagram(numInputs);
-	for(int i=0 ; i<numInputs ; i++){
+	for(int i=0 ; i<numInputs ; ++i){
 		inputDiagram[i] = vtkUnstructuredGrid::SafeDownCast(input[i]);
 	}
   // Calling the executing package
@@ -61,7 +60,6 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 	int dataType = inputDiagram[0]->GetCellData()->GetArray("Persistence")->GetDataType();
 	
 	// TODO If Windows, we need to get rid of one pair of parenthesis
-	std::cout<< "Entering Macro..." << std::endl;
 	switch(dataType){
 
 		vtkTemplateMacro((
@@ -124,24 +122,21 @@ int ttkPersistenceDiagramsClustering::RequestData(vtkInformation *request,
   vtkInformationVector **inputVector, vtkInformationVector *outputVector){
   Memory m;
   
-  std::cout << "Entering requestData" << std::endl;
   // Number of input files
   int numInputs = inputVector[0]->GetNumberOfInformationObjects();
   {
     stringstream msg;
     dMsg(cout, msg.str(), infoMsg);
   }
-	std::cout << "Getting input data" << std::endl;
   // Get input datas
   vtkDataSet* *input = new vtkDataSet*[numInputs];
-  for(int i=0 ; i<numInputs ; i++)
+  for(int i=0 ; i<numInputs ; ++i)
   {
     input[i] = vtkDataSet::GetData(inputVector[0], i);
 	if(!input[i]){
 		std::cout<<"No data in input["<<i<<"]"<<std::endl;
 	}
   }
-  
   // TODO Set output
   doIt(input, numInputs);
 

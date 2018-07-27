@@ -150,7 +150,7 @@ template <typename dataType>
 	Timer t;
 	{    
 	std::vector<std::vector<diagramTuple> > *intermediateDiagrams = (std::vector<std::vector<diagramTuple> > *) inputData_;
-	
+	std::cout<< "Number of diagrams : " <<  numberOfInputs_ << std::endl;
 	std::vector<std::vector<diagramTuple> > data_min(numberOfInputs_);
 	std::vector<std::vector<diagramTuple> > data_sad(numberOfInputs_);
 	std::vector<std::vector<diagramTuple> > data_max(numberOfInputs_);
