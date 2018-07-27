@@ -81,7 +81,6 @@ int main(int argc, char **argv){
     vtkSmartPointer<ttkMorseSmaleComplex>::New();
   morseSmaleComplex->SetInputConnection(
     topologicalSimplification->GetOutputPort());
-  morseSmaleComplex->SetUseInputOffsetScalarField(true);
   
   // 8. saving the output data
   vtkSmartPointer<vtkTableWriter> curveWriter = 
