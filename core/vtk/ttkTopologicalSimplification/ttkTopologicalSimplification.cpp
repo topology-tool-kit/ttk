@@ -191,6 +191,12 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
     return -4;
   }
 #endif
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(inputOffsets_->GetDataType()!=VTK_INT and inputOffsets_->GetDataType()!=VTK_ID_TYPE){
+    cerr << "[ttkTopologicalSimplification] Error : input offset field type not supported." << endl;
+    return -1;
+  }
+#endif
 
   const ttkIdType numberOfVertices=domain->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -301,15 +307,24 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  switch(vtkTemplate2PackMacro(inputScalars_->GetDataType(),
-        identifiers_->GetDataType())){
+  switch(inputScalars_->GetDataType()){
 #ifdef _MSC_VER
 #define COMMA ,
 #endif
 #ifndef _MSC_VER
-    vtkTemplate2Macro(({ret=topologicalSimplification_.execute<VTK_T1,VTK_T2>();}));
+    vtkTemplateMacro(({
+          if(inputOffsets_->GetDataType()==VTK_INT)
+          ret=topologicalSimplification_.execute<VTK_TT,int>();
+          if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+          ret=topologicalSimplification_.execute<VTK_TT,vtkIdType>();
+          }));
 #else
-    vtkTemplate2Macro({ret=topologicalSimplification_.execute<VTK_T1 COMMA VTK_T2>();});
+    vtkTemplateMacro({
+        if(inputOffsets_->GetDataType()==VTK_INT)
+        ret=topologicalSimplification_.execute<VTK_TT COMMA int>();
+        if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+        ret=topologicalSimplification_.execute<VTK_TT COMMA vtkIdType>();
+        });
 #endif
   }
 #ifndef TTK_ENABLE_KAMIKAZE
