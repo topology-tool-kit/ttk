@@ -107,7 +107,7 @@ int ttkPersistenceCurve::getScalars(vtkDataSet* input){
   if(!inputScalars_){
     cerr << "[ttkPersistenceCurve] Error : input scalar field pointer is null." 
       << endl;
-    return -2;
+    return -1;
   }
 #endif
 
@@ -121,7 +121,7 @@ int ttkPersistenceCurve::getTriangulation(vtkDataSet* input){
   triangulation_ = ttkTriangulation::getTriangulation(input);
   
   if(!triangulation_)
-    return 0;
+    return -1;
   
   triangulation_->setWrapper(this);
   persistenceCurve_.setupTriangulation(triangulation_);
@@ -204,7 +204,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret){
     cerr << "[ttkPersistenceCurve] Error : wrong triangulation." << endl;
-    return -2;
+    return -1;
   }
 #endif
 
@@ -212,7 +212,11 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret){
     cerr << "[ttkPersistenceCurve] Error : wrong offsets." << endl;
-    return -3;
+    return -1;
+  }
+  if(inputOffsets_->GetDataType()!=VTK_INT and inputOffsets_->GetDataType()!=VTK_ID_TYPE){
+    cerr << "[ttkPersistenceCurve] Error : input offset field type not supported." << endl;
+    return -1;
   }
 #endif
 
@@ -220,136 +224,144 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
   persistenceCurve_.setInputScalars(inputScalars_->GetVoidPointer(0));
   persistenceCurve_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
   persistenceCurve_.setComputeSaddleConnectors(ComputeSaddleConnectors);
-  switch(vtkTemplate2PackMacro(inputScalars_->GetDataType(),
-        inputOffsets_->GetDataType())){
+  switch(inputScalars_->GetDataType()){
 #ifndef _MSC_VER
-	  vtkTemplate2Macro(({
-		  vector<pair<VTK_T1, ttkIdType>> JTPlot;
-	  vector<pair<VTK_T1, ttkIdType>> STPlot;
-	  vector<pair<VTK_T1, ttkIdType>> MSCPlot;
-	  vector<pair<VTK_T1, ttkIdType>> CTPlot;
+	  vtkTemplateMacro(({
+		  vector<pair<VTK_TT, ttkIdType>> JTPlot;
+	  vector<pair<VTK_TT, ttkIdType>> STPlot;
+	  vector<pair<VTK_TT, ttkIdType>> MSCPlot;
+	  vector<pair<VTK_TT, ttkIdType>> CTPlot;
 
 	  persistenceCurve_.setOutputJTPlot(&JTPlot);
 	  persistenceCurve_.setOutputMSCPlot(&MSCPlot);
 	  persistenceCurve_.setOutputSTPlot(&STPlot);
 	  persistenceCurve_.setOutputCTPlot(&CTPlot);
-	  ret = persistenceCurve_.execute<VTK_T1, VTK_T2>();
+      if(inputOffsets_->GetDataType()==VTK_INT)
+      ret = persistenceCurve_.execute<VTK_TT, int>();
+      if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+      ret = persistenceCurve_.execute<VTK_TT, vtkIdType>();
 
 #ifndef TTK_ENABLE_KAMIKAZE
 	  if (ret) {
 		  cerr
 			  << "[ttkPersistenceCurve] PersistenceCurve.execute() error code : "
 			  << ret << endl;
-		  return -4;
+		  return -1;
 	  }
 #endif
 
-	  ret = getPersistenceCurve<vtkDoubleArray,VTK_T1>(TreeType::Join, JTPlot);
+	  ret = getPersistenceCurve<vtkDoubleArray,VTK_TT>(TreeType::Join, JTPlot);
 #ifndef TTK_ENABLE_KAMIKAZE
 	  if (ret) {
 		  cerr << "[ttkPersistenceCurve] Error :"
 			  << " build of join tree persistence curve has failed." << endl;
-		  return -5;
+		  return -1;
 	  }
 #endif
 
-	  ret = getMSCPersistenceCurve<vtkDoubleArray,VTK_T1>(MSCPlot);
+	  ret = getMSCPersistenceCurve<vtkDoubleArray,VTK_TT>(MSCPlot);
 #ifndef TTK_ENABLE_KAMIKAZE
 	  if (ret) {
 		  cerr << "[ttkPersistenceCurve] Error : "
 			  << "build of saddle-saddle persistence curve has failed." << endl;
-		  return -6;
+		  return -1;
 	  }
 #endif
 
-	  ret = getPersistenceCurve<vtkDoubleArray,VTK_T1>(TreeType::Split, STPlot);
+	  ret = getPersistenceCurve<vtkDoubleArray,VTK_TT>(TreeType::Split, STPlot);
 #ifndef TTK_ENABLE_KAMIKAZE
 	  if (ret) {
 		  cerr << "[ttkPersistenceCurve] Error : "
 			  << "build of split tree persistence curve has failed." << endl;
-		  return -7;
+		  return -1;
 	  }
 #endif
 
-	  ret = getPersistenceCurve<vtkDoubleArray,VTK_T1>(TreeType::Contour, CTPlot);
+	  ret = getPersistenceCurve<vtkDoubleArray,VTK_TT>(TreeType::Contour, CTPlot);
 #ifndef TTK_ENABLE_KAMIKAZE
 	  if (ret) {
 		  cerr << "[ttkPersistenceCurve] Error : "
 			  << "build of contour tree persistence curve has failed." << endl;
-		  return -8;
+		  return -1;
 	  }
 #endif
 	  }));
 #else
 #ifndef TTK_ENABLE_KAMIKAZE
-	  vtkTemplate2Macro(({
-		  vector<pair<VTK_T1 COMMA ttkIdType>> JTPlot;
-	  vector<pair<VTK_T1 COMMA ttkIdType>> STPlot;
-	  vector<pair<VTK_T1 COMMA ttkIdType>> MSCPlot;
-	  vector<pair<VTK_T1 COMMA ttkIdType>> CTPlot;
+	  vtkTemplateMacro({
+		  vector<pair<VTK_TT COMMA ttkIdType>> JTPlot;
+	  vector<pair<VTK_TT COMMA ttkIdType>> STPlot;
+	  vector<pair<VTK_TT COMMA ttkIdType>> MSCPlot;
+	  vector<pair<VTK_TT COMMA ttkIdType>> CTPlot;
 
 	  persistenceCurve_.setOutputJTPlot(&JTPlot);
 	  persistenceCurve_.setOutputMSCPlot(&MSCPlot);
 	  persistenceCurve_.setOutputSTPlot(&STPlot);
 	  persistenceCurve_.setOutputCTPlot(&CTPlot);
-	  ret = persistenceCurve_.execute<VTK_T1,VTK_T2>();
+      if(inputOffsets_->GetDataType()==VTK_INT)
+	  ret = persistenceCurve_.execute<VTK_TT COMMA int>();
+      if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+	  ret = persistenceCurve_.execute<VTK_TT COMMA vtkIdType>();
 
 	  if (ret) {
 		  cerr
 			  << "[ttkPersistenceCurve] PersistenceCurve.execute() error code : "
 			  << ret << endl;
-		  return -4;
+		  return -1;
 	  }
 
-	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_T1>(TreeType::Join, JTPlot);
+	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_TT>(TreeType::Join, JTPlot);
 	  if (ret) {
 		  cerr << "[ttkPersistenceCurve] Error :"
 			  << " build of join tree persistence curve has failed." << endl;
-		  return -5;
+		  return -1;
 	  }
 
-	  ret = getMSCPersistenceCurve<vtkDoubleArray COMMA VTK_T1>(MSCPlot);
+	  ret = getMSCPersistenceCurve<vtkDoubleArray COMMA VTK_TT>(MSCPlot);
 	  if (ret) {
 		  cerr << "[ttkPersistenceCurve] Error : "
 			  << "build of saddle-saddle persistence curve has failed." << endl;
-		  return -6;
+		  return -1;
 	  }
 
-	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_T1>(TreeType::Split, STPlot);
+	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_TT>(TreeType::Split, STPlot);
 	  if (ret) {
 		  cerr << "[ttkPersistenceCurve] Error : "
 			  << "build of split tree persistence curve has failed." << endl;
-		  return -7;
+		  return -1;
 	  }
 
-	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_T1>(TreeType::Contour, CTPlot);
+	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_TT>(TreeType::Contour, CTPlot);
 	  if (ret) {
 		  cerr << "[ttkPersistenceCurve] Error : "
 			  << "build of contour tree persistence curve has failed." << endl;
-		  return -8;
+		  return -1;
 	  }
-	  }));
+	  });
 #else
-	  vtkTemplate2Macro(({
-		  vector<pair<VTK_T1 COMMA ttkIdType>> JTPlot;
-	  vector<pair<VTK_T1 COMMA ttkIdType>> STPlot;
-	  vector<pair<VTK_T1 COMMA ttkIdType>> MSCPlot;
-	  vector<pair<VTK_T1 COMMA ttkIdType>> CTPlot;
+	  vtkTemplateMacro({
+		  vector<pair<VTK_TT COMMA ttkIdType>> JTPlot;
+	  vector<pair<VTK_TT COMMA ttkIdType>> STPlot;
+	  vector<pair<VTK_TT COMMA ttkIdType>> MSCPlot;
+	  vector<pair<VTK_TT COMMA ttkIdType>> CTPlot;
 
 	  persistenceCurve_.setOutputJTPlot(&JTPlot);
 	  persistenceCurve_.setOutputMSCPlot(&MSCPlot);
 	  persistenceCurve_.setOutputSTPlot(&STPlot);
 	  persistenceCurve_.setOutputCTPlot(&CTPlot);
-	  ret = persistenceCurve_.execute<VTK_T1>();
+      if(inputOffsets_->GetDataType()==VTK_INT)
+      ret = persistenceCurve_.execute<VTK_TT COMMA int>();
+      if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+      ret = persistenceCurve_.execute<VTK_TT COMMA vtkIdType>();
 
-	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_T1>(TreeType::Join, JTPlot);
+	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_TT>(TreeType::Join, JTPlot);
 
-	  ret = getMSCPersistenceCurve<vtkDoubleArray COMMA VTK_T1>(MSCPlot);
+	  ret = getMSCPersistenceCurve<vtkDoubleArray COMMA VTK_TT>(MSCPlot);
 
-	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_T1>(TreeType::Split, STPlot);
+	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_TT>(TreeType::Split, STPlot);
 
-	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_T1>(TreeType::Contour, CTPlot);
-	  }));
+	  ret = getPersistenceCurve<vtkDoubleArray COMMA VTK_TT>(TreeType::Contour, CTPlot);
+	  });
 #endif
 #endif
   }

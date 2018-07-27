@@ -77,7 +77,7 @@ int ttkIntegralLines::getScalars(vtkDataSet* input){
 
   if(!ScalarField.length()){
     cerr << "[ttkIntegralLines] Error : scalar field has no name." << endl;
-    return -2;
+    return -1;
   }
 #endif
 
@@ -86,7 +86,7 @@ int ttkIntegralLines::getScalars(vtkDataSet* input){
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalars_){
     cerr << "[ttkIntegralLines] Error : input scalar field pointer is null." << endl;
-    return -3;
+    return -1;
   }
 #endif
 
@@ -250,7 +250,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   // field problem
   if(ret){
     cerr << "[ttkIntegralLines] Error : wrong scalar field." << endl;
-    return -2;
+    return -1;
   }
 #endif
 
@@ -259,10 +259,9 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   // field problem
   if(ret){
     cerr << "[ttkIntegralLines] Error : wrong offsets." << endl;
-    return -3;
+    return -1;
   }
-#endif
-#ifndef TTK_ENABLE_KAMIKAZE
+
   if(inputOffsets_->GetDataType()!=VTK_INT and inputOffsets_->GetDataType()!=VTK_ID_TYPE){
     cerr << "[ttkIntegralLines] Error : input offset field type not supported." << endl;
     return -1;
@@ -274,7 +273,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   // field problem
   if(ret){
     cerr << "[ttkIntegralLines] Error : wrong identifiers." << endl;
-    return -3;
+    return -1;
   }
 #endif
 
@@ -283,7 +282,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   // no points.
   if(numberOfPointsInDomain<=0){
     cerr << "[ttkIntegralLines] Error : domain has no points." << endl;
-    return -4;
+    return -1;
   }
 #endif
 
@@ -292,7 +291,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   // no points.
   if(numberOfPointsInSeeds<=0){
     cerr << "[ttkIntegralLines] Error : seeds have no points." << endl;
-    return -5;
+    return -1;
   }
 #endif
 
@@ -332,7 +331,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   // something wrong in baseCode
   if(ret){
     cerr << "[ttkIntegralLines] IntegralLines.execute() error code : " << ret << endl;
-    return -6;
+    return -1;
   }
 #endif
 
@@ -342,7 +341,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   // trajectories problem
   if(ret){
     cerr << "[ttkIntegralLines] Error : wrong trajectories." << endl;
-    return -7;
+    return -1;
   }
 #endif
 
