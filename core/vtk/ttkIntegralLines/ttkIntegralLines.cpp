@@ -17,7 +17,7 @@ vtkStandardNewMacro(ttkIntegralLines)
 
   OffsetScalarFieldId = -1;
   OffsetScalarFieldName = ttk::OffsetScalarFieldName;
-  UseOffsetScalarField = false;
+  ForceInputOffsetScalarField = false;
 }
 
 ttkIntegralLines::~ttkIntegralLines(){
@@ -94,7 +94,7 @@ int ttkIntegralLines::getScalars(vtkDataSet* input){
 }
 
 int ttkIntegralLines::getOffsets(vtkDataSet* input){
-  if(UseOffsetScalarField and OffsetScalarFieldName.length()){
+  if(ForceInputOffsetScalarField and OffsetScalarFieldName.length()){
     inputOffsets_=input->GetPointData()->GetArray(OffsetScalarFieldName.data());
   }
   else if(OffsetScalarFieldId!=-1 and input->GetPointData()->GetArray(OffsetScalarFieldId)){

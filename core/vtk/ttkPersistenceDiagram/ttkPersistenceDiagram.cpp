@@ -21,7 +21,7 @@ vtkStandardNewMacro(ttkPersistenceDiagram)
   OffsetFieldId = -1;
   ComputeSaddleConnectors = false;
   InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
-  UseInputOffsetScalarField = false;
+  ForceInputOffsetScalarField = false;
   ShowInsideDomain = false;
   computeDiagram_= true;
 
@@ -110,11 +110,11 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
     inputOffsets_ = input->GetPointData()->GetArray(OffsetFieldId);
     if(inputOffsets_){
       InputOffsetScalarFieldName = inputOffsets_->GetName();
-      UseInputOffsetScalarField = true;
+      ForceInputOffsetScalarField = true;
     }
   }
 
-  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length()){
+  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()){
     inputOffsets_=
       input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
   }

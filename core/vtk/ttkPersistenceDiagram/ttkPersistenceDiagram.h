@@ -114,12 +114,12 @@ class ttkPersistenceDiagram
     }
     vtkGetMacro(OffsetFieldId, int);
 
-    void SetUseInputOffsetScalarField(int data){
-      UseInputOffsetScalarField = data;
+    void SetForceInputOffsetScalarField(int data){
+      ForceInputOffsetScalarField = data;
       Modified();
       computeDiagram_ = true;
     }
-    vtkGetMacro(UseInputOffsetScalarField, int);
+    vtkGetMacro(ForceInputOffsetScalarField, int);
 
     void SetComputeSaddleConnectors(int data){
       ComputeSaddleConnectors = data;
@@ -191,7 +191,7 @@ class ttkPersistenceDiagram
 
     std::string ScalarField;
     std::string InputOffsetScalarFieldName;
-    bool UseInputOffsetScalarField;
+    bool ForceInputOffsetScalarField;
     bool ComputeSaddleConnectors;
     int ShowInsideDomain;
 

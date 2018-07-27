@@ -45,7 +45,7 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
  
   vtkDataArray *offsetFieldU = NULL, *offsetFieldV = NULL;
   
-  if((PredefinedOffset)||((UoffsetId != -1)&&(VoffsetId != -1))){
+  if((ForceInputOffsetScalarField)||((UoffsetId != -1)&&(VoffsetId != -1))){
     if(OffsetFieldU.length()){
       
       offsetFieldU = input->GetPointData()->GetArray(OffsetFieldU.data());

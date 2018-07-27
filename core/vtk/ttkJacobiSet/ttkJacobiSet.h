@@ -105,8 +105,8 @@ class ttkJacobiSet
     vtkSetMacro(VoffsetId, int);
     vtkGetMacro(VoffsetId, int);
 
-    vtkGetMacro(PredefinedOffset, bool);
-    vtkSetMacro(PredefinedOffset, bool);
+    vtkGetMacro(ForceInputOffsetScalarField, bool);
+    vtkSetMacro(ForceInputOffsetScalarField, bool);
     
     vtkGetMacro(OffsetFieldU, std::string);
     vtkSetMacro(OffsetFieldU, std::string);
@@ -136,7 +136,7 @@ class ttkJacobiSet
     
   private:
     
-    bool                  PredefinedOffset;
+    bool                  ForceInputOffsetScalarField;
     bool                  EdgeIds, VertexScalars;
     int                   UcomponentId, VcomponentId, UoffsetId, VoffsetId;
     std::string                Ucomponent, Vcomponent, 

@@ -198,7 +198,7 @@ void ttkContourForests::SetUseAllCores(bool onOff)
   SetThreads();
 }
 
-void ttkContourForests::SetUseInputOffsetScalarField(bool onOff)
+void ttkContourForests::SetForceInputOffsetScalarField(bool onOff)
 {
   toUpdateVertexSoSoffsets_ = true;
   toComputeContourTree_     = true;

@@ -41,7 +41,7 @@ ttkReebSpace::ttkReebSpace(){
   SimplificationCriterion = 1;
   
   UseAllCores = false;
-  PredefinedOffset = false;
+  ForceInputOffsetScalarField = false;
   
   uComponent_ = NULL;
   vComponent_ = NULL;
@@ -178,7 +178,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   if(!vComponent_)
     return -2;
  
-  if(PredefinedOffset){
+  if(ForceInputOffsetScalarField){
     if(OffsetFieldU.length()){
       
       string oldName = OffsetFieldU;

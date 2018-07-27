@@ -90,8 +90,8 @@ class ttkPersistenceCurve
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
 
-    vtkSetMacro(UseInputOffsetScalarField, int);
-    vtkGetMacro(UseInputOffsetScalarField, int);
+    vtkSetMacro(ForceInputOffsetScalarField, int);
+    vtkGetMacro(ForceInputOffsetScalarField, int);
 
     vtkSetMacro(InputOffsetScalarFieldName, std::string);
     vtkGetMacro(InputOffsetScalarFieldName, std::string);
@@ -129,7 +129,7 @@ class ttkPersistenceCurve
     int OffsetFieldId;
     std::string ScalarField;
     std::string InputOffsetScalarFieldName;
-    bool UseInputOffsetScalarField;
+    bool ForceInputOffsetScalarField;
     bool ComputeSaddleConnectors;
 
     ttk::PersistenceCurve persistenceCurve_;

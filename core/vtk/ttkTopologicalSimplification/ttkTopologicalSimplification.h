@@ -100,8 +100,8 @@ class ttkTopologicalSimplification
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
 
-    vtkSetMacro(UseInputOffsetScalarField, int);
-    vtkGetMacro(UseInputOffsetScalarField, int);
+    vtkSetMacro(ForceInputOffsetScalarField, int);
+    vtkGetMacro(ForceInputOffsetScalarField, int);
 
     vtkSetMacro(ConsiderIdentifierAsBlackList, int);
     vtkGetMacro(ConsiderIdentifierAsBlackList, int);
@@ -143,7 +143,7 @@ class ttkTopologicalSimplification
     std::string InputOffsetScalarFieldName;
     std::string OutputOffsetScalarFieldName;
     std::string VertexIdentifierScalarField;
-    bool UseInputOffsetScalarField;
+    bool ForceInputOffsetScalarField;
     bool ConsiderIdentifierAsBlackList;
     bool AddPerturbation;
     bool hasUpdatedMesh_;

@@ -108,8 +108,8 @@ class ttkReebSpace
     vtkGetMacro(VcomponentId, int);
 
 
-    vtkGetMacro(PredefinedOffset, bool);
-    vtkSetMacro(PredefinedOffset, bool);
+    vtkGetMacro(ForceInputOffsetScalarField, bool);
+    vtkSetMacro(ForceInputOffsetScalarField, bool);
     
     vtkGetMacro(UseOctreeAcceleration, bool);
     vtkSetMacro(UseOctreeAcceleration, bool);
@@ -245,7 +245,7 @@ class ttkReebSpace
                           ThreeSheetDomainVolume, ThreeSheetRangeArea,
                           ThreeSheetHyperVolume;
 
-    bool                  PredefinedOffset;
+    bool                  ForceInputOffsetScalarField;
     bool                  UseOctreeAcceleration;
     int                   SimplificationCriterion;
     double                SimplificationThreshold;

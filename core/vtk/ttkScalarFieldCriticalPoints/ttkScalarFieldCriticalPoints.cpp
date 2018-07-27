@@ -8,7 +8,7 @@ vtkStandardNewMacro(ttkScalarFieldCriticalPoints)
 ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints(){
 
   // init
-  PredefinedOffset = false;
+  ForceInputOffsetScalarField = false;
   VertexBoundary = true;
   VertexIds = true;
   VertexScalars = true;
@@ -66,12 +66,12 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   if(OffsetFieldId != -1){
     offsetField = input->GetPointData()->GetArray(OffsetFieldId);
     if(offsetField){
-      PredefinedOffset = true;
+      ForceInputOffsetScalarField = true;
       OffsetField = offsetField->GetName();
     }
   }
 
-  if(PredefinedOffset){
+  if(ForceInputOffsetScalarField){
     if(OffsetField.length()){
       
       offsetField = input->GetPointData()->GetArray(OffsetField.data());

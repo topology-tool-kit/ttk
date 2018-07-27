@@ -372,13 +372,13 @@ int ttkFTMTree::getOffsets()
          inputOffsets = connected_components_[cc]->GetPointData()->GetArray(OffsetFieldId);
          if (inputOffsets) {
             InputOffsetScalarFieldName = inputOffsets->GetName();
-            UseInputOffsetScalarField  = true;
+            ForceInputOffsetScalarField  = true;
          }
       }
 
       const ttkIdType numberOfVertices = connected_components_[cc]->GetNumberOfPoints();
 
-      if (UseInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
+      if (ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
          inputOffsets =
              connected_components_[cc]->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
          offsets_[cc].resize(numberOfVertices);
@@ -645,7 +645,7 @@ int ttkFTMTree::setupTriangulation()
 
 ttkFTMTree::ttkFTMTree()
     : ScalarField{},
-      UseInputOffsetScalarField{},
+      ForceInputOffsetScalarField{},
       InputOffsetScalarFieldName{ttk::OffsetScalarFieldName},
       ScalarFieldId{},
       OffsetFieldId{-1},

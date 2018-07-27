@@ -9,7 +9,7 @@ vtkStandardNewMacro(ttkMorseSmaleComplex)
   ttkMorseSmaleComplex::ttkMorseSmaleComplex():
     ScalarField{},
     InputOffsetScalarFieldName{ttk::OffsetScalarFieldName},
-    UseInputOffsetScalarField{},
+    ForceInputOffsetScalarField{},
     IterationThreshold{-1},
     ReverseSaddleMaximumConnection{true},
     ReverseSaddleSaddleConnection{true},
@@ -141,11 +141,11 @@ vtkDataArray* ttkMorseSmaleComplex::getOffsets(vtkDataSet* input){
     inputOffsets = input->GetPointData()->GetArray(OffsetFieldId);
     if(inputOffsets){
       InputOffsetScalarFieldName = inputOffsets->GetName();
-      UseInputOffsetScalarField = true;
+      ForceInputOffsetScalarField = true;
     }
   }
 
-  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length()){
+  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()){
     inputOffsets=
       input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
   }

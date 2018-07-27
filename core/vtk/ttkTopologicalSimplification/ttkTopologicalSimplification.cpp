@@ -17,7 +17,7 @@ vtkStandardNewMacro(ttkTopologicalSimplification)
 
   ScalarFieldId = 0;
   OffsetFieldId = -1;
-  UseInputOffsetScalarField = false;
+  ForceInputOffsetScalarField = false;
   AddPerturbation = false;
   OutputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
   VertexIdentifierScalarField = "VertexIdentifier";
@@ -109,7 +109,7 @@ int ttkTopologicalSimplification::getIdentifiers(vtkPointSet* input){
 }
 
 int ttkTopologicalSimplification::getOffsets(vtkDataSet* input){
-  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length()){
+  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()){
     inputOffsets_=input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
   }
   else if(OffsetFieldId!=-1 and input->GetPointData()->GetArray(OffsetFieldId)){

@@ -86,8 +86,8 @@ class ttkIntegralLines
     vtkSetMacro(VertexIdentifierScalarFieldName, std::string);
     vtkGetMacro(VertexIdentifierScalarFieldName, std::string);
 
-    vtkSetMacro(UseOffsetScalarField, int);
-    vtkGetMacro(UseOffsetScalarField, int);
+    vtkSetMacro(ForceInputOffsetScalarField, int);
+    vtkGetMacro(ForceInputOffsetScalarField, int);
 
     vtkSetMacro(OffsetScalarFieldName, std::string);
     vtkGetMacro(OffsetScalarFieldName, std::string);
@@ -116,7 +116,7 @@ class ttkIntegralLines
     int OutputScalarFieldType;
     std::string VertexIdentifierScalarFieldName;
     int OffsetScalarFieldId;
-    int UseOffsetScalarField;
+    int ForceInputOffsetScalarField;
     std::string OffsetScalarFieldName;
 
     ttk::Triangulation *triangulation_;
