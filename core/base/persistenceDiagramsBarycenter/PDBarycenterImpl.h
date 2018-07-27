@@ -66,6 +66,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 				epsilon = epsilon_candidate;
 			}
 			min_persistence = this->enrichCurrentBidderDiagrams(min_persistence, rho, min_diag_price, min_price, min_points_to_add);
+			std::cout<< "Min persistence : " << min_persistence <<std::endl;
 			if(min_persistence<lowest_persistence){
 				use_progressive_=false;
 			}
@@ -545,7 +546,7 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 				}
 			}
 		}
-		std::cout<< " Diagram " << i << " size : " << current_bidder_diagrams_[i].size() << std::endl;
+		//std::cout<< " Diagram " << i << " size : " << current_bidder_diagrams_[i].size() << std::endl;
 	}
 	return new_min_persistence;
 }
