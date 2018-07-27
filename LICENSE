@@ -1,4 +1,4 @@
-TTK, Copyright (c) 2016, CNRS & UPMC.
+TTK, Copyright (c) 2016, CNRS & Sorbonne Universite.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -9,22 +9,22 @@ modification, are permitted provided that the following conditions are met:
 2. Redistributions in binary form must reproduce the above copyright
    notice, this list of conditions and the following disclaimer in the
    documentation and any other materials provided with the distribution.
-3. Neither the name of the CNRS & UPMC nor the names of its contributors may 
-   be used to endorse or promote products derived from this software 
-   without *specific* prior written permission.
+3. Neither the name of the CNRS & Sorbonne Universite nor the names of its 
+   contributors may be used to endorse or promote products derived from this 
+   software without *specific* prior written permission.
    [For permission [or any legal details], [please] contact Julien Tierny
-   <julien.tierny@lip6.fr>.]
+   <julien.tierny@sorbonne-universite.fr>.]
 4. Redistributions of any form whatsoever must retain the following
    acknowledgment: "This product includes TTK (the Topology ToolKit), 
-   which is developed by the CNRS & UPMC (contact: Julien Tierny 
-   <julien.tierny@lip6.fr>)."
+   which is developed by the CNRS & Sorbonne Universite (contact: Julien Tierny 
+   <julien.tierny@sorbonne-universite.fr>)."
 5. All public documents (including but not limited to: advertising or 
    teaching materials, technical or scientific publications, etc.) which 
    include materials generated with this software must properly cite the 
    TTK companion technical report ("The Topology ToolKit") and display the 
    following acknowledgement: "This document includes materials generated 
-   with TTK (the Topology ToolKit) which is developed by the CNRS & UPMC and 
-   its contributors."
+   with TTK (the Topology ToolKit) which is developed by the CNRS & Sorbonne
+   Universite and its contributors."
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
