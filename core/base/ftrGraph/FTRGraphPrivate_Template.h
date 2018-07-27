@@ -38,7 +38,7 @@ namespace ttk
          // topology
          bool isJoinSadlleLast = false;
          bool isJoinSaddle = false, isSplitSaddle = false;
-         bool isCrossing = false;
+         // bool isCrossing = false;
 
          // containers
          // vitsit
@@ -55,14 +55,17 @@ namespace ttk
                continue;
             }
             // check for opposite propagation crossing
-            if ((isCrossing = propagations_.hasVisitedOpposite(curVert, localProp))) {
-               DEBUG_1(<< curVert << " crossing another task!" << std::endl);
-            }
+            // TODO BUG: On join saddle, we have crossing: true but never merge the arc.
+            // This leads to pending arcs no merged: bug.
+            // if ((isCrossing = propagations_.hasVisitedOpposite(curVert, localProp))) {
+            //    DEBUG_1(<< curVert << " crossing another task!" << std::endl);
+            // }
 
             lowerStarEdges.clear();
             upperStarEdges.clear();
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
 
+#ifndef TTK_DISABLE_FTR_LAZY
             if (valences_.lower[curVert] < 2 && valences_.upper[curVert] < 2) {
 
                // simple reeb regular, lazyness
@@ -74,12 +77,12 @@ namespace ttk
                   dynGraph(localProp).setCorArc(dgNode, currentArc);
                }
 
-               if(isCrossing) {
-                  const idSuperArc targetArc = graph_.getArcId(curVert);
-                  graph_.getArc(currentArc).merge(targetArc);
-                  DEBUG_1(<< currentArc << " merge in " << targetArc << std::endl);
-                  continue;
-               }
+               // if(isCrossing) {
+               //    const idSuperArc targetArc = graph_.getArcId(curVert);
+               //    graph_.getArc(currentArc).merge(targetArc);
+               //    DEBUG_1(<< currentArc << " merge in " << targetArc << std::endl);
+               //    continue;
+               // }
 
                graph_.visit(curVert, currentArc);
                propagations_.visit(curVert, localProp);
@@ -93,20 +96,25 @@ namespace ttk
                // if add < del: add in real RG
                // else: drop both, computation avoided
                lazyApply(localProp);
+# else
+            {
+#endif
                lowerComp = lowerComps(lowerStarEdges, localProp);
                if (lowerComp.size() > 1) {
                   isJoinSaddle = true;
                   isJoinSadlleLast = checkLast(currentArc, localProp, lowerStarEdges);
                   break;
                } else {
-                  currentArc = lowerComp[0]->getCorArc();
-
-                  if (isCrossing) {
-                     const idSuperArc targetArc = graph_.getArcId(curVert);
-                     graph_.getArc(currentArc).merge(graph_.getArcId(curVert));
-                     DEBUG_1(<< currentArc << " merge in " << targetArc << std::endl);
-                     continue;
+                  if (lowerComp.size()) {
+                     currentArc = lowerComp[0]->getCorArc();
                   }
+
+                  // if (isCrossing) {
+                  //    const idSuperArc targetArc = graph_.getArcId(curVert);
+                  //    graph_.getArc(currentArc).merge(graph_.getArcId(curVert));
+                  //    DEBUG_1(<< currentArc << " merge in " << targetArc << std::endl);
+                  //    continue;
+                  // }
 
                   graph_.visit(curVert, currentArc);
                   propagations_.visit(curVert, localProp);

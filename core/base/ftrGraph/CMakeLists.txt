@@ -27,3 +27,8 @@ if(TTK_ENABLE_FTR_STATS)
    target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_STATS)
 endif()
 
+option (TTK_DISABLE_FTR_LAZY "Disable the lazyness optimization" OFF)
+mark_as_advanced(TTK_DISABLE_FTR_LAZY)
+if(TTK_DISABLE_FTR_LAZY)
+   target_compile_definitions(ftrGraph PUBLIC TTK_DISABLE_FTR_LAZY)
+endif()
