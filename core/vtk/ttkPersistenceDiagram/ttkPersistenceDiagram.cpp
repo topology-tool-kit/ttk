@@ -188,28 +188,32 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   int ret{};
 
   ret=getScalars(input);
-  if(ret){
 #ifndef TTK_ENABLE_KAMIKAZE
+  if(ret){
     cerr << "[ttkPersistenceDiagram] Error : wrong scalars." << endl;
     return -1;
-#endif
   }
+#endif
 
   ret=getTriangulation(input);
-  if(ret){
 #ifndef TTK_ENABLE_KAMIKAZE
+  if(ret){
     cerr << "[ttkPersistenceDiagram] Error : wrong triangulation." << endl;
     return -2;
-#endif
   }
+#endif
 
   ret=getOffsets(input);
-  if(ret){
 #ifndef TTK_ENABLE_KAMIKAZE
+  if(ret){
     cerr << "[ttkPersistenceDiagram] Error : wrong offsets." << endl;
     return -3;
-#endif
   }
+  if(inputOffsets_->GetDataType()!=VTK_INT and inputOffsets_->GetDataType()!=VTK_ID_TYPE){
+    cerr << "[ttkPersistenceDiagram] Error : input offset field type not supported." << endl;
+    return -1;
+  }
+#endif
 
   vector<tuple<Cell,Cell>> dmt_pairs;
   persistenceDiagram_.setDMTPairs(&dmt_pairs);
@@ -218,15 +222,14 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   persistenceDiagram_.setInputScalars(inputScalars_->GetVoidPointer(0));
   persistenceDiagram_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
   persistenceDiagram_.setComputeSaddleConnectors(ComputeSaddleConnectors);
-  switch(vtkTemplate2PackMacro(inputScalars_->GetDataType(),
-        inputOffsets_->GetDataType())){
+  switch(inputScalars_->GetDataType()){
 #ifndef _MSC_VER
-	  vtkTemplate2Macro(({
+	  vtkTemplateMacro(({
 		  using tuple_t = tuple<ttkIdType,
 		  ftm::NodeType,
 		  ttkIdType,
 		  ftm::NodeType,
-		  VTK_T1,
+		  VTK_TT,
 		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
@@ -243,7 +246,10 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-		  ret = persistenceDiagram_.execute<VTK_T1,VTK_T2>();
+          if(inputOffsets_->GetDataType()==VTK_INT)
+            ret = persistenceDiagram_.execute<VTK_TT,int>();
+          if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+            ret = persistenceDiagram_.execute<VTK_TT,vtkIdType>();
 #ifndef TTK_ENABLE_KAMIKAZE
 		  if (ret) {
 			  cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
@@ -254,9 +260,9 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  }
 
 	  if (ShowInsideDomain)
-		  ret = getPersistenceDiagramInsideDomain<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
+		  ret = getPersistenceDiagramInsideDomain<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
 	  else
-		  ret = getPersistenceDiagram<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
+		  ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
 #ifndef TTK_ENABLE_KAMIKAZE
 	  if (ret) {
 		  cerr << "[ttkPersistenceDiagram] Error : "
@@ -267,12 +273,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  }));
 #else
 #ifndef TTK_ENABLE_KAMIKAZE
-	  vtkTemplate2Macro(({
+	  vtkTemplateMacro({
 		  using tuple_t = tuple<ttkIdType COMMA
 		  ftm::NodeType COMMA
 		  ttkIdType COMMA
 		  ftm::NodeType COMMA
-		  VTK_T1 COMMA
+		  VTK_TT COMMA
 		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
@@ -289,7 +295,10 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-		  ret = persistenceDiagram_.execute<VTK_T1,VTK_T2>();
+          if(inputOffsets_->GetDataType()==VTK_INT)
+            ret = persistenceDiagram_.execute<VTK_TT COMMA int>();
+          if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+            ret = persistenceDiagram_.execute<VTK_TT COMMA vtkIdType>();
 		  if (ret) {
 			  cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
 				  << "error code : " << ret << endl;
@@ -298,22 +307,22 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  }
 
 	  if (ShowInsideDomain)
-		  ret = getPersistenceDiagramInsideDomain<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
+		  ret = getPersistenceDiagramInsideDomain<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
 	  else
-		  ret = getPersistenceDiagram<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
+		  ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
 	  if (ret) {
 		  cerr << "[ttkPersistenceDiagram] Error : "
 			  << "build of contour tree persistence diagram has failed." << endl;
 		  return -5;
 	  }
-	  }));
+	  });
 #else
-	  vtkTemplate2Macro(({
+	  vtkTemplateMacro({
 		  using tuple_t = tuple<ttkIdType COMMA
 		  ftm::NodeType COMMA
 		  ttkIdType COMMA
 		  ftm::NodeType COMMA
-		  VTK_T1 COMMA
+		  VTK_TT COMMA
 		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
@@ -330,14 +339,17 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-		  ret = persistenceDiagram_.execute<VTK_T1,VTK_T2>();
+          if(inputOffsets_->GetDataType()==VTK_INT)
+            ret = persistenceDiagram_.execute<VTK_TT COMMA int>();
+          if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+            ret = persistenceDiagram_.execute<VTK_TT COMMA vtkIdType>();
 	  }
 
 	  if (ShowInsideDomain)
-		  ret = getPersistenceDiagramInsideDomain<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
+		  ret = getPersistenceDiagramInsideDomain<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
 	  else
-		  ret = getPersistenceDiagram<VTK_T1>(ftm::TreeType::Contour, *CTDiagram);
-	  }));
+		  ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
+	  });
 #endif
 #endif
   }
