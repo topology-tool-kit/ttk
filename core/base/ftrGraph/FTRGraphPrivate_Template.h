@@ -38,7 +38,7 @@ namespace ttk
          // topology
          bool isJoinSadlleLast = false;
          bool isJoinSaddle = false, isSplitSaddle = false;
-         // bool isCrossing = false;
+         bool isCrossing = false;
 
          // containers
          // vitsit
@@ -55,9 +55,9 @@ namespace ttk
                continue;
             }
             // check for opposite propagation crossing
-            // if ((isCrossing = propagations_.hasVisitedOpposite(curVert, localProp))) {
-            //    DEBUG_1(<< curVert << " crossing another task!" << std::endl);
-            // }
+            if ((isCrossing = propagations_.hasVisitedOpposite(curVert, localProp))) {
+               DEBUG_1(<< curVert << " crossing another task!" << std::endl);
+            }
 
             lowerStarEdges.clear();
             upperStarEdges.clear();
@@ -74,12 +74,12 @@ namespace ttk
                   dynGraph(localProp).setCorArc(dgNode, currentArc);
                }
 
-               // if(isCrossing) {
-               //    const idSuperArc targetArc = graph_.getArcId(curVert);
-               //    graph_.getArc(currentArc).merge(targetArc);
-               //    DEBUG_1(<< currentArc << " merge in " << targetArc << std::endl);
-               //    continue;
-               // }
+               if(isCrossing) {
+                  const idSuperArc targetArc = graph_.getArcId(curVert);
+                  graph_.getArc(currentArc).merge(targetArc);
+                  DEBUG_1(<< currentArc << " merge in " << targetArc << std::endl);
+                  continue;
+               }
 
                graph_.visit(curVert, currentArc);
                propagations_.visit(curVert, localProp);
@@ -101,12 +101,12 @@ namespace ttk
                } else {
                   currentArc = lowerComp[0]->getCorArc();
 
-                  // if (isCrossing) {
-                  //    const idSuperArc targetArc = graph_.getArcId(curVert);
-                  //    graph_.getArc(currentArc).merge(graph_.getArcId(curVert));
-                  //    DEBUG_1(<< currentArc << " merge in " << targetArc << std::endl);
-                  //    continue;
-                  // }
+                  if (isCrossing) {
+                     const idSuperArc targetArc = graph_.getArcId(curVert);
+                     graph_.getArc(currentArc).merge(graph_.getArcId(curVert));
+                     DEBUG_1(<< currentArc << " merge in " << targetArc << std::endl);
+                     continue;
+                  }
 
                   graph_.visit(curVert, currentArc);
                   propagations_.visit(curVert, localProp);
@@ -197,12 +197,13 @@ namespace ttk
                graph_.closeArc(currentArc, upNode);
                DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
             }
-// #ifdef TTK_ENABLE_OPENMP
-// #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Min)
-// #endif
-            // splitAtSaddleBFS(localProp);
-            // else
+            if (!propagations_.hasVisitedOpposite(upVert, localProp)) {
                splitAtSaddle(localProp, upperComp);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task firstprivate(upVert, localProp) OPTIONAL_PRIORITY(PriorityLevel::Average)
+#endif
+               growthFromSeed(upVert, localProp);
+            }
          } else if (isJoinSadlleLast) {
             // recursive call
 #ifdef TTK_ENABLE_OPENMP
@@ -268,7 +269,7 @@ namespace ttk
                   graph_.closeArc(arc, splitNode);
                   DEBUG_1(<< v << "split arc close " << graph_.printArc(arc) << std::endl);
                }
-               splitAtSaddle(mockPropagation, upperComp, false);
+               splitAtSaddle(mockPropagation, upperComp);
             }
          }
       }
@@ -904,7 +905,7 @@ namespace ttk
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::splitAtSaddle(
-          Propagation* const localProp, const std::vector<DynGraphNode<idVertex>*>& upperComp, const bool startGrowth)
+          Propagation* const localProp, const std::vector<DynGraphNode<idVertex>*>& upperComp)
       {
          const idVertex curVert = localProp->getCurVertex();
          const idNode   curNode = graph_.getNodeId(curVert);
@@ -915,13 +916,6 @@ namespace ttk
 
             DEBUG_1(<< "set root arc " << newArc << " at ");
             DEBUG_1(<< printEdge(dynGraph(localProp).getNodeId(dgNode), localProp) << std::endl);
-         }
-
-         if (startGrowth) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(curVert, localProp) OPTIONAL_PRIORITY(PriorityLevel::Average)
-#endif
-            growthFromSeed(curVert, localProp);
          }
       }
 

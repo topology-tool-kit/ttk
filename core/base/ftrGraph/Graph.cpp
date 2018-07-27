@@ -29,6 +29,17 @@ void Graph::mergeArcs(VertCompFN comp)
          }
       }
    }
+
+   if (!mapArcs.size()) return;
+
+   // also adapt segmentation
+#pragma omp parallel for
+   for(idVertex v = 0; v < nbVerts_; ++v) {
+      const idSuperArc vArc = segmentation_[v].corArc;
+      if (mapArcs.count(vArc)) {
+         segmentation_[v].corArc = mapArcs[vArc];
+      }
+   }
 }
 
 void Graph::consolidateArc(const idSuperArc mainArc, const idSuperArc mergedArc, VertCompFN comp)
