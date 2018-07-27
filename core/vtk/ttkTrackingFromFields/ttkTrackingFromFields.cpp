@@ -155,7 +155,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   trackingF_.setInputScalars(inputFields);
 
   // 0'. get offsets
-  int numberOfVertices = (int) input->GetNumberOfPoints();
+  auto numberOfVertices = (int) input->GetNumberOfPoints();
   vtkIdTypeArray* offsets_ = vtkIdTypeArray::New();
   offsets_->SetNumberOfComponents(1);
   offsets_->SetNumberOfTuples(numberOfVertices);
@@ -173,6 +173,9 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   // 2. call feature tracking with threshold.
   auto outputMatchings =
     new std::vector<std::vector<matchingTuple>*>(fieldNumber - 1);
+  for (unsigned long i = 0; i < fieldNumber - 1; ++i) {
+      outputMatchings->at(i) = new std::vector<matchingTuple>();
+  }
 
   double spacing = Spacing;
   std::string algorithm = DistanceAlgorithm;
@@ -249,10 +252,8 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
       return -9;
     }
 
-    for (int c = 0; c < (int) chain.size() - 1; c += 2)
+    for (int c = 0; c < (int) chain.size() - 1; ++c)
     {
-      if (numStart %2 != 0 && c == 0) c++;
-
       std::vector<matchingTuple> matchings1 = *(outputMatchings->at((unsigned long) numStart + c));
       int d1id = numStart + c;
       int d2id = d1id + 1; // c % 2 == 0 ? d1id + 1 : d1id;
@@ -261,14 +262,14 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
       // Insert segments
       vtkIdType ids[2];
-      int n1 = (int) chain.at((unsigned long) c);
-      int n2 = (int) chain.at((unsigned long) c + 1);
+      auto n1 = (int) chain.at((unsigned long) c);
+      auto n2 = (int) chain.at((unsigned long) c + 1);
 
       // Search for right matching.
       double cost = 0.0;
       for (int m = 0; m < (int) matchings1.size(); ++m) {
         matchingTuple tup = matchings1.at((unsigned long) m);
-        int d1id1 = (int) std::get<0>(tup);
+        auto d1id1 = (int) std::get<0>(tup);
         if (d1id1 == n1) {
           cost = std::get<2>(tup);
           break;
@@ -282,9 +283,10 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
       BNodeType point1Type1 = std::get<1>(tuple1);
       BNodeType point1Type2 = std::get<3>(tuple1);
-      BNodeType point1Type = point1Type1 == BLocalMax || point1Type2 == BLocalMax ? BLocalMax :
-                             point1Type1 == BLocalMin || point1Type2 == BLocalMin ? BLocalMin :
-                             point1Type1 == BSaddle2  || point1Type2 == BSaddle2  ? BSaddle2 : BSaddle1;
+      BNodeType point1Type =
+        point1Type1 == BLocalMax || point1Type2 == BLocalMax ? BLocalMax :
+        point1Type1 == BLocalMin || point1Type2 == BLocalMin ? BLocalMin :
+        point1Type1 == BSaddle2  || point1Type2 == BSaddle2  ? BSaddle2 : BSaddle1;
       bool t11Min = point1Type1 == BLocalMin; bool t11Max = point1Type1 == BLocalMax;
       bool t12Min = point1Type2 == BLocalMin; bool t12Max = point1Type2 == BLocalMax;
       bool bothEx1 = (t11Min && t12Max) || (t11Max && t12Min);
@@ -292,12 +294,12 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
         x1 = t12Max ? std::get<11>(tuple1) : std::get<7>(tuple1);
         y1 = t12Max ? std::get<12>(tuple1) : std::get<8>(tuple1);
         z1 = t12Max ? std::get<13>(tuple1) : std::get<9>(tuple1);
-        if (useGeometricSpacing) z1 += spacing * (numStart + c / 2.0);
+        if (useGeometricSpacing) z1 += spacing * (numStart + c);
       } else {
         x1 = t12Max ? std::get<11>(tuple1) : t11Min ? std::get<7>(tuple1) : (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
         y1 = t12Max ? std::get<12>(tuple1) : t11Min ? std::get<8>(tuple1) : (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
         z1 = t12Max ? std::get<13>(tuple1) : t11Min ? std::get<9>(tuple1) : (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
-        if (useGeometricSpacing) z1 += spacing * (numStart + c / 2.0);
+        if (useGeometricSpacing) z1 += spacing * (numStart + c);
       }
 
       // Postproc component ids.
@@ -321,15 +323,16 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
             // Replace former first end of the segment with previous ending segment.
             std::vector<BIdVertex> chain3 = std::get<2>(ttt);
-            int nn = (int) chain3.at(chain3.size() - 1);
+            auto nn = (int) chain3.at(chain3.size() - 1);
             std::vector<diagramTuple> diagramRematch = *(persistenceDiagrams->at((unsigned long) numEnd2));
             diagramTuple tupleN = diagramRematch.at((unsigned long) nn);
 
             point1Type1 = std::get<1>(tupleN);
             point1Type2 = std::get<3>(tupleN);
-            point1Type  = point1Type1 == BLocalMax || point1Type2 == BLocalMax ? BLocalMax :
-                          point1Type1 == BLocalMin || point1Type2 == BLocalMin ? BLocalMin :
-                          point1Type1 == BSaddle2  || point1Type2 == BSaddle2  ? BSaddle2 : BSaddle1;
+            point1Type =
+              point1Type1 == BLocalMax || point1Type2 == BLocalMax ? BLocalMax :
+              point1Type1 == BLocalMin || point1Type2 == BLocalMin ? BLocalMin :
+              point1Type1 == BSaddle2  || point1Type2 == BSaddle2  ? BSaddle2 : BSaddle1;
             t11Min = point1Type1 == BLocalMin; t11Max = point1Type1 == BLocalMax;
             t12Min = point1Type2 == BLocalMin; t12Max = point1Type2 == BLocalMax;
             bothEx1 = (t11Min && t12Max) || (t11Max && t12Min);
@@ -358,9 +361,10 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
       BNodeType point2Type1 = std::get<1>(tuple2);
       BNodeType point2Type2 = std::get<3>(tuple2);
-      BNodeType point2Type = point2Type1 == BLocalMax || point2Type2 == BLocalMax ? BLocalMax :
-                             point2Type1 == BLocalMin || point2Type2 == BLocalMin ? BLocalMin :
-                             point2Type1 == BSaddle2 || point2Type2 == BSaddle2 ? BSaddle2 : BSaddle1;
+      BNodeType point2Type =
+        point2Type1 == BLocalMax || point2Type2 == BLocalMax ? BLocalMax :
+        point2Type1 == BLocalMin || point2Type2 == BLocalMin ? BLocalMin :
+        point2Type1 == BSaddle2 || point2Type2 == BSaddle2 ? BSaddle2 : BSaddle1;
       bool t21Ex = point2Type1 == BLocalMin || point2Type1 == BLocalMax;
       bool t22Ex = point2Type2 == BLocalMin || point2Type2 == BLocalMax;
       bool bothEx2 = t21Ex && t22Ex;
@@ -368,12 +372,12 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
         x2 = point2Type2 == BLocalMax ? std::get<11>(tuple2) : std::get<7>(tuple2);
         y2 = point2Type2 == BLocalMax ? std::get<12>(tuple2) : std::get<8>(tuple2);
         z2 = point2Type2 == BLocalMax ? std::get<13>(tuple2) : std::get<9>(tuple2);
-        if (useGeometricSpacing) z2 += spacing * (numStart + c / 2.0 + 1);
+        if (useGeometricSpacing) z2 += spacing * (numStart + c + 1);
       } else {
         x2 = t22Ex ? std::get<11>(tuple2) : t21Ex ? std::get<7>(tuple2) : (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
         y2 = t22Ex ? std::get<12>(tuple2) : t21Ex ? std::get<8>(tuple2) : (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
         z2 = t22Ex ? std::get<13>(tuple2) : t21Ex ? std::get<9>(tuple2) : (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
-        if (useGeometricSpacing) z2 += spacing * (numStart + c / 2.0 + 1);
+        if (useGeometricSpacing) z2 += spacing * (numStart + c + 1);
       }
       points->InsertNextPoint(x2, y2, z2);
       ids[1] = 2 * currentVertex + 1;
@@ -401,8 +405,6 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
   outputMesh_->ShallowCopy(persistenceDiagram);
   outputMesh->ShallowCopy(outputMesh_);
-
-  std::cout << "Coucou, j'ai tout changé encore." << std::endl;
 
   return 0;
 }

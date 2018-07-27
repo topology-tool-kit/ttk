@@ -17,8 +17,6 @@ int ttk::TrackingFromFields::performDiagramComputation(
     ttk::PersistenceDiagram persistenceDiagram_;
     persistenceDiagram_.setWrapper(wrapper);
     persistenceDiagram_.setupTriangulation(triangulation_);
-//    persistenceDiagram_.setThreadNumber(1);
-//    persistenceDiagram_.setDebugLevel(ttk::Debug::advancedInfoMsg);
       // should have been done before
 
     std::vector<std::tuple<ttk::dcg::Cell,ttk::dcg::Cell>> dmt_pairs;

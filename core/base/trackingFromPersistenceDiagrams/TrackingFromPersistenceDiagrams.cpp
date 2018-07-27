@@ -83,8 +83,7 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
   std::vector<std::vector<matchingTuple>*>* allMatchings,
   std::vector<trackingTuple>* trackings)
 {
-
-  int numPersistenceDiagramsInput = (int) allDiagrams->size();
+  auto numPersistenceDiagramsInput = (int) allDiagrams->size();
 
   for (int in = 1; in < numPersistenceDiagramsInput - 1; ++in)
   {
@@ -96,12 +95,12 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
     int endIndex = numPersistenceDiagramsInput - 2;
 
     for (int i = 0; i < matchingsSize1; ++i) {
-      int m1ai0 = (int) std::get<0>(matchings1->at((unsigned long) i));
-      int m1ai1 = (int) std::get<1>(matchings1->at((unsigned long) i));
+      auto m1ai0 = (int) std::get<0>(matchings1->at((unsigned long) i));
+      auto m1ai1 = (int) std::get<1>(matchings1->at((unsigned long) i));
 
       for (int j = 0; j < matchingsSize2; ++j) {
-        int m2aj0 = (int) std::get<0>(matchings2->at((unsigned long) j));
-        int m2aj1 = (int) std::get<1>(matchings2->at((unsigned long) j));
+        auto m2aj0 = (int) std::get<0>(matchings2->at((unsigned long) j));
+        auto m2aj1 = (int) std::get<1>(matchings2->at((unsigned long) j));
 
         if (m1ai1 != m2aj0) continue;
 
@@ -155,7 +154,7 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
       int chainEnd = std::get<1>(*tt);
       if (chainEnd == -1) {
         std::vector<BIdVertex> chain = std::get<2>(*tt);
-        int chainSize = (int) chain.size();
+        auto chainSize = (int) chain.size();
         if (chainStart + chainSize - 1 < in)
           std::get<1>(*tt) = in - 1;
       }
@@ -178,7 +177,7 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
   std::vector<std::set<int>>* trackingTupleToMerged,
   double postProcThresh)
 {
-  int numPersistenceDiagramsInput = (int) allDiagrams->size();
+  auto numPersistenceDiagramsInput = (int) allDiagrams->size();
 
   // Merge close connected components with threshold.
   for (unsigned int k = 0; k < trackings->size(); ++k) {
@@ -190,8 +189,8 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
     std::vector<diagramTuple> *diagramStartK = allDiagrams->at((unsigned long) startK);
     std::vector<diagramTuple> *diagramEndK = allDiagrams->at((unsigned long) endK);
 
-    int n1 = (int) chainK.at(0);
-    int n2 = (int) chainK.at(chainK.size() - 1);
+    auto n1 = (int) chainK.at(0);
+    auto n2 = (int) chainK.at(chainK.size() - 1);
     diagramTuple tuple1 = diagramStartK->at((unsigned long) n1);
     diagramTuple tuple2 = diagramEndK->at((unsigned long) n2);
 
@@ -245,7 +244,7 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         if (!doMatch1 && !doMatch2) continue;
 
         /// Check proximity.
-        int n3 = (int) chainM.at((unsigned long) c);
+        auto n3 = (int) chainM.at((unsigned long) c);
         std::vector<diagramTuple> *diagramM = allDiagrams->at((unsigned long) startM + c);
         diagramTuple tuple3 = diagramM->at((unsigned long) n3);
         double x3, y3, z3;

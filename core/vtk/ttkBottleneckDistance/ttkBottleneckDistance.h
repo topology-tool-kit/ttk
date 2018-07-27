@@ -346,16 +346,16 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   const double spacing,
   const int diagramNumber)
 {
-  vtkIntArray* vertexIdentifierScalars =
-    vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
+  vtkIdTypeArray* vertexIdentifierScalars =
+    vtkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("VertexIdentifier"));
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("NodeType"));
 
-  vtkIntArray* pairIdentifierScalars =
-    vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
+  vtkIdTypeArray* pairIdentifierScalars =
+    vtkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
       GetCellData()->GetArray("PairIdentifier"));
 
   vtkIntArray* extremumIndexScalars =
@@ -375,6 +375,9 @@ int ttkBottleneckDistance::getPersistenceDiagram(
       GetPointData()->GetArray("Death"));
 
   vtkPoints* points = (CTPersistenceDiagram_->GetPoints());
+  if (!pairIdentifierScalars)
+    return -2;
+
   auto pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
   auto s = (float) 0.0;
 
@@ -384,8 +387,8 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   if (!Is3D && diagramNumber == 1) s = (float) spacing;
 
   if (pairingsSize < 1 || !vertexIdentifierScalars
-      || !pairIdentifierScalars || !nodeTypeScalars
-      || !persistenceScalars || !extremumIndexScalars || !points)
+      || !nodeTypeScalars || !persistenceScalars
+      || !extremumIndexScalars || !points)
     return -2;
 
   diagram->resize((unsigned long) pairingsSize);
@@ -393,12 +396,12 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 
   for (int i = 0; i < pairingsSize; ++i) {
 
-    int vertexId1 = vertexIdentifierScalars->GetValue(2*i);
-    int vertexId2 = vertexIdentifierScalars->GetValue(2*i+1);
+    auto vertexId1 = (int) vertexIdentifierScalars->GetValue(2*i);
+    auto vertexId2 = (int) vertexIdentifierScalars->GetValue(2*i+1);
     int nodeType1 = nodeTypeScalars->GetValue(2*i);
     int nodeType2 = nodeTypeScalars->GetValue(2*i+1);
 
-    int pairIdentifier = pairIdentifierScalars->GetValue(i);
+    auto pairIdentifier = (int) pairIdentifierScalars->GetValue(i);
     int pairType = extremumIndexScalars->GetValue(i);
     double persistence = persistenceScalars->GetValue(i);
 
@@ -469,9 +472,9 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
   vtkUnstructuredGrid *CTPersistenceDiagram2_)
 {
 
-  BIdVertex diagramSize1 = (BIdVertex) diagram1->size();
-  BIdVertex diagramSize2 = (BIdVertex) diagram2->size();
-  BIdVertex matchingsSize = (BIdVertex) matchings->size();
+  auto diagramSize1 = (BIdVertex) diagram1->size();
+  auto diagramSize2 = (BIdVertex) diagram2->size();
+  auto matchingsSize = (BIdVertex) matchings->size();
 
   vtkSmartPointer<vtkIntArray> matchingIdentifiers1 =
     vtkSmartPointer<vtkIntArray>::New();
@@ -542,7 +545,7 @@ int ttkBottleneckDistance::getMatchingMesh(
       vtkSmartPointer<vtkIntArray>::New();
   matchingIdScalars->SetName("MatchingIdentifier");
 
-  BIdVertex matchingsSize = (BIdVertex) matchings->size();
+  auto matchingsSize = (BIdVertex) matchings->size();
 
   // Build matchings.
   if (matchingsSize > 0) {
@@ -551,8 +554,8 @@ int ttkBottleneckDistance::getMatchingMesh(
       vtkIdType ids[2];
 
       matchingTuple t = matchings->at((unsigned long) i);
-      int n1 = (int) std::get<0>(t);
-      int n2 = (int) std::get<1>(t);
+      auto n1 = (int) std::get<0>(t);
+      auto n2 = (int) std::get<1>(t);
 
       diagramTuple tuple1 = diagram1->at(n1);
       diagramTuple tuple2 = diagram2->at(n2);
