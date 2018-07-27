@@ -406,6 +406,10 @@ namespace ttk
          void bfsPropagation(const idVertex saddle, const idCell seed,
                              Propagation* const newLocalProp, const idSuperArc arc);
 
+         // visit a vertex in terms of segmantation and history,
+         // also check if the current arc is merging through an opposite one.
+         bool visit(Propagation* const localProp, const idSuperArc curArc);
+
          // Tools
 
          // Create a new propagation starting at leaf
