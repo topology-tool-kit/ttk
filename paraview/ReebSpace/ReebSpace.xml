@@ -93,15 +93,15 @@ ProjectionFromField, RangePolygon.
       </StringVectorProperty>
       
       <IntVectorProperty name="With predefined offset"
-        label="Use Input Offset Field"
+        label="Force Input Offset Field"
         command="SetForceInputOffsetScalarField"
         number_of_elements="1"
         panel_visibility="advanced"
         default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Check this box if one of the input scalar fields needs to be 
-          considered as a vertex offset field (to disambiguate collinear edges).
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
         </Documentation>
       </IntVectorProperty>
       
