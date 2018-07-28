@@ -6,24 +6,22 @@ using namespace ttk;
 vtkStandardNewMacro(ttkFiberSurface)
 
 ttkFiberSurface::ttkFiberSurface(){
-
-  UseAllCores = false;
-  RangeCoordinates = false;
-  EdgeParameterization = false;
-  EdgeIds = false;
-  TetIds = false;
-  CaseIds = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
+  RangeCoordinates = true;
+  EdgeParameterization = true;
+  EdgeIds = true;
+  TetIds = true;
+  CaseIds = true;
   PointMerge = false;
-  RangeOctree = false;
+  RangeOctree = true;
   PointMergeDistanceThreshold = 0.000001;
   SetNumberOfInputPorts(2);
 }
 
 ttkFiberSurface::~ttkFiberSurface(){
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
   
@@ -153,12 +151,12 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   long long extra_pt = *pt;
   const long long int *cellArray = &extra_pt;
 #endif
-  SimplexId cellNumber = polygon->GetNumberOfCells();
+  ttkIdType cellNumber = polygon->GetNumberOfCells();
 
-  SimplexId vertexId0, vertexId1;
+  ttkIdType vertexId0, vertexId1;
   pair<pair<double, double>, pair<double, double> > rangeEdge;
 
-  for(SimplexId i = 0; i < cellNumber; i++){
+  for(ttkIdType i = 0; i < cellNumber; i++){
 
     vertexId0 = cellArray[3*i + 1];
     vertexId1 = cellArray[3*i + 2];
@@ -172,7 +170,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     inputPolygon_.push_back(rangeEdge);
   }
   
-  for(SimplexId i = 0; i < (SimplexId) threadedTriangleList_.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) threadedTriangleList_.size(); i++){
     threadedTriangleList_[i].clear();
     fiberSurface_.setTriangleList(i, &(threadedTriangleList_[i]));
     threadedVertexList_[i].clear();
@@ -199,14 +197,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<char COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<char COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<char TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<char TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<char COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<char TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -233,14 +231,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<double COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<double COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<double TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<double TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<double COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<double TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -267,14 +265,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<float COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<float COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<float TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<float TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<float COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<float TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -301,14 +299,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<int COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<int COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<int TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<int TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<int COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<int TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -335,14 +333,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<vtkIdType COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<vtkIdType COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<vtkIdType TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<vtkIdType TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<vtkIdType COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<vtkIdType TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -369,14 +367,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<unsigned char COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<unsigned char COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<unsigned char TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<unsigned char TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<unsigned char COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<unsigned char TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -403,14 +401,14 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 		  vtkTemplateMacro(
 		  {
 			  if (RangeOctree)
-			  fiberSurface_.buildOctree<unsigned short COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<unsigned short COMMA VTK_TT>();
+			  fiberSurface_.buildOctree<unsigned short TTK_COMMA VTK_TT>();
+		  fiberSurface_.computeSurface<unsigned short TTK_COMMA VTK_TT>();
 		  }
 		  );
 #else
 		  vtkTemplateMacro(
 		  {
-			  fiberSurface_.computeSurface<unsigned short COMMA VTK_TT>();
+			  fiberSurface_.computeSurface<unsigned short TTK_COMMA VTK_TT>();
 		  }
 		  );
 #endif
@@ -424,9 +422,9 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   // NOTE: right now, there is a copy of the output data. this is no good.
   // to fix.
   
-  SimplexId triangleNumber = 0;
+  ttkIdType triangleNumber = 0;
   
-  for(SimplexId i = 0; i < (SimplexId) threadedTriangleList_.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) threadedTriangleList_.size(); i++){
     triangleNumber += threadedTriangleList_[i].size();
   }
   
@@ -440,12 +438,12 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     vtkSmartPointer<vtkDoubleArray>::New();
   vtkSmartPointer<vtkCellArray> outputTriangleList = 
     vtkSmartPointer<vtkCellArray>::New();
-  vtkSmartPointer<vtkIdTypeArray> outputEdgeIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
-  vtkSmartPointer<vtkIdTypeArray> outputTetIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
-  vtkSmartPointer<vtkIdTypeArray> outputCaseIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> outputEdgeIds = 
+    vtkSmartPointer<ttkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> outputTetIds = 
+    vtkSmartPointer<ttkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> outputCaseIds = 
+    vtkSmartPointer<ttkIdTypeArray>::New();
     
   if(RangeCoordinates){
     outputU->SetName(DataUcomponent.data());
@@ -466,7 +464,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId) outputVertexList_.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) outputVertexList_.size(); i++){
     outputVertexList->SetPoint(i, 
       outputVertexList_[i].p_[0], 
       outputVertexList_[i].p_[1], 
@@ -513,8 +511,8 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   idList->SetNumberOfIds(3);
   
   triangleNumber = 0;
-  for(SimplexId i = 0; i < (SimplexId) threadedTriangleList_.size(); i++){
-    for(SimplexId j = 0; j < (SimplexId) threadedTriangleList_[i].size(); j++){
+  for(ttkIdType i = 0; i < (ttkIdType) threadedTriangleList_.size(); i++){
+    for(ttkIdType j = 0; j < (ttkIdType) threadedTriangleList_[i].size(); j++){
       for(int k = 0; k < 3; k++){
         idList->SetId(k, threadedTriangleList_[i][j].vertexIds_[k]);
       }

@@ -33,27 +33,27 @@ namespace ttk
 
    // Scalar related containers (global)
    struct Scalars {
-      idVertex         size;
+      SimplexId         size;
       void*            values;
-      std::vector<idVertex> sosOffsets;
-      std::vector<idVertex> sortedVertices, mirrorVertices;
+      std::vector<SimplexId> sosOffsets;
+      std::vector<SimplexId> sortedVertices, mirrorVertices;
 
       // Need vertices to be sorted : use mirrorVertices.
 
-      bool isLower(const idVertex& a, const idVertex& b) const
+      bool isLower(const SimplexId& a, const SimplexId& b) const
       {
          return mirrorVertices[a] < mirrorVertices[b];
       }
-      bool isEqLower(const idVertex& a, const idVertex& b) const
+      bool isEqLower(const SimplexId& a, const SimplexId& b) const
       {
          return mirrorVertices[a] <= mirrorVertices[b];
       }
 
-      bool isHigher(const idVertex& a, const idVertex& b) const
+      bool isHigher(const SimplexId& a, const SimplexId& b) const
       {
          return mirrorVertices[a] > mirrorVertices[b];
       }
-      bool isEqHigher(const idVertex& a, const idVertex& b) const
+      bool isEqHigher(const SimplexId& a, const SimplexId& b) const
       {
          return mirrorVertices[a] >= mirrorVertices[b];
       }
@@ -78,7 +78,7 @@ namespace ttk
 
    // info on one vertex and CT arc in wich it is
    struct vertex {
-      idVertex   id;
+      SimplexId   id;
       idSuperArc ctArc;
    };
 

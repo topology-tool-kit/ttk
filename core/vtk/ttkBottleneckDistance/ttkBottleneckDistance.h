@@ -148,16 +148,19 @@ class ttkBottleneckDistance
     ttkBottleneckDistance() {
       
       // settings
-      UseAllCores = false;
+      UseAllCores = true;
+      ThreadNumber = 1;
+      debugLevel_ = 3;
       SetNumberOfInputPorts(2);
       SetNumberOfOutputPorts(3);
 
       // inputs
       UsePersistenceMetric = false;
       UseGeometricSpacing = false;
-      WassersteinMetric = "2";
+      UseOutputMatching = false;
+      WassersteinMetric = "1";
       Alpha = 1.0;
-      Spacing = 0.0;
+      Spacing = 1.0;
 
       // outputs
       result = -1.;
@@ -198,16 +201,16 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   const double spacing,
   const int diagramNumber)
 {
-  vtkIdTypeArray* vertexIdentifierScalars =
-    vtkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
+  ttkIdTypeArray* vertexIdentifierScalars =
+    ttkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("VertexIdentifier"));
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("NodeType"));
 
-  vtkIdTypeArray* pairIdentifierScalars =
-    vtkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
+  ttkIdTypeArray* pairIdentifierScalars =
+    ttkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
       GetCellData()->GetArray("PairIdentifier"));
 
   vtkIntArray* extremumIndexScalars =
@@ -328,7 +331,7 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
   matchingIdentifiers2->SetName("MatchingIdentifier");
 
   if (matchingsSize > 0) {
-    vtkIdType ids[2];
+    ttkIdType ids[2];
     matchingIdentifiers1->SetNumberOfComponents(1);
     matchingIdentifiers2->SetNumberOfComponents(1);
 

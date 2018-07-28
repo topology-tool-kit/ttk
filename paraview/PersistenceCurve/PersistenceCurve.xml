@@ -67,11 +67,12 @@ TopologicalSimplification.
       </StringVectorProperty>
 
       <IntVectorProperty
-         name="UseInputOffsetScalarField"
-         command="SetUseInputOffsetScalarField"
+         name="ForceInputOffsetScalarField"
+         command="SetForceInputOffsetScalarField"
          label="Use Input Offset Field"
          number_of_elements="1"
-         default_values="1">
+         panel_visibility="advanced"
+         default_values="0">
         <BooleanDomain name="bool"/>
          <Documentation>
           Check this box if an input scalar field should be considered as 
@@ -86,11 +87,12 @@ vertex offset (used to disambiguate flat plateaus).
         default_values="OutputOffsetScalarField"
         number_of_elements="1"
         animateable="0"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
 					default_values="0"
-					data_type="VTK_ID_TYPE">
+                    >
           <RequiredProperties>
             <Property name="Input" function="Input" />
           </RequiredProperties>
@@ -150,7 +152,7 @@ vertex offset (used to disambiguate flat plateaus).
       
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField" />
-        <Property name="UseInputOffsetScalarField"/>
+        <Property name="ForceInputOffsetScalarField"/>
         <Property name="InputOffsetScalarFieldName"/>
       </PropertyGroup>
 

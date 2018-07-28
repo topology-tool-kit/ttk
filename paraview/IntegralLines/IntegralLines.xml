@@ -107,7 +107,7 @@ sources if necessary to create such an identifier field).
         <ArrayListDomain
           name="array_list"
           default_values="0"
-          data_type="VTK_ID_TYPE">
+          >
           <RequiredProperties>
             <Property name="Seeds" function="Input" />
           </RequiredProperties>
@@ -118,11 +118,11 @@ sources if necessary to create such an identifier field).
       </StringVectorProperty>
 
       <IntVectorProperty
-        name="UseOffsetScalarField"
+        name="ForceInputOffsetScalarField"
         label="Use Input Offset Field"
-        command="SetUseOffsetScalarField"
+        command="SetForceInputOffsetScalarField"
         number_of_elements="1"
-        default_values="1">
+        default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
           Use an input offset field (to disambiguate flat plateaus).
@@ -140,7 +140,7 @@ sources if necessary to create such an identifier field).
         <ArrayListDomain
           name="array_list"
           default_values="0"
-          data_type="VTK_ID_TYPE">
+          >
           <RequiredProperties>
             <Property name="Domain" function="Input" />
           </RequiredProperties>
@@ -197,7 +197,7 @@ plateaus).
         <Property name="ScalarField" />
         <Property name="Direction" />
         <Property name="VertexIdentifierScalarFieldName" />
-        <Property name="UseOffsetScalarField" />
+        <Property name="ForceInputOffsetScalarField" />
         <Property name="OffsetScalarFieldName" />
       </PropertyGroup>
 

@@ -6,6 +6,9 @@ using namespace ttk;
 vtkStandardNewMacro(ttkMandatoryCriticalPoints)
 
 ttkMandatoryCriticalPoints::ttkMandatoryCriticalPoints(){
+  SetLowerBoundFieldName("lowerBoundField");
+  SetUpperBoundFieldName("upperBoundField");
+  SetSimplificationThreshold(0.0);
 
   // init
   outputMandatoryMinimum_ = NULL;
@@ -16,7 +19,9 @@ ttkMandatoryCriticalPoints::ttkMandatoryCriticalPoints(){
   mandatoryJoinTreePoints_ = NULL;
   mandatorySplitTreePoints_ = NULL;
 
-  UseAllCores = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 
   computeMinimumOutput_ = false;
   computeJoinSaddleOutput_ = false;
@@ -50,9 +55,13 @@ ttkMandatoryCriticalPoints::ttkMandatoryCriticalPoints(){
   upperBoundId = 1;
 
   outputAllMinimumComponents_ = true;
+  outputMinimumComponentId_ = 0;
   outputAllJoinSaddleComponents_ = true;
+  outputJoinSaddleComponentId_ = 0;
   outputAllSplitSaddleComponents_ = true;
+  outputSplitSaddleComponentId_ = 0;
   outputAllMaximumComponents_ = true;
+  outputMaximumComponentId_ = 0;
 
   computeMinimumOutput_ = true;
   computeJoinSaddleOutput_ = true;

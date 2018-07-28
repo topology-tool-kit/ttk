@@ -86,8 +86,8 @@ class ttkIntegralLines
     vtkSetMacro(VertexIdentifierScalarFieldName, std::string);
     vtkGetMacro(VertexIdentifierScalarFieldName, std::string);
 
-    vtkSetMacro(UseOffsetScalarField, int);
-    vtkGetMacro(UseOffsetScalarField, int);
+    vtkSetMacro(ForceInputOffsetScalarField, int);
+    vtkGetMacro(ForceInputOffsetScalarField, int);
 
     vtkSetMacro(OffsetScalarFieldName, std::string);
     vtkGetMacro(OffsetScalarFieldName, std::string);
@@ -96,7 +96,7 @@ class ttkIntegralLines
     int getScalars(vtkDataSet* input);
     int getOffsets(vtkDataSet* input);
     int getIdentifiers(vtkPointSet* input);
-    int getTrajectories(vtkDataSet* input, std::vector<std::vector<ttk::SimplexId>>& trajectories, vtkUnstructuredGrid* output);
+    int getTrajectories(vtkDataSet* input, std::vector<std::vector<ttkIdType>>& trajectories, vtkUnstructuredGrid* output);
 
   protected:
 
@@ -115,7 +115,8 @@ class ttkIntegralLines
     int Direction;
     int OutputScalarFieldType;
     std::string VertexIdentifierScalarFieldName;
-    int UseOffsetScalarField;
+    int OffsetScalarFieldId;
+    int ForceInputOffsetScalarField;
     std::string OffsetScalarFieldName;
 
     ttk::Triangulation *triangulation_;

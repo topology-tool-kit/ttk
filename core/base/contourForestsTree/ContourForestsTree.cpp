@@ -37,7 +37,7 @@ ContourForestsTree::~ContourForestsTree()
 // Process
 // {
 
-int ContourForestsTree::combine(const idVertex &seed0, const idVertex &seed1)
+int ContourForestsTree::combine(const SimplexId &seed0, const SimplexId &seed1)
 {
    queue<pair<bool, idNode>> growingNodes;
    pair<bool, idNode>        head;
@@ -49,7 +49,7 @@ int ContourForestsTree::combine(const idVertex &seed0, const idVertex &seed1)
    const bool DEBUG = false;
 
    // If a tree add only one leaf, the other tree is the result
-   idVertex nbAddedleavesST = 0,
+   SimplexId nbAddedleavesST = 0,
             nbAddedleavesJT = 0;
 
    // Add leves to growing nodes
@@ -101,8 +101,8 @@ int ContourForestsTree::combine(const idVertex &seed0, const idVertex &seed1)
    }
 
    // seed : to keep crossing edges;
-   const idVertex &s0 = (seed0 == -1) ? nullVertex : scalars_->sortedVertices[seed0];
-   const idVertex &s1 =
+   const SimplexId &s0 = (seed0 == -1) ? nullVertex : scalars_->sortedVertices[seed0];
+   const SimplexId &s1 =
        (seed1 >= scalars_->size) ? nullVertex : scalars_->sortedVertices[seed1];
 
    while (!growingNodes.empty()) {
@@ -203,8 +203,8 @@ int ContourForestsTree::combine(const idVertex &seed0, const idVertex &seed1)
       }
 
       // AddArc(CT, ij)
-      pair<idVertex, bool> *arcVertList = nullptr;
-      idVertex arcVertSize = 0;
+      pair<SimplexId, bool> *arcVertList = nullptr;
+      SimplexId arcVertSize = 0;
       {
          arcVertList = xt->getSuperArc(currentNode->getUpSuperArcId(0))->getVertList();
          arcVertSize = xt->getSuperArc(currentNode->getUpSuperArcId(0))->getVertSize();
@@ -236,9 +236,9 @@ int ContourForestsTree::combine(const idVertex &seed0, const idVertex &seed1)
             treeData_.arcsCrossingAbove.emplace_back(createdArc);
 
          // Segmentation, update only if not already set, user vert2tree to check
-         idVertex nbv = 0;
-         for (idVertex vert = 0; vert < arcVertSize; vert++) {
-            const idVertex &v = arcVertList[vert].first;
+         SimplexId nbv = 0;
+         for (SimplexId vert = 0; vert < arcVertSize; vert++) {
+            const SimplexId &v = arcVertList[vert].first;
             if (isCorrespondingNull(v)) {
                updateCorrespondingArc(v, createdArc);
                ++nbv;

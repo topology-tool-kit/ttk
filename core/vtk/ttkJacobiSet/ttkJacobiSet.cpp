@@ -6,6 +6,7 @@ using namespace ttk;
 vtkStandardNewMacro(ttkJacobiSet)
 
 ttkJacobiSet::ttkJacobiSet(){
+  ForceInputOffsetScalarField = false;
 
   // init
   UcomponentId = 0;
@@ -14,8 +15,11 @@ ttkJacobiSet::ttkJacobiSet(){
   UoffsetId = -1;
   VoffsetId = -1;
 
-  EdgeIds = true;
-  VertexScalars = true;
+  EdgeIds = false;
+  VertexScalars = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkJacobiSet::~ttkJacobiSet(){
@@ -45,14 +49,14 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
  
   vtkDataArray *offsetFieldU = NULL, *offsetFieldV = NULL;
   
-  if((PredefinedOffset)||((UoffsetId != -1)&&(VoffsetId != -1))){
+  if((ForceInputOffsetScalarField)||((UoffsetId != -1)&&(VoffsetId != -1))){
     if(OffsetFieldU.length()){
       
       offsetFieldU = input->GetPointData()->GetArray(OffsetFieldU.data());
       
       if(offsetFieldU){
         sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldU->GetNumberOfTuples(); i++){
+        for(ttkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++){
           sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
         }
         
@@ -64,7 +68,19 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
 
       if(offsetFieldU){
         sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldU->GetNumberOfTuples(); i++){
+        for(ttkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++){
+          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
+        }
+        
+        jacobiSet.setSosOffsetsU(&sosOffsetsU_);
+      }
+    }
+    else if(input->GetPointData()->GetArray(ttk::OffsetFieldUName)){
+      offsetFieldU = input->GetPointData()->GetArray(ttk::OffsetFieldUName);
+      
+      if(offsetFieldU){
+        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
+        for(ttkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++){
           sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
         }
         
@@ -77,7 +93,7 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
       
       if(offsetFieldV){
         sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldV->GetNumberOfTuples(); i++){
+        for(ttkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++){
           sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
         }
         
@@ -89,7 +105,19 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
 
       if(offsetFieldV){
         sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldV->GetNumberOfTuples(); i++){
+        for(ttkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++){
+          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
+        }
+        
+        jacobiSet.setSosOffsetsV(&sosOffsetsV_);
+      }
+    }
+    else if(input->GetPointData()->GetArray(ttk::OffsetFieldVName)){
+      offsetFieldV = input->GetPointData()->GetArray(ttk::OffsetFieldVName);
+
+      if(offsetFieldV){
+        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
+        for(ttkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++){
           sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
         }
         
@@ -104,9 +132,6 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
 
   return 0;  
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs, 
   vector<vtkDataSet *> &outputs){
 
@@ -160,7 +185,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<char COMMA VTK_TT>(input, uComponent, vComponent);
+			  baseCall<char TTK_COMMA VTK_TT>(input, uComponent, vComponent);
 		  }
 		  );
 #endif
@@ -178,7 +203,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<double COMMA VTK_TT>(input, uComponent, vComponent);
+			  baseCall<double TTK_COMMA VTK_TT>(input, uComponent, vComponent);
 		  }
 		  );
 #endif
@@ -196,7 +221,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<float COMMA VTK_TT>(input, uComponent, vComponent);
+			  baseCall<float TTK_COMMA VTK_TT>(input, uComponent, vComponent);
 		  }
 		  );
 #endif
@@ -214,7 +239,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<int COMMA VTK_TT>(input, uComponent, vComponent);
+			  baseCall<int TTK_COMMA VTK_TT>(input, uComponent, vComponent);
 		  }
 		  );
 #endif
@@ -232,7 +257,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<vtkIdType COMMA VTK_TT>(input, uComponent, vComponent);
+			  baseCall<vtkIdType TTK_COMMA VTK_TT>(input, uComponent, vComponent);
 		  }
 		  );
 #endif
@@ -250,7 +275,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<unsigned char COMMA VTK_TT>(input, uComponent, vComponent);
+			  baseCall<unsigned char TTK_COMMA VTK_TT>(input, uComponent, vComponent);
 		  }
 		  );
 #endif
@@ -268,7 +293,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 #else
 		  vtkTemplateMacro(
 		  {
-			  baseCall<unsigned short COMMA VTK_TT>(input, uComponent, vComponent);
+			  baseCall<unsigned short TTK_COMMA VTK_TT>(input, uComponent, vComponent);
 		  }
 		  );
 #endif
@@ -304,12 +329,12 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
   if(!triangulation)
     return -3;
   
-  SimplexId pointCount = 0;
+  ttkIdType pointCount = 0;
   double p[3];
-  for(SimplexId i = 0; i < (SimplexId) jacobiSet_.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) jacobiSet_.size(); i++){
     
-    SimplexId edgeId = jacobiSet_[i].first;
-    SimplexId vertexId0 = -1, vertexId1 = -1;
+    ttkIdType edgeId = jacobiSet_[i].first;
+    ttkIdType vertexId0 = -1, vertexId1 = -1;
     triangulation->getEdgeVertex(edgeId, 0, vertexId0);
     triangulation->getEdgeVertex(edgeId, 1, vertexId1);
     
@@ -332,14 +357,14 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
   output->GetPointData()->AddArray(edgeTypes);
  
   if(EdgeIds){
-    vtkSmartPointer<vtkIdTypeArray> edgeIdArray = 
-      vtkSmartPointer<vtkIdTypeArray>::New();
+    vtkSmartPointer<ttkIdTypeArray> edgeIdArray = 
+      vtkSmartPointer<ttkIdTypeArray>::New();
     edgeIdArray->SetNumberOfComponents(1);
     edgeIdArray->SetNumberOfTuples(jacobiSet_.size());
     edgeIdArray->SetName("EdgeIds");
     
     pointCount = 0;
-    for(SimplexId i = 0; i < (SimplexId) jacobiSet_.size(); i++){
+    for(ttkIdType i = 0; i < (ttkIdType) jacobiSet_.size(); i++){
       edgeIdArray->SetTuple1(pointCount, (float) jacobiSet_[i].first);
       pointCount++;
     }
@@ -369,10 +394,10 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
             
             double *value = new double[scalarField->GetNumberOfComponents()];
             pointCount = 0;
-            for(SimplexId j = 0; j < (SimplexId) jacobiSet_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) jacobiSet_.size(); j++){
               
-              SimplexId edgeId = jacobiSet_[j].first;
-              SimplexId vertexId0 = -1, vertexId1 = -1;
+              ttkIdType edgeId = jacobiSet_[j].first;
+              ttkIdType vertexId0 = -1, vertexId1 = -1;
               triangulation->getEdgeVertex(edgeId, 0, vertexId0);
               triangulation->getEdgeVertex(edgeId, 1, vertexId1);
               
@@ -402,10 +427,10 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
             
             double *value = new double[scalarField->GetNumberOfComponents()];
             pointCount = 0;
-            for(SimplexId j = 0; j < (SimplexId) jacobiSet_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) jacobiSet_.size(); j++){
               
-              SimplexId edgeId = jacobiSet_[j].first;
-              SimplexId vertexId0 = -1, vertexId1 = -1;
+              ttkIdType edgeId = jacobiSet_[j].first;
+              ttkIdType vertexId0 = -1, vertexId1 = -1;
               triangulation->getEdgeVertex(edgeId, 0, vertexId0);
               triangulation->getEdgeVertex(edgeId, 1, vertexId1);
               
@@ -436,10 +461,10 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
             
             double *value = new double[scalarField->GetNumberOfComponents()];
             pointCount = 0;
-            for(SimplexId j = 0; j < (SimplexId) jacobiSet_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) jacobiSet_.size(); j++){
               
-              SimplexId edgeId = jacobiSet_[j].first;
-              SimplexId vertexId0 = -1, vertexId1 = -1;
+              ttkIdType edgeId = jacobiSet_[j].first;
+              ttkIdType vertexId0 = -1, vertexId1 = -1;
               triangulation->getEdgeVertex(edgeId, 0, vertexId0);
               triangulation->getEdgeVertex(edgeId, 1, vertexId1);
               
@@ -469,10 +494,10 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
             
             double *value = new double[scalarField->GetNumberOfComponents()];
             pointCount = 0;
-            for(SimplexId j = 0; j < (SimplexId) jacobiSet_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) jacobiSet_.size(); j++){
               
-              SimplexId edgeId = jacobiSet_[j].first;
-              SimplexId vertexId0 = -1, vertexId1 = -1;
+              ttkIdType edgeId = jacobiSet_[j].first;
+              ttkIdType vertexId0 = -1, vertexId1 = -1;
               triangulation->getEdgeVertex(edgeId, 0, vertexId0);
               triangulation->getEdgeVertex(edgeId, 1, vertexId1);
               
@@ -500,10 +525,10 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
             
             double *value = new double[scalarField->GetNumberOfComponents()];
             pointCount = 0;
-            for(SimplexId j = 0; j < (SimplexId) jacobiSet_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) jacobiSet_.size(); j++){
               
-              SimplexId edgeId = jacobiSet_[j].first;
-              SimplexId vertexId0 = -1, vertexId1 = -1;
+              ttkIdType edgeId = jacobiSet_[j].first;
+              ttkIdType vertexId0 = -1, vertexId1 = -1;
               triangulation->getEdgeVertex(edgeId, 0, vertexId0);
               triangulation->getEdgeVertex(edgeId, 1, vertexId1);
               
@@ -531,10 +556,10 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
             
             double *value = new double[scalarField->GetNumberOfComponents()];
             pointCount = 0;
-            for(SimplexId j = 0; j < (SimplexId) jacobiSet_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) jacobiSet_.size(); j++){
               
-              SimplexId edgeId = jacobiSet_[j].first;
-              SimplexId vertexId0 = -1, vertexId1 = -1;
+              ttkIdType edgeId = jacobiSet_[j].first;
+              ttkIdType vertexId0 = -1, vertexId1 = -1;
               triangulation->getEdgeVertex(edgeId, 0, vertexId0);
               triangulation->getEdgeVertex(edgeId, 1, vertexId1);
               

@@ -94,9 +94,10 @@ ProjectionFromField, RangePolygon.
       
       <IntVectorProperty name="With predefined offset"
         label="Use Input Offset Field"
-        command="SetPredefinedOffset"
+        command="SetForceInputOffsetScalarField"
         number_of_elements="1"
-        default_values="1">
+        panel_visibility="advanced"
+        default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
           Check this box if one of the input scalar fields needs to be 
@@ -110,10 +111,10 @@ ProjectionFromField, RangePolygon.
         number_of_elements="1"
         animateable="0"
         label="U offset field"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
-          data_type="VTK_ID_TYPE"
           default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />
@@ -131,10 +132,10 @@ u-coordinate (used to disambiguate collinear edges).
         number_of_elements="1"
         animateable="0"
         label="V offset field"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
-          data_type="VTK_ID_TYPE"
           default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />

@@ -1052,7 +1052,7 @@ namespace ttk{
       }
 
       inline int setInputCells(const SimplexId &cellNumber, 
-        const SimplexId *cellArray){
+        const LongSimplexId *cellArray){
         
         if(cellNumber_)
           clear();
@@ -1084,7 +1084,7 @@ namespace ttk{
       bool                doublePrecision_;
       SimplexId           cellNumber_, vertexNumber_;
       const void          *pointSet_;
-      const SimplexId *cellArray_;
+      const LongSimplexId *cellArray_;
       
   };
 }

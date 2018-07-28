@@ -20,8 +20,12 @@ vtkStandardNewMacro(ttkPersistenceDiagram)
   ScalarFieldId = 0;
   OffsetFieldId = -1;
   ComputeSaddleConnectors = false;
-  InputOffsetScalarFieldName = "OutputOffsetScalarField";
-  UseInputOffsetScalarField = false;
+  InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
+  ForceInputOffsetScalarField = false;
+  ComputeSaddleConnectors = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
   ShowInsideDomain = false;
   computeDiagram_= true;
 
@@ -106,18 +110,22 @@ int ttkPersistenceDiagram::getTriangulation(vtkDataSet* input){
 }
 
 int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
-
   if(OffsetFieldId != -1){
     inputOffsets_ = input->GetPointData()->GetArray(OffsetFieldId);
     if(inputOffsets_){
       InputOffsetScalarFieldName = inputOffsets_->GetName();
-      UseInputOffsetScalarField = true;
+      ForceInputOffsetScalarField = true;
     }
   }
 
-  if(UseInputOffsetScalarField and InputOffsetScalarFieldName.length())
+  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()){
     inputOffsets_=
       input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
+  }
+  else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+    inputOffsets_=
+      input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
+  }
   else{
     if(varyingMesh_ and offsets_){
       offsets_->Delete();
@@ -125,13 +133,13 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
     }
 
     if(!offsets_){
-      const SimplexId numberOfVertices=input->GetNumberOfPoints();
+      const ttkIdType numberOfVertices=input->GetNumberOfPoints();
 
-      offsets_=vtkIdTypeArray::New();
+      offsets_=ttkIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
-      offsets_->SetName("OffsetScalarField");
-      for(SimplexId i=0; i<numberOfVertices; ++i)
+      offsets_->SetName(ttk::OffsetScalarFieldName);
+      for(ttkIdType i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
     }
 
@@ -148,21 +156,18 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
 
   return 0;
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkPersistenceDiagram::deleteDiagram(){
   if(CTDiagram_ and inputScalars_){
     switch(inputScalars_->GetDataType()){
 #ifndef _MSC_VER
 		vtkTemplateMacro(({
-			using tuple_t = tuple<ftm::idVertex,ftm::NodeType,ftm::idVertex,ftm::NodeType,VTK_TT,ftm::idVertex>;
+			using tuple_t = tuple<ttkIdType,ftm::NodeType,ttkIdType,ftm::NodeType,VTK_TT,ttkIdType>;
 		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
 		delete CTDiagram;
 		}));
 #else
 		vtkTemplateMacro({
-			using tuple_t = tuple<ftm::idVertex COMMA ftm::NodeType COMMA ftm::idVertex COMMA ftm::NodeType COMMA VTK_TT COMMA ftm::idVertex>;
+			using tuple_t = tuple<ttkIdType TTK_COMMA ftm::NodeType TTK_COMMA ttkIdType TTK_COMMA ftm::NodeType TTK_COMMA VTK_TT TTK_COMMA ttkIdType>;
 		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
 		delete CTDiagram;
 		});
@@ -184,28 +189,32 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   int ret{};
 
   ret=getScalars(input);
-  if(ret){
 #ifndef TTK_ENABLE_KAMIKAZE
+  if(ret){
     cerr << "[ttkPersistenceDiagram] Error : wrong scalars." << endl;
     return -1;
-#endif
   }
+#endif
 
   ret=getTriangulation(input);
-  if(ret){
 #ifndef TTK_ENABLE_KAMIKAZE
+  if(ret){
     cerr << "[ttkPersistenceDiagram] Error : wrong triangulation." << endl;
     return -2;
-#endif
   }
+#endif
 
   ret=getOffsets(input);
-  if(ret){
 #ifndef TTK_ENABLE_KAMIKAZE
+  if(ret){
     cerr << "[ttkPersistenceDiagram] Error : wrong offsets." << endl;
     return -3;
-#endif
   }
+  if(inputOffsets_->GetDataType()!=VTK_INT and inputOffsets_->GetDataType()!=VTK_ID_TYPE){
+    cerr << "[ttkPersistenceDiagram] Error : input offset field type not supported." << endl;
+    return -1;
+  }
+#endif
 
   vector<tuple<Cell,Cell>> dmt_pairs;
   persistenceDiagram_.setDMTPairs(&dmt_pairs);
@@ -217,12 +226,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   switch(inputScalars_->GetDataType()){
 #ifndef _MSC_VER
 	  vtkTemplateMacro(({
-		  using tuple_t = tuple<ftm::idVertex,
+		  using tuple_t = tuple<ttkIdType,
 		  ftm::NodeType,
-		  ftm::idVertex,
+		  ttkIdType,
 		  ftm::NodeType,
 		  VTK_TT,
-		  ftm::idVertex>;
+		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;
@@ -238,7 +247,10 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-		  ret = persistenceDiagram_.execute<VTK_TT>();
+          if(inputOffsets_->GetDataType()==VTK_INT)
+            ret = persistenceDiagram_.execute<VTK_TT,int>();
+          if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+            ret = persistenceDiagram_.execute<VTK_TT,vtkIdType>();
 #ifndef TTK_ENABLE_KAMIKAZE
 		  if (ret) {
 			  cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
@@ -263,12 +275,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #else
 #ifndef TTK_ENABLE_KAMIKAZE
 	  vtkTemplateMacro({
-		  using tuple_t = tuple<ftm::idVertex COMMA
-		  ftm::NodeType COMMA
-		  ftm::idVertex COMMA
-		  ftm::NodeType COMMA
-		  VTK_TT COMMA
-		  ftm::idVertex>;
+		  using tuple_t = tuple<ttkIdType TTK_COMMA
+		  ftm::NodeType TTK_COMMA
+		  ttkIdType TTK_COMMA
+		  ftm::NodeType TTK_COMMA
+		  VTK_TT TTK_COMMA
+		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;
@@ -284,7 +296,10 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-		  ret = persistenceDiagram_.execute<VTK_TT>();
+          if(inputOffsets_->GetDataType()==VTK_INT)
+            ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA int>();
+          if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+            ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA vtkIdType>();
 		  if (ret) {
 			  cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
 				  << "error code : " << ret << endl;
@@ -304,12 +319,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  });
 #else
 	  vtkTemplateMacro({
-		  using tuple_t = tuple<ftm::idVertex COMMA
-		  ftm::NodeType COMMA
-		  ftm::idVertex COMMA
-		  ftm::NodeType COMMA
-		  VTK_TT COMMA
-		  ftm::idVertex>;
+		  using tuple_t = tuple<ttkIdType TTK_COMMA
+		  ftm::NodeType TTK_COMMA
+		  ttkIdType TTK_COMMA
+		  ftm::NodeType TTK_COMMA
+		  VTK_TT TTK_COMMA
+		  ttkIdType>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;
@@ -325,7 +340,10 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 
 	  if (computeDiagram_) {
 		  persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-		  ret = persistenceDiagram_.execute<VTK_TT>();
+          if(inputOffsets_->GetDataType()==VTK_INT)
+            ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA int>();
+          if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
+            ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA vtkIdType>();
 	  }
 
 	  if (ShowInsideDomain)

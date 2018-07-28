@@ -34,7 +34,7 @@ namespace ftm
       SharedData data_;
 
      public:
-      inline explicit AtomicUF(idVertex extrema = nullVertex) : rank_(0), data_(extrema)
+      inline explicit AtomicUF(SimplexId extrema = nullVertex) : rank_(0), data_(extrema)
       {
          parent_ = this;
       }
@@ -57,7 +57,7 @@ namespace ftm
 
       // Shared data get/set
 
-      inline idVertex getExtrema(void) const
+      inline SimplexId getExtrema(void) const
       {
          return data_.extrema;
       }
@@ -104,7 +104,7 @@ namespace ftm
          data_.openedArcs.reset();
       }
 
-      inline void setExtrema(idVertex v)
+      inline void setExtrema(SimplexId v)
       {
          data_.extrema = v;
       }

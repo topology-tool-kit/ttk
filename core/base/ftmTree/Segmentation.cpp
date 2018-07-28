@@ -26,7 +26,7 @@ using namespace ftm;
 // Segment
 // -------
 
-Segment::Segment(idVertex size) : vertices_(size, nullVertex)
+Segment::Segment(SimplexId size) : vertices_(size, nullVertex)
 {
 }
 
@@ -40,13 +40,13 @@ segm_it Segment::begin(void)
    return vertices_.begin();
 }
 
-void Segment::createFromList(const Scalars* s, list<vector<idVertex>>& regularList, const bool reverse)
+void Segment::createFromList(const Scalars* s, list<vector<SimplexId>>& regularList, const bool reverse)
 {
-   auto vectComp = [&](const vector<idVertex>& a, const vector<idVertex>& b) {
+   auto vectComp = [&](const vector<SimplexId>& a, const vector<SimplexId>& b) {
       return s->isLower(a[0], b[0]);
    };
 
-   idVertex totalSize = 0;
+   SimplexId totalSize = 0;
    for (const auto& vectReg : regularList) {
       totalSize += vectReg.size();
    }
@@ -81,17 +81,17 @@ segm_it Segment::end(void)
    return vertices_.end();
 }
 
-idVertex Segment::operator[](const size_t& idx) const
+SimplexId Segment::operator[](const size_t& idx) const
 {
    return vertices_[idx];
 }
 
-idVertex& Segment::operator[](const size_t& idx)
+SimplexId& Segment::operator[](const size_t& idx)
 {
    return vertices_[idx];
 }
 
-idVertex Segment::size(void) const
+SimplexId Segment::size(void) const
 {
    return vertices_.size();
 }
@@ -99,7 +99,7 @@ idVertex Segment::size(void) const
 void Segment::sort(const Scalars* s)
 {
    // Sort by scalar value
-   auto comp = [&](idVertex a, idVertex b) { return s->isLower(a, b); };
+   auto comp = [&](SimplexId a, SimplexId b) { return s->isLower(a, b); };
 
    std::sort(vertices_.begin(), vertices_.end(), comp);
 }
@@ -127,7 +127,7 @@ Segment& Segments::operator[](const size_t& idx)
    return segments_[idx];
 }
 
-void Segments::resize(const vector<idVertex>& sizes)
+void Segments::resize(const vector<SimplexId>& sizes)
 {
 #ifndef TTK_ENABLE_KAMIKAZE
    if (segments_.size()) {
@@ -136,7 +136,7 @@ void Segments::resize(const vector<idVertex>& sizes)
 #endif
 
    segments_.reserve(sizes.size());
-   for (idVertex size : sizes) {
+   for (SimplexId size : sizes) {
       segments_.emplace_back(size);
    }
 }
@@ -197,7 +197,7 @@ void ArcRegion::createSegmentation(const Scalars* s)
    }
 #endif
 
-   idVertex              totalSegmSize = 0;
+   SimplexId              totalSegmSize = 0;
    vector<segm_const_it> heads, ends;
    for (const auto& region : segmentsIn_) {
       totalSegmSize += distance(region.segmentBegin, region.segmentEnd);
@@ -213,7 +213,7 @@ void ArcRegion::createSegmentation(const Scalars* s)
 
    while (added != -1) {
       added = -1;
-      idVertex minVert;
+      SimplexId minVert;
       for (idSegment i = 0; i < nbSegments; i++) {
          auto&       headIt = heads[i];
          const auto& endIt  = ends[i];
@@ -243,14 +243,14 @@ void ArcRegion::createSegmentation(const Scalars* s)
 #endif
 }
 
-idVertex ArcRegion::findBelow(idVertex v,
+SimplexId ArcRegion::findBelow(SimplexId v,
                               const Scalars* s,
                               const vector<idCorresp>& vert2treeOther) const
 {
    // split at v and return remaining vertices
 
-   auto comp            = [s](idVertex a, idVertex b) { return s->isLower(a, b); };
-   idVertex   splitVert = nullVertex;
+   auto comp            = [s](SimplexId a, SimplexId b) { return s->isLower(a, b); };
+   SimplexId   splitVert = nullVertex;
    const bool chkOther  = vert2treeOther.size() > 0;
 
    for (const auto& reg : segmentsIn_) {
@@ -317,13 +317,13 @@ bool ArcRegion::merge(const ArcRegion& r)
    return false;
 }
 
-tuple<idVertex, ArcRegion> ArcRegion::splitBack(idVertex v, const Scalars* s)
+tuple<SimplexId, ArcRegion> ArcRegion::splitBack(SimplexId v, const Scalars* s)
 {
    // split at v and return remaining vertices
 
-   auto comp = [s](idVertex a, idVertex b) { return s->isLower(a, b); };
+   auto comp = [s](SimplexId a, SimplexId b) { return s->isLower(a, b); };
    ArcRegion remainingRegion;
-   idVertex  splitVert = nullVertex;
+   SimplexId  splitVert = nullVertex;
 
    list<decltype(segmentsIn_)::iterator> willErase;
 
@@ -369,13 +369,13 @@ tuple<idVertex, ArcRegion> ArcRegion::splitBack(idVertex v, const Scalars* s)
    return make_tuple(splitVert, remainingRegion);
 }
 
-tuple<idVertex, ArcRegion> ArcRegion::splitFront(idVertex v, const Scalars* s)
+tuple<SimplexId, ArcRegion> ArcRegion::splitFront(SimplexId v, const Scalars* s)
 {
    // this function does not create empty region
 
-   auto comp = [s](idVertex a, idVertex b) { return s->isLower(a, b); };
+   auto comp = [s](SimplexId a, SimplexId b) { return s->isLower(a, b); };
    ArcRegion remainingRegion;
-   idVertex  splitVert = nullVertex;
+   SimplexId  splitVert = nullVertex;
 
    list<decltype(segmentsIn_)::iterator> willErase;
 

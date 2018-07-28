@@ -27,7 +27,7 @@
 // PROCESS
 // -------
 
-template <typename scalarType>
+  template <typename scalarType,typename idType>
 void ftm::FTMTree::build(void)
 {
    // -----
@@ -58,7 +58,7 @@ void ftm::FTMTree::build(void)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
-      for (idVertex i = 0; i < scalars_->size; i++) {
+      for (SimplexId i = 0; i < scalars_->size; i++) {
          if (::std::isnan((double)(((scalarType*)scalars_->values)[i]))) {
             ((scalarType*)scalars_->values)[i] = 0;
          }
@@ -116,8 +116,8 @@ void ftm::FTMTree::build(void)
    // for fast comparison
    // and regions / segmentation
    DebugTimer sortTime;
-   initSoS();
-   sortInput<scalarType>();
+   initSoS<idType>();
+   sortInput<scalarType,idType>();
    printTime(sortTime, "[FTM] sort step", -1, 3);
 
    // -----

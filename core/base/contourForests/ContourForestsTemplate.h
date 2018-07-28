@@ -97,7 +97,7 @@ std::endl;
 vect_baseUF_JT(parallelParams_.nbPartitions),
                                        
 vect_baseUF_ST(parallelParams_.nbPartitions);
-   const idVertex &resSize = (scalars_->size / parallelParams_.nbPartitions) / 
+   const SimplexId &resSize = (scalars_->size / parallelParams_.nbPartitions) / 
 10;
 
    parallelData_.trees.clear();
@@ -224,7 +224,7 @@ parallelData_.trees[p].parallelInitNodeValence(parallelParams_.nbThreads);
 == -1 &&
        params_->simplifyThreshold) {
       DebugTimer timerGlobalSimplify;
-      idEdge simplifed = globalSimplify<scalarType>(-1, nullVertex);
+      SimplexId simplifed = globalSimplify<scalarType>(-1, nullVertex);
       if(params_->debugLevel >=1){
          printDebug(timerGlobalSimplify, "Simplify Contour tree            ");
          std::cout << " ( " << simplifed << " pairs merged )" << std::endl;
@@ -291,7 +291,7 @@ int ContourForests::parallelBuild(std::vector<std::vector<ExtendedUnionFind *>>
    std::vector<float> timeSimplify(parallelParams_.nbPartitions, 0);
    std::vector<float> speedProcess(parallelParams_.nbPartitions*2, 0);
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
-   idEdge nbPairMerged = 0;
+   SimplexId nbPairMerged = 0;
 #endif
 
 #ifdef TTK_ENABLE_OPENMP
@@ -318,12 +318,12 @@ i)
       // Retrieve boundary & overlap list for current partition
       // ------------------------------------------------------
 
-      std::tuple<idVertex, idVertex> rangeJT = getJTRange(i);
-      std::tuple<idVertex, idVertex> rangeST = getSTRange(i);
-      std::tuple<idVertex, idVertex> seedsPos = getSeedsPos(i);
-      std::tuple<std::vector<idVertex>, std::vector<idVertex>> overlaps = 
+      std::tuple<SimplexId, SimplexId> rangeJT = getJTRange(i);
+      std::tuple<SimplexId, SimplexId> rangeST = getSTRange(i);
+      std::tuple<SimplexId, SimplexId> seedsPos = getSeedsPos(i);
+      std::tuple<std::vector<SimplexId>, std::vector<SimplexId>> overlaps = 
 getOverlaps(i);
-      const idVertex &partitionSize = abs(std::get<0>(rangeJT) - 
+      const SimplexId &partitionSize = abs(std::get<0>(rangeJT) - 
 std::get<1>(rangeJT)) +
                                       std::get<0>(overlaps).size() + 
 std::get<1>(overlaps).size();
@@ -357,7 +357,7 @@ std::get<1>(overlaps).size();
 
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
                 timerSimplify.reStart();
-                const idEdge tmpMerge =
+                const SimplexId tmpMerge =
                     
 parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
                             std::get<0>(seedsPos), std::get<1>(seedsPos));
@@ -393,7 +393,7 @@ parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
 
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
                 timerSimplify.reStart();
-                const idEdge tmpMerge =
+                const SimplexId tmpMerge =
                     
 parallelData_.trees[i].getSplitTree()->localSimplify<scalarType>(
                             std::get<0>(seedsPos), std::get<1>(seedsPos));

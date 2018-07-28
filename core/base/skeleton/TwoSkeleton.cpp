@@ -12,7 +12,7 @@ TwoSkeleton::~TwoSkeleton(){
 }
 
 int TwoSkeleton::buildCellNeighborsFromVertices(const SimplexId &vertexNumber, 
-  const SimplexId &cellNumber, const SimplexId *cellArray, 
+  const SimplexId &cellNumber, const LongSimplexId *cellArray, 
   vector<vector<SimplexId> > &cellNeighbors, 
   vector<vector<SimplexId> > *vertexStars) const{
 
@@ -123,7 +123,7 @@ int TwoSkeleton::buildCellNeighborsFromVertices(const SimplexId &vertexNumber,
 }
 
 int TwoSkeleton::buildEdgeTriangles(const SimplexId &vertexNumber, 
-  const SimplexId &cellNumber, const SimplexId *cellArray, 
+  const SimplexId &cellNumber, const LongSimplexId *cellArray, 
   vector<vector<SimplexId> > &edgeTriangleList, 
   vector<vector<SimplexId> > *vertexStarList,
   vector<pair<SimplexId, SimplexId> > *edgeList, 
@@ -300,7 +300,7 @@ int TwoSkeleton::buildEdgeTriangles(const SimplexId &vertexNumber,
 
 
 int TwoSkeleton::buildTriangleList(const SimplexId &vertexNumber, 
-  const SimplexId &cellNumber, const SimplexId *cellArray,
+  const SimplexId &cellNumber, const LongSimplexId *cellArray,
   vector<vector<SimplexId> > *triangleList,
   vector<vector<SimplexId> > *triangleStars,
   vector<vector<SimplexId> > *cellTriangleList) const{
@@ -649,7 +649,7 @@ int TwoSkeleton::buildTriangleList(const SimplexId &vertexNumber,
 }
 
 int TwoSkeleton::buildTriangleEdgeList(const SimplexId &vertexNumber, 
-  const SimplexId &cellNumber, const SimplexId *cellArray, 
+  const SimplexId &cellNumber, const LongSimplexId *cellArray, 
   vector<vector<SimplexId> > &triangleEdgeList, 
   vector<vector<SimplexId> > *vertexEdgeList, 
   vector<pair<SimplexId, SimplexId> > *edgeList, 
@@ -786,7 +786,7 @@ int TwoSkeleton::buildTriangleEdgeList(const SimplexId &vertexNumber,
 
 int TwoSkeleton::buildTriangleLinks(const vector<vector<SimplexId> > &triangleList,
   const vector<vector<SimplexId> > &triangleStars,
-  const SimplexId *cellArray,
+  const LongSimplexId *cellArray,
   vector<vector<SimplexId> > &triangleLinks) const{
 
 #ifndef TTK_ENABLE_KAMIKAZE

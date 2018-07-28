@@ -8,14 +8,18 @@ vtkStandardNewMacro(ttkScalarFieldCriticalPoints)
 ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints(){
 
   // init
-  PredefinedOffset = false;
+  ForceInputOffsetScalarField = false;
   VertexBoundary = true;
   VertexIds = true;
   VertexScalars = true;
 
   ScalarFieldId = 0;
   OffsetFieldId = -1;
-  OffsetField = "OutputOffsetScalarField";
+  OffsetField = ttk::OffsetScalarFieldName;
+
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints(){
@@ -66,22 +70,33 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   if(OffsetFieldId != -1){
     offsetField = input->GetPointData()->GetArray(OffsetFieldId);
     if(offsetField){
-      PredefinedOffset = true;
+      ForceInputOffsetScalarField = true;
       OffsetField = offsetField->GetName();
     }
   }
 
-  if(PredefinedOffset){
+  if(ForceInputOffsetScalarField){
     if(OffsetField.length()){
       
       offsetField = input->GetPointData()->GetArray(OffsetField.data());
       // not good... in the future, we want to use the pointer itself...
       sosOffsets_.resize(offsetField->GetNumberOfTuples());
-      for(vtkIdType i = 0; i < offsetField->GetNumberOfTuples(); i++){
-        vtkIdType offset = 0;
+      for(ttkIdType i = 0; i < offsetField->GetNumberOfTuples(); i++){
+        ttkIdType offset = 0;
         offset = offsetField->GetTuple1(i);
         sosOffsets_[i] = offset;
       }
+    }
+  }
+  else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+    offsetField = input->GetPointData()->GetArray(OffsetScalarFieldName);
+
+    // not good... in the future, we want to use the pointer itself...
+    sosOffsets_.resize(offsetField->GetNumberOfTuples());
+    for(ttkIdType i = 0; i < offsetField->GetNumberOfTuples(); i++){
+      ttkIdType offset = 0;
+      offset = offsetField->GetTuple1(i);
+      sosOffsets_[i] = offset;
     }
   }
   
@@ -133,7 +148,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   vtkSmartPointer<vtkPoints> pointSet = vtkSmartPointer<vtkPoints>::New();
   pointSet->SetNumberOfPoints(criticalPoints_.size());
   double p[3];
-  for(SimplexId i = 0; i < (SimplexId) criticalPoints_.size(); i++){
+  for(ttkIdType i = 0; i < (ttkIdType) criticalPoints_.size(); i++){
     input->GetPoint(criticalPoints_[i].first, p);
     pointSet->SetPoint(i, p);
     vertexTypes->SetTuple1(i, (float) criticalPoints_[i].second);
@@ -151,7 +166,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(SimplexId i = 0; i < (SimplexId) criticalPoints_.size(); i++){
+    for(ttkIdType i = 0; i < (ttkIdType) criticalPoints_.size(); i++){
       vertexBoundary->SetTuple1(i, 
         (char) triangulation->isVertexOnBoundary(       
           criticalPoints_[i].first));
@@ -164,14 +179,14 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
   
   if(VertexIds){
-    vtkSmartPointer<vtkIdTypeArray> vertexIds =
-      vtkSmartPointer<vtkIdTypeArray>::New();
+    vtkSmartPointer<ttkIdTypeArray> vertexIds =
+      vtkSmartPointer<ttkIdTypeArray>::New();
     vertexIds->SetNumberOfComponents(1);
     vertexIds->SetNumberOfTuples(criticalPoints_.size());
     vertexIds->SetName("VertexIdentifiers");
     
-    for(SimplexId i = 0; i < (SimplexId) criticalPoints_.size(); i++){
-      vertexIds->SetTuple1(i, (SimplexId) criticalPoints_[i].first);
+    for(ttkIdType i = 0; i < (ttkIdType) criticalPoints_.size(); i++){
+      vertexIds->SetTuple1(i, (ttkIdType) criticalPoints_[i].first);
     }
       
     output->GetPointData()->AddArray(vertexIds);
@@ -181,7 +196,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
   
   if(VertexScalars){
-    for(vtkIdType i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++){
+    for(ttkIdType i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++){
       
       vtkDataArray *scalarField = input->GetPointData()->GetArray(i);
       
@@ -196,7 +211,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
             scalarArray->SetNumberOfTuples(criticalPoints_.size());
             scalarArray->SetName(scalarField->GetName());
             double *value = new double[scalarField->GetNumberOfComponents()];
-            for(SimplexId j = 0; j < (SimplexId) criticalPoints_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) criticalPoints_.size(); j++){
               scalarField->GetTuple(
                 criticalPoints_[j].first, value);
               scalarArray->SetTuple(j, value);
@@ -215,7 +230,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
             scalarArray->SetNumberOfTuples(criticalPoints_.size());
             scalarArray->SetName(scalarField->GetName());
             double *value = new double[scalarField->GetNumberOfComponents()];
-            for(SimplexId j = 0; j < (SimplexId) criticalPoints_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) criticalPoints_.size(); j++){
               scalarField->GetTuple(
                 criticalPoints_[j].first, value);
               scalarArray->SetTuple(j, value);
@@ -234,7 +249,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
             scalarArray->SetNumberOfTuples(criticalPoints_.size());
             scalarArray->SetName(scalarField->GetName());
             double *value = new double[scalarField->GetNumberOfComponents()];
-            for(SimplexId j = 0; j < (SimplexId) criticalPoints_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) criticalPoints_.size(); j++){
               scalarField->GetTuple(
                 criticalPoints_[j].first, value);
               scalarArray->SetTuple(j, value);
@@ -253,7 +268,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
             scalarArray->SetNumberOfTuples(criticalPoints_.size());
             scalarArray->SetName(scalarField->GetName());
             double *value = new double[scalarField->GetNumberOfComponents()];
-            for(SimplexId j = 0; j < (SimplexId) criticalPoints_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) criticalPoints_.size(); j++){
               scalarField->GetTuple(
                 criticalPoints_[j].first, value);
               scalarArray->SetTuple(j, value);
@@ -272,7 +287,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
             scalarArray->SetNumberOfTuples(criticalPoints_.size());
             scalarArray->SetName(scalarField->GetName());
             double *value = new double[scalarField->GetNumberOfComponents()];
-            for(SimplexId j = 0; j < (SimplexId) criticalPoints_.size(); j++){
+            for(ttkIdType j = 0; j < (ttkIdType) criticalPoints_.size(); j++){
               scalarField->GetTuple(
                 criticalPoints_[j].first, value);
               scalarArray->SetTuple(j, value);
@@ -294,7 +309,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     }
   }
   else{
-    for(vtkIdType i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++){
+    for(ttkIdType i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++){
       output->GetPointData()->RemoveArray(
         input->GetPointData()->GetArray(i)->GetName());
     }

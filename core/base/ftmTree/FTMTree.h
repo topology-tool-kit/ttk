@@ -45,7 +45,7 @@ namespace ftm
 
       // Initialize structures then build tree
       // Need triangulation, scalars and all params set before call
-      template <typename scalarType>
+      template <typename scalarType,typename idType>
       void build(void);
 
    };

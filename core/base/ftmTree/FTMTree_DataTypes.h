@@ -32,12 +32,6 @@ namespace ftm
    using idSuperArc = long unsigned int;
    /// \brief Node index in vect_nodes_
    using idNode = unsigned int;
-   /// \brief Vertex index in scalars_
-   using idVertex = SimplexId;
-   /// \brief Edge index in vect_edgeList_
-   using idEdge = SimplexId;
-   /// \brief Cell index in vect_cellList_
-   using idCell = SimplexId;
 
    /// \brief type used to recover Node/Arc in vert2tree SIGNED ONLY
    // Warning, in long long int the max super arc is -1, might not be able to deal with
@@ -64,8 +58,8 @@ namespace ftm
 
    // For tasks:
    // Set using scalar value comparison
-   using VertCompFN     = std::function<bool(idVertex, idVertex)>;
-   using SetPropagation = std::set<idVertex, VertCompFN>;
+   using VertCompFN     = std::function<bool(SimplexId, SimplexId)>;
+   using SetPropagation = std::set<SimplexId, VertCompFN>;
    using SetCompFN      = std::function<bool(const SetPropagation &, const SetPropagation &)>;
 
    // Special values for types
@@ -74,9 +68,9 @@ namespace ftm
    // QUESTION impact on performance using max (0 would be faster alloacted)
    static const idSuperArc     nullSuperArc  = std::numeric_limits<idSuperArc>::max();
    static const idNode         nullNodes     = std::numeric_limits<idNode>::max();
-   static const idVertex       nullVertex    = std::numeric_limits<idVertex>::max();
-   static const idEdge         nullEdge      = std::numeric_limits<idEdge>::max();
-   static const idCell         nullCell      = std::numeric_limits<idCell>::max();
+   static const SimplexId       nullVertex    = std::numeric_limits<SimplexId>::max();
+   static const SimplexId         nullEdge      = std::numeric_limits<SimplexId>::max();
+   static const SimplexId         nullCell      = std::numeric_limits<SimplexId>::max();
    static const idCorresp      nullCorresp   = std::numeric_limits<idCorresp>::max();
    static const idSegment      nullSegment   = std::numeric_limits<idSegment>::max();
    static const ufDataType     nullUfData    = std::numeric_limits<ufDataType>::max();

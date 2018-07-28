@@ -96,11 +96,12 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
       </StringVectorProperty>
 
       <IntVectorProperty
-         name="UseInputOffsetScalarField"
-         command="SetUseInputOffsetScalarField"
+         name="ForceInputOffsetScalarField"
+         command="SetForceInputOffsetScalarField"
          label="Use Input Offset Field"
          number_of_elements="1"
-         default_values="1">
+         panel_visibility="advanced"
+         default_values="0">
         <BooleanDomain name="bool"/>
          <Documentation>
           Use an input offset field (to disambiguate flat plateaus).
@@ -114,11 +115,12 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
         default_values="OutputOffsetScalarField"
         number_of_elements="1"
         animateable="0"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
 					default_values="0"
-					data_type="VTK_ID_TYPE">
+                    >
           <RequiredProperties>
             <Property name="Domain" function="Input" />
           </RequiredProperties>
@@ -138,7 +140,7 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
         >
         <ArrayListDomain
           name="array_list"
-					data_type="VTK_ID_TYPE">
+          >
           <RequiredProperties>
             <Property name="Constraints" function="Input" />
           </RequiredProperties>
@@ -179,7 +181,7 @@ offset field for flat plateau disambiguation).
 				command="SetOutputOffsetScalarFieldName"
 				label="Output Offset Scalar Field"
 				number_of_elements="1"
-				default_values="OutputOffsetScalarField">
+                panel_visibility="advanced">
         <Documentation>
           Select the name of the output offset field.
         </Documentation>
@@ -231,7 +233,7 @@ offset field for flat plateau disambiguation).
 			<PropertyGroup panel_widget="Line" label="Input options">
 				<Property name="ScalarField"/>
 				<Property name="VertexIdentifierScalarField"/>
-				<Property name="UseInputOffsetScalarField"/>
+				<Property name="ForceInputOffsetScalarField"/>
 				<Property name="InputOffsetScalarFieldName"/>
 				<Property name="VertexIdentifierScalarField"/>
 				<Property name="ConsiderIdentifierAsBlackList"/>

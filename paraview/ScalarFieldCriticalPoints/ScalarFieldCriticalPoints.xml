@@ -63,9 +63,10 @@ American Mathematical Monthly, 1970.
      
       <IntVectorProperty name="With predefined offset"
         label="Use Input Offset Field"
-        command="SetPredefinedOffset"
+        command="SetForceInputOffsetScalarField"
         number_of_elements="1"
-        default_values="1">
+        panel_visibility="advanced"
+        default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
           Check this box if one of the input scalar fields needs to be 
@@ -79,11 +80,10 @@ American Mathematical Monthly, 1970.
         number_of_elements="1"
         animateable="0"
         label="Input Offset field"
-        default_values="OutputOffsetScalarField"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
-          data_type="VTK_ID_TYPE"
           default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />

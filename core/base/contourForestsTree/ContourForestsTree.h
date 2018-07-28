@@ -105,7 +105,7 @@ namespace ttk
       // {
 
       /// \brief Combine tree with Natarajan's algorithm
-      int combine(const idVertex &seed0, const idVertex &seed1);
+      int combine(const SimplexId &seed0, const SimplexId &seed1);
 
      private:
 

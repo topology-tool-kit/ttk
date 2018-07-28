@@ -61,11 +61,11 @@
             </StringVectorProperty>
 
             <IntVectorProperty
-                name="UseInputOffsetScalarField"
-                command="SetUseInputOffsetScalarField"
+                name="ForceInputOffsetScalarField"
+                command="SetForceInputOffsetScalarField"
                 label="Use Input Offset Scalar Field"
                 number_of_elements="1"
-                default_values="1">
+                default_values="0">
                 <BooleanDomain name="bool"/>
                 <Documentation>
                     Use an input offset field (to disambiguate flat plateaus).
@@ -82,7 +82,7 @@
                 <ArrayListDomain
                     name="array_list"
                     default_values="0"
-                    data_type="VTK_ID_TYPE">
+                    >
                     <RequiredProperties>
                         <Property name="Input" function="Input" />
                     </RequiredProperties>
@@ -184,7 +184,7 @@ between nodes, ...)
 
             <PropertyGroup panel_widget="Line" label="Input options">
                 <Property name="Scalar Field"/>
-                <Property name="UseInputOffsetScalarField"/>
+                <Property name="ForceInputOffsetScalarField"/>
                 <Property name="InputOffsetScalarFieldName"/>
             </PropertyGroup>
 

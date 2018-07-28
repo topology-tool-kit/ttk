@@ -96,8 +96,8 @@ int ZeroSkeleton::buildVertexEdges(const SimplexId &vertexNumber,
 
 
 int ZeroSkeleton::buildVertexLink(const SimplexId &vertexId, const SimplexId &cellNumber,
-  const SimplexId *cellArray,
-  vector<SimplexId> &vertexLink) const{
+  const LongSimplexId *cellArray,
+  vector<LongSimplexId> &vertexLink) const{
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!cellArray)
@@ -189,8 +189,8 @@ int ZeroSkeleton::buildVertexLink(const SimplexId &vertexId, const SimplexId &ce
 }
 
 int ZeroSkeleton::buildVertexLinks(const SimplexId &vertexNumber, 
-  const SimplexId &cellNumber, const SimplexId *cellArray,
-  vector<vector<SimplexId> > &vertexLinks,
+  const SimplexId &cellNumber, const LongSimplexId *cellArray,
+  vector<vector<LongSimplexId> > &vertexLinks,
   vector<vector<SimplexId> > *vertexStars) const{
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -483,7 +483,7 @@ int ZeroSkeleton::buildVertexLinks(const vector<vector<SimplexId> > &vertexStars
 
 int ZeroSkeleton::buildVertexNeighbors(const SimplexId &vertexNumber, 
   const SimplexId &cellNumber, 
-  const SimplexId *cellArray,
+  const LongSimplexId *cellArray,
   vector<vector<SimplexId> > &oneSkeleton,
   vector<pair<SimplexId, SimplexId> > *edgeList) const{
 
@@ -541,7 +541,7 @@ int ZeroSkeleton::buildVertexNeighbors(const SimplexId &vertexNumber,
 }
 
 int ZeroSkeleton::buildVertexStars(const SimplexId &vertexNumber, 
-  const SimplexId &cellNumber, const SimplexId *cellArray,
+  const SimplexId &cellNumber, const LongSimplexId *cellArray,
   vector<vector<SimplexId> > &vertexStars) const{
 
 #ifndef TTK_ENABLE_KAMIKAZE

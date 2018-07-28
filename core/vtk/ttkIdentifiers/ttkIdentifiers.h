@@ -28,13 +28,14 @@
 #include                  <vtkDataSetAlgorithm.h>
 #include                  <vtkFiltersCoreModule.h>
 #include                  <vtkInformation.h>
+#include                  <vtkIntArray.h>
 #include                  <vtkIdTypeArray.h>
 #include                  <vtkObjectFactory.h>
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
 
 // ttk code includes
-#include                  <Wrapper.h>
+#include                  <ttkWrapper.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a 
 // data-set on the output - to adapt.

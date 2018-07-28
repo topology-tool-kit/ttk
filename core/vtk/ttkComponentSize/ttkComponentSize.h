@@ -41,7 +41,7 @@
 #include                  <vtkUnstructuredGrid.h>
 
 // ttk code includes
-#include                  <Wrapper.h>
+#include                  <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkComponentSize

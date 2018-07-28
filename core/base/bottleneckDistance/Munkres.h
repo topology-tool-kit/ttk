@@ -6,7 +6,7 @@
 #define _MUNKRES_H
 
 #ifndef matchingTuple
-#define matchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, dataType>
+#define matchingTuple std::tuple<int, int, dataType>
 #endif
 
 #include <cmath>

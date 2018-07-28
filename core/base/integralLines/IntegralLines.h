@@ -50,10 +50,10 @@ namespace ttk{
           return fabs(scalars[b]-scalars[a])/getDistance<dataType>(a,b);
         }
 
-      template<typename dataType>
+      template<typename dataType, typename idType>
         int execute() const;
 
-      template<typename dataType, class Compare>
+      template<typename dataType, typename idType, class Compare>
         int execute(Compare cmp) const;
 
       inline int setVertexNumber(const SimplexId &vertexNumber){
@@ -112,9 +112,9 @@ namespace ttk{
   };
 }
 
-template<typename dataType>
+template<typename dataType, typename idType>
 int ttk::IntegralLines::execute() const{
-  SimplexId* offsets=static_cast<SimplexId*>(inputOffsets_);
+  idType* offsets=static_cast<idType*>(inputOffsets_);
   SimplexId* identifiers=static_cast<SimplexId*>(vertexIdentifierScalarField_);
   dataType* scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<std::vector<SimplexId>>* trajectories=outputTrajectories_;
@@ -160,15 +160,14 @@ int ttk::IntegralLines::execute() const{
       }
 
       if(vnext==-1 and !isLocalMax and !isLocalMin){
-        SimplexId onext=-1;
+        idType onext=-1;
         for(SimplexId k=0; k<neighborNumber; ++k){
           SimplexId n;
           triangulation_->getVertexNeighbor(v,k,n);
 
           if(scalars[n]==scalars[v]){
-            const SimplexId o=offsets[n];
-            if((direction_==static_cast<int>(Direction::Forward)) xor 
-(o<offsets[v])){
+            const idType o=offsets[n];
+            if((direction_==static_cast<int>(Direction::Forward)) xor (o<offsets[v])){
               if(o>onext){
                 vnext=n;
                 onext=o;
@@ -199,9 +198,9 @@ int ttk::IntegralLines::execute() const{
   return 0;
 }
 
-template<typename dataType, class Compare>
+template<typename dataType, typename idType, class Compare>
 int ttk::IntegralLines::execute(Compare cmp) const{
-  SimplexId* offsets=static_cast<SimplexId*>(inputOffsets_);
+  idType* offsets=static_cast<idType*>(inputOffsets_);
   SimplexId* identifiers=static_cast<SimplexId*>(vertexIdentifierScalarField_);
   dataType* scalars=static_cast<dataType*>(inputScalarField_);
   std::vector<std::vector<SimplexId>>* trajectories=outputTrajectories_;
