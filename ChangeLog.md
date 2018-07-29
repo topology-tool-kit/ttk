@@ -5,7 +5,8 @@
 ### 0.9.6
 - Fixed major performance bug with discrete gradient (thanks to Attila Gyulassy)
 - TDA aware compression (with ZLIB and ZFP support)
-- New flexible addressing scheme (up to long long int) for extreme size datasets
+- New addressing scheme (allowing up to 64 bit ids), for extreme size datasets
+- Automatic offset selection
 - Various bug fixes
 - Improved examples
 - Basic windows continuous integration support
