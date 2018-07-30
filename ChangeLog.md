@@ -11,6 +11,7 @@
 - Various bug fixes
 - Improved examples
 - Basic windows continuous integration support
+- 1000th commit!
 
 ### 0.9.5
 - Updates for ParaView-5.5.0
