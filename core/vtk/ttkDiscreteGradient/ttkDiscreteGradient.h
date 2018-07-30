@@ -132,7 +132,7 @@ class ttkDiscreteGradient
     ttk::Triangulation* triangulation_;
     ttk::dcg::DiscreteGradient discreteGradient_;
     vtkDataArray* inputScalars_;
-    ttkIdTypeArray* offsets_;
+    ttkSimplexIdTypeArray* offsets_;
     vtkDataArray* inputOffsets_;
     bool hasUpdatedMesh_;
 };

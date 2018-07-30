@@ -163,13 +163,13 @@ int ttkPersistenceCurve::getOffsets(vtkDataSet* input){
     }
 
     if(!offsets_){
-      const ttkIdType numberOfVertices=input->GetNumberOfPoints();
+      const SimplexId numberOfVertices=input->GetNumberOfPoints();
 
-      offsets_=ttkIdTypeArray::New();
+      offsets_=ttkSimplexIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName(ttk::OffsetScalarFieldName);
-      for(ttkIdType i=0; i<numberOfVertices; ++i)
+      for(SimplexId i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
     }
 
@@ -228,10 +228,10 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
   switch(inputScalars_->GetDataType()){
 #ifndef _MSC_VER
 	  vtkTemplateMacro(({
-		  vector<pair<VTK_TT, ttkIdType>> JTPlot;
-	  vector<pair<VTK_TT, ttkIdType>> STPlot;
-	  vector<pair<VTK_TT, ttkIdType>> MSCPlot;
-	  vector<pair<VTK_TT, ttkIdType>> CTPlot;
+		  vector<pair<VTK_TT, SimplexId>> JTPlot;
+	  vector<pair<VTK_TT, SimplexId>> STPlot;
+	  vector<pair<VTK_TT, SimplexId>> MSCPlot;
+	  vector<pair<VTK_TT, SimplexId>> CTPlot;
 
 	  persistenceCurve_.setOutputJTPlot(&JTPlot);
 	  persistenceCurve_.setOutputMSCPlot(&MSCPlot);
@@ -290,10 +290,10 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 #else
 #ifndef TTK_ENABLE_KAMIKAZE
 	  vtkTemplateMacro({
-		  vector<pair<VTK_TT TTK_COMMA ttkIdType>> JTPlot;
-	  vector<pair<VTK_TT TTK_COMMA ttkIdType>> STPlot;
-	  vector<pair<VTK_TT TTK_COMMA ttkIdType>> MSCPlot;
-	  vector<pair<VTK_TT TTK_COMMA ttkIdType>> CTPlot;
+		  vector<pair<VTK_TT TTK_COMMA SimplexId>> JTPlot;
+	  vector<pair<VTK_TT TTK_COMMA SimplexId>> STPlot;
+	  vector<pair<VTK_TT TTK_COMMA SimplexId>> MSCPlot;
+	  vector<pair<VTK_TT TTK_COMMA SimplexId>> CTPlot;
 
 	  persistenceCurve_.setOutputJTPlot(&JTPlot);
 	  persistenceCurve_.setOutputMSCPlot(&MSCPlot);
@@ -341,10 +341,10 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
 	  });
 #else
 	  vtkTemplateMacro({
-		  vector<pair<VTK_TT TTK_COMMA ttkIdType>> JTPlot;
-	  vector<pair<VTK_TT TTK_COMMA ttkIdType>> STPlot;
-	  vector<pair<VTK_TT TTK_COMMA ttkIdType>> MSCPlot;
-	  vector<pair<VTK_TT TTK_COMMA ttkIdType>> CTPlot;
+		  vector<pair<VTK_TT TTK_COMMA SimplexId>> JTPlot;
+	  vector<pair<VTK_TT TTK_COMMA SimplexId>> STPlot;
+	  vector<pair<VTK_TT TTK_COMMA SimplexId>> MSCPlot;
+	  vector<pair<VTK_TT TTK_COMMA SimplexId>> CTPlot;
 
 	  persistenceCurve_.setOutputJTPlot(&JTPlot);
 	  persistenceCurve_.setOutputMSCPlot(&MSCPlot);

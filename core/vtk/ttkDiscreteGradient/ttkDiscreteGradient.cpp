@@ -142,13 +142,13 @@ int ttkDiscreteGradient::getOffsets(vtkDataSet* input){
     }
 
     if(!offsets_){
-      const ttkIdType numberOfVertices=input->GetNumberOfPoints();
+      const SimplexId numberOfVertices=input->GetNumberOfPoints();
 
-      offsets_=ttkIdTypeArray::New();
+      offsets_=ttkSimplexIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName(ttk::OffsetScalarFieldName);
-      for(ttkIdType i=0; i<numberOfVertices; ++i)
+      for(SimplexId i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
     }
 
@@ -205,20 +205,20 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   // critical points
-  ttkIdType criticalPoints_numberOfPoints{};
+  SimplexId criticalPoints_numberOfPoints{};
   vector<float> criticalPoints_points;
   vector<char> criticalPoints_points_cellDimensions;
-  vector<ttkIdType> criticalPoints_points_cellIds;
+  vector<SimplexId> criticalPoints_points_cellIds;
   vector<char> criticalPoints_points_isOnBoundary;
-  vector<ttkIdType> criticalPoints_points_PLVertexIdentifiers;
-  vector<ttkIdType> criticalPoints_points_manifoldSize;
+  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
+  vector<SimplexId> criticalPoints_points_manifoldSize;
 
   // gradient pairs
-  ttkIdType gradientGlyphs_numberOfPoints{};
+  SimplexId gradientGlyphs_numberOfPoints{};
   vector<float> gradientGlyphs_points;
   vector<char> gradientGlyphs_points_pairOrigins;
-  ttkIdType gradientGlyphs_numberOfCells{};
-  vector<ttkIdType> gradientGlyphs_cells;
+  SimplexId gradientGlyphs_numberOfCells{};
+  vector<SimplexId> gradientGlyphs_cells;
   vector<char> gradientGlyphs_cells_pairTypes;
 
   // baseCode processing
@@ -325,10 +325,10 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             cellDimensions->SetNumberOfComponents(1);
             cellDimensions->SetName("CellDimension");
 
-            vtkSmartPointer<ttkIdTypeArray> cellIds=vtkSmartPointer<ttkIdTypeArray>::New();
+            vtkSmartPointer<ttkSimplexIdTypeArray> cellIds=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
             if(!cellIds){
-              cerr << "[ttkDiscreteGradient] Error : ttkIdTypeArray allocation problem." << endl;
+              cerr << "[ttkDiscreteGradient] Error : ttkSimplexIdTypeArray allocation problem." << endl;
               return -1;
             }
 #endif
@@ -355,11 +355,11 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             isOnBoundary->SetNumberOfComponents(1);
             isOnBoundary->SetName("IsOnBoundary");
 
-            vtkSmartPointer<ttkIdTypeArray> PLVertexIdentifiers=
-              vtkSmartPointer<ttkIdTypeArray>::New();
+            vtkSmartPointer<ttkSimplexIdTypeArray> PLVertexIdentifiers=
+              vtkSmartPointer<ttkSimplexIdTypeArray>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
             if(!PLVertexIdentifiers){
-              cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation "
+              cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
                 << "problem." << endl;
               return -1;
             }
@@ -367,7 +367,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             PLVertexIdentifiers->SetNumberOfComponents(1);
             PLVertexIdentifiers->SetName("VertexIdentifier");
 
-            for(ttkIdType i=0; i<criticalPoints_numberOfPoints; ++i){
+            for(SimplexId i=0; i<criticalPoints_numberOfPoints; ++i){
               points->InsertNextPoint(criticalPoints_points[3*i],
                   criticalPoints_points[3*i+1],
                   criticalPoints_points[3*i+2]);
@@ -471,9 +471,9 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             cellDimensions->SetNumberOfComponents(1);
             cellDimensions->SetName("CellDimension");
 
-            vtkSmartPointer<ttkIdTypeArray> cellIds=vtkSmartPointer<ttkIdTypeArray>::New();
+            vtkSmartPointer<ttkSimplexIdTypeArray> cellIds=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
             if(!cellIds){
-              cerr << "[ttkDiscreteGradient] Error : ttkIdTypeArray allocation problem." << endl;
+              cerr << "[ttkDiscreteGradient] Error : ttkSimplexIdTypeArray allocation problem." << endl;
               return -1;
             }
             cellIds->SetNumberOfComponents(1);
@@ -495,17 +495,17 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             isOnBoundary->SetNumberOfComponents(1);
             isOnBoundary->SetName("IsOnBoundary");
 
-            vtkSmartPointer<ttkIdTypeArray> PLVertexIdentifiers=
-              vtkSmartPointer<ttkIdTypeArray>::New();
+            vtkSmartPointer<ttkSimplexIdTypeArray> PLVertexIdentifiers=
+              vtkSmartPointer<ttkSimplexIdTypeArray>::New();
             if(!PLVertexIdentifiers){
-              cerr << "[ttkMorseSmaleComplex] Error : ttkIdTypeArray allocation "
+              cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
                 << "problem." << endl;
               return -1;
             }
             PLVertexIdentifiers->SetNumberOfComponents(1);
             PLVertexIdentifiers->SetName("VertexIdentifier");
 
-            for(ttkIdType i=0; i<criticalPoints_numberOfPoints; ++i){
+            for(SimplexId i=0; i<criticalPoints_numberOfPoints; ++i){
               points->InsertNextPoint(criticalPoints_points[3*i],
                   criticalPoints_points[3*i+1],
                   criticalPoints_points[3*i+2]);
@@ -582,7 +582,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             cellDimensions->SetNumberOfComponents(1);
             cellDimensions->SetName("CellDimension");
 
-            vtkSmartPointer<ttkIdTypeArray> cellIds=vtkSmartPointer<ttkIdTypeArray>::New();
+            vtkSmartPointer<ttkSimplexIdTypeArray> cellIds=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
             cellIds->SetNumberOfComponents(1);
             cellIds->SetName("CellId");
 
@@ -594,12 +594,12 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             isOnBoundary->SetNumberOfComponents(1);
             isOnBoundary->SetName("IsOnBoundary");
 
-            vtkSmartPointer<ttkIdTypeArray> PLVertexIdentifiers=
-              vtkSmartPointer<ttkIdTypeArray>::New();
+            vtkSmartPointer<ttkSimplexIdTypeArray> PLVertexIdentifiers=
+              vtkSmartPointer<ttkSimplexIdTypeArray>::New();
             PLVertexIdentifiers->SetNumberOfComponents(1);
             PLVertexIdentifiers->SetName("VertexIdentifier");
 
-            for(ttkIdType i=0; i<criticalPoints_numberOfPoints; ++i){
+            for(SimplexId i=0; i<criticalPoints_numberOfPoints; ++i){
               points->InsertNextPoint(criticalPoints_points[3*i],
                   criticalPoints_points[3*i+1],
                   criticalPoints_points[3*i+2]);
@@ -658,7 +658,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     pairTypes->SetNumberOfComponents(1);
     pairTypes->SetName("PairType");
 
-    for(ttkIdType i=0; i<gradientGlyphs_numberOfPoints; ++i){
+    for(SimplexId i=0; i<gradientGlyphs_numberOfPoints; ++i){
       points->InsertNextPoint(gradientGlyphs_points[3*i],
           gradientGlyphs_points[3*i+1],
           gradientGlyphs_points[3*i+2]);
@@ -668,8 +668,8 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     outputGradientGlyphs->SetPoints(points);
 
     outputGradientGlyphs->Allocate(gradientGlyphs_numberOfCells);
-    ttkIdType ptr{};
-    for(ttkIdType i=0; i<gradientGlyphs_numberOfCells; ++i){
+    SimplexId ptr{};
+    for(SimplexId i=0; i<gradientGlyphs_numberOfCells; ++i){
       vtkIdType line[2];
       line[0]=gradientGlyphs_cells[ptr+1];
       line[1]=gradientGlyphs_cells[ptr+2];

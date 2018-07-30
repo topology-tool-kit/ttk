@@ -117,14 +117,14 @@ int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
     output->GetCellData()->AddArray(outputScalarField_);
   }
   
-  vector<pair<ttkIdType, ttkIdType > > identifierMap;
+  vector<pair<SimplexId, SimplexId > > identifierMap;
   
-  for(ttkIdType i = 0; i < inputScalarField->GetNumberOfTuples(); i++){
+  for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++){
     double inputIdentifier = -1;
     inputScalarField->GetTuple(i, &inputIdentifier);
     
     bool isIn = false;
-    for(ttkIdType   j = 0; j < (ttkIdType) identifierMap.size(); j++){
+    for(SimplexId   j = 0; j < (SimplexId) identifierMap.size(); j++){
       if(identifierMap[j].first == inputIdentifier){
         isIn = true;
         break;
@@ -132,23 +132,23 @@ int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
     }
     
     if(!isIn){
-      identifierMap.push_back(pair<ttkIdType   , ttkIdType >(inputIdentifier, -INT_MAX));
+      identifierMap.push_back(pair<SimplexId   , SimplexId >(inputIdentifier, -INT_MAX));
     }
   }
   
   // now let's shuffle things around
-  ttkIdType freeIdentifiers = identifierMap.size();
-  ttkIdType randomIdentifier = -1;
+  SimplexId freeIdentifiers = identifierMap.size();
+  SimplexId randomIdentifier = -1;
   
-  for(ttkIdType i = 0; i < (ttkIdType  ) identifierMap.size(); i++){
+  for(SimplexId i = 0; i < (SimplexId  ) identifierMap.size(); i++){
     
     randomIdentifier = drand48()*(freeIdentifiers);
     
-    ttkIdType   freeCounter = -1;
-    for(ttkIdType   j = 0; j < (ttkIdType  ) identifierMap.size(); j++){
+    SimplexId   freeCounter = -1;
+    for(SimplexId   j = 0; j < (SimplexId  ) identifierMap.size(); j++){
       
       bool isFound = false;
-      for(ttkIdType k = 0; k < (ttkIdType  ) identifierMap.size(); k++){
+      for(SimplexId k = 0; k < (SimplexId  ) identifierMap.size(); k++){
         
         if(identifierMap[k].second == identifierMap[j].first){
           isFound = true;
@@ -170,13 +170,13 @@ int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
   }
   
   // now populate the output scalar field.
-  for(ttkIdType i = 0; i < inputScalarField->GetNumberOfTuples(); i++){
+  for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++){
     double inputIdentifier = -1;
     double outputIdentifier = -1;
     
     inputScalarField->GetTuple(i, &inputIdentifier);
     
-    for(ttkIdType   j = 0; j < (ttkIdType  ) identifierMap.size(); j++){
+    for(SimplexId   j = 0; j < (SimplexId  ) identifierMap.size(); j++){
       if(inputIdentifier == identifierMap[j].first){
         outputIdentifier = identifierMap[j].second;
         break;

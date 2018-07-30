@@ -96,7 +96,7 @@ class ttkIntegralLines
     int getScalars(vtkDataSet* input);
     int getOffsets(vtkDataSet* input);
     int getIdentifiers(vtkPointSet* input);
-    int getTrajectories(vtkDataSet* input, std::vector<std::vector<ttkIdType>>& trajectories, vtkUnstructuredGrid* output);
+    int getTrajectories(vtkDataSet* input, std::vector<std::vector<ttk::SimplexId>>& trajectories, vtkUnstructuredGrid* output);
 
   protected:
 

@@ -19,11 +19,9 @@
 #include                  <ttkTriangulation.h>
 
 #ifdef TTK_USE_64BIT_IDS
-using ttkIdType = vtkIdType;
-using ttkIdTypeArray = vtkIdTypeArray;
+using ttkSimplexIdTypeArray = vtkIdTypeArray;
 #else
-using ttkIdType = int;
-using ttkIdTypeArray = vtkIntArray;
+using ttkSimplexIdTypeArray = vtkIntArray;
 #endif
 
 #define TTK_COMMA ,
