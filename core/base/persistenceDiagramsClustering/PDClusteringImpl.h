@@ -766,9 +766,11 @@ void PDClustering<dataType>::acceleratedUpdateClusters(){
 				idx = rand() % k_;
 				if(inv_clustering_[idx]<k_ && inv_clustering_[idx]>=0  && clustering_[inv_clustering_[idx]].size()>1){
 					idx_acceptable = true;
+					int cluster_removal = inv_clustering_[idx]
+					// Removing the index to remove
+					clustering_[cluster_removal].erase(std::remove(clustering_[cluster_removal].begin(), clustering_[cluster_removal].end(), idx), clustering_[cluster_removal].end());
 				}
-				// Removing the index to remove
-				clustering_[inv_clustering_[idx]].erase(std::remove(clustering_[inv_clustering_[idx]].begin(), clustering_[inv_clustering_[idx]].end(), idx), clustering_[inv_clustering_[idx]].end());
+				
 			}
 			
 			clustering_[c].push_back(idx);
