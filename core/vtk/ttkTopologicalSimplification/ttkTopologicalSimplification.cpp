@@ -304,7 +304,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   topologicalSimplification_.setOutputOffsetScalarFieldPointer(
     outputOffsets->GetVoidPointer(0));
 
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(identifiers_->GetDataType() != inputOffsets_->GetDataType()){
     cerr << "[ttkTopologicalSimplification] Error : type of identifiers and offsets are different." << endl;
     return -11;
