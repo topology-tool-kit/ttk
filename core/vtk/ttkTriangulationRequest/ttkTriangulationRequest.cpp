@@ -311,6 +311,7 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Vertex:
             triangulation->preprocessVertexLinks();
             if(dimensionality==2){
+              triangulation->preprocessEdges();
               const SimplexId linkNumber=triangulation->getVertexLinkNumber(SimplexIdentifier);
               for(SimplexId i=0; i<linkNumber; ++i){
                 SimplexId linkId;
