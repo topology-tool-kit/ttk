@@ -18,6 +18,15 @@
 #include                  <Wrapper.h>
 #include                  <ttkTriangulation.h>
 
+
+#ifndef _MSC_VER 
+#define ttkTemplateMacro(s) vtkTemplateMacro((s));
+#define ttkTemplate2Macro(s) vtkTemplate2Macro((s));
+#else
+#define ttkTemplateMacro(s) vtkTemplateMacro(s);
+#define ttkTemplate2Macro(s) vtkTemplate2Macro(s);
+#endif
+
 #ifdef TTK_USE_64BIT_IDS
 using ttkSimplexIdTypeArray = vtkIdTypeArray;
 #else

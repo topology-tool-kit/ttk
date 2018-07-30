@@ -159,19 +159,11 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
 int ttkPersistenceDiagram::deleteDiagram(){
   if(CTDiagram_ and inputScalars_){
     switch(inputScalars_->GetDataType()){
-#ifndef _MSC_VER
-		vtkTemplateMacro(({
-			using tuple_t = tuple<SimplexId,ftm::NodeType,SimplexId,ftm::NodeType,VTK_TT,SimplexId>;
-		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
-		delete CTDiagram;
-		}));
-#else
-		vtkTemplateMacro({
-			using tuple_t = tuple<SimplexId TTK_COMMA ftm::NodeType TTK_COMMA SimplexId TTK_COMMA ftm::NodeType TTK_COMMA VTK_TT TTK_COMMA SimplexId>;
-		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
-		delete CTDiagram;
-		});
-#endif
+      ttkTemplateMacro({
+          using tuple_t = tuple<SimplexId TTK_COMMA ftm::NodeType TTK_COMMA SimplexId TTK_COMMA ftm::NodeType TTK_COMMA VTK_TT TTK_COMMA SimplexId>;
+          vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
+          delete CTDiagram;
+          });
     }
   }
   return 0;

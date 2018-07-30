@@ -307,11 +307,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
       ftmTree_[cc].tree.setNormalizeIds(GetWithNormalize());
 
       switch (inputScalars_[cc]->GetDataType()) {
-#ifndef _MSC_VER
-        vtkTemplateMacro(({ftmTree_[cc].tree.build<VTK_TT,SimplexId>();}));
-#else
-        vtkTemplateMacro({ftmTree_[cc].tree.build<VTK_TT TTK_COMMA SimplexId>();});
-#endif
+        ttkTemplateMacro(ftmTree_[cc].tree.build<VTK_TT TTK_COMMA SimplexId>());
       }
 
       ftmTree_[cc].offset = acc_nbNodes;

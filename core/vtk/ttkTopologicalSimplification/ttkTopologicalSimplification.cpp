@@ -312,21 +312,12 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   switch(inputScalars_->GetDataType()){
-#ifndef _MSC_VER
-    vtkTemplateMacro(({
-          if(inputOffsets_->GetDataType()==VTK_INT)
-          ret=topologicalSimplification_.execute<VTK_TT,int>();
-          if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-          ret=topologicalSimplification_.execute<VTK_TT,vtkIdType>();
-          }));
-#else
-    vtkTemplateMacro({
+    ttkTemplateMacro({
         if(inputOffsets_->GetDataType()==VTK_INT)
         ret=topologicalSimplification_.execute<VTK_TT TTK_COMMA int>();
         if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
         ret=topologicalSimplification_.execute<VTK_TT TTK_COMMA vtkIdType>();
         });
-#endif
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
