@@ -6,8 +6,8 @@ int ttkBottleneckDistance::doBenchmark()
 {
   using dataType = double;
 
-  auto CTDiagram1 = new std::vector<diagramTuple>();
-  auto CTDiagram2 = new std::vector<diagramTuple>();
+  std::vector<diagramTuple> CTDiagram1;
+  std::vector<diagramTuple> CTDiagram2;
 
   int benchmarkSize = BenchmarkSize;
   int status = 0;
@@ -22,8 +22,8 @@ int ttkBottleneckDistance::doBenchmark()
   bottleneckDistance_.setPZ(PZ);
   bottleneckDistance_.setPE(PE);
   bottleneckDistance_.setPS(PS);
-  bottleneckDistance_.setCTDiagram1(CTDiagram1);
-  bottleneckDistance_.setCTDiagram2(CTDiagram2);
+  bottleneckDistance_.setCTDiagram1(&CTDiagram1);
+  bottleneckDistance_.setCTDiagram2(&CTDiagram2);
 
   std::string wassersteinMetric = WassersteinMetric;
   bottleneckDistance_.setWasserstein(wassersteinMetric);
@@ -95,9 +95,8 @@ int ttkBottleneckDistance::doIt(
 //  switch (dataType1) {
 //    vtkTemplateMacro(({
   // TODO template my methods
-  auto CTDiagram1 = new std::vector<diagramTuple>();
-
-  auto CTDiagram2 = new std::vector<diagramTuple>();
+  std::vector<diagramTuple> CTDiagram1;
+  std::vector<diagramTuple> CTDiagram2;
 
   status = getPersistenceDiagram<dataType>(
       CTDiagram1, CTPersistenceDiagram1_, Spacing, 0);
@@ -107,8 +106,8 @@ int ttkBottleneckDistance::doIt(
       CTDiagram2, CTPersistenceDiagram2_, Spacing, 1);
   if (status < 0) {return -2;}
 
-  bottleneckDistance_.setCTDiagram1(CTDiagram1);
-  bottleneckDistance_.setCTDiagram2(CTDiagram2);
+  bottleneckDistance_.setCTDiagram1(&CTDiagram1);
+  bottleneckDistance_.setCTDiagram2(&CTDiagram2);
 
   std::string wassersteinMetric = WassersteinMetric;
   bottleneckDistance_.setWasserstein(wassersteinMetric);
@@ -118,8 +117,8 @@ int ttkBottleneckDistance::doIt(
   bottleneckDistance_.setPVAlgorithm(pvAlgorithm);
 
   // Empty matchings.
-  auto matchings = new std::vector<matchingTuple>();
-  bottleneckDistance_.setOutputMatchings(matchings);
+  std::vector<matchingTuple> matchings;
+  bottleneckDistance_.setOutputMatchings(&matchings);
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;

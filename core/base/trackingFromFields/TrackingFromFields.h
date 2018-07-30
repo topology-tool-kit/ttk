@@ -20,9 +20,9 @@ namespace ttk
 
     public:
 
-      TrackingFromFields();
+      TrackingFromFields() {}
 
-      ~TrackingFromFields();
+      ~TrackingFromFields() {}
 
       /// Execute the package.
       /// \return Returns 0 upon success, negative values otherwise.
@@ -31,7 +31,7 @@ namespace ttk
 
       int performDiagramComputation(
         int fieldNumber,
-        std::vector<std::vector<diagramTuple>*>* persistenceDiagrams,
+        std::vector<std::vector<diagramTuple>>& persistenceDiagrams,
         const ttk::Wrapper *wrapper);
 
       /// Pass a pointer to an input array representing a scalarfield.

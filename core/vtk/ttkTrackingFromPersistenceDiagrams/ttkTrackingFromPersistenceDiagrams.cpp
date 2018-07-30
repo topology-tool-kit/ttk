@@ -63,15 +63,14 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
 {
   using dataType = double;
 
-  auto inputPersistenceDiagrams =
-    new std::vector<std::vector<diagramTuple>*>((unsigned long) numInputs);
-  auto outputPersistenceDiagrams =
-    new std::vector<vtkUnstructuredGrid*>((unsigned long) 2 * numInputs - 2);
-  auto outputMatchings =
-    new std::vector<std::vector<matchingTuple>*>((unsigned long) numInputs - 1);
-  for (unsigned long i = 0; i < (unsigned long) numInputs - 1; ++i) {
-    outputMatchings->at(i) = new std::vector<matchingTuple>();
-  }
+  std::vector<std::vector<diagramTuple>> inputPersistenceDiagrams(
+    (unsigned long) numInputs, std::vector<diagramTuple>());
+
+  std::vector<vtkSmartPointer<vtkUnstructuredGrid>> outputPersistenceDiagrams(
+    (unsigned long) 2 * numInputs - 2, vtkSmartPointer<vtkUnstructuredGrid>::New());
+
+  std::vector<std::vector<matchingTuple>> outputMatchings(
+    (unsigned long) numInputs - 1, std::vector<matchingTuple>()  );
 
   // std::vector<vtkUnstructuredGrid*> input;
   // for (int i = 0; i < numInputs; ++i) {
@@ -97,10 +96,7 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
     vtkSmartPointer<ttkBottleneckDistance> bottleneckModule = vtkSmartPointer<ttkBottleneckDistance>::New();
     vtkUnstructuredGrid* grid1 = vtkUnstructuredGrid::New();
     grid1->ShallowCopy(vtkUnstructuredGrid::SafeDownCast(input[i]));
-
-    auto CTDiagram1 = new std::vector<diagramTuple>();
-    bottleneckModule->getPersistenceDiagram(CTDiagram1, grid1, spacing, 0);
-    inputPersistenceDiagrams->at((unsigned long) i) = CTDiagram1;
+    bottleneckModule->getPersistenceDiagram(inputPersistenceDiagrams[i], grid1, spacing, 0);
   }
 
   tracking_.performMatchings(
@@ -127,15 +123,12 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
 
     vtkSmartPointer<ttkBottleneckDistance> bottleneckModule = vtkSmartPointer<ttkBottleneckDistance>::New();
 
-    std::vector<diagramTuple>* CTDiagram1 = inputPersistenceDiagrams->at((unsigned long) i);
-    std::vector<diagramTuple>* CTDiagram2 = inputPersistenceDiagrams->at((unsigned long) i + 1);
-    std::vector<matchingTuple>* Matchings12 = outputMatchings->at((unsigned long) i);
-
     vtkUnstructuredGrid *CTPersistenceDiagram1_ = vtkUnstructuredGrid::SafeDownCast(grid1);
     vtkUnstructuredGrid *CTPersistenceDiagram2_ = vtkUnstructuredGrid::SafeDownCast(grid2);
 
     int status = bottleneckModule->augmentPersistenceDiagrams<dataType>(
-      CTDiagram1, CTDiagram2, Matchings12, CTPersistenceDiagram1_, CTPersistenceDiagram2_);
+      inputPersistenceDiagrams[i], inputPersistenceDiagrams[i + 1],
+      outputMatchings[i], CTPersistenceDiagram1_, CTPersistenceDiagram2_);
     if (status < 0) return -2;
 
     // TODO [] copy input persistence diags into var & convert formats
@@ -143,17 +136,15 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
     // TODO getMatchingMesh
     // TODO create outputs
 
-    outputPersistenceDiagrams->at((unsigned long) 2 * i) = vtkUnstructuredGrid::New();
-    outputPersistenceDiagrams->at((unsigned long) 2 * i + 1) = vtkUnstructuredGrid::New();
-    outputPersistenceDiagrams->at((unsigned long) 2 * i)->ShallowCopy(CTPersistenceDiagram1_);
-    outputPersistenceDiagrams->at((unsigned long) 2 * i + 1)->ShallowCopy(CTPersistenceDiagram2_);
+    outputPersistenceDiagrams[2 * i]->ShallowCopy(CTPersistenceDiagram1_);
+    outputPersistenceDiagrams[2 * i + 1]->ShallowCopy(CTPersistenceDiagram2_);
   }
 
-  auto numPersistenceDiagramsInput = (int) outputPersistenceDiagrams->size(); // numInputs;
+  auto numPersistenceDiagramsInput = (int) outputPersistenceDiagrams.size(); // numInputs;
 
   for (int i = 0; i < numPersistenceDiagramsInput; ++i)
   {
-    vtkUnstructuredGrid* grid = outputPersistenceDiagrams->at((unsigned long) i);
+    vtkSmartPointer<vtkUnstructuredGrid> grid = outputPersistenceDiagrams[i];
     if (!grid || !grid->GetCellData() ||
         !grid->GetCellData()->GetArray("Persistence"))
     {
@@ -165,7 +156,7 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
 
     // Check if inputs have the same data type and the same number of points
     if (grid->GetCellData()->GetArray("Persistence")->GetDataType()
-        != outputPersistenceDiagrams->at(0)->GetCellData()->GetArray("Persistence")->GetDataType())
+        != outputPersistenceDiagrams[0]->GetCellData()->GetArray("Persistence")->GetDataType())
     {
       std::stringstream msg;
       msg << "[ttkTrackingFromPersistenceDiagrams] Inputs of different data types." << std::endl;
@@ -176,8 +167,8 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
 
   for (int i = 0; i < numPersistenceDiagramsInput - 1; ++i)
   {
-    vtkUnstructuredGrid* grid1 = outputPersistenceDiagrams->at((unsigned long) i);
-    vtkUnstructuredGrid* grid2 = outputPersistenceDiagrams->at((unsigned long) i + 1);
+    vtkSmartPointer<vtkUnstructuredGrid> grid1 = outputPersistenceDiagrams[i];
+    vtkSmartPointer<vtkUnstructuredGrid> grid2 = outputPersistenceDiagrams[i + 1];
     if (i % 2 == 1 && i < numPersistenceDiagramsInput - 1 &&
         grid1->GetCellData()->GetNumberOfTuples() !=
         grid2->GetCellData()->GetNumberOfTuples())
@@ -211,12 +202,13 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
   // (+ vertex id)
 
   // TODO set prototype.
-  auto trackingsBase = new std::vector<trackingTuple>(); // trackings;
+  std::vector<trackingTuple> trackingsBase; // structure containing all trajectories
   tracking_.performTracking(
-    inputPersistenceDiagrams, outputMatchings,
+    inputPersistenceDiagrams,
+    outputMatchings,
     trackingsBase);
 
-  auto trackingTupleToMerged = new std::vector<std::set<int>>(trackingsBase->size(), std::set<int>());
+  std::vector<std::set<int>> trackingTupleToMerged(trackingsBase.size(), std::set<int>());
   if (DoPostProc)
     tracking_.performPostProcess(
       inputPersistenceDiagrams,
@@ -226,15 +218,15 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
 
   // bool Is3D = true;
   bool useGeometricSpacing = UseGeometricSpacing;
-//  auto spacing = (float) Spacing;
+  // auto spacing = (float) Spacing;
 
-  std::vector<trackingTuple> trackings = *trackingsBase;
+  // std::vector<trackingTuple> trackings = *trackingsBase;
   // Row = iteration number
   // Col = (id in pd 2, arrival point id)
 
   // Build mesh.
   buildMesh(
-    trackings,
+    trackingsBase,
     outputMatchings,
     inputPersistenceDiagrams,
     useGeometricSpacing, spacing, DoPostProc,
@@ -245,19 +237,17 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
   outputMesh_->ShallowCopy(persistenceDiagram);
   outputMesh->ShallowCopy(outputMesh_);
 
-  delete outputPersistenceDiagrams;
-
   return 0;
 }
 
 int ttkTrackingFromPersistenceDiagrams::buildMesh(
   std::vector<trackingTuple>& trackings,
-  std::vector<std::vector<matchingTuple>*>*& outputMatchings,
-  std::vector<std::vector<diagramTuple>*>*& inputPersistenceDiagrams,
+  std::vector<std::vector<matchingTuple>>& outputMatchings,
+  std::vector<std::vector<diagramTuple>>& inputPersistenceDiagrams,
   bool useGeometricSpacing,
   double spacing,
   bool DoPostProc,
-  std::vector<std::set<int>>*& trackingTupleToMerged,
+  std::vector<std::set<int>>& trackingTupleToMerged,
   vtkSmartPointer<vtkPoints>& points,
   vtkSmartPointer<vtkUnstructuredGrid>& persistenceDiagram,
   vtkSmartPointer<vtkDoubleArray>& persistenceScalars,
@@ -282,11 +272,11 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
     for (int c = 0; c < (int) chain.size() - 1; ++c)
     {
-      std::vector<matchingTuple> matchings1 = *(outputMatchings->at((unsigned long) numStart + c));
+      std::vector<matchingTuple> &matchings1 = outputMatchings[numStart + c];
       int d1id = numStart + c;
       int d2id = d1id + 1; // c % 2 == 0 ? d1id + 1 : d1id;
-      std::vector<diagramTuple> diagram1 = *(inputPersistenceDiagrams->at((unsigned long) d1id));
-      std::vector<diagramTuple> diagram2 = *(inputPersistenceDiagrams->at((unsigned long) d2id));
+      std::vector<diagramTuple> &diagram1 = inputPersistenceDiagrams[d1id];
+      std::vector<diagramTuple> &diagram2 = inputPersistenceDiagrams[d2id];
 
       // Insert segments
       vtkIdType ids[2];
@@ -303,8 +293,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
         }
       }
 
-      diagramTuple tuple1 = diagram1.at((unsigned long) n1);
-      diagramTuple tuple2 = diagram2.at((unsigned long) n2);
+      diagramTuple tuple1 = diagram1[n1];
+      diagramTuple tuple2 = diagram2[n2];
 
       double x1, y1, z1, x2, y2, z2;
 
@@ -333,7 +323,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       int cid = k;
       bool hasMergedFirst = false;
       if (DoPostProc) {
-        std::set<int> connected = trackingTupleToMerged->at(k);
+        std::set<int> &connected = trackingTupleToMerged[k];
         if (!connected.empty()) {
           int min = *(connected.begin());
           trackingTuple ttt = trackings.at((unsigned long) min);
@@ -351,7 +341,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
             // Replace former first end of the segment with previous ending segment.
             std::vector<BIdVertex> chain3 = std::get<2>(ttt);
             auto nn = (int) chain3.at(chain3.size() - 1);
-            std::vector<diagramTuple> diagramRematch = *(inputPersistenceDiagrams->at((unsigned long) numEnd2));
+            std::vector<diagramTuple> &diagramRematch = inputPersistenceDiagrams[numEnd2];
             diagramTuple tupleN = diagramRematch.at((unsigned long) nn);
 
             point1Type1 = std::get<1>(tupleN);

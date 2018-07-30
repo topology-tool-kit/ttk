@@ -276,9 +276,7 @@ int BottleneckDistance::computeBottleneck(
     dMsg(std::cout, msg.str(), timeMsg);
   }
 
-  dataType* distance = new dataType;
-  *distance = d;
-  distance_ = (void*) (distance);
+  distance_ = (double) d;
   return 0;
 }
 

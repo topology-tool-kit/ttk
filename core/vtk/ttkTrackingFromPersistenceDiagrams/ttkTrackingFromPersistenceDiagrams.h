@@ -111,12 +111,12 @@ class ttkTrackingFromPersistenceDiagrams
 
     static int buildMesh(
       std::vector<trackingTuple>& trackings,
-      std::vector<std::vector<matchingTuple>*>*& outputMatchings,
-      std::vector<std::vector<diagramTuple>*>*& inputPersistenceDiagrams,
+      std::vector<std::vector<matchingTuple>>& outputMatchings,
+      std::vector<std::vector<diagramTuple>>& inputPersistenceDiagrams,
       bool useGeometricSpacing,
       double spacing,
       bool doPostProc,
-      std::vector<std::set<int>>*& trackingTupleToMerged,
+      std::vector<std::set<int>>& trackingTupleToMerged,
       vtkSmartPointer<vtkPoints>& points,
       vtkSmartPointer<vtkUnstructuredGrid>& persistenceDiagram,
       vtkSmartPointer<vtkDoubleArray>& persistenceScalars,

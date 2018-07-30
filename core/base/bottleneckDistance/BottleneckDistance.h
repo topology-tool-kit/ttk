@@ -46,6 +46,7 @@ namespace ttk {
   public:
 
     BottleneckDistance():
+      distance_(-1),
       wasserstein_("inf"),
       pvAlgorithm_(-1),
       zeroThreshold_(0),
@@ -109,9 +110,8 @@ namespace ttk {
       dMsg(std::cout, msg.str(), timeMsg);
     }
 
-    template <typename dataType>
-    dataType getDistance() {
-      return *static_cast<dataType*> (distance_);
+    double getDistance() {
+      return distance_;
     }
 
     template<typename type>
@@ -129,10 +129,10 @@ namespace ttk {
     void                      *outputCT1_;
     void                      *outputCT2_;
     void                      *matchings_; // ids from CT1 to CT2
-    void                      *distance_;
+    double                    distance_;
 
-    std::string                    wasserstein_;
-    std::string                    algorithm_;
+    std::string               wasserstein_;
+    std::string               algorithm_;
     int                       pvAlgorithm_;
     double                    zeroThreshold_;
     double                    px_;

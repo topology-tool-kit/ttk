@@ -31,8 +31,8 @@ namespace ttk
 
       int performSingleMatching(
         int i,
-        std::vector<std::vector<diagramTuple>*>* inputPersistenceDiagrams,
-        std::vector<std::vector<matchingTuple>*>* outputMatchings,
+        std::vector<std::vector<diagramTuple>>& inputPersistenceDiagrams,
+        std::vector<std::vector<matchingTuple>>& outputMatchings,
         std::string algorithm,
         std::string wasserstein,
         double tolerance,
@@ -43,10 +43,10 @@ namespace ttk
 
       int performMatchings(
         int numInputs,
-        std::vector<std::vector<diagramTuple>*>* inputPersistenceDiagrams,
-        std::vector<std::vector<matchingTuple>*>* outputMatchings,
-        std::string algorithm,
-        std::string wasserstein,
+        std::vector<std::vector<diagramTuple>>& inputPersistenceDiagrams,
+        std::vector<std::vector<matchingTuple>>& outputMatchings,
+        const std::string& algorithm,
+        const std::string& wasserstein,
         double tolerance,
         bool is3D,
         double alpha,
@@ -54,14 +54,14 @@ namespace ttk
         const ttk::Wrapper *wrapper);
 
       int performTracking(
-        std::vector<std::vector<diagramTuple>*>* allDiagrams,
-        std::vector<std::vector<matchingTuple>*>* allMatchings,
-        std::vector<trackingTuple>* trackings);
+        std::vector<std::vector<diagramTuple>>& allDiagrams,
+        std::vector<std::vector<matchingTuple>>& allMatchings,
+        std::vector<trackingTuple>& trackings);
 
       int performPostProcess(
-        std::vector<std::vector<diagramTuple>*>* allDiagrams,
-        std::vector<trackingTuple>* trackings,
-        std::vector<std::set<int>>* trackingTupleToMerged,
+        std::vector<std::vector<diagramTuple>>& allDiagrams,
+        std::vector<trackingTuple>& trackings,
+        std::vector<std::set<int>>& trackingTupleToMerged,
         double postProcThresh);
 
       /// Pass a pointer to an input array representing a scalarfield.

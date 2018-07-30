@@ -163,17 +163,12 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   trackingF_.setInputOffsets(offsets_->GetVoidPointer(0));
 
   // 1. get persistence diagrams.
-  auto persistenceDiagrams = new std::vector<std::vector<diagramTuple>*>(fieldNumber);
-//  std::vector<vtkUnstructuredGrid*> persistenceDiagrams(fieldNumber);
+  std::vector<std::vector<diagramTuple>> persistenceDiagrams(fieldNumber, std::vector<diagramTuple>());
 
   trackingF_.performDiagramComputation((int) fieldNumber, persistenceDiagrams, this);
 
   // 2. call feature tracking with threshold.
-  auto outputMatchings =
-    new std::vector<std::vector<matchingTuple>*>(fieldNumber - 1);
-  for (unsigned long i = 0; i < fieldNumber - 1; ++i) {
-      outputMatchings->at(i) = new std::vector<matchingTuple>();
-  }
+  std::vector<std::vector<matchingTuple>> outputMatchings(fieldNumber - 1, std::vector<matchingTuple>());
 
   double spacing = Spacing;
   std::string algorithm = DistanceAlgorithm;
@@ -215,12 +210,13 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   pointTypeScalars->SetName("NodeType");
 
   // (+ vertex id)
-  auto trackingsBase = new std::vector<trackingTuple>(); // trackings;
+  std::vector<trackingTuple> trackingsBase;
   tracking_.performTracking(
       persistenceDiagrams, outputMatchings,
       trackingsBase);
 
-  auto trackingTupleToMerged = new std::vector<std::set<int>>(trackingsBase->size(), std::set<int>());
+  std::vector<std::set<int>> trackingTupleToMerged(trackingsBase.size(), std::set<int>());
+
   if (DoPostProc)
     tracking_.performPostProcess(
       persistenceDiagrams,
@@ -229,11 +225,10 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
       PostProcThresh);
 
   bool useGeometricSpacing = UseGeometricSpacing;
-  std::vector<trackingTuple> trackings = *trackingsBase;
 
   // Build mesh.
   ttkTrackingFromPersistenceDiagrams::buildMesh(
-    trackings, outputMatchings, persistenceDiagrams,
+    trackingsBase, outputMatchings, persistenceDiagrams,
     useGeometricSpacing, spacing, DoPostProc, trackingTupleToMerged,
     points, persistenceDiagram,
     persistenceScalars, valueScalars, matchingIdScalars, timeScalars,

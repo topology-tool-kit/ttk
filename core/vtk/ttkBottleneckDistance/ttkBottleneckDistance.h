@@ -157,29 +157,30 @@ public:
 
   template <typename dataType>
   int getPersistenceDiagram(
-      std::vector<diagramTuple>* diagram,
-      vtkUnstructuredGrid *CTPersistenceDiagram_,
+      std::vector<diagramTuple>& diagram,
+      const vtkSmartPointer<vtkUnstructuredGrid>& CTPersistenceDiagram_,
       double spacing,
       int diagramNumber);
 
   template <typename dataType>
   int generatePersistenceDiagram(
-      std::vector<diagramTuple>* diagram,
+      std::vector<diagramTuple>& diagram,
       int size);
 
   template <typename dataType>
   int augmentPersistenceDiagrams(
-      const std::vector<diagramTuple>* diagram1,
-      const std::vector<diagramTuple>* diagram2,
-      const std::vector<matchingTuple>* matchings,
-      vtkUnstructuredGrid *CTPersistenceDiagram1_,
-      vtkUnstructuredGrid *CTPersistenceDiagram2_);
+      const std::vector<diagramTuple>& diagram1,
+      const std::vector<diagramTuple>& diagram2,
+      const std::vector<matchingTuple>& matchings,
+      vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_,
+      vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_);
+
 
   template <typename dataType>
   int getMatchingMesh(
-      const std::vector<diagramTuple>* diagram1,
-      const std::vector<diagramTuple>* diagram2,
-      const std::vector<matchingTuple>* matchings,
+      const std::vector<diagramTuple>& diagram1,
+      const std::vector<diagramTuple>& diagram2,
+      const std::vector<matchingTuple>& matchings,
       bool useGeometricSpacing,
       double spacing);
 
@@ -214,15 +215,12 @@ protected:
 
     // outputs
     result = -1.;
-    CTPersistenceDiagram1_ = nullptr; // Copied inputs
-    CTPersistenceDiagram2_ = nullptr; // Copied inputs
-    CTPersistenceDiagram3_ = vtkUnstructuredGrid::New();
+    CTPersistenceDiagram1_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    CTPersistenceDiagram2_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    CTPersistenceDiagram3_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
   }
 
-  ~ttkBottleneckDistance() {
-    if (CTPersistenceDiagram3_)
-      CTPersistenceDiagram3_->Delete();
-  };
+  ~ttkBottleneckDistance() {};
 
 TTK_SETUP();
 
@@ -249,24 +247,24 @@ private:
   int                     PVAlgorithm;
   double                  result;
 
-  vtkUnstructuredGrid*    CTPersistenceDiagram1_;
-  vtkUnstructuredGrid*    CTPersistenceDiagram2_;
-  vtkUnstructuredGrid*    CTPersistenceDiagram3_;
+  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_;
+  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_;
+  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram3_;
 
   ttk::BottleneckDistance bottleneckDistance_;
 };
 
 template <typename dataType>
 int ttkBottleneckDistance::generatePersistenceDiagram(
-  std::vector<diagramTuple>* diagram,
+  std::vector<diagramTuple>& diagram,
   const int size)
 {
   // srand(time(NULL));
   int vertexId1 = 1;
   int vertexId2 = 2;
 
-  // diagram->resize(size);
-  //diagram->push_back(std::make_tuple(
+  // diagram.resize(size);
+  //diagram.push_back(std::make_tuple(
   //    0, BLocalMin,
   //    1, BLocalMax,
   //    1.0,
@@ -323,7 +321,7 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
 
     dataType persistence = y2 - x1;
 
-    diagram->push_back(std::make_tuple(
+    diagram.push_back(std::make_tuple(
         vertexId1, nodeType1,
         vertexId2, nodeType2,
         persistence,
@@ -336,7 +334,7 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
     vertexId2++;
   }
 
-  sort(diagram->begin(), diagram->end(),
+  sort(diagram.begin(), diagram.end(),
     [](const diagramTuple & a, const diagramTuple & b) -> bool
     {
       return std::get<6>(a) < std::get<6>(b);
@@ -347,8 +345,8 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
 
 template <typename dataType>
 int ttkBottleneckDistance::getPersistenceDiagram(
-  std::vector<diagramTuple>* diagram,
-  vtkUnstructuredGrid *CTPersistenceDiagram_,
+  std::vector<diagramTuple>& diagram,
+  const vtkSmartPointer<vtkUnstructuredGrid>& CTPersistenceDiagram_,
   const double spacing,
   const int diagramNumber)
 {
@@ -397,7 +395,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
       || !extremumIndexScalars || !points)
     return -2;
 
-  diagram->resize((unsigned long) pairingsSize);
+  diagram.resize((unsigned long) pairingsSize);
   int nbNonCompact = 0;
 
   for (int i = 0; i < pairingsSize; ++i) {
@@ -429,7 +427,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
                       (dataType) deathScalars->GetValue(2*i+1);
 
     if (pairIdentifier != -1 && pairIdentifier < pairingsSize)
-      diagram->at(pairIdentifier) = std::make_tuple(
+      diagram.at(pairIdentifier) = std::make_tuple(
         vertexId1, (BNodeType) nodeType1,
         vertexId2, (BNodeType) nodeType2,
         (dataType) persistence,
@@ -460,7 +458,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
     }
   }
 
-  sort(diagram->begin(), diagram->end(),
+  sort(diagram.begin(), diagram.end(),
     [](const diagramTuple & a, const diagramTuple & b) -> bool
     {
       return std::get<6>(a) < std::get<6>(b);
@@ -471,16 +469,16 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 
 template <typename dataType>
 int ttkBottleneckDistance::augmentPersistenceDiagrams(
-  const std::vector<diagramTuple>* diagram1,
-  const std::vector<diagramTuple>* diagram2,
-  const std::vector<matchingTuple>* matchings,
-  vtkUnstructuredGrid *CTPersistenceDiagram1_,
-  vtkUnstructuredGrid *CTPersistenceDiagram2_)
+  const std::vector<diagramTuple>& diagram1,
+  const std::vector<diagramTuple>& diagram2,
+  const std::vector<matchingTuple>& matchings,
+  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_,
+  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_)
 {
 
-  auto diagramSize1 = (BIdVertex) diagram1->size();
-  auto diagramSize2 = (BIdVertex) diagram2->size();
-  auto matchingsSize = (BIdVertex) matchings->size();
+  auto diagramSize1 = (BIdVertex) diagram1.size();
+  auto diagramSize2 = (BIdVertex) diagram2.size();
+  auto matchingsSize = (BIdVertex) matchings.size();
 
   vtkSmartPointer<vtkIntArray> matchingIdentifiers1 =
     vtkSmartPointer<vtkIntArray>::New();
@@ -516,7 +514,7 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
     // Affect bottleneck matchings
     int pairingIndex = 0;
     for (BIdVertex i = 0; i < matchingsSize; ++i) {
-      matchingTuple t = matchings->at((unsigned long) i);
+      matchingTuple t = matchings.at((unsigned long) i);
       ids[0] = std::get<0>(t);
       ids[1] = std::get<1>(t);
       matchingIdentifiers1->InsertTuple1(ids[0], pairingIndex);
@@ -533,9 +531,9 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
 
 template <typename dataType>
 int ttkBottleneckDistance::getMatchingMesh(
-    const std::vector<diagramTuple>* diagram1,
-    const std::vector<diagramTuple>* diagram2,
-    const std::vector<matchingTuple>* matchings,
+    const std::vector<diagramTuple>& diagram1,
+    const std::vector<diagramTuple>& diagram2,
+    const std::vector<matchingTuple>& matchings,
     const bool useGeometricSpacing,
     const double spacing)
 {
@@ -551,7 +549,7 @@ int ttkBottleneckDistance::getMatchingMesh(
       vtkSmartPointer<vtkIntArray>::New();
   matchingIdScalars->SetName("MatchingIdentifier");
 
-  auto matchingsSize = (BIdVertex) matchings->size();
+  auto matchingsSize = (BIdVertex) matchings.size();
 
   // Build matchings.
   if (matchingsSize > 0) {
@@ -559,12 +557,12 @@ int ttkBottleneckDistance::getMatchingMesh(
     for (BIdVertex i = 0; i < matchingsSize; ++i) {
       vtkIdType ids[2];
 
-      matchingTuple t = matchings->at((unsigned long) i);
+      matchingTuple t = matchings.at((unsigned long) i);
       auto n1 = (int) std::get<0>(t);
       auto n2 = (int) std::get<1>(t);
 
-      diagramTuple tuple1 = diagram1->at(n1);
-      diagramTuple tuple2 = diagram2->at(n2);
+      diagramTuple tuple1 = diagram1.at(n1);
+      diagramTuple tuple2 = diagram2.at(n2);
 
       double x1, y1, z1, x2, y2, z2;
 
