@@ -504,7 +504,7 @@ int MandatoryCriticalPoints::buildPairs(const TreeType treeType) {
   vector<pair<pair<int,int>,double> > *extremaSaddlePair = (treeType == TreeType::JoinTree) ?
     &( mdtMinJoinSaddlePair_ ) : &( mdtMaxSplitSaddlePair );
 
-  #ifdef TTK_ENABLE_KAMIKAZE
+  #ifndef TTK_ENABLE_KAMIKAZE
   if(lowerTree->isJoinTree() != upperTree->isJoinTree())
     return -1;
   #endif
