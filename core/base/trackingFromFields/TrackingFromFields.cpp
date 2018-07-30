@@ -25,11 +25,11 @@ int ttk::TrackingFromFields::performDiagramComputation(
     persistenceDiagram_.setInputOffsets(inputOffsets_);
     persistenceDiagram_.setComputeSaddleConnectors(false);
     auto CTDiagram = new std::vector<std::tuple<
-      ftm::idVertex, ftm::NodeType, ftm::idVertex, ftm::NodeType,
-      dataType, ftm::idVertex> >();
+      int, ftm::NodeType, int, ftm::NodeType,
+      dataType, int> >();
 
     persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-    persistenceDiagram_.execute<dataType>();
+    persistenceDiagram_.execute<dataType, int>();
 
     // Copy diagram into augmented diagram.
     auto od = new std::vector<diagramTuple>(CTDiagram->size());
@@ -37,8 +37,8 @@ int ttk::TrackingFromFields::performDiagramComputation(
       float p[3];
       float q[3];
       auto currentTuple = CTDiagram->at((unsigned long) j);
-      const ttk::ftm::idVertex a = std::get<0>(currentTuple);
-      const ttk::ftm::idVertex b = std::get<2>(currentTuple);
+      const int a = std::get<0>(currentTuple);
+      const int b = std::get<2>(currentTuple);
       triangulation_->getVertexPoint(a, p[0], p[1], p[2]);
       triangulation_->getVertexPoint(b, q[0], q[1], q[2]);
       const double sa = ((double*) inputData_[i])[a];

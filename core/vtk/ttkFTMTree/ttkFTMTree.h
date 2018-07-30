@@ -59,8 +59,8 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public ttk::Wrapper
    vtkSetMacro(ScalarField, std::string);
    vtkGetMacro(ScalarField, std::string);
 
-   vtkSetMacro(UseInputOffsetScalarField, int);
-   vtkGetMacro(UseInputOffsetScalarField, int);
+   vtkSetMacro(ForceInputOffsetScalarField, int);
+   vtkGetMacro(ForceInputOffsetScalarField, int);
 
    vtkSetMacro(InputOffsetScalarFieldName, std::string);
    vtkGetMacro(InputOffsetScalarFieldName, std::string);
@@ -165,7 +165,7 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public ttk::Wrapper
   private:
 
    std::string ScalarField;
-   bool   UseInputOffsetScalarField;
+   bool   ForceInputOffsetScalarField;
    std::string InputOffsetScalarFieldName;
    int    ScalarFieldId;
    int    OffsetFieldId;
@@ -177,7 +177,7 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public ttk::Wrapper
    std::vector<ttk::Triangulation*>         triangulation_;
    std::vector<LocalFTM>               ftmTree_;
    std::vector<vtkDataArray*>          inputScalars_;
-   std::vector<std::vector<ttk::ftm::idVertex>>  offsets_;
+   std::vector<std::vector<ttkIdType>>  offsets_;
 
    bool                   hasUpdatedMesh_;
 };

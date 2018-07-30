@@ -55,7 +55,7 @@ namespace ttk{
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildCellNeighborsFromVertices(const SimplexId &vertexNumber, 
-        const SimplexId &cellNumber, const SimplexId *cellArray,
+        const SimplexId &cellNumber, const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &cellNeighbors, 
         std::vector<std::vector<SimplexId> > *vertexStars = NULL) const;
     
@@ -146,7 +146,7 @@ namespace ttk{
       /// the 
       /// behavior is unspecified.
       int buildEdgeTriangles(const SimplexId &vertexNumber,
-        const SimplexId &cellNumber, const SimplexId *cellArray,
+        const SimplexId &cellNumber, const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &edgeTriangleList,
         std::vector<std::vector<SimplexId> > *vertexStarList = NULL,
         std::vector<std::pair<SimplexId, SimplexId> > *edgeList = NULL,
@@ -171,7 +171,7 @@ namespace ttk{
       /// each triangle, list of its adjacent tetrahedra).
       /// \return Returns 0 upon success, negative values otherwise.
       int buildTriangleList(const SimplexId &vertexNumber, const SimplexId &cellNumber,
-        const SimplexId *cellArray, 
+        const LongSimplexId *cellArray, 
         std::vector<std::vector<SimplexId> > *triangleList = NULL, 
         std::vector<std::vector<SimplexId> > *triangleStars = NULL,
         std::vector<std::vector<SimplexId> > *cellTriangleList = NULL) const;
@@ -253,7 +253,7 @@ namespace ttk{
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildTriangleEdgeList(const SimplexId &vertexNumber,
-        const SimplexId &cellNumber, const SimplexId *cellArray,
+        const SimplexId &cellNumber, const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &triangleEdgeList,
         std::vector<std::vector<SimplexId> > *vertexEdgeList = NULL,
         std::vector<std::pair<SimplexId, SimplexId> > *edgeList = NULL,
@@ -279,7 +279,7 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       int buildTriangleLinks(const std::vector<std::vector<SimplexId> > &triangeList,
         const std::vector<std::vector<SimplexId> > &triangleStars, 
-        const SimplexId *cellArray,
+        const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &triangleLinks) const;
         
       /// Compute the list of triangles connected to each vertex for 3D 

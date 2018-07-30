@@ -44,7 +44,7 @@ void Segment::sort(const Scalars* s)
   }
 }
 
-void Segment::emplace_back(const idVertex& v)
+void Segment::emplace_back(const SimplexId& v)
 {
    vertices_.emplace_back(vertex{v, nullSuperArc});
 }
@@ -57,12 +57,12 @@ void Segment::clear(void)
 
 
 
-idVertex& Segment::operator[](size_t idx)
+SimplexId& Segment::operator[](size_t idx)
 {
    return vertices_[idx].id;
 }
 
-const idVertex& Segment::operator[](size_t idx) const
+const SimplexId& Segment::operator[](size_t idx) const
 {
    return vertices_[idx].id;
 }
@@ -126,7 +126,7 @@ void ArcRegion::addSegment(const segmentIterator& begin, const segmentIterator& 
 
 void ArcRegion::createSegmentation(const idSuperArc& thisArc)
 {
-    idVertex totalSegmSize = 0;
+    SimplexId totalSegmSize = 0;
     vector<sorted_iterator> heads, ends;
     for (const auto& region : segmentsIn_) {
         totalSegmSize += distance(region.segmentBegin, region.segmentEnd);

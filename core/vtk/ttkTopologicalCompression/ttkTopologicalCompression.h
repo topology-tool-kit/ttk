@@ -115,13 +115,17 @@ class ttkTopologicalCompression
    
     ttkTopologicalCompression()
     {
+      CompressionType = 0;
+      Tolerance = 10;
+      Subdivide = false;
+      MaximumError = 10;
+      UseTopologicalSimplification = true;
       ScalarFieldId = 0;
       outputScalarField_ = nullptr;
       outputOffsetField_ = nullptr;
-      Tolerance = 1e-3;
-      Subdivide = false;
-      UseAllCores = false;
-      UseTopologicalSimplification = false;
+      UseAllCores = true;
+      ThreadNumber = 1;
+      debugLevel_ = 3;
     }
     
     ~ttkTopologicalCompression()

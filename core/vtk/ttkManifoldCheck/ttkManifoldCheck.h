@@ -82,6 +82,8 @@ class ttkManifoldCheck
       
         // init
       UseAllCores = true;
+      ThreadNumber = 1;
+      debugLevel_ = 3;
     }
     
     ~ttkManifoldCheck(){};
@@ -91,9 +93,9 @@ class ttkManifoldCheck
     
   private:
     
-    std::vector<ttk::SimplexId>           vertexLinkComponentNumber_;
-    std::vector<ttk::SimplexId>           edgeLinkComponentNumber_;
-    std::vector<ttk::SimplexId>           triangleLinkComponentNumber_;
+    std::vector<ttkIdType>           vertexLinkComponentNumber_;
+    std::vector<ttkIdType>           edgeLinkComponentNumber_;
+    std::vector<ttkIdType>           triangleLinkComponentNumber_;
     ttk::ManifoldCheck         manifoldCheck_;
     
 };

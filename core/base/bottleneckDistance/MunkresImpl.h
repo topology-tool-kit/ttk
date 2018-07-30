@@ -1,59 +1,6 @@
 #ifndef _MUNKRESIMPL_H
 #define _MUNKRESIMPL_H
 
-#ifndef matchingTuple
-#define matchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, dataType>
-#endif
-
-#ifdef TTK_ENABLE_OPENMP
-
-#ifndef parallelFor
-#define parallelFor _Pragma("omp parallel for num_threads(threadNumber_)")
-#endif
-
-#ifndef atomicWrite
-#define atomicWrite _Pragma("omp atomic write")
-#endif
-
-#ifndef QUOTE
-#define QUOTE(x) #x
-#endif
-
-#ifndef parallelSection
-#define parallelSection _Pragma("omp parallel num_threads(threadNumber_)")
-#endif
-#ifndef forSubSection
-#define forSubSection _Pragma("omp for nowait")
-#endif
-#ifndef criticalSubSection
-#define criticalSubSection _Pragma("omp critical")
-#endif
-
-#ifndef parallelForReduceMax
-#define parallelForReduceMax(varName) \
-_Pragma(QUOTE(omp parallel for num_threads(threadNumber_) reduction(max:varName)))
-#endif
-
-#ifndef parallelForReduceMin
-#define parallelForReduceMin(varName) \
-_Pragma(QUOTE(omp parallel for num_threads(threadNumber_) reduction(min:varName)))
-#endif
-
-#ifndef parallelForReduceSum
-#define parallelForReduceSum(varName) \
-_Pragma(QUOTE(omp parallel for num_threads(threadNumber_) reduction(+:varName)))
-#endif
-
-#else
-#define parallelSection
-#define forSubSection
-#define criticalSubSection
-#define parallelFor
-#define parallelForReduceMax(varName)
-#define parallelForReduceMin(varName)
-#define parallelForReduceSum(varName)
-#endif
-
 template <typename dataType>
 int Munkres::run(std::vector<matchingTuple> *matchings)
 {
@@ -291,7 +238,6 @@ int Munkres::stepTwo(int& step) // ~ 0% perf
 {
   std::vector<std::vector<dataType>>* C = (std::vector<std::vector<dataType>>*) Cptr;
 
-//  parallelFor
   for (int r = 0; r < rowSize - 1; ++r) {
     for (int c = 0; c < colSize - 1; ++c) {
       if (!rowCover[r] && !colCover[c] && isZero<dataType>((*C)[r][c])) {
@@ -309,7 +255,6 @@ int Munkres::stepTwo(int& step) // ~ 0% perf
     // // }
   }
 
-//  parallelFor
   for (int c = 0; c < colSize - 1; ++c)
     if (isZero<dataType>((*C)[rowSize-1][c]) && !colCover[c]) {
       M[rowSize-1][c] = 1;
@@ -336,7 +281,6 @@ int Munkres::stepTwo(int& step) // ~ 0% perf
 template <typename dataType>
 int Munkres::stepThree(int& step) // ~ 10% perf
 {
-//  parallelFor
   for (int r = 0; r < rowSize; ++r)
   {
     int start = rowLimitsMinus[r];
@@ -552,8 +496,6 @@ int Munkres::stepSix(int& step) // ~ 35% perf
   dataType minVal = std::numeric_limits<dataType>::max();
 
   // find smallest
-//  parallelForReduceMin(min)
-//#pragma omp parallel for reduction(min:minVal) schedule(static, rowSize/threadNumber_)
   for (int r = 0; r < rowSize; ++r) {
     if (rowCover[r]) continue;
 
@@ -568,9 +510,7 @@ int Munkres::stepSix(int& step) // ~ 35% perf
 
   createdZeros.clear();
 
-//  std::vector<std::vector<pair<int, int>>> vec(threadNumber_);
   // add and subtract
-//#pragma omp parallel for schedule(static, rowSize/threadNumber_)
   for (int r = 0; r < rowSize; ++r) {
 
     int start = rowLimitsMinus[r];
@@ -583,19 +523,10 @@ int Munkres::stepSix(int& step) // ~ 35% perf
         (*C)[r][c] = (*C)[r][c] - minVal;
         if (isZero<dataType>((*C)[r][c])) {
           createdZeros.emplace_back(r, c);
-//          vec[omp_get_thread_num()].emplace_back(r, c);
         }
       }
     }
   }
-
-//  unsigned int size = 0;
-//  for (int i = 0; i < threadNumber_; ++i)
-//    size += vec[i].size();
-
-//  createdZeros.reserve(size);
-//  for (int i = 0; i < threadNumber_; ++i)
-//    createdZeros.insert(createdZeros.end(), vec[i].begin(), vec[i].end());
 
   step = 4;
   return 0;
@@ -654,7 +585,6 @@ int Munkres::computeAffectationCost(
 
   dataType total = 0;
 
-//  parallelForReduceSum(total)
   for (int r = 0; r < nbR; ++r)
     for (int c = 0; c < nbC; ++c)
       if (M[r][c] == 1) {

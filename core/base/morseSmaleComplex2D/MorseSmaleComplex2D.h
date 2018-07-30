@@ -34,7 +34,7 @@ namespace ttk{
       /**
        * Main function for computing the whole Morse-Smale complex.
        */
-      template<typename dataType>
+      template<typename dataType, typename idType>
         int execute();
 
       /**
@@ -48,7 +48,7 @@ namespace ttk{
   };
 }
 
-template<typename dataType>
+template<typename dataType, typename idType>
 int ttk::MorseSmaleComplex2D::execute(){
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField_){
@@ -65,16 +65,16 @@ int ttk::MorseSmaleComplex2D::execute(){
 
   // nullptr_t is implicitly convertible and comparable to any pointer type
   // or pointer-to-member type.
-  dcg::simplexId_t* ascendingManifold=static_cast<dcg::simplexId_t*>(outputAscendingManifold_);
-  dcg::simplexId_t* descendingManifold=static_cast<dcg::simplexId_t*>(outputDescendingManifold_);
-  dcg::simplexId_t* morseSmaleManifold=static_cast<dcg::simplexId_t*>(outputMorseSmaleManifold_);
+  SimplexId* ascendingManifold=static_cast<SimplexId*>(outputAscendingManifold_);
+  SimplexId* descendingManifold=static_cast<SimplexId*>(outputDescendingManifold_);
+  SimplexId* morseSmaleManifold=static_cast<SimplexId*>(outputMorseSmaleManifold_);
 
   discreteGradient_.setThreadNumber(threadNumber_);
   discreteGradient_.setDebugLevel(debugLevel_);
   {
     Timer tmp;
-    discreteGradient_.buildGradient<dataType>();
-    discreteGradient_.buildGradient2<dataType>();
+    discreteGradient_.buildGradient<dataType,idType>();
+    discreteGradient_.buildGradient2<dataType,idType>();
 
     {
       std::stringstream msg;
@@ -84,7 +84,7 @@ int ttk::MorseSmaleComplex2D::execute(){
       dMsg(std::cout, msg.str(), timeMsg);
     }
   }
-  discreteGradient_.reverseGradient<dataType>();
+  discreteGradient_.reverseGradient<dataType,idType>();
 
   std::vector<dcg::Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
@@ -122,12 +122,12 @@ int ttk::MorseSmaleComplex2D::execute(){
     }
   }
 
-  std::vector<dcg::simplexId_t> maxSeeds;
+  std::vector<SimplexId> maxSeeds;
   {
     Timer tmp;
 
-    dcg::simplexId_t numberOfMaxima{};
-    dcg::simplexId_t numberOfMinima{};
+    SimplexId numberOfMaxima{};
+    SimplexId numberOfMinima{};
 
     if(ascendingManifold)
       setAscendingSegmentation(criticalPoints, maxSeeds, ascendingManifold, numberOfMaxima);
@@ -149,16 +149,16 @@ int ttk::MorseSmaleComplex2D::execute(){
 
   if(outputCriticalPoints_numberOfPoints_ and outputCriticalPoints_points_){
     if(ascendingManifold and descendingManifold)
-      discreteGradient_.setAugmentedCriticalPoints<dataType>(criticalPoints,
+      discreteGradient_.setAugmentedCriticalPoints<dataType,idType>(criticalPoints,
           maxSeeds,
           ascendingManifold,
           descendingManifold);
     else
-      discreteGradient_.setCriticalPoints<dataType>(criticalPoints);
+      discreteGradient_.setCriticalPoints<dataType,idType>(criticalPoints);
   }
 
   {
-    const dcg::simplexId_t numberOfVertices=inputTriangulation_->getNumberOfVertices();
+    const SimplexId numberOfVertices=inputTriangulation_->getNumberOfVertices();
     std::stringstream msg;
     msg << "[MorseSmaleComplex2D] Data-set (" << numberOfVertices
       << " points) processed in "

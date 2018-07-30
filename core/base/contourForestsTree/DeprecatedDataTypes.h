@@ -34,12 +34,6 @@ namespace ttk
    using idSuperArc = long unsigned int;
    /// \brief Node index in vect_nodes_
    using idNode = unsigned int;
-   /// \brief Vertex index in scalars_
-   using idVertex = SimplexId;
-   /// \brief Edge index in vect_edgeList_
-   using idEdge = SimplexId;
-   /// \brief Cell index in vect_cellList_
-   using idCell = SimplexId;
 
    /// \brief type used to recover Node/Arc in vert2tree SIGNED ONLY
    // Warning, in long long int the max super arc is -1, might not be able to deal with
@@ -64,7 +58,7 @@ namespace ttk
    // QUESTION impact on performance using max (0 would be faster alloacted)
    static const idSuperArc     nullSuperArc       = std::numeric_limits<idSuperArc>::max();
    static const idNode         nullNodes          = std::numeric_limits<idNode>::max();
-   static const idVertex       nullVertex         = std::numeric_limits<idVertex>::max();
+   static const SimplexId       nullVertex         = std::numeric_limits<SimplexId>::max();
    static const idCorresp      nullCorresp        = std::numeric_limits<idCorresp>::max();
    static const idSegment      nullSegment        = std::numeric_limits<idSegment>::max();
    static const idInterface    nullInterface      = std::numeric_limits<idInterface>::max();

@@ -7,9 +7,11 @@ vtkStandardNewMacro(ttkRangePolygon)
 
 ttkRangePolygon::ttkRangePolygon(){
 
-  ClosedLoop = true;
+  ClosedLoop = false;
   NumberOfIterations = 0;
-  UseAllCores = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkRangePolygon::~ttkRangePolygon(){
@@ -54,7 +56,7 @@ int ttkRangePolygon::processPoints(vtkUnstructuredGrid *input,
   vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
   idList->SetNumberOfIds(2);
   
-  for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++){
+  for(ttkIdType i = 0; i < input->GetNumberOfPoints(); i++){
     if(i){
       idList->SetId(0, i - 1);
       idList->SetId(1, i);

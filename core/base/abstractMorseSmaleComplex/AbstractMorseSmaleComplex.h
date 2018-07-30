@@ -43,7 +43,7 @@ namespace ttk{
         const dcg::Cell& saddle,
         const dcg::Cell& extremum,
         const bool isSegmentReversed,
-        const dcg::simplexId_t segmentGeometry):
+        const SimplexId segmentGeometry):
       isValid_{isValid},
       source_{saddle},
       destination_{extremum}
@@ -57,7 +57,7 @@ namespace ttk{
         const dcg::Cell& saddle,
         const dcg::Cell& extremum,
         const std::vector<char>& isReversed,
-        const std::vector<dcg::simplexId_t>& geometry):
+        const std::vector<SimplexId>& geometry):
       isValid_{isValid},
       source_{saddle},
       destination_{extremum},
@@ -117,7 +117,7 @@ namespace ttk{
      * container corresponding to a dense representation
      * of the geometry (i.e. separatricesGeometry).
      */
-    std::vector<dcg::simplexId_t> geometry_;
+    std::vector<SimplexId> geometry_;
   };
 
   /**
@@ -272,14 +272,14 @@ namespace ttk{
       /**
        * Set the output critical points data pointers.
        */
-      inline int setOutputCriticalPoints(dcg::simplexId_t* const criticalPoints_numberOfPoints,
+      inline int setOutputCriticalPoints(SimplexId* const criticalPoints_numberOfPoints,
           std::vector<float>* const criticalPoints_points,
           std::vector<char>* const criticalPoints_points_cellDimensons,
-          std::vector<dcg::simplexId_t>* const criticalPoints_points_cellIds,
+          std::vector<SimplexId>* const criticalPoints_points_cellIds,
           void* const criticalPoints_points_cellScalars,
           std::vector<char>* const criticalPoints_points_isOnBoundary,
-          std::vector<dcg::simplexId_t>* const criticalPoints_points_PLVertexIdentifiers,
-          std::vector<dcg::simplexId_t>* criticalPoints_points_manifoldSize){
+          std::vector<SimplexId>* const criticalPoints_points_PLVertexIdentifiers,
+          std::vector<SimplexId>* criticalPoints_points_manifoldSize){
         outputCriticalPoints_numberOfPoints_=criticalPoints_numberOfPoints;
         outputCriticalPoints_points_=criticalPoints_points;
         outputCriticalPoints_points_cellDimensions_=criticalPoints_points_cellDimensons;
@@ -302,16 +302,16 @@ namespace ttk{
       /**
        * Set the data pointers to the output 1-separatrices.
        */
-      inline int setOutputSeparatrices1(dcg::simplexId_t* const separatrices1_numberOfPoints,
+      inline int setOutputSeparatrices1(SimplexId* const separatrices1_numberOfPoints,
           std::vector<float>* const separatrices1_points,
           std::vector<char>* const separatrices1_points_smoothingMask,
           std::vector<char>* const separatrices1_points_cellDimensions,
-          std::vector<dcg::simplexId_t>* const separatrices1_points_cellIds,
-          dcg::simplexId_t* const separatrices1_numberOfCells,
-          std::vector<dcg::simplexId_t>* const separatrices1_cells,
-          std::vector<dcg::simplexId_t>* const separatrices1_cells_sourceIds,
-          std::vector<dcg::simplexId_t>* const separatrices1_cells_destinationIds,
-          std::vector<dcg::simplexId_t>* const separatrices1_cells_separatrixIds,
+          std::vector<SimplexId>* const separatrices1_points_cellIds,
+          SimplexId* const separatrices1_numberOfCells,
+          std::vector<SimplexId>* const separatrices1_cells,
+          std::vector<SimplexId>* const separatrices1_cells_sourceIds,
+          std::vector<SimplexId>* const separatrices1_cells_destinationIds,
+          std::vector<SimplexId>* const separatrices1_cells_separatrixIds,
           std::vector<char>* const separatrices1_cells_separatrixTypes,
           void* const separatrices1_cells_separatrixFunctionMaxima,
           void* const separatrices1_cells_separatrixFunctionMinima,
@@ -338,12 +338,12 @@ namespace ttk{
       /**
        * Set the data pointers to the output 2-separatrices.
        */
-      inline int setOutputSeparatrices2(dcg::simplexId_t* const separatrices2_numberOfPoints,
+      inline int setOutputSeparatrices2(SimplexId* const separatrices2_numberOfPoints,
           std::vector<float>* const separatrices2_points,
-          dcg::simplexId_t* const separatrices2_numberOfCells,
-          std::vector<dcg::simplexId_t>* const separatrices2_cells,
-          std::vector<dcg::simplexId_t>* const separatrices2_cells_sourceIds,
-          std::vector<dcg::simplexId_t>* const separatrices2_cells_separatrixIds,
+          SimplexId* const separatrices2_numberOfCells,
+          std::vector<SimplexId>* const separatrices2_cells,
+          std::vector<SimplexId>* const separatrices2_cells_sourceIds,
+          std::vector<SimplexId>* const separatrices2_cells_separatrixIds,
           std::vector<char>* const separatrices2_cells_separatrixTypes,
           void* const separatrices2_cells_separatrixFunctionMaxima,
           void* const separatrices2_cells_separatrixFunctionMinima,
@@ -400,26 +400,26 @@ namespace ttk{
        * Compute the ascending manifold of the maxima.
        */
       int setAscendingSegmentation(const std::vector<dcg::Cell>& criticalPoints,
-          std::vector<dcg::simplexId_t>& maxSeeds,
-          dcg::simplexId_t* const morseSmaleManifold,
-          dcg::simplexId_t& numberOfMaxima) const;
+          std::vector<SimplexId>& maxSeeds,
+          SimplexId* const morseSmaleManifold,
+          SimplexId& numberOfMaxima) const;
 
       /**
        * Compute the descending manifold of the minima.
        */
       int setDescendingSegmentation(const std::vector<dcg::Cell>& criticalPoints,
-          dcg::simplexId_t* const morseSmaleManifold,
-          dcg::simplexId_t& numberOfMinima) const;
+          SimplexId* const morseSmaleManifold,
+          SimplexId& numberOfMinima) const;
 
       /**
        * Compute the final combinatorial Morse-Smale complex
        * segmentation.
        */
-      int setFinalSegmentation(const dcg::simplexId_t numberOfMaxima,
-          const dcg::simplexId_t numberOfMinima,
-          const dcg::simplexId_t* const ascendingManifold,
-          const dcg::simplexId_t* const descendingManifold,
-          dcg::simplexId_t* const morseSmaleManifold) const;
+      int setFinalSegmentation(const SimplexId numberOfMaxima,
+          const SimplexId numberOfMinima,
+          const SimplexId* const ascendingManifold,
+          const SimplexId* const descendingManifold,
+          SimplexId* const morseSmaleManifold) const;
 
     protected:
 
@@ -440,37 +440,37 @@ namespace ttk{
       Triangulation* inputTriangulation_;
       void* inputOffsets_;
 
-      dcg::simplexId_t* outputCriticalPoints_numberOfPoints_;
+      SimplexId* outputCriticalPoints_numberOfPoints_;
       std::vector<float>* outputCriticalPoints_points_;
       std::vector<char>* outputCriticalPoints_points_cellDimensions_;
-      std::vector<dcg::simplexId_t>* outputCriticalPoints_points_cellIds_;
+      std::vector<SimplexId>* outputCriticalPoints_points_cellIds_;
       void* outputCriticalPoints_points_cellScalars_;
       std::vector<char>* outputCriticalPoints_points_isOnBoundary_;
-      std::vector<dcg::simplexId_t>* outputCriticalPoints_points_PLVertexIdentifiers_;
-      std::vector<dcg::simplexId_t>* outputCriticalPoints_points_manifoldSize_;
+      std::vector<SimplexId>* outputCriticalPoints_points_PLVertexIdentifiers_;
+      std::vector<SimplexId>* outputCriticalPoints_points_manifoldSize_;
 
-      dcg::simplexId_t* outputSeparatrices1_numberOfPoints_;
+      SimplexId* outputSeparatrices1_numberOfPoints_;
       std::vector<float>* outputSeparatrices1_points_;
       std::vector<char>* outputSeparatrices1_points_smoothingMask_;
       std::vector<char>* outputSeparatrices1_points_cellDimensions_;
-      std::vector<dcg::simplexId_t>* outputSeparatrices1_points_cellIds_;
-      dcg::simplexId_t* outputSeparatrices1_numberOfCells_;
-      std::vector<dcg::simplexId_t>* outputSeparatrices1_cells_;
-      std::vector<dcg::simplexId_t>* outputSeparatrices1_cells_sourceIds_;
-      std::vector<dcg::simplexId_t>* outputSeparatrices1_cells_destinationIds_;
-      std::vector<dcg::simplexId_t>* outputSeparatrices1_cells_separatrixIds_;
+      std::vector<SimplexId>* outputSeparatrices1_points_cellIds_;
+      SimplexId* outputSeparatrices1_numberOfCells_;
+      std::vector<SimplexId>* outputSeparatrices1_cells_;
+      std::vector<SimplexId>* outputSeparatrices1_cells_sourceIds_;
+      std::vector<SimplexId>* outputSeparatrices1_cells_destinationIds_;
+      std::vector<SimplexId>* outputSeparatrices1_cells_separatrixIds_;
       std::vector<char>* outputSeparatrices1_cells_separatrixTypes_;
       void* outputSeparatrices1_cells_separatrixFunctionMaxima_;
       void* outputSeparatrices1_cells_separatrixFunctionMinima_;
       void* outputSeparatrices1_cells_separatrixFunctionDiffs_;
       std::vector<char>* outputSeparatrices1_cells_isOnBoundary_;
 
-      dcg::simplexId_t* outputSeparatrices2_numberOfPoints_;
+      SimplexId* outputSeparatrices2_numberOfPoints_;
       std::vector<float>* outputSeparatrices2_points_;
-      dcg::simplexId_t* outputSeparatrices2_numberOfCells_;
-      std::vector<dcg::simplexId_t>* outputSeparatrices2_cells_;
-      std::vector<dcg::simplexId_t>* outputSeparatrices2_cells_sourceIds_;
-      std::vector<dcg::simplexId_t>* outputSeparatrices2_cells_separatrixIds_;
+      SimplexId* outputSeparatrices2_numberOfCells_;
+      std::vector<SimplexId>* outputSeparatrices2_cells_;
+      std::vector<SimplexId>* outputSeparatrices2_cells_sourceIds_;
+      std::vector<SimplexId>* outputSeparatrices2_cells_separatrixIds_;
       std::vector<char>* outputSeparatrices2_cells_separatrixTypes_;
       void* outputSeparatrices2_cells_separatrixFunctionMaxima_;
       void* outputSeparatrices2_cells_separatrixFunctionMinima_;
@@ -517,9 +517,9 @@ std::vector<Separatrix>& separatrices,
   std::vector<dataType>* outputSeparatrices1_cells_separatrixFunctionDiffs=
     static_cast<std::vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionDiffs_);
 
-  dcg::simplexId_t pointId=(*outputSeparatrices1_numberOfPoints_);
-  dcg::simplexId_t cellId=(*outputSeparatrices1_numberOfCells_);
-  dcg::simplexId_t separatrixId=0;
+  SimplexId pointId=(*outputSeparatrices1_numberOfPoints_);
+  SimplexId cellId=(*outputSeparatrices1_numberOfCells_);
+  SimplexId separatrixId=0;
   if(outputSeparatrices1_cells_separatrixIds_ and 
       outputSeparatrices1_cells_separatrixIds_->size()){
     separatrixId=*std::max_element(outputSeparatrices1_cells_separatrixIds_->begin(),
@@ -549,8 +549,8 @@ std::vector<Separatrix>& separatrices,
     const char isOnBoundary=(char)discreteGradient_.isBoundary(saddle) + (char)discreteGradient_.isBoundary(extremum);
 
     bool isFirst=true;
-    for(const dcg::simplexId_t geometryId : separatrix.geometry_){
-      dcg::simplexId_t oldPointId=-1;
+    for(const SimplexId geometryId : separatrix.geometry_){
+      SimplexId oldPointId=-1;
       for(auto cellIte=separatricesGeometry[geometryId].begin(); cellIte!=separatricesGeometry[geometryId].end(); ++cellIte){
         const dcg::Cell& cell=*cellIte;
 

@@ -105,8 +105,8 @@ class ttkJacobiSet
     vtkSetMacro(VoffsetId, int);
     vtkGetMacro(VoffsetId, int);
 
-    vtkGetMacro(PredefinedOffset, bool);
-    vtkSetMacro(PredefinedOffset, bool);
+    vtkGetMacro(ForceInputOffsetScalarField, bool);
+    vtkSetMacro(ForceInputOffsetScalarField, bool);
     
     vtkGetMacro(OffsetFieldU, std::string);
     vtkSetMacro(OffsetFieldU, std::string);
@@ -136,18 +136,18 @@ class ttkJacobiSet
     
   private:
     
-    bool                  PredefinedOffset;
+    bool                  ForceInputOffsetScalarField;
     bool                  EdgeIds, VertexScalars;
     int                   UcomponentId, VcomponentId, UoffsetId, VoffsetId;
     std::string                Ucomponent, Vcomponent, 
                           OffsetFieldU, OffsetFieldV;
-    std::vector<std::pair<ttk::SimplexId, ttk::SimplexId> > edgeList_;
+    std::vector<std::pair<ttkIdType, ttkIdType> > edgeList_;
     // for each edge, one skeleton of its triangle fan
-    std::vector<std::vector<std::pair<ttk::SimplexId, ttk::SimplexId> > > edgeFanLinkEdgeList_;
+    std::vector<std::vector<std::pair<ttkIdType, ttkIdType> > > edgeFanLinkEdgeList_;
     // for each edge, the one skeleton of its triangle fan
-    std::vector<std::vector<ttk::SimplexId> >  edgeFans_;
-    std::vector<std::pair<ttk::SimplexId, char> >        jacobiSet_;
-    std::vector<ttk::SimplexId>           sosOffsetsU_, sosOffsetsV_;
+    std::vector<std::vector<ttkIdType> >  edgeFans_;
+    std::vector<std::pair<ttkIdType, char> >        jacobiSet_;
+    std::vector<ttkIdType>           sosOffsetsU_, sosOffsetsV_;
    
     template<class dataTypeU, class dataTypeV> int baseCall(
       vtkDataSet *input,

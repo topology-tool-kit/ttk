@@ -10,7 +10,9 @@ ttkScalarFieldNormalizer::ttkScalarFieldNormalizer(){
   // init
   outputScalarField_ = NULL;
   
-  UseAllCores = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkScalarFieldNormalizer::~ttkScalarFieldNormalizer(){
@@ -48,7 +50,7 @@ int ttkScalarFieldNormalizer::normalize(
     return -2;
   
   double min = 0, max = 0;
-  for(SimplexId i = 0; i < input->GetNumberOfTuples(); i++){
+  for(ttkIdType i = 0; i < input->GetNumberOfTuples(); i++){
     
     double value = input->GetTuple1(i);
     
@@ -60,7 +62,7 @@ int ttkScalarFieldNormalizer::normalize(
     }
   }
   
-  for(SimplexId i = 0; i < input->GetNumberOfTuples(); i++){
+  for(ttkIdType i = 0; i < input->GetNumberOfTuples(); i++){
     double value = input->GetTuple1(i);
     
     value = (value - min)/(max - min) + pow10(-FLT_DIG);

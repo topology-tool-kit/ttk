@@ -45,7 +45,7 @@ cache:
 
 build:
   parallel: true
-  verbosity: quiet
+  verbosity: minimal
   project: C:/projects/ttk/build/ttk.sln
 
 before_build:
@@ -63,14 +63,18 @@ before_build:
   # Build VTK
 #  - if not exist "%VTK_BINARY_DIR%" (
 #      cd C:/projects/ &
-#      mkdir "%VTK_BINARY_DIR%" & cd "%VTK_BINARY_DIR%" & cmake -G "%GENERATOR%" -DBUILD_TESTING:BOOL=OFF ../VTK -DCMAKE_BUILD_TYPE=%BUILD_TYPE% & cmake --build . --config %BUILD_TYPE% &
-#      exit 1
+#      mkdir "%VTK_BINARY_DIR%" & cd "%VTK_BINARY_DIR%" & cmake -G "%GENERATOR%" -DBUILD_TESTING:BOOL=OFF -DVTK_Group_StandAlone=ON -DHDF5_ENABLE_DIRECT_VFD=OFF -DHDF5_ENABLE_EMBEDDED_LIBINFO=OFF -DHDF5_USE_FOLDERS=OFF -DVTK_USE_X=OFF ../VTK & cmake --build . --config %BUILD_TYPE%  
 #    )
   
   - cd "%APPVEYOR_BUILD_FOLDER%" & mkdir build & cd build
   # Fetch ExternalData. (Retried up to 3 times if network errors occured)
-  - cmake -G"%CTEST_CMAKE_GENERATOR%" -DVTK_DIR="%VTK_BINARY_DIR%" "%APPVEYOR_BUILD_FOLDER%" -DBoost_INCLUDE_DIR="%BOOST_SOURCE_DIR%" -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DTTK_BUILD_VTK_WRAPPERS=OFF  -DTTK_ENABLE_OPENMP=OFF -DCMAKE_BUILD_TYPE=%BUILD_TYPE%
+  - cmake -G"%CTEST_CMAKE_GENERATOR%" -DVTK_DIR="%VTK_BINARY_DIR%" "%APPVEYOR_BUILD_FOLDER%" -DBoost_INCLUDE_DIR="%BOOST_SOURCE_DIR%" -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DTTK_BUILD_VTK_WRAPPERS=OFF  -DTTK_ENABLE_OPENMP=OFF -DCMAKE_BUILD_TYPE=%BUILD_TYPE% -DTTK_BUILD_STANDALONE_APPS=OFF 
+
+build_script:
+  - cd "%APPVEYOR_BUILD_FOLDER%" & cd build
+  - cmake --build . --config %BUILD_TYPE% --target INSTALL
 
 test: off
 
 deploy: off
+

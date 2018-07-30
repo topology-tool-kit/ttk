@@ -38,12 +38,12 @@ namespace ttk
      void sort(const Scalars* s);
 
      // std::vector like
-     void emplace_back(const idVertex& v);
+     void emplace_back(const SimplexId& v);
      void clear(void);
      void norm_next(segmentIterator& it);
 
-     idVertex& operator[](size_t idx);
-     const idVertex& operator[](size_t idx) const;
+     SimplexId& operator[](size_t idx);
+     const SimplexId& operator[](size_t idx) const;
 
      // custom iterator to cross the segment in sorted order
      sorted_iterator sbegin(void);
@@ -85,7 +85,7 @@ namespace ttk
      // the begin and the end inside it (as a segment may be subdivided)
      std::forward_list<Region> segmentsIn_;
      // when and how to compact ?
-     std::vector<vertex> segmentation_;  // idVertex only ?
+     std::vector<vertex> segmentation_;  // SimplexId only ?
   };
 }
 

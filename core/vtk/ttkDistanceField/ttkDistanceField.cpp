@@ -8,6 +8,11 @@ vtkStandardNewMacro(ttkDistanceField)
   ttkDistanceField::ttkDistanceField():
     identifiers_{}
 {
+  OutputScalarFieldType = 0;
+  OutputScalarFieldName = "OutputDistanceField";
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
   SetNumberOfInputPorts(2);
   
   triangulation_ = NULL;
@@ -87,7 +92,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const SimplexId numberOfPointsInDomain=domain->GetNumberOfPoints();
+  const ttkIdType numberOfPointsInDomain=domain->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInDomain){
     cerr << "[ttkDistanceField] Error : domain has no points." << endl;
@@ -95,7 +100,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const SimplexId numberOfPointsInSources=sources->GetNumberOfPoints();
+  const ttkIdType numberOfPointsInSources=sources->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInSources){
     cerr << "[ttkDistanceField] Error : sources have no points." << endl;
@@ -103,7 +108,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  vtkSmartPointer<vtkIdTypeArray> origin=vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> origin=vtkSmartPointer<ttkIdTypeArray>::New();
   if(origin){
     origin->SetNumberOfComponents(1);
     origin->SetNumberOfTuples(numberOfPointsInDomain);
@@ -111,12 +116,12 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{
-    cerr << "[ttkDistanceField] Error : vtkIdTypeArray allocation problem." << endl;
+    cerr << "[ttkDistanceField] Error : ttkIdTypeArray allocation problem." << endl;
     return -5;
   }
 #endif
 
-  vtkSmartPointer<vtkIdTypeArray> seg=vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkIdTypeArray> seg=vtkSmartPointer<ttkIdTypeArray>::New();
   if(seg){
     seg->SetNumberOfComponents(1);
     seg->SetNumberOfTuples(numberOfPointsInDomain);
@@ -124,7 +129,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{
-    cerr << "[ttkDistanceField] Error : vtkIdTypeArray allocation problem." << endl;
+    cerr << "[ttkDistanceField] Error : ttkIdTypeArray allocation problem." << endl;
     return -6;
   }
 #endif

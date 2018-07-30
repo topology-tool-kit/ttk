@@ -97,11 +97,13 @@ class ttkLDistance
     ttkLDistance() {
 
       DistanceType = "2";
-      DistanceFieldName = "Distance Field";
+      DistanceFieldName = "L2-distance";
       ScalarFieldId1 = 0;
       ScalarFieldId2 = 1;
       outputScalarField_ = NULL;
-      UseAllCores = false;
+      UseAllCores = true;
+      ThreadNumber = 1;
+      debugLevel_ = 3;
       result = -1.;
     }
     

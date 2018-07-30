@@ -6,8 +6,8 @@ int ttkBottleneckDistance::doBenchmark()
 {
   using dataType = double;
 
-  std::vector<diagramTuple>* CTDiagram1 = new std::vector<diagramTuple>();
-  std::vector<diagramTuple>* CTDiagram2 = new std::vector<diagramTuple>();
+  auto CTDiagram1 = new std::vector<diagramTuple>();
+  auto CTDiagram2 = new std::vector<diagramTuple>();
 
   int benchmarkSize = BenchmarkSize;
   int status = 0;
@@ -34,7 +34,7 @@ int ttkBottleneckDistance::doBenchmark()
   bottleneckDistance_.setThreadNumber(ThreadNumber);
 
   // Empty matchings.
-  std::vector<diagramTuple>* matchings = new std::vector<diagramTuple>();
+  auto matchings = new std::vector<diagramTuple>();
   bottleneckDistance_.setOutputMatchings(matchings);
 
   // Exec.
@@ -95,9 +95,9 @@ int ttkBottleneckDistance::doIt(
 //  switch (dataType1) {
 //    vtkTemplateMacro(({
   // TODO template my methods
-  std::vector<diagramTuple>* CTDiagram1 = new std::vector<diagramTuple>();
+  auto CTDiagram1 = new std::vector<diagramTuple>();
 
-  std::vector<diagramTuple>* CTDiagram2 = new std::vector<diagramTuple>();
+  auto CTDiagram2 = new std::vector<diagramTuple>();
 
   status = getPersistenceDiagram<dataType>(
       CTDiagram1, CTPersistenceDiagram1_, Spacing, 0);
@@ -118,13 +118,14 @@ int ttkBottleneckDistance::doIt(
   bottleneckDistance_.setPVAlgorithm(pvAlgorithm);
 
   // Empty matchings.
-  std::vector<matchingTuple>* matchings = new std::vector<matchingTuple>();
+  auto matchings = new std::vector<matchingTuple>();
   bottleneckDistance_.setOutputMatchings(matchings);
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;
   double alpha = Alpha;
   status = bottleneckDistance_.execute<dataType>(usePersistenceMetric, alpha, Is3D);
+  if (status != 0) return status;
 
   // Apply results to outputs 0 and 1.
   status = augmentPersistenceDiagrams<dataType>(
@@ -144,7 +145,7 @@ int ttkBottleneckDistance::doIt(
         useGeometricSpacing, Spacing);
   }
 
-  if (status != 0) { return status; }
+  if (status != 0) return status;
 //    }));
 //  }
 

@@ -59,6 +59,11 @@ function(ttk_add_base_template_library library)
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 		$<INSTALL_INTERFACE:include/ttk/base>)
 
+  if(Boost_FOUND)
+    target_include_directories(${library} INTERFACE ${Boost_INCLUDE_DIR})
+    target_link_libraries(${library} INTERFACE ${Boost_LIBRARIES})
+  endif()
+		
 	if (TTK_ENABLE_KAMIKAZE)
 		target_compile_definitions(${library} INTERFACE TTK_ENABLE_KAMIKAZE)
 	endif()
@@ -93,6 +98,9 @@ function(ttk_add_base_template_library library)
 		target_include_directories(${library} INTERFACE ${ZLIB_INCLUDE_DIR})
 	endif()
 
+    if (TTK_USE_64BIT_IDS)
+      target_compile_definitions(${library} INTERFACE TTK_USE_64BIT_IDS)
+	endif()
 	
 	install(TARGETS ${library}
 		EXPORT TTKBaseConfig

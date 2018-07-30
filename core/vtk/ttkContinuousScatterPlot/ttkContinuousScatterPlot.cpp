@@ -11,11 +11,19 @@ ttkContinuousScatterPlot::ttkContinuousScatterPlot():
 {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(1);
+  ScatterplotResolution[0]=1920;
+  ScatterplotResolution[1]=1080;
+  ScatterplotResolution[2]=0;
 
   ProjectImageSupport = true;
+  WithDummyValue = false;
+  DummyValue = 0;
   UcomponentId = 0;
   VcomponentId = 1;
   triangulation_ = NULL;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ =3;
 }
 
 ttkContinuousScatterPlot::~ttkContinuousScatterPlot(){
@@ -100,9 +108,6 @@ int ttkContinuousScatterPlot::getTriangulation(vtkDataSet* input){
   
   return 0;
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
   
@@ -131,7 +136,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  SimplexId numberOfPixels=ScatterplotResolution[0]*ScatterplotResolution[1];
+  ttkIdType numberOfPixels=ScatterplotResolution[0]*ScatterplotResolution[1];
 #ifndef TTK_ENABLE_KAMIKAZE
   // no pixels
   if(!numberOfPixels){
@@ -144,12 +149,12 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   density_.resize(ScatterplotResolution[0]);
   validPointMask_.clear();
   validPointMask_.resize(ScatterplotResolution[0]);
-  for(SimplexId k=0; k<ScatterplotResolution[0]; ++k){
+  for(ttkIdType k=0; k<ScatterplotResolution[0]; ++k){
     density_[k].resize(ScatterplotResolution[1],0.0);
     validPointMask_[k].resize(ScatterplotResolution[1],0);
   }
 
-  SimplexId numberOfPoints=input->GetNumberOfPoints();
+  ttkIdType numberOfPoints=input->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   // no points
   if(!numberOfPoints){
@@ -157,7 +162,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
     return -4;
   }
 #endif
-  for(SimplexId k=0; k<numberOfPoints; ++k){
+  for(ttkIdType k=0; k<numberOfPoints; ++k){
     double d1=inputScalars1_->GetTuple1(k);
     double d2=inputScalars2_->GetTuple1(k);
 
@@ -197,7 +202,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<char,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<char COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<char TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -206,7 +211,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<unsigned char,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned char COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned char TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -215,7 +220,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<short,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<short COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<short TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -224,7 +229,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<unsigned short,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned short COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned short TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -233,7 +238,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<int,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<int COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<int TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -242,7 +247,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<vtkIdType,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<vtkIdType COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<vtkIdType TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -251,7 +256,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<unsigned int,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned int COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<unsigned int TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -260,7 +265,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<float,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<float COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<float TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -269,7 +274,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 		  vtkTemplateMacro(({ ret = continuousScatterPlot.execute<double,VTK_TT>(); }));
 #else
-		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<double COMMA VTK_TT>(); });
+		  vtkTemplateMacro({ ret = continuousScatterPlot.execute<double TTK_COMMA VTK_TT>(); });
 #endif
       }
       break;
@@ -360,10 +365,10 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   pts_ = vtkSmartPointer<vtkPoints>::New();
   pts_->SetNumberOfPoints(numberOfPixels);
 
-  SimplexId id{};
+  ttkIdType id{};
   vtkIdType ids[3];
-  for(SimplexId i=0; i<ScatterplotResolution[0]; i++){
-    for(SimplexId j=0; j<ScatterplotResolution[1]; j++){
+  for(ttkIdType i=0; i<ScatterplotResolution[0]; i++){
+    for(ttkIdType j=0; j<ScatterplotResolution[1]; j++){
       // positions:
       double x=imageMin[0]+i*imageDelta[0];
       double y=imageMin[1]+j*imageDelta[1];

@@ -73,7 +73,7 @@ int ttkTopologicalCompression::doIt(
     outputOffsetField_ = vtkSmartPointer<vtkIntArray>::New();
   }
 
-  ttk::SimplexId vertexNumber = (ttk::SimplexId) inputScalarField->GetNumberOfTuples();
+  ttkIdType vertexNumber = (ttkIdType) inputScalarField->GetNumberOfTuples();
   outputOffsetField_->SetNumberOfTuples(vertexNumber);
   outputOffsetField_->SetName("Offsets");
 
@@ -99,7 +99,7 @@ int ttkTopologicalCompression::doIt(
   }
 
   std::vector<int> voidOffsets = topologicalCompression_.getCompressedOffsets();
-  for (ttk::SimplexId i = 0; i < vertexNumber; ++i)
+  for (ttkIdType i = 0; i < vertexNumber; ++i)
     outputOffsetField_->SetTuple1(i, voidOffsets[i]);
 
   output1->GetPointData()->AddArray(outputScalarField_);

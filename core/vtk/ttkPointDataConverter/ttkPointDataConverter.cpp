@@ -10,6 +10,11 @@ using namespace ttk;
 vtkStandardNewMacro(ttkPointDataConverter)
 
 ttkPointDataConverter::ttkPointDataConverter(){
+  OutputType = 0;
+  UseNormalization = true;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkPointDataConverter::~ttkPointDataConverter(){

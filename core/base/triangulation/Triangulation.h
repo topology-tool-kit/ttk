@@ -3061,7 +3061,7 @@ namespace ttk{
       /// valid triangulation, this information will be over-written (which 
       /// means that pre-processing functions should be called again).
       inline int setInputCells(const SimplexId &cellNumber,
-        const SimplexId *cellArray){
+        const LongSimplexId *cellArray){
         
         abstractTriangulation_ = &explicitTriangulation_;
         gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;

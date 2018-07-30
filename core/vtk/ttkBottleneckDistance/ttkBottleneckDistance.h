@@ -56,7 +56,7 @@ public:
 
   static ttkBottleneckDistance* New();
 
-vtkTypeMacro(ttkBottleneckDistance, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkBottleneckDistance, vtkDataSetAlgorithm);
 
   // Default ttk setters
   vtkSetMacro(debugLevel_, int);
@@ -191,11 +191,13 @@ protected:
   {
     // settings
     UseAllCores = false;
+    ThreadNumber = 1;
     SetNumberOfInputPorts(2);
     SetNumberOfOutputPorts(3);
 
     // inputs
     BenchmarkSize = -1;
+    UseOutputMatching = false;
     UsePersistenceMetric = false;
     UseGeometricSpacing = false;
     WassersteinMetric = "2";
@@ -212,6 +214,8 @@ protected:
 
     // outputs
     result = -1.;
+    CTPersistenceDiagram1_ = nullptr; // Copied inputs
+    CTPersistenceDiagram2_ = nullptr; // Copied inputs
     CTPersistenceDiagram3_ = vtkUnstructuredGrid::New();
   }
 
@@ -257,7 +261,7 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
   std::vector<diagramTuple>* diagram,
   const int size)
 {
-//  srand(time(NULL));
+  // srand(time(NULL));
   int vertexId1 = 1;
   int vertexId2 = 2;
 
@@ -278,8 +282,10 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
 
   for (int i = 1; i < size; ++i) {
     int r0 = 2; // (rand() % 3);
-    float r1 = 0.001f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX); // (float) dis1(generator1); // static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-    float r2 = 0.001f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX); // (float) dis2(generator2); // static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    float r1 = 0.001f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    // (float) dis1(generator1); // static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    float r2 = 0.001f + static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+    // (float) dis2(generator2); // static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
     // r2 *= 0.1f;
 
     // BLocalMin BSaddle1 BSaddle2 BLocalMax
@@ -346,16 +352,16 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   const double spacing,
   const int diagramNumber)
 {
-  vtkIdTypeArray* vertexIdentifierScalars =
-    vtkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
+  ttkIdTypeArray* vertexIdentifierScalars =
+    ttkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("VertexIdentifier"));
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("NodeType"));
 
-  vtkIdTypeArray* pairIdentifierScalars =
-    vtkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
+  ttkIdTypeArray* pairIdentifierScalars =
+    ttkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
       GetCellData()->GetArray("PairIdentifier"));
 
   vtkIntArray* extremumIndexScalars =
@@ -396,12 +402,12 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 
   for (int i = 0; i < pairingsSize; ++i) {
 
-    auto vertexId1 = (int) vertexIdentifierScalars->GetValue(2*i);
-    auto vertexId2 = (int) vertexIdentifierScalars->GetValue(2*i+1);
+    int vertexId1 = vertexIdentifierScalars->GetValue(2*i);
+    int vertexId2 = vertexIdentifierScalars->GetValue(2*i+1);
     int nodeType1 = nodeTypeScalars->GetValue(2*i);
     int nodeType2 = nodeTypeScalars->GetValue(2*i+1);
 
-    auto pairIdentifier = (int) pairIdentifierScalars->GetValue(i);
+    int pairIdentifier = pairIdentifierScalars->GetValue(i);
     int pairType = extremumIndexScalars->GetValue(i);
     double persistence = persistenceScalars->GetValue(i);
 
@@ -485,7 +491,7 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
   matchingIdentifiers2->SetName("MatchingIdentifier");
 
   if (matchingsSize > 0) {
-    vtkIdType ids[2];
+    ttkIdType ids[2];
     matchingIdentifiers1->SetNumberOfComponents(1);
     matchingIdentifiers2->SetNumberOfComponents(1);
     matchingIdentifiers1->SetNumberOfTuples(diagramSize1);

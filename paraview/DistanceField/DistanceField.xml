@@ -1,5 +1,5 @@
-
 <ServerManagerConfiguration>
+
   <ProxyGroup name="filters">
     <SourceProxy
       name="DistanceField"
@@ -66,7 +66,7 @@ Edsger W. Dijkstra, Numerische Mathematik, 1959.
         <ArrayListDomain
           name="array_list"
           default_values="0"
-          data_type="VTK_ID_TYPE">
+          >
           <RequiredProperties>
             <Property name="Sources" function="Input" />
           </RequiredProperties>

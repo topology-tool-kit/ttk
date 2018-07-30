@@ -236,7 +236,7 @@ int FTMTree_CT::combine()
          // NODES IN CT
 
          idNode   node1, node2;
-         idVertex curVert = currentNode->getVertexId();
+         SimplexId curVert = currentNode->getVertexId();
          // NODE1
          if (isCorrespondingNode(curVert)) {
             // already a node in the tree
@@ -261,7 +261,7 @@ int FTMTree_CT::combine()
             cout << " parent node :" << parentNode->getVertexId() << endl;
          }
 
-         idVertex parVert = parentNode->getVertexId();
+         SimplexId parVert = parentNode->getVertexId();
          // NODE2
          if (isCorrespondingNode(parVert)) {
             // already a node in the tree
@@ -396,7 +396,7 @@ void FTMTree_CT::insertNodes(void)
 
    for (const idNode& t : sortedSTNodes) {
 
-      idVertex vertId = st_->getNode(t)->getVertexId();
+      SimplexId vertId = st_->getNode(t)->getVertexId();
       if (jt_->isCorrespondingNode(vertId)) {
           continue;
       }
@@ -405,7 +405,7 @@ void FTMTree_CT::insertNodes(void)
 
    for (const idNode& t : sortedJTNodes) {
 
-      idVertex vertId = jt_->getNode(t)->getVertexId();
+      SimplexId vertId = jt_->getNode(t)->getVertexId();
       if (st_->isCorrespondingNode(vertId)) {
           continue;
       }
@@ -420,20 +420,20 @@ int FTMTree_CT::leafSearch()
    const auto  chunkNb   = getChunkCount();
 
    // Extrema extract and launch tasks
-   for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+   for (SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId)
 #endif
       {
-         const idVertex lowerBound = chunkId * chunkSize;
-         const idVertex upperBound = min(nbScalars, (chunkId + 1) * chunkSize);
-         for (idVertex v = lowerBound; v < upperBound; ++v) {
+         const SimplexId lowerBound = chunkId * chunkSize;
+         const SimplexId upperBound = min(nbScalars, (chunkId + 1) * chunkSize);
+         for (SimplexId v = lowerBound; v < upperBound; ++v) {
             const auto &neighNumb   = mesh_->getVertexNeighborNumber(v);
             valence     upval       = 0;
             valence     downval     = 0;
 
             for (valence n = 0; n < neighNumb; ++n) {
-               idVertex neigh;
+               SimplexId neigh;
                mesh_->getVertexNeighbor(v, n, neigh);
                if(scalars_->isLower(neigh, v)){
                   ++downval;

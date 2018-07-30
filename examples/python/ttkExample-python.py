@@ -50,7 +50,6 @@ topologicalSimplification = TTKTopologicalSimplification(
 
 # 7. computing the Morse-Smale complex
 morseSmaleComplex = TTKMorseSmaleComplex(topologicalSimplification)
-morseSmaleComplex.UseInputOffsetField = 1
 
 # 8. saving the output data
 SaveData('curve.vtk', OutputPort(persistenceCurve, 3))

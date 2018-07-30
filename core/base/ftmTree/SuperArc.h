@@ -37,11 +37,11 @@ namespace ftm
       // Keep th last vertex seen by this arc
       // After the build a a merge tree, a close step is
       // done, using this field to close each root arc
-      idVertex lastVisited_;
+      SimplexId lastVisited_;
 
       // Segmentation related
       ArcRegion  region_;
-      idVertex   verticesSeen_;
+      SimplexId   verticesSeen_;
       idSuperArc normalizedId_;
 
      public:
@@ -103,18 +103,18 @@ namespace ftm
 
       // last vertex seen, nb vertex seen & ids
 
-      inline idVertex getLastVisited(void) const
+      inline SimplexId getLastVisited(void) const
       {
          return lastVisited_;
       }
 
-      inline void setLastVisited(idVertex vertId)
+      inline void setLastVisited(SimplexId vertId)
       {
          lastVisited_ = vertId;
          ++verticesSeen_;
       }
 
-      inline void atomicIncVisited(const idVertex nb=1)
+      inline void atomicIncVisited(const SimplexId nb=1)
       {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
@@ -127,7 +127,7 @@ namespace ftm
          --verticesSeen_;
       }
 
-      inline idVertex getNbVertSeen(void) const
+      inline SimplexId getNbVertSeen(void) const
       {
          return verticesSeen_;
       }
@@ -227,34 +227,34 @@ namespace ftm
          return region_.size();
       }
 
-      std::vector<idVertex>::iterator begin(void)
+      std::vector<SimplexId>::iterator begin(void)
       {
          return region_.begin();
       }
 
-      std::vector<idVertex>::iterator end(void)
+      std::vector<SimplexId>::iterator end(void)
       {
          return region_.end();
       }
 
-      idVertex operator[](idVertex v) const
+      SimplexId operator[](SimplexId v) const
       {
          return region_[v];
       }
 
-      idVertex &operator[](idVertex v)
+      SimplexId &operator[](SimplexId v)
       {
          return region_[v];
       }
 
       // Access Segmentation legacy
 
-      idVertex getNumberOfRegularNodes() const
+      SimplexId getNumberOfRegularNodes() const
       {
          return region_.size();
       }
 
-      idVertex getRegularNodeId(idVertex id) const
+      SimplexId getRegularNodeId(SimplexId id) const
       {
          return region_[id];
       }
@@ -262,18 +262,18 @@ namespace ftm
       // process segmentation
 
       // keep the front segmentation, return the back
-      std::tuple<idVertex, ArcRegion> splitFront(idVertex v, const Scalars *s)
+      std::tuple<SimplexId, ArcRegion> splitFront(SimplexId v, const Scalars *s)
       {
          return region_.splitFront(v, s);
       }
 
       // Keep the back, return the front
-      std::tuple<idVertex, ArcRegion> splitBack(idVertex v, const Scalars *s)
+      std::tuple<SimplexId, ArcRegion> splitBack(SimplexId v, const Scalars *s)
       {
          return region_.splitBack(v, s);
       }
 
-      idVertex findBelow(idVertex v, const Scalars *s,
+      SimplexId findBelow(SimplexId v, const Scalars *s,
                          const std::vector<idCorresp> &vert2treeOther = std::vector<idCorresp>()) const
       {
          return region_.findBelow(v, s, vert2treeOther);

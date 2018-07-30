@@ -30,7 +30,7 @@ template <class dataTypeU, class dataTypeV>
   int ttk::JacobiSet<dataTypeU, dataTypeV>::connectivityPreprocessing(
     const std::vector<std::vector<SimplexId> > &edgeStarList,
     std::vector<std::vector<std::pair<SimplexId, SimplexId> > > &edgeFanLinkEdgeLists,
-    std::vector<std::vector<SimplexId> > &edgeFans,
+    std::vector<std::vector<LongSimplexId> > &edgeFans,
     std::vector<SimplexId> &sosOffsets) const{
 
   Timer t;
@@ -70,7 +70,7 @@ template <class dataTypeU, class dataTypeV>
   }
   
   std::vector<ZeroSkeleton> threadedLinkers(threadNumber_);
-  std::vector<std::vector<SimplexId> > threadedLinks(threadNumber_);
+  std::vector<std::vector<LongSimplexId> > threadedLinks(threadNumber_);
   for(ThreadId i = 0; i < threadNumber_; i++){
     threadedLinkers[i].setDebugLevel(debugLevel_);
     threadedLinkers[i].setThreadNumber(1);

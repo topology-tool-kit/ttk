@@ -92,7 +92,7 @@ scalars, TreeType type,
       /// \brief init Simulation of Simplicity datastructure if not set
       void initSoS(void)
       {
-         std::vector<idVertex> &sosVect = scalars_->sosOffsets;
+         std::vector<SimplexId> &sosVect = scalars_->sosOffsets;
          if (!sosVect.size()) {
             sosVect.resize(scalars_->size);
             iota(sosVect.begin(), sosVect.end(), 0);
@@ -187,7 +187,7 @@ true)
       // .....................{
 
       template <typename scalarType>
-      inline const scalarType &getValue(const idVertex &idNode) const
+      inline const scalarType &getValue(const SimplexId &idNode) const
       {
          return (((scalarType *)scalars_->values))[idNode];
       }
@@ -202,7 +202,7 @@ true)
       // offset
       // .....................{
 
-      inline void setVertexSoSoffsets(const std::vector<idVertex>& offsets)
+      inline void setVertexSoSoffsets(const std::vector<SimplexId>& offsets)
       {
         scalars_->sosOffsets = offsets;
       }
@@ -245,13 +245,13 @@ true)
          return &(treeData_.superArcs[i]);
       }
 
-      inline idVertex getNumberOfVisibleRegularNode(const idSuperArc &sa)
+      inline SimplexId getNumberOfVisibleRegularNode(const idSuperArc &sa)
       {
          // Costly ! for dedbug only
-         idVertex   res   = 0;
+         SimplexId   res   = 0;
          SuperArc * a     = getSuperArc(sa);
          const auto nbReg = a->getNumberOfRegularNodes();
-         for (idVertex v = 0; v < nbReg; v++) {
+         for (SimplexId v = 0; v < nbReg; v++) {
             if (!a->isMasqued(v))
                ++res;
          }
@@ -290,7 +290,7 @@ true)
       // leaves / root
       // .....................{
 
-      inline idVertex getNumberOfLeaves(void) const
+      inline SimplexId getNumberOfLeaves(void) const
       {
          return treeData_.leaves.size();
       }
@@ -340,17 +340,17 @@ true)
       // test vertex correpondance
       // ...........................{
 
-      inline bool isCorrespondingArc(const idVertex &val) const
+      inline bool isCorrespondingArc(const SimplexId &val) const
       {
          return !isCorrespondingNull(val) && treeData_.vert2tree[val] >= 0;
       }
 
-      inline bool isCorrespondingNode(const idVertex &val) const
+      inline bool isCorrespondingNode(const SimplexId &val) const
       {
          return treeData_.vert2tree[val] < 0;
       }
 
-      inline bool isCorrespondingNull(const idVertex &val) const
+      inline bool isCorrespondingNull(const SimplexId &val) const
       {
          return treeData_.vert2tree[val] == nullCorresp;
       }
@@ -359,7 +359,7 @@ true)
       // Get vertex info
       // ...........................{
 
-      inline idNode getCorrespondingNodeId(const idVertex &val) const
+      inline idNode getCorrespondingNodeId(const SimplexId &val) const
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!isCorrespondingNode(val)) {
@@ -373,7 +373,7 @@ true)
          return corr2idNode(val);
       }
 
-      inline idSuperArc getCorrespondingSuperArcId(const idVertex &val) const
+      inline idSuperArc getCorrespondingSuperArcId(const SimplexId &val) const
       {
 #ifndef TTK_ENABLE_KAMIKAZE
          if (!isCorrespondingArc(val)) {
@@ -391,12 +391,12 @@ true)
       // Get vertex correponding object
       // ................................{
 
-      inline SuperArc *vertex2SuperArc(const idVertex &vert)
+      inline SuperArc *vertex2SuperArc(const SimplexId &vert)
       {
          return &(treeData_.superArcs[getCorrespondingSuperArcId(vert)]);
       }
 
-      inline Node *vertex2Node(const idVertex &vert)
+      inline Node *vertex2Node(const SimplexId &vert)
       {
          return &(treeData_.nodes[getCorrespondingNodeId(vert)]);
       }
@@ -405,13 +405,13 @@ true)
       // Update vertex info
       // ................................{
 
-      inline void updateCorrespondingArc(const idVertex &arc, const idSuperArc 
+      inline void updateCorrespondingArc(const SimplexId &arc, const idSuperArc 
 &val)
       {
          treeData_.vert2tree[arc] = val;
       }
 
-      inline void updateCorrespondingNode(const idVertex &vert, const idNode 
+      inline void updateCorrespondingNode(const SimplexId &vert, const idNode 
 &val)
       {
          treeData_.vert2tree[vert] = idNode2corr(val);
@@ -441,17 +441,17 @@ true)
       // ..........................{
 
       // Merge tree processing of a vertex during build
-      void processVertex(const idVertex &vertex, std::vector<ExtendedUnionFind 
+      void processVertex(const SimplexId &vertex, std::vector<ExtendedUnionFind 
 *> &vect_baseUF,
                          const bool overlapB, const bool overlapA, DebugTimer 
 &begin);
 
       /// \brief Compute the merge tree using Carr's algorithm
       int build(std::vector<ExtendedUnionFind *> &vect_baseUF, const 
-std::vector<idVertex> &overlapBefore,
-                const std::vector<idVertex> &overlapAfter, idVertex start, 
-idVertex end,
-                const idVertex &posSeed0, const idVertex &posSeed1);
+std::vector<SimplexId> &overlapBefore,
+                const std::vector<SimplexId> &overlapAfter, SimplexId start, 
+SimplexId end,
+                const SimplexId &posSeed0, const SimplexId &posSeed1);
 
       // }
       // Simplify
@@ -459,17 +459,17 @@ idVertex end,
 
       // BFS simplification for local CT
       template <typename scalarType>
-      idEdge localSimplify(const idVertex &podSeed0, const idVertex &podSeed1);
+      SimplexId localSimplify(const SimplexId &podSeed0, const SimplexId &podSeed1);
 
       // BFS simpliciation for global CT
       template <typename scalarType>
-      idEdge globalSimplify(const idVertex posSeed0, const idVertex posSeed1);
+      SimplexId globalSimplify(const SimplexId posSeed0, const SimplexId posSeed1);
 
       // Having sorted std::pairs, simplify the current tree
       // in accordance with threashol, between the two seeds.
       template <typename scalarType>
-      idEdge simplifyTree(const idVertex &posSeed0, const idVertex &posSeed1,
-                          const std::vector<std::tuple<idVertex, idVertex, 
+      SimplexId simplifyTree(const SimplexId &posSeed0, const SimplexId &posSeed1,
+                          const std::vector<std::tuple<SimplexId, SimplexId, 
 scalarType, bool>> &sortedPairs);
 
       // add this arc in the subtree which is in the parentNode
@@ -482,20 +482,20 @@ scalarType, bool>> &sortedPairs);
       // ...........................{
 
       template <typename scalarType>
-      int computePersistencePairs(std::vector<std::tuple<idVertex, idVertex, 
+      int computePersistencePairs(std::vector<std::tuple<SimplexId, SimplexId, 
 scalarType>> &pairs);
 
       template <typename scalarType>
-      int computePersistencePairs(std::vector<std::tuple<idVertex, idVertex, 
+      int computePersistencePairs(std::vector<std::tuple<SimplexId, SimplexId, 
 scalarType, bool>> &pairs);
 
       // Construct abstract JT / ST on a CT and fill std::pairs in accordance.
       // used for global simplification
       template <typename scalarType>
       void recoverMTPairs(const std::vector<idNode> &sortedNodes,
-                          std::vector<std::tuple<idVertex, idVertex, 
+                          std::vector<std::tuple<SimplexId, SimplexId, 
 scalarType, bool>> &pairsJT,
-                          std::vector<std::tuple<idVertex, idVertex, 
+                          std::vector<std::tuple<SimplexId, SimplexId, 
 scalarType, bool>> &pairsST);
 
       // }
@@ -514,9 +514,9 @@ const bool overlapA);
 
       idSuperArc makeSuperArc(const idNode &downNodeId, const idNode &upNodeId, 
 const bool overlapB,
-                              const bool overlapA, std::pair<idVertex, bool> 
+                              const bool overlapA, std::pair<SimplexId, bool> 
 *vertexList = nullptr,
-                              idVertex vertexSize = -1);
+                              SimplexId vertexSize = -1);
 
       void closeSuperArc(const idSuperArc &superArcId, const idNode &upNodeId, 
 const bool overlapB,
@@ -527,11 +527,11 @@ const bool overlapB,
       void mergeArc(const idSuperArc &sa, const idSuperArc &recept,
                     const bool changeConnectivity = true);
 
-      idVertex insertNodeAboveSeed(const idSuperArc &arc, const 
-std::pair<idVertex, bool> &seed);
+      SimplexId insertNodeAboveSeed(const idSuperArc &arc, const 
+std::pair<SimplexId, bool> &seed);
 
-      idVertex getVertBelowSeed(const idSuperArc &arc, const 
-std::pair<idVertex, bool> &seed,
+      SimplexId getVertBelowSeed(const idSuperArc &arc, const 
+std::pair<SimplexId, bool> &seed,
                                 const std::vector<idCorresp> &vert2treeOther);
 
       // is there an external arc linkind node with treeNode in tree
@@ -555,10 +555,10 @@ idNode &treeNode);
       // Nodes
       // ...........................{
 
-      idNode makeNode(const idVertex &vertexId, const idVertex &linked = 
+      idNode makeNode(const SimplexId &vertexId, const SimplexId &linked = 
 nullVertex);
 
-      idNode makeNode(const Node *const n, const idVertex &linked = nullVertex);
+      idNode makeNode(const Node *const n, const SimplexId &linked = nullVertex);
 
       idSuperArc insertNode(Node *node, const bool segment);
 
@@ -570,9 +570,9 @@ nullVertex);
 
       idNode getParent(const idNode &n);
 
-      void delNode(const idNode &node, const std::pair<idVertex, bool> *mv = 
+      void delNode(const idNode &node, const std::pair<SimplexId, bool> *mv = 
 nullptr,
-                   const idVertex &nbm = 0);
+                   const SimplexId &nbm = 0);
 
       void hideNode(const idNode &node);
 
@@ -588,9 +588,9 @@ nullptr,
 
       void hideAndClearArcsAbove(const idNode &baseNode);
 
-      void hideAndClearArcsBelow(const idNode &baseNode, const idVertex &seed);
+      void hideAndClearArcsBelow(const idNode &baseNode, const SimplexId &seed);
 
-      idSuperArc hideAndClearLeadingTo(const idNode &baseNode, const idVertex 
+      idSuperArc hideAndClearLeadingTo(const idNode &baseNode, const SimplexId 
 &v);
 
       // }
@@ -682,24 +682,24 @@ nullptr,
 
       // Strict
 
-      inline bool isLower(const idVertex &a, const idVertex &b) const
+      inline bool isLower(const SimplexId &a, const SimplexId &b) const
       {
          return scalars_->mirrorVertices[a] < scalars_->mirrorVertices[b];
       }
 
-      inline bool isHigher(const idVertex &a, const idVertex &b) const
+      inline bool isHigher(const SimplexId &a, const SimplexId &b) const
       {
          return scalars_->mirrorVertices[a] > scalars_->mirrorVertices[b];
       }
 
       // Large
 
-      inline bool isEqLower(const idVertex &a, const idVertex &b) const
+      inline bool isEqLower(const SimplexId &a, const SimplexId &b) const
       {
          return scalars_->mirrorVertices[a] <= scalars_->mirrorVertices[b];
       }
 
-      inline bool isEqHigher(const idVertex &a, const idVertex &b) const
+      inline bool isEqHigher(const SimplexId &a, const SimplexId &b) const
       {
          return scalars_->mirrorVertices[a] >= scalars_->mirrorVertices[b];
       }
@@ -715,7 +715,7 @@ nullptr,
       // Compare using the scalar array : only for sort step
 
       template <typename scalarType>
-      inline bool isLower(const idVertex &a, const idVertex &b) const
+      inline bool isLower(const SimplexId &a, const SimplexId &b) const
       {
          return ((scalarType *)scalars_->values)[a] < ((scalarType 
 *)scalars_->values)[b] ||
@@ -725,7 +725,7 @@ nullptr,
       }
 
       template <typename scalarType>
-      inline bool isHigher(const idVertex &a, const idVertex &b) const
+      inline bool isHigher(const SimplexId &a, const SimplexId &b) const
       {
          return ((scalarType *)scalars_->values)[a] > ((scalarType 
 *)scalars_->values)[b] ||
@@ -735,7 +735,7 @@ nullptr,
       }
 
       template <typename scalarType>
-      inline bool isEqLower(const idVertex &a, const idVertex &b) const
+      inline bool isEqLower(const SimplexId &a, const SimplexId &b) const
       {
          return ((scalarType *)scalars_->values)[a] < ((scalarType 
 *)scalars_->values)[b] ||
@@ -745,7 +745,7 @@ nullptr,
       }
 
       template <typename scalarType>
-      inline bool isEqHigher(const idVertex &a, const idVertex &b) const
+      inline bool isEqHigher(const SimplexId &a, const SimplexId &b) const
       {
          return ((scalarType *)scalars_->values)[a] > ((scalarType 
 *)scalars_->values)[b] ||
@@ -767,7 +767,7 @@ nullptr,
 
       // Use BFS from root to find down and up of the receptarc (maintaining 
       // segmentation information)
-      std::tuple<idNode, idNode, idVertex> createReceptArc(
+      std::tuple<idNode, idNode, SimplexId> createReceptArc(
           const idNode &root, const idSuperArc &receptArcId, 
 std::vector<ExtendedUnionFind *> &arrayUF,
           const std::vector<std::pair<idSuperArc, idSuperArc>> &valenceOffsets);
@@ -786,8 +786,8 @@ std::vector<ExtendedUnionFind *> &ufArray);
       // {
       // create a std::pair with relative order : child vertex first
 
-      inline std::pair<idVertex, idVertex> reorderEdgeRel(const 
-std::pair<idVertex, idVertex> &vert)
+      inline std::pair<SimplexId, SimplexId> reorderEdgeRel(const 
+std::pair<SimplexId, SimplexId> &vert)
       {
          if (treeData_.treeType == TreeType::Split) {
             if (isHigher(vert.first, vert.second)) {
@@ -809,14 +809,14 @@ std::pair<idVertex, idVertex> &vert)
       // method
 
       template <typename scalarType>
-      void addPair(std::vector<std::tuple<idVertex, idVertex, scalarType, 
-bool>> &pairs, const idVertex &orig,
-                   const idVertex &term, const bool goUp);
+      void addPair(std::vector<std::tuple<SimplexId, SimplexId, scalarType, 
+bool>> &pairs, const SimplexId &orig,
+                   const SimplexId &term, const bool goUp);
 
       template <typename scalarType>
-      void addPair(std::vector<std::tuple<idVertex, idVertex, scalarType>> 
-&pairs, const idVertex &orig,
-                   const idVertex &term);
+      void addPair(std::vector<std::tuple<SimplexId, SimplexId, scalarType>> 
+&pairs, const SimplexId &orig,
+                   const SimplexId &term);
 
       // }
    };

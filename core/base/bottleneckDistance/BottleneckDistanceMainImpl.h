@@ -3,10 +3,10 @@
 
 //  vector <   -- diagram
 //    tuple <    -- pair of critical points
-//      idVertex, NodeType
-//      idVertex, NodeType
+//      int , NodeType
+//      int, NodeType
 //      dataType  -- persistance of pair
-//      idVertex  -- type (0/min, 1/saddle, 2/max)
+//      int  -- type (0/min, 1/saddle, 2/max)
 //      dataType            -- scalar value at vertex 1
 //      float, float, float -- vertex 1 coordinates
 //      dataType            -- scalar value at vertex 2

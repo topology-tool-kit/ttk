@@ -6,6 +6,9 @@ using namespace ttk;
 vtkStandardNewMacro(ttkProjectionFromField)
 
 ttkProjectionFromField::ttkProjectionFromField(){
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 
   // init
   pointSet_ = vtkSmartPointer<vtkPoints>::New();
@@ -84,14 +87,14 @@ int ttkProjectionFromField::doIt(vtkPointSet *input, vtkPointSet *output){
     points[i][2] = 0;
   }
   
-  SimplexId count = 0;
+  ttkIdType count = 0;
   
 #ifdef TTK_ENABLE_OPENMP
   omp_lock_t writeLock;
   omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++){
+  for(ttkIdType i = 0; i < input->GetNumberOfPoints(); i++){
     
     ThreadId threadId = 0;
     

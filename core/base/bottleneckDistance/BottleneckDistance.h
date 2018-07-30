@@ -5,17 +5,17 @@
 #define _BOTTLENECKDISTANCE_H
 
 #ifndef diagramTuple
-#define diagramTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, ttk::ftm::idVertex, \
-  ttk::ftm::NodeType, dataType, ttk::ftm::idVertex, \
+#define diagramTuple std::tuple<int, ttk::ftm::NodeType, int, \
+  ttk::ftm::NodeType, dataType, int, \
   dataType, float, float, float, dataType, float, float, float>
 #endif
 
 #ifndef matchingTuple
-#define matchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, double>
+#define matchingTuple std::tuple<int, int, double>
 #endif
 
 #ifndef trackingTuple
-#define trackingTuple std::tuple<int, int, std::vector<ttk::ftm::idVertex>>
+#define trackingTuple std::tuple<int, int, std::vector<int>>
 #endif
 // start ts, end ts or -1, list of indices for every ts
 
@@ -25,7 +25,7 @@
 #define BLocalMin ttk::ftm::NodeType::Local_minimum
 #define BSaddle1  ttk::ftm::NodeType::Saddle1
 #define BSaddle2  ttk::ftm::NodeType::Saddle2
-#define BIdVertex ttk::ftm::idVertex
+#define BIdVertex int
 #endif
 
 // base code includes

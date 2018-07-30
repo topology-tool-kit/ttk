@@ -16,18 +16,18 @@ int MorseSmaleComplex2D::getAscendingSeparatrices1(const vector<Cell>& criticalP
     vector<Separatrix>& separatrices,
     vector<vector<Cell>>& separatricesGeometry) const{
 
-  vector<simplexId_t> saddleIndexes;
-  const simplexId_t numberOfCriticalPoints=criticalPoints.size();
-  for(simplexId_t i=0; i<numberOfCriticalPoints; ++i){
+  vector<SimplexId> saddleIndexes;
+  const SimplexId numberOfCriticalPoints=criticalPoints.size();
+  for(SimplexId i=0; i<numberOfCriticalPoints; ++i){
     const Cell& criticalPoint=criticalPoints[i];
 
     if(criticalPoint.dim_==1)
       saddleIndexes.push_back(i);
   }
-  const simplexId_t numberOfSaddles=saddleIndexes.size();
+  const SimplexId numberOfSaddles=saddleIndexes.size();
 
   // estimation of the number of separatrices, apriori : numberOfAscendingPaths=2, numberOfDescendingPaths=2
-  const simplexId_t numberOfSeparatrices=4*numberOfSaddles;
+  const SimplexId numberOfSeparatrices=4*numberOfSaddles;
   separatrices.resize(numberOfSeparatrices);
   separatricesGeometry.resize(numberOfSeparatrices);
 
@@ -35,17 +35,17 @@ int MorseSmaleComplex2D::getAscendingSeparatrices1(const vector<Cell>& criticalP
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(simplexId_t i=0; i<numberOfSaddles; ++i){
-    const simplexId_t saddleIndex=saddleIndexes[i];
+  for(SimplexId i=0; i<numberOfSaddles; ++i){
+    const SimplexId saddleIndex=saddleIndexes[i];
     const Cell& saddle=criticalPoints[saddleIndex];
 
     // add ascending vpaths
     {
-      const simplexId_t starNumber=inputTriangulation_->getEdgeStarNumber(saddle.id_);
-      for(simplexId_t j=0; j<starNumber; ++j){
-        const simplexId_t shift=j;
+      const SimplexId starNumber=inputTriangulation_->getEdgeStarNumber(saddle.id_);
+      for(SimplexId j=0; j<starNumber; ++j){
+        const SimplexId shift=j;
 
-        simplexId_t triangleId;
+        SimplexId triangleId;
         inputTriangulation_->getEdgeStar(saddle.id_, j, triangleId);
 
         vector<Cell> vpath;
@@ -54,7 +54,7 @@ int MorseSmaleComplex2D::getAscendingSeparatrices1(const vector<Cell>& criticalP
 
         const Cell& lastCell=vpath.back();
         if(lastCell.dim_==2 and discreteGradient_.isCellCritical(lastCell)){
-          const simplexId_t separatrixIndex=4*i+shift;
+          const SimplexId separatrixIndex=4*i+shift;
 
           separatricesGeometry[separatrixIndex]=std::move(vpath);
           separatrices[separatrixIndex]=std::move(Separatrix(true,saddle,lastCell,false,separatrixIndex));

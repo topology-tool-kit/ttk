@@ -43,7 +43,7 @@ namespace ttk{
 
       int connectivityPreprocessing(const std::vector<std::vector<SimplexId> > &edgeStarList,
         std::vector<std::vector<std::pair<SimplexId, SimplexId> > > &edgeFanLinkEdgeLists,
-        std::vector<std::vector<SimplexId> > &edgeFans,
+        std::vector<std::vector<LongSimplexId> > &edgeFans,
         std::vector<SimplexId> &sosOffsets) const;
       
       int execute(std::vector<std::pair<SimplexId, char> > &jacobiSet);

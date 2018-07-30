@@ -28,10 +28,10 @@ namespace ftm
 
      private:
       // mesh vertex where this node is
-      idVertex vertexId_;
+      SimplexId vertexId_;
       // For leaves, linkedNode is the saddle ending the persistance pair
       // For saddle, linked is the leaf starting the persistance pair in which they are
-      idVertex linkedNode_;
+      SimplexId linkedNode_;
       // link with superArc above and below
       std::vector<idSuperArc> vect_downSuperArcList_, vect_upSuperArcList_;
 
@@ -46,7 +46,7 @@ namespace ftm
       {
       }
 
-      Node(idVertex id, idVertex linked) : vertexId_(id), linkedNode_(linked)
+      Node(SimplexId id, SimplexId linked) : vertexId_(id), linkedNode_(linked)
       {
       }
 
@@ -56,34 +56,34 @@ namespace ftm
 
       // Vertex id
 
-      inline idVertex getVertexId() const
+      inline SimplexId getVertexId() const
       {
          return vertexId_;
       }
 
-      inline void setVertexId(idVertex vertexId)
+      inline void setVertexId(SimplexId vertexId)
       {
          vertexId_ = vertexId;
       }
 
       // Linked node
 
-      inline idVertex getOrigin(void) const
+      inline SimplexId getOrigin(void) const
       {
          return linkedNode_;
       }
 
-      inline idVertex getTerminaison(void) const
+      inline SimplexId getTerminaison(void) const
       {
          return linkedNode_;
       }
 
-      inline void setOrigin(idVertex linked)
+      inline void setOrigin(SimplexId linked)
       {
          linkedNode_ = linked;
       }
 
-      inline void setTerminaison(idVertex linked)
+      inline void setTerminaison(SimplexId linked)
       {
          linkedNode_ = linked;
       }

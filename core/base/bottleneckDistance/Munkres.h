@@ -5,10 +5,6 @@
 #ifndef _MUNKRES_H
 #define _MUNKRES_H
 
-#ifndef matchingTuple
-#define matchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, dataType>
-#endif
-
 #include <cmath>
 #include <limits>
 #include <iostream>

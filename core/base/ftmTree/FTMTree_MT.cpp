@@ -134,12 +134,12 @@ FTMTree_MT::~FTMTree_MT()
 #endif
 }
 
-void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
+void FTMTree_MT::arcGrowth(const SimplexId startVert, const SimplexId orig)
 {
    // current task id / propag
 
    // local order (ignore non regular verts)
-   idVertex localOrder = -1;
+   SimplexId localOrder = -1;
    UF startUF = (*mt_data_.ufs)[startVert]->find();
    // get or recover states
    CurrentState *currentState;
@@ -170,7 +170,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
    while (!currentState->empty()) {
       // Next vertex
 
-      idVertex currentVert = currentState->getNextMinVertex();
+      SimplexId currentVert = currentState->getNextMinVertex();
 
       // ignore duplicate
       if (!isCorrespondingNull(currentVert) && !isCorrespondingNode(currentVert)) {
@@ -258,7 +258,7 @@ void FTMTree_MT::arcGrowth(const idVertex startVert, const idVertex orig)
    }  // end wile propagation
 
    // close root
-   const idVertex closeVert      = getSuperArc(currentArc)->getLastVisited();
+   const SimplexId closeVert      = getSuperArc(currentArc)->getLastVisited();
    bool           existCloseNode = isCorrespondingNode(closeVert);
    idNode closeNode = (existCloseNode) ? getCorrespondingNodeId(closeVert) : makeNode(closeVert);
    closeSuperArc(currentArc, closeNode);
@@ -306,7 +306,7 @@ void FTMTree_MT::build(const bool ct)
    printTime(buildTime, "[FTM] leafGrowth "+treeString, nbProcessed, 3);
 
    DebugTimer bbTime;
-   idVertex bbSize = trunk(ct);
+   SimplexId bbSize = trunk(ct);
    printTime(bbTime, "[FTM] trunk "+treeString, bbSize, 3);
 
    // Segmentation
@@ -326,7 +326,7 @@ void FTMTree_MT::buildSegmentation()
 
    // SuperArc i correspond to segment i,
    // one arc correspond to one segment
-   vector<idVertex> sizes(nbArcs);
+   vector<SimplexId> sizes(nbArcs);
 
    // get the size of each segment
    const idSuperArc arcChunkSize = getChunkSize(nbArcs);
@@ -340,7 +340,7 @@ void FTMTree_MT::buildSegmentation()
            const idSuperArc lowerBound = arcChunkId*arcChunkSize;
            const idSuperArc upperBound = min(nbArcs, (arcChunkId+1)*arcChunkSize );
            for (idSuperArc a = lowerBound; a < upperBound; ++a) {
-              sizes[a] = max((idVertex)0, (*mt_data_.superArcs)[a].getNbVertSeen() - 1);
+              sizes[a] = max((SimplexId)0, (*mt_data_.superArcs)[a].getNbVertSeen() - 1);
            }
        }
    }
@@ -356,26 +356,26 @@ void FTMTree_MT::buildSegmentation()
    // Fill segments using vert2tree
 
    // current status of the segmentation of this arc
-   vector<idVertex> posSegm(nbArcs, 0);
+   vector<SimplexId> posSegm(nbArcs, 0);
 
    // Segments are connex region of geometrie forming
    // the segmentation (sorted in ascending order)
-   const idVertex nbVert = scalars_->size;
-   const idVertex chunkSize = getChunkSize();
-   const idVertex chunkNb   = getChunkCount();
-   for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId)
+   const SimplexId nbVert = scalars_->size;
+   const SimplexId chunkSize = getChunkSize();
+   const SimplexId chunkNb   = getChunkCount();
+   for (SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId)
    {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId) shared(posSegm)
 #endif
        {
-          const idVertex lowerBound = chunkId * chunkSize;
-          const idVertex upperBound = min(nbVert, (chunkId+1)*chunkSize);
-          for (idVertex i = lowerBound; i < upperBound; ++i) {
+          const SimplexId lowerBound = chunkId * chunkSize;
+          const SimplexId upperBound = min(nbVert, (chunkId+1)*chunkSize);
+          for (SimplexId i = lowerBound; i < upperBound; ++i) {
              const auto vert = (*scalars_->sortedVertices)[i];
              if (isCorrespondingArc(vert)) {
                 idSuperArc sa = getCorrespondingSuperArcId(vert);
-                idVertex   vertToAdd;
+                SimplexId   vertToAdd;
                 if((*mt_data_.visitOrder)[vert] != nullVertex){
                    // Opposite order for Split Tree
                    vertToAdd = (*mt_data_.visitOrder)[vert];
@@ -475,14 +475,14 @@ FTMTree_MT *FTMTree_MT::clone() const
    return newMT;
 }
 
-void FTMTree_MT::closeAndMergeOnSaddle(idVertex saddleVert)
+void FTMTree_MT::closeAndMergeOnSaddle(SimplexId saddleVert)
 {
    idNode closeNode = makeNode(saddleVert);
 
    // Union of the UF coming here (merge propagation and closing arcs)
    const auto &nbNeigh = mesh_->getVertexNeighborNumber(saddleVert);
    for (valence n = 0; n < nbNeigh; ++n) {
-      idVertex neigh;
+      SimplexId neigh;
       mesh_->getVertexNeighbor(saddleVert, n, neigh);
 
       if (comp_.vertLower(neigh, saddleVert)) {
@@ -508,14 +508,14 @@ void FTMTree_MT::closeArcsUF(idNode closeNode, UF uf)
    uf->find()->clearOpenedArcs();
 }
 
-void FTMTree_MT::closeOnBackBone(idVertex saddleVert)
+void FTMTree_MT::closeOnBackBone(SimplexId saddleVert)
 {
    idNode closeNode = makeNode(saddleVert);
 
    // Union of the UF coming here (merge propagation and closing arcs)
    const auto &nbNeigh = mesh_->getVertexNeighborNumber(saddleVert);
    for (valence n = 0; n < nbNeigh; ++n) {
-      idVertex neigh;
+      SimplexId neigh;
       mesh_->getVertexNeighbor(saddleVert, n, neigh);
 
       if (comp_.vertLower(neigh, saddleVert)) {
@@ -613,9 +613,9 @@ void FTMTree_MT::finalizeSegmentation(void)
    }
 }
 
-tuple<idVertex, idVertex> FTMTree_MT::getBoundsFromVerts(const vector<idVertex> &trunkVerts) const
+tuple<SimplexId, SimplexId> FTMTree_MT::getBoundsFromVerts(const vector<SimplexId> &trunkVerts) const
 {
-    idVertex begin, stop;
+    SimplexId begin, stop;
 
     if(isST()){
        begin = 0;
@@ -680,8 +680,8 @@ idNode FTMTree_MT::getUpperNodeId(const SuperArc *a)
    return getUpNodeId(a);
 }
 
-idNode FTMTree_MT::getVertInRange(const vector<idVertex> &range,
-                                  const idVertex v,
+idNode FTMTree_MT::getVertInRange(const vector<SimplexId> &range,
+                                  const SimplexId v,
                                   const idNode last) const
 {
     idNode idRes = last;
@@ -710,7 +710,7 @@ idSuperArc FTMTree_MT::insertNode(Node *node, const bool segm)
 
    idNode     upNodeId, newNodeId;
    idSuperArc currentSA, newSA;
-   idVertex   origin;
+   SimplexId   origin;
 
    // Create new node
    currentSA = getCorrespondingSuperArcId(node->getVertexId());
@@ -752,7 +752,7 @@ void FTMTree_MT::leafGrowth()
 
    // elevation: backbone only
    if (nbLeaves == 1) {
-      const idVertex v            = (*mt_data_.nodes)[0].getVertexId();
+      const SimplexId v            = (*mt_data_.nodes)[0].getVertexId();
       (*mt_data_.openedNodes)[v] = 1;
       (*mt_data_.ufs)[v]         = new AtomicUF(v);
       return;
@@ -799,19 +799,19 @@ int FTMTree_MT::leafSearch()
       const auto chunkNb   = getChunkCount();
 
       // Extrema extract and launch tasks
-      for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+      for (SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId)
 #endif
          {
-            const idVertex lowerBound = chunkId * chunkSize;
-            const idVertex upperBound = min(nbScalars, (chunkId + 1) * chunkSize);
-            for (idVertex v = lowerBound; v < upperBound; ++v) {
+            const SimplexId lowerBound = chunkId * chunkSize;
+            const SimplexId upperBound = min(nbScalars, (chunkId + 1) * chunkSize);
+            for (SimplexId v = lowerBound; v < upperBound; ++v) {
                const auto &neighNumb = mesh_->getVertexNeighborNumber(v);
                valence     val       = 0;
 
                for (valence n = 0; n < neighNumb; ++n) {
-                  idVertex neigh;
+                  SimplexId neigh;
                   mesh_->getVertexNeighbor(v, n, neigh);
                   comp_.vertLower(neigh, v) && ++val;
                }
@@ -851,7 +851,7 @@ int FTMTree_MT::leafSearch()
    return ret;
 }
 
-idNode FTMTree_MT::makeNode(idVertex vertexId, idVertex term)
+idNode FTMTree_MT::makeNode(SimplexId vertexId, SimplexId term)
 {
 #ifndef TTK_ENABLE_KAMIKAZE
    if (vertexId < 0 || vertexId >= scalars_->size) {
@@ -873,7 +873,7 @@ idNode FTMTree_MT::makeNode(idVertex vertexId, idVertex term)
    return newNodeId;
 }
 
-idNode FTMTree_MT::makeNode(const Node *const n, idVertex term)
+idNode FTMTree_MT::makeNode(const Node *const n, SimplexId term)
 {
    return makeNode(n->getVertexId());
 }
@@ -1021,8 +1021,8 @@ string FTMTree_MT::printArc(idSuperArc a)
 {
    const SuperArc *sa = getSuperArc(a);
    stringstream    res;
-   const idVertex dv = getNode(sa->getDownNodeId())->getVertexId();
-   const idVertex uv = getNode(sa->getUpNodeId())->getVertexId();
+   const SimplexId dv = getNode(sa->getDownNodeId())->getVertexId();
+   const SimplexId uv = getNode(sa->getUpNodeId())->getVertexId();
    res << a;
    res << " : ";
    if (dv != nullVertex) {
@@ -1105,7 +1105,7 @@ void FTMTree_MT::printParams(void) const
    }
 }
 
-int FTMTree_MT::printTime(DebugTimer &t, const string &s, idVertex nbScalars, const int debugLevel) const
+int FTMTree_MT::printTime(DebugTimer &t, const string &s, SimplexId nbScalars, const int debugLevel) const
 {
    if (nbScalars == -1) {
       nbScalars = scalars_->size;
@@ -1180,7 +1180,7 @@ tuple<bool, bool> FTMTree_MT::propage(CurrentState &currentState, UF curUF)
 
    // propagation / is saddle
    for (valence n = 0; n < nbNeigh; ++n) {
-      idVertex neigh;
+      SimplexId neigh;
       mesh_->getVertexNeighbor(currentState.vertex, n, neigh);
 
       if (comp_.vertLower(neigh, currentState.vertex)) {
@@ -1279,22 +1279,22 @@ vector<idNode> FTMTree_MT::sortedNodes(const bool para)
    return sortedNodes;
 }
 
-idVertex FTMTree_MT::trunk(const bool ct)
+SimplexId FTMTree_MT::trunk(const bool ct)
 {
    DebugTimer bbTimer;
 
-   vector<idVertex> trunkVerts;
+   vector<SimplexId> trunkVerts;
    const auto &     nbScalars = scalars_->size;
 
    //trunkVerts
-  trunkVerts.reserve(max((idVertex)10, nbScalars / 500));
-   for (idVertex v = 0; v < nbScalars; ++v) {
+  trunkVerts.reserve(max((SimplexId)10, nbScalars / 500));
+   for (SimplexId v = 0; v < nbScalars; ++v) {
        if((*mt_data_.openedNodes)[v]){
           trunkVerts.emplace_back(v);
        }
    }
    sort(trunkVerts.begin(), trunkVerts.end(), comp_.vertLower);
-   for (const idVertex v : trunkVerts) {
+   for (const SimplexId v : trunkVerts) {
       closeOnBackBone(v);
    }
 
@@ -1322,7 +1322,7 @@ idVertex FTMTree_MT::trunk(const bool ct)
    bbTimer.reStart();
 
    // Segmentation
-   idVertex begin, stop, processed;
+   SimplexId begin, stop, processed;
    tie(begin, stop) = getBoundsFromVerts(trunkVerts);
    if(ct){
        processed = trunkCTSegmentation(trunkVerts, begin, stop);
@@ -1334,9 +1334,9 @@ idVertex FTMTree_MT::trunk(const bool ct)
    return processed;
 }
 
-idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
-                                         const idVertex begin,
-                                         const idVertex stop)
+SimplexId FTMTree_MT::trunkCTSegmentation(const vector<SimplexId> &trunkVerts,
+                                         const SimplexId begin,
+                                         const SimplexId stop)
 {
    const int nbTasksThreads = 40;
    const auto sizeBackBone  = abs(stop - begin);
@@ -1345,23 +1345,23 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
    // si pas efficace vecteur de la taille de node ici a la place de acc
    idNode   lastVertInRange = 0;
    mt_data_.trunkSegments->resize(getNumberOfSuperArcs());
-   for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+   for (SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId, lastVertInRange) shared(trunkVerts)
 #endif
       {
-         vector<idVertex> regularList;
+         vector<SimplexId> regularList;
          if (params_->segm) {
             regularList.reserve(25);
          }
-         const idVertex lowerBound = begin + chunkId * chunkSize;
-         const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
+         const SimplexId lowerBound = begin + chunkId * chunkSize;
+         const SimplexId upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
          if (lowerBound != upperBound) {
-            const idVertex pos = isST() ? upperBound - 1 : lowerBound;
+            const SimplexId pos = isST() ? upperBound - 1 : lowerBound;
             lastVertInRange    = getVertInRange(trunkVerts, (*scalars_->sortedVertices)[pos], 0);
          }
-         for (idVertex v = lowerBound; v < upperBound; ++v) {
-            const idVertex s = isST() ? (*scalars_->sortedVertices)[lowerBound + upperBound - 1 - v]
+         for (SimplexId v = lowerBound; v < upperBound; ++v) {
+            const SimplexId s = isST() ? (*scalars_->sortedVertices)[lowerBound + upperBound - 1 - v]
                                       : (*scalars_->sortedVertices)[v];
             if (isCorrespondingNull(s)) {
                const idNode oldVertInRange = lastVertInRange;
@@ -1408,10 +1408,10 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
 #pragma omp taskwait
 #endif
    // count added
-   idVertex tot = 0;
+   SimplexId tot = 0;
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
    for (const auto& l : *mt_data_.trunkSegments) {
-       idVertex arcSize = 0;
+       SimplexId arcSize = 0;
        for (const auto& v: l){
           arcSize += v.size();
        }
@@ -1421,9 +1421,9 @@ idVertex FTMTree_MT::trunkCTSegmentation(const vector<idVertex> &trunkVerts,
    return tot;
 }
 
-idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
-                                       const idVertex begin,
-                                       const idVertex stop)
+SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
+                                       const SimplexId begin,
+                                       const SimplexId stop)
 {
    // Assign missing vert to the good arc
    // and also add the corresponding number for
@@ -1433,19 +1433,19 @@ idVertex FTMTree_MT::trunkSegmentation(const vector<idVertex> &trunkVerts,
    const auto chunkSize     = getChunkSize(sizeBackBone, nbTasksThreads);
    const auto chunkNb       = getChunkCount(sizeBackBone, nbTasksThreads);
    // si pas efficace vecteur de la taille de node ici a la place de acc
-   idVertex tot             = 0;
-   for (idVertex chunkId = 0; chunkId < chunkNb; ++chunkId) {
+   SimplexId tot             = 0;
+   for (SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(chunkId) shared(trunkVerts, tot)
 #endif
       {
          idNode   lastVertInRange = 0;
-         idVertex acc             = 0;
+         SimplexId acc             = 0;
 
-         const idVertex lowerBound = begin + chunkId * chunkSize;
-         const idVertex upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
-         for (idVertex v = lowerBound; v < upperBound; ++v) {
-            const idVertex s = isST() ? (*scalars_->sortedVertices)[lowerBound + upperBound - 1 - v]
+         const SimplexId lowerBound = begin + chunkId * chunkSize;
+         const SimplexId upperBound = min(stop, (begin + (chunkId + 1) * chunkSize));
+         for (SimplexId v = lowerBound; v < upperBound; ++v) {
+            const SimplexId s = isST() ? (*scalars_->sortedVertices)[lowerBound + upperBound - 1 - v]
                                       : (*scalars_->sortedVertices)[v];
             if (isCorrespondingNull(s)) {
                const idNode oldVertInRange = lastVertInRange;

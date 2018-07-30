@@ -9,7 +9,7 @@ ttkContourForests::ttkContourForests()
   :  // Base //
     FieldId{0},
     InputOffsetFieldId{-1},
-    inputOffsetScalarFieldName_{"OutputOffsetScalarField"},
+    inputOffsetScalarFieldName_{ttk::OffsetScalarFieldName},
     isLoaded_{},
     lessPartition_{true},
     tree_{},
@@ -51,17 +51,27 @@ ttkContourForests::ttkContourForests()
     // Convenient storage //
     deltaScalar_{},
     numberOfVertices_{},
-    vertexSoSoffsets_{new vector<SimplexId>},
-    criticalPoints_{new vector<SimplexId>},
+    vertexSoSoffsets_{new vector<ttkIdType>},
+    criticalPoints_{new vector<ttkIdType>},
     vertexScalars_{nullptr},
     inputScalars_{new vector<vector<double>>},
     inputScalarsName_{new vector<string>},
-    samples_{new vector<vector<vector<vector<SimplexId>>>>},
+    samples_{new vector<vector<vector<vector<ttkIdType>>>>},
     barycenters_{new vector<vector<vector<vector<double>>>>}
 {
   contourTree_->setWrapper(this);
   contourTree_->setDebugLevel(debugLevel_);
   UseAllCores = false;
+  useInputOffsetScalarField_ = false;
+  SetTreeType(2);
+  arcResolution_ = 20;
+  skeletonSmoothing_ = 15;
+  lessPartition_ = 1;
+  partitionNum_ = -1;
+
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 
   // VTK Interface //
   SetNumberOfInputPorts(1);
@@ -198,7 +208,7 @@ void ttkContourForests::SetUseAllCores(bool onOff)
   SetThreads();
 }
 
-void ttkContourForests::SetUseInputOffsetScalarField(bool onOff)
+void ttkContourForests::SetForceInputOffsetScalarField(bool onOff)
 {
   toUpdateVertexSoSoffsets_ = true;
   toComputeContourTree_     = true;
@@ -398,7 +408,7 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
             (*inputScalars_)[k].resize(numberOfVertices_);
             (*inputScalarsName_)[k] = inputArray->GetName();
 
-            for (SimplexId j = 0; j < numberOfVertices_; ++j) {
+            for (ttkIdType j = 0; j < numberOfVertices_; ++j) {
               (*inputScalars_)[k][j] = inputArray->GetTuple1(j);
             }
 
@@ -458,14 +468,33 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
       }
       else{
         vertexSoSoffsets_->resize(offsets->GetNumberOfTuples());
-        for (SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_->size(); ++i){
+        for (ttkIdType i = 0; i < (ttkIdType)vertexSoSoffsets_->size(); ++i){
+          (*vertexSoSoffsets_)[i] = offsets->GetTuple1(i);
+        }
+      }
+    }
+    else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+      auto offsets =
+        input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
+
+      if(offsets->GetNumberOfTuples() != numberOfVertices_){
+        stringstream msg;
+        msg << "[ttkContourForests] Mesh and offset sizes do not match :("
+          << endl;
+        msg << "[ttkContourForests] Using default offset field instead..."
+          << endl;
+        dMsg(cerr, msg.str(), Debug::infoMsg);
+      }
+      else{
+        vertexSoSoffsets_->resize(offsets->GetNumberOfTuples());
+        for (ttkIdType i = 0; i < (ttkIdType)vertexSoSoffsets_->size(); ++i){
           (*vertexSoSoffsets_)[i] = offsets->GetTuple1(i);
         }
       }
     }
     if(vertexSoSoffsets_->empty()){
       vertexSoSoffsets_->resize(numberOfVertices_);
-      for (SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_->size(); ++i){
+      for (ttkIdType i = 0; i < (ttkIdType)vertexSoSoffsets_->size(); ++i){
         (*vertexSoSoffsets_)[i] = i;
       }
     }
@@ -526,9 +555,9 @@ void ttkContourForests::getSkeletonArcs()
   vtkSmartPointer<vtkAppendPolyData> app = vtkSmartPointer<vtkAppendPolyData>::New();
 
   vtkDoubleArray* scalars{};
-  vtkIdTypeArray*    identifierScalars{};
+  ttkIdTypeArray*    identifierScalars{};
   vtkIntArray*    typeScalars{};
-  vtkIdTypeArray*    sizeScalars{};
+  ttkIdTypeArray*    sizeScalars{};
   vtkDoubleArray* spanScalars{};
   int type = static_cast<int>(TreeComponent::Arc);
 
@@ -541,23 +570,23 @@ void ttkContourForests::getSkeletonArcs()
 
   double    inputScalar;
   SuperArc* a;
-  SimplexId       regionSize;
+  ttkIdType       regionSize;
   double    regionSpan;
-  SimplexId       currentZone = 0;
-  SimplexId       regionId;
+  ttkIdType       currentZone = 0;
+  ttkIdType       regionId;
 
-  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
+  for (ttkIdType i = 0; i < (ttkIdType)tree_->getNumberOfSuperArcs(); ++i) {
     a = tree_->getSuperArc(i);
 
     if (a->isVisible()) {
-      SimplexId      upNodeId   = tree_->getSuperArc(i)->getUpNodeId();
-      SimplexId      upVertex   = tree_->getNode(upNodeId)->getVertexId();
+      ttkIdType      upNodeId   = tree_->getSuperArc(i)->getUpNodeId();
+      ttkIdType      upVertex   = tree_->getNode(upNodeId)->getVertexId();
       float    coordUp[3];
       triangulation_->getVertexPoint(
         upVertex, coordUp[0], coordUp[1], coordUp[2]);
 
-      SimplexId      downNodeId   = tree_->getSuperArc(i)->getDownNodeId();
-      SimplexId      downVertex   = tree_->getNode(downNodeId)->getVertexId();
+      ttkIdType      downNodeId   = tree_->getSuperArc(i)->getDownNodeId();
+      ttkIdType      downVertex   = tree_->getNode(downNodeId)->getVertexId();
       float    coordDown[3];
       triangulation_->getVertexPoint(
         downVertex, coordDown[0], coordDown[1], coordDown[2]);
@@ -569,7 +598,7 @@ void ttkContourForests::getSkeletonArcs()
       // Line //
       if ((*barycenters_)[static_cast<int>(treeType_)][i].size()) {
         // init: min
-        SimplexId downNodeVId;
+        ttkIdType downNodeVId;
         if (treeType_ == TreeType::Split)
           downNodeVId = tree_->getNode(a->getUpNodeId())->getVertexId();
         else
@@ -603,7 +632,7 @@ void ttkContourForests::getSkeletonArcs()
 
             // Cell data //
             // Identifier
-            identifierScalars = vtkIdTypeArray::New();
+            identifierScalars = ttkIdTypeArray::New();
             identifierScalars->SetName("SegmentationId");
             for (unsigned int k = 0; k < 2; ++k)
               identifierScalars->InsertTuple1(k, regionId);
@@ -617,7 +646,7 @@ void ttkContourForests::getSkeletonArcs()
             lineData->GetCellData()->AddArray(typeScalars);
             typeScalars->Delete();
             // Size
-            sizeScalars = vtkIdTypeArray::New();
+            sizeScalars = ttkIdTypeArray::New();
             sizeScalars->SetName("RegionSize");
             for (unsigned int k = 0; k < 2; ++k)
               sizeScalars->InsertTuple1(k, regionSize);
@@ -639,7 +668,7 @@ void ttkContourForests::getSkeletonArcs()
         }
 
         // end: max
-        SimplexId upNodeVId;
+        ttkIdType upNodeVId;
         if (treeType_ == TreeType::Split)
           upNodeVId = tree_->getNode(a->getDownNodeId())->getVertexId();
         else
@@ -671,7 +700,7 @@ void ttkContourForests::getSkeletonArcs()
 
           // Cell data //
           // Identifier
-          identifierScalars = vtkIdTypeArray::New();
+          identifierScalars = ttkIdTypeArray::New();
           identifierScalars->SetName("SegmentationId");
           for (unsigned int k = 0; k < 2; ++k)
             identifierScalars->InsertTuple1(k, regionId);
@@ -685,7 +714,7 @@ void ttkContourForests::getSkeletonArcs()
           lineData->GetCellData()->AddArray(typeScalars);
           typeScalars->Delete();
           // Size
-          sizeScalars = vtkIdTypeArray::New();
+          sizeScalars = ttkIdTypeArray::New();
           sizeScalars->SetName("RegionSize");
           for (unsigned int k = 0; k < 2; ++k)
             sizeScalars->InsertTuple1(k, regionSize);
@@ -704,12 +733,12 @@ void ttkContourForests::getSkeletonArcs()
       } else {
         vtkSmartPointer<vtkLineSource> line = vtkSmartPointer<vtkLineSource>::New();
 
-        SimplexId downNodeVId = tree_->getNode(a->getDownNodeId())->getVertexId();
+        ttkIdType downNodeVId = tree_->getNode(a->getDownNodeId())->getVertexId();
         triangulation_->getVertexPoint(
           downNodeVId, point1[0], point1[1], point1[2]);
         line->SetPoint1(point1);
 
-        SimplexId upNodeVId = tree_->getNode(a->getUpNodeId())->getVertexId();
+        ttkIdType upNodeVId = tree_->getNode(a->getUpNodeId())->getVertexId();
         float pt[3];
         triangulation_->getVertexPoint(upNodeVId, pt[0], pt[1], pt[2]);
         point2[0]=pt[0];
@@ -735,7 +764,7 @@ void ttkContourForests::getSkeletonArcs()
 
           // Cell data //
           // Identifier
-          identifierScalars = vtkIdTypeArray::New();
+          identifierScalars = ttkIdTypeArray::New();
           identifierScalars->SetName("SegmentationId");
           for (int k = 0; k < 2; ++k)
             identifierScalars->InsertTuple1(k, regionId);
@@ -749,7 +778,7 @@ void ttkContourForests::getSkeletonArcs()
           lineData->GetCellData()->AddArray(typeScalars);
           typeScalars->Delete();
           // Size
-          sizeScalars = vtkIdTypeArray::New();
+          sizeScalars = ttkIdTypeArray::New();
           sizeScalars->SetName("RegionSize");
           for (unsigned int k = 0; k < 2; ++k)
             sizeScalars->InsertTuple1(k, regionSize);
@@ -782,20 +811,20 @@ int ttkContourForests::getSkeletonScalars(const vector<double>& scalars,
   skeletonScalars.clear();
   skeletonScalars.resize(tree_->getNumberOfSuperArcs());
 
-  SimplexId nodeId;
-  SimplexId vertexId;
+  ttkIdType nodeId;
+  ttkIdType vertexId;
 
   double f;
   double f0;
   double f1;
   double fmin;
   double fmax;
-  SimplexId nodeMinId;
-  SimplexId nodeMaxId;
-  SimplexId nodeMinVId;
-  SimplexId nodeMaxVId;
+  ttkIdType nodeMinId;
+  ttkIdType nodeMaxId;
+  ttkIdType nodeMinVId;
+  ttkIdType nodeMaxVId;
   const SuperArc* a;
-  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
+  for (ttkIdType i = 0; i < (ttkIdType)tree_->getNumberOfSuperArcs(); ++i) {
     a = tree_->getSuperArc(i);
 
     if (!a->isPruned()) {
@@ -817,11 +846,11 @@ int ttkContourForests::getSkeletonScalars(const vector<double>& scalars,
       f0 = fmin;
 
       // iteration
-      for (SimplexId j = 0; j < (SimplexId)(*samples_)[static_cast<int>(treeType_)][i].size(); ++j) {
-        const vector<SimplexId>& sample = (*samples_)[static_cast<int>(treeType_)][i][j];
+      for (ttkIdType j = 0; j < (ttkIdType)(*samples_)[static_cast<int>(treeType_)][i].size(); ++j) {
+        const vector<ttkIdType>& sample = (*samples_)[static_cast<int>(treeType_)][i][j];
 
         f = 0;
-        for (SimplexId k = 0; k < (SimplexId)sample.size(); ++k) {
+        for (ttkIdType k = 0; k < (ttkIdType)sample.size(); ++k) {
           nodeId   = sample[k];
           vertexId = nodeId;
           f += scalars[vertexId];
@@ -859,24 +888,24 @@ void ttkContourForests::getSkeletonNodes()
     scalars[f]->SetName((*inputScalarsName_)[f].data());
   }
 
-  vtkIdTypeArray* nodeIdentifierScalars = vtkIdTypeArray::New();
+  ttkIdTypeArray* nodeIdentifierScalars = ttkIdTypeArray::New();
   nodeIdentifierScalars->SetName("NodeIdentifier");
 
-  vtkIdTypeArray* vertexIdentifierScalars = vtkIdTypeArray::New();
+  ttkIdTypeArray* vertexIdentifierScalars = ttkIdTypeArray::New();
   vertexIdentifierScalars->SetName("VertexIdentifier");
 
   int type{};
   vtkIntArray* nodeTypeScalars = vtkIntArray::New();
   nodeTypeScalars->SetName("NodeType");
 
-  vtkIdTypeArray* regionSizeScalars = vtkIdTypeArray::New();
+  ttkIdTypeArray* regionSizeScalars = ttkIdTypeArray::New();
   regionSizeScalars->SetName("RegionSize");
 
-  SimplexId identifier{};
+  ttkIdType identifier{};
   for (unsigned i = 0; i < criticalPoints_->size(); ++i) {
-    SimplexId nodeId        = (*criticalPoints_)[i];
+    ttkIdType nodeId        = (*criticalPoints_)[i];
     if(tree_->getNode(nodeId)->isHidden()) continue;
-    SimplexId vertexId      = tree_->getNode(nodeId)->getVertexId();
+    ttkIdType vertexId      = tree_->getNode(nodeId)->getVertexId();
     NodeType nodeType = getNodeType(nodeId);
 
     if ((nodeType == NodeType::Local_minimum and showMin_) or
@@ -906,13 +935,13 @@ void ttkContourForests::getSkeletonNodes()
       nodeTypeScalars->InsertTuple1(identifier, type);
 
       // RegionSize
-      SimplexId regionSize=0;
+      ttkIdType regionSize=0;
       if(nodeType==NodeType::Local_maximum){
-        const SimplexId arcId=tree_->getNode(nodeId)->getDownSuperArcId(0);
+        const ttkIdType arcId=tree_->getNode(nodeId)->getDownSuperArcId(0);
         regionSize=tree_->getSuperArc(arcId)->getNumberOfRegularNodes()+1;
       }
       else if(nodeType==NodeType::Local_minimum){
-        const SimplexId arcId=tree_->getNode(nodeId)->getUpSuperArcId(0);
+        const ttkIdType arcId=tree_->getNode(nodeId)->getUpSuperArcId(0);
         regionSize=tree_->getSuperArc(arcId)->getNumberOfRegularNodes()+1;
       }
       regionSizeScalars->InsertTuple1(identifier, regionSize);
@@ -936,12 +965,12 @@ void ttkContourForests::getSkeletonNodes()
   regionSizeScalars->Delete();
 }
 
-NodeType ttkContourForests::getNodeType(SimplexId id)
+NodeType ttkContourForests::getNodeType(ttkIdType id)
 {
   return getNodeType(id, treeType_, tree_);
 }
 
-NodeType ttkContourForests::getNodeType(SimplexId id, TreeType type, MergeTree* tree)
+NodeType ttkContourForests::getNodeType(ttkIdType id, TreeType type, MergeTree* tree)
 {
   int upDegree{};
   int downDegree{};
@@ -979,25 +1008,25 @@ void ttkContourForests::getCriticalPoints()
   vector<bool> isCriticalPoint(numberOfVertices_);
 
   criticalPoints_->clear();
-  for (SimplexId i = 0; i < numberOfVertices_; ++i)
+  for (ttkIdType i = 0; i < numberOfVertices_; ++i)
     isCriticalPoint[i] = false;
 
   //const int nbVert = triangulation_->getNumberOfOriginalVertices();
 
   // looking for critical points
-  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
+  for (ttkIdType i = 0; i < (ttkIdType)tree_->getNumberOfSuperArcs(); ++i) {
     auto a = tree_->getSuperArc(i);
 
     if (!a->isPruned()) {
-      SimplexId upId   = a->getUpNodeId();
-      SimplexId up_vId = tree_->getNode(upId)->getVertexId();
+      ttkIdType upId   = a->getUpNodeId();
+      ttkIdType up_vId = tree_->getNode(upId)->getVertexId();
       if (!isCriticalPoint[up_vId]) {
         isCriticalPoint[up_vId] = true;
         criticalPoints_->push_back(upId);
       }
 
-      SimplexId downId   = a->getDownNodeId();
-      SimplexId down_vId = tree_->getNode(downId)->getVertexId();
+      ttkIdType downId   = a->getDownNodeId();
+      ttkIdType down_vId = tree_->getNode(downId)->getVertexId();
       if (!isCriticalPoint[down_vId]) {
         isCriticalPoint[down_vId] = true;
         criticalPoints_->push_back(downId);
@@ -1018,10 +1047,10 @@ int ttkContourForests::sample(unsigned int samplingLevel)
 {
   samples_->resize(3);
   (*samples_)[static_cast<int>(treeType_)].resize(tree_->getNumberOfSuperArcs());
-  vector<vector<SimplexId>> sampleList(samplingLevel);
+  vector<vector<ttkIdType>> sampleList(samplingLevel);
 
   SuperArc* a;
-  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
+  for (ttkIdType i = 0; i < (ttkIdType)tree_->getNumberOfSuperArcs(); ++i) {
     a = tree_->getSuperArc(i);
 
     if (!a->isPruned()) {
@@ -1030,8 +1059,8 @@ int ttkContourForests::sample(unsigned int samplingLevel)
       }
 
       double fmax, fmin;
-      SimplexId nodeMaxId, nodeMinId;
-      SimplexId nodeMaxVId, nodeMinVId;
+      ttkIdType nodeMaxId, nodeMinId;
+      ttkIdType nodeMaxVId, nodeMinVId;
       double delta;
       if (a->getNumberOfRegularNodes()) {
         if (treeType_ == TreeType::Split) {
@@ -1051,9 +1080,9 @@ int ttkContourForests::sample(unsigned int samplingLevel)
         delta = (fmax - fmin) / samplingLevel;
 
         double f;
-        SimplexId nodeId;
-        SimplexId vertexId;
-        for (SimplexId j = 0; j < a->getNumberOfRegularNodes(); ++j) {
+        ttkIdType nodeId;
+        ttkIdType vertexId;
+        for (ttkIdType j = 0; j < a->getNumberOfRegularNodes(); ++j) {
           nodeId   = a->getRegularNodeId(j);
           if(a->isMasqued(j)) continue;
           vertexId = nodeId;
@@ -1068,7 +1097,7 @@ int ttkContourForests::sample(unsigned int samplingLevel)
         }
 
         // update the arc
-        for (SimplexId j = 0; j < (SimplexId)sampleList.size(); ++j)
+        for (ttkIdType j = 0; j < (ttkIdType)sampleList.size(); ++j)
           (*samples_)[static_cast<int>(treeType_)][i].push_back(sampleList[j]);
       }
     }
@@ -1082,19 +1111,19 @@ int ttkContourForests::computeBarycenters()
   barycenters_->resize(3);
   (*barycenters_)[static_cast<int>(treeType_)].resize(tree_->getNumberOfSuperArcs());
   vector<float> barycenter(3);
-  SimplexId vertexId;
+  ttkIdType vertexId;
 
   const SuperArc* a;
-  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
+  for (ttkIdType i = 0; i < (ttkIdType)tree_->getNumberOfSuperArcs(); ++i) {
     a = tree_->getSuperArc(i);
     if (!a->isPruned()) {
-      for (SimplexId j = 0; j < (SimplexId)(*samples_)[static_cast<int>(treeType_)][i].size(); ++j) {
-        vector<SimplexId>& sample = (*samples_)[static_cast<int>(treeType_)][i][j];
+      for (ttkIdType j = 0; j < (ttkIdType)(*samples_)[static_cast<int>(treeType_)][i].size(); ++j) {
+        vector<ttkIdType>& sample = (*samples_)[static_cast<int>(treeType_)][i][j];
 
         for (unsigned int k = 0; k < 3; ++k)
           barycenter[k] = 0;
 
-        for (SimplexId k = 0; k < (SimplexId)sample.size(); ++k) {
+        for (ttkIdType k = 0; k < (ttkIdType)sample.size(); ++k) {
           vertexId = sample[k];
 
           float pt[3];
@@ -1131,7 +1160,7 @@ void ttkContourForests::computeSkeleton(unsigned int arcRes)
 void ttkContourForests::smoothSkeleton(unsigned int skeletonSmoothing)
 {
   for (unsigned int i = 0; i < skeletonSmoothing; i++) {
-    for (SimplexId j = 0; j < (SimplexId)tree_->getNumberOfSuperArcs(); j++) {
+    for (ttkIdType j = 0; j < (ttkIdType)tree_->getNumberOfSuperArcs(); j++) {
       if (!tree_->getSuperArc(j)->isPruned()) {
         smooth(j, !(treeType_ == TreeType::Split));
       }
@@ -1139,7 +1168,7 @@ void ttkContourForests::smoothSkeleton(unsigned int skeletonSmoothing)
   }
 }
 
-void ttkContourForests::smooth(const SimplexId idArc, bool order)
+void ttkContourForests::smooth(const ttkIdType idArc, bool order)
 {
   int N = (*barycenters_)[static_cast<int>(treeType_)][idArc].size();
   if (N) {
@@ -1148,8 +1177,8 @@ void ttkContourForests::smooth(const SimplexId idArc, bool order)
     for (unsigned int i = 0; i < barycenterList.size(); ++i)
       barycenterList[i].resize(3);
 
-    SimplexId up_vId;
-    SimplexId down_vId;
+    ttkIdType up_vId;
+    ttkIdType down_vId;
     if (order) {
       up_vId   = tree_->getNode(tree_->getSuperArc(idArc)->getUpNodeId())->getVertexId();
       down_vId = tree_->getNode(tree_->getSuperArc(idArc)->getDownNodeId())->getVertexId();
@@ -1231,8 +1260,8 @@ void ttkContourForests::getSegmentation(vtkDataSet* input)
   Timer t;
 
   // field
-  SimplexId regionId{};
-  vtkSmartPointer<vtkIdTypeArray> scalarsRegionId = vtkSmartPointer<vtkIdTypeArray>::New();
+  ttkIdType regionId{};
+  vtkSmartPointer<ttkIdTypeArray> scalarsRegionId = vtkSmartPointer<ttkIdTypeArray>::New();
   scalarsRegionId->SetName("SegmentationId");
   scalarsRegionId->SetNumberOfTuples(vertexScalars_->size());
 
@@ -1241,8 +1270,8 @@ void ttkContourForests::getSegmentation(vtkDataSet* input)
   scalarsRegionType->SetName("RegionType");
   scalarsRegionType->SetNumberOfTuples(vertexScalars_->size());
 
-  SimplexId regionSize{};
-  vtkSmartPointer<vtkIdTypeArray> scalarsRegionSize = vtkSmartPointer<vtkIdTypeArray>::New();
+  ttkIdType regionSize{};
+  vtkSmartPointer<ttkIdTypeArray> scalarsRegionSize = vtkSmartPointer<ttkIdTypeArray>::New();
   scalarsRegionSize->SetName("RegionSize");
   scalarsRegionSize->SetNumberOfTuples(vertexScalars_->size());
 
@@ -1251,21 +1280,21 @@ void ttkContourForests::getSegmentation(vtkDataSet* input)
   scalarsRegionSpan->SetName("RegionSpan");
   scalarsRegionSpan->SetNumberOfTuples(vertexScalars_->size());
 
-  SimplexId currentZone{};
+  ttkIdType currentZone{};
 
   if (!segmentation_) {
     segmentation_ = input->NewInstance();
     segmentation_->ShallowCopy(input);
   }
 
-  for (SimplexId i = 0; i < numberOfVertices_; i++) {
+  for (ttkIdType i = 0; i < numberOfVertices_; i++) {
     scalarsRegionId->SetTuple1(i, -1);
   }
 
   // nodes
-  for (SimplexId it = 0; it < (SimplexId)criticalPoints_->size(); ++it) {
-    SimplexId nodeId   = (*criticalPoints_)[it];
-    SimplexId vertexId = tree_->getNode(nodeId)->getVertexId();
+  for (ttkIdType it = 0; it < (ttkIdType)criticalPoints_->size(); ++it) {
+    ttkIdType nodeId   = (*criticalPoints_)[it];
+    ttkIdType vertexId = tree_->getNode(nodeId)->getVertexId();
 
     // RegionType
     regionType = -1;
@@ -1273,19 +1302,19 @@ void ttkContourForests::getSegmentation(vtkDataSet* input)
   }
 
   // arcs
-  for (SimplexId i = 0; i < (SimplexId)tree_->getNumberOfSuperArcs(); ++i) {
+  for (ttkIdType i = 0; i < (ttkIdType)tree_->getNumberOfSuperArcs(); ++i) {
     auto a = tree_->getSuperArc(i);
     if (a->isVisible()) {
-      SimplexId      upNodeId   = tree_->getSuperArc(i)->getUpNodeId();
+      ttkIdType      upNodeId   = tree_->getSuperArc(i)->getUpNodeId();
       NodeType upNodeType = getNodeType(upNodeId);
-      SimplexId      upVertex   = tree_->getNode(upNodeId)->getVertexId();
+      ttkIdType      upVertex   = tree_->getNode(upNodeId)->getVertexId();
       float    coordUp[3];
       triangulation_->getVertexPoint(
         upVertex, coordUp[0], coordUp[1], coordUp[2]);
 
-      SimplexId      downNodeId   = tree_->getSuperArc(i)->getDownNodeId();
+      ttkIdType      downNodeId   = tree_->getSuperArc(i)->getDownNodeId();
       NodeType downNodeType = getNodeType(downNodeId);
-      SimplexId      downVertex   = tree_->getNode(downNodeId)->getVertexId();
+      ttkIdType      downVertex   = tree_->getNode(downNodeId)->getVertexId();
       float    coordDown[3];
       triangulation_->getVertexPoint(
         downVertex, coordDown[0], coordDown[1], coordDown[2]);
@@ -1314,9 +1343,9 @@ void ttkContourForests::getSegmentation(vtkDataSet* input)
       scalarsRegionSpan->SetTuple1(tree_->getNode(downNodeId)->getVertexId(), regionSpan);
       scalarsRegionSpan->SetTuple1(tree_->getNode(upNodeId)->getVertexId(), regionSpan);
 
-      for (SimplexId j = 0; j < tree_->getSuperArc(i)->getNumberOfRegularNodes(); ++j) {
-        SimplexId nodeId   = tree_->getSuperArc(i)->getRegularNodeId(j);
-        SimplexId vertexId = nodeId;
+      for (ttkIdType j = 0; j < tree_->getSuperArc(i)->getNumberOfRegularNodes(); ++j) {
+        ttkIdType nodeId   = tree_->getSuperArc(i)->getRegularNodeId(j);
+        ttkIdType vertexId = nodeId;
         // cout << vertexId << ", ";
         if(tree_->getSuperArc(i)->isMasqued(j)) {
           // cout << vertexId << ", ";
@@ -1344,13 +1373,13 @@ void ttkContourForests::getSegmentation(vtkDataSet* input)
       else
         regionType = static_cast<int>(ArcType::Saddle1_saddle2_arc);
 
-      for (SimplexId j = 0; j < tree_->getSuperArc(i)->getNumberOfRegularNodes(); ++j) {
-        SimplexId nodeId   = tree_->getSuperArc(i)->getRegularNodeId(j);
+      for (ttkIdType j = 0; j < tree_->getSuperArc(i)->getNumberOfRegularNodes(); ++j) {
+        ttkIdType nodeId   = tree_->getSuperArc(i)->getRegularNodeId(j);
         if(tree_->getSuperArc(i)->isMasqued(j)){
           // Ignore masqued ones
           continue;
         }
-        SimplexId vertexId = nodeId;
+        ttkIdType vertexId = nodeId;
         scalarsRegionType->SetTuple1(vertexId, regionType);
       }
     }

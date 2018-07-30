@@ -91,8 +91,8 @@ class ttkMorseSmaleComplex
     vtkSetMacro(OffsetFieldId, int);
     vtkGetMacro(OffsetFieldId, int);
 
-    vtkSetMacro(UseInputOffsetScalarField, int);
-    vtkGetMacro(UseInputOffsetScalarField, int);
+    vtkSetMacro(ForceInputOffsetScalarField, int);
+    vtkGetMacro(ForceInputOffsetScalarField, int);
 
     vtkSetMacro(InputOffsetScalarFieldName, std::string);
     vtkGetMacro(InputOffsetScalarFieldName, std::string);
@@ -159,7 +159,7 @@ class ttkMorseSmaleComplex
   private:
     std::string ScalarField;
     std::string InputOffsetScalarFieldName;
-    bool UseInputOffsetScalarField;
+    bool ForceInputOffsetScalarField;
     int IterationThreshold;
     bool ReverseSaddleMaximumConnection;
     bool ReverseSaddleSaddleConnection;
@@ -180,7 +180,7 @@ class ttkMorseSmaleComplex
 
     ttk::MorseSmaleComplex morseSmaleComplex_;
     ttk::Triangulation *triangulation_;
-    vtkIdTypeArray* defaultOffsets_;
+    vtkDataArray* defaultOffsets_;
     bool hasUpdatedMesh_;
 };
 
