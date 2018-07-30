@@ -764,7 +764,7 @@ void PDClustering<dataType>::acceleratedUpdateClusters(){
 			int idx;
 			while(!idx_acceptable){
 				idx = rand() % k_;
-				if(clustering_[inv_clustering_[idx]].size()>1){
+				if(inv_clustering_[idx]<k_ && inv_clustering_[idx]>=0  && clustering_[inv_clustering_[idx]].size()>1){
 					idx_acceptable = true;
 				}
 				// Removing the index to remove
