@@ -124,7 +124,7 @@ int ttkTrackingFromFields::doIt(
 
   int res = 0;
   if (useTTKMethod)
-    res = trackWithPersistenceMatching(
+    res = trackWithPersistenceMatching<double>(
         input, output, inputScalarFields);
   else
   {
@@ -134,108 +134,4 @@ int ttkTrackingFromFields::doIt(
   }
 
   return res;
-}
-
-// (*) Persistence-driven approach
-int ttkTrackingFromFields::trackWithPersistenceMatching(
-    vtkDataSet *input,
-    vtkUnstructuredGrid *output,
-    std::vector<vtkDataArray*> inputScalarFields)
-{
-  using dataType = double;
-  unsigned long fieldNumber = inputScalarFields.size();
-
-  // 0. get data
-  trackingF_.setTriangulation(internalTriangulation_);
-  std::vector<void *> inputFields(fieldNumber);
-  for (int i = 0; i < (int) fieldNumber; ++i)
-    inputFields[i] = inputScalarFields[i]->GetVoidPointer(0);
-  trackingF_.setInputScalars(inputFields);
-
-  // 0'. get offsets
-  auto numberOfVertices = (int) input->GetNumberOfPoints();
-  vtkIdTypeArray* offsets_ = vtkIdTypeArray::New();
-  offsets_->SetNumberOfComponents(1);
-  offsets_->SetNumberOfTuples(numberOfVertices);
-  offsets_->SetName("OffsetScalarField");
-  for(int i = 0; i < numberOfVertices; ++i)
-    offsets_->SetTuple1(i,i);
-  trackingF_.setInputOffsets(offsets_->GetVoidPointer(0));
-
-  // 1. get persistence diagrams.
-  std::vector<std::vector<diagramTuple>> persistenceDiagrams(fieldNumber, std::vector<diagramTuple>());
-
-  trackingF_.performDiagramComputation((int) fieldNumber, persistenceDiagrams, this);
-
-  // 2. call feature tracking with threshold.
-  std::vector<std::vector<matchingTuple>> outputMatchings(fieldNumber - 1, std::vector<matchingTuple>());
-
-  double spacing = Spacing;
-  std::string algorithm = DistanceAlgorithm;
-  double alpha = Alpha;
-  double tolerance = Tolerance;
-  bool is3D = Is3D;
-  std::string wasserstein = WassersteinMetric;
-
-  tracking_.performMatchings(
-      (int) fieldNumber,
-      persistenceDiagrams,
-      outputMatchings,
-      algorithm, // Not from paraview, from enclosing tracking plugin
-      wasserstein,
-      tolerance,
-      is3D,
-      alpha, // Blending
-      PX, PY, PZ, PS, PE, // Coefficients
-      this // Wrapper for accessing threadNumber
-  );
-
-  outputMesh_ = vtkUnstructuredGrid::New();
-  vtkUnstructuredGrid *outputMesh = vtkUnstructuredGrid::SafeDownCast(output);
-
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram = vtkSmartPointer<vtkUnstructuredGrid>::New();
-
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkDoubleArray> valueScalars = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkIntArray> matchingIdScalars = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> timeScalars = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> componentIds = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> pointTypeScalars = vtkSmartPointer<vtkIntArray>::New();
-  persistenceScalars->SetName("Cost");
-  valueScalars->SetName("Scalar");
-  matchingIdScalars->SetName("MatchingIdentifier");
-  timeScalars->SetName("TimeStep");
-  componentIds->SetName("ConnectedComponentId");
-  pointTypeScalars->SetName("NodeType");
-
-  // (+ vertex id)
-  std::vector<trackingTuple> trackingsBase;
-  tracking_.performTracking(
-      persistenceDiagrams, outputMatchings,
-      trackingsBase);
-
-  std::vector<std::set<int>> trackingTupleToMerged(trackingsBase.size(), std::set<int>());
-
-  if (DoPostProc)
-    tracking_.performPostProcess(
-      persistenceDiagrams,
-      trackingsBase,
-      trackingTupleToMerged,
-      PostProcThresh);
-
-  bool useGeometricSpacing = UseGeometricSpacing;
-
-  // Build mesh.
-  ttkTrackingFromPersistenceDiagrams::buildMesh(
-    trackingsBase, outputMatchings, persistenceDiagrams,
-    useGeometricSpacing, spacing, DoPostProc, trackingTupleToMerged,
-    points, persistenceDiagram,
-    persistenceScalars, valueScalars, matchingIdScalars, timeScalars,
-    componentIds, pointTypeScalars);
-
-  outputMesh_->ShallowCopy(persistenceDiagram);
-  outputMesh->ShallowCopy(outputMesh_);
-
-  return 0;
 }
