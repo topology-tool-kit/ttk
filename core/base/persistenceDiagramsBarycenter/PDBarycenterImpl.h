@@ -189,7 +189,9 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 	}
 
 	std::vector<std::vector<matchingTuple>> corrected_matchings = correctMatchings(previous_matchings);
-	
+	for(unsigned int d=0; d<current_bidder_diagrams_.size(); ++d){
+		std::cout << "Size of diagram " << d << " : " << current_bidder_diagrams_[d].size() << std::endl;
+	}
 	return corrected_matchings;
 }
 
