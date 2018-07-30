@@ -649,7 +649,7 @@ void PDClustering<dataType>::invertInverseClusters(){
 	// Check if a cluster was left without diagram
 	for(int c=0; c<k_; ++c){
 		if(clustering_[c].size() == 0){
-			std::cout<< " Problem in invertInverseClusters()... \n Cluster " << c << " was left with no diagram attached to it... " << std::endl;
+			std::cout<< "Problem in invertInverseClusters()... \nCluster " << c << " was left with no diagram attached to it... " << std::endl;
 		}
 	}
 }
@@ -760,7 +760,17 @@ void PDClustering<dataType>::acceleratedUpdateClusters(){
 	for(int c=0; c<k_; ++c){
 		if(clustering_[c].size()==0){
 			std::cout<< "Adding artificial centroid because a cluster was empty" <<std::endl;
-			int idx = rand() % k_;
+			bool idx_acceptable = false;
+			int idx;
+			while(!idx_acceptable){
+				idx = rand() % k_;
+				if(clustering_[inv_clustering_[idx]].size()>1){
+					idx_acceptable = true;
+				}
+				// Removing the index to remove
+				clustering_[inv_clustering_[idx]].erase(std::remove(clustering_[inv_clustering_[idx]].begin(), clustering_[inv_clustering_[idx]].end(), idx), clustering_[inv_clustering_[idx]].end());
+			}
+			
 			clustering_[c].push_back(idx);
 			inv_clustering_[idx] = c;
 			
