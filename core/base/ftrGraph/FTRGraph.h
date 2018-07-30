@@ -206,6 +206,15 @@ namespace ttk
             }
          }
 
+         DynamicGraph<idVertex>& dynGraphOpposite(const Propagation* const lp)
+         {
+            if(lp->goUp()){
+               return dynGraphs_.down;
+            } else {
+               return dynGraphs_.up;
+            }
+         }
+
         protected:
 
          // Build functions
@@ -278,7 +287,7 @@ namespace ttk
          /// Symetric to lowerComps
          /// \ref lowerComps
          std::vector<DynGraphNode<idVertex>*> upperComps(const std::vector<idEdge>& startingEdges,
-                                                         const Propagation* const   localProp);
+                                                          const Propagation* const   localProp);
 
          // visit these edges neighborhood to understand the local connectivity
          // return the number of component in lower/upper link
@@ -358,12 +367,11 @@ namespace ttk
          /// Add vertices above the current one in the propagation,
          /// return true if vertices aboves the current one have been found.
          /// Note, these vertices may not have been added if already marked as in the propagation.
-         bool localGrowth(Propagation* const localProp);
+         bool localGrowth(Propagation* const localProp, const std::vector<idEdge>& upperEdges);
 
          // Check if the current vertex which is on a Join saddle come from the
          // last growth touching this saddle
-         bool checkLast(const idSuperArc currentArc, Propagation* const localProp,
-                        const std::vector<idEdge>& lowerStarEdges);
+         bool checkLast(Propagation* const localProp, const std::vector<idEdge>& lowerStarEdges);
 
          // At a join saddle, merge local propagations coming here
          // and close remiang opened arcs.

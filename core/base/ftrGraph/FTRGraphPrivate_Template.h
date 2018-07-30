@@ -88,7 +88,7 @@ namespace ttk
                lowerComp = lowerComps(lowerStarEdges, localProp);
                if (lowerComp.size() > 1) {
                   isJoinSaddle = true;
-                  isJoinSadlleLast = checkLast(currentArc, localProp, lowerStarEdges);
+                  isJoinSadlleLast = checkLast(localProp, lowerStarEdges);
                   break;
                } else {
                   if (lowerComp.size()) {
@@ -109,12 +109,13 @@ namespace ttk
             }
 
             // add upper star for futur visit
-            bool seenAbove = localGrowth(localProp);
+            // TODO use the upperStarEdge?
+            bool seenAbove = localGrowth(localProp, upperStarEdges);
             if (!seenAbove) {
-               // We have reached an opposite leaf
+               // We have reached a local extrema
                const idNode upNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, upNode);
-               DEBUG_1(<< "close arc max " << graph_.printArc(currentArc) << std::endl);
+               DEBUG_1(<< curVert << " arc max " << graph_.printArc(currentArc) << std::endl);
 #ifdef TTK_ENABLE_FTR_STATS
                if (localProp->empty()) {
                   idVertex curProp;
@@ -135,13 +136,13 @@ namespace ttk
          if (isSplitSaddle) {
             DEBUG_1(<< ": is split " << std::endl);
          }
+
          // get the corresponging critical point on which
          // the propagation has stopped (join, split, max)
          const idVertex upVert = localProp->getCurVertex();
          const idNode   upNode = graph_.makeNode(upVert);
 
          // At saddle: join or split or both
-
          idSuperArc joinNewArc;
          // arriving at a join
          if (isJoinSadlleLast) {
@@ -151,7 +152,7 @@ namespace ttk
                std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
                lowerComp = lowerComps(lowerStarEdges, localProp);
             }
-            localGrowth(localProp);
+            localGrowth(localProp, upperStarEdges);
             mergeAtSaddle(upNode, localProp, lowerComp);
             const idNode downNode = graph_.getNodeId(upVert);
             joinNewArc            = graph_.openArc(downNode, localProp);
@@ -685,29 +686,27 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      bool FTRGraph<ScalarType>::localGrowth(Propagation* const localProp)
+      bool FTRGraph<ScalarType>::localGrowth(Propagation* const localProp, const std::vector<idEdge>& upperEdges)
       {
-         bool seenAbove = false;
          const idVertex curVert = localProp->getCurVertex();
-         const idVertex nbNeigh = mesh_.getVertexNeighborNumber(localProp->getCurVertex());
-         for (idVertex n = 0; n < nbNeigh; ++n) {
-            idVertex neighId;
-            mesh_.getVertexNeighbor(curVert, n, neighId);
-            if (localProp->compare(curVert, neighId)) {
-               seenAbove = true;
-               if (!propagations_.willVisit(neighId, localProp)) {
-                  localProp->addNewVertex(neighId);
-                  propagations_.toVisit(neighId, localProp);
-                  // DEBUG_1(<< " + " << neighId << std::endl);
+         for (const idEdge e : upperEdges) {
+            idVertex v0, v1;
+            mesh_.getEdgeVertex(e, 0, v0);
+            mesh_.getEdgeVertex(e, 1, v1);
+            const idVertex other = (v0 == curVert) ? v1 : v0;
+            if (localProp->compare(curVert, other)) {
+               if (!propagations_.willVisit(other, localProp)) {
+                  localProp->addNewVertex(other);
+                  propagations_.toVisit(other, localProp);
+                  // DEBUG_1(<< " + " << other << std::endl);
                }
             }
          }
-         return seenAbove;
+         return upperEdges.size() != 0;
       }
 
       template <typename ScalarType>
-      bool FTRGraph<ScalarType>::checkLast(const idSuperArc           currentArc,
-                                           Propagation* const         localProp,
+      bool FTRGraph<ScalarType>::checkLast(Propagation* const         localProp,
                                            const std::vector<idEdge>& lowerStarEdges)
       {
          const idVertex curSaddle = localProp->getCurVertex();
@@ -900,6 +899,7 @@ namespace ttk
          for (auto* dgNode : upperComp) {
             const idSuperArc newArc = graph_.openArc(curNode, localProp);
             dgNode->setRootArc(newArc);
+            visit(localProp, newArc);
 
             DEBUG_1(<< "set root arc " << newArc << " at ");
             DEBUG_1(<< printEdge(dynGraph(localProp).getNodeId(dgNode), localProp) << std::endl);
@@ -910,17 +910,6 @@ namespace ttk
       bool FTRGraph<ScalarType>::visit(Propagation* const localProp, const idSuperArc curArc)
       {
          const idVertex curVert = localProp->getCurVertex();
-         if (propagations_.hasVisitedOpposite(curVert, localProp)) {
-            if (!graph_.isNode(curVert)) {
-               const idSuperArc targetArc = graph_.getArcId(curVert);
-               graph_.getArc(curArc).merge(targetArc);
-               DEBUG_1(<< graph_.printArc(curArc) << " merge " << graph_.printArc(targetArc) << std::endl);
-            } else {
-               DEBUG_1(<< graph_.printArc(curArc) << " stop here " << std::endl);
-               // close arc ??
-            }
-            return true;
-         }
          graph_.visit(curVert, curArc);
          propagations_.visit(curVert, localProp);
          DEBUG_1(<< curVert << " visit arc " << curArc << std::endl);

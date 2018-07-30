@@ -223,11 +223,14 @@ namespace ttk
          using super = DynamicGraph<Type>;
 
          public:
+          LocalForest() : super(), nbCC_{0}
+          {
+          }
 
-         void setNumberOfNodes(const std::size_t nbNodes)
-         {
-            super::setNumberOfNodes(nbNodes);
-            nbCC_ = nbNodes;
+          void setNumberOfNodes(const std::size_t nbNodes)
+          {
+             super::setNumberOfNodes(nbNodes);
+             nbCC_ = nbNodes;
          }
 
          void setNbCC(const std::size_t nb)

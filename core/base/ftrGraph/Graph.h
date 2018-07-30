@@ -144,6 +144,11 @@ namespace ttk
             }
          }
 
+         void setArc(const idVertex v, const idSegmentation id)
+         {
+            segmentation_[v].corArc = id;
+         }
+
          std::tuple<idNode,idSuperArc> visit(const idVertex v) const
          {
             return {segmentation_[v].corNode, segmentation_[v].corArc};
@@ -177,6 +182,11 @@ namespace ttk
          idSuperArc getArcId(const idVertex v) const
          {
             return segmentation_[v].corArc;
+         }
+
+         const Node& getDownNode(const idSuperArc a) const
+         {
+            return getNode(getArc(a).getDownNodeId());
          }
 
          // direct access for openmp capture

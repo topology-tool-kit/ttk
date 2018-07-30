@@ -131,7 +131,11 @@ namespace ttk
 
          // Debug print
          // std::cout << graph_.printVisit() << std::endl;
-         printGraph(4);
+         // printGraph(4);
+         // std::cout << "up" << std::endl;
+         // std::cout << dynGraphs_.up.print() << std::endl;
+         // std::cout << "down" << std::endl;
+         // std::cout << dynGraphs_.down.print() << std::endl;
 
          // post-process
          graph_.mergeArcs(
@@ -141,7 +145,7 @@ namespace ttk
 
          // Debug print
          // std::cout << graph_.printVisit() << std::endl;
-         printGraph(4);
+         // printGraph(4);
          // std::cout << dynGraphs_.up.printNbCC() << std::endl;
 
          // Message user
@@ -210,7 +214,7 @@ namespace ttk
       void FTRGraph<ScalarType>::criticalSearch()
       {
          const bool addMin = true;
-         const bool addMax = true;
+         const bool addMax = false;
 
          TaskChunk leafChunkParams(scalars_->getSize());
          leafChunkParams.grainSize = 10000;
