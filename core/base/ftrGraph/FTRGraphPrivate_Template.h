@@ -38,7 +38,6 @@ namespace ttk
          // topology
          bool isJoinSadlleLast = false;
          bool isJoinSaddle = false, isSplitSaddle = false;
-         bool isMerging = false;
 
          // containers
          // vitsit
@@ -47,7 +46,8 @@ namespace ttk
 
          while (!isJoinSaddle && !isSplitSaddle && !localProp->empty()) {
             localProp->nextVertex();
-            const idVertex curVert = localProp->getCurVertex();
+            const idVertex curVert   = localProp->getCurVertex();
+            bool           isMerging = false;
 
             // Check history for visit (quick test)
             if (propagations_.hasVisited(curVert, localProp)) {
@@ -104,7 +104,9 @@ namespace ttk
             }
 
             // do not propagate on merging arc.
-            if (isMerging) continue;
+            if (isMerging) {
+               continue;
+            }
 
             // add upper star for futur visit
             bool seenAbove = localGrowth(localProp);
@@ -909,9 +911,14 @@ namespace ttk
       {
          const idVertex curVert = localProp->getCurVertex();
          if (propagations_.hasVisitedOpposite(curVert, localProp)) {
-            const idSuperArc targetArc = graph_.getArcId(curVert);
-            graph_.getArc(curArc).merge(targetArc);
-            DEBUG_1(<< graph_.printArc(curArc) << " merge " << graph_.printArc(targetArc) << std::endl);
+            if (!graph_.isNode(curVert)) {
+               const idSuperArc targetArc = graph_.getArcId(curVert);
+               graph_.getArc(curArc).merge(targetArc);
+               DEBUG_1(<< graph_.printArc(curArc) << " merge " << graph_.printArc(targetArc) << std::endl);
+            } else {
+               DEBUG_1(<< graph_.printArc(curArc) << " stop here " << std::endl);
+               // close arc ??
+            }
             return true;
          }
          graph_.visit(curVert, curArc);
