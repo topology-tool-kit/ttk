@@ -114,10 +114,10 @@ int PDClustering<dataType>::execute(){
 				updateClusters();
 			}
 			
-			if(cost_<min_cost && n_iterations_>2){
+			if(cost_<min_cost && n_iterations_>2 && !use_progressive_){
 				min_cost=cost_;
 			}
-			else if(n_iterations_>2 && epsilon_<epsilon0/500.){
+			else if(n_iterations_>2 && epsilon_<epsilon0/500. && !use_progressive_){
 				// TODO Adapt the condition with progressive KMeans
 				converged = true;
 			}
