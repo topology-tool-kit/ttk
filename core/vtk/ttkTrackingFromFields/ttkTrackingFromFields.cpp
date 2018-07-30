@@ -27,8 +27,6 @@ int ttkTrackingFromFields::doIt(
   vtkDataSet *input = inputs[0];
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
 
-  // triangulation_.setWrapper(this);
-  // triangulation_.setInputData(input);
   internalTriangulation_ = ttkTriangulation::getTriangulation(input);
   internalTriangulation_->setWrapper(this);
 
