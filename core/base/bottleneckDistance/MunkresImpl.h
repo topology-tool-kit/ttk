@@ -2,7 +2,7 @@
 #define _MUNKRESIMPL_H
 
 template <typename dataType>
-int Munkres::run(std::vector<matchingTuple> *matchings)
+int Munkres::run(std::vector<matchingTuple> &matchings)
 {
   int step = 1;
   int iter = 0;
@@ -347,7 +347,8 @@ int Munkres::stepFour(int& step) // ~ 45% perf
 }
 
 template <typename dataType>
-int Munkres::findStarInRow(int row) {
+int Munkres::findStarInRow(int row)
+{
   int start = rowLimitsMinus[row];
   int end = rowLimitsPlus[row];
   for (int c = start; c < end; ++c)
@@ -356,7 +357,8 @@ int Munkres::findStarInRow(int row) {
 }
 
 template <typename dataType>
-int Munkres::findZero(int& row, int& col) {
+int Munkres::findZero(int& row, int& col)
+{
   std::vector<std::vector<dataType>>* C = (std::vector<std::vector<dataType>>*) Cptr;
 
   row = -1;
@@ -465,7 +467,8 @@ int Munkres::stepFive(int& step) // ~ 10% perf
 }
 
 template <typename dataType>
-int Munkres::findStarInCol(int col) {
+int Munkres::findStarInCol(int col)
+{
   int start = colLimitsMinus[col];
   int end = colLimitsPlus[col];
   for (int r = start; r < end; ++r)
@@ -477,7 +480,8 @@ int Munkres::findStarInCol(int col) {
 }
 
 template <typename dataType>
-int Munkres::findPrimeInRow(int row) {
+int Munkres::findPrimeInRow(int row)
+{
   int start = rowLimitsMinus[row];
   int end = rowLimitsPlus[row];
   for (int c = start; c < end; ++c)
@@ -533,7 +537,8 @@ int Munkres::stepSix(int& step) // ~ 35% perf
 }
 
 template <typename dataType>
-int Munkres::stepSeven(int& step) {
+int Munkres::stepSeven(int& step)
+{
   std::stringstream msg;
   msg << "[Munkres] Step 7 over." << std::endl;
   dMsg(std::cout, msg.str(), advancedInfoMsg);
@@ -542,19 +547,19 @@ int Munkres::stepSeven(int& step) {
 
 template<typename dataType>
 int Munkres::affect(
-    std::vector<matchingTuple> *matchings,
-    std::vector<std::vector<dataType>> C)
+  std::vector<matchingTuple> &matchings,
+  const std::vector<std::vector<dataType>> &C)
 {
   int nbC = colSize;
   int nbR = rowSize;
 
-  matchings->clear();
+  matchings.clear();
 
   for (int r = 0; r < nbR; ++r)
     for (int c = 0; c < nbC; ++c)
       if (M[r][c] == 1) {
         matchingTuple t = std::make_tuple(r, c, C[r][c]);
-        matchings->push_back(t);
+        matchings.push_back(t);
         // Use row cover to match to last column diagonal.
         if (r < nbR - 1)
           rowCover[r] = true;
@@ -565,7 +570,7 @@ int Munkres::affect(
     // Match to diagonal.
     if (!rowCover[r]) {
       matchingTuple t = std::make_tuple(r, nbC - 1, C[r][nbC - 1]);
-      matchings->push_back(t);
+      matchings.push_back(t);
     }
       // Ensure row covers are cleared.
     else {
@@ -578,7 +583,7 @@ int Munkres::affect(
 
 template<typename dataType>
 int Munkres::computeAffectationCost(
-    std::vector<std::vector<dataType>> C)
+  const std::vector<std::vector<dataType>> &C)
 {
   int nbC = colSize;
   int nbR = rowSize;

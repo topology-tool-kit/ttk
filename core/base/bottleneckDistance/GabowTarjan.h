@@ -22,7 +22,7 @@ class GabowTarjan : public Debug {
     void printCurrentMatching();
 
     template <typename dataType>
-    int run(std::vector<matchingTuple> *matchings);
+    int run(std::vector<matchingTuple> &matchings);
 
     template <typename dataType>
     inline void setInput(int rowSize_, int colSize_, void* C_)

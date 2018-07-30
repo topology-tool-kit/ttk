@@ -145,50 +145,50 @@ namespace ttk {
 
     template <typename dataType>
     int computeBottleneck(
-      const std::vector<diagramTuple> *d1,
-      const std::vector<diagramTuple> *d2,
-      std::vector<matchingTuple> *matchings,
+      const std::vector<diagramTuple> &d1,
+      const std::vector<diagramTuple> &d2,
+      std::vector<matchingTuple> &matchings,
       bool usePersistenceMetric,
       double alpha);
 
     template <typename dataType>
     double computeGeometricalRange(
-      const std::vector<diagramTuple> *CTDiagram1,
-      const std::vector<diagramTuple> *CTDiagram2,
+      const std::vector<diagramTuple> &CTDiagram1,
+      const std::vector<diagramTuple> &CTDiagram2,
       int d1Size,
       int d2Size) const;
 
     template <typename dataType>
     double computeMinimumRelevantPersistence(
-      const std::vector<diagramTuple> *CTDiagram1,
-      const std::vector<diagramTuple> *CTDiagram2,
+      const std::vector<diagramTuple> &CTDiagram1,
+      const std::vector<diagramTuple> &CTDiagram2,
       int d1Size,
       int d2Size) const;
 
     template <typename dataType>
     void computeMinMaxSaddleNumberAndMapping(
-      const std::vector<diagramTuple> *CTDiagram,
+      const std::vector<diagramTuple> &CTDiagram,
       int dSize,
       int &nbMin,
       int &nbMax,
       int &nbSaddle,
-      std::vector<int> *minMap,
-      std::vector<int> *maxMap,
-      std::vector<int> *sadMap,
+      std::vector<int> &minMap,
+      std::vector<int> &maxMap,
+      std::vector<int> &sadMap,
       dataType zeroThresh);
 
     template <typename dataType>
     void buildCostMatrices(
-      const std::vector<diagramTuple> *CTDiagram1,
-      const std::vector<diagramTuple> *CTDiagram2,
+      const std::vector<diagramTuple> &CTDiagram1,
+      const std::vector<diagramTuple> &CTDiagram2,
       int d1Size,
       int d2Size,
       std::function<dataType (const diagramTuple, const diagramTuple)>& distanceFunction,
       std::function<dataType (const diagramTuple)>& diagonalDistanceFunction,
       double zeroThresh,
-      std::vector<std::vector<dataType>>& minMatrix,
-      std::vector<std::vector<dataType>>& maxMatrix,
-      std::vector<std::vector<dataType>>& sadMatrix,
+      std::vector<std::vector<dataType>> &minMatrix,
+      std::vector<std::vector<dataType>> &maxMatrix,
+      std::vector<std::vector<dataType>> &sadMatrix,
       bool reverseMin,
       bool reverseMax,
       bool reverseSad,
@@ -198,9 +198,9 @@ namespace ttk {
     void solvePWasserstein(
       int nbRow,
       int nbCol,
-      std::vector<std::vector<dataType>> matrix,
-      std::vector<matchingTuple> *matchings,
-      Munkres *solver);
+      std::vector<std::vector<dataType>> &matrix,
+      std::vector<matchingTuple> &matchings,
+      Munkres &solver);
 
     template <typename dataType>
     void solveInfinityWasserstein(
@@ -208,18 +208,18 @@ namespace ttk {
       int nbCol,
       int nbRowToCut,
       int nbColToCut,
-      std::vector<std::vector<dataType>> matrix,
-      std::vector<matchingTuple> *matchings,
-      GabowTarjan *solver);
+      std::vector<std::vector<dataType>> &matrix,
+      std::vector<matchingTuple> &matchings,
+      GabowTarjan &solver);
 
     template <typename dataType>
     dataType buildMappings(
-      std::vector<matchingTuple> inputMatchings,
+      const std::vector<matchingTuple> &inputMatchings,
       bool transposeGlobal,
       bool transposeLocal,
-      std::vector<matchingTuple> *outputMatchings,
-      std::vector<int> m1,
-      std::vector<int> m2,
+      std::vector<matchingTuple> &outputMatchings,
+      const std::vector<int> &m1,
+      const std::vector<int> &m2,
       int wasserstein);
   };
 

@@ -23,7 +23,7 @@ namespace ttk {
     ~Munkres() {};
 
     template <typename dataType>
-    int run(std::vector<matchingTuple> *matchings);
+    int run(std::vector<matchingTuple> &matchings);
 
     template<typename dataType>
     inline void clear() {
@@ -165,12 +165,12 @@ namespace ttk {
 
     template <typename dataType>
     int affect(
-        std::vector<matchingTuple> *matchings,
-        std::vector<std::vector<dataType>> C);
+        std::vector<matchingTuple> &matchings,
+        const std::vector<std::vector<dataType>> &C);
 
     template <typename dataType>
     int computeAffectationCost(
-        std::vector<std::vector<dataType>> C);
+        const std::vector<std::vector<dataType>> &C);
 
     template <typename dataType>
     inline bool isZero(dataType t) {

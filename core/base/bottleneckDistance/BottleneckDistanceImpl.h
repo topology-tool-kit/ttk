@@ -26,9 +26,9 @@ int BottleneckDistance::execute(
         dMsg(std::cout, msg.str(), timeMsg);
       }
         this->computeBottleneck<dataType>(
-            static_cast<const std::vector<diagramTuple>*> (outputCT1_),
-            static_cast<const std::vector<diagramTuple>*> (outputCT2_),
-            static_cast<std::vector<matchingTuple>*> (matchings_),
+            *static_cast<const std::vector<diagramTuple>*> (outputCT1_),
+            *static_cast<const std::vector<diagramTuple>*> (outputCT2_),
+            *static_cast<std::vector<matchingTuple>*> (matchings_),
             usePersistenceMetric,
             alpha);
         break;
@@ -82,9 +82,9 @@ int BottleneckDistance::execute(
         dMsg(std::cout, msg.str(), timeMsg);
       }
         this->computeBottleneck<dataType>(
-            static_cast<const std::vector<diagramTuple>*> (outputCT1_),
-            static_cast<const std::vector<diagramTuple>*> (outputCT2_),
-            static_cast<std::vector<matchingTuple>*> (matchings_),
+            *static_cast<const std::vector<diagramTuple>*> (outputCT1_),
+            *static_cast<const std::vector<diagramTuple>*> (outputCT2_),
+            *static_cast<std::vector<matchingTuple>*> (matchings_),
             usePersistenceMetric,
             alpha);
         break;
@@ -146,8 +146,8 @@ int BottleneckDistance::execute(
 
 template <typename dataType>
 double BottleneckDistance::computeGeometricalRange(
-    const std::vector<diagramTuple> *CTDiagram1,
-    const std::vector<diagramTuple> *CTDiagram2,
+    const std::vector<diagramTuple> &CTDiagram1,
+    const std::vector<diagramTuple> &CTDiagram2,
     const int d1Size,
     const int d2Size) const
 {
@@ -158,7 +158,7 @@ double BottleneckDistance::computeGeometricalRange(
   maxX1 = maxY1 = maxZ1 = maxX2 = maxY2 = maxZ2 = std::numeric_limits<float>::min();
 
   for (int i = 0; i < d1Size; ++i) {
-    diagramTuple t = CTDiagram1->at(i);
+    const diagramTuple &t = CTDiagram1[i];
     float xa = std::get<7>(t), ya = std::get<8>(t), za = std::get<9>(t);
     float xb = std::get<11>(t), yb = std::get<12>(t), zb = std::get<13>(t);
     minX1 = std::min(std::min(minX1, xa), xb);
@@ -170,7 +170,7 @@ double BottleneckDistance::computeGeometricalRange(
   }
 
   for (int i = 0; i < d2Size; ++i) {
-    diagramTuple t = CTDiagram2->at(i);
+    const diagramTuple &t = CTDiagram2[i];
     float xa = std::get<7>(t), ya = std::get<8>(t), za = std::get<9>(t);
     float xb = std::get<11>(t), yb = std::get<12>(t), zb = std::get<13>(t);
     minX2 = std::min(std::min(minX2, xa), xb);
@@ -191,8 +191,8 @@ double BottleneckDistance::computeGeometricalRange(
 
 template <typename dataType>
 double BottleneckDistance::computeMinimumRelevantPersistence(
-    const std::vector<diagramTuple> *CTDiagram1,
-    const std::vector<diagramTuple> *CTDiagram2,
+    const std::vector<diagramTuple> &CTDiagram1,
+    const std::vector<diagramTuple> &CTDiagram2,
     const int d1Size,
     const int d2Size) const
 {
@@ -201,12 +201,12 @@ double BottleneckDistance::computeMinimumRelevantPersistence(
 
   std::vector<dataType> toSort;
   for (int i = 0; i < d1Size; ++i) {
-    diagramTuple t = CTDiagram1->at(i);
+    const diagramTuple &t = CTDiagram1[i];
     dataType persistence = abs<dataType>(std::get<4>(t));
     toSort.push_back(persistence);
   }
   for (int i = 0; i < d2Size; ++i) {
-    diagramTuple t = CTDiagram2->at(i);
+    const diagramTuple &t = CTDiagram2[i];
     dataType persistence = abs<dataType>(std::get<4>(t));
     toSort.push_back(persistence);
   }
@@ -231,18 +231,18 @@ double BottleneckDistance::computeMinimumRelevantPersistence(
 
 template <typename dataType>
 void BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
-    const std::vector<diagramTuple > *CTDiagram,
+    const std::vector<diagramTuple> &CTDiagram,
     int dSize,
     int &nbMin,
     int &nbMax,
     int &nbSaddle,
-    std::vector<int> *minMap,
-    std::vector<int> *maxMap,
-    std::vector<int> *sadMap,
+    std::vector<int> &minMap,
+    std::vector<int> &maxMap,
+    std::vector<int> &sadMap,
     const dataType zeroThresh)
 {
   for (int i = 0; i < dSize; ++i) {
-    diagramTuple t = CTDiagram->at(i);
+    const diagramTuple &t = CTDiagram[i];
     BNodeType nt1 = std::get<1>(t);
     BNodeType nt2 = std::get<3>(t);
     dataType dt = std::get<4>(t);
@@ -250,21 +250,21 @@ void BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
 
     if (nt1 == BLocalMin && nt2 == BLocalMax) {
       nbMax++;
-      maxMap->push_back(i);
+      maxMap.push_back(i);
     }
     else {
       if (nt1 == BLocalMax || nt2 == BLocalMax) {
         nbMax++;
-        maxMap->push_back(i);
+        maxMap.push_back(i);
       }
       if (nt1 == BLocalMin || nt2 == BLocalMin) {
         nbMin++;
-        minMap->push_back(i);
+        minMap.push_back(i);
       }
       if ((nt1 == BSaddle1 && nt2 == BSaddle2)
           || (nt1 == BSaddle2 && nt2 == BSaddle1)) {
         nbSaddle++;
-        sadMap->push_back(i);
+        sadMap.push_back(i);
       }
     }
   }
@@ -272,16 +272,16 @@ void BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
 
 template <typename dataType>
 void BottleneckDistance::buildCostMatrices(
-    const std::vector<diagramTuple> *CTDiagram1,
-    const std::vector<diagramTuple> *CTDiagram2,
+    const std::vector<diagramTuple> &CTDiagram1,
+    const std::vector<diagramTuple> &CTDiagram2,
     const int d1Size,
     const int d2Size,
-    std::function<dataType (const diagramTuple, const diagramTuple)>& distanceFunction,
-    std::function<dataType (const diagramTuple)>& diagonalDistanceFunction,
+    std::function<dataType (const diagramTuple, const diagramTuple)> &distanceFunction,
+    std::function<dataType (const diagramTuple)> &diagonalDistanceFunction,
     const double zeroThresh,
-    std::vector<std::vector<dataType>>& minMatrix,
-    std::vector<std::vector<dataType>>& maxMatrix,
-    std::vector<std::vector<dataType>>& sadMatrix,
+    std::vector<std::vector<dataType>> &minMatrix,
+    std::vector<std::vector<dataType>> &maxMatrix,
+    std::vector<std::vector<dataType>> &sadMatrix,
     const bool reverseMin,
     const bool reverseMax,
     const bool reverseSad,
@@ -293,7 +293,7 @@ void BottleneckDistance::buildCostMatrices(
 
   for (int i = 0; i < d1Size; ++i)
   {
-    diagramTuple t1 = CTDiagram1->at(i);
+    const diagramTuple &t1 = CTDiagram1[i];
     if (abs<dataType>(std::get<4>(t1)) < zeroThresh) continue;
 
     BNodeType t11 = std::get<1>(t1);
@@ -313,7 +313,7 @@ void BottleneckDistance::buildCostMatrices(
 
     for (int j = 0; j < d2Size; ++j)
     {
-      diagramTuple t2 = CTDiagram2->at(j);
+      const diagramTuple &t2 = CTDiagram2[j];
       if (abs<dataType>(std::get<4>(t2)) < zeroThresh) continue;
 
       BNodeType t21 = std::get<1>(t2);
@@ -388,7 +388,7 @@ void BottleneckDistance::buildCostMatrices(
 
   // Last row: match remaining J components with diagonal.
   for (int j = 0; j < d2Size; ++j) {
-    diagramTuple t2 = CTDiagram2->at(j);
+    const diagramTuple &t2 = CTDiagram2[j];
     if (abs<dataType>(std::get<4>(t2)) < zeroThresh) continue;
 
     BNodeType t21 = std::get<1>(t2);
@@ -448,13 +448,13 @@ template <typename dataType>
 void BottleneckDistance::solvePWasserstein(
     const int nbRow,
     const int nbCol,
-    std::vector<std::vector<dataType>> matrix,
-    std::vector<matchingTuple> *matchings,
-    Munkres *solver)
+    std::vector<std::vector<dataType>> &matrix,
+    std::vector<matchingTuple> &matchings,
+    Munkres &solver)
 {
-  solver->setInput(nbRow, nbCol, (void*) &matrix);
-  solver->run<dataType>(matchings);
-  solver->clearMatrix<dataType>();
+  solver.setInput(nbRow, nbCol, (void*) &matrix);
+  solver.run<dataType>(matchings);
+  solver.clearMatrix<dataType>();
 }
 
 template <typename dataType>
@@ -463,9 +463,9 @@ void BottleneckDistance::solveInfinityWasserstein(
     const int nbCol,
     const int nbRowToCut,
     const int nbColToCut,
-    std::vector<std::vector<dataType>> matrix,
-    std::vector<matchingTuple> *matchings,
-    GabowTarjan *solver)
+    std::vector<std::vector<dataType>> &matrix,
+    std::vector<matchingTuple> &matchings,
+    GabowTarjan &solver)
 {
   std::vector<std::vector<dataType>> bottleneckMatrix(nbRow, std::vector<dataType>(nbCol));
 
@@ -475,26 +475,25 @@ void BottleneckDistance::solveInfinityWasserstein(
       bottleneckMatrix[i][j] = matrix[i][j];
 
   // Solve.
-  solver->setInput<dataType>(nbRow, nbCol, (void*) &bottleneckMatrix);
-  solver->run<dataType>(matchings);
-  solver->clear<dataType>();
+  solver.setInput<dataType>(nbRow, nbCol, (void*) &bottleneckMatrix);
+  solver.run<dataType>(matchings);
+  solver.clear<dataType>();
 }
 
 template <typename dataType>
 dataType BottleneckDistance::buildMappings(
-    const std::vector<matchingTuple> inputMatchings,
+    const std::vector<matchingTuple> &inputMatchings,
     const bool transposeGlobal,
     const bool transposeLocal,
-    std::vector<matchingTuple> *outputMatchings,
-    const std::vector<int> m1,
-    const std::vector<int> m2,
+    std::vector<matchingTuple> &outputMatchings,
+    const std::vector<int> &m1,
+    const std::vector<int> &m2,
     int wasserstein)
 {
   // Input map permutation (so as to ignore transposition later on)
   const std::vector<int> map1 = transposeLocal ? m2 : m1;
   const std::vector<int> map2 = transposeLocal ? m1 : m2;
 
-  bool debug = false;
   std::stringstream msg;
   dataType addedPersistence = 0;
   for (int i = 0, s = (int) inputMatchings.size(); i < s; ++i) {
@@ -504,7 +503,6 @@ dataType BottleneckDistance::buildMappings(
     int p1 = std::get<0>(t);
     int p2 = std::get<1>(t);
 
-    if (debug) msg << std::fixed << std::setprecision(3) << val << " + ";
     if (p1 >= (int) map1.size() || p1 < 0) {
       addedPersistence =
           (wasserstein > 0 ?
@@ -526,11 +524,9 @@ dataType BottleneckDistance::buildMappings(
           std::make_tuple(point2, point1, val) :
           std::make_tuple(point1, point2, val);
 
-      outputMatchings->push_back(newT);
+      outputMatchings.push_back(newT);
     }
   }
-
-  if (debug) std::cout << msg.str() << std::endl;
 
   return addedPersistence;
 }

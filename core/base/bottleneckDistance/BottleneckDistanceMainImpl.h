@@ -13,18 +13,18 @@
 //      float, float, float -- vertex 2 coordinates
 template <typename dataType>
 int BottleneckDistance::computeBottleneck(
-    const std::vector<diagramTuple> *d1,
-    const std::vector<diagramTuple> *d2,
-    std::vector<matchingTuple> *matchings,
+    const std::vector<diagramTuple> &d1,
+    const std::vector<diagramTuple> &d2,
+    std::vector<matchingTuple> &matchings,
     const bool usePersistenceMetric,
     const double alpha)
 {
-  int d1Size = (int) d1->size();
-  int d2Size = (int) d2->size();
+  auto d1Size = (int) d1.size();
+  auto d2Size = (int) d2.size();
 
   bool transposeOriginal = d1Size > d2Size;
-  const std::vector<diagramTuple> *CTDiagram1 = transposeOriginal ? d2 : d1;
-  const std::vector<diagramTuple> *CTDiagram2 = transposeOriginal ? d1 : d2;
+  const std::vector<diagramTuple> &CTDiagram1 = transposeOriginal ? d2 : d1;
+  const std::vector<diagramTuple> &CTDiagram2 = transposeOriginal ? d1 : d2;
   if (transposeOriginal) {
     int temp = d1Size;
     d1Size = d2Size;
@@ -71,10 +71,10 @@ int BottleneckDistance::computeBottleneck(
 
   this->computeMinMaxSaddleNumberAndMapping(
       CTDiagram1, d1Size, nbRowMin, nbRowMax, nbRowSad,
-      &minMap1, &maxMap1, &sadMap1, zeroThresh);
+      minMap1, maxMap1, sadMap1, zeroThresh);
   this->computeMinMaxSaddleNumberAndMapping(
       CTDiagram2, d2Size, nbColMin, nbColMax, nbColSad,
-      &minMap2, &maxMap2, &sadMap2, zeroThresh);
+      minMap2, maxMap2, sadMap2, zeroThresh);
 
   // Automatically transpose if nb rows > nb cols
   maxRowColMin = std::max(nbRowMin+1, nbColMin+1);
@@ -157,19 +157,25 @@ int BottleneckDistance::computeBottleneck(
     if (nbRowMin > 0 && nbColMin > 0) {
       Munkres solverMin;
       dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
-      this->solvePWasserstein(minRowColMin, maxRowColMin, minMatrix, &minMatchings, &solverMin);
+      this->solvePWasserstein(
+        minRowColMin, maxRowColMin,
+        minMatrix, minMatchings, solverMin);
     }
 
     if (nbRowMax > 0 && nbColMax > 0) {
       Munkres solverMax;
       dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
-      this->solvePWasserstein(minRowColMax, maxRowColMax, maxMatrix, &maxMatchings, &solverMax);
+      this->solvePWasserstein(
+        minRowColMax, maxRowColMax,
+        maxMatrix, maxMatchings, solverMax);
     }
 
     if (nbRowSad > 0 && nbColSad > 0) {
       Munkres solverSad;
       dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
-      this->solvePWasserstein(minRowColSad, maxRowColSad, sadMatrix, &sadMatchings, &solverSad);
+      this->solvePWasserstein(
+        minRowColSad, maxRowColSad,
+        sadMatrix, sadMatchings, solverSad);
     }
 
   } else {
@@ -180,7 +186,7 @@ int BottleneckDistance::computeBottleneck(
       dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
       this->solveInfinityWasserstein(
         minRowColMin, maxRowColMin, nbRowMin, nbColMin,
-        minMatrix, &minMatchings, &solverMin);
+        minMatrix, minMatchings, solverMin);
     }
 
     // Launch solving for maxima.
@@ -189,7 +195,7 @@ int BottleneckDistance::computeBottleneck(
       dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
       this->solveInfinityWasserstein(
         minRowColMax, maxRowColMax, nbRowMax, nbColMax,
-        maxMatrix, &maxMatchings, &solverMax);
+        maxMatrix, maxMatchings, solverMax);
     }
 
     // Launch solving for saddles.
@@ -198,7 +204,7 @@ int BottleneckDistance::computeBottleneck(
       dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
       this->solveInfinityWasserstein(
         minRowColSad, maxRowColSad, nbRowSad, nbColSad,
-        sadMatrix, &sadMatchings, &solverSad);
+        sadMatrix, sadMatchings, solverSad);
     }
   }
 
@@ -230,15 +236,15 @@ int BottleneckDistance::computeBottleneck(
   for (int b = 0; b < d2Size; ++b) paired2[b] = false;
 
   int numberOfMismatches = 0;
-  for (int m = 0, ms = (int) matchings->size(); m < ms; ++m)
+  for (int m = 0, ms = (int) matchings.size(); m < ms; ++m)
   {
-    matchingTuple t = matchings->at(m);
+    matchingTuple t = matchings[m];
     int i = transposeOriginal ? std::get<1>(t) : std::get<0>(t);
     int j = transposeOriginal ? std::get<0>(t) : std::get<1>(t);
     dataType val = std::get<2>(t);
 
-    diagramTuple t1 = CTDiagram1->at(i);
-    diagramTuple t2 = CTDiagram2->at(j);
+    diagramTuple t1 = CTDiagram1[i];
+    diagramTuple t2 = CTDiagram2[j];
     dataType rX = std::get<6>(t1); dataType rY = std::get<10>(t1);
     dataType cX = std::get<6>(t2); dataType cY = std::get<10>(t2);
     dataType x = rX - cX; dataType y = rY - cY;

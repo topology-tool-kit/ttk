@@ -260,7 +260,7 @@ void GabowTarjan::printCurrentMatching() {
 }
 
 template <typename dataType>
-int GabowTarjan::run(std::vector<matchingTuple> *matchings)
+int GabowTarjan::run(std::vector<matchingTuple> &matchings)
 {
   // Compute distance.
   double d = Distance<dataType>(1);
@@ -271,7 +271,7 @@ int GabowTarjan::run(std::vector<matchingTuple> *matchings)
   }
 
   // Fill matchings.
-  matchings->clear();
+  matchings.clear();
   auto C = (std::vector<std::vector<dataType>>*) Cptr;
 
   for (unsigned int i = 0; i < Size1; ++i) {
@@ -287,10 +287,10 @@ int GabowTarjan::run(std::vector<matchingTuple> *matchings)
 
     if (j >= (int) Size2) {
       matchingTuple t = std::make_tuple(i, j, (*C)[i][Size2]);
-      matchings->push_back(t);
+      matchings.push_back(t);
     } else {
       matchingTuple t = std::make_tuple(i, j, (*C)[i][j]);
-      matchings->push_back(t);
+      matchings.push_back(t);
     }
   }
 
@@ -307,11 +307,11 @@ int GabowTarjan::run(std::vector<matchingTuple> *matchings)
 
     if (i <= -1) {
       matchingTuple t = std::make_tuple(i, j - Size1, (*C)[Size1][j - Size1]);
-      matchings->push_back(t);
+      matchings.push_back(t);
     } else {
       // Already added by symmetry.
       matchingTuple t = std::make_tuple(i, j - Size1, (*C)[i][j - Size1]);
-      matchings->push_back(t);
+      matchings.push_back(t);
     }
   }
 
