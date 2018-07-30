@@ -92,6 +92,7 @@ int PDClustering<dataType>::execute(){
 					min_persistence = 0;
 					min_points_to_add = std::numeric_limits<int>::max();
 					diagrams_complete = true;
+					use_progressive_=false;
 				}
 				dataType epsilon_candidate = pow(min_persistence, 2)/8.;
 				if(epsilon_candidate>epsilon_){
@@ -118,7 +119,6 @@ int PDClustering<dataType>::execute(){
 				min_cost=cost_;
 			}
 			else if(n_iterations_>2 && epsilon_<epsilon0/500. && !use_progressive_){
-				// TODO Adapt the condition with progressive KMeans
 				converged = true;
 			}
 			std::cout<< "Cost = "<< cost_<< std::endl;
