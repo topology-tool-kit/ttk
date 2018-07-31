@@ -59,7 +59,6 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		{
 		n_iterations += 1;
 		dataType rho = getRho(epsilon);
-		std::cout<< "epsilon (0) : "<< epsilon << std::endl;
 		if(use_progressive_ && n_iterations>1 && min_persistence>rho && epsilon_decreases_){
 			dataType epsilon_candidate = getEpsilon(min_persistence);
 			if(epsilon_candidate>epsilon){
@@ -139,7 +138,9 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 				if(epsilon_candidate<epsilon){
 					epsilon=epsilon_candidate;
 				}
-				std::cout<< "epsilon (2) : "<< epsilon << std::endl;
+				else{
+					epsilon *= 0.9
+				}
 			}
 			
 			if(!use_progressive_ && min_cost>total_cost && n_iterations>2){
