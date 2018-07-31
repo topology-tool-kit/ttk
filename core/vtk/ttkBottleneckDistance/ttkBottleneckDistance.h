@@ -54,7 +54,11 @@ class ttkBottleneckDistance
 
 public:
 
-  static ttkBottleneckDistance* New();
+  static ttkBottleneckDistance* New() {
+    ttkBottleneckDistance *result = new ttkBottleneckDistance;
+    result->InitializeObjectBase();
+    return result;
+  }
 
   vtkTypeMacro(ttkBottleneckDistance, vtkDataSetAlgorithm);
 
