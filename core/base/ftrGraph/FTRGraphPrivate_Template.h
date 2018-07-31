@@ -76,12 +76,10 @@ namespace ttk
                lazyUpdatePreimage(localProp, currentArc);
             } else {
 
-               // apply below current
-               // CAUTION: This cause a data race in parallel as a same list
-               // can be processed twice!
+               // locally aply the lazy one the current growing arc
                for (const idEdge e : lowerStarEdges) {
                   const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
-                  if (a != nullSuperArc && !lazy_.isEmpty(a)) {
+                  if (a != nullSuperArc && graph_.getArc(a).getPropagation()->getId() == localProp->getId()) {
                      // process lazy
                      // sort both list
                      // for each:
