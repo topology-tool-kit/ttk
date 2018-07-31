@@ -139,7 +139,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 					epsilon=epsilon_candidate;
 				}
 				else{
-					epsilon *= 0.9
+					epsilon *= 0.9;
 				}
 			}
 			
