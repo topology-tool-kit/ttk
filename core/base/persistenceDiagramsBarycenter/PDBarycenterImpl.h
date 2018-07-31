@@ -59,6 +59,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		{
 		n_iterations += 1;
 		dataType rho = getRho(epsilon);
+		std::cout<< "epsilon (0) : "<< epsilon << std::endl;
 		if(use_progressive_ && n_iterations>1 && min_persistence>rho && epsilon_decreases_){
 			dataType epsilon_candidate = getEpsilon(min_persistence);
 			if(epsilon_candidate>epsilon){
@@ -134,16 +135,11 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 			dataType max_shift = updateBarycenter(all_matchings);
 			std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 			if(epsilon_decreases_){
-				dataType eps_candidate = getEpsilon(pow(max_shift, 1./wasserstein_));
-				dataType eps_candidate_2 = ((double)epsilon)/5.0;
-				
-				epsilon = eps_candidate;
-				if(eps_candidate_2>epsilon){
-					epsilon = eps_candidate_2;
+				dataType epsilon_candidate = std::max(std::min(max_shift/8., epsilon_0/pow(n_iterations, 2)), epsilon/5.);
+				if(epsilon_candidate<epsilon){
+					epsilon=epsilon_candidate;
 				}
-				if(epsilon>epsilon_0/n_iterations){
-					epsilon = epsilon_0/pow(n_iterations, 2);
-				}
+				std::cout<< "epsilon (2) : "<< epsilon << std::endl;
 			}
 			
 			if(!use_progressive_ && min_cost>total_cost && n_iterations>2){
