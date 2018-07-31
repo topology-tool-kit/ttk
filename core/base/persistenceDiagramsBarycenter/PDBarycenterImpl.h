@@ -65,9 +65,17 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 				// Should always be the case
 				epsilon = epsilon_candidate;
 			}
+			
+			if(epsilon<5e-5){
+				// Add all remaining points for final convergence.
+				min_persistence = 0;
+				min_points_to_add = std::numeric_limits<int>::max();
+				use_progressive_=false;
+			}
+			
 			min_persistence = this->enrichCurrentBidderDiagrams(min_persistence, rho, min_diag_price, min_price, min_points_to_add);
 			std::cout<< "Min persistence : " << min_persistence <<std::endl;
-			if(min_persistence<lowest_persistence){
+			if(min_persistence<=lowest_persistence){
 				use_progressive_=false;
 			}
 			// TODO Enrich barycenter using median diagonal and off-diagonal prices
