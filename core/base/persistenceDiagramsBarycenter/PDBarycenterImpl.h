@@ -151,8 +151,9 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 				last_min_cost_obtained += 1;
 			}
 			
-			converged = converged || ((previous_min_persistence<=lowest_persistence || !use_progressive_) && \
-						(last_min_cost_obtained>1 && (!epsilon_decreases_ || epsilon<epsilon_0/500. || epsilon<epsilon_min_)));
+			converged = converged ||\
+						((previous_min_persistence<=lowest_persistence || !use_progressive_) && \
+						(last_min_cost_obtained>1 && (!epsilon_decreases_ || !early_stoppage_ || epsilon<epsilon_0/500. || epsilon<epsilon_min_)));
 			
 		}
 		
