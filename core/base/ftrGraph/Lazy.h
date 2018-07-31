@@ -25,8 +25,6 @@ namespace ttk
 {
    namespace ftr
    {
-      // TODO also move the comparison funciton here
-
       class Lazy : public Allocable
       {
         private:

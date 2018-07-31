@@ -188,10 +188,12 @@ namespace ttk
       {
          DynGraphNode* curNode = const_cast<DynGraphNode<Type>*>(this);
          DynGraphNode* minNode = const_cast<DynGraphNode<Type>*>(this);
+         auto minW = minNode->weight_;
 
          while (curNode->parent_) {
-            if (curNode->weight_ < minNode->weight_) {
+            if (curNode->weight_ < minW) {
                minNode = curNode;
+               minW = minNode->weight_;
             }
             curNode = curNode->parent_;
          }
