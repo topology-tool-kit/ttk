@@ -52,6 +52,10 @@ int PDClustering<dataType>::execute(){
 		}
 	}
 	min_persistence = enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price, min_points_to_add);
+	if(min_persistence<=lowest_persistence){
+		diagrams_complete = true;
+		use_progressive_=false;
+	}
 	
 	// Initializing centroids and clusters
 	if(use_kmeanspp_){
@@ -101,7 +105,7 @@ int PDClustering<dataType>::execute(){
 				}
 				min_diag_price = getMinDiagonalPrices();
 				min_persistence = enrichCurrentBidderDiagrams(min_persistence, rho, min_diag_price, min_points_to_add);
-				if(min_persistence<lowest_persistence){
+				if(min_persistence<=lowest_persistence){
 					use_progressive_=false;
 					diagrams_complete = true;
 				}
