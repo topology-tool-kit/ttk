@@ -85,7 +85,7 @@ int PDClustering<dataType>::execute(){
 			
 			std::cout<< "Iteration "<< n_iterations_<<", Epsilon = "<< epsilon_<< std::endl;
 			std::cout<< "Max shift : "<< max_shift << std::endl;
-			dataType rho = std::sqrt(8.0*epsilon_);
+			dataType rho = epsilon_>0 ? std::sqrt(8.0*epsilon_) : -1;
 			if(use_progressive_ && n_iterations_>1 && min_persistence>rho && !diagrams_complete){
 				if(epsilon_<5e-5){
 					// Add all remaining points for final convergence.
