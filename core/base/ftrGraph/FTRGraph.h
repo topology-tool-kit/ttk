@@ -28,6 +28,10 @@
 #include "Propagations.h"
 #include "Scalars.h"
 
+#ifndef TTK_DISABLE_FTR_LAZY
+#include "Lazy.h"
+#endif
+
 // c++ includes
 #include <set>
 #include <tuple>
@@ -71,6 +75,10 @@ namespace ttk
          Propagations propagations_;
          DynGraphs    dynGraphs_;
          Valences     valences_;
+
+#ifndef TTK_DISABLE_FTR_LAZY
+         Lazy lazy_;
+#endif
 
          // BFS history arrays
          std::vector<idCell>   bfsCells_;
@@ -319,6 +327,8 @@ namespace ttk
                                     const Propagation* const localProp,
                                     const idSuperArc         curArc);
 
+#ifndef TTK_DISABLE_FTR_LAZY
+
          // like updatePreimage but only impacte the lazy list in propagation
          // and not the global DG
          void lazyUpdatePreimage(Propagation* const localProp, const idSuperArc curArc);
@@ -347,6 +357,8 @@ namespace ttk
 
          // aply modifications from lazy lists to the global DG (for arc a)
          void lazyApply(Propagation* const locapProp, const idSuperArc a);
+
+#endif
 
          /// update the current arc of the dynGraph subtree of seed with curArc (on the component
          /// going through neigEdge)

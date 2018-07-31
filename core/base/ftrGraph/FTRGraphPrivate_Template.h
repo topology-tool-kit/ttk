@@ -81,7 +81,7 @@ namespace ttk
                // can be processed twice!
                for (const idEdge e : lowerStarEdges) {
                   const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
-                  if (a != nullSuperArc && !localProp->lazyListsEmpty(a)) {
+                  if (a != nullSuperArc && !lazy_.isEmpty(a)) {
                      // process lazy
                      // sort both list
                      // for each:
@@ -89,9 +89,6 @@ namespace ttk
                      // if add < del: add in real RG
                      // else: drop both, computation avoided
                      lazyApply(localProp, a);
-                  } else {
-                     std::cout << curVert << " no lazy for " << printEdge(e, localProp) << " arc "
-                               << a << std::endl;
                   }
                }
 # else
@@ -533,6 +530,7 @@ namespace ttk
          }
       }
 
+#ifndef TTK_DISABLE_FTR_LAZY
       template <typename ScalarType>
       void FTRGraph<ScalarType>::lazyUpdatePreimage(Propagation* const localProp,
                                                     const idSuperArc   curArc)
@@ -575,7 +573,7 @@ namespace ttk
                                                  Propagation* const     localProp,
                                                  const idSuperArc       curArc)
       {
-         localProp->lazyAdd(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
+         lazy_.addEmplace(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
       }
 
       template <typename ScalarType>
@@ -583,8 +581,8 @@ namespace ttk
                                                   Propagation* const     localProp,
                                                   const idSuperArc       curArc)
       {
-         localProp->lazyDel(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
-         localProp->lazyAdd(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
+         lazy_.delEmplace(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
+         lazy_.addEmplace(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
       }
 
       template <typename ScalarType>
@@ -592,7 +590,7 @@ namespace ttk
                                                Propagation* const     localProp,
                                                const idSuperArc       curArc)
       {
-         localProp->lazyDel(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
+         lazy_.delEmplace(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
       }
 
       template <typename ScalarType>
@@ -641,37 +639,31 @@ namespace ttk
             return localProp->compare(a, b);
          };
 
-         // auto compEdges = [&, comp](const linkEdge& a, const linkEdge& b) {
-         //    return mesh_.compareLinks(a, b, comp);
-         // };
-
          DEBUG_1(<< "lazy apply " << localProp->getCurVertex() << " arc " << graph_.printArc(a)
                  << std::endl);
 
-         // use a real sort to avoid problem linked to the tree structure of the DG
-         // + also look at the Weight bug
-         // localProp->sortLazyLists(compEdges);
-
-         auto add = localProp->lazyAddNext(a);
-         auto del = localProp->lazyDelNext(a);
+         auto add = lazy_.addGetNext(a);
+         auto del = lazy_.delGetNext(a);
          while (add != nullLink || del != nullLink) {
             if(del == nullLink) {
                updateLazyAdd(localProp, add, a);
-               add = localProp->lazyAddNext(a);
+               add = lazy_.addGetNext(a);
             } else if (add == nullLink || mesh_.compareLinks(del, add, comp)) {
                updateLazyDel(localProp, del, a);
-               del = localProp->lazyDelNext(a);
+               del = lazy_.delGetNext(a);
             } else if (mesh_.compareLinks(add, del, comp)) {
                updateLazyAdd(localProp, add, a);
-               add = localProp->lazyAddNext(a);
+               add = lazy_.addGetNext(a);
             } else {
                // same arc in both list, should be added and removed so we jus ignore it
                // (add and del cant be null both of them at the same time)
-               add = localProp->lazyAddNext(a);
-               del = localProp->lazyDelNext(a);
+               add = lazy_.addGetNext(a);
+               del = lazy_.delGetNext(a);
             }
          }
       }
+
+#endif
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::updateDynGraphCurArc(const idVertex seed, const idSuperArc curArc,

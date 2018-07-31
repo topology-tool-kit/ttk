@@ -23,10 +23,6 @@
 // library include
 #include <boost/heap/fibonacci_heap.hpp>
 
-// C++ includes
-#include <deque>
-#include <unordered_map>
-
 namespace ttk
 {
    namespace ftr
@@ -47,13 +43,6 @@ namespace ttk
 
          // representant (pos in array)
          AtomicUF id_;
-
-         // Lazyness: do not impact the global DG
-         // contains DG link between to node, lowest first
-         // (see edge comparison from Parsa's paper)
-         // per arc
-         // TODO if we ue a map here, it is because this is not the right place for this container
-         std::unordered_map<idSuperArc, std::deque<linkEdge>> lazyAdd_, lazyDel_;
 
         public:
          Propagation(idVertex startVert, VertCompFN vertComp, bool up)
@@ -159,59 +148,6 @@ namespace ttk
          bool goDown(void) const
          {
             return !goUp_;
-         }
-
-         void lazyAdd(const idEdge e0, const idEdge e1, const idSuperArc a)
-         {
-            lazyAdd_[a].emplace_back(std::make_pair(e0, e1));
-            std::cout << a << " lazy add " << e0 << " " << e1 << std::endl;
-         }
-
-         void lazyDel(const idEdge e0, const idEdge e1, const idSuperArc a)
-         {
-            // here the arc would be a non sense.
-            lazyDel_[a].emplace_back(std::make_pair(e0, e1));
-            std::cout << a << " lazy del " << e0 << " " << e1 << std::endl;
-         }
-
-         // return the head of lazyAdd / lazyDel (or a null link if empty)
-         // would have used std::optional if possible
-         linkEdge lazyAddNext(const idSuperArc a)
-         {
-            if (!lazyAdd_.count(a) || lazyAdd_[a].empty()) {
-               return nullLink;
-            } else {
-               linkEdge add = lazyAdd_[a].front();
-               lazyAdd_[a].pop_front();
-               return add;
-            }
-         }
-
-         linkEdge lazyDelNext(const idSuperArc a)
-         {
-            if (!lazyDel_.count(a) || lazyDel_[a].empty()) {
-               return nullLink;
-            } else {
-               linkEdge del = lazyDel_[a].front();
-               lazyDel_[a].pop_front();
-               return del;
-            }
-         }
-
-         bool lazyListsEmpty(const idSuperArc a)
-         {
-            return (!lazyAdd_.count(a) || lazyAdd_[a].empty()) &&
-                   (!lazyDel_.count(a) || lazyDel_[a].empty());
-         }
-
-         const decltype(lazyAdd_)& addEach() const
-         {
-            return lazyAdd_;
-         }
-
-         const decltype(lazyDel_)& delEach() const
-         {
-            return lazyDel_;
          }
 
          // DEBUG ONLY

@@ -321,6 +321,11 @@ namespace ttk
          dynGraphs_.down.setNumberOfElmt(mesh_.getNumberOfEdges());
          dynGraphs_.down.alloc();
 
+#ifndef TTK_DISABLE_FTR_LAZY
+         lazy_.setNumberOfElmt(mesh_.getNumberOfVertices());
+         lazy_.alloc();
+#endif
+
          valences_.lower.resize(mesh_.getNumberOfVertices());
          valences_.upper.resize(mesh_.getNumberOfVertices());
 
@@ -338,6 +343,10 @@ namespace ttk
          propagations_.init();
          dynGraphs_.up.init();
          dynGraphs_.down.init();
+
+#ifndef TTK_DISABLE_FTR_LAZY
+         lazy_.init();
+#endif
 
          // fillVector<idCell>(bfsCells_, nullCell);
          // fillVector<idEdge>(bfsEdges_, nullEdge);
