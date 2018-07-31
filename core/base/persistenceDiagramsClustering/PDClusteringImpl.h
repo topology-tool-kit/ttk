@@ -36,7 +36,7 @@ int PDClustering<dataType>::execute(){
 	// Getting current diagrams (with only at most min_points_to_add points)
 	dataType max_persistence = getMostPersistent();
 	dataType lowest_persistence = getLessPersistent();
-	int min_points_to_add = 30;
+	int min_points_to_add = 50;
 	dataType min_persistence = 0;
 	if(use_progressive_){
 		// min_persistence = max_persistence/2.;
@@ -52,6 +52,7 @@ int PDClustering<dataType>::execute(){
 		}
 	}
 	min_persistence = enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price, min_points_to_add);
+	min_points_to_add = 10;
 	if(min_persistence<=lowest_persistence){
 		diagrams_complete = true;
 		use_progressive_=false;

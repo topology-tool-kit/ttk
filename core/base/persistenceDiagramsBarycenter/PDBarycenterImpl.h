@@ -32,7 +32,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 	int last_min_cost_obtained = 0;
 	int min_points_to_add = 10;
 	if(use_progressive_){
-		min_persistence = max_persistence/2.;
+		min_persistence = 0;
 	}
 	else{
 		min_persistence = 0;
@@ -146,8 +146,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 				last_min_cost_obtained += 1;
 			}
 			
-			converged = (previous_min_persistence<=lowest_persistence || !use_progressive_) && \
-						(last_min_cost_obtained>1 && (!epsilon_decreases_ || epsilon<epsilon_0/1000. || epsilon<epsilon_min_));
+			converged = converged || ((previous_min_persistence<=lowest_persistence || !use_progressive_) && \
+						(last_min_cost_obtained>1 && (!epsilon_decreases_ || epsilon<epsilon_0/500. || epsilon<epsilon_min_)));
 			
 		}
 		
