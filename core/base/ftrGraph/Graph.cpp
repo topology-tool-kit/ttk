@@ -34,7 +34,7 @@ void Graph::mergeArcs(VertCompFN comp)
 
    // also adapt segmentation
 #pragma omp parallel for
-   for(idVertex v = 0; v < nbVerts_; ++v) {
+   for(idVertex v = 0; v < nbElmt_; ++v) {
       const idSuperArc vArc = segmentation_[v].corArc;
       if (mapArcs.count(vArc)) {
          segmentation_[v].corArc = mapArcs[vArc];
@@ -237,7 +237,7 @@ std::string Graph::printVisit() const
 {
    std::stringstream res;
    res << "Segmentation: " << std::endl;
-   for (idVertex s = 0; s < nbVerts_; ++s) {
+   for (idVertex s = 0; s < nbElmt_; ++s) {
       res << s << " : ";
       res << printVisit(s);
       res << std::endl;
@@ -250,16 +250,16 @@ std::string Graph::printVisit() const
 void Graph::alloc()
 {
 #ifndef TTK_ENABLE_KAMIKAZE
-   if (nbVerts_ == nullVertex) {
-      cout << "[FTR Graph]: ERROR, setNumberOfVertices not called before alloc in Graph" << endl;
+   if (nbElmt_ == nullVertex) {
+      cout << "[FTR Graph]: ERROR, setNumberOfElmt not called before alloc in Graph" << endl;
    }
 #endif
-   leaves_.reserve(nbVerts_/2);
-   nodes_.reserve(nbVerts_);
-   arcs_.reserve(nbVerts_);
-   segmentation_.resize(nbVerts_);
-   valUp_.resize(nbVerts_);
-   valDown_.resize(nbVerts_);
+   leaves_.reserve(nbElmt_/2);
+   nodes_.reserve(nbElmt_);
+   arcs_.reserve(nbElmt_);
+   segmentation_.resize(nbElmt_);
+   valUp_.resize(nbElmt_);
+   valDown_.resize(nbElmt_);
 }
 
 void Graph::init()

@@ -63,12 +63,12 @@ namespace ttk
       {
         protected:
          /// Allocation may depends on the number of vertices
-         idVertex nbVerts_ = nullVertex;
+         idVertex nbElmt_ = nullVertex;
 
         public:
-         void setNumberOfVertices(const idVertex nbVerts)
+         void setNumberOfElmt(const idVertex nbVerts)
          {
-            nbVerts_ = nbVerts;
+            nbElmt_ = nbVerts;
          }
 
          template <typename type>

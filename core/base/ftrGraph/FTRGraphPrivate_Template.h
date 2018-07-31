@@ -75,13 +75,25 @@ namespace ttk
 
                lazyUpdatePreimage(localProp, currentArc);
             } else {
-               // process lazy
-               // sort both list
-               // for each:
-               // if del < add: delete in real RG
-               // if add < del: add in real RG
-               // else: drop both, computation avoided
-               lazyApply(localProp);
+
+               // apply below current
+               // CAUTION: This cause a data race in parallel as a same list
+               // can be processed twice!
+               for (const idEdge e : lowerStarEdges) {
+                  const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
+                  if (a != nullSuperArc && !localProp->lazyListsEmpty(a)) {
+                     // process lazy
+                     // sort both list
+                     // for each:
+                     // if del < add: delete in real RG
+                     // if add < del: add in real RG
+                     // else: drop both, computation avoided
+                     lazyApply(localProp, a);
+                  } else {
+                     std::cout << curVert << " no lazy for " << printEdge(e, localProp) << " arc "
+                               << a << std::endl;
+                  }
+               }
 # else
             {
 #endif
@@ -571,7 +583,7 @@ namespace ttk
                                                   Propagation* const     localProp,
                                                   const idSuperArc       curArc)
       {
-         localProp->lazyDel(std::get<0>(oTriangle), std::get<1>(oTriangle));
+         localProp->lazyDel(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
          localProp->lazyAdd(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
       }
 
@@ -580,53 +592,50 @@ namespace ttk
                                                Propagation* const     localProp,
                                                const idSuperArc       curArc)
       {
-         localProp->lazyDel(std::get<1>(oTriangle), std::get<2>(oTriangle));
+         localProp->lazyDel(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
       }
 
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::updateLazyAdd(const Propagation* const                localProp,
-                                               const std::tuple<linkEdge, idSuperArc>& add)
+      void FTRGraph<ScalarType>::updateLazyAdd(const Propagation* const localProp,
+                                               const linkEdge edge, const idSuperArc arc)
       {
-         const linkEdge    curLink = std::get<0>(add);
-         const orderedEdge e0      = mesh_.getOrderedEdge(std::get<0>(curLink), localProp->goUp());
-         const orderedEdge e1      = mesh_.getOrderedEdge(std::get<1>(curLink), localProp->goUp());
+         const orderedEdge e0      = mesh_.getOrderedEdge(std::get<0>(edge), localProp->goUp());
+         const orderedEdge e1      = mesh_.getOrderedEdge(std::get<1>(edge), localProp->goUp());
          const idVertex    w       = getWeight(e0, e1, localProp);
          bool              t;
-         t = dynGraph(localProp).insertEdge(std::get<1>(curLink), std::get<0>(curLink), w,
-                                            std::get<1>(add));
+         t = dynGraph(localProp).insertEdge(std::get<1>(edge), std::get<0>(edge), w, arc);
          if (t) {
-            DEBUG_2(<< "start add edge: " << printEdge(std::get<0>(curLink), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << " w " << w << " arc " << std::get<1>(add) << std::endl);
+            DEBUG_2(<< "start add edge: " << printEdge(std::get<0>(edge), localProp));
+            DEBUG_2(<< " :: " << printEdge(std::get<1>(edge), localProp) << " w " << w << " arc " << arc << std::endl);
          } else {
             DEBUG_2(<< "start no need to create edge: "
-                    << printEdge(std::get<0>(curLink), localProp) << std::endl);
-         // DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << std::endl);
+                    << printEdge(std::get<0>(edge), localProp) << std::endl);
+         // DEBUG_2(<< " :: " << printEdge(std::get<1>(edge), localProp) << std::endl);
          }
       }
 
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::updateLazyDel(const Propagation* const                localProp,
-                                               const std::tuple<linkEdge, idSuperArc>& del)
+      void FTRGraph<ScalarType>::updateLazyDel(const Propagation* const localProp,
+                                               const linkEdge edge, const idSuperArc arc)
       {
-         const linkEdge curLink = std::get<0>(del);
-         const int t = dynGraph(localProp).removeEdge(std::get<0>(curLink), std::get<1>(curLink));
+         const int t = dynGraph(localProp).removeEdge(std::get<0>(edge), std::get<1>(edge));
 
          // keep history inside the dyngraph structure
-         // dynGraph(localProp).setSubtreeArc(std::get<0>(curLink), std::get<1>(del));
-         // dynGraph(localProp).setSubtreeArc(std::get<1>(curLink), std::get<1>(del));
+         // dynGraph(localProp).setSubtreeArc(std::get<0>(edge), std::get<1>(del));
+         // dynGraph(localProp).setSubtreeArc(std::get<1>(edge), std::get<1>(del));
 
          if (t) {
-            DEBUG_2(<< "mid del edge: " << printEdge(std::get<0>(curLink), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << " : " << std::get<1>(del) << std::endl);
+            DEBUG_2(<< "mid del edge: " << printEdge(std::get<0>(edge), localProp));
+            DEBUG_2(<< " :: " << printEdge(std::get<1>(edge), localProp) << " : " << arc << std::endl);
          }
          else {
-            DEBUG_2(<< "mid no found edge: " << printEdge(std::get<0>(curLink), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(curLink), localProp) << " : " << std::get<1>(del) << std::endl);
+            DEBUG_2(<< "mid no found edge: " << printEdge(std::get<0>(edge), localProp));
+            DEBUG_2(<< " :: " << printEdge(std::get<1>(edge), localProp) << " : " << arc << std::endl);
          }
       }
 
       template<typename ScalarType>
-      void FTRGraph<ScalarType>::lazyApply(Propagation* const localProp)
+      void FTRGraph<ScalarType>::lazyApply(Propagation* const localProp, const idSuperArc a)
       {
          auto comp = [localProp](const idVertex a, const idVertex b) {
             return localProp->compare(a, b);
@@ -636,29 +645,30 @@ namespace ttk
          //    return mesh_.compareLinks(a, b, comp);
          // };
 
-         DEBUG_1(<< "lazy apply " << localProp->getCurVertex() << std::endl);
+         DEBUG_1(<< "lazy apply " << localProp->getCurVertex() << " arc " << graph_.printArc(a)
+                 << std::endl);
 
          // use a real sort to avoid problem linked to the tree structure of the DG
          // + also look at the Weight bug
          // localProp->sortLazyLists(compEdges);
 
-         auto add = localProp->lazyAddNext();
-         auto del = localProp->lazyDelNext();
-         while (std::get<0>(add) != nullLink || std::get<0>(del) != nullLink) {
-            if(std::get<0>(del) == nullLink) {
-               updateLazyAdd(localProp, add);
-               add = localProp->lazyAddNext();
-            } else if (std::get<0>(add) == nullLink || mesh_.compareLinks(std::get<0>(del), std::get<0>(add), comp)) {
-               updateLazyDel(localProp, del);
-               del = localProp->lazyDelNext();
-            } else if (mesh_.compareLinks(std::get<0>(add), std::get<0>(del), comp)) {
-               updateLazyAdd(localProp, add);
-               add = localProp->lazyAddNext();
+         auto add = localProp->lazyAddNext(a);
+         auto del = localProp->lazyDelNext(a);
+         while (add != nullLink || del != nullLink) {
+            if(del == nullLink) {
+               updateLazyAdd(localProp, add, a);
+               add = localProp->lazyAddNext(a);
+            } else if (add == nullLink || mesh_.compareLinks(del, add, comp)) {
+               updateLazyDel(localProp, del, a);
+               del = localProp->lazyDelNext(a);
+            } else if (mesh_.compareLinks(add, del, comp)) {
+               updateLazyAdd(localProp, add, a);
+               add = localProp->lazyAddNext(a);
             } else {
                // same arc in both list, should be added and removed so we jus ignore it
                // (add and del cant be null both of them at the same time)
-               add = localProp->lazyAddNext();
-               del = localProp->lazyDelNext();
+               add = localProp->lazyAddNext(a);
+               del = localProp->lazyDelNext(a);
             }
          }
       }

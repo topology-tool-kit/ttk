@@ -25,6 +25,7 @@
 
 // C++ includes
 #include <deque>
+#include <unordered_map>
 
 namespace ttk
 {
@@ -50,8 +51,9 @@ namespace ttk
          // Lazyness: do not impact the global DG
          // contains DG link between to node, lowest first
          // (see edge comparison from Parsa's paper)
-         // along with the arc that visit this linkEdge
-         std::deque<std::tuple<linkEdge, idSuperArc>> lazyAdd_, lazyDel_;
+         // per arc
+         // TODO if we ue a map here, it is because this is not the right place for this container
+         std::unordered_map<idSuperArc, std::deque<linkEdge>> lazyAdd_, lazyDel_;
 
         public:
          Propagation(idVertex startVert, VertCompFN vertComp, bool up)
@@ -161,53 +163,45 @@ namespace ttk
 
          void lazyAdd(const idEdge e0, const idEdge e1, const idSuperArc a)
          {
-            lazyAdd_.emplace_back(std::make_tuple(std::make_pair(e0, e1), a));
+            lazyAdd_[a].emplace_back(std::make_pair(e0, e1));
+            std::cout << a << " lazy add " << e0 << " " << e1 << std::endl;
          }
 
-         void lazyDel(const idEdge e0, const idEdge e1)
+         void lazyDel(const idEdge e0, const idEdge e1, const idSuperArc a)
          {
             // here the arc would be a non sense.
-            lazyDel_.emplace_back(std::make_tuple(std::make_pair(e0, e1), nullSuperArc));
-         }
-
-         void sortLazyLists(LinkCompFN comp)
-         {
-            auto updateComp = [comp](const std::tuple<linkEdge, idSuperArc>& a,
-                                     const std::tuple<linkEdge, idSuperArc>& b) {
-               return comp(std::get<0>(a), std::get<0>(b));
-            };
-            std::sort(lazyAdd_.begin(), lazyAdd_.end(), updateComp);
-            std::sort(lazyDel_.begin(), lazyDel_.end(), updateComp);
-            // TODO maybe we could use only one list for both?
+            lazyDel_[a].emplace_back(std::make_pair(e0, e1));
+            std::cout << a << " lazy del " << e0 << " " << e1 << std::endl;
          }
 
          // return the head of lazyAdd / lazyDel (or a null link if empty)
          // would have used std::optional if possible
-         std::tuple<linkEdge, idSuperArc> lazyAddNext()
+         linkEdge lazyAddNext(const idSuperArc a)
          {
-            if (lazyAdd_.empty()) {
-               return  std::make_tuple(nullLink, nullSuperArc);
+            if (!lazyAdd_.count(a) || lazyAdd_[a].empty()) {
+               return nullLink;
             } else {
-               std::tuple<linkEdge, idSuperArc> add = lazyAdd_.front();
-               lazyAdd_.pop_front();
+               linkEdge add = lazyAdd_[a].front();
+               lazyAdd_[a].pop_front();
                return add;
             }
          }
 
-         std::tuple<linkEdge, idSuperArc> lazyDelNext()
+         linkEdge lazyDelNext(const idSuperArc a)
          {
-            if (lazyDel_.empty()) {
-               return std::make_tuple(nullLink, nullSuperArc);
+            if (!lazyDel_.count(a) || lazyDel_[a].empty()) {
+               return nullLink;
             } else {
-               std::tuple<linkEdge, idSuperArc> del = lazyDel_.front();
-               lazyDel_.pop_front();
+               linkEdge del = lazyDel_[a].front();
+               lazyDel_[a].pop_front();
                return del;
             }
          }
 
-         bool lazyListsEmpty()
+         bool lazyListsEmpty(const idSuperArc a)
          {
-            return lazyAdd_.empty() && lazyDel_.empty();
+            return (!lazyAdd_.count(a) || lazyAdd_[a].empty()) &&
+                   (!lazyDel_.count(a) || lazyDel_[a].empty());
          }
 
          const decltype(lazyAdd_)& addEach() const

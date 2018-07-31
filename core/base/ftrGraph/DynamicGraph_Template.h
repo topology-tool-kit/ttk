@@ -26,7 +26,7 @@ namespace ttk
       template <typename Type>
       void DynamicGraph<Type>::alloc()
       {
-         nodes_.resize(nbVerts_);
+         nodes_.resize(nbElmt_);
       }
 
       template<typename Type>

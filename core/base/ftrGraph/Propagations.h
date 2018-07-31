@@ -52,9 +52,9 @@ namespace ttk
 
          void alloc() override
          {
-            propagations_.reserve(nbVerts_);
-            visits_.down.resize(nbVerts_);
-            visits_.up.resize(nbVerts_);
+            propagations_.reserve(nbElmt_);
+            visits_.down.resize(nbElmt_);
+            visits_.up.resize(nbElmt_);
          }
 
          void init() override

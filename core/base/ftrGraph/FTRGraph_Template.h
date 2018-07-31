@@ -309,16 +309,16 @@ namespace ttk
          scalars_->setSize(mesh_.getNumberOfVertices());
          scalars_->alloc();
 
-         graph_.setNumberOfVertices(mesh_.getNumberOfVertices());
+         graph_.setNumberOfElmt(mesh_.getNumberOfVertices());
          graph_.alloc();
 
-         propagations_.setNumberOfVertices(mesh_.getNumberOfVertices());
+         propagations_.setNumberOfElmt(mesh_.getNumberOfVertices());
          propagations_.alloc();
 
-         dynGraphs_.up.setNumberOfNodes(mesh_.getNumberOfEdges());
+         dynGraphs_.up.setNumberOfElmt(mesh_.getNumberOfEdges());
          dynGraphs_.up.alloc();
 
-         dynGraphs_.down.setNumberOfNodes(mesh_.getNumberOfEdges());
+         dynGraphs_.down.setNumberOfElmt(mesh_.getNumberOfEdges());
          dynGraphs_.down.alloc();
 
          valences_.lower.resize(mesh_.getNumberOfVertices());

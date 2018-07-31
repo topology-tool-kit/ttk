@@ -12,7 +12,6 @@
 
 #pragma once
 
-
 // core includes
 #include <Triangulation.h>
 
@@ -68,7 +67,7 @@ namespace ttk
       {
          private:
           ttk::Triangulation* tri_;
-          // idVertex             nbVerts_; // inherits from Allocable
+          idVertex                nbVerts_;
           idEdge                  nbEdges_;
           idCell                  nbTriangles_;
           std::vector<edgeScheme> edgesSortId_;

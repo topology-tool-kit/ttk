@@ -339,14 +339,14 @@ namespace ttk
                             const idSuperArc       curArc);
 
          // impacte the global DG
-         void updateLazyAdd(const Propagation* const                localProp,
-                            const std::tuple<linkEdge, idSuperArc>& add);
+         void updateLazyAdd(const Propagation* const localProp, const linkEdge edge,
+                            const idSuperArc arc);
 
-         void updateLazyDel(const Propagation* const                localProp,
-                            const std::tuple<linkEdge, idSuperArc>& add);
+         void updateLazyDel(const Propagation* const localProp, const linkEdge edge,
+                            const idSuperArc arc);
 
-         // aply modifications from lazy lists to the global DG
-         void lazyApply(Propagation* const locapProp);
+         // aply modifications from lazy lists to the global DG (for arc a)
+         void lazyApply(Propagation* const locapProp, const idSuperArc a);
 
          /// update the current arc of the dynGraph subtree of seed with curArc (on the component
          /// going through neigEdge)

@@ -43,14 +43,12 @@ namespace ttk
 
          void setNumberOfNodes(const std::size_t nbNodes)
          {
-            // we use the nbVerts_ as the number
-            // of nodes to allocate
-            setNumberOfVertices(nbNodes);
+            setNumberOfElmt(nbNodes);
          }
 
          /// preallocate the array of tree
          /// representing the forset,
-         /// \pre needs nbVerts_ to be set.
+         /// \pre needs nbElmt_ to be set.
          void alloc() override;
 
          void init() override;
