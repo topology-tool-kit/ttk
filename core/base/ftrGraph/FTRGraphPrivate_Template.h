@@ -80,6 +80,7 @@ namespace ttk
                for (const idEdge e : lowerStarEdges) {
                   const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
                   if (a != nullSuperArc && graph_.getArc(a).getPropagation()->getId() == localProp->getId()) {
+                     // TODO: Check here if we dan't call it one a same list twice or more
                      // process lazy
                      // sort both list
                      // for each:
@@ -215,58 +216,100 @@ namespace ttk
          std::vector<DynGraphNode<idVertex>*> lowerComp, upperComp;
 
          // TODO add lazyness!
-         // NOTE: Lazyness is propagation scope and not per arc
 
          const bool     fromMin         = begin < stop;
-         Propagation*   mockPropagation = newPropagation(scalars_->getSortedVert(begin), fromMin);
+         Propagation*   localProp = newPropagation(scalars_->getSortedVert(begin), fromMin);
          const idVertex incr            = fromMin ? 1 : -1;
          for (idVertex idv = begin; idv < stop; idv = idv + incr) {
-            const idVertex v = scalars_->getSortedVert(idv);
-            mockPropagation->setCurvert(v);  // never use Fibo Heap here
+            const idVertex curVert = scalars_->getSortedVert(idv);
+            localProp->setCurvert(curVert);  // never use Fibo Heap here
 
-            idSuperArc arc = nullSuperArc;
-            bool isJoin = false;
+            idSuperArc currentArc = nullSuperArc;
             lowerStarEdges.clear();
             upperStarEdges.clear();
-            std::tie(lowerStarEdges, upperStarEdges) = visitStar(mockPropagation);
-            lowerComp                                = lowerComps(lowerStarEdges, mockPropagation);
-            if (!lowerComp.size()) { // min
-               const idNode minNode = graph_.makeNode(v);
-               arc                  = graph_.openArc(minNode, mockPropagation);
-               DEBUG_1(<< v << " min arc " << arc << std::endl);
-            } else if (lowerComp.size() < 2) { // regular
-               arc = lowerComp[0]->getCorArc();
-            } else { // join saddle
-               const idNode sadNode = graph_.makeNode(v);
-               arc                  = graph_.openArc(sadNode, mockPropagation);
-               DEBUG_1(<< v << " join arc " << arc << std::endl);
-               mergeAtSaddle(sadNode, lowerComp);
-               isJoin = true;
+            std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
+
+            if (valences_.lower[curVert] == 0) { // min
+               const idNode minNode = graph_.makeNode(curVert);
+               currentArc           = graph_.openArc(minNode, localProp);
+               DEBUG_1(<< curVert << " min arc " << currentArc << std::endl);
             }
 
-            DEBUG_1(<< v << " arc " << arc << std::endl);
-            graph_.visit(v, arc);
-            propagations_.visit(v, mockPropagation);
-            updatePreimage(mockPropagation, arc);
+#ifndef TTK_DISABLE_FTR_LAZY
+            if (valences_.lower[curVert] < 2 && valences_.upper[curVert] < 2) {
 
-            upperComp = upperComps(upperStarEdges, mockPropagation);
-            if(!upperComp.size()) {
-               const idNode maxNode = graph_.makeNode(v);
-               graph_.closeArc(arc, maxNode);
-               DEBUG_1(<< v << "max arc close " << graph_.printArc(arc) << std::endl);
-            } else if (upperComp.size() < 2) {
-               // 1 cc above
-            } else {
-               if (isJoin) {
-                  graph_.getArc(arc).hide();
-               } else {
-                  const idNode splitNode = graph_.makeNode(v);
-                  graph_.closeArc(arc, splitNode);
-                  DEBUG_1(<< v << "split arc close " << graph_.printArc(arc) << std::endl);
+               // simple reeb regular, lazyness
+               if(lowerStarEdges.size()) {
+                  // not a min nor a saddle: 1 CC below
+                  currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
                }
-               splitAtSaddle(mockPropagation, upperComp);
+               if (upperStarEdges.size()) {
+                  for (const idEdge dgNode : upperStarEdges) {
+                     dynGraph(localProp).setCorArc(dgNode, currentArc);
+                  }
+               } else {
+                  const idNode maxNode = graph_.makeNode(curVert);
+                  graph_.closeArc(currentArc, maxNode);
+                  DEBUG_1(<< curVert << "max arc close " << graph_.printArc(currentArc) << std::endl);
+               }
+
+               visit(localProp, currentArc);
+
+               lazyUpdatePreimage(localProp, currentArc);
+            } else {
+
+               // locally aply the lazy one the current growing arc
+               for (const idEdge e : lowerStarEdges) {
+                  const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
+                  if (!lazy_.isEmpty(a)) {
+                     // process lazy
+                     // sort both list
+                     // for each:
+                     // if del < add: delete in real RG
+                     // if add < del: add in real RG
+                     // else: drop both, computation avoided
+                     lazyApply(localProp, a);
+                  }
+               }
+# else
+            {
+#endif
+               bool isJoin = false;
+               lowerComp = lowerComps(lowerStarEdges, localProp);
+               if (lowerComp.size() == 1) {  // regular
+                  currentArc = lowerComp[0]->getCorArc();
+               } else if (lowerComp.size() > 1) {  // join saddle
+                  const idNode sadNode = graph_.makeNode(curVert);
+                  currentArc           = graph_.openArc(sadNode, localProp);
+                  DEBUG_1(<< curVert << " join arc " << currentArc << std::endl);
+                  mergeAtSaddle(sadNode, lowerComp);
+                  isJoin = true;
+               }
+
+               DEBUG_1(<< curVert << " arc " << currentArc << std::endl);
+               graph_.visit(curVert, currentArc);
+               propagations_.visit(curVert, localProp);
+               updatePreimage(localProp, currentArc);
+
+               upperComp = upperComps(upperStarEdges, localProp);
+               if (!upperComp.size()) {
+                  const idNode maxNode = graph_.makeNode(curVert);
+                  graph_.closeArc(currentArc, maxNode);
+                  DEBUG_1(<< curVert << "max arc close " << graph_.printArc(currentArc) << std::endl);
+               } else if (upperComp.size() < 2) {
+                  // 1 cc above
+               } else {
+                  if (isJoin) {
+                     graph_.getArc(currentArc).hide();
+                  } else {
+                     const idNode splitNode = graph_.makeNode(curVert);
+                     graph_.closeArc(currentArc, splitNode);
+                     DEBUG_1(<< curVert << "split arc close " << graph_.printArc(currentArc) << std::endl);
+                  }
+                  splitAtSaddle(localProp, upperComp);
+               }
             }
-         }
+         } // end for each vertex
       }
 
       template <typename ScalarType>
