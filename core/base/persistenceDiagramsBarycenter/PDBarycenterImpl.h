@@ -139,6 +139,9 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 				if(epsilon_candidate<epsilon && use_progressive_){
 					epsilon=epsilon_candidate;
 				}
+				else if (!use_progressive_){
+					epsilon=epsilon_candidate;
+				}
 				else if (use_progressive_){
 					epsilon *= 0.95;
 				}
