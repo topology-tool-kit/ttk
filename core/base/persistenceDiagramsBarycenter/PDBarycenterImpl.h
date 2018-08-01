@@ -136,7 +136,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 			std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 			if(epsilon_decreases_){
 				dataType epsilon_candidate = std::min(std::max(max_shift/8., epsilon/5.), epsilon_0/pow(n_iterations, 2));
-				if(epsilon_candidate<epsilon){
+				if(epsilon_candidate<epsilon && use_progressive_){
 					epsilon=epsilon_candidate;
 				}
 				else if (use_progressive_){
