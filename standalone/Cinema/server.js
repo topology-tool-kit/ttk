@@ -5,7 +5,6 @@ const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const express = require('express');
 const app = express();
-const ws = require('express-ws')(app);
 
 const db = new sqlite3.Database(':memory:');
 const databasesPath = process.argv[2];
