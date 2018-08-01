@@ -171,7 +171,7 @@ int ttkSuperlevelSetOverlapTracking::doIt(vtkTable* inputTable, vtkUnstructuredG
         for(size_t t=0; t<tn-1; t++){
             auto& edges = timeEdgeMap[t];
             for(auto& e: edges){
-                vtkIdType ids[2] = { e.n0+offset[t], e.n1+offset[t+1] };
+                vtkIdType ids[2] = { (vtkIdType)(e.n0+offset[t]), (vtkIdType)(e.n1+offset[t+1]) };
                 mesh->InsertNextCell(VTK_LINE, 2, ids);
                 branches->InsertTuple1(q++, e.branch);
             }
