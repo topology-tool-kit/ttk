@@ -112,6 +112,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vec
 		else if(!early_stoppage_ && epsilon_decreases_){
 			epsilon = epsilon_0;
 			while(epsilon>1e-5){
+				std::cout<< "epsilon : "<< epsilon << std::endl;
 				total_cost = 0;
 				runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
 							&min_diag_price,  &min_price, &all_matchings, use_kdt);
