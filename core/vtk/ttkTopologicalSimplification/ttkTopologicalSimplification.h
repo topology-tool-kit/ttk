@@ -66,6 +66,7 @@
 #include                  <vtkPointData.h>
 #include                  <vtkSmartPointer.h>
 
+
 // ttk code includes
 #include                  <TopologicalSimplification.h>
 #include                  <ttkWrapper.h>
@@ -99,8 +100,8 @@ class ttkTopologicalSimplification
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
 
-    vtkSetMacro(UseInputOffsetScalarField, int);
-    vtkGetMacro(UseInputOffsetScalarField, int);
+    vtkSetMacro(ForceInputOffsetScalarField, int);
+    vtkGetMacro(ForceInputOffsetScalarField, int);
 
     vtkSetMacro(ConsiderIdentifierAsBlackList, int);
     vtkGetMacro(ConsiderIdentifierAsBlackList, int);
@@ -137,11 +138,12 @@ class ttkTopologicalSimplification
   private:
    
     int ScalarFieldId;
+    int OffsetFieldId;
     std::string ScalarField;
     std::string InputOffsetScalarFieldName;
     std::string OutputOffsetScalarFieldName;
     std::string VertexIdentifierScalarField;
-    bool UseInputOffsetScalarField;
+    bool ForceInputOffsetScalarField;
     bool ConsiderIdentifierAsBlackList;
     bool AddPerturbation;
     bool hasUpdatedMesh_;
@@ -150,7 +152,7 @@ class ttkTopologicalSimplification
     ttk::Triangulation *triangulation_;
     vtkDataArray* identifiers_;
     vtkDataArray* inputScalars_;
-    vtkIdTypeArray* offsets_;
+    vtkDataArray* offsets_;
     vtkDataArray* inputOffsets_;
 
 };

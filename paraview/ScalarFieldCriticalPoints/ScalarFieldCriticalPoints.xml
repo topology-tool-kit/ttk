@@ -62,14 +62,15 @@ American Mathematical Monthly, 1970.
       </StringVectorProperty>
      
       <IntVectorProperty name="With predefined offset"
-        label="Use Input Offset Field"
-        command="SetPredefinedOffset"
+        label="Force Input Offset Field"
+        command="SetForceInputOffsetScalarField"
         number_of_elements="1"
-        default_values="1">
+        panel_visibility="advanced"
+        default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Check this box if one of the input scalar fields needs to be 
-          considered as a vertex offset field (to disambiguate flat plateaus).
+          Check this box to force the usage of a specific input scalar field
+          as vertex offset (used to disambiguate flat plateaus).
         </Documentation>
       </IntVectorProperty>
       
@@ -79,11 +80,10 @@ American Mathematical Monthly, 1970.
         number_of_elements="1"
         animateable="0"
         label="Input Offset field"
-        default_values="OutputOffsetScalarField"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
-          data_type="VTK_ID_TYPE"
           default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />

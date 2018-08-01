@@ -10,6 +10,9 @@ ttkIdentifiers::ttkIdentifiers(){
   // init
   CellFieldName = "CellIdentifiers";
   VertexFieldName = "VertexIdentifiers";
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkIdentifiers::~ttkIdentifiers(){
@@ -43,11 +46,11 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
   output->ShallowCopy(input);
-  
-  vtkSmartPointer<vtkIdTypeArray> vertexIdentifiers 
-    = vtkSmartPointer<vtkIdTypeArray>::New();
-  vtkSmartPointer<vtkIdTypeArray> cellIdentifiers
-    = vtkSmartPointer<vtkIdTypeArray>::New();
+ 
+  vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifiers 
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> cellIdentifiers
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     
   vertexIdentifiers->SetName(VertexFieldName.data());
   vertexIdentifiers->SetNumberOfComponents(1);

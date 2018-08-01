@@ -10,6 +10,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 
+option(TTK_USE_64BIT_IDS "Enable processing on large datasets" OFF)
 option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" OFF)
 option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" ON)
 

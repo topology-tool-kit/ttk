@@ -187,7 +187,7 @@ namespace ttk{
       ~MorseSmaleComplex();
 
       int setIterationThreshold(const int iterationThreshold){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -196,7 +196,7 @@ namespace ttk{
       }
 
       int setReverseSaddleMaximumConnection(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -205,7 +205,7 @@ namespace ttk{
       }
 
       int setReverseSaddleSaddleConnection(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -214,7 +214,7 @@ namespace ttk{
       }
 
       int setComputeAscendingSeparatrices1(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -223,7 +223,7 @@ namespace ttk{
       }
 
       int setComputeDescendingSeparatrices1(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -232,7 +232,7 @@ namespace ttk{
       }
 
       int setComputeSaddleConnectors(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -241,7 +241,7 @@ namespace ttk{
       }
 
       int setComputeAscendingSeparatrices2(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -250,7 +250,7 @@ namespace ttk{
       }
 
       int setComputeDescendingSeparatrices2(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -259,7 +259,7 @@ namespace ttk{
       }
 
       int setReturnSaddleConnectors(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -268,7 +268,7 @@ namespace ttk{
       }
 
       int setSaddleConnectorsPersistenceThreshold(const double threshold){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -277,7 +277,7 @@ namespace ttk{
       }
 
       int setPrioritizeSpeedOverMemory(const bool state){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -303,7 +303,7 @@ namespace ttk{
       }
 
       inline int setDebugLevel(const int& debugLevel){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -313,7 +313,7 @@ namespace ttk{
       }
 
       inline int setThreadNumber(const int& threadNumber){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -323,7 +323,7 @@ namespace ttk{
       }
 
       inline int setWrapper(const Wrapper* const wrapper){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -333,7 +333,7 @@ namespace ttk{
       }
 
       inline int setInputScalarField(void* const data){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -343,7 +343,7 @@ namespace ttk{
       }
 
       inline int setInputOffsets(void* const data){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -352,15 +352,15 @@ namespace ttk{
         return 0;
       }
 
-      inline int setOutputCriticalPoints(dcg::simplexId_t* const criticalPoints_numberOfPoints,
+      inline int setOutputCriticalPoints(SimplexId* const criticalPoints_numberOfPoints,
           std::vector<float>* const criticalPoints_points,
           std::vector<char>* const criticalPoints_points_cellDimensons,
-          std::vector<dcg::simplexId_t>* const criticalPoints_points_cellIds,
+          std::vector<SimplexId>* const criticalPoints_points_cellIds,
           void* const criticalPoints_points_cellScalars,
           std::vector<char>* const criticalPoints_points_isOnBoundary,
-          std::vector<dcg::simplexId_t>* const criticalPoints_points_PLVertexIdentifiers,
-          std::vector<dcg::simplexId_t>* const criticalPoints_points_manifoldSize){
-#ifdef TTK_ENABLE_KAMIKAZE
+          std::vector<SimplexId>* const criticalPoints_points_PLVertexIdentifiers,
+          std::vector<SimplexId>* const criticalPoints_points_manifoldSize){
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -377,22 +377,22 @@ namespace ttk{
         return 0;
       }
 
-      inline int setOutputSeparatrices1(dcg::simplexId_t* const separatrices1_numberOfPoints,
+      inline int setOutputSeparatrices1(SimplexId* const separatrices1_numberOfPoints,
           std::vector<float>* const separatrices1_points,
           std::vector<char>* const separatrices1_points_smoothingMask,
           std::vector<char>* const separatrices1_points_cellDimensions,
-          std::vector<dcg::simplexId_t>* const separatrices1_points_cellIds,
-          dcg::simplexId_t* const separatrices1_numberOfCells,
-          std::vector<dcg::simplexId_t>* const separatrices1_cells,
-          std::vector<dcg::simplexId_t>* const separatrices1_cells_sourceIds,
-          std::vector<dcg::simplexId_t>* const separatrices1_cells_destinationIds,
-          std::vector<dcg::simplexId_t>* const separatrices1_cells_separatrixIds,
+          std::vector<SimplexId>* const separatrices1_points_cellIds,
+          SimplexId* const separatrices1_numberOfCells,
+          std::vector<SimplexId>* const separatrices1_cells,
+          std::vector<SimplexId>* const separatrices1_cells_sourceIds,
+          std::vector<SimplexId>* const separatrices1_cells_destinationIds,
+          std::vector<SimplexId>* const separatrices1_cells_separatrixIds,
           std::vector<char>* const separatrices1_cells_separatrixTypes,
           void* const separatrices1_cells_separatrixFunctionMaxima,
           void* const separatrices1_cells_separatrixFunctionMinima,
           void* const separatrices1_cells_separatrixFunctionDiffs,
           std::vector<char>* const separatrices1_cells_isOnBoundary){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -416,18 +416,18 @@ namespace ttk{
         return 0;
       }
 
-      inline int setOutputSeparatrices2(dcg::simplexId_t* const separatrices2_numberOfPoints,
+      inline int setOutputSeparatrices2(SimplexId* const separatrices2_numberOfPoints,
           std::vector<float>* const separatrices2_points,
-          dcg::simplexId_t* const separatrices2_numberOfCells,
-          std::vector<dcg::simplexId_t>* const separatrices2_cells,
-          std::vector<dcg::simplexId_t>* const separatrices2_cells_sourceIds,
-          std::vector<dcg::simplexId_t>* const separatrices2_cells_separatrixIds,
+          SimplexId* const separatrices2_numberOfCells,
+          std::vector<SimplexId>* const separatrices2_cells,
+          std::vector<SimplexId>* const separatrices2_cells_sourceIds,
+          std::vector<SimplexId>* const separatrices2_cells_separatrixIds,
           std::vector<char>* const separatrices2_cells_separatrixTypes,
           void* const separatrices2_cells_separatrixFunctionMaxima,
           void* const separatrices2_cells_separatrixFunctionMinima,
           void* const separatrices2_cells_separatrixFunctionDiffs,
           std::vector<char>* const separatrices2_cells_isOnBoundary){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -450,7 +450,7 @@ namespace ttk{
       inline int setOutputMorseComplexes(void* const ascendingManifold,
           void* const descendingManifold,
           void* const morseSmaleManifold){
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
         if(!abstractMorseSmaleComplex_){
           return -1;
         }
@@ -462,15 +462,15 @@ namespace ttk{
         return 0;
       }
 
-      template<typename dataType>
+      template<typename dataType, typename idType>
         int execute(){
           switch(dimensionality_){
             case 2:
-              morseSmaleComplex2D_.execute<dataType>();
+              morseSmaleComplex2D_.execute<dataType,idType>();
               break;
 
             case 3:
-              morseSmaleComplex3D_.execute<dataType>();
+              morseSmaleComplex3D_.execute<dataType,idType>();
               break;
           }
           return 0;

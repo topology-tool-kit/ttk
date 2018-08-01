@@ -66,7 +66,7 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       int buildCellEdges(const SimplexId &vertexNumber,
         const SimplexId &cellNumber, 
-        const SimplexId *cellArray,
+        const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &cellEdges,
         std::vector<std::pair<SimplexId, SimplexId> > *edgeList = NULL,
         std::vector<std::vector<SimplexId> > *vertexEdges = NULL) const ;
@@ -101,7 +101,7 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       int buildCellNeighborsFromTriangles(const SimplexId &vertexNumber, 
         const SimplexId &cellNumber,
-        const SimplexId *cellArray,
+        const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &cellNeighbors,
         std::vector<std::vector<SimplexId> > *triangleStars = NULL) const;
 
@@ -131,7 +131,7 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       int buildCellNeighborsFromVertices(const SimplexId &vertexNumber, 
         const SimplexId &cellNumber,
-        const SimplexId *cellArray,
+        const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &cellNeighbors,
         std::vector<std::vector<SimplexId> > *vertexStars = NULL) const;
         

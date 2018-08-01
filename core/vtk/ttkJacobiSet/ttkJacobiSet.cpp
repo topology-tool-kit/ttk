@@ -6,6 +6,7 @@ using namespace ttk;
 vtkStandardNewMacro(ttkJacobiSet)
 
 ttkJacobiSet::ttkJacobiSet(){
+  ForceInputOffsetScalarField = false;
 
   // init
   UcomponentId = 0;
@@ -14,8 +15,11 @@ ttkJacobiSet::ttkJacobiSet(){
   UoffsetId = -1;
   VoffsetId = -1;
 
-  EdgeIds = true;
-  VertexScalars = true;
+  EdgeIds = false;
+  VertexScalars = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkJacobiSet::~ttkJacobiSet(){
@@ -45,7 +49,7 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
  
   vtkDataArray *offsetFieldU = NULL, *offsetFieldV = NULL;
   
-  if((PredefinedOffset)||((UoffsetId != -1)&&(VoffsetId != -1))){
+  if((ForceInputOffsetScalarField)||((UoffsetId != -1)&&(VoffsetId != -1))){
     if(OffsetFieldU.length()){
       
       offsetFieldU = input->GetPointData()->GetArray(OffsetFieldU.data());
@@ -62,6 +66,18 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
     else if(UoffsetId != -1){
       offsetFieldU = input->GetPointData()->GetArray(UoffsetId);
 
+      if(offsetFieldU){
+        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
+        for(SimplexId i = 0; i < offsetFieldU->GetNumberOfTuples(); i++){
+          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
+        }
+        
+        jacobiSet.setSosOffsetsU(&sosOffsetsU_);
+      }
+    }
+    else if(input->GetPointData()->GetArray(ttk::OffsetFieldUName)){
+      offsetFieldU = input->GetPointData()->GetArray(ttk::OffsetFieldUName);
+      
       if(offsetFieldU){
         sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
         for(SimplexId i = 0; i < offsetFieldU->GetNumberOfTuples(); i++){
@@ -96,6 +112,18 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
         jacobiSet.setSosOffsetsV(&sosOffsetsV_);
       }
     }
+    else if(input->GetPointData()->GetArray(ttk::OffsetFieldVName)){
+      offsetFieldV = input->GetPointData()->GetArray(ttk::OffsetFieldVName);
+
+      if(offsetFieldV){
+        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
+        for(SimplexId i = 0; i < offsetFieldV->GetNumberOfTuples(); i++){
+          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
+        }
+        
+        jacobiSet.setSosOffsetsV(&sosOffsetsV_);
+      }
+    }
   }
   
   // go!
@@ -104,9 +132,6 @@ template<class dataTypeU, class dataTypeV> int ttkJacobiSet::baseCall(
 
   return 0;  
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs, 
   vector<vtkDataSet *> &outputs){
 
@@ -147,142 +172,9 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
   }
 
   // set the jacobi functor
-  switch(uComponent->GetDataType()){
-    
-    case VTK_CHAR:
-      switch(vComponent->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<char, VTK_TT>(input, uComponent, vComponent);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<char COMMA VTK_TT>(input, uComponent, vComponent);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    case VTK_DOUBLE:
-      switch(vComponent->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<double, VTK_TT>(input, uComponent, vComponent);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<double COMMA VTK_TT>(input, uComponent, vComponent);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    case VTK_FLOAT:
-      switch(vComponent->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<float, VTK_TT>(input, uComponent, vComponent);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<float COMMA VTK_TT>(input, uComponent, vComponent);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    case VTK_INT:
-      switch(vComponent->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<int, VTK_TT>(input, uComponent, vComponent);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<int COMMA VTK_TT>(input, uComponent, vComponent);
-		  }
-		  );
-#endif
-      }
-      break;
-
-    case VTK_ID_TYPE:
-      switch(vComponent->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<vtkIdType, VTK_TT>(input, uComponent, vComponent);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<vtkIdType COMMA VTK_TT>(input, uComponent, vComponent);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    case VTK_UNSIGNED_CHAR:
-      switch(vComponent->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<unsigned char, VTK_TT>(input, uComponent, vComponent);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<unsigned char COMMA VTK_TT>(input, uComponent, vComponent);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    case VTK_UNSIGNED_SHORT:
-      switch(vComponent->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<unsigned short, VTK_TT>(input, uComponent, vComponent);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<unsigned short COMMA VTK_TT>(input, uComponent, vComponent);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    default:
-      {
-        stringstream msg;
-        msg << "[ttkJacobiSet] Unsupported U-component data type :( ["
-          << uComponent->GetDataType() << "]" << endl;
-        dMsg(cerr, msg.str(), 1);
-      }
-      break;
+  switch(vtkTemplate2PackMacro(uComponent->GetDataType(),
+        vComponent->GetDataType())){
+    ttkTemplate2Macro(baseCall<VTK_T1 TTK_COMMA VTK_T2>(input, uComponent, vComponent));
   }
   
   vtkSmartPointer<vtkCharArray> edgeTypes = 
@@ -332,8 +224,8 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
   output->GetPointData()->AddArray(edgeTypes);
  
   if(EdgeIds){
-    vtkSmartPointer<vtkIdTypeArray> edgeIdArray = 
-      vtkSmartPointer<vtkIdTypeArray>::New();
+    vtkSmartPointer<ttkSimplexIdTypeArray> edgeIdArray = 
+      vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     edgeIdArray->SetNumberOfComponents(1);
     edgeIdArray->SetNumberOfTuples(jacobiSet_.size());
     edgeIdArray->SetName("EdgeIds");

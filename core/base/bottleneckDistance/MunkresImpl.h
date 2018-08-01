@@ -2,7 +2,7 @@
 #define _MUNKRESIMPL_H
 
 #ifndef matchingTuple
-#define matchingTuple std::tuple<ftm::idVertex, ftm::idVertex, dataType>
+#define matchingTuple std::tuple<int, int, dataType>
 #endif
 
 template <typename dataType>

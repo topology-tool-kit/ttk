@@ -100,7 +100,7 @@ namespace ttk{
       template <typename dataType>
         int addPerturbation(dataType* scalars, SimplexId* offsets) const;
 
-      template <typename dataType>
+      template <typename dataType, typename idType>
         int execute() const;
 
       inline int setupTriangulation(Triangulation* triangulation){
@@ -284,14 +284,14 @@ offsets) const{
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename idType>
 int ttk::TopologicalSimplification::execute() const{
   
   // get input data
   dataType* inputScalars=static_cast<dataType*>(inputScalarFieldPointer_);
   dataType* scalars=static_cast<dataType*>(outputScalarFieldPointer_);
-  SimplexId* identifiers=static_cast<SimplexId*>(vertexIdentifierScalarFieldPointer_);
-  SimplexId* inputOffsets=static_cast<SimplexId*>(inputOffsetScalarFieldPointer_);
+  idType* identifiers=static_cast<idType*>(vertexIdentifierScalarFieldPointer_);
+  idType* inputOffsets=static_cast<idType*>(inputOffsetScalarFieldPointer_);
   SimplexId* offsets=static_cast<SimplexId*>(outputOffsetScalarFieldPointer_);
 
   Timer t;

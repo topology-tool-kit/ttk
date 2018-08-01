@@ -114,12 +114,12 @@ class ttkPersistenceDiagram
     }
     vtkGetMacro(OffsetFieldId, int);
 
-    void SetUseInputOffsetScalarField(int data){
-      UseInputOffsetScalarField = data;
+    void SetForceInputOffsetScalarField(int data){
+      ForceInputOffsetScalarField = data;
       Modified();
       computeDiagram_ = true;
     }
-    vtkGetMacro(UseInputOffsetScalarField, int);
+    vtkGetMacro(ForceInputOffsetScalarField, int);
 
     void SetComputeSaddleConnectors(int data){
       ComputeSaddleConnectors = data;
@@ -146,35 +146,35 @@ class ttkPersistenceDiagram
     int getOffsets(vtkDataSet* input);
 
     template <typename scalarType>
-      int setPersistenceDiagramInfo(ttk::ftm::idVertex id,
-          vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars,
+      int setPersistenceDiagramInfo(ttk::SimplexId id,
+          vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars,
           vtkSmartPointer<vtkIntArray> nodeTypeScalars,
           vtkSmartPointer<vtkFloatArray> coordsScalars,
-          const std::vector<std::tuple<ttk::ftm::idVertex,ttk::ftm::NodeType,ttk::ftm::idVertex,ttk::ftm::NodeType,
-          scalarType,ttk::ftm::idVertex>>& diagram,
+          const std::vector<std::tuple<ttk::SimplexId,ttk::ftm::NodeType,ttk::SimplexId,ttk::ftm::NodeType,
+          scalarType,ttk::SimplexId>>& diagram,
           vtkSmartPointer<vtkPoints> points,
           vtkIdType ids[3]);
 
     template <typename scalarType>
       int getPersistenceDiagram(ttk::ftm::TreeType treeType,
-          const std::vector<std::tuple<ttk::ftm::idVertex,ttk::ftm::NodeType,ttk::ftm::idVertex,ttk::ftm::NodeType,
-          scalarType,ttk::ftm::idVertex>>& diagram);
+          const std::vector<std::tuple<ttk::SimplexId,ttk::ftm::NodeType,ttk::SimplexId,ttk::ftm::NodeType,
+          scalarType,ttk::SimplexId>>& diagram);
 
     template <typename scalarType>
-      int setPersistenceDiagramInfoInsideDomain(ttk::ftm::idVertex id,
-          vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars,
+      int setPersistenceDiagramInfoInsideDomain(ttk::SimplexId id,
+          vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars,
           vtkSmartPointer<vtkIntArray> nodeTypeScalars,
           vtkDataArray* birthScalars,
           vtkDataArray* deathScalars,
-          const std::vector<std::tuple<ttk::ftm::idVertex,ttk::ftm::NodeType,ttk::ftm::idVertex,ttk::ftm::NodeType,
-          scalarType,ttk::ftm::idVertex>>& diagram,
+          const std::vector<std::tuple<ttk::SimplexId,ttk::ftm::NodeType,ttk::SimplexId,ttk::ftm::NodeType,
+          scalarType,ttk::SimplexId>>& diagram,
           vtkSmartPointer<vtkPoints> points,
           vtkIdType ids[3]);
 
     template <typename scalarType>
       int getPersistenceDiagramInsideDomain(ttk::ftm::TreeType treeType,
-          const std::vector<std::tuple<ttk::ftm::idVertex,ttk::ftm::NodeType,ttk::ftm::idVertex,ttk::ftm::NodeType,
-          scalarType,ttk::ftm::idVertex>>& diagram);
+          const std::vector<std::tuple<ttk::SimplexId,ttk::ftm::NodeType,ttk::SimplexId,ttk::ftm::NodeType,
+          scalarType,ttk::SimplexId>>& diagram);
 
     int deleteDiagram();
 
@@ -191,7 +191,7 @@ class ttkPersistenceDiagram
 
     std::string ScalarField;
     std::string InputOffsetScalarFieldName;
-    bool UseInputOffsetScalarField;
+    bool ForceInputOffsetScalarField;
     bool ComputeSaddleConnectors;
     int ShowInsideDomain;
 
@@ -199,7 +199,7 @@ class ttkPersistenceDiagram
     ttk::Triangulation *triangulation_;
     vtkDataArray* inputScalars_;
     vtkUnstructuredGrid* CTPersistenceDiagram_;
-    vtkIdTypeArray* offsets_;
+    vtkDataArray* offsets_;
     vtkDataArray* inputOffsets_;
     bool varyingMesh_;
     int ScalarFieldId, OffsetFieldId;
@@ -209,19 +209,19 @@ class ttkPersistenceDiagram
 };
 
 template <typename scalarType>
-int ttkPersistenceDiagram::setPersistenceDiagramInfo(ttk::ftm::idVertex id,
-    vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars,
+int ttkPersistenceDiagram::setPersistenceDiagramInfo(ttk::SimplexId id,
+    vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars,
     vtkSmartPointer<vtkIntArray> nodeTypeScalars,
     vtkSmartPointer<vtkFloatArray> coordsScalars,
-    const std::vector<std::tuple<ttk::ftm::idVertex,ttk::ftm::NodeType,ttk::ftm::idVertex,ttk::ftm::NodeType,
-    scalarType,ttk::ftm::idVertex>>& diagram,
+    const std::vector<std::tuple<ttk::SimplexId,ttk::ftm::NodeType,ttk::SimplexId,ttk::ftm::NodeType,
+    scalarType,ttk::SimplexId>>& diagram,
     vtkSmartPointer<vtkPoints> points,
     vtkIdType ids[3]){
   double p[3]={0,0,0};
-  const ttk::ftm::idVertex a=std::get<0>(diagram[id]);
-  const ttk::ftm::idVertex na=static_cast<ttk::ftm::idVertex>(std::get<1>(diagram[id]));
-  const ttk::ftm::idVertex b=std::get<2>(diagram[id]);
-  const ttk::ftm::idVertex nb=static_cast<ttk::ftm::idVertex>(std::get<3>(diagram[id]));
+  const ttk::SimplexId a=std::get<0>(diagram[id]);
+  const ttk::SimplexId na=static_cast<ttk::SimplexId>(std::get<1>(diagram[id]));
+  const ttk::SimplexId b=std::get<2>(diagram[id]);
+  const ttk::SimplexId nb=static_cast<ttk::SimplexId>(std::get<3>(diagram[id]));
 
   nodeTypeScalars->InsertTuple1(2*id,na);
   nodeTypeScalars->InsertTuple1(2*id+1,nb);
@@ -249,15 +249,15 @@ int ttkPersistenceDiagram::setPersistenceDiagramInfo(ttk::ftm::idVertex id,
 
 template <typename scalarType>
 int ttkPersistenceDiagram::getPersistenceDiagram(ttk::ftm::TreeType treeType,
-    const std::vector<std::tuple<ttk::ftm::idVertex,ttk::ftm::NodeType,ttk::ftm::idVertex,ttk::ftm::NodeType,
-    scalarType,ttk::ftm::idVertex>>& diagram){
+    const std::vector<std::tuple<ttk::SimplexId,ttk::ftm::NodeType,ttk::SimplexId,ttk::ftm::NodeType,
+    scalarType,ttk::SimplexId>>& diagram){
   vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
 
   vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram=
     vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-  vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars=
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars=
+    vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   vertexIdentifierScalars->SetNumberOfComponents(1);
   vertexIdentifierScalars->SetName("VertexIdentifier");
 
@@ -266,8 +266,8 @@ int ttkPersistenceDiagram::getPersistenceDiagram(ttk::ftm::TreeType treeType,
   nodeTypeScalars->SetNumberOfComponents(1);
   nodeTypeScalars->SetName("NodeType");
 
-  vtkSmartPointer<vtkIdTypeArray> pairIdentifierScalars=
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> pairIdentifierScalars=
+    vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   pairIdentifierScalars->SetNumberOfComponents(1);
   pairIdentifierScalars->SetName("PairIdentifier");
 
@@ -286,20 +286,20 @@ int ttkPersistenceDiagram::getPersistenceDiagram(ttk::ftm::TreeType treeType,
   coordsScalars->SetNumberOfComponents(3);
   coordsScalars->SetName("Coordinates");
 
-  const ttk::ftm::idVertex minIndex=0;
-  const ttk::ftm::idVertex saddleSaddleIndex=1;
-  const ttk::ftm::idVertex maxIndex=triangulation_->getCellVertexNumber(0) - 2;
+  const ttk::SimplexId minIndex=0;
+  const ttk::SimplexId saddleSaddleIndex=1;
+  const ttk::SimplexId maxIndex=triangulation_->getCellVertexNumber(0) - 2;
 
-  const ttk::ftm::idVertex diagramSize=diagram.size();
+  const ttk::SimplexId diagramSize=diagram.size();
   if(diagramSize){
     vtkIdType ids[2];
     vtkIdType oldIds[2];
 
     scalarType maxPersistenceValue=std::numeric_limits<scalarType>::min();
     oldIds[0]=0;
-    for(ttk::ftm::idVertex i=0; i<diagramSize; ++i){
+    for(ttk::SimplexId i=0; i<diagramSize; ++i){
       const scalarType persistenceValue=std::get<4>(diagram[i]);
-      const ttk::ftm::idVertex type=std::get<5>(diagram[i]);
+      const ttk::SimplexId type=std::get<5>(diagram[i]);
       maxPersistenceValue=std::max(persistenceValue,maxPersistenceValue);
 
       setPersistenceDiagramInfo(i, 
@@ -351,24 +351,24 @@ points, ids);
 }
 
 template <typename scalarType>
-int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(ttk::ftm::idVertex id,
-    vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars,
+int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(ttk::SimplexId id,
+    vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars,
     vtkSmartPointer<vtkIntArray> nodeTypeScalars,
     vtkDataArray* birthScalars,
     vtkDataArray* deathScalars,
     const 
-std::vector<std::tuple<ttk::ftm::idVertex,ttk::ftm::NodeType,ttk::ftm::idVertex,
+std::vector<std::tuple<ttk::SimplexId,ttk::ftm::NodeType,ttk::SimplexId,
 ttk::ftm::NodeType,
-    scalarType,ttk::ftm::idVertex>>& diagram,
+    scalarType,ttk::SimplexId>>& diagram,
     vtkSmartPointer<vtkPoints> points,
     vtkIdType ids[3]){
   float p[3];
-  const ttk::ftm::idVertex a=std::get<0>(diagram[id]);
-  const ttk::ftm::idVertex 
-na=static_cast<ttk::ftm::idVertex>(std::get<1>(diagram[id]));
-  const ttk::ftm::idVertex b=std::get<2>(diagram[id]);
-  const ttk::ftm::idVertex 
-nb=static_cast<ttk::ftm::idVertex>(std::get<3>(diagram[id]));
+  const ttk::SimplexId a=std::get<0>(diagram[id]);
+  const ttk::SimplexId 
+na=static_cast<ttk::SimplexId>(std::get<1>(diagram[id]));
+  const ttk::SimplexId b=std::get<2>(diagram[id]);
+  const ttk::SimplexId 
+nb=static_cast<ttk::SimplexId>(std::get<3>(diagram[id]));
   const double sa=inputScalars_->GetTuple1(a);
   const double sb=inputScalars_->GetTuple1(b);
 
@@ -393,17 +393,17 @@ nb=static_cast<ttk::ftm::idVertex>(std::get<3>(diagram[id]));
 template <typename scalarType>
 int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
     ttk::ftm::TreeType treeType,
-    const std::vector<std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, 
-ttk::ftm::idVertex, ttk::ftm::NodeType, scalarType,
-                       ttk::ftm::idVertex>>& diagram)
+    const std::vector<std::tuple<ttk::SimplexId, ttk::ftm::NodeType, 
+ttk::SimplexId, ttk::ftm::NodeType, scalarType,
+                       ttk::SimplexId>>& diagram)
 {
    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
    vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
        vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-   vtkSmartPointer<vtkIdTypeArray> vertexIdentifierScalars = 
-vtkSmartPointer<vtkIdTypeArray>::New();
+   vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars = 
+vtkSmartPointer<ttkSimplexIdTypeArray>::New();
    vertexIdentifierScalars->SetNumberOfComponents(1);
    vertexIdentifierScalars->SetName("VertexIdentifier");
 
@@ -412,8 +412,8 @@ vtkSmartPointer<vtkIntArray>::New();
    nodeTypeScalars->SetNumberOfComponents(1);
    nodeTypeScalars->SetName("NodeType");
 
-   vtkSmartPointer<vtkIdTypeArray> pairIdentifierScalars = 
-vtkSmartPointer<vtkIdTypeArray>::New();
+   vtkSmartPointer<ttkSimplexIdTypeArray> pairIdentifierScalars = 
+vtkSmartPointer<ttkSimplexIdTypeArray>::New();
    pairIdentifierScalars->SetNumberOfComponents(1);
    pairIdentifierScalars->SetName("PairIdentifier");
 
@@ -435,19 +435,19 @@ vtkSmartPointer<vtkIntArray>::New();
    deathScalars->SetNumberOfComponents(1);
    deathScalars->SetName("Death");
 
-   const ttk::ftm::idVertex minIndex          = 0;
-   const ttk::ftm::idVertex saddleSaddleIndex = 1;
-   const ttk::ftm::idVertex maxIndex          = 
+   const ttk::SimplexId minIndex          = 0;
+   const ttk::SimplexId saddleSaddleIndex = 1;
+   const ttk::SimplexId maxIndex          = 
 triangulation_->getCellVertexNumber(0) - 2;
 
-   const ttk::ftm::idVertex diagramSize = diagram.size();
+   const ttk::SimplexId diagramSize = diagram.size();
    if (diagramSize) {
       vtkIdType ids[2];
 
       scalarType maxPersistenceValue = std::numeric_limits<scalarType>::min();
-      for (ttk::ftm::idVertex i = 0; i < diagramSize; ++i) {
+      for (ttk::SimplexId i = 0; i < diagramSize; ++i) {
          const scalarType    persistenceValue = std::get<4>(diagram[i]);
-         const ttk::ftm::idVertex type             = std::get<5>(diagram[i]);
+         const ttk::SimplexId type             = std::get<5>(diagram[i]);
          maxPersistenceValue                  = std::max(persistenceValue, maxPersistenceValue);
 
          setPersistenceDiagramInfoInsideDomain(i, vertexIdentifierScalars, nodeTypeScalars,

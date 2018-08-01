@@ -10,7 +10,9 @@ ttkScalarFieldNormalizer::ttkScalarFieldNormalizer(){
   // init
   outputScalarField_ = NULL;
   
-  UseAllCores = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkScalarFieldNormalizer::~ttkScalarFieldNormalizer(){

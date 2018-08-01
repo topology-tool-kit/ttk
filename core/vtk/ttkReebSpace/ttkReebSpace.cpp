@@ -40,8 +40,10 @@ ttkReebSpace::ttkReebSpace(){
   SimplificationThreshold = 0;
   SimplificationCriterion = 1;
   
-  UseAllCores = false;
-  PredefinedOffset = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
+  ForceInputOffsetScalarField = false;
   
   uComponent_ = NULL;
   vComponent_ = NULL;
@@ -125,9 +127,6 @@ template<class dataTypeU, class dataTypeV> int ttkReebSpace::baseCall(
  
   return 0;
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
 
@@ -178,7 +177,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   if(!vComponent_)
     return -2;
  
-  if(PredefinedOffset){
+  if(ForceInputOffsetScalarField){
     if(OffsetFieldU.length()){
       
       string oldName = OffsetFieldU;
@@ -214,172 +213,34 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
       }
     }
   }
+  else{
+    if(input->GetPointData()->GetArray(ttk::OffsetFieldUName)){
+      offsetFieldU_ = input->GetPointData()->GetArray(ttk::OffsetFieldUName);
+      if(offsetFieldU_){
+        sosOffsetsU_.resize(offsetFieldU_->GetNumberOfTuples());
+        for(SimplexId i = 0; i < offsetFieldU_->GetNumberOfTuples(); i++){
+          sosOffsetsU_[i] = offsetFieldU_->GetTuple1(i);
+        }
+      }
+    }
+    if(input->GetPointData()->GetArray(ttk::OffsetFieldVName)){
+      offsetFieldV_ = input->GetPointData()->GetArray(ttk::OffsetFieldVName);
+      if(offsetFieldV_){
+        sosOffsetsV_.resize(offsetFieldV_->GetNumberOfTuples());
+        for(SimplexId i = 0; i < offsetFieldV_->GetNumberOfTuples(); i++){
+          sosOffsetsV_[i] = offsetFieldV_->GetTuple1(i);
+        }
+      }
+    }
+  }
   
   // set the Reeb space functor
-  switch(uComponent_->GetDataType()){
-    
-    case VTK_CHAR:
-      switch(vComponent_->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<char, VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<char COMMA VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    case VTK_DOUBLE:
-      switch(vComponent_->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<double, VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<double COMMA VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    case VTK_FLOAT:
-      switch(vComponent_->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<float, VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<float COMMA VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    case VTK_INT:
-      switch(vComponent_->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<int, VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<int COMMA VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  );
-#endif
-      }
-      break;
-
-    case VTK_ID_TYPE:
-      switch(vComponent_->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<vtkIdType, VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<vtkIdType COMMA VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    case VTK_UNSIGNED_CHAR:
-      switch(vComponent_->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<unsigned char, VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<unsigned char COMMA VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    case VTK_UNSIGNED_SHORT:
-      switch(vComponent_->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-			  baseCall<unsigned short, VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  ));
-#else
-		  vtkTemplateMacro(
-		  {
-			  baseCall<unsigned short COMMA VTK_TT>(input,
-			  uComponent_, offsetFieldU_,
-			  vComponent_, offsetFieldV_);
-		  }
-		  );
-#endif
-      }
-      break;
-      
-    default:
-      {
-        stringstream msg;
-        msg << "[ttkReebSpace] Unsupported U-component data type :( ["
-          << uComponent_->GetDataType() << "]" << endl;
-        dMsg(cerr, msg.str(), 1);
-      }
-      break;
+  switch(vtkTemplate2PackMacro(uComponent_->GetDataType(),
+        vComponent_->GetDataType())){
+    ttkTemplate2Macro(baseCall<VTK_T1 TTK_COMMA VTK_T2>(input,
+          uComponent_, offsetFieldU_,
+          vComponent_, offsetFieldV_)
+        );
   }
   
   // prepare the output
@@ -431,8 +292,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     sheet0->GetPointData()->RemoveArray(vComponent_->GetName());
   }
   
-  vtkSmartPointer<vtkIdTypeArray> vertexIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> vertexIds = 
+    vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(ZeroSheetVertexId){
     vertexIds->SetNumberOfTuples(vertexNumber);
     vertexIds->SetName("VertexIds");
@@ -451,8 +312,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     sheet0->GetPointData()->RemoveArray("SheetType");
   }
   
-  vtkSmartPointer<vtkIdTypeArray> vertexSheetId =
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> vertexSheetId =
+    vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(ZeroSheetId){
     vertexSheetId->SetNumberOfTuples(vertexNumber);
     vertexSheetId->SetName("0-SheetId");
@@ -538,8 +399,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     sheet1->GetPointData()->RemoveArray(vComponent_->GetName());
   }
  
-  vtkSmartPointer<vtkIdTypeArray> edgeVertexIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> edgeVertexIds = 
+    vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(OneSheetVertexId){
     edgeVertexIds->SetName("VertexIds");
   }
@@ -556,8 +417,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     sheet1->GetCellData()->RemoveArray("EdgeType");
   }
   
-  vtkSmartPointer<vtkIdTypeArray> edgeIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> edgeIds = 
+    vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(OneSheetEdgeId){
     edgeIds->SetName("EdgeIds");
   }
@@ -565,8 +426,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     sheet1->GetCellData()->RemoveArray("EdgeIds");
   }
   
-  vtkSmartPointer<vtkIdTypeArray> edgeSheetIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> edgeSheetIds = 
+    vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(OneSheetId){
     edgeSheetIds->SetName("1-SheetId");
   }
@@ -709,8 +570,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     vtkSmartPointer<vtkCellArray>::New();
 
     // celldata: twoSheetId, twoSheetEdgeId, twoSheetTetId
-    vtkSmartPointer<vtkIdTypeArray> triangleSheetIds = 
-      vtkSmartPointer<vtkIdTypeArray>::New();
+    vtkSmartPointer<ttkSimplexIdTypeArray> triangleSheetIds = 
+      vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     if(TwoSheetId){
       triangleSheetIds->SetName("2-SheetId");
       triangleSheetIds->SetNumberOfTuples(sheet2TriangleNumber);
@@ -719,8 +580,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
       sheet2->GetCellData()->RemoveArray("2-SheetId");
     }
     
-    vtkSmartPointer<vtkIdTypeArray> triangleEdgeIds = 
-      vtkSmartPointer<vtkIdTypeArray>::New();
+    vtkSmartPointer<ttkSimplexIdTypeArray> triangleEdgeIds = 
+      vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     if(TwoSheetEdgeId){
       triangleEdgeIds->SetName("EdgeIds");
       triangleEdgeIds->SetNumberOfTuples(sheet2TriangleNumber);
@@ -739,8 +600,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
       sheet2->GetCellData()->RemoveArray("EdgeType");
     }
     
-    vtkSmartPointer<vtkIdTypeArray> triangleTetIds = 
-      vtkSmartPointer<vtkIdTypeArray>::New();
+    vtkSmartPointer<ttkSimplexIdTypeArray> triangleTetIds = 
+      vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     if(TwoSheetTetId){
       triangleTetIds->SetName("TetIds");
       triangleTetIds->SetNumberOfTuples(sheet2TriangleNumber);
@@ -749,8 +610,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
       sheet2->GetCellData()->RemoveArray("TetIds");
     }
     
-    vtkSmartPointer<vtkIdTypeArray> triangleCaseIds = 
-      vtkSmartPointer<vtkIdTypeArray>::New();
+    vtkSmartPointer<ttkSimplexIdTypeArray> triangleCaseIds = 
+      vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     if(TwoSheetCaseId){
       triangleCaseIds->SetName("CaseIds");
       triangleCaseIds->SetNumberOfTuples(sheet2TriangleNumber);
@@ -862,8 +723,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 //   
 //   vtkSmartPointer<vtkCellArray> sheet3Cells 
 //     = vtkSmartPointer<vtkCellArray>::New();
-//   vtkSmartPointer<vtkIdTypeArray> idArray 
-//     = vtkSmartPointer<vtkIdTypeArray>::New();
+//   vtkSmartPointer<ttkSimplexIdTypeArray> idArray 
+//     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
 //   idArray->SetVoidArray(
 //     triangulationCells->data(), triangulationCells->size(), 1);
 //   sheet3Cells->SetCells(triangulationCells->size()/5, idArray);
@@ -873,10 +734,10 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   sheet3->ShallowCopy(input);
   const vector<SimplexId> *vertex3sheets = reebSpace_.get3sheetVertexSegmentation();
   
-  vtkSmartPointer<vtkIdTypeArray> vertexNumberField
-    = vtkSmartPointer<vtkIdTypeArray>::New();
-  vtkSmartPointer<vtkIdTypeArray> tetNumberField
-    = vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> vertexNumberField
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> tetNumberField
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   
   if(ThreeSheetTetNumber){
     tetNumberField->SetNumberOfTuples(input->GetNumberOfPoints());
@@ -981,8 +842,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     sheet3->GetPointData()->RemoveArray("3-SheetHyperVolume");
   }
   
-  vtkSmartPointer<vtkIdTypeArray> vertexSegmentation 
-    = vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> vertexSegmentation 
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   vertexSegmentation->SetName("3-SheetId");
   vertexSegmentation->SetNumberOfTuples(input->GetNumberOfPoints());
   for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++){
@@ -997,8 +858,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   sheet3->GetPointData()->AddArray(vertexSegmentation);
   
   const vector<SimplexId> *tet3sheets = reebSpace_.get3sheetTetSegmentation();
-  vtkSmartPointer<vtkIdTypeArray> tetSegmentation 
-    = vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> tetSegmentation 
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   tetSegmentation->SetName("3-SheetId");
   tetSegmentation->SetNumberOfTuples(input->GetNumberOfCells());
   for(SimplexId i = 0; i < input->GetNumberOfCells(); i++){

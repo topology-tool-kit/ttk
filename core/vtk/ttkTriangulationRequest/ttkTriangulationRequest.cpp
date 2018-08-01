@@ -26,7 +26,7 @@ vtkStandardNewMacro(ttkTriangulationRequest)
     vtkSmartPointer<vtkUnstructuredGrid> cells=vtkSmartPointer<vtkUnstructuredGrid>::New();
 
     const SimplexId numberOfVertices=triangulation->getNumberOfVertices();
-    vector<vtkIdType> isVisited(numberOfVertices, -1);
+    vector<SimplexId> isVisited(numberOfVertices, -1);
 
     cells->Allocate();
 
@@ -311,6 +311,7 @@ vtkStandardNewMacro(ttkTriangulationRequest)
           case Vertex:
             triangulation->preprocessVertexLinks();
             if(dimensionality==2){
+              triangulation->preprocessEdges();
               const SimplexId linkNumber=triangulation->getVertexLinkNumber(SimplexIdentifier);
               for(SimplexId i=0; i<linkNumber; ++i){
                 SimplexId linkId;

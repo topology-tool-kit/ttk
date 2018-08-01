@@ -55,8 +55,8 @@ namespace ttk{
       /// 3, edges: 2) followed by the corresponding vertex identifiers.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildVertexLink(const SimplexId &vertexId, const SimplexId &cellNumber, 
-        const SimplexId *cellArray,
-        std::vector<SimplexId> &vertexLink) const;
+        const LongSimplexId *cellArray,
+        std::vector<LongSimplexId> &vertexLink) const;
       
       /// Compute the link of each vertex of a triangulation (unspecified 
       /// behavior if the input mesh is not a valid triangulation).
@@ -86,8 +86,8 @@ namespace ttk{
       /// behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildVertexLinks(const SimplexId &vertexNumber, const SimplexId &cellNumber, 
-        const SimplexId *cellArray,
-        std::vector<std::vector<SimplexId> > &vertexLinks,
+        const LongSimplexId *cellArray,
+        std::vector<std::vector<LongSimplexId> > &vertexLinks,
         std::vector<std::vector<SimplexId> > *vertexStars = NULL) const;
      
       /// Compute the link of each vertex of a 2D triangulation (unspecified 
@@ -155,7 +155,7 @@ namespace ttk{
       /// std::vector is not empty but incorrect, the behavior is unspecified.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildVertexNeighbors(const SimplexId &vertexNumber, const SimplexId &cellNumber, 
-        const SimplexId *cellArray,
+        const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &vertexNeighbors,
         std::vector<std::pair<SimplexId, SimplexId> > *edgeList = NULL) const;
         
@@ -175,7 +175,7 @@ namespace ttk{
       /// (3D: tetrahedra, 2D: triangles, etc.) connected to the entry's vertex.
       /// \return Returns 0 upon success, negative values otherwise.
       int buildVertexStars(const SimplexId &vertexNumber, const SimplexId &cellNumber, 
-        const SimplexId *cellArray,
+        const LongSimplexId *cellArray,
         std::vector<std::vector<SimplexId> > &vertexStars) const;
       
     protected:

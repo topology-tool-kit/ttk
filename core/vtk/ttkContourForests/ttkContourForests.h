@@ -97,7 +97,7 @@ class ttkContourForests
     void SetScalarField(std::string scalarField);
 
     vtkGetMacro(useInputOffsetScalarField_, int);
-    void SetUseInputOffsetScalarField(bool onOff);
+    void SetForceInputOffsetScalarField(bool onOff);
 
     vtkSetMacro(inputOffsetScalarFieldName_, std::string);
     vtkGetMacro(inputOffsetScalarFieldName_, std::string);

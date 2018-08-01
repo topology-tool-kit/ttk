@@ -177,23 +177,23 @@ int main(int argc, char **argv) {
   
   // 2. computing the persistence curve
   ttk::PersistenceCurve curve;
-  std::vector<std::pair<float, ttk::ftm::idVertex> > outputCurve;
+  std::vector<std::pair<float, ttk::SimplexId> > outputCurve;
   curve.setupTriangulation(&triangulation);
   curve.setInputScalars(height.data());
   curve.setInputOffsets(offsets.data());
   curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float>();
+  curve.execute<float,int>();
   
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
-  std::vector<std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, 
-    ttk::ftm::idVertex, ttk::ftm::NodeType, float, ttk::ftm::idVertex> >
+  std::vector<std::tuple<ttk::SimplexId, ttk::ftm::NodeType, 
+    ttk::SimplexId, ttk::ftm::NodeType, float, ttk::SimplexId> >
     diagramOutput;
   diagram.setupTriangulation(&triangulation);
   diagram.setInputScalars(height.data());
   diagram.setInputOffsets(offsets.data());
   diagram.setOutputCTDiagram(&diagramOutput);
-  diagram.execute<float>();
+  diagram.execute<float,int>();
   
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
   simplification.setConstraintNumber(authorizedCriticalPoints.size());
   simplification.setVertexIdentifierScalarFieldPointer(
     authorizedCriticalPoints.data());
-  simplification.execute<float>();
+  simplification.execute<float,int>();
   
   // assign the simplified values to the input mesh
   for(int i = 0; i < (int) simplifiedHeight.size(); i++){
@@ -230,7 +230,7 @@ int main(int argc, char **argv) {
   // critical points
   int criticalPoints_numberOfPoints{};
   std::vector<float> criticalPoints_points;
-  std::vector<int> criticalPoints_points_cellDimensions;
+  std::vector<char> criticalPoints_points_cellDimensions;
   std::vector<int> criticalPoints_points_cellIds;
   std::vector<char> criticalPoints_points_isOnBoundary;
   std::vector<float> criticalPoints_points_cellScalars;
@@ -240,7 +240,7 @@ int main(int argc, char **argv) {
   int separatrices1_numberOfPoints{};
   std::vector<float> separatrices1_points;
   std::vector<char> separatrices1_points_smoothingMask;
-  std::vector<int> separatrices1_points_cellDimensions;
+  std::vector<char> separatrices1_points_cellDimensions;
   std::vector<int> separatrices1_points_cellIds;
   int separatrices1_numberOfCells{};
   std::vector<int> separatrices1_cells;
@@ -290,7 +290,7 @@ int main(int argc, char **argv) {
     &separatrices1_cells_separatrixFunctionDiffs,
     &separatrices1_cells_isOnBoundary);
 
-  morseSmaleComplex.execute<float>();
+  morseSmaleComplex.execute<float,int>();
   
   // save the output
   save(pointSet, triangleSet, "output.off");

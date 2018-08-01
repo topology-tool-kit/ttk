@@ -8,6 +8,11 @@ vtkStandardNewMacro(ttkDistanceField)
   ttkDistanceField::ttkDistanceField():
     identifiers_{}
 {
+  OutputScalarFieldType = 0;
+  OutputScalarFieldName = "OutputDistanceField";
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
   SetNumberOfInputPorts(2);
   
   triangulation_ = NULL;
@@ -103,7 +108,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  vtkSmartPointer<vtkIdTypeArray> origin=vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> origin=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(origin){
     origin->SetNumberOfComponents(1);
     origin->SetNumberOfTuples(numberOfPointsInDomain);
@@ -111,12 +116,12 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{
-    cerr << "[ttkDistanceField] Error : vtkIdTypeArray allocation problem." << endl;
+    cerr << "[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem." << endl;
     return -5;
   }
 #endif
 
-  vtkSmartPointer<vtkIdTypeArray> seg=vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> seg=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(seg){
     seg->SetNumberOfComponents(1);
     seg->SetNumberOfTuples(numberOfPointsInDomain);
@@ -124,7 +129,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{
-    cerr << "[ttkDistanceField] Error : vtkIdTypeArray allocation problem." << endl;
+    cerr << "[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem." << endl;
     return -6;
   }
 #endif

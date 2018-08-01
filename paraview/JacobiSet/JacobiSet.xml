@@ -82,14 +82,15 @@ Foundations of Computational Mathematics. Cambridge University Press, 2002.
       </StringVectorProperty>
      
       <IntVectorProperty name="With predefined offset"
-        label="Use Input Offset Field"
-        command="SetPredefinedOffset"
+        label="Force Input Offset Field"
+        command="SetForceInputOffsetScalarField"
         number_of_elements="1"
-        default_values="1">
+        panel_visibility="advanced"
+        default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Check this box if one of the input scalar fields needs to be 
-          considered as a vertex offset field (to disambiguate collinear edges).
+          Check this box to force the usage of a specific input scalar field 
+          as vertex offset (used to disambiguate flat plateaus).
         </Documentation>
       </IntVectorProperty>
       
@@ -99,10 +100,10 @@ Foundations of Computational Mathematics. Cambridge University Press, 2002.
         number_of_elements="1"
         animateable="0"
         label="U offset field"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
-          data_type="VTK_ID_TYPE"
           default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />
@@ -120,10 +121,10 @@ u-coordinate (used to disambiguate collinear edges).
         number_of_elements="1"
         animateable="0"
         label="V offset field"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
-          data_type="VTK_ID_TYPE"
           default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />

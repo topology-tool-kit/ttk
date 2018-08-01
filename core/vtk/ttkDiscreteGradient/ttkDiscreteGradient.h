@@ -71,8 +71,8 @@ class ttkDiscreteGradient
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
 
-    vtkSetMacro(UseInputOffsetScalarField, int);
-    vtkGetMacro(UseInputOffsetScalarField, int);
+    vtkSetMacro(ForceInputOffsetScalarField, int);
+    vtkGetMacro(ForceInputOffsetScalarField, int);
 
     vtkSetMacro(InputOffsetScalarFieldName, std::string);
     vtkGetMacro(InputOffsetScalarFieldName, std::string);
@@ -119,7 +119,7 @@ class ttkDiscreteGradient
 
     std::string ScalarField;
     std::string InputOffsetScalarFieldName;
-    bool UseInputOffsetScalarField;
+    bool ForceInputOffsetScalarField;
     bool ReverseSaddleMaximumConnection;
     bool ReverseSaddleSaddleConnection;
     bool AllowSecondPass;
@@ -132,7 +132,7 @@ class ttkDiscreteGradient
     ttk::Triangulation* triangulation_;
     ttk::dcg::DiscreteGradient discreteGradient_;
     vtkDataArray* inputScalars_;
-    vtkIdTypeArray* offsets_;
+    ttkSimplexIdTypeArray* offsets_;
     vtkDataArray* inputOffsets_;
     bool hasUpdatedMesh_;
 };

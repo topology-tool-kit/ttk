@@ -8,14 +8,18 @@ vtkStandardNewMacro(ttkScalarFieldCriticalPoints)
 ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints(){
 
   // init
-  PredefinedOffset = false;
+  ForceInputOffsetScalarField = false;
   VertexBoundary = true;
   VertexIds = true;
   VertexScalars = true;
 
   ScalarFieldId = 0;
   OffsetFieldId = -1;
-  OffsetField = "OutputOffsetScalarField";
+  OffsetField = ttk::OffsetScalarFieldName;
+
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
 }
 
 ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints(){
@@ -66,22 +70,33 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   if(OffsetFieldId != -1){
     offsetField = input->GetPointData()->GetArray(OffsetFieldId);
     if(offsetField){
-      PredefinedOffset = true;
+      ForceInputOffsetScalarField = true;
       OffsetField = offsetField->GetName();
     }
   }
 
-  if(PredefinedOffset){
+  if(ForceInputOffsetScalarField){
     if(OffsetField.length()){
       
       offsetField = input->GetPointData()->GetArray(OffsetField.data());
       // not good... in the future, we want to use the pointer itself...
       sosOffsets_.resize(offsetField->GetNumberOfTuples());
-      for(vtkIdType i = 0; i < offsetField->GetNumberOfTuples(); i++){
-        vtkIdType offset = 0;
+      for(SimplexId i = 0; i < offsetField->GetNumberOfTuples(); i++){
+        SimplexId offset = 0;
         offset = offsetField->GetTuple1(i);
         sosOffsets_[i] = offset;
       }
+    }
+  }
+  else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)){
+    offsetField = input->GetPointData()->GetArray(OffsetScalarFieldName);
+
+    // not good... in the future, we want to use the pointer itself...
+    sosOffsets_.resize(offsetField->GetNumberOfTuples());
+    for(SimplexId i = 0; i < offsetField->GetNumberOfTuples(); i++){
+      SimplexId offset = 0;
+      offset = offsetField->GetTuple1(i);
+      sosOffsets_[i] = offset;
     }
   }
   
@@ -164,8 +179,8 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
   
   if(VertexIds){
-    vtkSmartPointer<vtkIdTypeArray> vertexIds =
-      vtkSmartPointer<vtkIdTypeArray>::New();
+    vtkSmartPointer<ttkSimplexIdTypeArray> vertexIds =
+      vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     vertexIds->SetNumberOfComponents(1);
     vertexIds->SetNumberOfTuples(criticalPoints_.size());
     vertexIds->SetName("VertexIdentifiers");
@@ -181,7 +196,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
   
   if(VertexScalars){
-    for(vtkIdType i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++){
+    for(SimplexId i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++){
       
       vtkDataArray *scalarField = input->GetPointData()->GetArray(i);
       
@@ -294,7 +309,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     }
   }
   else{
-    for(vtkIdType i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++){
+    for(SimplexId i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++){
       output->GetPointData()->RemoveArray(
         input->GetPointData()->GetArray(i)->GetName());
     }

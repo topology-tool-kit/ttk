@@ -29,27 +29,27 @@ namespace ttk
 namespace ftm
 {
 
-template <typename scalarType>
+template <typename scalarType, typename idType>
 void ftm::FTMTree_MT::sortInput(void)
 {
    const auto &nbVertices = scalars_->size;
 
    auto *sortedVect = scalars_->sortedVertices.get();
    if (sortedVect == nullptr) {
-      sortedVect = new std::vector<idVertex>(0);
+      sortedVect = new std::vector<SimplexId>(0);
       scalars_->sortedVertices.reset(sortedVect);
    } else {
       sortedVect->clear();
    }
 
-   auto indirect_sort = [&](const size_t &a, const size_t &b) { return isLower<scalarType>(a, b); };
+   auto indirect_sort = [&](const size_t &a, const size_t &b) { return isLower<scalarType,idType>(a, b); };
 
    sortedVect->resize(nbVertices, 0);
    std::iota(sortedVect->begin(), sortedVect->end(), 0);
 
 // #pragma omp parallel
 // #pragma omp single
-//    scalars_->qsort<idVertex>(sortedVect->data(), 0, scalars_->size -1, indirect_sort);
+//    scalars_->qsort<SimplexId>(sortedVect->data(), 0, scalars_->size -1, indirect_sort);
 
 #ifdef TTK_ENABLE_OPENMP
 # ifdef __clang__
@@ -64,7 +64,7 @@ void ftm::FTMTree_MT::sortInput(void)
 
    auto *mirrorVert = scalars_->mirrorVertices.get();
    if (mirrorVert == nullptr) {
-      mirrorVert = new std::vector<idVertex>(0);
+      mirrorVert = new std::vector<SimplexId>(0);
       scalars_->mirrorVertices.reset(mirrorVert);
    } else {
       mirrorVert->clear();
@@ -75,7 +75,7 @@ void ftm::FTMTree_MT::sortInput(void)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
-   for (idVertex i = 0; i < nbVertices; i++) {
+   for (SimplexId i = 0; i < nbVertices; i++) {
       (*scalars_->mirrorVertices)[(*sortedVect)[i]] = i;
    }
 }

@@ -6,24 +6,22 @@ using namespace ttk;
 vtkStandardNewMacro(ttkFiberSurface)
 
 ttkFiberSurface::ttkFiberSurface(){
-
-  UseAllCores = false;
-  RangeCoordinates = false;
-  EdgeParameterization = false;
-  EdgeIds = false;
-  TetIds = false;
-  CaseIds = false;
+  UseAllCores = true;
+  ThreadNumber = 1;
+  debugLevel_ = 3;
+  RangeCoordinates = true;
+  EdgeParameterization = true;
+  EdgeIds = true;
+  TetIds = true;
+  CaseIds = true;
   PointMerge = false;
-  RangeOctree = false;
+  RangeOctree = true;
   PointMergeDistanceThreshold = 0.000001;
   SetNumberOfInputPorts(2);
 }
 
 ttkFiberSurface::~ttkFiberSurface(){
 }
-#ifdef _MSC_VER
-#define COMMA ,
-#endif 
 int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
   
@@ -179,246 +177,21 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     fiberSurface_.setVertexList(i, &(threadedVertexList_[i]));
   }
   
-  switch(dataUfield->GetDataType()){
-    
-    case VTK_CHAR:
-      
-      switch(dataVfield->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<char, VTK_TT>();
-#endif
-		  fiberSurface_.computeSurface<char, VTK_TT>();
-		  }
-		  ));
-#else
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-		  vtkTemplateMacro(
-		  {
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<char COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<char COMMA VTK_TT>();
-		  }
-		  );
-#else
-		  vtkTemplateMacro(
-		  {
-			  fiberSurface_.computeSurface<char COMMA VTK_TT>();
-		  }
-		  );
-#endif
-#endif
-      }
-      
-      break;
-    
-    case VTK_DOUBLE:
-      
-      switch(dataVfield->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<double, VTK_TT>();
-#endif
-		  fiberSurface_.computeSurface<double, VTK_TT>();
-		  }
-		  ));
-#else
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-		  vtkTemplateMacro(
-		  {
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<double COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<double COMMA VTK_TT>();
-		  }
-		  );
-#else
-		  vtkTemplateMacro(
-		  {
-			  fiberSurface_.computeSurface<double COMMA VTK_TT>();
-		  }
-		  );
-#endif
-#endif
-      }
-      
-      break;
-      
-    case VTK_FLOAT:
-      
-      switch(dataVfield->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<float, VTK_TT>();
-#endif
-		  fiberSurface_.computeSurface<float, VTK_TT>();
-		  }
-		  ));
-#else
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-		  vtkTemplateMacro(
-		  {
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<float COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<float COMMA VTK_TT>();
-		  }
-		  );
-#else
-		  vtkTemplateMacro(
-		  {
-			  fiberSurface_.computeSurface<float COMMA VTK_TT>();
-		  }
-		  );
-#endif
-#endif
-      }
-      
-      break;
-      
-    case VTK_INT:
-      
-      switch(dataVfield->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<int, VTK_TT>();
-#endif
-		  fiberSurface_.computeSurface<int, VTK_TT>();
-		  }
-		  ));
-#else
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-		  vtkTemplateMacro(
-		  {
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<int COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<int COMMA VTK_TT>();
-		  }
-		  );
-#else
-		  vtkTemplateMacro(
-		  {
-			  fiberSurface_.computeSurface<int COMMA VTK_TT>();
-		  }
-		  );
-#endif
-#endif
-      }
-      
-      break;
-
-    case VTK_ID_TYPE:
-      
-      switch(dataVfield->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<vtkIdType, VTK_TT>();
-#endif
-		  fiberSurface_.computeSurface<vtkIdType, VTK_TT>();
-		  }
-		  ));
-#else
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-		  vtkTemplateMacro(
-		  {
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<vtkIdType COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<vtkIdType COMMA VTK_TT>();
-		  }
-		  );
-#else
-		  vtkTemplateMacro(
-		  {
-			  fiberSurface_.computeSurface<vtkIdType COMMA VTK_TT>();
-		  }
-		  );
-#endif
-#endif
-      }
-      
-      break;
-      
-    case VTK_UNSIGNED_CHAR:
-      
-      switch(dataVfield->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<unsigned char, VTK_TT>();
-#endif
-		  fiberSurface_.computeSurface<unsigned char, VTK_TT>();
-		  }
-		  ));
-#else
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-		  vtkTemplateMacro(
-		  {
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<unsigned char COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<unsigned char COMMA VTK_TT>();
-		  }
-		  );
-#else
-		  vtkTemplateMacro(
-		  {
-			  fiberSurface_.computeSurface<unsigned char COMMA VTK_TT>();
-		  }
-		  );
-#endif
-#endif
-      }
-      
-      break;
-      
-    case VTK_UNSIGNED_SHORT:
-      
-      switch(dataVfield->GetDataType()){
-#ifndef _MSC_VER
-		  vtkTemplateMacro((
-		  {
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<unsigned short, VTK_TT>();
-#endif
-		  fiberSurface_.computeSurface<unsigned short, VTK_TT>();
-		  }
-		  ));
-#else
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-		  vtkTemplateMacro(
-		  {
-			  if (RangeOctree)
-			  fiberSurface_.buildOctree<unsigned short COMMA VTK_TT>();
-		  fiberSurface_.computeSurface<unsigned short COMMA VTK_TT>();
-		  }
-		  );
-#else
-		  vtkTemplateMacro(
-		  {
-			  fiberSurface_.computeSurface<unsigned short COMMA VTK_TT>();
-		  }
-		  );
-#endif
-#endif
-      }
-      
-      break;
+  switch(vtkTemplate2PackMacro(dataUfield->GetDataType(),
+        dataVfield->GetDataType())){
+    ttkTemplate2Macro({
+        if (RangeOctree)
+        fiberSurface_.buildOctree<VTK_T1 TTK_COMMA VTK_T2>();
+        fiberSurface_.computeSurface<VTK_T1 TTK_COMMA VTK_T2>();
+        });
   }
+#else
+  switch(vtkTemplate2PackMacro(dataUfield->GetDataType(),
+        dataVfield->GetDataType())){
+    ttkTemplate2Macro(fiberSurface_.computeSurface<VTK_T1 TTK_COMMA VTK_T2>());
+  }
+#endif
   
   // prepare the VTK output
   // NOTE: right now, there is a copy of the output data. this is no good.
@@ -440,12 +213,12 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     vtkSmartPointer<vtkDoubleArray>::New();
   vtkSmartPointer<vtkCellArray> outputTriangleList = 
     vtkSmartPointer<vtkCellArray>::New();
-  vtkSmartPointer<vtkIdTypeArray> outputEdgeIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
-  vtkSmartPointer<vtkIdTypeArray> outputTetIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
-  vtkSmartPointer<vtkIdTypeArray> outputCaseIds = 
-    vtkSmartPointer<vtkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> outputEdgeIds = 
+    vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> outputTetIds = 
+    vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> outputCaseIds = 
+    vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     
   if(RangeCoordinates){
     outputU->SetName(DataUcomponent.data());

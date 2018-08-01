@@ -14,7 +14,7 @@ OneSkeleton::~OneSkeleton(){
 
 int OneSkeleton::buildEdgeLinks(const vector<pair<SimplexId, SimplexId> > &edgeList, 
   const vector<vector<SimplexId> > &edgeStars, 
-  const SimplexId *cellArray, 
+  const LongSimplexId *cellArray, 
   vector<vector<SimplexId> > &edgeLinks) const{
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -125,7 +125,7 @@ int OneSkeleton::buildEdgeLinks(const vector<pair<SimplexId, SimplexId> > &edgeL
 }
 
 int OneSkeleton::buildEdgeList(const SimplexId &vertexNumber, const SimplexId &cellNumber, 
-  const SimplexId *cellArray,
+  const LongSimplexId *cellArray,
   vector<pair<SimplexId, SimplexId> > &edgeList) const{
 
   ThreadId oldThreadNumber = threadNumber_;
@@ -271,7 +271,7 @@ int OneSkeleton::buildEdgeList(const SimplexId &vertexNumber, const SimplexId &c
 }
 
 int OneSkeleton::buildEdgeLists(
-  const vector<vector<SimplexId> > &cellArrays,
+  const vector<vector<LongSimplexId> > &cellArrays,
   vector<vector<pair<SimplexId, SimplexId> > > &edgeLists) const{
 
   Timer t;
@@ -315,7 +315,7 @@ int OneSkeleton::buildEdgeLists(
 }
 
 int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber, const SimplexId &cellNumber,
-  const SimplexId *cellArray,
+  const LongSimplexId *cellArray,
   vector<vector<SimplexId> > &starList,
   vector<pair<SimplexId, SimplexId> > *edgeList,
   vector<vector<SimplexId> > *vertexStars) const{
@@ -405,7 +405,7 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber, const SimplexId &
 }
 
 int OneSkeleton::buildEdgeSubList(const SimplexId &cellNumber, 
-  const SimplexId *cellArray,
+  const LongSimplexId *cellArray,
   vector<pair<SimplexId, SimplexId> > &edgeList) const{
   
   // NOTE: here we're dealing with a subportion of the mesh.

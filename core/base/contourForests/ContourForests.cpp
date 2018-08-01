@@ -13,7 +13,7 @@
 using namespace std;
 using namespace ttk;
 
-Interface::Interface(const idVertex &seed) : seed_(seed)
+Interface::Interface(const SimplexId &seed) : seed_(seed)
 {
 }
 
@@ -35,9 +35,9 @@ ContourForests::~ContourForests()
 // Get
 // {
 
-idPartition ContourForests::vertex2partition(const idVertex& v)
+idPartition ContourForests::vertex2partition(const SimplexId& v)
 {
-   const idVertex &position = scalars_->mirrorVertices[v];
+   const SimplexId &position = scalars_->mirrorVertices[v];
    idPartition partition = 0;
    while (partition < parallelParams_.nbInterfaces &&
           scalars_->mirrorVertices[parallelData_.interfaces[partition].getSeed()] <= position) {
@@ -89,7 +89,7 @@ void ContourForests::initInterfaces()
 
 void ContourForests::initOverlap()
 {
-   const idEdge nbEdges = mesh_->getNumberOfEdges();
+   const SimplexId nbEdges = mesh_->getNumberOfEdges();
 
    // if we choose to have less partition, we still want to use all thread for overlap init.
 
@@ -98,8 +98,8 @@ void ContourForests::initOverlap()
    // ------------------
    // {
 
-   vector<vector<vector<idVertex>>> lowers(parallelParams_.nbThreads);
-   vector<vector<vector<idVertex>>> uppers(parallelParams_.nbThreads);
+   vector<vector<vector<SimplexId>>> lowers(parallelParams_.nbThreads);
+   vector<vector<vector<SimplexId>>> uppers(parallelParams_.nbThreads);
 
    for (numThread p = 0; p < parallelParams_.nbThreads; p++) {
         lowers[p].resize(parallelParams_.nbInterfaces);
@@ -109,7 +109,7 @@ void ContourForests::initOverlap()
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(parallelParams_.nbThreads) schedule(static)
 #endif
-   for (idEdge e = 0; e < nbEdges; e++) {
+   for (SimplexId e = 0; e < nbEdges; e++) {
 
 #ifdef TTK_ENABLE_OPENMP
        idPartition part = omp_get_thread_num();
@@ -117,10 +117,10 @@ void ContourForests::initOverlap()
        idPartition part = 0;
 #endif
 
-       vector<vector<idVertex>> &localUppers = uppers[part];
-       vector<vector<idVertex>> &localLowers = lowers[part];
+       vector<vector<SimplexId>> &localUppers = uppers[part];
+       vector<vector<SimplexId>> &localLowers = lowers[part];
 
-       idVertex v0, v1;
+       SimplexId v0, v1;
        mesh_->getEdgeVertex(e,0,v0);
        mesh_->getEdgeVertex(e,1,v1);
 
@@ -153,8 +153,8 @@ void ContourForests::initOverlap()
    // {
 
    // reserve
-   vector<idVertex> sizeReserveUp(parallelParams_.nbInterfaces, 0);
-   vector<idVertex> sizeReserveLo(parallelParams_.nbInterfaces, 0);
+   vector<SimplexId> sizeReserveUp(parallelParams_.nbInterfaces, 0);
+   vector<SimplexId> sizeReserveLo(parallelParams_.nbInterfaces, 0);
    for (numThread p = 0; p < parallelParams_.nbThreads; p++) {
        for (idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
            sizeReserveUp[i] += uppers[p][i].size();
@@ -181,25 +181,25 @@ void ContourForests::initOverlap()
    // ----------------
    // {
 
-   auto vertComp = [&](const idVertex &a, const idVertex &b) { return isLower(a, b); };
+   auto vertComp = [&](const SimplexId &a, const SimplexId &b) { return isLower(a, b); };
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(parallelParams_.nbThreads) schedule(static)
 #endif
    for (idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
-      vector<idVertex> &upOverlap = parallelData_.interfaces[i].getUpper();
-      vector<idVertex> &loOverlap = parallelData_.interfaces[i].getLower();
+      vector<SimplexId> &upOverlap = parallelData_.interfaces[i].getUpper();
+      vector<SimplexId> &loOverlap = parallelData_.interfaces[i].getLower();
 
       // sort & unique via set
 
       // LESS EFFICIENT IN PARALLEL
       // {
-      //set<idVertex, decltype(vertComp)> setUpOverlap(upOverlap.begin(), upOverlap.end(), vertComp);
-      //vector<idVertex> vectUpOverlap(setUpOverlap.begin(), setUpOverlap.end());
+      //set<SimplexId, decltype(vertComp)> setUpOverlap(upOverlap.begin(), upOverlap.end(), vertComp);
+      //vector<SimplexId> vectUpOverlap(setUpOverlap.begin(), setUpOverlap.end());
       //parallelData_.interfaces[i].swapUpper(vectUpOverlap);
 
-      //set<idVertex, decltype(vertComp)> setLoOverlap(loOverlap.begin(), loOverlap.end(), vertComp);
-      //vector<idVertex> vectLoOverlap(setLoOverlap.begin(), setLoOverlap.end());
+      //set<SimplexId, decltype(vertComp)> setLoOverlap(loOverlap.begin(), loOverlap.end(), vertComp);
+      //vector<SimplexId> vectLoOverlap(setLoOverlap.begin(), setLoOverlap.end());
       //parallelData_.interfaces[i].swapLower(vectLoOverlap);
       // }
 
@@ -224,12 +224,12 @@ void ContourForests::initOverlap()
       //cout << "interface : " << i << endl;
 
       //cout << "upper" << endl;
-      //for (const idVertex &v : parallelData_.interfaces[i].getUpper()) {
+      //for (const SimplexId &v : parallelData_.interfaces[i].getUpper()) {
          //cout << v << ", ";
       //}
 
       //cout << endl << "lower" << endl;
-      //for (const idVertex &v : parallelData_.interfaces[i].getLower()) {
+      //for (const SimplexId &v : parallelData_.interfaces[i].getLower()) {
          //cout << v << ", ";
       //}
 
@@ -313,7 +313,7 @@ void ContourForests::stitchTree(const char treetype)
             continue;
 
          // Stitch vertex and insertion in current tree
-         const idVertex& stitchVertex = curTree->insertNodeAboveSeed(arc, seedPair);
+         const SimplexId& stitchVertex = curTree->insertNodeAboveSeed(arc, seedPair);
 
          // Opposite partition
          const idPartition &otherPartition = vertex2partition(stitchVertex);
@@ -380,7 +380,7 @@ void ContourForests::stitchTree(const char treetype)
                }
             }
          } else if (!otherTreeAlreadyHide && crossing->getDownCT() == i) {
-            const idVertex &currentBelowSeed =
+            const SimplexId &currentBelowSeed =
                 curTree->getVertBelowSeed(arc, seedPair, otherTree->treeData_.vert2tree);
             const idSuperArc &arcToHide =
                 otherTree->hideAndClearLeadingTo(otherTreeStitchNodeId, currentBelowSeed);
@@ -405,7 +405,7 @@ void ContourForests::stitchTree(const char treetype)
          // chk if cross the next interface to add it in the vector if crossing above
          bool crossNextInterface = false;
          if (otherPartition < parallelParams_.nbInterfaces) {
-             const idVertex &nextSeed = parallelData_.interfaces[otherPartition].getSeed();
+             const SimplexId &nextSeed = parallelData_.interfaces[otherPartition].getSeed();
              crossNextInterface = isEqLower(nextSeed, stitchVertex);
          }
          otherTree->treeData_.superArcs.emplace_back(curTreeStitchNodeId, otherTreeStitchNodeId,
@@ -480,7 +480,7 @@ void ContourForests::unifyTree(const char treetype)
 
       for (auto &l : currentTree->treeData_.leaves) {
          Node *   curNode  = currentTree->getNode(l);
-         idVertex leafVert = curNode->getVertexId();
+         SimplexId leafVert = curNode->getVertexId();
 
          // Condition to keep
 
@@ -582,8 +582,8 @@ void ContourForests::unifyTree(const char treetype)
          SuperArc * newArc_tt           = tmpTree.getSuperArc(newArcId_tt);
 
          // segmentation related
-         list<pair<idVertex, bool> *> listVertList;
-         list<idVertex> listVertSize;
+         list<pair<SimplexId, bool> *> listVertList;
+         list<SimplexId> listVertSize;
          int totalSize=0;
 
          // add upArc until the upnode is not a regular one
@@ -628,7 +628,7 @@ void ContourForests::unifyTree(const char treetype)
          }
 
          // push current vertex TODO
-         const idVertex &closingVertex = currentNode->getVertexId();
+         const SimplexId &closingVertex = currentNode->getVertexId();
          ++nbVisit[closingVertex];
 
          // get the down valence of this node in the partition where it have no noise

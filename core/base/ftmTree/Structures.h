@@ -39,34 +39,34 @@ namespace ftm
    struct ActiveTask {
       float    begin = -1;
       float    end  = -1;
-      idVertex origin = nullVertex;
+      SimplexId origin = nullVertex;
    };
 #endif
 
    // Scalar related containers (global)
    struct Scalars {
-      idVertex  size;
+      SimplexId  size;
       void*     values;
-      idVertex* offsets;
+      void*     offsets;
 
-      std::shared_ptr<std::vector<idVertex>> sortedVertices, mirrorVertices;
+      std::shared_ptr<std::vector<SimplexId>> sortedVertices, mirrorVertices;
 
       // Need vertices to be sorted : use mirrorVertices.
 
-      bool isLower(idVertex a, idVertex b) const
+      bool isLower(SimplexId a, SimplexId b) const
       {
          return (*mirrorVertices)[a] < (*mirrorVertices)[b];
       }
-      bool isEqLower(idVertex a, idVertex b) const
+      bool isEqLower(SimplexId a, SimplexId b) const
       {
          return (*mirrorVertices)[a] <= (*mirrorVertices)[b];
       }
 
-      bool isHigher(idVertex a, idVertex b) const
+      bool isHigher(SimplexId a, SimplexId b) const
       {
          return (*mirrorVertices)[a] > (*mirrorVertices)[b];
       }
-      bool isEqHigher(idVertex a, idVertex b) const
+      bool isEqHigher(SimplexId a, SimplexId b) const
       {
          return (*mirrorVertices)[a] >= (*mirrorVertices)[b];
       }
@@ -139,10 +139,10 @@ namespace ftm
    };
 
    struct CurrentState {
-      idVertex vertex;
-      boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> propagation;
+      SimplexId vertex;
+      boost::heap::fibonacci_heap<SimplexId, boost::heap::compare<VertCompFN>> propagation;
 
-      CurrentState(idVertex startVert, VertCompFN vertComp)
+      CurrentState(SimplexId startVert, VertCompFN vertComp)
           : vertex(startVert), propagation(vertComp)
       {
       }
@@ -153,19 +153,19 @@ namespace ftm
          // will need to use setStartVert before use
       }
 
-      void setStartVert(const idVertex v)
+      void setStartVert(const SimplexId v)
       {
          vertex = v;
       }
 
-      idVertex getNextMinVertex(void)
+      SimplexId getNextMinVertex(void)
       {
           vertex = propagation.top();
           propagation.pop();
           return vertex;
       }
 
-      void addNewVertex(const idVertex v)
+      void addNewVertex(const SimplexId v)
       {
           propagation.emplace(v);
       }
@@ -182,18 +182,18 @@ namespace ftm
       }
 
       // DEBUG ONLY
-      bool find(idVertex v)
+      bool find(SimplexId v)
       {
          return std::find(propagation.begin(), propagation.end(), v) != propagation.end();
       }
    };
 
    struct SharedData {
-      idVertex                    extrema;
+      SimplexId                    extrema;
       AtomicVector<CurrentState*> states;
       AtomicVector<idSuperArc>    openedArcs;
 
-      explicit SharedData(idVertex e) : extrema(e), states(50), openedArcs(50)
+      explicit SharedData(SimplexId e) : extrema(e), states(50), openedArcs(50)
       {
       }
 
@@ -231,10 +231,10 @@ namespace ftm
       VertCompFN vertLower, vertHigher;
    };
 
-   using segm_it           = std::vector<idVertex>::iterator;
-   using segm_rev_it       = std::vector<idVertex>::reverse_iterator;
-   using segm_const_it     = std::vector<idVertex>::const_iterator;
-   using segm_const_rev_it = std::vector<idVertex>::const_reverse_iterator;
+   using segm_it           = std::vector<SimplexId>::iterator;
+   using segm_rev_it       = std::vector<SimplexId>::reverse_iterator;
+   using segm_const_it     = std::vector<SimplexId>::const_iterator;
+   using segm_const_rev_it = std::vector<SimplexId>::const_reverse_iterator;
 
    // Segmentation data
    struct Region {
