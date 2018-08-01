@@ -6,28 +6,46 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="CinemaQuery"
-     class="ttkCinemaQuery"
-     label="TTK CinemaQuery">
+     name="CinemaImageExport"
+     class="ttkCinemaImageExport"
+     label="TTK CinemaImageExport">
      <Documentation
-        long_help="TTK cinemaQuery plugin."
-        short_help="TTK cinemaQuery plugin.">
-          TTK cinemaQuery plugin documentation.
+        long_help="TTK cinemaImageExport plugin."
+        short_help="TTK cinemaImageExport plugin.">
+          TTK cinemaImageExport plugin documentation.
      </Documentation>
-     <InputProperty
-        name="Input"
+
+  	 <InputProperty
+			 name="Dataset"
+			 port_index="0"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkTable"/>
+          <DataType value="vtkDataSet"/>
         </DataTypeDomain>
         <Documentation>
           Data-set to process.
         </Documentation>
       </InputProperty>
+
+		 <InputProperty
+			 name="SamplingGrid"
+			 port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkPointSet"/>
+        </DataTypeDomain>
+        <Documentation>
+					vtkPointSet that represent the camera sampling locations
+        </Documentation>
+        </InputProperty>
 
       <IntVectorProperty
          name="UseAllCores"
@@ -64,24 +82,6 @@
            Debug level.
          </Documentation>
       </IntVectorProperty>
-
-      <StringVectorProperty
-        name="QueryString"
-        label="SQL Statement"
-        command="SetQueryString"
-        number_of_elements="1"
-        default_values="SELECT * FROM VolumeData">
-        <Hints>
-            <Widget type="multi_line"/>
-        </Hints>
-      </StringVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="QueryString"/>
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Output options">
-      </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />

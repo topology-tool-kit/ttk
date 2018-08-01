@@ -6,13 +6,13 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="CinemaQueryLoader"
-     class="ttkCinemaQueryLoader"
-     label="TTK CinemaQueryLoader">
+     name="CinemaQueryReader"
+     class="ttkCinemaQueryReader"
+     label="TTK CinemaReader">
      <Documentation
-        long_help="TTK cinemaQueryLoader plugin."
-        short_help="TTK cinemaQueryLoader plugin.">
-          TTK cinemaQueryLoader plugin documentation.
+        long_help="TTK cinemaQueryReader plugin."
+        short_help="TTK cinemaQueryReader plugin.">
+          TTK cinemaQueryReader plugin documentation.
      </Documentation>
      <InputProperty
         name="Input"
@@ -28,30 +28,6 @@
           Data-set to process.
         </Documentation>
       </InputProperty>
-
-      <IntVectorProperty
-         name="Index"
-         label="Index"
-         command="SetIndex"
-         number_of_elements="1"
-         default_values="1" >
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Integer argument for the cinemaQueryLoader filter.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="NumberOfRows"
-         label="NumberOfRows"
-         command="SetNumberOfRows"
-         number_of_elements="1"
-         default_values="1" >
-        <IntRangeDomain name="range" min="1" max="100" />
-         <Documentation>
-           Integer argument for the cinemaQueryLoader filter.
-         </Documentation>
-      </IntVectorProperty>
 
       <IntVectorProperty
          name="UseAllCores"
@@ -88,11 +64,6 @@
            Debug level.
          </Documentation>
       </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="Index" />
-        <Property name="NumberOfRows" />
-      </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
