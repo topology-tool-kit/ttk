@@ -1,37 +1,17 @@
-#include <ttkCinemaQueryLoader.h>
+#include <ttkCinemaQueryReader.h>
 #include <vtkVariantArray.h>
 #include <vtkXMLImageDataReader.h>
+#include <vtkXMLPolyDataReader.h>
+#include <vtkXMLUnstructuredGridReader.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkMultiBlockDataGroupFilter.h>
 
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkCinemaQueryLoader)
+vtkStandardNewMacro(ttkCinemaQueryReader)
 
-int ttkCinemaQueryLoader::doIt(vtkTable* input, vtkImageData* output){
-
-    Memory m;
-
-    auto* paths = vtkVariantArray::SafeDownCast( input->GetColumnByName("path") );
-    auto path = paths->GetValue(0).ToString();
-
-    vtkSmartPointer<vtkXMLImageDataReader> reader = vtkSmartPointer<vtkXMLImageDataReader>::New();
-    reader->SetFileName(path.data());
-    reader->Update();
-
-    output->DeepCopy( reader->GetOutput() );
-
-    {
-        stringstream msg;
-        msg << "[ttkCinemaQueryLoader] Memory usage: " << m.getElapsedUsage() << " MB." << endl;
-        dMsg(cout, msg.str(), memoryMsg);
-    }
-
-  return 0;
-}
-
-int ttkCinemaQueryLoader::RequestData(vtkInformation* request,
+int ttkCinemaQueryReader::RequestData(vtkInformation* request,
     vtkInformationVector** inputVector, vtkInformationVector* outputVector){
 
     Memory m;
@@ -41,22 +21,33 @@ int ttkCinemaQueryLoader::RequestData(vtkInformation* request,
 
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
     vtkTable* inputTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
-    auto* paths = vtkVariantArray::SafeDownCast( inputTable->GetColumnByName("path") );
+    auto* paths = vtkVariantArray::SafeDownCast( inputTable->GetColumnByName("CDB_Filepath") );
     size_t max = paths->GetSize();
     for(size_t i=0; i<max; i++){
         auto path = paths->GetValue(i).ToString();
+        auto ext = path.substr( path.length() - 3 );
 
-        vtkSmartPointer<vtkXMLImageDataReader> reader = vtkSmartPointer<vtkXMLImageDataReader>::New();
-        reader->SetFileName(path.data());
-        reader->Update();
+        if(ext=="vti"){
+            vtkSmartPointer<vtkXMLImageDataReader> reader = vtkSmartPointer<vtkXMLImageDataReader>::New();
+            reader->SetFileName(path.data());
+            reader->Update();
+            output->SetBlock(i, reader->GetOutput());
+        } else if(ext=="vtu"){
+            vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+            reader->SetFileName(path.data());
+            reader->Update();
+            output->SetBlock(i, reader->GetOutput());
+        } else if(ext=="vtp"){
+            vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
+            reader->SetFileName(path.data());
+            reader->Update();
+            output->SetBlock(i, reader->GetOutput());
+        } else {
+            cout<<"Unknown File type: "<<ext<<endl;
+        }
 
         // vtkNew<vtkCubeSource> cube1;
-        output->SetBlock(i, reader->GetOutput());
     }
-
-
-
-
 
   // Append geometry of the two first meshes
 //   vtkNew<vtkAppendFilter> append;
@@ -79,7 +70,7 @@ int ttkCinemaQueryLoader::RequestData(vtkInformation* request,
     return 1;
 }
 
-// int ttkCinemaQueryLoader::RequestInformation (
+// int ttkCinemaQueryReader::RequestInformation (
 //   vtkInformation* request,
 //   vtkInformationVector** inputVector,
 //   vtkInformationVector *outputVector)

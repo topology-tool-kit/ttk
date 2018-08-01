@@ -36,13 +36,12 @@ namespace ttk{
 
       template <class dataType>
         vector<vector<string>> execute(const string &serverAddress, const string &sqlQuery) const;
-
       //This generates a valid url from a string
       inline string generateURL(string input) const{
         string resultString;
         //iterator over blanks
         for(string::iterator it = input.begin(); it != input.end(); ++it) {
-          if(*it == ' ') {
+          if(*it == ' ' || *it == '\n') {
             resultString += "%20";
           } else if(*it == '%'){
             resultString += "%25";
@@ -50,6 +49,7 @@ namespace ttk{
             resultString += *it;
           }
         }
+
         return resultString;
       }
 
@@ -63,11 +63,11 @@ namespace ttk{
         string port = serverAddress.substr(serverAddress.find_last_of(":")+1);
 
         {
-            std::stringstream msg;
+            stringstream msg;
             msg << "[CinemaQuery] Server: "
                 << serverAddress << endl
-                << "[CinemaQuery]  Query: " << sqlQuery << endl;
-            dMsg(std::cout, msg.str(), timeMsg);
+                << "[CinemaQuery]  Query:\n" << sqlQuery << endl;
+            dMsg(cout, msg.str(), timeMsg);
         }
 
         boost::asio::ip::tcp::endpoint endpoint(
@@ -252,11 +252,11 @@ template <class dataType> vector<vector<string>> ttk::CinemaQuery::execute(
     int m = n>0 ? resultMartix[0].size() : 0;
 
     {
-        std::stringstream msg;
+        stringstream msg;
         msg << "[CinemaQuery] ("<< n << ","<<m<<") tuples fetched in "
             << t.getElapsedTime() << " s."
             << endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return resultMartix;

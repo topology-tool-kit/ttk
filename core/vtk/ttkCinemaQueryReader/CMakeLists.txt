@@ -1,4 +1,4 @@
-ttk_add_vtk_library(ttkCinemaQueryLoader
-	SOURCES ttkCinemaQueryLoader.cpp
-	HEADERS ttkCinemaQueryLoader.h
+ttk_add_vtk_library(ttkCinemaQueryReader
+	SOURCES ttkCinemaQueryReader.cpp
+	HEADERS ttkCinemaQueryReader.h
 	LINK ttkTriangulation)

@@ -1,11 +1,11 @@
 /// ingroup vtk
-/// class ttkCinemaQueryLoader
+/// class ttkCinemaQueryReader
 /// author Your Name Here <Your Email Address Here>
 /// date The Date Here.
 ///
-/// brief TTK VTK-filter that wraps the cinemaQueryLoader processing package.
+/// brief TTK VTK-filter that wraps the cinemaQueryReader processing package.
 ///
-/// VTK wrapping code for the @CinemaQueryLoader package.
+/// VTK wrapping code for the @CinemaQueryReader package.
 ///
 /// param Input Input scalar field (vtkDataSet)
 /// param Output Output scalar field (vtkDataSet)
@@ -16,7 +16,7 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// sa ttk::CinemaQueryLoader
+/// sa ttk::CinemaQueryReader
 #pragma once
 
 #include                  <vtkTable.h>
@@ -35,16 +35,16 @@
 // see the documentation of the vtkImageAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaQueryLoader
+class VTKFILTERSCORE_EXPORT ttkCinemaQueryReader
 #else
-class ttkCinemaQueryLoader
+class ttkCinemaQueryReader
 #endif
   : public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
-    static ttkCinemaQueryLoader* New();
-    vtkTypeMacro(ttkCinemaQueryLoader, vtkMultiBlockDataSetAlgorithm)
+    static ttkCinemaQueryReader* New();
+    vtkTypeMacro(ttkCinemaQueryReader, vtkMultiBlockDataSetAlgorithm)
 
     // default ttk setters
     vtkSetMacro(debugLevel_, int);
@@ -65,12 +65,6 @@ class ttkCinemaQueryLoader
       SetThreads();
     }
     // end of default ttk setters
-
-    vtkSetMacro(Index, int);
-    vtkGetMacro(Index, int);
-
-    vtkSetMacro(NumberOfRows, int);
-    vtkGetMacro(NumberOfRows, int);
 
     int FillInputPortInformation(int port, vtkInformation *info) override {
 
@@ -100,17 +94,14 @@ class ttkCinemaQueryLoader
 
   protected:
 
-    ttkCinemaQueryLoader(){
-      Index = 0;
-      NumberOfRows = 1;
-
+    ttkCinemaQueryReader(){
       UseAllCores = false;
 
       SetNumberOfInputPorts(1);
       SetNumberOfOutputPorts(1);
     }
 
-    ~ttkCinemaQueryLoader(){};
+    ~ttkCinemaQueryReader(){};
 
     // TTK_SETUP();
     int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
@@ -120,9 +111,6 @@ class ttkCinemaQueryLoader
     int ThreadNumber;
 
   private:
-
-    int                    Index;
-    int                    NumberOfRows;
 
     int doIt(vtkTable* inputTable, vtkImageData* output);
 
