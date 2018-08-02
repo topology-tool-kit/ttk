@@ -10,7 +10,8 @@
 ///
 /// \sa ttk::FTRGraph
 
-#pragma once
+#ifndef GRAPH_H
+#define GRAPH_H
 
 #include "AtomicVector.h"
 #include "DataTypesFTR.h"
@@ -291,10 +292,16 @@ namespace ttk
          // some arc may be pending due to symbolic merge during computation
          // if tasks from both min and max.
          // here we replace them by one consistent arc
-         void mergeArcs(VertCompFN comp);
+         template <typename ScalarType>
+         void mergeArcs(const Scalars<ScalarType>* const s);
 
          // Link nodes to arcs when arc are completely created
-         void arcs2nodes(VertCompFN comp);
+         template <typename ScalarType>
+         void arcs2nodes(const Scalars<ScalarType>* const s);
+
+         // Build the list of regular vertices of each arc
+         template <typename ScalarType>
+         void buildArcSegmentation(const Scalars<ScalarType>* const s);
 
          // Tools
          // -----
@@ -324,9 +331,14 @@ namespace ttk
          // ensure that main arc have valid up/down node even if the merge of
          // the two arc occured during the computation, leaving some unfinished
          // arcs.
-         void consolidateArc(const idSuperArc mainArc, const idSuperArc mergedArc, VertCompFN comp);
+         template <typename ScalarType>
+         void consolidateArc(const idSuperArc mainArc, const idSuperArc mergedArc,
+                             const Scalars<ScalarType>* const s);
       };
 
    }
 }
 
+#include "Graph_Template.h"
+
+#endif /* end of include guard: GRAPH_H */

@@ -84,6 +84,20 @@
         </StringVectorProperty>
 
         <IntVectorProperty
+           name="ArcSampling"
+           label="Arc samplig"
+           command="SetSampling"
+           number_of_elements="1"
+           default_values="0">
+           <IntRangeDomain name="range" min="-1" max="20" />
+           <Documentation>
+              Set arc sampling level. The sample create "sampleLvl" chunk
+              of element in an arc and add a point at the barycenters of these elements.
+              Special vaues: -1 will insert all regular arcs and 0 only the super arcs (faster)
+           </Documentation>
+        </IntVectorProperty>
+
+        <IntVectorProperty
            name="UseAllCores"
            label="Use All Cores"
            command="SetUseAllCores"
@@ -135,6 +149,7 @@
            <Property name="ScalarField" />
            <Property name="UseInputOffsetScalarField" />
            <Property name="InputOffsetScalarFieldName" />
+           <Property name="ArcSampling" />
         </PropertyGroup>
 
         <PropertyGroup panel_widget="Line" label="Testing">

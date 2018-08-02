@@ -75,7 +75,11 @@ namespace ttk
 
          public:
           // Init
-          Mesh() : tri_(nullptr)
+          explicit Mesh(Triangulation* tri) : tri_{tri}
+          {
+          }
+
+          Mesh() : Mesh{nullptr}
           {
           }
 

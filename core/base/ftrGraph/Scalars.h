@@ -65,17 +65,17 @@ namespace ttk
             return size_;
          }
 
-         ScalarType getVal(const idVertex i)
+         ScalarType getVal(const idVertex i) const
          {
             return values_[i];
          }
 
-         idVertex getSortedVert(const idVertex i)
+         idVertex getSortedVert(const idVertex i) const
          {
             return vertices_[i].id;
          }
 
-         idVertex getMirror(const idVertex i)
+         idVertex getMirror(const idVertex i) const
          {
             return mirror_[i];
          }

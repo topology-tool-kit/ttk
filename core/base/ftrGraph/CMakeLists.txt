@@ -1,8 +1,8 @@
 ttk_add_base_library(ftrGraph
-   SOURCES Graph.cpp Mesh.cpp
+   SOURCES Graph.cpp Mesh.cpp Segmentation.cpp
    HEADERS AtomicVector.h FTRGraph.h FTRGraph_Template.h FTRGraphBFS_Template.h
            FTRGraphPrint_Template.h FTRGraphPrivate_Template.h DynamicGraph.h
-           Lazy.h Mesh.h Propagation.h Propagations.h Scalars.h
+           Lazy.h Mesh.h Propagation.h Propagations.h Scalars.h Segmentation.h
            LINK triangulation)
 
 target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})

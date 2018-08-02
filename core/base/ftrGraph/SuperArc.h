@@ -17,6 +17,7 @@
 #include "AtomicUF.h"
 #include "DataTypesFTR.h"
 #include "Scalars.h"
+#include "Segmentation.h"
 
 // c++ includes
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -37,6 +38,7 @@ namespace ttk
          AtomicUF* ufProp_;
          bool visible_;
          idSuperArc merged_;
+         Segment segmentation_;
 #ifndef NDEBUG
          bool fromUp_;
 #endif
@@ -47,7 +49,8 @@ namespace ttk
                downNodeId_{down},
                ufProp_{nullptr},
                visible_{true},
-               merged_{nullSuperArc}
+               merged_{nullSuperArc},
+               segmentation_{}
 #ifndef NDEBUG
               ,fromUp_{false}
 #endif
@@ -129,6 +132,16 @@ namespace ttk
          {
             visible_ = true;
             merged_ = nullSuperArc;
+         }
+
+         const decltype(segmentation_)& segmentation() const
+         {
+            return segmentation_;
+         }
+
+         decltype(segmentation_)& segmentation()
+         {
+            return segmentation_;
          }
 
 #ifndef NDEBUG

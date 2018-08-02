@@ -20,27 +20,22 @@ namespace ttk
    namespace ftr
    {
       template <typename ScalarType>
-      FTRGraph<ScalarType>::FTRGraph()
-          : params_{new Params},
-            scalars_{new Scalars<ScalarType>},
-            needDelete_{true}
+      FTRGraph<ScalarType>::FTRGraph() : params_{}, scalars_{new Scalars<ScalarType>}, mesh_{}
       {
+         // need a call to setupTriangulation later
       }
 
       template <typename ScalarType>
-      FTRGraph<ScalarType>::FTRGraph(Params* const params, Triangulation* mesh,
-                                     Scalars<ScalarType>* const scalars)
-          : params_(params), scalars_(scalars), needDelete_(false)
+      FTRGraph<ScalarType>::FTRGraph(Triangulation* mesh)
+          : params_{}, scalars_{new Scalars<ScalarType>}, mesh_{}
       {
+         setupTriangulation(mesh);
       }
 
       template <typename ScalarType>
       FTRGraph<ScalarType>::~FTRGraph()
       {
-         if (needDelete_) {
-            delete params_;
-            delete scalars_;
-         }
+         delete scalars_;
       }
 
       template <typename ScalarType>
@@ -53,15 +48,11 @@ namespace ttk
             std::cerr << "[FTR Graph]: no scalars given" << std::endl;
             return;
          }
-         if (!params_) {
-            std::cerr << "[FTR Graph]: no parameters" << std::endl;
-            return;
-         }
 #endif
          // init some values
 
 #ifdef TTK_ENABLE_OPENMP
-         omp_set_num_threads(params_->threadNumber);
+         omp_set_num_threads(params_.threadNumber);
          omp_set_nested(1);
 #ifdef TTK_ENABLE_FTR_PRIORITY
          if(omp_get_max_task_priority() < PriorityLevel::Max) {
@@ -77,7 +68,7 @@ namespace ttk
          alloc();
          printTime(timeAlloc, "[FTR Graph]: alloc time: ", infoMsg);
 
-         params_->printSelf();
+         params_.printSelf();
 
          DebugTimer timeInit;
          init();
@@ -100,7 +91,7 @@ namespace ttk
          DebugTimer timeBuild;
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(params_->threadNumber)
+#pragma omp parallel num_threads(params_.threadNumber)
 #endif
          {
 #ifdef TTK_ENABLE_OPENMP
@@ -138,10 +129,12 @@ namespace ttk
          // std::cout << dynGraphs_.down.print() << std::endl;
 
          // post-process
-         graph_.mergeArcs(
-             [&](const idVertex a, const idVertex b) { return scalars_->isLower(a, b); });
-         graph_.arcs2nodes(
-             [&](const idVertex a, const idVertex b) { return scalars_->isLower(a, b); });
+         graph_.mergeArcs<ScalarType>(scalars_);
+         graph_.arcs2nodes<ScalarType>(scalars_);
+
+         if (params_.samplingLvl) {
+            graph_.buildArcSegmentation<ScalarType>(scalars_);
+         }
 
          // Debug print
          // std::cout << graph_.printVisit() << std::endl;
@@ -153,7 +146,7 @@ namespace ttk
             std::stringstream msg;
             msg << "[FTR Graph] Data-set (" << mesh_.getNumberOfVertices()
                 << " points) processed in " << t.getElapsedTime() << " s. ("
-                << params_->threadNumber << " thread(s))." << std::endl;
+                << params_.threadNumber << " thread(s))." << std::endl;
             dMsg(std::cout, msg.str(), timeMsg);
          }
       }

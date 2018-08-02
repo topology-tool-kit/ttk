@@ -123,7 +123,7 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
       return params_.advStats;
    }
 
-   void SetSuperArcSamplingLevel(int lvl)
+   void SetSampling(int lvl)
    {
       params_.samplingLvl = lvl;
       Modified();
@@ -140,14 +140,16 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
 
    int getSkeletonNodes(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonNodes);
 
-   int addDirectSkeletonArc(const ttk::ftr::idSuperArc arcId, const int cc, vtkPoints* points,
-                            vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+   int addDirectSkeletonArc(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc arcId,
+                            vtkPoints* points, vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
 
-   int addSampledSkeletonArc(const ttk::ftr::idSuperArc arcId, const int cc, vtkPoints* points,
-                             vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+   int addSampledSkeletonArc(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc arcId,
+                             vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
+                             ArcData& arcData);
 
-   int addCompleteSkeletonArc(const ttk::ftr::idSuperArc arcId, const int cc, vtkPoints* points,
-                              vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+   int addCompleteSkeletonArc(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc arcId,
+                              vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
+                              ArcData& arcData);
 
    int getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonArcs);
 

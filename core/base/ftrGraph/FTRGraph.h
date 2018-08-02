@@ -63,11 +63,8 @@ namespace ttk
       {
         private:
          // Exernal fields
-         Params* const              params_;
+         Params                     params_;
          Scalars<ScalarType>* const scalars_;
-
-         // if yes, also delete params_ and scalars as we have created them
-         const bool needDelete_;
 
          // Internal fields
          Graph        graph_;
@@ -93,7 +90,7 @@ namespace ttk
 #endif
 
         public:
-         FTRGraph(Params* const params, Triangulation* mesh, Scalars<ScalarType>* const scalars);
+         explicit FTRGraph(Triangulation* mesh);
          FTRGraph();
          virtual ~FTRGraph();
 
@@ -167,7 +164,7 @@ namespace ttk
          /// of the reeb graph
          void setThreadNumber(const idThread nb)
          {
-            params_->threadNumber = nb;
+            params_.threadNumber = nb;
             // Security, but do not rely on this one
             threadNumber_ = nb;
          }
@@ -176,8 +173,14 @@ namespace ttk
          virtual int setDebugLevel(const int& lvl) override
          {
             Debug::setDebugLevel(lvl);
-            params_->debugLevel = lvl;
+            params_.debugLevel = lvl;
             return 0;
+         }
+
+         void setParams(const Params& p)
+         {
+            params_       = p;
+            threadNumber_ = params_.threadNumber;
          }
 
          /// Scalar field used to compute the Reeb Graph
