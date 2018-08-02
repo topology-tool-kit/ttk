@@ -215,8 +215,6 @@ namespace ttk
          std::vector<idEdge>                  lowerStarEdges, upperStarEdges;
          std::vector<DynGraphNode<idVertex>*> lowerComp, upperComp;
 
-         // TODO add lazyness!
-
          const bool     fromMin         = begin < stop;
          Propagation*   localProp = newPropagation(scalars_->getSortedVert(begin), fromMin);
          const idVertex incr            = fromMin ? 1 : -1;
@@ -240,7 +238,7 @@ namespace ttk
 
                // simple reeb regular, lazyness
                if(lowerStarEdges.size()) {
-                  // not a min nor a saddle: 1 CC below
+                  // not a min nor a saddle: 1 CC below (need findSubtree)
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
                }
                if (upperStarEdges.size()) {
@@ -758,29 +756,29 @@ namespace ttk
 
           DEBUG_1(<< "Check last on " << curSaddle << " id " << curId << std::endl);
 
-         // NOTE:
-         // Using propagation id allows to decrement by the number of time this propagation
-         // has reached the saddle, even if the propagation take care of several of these arcs
-         // (after a Hole-split).
-         for(idEdge edgeId : lowerStarEdges) {
-            // lowerStarEdge already conatins roots
-           const idSuperArc    edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
-           if (edgeArc == nullSuperArc)  // ignore unseen
-           {
-              DEBUG_1(<< printEdge(edgeId, localProp) << " ignore " << std::endl);
-              continue;
-           }
-           AtomicUF* tmpId = graph_.getArc(edgeArc).getPropagation()->getId();
-           if (tmpId == curId) {
-              ++decr;
-              DEBUG_1(<< printEdge(edgeId, localProp) << " decrement " << static_cast<unsigned>(decr) << " " << curSaddle << std::endl);
-           } else {
-              DEBUG_1(<< printEdge(edgeId, localProp) << " no decrement " << edgeArc << std::endl);
-           }
-         }
+          // NOTE:
+          // Using propagation id allows to decrement by the number of time this propagation
+          // has reached the saddle, even if the propagation take care of several of these arcs
+          // (after a Hole-split).
+          for (idEdge edgeId : lowerStarEdges) {
+             const idSuperArc edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
+             if (edgeArc == nullSuperArc) {
+                DEBUG_1(<< printEdge(edgeId, localProp) << " ignore " << std::endl);
+                continue;
+             }
+             AtomicUF* tmpId = graph_.getArc(edgeArc).getPropagation()->getId();
+             if (tmpId == curId) {
+                ++decr;
+                DEBUG_1(<< printEdge(edgeId, localProp) << " decrement "
+                        << static_cast<unsigned>(decr) << " " << curSaddle << std::endl);
+             } else {
+                DEBUG_1(<< printEdge(edgeId, localProp) << " no decrement " << edgeArc
+                        << std::endl);
+             }
+          }
 
-         valence oldVal = 0;
-         if (localProp->goUp()) {
+          valence oldVal = 0;
+          if (localProp->goUp()) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
 #endif
@@ -855,6 +853,7 @@ namespace ttk
       void FTRGraph<ScalarType>::mergeAtSaddle(
           const idNode saddleId, const std::vector<DynGraphNode<idVertex>*>& lowerComp)
       {
+         // version for the sequential arc growth, do not merge the propagations
 
 #ifndef TTK_ENABLE_KAMIKAZE
          if (lowerComp.size() < 2) {

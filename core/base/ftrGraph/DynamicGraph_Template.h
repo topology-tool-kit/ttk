@@ -159,7 +159,7 @@ namespace ttk
          // return even if another thread is touching these nodes.
          DynGraphNode* curNode = const_cast<DynGraphNode<Type>*>(this);
          DynGraphNode* lastNode = curNode;
-         while (curNode != nullptr) {
+         while (curNode) {
             lastNode = curNode;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic read
@@ -172,8 +172,7 @@ namespace ttk
       template <typename Type>
       idSuperArc DynGraphNode<Type>::findRootArc(void) const
       {
-         DynGraphNode* rootNode = findRoot();
-         return rootNode->corArc_;
+         return findRoot()->corArc_;
       }
 
       template <typename Type>
@@ -186,9 +185,11 @@ namespace ttk
       std::tuple<DynGraphNode<Type>*, DynGraphNode<Type>*>
       DynGraphNode<Type>::findMinWeightRoot() const
       {
-         DynGraphNode* curNode = const_cast<DynGraphNode<Type>*>(this);
          DynGraphNode* minNode = const_cast<DynGraphNode<Type>*>(this);
          auto minW = minNode->weight_;
+         DynGraphNode* curNode = minNode->parent_;
+
+         if(!curNode) return std::make_tuple(curNode, minNode);
 
          while (curNode->parent_) {
             if (curNode->weight_ < minW) {
