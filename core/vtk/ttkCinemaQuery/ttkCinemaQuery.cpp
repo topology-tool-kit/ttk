@@ -2,17 +2,27 @@
 #include                <vtkStringArray.h>
 #include                <vtkVariantArray.h>
 #include                <vtkSmartPointer.h>
+#include                <vtkStreamingDemandDrivenPipeline.h>
 
 using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkCinemaQuery)
 
-int ttkCinemaQuery::doIt(vtkTable* input, vtkTable* output){
+int ttkCinemaQuery::RequestData(vtkInformation *request,
+    vtkInformationVector **inputVector, vtkInformationVector *outputVector){
 
-    auto* column =  vtkStringArray::SafeDownCast( input->GetColumn(0) );
+    cout<<"-------------------------------------------------------------"<<endl;
+    cout<<"[ttkCinemaQuery] RequestData"<<endl;
+    Memory m;
 
-    string serverAddress = column->GetValue(0);
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
+    vtkTable* outputTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+    for(int i=outputTable->GetNumberOfColumns()-1; i>=0; i--)
+        outputTable->RemoveColumn(i);
+
+    string serverAddress = "127.0.0.1:8888";
 
     vector<vector<string>> rMatrix = cinemaQuery_.execute<int>( serverAddress, QueryString );
 
@@ -31,26 +41,46 @@ int ttkCinemaQuery::doIt(vtkTable* input, vtkTable* output){
         for (unsigned int j = 1; j < rows; j++) {
             column->SetValue(j-1, vtkVariant(rMatrix[j][i]) );
         }
-        output->AddColumn(column);
+        outputTable->AddColumn(column);
     }
 
-    return 0;
+    cout<<"-------------------------------------------------------------"<<endl;
+
+    return 1;
 }
 
-int ttkCinemaQuery::RequestData(vtkInformation *request,
-    vtkInformationVector **inputVector, vtkInformationVector *outputVector){
+int ttkCinemaQuery::RequestInformation (
+    vtkInformation* request,
+    vtkInformationVector** inputVector,
+    vtkInformationVector* outputVector
+){
+    vtkTableReader::RequestInformation(request, inputVector, outputVector);
+    cout<<"[ttkCinemaQuery] RequestInformation"<<endl;
 
-  Memory m;
+    string serverAddress = "127.0.0.1:8888";
+    vector<vector<string>> rMatrix = cinemaQuery_.execute<int>( serverAddress, QueryString );
+    unsigned int n = rMatrix.size()-1;
 
-  vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-  vtkTable* inputTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    vector<double> steps(n);
+    for(int i=0; i<n; i++)
+        steps[i] = i;
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
+    outInfo->Set( vtkStreamingDemandDrivenPipeline::TIME_STEPS(), steps.data(), n );
 
-  vtkTable* outputTable = vtkTable::GetData(outputVector);
+    cout<<"[ttkCinemaQuery] RequestInformation n "<< n <<endl;
 
-  doIt(
-      inputTable,
-      outputTable
-  );
+    // this->RequestData(request, inputVector, outputVector);
 
-  return 1;
+    // vtkTable* outputTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    // int n = outputTable->GetNumberOfRows();
+
+    // cout<<"[ttkCinemaQuery] Set tn "<<n<<endl;
+
+
+    // vector<double> range(2);
+    // range[0]=0;
+    // range[1]=n;
+    // outInfo->Set( vtkStreamingDemandDrivenPipeline::TIME_RANGE(), range.data(), 2 );
+
+    return 1;
 }

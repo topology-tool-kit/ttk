@@ -4,7 +4,7 @@
        our new filter. As a rule of thumb, try to locate the configuration for
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
-  <ProxyGroup name="filters">
+  <ProxyGroup name="sources">
    <SourceProxy
      name="CinemaQuery"
      class="ttkCinemaQuery"
@@ -14,20 +14,20 @@
         short_help="TTK cinemaQuery plugin.">
           TTK cinemaQuery plugin documentation.
      </Documentation>
-     <InputProperty
-        name="Input"
-        command="SetInputConnection">
-        <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
-        </ProxyGroupDomain>
-        <DataTypeDomain name="input_type">
-          <DataType value="vtkTable"/>
-        </DataTypeDomain>
-        <Documentation>
-          Data-set to process.
-        </Documentation>
-      </InputProperty>
+     <!--<InputProperty-->
+     <!--   name="Input"-->
+     <!--   command="SetInputConnection">-->
+     <!--   <ProxyGroupDomain name="groups">-->
+     <!--     <Group name="sources"/>-->
+     <!--     <Group name="filters"/>-->
+     <!--   </ProxyGroupDomain>-->
+     <!--   <DataTypeDomain name="input_type">-->
+     <!--     <DataType value="vtkTable"/>-->
+     <!--   </DataTypeDomain>-->
+     <!--   <Documentation>-->
+     <!--     Data-set to process.-->
+     <!--   </Documentation>-->
+     <!-- </InputProperty>-->
 
       <IntVectorProperty
          name="UseAllCores"

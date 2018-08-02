@@ -22,7 +22,7 @@
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkTable"/>
+          <DataType value="vtkMultiBlockDataSet"/>
         </DataTypeDomain>
         <Documentation>
           Data-set to process.

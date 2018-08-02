@@ -22,8 +22,8 @@
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkDataSetAlgorithm.h>
+#include                  <vtkMultiBlockDataSet.h>
+#include                  <vtkMultiBlockDataSetAlgorithm.h>
 #include                  <vtkDoubleArray.h>
 #include                  <vtkFiltersCoreModule.h>
 #include                  <vtkFloatArray.h>
@@ -47,12 +47,12 @@ class VTKFILTERSCORE_EXPORT ttkSuperlevelSetOverlapTracking
 #else
 class ttkSuperlevelSetOverlapTracking
 #endif
-  : public vtkDataSetAlgorithm, public ttk::Wrapper{
+  : public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
     static ttkSuperlevelSetOverlapTracking* New();
-    vtkTypeMacro(ttkSuperlevelSetOverlapTracking, vtkDataSetAlgorithm)
+    vtkTypeMacro(ttkSuperlevelSetOverlapTracking, vtkMultiBlockDataSetAlgorithm)
 
     // default ttk setters
     vtkSetMacro(debugLevel_, int);
@@ -83,7 +83,7 @@ class ttkSuperlevelSetOverlapTracking
 
       switch(port){
         case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
           break;
         default:
           break;
@@ -107,6 +107,7 @@ class ttkSuperlevelSetOverlapTracking
 
   protected:
     ttkSuperlevelSetOverlapTracking(){
+      CurrentTimeIndex = 0;
       Level = 0;
       SetNumberOfInputPorts(1);
       SetNumberOfOutputPorts(1);
@@ -114,32 +115,30 @@ class ttkSuperlevelSetOverlapTracking
     ~ttkSuperlevelSetOverlapTracking(){};
 
     int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+    int RequestUpdateExtent(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 
-    int RequestDataObject(vtkInformation *request,
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override {
+    // int RequestDataObject(vtkInformation *request,
+    //   vtkInformationVector **inputVector, vtkInformationVector *outputVector) override {
 
-      vtkDataSetAlgorithm::RequestDataObject(request, inputVector, outputVector);
+    //   vtkMultiBlockDataSetAlgorithm::RequestDataObject(request, inputVector, outputVector);
 
-      for(int i = 0; i < GetNumberOfOutputPorts(); i++){
+    //   for(int i = 0; i < GetNumberOfOutputPorts(); i++){
 
-        vtkInformation *outputInformation =
-          outputVector->GetInformationObject(i);
+    //     vtkInformation *outputInformation =
+    //       outputVector->GetInformationObject(i);
 
-        vtkDataSet *output = vtkDataSet::SafeDownCast(
-          outputInformation->Get(vtkDataObject::DATA_OBJECT()));
+    //     vtkDataSet *output = vtkDataSet::SafeDownCast(
+    //       outputInformation->Get(vtkDataObject::DATA_OBJECT()));
 
-        if(output){
+    //     if(output){
+    //       std::string dataType = output->GetClassName();
+    //       TTK_UNSTRUCTURED_GRID_NEW(i, outputInformation, dataType);
+    //       TTK_POLY_DATA_NEW(i, outputInformation, dataType);
+    //     }
+    //   }
 
-          std::string dataType = output->GetClassName();
-
-          TTK_UNSTRUCTURED_GRID_NEW(i, outputInformation, dataType);
-
-          TTK_POLY_DATA_NEW(i, outputInformation, dataType);
-        }
-      }
-
-      return 1;
-    }
+    //   return 1;
+    // }
 
     bool UseAllCores;
     int ThreadNumber;
@@ -148,6 +147,7 @@ class ttkSuperlevelSetOverlapTracking
 
 private:
 
+    size_t CurrentTimeIndex;
     double                Level;
     ttk::SuperlevelSetOverlapTracking superlevelSetOverlapTracking_;
 

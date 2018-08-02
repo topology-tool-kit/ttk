@@ -95,24 +95,29 @@ class ttkCinemaQueryReader
   protected:
 
     ttkCinemaQueryReader(){
-      UseAllCores = false;
 
-      SetNumberOfInputPorts(1);
-      SetNumberOfOutputPorts(1);
+        CurrentTimeIndex = 0;
+
+        UseAllCores = false;
+
+        SetNumberOfInputPorts(1);
+        SetNumberOfOutputPorts(1);
     }
 
     ~ttkCinemaQueryReader(){};
 
     // TTK_SETUP();
     int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
-    // int RequestInformation (vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+    int RequestInformation(vtkInformation*, vtkInformationVector**, vtkInformationVector*) override;
+    int RequestModified(vtkInformation*, int when);
+    // int RequestUpdateExtent(vtkInformation*, vtkInformationVector**, vtkInformationVector*) override;
 
     bool UseAllCores;
     int ThreadNumber;
 
   private:
 
-    int doIt(vtkTable* inputTable, vtkImageData* output);
+    size_t CurrentTimeIndex = 0;
 
     bool needsToAbort() override { return GetAbortExecute();};
     int updateProgress(const float &progress) override {

@@ -5,6 +5,7 @@
 #include <vtkStringArray.h>
 #include <vtkUnsignedLongLongArray.h>
 #include <vtkCellData.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 
 using namespace std;
 using namespace ttk;
@@ -209,21 +210,74 @@ int ttkSuperlevelSetOverlapTracking::doIt(vtkTable* inputTable, vtkUnstructuredG
     return 0;
 }
 
-int ttkSuperlevelSetOverlapTracking::RequestData(vtkInformation *request,
-    vtkInformationVector **inputVector, vtkInformationVector *outputVector){
+int ttkSuperlevelSetOverlapTracking::RequestUpdateExtent(
+    vtkInformation* vtkNotUsed(request),
+    vtkInformationVector** inputVector,
+    vtkInformationVector* vtkNotUsed(outputVector)
+){
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
 
-  Memory m;
+    cout<<"[ttkSuperlevelSetOverlapTracking] RequestUpdateExtent:"<<this->CurrentTimeIndex<<endl;
+    double* inTimes = inInfo->Get(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
+    if(inTimes) {
+        inInfo->Set( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(), inTimes[this->CurrentTimeIndex]);
+    }
 
-  vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-  vtkTable* inputTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    return 1;
+}
 
-  vtkInformation* outInfo = outputVector->GetInformationObject(0);
-  vtkUnstructuredGrid* outputGrid = vtkUnstructuredGrid::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+int ttkSuperlevelSetOverlapTracking::RequestData(
+    vtkInformation* request,
+    vtkInformationVector** inputVector,
+    vtkInformationVector* outputVector
+){
 
-  doIt(
-      inputTable,
-      outputGrid
-  );
+    Memory m;
+
+    vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation *outInfo = outputVector->GetInformationObject(0);
+
+    vtkDataObject *input = vtkDataObject::GetData(inInfo);
+    vtkDataObject *output = vtkDataObject::GetData(outInfo);
+
+    auto n = inInfo->Length(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
+
+    cout<<"[ttkSuperlevelSetOverlapTracking] max t"<<n<<endl;
+
+    this->UpdateProgress( (double)(this->CurrentTimeIndex)/(double)n );
+
+    if(this->CurrentTimeIndex == 0) {
+        cout<<"[ttkSuperlevelSetOverlapTracking] First execution, initialize arrays."<<endl;
+        // this->InitializeStatistics(input, output);
+    } else {
+        cout<<"[ttkSuperlevelSetOverlapTracking] Subsequent execution, accumulate new data."<<endl;
+        // this->AccumulateStatistics(input, output);
+    }
+
+    this->CurrentTimeIndex++;
+
+    if(this->CurrentTimeIndex < n) {
+        cout<< "[ttkSuperlevelSetOverlapTracking] There is still more to do."<<endl;
+        request->Set(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING(), 1);
+    } else {
+        cout<< "[ttkSuperlevelSetOverlapTracking] We are done.  Finish up."<<endl;
+        // this->PostExecute(input, output);
+        request->Remove(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING());
+        this->CurrentTimeIndex = 0;
+    }
 
   return 1;
+
+//   vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+//   vtkTable* inputTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+//   vtkInformation* outInfo = outputVector->GetInformationObject(0);
+//   vtkUnstructuredGrid* outputGrid = vtkUnstructuredGrid::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+//   doIt(
+//       inputTable,
+//       outputGrid
+//   );
+
+//   return 1;
 }

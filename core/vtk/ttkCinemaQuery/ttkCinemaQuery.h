@@ -22,8 +22,7 @@
 // VTK includes -- to adapt
 #include                <vtkCharArray.h>
 #include                <vtkDataArray.h>
-#include                <vtkDataSet.h>
-#include                <vtkTableAlgorithm.h>
+#include                <vtkTableReader.h>
 #include                <vtkDoubleArray.h>
 #include                <vtkFiltersCoreModule.h>
 #include                <vtkFloatArray.h>
@@ -47,12 +46,12 @@ class VTKFILTERSCORE_EXPORT ttkCinemaQuery
 #else
 class ttkCinemaQuery
 #endif
-  : public vtkTableAlgorithm, public ttk::Wrapper{
+  : public vtkTableReader, public ttk::Wrapper{
 
   public:
 
     static ttkCinemaQuery* New();
-    vtkTypeMacro(ttkCinemaQuery, vtkTableAlgorithm)
+    vtkTypeMacro(ttkCinemaQuery, vtkTableReader)
 
     // default ttk setters
     vtkSetMacro(debugLevel_, int);
@@ -81,13 +80,13 @@ class ttkCinemaQuery
 
     int FillInputPortInformation(int port, vtkInformation *info) override {
 
-      switch(port){
-        case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-          break;
-        default:
-          break;
-      }
+    //   switch(port){
+    //     case 0:
+    //       info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+    //       break;
+    //     default:
+    //       break;
+    //   }
 
       return 1;
     }
@@ -112,12 +111,13 @@ class ttkCinemaQuery
       UseAllCores = false;
 
       // Specify the number of input and output ports.
-      SetNumberOfInputPorts(1);
+      SetNumberOfInputPorts(0);
       SetNumberOfOutputPorts(1);
     }
     ~ttkCinemaQuery(){};
 
     int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+    int RequestInformation(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 
     bool UseAllCores;
     int ThreadNumber;
