@@ -1,6 +1,6 @@
 /// \sa ttk::ftr::FTMTree
-#ifndef _VTK_CONTOURFORESTS_H
-#define _VTK_CONTOURFORESTS_H
+#ifndef VTK_FTRGRAPH_H_
+#define VTK_FTRGRAPH_H_
 
 // ttk code includes
 #include "FTRGraph.h"
@@ -167,4 +167,4 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
    virtual int FillOutputPortInformation(int port, vtkInformation* info) override;
 };
 
-#endif  // _VTK_CONTOURFORESTS_H
+#endif  // VTK_FTRGRAPH_H_
