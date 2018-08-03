@@ -159,6 +159,10 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet*>& inputs, std::vector<vtkDataSet*>
 #endif
    }
 
+   // gives parameters to the params_ structure
+   params_.debugLevel   = debugLevel_;
+   params_.threadNumber = threadNumber_;
+
    // Scalar field related
    getScalars();
    getOffsets();
@@ -327,8 +331,6 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGr
    ArcData arcData(nbFinArc);
    vtkSmartPointer<vtkUnstructuredGrid> arcs   = vtkSmartPointer<vtkUnstructuredGrid>::New();
    vtkSmartPointer<vtkPoints>           points = vtkSmartPointer<vtkPoints>::New();
-
-   std::cout << "Sampling is " << params_.samplingLvl << std::endl;
 
    for(idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
       if (!graph.getArc(arcId).isVisible()) continue;
