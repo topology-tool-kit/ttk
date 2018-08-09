@@ -1,14 +1,12 @@
 /// \ingroup vtk
-/// \class ttkCinemaQuery
+/// \class ttkCinemaReader
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2018
 ///
-/// \brief TTK VTK-filter that wraps the cinemaQuery processing package.
+/// \brief TTK VTK-filter that reads a Cinema Spec X Database
 ///
-/// VTK wrapping code for the @CinemaQuery package.
-///
-/// param Input Input table (vtkTable)
-/// param Output Output table (vtkTable)
+/// \param Input -
+/// \param Output database content (vtkTable)
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
@@ -16,29 +14,31 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// sa ttk::CinemaQuery
+/// \sa ttk::CinemaReader
 #pragma once
 
 // VTK includes
-#include                <vtkTableAlgorithm.h>
-#include                <vtkInformation.h>
-#include                <vtkTable.h>
+#include <vtkTableReader.h>
+#include <vtkInformation.h>
+#include <vtkTable.h>
 
-// ttk code includes
-#include                  <CinemaQuery.h>
-#include                  <ttkWrapper.h>
+// TTK includes
+#include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaQuery
+class VTKFILTERSCORE_EXPORT ttkCinemaReader
 #else
-class ttkCinemaQuery
+class ttkCinemaReader
 #endif
-  : public vtkTableAlgorithm, public ttk::Wrapper{
+  : public vtkTableReader, public ttk::Wrapper{
 
   public:
 
-    static ttkCinemaQuery* New();
-    vtkTypeMacro(ttkCinemaQuery, vtkTableAlgorithm)
+    static ttkCinemaReader* New();
+    vtkTypeMacro(ttkCinemaReader, vtkTableReader)
+
+    vtkSetMacro(DatabasePath, std::string);
+    vtkGetMacro(DatabasePath, std::string);
 
     // default ttk setters
     vtkSetMacro(debugLevel_, int);
@@ -62,55 +62,42 @@ class ttkCinemaQuery
     }
     // end of default ttk setters
 
-    vtkSetMacro(QueryString, std::string);
-    vtkGetMacro(QueryString, std::string);
-
     int FillInputPortInformation(int port, vtkInformation *info) override {
-
-      switch(port){
-        case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-          break;
-        default:
-          break;
-      }
-
       return 1;
     }
 
     int FillOutputPortInformation(int port, vtkInformation *info) override {
-
       switch(port){
         case 0:
           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-          break;
-        default:
           break;
       }
 
       return 1;
     }
 
+
   protected:
 
-    ttkCinemaQuery(){
-      QueryString = "";
-      UseAllCores = false;
+    ttkCinemaReader(){
+      DatabasePath = "";
 
-      SetNumberOfInputPorts(1);
+      UseAllCores = true;
+      ThreadNumber = 1;
+
+      SetNumberOfInputPorts(0);
       SetNumberOfOutputPorts(1);
     }
-    ~ttkCinemaQuery(){};
-
-    int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+    ~ttkCinemaReader(){};
 
     bool UseAllCores;
     int ThreadNumber;
 
+    int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+
   private:
 
-    std::string      QueryString;
-    ttk::CinemaQuery cinemaQuery_;
+    std::string DatabasePath;
 
     bool needsToAbort() override { return GetAbortExecute();};
     int updateProgress(const float &progress) override {

@@ -1,8 +1,8 @@
-#include                <ttkCinemaQuery.h>
-#include                <vtkStringArray.h>
-#include                <vtkVariantArray.h>
-#include                <vtkSmartPointer.h>
-#include                <vtkStreamingDemandDrivenPipeline.h>
+#include  <ttkCinemaQuery.h>
+#include  <vtkSmartPointer.h>
+#include  <vtkStringArray.h>
+#include  <vtkFieldData.h>
+#include  <vtkDelimitedTextReader.h>
 
 using namespace std;
 using namespace ttk;
@@ -12,75 +12,100 @@ vtkStandardNewMacro(ttkCinemaQuery)
 int ttkCinemaQuery::RequestData(vtkInformation *request,
     vtkInformationVector **inputVector, vtkInformationVector *outputVector){
 
-    cout<<"-------------------------------------------------------------"<<endl;
-    cout<<"[ttkCinemaQuery] RequestData"<<endl;
-    Memory m;
-
-    vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    vtkTable* outputTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
-
-    for(int i=outputTable->GetNumberOfColumns()-1; i>=0; i--)
-        outputTable->RemoveColumn(i);
-
-    string serverAddress = "127.0.0.1:8888";
-
-    vector<vector<string>> rMatrix = cinemaQuery_.execute<int>( serverAddress, QueryString );
-
-    unsigned int rows = rMatrix.size();
-    unsigned int cols = rMatrix[0].size();
-
-    if(rows<1)
-        return 0;
-
-    for ( unsigned int i = 0; i < cols; i++ ) {
-        vtkSmartPointer<vtkVariantArray> column = vtkSmartPointer<vtkVariantArray>::New();
-
-        column->SetNumberOfTuples(rows-1);
-        column->SetName( rMatrix[0][i].data() );
-
-        for (unsigned int j = 1; j < rows; j++) {
-            column->SetValue(j-1, vtkVariant(rMatrix[j][i]) );
-        }
-        outputTable->AddColumn(column);
+    {
+        stringstream msg;
+        msg<<"-------------------------------------------------------------"<<endl;
+        msg<<"[ttkCinemaQuery] RequestData"<<endl;
+        dMsg(cout, msg.str(), timeMsg);
     }
 
-    cout<<"-------------------------------------------------------------"<<endl;
+    Memory m;
 
-    return 1;
-}
+    string result;
+    string sqlTableDefinition, sqlTableRows;
 
-int ttkCinemaQuery::RequestInformation (
-    vtkInformation* request,
-    vtkInformationVector** inputVector,
-    vtkInformationVector* outputVector
-){
-    vtkTableReader::RequestInformation(request, inputVector, outputVector);
-    cout<<"[ttkCinemaQuery] RequestInformation"<<endl;
+    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+    vtkTable* inTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-    string serverAddress = "127.0.0.1:8888";
-    vector<vector<string>> rMatrix = cinemaQuery_.execute<int>( serverAddress, QueryString );
-    unsigned int n = rMatrix.size()-1;
-
-    vector<double> steps(n);
-    for(int i=0; i<n; i++)
-        steps[i] = i;
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    outInfo->Set( vtkStreamingDemandDrivenPipeline::TIME_STEPS(), steps.data(), n );
+    vtkTable* outTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-    cout<<"[ttkCinemaQuery] RequestInformation n "<< n <<endl;
+    // Convert Input Table to SQL Table
+    {
+        int nc = inTable->GetNumberOfColumns();
+        int nr = inTable->GetNumberOfRows();
 
-    // this->RequestData(request, inputVector, outputVector);
+        sqlTableDefinition = "CREATE TABLE InputTable (";
+        vector<bool> isNumeric(nc);
+        for(int i=0; i<nc; i++){
+            auto c = inTable->GetColumn(i);
+            isNumeric[i] = c->IsNumeric();
+            sqlTableDefinition += (i>0 ? "," : "") + string(c->GetName()) + " " + (isNumeric[i] ? "REAL" : "TEXT");
+        }
+        sqlTableDefinition+=")";
 
-    // vtkTable* outputTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
-    // int n = outputTable->GetNumberOfRows();
+        sqlTableRows = "INSERT INTO InputTable VALUES ";
+        for(int j=0; j<nr; j++){
+            if(j>0) sqlTableRows+=",";
+            sqlTableRows+="(";
+            for(int i=0; i<nc; i++){
+                if(i>0) sqlTableRows+=",";
+                if(isNumeric[i])
+                    sqlTableRows += inTable->GetValue(j,i).ToString();
+                else
+                    sqlTableRows += "'" + inTable->GetValue(j,i).ToString() + "'";
+            }
+            sqlTableRows+=")";
+        }
+    }
 
-    // cout<<"[ttkCinemaQuery] Set tn "<<n<<endl;
+    // Compute Result
+    {
+        result = cinemaQuery_.execute<int>(
+            sqlTableDefinition,
+            sqlTableRows,
+            this->QueryString
+        );
+    }
 
+    // Process Result
+    {
+        if(result!=""){
+            vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+            reader->SetReadFromInputString( true );
+            reader->SetInputString( result );
+            reader->DetectNumericColumnsOn();
+            reader->SetHaveHeaders(true);
+            reader->SetFieldDelimiterCharacters(",");
+            reader->Update();
 
-    // vector<double> range(2);
-    // range[0]=0;
-    // range[1]=n;
-    // outInfo->Set( vtkStreamingDemandDrivenPipeline::TIME_RANGE(), range.data(), 2 );
+            outTable->ShallowCopy( reader->GetOutput() );
+        } else {
+            vtkSmartPointer<vtkTable> emptyTable = vtkSmartPointer<vtkTable>::New();
+
+            int nc = inTable->GetNumberOfColumns();
+            for(int i=0; i<nc; i++){
+                auto c = inTable->GetColumn(i);
+                vtkSmartPointer<vtkStringArray> emptyColumn = vtkSmartPointer<vtkStringArray>::New();
+                emptyColumn->SetNumberOfValues(1);
+                emptyColumn->SetValue(0,"NULL");
+                emptyColumn->SetName( c->GetName() );
+                emptyTable->AddColumn( emptyColumn );
+            }
+            outTable->ShallowCopy( emptyTable );
+        }
+
+        outTable->GetFieldData()->ShallowCopy( inTable->GetFieldData() );
+    }
+
+    // Output Performance
+    {
+        stringstream msg;
+        msg << "[ttkCinemaQuery] Memory usage: "
+            << m.getElapsedUsage()
+            << " MB." << endl;
+        dMsg(cout, msg.str(), memoryMsg);
+    }
 
     return 1;
 }
