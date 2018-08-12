@@ -8,7 +8,7 @@
    <SourceProxy
      name="CinemaQueryReader"
      class="ttkCinemaQueryReader"
-     label="TTK CinemaReader">
+     label="TTK CinemaQueryReader">
      <Documentation
         long_help="TTK cinemaQueryReader plugin."
         short_help="TTK cinemaQueryReader plugin.">

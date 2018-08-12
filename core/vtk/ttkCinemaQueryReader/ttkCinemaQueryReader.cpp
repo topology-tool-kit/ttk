@@ -3,8 +3,8 @@
 #include <vtkXMLImageDataReader.h>
 #include <vtkXMLPolyDataReader.h>
 #include <vtkXMLUnstructuredGridReader.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkMultiBlockDataGroupFilter.h>
+#include <vtkFieldData.h>
+#include <vtkStringArray.h>
 
 using namespace std;
 using namespace ttk;
@@ -16,115 +16,85 @@ int ttkCinemaQueryReader::RequestData(
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
 ){
-    vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    auto t = outInfo->Get( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP() );
-    cout<<"-------------------------------------------------------------"<<endl;
-    cout<<"[ttkCinemaQueryReader] RequestData t="<<t<<endl;
+    {
+        stringstream msg;
+        msg<<"-------------------------------------------------------------"<<endl;
+        msg<<"[ttkCinemaQueryReader] RequestData"<<endl;
+        dMsg(cout, msg.str(), timeMsg);
+    }
 
-    // Memory m;
+    Memory m;
+
+    // Prepare Input and Output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
     vtkTable* inputTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
-    int n = inputTable->GetNumberOfRows();
-    cout<<"[ttkCinemaQueryReader] Req n: "<<n<<endl;
 
-
-
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
     vtkMultiBlockDataSet* output = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
-    // for(size_t i=0; i<n; i++){
+
+    // Read Data
     {
-        size_t i = t;
+        // Determine number of files
+        int n = inputTable->GetNumberOfRows();
+        cout<<"[ttkCinemaQueryReader] Reading "<<n<<" files:"<<endl;
 
-        auto* paths = vtkVariantArray::SafeDownCast( inputTable->GetColumnByName("CDB_Filepath") );
-        auto path = paths->GetValue(i).ToString();
-        cout<<"[ttkCinemaQueryReader] Loading: "<<path<<endl;
-        auto ext = path.substr( path.length() - 3 );
+        // Compute DatabasePath
+        auto databasePath = inputTable->GetFieldData()->GetAbstractArray("DatabasePath")->GetVariantValue(0).ToString();
+        databasePath = databasePath.substr( 0, databasePath.find_last_of("/"));
 
-        if(ext=="vti"){
-            vtkSmartPointer<vtkXMLImageDataReader> reader = vtkSmartPointer<vtkXMLImageDataReader>::New();
-            reader->SetFileName(path.data());
-            reader->Update();
-            output->SetBlock(i, reader->GetOutput());
-        } else if(ext=="vtu"){
-            vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
-            reader->SetFileName(path.data());
-            reader->Update();
-            output->SetBlock(i, reader->GetOutput());
-        } else if(ext=="vtp"){
-            vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
-            reader->SetFileName(path.data());
-            reader->Update();
-            output->SetBlock(i, reader->GetOutput());
-        } else {
-            cout<<"[ttkCinemaQueryReader] Unknown File type: "<<ext<<endl;
+        // Get column that contains paths
+        // TODO: Let user choose column
+        auto* paths = inputTable->GetColumnByName("path");
+
+        // For each row
+        for(int i=0; i<n; i++){
+            // get path
+            auto path = databasePath + "/" + paths->GetVariantValue(i).ToString();
+            cout<<"[ttkCinemaQueryReader]    "<<i<<": "<<path<<endl;
+            auto ext = path.substr( path.length() - 3 );
+
+            // load data using correct reader
+            if(ext=="vti"){
+                vtkSmartPointer<vtkXMLImageDataReader> reader = vtkSmartPointer<vtkXMLImageDataReader>::New();
+                reader->SetFileName( path.data() );
+                reader->Update();
+                output->SetBlock(i, reader->GetOutput());
+            } else if(ext=="vtu"){
+                vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+                reader->SetFileName( path.data() );
+                reader->Update();
+                output->SetBlock(i, reader->GetOutput());
+            } else if(ext=="vtp"){
+                vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
+                reader->SetFileName( path.data() );
+                reader->Update();
+                output->SetBlock(i, reader->GetOutput());
+            } else {
+                cout<<"[ttkCinemaQueryReader] Unknown File type: "<<ext<<endl;
+            }
+
+            // Augment read data with row information
+            // TODO: Make Optional
+            int m = inputTable->GetNumberOfColumns();
+            auto block = output->GetBlock(i);
+            for(int j=0; j<m; j++){
+                vtkSmartPointer<vtkVariantArray> c = vtkSmartPointer<vtkVariantArray>::New();
+                c->SetName( inputTable->GetColumnName(j) );
+                c->SetNumberOfValues(1);
+                c->SetValue(0, inputTable->GetValue(i,j));
+                block->GetFieldData()->AddArray( c );
+            }
         }
     }
-    cout<<"-------------------------------------------------------------"<<endl;
+
+    // Output Performance
+    {
+        stringstream msg;
+        msg << "[ttkCinemaQueryReader] Memory usage: "
+            << m.getElapsedUsage()
+            << " MB." << endl;
+        dMsg(cout, msg.str(), memoryMsg);
+    }
 
     return 1;
 }
-
-int ttkCinemaQueryReader::RequestInformation (
-    vtkInformation* request,
-    vtkInformationVector** inputVector,
-    vtkInformationVector* outputVector
-){
-    vtkMultiBlockDataSetAlgorithm::RequestInformation(request, inputVector, outputVector);
-
-    cout<<"[ttkCinemaQueryReader] RequestInformation"<<endl;
-    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-    auto n = inInfo->Length(vtkStreamingDemandDrivenPipeline::TIME_STEPS());
-    cout<<"[ttkCinemaQueryReader] RequestInformation n "<< n <<endl;
-
-    // vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-    // vtkTable* input = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
-    // int n = input->GetNumberOfRows();
-    // cout<<"[ttkCinemaQueryReader] n: "<<n<<endl;
-
-
-    // vtkInformation* outInfo = outputVector->GetInformationObject(0);
-
-    // vector<double> steps(n);
-    // for(int i=0; i<n; i++)
-    //     steps[i] = i;
-    // outInfo->Set( vtkStreamingDemandDrivenPipeline::TIME_STEPS(), steps.data(), n );
-
-    // vector<double> range(2);
-    // range[0]=0;
-    // range[1]=n;
-    // outInfo->Set( vtkStreamingDemandDrivenPipeline::TIME_RANGE(), range.data(), 2 );
-
-    return 1;
-}
-
-int ttkCinemaQueryReader::RequestModified(vtkInformation* info, int when){
-    cout<<"[ttkCinemaQueryReader] RequestModified "<<when<<endl;
-    return 0;
-}
-
-// int ttkCinemaQueryReader::RequestUpdateExtend (
-//     vtkInformation* request,
-//     vtkInformationVector** inputVector,
-//     vtkInformationVector* outputVector
-// ){
-//     // vtkMultiBlockDataSetAlgorithm::RequestInformation(request, inputVector, outputVector);
-
-//     // cout<<"ttkCinemaQueryReader: RequestInformation"<<endl;
-
-//     // vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-//     // vtkTable* input = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
-//     // int n = input->GetNumberOfRows();
-
-//     // vtkInformation* outInfo = outputVector->GetInformationObject(0);
-
-//     // vector<double> steps(n);
-//     // for(int i=0; i<n; i++)
-//     //     steps[i] = i;
-//     // outInfo->Set( vtkStreamingDemandDrivenPipeline::TIME_STEPS(), steps.data(), n );
-
-//     // vector<double> range(2);
-//     // range[0]=0;
-//     // range[1]=n;
-//     // outInfo->Set( vtkStreamingDemandDrivenPipeline::TIME_RANGE(), range.data(), 2 );
-
-//     // return 1;
-// }

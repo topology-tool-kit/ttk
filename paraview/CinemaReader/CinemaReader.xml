@@ -4,32 +4,29 @@
        our new filter. As a rule of thumb, try to locate the configuration for
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
-  <ProxyGroup name="filters">
+  <ProxyGroup name="sources">
    <SourceProxy
-     name="CinemaQuery"
-     class="ttkCinemaQuery"
-     label="TTK CinemaQuery">
+     name="CinemaReader"
+     class="ttkCinemaReader"
+     label="TTK CinemaReader">
      <Documentation
-        long_help="TTK cinemaQuery plugin."
-        short_help="TTK cinemaQuery plugin.">
-          TTK cinemaQuery plugin documentation.
+        long_help="TTK cinemaReader plugin."
+        short_help="TTK cinemaReader plugin.">
+          TTK cinemaReader plugin documentation.
      </Documentation>
-     <InputProperty
-        name="Input"
-        command="SetInputConnection">
-        <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
-        </ProxyGroupDomain>
-        <DataTypeDomain name="input_type">
-          <DataType value="vtkTable"/>
-        </DataTypeDomain>
-        <Documentation>
-          Data-set to process.
-        </Documentation>
-      </InputProperty>
 
-      <IntVectorProperty
+     <StringVectorProperty
+            name="DatabasePath"
+            animateable="0"
+            command="SetDatabasePath"
+            number_of_elements="1">
+        <FileListDomain name="files"/>
+        <Documentation>
+          This property specifies the file name for the PNG reader.
+        </Documentation>
+      </StringVectorProperty>
+
+    <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
          command="SetUseAllCores"
@@ -65,22 +62,8 @@
          </Documentation>
       </IntVectorProperty>
 
-      <StringVectorProperty
-        name="QueryString"
-        label="SQL Statement"
-        command="SetQueryString"
-        number_of_elements="1"
-        default_values="SELECT * FROM InputTable">
-        <Hints>
-            <Widget type="multi_line"/>
-        </Hints>
-      </StringVectorProperty>
-
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="QueryString"/>
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="DatabasePath"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
@@ -90,7 +73,8 @@
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <!--<ShowInMenu category="TTK - Misc" />-->
+        <ReaderFactory extensions="cdb" file_description="Cinema Spec X Database" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

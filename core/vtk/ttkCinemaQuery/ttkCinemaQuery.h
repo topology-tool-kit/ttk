@@ -33,88 +33,80 @@ class VTKFILTERSCORE_EXPORT ttkCinemaQuery
 #else
 class ttkCinemaQuery
 #endif
-  : public vtkTableAlgorithm, public ttk::Wrapper{
+: public vtkTableAlgorithm, public ttk::Wrapper{
 
-  public:
+    public:
+        static ttkCinemaQuery* New();
+        vtkTypeMacro(ttkCinemaQuery, vtkTableAlgorithm)
 
-    static ttkCinemaQuery* New();
-    vtkTypeMacro(ttkCinemaQuery, vtkTableAlgorithm)
+        // default ttk setters
+        vtkSetMacro(debugLevel_, int);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+        void SetThreads(){
+            if(!UseAllCores)
+                threadNumber_ = ThreadNumber;
+            else
+                threadNumber_ = ttk::OsCall::getNumberOfCores();
+            Modified();
+        }
 
-    void SetThreads(){
-      if(!UseAllCores)
-        threadNumber_ = ThreadNumber;
-      else{
-        threadNumber_ = ttk::OsCall::getNumberOfCores();
-      }
-      Modified();
-    }
+        void SetThreadNumber(int threadNumber){
+            ThreadNumber = threadNumber;
+            SetThreads();
+        }
+        void SetUseAllCores(bool onOff){
+            UseAllCores = onOff;
+            SetThreads();
+        }
+        // end of default ttk setters
 
-    void SetThreadNumber(int threadNumber){
-      ThreadNumber = threadNumber;
-      SetThreads();
-    }
-    void SetUseAllCores(bool onOff){
-      UseAllCores = onOff;
-      SetThreads();
-    }
-    // end of default ttk setters
+        vtkSetMacro(QueryString, std::string);
+        vtkGetMacro(QueryString, std::string);
 
-    vtkSetMacro(QueryString, std::string);
-    vtkGetMacro(QueryString, std::string);
+        int FillInputPortInformation(int port, vtkInformation *info) override {
+            switch(port){
+                case 0:
+                    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+                    break;
+                default:
+                    break;
+            }
+            return 1;
+        }
 
-    int FillInputPortInformation(int port, vtkInformation *info) override {
+        int FillOutputPortInformation(int port, vtkInformation *info) override {
+            switch(port){
+                case 0:
+                    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+                    break;
+                default:
+                    break;
+            }
+            return 1;
+        }
 
-      switch(port){
-        case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-          break;
-        default:
-          break;
-      }
+    protected:
+        ttkCinemaQuery(){
+            QueryString = "";
+            UseAllCores = false;
 
-      return 1;
-    }
+            SetNumberOfInputPorts(1);
+            SetNumberOfOutputPorts(1);
+        }
+        ~ttkCinemaQuery(){};
 
-    int FillOutputPortInformation(int port, vtkInformation *info) override {
+        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 
-      switch(port){
-        case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-          break;
-        default:
-          break;
-      }
+        bool UseAllCores;
+        int ThreadNumber;
 
-      return 1;
-    }
+    private:
+        std::string      QueryString;
+        ttk::CinemaQuery cinemaQuery_;
 
-  protected:
-
-    ttkCinemaQuery(){
-      QueryString = "";
-      UseAllCores = false;
-
-      SetNumberOfInputPorts(1);
-      SetNumberOfOutputPorts(1);
-    }
-    ~ttkCinemaQuery(){};
-
-    int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
-
-    bool UseAllCores;
-    int ThreadNumber;
-
-  private:
-
-    std::string      QueryString;
-    ttk::CinemaQuery cinemaQuery_;
-
-    bool needsToAbort() override { return GetAbortExecute();};
-    int updateProgress(const float &progress) override {
-        UpdateProgress(progress);
-        return 0;
-    };
+        bool needsToAbort() override { return GetAbortExecute();};
+        int updateProgress(const float &progress) override {
+            UpdateProgress(progress);
+            return 0;
+        };
 };

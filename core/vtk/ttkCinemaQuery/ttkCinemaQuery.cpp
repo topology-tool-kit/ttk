@@ -9,9 +9,11 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkCinemaQuery)
 
-int ttkCinemaQuery::RequestData(vtkInformation *request,
-    vtkInformationVector **inputVector, vtkInformationVector *outputVector){
-
+int ttkCinemaQuery::RequestData(
+    vtkInformation* request,
+    vtkInformationVector** inputVector,
+    vtkInformationVector* outputVector
+){
     {
         stringstream msg;
         msg<<"-------------------------------------------------------------"<<endl;
