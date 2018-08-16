@@ -20,21 +20,10 @@
 #pragma once
 
 // VTK includes -- to adapt
-#include                  <vtkCharArray.h>
-#include                  <vtkDataArray.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkDataSetAlgorithm.h>
-#include                  <vtkDoubleArray.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkFloatArray.h>
 #include                  <vtkInformation.h>
-#include                  <vtkIntArray.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkPointData.h>
-#include                  <vtkSmartPointer.h>
+#include                  <vtkMultiBlockDataSetAlgorithm.h>
 
 // ttk code includes
-#include                  <CinemaImageExport.h>
 #include                  <ttkWrapper.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
@@ -46,56 +35,40 @@ class VTKFILTERSCORE_EXPORT ttkCinemaImageExport
 #else
 class ttkCinemaImageExport
 #endif
-  : public vtkDataSetAlgorithm, public ttk::Wrapper{
+  : public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
     static ttkCinemaImageExport* New();
-    vtkTypeMacro(ttkCinemaImageExport, vtkDataSetAlgorithm)
+    vtkTypeMacro(ttkCinemaImageExport, vtkMultiBlockDataSetAlgorithm)
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+        // default ttk setters
+        vtkSetMacro(debugLevel_, int);
 
-    void SetThreadNumber(int threadNumber){
-      ThreadNumber = threadNumber;
-      SetThreads();
-    }
-    void SetUseAllCores(bool onOff){
-      UseAllCores = onOff;
-      SetThreads();
-    }
-    // end of default ttk setters
+        void SetThreads(){
+            if(!UseAllCores)
+                threadNumber_ = ThreadNumber;
+            else
+                threadNumber_ = ttk::OsCall::getNumberOfCores();
+            Modified();
+        }
+
+        void SetThreadNumber(int threadNumber){
+            ThreadNumber = threadNumber;
+            SetThreads();
+        }
+        void SetUseAllCores(bool onOff){
+            UseAllCores = onOff;
+            SetThreads();
+        }
+        // end of default ttk setters
 
 
-    // TODO-4
-    // set-getters macros to define from each variable you want to access from
-    // the outside (in particular from paraview) - to adapt.
-    // Note that the XML file for the ParaView plug-in specification needs to be
-    // edited accordingly.
-    vtkSetMacro(SomeIntegerArgument, int);
-    vtkGetMacro(SomeIntegerArgument, int);
-
-    vtkSetMacro(SomeDoubleArgument, double);
-    vtkGetMacro(SomeDoubleArgument, double);
-
-    vtkSetMacro(SomeOption, bool);
-    vtkGetMacro(SomeOption, bool);
-
-    vtkSetMacro(ScalarField, std::string);
-    vtkGetMacro(ScalarField, std::string);
-    // end of TODO-4
-
-    // TODO-2
-    // Over-ride the input types.
-    // By default, this filter has one input and one output, of the same type.
-    // Here, you can re-define the input types, on a per input basis.
-    // In this example, the first input type is forced to vtkUnstructuredGrid.
-    // The second input type is forced to vtkImageData.
     int FillInputPortInformation(int port, vtkInformation *info) override {
 
       switch(port){
         case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
+          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
           break;
         case 1:
           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
@@ -106,19 +79,11 @@ class ttkCinemaImageExport
 
       return 1;
     }
-    // end of TODO-2
-
-    // TODO-3
-    // Over-ride the output types.
-    // By default, this filter has one input and one output, of the same type.
-    // Here, you can re-define the output types, on a per output basis.
-    // In this example, the first output type is forced to vtkUnstructuredGrid.
-    // The second output type is forced to vtkImageData.
     int FillOutputPortInformation(int port, vtkInformation *info) override {
 
       switch(port){
         case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
+          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
           break;
         default:
           break;
@@ -126,42 +91,27 @@ class ttkCinemaImageExport
 
       return 1;
     }
-    // end of TODO-3
 
 
   protected:
 
     ttkCinemaImageExport(){
-
-        // init
-      SomeIntegerArgument = -1;
-      SomeDoubleArgument = -1;
-      SomeOption = false;
-      outputScalarField_ = NULL;
-
       UseAllCores = false;
 
-      // TODO-1
-      // Specify the number of input and output ports.
-      // By default, this filter has one input and one output.
-      // In this example, we define 2 inputs and 2 outputs.
       SetNumberOfInputPorts(2);
       SetNumberOfOutputPorts(1);
-      // end of TODO-1
     }
-
     ~ttkCinemaImageExport(){};
 
-    TTK_SETUP();
+        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 
+        bool UseAllCores;
+        int ThreadNumber;
 
-  private:
-
-    int                   SomeIntegerArgument;
-    double                SomeDoubleArgument;
-    bool                  SomeOption;
-    std::string           ScalarField;
-    vtkDataArray          *outputScalarField_;
-    ttk::CinemaImageExport            cinemaImageExport_;
-
+    private:
+        bool needsToAbort() override { return GetAbortExecute();};
+        int updateProgress(const float &progress) override {
+            UpdateProgress(progress);
+            return 0;
+        };
 };

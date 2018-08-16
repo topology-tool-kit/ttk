@@ -1,109 +1,83 @@
 #include                  <ttkCinemaImageExport.h>
+#include                  <vtkSmartPointer.h>
+#include                  <vtkDataSet.h>
+#include                  <vtkMultiBlockDataSet.h>
+#include                  <vtkWindowToImageFilter.h>
+#include                  <vtkCompositePolyDataMapper.h>
+#include                  <vtkActor.h>
+#include                  <vtkRenderer.h>
+#include                  <vtkRenderWindow.h>
+#include                  <vtkCamera.h>
 
 using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkCinemaImageExport)
 
-int ttkCinemaImageExport::doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs){
+int ttkCinemaImageExport::RequestData(
+    vtkInformation* request,
+    vtkInformationVector** inputVector,
+    vtkInformationVector* outputVector
+){
+    {
+        stringstream msg;
+        msg<<"-------------------------------------------------------------"<<endl;
+        msg<<"[ttkCinemaImageExport] RequestData"<<endl;
+        dMsg(cout, msg.str(), timeMsg);
+    }
 
-  Memory m;
+    Memory m;
 
-  vtkDataSet *input = inputs[0];
-  vtkDataSet *output = outputs[0];
+    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+    vtkDataSet* inputGeomerty = vtkDataSet::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  output->ShallowCopy( input );
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
+    vtkMultiBlockDataSet* output = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-//   Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
+    // Visualize
+    vtkSmartPointer<vtkCompositePolyDataMapper> mapper = vtkSmartPointer<vtkCompositePolyDataMapper>::New();
+    mapper->SetInputDataObject( inputGeomerty );
 
-//   if(!triangulation)
-//     return -1;
+    vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
+    actor->SetMapper(mapper);
 
-//   triangulation->setWrapper(this);
-//   cinemaImageExport_.setupTriangulation(triangulation);
-//   cinemaImageExport_.setWrapper(this);
+    vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
+    vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
+    renderWindow->SetSize(256,256);
+    renderWindow->AddRenderer(renderer);
 
-//   // use a pointer-base copy for the input data -- to adapt if your wrapper does
-//   // not produce an output of the type of the input.
-//   output->ShallowCopy(input);
+    vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New();
+    camera->SetPosition(0, 0, 20);
+    camera->SetFocalPoint(0, 0, 0);
+    renderer->SetActiveCamera(camera);
 
-//   // in the following, the target scalar field of the input is replaced in the
-//   // variable 'output' with the result of the computation.
-//   // if your wrapper produces an output of the same type of the input, you
-//   // should proceed in the same way.
-//   vtkDataArray *inputScalarField = NULL;
+    // renderWindow->SetAlphaBitPlanes(0); //enable usage of alpha channel
 
-//   if(ScalarField.length()){
-//     inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
-//   }
-//   else{
-//     inputScalarField = input->GetPointData()->GetArray(0);
-//   }
+    // vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
+    // vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    // renderWindowInteractor->SetRenderWindow(renderWindow);
 
-//   if(!inputScalarField)
-//     return -2;
+    renderer->AddActor(actor);
+    renderer->SetBackground(1,1,1); // Background color white
 
-//   // allocate the memory for the output scalar field
-//   if(!outputScalarField_){
-//     switch(inputScalarField->GetDataType()){
+    renderWindow->Render();
 
-//       case VTK_CHAR:
-//         outputScalarField_ = vtkCharArray::New();
-//         break;
+    vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
+    windowToImageFilter->SetInput( renderWindow );
+    windowToImageFilter->SetInputBufferTypeToRGBA(); //also record the alpha (transparency) channel
+    windowToImageFilter->ReadFrontBufferOff(); // read from the back buffer
+    windowToImageFilter->Update();
 
-//       case VTK_DOUBLE:
-//         outputScalarField_ = vtkDoubleArray::New();
-//         break;
+    output->SetBlock(0, windowToImageFilter->GetOutput());
 
-//       case VTK_FLOAT:
-//         outputScalarField_ = vtkFloatArray::New();
-//         break;
+    // Output Performance
+    {
+        stringstream msg;
+        msg << "[ttkCinemaImageExport] Memory usage: "
+            << m.getElapsedUsage()
+            << " MB." << endl;
+        dMsg(cout, msg.str(), memoryMsg);
+    }
 
-//       case VTK_INT:
-//         outputScalarField_ = vtkIntArray::New();
-//         break;
-
-//       case VTK_ID_TYPE:
-//         outputScalarField_ = vtkIdTypeArray::New();
-//         break;
-
-//       stringstream msg;
-//       msg << "[ttkCinemaImageExport] Unsupported data type :(" << endl;
-//       dMsg(cerr, msg.str(), fatalMsg);
-//     }
-//   }
-//   outputScalarField_->SetNumberOfTuples(input->GetNumberOfPoints());
-//   outputScalarField_->SetName(inputScalarField->GetName());
-
-
-//   // on the output, replace the field array by a pointer to its processed
-//   // version
-//   if(ScalarField.length()){
-//     output->GetPointData()->RemoveArray(ScalarField.data());
-//   }
-//   else{
-//     output->GetPointData()->RemoveArray(0);
-//   }
-//   output->GetPointData()->AddArray(outputScalarField_);
-
-//   // calling the executing package
-//   switch(inputScalarField->GetDataType()){
-
-//     vtkTemplateMacro(
-//     {
-//       cinemaImageExport_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
-//       cinemaImageExport_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
-//       cinemaImageExport_.execute<VTK_TT>(SomeIntegerArgument);
-//     }
-//     );
-//   }
-
-  {
-    stringstream msg;
-    msg << "[ttkCinemaImageExport] Memory usage: " << m.getElapsedUsage()
-      << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
+    return 1;
 }
