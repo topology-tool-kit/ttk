@@ -42,6 +42,21 @@ class ttkCinemaImageExport
     static ttkCinemaImageExport* New();
     vtkTypeMacro(ttkCinemaImageExport, vtkMultiBlockDataSetAlgorithm)
 
+        vtkSetVector2Macro(Resolution, int);
+        vtkGetVector2Macro(Resolution, int);
+
+        vtkSetVector2Macro(CamNearFar, double);
+        vtkGetVector2Macro(CamNearFar, double);
+
+        vtkSetVector3Macro(CamPosition, double)
+        vtkGetVector3Macro(CamPosition, double)
+
+        vtkSetVector3Macro(CamFocus, double);
+        vtkGetVector3Macro(CamFocus, double);
+
+        vtkSetMacro(CamScale, double);
+        vtkGetMacro(CamScale, double);
+
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
 
@@ -96,10 +111,24 @@ class ttkCinemaImageExport
   protected:
 
     ttkCinemaImageExport(){
-      UseAllCores = false;
+        UseAllCores = false;
 
-      SetNumberOfInputPorts(2);
-      SetNumberOfOutputPorts(1);
+        int res[2] = {256,256};
+        SetResolution(res);
+
+        double nf[2] = {0.1,2};
+        SetCamNearFar(nf);
+
+        double pos[3] = {0,0,1};
+        SetCamPosition(pos);
+
+        double foc[3] = {0,0,0};
+        SetCamFocus(foc);
+
+        CamScale = 1;
+
+        SetNumberOfInputPorts(2);
+        SetNumberOfOutputPorts(1);
     }
     ~ttkCinemaImageExport(){};
 
@@ -109,6 +138,13 @@ class ttkCinemaImageExport
         int ThreadNumber;
 
     private:
+
+        int Resolution[2];
+        double CamNearFar[2];
+        double CamPosition[3];
+        double CamFocus[3];
+        double CamScale;
+
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);

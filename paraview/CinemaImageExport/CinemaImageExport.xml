@@ -47,6 +47,57 @@
         </Documentation>
         </InputProperty>
 
+        <IntVectorProperty
+            name="Resolution"
+            label="Resolution"
+            command="SetResolution"
+            number_of_elements="2"
+            default_values="256 256" >
+            <Documentation>
+                Resolution
+            </Documentation>
+        </IntVectorProperty>
+        <DoubleVectorProperty
+            name="CamNearFar"
+            label="CamNearFar"
+            command="SetCamNearFar"
+            number_of_elements="2"
+            default_values="0.1 2" >
+            <Documentation>
+                CamNearFar
+            </Documentation>
+        </DoubleVectorProperty>
+        <DoubleVectorProperty
+            name="CamPosition"
+            label="CamPosition"
+            command="SetCamPosition"
+            number_of_elements="3"
+            default_values="0 0 1" >
+            <Documentation>
+                CamPosition
+            </Documentation>
+        </DoubleVectorProperty>
+        <DoubleVectorProperty
+            name="CamFocus"
+            label="CamFocus"
+            command="SetCamFocus"
+            number_of_elements="3"
+            default_values="0 0 0" >
+            <Documentation>
+                CamFocus
+            </Documentation>
+        </DoubleVectorProperty>
+        <DoubleVectorProperty
+            name="CamScale"
+            label="CamScale"
+            command="SetCamScale"
+            number_of_elements="1"
+            default_values="1" >
+            <Documentation>
+                CamScale
+            </Documentation>
+        </DoubleVectorProperty>
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"

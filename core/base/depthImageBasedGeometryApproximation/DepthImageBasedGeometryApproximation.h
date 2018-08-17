@@ -105,6 +105,21 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
         camDir[0]*camUp[1] - camDir[1]*camUp[0]
     };
 
+    double temp = sqrt( camRight[0]*camRight[0] + camRight[1]*camRight[1] + camRight[2]*camRight[2] );
+    camRight[0]/=temp;
+    camRight[1]/=temp;
+    camRight[2]/=temp;
+
+    double camUpTrue[3] = {
+        camDir[1]*(-camRight[2]) - camDir[2]*(-camRight[1]),
+        camDir[2]*(-camRight[0]) - camDir[0]*(-camRight[2]),
+        camDir[0]*(-camRight[1]) - camDir[1]*(-camRight[0])
+    };
+    temp = sqrt( camUpTrue[0]*camUpTrue[0] + camUpTrue[1]*camUpTrue[1] + camUpTrue[2]*camUpTrue[2] );
+    camUpTrue[0]/=temp;
+    camUpTrue[1]/=temp;
+    camUpTrue[2]/=temp;
+
     double camSize[2] = {
         camResX/camResY*camHeight[0],
         camHeight[0]
@@ -118,18 +133,20 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
     size_t numberNewVertices = 0;
     {
         for(size_t i=0; i<n; i++)
-            pixelIndexVertexIndexMap[i] = depthValues[i] > 9999. ? -1 : numberNewVertices++;
+            pixelIndexVertexIndexMap[i] = depthValues[i] > 0.99 ? -1 : numberNewVertices++;
     }
 
     // -------------------------------------------------------------------------
     // Create Vertices
     // -------------------------------------------------------------------------
     {
-        dataType pixelWidthWorld = camSize[0]/camResX;
-        dataType pixelHeightWorld = camSize[1]/camResY;
+        double pixelWidthWorld = camSize[0];
+        double pixelHeightWorld = camSize[1];
 
         // make room for new vertices
         vertices.resize( numberInitialVertices + numberNewVertices );
+
+        double delta = camNearFar[1]-camNearFar[0];
 
         // compute vertex positions
         #ifdef TTK_ENABLE_OPENMP
@@ -137,22 +154,21 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
         #endif
         for(size_t y=0; y<camResY; y+=step){
             size_t yD = y*camResX;
-            dataType v = y * pixelHeightWorld - 0.5;
+            double v = ((double)y/(double)camResY - 0.5) * pixelHeightWorld;
 
             for(size_t x=0; x<camResX; x+=step){
                 size_t pixelIndex = x + yD;
 
-                // ToDo use Near/Far Plane
-                dataType d = depthValues[ pixelIndex ];
                 int vertexIndex = pixelIndexVertexIndexMap[ pixelIndex ];
                 if(vertexIndex < 0) continue;
 
-                dataType u = x * pixelWidthWorld - 0.5;
+                double d = (double)(depthValues[ pixelIndex ])*delta+camNearFar[0];
+                double u = ((double)x/(double)camResX - 0.5) * pixelWidthWorld;
                 auto& vertex = vertices[vertexIndex];
 
-                get<0>(vertex) = camPos[0] + u*camRight[0] + v*camUp[0] + d*camDir[0];
-                get<1>(vertex) = camPos[1] + u*camRight[1] + v*camUp[1] + d*camDir[1];
-                get<2>(vertex) = camPos[2] + u*camRight[2] + v*camUp[2] + d*camDir[2];
+                get<0>(vertex) = camPos[0] + u*camRight[0] + v*camUpTrue[0] + d*camDir[0];
+                get<1>(vertex) = camPos[1] + u*camRight[1] + v*camUpTrue[1] + d*camDir[1];
+                get<2>(vertex) = camPos[2] + u*camRight[2] + v*camUpTrue[2] + d*camDir[2];
             }
         }
     }
@@ -222,9 +238,8 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
 
     {
         std::stringstream msg;
-        msg << "[DepthImageBasedGeometryApproximation] Depth Image ("<<camResX<<"x"<<camResY<<":"<<step<<") processed in "
-            << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << std::endl;
-        msg << "[DepthImageBasedGeometryApproximation] " << "generated (" << (vertices.size()-numberInitialVertices) << " vertices) and (" << (triangles.size()-numberInitialTriangles) << " triangles)" << std::endl;
+        msg << "[ttkDepthImageBasedGeometryApproximation] Depth Image ("<<camResX<<"x"<<camResY<<":"<<step<<") processed in " << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << std::endl;
+        msg << "[ttkDepthImageBasedGeometryApproximation] " << "generated (" << (vertices.size()-numberInitialVertices) << " vertices) and (" << (triangles.size()-numberInitialTriangles) << " triangles)" << std::endl;
         dMsg(std::cout, msg.str(), timeMsg);
     }
 

@@ -22,8 +22,8 @@
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>
 #include                  <vtkDataArray.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkDataSetAlgorithm.h>
+#include                  <vtkMultiBlockDataSet.h>
+#include                  <vtkMultiBlockDataSetAlgorithm.h>
 #include                  <vtkDoubleArray.h>
 #include                  <vtkFiltersCoreModule.h>
 #include                  <vtkFloatArray.h>
@@ -47,25 +47,33 @@ class VTKFILTERSCORE_EXPORT ttkDepthImageBasedGeometryApproximation
 #else
 class ttkDepthImageBasedGeometryApproximation
 #endif
-  : public vtkDataSetAlgorithm, public ttk::Wrapper{
+  : public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
 
   public:
 
     static ttkDepthImageBasedGeometryApproximation* New();
-    vtkTypeMacro(ttkDepthImageBasedGeometryApproximation, vtkDataSetAlgorithm)
+    vtkTypeMacro(ttkDepthImageBasedGeometryApproximation, vtkMultiBlockDataSetAlgorithm)
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+        // default ttk setters
+        vtkSetMacro(debugLevel_, int);
 
-    void SetThreadNumber(int threadNumber){
-      ThreadNumber = threadNumber;
-      SetThreads();
-    }
-    void SetUseAllCores(bool onOff){
-      UseAllCores = onOff;
-      SetThreads();
-    }
-    // end of default ttk setters
+        void SetThreads(){
+            if(!UseAllCores)
+                threadNumber_ = ThreadNumber;
+            else
+                threadNumber_ = ttk::OsCall::getNumberOfCores();
+            Modified();
+        }
+
+        void SetThreadNumber(int threadNumber){
+            ThreadNumber = threadNumber;
+            SetThreads();
+        }
+        void SetUseAllCores(bool onOff){
+            UseAllCores = onOff;
+            SetThreads();
+        }
+        // end of default ttk setters
 
     vtkSetMacro(Downsampling, int);
     vtkGetMacro(Downsampling, int);
@@ -75,7 +83,7 @@ class ttkDepthImageBasedGeometryApproximation
 
       switch(port){
         case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
+          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
           break;
         default:
           break;
@@ -89,7 +97,7 @@ class ttkDepthImageBasedGeometryApproximation
 
       switch(port){
         case 0:
-          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+          info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
           break;
         default:
           break;
@@ -102,23 +110,30 @@ class ttkDepthImageBasedGeometryApproximation
   protected:
 
     ttkDepthImageBasedGeometryApproximation(){
-
       Downsampling = 0;
 
       UseAllCores = false;
-
       SetNumberOfInputPorts(1);
       SetNumberOfOutputPorts(1);
     }
-
     ~ttkDepthImageBasedGeometryApproximation(){};
 
-    TTK_SETUP();
+        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+
+        bool UseAllCores;
+        int ThreadNumber;
+
 
 
   private:
 
     int                   Downsampling;
     ttk::DepthImageBasedGeometryApproximation            depthImageBasedGeometryApproximation_;
+
+    bool needsToAbort() override { return GetAbortExecute();};
+    int updateProgress(const float &progress) override {
+        UpdateProgress(progress);
+        return 0;
+    };
 
 };
