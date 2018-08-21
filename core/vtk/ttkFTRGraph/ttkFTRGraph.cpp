@@ -59,15 +59,21 @@ int ttkFTRGraph::addCompleteSkeletonArc(const Graph& graph, const idSuperArc arc
       triangulation_->getVertexPoint(downVertId, pointCoord[0], pointCoord[1], pointCoord[2]);
       pointIds[0] = points->InsertNextPoint(pointCoord);
       arcData.points.emplace(downVertId, pointIds[0]);
+      arcData.setPointInfo(graph, arcId, pointIds[0]);
    }
 
    for (const idVertex regV : arc.segmentation()) {
+
+      // for regular mask to be set by the boundary vertices correctly
+      if (regV == downVertId || regV == upVertId) continue;
+
       if (arcData.points.count(regV)) {
          pointIds[1] = arcData.points[regV];
       } else {
          triangulation_->getVertexPoint(regV, pointCoord[0], pointCoord[1], pointCoord[2]);
          pointIds[1] = points->InsertNextPoint(pointCoord);
          arcData.points.emplace(regV, pointIds[1]);
+         arcData.setPointInfo(graph, arcId, pointIds[1], true);
       }
       if(pointIds[0] != pointIds[1]){
          vtkIdType nextCellId = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
@@ -82,6 +88,7 @@ int ttkFTRGraph::addCompleteSkeletonArc(const Graph& graph, const idSuperArc arc
       triangulation_->getVertexPoint(upVertId, pointCoord[0], pointCoord[1], pointCoord[2]);
       pointIds[1] = points->InsertNextPoint(pointCoord);
       arcData.points.emplace(upVertId, pointIds[1]);
+      arcData.setPointInfo(graph, arcId, pointIds[1]);
    }
    if(pointIds[0] != pointIds[1]){
       vtkIdType nextCellId = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
@@ -116,6 +123,7 @@ int ttkFTRGraph::addDirectSkeletonArc(const Graph& graph, const idSuperArc arcId
       triangulation_->getVertexPoint(downVertId, pointCoord[0], pointCoord[1], pointCoord[2]);
       pointIds[0] = points->InsertNextPoint(pointCoord);
       arcData.points.emplace(downVertId, pointIds[0]);
+      arcData.setPointInfo(graph, arcId, pointIds[0]);
    }
    if (arcData.points.count(upVertId)) {
       pointIds[1] = arcData.points[upVertId];
@@ -123,6 +131,7 @@ int ttkFTRGraph::addDirectSkeletonArc(const Graph& graph, const idSuperArc arcId
       triangulation_->getVertexPoint(upVertId, pointCoord[0], pointCoord[1], pointCoord[2]);
       pointIds[1] = points->InsertNextPoint(pointCoord);
       arcData.points.emplace(upVertId, pointIds[1]);
+      arcData.setPointInfo(graph, arcId, pointIds[1]);
    }
    vtkIdType nextCellId = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
 
@@ -134,6 +143,97 @@ int ttkFTRGraph::addDirectSkeletonArc(const Graph& graph, const idSuperArc arcId
 int ttkFTRGraph::addSampledSkeletonArc(const Graph& graph, const idSuperArc arcId, vtkPoints* points,
                                        vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
+   const SuperArc& arc = graph.getArc(arcId);
+   float           pointCoord[3];
+   const idNode    upNodeId   = arc.getUpNodeId();
+   const idNode    downNodeId = arc.getDownNodeId();
+
+   const double scalarMin = inputScalars_->GetTuple1(graph.getNode(downNodeId).getVertexIdentifier());
+   const double scalarMax = inputScalars_->GetTuple1(graph.getNode(upNodeId).getVertexIdentifier());
+   const double delta     = (scalarMax - scalarMin) / (params_.samplingLvl + 1);
+
+#ifndef TTK_ENABLE_KAMIKAZE
+   if (upNodeId == nullNode || downNodeId == nullNode) {
+      std::cerr << "NULL NODES IN SKELETON " << graph.printArc(arcId) << std::endl;
+      return 1;
+   }
+#endif
+
+   const idVertex upVertId   = graph.getNode(upNodeId).getVertexIdentifier();
+   const idVertex downVertId = graph.getNode(downNodeId).getVertexIdentifier();
+
+   vtkIdType pointIds[2];
+   if (arcData.points.count(downVertId)) {
+      pointIds[0] = arcData.points[downVertId];
+   } else {
+      triangulation_->getVertexPoint(downVertId, pointCoord[0], pointCoord[1], pointCoord[2]);
+      pointIds[0] = points->InsertNextPoint(pointCoord);
+      arcData.points.emplace(downVertId, pointIds[0]);
+      arcData.setPointInfo(graph, arcId, pointIds[0]);
+   }
+
+   float  sum[3]{};
+   int    chunk       = 0;
+   double avgScal     = 0;
+   double scalarLimit = scalarMin + delta;
+
+   for (const idVertex regV : arc.segmentation()) {
+
+      // for regular mask to be set by the boundary vertices correctly
+      if (regV == downVertId || regV == upVertId) continue;
+
+      triangulation_->getVertexPoint(regV, pointCoord[0], pointCoord[1], pointCoord[2]);
+      const double scalar = inputScalars_->GetTuple1(regV);
+      if (scalar < scalarLimit) {
+         sum[0] += pointCoord[0];
+         sum[1] += pointCoord[1];
+         sum[2] += pointCoord[2];
+         avgScal += scalar;
+         ++chunk;
+      } else {
+         if (chunk) {
+            sum[0] /= chunk;
+            sum[1] /= chunk;
+            sum[2] /= chunk;
+            avgScal /= chunk;
+
+            // do not use memorized points as even if a point already exisit it is from another
+            // vertex and should not be used
+            pointIds[1] = points->InsertNextPoint(pointCoord);
+            arcData.points.emplace(regV, pointIds[1]);
+            arcData.setPointInfo(graph, arcId, pointIds[1], true);
+
+            if(pointIds[0] != pointIds[1]){
+               vtkIdType nextCellId = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
+               arcData.setArcInfo(graph, arcId, nextCellId);
+            }
+
+            pointIds[0] = pointIds[1];
+         }
+
+         // reset for next iteration
+         scalarLimit += delta;
+         sum[0]  = 0;
+         sum[1]  = 0;
+         sum[2]  = 0;
+         avgScal = 0;
+         chunk   = 0;
+      }
+   }
+
+   if (arcData.points.count(upVertId)) {
+      pointIds[1] = arcData.points[upVertId];
+   } else {
+      triangulation_->getVertexPoint(upVertId, pointCoord[0], pointCoord[1], pointCoord[2]);
+      pointIds[1] = points->InsertNextPoint(pointCoord);
+      arcData.points.emplace(upVertId, pointIds[1]);
+      arcData.setPointInfo(graph, arcId, pointIds[1]);
+   }
+   if(pointIds[0] != pointIds[1]){
+      vtkIdType nextCellId = skeletonArcs->InsertNextCell(VTK_LINE, 2, pointIds);
+      arcData.setArcInfo(graph, arcId, nextCellId);
+   }
+
    return 0;
 }
 
@@ -318,13 +418,14 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGr
    idSuperArc       nbFinArc = 0;
    switch (params_.samplingLvl) {
       case -1:
-         nbFinArc = triangulation_->getNumberOfVertices() - 1;
+         // loops may create more arcs
+         nbFinArc = triangulation_->getNumberOfVertices() * 1.5;
          break;
       case 0:
          nbFinArc = graph.getNumberOfVisibleArcs();
          break;
       default:
-         nbFinArc = graph.getNumberOfVisibleArcs() * params_.samplingLvl;
+         nbFinArc = graph.getNumberOfVisibleArcs() * (params_.samplingLvl + 1);
          break;
    }
 
@@ -343,12 +444,13 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGr
             addDirectSkeletonArc(graph, arcId, points, arcs, arcData);
             break;
          default:
-            std::cout << " sampling not implemented yet" << std::endl;
+            addSampledSkeletonArc(graph, arcId, points, arcs, arcData);
+            break;
       }
    }
 
-   arcData.addArrays(arcs, params_);
    arcs->SetPoints(points);
+   arcData.addArrays(arcs, params_);
    outputSkeletonArcs->ShallowCopy(arcs);
 
    return 0;

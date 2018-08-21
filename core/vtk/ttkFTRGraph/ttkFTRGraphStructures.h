@@ -4,6 +4,7 @@
 #include <vtkDataSet.h>
 #include <vtkIntArray.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkCharArray.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
@@ -58,6 +59,7 @@ struct NodeData : public ObjectData {
 
 struct ArcData : public ObjectData {
    vtkSmartPointer<vtkIntArray> ids;
+   vtkSmartPointer<vtkCharArray> reg;
 #ifndef NDEBUG
    vtkSmartPointer<vtkUnsignedCharArray> fromUp;
 #endif
@@ -66,9 +68,17 @@ struct ArcData : public ObjectData {
    explicit ArcData(const ttk::ftr::idSuperArc nbArcs)
    {
       ids = allocArray<vtkIntArray>("ArcId", nbArcs);
+      reg = allocArray<vtkCharArray>("regularMask", nbArcs+1);
 #ifndef NDEBUG
       fromUp = allocArray<vtkUnsignedCharArray>("growUp", nbArcs);
 #endif
+   }
+
+   void setPointInfo(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc a,
+                     const vtkIdType skeletonVert, bool r = false)
+   {
+      std::cout << skeletonVert << std::endl;
+      reg->SetTuple1(skeletonVert, r);
    }
 
    void setArcInfo(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc a,
@@ -82,8 +92,13 @@ struct ArcData : public ObjectData {
 
    void addArrays(vtkUnstructuredGrid* arcs, ttk::ftr::Params params)
    {
-       arcs->GetCellData()->SetScalars(ids);
+      // original size may be too large
+      ids->SetNumberOfTuples(arcs->GetNumberOfCells());
+      arcs->GetCellData()->SetScalars(ids);
+      reg->SetNumberOfTuples(arcs->GetNumberOfPoints());
+      arcs->GetPointData()->AddArray(reg);
 #ifndef NDEBUG
+      fromUp->SetNumberOfTuples(arcs->GetNumberOfCells());
       arcs->GetCellData()->AddArray(fromUp);
 #endif
    }

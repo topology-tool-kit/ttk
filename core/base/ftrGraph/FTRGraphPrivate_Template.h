@@ -13,8 +13,8 @@
 #define DEBUG_1(msg) std::cout msg
 // #define DEBUG_1(msg)
 #else
-#define DEBUG_1(msg)
-// #define DEBUG_1(msg) std::cout msg
+// #define DEBUG_1(msg)
+#define DEBUG_1(msg) std::cout msg
 #endif
 
 // Dynamic graph structure

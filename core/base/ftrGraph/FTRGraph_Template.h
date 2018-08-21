@@ -226,10 +226,10 @@ namespace ttk
 
                // each task uses its local forests
                LocalForests localForests;
-               localForests.up.setNumberOfNodes(30);
+               localForests.up.setNumberOfNodes(60);
                localForests.up.init();
                localForests.up.alloc();
-               localForests.down.setNumberOfNodes(30);
+               localForests.down.setNumberOfNodes(60);
                localForests.down.init();
                localForests.down.alloc();
 
