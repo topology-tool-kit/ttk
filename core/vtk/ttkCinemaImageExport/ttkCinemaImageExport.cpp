@@ -62,7 +62,7 @@ int ttkCinemaImageExport::RequestData(
 
     vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
     renderer->SetBackground(0,0,0); // Background color white
-    renderer->SetBackgroundAlpha(1);
+    // renderer->SetBackgroundAlpha(1);
 
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
