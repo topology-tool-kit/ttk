@@ -121,10 +121,10 @@ namespace ttk
          bool hasVisitedOpposite(const idVertex v, Propagation* const prop) const
          {
             // reversed
-            if (!prop->goUp()) {
-               return visits_.up[v].done;
-            } else {
+            if (prop->goUp()) {
                return visits_.down[v].done;
+            } else {
+               return visits_.up[v].done;
             }
          }
 
@@ -134,6 +134,15 @@ namespace ttk
                return visits_.up[v];
             }else {
                return visits_.down[v];
+            }
+         }
+
+         Visit visitOpposite(const idVertex v, const Propagation* const prop) const
+         {
+            if (prop->goUp()){
+               return visits_.down[v];
+            }else {
+               return visits_.up[v];
             }
          }
       };

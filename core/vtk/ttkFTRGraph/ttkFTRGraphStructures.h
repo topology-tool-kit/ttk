@@ -77,7 +77,6 @@ struct ArcData : public ObjectData {
    void setPointInfo(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc a,
                      const vtkIdType skeletonVert, bool r = false)
    {
-      std::cout << skeletonVert << std::endl;
       reg->SetTuple1(skeletonVert, r);
    }
 

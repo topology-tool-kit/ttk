@@ -431,7 +431,7 @@ namespace ttk
 
          // visit a vertex in terms of segmantation and history,
          // also check if the current arc is merging through an opposite one.
-         bool visit(Propagation* const localProp, const idSuperArc curArc);
+         idSuperArc visit(Propagation* const localProp, const idSuperArc curArc);
 
          // Tools
 

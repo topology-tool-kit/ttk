@@ -23,6 +23,10 @@
 // library include
 #include <boost/heap/fibonacci_heap.hpp>
 
+// C++ includes
+#include <deque>
+#include <unordered_map>
+
 namespace ttk
 {
    namespace ftr

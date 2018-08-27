@@ -17,6 +17,7 @@ namespace ttk
          for (idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
             const SuperArc& arc = getArc(arcId);
             if (arc.merged()) {
+               // std::cout << "arc merged: " << printArc(arcId) << std::endl;
                const idSuperArc target = arc.mergedIn();
                if (mapArcs.count(target) == 0) {
                   mapArcs[arcId] = target;
@@ -166,7 +167,7 @@ namespace ttk
          }
 #endif
 
-         std::cout << "arc before " << printArc(mainArc) << std::endl;
+         // std::cout << "arc before " << printArc(mainArc) << std::endl;
 
          const idVertex vMainDown   = getNode(mainDown).getVertexIdentifier();
          const idVertex vMergedDown = getNode(mergedDown).getVertexIdentifier();
@@ -179,7 +180,7 @@ namespace ttk
          }
          getArc(mainArc).restore();
 
-         std::cout << "arc after " << printArc(mainArc) << std::endl;
+         // std::cout << "arc after " << printArc(mainArc) << std::endl;
       }
 
    }  // namespace ftr
