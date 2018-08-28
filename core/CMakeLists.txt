@@ -69,8 +69,15 @@ function(ttk_print_summary)
     message(STATUS "TTK_ENABLE_ZLIB: ${TTK_ENABLE_ZLIB}")
     message(STATUS "TTK_USE_64BIT_IDS: ${TTK_USE_64BIT_IDS}")
 	message(STATUS "ttk build -------------------------------------------------------------------")
-  message(STATUS "BOOST_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
-  message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+    message(STATUS "BOOST_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
+    if(PYTHON_NUMPY_INCLUDE_DIR)
+      message(STATUS "Numpy headers: ${PYTHON_NUMPY_INCLUDE_DIR}")
+    endif()
+    if(TTK_PYTHON_MAJOR_VERSION)
+      message(STATUS
+        "Python version: ${TTK_PYTHON_MAJOR_VERSION}.${TTK_PYTHON_MINOR_VERSION}")
+    endif()
+    message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 	message(STATUS "TTK_BUILD_DOCUMENTATION: ${TTK_BUILD_DOCUMENTATION}")
 	if(TTK_BUILD_DOCUMENTATION)
 		message(STATUS "  DOXYGEN_EXECUTABLE: ${DOXYGEN_EXECUTABLE}")
@@ -89,6 +96,31 @@ function(ttk_print_summary)
 	message(STATUS "TTK_INSTALL_PLUGIN_DIR: ${TTK_INSTALL_PLUGIN_DIR}")
 	message(STATUS "-----------------------------------------------------------------------------")
 
+endfunction()
+
+function(ttk_find_python)
+  find_package(PythonLibs REQUIRED QUIET)
+  include_directories(${PYTHON_INCLUDE_DIRS})
+
+  if (${CMAKE_VERSION} VERSION_GREATER "3.10" OR ${CMAKE_VERSION} VERSION_EQUAL "3.10")
+    string(REPLACE \".\" \" \" PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
+  else()
+    string(REPLACE "." " " PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
+  endif()
+  separate_arguments(PYTHON_VERSION_LIST)
+  list(GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
+  list(GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
+
+  set(TTK_PYTHON_MAJOR_VERSION "${PYTHON_MAJOR_VERSION}"
+    CACHE INTERNAL "TTK_PYTHON_MAJOR_VERSION")
+  set(TTK_PYTHON_MINOR_VERSION "${PYTHON_MINOR_VERSION}"
+    CACHE INTERNAL "TTK_PYTHON_MINOR_VERSION")
+
+  find_path(PYTHON_NUMPY_INCLUDE_DIR numpy/arrayobject.h PATHS
+    ${PYTHON_INCLUDE_DIRS}
+    /usr/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include/
+    /usr/local/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include)
+  include_directories(${PYTHON_NUMPY_INCLUDE_DIR})
 endfunction()
 
 option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)
