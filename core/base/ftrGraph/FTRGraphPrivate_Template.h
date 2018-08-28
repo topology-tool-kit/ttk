@@ -10,8 +10,8 @@
 
 // Skeleton + propagation
 #ifndef NDEBUG
-// #define DEBUG_1(msg) std::cout msg
-#define DEBUG_1(msg)
+#define DEBUG_1(msg) std::cout msg
+// #define DEBUG_1(msg)
 #else
 #define DEBUG_1(msg)
 // #define DEBUG_1(msg) std::cout msg
@@ -66,9 +66,11 @@ namespace ttk
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
-                  if (currentArc == nullSuperArc) {
+                  if (currentArc == nullSuperArc || graph_.getArc(currentArc).merged()) {
                      // current arc is merging, the lower star has been discontinued
                      continue;
+                  } else {
+                     graph_.getArc(currentArc).visit();
                   }
                }
                // ensure we will always recover this arc from the upper neighbors
@@ -86,13 +88,6 @@ namespace ttk
                for (const idEdge e : lowerStarEdges) {
                   const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
                   if (a != nullSuperArc && graph_.getArc(a).getPropagation()->getId() == localProp->getId()) {
-                     // TODO: Check here if we dan't call it one a same list twice or more
-                     // process lazy
-                     // sort both list
-                     // for each:
-                     // if del < add: delete in real RG
-                     // if add < del: add in real RG
-                     // else: drop both, computation avoided
                      lazyApply(localProp, a);
                   }
                }
@@ -107,7 +102,7 @@ namespace ttk
                } else {
                   if (lowerComp.size()) {
                      currentArc = lowerComp[0]->getCorArc();
-                     if (currentArc == nullSuperArc) {
+                     if (currentArc == nullSuperArc || graph_.getArc(currentArc).merged()) {
                         // current arc is merging, the lower star has been discontinued
                         continue;
                      }
@@ -119,12 +114,16 @@ namespace ttk
                if (upperComp.size() > 1) {
                   isSplitSaddle = true;
                }
+
+               if (!isJoinSaddle && !isSplitSaddle){
+                  graph_.getArc(currentArc).visit();
+               }
             }
 
             // do not propagate on merging arc.
             if (mergeIn != nullSuperArc) {
                graph_.getArc(currentArc).merge(mergeIn);
-               DEBUG_1(<< curVert << " arc merging " << currentArc << std::endl);
+               DEBUG_1(<< curVert << " arc merging " << currentArc << " in " << mergeIn << std::endl);
                continue;
             }
 

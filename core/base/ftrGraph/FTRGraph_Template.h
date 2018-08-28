@@ -122,7 +122,7 @@ namespace ttk
 
          // Debug print
          // std::cout << graph_.printVisit() << std::endl;
-         // printGraph(4);
+         printGraph(4);
          // std::cout << "up" << std::endl;
          // std::cout << dynGraphs_.up.print() << std::endl;
          // std::cout << "down" << std::endl;
@@ -131,6 +131,8 @@ namespace ttk
          // post-process
          graph_.mergeArcs<ScalarType>(scalars_);
          graph_.arcs2nodes<ScalarType>(scalars_);
+
+         printTime(timeBuild, "[FTR Graph]: final time: ", timeMsg);
 
          if (params_.samplingLvl) {
             graph_.buildArcSegmentation<ScalarType>(scalars_);

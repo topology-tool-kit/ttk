@@ -37,6 +37,7 @@ namespace ttk
          idNode downNodeId_;
          AtomicUF* ufProp_;
          bool visible_;
+         bool empty_;
          idSuperArc merged_;
          Segment segmentation_;
 #ifndef NDEBUG
@@ -49,6 +50,7 @@ namespace ttk
                downNodeId_{down},
                ufProp_{nullptr},
                visible_{true},
+               empty_{true},
                merged_{nullSuperArc},
                segmentation_{}
 #ifndef NDEBUG
@@ -108,6 +110,16 @@ namespace ttk
          bool isVisible(void) const
          {
             return visible_;
+         }
+
+         void visit(void)
+         {
+            empty_ = false;
+         }
+
+         bool isEmpty() const
+         {
+            return empty_;
          }
 
          void merge(const idSuperArc arc)

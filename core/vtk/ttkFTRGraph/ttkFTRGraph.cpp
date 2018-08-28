@@ -343,7 +343,7 @@ int ttkFTRGraph::getOffsets()
          offsets_[i] = inputOffsets->GetTuple1(i);
       }
    } else {
-      if (hasUpdatedMesh_ and offsets_.size()) {
+      if (offsets_.size()) {
          // don't keep an out-dated offset array
          offsets_.clear();
       }

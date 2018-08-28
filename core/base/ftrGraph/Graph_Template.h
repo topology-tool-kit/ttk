@@ -13,9 +13,24 @@ namespace ttk
       void Graph::mergeArcs(const Scalars<ScalarType>* const s)
       {
          std::unordered_map<idSuperArc, idSuperArc> mapArcs;
-         const idSuperArc                           nbArcs = arcs_.size();
+         std::map<std::pair<idVertex, idVertex>, idSuperArc> zeroedArc;
+
+         const idSuperArc nbArcs = arcs_.size();
          for (idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
             const SuperArc& arc = getArc(arcId);
+            if (getArc(arcId).isVisible() && getArc(arcId).isEmpty()) {
+               const idNode                  upNodeId   = getArc(arcId).getUpNodeId();
+               const idNode                  downNodeId = getArc(arcId).getDownNodeId();
+               std::pair<idVertex, idVertex> arcVerts =
+                   std::make_pair(getNode(upNodeId).getVertexIdentifier(),
+                                  getNode(downNodeId).getVertexIdentifier());
+               if (zeroedArc.count(arcVerts)) {
+                  getArc(arcId).merge(zeroedArc[arcVerts]);
+               } else {
+                  zeroedArc[arcVerts] = arcId;
+               }
+            }
+
             if (arc.merged()) {
                // std::cout << "arc merged: " << printArc(arcId) << std::endl;
                const idSuperArc target = arc.mergedIn();
@@ -70,6 +85,7 @@ namespace ttk
                getArc(arcId).setUpNodeId(upNodeId);
                getArc(arcId).setDownNodeId(downNodeId);
             }
+
          }
 
          // reserve good size
