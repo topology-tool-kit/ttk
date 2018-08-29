@@ -29,6 +29,26 @@
         </Documentation>
       </InputProperty>
 
+      <StringVectorProperty animateable="0"
+                            command="SetFilepathColumnName"
+                            element_types="0 0 0 0 2"
+                            label="Filepath Column"
+                            name="SelectColumn"
+                            number_of_elements="5"
+                            default_values="path">
+        <ArrayListDomain attribute_type="Scalars" name="array_list">
+          <RequiredProperties>
+            <Property function="Input" name="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <FieldDataDomain name="field_list">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </FieldDataDomain>
+        <Documentation>TODO.</Documentation>
+      </StringVectorProperty>
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -64,6 +84,10 @@
            Debug level.
          </Documentation>
       </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input">
+        <Property name="SelectColumn" />
+      </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />

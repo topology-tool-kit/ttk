@@ -43,8 +43,12 @@ int ttkCinemaQueryReader::RequestData(
         databasePath = databasePath.substr( 0, databasePath.find_last_of("/"));
 
         // Get column that contains paths
-        // TODO: Let user choose column
-        auto* paths = inputTable->GetColumnByName("path");
+        auto paths = inputTable->GetColumnByName( this->FilepathColumnName.data() );
+        if(paths==nullptr){
+            stringstream msg;
+            msg<<"[ttkCinemaQueryReader] ERROR: Table does not have FilepathColumn '"<<this->FilepathColumnName<<"'"<<endl;
+            dMsg(cout, msg.str(), timeMsg);
+        }
 
         // For each row
         for(int i=0; i<n; i++){
@@ -52,6 +56,15 @@ int ttkCinemaQueryReader::RequestData(
             auto path = databasePath + "/" + paths->GetVariantValue(i).ToString();
             cout<<"[ttkCinemaQueryReader]    "<<i<<": "<<path<<endl;
             auto ext = path.substr( path.length() - 3 );
+
+            std::ifstream infile(path.data());
+            bool exists = infile.good();
+
+            if(!exists){
+                stringstream msg;
+                msg<<"[ttkCinemaQueryReader] ERROR: File does not exist: "<<path<<endl;
+                dMsg(cout, msg.str(), timeMsg);
+            }
 
             // load data using correct reader
             if(ext=="vti"){

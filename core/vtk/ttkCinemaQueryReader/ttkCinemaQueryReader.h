@@ -65,6 +65,19 @@ class ttkCinemaQueryReader
     }
     // end of default ttk setters
 
+    void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char *name){
+        this->FilepathColumnName = std::string(name);
+        this->Modified();
+    };
+
+    // void SetFilepathColumnName(void*, void*, int, int, int, int, std::string name){
+    //     this->FilepathColumnName = name;
+    // };
+    // std::string GetFilepathColumnName(){
+    //     return this->FilepathColumnName;
+    // };
+
+
     int FillInputPortInformation(int port, vtkInformation *info) override {
 
       switch(port){
@@ -105,6 +118,8 @@ class ttkCinemaQueryReader
 
     bool UseAllCores;
     int ThreadNumber;
+
+    std::string FilepathColumnName;
 
   private:
 
