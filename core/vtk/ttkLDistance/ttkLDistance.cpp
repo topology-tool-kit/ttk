@@ -68,7 +68,7 @@ int ttkLDistance::doIt(
 
   const char* fieldName = DistanceFieldName.c_str();
 
-  ttkIdType numberOfPoints = (ttkIdType) input1->GetNumberOfPoints();
+  SimplexId numberOfPoints = (SimplexId) input1->GetNumberOfPoints();
 
   lDistance_.setNumberOfPoints(numberOfPoints);
   outputScalarField_->SetNumberOfTuples(numberOfPoints);

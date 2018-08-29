@@ -130,13 +130,13 @@ int ttkTopologicalSimplification::getOffsets(vtkDataSet* input){
     }
 
     if(!offsets_){
-      const ttkIdType numberOfVertices=input->GetNumberOfPoints();
+      const SimplexId numberOfVertices=input->GetNumberOfPoints();
 
-      offsets_=ttkIdTypeArray::New();
+      offsets_=ttkSimplexIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName(ttk::OffsetScalarFieldName);
-      for(ttkIdType i=0; i<numberOfVertices; ++i)
+      for(SimplexId i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
     }
 
@@ -202,7 +202,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const ttkIdType numberOfVertices=domain->GetNumberOfPoints();
+  const SimplexId numberOfVertices=domain->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(numberOfVertices<=0){
     cerr << "[ttkTopologicalSimplification] Error : domain has no points." << endl;
@@ -213,7 +213,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   if(OutputOffsetScalarFieldName.length()<=0)
     OutputOffsetScalarFieldName=ttk::OffsetScalarFieldName;
 
-  vtkSmartPointer<ttkIdTypeArray> outputOffsets=vtkSmartPointer<ttkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> outputOffsets=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(outputOffsets){
     outputOffsets->SetNumberOfComponents(1);
     outputOffsets->SetNumberOfTuples(numberOfVertices);
@@ -221,7 +221,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{
-    cerr << "[ttkTopologicalSimplification] Error : ttkIdTypeArray allocation problem." << endl;
+    cerr << "[ttkTopologicalSimplification] Error : ttkSimplexIdTypeArray allocation problem." << endl;
     return -7;
   }
 #endif
@@ -277,7 +277,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const ttkIdType numberOfConstraints=constraints->GetNumberOfPoints();
+  const SimplexId numberOfConstraints=constraints->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(numberOfConstraints<=0){
     cerr << "[ttkTopologicalSimplification] Error : input has no constraints." << endl;
@@ -304,7 +304,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   topologicalSimplification_.setOutputOffsetScalarFieldPointer(
     outputOffsets->GetVoidPointer(0));
 
-#ifdef TTK_ENABLE_KAMIKAZE
+#ifndef TTK_ENABLE_KAMIKAZE
   if(identifiers_->GetDataType() != inputOffsets_->GetDataType()){
     cerr << "[ttkTopologicalSimplification] Error : type of identifiers and offsets are different." << endl;
     return -11;
@@ -312,21 +312,12 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   switch(inputScalars_->GetDataType()){
-#ifndef _MSC_VER
-    vtkTemplateMacro(({
-          if(inputOffsets_->GetDataType()==VTK_INT)
-          ret=topologicalSimplification_.execute<VTK_TT,int>();
-          if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
-          ret=topologicalSimplification_.execute<VTK_TT,vtkIdType>();
-          }));
-#else
-    vtkTemplateMacro({
+    ttkTemplateMacro({
         if(inputOffsets_->GetDataType()==VTK_INT)
         ret=topologicalSimplification_.execute<VTK_TT TTK_COMMA int>();
         if(inputOffsets_->GetDataType()==VTK_ID_TYPE)
         ret=topologicalSimplification_.execute<VTK_TT TTK_COMMA vtkIdType>();
         });
-#endif
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode

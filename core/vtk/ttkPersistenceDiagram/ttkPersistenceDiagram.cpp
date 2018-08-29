@@ -133,13 +133,13 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
     }
 
     if(!offsets_){
-      const ttkIdType numberOfVertices=input->GetNumberOfPoints();
+      const SimplexId numberOfVertices=input->GetNumberOfPoints();
 
-      offsets_=ttkIdTypeArray::New();
+      offsets_=ttkSimplexIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
       offsets_->SetNumberOfTuples(numberOfVertices);
       offsets_->SetName(ttk::OffsetScalarFieldName);
-      for(ttkIdType i=0; i<numberOfVertices; ++i)
+      for(SimplexId i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
     }
 
@@ -159,19 +159,11 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
 int ttkPersistenceDiagram::deleteDiagram(){
   if(CTDiagram_ and inputScalars_){
     switch(inputScalars_->GetDataType()){
-#ifndef _MSC_VER
-		vtkTemplateMacro(({
-			using tuple_t = tuple<ttkIdType,ftm::NodeType,ttkIdType,ftm::NodeType,VTK_TT,ttkIdType>;
-		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
-		delete CTDiagram;
-		}));
-#else
-		vtkTemplateMacro({
-			using tuple_t = tuple<ttkIdType TTK_COMMA ftm::NodeType TTK_COMMA ttkIdType TTK_COMMA ftm::NodeType TTK_COMMA VTK_TT TTK_COMMA ttkIdType>;
-		vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
-		delete CTDiagram;
-		});
-#endif
+      ttkTemplateMacro({
+          using tuple_t = tuple<SimplexId TTK_COMMA ftm::NodeType TTK_COMMA SimplexId TTK_COMMA ftm::NodeType TTK_COMMA VTK_TT TTK_COMMA SimplexId>;
+          vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
+          delete CTDiagram;
+          });
     }
   }
   return 0;
@@ -226,12 +218,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   switch(inputScalars_->GetDataType()){
 #ifndef _MSC_VER
 	  vtkTemplateMacro(({
-		  using tuple_t = tuple<ttkIdType,
+		  using tuple_t = tuple<SimplexId,
 		  ftm::NodeType,
-		  ttkIdType,
+		  SimplexId,
 		  ftm::NodeType,
 		  VTK_TT,
-		  ttkIdType>;
+		  SimplexId>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;
@@ -275,12 +267,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #else
 #ifndef TTK_ENABLE_KAMIKAZE
 	  vtkTemplateMacro({
-		  using tuple_t = tuple<ttkIdType TTK_COMMA
+		  using tuple_t = tuple<SimplexId TTK_COMMA
 		  ftm::NodeType TTK_COMMA
-		  ttkIdType TTK_COMMA
+		  SimplexId TTK_COMMA
 		  ftm::NodeType TTK_COMMA
 		  VTK_TT TTK_COMMA
-		  ttkIdType>;
+		  SimplexId>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;
@@ -319,12 +311,12 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 	  });
 #else
 	  vtkTemplateMacro({
-		  using tuple_t = tuple<ttkIdType TTK_COMMA
+		  using tuple_t = tuple<SimplexId TTK_COMMA
 		  ftm::NodeType TTK_COMMA
-		  ttkIdType TTK_COMMA
+		  SimplexId TTK_COMMA
 		  ftm::NodeType TTK_COMMA
 		  VTK_TT TTK_COMMA
-		  ttkIdType>;
+		  SimplexId>;
 
 	  if (CTDiagram_ and computeDiagram_) {
 		  vector<tuple_t>* tmpDiagram = (vector<tuple_t>*)CTDiagram_;

@@ -31,7 +31,7 @@ namespace ttk{
     }
 
     int evaluateRealization(const void *voidPointer) {
-      #ifdef TTK_ENABLE_KAMIKAZE
+      #ifndef TTK_ENABLE_KAMIKAZE
       if(!(numberOfVertices_>0)) {
         return -1; // Number of vertices not defined
       }
@@ -147,7 +147,7 @@ namespace ttk{
 
     template <class dataType>
     int evaluateRealization(const dataType *inputData) {
-      #ifdef TTK_ENABLE_KAMIKAZE
+      #ifndef TTK_ENABLE_KAMIKAZE
       if(!(rangeMin_<rangeMax_)) {
         return -1; // Range error
       }

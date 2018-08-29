@@ -92,7 +92,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const ttkIdType numberOfPointsInDomain=domain->GetNumberOfPoints();
+  const SimplexId numberOfPointsInDomain=domain->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInDomain){
     cerr << "[ttkDistanceField] Error : domain has no points." << endl;
@@ -100,7 +100,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const ttkIdType numberOfPointsInSources=sources->GetNumberOfPoints();
+  const SimplexId numberOfPointsInSources=sources->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInSources){
     cerr << "[ttkDistanceField] Error : sources have no points." << endl;
@@ -108,7 +108,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  vtkSmartPointer<ttkIdTypeArray> origin=vtkSmartPointer<ttkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> origin=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(origin){
     origin->SetNumberOfComponents(1);
     origin->SetNumberOfTuples(numberOfPointsInDomain);
@@ -116,12 +116,12 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{
-    cerr << "[ttkDistanceField] Error : ttkIdTypeArray allocation problem." << endl;
+    cerr << "[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem." << endl;
     return -5;
   }
 #endif
 
-  vtkSmartPointer<ttkIdTypeArray> seg=vtkSmartPointer<ttkIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> seg=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(seg){
     seg->SetNumberOfComponents(1);
     seg->SetNumberOfTuples(numberOfPointsInDomain);
@@ -129,7 +129,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{
-    cerr << "[ttkDistanceField] Error : ttkIdTypeArray allocation problem." << endl;
+    cerr << "[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem." << endl;
     return -6;
   }
 #endif

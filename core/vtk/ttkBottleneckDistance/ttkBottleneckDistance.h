@@ -354,16 +354,16 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   const double spacing,
   const int diagramNumber)
 {
-  ttkIdTypeArray* vertexIdentifierScalars =
-    ttkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
+  ttkSimplexIdTypeArray* vertexIdentifierScalars =
+    ttkSimplexIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("VertexIdentifier"));
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("NodeType"));
 
-  ttkIdTypeArray* pairIdentifierScalars =
-    ttkIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
+  ttkSimplexIdTypeArray* pairIdentifierScalars =
+    ttkSimplexIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
       GetCellData()->GetArray("PairIdentifier"));
 
   vtkIntArray* extremumIndexScalars =
@@ -493,7 +493,7 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
   matchingIdentifiers2->SetName("MatchingIdentifier");
 
   if (matchingsSize > 0) {
-    ttkIdType ids[2];
+    ttk::SimplexId ids[2];
     matchingIdentifiers1->SetNumberOfComponents(1);
     matchingIdentifiers2->SetNumberOfComponents(1);
     matchingIdentifiers1->SetNumberOfTuples(diagramSize1);
