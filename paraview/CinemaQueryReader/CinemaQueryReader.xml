@@ -36,16 +36,21 @@
                             name="SelectColumn"
                             number_of_elements="5"
                             default_values="path">
-        <ArrayListDomain attribute_type="Scalars" name="array_list">
+        <ArrayListDomain name="array_list">
           <RequiredProperties>
             <Property function="Input" name="Input" />
           </RequiredProperties>
         </ArrayListDomain>
-        <FieldDataDomain name="field_list">
-          <RequiredProperties>
-            <Property name="Input" function="Input" />
-          </RequiredProperties>
-        </FieldDataDomain>
+        <!--<ArrayListDomain attribute_type="Scalars" name="array_list">-->
+        <!--  <RequiredProperties>-->
+        <!--    <Property function="Input" name="Input" />-->
+        <!--  </RequiredProperties>-->
+        <!--</ArrayListDomain>-->
+        <!--<FieldDataDomain name="field_list">-->
+        <!--  <RequiredProperties>-->
+        <!--    <Property name="Input" function="Input" />-->
+        <!--  </RequiredProperties>-->
+        <!--</FieldDataDomain>-->
         <Documentation>TODO.</Documentation>
       </StringVectorProperty>
 

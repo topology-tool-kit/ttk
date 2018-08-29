@@ -23,9 +23,16 @@ namespace ttk{
 
     public:
 
-      DepthImageBasedGeometryApproximation();
+      DepthImageBasedGeometryApproximation(){
+          inputData_ = NULL;
+      };
+      ~DepthImageBasedGeometryApproximation(){};
 
-      ~DepthImageBasedGeometryApproximation();
+      /// Pass a pointer to an input array containing the depth values
+      inline int setInputDataPointer(void *data){
+        inputData_ = data;
+        return 0;
+      }
 
       /// Execute the Geometry Approximation.
       template <class dataType>
@@ -44,35 +51,14 @@ namespace ttk{
             vector<float>& triangleDistortions
         ) const;
 
-      /// Pass a pointer to an input array recording the depth values
-      inline int setInputDataPointer(void *data){
-        inputData_ = data;
-        return 0;
-      }
-
-      /// Pass a pointer to an output array representing a scalar field.
-      /// The expected format for the array is the following:
-      /// <vertex0-component0> <vertex0-component1> ... <vertex0-componentN>
-      /// <vertex1-component0> <vertex1-component1> ... <vertex1-componentN>
-      /// <vertexM-component0> <vertexM-component1> ... <vertexM-componentN>.
-      /// The array is expected to be correctly allocated.
-      /// \param data Pointer to the data array.
-      /// \return Returns 0 upon success, negative values otherwise.
-      /// \sa setVertexNumber() and setDimensionNumber().
-      inline int setOutputDataPointer(void *data){
-        outputData_ = data;
-        return 0;
-      }
-
     protected:
-
-      void                  *inputData_, *outputData_;
+      void  *inputData_;
   };
+
 }
 
 // if the package is a pure template class, uncomment the following line
 // #include                  <DepthImageBasedGeometryApproximation.cpp>
-
 template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute(
     double* camPos,
     double* camDir,
@@ -93,8 +79,7 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
     int numberInitialTriangles = triangles.size();
     size_t step = downsampling + 1;
 
-    size_t camResX = (size_t) camRes[0];
-    size_t camResY = (size_t) camRes[1];
+    size_t camResST[2] = {(size_t) camRes[0], (size_t) camRes[1]};
 
     dataType* depthValues = (dataType*) this->inputData_;
 
@@ -120,13 +105,17 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
     camUpTrue[1]/=temp;
     camUpTrue[2]/=temp;
 
+    // cout<<camUpTrue[0]<<" "<<camUpTrue[1]<<" "<<camUpTrue[2]<<endl;
+    // cout<<camRight[0]<<" "<<camRight[1]<<" "<<camRight[2]<<endl;
+    // cout<<camDir[0]<<" "<<camDir[1]<<" "<<camDir[2]<<endl;
+
     double camSize[2] = {
-        camResX/camResY*camHeight[0],
+        camRes[0]/camRes[1]*camHeight[0],
         camHeight[0]
     };
 
     // Compute Index Map
-    size_t n = (size_t) (camResX * camResY);
+    size_t n = camResST[0] * camResST[1];
 
     vector<int> pixelIndexVertexIndexMap;
     pixelIndexVertexIndexMap.resize( n );
@@ -152,23 +141,25 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
         #ifdef TTK_ENABLE_OPENMP
         #pragma omp parallel for num_threads(threadNumber_)
         #endif
-        for(size_t y=0; y<camResY; y+=step){
-            size_t yD = y*camResX;
-            double v = ((double)y/(double)camResY - 0.5) * pixelHeightWorld;
+        for(size_t y=0; y<camResST[1]; y+=step){
+            size_t yD = y*camResST[0];
+            double v = (((double)y)/camRes[1] - 0.5) * pixelHeightWorld;
 
-            for(size_t x=0; x<camResX; x+=step){
+            for(size_t x=0; x<camResST[0]; x+=step){
                 size_t pixelIndex = x + yD;
 
                 int vertexIndex = pixelIndexVertexIndexMap[ pixelIndex ];
                 if(vertexIndex < 0) continue;
 
                 double d = (double)(depthValues[ pixelIndex ])*delta+camNearFar[0];
-                double u = ((double)x/(double)camResX - 0.5) * pixelWidthWorld;
+                double u = ( ((double)x)/camRes[0] - 0.5) * pixelWidthWorld;
                 auto& vertex = vertices[vertexIndex];
 
                 get<0>(vertex) = camPos[0] + u*camRight[0] + v*camUpTrue[0] + d*camDir[0];
                 get<1>(vertex) = camPos[1] + u*camRight[1] + v*camUpTrue[1] + d*camDir[1];
                 get<2>(vertex) = camPos[2] + u*camRight[2] + v*camUpTrue[2] + d*camDir[2];
+
+                // cout<<get<0>(vertex)<<" "<<get<1>(vertex)<<" "<<get<2>(vertex)<<endl;
             }
         }
     }
@@ -186,13 +177,13 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
         |   |
         2 - 3
         */
-        size_t xl = camResX-step;
-        size_t yl = camResY-step;
-        size_t yD = step*camResX;
+        size_t xl = camResST[0]-step;
+        size_t yl = camResST[1]-step;
+        size_t yD = step*camResST[0];
 
         for(size_t y=0; y<yl; y+=step){
             for(size_t x=0; x<xl; x+=step){
-                size_t i0 = x  + y*camResX;
+                size_t i0 = x  + y*camResST[0];
                 size_t i1 = i0 + step;
                 size_t i2 = i0 + yD;
                 size_t i3 = i2 + step;
@@ -238,7 +229,7 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
 
     {
         std::stringstream msg;
-        msg << "[ttkDepthImageBasedGeometryApproximation] Depth Image ("<<camResX<<"x"<<camResY<<":"<<step<<") processed in " << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << std::endl;
+        msg << "[ttkDepthImageBasedGeometryApproximation] Depth Image ("<<camResST[0]<<"x"<<camResST[1]<<":"<<step<<") processed in " << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << std::endl;
         msg << "[ttkDepthImageBasedGeometryApproximation] " << "generated (" << (vertices.size()-numberInitialVertices) << " vertices) and (" << (triangles.size()-numberInitialTriangles) << " triangles)" << std::endl;
         dMsg(std::cout, msg.str(), timeMsg);
     }

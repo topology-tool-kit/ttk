@@ -65,21 +65,16 @@ class ttkCinemaQueryReader
     }
     // end of default ttk setters
 
+    // vtkGetMacro(FilepathColumnName, std::string);
+    // vtkSetMacro(FilepathColumnName, std::string);
+
     void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char *name){
         this->FilepathColumnName = std::string(name);
         this->Modified();
     };
 
-    // void SetFilepathColumnName(void*, void*, int, int, int, int, std::string name){
-    //     this->FilepathColumnName = name;
-    // };
-    // std::string GetFilepathColumnName(){
-    //     return this->FilepathColumnName;
-    // };
-
 
     int FillInputPortInformation(int port, vtkInformation *info) override {
-
       switch(port){
         case 0:
           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
@@ -87,7 +82,6 @@ class ttkCinemaQueryReader
         default:
           break;
       }
-
       return 1;
     }
 
@@ -99,7 +93,6 @@ class ttkCinemaQueryReader
         default:
           break;
       }
-
       return 1;
     }
 

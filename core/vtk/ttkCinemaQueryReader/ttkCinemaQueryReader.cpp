@@ -36,6 +36,7 @@ int ttkCinemaQueryReader::RequestData(
     {
         // Determine number of files
         int n = inputTable->GetNumberOfRows();
+        int m = inputTable->GetNumberOfColumns();
         cout<<"[ttkCinemaQueryReader] Reading "<<n<<" files:"<<endl;
 
         // Compute DatabasePath
@@ -47,23 +48,30 @@ int ttkCinemaQueryReader::RequestData(
         if(paths==nullptr){
             stringstream msg;
             msg<<"[ttkCinemaQueryReader] ERROR: Table does not have FilepathColumn '"<<this->FilepathColumnName<<"'"<<endl;
-            dMsg(cout, msg.str(), timeMsg);
+            dMsg(cerr, msg.str(), timeMsg);
+            return 0;
         }
 
         // For each row
         for(int i=0; i<n; i++){
             // get path
             auto path = databasePath + "/" + paths->GetVariantValue(i).ToString();
-            cout<<"[ttkCinemaQueryReader]    "<<i<<": "<<path<<endl;
             auto ext = path.substr( path.length() - 3 );
 
             std::ifstream infile(path.data());
             bool exists = infile.good();
 
+            {
+                stringstream msg;
+                msg<<"[ttkCinemaQueryReader]    "<<i<<": "<<path<<endl;
+                dMsg(cout, msg.str(), timeMsg);
+            }
+
             if(!exists){
                 stringstream msg;
-                msg<<"[ttkCinemaQueryReader] ERROR: File does not exist: "<<path<<endl;
-                dMsg(cout, msg.str(), timeMsg);
+                msg<<"[ttkCinemaQueryReader]    ERROR: File does not exist."<<endl;
+                dMsg(cerr, msg.str(), timeMsg);
+                continue;
             }
 
             // load data using correct reader
@@ -88,7 +96,6 @@ int ttkCinemaQueryReader::RequestData(
 
             // Augment read data with row information
             // TODO: Make Optional
-            int m = inputTable->GetNumberOfColumns();
             auto block = output->GetBlock(i);
             for(int j=0; j<m; j++){
                 vtkSmartPointer<vtkVariantArray> c = vtkSmartPointer<vtkVariantArray>::New();
