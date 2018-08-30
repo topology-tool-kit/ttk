@@ -31,19 +31,19 @@ def doIt(X, method, ncomponents, nneighbors, njobs):
     import numpy
 
     if method == 0:
-        se = manifold.SpectralEmbedding(n_components=ncomponents, n_neighbors=nneighbors)
+        se = manifold.SpectralEmbedding(n_components=ncomponents, n_neighbors=nneighbors, n_jobs=njobs)
         Y = se.fit_transform(X)
     elif method == 1:
-        lle = manifold.LocallyLinearEmbedding(nneighbors, ncomponents, eigen_solver='auto', method='standard')
+        lle = manifold.LocallyLinearEmbedding(n_components=ncomponents, n_neighbors=nneighbors, eigen_solver='auto', method='standard', n_jobs=njobs)
         Y = lle.fit_transform(X)
     elif method == 2:
-        mds = manifold.MDS(ncomponents, max_iter=100, n_init=1)
+        mds = manifold.MDS(n_components=ncomponents, max_iter=100, n_init=1, n_jobs=njobs)
         Y = mds.fit_transform(X)
     elif method == 3:
         tsne = manifold.TSNE(n_components=ncomponents, init='pca', random_state=0)
         Y = tsne.fit_transform(X)
     elif method == 4:
-        iso = manifold.Isomap(nneighbors, ncomponents)
+        iso = manifold.Isomap(n_components=ncomponents, n_neighbors=nneighbors, n_jobs=njobs)
         Y = iso.fit_transform(X)
 
     L = list()
