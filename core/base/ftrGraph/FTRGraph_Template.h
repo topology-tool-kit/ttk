@@ -122,7 +122,7 @@ namespace ttk
 
          // Debug print
          // std::cout << graph_.printVisit() << std::endl;
-         printGraph(4);
+         // printGraph(4);
          // std::cout << "up" << std::endl;
          // std::cout << dynGraphs_.up.print() << std::endl;
          // std::cout << "down" << std::endl;
@@ -209,7 +209,7 @@ namespace ttk
       void FTRGraph<ScalarType>::criticalSearch()
       {
          const bool addMin = true;
-         const bool addMax = true;
+         const bool addMax = false;
 
          TaskChunk leafChunkParams(scalars_->getSize());
          leafChunkParams.grainSize = 10000;
@@ -324,9 +324,11 @@ namespace ttk
          valences_.lower.resize(mesh_.getNumberOfVertices());
          valences_.upper.resize(mesh_.getNumberOfVertices());
 
-         // bfsCells_.resize(mesh_.getNumberOfTriangles());
-         // bfsEdges_.resize(mesh_.getNumberOfEdges());
-         // bfsVerts_.resize(mesh_.getNumberOfVertices());
+#ifdef TTK_ENABLE_FTR_BFS
+         bfsCells_.resize(mesh_.getNumberOfTriangles());
+         bfsEdges_.resize(mesh_.getNumberOfEdges());
+         bfsVerts_.resize(mesh_.getNumberOfVertices());
+#endif
       }
 
       template <typename ScalarType>
@@ -343,9 +345,11 @@ namespace ttk
          lazy_.init();
 #endif
 
-         // fillVector<idCell>(bfsCells_, nullCell);
-         // fillVector<idEdge>(bfsEdges_, nullEdge);
-         // fillVector<idVertex>(bfsVerts_, nullVertex);
+#ifdef TTK_ENABLE_FTR_BFS
+         fillVector<idCell>(bfsCells_, nullCell);
+         fillVector<idEdge>(bfsEdges_, nullEdge);
+         fillVector<idVertex>(bfsVerts_, nullVertex);
+#endif
 
          // Stats
 #ifdef TTK_ENABLE_FTR_STATS

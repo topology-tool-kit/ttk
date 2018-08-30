@@ -402,7 +402,7 @@ namespace ttk
          // At a split saddle, assign new arcs at each CC in the DynGraph,
          // compute the new localPropagation for each using a BFS
          // and launch the new propagation.
-         void splitAtSaddleBFS(Propagation* const localProp);
+         Propagation* splitAtSaddleBFS(Propagation* const localProp);
 
          // At a split saddle, assign new arcs at each CC in the DynGraph,
          // and launch a new propagation taking care of these arcs simultaneously
@@ -431,7 +431,7 @@ namespace ttk
 
          // visit a vertex in terms of segmantation and history,
          // also check if the current arc is merging through an opposite one.
-         idSuperArc visit(Propagation* const localProp, const idSuperArc curArc);
+         void visit(Propagation* const localProp, const idSuperArc curArc);
 
          // Tools
 

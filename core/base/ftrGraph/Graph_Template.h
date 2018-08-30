@@ -21,6 +21,10 @@ namespace ttk
             if (getArc(arcId).isVisible() && getArc(arcId).isEmpty()) {
                const idNode                  upNodeId   = getArc(arcId).getUpNodeId();
                const idNode                  downNodeId = getArc(arcId).getDownNodeId();
+               if (upNodeId == nullNode) {
+                  std::cout << "Remaining nulled arc " << printArc(arcId) << std::endl;
+                  continue;
+               }
                std::pair<idVertex, idVertex> arcVerts =
                    std::make_pair(getNode(upNodeId).getVertexIdentifier(),
                                   getNode(downNodeId).getVertexIdentifier());
