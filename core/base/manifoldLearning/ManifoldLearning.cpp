@@ -10,11 +10,12 @@ using namespace std;
 using namespace ttk;
 
 ManifoldLearning::ManifoldLearning():
-  matrixDimension_{0},
+  numberOfRows_{0},
+  numberOfColumns_{0},
   numberOfComponents_{0},
   numberOfNeighbors_{0},
   matrix_{nullptr},
-  components_{nullptr},
+  embedding_{nullptr},
   majorVersion_{'0'}
 {
   auto finalize_callback=[](){
@@ -45,5 +46,201 @@ ManifoldLearning::~ManifoldLearning(){
 }
 
 int ManifoldLearning::execute() const{
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(majorVersion_<'3') return -1;
+  if(modulePath_.length()<=0) return -1;
+  if(moduleName_.length()<=0) return -1;
+  if(functionName_.length()<=0) return -1;
+  if(!matrix_) return -1;
+  // if(!components_) return -1;
+#endif
+
+  const int numberOfComponents=std::max(2,numberOfComponents_);
+  const int numberOfNeighbors=std::max(1,numberOfNeighbors_);
+
+  // declared here to avoid crossing initialization with goto
+  vector<PyObject*> gc;
+  PyObject* pArray;
+  PyObject* pPath;
+  PyObject* pSys;
+  PyObject* pName;
+  PyObject* pModule;
+  PyObject* pFunc;
+  PyObject* pMethod;
+  PyObject* pNumberOfComponents;
+  PyObject* pNumberOfNeighbors;
+  PyObject* pJobs;
+  PyObject* pEmbedding;
+  PyArrayObject* npArr;
+  PyArrayObject* npEmbedding;
+
+   string modulePath;
+
+  if(PyArray_API==NULL){
+    import_array();
+  }
+
+  // convert the input matrix into a NumPy array.
+  const int numberOfDimensions=2;
+  npy_intp dimensions[2]{numberOfRows_, numberOfColumns_};
+
+  pArray=PyArray_SimpleNewFromData(numberOfDimensions,
+      dimensions, NPY_DOUBLE, matrix_);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pArray){
+    cerr << "[ManifoldLearning] Python error: failed to convert the array." << endl;
+    goto collect_garbage;
+  }
+#endif
+  gc.push_back(pArray);
+
+  npArr=reinterpret_cast<PyArrayObject*>(pArray);
+
+  pSys=PyImport_ImportModule("sys");
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pSys){
+    cerr << "[ManifoldLearning] Python error: failed to load the sys module." << endl;
+    goto collect_garbage;
+  }
+#endif
+  gc.push_back(pSys);
+
+  pPath=PyObject_GetAttrString(pSys, "path");
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pPath){
+    cerr << "[ManifoldLearning] Python error: failed to get the path variable." << endl;
+    goto collect_garbage;
+  }
+#endif
+  gc.push_back(pPath);
+
+  if(modulePath_=="default")
+    modulePath=VALUE(TTK_SCRIPTS_PATH);
+  else
+    modulePath=modulePath_;
+
+  {
+    stringstream msg;
+    msg << "[ManifoldLearning] Loading Python script from: "
+      << modulePath << endl;
+    dMsg(cout, msg.str(), infoMsg);
+  }
+  PyList_Append(pPath, PyUnicode_FromString(modulePath.data()));
+
+  // set other parameters
+  pNumberOfComponents=PyLong_FromLong(numberOfComponents);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pNumberOfComponents){
+    cerr << "[ManifoldLearning] Python error: cannot convert pNumberOfComponents." << endl;
+    goto collect_garbage;
+  }
+#endif
+  gc.push_back(pNumberOfComponents);
+
+  pNumberOfNeighbors=PyLong_FromLong(numberOfNeighbors);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pNumberOfNeighbors){
+    cerr << "[ManifoldLearning] Python error: cannot convert pNumberOfNeighbors." << endl;
+    goto collect_garbage;
+  }
+#endif
+  gc.push_back(pNumberOfNeighbors);
+
+  pMethod=PyLong_FromLong(method_);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pMethod){
+    cerr << "[ManifoldLearning] Python error: cannot convert pMethod." << endl;
+    goto collect_garbage;
+  }
+#endif
+  gc.push_back(pMethod);
+
+  pJobs=PyLong_FromLong(threadNumber_);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pJobs){
+    cerr << "[ManifoldLearning] Python error: cannot convert pJobs." << endl;
+    goto collect_garbage;
+  }
+#endif
+
+  // load module
+  pName=PyUnicode_FromString(moduleName_.data());
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pName){
+    cerr << "[ManifoldLearning] Python error: moduleName parsing failed." << endl;
+    goto collect_garbage;
+  }
+#endif
+  gc.push_back(pName);
+
+  pModule=PyImport_Import(pName);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pModule){
+    cerr << "[ManifoldLearning] Python error: module import failed." << endl;
+    goto collect_garbage;
+  }
+#endif
+  gc.push_back(pModule);
+
+  // configure function
+  pFunc=PyObject_GetAttrString(pModule, functionName_.data());
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pFunc){
+    cerr << "[ManifoldLearning] Python error: functionName parsing failed." << endl;
+    goto collect_garbage;
+  }
+#endif
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!PyCallable_Check(pFunc)){
+    cerr << "[ManifoldLearning] Python error: function call failed." << endl;
+    goto collect_garbage;
+  }
+#endif
+
+   pEmbedding=PyObject_CallFunctionObjArgs(pFunc, npArr, pMethod, pNumberOfComponents,
+       pNumberOfNeighbors, pJobs, NULL);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pEmbedding){
+    cerr << "[ManifoldLearning] Python error: function returned invalid object." << endl;
+    goto collect_garbage;
+  }
+  if(PyList_Size(pEmbedding) != numberOfComponents){
+    cerr << "[ManifoldLearning] Python error: returned list has incorrect size." << endl;
+    goto collect_garbage;
+  }
+#endif
+  gc.push_back(pEmbedding);
+
+  embedding_->resize(numberOfComponents);
+  for(int i=0; i<numberOfComponents; ++i){
+    npEmbedding=reinterpret_cast<PyArrayObject*>(PyList_GetItem(pEmbedding,i));
+
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(PyArray_SIZE(npEmbedding) != numberOfRows_){
+      cerr << "[ManifoldLearning] Python error: returned vector has incorrect size." << endl;
+      embedding_->clear();
+      goto collect_garbage;
+    }
+#endif
+
+    if(PyArray_TYPE(npEmbedding)==NPY_FLOAT){
+      float* c_out=reinterpret_cast<float*>(PyArray_DATA(npEmbedding));
+      for(int j=0; j<numberOfRows_; ++j)
+        (*embedding_)[i].push_back(c_out[j]);
+    }
+    if(PyArray_TYPE(npEmbedding)==NPY_DOUBLE){
+      double* c_out=reinterpret_cast<double*>(PyArray_DATA(npEmbedding));
+      for(int j=0; j<numberOfRows_; ++j)
+        (*embedding_)[i].push_back(c_out[j]);
+    }
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+collect_garbage:
+#endif
+  for(auto i : gc)
+    Py_DECREF(i);
+
   return 0;
 }

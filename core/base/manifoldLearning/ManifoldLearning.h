@@ -40,13 +40,19 @@ namespace ttk{
         return 0;
       }
 
-      inline int setInputMatrixDimension(const int matrixDimension){
-        matrixDimension_=matrixDimension;
+      inline int setInputMatrixDimensions(int numberOfRows, int numberOfColumns){
+        numberOfRows_=numberOfRows;
+        numberOfColumns_=numberOfColumns;
         return 0;
       }
 
       inline int setInputMatrix(void* data){
         matrix_=data;
+        return 0;
+      }
+
+      inline int setInputMethod(int method){
+        method_=method;
         return 0;
       }
 
@@ -60,8 +66,8 @@ namespace ttk{
         return 0;
       }
 
-       inline int setOutputComponents(std::vector<void*>* data){
-        components_=data;
+       inline int setOutputComponents(std::vector<std::vector<double>>* data){
+        embedding_=data;
         return 0;
        }
 
@@ -71,11 +77,13 @@ namespace ttk{
       std::string modulePath_;
       std::string moduleName_;
       std::string functionName_;
-      int matrixDimension_;
+      int numberOfRows_;
+      int numberOfColumns_;
+      int method_;
       int numberOfComponents_;
       int numberOfNeighbors_;
       void* matrix_;
-      std::vector<void*>* components_;
+      std::vector<std::vector<double>>* embedding_;
       char majorVersion_;
   };
 }

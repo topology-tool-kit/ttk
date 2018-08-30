@@ -22,7 +22,7 @@
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
+          <DataType value="vtkTable"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars" number_of_components="1">
           <Property name="Input" function="FieldDataSelection" />
@@ -31,6 +31,85 @@
           Data-set to process.
         </Documentation>
       </InputProperty>
+
+      <StringVectorProperty name="ModulePath"
+        label="Module Path"
+        command="SetModulePath"
+        number_of_elements="1"
+        default_values="default"
+        panel_visibility="advanced">
+        <FileListDomain name="files"/>
+        <Documentation>
+          Set the path of the Python module.
+        </Documentation>
+        <Hints>
+          <UseDirectoryName/>
+          <AcceptAnyFile/>
+        </Hints>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ModuleName"
+        label="Module Name"
+        command="SetModuleName"
+        number_of_elements="1"
+        default_values="manifoldLearning"
+        panel_visibility="advanced">
+        <Documentation>
+          Set the name of the Python module.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="FunctionName"
+        label="Function Name"
+        command="SetFunctionName"
+        number_of_elements="1"
+        default_values="doIt"
+        panel_visibility="advanced">
+        <Documentation>
+          Set the name of the Python function.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="NumberOfComponents"
+        label="Number Of Components"
+        command="SetNumberOfComponents"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="default">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Set the number of components.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="NumberOfNeighbors"
+        label="Number Of Neighbors"
+        command="SetNumberOfNeighbors"
+        number_of_elements="1"
+        default_values="5"
+        panel_visibility="default">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Set the number of neighbors.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="Method"
+        label="Label"
+        command="SetMethod"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="SpectralEmbedding"/>
+          <Entry value="1" text="LocallyLinearEmbedding"/>
+          <Entry value="2" text="MDS"/>
+          <Entry value="3" text="TSNE"/>
+          <Entry value="4" text="Isomap"/>
+        </EnumerationDomain>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
 
       <IntVectorProperty
         name="UseAllCores"
