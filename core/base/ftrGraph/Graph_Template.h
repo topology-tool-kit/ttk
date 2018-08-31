@@ -19,8 +19,8 @@ namespace ttk
          for (idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
             const SuperArc& arc = getArc(arcId);
             if (getArc(arcId).isVisible() && getArc(arcId).isEmpty()) {
-               const idNode                  upNodeId   = getArc(arcId).getUpNodeId();
-               const idNode                  downNodeId = getArc(arcId).getDownNodeId();
+               const idNode upNodeId   = getArc(arcId).getUpNodeId();
+               const idNode downNodeId = getArc(arcId).getDownNodeId();
                if (upNodeId == nullNode) {
                   std::cout << "Remaining nulled arc " << printArc(arcId) << std::endl;
                   continue;
@@ -30,6 +30,7 @@ namespace ttk
                                   getNode(downNodeId).getVertexIdentifier());
                if (zeroedArc.count(arcVerts)) {
                   getArc(arcId).merge(zeroedArc[arcVerts]);
+                  std::cout << "Merge " << printArc(arcId) << " in " << printArc(zeroedArc[arcVerts]) << std::endl;
                } else {
                   zeroedArc[arcVerts] = arcId;
                }

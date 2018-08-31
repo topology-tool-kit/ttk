@@ -122,7 +122,7 @@ namespace ttk
 
          // Debug print
          // std::cout << graph_.printVisit() << std::endl;
-         // printGraph(4);
+         printGraph(4);
          // std::cout << "up" << std::endl;
          // std::cout << dynGraphs_.up.print() << std::endl;
          // std::cout << "down" << std::endl;
@@ -278,7 +278,7 @@ namespace ttk
                const idVertex   corLeaf          = graph_.getLeaf(i);
                const bool       fromMin          = graph_.isLeafFromMin(i);
                Propagation*     localPropagation = newPropagation(corLeaf, fromMin);
-               const idSuperArc newArc = graph_.openArc(graph_.makeNode(corLeaf), localPropagation);
+               const idSuperArc newArc = graph_.openArc(std::get<0>(graph_.makeNode(corLeaf)), localPropagation);
                graph_.visit(corLeaf, newArc);
                // process
 #ifdef TTK_ENABLE_OPENMP

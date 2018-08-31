@@ -65,7 +65,6 @@ namespace ttk
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
-                  graph_.getArc(currentArc).visit();
                }
                // ensure we will always recover this arc from the upper neighbors
                for (const idEdge dgNode : upperStarEdges) {
@@ -73,17 +72,18 @@ namespace ttk
                }
 
                visit(localProp, currentArc);
+               graph_.getArc(currentArc).visit();
 
                lazyUpdatePreimage(localProp, currentArc);
 
             } else {
 
-               // locally aply the lazy one the current growing arc
+               // locally apply the lazy one the current growing arc
                for (const idEdge e : lowerStarEdges) {
                   const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
                   if (a != nullSuperArc && graph_.getArc(a).getPropagation()->getId() == localProp->getId()) {
                      lazyApply(localProp, a);
-                     break;
+                     // break; // TODO try back
                   }
                }
 # else
@@ -107,6 +107,7 @@ namespace ttk
                }
 
                if (!isJoinSaddle && !isSplitSaddle){
+                  // this arc is not empty
                   graph_.getArc(currentArc).visit();
                }
             }
@@ -115,7 +116,7 @@ namespace ttk
             bool seenAbove = localGrowth(localProp, upperStarEdges);
             if (!seenAbove) {
                // We have reached a local extrema
-               const idNode upNode = graph_.makeNode(curVert);
+               const idNode upNode = std::get<0>(graph_.makeNode(curVert));
                graph_.closeArc(currentArc, upNode);
                DEBUG_1(<< curVert << " arc max " << graph_.printArc(currentArc) << std::endl);
 #ifdef TTK_ENABLE_FTR_STATS
@@ -135,7 +136,9 @@ namespace ttk
          // get the corresponging critical point on which
          // the propagation has stopped (join, split, max)
          const idVertex upVert = localProp->getCurVertex();
-         const idNode   upNode = graph_.makeNode(upVert);
+         // reached node id and wether it has been created by this task or already existed
+         idNode upNode;
+         bool newNode;
 
          if (isJoinSaddle) {
             DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
@@ -155,6 +158,7 @@ namespace ttk
                lowerComp = lowerComps(lowerStarEdges, localProp);
             }
             localGrowth(localProp, upperStarEdges);
+            std::tie(upNode, newNode) = graph_.makeNode(upVert);
             mergeAtSaddle(upNode, localProp, lowerComp);
 
             const idNode downNode = graph_.getNodeId(upVert);
@@ -187,19 +191,25 @@ namespace ttk
          if (isSplitSaddle && (!isJoinSaddle || isJoinSadlleLast)) {
             if (!isJoinSaddle) {
                // only one arc coming here
+               std::tie(upNode, newNode) = graph_.makeNode(upVert);
                graph_.closeArc(currentArc, upNode);
                DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
             }
 
 #ifdef TTK_ENABLE_FTR_BFS
-               Propagation* remainProp = splitAtSaddleBFS(localProp);
-               growthFromSeed(upVert, remainProp);
+            // TODO send newNode to avoid useless propagation
+            Propagation* remainProp = splitAtSaddleBFS(localProp);
+            growthFromSeed(upVert, remainProp);
 #else
+            if (newNode) {
                splitAtSaddle(localProp, upperComp);
                growthFromSeed(upVert, localProp);
+            }
 #endif
          } else if (isJoinSadlleLast) {
-            growthFromSeed(upVert, localProp, joinNewArc);
+            if (newNode) {
+               growthFromSeed(upVert, localProp, joinNewArc);
+            }
          }
       }
 
@@ -222,7 +232,7 @@ namespace ttk
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
 
             if (valences_.lower[curVert] == 0) { // min
-               const idNode minNode = graph_.makeNode(curVert);
+               const idNode minNode = std::get<0>(graph_.makeNode(curVert));
                currentArc           = graph_.openArc(minNode, localProp);
                DEBUG_1(<< curVert << " min arc " << currentArc << std::endl);
             }
@@ -240,11 +250,12 @@ namespace ttk
                      dynGraph(localProp).setCorArc(dgNode, currentArc);
                   }
                } else { // max
-                  const idNode maxNode = graph_.makeNode(curVert);
+                  const idNode maxNode = std::get<0>(graph_.makeNode(curVert));
                   graph_.closeArc(currentArc, maxNode);
                   DEBUG_1(<< curVert << "max arc close " << graph_.printArc(currentArc) << std::endl);
                }
 
+               graph_.getArc(currentArc).visit();
                visit(localProp, currentArc);
 
                lazyUpdatePreimage(localProp, currentArc);
@@ -271,7 +282,7 @@ namespace ttk
                if (lowerComp.size() == 1) {  // regular
                   currentArc = lowerComp[0]->getCorArc();
                } else if (lowerComp.size() > 1) {  // join saddle
-                  const idNode sadNode = graph_.makeNode(curVert);
+                  const idNode sadNode = std::get<0>(graph_.makeNode(curVert));
                   currentArc           = graph_.openArc(sadNode, localProp);
                   DEBUG_1(<< curVert << " join arc " << currentArc << std::endl);
                   mergeAtSaddle(sadNode, lowerComp);
@@ -285,16 +296,19 @@ namespace ttk
 
                upperComp = upperComps(upperStarEdges, localProp);
                if (!upperComp.size()) {
-                  const idNode maxNode = graph_.makeNode(curVert);
+                  const idNode maxNode = std::get<0>(graph_.makeNode(curVert));
                   graph_.closeArc(currentArc, maxNode);
                   DEBUG_1(<< curVert << "max arc close " << graph_.printArc(currentArc) << std::endl);
                } else if (upperComp.size() < 2) {
-                  // 1 cc above
+                  if (!isJoin) {
+                     // this arc is not empty
+                     graph_.getArc(currentArc).visit();
+                  }
                } else {
                   if (isJoin) {
                      graph_.getArc(currentArc).hide();
                   } else {
-                     const idNode splitNode = graph_.makeNode(curVert);
+                     const idNode splitNode = std::get<0>(graph_.makeNode(curVert));
                      graph_.closeArc(currentArc, splitNode);
                      DEBUG_1(<< curVert << "split arc close " << graph_.printArc(currentArc) << std::endl);
                   }

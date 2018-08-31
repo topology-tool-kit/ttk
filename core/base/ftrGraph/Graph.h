@@ -219,16 +219,19 @@ namespace ttk
             leaves_.emplace_back(std::make_tuple(v, isMax));
          }
 
-         idNode makeNode(const idVertex v)
+         // return either a new node or the existing one if this vertex
+         // already corresponds to a node.
+         // The bool is true if a node has been created.
+         std::tuple<idNode, bool> makeNode(const idVertex v)
          {
             if (isNode(v)) {
-               return getNodeId(v);
+               return {getNodeId(v), false};
             }
 
             const idNode newNode = nodes_.getNext();
             nodes_[newNode].setVerterIdentifier(v);
             visit(v, newNode, false);
-            return newNode;
+            return {newNode, true};
          }
 
          idSuperArc openArc(const idNode downId, Propagation * p = nullptr)
