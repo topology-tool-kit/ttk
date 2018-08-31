@@ -28,7 +28,7 @@ def doIt(X, method, ncomponents, nneighbors, njobs):
         print("[ManifoldLearning] Python error: sklearn module not found.")
 
     from sklearn import manifold
-    import numpy
+    import numpy as np
 
     if method == 0:
         se = manifold.SpectralEmbedding(n_components=ncomponents, n_neighbors=nneighbors, n_jobs=njobs)
@@ -48,6 +48,6 @@ def doIt(X, method, ncomponents, nneighbors, njobs):
 
     L = list()
     for i in range(ncomponents):
-        L.append(numpy.copy(Y[:, i]))
+        L.append(np.copy(Y[:, i]))
 
     return L
