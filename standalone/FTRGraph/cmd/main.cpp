@@ -11,11 +11,17 @@ int main(int argc, char **argv)
 {
    vtkProgram<ttkFTRGraph> program;
 
+   int scalarFieldId = 0;
+
+   program.parser_.setArgument("f", &scalarFieldId, "Scalar field id", true);
+
    int ret = 0;
    ret     = program.init(argc, argv);
 
    if (ret != 0)
       return ret;
+
+   program.ttkObject_->SetScalarFieldId(scalarFieldId);
 
    // execute data processing
    ret = program.run();
