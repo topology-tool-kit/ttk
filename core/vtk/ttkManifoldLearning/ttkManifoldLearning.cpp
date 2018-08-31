@@ -9,11 +9,14 @@ vtkStandardNewMacro(ttkManifoldLearning)
     Memory m;
 
     const int numberOfRows=input->GetNumberOfRows();
-    const int numberOfColumns=input->GetNumberOfColumns();
+    const int numberOfColumns=ScalarFields.size();
     vector<double> inputData;
+    vector<vtkAbstractArray*> arrays;
+    for(auto s : ScalarFields)
+      arrays.push_back(input->GetColumnByName(s.data()));
     for(int i=0; i<numberOfRows; ++i){
-      for(int j=0; j<numberOfColumns; ++j)
-        inputData.push_back(input->GetValue(i,j).ToDouble());
+      for(auto arr : arrays)
+        inputData.push_back(arr->GetVariantValue(i).ToDouble());
     }
 
     outputData_->clear();
@@ -30,7 +33,7 @@ vtkStandardNewMacro(ttkManifoldLearning)
     manifoldLearning_.setOutputComponents(outputData_);
     manifoldLearning_.execute();
 
-    // output->ShallowCopy(input);
+    output->ShallowCopy(input);
     for(int i=0; i<NumberOfComponents; ++i){
       vtkSmartPointer<vtkDoubleArray> arr=vtkSmartPointer<vtkDoubleArray>::New();
       arr->SetVoidArray((*outputData_)[i].data(), numberOfRows, 1);

@@ -78,6 +78,16 @@ class ttkManifoldLearning
     }
     // end of default ttk setters
 
+    void SetScalarFields(std::string s){
+      ScalarFields.push_back(s);
+      Modified();
+    }
+
+    void ClearScalarFields(){
+      ScalarFields.clear();
+      Modified();
+    }
+
     vtkSetMacro(ModulePath, std::string);
     vtkGetMacro(ModulePath, std::string);
 
@@ -148,6 +158,7 @@ class ttkManifoldLearning
     ttk::ThreadId ThreadNumber;
     ttk::ManifoldLearning manifoldLearning_;
 
+    std::vector<std::string> ScalarFields;
     std::vector<std::vector<double>>* outputData_;
 
 };
