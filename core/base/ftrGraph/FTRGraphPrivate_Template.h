@@ -65,6 +65,10 @@ namespace ttk
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
+                  if(valences_.upper[curVert] && valences_.lower[curVert]){
+                     // not saddle neither extrema
+                     graph_.getArc(currentArc).visit(curVert);
+                  }
                }
                // ensure we will always recover this arc from the upper neighbors
                for (const idEdge dgNode : upperStarEdges) {
@@ -72,7 +76,6 @@ namespace ttk
                }
 
                visit(localProp, currentArc);
-               graph_.getArc(currentArc).visit();
 
                lazyUpdatePreimage(localProp, currentArc);
 
@@ -83,7 +86,6 @@ namespace ttk
                   const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
                   if (a != nullSuperArc && graph_.getArc(a).getPropagation()->getId() == localProp->getId()) {
                      lazyApply(localProp, a);
-                     // break; // TODO try back
                   }
                }
 # else
@@ -106,9 +108,9 @@ namespace ttk
                   isSplitSaddle = true;
                }
 
-               if (!isJoinSaddle && !isSplitSaddle){
-                  // this arc is not empty
-                  graph_.getArc(currentArc).visit();
+               if (!isJoinSaddle && !isSplitSaddle && upperComp.size()){
+                  // this arc is not empty (not saddle not max)
+                  graph_.getArc(currentArc).visit(curVert);
                }
             }
 
@@ -202,6 +204,8 @@ namespace ttk
             growthFromSeed(upVert, remainProp);
 #else
             if (newNode) {
+               // BUG TODO This is not a good way to do this,
+               // may discard work of other components and so leads to unfinished works
                splitAtSaddle(localProp, upperComp);
                growthFromSeed(upVert, localProp);
             }
@@ -244,6 +248,10 @@ namespace ttk
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below (need findSubtree)
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
+                  if(valences_.upper[curVert] && valences_.lower[curVert]){
+                     // not saddle neither extrema
+                     graph_.getArc(currentArc).visit(curVert);
+                  }
                }
                if (upperStarEdges.size()) {
                   for (const idEdge dgNode : upperStarEdges) {
@@ -255,7 +263,6 @@ namespace ttk
                   DEBUG_1(<< curVert << "max arc close " << graph_.printArc(currentArc) << std::endl);
                }
 
-               graph_.getArc(currentArc).visit();
                visit(localProp, currentArc);
 
                lazyUpdatePreimage(localProp, currentArc);
@@ -302,7 +309,7 @@ namespace ttk
                } else if (upperComp.size() < 2) {
                   if (!isJoin) {
                      // this arc is not empty
-                     graph_.getArc(currentArc).visit();
+                     graph_.getArc(currentArc).visit(curVert);
                   }
                } else {
                   if (isJoin) {

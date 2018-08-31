@@ -13,26 +13,34 @@ namespace ttk
       void Graph::mergeArcs(const Scalars<ScalarType>* const s)
       {
          std::unordered_map<idSuperArc, idSuperArc> mapArcs;
-         std::map<std::pair<idVertex, idVertex>, idSuperArc> zeroedArc;
+         std::map<std::pair<idVertex, idVertex>, idSuperArc> masterArcs;
 
          const idSuperArc nbArcs = arcs_.size();
          for (idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
             const SuperArc& arc = getArc(arcId);
-            if (getArc(arcId).isVisible() && getArc(arcId).isEmpty()) {
+            if (getArc(arcId).isVisible()) {
                const idNode upNodeId   = getArc(arcId).getUpNodeId();
                const idNode downNodeId = getArc(arcId).getDownNodeId();
                if (upNodeId == nullNode) {
                   std::cout << "Remaining nulled arc " << printArc(arcId) << std::endl;
+                  getArc(arcId).hide();
                   continue;
                }
-               std::pair<idVertex, idVertex> arcVerts =
-                   std::make_pair(getNode(upNodeId).getVertexIdentifier(),
-                                  getNode(downNodeId).getVertexIdentifier());
-               if (zeroedArc.count(arcVerts)) {
-                  getArc(arcId).merge(zeroedArc[arcVerts]);
-                  std::cout << "Merge " << printArc(arcId) << " in " << printArc(zeroedArc[arcVerts]) << std::endl;
+               std::pair<idVertex, idVertex> arcVerts;
+               if (getArc(arcId).isEmpty()) {
+                  arcVerts = std::make_pair(getNode(upNodeId).getVertexIdentifier(),
+                                            getNode(downNodeId).getVertexIdentifier());
                } else {
-                  zeroedArc[arcVerts] = arcId;
+                  arcVerts = std::make_pair(getArc(arcId).getFirstV(), getArc(arcId).getLastV());
+               }
+               if (std::get<0>(arcVerts) > std::get<1>(arcVerts)){
+                  arcVerts = std::make_pair(std::get<1>(arcVerts), std::get<0>(arcVerts));
+               }
+               if (masterArcs.count(arcVerts)) {
+                  getArc(arcId).merge(masterArcs[arcVerts]);
+                  std::cout << "Merge " << printArc(arcId) << " in " << printArc(masterArcs[arcVerts]) << std::endl;
+               } else {
+                  masterArcs[arcVerts] = arcId;
                }
             }
 

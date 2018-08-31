@@ -37,7 +37,7 @@ namespace ttk
          idNode downNodeId_;
          AtomicUF* ufProp_;
          bool visible_;
-         bool empty_;
+         idVertex firstV_, lastV_;
          idSuperArc merged_;
          Segment segmentation_;
 #ifndef NDEBUG
@@ -50,7 +50,8 @@ namespace ttk
                downNodeId_{down},
                ufProp_{nullptr},
                visible_{true},
-               empty_{true},
+               firstV_{nullVertex},
+               lastV_{nullVertex},
                merged_{nullSuperArc},
                segmentation_{}
 #ifndef NDEBUG
@@ -112,14 +113,28 @@ namespace ttk
             return visible_;
          }
 
-         void visit(void)
+         void visit(const idVertex v)
          {
-            empty_ = false;
+            // firstV only set once
+            if (firstV_ == nullVertex)
+               firstV_ = v;
+
+            lastV_ = v;
          }
 
          bool isEmpty() const
          {
-            return empty_;
+            return firstV_ == nullVertex;
+         }
+
+         idVertex getFirstV() const
+         {
+            return firstV_;
+         }
+
+         idVertex getLastV() const
+         {
+            return lastV_;
          }
 
          void merge(const idSuperArc arc)

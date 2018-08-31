@@ -72,8 +72,11 @@ std::string Graph::printArc(const idSuperArc arcId) const
    } else {
       res << "X";
    }
+   res << " ";
    if (arcs_[arcId].isEmpty()) {
-      res << "-0-";
+      res << "--";
+   } else {
+      res << arcs_[arcId].getFirstV() << ".." << arcs_[arcId].getLastV();
    }
    res << ")";
    return res.str();
