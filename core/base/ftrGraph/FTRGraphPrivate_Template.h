@@ -47,6 +47,7 @@ namespace ttk
          while (!isJoinSaddle && !isSplitSaddle && !localProp->empty()) {
             localProp->nextVertex();
             const idVertex curVert = localProp->getCurVertex();
+            idSuperArc mergeIn = nullSuperArc;
 
             // Check history for visit (quick test)
             if (propagations_.hasVisited(curVert, localProp)) {
@@ -65,6 +66,10 @@ namespace ttk
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
+                  if (currentArc == nullSuperArc) {
+                     // merging component, propagation has been discarded
+                     continue;
+                  }
                   if(valences_.upper[curVert] && valences_.lower[curVert]){
                      // not saddle neither extrema
                      graph_.getArc(currentArc).visit(curVert);
@@ -75,7 +80,7 @@ namespace ttk
                   dynGraph(localProp).setCorArc(dgNode, currentArc);
                }
 
-               visit(localProp, currentArc);
+               mergeIn = visit(localProp, currentArc);
 
                lazyUpdatePreimage(localProp, currentArc);
 
@@ -99,8 +104,12 @@ namespace ttk
                } else {
                   if (lowerComp.size()) {
                      currentArc = lowerComp[0]->getCorArc();
+                     if (currentArc == nullSuperArc) {
+                        // current arc is merging, the lower star has been discontinued
+                        continue;
+                     }
                   }
-                  visit(localProp, currentArc);
+                  mergeIn = visit(localProp, currentArc);
                }
                updatePreimage(localProp, currentArc);
                upperComp = upperComps(upperStarEdges, localProp);
@@ -114,11 +123,18 @@ namespace ttk
                }
             }
 
+            // do not propagate on merging arc.
+            if (mergeIn != nullSuperArc) {
+               graph_.getArc(currentArc).merge(mergeIn);
+               DEBUG_1(<< curVert << " arc merging " << currentArc << std::endl);
+               continue;
+            }
+
             // add upper star for futur visit
             bool seenAbove = localGrowth(localProp, upperStarEdges);
             if (!seenAbove) {
                // We have reached a local extrema
-               const idNode upNode = std::get<0>(graph_.makeNode(curVert));
+               const idNode upNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, upNode);
                DEBUG_1(<< curVert << " arc max " << graph_.printArc(currentArc) << std::endl);
 #ifdef TTK_ENABLE_FTR_STATS
@@ -140,7 +156,6 @@ namespace ttk
          const idVertex upVert = localProp->getCurVertex();
          // reached node id and wether it has been created by this task or already existed
          idNode upNode;
-         bool newNode;
 
          if (isJoinSaddle) {
             DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
@@ -160,7 +175,7 @@ namespace ttk
                lowerComp = lowerComps(lowerStarEdges, localProp);
             }
             localGrowth(localProp, upperStarEdges);
-            std::tie(upNode, newNode) = graph_.makeNode(upVert);
+            upNode = graph_.makeNode(upVert);
             mergeAtSaddle(upNode, localProp, lowerComp);
 
             const idNode downNode = graph_.getNodeId(upVert);
@@ -193,27 +208,20 @@ namespace ttk
          if (isSplitSaddle && (!isJoinSaddle || isJoinSadlleLast)) {
             if (!isJoinSaddle) {
                // only one arc coming here
-               std::tie(upNode, newNode) = graph_.makeNode(upVert);
+               upNode = graph_.makeNode(upVert);
                graph_.closeArc(currentArc, upNode);
                DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
             }
 
 #ifdef TTK_ENABLE_FTR_BFS
-            // TODO send newNode to avoid useless propagation
             Propagation* remainProp = splitAtSaddleBFS(localProp);
             growthFromSeed(upVert, remainProp);
 #else
-            if (1 || newNode) {
-               // BUG TODO This is not a good way to do this,
-               // may discard work of other components and so leads to unfinished works
-               splitAtSaddle(localProp, upperComp);
-               growthFromSeed(upVert, localProp);
-            }
+            splitAtSaddle(localProp, upperComp);
+            growthFromSeed(upVert, localProp);
 #endif
          } else if (isJoinSadlleLast) {
-            if (newNode) {
-               growthFromSeed(upVert, localProp, joinNewArc);
-            }
+            growthFromSeed(upVert, localProp, joinNewArc);
          }
       }
 
@@ -236,7 +244,7 @@ namespace ttk
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
 
             if (valences_.lower[curVert] == 0) { // min
-               const idNode minNode = std::get<0>(graph_.makeNode(curVert));
+               const idNode minNode = graph_.makeNode(curVert);
                currentArc           = graph_.openArc(minNode, localProp);
                DEBUG_1(<< curVert << " min arc " << currentArc << std::endl);
             }
@@ -258,7 +266,7 @@ namespace ttk
                      dynGraph(localProp).setCorArc(dgNode, currentArc);
                   }
                } else { // max
-                  const idNode maxNode = std::get<0>(graph_.makeNode(curVert));
+                  const idNode maxNode = graph_.makeNode(curVert);
                   graph_.closeArc(currentArc, maxNode);
                   DEBUG_1(<< curVert << "max arc close " << graph_.printArc(currentArc) << std::endl);
                }
@@ -289,7 +297,7 @@ namespace ttk
                if (lowerComp.size() == 1) {  // regular
                   currentArc = lowerComp[0]->getCorArc();
                } else if (lowerComp.size() > 1) {  // join saddle
-                  const idNode sadNode = std::get<0>(graph_.makeNode(curVert));
+                  const idNode sadNode = graph_.makeNode(curVert);
                   currentArc           = graph_.openArc(sadNode, localProp);
                   DEBUG_1(<< curVert << " join arc " << currentArc << std::endl);
                   mergeAtSaddle(sadNode, lowerComp);
@@ -303,7 +311,7 @@ namespace ttk
 
                upperComp = upperComps(upperStarEdges, localProp);
                if (!upperComp.size()) {
-                  const idNode maxNode = std::get<0>(graph_.makeNode(curVert));
+                  const idNode maxNode = graph_.makeNode(curVert);
                   graph_.closeArc(currentArc, maxNode);
                   DEBUG_1(<< curVert << "max arc close " << graph_.printArc(currentArc) << std::endl);
                } else if (upperComp.size() < 2) {
@@ -315,7 +323,7 @@ namespace ttk
                   if (isJoin) {
                      graph_.getArc(currentArc).hide();
                   } else {
-                     const idNode splitNode = std::get<0>(graph_.makeNode(curVert));
+                     const idNode splitNode = graph_.makeNode(curVert);
                      graph_.closeArc(currentArc, splitNode);
                      DEBUG_1(<< curVert << "split arc close " << graph_.printArc(currentArc) << std::endl);
                   }
@@ -962,11 +970,22 @@ namespace ttk
       }
 
       template<typename ScalarType>
-      void FTRGraph<ScalarType>::visit(Propagation* const localProp, const idSuperArc curArc)
+      idSuperArc FTRGraph<ScalarType>::visit(Propagation* const localProp, const idSuperArc curArc)
       {
          const idVertex curVert = localProp->getCurVertex();
          propagations_.visit(curVert, localProp);
-         graph_.visit(curVert, curArc);
+         const Visit& opposite = propagations_.visitOpposite(curVert, localProp);
+         if (!opposite.done) {
+#pragma omp critical
+            {
+               graph_.visit(curVert, curArc);
+            }
+            DEBUG_1(<< curVert << " visit arc " << curArc << opposite.done << std::endl);
+            return nullSuperArc;
+
+         } else {
+            return graph_.getArcId(curVert);
+         }
       }
 
       /// Tools

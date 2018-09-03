@@ -280,7 +280,7 @@ namespace ttk
                const idVertex   corLeaf          = graph_.getLeaf(i);
                const bool       fromMin          = graph_.isLeafFromMin(i);
                Propagation*     localPropagation = newPropagation(corLeaf, fromMin);
-               const idSuperArc newArc = graph_.openArc(std::get<0>(graph_.makeNode(corLeaf)), localPropagation);
+               const idSuperArc newArc = graph_.openArc(graph_.makeNode(corLeaf), localPropagation);
                graph_.visit(corLeaf, newArc);
                // process
 #ifdef TTK_ENABLE_OPENMP

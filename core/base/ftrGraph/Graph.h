@@ -222,16 +222,16 @@ namespace ttk
          // return either a new node or the existing one if this vertex
          // already corresponds to a node.
          // The bool is true if a node has been created.
-         std::tuple<idNode, bool> makeNode(const idVertex v)
+         idNode makeNode(const idVertex v)
          {
             if (isNode(v)) {
-               return {getNodeId(v), false};
+               return getNodeId(v);
             }
 
             const idNode newNode = nodes_.getNext();
             nodes_[newNode].setVerterIdentifier(v);
             visit(v, newNode, false);
-            return {newNode, true};
+            return newNode;
          }
 
          idSuperArc openArc(const idNode downId, Propagation * p = nullptr)
