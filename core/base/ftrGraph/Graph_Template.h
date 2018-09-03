@@ -1,6 +1,14 @@
 #ifndef GRAPH_TEMPLATE_H
 #define GRAPH_TEMPLATE_H
 
+#ifndef NDEBUG
+#define DEBUG(msg) std::cout msg
+// #define DEBUG(msg)
+#else
+#define DEBUG(msg)
+// #define DEBUG(msg) std::cout msg
+#endif
+
 #include "Graph.h"
 
 #include <unordered_map>
@@ -15,6 +23,9 @@ namespace ttk
          std::unordered_map<idSuperArc, idSuperArc> mapArcs;
          std::map<std::pair<idVertex, idVertex>, idSuperArc> masterArcs;
 
+         int totalArc = getNumberOfArcs();
+         int merged   = 0;
+
          const idSuperArc nbArcs = arcs_.size();
          for (idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
             const SuperArc& arc = getArc(arcId);
@@ -22,8 +33,9 @@ namespace ttk
                const idNode upNodeId   = getArc(arcId).getUpNodeId();
                const idNode downNodeId = getArc(arcId).getDownNodeId();
                if (upNodeId == nullNode) {
-                  std::cout << "Remaining nulled arc " << printArc(arcId) << std::endl;
+                  DEBUG(<< "Remaining nulled arc " << printArc(arcId) << std::endl);
                   getArc(arcId).hide();
+                  ++merged;
                   continue;
                }
                std::pair<idVertex, idVertex> arcVerts;
@@ -38,7 +50,8 @@ namespace ttk
                }
                if (masterArcs.count(arcVerts)) {
                   getArc(arcId).merge(masterArcs[arcVerts]);
-                  std::cout << "Merge " << printArc(arcId) << " in " << printArc(masterArcs[arcVerts]) << std::endl;
+                  DEBUG(<< "Merge " << printArc(arcId) << " in " << printArc(masterArcs[arcVerts]) << std::endl);
+                  ++merged;
                } else {
                   masterArcs[arcVerts] = arcId;
                }
@@ -53,6 +66,8 @@ namespace ttk
                }
             }
          }
+
+         std::cout << "Merged: " << merged << " / " << totalArc << std::endl;
 
          if (!mapArcs.size())
             return;

@@ -203,7 +203,7 @@ namespace ttk
             Propagation* remainProp = splitAtSaddleBFS(localProp);
             growthFromSeed(upVert, remainProp);
 #else
-            if (newNode) {
+            if (1 || newNode) {
                // BUG TODO This is not a good way to do this,
                // may discard work of other components and so leads to unfinished works
                splitAtSaddle(localProp, upperComp);

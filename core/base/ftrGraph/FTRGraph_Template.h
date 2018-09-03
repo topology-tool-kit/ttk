@@ -121,12 +121,14 @@ namespace ttk
 #endif
 
          // Debug print
+#ifndef NDEBUG
          // std::cout << graph_.printVisit() << std::endl;
          printGraph(4);
          // std::cout << "up" << std::endl;
          // std::cout << dynGraphs_.up.print() << std::endl;
          // std::cout << "down" << std::endl;
          // std::cout << dynGraphs_.down.print() << std::endl;
+#endif
 
          // post-process
          graph_.mergeArcs<ScalarType>(scalars_);
@@ -317,7 +319,7 @@ namespace ttk
          dynGraphs_.down.alloc();
 
 #ifndef TTK_DISABLE_FTR_LAZY
-         lazy_.setNumberOfElmt(mesh_.getNumberOfVertices());
+         lazy_.setNumberOfElmt(mesh_.getNumberOfVertices()*2);
          lazy_.alloc();
 #endif
 
