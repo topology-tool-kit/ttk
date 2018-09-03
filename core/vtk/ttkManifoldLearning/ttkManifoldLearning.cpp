@@ -10,6 +10,14 @@ vtkStandardNewMacro(ttkManifoldLearning)
 
     const int numberOfRows=input->GetNumberOfRows();
     const int numberOfColumns=ScalarFields.size();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(numberOfRows<=0 or numberOfColumns<=0){
+      cerr << "[ttkManifoldLearning] Error : input matrix has invalid dimensions" << endl;
+      return -1;
+    }
+#endif
+
     vector<double> inputData;
     vector<vtkAbstractArray*> arrays;
     for(auto s : ScalarFields)
@@ -33,14 +41,15 @@ vtkStandardNewMacro(ttkManifoldLearning)
     manifoldLearning_.setOutputComponents(outputData_);
     manifoldLearning_.execute();
 
-    output->ShallowCopy(input);
-    if(KeepAllDataArrays){
-      for(int i=0; i<NumberOfComponents; ++i){
-        vtkSmartPointer<vtkDoubleArray> arr=vtkSmartPointer<vtkDoubleArray>::New();
-        arr->SetVoidArray((*outputData_)[i].data(), numberOfRows, 1);
-        arr->SetName(to_string(i).data());
-        output->AddColumn(arr);
-      }
+    if(KeepAllDataArrays)
+      output->ShallowCopy(input);
+
+    for(int i=0; i<NumberOfComponents; ++i){
+      string s = "Component_" + to_string(i);
+      vtkSmartPointer<vtkDoubleArray> arr=vtkSmartPointer<vtkDoubleArray>::New();
+      arr->SetVoidArray((*outputData_)[i].data(), numberOfRows, 1);
+      arr->SetName(s.data());
+      output->AddColumn(arr);
     }
 
     {
