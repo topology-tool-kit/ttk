@@ -70,6 +70,9 @@ int ManifoldLearning::execute() const{
   PyObject* pNumberOfComponents;
   PyObject* pNumberOfNeighbors;
   PyObject* pJobs;
+  PyObject* pReturn;
+  PyObject* pNRows;
+  PyObject* pNColumns;
   PyObject* pEmbedding;
   PyArrayObject* npArr;
   PyArrayObject* npEmbedding;
@@ -189,50 +192,62 @@ int ManifoldLearning::execute() const{
     cerr << "[ManifoldLearning] Python error: functionName parsing failed." << endl;
     goto collect_garbage;
   }
-#endif
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if(!PyCallable_Check(pFunc)){
     cerr << "[ManifoldLearning] Python error: function call failed." << endl;
     goto collect_garbage;
   }
 #endif
 
-   pEmbedding=PyObject_CallFunctionObjArgs(pFunc, npArr, pMethod, pNumberOfComponents,
+   pReturn=PyObject_CallFunctionObjArgs(pFunc, npArr, pMethod, pNumberOfComponents,
        pNumberOfNeighbors, pJobs, NULL);
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!pEmbedding){
+  if(!pReturn){
     cerr << "[ManifoldLearning] Python error: function returned invalid object." << endl;
     goto collect_garbage;
   }
-  if(PyList_Size(pEmbedding) != numberOfComponents){
-    cerr << "[ManifoldLearning] Python error: returned list has incorrect size." << endl;
+#endif
+  gc.push_back(pReturn);
+
+  pNRows=PyList_GetItem(pReturn, 0);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pNRows){
+    cerr << "[SpectralEmbedding] Python error: function returned invalid number of rows." << endl;
     goto collect_garbage;
   }
 #endif
-  gc.push_back(pEmbedding);
 
-  embedding_->resize(numberOfComponents);
-  for(int i=0; i<numberOfComponents; ++i){
-    npEmbedding=reinterpret_cast<PyArrayObject*>(PyList_GetItem(pEmbedding,i));
-
+  pNColumns=PyList_GetItem(pReturn, 1);
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(PyArray_SIZE(npEmbedding) != numberOfRows_){
-      cerr << "[ManifoldLearning] Python error: returned vector has incorrect size." << endl;
-      embedding_->clear();
-      goto collect_garbage;
-    }
+  if(!pNColumns){
+    cerr << "[SpectralEmbedding] Python error: function returned invalid number of columns." << endl;
+    goto collect_garbage;
+  }
 #endif
 
-    if(PyArray_TYPE(npEmbedding)==NPY_FLOAT){
-      float* c_out=reinterpret_cast<float*>(PyArray_DATA(npEmbedding));
-      for(int j=0; j<numberOfRows_; ++j)
-        (*embedding_)[i].push_back(c_out[j]);
-    }
-    if(PyArray_TYPE(npEmbedding)==NPY_DOUBLE){
-      double* c_out=reinterpret_cast<double*>(PyArray_DATA(npEmbedding));
-      for(int j=0; j<numberOfRows_; ++j)
-        (*embedding_)[i].push_back(c_out[j]);
+  pEmbedding=PyList_GetItem(pReturn, 2);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pEmbedding){
+    cerr << "[SpectralEmbedding] Python error: function returned invalid embedding data." << endl;
+    goto collect_garbage;
+  }
+#endif
+
+  if(PyLong_AsLong(pNRows)==numberOfRows_ and PyLong_AsLong(pNColumns)==numberOfComponents){
+    npEmbedding=reinterpret_cast<PyArrayObject*>(pEmbedding);
+
+    embedding_->resize(numberOfComponents);
+    for(int i=0; i<numberOfComponents; ++i){
+      if(PyArray_TYPE(npEmbedding)==NPY_FLOAT){
+        float* c_out=reinterpret_cast<float*>(PyArray_DATA(npEmbedding));
+        for(int j=0; j<numberOfRows_; ++j)
+          (*embedding_)[i].push_back(c_out[i*numberOfRows_+j]);
+      }
+      else if(PyArray_TYPE(npEmbedding)==NPY_DOUBLE){
+        double* c_out=reinterpret_cast<double*>(PyArray_DATA(npEmbedding));
+        for(int j=0; j<numberOfRows_; ++j)
+          (*embedding_)[i].push_back(c_out[i*numberOfRows_+j]);
+      }
     }
   }
 

@@ -46,8 +46,6 @@ def doIt(X, method, ncomponents, nneighbors, njobs):
         iso = manifold.Isomap(n_components=ncomponents, n_neighbors=nneighbors, n_jobs=njobs)
         Y = iso.fit_transform(X)
 
-    L = list()
-    for i in range(ncomponents):
-        L.append(np.copy(Y[:, i]))
+    L = [Y.shape[0], Y.shape[1], np.ravel(Y, 'F')]
 
     return L
