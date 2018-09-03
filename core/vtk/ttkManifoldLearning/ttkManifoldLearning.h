@@ -106,6 +106,9 @@ class ttkManifoldLearning
     vtkSetMacro(Method, int);
     vtkGetMacro(Method, int);
 
+    vtkSetMacro(KeepAllDataArrays, int);
+    vtkGetMacro(KeepAllDataArrays, int);
+
     int FillInputPortInformation(int port, vtkInformation *info) override {
       switch(port){
         case 0:
@@ -154,6 +157,7 @@ class ttkManifoldLearning
     int NumberOfComponents;
     int NumberOfNeighbors;
     int Method;
+    bool KeepAllDataArrays;
     bool UseAllCores;
     ttk::ThreadId ThreadNumber;
     ttk::ManifoldLearning manifoldLearning_;

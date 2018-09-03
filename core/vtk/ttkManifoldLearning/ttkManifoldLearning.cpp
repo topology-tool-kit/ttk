@@ -34,11 +34,13 @@ vtkStandardNewMacro(ttkManifoldLearning)
     manifoldLearning_.execute();
 
     output->ShallowCopy(input);
-    for(int i=0; i<NumberOfComponents; ++i){
-      vtkSmartPointer<vtkDoubleArray> arr=vtkSmartPointer<vtkDoubleArray>::New();
-      arr->SetVoidArray((*outputData_)[i].data(), numberOfRows, 1);
-      arr->SetName(to_string(i).data());
-      output->AddColumn(arr);
+    if(KeepAllDataArrays){
+      for(int i=0; i<NumberOfComponents; ++i){
+        vtkSmartPointer<vtkDoubleArray> arr=vtkSmartPointer<vtkDoubleArray>::New();
+        arr->SetVoidArray((*outputData_)[i].data(), numberOfRows, 1);
+        arr->SetName(to_string(i).data());
+        output->AddColumn(arr);
+      }
     }
 
     {

@@ -72,7 +72,7 @@
 
       <StringVectorProperty command="SetScalarFields"
         clean_command="ClearScalarFields"
-        label="Scalar Fields"
+        label="Input Columns"
         name="ScalarFields"
         number_of_elements="0"
         default_values="1"
@@ -135,6 +135,18 @@
       </IntVectorProperty>
 
       <IntVectorProperty
+        name="KeepAllDataArrays"
+        label="Keep All Data Arrays"
+        command="SetKeepAllDataArrays"
+        number_of_elements="1"
+        default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Keep all data arrays.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
         command="SetUseAllCores"
@@ -174,6 +186,17 @@
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarFields" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="NumberOfComponents" />
+        <Property name="NumberOfNeighbors" />
+        <Property name="Method" />
+        <Property name="KeepAllDataArrays" />
       </PropertyGroup>
 
       <Hints>
