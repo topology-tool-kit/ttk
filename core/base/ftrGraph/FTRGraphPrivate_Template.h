@@ -137,17 +137,6 @@ namespace ttk
                const idNode upNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, upNode);
                DEBUG_1(<< curVert << " arc max " << graph_.printArc(currentArc) << std::endl);
-#ifdef TTK_ENABLE_FTR_STATS
-               if (localProp->empty()) {
-                  idVertex curProp;
-#pragma omp atomic capture
-                  {
-                     curProp = nbProp_;
-                     nbProp_--;
-                  }
-                  propTimes_[curProp - 1] = sweepStart_.getElapsedTime();
-               }
-#endif
             }
          } // end propagation while
 
@@ -191,19 +180,6 @@ namespace ttk
             }
          }
 
-#ifdef TTK_ENABLE_FTR_STATS
-         if (isJoinSaddle && !isJoinSadlleLast) {
-            // This propagation is dying here
-            idVertex curProp;
-#pragma omp atomic capture
-            {
-               curProp = nbProp_;
-               nbProp_--;
-            }
-            propTimes_[curProp - 1] = sweepStart_.getElapsedTime();
-         }
-#endif
-
          // starting from the saddle
          if (isSplitSaddle && (!isJoinSaddle || isJoinSadlleLast)) {
             if (!isJoinSaddle) {
@@ -223,6 +199,24 @@ namespace ttk
          } else if (isJoinSadlleLast) {
             growthFromSeed(upVert, localProp, joinNewArc);
          }
+#ifdef TTK_ENABLE_FTR_STATS
+         else {
+            // This propagation is dying here
+            idVertex curProp;
+            float    curTime;
+#pragma omp atomic capture
+            {
+               curProp = nbProp_;
+               --nbProp_;
+            }
+#pragma omp critical(stats)
+            {
+               curTime = sweepStart_.getElapsedTime();
+            }
+            propTimes_[curProp - 1] = curTime;
+         }
+#endif
+
       }
 
       template<typename ScalarType>
