@@ -63,12 +63,12 @@ namespace ttk
 #endif
 #endif
 
+         params_.printSelf();
+
          // Precompute
          DebugTimer timeAlloc;
          alloc();
          printTime(timeAlloc, "[FTR Graph]: alloc time: ", infoMsg);
-
-         params_.printSelf();
 
          DebugTimer timeInit;
          init();
@@ -211,7 +211,7 @@ namespace ttk
       void FTRGraph<ScalarType>::criticalSearch()
       {
          const bool addMin = true;
-         const bool addMax = false;
+         const bool addMax = true;
 
          TaskChunk leafChunkParams(scalars_->getSize());
          leafChunkParams.grainSize = 10000;
