@@ -74,7 +74,7 @@ namespace ttk
          init();
          printTime(timeInit, "[FTR Graph]: init time: ", infoMsg);
 
-         std::cout << printMesh() << std::endl;
+         // std::cout << printMesh() << std::endl;
          // std::cout << mesh_.printEdges() << std::endl;
 
          DebugTimer timeSort;
