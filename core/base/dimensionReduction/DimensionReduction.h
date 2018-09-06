@@ -1,15 +1,15 @@
 /// \ingroup base
-/// \class ttk::ManifoldLearning 
+/// \class ttk::DimensionReduction 
 /// \author Your Name Here <Your Email Address Here>
 /// \date The Date Here.
 ///
-/// \brief TTK %manifoldLearning processing package.
+/// \brief TTK %dimensionReduction processing package.
 ///
-/// %ManifoldLearning is a TTK processing package that takes a scalar field on the input 
+/// %DimensionReduction is a TTK processing package that takes a scalar field on the input 
 /// and produces a scalar field on the output.
 ///
 /// \sa ttk::Triangulation
-/// \sa ttkManifoldLearning.cpp %for a usage example.
+/// \sa ttkDimensionReduction.cpp %for a usage example.
 
 #pragma once
 
@@ -18,12 +18,12 @@
 
 namespace ttk{
 
-  class ManifoldLearning : public Debug{
+  class DimensionReduction : public Debug{
 
     public:
 
-      ManifoldLearning();
-      ~ManifoldLearning();
+      DimensionReduction();
+      ~DimensionReduction();
 
       inline int setInputModulePath(const std::string& modulePath){
         modulePath_=modulePath;

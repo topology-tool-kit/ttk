@@ -6,13 +6,13 @@
   that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy 
-      name="ManifoldLearning" 
-      class="ttkManifoldLearning" 
-      label="TTK ManifoldLearning">
+      name="DimensionReduction" 
+      class="ttkDimensionReduction" 
+      label="TTK DimensionReduction">
       <Documentation
-        long_help="TTK manifoldLearning plugin."
-        short_help="TTK manifoldLearning plugin.">
-        TTK manifoldLearning plugin documentation.
+        long_help="TTK dimensionReduction plugin."
+        short_help="TTK dimensionReduction plugin.">
+        TTK dimensionReduction plugin documentation.
       </Documentation>
       <InputProperty
         name="Input"
@@ -52,7 +52,7 @@
         label="Module Name"
         command="SetModuleName"
         number_of_elements="1"
-        default_values="manifoldLearning"
+        default_values="dimensionReduction"
         panel_visibility="advanced">
         <Documentation>
           Set the name of the Python module.

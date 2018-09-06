@@ -1,4 +1,4 @@
-#include<ManifoldLearning.h>
+#include<DimensionReduction.h>
 #define VALUE_TO_STRING(x) #x
 #define VALUE(x) VALUE_TO_STRING(x)
 
@@ -9,7 +9,7 @@
 using namespace std;
 using namespace ttk;
 
-ManifoldLearning::ManifoldLearning():
+DimensionReduction::DimensionReduction():
   numberOfRows_{0},
   numberOfColumns_{0},
   numberOfComponents_{0},
@@ -30,22 +30,22 @@ ManifoldLearning::ManifoldLearning():
   const char* version=Py_GetVersion();
   if(version[0]>='3'){
     stringstream msg;
-    msg << "[ManifoldLearning] Initializing Python: " <<
+    msg << "[DimensionReduction] Initializing Python: " <<
       version[0] << version[1] << version[2] << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
   else{
-    cerr << "[ManifoldLearning] Error: Python 3+ is required:\n" <<
+    cerr << "[DimensionReduction] Error: Python 3+ is required:\n" <<
       version << " is provided." << endl;
   }
 
   majorVersion_=version[0];
 }
 
-ManifoldLearning::~ManifoldLearning(){
+DimensionReduction::~DimensionReduction(){
 }
 
-int ManifoldLearning::execute() const{
+int DimensionReduction::execute() const{
 #ifndef TTK_ENABLE_KAMIKAZE
   if(majorVersion_<'3') return -1;
   if(modulePath_.length()<=0) return -1;
@@ -91,7 +91,7 @@ int ManifoldLearning::execute() const{
       dimensions, NPY_DOUBLE, matrix_);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pArray){
-    cerr << "[ManifoldLearning] Python error: failed to convert the array." << endl;
+    cerr << "[DimensionReduction] Python error: failed to convert the array." << endl;
     goto collect_garbage;
   }
 #endif
@@ -102,7 +102,7 @@ int ManifoldLearning::execute() const{
   pSys=PyImport_ImportModule("sys");
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pSys){
-    cerr << "[ManifoldLearning] Python error: failed to load the sys module." << endl;
+    cerr << "[DimensionReduction] Python error: failed to load the sys module." << endl;
     goto collect_garbage;
   }
 #endif
@@ -111,7 +111,7 @@ int ManifoldLearning::execute() const{
   pPath=PyObject_GetAttrString(pSys, "path");
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pPath){
-    cerr << "[ManifoldLearning] Python error: failed to get the path variable." << endl;
+    cerr << "[DimensionReduction] Python error: failed to get the path variable." << endl;
     goto collect_garbage;
   }
 #endif
@@ -124,7 +124,7 @@ int ManifoldLearning::execute() const{
 
   {
     stringstream msg;
-    msg << "[ManifoldLearning] Loading Python script from: "
+    msg << "[DimensionReduction] Loading Python script from: "
       << modulePath << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
@@ -134,7 +134,7 @@ int ManifoldLearning::execute() const{
   pNumberOfComponents=PyLong_FromLong(numberOfComponents);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNumberOfComponents){
-    cerr << "[ManifoldLearning] Python error: cannot convert pNumberOfComponents." << endl;
+    cerr << "[DimensionReduction] Python error: cannot convert pNumberOfComponents." << endl;
     goto collect_garbage;
   }
 #endif
@@ -143,7 +143,7 @@ int ManifoldLearning::execute() const{
   pNumberOfNeighbors=PyLong_FromLong(numberOfNeighbors);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNumberOfNeighbors){
-    cerr << "[ManifoldLearning] Python error: cannot convert pNumberOfNeighbors." << endl;
+    cerr << "[DimensionReduction] Python error: cannot convert pNumberOfNeighbors." << endl;
     goto collect_garbage;
   }
 #endif
@@ -152,7 +152,7 @@ int ManifoldLearning::execute() const{
   pMethod=PyLong_FromLong(method_);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pMethod){
-    cerr << "[ManifoldLearning] Python error: cannot convert pMethod." << endl;
+    cerr << "[DimensionReduction] Python error: cannot convert pMethod." << endl;
     goto collect_garbage;
   }
 #endif
@@ -161,7 +161,7 @@ int ManifoldLearning::execute() const{
   pJobs=PyLong_FromLong(threadNumber_);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pJobs){
-    cerr << "[ManifoldLearning] Python error: cannot convert pJobs." << endl;
+    cerr << "[DimensionReduction] Python error: cannot convert pJobs." << endl;
     goto collect_garbage;
   }
 #endif
@@ -170,7 +170,7 @@ int ManifoldLearning::execute() const{
   pName=PyUnicode_FromString(moduleName_.data());
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pName){
-    cerr << "[ManifoldLearning] Python error: moduleName parsing failed." << endl;
+    cerr << "[DimensionReduction] Python error: moduleName parsing failed." << endl;
     goto collect_garbage;
   }
 #endif
@@ -179,7 +179,7 @@ int ManifoldLearning::execute() const{
   pModule=PyImport_Import(pName);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pModule){
-    cerr << "[ManifoldLearning] Python error: module import failed." << endl;
+    cerr << "[DimensionReduction] Python error: module import failed." << endl;
     goto collect_garbage;
   }
 #endif
@@ -189,12 +189,12 @@ int ManifoldLearning::execute() const{
   pFunc=PyObject_GetAttrString(pModule, functionName_.data());
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pFunc){
-    cerr << "[ManifoldLearning] Python error: functionName parsing failed." << endl;
+    cerr << "[DimensionReduction] Python error: functionName parsing failed." << endl;
     goto collect_garbage;
   }
 
   if(!PyCallable_Check(pFunc)){
-    cerr << "[ManifoldLearning] Python error: function call failed." << endl;
+    cerr << "[DimensionReduction] Python error: function call failed." << endl;
     goto collect_garbage;
   }
 #endif
@@ -203,7 +203,7 @@ int ManifoldLearning::execute() const{
        pNumberOfNeighbors, pJobs, NULL);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pReturn){
-    cerr << "[ManifoldLearning] Python error: function returned invalid object." << endl;
+    cerr << "[DimensionReduction] Python error: function returned invalid object." << endl;
     goto collect_garbage;
   }
 #endif

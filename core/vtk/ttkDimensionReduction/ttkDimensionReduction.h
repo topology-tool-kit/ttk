@@ -1,11 +1,11 @@
 /// \ingroup vtk
-/// \class ttkManifoldLearning
+/// \class ttkDimensionReduction
 /// \author Your Name Here <Your Email Address Here>
 /// \date The Date Here.
 ///
-/// \brief TTK VTK-filter that wraps the manifoldLearning processing package.
+/// \brief TTK VTK-filter that wraps the dimensionReduction processing package.
 ///
-/// VTK wrapping code for the @ManifoldLearning package.
+/// VTK wrapping code for the @DimensionReduction package.
 /// 
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
@@ -16,7 +16,7 @@
 /// See the related ParaView example state files for usage examples within a 
 /// VTK pipeline.
 ///
-/// \sa ttk::ManifoldLearning
+/// \sa ttk::DimensionReduction
 #pragma once
 
 #include<vtkCharArray.h>
@@ -33,13 +33,13 @@
 #include<vtkTable.h>
 #include<vtkTableAlgorithm.h>
 
-#include<ManifoldLearning.h>
+#include<DimensionReduction.h>
 #include<ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkManifoldLearning
+class VTKFILTERSCORE_EXPORT ttkDimensionReduction
 #else
-class ttkManifoldLearning
+class ttkDimensionReduction
 #endif
 : public vtkTableAlgorithm, public ttk::Wrapper{
   public:
@@ -52,8 +52,8 @@ class ttkManifoldLearning
       Isomap
     };
 
-    static ttkManifoldLearning* New();
-    vtkTypeMacro(ttkManifoldLearning, vtkTableAlgorithm)
+    static ttkDimensionReduction* New();
+    vtkTypeMacro(ttkDimensionReduction, vtkTableAlgorithm)
 
       // default ttk setters
       vtkSetMacro(debugLevel_, int);
@@ -131,14 +131,14 @@ class ttkManifoldLearning
 
   protected:
 
-    ttkManifoldLearning(){
+    ttkDimensionReduction(){
       UseAllCores = true;
       ThreadNumber = 1;
       debugLevel_ = 3;
 
       outputData_=new std::vector<std::vector<double>>;
     }
-    ~ttkManifoldLearning(){
+    ~ttkDimensionReduction(){
       delete outputData_;
     };
 
@@ -160,7 +160,7 @@ class ttkManifoldLearning
     bool KeepAllDataArrays;
     bool UseAllCores;
     ttk::ThreadId ThreadNumber;
-    ttk::ManifoldLearning manifoldLearning_;
+    ttk::DimensionReduction dimensionReduction_;
 
     std::vector<std::string> ScalarFields;
     std::vector<std::vector<double>>* outputData_;

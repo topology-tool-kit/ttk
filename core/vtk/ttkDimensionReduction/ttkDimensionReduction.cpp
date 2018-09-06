@@ -1,11 +1,11 @@
-#include                  <ttkManifoldLearning.h>
+#include                  <ttkDimensionReduction.h>
 
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkManifoldLearning)
+vtkStandardNewMacro(ttkDimensionReduction)
 
-  int ttkManifoldLearning::doIt(vtkTable* input, vtkTable* output){
+  int ttkDimensionReduction::doIt(vtkTable* input, vtkTable* output){
     Memory m;
 
     const int numberOfRows=input->GetNumberOfRows();
@@ -13,7 +13,7 @@ vtkStandardNewMacro(ttkManifoldLearning)
 
 #ifndef TTK_ENABLE_KAMIKAZE
     if(numberOfRows<=0 or numberOfColumns<=0){
-      cerr << "[ttkManifoldLearning] Error : input matrix has invalid dimensions" << endl;
+      cerr << "[ttkDimensionReduction] Error : input matrix has invalid dimensions" << endl;
       return -1;
     }
 #endif
@@ -29,17 +29,17 @@ vtkStandardNewMacro(ttkManifoldLearning)
 
     outputData_->clear();
 
-    manifoldLearning_.setWrapper(this);
-    manifoldLearning_.setInputModulePath(ModulePath);
-    manifoldLearning_.setInputModuleName(ModuleName);
-    manifoldLearning_.setInputFunctionName(FunctionName);
-    manifoldLearning_.setInputMatrixDimensions(numberOfRows, numberOfColumns);
-    manifoldLearning_.setInputMatrix(inputData.data());
-    manifoldLearning_.setInputMethod(Method);
-    manifoldLearning_.setInputNumberOfComponents(NumberOfComponents);
-    manifoldLearning_.setInputNumberOfNeighbors(NumberOfNeighbors);
-    manifoldLearning_.setOutputComponents(outputData_);
-    manifoldLearning_.execute();
+    dimensionReduction_.setWrapper(this);
+    dimensionReduction_.setInputModulePath(ModulePath);
+    dimensionReduction_.setInputModuleName(ModuleName);
+    dimensionReduction_.setInputFunctionName(FunctionName);
+    dimensionReduction_.setInputMatrixDimensions(numberOfRows, numberOfColumns);
+    dimensionReduction_.setInputMatrix(inputData.data());
+    dimensionReduction_.setInputMethod(Method);
+    dimensionReduction_.setInputNumberOfComponents(NumberOfComponents);
+    dimensionReduction_.setInputNumberOfNeighbors(NumberOfNeighbors);
+    dimensionReduction_.setOutputComponents(outputData_);
+    dimensionReduction_.execute();
 
     if(KeepAllDataArrays)
       output->ShallowCopy(input);
@@ -54,7 +54,7 @@ vtkStandardNewMacro(ttkManifoldLearning)
 
     {
       stringstream msg;
-      msg << "[ttkManifoldLearning] Memory usage: " << m.getElapsedUsage() 
+      msg << "[ttkDimensionReduction] Memory usage: " << m.getElapsedUsage() 
         << " MB." << endl;
       dMsg(cout, msg.str(), memoryMsg);
     }
@@ -62,15 +62,15 @@ vtkStandardNewMacro(ttkManifoldLearning)
     return 0;
   }
 
-bool ttkManifoldLearning::needsToAbort(){
+bool ttkDimensionReduction::needsToAbort(){
   return GetAbortExecute();
 }
 
-int ttkManifoldLearning::updateProgress(const float &progress){
+int ttkDimensionReduction::updateProgress(const float &progress){
 
   {
     stringstream msg;
-    msg << "[ttkManifoldLearning] " << progress*100
+    msg << "[ttkDimensionReduction] " << progress*100
       << "% processed...." << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
@@ -79,7 +79,7 @@ int ttkManifoldLearning::updateProgress(const float &progress){
   return 0;
 }
 
-int ttkManifoldLearning::RequestData(vtkInformation *request,
+int ttkDimensionReduction::RequestData(vtkInformation *request,
     vtkInformationVector **inputVector, vtkInformationVector *outputVector){
 
   Memory m;
@@ -94,7 +94,7 @@ int ttkManifoldLearning::RequestData(vtkInformation *request,
 
   {
     stringstream msg;
-    msg << "[ttkManifoldLearning] Memory usage: " << m.getElapsedUsage()
+    msg << "[ttkDimensionReduction] Memory usage: " << m.getElapsedUsage()
       << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }
