@@ -5,27 +5,27 @@ def doIt(X, method, ncomponents, nneighbors, njobs):
     loader = importlib.find_loader('numpy')
     found = loader is not None
     if found:
-        print("[ManifoldLearning] Python: numpy module found.")
+        print("[DimensionReduction] Python: numpy module found.")
     else:
-        print("[ManifoldLearning] Python error: numpy module not found.")
+        print("[DimensionReduction] Python error: numpy module not found.")
         return 0
 
     # check if scipy is installed
     loader = importlib.find_loader('scipy')
     found = loader is not None
     if found:
-        print("[ManifoldLearning] Python: scipy module found.")
+        print("[DimensionReduction] Python: scipy module found.")
     else:
-        print("[ManifoldLearning] Python error: scipy module not found.")
+        print("[DimensionReduction] Python error: scipy module not found.")
         return 0
 
     # check if scikit-learn is installed
     loader = importlib.find_loader('sklearn')
     found = loader is not None
     if found:
-        print("[ManifoldLearning] Python: sklearn module found.")
+        print("[DimensionReduction] Python: sklearn module found.")
     else:
-        print("[ManifoldLearning] Python error: sklearn module not found.")
+        print("[DimensionReduction] Python error: sklearn module not found.")
 
     from sklearn import manifold
     import numpy as np
