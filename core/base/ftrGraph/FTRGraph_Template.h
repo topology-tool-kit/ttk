@@ -141,9 +141,11 @@ namespace ttk
          }
 
          // Debug print
+#ifndef NDEBUG
          // std::cout << graph_.printVisit() << std::endl;
-         // printGraph(4);
+         printGraph(4);
          // std::cout << dynGraphs_.up.printNbCC() << std::endl;
+#endif
 
          // Message user
          {
@@ -281,7 +283,7 @@ namespace ttk
                const bool       fromMin          = graph_.isLeafFromMin(i);
                Propagation*     localPropagation = newPropagation(corLeaf, fromMin);
                const idSuperArc newArc = graph_.openArc(graph_.makeNode(corLeaf), localPropagation);
-               graph_.visit(corLeaf, newArc);
+               // graph_.visit(corLeaf, newArc);
                // process
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Higher)

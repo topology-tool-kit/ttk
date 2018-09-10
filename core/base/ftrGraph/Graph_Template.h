@@ -35,7 +35,6 @@ namespace ttk
                if (upNodeId == nullNode) {
                   DEBUG(<< "Remaining nulled arc " << printArc(arcId) << std::endl);
                   getArc(arcId).hide();
-                  ++merged;
                   continue;
                }
                std::pair<idVertex, idVertex> arcVerts;
@@ -51,13 +50,13 @@ namespace ttk
                if (masterArcs.count(arcVerts)) {
                   getArc(arcId).merge(masterArcs[arcVerts]);
                   DEBUG(<< "Merge " << printArc(arcId) << " in " << printArc(masterArcs[arcVerts]) << std::endl);
-                  ++merged;
                } else {
                   masterArcs[arcVerts] = arcId;
                }
             }
 
             if (arc.merged()) {
+               ++merged;
                // std::cout << "arc merged: " << printArc(arcId) << std::endl;
                const idSuperArc target = arc.mergedIn();
                if (mapArcs.count(target) == 0) {
