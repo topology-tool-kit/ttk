@@ -382,7 +382,7 @@ namespace ttk
          /// Add vertices above the current one in the propagation,
          /// return true if vertices aboves the current one have been found.
          /// Note, these vertices may not have been added if already marked as in the propagation.
-         bool localGrowth(Propagation* const localProp, const std::vector<idEdge>& upperEdges);
+         void localGrowth(Propagation* const localProp, const std::vector<idEdge>& upperEdges);
 
          // Check if the current vertex which is on a Join saddle come from the
          // last growth touching this saddle
@@ -391,13 +391,15 @@ namespace ttk
          // At a join saddle, merge local propagations coming here
          // and close remiang opened arcs.
          // Remove duplicate on the saddleVertex (only)
-         void mergeAtSaddle(const idNode saddleId, Propagation* localProp,
+         // return the number of visible arcs merging
+         idSuperArc mergeAtSaddle(const idNode saddleId, Propagation* localProp,
                             const std::vector<DynGraphNode<idVertex>*>& lowerComp);
 
          // At a join saddle, close onped arcs only
          // do not touch local propagations
-         void mergeAtSaddle(const idNode                                saddleId,
-                            const std::vector<DynGraphNode<idVertex>*>& lowerComp);
+         // return the number of visible arcs merging
+         idSuperArc mergeAtSaddle(const idNode                                saddleId,
+                                  const std::vector<DynGraphNode<idVertex>*>& lowerComp);
 
          // At a split saddle, assign new arcs at each CC in the DynGraph,
          // compute the new localPropagation for each using a BFS

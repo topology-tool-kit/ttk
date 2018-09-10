@@ -33,7 +33,8 @@ namespace ttk
       void FTRGraph<ScalarType>::growthFromSeed(const idVertex seed, Propagation* localProp,
                                                 idSuperArc currentArc)
       {
-         DEBUG_1(<< seed << " go up " << localProp->goUp() << " arc " << currentArc << std::endl);
+         DEBUG_1(<< seed << " go up " << localProp->goUp() << " arc " << currentArc << " nb "
+                 << localProp->getNbArcs() << std::endl);
 
          // topology
          bool isJoinSadlleLast = false;
@@ -48,6 +49,8 @@ namespace ttk
             localProp->nextVertex();
             const idVertex curVert = localProp->getCurVertex();
             idSuperArc mergeIn = nullSuperArc;
+
+            DEBUG_1(<< curVert << std::endl);
 
             // Check history for visit (quick test)
             if (propagations_.hasVisited(curVert, localProp)) {
@@ -67,6 +70,7 @@ namespace ttk
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
                   if (currentArc == nullSuperArc) {
+                     DEBUG_1(<< "- " << curVert << std::endl);
                      // merging component, propagation has been discarded
                      continue;
                   }
@@ -123,21 +127,26 @@ namespace ttk
                }
             }
 
-            // do not propagate on merging arc.
-            if (mergeIn != nullSuperArc) {
-               graph_.getArc(currentArc).merge(mergeIn);
-               DEBUG_1(<< curVert << " arc merging " << currentArc << std::endl);
-               continue;
-            }
-
-            // add upper star for futur visit
-            bool seenAbove = localGrowth(localProp, upperStarEdges);
-            if (!seenAbove) {
+            if (!upperStarEdges.size()) {
                // We have reached a local extrema
                const idNode upNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, upNode);
+               localProp->lessArc();
                DEBUG_1(<< curVert << " arc max " << graph_.printArc(currentArc) << std::endl);
             }
+
+            // do not propagate on merging arc.
+            if (mergeIn != nullSuperArc) {
+               if (graph_.getArc(currentArc).isVisible()) {
+                  localProp->lessArc();
+               }
+               graph_.getArc(currentArc).merge(mergeIn);
+               DEBUG_1(<< curVert << " arc merging " << graph_.printArc(currentArc) << " in "
+                     << graph_.printArc(mergeIn) << std::endl);
+            }
+
+            // add upper star for futur visit
+            localGrowth(localProp, upperStarEdges);
          } // end propagation while
 
          // get the corresponging critical point on which
@@ -165,7 +174,8 @@ namespace ttk
             }
             localGrowth(localProp, upperStarEdges);
             upNode = graph_.makeNode(upVert);
-            mergeAtSaddle(upNode, localProp, lowerComp);
+            idSuperArc visibleMerged = mergeAtSaddle(upNode, localProp, lowerComp);
+            localProp->lessArc(visibleMerged - graph_.getArc(currentArc).isVisible());
 
             const idNode downNode = graph_.getNodeId(upVert);
             joinNewArc            = graph_.openArc(downNode, localProp);
@@ -174,7 +184,7 @@ namespace ttk
             upperComp = upperComps(upperStarEdges, localProp);
             if (upperComp.size() > 1) {
                isSplitSaddle = true;
-               DEBUG_1(<< ": is joina & split : " << localProp->print() << std::endl);
+               DEBUG_1(<< ": is join & split : " << localProp->print() << std::endl);
                // will be replaced be new arcs of the split
                graph_.getArc(joinNewArc).hide();
             }
@@ -194,7 +204,10 @@ namespace ttk
             growthFromSeed(upVert, remainProp);
 #else
             splitAtSaddle(localProp, upperComp);
+            localProp->moreArc(upperComp.size() - 1);
             growthFromSeed(upVert, localProp);
+            // Can't stop propagation here cause some other arcs thant the current
+            // one may nees to growth
 #endif
          } else if (isJoinSadlleLast) {
             growthFromSeed(upVert, localProp, joinNewArc);
@@ -735,7 +748,7 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      bool FTRGraph<ScalarType>::localGrowth(Propagation* const localProp, const std::vector<idEdge>& upperEdges)
+      void FTRGraph<ScalarType>::localGrowth(Propagation* const localProp, const std::vector<idEdge>& upperEdges)
       {
          const idVertex curVert = localProp->getCurVertex();
          for (const idEdge e : upperEdges) {
@@ -751,7 +764,6 @@ namespace ttk
                }
             }
          }
-         return upperEdges.size() != 0;
       }
 
       template <typename ScalarType>
@@ -762,7 +774,7 @@ namespace ttk
          AtomicUF*      curId     = localProp->getId();
          valence        decr      = 0;
 
-          DEBUG_1(<< "Check last on " << curSaddle << " id " << curId << std::endl);
+          DEBUG_1(<< "Check last on " << curSaddle <<  std::endl);
 
           // NOTE:
           // Using propagation id allows to decrement by the number of time this propagation
@@ -833,7 +845,7 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::mergeAtSaddle(
+      idSuperArc FTRGraph<ScalarType>::mergeAtSaddle(
           const idNode saddleId, Propagation* localProp,
           const std::vector<DynGraphNode<idVertex>*>& lowerComp)
       {
@@ -846,19 +858,24 @@ namespace ttk
 
          // DEBUG_1(<< " merge in " << graph_.getNode(saddleId).getVertexIdentifier() << std::endl);
 
+         idSuperArc visibleClosed = 0;
          for(auto* dgNode : lowerComp) {
             // read in the history (lower comp already contains roots)
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
+            if (graph_.getArc(endingArc).isVisible()) {
+               ++visibleClosed;
+            }
             Propagation * arcProp =  graph_.getArc(endingArc).getPropagation();
-            DEBUG_1(<< "merge " << graph_.printArc(endingArc) << " prop " << arcProp << std::endl);
+            DEBUG_1(<< "merge " << graph_.printArc(endingArc) << std::endl);
             localProp->merge(*arcProp);
          }
          // DEBUG_1(<< " result " << localProp->print() << std::endl);
+         return visibleClosed;
       }
 
       template <typename ScalarType>
-      void FTRGraph<ScalarType>::mergeAtSaddle(
+      idSuperArc FTRGraph<ScalarType>::mergeAtSaddle(
           const idNode saddleId, const std::vector<DynGraphNode<idVertex>*>& lowerComp)
       {
          // version for the sequential arc growth, do not merge the propagations
@@ -869,11 +886,16 @@ namespace ttk
          }
 #endif
 
+         idSuperArc visibleClosed = 0;
          for(auto* dgNode : lowerComp) {
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
+            if (graph_.getArc(endingArc).isVisible()) {
+               ++visibleClosed;
+            }
             DEBUG_1(<< "close " << graph_.printArc(endingArc) << std::endl);
          }
+         return visibleClosed;
       }
 
       template <typename ScalarType>
@@ -967,14 +989,15 @@ namespace ttk
       idSuperArc FTRGraph<ScalarType>::visit(Propagation* const localProp, const idSuperArc curArc)
       {
          const idVertex curVert = localProp->getCurVertex();
-         propagations_.visit(curVert, localProp);
-         const Visit& opposite = propagations_.visitOpposite(curVert, localProp);
-         if (!opposite.done) {
+         Visit          opposite;
 #pragma omp critical
-            {
-               graph_.visit(curVert, curArc);
-            }
-            DEBUG_1(<< curVert << " visit arc " << curArc << opposite.done << std::endl);
+         {
+            propagations_.visit(curVert, localProp);
+            opposite = propagations_.visitOpposite(curVert, localProp);
+         }
+         if (!opposite.done) {
+            graph_.visit(curVert, curArc);
+            DEBUG_1(<< curVert << " visit arc " << curArc << std::endl);
             return nullSuperArc;
 
          } else {

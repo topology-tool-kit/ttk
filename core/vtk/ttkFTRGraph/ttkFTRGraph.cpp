@@ -470,7 +470,8 @@ int ttkFTRGraph::getSkeletonNodes(const Graph& graph, vtkUnstructuredGrid* outpu
       triangulation_->getVertexPoint(vertId, point[0], point[1], point[2]);
       points->InsertNextPoint(point);
 
-      nodeData.addNode(graph, nodeId);
+      double scalar = inputScalars_->GetTuple1(vertId);
+      nodeData.addNode(graph, nodeId, scalar);
    }
 
    nodes->SetPoints(points);

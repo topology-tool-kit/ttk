@@ -35,7 +35,8 @@ namespace ttk
       {
         private:
          // cache current simplex
-         idVertex        curVert_;
+         idVertex curVert_;
+         idSuperArc nbArcs_;
 
          // comparison function
          VertCompFN comp_;
@@ -51,6 +52,7 @@ namespace ttk
         public:
          Propagation(idVertex startVert, VertCompFN vertComp, bool up)
              : curVert_{nullVertex},
+               nbArcs_{1},
                comp_{vertComp},
                goUp_{up},
                propagation_{vertComp},
@@ -73,6 +75,23 @@ namespace ttk
          void setCurvert(const idVertex v)
          {
             curVert_ = v;
+         }
+
+         idSuperArc getNbArcs(void) const
+         {
+            return nbArcs_;
+         }
+
+         void moreArc(const idSuperArc a = 1)
+         {
+            nbArcs_ += a;
+            std::cout << " - new nb arc " << nbArcs_ << " added " << a << std::endl;
+         }
+
+         void lessArc(const idSuperArc a = 1)
+         {
+            nbArcs_ -= a;
+            std::cout << " - new nb arc " << nbArcs_ << " removed " << a << std::endl;
          }
 
          AtomicUF* getId(void)
@@ -120,6 +139,7 @@ namespace ttk
             if (&other == this) return;
             propagation_.merge(other.propagation_);
             AtomicUF::makeUnion(&id_, &other.id_);
+            nbArcs_ += other.nbArcs_;
             // TODO once after all the merge ?
             id_.find()->setPropagation(this);
          }
@@ -169,7 +189,7 @@ namespace ttk
          std::string print() const
          {
             std::stringstream res;
-            res << this << " localProp " << curVert_ << " : ";
+            res << " localProp " << curVert_ << " : ";
 #ifndef NDEBUG
             // only if perf are not important: copy
             boost::heap::fibonacci_heap<idVertex, boost::heap::compare<VertCompFN>> tmp(propagation_);

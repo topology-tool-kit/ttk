@@ -5,6 +5,7 @@
 #include <vtkIntArray.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkCharArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
@@ -37,23 +38,27 @@ struct ObjectData {
 struct NodeData : public ObjectData {
    vtkSmartPointer<vtkIntArray> ids;
    vtkSmartPointer<vtkIntArray> types;
+   vtkSmartPointer<vtkDoubleArray> scalars;
 
    explicit NodeData(const ttk::ftr::idVertex nbNodes)
    {
-      ids   = allocArray<vtkIntArray>("VertexId", nbNodes);
-      types = allocArray<vtkIntArray>("NodeType", nbNodes);
+      ids     = allocArray<vtkIntArray>("VertexId", nbNodes);
+      types   = allocArray<vtkIntArray>("NodeType", nbNodes);
+      scalars = allocArray<vtkDoubleArray>("Scalar", nbNodes);
    }
 
-   void addNode(const ttk::ftr::Graph& graph, const ttk::ftr::idNode n)
+   void addNode(const ttk::ftr::Graph& graph, const ttk::ftr::idNode n, const double scalar)
    {
       ids->SetTuple1(n, graph.getNode(n).getVertexIdentifier());
       types->SetTuple1(n, (double)graph.getNode(n).getType());
+      scalars->SetTuple1(n, scalar);
    }
 
    void addArrays(vtkPointData* pointData, ttk::ftr::Params params)
    {
       pointData->AddArray(ids);
       pointData->SetScalars(types);
+      pointData->AddArray(scalars);
    }
 };
 
