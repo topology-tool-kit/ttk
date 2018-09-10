@@ -38,6 +38,7 @@ vtkStandardNewMacro(ttkDimensionReduction)
     dimensionReduction_.setInputMethod(Method);
     dimensionReduction_.setInputNumberOfComponents(NumberOfComponents);
     dimensionReduction_.setInputNumberOfNeighbors(NumberOfNeighbors);
+    dimensionReduction_.setInputRandomState(RandomState);
     dimensionReduction_.setOutputComponents(outputData_);
     dimensionReduction_.execute();
 

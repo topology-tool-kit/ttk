@@ -32,43 +32,6 @@
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty name="ModulePath"
-        label="Module Path"
-        command="SetModulePath"
-        number_of_elements="1"
-        default_values="default"
-        panel_visibility="advanced">
-        <FileListDomain name="files"/>
-        <Documentation>
-          Set the path of the Python module.
-        </Documentation>
-        <Hints>
-          <UseDirectoryName/>
-          <AcceptAnyFile/>
-        </Hints>
-      </StringVectorProperty>
-
-      <StringVectorProperty name="ModuleName"
-        label="Module Name"
-        command="SetModuleName"
-        number_of_elements="1"
-        default_values="dimensionReduction"
-        panel_visibility="advanced">
-        <Documentation>
-          Set the name of the Python module.
-        </Documentation>
-      </StringVectorProperty>
-
-      <StringVectorProperty name="FunctionName"
-        label="Function Name"
-        command="SetFunctionName"
-        number_of_elements="1"
-        default_values="doIt"
-        panel_visibility="advanced">
-        <Documentation>
-          Set the name of the Python function.
-        </Documentation>
-      </StringVectorProperty>
 
       <StringVectorProperty command="SetScalarFields"
         clean_command="ClearScalarFields"
@@ -183,10 +146,64 @@
         </Documentation>
       </IntVectorProperty>
 
+      <StringVectorProperty name="ModulePath"
+        label="Module Path"
+        command="SetModulePath"
+        number_of_elements="1"
+        default_values="default"
+        panel_visibility="advanced">
+        <FileListDomain name="files"/>
+        <Documentation>
+          Set the path of the Python module.
+        </Documentation>
+        <Hints>
+          <UseDirectoryName/>
+          <AcceptAnyFile/>
+        </Hints>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="ModuleName"
+        label="Module Name"
+        command="SetModuleName"
+        number_of_elements="1"
+        default_values="dimensionReduction"
+        panel_visibility="advanced">
+        <Documentation>
+          Set the name of the Python module.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="FunctionName"
+        label="Function Name"
+        command="SetFunctionName"
+        number_of_elements="1"
+        default_values="doIt"
+        panel_visibility="advanced">
+        <Documentation>
+          Set the name of the Python function.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="RandomState"
+        label="Random State"
+        command="SetRandomState"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Set the random seed or -1.
+        </Documentation>
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
+        <Property name="ModulePath" />
+        <Property name="ModuleName" />
+        <Property name="FunctionName" />
+        <Property name="RandomState" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Input options">

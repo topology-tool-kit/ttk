@@ -69,12 +69,17 @@ namespace ttk{
         return 0;
       }
 
-       inline int setOutputComponents(std::vector<std::vector<double>>* data){
+      inline int setInputRandomState(int randomState){
+        randomState_=randomState;
+        return 0;
+      }
+
+      inline int setOutputComponents(std::vector<std::vector<double>>* data){
         embedding_=data;
         return 0;
-       }
+      }
 
-       int execute() const;
+      int execute() const;
 
     protected:
       std::string modulePath_;
@@ -85,6 +90,7 @@ namespace ttk{
       int method_;
       int numberOfComponents_;
       int numberOfNeighbors_;
+      int randomState_;
       void* matrix_;
       std::vector<std::vector<double>>* embedding_;
       char majorVersion_;

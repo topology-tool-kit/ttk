@@ -1,4 +1,4 @@
-def doIt(X, method, ncomponents, nneighbors, njobs):
+def doIt(X, method, ncomponents, nneighbors, njobs, rstate):
     import importlib
 
     # check if numpy is installed
@@ -31,6 +31,9 @@ def doIt(X, method, ncomponents, nneighbors, njobs):
     from sklearn import decomposition
     import numpy as np
 
+    if rstate > 0:
+        np.random.seed(rstate)
+
     if method == 0:
         se = manifold.SpectralEmbedding(n_components=ncomponents, n_neighbors=nneighbors, n_jobs=njobs)
         Y = se.fit_transform(X)
@@ -41,7 +44,7 @@ def doIt(X, method, ncomponents, nneighbors, njobs):
         mds = manifold.MDS(n_components=ncomponents, max_iter=100, n_init=1, n_jobs=njobs)
         Y = mds.fit_transform(X)
     elif method == 3:
-        tsne = manifold.TSNE(n_components=ncomponents, init='pca', random_state=0)
+        tsne = manifold.TSNE(n_components=ncomponents, init='pca')
         Y = tsne.fit_transform(X)
     elif method == 4:
         iso = manifold.Isomap(n_components=ncomponents, n_neighbors=nneighbors, n_jobs=njobs)

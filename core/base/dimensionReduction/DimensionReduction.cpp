@@ -14,6 +14,7 @@ DimensionReduction::DimensionReduction():
   numberOfColumns_{0},
   numberOfComponents_{0},
   numberOfNeighbors_{0},
+  randomState_{0},
   matrix_{nullptr},
   embedding_{nullptr},
   majorVersion_{'0'}
@@ -70,6 +71,7 @@ int DimensionReduction::execute() const{
   PyObject* pNumberOfComponents;
   PyObject* pNumberOfNeighbors;
   PyObject* pJobs;
+  PyObject* pRandomState;
   PyObject* pReturn;
   PyObject* pNRows;
   PyObject* pNColumns;
@@ -166,6 +168,14 @@ int DimensionReduction::execute() const{
   }
 #endif
 
+  pRandomState=PyLong_FromLong(randomState_);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!pRandomState){
+    cerr << "[DimensionReduction] Python error: cannot convert pRandomState." << endl;
+    goto collect_garbage;
+  }
+#endif
+
   // load module
   pName=PyUnicode_FromString(moduleName_.data());
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -200,7 +210,7 @@ int DimensionReduction::execute() const{
 #endif
 
    pReturn=PyObject_CallFunctionObjArgs(pFunc, npArr, pMethod, pNumberOfComponents,
-       pNumberOfNeighbors, pJobs, NULL);
+       pNumberOfNeighbors, pJobs, pRandomState, NULL);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pReturn){
     cerr << "[DimensionReduction] Python error: function returned invalid object." << endl;

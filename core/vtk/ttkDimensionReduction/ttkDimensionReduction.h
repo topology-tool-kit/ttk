@@ -104,6 +104,9 @@ class ttkDimensionReduction
     vtkSetMacro(NumberOfNeighbors, int);
     vtkGetMacro(NumberOfNeighbors, int);
 
+    vtkSetMacro(RandomState, int);
+    vtkGetMacro(RandomState, int);
+
     vtkSetMacro(Method, int);
     vtkGetMacro(Method, int);
 
@@ -158,6 +161,7 @@ class ttkDimensionReduction
     int NumberOfComponents;
     int NumberOfNeighbors;
     int Method;
+    int RandomState;
     bool KeepAllDataArrays;
     bool UseAllCores;
     ttk::ThreadId ThreadNumber;
