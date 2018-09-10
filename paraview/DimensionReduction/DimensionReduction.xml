@@ -129,6 +129,7 @@
           <Entry value="2" text="MDS"/>
           <Entry value="3" text="TSNE"/>
           <Entry value="4" text="Isomap"/>
+          <Entry value="5" text="PCA"/>
         </EnumerationDomain>
         <Documentation>
         </Documentation>

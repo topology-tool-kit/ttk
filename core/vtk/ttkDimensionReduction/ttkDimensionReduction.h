@@ -49,7 +49,8 @@ class ttkDimensionReduction
       LocallyLinearEmbedding,
       MDS,
       TSNE,
-      Isomap
+      Isomap,
+      PCA
     };
 
     static ttkDimensionReduction* New();

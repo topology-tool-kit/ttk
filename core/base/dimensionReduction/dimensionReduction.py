@@ -28,6 +28,7 @@ def doIt(X, method, ncomponents, nneighbors, njobs):
         print("[DimensionReduction] Python error: sklearn module not found.")
 
     from sklearn import manifold
+    from sklearn import decomposition
     import numpy as np
 
     if method == 0:
@@ -45,6 +46,9 @@ def doIt(X, method, ncomponents, nneighbors, njobs):
     elif method == 4:
         iso = manifold.Isomap(n_components=ncomponents, n_neighbors=nneighbors, n_jobs=njobs)
         Y = iso.fit_transform(X)
+    elif method == 5:
+        pca = decomposition.PCA(n_components=ncomponents)
+        Y = pca.fit_transform(X)
 
     L = [Y.shape[0], Y.shape[1], np.ravel(Y, 'F')]
 
