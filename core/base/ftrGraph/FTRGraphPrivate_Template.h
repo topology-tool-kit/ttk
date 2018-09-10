@@ -50,11 +50,9 @@ namespace ttk
             const idVertex curVert = localProp->getCurVertex();
             idSuperArc mergeIn = nullSuperArc;
 
-            DEBUG_1(<< curVert << std::endl);
-
             // Check history for visit (quick test)
             if (propagations_.hasVisited(curVert, localProp)) {
-               DEBUG_1(<< curVert << "already seen " << localProp->getId() << std::endl);
+               // DEBUG_1(<< curVert << "already seen " << localProp->getId() << std::endl);
                continue;
             }
 
@@ -69,11 +67,11 @@ namespace ttk
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
-                  if (currentArc == nullSuperArc) {
-                     DEBUG_1(<< "- " << curVert << std::endl);
-                     // merging component, propagation has been discarded
-                     continue;
-                  }
+                  // if (currentArc == nullSuperArc) {
+                  //    DEBUG_1(<< "- " << curVert << std::endl);
+                  //    // merging component, propagation has been discarded
+                  //    continue;
+                  // }
                   if(valences_.upper[curVert] && valences_.lower[curVert]){
                      // not saddle neither extrema
                      graph_.getArc(currentArc).visit(curVert);
@@ -129,12 +127,15 @@ namespace ttk
 
             // do not propagate on merging arc.
             if (mergeIn != nullSuperArc) {
+               // DEBUG_1(<< curVert << " arc merging " << graph_.printArc(currentArc) << " in " << graph_.printArc(mergeIn) << std::endl);
                if (graph_.getArc(currentArc).isVisible()) {
                   localProp->lessArc();
+                  if (localProp->getNbArcs() == 0) {
+                     DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
+                     return;
+                  }
                }
                graph_.getArc(currentArc).merge(mergeIn);
-               DEBUG_1(<< curVert << " arc merging " << graph_.printArc(currentArc) << " in "
-                     << graph_.printArc(mergeIn) << std::endl);
             }
 
             // stop on leaves
@@ -142,13 +143,16 @@ namespace ttk
                // We have reached a local extrema
                const idNode upNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, upNode);
+               DEBUG_1(<< curVert << " arc max " << graph_.printArc(currentArc) << std::endl);
                if (graph_.getArc(currentArc).isVisible()) {
                   // do not decrease on merged arcs
                   localProp->lessArc();
+                  if (localProp->getNbArcs() == 0) {
+                     DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
+                     return;
+                  }
                }
-               DEBUG_1(<< curVert << " arc max " << graph_.printArc(currentArc) << std::endl);
             }
-
 
             // add upper star for futur visit
             localGrowth(localProp, upperStarEdges);
@@ -174,13 +178,14 @@ namespace ttk
             // ensure we have the good values here, even if other tasks were doing stuff
             {
                // here to solve a 1 over thousands execution bug in parallel
+               // TODO Still required ??
                std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
                lowerComp = lowerComps(lowerStarEdges, localProp);
             }
             localGrowth(localProp, upperStarEdges);
             upNode = graph_.makeNode(upVert);
             idSuperArc visibleMerged = mergeAtSaddle(upNode, localProp, lowerComp);
-            localProp->lessArc(visibleMerged - 1);
+            localProp->lessArc(visibleMerged-1);
 
             const idNode downNode = graph_.getNodeId(upVert);
             joinNewArc            = graph_.openArc(downNode, localProp);
@@ -192,14 +197,8 @@ namespace ttk
                DEBUG_1(<< ": is join & split : " << localProp->print() << std::endl);
                // will be replaced be new arcs of the split
                graph_.getArc(joinNewArc).hide();
+               localProp->lessArc();
             }
-         }
-
-
-         // this propagation can stop
-         if (localProp->getNbArcs() == 0) {
-            DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
-            return;
          }
 
          // starting from the saddle
@@ -209,8 +208,7 @@ namespace ttk
                upNode = graph_.makeNode(upVert);
                graph_.closeArc(currentArc, upNode);
                DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
-               // current arc stop here
-               localProp->lessArc(graph_.getArc(currentArc).isVisible());
+               localProp->lessArc();
             }
 
 #ifdef TTK_ENABLE_FTR_BFS
@@ -1011,7 +1009,7 @@ namespace ttk
          }
          if (!opposite.done) {
             graph_.visit(curVert, curArc);
-            DEBUG_1(<< curVert << " visit arc " << curArc << std::endl);
+            // DEBUG_1(<< curVert << " visit arc " << curArc << std::endl);
             return nullSuperArc;
 
          } else {
