@@ -1,12 +1,15 @@
 /// \ingroup base
 /// \class ttk::DimensionReduction 
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
+/// \date September 2018
 ///
-/// \brief TTK %dimensionReduction processing package.
+/// \brief TTK VTK-filter that apply dimension reduction algorithms on input.
 ///
-/// %DimensionReduction is a TTK processing package that takes a scalar field on the input 
-/// and produces a scalar field on the output.
+/// \param Input Input scalar field (vtkTable)
+/// \param Output Output scalar field (vtkTable)
+///
+/// \brief TTK VTK-filter that takes a matrix (vtkTable) as input and apply a dimension
+/// reduction algorithm from scikit-learn.
 ///
 /// \sa ttk::Triangulation
 /// \sa ttkDimensionReduction.cpp %for a usage example.

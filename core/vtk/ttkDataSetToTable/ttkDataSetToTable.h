@@ -1,12 +1,12 @@
 /// \ingroup vtk
 /// \class ttkDataSetToTable
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
-/// \date December 2017
+/// \date September 2018
 ///
-/// \brief TTK VTK-filter that selects scalar fields on input with shallow copy.
+/// \brief TTK VTK-filter that creates a vtkTable from a vtkDataSet.
 /// 
-/// \param Input Input scalar field (vtkDataSet)
-/// \param Output Output scalar field (vtkDataSet)
+/// \param Input vtkDataSet and scalar fields
+/// \param Output vtkTable and fields as columns
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the 
 /// sequence of calls SetInputData(), Update(), GetOutput()).

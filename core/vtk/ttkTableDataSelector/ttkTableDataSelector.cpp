@@ -1,5 +1,4 @@
 #include <ttkTableDataSelector.h>
-#include <regex>
 
 using namespace std;
 using namespace ttk;

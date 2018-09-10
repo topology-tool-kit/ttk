@@ -1,5 +1,4 @@
 #include <ttkDataSetToTable.h>
-#include <regex>
 
 using namespace std;
 using namespace ttk;
