@@ -140,6 +140,7 @@ namespace ttk
             propagation_.merge(other.propagation_);
             AtomicUF::makeUnion(&id_, &other.id_);
             nbArcs_ += other.nbArcs_;
+            std::cout << " ~ new nb arc " << nbArcs_ << " added " << other.nbArcs_ << std::endl;
             // TODO once after all the merge ?
             id_.find()->setPropagation(this);
          }
