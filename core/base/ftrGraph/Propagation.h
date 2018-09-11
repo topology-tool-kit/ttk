@@ -85,13 +85,13 @@ namespace ttk
          void moreArc(const idSuperArc a = 1)
          {
             nbArcs_ += a;
-            std::cout << " - new nb arc " << nbArcs_ << " added " << a << std::endl;
+            // std::cout << " - new nb arc " << nbArcs_ << " added " << a << std::endl;
          }
 
          void lessArc(const idSuperArc a = 1)
          {
             nbArcs_ -= a;
-            std::cout << " - new nb arc " << nbArcs_ << " removed " << a << std::endl;
+            // std::cout << " - new nb arc " << nbArcs_ << " removed " << a << std::endl;
          }
 
          AtomicUF* getId(void)
@@ -140,7 +140,7 @@ namespace ttk
             propagation_.merge(other.propagation_);
             AtomicUF::makeUnion(&id_, &other.id_);
             nbArcs_ += other.nbArcs_;
-            std::cout << " ~ new nb arc " << nbArcs_ << " added " << other.nbArcs_ << std::endl;
+            // std::cout << " ~ new nb arc " << nbArcs_ << " added " << other.nbArcs_ << std::endl;
             // TODO once after all the merge ?
             id_.find()->setPropagation(this);
          }

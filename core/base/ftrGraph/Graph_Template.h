@@ -26,6 +26,14 @@ namespace ttk
          int totalArc = getNumberOfArcs();
          int merged   = 0;
 
+         // Here arc are represented by a starting and an ending vertex
+         // These vertices are the first and last in the arc if it has a segmentation.
+         // Otherwise, starting vertex is the lower node of the arc and ending vertex the higher.
+         // With this method, the only case two distinct arc would be considered the same is
+         // two arcs forming a loop without segmentation. In therm of mesh this would occurs
+         // if two distinct edges have the same boundary vertices, which is not possible in a
+         // manifold.
+
          const idSuperArc nbArcs = arcs_.size();
          for (idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
             const SuperArc& arc = getArc(arcId);

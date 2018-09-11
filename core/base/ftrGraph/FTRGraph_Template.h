@@ -136,6 +136,8 @@ namespace ttk
 
          printTime(timeBuild, "[FTR Graph]: final time: ", timeMsg);
 
+         // list of regular vertices on each arc
+         // explicit build: for sampling
          if (params_.samplingLvl) {
             graph_.buildArcSegmentation<ScalarType>(scalars_);
          }
