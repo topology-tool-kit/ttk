@@ -127,15 +127,15 @@ namespace ttk
 
             // do not propagate on merging arc.
             if (mergeIn != nullSuperArc) {
-               // DEBUG_1(<< curVert << " arc merging " << graph_.printArc(currentArc) << " in " << graph_.printArc(mergeIn) << std::endl);
+               DEBUG_1(<< curVert << " arc merging " << graph_.printArc(currentArc) << " in " << graph_.printArc(mergeIn) << std::endl);
                if (graph_.getArc(currentArc).isVisible()) {
                   localProp->lessArc();
-                  if (localProp->getNbArcs() == 0) {
-                     DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
-                     return;
-                  }
                }
                graph_.getArc(currentArc).merge(mergeIn);
+               if (localProp->getNbArcs() == 0) {
+                  DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
+                  return;
+               }
             }
 
             // stop on leaves
