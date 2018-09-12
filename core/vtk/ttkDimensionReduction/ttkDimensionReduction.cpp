@@ -8,8 +8,8 @@ vtkStandardNewMacro(ttkDimensionReduction)
   int ttkDimensionReduction::doIt(vtkTable* input, vtkTable* output){
     Memory m;
 
-    const int numberOfRows=input->GetNumberOfRows();
-    const int numberOfColumns=ScalarFields.size();
+    const SimplexId numberOfRows=input->GetNumberOfRows();
+    const SimplexId numberOfColumns=ScalarFields.size();
 
 #ifndef TTK_ENABLE_KAMIKAZE
     if(numberOfRows<=0 or numberOfColumns<=0){
@@ -22,7 +22,7 @@ vtkStandardNewMacro(ttkDimensionReduction)
     vector<vtkAbstractArray*> arrays;
     for(auto s : ScalarFields)
       arrays.push_back(input->GetColumnByName(s.data()));
-    for(int i=0; i<numberOfRows; ++i){
+    for(SimplexId i=0; i<numberOfRows; ++i){
       for(auto arr : arrays)
         inputData.push_back(arr->GetVariantValue(i).ToDouble());
     }

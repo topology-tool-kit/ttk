@@ -43,7 +43,7 @@ namespace ttk{
         return 0;
       }
 
-      inline int setInputMatrixDimensions(int numberOfRows, int numberOfColumns){
+      inline int setInputMatrixDimensions(SimplexId numberOfRows, SimplexId numberOfColumns){
         numberOfRows_=numberOfRows;
         numberOfColumns_=numberOfColumns;
         return 0;
@@ -85,8 +85,8 @@ namespace ttk{
       std::string modulePath_;
       std::string moduleName_;
       std::string functionName_;
-      int numberOfRows_;
-      int numberOfColumns_;
+      SimplexId numberOfRows_;
+      SimplexId numberOfColumns_;
       int method_;
       int numberOfComponents_;
       int numberOfNeighbors_;
