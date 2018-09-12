@@ -69,7 +69,7 @@ namespace ttk{
         return 0;
       }
 
-      inline int setInputRandomState(int randomState){
+      inline int setInputIsDeterministic(int randomState){
         randomState_=randomState;
         return 0;
       }

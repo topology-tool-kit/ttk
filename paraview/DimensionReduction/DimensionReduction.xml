@@ -32,7 +32,6 @@
         </Documentation>
       </InputProperty>
 
-
       <StringVectorProperty command="SetScalarFields"
         clean_command="ClearScalarFields"
         label="Input Columns"
@@ -87,12 +86,12 @@
         default_values="0"
         panel_visibility="default">
         <EnumerationDomain name="enum">
-          <Entry value="0" text="SpectralEmbedding"/>
-          <Entry value="1" text="LocallyLinearEmbedding"/>
-          <Entry value="2" text="MDS"/>
-          <Entry value="3" text="TSNE"/>
-          <Entry value="4" text="Isomap"/>
-          <Entry value="5" text="PCA"/>
+          <Entry value="0" text="Spectral Embedding"/>
+          <Entry value="1" text="Locally Linear Embedding"/>
+          <Entry value="2" text="Multi-Dimensional Scaling" />
+          <Entry value="3" text="t-distributed Stochastic Neighbor Embedding"/>
+          <Entry value="4" text="Isomap Embedding"/>
+          <Entry value="5" text="Principal Component Analysis" />
         </EnumerationDomain>
         <Documentation>
         </Documentation>
@@ -184,15 +183,15 @@
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty name="RandomState"
-        label="Random State"
-        command="SetRandomState"
+      <IntVectorProperty name="IsDeterministic"
+        label="Is Deterministic"
+        command="SetIsDeterministic"
         number_of_elements="1"
-        default_values="0"
+        default_values="1"
         panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
+        <BooleanDomain name="bool"/>
         <Documentation>
-          Set the random seed or -1.
+          Set the random state.
         </Documentation>
       </IntVectorProperty>
 
@@ -203,7 +202,7 @@
         <Property name="ModulePath" />
         <Property name="ModuleName" />
         <Property name="FunctionName" />
-        <Property name="RandomState" />
+        <Property name="IsDeterministic" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Input options">

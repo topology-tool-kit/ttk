@@ -71,7 +71,7 @@ int DimensionReduction::execute() const{
   PyObject* pNumberOfComponents;
   PyObject* pNumberOfNeighbors;
   PyObject* pJobs;
-  PyObject* pRandomState;
+  PyObject* pIsDeterministic;
   PyObject* pReturn;
   PyObject* pNRows;
   PyObject* pNColumns;
@@ -168,10 +168,10 @@ int DimensionReduction::execute() const{
   }
 #endif
 
-  pRandomState=PyLong_FromLong(randomState_);
+  pIsDeterministic=PyLong_FromLong(randomState_);
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!pRandomState){
-    cerr << "[DimensionReduction] Python error: cannot convert pRandomState." << endl;
+  if(!pIsDeterministic){
+    cerr << "[DimensionReduction] Python error: cannot convert pIsDeterministic." << endl;
     goto collect_garbage;
   }
 #endif
@@ -210,7 +210,7 @@ int DimensionReduction::execute() const{
 #endif
 
    pReturn=PyObject_CallFunctionObjArgs(pFunc, npArr, pMethod, pNumberOfComponents,
-       pNumberOfNeighbors, pJobs, pRandomState, NULL);
+       pNumberOfNeighbors, pJobs, pIsDeterministic, NULL);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pReturn){
     cerr << "[DimensionReduction] Python error: function returned invalid object." << endl;

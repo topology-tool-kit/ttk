@@ -32,7 +32,7 @@ def doIt(X, method, ncomponents, nneighbors, njobs, rstate):
     import numpy as np
 
     if rstate > 0:
-        np.random.seed(rstate)
+        np.random.seed(0)
 
     if method == 0:
         se = manifold.SpectralEmbedding(n_components=ncomponents, n_neighbors=nneighbors, n_jobs=njobs)
