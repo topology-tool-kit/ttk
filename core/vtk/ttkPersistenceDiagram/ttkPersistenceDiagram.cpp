@@ -81,6 +81,9 @@ int ttkPersistenceDiagram::getScalars(vtkDataSet* input){
   }
 #endif
 
+  if(this->GetMTime() < inputScalars_->GetMTime())
+    computeDiagram_=true;
+
   stringstream msg;
   msg << "[ttkPersistenceDiagram] Starting computation on field `"
     << inputScalars_->GetName() << "'..." << endl;
@@ -141,10 +144,14 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
       offsets_->SetName(ttk::OffsetScalarFieldName);
       for(SimplexId i=0; i<numberOfVertices; ++i)
         offsets_->SetTuple1(i,i);
+      offsets_->Modified();
     }
 
     inputOffsets_=offsets_;
   }
+
+  if(this->GetMTime() < inputOffsets_->GetMTime())
+    computeDiagram_=true;
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputOffsets_){
@@ -156,6 +163,7 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet* input){
 
   return 0;
 }
+
 int ttkPersistenceDiagram::deleteDiagram(){
   if(CTDiagram_ and inputScalars_){
     switch(inputScalars_->GetDataType()){

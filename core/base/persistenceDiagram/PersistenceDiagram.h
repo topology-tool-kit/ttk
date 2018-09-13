@@ -216,6 +216,7 @@ int ttk::PersistenceDiagram::execute() const{
   contourTree.setTreeType(ftm::TreeType::Join_Split);
   contourTree.setVertexSoSoffsets(voffsets.data());
   contourTree.setThreadNumber(threadNumber_);
+  contourTree.setDebugLevel(debugLevel_);
   contourTree.setSegmentation(false);
   contourTree.build<scalarType,idType>();
 
