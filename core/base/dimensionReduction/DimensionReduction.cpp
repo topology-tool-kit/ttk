@@ -2,9 +2,11 @@
 #define VALUE_TO_STRING(x) #x
 #define VALUE(x) VALUE_TO_STRING(x)
 
+#ifdef TTK_PYTHON_FOUND
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include<Python.h>
 #include<numpy/arrayobject.h>
+#endif
 
 using namespace std;
 using namespace ttk;
@@ -19,6 +21,7 @@ DimensionReduction::DimensionReduction():
   embedding_{nullptr},
   majorVersion_{'0'}
 {
+#ifdef TTK_PYTHON_FOUND
   auto finalize_callback=[](){
     Py_Finalize();
   };
@@ -41,19 +44,28 @@ DimensionReduction::DimensionReduction():
   }
 
   majorVersion_=version[0];
+#endif
 }
 
 DimensionReduction::~DimensionReduction(){
 }
 
+bool DimensionReduction::isPythonFound() const{
+#ifdef TTK_PYTHON_FOUND
+  return true;
+#else
+  return false;
+#endif
+}
+
 int DimensionReduction::execute() const{
+#ifdef TTK_PYTHON_FOUND
 #ifndef TTK_ENABLE_KAMIKAZE
   if(majorVersion_<'3') return -1;
   if(modulePath_.length()<=0) return -1;
   if(moduleName_.length()<=0) return -1;
   if(functionName_.length()<=0) return -1;
   if(!matrix_) return -1;
-  // if(!components_) return -1;
 #endif
 
   const int numberOfComponents=std::max(2,numberOfComponents_);
@@ -267,5 +279,6 @@ collect_garbage:
   for(auto i : gc)
     Py_DECREF(i);
 
+#endif
   return 0;
 }

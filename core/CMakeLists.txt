@@ -99,7 +99,7 @@ function(ttk_print_summary)
 endfunction()
 
 function(ttk_find_python)
-  find_package(PythonLibs REQUIRED QUIET)
+  find_package(PythonLibs QUIET)
   include_directories(${PYTHON_INCLUDE_DIRS})
 
   if (${CMAKE_VERSION} VERSION_GREATER "3.10" OR ${CMAKE_VERSION} VERSION_EQUAL "3.10")
@@ -121,6 +121,10 @@ function(ttk_find_python)
     /usr/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include/
     /usr/local/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include)
   include_directories(${PYTHON_NUMPY_INCLUDE_DIR})
+
+  if(NOT(PYTHON_INCLUDE_DIRS STREQUAL "") AND NOT(PYTHON_NUMPY_INCLUDE_DIR STREQUAL ""))
+    add_compile_definitions(TTK_PYTHON_FOUND)
+  endif()
 endfunction()
 
 option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)

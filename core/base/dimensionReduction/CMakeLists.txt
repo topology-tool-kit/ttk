@@ -10,4 +10,3 @@ install(FILES
   ${CMAKE_INSTALL_PREFIX}/share/scripts/ttk)
 
 add_definitions(-DTTK_SCRIPTS_PATH=${CMAKE_INSTALL_PREFIX}/share/scripts/ttk)
-

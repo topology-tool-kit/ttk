@@ -79,7 +79,10 @@ namespace ttk{
         return 0;
       }
 
+      bool isPythonFound() const;
+
       int execute() const;
+
 
     protected:
       std::string modulePath_;
