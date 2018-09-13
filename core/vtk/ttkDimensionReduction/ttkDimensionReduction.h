@@ -89,15 +89,7 @@ class ttkDimensionReduction
       Modified();
     }
 
-    vtkSetMacro(ModulePath, std::string);
-    vtkGetMacro(ModulePath, std::string);
-
-    vtkSetMacro(ModuleName, std::string);
-    vtkGetMacro(ModuleName, std::string);
-
-    vtkSetMacro(FunctionName, std::string);
-    vtkGetMacro(FunctionName, std::string);
-
+    // default
     vtkSetMacro(NumberOfComponents, int);
     vtkGetMacro(NumberOfComponents, int);
 
@@ -112,6 +104,65 @@ class ttkDimensionReduction
 
     vtkSetMacro(KeepAllDataArrays, int);
     vtkGetMacro(KeepAllDataArrays, int);
+
+    // SE
+
+    // LLE
+    vtkSetMacro(lle_Regularization, float);
+    vtkGetMacro(lle_Regularization, float);
+
+    vtkSetMacro(lle_EigenSolver, std::string);
+    vtkGetMacro(lle_EigenSolver, std::string);
+
+    vtkSetMacro(lle_Tolerance, float);
+    vtkGetMacro(lle_Tolerance, float);
+
+    vtkSetMacro(lle_MaxIteration, int);
+    vtkGetMacro(lle_MaxIteration, int);
+
+    vtkSetMacro(lle_Method, std::string);
+    vtkGetMacro(lle_Method, std::string);
+
+    vtkSetMacro(lle_HessianTolerance, float);
+    vtkGetMacro(lle_HessianTolerance, float);
+
+    vtkSetMacro(lle_ModifiedTolerance, float);
+    vtkGetMacro(lle_ModifiedTolerance, float);
+
+    vtkSetMacro(lle_NeighborsAlgorithm, std::string);
+    vtkGetMacro(lle_NeighborsAlgorithm, std::string);
+
+    // MDS
+
+    // TSNE
+
+    // Iso
+    vtkSetMacro(iso_EigenSolver, std::string);
+    vtkGetMacro(iso_EigenSolver, std::string);
+
+    vtkSetMacro(iso_Tolerance, float);
+    vtkGetMacro(iso_Tolerance, float);
+
+    vtkSetMacro(iso_MaxIteration, int);
+    vtkGetMacro(iso_MaxIteration, int);
+
+    vtkSetMacro(iso_PathMethod, std::string);
+    vtkGetMacro(iso_PathMethod, std::string);
+
+    vtkSetMacro(iso_NeighborsAlgorithm, std::string);
+    vtkGetMacro(iso_NeighborsAlgorithm, std::string);
+
+    // PCA
+
+    // testing
+    vtkSetMacro(ModulePath, std::string);
+    vtkGetMacro(ModulePath, std::string);
+
+    vtkSetMacro(ModuleName, std::string);
+    vtkGetMacro(ModuleName, std::string);
+
+    vtkSetMacro(FunctionName, std::string);
+    vtkGetMacro(FunctionName, std::string);
 
     int FillInputPortInformation(int port, vtkInformation *info) override {
       switch(port){
@@ -155,14 +206,34 @@ class ttkDimensionReduction
     bool needsToAbort();
     int updateProgress(const float &progress);
 
-    std::string ModulePath;
-    std::string ModuleName;
-    std::string FunctionName;
+    // default
     int NumberOfComponents;
     int NumberOfNeighbors;
     int Method;
     int IsDeterministic;
     bool KeepAllDataArrays;
+
+    // lle
+    float lle_Regularization;
+    std::string lle_EigenSolver;
+    float lle_Tolerance;
+    int lle_MaxIteration;
+    std::string lle_Method;
+    float lle_HessianTolerance;
+    float lle_ModifiedTolerance;
+    std::string lle_NeighborsAlgorithm;
+
+    // iso
+    std::string iso_EigenSolver;
+    float iso_Tolerance;
+    int iso_MaxIteration;
+    std::string iso_PathMethod;
+    std::string iso_NeighborsAlgorithm;
+
+    // testing
+    std::string ModulePath;
+    std::string ModuleName;
+    std::string FunctionName;
     bool UseAllCores;
     ttk::ThreadId ThreadNumber;
     ttk::DimensionReduction dimensionReduction_;

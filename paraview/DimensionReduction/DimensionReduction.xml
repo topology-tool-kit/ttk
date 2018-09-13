@@ -109,6 +109,176 @@
         </Documentation>
       </IntVectorProperty>
 
+      <DoubleVectorProperty name="lle_Regularization"
+        label="Regularization"
+        command="Setlle_Regularization"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="lle_EigenSolver"
+        label="Eigen Solver"
+        command="Setlle_EigenSolver"
+        number_of_elements="1"
+        default_values="Value"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="arpack"/>
+          <String value="dense"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="lle_Tolerance"
+        label="Tolerance"
+        command="Setlle_Tolerance"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty name="lle_MaxIteration"
+        label="Iteration threshold"
+        command="Setlle_MaxIteration"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="lle_Method"
+        label="Method"
+        command="Setlle_Method"
+        number_of_elements="1"
+        default_values="Value"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="standard"/>
+          <String value="hessian"/>
+          <String value="modified"/>
+          <String value="ltsa"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="lle_HessianTolerance"
+        label="Hessian Tolerance"
+        command="Setlle_HessianTolerance"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty name="lle_ModifiedTolerance"
+        label="Modified Tolerance"
+        command="Setlle_ModifiedTolerance"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="lle_NeighborsAlgorithm"
+        label="NN-algorithm"
+        command="Setlle_NeighborsAlgorithm"
+        number_of_elements="1"
+        default_values="Value"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="brute"/>
+          <String value="kd_tree"/>
+          <String value="ball_tree"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="iso_EigenSolver"
+        label="Eigen Solver"
+        command="Setiso_EigenSolver"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="arpack"/>
+          <String value="dense"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="iso_Tolerance"
+        label="Tolerance"
+        command="Setiso_Tolerance"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty name="iso_MaxIteration"
+        label="Iteration threshold"
+        command="Setiso_MaxIteration"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="iso_PathMethod"
+        label="Path method"
+        command="Setiso_PathMethod"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="FW"/>
+          <String value="D"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="iso_NeighborsAlgorithm"
+        label="NN-algorithm"
+        command="Setiso_NeighborsAlgorithm"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="brute"/>
+          <String value="kd_tree"/>
+          <String value="ball_tree"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -195,16 +365,6 @@
         </Documentation>
       </IntVectorProperty>
 
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-        <Property name="ModulePath" />
-        <Property name="ModuleName" />
-        <Property name="FunctionName" />
-        <Property name="IsDeterministic" />
-      </PropertyGroup>
-
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFields" />
       </PropertyGroup>
@@ -214,6 +374,35 @@
         <Property name="NumberOfNeighbors" />
         <Property name="Method" />
         <Property name="KeepAllDataArrays" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Locally Linear Embedding">
+        <Property name="lle_Regularization" />
+        <Property name="lle_EigenSolver" />
+        <Property name="lle_Tolerance" />
+        <Property name="lle_MaxIteration" />
+        <Property name="lle_Method" />
+        <Property name="lle_HessianTolerance" />
+        <Property name="lle_ModifiedTolerance" />
+        <Property name="lle_NeighborsAlgorithm" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Isomap Embedding">
+        <Property name="iso_EigenSolver" />
+        <Property name="iso_Tolerance" />
+        <Property name="iso_MaxIteration" />
+        <Property name="iso_PathMethod" />
+        <Property name="iso_NeighborsAlgorithm" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+        <Property name="ModulePath" />
+        <Property name="ModuleName" />
+        <Property name="FunctionName" />
+        <Property name="IsDeterministic" />
       </PropertyGroup>
 
       <Hints>
