@@ -210,6 +210,20 @@ class ttkDimensionReduction
     vtkGetMacro(iso_NeighborsAlgorithm, std::string);
 
     // PCA
+    vtkSetMacro(pca_Copy, bool);
+    vtkGetMacro(pca_Copy, bool);
+
+    vtkSetMacro(pca_Whiten, bool);
+    vtkGetMacro(pca_Whiten, bool);
+
+    vtkSetMacro(pca_SVDSolver, std::string);
+    vtkGetMacro(pca_SVDSolver, std::string);
+
+    vtkSetMacro(pca_Tolerance, float);
+    vtkGetMacro(pca_Tolerance, float);
+
+    vtkSetMacro(pca_MaxIteration, std::string);
+    vtkGetMacro(pca_MaxIteration, std::string);
 
     // testing
     vtkSetMacro(ModulePath, std::string);
@@ -244,6 +258,54 @@ class ttkDimensionReduction
   protected:
 
     ttkDimensionReduction(){
+      NumberOfComponents=1;
+      NumberOfNeighbors=5;
+      Method=0;
+
+      se_Affinity="nearest_neighbors";
+      se_Gamma=1;
+      se_EigenSolver="auto";
+
+      lle_Regularization=1;
+      lle_EigenSolver="auto";
+      lle_Tolerance=1e-3;
+      lle_MaxIteration=300;
+      lle_Method="standard";
+      lle_HessianTolerance=1e-3;
+      lle_ModifiedTolerance=1e-3;
+      lle_NeighborsAlgorithm="auto";
+
+      mds_Metric=true;
+      mds_Init=4;
+      mds_MaxIteration=300;
+      mds_Verbose=0;
+      mds_Epsilon=0;
+      mds_Dissimilarity="euclidean";
+
+      tsne_Perplexity=30;
+      tsne_Exaggeration=12;
+      tsne_LearningRate=200;
+      tsne_MaxIteration=1000;
+      tsne_MaxIterationProgress=300;
+      tsne_GradientThreshold=1e-7;
+      tsne_Metric="euclidean";
+      tsne_Init="random";
+      tsne_Verbose=0;
+      tsne_Method="barnes_hut";
+      tsne_Angle=0.5;
+
+      iso_EigenSolver="auto";
+      iso_Tolerance=1e-3;
+      iso_MaxIteration=300;
+      iso_PathMethod="auto";
+      iso_NeighborsAlgorithm="auto";
+
+      pca_Copy=true;
+      pca_Whiten=false;
+      pca_SVDSolver="auto";
+      pca_Tolerance=0;
+      pca_MaxIteration="auto";
+
       UseAllCores = true;
       ThreadNumber = 1;
       debugLevel_ = 3;
@@ -314,6 +376,11 @@ class ttkDimensionReduction
     std::string iso_NeighborsAlgorithm;
 
     // pca
+    bool pca_Copy;
+    bool pca_Whiten;
+    std::string pca_SVDSolver;
+    float pca_Tolerance;
+    std::string pca_MaxIteration;
 
     // testing
     std::string ModulePath;

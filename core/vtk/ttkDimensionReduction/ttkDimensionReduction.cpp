@@ -41,17 +41,19 @@ vtkStandardNewMacro(ttkDimensionReduction)
       dimensionReduction_.setInputNumberOfNeighbors(NumberOfNeighbors);
       dimensionReduction_.setInputIsDeterministic(IsDeterministic);
       dimensionReduction_.setOutputComponents(outputData_);
-      dimensionReduction_.execute();
+      const int errorCode=dimensionReduction_.execute();
 
-      if(KeepAllDataArrays)
-        output->ShallowCopy(input);
+      if(!errorCode){
+        if(KeepAllDataArrays)
+          output->ShallowCopy(input);
 
-      for(int i=0; i<NumberOfComponents; ++i){
-        string s = "Component_" + to_string(i);
-        vtkSmartPointer<vtkDoubleArray> arr=vtkSmartPointer<vtkDoubleArray>::New();
-        arr->SetVoidArray((*outputData_)[i].data(), numberOfRows, 1);
-        arr->SetName(s.data());
-        output->AddColumn(arr);
+        for(int i=0; i<NumberOfComponents; ++i){
+          string s = "Component_" + to_string(i);
+          vtkSmartPointer<vtkDoubleArray> arr=vtkSmartPointer<vtkDoubleArray>::New();
+          arr->SetVoidArray((*outputData_)[i].data(), numberOfRows, 1);
+          arr->SetName(s.data());
+          output->AddColumn(arr);
+        }
       }
     }
     else{

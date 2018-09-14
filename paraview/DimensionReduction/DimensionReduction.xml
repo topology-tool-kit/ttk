@@ -144,7 +144,8 @@
         <StringListDomain name="enum">
           <String value="auto"/>
           <String value="arpack"/>
-          <String value="dense"/>
+          <String value="lobpcg"/>
+          <String value="amg"/>
         </StringListDomain>
         <Documentation>
         </Documentation>
@@ -516,6 +517,65 @@
         </Documentation>
       </StringVectorProperty>
 
+      <IntVectorProperty name="pca_Copy"
+        label="Copy"
+        command="Setpca_Copy"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="pca_Whiten"
+        label="Whiten"
+        command="Setpca_Whiten"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="pca_SVDSolver"
+        label="SVD Solver"
+        command="Setpca_SVDSolver"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="full"/>
+          <String value="arpack"/>
+          <String value="randomized"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="pca_Tolerance"
+        label="Tolerance"
+        command="Setpca_Tolerance"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="pca_MaxIteration"
+        label="Iteration Threshold"
+        command="Setpca_MaxIteration"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -659,6 +719,14 @@
         <Property name="iso_MaxIteration" />
         <Property name="iso_PathMethod" />
         <Property name="iso_NeighborsAlgorithm" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Principal Component Analysis">
+        <Property name="pca_Copy" />
+        <Property name="pca_Whiten" />
+        <Property name="pca_SVDSolver" />
+        <Property name="pca_Tolerance" />
+        <Property name="pca_MaxIteration" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">

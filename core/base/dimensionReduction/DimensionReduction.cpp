@@ -273,11 +273,18 @@ int DimensionReduction::execute() const{
     }
   }
 
+  // normal control-flow
+  for(auto i : gc)
+    Py_DECREF(i);
+  return 0;
+
+  // error control-flow
 #ifndef TTK_ENABLE_KAMIKAZE
 collect_garbage:
 #endif
   for(auto i : gc)
     Py_DECREF(i);
+  return -1;
 
 #endif
   return 0;
