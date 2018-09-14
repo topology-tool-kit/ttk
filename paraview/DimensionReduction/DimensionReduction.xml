@@ -286,7 +286,7 @@
       </IntVectorProperty>
 
       <IntVectorProperty name="mds_Verbose"
-        label="Level of Verbosity"
+        label="Verbosity Level"
         command="Setmds_Verbose"
         number_of_elements="1"
         default_values="0"
@@ -320,6 +320,133 @@
         <Documentation>
         </Documentation>
       </StringVectorProperty>
+
+      <DoubleVectorProperty name="tsne_Perplexity"
+        label="Perplexity"
+        command="Settsne_Perplexity"
+        number_of_elements="1"
+        default_values="30"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty name="tsne_Exaggeration"
+        label="Early Exaggeration"
+        command="Settsne_Exaggeration"
+        number_of_elements="1"
+        default_values="12"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty name="tsne_LearningRate"
+        label="Learning Rate"
+        command="Settsne_LearningRate"
+        number_of_elements="1"
+        default_values="200"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <IntVectorProperty name="tsne_MaxIteration"
+        label="Iteration Threshold"
+        command="Settsne_MaxIteration"
+        number_of_elements="1"
+        default_values="1000"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="tsne_MaxIterationProgress"
+        label="Iteration Without Progress Threshold"
+        command="Settsne_MaxIterationProgress"
+        number_of_elements="1"
+        default_values="300"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Documentation.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty name="tsne_GradientThreshold"
+        label="Gradient Threshold"
+        command="Settsne_GradientThreshold"
+        number_of_elements="1"
+        default_values="1e-7"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="tsne_Metric"
+        label="Metric"
+        command="Settsne_Metric"
+        number_of_elements="1"
+        default_values="euclidean"
+        panel_visibility="advanced">
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="tsne_Init"
+        label="Init"
+        command="Settsne_Init"
+        number_of_elements="1"
+        default_values="random"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="random"/>
+          <String value="pca"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="tsne_Verbose"
+        label="Verbosity Level"
+        command="Settsne_Verbose"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty name="tsne_Method"
+        label="Method"
+        command="Settsne_Method"
+        number_of_elements="1"
+        default_values="barnes_hut"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="barnes_hut"/>
+          <String value="exact"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="tsne_Angle"
+        label="Angle"
+        command="Settsne_Angle"
+        number_of_elements="1"
+        default_values="0.5"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
 
       <StringVectorProperty name="iso_EigenSolver"
         label="Eigen Solver"
@@ -513,6 +640,17 @@
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="t-distributed Stochastic Neighbor Embedding">
+        <Property name="tsne_Perplexity" />
+        <Property name="tsne_Exaggeration" />
+        <Property name="tsne_LearningRate" />
+        <Property name="tsne_MaxIteration" />
+        <Property name="tsne_MaxIterationProgress" />
+        <Property name="tsne_GradientThreshold" />
+        <Property name="tsne_Metric" />
+        <Property name="tsne_Init" />
+        <Property name="tsne_Verbose" />
+        <Property name="tsne_Method" />
+        <Property name="tsne_Angle" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Isomap Embedding">

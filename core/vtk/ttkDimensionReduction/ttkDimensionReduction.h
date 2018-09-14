@@ -160,6 +160,38 @@ class ttkDimensionReduction
     vtkGetMacro(mds_Dissimilarity, std::string);
 
     // TSNE
+    vtkSetMacro(tsne_Perplexity, float);
+    vtkGetMacro(tsne_Perplexity, float);
+
+    vtkSetMacro(tsne_Exaggeration, float);
+    vtkGetMacro(tsne_Exaggeration, float);
+
+    vtkSetMacro(tsne_LearningRate, float);
+    vtkGetMacro(tsne_LearningRate, float);
+
+    vtkSetMacro(tsne_MaxIteration, int);
+    vtkGetMacro(tsne_MaxIteration, int);
+
+    vtkSetMacro(tsne_MaxIterationProgress, int);
+    vtkGetMacro(tsne_MaxIterationProgress, int);
+
+    vtkSetMacro(tsne_GradientThreshold, float);
+    vtkGetMacro(tsne_GradientThreshold, float);
+
+    vtkSetMacro(tsne_Metric, std::string);
+    vtkGetMacro(tsne_Metric, std::string);
+
+    vtkSetMacro(tsne_Init, std::string);
+    vtkGetMacro(tsne_Init, std::string);
+
+    vtkSetMacro(tsne_Verbose, int);
+    vtkGetMacro(tsne_Verbose, int);
+
+    vtkSetMacro(tsne_Method, std::string);
+    vtkGetMacro(tsne_Method, std::string);
+
+    vtkSetMacro(tsne_Angle, float);
+    vtkGetMacro(tsne_Angle, float);
 
     // Iso
     vtkSetMacro(iso_EigenSolver, std::string);
@@ -243,7 +275,6 @@ class ttkDimensionReduction
     float se_Gamma;
     std::string se_EigenSolver;
 
-
     // lle
     float lle_Regularization;
     std::string lle_EigenSolver;
@@ -263,6 +294,17 @@ class ttkDimensionReduction
     std::string mds_Dissimilarity;
 
     // tsne
+    float tsne_Perplexity;
+    float tsne_Exaggeration;
+    float tsne_LearningRate;
+    int tsne_MaxIteration;
+    int tsne_MaxIterationProgress;
+    float tsne_GradientThreshold;
+    std::string tsne_Metric;
+    std::string tsne_Init;
+    int tsne_Verbose;
+    std::string tsne_Method;
+    float tsne_Angle;
 
     // iso
     std::string iso_EigenSolver;
