@@ -1,4 +1,5 @@
-def doIt(X, method, ncomponents, nneighbors, njobs, rstate):
+def doIt(X, method, ncomponents, nneighbors, njobs, rstate, params):
+
     import importlib
 
     # check if numpy is installed
@@ -26,6 +27,7 @@ def doIt(X, method, ncomponents, nneighbors, njobs, rstate):
         print("[DimensionReduction] Python: sklearn module found.")
     else:
         print("[DimensionReduction] Python error: sklearn module not found.")
+        return 0
 
     from sklearn import manifold
     from sklearn import decomposition

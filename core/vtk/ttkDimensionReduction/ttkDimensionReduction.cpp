@@ -40,6 +40,44 @@ vtkStandardNewMacro(ttkDimensionReduction)
       dimensionReduction_.setInputNumberOfComponents(NumberOfComponents);
       dimensionReduction_.setInputNumberOfNeighbors(NumberOfNeighbors);
       dimensionReduction_.setInputIsDeterministic(IsDeterministic);
+      dimensionReduction_.setSEParameters(se_Affinity,
+          se_Gamma,
+          se_EigenSolver);
+      dimensionReduction_.setLLEParameters(lle_Regularization,
+          lle_EigenSolver,
+          lle_Tolerance,
+          lle_MaxIteration,
+          lle_Method,
+          lle_HessianTolerance,
+          lle_ModifiedTolerance,
+          lle_NeighborsAlgorithm);
+      dimensionReduction_.setMDSParameters(mds_Metric,
+          mds_Init,
+          mds_MaxIteration,
+          mds_Verbose,
+          mds_Epsilon,
+          mds_Dissimilarity);
+      dimensionReduction_.setTSNEParameters(tsne_Perplexity,
+          tsne_Exaggeration,
+          tsne_LearningRate,
+          tsne_MaxIteration,
+          tsne_MaxIterationProgress,
+          tsne_GradientThreshold,
+          tsne_Metric,
+          tsne_Init,
+          tsne_Verbose,
+          tsne_Method,
+          tsne_Angle);
+      dimensionReduction_.setISOParameters(iso_EigenSolver,
+          iso_Tolerance,
+          iso_MaxIteration,
+          iso_PathMethod,
+          iso_NeighborsAlgorithm);
+      dimensionReduction_.setPCAParameters(pca_Copy,
+          pca_Whiten,
+          pca_SVDSolver,
+          pca_Tolerance,
+          pca_MaxIteration);
       dimensionReduction_.setOutputComponents(outputData_);
       const int errorCode=dimensionReduction_.execute();
 

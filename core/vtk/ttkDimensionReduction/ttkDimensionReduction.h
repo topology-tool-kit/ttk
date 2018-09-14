@@ -312,6 +312,7 @@ class ttkDimensionReduction
 
       outputData_=new std::vector<std::vector<double>>;
     }
+
     ~ttkDimensionReduction(){
       delete outputData_;
     };

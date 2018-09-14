@@ -88,6 +88,13 @@ int DimensionReduction::execute() const{
   PyObject* pNRows;
   PyObject* pNColumns;
   PyObject* pEmbedding;
+  PyObject* pSEParams;
+  PyObject* pLLEParams;
+  PyObject* pMDSParams;
+  PyObject* pTSNEParams;
+  PyObject* pISOParams;
+  PyObject* pPCAParams;
+  PyObject* pParams;
   PyArrayObject* npArr;
   PyArrayObject* npEmbedding;
 
@@ -221,8 +228,68 @@ int DimensionReduction::execute() const{
   }
 #endif
 
+  pSEParams=PyList_New(0);
+  PyList_Append(pSEParams, PyUnicode_FromString(se_Affinity.data()));
+  PyList_Append(pSEParams, PyFloat_FromDouble(se_Gamma));
+  PyList_Append(pSEParams, PyUnicode_FromString(se_EigenSolver.data()));
+
+  pLLEParams=PyList_New(0);
+  PyList_Append(pLLEParams, PyFloat_FromDouble(lle_Regularization));
+  PyList_Append(pLLEParams, PyUnicode_FromString(lle_EigenSolver.data()));
+  PyList_Append(pLLEParams, PyFloat_FromDouble(lle_Tolerance));
+  PyList_Append(pLLEParams, PyLong_FromLong(lle_MaxIteration));
+  PyList_Append(pLLEParams, PyUnicode_FromString(lle_Method.data()));
+  PyList_Append(pLLEParams, PyFloat_FromDouble(lle_HessianTolerance));
+  PyList_Append(pLLEParams, PyFloat_FromDouble(lle_ModifiedTolerance));
+  PyList_Append(pLLEParams, PyUnicode_FromString(lle_NeighborsAlgorithm.data()));
+
+  pMDSParams=PyList_New(0);
+  PyList_Append(pMDSParams, PyBool_FromLong(mds_Metric));
+  PyList_Append(pMDSParams, PyLong_FromLong(mds_Init));
+  PyList_Append(pMDSParams, PyLong_FromLong(mds_MaxIteration));
+  PyList_Append(pMDSParams, PyLong_FromLong(mds_Verbose));
+  PyList_Append(pMDSParams, PyFloat_FromDouble(mds_Epsilon));
+  PyList_Append(pMDSParams, PyUnicode_FromString(mds_Dissimilarity.data()));
+
+  pTSNEParams=PyList_New(0);
+  PyList_Append(pTSNEParams, PyFloat_FromDouble(tsne_Perplexity));
+  PyList_Append(pTSNEParams, PyFloat_FromDouble(tsne_Exaggeration));
+  PyList_Append(pTSNEParams, PyFloat_FromDouble(tsne_LearningRate));
+  PyList_Append(pTSNEParams, PyLong_FromLong(tsne_MaxIteration));
+  PyList_Append(pTSNEParams, PyLong_FromLong(tsne_MaxIterationProgress));
+  PyList_Append(pTSNEParams, PyFloat_FromDouble(tsne_GradientThreshold));
+  PyList_Append(pTSNEParams, PyUnicode_FromString(tsne_Metric.data()));
+  PyList_Append(pTSNEParams, PyUnicode_FromString(tsne_Init.data()));
+  PyList_Append(pTSNEParams, PyLong_FromLong(tsne_Verbose));
+  PyList_Append(pTSNEParams, PyUnicode_FromString(tsne_Method.data()));
+  PyList_Append(pTSNEParams, PyFloat_FromDouble(tsne_Angle));
+
+  pISOParams=PyList_New(0);
+  PyList_Append(pISOParams, PyUnicode_FromString(iso_EigenSolver.data()));
+  PyList_Append(pISOParams, PyFloat_FromDouble(iso_Tolerance));
+  PyList_Append(pISOParams, PyLong_FromLong(iso_MaxIteration));
+  PyList_Append(pISOParams, PyUnicode_FromString(iso_PathMethod.data()));
+  PyList_Append(pISOParams, PyUnicode_FromString(iso_NeighborsAlgorithm.data()));
+
+  pPCAParams=PyList_New(0);
+  PyList_Append(pPCAParams, PyBool_FromLong(pca_Copy));
+  PyList_Append(pPCAParams, PyBool_FromLong(pca_Whiten));
+  PyList_Append(pPCAParams, PyUnicode_FromString(pca_SVDSolver.data()));
+  PyList_Append(pPCAParams, PyFloat_FromDouble(pca_Tolerance));
+  PyList_Append(pPCAParams, PyUnicode_FromString(pca_MaxIteration.data()));
+
+  pParams=PyList_New(0);
+  gc.push_back(pParams);
+
+  PyList_Append(pParams, pSEParams);
+  PyList_Append(pParams, pLLEParams);
+  PyList_Append(pParams, pMDSParams);
+  PyList_Append(pParams, pTSNEParams);
+  PyList_Append(pParams, pISOParams);
+  PyList_Append(pParams, pPCAParams);
+
    pReturn=PyObject_CallFunctionObjArgs(pFunc, npArr, pMethod, pNumberOfComponents,
-       pNumberOfNeighbors, pJobs, pIsDeterministic, NULL);
+       pNumberOfNeighbors, pJobs, pIsDeterministic, pParams, NULL);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pReturn){
     cerr << "[DimensionReduction] Python error: function returned invalid object." << endl;
