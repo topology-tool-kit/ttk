@@ -109,11 +109,52 @@
         </Documentation>
       </IntVectorProperty>
 
+      <StringVectorProperty name="se_Affinity"
+        label="Affinity"
+        command="Setse_Affinity"
+        number_of_elements="1"
+        default_values="nearest_neighbors"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="nearest_neighbors"/>
+          <String value="rbf"/>
+          <String value="precomputed"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <DoubleVectorProperty name="se_Gamma"
+        label="Gamma"
+        command="Setse_Gamma"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="se_EigenSolver"
+        label="Eigen Solver"
+        command="Setse_EigenSolver"
+        number_of_elements="1"
+        default_values="auto"
+        panel_visibility="advanced">
+        <StringListDomain name="enum">
+          <String value="auto"/>
+          <String value="arpack"/>
+          <String value="dense"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
       <DoubleVectorProperty name="lle_Regularization"
         label="Regularization"
         command="Setlle_Regularization"
         number_of_elements="1"
-        default_values="0"
+        default_values="1"
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
@@ -124,7 +165,7 @@
         label="Eigen Solver"
         command="Setlle_EigenSolver"
         number_of_elements="1"
-        default_values="Value"
+        default_values="auto"
         panel_visibility="advanced">
         <StringListDomain name="enum">
           <String value="auto"/>
@@ -139,7 +180,7 @@
         label="Tolerance"
         command="Setlle_Tolerance"
         number_of_elements="1"
-        default_values="0"
+        default_values="1e-3"
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
@@ -150,7 +191,7 @@
         label="Iteration threshold"
         command="Setlle_MaxIteration"
         number_of_elements="1"
-        default_values="0"
+        default_values="300"
         panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
         <Documentation>
@@ -161,7 +202,7 @@
         label="Method"
         command="Setlle_Method"
         number_of_elements="1"
-        default_values="Value"
+        default_values="standard"
         panel_visibility="advanced">
         <StringListDomain name="enum">
           <String value="standard"/>
@@ -177,7 +218,7 @@
         label="Hessian Tolerance"
         command="Setlle_HessianTolerance"
         number_of_elements="1"
-        default_values="0"
+        default_values="1e-3"
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
@@ -188,7 +229,7 @@
         label="Modified Tolerance"
         command="Setlle_ModifiedTolerance"
         number_of_elements="1"
-        default_values="0"
+        default_values="1e-3"
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
@@ -199,13 +240,82 @@
         label="NN-algorithm"
         command="Setlle_NeighborsAlgorithm"
         number_of_elements="1"
-        default_values="Value"
+        default_values="auto"
         panel_visibility="advanced">
         <StringListDomain name="enum">
           <String value="auto"/>
           <String value="brute"/>
           <String value="kd_tree"/>
           <String value="ball_tree"/>
+        </StringListDomain>
+        <Documentation>
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="mds_Metric"
+        label="Metric"
+        command="Setmds_Metric"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="mds_Init"
+        label="Number of init runs"
+        command="Setmds_Init"
+        number_of_elements="1"
+        default_values="4"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="mds_MaxIteration"
+        label="Iteration Threshold"
+        command="Setmds_MaxIteration"
+        number_of_elements="1"
+        default_values="300"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="mds_Verbose"
+        label="Level of Verbosity"
+        command="Setmds_Verbose"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty name="mds_Epsilon"
+        label="Epsilon"
+        command="Setmds_Epsilon"
+        number_of_elements="1"
+        default_values="1e-3"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Documentation>
+        </Documentation>
+      </DoubleVectorProperty>
+
+      <StringVectorProperty name="mds_Dissimilarity"
+        label="Dissimilarity"
+        command="Setmds_Dissimilarity"
+        number_of_elements="1"
+        default_values="euclidean"
+        panel_visibility="default">
+        <StringListDomain name="enum">
+          <String value="euclidean"/>
+          <String value="precomputed"/>
         </StringListDomain>
         <Documentation>
         </Documentation>
@@ -230,7 +340,7 @@
         label="Tolerance"
         command="Setiso_Tolerance"
         number_of_elements="1"
-        default_values="0"
+        default_values="1e-3"
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
@@ -241,7 +351,7 @@
         label="Iteration threshold"
         command="Setiso_MaxIteration"
         number_of_elements="1"
-        default_values="0"
+        default_values="300"
         panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
         <Documentation>
@@ -376,6 +486,12 @@
         <Property name="KeepAllDataArrays" />
       </PropertyGroup>
 
+      <PropertyGroup panel_widget="Line" label="Spectral Embedding">
+        <Property name="se_Affinity" />
+        <Property name="se_Gamma" />
+        <Property name="se_EigenSolver" />
+      </PropertyGroup>
+
       <PropertyGroup panel_widget="Line" label="Locally Linear Embedding">
         <Property name="lle_Regularization" />
         <Property name="lle_EigenSolver" />
@@ -385,6 +501,18 @@
         <Property name="lle_HessianTolerance" />
         <Property name="lle_ModifiedTolerance" />
         <Property name="lle_NeighborsAlgorithm" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Multi-Dimensional Scaling">
+        <Property name="mds_Metric" />
+        <Property name="mds_Init" />
+        <Property name="mds_MaxIteration" />
+        <Property name="mds_Verbose" />
+        <Property name="mds_Epsilon" />
+        <Property name="mds_Dissimilarity" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="t-distributed Stochastic Neighbor Embedding">
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Isomap Embedding">

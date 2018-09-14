@@ -106,6 +106,14 @@ class ttkDimensionReduction
     vtkGetMacro(KeepAllDataArrays, int);
 
     // SE
+    vtkSetMacro(se_Affinity, std::string);
+    vtkGetMacro(se_Affinity, std::string);
+
+    vtkSetMacro(se_Gamma, float);
+    vtkGetMacro(se_Gamma, float);
+
+    vtkSetMacro(se_EigenSolver, std::string);
+    vtkGetMacro(se_EigenSolver, std::string);
 
     // LLE
     vtkSetMacro(lle_Regularization, float);
@@ -133,6 +141,23 @@ class ttkDimensionReduction
     vtkGetMacro(lle_NeighborsAlgorithm, std::string);
 
     // MDS
+    vtkSetMacro(mds_Metric, bool);
+    vtkGetMacro(mds_Metric, bool);
+
+    vtkSetMacro(mds_Init, int);
+    vtkGetMacro(mds_Init, int);
+
+    vtkSetMacro(mds_MaxIteration, int);
+    vtkGetMacro(mds_MaxIteration, int);
+
+    vtkSetMacro(mds_Verbose, int);
+    vtkGetMacro(mds_Verbose, int);
+
+    vtkSetMacro(mds_Epsilon, float);
+    vtkGetMacro(mds_Epsilon, float);
+
+    vtkSetMacro(mds_Dissimilarity, std::string);
+    vtkGetMacro(mds_Dissimilarity, std::string);
 
     // TSNE
 
@@ -213,6 +238,12 @@ class ttkDimensionReduction
     int IsDeterministic;
     bool KeepAllDataArrays;
 
+    // se
+    std::string se_Affinity;
+    float se_Gamma;
+    std::string se_EigenSolver;
+
+
     // lle
     float lle_Regularization;
     std::string lle_EigenSolver;
@@ -223,12 +254,24 @@ class ttkDimensionReduction
     float lle_ModifiedTolerance;
     std::string lle_NeighborsAlgorithm;
 
+    // mds
+    bool mds_Metric;
+    int mds_Init;
+    int mds_MaxIteration;
+    int mds_Verbose;
+    float mds_Epsilon;
+    std::string mds_Dissimilarity;
+
+    // tsne
+
     // iso
     std::string iso_EigenSolver;
     float iso_Tolerance;
     int iso_MaxIteration;
     std::string iso_PathMethod;
     std::string iso_NeighborsAlgorithm;
+
+    // pca
 
     // testing
     std::string ModulePath;
