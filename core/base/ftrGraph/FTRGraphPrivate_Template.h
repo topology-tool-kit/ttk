@@ -208,7 +208,10 @@ namespace ttk
                upNode = graph_.makeNode(upVert);
                graph_.closeArc(currentArc, upNode);
                DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
-               localProp->lessArc();
+               if (graph_.getArc(currentArc).isVisible()) {
+                  // if not visible, already decremented the counter
+                  localProp->lessArc();
+               }
             }
 
 #ifdef TTK_ENABLE_FTR_BFS
@@ -218,7 +221,7 @@ namespace ttk
             splitAtSaddle(localProp, upperComp);
             localProp->moreArc(upperComp.size());
             growthFromSeed(upVert, localProp);
-            // Can't stop propagation here cause some other arcs thant the current
+            // Can't stop propagation here cause some other arcs than the current
             // one may nees to growth
 #endif
          } else if (isJoinSadlleLast) {
