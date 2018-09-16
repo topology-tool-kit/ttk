@@ -1,0 +1,6 @@
+ttk_add_paraview_plugin(ttkSuperlevelSetOverlapTracking
+	SOURCES ${VTKWRAPPER_DIR}/ttkSuperlevelSetOverlapTracking/ttkSuperlevelSetOverlapTracking.cpp
+	PLUGIN_VERSION 1.0
+	PLUGIN_XML SuperlevelSetOverlapTracking.xml
+	LINK superlevelSetOverlapTracking)
+
