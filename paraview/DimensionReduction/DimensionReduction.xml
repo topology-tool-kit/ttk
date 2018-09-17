@@ -142,7 +142,7 @@
         default_values="auto"
         panel_visibility="advanced">
         <StringListDomain name="enum">
-          <String value="auto"/>
+          <String value="None"/>
           <String value="arpack"/>
           <String value="lobpcg"/>
           <String value="amg"/>
@@ -155,7 +155,7 @@
         label="Regularization"
         command="Setlle_Regularization"
         number_of_elements="1"
-        default_values="1"
+        default_values="1e-3"
         panel_visibility="advanced">
         <DoubleRangeDomain name="range" min="0.0" max="1.0" />
         <Documentation>
@@ -313,7 +313,7 @@
         command="Setmds_Dissimilarity"
         number_of_elements="1"
         default_values="euclidean"
-        panel_visibility="default">
+        panel_visibility="advanced">
         <StringListDomain name="enum">
           <String value="euclidean"/>
           <String value="precomputed"/>

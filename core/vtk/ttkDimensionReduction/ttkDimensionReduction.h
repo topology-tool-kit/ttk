@@ -266,7 +266,7 @@ class ttkDimensionReduction
       se_Gamma=1;
       se_EigenSolver="auto";
 
-      lle_Regularization=1;
+      lle_Regularization=1e-3;
       lle_EigenSolver="auto";
       lle_Tolerance=1e-3;
       lle_MaxIteration=300;
