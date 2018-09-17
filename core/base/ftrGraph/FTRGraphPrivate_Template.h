@@ -67,11 +67,11 @@ namespace ttk
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
-                  // if (currentArc == nullSuperArc) {
-                  //    DEBUG_1(<< "- " << curVert << std::endl);
-                  //    // merging component, propagation has been discarded
-                  //    continue;
-                  // }
+                  if (graph_.getArc(currentArc).merged()) {
+                     DEBUG_1(<< "- " << curVert << std::endl);
+                     // merging component, propagation has been discarded
+                     continue;
+                  }
                   if(valences_.upper[curVert] && valences_.lower[curVert]){
                      // not saddle neither extrema
                      graph_.getArc(currentArc).visit(curVert);
@@ -132,10 +132,10 @@ namespace ttk
                   localProp->lessArc();
                }
                graph_.getArc(currentArc).merge(mergeIn);
-               if (localProp->getNbArcs() == 0) {
-                  DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
-                  return;
-               }
+               // if (localProp->getNbArcs() == 0) {
+               //    DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
+               //    return;
+               // }
             }
 
             // stop on leaves
@@ -147,10 +147,10 @@ namespace ttk
                if (graph_.getArc(currentArc).isVisible()) {
                   // do not decrease on merged arcs
                   localProp->lessArc();
-                  if (localProp->getNbArcs() == 0) {
-                     DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
-                     return;
-                  }
+                  // if (localProp->getNbArcs() == 0) {
+                  //    DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
+                  //    return;
+                  // }
                }
             }
 
@@ -187,6 +187,11 @@ namespace ttk
             idSuperArc visibleMerged = mergeAtSaddle(upNode, localProp, lowerComp);
             localProp->lessArc(visibleMerged-1);
 
+            if (!visibleMerged && localProp->getNbArcs() == 0) {
+               DEBUG_1(<< "proapgation stop here, no merged arcs" << std::endl);
+               return;
+            }
+
             const idNode downNode = graph_.getNodeId(upVert);
             joinNewArc            = graph_.openArc(downNode, localProp);
             visit(localProp, joinNewArc);
@@ -208,6 +213,10 @@ namespace ttk
                upNode = graph_.makeNode(upVert);
                graph_.closeArc(currentArc, upNode);
                DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
+               if (localProp->getNbArcs() == 0) {
+                  DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
+                  return;
+               }
                if (graph_.getArc(currentArc).isVisible()) {
                   // if not visible, already decremented the counter
                   localProp->lessArc();
