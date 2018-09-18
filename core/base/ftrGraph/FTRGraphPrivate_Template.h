@@ -229,11 +229,17 @@ namespace ttk
 #else
             splitAtSaddle(localProp, upperComp);
             localProp->moreArc(upperComp.size());
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Low)
+#endif
             growthFromSeed(upVert, localProp);
             // Can't stop propagation here cause some other arcs than the current
             // one may nees to growth
 #endif
          } else if (isJoinSadlleLast) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
+#endif
             growthFromSeed(upVert, localProp, joinNewArc);
          }
 #ifdef TTK_ENABLE_FTR_STATS
