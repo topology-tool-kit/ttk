@@ -131,25 +131,37 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
         </Documentation>
       </StringVectorProperty>
 
-			<StringVectorProperty
-        name="VertexIdentifierScalarField"
-        command="SetVertexIdentifierScalarField"
-        label="Vertex Identifier Field"
-        default_values="VertexIdentifier"
+      <IntVectorProperty name="ForceInputVertexScalarField"
+        label="Force Input Vertex ScalarField"
+        command="SetForceInputVertexScalarField"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+        name="InputVertexScalarFieldName"
+        command="SetInputVertexScalarFieldName"
+        label="Vertex identifier field"
         number_of_elements="1"
         animateable="0"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
+          default_values="0"
           >
           <RequiredProperties>
             <Property name="Constraints" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
         <Documentation>
-          Select the field to use as vertex identifier on the constraints.
+          Select the vertex identifier scalar field in the sources.
         </Documentation>
-			</StringVectorProperty>
+      </StringVectorProperty>
 
      <IntVectorProperty
          name="ConsiderIdentifierAsBlackList"
@@ -233,10 +245,12 @@ offset field for flat plateau disambiguation).
 
 			<PropertyGroup panel_widget="Line" label="Input options">
 				<Property name="ScalarField"/>
-				<Property name="VertexIdentifierScalarField"/>
+                <Property name="ForceInputVertexScalarField" />
+                <Property name="InputVertexScalarFieldName" />
 				<Property name="ForceInputOffsetScalarField"/>
 				<Property name="InputOffsetScalarFieldName"/>
-				<Property name="VertexIdentifierScalarField"/>
+                <Property name="ForceInputVertexScalarField" />
+                <Property name="InputVertexScalarFieldName" />
 				<Property name="ConsiderIdentifierAsBlackList"/>
       </PropertyGroup>
       

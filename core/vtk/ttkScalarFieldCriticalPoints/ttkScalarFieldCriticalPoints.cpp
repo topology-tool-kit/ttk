@@ -183,7 +183,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
       vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     vertexIds->SetNumberOfComponents(1);
     vertexIds->SetNumberOfTuples(criticalPoints_.size());
-    vertexIds->SetName("VertexIdentifiers");
+    vertexIds->SetName(ttk::VertexScalarFieldName);
     
     for(SimplexId i = 0; i < (SimplexId) criticalPoints_.size(); i++){
       vertexIds->SetTuple1(i, (SimplexId) criticalPoints_[i].first);
@@ -192,7 +192,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     output->GetPointData()->AddArray(vertexIds);
   }
   else{
-    output->GetPointData()->RemoveArray("VertexIdentifiers");
+    output->GetPointData()->RemoveArray(ttk::VertexScalarFieldName);
   }
   
   if(VertexScalars){

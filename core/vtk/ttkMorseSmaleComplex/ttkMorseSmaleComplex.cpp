@@ -518,7 +518,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         }
 #endif
         PLVertexIdentifiers->SetNumberOfComponents(1);
-        PLVertexIdentifiers->SetName("VertexIdentifier");
+        PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
         vtkSmartPointer<ttkSimplexIdTypeArray> manifoldSizeScalars = 
           vtkSmartPointer<ttkSimplexIdTypeArray>::New();
@@ -1092,7 +1092,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           return -1;
         }
         PLVertexIdentifiers->SetNumberOfComponents(1);
-        PLVertexIdentifiers->SetName("VertexIdentifier");
+        PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
         vtkSmartPointer<ttkSimplexIdTypeArray> manifoldSizeScalars = 
           vtkSmartPointer<ttkSimplexIdTypeArray>::New();
@@ -1587,7 +1587,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           vtkSmartPointer<ttkSimplexIdTypeArray>::New();
 
         PLVertexIdentifiers->SetNumberOfComponents(1);
-        PLVertexIdentifiers->SetName("VertexIdentifier");
+        PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
         vtkSmartPointer<ttkSimplexIdTypeArray> manifoldSizeScalars = 
           vtkSmartPointer<ttkSimplexIdTypeArray>::New();

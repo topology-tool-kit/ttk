@@ -203,7 +203,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 {
   ttkSimplexIdTypeArray* vertexIdentifierScalars =
     ttkSimplexIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
-      GetPointData()->GetArray("VertexIdentifier"));
+      GetPointData()->GetArray(ttk::VertexScalarFieldName));
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->

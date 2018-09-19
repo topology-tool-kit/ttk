@@ -10,6 +10,8 @@ vtkStandardNewMacro(ttkDistanceField)
 {
   OutputScalarFieldType = 0;
   OutputScalarFieldName = "OutputDistanceField";
+  ForceInputVertexScalarField = false;
+  InputVertexScalarFieldName = ttk::VertexScalarFieldName;
   UseAllCores = true;
   ThreadNumber = 1;
   debugLevel_ = 3;
@@ -51,8 +53,10 @@ int ttkDistanceField::getTriangulation(vtkDataSet* input){
 }
 
 int ttkDistanceField::getIdentifiers(vtkDataSet* input){
-  if(VertexIdentifierScalarFieldName.length())
-    identifiers_=input->GetPointData()->GetArray(VertexIdentifierScalarFieldName.data());
+  if(ForceInputVertexScalarField and InputVertexScalarFieldName.length())
+    identifiers_=input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
+  else if(input->GetPointData()->GetArray(ttk::VertexScalarFieldName))
+    identifiers_=input->GetPointData()->GetArray(ttk::VertexScalarFieldName);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   // allocation problem
@@ -112,7 +116,7 @@ int ttkDistanceField::doIt(vector<vtkDataSet *> &inputs,
   if(origin){
     origin->SetNumberOfComponents(1);
     origin->SetNumberOfTuples(numberOfPointsInDomain);
-    origin->SetName("SeedVertexIdentifier");
+    origin->SetName(ttk::VertexScalarFieldName);
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else{

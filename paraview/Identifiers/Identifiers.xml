@@ -53,7 +53,7 @@ cells in subsequent filters throughout the VTK pipeline.
         command="SetVertexFieldName"
         label="Vertex Field Name"
         number_of_elements="1"
-        default_values="VertexIdentifiers">
+        default_values="ttkVertexScalarField">
         <Documentation>
           Name of the output vertex identifier field.
         </Documentation>

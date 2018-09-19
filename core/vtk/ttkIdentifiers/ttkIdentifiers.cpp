@@ -9,7 +9,7 @@ ttkIdentifiers::ttkIdentifiers(){
 
   // init
   CellFieldName = "CellIdentifiers";
-  VertexFieldName = "VertexIdentifiers";
+  VertexFieldName = ttk::VertexScalarFieldName;
   UseAllCores = true;
   ThreadNumber = 1;
   debugLevel_ = 3;

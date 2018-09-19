@@ -17,8 +17,10 @@ vtkStandardNewMacro(ttkIntegralLines)
   triangulation_ = NULL;
 
   OffsetScalarFieldId = -1;
-  OffsetScalarFieldName = ttk::OffsetScalarFieldName;
   ForceInputOffsetScalarField = false;
+  OffsetScalarFieldName = ttk::OffsetScalarFieldName;
+  ForceInputVertexScalarField = false;
+  InputVertexScalarFieldName = ttk::VertexScalarFieldName;
   UseAllCores = true;
   ThreadNumber = 1;
   debugLevel_ = 3;
@@ -140,8 +142,10 @@ int ttkIntegralLines::getOffsets(vtkDataSet* input){
 }
 
 int ttkIntegralLines::getIdentifiers(vtkPointSet* input){
-  if(VertexIdentifierScalarFieldName.length())
-    identifiers_=input->GetPointData()->GetArray(VertexIdentifierScalarFieldName.data());
+  if(ForceInputVertexScalarField and InputVertexScalarFieldName.length())
+    identifiers_=input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
+  else if(input->GetPointData()->GetArray(ttk::VertexScalarFieldName))
+    identifiers_=input->GetPointData()->GetArray(ttk::VertexScalarFieldName);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   // allocation problem

@@ -892,7 +892,7 @@ void ttkContourForests::getSkeletonNodes()
   nodeIdentifierScalars->SetName("NodeIdentifier");
 
   ttkSimplexIdTypeArray* vertexIdentifierScalars = ttkSimplexIdTypeArray::New();
-  vertexIdentifierScalars->SetName("VertexIdentifier");
+  vertexIdentifierScalars->SetName(ttk::VertexScalarFieldName);
 
   int type{};
   vtkIntArray* nodeTypeScalars = vtkIntArray::New();
