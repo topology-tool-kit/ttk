@@ -51,10 +51,10 @@ namespace ttk
             idSuperArc mergeIn = nullSuperArc;
 
             // Check history for visit (quick test)
-            if (propagations_.hasVisited(curVert, localProp)) {
-               // DEBUG_1(<< curVert << "already seen " << localProp->getId() << std::endl);
-               continue;
-            }
+            // if (propagations_.hasVisited(curVert, localProp)) {
+            //    DEBUG_1(<< curVert << "already seen " << localProp->getId() << std::endl);
+            //    continue;
+            // }
 
             lowerStarEdges.clear();
             upperStarEdges.clear();
@@ -132,10 +132,10 @@ namespace ttk
                   localProp->lessArc();
                }
                graph_.getArc(currentArc).merge(mergeIn);
-               // if (localProp->getNbArcs() == 0) {
-               //    DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
-               //    return;
-               // }
+               if (localProp->getNbArcs() == 0) {
+                  DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
+                  return;
+               }
             }
 
             // stop on leaves
@@ -147,10 +147,11 @@ namespace ttk
                if (graph_.getArc(currentArc).isVisible()) {
                   // do not decrease on merged arcs
                   localProp->lessArc();
-                  // if (localProp->getNbArcs() == 0) {
-                  //    DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
-                  //    return;
-                  // }
+                  if (localProp->getNbArcs() == 0) {
+                     DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
+                     localProp->clear();
+                     return;
+                  }
                }
             }
 
@@ -818,6 +819,7 @@ namespace ttk
              }
              AtomicUF* tmpId = graph_.getArc(edgeArc).getPropagation()->getId();
              if (tmpId == curId) {
+                graph_.getArc(edgeArc).setEnd(curSaddle);
                 ++decr;
                 DEBUG_1(<< printEdge(edgeId, localProp) << " decrement "
                         << static_cast<unsigned>(decr) << " " << curSaddle << std::endl);
@@ -1029,7 +1031,6 @@ namespace ttk
             graph_.visit(curVert, curArc);
             // DEBUG_1(<< curVert << " visit arc " << curArc << std::endl);
             return nullSuperArc;
-
          } else {
             return graph_.getArcId(curVert);
          }

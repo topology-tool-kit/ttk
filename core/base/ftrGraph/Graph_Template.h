@@ -38,19 +38,23 @@ namespace ttk
          for (idSuperArc arcId = 0; arcId < nbArcs; ++arcId) {
             const SuperArc& arc = getArc(arcId);
             if (getArc(arcId).isVisible()) {
-               const idNode upNodeId   = getArc(arcId).getUpNodeId();
+               idNode       upNodeId   = getArc(arcId).getUpNodeId();
                const idNode downNodeId = getArc(arcId).getDownNodeId();
                if (upNodeId == nullNode) {
-                  DEBUG(<< "Remaining nulled arc " << printArc(arcId) << std::endl);
-                  getArc(arcId).hide();
-                  continue;
+                  if (getArc(arcId).getEnd() != nullVertex) {
+                     upNodeId = getNodeId(getArc(arcId).getEnd());
+                     getArc(arcId).setUpNodeId(upNodeId);
+                  } else {
+                     getArc(arcId).hide();
+                     continue;
+                  }
                }
                std::pair<idVertex, idVertex> arcVerts;
                if (getArc(arcId).isEmpty()) {
                   arcVerts = std::make_pair(getNode(upNodeId).getVertexIdentifier(),
                                             getNode(downNodeId).getVertexIdentifier());
                } else {
-                  arcVerts = std::make_pair(getArc(arcId).getFirstV(), getArc(arcId).getLastV());
+                  arcVerts = std::make_pair(getArc(arcId).getFirstReg(), getArc(arcId).getLastReg());
                }
                if (std::get<0>(arcVerts) > std::get<1>(arcVerts)){
                   arcVerts = std::make_pair(std::get<1>(arcVerts), std::get<0>(arcVerts));

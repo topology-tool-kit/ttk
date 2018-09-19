@@ -59,7 +59,6 @@ namespace ttk
 
          void init() override
          {
-            fillVector<Propagation*>(propagations_, nullptr);
             fillVector<Visit>(visits_.down, {nullptr, false});
             fillVector<Visit>(visits_.up, {nullptr, false});
          }

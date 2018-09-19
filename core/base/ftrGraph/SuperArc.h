@@ -37,7 +37,7 @@ namespace ttk
          idNode downNodeId_;
          AtomicUF* ufProp_;
          bool visible_;
-         idVertex firstV_, lastV_;
+         idVertex firstReg_, lastReg_, endV_;
          idSuperArc merged_;
          Segment segmentation_;
 #ifndef NDEBUG
@@ -50,8 +50,9 @@ namespace ttk
                downNodeId_{down},
                ufProp_{nullptr},
                visible_{true},
-               firstV_{nullVertex},
-               lastV_{nullVertex},
+               firstReg_{nullVertex},
+               lastReg_{nullVertex},
+               endV_{nullVertex},
                merged_{nullSuperArc},
                segmentation_{}
 #ifndef NDEBUG
@@ -113,28 +114,44 @@ namespace ttk
             return visible_;
          }
 
+         // for regular vertices
          void visit(const idVertex v)
          {
             // firstV only set once
-            if (firstV_ == nullVertex)
-               firstV_ = v;
+            if (firstReg_ == nullVertex)
+               firstReg_ = v;
 
-            lastV_ = v;
+            lastReg_ = v;
+         }
+
+         // for all vertices:
+         // used to close arc at the end if not close during construct
+         void setEnd(const idVertex v)
+         {
+            // avoid an are being reclosed by a higher join
+            if (endV_ == nullVertex) {
+               endV_ = v;
+            }
+         }
+
+         idVertex getEnd(void) const
+         {
+            return endV_;
          }
 
          bool isEmpty() const
          {
-            return firstV_ == nullVertex;
+            return firstReg_ == nullVertex;
          }
 
-         idVertex getFirstV() const
+         idVertex getFirstReg() const
          {
-            return firstV_;
+            return firstReg_;
          }
 
-         idVertex getLastV() const
+         idVertex getLastReg() const
          {
-            return lastV_;
+            return lastReg_;
          }
 
          void merge(const idSuperArc arc)
