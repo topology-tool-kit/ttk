@@ -141,7 +141,7 @@ void Graph::alloc()
    }
 #endif
    leaves_.reserve(nbElmt_/2);
-   nodes_.reserve(nbElmt_);
+   nodes_.reserve(nbElmt_*2);
    arcs_.reserve(nbElmt_*2);
    segmentation_.resize(nbElmt_);
    valUp_.resize(nbElmt_);

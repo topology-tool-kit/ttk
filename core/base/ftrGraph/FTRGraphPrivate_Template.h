@@ -106,7 +106,8 @@ namespace ttk
                } else {
                   if (lowerComp.size()) {
                      currentArc = lowerComp[0]->getCorArc();
-                     if (currentArc == nullSuperArc) {
+                     if (currentArc == nullSuperArc || graph_.getArc(currentArc).merged()) {
+                        DEBUG_1(<< "-. " << curVert << std::endl);
                         // current arc is merging, the lower star has been discontinued
                         continue;
                      }
@@ -198,7 +199,12 @@ namespace ttk
             visit(localProp, joinNewArc);
             updatePreimage(localProp, joinNewArc);
             upperComp = upperComps(upperStarEdges, localProp);
-            if (upperComp.size() > 1) {
+            if (visibleMerged != lowerComp.size()) {
+               // Some arcs where already hidden so this node has been processed as a split by the other side
+               DEBUG_1(<< ": already processed join " << std::endl);
+               graph_.getArc(joinNewArc).hide();
+               localProp->lessArc();
+            } else if (upperComp.size() > 1) {
                isSplitSaddle = true;
                DEBUG_1(<< ": is join & split : " << localProp->print() << std::endl);
                // will be replaced be new arcs of the split
