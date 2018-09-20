@@ -131,8 +131,8 @@ namespace ttk
                DEBUG_1(<< curVert << " arc merging " << graph_.printArc(currentArc) << " in " << graph_.printArc(mergeIn) << std::endl);
                if (graph_.getArc(currentArc).isVisible()) {
                   localProp->lessArc();
+                  graph_.getArc(currentArc).merge(mergeIn);
                }
-               graph_.getArc(currentArc).merge(mergeIn);
                if (localProp->getNbArcs() == 0) {
                   DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
                   return;
@@ -175,6 +175,7 @@ namespace ttk
 
          // At saddle: join or split or both
          idSuperArc joinNewArc;
+         bool splitHidden = false;
          // arriving at a join
          if (isJoinSadlleLast) {
             // ensure we have the good values here, even if other tasks were doing stuff
@@ -184,7 +185,6 @@ namespace ttk
                std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
                lowerComp = lowerComps(lowerStarEdges, localProp);
             }
-            localGrowth(localProp, upperStarEdges);
             upNode = graph_.makeNode(upVert);
             idSuperArc visibleMerged = mergeAtSaddle(upNode, localProp, lowerComp);
             localProp->lessArc(visibleMerged-1);
@@ -193,6 +193,8 @@ namespace ttk
                DEBUG_1(<< "proapgation stop here, no merged arcs" << std::endl);
                return;
             }
+
+            localGrowth(localProp, upperStarEdges);
 
             const idNode downNode = graph_.getNodeId(upVert);
             joinNewArc            = graph_.openArc(downNode, localProp);
@@ -204,6 +206,7 @@ namespace ttk
                DEBUG_1(<< ": already processed join " << std::endl);
                graph_.getArc(joinNewArc).hide();
                localProp->lessArc();
+               splitHidden = true;
             } else if (upperComp.size() > 1) {
                isSplitSaddle = true;
                DEBUG_1(<< ": is join & split : " << localProp->print() << std::endl);
@@ -227,6 +230,8 @@ namespace ttk
                if (graph_.getArc(currentArc).isVisible()) {
                   // if not visible, already decremented the counter
                   localProp->lessArc();
+               } else {
+                  splitHidden = true;
                }
             }
 
@@ -234,8 +239,10 @@ namespace ttk
             Propagation* remainProp = splitAtSaddleBFS(localProp);
             growthFromSeed(upVert, remainProp);
 #else
-            splitAtSaddle(localProp, upperComp);
-            localProp->moreArc(upperComp.size());
+            splitAtSaddle(localProp, upperComp, splitHidden);
+            if (!splitHidden) {
+               localProp->moreArc(upperComp.size());
+            }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Low)
 #endif
@@ -1008,7 +1015,8 @@ namespace ttk
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::splitAtSaddle(
-          Propagation* const localProp, const std::vector<DynGraphNode<idVertex>*>& upperComp)
+          Propagation* const localProp, const std::vector<DynGraphNode<idVertex>*>& upperComp,
+          const bool hidden)
       {
          const idVertex curVert = localProp->getCurVertex();
          const idNode   curNode = graph_.getNodeId(curVert);
@@ -1017,6 +1025,8 @@ namespace ttk
             const idSuperArc newArc = graph_.openArc(curNode, localProp);
             dgNode->setRootArc(newArc);
             visit(localProp, newArc);
+
+            if(hidden) graph_.getArc(newArc).hide();
 
             DEBUG_1(<< "set root arc " << newArc << " at ");
             DEBUG_1(<< printEdge(dynGraph(localProp).getNodeId(dgNode), localProp) << std::endl);

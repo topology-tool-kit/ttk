@@ -408,8 +408,10 @@ namespace ttk
 
          // At a split saddle, assign new arcs at each CC in the DynGraph,
          // and launch a new propagation taking care of these arcs simultaneously
+         // if hidden is true, new arcs are created hidden
          void splitAtSaddle(Propagation* const                          localProp,
-                            const std::vector<DynGraphNode<idVertex>*>& upperComp);
+                            const std::vector<DynGraphNode<idVertex>*>& upperComp,
+                            const bool                                  hidden = false);
 
          // Retrun one triangle by upper CC of the vertex v
          std::set<idCell> upCCtriangleSeeds(const idVertex v, const Propagation* const localProp);
