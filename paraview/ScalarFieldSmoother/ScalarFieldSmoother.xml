@@ -1,24 +1,24 @@
 
 <ServerManagerConfiguration>
   <!-- This is the server manager configuration XML. It defines the interface to
-       our new filter. As a rule of thumb, try to locate the configuration for
-       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
-       that matches your filter and then model your xml on it -->
+  our new filter. As a rule of thumb, try to locate the configuration for
+  a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+  that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="ScalarFieldSmoother" 
-     class="ttkScalarFieldSmoother" 
-     label="TTK ScalarFieldSmoother">
-     <Documentation
+    <SourceProxy 
+      name="ScalarFieldSmoother" 
+      class="ttkScalarFieldSmoother" 
+      label="TTK ScalarFieldSmoother">
+      <Documentation
         long_help="TTK plugin for scalar field smoothing."
         short_help="TTK plugin for scalar field smoothing.">
-This class is a dummy example for the development of TTK filters. It 
-smooths an input scalar field by averaging the scalar values on the link
-of each vertex.
-       
-See also GeometrySmoother.
-     </Documentation>
-     <InputProperty
+        This class is a dummy example for the development of TTK filters. It 
+        smooths an input scalar field by averaging the scalar values on the link
+        of each vertex.
+
+        See also GeometrySmoother.
+      </Documentation>
+      <InputProperty
         name="Input"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -54,25 +54,23 @@ See also GeometrySmoother.
           Select the scalar field to smooth.
         </Documentation>
       </StringVectorProperty>
-      
-      
 
       <IntVectorProperty
-         name="NumberOfIterations"
-         label="Iteration Number"
-         command="SetNumberOfIterations"
-         number_of_elements="1"
-         default_values="1" >
+        name="NumberOfIterations"
+        label="Iteration Number"
+        command="SetNumberOfIterations"
+        number_of_elements="1"
+        default_values="1" >
         <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Number of iterations for the smoothing filter.
-         </Documentation>
+        <Documentation>
+          Number of iterations for the smoothing filter.
+        </Documentation>
       </IntVectorProperty>
 
       <IntVectorProperty
-        name="UseInputMask"
-        command="SetUseInputMask"
-        label="Use Input Mask Field"
+        name="ForceInputMaskScalarField"
+        command="SetForceInputMaskScalarField"
+        label="Force Input Mask Scalar Field"
         number_of_elements="1"
         panel_visibility="advanced"
         default_values="0">
@@ -103,61 +101,60 @@ See also GeometrySmoother.
           Input mask field (used to mark vertices to smooth).
         </Documentation>
       </StringVectorProperty>
-      
+
       <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
+        name="UseAllCores"
+        label="Use All Cores"
+        command="SetUseAllCores"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
-         <Documentation>
+        <Documentation>
           Use all available cores.
-         </Documentation>
+        </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
+        name="ThreadNumber"
+        label="Thread Number"
+        command="SetThreadNumber"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
         <IntRangeDomain name="range" min="1" max="100" />
-         <Documentation>
+        <Documentation>
           Thread number.
-         </Documentation>
+        </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetdebugLevel_"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
+        name="DebugLevel"
+        label="Debug Level"
+        command="SetdebugLevel_"
+        number_of_elements="1"
+        default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
+        <Documentation>
+          Debug level.
+        </Documentation>
       </IntVectorProperty>
-      
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Scalar Field" />
         <Property name="NumberOfIterations" />
-        <Property name="UseInputMask" />
+        <Property name="ForceInputMaskScalarField" />
         <Property name="InputMask" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />
       </Hints>
 
-   </SourceProxy>
- </ProxyGroup>
+    </SourceProxy>
+  </ProxyGroup>
 </ServerManagerConfiguration>

@@ -596,7 +596,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         }
 #endif
         smoothingMask->SetNumberOfComponents(1);
-        smoothingMask->SetName("SmoothingMask");
+        smoothingMask->SetName(ttk::MaskScalarFieldName);
 
         vtkSmartPointer<vtkCharArray>
           cellDimensions = vtkSmartPointer<vtkCharArray>::New();
@@ -1162,7 +1162,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           return -1;
         }
         smoothingMask->SetNumberOfComponents(1);
-        smoothingMask->SetName("SmoothingMask");
+        smoothingMask->SetName(ttk::MaskScalarFieldName);
 
         vtkSmartPointer<vtkCharArray>
           cellDimensions = vtkSmartPointer<vtkCharArray>::New();
@@ -1640,7 +1640,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           smoothingMask = vtkSmartPointer<vtkCharArray>::New();
 
         smoothingMask->SetNumberOfComponents(1);
-        smoothingMask->SetName("SmoothingMask");
+        smoothingMask->SetName(ttk::MaskScalarFieldName);
 
         vtkSmartPointer<vtkCharArray>
           cellDimensions = vtkSmartPointer<vtkCharArray>::New();

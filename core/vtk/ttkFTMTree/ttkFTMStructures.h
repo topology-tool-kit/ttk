@@ -106,7 +106,7 @@ struct ArcData : public WrapperData {
       cell_ids          = initArray<ttkSimplexIdTypeArray>("SegmentationId", samplePoints);
       cell_upNode       = initArray<ttkSimplexIdTypeArray>("upNodeId", samplePoints);
       cell_downNode     = initArray<ttkSimplexIdTypeArray>("downNodeId", samplePoints);
-      point_regularMask = initArray<vtkCharArray>("RegularMask", samplePoints);
+      point_regularMask = initArray<vtkCharArray>(ttk::MaskScalarFieldName, samplePoints);
       point_scalar      = initArray<vtkFloatArray>("Scalar", samplePoints);
 
       if (params.advStats) {

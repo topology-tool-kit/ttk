@@ -11,8 +11,8 @@ ttkScalarFieldSmoother::ttkScalarFieldSmoother(){
   NumberOfIterations = 1;
   ScalarFieldIdentifier = 0;
   MaskIdentifier = 0;
-  UseInputMask = false;
-  InputMask = "MaskField";
+  ForceInputMaskScalarField = false;
+  InputMask = ttk::MaskScalarFieldName;
   outputScalarField_ = NULL;
 
   UseAllCores = true;
@@ -72,7 +72,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), infoMsg);
   }
 
-  if(UseInputMask){
+  if(ForceInputMaskScalarField){
       if(InputMask.length()){
           inputMaskField = vtkCharArray::SafeDownCast(input->GetPointData()->GetArray(InputMask.data()));
       } else {
@@ -88,6 +88,10 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
               << inputMaskField->GetName() << "'..." << endl;
           dMsg(cout, msg.str(), infoMsg);
       }
+  }
+  else if(input->GetPointData()->GetArray(ttk::MaskScalarFieldName)){
+    inputMaskField = vtkCharArray::SafeDownCast(input->GetPointData()->GetArray(ttk::MaskScalarFieldName));
+    InputMask = ttk::MaskScalarFieldName;
   }
 
   if(outputScalarField_){
