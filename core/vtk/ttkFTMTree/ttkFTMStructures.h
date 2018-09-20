@@ -37,7 +37,7 @@ struct WrapperData {
       return arr;
    }
 
-   inline static ttk::ftm::NodeType getNodeType(ttk::ftm::FTMTree_MT&  tree,
+   inline static ttk::CriticalIndex getNodeType(ttk::ftm::FTMTree_MT&  tree,
                                                 const ttk::ftm::idNode nodeId,
                                                 ttk::ftm::Params       params)
    {
@@ -57,20 +57,20 @@ struct WrapperData {
       // saddle point
       if (degree > 1) {
          if (upDegree == 2 and downDegree == 1)
-            return ttk::ftm::NodeType::Saddle2;
+            return ttk::CriticalIndex::Saddle2;
          else if (upDegree == 1 and downDegree == 2)
-            return ttk::ftm::NodeType::Saddle1;
+            return ttk::CriticalIndex::Saddle1;
          else if (upDegree == 1 and downDegree == 1)
-            return ttk::ftm::NodeType::Regular;
+            return ttk::CriticalIndex::Regular;
          else
-            return ttk::ftm::NodeType::Degenerate;
+            return ttk::CriticalIndex::Degenerate;
       }
       // local extremum
       else {
          if (upDegree)
-            return ttk::ftm::NodeType::Local_minimum;
+            return ttk::CriticalIndex::Local_minimum;
          else
-            return ttk::ftm::NodeType::Local_maximum;
+            return ttk::CriticalIndex::Local_maximum;
       }
    }
 };
@@ -374,7 +374,7 @@ struct VertData: public WrapperData {
       const ttk::ftm::Node*    upNode       = tree->getNode(upNodeId);
       const ttk::SimplexId l_upVertexId = upNode->getVertexId();
       const ttk::SimplexId g_upVertexId = idMapper->GetTuple1(l_upVertexId);
-      const ttk::ftm::NodeType upNodeType   = getNodeType(*tree, upNodeId, params);
+      const ttk::CriticalIndex upNodeType   = getNodeType(*tree, upNodeId, params);
       float               coordUp[3];
       triangulation->getVertexPoint(l_upVertexId, coordUp[0], coordUp[1], coordUp[2]);
 
@@ -382,7 +382,7 @@ struct VertData: public WrapperData {
       const ttk::ftm::Node*    downNode       = tree->getNode(downNodeId);
       const ttk::SimplexId           l_downVertexId = downNode->getVertexId();
       const ttk::SimplexId           g_downVertexId = idMapper->GetTuple1(l_downVertexId);
-      const ttk::ftm::NodeType downNodeType   = getNodeType(*tree, downNodeId, params);
+      const ttk::CriticalIndex downNodeType   = getNodeType(*tree, downNodeId, params);
       float               coordDown[3];
       triangulation->getVertexPoint(l_downVertexId, coordDown[0], coordDown[1], coordDown[2]);
 
@@ -393,28 +393,28 @@ struct VertData: public WrapperData {
 
       ttk::ftm::ArcType regionType;
       // RegionType
-      if (upNodeType == ttk::ftm::NodeType::Local_minimum &&
-          downNodeType == ttk::ftm::NodeType::Local_maximum)
+      if (upNodeType == ttk::CriticalIndex::Local_minimum &&
+          downNodeType == ttk::CriticalIndex::Local_maximum)
       {
          regionType = ttk::ftm::ArcType::Min_arc;
       }
-      else if (upNodeType == ttk::ftm::NodeType::Local_minimum ||
-               downNodeType == ttk::ftm::NodeType::Local_minimum)
+      else if (upNodeType == ttk::CriticalIndex::Local_minimum ||
+               downNodeType == ttk::CriticalIndex::Local_minimum)
       {
          regionType = ttk::ftm::ArcType::Min_arc;
       }
-      else if (upNodeType == ttk::ftm::NodeType::Local_maximum ||
-               downNodeType == ttk::ftm::NodeType::Local_maximum)
+      else if (upNodeType == ttk::CriticalIndex::Local_maximum ||
+               downNodeType == ttk::CriticalIndex::Local_maximum)
       {
          regionType = ttk::ftm::ArcType::Max_arc;
       }
-      else if (upNodeType == ttk::ftm::NodeType::Saddle1 &&
-               downNodeType == ttk::ftm::NodeType::Saddle1)
+      else if (upNodeType == ttk::CriticalIndex::Saddle1 &&
+               downNodeType == ttk::CriticalIndex::Saddle1)
       {
          regionType = ttk::ftm::ArcType::Saddle1_arc;
       }
-      else if (upNodeType == ttk::ftm::NodeType::Saddle2 &&
-               downNodeType == ttk::ftm::NodeType::Saddle2)
+      else if (upNodeType == ttk::CriticalIndex::Saddle2 &&
+               downNodeType == ttk::CriticalIndex::Saddle2)
       {
          regionType = ttk::ftm::ArcType::Saddle2_arc;
       }

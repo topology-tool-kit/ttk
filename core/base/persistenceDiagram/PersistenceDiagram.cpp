@@ -16,7 +16,7 @@ PersistenceDiagram::PersistenceDiagram():
 PersistenceDiagram::~PersistenceDiagram(){
 }
 
-NodeType PersistenceDiagram::getNodeType(FTMTree_MT* tree,
+CriticalIndex PersistenceDiagram::getNodeType(FTMTree_MT* tree,
                                          TreeType    treeType,
                                          const SimplexId   vertexId) const
 {
@@ -35,13 +35,13 @@ NodeType PersistenceDiagram::getNodeType(FTMTree_MT* tree,
    // saddle point
    if (degree > 1) {
       if (upDegree > 1)
-         return NodeType::Saddle2;
-      else return NodeType::Saddle1;
+         return CriticalIndex::Saddle2;
+      else return CriticalIndex::Saddle1;
    }
    // local extremum
    else {
       if (upDegree)
-         return NodeType::Local_minimum;
-      else return NodeType::Local_maximum;
+         return CriticalIndex::Local_minimum;
+      else return CriticalIndex::Local_maximum;
   }
 }

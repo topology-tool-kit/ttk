@@ -37,6 +37,9 @@ namespace ttk{
   /// default name for bivariate offset fields
   const char OffsetFieldUName[]="ttkOffsetFieldU";
   const char OffsetFieldVName[]="ttkOffsetFieldV";
+
+  /// default value for critical index
+  enum class CriticalIndex { Local_minimum = 0, Saddle1, Saddle2, Degenerate, Local_maximum, Regular };
 }
 
 #endif // _DATATYPES_H

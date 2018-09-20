@@ -16,16 +16,16 @@
 #define _BOTTLENECKDISTANCE_H
 
 #ifndef diagramTuple
-#define diagramTuple std::tuple<int, ttk::ftm::NodeType, int, \
-  ttk::ftm::NodeType, dataType, int, \
+#define diagramTuple std::tuple<int, ttk::CriticalIndex, int, \
+  ttk::CriticalIndex, dataType, int, \
   dataType, float, float, float, dataType, float, float, float>
 #endif
 #ifndef BNodeType
-#define BNodeType ttk::ftm::NodeType
-#define BLocalMax ttk::ftm::NodeType::Local_maximum
-#define BLocalMin ttk::ftm::NodeType::Local_minimum
-#define BSaddle1  ttk::ftm::NodeType::Saddle1
-#define BSaddle2  ttk::ftm::NodeType::Saddle2
+#define BNodeType ttk::CriticalIndex
+#define BLocalMax ttk::CriticalIndex::Local_maximum
+#define BLocalMin ttk::CriticalIndex::Local_minimum
+#define BSaddle1  ttk::CriticalIndex::Saddle1
+#define BSaddle2  ttk::CriticalIndex::Saddle2
 #define BIdVertex int
 #endif
 

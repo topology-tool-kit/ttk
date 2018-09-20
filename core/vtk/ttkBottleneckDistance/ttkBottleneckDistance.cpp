@@ -6,8 +6,8 @@ using namespace ttk;
 vtkStandardNewMacro(ttkBottleneckDistance)
 
 #ifndef macroDiagramTuple
-#define macroDiagramTuple tuple<int, ftm::NodeType, int, \
-  ftm::NodeType, VTK_TT, int, \
+#define macroDiagramTuple tuple<int, CriticalIndex, int, \
+  CriticalIndex, VTK_TT, int, \
   VTK_TT, float, float, float, VTK_TT, float, float, float>
 #endif
 #ifndef macroMatchingTuple

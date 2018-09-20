@@ -141,8 +141,8 @@ class ttkContourForests
     // ContourForestsTree //
     void getTree();
     void updateTree();
-    ttk::NodeType getNodeType(ttk::SimplexId id);
-    ttk::NodeType getNodeType(ttk::SimplexId id, ttk::TreeType type, ttk::MergeTree* tree);
+    ttk::CriticalIndex getNodeType(ttk::SimplexId id);
+    ttk::CriticalIndex getNodeType(ttk::SimplexId id, ttk::TreeType type, ttk::MergeTree* tree);
     void getCriticalPoints();
     void clearTree();
 
