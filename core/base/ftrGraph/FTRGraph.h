@@ -300,6 +300,8 @@ namespace ttk
          std::vector<DynGraphNode<idVertex>*> upperComps(const std::vector<idEdge>& startingEdges,
                                                           const Propagation* const   localProp);
 
+         bool checkStop(const std::vector<DynGraphNode<idVertex>*>& lowerComp);
+
          // visit these edges neighborhood to understand the local connectivity
          // return the number of component in lower/upper link
          std::pair<valence, valence> getLinkNbCC(const idVertex curVert,

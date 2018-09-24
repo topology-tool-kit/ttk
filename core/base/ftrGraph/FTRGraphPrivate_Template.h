@@ -99,6 +99,11 @@ namespace ttk
             {
 #endif
                lowerComp = lowerComps(lowerStarEdges, localProp);
+               if (checkStop(lowerComp)) {
+                  DEBUG_1(<< "already merged component : " << curVert << std::endl);
+                  continue;
+               }
+
                if (lowerComp.size() > 1) {
                   isJoinSaddle = true;
                   isJoinSadlleLast = checkLast(localProp, lowerStarEdges);
@@ -422,6 +427,18 @@ namespace ttk
           const std::vector<idEdge>& startingEdges, const Propagation* const localProp)
       {
          return dynGraph(localProp).findRoot(startingEdges);
+      }
+
+      template <typename ScalarType>
+      bool FTRGraph<ScalarType>::checkStop(const std::vector<DynGraphNode<idVertex>*>& lowerComp)
+      {
+         for (const auto* dgNode : lowerComp) {
+            const idSuperArc arc = dgNode->getCorArc();
+            if (arc != nullSuperArc && !graph_.getArc(arc).isVisible()) {
+               return true;
+            }
+         }
+         return false;
       }
 
       template <typename ScalarType>
