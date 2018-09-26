@@ -20,6 +20,10 @@ namespace ttk
 {
    namespace ftm
    {
+     /**
+      * Compute the persistence pairs of a function on a triangulation.
+      * TTK assumes that the input dataset is made of only one connected component.
+      */
       class FTMTreePP : public FTMTree
       {
         private:
