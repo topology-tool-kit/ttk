@@ -49,6 +49,9 @@ std::string Graph::print(const int verbosity) const
          res << printArc(i) << endl;
       }
    }
+
+   res << "visible " << getNumberOfVisibleArcs() << " / " << getNumberOfArcs() << std::endl;
+
    return res.str();
 }
 

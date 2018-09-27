@@ -47,6 +47,10 @@ namespace ttk
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
+                  if (currentArc == nullSuperArc || !graph_.getArc(currentArc).isVisible()) {
+                     PRINT("-" << curVert);
+                     continue;
+                  }
                   if(valences_.upper[curVert] && valences_.lower[curVert]){
                      // not saddle neither extrema
                      graph_.getArc(currentArc).visit(curVert);
@@ -115,6 +119,11 @@ namespace ttk
                if (graph_.getArc(currentArc).isVisible()) {
                   // do not decrease on merged arcs
                   localProp->lessArc();
+               }
+               if (localProp->getNbArcs() == 0){
+                  // no more active arcs
+                  PRINT(curVert << " stop");
+                  return;
                }
             }
 
@@ -187,7 +196,11 @@ namespace ttk
             // only one arc coming here
             saddleNode = graph_.getNodeId(upVert);
             graph_.closeArc(currentArc, saddleNode);
-            // TODO if no active arc here: stop
+            if (localProp->getNbArcs() == 0) {
+               // no more active arcs
+               PRINT(upVert << " stop");
+               return;
+            }
             if (graph_.getArc(currentArc).isVisible()) {
                // if not visible, already decremented the counter
                localProp->lessArc();
