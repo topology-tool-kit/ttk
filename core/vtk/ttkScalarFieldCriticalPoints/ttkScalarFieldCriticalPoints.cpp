@@ -143,7 +143,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   
   vertexTypes->SetNumberOfComponents(1);
   vertexTypes->SetNumberOfTuples(criticalPoints_.size());
-  vertexTypes->SetName("CriticalIndex");
+  vertexTypes->SetName("CriticalType");
   
   vtkSmartPointer<vtkPoints> pointSet = vtkSmartPointer<vtkPoints>::New();
   pointSet->SetNumberOfPoints(criticalPoints_.size());

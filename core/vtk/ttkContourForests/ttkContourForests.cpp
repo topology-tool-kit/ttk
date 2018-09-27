@@ -906,14 +906,14 @@ void ttkContourForests::getSkeletonNodes()
     SimplexId nodeId        = (*criticalPoints_)[i];
     if(tree_->getNode(nodeId)->isHidden()) continue;
     SimplexId vertexId      = tree_->getNode(nodeId)->getVertexId();
-    CriticalIndex nodeType = getNodeType(nodeId);
+    CriticalType nodeType = getNodeType(nodeId);
 
-    if ((nodeType == CriticalIndex::Local_minimum and showMin_) or
-        (nodeType == CriticalIndex::Local_maximum and showMax_) or
-        (nodeType == CriticalIndex::Saddle1 and showSaddle1_) or
-        (nodeType == CriticalIndex::Saddle2 and showSaddle2_) or
+    if ((nodeType == CriticalType::Local_minimum and showMin_) or
+        (nodeType == CriticalType::Local_maximum and showMax_) or
+        (nodeType == CriticalType::Saddle1 and showSaddle1_) or
+        (nodeType == CriticalType::Saddle2 and showSaddle2_) or
         ((showSaddle1_ and showSaddle2_) and
-         (nodeType == CriticalIndex::Regular or nodeType == CriticalIndex::Degenerate))) {
+         (nodeType == CriticalType::Regular or nodeType == CriticalType::Degenerate))) {
       // Positions
       triangulation_->getVertexPoint(vertexId, point[0], point[1], point[2]);
       points->InsertPoint(identifier, point);
@@ -936,11 +936,11 @@ void ttkContourForests::getSkeletonNodes()
 
       // RegionSize
       SimplexId regionSize=0;
-      if(nodeType==CriticalIndex::Local_maximum){
+      if(nodeType==CriticalType::Local_maximum){
         const SimplexId arcId=tree_->getNode(nodeId)->getDownSuperArcId(0);
         regionSize=tree_->getSuperArc(arcId)->getNumberOfRegularNodes()+1;
       }
-      else if(nodeType==CriticalIndex::Local_minimum){
+      else if(nodeType==CriticalType::Local_minimum){
         const SimplexId arcId=tree_->getNode(nodeId)->getUpSuperArcId(0);
         regionSize=tree_->getSuperArc(arcId)->getNumberOfRegularNodes()+1;
       }
@@ -965,12 +965,12 @@ void ttkContourForests::getSkeletonNodes()
   regionSizeScalars->Delete();
 }
 
-CriticalIndex ttkContourForests::getNodeType(SimplexId id)
+CriticalType ttkContourForests::getNodeType(SimplexId id)
 {
   return getNodeType(id, treeType_, tree_);
 }
 
-CriticalIndex ttkContourForests::getNodeType(SimplexId id, TreeType type, MergeTree* tree)
+CriticalType ttkContourForests::getNodeType(SimplexId id, TreeType type, MergeTree* tree)
 {
   int upDegree{};
   int downDegree{};
@@ -986,20 +986,20 @@ CriticalIndex ttkContourForests::getNodeType(SimplexId id, TreeType type, MergeT
   // saddle point
   if (degree > 1) {
     if (upDegree == 2 && downDegree == 1)
-      return CriticalIndex::Saddle2;
+      return CriticalType::Saddle2;
     else if (upDegree == 1 && downDegree == 2)
-      return CriticalIndex::Saddle1;
+      return CriticalType::Saddle1;
     else if(upDegree == 1 && downDegree == 1)
-      return CriticalIndex::Regular;
+      return CriticalType::Regular;
     else
-      return CriticalIndex::Degenerate;
+      return CriticalType::Degenerate;
   }
   // local extremum
   else {
     if (upDegree)
-      return CriticalIndex::Local_minimum;
+      return CriticalType::Local_minimum;
     else
-      return CriticalIndex::Local_maximum;
+      return CriticalType::Local_maximum;
   }
 }
 
@@ -1306,14 +1306,14 @@ void ttkContourForests::getSegmentation(vtkDataSet* input)
     auto a = tree_->getSuperArc(i);
     if (a->isVisible()) {
       SimplexId      upNodeId   = tree_->getSuperArc(i)->getUpNodeId();
-      CriticalIndex upNodeType = getNodeType(upNodeId);
+      CriticalType upNodeType = getNodeType(upNodeId);
       SimplexId      upVertex   = tree_->getNode(upNodeId)->getVertexId();
       float    coordUp[3];
       triangulation_->getVertexPoint(
         upVertex, coordUp[0], coordUp[1], coordUp[2]);
 
       SimplexId      downNodeId   = tree_->getSuperArc(i)->getDownNodeId();
-      CriticalIndex downNodeType = getNodeType(downNodeId);
+      CriticalType downNodeType = getNodeType(downNodeId);
       SimplexId      downVertex   = tree_->getNode(downNodeId)->getVertexId();
       float    coordDown[3];
       triangulation_->getVertexPoint(
@@ -1360,15 +1360,15 @@ void ttkContourForests::getSegmentation(vtkDataSet* input)
       //cout << endl;
 
       // RegionType
-      if (upNodeType == CriticalIndex::Local_minimum && downNodeType == CriticalIndex::Local_maximum)
+      if (upNodeType == CriticalType::Local_minimum && downNodeType == CriticalType::Local_maximum)
         regionType = static_cast<int>(ArcType::Min_arc);
-      else if (upNodeType == CriticalIndex::Local_minimum || downNodeType == CriticalIndex::Local_minimum)
+      else if (upNodeType == CriticalType::Local_minimum || downNodeType == CriticalType::Local_minimum)
         regionType = static_cast<int>(ArcType::Min_arc);
-      else if (upNodeType == CriticalIndex::Local_maximum || downNodeType == CriticalIndex::Local_maximum)
+      else if (upNodeType == CriticalType::Local_maximum || downNodeType == CriticalType::Local_maximum)
         regionType = static_cast<int>(ArcType::Max_arc);
-      else if (upNodeType == CriticalIndex::Saddle1 && downNodeType == CriticalIndex::Saddle1)
+      else if (upNodeType == CriticalType::Saddle1 && downNodeType == CriticalType::Saddle1)
         regionType = static_cast<int>(ArcType::Saddle1_arc);
-      else if (upNodeType == CriticalIndex::Saddle2 && downNodeType == CriticalIndex::Saddle2)
+      else if (upNodeType == CriticalType::Saddle2 && downNodeType == CriticalType::Saddle2)
         regionType = static_cast<int>(ArcType::Saddle2_arc);
       else
         regionType = static_cast<int>(ArcType::Saddle1_saddle2_arc);
