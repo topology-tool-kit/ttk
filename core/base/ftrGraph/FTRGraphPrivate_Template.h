@@ -123,8 +123,8 @@ namespace ttk
             // stop on leaves
             if (!upperStarEdges.size()) {
                // We have reached a local extrema
-               const idNode upNode = graph_.makeNode(curVert);
-               graph_.closeArc(currentArc, upNode);
+               const idNode leafNode = graph_.makeNode(curVert);
+               graph_.closeArc(currentArc, leafNode);
                DEBUG_1(<< curVert << " arc max " << graph_.printArc(currentArc) << std::endl);
                if (graph_.getArc(currentArc).isVisible()) {
                   // do not decrease on merged arcs
@@ -140,17 +140,28 @@ namespace ttk
          // the propagation has stopped (join, split, max)
          const idVertex upVert = localProp->getCurVertex();
          // reached node id and wether it has been created by this task or already existed
-         idNode upNode;
+         idNode saddleNode;
+         idSuperArc joinParentArc;
+         bool hideFromHere = false;// if true, new arc are hidden to stop propagation.
 
-         if (isJoinSaddle) {
-            DEBUG_1(<< ": is join " << isJoinSadlleLast << std::endl);
-         }
-         if (isSplitSaddle) {
-            DEBUG_1(<< ": is split " << std::endl);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif
+         {
+            bool alreadyNode = graph_.isNode(upVert);
+            hideFromHere = alreadyNode;
+            if (isJoinSaddle) {
+               DEBUG_1(<< ": is join last " << isJoinSadlleLast << " n " << alreadyNode << std::endl);
+               if (isJoinSadlleLast) {
+                  graph_.makeNode(upVert);
+               }
+            }
+            if (isSplitSaddle) {
+               DEBUG_1(<< ": is split n " << alreadyNode << std::endl);
+               graph_.makeNode(upVert);
+            }
          }
 
-         // At saddle: join or split or both
-         idSuperArc joinNewArc;
          // arriving at a join
          if (isJoinSadlleLast) {
             // ensure we have the good values here, even if other tasks were doing stuff
@@ -160,63 +171,71 @@ namespace ttk
                std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
                lowerComp = lowerComps(lowerStarEdges, localProp);
             }
-            upNode = graph_.makeNode(upVert);
-            idSuperArc visibleMerged = mergeAtSaddle(upNode, localProp, lowerComp);
+            saddleNode = graph_.getNodeId(upVert);
+            idSuperArc visibleMerged = mergeAtSaddle(saddleNode, localProp, lowerComp);
             localProp->lessArc(visibleMerged-1);
 
             localGrowth(localProp, upperStarEdges);
 
-            const idNode downNode = graph_.getNodeId(upVert);
-            joinNewArc            = graph_.openArc(downNode, localProp);
-            visit(localProp, joinNewArc);
-            updatePreimage(localProp, joinNewArc);
+            joinParentArc = graph_.openArc(saddleNode, localProp);
+            visit(localProp, joinParentArc);
+            updatePreimage(localProp, joinParentArc);
             upperComp = upperComps(upperStarEdges, localProp);
+
+            // do not propagate
+            // if (hideFromHere) graph_.getArc(joinParentArc).hide();
 
             if (upperComp.size() > 1) {
                isSplitSaddle = true;
                DEBUG_1(<< ": is join & split : " << localProp->print() << std::endl);
                // will be replaced be new arcs of the split
-               graph_.getArc(joinNewArc).hide();
+               graph_.getArc(joinParentArc).hide();
+               localProp->lessArc();
+            }
+         } else if (!isJoinSaddle) {
+            // only one arc coming here
+            saddleNode = graph_.getNodeId(upVert);
+            graph_.closeArc(currentArc, saddleNode);
+            DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
+            if (localProp->getNbArcs() == 0) {
+               DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
+               return;
+            }
+            if (graph_.getArc(currentArc).isVisible()) {
+               // if not visible, already decremented the counter
                localProp->lessArc();
             }
          }
 
          // starting from the saddle
          if (isSplitSaddle && (!isJoinSaddle || isJoinSadlleLast)) {
-            if (!isJoinSaddle) {
-               // only one arc coming here
-               upNode = graph_.makeNode(upVert);
-               graph_.closeArc(currentArc, upNode);
-               DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
-               if (localProp->getNbArcs() == 0) {
-                  DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
-                  return;
-               }
-               if (graph_.getArc(currentArc).isVisible()) {
-                  // if not visible, already decremented the counter
-                  localProp->lessArc();
-               }
-            }
 
-#ifdef TTK_ENABLE_FTR_BFS
-            Propagation* remainProp = splitAtSaddleBFS(localProp);
-            growthFromSeed(upVert, remainProp);
-#else
             splitAtSaddle(localProp, upperComp);
             localProp->moreArc(upperComp.size());
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Low)
 #endif
             growthFromSeed(upVert, localProp);
-            // Can't stop propagation here cause some other arcs than the current
-            // one may nees to growth
-#endif
+
          } else if (isJoinSadlleLast) {
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
 #endif
-            growthFromSeed(upVert, localProp, joinNewArc);
+            growthFromSeed(upVert, localProp, joinParentArc);
+
          }
+         // else if (isJoinSaddle && hideFromHere && localProp->getNbArcs() > 1) {
+
+         //    // Continue on a saddle where we would have stop but needs to
+         //    // process other arcs
+// #ifdef TTK_ENABLE_OPENMP
+// #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
+// #endif
+         //       growthFromSeed(upVert, localProp, joinParentArc);
+
+         // }
 #ifdef TTK_ENABLE_FTR_STATS
          else {
             // This propagation is dying here
