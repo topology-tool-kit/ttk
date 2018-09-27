@@ -8,22 +8,8 @@
 // c++ incldues
 #include <unordered_map>
 
-// Skeleton + propagation
-#ifndef NDEBUG
-#define DEBUG_1(msg) std::cout msg
-// #define DEBUG_1(msg)
-#else
-#define DEBUG_1(msg)
-// #define DEBUG_1(msg) std::cout msg
-#endif
-
-// Dynamic graph structure
-#ifndef NDEBUG
-// #define DEBUG_2(msg) std::cout msg
-#define DEBUG_2(msg)
-#else
-#define DEBUG_2(msg)
-#endif
+// trick to print a full line in an atomic operation, avoid mixed up redulsts in parallel
+#define PRINT(msg) std::stringstream s; s << msg << std::endl; std::cout << s.str()
 
 namespace ttk
 {
@@ -33,19 +19,19 @@ namespace ttk
       void FTRGraph<ScalarType>::growthFromSeed(const idVertex seed, Propagation* localProp,
                                                 idSuperArc currentArc)
       {
-         DEBUG_1(<< seed << " go up " << localProp->goUp() << " arc " << currentArc << " nb "
-                 << localProp->getNbArcs() << std::endl);
+
+         PRINT(seed << " > " << localProp->getNbArcs());
 
          // topology
-         bool isJoinSadlleLast = false;
-         bool isJoinSaddle = false, isSplitSaddle = false;
+         bool isJoinLast = false;
+         bool isJoin = false, isSplit = false;
 
          // containers
          // vitsit
          std::vector<idEdge>                  lowerStarEdges, upperStarEdges;
          std::vector<DynGraphNode<idVertex>*> lowerComp, upperComp;
 
-         while (!isJoinSaddle && !isSplitSaddle && !localProp->empty()) {
+         while (!isJoin && !isSplit && !localProp->empty()) {
             localProp->nextVertex();
             const idVertex curVert = localProp->getCurVertex();
             idSuperArc mergeIn = nullSuperArc;
@@ -90,8 +76,8 @@ namespace ttk
                lowerComp = lowerComps(lowerStarEdges, localProp);
 
                if (lowerComp.size() > 1) {
-                  isJoinSaddle = true;
-                  isJoinSadlleLast = checkLast(localProp, lowerStarEdges);
+                  isJoin = true;
+                  isJoinLast = checkLast(localProp, lowerStarEdges);
                   break;
                } else {
                   if (lowerComp.size()) {
@@ -102,10 +88,10 @@ namespace ttk
                updatePreimage(localProp, currentArc);
                upperComp = upperComps(upperStarEdges, localProp);
                if (upperComp.size() > 1) {
-                  isSplitSaddle = true;
+                  isSplit = true;
                }
 
-               if (!isJoinSaddle && !isSplitSaddle && upperComp.size()){
+               if (!isJoin && !isSplit && upperComp.size()){
                   // this arc is not empty (not saddle not max)
                   graph_.getArc(currentArc).visit(curVert);
                }
@@ -113,7 +99,7 @@ namespace ttk
 
             // do not propagate on merging arc.
             if (mergeIn != nullSuperArc) {
-               DEBUG_1(<< curVert << " arc merging " << graph_.printArc(currentArc) << " in " << graph_.printArc(mergeIn) << std::endl);
+               // current arc mergin in mergein
                if (graph_.getArc(currentArc).isVisible()) {
                   localProp->lessArc();
                   graph_.getArc(currentArc).merge(mergeIn);
@@ -122,10 +108,10 @@ namespace ttk
 
             // stop on leaves
             if (!upperStarEdges.size()) {
-               // We have reached a local extrema
+               // We have reached a local extrema (max from this propagation)
                const idNode leafNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, leafNode);
-               DEBUG_1(<< curVert << " arc max " << graph_.printArc(currentArc) << std::endl);
+               PRINT(graph_.printArc(currentArc));
                if (graph_.getArc(currentArc).isVisible()) {
                   // do not decrease on merged arcs
                   localProp->lessArc();
@@ -150,20 +136,20 @@ namespace ttk
          {
             bool alreadyNode = graph_.isNode(upVert);
             hideFromHere = alreadyNode;
-            if (isJoinSaddle) {
-               DEBUG_1(<< ": is join last " << isJoinSadlleLast << " n " << alreadyNode << std::endl);
-               if (isJoinSadlleLast) {
+            if (isJoin) {
+               PRINT(upVert << " join " << isJoinLast << " h " << hideFromHere);
+               if (isJoinLast) {
                   graph_.makeNode(upVert);
                }
             }
-            if (isSplitSaddle) {
-               DEBUG_1(<< ": is split n " << alreadyNode << std::endl);
+            if (isSplit) {
+               PRINT(upVert << " split" << hideFromHere);
                graph_.makeNode(upVert);
             }
          }
 
-         // arriving at a join
-         if (isJoinSadlleLast) {
+         // arc management
+         if (isJoinLast) {
             // ensure we have the good values here, even if other tasks were doing stuff
             {
                // here to solve a 1 over thousands execution bug in parallel
@@ -183,50 +169,54 @@ namespace ttk
             upperComp = upperComps(upperStarEdges, localProp);
 
             // do not propagate
-            // if (hideFromHere) graph_.getArc(joinParentArc).hide();
+            if (hideFromHere) {
+               graph_.getArc(joinParentArc).hide();
+            }
 
+            // split detection required after the merge
             if (upperComp.size() > 1) {
-               isSplitSaddle = true;
-               DEBUG_1(<< ": is join & split : " << localProp->print() << std::endl);
+               // this node is both join and split
+               isSplit = true;
                // will be replaced be new arcs of the split
                graph_.getArc(joinParentArc).hide();
                localProp->lessArc();
             }
-         } else if (!isJoinSaddle) {
+
+            PRINT(graph_.printArc(joinParentArc));
+         } else if (!isJoin) {
             // only one arc coming here
             saddleNode = graph_.getNodeId(upVert);
             graph_.closeArc(currentArc, saddleNode);
-            DEBUG_1(<< "close arc split " << graph_.printArc(currentArc) << std::endl);
-            if (localProp->getNbArcs() == 0) {
-               DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
-               return;
-            }
+            // TODO if no active arc here: stop
             if (graph_.getArc(currentArc).isVisible()) {
                // if not visible, already decremented the counter
                localProp->lessArc();
             }
+            PRINT(graph_.printArc(currentArc));
+         }
+
+         if (isSplit) {
+            splitAtSaddle(localProp, upperComp, hideFromHere);
+            if (!hideFromHere){
+               localProp->moreArc(upperComp.size());
+            }
          }
 
          // starting from the saddle
-         if (isSplitSaddle && (!isJoinSaddle || isJoinSadlleLast)) {
-
-            splitAtSaddle(localProp, upperComp);
-            localProp->moreArc(upperComp.size());
-
+         if (isSplit && (!isJoin || isJoinLast)) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Low)
 #endif
             growthFromSeed(upVert, localProp);
 
-         } else if (isJoinSadlleLast) {
+         } else if (isJoinLast) {
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
 #endif
             growthFromSeed(upVert, localProp, joinParentArc);
-
          }
-         // else if (isJoinSaddle && hideFromHere && localProp->getNbArcs() > 1) {
+         // else if (isJoin && hideFromHere && localProp->getNbArcs() > 1) {
 
          //    // Continue on a saddle where we would have stop but needs to
          //    // process other arcs
@@ -277,7 +267,6 @@ namespace ttk
             if (valences_.lower[curVert] == 0) { // min
                const idNode minNode = graph_.makeNode(curVert);
                currentArc           = graph_.openArc(minNode, localProp);
-               DEBUG_1(<< curVert << " min arc " << currentArc << std::endl);
             }
 
 #ifndef TTK_DISABLE_FTR_LAZY
@@ -299,7 +288,6 @@ namespace ttk
                } else { // max
                   const idNode maxNode = graph_.makeNode(curVert);
                   graph_.closeArc(currentArc, maxNode);
-                  DEBUG_1(<< curVert << "max arc close " << graph_.printArc(currentArc) << std::endl);
                }
 
                visit(localProp, currentArc);
@@ -330,21 +318,18 @@ namespace ttk
                } else if (lowerComp.size() > 1) {  // join saddle
                   const idNode sadNode = graph_.makeNode(curVert);
                   currentArc           = graph_.openArc(sadNode, localProp);
-                  DEBUG_1(<< curVert << " join arc " << currentArc << std::endl);
                   mergeAtSaddle(sadNode, lowerComp);
                   isJoin = true;
                }
 
-               DEBUG_1(<< curVert << " arc " << currentArc << std::endl);
                graph_.visit(curVert, currentArc);
                propagations_.visit(curVert, localProp);
                updatePreimage(localProp, currentArc);
 
                upperComp = upperComps(upperStarEdges, localProp);
-               if (!upperComp.size()) {
+               if (!upperComp.size()) { // max
                   const idNode maxNode = graph_.makeNode(curVert);
                   graph_.closeArc(currentArc, maxNode);
-                  DEBUG_1(<< curVert << "max arc close " << graph_.printArc(currentArc) << std::endl);
                } else if (upperComp.size() < 2) {
                   if (!isJoin) {
                      // this arc is not empty
@@ -353,10 +338,9 @@ namespace ttk
                } else {
                   if (isJoin) {
                      graph_.getArc(currentArc).hide();
-                  } else {
+                  } else { // split
                      const idNode splitNode = graph_.makeNode(curVert);
                      graph_.closeArc(currentArc, splitNode);
-                     DEBUG_1(<< curVert << "split arc close " << graph_.printArc(currentArc) << std::endl);
                   }
                   splitAtSaddle(localProp, upperComp);
                }
@@ -500,8 +484,6 @@ namespace ttk
          const idCell nbAdjTriangles =
              mesh_.getVertexTriangleNumber(localProp->getCurVertex());
 
-         DEBUG_1(<< "update preimage " << localProp->getCurVertex() << std::endl);
-
          orderedTriangle oTriangle;
 
          for (idCell t = 0; t < nbAdjTriangles; ++t) {
@@ -541,19 +523,9 @@ namespace ttk
          const orderedEdge e1 = mesh_.getOrderedEdge(std::get<1>(oTriangle), localProp->goUp());
          const idVertex    w  = getWeight(e0, e1, localProp);
 
-         bool t;
          // this order for history
-         t = dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<0>(oTriangle), w,
+         dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<0>(oTriangle), w,
                                             curArc);
-
-         if (t) {
-            DEBUG_2(<< "start add edge: " << printEdge(std::get<0>(oTriangle), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(oTriangle), localProp) << std::endl);
-         } else {
-            DEBUG_2(<< "start no need to create edge: " << printEdge(std::get<0>(oTriangle), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(oTriangle), localProp) << std::endl);
-            DEBUG_2(<< dynGraph(localProp).print() << std::endl);
-         }
       }
 
       template <typename ScalarType>
@@ -564,39 +536,19 @@ namespace ttk
          // Check if exist ?
          // If not, the triangle will be visited again once a merge have occured.
          // So we do not add the edge now
-         const int t = dynGraph(localProp).removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
+         dynGraph(localProp).removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
 
          // keep history inside the dyngraph structure
          dynGraph(localProp).setCorArc(std::get<0>(oTriangle), curArc);
          // dynGraph(localProp).setCorArc(std::get<1>(oTriangle), curArc);
 
-         if (t) {
-            DEBUG_2(<< "mid replace edge: " << printEdge(std::get<0>(oTriangle), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(oTriangle), localProp) << std::endl);
-         }
-         else {
-            DEBUG_2(<< "mid no found edge: " << printEdge(std::get<0>(oTriangle), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(oTriangle), localProp) << std::endl);
-            DEBUG_2(<< dynGraph(localProp).print() << std::endl);
-         }
-
          const orderedEdge e1 = mesh_.getOrderedEdge(std::get<1>(oTriangle), localProp->goUp());
          const orderedEdge e2 = mesh_.getOrderedEdge(std::get<2>(oTriangle), localProp->goUp());
          const idVertex    w  = getWeight(e1, e2, localProp);
 
-         bool u;
          // this order for history
-         u = dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w,
+          dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w,
                                             curArc);
-
-         if (u) {
-            DEBUG_2(<< " new edge: " << printEdge(std::get<1>(oTriangle), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<2>(oTriangle), localProp) << std::endl);
-         } else {
-            DEBUG_2(<< " mid no need to create edge: " << printEdge(std::get<1>(oTriangle), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<2>(oTriangle), localProp) << std::endl);
-            DEBUG_2(<< dynGraph(localProp).print() << std::endl);
-         }
       }
 
       template <typename ScalarType>
@@ -604,18 +556,9 @@ namespace ttk
                                                        const Propagation* const localProp,
                                                        const idSuperArc         curArc)
       {
-         const int t = dynGraph(localProp).removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
-
+         dynGraph(localProp).removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
          dynGraph(localProp).setCorArc(std::get<1>(oTriangle), curArc);
          // dynGraph(localProp).setCorArc(std::get<2>(oTriangle), curArc);
-
-         if (t) {
-            DEBUG_2(<< "end remove edge: " << printEdge(std::get<1>(oTriangle), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<2>(oTriangle), localProp) << std::endl);
-         } else {
-            DEBUG_2(<< "end not found edge: " << printEdge(std::get<1>(oTriangle), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<2>(oTriangle), localProp) << std::endl);
-         }
       }
 
       template <typename ScalarType>
@@ -705,36 +648,14 @@ namespace ttk
          const orderedEdge e0      = mesh_.getOrderedEdge(std::get<0>(edge), localProp->goUp());
          const orderedEdge e1      = mesh_.getOrderedEdge(std::get<1>(edge), localProp->goUp());
          const idVertex    w       = getWeight(e0, e1, localProp);
-         bool              t;
-         t = dynGraph(localProp).insertEdge(std::get<1>(edge), std::get<0>(edge), w, arc);
-         if (t) {
-            DEBUG_2(<< "start add edge: " << printEdge(std::get<0>(edge), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(edge), localProp) << " w " << w << " arc " << arc << std::endl);
-         } else {
-            DEBUG_2(<< "start no need to create edge: "
-                    << printEdge(std::get<0>(edge), localProp) << std::endl);
-         // DEBUG_2(<< " :: " << printEdge(std::get<1>(edge), localProp) << std::endl);
-         }
+         dynGraph(localProp).insertEdge(std::get<1>(edge), std::get<0>(edge), w, arc);
       }
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::updateLazyDel(const Propagation* const localProp,
                                                const linkEdge edge, const idSuperArc arc)
       {
-         const int t = dynGraph(localProp).removeEdge(std::get<0>(edge), std::get<1>(edge));
-
-         // keep history inside the dyngraph structure
-         // dynGraph(localProp).setSubtreeArc(std::get<0>(edge), std::get<1>(del));
-         // dynGraph(localProp).setSubtreeArc(std::get<1>(edge), std::get<1>(del));
-
-         if (t) {
-            DEBUG_2(<< "mid del edge: " << printEdge(std::get<0>(edge), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(edge), localProp) << " : " << arc << std::endl);
-         }
-         else {
-            DEBUG_2(<< "mid no found edge: " << printEdge(std::get<0>(edge), localProp));
-            DEBUG_2(<< " :: " << printEdge(std::get<1>(edge), localProp) << " : " << arc << std::endl);
-         }
+         dynGraph(localProp).removeEdge(std::get<0>(edge), std::get<1>(edge));
       }
 
       template<typename ScalarType>
@@ -743,9 +664,6 @@ namespace ttk
          auto comp = [localProp](const idVertex a, const idVertex b) {
             return localProp->compare(a, b);
          };
-
-         DEBUG_1(<< "lazy apply " << localProp->getCurVertex() << " arc " << graph_.printArc(a)
-                 << std::endl);
 
          auto add = lazy_.addGetNext(a);
          auto del = lazy_.delGetNext(a);
@@ -796,7 +714,6 @@ namespace ttk
                if (!propagations_.willVisit(other, localProp)) {
                   localProp->addNewVertex(other);
                   propagations_.toVisit(other, localProp);
-                  // DEBUG_1(<< " + " << other << std::endl);
                }
             }
          }
@@ -810,8 +727,6 @@ namespace ttk
          AtomicUF*      curId     = localProp->getId();
          valence        decr      = 0;
 
-          DEBUG_1(<< "Check last on " << curSaddle <<  std::endl);
-
           // NOTE:
           // Using propagation id allows to decrement by the number of time this propagation
           // has reached the saddle, even if the propagation take care of several of these arcs
@@ -819,18 +734,12 @@ namespace ttk
           for (idEdge edgeId : lowerStarEdges) {
              const idSuperArc edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
              if (edgeArc == nullSuperArc) {
-                DEBUG_1(<< printEdge(edgeId, localProp) << " ignore " << std::endl);
                 continue;
              }
              AtomicUF* tmpId = graph_.getArc(edgeArc).getPropagation()->getId();
              if (tmpId == curId) {
                 graph_.getArc(edgeArc).setEnd(curSaddle);
                 ++decr;
-                DEBUG_1(<< printEdge(edgeId, localProp) << " decrement "
-                        << static_cast<unsigned>(decr) << " " << curSaddle << std::endl);
-             } else {
-                DEBUG_1(<< printEdge(edgeId, localProp) << " no decrement " << edgeArc
-                        << std::endl);
              }
           }
 
@@ -893,21 +802,18 @@ namespace ttk
          }
 #endif
 
-         // DEBUG_1(<< " merge in " << graph_.getNode(saddleId).getVertexIdentifier() << std::endl);
-
          idSuperArc visibleClosed = 0;
          for(auto* dgNode : lowerComp) {
             // read in the history (lower comp already contains roots)
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
+            PRINT(graph_.printArc(endingArc));
             if (graph_.getArc(endingArc).isVisible()) {
                ++visibleClosed;
             }
             Propagation * arcProp =  graph_.getArc(endingArc).getPropagation();
-            DEBUG_1(<< "merge " << graph_.printArc(endingArc) << std::endl);
             localProp->merge(*arcProp);
          }
-         // DEBUG_1(<< " result " << localProp->print() << std::endl);
          return visibleClosed;
       }
 
@@ -927,10 +833,10 @@ namespace ttk
          for(auto* dgNode : lowerComp) {
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
+            PRINT(graph_.printArc(endingArc));
             if (graph_.getArc(endingArc).isVisible()) {
                ++visibleClosed;
             }
-            DEBUG_1(<< "close " << graph_.printArc(endingArc) << std::endl);
          }
          return visibleClosed;
       }
@@ -953,9 +859,6 @@ namespace ttk
             if (bfsCells_[neighTriangle] != curVert &&
                 getVertPosInTriangle(oNeighTriangle, localProp) != vertPosInTriangle::End) {
                const idVertex endTri          = getEndVertexInTriangle(oNeighTriangle, localProp);
-
-               DEBUG_1(<< "split " << curVert << " at " << printTriangle(neighTriangle, localProp)
-                       << std::endl);
 
                // BFS to add vertices in the current propagation for each seed
                // and its corresponfing arc
@@ -994,7 +897,6 @@ namespace ttk
             const auto prop = std::get<1>(bfsRes);
             graph_.visit(curVert, arc);
             propagations_.visit(curVert, localProp);
-            DEBUG_1(<< "visit s: " << curVert << " with " << arc << std::endl);
             // why is the firstprivate required here ?
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task firstprivate(curVert, prop, arc) OPTIONAL_PRIORITY(PriorityLevel::Low)
@@ -1020,8 +922,7 @@ namespace ttk
 
             if(hidden) graph_.getArc(newArc).hide();
 
-            DEBUG_1(<< "set root arc " << newArc << " at ");
-            DEBUG_1(<< printEdge(dynGraph(localProp).getNodeId(dgNode), localProp) << std::endl);
+            PRINT(graph_.printArc(newArc));
          }
       }
 
@@ -1037,7 +938,6 @@ namespace ttk
          }
          if (!opposite.done) {
             graph_.visit(curVert, curArc);
-            // DEBUG_1(<< curVert << " visit arc " << curArc << std::endl);
             return nullSuperArc;
          } else {
             return graph_.getArcId(curVert);

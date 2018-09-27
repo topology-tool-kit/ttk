@@ -123,7 +123,7 @@ namespace ttk
          // Debug print
 #ifndef NDEBUG
          // std::cout << graph_.printVisit() << std::endl;
-         printGraph(4);
+         // printGraph(4);
          // std::cout << "up" << std::endl;
          // std::cout << dynGraphs_.up.print() << std::endl;
          // std::cout << "down" << std::endl;
