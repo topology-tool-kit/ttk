@@ -896,7 +896,7 @@ void ttkContourForests::getSkeletonNodes()
 
   int type{};
   vtkIntArray* nodeTypeScalars = vtkIntArray::New();
-  nodeTypeScalars->SetName("NodeType");
+  nodeTypeScalars->SetName("CriticalType");
 
   ttkSimplexIdTypeArray* regionSizeScalars = ttkSimplexIdTypeArray::New();
   regionSizeScalars->SetName("RegionSize");

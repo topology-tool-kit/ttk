@@ -264,7 +264,7 @@ int ttkPersistenceDiagram::getPersistenceDiagram(ttk::ftm::TreeType treeType,
   vtkSmartPointer<vtkIntArray> nodeTypeScalars=
     vtkSmartPointer<vtkIntArray>::New();
   nodeTypeScalars->SetNumberOfComponents(1);
-  nodeTypeScalars->SetName("NodeType");
+  nodeTypeScalars->SetName("CriticalType");
 
   vtkSmartPointer<ttkSimplexIdTypeArray> pairIdentifierScalars=
     vtkSmartPointer<ttkSimplexIdTypeArray>::New();
@@ -410,7 +410,7 @@ vtkSmartPointer<ttkSimplexIdTypeArray>::New();
    vtkSmartPointer<vtkIntArray> nodeTypeScalars = 
 vtkSmartPointer<vtkIntArray>::New();
    nodeTypeScalars->SetNumberOfComponents(1);
-   nodeTypeScalars->SetName("NodeType");
+   nodeTypeScalars->SetName("CriticalType");
 
    vtkSmartPointer<ttkSimplexIdTypeArray> pairIdentifierScalars = 
 vtkSmartPointer<ttkSimplexIdTypeArray>::New();

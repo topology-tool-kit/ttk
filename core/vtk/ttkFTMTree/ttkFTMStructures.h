@@ -226,7 +226,7 @@ struct NodeData : public WrapperData{
 
       ids     = initArray<ttkSimplexIdTypeArray>("NodeId", numberOfNodes);
       vertIds = initArray<ttkSimplexIdTypeArray>("VertexId", numberOfNodes);
-      type    = initArray<vtkIntArray>("NodeType", numberOfNodes);
+      type    = initArray<vtkIntArray>("CriticalType", numberOfNodes);
       scalars = initArray<vtkFloatArray>("Scalar", numberOfNodes);
 
       if (params.advStats) {

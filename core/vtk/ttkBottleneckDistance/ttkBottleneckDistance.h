@@ -207,7 +207,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
-      GetPointData()->GetArray("NodeType"));
+      GetPointData()->GetArray("CriticalType"));
 
   ttkSimplexIdTypeArray* pairIdentifierScalars =
     ttkSimplexIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
