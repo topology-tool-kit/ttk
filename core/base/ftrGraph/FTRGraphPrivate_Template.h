@@ -50,12 +50,6 @@ namespace ttk
             const idVertex curVert = localProp->getCurVertex();
             idSuperArc mergeIn = nullSuperArc;
 
-            // Check history for visit (quick test)
-            // if (propagations_.hasVisited(curVert, localProp)) {
-            //    DEBUG_1(<< curVert << "already seen " << localProp->getId() << std::endl);
-            //    continue;
-            // }
-
             lowerStarEdges.clear();
             upperStarEdges.clear();
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
@@ -67,11 +61,6 @@ namespace ttk
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
-                  if (graph_.getArc(currentArc).merged()) {
-                     DEBUG_1(<< "- " << curVert << std::endl);
-                     // merging component, propagation has been discarded
-                     continue;
-                  }
                   if(valences_.upper[curVert] && valences_.lower[curVert]){
                      // not saddle neither extrema
                      graph_.getArc(currentArc).visit(curVert);
@@ -99,10 +88,6 @@ namespace ttk
             {
 #endif
                lowerComp = lowerComps(lowerStarEdges, localProp);
-               if (checkStop(lowerComp)) {
-                  DEBUG_1(<< "already merged component : " << curVert << std::endl);
-                  continue;
-               }
 
                if (lowerComp.size() > 1) {
                   isJoinSaddle = true;
@@ -111,11 +96,6 @@ namespace ttk
                } else {
                   if (lowerComp.size()) {
                      currentArc = lowerComp[0]->getCorArc();
-                     if (currentArc == nullSuperArc || graph_.getArc(currentArc).merged()) {
-                        DEBUG_1(<< "-. " << curVert << std::endl);
-                        // current arc is merging, the lower star has been discontinued
-                        continue;
-                     }
                   }
                   mergeIn = visit(localProp, currentArc);
                }
@@ -138,10 +118,6 @@ namespace ttk
                   localProp->lessArc();
                   graph_.getArc(currentArc).merge(mergeIn);
                }
-               if (localProp->getNbArcs() == 0) {
-                  DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
-                  return;
-               }
             }
 
             // stop on leaves
@@ -153,11 +129,6 @@ namespace ttk
                if (graph_.getArc(currentArc).isVisible()) {
                   // do not decrease on merged arcs
                   localProp->lessArc();
-                  if (localProp->getNbArcs() == 0) {
-                     DEBUG_1(<< "proapgation stop here, no active arcs" << std::endl);
-                     localProp->clear();
-                     return;
-                  }
                }
             }
 
@@ -180,7 +151,6 @@ namespace ttk
 
          // At saddle: join or split or both
          idSuperArc joinNewArc;
-         bool splitHidden = false;
          // arriving at a join
          if (isJoinSadlleLast) {
             // ensure we have the good values here, even if other tasks were doing stuff
@@ -194,11 +164,6 @@ namespace ttk
             idSuperArc visibleMerged = mergeAtSaddle(upNode, localProp, lowerComp);
             localProp->lessArc(visibleMerged-1);
 
-            if (!visibleMerged && localProp->getNbArcs() == 0) {
-               DEBUG_1(<< "proapgation stop here, no merged arcs" << std::endl);
-               return;
-            }
-
             localGrowth(localProp, upperStarEdges);
 
             const idNode downNode = graph_.getNodeId(upVert);
@@ -206,13 +171,8 @@ namespace ttk
             visit(localProp, joinNewArc);
             updatePreimage(localProp, joinNewArc);
             upperComp = upperComps(upperStarEdges, localProp);
-            if (visibleMerged != lowerComp.size()) {
-               // Some arcs where already hidden so this node has been processed as a split by the other side
-               DEBUG_1(<< ": already processed join " << std::endl);
-               graph_.getArc(joinNewArc).hide();
-               localProp->lessArc();
-               splitHidden = true;
-            } else if (upperComp.size() > 1) {
+
+            if (upperComp.size() > 1) {
                isSplitSaddle = true;
                DEBUG_1(<< ": is join & split : " << localProp->print() << std::endl);
                // will be replaced be new arcs of the split
@@ -235,8 +195,6 @@ namespace ttk
                if (graph_.getArc(currentArc).isVisible()) {
                   // if not visible, already decremented the counter
                   localProp->lessArc();
-               } else {
-                  splitHidden = true;
                }
             }
 
@@ -244,10 +202,8 @@ namespace ttk
             Propagation* remainProp = splitAtSaddleBFS(localProp);
             growthFromSeed(upVert, remainProp);
 #else
-            splitAtSaddle(localProp, upperComp, splitHidden);
-            if (!splitHidden) {
-               localProp->moreArc(upperComp.size());
-            }
+            splitAtSaddle(localProp, upperComp);
+            localProp->moreArc(upperComp.size());
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Low)
 #endif
