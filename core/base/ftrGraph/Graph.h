@@ -294,8 +294,7 @@ namespace ttk
             }
          }
 
-         template<typename ScalarType>
-         void shuffleLeaves(const Scalars<ScalarType>* s)
+         void shuffleLeaves()
          {
             std::random_shuffle(leaves_.begin(), leaves_.end());
          }

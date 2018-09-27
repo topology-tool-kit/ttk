@@ -9,7 +9,11 @@
 #include <unordered_map>
 
 // trick to print a full line in an atomic operation, avoid mixed up redulsts in parallel
+#ifndef NDEBUG
 #define PRINT(msg) std::stringstream s; s << msg << std::endl; std::cout << s.str()
+#else
+#define PRINT
+#endif
 
 namespace ttk
 {
@@ -86,6 +90,10 @@ namespace ttk
                } else {
                   if (lowerComp.size()) {
                      currentArc = lowerComp[0]->getCorArc();
+                     if (currentArc == nullSuperArc || !graph_.getArc(currentArc).isVisible()) {
+                        PRINT("-" << curVert);
+                        continue;
+                     }
                   }
                   mergeIn = visit(localProp, currentArc);
                }
@@ -152,7 +160,7 @@ namespace ttk
                }
             }
             if (isSplit) {
-               PRINT(upVert << " split" << hideFromHere);
+               PRINT(upVert << " split " << hideFromHere);
                graph_.makeNode(upVert);
             }
          }

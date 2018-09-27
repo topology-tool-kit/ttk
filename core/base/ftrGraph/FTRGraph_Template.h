@@ -144,7 +144,7 @@ namespace ttk
 
          // Debug print
 #ifndef NDEBUG
-         // std::cout << graph_.printVisit() << std::endl;
+         std::cout << graph_.printVisit() << std::endl;
          printGraph(4);
          // std::cout << dynGraphs_.up.printNbCC() << std::endl;
 #endif
@@ -271,7 +271,7 @@ namespace ttk
          const idNode nbSeed = graph_.getNumberOfLeaves();
          // used to interleave min and max
          // Note: useless if only start for min or max
-         graph_.shuffleLeaves<ScalarType>(scalars_);
+         graph_.shuffleLeaves();
 #ifdef TTK_ENABLE_FTR_STATS
          sweepStart_.reStart();
 #endif
