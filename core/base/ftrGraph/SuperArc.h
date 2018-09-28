@@ -104,9 +104,11 @@ namespace ttk
             ufProp_ = UFprop;
          }
 
-         void hide(void)
+         bool hide(void)
          {
+            bool old = visible_;
             visible_ = false;
+            return old;
          }
 
          bool isVisible(void) const

@@ -12,7 +12,7 @@
 #ifndef NDEBUG
 #define PRINT(msg) {std::stringstream s; s << msg << std::endl; std::cout << s.str();}
 #else
-#define PRINT
+#define PRINT(msg)
 #endif
 
 namespace ttk
@@ -44,6 +44,8 @@ namespace ttk
             const idVertex curVert = localProp->getCurVertex();
             idSuperArc mergeIn = nullSuperArc;
 
+            PRINT("<" << curVert << " " << localProp->goUp());
+
             lowerStarEdges.clear();
             upperStarEdges.clear();
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
@@ -55,8 +57,8 @@ namespace ttk
                if(lowerStarEdges.size()) {
                   // not a min nor a saddle: 1 CC below
                   currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
-                  if (currentArc == nullSuperArc || !graph_.getArc(currentArc).isVisible()) {
-                     PRINT("-" << curVert);
+                  if (currentArc == nullSuperArc) {
+                     PRINT("n-" << curVert);
                      continue;
                   }
                   if(valences_.upper[curVert] && valences_.lower[curVert]){
@@ -94,8 +96,8 @@ namespace ttk
                } else {
                   if (lowerComp.size()) {
                      currentArc = lowerComp[0]->getCorArc();
-                     if (currentArc == nullSuperArc || !graph_.getArc(currentArc).isVisible()) {
-                        PRINT("--" << curVert);
+                     if (currentArc == nullSuperArc) {
+                        PRINT("n--" << curVert);
                         continue;
                      }
                   }
@@ -113,13 +115,14 @@ namespace ttk
                }
             }
 
-            // do not propagate on merging arc.
-            if (mergeIn != nullSuperArc) {
-               // current arc mergin in mergein
-               if (graph_.getArc(currentArc).isVisible()) {
-                  localProp->lessArc();
-                  graph_.getArc(currentArc).merge(mergeIn);
-                  PRINT(">" << graph_.printArc(currentArc) << " " << graph_.printArc(mergeIn));
+            // merge current arc
+            if (mergeIn != nullSuperArc && graph_.getArc(currentArc).isVisible()) {
+               graph_.getArc(currentArc).merge(mergeIn);
+               localProp->lessArc();
+               PRINT(">" << graph_.printArc(currentArc) << " " << graph_.printArc(mergeIn));
+               if (localProp->getNbArcs() == 0) {
+                  PRINT(curVert << "Merge last");
+                  return;
                }
             }
 
@@ -200,7 +203,9 @@ namespace ttk
 
             // do not propagate
             if (hideFromHere) {
-               graph_.getArc(joinParentArc).hide();
+               if (graph_.getArc(joinParentArc).hide()) {
+                  localProp->lessArc();
+               }
             }
 
             // split detection required after the merge
@@ -208,8 +213,9 @@ namespace ttk
                // this node is both join and split
                isSplit = true;
                // will be replaced be new arcs of the split
-               graph_.getArc(joinParentArc).hide();
-               localProp->lessArc();
+               if (graph_.getArc(joinParentArc).hide()) {
+                  localProp->lessArc();
+               }
             }
 
             PRINT("+"<<graph_.printArc(joinParentArc));
@@ -965,17 +971,19 @@ namespace ttk
       {
          const idVertex curVert = localProp->getCurVertex();
          Visit          opposite;
+         idSuperArc     retArc;
 #pragma omp critical
          {
             propagations_.visit(curVert, localProp);
             opposite = propagations_.visitOpposite(curVert, localProp);
+            if (!opposite.done) {
+               graph_.visit(curVert, curArc);
+               retArc = nullSuperArc;
+            } else {
+               retArc = graph_.getArcId(curVert);
+            }
          }
-         if (!opposite.done) {
-            graph_.visit(curVert, curArc);
-            return nullSuperArc;
-         } else {
-            return graph_.getArcId(curVert);
-         }
+         return retArc;
       }
 
       /// Tools
