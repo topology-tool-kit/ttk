@@ -95,7 +95,7 @@ namespace ttk
                   if (lowerComp.size()) {
                      currentArc = lowerComp[0]->getCorArc();
                      if (currentArc == nullSuperArc || !graph_.getArc(currentArc).isVisible()) {
-                        PRINT("-" << curVert);
+                        PRINT("--" << curVert);
                         continue;
                      }
                   }
@@ -147,6 +147,11 @@ namespace ttk
          // get the corresponging critical point on which
          // the propagation has stopped (join, split, max)
          const idVertex upVert = localProp->getCurVertex();
+
+         if (localProp->getNbArcs() == 0 || localProp->empty()) {
+            PRINT(upVert << " stop " << localProp->getNbArcs());
+            return;
+         }
 
          PRINT(upVert << " active " << localProp->getNbArcs());
 
