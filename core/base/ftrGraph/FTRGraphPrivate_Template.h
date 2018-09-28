@@ -10,7 +10,7 @@
 
 // trick to print a full line in an atomic operation, avoid mixed up redulsts in parallel
 #ifndef NDEBUG
-#define PRINT(msg) std::stringstream s; s << msg << std::endl; std::cout << s.str()
+#define PRINT(msg) {std::stringstream s; s << msg << std::endl; std::cout << s.str();}
 #else
 #define PRINT
 #endif
@@ -24,7 +24,11 @@ namespace ttk
                                                 idSuperArc currentArc)
       {
 
-         PRINT(seed << " > " << localProp->getNbArcs());
+         PRINT(seed << " :: " << localProp->getNbArcs());
+         if (!localProp->getNbArcs()) {
+            PRINT(seed << " Stop direct");
+            return;
+         }
 
          // topology
          bool isJoinLast = false;
@@ -115,6 +119,7 @@ namespace ttk
                if (graph_.getArc(currentArc).isVisible()) {
                   localProp->lessArc();
                   graph_.getArc(currentArc).merge(mergeIn);
+                  PRINT(">" << graph_.printArc(currentArc) << " " << graph_.printArc(mergeIn));
                }
             }
 
@@ -123,7 +128,7 @@ namespace ttk
                // We have reached a local extrema (max from this propagation)
                const idNode leafNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, leafNode);
-               PRINT(graph_.printArc(currentArc));
+               PRINT("^"<<graph_.printArc(currentArc));
                if (graph_.getArc(currentArc).isVisible()) {
                   // do not decrease on merged arcs
                   localProp->lessArc();
@@ -142,6 +147,9 @@ namespace ttk
          // get the corresponging critical point on which
          // the propagation has stopped (join, split, max)
          const idVertex upVert = localProp->getCurVertex();
+
+         PRINT(upVert << " active " << localProp->getNbArcs());
+
          // reached node id and wether it has been created by this task or already existed
          idNode saddleNode;
          idSuperArc joinParentArc;
@@ -199,7 +207,7 @@ namespace ttk
                localProp->lessArc();
             }
 
-            PRINT(graph_.printArc(joinParentArc));
+            PRINT("+"<<graph_.printArc(joinParentArc));
          } else if (!isJoin) {
             // only one arc coming here
             saddleNode = graph_.getNodeId(upVert);
@@ -213,7 +221,7 @@ namespace ttk
                // if not visible, already decremented the counter
                localProp->lessArc();
             }
-            PRINT(graph_.printArc(currentArc));
+            PRINT("|"<<graph_.printArc(currentArc));
          }
 
          if (isSplit) {
@@ -828,7 +836,7 @@ namespace ttk
             // read in the history (lower comp already contains roots)
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
-            PRINT(graph_.printArc(endingArc));
+            PRINT("/"<<graph_.printArc(endingArc));
             if (graph_.getArc(endingArc).isVisible()) {
                ++visibleClosed;
             }
@@ -854,7 +862,7 @@ namespace ttk
          for(auto* dgNode : lowerComp) {
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
-            PRINT(graph_.printArc(endingArc));
+            PRINT("/"<<graph_.printArc(endingArc));
             if (graph_.getArc(endingArc).isVisible()) {
                ++visibleClosed;
             }
@@ -943,7 +951,7 @@ namespace ttk
 
             if(hidden) graph_.getArc(newArc).hide();
 
-            PRINT(graph_.printArc(newArc));
+            PRINT("v"<<graph_.printArc(newArc));
          }
       }
 
