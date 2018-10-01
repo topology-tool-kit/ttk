@@ -28,6 +28,10 @@ namespace ttk
 namespace ftm
 {
 
+  /**
+   * Compute the join tree, split tree or contour tree of a function on a triangulation.
+   * TTK assumes that the input dataset is made of only one connected component.
+   */
    class FTMTree : public FTMTree_CT
    {
      public:
