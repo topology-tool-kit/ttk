@@ -68,7 +68,7 @@ int ttkTopologicalCompression::doIt(
             << std::endl;
           dMsg(std::cerr, msg.str(), fatalMsg);
         }
-        break;
+        return -1;
     }
   }
 
