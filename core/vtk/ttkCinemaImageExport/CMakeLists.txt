@@ -1,4 +1,0 @@
-ttk_add_vtk_library(ttkCinemaImageExport
-	SOURCES ttkCinemaImageExport.cpp
-	HEADERS ttkCinemaImageExport.h
-	LINK ttkTriangulation)

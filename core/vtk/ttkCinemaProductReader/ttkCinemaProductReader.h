@@ -1,37 +1,38 @@
 /// \ingroup vtk
-/// \class ttkCinemaQuery
+/// \class ttkCinemaProductReader
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2018
 ///
-/// \brief TTK VTK-filter that uses a SQL statement to select a subset of a vtkTable.
+/// \brief TTK VTK-filter that reads the data products that are referenced in a vtkTable.
 ///
-/// This filter creates a temporary SQLite3 database from the input table, performs a SQL query, and then returns the result as a vtkTable.
+/// This filter reads the products that are referenced in a vtkTable. The results are stored in a vtkMultiBlockDataSet where each block corresponds to a row of the table with consistent ordering.
 ///
-/// VTK wrapping code for the @CinemaQuery package.
+/// \param Input vtkTable that contains data product references (vtkTable)
+/// \param Output vtkMultiBlockDataSet where each block is a referenced product of an input table row (vtkMultiBlockDataSet)
 ///
-/// param Input Input table (vtkTable)
-/// param Output Output table (vtkTable)
-///
-/// sa ttk::CinemaQuery
+/// \sa ttk::CinemaProductReader
 #pragma once
 
-#include                <vtkTableAlgorithm.h>
-#include                <vtkInformation.h>
-#include                <vtkTable.h>
+#include                  <vtkTable.h>
+#include                  <vtkImageData.h>
+#include                  <vtkMultiBlockDataSetAlgorithm.h>
+#include                  <vtkFiltersCoreModule.h>
+#include                  <vtkInformation.h>
+#include                  <vtkMultiBlockDataSet.h>
 
-#include                  <CinemaQuery.h>
 #include                  <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaQuery
+class VTKFILTERSCORE_EXPORT ttkCinemaProductReader
 #else
-class ttkCinemaQuery
+class ttkCinemaProductReader
 #endif
-: public vtkTableAlgorithm, public ttk::Wrapper{
+: public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
 
     public:
-        static ttkCinemaQuery* New();
-        vtkTypeMacro(ttkCinemaQuery, vtkTableAlgorithm)
+
+        static ttkCinemaProductReader* New();
+        vtkTypeMacro(ttkCinemaProductReader, vtkMultiBlockDataSetAlgorithm)
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -49,8 +50,11 @@ class ttkCinemaQuery
         }
         // end of default ttk setters
 
-        vtkSetMacro(QueryString, std::string);
-        vtkGetMacro(QueryString, std::string);
+        void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char *name){
+            this->FilepathColumnName = std::string(name);
+            this->Modified();
+        };
+
 
         int FillInputPortInformation(int port, vtkInformation *info) override {
             switch(port)
@@ -60,20 +64,19 @@ class ttkCinemaQuery
 
         int FillOutputPortInformation(int port, vtkInformation *info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
             return 1;
         }
 
     protected:
 
-        ttkCinemaQuery(){
-            QueryString = "";
+        ttkCinemaProductReader(){
             UseAllCores = false;
 
             SetNumberOfInputPorts(1);
             SetNumberOfOutputPorts(1);
         }
-        ~ttkCinemaQuery(){};
+        ~ttkCinemaProductReader(){};
 
         bool UseAllCores;
         int ThreadNumber;
@@ -82,8 +85,7 @@ class ttkCinemaQuery
 
     private:
 
-        std::string      QueryString;
-        ttk::CinemaQuery cinemaQuery;
+        std::string FilepathColumnName;
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

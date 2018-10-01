@@ -1,4 +1,4 @@
-#include <ttkCinemaQueryReader.h>
+#include <ttkCinemaProductReader.h>
 #include <vtkVariantArray.h>
 #include <vtkXMLImageDataReader.h>
 #include <vtkXMLPolyDataReader.h>
@@ -9,9 +9,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkCinemaQueryReader)
+vtkStandardNewMacro(ttkCinemaProductReader)
 
-int ttkCinemaQueryReader::RequestData(
+int ttkCinemaProductReader::RequestData(
     vtkInformation* request,
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
@@ -19,7 +19,7 @@ int ttkCinemaQueryReader::RequestData(
     {
         stringstream msg;
         msg<<"-------------------------------------------------------------"<<endl;
-        msg<<"[ttkCinemaQueryReader] RequestData"<<endl;
+        msg<<"[ttkCinemaProductReader] RequestData"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 
@@ -37,17 +37,16 @@ int ttkCinemaQueryReader::RequestData(
         // Determine number of files
         int n = inputTable->GetNumberOfRows();
         int m = inputTable->GetNumberOfColumns();
-        cout<<"[ttkCinemaQueryReader] Reading "<<n<<" files:"<<endl;
+        cout<<"[ttkCinemaProductReader] Reading "<<n<<" files:"<<endl;
 
         // Compute DatabasePath
         auto databasePath = inputTable->GetFieldData()->GetAbstractArray("DatabasePath")->GetVariantValue(0).ToString();
-        databasePath = databasePath.substr( 0, databasePath.find_last_of("/"));
 
         // Get column that contains paths
         auto paths = inputTable->GetColumnByName( this->FilepathColumnName.data() );
         if(paths==nullptr){
             stringstream msg;
-            msg<<"[ttkCinemaQueryReader] ERROR: Table does not have FilepathColumn '"<<this->FilepathColumnName<<"'"<<endl;
+            msg<<"[ttkCinemaProductReader] ERROR: Table does not have FilepathColumn '"<<this->FilepathColumnName<<"'"<<endl;
             dMsg(cerr, msg.str(), timeMsg);
             return 0;
         }
@@ -63,13 +62,13 @@ int ttkCinemaQueryReader::RequestData(
 
             {
                 stringstream msg;
-                msg<<"[ttkCinemaQueryReader]    "<<i<<": "<<path<<endl;
+                msg<<"[ttkCinemaProductReader]    "<<i<<": "<<path<<endl;
                 dMsg(cout, msg.str(), timeMsg);
             }
 
             if(!exists){
                 stringstream msg;
-                msg<<"[ttkCinemaQueryReader]    ERROR: File does not exist."<<endl;
+                msg<<"[ttkCinemaProductReader]    ERROR: File does not exist."<<endl;
                 dMsg(cerr, msg.str(), timeMsg);
                 continue;
             }
@@ -91,7 +90,7 @@ int ttkCinemaQueryReader::RequestData(
                 reader->Update();
                 output->SetBlock(i, reader->GetOutput());
             } else {
-                cout<<"[ttkCinemaQueryReader] Unknown File type: "<<ext<<endl;
+                cout<<"[ttkCinemaProductReader] Unknown File type: "<<ext<<endl;
             }
 
             // Augment read data with row information
@@ -110,7 +109,7 @@ int ttkCinemaQueryReader::RequestData(
     // Output Performance
     {
         stringstream msg;
-        msg << "[ttkCinemaQueryReader] Memory usage: "
+        msg << "[ttkCinemaProductReader] Memory usage: "
             << m.getElapsedUsage()
             << " MB." << endl;
         dMsg(cout, msg.str(), memoryMsg);

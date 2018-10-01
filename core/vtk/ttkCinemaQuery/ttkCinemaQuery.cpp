@@ -14,6 +14,7 @@ int ttkCinemaQuery::RequestData(
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
 ){
+    // Print Status
     {
         stringstream msg;
         msg<<"-------------------------------------------------------------"<<endl;
@@ -26,9 +27,11 @@ int ttkCinemaQuery::RequestData(
     string result;
     string sqlTableDefinition, sqlTableRows;
 
+    // Get Input Table
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
     vtkTable* inTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
+    // Get Output Table
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     vtkTable* outTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
@@ -61,9 +64,9 @@ int ttkCinemaQuery::RequestData(
         }
     }
 
-    // Compute Result
+    // Compute Query Result
     {
-        result = cinemaQuery_.execute<int>(
+        result = cinemaQuery.execute<int>(
             sqlTableDefinition,
             sqlTableRows,
             this->QueryString

@@ -1,4 +1,4 @@
-#include                  <ttkCinemaReader.h>
+#include                  <ttkCinemaDatabaseReader.h>
 #include                  <vtkDelimitedTextReader.h>
 #include                  <vtkFieldData.h>
 #include                  <vtkStringArray.h>
@@ -6,9 +6,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkCinemaReader)
+vtkStandardNewMacro(ttkCinemaDatabaseReader)
 
-int ttkCinemaReader::RequestData (
+int ttkCinemaDatabaseReader::RequestData (
     vtkInformation* request,
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
@@ -16,16 +16,17 @@ int ttkCinemaReader::RequestData (
     Timer t;
     Memory m;
 
+    // Print Status
     {
         stringstream msg;
         msg<<"-------------------------------------------------------------"<<endl;
-        msg<<"[ttkCinemaReader] RequestData"<<endl;
+        msg<<"[ttkCinemaDatabaseReader] RequestData"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 
-    // Read CSV file which is in Spec X format
+    // Read CSV file which is in Spec D format
     vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
-    reader->SetFileName( this->DatabasePath.data() );
+    reader->SetFileName( (this->DatabasePath+"/data.csv").data() );
     reader->DetectNumericColumnsOn();
     reader->SetHaveHeaders(true);
     reader->SetFieldDelimiterCharacters(",");
@@ -36,7 +37,7 @@ int ttkCinemaReader::RequestData (
     vtkTable* outTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
     outTable->ShallowCopy( reader->GetOutput() );
 
-    // Database path as field data
+    // Append database path as field data
     auto DatabasePathFD = vtkSmartPointer<vtkStringArray>::New();
     DatabasePathFD->SetName("DatabasePath");
     DatabasePathFD->SetNumberOfValues(1);
@@ -46,8 +47,8 @@ int ttkCinemaReader::RequestData (
     // Output Performance
     {
         stringstream msg;
-        msg << "[ttkCinemaReader]   Time: " << t.getElapsedTime() << " s." << endl;
-        msg << "[ttkCinemaReader] Memory: " << m.getElapsedUsage() << " MB." << endl;
+        msg << "[ttkCinemaDatabaseReader]   Time: " << t.getElapsedTime() << " s." << endl;
+        msg << "[ttkCinemaDatabaseReader] Memory: " << m.getElapsedUsage() << " MB." << endl;
         dMsg(cout, msg.str(), memoryMsg);
     }
 

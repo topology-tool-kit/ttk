@@ -8,7 +8,6 @@
 /// %DepthImageBasedGeometryApproximation is a TTK processing package that derives geomerty based on an input depth image and its corresponding camera parameters.
 ///
 /// \sa ttk::Triangulation
-/// \sa ttkDepthImageBasedGeometryApproximation.cpp %for a usage example.
 
 #pragma once
 

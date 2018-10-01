@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="CinemaImaging" class="ttkCinemaImaging" label="TTK CinemaImaging">
+            <Documentation long_help="TTK CinemaImaging" short_help="TTK CinemaImaging">This filter takes images of a vtkDataSet from angles specified on a vtkPointSet. Each image will be a block of a vtkMultiBlockDataSet where block order corresponds to point order. Each sample point can optionally have vtkDoubleArrays to override the default rendering parameters, i.e, the resolution, focus, clipping planes, and viewport height.</Documentation>
+            <InputProperty name="Dataset" port_index="0" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkDataSet" />
+                </DataTypeDomain>
+                <Documentation>vtkDataSet to be depicted.</Documentation>
+            </InputProperty>
+            <InputProperty name="SamplingGrid" port_index="1" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkPointSet" />
+                </DataTypeDomain>
+                <Documentation>vtkPointSet that represents the camera sampling locations.</Documentation>
+            </InputProperty>
+            <IntVectorProperty name="Resolution" label="Resolution" command="SetResolution" number_of_elements="2" default_values="256 256">
+                <Documentation>Resolution</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="CamNearFar" label="CamNearFar" command="SetCamNearFar" number_of_elements="2" default_values="0.1 2">
+                <Documentation>CamNearFar</Documentation>
+            </DoubleVectorProperty>
+            <DoubleVectorProperty name="CamFocus" label="CamFocus" command="SetCamFocus" number_of_elements="3" default_values="0 0 0">
+                <Documentation>CamFocus</Documentation>
+            </DoubleVectorProperty>
+            <DoubleVectorProperty name="CamHeight" label="CamHeight" command="SetCamHeight" number_of_elements="1" default_values="1">
+                <Documentation>CamHeight</Documentation>
+            </DoubleVectorProperty>
+            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <BooleanDomain name="bool" />
+                <Documentation>Use all available cores.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="1" max="100" />
+                <Documentation>Thread number.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="0" max="100" />
+                <Documentation>Debug level.</Documentation>
+            </IntVectorProperty>
+            <PropertyGroup panel_widget="Line" label="Sampling Parameters">
+                <Property name="Resolution" />
+                <Property name="CamNearFar" />
+                <Property name="CamFocus" />
+                <Property name="CamHeight" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Testing">
+                <Property name="UseAllCores" />
+                <Property name="ThreadNumber" />
+                <Property name="DebugLevel" />
+            </PropertyGroup>
+            <Hints>
+                <ShowInMenu category="TTK - Cinema" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>
