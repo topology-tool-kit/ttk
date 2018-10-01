@@ -348,6 +348,7 @@ namespace ttk{
 
     /**
      * Compute and manage a discrete gradient of a function on a triangulation.
+     * TTK assumes that the input dataset is made of only one connected component.
      */
     class DiscreteGradient : public Debug {
 
