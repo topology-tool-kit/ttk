@@ -677,6 +677,12 @@
         <Property name="se_Affinity" />
         <Property name="se_Gamma" />
         <Property name="se_EigenSolver" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="0" />
+        </Hints>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Locally Linear Embedding">
@@ -688,6 +694,12 @@
         <Property name="lle_HessianTolerance" />
         <Property name="lle_ModifiedTolerance" />
         <Property name="lle_NeighborsAlgorithm" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="1" />
+        </Hints>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Multi-Dimensional Scaling">
@@ -697,6 +709,12 @@
         <Property name="mds_Verbose" />
         <Property name="mds_Epsilon" />
         <Property name="mds_Dissimilarity" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="2" />
+        </Hints>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="t-distributed Stochastic Neighbor Embedding">
@@ -711,6 +729,12 @@
         <Property name="tsne_Verbose" />
         <Property name="tsne_Method" />
         <Property name="tsne_Angle" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="3" />
+        </Hints>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Isomap Embedding">
@@ -719,6 +743,12 @@
         <Property name="iso_MaxIteration" />
         <Property name="iso_PathMethod" />
         <Property name="iso_NeighborsAlgorithm" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="4" />
+        </Hints>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Principal Component Analysis">
@@ -727,6 +757,12 @@
         <Property name="pca_SVDSolver" />
         <Property name="pca_Tolerance" />
         <Property name="pca_MaxIteration" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="5" />
+        </Hints>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
