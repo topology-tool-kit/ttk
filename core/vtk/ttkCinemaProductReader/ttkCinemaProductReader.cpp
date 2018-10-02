@@ -97,11 +97,15 @@ int ttkCinemaProductReader::RequestData(
             // TODO: Make Optional
             auto block = output->GetBlock(i);
             for(int j=0; j<m; j++){
-                vtkSmartPointer<vtkVariantArray> c = vtkSmartPointer<vtkVariantArray>::New();
-                c->SetName( inputTable->GetColumnName(j) );
-                c->SetNumberOfValues(1);
-                c->SetValue(0, inputTable->GetValue(i,j));
-                block->GetFieldData()->AddArray( c );
+                auto columnName = inputTable->GetColumnName(j);
+                auto fieldData = block->GetFieldData();
+                if(!fieldData->HasArray( columnName )){
+                    vtkSmartPointer<vtkVariantArray> c = vtkSmartPointer<vtkVariantArray>::New();
+                    c->SetName( columnName );
+                    c->SetNumberOfValues(1);
+                    c->SetValue(0, inputTable->GetValue(i,j));
+                    fieldData->AddArray( c );
+                }
             }
         }
     }
