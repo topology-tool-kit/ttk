@@ -54,6 +54,10 @@ bool DimensionReduction::isPythonFound() const{
 #ifdef TTK_PYTHON_FOUND
   return true;
 #else
+  stringstream msg;
+  msg << "[DimensionReduction] Warning: Python/Numpy not found :(" << endl;
+  msg << "[DimensionReduction] Features disabled..." << endl;
+  dMsg(cerr, msg.str(), fatalMsg);
   return false;
 #endif
 }
