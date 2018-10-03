@@ -109,7 +109,7 @@ function(ttk_print_summary)
 endfunction()
 
 function(ttk_find_python)
-  find_package(PythanLibs QUIET)
+  find_package(PythonLibs QUIET)
   if(PYTHON_INCLUDE_DIRS)
     include_directories(${PYTHON_INCLUDE_DIRS})
 
