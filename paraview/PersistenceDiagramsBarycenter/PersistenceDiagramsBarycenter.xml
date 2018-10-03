@@ -54,7 +54,38 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
 	  
-	  
+       <IntVectorProperty
+          name="Deterministic"
+          label="Kill randomness"
+          command="SetDeterministic"
+          number_of_elements="1"
+	  default_values="0"
+	 panel_visibility = "advanced" >
+       	<BooleanDomain name="bool"/>
+	 <Documentation>
+		 For a deterministic algorithm.
+		 Kill any randomness in the initialization of barycenters. 
+	 </Documentation>
+      </IntVectorProperty>
+
+       <IntVectorProperty
+          name="Method"
+          label="Method for the auction"
+          command="SetMethod"
+          number_of_elements="1"
+          default_values="1" >
+		 <EnumerationDomain name="enum">
+          <Entry value="1" text="Exact Munkres Algorithm"/>
+          <Entry value="2" text="Approximate Auction Algorithm"/>
+        </EnumerationDomain>
+        <Documentation>
+          Type of algorithm for the computation of the matching. 
+		  Either the exact Munkres algorithm or the Approximate Auction
+		  Algorithm.
+		  The Auction algorithm is computationally less expensive than 
+		  the Munkres Algorithm.
+        </Documentation>
+      </IntVectorProperty>
 	  <IntVectorProperty
         name="UseProgressive"
         command="SetUseProgressive"
@@ -63,6 +94,13 @@ computation (type "inf" for the Bottleneck distance).
         default_values="1"
         panel_visibility="advanced">
         <BooleanDomain name="bool"/>
+		        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
         <Documentation>
           If set to true, the barycenter is computed progressively (starting with most persistent pairs).
 		  The option may turn useful coupled with Time Limit since the Barycenter will be computed with only a portion of the 
@@ -79,6 +117,13 @@ computation (type "inf" for the Bottleneck distance).
           default_values="3600"
           panel_visibility="advanced"
           >
+		 <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
         <Documentation>
           Maximal time of computation for the computation of the barycenter.
 		  Since Min/Saddle, Saddle/Saddle and Saddle/Max pairs are treated separatly, the actual computation time could be 
@@ -88,27 +133,23 @@ computation (type "inf" for the Bottleneck distance).
       </DoubleVectorProperty>
 	  
 	  
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
 	  
 	  <IntVectorProperty
          name="EarlyStoppage"
          label="EarlyStoppage"
          command="SetEarlyStoppage"
          number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
+         default_values="1" >
         <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
          <Documentation>
-          Use all available cores.
+          
          </Documentation>
       </IntVectorProperty>
 	  
@@ -119,8 +160,15 @@ computation (type "inf" for the Bottleneck distance).
          number_of_elements="1"
          default_values="1" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="2" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
          <Documentation>
-          Use all available cores.
+          Reinitialize the prices for each Auction Iteration. Slower.
          </Documentation>
       </IntVectorProperty>
 	  
@@ -131,6 +179,13 @@ computation (type "inf" for the Bottleneck distance).
          number_of_elements="1"
          default_values="1" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="UseProgressive"
+                                   value="0" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
          <Documentation>
           Use all available cores.
          </Documentation>
@@ -154,6 +209,18 @@ set to 0, only distances in the original 3D domain are considered
 between matched critical points.
         </Documentation>
       </DoubleVectorProperty>
+	
+	      <IntVectorProperty
+         name="UseAllCores"
+         label="Use All Cores"
+         command="SetUseAllCores"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use all available cores.
+         </Documentation>
+      </IntVectorProperty>
 
       <IntVectorProperty
          name="ThreadNumber"

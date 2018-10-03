@@ -22,7 +22,7 @@ ttkPersistenceDiagramsBarycenter::ttkPersistenceDiagramsBarycenter(){
 
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);
-  
+
 }
 
 ttkPersistenceDiagramsBarycenter::~ttkPersistenceDiagramsBarycenter(){}
@@ -56,9 +56,9 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 		inputDiagram[i] = vtkUnstructuredGrid::SafeDownCast(input[i]);
 	}
   // Calling the executing package
-	
+
 	int dataType = inputDiagram[0]->GetCellData()->GetArray("Persistence")->GetDataType();
-	
+
 	// TODO If Windows, we need to get rid of one pair of parenthesis
 	switch(dataType){
 
@@ -66,10 +66,10 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 		{
 			PersistenceDiagramsBarycenter<VTK_TT> persistenceDiagramsBarycenter;
 			persistenceDiagramsBarycenter.setWrapper(this);
-			
+
 			string wassersteinMetric = WassersteinMetric;
 			persistenceDiagramsBarycenter.setWasserstein(wassersteinMetric);
-
+      persistenceDiagramsBarycenter.setMethod(Method);
 			persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
 			persistenceDiagramsBarycenter.setTimeLimit(TimeLimit);
 			persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
@@ -78,25 +78,25 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 			persistenceDiagramsBarycenter.setReinitPrices(ReinitPrices);
 			persistenceDiagramsBarycenter.setEpsilonDecreases(EpsilonDecreases);
 			persistenceDiagramsBarycenter.setEarlyStoppage(EarlyStoppage);
-			
-      std::vector<std::vector<macroDiagramTuple> > 
+
+      std::vector<std::vector<macroDiagramTuple> >
         intermediateDiagrams(numInputs);
       for(int i = 0; i < numInputs; i++){
         double Spacing = 0;
         getPersistenceDiagram<VTK_TT>(
           &(intermediateDiagrams[i]), inputDiagram[i], Spacing, 0);
-//         persistenceDiagramsBarycenter.setDiagram(i, 
+//         persistenceDiagramsBarycenter.setDiagram(i,
 //           (void*) &(intermediateDiagrams[i]));
       }
       persistenceDiagramsBarycenter.setDiagrams((void *) &intermediateDiagrams);
-      
-			
+
+
 			std::vector<macroDiagramTuple> barycenter;
-			std::vector<std::vector<macroMatchingTuple>> matchings = 
+			std::vector<std::vector<macroMatchingTuple>> matchings =
 				persistenceDiagramsBarycenter.execute(&barycenter);
-			
+
 			outputBarycenter->ShallowCopy(createPersistenceDiagram<VTK_TT>(&barycenter));
-			outputMatchings->ShallowCopy(createMatchings(&matchings, &barycenter, 
+			outputMatchings->ShallowCopy(createMatchings(&matchings, &barycenter,
 				intermediateDiagrams));
 			outputDiagrams->ShallowCopy(createOutputDiagrams(intermediateDiagrams));
 		}
@@ -129,7 +129,7 @@ int ttkPersistenceDiagramsBarycenter::FillOutputPortInformation(int port, vtkInf
 int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
   vtkInformationVector **inputVector, vtkInformationVector *outputVector){
   Memory m;
-  
+
   // Number of input files
   int numInputs = inputVector[0]->GetNumberOfInformationObjects();
   {
@@ -146,35 +146,35 @@ int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
 		std::cout<<"No data in input["<<i<<"]"<<std::endl;
 	}
   }
-  
+
   // TODO Set output
-  
+
   /*vtkInformation* outInfo;
   outInfo = outputVector->GetInformationObject(0);
   vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(outInfo);*/
-  
+
   vtkInformation* outInfo1;
   outInfo1 = outputVector->GetInformationObject(0);
   vtkDataSet *output1 = vtkDataSet::SafeDownCast(outInfo1->Get(vtkDataObject::DATA_OBJECT()));
   vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(output1);
-  
+
   vtkInformation* outInfo2;
   outInfo2 = outputVector->GetInformationObject(1);
   vtkDataSet *output2 = vtkDataSet::SafeDownCast(outInfo2->Get(vtkDataObject::DATA_OBJECT()));
   vtkUnstructuredGrid *matchings = vtkUnstructuredGrid::SafeDownCast(output2);
-  
+
   vtkInformation* outInfo3;
   outInfo3 = outputVector->GetInformationObject(2);
   vtkDataSet *output3 = vtkDataSet::SafeDownCast(outInfo3->Get(vtkDataObject::DATA_OBJECT()));
   vtkUnstructuredGrid *outputDiagrams = vtkUnstructuredGrid::SafeDownCast(output3);
-  
-  
-  
+
+
+
   doIt(input, outputCT1, matchings, outputDiagrams, numInputs);
-  
-  
-  
-  
+
+
+
+
   /*vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(output1);
   outputCT1->ShallowCopy(outputBarycenter);*/
 

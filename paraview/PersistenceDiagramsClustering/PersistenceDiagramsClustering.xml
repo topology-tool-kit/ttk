@@ -65,7 +65,20 @@ See also MandatoryCriticalPoints.
 computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
-	  
+	        <IntVectorProperty
+          name="Deterministic"
+          label="Kill randomness"
+          command="SetDeterministic"
+          number_of_elements="1"
+          default_values="0"
+         panel_visibility = "advanced" >
+        <BooleanDomain name="bool"/>
+         <Documentation>
+                 For a deterministic algorithm.
+                 Kill any randomness in the initialization of barycenters.
+         </Documentation>
+      </IntVectorProperty>
+ 
 	  
 	  <IntVectorProperty
         name="UseProgressive"

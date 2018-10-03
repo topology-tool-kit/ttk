@@ -106,7 +106,7 @@ int ttk::BottleneckDistance::computeBottleneck(
       [wasserstein](const diagramTuple a) -> dataType {
         dataType rX = std::get<6>(a);
         dataType rY = std::get<10>(a);
-        dataType dist = abs_diff<dataType>(rX, rY);
+        dataType dist = abs_diff<dataType>(rX, rY)/sqrt(2);
         return
           wasserstein > 0 ? pow(dist, wasserstein) : dist;
         //abs<dataType>(std::get<4>(a))
@@ -166,6 +166,7 @@ int ttk::BottleneckDistance::computeBottleneck(
   dataType addedSadPersistence =
     this->buildMappings(sadMatchings, matchings, sadMap1, sadMap2, wasserstein);
 
+  std::cout<<"size of matchings : "<<(*matchings).size()<< " " <<minMatchings.size()<< " " <<sadMatchings.size()<< " " <<maxMatchings.size()<<std::endl;
   // Recompute matching weights for user-fristd::endly distance.
   dataType d = 0;
   std::vector<bool> paired1(d1Size);
@@ -197,7 +198,7 @@ int ttk::BottleneckDistance::computeBottleneck(
     } else {
       d = std::max(d, linfty);
     }
-  }  
+  }
   d = wasserstein > 0
       ? pow(d + addedMaxPersistence + addedMinPersistence + addedSadPersistence, (1.0 / (double) wasserstein))
       : std::max(d, std::max(addedMaxPersistence, std::max(addedMinPersistence, addedSadPersistence)));
@@ -228,11 +229,11 @@ int ttk::BottleneckDistance::computeAuction(
 	const double geometricalFactor = (alpha < 0.0 || alpha > 1.0) ? 1.0 : alpha;
 	const int wasserstein = (wasserstein_ == "inf") ? -1 : stoi(wasserstein_);
 	auto* distance = new dataType;
-	
+
 	const int d1Size = (int) CTDiagram1->size();
 	const int d2Size = (int) CTDiagram2->size();
 	const dataType zeroThresh = this->computeMinimumRelevantPersistence(CTDiagram1, CTDiagram2, d1Size, d2Size);
-	
+
 	std::vector<diagramTuple> D1Min, D1Sad, D1Max, D2Min, D2Sad, D2Max;
 	std::vector<int> D1Min_idx, D1Sad_idx, D1Max_idx, D2Min_idx, D2Sad_idx, D2Max_idx;
 	// Creating the subdiagrams for the three types of pairs
@@ -264,7 +265,7 @@ int ttk::BottleneckDistance::computeAuction(
 			}
 		}
 	}
-	
+
 	for(int i=0; i < (int) CTDiagram2->size(); ++i){
 		diagramTuple t = CTDiagram2->at(i);
 		BNodeType nt1 = std::get<1>(t);
@@ -292,13 +293,13 @@ int ttk::BottleneckDistance::computeAuction(
 			}
 		}
 	}
-	
-	
+
+
 	std::vector<matchingTuple> minMatchings;
 	std::vector<matchingTuple> maxMatchings;
 	std::vector<matchingTuple> sadMatchings;
 	dataType d = 0;
-	
+
 	#ifdef TTK_ENABLE_OPENMP
 	#pragma omp parallel sections
 	#endif
@@ -318,7 +319,7 @@ int ttk::BottleneckDistance::computeAuction(
 				d += cost;
 			}
 		}
-		
+
 		#ifdef TTK_ENABLE_OPENMP
 		#pragma omp section
 		#endif
@@ -334,7 +335,7 @@ int ttk::BottleneckDistance::computeAuction(
 				d += cost;
 			}
 		}
-		
+
 		#ifdef TTK_ENABLE_OPENMP
 		#pragma omp section
 		#endif
@@ -359,7 +360,7 @@ int ttk::BottleneckDistance::computeAuction(
 		dataType cost = std::get<2>(t);
 		matchings->push_back(std::make_tuple(D1Min_idx[i], D2Min_idx[j], cost));
 	}
-	
+
 	for(int k=0; k < (int) maxMatchings.size(); k++){
 		matchingTuple t = maxMatchings[k];
 		int i = std::get<0>(t);
@@ -367,17 +368,17 @@ int ttk::BottleneckDistance::computeAuction(
 		dataType cost = std::get<2>(t);
 		matchings->push_back(std::make_tuple(D1Max_idx[i], D2Max_idx[j], cost));
 	}
-	
+
 	for(int k=0; k < (int) sadMatchings.size(); k++){
 		matchingTuple t = sadMatchings[k];
 		int i = std::get<0>(t);
 		int j = std::get<1>(t);
 		dataType cost = std::get<2>(t);
 		matchings->push_back(std::make_tuple(D1Sad_idx[i], D2Sad_idx[j], cost));
-		
+
 	}
-	
-	
+
+
 	*distance = pow(d, (1.0 / (double) wasserstein));
 	distance_ = (void*)(distance);
 	return 0;

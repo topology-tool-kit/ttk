@@ -3,23 +3,23 @@
 /// \author Michael Michaux <michauxmichael89@gmail.com>
 /// \date August 2016.
 ///
-/// \brief TTK VTK-filter that takes an input ensemble data set 
-/// (represented by a list of scalar fields) and which computes various 
+/// \brief TTK VTK-filter that takes an input ensemble data set
+/// (represented by a list of scalar fields) and which computes various
 /// vertexwise statistics (PDF estimation, bounds, moments, etc.)
 ///
-/// \param Input0 Input ensemble scalar field #0 (vtkDataSet) 
-/// \param Input1 Input ensemble scalar field #1 (vtkDataSet)\n 
+/// \param Input0 Input ensemble scalar field #0 (vtkDataSet)
+/// \param Input1 Input ensemble scalar field #1 (vtkDataSet)\n
 /// ...\n
 /// \param InputN Input ensemble scalar field #N (vtkDataSet)
 /// \param Output0 Lower and upper bound fields (vtkDataSet)
-/// \param Output1 Histogram estimations of the vertex probability density 
+/// \param Output1 Histogram estimations of the vertex probability density
 /// functions (vtkDataSet)
 /// \param Output2 Mean field (vtkDataSet)
 ///
-/// This filter can be used as any other VTK filter (for instance, by using the 
+/// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
-/// See the corresponding ParaView state file example for a usage example 
+/// See the corresponding ParaView state file example for a usage example
 /// within a VTK pipeline.
 ///
 /// \sa vtkMandatoryCriticalPoints
@@ -101,33 +101,38 @@ class ttkPersistenceDiagramsBarycenter
 
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
-	
+
 	vtkSetMacro(WassersteinMetric, std::string);
     vtkGetMacro(WassersteinMetric, std::string);
-	
+
 	vtkSetMacro(UseProgressive, int);
     vtkGetMacro(UseProgressive, int);
 
     vtkSetMacro(TimeLimit, double);
     vtkGetMacro(TimeLimit, double);
-	
+
 	vtkSetMacro(UseOutputMatching, int);
     vtkGetMacro(UseOutputMatching, int);
-	
+
 	vtkSetMacro(ReinitPrices, int);
     vtkGetMacro(ReinitPrices, int);
-	
+
 	vtkSetMacro(EpsilonDecreases, int);
     vtkGetMacro(EpsilonDecreases, int);
-	
+
 	vtkSetMacro(EarlyStoppage, int);
     vtkGetMacro(EarlyStoppage, int);
-	
+
 	vtkSetMacro(ThreadNumber, int);
     vtkGetMacro(ThreadNumber, int);
-	
+
 	vtkSetMacro(Alpha, double);
     vtkGetMacro(Alpha, double);
+
+    vtkSetMacro(Method, int);
+    vtkGetMacro(Method, int);
+    vtkSetMacro(Deterministic, bool);
+    vtkGetMacro(Deterministic, bool);
 
 
 
@@ -136,28 +141,28 @@ class ttkPersistenceDiagramsBarycenter
     ttkPersistenceDiagramsBarycenter();
 
     ~ttkPersistenceDiagramsBarycenter();
-	
+
 	template <typename dataType>
     int getPersistenceDiagram(
       std::vector<diagramTuple>* diagram,
       vtkUnstructuredGrid *CTPersistenceDiagram_,
       const double spacing,
       const int diagramNumber);
-	
+
 	template<typename dataType>
 	vtkSmartPointer<vtkUnstructuredGrid> createPersistenceDiagram(
     const std::vector<diagramTuple>* diagram);
-	
+
 	template<typename dataType>
 	vtkSmartPointer<vtkUnstructuredGrid> createOutputDiagrams(
     std::vector<std::vector<diagramTuple>> &all_CTDiagrams);
-	
+
 	template<typename dataType>
 	vtkSmartPointer<vtkUnstructuredGrid> createMatchings(
-		const std::vector<std::vector<matchingTuple>> *matchings, 
-    const std::vector<diagramTuple>* barycenter, 
+		const std::vector<std::vector<matchingTuple>> *matchings,
+    const std::vector<diagramTuple>* barycenter,
     std::vector<std::vector<diagramTuple>> &all_CTDiagrams);
-	
+
 	int FillInputPortInformation(int port, vtkInformation *info);
     int FillOutputPortInformation(int port, vtkInformation *info);
 
@@ -166,17 +171,18 @@ class ttkPersistenceDiagramsBarycenter
 
 
   private:
-
+    bool                  Deterministic;
     bool                  UseAllCores;
     int                   ThreadNumber;
+    int                   Method;
 	bool                  UseOutputMatching;
 	double                Alpha;
     std::string                ScalarField;
 	std::string                WassersteinMetric;
-	
+
 	bool	              UseProgressive;
 	double	              TimeLimit;
-	
+
 	bool ReinitPrices;
 	bool EarlyStoppage;
 	bool EpsilonDecreases;
@@ -230,7 +236,7 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
       GetPointData()->GetArray("Death"));
 
   vtkPoints* points = (CTPersistenceDiagram_->GetPoints());
-  auto pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
+  int pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
   auto s = (float) 0.0;
 
   if (!deathScalars != !birthScalars) return -2;
@@ -313,25 +319,25 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
 template <typename dataType>
 vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPersistenceDiagram(
     const std::vector<diagramTuple>* diagram)
-{	
+{
 	printf("Creating vtk Diagram");
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
 	vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
 		vtkSmartPointer<vtkUnstructuredGrid>::New();
-		
+
 	vtkSmartPointer<vtkIntArray> nodeType =
 		vtkSmartPointer<vtkIntArray>::New();
 	nodeType->SetName("nodeType");
-		
+
 	vtkSmartPointer<vtkDoubleArray> persistenceScalars =
 		vtkSmartPointer<vtkDoubleArray>::New();
 	persistenceScalars->SetName("Persistence");
-	
+
 	vtkSmartPointer<vtkIntArray> pairType =
 		vtkSmartPointer<vtkIntArray>::New();
 	pairType->SetName("pairType");
-	
+
 	vtkSmartPointer<vtkFloatArray> coordsScalars=
 		vtkSmartPointer<vtkFloatArray>::New();
 	coordsScalars->SetNumberOfComponents(3);
@@ -343,22 +349,22 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 		double x1 = std::get<6>(t);
 		double y1 = x1;
 		double z1 = 0;
-		
+
 		float coords1[3];
 		coords1[0] = std::get<7>(t);
 		coords1[1] = std::get<8>(t);
 		coords1[2] = std::get<9>(t);
-		
+
 		double x2 = std::get<6>(t);
 		double y2 = std::get<10>(t);
 		double z2 = 0;
-		
+
 		float coords2[3];
 		coords2[0] = std::get<11>(t);
 		coords2[1] = std::get<12>(t);
 		coords2[2] = std::get<13>(t);
-		
-		
+
+
 		points->InsertNextPoint(x1, y1, z1);
 		coordsScalars->InsertTuple3(2*i, coords1[0], coords1[1], coords1[2]);
 		const ttk::ftm::NodeType n1Type = std::get<1>(t);
@@ -370,7 +376,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 			case BSaddle1:
 				nodeType->InsertTuple1(2*i, 1);
 				break;
-				
+
 			case BSaddle2:
 				nodeType->InsertTuple1(2*i, 2);
 				break;
@@ -383,7 +389,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 		}
 		points->InsertNextPoint(x2, y2, z2);
 		coordsScalars->InsertTuple3(2*i+1, coords2[0], coords2[1], coords2[2]);
-		
+
 		const ttk::ftm::NodeType n2Type = std::get<3>(t);
 		switch (n2Type) {
 			case BLocalMin:
@@ -393,7 +399,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 			case BSaddle1:
 				nodeType->InsertTuple1(2*i+1, 1);
 				break;
-				
+
 			case BSaddle2:
 				nodeType->InsertTuple1(2*i+1, 2);
 				break;
@@ -404,10 +410,10 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 		default :
 			nodeType->InsertTuple1(2*i+1, 0);
 		}
-		
+
 		ids[0] = 2*i;
 		ids[1] = 2*i+1;
-		
+
 		persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
 		persistenceScalars->InsertTuple1(i, y2-x2);
 		const ttk::ftm::idVertex type = std::get<5>(t);
@@ -427,7 +433,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 				pairType->InsertTuple1(i, 0);
 		}
 	}
-    
+
 	persistenceDiagram->SetPoints(points);
 	persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
 	persistenceDiagram->GetCellData()->AddArray(pairType);
@@ -445,44 +451,44 @@ vtkSmartPointer<vtkUnstructuredGrid>
 {
 	printf("Creating vtk Outputs");
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-	
+
 	vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
 		vtkSmartPointer<vtkUnstructuredGrid>::New();
-		
+
 	vtkSmartPointer<vtkIntArray> nodeType =
 		vtkSmartPointer<vtkIntArray>::New();
 	nodeType->SetName("nodeType");
-		
+
 	vtkSmartPointer<vtkDoubleArray> persistenceScalars =
 		vtkSmartPointer<vtkDoubleArray>::New();
 	persistenceScalars->SetName("Persistence");
-	
+
 	vtkSmartPointer<vtkIntArray> idOfPair =
 		vtkSmartPointer<vtkIntArray>::New();
 	idOfPair->SetName("ID of Pair");
-	
+
 	vtkSmartPointer<vtkDoubleArray> persistenceScalarsPoint =
 		vtkSmartPointer<vtkDoubleArray>::New();
 	persistenceScalarsPoint->SetName("Persistence");
-	
+
 	vtkSmartPointer<vtkIntArray> idOfDiagramPoint =
 		vtkSmartPointer<vtkIntArray>::New();
-	idOfDiagramPoint->SetName("ID of Diagram");	
-	
+	idOfDiagramPoint->SetName("ID of Diagram");
+
 	vtkSmartPointer<vtkIntArray> pairType =
 		vtkSmartPointer<vtkIntArray>::New();
 	pairType->SetName("pairType");
-	
+
 	vtkSmartPointer<vtkFloatArray> coordsScalars=
 		vtkSmartPointer<vtkFloatArray>::New();
 	coordsScalars->SetNumberOfComponents(3);
 	coordsScalars->SetName("Coordinates");
-	
-	
+
+
 	int count = 0;
 	for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j){
 		std::vector<diagramTuple> *diagram = &(all_CTDiagrams[j]);
-		
+
 		// First, add diagram points to the global input diagram
 		for (unsigned int i = 0; i < diagram->size(); ++i) {
 			vtkIdType ids[2];
@@ -490,23 +496,23 @@ vtkSmartPointer<vtkUnstructuredGrid>
 			double x1 = std::get<6>(t);
 			double y1 = x1;
 			double z1 = 1;  // Change 1 to j if you want to isolate the diagrams
-			
+
 			float coords1[3];
 			coords1[0] = std::get<7>(t);
 			coords1[1] = std::get<8>(t);
 			coords1[2] = std::get<9>(t);
-			
+
 			double x2 = std::get<6>(t);
 			double y2 = std::get<10>(t);
-			double z2 = 1;  // Change 1 to j if you want to isolate the 
-			
+			double z2 = 1;  // Change 1 to j if you want to isolate the
+
 			float coords2[3];
 			coords2[0] = std::get<11>(t);
 			coords2[1] = std::get<12>(t);
 			coords2[2] = std::get<13>(t);
-			
+
 			idOfPair->InsertTuple1(count, i);
-			
+
 			points->InsertNextPoint(x1, y1, z1);
 			coordsScalars->InsertTuple3(2*count, coords1[0], coords1[1], coords1[2]);
 			idOfDiagramPoint->InsertTuple1(2*count, j);
@@ -519,7 +525,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 				case BSaddle1:
 					nodeType->InsertTuple1(2*count, 1);
 					break;
-					
+
 				case BSaddle2:
 					nodeType->InsertTuple1(2*count, 2);
 					break;
@@ -530,7 +536,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 				default:
 					nodeType->InsertTuple1(2*count, 0);
 			}
-			
+
 			points->InsertNextPoint(x2, y2, z2);
 			coordsScalars->InsertTuple3(2*count+1, coords2[0], coords2[1], coords2[2]);
 			idOfDiagramPoint->InsertTuple1(2*count+1, j);
@@ -543,7 +549,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 				case BSaddle1:
 					nodeType->InsertTuple1(2*count+1, 1);
 					break;
-					
+
 				case BSaddle2:
 					nodeType->InsertTuple1(2*count+1, 2);
 					break;
@@ -554,10 +560,10 @@ vtkSmartPointer<vtkUnstructuredGrid>
 				default:
 					nodeType->InsertTuple1(2*count+1, 0);
 			}
-			
+
 			ids[0] = 2*count;
 			ids[1] = 2*count+1;
-			
+
 			persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
 			persistenceScalars->InsertTuple1(count, y2-x2);
 			persistenceScalarsPoint->InsertTuple1(2*count, y2-x2);
@@ -579,9 +585,9 @@ vtkSmartPointer<vtkUnstructuredGrid>
 					pairType->InsertTuple1(count, 0);
 			}
 			count++;
-		}		
+		}
 	}
-	
+
 	persistenceDiagram->SetPoints(points);
 	persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
 	persistenceDiagram->GetCellData()->AddArray(pairType);
@@ -590,66 +596,66 @@ vtkSmartPointer<vtkUnstructuredGrid>
 	persistenceDiagram->GetPointData()->AddArray(coordsScalars);
 	persistenceDiagram->GetPointData()->AddArray(idOfDiagramPoint);
 	persistenceDiagram->GetPointData()->AddArray(persistenceScalarsPoint);
-	
+
 
   return persistenceDiagram;
 }
 
 
 template <typename dataType>
-vtkSmartPointer<vtkUnstructuredGrid> 
+vtkSmartPointer<vtkUnstructuredGrid>
   ttkPersistenceDiagramsBarycenter::createMatchings(
-    const std::vector<std::vector<matchingTuple>> *matchings, 
-    const std::vector<diagramTuple>* barycenter, 
+    const std::vector<std::vector<matchingTuple>> *matchings,
+    const std::vector<diagramTuple>* barycenter,
     std::vector<std::vector<diagramTuple>> &all_CTDiagrams)
-{	
+{
 	printf("Creating vtk Matching");
 	vtkSmartPointer<vtkPoints> matchingPoints = vtkSmartPointer<vtkPoints>::New();
-	
+
 	vtkSmartPointer<vtkUnstructuredGrid> matchingMesh =
 		vtkSmartPointer<vtkUnstructuredGrid>::New();
-		
+
 	vtkSmartPointer<vtkIntArray> idOfDiagramMatchingPoint =
 		vtkSmartPointer<vtkIntArray>::New();
 	idOfDiagramMatchingPoint->SetName("ID of Diagram");
-	
+
 	vtkSmartPointer<vtkIntArray> idOfPoint =
 		vtkSmartPointer<vtkIntArray>::New();
 	idOfPoint->SetName("ID of Point");
-	
+
 	vtkSmartPointer<vtkIntArray> idOfDiagramMatching =
 		vtkSmartPointer<vtkIntArray>::New();
 	idOfDiagramMatching->SetName("ID of Diagram");
-	
+
 	vtkSmartPointer<vtkDoubleArray> cost =
 		vtkSmartPointer<vtkDoubleArray>::New();
 	cost->SetName("Cost");
-	
+
 	int count=0;
 	for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j){
 		std::vector<diagramTuple> *diagram = &(all_CTDiagrams[j]);
 		std::vector<matchingTuple> matchings_j = matchings->at(j);
 
-		
+
 		for(unsigned int i = 0; i < matchings_j.size(); ++i) {
 			vtkIdType ids[2];
 			ids[0] = 2*count;
 			ids[1] = 2*count+1;
-			
+
 			matchingTuple m = matchings_j[i];
 			int bidder_id = std::get<0>(m);
 			int good_id = std::get<1>(m);
-			
+
 			diagramTuple t1 = barycenter->at(good_id);
 			double x1 = std::get<6>(t1);
 			double y1 = std::get<10>(t1);
 			double z1 = 0;
-			
+
 			diagramTuple t2 = diagram->at(bidder_id);
 			double x2 = std::get<6>(t2);
 			double y2 = std::get<10>(t2);
 			double z2 = 1;  // Change 1 to j if you want to isolate the diagrams
-			
+
 			if(y2>x2){
 				matchingPoints->InsertNextPoint(x1, y1, z1);
 				matchingPoints->InsertNextPoint(x2, y2, z2);
@@ -660,13 +666,13 @@ vtkSmartPointer<vtkUnstructuredGrid>
 				idOfDiagramMatchingPoint->InsertTuple1(2*count+1, j);
 				idOfPoint->InsertTuple1(2*count+1, good_id);
 				idOfPoint->InsertTuple1(2*count+1, bidder_id);
-				
+
 				count++;
 			}
 		}
-		
+
 	}
-	
+
 	matchingMesh->SetPoints(matchingPoints);
 	matchingMesh->GetPointData()->AddArray(idOfDiagramMatchingPoint);
 	matchingMesh->GetPointData()->AddArray(idOfPoint);

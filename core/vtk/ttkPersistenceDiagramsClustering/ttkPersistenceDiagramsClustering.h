@@ -3,23 +3,23 @@
 /// \author Michael Michaux <michauxmichael89@gmail.com>
 /// \date August 2016.
 ///
-/// \brief TTK VTK-filter that takes an input ensemble data set 
-/// (represented by a list of scalar fields) and which computes various 
+/// \brief TTK VTK-filter that takes an input ensemble data set
+/// (represented by a list of scalar fields) and which computes various
 /// vertexwise statistics (PDF estimation, bounds, moments, etc.)
 ///
-/// \param Input0 Input ensemble scalar field #0 (vtkDataSet) 
-/// \param Input1 Input ensemble scalar field #1 (vtkDataSet)\n 
+/// \param Input0 Input ensemble scalar field #0 (vtkDataSet)
+/// \param Input1 Input ensemble scalar field #1 (vtkDataSet)\n
 /// ...\n
 /// \param InputN Input ensemble scalar field #N (vtkDataSet)
 /// \param Output0 Lower and upper bound fields (vtkDataSet)
-/// \param Output1 Histogram estimations of the vertex probability density 
+/// \param Output1 Histogram estimations of the vertex probability density
 /// functions (vtkDataSet)
 /// \param Output2 Mean field (vtkDataSet)
 ///
-/// This filter can be used as any other VTK filter (for instance, by using the 
+/// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
-/// See the corresponding ParaView state file example for a usage example 
+/// See the corresponding ParaView state file example for a usage example
 /// within a VTK pipeline.
 ///
 /// \sa vtkMandatoryCriticalPoints
@@ -101,48 +101,50 @@ class ttkPersistenceDiagramsClustering
 
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
-	
+
 	vtkSetMacro(WassersteinMetric, std::string);
     vtkGetMacro(WassersteinMetric, std::string);
-	
+
 	vtkSetMacro(UseProgressive, int);
     vtkGetMacro(UseProgressive, int);
 
     vtkSetMacro(TimeLimit, double);
     vtkGetMacro(TimeLimit, double);
-	
+
 	vtkSetMacro(UseOutputMatching, int);
     vtkGetMacro(UseOutputMatching, int);
-	
+
 	vtkSetMacro(ThreadNumber, int);
     vtkGetMacro(ThreadNumber, int);
-	
+
 	vtkSetMacro(Alpha, double);
     vtkGetMacro(Alpha, double);
 
 	vtkSetMacro(NumberOfClusters, int);
 	vtkGetMacro(NumberOfClusters, int);
-	
+
 	vtkSetMacro(UseAccelerated, bool);
 	vtkGetMacro(UseAccelerated, bool);
-	
+
 	vtkSetMacro(UseKmeansppInit, bool);
 	vtkGetMacro(UseKmeansppInit, bool);
 
+  vtkSetMacro(Deterministic, bool);
+  vtkGetMacro(Deterministic, bool);
 
   protected:
 
     ttkPersistenceDiagramsClustering();
 
     ~ttkPersistenceDiagramsClustering();
-	
+
 	template <typename dataType>
     int getPersistenceDiagram(
       std::vector<diagramTuple>* diagram,
       vtkUnstructuredGrid *CTPersistenceDiagram_,
       const double spacing,
       const int diagramNumber);
-	
+
 	int FillInputPortInformation(int port, vtkInformation *info);
     int FillOutputPortInformation(int port, vtkInformation *info);
 
@@ -151,19 +153,19 @@ class ttkPersistenceDiagramsClustering
 
 
   private:
-
+    bool                  Deterministic;
     bool                  UseAllCores;
     int                   ThreadNumber;
 	bool                  UseOutputMatching;
 	double                Alpha;
-	
+
 	int 				  NumberOfClusters;
 	bool 				  UseAccelerated;
 	bool 				  UseKmeansppInit;
-	
+
     std::string                ScalarField;
 	std::string                WassersteinMetric;
-	
+
 	bool	              UseProgressive;
 	double	              TimeLimit;
 

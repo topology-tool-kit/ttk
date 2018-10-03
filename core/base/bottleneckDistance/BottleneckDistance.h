@@ -1,12 +1,12 @@
 /// \ingroup base
-/// \class ttk::BottleneckDistance 
+/// \class ttk::BottleneckDistance
 /// \author Maxime Soler <soler.maxime@total.com>
 /// \date The Date Here.
 ///
 /// \brief TTK %bottleneckDistance processing package.
 ///
-/// %BottleneckDistance is a TTK processing package that 
-/// takes a scalar field on the input 
+/// %BottleneckDistance is a TTK processing package that
+/// takes a scalar field on the input
 /// and produces a scalar field on the output.
 ///
 /// \sa ttk::Triangulation
@@ -45,9 +45,9 @@ namespace ttk {
   class BottleneckDistance : public Debug {
 
     public:
-        
+
       BottleneckDistance():wasserstein_("inf") {};
-      
+
       ~BottleneckDistance() {};
 
       template <typename dataType>
@@ -72,22 +72,22 @@ namespace ttk {
         wasserstein_ = wasserstein;
         return 0;
       }
-      
+
       inline int setPersistencePercentage(double persistence_percentage) {
         persistence_percentage_ = persistence_percentage;
         return 0;
       }
-      
+
       inline int setUseKDTree(int use_kdtree){
 		  use_kdtree_ = (use_kdtree>0);
 		  return 0;
 	  }
-      
+
       inline int setDelta_lim(double delta_lim){
 		  delta_lim_ = delta_lim;
 		  return 0;
 	  }
-     
+
       inline int setMethod(const int &method){
 		  if(method==1){
 			  method_="Munkres";
@@ -112,21 +112,21 @@ namespace ttk {
       static type abs_diff(const type var1, const type var2) {
         return (var1 > var2) ? var1 - var2 : var2 - var1;
       }
-    
+
     protected:
-    
+
       void                      *outputCT1_;
       void                      *outputCT2_;
       void                      *matchings_; // ids from CT1 to CT2
       void                      *distance_;
-	  
+
 	  double						 delta_lim_;
 	  double						 persistence_percentage_;
 	  bool 							 use_kdtree_;
 
       std::string                    wasserstein_;
       std::string                    method_;
-    
+
   private:
 
     template <typename dataType>

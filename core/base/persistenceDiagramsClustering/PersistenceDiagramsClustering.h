@@ -3,8 +3,8 @@
 /// \author Michael Michaux <michauxmichael89@gmail.com>
 /// \date August 2016.
 ///
-/// \brief TTK processing package that takes an input ensemble data set 
-/// (represented by a list of scalar fields) and which computes various 
+/// \brief TTK processing package that takes an input ensemble data set
+/// (represented by a list of scalar fields) and which computes various
 /// vertexwise statistics (PDF estimation, bounds, moments, etc.)
 ///
 /// \sa ttkPersistenceDiagramsClustering.cpp %for a usage example.
@@ -60,7 +60,7 @@ namespace ttk{
 		~PersistenceDiagramsClustering(){};
 
 
-		std::vector<std::vector<matchingTuple> > 
+		std::vector<std::vector<matchingTuple> >
 		execute(std::vector<diagramTuple>* barycenter);
 
 		inline int setDiagrams(void *data){
@@ -78,39 +78,42 @@ namespace ttk{
 // 			}
 			return 0;
 		}
-		
+
 		inline void setWasserstein(const std::string &wasserstein){
 			wasserstein_ = (wasserstein == "inf") ? -1 : stoi(wasserstein);
 		}
-		
+
 		inline void setThreadNumber(const int &ThreadNumber){
 			threadNumber_ = ThreadNumber;
 		}
-		
+
 		inline void setUseProgressive(const bool use_progressive){
 			use_progressive_ = use_progressive;
 		}
-		
+
 		inline void setAlpha(const double alpha){
 			alpha_ = alpha;
 		}
-		
+
 		inline void setTimeLimit(const double time_limit){
 			time_limit_ = time_limit;
 		}
-		
+
 		inline void setUseKmeansppInit(const bool UseKmeansppInit){
 			use_kmeanspp_ = UseKmeansppInit;
 		}
-		
+
 		inline void setUseAccelerated(const bool UseAccelerated){
 			use_accelerated_ = UseAccelerated;
 		}
-		
+
 		inline void setNumberOfClusters(const int NumberOfClusters){
 			n_clusters_ = NumberOfClusters;
 		}
-		
+    inline void setDeterministic(const bool deterministic){
+			deterministic_ = deterministic;
+		}
+
 		template<typename type>
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;
@@ -119,9 +122,10 @@ namespace ttk{
 
 
     protected:
+      bool        deterministic_;
 	  int 					wasserstein_;
 	  int 					n_clusters_;
-	  
+
       int                   numberOfInputs_;
       void*                 inputData_; //TODO : std::vector<void*>
       int 					threadNumber_;
@@ -130,51 +134,51 @@ namespace ttk{
 	  bool                  use_kmeanspp_;
 	  double                alpha_;
 	  double                time_limit_;
-      
+
       int points_added_;
 	  int points_deleted_;
-      
+
       std::vector<std::vector<dataType>>      all_matchings_;
  	  std::vector<std::vector<dataType>>      all_old_matchings_;
       std::vector<BidderDiagram<dataType>>    bidder_diagrams_;
       std::vector<GoodDiagram<dataType>>	  barycenter_goods_;
   };
-  
-  
-template <typename dataType> 
-  std::vector<std::vector<matchingTuple>> 
+
+
+template <typename dataType>
+  std::vector<std::vector<matchingTuple>>
     PersistenceDiagramsClustering<dataType>::execute(
       std::vector<diagramTuple>* barycenter){
-	
+
 	std::cout<< "Launching execute..." << std::endl;
 	Timer t;
-	{    
+	{
 	std::vector<std::vector<diagramTuple> > *intermediateDiagrams = (std::vector<std::vector<diagramTuple> > *) inputData_;
 	std::cout<< "Number of diagrams : " <<  numberOfInputs_ << std::endl;
 	std::vector<std::vector<diagramTuple> > data_min(numberOfInputs_);
 	std::vector<std::vector<diagramTuple> > data_sad(numberOfInputs_);
 	std::vector<std::vector<diagramTuple> > data_max(numberOfInputs_);
-	
+
 	std::vector<std::vector<int>> data_min_idx(numberOfInputs_);
 	std::vector<std::vector<int>> data_sad_idx(numberOfInputs_);
 	std::vector<std::vector<int>> data_max_idx(numberOfInputs_);
-	
+
 	std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
-	
+
 	bool do_min = false;
 	bool do_sad = false;
 	bool do_max = false;
-	
+
 	// Create diagrams for min, saddle and max persistence pairs
 	for(int i=0; i<numberOfInputs_; i++){
     std::vector<diagramTuple>* CTDiagram = &((*intermediateDiagrams)[i]);
-		
+
 		for(int j=0; j<(int) CTDiagram->size(); ++j){
 			diagramTuple t = CTDiagram->at(j);
-			
+
 			BNodeType nt1 = std::get<1>(t);
 			BNodeType nt2 = std::get<3>(t);
-			
+
 			dataType dt = std::get<4>(t);
 			//if (abs<dataType>(dt) < zeroThresh) continue;
 			if(dt>0){
@@ -204,7 +208,7 @@ template <typename dataType>
 			}
 		}
 	}
-	
+
 	PDClustering<dataType> KMeans = PDClustering<dataType>();
 	KMeans.setWasserstein(wasserstein_);
 	KMeans.setThreadNumber(threadNumber_);
@@ -216,13 +220,13 @@ template <typename dataType>
 	KMeans.setGeometricalFactor(alpha_);
 	KMeans.setKMeanspp(use_kmeanspp_);
 	KMeans.setK(n_clusters_);
-	
+
 	KMeans.setDiagrams(&data_min, &data_sad, &data_max);
 	KMeans.setDos(do_min, do_sad, do_max);
 	KMeans.execute();
-	
-	
-	
+
+
+
 	std::stringstream msg;
 	msg << "[PersistenceDiagramsClustering] processed in "
 		<< t.getElapsedTime() << " s. (" << threadNumber_
@@ -231,9 +235,9 @@ template <typename dataType>
 	dMsg(std::cout, msg.str(), timeMsg);
 	return all_matchings;
 	}
-	
-}
 
 }
 
-#endif 
+}
+
+#endif
