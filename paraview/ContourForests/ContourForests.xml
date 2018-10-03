@@ -102,6 +102,12 @@
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Input offset field (used to disambiguate flat plateaus).
         </Documentation>

@@ -126,6 +126,12 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
             <Property name="Domain" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the input offset field (to disambiguate flat plateaus).
         </Documentation>
@@ -158,6 +164,12 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
             <Property name="Constraints" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputVertexScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the vertex identifier scalar field in the sources.
         </Documentation>

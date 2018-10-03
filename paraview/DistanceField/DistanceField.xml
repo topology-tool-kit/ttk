@@ -83,6 +83,12 @@ Edsger W. Dijkstra, Numerische Mathematik, 1959.
             <Property name="Sources" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputVertexScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the vertex identifier scalar field in the sources.
         </Documentation>

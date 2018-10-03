@@ -104,6 +104,12 @@
                         <Property name="Input" function="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
+                <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                    mode="visibility"
+                    property="ForceInputOffsetScalarField"
+                    value="1" />
+                </Hints>
                 <Documentation>
                     Select the input offset scalar field to process.
                 </Documentation>

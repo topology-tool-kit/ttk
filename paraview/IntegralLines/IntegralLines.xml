@@ -122,6 +122,12 @@ sources if necessary to create such an identifier field).
             <Property name="Seeds" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputVertexScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the vertex identifier scalar field in the sources.
         </Documentation>
@@ -158,6 +164,12 @@ sources if necessary to create such an identifier field).
             <Property name="Domain" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the input offset field (to disambiguate flat 
 plateaus).

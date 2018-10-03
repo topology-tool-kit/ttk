@@ -97,6 +97,12 @@
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputMaskScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Input mask field (used to mark vertices to smooth).
         </Documentation>
