@@ -78,8 +78,8 @@ class ttkImportEmbeddingFromTable
     vtkSetMacro(ZColumn, std::string);
     vtkGetMacro(ZColumn, std::string);
 
-    vtkSetMacro(Embedding2D, int);
-    vtkGetMacro(Embedding2D, int);
+    vtkSetMacro(Embedding2D, bool);
+    vtkGetMacro(Embedding2D, bool);
 
     int FillInputPortInformation(int port, vtkInformation *info){
       if(port == 0)

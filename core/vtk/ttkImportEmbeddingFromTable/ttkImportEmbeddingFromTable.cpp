@@ -1,5 +1,6 @@
 #include <ttkImportEmbeddingFromTable.h>
 #include <regex>
+#include <iso646.h>
 
 using namespace std;
 using namespace ttk;
@@ -43,7 +44,7 @@ int ttkImportEmbeddingFromTable::doIt(vtkPointSet* inputDataSet,
   vtkAbstractArray* zarr=ZColumn.empty()?nullptr:inputTable->GetColumnByName(ZColumn.data());
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!xarr or !yarr or !zarr){
+  if(xarr!=nullptr or yarr!=nullptr or zarr!=nullptr){
     cerr << "[ttkImportEmbeddingFromTable] Error: invalid input columns." << endl;
     return -1;
   }
