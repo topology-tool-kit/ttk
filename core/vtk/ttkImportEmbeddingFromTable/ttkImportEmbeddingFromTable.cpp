@@ -44,7 +44,7 @@ int ttkImportEmbeddingFromTable::doIt(vtkPointSet* inputDataSet,
   vtkAbstractArray* zarr=ZColumn.empty()?nullptr:inputTable->GetColumnByName(ZColumn.data());
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(xarr!=nullptr or yarr!=nullptr or zarr!=nullptr){
+  if(xarr==nullptr or yarr==nullptr or zarr==nullptr){
     cerr << "[ttkImportEmbeddingFromTable] Error: invalid input columns." << endl;
     return -1;
   }
