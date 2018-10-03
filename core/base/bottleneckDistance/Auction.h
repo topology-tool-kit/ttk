@@ -6,12 +6,12 @@
 #define _AUCTION_H
 
 #ifndef matchingTuple
-#define matchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, dataType>
+#define matchingTuple std::tuple<ttk::SimplexId, ttk::SimplexId, dataType>
 #endif
 
 #ifndef diagramTuple
-#define diagramTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, ttk::ftm::idVertex, \
-  ttk::ftm::NodeType, dataType, ttk::ftm::idVertex, \
+#define diagramTuple std::tuple<ttk::SimplexId, ttk::ftm::NodeType, ttk::SimplexId, \
+  ttk::ftm::NodeType, dataType, ttk::SimplexId, \
   dataType, float, float, float, dataType, float, float, float>
 #endif
 
@@ -25,7 +25,7 @@
 #include <KDTree.h>
 #include <queue>
 #include <unordered_map>
-#include <utility> 
+#include <utility>
 
 
 namespace ttk {
@@ -35,9 +35,9 @@ namespace ttk {
 								std::pair<int, dataType> const & b) const noexcept
     { return a.second > b.second;}
   };
-	
-	
-    
+
+
+
   template<typename dataType>
   class Auction : public Debug
   {
@@ -45,7 +45,7 @@ namespace ttk {
     public:
 		KDTree<dataType>* kdt_;
 		std::vector<KDTree<dataType>*> correspondance_kdt_map_;
-		
+
 		Auction(int wasserstein, double geometricalFactor, double delta_lim, bool use_kdTree=true) {
             n_bidders_ = 0;
             n_goods_ = 0;
@@ -59,17 +59,17 @@ namespace ttk {
 			bidders_ = new BidderDiagram<dataType>;
 			goods_ = new GoodDiagram<dataType>;
         };
-		
-		
+
+
 		Auction(BidderDiagram<dataType>* bidders, GoodDiagram<dataType>* goods, int wasserstein, double geometricalFactor, double delta_lim, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>& correspondance_kdt_map, dataType epsilon, dataType initial_diag_price, bool use_kdTree=true) {
 			delete_bidders_ = false;
 			bidders_ = bidders;
 			goods_ = goods;
 			diagonal_goods_ = new GoodDiagram<dataType>;
-			
+
             n_bidders_ = bidders->size();
             n_goods_ = goods->size();
-			
+
 			for(int i=0; i < n_bidders_; i++){
 				//Add diagonal goods
 				Bidder<dataType>& b = bidders_->get(i);
@@ -93,20 +93,20 @@ namespace ttk {
 				b.setPositionInAuction(bidders_->size());
 				bidders_->addBidder(b);
 			}
-			
+
 			epsilon_ = epsilon;
 			wasserstein_ = wasserstein;
 			delta_lim_ = delta_lim;
 			geometricalFactor_ = geometricalFactor;
-			
+
 			use_kdt_ = (use_kdTree && goods_->size()>0);
 			if(use_kdt_) {
 				kdt_ = kdt;
 				correspondance_kdt_map_ = correspondance_kdt_map;
 			}
         };
-		
-		
+
+
 		~Auction() {
 			delete diagonal_goods_;
 			if(delete_bidders_){
@@ -120,15 +120,15 @@ namespace ttk {
 		dataType run(std::vector<matchingTuple> *matchings);
 		dataType getMaximalPrice();
 
-		
+
 		void BuildAuctionDiagrams(BidderDiagram<dataType> *BD, GoodDiagram<dataType> *GD){
 			n_bidders_ = BD->size();
 			n_goods_ = GD->size();
-			
+
 			delete_bidders_ = false;
 			bidders_ = BD;
 			goods_ = GD;
-			
+
 			for(int i=0; i < n_bidders_; i++){
 				//Add diagonal goods
 				Bidder<dataType>& b = bidders_->get(i);
@@ -154,8 +154,8 @@ namespace ttk {
 				use_kdt_=false;
 			}
 		}
-		
-		
+
+
 		void BuildAuctionDiagrams(std::vector<diagramTuple> diagram1, std::vector<diagramTuple> diagram2){
 			n_bidders_ = diagram1.size();
 			n_goods_ = diagram2.size();
@@ -186,10 +186,10 @@ namespace ttk {
 				use_kdt_=false;
 			}
 		}
-		
+
 		void setBidders(std::vector<diagramTuple> diagram1){
 			int d1Size = (int) diagram1.size();
-			
+
 			for(int i=0; i<d1Size; i++){
 				//Add bidder to bidders
 				Bidder<dataType> b = Bidder<dataType>(diagram1[i], i);
@@ -201,16 +201,16 @@ namespace ttk {
 
 		void setGoods(std::vector<diagramTuple> diagram2){
 			int d2Size = (int) diagram2.size();
-			
+
 			for(int i=0; i<d2Size; i++){
 				//Add bidder to bidders
 				Good<dataType> g = Good<dataType>(diagram2[i], i);
 				goods_->addGood(g);
-			}	
+			}
 			n_goods_ = goods_->size();
 		}
-		
-		
+
+
 		void buildKDTree(){
 			Timer t;
 			kdt_ = new KDTree<dataType>(true, wasserstein_);
@@ -228,11 +228,11 @@ namespace ttk {
 			}
 			correspondance_kdt_map_ = kdt_->build(coordinates.data(), goods_->size(), dimension);
 		}
-		
+
 		void setEpsilon(dataType epsilon){
 			epsilon_ = epsilon;
 		}
-		
+
 		void initializeEpsilon(){
 			dataType max_persistence = 0;
 			for(int i=0; i<bidders_->size(); i++){
@@ -242,7 +242,7 @@ namespace ttk {
 					max_persistence = persistence;
 				}
 			}
-			
+
 			for(int i=0; i<goods_->size(); i++){
 				Good<dataType>& g = goods_->get(i);
 				dataType persistence = g.getPersistence();
@@ -252,8 +252,8 @@ namespace ttk {
 			}
 			this->epsilon_ = 5/4 * pow(max_persistence, wasserstein_);
 		}
-		
-		
+
+
 		void buildUnassignedBidders(){
 			for(int i=0; i<bidders_->size(); i++){
 				Bidder<dataType>& b = bidders_->get(i);
@@ -261,8 +261,8 @@ namespace ttk {
 				unassignedBidders_.push_back(i);
 			}
 		}
-		
-		
+
+
 		void reinitializeGoods(){
 			for(int i=0; i<goods_->size(); i++){
 				Good<dataType>& g = goods_->get(i);
@@ -273,18 +273,18 @@ namespace ttk {
 				g.setOwner(-1);
 			}
 		}
-		
-		
+
+
 		dataType getMatchingDistance(){
 			dataType d = 0;
 			for(int i=0; i<bidders_->size(); i++){
 				Bidder<dataType>& b = bidders_->get(i);
-				d += b.cost(b.getProperty(), wasserstein_, geometricalFactor_); 
+				d += b.cost(b.getProperty(), wasserstein_, geometricalFactor_);
 			}
 			return d;
 		}
-		
-		
+
+
 		dataType getRelativePrecision(){
 			dataType d = this->getMatchingDistance();
 			if(d<1e-12){
@@ -298,14 +298,14 @@ namespace ttk {
 				return pow(d/denominator, 1/((float)wasserstein_)) - 1;
 			}
 		}
-		
+
 		void updateDiagonalPrices(){
 			for(int i =0; i< diagonal_goods_->size(); i++){
 				Bidder<dataType>& b = bidders_->get(i);
 				b.setDiagonalPrice(diagonal_goods_->get(i).getPrice());
 			}
 		}
-		
+
 		dataType getMinimalDiagonalPrice(){
 			if(diagonal_goods_->size()==0){
 				return 0;
@@ -319,17 +319,17 @@ namespace ttk {
 			}
 			return min_price;
 		}
-		
+
 		void setEpsilonconst (dataType epsilon){
 			epsilon_ = epsilon;
 		}
-		
-		
+
+
 		template<typename type>
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;
 		}
-	
+
     protected:
 		int wasserstein_;   // Power in Wassertsein distance (by default set to 2)
 		BidderDiagram<dataType>*  bidders_;
@@ -338,15 +338,15 @@ namespace ttk {
 		std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>> diagonal_queue_;
 		std::list<int> unassignedBidders_;
 		bool delete_bidders_;
-		
+
 		int n_bidders_;
 		int n_goods_;
-		
+
 		dataType epsilon_;
 		double delta_lim_;
 		double geometricalFactor_;
 		bool use_kdt_;
-		
+
 		//KDTree<dataType>* kdt_;
   };
 }
@@ -354,4 +354,3 @@ namespace ttk {
 #include <AuctionImpl.h>
 
 #endif
-

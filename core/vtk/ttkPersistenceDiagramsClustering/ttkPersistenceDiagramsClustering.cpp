@@ -1,13 +1,13 @@
 #include                  <ttkPersistenceDiagramsClustering.h>
 
 #ifndef macroDiagramTuple
-#define macroDiagramTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, ttk::ftm::idVertex, \
-  ttk::ftm::NodeType, VTK_TT, ttk::ftm::idVertex, \
+#define macroDiagramTuple std::tuple<ttk::SimplexId, ttk::ftm::NodeType, ttk::SimplexId, \
+  ttk::ftm::NodeType, VTK_TT, ttk::SimplexId, \
   VTK_TT, float, float, float, VTK_TT, float, float, float>
 #endif
 
 #ifndef macroMatchingTuple
-#define macroMatchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, VTK_TT>
+#define macroMatchingTuple std::tuple<ttk::SimplexId, ttk::SimplexId, VTK_TT>
 #endif
 
 using namespace std;
@@ -22,7 +22,7 @@ ttkPersistenceDiagramsClustering::ttkPersistenceDiagramsClustering(){
 
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(1);
-  
+
 }
 
 ttkPersistenceDiagramsClustering::~ttkPersistenceDiagramsClustering(){}
@@ -56,9 +56,9 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 		inputDiagram[i] = vtkUnstructuredGrid::SafeDownCast(input[i]);
 	}
   // Calling the executing package
-	
+
 	int dataType = inputDiagram[0]->GetCellData()->GetArray("Persistence")->GetDataType();
-	
+
 	// TODO If Windows, we need to get rid of one pair of parenthesis
 	switch(dataType){
 
@@ -66,7 +66,7 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 		{
 			PersistenceDiagramsClustering<VTK_TT> persistenceDiagramsClustering;
 			persistenceDiagramsClustering.setWrapper(this);
-			
+
 			string wassersteinMetric = WassersteinMetric;
 			persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
 
@@ -78,8 +78,8 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 			persistenceDiagramsClustering.setNumberOfClusters(NumberOfClusters);
 			persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
 			persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
-			
-			std::vector<std::vector<macroDiagramTuple> > 
+
+			std::vector<std::vector<macroDiagramTuple> >
 				intermediateDiagrams(numInputs);
 			for(int i = 0; i < numInputs; i++){
 				double Spacing = 0;
@@ -87,8 +87,8 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 				&(intermediateDiagrams[i]), inputDiagram[i], Spacing, 0);
 			}
 			persistenceDiagramsClustering.setDiagrams((void *) &intermediateDiagrams);
-		
-				
+
+
 			std::vector<macroDiagramTuple> barycenter;
 			std::vector<std::vector<macroMatchingTuple>> matchings = persistenceDiagramsClustering.execute(&barycenter);
 		}
@@ -121,7 +121,7 @@ int ttkPersistenceDiagramsClustering::FillOutputPortInformation(int port, vtkInf
 int ttkPersistenceDiagramsClustering::RequestData(vtkInformation *request,
   vtkInformationVector **inputVector, vtkInformationVector *outputVector){
   Memory m;
-  
+
   // Number of input files
   int numInputs = inputVector[0]->GetNumberOfInformationObjects();
   {

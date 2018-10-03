@@ -2,7 +2,7 @@
 #define _AUCTIONIMPL_H
 
 #ifndef matchingTuple
-#define matchingTuple std::tuple<ftm::idVertex, ftm::idVertex, dataType>
+#define matchingTuple std::tuple<SimplexId, SimplexId, dataType>
 #endif
 
 
@@ -20,7 +20,7 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_inde
 		int pos = unassignedBidders_.front();
 		Bidder<dataType>& b = bidders_->get(pos);
 		unassignedBidders_.pop_front();
-		
+
 		GoodDiagram<dataType>* all_goods = b.isDiagonal() ? diagonal_goods_ : goods_;
 		Good<dataType>& twin_good = b.id_>=0 ? diagonal_goods_->get(b.id_) : goods_->get(-b.id_-1);
 		//dataType eps = epsilon_*(1+0.05*n_biddings/bidders_->size());
@@ -66,7 +66,7 @@ dataType ttk::Auction<dataType>::getMaximalPrice()
 			max_price = price;
 		}
 	}
-	
+
 	for(int i=0; i<diagonal_goods_->size(); ++i){
 		Good<dataType>& g = diagonal_goods_->get(i);
 		dataType price = g.getPrice();
@@ -74,7 +74,7 @@ dataType ttk::Auction<dataType>::getMaximalPrice()
 			max_price = price;
 		}
 	}
-	
+
 	return max_price;
 }
 
@@ -88,7 +88,7 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(std::vector<matchingTup
 		if(!b.isDiagonal()){
 			int good_id = b.getProperty()->id_;
 			dataType cost;
-			
+
 			if(good_id>-1){
 				// good is not diagonal
 				cost = b.cost(b.getProperty(), wasserstein_, geometricalFactor_);
@@ -125,7 +125,7 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(std::vector<matchingTup
 
 template <typename dataType>
 dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
-{	
+{
 	initializeEpsilon();
 	int n_biddings = 0;
 	dataType delta = 5;

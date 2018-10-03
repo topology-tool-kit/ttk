@@ -15,8 +15,8 @@
 
 
 #ifndef diagramTuple
-#define diagramTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, ttk::ftm::idVertex, \
-  ttk::ftm::NodeType, dataType, ttk::ftm::idVertex, \
+#define diagramTuple std::tuple<ttk::SimplexId, ttk::ftm::NodeType, ttk::SimplexId, \
+  ttk::ftm::NodeType, dataType, ttk::SimplexId, \
   dataType, float, float, float, dataType, float, float, float>
 #endif
 
@@ -27,7 +27,7 @@
 #define BLocalMin ttk::ftm::NodeType::Local_minimum
 #define BSaddle1  ttk::ftm::NodeType::Saddle1
 #define BSaddle2  ttk::ftm::NodeType::Saddle2
-#define BIdVertex ttk::ftm::idVertex
+#define BIdVertex ttk::SimplexId
 #endif
 
 

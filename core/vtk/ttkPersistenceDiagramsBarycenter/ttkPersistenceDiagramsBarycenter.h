@@ -416,7 +416,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 
 		persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
 		persistenceScalars->InsertTuple1(i, y2-x2);
-		const ttk::ftm::idVertex type = std::get<5>(t);
+		const ttk::SimplexId type = std::get<5>(t);
 		switch (type) {
 			case 0:
 				pairType->InsertTuple1(i, 0);
@@ -568,7 +568,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 			persistenceScalars->InsertTuple1(count, y2-x2);
 			persistenceScalarsPoint->InsertTuple1(2*count, y2-x2);
 			persistenceScalarsPoint->InsertTuple1(2*count+1, y2-x2);
-			const ttk::ftm::idVertex type = std::get<5>(t);
+			const ttk::SimplexId type = std::get<5>(t);
 			switch (type) {
 				case 0:
 					pairType->InsertTuple1(count, 0);

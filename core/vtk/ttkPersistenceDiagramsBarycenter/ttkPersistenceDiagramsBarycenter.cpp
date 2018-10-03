@@ -1,13 +1,13 @@
 #include                  <ttkPersistenceDiagramsBarycenter.h>
 
 #ifndef macroDiagramTuple
-#define macroDiagramTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::NodeType, ttk::ftm::idVertex, \
-  ttk::ftm::NodeType, VTK_TT, ttk::ftm::idVertex, \
+#define macroDiagramTuple std::tuple<ttk::SimplexId, ttk::ftm::NodeType, ttk::SimplexId, \
+  ttk::ftm::NodeType, VTK_TT, ttk::SimplexId, \
   VTK_TT, float, float, float, VTK_TT, float, float, float>
 #endif
 
 #ifndef macroMatchingTuple
-#define macroMatchingTuple std::tuple<ttk::ftm::idVertex, ttk::ftm::idVertex, VTK_TT>
+#define macroMatchingTuple std::tuple<ttk::SimplexId, ttk::SimplexId, VTK_TT>
 #endif
 
 using namespace std;
