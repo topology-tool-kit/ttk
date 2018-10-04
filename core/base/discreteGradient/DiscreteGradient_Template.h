@@ -1024,9 +1024,9 @@ int DiscreteGradient::getRemovableMaxima(const std::vector<std::pair<SimplexId,c
   for(SimplexId i=0; i<numberOfCriticalPoints; ++i){
     const std::pair<SimplexId,char>& criticalPoint=criticalPoints[i];
     const SimplexId criticalPointId=criticalPoint.first;
-    const char criticalPoidType=criticalPoint.second;
+    const char criticalPointType=criticalPoint.second;
 
-    if(criticalPoidType==maximumDim){
+    if(criticalPointType==static_cast<char>(CriticalType::Local_maximum)){
       if(!allowBoundary and
          inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
@@ -1082,9 +1082,9 @@ int DiscreteGradient::getRemovableSaddles1(const std::vector<std::pair<SimplexId
   // is [edgeId] in star of PL-1saddle?
   for(auto& criticalPoint : criticalPoints){
     const SimplexId criticalPointId=criticalPoint.first;
-    const char criticalPoidType=criticalPoint.second;
+    const char criticalPointType=criticalPoint.second;
 
-    if(criticalPoidType==1){
+    if(criticalPointType==static_cast<char>(CriticalType::Saddle1)){
       if(!allowBoundary and
          inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
@@ -1141,9 +1141,9 @@ int DiscreteGradient::getRemovableSaddles2(const
   // is [triangleId] in star of PL-2saddle?
   for(auto& criticalPoint : criticalPoints){
     const SimplexId criticalPointId=criticalPoint.first;
-    const char criticalPoidType=criticalPoint.second;
+    const char criticalPointType=criticalPoint.second;
 
-    if(criticalPoidType==2){
+    if(criticalPointType==static_cast<char>(CriticalType::Saddle2)){
       if(!allowBoundary and
          inputTriangulation_->isVertexOnBoundary(criticalPointId)) continue;
 
@@ -1563,7 +1563,8 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
           else if(dimensionality_==3)
             inputTriangulation_->getTriangleVertex(dmt_saddleId, i, vertexId);
 
-          if(isPL[vertexId]!=saddleDim) continue;
+          if(isPL[vertexId]!=static_cast<char>(CriticalType::Saddle1) and dimensionality_==1) continue;
+          if(isPL[vertexId]!=static_cast<char>(CriticalType::Saddle2) and dimensionality_==2) continue;
 
           if(!allowBoundary and
              inputTriangulation_->isVertexOnBoundary(vertexId)){
@@ -1640,7 +1641,7 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
           SimplexId vertexId;
           inputTriangulation_->getCellVertex(dmt_maxId, i, vertexId);
 
-          if(isPL[vertexId]!=maximumDim) continue;
+          if(isPL[vertexId]!=static_cast<char>(CriticalType::Local_maximum)) continue;
 
           if(!allowBoundary and
              inputTriangulation_->isVertexOnBoundary(vertexId)){
@@ -2137,7 +2138,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int
             SimplexId vertexId;
             inputTriangulation_->getEdgeVertex(dmt_saddle1Id, i, vertexId);
 
-            if(isPL[vertexId]!=1) continue;
+            if(isPL[vertexId]!=static_cast<char>(CriticalType::Saddle1)) continue;
 
             if(!allowBoundary and
                inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
@@ -2196,7 +2197,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int
             SimplexId vertexId;
             inputTriangulation_->getTriangleVertex(dmt_saddle2Id, i, vertexId);
 
-            if(isPL[vertexId]!=2) continue;
+            if(isPL[vertexId]!=static_cast<char>(CriticalType::Saddle2)) continue;
 
             if(!allowBoundary and
                inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
@@ -2732,7 +2733,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int
             SimplexId vertexId;
             inputTriangulation_->getEdgeVertex(dmt_saddle1Id, i, vertexId);
 
-            if(isPL[vertexId]!=1) continue;
+            if(isPL[vertexId]!=static_cast<char>(CriticalType::Saddle1)) continue;
 
             if(!allowBoundary and
                inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
@@ -2791,7 +2792,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int
             SimplexId vertexId;
             inputTriangulation_->getTriangleVertex(dmt_saddle2Id, i, vertexId);
 
-            if(isPL[vertexId]!=2) continue;
+            if(isPL[vertexId]!=static_cast<char>(CriticalType::Saddle2)) continue;
 
             if(!allowBoundary and
                inputTriangulation_->isVertexOnBoundary(vertexId)) continue;
@@ -3260,11 +3261,11 @@ int DiscreteGradient::reverseGradient(){
     std::vector<SimplexId> numberOfPLInteriorCriticalPoints(numberOfDimensions,0);
     for(auto& criticalPoint : criticalPoints){
       const SimplexId criticalPointId=criticalPoint.first;
-      const char criticalPoidType=criticalPoint.second;
+      const char criticalPointType=criticalPoint.second;
 
       if(!inputTriangulation_->isVertexOnBoundary(criticalPointId) and
-         criticalPoidType!=-1)
-        ++numberOfPLInteriorCriticalPoints[criticalPoidType];
+         criticalPointType!=static_cast<char>(CriticalType::Regular))
+        ++numberOfPLInteriorCriticalPoints[criticalPointType];
     }
 
     {
