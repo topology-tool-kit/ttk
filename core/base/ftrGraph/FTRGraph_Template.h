@@ -148,6 +148,7 @@ namespace ttk
          printGraph(4);
          // std::cout << dynGraphs_.up.printNbCC() << std::endl;
 #endif
+         std::cout << graph_.getNumberOfVisibleArcs() << " // " << graph_.getNumberOfArcs() << std::endl;
 
          // Message user
          {
