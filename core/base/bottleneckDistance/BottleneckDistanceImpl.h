@@ -8,10 +8,7 @@ constexpr unsigned int str2int(const char* str, int h = 0)
 
 template <typename dataType>
 int BottleneckDistance::execute(
-    const bool usePersistenceMetric,
-    const double alpha,
-    const bool is3D
-)
+    const bool usePersistenceMetric)
 {
   Timer t;
 
@@ -29,8 +26,7 @@ int BottleneckDistance::execute(
             *static_cast<const std::vector<diagramTuple>*> (outputCT1_),
             *static_cast<const std::vector<diagramTuple>*> (outputCT2_),
             *static_cast<std::vector<matchingTuple>*> (matchings_),
-            usePersistenceMetric,
-            alpha);
+            usePersistenceMetric);
         break;
       case 1:
       {
@@ -85,8 +81,7 @@ int BottleneckDistance::execute(
             *static_cast<const std::vector<diagramTuple>*> (outputCT1_),
             *static_cast<const std::vector<diagramTuple>*> (outputCT2_),
             *static_cast<std::vector<matchingTuple>*> (matchings_),
-            usePersistenceMetric,
-            alpha);
+            usePersistenceMetric);
         break;
       case str2int("1"):
       case str2int("legacy"):

@@ -23,7 +23,7 @@ ttkTrackingFromPersistenceDiagrams::ttkTrackingFromPersistenceDiagrams()
 
   WassersteinMetric = "1";
   UseGeometricSpacing = false;
-  Is3D = false;
+  Is3D = true;
   Spacing = 1.0;
 
   SetNumberOfInputPorts(1);

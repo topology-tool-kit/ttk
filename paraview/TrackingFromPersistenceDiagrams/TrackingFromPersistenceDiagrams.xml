@@ -138,23 +138,6 @@ by a list of scalar fields) and which computes a tracking mesh."
       </IntVectorProperty>
 
       <DoubleVectorProperty
-      name="alpha"
-      label="Diagram blending"
-      command="SetAlpha"
-      number_of_elements="1"
-      default_values="1"
-      panel_visibility="advanced">
-        <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
-        <Documentation>
-          Blending coefficient for the cost evaluation of each critical point
-          matching. By default (1), only distances  in
-          the persistence diagrams are considered between matched critical points. When
-          set to 0, only distances in the original 3D domain are considered
-          between matched critical points.
-        </Documentation>
-      </DoubleVectorProperty>
-
-      <DoubleVectorProperty
       name="spacing"
       label="Z-Translation"
       command="SetSpacing"
@@ -179,19 +162,6 @@ by a list of scalar fields) and which computes a tracking mesh."
           For the translation of the second set of critical points even the
           persistence diagrams are embedded in the original domain. This is useful to
           visualize the matching between the diagrams of two 2D scalar fields.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-      name="Use auction"
-      command="SetIs3D"
-      label="Use auction"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use 5D.
         </Documentation>
       </IntVectorProperty>
 
@@ -223,7 +193,6 @@ by a list of scalar fields) and which computes a tracking mesh."
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="n" />
-        <Property name="alpha" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">

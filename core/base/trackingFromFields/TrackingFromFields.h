@@ -104,11 +104,13 @@ int ttk::TrackingFromFields::performDiagramComputation(
   const ttk::Wrapper *wrapper)
 {
 
+  #pragma omp parallel for num_threads(threadNumber_)
   for (int i = 0; i < fieldNumber; ++i)
   {
     ttk::PersistenceDiagram persistenceDiagram_;
     persistenceDiagram_.setWrapper(wrapper);
     persistenceDiagram_.setupTriangulation(triangulation_);
+    persistenceDiagram_.setThreadNumber(1);
     // should have been done before
 
     std::vector<std::tuple<ttk::dcg::Cell,ttk::dcg::Cell>> dmt_pairs;

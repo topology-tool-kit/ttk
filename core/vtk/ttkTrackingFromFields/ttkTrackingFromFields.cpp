@@ -13,8 +13,8 @@ int ttkTrackingFromFields::FillOutputPortInformation(int port, vtkInformation* i
     case 0:
       info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
       break;
-    // default:
-    //   break;
+     default:
+      break;
   }
 
   return 1;
@@ -45,7 +45,6 @@ int ttkTrackingFromFields::doIt(
   }
 
   vtkDataArray* firstScalarField = input->GetPointData()->GetArray(0);
-  // inputScalarFields.push_back(firstScalarField);
 
   for (int i = 0; i < numberOfInputFields; ++i) {
     vtkDataArray* currentScalarField = input->GetPointData()->GetArray(i);
@@ -74,7 +73,8 @@ int ttkTrackingFromFields::doIt(
   int end = EndTimestep <= 0 ? numberOfInputFields : std::min(numberOfInputFields, EndTimestep);
   for (int i = StartTimestep; i < end; i += Sampling) {
     vtkDataArray* currentScalarField = inputScalarFieldsRaw[i];
-    std::cout << currentScalarField->GetName() << std::endl;
+    // Print scalar field names:
+    // std::cout << currentScalarField->GetName() << std::endl;
     inputScalarFields.push_back(currentScalarField);
   }
 

@@ -95,9 +95,6 @@ class ttkTrackingFromPersistenceDiagrams
     vtkSetMacro(UseGeometricSpacing, int);
     vtkGetMacro(UseGeometricSpacing, int);
 
-    vtkSetMacro(Is3D, int);
-    vtkGetMacro(Is3D, int);
-
     vtkSetMacro(Spacing, double);
     vtkGetMacro(Spacing, double);
 

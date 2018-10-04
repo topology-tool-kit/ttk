@@ -153,7 +153,7 @@ int ttk::TrackingFromPersistenceDiagrams::performSingleMatching(
   bottleneckDistance_.setCTDiagram1(&inputPersistenceDiagrams[i]);
   bottleneckDistance_.setCTDiagram2(&inputPersistenceDiagrams[i + 1]);
   bottleneckDistance_.setOutputMatchings(&outputMatchings[i]);
-  bottleneckDistance_.execute<dataType>(false, alpha, is3D);
+  bottleneckDistance_.execute<dataType>(false);
 
   return 0;
 }
@@ -172,7 +172,7 @@ int ttk::TrackingFromPersistenceDiagrams::performMatchings(
   const ttk::Wrapper *wrapper)
 {
 
-//  #pragma omp parallel for num_threads(ThreadNumber)
+  #pragma omp parallel for num_threads(threadNumber_)
   for (int i = 0; i < numInputs - 1; ++i)
   {
     performSingleMatching<dataType>(

@@ -100,9 +100,6 @@ class ttkTrackingFromFields
     vtkSetMacro(UseGeometricSpacing, int);
     vtkGetMacro(UseGeometricSpacing, int);
 
-    vtkSetMacro(Is3D, int);
-    vtkGetMacro(Is3D, int);
-
     vtkSetMacro(Spacing, double);
     vtkGetMacro(Spacing, double);
     vtkSetMacro(DoPostProc, int);
@@ -122,7 +119,7 @@ class ttkTrackingFromFields
       Alpha = 1.0;
       WassersteinMetric = "1";
       UseGeometricSpacing = false;
-      Is3D = false;
+      Is3D = true;
       Spacing = 1.0;
 
       DoPostProc = false;
@@ -231,7 +228,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   std::string algorithm = DistanceAlgorithm;
   double alpha = Alpha;
   double tolerance = Tolerance;
-  bool is3D = Is3D;
+  bool is3D = true; // Is3D;
   std::string wasserstein = WassersteinMetric;
 
   tracking_.performMatchings<dataType>(

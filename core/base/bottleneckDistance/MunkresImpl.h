@@ -6,17 +6,12 @@ int Munkres::run(std::vector<matchingTuple> &matchings)
 {
   int step = 1;
   int iter = 0;
-  int maxIter = 50000;
+  int maxIter = 100000;
   bool done = false;
   Timer t;
 
   std::vector<std::vector<dataType>> inputMatrix(rowSize, std::vector<dataType>(colSize));
   copyInputMatrix<dataType>(inputMatrix);
-
-  // this->showCostMatrix<dataType>();
-
-  // int n1, n2, n3, n4, n5, n6;
-  // n1 = n2 = n3 = n4 = n5 = n6 = 0;
 
   while (!done)
   {
@@ -49,36 +44,31 @@ int Munkres::run(std::vector<matchingTuple> &matchings)
 
       step = 7;
       // Abort. Still found something
-      // albeit hardly optimized.
+      // though not optimal.
     }
 
+    // Show intermediary matrices:
     // showCostMatrix<dataType>();
     // showMaskMatrix();
 
     switch(step)
     {
       case 1:
-        // ++n1;
         stepOne<dataType>(step);
         break;
       case 2:
-        // ++n2;
         stepTwo<dataType>(step);
         break;
       case 3:
-        // ++n3;
         stepThree<dataType>(step);
         break;
       case 4:
-        // ++n4;
         stepFour<dataType>(step);
         break;
       case 5:
-        // ++n5;
         stepFive<dataType>(step);
         break;
       case 6:
-        // ++n6;
         stepSix<dataType>(step);
         break;
       case 7:
@@ -89,16 +79,6 @@ int Munkres::run(std::vector<matchingTuple> &matchings)
         break;
     }
   }
-
-  // int nt = n1 + n2 + n3 + n4 + n5 + n6;
-  // std::cout << "1: " << std::fixed << std::setprecision(5) << 100.f * (float) n1 / (float) nt << "%" << std::endl;
-  // std::cout << "2: " << std::fixed << std::setprecision(5) << 100.f * (float) n2 / (float) nt << "%" << std::endl;
-  // std::cout << "3: " << std::fixed << std::setprecision(5) << 100.f * (float) n3 / (float) nt << "%" << std::endl;
-  // std::cout << "4: " << std::fixed << std::setprecision(5) << 100.f * (float) n4 / (float) nt << "%" << std::endl;
-  // std::cout << "5: " << std::fixed << std::setprecision(5) << 100.f * (float) n5 / (float) nt << "%" << std::endl;
-  // std::cout << "6: " << std::fixed << std::setprecision(5) << 100.f * (float) n6 / (float) nt << "%" << std::endl;
-
-  // this->showMaskMatrix();
 
   this->computeAffectationCost<dataType>(inputMatrix);
   this->affect<dataType>(matchings, inputMatrix);
@@ -156,14 +136,14 @@ int Munkres::stepOne(int& step) // ~ 0% perf
     std::stringstream msg;
     msg << "[Munkres] Unexpected non-assignable row [minus], dropping optimisation for "
         << droppedMinus << " row(s)." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
 
   if (droppedPlus > 0) {
     std::stringstream msg;
     msg << "[Munkres] Unexpected non-assignable row [plus], dropping optimisation for "
         << droppedPlus << " row(s)." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
 
   droppedMinus = 0;
@@ -194,14 +174,14 @@ int Munkres::stepOne(int& step) // ~ 0% perf
     std::stringstream msg;
     msg << "[Munkres] Unexpected non-assignable column [minus], dropping optimisation for "
         << droppedMinus << " column(s)." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
 
   if (droppedPlus > 0) {
     std::stringstream msg;
     msg << "[Munkres] Unexpected non-assignable column [plus], dropping optimisation for "
         << droppedPlus << " column(s)." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
 
   rowLimitsMinus[rowSize - 1] = 0;
@@ -249,10 +229,6 @@ int Munkres::stepTwo(int& step) // ~ 0% perf
     }
 
     // Don't account for last column.
-    // // if (!rowCover[r] && isZero<dataType>((*C)[r][colSize - 1])) {
-    // //   M[r][colSize - 1] = 1;
-    // //   rowCover[r] = true;
-    // // }
   }
 
   for (int c = 0; c < colSize - 1; ++c)
@@ -263,11 +239,9 @@ int Munkres::stepTwo(int& step) // ~ 0% perf
     }
 
   // Remove coverings (temporarily used to find independent zeros).
-//#pragma omp parallel for shared(rowCover)
   for (int r = 0; r < rowSize; ++r)
     rowCover[r] = false;
 
-//#pragma omp parallel for shared(colCover)
   for (int c = 0; c < colSize - 1; ++c)
     colCover[c] = false;
 
@@ -292,7 +266,6 @@ int Munkres::stepThree(int& step) // ~ 10% perf
 
   int processedCols = 0;
 
-//#pragma omp parallel for reduction(+:processedCols) shared(colCover)
   for (int c = 0; c < colSize - 1; ++c)
     if (colCover[c]) ++processedCols;
 
@@ -311,7 +284,6 @@ int Munkres::stepThree(int& step) // ~ 10% perf
 template <typename dataType>
 int Munkres::stepFour(int& step) // ~ 45% perf
 {
-//  std::vector<std::vector<dataType>>* C = (std::vector<std::vector<dataType>>*) Cptr;
   int row = -1;
   int col = -1;
   bool done = false;

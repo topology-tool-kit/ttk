@@ -16,8 +16,7 @@ int BottleneckDistance::computeBottleneck(
     const std::vector<diagramTuple> &d1,
     const std::vector<diagramTuple> &d2,
     std::vector<matchingTuple> &matchings,
-    const bool usePersistenceMetric,
-    const double alpha)
+    const bool usePersistenceMetric)
 {
   auto d1Size = (int) d1.size();
   auto d2Size = (int) d2.size();
@@ -39,7 +38,6 @@ int BottleneckDistance::computeBottleneck(
   }
 
   // Check user parameters.
-  const double geometricalFactor = alpha < 0.0 ? 0.0 : alpha > 1.0 ? 1.0 : alpha;
   const int wasserstein = (wasserstein_ == "inf") ? -1 : stoi(wasserstein_);
   if (wasserstein < 0 && wasserstein != -1) return -4;
 
@@ -97,30 +95,63 @@ int BottleneckDistance::computeBottleneck(
 
   std::function<dataType (const diagramTuple, const diagramTuple)>
       distanceFunction =
-      [maxDistance, wasserstein, geometricalFactor, px, py, pz, pe, ps]
-          (const diagramTuple a, const diagramTuple b) -> dataType {
+      [maxDistance, wasserstein, px, py, pz, pe, ps]
+          (const diagramTuple a, const diagramTuple b) -> dataType
+      {
+        BNodeType ta1 = std::get<1>(a);
+        BNodeType ta2 = std::get<3>(a);
+        double w = 1; // wasserstein > 1 ? wasserstein : 1;
+
+        // We don't match critical points of different index.
+        // This must be ensured before calling the distance function.
+        // BNodeType tb1 = get<1>(b);
+        // BNodeType tb2 = get<3>(b);
+        bool isMin1 = ta1 == BLocalMin;
+        bool isMax1 = ta2 == BLocalMax;
+        // bool isBoth = isMin1 && isMax1;
+
         dataType rX = std::get<6>(a);
         dataType rY = std::get<10>(a);
         dataType cX = std::get<6>(b);
         dataType cY = std::get<10>(b);
-        dataType x = ps * abs_diff<dataType>(rX, cX);
-        dataType y = pe * abs_diff<dataType>(rY, cY);
-        double dist = sqrt(
-            px * pow((/*std::get<7>(a)+*/std::get<11>(a))/*/2*/ - (/*std::get<7>(b)+*/std::get<11>(b))/*/2*/, 2) +
-            py * pow((/*std::get<8>(a)+*/std::get<12>(a))/*/2*/ - (/*std::get<8>(b)+*/std::get<12>(b))/*/2*/, 2) +
-            pz * pow((/*std::get<9>(a)+*/std::get<13>(a))/*/2*/ - (/*std::get<9>(b)+*/std::get<13>(b))/*/2*/, 2)
-        );
-        //dist /= maxDistance;
+        dataType x = (isMin1 ? pe : ps) * abs_diff<dataType>(rX, cX);
+        dataType y = (isMax1 ? pe : ps) * abs_diff<dataType>(rY, cY);
+        double geoDistance =
+          isMax1 ?
+          (
+            px * pow(abs(std::get<11>(a) - std::get<11>(b)), w) +
+            py * pow(abs(std::get<12>(a) - std::get<12>(b)), w) +
+            pz * pow(abs(std::get<13>(a) - std::get<13>(b)), w)
+          ) : isMin1 ?
+          (
+            px * pow(abs(std::get<7>(a) - std::get<7>(b)), w) +
+            py * pow(abs(std::get<8>(a) - std::get<8>(b)), w) +
+            pz * pow(abs(std::get<9>(a) - std::get<9>(b)), w)
+          ) :
+          (
+            px * pow(abs(std::get<7>(a)+std::get<11>(a))/2 - abs(std::get<7>(b)+std::get<11>(b))/2, w) +
+            py * pow(abs(std::get<8>(a)+std::get<12>(a))/2 - abs(std::get<8>(b)+std::get<12>(b))/2, w) +
+            pz * pow(abs(std::get<9>(a)+std::get<13>(a))/2 - abs(std::get<9>(b)+std::get<13>(b))/2, w)
+          );
+
+        // dist /= maxDistance;
         double infDistance = std::max(x, y);
-        double val = geometricalFactor * infDistance + (1.0 - geometricalFactor) * dist;
-        val = wasserstein > 1 ? pow(val, wasserstein) : val;
+        double val = infDistance + geoDistance;
+        val = pow(val, 1/w);
         return val;
       };
 
   std::function<dataType (const diagramTuple)>
       diagonalDistanceFunction =
-      [wasserstein, geometricalFactor, px, py, pz, ps, pe]
-          (const diagramTuple a) -> dataType {
+      [wasserstein, px, py, pz, ps, pe]
+          (const diagramTuple a) -> dataType
+      {
+        BNodeType ta1 = std::get<1>(a);
+        BNodeType ta2 = std::get<3>(a);
+        double w = 1; // wasserstein > 1 ? wasserstein : 1;
+        bool isMin1 = ta1 == BLocalMin;
+        bool isMax1 = ta2 == BLocalMax;
+
         dataType rX = std::get<6>(a);
         dataType rY = std::get<10>(a);
         double x1 = std::get<7>(a);
@@ -129,11 +160,12 @@ int BottleneckDistance::computeBottleneck(
         double x2 = std::get<11>(a);
         double y2 = std::get<12>(a);
         double z2 = std::get<13>(a);
-        double infDistance = ps * abs_diff<dataType>(rX, rY);
-        double dist =
-            sqrt(px * pow(x2 - x1, 2) + py * pow(y2 - y1, 2) + pz * pow(z2 - z1, 2));
-        double val = geometricalFactor * infDistance + (1.0 - geometricalFactor) * dist;
-        return wasserstein > 1 ? pow(val, wasserstein) : val;
+
+        double infDistance = (isMin1 || isMax1 ? pe : ps) * abs_diff<dataType>(rX, rY);
+        double geoDistance =
+            (px * pow(abs(x2 - x1), w) + py * pow(abs(y2 - y1), w) + pz * pow(abs(z2 - z1), w));
+        double val = infDistance + geoDistance;
+        return pow(val, 1/w);
       };
 
   const bool transposeMin = nbRowMin > nbColMin;
@@ -208,7 +240,12 @@ int BottleneckDistance::computeBottleneck(
     }
   }
 
-  std::cout << "[BottleneckDistance] TTK CORE DONE IN " << t.getElapsedTime() << std::endl;
+  {
+    std::stringstream msg;
+    msg << "[BottleneckDistance] TTK CORE DONE IN "
+        << t.getElapsedTime() << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
+  }
 
   // Rebuild mappings.
   // Begin cost computation for unpaired vertices.
@@ -252,8 +289,8 @@ int BottleneckDistance::computeBottleneck(
     paired2[j] = true;
     dataType lInf = std::max(abs<dataType>(x), abs<dataType>(y));
 
-    if (geometricalFactor == 1.0 && ((wasserstein < 0 && lInf != val) || (wasserstein > 0 && pow(lInf, wasserstein) != val)))
-      ++numberOfMismatches;
+    //if (((wasserstein < 0 && lInf != val) || (wasserstein > 0 && pow(lInf, wasserstein) != val)))
+      //++numberOfMismatches;
 
     dataType partialDistance = distanceFunction(t1, t2);
     //wasserstein > 0 ? pow(lInf, wasserstein) : std::max(d, lInf);

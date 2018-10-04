@@ -60,7 +60,7 @@ namespace ttk {
     ~BottleneckDistance() {};
 
     template <typename dataType>
-    int execute(bool usePersistenceMetric, double alpha, bool is3D);
+    int execute(bool usePersistenceMetric);
 
     inline int setPersistencePercentThreshold(double t) {
       zeroThreshold_ = t;
@@ -148,8 +148,7 @@ namespace ttk {
       const std::vector<diagramTuple> &d1,
       const std::vector<diagramTuple> &d2,
       std::vector<matchingTuple> &matchings,
-      bool usePersistenceMetric,
-      double alpha);
+      bool usePersistenceMetric);
 
     template <typename dataType>
     double computeGeometricalRange(
