@@ -258,7 +258,7 @@ class ttkDimensionReduction
   protected:
 
     ttkDimensionReduction(){
-      NumberOfComponents=1;
+      NumberOfComponents=2;
       NumberOfNeighbors=5;
       Method=0;
 

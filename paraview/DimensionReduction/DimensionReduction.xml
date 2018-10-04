@@ -54,37 +54,13 @@
           Select the scalar fields to process.
         </Documentation>
       </StringVectorProperty>
-
-      <IntVectorProperty name="NumberOfComponents"
-        label="Number Of Components"
-        command="SetNumberOfComponents"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="default">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Set the number of components.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="NumberOfNeighbors"
-        label="Number Of Neighbors"
-        command="SetNumberOfNeighbors"
-        number_of_elements="1"
-        default_values="5"
-        panel_visibility="default">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Set the number of neighbors.
-        </Documentation>
-      </IntVectorProperty>
-
+      
       <IntVectorProperty name="Method"
-        label="Method"
-        command="SetMethod"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="default">
+                         label="Method"
+                         command="SetMethod"
+                         number_of_elements="1"
+                         default_values="0"
+                         panel_visibility="default">
         <EnumerationDomain name="enum">
           <Entry value="0" text="Spectral Embedding"/>
           <Entry value="1" text="Locally Linear Embedding"/>
@@ -96,6 +72,32 @@
         <Documentation>
         </Documentation>
       </IntVectorProperty>
+
+      <IntVectorProperty name="NumberOfComponents"
+        label="Components"
+        command="SetNumberOfComponents"
+        number_of_elements="1"
+        default_values="2"
+        panel_visibility="default">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Set the number of output components (i.e. dimensions).
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="NumberOfNeighbors"
+        label="Neighbors"
+        command="SetNumberOfNeighbors"
+        number_of_elements="1"
+        default_values="5"
+        panel_visibility="default">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Set the number of neighbors.
+        </Documentation>
+      </IntVectorProperty>
+
+      
 
       <IntVectorProperty
         name="KeepAllDataArrays"
@@ -667,9 +669,9 @@
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="Method" />
         <Property name="NumberOfComponents" />
         <Property name="NumberOfNeighbors" />
-        <Property name="Method" />
         <Property name="KeepAllDataArrays" />
       </PropertyGroup>
 
@@ -776,7 +778,7 @@
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>
