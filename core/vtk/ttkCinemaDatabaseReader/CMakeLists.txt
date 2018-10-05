@@ -1,4 +1,0 @@
-ttk_add_vtk_library(ttkCinemaDatabaseReader
-	SOURCES ttkCinemaDatabaseReader.cpp
-	HEADERS ttkCinemaDatabaseReader.h
-	LINK ttkTriangulation)

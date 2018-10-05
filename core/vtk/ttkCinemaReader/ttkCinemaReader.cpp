@@ -1,4 +1,4 @@
-#include                  <ttkCinemaDatabaseReader.h>
+#include                  <ttkCinemaReader.h>
 #include                  <vtkDelimitedTextReader.h>
 #include                  <vtkFieldData.h>
 #include                  <vtkStringArray.h>
@@ -6,9 +6,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkCinemaDatabaseReader)
+vtkStandardNewMacro(ttkCinemaReader)
 
-int ttkCinemaDatabaseReader::RequestData (
+int ttkCinemaReader::RequestData (
     vtkInformation* request,
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
@@ -20,7 +20,7 @@ int ttkCinemaDatabaseReader::RequestData (
     {
         stringstream msg;
         msg<<"-------------------------------------------------------------"<<endl;
-        msg<<"[ttkCinemaDatabaseReader] RequestData"<<endl;
+        msg<<"[ttkCinemaReader] RequestData"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 
@@ -47,8 +47,8 @@ int ttkCinemaDatabaseReader::RequestData (
     // Output Performance
     {
         stringstream msg;
-        msg << "[ttkCinemaDatabaseReader]   Time: " << t.getElapsedTime() << " s." << endl;
-        msg << "[ttkCinemaDatabaseReader] Memory: " << m.getElapsedUsage() << " MB." << endl;
+        msg << "[ttkCinemaReader]   Time: " << t.getElapsedTime() << " s." << endl;
+        msg << "[ttkCinemaReader] Memory: " << m.getElapsedUsage() << " MB." << endl;
         dMsg(cout, msg.str(), memoryMsg);
     }
 

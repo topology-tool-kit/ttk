@@ -1,5 +1,5 @@
 /// \ingroup vtk
-/// \class ttkCinemaDatabaseReader
+/// \class ttkCinemaReader
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2018
 ///
@@ -10,7 +10,7 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
-/// \sa ttk::CinemaDatabaseReader
+/// \sa ttk::CinemaReader
 #pragma once
 
 // VTK includes
@@ -22,16 +22,16 @@
 #include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaDatabaseReader
+class VTKFILTERSCORE_EXPORT ttkCinemaReader
 #else
-class ttkCinemaDatabaseReader
+class ttkCinemaReader
 #endif
 : public vtkTableReader, public ttk::Wrapper{
 
     public:
 
-        static ttkCinemaDatabaseReader* New();
-        vtkTypeMacro(ttkCinemaDatabaseReader, vtkTableReader)
+        static ttkCinemaReader* New();
+        vtkTypeMacro(ttkCinemaReader, vtkTableReader)
 
         vtkSetMacro(DatabasePath, std::string);
         vtkGetMacro(DatabasePath, std::string);
@@ -64,7 +64,7 @@ class ttkCinemaDatabaseReader
 
     protected:
 
-        ttkCinemaDatabaseReader(){
+        ttkCinemaReader(){
             DatabasePath = "";
 
             UseAllCores = true;
@@ -73,7 +73,7 @@ class ttkCinemaDatabaseReader
             SetNumberOfInputPorts(0);
             SetNumberOfOutputPorts(1);
         }
-        ~ttkCinemaDatabaseReader(){};
+        ~ttkCinemaReader(){};
 
         bool UseAllCores;
         int ThreadNumber;
