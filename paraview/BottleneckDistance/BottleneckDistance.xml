@@ -219,19 +219,6 @@
       </IntVectorProperty>
 
       <IntVectorProperty
-      name="Use 5D"
-      command="SetIs3D"
-      label="Use 5D"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use 5D.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
       name="UseAllCores"
       label="Use All Cores"
       command="SetUseAllCores"
@@ -276,7 +263,6 @@
         <Property name="Output matchings" />
         <Property name="spacing" />
         <Property name="Use spacing" />
-        <Property name="Use 5D" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
