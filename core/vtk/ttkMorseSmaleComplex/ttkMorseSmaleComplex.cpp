@@ -668,7 +668,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         }
 #endif
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -843,7 +843,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         }
 #endif
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -1222,7 +1222,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           return -1;
         }
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
         if (!separatrixFunctionMaxima) {
@@ -1378,7 +1378,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           return -1;
         }
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
         if (!separatrixFunctionMaxima) {
@@ -1676,7 +1676,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           separatrixTypes = vtkSmartPointer<vtkCharArray>::New();
 
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
 
@@ -1786,7 +1786,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           vtkSmartPointer<vtkCharArray>::New();
 
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
 
