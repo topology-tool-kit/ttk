@@ -53,5 +53,5 @@ morseSmaleComplex = TTKMorseSmaleComplex(topologicalSimplification)
 
 # 8. saving the output data
 SaveData('curve.vtk', OutputPort(persistenceCurve, 3))
-SaveData('separatrices.vtu', CleantoGrid(OutputPort(morseSmaleComplex, 1)))
-SaveData('segmentation.vtu', CleantoGrid(OutputPort(morseSmaleComplex, 3)))
+SaveData('separatrices.vtu', OutputPort(morseSmaleComplex, 1))
+SaveData('segmentation.vtu', OutputPort(morseSmaleComplex, 3))
