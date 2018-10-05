@@ -25,6 +25,7 @@ vtkStandardNewMacro(ttkTriangulationRequest)
     vtkSmartPointer<vtkPoints> points=vtkSmartPointer<vtkPoints>::New();
     vtkSmartPointer<vtkUnstructuredGrid> cells=vtkSmartPointer<vtkUnstructuredGrid>::New();
 
+    vector<SimplexId> vertices;
     const SimplexId numberOfVertices=triangulation->getNumberOfVertices();
     vector<SimplexId> isVisited(numberOfVertices, -1);
 
@@ -35,6 +36,7 @@ vtkStandardNewMacro(ttkTriangulationRequest)
 
       float p[3];
       triangulation->getVertexPoint(vertexId, p[0], p[1], p[2]);
+      vertices.push_back(vertexId);
       return points->InsertNextPoint(p);
     };
 
@@ -371,6 +373,40 @@ vtkStandardNewMacro(ttkTriangulationRequest)
     cells->SetPoints(points);
 
     output->ShallowCopy(cells);
+
+    if(KeepAllDataArrays){
+      vtkPointData* inputPointData=input->GetPointData();
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!inputPointData){
+        cerr << "[ttkTriangulationRequest] Error: Input has no point data." << endl;
+        return -1;
+      }
+#endif
+      const int numberOfInputArrays=inputPointData->GetNumberOfArrays();
+
+      vtkPointData* outputPointData=output->GetPointData();
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!outputPointData){
+        cerr << "[ttkTriangulationRequest] Error: Output has no point data." << endl;
+        return -1;
+      }
+#endif
+
+      for(int i=0; i<numberOfInputArrays; ++i){
+        vtkDataArray* arr=inputPointData->GetArray(i);
+
+        if(arr and arr->GetNumberOfComponents()==1){
+          vtkDataArray* newArr=arr->NewInstance();
+          newArr->SetName(arr->GetName());
+          newArr->SetNumberOfComponents(1);
+
+          for(SimplexId v : vertices)
+            newArr->InsertNextTuple1(arr->GetTuple1(v));
+
+          outputPointData->AddArray(newArr);
+        }
+      }
+    }
 
     {
       stringstream msg;

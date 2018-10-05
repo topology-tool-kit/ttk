@@ -57,6 +57,18 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty name="KeepAllDataArrays"
+        label="Keep All Data Arrays"
+        command="SetKeepAllDataArrays"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Keep all data arrays.
+        </Documentation>
+      </IntVectorProperty>
+
       <IntVectorProperty name="RequestType"
         label="Request type"
         command="SetRequestType"
@@ -114,6 +126,7 @@
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="SimplexType" />
         <Property name="SimplexIdentifier" />
+        <Property name="KeepAllDataArrays" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
