@@ -21794,8 +21794,8 @@
         </Domain>
       </Property>
       <Property name="ThresholdBetween" id="6072.ThresholdBetween" number_of_elements="2">
-        <Element index="0" value="4"/>
-        <Element index="1" value="4"/>
+        <Element index="0" value="3"/>
+        <Element index="1" value="3"/>
         <Domain name="range" id="6072.ThresholdBetween.range"/>
       </Property>
       <Property name="UseContinuousCellRange" id="6072.UseContinuousCellRange" number_of_elements="1">
