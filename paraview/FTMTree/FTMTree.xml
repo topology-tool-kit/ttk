@@ -188,6 +188,13 @@ between nodes, ...)
                 default_values="1"
                 panel_visibility="advanced">
                 <IntRangeDomain name="range" min="1" max="128" />
+                <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                    mode="visibility"
+                    property="UseAllCores"
+                    value="0" />
+                </Hints>
+
                 <Documentation>
                     Number of threads to use for the computation.
                 </Documentation>
