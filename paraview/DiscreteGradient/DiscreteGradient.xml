@@ -229,7 +229,7 @@
       <OutputPort name="Gradient Glyphs" index="1" id="port1"/>
 
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Scalar Data" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>
