@@ -2,6 +2,8 @@
 #define TTKFTMSTRUCTURES_H
 
 #include <FTMTree.h>
+#include <ttkWrapper.h>
+
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkPointData.h>

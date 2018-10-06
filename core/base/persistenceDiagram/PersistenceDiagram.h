@@ -38,6 +38,10 @@
 
 namespace ttk{
 
+  /**
+   * Compute the persistence diagram of a function on a triangulation.
+   * TTK assumes that the input dataset is made of only one connected component.
+   */
   class PersistenceDiagram : public Debug{
 
     public:
