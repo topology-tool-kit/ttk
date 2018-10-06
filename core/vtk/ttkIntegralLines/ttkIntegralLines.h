@@ -83,8 +83,11 @@ class ttkIntegralLines
     vtkSetMacro(OutputScalarFieldType, int);
     vtkGetMacro(OutputScalarFieldType, int);
 
-    vtkSetMacro(VertexIdentifierScalarFieldName, std::string);
-    vtkGetMacro(VertexIdentifierScalarFieldName, std::string);
+    vtkSetMacro(ForceInputVertexScalarField, int);
+    vtkGetMacro(ForceInputVertexScalarField, int);
+
+    vtkSetMacro(InputVertexScalarFieldName, std::string);
+    vtkGetMacro(InputVertexScalarFieldName, std::string);
 
     vtkSetMacro(ForceInputOffsetScalarField, int);
     vtkGetMacro(ForceInputOffsetScalarField, int);
@@ -114,7 +117,8 @@ class ttkIntegralLines
     std::string ScalarField;
     int Direction;
     int OutputScalarFieldType;
-    std::string VertexIdentifierScalarFieldName;
+    bool ForceInputVertexScalarField;
+    std::string InputVertexScalarFieldName;
     int OffsetScalarFieldId;
     int ForceInputOffsetScalarField;
     std::string OffsetScalarFieldName;

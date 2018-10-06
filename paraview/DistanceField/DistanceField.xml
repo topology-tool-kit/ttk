@@ -56,12 +56,24 @@ Edsger W. Dijkstra, Numerische Mathematik, 1959.
         </Documentation>
       </InputProperty>
 
+      <IntVectorProperty name="ForceInputVertexScalarField"
+        label="Force Input Vertex ScalarField"
+        command="SetForceInputVertexScalarField"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
       <StringVectorProperty
-        name="VertexIdentifierScalarFieldName"
-        command="SetVertexIdentifierScalarFieldName"
+        name="InputVertexScalarFieldName"
+        command="SetInputVertexScalarFieldName"
         label="Vertex identifier field"
         number_of_elements="1"
         animateable="0"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
@@ -71,6 +83,12 @@ Edsger W. Dijkstra, Numerische Mathematik, 1959.
             <Property name="Sources" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputVertexScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the vertex identifier scalar field in the sources.
         </Documentation>
@@ -146,7 +164,8 @@ Edsger W. Dijkstra, Numerische Mathematik, 1959.
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Sources" />
-        <Property name="VertexIdentifierScalarFieldName" />
+        <Property name="ForceInputVertexScalarField" />
+        <Property name="InputVertexScalarFieldName" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">

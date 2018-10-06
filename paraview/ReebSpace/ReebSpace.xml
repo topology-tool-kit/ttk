@@ -120,6 +120,12 @@ ProjectionFromField, RangePolygon.
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="With predefined offset"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the scalar field to use as a vertex offset for the 
 u-coordinate (used to disambiguate collinear edges).
@@ -141,6 +147,12 @@ u-coordinate (used to disambiguate collinear edges).
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="With predefined offset"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the scalar field to use as a vertex offset for the 
 v-coordinate (used to disambiguate collinear edges).

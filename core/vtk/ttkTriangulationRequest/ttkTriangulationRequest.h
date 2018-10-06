@@ -87,6 +87,9 @@ class ttkTriangulationRequest
     vtkSetMacro(RequestType, int);
     vtkGetMacro(RequestType, int);
 
+    vtkSetMacro(KeepAllDataArrays, bool);
+    vtkGetMacro(KeepAllDataArrays, bool);
+
     int FillInputPortInformation(int port, vtkInformation *info){
 
       switch(port){
@@ -124,6 +127,7 @@ class ttkTriangulationRequest
       SimplexType=0;
       SimplexIdentifier=0;
       RequestType=0;
+      KeepAllDataArrays=true;
 
       SetNumberOfInputPorts(1);
       SetNumberOfOutputPorts(1);
@@ -138,5 +142,6 @@ class ttkTriangulationRequest
     int SimplexType;
     int SimplexIdentifier;
     int RequestType;
+    bool KeepAllDataArrays;
 
 };

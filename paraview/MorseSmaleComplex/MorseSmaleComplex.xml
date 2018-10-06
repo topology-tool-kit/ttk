@@ -93,6 +93,12 @@ Computer Graphics Forum, 2012.
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the input offset field (to disambiguate flat plateaus).
         </Documentation>

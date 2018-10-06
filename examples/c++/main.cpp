@@ -186,8 +186,8 @@ int main(int argc, char **argv) {
   
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
-  std::vector<std::tuple<ttk::SimplexId, ttk::ftm::NodeType, 
-    ttk::SimplexId, ttk::ftm::NodeType, float, ttk::SimplexId> >
+  std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, 
+    ttk::SimplexId, ttk::CriticalType, float, ttk::SimplexId> >
     diagramOutput;
   diagram.setupTriangulation(&triangulation);
   diagram.setInputScalars(height.data());
