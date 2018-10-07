@@ -24,8 +24,8 @@
               * 0 - minimum,
               * 1 - 1saddle,
               * 2 - 2saddle,
-              * 3 - degenerate,
-              * 4 - maximum,
+              * 3 - maximum,
+              * 4 - degenerate,
               * 5 - regular,
 
               RegionType:
