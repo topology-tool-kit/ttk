@@ -117,7 +117,7 @@ class ttkTrackingFromFields
       DistanceAlgorithm = "ttk";
       PVAlgorithm = -1;
       Alpha = 1.0;
-      WassersteinMetric = "1";
+      WassersteinMetric = "2";
       UseGeometricSpacing = false;
       Is3D = true;
       Spacing = 1.0;
@@ -132,9 +132,9 @@ class ttkTrackingFromFields
       Tolerance = 1;
       PX = 1;
       PY = 1;
-      PZ = 1;
-      PE = 1;
-      PS = 1;
+      PZ = 0;
+      PE = 0;
+      PS = 0;
 
       SetNumberOfInputPorts(1);
       SetNumberOfOutputPorts(1);

@@ -14,11 +14,8 @@
 by a list of scalar fields) and which computes a tracking mesh."
       short_help="TTK plugin that takes an input time-varying data set (represented
         by a list of scalar fields) and which computes a tracking mesh.">
-        TTK plugin that takes an input ensemble data set (represented
-        by a list of scalar fields) and which computes various vertexwise statistics
-        (PDF estimation, bounds, moments, etc.).
+        TTK plugin that takes an input time-varying data set (represented by a list of scalar fields) and which computes a tracking mesh.
 
-        See also MandatoryCriticalPoints.
       </Documentation>
 
       <!-- Inputs -->
@@ -114,7 +111,7 @@ by a list of scalar fields) and which computes a tracking mesh."
       label="X scaling"
       command="SetPX"
       number_of_elements="1"
-      default_values="1"
+      default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
         <Documentation>Scaling for x.</Documentation>
@@ -125,7 +122,7 @@ by a list of scalar fields) and which computes a tracking mesh."
       label="Y scaling"
       command="SetPY"
       number_of_elements="1"
-      default_values="1"
+      default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
         <Documentation>Scaling for py.</Documentation>
@@ -136,7 +133,7 @@ by a list of scalar fields) and which computes a tracking mesh."
       label="Z scaling"
       command="SetPZ"
       number_of_elements="1"
-      default_values="1"
+      default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
         <Documentation>Scaling for pz.</Documentation>
@@ -148,7 +145,7 @@ by a list of scalar fields) and which computes a tracking mesh."
       label="p parameter"
       command="SetWassersteinMetric"
       number_of_elements="1"
-      default_values="1">
+      default_values="2">
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance
           computation (type "inf" for the Bottleneck distance).
@@ -225,7 +222,16 @@ by a list of scalar fields) and which computes a tracking mesh."
       </DoubleVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="StartTimestep" />
+        <Property name="EndTimestep" />
+        <Property name="Sampling" />
         <Property name="n" />
+        <Property name="Tolerance" />
+        <Property name="spe" />
+        <Property name="sps" />
+        <Property name="spx" />
+        <Property name="spy" />
+        <Property name="spz" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
@@ -253,6 +259,12 @@ by a list of scalar fields) and which computes a tracking mesh."
       number_of_elements="1"
       default_values="1" panel_visibility="advanced">
         <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="UseAllCores"
+            value="0" />
+        </Hints>
         <Documentation>
           Thread number.
         </Documentation>

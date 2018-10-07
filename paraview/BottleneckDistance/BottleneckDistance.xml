@@ -57,22 +57,6 @@
         </Documentation>
       </InputProperty>
 
-
-
-      <StringVectorProperty
-      name="n"
-      label="p parameter"
-      command="SetWassersteinMetric"
-      number_of_elements="1"
-      default_values="2" >
-        <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance
-          computation (type "inf" for the Bottleneck distance).
-        </Documentation>
-      </StringVectorProperty>
-
-
-
       <!-- Persistence filtering options -->
       <DoubleVectorProperty
       name="Tolerance"
@@ -85,6 +69,37 @@
         </Documentation>
         <DoubleRangeDomain name="range" min="0" max="100" />
       </DoubleVectorProperty>
+
+      <IntVectorProperty
+      name="Assignment method"
+      label="Assignment method"
+      command="SetPVAlgorithm"
+      number_of_elements="1"
+      default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="ttk: pMunkres (Wasserstein), Gabow-Tarjan (Bottleneck)"/>
+          <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/>
+          <Entry value="2" text="geometric: Auction (Wasserstein), augmenting paths (Bottleneck)"/>
+          <Entry value="3" text="parallel: Soler-Tierny-Munkres (Wasserstein only)"/>
+          <Entry value="4" text="bench: dummy bench (wasserstein only)"/>
+        </EnumerationDomain>
+        <Documentation>
+          Value of the parameter p for the Wp (p-th Wasserstein) distance
+          computation (type "inf" for the Bottleneck distance).
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+      name="n"
+      label="p parameter"
+      command="SetWassersteinMetric"
+      number_of_elements="1"
+      default_values="2" >
+        <Documentation>
+          Value of the parameter p for the Wp (p-th Wasserstein) distance
+          computation (type "inf" for the Bottleneck distance).
+        </Documentation>
+      </StringVectorProperty>
 
       <DoubleVectorProperty
       name="spe"
@@ -142,24 +157,6 @@
         <Documentation>Scaling for pz.</Documentation>
       </DoubleVectorProperty>
 
-      <IntVectorProperty
-      name="Assignment method"
-      label="Assignment method"
-      command="SetPVAlgorithm"
-      number_of_elements="1"
-      default_values="0" >
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="ttk: pMunkres (Wasserstein), Gabow-Tarjan (Bottleneck)"/>
-          <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/>
-          <Entry value="2" text="geometric: Auction (Wasserstein), augmenting paths (Bottleneck)"/>
-          <Entry value="3" text="parallel: Soler-Tierny-Munkres (Wasserstein only)"/>
-          <Entry value="4" text="bench: dummy bench (wasserstein only)"/>
-        </EnumerationDomain>
-        <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance
-          computation (type "inf" for the Bottleneck distance).
-        </Documentation>
-      </IntVectorProperty>
 
       <IntVectorProperty
       name="Output matchings"
@@ -175,18 +172,6 @@
         </Documentation>
       </IntVectorProperty>
 
-      <DoubleVectorProperty
-      name="spacing"
-      label="Z-Translation"
-      command="SetSpacing"
-      number_of_elements="1"
-      default_values="1"
-      panel_visibility="advanced">
-        <Documentation>
-          Translation on the Z axis between the output representations of the
-          persistence diagrams.
-        </Documentation>
-      </DoubleVectorProperty>
 
       <IntVectorProperty
       name="Use spacing"
@@ -202,6 +187,26 @@
           visualize the matching between the diagrams of two 2D scalar fields.
         </Documentation>
       </IntVectorProperty>
+
+      <DoubleVectorProperty
+      name="spacing"
+      label="Z-Translation"
+      command="SetSpacing"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Use spacing"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Translation on the Z axis between the output representations of the
+          persistence diagrams.
+        </Documentation>
+      </DoubleVectorProperty>
+
 
       <IntVectorProperty
       name="UseAllCores"
@@ -247,11 +252,10 @@
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="n" />
+        <Property name="Tolerance" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="Assignment method" />
         <Property name="Output matchings" />
         <Property name="spacing" />
         <Property name="Use spacing" />
