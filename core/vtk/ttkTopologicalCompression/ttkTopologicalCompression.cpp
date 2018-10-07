@@ -78,7 +78,7 @@ int ttkTopologicalCompression::doIt(
 
   SimplexId vertexNumber = (SimplexId) inputScalarField->GetNumberOfTuples();
   outputOffsetField_->SetNumberOfTuples(vertexNumber);
-  outputOffsetField_->SetName("Offsets");
+  outputOffsetField_->SetName(ttk::OffsetScalarFieldName);
 
   outputScalarField_->SetNumberOfTuples(vertexNumber);
   outputScalarField_->SetName(inputScalarField->GetName());
