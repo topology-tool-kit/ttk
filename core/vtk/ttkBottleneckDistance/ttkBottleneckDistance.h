@@ -205,9 +205,9 @@ protected:
     WassersteinMetric = "2";
     Alpha = 1.0;
     Tolerance = 1.0;
-    PX = 1;
-    PY = 1;
-    PZ = 1;
+    PX = 0;
+    PY = 0;
+    PZ = 0;
     PE = 1;
     PS = 1;
     Spacing = 0.0;

@@ -64,31 +64,14 @@
       label="p parameter"
       command="SetWassersteinMetric"
       number_of_elements="1"
-      default_values="1" >
+      default_values="2" >
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance
           computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty
-      name="Assignment method"
-      label="Assignment method"
-      command="SetPVAlgorithm"
-      number_of_elements="1"
-      default_values="0" >
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="ttk: pMunkres (Wasserstein), Gabow-Tarjan (Bottleneck)"/>
-          <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/>
-          <Entry value="2" text="geometric: Auction (Wasserstein), augmenting paths (Bottleneck)"/>
-          <Entry value="3" text="parallel: Soler-Tierny-Munkres (Wasserstein only)"/>
-          <Entry value="4" text="bench: dummy bench (wasserstein only)"/>
-        </EnumerationDomain>
-        <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance
-          computation (type "inf" for the Bottleneck distance).
-        </Documentation>
-      </IntVectorProperty>
+
 
       <!-- Persistence filtering options -->
       <DoubleVectorProperty
@@ -101,23 +84,6 @@
           Maximum error threshold.
         </Documentation>
         <DoubleRangeDomain name="range" min="0" max="100" />
-      </DoubleVectorProperty>
-
-      <DoubleVectorProperty
-      name="alpha"
-      label="Diagram blending"
-      command="SetAlpha"
-      number_of_elements="1"
-      default_values="1"
-      panel_visibility="advanced">
-        <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
-        <Documentation>
-          Blending coefficient for the cost evaluation of each critical point
-          matching. By default (1), only distances  in
-          the persistence diagrams are considered between matched critical points. When
-          set to 0, only distances in the original 3D domain are considered
-          between matched critical points.
-        </Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -147,7 +113,7 @@
       label="X scaling"
       command="SetPX"
       number_of_elements="1"
-      default_values="1"
+      default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
         <Documentation>Scaling for x.</Documentation>
@@ -158,7 +124,7 @@
       label="Y scaling"
       command="SetPY"
       number_of_elements="1"
-      default_values="1"
+      default_values="0"
       panel_visibility="advanced"
       >
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
@@ -170,11 +136,30 @@
       label="Z scaling"
       command="SetPZ"
       number_of_elements="1"
-      default_values="1"
+      default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
         <Documentation>Scaling for pz.</Documentation>
       </DoubleVectorProperty>
+
+      <IntVectorProperty
+      name="Assignment method"
+      label="Assignment method"
+      command="SetPVAlgorithm"
+      number_of_elements="1"
+      default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="ttk: pMunkres (Wasserstein), Gabow-Tarjan (Bottleneck)"/>
+          <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/>
+          <Entry value="2" text="geometric: Auction (Wasserstein), augmenting paths (Bottleneck)"/>
+          <Entry value="3" text="parallel: Soler-Tierny-Munkres (Wasserstein only)"/>
+          <Entry value="4" text="bench: dummy bench (wasserstein only)"/>
+        </EnumerationDomain>
+        <Documentation>
+          Value of the parameter p for the Wp (p-th Wasserstein) distance
+          computation (type "inf" for the Bottleneck distance).
+        </Documentation>
+      </IntVectorProperty>
 
       <IntVectorProperty
       name="Output matchings"
@@ -263,10 +248,10 @@
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="n" />
-        <Property name="alpha" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="Assignment method" />
         <Property name="Output matchings" />
         <Property name="spacing" />
         <Property name="Use spacing" />

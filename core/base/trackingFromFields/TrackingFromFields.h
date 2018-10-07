@@ -118,7 +118,7 @@ int ttk::TrackingFromFields::performDiagramComputation(
     persistenceDiagram_.setInputScalars(inputData_[i]);
     persistenceDiagram_.setInputOffsets(inputOffsets_);
     persistenceDiagram_.setComputeSaddleConnectors(false);
-    std::vector<std::tuple<int, ftm::NodeType, int, ftm::NodeType, dataType, int>> CTDiagram;
+    std::vector<std::tuple<int, CriticalType, int, CriticalType, dataType, int>> CTDiagram;
 
     persistenceDiagram_.setOutputCTDiagram(&CTDiagram);
     persistenceDiagram_.execute<dataType, int>();

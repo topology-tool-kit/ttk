@@ -37,7 +37,7 @@ int ttkBottleneckDistance::doBenchmark()
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;
-  double alpha = Alpha;
+  //double alpha = Alpha;
   status = bottleneckDistance_.execute<dataType>(usePersistenceMetric);
 
   if (status != 0) { return status; }
@@ -120,7 +120,7 @@ int ttkBottleneckDistance::doIt(
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;
-  double alpha = Alpha;
+  //double alpha = Alpha;
   status = bottleneckDistance_.execute<dataType>(usePersistenceMetric);
   if (status != 0) return status;
 

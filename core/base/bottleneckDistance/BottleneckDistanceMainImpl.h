@@ -278,16 +278,16 @@ int BottleneckDistance::computeBottleneck(
     matchingTuple t = matchings[m];
     int i = transposeOriginal ? std::get<1>(t) : std::get<0>(t);
     int j = transposeOriginal ? std::get<0>(t) : std::get<1>(t);
-    dataType val = std::get<2>(t);
+    //dataType val = std::get<2>(t);
 
     diagramTuple t1 = CTDiagram1[i];
     diagramTuple t2 = CTDiagram2[j];
-    dataType rX = std::get<6>(t1); dataType rY = std::get<10>(t1);
-    dataType cX = std::get<6>(t2); dataType cY = std::get<10>(t2);
-    dataType x = rX - cX; dataType y = rY - cY;
+    //dataType rX = std::get<6>(t1); dataType rY = std::get<10>(t1);
+    //dataType cX = std::get<6>(t2); dataType cY = std::get<10>(t2);
+    //dataType x = rX - cX; dataType y = rY - cY;
     paired1[i] = true;
     paired2[j] = true;
-    dataType lInf = std::max(abs<dataType>(x), abs<dataType>(y));
+    //dataType lInf = std::max(abs<dataType>(x), abs<dataType>(y));
 
     //if (((wasserstein < 0 && lInf != val) || (wasserstein > 0 && pow(lInf, wasserstein) != val)))
       //++numberOfMismatches;
