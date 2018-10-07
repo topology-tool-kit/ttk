@@ -20,7 +20,8 @@ vtkStandardNewMacro(ttkTopologicalSimplification)
   ForceInputOffsetScalarField = false;
   AddPerturbation = false;
   OutputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
-  VertexIdentifierScalarField = "VertexIdentifier";
+  ForceInputVertexScalarField = false;
+  InputVertexScalarFieldName = ttk::VertexScalarFieldName;
   ConsiderIdentifierAsBlackList = false;
   InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
 
@@ -99,8 +100,10 @@ int ttkTopologicalSimplification::getScalars(vtkDataSet* input){
 }
 
 int ttkTopologicalSimplification::getIdentifiers(vtkPointSet* input){
-  if(VertexIdentifierScalarField.length())
-    identifiers_=input->GetPointData()->GetArray(VertexIdentifierScalarField.data());
+  if(ForceInputVertexScalarField and InputVertexScalarFieldName.length())
+    identifiers_=input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
+  else if(input->GetPointData()->GetArray(ttk::VertexScalarFieldName))
+    identifiers_=input->GetPointData()->GetArray(ttk::VertexScalarFieldName);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!identifiers_){

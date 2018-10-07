@@ -21,19 +21,20 @@
         Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny, 
         Proc. of IEEE LDAV 2016.
         
-        NodeType:
+        CriticalType:
         * 0 - minimum,
         * 1 - 1saddle,
         * 2 - 2saddle,
-        * 3 - maximum,
-        * (-1) - arcs.
+        * 3 - degenerate,
+        * 4 - maximum,
+        * 5 - regular,
 
         RegionType:
         * 0 - (x,minimum),
         * 1 - (x,maximum),
         * 2 - (1-saddle,1-saddle),
         * 3 - (2-saddle,2-saddle),
-        * 4 - (1-saddle,2-saddle)."
+        * 4 - (1-saddle,2-saddle).
       </Documentation>
 
       <InputProperty
@@ -101,6 +102,12 @@
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Input offset field (used to disambiguate flat plateaus).
         </Documentation>
@@ -237,6 +244,13 @@
         number_of_elements="1"
         default_values="1" panel_visibility="advanced">
         <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="UseAllCores"
+            value="0" />
+        </Hints>
+
         <Documentation>
           Thread number.
         </Documentation>

@@ -353,11 +353,11 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 {
   ttkSimplexIdTypeArray* vertexIdentifierScalars =
     ttkSimplexIdTypeArray::SafeDownCast(CTPersistenceDiagram_->
-      GetPointData()->GetArray("VertexIdentifier"));
+      GetPointData()->GetArray(ttk::VertexScalarFieldName));
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
-      GetPointData()->GetArray("NodeType"));
+      GetPointData()->GetArray("CriticalType"));
 
   ttkSimplexIdTypeArray* pairIdentifierScalars =
     ttkSimplexIdTypeArray::SafeDownCast(CTPersistenceDiagram_->

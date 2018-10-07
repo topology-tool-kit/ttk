@@ -115,8 +115,11 @@ class ttkTopologicalSimplification
     vtkSetMacro(OutputOffsetScalarFieldName, std::string);
     vtkGetMacro(OutputOffsetScalarFieldName, std::string);
 
-    vtkSetMacro(VertexIdentifierScalarField, std::string);
-    vtkGetMacro(VertexIdentifierScalarField, std::string);
+    vtkSetMacro(ForceInputVertexScalarField, int);
+    vtkGetMacro(ForceInputVertexScalarField, int);
+
+    vtkSetMacro(InputVertexScalarFieldName, std::string);
+    vtkGetMacro(InputVertexScalarFieldName, std::string);
 
     int getTriangulation(vtkDataSet* input);
     int getScalars(vtkDataSet* input);
@@ -142,7 +145,8 @@ class ttkTopologicalSimplification
     std::string ScalarField;
     std::string InputOffsetScalarFieldName;
     std::string OutputOffsetScalarFieldName;
-    std::string VertexIdentifierScalarField;
+    bool ForceInputVertexScalarField;
+    std::string InputVertexScalarFieldName;
     bool ForceInputOffsetScalarField;
     bool ConsiderIdentifierAsBlackList;
     bool AddPerturbation;

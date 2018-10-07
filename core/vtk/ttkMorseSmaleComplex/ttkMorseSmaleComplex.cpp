@@ -518,7 +518,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         }
 #endif
         PLVertexIdentifiers->SetNumberOfComponents(1);
-        PLVertexIdentifiers->SetName("VertexIdentifier");
+        PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
         vtkSmartPointer<ttkSimplexIdTypeArray> manifoldSizeScalars = 
           vtkSmartPointer<ttkSimplexIdTypeArray>::New();
@@ -596,7 +596,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         }
 #endif
         smoothingMask->SetNumberOfComponents(1);
-        smoothingMask->SetName("SmoothingMask");
+        smoothingMask->SetName(ttk::MaskScalarFieldName);
 
         vtkSmartPointer<vtkCharArray>
           cellDimensions = vtkSmartPointer<vtkCharArray>::New();
@@ -668,7 +668,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         }
 #endif
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -843,7 +843,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
         }
 #endif
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -1092,7 +1092,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           return -1;
         }
         PLVertexIdentifiers->SetNumberOfComponents(1);
-        PLVertexIdentifiers->SetName("VertexIdentifier");
+        PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
         vtkSmartPointer<ttkSimplexIdTypeArray> manifoldSizeScalars = 
           vtkSmartPointer<ttkSimplexIdTypeArray>::New();
@@ -1162,7 +1162,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           return -1;
         }
         smoothingMask->SetNumberOfComponents(1);
-        smoothingMask->SetName("SmoothingMask");
+        smoothingMask->SetName(ttk::MaskScalarFieldName);
 
         vtkSmartPointer<vtkCharArray>
           cellDimensions = vtkSmartPointer<vtkCharArray>::New();
@@ -1222,7 +1222,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           return -1;
         }
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
         if (!separatrixFunctionMaxima) {
@@ -1378,7 +1378,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           return -1;
         }
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
         if (!separatrixFunctionMaxima) {
@@ -1587,7 +1587,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           vtkSmartPointer<ttkSimplexIdTypeArray>::New();
 
         PLVertexIdentifiers->SetNumberOfComponents(1);
-        PLVertexIdentifiers->SetName("VertexIdentifier");
+        PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
         vtkSmartPointer<ttkSimplexIdTypeArray> manifoldSizeScalars = 
           vtkSmartPointer<ttkSimplexIdTypeArray>::New();
@@ -1640,7 +1640,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           smoothingMask = vtkSmartPointer<vtkCharArray>::New();
 
         smoothingMask->SetNumberOfComponents(1);
-        smoothingMask->SetName("SmoothingMask");
+        smoothingMask->SetName(ttk::MaskScalarFieldName);
 
         vtkSmartPointer<vtkCharArray>
           cellDimensions = vtkSmartPointer<vtkCharArray>::New();
@@ -1676,7 +1676,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           separatrixTypes = vtkSmartPointer<vtkCharArray>::New();
 
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
 
@@ -1786,7 +1786,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
           vtkSmartPointer<vtkCharArray>::New();
 
         separatrixTypes->SetNumberOfComponents(1);
-        separatrixTypes->SetName("CriticalPointIndex");
+        separatrixTypes->SetName("SeparatrixType");
 
         vtkDataArray* separatrixFunctionMaxima = inputScalars->NewInstance();
 

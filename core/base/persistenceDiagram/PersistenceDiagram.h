@@ -54,15 +54,15 @@ namespace ttk{
         return 0;
       }
 
-      ftm::NodeType getNodeType(ftm::FTMTree_MT* tree,
+      ttk::CriticalType getNodeType(ftm::FTMTree_MT* tree,
                                 ftm::TreeType    treeType,
                                 const SimplexId        vertexId) const;
 
       template <typename scalarType>
       int sortPersistenceDiagram(std::vector<std::tuple<ttk::SimplexId,
-                                              ftm::NodeType,
+                                              ttk::CriticalType,
                                               ttk::SimplexId,
-                                              ftm::NodeType,
+                                              ttk::CriticalType,
                                               scalarType,
                                               ttk::SimplexId>>& diagram,
                                               scalarType* scalars,
@@ -73,9 +73,9 @@ namespace ttk{
           ftm::FTMTreePP& tree,
           const std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool>>& pairs,
           std::vector<std::tuple<ttk::SimplexId,
-                       ftm::NodeType,
+                       ttk::CriticalType,
                        ttk::SimplexId,
-                       ftm::NodeType,
+                       ttk::CriticalType,
                        scalarType,
                        ttk::SimplexId>>& diagram,
           scalarType*                   scalars) const;
@@ -130,15 +130,15 @@ namespace ttk{
 template <typename scalarType>
 int ttk::PersistenceDiagram::sortPersistenceDiagram(
     
-std::vector<std::tuple<ttk::SimplexId,ftm::NodeType,ttk::SimplexId,ftm::NodeType,
+std::vector<std::tuple<ttk::SimplexId,ttk::CriticalType,ttk::SimplexId,ttk::CriticalType,
 scalarType,ttk::SimplexId>>& diagram,
     scalarType* scalars,
     SimplexId* offsets) const{
   auto cmp=[scalars, offsets](const 
-std::tuple<ttk::SimplexId,ftm::NodeType,ttk::SimplexId,ftm::NodeType,scalarType,
+std::tuple<ttk::SimplexId,ttk::CriticalType,ttk::SimplexId,ttk::CriticalType,scalarType,
 ttk::SimplexId>& a,
       const 
-std::tuple<ttk::SimplexId,ftm::NodeType,ttk::SimplexId,ftm::NodeType,scalarType,
+std::tuple<ttk::SimplexId,ttk::CriticalType,ttk::SimplexId,ttk::CriticalType,scalarType,
 ttk::SimplexId>& b){
     const ttk::SimplexId idA=std::get<0>(a);
     const ttk::SimplexId idB=std::get<0>(b);
@@ -162,9 +162,9 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
     const std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, 
 bool>>& pairs,
     std::vector<std::tuple<ttk::SimplexId,
-                 ftm::NodeType,
+                 ttk::CriticalType,
                  ttk::SimplexId,
-                 ftm::NodeType,
+                 ttk::CriticalType,
                  scalarType,
                  ttk::SimplexId>>& diagram,
     scalarType*                   scalars) const
@@ -203,8 +203,8 @@ ftm::TreeType::Split, v0);
 template <typename scalarType, typename idType>
 int ttk::PersistenceDiagram::execute() const{
   // get data
-  std::vector<std::tuple<ttk::SimplexId,ftm::NodeType,ttk::SimplexId,ftm::NodeType,scalarType,ttk::SimplexId>>& CTDiagram=
-    *static_cast<std::vector<std::tuple<ttk::SimplexId,ftm::NodeType,ttk::SimplexId,ftm::NodeType,scalarType,ttk::SimplexId>>*>(CTDiagram_);
+  std::vector<std::tuple<ttk::SimplexId,ttk::CriticalType,ttk::SimplexId,ttk::CriticalType,scalarType,ttk::SimplexId>>& CTDiagram=
+    *static_cast<std::vector<std::tuple<ttk::SimplexId,ttk::CriticalType,ttk::SimplexId,ttk::CriticalType,scalarType,ttk::SimplexId>>*>(CTDiagram_);
   scalarType* scalars=static_cast<scalarType*>(inputScalars_);
   SimplexId* offsets=static_cast<SimplexId*>(inputOffsets_);
 
@@ -279,12 +279,12 @@ int ttk::PersistenceDiagram::execute() const{
       const ttk::SimplexId v1=std::get<1>(i);
       const scalarType persistenceValue=std::get<2>(i);
 
-      std::tuple<ttk::SimplexId, ftm::NodeType, ttk::SimplexId, ftm::NodeType, scalarType, ttk::SimplexId> t;
+      std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId, ttk::CriticalType, scalarType, ttk::SimplexId> t;
 
       std::get<0>(t)=v0;
-      std::get<1>(t)=ftm::NodeType::Saddle1;
+      std::get<1>(t)=ttk::CriticalType::Saddle1;
       std::get<2>(t)=v1;
-      std::get<3>(t)=ftm::NodeType::Saddle2;
+      std::get<3>(t)=ttk::CriticalType::Saddle2;
       std::get<4>(t)=persistenceValue;
       std::get<5>(t)=1;
 

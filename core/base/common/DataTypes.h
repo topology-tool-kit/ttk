@@ -25,12 +25,22 @@ namespace ttk{
   /// \brief Identifier type for tasks (i.e. with OpenMP).
   using TaskId = int;
 
+  /// default name for mask scalar field
+  const char MaskScalarFieldName[]="ttkMaskScalarField";
+
+  /// default name for vertex scalar field
+  const char VertexScalarFieldName[]="ttkVertexScalarField";
+
   /// default name for offset scalar field
   const char OffsetScalarFieldName[]="ttkOffsetScalarField";
 
   /// default name for bivariate offset fields
   const char OffsetFieldUName[]="ttkOffsetFieldU";
   const char OffsetFieldVName[]="ttkOffsetFieldV";
+
+  /// default value for critical index
+  enum class CriticalType { 
+    Local_minimum = 0, Saddle1, Saddle2, Local_maximum, Degenerate, Regular };
 }
 
 #endif // _DATATYPES_H

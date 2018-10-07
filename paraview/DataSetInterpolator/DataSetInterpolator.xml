@@ -1,21 +1,22 @@
 
 <ServerManagerConfiguration>
   <!-- This is the server manager configuration XML. It defines the interface to
-       our new filter. As a rule of thumb, try to locate the configuration for
-       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
-       that matches your filter and then model your xml on it -->
+  our new filter. As a rule of thumb, try to locate the configuration for
+  a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+  that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy 
-      name="PointDataSelector" 
-      class="ttkPointDataSelector" 
-      label="TTK PointDataSelector">
+      name="DataSetInterpolator" 
+      class="ttkDataSetInterpolator" 
+      label="TTK DataSetInterpolator">
       <Documentation
-        long_help="TTK fieldSelector plugin."
-        short_help="TTK fieldSelector plugin.">
-        TTK fieldSelector plugin documentation.
+        long_help="TTK dataSetInterpolator plugin."
+        short_help="TTK dataSetInterpolator plugin.">
+        TTK dataSetInterpolator plugin documentation.
       </Documentation>
       <InputProperty
-        name="Input"
+        name="Source"
+        port_index="1"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
@@ -24,47 +25,29 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkDataSet"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars"
-          attribute_type="point">
-          <Property name="Input" function="FieldDataSelection" />
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Source" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
           Data-set to process.
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty command="SetScalarFields"
-        clean_command="ClearScalarFields"
-        label="Scalar Fields"
-        name="ScalarFields"
-        number_of_elements="0"
-        default_values="1"
-        number_of_elements_per_command="1"
-        repeat_command="1">
-        <ArrayListDomain name="array_list"
-          default_values="1">
-          <RequiredProperties>
-            <Property name="Input"
-              function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Hints>
-          <NoDefault />
-        </Hints>
+      <InputProperty
+        name="Target"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
         <Documentation>
-          Select the scalar fields to process.
+          Data-set to process.
         </Documentation>
-      </StringVectorProperty>
-
-      <StringVectorProperty
-         name="Filter"
-         command="SetRegexpString"
-         number_of_elements="1"
-         default_values=".*" panel_visibility="advanced">
-         <Documentation>
-            This regexp will be used to filter the chosen fields. Only matching ones will be selected.
-         </Documentation>
-      </StringVectorProperty>
+      </InputProperty>
 
       <IntVectorProperty
         name="UseAllCores"
@@ -108,11 +91,6 @@
           Debug level.
         </Documentation>
       </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="ScalarFields" />
-        <Property name="Filter" />
-      </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />

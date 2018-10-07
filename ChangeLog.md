@@ -1,6 +1,12 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+- Automatic guesses for ttk generated fields
+- Improved type consistency
+- Improved ParaView GUIs
+- DataSet Interpolator (interpolate anything onto anything)
+- Improved triangulation request
+- Bug fixes
 
 ### 0.9.6
 - Fixed major performance bug with discrete gradient (thanks to Attila Gyulassy)
