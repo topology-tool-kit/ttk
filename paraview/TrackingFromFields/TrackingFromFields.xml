@@ -90,60 +90,7 @@ by a list of scalar fields) and which computes a tracking mesh."
         <DoubleRangeDomain name="range" min="0" max="100" />
       </DoubleVectorProperty>
 
-      <DoubleVectorProperty
-      name="spe"
-      label="Extremum weight"
-      command="SetPE"
-      number_of_elements="1"
-      default_values="1"
-      panel_visibility="advanced">
-        <DoubleRangeDomain name="spe" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for extrema.</Documentation>
-      </DoubleVectorProperty>
-
-      <DoubleVectorProperty
-      name="sps"
-      label="Saddle weight"
-      command="SetPS"
-      number_of_elements="1"
-      default_values="1"
-      panel_visibility="advanced">
-        <DoubleRangeDomain name="sps" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for saddles.</Documentation>
-      </DoubleVectorProperty>
-
-      <DoubleVectorProperty
-      name="spx"
-      label="X weight"
-      command="SetPX"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
-        <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the X component</Documentation>
-      </DoubleVectorProperty>
-
-      <DoubleVectorProperty
-      name="spy"
-      label="Y weight"
-      command="SetPY"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
-        <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the Y component</Documentation>
-      </DoubleVectorProperty>
-
-      <DoubleVectorProperty
-      name="spz"
-      label="Z weight"
-      command="SetPZ"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
-        <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the Z component</Documentation>
-      </DoubleVectorProperty>
+      
 
 
 
@@ -175,6 +122,64 @@ by a list of scalar fields) and which computes a tracking mesh."
       </StringVectorProperty>
 
 
+      <DoubleVectorProperty
+        name="spe"
+        label="Extremum weight"
+        command="SetPE"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spe" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for extrema.</Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="sps"
+        label="Saddle weight"
+        command="SetPS"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="sps" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for saddles.</Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="spx"
+        label="X weight"
+        command="SetPX"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the X component of 
+the extremum</Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="spy"
+        label="Y weight"
+        command="SetPY"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the Y component of 
+the extremum</Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="spz"
+        label="Z weight"
+        command="SetPZ"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the Z component of 
+the extremum</Documentation>
+      </DoubleVectorProperty>
+      
 
       <IntVectorProperty
       name="Use spacing"
@@ -210,7 +215,7 @@ by a list of scalar fields) and which computes a tracking mesh."
         </Documentation>
       </DoubleVectorProperty>
 
-      <IntVectorProperty
+<!--      <IntVectorProperty
       name="Do post-proc"
       command="SetDoPostProc"
       label="Perform trajectory post-processing"
@@ -240,25 +245,20 @@ by a list of scalar fields) and which computes a tracking mesh."
           Threshold for merging/splitting trajectories in
           connected components array.
         </Documentation>
-      </DoubleVectorProperty>
+      </DoubleVectorProperty>-->
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="StartTimestep" />
         <Property name="EndTimestep" />
         <Property name="Sampling" />
         <Property name="Tolerance" />
-        <Property name="spe" />
-        <Property name="sps" />
-        <Property name="spx" />
-        <Property name="spy" />
-        <Property name="spz" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="spacing" />
         <Property name="Use spacing" />
-        <Property name="Do post-proc" />
-        <Property name="Post-proc threshold" />
+<!--         <Property name="Do post-proc" /> -->
+<!--         <Property name="Post-proc threshold" /> -->
       </PropertyGroup>
 
       <!-- TTK internals -->

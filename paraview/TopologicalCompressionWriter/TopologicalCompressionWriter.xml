@@ -163,7 +163,7 @@
           Use SQ instead of topological compression.
         </Documentation>
       </IntVectorProperty>
-
+      
       <PropertyGroup panel_widget="Line" label="Input">
         <Property name="ScalarField" />
       </PropertyGroup>

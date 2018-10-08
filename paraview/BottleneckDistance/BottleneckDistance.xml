@@ -14,12 +14,17 @@
       long_help="TTK bottleneckDistance plugin."
       short_help="TTK bottleneckDistance plugin.">
         TTK bottleneckDistance plugin documentation.
+        
+        Related publication:
+        'Lifted Wasserstein Matcher for Fast and Robust Topology Tracking'
+        Maxime Soler, Melanie Plainchault, Bruno Conche, Julien Tierny 
+        Proc. of IEEE Symposium on Large Data Analysis and Visualization 2018.
       </Documentation>
 
       <InputProperty
       name="Input1"
       port_index="0"
-      label="Smallest persistence diagram"
+      label="Persistence diagram 1"
       command="SetInputConnection"
       >
         <ProxyGroupDomain name="groups">
@@ -40,7 +45,7 @@
       <InputProperty
       name="Input2"
       port_index="1"
-      label="Largest persistence diagram"
+      label="Persistence diagram 2"
       command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
@@ -128,7 +133,8 @@
       default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the X component</Documentation>
+        <Documentation>Importance weight for the X component of 
+the extremum</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -140,7 +146,8 @@
       panel_visibility="advanced"
       >
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the Y component</Documentation>
+        <Documentation>Importance weight for the Y component of 
+the extremum</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
@@ -151,7 +158,8 @@
       default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the Z component</Documentation>
+        <Documentation>Importance weight for the Z component of 
+the extremum</Documentation>
       </DoubleVectorProperty>
 
 
