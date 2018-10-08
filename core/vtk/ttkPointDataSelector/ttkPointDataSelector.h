@@ -23,11 +23,13 @@
 #include<vtkDoubleArray.h>
 #include<vtkFiltersCoreModule.h>
 #include<vtkFloatArray.h>
+#include<vtkIdTypeArray.h>
 #include<vtkInformation.h>
 #include<vtkIntArray.h>
 #include<vtkObjectFactory.h>
 #include<vtkPointData.h>
 #include<vtkSmartPointer.h>
+#include<vtkUnsignedShortArray.h>
 
 // ttk code includes
 #include<Wrapper.h>
@@ -120,9 +122,14 @@ class ttkPointDataSelector
 
       SetNumberOfInputPorts(1);
       SetNumberOfOutputPorts(1);
+      
+      localFieldCopy_ = NULL;
     }
 
-    ~ttkPointDataSelector(){};
+    ~ttkPointDataSelector(){
+      if(localFieldCopy_)
+        localFieldCopy_->Delete();
+    };
 
     int RequestData(vtkInformation *request,
         vtkInformationVector **inputVector,
@@ -136,6 +143,7 @@ class ttkPointDataSelector
     std::string              SelectedFieldName;
     std::vector<std::string> ScalarFields;
     std::string RegexpString;
+    vtkDataArray             *localFieldCopy_;
 
     int doIt(vtkDataSet *input, vtkDataSet *output);
     bool needsToAbort();
