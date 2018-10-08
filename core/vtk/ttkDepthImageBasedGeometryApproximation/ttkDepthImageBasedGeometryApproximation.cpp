@@ -66,7 +66,6 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         vector<double> triangleDistortions;
 
         // Approximate geometry
-        cout<<depthValues->GetDataType()<<endl;
         switch(depthValues->GetDataType()){
             vtkTemplateMacro({
                 depthImageBasedGeometryApproximation_.execute<VTK_TT>(
