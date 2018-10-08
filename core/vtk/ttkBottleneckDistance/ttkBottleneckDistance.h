@@ -176,6 +176,11 @@ public:
       vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_,
       vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_);
 
+  template <typename dataType>
+  int translateSecondDiagram(
+    vtkUnstructuredGrid *outputCT2,
+    double spacing
+    );
 
   template <typename dataType>
   int getMatchingMesh(
@@ -183,7 +188,8 @@ public:
       const std::vector<diagramTuple>& diagram2,
       const std::vector<matchingTuple>& matchings,
       bool useGeometricSpacing,
-      double spacing);
+      double spacing,
+      bool is2D);
 
   int doBenchmark();
 
@@ -387,7 +393,8 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   auto s = (float) 0.0;
 
   if (!deathScalars != !birthScalars) return -2;
-  bool is3D = !(!deathScalars && !birthScalars);
+  bool is2D = !deathScalars && !birthScalars;
+  bool is3D = !is2D;
   if (Is3D && !is3D) Is3D = false;
   if (!Is3D && diagramNumber == 1) s = (float) spacing;
 
@@ -531,12 +538,46 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
 }
 
 template <typename dataType>
+int ttkBottleneckDistance::translateSecondDiagram(
+  vtkUnstructuredGrid *outputCT2,
+  const double spacing)
+{
+  vtkSmartPointer<vtkPoints> points2 = vtkSmartPointer<vtkPoints>::New();
+  vtkPoints* points = (outputCT2->GetPoints());
+  ttkSimplexIdTypeArray* pairIdentifierScalars =
+    ttkSimplexIdTypeArray::SafeDownCast(outputCT2->
+      GetCellData()->GetArray("PairIdentifier"));
+  auto pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
+
+  for (int i = 0; i < pairingsSize; ++i) {
+    int index1 = 2 * i;
+    double* coords1 = points->GetPoint(index1);
+    auto x1 = coords1[0];
+    auto y1 = coords1[1];
+    auto z1 = coords1[2] + spacing;
+
+    int index2 = index1 + 1;
+    double* coords2 = points->GetPoint(index2);
+    auto x2 = coords2[0];
+    auto y2 = coords2[1];
+    auto z2 = coords2[2] + spacing;
+    points2->InsertNextPoint(x1, y1, z1);
+    points2->InsertNextPoint(x2, y2, z2);
+  }
+
+  outputCT2->SetPoints(points2);
+
+  return 0;
+}
+
+template <typename dataType>
 int ttkBottleneckDistance::getMatchingMesh(
     const std::vector<diagramTuple>& diagram1,
     const std::vector<diagramTuple>& diagram2,
     const std::vector<matchingTuple>& matchings,
     const bool useGeometricSpacing,
-    const double spacing)
+    const double spacing,
+    const bool is2D)
 {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
   vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
@@ -577,6 +618,12 @@ int ttkBottleneckDistance::getMatchingMesh(
         BNodeType t12 = std::get<3>(tuple1);
         bool t11Max = t11 == BLocalMin || t11 == BLocalMax;
         bool t12Max = t12 == BLocalMin || t12 == BLocalMax;
+        if (is2D) { // Quickchage for highlighting 2D matching
+          if (t11 != BLocalMax && t12 != BLocalMax) {
+            t11Max = t11 != BLocalMin;
+            t12Max = t12 != BLocalMin;
+          }
+        }
         x1 = t12Max ? std::get<11>(tuple1) : t11Max ? std::get<7>(tuple1) :
              (std::get<7>(tuple1) + std::get<11>(tuple1))/2;
         y1 = t12Max ? std::get<12>(tuple1) : t11Max ? std::get<8>(tuple1) :
@@ -596,7 +643,12 @@ int ttkBottleneckDistance::getMatchingMesh(
         BNodeType t22 = std::get<3>(tuple2);
         bool t21Max = t21 == BLocalMin || t21 == BLocalMax;
         bool t22Max = t22 == BLocalMin || t22 == BLocalMax;
-
+        if (is2D) { // Quickchage for highlighting 2D matching
+          if (t21 != BLocalMax && t22 != BLocalMax) {
+            t21Max = t21 != BLocalMin;
+            t22Max = t22 != BLocalMin;
+          }
+        }
         x2 = t22Max ? std::get<11>(tuple2) : t21Max ? std::get<7>(tuple2) :
              (std::get<7>(tuple2) + std::get<11>(tuple2))/2;
         y2 = t22Max ? std::get<12>(tuple2) : t21Max ? std::get<8>(tuple2) :

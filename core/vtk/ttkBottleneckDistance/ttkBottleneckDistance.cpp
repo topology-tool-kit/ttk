@@ -87,6 +87,19 @@ int ttkBottleneckDistance::doIt(
   int dataType2 = CTPersistenceDiagram2_->GetCellData()->GetArray("Persistence")->GetDataType();
   if (dataType1 != dataType2) return -1;
 
+  vtkDoubleArray* birthScalars1 =
+    vtkDoubleArray::SafeDownCast(CTPersistenceDiagram1_->GetPointData()->GetArray("Birth"));
+  vtkDoubleArray* deathScalars1 =
+    vtkDoubleArray::SafeDownCast(CTPersistenceDiagram1_->GetPointData()->GetArray("Death"));
+  vtkDoubleArray* birthScalars2 =
+    vtkDoubleArray::SafeDownCast(CTPersistenceDiagram1_->GetPointData()->GetArray("Birth"));
+  vtkDoubleArray* deathScalars2 =
+    vtkDoubleArray::SafeDownCast(CTPersistenceDiagram1_->GetPointData()->GetArray("Death"));
+  bool is2D1 = !deathScalars1 && !birthScalars1;
+  bool is2D2 = !deathScalars2 && !birthScalars2;
+  if (is2D1 != is2D2) return -2;
+  bool is2D = is2D1;
+
   // Call package
   int status = 0;
 
@@ -139,7 +152,7 @@ int ttkBottleneckDistance::doIt(
   if (useOutputMatching) {
     status = getMatchingMesh<dataType>(
         CTDiagram1, CTDiagram2, matchings,
-        useGeometricSpacing, Spacing);
+        useGeometricSpacing, Spacing, is2D);
   }
 
   if (status != 0) return status;
@@ -148,7 +161,10 @@ int ttkBottleneckDistance::doIt(
 
   // Set output.
   outputCT1->ShallowCopy(CTPersistenceDiagram1_);
-  outputCT2->ShallowCopy(CTPersistenceDiagram2_);
+  outputCT2->DeepCopy(CTPersistenceDiagram2_);
+  if (UseGeometricSpacing)
+    translateSecondDiagram<dataType>(outputCT2, Spacing);
+
   if (UseOutputMatching)
     outputCT3->ShallowCopy(CTPersistenceDiagram3_);
 

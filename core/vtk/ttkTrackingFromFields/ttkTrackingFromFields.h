@@ -200,6 +200,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   unsigned long fieldNumber = inputScalarFields.size();
 
   // 0. get data
+  trackingF_.setThreadNumber(ThreadNumber);
   trackingF_.setTriangulation(internalTriangulation_);
   std::vector<void *> inputFields(fieldNumber);
   for (int i = 0; i < (int) fieldNumber; ++i)
@@ -231,6 +232,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   bool is3D = true; // Is3D;
   std::string wasserstein = WassersteinMetric;
 
+  tracking_.setThreadNumber(ThreadNumber);
   tracking_.performMatchings<dataType>(
     (int) fieldNumber,
     persistenceDiagrams,
@@ -253,18 +255,21 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   vtkSmartPointer<vtkDoubleArray> persistenceScalars = vtkSmartPointer<vtkDoubleArray>::New();
   vtkSmartPointer<vtkDoubleArray> valueScalars = vtkSmartPointer<vtkDoubleArray>::New();
   vtkSmartPointer<vtkIntArray> matchingIdScalars = vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIntArray> lengthScalars = vtkSmartPointer<vtkIntArray>::New();
   vtkSmartPointer<vtkIntArray> timeScalars = vtkSmartPointer<vtkIntArray>::New();
   vtkSmartPointer<vtkIntArray> componentIds = vtkSmartPointer<vtkIntArray>::New();
   vtkSmartPointer<vtkIntArray> pointTypeScalars = vtkSmartPointer<vtkIntArray>::New();
   persistenceScalars->SetName("Cost");
   valueScalars->SetName("Scalar");
   matchingIdScalars->SetName("MatchingIdentifier");
+  lengthScalars->SetName("ComponentLength");
   timeScalars->SetName("TimeStep");
   componentIds->SetName("ConnectedComponentId");
-  pointTypeScalars->SetName("NodeType");
+  pointTypeScalars->SetName("CriticalType");
 
   // (+ vertex id)
   std::vector<trackingTuple> trackingsBase;
+  tracking_.setThreadNumber(ThreadNumber);
   tracking_.performTracking<dataType>(
     persistenceDiagrams, outputMatchings,
     trackingsBase);
@@ -285,7 +290,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
     trackingsBase, outputMatchings, persistenceDiagrams,
     useGeometricSpacing, spacing, DoPostProc, trackingTupleToMerged,
     points, persistenceDiagram,
-    persistenceScalars, valueScalars, matchingIdScalars, timeScalars,
+    persistenceScalars, valueScalars, matchingIdScalars, lengthScalars, timeScalars,
     componentIds, pointTypeScalars);
 
   outputMesh_->ShallowCopy(persistenceDiagram);

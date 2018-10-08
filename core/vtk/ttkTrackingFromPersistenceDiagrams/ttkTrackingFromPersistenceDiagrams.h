@@ -118,6 +118,7 @@ class ttkTrackingFromPersistenceDiagrams
       vtkSmartPointer<vtkDoubleArray>& persistenceScalars,
       vtkSmartPointer<vtkDoubleArray>& valueScalars,
       vtkSmartPointer<vtkIntArray>& matchingIdScalars,
+      vtkSmartPointer<vtkIntArray>& lengthScalars,
       vtkSmartPointer<vtkIntArray>& timeScalars,
       vtkSmartPointer<vtkIntArray>& componentIds,
       vtkSmartPointer<vtkIntArray>& pointTypeScalars);
@@ -194,13 +195,13 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
 
   // Transform inputs into the right structure.
   for (int i = 0; i < numInputs; ++i) {
-    // TODO do it in another, normalized loop.
     vtkSmartPointer<ttkBottleneckDistance> bottleneckModule = vtkSmartPointer<ttkBottleneckDistance>::New();
     vtkUnstructuredGrid* grid1 = vtkUnstructuredGrid::New();
     grid1->ShallowCopy(vtkUnstructuredGrid::SafeDownCast(input[i]));
     bottleneckModule->getPersistenceDiagram(inputPersistenceDiagrams[i], grid1, spacing, 0);
   }
 
+  tracking_.setThreadNumber(ThreadNumber);
   tracking_.performMatchings<dataType>(
     numInputs,
     inputPersistenceDiagrams,
@@ -286,18 +287,21 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
   vtkSmartPointer<vtkDoubleArray> persistenceScalars = vtkSmartPointer<vtkDoubleArray>::New();
   vtkSmartPointer<vtkDoubleArray> valueScalars = vtkSmartPointer<vtkDoubleArray>::New();
   vtkSmartPointer<vtkIntArray> matchingIdScalars = vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIntArray> lengthScalars = vtkSmartPointer<vtkIntArray>::New();
   vtkSmartPointer<vtkIntArray> timeScalars = vtkSmartPointer<vtkIntArray>::New();
   vtkSmartPointer<vtkIntArray> componentIds = vtkSmartPointer<vtkIntArray>::New();
   vtkSmartPointer<vtkIntArray> pointTypeScalars = vtkSmartPointer<vtkIntArray>::New();
   persistenceScalars->SetName("Cost");
   valueScalars->SetName("Scalar");
   matchingIdScalars->SetName("MatchingIdentifier");
+  lengthScalars->SetName("ComponentLength");
   timeScalars->SetName("TimeStep");
   componentIds->SetName("ConnectedComponentId");
-  pointTypeScalars->SetName("NodeType");
+  pointTypeScalars->SetName("CriticalType");
 
   // (+ vertex id)
   std::vector<trackingTuple> trackingsBase; // structure containing all trajectories
+  tracking_.setThreadNumber(ThreadNumber);
   tracking_.performTracking<dataType>(
     inputPersistenceDiagrams,
     outputMatchings,
@@ -327,7 +331,8 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
     useGeometricSpacing, spacing, DoPostProc,
     trackingTupleToMerged,
     points, persistenceDiagram,
-    persistenceScalars, valueScalars, matchingIdScalars, timeScalars, componentIds, pointTypeScalars);
+    persistenceScalars, valueScalars, matchingIdScalars,
+    lengthScalars, timeScalars, componentIds, pointTypeScalars);
 
   outputMesh_->ShallowCopy(persistenceDiagram);
   outputMesh->ShallowCopy(outputMesh_);
@@ -349,6 +354,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   vtkSmartPointer<vtkDoubleArray>& persistenceScalars,
   vtkSmartPointer<vtkDoubleArray>& valueScalars,
   vtkSmartPointer<vtkIntArray>& matchingIdScalars,
+  vtkSmartPointer<vtkIntArray>& lengthScalars,
   vtkSmartPointer<vtkIntArray>& timeScalars,
   vtkSmartPointer<vtkIntArray>& componentIds,
   vtkSmartPointer<vtkIntArray>& pointTypeScalars)
@@ -358,7 +364,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
     trackingTuple tt = trackings.at((unsigned long) k);
 
     int numStart = std::get<0>(tt);
-    // int numEnd = std::get<1>(tt);
+    int numEnd = std::get<1>(tt);
+    int chainLength = numEnd - numStart;
     std::vector<BIdVertex> chain = std::get<2>(tt);
 
     if (chain.size() <= 1) {
@@ -432,7 +439,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
           }
 
           if (hasMergedFirst) {
-            std::cout << "Has merged first " << std::endl;
+            // std::cout << "Has merged first " << std::endl;
 
             // Replace former first end of the segment with previous ending segment.
             std::vector<BIdVertex> chain3 = std::get<2>(ttt);
@@ -449,7 +456,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
             t11Min = point1Type1 == BLocalMin; t11Max = point1Type1 == BLocalMax;
             t12Min = point1Type2 == BLocalMin; t12Max = point1Type2 == BLocalMax;
             bothEx1 = (t11Min && t12Max) || (t11Max && t12Min);
-            std::cout << "xyz " << x1 << ", " << y1 << ", " << z1 << std::endl;
+            // std::cout << "xyz " << x1 << ", " << y1 << ", " << z1 << std::endl;
             if (bothEx1) {
               x1 = t12Max ? std::get<11>(tupleN) : std::get<7>(tupleN);
               y1 = t12Max ? std::get<12>(tupleN) : std::get<8>(tupleN);
@@ -461,7 +468,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
               z1 = t12Max ? std::get<13>(tupleN) : t11Min ? std::get<9>(tupleN) : (std::get<9>(tupleN) + std::get<13>(tupleN)) / 2;
               if (useGeometricSpacing) z1 += spacing * (numStart + c);
             }
-            std::cout << "xyz " << x1 << ", " << y1 << ", " << z1 << std::endl;
+            // std::cout << "xyz " << x1 << ", " << y1 << ", " << z1 << std::endl;
           }
         }
       }
@@ -505,6 +512,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       persistenceScalars->InsertTuple1(currentVertex, cost);
       valueScalars->InsertTuple1(currentVertex, (std::get<10>(tuple1) + std::get<10>(tuple2)) / 2);
       matchingIdScalars->InsertTuple1(currentVertex, currentVertex);
+      lengthScalars->InsertTuple1(currentVertex, chainLength);
 
       currentVertex++;
     }
@@ -514,6 +522,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
   persistenceDiagram->GetCellData()->AddArray(valueScalars);
   persistenceDiagram->GetCellData()->AddArray(matchingIdScalars);
+  persistenceDiagram->GetCellData()->AddArray(lengthScalars);
   persistenceDiagram->GetPointData()->AddArray(timeScalars);
   persistenceDiagram->GetPointData()->AddArray(componentIds);
   persistenceDiagram->GetPointData()->AddArray(pointTypeScalars);

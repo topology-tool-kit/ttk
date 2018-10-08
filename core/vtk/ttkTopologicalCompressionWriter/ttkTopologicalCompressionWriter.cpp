@@ -107,6 +107,7 @@ void ttkTopologicalCompressionWriter::WriteData()
 {
   bool zfpOnly = ZFPOnly;
   double zfpBitBudget = ZFPBitBudget;
+  topologicalCompression.setThreadNumber(ThreadNumber);
 
   {
     ttk::Debug d;
