@@ -28,7 +28,12 @@ int ttkCellDataSelector::updateProgress(const float &progress){
 int ttkCellDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
   Memory m;
 
-  output->ShallowCopy(input);
+  if((ScalarFields.size() == 1)&&(RenameSelected)){
+    output->DeepCopy(input);
+  }
+  else{
+    output->ShallowCopy(input);
+  }
 
   vtkCellData* inputCellData=input->GetCellData();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -50,7 +55,59 @@ int ttkCellDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
      for (auto &scalar : ScalarFields) {
         if (scalar.length() > 0 && regex_match(scalar, regex(RegexpString))) {
            vtkDataArray *arr = inputCellData->GetArray(scalar.data());
-           if (arr) outputCellData->AddArray(arr);
+          if (arr){
+            
+            if((ScalarFields.size() == 1)&&(RenameSelected)){
+              
+              if(localFieldCopy_){
+                localFieldCopy_->Delete();
+                localFieldCopy_ = NULL;
+              }
+              
+              switch(arr->GetDataType()){
+                case VTK_CHAR:
+                  localFieldCopy_ = vtkCharArray::New();
+                  break;
+                  
+                case VTK_DOUBLE:
+                  localFieldCopy_ = vtkDoubleArray::New();
+                  break;
+                  
+                case VTK_FLOAT:
+                  localFieldCopy_ = vtkFloatArray::New();
+                  break;
+                  
+                case VTK_INT:
+                  localFieldCopy_ = vtkIntArray::New();
+                  break;
+                  
+                case VTK_ID_TYPE:
+                  localFieldCopy_ = vtkIdTypeArray::New();
+                  break;
+                  
+                case VTK_UNSIGNED_SHORT:
+                  localFieldCopy_ = vtkUnsignedShortArray::New();
+                  break;
+                  
+                default:
+                {
+                  stringstream msg;
+                  msg << "[ttkPointDataSelector] Unsupported data type :(" << 
+                  endl;
+                  dMsg(cerr, msg.str(), fatalMsg);
+                }
+                break;
+              }
+              
+              if(localFieldCopy_){
+                localFieldCopy_->DeepCopy(arr);
+                localFieldCopy_->SetName(SelectedFieldName.data());
+                arr = localFieldCopy_;
+              }
+            }
+            
+            outputCellData->AddArray(arr);
+          }
         }
      }
   } catch (std::regex_error&) {
