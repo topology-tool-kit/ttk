@@ -85,18 +85,17 @@ namespace ttk{
 // 			}
 // 			return 0;
 // 		}
-    inline int setDeterministic(const bool deterministic){
+    inline void setDeterministic(const bool deterministic){
       deterministic_ = deterministic;
     }
 
-    inline int setMethod(const int &method){
+    inline void setMethod(const int &method){
       if(method==1){
         method_="Munkres";
       }
       else if(method==2){
         method_="Auction";
       }
-      return 0;
     }
 
 		inline int setDiagrams(std::vector<std::vector<diagramTuple> > *data){

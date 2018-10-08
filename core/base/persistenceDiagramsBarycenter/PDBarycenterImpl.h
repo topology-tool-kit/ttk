@@ -597,7 +597,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeMunkresBa
 
 		if(!finished){
 			std::cout << "updating barycenter..." << '\n';
-			dataType max_shift = updateBarycenter(all_matchings);
+			updateBarycenter(all_matchings);
 			std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 
 

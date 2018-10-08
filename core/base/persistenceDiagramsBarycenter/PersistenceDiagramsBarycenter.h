@@ -88,7 +88,7 @@ namespace ttk{
 			return 0;
 		}
 
-    inline int setMethod(const bool deterministic){
+    inline void setMethod(const bool deterministic){
       deterministic_ = deterministic;
     }
 
@@ -119,7 +119,7 @@ namespace ttk{
 			return (var >= 0) ? var : -var;
 		}
 
-    inline int setMethod(const int &method){
+    inline void setMethod(const int &method){
       method_ = method;
     }
 
