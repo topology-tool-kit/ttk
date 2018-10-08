@@ -135,7 +135,7 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
         };
 
         // Compute vertex positions and parallize over rows
-        for(size_t y=0; y<camResST[1]-1; y+=step){
+        for(size_t y=0; y<camResST[1]; y+=step){
             double v = ((double)y)*pixelHeightWorld;
             double vTimesUp[3] = {
                 v*camUpTrue[0],
@@ -144,7 +144,7 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
             };
 
             size_t yOffset = y*camResST[0];
-            for(size_t x=0; x<camResST[0]-1; x+=step){
+            for(size_t x=0; x<camResST[0]; x+=step){
                 size_t pixelIndex = x + yOffset;
                 int vertexIndex = pixelIndexVertexIndexMap[ pixelIndex ];
                 if(vertexIndex < 0) continue;

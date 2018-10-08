@@ -75,6 +75,7 @@ int ttkCinemaImaging::RequestData(
 
     vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
     renderWindow->SetSize( this->Resolution );
+    renderWindow->SetMultiSamples( 0 );
     renderWindow->AddRenderer(renderer);
 
     // Setup Camera and Render to Update Everything
