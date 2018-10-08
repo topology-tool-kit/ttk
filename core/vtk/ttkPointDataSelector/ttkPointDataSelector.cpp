@@ -49,8 +49,13 @@ int ttkPointDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
   try {
      for(auto& scalar : ScalarFields){
         if(scalar.length()>0 && regex_match(scalar, regex(RegexpString))){
-           vtkDataArray* arr=inputPointData->GetArray(scalar.data());
-           if(arr) outputPointData->AddArray(arr);
+          vtkDataArray* arr=inputPointData->GetArray(scalar.data());
+          if(arr){
+            if((ScalarFields.size() == 1)&&(RenameSelected)){
+              arr->SetName(SelectedFieldName.data());
+            }
+            outputPointData->AddArray(arr);
+          }
         }
      }
   } catch (std::regex_error&) {

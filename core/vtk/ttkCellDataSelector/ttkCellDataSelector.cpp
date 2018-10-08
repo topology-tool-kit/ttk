@@ -50,7 +50,12 @@ int ttkCellDataSelector::doIt(vtkDataSet* input, vtkDataSet* output){
      for (auto &scalar : ScalarFields) {
         if (scalar.length() > 0 && regex_match(scalar, regex(RegexpString))) {
            vtkDataArray *arr = inputCellData->GetArray(scalar.data());
-           if (arr) outputCellData->AddArray(arr);
+          if (arr){
+            if((ScalarFields.size() == 1)&&(RenameSelected)){
+              arr->SetName(SelectedFieldName.data());
+            }
+            outputCellData->AddArray(arr);
+          }
         }
      }
   } catch (std::regex_error&) {

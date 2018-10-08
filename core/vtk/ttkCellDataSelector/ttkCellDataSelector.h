@@ -47,6 +47,12 @@ class ttkCellDataSelector
       // default ttk setters
       vtkSetMacro(debugLevel_, int);
       vtkSetMacro(RegexpString, std::string);
+      
+      vtkSetMacro(RenameSelected, bool);
+      vtkGetMacro(RenameSelected, bool);
+      
+      vtkSetMacro(SelectedFieldName, std::string);
+      vtkGetMacro(SelectedFieldName, std::string);
 
     void SetThreads(){
       if(!UseAllCores)
@@ -106,10 +112,12 @@ class ttkCellDataSelector
 
     ttkCellDataSelector(){
       UseAllCores = false;
+      RenameSelected = false;
       ThreadNumber = 1;
       debugLevel_ = 3;
 
       RegexpString = "*";
+      SelectedFieldName = "SelectedField";
 
       SetNumberOfInputPorts(1);
       SetNumberOfOutputPorts(1);
@@ -125,6 +133,8 @@ class ttkCellDataSelector
 
     bool UseAllCores;
     int ThreadNumber;
+    bool RenameSelected;
+    std::string              SelectedFieldName;
     std::vector<std::string> ScalarFields;
     std::string RegexpString;
 
