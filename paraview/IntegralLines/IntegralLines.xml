@@ -61,8 +61,6 @@ sources if necessary to create such an identifier field).
         </Documentation>
       </InputProperty>
 
-
-
       <StringVectorProperty
         name="ScalarField"
         command="SetScalarField"
@@ -97,12 +95,24 @@ sources if necessary to create such an identifier field).
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty name="ForceInputVertexScalarField"
+        label="Force Input Vertex ScalarField"
+        command="SetForceInputVertexScalarField"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
       <StringVectorProperty
-        name="VertexIdentifierScalarFieldName"
-        command="SetVertexIdentifierScalarFieldName"
-        label="Vertex Identifier Scalar Field Name"
+        name="InputVertexScalarFieldName"
+        command="SetInputVertexScalarFieldName"
+        label="Vertex identifier field"
         number_of_elements="1"
         animateable="0"
+        panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
@@ -112,14 +122,20 @@ sources if necessary to create such an identifier field).
             <Property name="Seeds" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputVertexScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
-          Select the vertex identifier field for the seeds.
+          Select the vertex identifier scalar field in the sources.
         </Documentation>
       </StringVectorProperty>
 
       <IntVectorProperty
         name="ForceInputOffsetScalarField"
-        label="Froce Input Offset Field"
+        label="Force Input Offset Field"
         command="SetForceInputOffsetScalarField"
         number_of_elements="1"
         panel_visibility="advanced"
@@ -148,6 +164,12 @@ sources if necessary to create such an identifier field).
             <Property name="Domain" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the input offset field (to disambiguate flat 
 plateaus).
@@ -173,6 +195,13 @@ plateaus).
         number_of_elements="1"
         default_values="1" panel_visibility="advanced">
         <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="UseAllCores"
+            value="0" />
+        </Hints>
+
         <Documentation>
           Thread number.
         </Documentation>
@@ -199,7 +228,8 @@ plateaus).
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField" />
         <Property name="Direction" />
-        <Property name="VertexIdentifierScalarFieldName" />
+        <Property name="ForceInputVertexScalarField" />
+        <Property name="InputVertexScalarFieldName" />
         <Property name="ForceInputOffsetScalarField" />
         <Property name="OffsetScalarFieldName" />
       </PropertyGroup>

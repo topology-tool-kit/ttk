@@ -77,8 +77,8 @@ class ttkScalarFieldSmoother
     vtkSetMacro(MaskIdentifier, int);
     vtkGetMacro(MaskIdentifier, int);
 
-    vtkSetMacro(UseInputMask, bool);
-    vtkGetMacro(UseInputMask, bool);
+    vtkSetMacro(ForceInputMaskScalarField, bool);
+    vtkGetMacro(ForceInputMaskScalarField, bool);
     
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
@@ -102,7 +102,7 @@ class ttkScalarFieldSmoother
     int                   NumberOfIterations;
     int                   ScalarFieldIdentifier;
     int                   MaskIdentifier;
-    bool                  UseInputMask;
+    bool                  ForceInputMaskScalarField;
     std::string                ScalarField;
     std::string                InputMask;
     vtkDataArray          *outputScalarField_;

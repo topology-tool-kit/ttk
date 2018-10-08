@@ -125,7 +125,7 @@ int ttkTopologicalCompressionReader::RequestData(
   {
     vertexOffset = vtkSmartPointer<vtkIntArray>::New();
     vertexOffset->SetNumberOfTuples(vertexNumber);
-    vertexOffset->SetName("Offsets");
+    vertexOffset->SetName(ttk::OffsetScalarFieldName);
     std::vector<int> voidOffsets = topologicalCompression.getDecompressedOffsets();
     for (int i = 0; i < vertexNumber; ++i)
       vertexOffset->SetTuple1(i, voidOffsets[i]);

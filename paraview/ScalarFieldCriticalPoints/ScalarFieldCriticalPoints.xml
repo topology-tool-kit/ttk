@@ -10,19 +10,26 @@
      class="ttkScalarFieldCriticalPoints" 
      label="TTK ScalarFieldCriticalPoints">
      <Documentation
-        long_help="TTK plugin for the computation of critical points in PL
-scalar fields defined on PL manifolds."
-        short_help="TTK plugin for the computation of critical points in PL
-scalar fields defined on PL manifolds.">
-       
-This plugin computes the list of critical points of the input scalar field 
-and classify them according to their type.
+       long_help="TTK plugin for the computation of critical points in PL
+       scalar fields defined on PL manifolds."
+       short_help="TTK plugin for the computation of critical points in PL
+       scalar fields defined on PL manifolds.">
 
-Related publication:
-"Critical points and curvature for embedded polyhedral surfaces"
-Thomas Banchoff 
-American Mathematical Monthly, 1970.
+       This plugin computes the list of critical points of the input scalar field 
+       and classify them according to their type.
 
+       Related publication:
+       "Critical points and curvature for embedded polyhedral surfaces"
+       Thomas Banchoff 
+       American Mathematical Monthly, 1970.
+
+       CriticalType:
+       * 0 - minimum,
+       * 1 - 1saddle,
+       * 2 - 2saddle,
+       * 3 - maximum,
+       * 4 - degenerate,
+       * 5 - regular,
      </Documentation>
      <InputProperty
         name="Input"
@@ -89,6 +96,12 @@ American Mathematical Monthly, 1970.
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="With predefined offset"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the scalar field to use as a vertex offset (used to 
 disambiguate flat plateaus).
@@ -144,6 +157,13 @@ disambiguate flat plateaus).
          number_of_elements="1"
          default_values="1" panel_visibility="advanced">
         <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="UseAllCores"
+            value="0" />
+        </Hints>
+
          <Documentation>
           Thread number
          </Documentation>

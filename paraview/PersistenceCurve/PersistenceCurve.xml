@@ -99,6 +99,12 @@ TopologicalSimplification.
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the input offset field to disambiguate flat plateaus.
         </Documentation>
@@ -135,6 +141,13 @@ TopologicalSimplification.
         number_of_elements="1"
         default_values="1" panel_visibility="advanced">
         <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="UseAllCores"
+            value="0" />
+        </Hints>
+
         <Documentation>
           Thread number.
         </Documentation>

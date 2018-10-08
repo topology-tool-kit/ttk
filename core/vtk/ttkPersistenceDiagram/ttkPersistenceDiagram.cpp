@@ -171,7 +171,7 @@ int ttkPersistenceDiagram::deleteDiagram(){
   if(CTDiagram_ and inputScalars_){
     switch(inputScalars_->GetDataType()){
       ttkTemplateMacro({
-          using tuple_t = tuple<SimplexId TTK_COMMA ftm::NodeType TTK_COMMA SimplexId TTK_COMMA ftm::NodeType TTK_COMMA VTK_TT TTK_COMMA SimplexId>;
+          using tuple_t = tuple<SimplexId TTK_COMMA CriticalType TTK_COMMA SimplexId TTK_COMMA CriticalType TTK_COMMA VTK_TT TTK_COMMA SimplexId>;
           vector<tuple_t>* CTDiagram = (vector<tuple_t>*) CTDiagram_;
           delete CTDiagram;
           });
@@ -230,9 +230,9 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #ifndef _MSC_VER
 	  vtkTemplateMacro(({
 		  using tuple_t = tuple<SimplexId,
-		  ftm::NodeType,
+		  CriticalType,
 		  SimplexId,
-		  ftm::NodeType,
+		  CriticalType,
 		  VTK_TT,
 		  SimplexId>;
 
@@ -279,9 +279,9 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
 	  vtkTemplateMacro({
 		  using tuple_t = tuple<SimplexId TTK_COMMA
-		  ftm::NodeType TTK_COMMA
+		  CriticalType TTK_COMMA
 		  SimplexId TTK_COMMA
-		  ftm::NodeType TTK_COMMA
+		  CriticalType TTK_COMMA
 		  VTK_TT TTK_COMMA
 		  SimplexId>;
 
@@ -323,9 +323,9 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #else
 	  vtkTemplateMacro({
 		  using tuple_t = tuple<SimplexId TTK_COMMA
-		  ftm::NodeType TTK_COMMA
+		  CriticalType TTK_COMMA
 		  SimplexId TTK_COMMA
-		  ftm::NodeType TTK_COMMA
+		  CriticalType TTK_COMMA
 		  VTK_TT TTK_COMMA
 		  SimplexId>;
 

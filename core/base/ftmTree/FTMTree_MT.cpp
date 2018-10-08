@@ -1084,12 +1084,12 @@ void FTMTree_MT::printParams(void) const
 {
    if (debugLevel_ > 1) {
       if (debugLevel_ > 2) {
-         cout << "------------" << endl;
+         cout << "[FTM] ------------" << endl;
       }
       cout << "[FTM] number of threads : " << threadNumber_ << endl;
       if (debugLevel_ > 2) {
-         cout << "* debug lvl  : " << debugLevel_ << endl;
-         cout << "* tree type  : ";
+         cout << "[FTM] * debug lvl  : " << debugLevel_ << endl;
+         cout << "[FTM] * tree type  : ";
          if (params_->treeType == TreeType::Contour) {
             cout << "Contour";
          } else if (params_->treeType == TreeType::Join) {
@@ -1100,7 +1100,7 @@ void FTMTree_MT::printParams(void) const
             cout << "Join + Split";
          }
          cout << endl;
-         cout << "------------" << endl;
+         cout << "[FTM] ------------" << endl;
       }
    }
 }

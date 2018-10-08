@@ -96,24 +96,24 @@ ttk::ScalarFieldCriticalPoints<dataType>::execute(){
     if(dimension_ == 3){
       for(SimplexId i = 0; i < vertexNumber_; i++){
         switch(vertexTypes[i]){
-          
-          case 0:
+
+          case static_cast<char>(CriticalType::Local_minimum):
             minimumNumber++;
             break;
             
-          case 1:
+          case static_cast<char>(CriticalType::Saddle1):
             oneSaddleNumber++;
             break;
-            
-          case 2:
+
+          case static_cast<char>(CriticalType::Saddle2):
             twoSaddleNumber++;
             break;
-          
-          case 3:
+            
+          case static_cast<char>(CriticalType::Local_maximum):
             maximumNumber++;
             break;
-            
-          case -1:
+          
+          case static_cast<char>(CriticalType::Degenerate):
             monkeySaddleNumber++;
             break;
         }
@@ -123,19 +123,19 @@ ttk::ScalarFieldCriticalPoints<dataType>::execute(){
       for(SimplexId i = 0; i < vertexNumber_; i++){
         switch(vertexTypes[i]){
           
-          case 0:
+          case static_cast<char>(CriticalType::Local_minimum):
             minimumNumber++;
             break;
             
-          case 1:
+          case static_cast<char>(CriticalType::Saddle1):
             saddleNumber++;
             break;
             
-          case 2:
+          case static_cast<char>(CriticalType::Local_maximum):
             maximumNumber++;
             break;
           
-          case -1:
+          case static_cast<char>(CriticalType::Degenerate):
             monkeySaddleNumber++;
             break;
         }
@@ -184,7 +184,7 @@ ttk::ScalarFieldCriticalPoints<dataType>::execute(){
   criticalPoints_->clear();
   criticalPoints_->reserve(vertexNumber_);
   for(SimplexId i = 0; i < vertexNumber_; i++){
-    if(vertexTypes[i] != -2){
+    if(vertexTypes[i] != static_cast<char>(CriticalType::Regular)){
       criticalPoints_->emplace_back(i, vertexTypes[i]);
     }
   }
@@ -231,12 +231,12 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   
   if(lowerNeighbors.empty()){
     // minimum
-    return 0;
+    return static_cast<char>(CriticalType::Local_minimum);
   }
   
   if(upperNeighbors.empty()){
     // maximum
-    return dimension_;
+    return static_cast<char>(CriticalType::Local_maximum);
   }
   
   // now do the actual work
@@ -341,17 +341,17 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   
   if((lowerList.size() == 1)&&(upperList.size() == 1))
     // regular point
-    return -2;
+    return static_cast<char>(CriticalType::Regular);
   else{
     // saddles
     if(dimension_ == 2){
       if((lowerList.size() > 2)||(upperList.size() > 2)){
         // monkey saddle
-        return -1;
+        return static_cast<char>(CriticalType::Degenerate);
       }
       else{
         // regular saddle
-        return 1;
+        return static_cast<char>(CriticalType::Saddle1);
         // NOTE: you may have multi-saddles on the boundary in that 
         // configuration
         // to make this computation 100% correct, one would need to disambiguate
@@ -360,21 +360,21 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
     }
     else if(dimension_ == 3){
       if((lowerList.size() == 2)&&(upperList.size() == 1)){
-        return 1;
+        return static_cast<char>(CriticalType::Saddle1);
       }
       else if((lowerList.size() == 1)&&(upperList.size() == 2)){
-        return 2;
+        return static_cast<char>(CriticalType::Saddle2);
       }
       else{
         // monkey saddle
-        return -1;
+        return static_cast<char>(CriticalType::Degenerate);
         // NOTE: we may have a similar effect in 3D (TODO)
       }
     }
   }
   
   // -2: regular points
-  return -2;  
+  return static_cast<char>(CriticalType::Regular);
 }
 
 template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
@@ -460,11 +460,11 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   
   if(!lowerCount){
     // minimum
-    return 0;
+    return static_cast<char>(CriticalType::Local_minimum);
   }
   if(!upperCount){
     // maximum
-    return dimension_;
+    return static_cast<char>(CriticalType::Local_maximum);
   }
   
   // so far 40% of the computation, that's ok.
@@ -546,17 +546,17 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
   
   if((lowerList.size() == 1)&&(upperList.size() == 1))
     // regular point
-    return -2;
+    return static_cast<char>(CriticalType::Regular);
   else{
     // saddles
     if(dimension_ == 2){
       if((lowerList.size() > 2)||(upperList.size() > 2)){
         // monkey saddle
-        return -1;
+        return static_cast<char>(CriticalType::Degenerate);
       }
       else{
         // regular saddle
-        return 1;
+        return static_cast<char>(CriticalType::Saddle1);
         // NOTE: you may have multi-saddles on the boundary in that 
         // configuration
         // to make this computation 100% correct, one would need to disambiguate
@@ -565,21 +565,21 @@ template <class dataType> char ttk::ScalarFieldCriticalPoints<dataType>
     }
     else if(dimension_ == 3){
       if((lowerList.size() == 2)&&(upperList.size() == 1)){
-        return 1;
+        return static_cast<char>(CriticalType::Saddle1);
       }
       else if((lowerList.size() == 1)&&(upperList.size() == 2)){
-        return 2;
+        return static_cast<char>(CriticalType::Saddle2);
       }
       else{
         // monkey saddle
-        return -1;
+        return static_cast<char>(CriticalType::Degenerate);
         // NOTE: we may have a similar effect in 3D (TODO)
       }
     }
   }
   
   // -2: regular points
-  return -2;
+  return static_cast<char>(CriticalType::Regular);
 }
 
 #endif /* end of include guard: SCALARFIELDCRITICALPOINTS_INL */

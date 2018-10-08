@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
   program.ttkObject_->SetNumberOfIterations(iterationNumber);
   program.ttkObject_->SetScalarFieldIdentifier(scalarFieldId);
   if (maskId != -1) {
-     program.ttkObject_->SetUseInputMask(true);
+     program.ttkObject_->SetForceInputMaskScalarField(true);
      program.ttkObject_->SetMaskIdentifier(maskId);
   }
   

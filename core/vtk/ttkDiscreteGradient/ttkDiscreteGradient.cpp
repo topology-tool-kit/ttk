@@ -365,7 +365,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             }
 #endif
             PLVertexIdentifiers->SetNumberOfComponents(1);
-            PLVertexIdentifiers->SetName("VertexIdentifier");
+            PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
             for(SimplexId i=0; i<criticalPoints_numberOfPoints; ++i){
               points->InsertNextPoint(criticalPoints_points[3*i],
@@ -503,7 +503,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
               return -1;
             }
             PLVertexIdentifiers->SetNumberOfComponents(1);
-            PLVertexIdentifiers->SetName("VertexIdentifier");
+            PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
             for(SimplexId i=0; i<criticalPoints_numberOfPoints; ++i){
               points->InsertNextPoint(criticalPoints_points[3*i],
@@ -597,7 +597,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
             vtkSmartPointer<ttkSimplexIdTypeArray> PLVertexIdentifiers=
               vtkSmartPointer<ttkSimplexIdTypeArray>::New();
             PLVertexIdentifiers->SetNumberOfComponents(1);
-            PLVertexIdentifiers->SetName("VertexIdentifier");
+            PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
             for(SimplexId i=0; i<criticalPoints_numberOfPoints; ++i){
               points->InsertNextPoint(criticalPoints_points[3*i],

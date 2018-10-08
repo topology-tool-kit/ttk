@@ -71,8 +71,8 @@ class ttkGeometrySmoother
     vtkSetMacro(MaskIdentifier, int);
     vtkGetMacro(MaskIdentifier, int);
 
-    vtkSetMacro(UseInputMask, bool);
-    vtkGetMacro(UseInputMask, bool);
+    vtkSetMacro(ForceInputMaskScalarField, bool);
+    vtkGetMacro(ForceInputMaskScalarField, bool);
     
     vtkSetMacro(InputMask, std::string);
     vtkGetMacro(InputMask, std::string);
@@ -90,7 +90,7 @@ class ttkGeometrySmoother
     
     int                   NumberOfIterations;
     int                   MaskIdentifier;
-    bool                  UseInputMask;
+    bool                  ForceInputMaskScalarField;
     std::string                InputMask;
     
     ttk::ScalarFieldSmoother   smoother_;
