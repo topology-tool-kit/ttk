@@ -61,11 +61,11 @@
       <DoubleVectorProperty
       name="Tolerance"
       command="SetTolerance"
-      label="Persistence error tolerance"
+      label="Persistence threshold"
       number_of_elements="1"
-      default_values="01">
+      default_values="1">
         <Documentation>
-          Maximum error threshold.
+          Discard pairs below this threshold (percentage of the function span).
         </Documentation>
         <DoubleRangeDomain name="range" min="0" max="100" />
       </DoubleVectorProperty>
@@ -103,58 +103,58 @@
 
       <DoubleVectorProperty
       name="spe"
-      label="Extremal persistence scaling"
+      label="Extremum weight"
       command="SetPE"
       number_of_elements="1"
       default_values="1"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spe" min="0.0" max="1.0"/>
-        <Documentation>Scaling for py.</Documentation>
+        <Documentation>Importance weight for extrema</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
       name="sps"
-      label="Saddle persistence scaling"
+      label="Saddle weight"
       command="SetPS"
       number_of_elements="1"
       default_values="1"
       panel_visibility="advanced">
         <DoubleRangeDomain name="sps" min="0.0" max="1.0"/>
-        <Documentation>Scaling for px.</Documentation>
+        <Documentation>Importance weight for saddles</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
       name="spx"
-      label="X scaling"
+      label="X weight"
       command="SetPX"
       number_of_elements="1"
       default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
-        <Documentation>Scaling for x.</Documentation>
+        <Documentation>Importance weight for the X component</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
       name="spy"
-      label="Y scaling"
+      label="Y weight"
       command="SetPY"
       number_of_elements="1"
       default_values="0"
       panel_visibility="advanced"
       >
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
-        <Documentation>Scaling for py.</Documentation>
+        <Documentation>Importance weight for the Y component</Documentation>
       </DoubleVectorProperty>
 
       <DoubleVectorProperty
       name="spz"
-      label="Z scaling"
+      label="Z weight"
       command="SetPZ"
       number_of_elements="1"
       default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
-        <Documentation>Scaling for pz.</Documentation>
+        <Documentation>Importance weight for the Z component</Documentation>
       </DoubleVectorProperty>
 
 
