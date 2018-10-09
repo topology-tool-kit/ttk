@@ -50,14 +50,15 @@ namespace ttk
             upperStarEdges.clear();
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
 
-            // if (propagations_.hasVisitedOpposite(curVert, localProp)) {
-            //    for (auto edge : lowerStarEdges) {
-            //       const idSuperArc tmpLowArc = dynGraph(localProp).getSubtreeArc(edge);
-            //       if (tmpLowArc != nullSuperArc && graph_.getArc(tmpLowArc).merged()) {
-            //          continue;
-            //       }
-            //    }
-            // }
+            if (propagations_.hasVisitedOpposite(curVert, localProp)) {
+               for (auto edge : lowerStarEdges) {
+                  const idSuperArc tmpLowArc = dynGraph(localProp).getSubtreeArc(edge);
+                  if (tmpLowArc != nullSuperArc && graph_.getArc(tmpLowArc).merged()) {
+                     PRINT("-" << curVert);
+                     continue;
+                  }
+               }
+            }
 
 #ifndef TTK_DISABLE_FTR_LAZY
             if (valences_.lower[curVert] < 2 && valences_.upper[curVert] < 2) {
