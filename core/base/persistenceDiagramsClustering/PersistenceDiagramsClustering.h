@@ -15,18 +15,18 @@
 
 
 #ifndef diagramTuple
-#define diagramTuple std::tuple<ttk::SimplexId, ttk::ftm::NodeType, ttk::SimplexId, \
-  ttk::ftm::NodeType, dataType, ttk::SimplexId, \
+#define diagramTuple std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId, \
+  ttk::CriticalType, dataType, ttk::SimplexId, \
   dataType, float, float, float, dataType, float, float, float>
 #endif
 
 
 #ifndef BNodeType
-#define BNodeType ttk::ftm::NodeType
-#define BLocalMax ttk::ftm::NodeType::Local_maximum
-#define BLocalMin ttk::ftm::NodeType::Local_minimum
-#define BSaddle1  ttk::ftm::NodeType::Saddle1
-#define BSaddle2  ttk::ftm::NodeType::Saddle2
+#define BNodeType ttk::CriticalType
+#define BLocalMax ttk::CriticalType::Local_maximum
+#define BLocalMin ttk::CriticalType::Local_minimum
+#define BSaddle1  ttk::CriticalType::Saddle1
+#define BSaddle2  ttk::CriticalType::Saddle2
 #define BIdVertex ttk::SimplexId
 #endif
 

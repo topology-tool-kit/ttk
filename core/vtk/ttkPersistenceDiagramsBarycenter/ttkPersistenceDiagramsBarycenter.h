@@ -28,10 +28,10 @@
 #define _TTK_PERSISTENCEDIAGRAMSBARYCENTER_H
 
 
-#define BLocalMax ttk::ftm::NodeType::Local_maximum
-#define BLocalMin ttk::ftm::NodeType::Local_minimum
-#define BSaddle1  ttk::ftm::NodeType::Saddle1
-#define BSaddle2  ttk::ftm::NodeType::Saddle2
+#define BLocalMax ttk::CriticalType::Local_maximum
+#define BLocalMin ttk::CriticalType::Local_minimum
+#define BSaddle1  ttk::CriticalType::Saddle1
+#define BSaddle2  ttk::CriticalType::Saddle2
 
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>
@@ -367,7 +367,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 
 		points->InsertNextPoint(x1, y1, z1);
 		coordsScalars->InsertTuple3(2*i, coords1[0], coords1[1], coords1[2]);
-		const ttk::ftm::NodeType n1Type = std::get<1>(t);
+		const ttk::CriticalType n1Type = std::get<1>(t);
 		switch (n1Type) {
 			case BLocalMin:
 				nodeType->InsertTuple1(2*i, 0);
@@ -390,7 +390,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 		points->InsertNextPoint(x2, y2, z2);
 		coordsScalars->InsertTuple3(2*i+1, coords2[0], coords2[1], coords2[2]);
 
-		const ttk::ftm::NodeType n2Type = std::get<3>(t);
+		const ttk::CriticalType n2Type = std::get<3>(t);
 		switch (n2Type) {
 			case BLocalMin:
 				nodeType->InsertTuple1(2*i+1, 0);
@@ -516,7 +516,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 			points->InsertNextPoint(x1, y1, z1);
 			coordsScalars->InsertTuple3(2*count, coords1[0], coords1[1], coords1[2]);
 			idOfDiagramPoint->InsertTuple1(2*count, j);
-			const ttk::ftm::NodeType n1Type = std::get<1>(t);
+			const ttk::CriticalType n1Type = std::get<1>(t);
 			switch (n1Type) {
 				case BLocalMin:
 					nodeType->InsertTuple1(2*count, 0);
@@ -540,7 +540,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 			points->InsertNextPoint(x2, y2, z2);
 			coordsScalars->InsertTuple3(2*count+1, coords2[0], coords2[1], coords2[2]);
 			idOfDiagramPoint->InsertTuple1(2*count+1, j);
-			const ttk::ftm::NodeType n2Type = std::get<3>(t);
+			const ttk::CriticalType n2Type = std::get<3>(t);
 			switch (n2Type) {
 				case BLocalMin:
 					nodeType->InsertTuple1(2*count+1, 0);

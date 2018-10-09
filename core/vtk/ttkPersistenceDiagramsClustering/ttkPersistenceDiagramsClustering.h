@@ -28,10 +28,10 @@
 #define _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H
 
 
-#define BLocalMax ttk::ftm::NodeType::Local_maximum
-#define BLocalMin ttk::ftm::NodeType::Local_minimum
-#define BSaddle1  ttk::ftm::NodeType::Saddle1
-#define BSaddle2  ttk::ftm::NodeType::Saddle2
+#define BLocalMax ttk::CriticalType::Local_maximum
+#define BLocalMin ttk::CriticalType::Local_minimum
+#define BSaddle1  ttk::CriticalType::Saddle1
+#define BSaddle2  ttk::CriticalType::Saddle2
 
 // VTK includes -- to adapt
 #include                  <vtkCharArray.h>

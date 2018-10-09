@@ -242,6 +242,10 @@ int ttk::BottleneckDistance::computeAuction(
 		diagramTuple t = CTDiagram1->at(i);
 		BNodeType nt1 = std::get<1>(t);
 		BNodeType nt2 = std::get<3>(t);
+    if( std::get<6>(t) > std::get<10>(t) ){
+      std::cout << "\n###########\n ERROR : wrong match \n###########\n" << '\n';
+      return -1;
+    }
 		dataType dt = std::get<4>(t);
 		if (abs<dataType>(dt) < zeroThresh) continue;
 

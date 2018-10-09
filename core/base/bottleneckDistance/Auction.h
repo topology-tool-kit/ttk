@@ -10,8 +10,8 @@
 #endif
 
 #ifndef diagramTuple
-#define diagramTuple std::tuple<ttk::SimplexId, ttk::ftm::NodeType, ttk::SimplexId, \
-  ttk::ftm::NodeType, dataType, ttk::SimplexId, \
+#define diagramTuple std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId, \
+  ttk::CriticalType, dataType, ttk::SimplexId, \
   dataType, float, float, float, dataType, float, float, float>
 #endif
 

@@ -1,10 +1,10 @@
 #ifndef _PDBARYCENTERIMPL_H
 #define _PDBARYCENTERIMPL_H
 
-#define BLocalMax ttk::ftm::NodeType::Local_maximum
-#define BLocalMin ttk::ftm::NodeType::Local_minimum
-#define BSaddle1  ttk::ftm::NodeType::Saddle1
-#define BSaddle2  ttk::ftm::NodeType::Saddle2
+#define BLocalMax ttk::CriticalType::Local_maximum
+#define BLocalMin ttk::CriticalType::Local_minimum
+#define BSaddle1  ttk::CriticalType::Saddle1
+#define BSaddle2  ttk::CriticalType::Saddle2
 
 #include <stdlib.h>     /* srand, rand */
 #include <cmath>
