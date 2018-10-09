@@ -60,8 +60,8 @@ int ttkCinemaWriter::RequestData (
     }
 
     // Initialize path variables
-    string dataPath = "data/";
-    string pathPrefix = this->DatabasePath+"/" + dataPath;
+    string dataPrefix = "data/";
+    string pathPrefix = this->DatabasePath+"/" + dataPrefix;
     string pathSuffix = ".vtm";
 
     // Create directory if does not already exist
@@ -114,14 +114,17 @@ int ttkCinemaWriter::RequestData (
         dMsg(cout, msg.str(), timeMsg);
     }
 
-    // TODO Create data.csv file if does not already exist
-    {
+    string dataCsvPath = this->DatabasePath+"/data.csv";
 
+    // Create data.csv file if does not already exist
+    if( stat( dataCsvPath.data(), &info ) == 0 ){
+        string csv = "path\n";
+        // TODO Wrtie
     }
 
     // Update data.csv file
     vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
-    reader->SetFileName( (this->DatabasePath+"/data.csv").data() );
+    reader->SetFileName( dataCsvPath.data() );
     reader->DetectNumericColumnsOff();
     reader->SetHaveHeaders(true);
     reader->SetFieldDelimiterCharacters(",");
@@ -145,7 +148,7 @@ int ttkCinemaWriter::RequestData (
             // auto columnFD = fieldData->GetAbstractArray(columnName);
             auto columnCSV = vtkStringArray::SafeDownCast( table->GetColumn(j) );
             if(string(columnName).compare("path")==0){
-                columnCSV->SetValue(offset+i, vtkStdString( dataPath+id+"/"+id+"_"+to_string(i)+"."+blockExtension ));
+                columnCSV->SetValue(offset+i, vtkStdString( dataPrefix+id+"/"+id+"_"+to_string(i)+"."+blockExtension ));
             // TODO store field data in CSV
             // } else if(columnFD!=nullptr){
             //     columnCSV->SetValue(offset+i, columnFD->GetVariantValue(0).ToString());

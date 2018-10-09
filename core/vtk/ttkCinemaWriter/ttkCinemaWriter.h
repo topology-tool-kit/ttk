@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that writes input to disk.
 ///
-/// This filter stores the input as a VTK dataset to disk and optionally updates the data.csv file of Cinema Spec D database.
+/// This filter stores the input as a VTK dataset to disk and updates the data.csv file of a Cinema Spec D database.
 ///
 /// \param Input vtkDataSet to be stored (vtkDataSet)
 #pragma once

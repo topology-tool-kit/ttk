@@ -31,14 +31,14 @@
       </InputProperty>
 
       <IntVectorProperty
-         name="Downsampling"
-         label="Downsampling"
-         command="SetDownsampling"
+         name="SubSampling"
+         label="SubSampling"
+         command="SetSubSampling"
          number_of_elements="1"
          default_values="0" >
         <IntRangeDomain name="range" min="0" max="100" />
          <Documentation>
-            The factor that controls the sampling rate (0: no downsampling, 1: skip every second sample, 2: skip every second and third sample...)
+            The factor that controls the sampling rate (0: no SubSampling, 1: skip every second sample, 2: skip every second and third sample...)
          </Documentation>
       </IntVectorProperty>
 
@@ -79,7 +79,7 @@
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input Options">
-        <Property name="Downsampling" />
+        <Property name="SubSampling" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
