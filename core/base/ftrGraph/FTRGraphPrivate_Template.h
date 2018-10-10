@@ -57,9 +57,13 @@ namespace ttk
 
             if (propagations_.hasVisitedOpposite(curVert, localProp)) {
                for (auto edge : lowerStarEdges) {
-                  const idSuperArc tmpLowArc = dynGraph(localProp).getSubtreeArc(edge);
+                  const idSuperArc tmpLowArc = dynGraph(localProp).getCorArc(edge);
                   if (tmpLowArc != nullSuperArc && graph_.getArc(tmpLowArc).merged()) {
                      PRINT("-" << curVert);
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+#pragma omp atomic update
+                     avoided_++;
+#endif
                      continue;
                   }
                }
@@ -108,6 +112,10 @@ namespace ttk
                //    for (auto dgNode : lowerComp) {
                //       const idSuperArc tmpLowArc = dgNode->getCorArc();
                //       if (tmpLowArc != nullSuperArc && graph_.getArc(tmpLowArc).merged()) {
+// #ifdef TTK_ENABLE_FTR_VERT_STATS
+// #pragma omp atomic update
+               //       avoided_++;
+// #endif
                //          continue;
                //       }
                //    }

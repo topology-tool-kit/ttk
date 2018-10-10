@@ -91,6 +91,7 @@ namespace ttk
 
 #ifdef TTK_ENABLE_FTR_VERT_STATS
          std::vector<uint> nbVisit_;
+         uint              avoided_;
 #endif
 
         public:

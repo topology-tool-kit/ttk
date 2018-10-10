@@ -158,6 +158,7 @@ namespace ttk
          int nbRevisit = std::count_if(nbVisit_.cbegin(), nbVisit_.cend(), gt1);
          std::cout << "revisit: " << nbRevisit << " / " <<  mesh_.getNumberOfVertices();
          std::cout << " = " << ((float)nbRevisit / mesh_.getNumberOfVertices())*100 << std::endl;
+         std::cout << "avoided: " << avoided_ << std::endl;
 #endif
 
 
@@ -350,6 +351,7 @@ namespace ttk
 
 #ifdef TTK_ENABLE_FTR_VERT_STATS
          nbVisit_.resize(mesh_.getNumberOfVertices(), 0);
+         avoided_ = 0;
 #endif
       }
 
