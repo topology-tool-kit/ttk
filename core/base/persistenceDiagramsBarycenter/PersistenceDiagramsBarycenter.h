@@ -88,7 +88,7 @@ namespace ttk{
 			return 0;
 		}
 
-    inline void setMethod(const bool deterministic){
+    inline void setDeterministic(const bool deterministic){
       deterministic_ = deterministic;
     }
 

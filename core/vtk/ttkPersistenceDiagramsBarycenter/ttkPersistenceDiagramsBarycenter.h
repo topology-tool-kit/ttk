@@ -209,11 +209,11 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
 {
   vtkIntArray* vertexIdentifierScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
-      GetPointData()->GetArray("VertexIdentifier"));
+      GetPointData()->GetArray(ttk::VertexScalarFieldName));
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
-      GetPointData()->GetArray("NodeType"));
+      GetPointData()->GetArray("CriticalType"));
 
   vtkIntArray* pairIdentifierScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
@@ -293,7 +293,7 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
       nbNonCompact++;
       if (nbNonCompact == 0) {
         std::stringstream msg;
-        msg << "[TTKBottleneckDistance] Diagram pair identifiers "
+        msg << "[TTKPersistenceDiagramBarycenter] Diagram pair identifiers "
             << "must be compact (not exceed the diagram size). "
             << std::endl;
         dMsg(std::cout, msg.str(), timeMsg);
@@ -304,7 +304,7 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
   if (nbNonCompact > 0) {
     {
       std::stringstream msg;
-      msg << "[TTKBottleneckDistance] Missed "
+      msg << "[TTKPersistenceDiagramBarycenter] Missed "
           << nbNonCompact << " pairs due to non-compactness."
           << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
@@ -495,7 +495,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 			diagramTuple t = diagram->at(i);
 			double x1 = std::get<6>(t);
 			double y1 = x1;
-			double z1 = 1;  // Change 1 to j if you want to isolate the diagrams
+			double z1 = j;  // Change 1 to j if you want to isolate the diagrams
 
 			float coords1[3];
 			coords1[0] = std::get<7>(t);
@@ -504,7 +504,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 			double x2 = std::get<6>(t);
 			double y2 = std::get<10>(t);
-			double z2 = 1;  // Change 1 to j if you want to isolate the
+			double z2 = j;  // Change 1 to j if you want to isolate the
 
 			float coords2[3];
 			coords2[0] = std::get<11>(t);
