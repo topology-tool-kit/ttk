@@ -120,11 +120,19 @@ namespace ttk
          bool hasVisitedOpposite(const idVertex v, Propagation* const prop) const
          {
             // reversed
+            bool res;
             if (prop->goUp()) {
-               return visits_.down[v].done;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic read seq_cst
+#endif
+               res = visits_.down[v].done;
             } else {
-               return visits_.up[v].done;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic read seq_cst
+#endif
+               res = visits_.up[v].done;
             }
+            return res;
          }
 
          Visit visit(const idVertex v, const Propagation* const prop) const

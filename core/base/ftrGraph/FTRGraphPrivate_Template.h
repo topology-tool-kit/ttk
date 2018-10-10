@@ -1001,7 +1001,7 @@ namespace ttk
             opposite = propagations_.visitOpposite(curVert, localProp);
             bool done;
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic read
+#pragma omp atomic read seq_cst
 #endif
             done = opposite.done;
             if (!done) {
