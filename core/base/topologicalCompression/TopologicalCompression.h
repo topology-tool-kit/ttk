@@ -559,7 +559,7 @@ int ttk::TopologicalCompression::WriteToFile(
   fclose(fm); // !Close stream to write changes!
   // #ifdef _MSC_VER
   fm = fopen(ffn, "rb");
-  fread(buf, len, sizeof(char), fm);
+  int ret = fread(buf, len, sizeof(char), fm);
   fclose(fm);
   remove(ffn);
   // #endif
@@ -631,7 +631,7 @@ int ttk::TopologicalCompression::WriteToFile(
   if (fflush(fp)) fclose(fp);
   else fclose(fp);
 
-  return 0;
+  return ret;
 }
 
 template <typename T>
