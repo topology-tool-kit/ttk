@@ -23,7 +23,7 @@ namespace ttk
          std::unordered_map<idSuperArc, idSuperArc> mapArcs;
          std::map<std::pair<idVertex, idVertex>, idSuperArc> masterArcs;
 
-         int totalArc = getNumberOfArcs();
+         // int totalArc = getNumberOfArcs();
          int merged   = 0;
 
          // Here arc are represented by a starting and an ending vertex
@@ -78,7 +78,7 @@ namespace ttk
             }
          }
 
-         std::cout << "Merged: " << merged << " / " << totalArc << std::endl;
+         // std::cout << "Merged: " << merged << " / " << totalArc << std::endl;
 
          if (!mapArcs.size())
             return;

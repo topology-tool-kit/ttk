@@ -5,7 +5,10 @@
 #include "Propagation.h"
 #include "Tasks.h"
 
-#ifdef TTK_ENABLE_FTR_STATS
+#ifdef TTK_ENABLE_FTR_TASK_STATS
+#include <iterator>
+#endif
+#ifdef TTK_ENABLE_FTR_VERT_STATS
 #include <iterator>
 #endif
 
@@ -114,12 +117,6 @@ namespace ttk
          }
          printTime(timeBuild, "[FTR Graph]: build time: ", timeMsg);
 
-#ifdef TTK_ENABLE_FTR_STATS
-         std::cout << "propTimes_ :" << std::endl;
-         copy(propTimes_.crbegin(),propTimes_.crend(),std::ostream_iterator<float>(std::cout," "));
-         std::cout << std::endl;
-#endif
-
          // Debug print
 #ifndef NDEBUG
          // std::cout << graph_.printVisit() << std::endl;
@@ -148,7 +145,21 @@ namespace ttk
          printGraph(4);
          // std::cout << dynGraphs_.up.printNbCC() << std::endl;
 #endif
-         std::cout << graph_.getNumberOfVisibleArcs() << " // " << graph_.getNumberOfArcs() << std::endl;
+         std::cout << "arcs : " << graph_.getNumberOfVisibleArcs() << " / " << graph_.getNumberOfArcs() << std::endl;
+
+#ifdef TTK_ENABLE_FTR_TASK_STATS
+         std::cout << "propTimes_ :" << std::endl;
+         copy(propTimes_.crbegin(),propTimes_.crend(),std::ostream_iterator<float>(std::cout," "));
+         std::cout << std::endl;
+#endif
+
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+         auto gt1 = [](uint i){return i > 1;};
+         int nbRevisit = std::count_if(nbVisit_.cbegin(), nbVisit_.cend(), gt1);
+         std::cout << "revisit: " << nbRevisit << " / " <<  mesh_.getNumberOfVertices();
+         std::cout << " = " << ((float)nbRevisit / mesh_.getNumberOfVertices())*100 << std::endl;
+#endif
+
 
          // Message user
          {
@@ -204,7 +215,7 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
-#ifdef TTK_ENABLE_FTR_STATS
+#ifdef TTK_ENABLE_FTR_TASK_STATS
          // Stats
          nbProp_ = graph_.getNumberOfLeaves();
          propTimes_.resize(nbProp_);
@@ -258,7 +269,7 @@ namespace ttk
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
-#ifdef TTK_ENABLE_FTR_STATS
+#ifdef TTK_ENABLE_FTR_TASK_STATS
          // Stats
          nbProp_ = graph_.getNumberOfLeaves();
          propTimes_.resize(nbProp_);
@@ -273,7 +284,7 @@ namespace ttk
          // used to interleave min and max
          // Note: useless if only start for min or max
          graph_.shuffleLeaves();
-#ifdef TTK_ENABLE_FTR_STATS
+#ifdef TTK_ENABLE_FTR_TASK_STATS
          sweepStart_.reStart();
 #endif
 #ifdef TTK_ENABLE_OPENMP
@@ -336,6 +347,10 @@ namespace ttk
          bfsEdges_.resize(mesh_.getNumberOfEdges());
          bfsVerts_.resize(mesh_.getNumberOfVertices());
 #endif
+
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+         nbVisit_.resize(mesh_.getNumberOfVertices(), 0);
+#endif
       }
 
       template <typename ScalarType>
@@ -359,7 +374,7 @@ namespace ttk
 #endif
 
          // Stats
-#ifdef TTK_ENABLE_FTR_STATS
+#ifdef TTK_ENABLE_FTR_TASK_STATS
          fillVector<float>(propTimes_, 0);
 #endif
       }

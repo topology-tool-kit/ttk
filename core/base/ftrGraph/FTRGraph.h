@@ -82,11 +82,15 @@ namespace ttk
          std::vector<idEdge>   bfsEdges_;
          std::vector<idVertex> bfsVerts_;
 
-#ifdef TTK_ENABLE_FTR_STATS
+#ifdef TTK_ENABLE_FTR_TASK_STATS
          // Stats
          DebugTimer         sweepStart_;
          std::vector<float> propTimes_;
          idVertex           nbProp_;
+#endif
+
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+         std::vector<uint> nbVisit_;
 #endif
 
         public:

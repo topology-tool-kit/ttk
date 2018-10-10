@@ -46,6 +46,11 @@ namespace ttk
 
             PRINT("<" << curVert << " " << localProp->goUp());
 
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+#pragma omp atomic update
+            nbVisit_[curVert]++;
+#endif
+
             lowerStarEdges.clear();
             upperStarEdges.clear();
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
@@ -275,18 +280,9 @@ namespace ttk
 #endif
             growthFromSeed(upVert, localProp, joinParentArc);
          }
-         // else if (isJoin && hideFromHere && localProp->getNbArcs() > 1) {
-
-         //    // Continue on a saddle where we would have stop but needs to
-         //    // process other arcs
-// #ifdef TTK_ENABLE_OPENMP
-// #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
-// #endif
-         //       growthFromSeed(upVert, localProp, joinParentArc);
-
-         // }
-#ifdef TTK_ENABLE_FTR_STATS
+#ifdef TTK_ENABLE_FTR_TASK_STATS
          else {
+            // This only when tasks grows exclusively from min
             // This propagation is dying here
             idVertex curProp;
             float    curTime;
