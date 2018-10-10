@@ -152,10 +152,8 @@ namespace ttk
                graph_.getArc(currentArc).merge(mergeIn);
                localProp->lessArc();
                PRINT(">" << graph_.printArc(currentArc) << " " << graph_.printArc(mergeIn));
-               if (localProp->getNbArcs() == 0) {
-                  PRINT(curVert << "Merge last");
-                  return;
-               }
+               // Can't stop here
+               // try interleaved launch sequential on dragon.vtu
             }
 
             // stop on leaves

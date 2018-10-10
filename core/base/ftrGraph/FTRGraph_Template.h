@@ -296,7 +296,7 @@ namespace ttk
          {
             for (idNode i = 0; i < nbSeed; i++) {
                // alterneate min/max, string at the deepest
-               idVertex l = (i % 2) ? nbSeed - 1 - i / 2 : i / 2;
+               idVertex l = (i % 2) ? i / 2 : nbSeed - 1 - i / 2;
                // initialize structure
                const idVertex   corLeaf          = graph_.getLeaf(l);
                const bool       fromMin          = graph_.isLeafFromMin(l);
