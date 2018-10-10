@@ -364,9 +364,9 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
     trackingTuple tt = trackings.at((unsigned long) k);
 
     int numStart = std::get<0>(tt);
-    int numEnd = std::get<1>(tt);
-    int chainLength = numEnd - numStart;
+//     int numEnd = std::get<1>(tt);
     std::vector<BIdVertex> chain = std::get<2>(tt);
+    int chainLength = chain.size();
 
     if (chain.size() <= 1) {
       std::cout << "Got an unexpected 0-size chain." << std::endl;
