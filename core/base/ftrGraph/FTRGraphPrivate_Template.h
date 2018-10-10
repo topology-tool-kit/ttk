@@ -995,11 +995,16 @@ namespace ttk
          const idVertex curVert = localProp->getCurVertex();
          Visit          opposite;
          idSuperArc     retArc;
-#pragma omp critical
+// #pragma omp critical
          {
             propagations_.visit(curVert, localProp);
             opposite = propagations_.visitOpposite(curVert, localProp);
-            if (!opposite.done) {
+            bool done;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic read
+#endif
+            done = opposite.done;
+            if (!done) {
                graph_.visit(curVert, curArc);
                retArc = nullSuperArc;
             } else {

@@ -284,7 +284,9 @@ namespace ttk
          const idNode nbSeed = graph_.getNumberOfLeaves();
          // used to interleave min and max
          // Note: useless if only start for min or max
-         graph_.shuffleLeaves();
+
+         graph_.sortLeaves<ScalarType>(scalars_);
+
 #ifdef TTK_ENABLE_FTR_TASK_STATS
          sweepStart_.reStart();
 #endif
@@ -293,9 +295,11 @@ namespace ttk
 #endif
          {
             for (idNode i = 0; i < nbSeed; i++) {
+               // alterneate min/max, string at the deepest
+               idVertex l = (i % 2) ? nbSeed - 1 - i / 2 : i / 2;
                // initialize structure
-               const idVertex   corLeaf          = graph_.getLeaf(i);
-               const bool       fromMin          = graph_.isLeafFromMin(i);
+               const idVertex   corLeaf          = graph_.getLeaf(l);
+               const bool       fromMin          = graph_.isLeafFromMin(l);
                Propagation*     localPropagation = newPropagation(corLeaf, fromMin);
                const idSuperArc newArc = graph_.openArc(graph_.makeNode(corLeaf), localPropagation);
                // graph_.visit(corLeaf, newArc);
