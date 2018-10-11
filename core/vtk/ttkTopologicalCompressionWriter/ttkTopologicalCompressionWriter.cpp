@@ -15,6 +15,7 @@ ttkTopologicalCompressionWriter::ttkTopologicalCompressionWriter()
   UseTopologicalSimplification = true;
   // ScalarField = "";
   ScalarFieldId = 0;
+  SetUseAllCores(true);
 }
 
 ttkTopologicalCompressionWriter::~ttkTopologicalCompressionWriter()
@@ -107,6 +108,7 @@ void ttkTopologicalCompressionWriter::WriteData()
 {
   bool zfpOnly = ZFPOnly;
   double zfpBitBudget = ZFPBitBudget;
+  topologicalCompression.setThreadNumber(threadNumber_);
 
   {
     ttk::Debug d;

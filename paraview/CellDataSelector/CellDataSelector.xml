@@ -67,6 +67,36 @@
       </StringVectorProperty>
 
       <IntVectorProperty
+        name="RenameSelected"
+        label="Rename selected field"
+        command="SetRenameSelected"
+        number_of_elements="1"
+        default_values="0" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Rename the output field if only one is selected (useful for 
+          animations).
+        </Documentation>
+      </IntVectorProperty>
+      
+      <StringVectorProperty
+        name="SelectedName"
+        label="Name for selected field"
+        command="SetSelectedFieldName"
+        number_of_elements="1"
+        default_values="SelectedField" panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="RenameSelected"
+                                   value="1" />
+          </Hints>
+          <Documentation>
+            Name to be used for renaming the selected field.
+          </Documentation>
+        </StringVectorProperty>
+      
+      <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
         command="SetUseAllCores"
@@ -112,6 +142,8 @@
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFields" />
         <Property name="Filter" />
+        <Property name="RenameSelected" />
+        <Property name="SelectedName" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">

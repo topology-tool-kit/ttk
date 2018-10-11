@@ -520,15 +520,15 @@ int ttk::TopologicalCompression::WriteToFile(
   char *buf = bbuf.data();
   size_t len = (size_t) totalSize;
 
-  #ifndef _MSC_VER
-  FILE *fm = fmemopen(buf, len, "r+");
-  #else
+  // #ifndef _MSC_VER
+  // FILE *fm = fmemopen(buf, len, "r+");
+  // #else
   std::stringstream str;
   str << fileName << ".temp";
   const std::string s = str.str();
   const char* ffn = s.c_str();
   FILE *fm = fopen(ffn, "wb");
-  #endif
+  // #endif
 
   // [->fm] Encode, lossless compress and write topology.
   if (!(zfpOnly)) {
@@ -557,12 +557,12 @@ int ttk::TopologicalCompression::WriteToFile(
     status = WriteOtherGeometry<double>(fm);
 
   fclose(fm); // !Close stream to write changes!
-  #ifdef _MSC_VER
+  // #ifdef _MSC_VER
   fm = fopen(ffn, "rb");
-  fread(buf, len, sizeof(char), fm);
+  int ret = fread(buf, len, sizeof(char), fm);
   fclose(fm);
   remove(ffn);
-  #endif
+  // #endif
 
   if (status == 0) {
     {
@@ -631,7 +631,7 @@ int ttk::TopologicalCompression::WriteToFile(
   if (fflush(fp)) fclose(fp);
   else fclose(fp);
 
-  return 0;
+  return ret;
 }
 
 template <typename T>
@@ -786,9 +786,9 @@ int ttk::TopologicalCompression::ReadFromFile(
   // [fm->] Read data.
   char *buf = reinterpret_cast<char*>(dest);
 
-  #ifndef _MSC_VER
-  FILE *fm = fmemopen(buf, destLen, "r+");
-  #else
+  //#ifndef _MSC_VER
+  //FILE *fm = fmemopen(buf, destLen, "r+");
+  //#else
   std::stringstream str;
   str << fileName << ".temp";
   const std::string s = str.str();
@@ -797,7 +797,7 @@ int ttk::TopologicalCompression::ReadFromFile(
   fwrite(buf, destLen, sizeof(char), ftemp);
   fclose(ftemp);
   FILE *fm = fopen(ffn, "rb");
-  #endif
+  //#endif
 
   // Do read topology.
   if (!(zfpOnly_)) {
@@ -822,9 +822,9 @@ int ttk::TopologicalCompression::ReadFromFile(
     status = ReadOtherGeometry<double>(fm);
 
   fclose(fm);
-  #ifdef _MSC_VER
+  // #ifdef _MSC_VER
   remove(ffn);
-  #endif
+  // #endif
   fclose(fp);
 
   if (status == 0) {

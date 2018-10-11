@@ -47,6 +47,25 @@ class ttkTopologicalCompressionWriter
 
     static ttkTopologicalCompressionWriter *New();
 
+    void SetThreads(){
+      if(!UseAllCores)
+        threadNumber_ = ThreadNumber;
+      else{
+        threadNumber_ = ttk::OsCall::getNumberOfCores();
+      }
+      Modified();
+    }
+
+    void SetThreadNumber(int threadNumber){
+      ThreadNumber = threadNumber;
+      SetThreads();
+    }
+
+    void SetUseAllCores(bool onOff){
+      UseAllCores = onOff;
+      SetThreads();
+    }
+
     vtkTypeMacro(ttkTopologicalCompressionWriter, vtkWriter);
 
     vtkSetStringMacro(FileName);
@@ -117,6 +136,9 @@ class ttkTopologicalCompressionWriter
     int AllocateOutput(vtkDataArray *vda);
     void PerformCompression(vtkDataArray *vda);
 
+  protected:
+    mutable int threadNumber_;
+
   private:
 
     // Writer parameters.
@@ -141,6 +163,8 @@ class ttkTopologicalCompressionWriter
     vtkSmartPointer<vtkDataArray> outputScalarField;
     ttkTriangulation              triangulation;
     ttk::TopologicalCompression   topologicalCompression;
+    int                           ThreadNumber;
+    bool                          UseAllCores;
 
     // Whatever.
     ttkTopologicalCompressionWriter(const ttkTopologicalCompressionWriter&);

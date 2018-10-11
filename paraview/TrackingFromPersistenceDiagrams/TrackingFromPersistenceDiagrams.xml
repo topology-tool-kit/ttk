@@ -6,53 +6,34 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-    name="BottleneckDistance"
-    class="ttkBottleneckDistance"
-    label="TTK BottleneckDistance"
-    >
+    name="TrackingFromPersistenceDiagrams"
+    class="ttkTrackingFromPersistenceDiagrams"
+    label="TTK TrackingFromPersistenceDiagrams">
       <Documentation
-      long_help="TTK bottleneckDistance plugin."
-      short_help="TTK bottleneckDistance plugin.">
-        TTK bottleneckDistance plugin documentation.
-        
+      long_help="TTK plugin that takes an input time-varying data set (represented
+by a list of scalar fields) and which computes a tracking mesh."
+      short_help="TTK plugin that takes an input time-varying data set (represented
+        by a list of scalar fields) and which computes a tracking mesh.">
+        TTK plugin that takes an input time-varying data set (represented by a
+        list of scalar fields) and which computes a tracking mesh.
+
         Related publication:
         'Lifted Wasserstein Matcher for Fast and Robust Topology Tracking'
         Maxime Soler, Melanie Plainchault, Bruno Conche, Julien Tierny 
         Proc. of IEEE Symposium on Large Data Analysis and Visualization 2018.
       </Documentation>
 
+      <!-- Inputs -->
       <InputProperty
-      name="Input1"
-      port_index="0"
-      label="Persistence diagram 1"
-      command="SetInputConnection"
-      >
+      name="Input"
+      command="AddInputConnection"
+      multiple_input="1">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
-        </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Input" function="FieldDataSelection" />
-        </InputArrayDomain>
-        <Documentation>
-          Data-set to process.
-        </Documentation>
-      </InputProperty>
-
-      <InputProperty
-      name="Input2"
-      port_index="1"
-      label="Persistence diagram 2"
-      command="SetInputConnection">
-        <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
-        </ProxyGroupDomain>
-        <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
+          <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars" number_of_components="1">
           <Property name="Input" function="FieldDataSelection" />
@@ -68,131 +49,118 @@
       command="SetTolerance"
       label="Persistence threshold"
       number_of_elements="1"
-      default_values="1">
+      default_values="01">
         <Documentation>
           Discard pairs below this threshold (percentage of the function span).
         </Documentation>
         <DoubleRangeDomain name="range" min="0" max="100" />
       </DoubleVectorProperty>
 
+      
+
+
+
       <IntVectorProperty
       name="Assignment method"
       label="Assignment method"
       command="SetPVAlgorithm"
       number_of_elements="1"
-      default_values="0" >
+      default_values="0">
         <EnumerationDomain name="enum">
           <Entry value="0" text="ttk: pMunkres (Wasserstein), Gabow-Tarjan (Bottleneck)"/>
-          <!-- <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/> -->
         </EnumerationDomain>
         <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance
-          computation (type "inf" for the Bottleneck distance).
+          Method for computing matchings.
         </Documentation>
       </IntVectorProperty>
 
+      <!-- Bottleneck options -->
       <StringVectorProperty
-      name="n"
-      label="p parameter"
-      command="SetWassersteinMetric"
-      number_of_elements="1"
-      default_values="2" >
+        name="n"
+        label="p parameter"
+        command="SetWassersteinMetric"
+        number_of_elements="1"
+        default_values="2">
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance
           computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
-
+      
       <DoubleVectorProperty
-      name="spe"
-      label="Extremum weight"
-      command="SetPE"
-      number_of_elements="1"
-      default_values="1"
-      panel_visibility="advanced">
+        name="spe"
+        label="Extremum weight"
+        command="SetPE"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
         <DoubleRangeDomain name="spe" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for extrema</Documentation>
+        <Documentation>Importance weight for extrema.</Documentation>
       </DoubleVectorProperty>
-
+      
       <DoubleVectorProperty
-      name="sps"
-      label="Saddle weight"
-      command="SetPS"
-      number_of_elements="1"
-      default_values="1"
-      panel_visibility="advanced">
+        name="sps"
+        label="Saddle weight"
+        command="SetPS"
+        number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
         <DoubleRangeDomain name="sps" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for saddles</Documentation>
+        <Documentation>Importance weight for saddles.</Documentation>
       </DoubleVectorProperty>
-
+      
       <DoubleVectorProperty
-      name="spx"
-      label="X weight"
-      command="SetPX"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
+        name="spx"
+        label="X weight"
+        command="SetPX"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the X component of 
 the extremum</Documentation>
       </DoubleVectorProperty>
-
+      
       <DoubleVectorProperty
-      name="spy"
-      label="Y weight"
-      command="SetPY"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced"
-      >
+        name="spy"
+        label="Y weight"
+        command="SetPY"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the Y component of 
 the extremum</Documentation>
       </DoubleVectorProperty>
-
+      
       <DoubleVectorProperty
-      name="spz"
-      label="Z weight"
-      command="SetPZ"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
+        name="spz"
+        label="Z weight"
+        command="SetPZ"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
         <Documentation>Importance weight for the Z component of 
 the extremum</Documentation>
       </DoubleVectorProperty>
-
-
+      
       <IntVectorProperty
-      name="Output matchings"
-      command="SetUseOutputMatching"
-      label="Display the matchings with line segments"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Display the matching between pairs of the persistence diagrams with
-          line segments in 3D.
-        </Documentation>
-      </IntVectorProperty>
-
-
-      <IntVectorProperty
-      name="Use spacing"
-      command="SetUseGeometricSpacing"
-      label="Force Z-translation"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
+        name="Use spacing"
+        command="SetUseGeometricSpacing"
+        label="Force Z-translation"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
           For the translation of the second set of critical points even the
-          persistence diagrams are embedded in the original domain. This is useful to
+          persistence diagrams are embedded in the original domain. This is 
+          useful to
           visualize the matching between the diagrams of two 2D scalar fields.
         </Documentation>
       </IntVectorProperty>
-
+      
       <DoubleVectorProperty
       name="spacing"
       label="Z-Translation"
@@ -202,10 +170,10 @@ the extremum</Documentation>
       panel_visibility="advanced">
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="Use spacing"
-            value="1" />
-        </Hints>
+                                   mode="visibility"
+                                   property="Use spacing"
+                                   value="1" />
+          </Hints>
         <Documentation>
           Translation on the Z axis between the output representations of the
           persistence diagrams.
@@ -213,6 +181,51 @@ the extremum</Documentation>
       </DoubleVectorProperty>
 
 
+
+<!--      <IntVectorProperty
+      name="Do post-proc"
+      command="SetDoPostProc"
+      label="Perform trajectory post-processing"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Do post-processing.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+      name="Post-proc threshold"
+      label="Split-Merge threshold"
+      command="SetPostProcThresh"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Do post-proc"
+                                   value="1" />
+          </Hints>
+        <Documentation>
+          Threshold for merging/splitting trajectories in
+          connected components array.
+        </Documentation>
+      </DoubleVectorProperty>-->
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="Tolerance" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="spacing" />
+        <Property name="Use spacing" />
+<!--        <Property name="Do post-proc" />
+        <Property name="Post-proc threshold" />-->
+      </PropertyGroup>
+
+      <!-- TTK internals -->
       <IntVectorProperty
       name="UseAllCores"
       label="Use All Cores"
@@ -234,11 +247,10 @@ the extremum</Documentation>
         <IntRangeDomain name="range" min="1" max="100" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-
+                                   mode="visibility"
+                                   property="UseAllCores"
+                                   value="0" />
+          </Hints>
         <Documentation>
           Thread number.
         </Documentation>
@@ -256,29 +268,19 @@ the extremum</Documentation>
         </Documentation>
       </IntVectorProperty>
 
-      <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="Tolerance" />
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="Output matchings" />
-        <Property name="spacing" />
-        <Property name="Use spacing" />
-      </PropertyGroup>
-
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
 
-      <OutputPort name="Persistence Diagram 1" index="0" id="port1"/>
-      <OutputPort name="Persistence Diagram 2" index="1" id="port2"/>
+      <!-- Outputs -->
       <OutputPort name="Persistence Mesh" index="2" id="port3"/>
 
       <Hints>
-        <ShowInMenu category="TTK - Scalar Data" />
+        <ShowInMenu category="TTK - Time-varying Scalar Data" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>
 </ServerManagerConfiguration>
+
