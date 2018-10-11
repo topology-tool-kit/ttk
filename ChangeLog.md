@@ -1,6 +1,7 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+- Dimension reduction for high dimensional data (scikit-learn integration)
 - Automatic guesses for ttk generated fields
 - Improved type consistency
 - Improved ParaView GUIs
