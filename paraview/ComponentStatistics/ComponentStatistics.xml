@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ComponentStatistics" class="ttkComponentStatistics" label="TTK ComponentStatistics">
+            <InputProperty
+                name="Input"
+                command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                  <Group name="sources"/>
+                  <Group name="filters"/>
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                  <DataType value="vtkDataSet"/>
+                </DataTypeDomain>
+                <Documentation>
+                  Data-set to process.
+                </Documentation>
+              </InputProperty>
+            <Documentation long_help="TTK ComponentStatistics" short_help="TTK ComponentStatistics">TODO.</Documentation>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

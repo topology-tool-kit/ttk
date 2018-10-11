@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="CinemaWriter" class="ttkCinemaWriter" label="TTK CinemaWriter">
+            <Documentation long_help="TTK CinemaWriter plugin." short_help="TTK CinemaWriter plugin.">TTK CinemaWriter plugin documentation.</Documentation>
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkDataSet" />
+                </DataTypeDomain>
+                <Documentation>Data-set to process.</Documentation>
+            </InputProperty>
+            <StringVectorProperty name="DatabasePath" animateable="0" command="SetDatabasePath" number_of_elements="1">
+                <Documentation>Path to a Cinema Spec D database folder.</Documentation>
+                <FileListDomain name="files" />
+                <Hints>
+                    <UseDirectoryName />
+                </Hints>
+            </StringVectorProperty>
+            <IntVectorProperty name="OverrideDatabase" label="Override Database" command="SetOverrideDatabase" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Determines if the filter replaces (true) or appends (false) database content.</Documentation>
+            </IntVectorProperty>
+            <Hints>
+                <ShowInMenu category="TTK - Cinema" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>
