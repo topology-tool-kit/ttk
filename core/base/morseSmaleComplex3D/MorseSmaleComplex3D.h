@@ -1283,11 +1283,11 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(const std::vector<std::tup
       pl_filteredCriticalPoints.push_back(i);
 
       switch(type){
-        case 1:
+        case static_cast<char>(CriticalType::Saddle1):
           isSaddle1[vertexId]=true;
           break;
 
-        case 2:
+        case static_cast<char>(CriticalType::Saddle2):
           isSaddle2[vertexId]=true;
           break;
       }

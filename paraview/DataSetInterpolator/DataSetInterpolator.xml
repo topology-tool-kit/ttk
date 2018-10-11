@@ -1,0 +1,106 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+  our new filter. As a rule of thumb, try to locate the configuration for
+  a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+  that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+    <SourceProxy 
+      name="DataSetInterpolator" 
+      class="ttkDataSetInterpolator" 
+      label="TTK DataSetInterpolator">
+      <Documentation
+        long_help="TTK dataSetInterpolator plugin."
+        short_help="TTK dataSetInterpolator plugin.">
+        TTK dataSetInterpolator plugin documentation.
+      </Documentation>
+      <InputProperty
+        name="Source"
+        port_index="1"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Source" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+        name="Target"
+        port_index="0"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+        name="UseAllCores"
+        label="Use All Cores"
+        command="SetUseAllCores"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use all available cores.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="ThreadNumber"
+        label="Thread Number"
+        command="SetThreadNumber"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="UseAllCores"
+            value="0" />
+        </Hints>
+
+        <Documentation>
+          Thread number.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+        name="DebugLevel"
+        label="Debug Level"
+        command="SetdebugLevel_"
+        number_of_elements="1"
+        default_values="3" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Debug level.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

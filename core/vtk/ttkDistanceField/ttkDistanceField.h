@@ -84,8 +84,11 @@ class ttkDistanceField
     vtkSetMacro(OutputScalarFieldName, std::string);
     vtkGetMacro(OutputScalarFieldName, std::string);
 
-    vtkSetMacro(VertexIdentifierScalarFieldName, std::string);
-    vtkGetMacro(VertexIdentifierScalarFieldName, std::string);
+    vtkSetMacro(ForceInputVertexScalarField, int);
+    vtkGetMacro(ForceInputVertexScalarField, int);
+
+    vtkSetMacro(InputVertexScalarFieldName, std::string);
+    vtkGetMacro(InputVertexScalarFieldName, std::string);
 
     int getTriangulation(vtkDataSet* input);
     int getIdentifiers(vtkDataSet* input);
@@ -106,7 +109,8 @@ class ttkDistanceField
     std::string ScalarField;
     int OutputScalarFieldType;
     std::string OutputScalarFieldName;
-    std::string VertexIdentifierScalarFieldName;
+    bool ForceInputVertexScalarField;
+    std::string InputVertexScalarFieldName;
 
     ttk::DistanceField distanceField_;
     ttk::Triangulation *triangulation_;

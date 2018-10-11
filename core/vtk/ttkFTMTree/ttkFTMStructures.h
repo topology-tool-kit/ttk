@@ -39,7 +39,7 @@ struct WrapperData {
       return arr;
    }
 
-   inline static ttk::ftm::NodeType getNodeType(ttk::ftm::FTMTree_MT&  tree,
+   inline static ttk::CriticalType getNodeType(ttk::ftm::FTMTree_MT&  tree,
                                                 const ttk::ftm::idNode nodeId,
                                                 ttk::ftm::Params       params)
    {
@@ -59,20 +59,20 @@ struct WrapperData {
       // saddle point
       if (degree > 1) {
          if (upDegree == 2 and downDegree == 1)
-            return ttk::ftm::NodeType::Saddle2;
+            return ttk::CriticalType::Saddle2;
          else if (upDegree == 1 and downDegree == 2)
-            return ttk::ftm::NodeType::Saddle1;
+            return ttk::CriticalType::Saddle1;
          else if (upDegree == 1 and downDegree == 1)
-            return ttk::ftm::NodeType::Regular;
+            return ttk::CriticalType::Regular;
          else
-            return ttk::ftm::NodeType::Degenerate;
+            return ttk::CriticalType::Degenerate;
       }
       // local extremum
       else {
          if (upDegree)
-            return ttk::ftm::NodeType::Local_minimum;
+            return ttk::CriticalType::Local_minimum;
          else
-            return ttk::ftm::NodeType::Local_maximum;
+            return ttk::CriticalType::Local_maximum;
       }
    }
 };
@@ -108,7 +108,7 @@ struct ArcData : public WrapperData {
       cell_ids          = initArray<ttkSimplexIdTypeArray>("SegmentationId", samplePoints);
       cell_upNode       = initArray<ttkSimplexIdTypeArray>("upNodeId", samplePoints);
       cell_downNode     = initArray<ttkSimplexIdTypeArray>("downNodeId", samplePoints);
-      point_regularMask = initArray<vtkCharArray>("RegularMask", samplePoints);
+      point_regularMask = initArray<vtkCharArray>(ttk::MaskScalarFieldName, samplePoints);
       point_scalar      = initArray<vtkFloatArray>("Scalar", samplePoints);
 
       if (params.advStats) {
@@ -228,7 +228,7 @@ struct NodeData : public WrapperData{
 
       ids     = initArray<ttkSimplexIdTypeArray>("NodeId", numberOfNodes);
       vertIds = initArray<ttkSimplexIdTypeArray>("VertexId", numberOfNodes);
-      type    = initArray<vtkIntArray>("NodeType", numberOfNodes);
+      type    = initArray<vtkIntArray>("CriticalType", numberOfNodes);
       scalars = initArray<vtkFloatArray>("Scalar", numberOfNodes);
 
       if (params.advStats) {
@@ -376,7 +376,7 @@ struct VertData: public WrapperData {
       const ttk::ftm::Node*    upNode       = tree->getNode(upNodeId);
       const ttk::SimplexId l_upVertexId = upNode->getVertexId();
       const ttk::SimplexId g_upVertexId = idMapper->GetTuple1(l_upVertexId);
-      const ttk::ftm::NodeType upNodeType   = getNodeType(*tree, upNodeId, params);
+      const ttk::CriticalType upNodeType   = getNodeType(*tree, upNodeId, params);
       float               coordUp[3];
       triangulation->getVertexPoint(l_upVertexId, coordUp[0], coordUp[1], coordUp[2]);
 
@@ -384,7 +384,7 @@ struct VertData: public WrapperData {
       const ttk::ftm::Node*    downNode       = tree->getNode(downNodeId);
       const ttk::SimplexId           l_downVertexId = downNode->getVertexId();
       const ttk::SimplexId           g_downVertexId = idMapper->GetTuple1(l_downVertexId);
-      const ttk::ftm::NodeType downNodeType   = getNodeType(*tree, downNodeId, params);
+      const ttk::CriticalType downNodeType   = getNodeType(*tree, downNodeId, params);
       float               coordDown[3];
       triangulation->getVertexPoint(l_downVertexId, coordDown[0], coordDown[1], coordDown[2]);
 
@@ -395,28 +395,28 @@ struct VertData: public WrapperData {
 
       ttk::ftm::ArcType regionType;
       // RegionType
-      if (upNodeType == ttk::ftm::NodeType::Local_minimum &&
-          downNodeType == ttk::ftm::NodeType::Local_maximum)
+      if (upNodeType == ttk::CriticalType::Local_minimum &&
+          downNodeType == ttk::CriticalType::Local_maximum)
       {
          regionType = ttk::ftm::ArcType::Min_arc;
       }
-      else if (upNodeType == ttk::ftm::NodeType::Local_minimum ||
-               downNodeType == ttk::ftm::NodeType::Local_minimum)
+      else if (upNodeType == ttk::CriticalType::Local_minimum ||
+               downNodeType == ttk::CriticalType::Local_minimum)
       {
          regionType = ttk::ftm::ArcType::Min_arc;
       }
-      else if (upNodeType == ttk::ftm::NodeType::Local_maximum ||
-               downNodeType == ttk::ftm::NodeType::Local_maximum)
+      else if (upNodeType == ttk::CriticalType::Local_maximum ||
+               downNodeType == ttk::CriticalType::Local_maximum)
       {
          regionType = ttk::ftm::ArcType::Max_arc;
       }
-      else if (upNodeType == ttk::ftm::NodeType::Saddle1 &&
-               downNodeType == ttk::ftm::NodeType::Saddle1)
+      else if (upNodeType == ttk::CriticalType::Saddle1 &&
+               downNodeType == ttk::CriticalType::Saddle1)
       {
          regionType = ttk::ftm::ArcType::Saddle1_arc;
       }
-      else if (upNodeType == ttk::ftm::NodeType::Saddle2 &&
-               downNodeType == ttk::ftm::NodeType::Saddle2)
+      else if (upNodeType == ttk::CriticalType::Saddle2 &&
+               downNodeType == ttk::CriticalType::Saddle2)
       {
          regionType = ttk::ftm::ArcType::Saddle2_arc;
       }

@@ -296,10 +296,10 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(ZeroSheetVertexId){
     vertexIds->SetNumberOfTuples(vertexNumber);
-    vertexIds->SetName("VertexIds");
+    vertexIds->SetName(ttk::VertexScalarFieldName);
   }
   else{
-    sheet0->GetPointData()->RemoveArray("VertexIds");
+    sheet0->GetPointData()->RemoveArray(ttk::VertexScalarFieldName);
   }
   
   vtkSmartPointer<vtkCharArray> vertexTypes = 
@@ -402,10 +402,10 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   vtkSmartPointer<ttkSimplexIdTypeArray> edgeVertexIds = 
     vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(OneSheetVertexId){
-    edgeVertexIds->SetName("VertexIds");
+    edgeVertexIds->SetName(ttk::VertexScalarFieldName);
   }
   else{
-    sheet1->GetPointData()->RemoveArray("VertexIds");
+    sheet1->GetPointData()->RemoveArray(ttk::VertexScalarFieldName);
   }
   
   vtkSmartPointer<vtkIntArray> edgeType = 

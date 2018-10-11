@@ -39,7 +39,7 @@ int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId, const int cc
                                        vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
    FTMTree_MT*   tree     = ftmTree_[cc].tree.getTree(GetTreeType());
-   vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
+   vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray(ttk::VertexScalarFieldName);
    SuperArc*     arc      = tree->getSuperArc(arcId);
    float         point[3];
    vtkIdType     pointIds[2];
@@ -99,7 +99,7 @@ int ttkFTMTree::addDirectSkeletonArc(const idSuperArc arcId, const int cc, vtkPo
                                      vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
    FTMTree_MT* tree = ftmTree_[cc].tree.getTree(GetTreeType());
-   vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
+   vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray(ttk::VertexScalarFieldName);
    SuperArc* arc = tree->getSuperArc(arcId);
    float     point[3];
    vtkIdType pointIds[2];
@@ -142,7 +142,7 @@ int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId, const int cc, vtkP
                                       vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
 {
    FTMTree_MT* tree = ftmTree_[cc].tree.getTree(GetTreeType());
-   vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
+   vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray(ttk::VertexScalarFieldName);
    SuperArc* arc = tree->getSuperArc(arcId);
    float     point[3];
    vtkIdType pointIds[2];
@@ -461,7 +461,7 @@ int ttkFTMTree::getSegmentation(vtkDataSet* outputSegmentation)
    for (int cc = 0; cc < nbCC_; cc++) {
       FTMTree_MT*   tree = ftmTree_[cc].tree.getTree(GetTreeType());
       vtkDataArray* idMapper =
-          connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
+          connected_components_[cc]->GetPointData()->GetArray(ttk::VertexScalarFieldName);
       const idSuperArc numberOfSuperArcs = tree->getNumberOfSuperArcs();
       // #pragma omp for
       for (idSuperArc arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
@@ -535,7 +535,7 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes)
    for (int cc = 0; cc < nbCC_; cc++) {
       FTMTree_MT* tree = ftmTree_[cc].tree.getTree(GetTreeType());
       vtkDataArray* idMapper =
-          connected_components_[cc]->GetPointData()->GetArray("VertexIdentifier");
+          connected_components_[cc]->GetPointData()->GetArray(ttk::VertexScalarFieldName);
 
       const idNode numberOfNodes = tree->getNumberOfNodes();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -675,7 +675,7 @@ void ttkFTMTree::identify(vtkDataSet* ds) const
 {
    vtkSmartPointer<ttkSimplexIdTypeArray> identifiers=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
    const SimplexId nbPoints = ds->GetNumberOfPoints();
-   identifiers->SetName("VertexIdentifier");
+   identifiers->SetName(ttk::VertexScalarFieldName);
    identifiers->SetNumberOfComponents(1);
    identifiers->SetNumberOfTuples(nbPoints);
 

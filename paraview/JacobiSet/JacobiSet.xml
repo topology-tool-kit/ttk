@@ -109,6 +109,12 @@ Foundations of Computational Mathematics. Cambridge University Press, 2002.
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="With predefined offset"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the scalar field to use as a vertex offset for the 
 u-coordinate (used to disambiguate collinear edges).
@@ -130,6 +136,12 @@ u-coordinate (used to disambiguate collinear edges).
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="With predefined offset"
+            value="1" />
+        </Hints>
         <Documentation>
           Select the scalar field to use as a vertex offset for the 
 v-coordinate (used to disambiguate collinear edges).
@@ -169,6 +181,12 @@ v-coordinate (used to disambiguate collinear edges).
          number_of_elements="1"
          default_values="1" panel_visibility="advanced">
         <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="UseAllCores"
+            value="0" />
+        </Hints>
          <Documentation>
           Thread number.
          </Documentation>

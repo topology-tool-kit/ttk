@@ -13,8 +13,8 @@ ttkGeometrySmoother::ttkGeometrySmoother(){
   // init
   NumberOfIterations = 1;
   MaskIdentifier = 0;
-  UseInputMask = false;
-  InputMask = "MaskField";
+  ForceInputMaskScalarField = false;
+  InputMask = ttk::MaskScalarFieldName;
   UseAllCores = true;
   ThreadNumber = 1;
   debugLevel_ = 3;
@@ -43,7 +43,7 @@ int ttkGeometrySmoother::doIt(vector<vtkDataSet *> &inputs,
   
   vtkCharArray *inputMaskField = NULL;
 
-  if(UseInputMask){
+  if(ForceInputMaskScalarField){
       if(InputMask.length()){
           inputMaskField = vtkCharArray::SafeDownCast(input->GetPointData()->GetArray(InputMask.data()));
       } else {
@@ -59,6 +59,10 @@ int ttkGeometrySmoother::doIt(vector<vtkDataSet *> &inputs,
               << inputMaskField->GetName() << "'..." << endl;
           dMsg(cout, msg.str(), infoMsg);
       }
+  }
+  else if(input->GetPointData()->GetArray(ttk::MaskScalarFieldName)){
+    inputMaskField = vtkCharArray::SafeDownCast(input->GetPointData()->GetArray(ttk::MaskScalarFieldName));
+    InputMask = ttk::MaskScalarFieldName;
   }
 
   // This filter copies the input into a new data-set (smoothed)
