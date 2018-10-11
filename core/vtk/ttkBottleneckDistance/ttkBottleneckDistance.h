@@ -52,7 +52,7 @@ class ttkBottleneckDistance
     : public vtkDataSetAlgorithm, public ttk::Wrapper
 {
 
-<<<<<<< HEAD
+/*
   public:
       
     static ttkBottleneckDistance* New();
@@ -125,9 +125,9 @@ class ttkBottleneckDistance
       }
       return 1;
     }
-=======
+*/
 public:
->>>>>>> master
+
 
   static ttkBottleneckDistance* New();
 
@@ -216,7 +216,7 @@ public:
       case 0:
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
         break;
-      case 1:
+      case 1:core/vtk/ttkBottleneckDistance/ttkBottleneckDistance.h
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
         break;
       case 2:
@@ -240,7 +240,7 @@ public:
       std::vector<diagramTuple>& diagram,
       int size);
 
-  template <typename dataType>
+  template <typename dataType>core/vtk/ttkBottleneckDistance/ttkBottleneckDistance.h
   int augmentPersistenceDiagrams(
       const std::vector<diagramTuple>& diagram1,
       const std::vector<diagramTuple>& diagram2,
