@@ -66,7 +66,7 @@ int ttkCinemaQuery::RequestData(
 
     // Compute Query Result
     {
-        result = cinemaQuery.execute<int>(
+        result = cinemaQuery.execute(
             sqlTableDefinition,
             sqlTableRows,
             this->QueryString
