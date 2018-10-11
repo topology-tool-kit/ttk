@@ -8,9 +8,9 @@
 /// %DepthImageBasedGeometryApproximation is a TTK processing package that approximates geomerty based on an input depth image and its corresponding camera parameters.
 ///
 /// Related publication:
-/// 'VOIDGA: A View-Approximation Oriented Image Database Generation Approach',
+/// 'VOIDGA: A View-Approximation Oriented Image Database Generation Approach'
 /// Jonas Lukasczyk, Eric Kinner, James Ahrens, Heike Leitte, and Christoph Garth.
-/// To appear in the IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV), 2018.
+/// IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV), 2018.
 ///
 /// \sa ttk::Triangulation
 

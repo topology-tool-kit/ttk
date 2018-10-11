@@ -20,10 +20,8 @@ namespace ttk{
             CinemaQuery();
             ~CinemaQuery();
 
-            /*
-            Creates a temporary database based on a SQL table definition and table content
-            in order to subsequentually return the result of a query.
-            */
+            // Creates a temporary database based on a SQL table definition and
+            // and table content to subsequentually return a query result.
             string execute(
                 const string& sqlTableDefinition,
                 const string& sqlTableRows,

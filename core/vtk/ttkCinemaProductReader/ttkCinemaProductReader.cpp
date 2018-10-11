@@ -2,6 +2,7 @@
 #include <vtkXMLGenericDataObjectReader.h>
 #include <vtkVariantArray.h>
 #include <vtkFieldData.h>
+#include <vtkDoubleArray.h>
 #include <vtkStringArray.h>
 
 using namespace std;
@@ -87,11 +88,21 @@ int ttkCinemaProductReader::RequestData(
                 auto columnName = inputTable->GetColumnName(j);
                 auto fieldData = block->GetFieldData();
                 if(!fieldData->HasArray( columnName )){
-                    vtkSmartPointer<vtkVariantArray> c = vtkSmartPointer<vtkVariantArray>::New();
-                    c->SetName( columnName );
-                    c->SetNumberOfValues(1);
-                    c->SetValue(0, inputTable->GetValue(i,j));
-                    fieldData->AddArray( c );
+                    bool isNumeric = inputTable->GetColumn(j)->IsNumeric();
+
+                    if(isNumeric){
+                        vtkSmartPointer<vtkDoubleArray> c = vtkSmartPointer<vtkDoubleArray>::New();
+                        c->SetName( columnName );
+                        c->SetNumberOfValues(1);
+                        c->SetValue(0, inputTable->GetValue(i,j).ToDouble());
+                        fieldData->AddArray( c );
+                    } else {
+                        vtkSmartPointer<vtkStringArray> c = vtkSmartPointer<vtkStringArray>::New();
+                        c->SetName( columnName );
+                        c->SetNumberOfValues(1);
+                        c->SetValue(0, inputTable->GetValue(i,j).ToString());
+                        fieldData->AddArray( c );
+                    }
                 }
             }
 

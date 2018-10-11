@@ -6,7 +6,7 @@
 
                 Related publication:
 
-                'VOIDGA: A View-Approximation Oriented Image Database Generation Approach', Jonas Lukasczyk, Eric Kinner, James Ahrens, Heike Leitte, and Christoph Garth. To appear in the IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV), 2018.
+                'VOIDGA: A View-Approximation Oriented Image Database Generation Approach', Jonas Lukasczyk, Eric Kinner, James Ahrens, Heike Leitte, and Christoph Garth. IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV), 2018.
 
             </Documentation>
             <InputProperty name="Input" command="SetInputConnection">
@@ -31,9 +31,7 @@
             <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
                 <IntRangeDomain name="range" min="1" max="100" />
                 <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator" 
-                                           mode="visibility" 
-                                           property="UseAllCores" value="0" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
                 </Hints>
                 <Documentation>Thread number.</Documentation>
             </IntVectorProperty>

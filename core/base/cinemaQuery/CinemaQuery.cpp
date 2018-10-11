@@ -1,34 +1,34 @@
 #include <CinemaQuery.h>
 
 #if TTK_ENABLE_SQLITE3
-#include <sqlite3.h>
+
+    #include <sqlite3.h>
+
+    // Process a row of a query result and append it to a string
+    static int processRow(void *data, int argc, char **argv, char **azColName){
+        int i;
+
+        // Get output string as reference
+        string& result = *((string*)data);
+
+        // If string is empty then add a first row that records column names
+        if(result==""){
+            for(int i = 0; i<argc; i++)
+                result+= (i>0?",":"") + string(azColName[i]);
+            result+="\n";
+        }
+
+        // Append row content to string
+        for(i = 0; i<argc; i++)
+            result+= (i>0?",":"") + string(argv[i]);
+        result+="\n";
+
+        return 0;
+    }
 #endif
 
 ttk::CinemaQuery::CinemaQuery(){}
 ttk::CinemaQuery::~CinemaQuery(){}
-
-#if TTK_ENABLE_SQLITE3
-static int processRow(void *data, int argc, char **argv, char **azColName){
-    int i;
-
-    // Get output string as reference
-    string& result = *((string*)data);
-
-    // If string is empty then add a first row that records column names
-    if(result==""){
-        for(int i = 0; i<argc; i++)
-            result+= (i>0?",":"") + string(azColName[i]);
-        result+="\n";
-    }
-
-    // Append row content to string
-    for(i = 0; i<argc; i++)
-        result+= (i>0?",":"") + string(argv[i]);
-    result+="\n";
-
-    return 0;
-}
-#endif
 
 string ttk::CinemaQuery::execute(
     const string& sqlTableDefinition,
@@ -37,12 +37,6 @@ string ttk::CinemaQuery::execute(
 ) const{
 
     string result="";
-
-    #if TTK_ENABLE_SQLITE3
-        cout<< "on" << endl;
-    #else
-        cout<< "off" << endl;
-    #endif
 
     #if TTK_ENABLE_SQLITE3
         // SQLite Variables
@@ -124,8 +118,7 @@ string ttk::CinemaQuery::execute(
         // Print Error
         {
             stringstream msg;
-            msg << "[ttkCinemaQuery] ERROR: TTK has been built without Sqlite3"
-              << " support. Query is not executed."<<endl;
+            msg << "[ttkCinemaQuery] ERROR: TTK is build without Sqlite3 support. Query is not executed."<<endl;
             dMsg(cout, msg.str(), timeMsg);
         }
     #endif

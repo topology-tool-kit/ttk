@@ -10,9 +10,9 @@
 /// This filter approximates the geometry that is depicted by a set of depth images.
 ///
 /// Related publication:
-/// 'VOIDGA: A View-Approximation Oriented Image Database Generation Approach',
+/// 'VOIDGA: A View-Approximation Oriented Image Database Generation Approach'
 /// Jonas Lukasczyk, Eric Kinner, James Ahrens, Heike Leitte, and Christoph Garth.
-/// To appear in the IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV), 2018.
+/// IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV), 2018.
 ///
 /// \param Input A vtkMultiBlockDataSet containing a set of depth images represented by vtkImagedata objects. (vtkMultiBlockDataSet)
 /// \param Subsampling The factor that controls the sampling rate (0: no Subsampling, 1: skip every second sample, 2: skip every second and third sample...)
