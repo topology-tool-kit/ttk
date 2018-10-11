@@ -21,11 +21,6 @@ namespace ttk{
             ~CinemaQuery();
 
             /*
-            Appends a row of a SQL query result to a string
-            */
-            int processRow(void *data, int argc, char **argv, char **azColName) const;
-
-            /*
             Creates a temporary database based on a SQL table definition and table content
             in order to subsequentually return the result of a query.
             */

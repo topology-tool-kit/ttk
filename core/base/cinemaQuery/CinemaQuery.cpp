@@ -7,7 +7,8 @@
 ttk::CinemaQuery::CinemaQuery(){}
 ttk::CinemaQuery::~CinemaQuery(){}
 
-int ttk::CinemaQuery::processRow(void *data, int argc, char **argv, char **azColName) const{
+#if TTK_ENABLE_SQLITE3
+static int processRow(void *data, int argc, char **argv, char **azColName){
     int i;
 
     // Get output string as reference
@@ -27,6 +28,7 @@ int ttk::CinemaQuery::processRow(void *data, int argc, char **argv, char **azCol
 
     return 0;
 }
+#endif
 
 string ttk::CinemaQuery::execute(
     const string& sqlTableDefinition,
@@ -36,7 +38,7 @@ string ttk::CinemaQuery::execute(
 
     string result="";
 
-    #ifdef TTK_ENABLE_SQLITE3
+    #if TTK_ENABLE_SQLITE3
         cout<< "on" << endl;
     #else
         cout<< "off" << endl;
@@ -98,7 +100,7 @@ string ttk::CinemaQuery::execute(
             Timer t;
 
             // Perform query
-//             rc = sqlite3_exec(db, sqlQuery.data(), processRow, (void*)(&result), &zErrMsg);
+            rc = sqlite3_exec(db, sqlQuery.data(), processRow, (void*)(&result), &zErrMsg);
             if( rc != SQLITE_OK ){
                 fprintf(stderr, "[ttkCinemaQuery] SQL error: %s\n", zErrMsg);
                 sqlite3_free(zErrMsg);
