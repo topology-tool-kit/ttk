@@ -1,8 +1,6 @@
 #include <ttkCinemaProductReader.h>
+#include <vtkXMLGenericDataObjectReader.h>
 #include <vtkVariantArray.h>
-#include <vtkXMLImageDataReader.h>
-#include <vtkXMLPolyDataReader.h>
-#include <vtkXMLUnstructuredGridReader.h>
 #include <vtkFieldData.h>
 #include <vtkStringArray.h>
 
@@ -16,6 +14,7 @@ int ttkCinemaProductReader::RequestData(
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
 ){
+    // Print status
     {
         stringstream msg;
         msg<<"-------------------------------------------------------------"<<endl;
@@ -53,12 +52,9 @@ int ttkCinemaProductReader::RequestData(
 
         // For each row
         for(int i=0; i<n; i++){
-            // get path
+            // Get path
             auto path = databasePath + "/" + paths->GetVariantValue(i).ToString();
             auto ext = path.substr( path.length() - 3 );
-
-            std::ifstream infile(path.data());
-            bool exists = infile.good();
 
             {
                 stringstream msg;
@@ -66,6 +62,9 @@ int ttkCinemaProductReader::RequestData(
                 dMsg(cout, msg.str(), timeMsg);
             }
 
+            // Check if file exists
+            std::ifstream infile(path.data());
+            bool exists = infile.good();
             if(!exists){
                 stringstream msg;
                 msg<<"[ttkCinemaProductReader]    ERROR: File does not exist."<<endl;
@@ -73,24 +72,12 @@ int ttkCinemaProductReader::RequestData(
                 continue;
             }
 
-            // load data using correct reader
-            if(ext=="vti"){
-                vtkSmartPointer<vtkXMLImageDataReader> reader = vtkSmartPointer<vtkXMLImageDataReader>::New();
+            // Read any data using vtkXMLGenericDataObjectReader
+            {
+                vtkSmartPointer<vtkXMLGenericDataObjectReader> reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
                 reader->SetFileName( path.data() );
                 reader->Update();
                 output->SetBlock(i, reader->GetOutput());
-            } else if(ext=="vtu"){
-                vtkSmartPointer<vtkXMLUnstructuredGridReader> reader = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
-                reader->SetFileName( path.data() );
-                reader->Update();
-                output->SetBlock(i, reader->GetOutput());
-            } else if(ext=="vtp"){
-                vtkSmartPointer<vtkXMLPolyDataReader> reader = vtkSmartPointer<vtkXMLPolyDataReader>::New();
-                reader->SetFileName( path.data() );
-                reader->Update();
-                output->SetBlock(i, reader->GetOutput());
-            } else {
-                cout<<"[ttkCinemaProductReader] Unknown File type: "<<ext<<endl;
             }
 
             // Augment read data with row information
@@ -107,10 +94,12 @@ int ttkCinemaProductReader::RequestData(
                     fieldData->AddArray( c );
                 }
             }
+
+            this->updateProgress( ((float)i)/((float)(n-1)) );
         }
     }
 
-    // Output Performance
+    // Print status
     {
         stringstream msg;
         msg << "[ttkCinemaProductReader] Memory usage: "

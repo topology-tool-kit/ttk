@@ -35,7 +35,7 @@ namespace ttk{
                 double* camNearFar,
                 double* camHeight,
 
-                int subSampling,
+                int subsampling,
 
                 vector<tuple<double,double,double>>& vertices,
                 vector<tuple<int,int,int>>& triangles,
@@ -53,7 +53,7 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
     double* camNearFar,
     double* camHeight,
 
-    int subSampling,
+    int subsampling,
 
     vector<tuple<double,double,double>>& vertices,
     vector<tuple<int,int,int>>& triangles,
@@ -61,7 +61,7 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
 ) const{
 
     Timer t;
-    size_t step = subSampling + 1;
+    size_t step = subsampling + 1;
 
     size_t camResST[2] = {(size_t) camRes[0], (size_t) camRes[1]};
 
@@ -135,6 +135,9 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
         };
 
         // Compute vertex positions and parallize over rows
+        #ifdef TTK_ENABLE_OPENMP
+        #pragma omp parallel for num_threads(threadNumber_)
+        #endif
         for(size_t y=0; y<camResST[1]; y+=step){
             double v = ((double)y)*pixelHeightWorld;
             double vTimesUp[3] = {

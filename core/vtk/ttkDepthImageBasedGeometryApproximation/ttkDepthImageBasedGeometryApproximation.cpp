@@ -1,4 +1,4 @@
-#include                  <ttkDepthImageBasedGeometryApproximation.h>
+#include <ttkDepthImageBasedGeometryApproximation.h>
 
 using namespace std;
 using namespace ttk;
@@ -17,15 +17,16 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
 ){
+    Memory m;
+    Timer t;
+
+    // Print status
     {
         stringstream msg;
         msg<<"-------------------------------------------------------------"<<endl;
         msg<<"[ttkDepthImageBasedGeometryApproximation] RequestData"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
-
-    Memory m;
-    Timer t;
 
     // Prepare input and output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
@@ -77,7 +78,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
                     (double*) camRes->GetVoidPointer(0),
                     (double*) camNearFar->GetVoidPointer(0),
                     (double*) camHeight->GetVoidPointer(0),
-                    this->SubSampling,
+                    this->Subsampling,
 
                     // Output
                     vertices,
@@ -114,6 +115,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         }
 
         outputMBD->SetBlock(i,mesh);
+        this->updateProgress( ((float)i)/((float)(n-1)) );
     }
 
     // Print status

@@ -32,8 +32,8 @@ class ttkDepthImageBasedGeometryApproximation
         static ttkDepthImageBasedGeometryApproximation* New();
         vtkTypeMacro(ttkDepthImageBasedGeometryApproximation, vtkMultiBlockDataSetAlgorithm)
 
-        vtkSetMacro(SubSampling, int);
-        vtkGetMacro(SubSampling, int);
+        vtkSetMacro(Subsampling, int);
+        vtkGetMacro(Subsampling, int);
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -66,7 +66,7 @@ class ttkDepthImageBasedGeometryApproximation
     protected:
 
         ttkDepthImageBasedGeometryApproximation(){
-            SubSampling = 0;
+            Subsampling = 0;
 
             UseAllCores = false;
             SetNumberOfInputPorts(1);
@@ -81,7 +81,7 @@ class ttkDepthImageBasedGeometryApproximation
 
     private:
 
-        int SubSampling;
+        int Subsampling;
         ttk::DepthImageBasedGeometryApproximation depthImageBasedGeometryApproximation_;
 
         bool needsToAbort() override { return GetAbortExecute();};

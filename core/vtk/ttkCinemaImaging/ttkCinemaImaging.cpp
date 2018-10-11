@@ -1,25 +1,19 @@
 #include                  <ttkCinemaImaging.h>
 #include                  <vtkSmartPointer.h>
-#include                  <vtkDataSet.h>
-#include                  <vtkMultiBlockDataSet.h>
-#include                  <vtkWindowToImageFilter.h>
-#include                  <vtkDataSetMapper.h>
-#include                  <vtkCompositePolyDataMapper.h>
-#include                  <vtkCompositePolyDataMapper2.h>
-#include                  <vtkActor.h>
-#include                  <vtkRenderer.h>
-#include                  <vtkRenderWindow.h>
-#include                  <vtkCamera.h>
-#include                  <vtkCompositePolyDataMapper2.h>
-#include                  <vtkPolyDataMapper.h>
-#include                  <vtkCompositeDataDisplayAttributes.h>
-
 #include                  <vtkPointSet.h>
-#include                  <vtkUnstructuredGrid.h>
 #include                  <vtkPointData.h>
 #include                  <vtkFieldData.h>
 #include                  <vtkDoubleArray.h>
 #include                  <vtkMath.h>
+
+#include                  <vtkMultiBlockDataSet.h>
+#include                  <vtkActor.h>
+#include                  <vtkCompositePolyDataMapper2.h>
+#include                  <vtkCamera.h>
+#include                  <vtkCompositeDataGeometryFilter.h>
+#include                  <vtkWindowToImageFilter.h>
+#include                  <vtkRenderer.h>
+#include                  <vtkRenderWindow.h>
 
 using namespace std;
 using namespace ttk;
@@ -45,7 +39,7 @@ int ttkCinemaImaging::RequestData(
 
     // Get Input / Output
     vtkInformation* inputGeomertyInfo = inputVector[0]->GetInformationObject(0);
-    auto inputGeomerty = inputGeomertyInfo->Get(vtkDataObject::DATA_OBJECT());
+    auto inputObject = inputGeomertyInfo->Get(vtkDataObject::DATA_OBJECT());
 
     vtkInformation* inGridInfo = inputVector[1]->GetInformationObject(0);
     auto inputGrid = vtkPointSet::SafeDownCast( inGridInfo->Get(vtkDataObject::DATA_OBJECT()) );
@@ -57,14 +51,18 @@ int ttkCinemaImaging::RequestData(
     // Initialize Renderer
     // -------------------------------------------------------------------------
 
-    // Create Mapper and Actor for Input Geometry
-    vtkSmartPointer<vtkDataSetMapper> mapper = vtkSmartPointer<vtkDataSetMapper>::New();
-    if(inputGeomerty->IsA("vtkMultiBlockDataSet")){
-        auto x = vtkMultiBlockDataSet::SafeDownCast(inputGeomerty)->GetBlock(0);
-        mapper->SetInputData( vtkUnstructuredGrid::SafeDownCast(x) );
-    } else {
-        mapper->SetInputData( vtkUnstructuredGrid::SafeDownCast(inputGeomerty) );
-    }
+    // Insert InputDataObject into MultiBlockDataSet
+    vtkSmartPointer<vtkMultiBlockDataSet> inputMultiBlock = vtkSmartPointer<vtkMultiBlockDataSet>::New();
+    inputMultiBlock->SetBlock(0, inputObject);
+
+    // Create Mapper and Actor
+    vtkNew<vtkCompositeDataGeometryFilter> toPoly;
+    toPoly->SetInputData( inputMultiBlock );
+    toPoly->Update();
+
+    vtkSmartPointer<vtkCompositePolyDataMapper2> mapper = vtkSmartPointer<vtkCompositePolyDataMapper2>::New();
+    mapper->SetInputConnection(toPoly->GetOutputPort());
+
     vtkSmartPointer<vtkActor> actor = vtkSmartPointer<vtkActor>::New();
     actor->SetMapper(mapper);
 
@@ -75,7 +73,7 @@ int ttkCinemaImaging::RequestData(
 
     vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
     renderWindow->SetSize( this->Resolution );
-    renderWindow->SetMultiSamples( 0 );
+    renderWindow->SetMultiSamples( 0 ); // Disable AA
     renderWindow->AddRenderer(renderer);
 
     // Setup Camera and Render to Update Everything
