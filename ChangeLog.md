@@ -1,6 +1,8 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+- Lifted Wasserstein Matcher for Topology Time-Tracking (IEEE LDAV 2018 paper)
+- Dimension reduction for high dimensional data (scikit-learn integration)
 - Automatic guesses for ttk generated fields
 - Improved type consistency
 - Improved ParaView GUIs

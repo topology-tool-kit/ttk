@@ -23,11 +23,13 @@
 #include<vtkDoubleArray.h>
 #include<vtkFiltersCoreModule.h>
 #include<vtkFloatArray.h>
+#include<vtkIdTypeArray.h>
 #include<vtkInformation.h>
 #include<vtkIntArray.h>
 #include<vtkObjectFactory.h>
 #include<vtkCellData.h>
 #include<vtkSmartPointer.h>
+#include<vtkUnsignedShortArray.h>
 
 // ttk code includes
 #include<Wrapper.h>
@@ -47,6 +49,12 @@ class ttkCellDataSelector
       // default ttk setters
       vtkSetMacro(debugLevel_, int);
       vtkSetMacro(RegexpString, std::string);
+      
+      vtkSetMacro(RenameSelected, bool);
+      vtkGetMacro(RenameSelected, bool);
+      
+      vtkSetMacro(SelectedFieldName, std::string);
+      vtkGetMacro(SelectedFieldName, std::string);
 
     void SetThreads(){
       if(!UseAllCores)
@@ -106,16 +114,23 @@ class ttkCellDataSelector
 
     ttkCellDataSelector(){
       UseAllCores = false;
+      RenameSelected = false;
       ThreadNumber = 1;
       debugLevel_ = 3;
 
       RegexpString = "*";
+      SelectedFieldName = "SelectedField";
 
       SetNumberOfInputPorts(1);
       SetNumberOfOutputPorts(1);
+      
+      localFieldCopy_ = NULL;
     }
 
-    ~ttkCellDataSelector(){};
+    ~ttkCellDataSelector(){
+      if(localFieldCopy_)
+        localFieldCopy_->Delete();
+    };
 
     int RequestData(vtkInformation *request,
         vtkInformationVector **inputVector,
@@ -125,8 +140,11 @@ class ttkCellDataSelector
 
     bool UseAllCores;
     int ThreadNumber;
+    bool RenameSelected;
+    std::string              SelectedFieldName;
     std::vector<std::string> ScalarFields;
     std::string RegexpString;
+    vtkDataArray             *localFieldCopy_;
 
     int doIt(vtkDataSet *input, vtkDataSet *output);
     bool needsToAbort();

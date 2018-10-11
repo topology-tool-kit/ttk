@@ -159,24 +159,24 @@
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty
-          name="ThreadNumber"
-          label="Thread Number"
-          command="SetThreadNumber"
-          number_of_elements="1"
-          default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
+        <IntVectorProperty
+                name="ThreadNumber"
+                label="Thread Number"
+                command="SetThreadNumber"
+                number_of_elements="1"
+                default_values="1" panel_visibility="advanced">
+            <IntRangeDomain name="range" min="1" max="100" />
+            <Hints>
+                <PropertyWidgetDecorator type="GenericDecorator"
+                                         mode="visibility"
+                                         property="UseAllCores"
+                                         value="0" />
+            </Hints>
 
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
+            <Documentation>
+                Thread number.
+            </Documentation>
+        </IntVectorProperty>
 
       <IntVectorProperty
           name="DebugLevel"

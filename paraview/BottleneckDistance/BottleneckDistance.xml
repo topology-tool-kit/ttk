@@ -6,22 +6,27 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-        name="BottleneckDistance"
-        class="ttkBottleneckDistance"
-        label="TTK BottleneckDistance"
-        >
+    name="BottleneckDistance"
+    class="ttkBottleneckDistance"
+    label="TTK BottleneckDistance"
+    >
       <Documentation
-          long_help="TTK bottleneckDistance plugin."
-          short_help="TTK bottleneckDistance plugin.">
+      long_help="TTK bottleneckDistance plugin."
+      short_help="TTK bottleneckDistance plugin.">
         TTK bottleneckDistance plugin documentation.
+        
+        Related publication:
+        'Lifted Wasserstein Matcher for Fast and Robust Topology Tracking'
+        Maxime Soler, Melanie Plainchault, Bruno Conche, Julien Tierny 
+        Proc. of IEEE Symposium on Large Data Analysis and Visualization 2018.
       </Documentation>
 
       <InputProperty
-          name="Input1"
-          port_index="0"
-          label="Smallest persistence diagram"
-          command="SetInputConnection"
-          >
+      name="Input1"
+      port_index="0"
+      label="Persistence diagram 1"
+      command="SetInputConnection"
+      >
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
@@ -38,10 +43,10 @@
       </InputProperty>
 
       <InputProperty
-          name="Input2"
-          port_index="1"
-          label="Largest persistence diagram"
-          command="SetInputConnection">
+      name="Input2"
+      port_index="1"
+      label="Persistence diagram 2"
+      command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
@@ -57,17 +62,44 @@
         </Documentation>
       </InputProperty>
 
-      
+      <!-- Persistence filtering options -->
+      <DoubleVectorProperty
+      name="Tolerance"
+      command="SetTolerance"
+      label="Persistence threshold"
+      number_of_elements="1"
+      default_values="1">
+        <Documentation>
+          Discard pairs below this threshold (percentage of the function span).
+        </Documentation>
+        <DoubleRangeDomain name="range" min="0" max="100" />
+      </DoubleVectorProperty>
+
+      <IntVectorProperty
+      name="Assignment method"
+      label="Assignment method"
+      command="SetPVAlgorithm"
+      number_of_elements="1"
+      default_values="0" >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="ttk: pMunkres (Wasserstein), Gabow-Tarjan (Bottleneck)"/>
+          <!-- <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/> -->
+        </EnumerationDomain>
+        <Documentation>
+          Value of the parameter p for the Wp (p-th Wasserstein) distance
+          computation (type "inf" for the Bottleneck distance).
+        </Documentation>
+      </IntVectorProperty>
 
       <StringVectorProperty
-          name="n"
-          label="p parameter"
-          command="SetWassersteinMetric"
-          number_of_elements="1"
-          default_values="1" >
+      name="n"
+      label="p parameter"
+      command="SetWassersteinMetric"
+      number_of_elements="1"
+      default_values="2" >
         <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance 
-computation (type "inf" for the Bottleneck distance).
+          Value of the parameter p for the Wp (p-th Wasserstein) distance
+          computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
 	  
@@ -109,21 +141,50 @@ computation (type "inf" for the Bottleneck distance).
 	  
 
       <DoubleVectorProperty
-          name="alpha"
-          label="Diagram blending"
-          command="SetAlpha"
-          number_of_elements="1"
-          default_values="1"
-          panel_visibility="advanced"
-          >
-        <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
-        <Documentation>
-          Blending coefficient for the cost evaluation of each critical point  
-matching. By default (1), only distances  in 
-the persistence diagrams are considered between matched critical points. When 
-set to 0, only distances in the original 3D domain are considered 
-between matched critical points.
-        </Documentation>
+      name="spe"
+      label="Extremum weight"
+      command="SetPE"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <DoubleRangeDomain name="spe" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for extrema</Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+      name="sps"
+      label="Saddle weight"
+      command="SetPS"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <DoubleRangeDomain name="sps" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for saddles</Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+      name="spx"
+      label="X weight"
+      command="SetPX"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the X component of 
+the extremum</Documentation>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+      name="spy"
+      label="Y weight"
+      command="SetPY"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced"
+      >
+        <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the Y component of 
+the extremum</Documentation>
       </DoubleVectorProperty>
 	  
 	  
@@ -142,6 +203,7 @@ Threshold.
         </Documentation>
       </DoubleVectorProperty>
 
+<!--
 	  
 	  <IntVectorProperty
         name="Use KDTree"
@@ -158,57 +220,76 @@ Threshold.
       </IntVectorProperty>
 	  
 	  
+-->
+      <DoubleVectorProperty
+      name="spz"
+      label="Z weight"
+      command="SetPZ"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
+        <Documentation>Importance weight for the Z component of 
+the extremum</Documentation>
+      </DoubleVectorProperty>
+
+
       <IntVectorProperty
-        name="Output matchings"
-        command="SetUseOutputMatching"
-        label="Display the matchings with line segments"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
+      name="Output matchings"
+      command="SetUseOutputMatching"
+      label="Display the matchings with line segments"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Display the matching between pairs of the persistence diagrams with 
-line segments in 3D.
+          Display the matching between pairs of the persistence diagrams with
+          line segments in 3D.
         </Documentation>
       </IntVectorProperty>
-      
 
+
+      <IntVectorProperty
+      name="Use spacing"
+      command="SetUseGeometricSpacing"
+      label="Force Z-translation"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          For the translation of the second set of critical points even the
+          persistence diagrams are embedded in the original domain. This is useful to
+          visualize the matching between the diagrams of two 2D scalar fields.
+        </Documentation>
+      </IntVectorProperty>
 
       <DoubleVectorProperty
-          name="spacing"
-          label="Z-Translation"
-          command="SetSpacing"
-          number_of_elements="1"
-          default_values="1"
-          panel_visibility="advanced"
-      >
+      name="spacing"
+      label="Z-Translation"
+      command="SetSpacing"
+      number_of_elements="1"
+      default_values="1"
+      panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Use spacing"
+            value="1" />
+        </Hints>
         <Documentation>
-          Translation on the Z axis between the output representations of the 
-persistence diagrams.
+          Translation on the Z axis between the output representations of the
+          persistence diagrams.
         </Documentation>
       </DoubleVectorProperty>
-      
-        <IntVectorProperty
-          name="Use spacing"
-          command="SetUseGeometricSpacing"
-          label="Force Z-translation"
-          number_of_elements="1"
-          default_values="0"
-          panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          For the translation of the second set of critical points even the 
-persistence diagrams are embedded in the original domain. This is useful to 
-visualize the matching between the diagrams of two 2D scalar fields.
-        </Documentation>
-      </IntVectorProperty>
+
 
       <IntVectorProperty
-          name="UseAllCores"
-          label="Use All Cores"
-          command="SetUseAllCores"
-          number_of_elements="1"
-          default_values="1" panel_visibility="advanced">
+      name="UseAllCores"
+      label="Use All Cores"
+      command="SetUseAllCores"
+      number_of_elements="1"
+      default_values="1" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
           Use all available cores.
@@ -216,11 +297,11 @@ visualize the matching between the diagrams of two 2D scalar fields.
       </IntVectorProperty>
 
       <IntVectorProperty
-          name="ThreadNumber"
-          label="Thread Number"
-          command="SetThreadNumber"
-          number_of_elements="1"
-          default_values="1" panel_visibility="advanced">
+      name="ThreadNumber"
+      label="Thread Number"
+      command="SetThreadNumber"
+      number_of_elements="1"
+      default_values="1" panel_visibility="advanced">
         <IntRangeDomain name="range" min="1" max="100" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
@@ -235,11 +316,11 @@ visualize the matching between the diagrams of two 2D scalar fields.
       </IntVectorProperty>
 
       <IntVectorProperty
-          name="DebugLevel"
-          label="Debug Level"
-          command="SetdebugLevel_"
-          number_of_elements="1"
-          default_values="3" panel_visibility="advanced">
+      name="DebugLevel"
+      label="Debug Level"
+      command="SetdebugLevel_"
+      number_of_elements="1"
+      default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
         <Documentation>
           Debug level.
@@ -247,8 +328,7 @@ visualize the matching between the diagrams of two 2D scalar fields.
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="n" />
-        <Property name="alpha" />
+        <Property name="Tolerance" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
@@ -256,7 +336,7 @@ visualize the matching between the diagrams of two 2D scalar fields.
         <Property name="spacing" />
         <Property name="Use spacing" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
