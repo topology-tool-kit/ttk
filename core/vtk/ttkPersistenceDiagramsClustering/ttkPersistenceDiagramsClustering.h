@@ -188,11 +188,11 @@ int ttkPersistenceDiagramsClustering::getPersistenceDiagram(
 {
   vtkIntArray* vertexIdentifierScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
-      GetPointData()->GetArray("VertexIdentifier"));
+      GetPointData()->GetArray(ttk::VertexScalarFieldName));
 
   vtkIntArray* nodeTypeScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
-      GetPointData()->GetArray("NodeType"));
+      GetPointData()->GetArray("CriticalType"));
 
   vtkIntArray* pairIdentifierScalars =
     vtkIntArray::SafeDownCast(CTPersistenceDiagram_->
