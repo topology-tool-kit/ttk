@@ -215,8 +215,6 @@ else()
   message(STATUS "SQLITE3 not found, disabling SQLITE3 support in TTK.")
 endif()
 
-message(STATUS "SQL include '${SQLITE3_INCLUDE_DIR}' lib: '${SQLITE3_LIBRARY}'")
-
 # START_FINDZFP
 find_path(ZFP_INCLUDE_DIR zfp.h
     PATHS
