@@ -1,5 +1,7 @@
 #include                  "ttkBottleneckDistance.h"
 
+vtkStandardNewMacro(ttkBottleneckDistance)
+
 int ttkBottleneckDistance::doBenchmark()
 {
   using dataType = double;
