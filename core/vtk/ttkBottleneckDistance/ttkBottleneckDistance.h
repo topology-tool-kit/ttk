@@ -240,7 +240,7 @@ public:
       std::vector<diagramTuple>& diagram,
       int size);
 
-  template <typename dataType>core/vtk/ttkBottleneckDistance/ttkBottleneckDistance.h
+  template <typename dataType>
   int augmentPersistenceDiagrams(
       const std::vector<diagramTuple>& diagram1,
       const std::vector<diagramTuple>& diagram2,
