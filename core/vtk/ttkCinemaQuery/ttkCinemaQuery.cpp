@@ -35,7 +35,6 @@ int ttkCinemaQuery::RequestData(
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     vtkTable* outTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-
     // Convert Input Table to SQL Table
     {
         int nc = inTable->GetNumberOfColumns();

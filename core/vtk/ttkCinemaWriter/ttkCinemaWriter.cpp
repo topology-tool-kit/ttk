@@ -33,8 +33,8 @@ int ttkCinemaWriter::RequestData (
         stringstream msg;
         msg<<"-------------------------------------------------------------"<<endl;
         msg<<"[ttkCinemaWriter] RequestData"<<endl;
-        msg<<"[ttkCinemaWriter] Database Path    : "<<this->DatabasePath<<endl;
-        msg<<"[ttkCinemaWriter] Override Database: "<<(this->OverrideDatabase?"yes":"no")<<endl;
+        msg<<"[ttkCinemaWriter] Database Path: "<<this->DatabasePath<<endl;
+        msg<<"[ttkCinemaWriter] Override     : "<<(this->OverrideDatabase?"yes":"no")<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 
@@ -100,6 +100,11 @@ int ttkCinemaWriter::RequestData (
     }
 
     // Write input to disk
+    {
+        stringstream msg;
+        msg<<"[ttkCinemaWriter] Writing new data products to disk ... ";
+        dMsg(cout, msg.str(), timeMsg);
+    }
     vtkSmartPointer<vtkXMLMultiBlockDataWriter> mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
     mbWriter->SetFileName( path.data() );
     mbWriter->SetDataModeToAppended();
@@ -109,7 +114,7 @@ int ttkCinemaWriter::RequestData (
     mbWriter->Write();
     {
         stringstream msg;
-        msg<<"[ttkCinemaWriter] New data products written to disk"<<endl;
+        msg<<"Done"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 
@@ -125,6 +130,11 @@ int ttkCinemaWriter::RequestData (
     }
 
     // Update data.csv file
+    {
+        stringstream msg;
+        msg<<"[ttkCinemaWriter] Updating data.csv file ... "<<endl;
+        dMsg(cout, msg.str(), timeMsg);
+    }
     vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
     reader->SetFileName( dataCsvPath.data() );
     reader->DetectNumericColumnsOff();
@@ -143,7 +153,19 @@ int ttkCinemaWriter::RequestData (
 
     for(int i=0; i<n; i++){
         auto block = outputMBD->GetBlock(i);
-        auto blockExtension = this->GetDefaultFileExtensionForDataSet( block->GetDataObjectType() );
+        string blockExtension = "vtk";
+        #if VTK_MAJOR_VERSION <= 7
+            stringstream msg;
+            msg << "Failed" << endl
+                << "[ttkCinemaQuery] ERROR: VTK version too old."<<endl
+                << "[ttkCinemaQuery]        This filter requires vtkXMLPMultiBlockDataWriter"<<endl
+                << "[ttkCinemaQuery]        of version 7.0 or higher."<<endl;
+            dMsg(cout, msg.str(), memoryMsg);
+            return 0;
+        #else
+            blockExtension = this->GetDefaultFileExtensionForDataSet( block->GetDataObjectType() );
+        #endif
+
         // auto fieldData = block->GetFieldData();
         for(int j=0; j<table->GetNumberOfColumns(); j++){
             auto columnName = table->GetColumnName(j);
@@ -168,7 +190,7 @@ int ttkCinemaWriter::RequestData (
     csvWriter->Write();
     {
         stringstream msg;
-        msg<<"[ttkCinemaWriter] data.csv file updated"<<endl;
+        msg<<"Done"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 
