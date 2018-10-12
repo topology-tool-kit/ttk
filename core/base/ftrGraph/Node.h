@@ -52,29 +52,33 @@ namespace ttk
              switch (upVal) {
                 case 0:
                    if (downVal == 1) {
-                      return ftr::NodeType::Local_minimum;
+                      return ftr::NodeType::Local_maximum;
                    }
+                   break;
                 case 1:
                    if(downVal == 1) {
                       return ftr::NodeType::Regular;
                    }
                    if (downVal == 2) {
-                      return ftr::NodeType::Saddle2;
+                      return ftr::NodeType::Saddle1;
                    }
+                   break;
              }
 
              switch (downVal) {
                 case 0:
                    if(upVal == 1) {
-                      return ftr::NodeType::Local_maximum;
+                      return ftr::NodeType::Local_minimum;
                    }
+                   break;
                 case 1:
                    if (upVal == 1) {
                       return ftr::NodeType::Regular;
                    }
                    if (upVal == 2) {
-                      return ftr::NodeType::Saddle1;
+                      return ftr::NodeType::Saddle2;
                    }
+                   break;
              }
 
              return ftr::NodeType::Degenerate;

@@ -68,13 +68,13 @@ struct ArcData : public ObjectData {
 #ifndef NDEBUG
    vtkSmartPointer<vtkUnsignedCharArray> fromUp;
 #endif
-   std::map<ttk::ftr::idVertex, vtkIdType> points;
-
+   std::map<ttk::ftr::idVertex, vtkIdType> points; 
+                                                   
    explicit ArcData(const ttk::ftr::idSuperArc nbArcs)
-   {
+   {                                               
       ids = allocArray<vtkIntArray>("ArcId", nbArcs);
       reg = allocArray<vtkCharArray>("regularMask", nbArcs+1);
-#ifndef NDEBUG
+#ifndef NDEBUG                                     
       fromUp = allocArray<vtkUnsignedCharArray>("growUp", nbArcs);
 #endif
    }
@@ -110,10 +110,19 @@ struct ArcData : public ObjectData {
 
 struct VertData : public ObjectData {
    vtkSmartPointer<vtkIntArray> ids;
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+   vtkSmartPointer<vtkIntArray> touch;
+   vtkSmartPointer<vtkIntArray> arcActif;
+   vtkSmartPointer<vtkIntArray> taskActif;
+#endif
 
    explicit VertData(const ttk::ftr::idVertex nbVertices)
    {
-      ids = allocArray<vtkIntArray>("Segmentation", nbVertices);
+      ids = allocArray<vtkIntArray>("ArcId", nbVertices);
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+      touch     = allocArray<vtkIntArray>("Visit", nbVertices);
+      arcActif  = allocArray<vtkIntArray>("Arc active", nbVertices);
+#endif
    }
 
    void setVertexInfo(const ttk::ftr::Graph& graph, const ttk::ftr::idVertex v)
@@ -123,10 +132,19 @@ struct VertData : public ObjectData {
       } else {
          ids->SetTuple1(v, -1);
       }
+
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+      touch->SetTuple1(v, graph.getNbTouch(v));
+      arcActif->SetTuple1(v, graph.getNbArcActive(v));
+#endif
    }
 
    void addArrays(vtkDataSet* segmentation, ttk::ftr::Params params)
    {
       segmentation->GetPointData()->SetScalars(ids);
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+      segmentation->GetPointData()->AddArray(touch);
+      segmentation->GetPointData()->AddArray(arcActif);
+#endif
    }
 };

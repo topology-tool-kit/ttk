@@ -152,6 +152,7 @@ void Graph::alloc()
 
 #ifdef TTK_ENABLE_FTR_VERT_STATS
    nbTouch_.resize(nbElmt_);
+   nbArcActif_.resize(nbElmt_);
    avoided_ = 0;
 #endif
 }
@@ -164,6 +165,7 @@ void Graph::init()
    fillVector<valence>(valDown_, -1);
 #ifdef TTK_ENABLE_FTR_VERT_STATS
    fillVector<idVertex>(nbTouch_, 0);
+   fillVector<idSuperArc>(nbArcActif_, 0);
 #endif
 }
 

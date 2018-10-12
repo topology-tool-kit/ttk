@@ -39,6 +39,7 @@ namespace ttk
       class Graph : public Allocable
       {
         private:
+         // update operator =
          AtomicVector<std::tuple<idVertex, bool>> leaves_;
          AtomicVector<Node>                       nodes_;
          AtomicVector<SuperArc>                   arcs_;
@@ -46,8 +47,9 @@ namespace ttk
          std::vector<SegmInfo> segmentation_;
 
 #ifdef TTK_ENABLE_FTR_VERT_STATS
-         std::vector<idVertex> nbTouch_;
-         uint                  avoided_;
+         std::vector<idVertex>      nbTouch_;
+         std::vector<idSuperArc>    nbArcActif_;
+         idVertex                   avoided_;
 #endif
 
 
@@ -69,6 +71,11 @@ namespace ttk
                segmentation_ = std::move(other.segmentation_);
                valDown_      = std::move(other.valDown_);
                valUp_        = std::move(other.valUp_);
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+               nbTouch_     = std::move(other.nbTouch_);
+               nbArcActif_  = std::move(other.nbArcActif_);
+               avoided_     = std::move(other.avoided_);
+#endif
             }
             return *this;
          }
@@ -163,6 +170,19 @@ namespace ttk
          idVertex getNbTouch(const idVertex v) const
          {
             return nbTouch_[v];
+         }
+
+         void setNbArcActive(const idVertex v, const idSuperArc nb)
+         {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic write
+#endif
+            nbArcActif_[v] = nb;
+         }
+
+         idSuperArc getNbArcActive(const idVertex v) const
+         {
+            return nbArcActif_[v];
          }
 
          void incAvoid()

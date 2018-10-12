@@ -357,7 +357,12 @@ namespace ttk
          /// Get the arcs corresponding to this subtree
          idSuperArc getCorArc() const
          {
-            return corArc_;
+            idSuperArc corArc;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic read
+#endif
+            corArc = corArc_;
+            return corArc;
          }
 
          void setRootArc(const idSuperArc arcId);

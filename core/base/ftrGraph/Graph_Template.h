@@ -43,11 +43,14 @@ namespace ttk
                if (upNodeId == nullNode) {
                   if (getArc(arcId).getEnd() != nullVertex) {
                      upNodeId = getNodeId(getArc(arcId).getEnd());
-                     getArc(arcId).setUpNodeId(upNodeId);
-                  } else {
-                     getArc(arcId).hide();
-                     continue;
-                  }
+                     if (upNodeId == nullNode) {
+                        upNodeId = makeNode(getArc(arcId).getEnd());
+                     }                                          
+                     getArc(arcId).setUpNodeId(upNodeId);       
+                  } else {                                      
+                     getArc(arcId).hide();                      
+                     continue;                                  
+                  }                                             
                }
                std::pair<idVertex, idVertex> arcVerts;
                if (getArc(arcId).isEmpty()) {

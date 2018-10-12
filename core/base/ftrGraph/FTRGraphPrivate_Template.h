@@ -11,6 +11,7 @@
 // trick to print a full line in an atomic operation, avoid mixed up redulsts in parallel
 #ifndef NDEBUG
 #define PRINT(msg) {std::stringstream s; s << msg << std::endl; std::cout << s.str();}
+// #define PRINT(msg)
 #else
 #define PRINT(msg)
 #endif
@@ -48,6 +49,7 @@ namespace ttk
 
 #ifdef TTK_ENABLE_FTR_VERT_STATS
             graph_.incTouch(curVert);
+            graph_.setNbArcActive(curVert, localProp->getNbArcs());
 #endif
 
             lowerStarEdges.clear();
@@ -151,6 +153,7 @@ namespace ttk
                PRINT(">" << graph_.printArc(currentArc) << " " << graph_.printArc(mergeIn));
                // Can't stop here
                // try interleaved launch sequential on dragon.vtu
+               // if (localProp->getNbArcs() == 0) return;
             }
 
             // stop on leaves
