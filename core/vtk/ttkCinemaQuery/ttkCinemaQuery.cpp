@@ -35,6 +35,7 @@ int ttkCinemaQuery::RequestData(
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     vtkTable* outTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
+
     // Convert Input Table to SQL Table
     {
         int nc = inTable->GetNumberOfColumns();
@@ -76,15 +77,24 @@ int ttkCinemaQuery::RequestData(
     // Process Result
     {
         if(result!=""){
-            vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
-            reader->SetReadFromInputString( true );
-            reader->SetInputString( result );
-            reader->DetectNumericColumnsOn();
-            reader->SetHaveHeaders(true);
-            reader->SetFieldDelimiterCharacters(",");
-            reader->Update();
+            #if VTK_MAJOR_VERSION <= 7
+                stringstream msg;
+                msg << "[ttkCinemaQuery] ERROR: VTK version too old."<<endl
+                    << "[ttkCinemaQuery]        This filter requires vtkDelimitedTextReader"<<endl
+                    << "[ttkCinemaQuery]        of version 7.0 or higher."<<endl;
+                dMsg(cout, msg.str(), memoryMsg);
+                return 0;
+            #else
+                vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+                reader->SetReadFromInputString( true );
+                reader->SetInputString( result );
+                reader->DetectNumericColumnsOn();
+                reader->SetHaveHeaders(true);
+                reader->SetFieldDelimiterCharacters(",");
+                reader->Update();
 
-            outTable->ShallowCopy( reader->GetOutput() );
+                outTable->ShallowCopy( reader->GetOutput() );
+            #endif
         } else {
             vtkSmartPointer<vtkTable> emptyTable = vtkSmartPointer<vtkTable>::New();
 
