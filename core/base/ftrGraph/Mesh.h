@@ -33,7 +33,7 @@ namespace ttk
       // keep the internal order of boundary vertices of an edge
       // 0 : 0 1
       // 1 : 1 0
-      using edgeScheme = bool;
+      using edgeScheme = char;
 
       // bit field having 2^3 = 8 value.
       // only 6 are used

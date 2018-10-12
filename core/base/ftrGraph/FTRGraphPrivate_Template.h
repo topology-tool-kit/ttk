@@ -45,7 +45,13 @@ namespace ttk
             const idVertex curVert = localProp->getCurVertex();
             idSuperArc mergeIn = nullSuperArc;
 
+            // if (localProp->getNbArcs() == 0) return;
+
             PRINT("<" << curVert << " " << localProp->goUp());
+
+            // if (propagations_.hasVisited(curVert, localProp)){
+            //    continue;
+            // }
 
 #ifdef TTK_ENABLE_FTR_VERT_STATS
             graph_.incTouch(curVert);

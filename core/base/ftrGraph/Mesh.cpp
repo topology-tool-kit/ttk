@@ -7,9 +7,9 @@ using namespace ftr;
 void Mesh::preSortEdges(VertCompFN lowerThan)
 {
    // Can't be parallel on a vector of bool !!
-   // #ifdef TTK_ENABLE_OPENMP
-   // #pragma omp parallel for schedule(static)
-   // #endif
+   #ifdef TTK_ENABLE_OPENMP
+   #pragma omp parallel for schedule(static)
+   #endif
    for(idEdge ei = 0; ei < nbEdges_; ++ei) {
       idVertex v0, v1;
       tri_->getEdgeVertex(ei, 0, v0);
@@ -24,9 +24,9 @@ void Mesh::preSortTriangles(VertCompFN lowerThan)
    // require edges to be already sorted
    //
    // Not sure we can parallelie on a vector of bitfields
-   // #ifdef TTK_ENABLE_OPENMP
-   // #pragma omp parallel for schedule(static)
-   // #endif
+   #ifdef TTK_ENABLE_OPENMP
+   #pragma omp parallel for schedule(static)
+   #endif
    for(idCell ti = 0; ti < nbTriangles_; ++ti)
    {
       idEdge   e0, e1, e2;

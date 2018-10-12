@@ -80,6 +80,8 @@ namespace ttk
          // std::cout << printMesh() << std::endl;
          // std::cout << mesh_.printEdges() << std::endl;
 
+         DebugTimer finTime;
+
          DebugTimer timeSort;
          scalars_->sort();
          printTime(timeSort, "[FTR Graph]: sort time: ", infoMsg);
@@ -107,7 +109,7 @@ namespace ttk
 
                DebugTimer timeCritSearch;
                criticalSearch();
-               printTime(timeCritSearch, "[FTR Graph]: crit classify time ", timeMsg);
+               printTime(timeCritSearch, "[FTR Graph]: leaf search time ", timeMsg);
 
                DebugTimer timeSwipe;
                sweepFrowSeeds();
@@ -128,10 +130,12 @@ namespace ttk
 #endif
 
          // post-process
+         DebugTimer postProcTime;
          graph_.mergeArcs<ScalarType>(scalars_);
          graph_.arcs2nodes<ScalarType>(scalars_);
+         printTime(postProcTime, "[FTR Graph]: postProcess: ", advancedInfoMsg);
 
-         printTime(timeBuild, "[FTR Graph]: final time: ", timeMsg);
+         printTime(finTime, "[FTR Graph]: final time: ", timeMsg);
 
          // list of regular vertices on each arc
          // explicit build: for sampling
