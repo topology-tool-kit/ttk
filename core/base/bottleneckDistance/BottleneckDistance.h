@@ -192,6 +192,26 @@ namespace ttk {
       return 0;
     }
 
+    inline int setUseKDTree(int use_kdtree){
+      use_kdtree_ = (use_kdtree>0);
+      return 0;
+    }
+
+    inline int setDelta_lim(double delta_lim){
+      delta_lim_ = delta_lim;
+      return 0;
+    }
+
+    inline int setMethod(const int &method){
+      if(method==1){
+        method_="Munkres";
+      }
+      else if(method==2){
+        method_="Auction";
+      }
+      return 0;
+    }
+
     inline void message(const char* s)
     {
       std::stringstream msg;
@@ -215,6 +235,9 @@ namespace ttk {
 
   protected:
 
+    bool                      use_kdtree_;
+    double                    delta_lim_;
+    std::string                    method_;
     void                      *outputCT1_;
     void                      *outputCT2_;
     void                      *matchings_; // ids from CT1 to CT2
@@ -245,7 +268,8 @@ namespace ttk {
     bool isValidMatching(
       const std::vector<matchingTuple>* matchings,
       dataType thresholdMin) const;
- 
+
+    template<typename dataType> 
     int computeBottleneck(
       const std::vector<diagramTuple> &d1,
       const std::vector<diagramTuple> &d2,

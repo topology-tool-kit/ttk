@@ -213,8 +213,7 @@ int BottleneckDistance::computeBottleneck(
         sadMatrix, sadMatchings, solverSad);
     }
 
-  } else {
-
+  else {
     // Launch solving for minima.
     if (nbRowMin > 0 && nbColMin > 0) {
       GabowTarjan solverMin;
@@ -428,7 +427,7 @@ int ttk::BottleneckDistance::computeAuction(
 		#endif
 		{
 			if(D1Min.size()+D2Min.size()>0){
-				Auction<dataType> auctionMin(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
+				Auction<dataType> auctionMin(wasserstein, geometricalFactor, delta_lim, true /*use_kdtree_*/);
 				dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
 				auctionMin.BuildAuctionDiagrams(D1Min, D2Min);
 				dataType cost = auctionMin.run(&minMatchings);
@@ -444,7 +443,7 @@ int ttk::BottleneckDistance::computeAuction(
 		#endif
 		{
 			if(D1Sad.size()+D2Sad.size()>0){
-				Auction<dataType> auctionSad(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
+				Auction<dataType> auctionSad(wasserstein, geometricalFactor, delta_lim,true /* use_kdtree_*/);
 				dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
 				auctionSad.BuildAuctionDiagrams(D1Sad, D2Sad);
 				dataType cost = auctionSad.run(&sadMatchings);
@@ -460,7 +459,7 @@ int ttk::BottleneckDistance::computeAuction(
 		#endif
 		{
 			if(D1Max.size()+D2Max.size()>0){
-				Auction<dataType> auctionMax(wasserstein, geometricalFactor, delta_lim, use_kdtree_);
+				Auction<dataType> auctionMax(wasserstein, geometricalFactor, delta_lim, true /*use_kdtree_*/);
 				dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
 				auctionMax.BuildAuctionDiagrams(D1Max, D2Max);
 				dataType cost = auctionMax.run(&maxMatchings);

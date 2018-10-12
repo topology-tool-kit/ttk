@@ -77,9 +77,9 @@ void PDBarycenter<dataType>::runMatchingMunkres(dataType* total_cost,
 			bottleneckDistance.setWasserstein(std::to_string(wasserstein_));
 			bottleneckDistance.setOutputMatchings(&((*all_matchings)[i]));
 
-			bottleneckDistance.execute<dataType>(false, 1.);
+			bottleneckDistance.execute<dataType>(1.);
 
-			dataType cost = bottleneckDistance.getDistance<dataType>();
+			dataType cost = bottleneckDistance.getDistance();
 
 	 		(*total_cost) += cost;
 	 	}

@@ -103,7 +103,7 @@
         </Documentation>
       </StringVectorProperty>
 	  
-	  
+      <!--	  
 	   <DoubleVectorProperty
           name="PersistencePercentage"
           label="Percentage of Maximal Persistence kept"
@@ -118,7 +118,7 @@
 		  than p x max_persistence.
         </Documentation>
       </DoubleVectorProperty>
-
+-->
 
      <IntVectorProperty
           name="Method"

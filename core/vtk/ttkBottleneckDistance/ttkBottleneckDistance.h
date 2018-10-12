@@ -194,6 +194,12 @@ public:
 
   vtkGetMacro(result, double);
 
+  vtkSetMacro(Method, int);
+  vtkGetMacro(Method, int);
+ 
+  vtkSetMacro(Delta_lim, double);
+  vtkGetMacro(Delta_lim, double);
+ 
   // Override input types.
   int FillInputPortInformation(int port, vtkInformation *info) {
     switch (port) {
@@ -216,7 +222,7 @@ public:
       case 0:
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
         break;
-      case 1:core/vtk/ttkBottleneckDistance/ttkBottleneckDistance.h
+      case 1:
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
         break;
       case 2:
@@ -306,7 +312,8 @@ TTK_SETUP();
 private:
 
   int                     BenchmarkSize;
-
+  int                     Method;
+  double                  Delta_lim; 
   bool                    UseOutputMatching;
   bool                    Is3D;
   double                  Spacing;
