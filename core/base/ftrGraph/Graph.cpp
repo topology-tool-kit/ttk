@@ -149,6 +149,11 @@ void Graph::alloc()
    segmentation_.resize(nbElmt_);
    valUp_.resize(nbElmt_);
    valDown_.resize(nbElmt_);
+
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+   nbTouch_.resize(nbElmt_);
+   avoided_ = 0;
+#endif
 }
 
 void Graph::init()
@@ -157,6 +162,9 @@ void Graph::init()
    fillVector<SegmInfo>(segmentation_, SegmInfo{});
    fillVector<valence>(valUp_, -1);
    fillVector<valence>(valDown_, -1);
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+   fillVector<idVertex>(nbTouch_, 0);
+#endif
 }
 
 

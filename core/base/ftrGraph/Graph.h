@@ -45,6 +45,12 @@ namespace ttk
 
          std::vector<SegmInfo> segmentation_;
 
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+         std::vector<idVertex> nbTouch_;
+         uint                  avoided_;
+#endif
+
+
         public:
 
          // For openmp capture, we need direct access...
@@ -144,6 +150,40 @@ namespace ttk
                }
             }
          }
+
+#ifdef TTK_ENABLE_FTR_VERT_STATS
+         void incTouch(const idVertex v)
+         {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic update
+#endif
+            nbTouch_[v]++;
+         }
+
+         idVertex getNbTouch(const idVertex v) const
+         {
+            return nbTouch_[v];
+         }
+
+         void incAvoid()
+         {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic update
+#endif
+            avoided_++;
+         }
+
+         idVertex getNbAvoided() const
+         {
+            return avoided_;
+         }
+
+         idVertex getNbMultiTouch() const
+         {
+            auto gt1 = [](uint i) { return i > 1; };
+            return std::count_if(nbTouch_.cbegin(), nbTouch_.cend(), gt1);
+         }
+#endif
 
          void setArc(const idVertex v, const idSegmentation id)
          {

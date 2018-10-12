@@ -47,8 +47,7 @@ namespace ttk
             PRINT("<" << curVert << " " << localProp->goUp());
 
 #ifdef TTK_ENABLE_FTR_VERT_STATS
-#pragma omp atomic update
-            nbVisit_[curVert]++;
+            graph_.incTouch(curVert);
 #endif
 
             lowerStarEdges.clear();
@@ -61,8 +60,7 @@ namespace ttk
                   if (tmpLowArc != nullSuperArc && graph_.getArc(tmpLowArc).merged()) {
                      PRINT("-" << curVert);
 #ifdef TTK_ENABLE_FTR_VERT_STATS
-#pragma omp atomic update
-                     avoided_++;
+                     graph_.incAvoid();
 #endif
                      continue;
                   }
@@ -113,8 +111,7 @@ namespace ttk
                //       const idSuperArc tmpLowArc = dgNode->getCorArc();
                //       if (tmpLowArc != nullSuperArc && graph_.getArc(tmpLowArc).merged()) {
 // #ifdef TTK_ENABLE_FTR_VERT_STATS
-// #pragma omp atomic update
-               //       avoided_++;
+               //          graph_.incAvoid();
 // #endif
                //          continue;
                //       }

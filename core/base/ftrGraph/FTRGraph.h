@@ -89,11 +89,6 @@ namespace ttk
          idVertex           nbProp_;
 #endif
 
-#ifdef TTK_ENABLE_FTR_VERT_STATS
-         std::vector<uint> nbVisit_;
-         uint              avoided_;
-#endif
-
         public:
          explicit FTRGraph(Triangulation* mesh);
          FTRGraph();
