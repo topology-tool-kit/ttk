@@ -68,9 +68,8 @@ int ttkCinemaWriter::RequestData (
     {
         vtkSmartPointer<vtkDirectory> directory = vtkSmartPointer<vtkDirectory>::New();
         int opened = directory->Open( this->DatabasePath.data() );
-        if(!opened){
+        if(!opened)
             directory->MakeDirectory( this->DatabasePath.data() );
-        }
     }
 
     // If OverrideDatabase then delete old data products
@@ -117,9 +116,12 @@ int ttkCinemaWriter::RequestData (
     string dataCsvPath = this->DatabasePath+"/data.csv";
 
     // Create data.csv file if does not already exist
-    if( stat( dataCsvPath.data(), &info ) == 0 ){
-        string csv = "path\n";
-        // TODO Wrtie
+    if( stat( dataCsvPath.data(), &info ) != 0 ){
+        string csv = "FILE\n";
+        ofstream csvFile;
+        csvFile.open( dataCsvPath.data() );
+        csvFile << csv;
+        csvFile.close();
     }
 
     // Update data.csv file
@@ -142,12 +144,12 @@ int ttkCinemaWriter::RequestData (
     for(int i=0; i<n; i++){
         auto block = outputMBD->GetBlock(i);
         auto blockExtension = this->GetDefaultFileExtensionForDataSet( block->GetDataObjectType() );
-        auto fieldData = block->GetFieldData();
+        // auto fieldData = block->GetFieldData();
         for(int j=0; j<table->GetNumberOfColumns(); j++){
             auto columnName = table->GetColumnName(j);
             // auto columnFD = fieldData->GetAbstractArray(columnName);
             auto columnCSV = vtkStringArray::SafeDownCast( table->GetColumn(j) );
-            if(string(columnName).compare("path")==0){
+            if(string(columnName).compare("FILE")==0){
                 columnCSV->SetValue(offset+i, vtkStdString( dataPrefix+id+"/"+id+"_"+to_string(i)+"."+blockExtension ));
             // TODO store field data in CSV
             // } else if(columnFD!=nullptr){

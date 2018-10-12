@@ -5,11 +5,11 @@
 ///
 /// \brief TTK VTK-filter that generates images of a vtkDataSet.
 ///
-/// This filter takes images of a vtkDataSet from angles specified on a vtkPointSet. Each image will be a block of a vtkMultiBlockDataSet where block order corresponds to point order. Each sample point can optionally have vtkDoubleArrays to override the default rendering parameters, i.e, the resolution, focus, clipping planes, and viewport height.
+/// This filter takes images of a vtkDataObject from positions specified on a vtkPointSet. Each image will be a block of a vtkMultiBlockDataSet where block order corresponds to point order. Each sample point can optionally have vtkDoubleArrays to override the default rendering parameters, i.e, the resolution, focus, clipping planes, and viewport height.
 ///
 /// VTK wrapping code for the @CinemaImaging package.
 ///
-/// \param Input vtkDataSet that will be depicted (vtkDataSet)
+/// \param Input vtkDataObject that will be depicted (vtkDataObject)
 /// \param Input vtkPointSet that records the camera sampling locations (vtkPointSet)
 /// \param Output vtkMultiBlockDataSet that represents a list of images (vtkMultiBlockDataSet)
 ///
@@ -63,11 +63,12 @@ class ttkCinemaImaging
 
         int FillInputPortInformation(int port, vtkInformation *info) override {
             switch(port){
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");  break;
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");  break;
                 case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet"); break;
             }
             return 1;
         }
+
         int FillOutputPortInformation(int port, vtkInformation *info) override {
             switch(port)
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
