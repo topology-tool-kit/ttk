@@ -181,7 +181,7 @@ else()
 endif()
 
 # START_FINDSQLITE3
-find_path(SQLITE3_INCLUDE_DIR sqlite9.h
+find_path(SQLITE3_INCLUDE_DIR sqlite3.h
     PATHS
     /usr/include
     /usr/local/include)
