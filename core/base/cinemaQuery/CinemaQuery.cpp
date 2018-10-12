@@ -124,7 +124,8 @@ string ttk::CinemaQuery::execute(
         // Print Error
         {
             stringstream msg;
-            msg << "[ttkCinemaQuery] ERROR: TTK is build without Sqlite3 support. Query is not executed."<<endl;
+            msg << "[ttkCinemaQuery] ERROR: TTK has been built without Sqlite3"
+              << " support. Query is not executed."<<endl;
             dMsg(cout, msg.str(), timeMsg);
         }
     #endif
