@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="DepthImageBasedGeometryApproximation" class="ttkDepthImageBasedGeometryApproximation" label="TTK DepthImageBasedGeometryApproximation">
+            <Documentation long_help="TTK depthImageBasedGeometryApproximation" short_help="TTK depthImageBasedGeometryApproximation">This filter approximates the geometry that is depicted by a set of depth images.
+
+                Related publication:
+
+                'VOIDGA: A View-Approximation Oriented Image Database Generation Approach', Jonas Lukasczyk, Eric Kinner, James Ahrens, Heike Leitte, and Christoph Garth. IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV), 2018.
+
+            </Documentation>
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet" />
+                </DataTypeDomain>
+                <Documentation>A vtkMultiBlockDataSet containing a set of depth images represented by vtkImagedata objects.</Documentation>
+            </InputProperty>
+            <IntVectorProperty name="Subsampling" label="Subsampling" command="SetSubsampling" number_of_elements="1" default_values="0">
+                <IntRangeDomain name="range" min="0" max="100" />
+                <Documentation>The factor that controls the sampling rate (0: no Subsampling, 1: skip every second sample, 2: skip every second and third sample...)</Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <BooleanDomain name="bool" />
+                <Documentation>Use all available cores.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="1" max="100" />
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
+                </Hints>
+                <Documentation>Thread number.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="0" max="100" />
+                <Documentation>Debug level.</Documentation>
+            </IntVectorProperty>
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="Subsampling" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Testing">
+                <Property name="UseAllCores" />
+                <Property name="ThreadNumber" />
+                <Property name="DebugLevel" />
+            </PropertyGroup>
+
+            <Hints>
+                <ShowInMenu category="TTK - Misc" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

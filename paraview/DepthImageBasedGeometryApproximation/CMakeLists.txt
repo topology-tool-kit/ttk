@@ -1,0 +1,6 @@
+ttk_add_paraview_plugin(ttkDepthImageBasedGeometryApproximation
+	SOURCES ${VTKWRAPPER_DIR}/ttkDepthImageBasedGeometryApproximation/ttkDepthImageBasedGeometryApproximation.cpp
+	PLUGIN_VERSION 1.0
+	PLUGIN_XML DepthImageBasedGeometryApproximation.xml
+	LINK depthImageBasedGeometryApproximation)
+

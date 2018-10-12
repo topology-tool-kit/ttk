@@ -1,0 +1,4 @@
+ttk_add_vtk_library(ttkDepthImageBasedGeometryApproximation
+	SOURCES ttkDepthImageBasedGeometryApproximation.cpp
+	HEADERS ttkDepthImageBasedGeometryApproximation.h
+	LINK depthImageBasedGeometryApproximation ttkTriangulation)
