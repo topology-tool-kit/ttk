@@ -13,6 +13,7 @@
                 </DataTypeDomain>
                 <Documentation>Data-set to process.</Documentation>
             </InputProperty>
+
             <StringVectorProperty name="DatabasePath" animateable="0" command="SetDatabasePath" number_of_elements="1">
                 <Documentation>Path to a Cinema Spec D database folder.</Documentation>
                 <FileListDomain name="files" />
@@ -24,6 +25,32 @@
                 <BooleanDomain name="bool" />
                 <Documentation>Determines if the filter replaces (true) or appends (false) database content.</Documentation>
             </IntVectorProperty>
+
+            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <BooleanDomain name="bool" />
+                <Documentation>Use all available cores.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="1" max="100" />
+                <Documentation>Thread number.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
+                </Hints>
+            </IntVectorProperty>
+            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="0" max="100" />
+                <Documentation>Debug level.</Documentation>
+            </IntVectorProperty>
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="DatabasePath" />
+                <Property name="OverrideDatabase" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Testing">
+                <Property name="UseAllCores" />
+                <Property name="ThreadNumber" />
+                <Property name="DebugLevel" />
+            </PropertyGroup>
+
             <Hints>
                 <ShowInMenu category="TTK - Cinema" />
             </Hints>

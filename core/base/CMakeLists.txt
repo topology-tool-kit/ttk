@@ -11,7 +11,7 @@ function(ttk_add_base_library library)
 	cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LINK" ${ARGN})
 
 	set(CMAKE_SKIP_BUILD_RPATH TRUE)
-	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
+	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 	set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
 	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
@@ -63,7 +63,7 @@ function(ttk_add_base_template_library library)
     target_include_directories(${library} INTERFACE ${Boost_INCLUDE_DIR})
     target_link_libraries(${library} INTERFACE ${Boost_LIBRARIES})
   endif()
-		
+
 	if (TTK_ENABLE_KAMIKAZE)
 		target_compile_definitions(${library} INTERFACE TTK_ENABLE_KAMIKAZE)
 	endif()
@@ -88,11 +88,16 @@ function(ttk_add_base_template_library library)
 		target_link_libraries(${library} INTERFACE ${MPI_CXX_LIBRARIES})
 	endif()
 
-  if (TTK_ENABLE_ZFP)
+    if (TTK_ENABLE_ZFP)
 		target_compile_definitions(${library} INTERFACE TTK_ENABLE_ZFP)
 		target_include_directories(${library} INTERFACE ${ZFP_INCLUDE_DIR})
 	endif()
-	
+
+    if (TTK_ENABLE_SQLITE3)
+		target_compile_definitions(${library} INTERFACE TTK_ENABLE_SQLITE3)
+		target_include_directories(${library} INTERFACE ${SQLITE3_INCLUDE_DIR})
+	endif()
+
 	if (TTK_ENABLE_ZLIB)
 		target_compile_definitions(${library} INTERFACE TTK_ENABLE_ZLIB)
 		target_include_directories(${library} INTERFACE ${ZLIB_INCLUDE_DIR})
