@@ -56,7 +56,7 @@ int ttkCinemaImaging::RequestData(
     inputMultiBlock->SetBlock(0, inputObject);
 
     // Create Mapper and Actor
-    vtkNew<vtkCompositeDataGeometryFilter> toPoly;
+    vtkSmartPointer<vtkCompositeDataGeometryFilter> toPoly = vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
     toPoly->SetInputData( inputMultiBlock );
     toPoly->Update();
 
