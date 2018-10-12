@@ -98,7 +98,7 @@ string ttk::CinemaQuery::execute(
             Timer t;
 
             // Perform query
-            rc = sqlite3_exec(db, sqlQuery.data(), processRow, (void*)(&result), &zErrMsg);
+//             rc = sqlite3_exec(db, sqlQuery.data(), processRow, (void*)(&result), &zErrMsg);
             if( rc != SQLITE_OK ){
                 fprintf(stderr, "[ttkCinemaQuery] SQL error: %s\n", zErrMsg);
                 sqlite3_free(zErrMsg);

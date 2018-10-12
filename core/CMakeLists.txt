@@ -54,9 +54,9 @@ function(ttk_set_compile_options library)
     endif()
 
     if (TTK_ENABLE_SQLITE3)
-        target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE)
-        target_include_directories(${library} PUBLIC ${SQLITE_INCLUDE_DIR})
-        target_link_libraries(${library} PUBLIC ${SQLITE_LIBRARY})
+        target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
+        target_include_directories(${library} PUBLIC ${SQLITE3_INCLUDE_DIR})
+        target_link_libraries(${library} PUBLIC ${SQLITE3_LIBRARY})
     endif()
 
     if (TTK_USE_64BIT_IDS)
@@ -183,8 +183,8 @@ endif()
 # START_FINDSQLITE3
 find_path(SQLITE3_INCLUDE_DIR sqlite3.h
     PATHS
-    $ENV{SQLITE3_ROOT_DIR}/include
-    /opt/zfp/include)
+    /usr/include
+    /usr/local/include)
 set(SQLITE3_NAMES ${SQLITE3_NAMES} sqlite3)
 find_library(SQLITE3_LIBRARY
     NAMES ${SQLITE3_NAMES}
@@ -214,6 +214,8 @@ else()
   option(TTK_ENABLE_SQLITE3 "Enable SQLITE3 support" OFF)
   message(STATUS "SQLITE3 not found, disabling SQLITE3 support in TTK.")
 endif()
+
+message(STATUS "SQL include '${SQLITE3_INCLUDE_DIR}' lib: '${SQLITE3_LIBRARY}'")
 
 # START_FINDZFP
 find_path(ZFP_INCLUDE_DIR zfp.h
