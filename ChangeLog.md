@@ -1,7 +1,7 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
-- Depth image based geometry approximation
+- Depth image based geometry approximation (IEEE LDAV 2018 paper)
 - Advanced cinema+sqlite3 support
 - Lifted Wasserstein Matcher for Topology Time-Tracking (IEEE LDAV 2018 paper)
 - Dimension reduction for high dimensional data (scikit-learn integration)
