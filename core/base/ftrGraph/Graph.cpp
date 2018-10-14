@@ -143,7 +143,7 @@ void Graph::alloc()
       cout << "[FTR Graph]: ERROR, setNumberOfElmt not called before alloc in Graph" << endl;
    }
 #endif
-   leaves_.reserve(nbElmt_/2);
+   leaves_.reserve(nbElmt_);
    nodes_.reserve(nbElmt_*2);
    arcs_.reserve(nbElmt_*2);
    segmentation_.resize(nbElmt_);

@@ -145,8 +145,8 @@ namespace ttk
 
          // Debug print
 #ifndef NDEBUG
-         std::cout << graph_.printVisit() << std::endl;
-         printGraph(4);
+         // std::cout << graph_.printVisit() << std::endl;
+         // printGraph(4);
          // std::cout << dynGraphs_.up.printNbCC() << std::endl;
 #endif
          std::cout << "arcs : " << graph_.getNumberOfVisibleArcs() << " / " << graph_.getNumberOfArcs() << std::endl;
@@ -300,6 +300,8 @@ namespace ttk
             for (idNode i = 0; i < nbSeed; i++) {
                // alterneate min/max, string at the deepest
                idVertex l = (i % 2) ? i / 2 : nbSeed - 1 - i / 2;
+               // increasing order, min first
+               // idVertex l = i;
                // initialize structure
                const idVertex   corLeaf          = graph_.getLeaf(l);
                const bool       fromMin          = graph_.isLeafFromMin(l);

@@ -45,9 +45,9 @@ namespace ttk
             const idVertex curVert = localProp->getCurVertex();
             idSuperArc mergeIn = nullSuperArc;
 
-            // if (localProp->getNbArcs() == 0) return;
+            if (localProp->getNbArcs() == 0) return;
 
-            PRINT("<" << curVert << " " << localProp->goUp());
+            PRINT("<" << curVert << " " << localProp->goUp() << " a " << localProp->getNbArcs());
 
             // if (propagations_.hasVisited(curVert, localProp)){
             //    continue;
@@ -63,16 +63,19 @@ namespace ttk
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
 
             if (propagations_.hasVisitedOpposite(curVert, localProp)) {
+               bool ignoreVert = false;
                for (auto edge : lowerStarEdges) {
-                  const idSuperArc tmpLowArc = dynGraph(localProp).getCorArc(edge);
-                  if (tmpLowArc != nullSuperArc && graph_.getArc(tmpLowArc).merged()) {
+                  const idSuperArc tmpLowArc = dynGraph(localProp).getSubtreeArc(edge);
+                  if (tmpLowArc != nullSuperArc && !graph_.getArc(tmpLowArc).isVisible()) {
                      PRINT("-" << curVert);
 #ifdef TTK_ENABLE_FTR_VERT_STATS
                      graph_.incAvoid();
 #endif
+                     ignoreVert = true;
                      continue;
                   }
                }
+               if(ignoreVert) continue;
             }
 
 #ifndef TTK_DISABLE_FTR_LAZY
@@ -101,15 +104,14 @@ namespace ttk
                lazyUpdatePreimage(localProp, currentArc);
 
             } else {
-
                // locally apply the lazy one the current growing arc
                for (const idEdge e : lowerStarEdges) {
                   const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
-                  if (a != nullSuperArc && graph_.getArc(a).getPropagation()->getId() == localProp->getId()) {
+                  if (a != nullSuperArc && graph_.getArc(a).isVisible() && graph_.getArc(a).getPropagation()->getId() == localProp->getId()) {
                      lazyApply(localProp, a);
                   }
                }
-# else
+#else
             {
 #endif
                lowerComp = lowerComps(lowerStarEdges, localProp);
@@ -167,7 +169,7 @@ namespace ttk
                // We have reached a local extrema (max from this propagation)
                const idNode leafNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, leafNode);
-               PRINT("^"<<graph_.printArc(currentArc));
+               PRINT("^" << graph_.printArc(currentArc));
                if (graph_.getArc(currentArc).isVisible()) {
                   // do not decrease on merged arcs
                   localProp->lessArc();
