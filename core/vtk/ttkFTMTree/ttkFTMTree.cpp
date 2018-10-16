@@ -298,7 +298,12 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    }
 
    // Fill the vector of scalar/offset, cut the array in pieces if needed
-    getScalars();
+    if(getScalars()){
+#ifndef TTK_ENABLE_KAMIKAZE
+      cerr << "[ttkFTMTree] Error : wrong input scalars." << endl;
+      return -1;
+#endif
+    }
     getOffsets();
 
    if(debugLevel_) {
