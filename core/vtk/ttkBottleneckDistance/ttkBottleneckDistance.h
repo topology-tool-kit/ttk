@@ -174,8 +174,8 @@ public:
 
   template <typename dataType>
   int translateSecondDiagram(
-    vtkUnstructuredGrid *outputCT2,
-    double spacing
+    vtkUnstructuredGrid *& outputCT2,
+    double& spacing
     );
 
   template <typename dataType>
@@ -535,14 +535,14 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
 
 template <typename dataType>
 int ttkBottleneckDistance::translateSecondDiagram(
-  vtkUnstructuredGrid *outputCT2,
-  const double spacing)
+  vtkUnstructuredGrid *& outputCT2,
+  double& spacing)
 {
   vtkSmartPointer<vtkPoints> points2 = vtkSmartPointer<vtkPoints>::New();
   vtkPoints* points = (outputCT2->GetPoints());
   ttkSimplexIdTypeArray* pairIdentifierScalars =
-    ttkSimplexIdTypeArray::SafeDownCast(outputCT2->
-      GetCellData()->GetArray("PairIdentifier"));
+    ttkSimplexIdTypeArray::SafeDownCast(
+      outputCT2->GetCellData()->GetArray("PairIdentifier"));
   auto pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
 
   for (int i = 0; i < pairingsSize; ++i) {
