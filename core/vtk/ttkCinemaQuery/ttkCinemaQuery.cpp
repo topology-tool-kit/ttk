@@ -78,17 +78,6 @@ int ttkCinemaQuery::RequestData(
     // Process Result
     {
         if(result!=""){
-<<<<<<< HEAD
-            vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
-            reader->SetReadFromInputString( true );
-            reader->SetInputString( result );
-            reader->DetectNumericColumnsOn();
-            reader->SetHaveHeaders(true);
-            reader->SetFieldDelimiterCharacters(",");
-            reader->Update();
-
-            outTable->ShallowCopy( reader->GetOutput() );
-=======
             #if VTK_MAJOR_VERSION <= 7
                 stringstream msg;
                 msg << "[ttkCinemaQuery] ERROR: VTK version too old."<<endl
@@ -107,7 +96,6 @@ int ttkCinemaQuery::RequestData(
 
                 outTable->ShallowCopy( reader->GetOutput() );
             #endif
->>>>>>> 958f83a5202b54bddb5b368d54c885167eee12f3
         } else {
             vtkSmartPointer<vtkTable> emptyTable = vtkSmartPointer<vtkTable>::New();
 

@@ -1,5 +1,6 @@
 #include <ttkCinemaProductReader.h>
 
+#include <vtkTable.h>
 #include <vtkXMLGenericDataObjectReader.h>
 #include <vtkVariantArray.h>
 #include <vtkFieldData.h>
