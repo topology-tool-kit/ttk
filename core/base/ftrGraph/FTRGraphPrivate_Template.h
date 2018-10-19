@@ -62,13 +62,14 @@ namespace ttk
                bool ignoreVert = false;
                for (auto edge : lowerStarEdges) {
                   const idSuperArc tmpLowArc = dynGraph(localProp).getSubtreeArc(edge);
-                  if (tmpLowArc != nullSuperArc && !graph_.getArc(tmpLowArc).isVisible()) {
+                  if (tmpLowArc != nullSuperArc && !graph_.getArc(tmpLowArc).isVisible() &&
+                      graph_.getArc(tmpLowArc).getPropagation() == localProp) {
                      PRINT("-" << curVert << " " << graph_.printArc(tmpLowArc));
 #ifdef TTK_ENABLE_FTR_VERT_STATS
                      graph_.incAvoid();
 #endif
                      ignoreVert = true;
-                     continue;
+                     break;
                   } else if (tmpLowArc != nullSuperArc) {
                      PRINT("!" << graph_.printArc(tmpLowArc));
                   }
