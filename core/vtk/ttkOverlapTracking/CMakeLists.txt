@@ -1,0 +1,4 @@
+ttk_add_vtk_library(ttkOverlapTracking
+	SOURCES ttkOverlapTracking.cpp
+	HEADERS ttkOverlapTracking.h
+	LINK overlapTracking ttkTriangulation)
