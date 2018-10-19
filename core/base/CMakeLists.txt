@@ -141,4 +141,3 @@ install(TARGETS baseAll
 install(EXPORT TTKBaseConfig
 	NAMESPACE ttk::base::
 	DESTINATION lib/cmake/ttk)
-

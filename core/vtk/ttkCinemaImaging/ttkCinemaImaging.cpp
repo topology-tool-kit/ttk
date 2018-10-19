@@ -1,19 +1,20 @@
-#include                  <ttkCinemaImaging.h>
-#include                  <vtkSmartPointer.h>
-#include                  <vtkPointSet.h>
-#include                  <vtkPointData.h>
-#include                  <vtkFieldData.h>
-#include                  <vtkDoubleArray.h>
-#include                  <vtkMath.h>
+#include <ttkCinemaImaging.h>
 
-#include                  <vtkMultiBlockDataSet.h>
-#include                  <vtkActor.h>
-#include                  <vtkCompositePolyDataMapper2.h>
-#include                  <vtkCamera.h>
-#include                  <vtkCompositeDataGeometryFilter.h>
-#include                  <vtkWindowToImageFilter.h>
-#include                  <vtkRenderer.h>
-#include                  <vtkRenderWindow.h>
+#include <vtkSmartPointer.h>
+#include <vtkPointSet.h>
+#include <vtkPointData.h>
+#include <vtkFieldData.h>
+#include <vtkDoubleArray.h>
+#include <vtkMath.h>
+#include <vtkMultiBlockDataSet.h>
+
+#include <vtkActor.h>
+#include <vtkCompositePolyDataMapper2.h>
+#include <vtkCamera.h>
+#include <vtkCompositeDataGeometryFilter.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
 
 using namespace std;
 using namespace ttk;
@@ -56,7 +57,7 @@ int ttkCinemaImaging::RequestData(
     inputMultiBlock->SetBlock(0, inputObject);
 
     // Create Mapper and Actor
-    vtkNew<vtkCompositeDataGeometryFilter> toPoly;
+    vtkSmartPointer<vtkCompositeDataGeometryFilter> toPoly = vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
     toPoly->SetInputData( inputMultiBlock );
     toPoly->Update();
 

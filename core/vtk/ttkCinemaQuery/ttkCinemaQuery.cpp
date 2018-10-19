@@ -1,8 +1,10 @@
-#include  <ttkCinemaQuery.h>
-#include  <vtkSmartPointer.h>
-#include  <vtkStringArray.h>
-#include  <vtkFieldData.h>
-#include  <vtkDelimitedTextReader.h>
+#include <ttkCinemaQuery.h>
+
+#include <vtkTable.h>
+#include <vtkSmartPointer.h>
+#include <vtkStringArray.h>
+#include <vtkFieldData.h>
+#include <vtkDelimitedTextReader.h>
 
 using namespace std;
 using namespace ttk;
@@ -76,6 +78,7 @@ int ttkCinemaQuery::RequestData(
     // Process Result
     {
         if(result!=""){
+<<<<<<< HEAD
             vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
             reader->SetReadFromInputString( true );
             reader->SetInputString( result );
@@ -85,6 +88,26 @@ int ttkCinemaQuery::RequestData(
             reader->Update();
 
             outTable->ShallowCopy( reader->GetOutput() );
+=======
+            #if VTK_MAJOR_VERSION <= 7
+                stringstream msg;
+                msg << "[ttkCinemaQuery] ERROR: VTK version too old."<<endl
+                    << "[ttkCinemaQuery]        This filter requires vtkDelimitedTextReader"<<endl
+                    << "[ttkCinemaQuery]        of version 7.0 or higher."<<endl;
+                dMsg(cout, msg.str(), memoryMsg);
+                return 0;
+            #else
+                vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+                reader->SetReadFromInputString( true );
+                reader->SetInputString( result );
+                reader->DetectNumericColumnsOn();
+                reader->SetHaveHeaders(true);
+                reader->SetFieldDelimiterCharacters(",");
+                reader->Update();
+
+                outTable->ShallowCopy( reader->GetOutput() );
+            #endif
+>>>>>>> 958f83a5202b54bddb5b368d54c885167eee12f3
         } else {
             vtkSmartPointer<vtkTable> emptyTable = vtkSmartPointer<vtkTable>::New();
 

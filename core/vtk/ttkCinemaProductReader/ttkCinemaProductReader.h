@@ -9,18 +9,17 @@
 ///
 /// \param Input vtkTable that contains data product references (vtkTable)
 /// \param Output vtkMultiBlockDataSet where each block is a referenced product of an input table row (vtkMultiBlockDataSet)
-///
-/// \sa ttk::CinemaProductReader
+
 #pragma once
 
-#include                  <vtkTable.h>
-#include                  <vtkImageData.h>
-#include                  <vtkMultiBlockDataSetAlgorithm.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkInformation.h>
-#include                  <vtkMultiBlockDataSet.h>
+// VTK includes
+#include <vtkMultiBlockDataSetAlgorithm.h>
+#include <vtkFiltersCoreModule.h>
+#include <vtkInformation.h>
+#include <vtkMultiBlockDataSet.h>
 
-#include                  <ttkWrapper.h>
+// TTK includes
+#include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkCinemaProductReader

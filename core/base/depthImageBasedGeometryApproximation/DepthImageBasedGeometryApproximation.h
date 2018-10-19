@@ -17,7 +17,7 @@
 #pragma once
 
 // base code includes
-#include                 <Wrapper.h>
+#include <Wrapper.h>
 
 using namespace std;
 
@@ -232,6 +232,7 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
         }
     }
 
+    // Print performance
     {
         std::stringstream msg;
         msg << "[ttkDepthImageBasedGeometryApproximation] Depth Image ("<<camResST[0]<<"x"<<camResST[1]<<":"<<step<<") processed in " << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << std::endl;
@@ -239,5 +240,5 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
         dMsg(std::cout, msg.str(), timeMsg);
     }
 
-  return 0;
+    return 0;
 }

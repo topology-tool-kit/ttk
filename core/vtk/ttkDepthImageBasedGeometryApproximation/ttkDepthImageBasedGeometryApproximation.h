@@ -19,14 +19,16 @@
 /// \param Output A set of unstructured grids where each grid corresponds to a depth image (vtkMultiBlockDataSet)
 ///
 /// \sa ttk::DepthImageBasedGeometryApproximation
+
 #pragma once
 
-#include                  <vtkMultiBlockDataSet.h>
-#include                  <vtkMultiBlockDataSetAlgorithm.h>
-#include                  <vtkInformation.h>
+// VTK includes
+#include <vtkMultiBlockDataSetAlgorithm.h>
+#include <vtkInformation.h>
 
-#include                  <DepthImageBasedGeometryApproximation.h>
-#include                  <ttkWrapper.h>
+// TTK includes
+#include <DepthImageBasedGeometryApproximation.h>
+#include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkDepthImageBasedGeometryApproximation
