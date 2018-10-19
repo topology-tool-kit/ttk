@@ -1,14 +1,15 @@
 #include <ttkDepthImageBasedGeometryApproximation.h>
 
-using namespace std;
-using namespace ttk;
-
+#include <vtkMultiBlockDataSet.h>
 #include <vtkImageData.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkUnstructuredGrid.h>
 #include <vtkSmartPointer.h>
 #include <vtkDoubleArray.h>
+
+using namespace std;
+using namespace ttk;
 
 vtkStandardNewMacro(ttkDepthImageBasedGeometryApproximation)
 

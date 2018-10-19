@@ -8,12 +8,14 @@
 /// This filter stores the input as a VTK dataset to disk and updates the data.csv file of a Cinema Spec D database.
 ///
 /// \param Input vtkDataSet to be stored (vtkDataSet)
+
 #pragma once
 
-#include <vtkMultiBlockDataSet.h>
+// VTK includes
 #include <vtkXMLPMultiBlockDataWriter.h>
 #include <vtkInformation.h>
 
+// TTK includes
 #include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN

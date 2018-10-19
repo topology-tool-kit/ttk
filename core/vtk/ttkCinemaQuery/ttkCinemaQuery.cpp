@@ -1,8 +1,10 @@
-#include  <ttkCinemaQuery.h>
-#include  <vtkSmartPointer.h>
-#include  <vtkStringArray.h>
-#include  <vtkFieldData.h>
-#include  <vtkDelimitedTextReader.h>
+#include <ttkCinemaQuery.h>
+
+#include <vtkTable.h>
+#include <vtkSmartPointer.h>
+#include <vtkStringArray.h>
+#include <vtkFieldData.h>
+#include <vtkDelimitedTextReader.h>
 
 using namespace std;
 using namespace ttk;
