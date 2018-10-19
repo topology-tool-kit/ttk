@@ -268,3 +268,13 @@ std::string Mesh::printEdges(void) const
 
    return res.str();
 }
+
+std::string Mesh::printEdge(const idEdge e) const
+{
+   std::stringstream res;
+   idVertex          v0, v1;
+   getEdgeVertex(e, 0, v0);
+   getEdgeVertex(e, 1, v1);
+   res << v0 << " " << v1;
+   return res.str();
+}

@@ -214,6 +214,8 @@ namespace ttk
           // tools
 
           std::string printEdges(void) const;
+
+          std::string printEdge(const idEdge e) const;
       };
    }
 }

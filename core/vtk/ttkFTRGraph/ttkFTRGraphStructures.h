@@ -73,7 +73,7 @@ struct ArcData : public ObjectData {
    explicit ArcData(const ttk::ftr::idSuperArc nbArcs)
    {                                               
       ids = allocArray<vtkIntArray>("ArcId", nbArcs);
-      reg = allocArray<vtkCharArray>("regularMask", nbArcs+1);
+      reg = allocArray<vtkCharArray>("RegularMask", nbArcs+1);
 #ifndef NDEBUG                                     
       fromUp = allocArray<vtkUnsignedCharArray>("growUp", nbArcs);
 #endif

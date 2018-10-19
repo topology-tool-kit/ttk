@@ -44,10 +44,3 @@ mark_as_advanced(TTK_ENABLE_FTR_VERT_STATS)
 if(TTK_ENABLE_FTR_VERT_STATS)
    target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_VERT_STATS)
 endif()
-
-option (TTK_FTR_SINGLE_LIST "Use single only one list for laziness" OFF)
-mark_as_advanced(TTK_FTR_SINGLE_LIST)
-if(TTK_FTR_SINGLE_LIST)
-   target_compile_definitions(ftrGraph PUBLIC TTK_FTR_SINGLE_LIST)
-endif()
-

@@ -49,10 +49,6 @@ namespace ttk
 
             PRINT("<" << curVert << " " << localProp->goUp() << " a " << localProp->getNbArcs());
 
-            // if (propagations_.hasVisited(curVert, localProp)){
-            //    continue;
-            // }
-
 #ifdef TTK_ENABLE_FTR_VERT_STATS
             graph_.incTouch(curVert);
             graph_.setNbArcActive(curVert, localProp->getNbArcs());
@@ -62,17 +58,19 @@ namespace ttk
             upperStarEdges.clear();
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
 
-            if (propagations_.hasVisitedOpposite(curVert, localProp)) {
+            if (propagations_.hasVisitedOpposite(curVert, localProp) && !graph_.isNode(curVert)) {
                bool ignoreVert = false;
                for (auto edge : lowerStarEdges) {
                   const idSuperArc tmpLowArc = dynGraph(localProp).getSubtreeArc(edge);
                   if (tmpLowArc != nullSuperArc && !graph_.getArc(tmpLowArc).isVisible()) {
-                     PRINT("-" << curVert);
+                     PRINT("-" << curVert << graph_.printArc(tmpLowArc));
 #ifdef TTK_ENABLE_FTR_VERT_STATS
                      graph_.incAvoid();
 #endif
                      ignoreVert = true;
                      continue;
+                  } else if (tmpLowArc != nullSuperArc) {
+                     PRINT("!" << graph_.printArc(tmpLowArc));
                   }
                }
                if(ignoreVert) continue;
