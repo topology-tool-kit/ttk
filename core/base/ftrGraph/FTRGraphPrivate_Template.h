@@ -58,12 +58,12 @@ namespace ttk
             upperStarEdges.clear();
             std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
 
-            if (propagations_.hasVisitedOpposite(curVert, localProp) && !graph_.isNode(curVert)) {
+            if (propagations_.hasVisitedOpposite(curVert, localProp) /*&& !graph_.isNode(curVert)*/) {
                bool ignoreVert = false;
                for (auto edge : lowerStarEdges) {
                   const idSuperArc tmpLowArc = dynGraph(localProp).getSubtreeArc(edge);
                   if (tmpLowArc != nullSuperArc && !graph_.getArc(tmpLowArc).isVisible()) {
-                     PRINT("-" << curVert << graph_.printArc(tmpLowArc));
+                     PRINT("-" << curVert << " " << graph_.printArc(tmpLowArc));
 #ifdef TTK_ENABLE_FTR_VERT_STATS
                      graph_.incAvoid();
 #endif
