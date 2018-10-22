@@ -14,20 +14,6 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkOverlapTracking)
 
-struct Comparator {
-    float* coords;
-
-    inline bool operator() (const size_t& i, const size_t& j) {
-        size_t ic = i*3;
-        size_t jc = j*3;
-        return coords[ic]==coords[jc]
-            ? coords[ic+1]==coords[jc+1]
-                ? coords[ic+2]<coords[jc+2]
-                : coords[ic+1]<coords[jc+1]
-            : coords[ic]<coords[jc];
-    }
-};
-
 int ttkOverlapTracking::RequestData(
     vtkInformation* request,
     vtkInformationVector** inputVector,
@@ -55,33 +41,45 @@ int ttkOverlapTracking::RequestData(
 
     outMB->ShallowCopy(inMB);
 
-    vtkPointSet* block = vtkPointSet::SafeDownCast( inMB->GetBlock(0) );
+    vtkPointSet* block1 = vtkPointSet::SafeDownCast( inMB->GetBlock(0) );
+    vtkPointSet* block2 = vtkPointSet::SafeDownCast( inMB->GetBlock(1) );
 
-    if(block==nullptr)
-        cout<< "shit"<<endl;
+    overlapTracking.reset();
 
-    auto pd = block->GetPointData();
+    {
+        auto block = block1;
+        overlapTracking.processTimestep(
+            (float*) block->GetPoints()->GetVoidPointer(0),
+            (labelType*) block->GetPointData()->GetAbstractArray("RegionId")->GetVoidPointer(0),
+            block->GetNumberOfPoints()
+        );
+    }
+    {
+        auto block = block2;
 
-    vtkSmartPointer<vtkDoubleArray> indices = vtkSmartPointer<vtkDoubleArray>::New();
-    indices->SetNumberOfComponents(1);
-    indices->SetNumberOfValues( block->GetNumberOfPoints() );
-    indices->SetName( "Indices" );
-    pd->AddArray( indices );
+        // cout<< block->GetPointData()->GetAbstractArray("RegionId")->GetTypeAsString() <<endl;
+        block->GetPointData()->GetAbstractArray("RegionId")->Print(cout);
 
-    vtkPoints* points = block->GetPoints();
+        auto xxx = vtkIdTypeArray::SafeDownCast( block->GetPointData()->GetAbstractArray("RegionId") );
+        cout<<"... "<<xxx->GetSize()<<" "<<block->GetNumberOfPoints()<<endl;
 
+        size_t count = 0;
+        for(size_t i=0; i<xxx->GetSize(); i++)
+            if(xxx->GetValue(i)==0) count++;
+        cout<<count<<endl;
 
-    vector<size_t> temp( block->GetNumberOfPoints() );
-    for(size_t i=0; i<block->GetNumberOfPoints(); i++)
-        temp[i] = i;
+        overlapTracking.processTimestep(
+            (float*) block->GetPoints()->GetVoidPointer(0),
+            (labelType*) block->GetPointData()->GetAbstractArray("RegionId")->GetVoidPointer(0),
+            block->GetNumberOfPoints()
+        );
+    }
 
-    Comparator c = Comparator();
-    float* pointCoords = (float*) points->GetVoidPointer(0);
-    c.coords = pointCoords;
-    sort(temp.begin(), temp.end(), c);
-
-    for(size_t i=0; i<block->GetNumberOfPoints(); i++)
-        indices->SetValue(temp[i], (double)i);
+    // vtkSmartPointer<vtkDoubleArray> indices = vtkSmartPointer<vtkDoubleArray>::New();
+    // indices->SetNumberOfComponents(1);
+    // indices->SetNumberOfValues( n );
+    // indices->SetName( "Indices" );
+    // pd->AddArray( indices );
 
     // Output Performance
     {
