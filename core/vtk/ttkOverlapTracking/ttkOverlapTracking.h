@@ -59,8 +59,7 @@ class ttkOverlapTracking
 
         int FillOutputPortInformation(int port, vtkInformation *info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-                // case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
             return 1;
         }
 
@@ -78,6 +77,9 @@ class ttkOverlapTracking
         int ThreadNumber;
 
         int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+
+        int processTimestep(vtkPointSet* block);
+        int finalize(vtkUnstructuredGrid* trackingGraph);
 
     private:
 

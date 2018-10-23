@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <unordered_set>
-#include <unordered_map>
 
 using namespace ttk;
 using namespace std;
@@ -24,82 +23,90 @@ struct CoordinateComparator {
 };
 
 ttk::OverlapTracking::OverlapTracking(){
+    this->prevTCD = nullptr;
     this->reset();
 }
 ttk::OverlapTracking::~OverlapTracking(){}
 
 int ttk::OverlapTracking::reset(){
-    cout<<"Reset"<<endl;
-    this->timeNodesMap.clear();
-    this->timeEdgesMap.clear();
-    this->firstTimeStep = true;
+    this->timeNodesMap = vector< vector<Node> >();
+    this->timeEdgesMap = vector< vector<Edge> >();
+
+    if(this->prevTCD!=nullptr)
+        delete this->prevTCD;
+    this->prevTCD = nullptr;
 
     return 0;
 }
 
+vector< vector<Node> >& ttk::OverlapTracking::getTimeNodesMap(){
+    return this->timeNodesMap;
+};
+
+vector< vector<Edge> >& ttk::OverlapTracking::getTimeEdgesMap(){
+    return this->timeEdgesMap;
+};
+
 int ttk::OverlapTracking::processTimestep(
-    float* pointCoords,
-    labelType*   pointLabels,
-    size_t nPoints
+    float*     pointCoords,
+    labelType* pointLabels,
+    size_t     nPoints
 ){
-    cout<<"Process "<<nPoints<<endl;
+    // Print Status
+    {
+        stringstream msg;
+        msg << "[ttkOverlapTracking] Initialize nodes ... "<<flush;
+        dMsg(cout, msg.str(), timeMsg);
+    }
 
     // Initialize nodes
-    unordered_map<size_t, size_t> labelIndexMap;
-    vector<Node> nodes;
+    this->timeNodesMap.resize( this->timeNodesMap.size()+1 ); // Add a node set
+    unordered_map<labelType, size_t> labelIndexMap;
+    vector<Node>& nodes = this->timeNodesMap[ this->timeNodesMap.size()-1 ];
     {
-        unordered_set<size_t> labels;
+        unordered_set<labelType> labels;
         for(size_t i=0; i<nPoints; i++)
-            labels.insert( (size_t) pointLabels[i] );
+            labels.insert( pointLabels[i] );
         nodes.resize( labels.size() );
         size_t i=0;
         for(auto& x: labels){
-            nodes[i].id = x;
+            nodes[i].label = x;
             labelIndexMap[x] = i;
             i++;
         }
     }
-    cout<<labelIndexMap.size()<<endl;
-    cout<<nodes.size()<<endl;
-    cout<<nodes[0].id<<endl;
-    cout<<"-------------"<<endl;
+
+    // Print Status
+    {
+        stringstream msg;
+        msg << "done."<<endl
+            << "[ttkOverlapTracking] Sort nodes ... "<<flush;
+        dMsg(cout, msg.str(), timeMsg);
+    }
 
     // Sort indicies for grid comparison
-    TrackingComputationData newTCD;
+    TrackingComputationData* currTCD = new TrackingComputationData(pointCoords, pointLabels, nPoints, labelIndexMap);
     {
-        newTCD.sortedIndicies.resize( nPoints );
+        currTCD->sortedIndicies.resize( nPoints );
         for(size_t i=0; i<nPoints; i++)
-            newTCD.sortedIndicies[i] = i;
+            currTCD->sortedIndicies[i] = i;
 
         CoordinateComparator c = CoordinateComparator(pointCoords);
-        sort(newTCD.sortedIndicies.begin(), newTCD.sortedIndicies.end(), c);
-
-        float oldX = pointCoords[ newTCD.sortedIndicies[0]*3 ];
-        for(size_t i=0; i<nPoints; i++){
-            float currentX = pointCoords[ newTCD.sortedIndicies[i]*3 ];
-            if(oldX!=currentX){
-                newTCD.slicesI.push_back( i );
-                newTCD.slicesV.push_back( oldX );
-                oldX=currentX;
-            }
-        }
+        sort(currTCD->sortedIndicies.begin(), currTCD->sortedIndicies.end(), c);
     }
-    newTCD.pointCoords = pointCoords;
-    newTCD.pointLabels = pointLabels;
-    newTCD.nPoints = nPoints;
 
     // Tracking
-    auto compare = [](float* pointCoordsI, float* pointCoordsJ, size_t i, size_t j) {
+    auto compare = [](vector<float>& prevPointCoords, vector<float>& currPointCoords, size_t i, size_t j) {
         size_t i3 = i*3;
         size_t j3 = j*3;
 
-        float iX = pointCoordsI[i3++];
-        float iY = pointCoordsI[i3++];
-        float iZ = pointCoordsI[i3];
+        float iX = prevPointCoords[i3++];
+        float iY = prevPointCoords[i3++];
+        float iZ = prevPointCoords[i3];
 
-        float jX = pointCoordsJ[j3++];
-        float jY = pointCoordsJ[j3++];
-        float jZ = pointCoordsJ[j3];
+        float jX = currPointCoords[j3++];
+        float jY = currPointCoords[j3++];
+        float jZ = currPointCoords[j3];
 
         return iX==jX
             ? iY==jY
@@ -113,128 +120,89 @@ int ttk::OverlapTracking::processTimestep(
                 ? -1 : 1;
     };
 
-    size_t count = 0;
-    for(size_t i=0; i<nPoints; i++)
-        if(pointLabels[i]==0) count++;
+    // Print Status
+    {
+        stringstream msg;
+        msg << "done."<<endl
+            << "[ttkOverlapTracking] Tracking ... "<<flush;
+        dMsg(cout, msg.str(), timeMsg);
+    }
 
-    cout<<" -> "<<count<<endl;
+    if(this->prevTCD != nullptr){
+        TrackingComputationData* prevTCD = this->prevTCD;
 
-    if(!this->firstTimeStep){
-        TrackingComputationData& oldTCD = this->oldTCD;
+        this->timeEdgesMap.resize( this->timeEdgesMap.size()+1 ); // Add an edge set
+        auto& edges = this->timeEdgesMap[ this->timeEdgesMap.size()-1 ];
 
-        // unordered_map<size_t, Edge> newIndexToEdgeMap;
+        unordered_map<size_t, unordered_map<size_t, size_t>> edgesMap0;
 
-        // for(size_t i=0; i<newTCD.slicesI.size(); i++){
-        //     float newX = newTCD.slicesV[i];
+        {
+            size_t i = 0; // iterator for prev timestep
+            size_t j = 0; // iterator for curr timestep
 
-        //     // Scan for x in old
-        //     size_t j=0;
-        //     bool found = false;
-        //     for(j=0; j<oldTCD.slicesV.size(); j++){
-        //         if( oldTCD.slicesV[j] == newX ){
-        //             found = true;
-        //             break;
-        //         }
-        //     }
-        //     if(!found) cout<<"not found "<<newX<<endl;
+            while(i<prevTCD->nPoints && j<currTCD->nPoints){
+                int c = compare(
+                    prevTCD->pointCoords,
+                    currTCD->pointCoords,
+                    prevTCD->sortedIndicies[i],
+                    currTCD->sortedIndicies[j]
+                );
+                if(c == 0){ // Same
+                    size_t index0 = prevTCD->sortedIndicies[i];
+                    size_t index1 = currTCD->sortedIndicies[j];
 
-        //     if(found){
-        //         cout<<"Track Slice"<<endl;
-                // size_t k=newTCD.slicesI[i];
-                // size_t l=oldTCD.slicesI[j];
-                // size_t kLimit = i==newTCD.slicesI.size()-1 ? newTCD.nPoints : newTCD.slicesI[i+1];
-                // size_t lLimit = j==oldTCD.slicesI.size()-1 ? oldTCD.nPoints : oldTCD.slicesI[j+1];
+                    size_t labelIndex0 = prevTCD->pointLabelIndicies[ index0 ];
+                    size_t labelIndex1 = currTCD->pointLabelIndicies[ index1 ];
 
-                size_t i = 0;
-                size_t j = 0;
-
-                unordered_map<labelType, unordered_map<labelType, size_t>> edges;
-
-                while(i<newTCD.nPoints && j<oldTCD.nPoints){
-                    int c = compare(
-                        newTCD.pointCoords,
-                        oldTCD.pointCoords,
-                        newTCD.sortedIndicies[i],
-                        oldTCD.sortedIndicies[j]
-                    );
-                    if(c == 0){ // Same
-                        size_t index0 = newTCD.sortedIndicies[i];
-                        size_t index1 = oldTCD.sortedIndicies[j];
-
-                        auto label0 = newTCD.pointLabels[ index0 ];
-                        auto label1 = oldTCD.pointLabels[ index1 ];
-
-                        auto edgesBack = edges.find(label0);
-                        if(edgesBack == edges.end()){
-                            edges.insert({ label0, unordered_map<labelType, size_t>() });
-                            edgesBack = edges.find(label0);
-                        }
-
-                        auto edge = edgesBack->second.find(label1);
-                        if(edge == edgesBack->second.end()){
-                            edgesBack->second[label1] = 0;
-                            edgesBack->second.insert({ label1, 0 });
-                            edge = edgesBack->second.find(label1);
-                        }
-
-                        edge->second++;
-
-                        // cout
-                        //     <<"o " << newTCD.pointLabels[ index0 ]<<" - " << oldTCD.pointLabels[ index1 ] << " ["
-                        //     << newTCD.pointCoords[ index0*3 ]
-                        //     << " "
-                        //     << newTCD.pointCoords[ index0*3+1 ]
-                        //     << " "
-                        //     << newTCD.pointCoords[ index0*3+2 ]
-                        //     << "] ["
-                        //     << oldTCD.pointCoords[ index1*3 ]
-                        //     << " "
-                        //     << oldTCD.pointCoords[ index1*3+1 ]
-                        //     << " "
-                        //     << oldTCD.pointCoords[ index1*3+2 ]
-                        //     << "]" << endl;
-                        i++;
-                        j++;
-                    } else if (c>0){ // new larger than old
-                        j++;
-                    } else { // old larger than new
-                        i++;
+                    // Find edge and increase overlap counter
+                    auto edges0 = edgesMap0.find(labelIndex0); // Edges from node label0 from prev timestep to nodes of current timestep
+                    if(edges0 == edgesMap0.end()){
+                        edgesMap0[labelIndex0] = unordered_map<size_t, size_t>();
+                        edges0 = edgesMap0.find(labelIndex0);
                     }
+                    auto edge = edges0->second.find(labelIndex1);
+                    if(edge == edges0->second.end()){
+                        edges0->second[labelIndex1] = 0;
+                        edge = edges0->second.find(labelIndex1);
+                    }
+                    edge->second++;
+
+                    i++;
+                    j++;
+                } else if (c>0){ // prev larger than curr
+                    j++;
+                } else { // curr larger than prev
+                    i++;
                 }
+            }
+        }
 
-                // for(auto& i: edges){
-                //     cout<<i.first<<": "<<endl;
-                //     for(auto& j: i.second)
-                //         cout<<"    "<<j.first<<" -> "<<j.second<<endl;
-                // }
+        size_t nEdges = 0;
+        for(auto& i: edgesMap0)
+            nEdges += i.second.size();
 
-                // 5497
-                // 3413
+        edges.resize(nEdges);
+        size_t q=0;
+        for(auto& i: edgesMap0)
+            for(auto& j: i.second){
+                auto& edge = edges[q++];
+                edge.i = i.first;
+                edge.j = j.first;
+                edge.overlap = j.second;
+            }
+    }
 
-                // 6223
-                // 3884
-            // }
-
-        //     // float oldX = oldTCD.slicesV[j];
-        //     // cout<<newX<< " " <<oldX<<endl;
-        //     // while( oldX<newX){
-        //     //     j++;
-        //     //     oldX = oldTCD.pointCoords[ oldTCD.sortedIndicies[j] ];
-        //     // }
-        //     // if(oldX == newX){
-        //     //     cout<< "Track "<<i<<" "<<j<<endl;
-        //     //     j++;
-        //     // }
-        // }
+    // Print Status
+    {
+        stringstream msg;
+        msg << "done."<<endl;
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     // Finalizing
-    this->firstTimeStep = false;
-    this->oldTCD = newTCD;
-
-    this->timeNodesMap.push_back( nodes );
-    // this->timeEdgesMap.push_back( edges );
-
+    if(this->prevTCD != nullptr)
+        delete this->prevTCD;
+    this->prevTCD = currTCD;
 
     return 0;
 }

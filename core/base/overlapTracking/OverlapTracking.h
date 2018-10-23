@@ -9,18 +9,20 @@
 
 #pragma once
 
+#include <unordered_map>
+
 // base code includes
 #include <Wrapper.h>
 
 using namespace std;
 
-typedef long long int labelType;
+typedef long long labelType;
 
 struct Node {
-    size_t id;
+    labelType label;
 
-    Node(size_t id=0)
-        : id(id){
+    Node(labelType label=0)
+        : label(label){
     }
 };
 
@@ -36,12 +38,22 @@ struct Edge {
 
 struct TrackingComputationData {
     vector<size_t> sortedIndicies;
-    vector<size_t> slicesI;
-    vector<float>  slicesV;
+    vector<float> pointCoords;
+    vector<size_t> pointLabelIndicies;
+    size_t nPoints;
 
-    float*     pointCoords;
-    labelType* pointLabels;
-    size_t     nPoints;
+    TrackingComputationData(float* pointCoords, labelType* pointLabels, size_t nPoints, unordered_map<labelType, size_t>& labelIndexMap){
+        this->pointCoords.resize(nPoints*3);
+        this->pointLabelIndicies.resize(nPoints);
+        this->nPoints = nPoints;
+        for(size_t i=0; i<nPoints; i++){
+            size_t j = i*3;
+            this->pointCoords[j] = pointCoords[j];
+            this->pointCoords[j+1] = pointCoords[j+1];
+            this->pointCoords[j+2] = pointCoords[j+2];
+            this->pointLabelIndicies[i] = labelIndexMap[ pointLabels[i] ];
+        }
+    }
 };
 
 namespace ttk{
@@ -51,6 +63,9 @@ namespace ttk{
             ~OverlapTracking();
 
             int reset();
+
+            vector< vector<Node> >& getTimeNodesMap();
+            vector< vector<Edge> >& getTimeEdgesMap();
 
             int processTimestep(
                 float* pointCoords,
@@ -64,7 +79,6 @@ namespace ttk{
             vector< vector<Edge> > timeEdgesMap; // Edges from time t to t+1
 
             // Previous Timestep
-            bool firstTimeStep;
-            TrackingComputationData oldTCD;
+            TrackingComputationData* prevTCD;
     };
 }
