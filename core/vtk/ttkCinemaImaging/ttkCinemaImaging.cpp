@@ -31,85 +31,6 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkCinemaImaging)
 
-vtkSmartPointer<vtkCamera> createCamera(double* camNearFar, double* camFocus, double camHeight){
-    auto camera = vtkSmartPointer<vtkCamera>::New();
-
-    camera->SetParallelProjection(true);
-    camera->SetClippingRange( camNearFar );
-    camera->SetFocalPoint( camFocus );
-    camera->SetParallelScale( camHeight*0.5 ); // *0.5 to convert CamHeight to weird VTK convention
-
-    return camera;
-}
-
-vtkSmartPointer<vtkRenderer> createRenderer(vtkSmartPointer<vtkActor> actor, vtkSmartPointer<vtkCamera> camera){
-    auto renderer = vtkSmartPointer<vtkRenderer>::New();
-
-    renderer->SetBackground(0,0,0); // Background color black
-    renderer->AddActor(actor);
-    renderer->SetActiveCamera(camera);
-
-    return renderer;
-}
-
-vtkSmartPointer<vtkRenderWindow> createWindow(int* resolution, vtkSmartPointer<vtkRenderer> renderer){
-    auto renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
-
-    renderWindow->SetSize( resolution );
-    renderWindow->SetMultiSamples( 0 ); // Disable AA
-    renderWindow->AddRenderer( renderer );
-
-    return renderWindow;
-}
-
-vector< vtkValuePass* > addValuePasses(vtkSmartPointer<vtkRenderer> renderer, vtkPolyData* poly){
-    auto pointData = poly->GetPointData();
-    auto cellData = poly->GetCellData();
-
-
-    vector< vtkValuePass* > passesArray;
-
-    auto passes = vtkSmartPointer<vtkRenderPassCollection>::New();
-
-    double minmax[2];
-
-    // Point Data
-    {
-        size_t n = pointData->GetNumberOfArrays();
-        for(size_t i=0; i<n; i++){
-            auto values = pointData->GetArray(i);
-
-            auto valuePass = vtkSmartPointer<vtkValuePass>::New();
-            valuePass->SetInputArrayToProcess(VTK_SCALAR_MODE_USE_POINT_FIELD_DATA, i);
-            valuePass->SetRenderingMode(2);
-            valuePass->SetInputComponentToProcess(0); // TODO Iterate over components
-
-            values->GetRange(minmax);
-            valuePass->SetScalarRange(minmax[0], minmax[1]);
-
-            passes->AddItem(valuePass);
-            passesArray.push_back( valuePass );
-        }
-
-    }
-
-    // TODO Cell Data
-    {
-        size_t m = cellData->GetNumberOfArrays();
-    }
-
-    auto sequence = vtkSmartPointer<vtkSequencePass>::New();
-    sequence->SetPasses(passes);
-
-    auto cameraPass = vtkSmartPointer<vtkCameraPass>::New();
-    cameraPass->SetDelegatePass(sequence);
-
-    auto glRenderer = vtkOpenGLRenderer::SafeDownCast( renderer );
-    glRenderer->SetPass(cameraPass);
-
-    return passesArray;
-}
-
 int ttkCinemaImaging::RequestData(
     vtkInformation* request,
     vtkInformationVector** inputVector,
@@ -138,40 +59,119 @@ int ttkCinemaImaging::RequestData(
     auto output = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     // -------------------------------------------------------------------------
-    // Initialize Renderer
+    // Initialize Render Object
     // -------------------------------------------------------------------------
 
     // Insert InputDataObject into MultiBlockDataSet
     auto inputMultiBlock = vtkSmartPointer<vtkMultiBlockDataSet>::New();
     inputMultiBlock->SetBlock(0, inputObject);
 
-    // Create Mapper and Actor
+    // Convert MultiBlock to PolyData
     auto toPoly = vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
     toPoly->SetInputData( inputMultiBlock );
     toPoly->Update();
-
     auto poly = toPoly->GetOutput();
 
-    auto mapper = vtkSmartPointer<vtkCompositePolyDataMapper2>::New();
-    mapper->SetInputConnection(toPoly->GetOutputPort());
+    // -------------------------------------------------------------------------
+    // Initialize Depth Renderer
+    // -------------------------------------------------------------------------
 
-    auto actor = vtkSmartPointer<vtkActor>::New();
-    actor->SetMapper(mapper);
+    // Mapper
+    auto mapper0 = vtkSmartPointer<vtkCompositePolyDataMapper2>::New();
+    mapper0->SetInputConnection(toPoly->GetOutputPort());
 
-    // Setup Camera
-    auto camera = createCamera(this->CamNearFar, this->CamFocus, this->CamHeight);
+    // Actor
+    auto actor0 = vtkSmartPointer<vtkActor>::New();
+    actor0->SetMapper(mapper0);
 
-    // Create Renderers and Windows
-    auto depthRenderer = createRenderer( actor, camera );
-    auto depthWindow = createWindow( this->Resolution, depthRenderer );
+    // Camera
+    auto camera0 = vtkSmartPointer<vtkCamera>::New();
+    camera0->SetParallelProjection(true);
+    camera0->SetClippingRange( this->CamNearFar );
+    camera0->SetFocalPoint( this->CamFocus );
+    camera0->SetParallelScale( this->CamHeight*0.5 ); // *0.5 to convert CamHeight to weird VTK convention
 
-    auto valueRenderer = createRenderer( actor, camera );
-    auto valueWindow = createWindow( this->Resolution, valueRenderer );
-    auto valuePasses = addValuePasses(valueRenderer, poly);
-    bool renderValues = valuePasses.size()>0;
+    // Renderer
+    auto renderer0 = vtkSmartPointer<vtkRenderer>::New();
+    renderer0->SetBackground(0,0,0);
+    renderer0->AddActor(actor0);
+    renderer0->SetActiveCamera(camera0);
 
-    // First Render Call to Update Everything
-    depthWindow->Render();
+    // Window
+    auto renderWindow0 = vtkSmartPointer<vtkRenderWindow>::New();
+    renderWindow0->SetSize( this->Resolution );
+    renderWindow0->SetMultiSamples( 0 ); // Disable AA
+    renderWindow0->AddRenderer( renderer0 );
+
+    // -------------------------------------------------------------------------
+    // Initialize Value Renderer
+    // -------------------------------------------------------------------------
+
+    // Mapper
+    auto mapper1 = vtkSmartPointer<vtkCompositePolyDataMapper2>::New();
+    mapper1->SetInputConnection(toPoly->GetOutputPort());
+
+    // Actor
+    auto actor1 = vtkSmartPointer<vtkActor>::New();
+    actor1->SetMapper(mapper1);
+
+    // Camera
+    auto camera1 = vtkSmartPointer<vtkCamera>::New();
+    camera1->SetParallelProjection(true);
+    camera1->SetClippingRange( this->CamNearFar );
+    camera1->SetFocalPoint( this->CamFocus );
+    camera1->SetParallelScale( this->CamHeight*0.5 ); // *0.5 to convert CamHeight to weird VTK convention
+
+    // Renderer
+    auto renderer1 = vtkSmartPointer<vtkRenderer>::New();
+    renderer1->SetBackground(0,0,0);
+    renderer1->AddActor(actor1);
+    renderer1->SetActiveCamera(camera1);
+
+    // Window
+    auto renderWindow1 = vtkSmartPointer<vtkRenderWindow>::New();
+    renderWindow1->SetSize( this->Resolution );
+    renderWindow1->SetMultiSamples( 0 ); // Disable AA
+    renderWindow1->AddRenderer( renderer1 );
+
+    // Value Passes
+    vector< pair<vtkValuePass*,string> > valuePasses;
+    {
+        auto passes = vtkSmartPointer<vtkRenderPassCollection>::New();
+
+        auto pointData = poly->GetPointData();
+        size_t n = pointData->GetNumberOfArrays();
+
+        double minmax[2];
+        for(size_t i=0; i<n; i++){
+            auto values = pointData->GetArray(i);
+            values->GetRange(minmax);
+
+            auto valuePass = vtkSmartPointer<vtkValuePass>::New();
+            valuePass->SetInputArrayToProcess(VTK_SCALAR_MODE_USE_POINT_FIELD_DATA, i);
+            valuePass->SetRenderingMode(2);
+            valuePass->SetInputComponentToProcess(0); // TODO Iterate components
+            valuePass->SetScalarRange(minmax[0], minmax[1]);
+
+            passes->AddItem(valuePass);
+            valuePasses.push_back( make_pair(valuePass, values->GetName()) );
+        }
+
+        // TODO Iterate Cell Data and Components
+
+        auto sequence = vtkSmartPointer<vtkSequencePass>::New();
+        sequence->SetPasses(passes);
+
+        auto cameraPass = vtkSmartPointer<vtkCameraPass>::New();
+        cameraPass->SetDelegatePass(sequence);
+
+        auto glRenderer = vtkOpenGLRenderer::SafeDownCast( renderer1 );
+        glRenderer->SetPass(cameraPass);
+    }
+    bool renderValuePasses = valuePasses.size()>0;
+
+    renderWindow0->Render();
+    if(renderValuePasses) renderWindow1->Render();
 
     // Print Status
     {
@@ -187,10 +187,10 @@ int ttkCinemaImaging::RequestData(
 
     // Create vtkWindowToImageFilter
     auto windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
-    windowToImageFilter->SetInput( depthWindow );
+    windowToImageFilter->SetInput( renderWindow0 );
     windowToImageFilter->SetInputBufferTypeToZBuffer(); // Set output to depth buffer
 
-    // Prepare Field Data
+    // Prepare Field Data for Depth Values
     auto ch = vtkSmartPointer<vtkDoubleArray>::New();
     ch->SetName("CamHeight");
     ch->SetNumberOfValues(1);
@@ -211,98 +211,85 @@ int ttkCinemaImaging::RequestData(
     // Iterate over Locations
     double camPosition[3] = {0,0,0};
     size_t n = inputGrid->GetNumberOfPoints();
+
     for(size_t i=0; i<n; i++){
         // Set Camera Position
-        inputGrid->GetPoint(i, camPosition);
-        camera->SetPosition( camPosition );
-
         // TODO: In the future it shoud be possible to override focus, res,...
+        inputGrid->GetPoint(i, camPosition);
+        camera0->SetPosition( camPosition );
+        camera1->SetPosition( camPosition );
 
-        // Render Image
-        depthWindow->Render();
+        // Render Depth Image
+        renderWindow0->Render();
 
-            // vtkSmartPointer<vtkWindowToImageFilter> grabber =
-            // vtkSmartPointer<vtkWindowToImageFilter>::New();
-            //   grabber->SetInput(renderWindow);
-            //   grabber->Update();
-            //   vtkImageData *id = grabber->GetOutput();
-            //   //id->PrintSelf(cerr, vtkIndent(0));
-
-            //   vtkUnsignedCharArray *ar =
-            //     vtkArrayDownCast<vtkUnsignedCharArray>(id->GetPointData()->GetArray("ImageScalars"));
-            //   unsigned char *ptr = static_cast<unsigned char*>(ar->GetVoidPointer(0));
-            //   double value;
-            //   for (int i = 0; i < id->GetNumberOfPoints(); i++)
-            //   {
-            //     valuePass->ColorToValue(ptr, 0, 1, value);
-            //         ptr+=3;
-            //   }
-
-        windowToImageFilter->Modified();
-        windowToImageFilter->Update();
-
-        // Get Image
+        // Initialize Output Image
         auto outputImage = vtkSmartPointer<vtkImageData>::New();
-        outputImage->DeepCopy(windowToImageFilter->GetOutput());
+        {
+            windowToImageFilter->Modified();
+            windowToImageFilter->Update();
+            outputImage->DeepCopy(windowToImageFilter->GetOutput());
+            auto depthValues = outputImage->GetPointData()->GetAbstractArray("ImageScalars");
+            depthValues->SetName("Depth");
+        }
 
-        // Rename Scalar Values
-        auto depthValues = outputImage->GetPointData()->GetArray("ImageScalars");
-        depthValues->SetName("DepthValues");
+        // Add Field Data
+        {
+            auto outputImageFD = outputImage->GetFieldData();
 
-        // Additional Point Data
-            valueWindow->Render();
-        // if(renderValues){
-        //     // for(auto pass: valuePasses){
-        //     // }
-        // }
+            // Camera Parameters
+            outputImageFD->AddArray( ch );
+            outputImageFD->AddArray( cnf );
+            outputImageFD->AddArray( cr );
 
-        // auto outputImagePD = outputImage->GetPointData();
-        // vtkSmartPointer<vtkFloatArray> ele = vtkSmartPointer<vtkFloatArray>::New();
-        // ele->DeepCopy( valuePass->GetFloatImageDataArray( renderer ) );
-        // ele->SetName("xxx");
-        // outputImagePD->AddArray( ele );
+            // Position
+            auto cp = vtkSmartPointer<vtkDoubleArray>::New();
+            cp->SetName("CamPosition");
+            cp->SetNumberOfValues(3);
+            cp->SetValue(0, camPosition[0]);
+            cp->SetValue(1, camPosition[1]);
+            cp->SetValue(2, camPosition[2]);
+            outputImageFD->AddArray( cp );
 
-        // Set Field Data of Output Image
-        auto outputImageFD = outputImage->GetFieldData();
+            // Dir
+            auto cd = vtkSmartPointer<vtkDoubleArray>::New();
+            cd->SetName("CamDirection");
+            cd->SetNumberOfValues(3);
+            double tempCD[3] = {
+                this->CamFocus[0]-camPosition[0],
+                this->CamFocus[1]-camPosition[1],
+                this->CamFocus[2]-camPosition[2]
+            };
+            vtkMath::Normalize(tempCD);
+            cd->SetValue(0, tempCD[0]);
+            cd->SetValue(1, tempCD[1]);
+            cd->SetValue(2, tempCD[2]);
+            outputImageFD->AddArray( cd );
 
-        // Camera Parameters
-        outputImageFD->AddArray( ch );
-        outputImageFD->AddArray( cnf );
-        outputImageFD->AddArray( cr );
+            // Up
+            auto upd = camera0->GetViewUp();
+            auto cu = vtkSmartPointer<vtkDoubleArray>::New();
+            cu->SetName("CamUp");
+            cu->SetNumberOfValues(3);
+            cu->SetValue(0, upd[0]);
+            cu->SetValue(1, upd[1]);
+            cu->SetValue(2, upd[2]);
+            outputImageFD->AddArray( cu );
+        }
 
-        // Position
-        auto cp = vtkSmartPointer<vtkDoubleArray>::New();
-        cp->SetName("CamPosition");
-        cp->SetNumberOfValues(3);
-        cp->SetValue(0, camPosition[0]);
-        cp->SetValue(1, camPosition[1]);
-        cp->SetValue(2, camPosition[2]);
-        outputImageFD->AddArray( cp );
+        // Add Point Data
+        if(renderValuePasses){
 
-        // Dir
-        auto cd = vtkSmartPointer<vtkDoubleArray>::New();
-        cd->SetName("CamDirection");
-        cd->SetNumberOfValues(3);
-        double tempCD[3] = {
-            this->CamFocus[0]-camPosition[0],
-            this->CamFocus[1]-camPosition[1],
-            this->CamFocus[2]-camPosition[2]
-        };
-        vtkMath::Normalize(tempCD);
-        cd->SetValue(0, tempCD[0]);
-        cd->SetValue(1, tempCD[1]);
-        cd->SetValue(2, tempCD[2]);
-        outputImageFD->AddArray( cd );
+            // Render Value Passes
+            renderWindow1->Render();
 
-        // Up
-        auto upd = camera->GetViewUp();
-        auto cu = vtkSmartPointer<vtkDoubleArray>::New();
-        cu->SetName("CamUp");
-        cu->SetNumberOfValues(3);
-        cu->SetValue(0, upd[0]);
-        cu->SetValue(1, upd[1]);
-        cu->SetValue(2, upd[2]);
-        outputImageFD->AddArray( cu );
+            auto outputImagePD = outputImage->GetPointData();
+            for(auto& passData: valuePasses){
+                vtkSmartPointer<vtkFloatArray> data = vtkSmartPointer<vtkFloatArray>::New();
+                data->DeepCopy( passData.first->GetFloatImageDataArray( renderer1 ) );
+                data->SetName( passData.second.data() );
+                outputImagePD->AddArray( data );
+            }
+        }
 
         // Add Image to MultiBlock
         output->SetBlock(i, outputImage);

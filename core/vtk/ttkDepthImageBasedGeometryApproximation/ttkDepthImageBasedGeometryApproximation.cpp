@@ -46,7 +46,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         auto inputImage = vtkImageData::SafeDownCast( inputMBD->GetBlock(i) );
 
         // Get input paramters
-        auto depthValues = inputImage->GetPointData()->GetAbstractArray("DepthValues");
+        auto depthValues = inputImage->GetPointData()->GetAbstractArray("Depth");
         auto camHeight = inputImage->GetFieldData()->GetAbstractArray("CamHeight");
         auto camPosition = inputImage->GetFieldData()->GetAbstractArray("CamPosition");
         auto camDirection = inputImage->GetFieldData()->GetAbstractArray("CamDirection");
@@ -121,7 +121,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
             vtkSmartPointer<vtkDoubleArray> triangleDistortionsScalars = vtkSmartPointer<vtkDoubleArray>::New();
             triangleDistortionsScalars->SetNumberOfValues( n );
             triangleDistortionsScalars->SetNumberOfComponents(1);
-            triangleDistortionsScalars->SetName("TriangleDistortion");
+            triangleDistortionsScalars->SetName("Distortion");
             double* triangleDistortionsScalarsData = (double*) triangleDistortionsScalars->GetVoidPointer(0);
 
             size_t q=0;
