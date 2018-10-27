@@ -51,13 +51,13 @@ class ttkOverlapTracking
         }
         // end of default ttk setters
 
-        int FillInputPortInformation(int port, vtkInformation *info) override {
+        int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port)
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
             return 1;
         }
 
-        int FillOutputPortInformation(int port, vtkInformation *info) override {
+        int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port)
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
             return 1;
@@ -67,6 +67,7 @@ class ttkOverlapTracking
 
         ttkOverlapTracking(){
             UseAllCores = false;
+            currentIndex = 0;
 
             SetNumberOfInputPorts(1);
             SetNumberOfOutputPorts(1);
@@ -76,14 +77,19 @@ class ttkOverlapTracking
         bool UseAllCores;
         int ThreadNumber;
 
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+        int RequestUpdateExtentInformation(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector);
+        int RequestUpdateExtent(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
-        int processTimestep(vtkPointSet* block);
+        int RequestInformation(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
+        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
+
+        int processTimestep(vtkDataObject* dataObject);
         int finalize(vtkUnstructuredGrid* trackingGraph);
 
     private:
 
         ttk::OverlapTracking overlapTracking;
+        size_t currentIndex;
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

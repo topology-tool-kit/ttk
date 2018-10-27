@@ -29,7 +29,7 @@ ttk::OverlapTracking::OverlapTracking(){
 ttk::OverlapTracking::~OverlapTracking(){}
 
 int ttk::OverlapTracking::reset(){
-    this->timeNodesMap = vector< vector<Node> >();
+    this->timeNodeLabelMap = vector< vector<labelType> >();
     this->timeEdgesMap = vector< vector<Edge> >();
 
     if(this->prevTCD!=nullptr)
@@ -39,8 +39,8 @@ int ttk::OverlapTracking::reset(){
     return 0;
 }
 
-vector< vector<Node> >& ttk::OverlapTracking::getTimeNodesMap(){
-    return this->timeNodesMap;
+vector< vector<labelType> >& ttk::OverlapTracking::getTimeNodeLabelMap(){
+    return this->timeNodeLabelMap;
 };
 
 vector< vector<Edge> >& ttk::OverlapTracking::getTimeEdgesMap(){
@@ -52,25 +52,28 @@ int ttk::OverlapTracking::processTimestep(
     labelType* pointLabels,
     size_t     nPoints
 ){
+    Timer t;
+    auto tD = t.getElapsedTime();
+
     // Print Status
     {
         stringstream msg;
-        msg << "[ttkOverlapTracking] Initialize nodes ... "<<flush;
+        msg << "[ttkOverlapTracking] Initializing nodes ... "<<flush;
         dMsg(cout, msg.str(), timeMsg);
     }
 
     // Initialize nodes
-    this->timeNodesMap.resize( this->timeNodesMap.size()+1 ); // Add a node set
+    this->timeNodeLabelMap.resize( this->timeNodeLabelMap.size()+1 ); // Add a node set
     unordered_map<labelType, size_t> labelIndexMap;
-    vector<Node>& nodes = this->timeNodesMap[ this->timeNodesMap.size()-1 ];
+    vector<labelType>& nodeLabels = this->timeNodeLabelMap[ this->timeNodeLabelMap.size()-1 ];
     {
         unordered_set<labelType> labels;
         for(size_t i=0; i<nPoints; i++)
             labels.insert( pointLabels[i] );
-        nodes.resize( labels.size() );
+        nodeLabels.resize( labels.size() );
         size_t i=0;
         for(auto& x: labels){
-            nodes[i].label = x;
+            nodeLabels[i] = x;
             labelIndexMap[x] = i;
             i++;
         }
@@ -78,15 +81,27 @@ int ttk::OverlapTracking::processTimestep(
 
     // Print Status
     {
+        auto tTemp = t.getElapsedTime();
         stringstream msg;
-        msg << "done."<<endl
-            << "[ttkOverlapTracking] Sort nodes ... "<<flush;
+        msg << "done ("<<(tTemp-tD)<<" s)."<<endl
+            << "[ttkOverlapTracking] Sorting nodes ... "<<flush;
+        tD = tTemp;
         dMsg(cout, msg.str(), timeMsg);
     }
 
     // Sort indicies for grid comparison
-    TrackingComputationData* currTCD = new TrackingComputationData(pointCoords, pointLabels, nPoints, labelIndexMap);
+    TrackingComputationData* currTCD = new TrackingComputationData();
     {
+        currTCD->nPoints = nPoints;
+
+        currTCD->pointLabelIndicies.resize( nPoints );
+        for(size_t i=0; i<nPoints; i++)
+            currTCD->pointLabelIndicies[i] = labelIndexMap[ pointLabels[i] ];
+
+        currTCD->pointCoords.resize( nPoints*3 );
+        for(size_t i=0; i<nPoints*3; i++)
+            currTCD->pointCoords[i] = pointCoords[i];
+
         currTCD->sortedIndicies.resize( nPoints );
         for(size_t i=0; i<nPoints; i++)
             currTCD->sortedIndicies[i] = i;
@@ -122,13 +137,20 @@ int ttk::OverlapTracking::processTimestep(
 
     // Print Status
     {
+        auto tTemp = t.getElapsedTime();
         stringstream msg;
-        msg << "done."<<endl
-            << "[ttkOverlapTracking] Tracking ... "<<flush;
+        msg << "done ("<<(tTemp-tD)<<" s)."<<endl;
         dMsg(cout, msg.str(), timeMsg);
+        tD=tTemp;
     }
 
     if(this->prevTCD != nullptr){
+        // Print Status
+        {
+            stringstream msg;
+            msg << "[ttkOverlapTracking] Tracking ... "<<flush;
+            dMsg(cout, msg.str(), timeMsg);
+        }
         TrackingComputationData* prevTCD = this->prevTCD;
 
         this->timeEdgesMap.resize( this->timeEdgesMap.size()+1 ); // Add an edge set
@@ -190,14 +212,16 @@ int ttk::OverlapTracking::processTimestep(
                 edge.j = j.first;
                 edge.overlap = j.second;
             }
+
+        // Print Status
+        {
+            auto tTemp = t.getElapsedTime();
+            stringstream msg;
+            msg << "done ("<<(tTemp-tD)<<" s)."<<endl;
+            dMsg(cout, msg.str(), timeMsg);
+        }
     }
 
-    // Print Status
-    {
-        stringstream msg;
-        msg << "done."<<endl;
-        dMsg(cout, msg.str(), timeMsg);
-    }
 
     // Finalizing
     if(this->prevTCD != nullptr)
