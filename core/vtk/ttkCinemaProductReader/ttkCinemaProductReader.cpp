@@ -6,11 +6,43 @@
 #include <vtkFieldData.h>
 #include <vtkDoubleArray.h>
 #include <vtkStringArray.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 
 using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkCinemaProductReader)
+
+int ttkCinemaProductReader::RequestInformation(
+    vtkInformation *request,
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector
+){
+    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
+
+    cout<<"[ttkCinemaProductReader] RequestInformation"<<endl;
+
+    double* tSteps = new double[1];
+    tSteps[0] = 0;
+    double* tRange = new double[2];
+    tRange[0] = 0;
+    tRange[1] = 0;
+
+    outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_STEPS(), tSteps, 1);
+    outInfo->Set(vtkStreamingDemandDrivenPipeline::TIME_RANGE(), tRange, 2);
+
+    return this->Superclass::RequestInformation(request, inputVector, outputVector);
+}
+
+// int ttkCinemaProductReader::RequestUpdateExtentInformation(
+//     vtkInformation* request,
+//     vtkInformationVector** inputVector,
+//     vtkInformationVector* outputVector
+// ){
+//     cout<<"[ttkCinemaProductReader] RequestUpdateExtentInformation"<<endl;
+//     return this->Superclass::RequestInformation(request, inputVector, outputVector);
+// };
 
 int ttkCinemaProductReader::RequestData(
     vtkInformation* request,
@@ -34,6 +66,9 @@ int ttkCinemaProductReader::RequestData(
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     vtkMultiBlockDataSet* output = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
+    // inInfo->Print(cout);
+    // outInfo->Print(cout);
+
     // Read Data
     {
         // Determine number of files
@@ -53,8 +88,20 @@ int ttkCinemaProductReader::RequestData(
             return 0;
         }
 
+        int i, limit;
+        if(this->UseStreaming){
+            i = (int) inInfo->Get(vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
+            limit = i+1;
+
+            if(i>=n) // Send empty vtkMultiBlock to indicate end of sequence
+                return 1;
+        } else {
+            i = 0;
+            limit = n;
+        }
+
         // For each row
-        for(int i=0; i<n; i++){
+        for(; i<limit; i++){
             // Get path
             auto path = databasePath + "/" + paths->GetVariantValue(i).ToString();
             auto ext = path.substr( path.length() - 3 );
@@ -80,12 +127,12 @@ int ttkCinemaProductReader::RequestData(
                 vtkSmartPointer<vtkXMLGenericDataObjectReader> reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
                 reader->SetFileName( path.data() );
                 reader->Update();
-                output->SetBlock(i, reader->GetOutput());
+                output->SetBlock( this->UseStreaming ? 0 : i, reader->GetOutput());
             }
 
             // Augment read data with row information
             // TODO: Make Optional
-            auto block = output->GetBlock(i);
+            auto block = output->GetBlock( this->UseStreaming ? 0 : i );
             for(int j=0; j<m; j++){
                 auto columnName = inputTable->GetColumnName(j);
                 auto fieldData = block->GetFieldData();
@@ -108,8 +155,10 @@ int ttkCinemaProductReader::RequestData(
                 }
             }
 
-            this->updateProgress( ((float)i)/((float)(n-1)) );
+            if(!this->UseStreaming)
+                this->updateProgress( ((float)i)/((float)(n-1)) );
         }
+
     }
 
     // Print status

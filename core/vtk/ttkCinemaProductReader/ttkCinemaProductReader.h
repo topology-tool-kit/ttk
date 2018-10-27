@@ -49,19 +49,22 @@ class ttkCinemaProductReader
         }
         // end of default ttk setters
 
-        void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char *name){
+        vtkSetMacro(UseStreaming, bool);
+        vtkGetMacro(UseStreaming, bool);
+
+        void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char* name){
             this->FilepathColumnName = std::string(name);
             this->Modified();
         };
 
 
-        int FillInputPortInformation(int port, vtkInformation *info) override {
+        int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port)
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
             return 1;
         }
 
-        int FillOutputPortInformation(int port, vtkInformation *info) override {
+        int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port)
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
             return 1;
@@ -71,6 +74,7 @@ class ttkCinemaProductReader
 
         ttkCinemaProductReader(){
             UseAllCores = false;
+            UseStreaming = false;
 
             SetNumberOfInputPorts(1);
             SetNumberOfOutputPorts(1);
@@ -78,9 +82,12 @@ class ttkCinemaProductReader
         ~ttkCinemaProductReader(){};
 
         bool UseAllCores;
+        bool UseStreaming;
         int ThreadNumber;
 
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+        // int RequestUpdateExtentInformation(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector);
+        int RequestInformation(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
+        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
