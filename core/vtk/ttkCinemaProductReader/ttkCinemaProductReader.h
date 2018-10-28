@@ -49,9 +49,6 @@ class ttkCinemaProductReader
         }
         // end of default ttk setters
 
-        vtkSetMacro(UseStreaming, bool);
-        vtkGetMacro(UseStreaming, bool);
-
         void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char* name){
             this->FilepathColumnName = std::string(name);
             this->Modified();
@@ -74,7 +71,6 @@ class ttkCinemaProductReader
 
         ttkCinemaProductReader(){
             UseAllCores = false;
-            UseStreaming = false;
 
             SetNumberOfInputPorts(1);
             SetNumberOfOutputPorts(1);
@@ -82,16 +78,14 @@ class ttkCinemaProductReader
         ~ttkCinemaProductReader(){};
 
         bool UseAllCores;
-        bool UseStreaming;
         int ThreadNumber;
 
-        // int RequestUpdateExtentInformation(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector);
-        int RequestInformation(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
+        std::string FilepathColumnName;
+
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
-        std::string FilepathColumnName;
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

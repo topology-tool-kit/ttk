@@ -21,10 +21,6 @@
                 </ArrayListDomain>
                 <Documentation>Name of the column containing data product references.</Documentation>
             </StringVectorProperty>
-            <IntVectorProperty name="UseStreaming" label="Use Streaming" command="SetUseStreaming" number_of_elements="1" default_values="0">
-                <BooleanDomain name="bool" />
-                <Documentation>Stream products one by one.</Documentation>
-            </IntVectorProperty>
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
                 <BooleanDomain name="bool" />
                 <Documentation>Use all available cores.</Documentation>
@@ -42,7 +38,6 @@
             </IntVectorProperty>
             <PropertyGroup panel_widget="Line" label="Input Options">
                 <Property name="SelectColumn" />
-                <Property name="UseStreaming" />
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Testing">
                 <Property name="UseAllCores" />

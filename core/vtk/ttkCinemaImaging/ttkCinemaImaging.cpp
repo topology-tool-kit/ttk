@@ -2,29 +2,29 @@
 
 #include <vtkSmartPointer.h>
 #include <vtkPointSet.h>
+#include <vtkMultiBlockDataSet.h>
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkFieldData.h>
-#include <vtkDoubleArray.h>
 #include <vtkMath.h>
-#include <vtkMultiBlockDataSet.h>
+#include <vtkFloatArray.h>
+#include <vtkDoubleArray.h>
 
+// Render Dependencies
+#include <vtkCamera.h>
 #include <vtkActor.h>
 #include <vtkCompositePolyDataMapper2.h>
-#include <vtkCamera.h>
 #include <vtkCompositeDataGeometryFilter.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
 
-#include <vtkFloatArray.h>
+// Value Pass Dependencies
 #include <vtkValuePass.h>
 #include <vtkRenderPassCollection.h>
 #include <vtkCameraPass.h>
 #include <vtkSequencePass.h>
 #include <vtkOpenGLRenderer.h>
-
-#include <set>
 
 using namespace std;
 using namespace ttk;
@@ -39,7 +39,7 @@ int ttkCinemaImaging::RequestData(
     // Print Status
     {
         stringstream msg;
-        msg<<"-------------------------------------------------------------"<<endl;
+        msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaImaging] RequestData"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
@@ -59,7 +59,7 @@ int ttkCinemaImaging::RequestData(
     auto output = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     // -------------------------------------------------------------------------
-    // Initialize Render Object
+    // Initialize Shared Render Objects
     // -------------------------------------------------------------------------
 
     // Insert InputDataObject into MultiBlockDataSet
@@ -72,8 +72,15 @@ int ttkCinemaImaging::RequestData(
     toPoly->Update();
     auto poly = toPoly->GetOutput();
 
+    // Camera
+    auto camera = vtkSmartPointer<vtkCamera>::New();
+    camera->SetParallelProjection(true);
+    camera->SetClippingRange( this->CamNearFar );
+    camera->SetFocalPoint( this->CamFocus );
+    camera->SetParallelScale( this->CamHeight*0.5 ); // *0.5 to convert CamHeight to weird VTK convention
+
     // -------------------------------------------------------------------------
-    // Initialize Depth Renderer
+    // Initialize Depth Renderer and Components
     // -------------------------------------------------------------------------
 
     // Mapper
@@ -84,27 +91,21 @@ int ttkCinemaImaging::RequestData(
     auto actor0 = vtkSmartPointer<vtkActor>::New();
     actor0->SetMapper(mapper0);
 
-    // Camera
-    auto camera0 = vtkSmartPointer<vtkCamera>::New();
-    camera0->SetParallelProjection(true);
-    camera0->SetClippingRange( this->CamNearFar );
-    camera0->SetFocalPoint( this->CamFocus );
-    camera0->SetParallelScale( this->CamHeight*0.5 ); // *0.5 to convert CamHeight to weird VTK convention
-
     // Renderer
     auto renderer0 = vtkSmartPointer<vtkRenderer>::New();
     renderer0->SetBackground(0,0,0);
     renderer0->AddActor(actor0);
-    renderer0->SetActiveCamera(camera0);
+    renderer0->SetActiveCamera(camera);
 
     // Window
     auto renderWindow0 = vtkSmartPointer<vtkRenderWindow>::New();
     renderWindow0->SetSize( this->Resolution );
     renderWindow0->SetMultiSamples( 0 ); // Disable AA
+    renderWindow0->OffScreenRenderingOn();
     renderWindow0->AddRenderer( renderer0 );
 
     // -------------------------------------------------------------------------
-    // Initialize Value Renderer
+    // Initialize Value Renderer and Components
     // -------------------------------------------------------------------------
 
     // Mapper
@@ -115,61 +116,83 @@ int ttkCinemaImaging::RequestData(
     auto actor1 = vtkSmartPointer<vtkActor>::New();
     actor1->SetMapper(mapper1);
 
-    // Camera
-    auto camera1 = vtkSmartPointer<vtkCamera>::New();
-    camera1->SetParallelProjection(true);
-    camera1->SetClippingRange( this->CamNearFar );
-    camera1->SetFocalPoint( this->CamFocus );
-    camera1->SetParallelScale( this->CamHeight*0.5 ); // *0.5 to convert CamHeight to weird VTK convention
-
     // Renderer
     auto renderer1 = vtkSmartPointer<vtkRenderer>::New();
     renderer1->SetBackground(0,0,0);
     renderer1->AddActor(actor1);
-    renderer1->SetActiveCamera(camera1);
+    renderer1->SetActiveCamera(camera);
 
     // Window
     auto renderWindow1 = vtkSmartPointer<vtkRenderWindow>::New();
     renderWindow1->SetSize( this->Resolution );
     renderWindow1->SetMultiSamples( 0 ); // Disable AA
+    renderWindow1->OffScreenRenderingOn();
     renderWindow1->AddRenderer( renderer1 );
 
     // Value Passes
-    vector< pair<vtkValuePass*,string> > valuePasses;
+    vector< pair<vtkValuePass*,string> > valuePassList;
     {
-        auto passes = vtkSmartPointer<vtkRenderPassCollection>::New();
+        auto valuePassCollection = vtkSmartPointer<vtkRenderPassCollection>::New();
 
-        auto pointData = poly->GetPointData();
-        size_t n = pointData->GetNumberOfArrays();
+        // Lambda function that generates a vtkValuePasses for Point or Cell Data
+        auto addValuePasses = [](
+            vtkRenderPassCollection* valuePassCollection,
+            vector< pair<vtkValuePass*,string> >& valuePassList,
+            vtkFieldData* data,
+            int pointDataFlag // 0: Point Data, 1: Cell Data
+        ) {
+            double minmax[2];
+            size_t n = data->GetNumberOfArrays();
 
-        double minmax[2];
-        for(size_t i=0; i<n; i++){
-            auto values = pointData->GetArray(i);
-            values->GetRange(minmax);
+            for(size_t i=0; i<n; i++){
+                auto values = data->GetArray(i);
+                values->GetRange(minmax);
 
-            auto valuePass = vtkSmartPointer<vtkValuePass>::New();
-            valuePass->SetInputArrayToProcess(VTK_SCALAR_MODE_USE_POINT_FIELD_DATA, i);
-            valuePass->SetRenderingMode(2);
-            valuePass->SetInputComponentToProcess(0); // TODO Iterate components
-            valuePass->SetScalarRange(minmax[0], minmax[1]);
+                size_t m = values->GetNumberOfComponents();
+                for(size_t j=0; j<m; j++){
+                    auto valuePass = vtkSmartPointer<vtkValuePass>::New();
+                    valuePass->SetInputArrayToProcess(
+                        pointDataFlag == 0
+                            ? VTK_SCALAR_MODE_USE_POINT_FIELD_DATA
+                            : VTK_SCALAR_MODE_USE_CELL_FIELD_DATA,
+                        i
+                    );
+                    valuePass->SetRenderingMode(2);
+                    valuePass->SetInputComponentToProcess(j);
+                    valuePass->SetScalarRange(minmax[0], minmax[1]);
 
-            passes->AddItem(valuePass);
-            valuePasses.push_back( make_pair(valuePass, values->GetName()) );
+                    valuePassCollection->AddItem(valuePass);
+                    valuePassList.push_back(make_pair(
+                        valuePass,
+                        m<2
+                            ? values->GetName()
+                            : string(values->GetName())+"_"+to_string(j)
+                    ));
+                }
+            }
+        };
+
+        // Add Point Data Passes
+        addValuePasses( valuePassCollection, valuePassList, poly->GetPointData(), 0 );
+
+        // Add Cell Data Passes
+        addValuePasses( valuePassCollection, valuePassList, poly->GetCellData(), 1 );
+
+        // Build Render Sequence
+        {
+            auto sequence = vtkSmartPointer<vtkSequencePass>::New();
+            sequence->SetPasses( valuePassCollection );
+
+            auto cameraPass = vtkSmartPointer<vtkCameraPass>::New();
+            cameraPass->SetDelegatePass(sequence);
+
+            auto glRenderer = vtkOpenGLRenderer::SafeDownCast( renderer1 );
+            glRenderer->SetPass(cameraPass);
         }
-
-        // TODO Iterate Cell Data and Components
-
-        auto sequence = vtkSmartPointer<vtkSequencePass>::New();
-        sequence->SetPasses(passes);
-
-        auto cameraPass = vtkSmartPointer<vtkCameraPass>::New();
-        cameraPass->SetDelegatePass(sequence);
-
-        auto glRenderer = vtkOpenGLRenderer::SafeDownCast( renderer1 );
-        glRenderer->SetPass(cameraPass);
     }
-    bool renderValuePasses = valuePasses.size()>0;
+    bool renderValuePasses = valuePassList.size()>0;
 
+    // Render for the first time to initialize everything
     renderWindow0->Render();
     if(renderValuePasses) renderWindow1->Render();
 
@@ -216,8 +239,7 @@ int ttkCinemaImaging::RequestData(
         // Set Camera Position
         // TODO: In the future it shoud be possible to override focus, res,...
         inputGrid->GetPoint(i, camPosition);
-        camera0->SetPosition( camPosition );
-        camera1->SetPosition( camPosition );
+        camera->SetPosition( camPosition );
 
         // Render Depth Image
         renderWindow0->Render();
@@ -266,7 +288,7 @@ int ttkCinemaImaging::RequestData(
             outputImageFD->AddArray( cd );
 
             // Up
-            auto upd = camera0->GetViewUp();
+            auto upd = camera->GetViewUp();
             auto cu = vtkSmartPointer<vtkDoubleArray>::New();
             cu->SetName("CamUp");
             cu->SetNumberOfValues(3);
@@ -283,7 +305,7 @@ int ttkCinemaImaging::RequestData(
             renderWindow1->Render();
 
             auto outputImagePD = outputImage->GetPointData();
-            for(auto& passData: valuePasses){
+            for(auto& passData: valuePassList){
                 vtkSmartPointer<vtkFloatArray> data = vtkSmartPointer<vtkFloatArray>::New();
                 data->DeepCopy( passData.first->GetFloatImageDataArray( renderer1 ) );
                 data->SetName( passData.second.data() );
@@ -298,11 +320,10 @@ int ttkCinemaImaging::RequestData(
     // Output Performance
     {
         stringstream msg;
-        msg << "[ttkCinemaImaging] ------------------------------------" << endl;
+        msg << "[ttkCinemaImaging] -------------------------------------------------------------" << endl;
         msg << "[ttkCinemaImaging] " << n << " Images rendered" << endl;
         msg << "[ttkCinemaImaging]   time: " << (t.getElapsedTime()-t0) << " s" << endl;
         msg << "[ttkCinemaImaging] memory: " << m.getElapsedUsage() << " MB" << endl;
-        msg << "[ttkCinemaImaging] ------------------------------------" << endl;
         dMsg(cout, msg.str(), memoryMsg);
     }
 

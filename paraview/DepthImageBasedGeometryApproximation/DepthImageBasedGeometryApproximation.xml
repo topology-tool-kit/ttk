@@ -19,6 +19,16 @@
                 </DataTypeDomain>
                 <Documentation>A vtkMultiBlockDataSet containing a set of depth images represented by vtkImagedata objects.</Documentation>
             </InputProperty>
+
+            <StringVectorProperty name="DepthScalarField" command="SetDepthScalarField" number_of_elements="1" animateable="0" label="Depth Values">
+                <ArrayListDomain name="array_list" default_values="Depth">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Scalar field that contains depth values.</Documentation>
+            </StringVectorProperty>
+
             <IntVectorProperty name="Subsampling" label="Subsampling" command="SetSubsampling" number_of_elements="1" default_values="0">
                 <IntRangeDomain name="range" min="0" max="100" />
                 <Documentation>The factor that controls the sampling rate (0: no Subsampling, 1: skip every second sample, 2: skip every second and third sample...)</Documentation>
@@ -39,6 +49,9 @@
                 <IntRangeDomain name="range" min="0" max="100" />
                 <Documentation>Debug level.</Documentation>
             </IntVectorProperty>
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="DepthScalarField" />
+            </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="Subsampling" />
             </PropertyGroup>

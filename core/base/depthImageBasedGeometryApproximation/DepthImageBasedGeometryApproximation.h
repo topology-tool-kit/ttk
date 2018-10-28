@@ -42,6 +42,7 @@ namespace ttk{
 
                 int subsampling,
 
+                vector<size_t>& indicies,
                 vector<tuple<double,double,double>>& vertices,
                 vector<tuple<int,int,int>>& triangles,
                 vector<double>& triangleDistortions
@@ -60,6 +61,7 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
 
     int subsampling,
 
+    vector<size_t>& indicies,
     vector<tuple<double,double,double>>& vertices,
     vector<tuple<int,int,int>>& triangles,
     vector<double>& triangleDistortions
@@ -128,6 +130,7 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
 
         // Make room for new vertices
         vertices.resize( numberNewVertices );
+        indicies.resize( numberNewVertices );
 
         // Compute depth delta
         double delta = camNearFar[1]-camNearFar[0];
@@ -157,10 +160,14 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
                 int vertexIndex = pixelIndexVertexIndexMap[ pixelIndex ];
                 if(vertexIndex < 0) continue;
 
+
                 // double d = (double)(depthValues[ pixelIndex ])*delta+camNearFar[0];
                 double d = ((double)depthValues[pixelIndex]) * delta + camNearFar[0];
                 double u = ((double)x)*pixelWidthWorld;
                 auto& vertex = vertices[vertexIndex];
+
+                // Store pixel index of vertex
+                indicies[ vertexIndex ] = pixelIndex;
 
                 get<0>(vertex) = camPosCorner[0] + u*camRight[0] + vTimesUp[0] + d*camDir[0];
                 get<1>(vertex) = camPosCorner[1] + u*camRight[1] + vTimesUp[1] + d*camDir[1];

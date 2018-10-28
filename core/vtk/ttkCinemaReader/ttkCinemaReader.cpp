@@ -21,7 +21,7 @@ int ttkCinemaReader::RequestData (
     // Print Status
     {
         stringstream msg;
-        msg<<"-------------------------------------------------------------"<<endl;
+        msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaReader] RequestData"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }

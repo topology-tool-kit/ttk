@@ -45,6 +45,9 @@ class ttkDepthImageBasedGeometryApproximation
         vtkSetMacro(Subsampling, int);
         vtkGetMacro(Subsampling, int);
 
+        vtkSetMacro(DepthScalarField, string);
+        vtkGetMacro(DepthScalarField, string);
+
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
         void SetThreads(){
@@ -92,6 +95,7 @@ class ttkDepthImageBasedGeometryApproximation
     private:
 
         int Subsampling;
+        string DepthScalarField;
         ttk::DepthImageBasedGeometryApproximation depthImageBasedGeometryApproximation_;
 
         bool needsToAbort() override { return GetAbortExecute();};
