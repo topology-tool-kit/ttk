@@ -1,5 +1,0 @@
-ttk_add_base_library(superlevelSetOverlapTracking
-	SOURCES SuperlevelSetOverlapTracking.cpp
-	HEADERS SuperlevelSetOverlapTracking.h
-	LINK triangulation)
-
