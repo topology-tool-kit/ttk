@@ -1,4 +1,0 @@
-ttk_add_vtk_library(ttkPlanarGraphLayout
-	SOURCES ttkPlanarGraphLayout.cpp
-	HEADERS ttkPlanarGraphLayout.h
-	LINK planarGraphLayout ttkTriangulation)
