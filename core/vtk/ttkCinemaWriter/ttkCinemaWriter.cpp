@@ -67,7 +67,7 @@ int ttkCinemaWriter::RequestData (
 
     // Create directory if does not already exist
     {
-        vtkSmartPointer<vtkDirectory> directory = vtkSmartPointer<vtkDirectory>::New();
+        auto directory = vtkSmartPointer<vtkDirectory>::New();
         int opened = directory->Open( this->DatabasePath.data() );
         if(!opened)
             directory->MakeDirectory( this->DatabasePath.data() );
@@ -75,7 +75,7 @@ int ttkCinemaWriter::RequestData (
 
     // If OverrideDatabase then delete old data products
     if( this->OverrideDatabase ){
-        vtkSmartPointer<vtkDirectory> directory = vtkSmartPointer<vtkDirectory>::New();
+        auto directory = vtkSmartPointer<vtkDirectory>::New();
         int opened = directory->Open( pathPrefix.data() );
         if(opened){
             int status = directory->DeleteDirectory( pathPrefix.data() );
@@ -107,7 +107,7 @@ int ttkCinemaWriter::RequestData (
         dMsg(cout, msg.str(), timeMsg);
     }
 
-    vtkSmartPointer<vtkXMLMultiBlockDataWriter> mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
+    auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
     mbWriter->SetFileName( path.data() );
     mbWriter->SetDataModeToAppended();
     mbWriter->SetCompressorTypeToZLib();
@@ -137,7 +137,7 @@ int ttkCinemaWriter::RequestData (
         msg<<"[ttkCinemaWriter] Updating data.csv file ... "<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
-    vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+    auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
     reader->SetFileName( dataCsvPath.data() );
     reader->DetectNumericColumnsOff();
     reader->SetHaveHeaders(true);
@@ -168,19 +168,13 @@ int ttkCinemaWriter::RequestData (
             blockExtension = this->GetDefaultFileExtensionForDataSet( block->GetDataObjectType() );
         #endif
 
-        // auto fieldData = block->GetFieldData();
         for(int j=0; j<table->GetNumberOfColumns(); j++){
             auto columnName = table->GetColumnName(j);
-            // auto columnFD = fieldData->GetAbstractArray(columnName);
             auto columnCSV = vtkStringArray::SafeDownCast( table->GetColumn(j) );
-            if(string(columnName).compare("FILE")==0){
+            if(string(columnName).compare("FILE")==0)
                 columnCSV->SetValue(offset+i, vtkStdString( dataPrefix+id+"/"+id+"_"+to_string(i)+"."+blockExtension ));
-            // TODO store field data in CSV
-            // } else if(columnFD!=nullptr){
-            //     columnCSV->SetValue(offset+i, columnFD->GetVariantValue(0).ToString());
-            } else {
+            else
                 columnCSV->SetValue(offset+i, "");
-            }
         }
     }
 
@@ -190,11 +184,8 @@ int ttkCinemaWriter::RequestData (
     csvWriter->SetFileName( (this->DatabasePath+"/data.csv").data() );
     csvWriter->SetInputData( table );
     csvWriter->Write();
-    {
-        stringstream msg;
-        msg<<"Done"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
-    }
+
+    dMsg(cout, "Done\n", timeMsg);
 
     // Output Performance
     {

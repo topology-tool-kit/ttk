@@ -30,10 +30,10 @@ int ttkCinemaProductReader::RequestData(
 
     // Prepare Input and Output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-    vtkTable* inputTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    auto inputTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    vtkMultiBlockDataSet* output = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    auto output = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     // Read Data
     {
@@ -78,7 +78,7 @@ int ttkCinemaProductReader::RequestData(
 
             // Read any data using vtkXMLGenericDataObjectReader
             {
-                vtkSmartPointer<vtkXMLGenericDataObjectReader> reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
+                auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
                 reader->SetFileName( path.data() );
                 reader->Update();
                 output->SetBlock( i, reader->GetOutput());
@@ -94,13 +94,13 @@ int ttkCinemaProductReader::RequestData(
                     bool isNumeric = inputTable->GetColumn(j)->IsNumeric();
 
                     if(isNumeric){
-                        vtkSmartPointer<vtkDoubleArray> c = vtkSmartPointer<vtkDoubleArray>::New();
+                        auto c = vtkSmartPointer<vtkDoubleArray>::New();
                         c->SetName( columnName );
                         c->SetNumberOfValues(1);
                         c->SetValue(0, inputTable->GetValue(i,j).ToDouble());
                         fieldData->AddArray( c );
                     } else {
-                        vtkSmartPointer<vtkStringArray> c = vtkSmartPointer<vtkStringArray>::New();
+                        auto c = vtkSmartPointer<vtkStringArray>::New();
                         c->SetName( columnName );
                         c->SetNumberOfValues(1);
                         c->SetValue(0, inputTable->GetValue(i,j).ToString());

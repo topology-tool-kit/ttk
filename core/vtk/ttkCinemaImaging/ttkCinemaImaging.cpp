@@ -320,7 +320,7 @@ int ttkCinemaImaging::RequestData(
 
             auto outputImagePD = outputImage->GetPointData();
             for(auto& passData: valuePassList){
-                vtkSmartPointer<vtkFloatArray> data = vtkSmartPointer<vtkFloatArray>::New();
+                auto data = vtkSmartPointer<vtkFloatArray>::New();
                 data->DeepCopy( passData.first->GetFloatImageDataArray( renderer1 ) );
                 data->SetName( passData.second.data() );
                 outputImagePD->AddArray( data );
