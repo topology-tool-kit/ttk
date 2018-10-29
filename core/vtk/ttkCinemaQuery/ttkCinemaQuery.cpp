@@ -1,8 +1,10 @@
-#include  <ttkCinemaQuery.h>
-#include  <vtkSmartPointer.h>
-#include  <vtkStringArray.h>
-#include  <vtkFieldData.h>
-#include  <vtkDelimitedTextReader.h>
+#include <ttkCinemaQuery.h>
+
+#include <vtkTable.h>
+#include <vtkSmartPointer.h>
+#include <vtkStringArray.h>
+#include <vtkFieldData.h>
+#include <vtkDelimitedTextReader.h>
 
 using namespace std;
 using namespace ttk;
@@ -17,7 +19,7 @@ int ttkCinemaQuery::RequestData(
     // Print Status
     {
         stringstream msg;
-        msg<<"-------------------------------------------------------------"<<endl;
+        msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaQuery] RequestData"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }

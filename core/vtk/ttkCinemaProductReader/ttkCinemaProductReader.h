@@ -9,18 +9,17 @@
 ///
 /// \param Input vtkTable that contains data product references (vtkTable)
 /// \param Output vtkMultiBlockDataSet where each block is a referenced product of an input table row (vtkMultiBlockDataSet)
-///
-/// \sa ttk::CinemaProductReader
+
 #pragma once
 
-#include                  <vtkTable.h>
-#include                  <vtkImageData.h>
-#include                  <vtkMultiBlockDataSetAlgorithm.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkInformation.h>
-#include                  <vtkMultiBlockDataSet.h>
+// VTK includes
+#include <vtkMultiBlockDataSetAlgorithm.h>
+#include <vtkFiltersCoreModule.h>
+#include <vtkInformation.h>
+#include <vtkMultiBlockDataSet.h>
 
-#include                  <ttkWrapper.h>
+// TTK includes
+#include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkCinemaProductReader
@@ -50,19 +49,19 @@ class ttkCinemaProductReader
         }
         // end of default ttk setters
 
-        void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char *name){
+        void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char* name){
             this->FilepathColumnName = std::string(name);
             this->Modified();
         };
 
 
-        int FillInputPortInformation(int port, vtkInformation *info) override {
+        int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port)
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
             return 1;
         }
 
-        int FillOutputPortInformation(int port, vtkInformation *info) override {
+        int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port)
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
             return 1;
@@ -81,11 +80,12 @@ class ttkCinemaProductReader
         bool UseAllCores;
         int ThreadNumber;
 
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+        std::string FilepathColumnName;
+
+        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
-        std::string FilepathColumnName;
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

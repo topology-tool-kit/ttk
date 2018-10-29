@@ -19,14 +19,16 @@
 /// \param Output A set of unstructured grids where each grid corresponds to a depth image (vtkMultiBlockDataSet)
 ///
 /// \sa ttk::DepthImageBasedGeometryApproximation
+
 #pragma once
 
-#include                  <vtkMultiBlockDataSet.h>
-#include                  <vtkMultiBlockDataSetAlgorithm.h>
-#include                  <vtkInformation.h>
+// VTK includes
+#include <vtkMultiBlockDataSetAlgorithm.h>
+#include <vtkInformation.h>
 
-#include                  <DepthImageBasedGeometryApproximation.h>
-#include                  <ttkWrapper.h>
+// TTK includes
+#include <DepthImageBasedGeometryApproximation.h>
+#include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkDepthImageBasedGeometryApproximation
@@ -42,6 +44,9 @@ class ttkDepthImageBasedGeometryApproximation
 
         vtkSetMacro(Subsampling, int);
         vtkGetMacro(Subsampling, int);
+
+        vtkSetMacro(DepthScalarField, string);
+        vtkGetMacro(DepthScalarField, string);
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -90,6 +95,7 @@ class ttkDepthImageBasedGeometryApproximation
     private:
 
         int Subsampling;
+        string DepthScalarField;
         ttk::DepthImageBasedGeometryApproximation depthImageBasedGeometryApproximation_;
 
         bool needsToAbort() override { return GetAbortExecute();};

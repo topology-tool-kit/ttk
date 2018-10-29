@@ -1,9 +1,12 @@
 #include <ttkCinemaProductReader.h>
+
+#include <vtkTable.h>
 #include <vtkXMLGenericDataObjectReader.h>
 #include <vtkVariantArray.h>
 #include <vtkFieldData.h>
 #include <vtkDoubleArray.h>
 #include <vtkStringArray.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 
 using namespace std;
 using namespace ttk;
@@ -18,7 +21,7 @@ int ttkCinemaProductReader::RequestData(
     // Print status
     {
         stringstream msg;
-        msg<<"-------------------------------------------------------------"<<endl;
+        msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaProductReader] RequestData"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
@@ -35,8 +38,8 @@ int ttkCinemaProductReader::RequestData(
     // Read Data
     {
         // Determine number of files
-        int n = inputTable->GetNumberOfRows();
-        int m = inputTable->GetNumberOfColumns();
+        size_t n = inputTable->GetNumberOfRows();
+        size_t m = inputTable->GetNumberOfColumns();
         cout<<"[ttkCinemaProductReader] Reading "<<n<<" files:"<<endl;
 
         // Compute DatabasePath
@@ -52,7 +55,7 @@ int ttkCinemaProductReader::RequestData(
         }
 
         // For each row
-        for(int i=0; i<n; i++){
+        for(size_t i=0; i<n; i++){
             // Get path
             auto path = databasePath + "/" + paths->GetVariantValue(i).ToString();
             auto ext = path.substr( path.length() - 3 );
@@ -78,13 +81,13 @@ int ttkCinemaProductReader::RequestData(
                 vtkSmartPointer<vtkXMLGenericDataObjectReader> reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
                 reader->SetFileName( path.data() );
                 reader->Update();
-                output->SetBlock(i, reader->GetOutput());
+                output->SetBlock( i, reader->GetOutput());
             }
 
             // Augment read data with row information
             // TODO: Make Optional
-            auto block = output->GetBlock(i);
-            for(int j=0; j<m; j++){
+            auto block = output->GetBlock( i );
+            for(size_t j=0; j<m; j++){
                 auto columnName = inputTable->GetColumnName(j);
                 auto fieldData = block->GetFieldData();
                 if(!fieldData->HasArray( columnName )){
@@ -108,6 +111,7 @@ int ttkCinemaProductReader::RequestData(
 
             this->updateProgress( ((float)i)/((float)(n-1)) );
         }
+
     }
 
     // Print status

@@ -1,4 +1,6 @@
 #include <ttkCinemaWriter.h>
+
+#include <vtkMultiBlockDataSet.h>
 #include <vtkDelimitedTextReader.h>
 #include <vtkDelimitedTextWriter.h>
 #include <vtkXMLMultiBlockDataWriter.h>
@@ -10,7 +12,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-
 #include <stdlib.h>
 #include <vtkDirectory.h>
 
@@ -105,6 +106,7 @@ int ttkCinemaWriter::RequestData (
         msg<<"[ttkCinemaWriter] Writing new data products to disk ... ";
         dMsg(cout, msg.str(), timeMsg);
     }
+
     vtkSmartPointer<vtkXMLMultiBlockDataWriter> mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
     mbWriter->SetFileName( path.data() );
     mbWriter->SetDataModeToAppended();

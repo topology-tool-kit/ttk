@@ -12,14 +12,15 @@
 /// \param Input vtkDataObject that will be depicted (vtkDataObject)
 /// \param Input vtkPointSet that records the camera sampling locations (vtkPointSet)
 /// \param Output vtkMultiBlockDataSet that represents a list of images (vtkMultiBlockDataSet)
-///
-/// \sa ttk::CinemaImaging
+
 #pragma once
 
-#include                  <vtkInformation.h>
-#include                  <vtkMultiBlockDataSetAlgorithm.h>
+// VTK includes
+#include <vtkInformation.h>
+#include <vtkMultiBlockDataSetAlgorithm.h>
 
-#include                  <ttkWrapper.h>
+// TTK includes
+#include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkCinemaImaging

@@ -1,7 +1,9 @@
-#include                  <ttkCinemaReader.h>
-#include                  <vtkDelimitedTextReader.h>
-#include                  <vtkFieldData.h>
-#include                  <vtkStringArray.h>
+#include <ttkCinemaReader.h>
+
+#include <vtkTable.h>
+#include <vtkDelimitedTextReader.h>
+#include <vtkFieldData.h>
+#include <vtkStringArray.h>
 
 using namespace std;
 using namespace ttk;
@@ -19,7 +21,7 @@ int ttkCinemaReader::RequestData (
     // Print Status
     {
         stringstream msg;
-        msg<<"-------------------------------------------------------------"<<endl;
+        msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaReader] RequestData"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }

@@ -5,18 +5,16 @@
 ///
 /// \brief TTK VTK-filter that reads a Cinema Spec D Database
 ///
-/// \param Output content of the data.csv file of the database in form of a vtkTable
-///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
-/// \sa ttk::CinemaReader
+/// \param Output content of the data.csv file of the database in form of a vtkTable
+
 #pragma once
 
 // VTK includes
 #include <vtkTableReader.h>
 #include <vtkInformation.h>
-#include <vtkTable.h>
 
 // TTK includes
 #include <ttkWrapper.h>
