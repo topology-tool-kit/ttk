@@ -28,6 +28,24 @@ namespace ttk
          PRINT(seed << " :: " << localProp->getNbArcs());
          if (!localProp->getNbArcs()) {
             PRINT(seed << " Stop direct");
+#ifdef TTK_ENABLE_FTR_TASK_STATS
+            {
+               // This only when tasks grows exclusively from min
+               // This propagation is dying here
+               idVertex curProp;
+               float    curTime;
+#pragma omp atomic capture seq_cst
+               {
+                  curProp = nbProp_;
+                  --nbProp_;
+               }
+#pragma omp critical(stats)
+               {
+                  curTime = sweepStart_.getElapsedTime();
+               }
+               propTimes_[curProp - 1] = curTime;
+            }
+#endif
             return;
          }
 
@@ -45,7 +63,27 @@ namespace ttk
             const idVertex curVert = localProp->getCurVertex();
             idSuperArc mergeIn = nullSuperArc;
 
-            if (localProp->getNbArcs() == 0) return;
+            if (localProp->getNbArcs() == 0) {
+#ifdef TTK_ENABLE_FTR_TASK_STATS
+               {
+                  // This only when tasks grows exclusively from min
+                  // This propagation is dying here
+                  idVertex curProp;
+                  float    curTime;
+#pragma omp atomic capture seq_cst
+                  {
+                     curProp = nbProp_;
+                     --nbProp_;
+                  }
+#pragma omp critical(stats)
+                  {
+                     curTime = sweepStart_.getElapsedTime();
+                  }
+                  propTimes_[curProp - 1] = curTime;
+               }
+#endif
+               return;
+            }
 
             PRINT("<" << curVert << " " << localProp->goUp() << " a " << localProp->getNbArcs());
 
@@ -176,6 +214,24 @@ namespace ttk
                if (localProp->getNbArcs() == 0){
                   // no more active arcs
                   PRINT(curVert << " stop");
+#ifdef TTK_ENABLE_FTR_TASK_STATS
+                  {
+                     // This only when tasks grows exclusively from min
+                     // This propagation is dying here
+                     idVertex curProp;
+                     float    curTime;
+#pragma omp atomic capture seq_cst
+                     {
+                        curProp = nbProp_;
+                        --nbProp_;
+                     }
+#pragma omp critical(stats)
+                     {
+                        curTime = sweepStart_.getElapsedTime();
+                     }
+                     propTimes_[curProp - 1] = curTime;
+                  }
+#endif
                   return;
                }
             }
@@ -190,6 +246,24 @@ namespace ttk
 
          if (localProp->getNbArcs() == 0 || localProp->empty()) {
             PRINT(upVert << " stop " << localProp->getNbArcs());
+#ifdef TTK_ENABLE_FTR_TASK_STATS
+               {
+                  // This only when tasks grows exclusively from min
+                  // This propagation is dying here
+                  idVertex curProp;
+                  float    curTime;
+#pragma omp atomic capture seq_cst
+                  {
+                     curProp = nbProp_;
+                     --nbProp_;
+                  }
+#pragma omp critical(stats)
+                  {
+                     curTime = sweepStart_.getElapsedTime();
+                  }
+                  propTimes_[curProp - 1] = curTime;
+               }
+#endif
             return;
          }
 
@@ -263,6 +337,24 @@ namespace ttk
             if (localProp->getNbArcs() == 0) {
                // no more active arcs
                PRINT(upVert << " stop");
+#ifdef TTK_ENABLE_FTR_TASK_STATS
+               {
+                  // This only when tasks grows exclusively from min
+                  // This propagation is dying here
+                  idVertex curProp;
+                  float    curTime;
+#pragma omp atomic capture seq_cst
+                  {
+                     curProp = nbProp_;
+                     --nbProp_;
+                  }
+#pragma omp critical(stats)
+                  {
+                     curTime = sweepStart_.getElapsedTime();
+                  }
+                  propTimes_[curProp - 1] = curTime;
+               }
+#endif
                return;
             }
             if (graph_.getArc(currentArc).isVisible()) {
@@ -299,7 +391,7 @@ namespace ttk
             // This propagation is dying here
             idVertex curProp;
             float    curTime;
-#pragma omp atomic capture
+#pragma omp atomic capture seq_cst
             {
                curProp = nbProp_;
                --nbProp_;
