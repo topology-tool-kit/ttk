@@ -86,7 +86,6 @@ class ttkCinemaProductReader
 
     private:
 
-
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
