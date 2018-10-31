@@ -60,7 +60,7 @@ class ttkCinemaWriter
 
         int FillOutputPortInformation(int port, vtkInformation *info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
             return 1;
         }
 
