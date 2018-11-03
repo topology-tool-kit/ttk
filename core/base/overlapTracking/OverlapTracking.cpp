@@ -36,6 +36,13 @@ int ttk::OverlapTracking::reset(){
         delete this->prevTCD;
     this->prevTCD = nullptr;
 
+    // Print Status
+    {
+        stringstream msg;
+        msg << "[ttkOverlapTracking] Initialized "<<endl;
+        dMsg(cout, msg.str(), timeMsg);
+    }
+
     return 0;
 }
 
@@ -58,7 +65,7 @@ int ttk::OverlapTracking::processTimestep(
     // Print Status
     {
         stringstream msg;
-        msg << "[ttkOverlapTracking] Initializing nodes ... "<<flush;
+        msg << "[ttkOverlapTracking] Creating nodes ... "<<flush;
         dMsg(cout, msg.str(), timeMsg);
     }
 
@@ -84,7 +91,7 @@ int ttk::OverlapTracking::processTimestep(
         auto tTemp = t.getElapsedTime();
         stringstream msg;
         msg << "done ("<<(tTemp-tD)<<" s)."<<endl
-            << "[ttkOverlapTracking] Sorting nodes ... "<<flush;
+            << "[ttkOverlapTracking] Sorting  nodes ... "<<flush;
         tD = tTemp;
         dMsg(cout, msg.str(), timeMsg);
     }
@@ -148,7 +155,7 @@ int ttk::OverlapTracking::processTimestep(
         // Print Status
         {
             stringstream msg;
-            msg << "[ttkOverlapTracking] Tracking ... "<<flush;
+            msg << "[ttkOverlapTracking] Tracking       ... "<<flush;
             dMsg(cout, msg.str(), timeMsg);
         }
         TrackingComputationData* prevTCD = this->prevTCD;

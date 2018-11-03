@@ -1,39 +1,34 @@
 /// \ingroup vtk
-/// \class ttkOverlapTracking
+/// \class ttkForEachRow
 /// \author Jonas Lukasczyk <jl@jluk.de>
-/// \date 01.09.2018
+/// \date 01.11.2018
 ///
-/// \brief TTK VTK-filter that TODO
+/// \brief TTK VTK-filter that iterates over rows of a vtkTable
 ///
-/// This filter TODO
+/// This filter works together with the ttkEndFor filter to iterate over rows of a vtkTable
 ///
-/// VTK wrapping code for the @OverlapTracking package.
-///
-/// \param Input TODO
-/// \param Output TODO
-///
-/// sa ttk::OverlapTracking
+/// \param Input vtkTable table that will be iterated over
+/// \param Output vtkTable table that contains only one row of the input
 
 #pragma once
 
 // VTK includes
-#include <vtkTableAlgorithm.h>
-#include <vtkInformation.h>
+#include <vtkMultiBlockDataSetAlgorithm.h>
 
 // TTK includes
-#include <OverlapTracking.h>
 #include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkOverlapTracking
+class VTKFILTERSCORE_EXPORT ttkForEachRow
 #else
-class ttkOverlapTracking
+class ttkForEachRow
 #endif
-: public vtkTableAlgorithm, public ttk::Wrapper{
+: public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
 
     public:
-        static ttkOverlapTracking* New();
-        vtkTypeMacro(ttkOverlapTracking, vtkTableAlgorithm)
+
+        static ttkForEachRow* New();
+        vtkTypeMacro(ttkForEachRow, vtkMultiBlockDataSetAlgorithm)
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -53,37 +48,33 @@ class ttkOverlapTracking
 
         int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
             return 1;
         }
 
     protected:
 
-        ttkOverlapTracking(){
+        ttkForEachRow(){
             UseAllCores = false;
 
             SetNumberOfInputPorts(1);
             SetNumberOfOutputPorts(1);
         }
-        ~ttkOverlapTracking(){};
+        ~ttkForEachRow(){};
 
         bool UseAllCores;
         int ThreadNumber;
 
+        int RequestInformation(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
-        int processTimestep(vtkDataObject* dataObject);
-        int finalize(vtkUnstructuredGrid* trackingGraph);
-
     private:
-
-        ttk::OverlapTracking overlapTracking;
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

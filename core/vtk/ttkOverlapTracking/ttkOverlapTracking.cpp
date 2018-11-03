@@ -22,17 +22,13 @@ int ttkOverlapTracking::processTimestep(vtkDataObject* dataObject){
 
     auto block = vtkPointSet::SafeDownCast( dataObject );
     if(block==nullptr){
-        stringstream msg;
-        msg << "[ttkOverlapTracking] ERROR: Input data can not be converted to vtkPointSet" << endl;
-        dMsg(cerr, msg.str(), memoryMsg);
+        dMsg(cerr, "[ttkOverlapTracking] ERROR: Input data can not be converted to vtkPointSet\n", memoryMsg);
         return 0;
     }
 
     auto labels = block->GetPointData()->GetAbstractArray("RegionId");
     if(labels==nullptr){
-        stringstream msg;
-        msg<<"[ttkOverlapTracking] ERROR: No label point data found"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, "[ttkOverlapTracking] ERROR: No label point data found\n", timeMsg);
         return 0;
     }
 
@@ -41,6 +37,7 @@ int ttkOverlapTracking::processTimestep(vtkDataObject* dataObject){
         (labelType*) block->GetPointData()->GetAbstractArray("RegionId")->GetVoidPointer(0),
         block->GetNumberOfPoints()
     );
+
     return 1;
 }
 
@@ -106,40 +103,6 @@ int ttkOverlapTracking::finalize(vtkUnstructuredGrid* trackingGraph){
 
     trackingGraph->ShallowCopy( mesh );
 
-    this->overlapTracking.reset();
-
-    return 1;
-}
-
-int ttkOverlapTracking::RequestInformation(
-    vtkInformation* request,
-    vtkInformationVector** inputVector,
-    vtkInformationVector* outputVector
-){
-    // vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-    cout<<"[ttkOverlapTracking] RequestInformation"<<endl;
-    this->currentIndex = 0;
-    return this->Superclass::RequestInformation(request, inputVector, outputVector);
-}
-
-int ttkOverlapTracking::RequestUpdateExtentInformation(
-    vtkInformation* request,
-    vtkInformationVector** inputVector,
-    vtkInformationVector* outputVector
-){
-    cout<<"[ttkOverlapTracking] RequestUpdateExtentInformation"<<endl;
-    return 1;
-}
-
-int ttkOverlapTracking::RequestUpdateExtent(
-    vtkInformation* request,
-    vtkInformationVector** inputVector,
-    vtkInformationVector* outputVector
-){
-    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-    cout<<"[ttkOverlapTracking] RequestUpdateExtent: "<<this->currentIndex<<endl;
-    inInfo->Set( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(), this->currentIndex);
-
     return 1;
 }
 
@@ -151,51 +114,47 @@ int ttkOverlapTracking::RequestData(
     // Print Status
     {
         stringstream msg;
-        msg<<"-------------------------------------------------------------"<<endl;
-        msg<<"[ttkOverlapTracking] RequestData"<<endl;
+        msg << "================================================================================" << endl
+            << "[ttkOverlapTracking] RequestData" << endl;
         dMsg(cout, msg.str(), timeMsg);
     }
-
-    Memory m;
 
     // Get Input Object
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
     vtkMultiBlockDataSet* inMB = vtkMultiBlockDataSet::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-    // Get Output Graph
-    vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    vtkUnstructuredGrid* trackingGraph = vtkUnstructuredGrid::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    double i = inInfo->Get( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP() );
+    double n = inMB->GetInformation()->Get( vtkDataObject::DATA_TIME_STEP() );
 
-    // Process input based on mode
-    auto nBlocks = inMB->GetNumberOfBlocks();
-    if(nBlocks>1) { // Process all blocks without streaming
+    // First Timestep
+    if(i==0){
         this->overlapTracking.reset();
-        for(size_t i=0; i<nBlocks; i++){
-            int status = this->processTimestep( inMB->GetBlock(i) );
-            if(status==0) return 0;
-        }
-        this->finalize( trackingGraph );
-    } else if(nBlocks==1) {
-        // Process streamed element
-        int status = this->processTimestep( inMB->GetBlock(0) );
-        if(status==0) return 0;
-
-        this->currentIndex++;
-        request->Set(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING(), 1);
-        request->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES(), 1);
-    } else {
-        // Streaming complete
-        this->finalize( trackingGraph );
-        request->Remove(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING());
     }
 
-    // Output Performance
-    {
-        stringstream msg;
-        msg << "[ttkOverlapTracking] Memory usage: "
-            << m.getElapsedUsage()
-            << " MB." << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+    size_t nBlocks = inMB->GetNumberOfBlocks();
+
+    // Process Timestep(s)
+    for(size_t i=0; i<nBlocks; i++){
+        int status = this->processTimestep( inMB->GetBlock(i) );
+        if(status==0) return 0;
+        if(nBlocks>1)
+            dMsg(cout, "[ttkOverlapTracking] -----------------------------------------------------------\n", timeMsg);
+    }
+
+    // Last Timestep
+    if(i==n-1 || nBlocks>1){
+        if(nBlocks<2)
+            dMsg(cout, "[ttkOverlapTracking] -----------------------------------------------------------\n", timeMsg);
+
+        // Get Output
+        vtkInformation* outInfo = outputVector->GetInformationObject(0);
+        auto trackingGraph = vtkUnstructuredGrid::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
+
+        // Create Tracking Graph
+        this->finalize( trackingGraph );
+
+        // Print Status
+        dMsg(cout, "[ttkOverlapTracking] Tracking Graph Finalized\n", timeMsg);
     }
 
     return 1;

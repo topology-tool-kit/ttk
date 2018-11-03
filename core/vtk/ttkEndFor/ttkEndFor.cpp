@@ -1,0 +1,85 @@
+#include <ttkEndFor.h>
+
+#include <vtkMultiBlockDataSet.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
+
+using namespace std;
+using namespace ttk;
+
+vtkStandardNewMacro(ttkEndFor)
+
+int ttkEndFor::RequestInformation(
+    vtkInformation* request,
+    vtkInformationVector** inputVector,
+    vtkInformationVector* outputVector
+){
+    // Reset index
+    this->nextIndex = 0;
+    return this->Superclass::RequestInformation(request, inputVector, outputVector);
+}
+
+int ttkEndFor::RequestUpdateExtent(
+    vtkInformation* request,
+    vtkInformationVector** inputVector,
+    vtkInformationVector* outputVector
+){
+    // Print status
+    stringstream msg;
+    msg << "[ttkEndFor] Next Iteration: "<< this->nextIndex << endl;
+    dMsg(cout, msg.str(), timeMsg);
+
+    // Request next index
+    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+    inInfo->Set( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(), this->nextIndex);
+
+    return 1;
+}
+
+int ttkEndFor::RequestData(
+    vtkInformation* request,
+    vtkInformationVector** inputVector,
+    vtkInformationVector* outputVector
+){
+    // Print status
+    {
+        stringstream msg;
+        msg<<"================================================================================"<<endl;
+        dMsg(cout, msg.str(), timeMsg);
+    }
+
+    // Get Input
+    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+    auto input = inInfo->Get( vtkDataObject::DATA_OBJECT() );
+
+    // Get iteration information
+    double i = inInfo->Get( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP() );
+    double n = input->GetInformation()->Get( vtkDataObject::DATA_TIME_STEP() );
+
+    this->nextIndex = i+1;
+
+    if(this->nextIndex<n){
+        // Request Next Element
+        request->Set( vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING(), 1 );
+    } else {
+        // Stop iterations
+        request->Remove( vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING() );
+
+        // Print status
+        {
+            stringstream msg;
+            msg << "[ttkEndFor] Iteration complete" << endl;
+            dMsg(cout, msg.str(), timeMsg);
+        }
+
+        // Copy input to output
+        vtkInformation* outInfo = outputVector->GetInformationObject(0);
+        auto output = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+
+        if(input->IsA("vtkMultiBlockDataSet"))
+            output->ShallowCopy(input);
+        else
+            output->SetBlock(0, input);
+    }
+
+    return 1;
+}
