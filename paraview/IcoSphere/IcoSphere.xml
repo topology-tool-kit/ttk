@@ -41,6 +41,10 @@
                 <Property name="ThreadNumber" />
                 <Property name="DebugLevel" />
             </PropertyGroup>
+
+            <Hints>
+                <RepresentationType view="RenderView" type="Wireframe" />
+            </Hints>
         </SourceProxy>
     </ProxyGroup>
 </ServerManagerConfiguration>
