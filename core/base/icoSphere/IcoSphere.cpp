@@ -87,10 +87,10 @@ TriangleList subdivide(VertexList& vertices, TriangleList& triangles) {
             get<0>(each)
         );
 
-        results.push_back({get<0>(each), mid[0], mid[2]});
-        results.push_back({get<1>(each), mid[1], mid[0]});
-        results.push_back({get<2>(each), mid[2], mid[1]});
-        results.push_back({mid[0], mid[1], mid[2]});
+        results.push_back( make_tuple(get<0>(each), mid[0], mid[2]) );
+        results.push_back( make_tuple(get<1>(each), mid[1], mid[0]) );
+        results.push_back( make_tuple(get<2>(each), mid[2], mid[1]) );
+        results.push_back( make_tuple(      mid[0], mid[1], mid[2]) );
     }
     return results;
 }
@@ -114,16 +114,16 @@ int ttk::IcoSphere::generate(
     const float N=0.f;
 
     vertices = {
-        {-X,N,Z}, {X,N,Z}, {-X,N,-Z}, {X,N,-Z},
-        {N,Z,X}, {N,Z,-X}, {N,-Z,X}, {N,-Z,-X},
-        {Z,X,N}, {-Z,X, N}, {Z,-X,N}, {-Z,-X, N}
+        make_tuple(-X,N,Z), make_tuple(X,N,Z), make_tuple(-X,N,-Z), make_tuple(X,N,-Z),
+        make_tuple(N,Z,X), make_tuple(N,Z,-X), make_tuple(N,-Z,X), make_tuple(N,-Z,-X),
+        make_tuple(Z,X,N), make_tuple(-Z,X, N), make_tuple(Z,-X,N), make_tuple(-Z,-X, N)
     };
 
     triangles = {
-        {0,4,1},{0,9,4},{9,5,4},{4,5,8},{4,8,1},
-        {8,10,1},{8,3,10},{5,3,8},{5,2,3},{2,7,3},
-        {7,10,3},{7,6,10},{7,11,6},{11,0,6},{0,1,6},
-        {6,1,10},{9,0,11},{9,11,2},{9,2,5},{7,2,11}
+        make_tuple(0,4,1),make_tuple(0,9,4),make_tuple(9,5,4),make_tuple(4,5,8),make_tuple(4,8,1),
+        make_tuple(8,10,1),make_tuple(8,3,10),make_tuple(5,3,8),make_tuple(5,2,3),make_tuple(2,7,3),
+        make_tuple(7,10,3),make_tuple(7,6,10),make_tuple(7,11,6),make_tuple(11,0,6),make_tuple(0,1,6),
+        make_tuple(6,1,10),make_tuple(9,0,11),make_tuple(9,11,2),make_tuple(9,2,5),make_tuple(7,2,11)
     };
 
     for(size_t i=0; i<subdivisions; i++)
