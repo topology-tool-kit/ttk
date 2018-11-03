@@ -35,6 +35,9 @@ class ttkOverlapTracking
         static ttkOverlapTracking* New();
         vtkTypeMacro(ttkOverlapTracking, vtkTableAlgorithm)
 
+        vtkSetMacro(LabelScalarField, string);
+        vtkGetMacro(LabelScalarField, string);
+
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
         void SetThreads(){
@@ -75,6 +78,8 @@ class ttkOverlapTracking
 
         bool UseAllCores;
         int ThreadNumber;
+
+        string LabelScalarField;
 
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 

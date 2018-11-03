@@ -20,22 +20,22 @@ vtkStandardNewMacro(ttkOverlapTracking)
 
 int ttkOverlapTracking::processTimestep(vtkDataObject* dataObject){
 
-    auto block = vtkPointSet::SafeDownCast( dataObject );
-    if(block==nullptr){
+    auto pointSet = vtkPointSet::SafeDownCast( dataObject );
+    if(pointSet==nullptr){
         dMsg(cerr, "[ttkOverlapTracking] ERROR: Input data can not be converted to vtkPointSet\n", memoryMsg);
         return 0;
     }
 
-    auto labels = block->GetPointData()->GetAbstractArray("RegionId");
+    auto labels = pointSet->GetPointData()->GetAbstractArray( this->GetLabelScalarField().data() );
     if(labels==nullptr){
-        dMsg(cout, "[ttkOverlapTracking] ERROR: No label point data found\n", timeMsg);
+        dMsg(cout, "[ttkOverlapTracking] ERROR: Point labels not found\n", timeMsg);
         return 0;
     }
 
     this->overlapTracking.processTimestep(
-        (float*) block->GetPoints()->GetVoidPointer(0),
-        (labelType*) block->GetPointData()->GetAbstractArray("RegionId")->GetVoidPointer(0),
-        block->GetNumberOfPoints()
+        (float*) pointSet->GetPoints()->GetVoidPointer(0),
+        (labelType*) labels->GetVoidPointer(0),
+        pointSet->GetNumberOfPoints()
     );
 
     return 1;
@@ -45,20 +45,50 @@ int ttkOverlapTracking::finalize(vtkUnstructuredGrid* trackingGraph){
     auto& timeNodeLabelMap = this->overlapTracking.getTimeNodeLabelMap();
     auto& timeEdgesMap = this->overlapTracking.getTimeEdgesMap();
     size_t tn = timeNodeLabelMap.size();
-    vtkSmartPointer<vtkUnstructuredGrid> mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    auto mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
     // Point Data
     {
-        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+        size_t n = 0;
+        for(size_t t=0; t<tn; t++)
+            n += timeNodeLabelMap[t].size();
 
+        auto points = vtkSmartPointer<vtkPoints>::New();
+        points->SetNumberOfPoints( n );
+        auto pointCoords = (float*) points->GetVoidPointer(0);
+
+        vtkSmartPointer<vtkDoubleArray> time = vtkSmartPointer<vtkDoubleArray>::New();
+        time->SetNumberOfComponents(1);
+        time->SetName("Time");
+        time->SetNumberOfValues(n);
+        auto timeData = (double*) time->GetVoidPointer(0);
+
+        vtkSmartPointer<vtkIdTypeArray> label = vtkSmartPointer<vtkIdTypeArray>::New();
+        label->SetNumberOfComponents(1);
+        label->SetName("RegionId");
+        label->SetNumberOfValues(n);
+        auto labelData = (long long*) label->GetVoidPointer(0);
+
+        size_t q=0;
+        size_t q2=0;
         for(size_t t=0; t<tn; t++){
             auto& nodes = timeNodeLabelMap[t];
             for(size_t i=0; i<nodes.size(); i++){
-                points->InsertNextPoint( t, i, 0 );
+                pointCoords[q++] = t;
+                pointCoords[q++] = i;
+                pointCoords[q++] = 0;
+
+                timeData[q2] = t;
+                labelData[q2] = nodes[i];
+                q2++;
             }
         }
 
         mesh->SetPoints(points);
+
+        auto pointData = mesh->GetPointData();
+        pointData->AddArray( time );
+        pointData->AddArray( label );
     }
 
     // Cell Data
@@ -66,14 +96,6 @@ int ttkOverlapTracking::finalize(vtkUnstructuredGrid* trackingGraph){
         vtkSmartPointer<vtkUnsignedLongLongArray> overlap = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
         overlap->SetNumberOfComponents(1);
         overlap->SetName("Overlap");
-
-        vtkSmartPointer<vtkIdTypeArray> r0 = vtkSmartPointer<vtkIdTypeArray>::New();
-        r0->SetNumberOfComponents(1);
-        r0->SetName("RegionId_t");
-
-        vtkSmartPointer<vtkIdTypeArray> r1 = vtkSmartPointer<vtkIdTypeArray>::New();
-        r1->SetNumberOfComponents(1);
-        r1->SetName("RegionId_t+1");
 
         vector<size_t> offset(tn);
         offset[0] = 0;
@@ -90,14 +112,10 @@ int ttkOverlapTracking::finalize(vtkUnstructuredGrid* trackingGraph){
             for(auto& e: edges){
                 vtkIdType ids[2] = { (vtkIdType)(e.i+offset[t]), (vtkIdType)(e.j+offset[t+1]) };
                 mesh->InsertNextCell(VTK_LINE, 2, ids);
-                r0->InsertNextValue( timeNodeLabelMap[t  ][e.i] );
-                r1->InsertNextValue( timeNodeLabelMap[t+1][e.j] );
                 overlap->InsertNextValue( e.overlap );
             }
         }
         auto cellData = mesh->GetCellData();
-        cellData->AddArray( r0 );
-        cellData->AddArray( r1 );
         cellData->AddArray( overlap );
     }
 
@@ -139,6 +157,7 @@ int ttkOverlapTracking::RequestData(
         if(status==0) return 0;
         if(nBlocks>1)
             dMsg(cout, "[ttkOverlapTracking] -----------------------------------------------------------\n", timeMsg);
+        this->updateProgress( ((float)i)/((float)(nBlocks-1)) );
     }
 
     // Last Timestep
