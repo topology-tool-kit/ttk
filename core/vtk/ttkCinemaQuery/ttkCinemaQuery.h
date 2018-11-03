@@ -80,12 +80,13 @@ class ttkCinemaQuery
         bool UseAllCores;
         int ThreadNumber;
 
+        std::string      QueryString;
+        ttk::CinemaQuery cinemaQuery;
+
         int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 
     private:
 
-        std::string      QueryString;
-        ttk::CinemaQuery cinemaQuery;
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

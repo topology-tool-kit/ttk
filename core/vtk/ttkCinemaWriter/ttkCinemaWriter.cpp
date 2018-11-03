@@ -32,61 +32,63 @@ int ttkCinemaWriter::RequestData (
     // Print Status
     {
         stringstream msg;
-        msg<<"-------------------------------------------------------------"<<endl;
+        msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaWriter] RequestData"<<endl;
-        msg<<"[ttkCinemaWriter] Database Path: "<<this->DatabasePath<<endl;
-        msg<<"[ttkCinemaWriter] Override     : "<<(this->OverrideDatabase?"yes":"no")<<endl;
+        msg<<"[ttkCinemaWriter]     Path: "<<this->DatabasePath<<endl;
+        msg<<"[ttkCinemaWriter] Override: "<<(this->OverrideDatabase?"yes":"no")<<endl;
+        msg<<"[ttkCinemaWriter] --------------------------------------------------------------"<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 
     // Copy Input to Output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
     auto input = inInfo->Get(vtkDataObject::DATA_OBJECT());
-    vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    auto outputMBD = vtkMultiBlockDataSet::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
+
+    auto inputIsAlreadyMB = input->IsA("vtkMultiBlockDataSet");
+    auto inputMB = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
     // If input is vtkMultiBlockDataSet then copy, otherwise add as single block
-    if(input->IsA("vtkMultiBlockDataSet")){
-        outputMBD->ShallowCopy( input );
-    } else {
-        outputMBD->SetBlock(0, input);
-    }
+    if(inputIsAlreadyMB)
+        inputMB->ShallowCopy( input );
+    else
+        inputMB->SetBlock(0, input);
 
-    // Check if Database exists
-    if(this->DatabasePath.compare("")==0 ){
-        stringstream msg;
-        msg<<"[ttkCinemaWriter] ERROR: Invalid database path"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+    // Check if database path exists and if it has the correct extension
+    string extension = this->DatabasePath.substr(this->DatabasePath.length()-4,4);
+    if( extension.compare(".cdb")!=0 ){
+        dMsg(cout, "[ttkCinemaWriter] ERROR: Invalid database path\n", timeMsg);
         return 0;
     }
 
     // Initialize path variables
-    string dataPrefix = "data/";
-    string pathPrefix = this->DatabasePath+"/" + dataPrefix;
-    string pathSuffix = ".vtm";
-
-    // Create directory if does not already exist
-    {
-        vtkSmartPointer<vtkDirectory> directory = vtkSmartPointer<vtkDirectory>::New();
-        int opened = directory->Open( this->DatabasePath.data() );
-        if(!opened)
-            directory->MakeDirectory( this->DatabasePath.data() );
-    }
+    string dataPrefix  = "data/";
+    string pathPrefix  = this->DatabasePath+"/" + dataPrefix;
+    string dataCsvPath = this->DatabasePath+"/data.csv";
+    string pathSuffix  = ".vtm";
 
     // If OverrideDatabase then delete old data products
     if( this->OverrideDatabase ){
-        vtkSmartPointer<vtkDirectory> directory = vtkSmartPointer<vtkDirectory>::New();
-        int opened = directory->Open( pathPrefix.data() );
-        if(opened){
-            int status = directory->DeleteDirectory( pathPrefix.data() );
-
+        {
             stringstream msg;
-            if(status==0)
-                msg<<"[ttkCinemaWriter] ERROR: Unable to delete existing data products"<<endl;
-            else
-                msg<<"[ttkCinemaWriter] Old data products deleted"<<endl;
+            msg << "[ttkCinemaWriter] -> Deleting old data products        ... " << flush;
             dMsg(cout, msg.str(), timeMsg);
         }
+
+        remove( dataCsvPath.data() );
+
+        auto directory = vtkSmartPointer<vtkDirectory>::New();
+        if( directory->Open(pathPrefix.data()) && directory->DeleteDirectory(pathPrefix.data())==0 )
+            dMsg(cout, "Failed\n[ttkCinemaWriter] ERROR: Unable to delete existing data products\n", timeMsg);
+        else
+            dMsg(cout, "Done\n", timeMsg);
+    }
+
+    // Create directory if does not already exist
+    {
+        auto directory = vtkSmartPointer<vtkDirectory>::New();
+        int opened = directory->Open( this->DatabasePath.data() );
+        if(!opened)
+            directory->MakeDirectory( this->DatabasePath.data() );
     }
 
     // Determine unique path to new products (for now just generate random number)
@@ -103,41 +105,52 @@ int ttkCinemaWriter::RequestData (
     // Write input to disk
     {
         stringstream msg;
-        msg<<"[ttkCinemaWriter] Writing new data products to disk ... ";
+        msg << "[ttkCinemaWriter] -> Writing new data products to disk ... " << flush;
         dMsg(cout, msg.str(), timeMsg);
     }
-
-    vtkSmartPointer<vtkXMLMultiBlockDataWriter> mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
+    auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
     mbWriter->SetFileName( path.data() );
     mbWriter->SetDataModeToAppended();
     mbWriter->SetCompressorTypeToZLib();
     vtkZLibDataCompressor::SafeDownCast( mbWriter->GetCompressor() )->SetCompressionLevel(9);
-    mbWriter->SetInputData( outputMBD );
+    mbWriter->SetInputData( inputMB );
     mbWriter->Write();
-    {
-        stringstream msg;
-        msg<<"Done"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
-    }
 
-    string dataCsvPath = this->DatabasePath+"/data.csv";
+    dMsg(cout, "Done\n", timeMsg);
 
     // Create data.csv file if does not already exist
     if( stat( dataCsvPath.data(), &info ) != 0 ){
-        string csv = "FILE\n";
-        ofstream csvFile;
-        csvFile.open( dataCsvPath.data() );
-        csvFile << csv;
-        csvFile.close();
+        vtkDataObject* firstBlock = inputMB->GetBlock(0);
+
+        if(firstBlock!=nullptr){
+            // Open file
+            ofstream csvFile;
+            csvFile.open( dataCsvPath.data() );
+
+            // Get column names
+            auto fieldData = firstBlock->GetFieldData();
+            size_t n = fieldData->GetNumberOfArrays();
+            for(size_t i=0; i<n; i++){
+                auto array = fieldData->GetAbstractArray(i);
+                string name = array->GetName();
+                if(array->GetNumberOfValues()==1 && name.compare("FILE")!=0)
+                    csvFile << name <<",";
+            }
+            csvFile<<"FILE\n";
+
+            // Close file
+            csvFile.close();
+        }
     }
 
     // Update data.csv file
     {
         stringstream msg;
-        msg<<"[ttkCinemaWriter] Updating data.csv file ... "<<endl;
+        msg << "[ttkCinemaWriter] -> Updating data.csv file            ... " << flush;
         dMsg(cout, msg.str(), timeMsg);
     }
-    vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+
+    auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
     reader->SetFileName( dataCsvPath.data() );
     reader->DetectNumericColumnsOff();
     reader->SetHaveHeaders(true);
@@ -145,7 +158,7 @@ int ttkCinemaWriter::RequestData (
     reader->Update();
     auto table = vtkTable::SafeDownCast( reader->GetOutput() );
 
-    int n = outputMBD->GetNumberOfBlocks();
+    int n = inputMB->GetNumberOfBlocks();
     int offset = this->OverrideDatabase ? 0 : table->GetNumberOfRows();
     if(this->OverrideDatabase)
         table->SetNumberOfRows(n);
@@ -154,7 +167,7 @@ int ttkCinemaWriter::RequestData (
             table->InsertNextBlankRow();
 
     for(int i=0; i<n; i++){
-        auto block = outputMBD->GetBlock(i);
+        auto block = inputMB->GetBlock(i);
         string blockExtension = "vtk";
         #if VTK_MAJOR_VERSION <= 7
             stringstream msg;
@@ -168,37 +181,34 @@ int ttkCinemaWriter::RequestData (
             blockExtension = this->GetDefaultFileExtensionForDataSet( block->GetDataObjectType() );
         #endif
 
-        // auto fieldData = block->GetFieldData();
+        auto fieldData = block->GetFieldData();
+
         for(int j=0; j<table->GetNumberOfColumns(); j++){
             auto columnName = table->GetColumnName(j);
-            // auto columnFD = fieldData->GetAbstractArray(columnName);
             auto columnCSV = vtkStringArray::SafeDownCast( table->GetColumn(j) );
-            if(string(columnName).compare("FILE")==0){
+            if(string(columnName).compare("FILE")==0)
                 columnCSV->SetValue(offset+i, vtkStdString( dataPrefix+id+"/"+id+"_"+to_string(i)+"."+blockExtension ));
-            // TODO store field data in CSV
-            // } else if(columnFD!=nullptr){
-            //     columnCSV->SetValue(offset+i, columnFD->GetVariantValue(0).ToString());
-            } else {
-                columnCSV->SetValue(offset+i, "");
+            else {
+                auto array = fieldData->GetAbstractArray( columnName );
+                string value = array->GetVariantValue(0).ToString();
+                columnCSV->SetValue(offset+i, value);
             }
         }
     }
 
     // Write data.csv file
-    vtkSmartPointer<vtkDelimitedTextWriter> csvWriter = vtkSmartPointer<vtkDelimitedTextWriter>::New();
+    auto csvWriter = vtkSmartPointer<vtkDelimitedTextWriter>::New();
     csvWriter->SetUseStringDelimiter(false);
     csvWriter->SetFileName( (this->DatabasePath+"/data.csv").data() );
     csvWriter->SetInputData( table );
     csvWriter->Write();
-    {
-        stringstream msg;
-        msg<<"Done"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
-    }
+
+    dMsg(cout, "Done\n", timeMsg);
 
     // Output Performance
     {
         stringstream msg;
+        msg << "[ttkCinemaWriter] --------------------------------------------------------------"<<endl;
         msg << "[ttkCinemaWriter]   time: " << t.getElapsedTime() << " s." << endl;
         msg << "[ttkCinemaWriter] memory: " << m.getElapsedUsage() << " MB." << endl;
         dMsg(cout, msg.str(), memoryMsg);

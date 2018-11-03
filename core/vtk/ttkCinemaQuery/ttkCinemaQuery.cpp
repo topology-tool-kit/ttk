@@ -31,11 +31,11 @@ int ttkCinemaQuery::RequestData(
 
     // Get Input Table
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-    vtkTable* inTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    auto inTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     // Get Output Table
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    vtkTable* outTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    auto outTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     // Convert Input Table to SQL Table
     {
@@ -86,7 +86,7 @@ int ttkCinemaQuery::RequestData(
                 dMsg(cout, msg.str(), memoryMsg);
                 return 0;
             #else
-                vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+                auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
                 reader->SetReadFromInputString( true );
                 reader->SetInputString( result );
                 reader->DetectNumericColumnsOn();
@@ -97,12 +97,12 @@ int ttkCinemaQuery::RequestData(
                 outTable->ShallowCopy( reader->GetOutput() );
             #endif
         } else {
-            vtkSmartPointer<vtkTable> emptyTable = vtkSmartPointer<vtkTable>::New();
+            auto emptyTable = vtkSmartPointer<vtkTable>::New();
 
             int nc = inTable->GetNumberOfColumns();
             for(int i=0; i<nc; i++){
                 auto c = inTable->GetColumn(i);
-                vtkSmartPointer<vtkStringArray> emptyColumn = vtkSmartPointer<vtkStringArray>::New();
+                auto emptyColumn = vtkSmartPointer<vtkStringArray>::New();
                 emptyColumn->SetNumberOfValues(1);
                 emptyColumn->SetValue(0,"NULL");
                 emptyColumn->SetName( c->GetName() );

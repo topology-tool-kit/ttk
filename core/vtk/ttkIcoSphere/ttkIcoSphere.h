@@ -1,37 +1,44 @@
 /// \ingroup vtk
-/// \class ttkComponentStatistics
-/// \author Jonas Lukasczyk <jl@jluk.de>
-/// \date 01.09.2018
+/// \class ttkIcoSphere
+/// \author Jonas Lukasczyk (jl@jluk.de)
+/// \date 01.10.2018
 ///
-/// \brief TTK VTK-filter that reads a Cinema Spec D Database
+/// \brief TTK VTK-filter that generates an Icosphere.
 ///
-/// \param Output content of the data.csv file of the database in form of a vtkTable
+/// VTK wrapping code for the @IcoSphere package.
 ///
-/// This filter can be used as any other VTK filter (for instance, by using the
-/// sequence of calls SetInputData(), Update(), GetOutput()).
-///
-/// \sa ttk::ComponentStatistics
+/// \sa ttk::IcoSphere
+
 #pragma once
 
 // VTK includes
-#include <vtkTableAlgorithm.h>
+#include <vtkUnstructuredGridAlgorithm.h>
 #include <vtkInformation.h>
-#include <vtkTable.h>
 
 // TTK includes
+#include <IcoSphere.h>
 #include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkComponentStatistics
+class VTKFILTERSCORE_EXPORT ttkIcoSphere
 #else
-class ttkComponentStatistics
+class ttkIcoSphere
 #endif
-: public vtkTableAlgorithm, public ttk::Wrapper{
+: public vtkUnstructuredGridAlgorithm, public ttk::Wrapper{
 
     public:
 
-        static ttkComponentStatistics* New();
-        vtkTypeMacro(ttkComponentStatistics, vtkTableAlgorithm)
+        static ttkIcoSphere* New();
+        vtkTypeMacro(ttkIcoSphere, vtkUnstructuredGridAlgorithm)
+
+        vtkSetMacro(Subdivisions, int);
+        vtkGetMacro(Subdivisions, int);
+
+        vtkSetVector3Macro(Center, float);
+        vtkGetVector3Macro(Center, float);
+
+        vtkSetMacro(Radius, float);
+        vtkGetMacro(Radius, float);
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -50,34 +57,41 @@ class ttkComponentStatistics
         // end of default ttk setters
 
         int FillInputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation *info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
             return 1;
         }
 
     protected:
 
-        ttkComponentStatistics(){
-            UseAllCores = true;
-            ThreadNumber = 1;
+        ttkIcoSphere(){
+            SetSubdivisions( 0 );
+            float center[3] = {0,0,0};
+            SetCenter( center );
+            SetRadius( 1 );
 
-            SetNumberOfInputPorts(1);
+            UseAllCores = false;
+            SetNumberOfInputPorts(0);
             SetNumberOfOutputPorts(1);
         }
-        ~ttkComponentStatistics(){};
+        ~ttkIcoSphere(){};
 
         bool UseAllCores;
         int ThreadNumber;
 
+        int Subdivisions;
+        float Center[3];
+        float Radius;
+
         int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 
     private:
+
+        ttk::IcoSphere icoSphere_;
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

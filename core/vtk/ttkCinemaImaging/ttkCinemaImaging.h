@@ -100,14 +100,14 @@ class ttkCinemaImaging
         bool UseAllCores;
         int ThreadNumber;
 
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
-
-    private:
-
         int Resolution[2];
         double CamNearFar[2];
         double CamFocus[3];
         double CamHeight;
+
+        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+
+    private:
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

@@ -20,11 +20,13 @@
 #include <vtkRenderWindow.h>
 
 // Value Pass Dependencies
-#include <vtkValuePass.h>
-#include <vtkRenderPassCollection.h>
-#include <vtkCameraPass.h>
-#include <vtkSequencePass.h>
-#include <vtkOpenGLRenderer.h>
+#if VTK_MAJOR_VERSION >= 7
+    #include <vtkValuePass.h>
+    #include <vtkRenderPassCollection.h>
+    #include <vtkCameraPass.h>
+    #include <vtkSequencePass.h>
+    #include <vtkOpenGLRenderer.h>
+#endif
 
 using namespace std;
 using namespace ttk;
@@ -107,6 +109,7 @@ int ttkCinemaImaging::RequestData(
     // -------------------------------------------------------------------------
     // Initialize Value Renderer and Components
     // -------------------------------------------------------------------------
+    #if VTK_MAJOR_VERSION >= 7
 
     // Mapper
     auto mapper1 = vtkSmartPointer<vtkCompositePolyDataMapper2>::New();
@@ -191,10 +194,20 @@ int ttkCinemaImaging::RequestData(
         }
     }
     bool renderValuePasses = valuePassList.size()>0;
+    // Render for the first time to initialize everything
+    if(renderValuePasses) renderWindow1->Render();
+
+    #else
+    {
+        stringstream msg;
+        msg<<"[ttkCinemaImaging] ERROR: VTK version too old." << endl;
+        msg<<"[ttkCinemaImaging]        Support for Value Images requires VTK 7.0 or higher" << endl;
+        dMsg(cout, msg.str(), timeMsg);
+    }
+    #endif
 
     // Render for the first time to initialize everything
     renderWindow0->Render();
-    if(renderValuePasses) renderWindow1->Render();
 
     // Print Status
     {
@@ -299,6 +312,7 @@ int ttkCinemaImaging::RequestData(
         }
 
         // Add Point Data
+        #if VTK_MAJOR_VERSION >= 7
         if(renderValuePasses){
 
             // Render Value Passes
@@ -306,12 +320,13 @@ int ttkCinemaImaging::RequestData(
 
             auto outputImagePD = outputImage->GetPointData();
             for(auto& passData: valuePassList){
-                vtkSmartPointer<vtkFloatArray> data = vtkSmartPointer<vtkFloatArray>::New();
+                auto data = vtkSmartPointer<vtkFloatArray>::New();
                 data->DeepCopy( passData.first->GetFloatImageDataArray( renderer1 ) );
                 data->SetName( passData.second.data() );
                 outputImagePD->AddArray( data );
             }
         }
+        #endif
 
         // Add Image to MultiBlock
         output->SetBlock(i, outputImage);

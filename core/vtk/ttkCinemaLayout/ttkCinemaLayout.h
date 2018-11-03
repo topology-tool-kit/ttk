@@ -1,37 +1,34 @@
 /// \ingroup vtk
-/// \class ttkImageMetrics
+/// \class ttkCinemaLayout
 /// \author Jonas Lukasczyk <jl@jluk.de>
-/// \date 01.10.2018
+/// \date 01.09.2018
 ///
-/// \brief TTK VTK-filter that computes image metrics for two lists of images.
+/// \brief TTK VTK-filter that writes input to disk.
 ///
-/// This filter takes two lists of images ("Images A" and "Images B") and computes for each pair a set of user defined image metrics.
+/// This filter stores the input as a VTK dataset to disk and updates the data.csv file of a Cinema Spec D database.
 ///
-/// VTK wrapping code for the @ImageMetrics package.
-///
-/// param Input ImagesA (vtkMultiBlockDataSet)
-/// param Input ImagesB (vtkMultiBlockDataSet)
-/// param Output metrics (vtkTable)
-///
-/// sa ttk::ImageMetrics
+/// \param Input vtkDataSet to be stored (vtkDataSet)
+
 #pragma once
 
-#include <vtkTableAlgorithm.h>
+// VTK includes
+#include <vtkXMLPMultiBlockDataWriter.h>
 #include <vtkInformation.h>
 
-#include <ImageMetrics.h>
+// TTK includes
 #include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkImageMetrics
+class VTKFILTERSCORE_EXPORT ttkCinemaLayout
 #else
-class ttkImageMetrics
+class ttkCinemaLayout
 #endif
-: public vtkTableAlgorithm, public ttk::Wrapper{
+: public vtkXMLPMultiBlockDataWriter, public ttk::Wrapper{
 
     public:
-        static ttkImageMetrics* New();
-        vtkTypeMacro(ttkImageMetrics, vtkTableAlgorithm)
+
+        static ttkCinemaLayout* New();
+        vtkTypeMacro(ttkCinemaLayout, vtkXMLPMultiBlockDataWriter)
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -50,28 +47,26 @@ class ttkImageMetrics
         // end of default ttk setters
 
         int FillInputPortInformation(int port, vtkInformation *info) override {
-            switch(port){
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");break;
-                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");break;
-            }
+            switch(port)
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation *info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
             return 1;
         }
 
     protected:
 
-        ttkImageMetrics(){
+        ttkCinemaLayout(){
             UseAllCores = false;
 
-            SetNumberOfInputPorts(2);
+            SetNumberOfInputPorts(1);
             SetNumberOfOutputPorts(1);
         }
-        ~ttkImageMetrics(){};
+        ~ttkCinemaLayout(){};
 
         bool UseAllCores;
         int ThreadNumber;
@@ -79,8 +74,6 @@ class ttkImageMetrics
         int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector);
 
     private:
-
-        ttk::ImageMetrics imageMetrics;
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

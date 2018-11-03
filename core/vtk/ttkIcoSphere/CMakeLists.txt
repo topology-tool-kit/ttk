@@ -1,0 +1,4 @@
+ttk_add_vtk_library(ttkIcoSphere
+	SOURCES ttkIcoSphere.cpp
+	HEADERS ttkIcoSphere.h
+	LINK icoSphere ttkTriangulation)

@@ -248,7 +248,7 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
     {
       std::stringstream msg;
       msg << "[ttkTrackingFromPersistenceDiagrams] Inputs are not persistence diagrams." << std::endl;
-      dMsg(cerr, msg.str(), fatalMsg);
+      dMsg(std::cerr, msg.str(), fatalMsg);
       return -1;
     }
 
@@ -258,7 +258,7 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
     {
       std::stringstream msg;
       msg << "[ttkTrackingFromPersistenceDiagrams] Inputs of different data types." << std::endl;
-      dMsg(cerr, msg.str(), fatalMsg);
+      dMsg(std::cerr, msg.str(), fatalMsg);
       return -3;
     }
   }
@@ -273,7 +273,7 @@ int ttkTrackingFromPersistenceDiagrams::doIt(
     {
       std::stringstream msg;
       msg << "[ttkTrackingFromPersistenceDiagrams] Inconsistent length or order of input diagrams." << std::endl;
-      dMsg(cerr, msg.str(), fatalMsg);
+      dMsg(std::cerr, msg.str(), fatalMsg);
       return -2;
     }
   }
