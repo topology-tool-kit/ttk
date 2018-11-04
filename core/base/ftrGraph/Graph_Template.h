@@ -2,11 +2,10 @@
 #define GRAPH_TEMPLATE_H
 
 #ifndef NDEBUG
-#define DEBUG(msg) std::cout msg
-// #define DEBUG(msg)
+#include<sstream>
+#define DEBUG(msg) {std::stringstream s; s << msg << std::endl; std::cout << s.str();}
 #else
 #define DEBUG(msg)
-// #define DEBUG(msg) std::cout msg
 #endif
 
 #include "Graph.h"
@@ -45,12 +44,12 @@ namespace ttk
                      upNodeId = getNodeId(getArc(arcId).getEnd());
                      if (upNodeId == nullNode) {
                         upNodeId = makeNode(getArc(arcId).getEnd());
-                     }                                          
-                     getArc(arcId).setUpNodeId(upNodeId);       
-                  } else {                                      
-                     getArc(arcId).hide();                      
-                     continue;                                  
-                  }                                             
+                     }
+                     getArc(arcId).setUpNodeId(upNodeId);
+                  } else {
+                     getArc(arcId).hide();
+                     continue;
+                  }
                }
                std::pair<idVertex, idVertex> arcVerts;
                if (getArc(arcId).isEmpty()) {
@@ -59,12 +58,11 @@ namespace ttk
                } else {
                   arcVerts = std::make_pair(getArc(arcId).getFirstReg(), getArc(arcId).getLastReg());
                }
-               if (std::get<0>(arcVerts) > std::get<1>(arcVerts)){
-                  arcVerts = std::make_pair(std::get<1>(arcVerts), std::get<0>(arcVerts));
-               }
-               if (masterArcs.count(arcVerts)) {
-                  getArc(arcId).merge(masterArcs[arcVerts]);
-                  DEBUG(<< "Merge " << printArc(arcId) << " in " << printArc(masterArcs[arcVerts]) << std::endl);
+               auto revertArcVerts = std::make_pair(std::get<1>(arcVerts), std::get<0>(arcVerts));
+               if (masterArcs.count(revertArcVerts)) {
+                  getArc(arcId).merge(masterArcs[revertArcVerts]);
+                  DEBUG("Merge " << printArc(arcId) << " in " << printArc(masterArcs[revertArcVerts]));
+                  DEBUG(" using " << std::get<0>(revertArcVerts) << " " << std::get<1>(revertArcVerts));
                } else {
                   masterArcs[arcVerts] = arcId;
                }
