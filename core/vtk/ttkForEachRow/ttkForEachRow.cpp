@@ -54,7 +54,7 @@ int ttkForEachRow::RequestData(
         auto column = inputTable->GetColumn(i);
         auto newColumn = vtkAbstractArray::CreateArray( column->GetDataType() );
         newColumn->SetName( column->GetName() );
-        newColumn->SetNumberOfValues( 1 );
+        newColumn->SetNumberOfTuples( 1 );
         newColumn->SetVariantValue(0, column->GetVariantValue( index ) );
         outputTable->AddColumn( newColumn );
     }
