@@ -68,13 +68,13 @@ struct ArcData : public ObjectData {
 #ifndef NDEBUG
    vtkSmartPointer<vtkUnsignedCharArray> fromUp;
 #endif
-   std::map<ttk::ftr::idVertex, vtkIdType> points; 
-                                                   
+   std::map<ttk::ftr::idVertex, vtkIdType> points;
+
    explicit ArcData(const ttk::ftr::idSuperArc nbArcs)
-   {                                               
+   {
       ids = allocArray<vtkIntArray>("ArcId", nbArcs);
       reg = allocArray<vtkCharArray>("RegularMask", nbArcs+1);
-#ifndef NDEBUG                                     
+#ifndef NDEBUG
       fromUp = allocArray<vtkUnsignedCharArray>("growUp", nbArcs);
 #endif
    }
