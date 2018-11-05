@@ -3,6 +3,7 @@
 #include <vtkMultiBlockDataSet.h>
 #include <vtkDelimitedTextReader.h>
 #include <vtkPointData.h>
+#include <vtkCellData.h>
 #include <vtkFieldData.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
@@ -30,7 +31,6 @@ int ttkAddFieldData::RequestData(
     // Prepare Input and Output
     auto source = inputVector[0]->GetInformationObject(0)->Get(vtkDataObject::DATA_OBJECT());
     auto target = inputVector[1]->GetInformationObject(0)->Get(vtkDataObject::DATA_OBJECT());
-
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     auto output = vtkTable::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
@@ -60,9 +60,8 @@ int ttkAddFieldData::RequestData(
             // Generate csv string that has only one column
             stringstream result;
             stringstream ss1( line );
-            while( getline(ss1, element, ',') ){
+            while( getline(ss1, element, ',') )
                 result << element << endl;
-            }
 
             // Parse csv string with reader
             reader->SetInputString( result.str() );
@@ -73,7 +72,7 @@ int ttkAddFieldData::RequestData(
             size_t n = csvTable->GetNumberOfColumns(); // n should always be 1
             for(size_t i=0; i<n; i++){
                 auto column = csvTable->GetColumn(i);
-                if(column->GetNumberOfValues()>0)
+                if(column->GetNumberOfTuples()>0)
                     outputFieldData->AddArray( csvTable->GetColumn(i) );
             }
         }
@@ -82,11 +81,22 @@ int ttkAddFieldData::RequestData(
     // If source is a vtkDataSet and is not the target then add source point/cell/field data to target field data
     if( source->IsA("vtkDataSet") && source!=target ){
         auto sourceAsVtkDataSet = vtkDataSet::SafeDownCast( source );
-        auto pointData = sourceAsVtkDataSet->GetPointData();
 
-        size_t n = pointData->GetNumberOfArrays(); // n should always be 1
-        for(size_t i=0; i<n; i++)
-            outputFieldData->AddArray( pointData->GetArray(i) );
+        // Copy Point Data
+        {
+            auto pointData = sourceAsVtkDataSet->GetPointData();
+            size_t n = pointData->GetNumberOfArrays(); // n should always be 1
+            for(size_t i=0; i<n; i++)
+                outputFieldData->AddArray( pointData->GetArray(i) );
+        }
+
+        // Copy Cell Data
+        {
+            auto cellData = sourceAsVtkDataSet->GetCellData();
+            size_t n = cellData->GetNumberOfArrays(); // n should always be 1
+            for(size_t i=0; i<n; i++)
+                outputFieldData->AddArray( cellData->GetArray(i) );
+        }
     }
 
     return 1;

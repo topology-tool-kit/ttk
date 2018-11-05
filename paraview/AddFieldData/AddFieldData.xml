@@ -25,6 +25,9 @@
                     <DataType value="vtkDataSet" />
                 </DataTypeDomain>
                 <Documentation>TODO.</Documentation>
+                <Hints>
+                    <Optional />
+                </Hints>
             </InputProperty>
 
             <StringVectorProperty name="FieldDataString" label="New Field Data" command="SetFieldDataString" number_of_elements="1" default_values="">
