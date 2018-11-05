@@ -1,0 +1,4 @@
+ttk_add_vtk_library(ttkCreateMultiBlockDataSet
+	SOURCES ttkCreateMultiBlockDataSet.cpp
+	HEADERS ttkCreateMultiBlockDataSet.h
+	LINK ttkTriangulation)

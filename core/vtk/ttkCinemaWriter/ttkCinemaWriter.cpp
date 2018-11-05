@@ -133,7 +133,7 @@ int ttkCinemaWriter::RequestData (
             for(size_t i=0; i<n; i++){
                 auto array = fieldData->GetAbstractArray(i);
                 string name = array->GetName();
-                if(array->GetNumberOfValues()==1 && name.compare("FILE")!=0)
+                if(array->GetNumberOfTuples()==1 && name.compare("FILE")!=0)
                     csvFile << name <<",";
             }
             csvFile<<"FILE\n";
