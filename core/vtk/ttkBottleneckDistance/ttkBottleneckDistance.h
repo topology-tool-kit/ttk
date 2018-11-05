@@ -469,6 +469,28 @@ int ttkBottleneckDistance::getPersistenceDiagram(
     return -2;
 
   auto pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
+ /* 
+  // TODO FIX : no more missed pairs
+  // plus the persistence pairs are ordered by decreasing persistence
+
+ for(int pair_index = 0; pair_index<pairingsSize; pair_index++){
+    std::cout<<"ID "<<pair_index<<" : "<< *pairIdentifierScalars->GetTuple(pair_index)<<std::endl;
+ }
+ for(int pair_index = 0; pair_index<pairingsSize; pair_index++){
+    const float index_of_pair = pair_index;
+    if(*pairIdentifierScalars->GetTuple(pair_index)!=-1)
+        pairIdentifierScalars->SetTuple(pair_index, &index_of_pair);
+  }
+  std::cout<<"PAIR INDENTIFIERS : "<<pairingsSize<<std::endl;
+  double* range = new double[2];
+  range = pairIdentifierScalars->GetRange(0);
+  std::cout<<"RANGE : "<<range[0]<<" "<<range[1]<<std::endl;
+  
+  for(int pair_index = 0; pair_index<pairingsSize; pair_index++){
+    std::cout<<"ID "<<pair_index<<" : "<< *pairIdentifierScalars->GetTuple(pair_index)<<std::endl;
+ }
+ */
+
   auto s = (float) 0.0;
 
   if (!deathScalars != !birthScalars) return -2;

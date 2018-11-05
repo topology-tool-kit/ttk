@@ -10,15 +10,15 @@
      class="ttkPersistenceDiagramsClustering"
      label="TTK PersistenceDiagramsClustering">
      <Documentation
-        long_help="TTK plugin that takes an input ensemble data set (represented 
-by a list of scalar fields) and which computes various vertexwise statistics 
+        long_help="TTK plugin that takes an input ensemble data set (represented
+by a list of scalar fields) and which computes various vertexwise statistics
 (PDF estimation, bounds, moments, etc.)."
-        short_help="TTK plugin that takes an input ensemble data set 
-(represented 
-by a list of scalar fields) and which computes various vertexwise statistics 
+        short_help="TTK plugin that takes an input ensemble data set
+(represented
+by a list of scalar fields) and which computes various vertexwise statistics
 (PDF estimation, bounds, moments, etc.).">
-          TTK plugin that takes an input ensemble data set (represented 
-by a list of scalar fields) and which computes various vertexwise statistics 
+          TTK plugin that takes an input ensemble data set (represented
+by a list of scalar fields) and which computes various vertexwise statistics
 (PDF estimation, bounds, moments, etc.).
 
 See also MandatoryCriticalPoints.
@@ -41,8 +41,27 @@ See also MandatoryCriticalPoints.
           Data-set to process.
         </Documentation>
       </InputProperty>
-	  
-	  
+
+
+      <IntVectorProperty
+      name="Critical pairs"
+      label="Critical pairs used for the clustering"
+      command="SetPairTypeClustering"
+      number_of_elements="1"
+      default_values="-1" >
+        <EnumerationDomain name="enum">
+          <Entry value="-1" text="All pairs : global clustering"/>
+          <Entry value="0" text="min-saddle pairs"/>
+          <Entry value="1" text="saddle-saddle pairs"/>
+          <Entry value="2" text="saddle-max pairs"/>
+          <!-- <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/> -->
+        </EnumerationDomain>
+        <Documentation>
+          Value of the parameter p for the Wp (p-th Wasserstein) distance
+          computation (type "inf" for the Bottleneck distance).
+        </Documentation>
+      </IntVectorProperty>
+
 	  <IntVectorProperty
           name="NumberOfClusters"
           label="Number of clusters"
@@ -61,7 +80,7 @@ See also MandatoryCriticalPoints.
           number_of_elements="1"
           default_values="2" >
         <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance 
+          Value of the parameter p for the Wp (p-th Wasserstein) distance
 computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
@@ -78,8 +97,8 @@ computation (type "inf" for the Bottleneck distance).
                  Kill any randomness in the initialization of barycenters.
          </Documentation>
       </IntVectorProperty>
- 
-	  
+
+
 	  <IntVectorProperty
         name="UseProgressive"
         command="SetUseProgressive"
@@ -90,12 +109,12 @@ computation (type "inf" for the Bottleneck distance).
         <BooleanDomain name="bool"/>
         <Documentation>
           If set to true, the barycenter is computed progressively (starting with most persistent pairs).
-		  The option may turn useful coupled with Time Limit since the Barycenter will be computed with only a portion of the 
+		  The option may turn useful coupled with Time Limit since the Barycenter will be computed with only a portion of the
 		  input points if computation time gets too important.
         </Documentation>
       </IntVectorProperty>
-	  
-	  
+
+
 	  <DoubleVectorProperty
           name="TimeLimit"
           label="Maximal computation time (s)"
@@ -106,12 +125,12 @@ computation (type "inf" for the Bottleneck distance).
           >
         <Documentation>
           Maximal time of computation for the computation of the barycenter.
-		  Since Min/Saddle, Saddle/Saddle and Saddle/Max pairs are treated separatly, the actual computation time could be 
+		  Since Min/Saddle, Saddle/Saddle and Saddle/Max pairs are treated separatly, the actual computation time could be
 		  three times the decided limit.
 		  A low value of Time Limit will yield approximate results. Use with caution.
         </Documentation>
       </DoubleVectorProperty>
-	  
+
 	  <IntVectorProperty
          name="UseAccelerated"
          label="Use Accelerated KMeans"
@@ -120,12 +139,12 @@ computation (type "inf" for the Bottleneck distance).
          default_values="1" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
          <Documentation>
-          Whether or not to use the triangular inequality too fasten the computation of the 
-		  clustering. If activated, the option saves time. However it may lead to slightly 
+          Whether or not to use the triangular inequality too fasten the computation of the
+		  clustering. If activated, the option saves time. However it may lead to slightly
 		  inaccurate classification due to the approximations made during the computation of distance.
          </Documentation>
       </IntVectorProperty>
-	  
+
 	  <IntVectorProperty
          name="UseKmeansppInit"
          label="KMeanspp Initialization"
@@ -138,7 +157,7 @@ computation (type "inf" for the Bottleneck distance).
 		  of some initial computations proportionnal to the product of the number of clusters and the number of diagrams.
          </Documentation>
       </IntVectorProperty>
-	  
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -150,8 +169,8 @@ computation (type "inf" for the Bottleneck distance).
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-	  
-	  
+
+
       <DoubleVectorProperty
           name="Alpha"
           label="Diagram blending"
@@ -162,10 +181,10 @@ computation (type "inf" for the Bottleneck distance).
           >
         <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
         <Documentation>
-          Blending coefficient for the cost evaluation of each critical point  
-matching. By default (1), only distances  in 
-the persistence diagrams are considered between matched critical points. When 
-set to 0, only distances in the original 3D domain are considered 
+          Blending coefficient for the cost evaluation of each critical point
+matching. By default (1), only distances  in
+the persistence diagrams are considered between matched critical points. When
+set to 0, only distances in the original 3D domain are considered
 between matched critical points.
         </Documentation>
       </DoubleVectorProperty>
@@ -181,7 +200,7 @@ between matched critical points.
           Thread number.
          </Documentation>
       </IntVectorProperty>
-	  
+
 	  <IntVectorProperty
         name="Output matchings"
         command="SetUseOutputMatching"
@@ -191,7 +210,7 @@ between matched critical points.
         panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Display the matching between pairs of the persistence diagrams with 
+          Display the matching between pairs of the persistence diagrams with
 line segments in 3D.
         </Documentation>
       </IntVectorProperty>
@@ -207,7 +226,7 @@ line segments in 3D.
            Debug level.
          </Documentation>
       </IntVectorProperty>
-    
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />

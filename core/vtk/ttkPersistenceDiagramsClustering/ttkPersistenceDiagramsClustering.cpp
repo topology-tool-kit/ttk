@@ -69,7 +69,8 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 
 			string wassersteinMetric = WassersteinMetric;
 			persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
-
+      persistenceDiagramsClustering.setDeterministic(Deterministic);
+      persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
 			persistenceDiagramsClustering.setNumberOfInputs(numInputs);
 			persistenceDiagramsClustering.setTimeLimit(TimeLimit);
 			persistenceDiagramsClustering.setUseProgressive(UseProgressive);

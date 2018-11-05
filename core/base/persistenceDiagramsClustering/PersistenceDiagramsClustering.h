@@ -113,6 +113,9 @@ namespace ttk{
     inline void setDeterministic(const bool deterministic){
 			deterministic_ = deterministic;
 		}
+    inline void setPairTypeClustering(const int pairTypeClustering){
+			pairTypeClustering_ = pairTypeClustering;
+		}
 
 		template<typename type>
 		static type abs(const type var) {
@@ -122,6 +125,9 @@ namespace ttk{
 
 
     protected:
+      // Critical pairs used for clustering
+      // 0:min-saddles ; 1:saddles-saddles ; 2:sad-max ; else : all
+      int         pairTypeClustering_;
       bool        deterministic_;
 	  int 					wasserstein_;
 	  int 					n_clusters_;
@@ -208,6 +214,27 @@ template <typename dataType>
 			}
 		}
 	}
+
+  switch(pairTypeClustering_){
+  case(0):
+  std::cout << "[ttkPersistenceDiagramsClustering] Only MIN-SAD Pairs" << '\n';
+    do_max = false;
+    do_sad = false;
+    break;
+  case(1):
+    std::cout << "[ttkPersistenceDiagramsClustering] Only SAD-SAD Pairs" << '\n';
+    do_max = false;
+    do_min = false;
+    break;
+  case(2):
+  std::cout << "[ttkPersistenceDiagramsClustering] Only SAD-MAX Pairs" << '\n';
+    do_min = false;
+    do_sad = false;
+    break;
+  default:
+  std::cout << "[ttkPersistenceDiagramsClustering] All critical pairs : global clustering" << '\n';
+  break;
+  }
 
 	PDClustering<dataType> KMeans = PDClustering<dataType>();
 	KMeans.setWasserstein(wasserstein_);

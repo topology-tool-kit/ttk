@@ -132,6 +132,8 @@ class ttkPersistenceDiagramsClustering
   vtkSetMacro(Deterministic, bool);
   vtkGetMacro(Deterministic, bool);
 
+  vtkSetMacro(PairTypeClustering, int);
+  vtkGetMacro(PairTypeClustering, int);
   protected:
 
     ttkPersistenceDiagramsClustering();
@@ -153,6 +155,7 @@ class ttkPersistenceDiagramsClustering
 
 
   private:
+    int                   PairTypeClustering;
     bool                  Deterministic;
     bool                  UseAllCores;
     int                   ThreadNumber;
