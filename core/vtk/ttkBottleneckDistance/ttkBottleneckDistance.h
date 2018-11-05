@@ -256,8 +256,8 @@ public:
 
   template <typename dataType>
   int translateSecondDiagram(
-    vtkUnstructuredGrid *outputCT2,
-    double spacing
+    vtkUnstructuredGrid *& outputCT2,
+    double& spacing
     );
 
   template <typename dataType>
@@ -640,8 +640,8 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
 
 template <typename dataType>
 int ttkBottleneckDistance::translateSecondDiagram(
-  vtkUnstructuredGrid *outputCT2,
-  double spacing)
+  vtkUnstructuredGrid *& outputCT2,
+  double& spacing)
 {
   vtkSmartPointer<vtkPoints> points2 = vtkSmartPointer<vtkPoints>::New();
   vtkPoints* points = (outputCT2->GetPoints());

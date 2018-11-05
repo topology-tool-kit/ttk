@@ -207,7 +207,7 @@ namespace ttk {
         method_="Munkres";
       }
       else if(method==2){
-        method_="Munkres";
+        method_="Auction";
       }
       return 0;
     }
