@@ -55,11 +55,8 @@ class ttkCinemaQuery
         vtkGetMacro(QueryString, std::string);
 
         int FillInputPortInformation(int port, vtkInformation *info) override {
-            switch(port){
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable"); break;
-                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
-                        info->Set( vtkAlgorithm::INPUT_IS_OPTIONAL(), 1); break;
-            }
+            switch(port)
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
             return 1;
         }
 
@@ -75,7 +72,7 @@ class ttkCinemaQuery
             QueryString = "";
             UseAllCores = false;
 
-            SetNumberOfInputPorts(2);
+            SetNumberOfInputPorts(1);
             SetNumberOfOutputPorts(1);
         }
         ~ttkCinemaQuery(){};
@@ -89,7 +86,6 @@ class ttkCinemaQuery
         int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 
     private:
-
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {
