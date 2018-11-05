@@ -58,23 +58,38 @@ string ttk::CinemaQuery::execute(
             // Initialize DB in memory
             rc = sqlite3_open(":memory:", &db);
             if(rc){
-                fprintf(stderr, "[ttkCinemaQuery] Unable to create database: %s\n", sqlite3_errmsg(db));
+                stringstream msg;
+                msg<<"[ttkCinemaQuery] ERROR: Unable to create database."<<endl;
+                msg<<"[ttkCinemaQuery]         - "<< sqlite3_errmsg(db) <<endl;
+                msg<<"[ttkCinemaQuery] ---------------------------------------------------------------"<<endl;
+                dMsg(cout, msg.str(), timeMsg);
                 return result;
             }
 
             // Create table
             rc = sqlite3_exec(db, sqlTableDefinition.data(), nullptr, 0, &zErrMsg);
             if( rc != SQLITE_OK ){
-                fprintf(stderr, "[ttkCinemaQuery] SQL error: %s\n", zErrMsg);
+                stringstream msg;
+                msg<<"[ttkCinemaQuery] ERROR: SQL error"<<endl;
+                msg<<"[ttkCinemaQuery]         - "<< zErrMsg <<endl;
+                msg<<"[ttkCinemaQuery] ---------------------------------------------------------------"<<endl;
+                dMsg(cout, msg.str(), timeMsg);
+
                 sqlite3_free(zErrMsg);
                 sqlite3_close(db);
+
                 return result;
             }
 
             // Fill table
             rc = sqlite3_exec(db, sqlTableRows.data(), nullptr, 0, &zErrMsg);
             if( rc != SQLITE_OK ){
-                fprintf(stderr, "[ttkCinemaQuery] SQL error: %s\n", zErrMsg);
+                stringstream msg;
+                msg<<"[ttkCinemaQuery] ERROR: SQL error"<<endl;
+                msg<<"[ttkCinemaQuery]         - "<< zErrMsg <<endl;
+                msg<<"[ttkCinemaQuery] ---------------------------------------------------------------"<<endl;
+                dMsg(cout, msg.str(), timeMsg);
+
                 sqlite3_free(zErrMsg);
                 sqlite3_close(db);
                 return result;
@@ -96,7 +111,12 @@ string ttk::CinemaQuery::execute(
             // Perform query
             rc = sqlite3_exec(db, sqlQuery.data(), processRow, (void*)(&result), &zErrMsg);
             if( rc != SQLITE_OK ){
-                fprintf(stderr, "[ttkCinemaQuery] SQL error: %s\n", zErrMsg);
+                stringstream msg;
+                msg<<"[ttkCinemaQuery] ERROR: SQL error"<<endl;
+                msg<<"[ttkCinemaQuery]         - "<< zErrMsg <<endl;
+                msg<<"[ttkCinemaQuery] ---------------------------------------------------------------"<<endl;
+                dMsg(cout, msg.str(), timeMsg);
+
                 sqlite3_free(zErrMsg);
                 sqlite3_close(db);
                 return result;
