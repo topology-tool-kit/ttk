@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="AddFieldData" class="ttkAddFieldData" label="TTK AddFieldData">
-            <Documentation long_help="TTK AddFieldData" short_help="TTK AddFieldData">This filter adds field data to a vtkDataObject based on a string and/or point/cell/field data of an optional vtkDataObject.</Documentation>
+            <Documentation long_help="TTK AddFieldData" short_help="TTK AddFieldData">This filter adds field data to a vtkDataObject based on a string and/or point/cell/field data of an optional vtkDataObject (second input port).</Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
@@ -14,7 +14,6 @@
                 </DataTypeDomain>
                 <Documentation>vtkDataObject to add field data to.</Documentation>
             </InputProperty>
-
             <InputProperty name="DataSource" port_index="1" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
@@ -33,12 +32,11 @@
             </InputProperty>
 
             <StringVectorProperty name="FieldDataString" label="New Field Data" command="SetFieldDataString" number_of_elements="1" default_values="">
-                <Documentation>CSV string that will be used to create field data. Each row is an array named after the first value and contains all following values (e.g. 'Time,0,0.23,0.5,1').</Documentation>
+                <Documentation>CSV string that will be used to create field data. Each row is converted into an array named after the first value (e.g. 'Time,0,0.23,0.5,1').</Documentation>
                 <Hints>
                     <Widget type="multi_line" />
                 </Hints>
             </StringVectorProperty>
-
             <StringVectorProperty
                 name="PointDataArrays"
                 command="AddPointDataArray"

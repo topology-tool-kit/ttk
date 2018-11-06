@@ -59,13 +59,13 @@ int ttkOverlapTracking::finalize(vtkUnstructuredGrid* trackingGraph){
 
         vtkSmartPointer<vtkDoubleArray> time = vtkSmartPointer<vtkDoubleArray>::New();
         time->SetNumberOfComponents(1);
-        time->SetName("Time");
+        time->SetName("TimeIndex");
         time->SetNumberOfValues(n);
         auto timeData = (double*) time->GetVoidPointer(0);
 
         vtkSmartPointer<vtkIdTypeArray> label = vtkSmartPointer<vtkIdTypeArray>::New();
         label->SetNumberOfComponents(1);
-        label->SetName("RegionId");
+        label->SetName( this->GetLabelScalarField().data() );
         label->SetNumberOfValues(n);
         auto labelData = (long long*) label->GetVoidPointer(0);
 

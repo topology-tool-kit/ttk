@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="CreateMultiBlockDataSet" class="ttkCreateMultiBlockDataSet" label="TTK CreateMultiBlockDataSet">
-            <Documentation long_help="TTK CreateMultiBlockDataSet" short_help="TTK CreateMultiBlockDataSet">This filter takes up to 5 data inputs and sets them as blocks of a newly created vtkMultiBlockDataSet.</Documentation>
+            <Documentation long_help="TTK CreateMultiBlockDataSet" short_help="TTK CreateMultiBlockDataSet">This filter takes up to 5 vtkDataObjects and stores them as blocks of a newly created vtkMultiBlockDataSet.</Documentation>
 
             <InputProperty name="Block0" port_index="0" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">

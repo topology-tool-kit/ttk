@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="OverlapTracking" class="ttkOverlapTracking" label="TTK OverlapTracking">
-            <Documentation long_help="TTK OverlapTracking" short_help="TTK OverlapTracking">This filter computes the overlap between two labeled vtkPointSets where overlap is characterized by the equality of spatial point coordinates.</Documentation>
+            <Documentation long_help="TTK OverlapTracking" short_help="TTK OverlapTracking">This filter computes the overlap between labeled vtkPointSets stored as blocks of a vtkMultiBlockDataSet. Overlap is characterized by the equality of spatial point coordinates. This filter can be executed iteratively.</Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">

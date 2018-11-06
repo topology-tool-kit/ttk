@@ -1,17 +1,18 @@
 /// \ingroup vtk
 /// \class ttkCreateMultiBlockDataSet
 /// \author Jonas Lukasczyk <jl@jluk.de>
-/// \date 1.9.2018
+/// \date 1.10.2018
 ///
-/// \brief TTK VTK-filter that generates images of a vtkDataSet.
+/// \brief TTK VTK-filter that stores up to 5 vtkDataObjects as blocks of a vtkMultiBlockDataSet.
 ///
-/// This filter takes images of a vtkDataObject from positions specified on a vtkPointSet. Each image will be a block of a vtkMultiBlockDataSet where block order corresponds to point order. Each sample point can optionally have vtkDoubleArrays to override the default rendering parameters, i.e, the resolution, focus, clipping planes, and viewport height.
+/// This filter takes up to 5 vtkDataObjects and stores them as blocks of a newly created vtkMultiBlockDataSet.
 ///
-/// VTK wrapping code for the @CreateMultiBlockDataSet package.
-///
-/// \param Input vtkDataObject that will be depicted (vtkDataObject)
-/// \param Input vtkPointSet that records the camera sampling locations (vtkPointSet)
-/// \param Output vtkMultiBlockDataSet that represents a list of images (vtkMultiBlockDataSet)
+/// \param Input vtkDataObject
+/// \param Input vtkDataObject
+/// \param Input vtkDataObject
+/// \param Input vtkDataObject
+/// \param Input vtkDataObject
+/// \param Output vtkMultiBlockDataSet
 
 #pragma once
 

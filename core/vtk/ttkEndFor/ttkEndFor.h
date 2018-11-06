@@ -3,17 +3,17 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.11.2018
 ///
-/// \brief TTK VTK-filter that requests more for executions
+/// \brief TTK VTK-filter that requests data as long as it is available.
 ///
-/// This filter requests more for executions as long as the maximum number of elements is not reached. This filter works in conjunction with  the ttkForEachRow or ttkForEachBlock filter.
+/// This filter requests more data as long as the maximum number of elements is not reached. This filter works in conjunction with the ttkForEachRow filter.
 ///
-/// \param Input vtkDataSet Data that will be pushed trough after all iterations.
-/// \param Output vtkMultiBlockDataSet Shallow copy of the input
+/// \param Input vtkDataObject that will be passed through after all iterations.
+/// \param Output vtkDataObject Shallow copy of the input
 
 #pragma once
 
 // VTK includes
-#include <vtkMultiBlockDataSetAlgorithm.h>
+#include <vtkPassInputTypeAlgorithm.h>
 
 // TTK includes
 #include <ttkWrapper.h>
@@ -23,12 +23,12 @@ class VTKFILTERSCORE_EXPORT ttkEndFor
 #else
 class ttkEndFor
 #endif
-: public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
+: public vtkPassInputTypeAlgorithm, public ttk::Wrapper{
 
     public:
 
         static ttkEndFor* New();
-        vtkTypeMacro(ttkEndFor, vtkMultiBlockDataSetAlgorithm)
+        vtkTypeMacro(ttkEndFor, vtkPassInputTypeAlgorithm)
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -48,13 +48,13 @@ class ttkEndFor
 
         int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port)
-                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
+                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
             return 1;
         }
 

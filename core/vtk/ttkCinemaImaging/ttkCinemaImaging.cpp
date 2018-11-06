@@ -252,6 +252,13 @@ int ttkCinemaImaging::RequestData(
         // Set Camera Position
         // TODO: In the future it shoud be possible to override focus, res,...
         inputGrid->GetPoint(i, camPosition);
+
+        // Cam Up Fix
+        if( camPosition[0]==0 && camPosition[2]==0 ){
+            camPosition[0]=0.00000000001;
+            camPosition[2]=0.00000000001;
+        }
+
         camera->SetPosition( camPosition );
 
         // Render Depth Image

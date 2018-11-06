@@ -2,14 +2,14 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="EndFor" class="ttkEndFor" label="TTK EndFor">
-            <Documentation long_help="TTK EndFor" short_help="TTK EndFor">This filter requests more data in conjunction with the StreamingStart filter.</Documentation>
+            <Documentation long_help="TTK EndFor" short_help="TTK EndFor">This filter requests more data as long as the maximum number of elements is not reached. This filter works in conjunction with the ttkForEachRow filter.</Documentation>
 
-            <InputProperty name="DataSet" command="SetInputConnection">
+            <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />
                 </ProxyGroupDomain>
-                <Documentation>vtkDataSet that will be passed through after streaming ends.</Documentation>
+                <Documentation>vtkDataObject that will be passed through after all iterations.</Documentation>
             </InputProperty>
 
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">

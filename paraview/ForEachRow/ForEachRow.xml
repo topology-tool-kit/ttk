@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ForEachRow" class="ttkForEachRow" label="TTK ForEachRow">
-            <Documentation long_help="TTK ForEachRow" short_help="TTK ForEachRow">This filter starts to stream rows of a vtkTable.</Documentation>
+            <Documentation long_help="TTK ForEachRow" short_help="TTK ForEachRow">This filter works in conjunction with the ttkEndFor filter to iterate over rows of a vtkTable.</Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">

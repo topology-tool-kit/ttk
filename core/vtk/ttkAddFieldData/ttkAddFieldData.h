@@ -11,7 +11,6 @@
 ///
 /// \param Output vtkTable
 
-
 #pragma once
 
 // VTK includes

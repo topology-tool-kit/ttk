@@ -1,13 +1,14 @@
 /// \ingroup vtk
 /// \class ttkCinemaLayout
 /// \author Jonas Lukasczyk <jl@jluk.de>
-/// \date 01.09.2018
+/// \date 01.10.2018
 ///
-/// \brief TTK VTK-filter that writes input to disk.
+/// \brief TTK VTK-filter that computes an image grid layout.
 ///
-/// This filter stores the input as a VTK dataset to disk and updates the data.csv file of a Cinema Spec D database.
+/// This filter computes a grid layout for images stored as blocks of a vtkMultiBlockDataSet.
 ///
-/// \param Input vtkDataSet to be stored (vtkDataSet)
+/// \param Input vtkMultiBlockDataSet
+/// \param Output vtkMultiBlockDataSet
 
 #pragma once
 

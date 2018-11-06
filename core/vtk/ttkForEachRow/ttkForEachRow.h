@@ -3,9 +3,9 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.11.2018
 ///
-/// \brief TTK VTK-filter that iterates over rows of a vtkTable
+/// \brief TTK VTK-filter that iterates over rows of a vtkTable.
 ///
-/// This filter works together with the ttkEndFor filter to iterate over rows of a vtkTable
+/// This filter works in conjunction with the ttkEndFor filter to iterate over rows of a vtkTable.
 ///
 /// \param Input vtkTable table that will be iterated over
 /// \param Output vtkTable table that contains only one row of the input

@@ -72,13 +72,12 @@ int ttkEndFor::RequestData(
         }
 
         // Copy input to output
-        vtkInformation* outInfo = outputVector->GetInformationObject(0);
-        auto output = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+        vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+        auto input = inInfo->Get(vtkDataObject::DATA_OBJECT());
 
-        if(input->IsA("vtkMultiBlockDataSet"))
-            output->ShallowCopy(input);
-        else
-            output->SetBlock(0, input);
+        vtkInformation* outInfo = outputVector->GetInformationObject(0);
+        auto output = outInfo->Get(vtkDataObject::DATA_OBJECT());
+        output->ShallowCopy(input);
     }
 
     return 1;

@@ -1,7 +1,7 @@
 #include <ttkCinemaLayout.h>
 
 #include <vtkMultiBlockDataSet.h>
-#include <vtkImageData.h>
+#include <vtkDataSet.h>
 #include <vtkTransform.h>
 #include <vtkTransformFilter.h>
 
@@ -26,33 +26,41 @@ int ttkCinemaLayout::RequestData (
         dMsg(cout, msg.str(), timeMsg);
     }
 
-    // Copy Input to Output
+    // Get Input and Output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
     auto inputMB = vtkMultiBlockDataSet::SafeDownCast( inInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     auto outputMB = vtkMultiBlockDataSet::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
+    // Determine Grid Size
     size_t nBlocks = inputMB->GetNumberOfBlocks();
     size_t n = ceil( sqrt(nBlocks) );
 
-    auto firstImage = vtkImageData::SafeDownCast( inputMB->GetBlock(0) );
-    double* bounds = firstImage->GetBounds();
+    auto firstBlock = vtkDataSet::SafeDownCast( inputMB->GetBlock(0) );
+    if(firstBlock==nullptr){
+        stringstream msg;
+        msg << "[ttkCinemaLayout] ERROR: This filter can only arrange vtkDataSet objects"<<endl;
+        dMsg(cout, msg.str(), memoryMsg);
+        return 0;
+    }
+    double* bounds = firstBlock->GetBounds();
     double width = bounds[1]-bounds[0];
     double height = bounds[3]-bounds[2];
 
+    // Iterate over blocks and arrange images on the
     size_t i = 0;
     double y = 0;
     while(i<nBlocks){
         for(size_t x=0; x<n && i<nBlocks; x++){
-            auto image = vtkImageData::SafeDownCast( inputMB->GetBlock(i) );
+            auto block = vtkDataSet::SafeDownCast( inputMB->GetBlock(i) );
 
             auto transform = vtkSmartPointer<vtkTransform>::New();
             transform->Translate(x*width,y,0);
 
             auto transformFilter = vtkSmartPointer<vtkTransformFilter>::New();
             transformFilter->SetTransform( transform );
-            transformFilter->SetInputData( image );
+            transformFilter->SetInputData( block );
             transformFilter->Update();
 
             outputMB->SetBlock(i, transformFilter->GetOutput());
