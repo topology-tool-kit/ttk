@@ -26,15 +26,17 @@ int ttkOverlapTracking::processTimestep(vtkDataObject* dataObject){
         return 0;
     }
 
+    auto n = pointSet->GetNumberOfPoints();
+
     auto labels = pointSet->GetPointData()->GetAbstractArray( this->GetLabelScalarField().data() );
-    if(labels==nullptr){
+    if(labels==nullptr && n>0){
         dMsg(cout, "[ttkOverlapTracking] ERROR: Point labels not found\n", timeMsg);
         return 0;
     }
 
     this->overlapTracking.processTimestep(
-        (float*) pointSet->GetPoints()->GetVoidPointer(0),
-        (labelType*) labels->GetVoidPointer(0),
+        n>0 ? (float*) pointSet->GetPoints()->GetVoidPointer(0) : nullptr,
+        n>0 ? (labelType*) labels->GetVoidPointer(0)            : nullptr,
         pointSet->GetNumberOfPoints()
     );
 
