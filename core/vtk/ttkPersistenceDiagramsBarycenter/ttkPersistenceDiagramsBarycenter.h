@@ -237,6 +237,13 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
 
   vtkPoints* points = (CTPersistenceDiagram_->GetPoints());
   int pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
+  
+  // FIX : no more missed pairs
+   for(int pair_index = 0; pair_index<pairingsSize; pair_index++){
+    const float index_of_pair = pair_index;
+    if(*pairIdentifierScalars->GetTuple(pair_index)!=-1)
+        pairIdentifierScalars->SetTuple(pair_index, &index_of_pair);
+  }
   auto s = (float) 0.0;
 
   if (!deathScalars != !birthScalars) return -2;

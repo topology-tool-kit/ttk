@@ -71,7 +71,7 @@ void PDBarycenter<dataType>::runMatchingMunkres(dataType* total_cost,
 	 	#endif
 	 	for(int i=0; i<numberOfInputs_; i++){
 			BottleneckDistance bottleneckDistance = BottleneckDistance();
-			bottleneckDistance.setMethod(1); //Munkres algorithm
+			//bottleneckDistance.setMethod(1); //Munkres algorithm
 			bottleneckDistance.setCTDiagram2(&barycenter);
 			bottleneckDistance.setCTDiagram1(&((*inputDiagrams_)[i]));
 			bottleneckDistance.setWasserstein(std::to_string(wasserstein_));
