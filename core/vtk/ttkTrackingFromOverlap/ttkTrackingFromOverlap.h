@@ -1,37 +1,42 @@
 /// \ingroup vtk
-/// \class ttkCinemaProductReader
+/// \class ttkTrackingFromOverlap
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2018
 ///
-/// \brief TTK VTK-filter that reads the data products that are referenced in a vtkTable.
+/// \brief TTK VTK-filter that computes the overlap between labeled vtkPointSets.
 ///
-/// This filter reads the products that are referenced in a vtkTable. The results are stored in a vtkMultiBlockDataSet where each block corresponds to a row of the table with consistent ordering.
+/// This filter computes the overlap between labeled vtkPointSets stored as blocks of a vtkMultiBlockDataSet. Overlap is characterized by the equality of spatial point coordinates. This filter can be executed iteratively.
 ///
-/// \param Input vtkTable that contains data product references (vtkTable)
-/// \param Output vtkMultiBlockDataSet where each block is a referenced product of an input table row (vtkMultiBlockDataSet)
+/// VTK wrapping code for the @TrackingFromOverlap package.
+///
+/// \param Input vtkMultiBlockDataSet holding the vtkPointSets (vtkMultiBlockDataSet)
+/// \param Output Tracking Graph (vtkUnstructuredGrid)
+///
+/// sa ttk::TrackingFromOverlap
 
 #pragma once
 
 // VTK includes
-#include <vtkMultiBlockDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
+#include <vtkUnstructuredGridAlgorithm.h>
 #include <vtkInformation.h>
-#include <vtkMultiBlockDataSet.h>
 
 // TTK includes
 #include <ttkWrapper.h>
+#include <TrackingFromOverlap.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaProductReader
+class VTKFILTERSCORE_EXPORT ttkTrackingFromOverlap
 #else
-class ttkCinemaProductReader
+class ttkTrackingFromOverlap
 #endif
-: public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
+: public vtkUnstructuredGridAlgorithm, public ttk::Wrapper{
 
     public:
+        static ttkTrackingFromOverlap* New();
+        vtkTypeMacro(ttkTrackingFromOverlap, vtkUnstructuredGridAlgorithm)
 
-        static ttkCinemaProductReader* New();
-        vtkTypeMacro(ttkCinemaProductReader, vtkMultiBlockDataSetAlgorithm)
+        vtkSetMacro(LabelScalarField, string);
+        vtkGetMacro(LabelScalarField, string);
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -49,42 +54,42 @@ class ttkCinemaProductReader
         }
         // end of default ttk setters
 
-        void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char* name){
-            this->FilepathColumnName = std::string(name);
-            this->Modified();
-        };
-
-
         int FillInputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-            return 1;
-        }
-
-        int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port)
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
             return 1;
         }
 
+        int FillOutputPortInformation(int port, vtkInformation* info) override {
+            switch(port)
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+            return 1;
+        }
+
     protected:
 
-        ttkCinemaProductReader(){
+        ttkTrackingFromOverlap(){
+            LabelScalarField = "RegionId";
+
             UseAllCores = false;
 
             SetNumberOfInputPorts(1);
             SetNumberOfOutputPorts(1);
         }
-        ~ttkCinemaProductReader(){};
+        ~ttkTrackingFromOverlap(){};
 
         bool UseAllCores;
         int ThreadNumber;
 
-        std::string FilepathColumnName;
-
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
+        int processTimestep(vtkDataObject* dataObject);
+        int finalize(vtkUnstructuredGrid* trackingGraph);
+
     private:
+
+        string LabelScalarField;
+        ttk::TrackingFromOverlap trackingFromOverlap;
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

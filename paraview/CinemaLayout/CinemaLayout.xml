@@ -1,26 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="CinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
-            <Documentation long_help="TTK CinemaQuery" short_help="TTK CinemaQuery">This filter uses a SQL statement to select a subset of a vtkTable.</Documentation>
+        <SourceProxy name="CinemaLayout" class="ttkCinemaLayout" label="TTK CinemaLayout">
+            <Documentation long_help="TTK CinemaLayout plugin." short_help="TTK CinemaLayout plugin.">This filter computes a grid layout for images stored as blocks of a vtkMultiBlockDataSet.</Documentation>
 
-            <InputProperty name="Table" command="SetInputConnection">
+            <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />
                 </ProxyGroupDomain>
                 <DataTypeDomain name="input_type">
-                    <DataType value="vtkTable" />
+                    <DataType value="vtkMultiBlockDataSet" />
                 </DataTypeDomain>
-                <Documentation>vtkTable to run the query on.</Documentation>
+                <Documentation>vtkMultiBlockDataSet whoes blocks are vtkImageData objects.</Documentation>
             </InputProperty>
-
-            <StringVectorProperty name="QueryString" label="SQL Statement" command="SetQueryString" number_of_elements="1" default_values="SELECT * FROM InputTable">
-                <Documentation>SQL statement.</Documentation>
-                <Hints>
-                    <Widget type="multi_line" />
-                </Hints>
-            </StringVectorProperty>
 
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
                 <BooleanDomain name="bool" />
@@ -37,10 +30,6 @@
                 <IntRangeDomain name="range" min="0" max="100" />
                 <Documentation>Debug level.</Documentation>
             </IntVectorProperty>
-
-            <PropertyGroup panel_widget="Line" label="Output Options">
-                <Property name="QueryString" />
-            </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Testing">
                 <Property name="UseAllCores" />

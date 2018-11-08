@@ -1,39 +1,39 @@
 /// \ingroup vtk
-/// \class ttkCinemaQuery
+/// \class ttkCreateMultiBlockDataSet
 /// \author Jonas Lukasczyk <jl@jluk.de>
-/// \date 01.09.2018
+/// \date 1.10.2018
 ///
-/// \brief TTK VTK-filter that uses a SQL statement to select a subset of a vtkTable.
+/// \brief TTK VTK-filter that stores up to 5 vtkDataObjects as blocks of a vtkMultiBlockDataSet.
 ///
-/// This filter creates a temporary SQLite3 database from the input table, performs a SQL query, and then returns the result as a vtkTable.
+/// This filter takes up to 5 vtkDataObjects and stores them as blocks of a newly created vtkMultiBlockDataSet.
 ///
-/// VTK wrapping code for the @CinemaQuery package.
-///
-/// \param Input Input table (vtkTable)
-/// \param Output Output table (vtkTable)
-///
-/// sa ttk::CinemaQuery
+/// \param Input vtkDataObject
+/// \param Input vtkDataObject
+/// \param Input vtkDataObject
+/// \param Input vtkDataObject
+/// \param Input vtkDataObject
+/// \param Output vtkMultiBlockDataSet
 
 #pragma once
 
 // VTK includes
-#include <vtkTableAlgorithm.h>
 #include <vtkInformation.h>
+#include <vtkMultiBlockDataSetAlgorithm.h>
 
 // TTK includes
-#include <CinemaQuery.h>
 #include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaQuery
+class VTKFILTERSCORE_EXPORT ttkCreateMultiBlockDataSet
 #else
-class ttkCinemaQuery
+class ttkCreateMultiBlockDataSet
 #endif
-: public vtkTableAlgorithm, public ttk::Wrapper{
+: public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
 
     public:
-        static ttkCinemaQuery* New();
-        vtkTypeMacro(ttkCinemaQuery, vtkTableAlgorithm)
+
+        static ttkCreateMultiBlockDataSet* New();
+        vtkTypeMacro(ttkCreateMultiBlockDataSet, vtkMultiBlockDataSetAlgorithm)
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -51,37 +51,31 @@ class ttkCinemaQuery
         }
         // end of default ttk setters
 
-        vtkSetMacro(QueryString, std::string);
-        vtkGetMacro(QueryString, std::string);
-
         int FillInputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+            // All ports have the same generic type and are optional
+            info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
+            info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1 );
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation *info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
             return 1;
         }
 
     protected:
 
-        ttkCinemaQuery(){
-            QueryString = "";
+        ttkCreateMultiBlockDataSet(){
             UseAllCores = false;
 
-            SetNumberOfInputPorts(1);
+            SetNumberOfInputPorts(5);
             SetNumberOfOutputPorts(1);
         }
-        ~ttkCinemaQuery(){};
+        ~ttkCreateMultiBlockDataSet(){};
 
         bool UseAllCores;
         int ThreadNumber;
-
-        std::string      QueryString;
-        ttk::CinemaQuery cinemaQuery;
 
         int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 

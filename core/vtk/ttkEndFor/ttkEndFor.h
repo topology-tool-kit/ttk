@@ -1,37 +1,34 @@
 /// \ingroup vtk
-/// \class ttkCinemaProductReader
+/// \class ttkEndFor
 /// \author Jonas Lukasczyk <jl@jluk.de>
-/// \date 01.09.2018
+/// \date 01.11.2018
 ///
-/// \brief TTK VTK-filter that reads the data products that are referenced in a vtkTable.
+/// \brief TTK VTK-filter that requests data as long as it is available.
 ///
-/// This filter reads the products that are referenced in a vtkTable. The results are stored in a vtkMultiBlockDataSet where each block corresponds to a row of the table with consistent ordering.
+/// This filter requests more data as long as the maximum number of elements is not reached. This filter works in conjunction with the ttkForEachRow filter.
 ///
-/// \param Input vtkTable that contains data product references (vtkTable)
-/// \param Output vtkMultiBlockDataSet where each block is a referenced product of an input table row (vtkMultiBlockDataSet)
+/// \param Input vtkDataObject that will be passed through after all iterations.
+/// \param Output vtkDataObject Shallow copy of the input
 
 #pragma once
 
 // VTK includes
-#include <vtkMultiBlockDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkMultiBlockDataSet.h>
+#include <vtkPassInputTypeAlgorithm.h>
 
 // TTK includes
 #include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaProductReader
+class VTKFILTERSCORE_EXPORT ttkEndFor
 #else
-class ttkCinemaProductReader
+class ttkEndFor
 #endif
-: public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
+: public vtkPassInputTypeAlgorithm, public ttk::Wrapper{
 
     public:
 
-        static ttkCinemaProductReader* New();
-        vtkTypeMacro(ttkCinemaProductReader, vtkMultiBlockDataSetAlgorithm)
+        static ttkEndFor* New();
+        vtkTypeMacro(ttkEndFor, vtkPassInputTypeAlgorithm)
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -49,39 +46,37 @@ class ttkCinemaProductReader
         }
         // end of default ttk setters
 
-        void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char* name){
-            this->FilepathColumnName = std::string(name);
-            this->Modified();
-        };
-
-
         int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
             return 1;
         }
 
     protected:
 
-        ttkCinemaProductReader(){
+        ttkEndFor(){
+            nextIndex = 0;
+
             UseAllCores = false;
 
             SetNumberOfInputPorts(1);
             SetNumberOfOutputPorts(1);
         }
-        ~ttkCinemaProductReader(){};
+        ~ttkEndFor(){};
 
         bool UseAllCores;
         int ThreadNumber;
 
-        std::string FilepathColumnName;
+        double nextIndex;
 
+        int RequestInformation(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
+        int RequestUpdateExtent(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:

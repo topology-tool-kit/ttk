@@ -1,25 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="CinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
-            <Documentation long_help="TTK CinemaQuery" short_help="TTK CinemaQuery">This filter uses a SQL statement to select a subset of a vtkTable.</Documentation>
+        <SourceProxy name="TrackingFromOverlap" class="ttkTrackingFromOverlap" label="TTK TrackingFromOverlap">
+            <Documentation long_help="TTK TrackingFromOverlap" short_help="TTK TrackingFromOverlap">This filter computes the overlap between labeled vtkPointSets stored as blocks of a vtkMultiBlockDataSet. Overlap is characterized by the equality of spatial point coordinates. This filter can be executed iteratively.</Documentation>
 
-            <InputProperty name="Table" command="SetInputConnection">
+            <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />
                 </ProxyGroupDomain>
                 <DataTypeDomain name="input_type">
-                    <DataType value="vtkTable" />
+                    <DataType value="vtkMultiBlockDataSet" />
                 </DataTypeDomain>
-                <Documentation>vtkTable to run the query on.</Documentation>
+                <InputArrayDomain name="input_array" attribute_type="point" />
+                <Documentation>A vtkMultiBlockDataSet that contains a sequence of vtkPointSets.</Documentation>
             </InputProperty>
 
-            <StringVectorProperty name="QueryString" label="SQL Statement" command="SetQueryString" number_of_elements="1" default_values="SELECT * FROM InputTable">
-                <Documentation>SQL statement.</Documentation>
-                <Hints>
-                    <Widget type="multi_line" />
-                </Hints>
+            <StringVectorProperty name="LabelScalarField" command="SetLabelScalarField" number_of_elements="1" animateable="0" label="Labels">
+                <ArrayListDomain name="array_list" default_values="RegionId" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Point data that associates a label with each point.</Documentation>
             </StringVectorProperty>
 
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
@@ -38,8 +41,8 @@
                 <Documentation>Debug level.</Documentation>
             </IntVectorProperty>
 
-            <PropertyGroup panel_widget="Line" label="Output Options">
-                <Property name="QueryString" />
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="LabelScalarField" />
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Testing">

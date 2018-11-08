@@ -17,11 +17,12 @@
                 <DataTypeDomain name="input_type">
                     <DataType value="vtkMultiBlockDataSet" />
                 </DataTypeDomain>
+                <InputArrayDomain name="input_array" attribute_type="point" />
                 <Documentation>A vtkMultiBlockDataSet containing a set of depth images represented by vtkImagedata objects.</Documentation>
             </InputProperty>
 
             <StringVectorProperty name="DepthScalarField" command="SetDepthScalarField" number_of_elements="1" animateable="0" label="Depth Values">
-                <ArrayListDomain name="array_list" default_values="Depth">
+                <ArrayListDomain name="array_list" default_values="Depth"  input_domain_name="input_array">
                     <RequiredProperties>
                         <Property name="Input" function="Input" />
                     </RequiredProperties>

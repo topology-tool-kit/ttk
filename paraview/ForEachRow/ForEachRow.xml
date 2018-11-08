@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="CinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
-            <Documentation long_help="TTK CinemaQuery" short_help="TTK CinemaQuery">This filter uses a SQL statement to select a subset of a vtkTable.</Documentation>
+        <SourceProxy name="ForEachRow" class="ttkForEachRow" label="TTK ForEachRow">
+            <Documentation long_help="TTK ForEachRow" short_help="TTK ForEachRow">This filter works in conjunction with the ttkEndFor filter to iterate over rows of a vtkTable.</Documentation>
 
-            <InputProperty name="Table" command="SetInputConnection">
+            <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />
@@ -12,15 +12,8 @@
                 <DataTypeDomain name="input_type">
                     <DataType value="vtkTable" />
                 </DataTypeDomain>
-                <Documentation>vtkTable to run the query on.</Documentation>
+                <Documentation>vtkTable.</Documentation>
             </InputProperty>
-
-            <StringVectorProperty name="QueryString" label="SQL Statement" command="SetQueryString" number_of_elements="1" default_values="SELECT * FROM InputTable">
-                <Documentation>SQL statement.</Documentation>
-                <Hints>
-                    <Widget type="multi_line" />
-                </Hints>
-            </StringVectorProperty>
 
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
                 <BooleanDomain name="bool" />
@@ -38,18 +31,13 @@
                 <Documentation>Debug level.</Documentation>
             </IntVectorProperty>
 
-            <PropertyGroup panel_widget="Line" label="Output Options">
-                <Property name="QueryString" />
-            </PropertyGroup>
-
             <PropertyGroup panel_widget="Line" label="Testing">
                 <Property name="UseAllCores" />
                 <Property name="ThreadNumber" />
                 <Property name="DebugLevel" />
             </PropertyGroup>
-
             <Hints>
-                <ShowInMenu category="TTK - Cinema" />
+                <ShowInMenu category="TTK - Pipeline" />
             </Hints>
         </SourceProxy>
     </ProxyGroup>

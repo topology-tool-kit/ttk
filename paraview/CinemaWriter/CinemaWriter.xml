@@ -53,6 +53,7 @@
 
             <Hints>
                 <ShowInMenu category="TTK - Cinema" />
+                <Visibility replace_input="0" />
             </Hints>
         </SourceProxy>
     </ProxyGroup>
