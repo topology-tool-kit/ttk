@@ -11,23 +11,6 @@ int BottleneckDistance::execute(
     const bool usePersistenceMetric)
 {
   Timer t;
-/*
-  if (this->method_=="Auction"){
-	  this->computeAuction(
-		static_cast<const std::vector<diagramTuple>*> (outputCT1_),
-		static_cast<const std::vector<diagramTuple>*> (outputCT2_),
-		static_cast<std::vector<matchingTuple>*> (matchings_),
-		alpha,
-		delta_lim_);
-  }
-  else{
-	  this->computeBottleneck(
-	  		static_cast<const std::vector<diagramTuple>*> (outputCT1_),
-	  		static_cast<const std::vector<diagramTuple>*> (outputCT2_),
-	  		static_cast<std::vector<matchingTuple>*> (matchings_),
-	  		usePersistenceMetric,
-	  		alpha);
-*/
 
   bool fromParaView = pvAlgorithm_ >= 0;
   if (fromParaView)
@@ -142,7 +125,6 @@ int BottleneckDistance::execute(
         dMsg(std::cout, msg.str(), fatalMsg);
       }
     }
-
   }
 
   {
@@ -213,24 +195,17 @@ double BottleneckDistance::computeMinimumRelevantPersistence(
   double s = sp > 0.0 && sp < 100.0 ? sp / 100.0 : 0;
 
   std::vector<dataType> toSort;
-  dataType max_persistence = std::numeric_limits<dataType>::lowest();
   for (int i = 0; i < d1Size; ++i) {
     const diagramTuple &t = CTDiagram1[i];
     dataType persistence = abs<dataType>(std::get<4>(t));
-	//toSort.push_back(persistence);
-	if(persistence>max_persistence){
-		max_persistence = persistence;
-	}
+    toSort.push_back(persistence);
   }
-
   for (int i = 0; i < d2Size; ++i) {
     const diagramTuple &t = CTDiagram2[i];
-
     dataType persistence = abs<dataType>(std::get<4>(t));
     toSort.push_back(persistence);
   }
   sort(toSort.begin(), toSort.end());
-
 
   double minVal = toSort.at(0);
   double maxVal = toSort.at(toSort.size() - 1);
@@ -247,7 +222,6 @@ double BottleneckDistance::computeMinimumRelevantPersistence(
   // if (zeroThresh < epsilon) zeroThresh = epsilon;
 
   return s;
-
 }
 
 template <typename dataType>
@@ -500,20 +474,6 @@ void BottleneckDistance::solveInfinityWasserstein(
   solver.run<dataType>(matchings);
   solver.clear<dataType>();
 }
-
-
-template <typename dataType>
-void ttk::BottleneckDistance::solveAuctionPWasserstein(
-  const int nbRow,
-  const int nbCol,
-  dataType **matrix,
-  std::vector<matchingTuple> *matchings,
-  Auction<dataType> *solver)
-{
-  solver->setInput(nbRow+1, nbCol+1, (void*) matrix);
-  solver->run(matchings);
-}
-
 
 template <typename dataType>
 dataType BottleneckDistance::buildMappings(

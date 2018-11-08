@@ -1,7 +1,6 @@
 /// \ingroup base
-/// \class ttk::BottleneckDistance
+/// \class ttk::BottleneckDistance 
 /// \author Maxime Soler <soler.maxime@total.com>
-
 #ifndef _BOTTLENECKDISTANCE_H
 #define _BOTTLENECKDISTANCE_H
 
@@ -34,7 +33,6 @@
 #include                  <Wrapper.h>
 #include                  <PersistenceDiagram.h>
 #include                  <Munkres.h>
-#include                  <Auction.h>
 #include                  <GabowTarjan.h>
 
 #include                  <string>
@@ -45,92 +43,6 @@ namespace ttk {
 
   class BottleneckDistance : public Debug {
 
-/*
-    public:
-
-      BottleneckDistance():wasserstein_("inf") {};
-
-      ~BottleneckDistance() {};
-
-      template <typename dataType>
-      int execute(bool usePersistenceMetric, double alpha);
-
-      inline int setCTDiagram1(void *diagram) {
-        outputCT1_ = diagram;
-        return 0;
-      }
-
-      inline int setCTDiagram2(void *diagram) {
-        outputCT2_ = diagram;
-        return 0;
-      }
-
-      inline int setOutputMatchings(void* matchings) {
-        matchings_ = matchings;
-        return 0;
-      }
-
-      inline int setWasserstein(const std::string &wasserstein) {
-        wasserstein_ = wasserstein;
-        return 0;
-      }
-
-      inline int setPersistencePercentage(double persistence_percentage) {
-        persistence_percentage_ = persistence_percentage;
-        return 0;
-      }
-
-      inline int setUseKDTree(int use_kdtree){
-		  use_kdtree_ = (use_kdtree>0);
-		  return 0;
-	  }
-
-      inline int setDelta_lim(double delta_lim){
-		  delta_lim_ = delta_lim;
-		  return 0;
-	  }
-
-      inline int setMethod(const int &method){
-		  if(method==1){
-			  method_="Munkres";
-		  }
-		  else if(method==2){
-			  method_="Auction";
-		  }
-    	  return 0;
-      }
-
-      template <typename dataType>
-      dataType getDistance() {
-        return *static_cast<dataType*> (distance_);
-      }
-
-      template<typename type>
-      static type abs(const type var) {
-        return (var >= 0) ? var : -var;
-      }
-
-      template<typename type>
-      static type abs_diff(const type var1, const type var2) {
-        return (var1 > var2) ? var1 - var2 : var2 - var1;
-      }
-
-    protected:
-
-      void                      *outputCT1_;
-      void                      *outputCT2_;
-      void                      *matchings_; // ids from CT1 to CT2
-      void                      *distance_;
-
-	  double						 delta_lim_;
-	  double						 persistence_percentage_;
-	  bool 							 use_kdtree_;
-
-      std::string                    wasserstein_;
-      std::string                    method_;
-
-  private:
-*/
   public:
 
     BottleneckDistance():
@@ -146,7 +58,6 @@ namespace ttk {
     {};
 
     ~BottleneckDistance() {};
-
 
     template <typename dataType>
     int execute(bool usePersistenceMetric);
@@ -192,26 +103,6 @@ namespace ttk {
       return 0;
     }
 
-    inline int setUseKDTree(int use_kdtree){
-      use_kdtree_ = (use_kdtree>0);
-      return 0;
-    }
-
-    inline int setDelta_lim(double delta_lim){
-      delta_lim_ = delta_lim;
-      return 0;
-    }
-
-    inline int setMethod(const int &method){
-      if(method==1){
-        method_="Munkres";
-      }
-      else if(method==2){
-        method_="Auction";
-      }
-      return 0;
-    }
-
     inline void message(const char* s)
     {
       std::stringstream msg;
@@ -235,9 +126,6 @@ namespace ttk {
 
   protected:
 
-    bool                      use_kdtree_;
-    double                    delta_lim_;
-    std::string                    method_;
     void                      *outputCT1_;
     void                      *outputCT2_;
     void                      *matchings_; // ids from CT1 to CT2
@@ -256,20 +144,6 @@ namespace ttk {
   private:
 
     template <typename dataType>
-	int computeAuction(
-		const std::vector<diagramTuple> *CTDiagram1,
-		const std::vector<diagramTuple> *CTDiagram2,
-		std::vector<matchingTuple> *matchings,
-		double alpha,
-		double delta_lim);
-
-    template <typename dataType>
-    
-    bool isValidMatching(
-      const std::vector<matchingTuple>* matchings,
-      dataType thresholdMin) const;
-
-    template<typename dataType> 
     int computeBottleneck(
       const std::vector<diagramTuple> &d1,
       const std::vector<diagramTuple> &d2,
@@ -326,14 +200,6 @@ namespace ttk {
       std::vector<std::vector<dataType>> &matrix,
       std::vector<matchingTuple> &matchings,
       Munkres &solver);
-
-    template <typename dataType>
-        void solveAuctionPWasserstein(
-          int nbRow,
-          int nbCol,
-          dataType **matrix,
-          std::vector<matchingTuple> *matchings,
-          Auction<dataType> *solver);
 
     template <typename dataType>
     void solveInfinityWasserstein(

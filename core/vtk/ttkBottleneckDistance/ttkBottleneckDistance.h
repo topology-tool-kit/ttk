@@ -52,82 +52,7 @@ class ttkBottleneckDistance
     : public vtkDataSetAlgorithm, public ttk::Wrapper
 {
 
-/*
-  public:
-      
-    static ttkBottleneckDistance* New();
-    
-    vtkTypeMacro(ttkBottleneckDistance, vtkDataSetAlgorithm);
-    
-    // Default ttk setters
-    vtkSetMacro(debugLevel_, int);
-    
-    void SetThreadNumber(int threadNumber) {
-      ThreadNumber = threadNumber;
-      SetThreads();
-    }   
-    
-    void SetUseAllCores(bool onOff) {
-      UseAllCores = onOff;
-      SetThreads();
-    }
-    // end of default ttk setters
-    
-    vtkSetMacro(Alpha, double);
-    vtkGetMacro(Alpha, double);
-	
-	vtkSetMacro(Delta_lim, double);
-    vtkGetMacro(Delta_lim, double);
-	
-	vtkSetMacro(PersistencePercentage, double);
-    vtkGetMacro(PersistencePercentage, double);
-
-    vtkSetMacro(UseOutputMatching, int);
-    vtkGetMacro(UseOutputMatching, int);
-	
-	vtkSetMacro(UseKDTree, int);
-    vtkGetMacro(UseKDTree, int);
-
-    vtkSetMacro(UsePersistenceMetric, int);
-    vtkGetMacro(UsePersistenceMetric, int);
-
-    vtkSetMacro(WassersteinMetric, std::string);
-    vtkGetMacro(WassersteinMetric, std::string);
-
-    vtkSetMacro(UseGeometricSpacing, int);
-    vtkGetMacro(UseGeometricSpacing, int);
-
-    vtkSetMacro(Spacing, double);
-    vtkGetMacro(Spacing, double);
-	
-	vtkSetMacro(UseProgressive, int);
-    vtkGetMacro(UseProgressive, int);
-
-    vtkSetMacro(TimeLimit, double);
-    vtkGetMacro(TimeLimit, double);
-
-    vtkSetMacro(Method, int);
-    vtkGetMacro(Method, int);
-
-    vtkGetMacro(result, double);
-
-    // Override input types.
-    int FillInputPortInformation(int port, vtkInformation *info) {
-      switch (port) {
-       case 0:
-         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-         break;
-       case 1:
-         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-       break;
-       default:		   
-         break;
-      }
-      return 1;
-    }
-*/
 public:
-
 
   static ttkBottleneckDistance* New();
 
@@ -194,12 +119,6 @@ public:
 
   vtkGetMacro(result, double);
 
-  vtkSetMacro(Method, int);
-  vtkGetMacro(Method, int);
- 
-  vtkSetMacro(Delta_lim, double);
-  vtkGetMacro(Delta_lim, double);
- 
   // Override input types.
   int FillInputPortInformation(int port, vtkInformation *info) {
     switch (port) {
@@ -214,7 +133,6 @@ public:
     }
     return 1;
   }
-
 
   // Override output types.
   int FillOutputPortInformation(int port, vtkInformation *info) {
@@ -256,8 +174,8 @@ public:
 
   template <typename dataType>
   int translateSecondDiagram(
-    vtkUnstructuredGrid *& outputCT2,
-    double& spacing
+    vtkUnstructuredGrid *outputCT2,
+    double spacing
     );
 
   template <typename dataType>
@@ -312,8 +230,7 @@ TTK_SETUP();
 private:
 
   int                     BenchmarkSize;
-  int                     Method;
-  double                  Delta_lim; 
+
   bool                    UseOutputMatching;
   bool                    Is3D;
   double                  Spacing;
@@ -469,28 +386,6 @@ int ttkBottleneckDistance::getPersistenceDiagram(
     return -2;
 
   auto pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
- /* 
-  // TODO FIX : no more missed pairs
-  // plus the persistence pairs are ordered by decreasing persistence
-
- for(int pair_index = 0; pair_index<pairingsSize; pair_index++){
-    std::cout<<"ID "<<pair_index<<" : "<< *pairIdentifierScalars->GetTuple(pair_index)<<std::endl;
- }
- for(int pair_index = 0; pair_index<pairingsSize; pair_index++){
-    const float index_of_pair = pair_index;
-    if(*pairIdentifierScalars->GetTuple(pair_index)!=-1)
-        pairIdentifierScalars->SetTuple(pair_index, &index_of_pair);
-  }
-  std::cout<<"PAIR INDENTIFIERS : "<<pairingsSize<<std::endl;
-  double* range = new double[2];
-  range = pairIdentifierScalars->GetRange(0);
-  std::cout<<"RANGE : "<<range[0]<<" "<<range[1]<<std::endl;
-  
-  for(int pair_index = 0; pair_index<pairingsSize; pair_index++){
-    std::cout<<"ID "<<pair_index<<" : "<< *pairIdentifierScalars->GetTuple(pair_index)<<std::endl;
- }
- */
-
   auto s = (float) 0.0;
 
   if (!deathScalars != !birthScalars) return -2;
@@ -640,14 +535,14 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
 
 template <typename dataType>
 int ttkBottleneckDistance::translateSecondDiagram(
-  vtkUnstructuredGrid *& outputCT2,
-  double& spacing)
+  vtkUnstructuredGrid *outputCT2,
+  const double spacing)
 {
   vtkSmartPointer<vtkPoints> points2 = vtkSmartPointer<vtkPoints>::New();
   vtkPoints* points = (outputCT2->GetPoints());
   ttkSimplexIdTypeArray* pairIdentifierScalars =
-    ttkSimplexIdTypeArray::SafeDownCast(
-      outputCT2->GetCellData()->GetArray("PairIdentifier"));
+    ttkSimplexIdTypeArray::SafeDownCast(outputCT2->
+      GetCellData()->GetArray("PairIdentifier"));
   auto pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
 
   for (int i = 0; i < pairingsSize; ++i) {
