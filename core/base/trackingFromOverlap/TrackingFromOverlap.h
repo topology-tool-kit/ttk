@@ -1,11 +1,11 @@
 /// \ingroup base
-/// \class ttk::OverlapTracking
+/// \class ttk::TrackingFromOverlap
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2018
 ///
-/// \brief TTK %overlapTracking processing package.
+/// \brief TTK %trackingFromOverlap processing package.
 ///
-/// %OverlapTracking is a TTK processing package that TODO
+/// %TrackingFromOverlap is a TTK processing package that TODO
 
 #pragma once
 
@@ -36,10 +36,10 @@ struct TrackingComputationData {
 };
 
 namespace ttk{
-    class OverlapTracking : public Debug{
+    class TrackingFromOverlap : public Debug{
         public:
-            OverlapTracking();
-            ~OverlapTracking();
+            TrackingFromOverlap();
+            ~TrackingFromOverlap();
 
             int reset();
 

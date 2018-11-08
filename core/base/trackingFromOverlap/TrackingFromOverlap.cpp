@@ -1,4 +1,4 @@
-#include <OverlapTracking.h>
+#include <TrackingFromOverlap.h>
 
 #include <algorithm>
 #include <unordered_set>
@@ -22,13 +22,13 @@ struct CoordinateComparator {
     }
 };
 
-ttk::OverlapTracking::OverlapTracking(){
+ttk::TrackingFromOverlap::TrackingFromOverlap(){
     this->prevTCD = nullptr;
     this->reset();
 }
-ttk::OverlapTracking::~OverlapTracking(){}
+ttk::TrackingFromOverlap::~TrackingFromOverlap(){}
 
-int ttk::OverlapTracking::reset(){
+int ttk::TrackingFromOverlap::reset(){
     this->timeNodeLabelMap = vector< vector<labelType> >();
     this->timeEdgesMap = vector< vector<Edge> >();
 
@@ -39,22 +39,22 @@ int ttk::OverlapTracking::reset(){
     // Print Status
     {
         stringstream msg;
-        msg << "[ttkOverlapTracking] Initialized "<<endl;
+        msg << "[ttkTrackingFromOverlap] Initialized "<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 
     return 0;
 }
 
-vector< vector<labelType> >& ttk::OverlapTracking::getTimeNodeLabelMap(){
+vector< vector<labelType> >& ttk::TrackingFromOverlap::getTimeNodeLabelMap(){
     return this->timeNodeLabelMap;
 };
 
-vector< vector<Edge> >& ttk::OverlapTracking::getTimeEdgesMap(){
+vector< vector<Edge> >& ttk::TrackingFromOverlap::getTimeEdgesMap(){
     return this->timeEdgesMap;
 };
 
-int ttk::OverlapTracking::processTimestep(
+int ttk::TrackingFromOverlap::processTimestep(
     float*     pointCoords,
     labelType* pointLabels,
     size_t     nPoints
@@ -65,7 +65,7 @@ int ttk::OverlapTracking::processTimestep(
     // Print Status
     {
         stringstream msg;
-        msg << "[ttkOverlapTracking] Creating nodes ... "<<flush;
+        msg << "[ttkTrackingFromOverlap] Creating nodes ... "<<flush;
         dMsg(cout, msg.str(), timeMsg);
     }
 
@@ -91,7 +91,7 @@ int ttk::OverlapTracking::processTimestep(
         auto tTemp = t.getElapsedTime();
         stringstream msg;
         msg << "done ("<<(tTemp-tD)<<" s)."<<endl
-            << "[ttkOverlapTracking] Sorting  nodes ... "<<flush;
+            << "[ttkTrackingFromOverlap] Sorting  nodes ... "<<flush;
         tD = tTemp;
         dMsg(cout, msg.str(), timeMsg);
     }
@@ -155,7 +155,7 @@ int ttk::OverlapTracking::processTimestep(
         // Print Status
         {
             stringstream msg;
-            msg << "[ttkOverlapTracking] Tracking       ... "<<flush;
+            msg << "[ttkTrackingFromOverlap] Tracking       ... "<<flush;
             dMsg(cout, msg.str(), timeMsg);
         }
         TrackingComputationData* prevTCD = this->prevTCD;
