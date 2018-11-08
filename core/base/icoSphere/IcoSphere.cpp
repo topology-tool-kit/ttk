@@ -66,7 +66,7 @@ TriangleList subdivide(VertexList& vertices, TriangleList& triangles) {
     for(size_t i=0; i<maxIndex; i++) {
         Triangle& each = triangles[i];
 
-        array<IndexType, 3> mid;
+        IndexType mid[3];
 
         mid[0] = vertex_for_edge(
             edgeVertexMap,
