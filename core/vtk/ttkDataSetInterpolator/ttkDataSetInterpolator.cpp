@@ -13,7 +13,36 @@ vtkStandardNewMacro(ttkDataSetInterpolator)
     probe->SetInputData(target);
     probe->SetSourceData(source);
     probe->Update();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!probe->GetOutput()){
+      cerr << "[ttkDataSetInterpolator] Error: data probe failed." << endl;
+      return -1;
+    }
+#endif
+
     output->ShallowCopy(probe->GetOutput());
+
+    // add original data arrays
+    vtkPointData* inputPointData=target->GetPointData();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!inputPointData){
+      cerr << "[ttkDataSetInterpolator] Error: input has no point data." << endl;
+      return -1;
+    }
+#endif
+
+    vtkPointData* outputPointData=output->GetPointData();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!outputPointData){
+      cerr << "[ttkDataSetInterpolator] Error: input has no point data." << endl;
+      return -1;
+    }
+#endif
+
+    const SimplexId numberOfArrays=inputPointData->GetNumberOfArrays();
+    for(SimplexId i=0; i<numberOfArrays; ++i)
+      outputPointData->AddArray(inputPointData->GetArray(i));
 
     {
       stringstream msg;
