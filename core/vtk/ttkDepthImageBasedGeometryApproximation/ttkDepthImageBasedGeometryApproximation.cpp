@@ -148,7 +148,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
             size_t n = triangles.size();
 
             auto cells = vtkSmartPointer<vtkIdTypeArray>::New();
-            cells->SetNumberOfValues(n + n * 3);
+            cells->SetNumberOfValues( 4*n );
             auto cellIds = (vtkIdType*) cells->GetVoidPointer(0);
 
             auto triangleDistortionsScalars = vtkSmartPointer<vtkDoubleArray>::New();

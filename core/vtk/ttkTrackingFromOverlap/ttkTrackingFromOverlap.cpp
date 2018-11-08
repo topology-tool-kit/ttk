@@ -47,9 +47,8 @@ int ttkTrackingFromOverlap::finalize(vtkUnstructuredGrid* trackingGraph){
     auto& timeNodeLabelMap = this->trackingFromOverlap.getTimeNodeLabelMap();
     auto& timeEdgesMap = this->trackingFromOverlap.getTimeEdgesMap();
     size_t tn = timeNodeLabelMap.size();
-    auto mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-    // Point Data
+    // Add Points
     {
         size_t n = 0;
         for(size_t t=0; t<tn; t++)
@@ -86,42 +85,53 @@ int ttkTrackingFromOverlap::finalize(vtkUnstructuredGrid* trackingGraph){
             }
         }
 
-        mesh->SetPoints(points);
+        trackingGraph->SetPoints(points);
 
-        auto pointData = mesh->GetPointData();
+        auto pointData = trackingGraph->GetPointData();
         pointData->AddArray( time );
         pointData->AddArray( label );
     }
 
-    // Cell Data
+    // Add Cells
     {
+        size_t n = 0;
+        for(size_t t=0; t<tn-1; t++)
+            n += timeEdgesMap[t].size();
+
+        auto cells = vtkSmartPointer<vtkIdTypeArray>::New();
+        cells->SetNumberOfValues( 3*n );
+        auto cellIds = (vtkIdType*) cells->GetVoidPointer(0);
+
         vtkSmartPointer<vtkUnsignedLongLongArray> overlap = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
-        overlap->SetNumberOfComponents(1);
+        overlap->SetNumberOfValues( n );
         overlap->SetName("Overlap");
+
+        auto overlapData = (unsigned long long*) overlap->GetVoidPointer(0);
 
         vector<size_t> offset(tn);
         offset[0] = 0;
         for(size_t t=1; t<tn; t++)
             offset[t] = offset[t-1] + timeNodeLabelMap[t-1].size();
 
-        size_t nEdges = 0;
-        for(size_t t=0; t<tn-1; t++){
-            nEdges += timeEdgesMap[t].size();
-        }
-
+        size_t q0=0;
+        size_t q1=0;
         for(size_t t=0; t<tn-1; t++){
             auto& edges = timeEdgesMap[t];
             for(auto& e: edges){
-                vtkIdType ids[2] = { (vtkIdType)(e.i+offset[t]), (vtkIdType)(e.j+offset[t+1]) };
-                mesh->InsertNextCell(VTK_LINE, 2, ids);
-                overlap->InsertNextValue( e.overlap );
+                cellIds[q0++] = 2;
+                cellIds[q0++] = (vtkIdType) e.i+offset[t  ];
+                cellIds[q0++] = (vtkIdType) e.j+offset[t+1];
+
+                overlapData[q1++] = e.overlap;
             }
         }
-        auto cellData = mesh->GetCellData();
-        cellData->AddArray( overlap );
-    }
 
-    trackingGraph->ShallowCopy( mesh );
+        auto cellArray = vtkSmartPointer<vtkCellArray>::New();
+        cellArray->SetCells(n, cells);
+        trackingGraph->SetCells(VTK_LINE, cellArray);
+
+        trackingGraph->GetCellData()->AddArray( overlap );
+    }
 
     return 1;
 }
