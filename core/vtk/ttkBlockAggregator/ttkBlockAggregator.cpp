@@ -111,17 +111,12 @@ int ttkBlockAggregator::RequestData(
             break;
     }
     if(copy==nullptr){
-        stringstream msg;
-        msg << "[ttkBlockAggregator] ERROR: Unsupported DataType" << endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, "[ttkBlockAggregator] ERROR: Unsupported DataType\n", timeMsg);
+        return 0;
     }
-
-    copy->Print(cout);
-
     copy->DeepCopy( input );
 
     this->AggregatedMultiBlockDataSet->SetBlock( n, copy );
-
     outMB->ShallowCopy( this->AggregatedMultiBlockDataSet );
 
     // Print status
