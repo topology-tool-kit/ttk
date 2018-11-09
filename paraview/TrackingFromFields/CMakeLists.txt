@@ -1,18 +1,9 @@
 include_directories(${VTKWRAPPER_DIR}/ttkBottleneckDistance/)
 include_directories(${VTKWRAPPER_DIR}/ttkTrackingFromPersistenceDiagrams/)
 
-if(UNIX AND NOT APPLE)
-  ttk_add_paraview_plugin(ttkTrackingFromFields
-    SOURCES ${VTKWRAPPER_DIR}/ttkTrackingFromFields/ttkTrackingFromFields.cpp 
-    PLUGIN_VERSION 1.0
-    PLUGIN_XML TrackingFromFields.xml
-    LINK 
-      trackingFromFields trackingFromPersistenceDiagrams)
-else()
-  ttk_add_paraview_plugin(ttkTrackingFromFields
-    SOURCES ${VTKWRAPPER_DIR}/ttkTrackingFromFields/ttkTrackingFromFields.cpp 
-    PLUGIN_VERSION 1.0
-    PLUGIN_XML TrackingFromFields.xml
-    LINK 
-      trackingFromFields trackingFromPersistenceDiagrams ttkBottleneckDistance)
-endif()
+ttk_add_paraview_plugin(ttkTrackingFromFields
+  SOURCES ${VTKWRAPPER_DIR}/ttkTrackingFromFields/ttkTrackingFromFields.cpp 
+  PLUGIN_VERSION 1.0
+  PLUGIN_XML TrackingFromFields.xml
+  LINK 
+    trackingFromFields trackingFromPersistenceDiagrams)
