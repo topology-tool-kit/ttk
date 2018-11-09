@@ -75,6 +75,7 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 			persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
 			persistenceDiagramsBarycenter.setThreadNumber(ThreadNumber);
 			persistenceDiagramsBarycenter.setAlpha(Alpha);
+      persistenceDiagramsBarycenter.setLambda(Lambda);
 			persistenceDiagramsBarycenter.setReinitPrices(ReinitPrices);
 			persistenceDiagramsBarycenter.setEpsilonDecreases(EpsilonDecreases);
 			persistenceDiagramsBarycenter.setEarlyStoppage(EarlyStoppage);

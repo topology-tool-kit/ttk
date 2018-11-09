@@ -39,7 +39,7 @@ void PDBarycenter<dataType>::runMatching(dataType* total_cost,
 	#pragma omp parallel for schedule(dynamic, 1)
 	#endif
 	for(int i=0; i<numberOfInputs_; i++){
-		Auction<dataType> auction = Auction<dataType>(&current_bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_, geometrical_factor_, 0.01, kdt, *correspondance_kdt_map, epsilon, (*min_diag_price)[i], use_kdt);
+		Auction<dataType> auction = Auction<dataType>(&current_bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_, geometrical_factor_, lambda_, 0.01, kdt, *correspondance_kdt_map, epsilon, (*min_diag_price)[i], use_kdt);
 		int n_biddings = 0;
 		auction.buildUnassignedBidders();
 		auction.reinitializeGoods();
@@ -483,7 +483,7 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence){
 			int count=0;
 			for(unsigned int j=0; j<CTDiagram->size(); j++){
 				//Add bidder to bidders
-				Good<dataType> g = Good<dataType>((*CTDiagram)[j], count);
+				Good<dataType> g = Good<dataType>((*CTDiagram)[j], count, lambda_);
 				if(g.getPersistence()>=min_persistence){
 					goods.addGood(g);
 					count ++;

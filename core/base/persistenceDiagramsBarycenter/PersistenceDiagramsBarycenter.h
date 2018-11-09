@@ -51,7 +51,7 @@ namespace ttk{
 
 		PersistenceDiagramsBarycenter(){
 			wasserstein_ = 2;
-			geometrical_factor_ = 1;
+			alpha_ = 1;
 			inputData_ = NULL;
 			numberOfInputs_ = 0;
 			threadNumber_ = 1;
@@ -110,6 +110,10 @@ namespace ttk{
 			alpha_ = alpha;
 		}
 
+    inline void setLambda(const double lambda){
+      lambda_ = lambda;
+    }
+
 		inline void setTimeLimit(const double time_limit){
 			time_limit_ = time_limit;
 		}
@@ -144,13 +148,12 @@ namespace ttk{
     bool                  deterministic_;
     int                    method_;
 	  int 					wasserstein_;
-	  double                geometrical_factor_; // TODO include it in barycenter
-
       int                   numberOfInputs_;
       void*                inputData_; //TODO : std::vector<void*>
       int 					threadNumber_;
 	  bool                  use_progressive_;
 	  double                alpha_;
+    double                lambda_;
 	  double                time_limit_;
 
 
@@ -257,6 +260,7 @@ template <typename dataType>
 				bary_min.setUseProgressive(use_progressive_);
 				bary_min.setTimeLimit(time_limit_);
 				bary_min.setGeometricalFactor(alpha_);
+        bary_min.setLambda(lambda_);
         bary_min.setMethod(method_);
 				bary_min.setEarlyStoppage(early_stoppage_);
 				bary_min.setEpsilonDecreases(epsilon_decreases_);
@@ -280,6 +284,7 @@ template <typename dataType>
 				bary_sad.setUseProgressive(use_progressive_);
 				bary_sad.setTimeLimit(time_limit_);
 				bary_sad.setGeometricalFactor(alpha_);
+        bary_sad.setLambda(lambda_);
         bary_sad.setMethod(method_);
 				bary_sad.setEarlyStoppage(early_stoppage_);
 				bary_sad.setEpsilonDecreases(epsilon_decreases_);
@@ -303,6 +308,7 @@ template <typename dataType>
 				bary_max.setUseProgressive(use_progressive_);
 				bary_max.setTimeLimit(time_limit_);
 				bary_max.setGeometricalFactor(alpha_);
+        bary_max.setLambda(lambda_);
         bary_max.setMethod(method_);
 				bary_max.setEarlyStoppage(early_stoppage_);
 				bary_max.setEpsilonDecreases(epsilon_decreases_);

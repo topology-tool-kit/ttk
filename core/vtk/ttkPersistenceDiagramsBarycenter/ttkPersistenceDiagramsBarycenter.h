@@ -129,10 +129,13 @@ class ttkPersistenceDiagramsBarycenter
 	vtkSetMacro(Alpha, double);
     vtkGetMacro(Alpha, double);
 
-    vtkSetMacro(Method, int);
-    vtkGetMacro(Method, int);
-    vtkSetMacro(Deterministic, bool);
-    vtkGetMacro(Deterministic, bool);
+  vtkSetMacro(Lambda, double);
+    vtkGetMacro(Lambda, double);
+
+  vtkSetMacro(Method, int);
+  vtkGetMacro(Method, int);
+  vtkSetMacro(Deterministic, bool);
+  vtkGetMacro(Deterministic, bool);
 
 
 
@@ -177,6 +180,7 @@ class ttkPersistenceDiagramsBarycenter
     int                   Method;
 	bool                  UseOutputMatching;
 	double                Alpha;
+  double                Lambda;
     std::string                ScalarField;
 	std::string                WassersteinMetric;
 
@@ -237,7 +241,7 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
 
   vtkPoints* points = (CTPersistenceDiagram_->GetPoints());
   int pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
-  
+
   // FIX : no more missed pairs
    for(int pair_index = 0; pair_index<pairingsSize; pair_index++){
     const float index_of_pair = pair_index;

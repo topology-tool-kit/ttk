@@ -189,6 +189,23 @@ between matched critical points.
         </Documentation>
       </DoubleVectorProperty>
 
+      <DoubleVectorProperty
+          name="Lambda"
+          label="Extremas weight in blending"
+          command="Lambda"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced"
+          >
+        <DoubleRangeDomain name="lambda" min="0.0" max="1.0"/>
+        <Documentation>
+          Parametrizes the point used for the geometrical coordinates of the persistence pair.
+          Set to 1 to choose the potential extremum, for an increased stability.
+          Set to 0 to choose the other point (saddle point). Not advised, awful stability.
+          Set to 0.5 to choose the geometrical middle of the pair points (bad stability)
+        </Documentation>
+      </DoubleVectorProperty>
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"

@@ -36,8 +36,6 @@ int main(int argc, char **argv) {
   double alpha = 1.0;
   double spacing = 5.0;
   bool useMatchingMesh;
-  int method = 1;
-  double delta_lim = 0.01;
 
   bool persistence = false;
 
@@ -50,9 +48,7 @@ int main(int argc, char **argv) {
 
   program.parser_.setOption("m", &useMatchingMesh, "Use matching mesh.");
   program.parser_.setOption("p", &persistence, "Use persistence metric");
-  program.parser_.setArgument("meth", &method, "Method to use for the matching (1 for Munkres, 2 for Auction)");
-  program.parser_.setArgument("prec", &delta_lim, "Relative precision for the auction computation");
-  
+
   int ret = program.init(argc, argv);
   if (ret != 0) return ret;
 
@@ -61,8 +57,6 @@ int main(int argc, char **argv) {
   program.ttkObject_->SetUseOutputMatching(useMatchingMesh);
   program.ttkObject_->SetAlpha(alpha);
   program.ttkObject_->SetSpacing(spacing);
-  program.ttkObject_->SetMethod(method);
-  program.ttkObject_->SetDelta_lim(delta_lim);
 
   myKeyHandler myHandler;
   program.setKeyHandler(&myHandler); 

@@ -94,6 +94,9 @@ namespace ttk{
 		inline void setAlpha(const double alpha){
 			alpha_ = alpha;
 		}
+    inline void setLambda(const double lambda){
+      lambda_ = lambda;
+    }
 
 		inline void setTimeLimit(const double time_limit){
 			time_limit_ = time_limit;
@@ -139,6 +142,7 @@ namespace ttk{
 	  bool                  use_accelerated_;
 	  bool                  use_kmeanspp_;
 	  double                alpha_;
+    double                lambda_;
 	  double                time_limit_;
 
       int points_added_;
@@ -245,6 +249,7 @@ template <typename dataType>
 	KMeans.setUseKDTree(true);
 	KMeans.setTimeLimit(time_limit_);
 	KMeans.setGeometricalFactor(alpha_);
+  KMeans.setLambda(lambda_);
 	KMeans.setKMeanspp(use_kmeanspp_);
 	KMeans.setK(n_clusters_);
 

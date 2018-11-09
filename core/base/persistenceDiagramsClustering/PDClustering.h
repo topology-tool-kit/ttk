@@ -119,6 +119,9 @@ namespace ttk{
 		inline void setGeometricalFactor(const double geometrical_factor){
 			geometrical_factor_ = geometrical_factor;
 		}
+    inline void setLambda(const double lambda){
+			lambda_ = lambda;
+		}
     inline void setDeterministic(const bool deterministic){
 			deterministic_ = deterministic;
 		}
@@ -149,6 +152,13 @@ namespace ttk{
     bool           deterministic_;
 	  int 					wasserstein_;
 	  double                geometrical_factor_;
+    // lambda : 0<=lambda<=1
+    // parametrizes the point used for the physical (critical) coordinates of the persistence paired
+    // lambda = 1 : extremum (min if pair min-sad, max if pair sad-max)
+    // lambda = 0 : saddle (bad stability)
+    // lambda = 1/2 : middle of the 2 critical points of the pair
+    double                lambda_;
+
 	  int 					k_;
 
       int                   numberOfInputs_;

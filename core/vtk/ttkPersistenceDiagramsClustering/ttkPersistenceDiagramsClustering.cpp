@@ -76,6 +76,7 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 			persistenceDiagramsClustering.setUseProgressive(UseProgressive);
 			persistenceDiagramsClustering.setThreadNumber(ThreadNumber);
 			persistenceDiagramsClustering.setAlpha(Alpha);
+      persistenceDiagramsClustering.setLambda(Lambda);
 			persistenceDiagramsClustering.setNumberOfClusters(NumberOfClusters);
 			persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
 			persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);

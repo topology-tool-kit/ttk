@@ -18,7 +18,7 @@ namespace ttk{
 		PDBarycenter(){
 			wasserstein_ = 2;
 			geometrical_factor_ = 1;
-      method_ = "Munkres";
+      method_ = "Auction";
 			threadNumber_ = 1;
 			use_progressive_ = true;
 			time_limit_ = std::numeric_limits<double>::max();
@@ -128,6 +128,10 @@ namespace ttk{
 			geometrical_factor_ = geometrical_factor;
 		}
 
+    inline void setLambda(const double lambda){
+			lambda_ = lambda;
+		}
+
 		inline void setCurrentBidders(std::vector<BidderDiagram<dataType>>& diagrams){
 			current_bidder_diagrams_ = diagrams;
 		}
@@ -187,7 +191,16 @@ namespace ttk{
 
     std::string                    method_;
 	  int 					wasserstein_;
-	  double                geometrical_factor_;
+
+    double                geometrical_factor_;
+
+    // lambda_ : 0<=lambda<=1
+    // parametrizes the point used for the physical (critical) coordinates of the persistence paired
+    // lambda_ = 1 : extremum (min if pair min-sad, max if pair sad-max)
+    // lambda_ = 0 : saddle (awful stability)
+    // lambda_ = 1/2 : middle of the 2 critical points of the pair (bad stability)
+    double                lambda_;
+
 	  int					diagramType_;
 	  BNodeType 			nt1_;
 	  BNodeType 			nt2_;

@@ -120,6 +120,9 @@ class ttkPersistenceDiagramsClustering
 	vtkSetMacro(Alpha, double);
     vtkGetMacro(Alpha, double);
 
+  vtkSetMacro(Lambda, double);
+    vtkGetMacro(Lambda, double);
+
 	vtkSetMacro(NumberOfClusters, int);
 	vtkGetMacro(NumberOfClusters, int);
 
@@ -161,6 +164,7 @@ class ttkPersistenceDiagramsClustering
     int                   ThreadNumber;
 	bool                  UseOutputMatching;
 	double                Alpha;
+  double                Lambda;
 
 	int 				  NumberOfClusters;
 	bool 				  UseAccelerated;
@@ -219,7 +223,7 @@ int ttkPersistenceDiagramsClustering::getPersistenceDiagram(
 
   vtkPoints* points = (CTPersistenceDiagram_->GetPoints());
   auto pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
-  
+
   // FIX : no more missed pairs
   for(int pair_index = 0; pair_index<pairingsSize; pair_index++){
     const float index_of_pair = pair_index;

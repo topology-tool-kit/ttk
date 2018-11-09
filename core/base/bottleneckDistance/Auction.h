@@ -15,6 +15,14 @@
   dataType, float, float, float, dataType, float, float, float>
 #endif
 
+#ifndef BNodeType
+#define BNodeType ttk::CriticalType
+#define BLocalMax ttk::CriticalType::Local_maximum
+#define BLocalMin ttk::CriticalType::Local_minimum
+#define BSaddle1  ttk::CriticalType::Saddle1
+#define BSaddle2  ttk::CriticalType::Saddle2
+#define BIdVertex int
+#endif
 
 #include <cmath>
 #include <limits>
@@ -46,13 +54,14 @@ namespace ttk {
 		KDTree<dataType>* kdt_;
 		std::vector<KDTree<dataType>*> correspondance_kdt_map_;
 
-		Auction(int wasserstein, double geometricalFactor, double delta_lim, bool use_kdTree=true) {
+		Auction(int wasserstein, double geometricalFactor, double lambda, double delta_lim, bool use_kdTree=true) {
             n_bidders_ = 0;
             n_goods_ = 0;
 			epsilon_ = 1;
 			wasserstein_ = wasserstein;
 			delta_lim_ = delta_lim;
 			geometricalFactor_ = geometricalFactor;
+      lambda_ = lambda;
 			use_kdt_ = use_kdTree;
 			diagonal_goods_ = new GoodDiagram<dataType>;
 			delete_bidders_ = true;
@@ -61,7 +70,7 @@ namespace ttk {
         };
 
 
-		Auction(BidderDiagram<dataType>* bidders, GoodDiagram<dataType>* goods, int wasserstein, double geometricalFactor, double delta_lim, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>& correspondance_kdt_map, dataType epsilon, dataType initial_diag_price, bool use_kdTree=true) {
+		Auction(BidderDiagram<dataType>* bidders, GoodDiagram<dataType>* goods, int wasserstein, double geometricalFactor, double lambda, double delta_lim, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>& correspondance_kdt_map, dataType epsilon, dataType initial_diag_price, bool use_kdTree=true) {
 			delete_bidders_ = false;
 			bidders_ = bidders;
 			goods_ = goods;
@@ -98,6 +107,7 @@ namespace ttk {
 			wasserstein_ = wasserstein;
 			delta_lim_ = delta_lim;
 			geometricalFactor_ = geometricalFactor;
+      lambda_ = lambda;
 
 			use_kdt_ = (use_kdTree && goods_->size()>0);
 			if(use_kdt_) {
@@ -204,7 +214,7 @@ namespace ttk {
 
 			for(int i=0; i<d2Size; i++){
 				//Add bidder to bidders
-				Good<dataType> g = Good<dataType>(diagram2[i], i);
+				Good<dataType> g = Good<dataType>(diagram2[i], i, lambda_);
 				goods_->addGood(g);
 			}
 			n_goods_ = goods_->size();
@@ -345,6 +355,12 @@ namespace ttk {
 		dataType epsilon_;
 		double delta_lim_;
 		double geometricalFactor_;
+    double lambda_;
+    // lambda : 0<=lambda<=1
+    // parametrizes the point used for the physical (critical) coordinates of the persistence paired
+    // lambda = 1 : extremum (min if pair min-sad, max if pair sad-max)
+    // lambda = 0 : saddle (bad stability)
+    // lambda = 1/2 : middle of the 2 critical points of the pair
 		bool use_kdt_;
 
 		//KDTree<dataType>* kdt_;

@@ -10,15 +10,15 @@
      class="ttkPersistenceDiagramsBarycenter"
      label="TTK PersistenceDiagramsBarycenter">
      <Documentation
-        long_help="TTK plugin that takes an input ensemble data set (represented 
-by a list of scalar fields) and which computes various vertexwise statistics 
+        long_help="TTK plugin that takes an input ensemble data set (represented
+by a list of scalar fields) and which computes various vertexwise statistics
 (PDF estimation, bounds, moments, etc.)."
-        short_help="TTK plugin that takes an input ensemble data set 
-(represented 
-by a list of scalar fields) and which computes various vertexwise statistics 
+        short_help="TTK plugin that takes an input ensemble data set
+(represented
+by a list of scalar fields) and which computes various vertexwise statistics
 (PDF estimation, bounds, moments, etc.).">
-          TTK plugin that takes an input ensemble data set (represented 
-by a list of scalar fields) and which computes various vertexwise statistics 
+          TTK plugin that takes an input ensemble data set (represented
+by a list of scalar fields) and which computes various vertexwise statistics
 (PDF estimation, bounds, moments, etc.).
 
 See also MandatoryCriticalPoints.
@@ -49,11 +49,11 @@ See also MandatoryCriticalPoints.
           number_of_elements="1"
           default_values="2" >
         <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance 
+          Value of the parameter p for the Wp (p-th Wasserstein) distance
 computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
-	  
+
        <IntVectorProperty
           name="Deterministic"
           label="Kill randomness"
@@ -64,7 +64,7 @@ computation (type "inf" for the Bottleneck distance).
        	<BooleanDomain name="bool"/>
 	 <Documentation>
 		 For a deterministic algorithm.
-		 Kill any randomness in the initialization of barycenters. 
+		 Kill any randomness in the initialization of barycenters.
 	 </Documentation>
       </IntVectorProperty>
 
@@ -79,10 +79,10 @@ computation (type "inf" for the Bottleneck distance).
           <Entry value="2" text="Approximate Auction Algorithm"/>
         </EnumerationDomain>
         <Documentation>
-          Type of algorithm for the computation of the matching. 
+          Type of algorithm for the computation of the matching.
 		  Either the exact Munkres algorithm or the Approximate Auction
 		  Algorithm.
-		  The Auction algorithm is computationally less expensive than 
+		  The Auction algorithm is computationally less expensive than
 		  the Munkres Algorithm.
         </Documentation>
       </IntVectorProperty>
@@ -103,12 +103,12 @@ computation (type "inf" for the Bottleneck distance).
         </Hints>
         <Documentation>
           If set to true, the barycenter is computed progressively (starting with most persistent pairs).
-		  The option may turn useful coupled with Time Limit since the Barycenter will be computed with only a portion of the 
+		  The option may turn useful coupled with Time Limit since the Barycenter will be computed with only a portion of the
 		  input points if computation time gets too important.
         </Documentation>
       </IntVectorProperty>
-	  
-	  
+
+
 	  <DoubleVectorProperty
           name="TimeLimit"
           label="Maximal computation time (s)"
@@ -126,14 +126,14 @@ computation (type "inf" for the Bottleneck distance).
         </Hints>
         <Documentation>
           Maximal time of computation for the computation of the barycenter.
-		  Since Min/Saddle, Saddle/Saddle and Saddle/Max pairs are treated separatly, the actual computation time could be 
+		  Since Min/Saddle, Saddle/Saddle and Saddle/Max pairs are treated separatly, the actual computation time could be
 		  three times the decided limit.
 		  A low value of Time Limit will yield approximate results. Use with caution.
         </Documentation>
       </DoubleVectorProperty>
-	  
-	  
-	  
+
+
+
 	  <IntVectorProperty
          name="EarlyStoppage"
          label="EarlyStoppage"
@@ -149,10 +149,10 @@ computation (type "inf" for the Bottleneck distance).
           <!-- enable this widget when <property> equals <value> -->
         </Hints>
          <Documentation>
-          
+
          </Documentation>
       </IntVectorProperty>
-	  
+
 	  <IntVectorProperty
          name="ReinitPrices"
          label="ReinitPrices"
@@ -171,7 +171,7 @@ computation (type "inf" for the Bottleneck distance).
           Reinitialize the prices for each Auction Iteration. Slower.
          </Documentation>
       </IntVectorProperty>
-	  
+
 	  <IntVectorProperty
          name="EpsilonDecreases"
          label="EpsilonDecreases"
@@ -190,8 +190,8 @@ computation (type "inf" for the Bottleneck distance).
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-	  
-	  
+
+
       <DoubleVectorProperty
           name="Alpha"
           label="Diagram blending"
@@ -202,14 +202,31 @@ computation (type "inf" for the Bottleneck distance).
           >
         <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
         <Documentation>
-          Blending coefficient for the cost evaluation of each critical point  
-matching. By default (1), only distances  in 
-the persistence diagrams are considered between matched critical points. When 
-set to 0, only distances in the original 3D domain are considered 
+          Blending coefficient for the cost evaluation of each critical point
+matching. By default (1), only distances  in
+the persistence diagrams are considered between matched critical points. When
+set to 0, only distances in the original 3D domain are considered
 between matched critical points.
         </Documentation>
       </DoubleVectorProperty>
-	
+
+      <DoubleVectorProperty
+          name="Lambda"
+          label="Extremas weight in blending"
+          command="SetLambda"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced"
+          >
+        <DoubleRangeDomain name="lambda" min="0.0" max="1.0"/>
+        <Documentation>
+          Parametrizes the point used for the geometrical coordinates of the persistence pair.
+          Set to 1 to choose the potential extremum, for an increased stability.
+          Set to 0 to choose the other point (saddle point). Not advised, awful stability.
+          Set to 0.5 to choose the geometrical middle of the pair points (bad stability)
+        </Documentation>
+      </DoubleVectorProperty>
+
 	      <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -233,7 +250,7 @@ between matched critical points.
           Thread number.
          </Documentation>
       </IntVectorProperty>
-	  
+
 	  <IntVectorProperty
         name="Output matchings"
         command="SetUseOutputMatching"
@@ -243,7 +260,7 @@ between matched critical points.
         panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Display the matching between pairs of the persistence diagrams with 
+          Display the matching between pairs of the persistence diagrams with
 line segments in 3D.
         </Documentation>
       </IntVectorProperty>
@@ -259,7 +276,7 @@ line segments in 3D.
            Debug level.
          </Documentation>
       </IntVectorProperty>
-    
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
