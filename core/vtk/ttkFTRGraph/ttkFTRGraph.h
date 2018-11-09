@@ -63,11 +63,20 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
    void SetThreadNumber(int threadNumber)
    {
       ThreadNumber = threadNumber;
+#ifdef TTK_FTR_SINGLE_LAZY_SEQ
+      ThreadNumber = 1;
+      UseAllCores = 0;
+      std::cout << "single lazy list: sequential execution" << std::endl;
+#endif
       SetThreads();
    }
 
    void SetUseAllCores(bool onOff)
    {
+#ifdef TTK_FTR_SINGLE_LAZY_SEQ
+      ThreadNumber = 1;
+      UseAllCores = 0;
+#endif
       UseAllCores = onOff;
       SetThreads();
    }

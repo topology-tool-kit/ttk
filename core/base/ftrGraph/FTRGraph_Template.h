@@ -231,7 +231,11 @@ namespace ttk
       void FTRGraph<ScalarType>::criticalSearch()
       {
          const bool addMin = true;
+#ifdef TTK_FTR_SINGLE_SWEEP
+         const bool addMax = false;
+#else
          const bool addMax = true;
+#endif
 
          TaskChunk leafChunkParams(scalars_->getSize());
          leafChunkParams.grainSize = 10000;

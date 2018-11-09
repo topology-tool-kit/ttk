@@ -1,11 +1,12 @@
-ttk_add_base_library(ftrGraph
-   SOURCES Graph.cpp Mesh.cpp Segmentation.cpp
-   HEADERS AtomicVector.h FTRGraph.h FTRGraph_Template.h FTRGraphBFS_Template.h
-           FTRGraphPrint_Template.h FTRGraphPrivate_Template.h DynamicGraph.h
-           Lazy.h Mesh.h Propagation.h Propagations.h Scalars.h Segmentation.h
-           LINK triangulation)
+# compilation options
 
-target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})
+option(ENABLE_PROFILING "Enable GPerfTools profiling" OFF)
+mark_as_advanced(ENABLE_PROFILING)
+
+set(profiler_lib "")
+if(ENABLE_PROFILING)
+  set(profiler_lib profiler)
+endif()
 
 if(OPENMP_FOUND)
    option(TTK_ENABLE_FTR_PRIORITY "Gives tasks priority, high perf improvement" OFF)
@@ -15,32 +16,53 @@ if(OPENMP_FOUND)
    endif()
 
    mark_as_advanced(TTK_ENABLE_FTR_PRIORITY)
-
-   if (TTK_ENABLE_FTR_PRIORITY)
-      target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_PRIORITY)
-   endif()
 endif()
+
+option (TTK_FTR_SINGLE_SWEEP "Only sweep from minima" OFF)
+mark_as_advanced(TTK_FTR_SINGLE_SWEEP)
 
 option (TTK_DISABLE_FTR_LAZY "Disable the lazyness optimization" OFF)
 mark_as_advanced(TTK_DISABLE_FTR_LAZY)
+
+option (TTK_ENABLE_FTR_TASK_STATS "print propagations death time (min only)" OFF)
+mark_as_advanced(TTK_ENABLE_FTR_TASK_STATS)
+
+option (TTK_ENABLE_FTR_VERT_STATS "print vertices touch" OFF)
+mark_as_advanced(TTK_ENABLE_FTR_VERT_STATS)
+
+# create lib
+
+ttk_add_base_library(ftrGraph
+   SOURCES Graph.cpp Mesh.cpp Segmentation.cpp
+   HEADERS AtomicVector.h FTRGraph.h FTRGraph_Template.h FTRGraphBFS_Template.h
+           FTRGraphPrint_Template.h FTRGraphPrivate_Template.h DynamicGraph.h
+           Lazy.h Mesh.h Propagation.h Propagations.h Scalars.h Segmentation.h
+           LINK triangulation ${profiler_lib})
+
+target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})
+
+# target definitions
+
+if(ENABLE_PROFILING)
+   target_compile_definitions(ftrGraph PUBLIC GPROFILE=1)
+endif()
+
+if (TTK_ENABLE_FTR_PRIORITY)
+   target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_PRIORITY)
+endif()
+
+if(TTK_FTR_SINGLE_SWEEP)
+   target_compile_definitions(ftrGraph PUBLIC TTK_FTR_SINGLE_SWEEP)
+endif()
+
 if(TTK_DISABLE_FTR_LAZY)
    target_compile_definitions(ftrGraph PUBLIC TTK_DISABLE_FTR_LAZY)
 endif()
 
-# option (TTK_ENABLE_FTR_BFS "Enable the bfs at split saddles (testing only, slow)" OFF)
-# mark_as_advanced(TTK_ENABLE_FTR_BFS)
-# if(TTK_ENABLE_FTR_BFS)
-#    target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_BFS)
-# endif()
-
-option (TTK_ENABLE_FTR_TASK_STATS "print propagations death time (min only)" OFF)
-mark_as_advanced(TTK_ENABLE_FTR_TASK_STATS)
 if(TTK_ENABLE_FTR_TASK_STATS)
    target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_TASK_STATS)
 endif()
 
-option (TTK_ENABLE_FTR_VERT_STATS "print vertices touch" OFF)
-mark_as_advanced(TTK_ENABLE_FTR_VERT_STATS)
 if(TTK_ENABLE_FTR_VERT_STATS)
    target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_VERT_STATS)
 endif()

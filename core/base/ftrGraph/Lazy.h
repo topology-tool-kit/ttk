@@ -46,12 +46,12 @@ namespace ttk
             // nothing
          }
 
-         void addEmplace(const idEdge e0, const idEdge e1, idSuperArc a)
+         void addEmplace(const idEdge e0, const idEdge e1, const idSuperArc a)
          {
             lazyAdd_[a].emplace_back(std::make_pair(e0, e1));
          }
 
-         void delEmplace(const idEdge e0, const idEdge e1, idSuperArc a)
+         void delEmplace(const idEdge e0, const idEdge e1, const idSuperArc a)
          {
             // here the arc would be a non sense.
             lazyDel_[a].emplace_back(std::make_pair(e0, e1));
@@ -59,7 +59,7 @@ namespace ttk
 
          // return the head of lazyAdd / lazyDel (or a null link if empty)
          // would have used std::optional if possible
-         linkEdge addGetNext(idSuperArc a)
+         linkEdge addGetNext(const idSuperArc a)
          {
             if (lazyAdd_[a].empty()) {
                return nullLink;
@@ -70,7 +70,7 @@ namespace ttk
             }
          }
 
-         linkEdge delGetNext(idSuperArc a)
+         linkEdge delGetNext(const idSuperArc a)
          {
             if (lazyDel_[a].empty()) {
                return nullLink;
@@ -81,20 +81,20 @@ namespace ttk
             }
          }
 
-         bool isEmpty(idSuperArc a)
+         bool isEmpty(const idSuperArc a)
          {
             return lazyAdd_[a].empty() && (lazyDel_[a].empty());
          }
 
-         const decltype(lazyAdd_)& addEach() const
-         {
-            return lazyAdd_;
-         }
+         // const decltype(lazyAdd_)& addEach() const
+         // {
+         //    return lazyAdd_;
+         // }
 
-         const decltype(lazyDel_)& delEach() const
-         {
-            return lazyDel_;
-         }
+         // const decltype(lazyDel_)& delEach() const
+         // {
+         //    return lazyDel_;
+         // }
       };
 
    }  // namespace ftr
