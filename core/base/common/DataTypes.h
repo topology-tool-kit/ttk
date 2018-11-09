@@ -13,7 +13,7 @@ namespace ttk{
   using LongSimplexId = long long int;
 
   /// \brief Identifier type for simplices of any dimension.
-#ifdef TTK_USE_64BIT_IDS
+#ifdef TTK_ENABLE_64BIT_IDS
   using SimplexId = long long int;
 #else
   using SimplexId = int;
