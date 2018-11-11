@@ -121,8 +121,8 @@ function(ttk_find_python)
   if(PYTHON_INCLUDE_DIRS)
     include_directories(${PYTHON_INCLUDE_DIRS})
 
-    if (${CMAKE_VERSION} VERSION_GREATER "3.10"
-      OR ${CMAKE_VERSION} VERSION_EQUAL "3.10")
+    if (${CMAKE_VERSION} VERSION_GREATER "3.12"
+      OR ${CMAKE_VERSION} VERSION_EQUAL "3.12")
       string(REPLACE \".\" \" \"
         PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
     else()
