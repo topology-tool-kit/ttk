@@ -29,7 +29,7 @@ ttk::TrackingFromOverlap::TrackingFromOverlap(){
 ttk::TrackingFromOverlap::~TrackingFromOverlap(){}
 
 int ttk::TrackingFromOverlap::reset(){
-    this->timeNodeLabelMap = vector< vector<labelType> >();
+    this->timeNodesMap = vector< vector<Node> >();
     this->timeEdgesMap = vector< vector<Edge> >();
 
     if(this->prevTCD!=nullptr)
@@ -46,8 +46,8 @@ int ttk::TrackingFromOverlap::reset(){
     return 0;
 }
 
-vector< vector<labelType> >& ttk::TrackingFromOverlap::getTimeNodeLabelMap(){
-    return this->timeNodeLabelMap;
+vector< vector<Node> >& ttk::TrackingFromOverlap::getTimeNodesMap(){
+    return this->timeNodesMap;
 };
 
 vector< vector<Edge> >& ttk::TrackingFromOverlap::getTimeEdgesMap(){
@@ -70,19 +70,42 @@ int ttk::TrackingFromOverlap::processTimestep(
     }
 
     // Initialize nodes
-    this->timeNodeLabelMap.resize( this->timeNodeLabelMap.size()+1 ); // Add a node set
+    this->timeNodesMap.resize( this->timeNodesMap.size()+1 ); // Add a node set
     unordered_map<labelType, size_t> labelIndexMap;
-    vector<labelType>& nodeLabels = this->timeNodeLabelMap[ this->timeNodeLabelMap.size()-1 ];
+    vector<Node>& nodes = this->timeNodesMap[ this->timeNodesMap.size()-1 ];
     {
         unordered_set<labelType> labels;
         for(size_t i=0; i<nPoints; i++)
             labels.insert( pointLabels[i] );
-        nodeLabels.resize( labels.size() );
+
+        size_t nNodes = labels.size();
+
+        nodes.resize( nNodes );
         size_t i=0;
         for(auto& x: labels){
-            nodeLabels[i] = x;
+            nodes[i].label = x;
             labelIndexMap[x] = i;
             i++;
+        }
+
+        size_t q=0;
+        for(size_t i=0; i<nPoints; i++){
+            Node& n = nodes[ labelIndexMap[ pointLabels[i] ] ];
+            n.size++;
+            n.x += pointCoords[q++];
+            n.y += pointCoords[q++];
+            n.z += pointCoords[q++];
+        }
+
+        #ifdef TTK_ENABLE_OPENMP
+        #pragma omp parallel for num_threads(threadNumber_)
+        #endif
+        for(size_t i=0; i<nNodes; i++){
+            Node& n = nodes[ i ];
+            float size = (float) n.size;
+            n.x /= size;
+            n.y /= size;
+            n.z /= size;
         }
     }
 

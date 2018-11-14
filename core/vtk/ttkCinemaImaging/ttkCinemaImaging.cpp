@@ -1,5 +1,7 @@
 #include <ttkCinemaImaging.h>
 
+#include <vtkVersion.h>
+
 #include <vtkSmartPointer.h>
 #include <vtkPointSet.h>
 #include <vtkMultiBlockDataSet.h>
@@ -201,7 +203,7 @@ int ttkCinemaImaging::RequestData(
     {
         stringstream msg;
         msg<<"[ttkCinemaImaging] ERROR: VTK version too old." << endl;
-        msg<<"[ttkCinemaImaging]        Support for Value Images requires VTK 7.0 or higher" << endl;
+        msg<<"[ttkCinemaImaging]        Value images requires VTK 7.0 or higher" << endl;
         dMsg(cout, msg.str(), timeMsg);
     }
     #endif
@@ -321,7 +323,6 @@ int ttkCinemaImaging::RequestData(
         // Add Point Data
         #if VTK_MAJOR_VERSION >= 7
         if(renderValuePasses){
-
             // Render Value Passes
             renderWindow1->Render();
 

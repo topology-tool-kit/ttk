@@ -18,6 +18,18 @@ using namespace std;
 
 typedef long long labelType;
 
+struct Node {
+    labelType label;
+    size_t size;
+    float x;
+    float y;
+    float z;
+
+    Node(labelType label=0, size_t size=0, float x=0, float y=0, float z=0)
+        : label(label), size(size), x(x), y(y), z(z) {
+    }
+};
+
 struct Edge {
     size_t i;
     size_t j;
@@ -30,7 +42,7 @@ struct Edge {
 
 struct TrackingComputationData {
     vector<size_t> sortedIndicies;
-    vector<float> pointCoords;
+    vector<float>  pointCoords;
     vector<size_t> pointLabelIndicies;
     size_t nPoints;
 };
@@ -43,7 +55,7 @@ namespace ttk{
 
             int reset();
 
-            vector< vector<labelType> >& getTimeNodeLabelMap();
+            vector< vector<Node> >& getTimeNodesMap();
             vector< vector<Edge> >& getTimeEdgesMap();
 
             int processTimestep(
@@ -54,7 +66,7 @@ namespace ttk{
 
         private:
             // Tracking Graph
-            vector< vector<labelType> > timeNodeLabelMap; // Nodes at time t
+            vector< vector<Node> > timeNodesMap; // Nodes at time t
             vector< vector<Edge> > timeEdgesMap; // Edges from time t to t+1
 
             // Previous Timestep

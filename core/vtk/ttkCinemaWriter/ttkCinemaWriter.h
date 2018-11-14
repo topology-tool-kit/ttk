@@ -67,8 +67,8 @@ class ttkCinemaWriter
     protected:
 
         ttkCinemaWriter(){
-            DatabasePath = "";
-            OverrideDatabase = true;
+            SetDatabasePath("");
+            SetOverrideDatabase(true);
 
             UseAllCores = false;
 
@@ -83,11 +83,11 @@ class ttkCinemaWriter
         std::string DatabasePath;
         bool OverrideDatabase;
 
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector);
 
     private:
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;

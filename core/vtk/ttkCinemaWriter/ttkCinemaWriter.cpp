@@ -1,5 +1,7 @@
 #include <ttkCinemaWriter.h>
 
+#include <vtkVersion.h>
+
 #include <vtkMultiBlockDataSet.h>
 #include <vtkDelimitedTextReader.h>
 #include <vtkDelimitedTextWriter.h>
@@ -54,9 +56,8 @@ int ttkCinemaWriter::RequestData (
         inputMB->SetBlock(0, input);
 
     // Check if database path exists and if it has the correct extension
-    string extension = this->DatabasePath.substr(this->DatabasePath.length()-4,4);
-    if( extension.compare(".cdb")!=0 ){
-        dMsg(cout, "[ttkCinemaWriter] ERROR: Invalid database path\n", timeMsg);
+    if( this->DatabasePath.length()<4 || this->DatabasePath.substr(this->DatabasePath.length()-4,4).compare(".cdb")!=0 ){
+        dMsg(cout, "[ttkCinemaWriter] ERROR: Database path has to end with '.cdb'\n", timeMsg);
         return 0;
     }
 
@@ -66,29 +67,29 @@ int ttkCinemaWriter::RequestData (
     string dataCsvPath = this->DatabasePath+"/data.csv";
     string pathSuffix  = ".vtm";
 
+    // Create directory if it does not already exist
+    {
+        auto directory = vtkSmartPointer<vtkDirectory>::New();
+        int opened = directory->Open( this->DatabasePath.data() );
+        if(!opened){
+            directory->MakeDirectory( this->DatabasePath.data() );
+            dMsg(cout, "[ttkCinemaWriter]  - Directory created\n", timeMsg);
+        }
+    }
+
     // If OverrideDatabase then delete old data products
     if( this->OverrideDatabase ){
-        {
-            stringstream msg;
-            msg << "[ttkCinemaWriter] -> Deleting old data products        ... " << flush;
-            dMsg(cout, msg.str(), timeMsg);
-        }
+        dMsg(cout, "[ttkCinemaWriter] - Deleting old data products        ... ", timeMsg);
 
+        // Delete data.csv
         remove( dataCsvPath.data() );
 
+        // Delete data folder
         auto directory = vtkSmartPointer<vtkDirectory>::New();
         if( directory->Open(pathPrefix.data()) && directory->DeleteDirectory(pathPrefix.data())==0 )
             dMsg(cout, "Failed\n[ttkCinemaWriter] ERROR: Unable to delete existing data products\n", timeMsg);
         else
             dMsg(cout, "Done\n", timeMsg);
-    }
-
-    // Create directory if does not already exist
-    {
-        auto directory = vtkSmartPointer<vtkDirectory>::New();
-        int opened = directory->Open( this->DatabasePath.data() );
-        if(!opened)
-            directory->MakeDirectory( this->DatabasePath.data() );
     }
 
     // Determine unique path to new products (for now just generate random number)
@@ -103,11 +104,8 @@ int ttkCinemaWriter::RequestData (
     }
 
     // Write input to disk
-    {
-        stringstream msg;
-        msg << "[ttkCinemaWriter] -> Writing new data products to disk ... " << flush;
-        dMsg(cout, msg.str(), timeMsg);
-    }
+    dMsg(cout, "[ttkCinemaWriter] -> Writing new data products to disk ... ", timeMsg);
+
     auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
     mbWriter->SetFileName( path.data() );
     mbWriter->SetDataModeToAppended();
@@ -118,7 +116,7 @@ int ttkCinemaWriter::RequestData (
 
     dMsg(cout, "Done\n", timeMsg);
 
-    // Create data.csv file if does not already exist
+    // Create data.csv file if it does not already exist
     if( stat( dataCsvPath.data(), &info ) != 0 ){
         vtkDataObject* firstBlock = inputMB->GetBlock(0);
 
