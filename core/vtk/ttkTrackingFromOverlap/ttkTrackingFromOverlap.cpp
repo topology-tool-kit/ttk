@@ -1,7 +1,5 @@
 #include <ttkTrackingFromOverlap.h>
 
-#include <vtkType.h>
-
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkUnstructuredGrid.h>
@@ -35,7 +33,8 @@ int ttkTrackingFromOverlap::processTimestep(vtkDataObject* dataObject){
         dMsg(cout, "[ttkTrackingFromOverlap] ERROR: Point labels not found\n", timeMsg);
         return 0;
     }
-    if( labels->GetDataType()!=VTK_LONG_LONG && (labels->GetDataType()!=VTK_ID_TYPE || VTK_ID_TYPE_IMPL!=VTK_LONG_LONG) ){
+    // TODO: Fix identification of VTK_ID_TYPE_IMPL for vtk6 or lower.
+    if( labels->GetDataType()!=VTK_LONG_LONG && (labels->GetDataType()!=VTK_ID_TYPE || labels->GetDataTypeSize()!=8) ){
         dMsg(cout, "[ttkTrackingFromOverlap] ERROR: Point labels are not of type 'Long Long'\n", timeMsg);
         return 0;
     }
