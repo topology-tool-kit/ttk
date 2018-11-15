@@ -59,6 +59,7 @@ class ttkEndFor
                 case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject"); break;
                 default: return 0;
             }
+            return 1;
         }
 
     protected:
