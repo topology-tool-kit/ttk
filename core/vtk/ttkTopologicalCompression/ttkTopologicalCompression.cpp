@@ -9,10 +9,38 @@ int ttkTopologicalCompression::doIt(
     std::vector<vtkDataSet *> &inputs,
     std::vector<vtkDataSet *> &outputs)
 {
+#ifndef TTK_ENABLE_KAMIKAZE
+  if (!inputs.size()) {
+    cerr << "[ttkTopologicalCompression] Error: not enough input information." << endl;
+    return -1;
+  }
+#endif
 
   // Prepare IO
   vtkDataSet *input1 = inputs[0];
   vtkDataSet *output1 = outputs[0];
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if (!input1) {
+    cerr << "[ttkTopologicalCompression] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if (!input1->GetNumberOfPoints()) {
+    cerr << "[ttkTopologicalCompression] Error: input has no point." << endl;
+    return -1;
+  }
+
+  if (!input1->GetPointData()) {
+    cerr << "[ttkTopologicalCompression] Error: input has no point data." << endl;
+    return -1;
+  }
+
+  if (!output1) {
+    cerr << "[ttkTopologicalCompression] Error: output pointer is NULL." << endl;
+    return -1;
+  }
+#endif
 
   triangulation_.setWrapper(this);
   topologicalCompression_.setWrapper(this);
@@ -22,8 +50,6 @@ int ttkTopologicalCompression::doIt(
   internalTriangulation_ = ttkTriangulation::getTriangulation(input1);
   topologicalCompression_.setupTriangulation(internalTriangulation_);
   Modified();
-
-  if (!input1) return -1;
 
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
@@ -45,7 +71,12 @@ int ttkTopologicalCompression::doIt(
   else
     inputScalarField = input1->GetPointData()->GetArray(ScalarFieldId);
 
-  if (!inputScalarField) return -1;
+#ifndef TTK_ENABLE_KAMIKAZE
+  if (!inputScalarField) {
+    cerr << "[ttkTopologicalCompression] Error: input scalar field pointer is NULL." << endl;
+    return -1;
+  }
+#endif
   
   // allocate the memory for the output scalar field
   if (!outputScalarField_) {
