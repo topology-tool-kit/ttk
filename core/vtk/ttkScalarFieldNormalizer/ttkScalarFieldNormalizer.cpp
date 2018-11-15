@@ -157,6 +157,18 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output){
   
   // end of test
   
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input){
+    cerr << "[ttkScalarFieldNormalizer] Error: not enough input information." << endl;
+    return -1;
+  }
+
+  if(!input->GetNumberOfPoints()){
+    cerr << "[ttkScalarFieldNormalizer] Error: input has no point." << endl;
+    return -1;
+  }
+#endif
+  
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
   output->ShallowCopy(input);
@@ -174,8 +186,12 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output){
     inputScalarField = input->GetPointData()->GetArray(0);
   }
   
-  if(!inputScalarField)
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputScalarField){
+    cerr << "[ttkScalarFieldNormalizer] Error: input scalar field pointer is NULL." << endl;
     return -1;
+  }
+#endif
   
   if(outputScalarField_){
     outputScalarField_->Delete();
