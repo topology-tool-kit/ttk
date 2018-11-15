@@ -1,5 +1,7 @@
 #include <ttkTrackingFromOverlap.h>
 
+#include <vtkType.h>
+
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkUnstructuredGrid.h>
