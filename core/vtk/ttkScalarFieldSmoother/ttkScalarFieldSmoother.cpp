@@ -32,13 +32,46 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
 
   Memory m;
 
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputs.size()){
+    cerr << "[ttkScalarFieldSmoother] Error: not enough input information." << endl;
+    return -1;
+  }
+#endif
+
   vtkDataSet *input = inputs[0];
   vtkDataSet *output = outputs[0];
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input){
+    cerr << "[ttkScalarFieldSmoother] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!input->GetNumberOfPoints()){
+    cerr << "[ttkScalarFieldSmoother] Error: input has no point." << endl;
+    return -1;
+  }
+
+  if(!input->GetPointData()){
+    cerr << "[ttkScalarFieldSmoother] Error: input has no point data." << endl;
+    return -1;
+  }
+
+  if(!output){
+    cerr << "[ttkScalarFieldSmoother] Error: output pointer is NULL." << endl;
+    return -1;
+  }
+#endif
   
   Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
   
-  if(!triangulation)
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!triangulation){
+    cerr << "[ttkScalarFieldSmoother] Error: input triangulation is NULL." << endl;
     return -1;
+  }
+#endif
   
   triangulation->setWrapper(this);
   smoother_.setupTriangulation(triangulation);
@@ -59,8 +92,12 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
     inputScalarField = input->GetPointData()->GetArray(ScalarFieldIdentifier);
   }
   
-  if(!inputScalarField)
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputScalarField){
+    cerr << "[ttkScalarFieldSmoother] Error: input scalar field poiner is NULL." << endl;
     return -2;
+  }
+#endif
 
   if(inputScalarField->GetName())
     ScalarField = inputScalarField->GetName();

@@ -348,8 +348,12 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
 
   triangulation_ = ttkTriangulation::getTriangulation(input);
 
-  if(!triangulation_)
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!triangulation_){
+    cerr << "[ttkContourForests] Error: input triangulation is NULL." << endl;
     return -1;
+  }
+#endif
 
   varyingMesh_ = false;
   if(triangulation_->isEmpty())
@@ -367,8 +371,12 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
     segmentation_->ShallowCopy(input);
   }
 
-  if(!input->GetPointData())
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input->GetPointData()){
+    cerr << "[ttkContourForests] Error: input has no point data." << endl;
     return -2;
+  }
+#endif
 
   // scalars
   if (scalarField_.length()) {
@@ -377,8 +385,12 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet* input)
      vtkInputScalars_ = input->GetPointData()->GetArray(FieldId);
   }
 
-  if(!vtkInputScalars_)
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!vtkInputScalars_){
+    cerr << "[ttkContourForests] Error: input scalar is NULL." << endl;
     return -2;
+  }
+#endif
 
   varyingDataValues_=(vtkInputScalars_->GetMTime() > GetMTime());
   if (varyingMesh_ || varyingDataValues_ || !inputScalarsName_->size()) {
@@ -1466,16 +1478,38 @@ int ttkContourForests::doIt(vector<vtkDataSet *> &inputs,
 
   Memory m;
 
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputs.size()){
+    cerr << "[ttkContourForests] Error: not enough input information." << endl;
+    return -1;
+  }
+#endif
+
   vtkDataSet *input = inputs[0];
   vtkPolyData *outputSkeletonNodes = vtkPolyData::SafeDownCast(outputs[0]);
   vtkPolyData *outputSkeletonArcs = vtkPolyData::SafeDownCast(outputs[1]);
   vtkDataSet *outputSegmentation = outputs[2];
 
-  if(!input->GetNumberOfPoints())
-    return 1;
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input){
+    cerr << "[ttkContourForests] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!outputSkeletonNodes || !outputSkeletonArcs || !outputSegmentation){
+    cerr << "[ttkContourForests] Error: output pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!input->GetNumberOfPoints()){
+    cerr << "[ttkContourForests] Error: input has no point." << endl;
+    return -1;
+  }
+#endif
 
   // conversion
-  vtkDataSetToStdVector(input);
+  if(vtkDataSetToStdVector(input))
+    return -1;
 
   if(simplificationType_ == 0){
     simplificationThreshold_ = simplificationThresholdBuffer_ * deltaScalar_;

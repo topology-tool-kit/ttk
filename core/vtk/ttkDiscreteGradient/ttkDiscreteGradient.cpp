@@ -167,9 +167,32 @@ int ttkDiscreteGradient::getOffsets(vtkDataSet* input){
 
 int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     vector<vtkDataSet *> &outputs){
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputs.size()){
+    cerr << "[ttkDiscreteGradient] Error: not enough input information." << endl;
+    return -1;
+  }
+#endif
   vtkDataSet* input=inputs[0];
   vtkUnstructuredGrid* outputCriticalPoints=vtkUnstructuredGrid::SafeDownCast(outputs[0]);
   vtkUnstructuredGrid* outputGradientGlyphs=vtkUnstructuredGrid::SafeDownCast(outputs[1]);
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input){
+    cerr << "[ttkDiscreteGradient] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!outputCriticalPoints or !outputGradientGlyphs){
+    cerr << "[ttkDiscreteGradient] Error: output pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(input->GetNumberOfPoints()){
+    cerr << "[ttkDiscreteGradient] Error: input has no point." << endl;
+    return -1;
+  }
+#endif
 
   int ret{};
 

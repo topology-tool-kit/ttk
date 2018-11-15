@@ -51,8 +51,12 @@ int ttkTopologicalSimplification::getTriangulation(vtkDataSet* input){
   
   triangulation_ = ttkTriangulation::getTriangulation(input);
   
-  if(!triangulation_)
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!triangulation_){
+    cerr << "[ttkTopologicalSimplification] Error : input triangulation pointer is NULL." << endl;
     return -1;
+  }
+#endif
   
   triangulation_->setWrapper(this);
   topologicalSimplification_.setWrapper(this);
@@ -71,6 +75,18 @@ int ttkTopologicalSimplification::getTriangulation(vtkDataSet* input){
 }
 
 int ttkTopologicalSimplification::getScalars(vtkDataSet* input){
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input){
+    cerr << "[ttkTopologicalSimplification] Error : input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!input->GetNumberOfPoints()){
+    cerr << "[ttkTopologicalSimplification] Error : input has no point." << endl;
+    return -1;
+  }
+#endif
+
   vtkPointData* pointData=input->GetPointData();
 
 #ifndef TTK_ENABLE_KAMIKAZE

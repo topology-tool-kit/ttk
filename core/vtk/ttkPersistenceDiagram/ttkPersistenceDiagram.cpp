@@ -96,8 +96,13 @@ int ttkPersistenceDiagram::getTriangulation(vtkDataSet* input){
   varyingMesh_=false;
 
   triangulation_ = ttkTriangulation::getTriangulation(input);
-  if(!triangulation_)
-    return 0;
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!triangulation_){
+    cerr << "[ttkPersistenceDiagram] Error: input triangulation is NULL." << endl;
+    return -1;
+  }
+#endif
   
   triangulation_->setWrapper(this);
   persistenceDiagram_.setupTriangulation(triangulation_);
@@ -179,10 +184,34 @@ int ttkPersistenceDiagram::deleteDiagram(){
 
 int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputs.size()){
+    cerr << "[ttkPersistenceDiagram] Error: not enough input information." << endl;
+    return -1;
+  }
+#endif
   
   vtkDataSet *input = inputs[0];
   vtkUnstructuredGrid *outputCTPersistenceDiagram = 
     vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input){
+    cerr << "[ttkPersistenceDiagram] Error: input is NULL." << endl;
+    return -1;
+  }
+
+  if(!input->GetNumberOfPoints()){
+    cerr << "[ttkPersistenceDiagram] Error: input has no point." << endl;
+    return -1;
+  }
+
+  if(!outputCTPersistenceDiagram){
+    cerr << "[ttkPersistenceDiagram] Error: output is NULL." << endl;
+    return -1;
+  }
+#endif
   
   Memory m;
   
