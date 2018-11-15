@@ -181,14 +181,14 @@ int ttkTrackingFromOverlap::RequestData(
         int status = this->processTimestep( inMB->GetBlock(i) );
         if(status==0) return 0;
         if(nBlocks>1)
-            dMsg(cout, "[ttkTrackingFromOverlap] -----------------------------------------------------------\n", timeMsg);
+            dMsg(cout, "[ttkTrackingFromOverlap] -------------------------------------------------------\n", timeMsg);
         this->updateProgress( ((float)i)/((float)(nBlocks-1)) );
     }
 
     // Last Timestep
     if(i==n-1 || nBlocks>1){
         if(nBlocks<2)
-            dMsg(cout, "[ttkTrackingFromOverlap] -----------------------------------------------------------\n", timeMsg);
+            dMsg(cout, "[ttkTrackingFromOverlap] -------------------------------------------------------\n", timeMsg);
 
         // Get Output
         vtkInformation* outInfo = outputVector->GetInformationObject(0);
