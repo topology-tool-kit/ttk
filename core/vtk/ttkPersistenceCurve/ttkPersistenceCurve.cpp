@@ -191,6 +191,24 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
     vtkTable* outputMSCPersistenceCurve,
     vtkTable* outputSTPersistenceCurve,
     vtkTable* outputCTPersistenceCurve){
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input){
+    cerr << "[ttkPersistenceCurve] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!input->GetNumberOfPoints()){
+    cerr << "[ttkPersistenceCurve] Error: input has no point." << endl;
+    return -1;
+  }
+
+  if(!outputJTPersistenceCurve or !outputMSCPersistenceCurve or ! outputSTPersistenceCurve
+      or !outputCTPersistenceCurve){
+    cerr << "[ttkPersistenceCurve] Error: output pointer is NULL." << endl;
+    return -1;
+  }
+#endif
+
   int ret{};
 
   ret=getScalars(input);
