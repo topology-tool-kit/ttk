@@ -66,6 +66,23 @@ int ttkBottleneckDistance::doIt(
   vtkDataSet *output2 = outputs[1];
   vtkDataSet *output3 = outputs[2];
 
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input1 || !input2){
+    cerr << "[ttkBottleneckDistance] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!output1 || !output2 || !output3){
+    cerr << "[ttkBottleneckDistance] Error: output pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(input1->GetNumberOfPoints()==0 || input2->GetNumberOfPoints()==0){
+    cerr << "[ttkBottleneckDistance] Error: input has no points." << endl;
+    return -1;
+  }
+#endif
+
   vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(output1);
   vtkUnstructuredGrid *outputCT2 = vtkUnstructuredGrid::SafeDownCast(output2);
   vtkUnstructuredGrid *outputCT3 = vtkUnstructuredGrid::SafeDownCast(output3);
