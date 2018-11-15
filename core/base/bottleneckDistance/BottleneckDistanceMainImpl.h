@@ -100,7 +100,7 @@ int BottleneckDistance::computeBottleneck(
       {
         BNodeType ta1 = std::get<1>(a);
         BNodeType ta2 = std::get<3>(a);
-        double w = 1; // wasserstein > 1 ? wasserstein : 1;
+        double w = wasserstein > 1 ? wasserstein : 1; // L_inf not managed.
 
         // We don't match critical points of different index.
         // This must be ensured before calling the distance function.
@@ -114,8 +114,8 @@ int BottleneckDistance::computeBottleneck(
         dataType rY = std::get<10>(a);
         dataType cX = std::get<6>(b);
         dataType cY = std::get<10>(b);
-        dataType x = (isMin1 ? pe : ps) * abs_diff<dataType>(rX, cX);
-        dataType y = (isMax1 ? pe : ps) * abs_diff<dataType>(rY, cY);
+        dataType x = ((isMin1 && !isMax1) ? pe : ps) * pow(abs_diff<dataType>(rX, cX), w);
+        dataType y = (isMax1 ? pe : ps) * pow(abs_diff<dataType>(rY, cY), w);
         double geoDistance =
           isMax1 ?
           (
@@ -134,9 +134,8 @@ int BottleneckDistance::computeBottleneck(
             pz * pow(abs(std::get<9>(a)+std::get<13>(a))/2 - abs(std::get<9>(b)+std::get<13>(b))/2, w)
           );
 
-        // dist /= maxDistance;
-        double infDistance = std::max(x, y);
-        double val = infDistance + geoDistance;
+        double persDistance = x + y;
+        double val = persDistance + geoDistance;
         val = pow(val, 1/w);
         return val;
       };
@@ -148,7 +147,7 @@ int BottleneckDistance::computeBottleneck(
       {
         BNodeType ta1 = std::get<1>(a);
         BNodeType ta2 = std::get<3>(a);
-        double w = 1; // wasserstein > 1 ? wasserstein : 1;
+        double w = wasserstein > 1 ? wasserstein : 1;
         bool isMin1 = ta1 == BLocalMin;
         bool isMax1 = ta2 == BLocalMax;
 
@@ -161,7 +160,7 @@ int BottleneckDistance::computeBottleneck(
         double y2 = std::get<12>(a);
         double z2 = std::get<13>(a);
 
-        double infDistance = (isMin1 || isMax1 ? pe : ps) * abs_diff<dataType>(rX, rY);
+        double infDistance = (isMin1 || isMax1 ? pe : ps) * pow(abs_diff<dataType>(rX, rY), w);
         double geoDistance =
             (px * pow(abs(x2 - x1), w) + py * pow(abs(y2 - y1), w) + pz * pow(abs(z2 - z1), w));
         double val = infDistance + geoDistance;

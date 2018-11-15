@@ -386,6 +386,14 @@ int ttkBottleneckDistance::getPersistenceDiagram(
     return -2;
 
   auto pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
+
+  // Continuous indexing (no gap in indices)
+  for (int pairIndex = 0; pairIndex < pairingsSize; ++pairIndex) {
+    const float indexOfPair = pairIndex;
+    if (*pairIdentifierScalars->GetTuple(pairIndex) != -1) // except diagonal
+      pairIdentifierScalars->SetTuple(pairIndex, &indexOfPair);
+  }
+
   auto s = (float) 0.0;
 
   if (!deathScalars != !birthScalars) return -2;
