@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="BlockAggregator" class="ttkBlockAggregator" label="TTK BlockAggregator">
-            <Documentation long_help="TTK BlockAggregator" short_help="TTK BlockAggregator">This filter iteratively appends its input to a vtkMultiBlockDataSet.</Documentation>
+            <Documentation long_help="TTK BlockAggregator" short_help="TTK BlockAggregator">This filter iteratively appends its input to a vtkMultiBlockDataSet. For example, this filter can be used to collect results of a ForEachRow execution.</Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
@@ -33,6 +33,7 @@
                 <Property name="ThreadNumber" />
                 <Property name="DebugLevel" />
             </PropertyGroup>
+
             <Hints>
                 <ShowInMenu category="TTK - Pipeline" />
             </Hints>

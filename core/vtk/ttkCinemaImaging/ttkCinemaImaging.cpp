@@ -53,14 +53,14 @@ int ttkCinemaImaging::RequestData(
     double t0=0;
 
     // Get Input / Output
-    vtkInformation* inputGeomertyInfo = inputVector[0]->GetInformationObject(0);
-    auto inputObject = inputGeomertyInfo->Get(vtkDataObject::DATA_OBJECT());
+    vtkInformation* inputObjectInfo = inputVector[0]->GetInformationObject(0);
+    auto inputObject = inputObjectInfo->Get(vtkDataObject::DATA_OBJECT());
 
     vtkInformation* inGridInfo = inputVector[1]->GetInformationObject(0);
     auto inputGrid = vtkPointSet::SafeDownCast( inGridInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    auto output = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    auto outputImages = vtkMultiBlockDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     // -------------------------------------------------------------------------
     // Initialize Shared Render Objects
@@ -139,7 +139,7 @@ int ttkCinemaImaging::RequestData(
     {
         auto valuePassCollection = vtkSmartPointer<vtkRenderPassCollection>::New();
 
-        // Lambda function that generates a vtkValuePasses for Point or Cell Data
+        // Lambda function that generates vtkValuePasses for Point or Cell Data
         auto addValuePasses = [](
             vtkRenderPassCollection* valuePassCollection,
             vector< pair<vtkValuePass*,string> >& valuePassList,
@@ -337,7 +337,7 @@ int ttkCinemaImaging::RequestData(
         #endif
 
         // Add Image to MultiBlock
-        output->SetBlock(i, outputImage);
+        outputImages->SetBlock(i, outputImage);
     }
 
     // Output Performance

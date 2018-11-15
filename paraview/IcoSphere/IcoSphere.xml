@@ -31,6 +31,7 @@
                 <IntRangeDomain name="range" min="0" max="100" />
                 <Documentation>Debug level.</Documentation>
             </IntVectorProperty>
+
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="Subdivisions" />
                 <Property name="Radius" />

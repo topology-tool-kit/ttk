@@ -52,6 +52,8 @@ class ttkCreateMultiBlockDataSet
         // end of default ttk setters
 
         int FillInputPortInformation(int port, vtkInformation *info) override {
+            if(port>4)
+                return 0;
             // All ports have the same generic type and are optional
             info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
             info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1 );
@@ -59,8 +61,10 @@ class ttkCreateMultiBlockDataSet
         }
 
         int FillOutputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
+                default: return 0;
+            }
             return 1;
         }
 
@@ -77,11 +81,11 @@ class ttkCreateMultiBlockDataSet
         bool UseAllCores;
         int ThreadNumber;
 
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;

@@ -62,7 +62,7 @@ class ttkCinemaImaging
         }
         // end of default ttk setters
 
-        int FillInputPortInformation(int port, vtkInformation *info) override {
+        int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port){
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");  break;
                 case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet"); break;
@@ -71,7 +71,7 @@ class ttkCinemaImaging
             return 1;
         }
 
-        int FillOutputPortInformation(int port, vtkInformation *info) override {
+        int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port){
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
                 default: return 0;

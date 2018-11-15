@@ -5,7 +5,7 @@
 ///
 /// \brief TTK VTK-filter that iteratively appends its input to a vtkMultiBlockDataSet.
 ///
-/// This filter iteratively appends its input as blocks to a vtkMultiBlockDataSet.
+/// This filter iteratively appends its input as a block to a vtkMultiBlockDataSet.
 ///
 /// \param Input vtkDataObject that will be added as a block (vtkDataObject).
 /// \param Output vtkMultiBlockDataSet containing all added blocks (vtkMultiBlockDataSet).
@@ -49,14 +49,18 @@ class ttkBlockAggregator
         // end of default ttk setters
 
         int FillInputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
+            switch(port){
+                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject"); break;
+                default: return 0;
+            }
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
+                default: return 0;
+            }
             return 1;
         }
 
@@ -79,7 +83,7 @@ class ttkBlockAggregator
 
         vtkSmartPointer<vtkMultiBlockDataSet> AggregatedMultiBlockDataSet;
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;

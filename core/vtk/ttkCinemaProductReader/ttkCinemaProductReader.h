@@ -56,14 +56,18 @@ class ttkCinemaProductReader
 
 
         int FillInputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable"); break;
+                case 1: return 0;
+            }
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
+                case 1: return 0;
+            }
             return 1;
         }
 
@@ -86,7 +90,7 @@ class ttkCinemaProductReader
 
     private:
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;

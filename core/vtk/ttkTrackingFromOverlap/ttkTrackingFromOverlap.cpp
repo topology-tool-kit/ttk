@@ -28,7 +28,7 @@ int ttkTrackingFromOverlap::processTimestep(vtkDataObject* dataObject){
 
     auto n = pointSet->GetNumberOfPoints();
 
-    auto labels = pointSet->GetPointData()->GetAbstractArray( this->GetLabelScalarField().data() );
+    auto labels = pointSet->GetPointData()->GetAbstractArray( this->GetLabelFieldName().data() );
     if(labels==nullptr && n>0){
         dMsg(cout, "[ttkTrackingFromOverlap] ERROR: Point labels not found\n", timeMsg);
         return 0;
@@ -76,7 +76,7 @@ int ttkTrackingFromOverlap::finalize(vtkUnstructuredGrid* trackingGraph){
 
         vtkSmartPointer<vtkIdTypeArray> label = vtkSmartPointer<vtkIdTypeArray>::New();
         label->SetNumberOfComponents(1);
-        label->SetName( this->GetLabelScalarField().data() );
+        label->SetName( this->GetLabelFieldName().data() );
         label->SetNumberOfValues(n);
         auto labelData = (long long*) label->GetVoidPointer(0);
 

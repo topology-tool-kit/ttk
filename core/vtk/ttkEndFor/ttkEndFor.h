@@ -47,15 +47,18 @@ class ttkEndFor
         // end of default ttk setters
 
         int FillInputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
+            switch(port){
+                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject"); break;
+                default: return 0;
+            }
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
-            return 1;
+            switch(port){
+                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject"); break;
+                default: return 0;
+            }
         }
 
     protected:
@@ -73,15 +76,15 @@ class ttkEndFor
         bool UseAllCores;
         int ThreadNumber;
 
-        double nextIndex;
-
         int RequestInformation(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
         int RequestUpdateExtent(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        double nextIndex;
+
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;

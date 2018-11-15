@@ -22,6 +22,7 @@ int ttkCreateMultiBlockDataSet::RequestData(
 
     Timer t;
 
+    // Get Output
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     auto outputMB = vtkMultiBlockDataSet::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
 

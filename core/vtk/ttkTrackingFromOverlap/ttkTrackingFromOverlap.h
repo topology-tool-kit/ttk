@@ -35,8 +35,8 @@ class ttkTrackingFromOverlap
         static ttkTrackingFromOverlap* New();
         vtkTypeMacro(ttkTrackingFromOverlap, vtkUnstructuredGridAlgorithm)
 
-        vtkSetMacro(LabelScalarField, string);
-        vtkGetMacro(LabelScalarField, string);
+        vtkSetMacro(LabelFieldName, string);
+        vtkGetMacro(LabelFieldName, string);
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -55,21 +55,25 @@ class ttkTrackingFromOverlap
         // end of default ttk setters
 
         int FillInputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
+                default: return 0;
+            }
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); break;
+                default: return 0;
+            }
             return 1;
         }
 
     protected:
 
         ttkTrackingFromOverlap(){
-            LabelScalarField = "RegionId";
+            SetLabelFieldName("RegionId");
 
             UseAllCores = false;
 
@@ -88,10 +92,10 @@ class ttkTrackingFromOverlap
 
     private:
 
-        string LabelScalarField;
+        string LabelFieldName;
         ttk::TrackingFromOverlap trackingFromOverlap;
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;
