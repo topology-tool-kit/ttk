@@ -16,7 +16,7 @@
                 <Documentation>Graph.</Documentation>
             </InputProperty>
 
-            <StringVectorProperty name="LevelFieldName" command="SetLevelFieldName" number_of_elements="1" animateable="0" label="Level Field">
+            <StringVectorProperty name="AxisFieldName" command="SetAxisFieldName" number_of_elements="1" animateable="0" label="Axis Field Name">
                 <ArrayListDomain name="array_list" default_values="TimeIndex" input_domain_name="input_array">
                     <RequiredProperties>
                         <Property name="Input" function="Input" />
@@ -42,7 +42,7 @@
             </IntVectorProperty>
 
             <PropertyGroup panel_widget="Line" label="Input Options">
-                <Property name="LevelFieldName" />
+                <Property name="AxisFieldName" />
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Testing">

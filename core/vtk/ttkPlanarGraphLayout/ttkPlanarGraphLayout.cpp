@@ -21,11 +21,12 @@ int ttkPlanarGraphLayout::RequestData(
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkPlanarGraphLayout] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     // Set Wrapper
     planarGraphLayout_.setWrapper(this);
+    planarGraphLayout_.setDebugLevel(this->debugLevel_);
 
     // Prepare input and output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
@@ -52,11 +53,11 @@ int ttkPlanarGraphLayout::RequestData(
 
     auto cells = output->GetCells();
     long long* topology = cells->GetPointer();
-    auto levels = outputPointData->GetAbstractArray( this->GetLevelFieldName().data() );
+    auto levels = outputPointData->GetAbstractArray( this->GetAxisFieldName().data() );
     if(!levels){
         stringstream msg;
-        msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetLevelFieldName() << "'" <<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetAxisFieldName() << "'" <<endl;
+        dMsg(cout, msg.str(), fatalMsg);
         return 0;
     }
 

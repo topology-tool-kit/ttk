@@ -53,6 +53,15 @@ function(ttk_set_compile_options library)
         target_link_libraries(${library} PUBLIC ${ZLIB_LIBRARY})
     endif()
 
+    if (TTK_ENABLE_GRAPHVIZ)
+		target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
+		target_include_directories(${library} PUBLIC ${GRAPHVIZ_INCLUDE_DIR})
+		target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CDT_LIBRARY})
+		target_link_libraries(${library} PUBLIC ${GRAPHVIZ_GVC_LIBRARY})
+		target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CGRAPH_LIBRARY})
+		target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
+	endif()
+
     if (TTK_ENABLE_SQLITE3)
         target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
         target_include_directories(${library} PUBLIC ${SQLITE3_INCLUDE_DIR})
@@ -76,6 +85,7 @@ function(ttk_print_summary)
     message(STATUS "TTK_ENABLE_OPENMP: ${TTK_ENABLE_OPENMP}")
     message(STATUS "TTK_ENABLE_MPI: ${TTK_ENABLE_MPI}")
     message(STATUS "TTK_ENABLE_SQLITE3: ${TTK_ENABLE_SQLITE3}")
+    message(STATUS "TTK_ENABLE_GRAPHVIZ: ${TTK_ENABLE_GRAPHVIZ}")
     message(STATUS "TTK_ENABLE_ZFP: ${TTK_ENABLE_ZFP}")
     message(STATUS "TTK_ENABLE_ZLIB: ${TTK_ENABLE_ZLIB}")
     message(STATUS "TTK_ENABLE_64BIT_IDS: ${TTK_ENABLE_64BIT_IDS}")
@@ -195,6 +205,30 @@ if(NOT ZLIB_INCLUDE_DIR)
 else()
   option(TTK_ENABLE_ZLIB "Enable Zlib support" ON)
 endif()
+
+
+option(TTK_ENABLE_GRAPHVIZ "Enable GraphViz support" ON)
+if(TTK_ENABLE_GRAPHVIZ)
+  find_path(GRAPHVIZ_INCLUDE_DIR
+    NAMES graphviz/cgraph.h
+    HINTS ${_GRAPHVIZ_INCLUDE_DIR})
+  find_library(GRAPHVIZ_CDT_LIBRARY
+    NAMES cdt
+    HINTS ${_GRAPHVIZ_LIBRARY_DIR})
+  find_library(GRAPHVIZ_GVC_LIBRARY
+    NAMES gvc
+    HINTS ${_GRAPHVIZ_LIBRARY_DIR})
+  find_library(GRAPHVIZ_CGRAPH_LIBRARY
+    NAMES cgraph
+    HINTS ${_GRAPHVIZ_LIBRARY_DIR})
+  find_library(GRAPHVIZ_PATHPLAN_LIBRARY
+    NAMES pathplan
+    HINTS ${_GRAPHVIZ_LIBRARY_DIR})
+  if(NOT GRAPHVIZ_INCLUDE_DIR)
+    message(WARNING "GraphViz not found, disabling GraphViz support in TTK.")
+  endif()
+endif()
+
 
 # START_FINDSQLITE3
 find_path(SQLITE3_INCLUDE_DIR sqlite3.h

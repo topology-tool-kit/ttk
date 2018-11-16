@@ -93,9 +93,22 @@ function(ttk_add_base_template_library library)
 		target_include_directories(${library} INTERFACE ${ZFP_INCLUDE_DIR})
 	endif()
 
+    if (TTK_ENABLE_GRAPHVIZ)
+		target_compile_definitions(${library} INTERFACE TTK_ENABLE_GRAPHVIZ)
+		target_include_directories(${library} INTERFACE ${GRAPHVIZ_INCLUDE_DIR})
+	endif()
+
     if (TTK_ENABLE_SQLITE3)
 		target_compile_definitions(${library} INTERFACE TTK_ENABLE_SQLITE3)
 		target_include_directories(${library} INTERFACE ${SQLITE3_INCLUDE_DIR})
+	endif()
+
+	if (GRAPHVIZ_INCLUDE_DIR)
+		target_compile_definitions(${library} INTERFACE TTK_ENABLE_GRAPHVIZ)
+		target_link_libraries(${library} INTERFACE ${GRAPHVIZ_CDT_LIBRARY})
+		target_link_libraries(${library} INTERFACE ${GRAPHVIZ_GVC_LIBRARY})
+		target_link_libraries(${library} INTERFACE ${GRAPHVIZ_CGRAPH_LIBRARY})
+		target_link_libraries(${library} INTERFACE ${GRAPHVIZ_PATHPLAN_LIBRARY})
 	endif()
 
 	if (TTK_ENABLE_ZLIB)

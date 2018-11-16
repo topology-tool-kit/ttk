@@ -3,11 +3,11 @@
 /// \author Wiebke Koepp (wiebke.koepp@gmail.com) and Jonas Lukasczyk (jl@jluk.de)
 /// \date 01.11.2018
 ///
-/// \brief TTK VTK-filter that TODO.
+/// \brief TTK VTK-filter that computes a planar graph layout.
 ///
 /// VTK wrapping code for the @PlanarGraphLayout package.
 ///
-/// This filter TODO
+/// This filter computes a planar graph layout of a vtkUnstructuredGrid.
 ///
 /// \param Input Graph. (vtkUnstructuredGrid)
 /// \param Output Graph (vtkUnstructuredGrid)
@@ -36,8 +36,8 @@ class ttkPlanarGraphLayout
         static ttkPlanarGraphLayout* New();
         vtkTypeMacro(ttkPlanarGraphLayout, vtkUnstructuredGridAlgorithm)
 
-        vtkSetMacro(LevelFieldName, std::string);
-        vtkGetMacro(LevelFieldName, std::string);
+        vtkSetMacro(AxisFieldName, std::string);
+        vtkGetMacro(AxisFieldName, std::string);
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -70,7 +70,7 @@ class ttkPlanarGraphLayout
     protected:
 
         ttkPlanarGraphLayout(){
-            LevelFieldName = "";
+            AxisFieldName = "";
 
             UseAllCores = false;
 
@@ -86,7 +86,7 @@ class ttkPlanarGraphLayout
 
     private:
 
-        std::string LevelFieldName;
+        std::string AxisFieldName;
         ttk::PlanarGraphLayout planarGraphLayout_;
 
         bool needsToAbort() override { return GetAbortExecute();};

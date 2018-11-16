@@ -16,9 +16,7 @@
 // base code includes
 #include <Wrapper.h>
 
-#define TTK_ENABLE_GRAPHVIZ 1
-
-#ifdef TTK_ENABLE_GRAPHVIZ
+#if TTK_ENABLE_GRAPHVIZ
 #include <graphviz/cgraph.h>
 #include <graphviz/gvc.h>
 #endif
@@ -59,15 +57,6 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
     float* layout
 ) const{
 
-    #ifndef TTK_ENABLE_GRAPHVIZ
-    {
-        std::stringstream msg;
-        msg << "[PlanarGraphLayout] ERROR: This filter requires GraphViz" << endl;
-        dMsg(std::cout, msg.str(), timeMsg);
-        return 1;
-    }
-    #endif
-
     auto levels = (dataType*) levelsP;
 
     Timer t;
@@ -75,22 +64,22 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
     // Print Input
     {
         stringstream msg;
-        msg << "[ttkPlanarGraphLayout] Computing Layout for graph with" << endl
-            << "[ttkPlanarGraphLayout]  - "<< nVertices << " vertices" << endl
-            << "[ttkPlanarGraphLayout]  - "<< nEdges << " edges" << endl;
-        dMsg(cout, msg.str(), timeMsg);
+        msg << "[ttkPlanarGraphLayout] Computing layout for graph with" << endl
+            << "[ttkPlanarGraphLayout]     "<< nVertices << " vertices" << endl
+            << "[ttkPlanarGraphLayout]     "<< nEdges << " edges" << endl;
+        dMsg(cout, msg.str(), infoMsg);
     }
 
-    // Get Labels
+    // Get labels and clear layout
     map<double, size_t> levelToLevelIndex;
     {
-        for(size_t i=0; i<nVertices; i++)
+        for(size_t i=0; i<nVertices; i++){
             levelToLevelIndex[ levels[i] ] = 0;
-        size_t i=0;
-        for(auto& t: levelToLevelIndex){
-            cout<<t.first << "->" << t.second << endl;
-            t.second = i++;
+            layout[i] = 0;
         }
+        size_t i=0;
+        for(auto& t: levelToLevelIndex)
+            t.second = i++;
     }
     size_t nLevels = levelToLevelIndex.size();
 
@@ -154,32 +143,35 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
         dMsg(cout, msg.str(), timeMsg);
         t0 = t.getElapsedTime();
     }
-
-    cout<<dot<<endl;
+    dMsg(cout, dot, advancedInfoMsg);
 
     // =========================================================================
     // Compute Layout
     // =========================================================================
-    cout<< "[ttkPlanarGraphLayout] Computing layout ... " << flush;
+    #if TTK_ENABLE_GRAPHVIZ
+        dMsg(cout, "[ttkPlanarGraphLayout] Computing layout ... ", timeMsg);
+        Agraph_t* G = agmemread( dot.c_str() );
+        GVC_t *gvc = gvContext();
+        gvLayout(gvc, G, "dot");
 
-    Agraph_t* G = agmemread( dot.c_str() );
-    GVC_t *gvc = gvContext();
-    gvLayout(gvc, G, "dot");
-
-    for(size_t i=0; i<nVertices; i++){
-        Agnode_t* n = agnode(G, const_cast<char*>(nl(i).c_str()), 0);
-        if(n!=nullptr){
-            auto c = ND_coord(n);
-            layout[i] = c.y/100.;
+        for(size_t i=0; i<nVertices; i++){
+            Agnode_t* n = agnode(G, const_cast<char*>(nl(i).c_str()), 0);
+            if(n!=nullptr){
+                auto c = ND_coord(n);
+                layout[i] = c.y/100.;
+            }
         }
-    }
 
-    {
-        stringstream msg;
-        msg << "done (" << (t.getElapsedTime()-t0) <<  " s)" << endl;
-        dMsg(cout, msg.str(), timeMsg);
-        t0 = t.getElapsedTime();
-    }
+        {
+            stringstream msg;
+            msg << "done (" << (t.getElapsedTime()-t0) <<  " s)" << endl;
+            dMsg(cout, msg.str(), timeMsg);
+            t0 = t.getElapsedTime();
+        }
+    #else
+        dMsg(cout, "[ttkPlanarGraphLayout] ERROR: This filter requires GraphViz to compute the layout.\n", fatalMsg);
+        return 1;
+    #endif
 
     // Print performance
     {
