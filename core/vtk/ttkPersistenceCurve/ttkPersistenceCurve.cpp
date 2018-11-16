@@ -66,6 +66,16 @@ int ttkPersistenceCurve::updateProgress(const float &progress){
   return 0;
 }
 
+vtkTable* ttkPersistenceCurve::GetOutput()
+{
+  return this->GetOutput(0);
+}
+
+vtkTable* ttkPersistenceCurve::GetOutput(int port)
+{
+  return vtkTable::SafeDownCast(this->GetOutputDataObject(port));
+}
+
 int ttkPersistenceCurve::FillOutputPortInformation(int port, vtkInformation* info){
   switch (port) {
     case 0:
