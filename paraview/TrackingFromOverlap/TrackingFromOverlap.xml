@@ -16,7 +16,7 @@
                 <Documentation>A vtkMultiBlockDataSet that contains a sequence of vtkPointSets.</Documentation>
             </InputProperty>
 
-            <StringVectorProperty name="LabelScalarField" command="SetLabelScalarField" number_of_elements="1" animateable="0" label="Labels">
+            <StringVectorProperty name="LabelFieldName" command="SetLabelFieldName" number_of_elements="1" animateable="0" label="Labels">
                 <ArrayListDomain name="array_list" default_values="RegionId" input_domain_name="input_array">
                     <RequiredProperties>
                         <Property name="Input" function="Input" />
@@ -42,7 +42,7 @@
             </IntVectorProperty>
 
             <PropertyGroup panel_widget="Line" label="Input Options">
-                <Property name="LabelScalarField" />
+                <Property name="LabelFieldName" />
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Testing">
@@ -52,7 +52,7 @@
             </PropertyGroup>
 
             <Hints>
-                <ShowInMenu category="TTK - Cinema" />
+                <ShowInMenu category="TTK - Time-varying Scalar Data" />
             </Hints>
         </SourceProxy>
     </ProxyGroup>

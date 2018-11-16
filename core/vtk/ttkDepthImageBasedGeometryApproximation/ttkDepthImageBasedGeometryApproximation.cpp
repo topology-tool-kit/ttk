@@ -28,7 +28,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkDepthImageBasedGeometryApproximation] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     // Prepare input and output
@@ -63,7 +63,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         if(depthValues==nullptr || camHeight==nullptr || camPosition==nullptr || camDirection==nullptr || camUp==nullptr || camNearFar==nullptr || camRes==nullptr){
             stringstream msg;
             msg << "[ttkDepthImageBasedGeometryApproximation] ERROR: Input depth image does not have one or more of the required fields (see Cinema Spec D - Data Product Specification)" << endl;
-            dMsg(cout, msg.str(), memoryMsg);
+            dMsg(cout, msg.str(), fatalMsg);
             return 0;
         }
 
@@ -129,11 +129,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
 
                 auto outArray = vtkDataArray::CreateDataArray( inArray->GetDataType() );
                 outArray->SetName( inArray->GetName() );
-                #if VTK_MAJOR_VERSION >= 7
-                    outArray->SetNumberOfValues( m );
-                #else
-                    outArray->SetNumberOfTuples( m );
-                #endif
+                outArray->SetNumberOfTuples( m );
 
                 for(size_t j=0; j<m; j++){
                     outArray->SetTuple(j, inArray->GetTuple(indicies[j]));
@@ -185,7 +181,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
             << "[ttkDepthImageBasedGeometryApproximation] " << n << " Images processed" << endl
             << "[ttkDepthImageBasedGeometryApproximation]   time: " << t.getElapsedTime() << " s" << endl
             << "[ttkDepthImageBasedGeometryApproximation] memory: " << m.getElapsedUsage() << " MB" << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;

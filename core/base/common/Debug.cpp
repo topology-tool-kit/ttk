@@ -7,12 +7,12 @@ int ttk::globalDebugLevel_ = -INT_MAX;
 using namespace std;
 using namespace ttk;
 
-Debug::Debug() { 
+Debug::Debug() {
   debugLevel_ = infoMsg;
-  
+
   // avoid warnings
-  if(goodbyeMsg_) goodbyeMsg_ = true; 
-  
+  if(goodbyeMsg_) goodbyeMsg_ = true;
+
   if((ttk::welcomeMsg_)&&(debugLevel_)){
     ttk::welcomeMsg_ = false;
     stringstream s;
@@ -49,12 +49,12 @@ Debug::~Debug(){
   }
 }
 
-int Debug::dMsg(ostream &stream, string msg, 
+int Debug::dMsg(ostream &stream, string msg,
   const int &debugLevel) const{
- 
+
   if((debugLevel_ >= debugLevel)
     ||(globalDebugLevel_ >= debugLevel))
-    stream << msg.data();
+    stream << msg.data() << flush;
   return 0;
 }
 

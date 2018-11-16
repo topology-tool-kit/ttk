@@ -3,9 +3,9 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.10.2018
 ///
-/// \brief TTK VTK-filter that computes an image grid layout.
+/// \brief TTK VTK-filter that arranges vtkDataSets on a grid.
 ///
-/// This filter computes a grid layout for images stored as blocks of a vtkMultiBlockDataSet.
+/// This filter arranges vtkDataSets which are stored in a vtkMultiBlockDataSet on a grid.
 ///
 /// \param Input vtkMultiBlockDataSet
 /// \param Output vtkMultiBlockDataSet
@@ -47,15 +47,19 @@ class ttkCinemaLayout
         }
         // end of default ttk setters
 
-        int FillInputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+        int FillInputPortInformation(int port, vtkInformation* info) override {
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
+                default: return 0;
+            }
             return 1;
         }
 
-        int FillOutputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+        int FillOutputPortInformation(int port, vtkInformation* info) override {
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
+                default: return 0;
+            }
             return 1;
         }
 

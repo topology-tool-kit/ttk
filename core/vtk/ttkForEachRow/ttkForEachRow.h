@@ -47,14 +47,18 @@ class ttkForEachRow
         // end of default ttk setters
 
         int FillInputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable"); break;
+                default: return 0;
+            }
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation* info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable"); break;
+                default: return 0;
+            }
             return 1;
         }
 
@@ -76,7 +80,7 @@ class ttkForEachRow
 
     private:
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;

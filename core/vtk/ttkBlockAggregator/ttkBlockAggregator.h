@@ -1,37 +1,36 @@
 /// \ingroup vtk
-/// \class ttkCinemaProductReader
+/// \class ttkBlockAggregator
 /// \author Jonas Lukasczyk <jl@jluk.de>
-/// \date 01.09.2018
+/// \date 01.11.2018
 ///
-/// \brief TTK VTK-filter that reads the data products that are referenced in a vtkTable.
+/// \brief TTK VTK-filter that iteratively appends its input to a vtkMultiBlockDataSet.
 ///
-/// This filter reads the products that are referenced in a vtkTable. The results are stored in a vtkMultiBlockDataSet where each block corresponds to a row of the table with consistent ordering.
+/// This filter iteratively appends its input as a block to a vtkMultiBlockDataSet.
 ///
-/// \param Input vtkTable that contains data product references (vtkTable)
-/// \param Output vtkMultiBlockDataSet where each block is a referenced product of an input table row (vtkMultiBlockDataSet)
+/// \param Input vtkDataObject that will be added as a block (vtkDataObject).
+/// \param Output vtkMultiBlockDataSet containing all added blocks (vtkMultiBlockDataSet).
 
 #pragma once
 
 // VTK includes
 #include <vtkMultiBlockDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkSmartPointer.h>
 
 // TTK includes
 #include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaProductReader
+class VTKFILTERSCORE_EXPORT ttkBlockAggregator
 #else
-class ttkCinemaProductReader
+class ttkBlockAggregator
 #endif
 : public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
 
     public:
 
-        static ttkCinemaProductReader* New();
-        vtkTypeMacro(ttkCinemaProductReader, vtkMultiBlockDataSetAlgorithm)
+        static ttkBlockAggregator* New();
+        vtkTypeMacro(ttkBlockAggregator, vtkMultiBlockDataSetAlgorithm)
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -49,16 +48,10 @@ class ttkCinemaProductReader
         }
         // end of default ttk setters
 
-        void SetFilepathColumnName(int idx, int port, int connection, int fieldAssociation, const char* name){
-            this->FilepathColumnName = std::string(name);
-            this->Modified();
-        };
-
-
         int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port){
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable"); break;
-                case 1: return 0;
+                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject"); break;
+                default: return 0;
             }
             return 1;
         }
@@ -66,29 +59,29 @@ class ttkCinemaProductReader
         int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port){
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
-                case 1: return 0;
+                default: return 0;
             }
             return 1;
         }
 
     protected:
 
-        ttkCinemaProductReader(){
+        ttkBlockAggregator(){
             UseAllCores = false;
 
             SetNumberOfInputPorts(1);
             SetNumberOfOutputPorts(1);
         }
-        ~ttkCinemaProductReader(){};
+        ~ttkBlockAggregator(){};
 
         bool UseAllCores;
         int ThreadNumber;
 
-        std::string FilepathColumnName;
-
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
+
+        vtkSmartPointer<vtkMultiBlockDataSet> AggregatedMultiBlockDataSet;
 
         bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {

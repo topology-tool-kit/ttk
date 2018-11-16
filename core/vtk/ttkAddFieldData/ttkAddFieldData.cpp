@@ -1,5 +1,7 @@
 #include <ttkAddFieldData.h>
 
+#include <vtkVersion.h>
+
 #include <vtkDataSet.h>
 #include <vtkTable.h>
 #include <vtkSmartPointer.h>

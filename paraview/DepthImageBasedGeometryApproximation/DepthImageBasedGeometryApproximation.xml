@@ -9,6 +9,7 @@
                 'VOIDGA: A View-Approximation Oriented Image Database Generation Approach', Jonas Lukasczyk, Eric Kinner, James Ahrens, Heike Leitte, and Christoph Garth. IEEE 8th Symposium on Large Data Analysis and Visualization (LDAV), 2018.
 
             </Documentation>
+
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
@@ -29,7 +30,6 @@
                 </ArrayListDomain>
                 <Documentation>Scalar field that contains depth values.</Documentation>
             </StringVectorProperty>
-
             <IntVectorProperty name="Subsampling" label="Subsampling" command="SetSubsampling" number_of_elements="1" default_values="0">
                 <IntRangeDomain name="range" min="0" max="100" />
                 <Documentation>The factor that controls the sampling rate (0: no Subsampling, 1: skip every second sample, 2: skip every second and third sample...)</Documentation>
@@ -50,6 +50,7 @@
                 <IntRangeDomain name="range" min="0" max="100" />
                 <Documentation>Debug level.</Documentation>
             </IntVectorProperty>
+
             <PropertyGroup panel_widget="Line" label="Input Options">
                 <Property name="DepthScalarField" />
             </PropertyGroup>
@@ -63,7 +64,7 @@
             </PropertyGroup>
 
             <Hints>
-                <ShowInMenu category="TTK - Misc" />
+                <ShowInMenu category="TTK - Cinema" />
             </Hints>
         </SourceProxy>
     </ProxyGroup>
