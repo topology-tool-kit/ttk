@@ -52,23 +52,27 @@ class ttkCinemaWriter
         }
         // end of default ttk setters
 
-        int FillInputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+        int FillInputPortInformation(int port, vtkInformation* info) override {
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
+                default: return 0;
+            }
             return 1;
         }
 
-        int FillOutputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
+        int FillOutputPortInformation(int port, vtkInformation* info) override {
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData"); break;
+                default: return 0;
+            }
             return 1;
         }
 
     protected:
 
         ttkCinemaWriter(){
-            DatabasePath = "";
-            OverrideDatabase = true;
+            SetDatabasePath("");
+            SetOverrideDatabase(true);
 
             UseAllCores = false;
 
@@ -80,14 +84,14 @@ class ttkCinemaWriter
         bool UseAllCores;
         int ThreadNumber;
 
-        std::string DatabasePath;
-        bool OverrideDatabase;
-
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector);
 
     private:
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        std::string DatabasePath;
+        bool OverrideDatabase;
+
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;

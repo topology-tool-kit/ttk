@@ -62,35 +62,35 @@ class ttkCinemaImaging
         }
         // end of default ttk setters
 
-        int FillInputPortInformation(int port, vtkInformation *info) override {
+        int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port){
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");  break;
                 case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet"); break;
+                default: return 0;
             }
             return 1;
         }
 
-        int FillOutputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+        int FillOutputPortInformation(int port, vtkInformation* info) override {
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
+                default: return 0;
+            }
             return 1;
         }
 
     protected:
 
         ttkCinemaImaging(){
-            UseAllCores = false;
-
             int res[2] = {256,256};
             SetResolution(res);
-
             double nf[2] = {0.1,2};
             SetCamNearFar(nf);
-
             double foc[3] = {0,0,0};
             SetCamFocus(foc);
-
             SetCamHeight(1);
+
+            UseAllCores = false;
 
             SetNumberOfInputPorts(2);
             SetNumberOfOutputPorts(1);
@@ -105,11 +105,11 @@ class ttkCinemaImaging
         double CamFocus[3];
         double CamHeight;
 
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;

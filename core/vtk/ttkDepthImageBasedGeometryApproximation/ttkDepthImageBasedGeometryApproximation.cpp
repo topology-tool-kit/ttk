@@ -129,11 +129,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
 
                 auto outArray = vtkDataArray::CreateDataArray( inArray->GetDataType() );
                 outArray->SetName( inArray->GetName() );
-                #if VTK_MAJOR_VERSION >= 7
-                    outArray->SetNumberOfValues( m );
-                #else
-                    outArray->SetNumberOfTuples( m );
-                #endif
+                outArray->SetNumberOfTuples( m );
 
                 for(size_t j=0; j<m; j++){
                     outArray->SetTuple(j, inArray->GetTuple(indicies[j]));

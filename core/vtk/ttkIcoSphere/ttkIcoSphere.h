@@ -56,13 +56,15 @@ class ttkIcoSphere
         }
         // end of default ttk setters
 
-        int FillInputPortInformation(int port, vtkInformation *info) override {
-            return 1;
+        int FillInputPortInformation(int port, vtkInformation* info) override {
+            return 0;
         }
 
-        int FillOutputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        int FillOutputPortInformation(int port, vtkInformation* info) override {
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); break;
+                default: return 0;
+            }
             return 1;
         }
 
@@ -83,17 +85,16 @@ class ttkIcoSphere
         bool UseAllCores;
         int ThreadNumber;
 
-        int Subdivisions;
-        float Center[3];
-        float Radius;
-
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
+        int Subdivisions;
+        float Center[3];
+        float Radius;
         ttk::IcoSphere icoSphere_;
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;

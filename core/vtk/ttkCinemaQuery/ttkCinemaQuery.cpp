@@ -1,5 +1,7 @@
 #include <ttkCinemaQuery.h>
 
+#include <vtkVersion.h>
+
 #include <vtkTable.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkSmartPointer.h>
