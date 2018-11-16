@@ -138,7 +138,6 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
       ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
 
       criticalPoints.setWrapper(this);
-      criticalPoints.setDebugLevel(Debug::infoMsg);
       criticalPoints.setDomainDimension(domainDimension);
       // set up input
       // 1 -- vertex values
