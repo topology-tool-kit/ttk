@@ -86,6 +86,17 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise.
       virtual int setDebugLevel(const int &debugLevel);
 
+      /// Specify a pointer to a calling object that wraps the current class
+      /// deriving from ttk::BaseClass.
+      ///
+      /// This function is useful to pass the execution context (debug level,
+      /// number of threads, etc.) from a wrapper to a base object.
+      /// \param wrapper Pointer to the wrapping object.
+      /// \return Returns 0 upon success, negative values otherwise.
+      /// \sa ttkBlank
+      virtual int setWrapper(const Wrapper *wrapper);
+
+
     protected:
       mutable int             debugLevel_;
   };

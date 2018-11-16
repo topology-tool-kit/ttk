@@ -71,3 +71,11 @@ int Debug::setDebugLevel(const int &debugLevel){
   return 0;
 }
 
+int Debug::setWrapper(const Wrapper *wrapper){
+
+  BaseClass::setWrapper(wrapper);
+
+  setDebugLevel(reinterpret_cast<Debug*>(wrapper_)->debugLevel_);
+
+  return 0;
+}

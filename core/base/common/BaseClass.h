@@ -40,7 +40,7 @@ namespace ttk {
     /// \param wrapper Pointer to the wrapping object.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa ttkBlank
-    int setWrapper(const Wrapper *wrapper);
+    virtual int setWrapper(const Wrapper *wrapper);
 
   protected:
     bool lastObject_;
