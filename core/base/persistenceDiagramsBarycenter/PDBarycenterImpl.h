@@ -179,7 +179,7 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 				x[good_id] += current_bidder_diagrams_[j].get(bidder_id).x_;
 				y[good_id] += current_bidder_diagrams_[j].get(bidder_id).y_;
 				if(geometrical_factor_<1){
-					std::tuple<dataType, dataType, dataType> critical_coordinates = current_bidder_diagrams_[j].get(bidder_id).GetCriticalCoordinates();
+					std::tuple<float, float, float> critical_coordinates = current_bidder_diagrams_[j].get(bidder_id).GetCriticalCoordinates();
 					crit_coords_x[good_id] += std::get<0>(critical_coordinates);
 					crit_coords_y[good_id] += std::get<1>(critical_coordinates);
 					crit_coords_z[good_id] += std::get<2>(critical_coordinates);
@@ -311,7 +311,7 @@ void PDBarycenter<dataType>::setBidderDiagrams(){
     BidderDiagram<dataType> bidders;
 		for(unsigned int j=0; j<CTDiagram->size(); j++){
 			//Add bidder to bidders
-			Bidder<dataType> b((*CTDiagram)[j], j);
+			Bidder<dataType> b((*CTDiagram)[j], j, lambda_);
 
 			b.setPositionInAuction(bidders.size());
 			bidders.addBidder(b);
@@ -477,7 +477,6 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence){
 		random_idx = deterministic_ ? iter%numberOfInputs_ : rand() % numberOfInputs_ ;
 		CTDiagram = &((*inputDiagrams_)[random_idx]);
 		size = CTDiagram->size();
-
 		for(int i=0; i<numberOfInputs_; i++){
 			GoodDiagram<dataType> goods;
 			int count=0;

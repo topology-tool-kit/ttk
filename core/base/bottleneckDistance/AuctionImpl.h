@@ -97,7 +97,7 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(std::vector<matchingTup
 			}
 			else{
 				if(!b.getProperty()->isDiagonal()){
-					std::cout<< "Huho" <<std::endl;
+					std::cout<< "[AuctionImpl] Huho : both the bidder and the good are diagonal points" <<std::endl;
 				}
 				cost = 2*pow(abs<dataType>((b.y_-b.x_)/2), wasserstein_);
 				if(get_diagonal_matches){

@@ -202,7 +202,7 @@ namespace ttk {
 
 			for(int i=0; i<d1Size; i++){
 				//Add bidder to bidders
-				Bidder<dataType> b = Bidder<dataType>(diagram1[i], i);
+				Bidder<dataType> b = Bidder<dataType>(diagram1[i], i, lambda_);
 				b.setPositionInAuction(bidders_->size());
 				bidders_->addBidder(b);
 			}
@@ -224,12 +224,14 @@ namespace ttk {
 		void buildKDTree(){
 			Timer t;
 			kdt_ = new KDTree<dataType>(true, wasserstein_);
-			const int dimension = geometricalFactor_ >= 1 ? 2 : 5;
+			const int dimension = geometricalFactor_ >= 1 ? (geometricalFactor_<=0 ? 3 : 2 ) : 5;
 			std::vector<dataType> coordinates;
 			for(int i=0; i<goods_->size(); i++){
 				Good<dataType>& g = goods_->get(i);
-				coordinates.push_back(geometricalFactor_*g.x_);
-				coordinates.push_back(geometricalFactor_*g.y_);
+        if(geometricalFactor_>0){
+          coordinates.push_back(geometricalFactor_*g.x_);
+          coordinates.push_back(geometricalFactor_*g.y_);
+        }
 				if(geometricalFactor_<1){
 					coordinates.push_back((1-geometricalFactor_)*g.coords_x_);
 					coordinates.push_back((1-geometricalFactor_)*g.coords_y_);

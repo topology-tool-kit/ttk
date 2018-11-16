@@ -29,7 +29,7 @@ namespace ttk{
 		dataType x_;
 		dataType y_;
 		int id_;
-		dataType coords_x_, coords_y_, coords_z_;
+		float coords_x_, coords_y_, coords_z_;
 
 		AuctionActor() {
 			id_ = 0;
@@ -39,7 +39,11 @@ namespace ttk{
 			coords_y_ = 0;
 			coords_z_ = 0;
 			is_diagonal_ = false;
-		}
+      geom_pair_length_ = new double[3];
+      geom_pair_length_[0] = 0;
+      geom_pair_length_[1] = 0;
+      geom_pair_length_[2] = 0;
+  		}
 
 		AuctionActor(dataType x, dataType y, bool is_diagonal, int id) {
 			id_ = id;
@@ -50,13 +54,18 @@ namespace ttk{
 			coords_x_ = 0;
 			coords_y_ = 0;
 			coords_z_ = 0;
+
+      geom_pair_length_ = new double[3];
+      geom_pair_length_[0] = 0;
+      geom_pair_length_[1] = 0;
+      geom_pair_length_[2] = 0;
 		}
 		~AuctionActor() {};
 
 
 		void SetCoordinates(dataType& x, dataType& y);
-		void SetCriticalCoordinates(dataType& coords_x, dataType& coords_y, dataType& coords_z);
-		std::tuple<dataType, dataType, dataType> GetCriticalCoordinates();
+		void SetCriticalCoordinates(float coords_x, float coords_y, float coords_z);
+		std::tuple<float, float, float> GetCriticalCoordinates();
 		void projectOnDiagonal();
 		int getId();
 		dataType getPersistence();
@@ -71,8 +80,12 @@ namespace ttk{
 
 		inline dataType cost(AuctionActor* g, int& wasserstein, double& geometricalFactor);
 
+    double getPairGeometricalLength(const int wasserstein);
+
 	protected:
 		bool is_diagonal_;
+    double* geom_pair_length_;
+
 
 
   };
@@ -89,14 +102,14 @@ namespace ttk{
 	}
 
 	template<typename dataType>
-	void AuctionActor<dataType>::SetCriticalCoordinates(dataType& coords_x, dataType& coords_y, dataType& coords_z){
+	void AuctionActor<dataType>::SetCriticalCoordinates(float coords_x, float coords_y, float coords_z){
 		coords_x_ = coords_x;
 		coords_y_ = coords_y;
 		coords_z_ = coords_z;
 	}
 
 	template<typename dataType>
-	std::tuple<dataType, dataType, dataType> AuctionActor<dataType>::GetCriticalCoordinates(){
+	std::tuple<float, float, float> AuctionActor<dataType>::GetCriticalCoordinates(){
 		return std::make_tuple(coords_x_, coords_y_, coords_z_);
 	}
 
@@ -118,17 +131,27 @@ namespace ttk{
 		return (is_diagonal_);
 	}
 
+  template<typename dataType>
+  double AuctionActor<dataType>::getPairGeometricalLength(const int wasserstein){
+    return pow(geom_pair_length_[0], wasserstein) + pow(geom_pair_length_[1], wasserstein) + pow(geom_pair_length_[2], wasserstein);
+  }
+
 	template<typename dataType>
 	dataType AuctionActor<dataType>::cost(AuctionActor& g, int& wasserstein, double& geometricalFactor){
 		if(is_diagonal_ && g.isDiagonal()){
 			return 0;
 		}
-		else if(is_diagonal_ || g.isDiagonal()){
-			return pow(abs<dataType>(x_ - g.x_) , wasserstein) + pow(abs<dataType>(y_ - g.y_), wasserstein);
+		else if(is_diagonal_){
+			return geometricalFactor * ( pow(abs<dataType>(x_ - g.x_) , wasserstein) + pow(abs<dataType>(y_ - g.y_), wasserstein) ) +
+      (1-geometricalFactor)* getPairGeometricalLength(wasserstein);
+		}
+    else if(g.isDiagonal()){
+			return geometricalFactor * pow(abs<dataType>(x_ - g.x_) , wasserstein) + pow(abs<dataType>(y_ - g.y_), wasserstein) +
+      (1-geometricalFactor) * g.getPairGeometricalLength(wasserstein);
 		}
 		else{
-			return pow(geometricalFactor, wasserstein) * (pow(abs<dataType>(x_ - g.x_) , wasserstein) + pow(abs<dataType>(y_ - g.y_), wasserstein)) +
-					pow(1 - geometricalFactor, wasserstein) * (pow(abs<dataType>(coords_x_ - g.coords_x_) , wasserstein) +
+			return geometricalFactor * (pow(abs<dataType>(x_ - g.x_) , wasserstein) + pow(abs<dataType>(y_ - g.y_), wasserstein)) +
+					(1 - geometricalFactor) * (pow(abs<dataType>(coords_x_ - g.coords_x_) , wasserstein) +
 					pow(abs<dataType>(coords_y_ - g.coords_y_) , wasserstein) +
 					pow(abs<dataType>(coords_z_ - g.coords_z_) , wasserstein));
 
@@ -173,18 +196,22 @@ namespace ttk{
       dataType coords_y;
       dataType coords_z;
 
+      this->geom_pair_length_[0] = abs(std::get<7>(tuple) - std::get<11>(tuple));
+      this->geom_pair_length_[1] = abs(std::get<8>(tuple) - std::get<12>(tuple));
+      this->geom_pair_length_[2] = abs(std::get<9>(tuple) - std::get<13>(tuple));
 
-      if(type1 == BLocalMax || type1 == BLocalMin){
-        coords_x = lambda*std::get<7>(tuple) + (1-lambda)*std::get<11>(tuple);
-			  coords_y = lambda*std::get<8>(tuple) + (1-lambda)*std::get<12>(tuple);
-        coords_z = lambda*std::get<9>(tuple) + (1-lambda)*std::get<13>(tuple);
-      }
-      else if(type2 == BLocalMax || type2 == BLocalMin){
+      if(type2 == BLocalMax){
         coords_x = (1-lambda)*std::get<7>(tuple) + lambda*std::get<11>(tuple);
 			  coords_y = (1-lambda)*std::get<8>(tuple) + lambda*std::get<12>(tuple);
         coords_z = (1-lambda)*std::get<9>(tuple) + lambda*std::get<13>(tuple);
       }
+      else if(type1 == BLocalMin){
+      coords_x = lambda*std::get<7>(tuple) + (1-lambda)*std::get<11>(tuple);
+      coords_y = lambda*std::get<8>(tuple) + (1-lambda)*std::get<12>(tuple);
+      coords_z = lambda*std::get<9>(tuple) + (1-lambda)*std::get<13>(tuple);
+      }
       else{ // pair saddle-saddle
+        std::cout << "\n\n\n SADDLE-SADDLE \n\n\n" << '\n';
         coords_x = (std::get<7>(tuple) + std::get<11>(tuple))/2;
         coords_y = (std::get<8>(tuple) + std::get<12>(tuple))/2;
         coords_z = (std::get<9>(tuple)+std::get<13>(tuple))/2;
@@ -197,6 +224,18 @@ namespace ttk{
             price_ = 0;
 			owner_ = -1;
          }
+
+       Good(diagramTuple& tuple, int id) : AuctionActor<dataType>(){
+       AuctionActor<dataType>::id_ = id;
+       dataType x = std::get<6>(tuple);
+       dataType y = std::get<10>(tuple);
+       this->SetCoordinates(x, y);
+
+       if(x==y){AuctionActor<dataType>::is_diagonal_=true;}
+       else{AuctionActor<dataType>::is_diagonal_=false;}
+          price_ = 0;
+       owner_ = -1;
+       }
 
          ~Good() {};
 
@@ -300,15 +339,40 @@ namespace ttk{
 			 AuctionActor<dataType>::id_ = id;
          }
 
-		Bidder(diagramTuple& tuple, int id) : AuctionActor<dataType>()  {
+		Bidder(diagramTuple& tuple, int id, double lambda) : AuctionActor<dataType>()  {
 			AuctionActor<dataType>::id_ = id;
+
+      BNodeType type1 = std::get<1>(tuple);
+      BNodeType type2 = std::get<3>(tuple);
+
 			dataType x = std::get<6>(tuple);
 			dataType y = std::get<10>(tuple);
 			this->SetCoordinates(x, y);
 
-			dataType coords_x = (std::get<7>(tuple)+std::get<11>(tuple))/2;
-			dataType coords_y = (std::get<8>(tuple)+std::get<12>(tuple))/2;
-			dataType coords_z = (std::get<9>(tuple)+std::get<13>(tuple))/2;
+      dataType coords_x;
+      dataType coords_y;
+      dataType coords_z;
+
+      this->geom_pair_length_[0] = abs(std::get<7>(tuple) - std::get<11>(tuple));
+      this->geom_pair_length_[1] = abs(std::get<8>(tuple) - std::get<12>(tuple));
+      this->geom_pair_length_[2] = abs(std::get<9>(tuple) - std::get<13>(tuple));
+
+      if(type2 == BLocalMax){
+        coords_x = (1-lambda)*std::get<7>(tuple) + lambda*std::get<11>(tuple);
+			  coords_y = (1-lambda)*std::get<8>(tuple) + lambda*std::get<12>(tuple);
+        coords_z = (1-lambda)*std::get<9>(tuple) + lambda*std::get<13>(tuple);
+      }
+      else if(type1 == BLocalMin){
+      coords_x = lambda*std::get<7>(tuple) + (1-lambda)*std::get<11>(tuple);
+      coords_y = lambda*std::get<8>(tuple) + (1-lambda)*std::get<12>(tuple);
+      coords_z = lambda*std::get<9>(tuple) + (1-lambda)*std::get<13>(tuple);
+      }
+      else{ // pair saddle-saddle
+        coords_x = (std::get<7>(tuple) + std::get<11>(tuple))/2;
+        coords_y = (std::get<8>(tuple) + std::get<12>(tuple))/2;
+        coords_z = (std::get<9>(tuple) + std::get<13>(tuple))/2;
+      }
+
 			this->SetCriticalCoordinates(coords_x, coords_y, coords_z);
 
 			if(fabs(x-y) < pow(10, -12)){

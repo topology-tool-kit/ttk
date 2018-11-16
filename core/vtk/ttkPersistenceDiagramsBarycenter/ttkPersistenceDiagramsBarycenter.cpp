@@ -72,6 +72,7 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
       persistenceDiagramsBarycenter.setMethod(Method);
 			persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
 			persistenceDiagramsBarycenter.setTimeLimit(TimeLimit);
+      persistenceDiagramsBarycenter.setDeterministic(Deterministic);
 			persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
 			persistenceDiagramsBarycenter.setThreadNumber(ThreadNumber);
 			persistenceDiagramsBarycenter.setAlpha(Alpha);

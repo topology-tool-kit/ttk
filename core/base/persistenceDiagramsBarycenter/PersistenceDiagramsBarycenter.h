@@ -260,6 +260,7 @@ template <typename dataType>
 				bary_min.setUseProgressive(use_progressive_);
 				bary_min.setTimeLimit(time_limit_);
 				bary_min.setGeometricalFactor(alpha_);
+        bary_min.setDeterministic(deterministic_);
         bary_min.setLambda(lambda_);
         bary_min.setMethod(method_);
 				bary_min.setEarlyStoppage(early_stoppage_);
@@ -288,6 +289,7 @@ template <typename dataType>
         bary_sad.setMethod(method_);
 				bary_sad.setEarlyStoppage(early_stoppage_);
 				bary_sad.setEpsilonDecreases(epsilon_decreases_);
+        bary_sad.setDeterministic(deterministic_);
 				bary_sad.setReinitPrices(reinit_prices_);
         bary_sad.setDiagrams(&data_sad);
 				matching_sad = bary_sad.execute(barycenter_sad);
@@ -311,6 +313,7 @@ template <typename dataType>
         bary_max.setLambda(lambda_);
         bary_max.setMethod(method_);
 				bary_max.setEarlyStoppage(early_stoppage_);
+        bary_max.setDeterministic(deterministic_);
 				bary_max.setEpsilonDecreases(epsilon_decreases_);
 				bary_max.setReinitPrices(reinit_prices_);
         bary_max.setDiagrams(&data_max);

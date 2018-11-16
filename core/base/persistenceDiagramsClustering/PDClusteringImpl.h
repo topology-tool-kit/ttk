@@ -1114,7 +1114,7 @@ void PDClustering<dataType>::setBidderDiagrams(){
 			BidderDiagram<dataType> bidders;
 			for(unsigned int j=0; j<CTDiagram->size(); j++){
 				//Add bidder to bidders
-				Bidder<dataType> b((*CTDiagram)[j], j);
+				Bidder<dataType> b((*CTDiagram)[j], j, lambda_);
 
 				b.setPositionInAuction(bidders.size());
 				bidders.addBidder(b);
@@ -1133,7 +1133,7 @@ void PDClustering<dataType>::setBidderDiagrams(){
 			BidderDiagram<dataType> bidders;
 			for(unsigned int j=0; j<CTDiagram->size(); j++){
 				//Add bidder to bidders
-				Bidder<dataType> b((*CTDiagram)[j], j);
+				Bidder<dataType> b((*CTDiagram)[j], j, lambda_);
 
 				b.setPositionInAuction(bidders.size());
 				bidders.addBidder(b);
@@ -1152,7 +1152,7 @@ void PDClustering<dataType>::setBidderDiagrams(){
 			BidderDiagram<dataType> bidders;
 			for(unsigned int j=0; j<CTDiagram->size(); j++){
 				//Add bidder to bidders
-				Bidder<dataType> b((*CTDiagram)[j], j);
+				Bidder<dataType> b((*CTDiagram)[j], j, lambda_);
 
 				b.setPositionInAuction(bidders.size());
 				bidders.addBidder(b);

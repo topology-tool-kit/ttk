@@ -234,7 +234,9 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
   vtkDoubleArray* birthScalars =
     vtkDoubleArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("Birth"));
-
+      vtkFloatArray* critCoordinates =
+        vtkFloatArray::SafeDownCast(CTPersistenceDiagram_->
+          GetPointData()->GetArray("Coordinates"));
   vtkDoubleArray* deathScalars =
     vtkDoubleArray::SafeDownCast(CTPersistenceDiagram_->
       GetPointData()->GetArray("Death"));
@@ -273,17 +275,27 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
     int pairType = extremumIndexScalars->GetValue(i);
     double persistence = persistenceScalars->GetValue(i);
 
+    double* critCoords1 = critCoordinates->GetTuple3(2*i);
+
+    auto coordX1 = (float) critCoords1[0];
+    auto coordY1 = (float) critCoords1[1];
+    auto coordZ1 = (float) critCoords1[2];
+
+    double* critCoords2 = critCoordinates->GetTuple3(2*i+1);
+    auto coordX2 = (float) critCoords2[0];
+    auto coordY2 = (float) critCoords2[1];
+    auto coordZ2 = (float) critCoords2[2];
     int index1 = 2*i;
     double* coords1 = points->GetPoint(index1);
     auto x1 = (float) coords1[0];
-    auto y1 = (float) coords1[1];
-    auto z1 = (float) coords1[2];
+    //auto y1 = (float) coords1[1];
+    //auto z1 = (float) coords1[2];
 
     int index2 = index1 + 1;
     double* coords2 = points->GetPoint(index2);
-    auto x2 = (float) coords2[0];
+    //auto x2 = (float) coords2[0];
     auto y2 = (float) coords2[1];
-    auto z2 = (float) coords2[2];
+    //auto z2 = (float) coords2[2];
 
     dataType value1 = (!birthScalars) ? (dataType) x1 :
                       (dataType) birthScalars->GetValue(2*i);
@@ -296,8 +308,8 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
         vertexId2, (BNodeType) nodeType2,
         (dataType) persistence,
         pairType,
-        value1, x1, y1, z1 + s,
-        value2, x2, y2, z2 + s
+        value1, coordX1, coordY1, coordZ1,
+        value2, coordX2, coordY2, coordZ2
       );
 
     if (pairIdentifier >= pairingsSize) {
