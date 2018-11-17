@@ -88,7 +88,7 @@ class ttkTrackingFromOverlap
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
         int processTimestep(vtkDataObject* dataObject);
-        int finalize(vtkUnstructuredGrid* trackingGraph);
+        int finalize(vtkDataObject* trackingGraphObject);
 
     private:
 

@@ -38,7 +38,7 @@ int ttkForEachRow::RequestData(
         stringstream msg;
         msg << "================================================================================" << endl
             << "[ttkForEachRow]  Iteration: " << index << endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     // Get Input and Output

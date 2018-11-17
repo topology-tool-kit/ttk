@@ -28,8 +28,11 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkDepthImageBasedGeometryApproximation] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
+
+    // Set Wrapper
+    depthImageBasedGeometryApproximation_.setWrapper(this);
 
     // Prepare input and output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
@@ -37,9 +40,6 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     auto outputMBD = vtkMultiBlockDataSet::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
-
-    // Set Wrapper
-    depthImageBasedGeometryApproximation_.setWrapper(this);
 
     // Process each depth image individually
     size_t n = inputMBD->GetNumberOfBlocks();
@@ -63,7 +63,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         if(depthValues==nullptr || camHeight==nullptr || camPosition==nullptr || camDirection==nullptr || camUp==nullptr || camNearFar==nullptr || camRes==nullptr){
             stringstream msg;
             msg << "[ttkDepthImageBasedGeometryApproximation] ERROR: Input depth image does not have one or more of the required fields (see Cinema Spec D - Data Product Specification)" << endl;
-            dMsg(cout, msg.str(), memoryMsg);
+            dMsg(cout, msg.str(), fatalMsg);
             return 0;
         }
 
@@ -179,9 +179,9 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         stringstream msg;
         msg << "[ttkDepthImageBasedGeometryApproximation] --------------------------------------" << endl
             << "[ttkDepthImageBasedGeometryApproximation] " << n << " Images processed" << endl
-            << "[ttkDepthImageBasedGeometryApproximation]   time: " << t.getElapsedTime() << " s" << endl
-            << "[ttkDepthImageBasedGeometryApproximation] memory: " << m.getElapsedUsage() << " MB" << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+            << "[ttkDepthImageBasedGeometryApproximation]   Time: " << t.getElapsedTime() << " s" << endl
+            << "[ttkDepthImageBasedGeometryApproximation] Memory: " << m.getElapsedUsage() << " MB" << endl;
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;

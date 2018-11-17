@@ -22,7 +22,7 @@ int ttkTrackingFromOverlap::processTimestep(vtkDataObject* dataObject){
 
     auto pointSet = vtkPointSet::SafeDownCast( dataObject );
     if(pointSet==nullptr){
-        dMsg(cerr, "[ttkTrackingFromOverlap] ERROR: Input data can not be converted to vtkPointSet\n", memoryMsg);
+        dMsg(cerr, "[ttkTrackingFromOverlap] ERROR: Input data can not be converted to 'vtkPointSet'.\n", fatalMsg);
         return 0;
     }
 
@@ -30,12 +30,12 @@ int ttkTrackingFromOverlap::processTimestep(vtkDataObject* dataObject){
 
     auto labels = pointSet->GetPointData()->GetAbstractArray( this->GetLabelFieldName().data() );
     if(labels==nullptr && n>0){
-        dMsg(cout, "[ttkTrackingFromOverlap] ERROR: Point labels not found\n", timeMsg);
+        dMsg(cout, "[ttkTrackingFromOverlap] ERROR: Point labels '" + this->GetLabelFieldName() + "' not found.\n" , fatalMsg);
         return 0;
     }
     // TODO: Fix identification of VTK_ID_TYPE_IMPL for vtk6 or lower.
     if( labels->GetDataType()!=VTK_LONG_LONG && (labels->GetDataType()!=VTK_ID_TYPE || labels->GetDataTypeSize()!=8) ){
-        dMsg(cout, "[ttkTrackingFromOverlap] ERROR: Point labels are not of type 'Long Long'\n", timeMsg);
+        dMsg(cout, "[ttkTrackingFromOverlap] ERROR: Point labels '" + this->GetLabelFieldName() + "' are not of type 'Long Long'\n", fatalMsg);
         return 0;
     }
 
@@ -48,7 +48,9 @@ int ttkTrackingFromOverlap::processTimestep(vtkDataObject* dataObject){
     return 1;
 }
 
-int ttkTrackingFromOverlap::finalize(vtkUnstructuredGrid* trackingGraph){
+int ttkTrackingFromOverlap::finalize(vtkDataObject* trackingGraphObject){
+    auto trackingGraph = vtkUnstructuredGrid::SafeDownCast( trackingGraphObject );
+
     auto& timeNodesMap = this->trackingFromOverlap.getTimeNodesMap();
     auto& timeEdgesMap = this->trackingFromOverlap.getTimeEdgesMap();
     size_t tn = timeNodesMap.size();
@@ -107,10 +109,12 @@ int ttkTrackingFromOverlap::finalize(vtkUnstructuredGrid* trackingGraph){
         pointData->AddArray( label );
     }
 
+
     // Add Cells
     {
         size_t n = 0;
-        for(size_t t=0; t<tn-1; t++)
+        size_t tnM1 = tn>0 ? tn-1 : 0;
+        for(size_t t=0; t<tnM1; t++)
             n += timeEdgesMap[t].size();
 
         auto cells = vtkSmartPointer<vtkIdTypeArray>::New();
@@ -123,14 +127,14 @@ int ttkTrackingFromOverlap::finalize(vtkUnstructuredGrid* trackingGraph){
 
         auto overlapData = (unsigned long long*) overlap->GetVoidPointer(0);
 
-        vector<size_t> offset(tn);
+        vector<size_t> offset(tnM1+1);
         offset[0] = 0;
         for(size_t t=1; t<tn; t++)
             offset[t] = offset[t-1] + timeNodesMap[t-1].size();
 
         size_t q0=0;
         size_t q1=0;
-        for(size_t t=0; t<tn-1; t++){
+        for(size_t t=0; t<tnM1; t++){
             auto& edges = timeEdgesMap[t];
             for(auto& e: edges){
                 cellIds[q0++] = 2;
@@ -161,12 +165,15 @@ int ttkTrackingFromOverlap::RequestData(
         stringstream msg;
         msg << "================================================================================" << endl
             << "[ttkTrackingFromOverlap] RequestData" << endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
+
+    // Set Wrapper
+    this->trackingFromOverlap.setWrapper(this);
 
     // Get Input Object
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-    vtkMultiBlockDataSet* inMB = vtkMultiBlockDataSet::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    auto inMB = vtkMultiBlockDataSet::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
 
     double i = inInfo->Get( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP() );
     double n = inMB->GetInformation()->Get( vtkDataObject::DATA_TIME_STEP() );
@@ -182,24 +189,24 @@ int ttkTrackingFromOverlap::RequestData(
         int status = this->processTimestep( inMB->GetBlock(i) );
         if(status==0) return 0;
         if(nBlocks>1)
-            dMsg(cout, "[ttkTrackingFromOverlap] -------------------------------------------------------\n", timeMsg);
+            dMsg(cout, "[ttkTrackingFromOverlap] -------------------------------------------------------\n", infoMsg);
         this->updateProgress( ((float)i)/((float)(nBlocks-1)) );
     }
 
     // Last Timestep
-    if(i==n-1 || nBlocks>1){
+    if(i==n-1 || n==0){
         if(nBlocks<2)
-            dMsg(cout, "[ttkTrackingFromOverlap] -------------------------------------------------------\n", timeMsg);
+            dMsg(cout, "[ttkTrackingFromOverlap] -------------------------------------------------------\n", infoMsg);
 
         // Get Output
         vtkInformation* outInfo = outputVector->GetInformationObject(0);
-        auto trackingGraph = vtkUnstructuredGrid::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
+        auto trackingGraph = outInfo->Get(vtkDataObject::DATA_OBJECT());
 
         // Create Tracking Graph
         this->finalize( trackingGraph );
 
         // Print Status
-        dMsg(cout, "[ttkTrackingFromOverlap] Tracking Graph Finalized\n", timeMsg);
+        dMsg(cout, "[ttkTrackingFromOverlap] Tracking Graph Finalized\n", infoMsg);
     }
 
     return 1;

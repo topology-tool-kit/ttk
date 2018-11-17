@@ -23,7 +23,7 @@ int ttkCinemaReader::RequestData (
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaReader] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     // Read CSV file which is in Spec D format
@@ -49,9 +49,10 @@ int ttkCinemaReader::RequestData (
     // Output Performance
     {
         stringstream msg;
+        msg << "[ttkCinemaReader] --------------------------------------------------------------"<<endl;
         msg << "[ttkCinemaReader]   Time: " << t.getElapsedTime() << " s." << endl;
         msg << "[ttkCinemaReader] Memory: " << m.getElapsedUsage() << " MB." << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;
