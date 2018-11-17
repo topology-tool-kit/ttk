@@ -36,6 +36,15 @@ class ttkMeshGraph
         static ttkMeshGraph* New();
         vtkTypeMacro(ttkMeshGraph, vtkUnstructuredGridAlgorithm)
 
+        vtkSetMacro(SizeFieldName, std::string);
+        vtkGetMacro(SizeFieldName, std::string);
+
+        vtkSetMacro(PrimaryAxis, int);
+        vtkGetMacro(PrimaryAxis, int);
+
+        vtkSetMacro(SecondaryAxis, int);
+        vtkGetMacro(SecondaryAxis, int);
+
         vtkSetMacro(Subdivisions, int);
         vtkGetMacro(Subdivisions, int);
 
@@ -74,7 +83,10 @@ class ttkMeshGraph
     protected:
 
         ttkMeshGraph(){
-            Subdivisions = 0;
+            SetSizeFieldName("Size");
+            SetPrimaryAxis(0);
+            SetSecondaryAxis(1);
+            SetSubdivisions(0);
 
             UseAllCores = false;
 
@@ -90,7 +102,11 @@ class ttkMeshGraph
 
     private:
 
+        std::string SizeFieldName;
+        int PrimaryAxis;
+        int SecondaryAxis;
         int Subdivisions;
+
         ttk::MeshGraph meshGraph;
 
         bool needsToAbort() override { return GetAbortExecute(); };

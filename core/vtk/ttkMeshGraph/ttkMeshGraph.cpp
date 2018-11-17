@@ -15,6 +15,9 @@ int ttkMeshGraph::RequestData(
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
 ){
+    Timer t;
+    Memory m;
+
     // Print status
     {
         stringstream msg;
@@ -30,10 +33,9 @@ int ttkMeshGraph::RequestData(
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
     auto input = vtkUnstructuredGrid::SafeDownCast( inInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
-    float* inputPoints = (float*) input->GetPoints()->GetVoidPointer(0);
+    const float* inputPoints = (float*) input->GetPoints()->GetVoidPointer(0);
 
-    auto inputCells = input->GetCells();
-    vtkIdType* inputTopology = inputCells->GetPointer();
+    vtkCellArray* inputCells = input->GetCells();
 
     size_t nInputPoints = input->GetNumberOfPoints();
     size_t nInputCells = input->GetNumberOfCells();
@@ -50,24 +52,37 @@ int ttkMeshGraph::RequestData(
     auto outputTopologySize = meshGraph.computeOutputTopologySize(nInputCells, this->Subdivisions);
     auto outputCells = vtkSmartPointer<vtkIdTypeArray>::New();
     outputCells->SetNumberOfValues( outputTopologySize );
-    vtkIdType* outputTopology = (vtkIdType*) outputCells->GetVoidPointer(0);
+    ;
 
-    auto inputPointSizeArray = input->GetPointData()->GetArray( "Size2" );
-    double* inputPointSizes = inputPointSizeArray ? (double*) inputPointSizeArray->GetVoidPointer(0) : nullptr;
+    auto inputPointSizes = input->GetPointData()->GetArray( this->GetSizeFieldName().data() );
+    if(!inputPointSizes){
+        dMsg(cout, "[ttkMeshGraph] ERROR: Point data '" + this->GetSizeFieldName() + "' not found.\n", fatalMsg);
+        return 0;
+    }
 
-    meshGraph.execute<vtkIdType>(
-        // Input
-        inputPoints,
-        inputTopology,
-        inputPointSizes,
-        nInputPoints,
-        nInputCells,
-        this->Subdivisions,
+    int status = 0;
 
-        // Output
-        outputVertices,
-        outputTopology
-    );
+    switch(inputPointSizes->GetDataType()){
+        ttkTemplateMacro({
+            status = meshGraph.execute<vtkIdType TTK_COMMA VTK_TT>(
+                // Input
+                inputPoints,
+                inputCells->GetPointer(),
+                (VTK_TT*) inputPointSizes->GetVoidPointer(0),
+                nInputPoints,
+                nInputCells,
+                this->Subdivisions,
+
+                this->PrimaryAxis,
+                this->SecondaryAxis,
+
+                // Output
+                outputVertices,
+                (vtkIdType*) outputCells->GetVoidPointer(0)
+            );
+        });
+    }
+    if(status!=1) return 0;
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     auto output = vtkUnstructuredGrid::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
@@ -76,6 +91,16 @@ int ttkMeshGraph::RequestData(
     auto outputCellArray = vtkSmartPointer<vtkCellArray>::New();
     outputCellArray->SetCells(nInputCells, outputCells);
     output->SetCells(VTK_POLYGON, outputCellArray);
+
+
+    // Print status
+    {
+        stringstream msg;
+        msg << "[ttkMeshGraph] -----------------------------------------------------------------" << endl
+            << "[ttkMeshGraph]   Time: " << t.getElapsedTime() << " s" << endl
+            << "[ttkMeshGraph] Memory: " << m.getElapsedUsage() << " MB" << endl;
+        dMsg(cout, msg.str(), timeMsg);
+    }
 
     return 1;
 }
