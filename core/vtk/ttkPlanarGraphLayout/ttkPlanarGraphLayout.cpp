@@ -26,7 +26,6 @@ int ttkPlanarGraphLayout::RequestData(
 
     // Set Wrapper
     planarGraphLayout_.setWrapper(this);
-    planarGraphLayout_.setDebugLevel(this->debugLevel_);
 
     // Prepare input and output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);

@@ -82,14 +82,14 @@ class ttkPlanarGraphLayout
         bool UseAllCores;
         int ThreadNumber;
 
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
+        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
         std::string AxisFieldName;
         ttk::PlanarGraphLayout planarGraphLayout_;
 
-        bool needsToAbort() override { return GetAbortExecute();};
+        bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {
             UpdateProgress(progress);
             return 0;
