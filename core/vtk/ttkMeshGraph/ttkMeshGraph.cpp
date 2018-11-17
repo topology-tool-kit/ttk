@@ -24,38 +24,44 @@ int ttkMeshGraph::RequestData(
     }
 
     // Set Wrapper
-    meshGraph_.setWrapper(this);
+    meshGraph.setWrapper(this);
 
     // Prepare input and output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
     auto input = vtkUnstructuredGrid::SafeDownCast( inInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
-    float* inputVertices = (float*) input->GetPoints()->GetVoidPointer(0);
+    float* inputPoints = (float*) input->GetPoints()->GetVoidPointer(0);
 
     auto inputCells = input->GetCells();
     vtkIdType* inputTopology = inputCells->GetPointer();
 
-    size_t nVertices = input->GetNumberOfPoints();
-    size_t nEdges = input->GetNumberOfCells();
+    size_t nInputPoints = input->GetNumberOfPoints();
+    size_t nInputCells = input->GetNumberOfCells();
 
-    auto outputVertexNumber = nVertices*2 + nEdges*(this->Subdivisions*2); // one vertex becomes two + subdivisons on edges
-    auto outputCellVertexNumber = 5+this->Subdivisions*2; // cellDim + 4 corners + 2 per each subdivision
+    this->Subdivisions = 3;
 
+    // Output Points
+    auto nOutputPoints = meshGraph.computeNumberOfOutputPoints(nInputPoints, nInputCells, this->Subdivisions);
     auto outputPoints = vtkSmartPointer<vtkPoints>::New();
-    outputPoints->SetNumberOfPoints( nVertices*outputVertexNumber );
+    outputPoints->SetNumberOfPoints( nOutputPoints );
     auto outputVertices = (float*) outputPoints->GetVoidPointer(0);
 
+    // Output Topology
+    auto outputTopologySize = meshGraph.computeOutputTopologySize(nInputCells, this->Subdivisions);
     auto outputCells = vtkSmartPointer<vtkIdTypeArray>::New();
-    outputCells->SetNumberOfValues( nEdges*outputCellVertexNumber );
+    outputCells->SetNumberOfValues( outputTopologySize );
     vtkIdType* outputTopology = (vtkIdType*) outputCells->GetVoidPointer(0);
 
-    meshGraph_.execute<vtkIdType>(
+    auto inputPointSizeArray = input->GetPointData()->GetArray( "Size2" );
+    double* inputPointSizes = inputPointSizeArray ? (double*) inputPointSizeArray->GetVoidPointer(0) : nullptr;
+
+    meshGraph.execute<vtkIdType>(
         // Input
-        inputVertices,
+        inputPoints,
         inputTopology,
-        nullptr,
-        nVertices,
-        nEdges,
+        inputPointSizes,
+        nInputPoints,
+        nInputCells,
         this->Subdivisions,
 
         // Output
@@ -68,9 +74,8 @@ int ttkMeshGraph::RequestData(
     output->SetPoints( outputPoints );
 
     auto outputCellArray = vtkSmartPointer<vtkCellArray>::New();
-    outputCellArray->SetCells(nEdges, outputCells);
-    output->SetCells(VTK_TRIANGLE, outputCellArray);
-
+    outputCellArray->SetCells(nInputCells, outputCells);
+    output->SetCells(VTK_POLYGON, outputCellArray);
 
     return 1;
 }
