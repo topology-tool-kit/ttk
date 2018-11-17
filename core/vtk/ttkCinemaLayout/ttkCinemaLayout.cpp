@@ -23,7 +23,7 @@ int ttkCinemaLayout::RequestData (
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaLayout] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     // Get Input and Output
@@ -41,7 +41,7 @@ int ttkCinemaLayout::RequestData (
     if(firstBlock==nullptr){
         stringstream msg;
         msg << "[ttkCinemaLayout] ERROR: This filter can only arrange vtkDataSet objects"<<endl;
-        dMsg(cout, msg.str(), memoryMsg);
+        dMsg(cout, msg.str(), fatalMsg);
         return 0;
     }
     double* bounds = firstBlock->GetBounds();
@@ -76,7 +76,7 @@ int ttkCinemaLayout::RequestData (
         msg << "[ttkCinemaLayout] --------------------------------------------------------------"<<endl;
         msg << "[ttkCinemaLayout]   time: " << t.getElapsedTime() << " s." << endl;
         msg << "[ttkCinemaLayout] memory: " << m.getElapsedUsage() << " MB." << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;

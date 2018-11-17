@@ -241,10 +241,14 @@ template <class dataType> int ttk::DepthImageBasedGeometryApproximation::execute
 
     // Print performance
     {
-        std::stringstream msg;
-        msg << "[ttkDepthImageBasedGeometryApproximation] Depth Image ("<<camResST[0]<<"x"<<camResST[1]<<":"<<step<<") processed in " << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << std::endl;
-        msg << "[ttkDepthImageBasedGeometryApproximation] " << "generated (" << vertices.size() << " vertices) and (" << triangles.size() << " triangles)" << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        stringstream msg;
+        msg << "[ttkDepthImageBasedGeometryApproximation] Depth Image ("<<camResST[0]<<"x"<<camResST[1]<<":"<<step<<") processed in " << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << endl;
+        dMsg(cout, msg.str(), timeMsg);
+    }
+    {
+        stringstream msg;
+        msg << "[ttkDepthImageBasedGeometryApproximation] Generated (" << vertices.size() << " vertices) and (" << triangles.size() << " triangles)." << endl;
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     return 0;

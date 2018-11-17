@@ -31,15 +31,15 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         dMsg(cout, msg.str(), infoMsg);
     }
 
+    // Set Wrapper
+    depthImageBasedGeometryApproximation_.setWrapper(this);
+
     // Prepare input and output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
     auto inputMBD = vtkMultiBlockDataSet::SafeDownCast( inInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     auto outputMBD = vtkMultiBlockDataSet::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
-
-    // Set Wrapper
-    depthImageBasedGeometryApproximation_.setWrapper(this);
 
     // Process each depth image individually
     size_t n = inputMBD->GetNumberOfBlocks();
@@ -179,8 +179,8 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         stringstream msg;
         msg << "[ttkDepthImageBasedGeometryApproximation] --------------------------------------" << endl
             << "[ttkDepthImageBasedGeometryApproximation] " << n << " Images processed" << endl
-            << "[ttkDepthImageBasedGeometryApproximation]   time: " << t.getElapsedTime() << " s" << endl
-            << "[ttkDepthImageBasedGeometryApproximation] memory: " << m.getElapsedUsage() << " MB" << endl;
+            << "[ttkDepthImageBasedGeometryApproximation]   Time: " << t.getElapsedTime() << " s" << endl
+            << "[ttkDepthImageBasedGeometryApproximation] Memory: " << m.getElapsedUsage() << " MB" << endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 

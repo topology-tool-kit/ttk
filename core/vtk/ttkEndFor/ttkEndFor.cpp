@@ -26,7 +26,7 @@ int ttkEndFor::RequestUpdateExtent(
     // Print status
     stringstream msg;
     msg << "[ttkEndFor] Next Iteration: "<< this->nextIndex << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    dMsg(cout, msg.str(), infoMsg);
 
     // Request next index
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
@@ -44,7 +44,7 @@ int ttkEndFor::RequestData(
     {
         stringstream msg;
         msg<<"================================================================================"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     // Get Input
@@ -68,7 +68,7 @@ int ttkEndFor::RequestData(
         {
             stringstream msg;
             msg << "[ttkEndFor] Iteration complete" << endl;
-            dMsg(cout, msg.str(), timeMsg);
+            dMsg(cout, msg.str(), infoMsg);
         }
 
         // Copy input to output

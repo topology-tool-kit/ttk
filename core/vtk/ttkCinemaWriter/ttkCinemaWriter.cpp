@@ -28,6 +28,7 @@ int ttkCinemaWriter::RequestData (
     vtkInformationVector* outputVector
 ){
     Timer t;
+    double t0=0;
     Memory m;
     struct stat info;
 
@@ -39,7 +40,7 @@ int ttkCinemaWriter::RequestData (
         msg<<"[ttkCinemaWriter]     Path: "<<this->DatabasePath<<endl;
         msg<<"[ttkCinemaWriter] Override: "<<(this->OverrideDatabase?"yes":"no")<<endl;
         msg<<"[ttkCinemaWriter] --------------------------------------------------------------"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     // Copy Input to Output
@@ -61,7 +62,7 @@ int ttkCinemaWriter::RequestData (
 
     // Check if database path exists and if it has the correct extension
     if( this->DatabasePath.length()<4 || this->DatabasePath.substr(this->DatabasePath.length()-4,4).compare(".cdb")!=0 ){
-        dMsg(cout, "[ttkCinemaWriter] ERROR: Database path has to end with '.cdb'.\n", timeMsg);
+        dMsg(cout, "[ttkCinemaWriter] ERROR: Database path has to end with '.cdb'.\n", fatalMsg);
         return 0;
     }
 
@@ -78,9 +79,9 @@ int ttkCinemaWriter::RequestData (
         if(!opened){
             int status = directory->MakeDirectory( this->DatabasePath.data() );
             if(status==1)
-                dMsg(cout, "[ttkCinemaWriter] - Directory created\n", timeMsg);
+                dMsg(cout, "[ttkCinemaWriter] - Directory created\n", infoMsg);
             else {
-                dMsg(cout, "[ttkCinemaWriter] ERROR: Unable to create database directory.\n", timeMsg);
+                dMsg(cout, "[ttkCinemaWriter] ERROR: Unable to create database directory.\n", fatalMsg);
                 return 0;
             }
         }
@@ -90,15 +91,20 @@ int ttkCinemaWriter::RequestData (
     if( this->OverrideDatabase ){
         dMsg(cout, "[ttkCinemaWriter] - Deleting old data products        ... ", timeMsg);
 
+        t0 = t.getElapsedTime();
+
         // Delete data.csv
         remove( dataCsvPath.data() );
 
         // Delete data folder
         auto directory = vtkSmartPointer<vtkDirectory>::New();
         if( directory->Open(pathPrefix.data()) && directory->DeleteDirectory(pathPrefix.data())==0 )
-            dMsg(cout, "Failed\n[ttkCinemaWriter] ERROR: Unable to delete existing data products.\n", timeMsg);
-        else
-            dMsg(cout, "Done\n", timeMsg);
+            dMsg(cout, "failed.\n[ttkCinemaWriter] ERROR: Unable to delete existing data products.\n", fatalMsg);
+        else{
+            stringstream msg;
+            msg << "done (" << (t.getElapsedTime()-t0) << " s).\n";
+            dMsg(cout, msg.str(), timeMsg);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -119,6 +125,8 @@ int ttkCinemaWriter::RequestData (
     // Write input to disk
     dMsg(cout, "[ttkCinemaWriter] - Writing new data products to disk ... ", timeMsg);
 
+    t0 = t.getElapsedTime();
+
     auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
     mbWriter->SetFileName( path.data() );
     mbWriter->SetDataModeToAppended();
@@ -127,11 +135,19 @@ int ttkCinemaWriter::RequestData (
     mbWriter->SetInputData( inputMB );
     mbWriter->Write();
 
-    dMsg(cout, "Done\n", timeMsg);
+    {
+        stringstream msg;
+        msg << "done (" << (t.getElapsedTime()-t0) << " s).\n";
+        dMsg(cout, msg.str(), timeMsg);
+    }
 
     // -------------------------------------------------------------------------
     // Update 'data.csv' File
     // -------------------------------------------------------------------------
+
+    // Update data.csv file
+    dMsg(cout, "[ttkCinemaWriter] - Updating data.csv file            ... ", timeMsg);
+    t0 = t.getElapsedTime();
 
     // Create data.csv file if it does not already exist
     if( stat( dataCsvPath.data(), &info ) != 0 ){
@@ -142,7 +158,7 @@ int ttkCinemaWriter::RequestData (
             ofstream csvFile;
             csvFile.open( dataCsvPath.data() );
             if(!csvFile.is_open()){
-                dMsg(cout, "[ttkCinemaWriter] ERROR: Unable to create 'data.csv' file.\n", timeMsg);
+                dMsg(cout, "failed.\n[ttkCinemaWriter] ERROR: Unable to create 'data.csv' file.\n", fatalMsg);
                 return 0;
             }
 
@@ -162,13 +178,7 @@ int ttkCinemaWriter::RequestData (
         }
     }
 
-    // Update data.csv file
-    {
-        stringstream msg;
-        msg << "[ttkCinemaWriter] - Updating data.csv file            ... " << flush;
-        dMsg(cout, msg.str(), timeMsg);
-    }
-
+    // Read csv file
     auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
     reader->SetFileName( dataCsvPath.data() );
     reader->DetectNumericColumnsOff();
@@ -190,11 +200,11 @@ int ttkCinemaWriter::RequestData (
         string blockExtension = "vtk";
         #if VTK_MAJOR_VERSION <= 7
             stringstream msg;
-            msg << "Failed" << endl
+            msg << "failed." << endl
                 << "[ttkCinemaQuery] ERROR: VTK version too old."<<endl
                 << "[ttkCinemaQuery]        This filter requires vtkXMLPMultiBlockDataWriter"<<endl
                 << "[ttkCinemaQuery]        of version 7.0 or higher."<<endl;
-            dMsg(cout, msg.str(), memoryMsg);
+            dMsg(cout, msg.str(), fatalMsg);
             return 0;
         #else
             blockExtension = this->GetDefaultFileExtensionForDataSet( block->GetDataObjectType() );
@@ -222,15 +232,19 @@ int ttkCinemaWriter::RequestData (
     csvWriter->SetInputData( table );
     csvWriter->Write();
 
-    dMsg(cout, "Done\n", timeMsg);
+    {
+        stringstream msg;
+        msg << "done (" << (t.getElapsedTime()-t0) << " s).\n";
+        dMsg(cout, msg.str(), timeMsg);
+    }
 
     // Output Performance
     {
         stringstream msg;
         msg << "[ttkCinemaWriter] --------------------------------------------------------------"<<endl;
-        msg << "[ttkCinemaWriter]   time: " << t.getElapsedTime() << " s." << endl;
-        msg << "[ttkCinemaWriter] memory: " << m.getElapsedUsage() << " MB." << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+        msg << "[ttkCinemaWriter]   Time: " << t.getElapsedTime() << " s." << endl;
+        msg << "[ttkCinemaWriter] Memory: " << m.getElapsedUsage() << " MB." << endl;
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;

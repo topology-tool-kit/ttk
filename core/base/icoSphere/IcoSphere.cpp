@@ -139,9 +139,9 @@ int ttk::IcoSphere::generate(
 
     // Print performance
     {
-        std::stringstream msg;
-        msg << "[ttkIcoSphere] Generated in " << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        stringstream msg;
+        msg << "[ttkIcoSphere] Generated in " << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))." << endl;
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 0;

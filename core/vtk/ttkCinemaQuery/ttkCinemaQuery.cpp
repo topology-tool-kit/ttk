@@ -27,9 +27,10 @@ int ttkCinemaQuery::RequestData(
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaQuery] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
+    Timer t;
     Memory m;
 
     string result;
@@ -117,8 +118,7 @@ int ttkCinemaQuery::RequestData(
                 // Print Error
                 stringstream msg;
                 msg<<"[ttkCinemaQuery] ERROR: Variable {"<<varToken<<"} not found in field data."<<endl;
-                msg<<"[ttkCinemaQuery] ---------------------------------------------------------------"<<endl;
-                dMsg(cout, msg.str(), timeMsg);
+                dMsg(cout, msg.str(), fatalMsg);
             }
         }
     }
@@ -144,7 +144,7 @@ int ttkCinemaQuery::RequestData(
                 msg << "[ttkCinemaQuery] ERROR: VTK version too old."<<endl
                     << "[ttkCinemaQuery]        This filter requires vtkDelimitedTextReader"<<endl
                     << "[ttkCinemaQuery]        of version 7.0 or higher."<<endl;
-                dMsg(cout, msg.str(), memoryMsg);
+                dMsg(cout, msg.str(), fatalMsg);
                 return 0;
             #else
                 auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
@@ -175,15 +175,13 @@ int ttkCinemaQuery::RequestData(
         outTable->GetFieldData()->ShallowCopy( inTable->GetFieldData() );
     }
 
-    // -------------------------------------------------------------------------
     // Output Performance
-    // -------------------------------------------------------------------------
     {
         stringstream msg;
-        msg << "[ttkCinemaQuery] Memory usage: "
-            << m.getElapsedUsage()
-            << " MB." << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+        msg << "[ttkCinemaQuery] ---------------------------------------------------------------"<<endl;
+        msg << "[ttkCinemaQuery]   time: " << t.getElapsedTime() << " s." << endl;
+        msg << "[ttkCinemaQuery] memory: " << m.getElapsedUsage() << " MB." << endl;
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;
