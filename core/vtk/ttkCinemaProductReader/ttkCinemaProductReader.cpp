@@ -23,9 +23,10 @@ int ttkCinemaProductReader::RequestData(
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaProductReader] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
+    Timer t;
     Memory m;
 
     // Prepare Input and Output
@@ -40,7 +41,12 @@ int ttkCinemaProductReader::RequestData(
         // Determine number of files
         size_t n = inputTable->GetNumberOfRows();
         size_t m = inputTable->GetNumberOfColumns();
-        cout<<"[ttkCinemaProductReader] Reading "<<n<<" files:"<<endl;
+
+        {
+            stringstream msg;
+            msg<<"[ttkCinemaProductReader] Reading "<<n<<" files:"<<endl;
+            dMsg(cout, msg.str(), infoMsg);
+        }
 
         // Compute DatabasePath
         auto databasePath = inputTable->GetFieldData()->GetAbstractArray("DatabasePath")->GetVariantValue(0).ToString();
@@ -50,7 +56,7 @@ int ttkCinemaProductReader::RequestData(
         if(paths==nullptr){
             stringstream msg;
             msg<<"[ttkCinemaProductReader] ERROR: Table does not have FilepathColumn '"<<this->FilepathColumnName<<"'"<<endl;
-            dMsg(cerr, msg.str(), timeMsg);
+            dMsg(cerr, msg.str(), fatalMsg);
             return 0;
         }
 
@@ -63,7 +69,7 @@ int ttkCinemaProductReader::RequestData(
             {
                 stringstream msg;
                 msg<<"[ttkCinemaProductReader]    "<<i<<": "<<path<<endl;
-                dMsg(cout, msg.str(), timeMsg);
+                dMsg(cout, msg.str(), infoMsg);
             }
 
             // Check if file exists
@@ -72,7 +78,7 @@ int ttkCinemaProductReader::RequestData(
             if(!exists){
                 stringstream msg;
                 msg<<"[ttkCinemaProductReader]    ERROR: File does not exist."<<endl;
-                dMsg(cerr, msg.str(), timeMsg);
+                dMsg(cerr, msg.str(), fatalMsg);
                 continue;
             }
 
@@ -111,16 +117,15 @@ int ttkCinemaProductReader::RequestData(
 
             this->updateProgress( ((float)i)/((float)(n-1)) );
         }
-
     }
 
-    // Print status
+    // Output Performance
     {
         stringstream msg;
-        msg << "[ttkCinemaProductReader] Memory usage: "
-            << m.getElapsedUsage()
-            << " MB." << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+        msg << "[ttkCinemaProductReader] -------------------------------------------------------"<<endl;
+        msg << "[ttkCinemaProductReader]   time: " << t.getElapsedTime() << " s." << endl;
+        msg << "[ttkCinemaProductReader] memory: " << m.getElapsedUsage() << " MB." << endl;
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;

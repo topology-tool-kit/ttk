@@ -45,7 +45,7 @@ int ttkCinemaImaging::RequestData(
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaImaging] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     Memory m;
@@ -204,7 +204,7 @@ int ttkCinemaImaging::RequestData(
         stringstream msg;
         msg<<"[ttkCinemaImaging] ERROR: VTK version too old." << endl;
         msg<<"[ttkCinemaImaging]        Value images requires VTK 7.0 or higher" << endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), fatalMsg);
     }
     #endif
 
@@ -338,6 +338,8 @@ int ttkCinemaImaging::RequestData(
 
         // Add Image to MultiBlock
         outputImages->SetBlock(i, outputImage);
+
+        this->updateProgress( ((float)i)/((float)(n-1)) );
     }
 
     // Output Performance
@@ -347,7 +349,7 @@ int ttkCinemaImaging::RequestData(
         msg << "[ttkCinemaImaging] " << n << " Images rendered" << endl;
         msg << "[ttkCinemaImaging]   time: " << (t.getElapsedTime()-t0) << " s" << endl;
         msg << "[ttkCinemaImaging] memory: " << m.getElapsedUsage() << " MB" << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;

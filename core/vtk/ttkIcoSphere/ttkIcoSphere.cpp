@@ -21,7 +21,7 @@ int ttkIcoSphere::RequestData(
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkIcoSphere] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     // Prepare input and output
@@ -89,9 +89,9 @@ int ttkIcoSphere::RequestData(
     {
         stringstream msg;
         msg << "[ttkIcoSphere] --------------------------------------" << endl
-            << "[ttkIcoSphere]   time: " << t.getElapsedTime() << " s" << endl
-            << "[ttkIcoSphere] memory: " << m.getElapsedUsage() << " MB" << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+            << "[ttkIcoSphere]   Time: " << t.getElapsedTime() << " s" << endl
+            << "[ttkIcoSphere] Memory: " << m.getElapsedUsage() << " MB" << endl;
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;

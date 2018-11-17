@@ -40,7 +40,7 @@ int ttk::TrackingFromOverlap::reset(){
     {
         stringstream msg;
         msg << "[ttkTrackingFromOverlap] Initialized "<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     return 0;
@@ -60,14 +60,11 @@ int ttk::TrackingFromOverlap::processTimestep(
     size_t     nPoints
 ){
     Timer t;
-    auto tD = t.getElapsedTime();
+    double t0;
 
     // Print Status
-    {
-        stringstream msg;
-        msg << "[ttkTrackingFromOverlap] Creating nodes ... "<<flush;
-        dMsg(cout, msg.str(), timeMsg);
-    }
+    dMsg(cout, "[ttkTrackingFromOverlap] Creating nodes ... ", timeMsg);
+    t0 = t.getElapsedTime();
 
     // Initialize nodes
     this->timeNodesMap.resize( this->timeNodesMap.size()+1 ); // Add a node set
@@ -111,15 +108,15 @@ int ttk::TrackingFromOverlap::processTimestep(
 
     // Print Status
     {
-        auto tTemp = t.getElapsedTime();
         stringstream msg;
-        msg << "done ("<<(tTemp-tD)<<" s)."<<endl
-            << "[ttkTrackingFromOverlap] Sorting  nodes ... "<<flush;
-        tD = tTemp;
+        msg << "done ("<<(t.getElapsedTime()-t0)<<" s)."<<endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 
     // Sort indicies for grid comparison
+    dMsg(cout, "[ttkTrackingFromOverlap] Sorting  nodes ... ", timeMsg);
+    t0 = t.getElapsedTime();
+
     TrackingComputationData* currTCD = new TrackingComputationData();
     {
         currTCD->nPoints = nPoints;
@@ -167,20 +164,16 @@ int ttk::TrackingFromOverlap::processTimestep(
 
     // Print Status
     {
-        auto tTemp = t.getElapsedTime();
         stringstream msg;
-        msg << "done ("<<(tTemp-tD)<<" s)."<<endl;
+        msg << "done ("<<(t.getElapsedTime()-t0)<<" s)."<<endl;
         dMsg(cout, msg.str(), timeMsg);
-        tD=tTemp;
     }
 
     if(this->prevTCD != nullptr){
         // Print Status
-        {
-            stringstream msg;
-            msg << "[ttkTrackingFromOverlap] Tracking       ... "<<flush;
-            dMsg(cout, msg.str(), timeMsg);
-        }
+        dMsg(cout, "[ttkTrackingFromOverlap] Tracking       ... ", timeMsg);
+        t0 = t.getElapsedTime();
+
         TrackingComputationData* prevTCD = this->prevTCD;
 
         this->timeEdgesMap.resize( this->timeEdgesMap.size()+1 ); // Add an edge set
@@ -245,13 +238,11 @@ int ttk::TrackingFromOverlap::processTimestep(
 
         // Print Status
         {
-            auto tTemp = t.getElapsedTime();
             stringstream msg;
-            msg << "done ("<<(tTemp-tD)<<" s)."<<endl;
+            msg << "done ("<<(t.getElapsedTime()-t0)<<" s)."<<endl;
             dMsg(cout, msg.str(), timeMsg);
         }
     }
-
 
     // Finalizing
     if(this->prevTCD != nullptr)

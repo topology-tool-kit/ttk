@@ -39,7 +39,7 @@ int ttkBlockAggregator::RequestData(
         stringstream msg;
         msg << "================================================================================" << endl
             << "[ttkBlockAggregator] RequestData" << endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     // Get Input
@@ -111,7 +111,7 @@ int ttkBlockAggregator::RequestData(
             break;
     }
     if(copy==nullptr){
-        dMsg(cout, "[ttkBlockAggregator] ERROR: Unsupported DataType\n", timeMsg);
+        dMsg(cout, "[ttkBlockAggregator] ERROR: Unsupported DataType\n", fatalMsg);
         return 0;
     }
     copy->DeepCopy( input );
@@ -123,7 +123,7 @@ int ttkBlockAggregator::RequestData(
     {
         stringstream msg;
         msg << "[ttkBlockAggregator] Added block at index " << n << endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     return 1;
