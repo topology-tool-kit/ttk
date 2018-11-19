@@ -72,6 +72,7 @@ int ttkMeshGraph::RequestData(
                 nInputPoints,
                 nInputCells,
                 this->Subdivisions,
+                this->SizeScale,
 
                 this->PrimaryAxis,
                 this->SecondaryAxis,

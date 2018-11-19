@@ -44,7 +44,9 @@
                 <IntRangeDomain name="range" min="0" max="10" />
                 <Documentation>TODO</Documentation>
             </IntVectorProperty>
-
+            <DoubleVectorProperty name="SizeScale" label="Size Scale" command="SetSizeScale" number_of_elements="1" default_values="1">
+                <Documentation>TODO</Documentation>
+            </DoubleVectorProperty>
 
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
                 <BooleanDomain name="bool" />
@@ -69,6 +71,7 @@
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="Subdivisions" />
+                <Property name="SizeScale" />
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Testing">
                 <Property name="UseAllCores" />

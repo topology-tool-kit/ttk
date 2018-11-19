@@ -48,6 +48,9 @@ class ttkMeshGraph
         vtkSetMacro(Subdivisions, int);
         vtkGetMacro(Subdivisions, int);
 
+        vtkSetMacro(SizeScale, float);
+        vtkGetMacro(SizeScale, float);
+
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
         void SetThreads(){
@@ -87,6 +90,7 @@ class ttkMeshGraph
             SetPrimaryAxis(0);
             SetSecondaryAxis(1);
             SetSubdivisions(0);
+            SetSizeScale(1);
 
             UseAllCores = false;
 
@@ -106,6 +110,7 @@ class ttkMeshGraph
         int PrimaryAxis;
         int SecondaryAxis;
         int Subdivisions;
+        float SizeScale;
 
         ttk::MeshGraph meshGraph;
 

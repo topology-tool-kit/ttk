@@ -44,6 +44,7 @@ namespace ttk{
                 const size_t nInputPoints,
                 const size_t nInputCells,
                 const size_t nSubdivisions,
+                const float sizeScale,
 
                 const size_t axis1,
                 const size_t axis2,
@@ -63,6 +64,7 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
     const size_t nInputPoints,
     const size_t nInputCells,
     const size_t nSubdivisions,
+    const float sizeScale,
 
     const size_t axis1,
     const size_t axis2,
@@ -98,9 +100,10 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
     }
 
     auto getInputPointData = [](
-        size_t pointIndex,
+        const size_t pointIndex,
         const float* inputPoints,
         const sizeType* inputPointSizes,
+        const float sizeScale,
         float data[4]
     ) {
         size_t i= pointIndex*3;
@@ -108,7 +111,7 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
         data[1] = inputPoints[i++];
         data[2] = inputPoints[i];
 
-        data[3] = (float) inputPointSizes[pointIndex];
+        data[3] = ((float) inputPointSizes[pointIndex]) * sizeScale;
     };
 
     size_t subdivisionOffset = nInputPoints*2;
@@ -134,7 +137,7 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
         #endif
         for(size_t i=0; i<nInputPoints; i++){
             float data[4];
-            getInputPointData(i, inputPoints, inputPointSizes, data);
+            getInputPointData(i, inputPoints, inputPointSizes, sizeScale, data);
 
             size_t q = i*6;
             outputPoints[q  ] = data[0];
