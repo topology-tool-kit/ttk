@@ -19,6 +19,7 @@
 // VTK includes
 #include <vtkUnstructuredGridAlgorithm.h>
 #include <vtkInformation.h>
+#include <vtkMultiBlockDataSet.h>
 
 // TTK includes
 #include <ttkWrapper.h>
@@ -74,6 +75,7 @@ class ttkTrackingFromOverlap
 
         ttkTrackingFromOverlap(){
             SetLabelFieldName("RegionId");
+            previousIterationData = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
             UseAllCores = false;
 
@@ -88,12 +90,15 @@ class ttkTrackingFromOverlap
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
         int processTimestep(vtkDataObject* dataObject);
-        int finalize(vtkDataObject* trackingGraphObject);
+        // int finalize(vtkDataObject* trackingGraphObject);
 
     private:
 
+        int LabelDataType;
         string LabelFieldName;
         ttk::TrackingFromOverlap trackingFromOverlap;
+
+        vtkSmartPointer<vtkMultiBlockDataSet> previousIterationData;
 
         bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {

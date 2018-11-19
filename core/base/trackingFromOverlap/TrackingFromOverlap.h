@@ -9,67 +9,310 @@
 
 #pragma once
 
+#include <map>
 #include <unordered_map>
+#include <algorithm>
+#include <boost/variant.hpp>
 
 // base code includes
 #include <Wrapper.h>
 
 using namespace std;
 
-typedef long long labelType;
+typedef boost::variant<
+    double, float, long long, unsigned long long, long, unsigned long, int, unsigned int, short, unsigned short, char, signed char, unsigned char
+> labelTypeVariant;
 
 struct Node {
-    labelType label;
-    size_t size;
+    labelTypeVariant label;
+    unsigned long long size;
     float x;
     float y;
     float z;
 
-    Node(labelType label=0, size_t size=0, float x=0, float y=0, float z=0)
-        : label(label), size(size), x(x), y(y), z(z) {
-    }
+    Node(unsigned long long size=0, float x=0, float y=0, float z=0)
+        : size(size), x(x), y(y), z(z) {}
 };
 
-struct Edge {
-    size_t i;
-    size_t j;
-    size_t overlap;
+typedef vector<size_t> Edges; // [index0, index1, overlap...]
+typedef vector<Node> Nodes;
 
-    Edge(size_t i=0, size_t j=0, size_t overlap=0)
-        : i(i), j(j), overlap(overlap) {
+struct CoordinateComparator {
+    const float* coordinates;
+
+    CoordinateComparator(const float* coordinates) : coordinates(coordinates){};
+
+    inline bool operator() (const size_t& i, const size_t& j) {
+        size_t ic = i*3;
+        size_t jc = j*3;
+        return coordinates[ic]==coordinates[jc]
+            ? coordinates[ic+1]==coordinates[jc+1]
+                ? coordinates[ic+2]<coordinates[jc+2]
+                : coordinates[ic+1]<coordinates[jc+1]
+            : coordinates[ic]<coordinates[jc];
     }
-};
-
-struct TrackingComputationData {
-    vector<size_t> sortedIndicies;
-    vector<float>  pointCoords;
-    vector<size_t> pointLabelIndicies;
-    size_t nPoints;
 };
 
 namespace ttk{
     class TrackingFromOverlap : public Debug{
         public:
-            TrackingFromOverlap();
-            ~TrackingFromOverlap();
+            TrackingFromOverlap(){};
+            ~TrackingFromOverlap(){};
 
-            int reset();
+            inline int sortCoordinates(
+                const float* pointCoordinates,
+                const size_t nPoints,
+                vector<size_t>& sortedIndicies
+            ) const {
+                dMsg(cout, "[ttkTrackingFromOverlap] Sorting coordinates ... ", timeMsg);
+                Timer t;
 
-            vector< vector<Node> >& getTimeNodesMap();
-            vector< vector<Edge> >& getTimeEdgesMap();
+                sortedIndicies.resize(nPoints);
+                for(size_t i=0; i<nPoints; i++)
+                    sortedIndicies[i] = i;
+                CoordinateComparator c = CoordinateComparator(pointCoordinates);
+                sort(sortedIndicies.begin(), sortedIndicies.end(), c);
 
-            int processTimestep(
-                float* pointCoords,
-                labelType* pointLabels,
-                size_t nPoints
-            );
+                stringstream msg;
+                msg << "done (" << t.getElapsedTime() << " s)." <<endl;
+                dMsg(cout, msg.str(), timeMsg);
+
+                return 1;
+            }
+
+            template<typename labelType> int computeLabelIndexMap(
+                const labelType* pointLabels,
+                const size_t nPoints,
+                map<labelType, size_t>& labelIndexMap
+            ) const;
+
+            template<typename labelType> int identifyNodes(
+                const float* pointCoordinates,
+                const labelType* pointLabels,
+                const size_t nPoints,
+                Nodes& nodes
+            ) const;
+
+            template<typename labelType> int computeOverlap(
+                const float* pointCoordinates0,
+                const float* pointCoordinates1,
+                const labelType* pointLabels0,
+                const labelType* pointLabels1,
+                const size_t nPoints0,
+                const size_t nPoints1,
+
+                Edges& edges
+            ) const;
 
         private:
-            // Tracking Graph
-            vector< vector<Node> > timeNodesMap; // Nodes at time t
-            vector< vector<Edge> > timeEdgesMap; // Edges from time t to t+1
-
-            // Previous Timestep
-            TrackingComputationData* prevTCD;
     };
+}
+
+// =============================================================================
+// Compute LabelIndexMap
+// =============================================================================
+template<typename labelType> int ttk::TrackingFromOverlap::computeLabelIndexMap(
+    const labelType* pointLabels,
+    const size_t nPoints,
+    map<labelType, size_t>& labelIndexMap
+) const {
+    for(size_t i=0; i<nPoints; i++)
+        labelIndexMap[ pointLabels[i] ] = 0;
+    size_t i=0;
+    for(auto& it: labelIndexMap)
+        it.second = i++;
+    return 1;
+}
+
+// =============================================================================
+// Identify Nodes
+// =============================================================================
+template<typename labelType> int ttk::TrackingFromOverlap::identifyNodes(
+    const float* pointCoordinates,
+    const labelType* pointLabels,
+    const size_t nPoints,
+    Nodes& nodes
+) const {
+    dMsg(cout, "[ttkTrackingFromOverlap] Identifying nodes ..... ", timeMsg);
+
+    Timer t;
+
+    map<labelType, size_t> labelIndexMap;
+    this->computeLabelIndexMap(pointLabels, nPoints, labelIndexMap);
+
+    size_t nNodes = labelIndexMap.size();
+
+    nodes.resize( nNodes );
+    for(size_t i=0, q=0; i<nPoints; i++){
+        labelType label = pointLabels[i];
+        Node& n = nodes[ labelIndexMap[ label ] ];
+        n.label = label;
+        n.size++;
+        n.x += pointCoordinates[q++];
+        n.y += pointCoordinates[q++];
+        n.z += pointCoordinates[q++];
+    }
+
+    for(size_t i=0; i<nNodes; i++){
+        Node& n = nodes[i];
+        float size = (float) n.size;
+        n.x /= size;
+        n.y /= size;
+        n.z /= size;
+    }
+
+    // Print Status
+    {
+        stringstream msg;
+        msg << "done (#" << nNodes << " in " <<t.getElapsedTime()<<" s)."<<endl;
+        dMsg(cout, msg.str(), timeMsg);
+    }
+
+    return 1;
+}
+
+// =============================================================================
+// Track Nodes
+// =============================================================================
+template<typename labelType> int ttk::TrackingFromOverlap::computeOverlap(
+    const float* pointCoordinates0,
+    const float* pointCoordinates1,
+    const labelType* pointLabels0,
+    const labelType* pointLabels1,
+    const size_t nPoints0,
+    const size_t nPoints1,
+
+    Edges& edges
+) const {
+    // -------------------------------------------------------------------------
+    // Compute labelIndexMaps
+    // -------------------------------------------------------------------------
+    map<labelType, size_t> labelIndexMap0;
+    map<labelType, size_t> labelIndexMap1;
+    this->computeLabelIndexMap<labelType>(pointLabels0, nPoints0, labelIndexMap0);
+    this->computeLabelIndexMap<labelType>(pointLabels1, nPoints1, labelIndexMap1);
+
+    // -------------------------------------------------------------------------
+    // Sort coordinates
+    // -------------------------------------------------------------------------
+    vector<size_t> sortedIndicies0;
+    vector<size_t> sortedIndicies1;
+    this->sortCoordinates(pointCoordinates0, nPoints0, sortedIndicies0);
+    this->sortCoordinates(pointCoordinates1, nPoints1, sortedIndicies1);
+
+    // -------------------------------------------------------------------------
+    // Track Nodes
+    // -------------------------------------------------------------------------
+    dMsg(cout, "[ttkTrackingFromOverlap] Tracking .............. ", timeMsg);
+    Timer t;
+
+    /* Function that determines configuration of point p0 and p1:
+        0: p0Coords = p1Coords
+       >0: p0Coords < p1Coords
+       <0: p0Coords > p1Coords
+    */
+    auto compare = [](const float* pointCoordinates0, const float* pointCoordinates1, size_t p0, size_t p1) {
+        size_t p0CoordIndex = p0*3;
+        size_t p1CoordIndex = p1*3;
+
+        float p0_X = pointCoordinates0[p0CoordIndex++];
+        float p0_Y = pointCoordinates0[p0CoordIndex++];
+        float p0_Z = pointCoordinates0[p0CoordIndex];
+
+        float p1_X = pointCoordinates1[p1CoordIndex++];
+        float p1_Y = pointCoordinates1[p1CoordIndex++];
+        float p1_Z = pointCoordinates1[p1CoordIndex];
+
+        return p0_X==p1_X
+            ? p0_Y==p1_Y
+                ? p0_Z==p1_Z
+                    ? 0
+                    : p0_Z<p1_Z
+                        ? -1 : 1
+                : p0_Y<p1_Y
+                    ? -1 : 1
+            : p0_X<p1_X
+                ? -1 : 1;
+    };
+
+    size_t i = 0; // iterator for 0
+    size_t j = 0; // iterator for 1
+
+    size_t nEdges = 0;
+    unordered_map<size_t, unordered_map<size_t, size_t>> edgesMap;
+    // Iterate over both point sets synchronously using comparison function
+    while(i<nPoints0 && j<nPoints1){
+        size_t pointIndex0 = sortedIndicies0[i];
+        size_t pointIndex1 = sortedIndicies1[j];
+
+        // Determine point configuration
+        int c = compare(
+            pointCoordinates0,
+            pointCoordinates1,
+            pointIndex0,
+            pointIndex1
+        );
+
+        if(c == 0){ // Points have same coordinates -> track
+            labelType label0 = pointLabels0[ pointIndex0 ];
+            labelType label1 = pointLabels1[ pointIndex1 ];
+
+            size_t& nodeIndex0 = labelIndexMap0[ label0 ];
+            size_t& nodeIndex1 = labelIndexMap1[ label1 ];
+
+            // Find edge and increase overlap counter
+            auto edges0 = edgesMap.find( nodeIndex0 ); // Edges from label0 to nodes1
+
+            // If map does not exist then create it
+            if(edges0 == edgesMap.end()){
+                edgesMap[ nodeIndex0 ] = unordered_map<size_t, size_t>();
+                edges0 = edgesMap.find( nodeIndex0 );
+            }
+
+            // Find edge label0 -> label1
+            auto edge = edges0->second.find( nodeIndex1 );
+
+            // If edge does not exist then create it
+            if(edge == edges0->second.end()){
+                edges0->second[ nodeIndex1 ] = 0;
+                edge = edges0->second.find( nodeIndex1 );
+                nEdges++;
+            }
+
+            // Increase overlap
+            edge->second++;
+
+            i++;
+            j++;
+        } else if (c>0){ // p0 in front of p1 -> let p1 catch up
+            j++;
+        } else { // p1 in front of p0 -> let p0 catch up
+            i++;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Pack Output
+    // -------------------------------------------------------------------------
+    {
+        size_t nEdges3 = nEdges*3;
+        edges.resize( nEdges3 );
+        size_t q=0;
+        for(auto& it0: edgesMap){
+            for(auto& it1: it0.second){
+                edges[q++] = it0.first;
+                edges[q++] = it1.first;
+                edges[q++] = it1.second;
+            }
+        }
+    }
+
+    // Print Status
+    {
+        stringstream msg;
+        msg << "done (#" << nEdges << " in " << t.getElapsedTime() <<" s)." <<endl;
+        dMsg(cout, msg.str(), timeMsg);
+    }
+
+    return 0;
 }
