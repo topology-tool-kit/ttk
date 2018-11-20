@@ -103,7 +103,7 @@ int ttkIdentifyByScalarField::doIt(vector<vtkDataSet *> &inputs, vector<vtkDataS
   vtkSmartPointer<ttkSimplexIdTypeArray> ids=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   ids->SetNumberOfComponents(1);
   ids->SetNumberOfTuples(numberOfCells);
-  ids->SetName(ttk::VertexScalarFieldName);
+  ids->SetName("CellScalarFieldName");
 
   SimplexId* outputIds=static_cast<SimplexId*>(ids->GetVoidPointer(0));
 
