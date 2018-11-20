@@ -10,15 +10,15 @@
      class="ttkUncertainDataEstimator"
      label="TTK UncertainDataEstimator">
      <Documentation
-        long_help="TTK plugin that takes an input ensemble data set (represented 
-by a list of scalar fields) and which computes various vertexwise statistics 
+        long_help="TTK plugin that takes an input ensemble data set (represented
+by a list of scalar fields) and which computes various vertexwise statistics
 (PDF estimation, bounds, moments, etc.)."
-        short_help="TTK plugin that takes an input ensemble data set 
-(represented 
-by a list of scalar fields) and which computes various vertexwise statistics 
+        short_help="TTK plugin that takes an input ensemble data set
+(represented
+by a list of scalar fields) and which computes various vertexwise statistics
 (PDF estimation, bounds, moments, etc.).">
-          TTK plugin that takes an input ensemble data set (represented 
-by a list of scalar fields) and which computes various vertexwise statistics 
+          TTK plugin that takes an input ensemble data set (represented
+by a list of scalar fields) and which computes various vertexwise statistics
 (PDF estimation, bounds, moments, etc.).
 
 See also MandatoryCriticalPoints.
@@ -42,24 +42,6 @@ See also MandatoryCriticalPoints.
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty
-        name="Scalar Field"
-        command="SetScalarField"
-        number_of_elements="1"
-        animateable="0"
-        label="Scalar Field"
-        >
-        <ArrayListDomain
-          name="array_list"
-          default_values="0">
-          <RequiredProperties>
-            <Property name="Input" function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Documentation>
-          Select the scalar field to process.
-        </Documentation>
-      </StringVectorProperty>
 
 
       <IntVectorProperty name="Bound to Compute" command="BoundToCompute"
@@ -140,10 +122,9 @@ See also MandatoryCriticalPoints.
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="Scalar Field" />
         <Property name="Bound to Compute" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />

@@ -138,7 +138,6 @@ int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
     stringstream msg;
     dMsg(cout, msg.str(), infoMsg);
   }
-
   // Get input datas
   vtkDataSet* *input = new vtkDataSet*[numInputs];
   for(int i=0 ; i<numInputs ; i++)

@@ -64,22 +64,29 @@ int ttkUncertainDataEstimator::updateProgress(const float &progress){
 
 int ttkUncertainDataEstimator::doIt(vtkDataSet **input, vtkDataSet *outputBoundFields, vtkDataSet *outputProbability, vtkDataSet *outputMean, int numInputs){
 
-
   // Use a pointer-base copy for the input data
   outputBoundFields->ShallowCopy(input[0]);
   outputProbability->ShallowCopy(input[0]);
   outputMean->ShallowCopy(input[0]);
-
   // Get arrays from input datas
   //vtkDataArray* inputScalarField[numInputs] = { NULL };
-  vector<vtkDataArray*> inputScalarField(numInputs);
-  for(int i=0 ; i<numInputs ; i++){
-    if(ScalarField.length()){
-      inputScalarField[i] = input[i]->GetPointData()->GetArray(ScalarField.data());
+  int numFields=0;
+  int numArrays=0;
+
+  vector<vtkDataArray*> inputScalarField;
+
+  for(int i=0; i<numInputs; i++){
+    numArrays = input[i]->GetPointData()->GetNumberOfArrays();
+    numFields+=numArrays;
+    for(int iarray=0; iarray<numArrays; iarray++){
+      inputScalarField.push_back( input[i]->GetPointData()->GetArray(iarray) );
     }
-    else{
-      inputScalarField[i] = input[i]->GetPointData()->GetArray(0);
-    }
+  }
+
+  std::cout << "[ttkUncertainDataEstimator] Number of Fields: " <<numFields<< '\n';
+
+  for(int i=0 ; i<numFields ; i++){
+
     // Check if inputs have the same data type and the same number of points
     if(inputScalarField[i]->GetDataType() != inputScalarField[0]->GetDataType()){
       stringstream msg;
@@ -97,7 +104,6 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input, vtkDataSet *outputBoundF
     if(!inputScalarField[i])
       return -1;
   }
-
   // Allocate the memory for the output bound scalar fields
   if(!outputLowerBoundScalarField_
      && !outputUpperBoundScalarField_){
@@ -151,10 +157,8 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input, vtkDataSet *outputBoundF
   outputProbabilityScalarField_ = (vtkDoubleArray **) malloc(binCount_*sizeof(vtkDoubleArray *));
   allocatedBinCount_ = binCount_;
   // Delete the pointer to the input field
-  if(ScalarField.length()){
-    outputProbability->GetPointData()->RemoveArray(ScalarField.data());
-  }
-  else{
+  int numberOfArrays = outputProbability->GetPointData()->GetNumberOfArrays();
+  for(int i=0 ; i<numberOfArrays ; i++) {
     outputProbability->GetPointData()->RemoveArray(0);
   }
   // Create DoubleArray objects and link them to the data set
@@ -168,9 +172,9 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input, vtkDataSet *outputBoundF
 
   // Mean field data set
   // Remove Arrays
-  int numberOfArrays = outputMean->GetPointData()->GetNumberOfArrays();
+  numberOfArrays = outputMean->GetPointData()->GetNumberOfArrays();
   for(int i=0 ; i<numberOfArrays ; i++) {
-    outputMean->GetPointData()->RemoveArray(outputMean->GetPointData()->GetArrayName(i));
+    outputMean->GetPointData()->RemoveArray(0);
   }
   // Allocate new array
   if(!outputMeanField_) {
@@ -183,10 +187,8 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input, vtkDataSet *outputBoundF
 
 
   // On the output, replace the field array by a pointer to its processed version
-  if(ScalarField.length()){
-    outputBoundFields->GetPointData()->RemoveArray(ScalarField.data());
-  }
-  else{
+  numberOfArrays = outputBoundFields->GetPointData()->GetNumberOfArrays();
+  for(int i=0 ; i<numberOfArrays ; i++) {
     outputBoundFields->GetPointData()->RemoveArray(0);
   }
 
@@ -215,23 +217,23 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input, vtkDataSet *outputBoundF
     {
       UncertainDataEstimator uncertainDataEstimator;
       uncertainDataEstimator.setWrapper(this);
- 
+
       uncertainDataEstimator.setVertexNumber(
         outputBoundFields->GetNumberOfPoints());
 
-      uncertainDataEstimator.setNumberOfInputs(numInputs);
-      for (int i = 0; i<numInputs; i++) {
-        uncertainDataEstimator.setInputDataPointer(i, 
+      uncertainDataEstimator.setNumberOfInputs(numFields);
+      for (int i = 0; i<numFields; i++) {
+        uncertainDataEstimator.setInputDataPointer(i,
         inputScalarField[i]->GetVoidPointer(0));
       }
 
       uncertainDataEstimator.setComputeLowerBound(computeLowerBound_);
       uncertainDataEstimator.setComputeUpperBound(computeUpperBound_);
 
-    
+
       uncertainDataEstimator.setOutputLowerBoundField(
         outputLowerBoundScalarField_->GetVoidPointer(0));
-        
+
       uncertainDataEstimator.setOutputUpperBoundField(
         outputUpperBoundScalarField_->GetVoidPointer(0));
 
@@ -240,7 +242,7 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input, vtkDataSet *outputBoundF
 
       uncertainDataEstimator.setBinCount(binCount_);
       for (int b = 0; b<binCount_; b++) {
-        uncertainDataEstimator.setOutputProbability(b, 
+        uncertainDataEstimator.setOutputProbability(b,
           outputProbabilityScalarField_[b]->GetVoidPointer(0));
       }
 
@@ -296,8 +298,6 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
   // Mean field
   outInfo = outputVector->GetInformationObject(2);
   vtkDataSet *mean = vtkDataSet::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
-
-
   // Number of input files
   int numInputs = inputVector[0]->GetNumberOfInformationObjects();
   {
@@ -305,16 +305,13 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
     msg << "[ttkUncertainDataEstimator] Number of inputs: " << numInputs << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
-
   // Get input datas
   vtkDataSet* *input = new vtkDataSet*[numInputs];
   for(int i=0 ; i<numInputs ; i++)
   {
     input[i] = vtkDataSet::GetData(inputVector[0], i);
   }
-
   doIt(input, boundFields, probability, mean, numInputs);
-
   delete[] input;
 
   {
@@ -323,6 +320,5 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
       << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }
-
   return 1;
 }
