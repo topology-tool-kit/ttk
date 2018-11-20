@@ -50,6 +50,30 @@
           Select the scalar field to process.
         </Documentation>
       </StringVectorProperty>
+
+      <IntVectorProperty name="IncreasingOrder"
+        label="Increasing Order"
+        command="SetIncreasingOrder"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Order for the identification.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="StartByOne"
+        label="Start By One"
+        command="SetStartByOne"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Start identication by one.
+        </Documentation>
+      </IntVectorProperty>
       
       <IntVectorProperty
          name="UseAllCores"
@@ -95,6 +119,8 @@
       
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField" />
+        <Property name="IncreasingOrder" />
+        <Property name="StartByOne" />
       </PropertyGroup>
       
       <PropertyGroup panel_widget="Line" label="Testing">

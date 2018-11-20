@@ -64,6 +64,12 @@ class ttkIdentifyByScalarField
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
 
+    vtkSetMacro(IncreasingOrder, bool);
+    vtkGetMacro(IncreasingOrder, bool);
+
+    vtkSetMacro(StartByOne, bool);
+    vtkGetMacro(StartByOne, bool);
+
     int FillInputPortInformation(int port, vtkInformation *info) override {
       switch(port){
         case 0:
@@ -96,6 +102,8 @@ class ttkIdentifyByScalarField
       UseAllCores = true;
       ThreadNumber = 1;
       debugLevel_ = 3;
+      IncreasingOrder = false;
+      StartByOne = false;
       ScalarFieldId=0;
       inputScalars_ = nullptr;
       SetNumberOfInputPorts(1);
@@ -109,6 +117,8 @@ class ttkIdentifyByScalarField
   private:
 
     int ScalarFieldId;
+    bool IncreasingOrder;
+    bool StartByOne;
     std::string           ScalarField;
 
     vtkDataArray* inputScalars_;

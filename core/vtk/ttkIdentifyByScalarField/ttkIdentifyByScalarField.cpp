@@ -82,26 +82,37 @@ int ttkIdentifyByScalarField::doIt(vector<vtkDataSet *> &inputs, vector<vtkDataS
   vector<SimplexId> inputIds(numberOfCells);
   std::iota(inputIds.begin(), inputIds.end(), 0);
   switch(inputScalars_->GetDataType()){
-    vtkTemplateMacro({
+    ttkTemplateMacro({
         VTK_TT* arr=static_cast<VTK_TT*>(inputScalars_->GetVoidPointer(0));
 
-        auto cmp=[arr](int a, int b){
+        auto greater_cmp=[arr](int a, int b){
         return arr[a] > arr[b];
         };
 
-        std::sort(inputIds.begin(), inputIds.end(), cmp);
+        auto lower_cmp=[arr](int a, int b){
+        return arr[a] < arr[b];
+        };
+
+        if(IncreasingOrder)
+        std::sort(inputIds.begin(), inputIds.end(), lower_cmp);
+        else
+        std::sort(inputIds.begin(), inputIds.end(), greater_cmp);
         });
   }
 
   vtkSmartPointer<ttkSimplexIdTypeArray> ids=vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   ids->SetNumberOfComponents(1);
   ids->SetNumberOfTuples(numberOfCells);
-  ids->SetName("NewIds");
+  ids->SetName(ttk::VertexScalarFieldName);
 
   SimplexId* outputIds=static_cast<SimplexId*>(ids->GetVoidPointer(0));
 
   for(int i=0; i<numberOfCells; ++i)
     outputIds[inputIds[i]]=i;
+  if(StartByOne){
+    for(int i=0; i<numberOfCells; ++i)
+      outputIds[i]+=1;
+  }
 
   output->ShallowCopy(input);
 
