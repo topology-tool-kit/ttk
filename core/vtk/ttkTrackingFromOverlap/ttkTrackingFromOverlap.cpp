@@ -63,19 +63,19 @@ template<typename labelType> int finalize(
         auto time = vtkSmartPointer<vtkUnsignedIntArray>::New();
         time->SetName("TimeIndex");
         time->SetNumberOfComponents(1);
-        time->SetNumberOfValues( nNodes );
+        time->SetNumberOfTuples( nNodes );
         auto timeData = (unsigned int*) time->GetVoidPointer(0);
 
         auto level = vtkSmartPointer<vtkUnsignedIntArray>::New();
         level->SetName("LevelIndex");
         level->SetNumberOfComponents(1);
-        level->SetNumberOfValues( nNodes );
+        level->SetNumberOfTuples( nNodes );
         auto levelData = (unsigned int*) level->GetVoidPointer(0);
 
         auto size = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
         size->SetName("Size");
         size->SetNumberOfComponents(1);
-        size->SetNumberOfValues( nNodes );
+        size->SetNumberOfTuples( nNodes );
         auto sizeData = (unsigned long long*) size->GetVoidPointer(0);
 
         auto label = vtkSmartPointer<vtkDataArray>::Take(
@@ -83,7 +83,7 @@ template<typename labelType> int finalize(
         );
         label->SetName( labelFieldName.data() );
         label->SetNumberOfComponents(1);
-        label->SetNumberOfValues( nNodes );
+        label->SetNumberOfTuples( nNodes );
         auto labelData = (labelType*) label->GetVoidPointer(0);
 
         size_t q1=0, q2=0;
@@ -139,16 +139,16 @@ template<typename labelType> int finalize(
                     nEdgesN += timeLevelEdgesNMap[t][l].size()/3;
 
         auto cells = vtkSmartPointer<vtkIdTypeArray>::New();
-        cells->SetNumberOfValues( 3*nEdgesT + 3*nEdgesN );
+        cells->SetNumberOfTuples( 3*nEdgesT + 3*nEdgesN );
         auto cellIds = (vtkIdType*) cells->GetVoidPointer(0);
 
         auto overlap = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
-        overlap->SetNumberOfValues( nEdgesT + nEdgesN );
+        overlap->SetNumberOfTuples( nEdgesT + nEdgesN );
         overlap->SetName("Overlap");
         auto overlapData = (unsigned long long*) overlap->GetVoidPointer(0);
 
         auto type = vtkSmartPointer<vtkUnsignedCharArray>::New();
-        type->SetNumberOfValues( nEdgesT + nEdgesN );
+        type->SetNumberOfTuples( nEdgesT + nEdgesN );
         type->SetName("Type");
         auto typeData = (unsigned char*) type->GetVoidPointer(0);
 
