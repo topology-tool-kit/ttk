@@ -1,0 +1,137 @@
+
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+   <SourceProxy 
+     name="IdentifyByScalarField" 
+     class="ttkIdentifyByScalarField" 
+     label="TTK IdentifyByScalarField">
+     <Documentation
+        long_help="TTK identifyByScalarField plugin."
+        short_help="TTK identifyByScalarField plugin.">
+          TTK identifyByScalarField plugin documentation.
+     </Documentation>
+     <InputProperty
+        name="Input"
+        command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Input" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+        name="ScalarField"
+        command="SetScalarField"
+        number_of_elements="1"
+        animateable="0"
+        label="Scalar Field"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="IncreasingOrder"
+        label="Increasing Order"
+        command="SetIncreasingOrder"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Order for the identification.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="StartByOne"
+        label="Start By One"
+        command="SetStartByOne"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Start identication by one.
+        </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="UseAllCores"
+         label="Use All Cores"
+         command="SetUseAllCores"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use all available cores.
+         </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="ThreadNumber"
+         label="Thread Number"
+         command="SetThreadNumber"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="UseAllCores"
+            value="0" />
+        </Hints>
+         <Documentation>
+          Thread number.
+         </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="DebugLevel"
+         label="Debug Level"
+         command="SetdebugLevel_"
+         number_of_elements="1"
+         default_values="3" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Debug level.
+         </Documentation>
+      </IntVectorProperty>
+      
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarField" />
+        <Property name="IncreasingOrder" />
+        <Property name="StartByOne" />
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
+      
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>
