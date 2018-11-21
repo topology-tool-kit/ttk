@@ -5,7 +5,13 @@
 ///
 /// \brief TTK %trackingFromOverlap processing package.
 ///
-/// %TrackingFromOverlap is a TTK processing package that TODO
+/// %TrackingFromOverlap is a TTK processing package that provides algorithms to identify and track features of labled point sets across time (and optionally levels) based on spatial overlap, where two points overlap iff their corresponding coordinates are equal.
+///
+/// Related publication:
+/// 'Nested Tracking Graphs'
+/// Jonas Lukasczyk, Gunther Weber, Ross Maciejewski, Christoph Garth, and Heike Leitte.
+/// Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
+///
 
 #pragma once
 
@@ -59,6 +65,7 @@ namespace ttk{
             TrackingFromOverlap(){};
             ~TrackingFromOverlap(){};
 
+            // This function sorts points based on their x, y, and then z coordinate
             inline int sortCoordinates(
                 const float* pointCoordinates,
                 const size_t nPoints,
@@ -80,19 +87,22 @@ namespace ttk{
                 return 1;
             }
 
+            // This function sorts all unique lables of a point set and then maps these lables to their respective index in the sorted list
             template<typename labelType> int computeLabelIndexMap(
                 const labelType* pointLabels,
                 const size_t nPoints,
                 map<labelType, size_t>& labelIndexMap
             ) const;
 
-            template<typename labelType> int identifyNodes(
+            // This function computes all nodes and their properties based on a labeled point set
+            template<typename labelType> int computeNodes(
                 const float* pointCoordinates,
                 const labelType* pointLabels,
                 const size_t nPoints,
                 Nodes& nodes
             ) const;
 
+            // This function computes the overlap between two labeled point sets
             template<typename labelType> int computeOverlap(
                 const float* pointCoordinates0,
                 const float* pointCoordinates1,
@@ -127,7 +137,7 @@ template<typename labelType> int ttk::TrackingFromOverlap::computeLabelIndexMap(
 // =============================================================================
 // Identify Nodes
 // =============================================================================
-template<typename labelType> int ttk::TrackingFromOverlap::identifyNodes(
+template<typename labelType> int ttk::TrackingFromOverlap::computeNodes(
     const float* pointCoordinates,
     const labelType* pointLabels,
     const size_t nPoints,

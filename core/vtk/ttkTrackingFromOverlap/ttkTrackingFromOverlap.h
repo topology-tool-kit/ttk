@@ -5,12 +5,14 @@
 ///
 /// \brief TTK VTK-filter that computes the overlap between labeled vtkPointSets.
 ///
-/// This filter computes the overlap between labeled vtkPointSets stored as blocks of a vtkMultiBlockDataSet. Overlap is characterized by the equality of spatial point coordinates. This filter can be executed iteratively.
-///
 /// VTK wrapping code for the @TrackingFromOverlap package.
 ///
-/// \param Input vtkMultiBlockDataSet holding the vtkPointSets (vtkMultiBlockDataSet)
-/// \param Output Tracking Graph (vtkUnstructuredGrid)
+/// This filter identifies and tracks features of labled vtkPointSets across time (and optionally levels) based on spatial overlap, where two points overlap iff their corresponding coordinates are equal. This filter can be executed iteratively and can generate nested tracking graphs.
+///
+/// Related publication:
+/// 'Nested Tracking Graphs'.
+/// Jonas Lukasczyk, Gunther Weber, Ross Maciejewski, Christoph Garth, and Heike Leitte.
+/// Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
 ///
 /// sa ttk::TrackingFromOverlap
 
@@ -19,6 +21,7 @@
 // VTK includes
 #include <vtkUnstructuredGridAlgorithm.h>
 #include <vtkInformation.h>
+#include <vtkSmartPointer.h>
 #include <vtkMultiBlockDataSet.h>
 
 // TTK includes
@@ -71,11 +74,11 @@ class ttkTrackingFromOverlap
             return 1;
         }
 
+
     protected:
 
         ttkTrackingFromOverlap(){
             SetLabelFieldName("RegionId");
-            previousIterationData = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
             UseAllCores = false;
 
@@ -87,10 +90,20 @@ class ttkTrackingFromOverlap
         bool UseAllCores;
         int ThreadNumber;
 
-        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
+        int reset();
 
-        int processTimestep(vtkDataObject* dataObject);
-        // int finalize(vtkDataObject* trackingGraphObject);
+        int packInputData(vtkDataObject* inputDataObject, vtkMultiBlockDataSet* packedData) const;
+        int packStreamedData(vtkMultiBlockDataSet* streamedData, vtkMultiBlockDataSet* packedData) const;
+        int checkData(vtkMultiBlockDataSet* data);
+
+        int storeStreamedData(vtkMultiBlockDataSet* data);
+        int computeNodes(vtkMultiBlockDataSet* data);
+        int computeTrackingGraphs(vtkMultiBlockDataSet* data);
+        int computeNestingTrees(vtkMultiBlockDataSet* data);
+
+        int meshNestedTrackingGraph(vtkDataObject* trackingGraph);
+
+        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
@@ -99,6 +112,11 @@ class ttkTrackingFromOverlap
         ttk::TrackingFromOverlap trackingFromOverlap;
 
         vtkSmartPointer<vtkMultiBlockDataSet> previousIterationData;
+
+        // Containers for nodes and edges
+        vector<vector<Nodes>> levelTimeNodesMap; // N
+        vector<vector<Edges>> levelTimeEdgesTMap; // E_T
+        vector<vector<Edges>> timeLevelEdgesNMap; // E_N
 
         bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {

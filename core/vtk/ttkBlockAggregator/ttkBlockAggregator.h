@@ -32,8 +32,8 @@ class ttkBlockAggregator
         static ttkBlockAggregator* New();
         vtkTypeMacro(ttkBlockAggregator, vtkMultiBlockDataSetAlgorithm)
 
-        vtkSetMacro(UseStreaming, bool);
-        vtkGetMacro(UseStreaming, bool);
+        vtkSetMacro(ForceReset, bool);
+        vtkGetMacro(ForceReset, bool);
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -69,7 +69,7 @@ class ttkBlockAggregator
     protected:
 
         ttkBlockAggregator(){
-            SetUseStreaming(true);
+            SetForceReset(false);
 
             UseAllCores = false;
 
@@ -81,14 +81,13 @@ class ttkBlockAggregator
         bool UseAllCores;
         int ThreadNumber;
 
+        int AggregateBlock(vtkDataObject* dataObject, vtkMultiBlockDataSet* mb, size_t index, bool useShallowCopy);
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
-        bool UseStreaming;
+        bool ForceReset;
         vtkSmartPointer<vtkMultiBlockDataSet> AggregatedMultiBlockDataSet;
-
-        int AddBlock(vtkDataObject* dataObject, vtkMultiBlockDataSet* mb, size_t index, bool useShallowCopy);
 
         bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {

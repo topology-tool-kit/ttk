@@ -63,6 +63,7 @@ int ttkEndFor::RequestData(
     } else {
         // Stop iterations
         request->Remove( vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING() );
+        this->nextIndex = 0;
 
         // Print status
         {

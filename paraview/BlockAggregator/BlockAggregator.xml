@@ -52,9 +52,9 @@
                 </Hints>
             </InputProperty>
 
-            <IntVectorProperty name="UseStreaming" label="Use Streaming" command="SetUseStreaming" number_of_elements="1" default_values="1">
+            <IntVectorProperty name="ForceReset" label="Force Reset" command="SetForceReset" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
-                <Documentation>Aggregate input based on stream.</Documentation>
+                <Documentation>Force deletion of previously aggregated data.</Documentation>
             </IntVectorProperty>
 
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
