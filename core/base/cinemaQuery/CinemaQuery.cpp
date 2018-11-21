@@ -46,81 +46,91 @@ string ttk::CinemaQuery::execute(
 
         // Create Temporary Database
         {
+            dMsg(cout, "[ttkCinemaQuery] Creating database ... ", timeMsg);
             Timer t;
-
-            // Print status
-            {
-                stringstream msg;
-                msg << "[ttkCinemaQuery] Create Temporary Database"<<endl;
-                dMsg(cout, msg.str(), timeMsg);
-            }
 
             // Initialize DB in memory
             rc = sqlite3_open(":memory:", &db);
-            if(rc){
-                fprintf(stderr, "[ttkCinemaQuery] Unable to create database: %s\n", sqlite3_errmsg(db));
+            if( rc!=SQLITE_OK ){
+                stringstream msg;
+                msg<<"failed\n[ttkCinemaQuery] ERROR: Unable to create database."<<endl;
+                msg<<"[ttkCinemaQuery]         - "<< sqlite3_errmsg(db) <<endl;
+                dMsg(cout, msg.str(), fatalMsg);
                 return result;
             }
 
             // Create table
             rc = sqlite3_exec(db, sqlTableDefinition.data(), nullptr, 0, &zErrMsg);
-            if( rc != SQLITE_OK ){
-                fprintf(stderr, "[ttkCinemaQuery] SQL error: %s\n", zErrMsg);
+            if( rc!=SQLITE_OK ){
+                stringstream msg;
+                msg<<"failed\n[ttkCinemaQuery] ERROR: " << zErrMsg <<endl;
+                dMsg(cout, msg.str(), fatalMsg);
+
                 sqlite3_free(zErrMsg);
                 sqlite3_close(db);
+
                 return result;
             }
 
             // Fill table
             rc = sqlite3_exec(db, sqlTableRows.data(), nullptr, 0, &zErrMsg);
-            if( rc != SQLITE_OK ){
-                fprintf(stderr, "[ttkCinemaQuery] SQL error: %s\n", zErrMsg);
+            if( rc!=SQLITE_OK ){
+                stringstream msg;
+                msg<<"failed\n[ttkCinemaQuery] ERROR: " << zErrMsg <<endl;
+                dMsg(cout, msg.str(), fatalMsg);
+
                 sqlite3_free(zErrMsg);
                 sqlite3_close(db);
                 return result;
-            }
-
-            // Print status
-            {
+            } else {
                 stringstream msg;
-                msg << "[ttkCinemaQuery] Created in "
-                    << t.getElapsedTime() << " s."<< endl;
+                msg << "done (" << t.getElapsedTime() << " s)."<< endl;
                 dMsg(cout, msg.str(), timeMsg);
             }
         }
 
-        // Run SQL on temporary database
+        // Run SQL statement on temporary database
         {
+            dMsg(cout, "[ttkCinemaQuery] Querying database ... ", timeMsg);
             Timer t;
 
             // Perform query
             rc = sqlite3_exec(db, sqlQuery.data(), processRow, (void*)(&result), &zErrMsg);
-            if( rc != SQLITE_OK ){
-                fprintf(stderr, "[ttkCinemaQuery] SQL error: %s\n", zErrMsg);
+            if( rc!=SQLITE_OK ){
+                stringstream msg;
+                msg<<"failed\n[ttkCinemaQuery] ERROR: " << zErrMsg <<endl;
+                dMsg(cout, msg.str(), fatalMsg);
+
                 sqlite3_free(zErrMsg);
                 sqlite3_close(db);
                 return result;
-            }
-
-            // Delete DB
-            sqlite3_close(db);
-
-            // Print status
-            {
+            } else {
                 stringstream msg;
-                msg << "[ttkCinemaQuery] Query processed in "
-                    << t.getElapsedTime() << " s." << endl;
+                msg << "done (" << t.getElapsedTime() << " s)." << endl;
                 dMsg(cout, msg.str(), timeMsg);
             }
         }
 
-    #else
-        // Print Error
+        // Close database
         {
-            stringstream msg;
-            msg << "[ttkCinemaQuery] ERROR: TTK is build without Sqlite3 support. Query is not executed."<<endl;
-            dMsg(cout, msg.str(), timeMsg);
+            dMsg(cout, "[ttkCinemaQuery] Closing  database ... ", timeMsg);
+
+            // Delete DB
+            rc = sqlite3_close(db);
+
+            // Print status
+            if(rc!=SQLITE_OK){
+                stringstream msg;
+                msg<<"failed\n[ttkCinemaQuery] ERROR: Unable to close database."<<endl;
+                msg<<"[ttkCinemaQuery]         - "<< sqlite3_errmsg(db) <<endl;
+                dMsg(cout, msg.str(), fatalMsg);
+            } else {
+                dMsg(cout, "done.\n", timeMsg);
+            }
         }
+
+    #else
+        dMsg(cout, "[ttkCinemaQuery] ERROR: This filter requires Sqlite3.\n", fatalMsg);
     #endif
 
     return result;

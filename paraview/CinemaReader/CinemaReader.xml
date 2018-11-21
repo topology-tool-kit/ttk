@@ -27,6 +27,7 @@
                 <IntRangeDomain name="range" min="0" max="100" />
                 <Documentation>Debug level.</Documentation>
             </IntVectorProperty>
+
             <PropertyGroup panel_widget="Line" label="Input Options">
                 <Property name="DatabasePath" />
             </PropertyGroup>

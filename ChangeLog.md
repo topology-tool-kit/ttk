@@ -1,6 +1,11 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+
+### 0.9.7
+- Updates for ParaView-5.6.0
+- Tracking from overlap
+- TTK pipeline filters (ForEachRow)
 - Depth image based geometry approximation (IEEE LDAV 2018 paper)
 - Advanced cinema+sqlite3 support
 - Lifted Wasserstein Matcher for Topology Time-Tracking (IEEE LDAV 2018 paper)

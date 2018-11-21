@@ -1,10 +1,16 @@
 #include <ttkCinemaQuery.h>
 
+#include <vtkVersion.h>
+
 #include <vtkTable.h>
+#include <vtkMultiBlockDataSet.h>
 #include <vtkSmartPointer.h>
 #include <vtkStringArray.h>
 #include <vtkFieldData.h>
 #include <vtkDelimitedTextReader.h>
+
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/replace.hpp>
 
 using namespace std;
 using namespace ttk;
@@ -21,23 +27,30 @@ int ttkCinemaQuery::RequestData(
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaQuery] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
+    Timer t;
     Memory m;
 
     string result;
     string sqlTableDefinition, sqlTableRows;
 
+    // -------------------------------------------------------------------------
     // Get Input Table
+    // -------------------------------------------------------------------------
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-    vtkTable* inTable = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+    auto inTable = vtkTable::SafeDownCast( inInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
+    // -------------------------------------------------------------------------
     // Get Output Table
+    // -------------------------------------------------------------------------
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    vtkTable* outTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    auto outTable = vtkTable::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
+    // -------------------------------------------------------------------------
     // Convert Input Table to SQL Table
+    // -------------------------------------------------------------------------
     {
         int nc = inTable->GetNumberOfColumns();
         int nr = inTable->GetNumberOfRows();
@@ -66,16 +79,64 @@ int ttkCinemaQuery::RequestData(
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Replace Variables in QueryString (e.g. {time[2]})
+    // -------------------------------------------------------------------------
+    string finalQueryString = this->QueryString;
+    {
+        vtkFieldData* fieldData = inTable->GetFieldData();
+
+        vector<string> temp; // vector of substrings of SQL string separated by '{'
+        boost::split(temp, finalQueryString, boost::is_any_of("{"));
+
+        for(size_t i=1; i<temp.size(); i++){
+            vector<string> temp2; // vector of substrings of temp separated by '}'
+            boost::split(temp2, temp[i], boost::is_any_of("}"));
+
+            string varToken = temp2[0]; // e.g. time[2]
+            string varName  = varToken; // time
+            size_t varIndex = 0;        // 2
+
+            // If varIndex specified in string then update varName and varIndex
+            size_t indexDelimiter0 = varToken.find("[");
+            size_t indexDelimiter1 = varToken.find("]");
+            if( indexDelimiter0!=string::npos && indexDelimiter1!=string::npos ){
+                varName = varToken.substr(0,indexDelimiter0);
+                varIndex = stoi( varToken.substr(indexDelimiter0+1,indexDelimiter1-indexDelimiter0-1) );
+            }
+
+            // Search in candidates
+            auto column = fieldData->GetAbstractArray( varName.data() );
+            if( column!=nullptr && varIndex<((size_t)column->GetNumberOfTuples()) ){
+                // Replace Variable
+                boost::replace_all(
+                    finalQueryString,
+                    "{"+varToken+"}",
+                    "\""+column->GetVariantValue( varIndex ).ToString()+"\""
+                );
+            } else {
+                // Print Error
+                stringstream msg;
+                msg<<"[ttkCinemaQuery] ERROR: Variable {"<<varToken<<"} not found in field data."<<endl;
+                dMsg(cout, msg.str(), fatalMsg);
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Compute Query Result
+    // -------------------------------------------------------------------------
     {
         result = cinemaQuery.execute(
             sqlTableDefinition,
             sqlTableRows,
-            this->QueryString
+            finalQueryString
         );
     }
 
+    // -------------------------------------------------------------------------
     // Process Result
+    // -------------------------------------------------------------------------
     {
         if(result!=""){
             #if VTK_MAJOR_VERSION <= 7
@@ -83,10 +144,10 @@ int ttkCinemaQuery::RequestData(
                 msg << "[ttkCinemaQuery] ERROR: VTK version too old."<<endl
                     << "[ttkCinemaQuery]        This filter requires vtkDelimitedTextReader"<<endl
                     << "[ttkCinemaQuery]        of version 7.0 or higher."<<endl;
-                dMsg(cout, msg.str(), memoryMsg);
+                dMsg(cout, msg.str(), fatalMsg);
                 return 0;
             #else
-                vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+                auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
                 reader->SetReadFromInputString( true );
                 reader->SetInputString( result );
                 reader->DetectNumericColumnsOn();
@@ -97,12 +158,12 @@ int ttkCinemaQuery::RequestData(
                 outTable->ShallowCopy( reader->GetOutput() );
             #endif
         } else {
-            vtkSmartPointer<vtkTable> emptyTable = vtkSmartPointer<vtkTable>::New();
+            auto emptyTable = vtkSmartPointer<vtkTable>::New();
 
             int nc = inTable->GetNumberOfColumns();
             for(int i=0; i<nc; i++){
                 auto c = inTable->GetColumn(i);
-                vtkSmartPointer<vtkStringArray> emptyColumn = vtkSmartPointer<vtkStringArray>::New();
+                auto emptyColumn = vtkSmartPointer<vtkStringArray>::New();
                 emptyColumn->SetNumberOfValues(1);
                 emptyColumn->SetValue(0,"NULL");
                 emptyColumn->SetName( c->GetName() );
@@ -117,10 +178,10 @@ int ttkCinemaQuery::RequestData(
     // Output Performance
     {
         stringstream msg;
-        msg << "[ttkCinemaQuery] Memory usage: "
-            << m.getElapsedUsage()
-            << " MB." << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+        msg << "[ttkCinemaQuery] ---------------------------------------------------------------"<<endl;
+        msg << "[ttkCinemaQuery]   time: " << t.getElapsedTime() << " s." << endl;
+        msg << "[ttkCinemaQuery] memory: " << m.getElapsedUsage() << " MB." << endl;
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;

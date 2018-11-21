@@ -66,6 +66,16 @@ int ttkPersistenceCurve::updateProgress(const float &progress){
   return 0;
 }
 
+vtkTable* ttkPersistenceCurve::GetOutput()
+{
+  return this->GetOutput(0);
+}
+
+vtkTable* ttkPersistenceCurve::GetOutput(int port)
+{
+  return vtkTable::SafeDownCast(this->GetOutputDataObject(port));
+}
+
 int ttkPersistenceCurve::FillOutputPortInformation(int port, vtkInformation* info){
   switch (port) {
     case 0:
@@ -124,8 +134,12 @@ int ttkPersistenceCurve::getTriangulation(vtkDataSet* input){
 
   triangulation_ = ttkTriangulation::getTriangulation(input);
   
-  if(!triangulation_)
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!triangulation_){
+    cerr << "[ttkPersistenceCurve] Error: input triangulation is NULL." << endl;
     return -1;
+  }
+#endif
   
   triangulation_->setWrapper(this);
   persistenceCurve_.setupTriangulation(triangulation_);
@@ -191,6 +205,24 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
     vtkTable* outputMSCPersistenceCurve,
     vtkTable* outputSTPersistenceCurve,
     vtkTable* outputCTPersistenceCurve){
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input){
+    cerr << "[ttkPersistenceCurve] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!input->GetNumberOfPoints()){
+    cerr << "[ttkPersistenceCurve] Error: input has no point." << endl;
+    return -1;
+  }
+
+  if(!outputJTPersistenceCurve or !outputMSCPersistenceCurve or ! outputSTPersistenceCurve
+      or !outputCTPersistenceCurve){
+    cerr << "[ttkPersistenceCurve] Error: output pointer is NULL." << endl;
+    return -1;
+  }
+#endif
+
   int ret{};
 
   ret=getScalars(input);

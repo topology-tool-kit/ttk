@@ -59,8 +59,8 @@ function(ttk_set_compile_options library)
         target_link_libraries(${library} PUBLIC ${SQLITE3_LIBRARY})
     endif()
 
-    if (TTK_USE_64BIT_IDS)
-        target_compile_definitions(${library} PUBLIC TTK_USE_64BIT_IDS)
+    if (TTK_ENABLE_64BIT_IDS)
+        target_compile_definitions(${library} PUBLIC TTK_ENABLE_64BIT_IDS)
     endif()
 
     if (PYTHON_NUMPY_INCLUDE_DIR)
@@ -75,10 +75,10 @@ function(ttk_print_summary)
     message(STATUS "TTK_ENABLE_KAMIKAZE: ${TTK_ENABLE_KAMIKAZE}")
     message(STATUS "TTK_ENABLE_OPENMP: ${TTK_ENABLE_OPENMP}")
     message(STATUS "TTK_ENABLE_MPI: ${TTK_ENABLE_MPI}")
+    message(STATUS "TTK_ENABLE_SQLITE3: ${TTK_ENABLE_SQLITE3}")
     message(STATUS "TTK_ENABLE_ZFP: ${TTK_ENABLE_ZFP}")
     message(STATUS "TTK_ENABLE_ZLIB: ${TTK_ENABLE_ZLIB}")
-    message(STATUS "TTK_ENABLE_SQLITE3: ${TTK_ENABLE_SQLITE3}")
-    message(STATUS "TTK_USE_64BIT_IDS: ${TTK_USE_64BIT_IDS}")
+    message(STATUS "TTK_ENABLE_64BIT_IDS: ${TTK_ENABLE_64BIT_IDS}")
     message(STATUS "ttk build -------------------------------------------------------------------")
     message(STATUS "BOOST_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
 
@@ -121,8 +121,8 @@ function(ttk_find_python)
   if(PYTHON_INCLUDE_DIRS)
     include_directories(${PYTHON_INCLUDE_DIRS})
 
-    if (${CMAKE_VERSION} VERSION_GREATER "3.10"
-      OR ${CMAKE_VERSION} VERSION_EQUAL "3.10")
+    if (${CMAKE_VERSION} VERSION_GREATER "3.12"
+      OR ${CMAKE_VERSION} VERSION_EQUAL "3.12")
       string(REPLACE \".\" \" \"
         PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
     else()
@@ -147,6 +147,22 @@ function(ttk_find_python)
     endif()
   endif()
 endfunction()
+
+set(CMAKE_CXX_STANDARD 11)
+
+# Set a predefined build type
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+   message(STATUS "Setting build type to 'Release'.")
+   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
+endif()
+
+option(TTK_ENABLE_64BIT_IDS "Enable processing on large datasets" OFF)
+
+option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" OFF)
+
+option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" ON)
+
 
 option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)
 if(TTK_BUILD_DOCUMENTATION)

@@ -192,6 +192,14 @@ vtkDataArray* ttkMorseSmaleComplex::getOffsets(vtkDataSet* input){
 int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
     vector<vtkDataSet *> &outputs){
   Memory m;
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputs.size()){
+    cerr << "[ttkMorseSmaleComplex] Error: not enough input information." << endl;
+    return -1;
+  }
+#endif
+
   int ret{};
 
   vtkDataSet *input = inputs[0];
@@ -202,6 +210,23 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   vtkUnstructuredGrid *outputSeparatrices2 = 
     vtkUnstructuredGrid::SafeDownCast(outputs[2]);
   vtkDataSet *outputMorseComplexes = outputs[3];
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input){
+    cerr << "[ttkMorseSmaleComplex] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!input->GetNumberOfPoints()){
+    cerr << "[ttkMorseSmaleComplex] Error: input has no point." << endl;
+    return -1;
+  }
+
+  if(!outputCriticalPoints or !outputSeparatrices1 or !outputSeparatrices2 or !outputMorseComplexes){
+    cerr << "[ttkMorseSmaleComplex] Error: output pointer is NULL." << endl;
+    return -1;
+  }
+#endif
 
   ret=setupTriangulation(input);
 #ifndef TTK_ENABLE_KAMIKAZE

@@ -9,16 +9,41 @@ int ttkLDistance::doIt(
   vector<vtkDataSet *> &inputs, 
   vector<vtkDataSet *> &outputs)
 {
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputs.size()){
+    cerr << "[ttkLDistance] Error: not enough input information." << endl;
+    return -1;
+  }
+#endif
   
   vtkDataSet *input1 = inputs[0];
-	vtkDataSet *output = outputs[0];
+  vtkDataSet *output = outputs[0];
+
+  // Test validity of datasets (must present the same number of points).
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input1){
+    cerr << "[ttkLDistance] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!input1->GetNumberOfPoints()){
+    cerr << "[ttkLDistance] Error: input has no point." << endl;
+    return -1;
+  }
+
+  if(!input1->GetPointData()){
+    cerr << "[ttkLDistance] Error: input has no point data." << endl;
+    return -1;
+  }
+
+  if(!output){
+    cerr << "[ttkLDistance] Error: output pointer is NULL." << endl;
+    return -1;
+  }
+#endif
   
   lDistance_.setWrapper(this);
   
-  // Test validity of datasets (must present the same number of points).
-  if (!input1)
-	 return -1;
-	
   // Use a pointer-base copy for the input.
   output->ShallowCopy(input1);
   
@@ -38,10 +63,13 @@ int ttkLDistance::doIt(
 	  inputScalarField2 = input1->GetPointData()->GetArray(ScalarField2.data());
   else 
   	inputScalarField2 = input1->GetPointData()->GetArray(ScalarFieldId2);
-  
+ 
+#ifndef TTK_ENABLE_KAMIKAZE
   if (!inputScalarField1 || !inputScalarField2 ||
       inputScalarField1->GetDataType() != inputScalarField2->GetDataType())
+    cerr << "[ttkLDistance] Error: input scalar fields are NULL or have different types." << endl;
 	return -1;
+#endif
   
   // Allocate memory for the output scalar field, based on the first input.
   if (!outputScalarField_) {

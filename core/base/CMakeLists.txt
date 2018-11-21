@@ -103,8 +103,8 @@ function(ttk_add_base_template_library library)
 		target_include_directories(${library} INTERFACE ${ZLIB_INCLUDE_DIR})
 	endif()
 
-  if (TTK_USE_64BIT_IDS)
-      target_compile_definitions(${library} INTERFACE TTK_USE_64BIT_IDS)
+  if (TTK_ENABLE_64BIT_IDS)
+      target_compile_definitions(${library} INTERFACE TTK_ENABLE_64BIT_IDS)
 	endif()
 
 	if (PYTHON_NUMPY_INCLUDE_DIR)

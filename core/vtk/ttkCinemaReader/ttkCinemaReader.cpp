@@ -23,11 +23,11 @@ int ttkCinemaReader::RequestData (
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkCinemaReader] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
 
     // Read CSV file which is in Spec D format
-    vtkSmartPointer<vtkDelimitedTextReader> reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+    auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
     reader->SetFileName( (this->DatabasePath+"/data.csv").data() );
     reader->DetectNumericColumnsOn();
     reader->SetHaveHeaders(true);
@@ -36,7 +36,7 @@ int ttkCinemaReader::RequestData (
 
     // Copy Information to Output
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    vtkTable* outTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+    auto outTable = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
     outTable->ShallowCopy( reader->GetOutput() );
 
     // Append database path as field data
@@ -49,9 +49,10 @@ int ttkCinemaReader::RequestData (
     // Output Performance
     {
         stringstream msg;
+        msg << "[ttkCinemaReader] --------------------------------------------------------------"<<endl;
         msg << "[ttkCinemaReader]   Time: " << t.getElapsedTime() << " s." << endl;
         msg << "[ttkCinemaReader] Memory: " << m.getElapsedUsage() << " MB." << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;

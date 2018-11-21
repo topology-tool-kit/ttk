@@ -231,9 +231,33 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
 {
    Memory m;
 
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputs.size()){
+    cerr << "[ttkFTMTree] Error: not enough input information." << endl;
+    return -1;
+  }
+#endif
+
    vtkUnstructuredGrid* outputSkeletonNodes = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
    vtkUnstructuredGrid* outputSkeletonArcs  = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
    vtkDataSet*          outputSegmentation  = outputs[2];
+
+#ifndef TTK_ENABLE_KAMIKAZE
+   if(!inputs[0]){
+     cerr << "[ttkFTMTree] Error: input pointer is NULL." << endl;
+     return -1;
+   }
+
+  if(!inputs[0]->GetNumberOfPoints()){
+     cerr << "[ttkFTMTree] Error: input has no point." << endl;
+     return -1;
+  }
+
+  if(!outputSkeletonNodes || !outputSkeletonArcs || !outputSegmentation){
+    cerr << "[ttkFTMTree] Error: output pointer is NULL." << endl;
+    return -1;
+  }
+#endif
 
    if(inputs[0]->IsA("vtkUnstructuredGrid")){
       // This data set may have several connected components,
@@ -298,7 +322,12 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
    }
 
    // Fill the vector of scalar/offset, cut the array in pieces if needed
-    getScalars();
+    if(getScalars()){
+#ifndef TTK_ENABLE_KAMIKAZE
+      cerr << "[ttkFTMTree] Error : wrong input scalars." << endl;
+      return -1;
+#endif
+    }
     getOffsets();
 
    if(debugLevel_) {

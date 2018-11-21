@@ -260,7 +260,7 @@ class ttkDimensionReduction
     ttkDimensionReduction(){
       NumberOfComponents=2;
       NumberOfNeighbors=5;
-      Method=0;
+      Method=2;
 
       se_Affinity="nearest_neighbors";
       se_Gamma=1;

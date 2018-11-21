@@ -3,7 +3,8 @@
     <ProxyGroup name="filters">
         <SourceProxy name="CinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
             <Documentation long_help="TTK CinemaQuery" short_help="TTK CinemaQuery">This filter uses a SQL statement to select a subset of a vtkTable.</Documentation>
-            <InputProperty name="Input" command="SetInputConnection">
+
+            <InputProperty name="Table" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />

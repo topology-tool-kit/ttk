@@ -15,27 +15,6 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkDepthImageBasedGeometryApproximation)
 
-
-template <class dataType, class arrayType> int addArraySubset(vtkAbstractArray* inAbstractArray, vector<size_t>& indicies, vtkPointData* outPointData){
-    arrayType* inArray = arrayType::SafeDownCast( inAbstractArray );
-
-    size_t n = indicies.size();
-
-    auto outArray = vtkSmartPointer<arrayType>::New();
-    outArray->DeepCopy( inArray );
-    outArray->SetNumberOfValues( n );
-
-    dataType* inData = (dataType*) inArray->GetVoidPointer(0);
-    dataType* outData = (dataType*) outArray->GetVoidPointer(0);
-
-    for(size_t j=0; j<n; j++)
-        outData[j] = inData[ indicies[j] ];
-
-    outPointData->AddArray( outArray );
-
-    return 0;
-}
-
 int ttkDepthImageBasedGeometryApproximation::RequestData(
     vtkInformation* request,
     vtkInformationVector** inputVector,
@@ -49,8 +28,11 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         stringstream msg;
         msg<<"================================================================================"<<endl;
         msg<<"[ttkDepthImageBasedGeometryApproximation] RequestData"<<endl;
-        dMsg(cout, msg.str(), timeMsg);
+        dMsg(cout, msg.str(), infoMsg);
     }
+
+    // Set Wrapper
+    depthImageBasedGeometryApproximation_.setWrapper(this);
 
     // Prepare input and output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
@@ -59,9 +41,6 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     auto outputMBD = vtkMultiBlockDataSet::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
-    // Set Wrapper
-    depthImageBasedGeometryApproximation_.setWrapper(this);
-
     // Process each depth image individually
     size_t n = inputMBD->GetNumberOfBlocks();
     for(size_t i=0; i<n; i++){
@@ -69,20 +48,22 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         auto inputImage = vtkImageData::SafeDownCast( inputMBD->GetBlock(i) );
 
         // Get input paramters
+        auto inPointData = inputImage->GetPointData();
         auto depthValues = inputImage->GetPointData()->GetAbstractArray( this->GetDepthScalarField().data() );
 
-        auto camHeight = inputImage->GetFieldData()->GetAbstractArray("CamHeight");
-        auto camPosition = inputImage->GetFieldData()->GetAbstractArray("CamPosition");
-        auto camDirection = inputImage->GetFieldData()->GetAbstractArray("CamDirection");
-        auto camUp = inputImage->GetFieldData()->GetAbstractArray("CamUp");
-        auto camNearFar = inputImage->GetFieldData()->GetAbstractArray("CamNearFar");
-        auto camRes = inputImage->GetFieldData()->GetAbstractArray("CamRes");
+        auto inFieldData = inputImage->GetFieldData();
+        auto camHeight = inFieldData->GetAbstractArray("CamHeight");
+        auto camPosition = inFieldData->GetAbstractArray("CamPosition");
+        auto camDirection = inFieldData->GetAbstractArray("CamDirection");
+        auto camUp = inFieldData->GetAbstractArray("CamUp");
+        auto camNearFar = inFieldData->GetAbstractArray("CamNearFar");
+        auto camRes = inFieldData->GetAbstractArray("CamRes");
 
         // Check if all parameters are present
         if(depthValues==nullptr || camHeight==nullptr || camPosition==nullptr || camDirection==nullptr || camUp==nullptr || camNearFar==nullptr || camRes==nullptr){
             stringstream msg;
             msg << "[ttkDepthImageBasedGeometryApproximation] ERROR: Input depth image does not have one or more of the required fields (see Cinema Spec D - Data Product Specification)" << endl;
-            dMsg(cout, msg.str(), memoryMsg);
+            dMsg(cout, msg.str(), fatalMsg);
             return 0;
         }
 
@@ -116,16 +97,16 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         }
 
         // Represent approximated geometry via VTK
-        vtkSmartPointer<vtkUnstructuredGrid> mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
+        auto mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
         // Create points
         {
             size_t n = vertices.size();
 
-            vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+            auto points = vtkSmartPointer<vtkPoints>::New();
             points->SetNumberOfPoints( n );
 
-            float* pointCoords = (float*) points->GetVoidPointer(0);
+            auto pointCoords = (float*) points->GetVoidPointer(0);
             size_t i=0;
             for(auto& x: vertices){
                 pointCoords[i++] = get<0>(x);
@@ -138,7 +119,6 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
 
         // Copy Point Data
         {
-            auto inPointData = inputImage->GetPointData();
             size_t n = inPointData->GetNumberOfArrays();
 
             auto outPointData = mesh->GetPointData();
@@ -149,11 +129,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
 
                 auto outArray = vtkDataArray::CreateDataArray( inArray->GetDataType() );
                 outArray->SetName( inArray->GetName() );
-                #if VTK_MAJOR_VERSION >= 7
-                    outArray->SetNumberOfValues( m );
-                #else
-                    outArray->SetNumberOfTuples( m );
-                #endif
+                outArray->SetNumberOfTuples( m );
 
                 for(size_t j=0; j<m; j++){
                     outArray->SetTuple(j, inArray->GetTuple(indicies[j]));
@@ -167,11 +143,11 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         {
             size_t n = triangles.size();
 
-            vtkSmartPointer<vtkIdTypeArray> cells = vtkSmartPointer<vtkIdTypeArray>::New();
-            cells->SetNumberOfValues(n + n * 3);
-            vtkIdType* cellIds = (vtkIdType*) cells->GetVoidPointer(0);
+            auto cells = vtkSmartPointer<vtkIdTypeArray>::New();
+            cells->SetNumberOfValues( 4*n );
+            auto cellIds = (vtkIdType*) cells->GetVoidPointer(0);
 
-            vtkSmartPointer<vtkDoubleArray> triangleDistortionsScalars = vtkSmartPointer<vtkDoubleArray>::New();
+            auto triangleDistortionsScalars = vtkSmartPointer<vtkDoubleArray>::New();
             triangleDistortionsScalars->SetNumberOfValues( n );
             triangleDistortionsScalars->SetNumberOfComponents(1);
             triangleDistortionsScalars->SetName("Distortion");
@@ -187,7 +163,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
                 triangleDistortionsScalarsData[i] = triangleDistortions[i];
             }
 
-            vtkSmartPointer<vtkCellArray> cellArray = vtkSmartPointer<vtkCellArray>::New();
+            auto cellArray = vtkSmartPointer<vtkCellArray>::New();
             cellArray->SetCells(n, cells);
             mesh->SetCells(VTK_TRIANGLE, cellArray);
 
@@ -203,9 +179,9 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         stringstream msg;
         msg << "[ttkDepthImageBasedGeometryApproximation] --------------------------------------" << endl
             << "[ttkDepthImageBasedGeometryApproximation] " << n << " Images processed" << endl
-            << "[ttkDepthImageBasedGeometryApproximation]   time: " << t.getElapsedTime() << " s" << endl
-            << "[ttkDepthImageBasedGeometryApproximation] memory: " << m.getElapsedUsage() << " MB" << endl;
-        dMsg(cout, msg.str(), memoryMsg);
+            << "[ttkDepthImageBasedGeometryApproximation]   Time: " << t.getElapsedTime() << " s" << endl
+            << "[ttkDepthImageBasedGeometryApproximation] Memory: " << m.getElapsedUsage() << " MB" << endl;
+        dMsg(cout, msg.str(), timeMsg);
     }
 
     return 1;
