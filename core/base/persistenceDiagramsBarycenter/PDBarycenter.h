@@ -85,6 +85,10 @@ namespace ttk{
 // 			}
 // 			return 0;
 // 		}
+    inline void setDebugLevel(const int debugLevel){
+      debugLevel_ = debugLevel;
+    }
+
     inline void setDeterministic(const bool deterministic){
       deterministic_ = deterministic;
     }
@@ -225,6 +229,7 @@ namespace ttk{
 	  bool reinit_prices_;
 	  bool epsilon_decreases_;
 	  bool early_stoppage_;
+    int debugLevel_;
   };
 }
 

@@ -88,6 +88,10 @@ namespace ttk{
 			return 0;
 		}
 
+    inline void setDebugLevel(const int debugLevel){
+      debugLevel_ = debugLevel;
+    }
+
     inline void setDeterministic(const bool deterministic){
       deterministic_ = deterministic;
     }
@@ -145,6 +149,7 @@ namespace ttk{
 
 
     protected:
+      int                 debugLevel_;
     bool                  deterministic_;
     int                    method_;
 	  int 					wasserstein_;
@@ -260,6 +265,7 @@ template <typename dataType>
 				bary_min.setUseProgressive(use_progressive_);
 				bary_min.setTimeLimit(time_limit_);
 				bary_min.setGeometricalFactor(alpha_);
+        bary_min.setDebugLevel(debugLevel_);
         bary_min.setDeterministic(deterministic_);
         bary_min.setLambda(lambda_);
         bary_min.setMethod(method_);
@@ -286,6 +292,7 @@ template <typename dataType>
 				bary_sad.setTimeLimit(time_limit_);
 				bary_sad.setGeometricalFactor(alpha_);
         bary_sad.setLambda(lambda_);
+        bary_sad.setDebugLevel(debugLevel_);
         bary_sad.setMethod(method_);
 				bary_sad.setEarlyStoppage(early_stoppage_);
 				bary_sad.setEpsilonDecreases(epsilon_decreases_);
@@ -312,6 +319,7 @@ template <typename dataType>
 				bary_max.setGeometricalFactor(alpha_);
         bary_max.setLambda(lambda_);
         bary_max.setMethod(method_);
+        bary_max.setDebugLevel(debugLevel_);
 				bary_max.setEarlyStoppage(early_stoppage_);
         bary_max.setDeterministic(deterministic_);
 				bary_max.setEpsilonDecreases(epsilon_decreases_);

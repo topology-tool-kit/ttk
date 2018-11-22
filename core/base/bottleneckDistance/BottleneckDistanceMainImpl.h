@@ -160,7 +160,7 @@ int BottleneckDistance::computeBottleneck(
         double y2 = std::get<12>(a);
         double z2 = std::get<13>(a);
 
-        double infDistance = (isMin1 || isMax1 ? pe : ps) * pow(abs_diff<dataType>(rX, rY), w);
+        double infDistance = (isMin1 || isMax1 ? pe : ps) * pow(abs_diff<dataType>(rX, rY)/(double)sqrt(2.0), w);
         double geoDistance =
             (px * pow(abs(x2 - x1), w) + py * pow(abs(y2 - y1), w) + pz * pow(abs(z2 - z1), w));
         double val = infDistance + geoDistance;

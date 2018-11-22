@@ -102,10 +102,10 @@ class ttkPersistenceDiagramsBarycenter
     vtkSetMacro(ScalarField, std::string);
     vtkGetMacro(ScalarField, std::string);
 
-	vtkSetMacro(WassersteinMetric, std::string);
+	   vtkSetMacro(WassersteinMetric, std::string);
     vtkGetMacro(WassersteinMetric, std::string);
 
-	vtkSetMacro(UseProgressive, int);
+	   vtkSetMacro(UseProgressive, int);
     vtkGetMacro(UseProgressive, int);
 
     vtkSetMacro(TimeLimit, double);
@@ -136,6 +136,7 @@ class ttkPersistenceDiagramsBarycenter
   vtkGetMacro(Method, int);
   vtkSetMacro(Deterministic, bool);
   vtkGetMacro(Deterministic, bool);
+
 
 
 
@@ -174,6 +175,7 @@ class ttkPersistenceDiagramsBarycenter
 
 
   private:
+    int                   debugLevel_;
     bool                  Deterministic;
     bool                  UseAllCores;
     int                   ThreadNumber;

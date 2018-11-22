@@ -291,7 +291,8 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
 		}
 		barycenter_goods_[j] = new_barycenter;
 	}
-	std::cout << "Points deleted : " << points_deleted_ << " Points added : " << points_added_ << std::endl;
+	if(debugLevel_>2)
+		std::cout << "Points deleted : " << points_deleted_ << " Points added : " << points_added_ << std::endl;
 	return max_shift;
 }
 
@@ -540,7 +541,8 @@ std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> PDBarycenter<dataTy
 	// Correspondance map : position in barycenter_goods_ --> KDT node
 
 	std::vector<KDTree<dataType>*> correspondance_kdt_map = kdt->build(coordinates.data(), barycenter_goods_[0].size(), dimension, weights, barycenter_goods_.size());
-	std::cout<<"[Building KD-Tree] Time elapsed : " << t.getElapsedTime() << " s."<<std::endl;
+	if(debugLevel_>2)
+		std::cout<<"[Building KD-Tree] Time elapsed : " << t.getElapsedTime() << " s."<<std::endl;
 	return std::make_pair(kdt, correspondance_kdt_map);
 }
 
@@ -568,7 +570,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeMunkresBa
 	int min_points_to_add = std::numeric_limits<int>::max();
 	min_persistence = this->enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price, min_price, min_points_to_add, false);
 
-	std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
+	if(debugLevel_>1)
+		std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 
 	int n_iterations = 0;
 
@@ -595,16 +598,16 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeMunkresBa
 
 		runMatchingMunkres(&total_cost, &all_matchings, barycenter);
 
-		std::cout<< "Barycenter cost : "<< total_cost << std::endl;
+		std::cout<< "[PersistenceDiagramsBarycenter] Barycenter cost : "<< total_cost << std::endl;
 
 		if(converged){
 			finished = true;
 		}
 
 		if(!finished){
-			std::cout << "updating barycenter..." << '\n';
 			updateBarycenter(all_matchings);
-			std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
+			if(debugLevel_>1)
+				std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 
 
 
@@ -633,7 +636,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeMunkresBa
 
 	std::vector<std::vector<matchingTuple>> corrected_matchings = correctMatchings(previous_matchings);
 	for(unsigned int d=0; d<current_bidder_diagrams_.size(); ++d){
-		std::cout << "Size of diagram " << d << " : " << current_bidder_diagrams_[d].size() << std::endl;
+		if(debugLevel_>1)
+			std::cout << "Size of diagram " << d << " : " << current_bidder_diagrams_[d].size() << std::endl;
 	}
 	return corrected_matchings;
 }
@@ -675,7 +679,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
 
 	min_persistence = this->enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price, min_price, min_points_to_add, false);
 	this->setInitialBarycenter(min_persistence); // false for a determinist initialization
-	std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
+	if(debugLevel_>1)
+		std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 
 	int n_iterations = 0;
 
@@ -701,7 +706,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
 			}
 
 			min_persistence = this->enrichCurrentBidderDiagrams(min_persistence, rho, min_diag_price, min_price, min_points_to_add);
-			std::cout<< "Min persistence : " << min_persistence <<std::endl;
+			if(debugLevel_>2)
+				std::cout<< "Min persistence : " << min_persistence <<std::endl;
 			if(min_persistence<=lowest_persistence){
 				use_progressive_=false;
 			}
@@ -711,7 +717,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
 			epsilon=epsilon_min_;
 			converged = true;
 		}
-		std::cout<< "epsilon : "<< epsilon << std::endl;
+		if(debugLevel_>2)
+			std::cout<< "epsilon : "<< epsilon << std::endl;
 		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair;
 		bool use_kdt = false;
 		// If the barycenter is empty, do not compute the kdt (or it will crash :/)
@@ -739,7 +746,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
 		else if(!early_stoppage_ && epsilon_decreases_){
 			epsilon = epsilon_0;
 			while(epsilon>1e-5){
-				std::cout<< "epsilon : "<< epsilon << std::endl;
+				if(debugLevel_>2)
+					std::cout<< "epsilon : "<< epsilon << std::endl;
 				total_cost = 0;
 				runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
 							&min_diag_price,  &min_price, &all_matchings, use_kdt);
@@ -751,7 +759,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
 			runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
 							&min_diag_price,  &min_price, &all_matchings, use_kdt);
 		}
-		std::cout<< "Barycenter cost : "<< total_cost << std::endl;
+		if(debugLevel_>1)
+			std::cout<< "Barycenter cost : "<< total_cost << std::endl;
 		delete kdt;
 
 		if(converged){
@@ -760,7 +769,10 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
 
 		if(!finished){
 			dataType max_shift = updateBarycenter(all_matchings);
-			std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
+
+			if(debugLevel_>1)
+				std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
+
 			if(epsilon_decreases_){
 				dataType epsilon_candidate = std::min(std::max(max_shift/8., epsilon/5.), epsilon_0/pow(n_iterations, 2));
 				if(epsilon_candidate<epsilon && use_progressive_){
@@ -827,7 +839,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
 
 	std::vector<std::vector<matchingTuple>> corrected_matchings = correctMatchings(previous_matchings);
 	for(unsigned int d=0; d<current_bidder_diagrams_.size(); ++d){
-		std::cout << "Size of diagram " << d << " : " << current_bidder_diagrams_[d].size() << std::endl;
+		if(debugLevel_>2)
+			std::cout << "Size of diagram " << d << " : " << current_bidder_diagrams_[d].size() << std::endl;
 	}
 	return corrected_matchings;
 }
