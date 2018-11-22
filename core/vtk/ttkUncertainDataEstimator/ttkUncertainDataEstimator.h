@@ -3,23 +3,23 @@
 /// \author Michael Michaux <michauxmichael89@gmail.com>
 /// \date August 2016.
 ///
-/// \brief TTK VTK-filter that takes an input ensemble data set 
-/// (represented by a list of scalar fields) and which computes various 
+/// \brief TTK VTK-filter that takes an input ensemble data set
+/// (represented by a list of scalar fields) and which computes various
 /// vertexwise statistics (PDF estimation, bounds, moments, etc.)
 ///
-/// \param Input0 Input ensemble scalar field #0 (vtkDataSet) 
-/// \param Input1 Input ensemble scalar field #1 (vtkDataSet)\n 
+/// \param Input0 Input ensemble scalar field #0 (vtkDataSet)
+/// \param Input1 Input ensemble scalar field #1 (vtkDataSet)\n
 /// ...\n
 /// \param InputN Input ensemble scalar field #N (vtkDataSet)
 /// \param Output0 Lower and upper bound fields (vtkDataSet)
-/// \param Output1 Histogram estimations of the vertex probability density 
+/// \param Output1 Histogram estimations of the vertex probability density
 /// functions (vtkDataSet)
 /// \param Output2 Mean field (vtkDataSet)
 ///
-/// This filter can be used as any other VTK filter (for instance, by using the 
+/// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
-/// See the corresponding ParaView state file example for a usage example 
+/// See the corresponding ParaView state file example for a usage example
 /// within a VTK pipeline.
 ///
 /// \sa vtkMandatoryCriticalPoints
@@ -122,8 +122,7 @@ class ttkUncertainDataEstimator
       Modified();
     }
 
-    vtkSetMacro(ScalarField, std::string);
-    vtkGetMacro(ScalarField, std::string);
+
 
 
   protected:
@@ -143,7 +142,6 @@ class ttkUncertainDataEstimator
 
     bool                  UseAllCores;
     ttk::ThreadId                   ThreadNumber;
-    std::string                ScalarField;
     bool                  computeLowerBound_;
     bool                  computeUpperBound_;
     int                   binCount_;
