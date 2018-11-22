@@ -4,7 +4,7 @@
         <SourceProxy name="AddFieldData" class="ttkAddFieldData" label="TTK AddFieldData">
             <Documentation long_help="TTK AddFieldData" short_help="TTK AddFieldData">This filter adds field data to a vtkDataObject based on a string and/or point/cell/field data of an optional vtkDataObject from the second input port.</Documentation>
 
-            <InputProperty name="Input" command="SetInputConnection">
+            <InputProperty name="Input" port_index="0" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />

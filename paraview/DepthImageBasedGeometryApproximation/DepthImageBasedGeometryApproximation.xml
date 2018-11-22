@@ -65,6 +65,7 @@
 
             <Hints>
                 <ShowInMenu category="TTK - Cinema" />
+                <View type="RenderView" also_show_in_current_view="0" />
             </Hints>
         </SourceProxy>
     </ProxyGroup>
