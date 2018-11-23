@@ -1,6 +1,8 @@
 #include <ttkForEachRow.h>
 
 #include <vtkTable.h>
+#include <vtkFieldData.h>
+#include <vtkDoubleArray.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
 using namespace std;
@@ -46,6 +48,13 @@ int ttkForEachRow::RequestData(
     auto outputTable = vtkTable::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
     // Propagate number of rows downstream
+    auto iterationInformation = vtkSmartPointer<vtkDoubleArray>::New();
+    iterationInformation->SetName( "_ttk_IterationInfo" );
+    iterationInformation->SetNumberOfValues(2);
+    iterationInformation->SetValue(0, index);
+    iterationInformation->SetValue(1, inputTable->GetNumberOfRows());
+    outputTable->GetFieldData()->AddArray( iterationInformation );
+
     outputTable->GetInformation()->Set( vtkDataObject::DATA_TIME_STEP(), inputTable->GetNumberOfRows() );
 
     // Extract row at index

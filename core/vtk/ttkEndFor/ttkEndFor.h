@@ -48,7 +48,8 @@ class ttkEndFor
 
         int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port){
-                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject"); break;
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject"); break;
+                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable"); break;
                 default: return 0;
             }
             return 1;
@@ -56,7 +57,7 @@ class ttkEndFor
 
         int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port){
-                case 1: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject"); break;
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject"); break;
                 default: return 0;
             }
             return 1;
@@ -69,7 +70,7 @@ class ttkEndFor
 
             UseAllCores = false;
 
-            SetNumberOfInputPorts(1);
+            SetNumberOfInputPorts(2);
             SetNumberOfOutputPorts(1);
         }
         ~ttkEndFor(){};

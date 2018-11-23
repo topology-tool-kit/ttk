@@ -35,6 +35,9 @@ class ttkBlockAggregator
         vtkSetMacro(ForceReset, bool);
         vtkGetMacro(ForceReset, bool);
 
+        vtkSetMacro(FlattenInput, bool);
+        vtkGetMacro(FlattenInput, bool);
+
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
         void SetThreads(){
@@ -70,6 +73,7 @@ class ttkBlockAggregator
 
         ttkBlockAggregator(){
             SetForceReset(false);
+            SetFlattenInput(true);
 
             UseAllCores = false;
 
@@ -81,12 +85,13 @@ class ttkBlockAggregator
         bool UseAllCores;
         int ThreadNumber;
 
-        int AggregateBlock(vtkDataObject* dataObject, vtkMultiBlockDataSet* mb, size_t index, bool useShallowCopy);
+        int AggregateBlock(vtkDataObject* dataObject, bool useShallowCopy);
         int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
 
     private:
 
         bool ForceReset;
+        bool FlattenInput;
         vtkSmartPointer<vtkMultiBlockDataSet> AggregatedMultiBlockDataSet;
 
         bool needsToAbort() override { return GetAbortExecute(); };
