@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="MeshGraph" class="ttkMeshGraph" label="TTK MeshGraph">
+            <Documentation long_help="TTK meshGraph" short_help="TTK meshGraph">TODO</Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkUnstructuredGrid" />
+                </DataTypeDomain>
+                <InputArrayDomain name="input_array" attribute_type="point" />
+                <Documentation>Graph.</Documentation>
+            </InputProperty>
+
+            <StringVectorProperty name="SizeFieldName" label="Point Sizes" command="SetSizeFieldName" number_of_elements="1" animateable="0">
+                <ArrayListDomain name="array_list" default_values="Size" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Scalar field that contains point sizes.</Documentation>
+            </StringVectorProperty>
+            <IntVectorProperty name="PrimaryAxis" label="Primary Axis" command="SetPrimaryAxis" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="X"/>
+                    <Entry value="1" text="Y"/>
+                    <Entry value="2" text="Z"/>
+                </EnumerationDomain>
+                <Documentation>TODO</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="SecondaryAxis" label="Secondary Axis" command="SetSecondaryAxis" number_of_elements="1" default_values="1">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="X"/>
+                    <Entry value="1" text="Y"/>
+                    <Entry value="2" text="Z"/>
+                </EnumerationDomain>
+                <Documentation>TODO</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="Subdivisions" label="Subdivisions" command="SetSubdivisions" number_of_elements="1" default_values="0">
+                <IntRangeDomain name="range" min="0" max="10" />
+                <Documentation>TODO</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="SizeScale" label="Size Scale" command="SetSizeScale" number_of_elements="1" default_values="1">
+                <Documentation>TODO</Documentation>
+            </DoubleVectorProperty>
+
+            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <BooleanDomain name="bool" />
+                <Documentation>Use all available cores.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="1" max="100" />
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
+                </Hints>
+                <Documentation>Thread number.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="0" max="100" />
+                <Documentation>Debug level.</Documentation>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="SizeFieldName" />
+                <Property name="PrimaryAxis" />
+                <Property name="SecondaryAxis" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="Subdivisions" />
+                <Property name="SizeScale" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Testing">
+                <Property name="UseAllCores" />
+                <Property name="ThreadNumber" />
+                <Property name="DebugLevel" />
+            </PropertyGroup>
+
+            <Hints>
+                <ShowInMenu category="TTK - Misc" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>
