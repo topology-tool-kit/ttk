@@ -39,6 +39,16 @@ class ttkPlanarGraphLayout
         vtkSetMacro(AxisFieldName, std::string);
         vtkGetMacro(AxisFieldName, std::string);
 
+        vtkSetMacro(UseSizes, bool);
+        vtkGetMacro(UseSizes, bool);
+        vtkSetMacro(SizeFieldName, std::string);
+        vtkGetMacro(SizeFieldName, std::string);
+
+        vtkSetMacro(UseLevels, bool);
+        vtkGetMacro(UseLevels, bool);
+        vtkSetMacro(LevelFieldName, std::string);
+        vtkGetMacro(LevelFieldName, std::string);
+
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
         void SetThreads(){
@@ -70,7 +80,11 @@ class ttkPlanarGraphLayout
     protected:
 
         ttkPlanarGraphLayout(){
-            AxisFieldName = "";
+            SetAxisFieldName("TimeIndex");
+            SetUseSizes(false);
+            SetSizeFieldName("Size");
+            SetUseLevels(false);
+            SetLevelFieldName("LevelIndex");
 
             UseAllCores = false;
 
@@ -87,6 +101,13 @@ class ttkPlanarGraphLayout
     private:
 
         std::string AxisFieldName;
+
+        bool UseSizes;
+        std::string SizeFieldName;
+
+        bool UseLevels;
+        std::string LevelFieldName;
+
         ttk::PlanarGraphLayout planarGraphLayout_;
 
         bool needsToAbort() override { return GetAbortExecute(); };

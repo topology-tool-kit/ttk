@@ -51,6 +51,9 @@ class ttkMeshGraph
         vtkSetMacro(SizeScale, float);
         vtkGetMacro(SizeScale, float);
 
+        vtkSetMacro(Tetrahedralize, bool);
+        vtkGetMacro(Tetrahedralize, bool);
+
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
         void SetThreads(){
@@ -111,6 +114,7 @@ class ttkMeshGraph
         int SecondaryAxis;
         int Subdivisions;
         float SizeScale;
+        bool Tetrahedralize;
 
         ttk::MeshGraph meshGraph;
 

@@ -4,6 +4,7 @@
 #include <vtkAbstractArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkPointData.h>
+#include <vtkDataSetTriangleFilter.h>
 
 using namespace std;
 using namespace ttk;
@@ -40,8 +41,6 @@ int ttkMeshGraph::RequestData(
     size_t nInputPoints = input->GetNumberOfPoints();
     size_t nInputCells = input->GetNumberOfCells();
 
-    this->Subdivisions = 3;
-
     // Output Points
     auto nOutputPoints = meshGraph.computeNumberOfOutputPoints(nInputPoints, nInputCells, this->Subdivisions);
     auto outputPoints = vtkSmartPointer<vtkPoints>::New();
@@ -52,7 +51,6 @@ int ttkMeshGraph::RequestData(
     auto outputTopologySize = meshGraph.computeOutputTopologySize(nInputCells, this->Subdivisions);
     auto outputCells = vtkSmartPointer<vtkIdTypeArray>::New();
     outputCells->SetNumberOfValues( outputTopologySize );
-    ;
 
     auto inputPointSizes = input->GetPointData()->GetArray( this->GetSizeFieldName().data() );
     if(!inputPointSizes){
@@ -71,7 +69,7 @@ int ttkMeshGraph::RequestData(
                 (VTK_TT*) inputPointSizes->GetVoidPointer(0),
                 nInputPoints,
                 nInputCells,
-                this->Subdivisions,
+                this->GetSubdivisions(),
                 this->SizeScale,
 
                 this->PrimaryAxis,
@@ -85,14 +83,24 @@ int ttkMeshGraph::RequestData(
     }
     if(status!=1) return 0;
 
-    vtkInformation* outInfo = outputVector->GetInformationObject(0);
-    auto output = vtkUnstructuredGrid::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
-    output->SetPoints( outputPoints );
 
+    auto meshedGraph = vtkSmartPointer<vtkUnstructuredGrid>::New();
+    meshedGraph->SetPoints( outputPoints );
     auto outputCellArray = vtkSmartPointer<vtkCellArray>::New();
     outputCellArray->SetCells(nInputCells, outputCells);
-    output->SetCells(VTK_POLYGON, outputCellArray);
+    meshedGraph->SetCells(VTK_POLYGON, outputCellArray);
 
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
+    auto output = vtkUnstructuredGrid::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
+    if(this->GetSubdivisions()>1 && this->GetTetrahedralize()){
+        auto dataSetTriangleFilter = vtkSmartPointer<vtkDataSetTriangleFilter>::New();
+        dataSetTriangleFilter->SetInputData( meshedGraph );
+        dataSetTriangleFilter->Update();
+
+        output->ShallowCopy( dataSetTriangleFilter->GetOutput() );
+    } else {
+        output->ShallowCopy( meshedGraph );
+    }
 
     // Print status
     {

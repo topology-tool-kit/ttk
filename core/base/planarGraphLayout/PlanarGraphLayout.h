@@ -35,7 +35,9 @@ namespace ttk{
             // Execute the geometry approximation.
             template <class dataType> int execute(
                 // Input
-                void* levelsP,
+                void* sequencesP,
+                float* sizes,
+                unsigned int* levels,
                 long long* topology,
                 size_t nVertices,
                 size_t nEdges,
@@ -48,7 +50,9 @@ namespace ttk{
 
 template <class dataType> int ttk::PlanarGraphLayout::execute(
     // Input
-    void* levelsP,
+    void* sequencesP,
+    float* sizes,
+    unsigned int* levels,
     long long* topology,
     size_t nVertices,
     size_t nEdges,
@@ -57,31 +61,37 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
     float* layout
 ) const{
 
-    auto levels = (dataType*) levelsP;
+    // Init input
+    auto sequences = (dataType*) sequencesP;
+    bool useSizes = sizes!=nullptr;
+    bool useLevels = levels!=nullptr;
 
     Timer t;
     double t0=0;
+
     // Print Input
     {
         stringstream msg;
         msg << "[ttkPlanarGraphLayout] Computing layout for graph with" << endl
-            << "[ttkPlanarGraphLayout]     "<< nVertices << " vertices" << endl
-            << "[ttkPlanarGraphLayout]     "<< nEdges << " edges" << endl;
+            << "[ttkPlanarGraphLayout]     * "<< nVertices << " vertices" << endl
+            << "[ttkPlanarGraphLayout]     * "<< nEdges << " edges" << endl;
+        if(useSizes)  msg << "[ttkPlanarGraphLayout]     * using sizes" << endl;
+        if(useLevels) msg << "[ttkPlanarGraphLayout]     * using levels" << endl;
         dMsg(cout, msg.str(), infoMsg);
     }
 
     // Get labels and clear layout
-    map<double, size_t> levelToLevelIndex;
+    map<double, size_t> sequenceToSequenceIndex;
     {
         for(size_t i=0; i<nVertices; i++){
-            levelToLevelIndex[ levels[i] ] = 0;
+            sequenceToSequenceIndex[ sequences[i] ] = 0;
             layout[i] = 0;
         }
         size_t i=0;
-        for(auto& t: levelToLevelIndex)
+        for(auto& t: sequenceToSequenceIndex)
             t.second = i++;
     }
-    size_t nLevels = levelToLevelIndex.size();
+    size_t nSequences = sequenceToSequenceIndex.size();
 
     // =========================================================================
     // Compute Dot String
@@ -91,33 +101,36 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
     string edgeString = "";
     string rankString = "";
 
-    // Set Default Node style
-    nodeString += "node[label=\"\",shape=box];";
-
     auto tl = [](size_t t){return "\"t"+to_string(t)+"\"";};
     auto nl = [](size_t id){return to_string(id);};
 
-    // Add level chain
+    // Set default node style
+    nodeString += "node[label=\"\",shape=box,width=1,height=1];";
+
+    if(useSizes)
+        for(size_t i=0; i<nVertices; i++)
+            nodeString += nl(i)+"[height="+to_string(sizes[i])+"];";
+
+    // Add sequence chain
     edgeString += tl(0);
-    for(size_t t=1; t<nLevels-1; t++)
+    for(size_t t=1; t<nSequences-1; t++)
         edgeString += "->"+tl(t+1);
     edgeString += ";";
 
     // ranks
     {
-        vector< vector<size_t> > levelIndexToNodesIndex( nLevels );
+        vector< vector<size_t> > sequenceIndexToNodesIndex( nSequences );
         for(size_t i=0; i<nVertices; i++)
-            levelIndexToNodesIndex[
-                levelToLevelIndex[ levels[i] ]
+            sequenceIndexToNodesIndex[
+                sequenceToSequenceIndex[ sequences[i] ]
             ].push_back( i );
 
-        for(size_t t=0; t<nLevels; t++){
+        for(size_t t=0; t<nSequences; t++){
             rankString += "{rank=same "+ tl(t);
 
-            auto& nodes = levelIndexToNodesIndex[t];
-            for(auto& i: nodes){
+            auto& nodes = sequenceIndexToNodesIndex[t];
+            for(auto& i: nodes)
                 rankString += " "+nl(i);
-            }
 
             rankString += "}";
         }
@@ -143,7 +156,7 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
         dMsg(cout, msg.str(), timeMsg);
         t0 = t.getElapsedTime();
     }
-    dMsg(cout, dot, advancedInfoMsg);
+    dMsg(cout, dot+"\n", infoMsg);
 
     // =========================================================================
     // Compute Layout

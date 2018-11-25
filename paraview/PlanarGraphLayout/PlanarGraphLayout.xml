@@ -25,6 +25,38 @@
                 <Documentation>Scalar field used to arrange points TODO.</Documentation>
             </StringVectorProperty>
 
+            <IntVectorProperty name="UseSizes" label="Use Sizes" command="SetUseSizes" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>Include node size in layout computation.</Documentation>
+            </IntVectorProperty>
+            <StringVectorProperty name="SizeFieldName" command="SetSizeFieldName" number_of_elements="1" animateable="0" label="Size Field Name">
+                <ArrayListDomain name="array_list" default_values="Size" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Size scalar field.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseSizes" value="1" />
+                </Hints>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="UseLevels" label="Use Levels" command="SetUseLevels" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>Include node level in layout computation.</Documentation>
+            </IntVectorProperty>
+            <StringVectorProperty name="LevelFieldName" command="SetLevelFieldName" number_of_elements="1" animateable="0" label="Level Field Name">
+                <ArrayListDomain name="array_list" default_values="LevelIndex" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Level scalar field.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseLevels" value="1" />
+                </Hints>
+            </StringVectorProperty>
+
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
                 <BooleanDomain name="bool" />
                 <Documentation>Use all available cores.</Documentation>
@@ -43,6 +75,10 @@
 
             <PropertyGroup panel_widget="Line" label="Input Options">
                 <Property name="AxisFieldName" />
+                <Property name="UseSizes" />
+                <Property name="SizeFieldName" />
+                <Property name="UseLevels" />
+                <Property name="LevelFieldName" />
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Testing">

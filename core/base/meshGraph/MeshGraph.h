@@ -35,6 +35,53 @@ namespace ttk{
                 return nInputCells*this->computeOutputCellSize( nSubdivisions );
             };
 
+            inline int computeBezierPoint(
+                float* outputPoints,
+                size_t no0,
+                size_t no1,
+                size_t axis1,
+                size_t axis2,
+                size_t axis3,
+                size_t subdivisionOffset,
+                float lambda
+            ) const{
+                float lambdaI = 1 - lambda;
+
+                float lambda_2 = lambda*lambda;
+                float lambda_3 = lambda*lambda_2;
+
+                float lambdaI_2 = lambdaI*lambdaI;
+                float lambdaI_3 = lambdaI*lambdaI_2;
+
+                float dx = outputPoints[no1+axis1] - outputPoints[no0+axis1];
+                float dy = outputPoints[no1+axis2] - outputPoints[no0+axis2];
+                float dz = outputPoints[no1+axis2] - outputPoints[no0+axis2];
+
+                float m0[3];
+                m0[axis1] = outputPoints[no0+axis1] + dx/2;
+                m0[axis2] = outputPoints[no0+axis2];
+                m0[axis3] = outputPoints[no0+axis3];
+
+                float m1[3];
+                m1[axis1] = outputPoints[no1+axis1] - dx/2;
+                m1[axis2] = outputPoints[no1+axis2];
+                m1[axis3] = outputPoints[no1+axis3];
+
+                // outputPoints[subdivisionOffset]
+
+                // P = lambdaI_3*P1 + 3*lambdaI_2*lambda*P2 + 3*lambdaI*lambda_2*P3 + lambda_3*P4
+                outputPoints[subdivisionOffset+axis1] = lambdaI_3*outputPoints[no0+axis1] + 3*lambdaI_2*lambda*m0[axis1] + 3*lambdaI*lambda_2*m1[axis1] + lambda_3*outputPoints[no1+axis1];
+                outputPoints[subdivisionOffset+axis2] = lambdaI_3*outputPoints[no0+axis2] + 3*lambdaI_2*lambda*m0[axis2] + 3*lambdaI*lambda_2*m1[axis2] + lambda_3*outputPoints[no1+axis2];
+                outputPoints[subdivisionOffset+axis3] = lambdaI_3*outputPoints[no0+axis3] + 3*lambdaI_2*lambda*m0[axis3] + 3*lambdaI*lambda_2*m1[axis3] + lambda_3*outputPoints[no1+axis3];
+
+                // outputPoints[subdivisionOffset+axis1] = lambdaI*outputPoints[no0+axis1] + lambda*outputPoints[no1+axis1];
+                // outputPoints[subdivisionOffset+axis2] = lambdaI*outputPoints[no0+axis2] + lambda*outputPoints[no1+axis2];
+                // outputPoints[subdivisionOffset+axis3] = lambdaI*outputPoints[no0+axis3] + lambda*outputPoints[no1+axis3];
+
+
+                return 1;
+            };
+
             // Execute the geometry approximation.
             template <typename idType, typename sizeType> int execute(
                 // Input
@@ -169,19 +216,39 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
             size_t no0 = n0*6;
             size_t no1 = n1*6;
 
-            float dx0 = (outputPoints[no1+axis1] - outputPoints[no0+axis1])/nSubdivisionsP1;
-            float dy0 = (outputPoints[no1+axis2] - outputPoints[no0+axis2])/nSubdivisionsP1;
-            float dx1 = (outputPoints[no1+axis1+3] - outputPoints[no0+axis1+3])/nSubdivisionsP1;
-            float dy1 = (outputPoints[no1+axis2+3] - outputPoints[no0+axis2+3])/nSubdivisionsP1;
+            // float dx0 = (outputPoints[no1+axis1] - outputPoints[no0+axis1])/nSubdivisionsP1;
+            // float dy0 = (outputPoints[no1+axis2] - outputPoints[no0+axis2])/nSubdivisionsP1;
+            // float dx1 = (outputPoints[no1+axis1+3] - outputPoints[no0+axis1+3])/nSubdivisionsP1;
+            // float dy1 = (outputPoints[no1+axis2+3] - outputPoints[no0+axis2+3])/nSubdivisionsP1;
 
             size_t q2 = q + i*outputPointsSubdivisonOffset;
-            for(size_t j=1; j<=nSubdivisions; j++){
-                outputPoints[q2+axis1] = outputPoints[no0+axis1] + j*dx0;
-                outputPoints[q2+axis2] = outputPoints[no0+axis2] + j*dy0;
-                outputPoints[q2+axis3] = outputPoints[no0+axis3];
-                outputPoints[q2+axis1+3] = outputPoints[no0+axis1+3] + j*dx1;
-                outputPoints[q2+axis2+3] = outputPoints[no0+axis2+3] + j*dy1;
-                outputPoints[q2+axis3+3] = outputPoints[no0+axis3+3];
+            for(float j=1; j<=nSubdivisions; j++){
+                computeBezierPoint(
+                    outputPoints,
+                    no0,
+                    no1,
+                    axis1,
+                    axis2,
+                    axis3,
+                    q2,
+                    j/nSubdivisionsP1
+                );
+                computeBezierPoint(
+                    outputPoints,
+                    no0+3,
+                    no1+3,
+                    axis1,
+                    axis2,
+                    axis3,
+                    q2+3,
+                    j/nSubdivisionsP1
+                );
+                // outputPoints[q2+axis1] = outputPoints[no0+axis1] + j*dx0;
+                // outputPoints[q2+axis2] = outputPoints[no0+axis2] + j*dy0;
+                // outputPoints[q2+axis3] = outputPoints[no0+axis3];
+                // outputPoints[q2+axis1+3] = outputPoints[no0+axis1+3] + j*dx1;
+                // outputPoints[q2+axis2+3] = outputPoints[no0+axis2+3] + j*dy1;
+                // outputPoints[q2+axis3+3] = outputPoints[no0+axis3+3];
 
                 q2 += 6;
             }
@@ -223,6 +290,7 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
 
             size_t q2 = cellSize*i;
             outputTopology[q2++] = cellDim;
+
             outputTopology[q2++] = c0;
             outputTopology[q2++] = c1;
 
@@ -236,6 +304,7 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
 
             for(int j=nSubdivisions-1; j>=0; j--)
                 outputTopology[q2++] = (idType) (temp + j*2);
+
         }
 
         // Print Status
