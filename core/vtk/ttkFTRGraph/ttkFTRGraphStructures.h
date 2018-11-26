@@ -110,6 +110,7 @@ struct ArcData : public ObjectData {
 
 struct VertData : public ObjectData {
    vtkSmartPointer<vtkIntArray> ids;
+   vtkSmartPointer<vtkIntArray> regionType;
 #ifdef TTK_ENABLE_FTR_VERT_STATS
    vtkSmartPointer<vtkIntArray> touch;
    vtkSmartPointer<vtkIntArray> arcActif;
@@ -118,7 +119,8 @@ struct VertData : public ObjectData {
 
    explicit VertData(const ttk::ftr::idVertex nbVertices)
    {
-      ids = allocArray<vtkIntArray>("ArcId", nbVertices);
+      ids        = allocArray<vtkIntArray>("ArcId", nbVertices);
+      regionType = allocArray<vtkIntArray>("RegionType", nbVertices);
 #ifdef TTK_ENABLE_FTR_VERT_STATS
       touch     = allocArray<vtkIntArray>("Visit", nbVertices);
       arcActif  = allocArray<vtkIntArray>("Arc active", nbVertices);
@@ -127,11 +129,18 @@ struct VertData : public ObjectData {
 
    void setVertexInfo(const ttk::ftr::Graph& graph, const ttk::ftr::idVertex v)
    {
-      if (graph.isVisited(v)) {
-         ids->SetTuple1(v, graph.getArcId(v));
-      } else {
-         ids->SetTuple1(v, -1);
+
+      if (!graph.isVisited(v)) {
+         // Problem, we should have visited all vertices
+         // return to avoid crash
+         return;
       }
+
+      const ttk::ftr::idSuperArc curArcId = graph.getArcId(v);
+      ids->SetTuple1(v, curArcId);
+
+      int downNodeType = (int)graph.getNode(graph.getArc(curArcId).getDownNodeId()).getType();
+      regionType->SetTuple1(v, downNodeType);
 
 #ifdef TTK_ENABLE_FTR_VERT_STATS
       touch->SetTuple1(v, graph.getNbTouch(v));
@@ -142,6 +151,7 @@ struct VertData : public ObjectData {
    void addArrays(vtkDataSet* segmentation, ttk::ftr::Params params)
    {
       segmentation->GetPointData()->SetScalars(ids);
+      segmentation->GetPointData()->AddArray(regionType);
 #ifdef TTK_ENABLE_FTR_VERT_STATS
       segmentation->GetPointData()->AddArray(touch);
       segmentation->GetPointData()->AddArray(arcActif);
