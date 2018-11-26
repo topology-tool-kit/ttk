@@ -127,52 +127,43 @@ int ttkCinemaQuery::RequestData(
     // Compute Query Result
     // -------------------------------------------------------------------------
     {
-        result = cinemaQuery.execute(
+        int status = cinemaQuery.execute(
             sqlTableDefinition,
             sqlTableRows,
-            finalQueryString
+            finalQueryString,
+            result
         );
+        if(status!=1) return 0;
+        if(result.compare("")==0){
+            stringstream msg;
+                msg << "[ttkCinemaQuery] ERROR: Empty result (VTK does not support empty tables)."<<endl
+            dMsg(cout, msg.str(), fatalMsg);
+        }
     }
 
     // -------------------------------------------------------------------------
     // Process Result
     // -------------------------------------------------------------------------
     {
-        if(result!=""){
-            #if VTK_MAJOR_VERSION <= 7
-                stringstream msg;
-                msg << "[ttkCinemaQuery] ERROR: VTK version too old."<<endl
-                    << "[ttkCinemaQuery]        This filter requires vtkDelimitedTextReader"<<endl
-                    << "[ttkCinemaQuery]        of version 7.0 or higher."<<endl;
-                dMsg(cout, msg.str(), fatalMsg);
-                return 0;
-            #else
-                auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
-                reader->SetReadFromInputString( true );
-                reader->SetInputString( result );
-                reader->DetectNumericColumnsOn();
-                reader->SetHaveHeaders(true);
-                reader->SetFieldDelimiterCharacters(",");
-                reader->Update();
+        #if VTK_MAJOR_VERSION <= 7
+            stringstream msg;
+            msg << "[ttkCinemaQuery] ERROR: VTK version too old."<<endl
+                << "[ttkCinemaQuery]        This filter requires vtkDelimitedTextReader"<<endl
+                << "[ttkCinemaQuery]        of version 7.0 or higher."<<endl;
+            dMsg(cout, msg.str(), fatalMsg);
+            return 0;
+        #else
+            auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+            reader->SetReadFromInputString( true );
+            reader->SetInputString( result );
+            reader->DetectNumericColumnsOn();
+            reader->SetHaveHeaders(true);
+            reader->SetFieldDelimiterCharacters(",");
+            reader->Update();
 
-                outTable->ShallowCopy( reader->GetOutput() );
-            #endif
-        } else {
-            auto emptyTable = vtkSmartPointer<vtkTable>::New();
-
-            int nc = inTable->GetNumberOfColumns();
-            for(int i=0; i<nc; i++){
-                auto c = inTable->GetColumn(i);
-                auto emptyColumn = vtkSmartPointer<vtkStringArray>::New();
-                emptyColumn->SetNumberOfValues(1);
-                emptyColumn->SetValue(0,"NULL");
-                emptyColumn->SetName( c->GetName() );
-                emptyTable->AddColumn( emptyColumn );
-            }
-            outTable->ShallowCopy( emptyTable );
-        }
-
-        outTable->GetFieldData()->ShallowCopy( inTable->GetFieldData() );
+            outTable->ShallowCopy( reader->GetOutput() );
+            outTable->GetFieldData()->ShallowCopy( inTable->GetFieldData() );
+        #endif
     }
 
     // Output Performance

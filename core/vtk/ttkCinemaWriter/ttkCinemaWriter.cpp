@@ -39,6 +39,7 @@ int ttkCinemaWriter::RequestData (
         msg<<"[ttkCinemaWriter] RequestData"<<endl;
         msg<<"[ttkCinemaWriter]     Path: "<<this->DatabasePath<<endl;
         msg<<"[ttkCinemaWriter] Override: "<<(this->OverrideDatabase?"yes":"no")<<endl;
+        msg<<"[ttkCinemaWriter] C. Level: "<<this->GetCompressionLevel()<<endl;
         msg<<"[ttkCinemaWriter] --------------------------------------------------------------"<<endl;
         dMsg(cout, msg.str(), infoMsg);
     }
@@ -131,7 +132,9 @@ int ttkCinemaWriter::RequestData (
     mbWriter->SetFileName( path.data() );
     mbWriter->SetDataModeToAppended();
     mbWriter->SetCompressorTypeToZLib();
-    vtkZLibDataCompressor::SafeDownCast( mbWriter->GetCompressor() )->SetCompressionLevel(9);
+    vtkZLibDataCompressor::SafeDownCast( mbWriter->GetCompressor() )->SetCompressionLevel(
+        this->GetCompressionLevel()
+    );
     mbWriter->SetInputData( inputMB );
     mbWriter->Write();
 
