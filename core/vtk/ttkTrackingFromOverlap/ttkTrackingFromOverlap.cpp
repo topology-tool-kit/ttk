@@ -78,6 +78,24 @@ template<typename labelType> int finalize(
         size->SetNumberOfValues( nNodes );
         auto sizeData = (unsigned long long*) size->GetVoidPointer(0);
 
+        auto inDegree = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
+        inDegree->SetName("InDegree");
+        inDegree->SetNumberOfComponents(1);
+        inDegree->SetNumberOfValues( nNodes );
+        auto inDegreeData = (unsigned long long*) inDegree->GetVoidPointer(0);
+
+        auto outDegree = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
+        outDegree->SetName("OutDegree");
+        outDegree->SetNumberOfComponents(1);
+        outDegree->SetNumberOfValues( nNodes );
+        auto outDegreeData = (unsigned long long*) outDegree->GetVoidPointer(0);
+
+        auto branch = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
+        branch->SetName("Branch");
+        branch->SetNumberOfComponents(1);
+        branch->SetNumberOfValues( nNodes );
+        auto branchData = (unsigned long long*) branch->GetVoidPointer(0);
+
         auto label = vtkSmartPointer<vtkDataArray>::Take(
             vtkDataArray::CreateDataArray( labelTypeId )
         );
@@ -98,6 +116,11 @@ template<typename labelType> int finalize(
                     levelData[q2] = (unsigned int)l;
                     sizeData[q2]  = node.size;
                     labelData[q2] = boost::get<labelType>( node.label );
+
+                    inDegreeData[q2] = node.inDegree;
+                    outDegreeData[q2] = node.outDegree;
+                    branchData[q2] = node.branchID;
+
                     q2++;
                 }
             }
@@ -110,6 +133,9 @@ template<typename labelType> int finalize(
         pointData->AddArray( level );
         pointData->AddArray( size );
         pointData->AddArray( label );
+        pointData->AddArray( inDegree );
+        pointData->AddArray( outDegree );
+        pointData->AddArray( branch );
     }
 
     // Add Cells
@@ -617,6 +643,25 @@ int ttkTrackingFromOverlap::computeNestingTrees(vtkMultiBlockDataSet* data){
     return 1;
 }
 
+// =============================================================================
+// Compute Branches
+// =============================================================================
+int ttkTrackingFromOverlap::computeBranches(){
+
+    size_t nL = this->levelTimeEdgesTMap.size();
+
+    for(size_t l=0; l<nL; l++)
+        this->trackingFromOverlap.computeBranches(
+            this->levelTimeEdgesTMap[l],
+            this->levelTimeNodesMap[l]
+        );
+
+    return 1;
+}
+
+// =============================================================================
+// Request Data
+// =============================================================================
 int ttkTrackingFromOverlap::RequestData(
     vtkInformation* request,
     vtkInformationVector** inputVector,
@@ -693,6 +738,10 @@ int ttkTrackingFromOverlap::RequestData(
         // Get Output
         vtkInformation* outInfo = outputVector->GetInformationObject(0);
         auto trackingGraph = outInfo->Get(vtkDataObject::DATA_OBJECT());
+
+        // Compute Branches
+        if( !this->computeBranches() )
+            return 0;
 
         // Mesh Graph
         if( !this->meshNestedTrackingGraph(trackingGraph) )
