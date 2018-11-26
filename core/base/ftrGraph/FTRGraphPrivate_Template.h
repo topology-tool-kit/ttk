@@ -153,18 +153,6 @@ namespace ttk
 #endif
                lowerComp = lowerComps(lowerStarEdges, localProp);
 
-               // if (propagations_.hasVisitedOpposite(curVert, localProp)) {
-               //    for (auto dgNode : lowerComp) {
-               //       const idSuperArc tmpLowArc = dgNode->getCorArc();
-               //       if (tmpLowArc != nullSuperArc && graph_.getArc(tmpLowArc).merged()) {
-// #ifdef TTK_ENABLE_FTR_VERT_STATS
-               //          graph_.incAvoid();
-// #endif
-               //          continue;
-               //       }
-               //    }
-               // }
-
                if (lowerComp.size() > 1) {
                   isJoin = true;
                   isJoinLast = checkLast(localProp, lowerStarEdges);
@@ -684,8 +672,7 @@ namespace ttk
          const idVertex    w  = getWeight(e0, e1, localProp);
 
          // this order for history
-         dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<0>(oTriangle), w,
-                                            curArc);
+         dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<0>(oTriangle), w, curArc);
       }
 
       template <typename ScalarType>
@@ -707,8 +694,7 @@ namespace ttk
          const idVertex    w  = getWeight(e1, e2, localProp);
 
          // this order for history
-          dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w,
-                                            curArc);
+         dynGraph(localProp).insertEdge(std::get<1>(oTriangle), std::get<2>(oTriangle), w, curArc);
       }
 
       template <typename ScalarType>

@@ -6,10 +6,6 @@
 #include <vtkDataObject.h>
 #include <vtkThreshold.h>
 
-#ifdef GPROFILE
-#include <gperftools/profiler.h>
-#endif
-
 using namespace ttk::ftr;
 
 vtkStandardNewMacro(ttkFTRGraph);
@@ -275,9 +271,6 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet*>& inputs, std::vector<vtkDataSet*>
       cout << "Launch on field : " << ScalarField << endl;
    }
 
-#ifdef GPROFILE
-   ProfilerStart("ftr.log");
-#endif
 
    // compute graph
    switch (inputScalars_->GetDataType()) {
@@ -295,9 +288,6 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet*>& inputs, std::vector<vtkDataSet*>
       });
    }
 
-#ifdef GPROFILE
-   ProfilerStop();
-#endif
 
    UpdateProgress(0.50);
 

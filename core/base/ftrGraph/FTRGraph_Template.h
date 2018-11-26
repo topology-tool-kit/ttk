@@ -18,6 +18,10 @@
 #define OPTIONAL_PRIORITY(value)
 #endif
 
+#ifdef GPROFILE
+#include <gperftools/profiler.h>
+#endif
+
 namespace ttk
 {
    namespace ftr
@@ -81,6 +85,10 @@ namespace ttk
          // std::cout << mesh_.printEdges() << std::endl;
 
          DebugTimer finTime;
+#ifdef GPROFILE
+   std::cout << "Profiling enabled ..." << std::endl;
+   ProfilerStart("ftr.log");
+#endif
 
          DebugTimer timeSort;
          scalars_->sort();
@@ -136,6 +144,9 @@ namespace ttk
          printTime(postProcTime, "[FTR Graph]: postProcess: ", advancedInfoMsg);
 
          printTime(finTime, "[FTR Graph]: final time: ", timeMsg);
+#ifdef GPROFILE
+   ProfilerStop();
+#endif
 
          // list of regular vertices on each arc
          // explicit build: for sampling
