@@ -100,6 +100,7 @@ class ttkTrackingFromOverlap
         int computeNodes(vtkMultiBlockDataSet* data);
         int computeTrackingGraphs(vtkMultiBlockDataSet* data);
         int computeNestingTrees(vtkMultiBlockDataSet* data);
+        int computeBranches();
 
         int meshNestedTrackingGraph(vtkDataObject* trackingGraph);
 
