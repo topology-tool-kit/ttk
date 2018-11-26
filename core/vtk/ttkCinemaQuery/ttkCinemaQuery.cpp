@@ -33,9 +33,6 @@ int ttkCinemaQuery::RequestData(
     Timer t;
     Memory m;
 
-    string result;
-    string sqlTableDefinition, sqlTableRows;
-
     // -------------------------------------------------------------------------
     // Get Input Table
     // -------------------------------------------------------------------------
@@ -51,6 +48,7 @@ int ttkCinemaQuery::RequestData(
     // -------------------------------------------------------------------------
     // Convert Input Table to SQL Table
     // -------------------------------------------------------------------------
+    string sqlTableDefinition, sqlTableRows;
     {
         int nc = inTable->GetNumberOfColumns();
         int nr = inTable->GetNumberOfRows();
@@ -126,6 +124,7 @@ int ttkCinemaQuery::RequestData(
     // -------------------------------------------------------------------------
     // Compute Query Result
     // -------------------------------------------------------------------------
+    string result="";
     {
         int status = cinemaQuery.execute(
             sqlTableDefinition,
@@ -136,7 +135,7 @@ int ttkCinemaQuery::RequestData(
         if(status!=1) return 0;
         if(result.compare("")==0){
             stringstream msg;
-                msg << "[ttkCinemaQuery] ERROR: Empty result (VTK does not support empty tables)."<<endl
+                msg << "[ttkCinemaQuery] ERROR: Empty result (VTK does not support empty tables)."<<endl;
             dMsg(cout, msg.str(), fatalMsg);
         }
     }

@@ -37,10 +37,15 @@ int ttkForEachRow::RequestData(
 
     // Print status
     {
+        string divider = "================================================================================";
+
         stringstream msg;
-        msg << "================================================================================" << endl
-            << "[ttkForEachRow]  Iteration: " << index << endl;
-        dMsg(cout, msg.str(), infoMsg);
+        msg << "[ttkForEachRow]  Iteration: " << index << "   ";
+        size_t n = divider.length()-msg.str().length();
+        for(size_t i=0; i<n; i++)
+            msg<<"/";
+        msg<<endl;
+        dMsg(cout, divider + "\n" + msg.str(), infoMsg);
     }
 
     // Get Input and Output
