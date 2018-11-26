@@ -25,10 +25,6 @@ int ttkEndFor::RequestUpdateExtent(
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
 ){
-    // Print status
-    stringstream msg;
-    msg << "[ttkEndFor] Next Iteration: "<< this->nextIndex << endl;
-    dMsg(cout, msg.str(), infoMsg);
 
     // Request next index
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
@@ -43,11 +39,8 @@ int ttkEndFor::RequestData(
     vtkInformationVector* outputVector
 ){
     // Print status
-    {
-        stringstream msg;
-        msg<<"================================================================================"<<endl;
-        dMsg(cout, msg.str(), infoMsg);
-    }
+    string divider = "================================================================================";
+    dMsg(cout, divider + "\n", infoMsg);
 
     // Get Input
     vtkInformation* inInfo = inputVector[1]->GetInformationObject(0);
@@ -65,6 +58,17 @@ int ttkEndFor::RequestData(
     if(this->nextIndex<n){
         // Request Next Element
         request->Set( vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING(), 1 );
+
+        // Print status
+        {
+            stringstream msg;
+            msg << "[ttkEndFor] Next Iteration: "<< this->nextIndex<<"   ";
+            size_t n = divider.length()-msg.str().length();
+            for(size_t i=0; i<n; i++)
+                msg<<"\\";
+            msg<<endl;
+            dMsg(cout, msg.str(), infoMsg);
+        }
     } else {
         // Stop iterations
         request->Remove( vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING() );
