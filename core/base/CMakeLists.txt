@@ -30,7 +30,7 @@ function(ttk_add_base_library library)
 	ttk_set_compile_options(${library})
 
 	install(TARGETS ${library}
-		EXPORT TTKBaseConfig
+		EXPORT TTKBaseTargets
 		RUNTIME DESTINATION bin/ttk
 		ARCHIVE DESTINATION lib/ttk
 		LIBRARY DESTINATION lib/ttk)
@@ -112,7 +112,7 @@ function(ttk_add_base_template_library library)
 	endif()
 
 	install(TARGETS ${library}
-		EXPORT TTKBaseConfig
+		EXPORT TTKBaseTargets
 		RUNTIME DESTINATION bin/ttk
 		ARCHIVE DESTINATION lib/ttk
 		LIBRARY DESTINATION lib/ttk)
@@ -133,11 +133,16 @@ add_library(baseAll INTERFACE)
 target_link_libraries(baseAll INTERFACE ${LIB_LIST})
 
 install(TARGETS baseAll
-	EXPORT TTKBaseConfig
+	EXPORT TTKBaseTargets
 	RUNTIME DESTINATION bin/ttk
 	ARCHIVE DESTINATION lib/ttk
 	LIBRARY DESTINATION lib/ttk)
 
-install(EXPORT TTKBaseConfig
+install(EXPORT TTKBaseTargets
 	NAMESPACE ttk::base::
 	DESTINATION lib/cmake/ttk)
+
+configure_file(TTKBaseConfig.cmake.in TTKBaseConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/TTKBaseConfig.cmake"
+	DESTINATION lib/cmake/ttk)
+

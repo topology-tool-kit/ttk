@@ -8,8 +8,7 @@ function(ttk_set_compile_options library)
     target_compile_options(${library} PRIVATE -Wall)
 
     if(Boost_FOUND)
-    target_include_directories(${library} PUBLIC ${Boost_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${Boost_LIBRARIES})
+		target_link_libraries(${library} PUBLIC Boost::boost Boost::system)
     endif()
 
     if (TTK_ENABLE_KAMIKAZE)
@@ -196,6 +195,7 @@ else()
   option(TTK_ENABLE_ZLIB "Enable Zlib support" ON)
 endif()
 
+# TODO: This should be in its own findpackage.cmake file!
 # START_FINDSQLITE3
 find_path(SQLITE3_INCLUDE_DIR sqlite3.h
     PATHS
@@ -231,6 +231,7 @@ else()
   message(STATUS "SQLITE3 not found, disabling SQLITE3 support in TTK.")
 endif()
 
+# Same here, should be its own findpackage file!
 # START_FINDZFP
 find_path(ZFP_INCLUDE_DIR zfp.h
     PATHS
