@@ -49,6 +49,12 @@ template<typename labelType> int finalize(
     size_t nL = levelTimeNodesMap.size();
     size_t nT = levelTimeNodesMap[0].size();
 
+    auto prepArray = [](vtkAbstractArray* array, string name, size_t nComponents, size_t nValues){
+        array->SetName(name.data());
+        array->SetNumberOfComponents( nComponents );
+        array->SetNumberOfValues( nValues );
+    };
+
     // Add Points
     {
         size_t nNodes = 0;
@@ -61,47 +67,33 @@ template<typename labelType> int finalize(
         auto pointCoords = (float*) points->GetVoidPointer(0);
 
         auto time = vtkSmartPointer<vtkUnsignedIntArray>::New();
-        time->SetName("TimeIndex");
-        time->SetNumberOfComponents(1);
-        time->SetNumberOfValues( nNodes );
+        prepArray(time, "TimeIndex", 1, nNodes);
         auto timeData = (unsigned int*) time->GetVoidPointer(0);
 
         auto level = vtkSmartPointer<vtkUnsignedIntArray>::New();
-        level->SetName("LevelIndex");
-        level->SetNumberOfComponents(1);
-        level->SetNumberOfValues( nNodes );
+        prepArray(level, "LevelIndex", 1, nNodes);
         auto levelData = (unsigned int*) level->GetVoidPointer(0);
 
         auto size = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
-        size->SetName("Size");
-        size->SetNumberOfComponents(1);
-        size->SetNumberOfValues( nNodes );
+        prepArray(size, "Size", 1, nNodes);
         auto sizeData = (unsigned long long*) size->GetVoidPointer(0);
 
         auto inDegree = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
-        inDegree->SetName("InDegree");
-        inDegree->SetNumberOfComponents(1);
-        inDegree->SetNumberOfValues( nNodes );
+        prepArray(inDegree, "InDegree", 1, nNodes);
         auto inDegreeData = (unsigned long long*) inDegree->GetVoidPointer(0);
 
         auto outDegree = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
-        outDegree->SetName("OutDegree");
-        outDegree->SetNumberOfComponents(1);
-        outDegree->SetNumberOfValues( nNodes );
+        prepArray(outDegree, "OutDegree", 1, nNodes);
         auto outDegreeData = (unsigned long long*) outDegree->GetVoidPointer(0);
 
         auto branch = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
-        branch->SetName("Branch");
-        branch->SetNumberOfComponents(1);
-        branch->SetNumberOfValues( nNodes );
+        prepArray(branch, "Branch", 1, nNodes);
         auto branchData = (unsigned long long*) branch->GetVoidPointer(0);
 
         auto label = vtkSmartPointer<vtkDataArray>::Take(
             vtkDataArray::CreateDataArray( labelTypeId )
         );
-        label->SetName( labelFieldName.data() );
-        label->SetNumberOfComponents(1);
-        label->SetNumberOfValues( nNodes );
+        prepArray(label, labelFieldName, 1, nNodes);
         auto labelData = (labelType*) label->GetVoidPointer(0);
 
         size_t q1=0, q2=0;

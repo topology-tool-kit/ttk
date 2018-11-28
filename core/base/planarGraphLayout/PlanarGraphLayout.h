@@ -37,6 +37,7 @@ namespace ttk{
                 // Input
                 void* sequencesP,
                 float* sizes,
+                unsigned long long* branches,
                 unsigned int* levels,
                 long long* topology,
                 size_t nVertices,
@@ -52,6 +53,7 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
     // Input
     void* sequencesP,
     float* sizes,
+    unsigned long long* branches,
     unsigned int* levels,
     long long* topology,
     size_t nVertices,
@@ -64,6 +66,7 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
     // Init input
     auto sequences = (dataType*) sequencesP;
     bool useSizes = sizes!=nullptr;
+    bool useBranches = branches!=nullptr;
     bool useLevels = levels!=nullptr;
 
     Timer t;
@@ -73,10 +76,11 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
     {
         stringstream msg;
         msg << "[ttkPlanarGraphLayout] Computing layout for graph with" << endl
-            << "[ttkPlanarGraphLayout]     * "<< nVertices << " vertices" << endl
-            << "[ttkPlanarGraphLayout]     * "<< nEdges << " edges" << endl;
-        if(useSizes)  msg << "[ttkPlanarGraphLayout]     * using sizes" << endl;
-        if(useLevels) msg << "[ttkPlanarGraphLayout]     * using levels" << endl;
+            << "[ttkPlanarGraphLayout]  - "<< nVertices << " vertices" << endl
+            << "[ttkPlanarGraphLayout]  - "<< nEdges << " edges" << endl;
+        if(useSizes)    msg << "[ttkPlanarGraphLayout]  - using sizes" << endl;
+        if(useBranches) msg << "[ttkPlanarGraphLayout]  - using branches" << endl;
+        if(useLevels)   msg << "[ttkPlanarGraphLayout]  - using levels" << endl;
         dMsg(cout, msg.str(), infoMsg);
     }
 
@@ -115,7 +119,7 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
     edgeString += tl(0);
     for(size_t t=1; t<nSequences-1; t++)
         edgeString += "->"+tl(t+1);
-    edgeString += ";";
+    edgeString += "[weight=1];";
 
     // ranks
     {
@@ -138,13 +142,21 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
 
     // edges
     {
-        edgeString += "edge[weight=1];";
-
         size_t n = nEdges*3;
         for(size_t i=0; i<n; i+=3){
             long long i0 = topology[i+1];
             long long i1 = topology[i+2];
-            edgeString += nl(i0)+"->"+nl(i1)+";";
+            edgeString += nl(i0)+"->"+nl(i1);
+
+            if(useBranches){
+                auto b0 = branches[i0];
+                auto b1 = branches[i1];
+                edgeString += b0==b1
+                    ? "[weight=1]"
+                    : "[weight=0]";
+            }
+
+            edgeString += ";";
         }
     }
 
@@ -156,7 +168,7 @@ template <class dataType> int ttk::PlanarGraphLayout::execute(
         dMsg(cout, msg.str(), timeMsg);
         t0 = t.getElapsedTime();
     }
-    dMsg(cout, dot+"\n", infoMsg);
+    dMsg(cout, dot+"\n", advancedInfoMsg);
 
     // =========================================================================
     // Compute Layout

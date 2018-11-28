@@ -25,7 +25,7 @@ int ttkPlanarGraphLayout::RequestData(
     }
 
     // Set Wrapper
-    planarGraphLayout_.setWrapper(this);
+    planarGraphLayout.setWrapper(this);
 
     // Prepare input and output
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
@@ -68,6 +68,14 @@ int ttkPlanarGraphLayout::RequestData(
         return 0;
     }
 
+    auto branches = outputPointData->GetAbstractArray( this->GetBranchFieldName().data() );
+    if(this->GetUseBranches() && !branches){
+        stringstream msg;
+        msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetSizeFieldName() << "'" <<endl;
+        dMsg(cout, msg.str(), fatalMsg);
+        return 0;
+    }
+
     auto levels = outputPointData->GetAbstractArray( this->GetLevelFieldName().data() );
     if(this->GetUseLevels() && !levels){
         stringstream msg;
@@ -78,11 +86,12 @@ int ttkPlanarGraphLayout::RequestData(
 
     switch(sequences->GetDataType()){
         vtkTemplateMacro({
-            planarGraphLayout_.execute<VTK_TT>(
+            planarGraphLayout.execute<VTK_TT>(
                 // Input
                 sequences->GetVoidPointer(0),
-                !this->GetUseSizes()  ? nullptr : (float*)        sizes->GetVoidPointer(0),
-                !this->GetUseLevels() ? nullptr : (unsigned int*) levels->GetVoidPointer(0),
+                !this->GetUseSizes()    ? nullptr : (float*)              sizes->GetVoidPointer(0),
+                !this->GetUseBranches() ? nullptr : (unsigned long long*) branches->GetVoidPointer(0),
+                !this->GetUseLevels()   ? nullptr : (unsigned int*)       levels->GetVoidPointer(0),
                 topology,
                 nPoints,
                 nEdges,

@@ -44,6 +44,11 @@ class ttkPlanarGraphLayout
         vtkSetMacro(SizeFieldName, std::string);
         vtkGetMacro(SizeFieldName, std::string);
 
+        vtkSetMacro(UseBranches, bool);
+        vtkGetMacro(UseBranches, bool);
+        vtkSetMacro(BranchFieldName, std::string);
+        vtkGetMacro(BranchFieldName, std::string);
+
         vtkSetMacro(UseLevels, bool);
         vtkGetMacro(UseLevels, bool);
         vtkSetMacro(LevelFieldName, std::string);
@@ -105,10 +110,13 @@ class ttkPlanarGraphLayout
         bool UseSizes;
         std::string SizeFieldName;
 
+        bool UseBranches;
+        std::string BranchFieldName;
+
         bool UseLevels;
         std::string LevelFieldName;
 
-        ttk::PlanarGraphLayout planarGraphLayout_;
+        ttk::PlanarGraphLayout planarGraphLayout;
 
         bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {

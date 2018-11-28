@@ -41,6 +41,22 @@
                 </Hints>
             </StringVectorProperty>
 
+            <IntVectorProperty name="UseBranches" label="Use Branches" command="SetUseBranches" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>Include node size in layout computation.</Documentation>
+            </IntVectorProperty>
+            <StringVectorProperty name="BranchFieldName" command="SetBranchFieldName" number_of_elements="1" animateable="0" label="Branch Field Name">
+                <ArrayListDomain name="array_list" default_values="Branch" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Branch scalar field.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseBranches" value="1" />
+                </Hints>
+            </StringVectorProperty>
+
             <IntVectorProperty name="UseLevels" label="Use Levels" command="SetUseLevels" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
                 <Documentation>Include node level in layout computation.</Documentation>
@@ -77,6 +93,8 @@
                 <Property name="AxisFieldName" />
                 <Property name="UseSizes" />
                 <Property name="SizeFieldName" />
+                <Property name="UseBranches" />
+                <Property name="BranchFieldName" />
                 <Property name="UseLevels" />
                 <Property name="LevelFieldName" />
             </PropertyGroup>
