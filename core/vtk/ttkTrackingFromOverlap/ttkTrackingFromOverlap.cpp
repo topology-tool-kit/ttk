@@ -87,7 +87,7 @@ template<typename labelType> int finalize(
         auto outDegreeData = (unsigned long long*) outDegree->GetVoidPointer(0);
 
         auto branch = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
-        prepArray(branch, "Branch", 1, nNodes);
+        prepArray(branch, "BranchIdPoints", 1, nNodes);
         auto branchData = (unsigned long long*) branch->GetVoidPointer(0);
 
         auto label = vtkSmartPointer<vtkDataArray>::Take(
@@ -148,13 +148,13 @@ template<typename labelType> int finalize(
         if(nT>1)
             for(size_t t=0; t<nT-1; t++)
                 for(size_t l=0; l<nL; l++)
-                    nEdgesT += levelTimeEdgesTMap[l][t].size()/3;
+                    nEdgesT += levelTimeEdgesTMap[l][t].size()/4;
 
         size_t nEdgesN = 0;
         if(nL>1)
             for(size_t l=0; l<nL-1; l++)
                 for(size_t t=0; t<nT; t++)
-                    nEdgesN += timeLevelEdgesNMap[t][l].size()/3;
+                    nEdgesN += timeLevelEdgesNMap[t][l].size()/4;
 
         auto cells = vtkSmartPointer<vtkIdTypeArray>::New();
         cells->SetNumberOfValues( 3*nEdgesT + 3*nEdgesN );
@@ -164,6 +164,11 @@ template<typename labelType> int finalize(
         overlap->SetNumberOfValues( nEdgesT + nEdgesN );
         overlap->SetName("Overlap");
         auto overlapData = (unsigned long long*) overlap->GetVoidPointer(0);
+
+        auto branch = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
+        branch->SetNumberOfValues( nEdgesT + nEdgesN );
+        branch->SetName("BranchIdCells");
+        auto branchData = (unsigned long long*) branch->GetVoidPointer(0);
 
         auto type = vtkSmartPointer<vtkUnsignedCharArray>::New();
         type->SetNumberOfValues( nEdgesT + nEdgesN );
@@ -182,7 +187,9 @@ template<typename labelType> int finalize(
                         cellIds[q0++] = (vtkIdType) (timeLevelOffsetMap[ (t-1)*nL+l ] + edges[i++]);
                         cellIds[q0++] = (vtkIdType) (timeLevelOffsetMap[ (t  )*nL+l ] + edges[i++]);
                         typeData[q1] = 0;
-                        overlapData[q1++] = edges[i++];
+                        overlapData[q1] = edges[i++];
+                        branchData[q1] = edges[i++];
+                        q1++;
                     }
                 }
             }
@@ -198,7 +205,9 @@ template<typename labelType> int finalize(
                         cellIds[q0++] = (vtkIdType) (timeLevelOffsetMap[ temp+(l-1) ] + edges[i++]);
                         cellIds[q0++] = (vtkIdType) (timeLevelOffsetMap[ temp+(l  ) ] + edges[i++]);
                         typeData[q1] = 1;
-                        overlapData[q1++] = edges[i++];
+                        overlapData[q1] = edges[i++];
+                        branchData[q1] = edges[i++];
+                        q1++;
                     }
                 }
             }
@@ -207,8 +216,10 @@ template<typename labelType> int finalize(
         cellArray->SetCells(nEdgesT + nEdgesN, cells);
         trackingGraph->SetCells(VTK_LINE, cellArray);
 
-        trackingGraph->GetCellData()->AddArray( overlap );
-        trackingGraph->GetCellData()->AddArray( type );
+        auto cellData = trackingGraph->GetCellData();
+        cellData->AddArray( type );
+        cellData->AddArray( overlap );
+        cellData->AddArray( branch );
     }
 
     return 1;

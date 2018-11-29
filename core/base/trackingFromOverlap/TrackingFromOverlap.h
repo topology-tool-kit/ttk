@@ -23,10 +23,12 @@
 // base code includes
 #include <Wrapper.h>
 
+
 using namespace std;
 
 typedef unsigned char topologyType;
 typedef unsigned long long indexType;
+#define NO_INDEX numeric_limits<indexType>::max()
 
 typedef boost::variant<
     double, float, long long, unsigned long long, long, unsigned long, int, unsigned int, short, unsigned short, char, signed char, unsigned char
@@ -50,12 +52,12 @@ struct Node {
     Node(
         sizeType size=0, float x=0, float y=0, float z=0,
         sizeType inDegree=0, sizeType outDegree=0,
-        indexType branchID=numeric_limits<indexType>::max(), indexType maxPredID=numeric_limits<indexType>::max(), indexType maxSuccID=numeric_limits<indexType>::max()
+        indexType branchID=numeric_limits<indexType>::max(), indexType maxPredID=NO_INDEX, indexType maxSuccID=NO_INDEX
     ) : size(size), x(x), y(y), z(z), inDegree(inDegree), outDegree(outDegree), branchID(branchID), maxPredID(maxPredID), maxSuccID(maxSuccID) {}
 };
 
 
-typedef vector<size_t> Edges; // [index0, index1, overlap...]
+typedef vector<size_t> Edges; // [index0, index1, overlap, branch,...]
 typedef vector<Node> Nodes;
 
 struct CoordinateComparator {
@@ -103,24 +105,24 @@ namespace ttk{
             }
 
             int computeBranches(
-                const vector<Edges>& timeEdgesMap,
+                vector<Edges>& timeEdgesMap,
                 vector<Nodes>& timeNodesMap
             ) const {
                 dMsg(cout, "[ttkTrackingFromOverlap] Computing branches  ... ", timeMsg);
                 Timer t;
 
                 size_t nT = timeNodesMap.size();
-                indexType _NULL_ = numeric_limits<indexType>::max();
+                indexType NO_INDEX_ = NO_INDEX;
 
                 // Compute max pred and succ
-                for(size_t t=0; t<nT-1; t++){
-                    auto& nodes0 = timeNodesMap[t];
-                    auto& nodes1 = timeNodesMap[t+1];
-                    auto& edges = timeEdgesMap[t];
+                for(size_t t=1; t<nT; t++){
+                    auto& nodes0 = timeNodesMap[t-1];
+                    auto& nodes1 = timeNodesMap[t];
+                    auto& edges = timeEdgesMap[t-1];
 
                     size_t nE = edges.size();
 
-                    for(size_t i=0; i<nE; i+=3){
+                    for(size_t i=0; i<nE; i+=4){
                         auto n0Index = edges[i];
                         auto n1Index = edges[i+1];
                         auto& n0 = nodes0[ n0Index ];
@@ -129,8 +131,8 @@ namespace ttk{
                         n0.outDegree++;
                         n1.inDegree++;
 
-                        sizeType n0MaxSuccSize = n0.maxSuccID!=_NULL_ ? nodes1[ n0.maxSuccID ].size : 0;
-                        sizeType n1MaxPredSize = n1.maxPredID!=_NULL_ ? nodes0[ n1.maxPredID ].size : 0;
+                        sizeType n0MaxSuccSize = n0.maxSuccID!=NO_INDEX_ ? nodes1[ n0.maxSuccID ].size : 0;
+                        sizeType n1MaxPredSize = n1.maxPredID!=NO_INDEX_ ? nodes0[ n1.maxPredID ].size : 0;
                         if( n0MaxSuccSize < n1.size )
                             n0.maxSuccID = n1Index;
                         if( n1MaxPredSize < n0.size )
@@ -143,35 +145,57 @@ namespace ttk{
 
                 for(size_t t=0; t<nT; t++)
                     for(auto& n: timeNodesMap[t])
-                        n.branchID = n.maxPredID==_NULL_ ? branchCounter++ : _NULL_;
+                        n.branchID = n.maxPredID==NO_INDEX_ ? branchCounter++ : NO_INDEX_;
 
-                for(size_t t=0; t<nT-1; t++){
-                    auto& nodes0 = timeNodesMap[t];
-                    auto& nodes1 = timeNodesMap[t+1];
+                for(size_t t=1; t<nT; t++){
+                    auto& nodes0 = timeNodesMap[t-1];
+                    auto& nodes1 = timeNodesMap[t];
 
                     for(size_t i=0; i<nodes1.size(); i++){
                         auto& n1 = nodes1[i];
-                        if( n1.maxPredID!=_NULL_ && i != nodes0[ n1.maxPredID ].maxSuccID )
+                        if( n1.maxPredID!=NO_INDEX_ && i != nodes0[ n1.maxPredID ].maxSuccID )
                             n1.branchID = branchCounter++;
                     }
                 }
 
                 // Propagate branch labels
-                for(size_t t=0; t<nT-1; t++){
-                    auto& nodes0 = timeNodesMap[t];
-                    auto& nodes1 = timeNodesMap[t+1];
-                    auto& edges = timeEdgesMap[t];
+                for(size_t t=1; t<nT; t++){
+                    auto& nodes0 = timeNodesMap[t-1];
+                    auto& nodes1 = timeNodesMap[t];
+                    auto& edges = timeEdgesMap[t-1];
 
                     size_t nE = edges.size();
 
-                    for(size_t i=0; i<nE; i+=3){
+                    for(size_t i=0; i<nE; i+=4){
                         auto n0Index = edges[i];
                         auto n1Index = edges[i+1];
                         auto& n0 = nodes0[ n0Index ];
                         auto& n1 = nodes1[ n1Index ];
 
-                        if(n1.branchID==_NULL_ && n0Index==n1.maxPredID)
+                        if(n1.branchID==NO_INDEX_ && n0Index==n1.maxPredID)
                             n1.branchID = n0.branchID;
+                    }
+                }
+
+                // Label edges
+                for(size_t t=1; t<nT; t++){
+                    auto& nodes0 = timeNodesMap[t-1];
+                    auto& nodes1 = timeNodesMap[t];
+                    auto& edges = timeEdgesMap[t-1];
+
+                    size_t nE = edges.size();
+
+                    for(size_t i=0; i<nE; i+=4){
+                        auto n0Index = edges[i];
+                        auto n1Index = edges[i+1];
+                        auto& n0 = nodes0[ n0Index ];
+                        auto& n1 = nodes1[ n1Index ];
+
+                        edges[i+3] = n0.branchID == n1.branchID
+                            ? n0.branchID
+                            : n0.maxSuccID == n1Index
+                                ? n0.branchID
+                                : n1.branchID;
                     }
                 }
 
@@ -400,14 +424,16 @@ template<typename labelType> int ttk::TrackingFromOverlap::computeOverlap(
     // Pack Output
     // -------------------------------------------------------------------------
     {
-        size_t nEdges3 = nEdges*3;
-        edges.resize( nEdges3 );
+        indexType NO_INDEX_ = NO_INDEX;
+
+        edges.resize( nEdges*4 );
         size_t q=0;
         for(auto& it0: edgesMap){
             for(auto& it1: it0.second){
                 edges[q++] = it0.first;
                 edges[q++] = it1.first;
                 edges[q++] = it1.second;
+                edges[q++] = NO_INDEX_;
             }
         }
     }
