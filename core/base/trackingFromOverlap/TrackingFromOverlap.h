@@ -110,7 +110,6 @@ namespace ttk{
                 Timer t;
 
                 size_t nT = timeNodesMap.size();
-
                 indexType _NULL_ = numeric_limits<indexType>::max();
 
                 // Compute max pred and succ
@@ -152,7 +151,7 @@ namespace ttk{
 
                     for(size_t i=0; i<nodes1.size(); i++){
                         auto& n1 = nodes1[i];
-                        if( i != nodes0[ n1.maxPredID ].maxSuccID )
+                        if( n1.maxPredID!=_NULL_ && i != nodes0[ n1.maxPredID ].maxSuccID )
                             n1.branchID = branchCounter++;
                     }
                 }
