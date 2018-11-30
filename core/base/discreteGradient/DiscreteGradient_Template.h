@@ -182,7 +182,7 @@ template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient(const int alphaDim,
     const dataType* const scalars,
     const idType* const offsets,
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
     std::vector<std::vector<char>>& gradient) const{
 #else
     std::vector<std::vector<SimplexId>>& gradient) const{
@@ -202,7 +202,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
     for(SimplexId alpha=0; alpha<alphaNumber; ++alpha){
       if (alphaDim == 0) {
         SimplexId minEdgeId{-1};
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
         char minEdgeLocalId{-1};
 #endif
         SimplexId minVertexId{-1};
@@ -219,14 +219,14 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           if(sosLowerThan(vertexId, alpha)){
             if(minVertexId==-1){
               minEdgeId = edgeId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
               minEdgeLocalId = k;
 #endif
               minVertexId = vertexId;
             }
             else if(sosLowerThan(vertexId,minVertexId)){
               minEdgeId = edgeId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
               minEdgeLocalId = k;
 #endif
               minVertexId = vertexId;
@@ -234,7 +234,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           }
         }
         if (minEdgeId != -1) {
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
           gradient[alphaDim][alpha] = minEdgeLocalId;
 
           char minAlphaLocalId{-1};
@@ -260,7 +260,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
         inputTriangulation_->getEdgeVertex(alpha, 1, v1);
 
         SimplexId minStarId{-1};
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
         char minStarLocalId{-1};
 #endif
         SimplexId minVertexId{-1};
@@ -279,14 +279,14 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           if (sosLowerThan(vertexId,v0) and sosLowerThan(vertexId,v1)){
             if (minVertexId == -1) {
               minStarId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
               minStarLocalId = k;
 #endif
               minVertexId = vertexId;
             }
             else if(sosLowerThan(vertexId,minVertexId)){
               minStarId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
               minStarLocalId = k;
 #endif
               minVertexId = vertexId;
@@ -294,7 +294,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           }
         }
         if (minStarId != -1) {
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
           gradient[alphaDim][alpha] = minStarLocalId;
 
           char minAlphaLocalId{-1};
@@ -323,7 +323,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
     for (SimplexId alpha = 0; alpha < alphaNumber; ++alpha) {
       if (alphaDim == 0) {
         SimplexId minEdgeId{-1};
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
         char minEdgeLocalId{-1};
 #endif
         SimplexId minVertexId{-1};
@@ -340,14 +340,14 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           if (sosLowerThan(vertexId, alpha)) {
             if(minVertexId==-1){
               minEdgeId = edgeId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
               minEdgeLocalId = k;
 #endif
               minVertexId = vertexId;
             }
             else if(sosLowerThan(vertexId,minVertexId)){
               minEdgeId = edgeId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
               minEdgeLocalId = k;
 #endif
               minVertexId = vertexId;
@@ -355,7 +355,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           }
         }
         if (minEdgeId != -1) {
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
           gradient[alphaDim][alpha] = minEdgeLocalId;
 
           char minAlphaLocalId{-1};
@@ -381,7 +381,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
         inputTriangulation_->getEdgeVertex(alpha, 1, v1);
 
         SimplexId minTriangleId{-1};
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
         char minTriangleLocalId{-1};
 #endif
         SimplexId minVertexId{-1};
@@ -401,14 +401,14 @@ int DiscreteGradient::assignGradient(const int alphaDim,
               sosLowerThan(vertexId,v1)) {
             if (minVertexId == -1) {
               minTriangleId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
               minTriangleLocalId = k;
 #endif
               minVertexId = vertexId;
             }
             else if(sosLowerThan(vertexId,minVertexId)){
               minTriangleId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
               minTriangleLocalId = k;
 #endif
               minVertexId = vertexId;
@@ -416,7 +416,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           }
         }
         if (minTriangleId != -1) {
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
           gradient[alphaDim][alpha] = minTriangleLocalId;
 
           char minAlphaLocalId{-1};
@@ -444,7 +444,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
         inputTriangulation_->getTriangleVertex(alpha, 2, v2);
 
         SimplexId minStarId{-1};
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
         char minStarLocalId{-1};
 #endif
         SimplexId minVertexId{-1};
@@ -467,14 +467,14 @@ int DiscreteGradient::assignGradient(const int alphaDim,
               sosLowerThan(vertexId,v2)) {
             if (minVertexId == -1) {
               minStarId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
               minStarLocalId = k;
 #endif
               minVertexId = vertexId;
             }
             else if(sosLowerThan(vertexId,minVertexId)){
               minStarId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
               minStarLocalId = k;
 #endif
               minVertexId = vertexId;
@@ -482,7 +482,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           }
         }
         if (minStarId != -1) {
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
           gradient[alphaDim][alpha] = minStarLocalId;
 
           char minAlphaLocalId{-1};
@@ -512,7 +512,7 @@ template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient2(const int alphaDim,
     const dataType* const scalars,
     const idType* const offsets,
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
     std::vector<std::vector<char>>& gradient) const{
 #else
     std::vector<std::vector<SimplexId>>& gradient) const{
@@ -538,7 +538,7 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
         inputTriangulation_->getEdgeVertex(alpha, 1, v1);
 
         SimplexId minStarId{-1};
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
         char minStarLocalId{-1};
 #endif
         SimplexId minVertexId{-1};
@@ -560,14 +560,14 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
                 (sosLowerThan(vertexId,v1) and sosLowerThan(v0, vertexId))){
               if (minVertexId == -1) {
                 minStarId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                 minStarLocalId = k;
 #endif
                 minVertexId = vertexId;
               }
               else if(sosLowerThan(vertexId,minVertexId)){
                 minStarId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                 minStarLocalId = k;
 #endif
                 minVertexId = vertexId;
@@ -576,7 +576,7 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
           }
         }
         if (minStarId != -1) {
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
           gradient[alphaDim][alpha] = minStarLocalId;
 
           char minAlphaLocalId{-1};
@@ -611,7 +611,7 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
           inputTriangulation_->getEdgeVertex(alpha, 1, v1);
 
           SimplexId minTriangleId{-1};
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
           char minTriangleLocalId{-1};
 #endif
           SimplexId minVertexId{-1};
@@ -633,14 +633,14 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
                   (sosLowerThan(vertexId,v1) and sosLowerThan(v0, vertexId))){
                 if (minVertexId == -1) {
                   minTriangleId = triangleId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                   minTriangleLocalId = k;
 #endif
                   minVertexId = vertexId;
                 }
                 else if(sosLowerThan(vertexId,minVertexId)){
                   minTriangleId = triangleId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                   minTriangleLocalId = k;
 #endif
                   minVertexId = vertexId;
@@ -649,7 +649,7 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
             }
           }
           if (minTriangleId != -1) {
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
             gradient[alphaDim][alpha] = minTriangleLocalId;
 
             char minAlphaLocalId{-1};
@@ -692,7 +692,7 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
             vb=v2;
 
           SimplexId minStarId{-1};
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
           char minStarLocalId{-1};
 #endif
           SimplexId minVertexId{-1};
@@ -714,14 +714,14 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
               if(sosLowerThan(vertexId, vb)){
                 if (minVertexId == -1) {
                   minStarId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                   minStarLocalId = k;
 #endif
                   minVertexId = vertexId;
                 }
                 else if(sosLowerThan(vertexId,minVertexId)){
                   minStarId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                   minStarLocalId = k;
 #endif
                   minVertexId = vertexId;
@@ -730,7 +730,7 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
             }
           }
           if (minStarId != -1) {
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
             gradient[alphaDim][alpha] = minStarLocalId;
 
             char minAlphaLocalId{-1};
@@ -761,7 +761,7 @@ template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient3(const int alphaDim,
     const dataType* const scalars,
     const idType* const offsets,
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
     std::vector<std::vector<char>>& gradient) const{
 #else
     std::vector<std::vector<SimplexId>>& gradient) const{
@@ -798,7 +798,7 @@ int DiscreteGradient::assignGradient3(const int alphaDim,
           vmax=v2;
 
         SimplexId minStarId{-1};
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
         char minStarLocalId{-1};
 #endif
         SimplexId minVertexId{-1};
@@ -820,14 +820,14 @@ int DiscreteGradient::assignGradient3(const int alphaDim,
             if(sosLowerThan(vertexId,vmax)) {
               if (minVertexId == -1) {
                 minStarId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                 minStarLocalId = k;
 #endif
                 minVertexId = vertexId;
               }
               else if(sosLowerThan(vertexId,minVertexId)){
                 minStarId = starId;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                 minStarLocalId = k;
 #endif
                 minVertexId = vertexId;
@@ -836,7 +836,7 @@ int DiscreteGradient::assignGradient3(const int alphaDim,
           }
         }
         if (minStarId != -1) {
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
           gradient[alphaDim][alpha] = minStarLocalId;
 
           char minAlphaLocalId{-1};

@@ -452,7 +452,7 @@ given dimension.
       int assignGradient(const int alphaDim,
                          const dataType *const scalars,
                          const idType *const offsets,
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                          std::vector<std::vector<char>> &gradient) const;
 #else
                          std::vector<std::vector<SimplexId>> &gradient) const;
@@ -469,7 +469,7 @@ unpaired cells.
       int assignGradient2(const int alphaDim,
                           const dataType *const scalars,
                           const idType *const offsets,
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                          std::vector<std::vector<char>> &gradient) const;
 #else
                          std::vector<std::vector<SimplexId>> &gradient) const;
@@ -485,7 +485,7 @@ triangulation only).
       int assignGradient3(const int alphaDim,
                           const dataType *const scalars,
                           const idType *const offsets,
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                          std::vector<std::vector<char>> &gradient) const;
 #else
                          std::vector<std::vector<SimplexId>> &gradient) const;
@@ -1046,7 +1046,7 @@ tetra identifier.
 
       int dimensionality_;
       SimplexId numberOfVertices_;
-#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
       std::vector<std::vector<std::vector<char>>> gradient_;
 #else
       std::vector<std::vector<std::vector<SimplexId>>> gradient_;
