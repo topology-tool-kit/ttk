@@ -18,7 +18,7 @@ namespace ttk{
 		PDBarycenter(){
 			wasserstein_ = 2;
 			geometrical_factor_ = 1;
-      method_ = "Auction";
+      method_ = "Partial Bidding";
 			threadNumber_ = 1;
 			use_progressive_ = true;
 			time_limit_ = std::numeric_limits<double>::max();
@@ -35,6 +35,7 @@ namespace ttk{
 		std::vector<std::vector<matchingTuple>> execute(std::vector<diagramTuple>& barycenter);
     std::vector<std::vector<matchingTuple>> executeMunkresBarycenter(std::vector<diagramTuple>& barycenter);
     std::vector<std::vector<matchingTuple>> executeAuctionBarycenter(std::vector<diagramTuple>& barycenter);
+    std::vector<std::vector<matchingTuple>> executePartialBiddingBarycenter(std::vector<diagramTuple>& barycenter);
 
 		void setBidderDiagrams();
 		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence,
@@ -56,6 +57,14 @@ namespace ttk{
 						 std::vector<KDTree<dataType>*>* correspondance_kdt_map,
 						 std::vector<dataType>* min_diag_price,
 						 std::vector<dataType>* min_price,
+						 std::vector<std::vector<matchingTuple>>* all_matchings,
+						 bool use_kdt);
+
+   void runMatchingAuction(dataType* total_cost,
+						 std::vector<int> sizes,
+						 KDTree<dataType>* kdt,
+						 std::vector<KDTree<dataType>*>* correspondance_kdt_map,
+						 std::vector<dataType>* min_diag_price,
 						 std::vector<std::vector<matchingTuple>>* all_matchings,
 						 bool use_kdt);
 
@@ -94,6 +103,9 @@ namespace ttk{
     }
 
     inline void setMethod(const int &method){
+      if(method==0){
+        method_="Partial Bidding";
+      }
       if(method==1){
         method_="Munkres";
       }

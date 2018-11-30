@@ -70,12 +70,13 @@ computation (type "inf" for the Bottleneck distance).
 
        <IntVectorProperty
           name="Method"
-          label="Method for the auction"
+          label="Algorithm for the assignments"
           command="SetMethod"
           number_of_elements="1"
-          default_values="1" >
+          default_values="0" >
 		 <EnumerationDomain name="enum">
-          <Entry value="1" text="Exact Munkres Algorithm"/>
+          <Entry value="0" text="Partial Bidding Algorithm"/>
+          <Entry value="1" text="TTK Munkres Algorithm"/>
           <Entry value="2" text="Approximate Auction Algorithm"/>
         </EnumerationDomain>
         <Documentation>
@@ -98,7 +99,7 @@ computation (type "inf" for the Bottleneck distance).
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
                                    property="Method"
-                                   value="2" />
+                                   value="0" />
           <!-- enable this widget when <property> equals <value> -->
         </Hints>
         <Documentation>
@@ -121,7 +122,7 @@ computation (type "inf" for the Bottleneck distance).
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
                                    property="Method"
-                                   value="2" />
+                                   value="0" />
           <!-- enable this widget when <property> equals <value> -->
         </Hints>
         <Documentation>
@@ -145,7 +146,7 @@ computation (type "inf" for the Bottleneck distance).
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
                                    property="Method"
-                                   value="2" />
+                                   value="0" />
           <!-- enable this widget when <property> equals <value> -->
         </Hints>
          <Documentation>
@@ -164,7 +165,7 @@ computation (type "inf" for the Bottleneck distance).
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
                                    property="Method"
-                                   value="2" />
+                                   value="0" />
           <!-- enable this widget when <property> equals <value> -->
         </Hints>
          <Documentation>
@@ -201,6 +202,13 @@ computation (type "inf" for the Bottleneck distance).
           panel_visibility="advanced"
           >
         <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="0" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
         <Documentation>
           Blending coefficient for the cost evaluation of each critical point
 matching. By default (1), only distances  in

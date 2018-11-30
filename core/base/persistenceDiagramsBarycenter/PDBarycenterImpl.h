@@ -17,8 +17,15 @@ template <typename dataType>
 std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vector<diagramTuple>& barycenter){
 	if(method_ == "Munkres")
 		return executeMunkresBarycenter(barycenter);
-	else
+	else if(method_ == "Auction")
 		return executeAuctionBarycenter(barycenter);
+	else if(method_ =="Partial Bidding")
+		return executePartialBiddingBarycenter(barycenter);
+	else{
+		std::cout << "[PersistenceDiagramsBarycenter] Error : you need to select a valid matching algorithm" << '\n';
+		std::vector<std::vector<matchingTuple>> v(0);
+		return v;
+	}
 }
 
 
@@ -91,6 +98,34 @@ void PDBarycenter<dataType>::runMatchingMunkres(dataType* total_cost,
 	 		(*total_cost) += cost;
 	 	}
 
+}
+
+template <typename dataType>
+void PDBarycenter<dataType>::runMatchingAuction(dataType* total_cost,
+										std::vector<int> sizes,
+										KDTree<dataType>* kdt,
+										std::vector<KDTree<dataType>*>* correspondance_kdt_map,
+										std::vector<dataType>* min_diag_price,
+										std::vector<std::vector<matchingTuple>>* all_matchings,
+										bool use_kdt
+										){
+	#ifdef TTK_ENABLE_OPENMP
+	omp_set_num_threads(threadNumber_);
+	#pragma omp parallel for schedule(dynamic, 1)
+	#endif
+	for(int i=0; i<numberOfInputs_; i++){
+		Auction<dataType> auction = Auction<dataType>(&current_bidder_diagrams_[i], &barycenter_goods_[i],
+			 wasserstein_, geometrical_factor_, lambda_, 0.01, kdt, *correspondance_kdt_map, (*min_diag_price)[i], use_kdt);
+		std::vector<matchingTuple> matchings;
+		dataType cost = auction.run(&matchings);
+		all_matchings->at(i) = matchings;
+		(*total_cost) += cost;
+		//std::cout<< "Barycenter cost for diagram " << i <<" : "<< cost << std::endl;
+		//std::cout<< "Number of biddings : " << n_biddings << std::endl;
+		// Resizes the diagram which was enrich with diagonal bidders during the auction
+		// TODO do this inside the auction !
+		current_bidder_diagrams_[i].bidders_.resize(sizes[i]);
+	}
 }
 
 template <typename dataType>
@@ -642,8 +677,133 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeMunkresBa
 	return corrected_matchings;
 }
 
-template <typename dataType>
+template<typename dataType>
 std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBarycenter(std::vector<diagramTuple>& barycenter){
+	double total_time = 0;
+
+	std::vector<std::vector<matchingTuple>> previous_matchings;
+	dataType min_persistence = 0;
+	dataType min_cost = std::numeric_limits<dataType>::max();
+	int last_min_cost_obtained = 0;
+
+	this->setBidderDiagrams();
+	this->setInitialBarycenter(min_persistence); // false for a determinist initialization
+
+		dataType max_persistence = getMaxPersistence();
+
+	std::vector<dataType> min_diag_price(numberOfInputs_);
+	std::vector<dataType> min_price(numberOfInputs_);
+	for(int i=0; i<numberOfInputs_; i++){
+		min_diag_price[i] = 0;
+		min_price[i] = 0;
+	}
+
+	int min_points_to_add = std::numeric_limits<int>::max();
+	min_persistence = this->enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price, min_price, min_points_to_add, false);
+
+	if(debugLevel_>1)
+		std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
+
+	int n_iterations = 0;
+
+	bool converged = false;
+	bool finished = false;
+	while(!finished){
+		Timer t;
+
+		n_iterations += 1;
+
+		std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair;
+		bool use_kdt = false;
+		// If the barycenter is empty, do not compute the kdt (or it will crash :/)
+		// TODO Fix KDTree to handle empty inputs...
+		if(barycenter_goods_[0].size()>0){
+			pair = this->getKDTree();
+			use_kdt = true;
+		}
+		KDTree<dataType>* kdt = pair.first;
+		std::vector<KDTree<dataType>*>& correspondance_kdt_map = pair.second;
+
+		std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
+		std::vector<int> sizes(numberOfInputs_);
+		for(int i=0; i<numberOfInputs_; i++){
+			sizes[i] = current_bidder_diagrams_[i].size();
+		}
+			
+		dataType total_cost = 0;
+
+		barycenter.resize(0);
+		for(int j=0; j<barycenter_goods_[0].size(); j++){
+			Good<dataType>& g = barycenter_goods_[0].get(j);
+			diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_, g.getPersistence(), diagramType_, g.x_, 0,0,0, g.y_, 0,0,0);
+			barycenter.push_back(t);
+		}
+
+		runMatchingAuction(&total_cost, sizes, kdt, &correspondance_kdt_map,
+					&min_diag_price, &all_matchings, use_kdt);
+
+		std::cout<< "[PersistenceDiagramsBarycenter] Barycenter cost : "<< total_cost << std::endl;
+
+		if(converged){
+			finished = true;
+		}
+
+		if(!finished){
+			updateBarycenter(all_matchings);
+			if(debugLevel_>1)
+				std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
+
+
+
+			if(min_cost>total_cost){
+				min_cost = total_cost;
+				last_min_cost_obtained = 0;
+			}
+			else{
+				last_min_cost_obtained += 1;
+			}
+
+			converged = converged || last_min_cost_obtained>1;
+		}
+
+
+		previous_matchings = std::move(all_matchings);
+		// END OF TIMER
+		total_time += t.getElapsedTime();
+
+		for(unsigned int i=0; i<barycenter_goods_.size(); ++i){
+			for(int j=0; j<barycenter_goods_[i].size(); ++j){
+				barycenter_goods_[i].get(j).setPrice(0);
+			}
+		}
+		for(unsigned int i=0; i<current_bidder_diagrams_.size(); ++i){
+			for(int j=0; j<current_bidder_diagrams_[i].size(); ++j){
+				current_bidder_diagrams_[i].get(j).setDiagonalPrice(0);
+			}
+		}
+		for(int i=0; i<numberOfInputs_; i++){
+			min_diag_price[i] = 0;
+			min_price[i] = 0;
+		}
+
+	}
+	barycenter.resize(0);
+	for(int j=0; j<barycenter_goods_[0].size(); j++){
+		Good<dataType>& g = barycenter_goods_[0].get(j);
+		diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_, g.getPersistence(), diagramType_, g.x_, 0,0,0, g.y_, 0,0,0);
+		barycenter.push_back(t);
+	}
+
+	std::vector<std::vector<matchingTuple>> corrected_matchings = correctMatchings(previous_matchings);
+	for(unsigned int d=0; d<current_bidder_diagrams_.size(); ++d){
+		if(debugLevel_>1)
+			std::cout << "Size of diagram " << d << " : " << current_bidder_diagrams_[d].size() << std::endl;
+	}
+	return corrected_matchings;
+}
+
+template <typename dataType>
+std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBiddingBarycenter(std::vector<diagramTuple>& barycenter){
 	double total_time = 0;
 
 	std::vector<std::vector<matchingTuple>> previous_matchings;

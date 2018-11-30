@@ -136,7 +136,7 @@ dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings)
 		this->runAuctionRound(n_biddings);
 		delta = this->getRelativePrecision();
 	}
-	dataType wassersteinDistance = this->getMatchingsAndDistance(matchings);
+	dataType wassersteinDistance = this->getMatchingsAndDistance(matchings,true);
 	return wassersteinDistance;
 }
 #endif

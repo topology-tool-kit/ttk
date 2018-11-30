@@ -70,7 +70,10 @@ namespace ttk {
         };
 
 
-		Auction(BidderDiagram<dataType>* bidders, GoodDiagram<dataType>* goods, int wasserstein, double geometricalFactor, double lambda, double delta_lim, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>& correspondance_kdt_map, dataType epsilon, dataType initial_diag_price, bool use_kdTree=true) {
+		Auction(BidderDiagram<dataType>* bidders, GoodDiagram<dataType>* goods, int wasserstein, double geometricalFactor,
+       double lambda, double delta_lim, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>& correspondance_kdt_map, dataType epsilon,
+       dataType initial_diag_price, bool use_kdTree=true) {
+         
 			delete_bidders_ = false;
 			bidders_ = bidders;
 			goods_ = goods;
