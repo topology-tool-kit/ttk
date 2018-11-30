@@ -188,7 +188,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     return -1;
   }
 
-  if(input->GetNumberOfPoints()){
+  if(!input->GetNumberOfPoints()){
     cerr << "[ttkDiscreteGradient] Error: input has no point." << endl;
     return -1;
   }
