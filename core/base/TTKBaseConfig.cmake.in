@@ -1,0 +1,21 @@
+include(CMakeFindDependencyMacro)
+
+# Boost is a required dependency
+find_dependency(Boost REQUIRED COMPONENTS system)
+
+# Was TTK built with zlib?
+if (@TTK_ENABLE_ZLIB@)
+	find_dependency(ZLIB REQUIRED)
+endif()
+
+if (@TTK_ENABLE_OPENMP@)
+	find_dependency(OpenMP REQUIRED)
+endif()
+
+if (@TTK_ENABLE_MPI@)
+    find_package(MPI REQUIRED)
+endif()
+
+# Include the actual targets for TTK Base
+include("${CMAKE_CURRENT_LIST_DIR}/TTKBaseTargets.cmake")
+
