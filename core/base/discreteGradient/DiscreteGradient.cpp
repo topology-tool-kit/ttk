@@ -214,24 +214,38 @@ SimplexId DiscreteGradient::getPairedCell(const Cell& cell, bool isReverse) cons
   if(dimensionality_==2){
     switch(cell.dim_){
       case 0:
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
         inputTriangulation_->getVertexEdge(cell.id_, gradient_[0][0][cell.id_], id);
-        return id;
+#else
+        return gradient_[0][0][cell.id_];
+#endif
         break;
 
       case 1:
         if(isReverse){
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
           inputTriangulation_->getEdgeVertex(cell.id_, gradient_[0][1][cell.id_], id);
           return id;
+#else
+          return gradient_[0][1][cell.id_];
+#endif
         }
 
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
         inputTriangulation_->getEdgeStar(cell.id_, gradient_[1][1][cell.id_], id);
-        return id;
+#else
+        return gradient_[1][1][cell.id_];
+#endif
         break;
 
       case 2:
         if(isReverse){
-          inputTriangulation_->getCellEdge(cell.id_, gradient_[1][2][cell.id_], id);
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
+          inputTriangulation_->getCellEdge(cell.id_, gradient_[2][2][cell.id_], id);
           return id;
+#else
+          return gradient_[1][2][cell.id_];
+#endif
         }
         break;
     }
@@ -239,40 +253,61 @@ SimplexId DiscreteGradient::getPairedCell(const Cell& cell, bool isReverse) cons
   else if(dimensionality_==3){
     switch(cell.dim_){
       case 0:
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
         inputTriangulation_->getVertexEdge(cell.id_, gradient_[0][0][cell.id_], id);
-        return id;
+#else
+        return gradient_[0][0][cell.id_];
+#endif
         break;
 
       case 1:
         if(isReverse){
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
           inputTriangulation_->getEdgeVertex(cell.id_, gradient_[0][1][cell.id_], id);
           return id;
+#else
+          return gradient_[0][1][cell.id_];
+#endif
         }
 
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
         inputTriangulation_->getEdgeTriangle(cell.id_, gradient_[1][1][cell.id_], id);
-        return id;
+#else
+        return gradient_[1][1][cell.id_];
+#endif
         break;
 
       case 2:
         if(isReverse){
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
           inputTriangulation_->getTriangleEdge(cell.id_, gradient_[1][2][cell.id_], id);
           return id;
+#else
+          return gradient_[1][2][cell.id_];
+#endif
         }
 
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
         inputTriangulation_->getTriangleStar(cell.id_, gradient_[2][2][cell.id_], id);
-        return id;
+#else
+        return gradient_[2][2][cell.id_];
+#endif
         break;
 
       case 3:
         if(isReverse){
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
           inputTriangulation_->getCellTriangle(cell.id_, gradient_[2][3][cell.id_], id);
           return id;
+#else
+          return gradient_[2][3][cell.id_];
+#endif
         }
         break;
     }
   }
 
-  return -1;
+  return id;
 }
 
 int DiscreteGradient::getCriticalPoints(vector<Cell>& criticalPoints) const{
@@ -746,6 +781,7 @@ int DiscreteGradient::reverseAscendingPath(const vector<Cell>& vpath){
       const SimplexId edgeId=vpath[i].id_;
       const SimplexId triangleId=vpath[i+1].id_;
 
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
       for(int k=0; k<3; ++k){
         SimplexId tmp;
         inputTriangulation_->getCellEdge(triangleId, k, tmp);
@@ -762,6 +798,10 @@ int DiscreteGradient::reverseAscendingPath(const vector<Cell>& vpath){
           break;
         }
       }
+#else
+      gradient_[1][2][triangleId]=edgeId;
+      gradient_[1][1][edgeId]=triangleId;
+#endif
     }
   }
   else if(dimensionality_==3){
@@ -771,6 +811,7 @@ int DiscreteGradient::reverseAscendingPath(const vector<Cell>& vpath){
       const SimplexId triangleId=vpath[i].id_;
       const SimplexId tetraId=vpath[i+1].id_;
 
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
       for(int k=0; k<4; ++k){
         SimplexId tmp;
         inputTriangulation_->getCellTriangle(tetraId, k, tmp);
@@ -787,6 +828,10 @@ int DiscreteGradient::reverseAscendingPath(const vector<Cell>& vpath){
           break;
         }
       }
+#else
+      gradient_[2][3][tetraId]=triangleId;
+      gradient_[2][2][triangleId]=tetraId;
+#endif
     }
   }
 
@@ -801,6 +846,7 @@ int DiscreteGradient::reverseAscendingPathOnWall(const vector<Cell>& vpath){
       const SimplexId edgeId=vpath[i].id_;
       const SimplexId triangleId=vpath[i+1].id_;
 
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
       for(int k=0; k<3; ++k){
         SimplexId tmp;
         inputTriangulation_->getTriangleEdge(triangleId, k, tmp);
@@ -817,6 +863,10 @@ int DiscreteGradient::reverseAscendingPathOnWall(const vector<Cell>& vpath){
           break;
         }
       }
+#else
+      gradient_[1][2][triangleId]=edgeId;
+      gradient_[1][1][edgeId]=triangleId;
+#endif
     }
   }
 
@@ -831,6 +881,7 @@ int DiscreteGradient::reverseDescendingPathOnWall(const vector<Cell>& vpath){
       const SimplexId triangleId=vpath[i].id_;
       const SimplexId edgeId=vpath[i+1].id_;
 
+#ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
       for(int k=0; k<3; ++k){
         SimplexId tmp;
         inputTriangulation_->getTriangleEdge(triangleId, k, tmp);
@@ -847,6 +898,10 @@ int DiscreteGradient::reverseDescendingPathOnWall(const vector<Cell>& vpath){
           break;
         }
       }
+#else
+      gradient_[1][1][edgeId]=triangleId;
+      gradient_[1][2][triangleId]=edgeId;
+#endif
     }
   }
 
