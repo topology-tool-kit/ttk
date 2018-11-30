@@ -241,7 +241,7 @@ SimplexId DiscreteGradient::getPairedCell(const Cell& cell, bool isReverse) cons
       case 2:
         if(isReverse){
 #ifdef TTK_ENABLE_DG_OPTIMIZE_MEMORY
-          inputTriangulation_->getCellEdge(cell.id_, gradient_[2][2][cell.id_], id);
+          inputTriangulation_->getCellEdge(cell.id_, gradient_[1][2][cell.id_], id);
           return id;
 #else
           return gradient_[1][2][cell.id_];
