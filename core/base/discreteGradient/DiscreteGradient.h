@@ -452,7 +452,7 @@ given dimension.
       int assignGradient(const int alphaDim,
                          const dataType *const scalars,
                          const idType *const offsets,
-                         std::vector<std::vector<SimplexId>> &gradient) const;
+                         std::vector<std::vector<char>> &gradient) const;
 
       /**
        * Body of AssignGradient2 algorithm from "Parallel Computation of 3D 
@@ -465,7 +465,7 @@ unpaired cells.
       int assignGradient2(const int alphaDim,
                           const dataType *const scalars,
                           const idType *const offsets,
-                          std::vector<std::vector<SimplexId>> &gradient) const;
+                          std::vector<std::vector<char>> &gradient) const;
 
       /**
        * Brand new pass on the discrete gradient designed specifically for this 
@@ -477,7 +477,7 @@ triangulation only).
       int assignGradient3(const int alphaDim,
                           const dataType *const scalars,
                           const idType *const offsets,
-                          std::vector<std::vector<SimplexId>> &gradient) const;
+                          std::vector<std::vector<char>> &gradient) const;
 
       /**
        * Compute the initial gradient field of the input scalar function on the 
@@ -891,7 +891,7 @@ discrete gradient, false otherwise.
        * Return the identifier of the cell paired to the cell given by the user 
 in the gradient.
        */
-      int getPairedCell(const Cell &cell, bool isReverse = false) const;
+      SimplexId getPairedCell(const Cell &cell, bool isReverse = false) const;
 
       /**
        * Get the output critical points as a STL vector of cells.
@@ -1034,7 +1034,7 @@ tetra identifier.
 
       int dimensionality_;
       SimplexId numberOfVertices_;
-      std::vector<std::vector<std::vector<SimplexId>>> gradient_;
+      std::vector<std::vector<std::vector<char>>> gradient_;
       std::vector<SimplexId> dmtMax2PL_;
       std::vector<SimplexId> dmt1Saddle2PL_;
       std::vector<SimplexId> dmt2Saddle2PL_;

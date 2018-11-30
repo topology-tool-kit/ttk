@@ -182,7 +182,7 @@ template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient(const int alphaDim,
     const dataType* const scalars,
     const idType* const offsets,
-    std::vector<std::vector<SimplexId>>& gradient) const{
+    std::vector<std::vector<char>>& gradient) const{
   const int betaDim=alphaDim+1;
   const SimplexId alphaNumber=gradient[alphaDim].size();
 
@@ -196,9 +196,9 @@ int DiscreteGradient::assignGradient(const int alphaDim,
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(SimplexId alpha=0; alpha<alphaNumber; ++alpha){
-      SimplexId gamma{-1};
       if (alphaDim == 0) {
         SimplexId minEdgeId{-1};
+        char minEdgeLocalId{-1};
         SimplexId minVertexId{-1};
         const SimplexId edgeNumber = inputTriangulation_->getVertexEdgeNumber(alpha);
         for (SimplexId k=0; k<edgeNumber; ++k) {
@@ -213,15 +213,31 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           if(sosLowerThan(vertexId, alpha)){
             if(minVertexId==-1){
               minEdgeId = edgeId;
+              minEdgeLocalId = k;
               minVertexId = vertexId;
             }
             else if(sosLowerThan(vertexId,minVertexId)){
               minEdgeId = edgeId;
+              minEdgeLocalId = k;
               minVertexId = vertexId;
             }
           }
         }
-        gamma = minEdgeId;
+        if (minEdgeId != -1) {
+          gradient[alphaDim][alpha] = minEdgeLocalId;
+
+          char minAlphaLocalId{-1};
+          for(SimplexId k=0; k<2; ++k){
+            SimplexId tmp;
+            inputTriangulation_->getEdgeVertex(minEdgeId, k, tmp);
+            if(tmp == alpha){
+              minAlphaLocalId = k;
+              break;
+            }
+          }
+
+          gradient[betaDim][minEdgeId] = minAlphaLocalId;
+        }
       } else if (alphaDim == 1) {
         SimplexId v0;
         SimplexId v1;
@@ -229,6 +245,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
         inputTriangulation_->getEdgeVertex(alpha, 1, v1);
 
         SimplexId minStarId{-1};
+        char minStarLocalId{-1};
         SimplexId minVertexId{-1};
         const SimplexId starNumber = inputTriangulation_->getEdgeStarNumber(alpha);
         for (SimplexId k = 0; k < starNumber; ++k) {
@@ -245,20 +262,31 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           if (sosLowerThan(vertexId,v0) and sosLowerThan(vertexId,v1)){
             if (minVertexId == -1) {
               minStarId = starId;
+              minStarLocalId = k;
               minVertexId = vertexId;
             }
             else if(sosLowerThan(vertexId,minVertexId)){
               minStarId = starId;
+              minStarLocalId = k;
               minVertexId = vertexId;
             }
           }
         }
-        gamma = minStarId;
-      }
+        if (minStarId != -1) {
+          gradient[alphaDim][alpha] = minStarLocalId;
 
-      if (gamma != -1) {
-        gradient[alphaDim][alpha] = gamma;
-        gradient[betaDim][gamma] = alpha;
+          char minAlphaLocalId{-1};
+          for(SimplexId k=0; k<3; ++k){
+            SimplexId tmp;
+            inputTriangulation_->getCellEdge(minStarId, k, tmp);
+            if(tmp == alpha){
+              minAlphaLocalId = k;
+              break;
+            }
+          }
+
+          gradient[betaDim][minStarId] = minAlphaLocalId;
+        }
       }
     }
   }
@@ -267,9 +295,9 @@ int DiscreteGradient::assignGradient(const int alphaDim,
 # pragma omp parallel for num_threads(threadNumber_)
 #endif
     for (SimplexId alpha = 0; alpha < alphaNumber; ++alpha) {
-      SimplexId gamma{-1};
       if (alphaDim == 0) {
         SimplexId minEdgeId{-1};
+        char minEdgeLocalId{-1};
         SimplexId minVertexId{-1};
         const SimplexId edgeNumber = inputTriangulation_->getVertexEdgeNumber(alpha);
         for (SimplexId k = 0; k < edgeNumber; ++k) {
@@ -284,15 +312,31 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           if (sosLowerThan(vertexId, alpha)) {
             if(minVertexId==-1){
               minEdgeId = edgeId;
+              minEdgeLocalId = k;
               minVertexId = vertexId;
             }
             else if(sosLowerThan(vertexId,minVertexId)){
               minEdgeId = edgeId;
+              minEdgeLocalId = k;
               minVertexId = vertexId;
             }
           }
         }
-        gamma = minEdgeId;
+        if (minEdgeId != -1) {
+          gradient[alphaDim][alpha] = minEdgeLocalId;
+
+          char minAlphaLocalId{-1};
+          for(SimplexId k=0; k<2; ++k){
+            SimplexId tmp;
+            inputTriangulation_->getEdgeVertex(minEdgeId, k, tmp);
+            if(tmp == alpha){
+              minAlphaLocalId = k;
+              break;
+            }
+          }
+
+          gradient[betaDim][minEdgeId] = minAlphaLocalId;
+        }
       } else if (alphaDim == 1) {
         SimplexId v0;
         SimplexId v1;
@@ -300,6 +344,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
         inputTriangulation_->getEdgeVertex(alpha, 1, v1);
 
         SimplexId minTriangleId{-1};
+        char minTriangleLocalId{-1};
         SimplexId minVertexId{-1};
         const SimplexId triangleNumber = inputTriangulation_->getEdgeTriangleNumber(alpha);
         for (SimplexId k = 0; k < triangleNumber; ++k) {
@@ -317,15 +362,31 @@ int DiscreteGradient::assignGradient(const int alphaDim,
               sosLowerThan(vertexId,v1)) {
             if (minVertexId == -1) {
               minTriangleId = starId;
+              minTriangleLocalId = k;
               minVertexId = vertexId;
             }
             else if(sosLowerThan(vertexId,minVertexId)){
               minTriangleId = starId;
+              minTriangleLocalId = k;
               minVertexId = vertexId;
             }
           }
         }
-        gamma = minTriangleId;
+        if (minTriangleId != -1) {
+          gradient[alphaDim][alpha] = minTriangleLocalId;
+
+          char minAlphaLocalId{-1};
+          for(SimplexId k=0; k<3; ++k){
+            SimplexId tmp;
+            inputTriangulation_->getTriangleEdge(minTriangleId, k, tmp);
+            if(tmp == alpha){
+              minAlphaLocalId = k;
+              break;
+            }
+          }
+
+          gradient[betaDim][minTriangleId] = minAlphaLocalId;
+        }
       } else if (alphaDim == 2) {
         SimplexId v0;
         SimplexId v1;
@@ -335,6 +396,7 @@ int DiscreteGradient::assignGradient(const int alphaDim,
         inputTriangulation_->getTriangleVertex(alpha, 2, v2);
 
         SimplexId minStarId{-1};
+        char minStarLocalId{-1};
         SimplexId minVertexId{-1};
         const SimplexId starNumber = inputTriangulation_->getTriangleStarNumber(alpha);
         for (SimplexId k = 0; k < starNumber; ++k) {
@@ -355,19 +417,31 @@ int DiscreteGradient::assignGradient(const int alphaDim,
               sosLowerThan(vertexId,v2)) {
             if (minVertexId == -1) {
               minStarId = starId;
+              minStarLocalId = k;
               minVertexId = vertexId;
             }
             else if(sosLowerThan(vertexId,minVertexId)){
               minStarId = starId;
+              minStarLocalId = k;
               minVertexId = vertexId;
             }
           }
         }
-        gamma = minStarId;
-      }
-      if (gamma != -1) {
-        gradient[alphaDim][alpha] = gamma;
-        gradient[betaDim][gamma] = alpha;
+        if (minStarId != -1) {
+          gradient[alphaDim][alpha] = minStarLocalId;
+
+          char minAlphaLocalId{-1};
+          for(SimplexId k=0; k<3; ++k){
+            SimplexId tmp;
+            inputTriangulation_->getTriangleEdge(minStarId, k, tmp);
+            if(tmp == alpha){
+              minAlphaLocalId = k;
+              break;
+            }
+          }
+
+          gradient[betaDim][minStarId] = minAlphaLocalId;
+        }
       }
     }
   }
@@ -379,7 +453,7 @@ template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient2(const int alphaDim,
     const dataType* const scalars,
     const idType* const offsets,
-    std::vector<std::vector<SimplexId>>& gradient) const{
+    std::vector<std::vector<char>>& gradient) const{
   if(alphaDim>0){
     const int betaDim=alphaDim+1;
     const SimplexId alphaNumber=gradient[alphaDim].size();
@@ -395,15 +469,13 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
 #endif
       for(SimplexId alpha=0; alpha<alphaNumber; ++alpha){
         if(!isCellCritical(alphaDim,alpha)) continue;
-
-        SimplexId gamma{-1};
-
         SimplexId v0;
         SimplexId v1;
         inputTriangulation_->getEdgeVertex(alpha, 0, v0);
         inputTriangulation_->getEdgeVertex(alpha, 1, v1);
 
         SimplexId minStarId{-1};
+        char minStarLocalId{-1};
         SimplexId minVertexId{-1};
         const SimplexId starNumber=inputTriangulation_->getEdgeStarNumber(alpha);
         for(SimplexId k=0; k<starNumber; ++k){
@@ -423,20 +495,31 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
                 (sosLowerThan(vertexId,v1) and sosLowerThan(v0, vertexId))){
               if (minVertexId == -1) {
                 minStarId = starId;
+                minStarLocalId = k;
                 minVertexId = vertexId;
               }
               else if(sosLowerThan(vertexId,minVertexId)){
                 minStarId = starId;
+                minStarLocalId = k;
                 minVertexId = vertexId;
               }
             }
           }
         }
-        gamma=minStarId;
+        if (minStarId != -1) {
+          gradient[alphaDim][alpha] = minStarLocalId;
 
-        if(gamma!=-1){
-          gradient[alphaDim][alpha]=gamma;
-          gradient[betaDim][gamma]=alpha;
+          char minAlphaLocalId{-1};
+          for(SimplexId k=0; k<3; ++k){
+            SimplexId tmp;
+            inputTriangulation_->getCellEdge(minStarId, k, tmp);
+            if(tmp == alpha){
+              minAlphaLocalId = k;
+              break;
+            }
+          }
+
+          gradient[betaDim][minStarId] = minAlphaLocalId;
         }
       }
     }
@@ -447,8 +530,6 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
       for(SimplexId alpha=0; alpha<alphaNumber; ++alpha){
         if(!isCellCritical(alphaDim,alpha)) continue;
 
-        SimplexId gamma{-1};
-
         if(alphaDim==1){
           SimplexId v0;
           SimplexId v1;
@@ -456,6 +537,7 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
           inputTriangulation_->getEdgeVertex(alpha, 1, v1);
 
           SimplexId minTriangleId{-1};
+          char minTriangleLocalId{-1};
           SimplexId minVertexId{-1};
           const SimplexId triangleNumber=inputTriangulation_->getEdgeTriangleNumber(alpha);
           for(SimplexId k=0; k<triangleNumber; ++k){
@@ -475,16 +557,32 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
                   (sosLowerThan(vertexId,v1) and sosLowerThan(v0, vertexId))){
                 if (minVertexId == -1) {
                   minTriangleId = triangleId;
+                  minTriangleLocalId = k;
                   minVertexId = vertexId;
                 }
                 else if(sosLowerThan(vertexId,minVertexId)){
                   minTriangleId = triangleId;
+                  minTriangleLocalId = k;
                   minVertexId = vertexId;
                 }
               }
             }
           }
-          gamma=minTriangleId;
+          if (minTriangleId != -1) {
+            gradient[alphaDim][alpha] = minTriangleLocalId;
+
+            char minAlphaLocalId{-1};
+            for(SimplexId k=0; k<3; ++k){
+              SimplexId tmp;
+              inputTriangulation_->getTriangleEdge(minTriangleId, k, tmp);
+              if(tmp == alpha){
+                minAlphaLocalId = k;
+                break;
+              }
+            }
+
+            gradient[betaDim][minTriangleId] = minAlphaLocalId;
+          }
         }
         else if(alphaDim==2){
           SimplexId v0;
@@ -509,6 +607,7 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
             vb=v2;
 
           SimplexId minStarId{-1};
+          char minStarLocalId{-1};
           SimplexId minVertexId{-1};
           const SimplexId starNumber=inputTriangulation_->getTriangleStarNumber(alpha);
           for(SimplexId k=0; k<starNumber; ++k){
@@ -528,21 +627,32 @@ int DiscreteGradient::assignGradient2(const int alphaDim,
               if(sosLowerThan(vertexId, vb)){
                 if (minVertexId == -1) {
                   minStarId = starId;
+                  minStarLocalId = k;
                   minVertexId = vertexId;
                 }
                 else if(sosLowerThan(vertexId,minVertexId)){
                   minStarId = starId;
+                  minStarLocalId = k;
                   minVertexId = vertexId;
                 }
               }
             }
           }
-          gamma=minStarId;
-        }
+          if (minStarId != -1) {
+            gradient[alphaDim][alpha] = minStarLocalId;
 
-        if(gamma!=-1){
-          gradient[alphaDim][alpha]=gamma;
-          gradient[betaDim][gamma]=alpha;
+            char minAlphaLocalId{-1};
+            for(SimplexId k=0; k<3; ++k){
+              SimplexId tmp;
+              inputTriangulation_->getTriangleEdge(minStarId, k, tmp);
+              if(tmp == alpha){
+                minAlphaLocalId = k;
+                break;
+              }
+            }
+
+            gradient[betaDim][minStarId] = minAlphaLocalId;
+          }
         }
       }
     }
@@ -555,7 +665,7 @@ template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient3(const int alphaDim,
     const dataType* const scalars,
     const idType* const offsets,
-    std::vector<std::vector<SimplexId>>& gradient) const{
+    std::vector<std::vector<char>>& gradient) const{
   if(alphaDim>0){
     const int betaDim=alphaDim+1;
     const SimplexId alphaNumber=gradient[alphaDim].size();
@@ -571,8 +681,6 @@ int DiscreteGradient::assignGradient3(const int alphaDim,
 #endif
       for(SimplexId alpha=0; alpha<alphaNumber; ++alpha){
         if(!isCellCritical(alphaDim,alpha)) continue;
-
-        SimplexId gamma{-1};
 
         SimplexId v0;
         SimplexId v1;
@@ -590,6 +698,7 @@ int DiscreteGradient::assignGradient3(const int alphaDim,
           vmax=v2;
 
         SimplexId minStarId{-1};
+        char minStarLocalId{-1};
         SimplexId minVertexId{-1};
         const SimplexId starNumber=inputTriangulation_->getTriangleStarNumber(alpha);
         for(SimplexId k=0; k<starNumber; ++k){
@@ -609,20 +718,31 @@ int DiscreteGradient::assignGradient3(const int alphaDim,
             if(sosLowerThan(vertexId,vmax)) {
               if (minVertexId == -1) {
                 minStarId = starId;
+                minStarLocalId = k;
                 minVertexId = vertexId;
               }
               else if(sosLowerThan(vertexId,minVertexId)){
                 minStarId = starId;
+                minStarLocalId = k;
                 minVertexId = vertexId;
               }
             }
           }
         }
-        gamma=minStarId;
+        if (minStarId != -1) {
+          gradient[alphaDim][alpha] = minStarLocalId;
 
-        if(gamma!=-1){
-          gradient[alphaDim][alpha]=gamma;
-          gradient[betaDim][gamma]=alpha;
+          char minAlphaLocalId{-1};
+          for(SimplexId k=0; k<3; ++k){
+            SimplexId tmp;
+            inputTriangulation_->getTriangleEdge(minStarId, k, tmp);
+            if(tmp == alpha){
+              minAlphaLocalId = k;
+              break;
+            }
+          }
+
+          gradient[betaDim][minStarId] = minAlphaLocalId;
         }
       }
     }
