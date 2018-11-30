@@ -431,9 +431,9 @@ int DiscreteGradient::assignGradient(const int alphaDim,
           gradient[alphaDim][alpha] = minStarLocalId;
 
           char minAlphaLocalId{-1};
-          for(SimplexId k=0; k<3; ++k){
+          for(SimplexId k=0; k<4; ++k){
             SimplexId tmp;
-            inputTriangulation_->getTriangleEdge(minStarId, k, tmp);
+            inputTriangulation_->getCellTriangle(minStarId, k, tmp);
             if(tmp == alpha){
               minAlphaLocalId = k;
               break;
