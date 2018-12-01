@@ -46,8 +46,7 @@ function(ttk_set_compile_options library)
 
     if (TTK_ENABLE_ZFP)
         target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZFP)
-        target_include_directories(${library} PUBLIC ${ZFP_INCLUDE_DIR})
-        target_link_libraries(${library} PUBLIC ${ZFP_LIBRARY})
+        target_link_libraries(${library} PUBLIC zfp::zfp)
     endif()
 
     if (TTK_ENABLE_ZLIB)
@@ -235,40 +234,12 @@ else()
   message(STATUS "SQLITE3 not found, disabling SQLITE3 support in TTK.")
 endif()
 
-# Same here, should be its own findpackage file!
-# START_FINDZFP
-find_path(ZFP_INCLUDE_DIR zfp.h
-    PATHS
-    $ENV{ZFP_ROOT_DIR}/include
-    /opt/zfp/include)
-set(ZFP_NAMES ${ZFP_NAMES} zfp)
-find_library(ZFP_LIBRARY
-    NAMES ${ZFP_NAMES}
-    PATHS $ENV{ZFP_ROOT_DIR}/lib /opt/zfp/lib)
-if (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
-  set(ZFP_LIBRARIES ${ZFP_LIBRARY})
-  set(ZFP_FOUND "YES")
-else (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
-  set(ZFP_FOUND "NO")
-endif (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
-if (ZFP_FOUND)
-  if (NOT ZFP_FIND_QUIETLY)
-    message(STATUS "Found ZFP: ${ZFP_LIBRARIES}")
-  endif (NOT ZFP_FIND_QUIETLY)
-else (ZFP_FOUND)
-  if (ZFP_FIND_REQUIRED)
-    message(FATAL_ERROR "Could not find ZFP library...")
-  endif (ZFP_FIND_REQUIRED)
-endif (ZFP_FOUND)
-mark_as_advanced(
-    ZFP_LIBRARY
-    ZFP_INCLUDE_DIR)
-# END_FINDZFP
-if (ZFP_FOUND)
-  option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
-else()
+find_package(ZFP)
+if(NOT ZFP_INCLUDE_DIRS)
   option(TTK_ENABLE_ZFP "Enable ZFP support" OFF)
   message(STATUS "ZFP not found, disabling ZFP support in TTK.")
+else()
+  option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
 endif()
 
 if (NOT APPLE)

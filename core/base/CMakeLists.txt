@@ -88,9 +88,8 @@ function(ttk_add_base_template_library library)
 	endif()
 
     if (TTK_ENABLE_ZFP)
-		target_compile_definitions(${library} INTERFACE TTK_ENABLE_ZFP)
-		target_include_directories(${library} INTERFACE ${ZFP_INCLUDE_DIR})
-	endif()
+      target_link_libraries(${library} INTERFACE zfp::zfp)
+	  endif()
 
     if (TTK_ENABLE_SQLITE3)
 		target_compile_definitions(${library} INTERFACE TTK_ENABLE_SQLITE3)
