@@ -123,7 +123,18 @@ namespace ttk{
                 const size_t& nInputCells,
 
                 const dataType* inputPointData,
-                dataType* outputPointData,
+                      dataType* outputPointData,
+
+                const bool& useQuadraticCells,
+                const size_t& nSubdivisions=0
+            ) const;
+
+            // Map input point data to output point data
+            template <typename idType, typename dataType> int mapInputCellDataToOutputCellData(
+                const size_t& nInputCells,
+
+                const dataType* inputCellData,
+                      dataType* outputCellData,
 
                 const bool& useQuadraticCells,
                 const size_t& nSubdivisions=0
@@ -162,23 +173,35 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
         dMsg(cout, msg.str(), infoMsg);
     }
 
-    auto getInputPointData = [](
-        const size_t& pointIndex,
-        const float* inputPoints,
-        const sizeType* inputPointSizes,
-        const float& sizeScale,
-        float data[4]
-    ) {
-        size_t i= pointIndex*3;
-        data[0] = inputPoints[i++];
-        data[1] = inputPoints[i++];
-        data[2] = inputPoints[i];
+    auto getInputPointData = inputPointSizes!=nullptr
+        ? [](
+            const size_t& pointIndex,
+            const float* inputPoints,
+            const sizeType* inputPointSizes,
+            const float& sizeScale,
+            float data[4]
+        ) {
+            size_t i= pointIndex*3;
+            data[0] = inputPoints[i++];
+            data[1] = inputPoints[i++];
+            data[2] = inputPoints[i];
 
-        data[3] = inputPointSizes!=nullptr
-            ? ((float) inputPointSizes[pointIndex]) * sizeScale
-            : sizeScale;
-    };
+            data[3] = ((float) inputPointSizes[pointIndex]) * sizeScale;
+        }
+        : [](
+            const size_t& pointIndex,
+            const float* inputPoints,
+            const sizeType* inputPointSizes,
+            const float& sizeScale,
+            float data[4]
+        ) {
+            size_t i= pointIndex*3;
+            data[0] = inputPoints[i++];
+            data[1] = inputPoints[i++];
+            data[2] = inputPoints[i];
 
+            data[3] = sizeScale;
+        };
 
     // -------------------------------------------------------------------------
     // Compute Output Point Locations
@@ -412,20 +435,35 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute2(
         dMsg(cout, msg.str(), infoMsg);
     }
 
-    auto getInputPointData = [](
-        const size_t pointIndex,
-        const float* inputPoints,
-        const sizeType* inputPointSizes,
-        const float sizeScale,
-        float data[4]
-    ) {
-        size_t i= pointIndex*3;
-        data[0] = inputPoints[i++];
-        data[1] = inputPoints[i++];
-        data[2] = inputPoints[i];
+    auto getInputPointData = inputPointSizes!=nullptr
+        ? [](
+            const size_t& pointIndex,
+            const float* inputPoints,
+            const sizeType* inputPointSizes,
+            const float& sizeScale,
+            float data[4]
+        ) {
+            size_t i= pointIndex*3;
+            data[0] = inputPoints[i++];
+            data[1] = inputPoints[i++];
+            data[2] = inputPoints[i];
 
-        data[3] = ((float) inputPointSizes[pointIndex]) * sizeScale;
-    };
+            data[3] = ((float) inputPointSizes[pointIndex]) * sizeScale;
+        }
+        : [](
+            const size_t& pointIndex,
+            const float* inputPoints,
+            const sizeType* inputPointSizes,
+            const float& sizeScale,
+            float data[4]
+        ) {
+            size_t i= pointIndex*3;
+            data[0] = inputPoints[i++];
+            data[1] = inputPoints[i++];
+            data[2] = inputPoints[i];
+
+            data[3] = sizeScale;
+        };
 
     size_t subdivisionOffset = nInputPoints*2;
     size_t nSubdivisionPoints = nSubdivisions*2;
@@ -604,7 +642,7 @@ template <typename idType, typename dataType> int ttk::MeshGraph::mapInputPointD
     const size_t& nInputCells,
 
     const dataType* inputPointData,
-    dataType* outputPointData,
+          dataType* outputPointData,
 
     const bool& useQuadraticCells,
     const size_t& nSubdivisions
@@ -624,7 +662,7 @@ template <typename idType, typename dataType> int ttk::MeshGraph::mapInputPointD
 
         size_t edgePointOffset = nInputPoints*3;
 
-        // Iterate over input cells and generate new points
+        // Iterate over input cells and assign point data of intermediate points
         #ifdef TTK_ENABLE_OPENMP
         #pragma omp parallel for num_threads(threadNumber_)
         #endif
@@ -656,11 +694,82 @@ template <typename idType, typename dataType> int ttk::MeshGraph::mapInputPointD
             outputPointData[b1m1] = outputPointData[m0b0];
         }
     } else {
-        //TODO
+
+        // Corners
+        #ifdef TTK_ENABLE_OPENMP
+        #pragma omp parallel for num_threads(threadNumber_)
+        #endif
+        for(size_t i=0; i<nInputPoints; i++){
+            size_t offset = i*2;
+            outputPointData[offset  ] = inputPointData[i];
+            outputPointData[offset+1] = inputPointData[i];
+        }
+
+        // Intermediate Points
+        size_t subdivisionOffset = nInputPoints*2;
+        size_t nSubdivisionPoints = nSubdivisions*2;
+
+        dataType nSubdivisionsP1 = ((dataType)nSubdivisions)+1;
+
+        #ifdef TTK_ENABLE_OPENMP
+        #pragma omp parallel for num_threads(threadNumber_)
+        #endif
+        for(size_t i=0; i<nInputCells; i++){
+            size_t q = i*3+1;
+            idType c0 = inputTopology[q++]*2;
+            idType c3 = inputTopology[q]*2;
+
+            dataType c0V = inputPointData[c0];
+            dataType c3V = inputPointData[c3];
+            dataType cD = (c3V-c0V)/nSubdivisionsP1;
+
+            size_t temp = subdivisionOffset + i*nSubdivisionPoints;
+
+            for(size_t j=0; j<nSubdivisions; j++){
+                size_t q2 = temp + j*2;
+
+                outputPointData[ q2   ] = cD;
+                outputPointData[ q2+1 ] = cD;
+
+                cD+=cD;
+            }
+        }
     }
 
     return 1;
 };
 
+// =============================================================================
+// Map input cell data to output cell data
+// =============================================================================
+template <typename idType, typename dataType> int ttk::MeshGraph::mapInputCellDataToOutputCellData(
+    const size_t& nInputCells,
 
+    const dataType* inputCellData,
+          dataType* outputCellData,
+
+    const bool& useQuadraticCells,
+    const size_t& nSubdivisions
+) const {
+
+    if(useQuadraticCells){
+        #ifdef TTK_ENABLE_OPENMP
+        #pragma omp parallel for num_threads(threadNumber_)
+        #endif
+        for(size_t i=0; i<nInputCells; i++){
+            size_t offset = i*2;
+            outputCellData[offset  ] = inputCellData[i];
+            outputCellData[offset+1] = inputCellData[i];
+        }
+    } else {
+        #ifdef TTK_ENABLE_OPENMP
+        #pragma omp parallel for num_threads(threadNumber_)
+        #endif
+        for(size_t i=0; i<nInputCells; i++){
+            outputCellData[i] = inputCellData[i];
+        }
+    }
+
+    return 1;
+};
 

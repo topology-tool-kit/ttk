@@ -3,6 +3,7 @@
 #include <vtkTable.h>
 #include <vtkFieldData.h>
 #include <vtkDoubleArray.h>
+#include <vtkUnsignedLongLongArray.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
 using namespace std;
@@ -66,7 +67,7 @@ int ttkForEachRow::RequestData(
     size_t n = inputTable->GetNumberOfColumns();
     for(size_t i=0; i<n; i++){
         auto column = inputTable->GetColumn(i);
-        auto newColumn = vtkAbstractArray::CreateArray( column->GetDataType() );
+        auto newColumn = vtkSmartPointer<vtkAbstractArray>::Take( column->NewInstance() );
         newColumn->SetName( column->GetName() );
         newColumn->SetNumberOfTuples( 1 );
         newColumn->SetVariantValue(0, column->GetVariantValue( index ) );

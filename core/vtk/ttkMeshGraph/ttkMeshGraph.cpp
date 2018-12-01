@@ -4,6 +4,7 @@
 #include <vtkAbstractArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkPointData.h>
+#include <vtkCellData.h>
 #include <vtkDataSetTriangleFilter.h>
 
 using namespace std;
@@ -27,8 +28,6 @@ int ttkMeshGraph::RequestData(
         dMsg(cout, msg.str(), timeMsg);
     }
 
-    this->SetUseQuadraticCells(true);
-
     // Set Wrapper
     meshGraph.setWrapper(this);
 
@@ -50,6 +49,7 @@ int ttkMeshGraph::RequestData(
     auto outputVertices = (float*) outputPoints->GetVoidPointer(0);
 
     // Output Topology
+    auto nOutputCells = meshGraph.computeNumberOfOutputCells( nInputCells, this->GetUseQuadraticCells() );
     auto outputTopologySize = meshGraph.computeOutputTopologySize(nInputCells, this->GetUseQuadraticCells(), this->GetSubdivisions());
     auto outputCells = vtkSmartPointer<vtkIdTypeArray>::New();
     outputCells->SetNumberOfValues( outputTopologySize );
@@ -118,7 +118,7 @@ int ttkMeshGraph::RequestData(
     meshedGraph->SetPoints( outputPoints );
     auto outputCellArray = vtkSmartPointer<vtkCellArray>::New();
     outputCellArray->SetCells(
-        meshGraph.computeNumberOfOutputCells( nInputCells, this->GetUseQuadraticCells() ),
+        nOutputCells,
         outputCells
     );
     meshedGraph->SetCells(
@@ -134,7 +134,6 @@ int ttkMeshGraph::RequestData(
         for(int i=0; i<iPointData->GetNumberOfArrays(); i++){
             auto iArray = iPointData->GetArray(i);
             if(iArray->GetNumberOfComponents()>1) continue;
-            if(!this->GetUseQuadraticCells()) continue;
 
             auto oArray = vtkDataArray::CreateDataArray( iArray->GetDataType() );
             oArray->SetName( iArray->GetName() );
@@ -158,7 +157,37 @@ int ttkMeshGraph::RequestData(
 
             oPointData->AddArray( oArray );
         }
+    }
 
+    // Copy input cell data to output cell data
+    {
+        auto iCellData = input->GetCellData();
+        auto oCellData = meshedGraph->GetCellData();
+
+        for(int i=0; i<iCellData->GetNumberOfArrays(); i++){
+            auto iArray = iCellData->GetArray(i);
+            if(iArray->GetNumberOfComponents()>1) continue;
+
+            auto oArray = vtkSmartPointer<vtkDataArray>::Take( vtkDataArray::CreateDataArray(iArray->GetDataType()) );
+            oArray->SetName( iArray->GetName() );
+            oArray->SetNumberOfValues( nOutputCells );
+
+            switch( iArray->GetDataType() ){
+                ttkTemplateMacro({
+                    status = meshGraph.mapInputCellDataToOutputCellData<vtkIdType TTK_COMMA VTK_TT>(
+                        nInputCells,
+
+                        (VTK_TT*) iArray->GetVoidPointer(0),
+                        (VTK_TT*) oArray->GetVoidPointer(0),
+
+                        this->GetUseQuadraticCells(),
+                        this->GetSubdivisions()
+                    );
+                });
+            }
+
+            oCellData->AddArray( oArray );
+        }
     }
 
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
