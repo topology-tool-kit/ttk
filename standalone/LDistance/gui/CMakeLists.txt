@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(lDistanceGui)
+project(ttkLDistanceGui)
 
 set(CMAKE_SKIP_BUILD_RPATH TRUE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE) 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-add_executable(lDistanceGui main.cpp)
-target_link_libraries(lDistanceGui ttkLDistance ttkUserInterfaceBase)
+add_executable(ttkLDistanceGui main.cpp)
+target_link_libraries(ttkLDistanceGui ttkLDistance ttkUserInterfaceBase)
 
-install(TARGETS lDistanceGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
+install(TARGETS ttkLDistanceGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
 
