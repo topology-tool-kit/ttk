@@ -176,7 +176,7 @@ namespace ttk
          const idVertex        nbVerts = s->getSize();
          const idSuperArc      nbArcs  = getNumberOfArcs();
          std::vector<idVertex> arcSizes(getNumberOfArcs(), 0);
-         std::cout << "build arc segm" << std::endl;
+         std::cout << "build arc segmentation..." << std::endl;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for

@@ -131,15 +131,15 @@ namespace ttk
                      graph_.getArc(currentArc).visit(curVert);
                   }
                }
-               // ensure we will always recover this arc from the upper neighbors
-               for (const idEdge dgNode : upperStarEdges) {
-                  dynGraph(localProp).setCorArc(dgNode, currentArc);
-               }
 
                mergeIn = visit(localProp, currentArc);
 
                lazyUpdatePreimage(localProp, currentArc);
 
+               // ensure we will always recover this arc from the upper neighbors
+               for (const idEdge dgNode : upperStarEdges) {
+                  dynGraph(localProp).setCorArc(dgNode, currentArc);
+               }
             } else {
                // locally apply the lazy one the current growing arc
                for (const idEdge e : lowerStarEdges) {
@@ -776,7 +776,10 @@ namespace ttk
                                                   const idSuperArc       curArc)
       {
          lazy_.delEmplace(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
-         lazy_.addEmplace(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
+         dynGraph(localProp).removeEdge(std::get<0>(oTriangle), std::get<1>(oTriangle));
+         dynGraph(localProp).setCorArc(std::get<0>(oTriangle), curArc);
+         dynGraph(localProp).setCorArc(std::get<1>(oTriangle), curArc);
+        lazy_.addEmplace(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
       }
 
       template <typename ScalarType>
@@ -785,6 +788,9 @@ namespace ttk
                                                const idSuperArc       curArc)
       {
          lazy_.delEmplace(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
+         dynGraph(localProp).removeEdge(std::get<1>(oTriangle), std::get<2>(oTriangle));
+         dynGraph(localProp).setCorArc(std::get<1>(oTriangle), curArc);
+         dynGraph(localProp).setCorArc(std::get<2>(oTriangle), curArc);
       }
 
       template <typename ScalarType>
