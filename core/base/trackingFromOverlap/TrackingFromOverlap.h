@@ -23,12 +23,10 @@
 // base code includes
 #include <Wrapper.h>
 
-
 using namespace std;
 
 typedef unsigned char topologyType;
-typedef unsigned long long indexType;
-#define NO_INDEX numeric_limits<indexType>::max()
+typedef long long idType;
 
 typedef boost::variant<
     double, float, long long, unsigned long long, long, unsigned long, int, unsigned int, short, unsigned short, char, signed char, unsigned char
@@ -45,19 +43,19 @@ struct Node {
     sizeType inDegree;
     sizeType outDegree;
 
-    indexType branchID;
-    indexType maxPredID;
-    indexType maxSuccID;
+    idType branchID;
+    idType maxPredID;
+    idType maxSuccID;
 
     Node(
         sizeType size=0, float x=0, float y=0, float z=0,
         sizeType inDegree=0, sizeType outDegree=0,
-        indexType branchID=numeric_limits<indexType>::max(), indexType maxPredID=NO_INDEX, indexType maxSuccID=NO_INDEX
+        idType branchID=numeric_limits<idType>::max(), idType maxPredID=-1, idType maxSuccID=-1
     ) : size(size), x(x), y(y), z(z), inDegree(inDegree), outDegree(outDegree), branchID(branchID), maxPredID(maxPredID), maxSuccID(maxSuccID) {}
 };
 
 
-typedef vector<size_t> Edges; // [index0, index1, overlap, branch,...]
+typedef vector<idType> Edges; // [index0, index1, overlap, branch,...]
 typedef vector<Node> Nodes;
 
 struct CoordinateComparator {
@@ -112,7 +110,6 @@ namespace ttk{
                 Timer t;
 
                 size_t nT = timeNodesMap.size();
-                indexType NO_INDEX_ = NO_INDEX;
 
                 // Compute max pred and succ
                 for(size_t t=1; t<nT; t++){
@@ -131,8 +128,8 @@ namespace ttk{
                         n0.outDegree++;
                         n1.inDegree++;
 
-                        sizeType n0MaxSuccSize = n0.maxSuccID!=NO_INDEX_ ? nodes1[ n0.maxSuccID ].size : 0;
-                        sizeType n1MaxPredSize = n1.maxPredID!=NO_INDEX_ ? nodes0[ n1.maxPredID ].size : 0;
+                        sizeType n0MaxSuccSize = n0.maxSuccID!=-1 ? nodes1[ n0.maxSuccID ].size : 0;
+                        sizeType n1MaxPredSize = n1.maxPredID!=-1 ? nodes0[ n1.maxPredID ].size : 0;
                         if( n0MaxSuccSize < n1.size )
                             n0.maxSuccID = n1Index;
                         if( n1MaxPredSize < n0.size )
@@ -141,11 +138,11 @@ namespace ttk{
                 }
 
                 // Label first nodes of branches
-                indexType branchCounter = 0;
+                idType branchCounter = 0;
 
                 for(size_t t=0; t<nT; t++)
                     for(auto& n: timeNodesMap[t])
-                        n.branchID = n.maxPredID==NO_INDEX_ ? branchCounter++ : NO_INDEX_;
+                        n.branchID = n.maxPredID==-1 ? branchCounter++ : -1;
 
                 for(size_t t=1; t<nT; t++){
                     auto& nodes0 = timeNodesMap[t-1];
@@ -153,7 +150,7 @@ namespace ttk{
 
                     for(size_t i=0; i<nodes1.size(); i++){
                         auto& n1 = nodes1[i];
-                        if( n1.maxPredID!=NO_INDEX_ && i != nodes0[ n1.maxPredID ].maxSuccID )
+                        if( n1.maxPredID!=-1 && ((idType)i)!=nodes0[ n1.maxPredID ].maxSuccID )
                             n1.branchID = branchCounter++;
                     }
                 }
@@ -172,7 +169,7 @@ namespace ttk{
                         auto& n0 = nodes0[ n0Index ];
                         auto& n1 = nodes1[ n1Index ];
 
-                        if(n1.branchID==NO_INDEX_ && n0Index==n1.maxPredID)
+                        if(n1.branchID==-1 && n0Index==n1.maxPredID)
                             n1.branchID = n0.branchID;
                     }
                 }
@@ -424,8 +421,6 @@ template<typename labelType> int ttk::TrackingFromOverlap::computeOverlap(
     // Pack Output
     // -------------------------------------------------------------------------
     {
-        indexType NO_INDEX_ = NO_INDEX;
-
         edges.resize( nEdges*4 );
         size_t q=0;
         for(auto& it0: edgesMap){
@@ -433,7 +428,7 @@ template<typename labelType> int ttk::TrackingFromOverlap::computeOverlap(
                 edges[q++] = it0.first;
                 edges[q++] = it1.first;
                 edges[q++] = it1.second;
-                edges[q++] = NO_INDEX_;
+                edges[q++] = -1;
             }
         }
     }

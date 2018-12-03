@@ -16,61 +16,72 @@
                 <Documentation>Graph.</Documentation>
             </InputProperty>
 
-            <StringVectorProperty name="AxisFieldName" command="SetAxisFieldName" number_of_elements="1" animateable="0" label="Axis Field Name">
-                <ArrayListDomain name="array_list" default_values="TimeIndex" input_domain_name="input_array">
+            <!--<IntVectorProperty name="UsePointSequence" label="Use Point Sequence" command="SetUsePointSequence" number_of_elements="1" default_values="1">-->
+            <!--    <BooleanDomain name="bool" />-->
+            <!--    <Documentation>Include point sequence in layout computation.</Documentation>-->
+            <!--</IntVectorProperty>-->
+            <StringVectorProperty name="SequenceFieldName" command="SetSequenceFieldName" number_of_elements="1" animateable="0" label="Sequence Field" default_values="SequenceIndex">
+                <ArrayListDomain name="array_list" input_domain_name="input_array">
                     <RequiredProperties>
                         <Property name="Input" function="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
-                <Documentation>Scalar field used to arrange points TODO.</Documentation>
+                <Documentation>Sequence scalar field.</Documentation>
+                <!--<Hints>-->
+                <!--    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UsePointSequence" value="1" />-->
+                <!--</Hints>-->
             </StringVectorProperty>
 
-            <IntVectorProperty name="UseSizes" label="Use Sizes" command="SetUseSizes" number_of_elements="1" default_values="0">
+            <IntVectorProperty name="UsePointSize" label="Use Point Size" command="SetUsePointSize" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
-                <Documentation>Include node size in layout computation.</Documentation>
+                <Documentation>Include point size in layout computation.</Documentation>
             </IntVectorProperty>
-            <StringVectorProperty name="SizeFieldName" command="SetSizeFieldName" number_of_elements="1" animateable="0" label="Size Field Name">
-                <ArrayListDomain name="array_list" default_values="Size" input_domain_name="input_array">
+            <StringVectorProperty name="SizeFieldName" command="SetSizeFieldName" number_of_elements="1" animateable="0" label="Size Field" default_values="Size">
+                <ArrayListDomain name="array_list" input_domain_name="input_array">
                     <RequiredProperties>
                         <Property name="Input" function="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
                 <Documentation>Size scalar field.</Documentation>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseSizes" value="1" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UsePointSize" value="1" />
                 </Hints>
             </StringVectorProperty>
 
-            <IntVectorProperty name="UseBranches" label="Use Branches" command="SetUseBranches" number_of_elements="1" default_values="0">
+            <IntVectorProperty name="UsePointBranch" label="Use Point Branch" command="SetUsePointBranch" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
-                <Documentation>Include node size in layout computation.</Documentation>
+                <Documentation>Include point branch in layout computation.</Documentation>
             </IntVectorProperty>
-            <StringVectorProperty name="BranchFieldName" command="SetBranchFieldName" number_of_elements="1" animateable="0" label="Branch Field Name">
-                <ArrayListDomain name="array_list" default_values="Branch" input_domain_name="input_array">
+            <StringVectorProperty name="BranchFieldName" command="SetBranchFieldName" number_of_elements="1" animateable="0" label="Branch Field" default_values="BranchId_Points">
+                <ArrayListDomain name="array_list" input_domain_name="input_array">
                     <RequiredProperties>
                         <Property name="Input" function="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
                 <Documentation>Branch scalar field.</Documentation>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseBranches" value="1" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UsePointBranch" value="1" />
                 </Hints>
             </StringVectorProperty>
 
-            <IntVectorProperty name="UseLevels" label="Use Levels" command="SetUseLevels" number_of_elements="1" default_values="0">
+            <IntVectorProperty name="UsePointLevel" label="Use Point Level" command="SetUsePointLevel" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
-                <Documentation>Include node level in layout computation.</Documentation>
+                <Documentation>Include point level in layout computation.</Documentation>
             </IntVectorProperty>
-            <StringVectorProperty name="LevelFieldName" command="SetLevelFieldName" number_of_elements="1" animateable="0" label="Level Field Name">
-                <ArrayListDomain name="array_list" default_values="LevelIndex" input_domain_name="input_array">
+            <StringVectorProperty name="LevelFieldName" command="SetLevelFieldName" number_of_elements="1" animateable="0" label="Level Field" default_values="LevelIndex">
+                <ArrayListDomain name="array_list" input_domain_name="input_array">
                     <RequiredProperties>
                         <Property name="Input" function="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
                 <Documentation>Level scalar field.</Documentation>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseLevels" value="1" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UsePointLevel" value="1" />
                 </Hints>
+            </StringVectorProperty>
+
+            <StringVectorProperty name="OutputFieldName" command="SetOutputFieldName" number_of_elements="1" animateable="0" label="Output Field" default_values="Layout">
+                <Documentation>Output scalar field.</Documentation>
             </StringVectorProperty>
 
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
@@ -90,13 +101,18 @@
             </IntVectorProperty>
 
             <PropertyGroup panel_widget="Line" label="Input Options">
-                <Property name="AxisFieldName" />
-                <Property name="UseSizes" />
+                <Property name="UsePointSequence" />
+                <Property name="SequenceFieldName" />
+                <Property name="UsePointSize" />
                 <Property name="SizeFieldName" />
-                <Property name="UseBranches" />
+                <Property name="UsePointBranch" />
                 <Property name="BranchFieldName" />
-                <Property name="UseLevels" />
+                <Property name="UsePointLevel" />
                 <Property name="LevelFieldName" />
+            </PropertyGroup>
+
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="OutputFieldName" />
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Testing">

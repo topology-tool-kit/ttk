@@ -15,7 +15,7 @@
                 <Documentation>Graph.</Documentation>
             </InputProperty>
 
-            <IntVectorProperty name="UseVariableSize" label="Use Variable Size" command="SetUseVariableSize" number_of_elements="1" default_values="1">
+            <IntVectorProperty name="UseVariableSize" label="Use Variable Size" command="SetUseVariableSize" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
                 <Documentation>Use variable edge sizes.</Documentation>
             </IntVectorProperty>

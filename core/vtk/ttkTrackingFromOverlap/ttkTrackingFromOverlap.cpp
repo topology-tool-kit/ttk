@@ -6,10 +6,7 @@
 
 #include <vtkPointData.h>
 #include <vtkCellData.h>
-#include <vtkDoubleArray.h>
-#include <vtkUnsignedLongLongArray.h>
-#include <vtkUnsignedIntArray.h>
-#include <vtkUnsignedCharArray.h>
+#include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
 
 using namespace std;
@@ -66,29 +63,29 @@ template<typename labelType> int finalize(
         points->SetNumberOfPoints( nNodes );
         auto pointCoords = (float*) points->GetVoidPointer(0);
 
-        auto time = vtkSmartPointer<vtkUnsignedIntArray>::New();
-        prepArray(time, "TimeIndex", 1, nNodes);
-        auto timeData = (unsigned int*) time->GetVoidPointer(0);
+        auto sequence = vtkSmartPointer<vtkIdTypeArray>::New();
+        prepArray(sequence, "SequenceIndex", 1, nNodes);
+        auto sequenceData = (vtkIdType*) sequence->GetVoidPointer(0);
 
-        auto level = vtkSmartPointer<vtkUnsignedIntArray>::New();
+        auto level = vtkSmartPointer<vtkIdTypeArray>::New();
         prepArray(level, "LevelIndex", 1, nNodes);
-        auto levelData = (unsigned int*) level->GetVoidPointer(0);
+        auto levelData = (vtkIdType*) level->GetVoidPointer(0);
 
-        auto size = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
+        auto size = vtkSmartPointer<vtkFloatArray>::New();
         prepArray(size, "Size", 1, nNodes);
-        auto sizeData = (unsigned long long*) size->GetVoidPointer(0);
+        auto sizeData = (float*) size->GetVoidPointer(0);
 
-        auto inDegree = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
+        auto inDegree = vtkSmartPointer<vtkIdTypeArray>::New();
         prepArray(inDegree, "InDegree", 1, nNodes);
-        auto inDegreeData = (unsigned long long*) inDegree->GetVoidPointer(0);
+        auto inDegreeData = (vtkIdType*) inDegree->GetVoidPointer(0);
 
-        auto outDegree = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
+        auto outDegree = vtkSmartPointer<vtkIdTypeArray>::New();
         prepArray(outDegree, "OutDegree", 1, nNodes);
-        auto outDegreeData = (unsigned long long*) outDegree->GetVoidPointer(0);
+        auto outDegreeData = (vtkIdType*) outDegree->GetVoidPointer(0);
 
-        auto branch = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
-        prepArray(branch, "BranchIdPoints", 1, nNodes);
-        auto branchData = (unsigned long long*) branch->GetVoidPointer(0);
+        auto branch = vtkSmartPointer<vtkIdTypeArray>::New();
+        prepArray(branch, "BranchId_Point", 1, nNodes);
+        auto branchData = (vtkIdType*) branch->GetVoidPointer(0);
 
         auto label = vtkSmartPointer<vtkDataArray>::Take(
             vtkDataArray::CreateDataArray( labelTypeId )
@@ -104,8 +101,8 @@ template<typename labelType> int finalize(
                     pointCoords[q1++] = node.y;
                     pointCoords[q1++] = node.z;
 
-                    timeData[q2]  = (unsigned int)t;
-                    levelData[q2] = (unsigned int)l;
+                    sequenceData[q2]  = t;
+                    levelData[q2] = l;
                     sizeData[q2]  = node.size;
                     labelData[q2] = boost::get<labelType>( node.label );
 
@@ -121,7 +118,7 @@ template<typename labelType> int finalize(
         trackingGraph->SetPoints(points);
 
         auto pointData = trackingGraph->GetPointData();
-        pointData->AddArray( time );
+        pointData->AddArray( sequence );
         pointData->AddArray( level );
         pointData->AddArray( size );
         pointData->AddArray( label );
@@ -160,20 +157,20 @@ template<typename labelType> int finalize(
         cells->SetNumberOfValues( 3*nEdgesT + 3*nEdgesN );
         auto cellIds = (vtkIdType*) cells->GetVoidPointer(0);
 
-        auto overlap = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
+        auto overlap = vtkSmartPointer<vtkFloatArray>::New();
         overlap->SetNumberOfValues( nEdgesT + nEdgesN );
         overlap->SetName("Overlap");
-        auto overlapData = (unsigned long long*) overlap->GetVoidPointer(0);
+        auto overlapData = (float*) overlap->GetVoidPointer(0);
 
-        auto branch = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
+        auto branch = vtkSmartPointer<vtkIdTypeArray>::New();
         branch->SetNumberOfValues( nEdgesT + nEdgesN );
-        branch->SetName("BranchIdCells");
-        auto branchData = (unsigned long long*) branch->GetVoidPointer(0);
+        branch->SetName("BranchId_Cell");
+        auto branchData = (vtkIdType*) branch->GetVoidPointer(0);
 
-        auto type = vtkSmartPointer<vtkUnsignedCharArray>::New();
+        auto type = vtkSmartPointer<vtkIdTypeArray>::New();
         type->SetNumberOfValues( nEdgesT + nEdgesN );
         type->SetName("Type");
-        auto typeData = (unsigned char*) type->GetVoidPointer(0);
+        auto typeData = (vtkIdType*) type->GetVoidPointer(0);
 
         size_t q0=0, q1=0;
 

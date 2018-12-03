@@ -36,23 +36,28 @@ class ttkPlanarGraphLayout
         static ttkPlanarGraphLayout* New();
         vtkTypeMacro(ttkPlanarGraphLayout, vtkUnstructuredGridAlgorithm)
 
-        vtkSetMacro(AxisFieldName, std::string);
-        vtkGetMacro(AxisFieldName, std::string);
+        vtkSetMacro(UsePointSequence, bool);
+        vtkGetMacro(UsePointSequence, bool);
+        vtkSetMacro(SequenceFieldName, std::string);
+        vtkGetMacro(SequenceFieldName, std::string);
 
-        vtkSetMacro(UseSizes, bool);
-        vtkGetMacro(UseSizes, bool);
+        vtkSetMacro(UsePointSize, bool);
+        vtkGetMacro(UsePointSize, bool);
         vtkSetMacro(SizeFieldName, std::string);
         vtkGetMacro(SizeFieldName, std::string);
 
-        vtkSetMacro(UseBranches, bool);
-        vtkGetMacro(UseBranches, bool);
+        vtkSetMacro(UsePointBranch, bool);
+        vtkGetMacro(UsePointBranch, bool);
         vtkSetMacro(BranchFieldName, std::string);
         vtkGetMacro(BranchFieldName, std::string);
 
-        vtkSetMacro(UseLevels, bool);
-        vtkGetMacro(UseLevels, bool);
+        vtkSetMacro(UsePointLevel, bool);
+        vtkGetMacro(UsePointLevel, bool);
         vtkSetMacro(LevelFieldName, std::string);
         vtkGetMacro(LevelFieldName, std::string);
+
+        vtkSetMacro(OutputFieldName, std::string);
+        vtkGetMacro(OutputFieldName, std::string);
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -85,11 +90,14 @@ class ttkPlanarGraphLayout
     protected:
 
         ttkPlanarGraphLayout(){
-            SetAxisFieldName("TimeIndex");
-            SetUseSizes(false);
+            SetUsePointSequence(true);
+            SetSequenceFieldName("SequenceIndex");
+            SetUsePointSize(false);
             SetSizeFieldName("Size");
-            SetUseLevels(false);
+            SetUsePointLevel(false);
             SetLevelFieldName("LevelIndex");
+
+            SetOutputFieldName("Layout");
 
             UseAllCores = false;
 
@@ -105,16 +113,19 @@ class ttkPlanarGraphLayout
 
     private:
 
-        std::string AxisFieldName;
+        bool UsePointSequence;
+        std::string SequenceFieldName;
 
-        bool UseSizes;
+        bool UsePointSize;
         std::string SizeFieldName;
 
-        bool UseBranches;
+        bool UsePointBranch;
         std::string BranchFieldName;
 
-        bool UseLevels;
+        bool UsePointLevel;
         std::string LevelFieldName;
+
+        std::string OutputFieldName;
 
         ttk::PlanarGraphLayout planarGraphLayout;
 

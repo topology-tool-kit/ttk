@@ -40,28 +40,19 @@ int ttkPlanarGraphLayout::RequestData(
     size_t nPoints = output->GetNumberOfPoints();
     size_t nEdges = output->GetNumberOfCells();
 
+    // Check input fields
     auto outputPointData = output->GetPointData();
 
-    vtkSmartPointer<vtkFloatArray> layout = vtkSmartPointer<vtkFloatArray>::New();
-    layout->SetName("Layout");
-    layout->SetNumberOfComponents(1);
-    layout->SetNumberOfValues(nPoints);
-    auto layoutData = (float*) layout->GetVoidPointer(0);
-
-    outputPointData->AddArray( layout );
-
-    auto cells = output->GetCells();
-    long long* topology = cells->GetPointer();
-    auto sequences = outputPointData->GetAbstractArray( this->GetAxisFieldName().data() );
-    if(!sequences){
+    auto sequences = outputPointData->GetAbstractArray( this->GetSequenceFieldName().data() );
+    if(this->GetUsePointSequence() && !sequences){
         stringstream msg;
-        msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetAxisFieldName() << "'" <<endl;
+        msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetSequenceFieldName() << "'" <<endl;
         dMsg(cout, msg.str(), fatalMsg);
         return 0;
     }
 
     auto sizes = outputPointData->GetAbstractArray( this->GetSizeFieldName().data() );
-    if(this->GetUseSizes() && !sizes){
+    if(this->GetUsePointSize() && !sizes){
         stringstream msg;
         msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetSizeFieldName() << "'" <<endl;
         dMsg(cout, msg.str(), fatalMsg);
@@ -69,7 +60,7 @@ int ttkPlanarGraphLayout::RequestData(
     }
 
     auto branches = outputPointData->GetAbstractArray( this->GetBranchFieldName().data() );
-    if(this->GetUseBranches() && !branches){
+    if(this->GetUsePointBranch() && !branches){
         stringstream msg;
         msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetSizeFieldName() << "'" <<endl;
         dMsg(cout, msg.str(), fatalMsg);
@@ -77,30 +68,42 @@ int ttkPlanarGraphLayout::RequestData(
     }
 
     auto levels = outputPointData->GetAbstractArray( this->GetLevelFieldName().data() );
-    if(this->GetUseLevels() && !levels){
+    if(this->GetUsePointLevel() && !levels){
         stringstream msg;
         msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetLevelFieldName() << "'" <<endl;
         dMsg(cout, msg.str(), fatalMsg);
         return 0;
     }
 
+    // Initialize output field
+    vtkSmartPointer<vtkFloatArray> outputField = vtkSmartPointer<vtkFloatArray>::New();
+    outputField->SetName( this->GetOutputFieldName().data() );
+    outputField->SetNumberOfComponents(1);
+    outputField->SetNumberOfValues(nPoints);
+
+    // Compute layout
     switch(sequences->GetDataType()){
-        vtkTemplateMacro({
-            planarGraphLayout.execute<VTK_TT>(
+        ttkTemplateMacro({
+            int status = planarGraphLayout.execute<vtkIdType TTK_COMMA VTK_TT>(
                 // Input
-                sequences->GetVoidPointer(0),
-                !this->GetUseSizes()    ? nullptr : (float*)              sizes->GetVoidPointer(0),
-                !this->GetUseBranches() ? nullptr : (unsigned long long*) branches->GetVoidPointer(0),
-                !this->GetUseLevels()   ? nullptr : (unsigned int*)       levels->GetVoidPointer(0),
-                topology,
+                (VTK_TT*) sequences->GetVoidPointer(0),
+                !this->GetUsePointSize()    ? nullptr : (float*)     sizes->GetVoidPointer(0),
+                !this->GetUsePointBranch()  ? nullptr : (vtkIdType*) branches->GetVoidPointer(0),
+                !this->GetUsePointLevel()   ? nullptr : (vtkIdType*) levels->GetVoidPointer(0),
+                output->GetCells()->GetPointer(),
                 nPoints,
                 nEdges,
 
                 // Output
-                layoutData
+                (float*) outputField->GetVoidPointer(0)
             );
+
+            if(status!=1) return 0;
         });
     }
+
+    // Add output field to output
+    outputPointData->AddArray( outputField );
 
     return 1;
 }
