@@ -152,6 +152,7 @@ public:
     return 1;
   }
 
+  // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
   template <typename dataType>
   int getPersistenceDiagram(
       std::vector<diagramTuple>& diagram,
@@ -164,6 +165,7 @@ public:
       std::vector<diagramTuple>& diagram,
       int size);
 
+  // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
   template <typename dataType>
   int augmentPersistenceDiagrams(
       const std::vector<diagramTuple>& diagram1,
@@ -346,6 +348,7 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
   return 0;
 }
 
+// Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
 template <typename dataType>
 int ttkBottleneckDistance::getPersistenceDiagram(
   std::vector<diagramTuple>& diagram,
@@ -479,6 +482,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
   return 0;
 }
 
+// Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
 template <typename dataType>
 int ttkBottleneckDistance::augmentPersistenceDiagrams(
   const std::vector<diagramTuple>& diagram1,
