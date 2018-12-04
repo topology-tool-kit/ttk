@@ -246,6 +246,7 @@ template <typename dataType>
 	std::vector<std::vector<matchingTuple>>
     matching_min, matching_sad, matching_max;
 
+    dataType total_cost = 0;
 	/*omp_set_num_threads(1);
 	#ifdef TTK_ENABLE_OPENMP
 	#pragma omp parallel sections
@@ -274,6 +275,7 @@ template <typename dataType>
 				bary_min.setReinitPrices(reinit_prices_);
         bary_min.setDiagrams(&data_min);
 				matching_min = bary_min.execute(barycenter_min);
+				total_cost += bary_min.getCost();
 			}
 		/*}
 
@@ -300,6 +302,7 @@ template <typename dataType>
 				bary_sad.setReinitPrices(reinit_prices_);
         bary_sad.setDiagrams(&data_sad);
 				matching_sad = bary_sad.execute(barycenter_sad);
+				total_cost += bary_sad.getCost();
 			}
 		/*}
 
@@ -326,6 +329,7 @@ template <typename dataType>
 				bary_max.setReinitPrices(reinit_prices_);
         bary_max.setDiagrams(&data_max);
 				matching_max = bary_max.execute(barycenter_max);
+				total_cost += bary_max.getCost();
 			}
 		//}
 	//}
@@ -429,6 +433,9 @@ template <typename dataType>
 // 		delete data_max[i];
 // 	}
 
+    if(debugLevel_>0){
+        std::cout << "[PersistenceDiagramBarycenter] Total cost : " << total_cost<< std::endl;
+    }
 	std::stringstream msg;
 	msg << "[PersistenceDiagramsBarycenter] processed in "
 		<< t.getElapsedTime() << " s. (" << threadNumber_

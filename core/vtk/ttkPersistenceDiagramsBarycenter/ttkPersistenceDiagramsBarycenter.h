@@ -252,11 +252,11 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
     if(*pairIdentifierScalars->GetTuple(pair_index)!=-1)
         pairIdentifierScalars->SetTuple(pair_index, &index_of_pair);
   }
-  auto s = (float) 0.0;
+  //auto s = (float) 0.0;
 
   if (!deathScalars != !birthScalars) return -2;
-  bool Is3D = !(!deathScalars && !birthScalars);
-  if (!Is3D && diagramNumber == 1) s = (float) spacing;
+  //bool Is3D = !(!deathScalars && !birthScalars);
+  //if (!Is3D && diagramNumber == 1) s = (float) spacing;
 
   if (pairingsSize < 1 || !vertexIdentifierScalars
       || !pairIdentifierScalars || !nodeTypeScalars

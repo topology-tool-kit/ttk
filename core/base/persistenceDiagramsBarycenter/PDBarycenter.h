@@ -192,8 +192,11 @@ namespace ttk{
 				nt2_ = BLocalMax;
 			}
 		}
-
-		template<typename type>
+        
+        dataType getCost(){
+            return cost_;
+        }
+		template <typename type>
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;
 		}
@@ -220,7 +223,7 @@ namespace ttk{
 	  int					diagramType_;
 	  BNodeType 			nt1_;
 	  BNodeType 			nt2_;
-
+      dataType                cost_;
       int                   numberOfInputs_;
       int                   threadNumber_;
 	  bool                  use_progressive_;

@@ -84,7 +84,7 @@ namespace ttk {
     }
 
     inline int setOutputMatchings(void* matchings) {
-      matchings_ = matchings;
+        matchings_ = matchings;
       return 0;
     }
 

@@ -111,7 +111,6 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(std::vector<matchingTup
 			// b is diagonal
 			Good<dataType> g = *b.getProperty();
 			dataType cost = 2*pow(abs<dataType>((g.y_-g.x_)/2), wasserstein_);
-			wassersteinDistance += cost;
 			if(get_diagonal_matches){
 				matchingTuple t = std::make_tuple(b.id_, g.id_, cost);
 				matchings->push_back(t);

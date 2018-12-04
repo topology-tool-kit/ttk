@@ -488,7 +488,13 @@ dataType BottleneckDistance::buildMappings(
   // Input map permutation (so as to ignore transposition later on)
   const std::vector<int> map1 = transposeLocal ? m2 : m1;
   const std::vector<int> map2 = transposeLocal ? m1 : m2;
-
+  /* PRINT MATCHINGS
+  for (int j = 0; j < (int) inputMatchings.size(); j++) {
+        std::cout << std::get<0>(inputMatchings[j]) << " " ;
+        std::cout << std::get<1>(inputMatchings[j]) << " " ;
+        std::cout << std::get<2>(inputMatchings[j]) << "  |   " ;
+    }
+    */
   std::stringstream msg;
   dataType addedPersistence = 0;
   for (int i = 0, s = (int) inputMatchings.size(); i < s; ++i) {
@@ -497,21 +503,35 @@ dataType BottleneckDistance::buildMappings(
 
     int p1 = std::get<0>(t);
     int p2 = std::get<1>(t);
-
-    if (p1 >= (int) map1.size() || p1 < 0) {
+    
+    if(p1<0 || p2<0){
       addedPersistence =
           (wasserstein > 0 ?
            addedPersistence + val :
            std::max(val, addedPersistence));
     }
-    else if (p2 >= (int) map2.size() || p2 < 0) {
+/*
+    if(p2<0){
+      addedPersistence =
+          (wasserstein > 0 ?
+           addedPersistence + val :
+           std::max(val, addedPersistence));
+    }
+*/
+    if (p1 >= (int) map1.size() ){ //}|| p1 < 0) {
+      addedPersistence =
+          (wasserstein > 0 ?
+           addedPersistence + val :
+           std::max(val, addedPersistence));
+    }
+    else if (p2 >= (int) map2.size() ){ //|| p2 < 0) {
       addedPersistence =
           (wasserstein > 0 ?
            addedPersistence + val :
            std::max(val, addedPersistence));
     } else {
-      int point1 = map1.at((unsigned long) p1);
-      int point2 = map2.at((unsigned long) p2);
+      int point1 = p1 > 0 ? map1.at((unsigned long) p1) : p1;
+      int point2 = p2 > 0 ? map2.at((unsigned long) p2) : p2;
       bool doTranspose = transposeGlobal ^ transposeLocal;
 
       matchingTuple newT =
@@ -522,7 +542,6 @@ dataType BottleneckDistance::buildMappings(
       outputMatchings.push_back(newT);
     }
   }
-
   return addedPersistence;
 }
 

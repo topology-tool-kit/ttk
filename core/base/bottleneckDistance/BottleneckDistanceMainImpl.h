@@ -136,7 +136,7 @@ int BottleneckDistance::computeBottleneck(
 
         double persDistance = x + y;
         double val = persDistance + geoDistance;
-        val = pow(val, 1/w);
+        //val = pow(val, 1/w);
         return val;
       };
 
@@ -164,7 +164,7 @@ int BottleneckDistance::computeBottleneck(
         double geoDistance =
             (px * pow(abs(x2 - x1), w) + py * pow(abs(y2 - y1), w) + pz * pow(abs(z2 - z1), w));
         double val = infDistance + geoDistance;
-        return pow(val, 1/w);
+        return val; //return pow(val, 1/w);
       };
 
   const bool transposeMin = nbRowMin > nbColMin;
@@ -272,30 +272,45 @@ int BottleneckDistance::computeBottleneck(
   for (int b = 0; b < d2Size; ++b) paired2[b] = false;
 
   int numberOfMismatches = 0;
+  dataType partialDistance=0;
   for (int m = 0, ms = (int) matchings.size(); m < ms; ++m)
   {
     matchingTuple t = matchings[m];
     int i = transposeOriginal ? std::get<1>(t) : std::get<0>(t);
     int j = transposeOriginal ? std::get<0>(t) : std::get<1>(t);
     //dataType val = std::get<2>(t);
+    if(i>=0 && j>=0){
+      diagramTuple t1 = CTDiagram1[i];
+      diagramTuple t2 = CTDiagram2[j];
+      //dataType rX = std::get<6>(t1); dataType rY = std::get<10>(t1);
+      //dataType cX = std::get<6>(t2); dataType cY = std::get<10>(t2);
+      //dataType x = rX - cX; dataType y = rY - cY;
+      paired1[i] = true;
+      paired2[j] = true;
+      //dataType lInf = std::max(abs<dataType>(x), abs<dataType>(y));
 
-    diagramTuple t1 = CTDiagram1[i];
-    diagramTuple t2 = CTDiagram2[j];
-    //dataType rX = std::get<6>(t1); dataType rY = std::get<10>(t1);
-    //dataType cX = std::get<6>(t2); dataType cY = std::get<10>(t2);
-    //dataType x = rX - cX; dataType y = rY - cY;
-    paired1[i] = true;
-    paired2[j] = true;
-    //dataType lInf = std::max(abs<dataType>(x), abs<dataType>(y));
+      //if (((wasserstein < 0 && lInf != val) || (wasserstein > 0 && pow(lInf, wasserstein) != val)))
+        //++numberOfMismatches;
 
-    //if (((wasserstein < 0 && lInf != val) || (wasserstein > 0 && pow(lInf, wasserstein) != val)))
-      //++numberOfMismatches;
+      partialDistance = distanceFunction(t1, t2);
+      //wasserstein > 0 ? pow(lInf, wasserstein) : std::max(d, lInf);
+    }
 
-    dataType partialDistance = distanceFunction(t1, t2);
-    //wasserstein > 0 ? pow(lInf, wasserstein) : std::max(d, lInf);
+    // *** by Jules Vidal 
+    // added for the compatibilty of cost with the PDBarycenter plugin
+    else if( i<0 && j>0 ){
+        diagramTuple t2 = CTDiagram2[j];
+        partialDistance = diagonalDistanceFunction(t2);
+    }
+    else if( j<0 && i>0 ){
+        diagramTuple t1 = CTDiagram1[i];
+        partialDistance = diagonalDistanceFunction(t1);
+    }
+    // ***
 
-    if (wasserstein > 0) d += partialDistance;
-    else d = partialDistance;
+      if (wasserstein > 0) d += partialDistance;
+      else d = partialDistance;
+
   }
 
   if (numberOfMismatches > 0) {
@@ -306,7 +321,7 @@ int BottleneckDistance::computeBottleneck(
 
   dataType affectationD = d;
   d = wasserstein > 0 ?
-      pow(d + addedMaxPersistence + addedMinPersistence + addedSadPersistence, (1.0 / (double) wasserstein)) :
+      pow(d + addedMaxPersistence + addedMinPersistence + addedSadPersistence, (1.0)/(double)wasserstein ) :
       std::max(d, std::max(addedMaxPersistence, std::max(addedMinPersistence, addedSadPersistence)));
 
   {
@@ -318,7 +333,7 @@ int BottleneckDistance::computeBottleneck(
     dMsg(std::cout, msg.str(), timeMsg);
   }
 
-  distance_ = (double) d;
+  distance_ = (double) affectationD;
   return 0;
 }
 
