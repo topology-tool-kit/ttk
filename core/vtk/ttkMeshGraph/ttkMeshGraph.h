@@ -1,13 +1,13 @@
 /// \ingroup vtk
 /// \class ttkMeshGraph
-/// \author Wiebke Koepp (wiebke.koepp@gmail.com) and Jonas Lukasczyk (jl@jluk.de)
-/// \date 01.11.2018
+/// \author Jonas Lukasczyk (jl@jluk.de)
+/// \date 01.12.2018
 ///
 /// \brief TTK VTK-filter that generates a mesh for a graph.
 ///
-/// VTK wrapping code for the @MeshGraph package.
+/// This filter generates for each one dimensional cell (edge) of a 'vtkUnstructuredGrid' a two dimensional cell by mapping a size value to the width of the input cell. The output is a 'vtkUnstructuredGrid' consisting of a set of either quadratic quads or linear polygons.
 ///
-/// This filter generates for each one dimensional cell (edge) of a 'vtkUnstructuredGrid' a two dimensional cell by mapping a size value to the width of the input cell.
+/// VTK wrapping code for the @MeshGraph package.
 ///
 /// \param Input Graph (vtkUnstructuredGrid)
 /// \param Output Graph (vtkUnstructuredGrid)
@@ -36,8 +36,11 @@ class ttkMeshGraph
         static ttkMeshGraph* New();
         vtkTypeMacro(ttkMeshGraph, vtkUnstructuredGridAlgorithm)
 
-        vtkSetMacro(UseQuadraticCells, bool);
-        vtkGetMacro(UseQuadraticCells, bool);
+        vtkSetMacro(UseVariableSize, bool);
+        vtkGetMacro(UseVariableSize, bool);
+
+        vtkSetMacro(SizeFieldName, std::string);
+        vtkGetMacro(SizeFieldName, std::string);
 
         vtkSetMacro(SizeAxis, int);
         vtkGetMacro(SizeAxis, int);
@@ -45,11 +48,8 @@ class ttkMeshGraph
         vtkSetMacro(SizeScale, float);
         vtkGetMacro(SizeScale, float);
 
-        vtkSetMacro(UseVariableSize, bool);
-        vtkGetMacro(UseVariableSize, bool);
-
-        vtkSetMacro(SizeFieldName, std::string);
-        vtkGetMacro(SizeFieldName, std::string);
+        vtkSetMacro(UseQuadraticCells, bool);
+        vtkGetMacro(UseQuadraticCells, bool);
 
         vtkSetMacro(Subdivisions, int);
         vtkGetMacro(Subdivisions, int);
@@ -92,13 +92,13 @@ class ttkMeshGraph
     protected:
 
         ttkMeshGraph(){
-            SetUseQuadraticCells(true);
 
-            SetSizeAxis(0);
-            SetSizeScale(1);
             SetUseVariableSize(true);
             SetSizeFieldName("Size");
 
+            SetSizeAxis(0);
+            SetSizeScale(1);
+            SetUseQuadraticCells(true);
             SetSubdivisions(0);
             SetTetrahedralize(true);
 
@@ -116,13 +116,12 @@ class ttkMeshGraph
 
     private:
 
-        bool UseQuadraticCells;
-
-        int SizeAxis;
-        float SizeScale;
         bool UseVariableSize;
         std::string SizeFieldName;
 
+        int SizeAxis;
+        float SizeScale;
+        bool UseQuadraticCells;
         int Subdivisions;
         bool Tetrahedralize;
 

@@ -7,6 +7,8 @@
 #include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkFloatArray.h>
+#include <vtkLongLongArray.h>
+#include <vtkCharArray.h>
 #include <vtkIdTypeArray.h>
 
 using namespace std;
@@ -27,7 +29,6 @@ void getNumberOfLevelsAndTimesteps(vtkMultiBlockDataSet* mb, size_t& nL, size_t&
     auto timesteps = vtkMultiBlockDataSet::SafeDownCast( mb->GetBlock( 0 ) );
     nT = timesteps->GetNumberOfBlocks();
 };
-
 
 // =============================================================================
 // Finalize
@@ -63,21 +64,21 @@ template<typename labelType> int finalize(
         points->SetNumberOfPoints( nNodes );
         auto pointCoords = (float*) points->GetVoidPointer(0);
 
-        auto sequence = vtkSmartPointer<vtkIdTypeArray>::New();
+        auto sequence = vtkSmartPointer<vtkLongLongArray>::New();
         prepArray(sequence, "SequenceIndex", 1, nNodes);
-        auto sequenceData = (vtkIdType*) sequence->GetVoidPointer(0);
+        auto sequenceData = (long long*) sequence->GetVoidPointer(0);
 
-        auto level = vtkSmartPointer<vtkIdTypeArray>::New();
+        auto level = vtkSmartPointer<vtkLongLongArray>::New();
         prepArray(level, "LevelIndex", 1, nNodes);
-        auto levelData = (vtkIdType*) level->GetVoidPointer(0);
+        auto levelData = (long long*) level->GetVoidPointer(0);
 
         auto size = vtkSmartPointer<vtkFloatArray>::New();
         prepArray(size, "Size", 1, nNodes);
         auto sizeData = (float*) size->GetVoidPointer(0);
 
-        auto branch = vtkSmartPointer<vtkIdTypeArray>::New();
+        auto branch = vtkSmartPointer<vtkLongLongArray>::New();
         prepArray(branch, "BranchId", 1, nNodes);
-        auto branchData = (vtkIdType*) branch->GetVoidPointer(0);
+        auto branchData = (long long*) branch->GetVoidPointer(0);
 
         auto label = vtkSmartPointer<vtkDataArray>::Take(
             vtkDataArray::CreateDataArray( labelTypeId )
@@ -149,15 +150,15 @@ template<typename labelType> int finalize(
         overlap->SetName("Overlap");
         auto overlapData = (float*) overlap->GetVoidPointer(0);
 
-        auto branch = vtkSmartPointer<vtkIdTypeArray>::New();
+        auto branch = vtkSmartPointer<vtkLongLongArray>::New();
         branch->SetNumberOfValues( nEdgesT + nEdgesN );
         branch->SetName("BranchId");
-        auto branchData = (vtkIdType*) branch->GetVoidPointer(0);
+        auto branchData = (long long*) branch->GetVoidPointer(0);
 
-        auto type = vtkSmartPointer<vtkIdTypeArray>::New();
+        auto type = vtkSmartPointer<vtkCharArray>::New();
         type->SetNumberOfValues( nEdgesT + nEdgesN );
         type->SetName("Type");
-        auto typeData = (vtkIdType*) type->GetVoidPointer(0);
+        auto typeData = (char*) type->GetVoidPointer(0);
 
         size_t q0=0, q1=0;
 

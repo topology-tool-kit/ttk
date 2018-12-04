@@ -31,16 +31,25 @@ int ttkMeshGraph::RequestData(
     // Set Wrapper
     meshGraph.setWrapper(this);
 
-    // Prepare input and output
+    // -------------------------------------------------------------------------
+    // Get Input
+    // -------------------------------------------------------------------------
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
     auto input = vtkUnstructuredGrid::SafeDownCast( inInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
-    const float* inputPoints = (float*) input->GetPoints()->GetVoidPointer(0);
-
-    vtkCellArray* inputCells = input->GetCells();
-
     size_t nInputPoints = input->GetNumberOfPoints();
     size_t nInputCells = input->GetNumberOfCells();
+
+    auto inputPointSizes = input->GetPointData()->GetArray( this->GetSizeFieldName().data() );
+    if(this->GetUseVariableSize() && !inputPointSizes){
+        dMsg(cout, "[ttkMeshGraph] ERROR: Input point data does not have array '" + this->GetSizeFieldName() + "'.\n", fatalMsg);
+        return 0;
+    }
+    int sizeType = this->GetUseVariableSize() ? inputPointSizes->GetDataType() : VTK_CHAR;
+
+    // -------------------------------------------------------------------------
+    // Init Output
+    // -------------------------------------------------------------------------
 
     // Output Points
     auto nOutputPoints = meshGraph.computeNumberOfOutputPoints(nInputPoints, nInputCells, this->GetUseQuadraticCells(), this->GetSubdivisions());
@@ -54,24 +63,18 @@ int ttkMeshGraph::RequestData(
     auto outputCells = vtkSmartPointer<vtkIdTypeArray>::New();
     outputCells->SetNumberOfValues( outputTopologySize );
 
-
-    auto inputPointSizes = input->GetPointData()->GetArray( this->GetSizeFieldName().data() );
-    if(this->GetUseVariableSize() && !inputPointSizes){
-        dMsg(cout, "[ttkMeshGraph] ERROR: Point data '" + this->GetSizeFieldName() + "' not found.\n", fatalMsg);
-        return 0;
-    }
-
-    int dataType = this->GetUseVariableSize() ? inputPointSizes->GetDataType() : VTK_CHAR;
-
+    // -------------------------------------------------------------------------
+    // Compute cells with base code
+    // -------------------------------------------------------------------------
     int status = 0;
-
     if(this->GetUseQuadraticCells()){
-        switch( dataType ){
+        // Quadratic cells
+        switch( sizeType ){
             ttkTemplateMacro({
                 status = meshGraph.execute<vtkIdType TTK_COMMA VTK_TT>(
                     // Input
-                    inputPoints,
-                    inputCells->GetPointer(),
+                    (float*) input->GetPoints()->GetVoidPointer(0),
+                    input->GetCells()->GetPointer(),
                     nInputPoints,
                     nInputCells,
 
@@ -88,12 +91,13 @@ int ttkMeshGraph::RequestData(
             });
         }
     } else {
-        switch( dataType ){
+        // Linear Polygons
+        switch( sizeType ){
             ttkTemplateMacro({
                 status = meshGraph.execute2<vtkIdType TTK_COMMA VTK_TT>(
                     // Input
-                    inputPoints,
-                    inputCells->GetPointer(),
+                    (float*) input->GetPoints()->GetVoidPointer(0),
+                    input->GetCells()->GetPointer(),
                     nInputPoints,
                     nInputCells,
                     this->GetSubdivisions(),
@@ -113,7 +117,11 @@ int ttkMeshGraph::RequestData(
     }
     if(status!=1) return 0;
 
-    // Generate meshed graph
+    // -------------------------------------------------------------------------
+    // Generate meshed graph as vtkUnstructuredGrid
+    // -------------------------------------------------------------------------
+
+    // Create new vtkUnstructuredGrid for meshed graph
     auto meshedGraph = vtkSmartPointer<vtkUnstructuredGrid>::New();
     meshedGraph->SetPoints( outputPoints );
     auto outputCellArray = vtkSmartPointer<vtkCellArray>::New();
@@ -190,6 +198,9 @@ int ttkMeshGraph::RequestData(
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Finalize Output
+    // -------------------------------------------------------------------------
     vtkInformation* outInfo = outputVector->GetInformationObject(0);
     auto output = vtkUnstructuredGrid::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
     if(!this->GetUseQuadraticCells() && this->GetSubdivisions()>1 && this->GetTetrahedralize()){
@@ -202,7 +213,9 @@ int ttkMeshGraph::RequestData(
         output->ShallowCopy( meshedGraph );
     }
 
+    // -------------------------------------------------------------------------
     // Print status
+    // -------------------------------------------------------------------------
     {
         stringstream msg;
         msg << "[ttkMeshGraph] -----------------------------------------------------------------" << endl

@@ -36,13 +36,13 @@ namespace ttk{
             PlanarGraphLayout(){};
             ~PlanarGraphLayout(){};
 
-            template <typename idType, typename sequenceType> int execute(
+            template <typename topoType, typename idType, typename sequenceType> int execute(
                 // Input
                 const sequenceType* pointSequences,
                 const float*        sizes,
                 const idType*       branches,
                 const idType*       levels,
-                const idType*       topology,
+                const topoType*     topology,
                 const size_t&       nPoints,
                 const size_t&       nEdges,
 
@@ -50,25 +50,25 @@ namespace ttk{
                 float* layout
             ) const;
 
-            template <typename idType> int extractLevel(
+            template <typename topoType, typename idType> int extractLevel(
                 // Input
-                const idType& level,
-                const idType* levels,
-                const idType* topology,
-                const size_t& nPoints,
-                const size_t& nEdges,
+                const idType&   level,
+                const idType*   levels,
+                const topoType* topology,
+                const size_t&   nPoints,
+                const size_t&   nEdges,
 
                 // Output
                 vector<size_t>& nodeIndicies,
                 vector<size_t>& edgeIndicies
             ) const;
 
-            template <typename idType, typename sequenceType> int computeDotString(
+            template <typename topoType, typename idType, typename sequenceType> int computeDotString(
                 // Input
                 const sequenceType*   pointSequences,
                 const float*          sizes,
                 const idType*         branches,
-                const idType*         topology,
+                const topoType*       topology,
                 const vector<size_t>& nodeIndicies,
                 const vector<size_t>& edgeIndicies,
                 const map<sequenceType, size_t>& sequenceValueToIndexMap,
@@ -77,14 +77,14 @@ namespace ttk{
                 string& dotString
             ) const;
 
-            template <typename idType> int computeSlots(
+            template <typename topoType, typename idType> int computeSlots(
                 // Input
-                const float*  sizes,
-                const idType* levels,
-                const idType* topology,
-                const size_t& nPoints,
-                const size_t& nEdges,
-                const idType& nLevels,
+                const float*    sizes,
+                const idType*   levels,
+                const topoType* topology,
+                const size_t&   nPoints,
+                const size_t&   nEdges,
+                const idType&   nLevels,
 
                 // Output
                 float* layout
@@ -152,13 +152,13 @@ namespace ttk{
 // =============================================================================
 // Extract Level
 // =============================================================================
-template <typename idType> int ttk::PlanarGraphLayout::extractLevel(
+template <typename topoType, typename idType> int ttk::PlanarGraphLayout::extractLevel(
     // Input
-    const idType& level,
-    const idType* levels,
-    const idType* topology,
-    const size_t& nPoints,
-    const size_t& nEdges,
+    const idType&   level,
+    const idType*   levels,
+    const topoType* topology,
+    const size_t&   nPoints,
+    const size_t&   nEdges,
 
     // Output
     vector<size_t>& nodeIndicies,
@@ -198,11 +198,11 @@ template <typename idType> int ttk::PlanarGraphLayout::extractLevel(
 // =============================================================================
 // Compute Dot String
 // =============================================================================
-template <typename idType, typename sequenceType> int ttk::PlanarGraphLayout::computeDotString(
+template <typename topoType, typename idType, typename sequenceType> int ttk::PlanarGraphLayout::computeDotString(
     const sequenceType*   pointSequences,
     const float*          sizes,
     const idType*         branches,
-    const idType*         topology,
+    const topoType*       topology,
     const vector<size_t>& nodeIndicies,
     const vector<size_t>& edgeIndicies,
     const map<sequenceType, size_t>& sequenceValueToIndexMap,
@@ -319,14 +319,14 @@ template <typename idType, typename sequenceType> int ttk::PlanarGraphLayout::co
 // =============================================================================
 // Compute Slots
 // =============================================================================
-template <typename idType> int ttk::PlanarGraphLayout::computeSlots(
+template <typename topoType, typename idType> int ttk::PlanarGraphLayout::computeSlots(
     // Input
-    const float*  sizes,
-    const idType* levels,
-    const idType* topology,
-    const size_t& nPoints,
-    const size_t& nEdges,
-    const idType& nLevels,
+    const float*    sizes,
+    const idType*   levels,
+    const topoType* topology,
+    const size_t&   nPoints,
+    const size_t&   nEdges,
+    const idType&   nLevels,
 
     // Output
     float* layout
@@ -366,7 +366,7 @@ template <typename idType> int ttk::PlanarGraphLayout::computeSlots(
         vector<size_t> edgeIndicies;
 
         // get nodes at current level (parents)
-        this->extractLevel<idType>(
+        this->extractLevel<topoType, idType>(
             // Input
             l,
             levels,
@@ -416,19 +416,19 @@ template <typename idType> int ttk::PlanarGraphLayout::computeSlots(
 // =============================================================================
 // Execute
 // =============================================================================
-template <typename idType, typename sequenceType> int ttk::PlanarGraphLayout::execute(
+template <typename topoType, typename idType, typename sequenceType> int ttk::PlanarGraphLayout::execute(
     // Input
     const sequenceType* pointSequences,
     const float*        sizes,
     const idType*       branches,
     const idType*       levels,
-    const idType*       topology,
+    const topoType*     topology,
     const size_t&       nPoints,
     const size_t&       nEdges,
 
     // Output
     float* layout
-) const{
+) const {
 
     Timer t;
 
@@ -483,7 +483,7 @@ template <typename idType, typename sequenceType> int ttk::PlanarGraphLayout::ex
 
         // Extract nodes and edges at certain level
         {
-            int status = this->extractLevel<idType>(
+            int status = this->extractLevel<topoType, idType>(
                 // Input
                 l,
                 levels,
@@ -501,7 +501,7 @@ template <typename idType, typename sequenceType> int ttk::PlanarGraphLayout::ex
         // Compute Dot String
         string dotString;
         {
-            int status = this->computeDotString<idType, sequenceType>(
+            int status = this->computeDotString<topoType, idType, sequenceType>(
                 // Input
                 pointSequences,
                 sizes,
@@ -532,7 +532,7 @@ template <typename idType, typename sequenceType> int ttk::PlanarGraphLayout::ex
     // If nLevels>1 then compute slots
     // -------------------------------------------------------------------------
     if(nLevels>1){
-        this->computeSlots<idType>(
+        this->computeSlots<topoType, idType>(
             // Input
             sizes,
             levels,

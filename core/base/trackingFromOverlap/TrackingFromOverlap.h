@@ -31,7 +31,7 @@ typedef long long int idType;
 typedef boost::variant<
     double, float, long long, unsigned long long, long, unsigned long, int, unsigned int, short, unsigned short, char, signed char, unsigned char
 > labelTypeVariant;
-typedef unsigned long long sizeType;
+typedef float sizeType;
 
 struct Node {
     labelTypeVariant label;

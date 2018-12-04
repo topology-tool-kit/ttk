@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="PlanarGraphLayout" class="ttkPlanarGraphLayout" label="TTK PlanarGraphLayout">
-            <Documentation long_help="TTK planarGraphLayout" short_help="TTK planarGraphLayout">
+            <Documentation long_help="TTK PlanarGraphLayout" short_help="TTK PlanarGraphLayout">
 This filter computes a planar graph layout of a 'vtkUnstructuredGrid'. To improve the quality of the layout it is possible to pass additional field data to the algorithm:
 
 1) Sequences: Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).

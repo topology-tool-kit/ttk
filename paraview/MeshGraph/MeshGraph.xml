@@ -2,7 +2,8 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="MeshGraph" class="ttkMeshGraph" label="TTK MeshGraph">
-            <Documentation long_help="TTK meshGraph" short_help="TTK meshGraph">This filter generates for each one dimensional cell (edge) of a 'vtkUnstructuredGrid' a two dimensional cell by mapping a size value to the width of the input cell.</Documentation>
+            <Documentation long_help="TTK MeshGraph" short_help="TTK MeshGraph">This filter generates for each one dimensional cell (edge) of a 'vtkUnstructuredGrid' a two dimensional cell by mapping a size value to the width of the input cell. The output is a 'vtkUnstructuredGrid' consisting of a set of either quadratic quads or linear polygons.</Documentation>
+
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
@@ -12,15 +13,15 @@
                     <DataType value="vtkUnstructuredGrid" />
                 </DataTypeDomain>
                 <InputArrayDomain name="input_array" attribute_type="point" />
-                <Documentation>Graph.</Documentation>
+                <Documentation>Input Graph.</Documentation>
             </InputProperty>
 
             <IntVectorProperty name="UseVariableSize" label="Use Variable Size" command="SetUseVariableSize" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
                 <Documentation>Use variable edge sizes.</Documentation>
             </IntVectorProperty>
-            <StringVectorProperty name="SizeFieldName" label="Point Sizes" command="SetSizeFieldName" number_of_elements="1" animateable="0">
-                <ArrayListDomain name="array_list" default_values="Size" input_domain_name="input_array">
+            <StringVectorProperty name="SizeFieldName" label="" command="SetSizeFieldName" number_of_elements="1" animateable="0" default_values="Size">
+                <ArrayListDomain name="array_list" input_domain_name="input_array">
                     <RequiredProperties>
                         <Property name="Input" function="Input" />
                     </RequiredProperties>
@@ -44,11 +45,11 @@
             </IntVectorProperty>
             <IntVectorProperty name="UseQuadraticCells" label="Use Quadratic Cells" command="SetUseQuadraticCells" number_of_elements="1" default_values="1">
                 <BooleanDomain name="bool" />
-                <Documentation>Mesh graph with quadratic cells.</Documentation>
+                <Documentation>Mesh graph with quadratic cells or linear polygons.</Documentation>
             </IntVectorProperty>
             <IntVectorProperty name="Subdivisions" label="Subdivisions" command="SetSubdivisions" number_of_elements="1" default_values="0">
                 <IntRangeDomain name="range" min="0" max="10" />
-                <Documentation>Number of edge subdivisions.</Documentation>
+                <Documentation>Number of edge subdivisions for linear polygons.</Documentation>
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseQuadraticCells" value="0" />
                 </Hints>

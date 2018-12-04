@@ -1,11 +1,11 @@
 /// \ingroup base
 /// \class ttk::MeshGraph
-/// \author Wiebke Koepp (wiebke.koepp@gmail.com) and Jonas Lukasczyk (jl@jluk.de)
-/// \date 1.11.2018
+/// \author Jonas Lukasczyk (jl@jluk.de)
+/// \date 01.12.2018
 ///
 /// \brief TTK %meshGraph processing package.
 ///
-/// %MeshGraph is a TTK processing package that generates for each one dimensional cell (edge) a two dimensional cell by mapping a size value to the width of the input cell.
+/// %MeshGraph is a TTK processing package that generates for each one dimensional cell (edge) a two dimensional cell by mapping a size value to the width of the input cell. The output is a set of either quadratic cells or linear polygons.
 ///
 /// This filter supports two modes:
 ///
@@ -27,7 +27,6 @@
 ///     |                   |
 ///     a0--s0d--s1d-- ...  b0
 ///
-/// \sa ttk::Triangulation
 
 #pragma once
 
@@ -48,7 +47,7 @@ namespace ttk{
             inline size_t computeNumberOfOutputPoints(
                 const size_t& nInputPoints,
                 const size_t& nInputCells,
-                const bool& useQuadraticCells,
+                const bool&   useQuadraticCells,
                 const size_t& nSubdivisions=0
             ) const{
                 return useQuadraticCells
@@ -58,7 +57,7 @@ namespace ttk{
 
             inline size_t computeNumberOfOutputCells(
                 const size_t& nInputCells,
-                const bool& useQuadraticCells
+                const bool&   useQuadraticCells
             ) const{
                 return useQuadraticCells
                     ? nInputCells*2 // each cell gets converted into two quadratic quads
@@ -73,7 +72,7 @@ namespace ttk{
 
             inline size_t computeOutputTopologySize(
                 const size_t& nInputCells,
-                const bool& useQuadraticCells,
+                const bool&   useQuadraticCells,
                 const size_t& nSubdivisions=0
             ) const{
                 return useQuadraticCells
@@ -82,61 +81,61 @@ namespace ttk{
             };
 
             // Mesh graph with quadratic quads
-            template <typename idType, typename sizeType> int execute(
+            template <typename topoType, typename sizeType> int execute(
                 // Input
-                const float* inputPoints,
-                const idType* inputTopology,
-                const size_t& nInputPoints,
-                const size_t& nInputCells,
+                const float*    inputPoints,
+                const topoType* inputTopology,
+                const size_t&   nInputPoints,
+                const size_t&   nInputCells,
 
                 const sizeType* inputPointSizes,
-                const float& sizeScale,
-                const size_t& sizeAxis,
+                const float&    sizeScale,
+                const size_t&   sizeAxis,
 
                 // Output
-                float* outputPoints,
-                idType* outputTopology
+                float*    outputPoints,
+                topoType* outputTopology
             ) const;
 
             // Mesh graph with linear polygon
-            template <typename idType, typename sizeType> int execute2(
+            template <typename topoType, typename sizeType> int execute2(
                 // Input
-                const float* inputPoints,
-                const idType* inputTopology,
-                const size_t nInputPoints,
-                const size_t nInputCells,
-                const size_t nSubdivisions,
+                const float*    inputPoints,
+                const topoType* inputTopology,
+                const size_t    nInputPoints,
+                const size_t    nInputCells,
+                const size_t    nSubdivisions,
 
                 const sizeType* inputPointSizes,
-                const float sizeScale,
-                const size_t sizeAxis,
+                const float     sizeScale,
+                const size_t    sizeAxis,
 
                 // Output
-                float* outputPoints,
-                idType* outputTopology
+                float*    outputPoints,
+                topoType* outputTopology
             ) const;
 
             // Map input point data to output point data
-            template <typename idType, typename dataType> int mapInputPointDataToOutputPointData(
-                const idType* inputTopology,
-                const size_t& nInputPoints,
-                const size_t& nInputCells,
+            template <typename topoType, typename dataType> int mapInputPointDataToOutputPointData(
+                const topoType* inputTopology,
+                const size_t&   nInputPoints,
+                const size_t&   nInputCells,
 
                 const dataType* inputPointData,
                       dataType* outputPointData,
 
-                const bool& useQuadraticCells,
+                const bool&   useQuadraticCells,
                 const size_t& nSubdivisions=0
             ) const;
 
             // Map input point data to output point data
-            template <typename idType, typename dataType> int mapInputCellDataToOutputCellData(
-                const size_t& nInputCells,
+            template <typename topoType, typename dataType> int mapInputCellDataToOutputCellData(
+                const size_t&   nInputCells,
 
                 const dataType* inputCellData,
                       dataType* outputCellData,
 
-                const bool& useQuadraticCells,
+                const bool&   useQuadraticCells,
                 const size_t& nSubdivisions=0
             ) const;
     };
@@ -145,20 +144,20 @@ namespace ttk{
 // =============================================================================
 // Version 1: Mesh Graph with Quadratic Quads
 // =============================================================================
-template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
+template <typename topoType, typename sizeType> int ttk::MeshGraph::execute(
     // Input
-    const float* inputPoints,
-    const idType* inputTopology,
-    const size_t& nInputPoints,
-    const size_t& nInputCells,
+    const float*    inputPoints,
+    const topoType* inputTopology,
+    const size_t&   nInputPoints,
+    const size_t&   nInputCells,
 
     const sizeType* inputPointSizes,
-    const float& sizeScale,
-    const size_t& sizeAxis,
+    const float&    sizeScale,
+    const size_t&   sizeAxis,
 
     // Output
-    float* outputPoints,
-    idType* outputTopology
+    float*    outputPoints,
+    topoType* outputTopology
 ) const{
 
     Timer t;
@@ -335,33 +334,33 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
         dMsg(cout, "[ttkMeshGraph] Computing output cells  ... ", timeMsg);
         t0 = t.getElapsedTime();
 
-        idType edgePointOffset_ = (idType) edgePointOffset;
+        topoType edgePointOffset_ = (topoType) edgePointOffset;
 
         #ifdef TTK_ENABLE_OPENMP
         #pragma omp parallel for num_threads(threadNumber_)
         #endif
         for(size_t i=0; i<nInputCells; i++){
             size_t temp = i*3+1;
-            idType aInputIndex = inputTopology[ temp++ ];
-            idType bInputIndex = inputTopology[ temp   ];
+            topoType aInputIndex = inputTopology[ temp++ ];
+            topoType bInputIndex = inputTopology[ temp   ];
 
             // get point indicies
-            idType a = aInputIndex*3;
-            idType a0 = a+1;
-            idType a1 = a+2;
-            idType b = bInputIndex*3;
-            idType b0 = b+1;
-            idType b1 = b+2;
+            topoType a = aInputIndex*3;
+            topoType a0 = a+1;
+            topoType a1 = a+2;
+            topoType b = bInputIndex*3;
+            topoType b0 = b+1;
+            topoType b1 = b+2;
 
-            idType i_ = (idType) i;
-            idType offset = edgePointOffset_ + i_*7;
-            idType m0 = offset;
-            idType m1 = offset+1;
-            idType a0m0 = offset+2;
-            idType m0b0 = offset+3;
-            idType b1m1 = offset+4;
-            idType m1a1 = offset+5;
-            idType c = offset+6;
+            topoType i_ = (topoType) i;
+            topoType offset = edgePointOffset_ + i_*7;
+            topoType m0 = offset;
+            topoType m1 = offset+1;
+            topoType a0m0 = offset+2;
+            topoType m0b0 = offset+3;
+            topoType b1m1 = offset+4;
+            topoType m1a1 = offset+5;
+            topoType c = offset+6;
 
             // output cell offset
             size_t q = i*18;
@@ -405,21 +404,21 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute(
 // =============================================================================
 // Version 2: Mesh Graph with Linear Polygon
 // =============================================================================
-template <typename idType, typename sizeType> int ttk::MeshGraph::execute2(
+template <typename topoType, typename sizeType> int ttk::MeshGraph::execute2(
     // Input
-    const float* inputPoints,
-    const idType* inputTopology,
-    const size_t nInputPoints,
-    const size_t nInputCells,
-    const size_t nSubdivisions,
+    const float*    inputPoints,
+    const topoType* inputTopology,
+    const size_t    nInputPoints,
+    const size_t    nInputCells,
+    const size_t    nSubdivisions,
 
     const sizeType* inputPointSizes,
-    const float sizeScale,
-    const size_t sizeAxis,
+    const float     sizeScale,
+    const size_t    sizeAxis,
 
     // Output
-    float* outputPoints,
-    idType* outputTopology
+    float*    outputPoints,
+    topoType* outputTopology
 ) const{
 
     Timer t;
@@ -589,20 +588,20 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute2(
         t0 = t.getElapsedTime();
 
         size_t cellSize = this->computeOutputCellSize( nSubdivisions );
-        idType cellDim = ((idType)cellSize)-1;
+        topoType cellDim = ((topoType)cellSize)-1;
 
         #ifdef TTK_ENABLE_OPENMP
         #pragma omp parallel for num_threads(threadNumber_)
         #endif
         for(size_t i=0; i<nInputCells; i++){
             size_t q = i*3+1;
-            idType in0 = inputTopology[q++]*2;
-            idType in1 = inputTopology[q]*2;
+            topoType in0 = inputTopology[q++]*2;
+            topoType in1 = inputTopology[q]*2;
 
-            idType c0 = in0;
-            idType c1 = in0+1;
-            idType c2 = in1+1;
-            idType c3 = in1;
+            topoType c0 = in0;
+            topoType c1 = in0+1;
+            topoType c2 = in1+1;
+            topoType c3 = in1;
 
             size_t q2 = cellSize*i;
             outputTopology[q2++] = cellDim;
@@ -613,13 +612,13 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute2(
             size_t temp = subdivisionOffset + i*nSubdivisionPoints;
 
             for(size_t j=0; j<nSubdivisions; j++)
-                outputTopology[q2++] = (idType) (temp + j*2 + 1);
+                outputTopology[q2++] = (topoType) (temp + j*2 + 1);
 
             outputTopology[q2++] = c2;
             outputTopology[q2++] = c3;
 
             for(int j=nSubdivisions-1; j>=0; j--)
-                outputTopology[q2++] = (idType) (temp + j*2);
+                outputTopology[q2++] = (topoType) (temp + j*2);
         }
 
         // Print Status
@@ -636,15 +635,15 @@ template <typename idType, typename sizeType> int ttk::MeshGraph::execute2(
 // =============================================================================
 // Map input point data to output point data
 // =============================================================================
-template <typename idType, typename dataType> int ttk::MeshGraph::mapInputPointDataToOutputPointData(
-    const idType* inputTopology,
-    const size_t& nInputPoints,
-    const size_t& nInputCells,
+template <typename topoType, typename dataType> int ttk::MeshGraph::mapInputPointDataToOutputPointData(
+    const topoType* inputTopology,
+    const size_t&   nInputPoints,
+    const size_t&   nInputCells,
 
     const dataType* inputPointData,
           dataType* outputPointData,
 
-    const bool& useQuadraticCells,
+    const bool&   useQuadraticCells,
     const size_t& nSubdivisions
 ) const {
 
@@ -716,8 +715,8 @@ template <typename idType, typename dataType> int ttk::MeshGraph::mapInputPointD
         #endif
         for(size_t i=0; i<nInputCells; i++){
             size_t q = i*3+1;
-            idType c0 = inputTopology[q++]*2;
-            idType c3 = inputTopology[q]*2;
+            topoType c0 = inputTopology[q++]*2;
+            topoType c3 = inputTopology[q]*2;
 
             dataType c0V = inputPointData[c0];
             dataType c3V = inputPointData[c3];
@@ -742,13 +741,13 @@ template <typename idType, typename dataType> int ttk::MeshGraph::mapInputPointD
 // =============================================================================
 // Map input cell data to output cell data
 // =============================================================================
-template <typename idType, typename dataType> int ttk::MeshGraph::mapInputCellDataToOutputCellData(
-    const size_t& nInputCells,
+template <typename topoType, typename dataType> int ttk::MeshGraph::mapInputCellDataToOutputCellData(
+    const size_t&   nInputCells,
 
     const dataType* inputCellData,
           dataType* outputCellData,
 
-    const bool& useQuadraticCells,
+    const bool&   useQuadraticCells,
     const size_t& nSubdivisions
 ) const {
 
@@ -772,4 +771,3 @@ template <typename idType, typename dataType> int ttk::MeshGraph::mapInputCellDa
 
     return 1;
 };
-

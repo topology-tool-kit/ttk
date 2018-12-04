@@ -61,15 +61,15 @@ int ttkPlanarGraphLayout::RequestData(
         return 0;
     }
 
-    auto branches = vtkLongArray::SafeDownCast( outputPointData->GetAbstractArray(this->GetBranchFieldName().data()) );
+    auto branches = outputPointData->GetAbstractArray(this->GetBranchFieldName().data());
     if(this->GetUseBranches() && !branches){
-        dMsg(cout, getErrorMsg("vtkLongArray", this->GetBranchFieldName()), fatalMsg);
+        dMsg(cout, getErrorMsg("vtkIdTypeArray", this->GetBranchFieldName()), fatalMsg);
         return 0;
     }
 
-    auto levels = vtkLongArray::SafeDownCast( outputPointData->GetAbstractArray( this->GetLevelFieldName().data()) );
+    auto levels = outputPointData->GetAbstractArray( this->GetLevelFieldName().data());
     if(this->GetUseLevels() && !levels){
-        dMsg(cout, getErrorMsg("vtkLongArray", this->GetLevelFieldName()), fatalMsg);
+        dMsg(cout, getErrorMsg("vtkIdTypeArray", this->GetLevelFieldName()), fatalMsg);
         return 0;
     }
 
@@ -79,15 +79,31 @@ int ttkPlanarGraphLayout::RequestData(
     outputField->SetNumberOfComponents(2); // (x,y) position
     outputField->SetNumberOfValues( nPoints*2 );
 
+    auto sequenceType = this->GetUseSequences() ? sequences->GetDataType() : VTK_CHAR;
+    auto branchType = this->GetUseBranches()
+        ? branches->GetDataType()
+        : this->GetUseLevels() ? levels->GetDataType() : VTK_CHAR;
+    auto levelType = this->GetUseLevels()
+        ? levels->GetDataType()
+        : this->GetUseBranches() ? branches->GetDataType() : VTK_CHAR;
+
+    if(branchType!=levelType){
+        dMsg(cout, "[ttkPlanarGraphLayout] ERROR: Branch and Level array must have the same type.\n", fatalMsg);
+        return 0;
+    }
+
     // Compute layout with base code
-    switch( this->GetUseSequences() ? sequences->GetDataType() : VTK_CHAR){
-        ttkTemplateMacro({
-            int status = planarGraphLayout.execute<vtkIdType TTK_COMMA VTK_TT>(
+    switch(vtkTemplate2PackMacro(
+        branchType,
+        sequenceType
+    )){
+        ttkTemplate2Macro({
+            int status = planarGraphLayout.execute<vtkIdType TTK_COMMA VTK_T1 TTK_COMMA VTK_T2>(
                 // Input
-                !this->GetUseSequences() ? nullptr : (VTK_TT*)    sequences->GetVoidPointer(0),
-                !this->GetUseSizes()     ? nullptr : (float*)     sizes->GetVoidPointer(0),
-                !this->GetUseBranches()  ? nullptr : (vtkIdType*) branches->GetVoidPointer(0),
-                !this->GetUseLevels()    ? nullptr : (vtkIdType*) levels->GetVoidPointer(0),
+                !this->GetUseSequences() ? nullptr : (VTK_T2*) sequences->GetVoidPointer(0),
+                !this->GetUseSizes()     ? nullptr : (float*)  sizes->GetVoidPointer(0),
+                !this->GetUseBranches()  ? nullptr : (VTK_T1*) branches->GetVoidPointer(0),
+                !this->GetUseLevels()    ? nullptr : (VTK_T1*) levels->GetVoidPointer(0),
                 output->GetCells()->GetPointer(),
                 nPoints,
                 nEdges,
