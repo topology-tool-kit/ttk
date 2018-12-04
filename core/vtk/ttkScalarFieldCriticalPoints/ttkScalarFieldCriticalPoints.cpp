@@ -28,17 +28,38 @@ ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints(){
 
 int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs, 
   vector<vtkDataSet *> &outputs){
-
   Memory m;
   Timer t;
 
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!inputs.size()){
+    cerr << "[ttkScalarFieldCriticalPoints] Error: not enough input information." << endl;
+    return -1;
+  }
+#endif
+
   vtkDataSet *input = inputs[0];
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input){
+    cerr << "[ttkScalarFieldCriticalPoints] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(!input->GetNumberOfPoints()){
+    cerr << "[ttkScalarFieldCriticalPoints] Error: input has no point." << endl;
+    return -1;
+  }
+#endif
   
   Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
-  
-  if(!triangulation)
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!triangulation){
+    cerr << "[ttkScalarFieldCriticalPoints] Error: input triangulation is NULL." << endl;
     return -1;
+  }
+#endif
   
   if(VertexBoundary)
     triangulation->preprocessBoundaryVertices();
@@ -117,7 +138,6 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
       ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
 
       criticalPoints.setWrapper(this);
-      criticalPoints.setDebugLevel(Debug::infoMsg);
       criticalPoints.setDomainDimension(domainDimension);
       // set up input
       // 1 -- vertex values

@@ -1,0 +1,12 @@
+include(CMakeFindDependencyMacro)
+
+find_dependency(VTK REQUIRED)
+include(${VTK_USE_FILE})
+include_directories(${VTK_INCLUDE_DIRS})
+
+# Include the actual config for TTK Base
+include("${CMAKE_CURRENT_LIST_DIR}/TTKBaseConfig.cmake")
+# And the actual targets for TTK VTK
+include("${CMAKE_CURRENT_LIST_DIR}/TTKVTKTargets.cmake")
+
+

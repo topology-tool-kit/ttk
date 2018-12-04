@@ -39,6 +39,7 @@ int ttkMeshGraph::RequestData(
 
     size_t nInputPoints = input->GetNumberOfPoints();
     size_t nInputCells = input->GetNumberOfCells();
+    auto inputCells = input->GetCells();
 
     auto inputPointSizes = input->GetPointData()->GetArray( this->GetSizeFieldName().data() );
     if(this->GetUseVariableSize() && !inputPointSizes){
@@ -74,7 +75,7 @@ int ttkMeshGraph::RequestData(
                 status = meshGraph.execute<vtkIdType TTK_COMMA VTK_TT>(
                     // Input
                     (float*) input->GetPoints()->GetVoidPointer(0),
-                    input->GetCells()->GetPointer(),
+                    inputCells->GetPointer(),
                     nInputPoints,
                     nInputCells,
 
@@ -97,7 +98,7 @@ int ttkMeshGraph::RequestData(
                 status = meshGraph.execute2<vtkIdType TTK_COMMA VTK_TT>(
                     // Input
                     (float*) input->GetPoints()->GetVoidPointer(0),
-                    input->GetCells()->GetPointer(),
+                    inputCells->GetPointer(),
                     nInputPoints,
                     nInputCells,
                     this->GetSubdivisions(),

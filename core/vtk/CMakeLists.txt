@@ -36,7 +36,7 @@ function(ttk_add_vtk_library library)
 	endif()
 
 	install(TARGETS ${library}
-		EXPORT TTKVTKConfig
+		EXPORT TTKVTKTargets
 		RUNTIME DESTINATION bin/ttk
 		ARCHIVE DESTINATION lib/ttk
 		LIBRARY DESTINATION lib/ttk)
@@ -64,12 +64,16 @@ add_library(ttkAll INTERFACE)
 target_link_libraries(ttkAll INTERFACE ${VTKWRAPPER_LIB_LIST})
 
 install(TARGETS ttkAll
-	EXPORT TTKVTKConfig
+	EXPORT TTKVTKTargets
 	RUNTIME DESTINATION bin/ttk
 	ARCHIVE DESTINATION lib/ttk
 	LIBRARY DESTINATION lib/ttk)
 
-install(EXPORT TTKVTKConfig
+install(EXPORT TTKVTKTargets
 	NAMESPACE ttk::vtk::
+	DESTINATION lib/cmake/ttk)
+
+configure_file(TTKVTKConfig.cmake.in TTKVTKConfig.cmake @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/TTKVTKConfig.cmake"
 	DESTINATION lib/cmake/ttk)
 

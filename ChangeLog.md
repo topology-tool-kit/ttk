@@ -1,6 +1,10 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+- Nested Tracking Graph (EuroVis 2017 paper)
+- Improved tracking from overlap (modular, templated, streaming support)
+- New identifier sorter (for example to select the N most persistent features)
+- Bug fixes
 
 ### 0.9.7
 - Updates for ParaView-5.6.0

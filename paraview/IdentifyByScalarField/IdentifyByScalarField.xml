@@ -5,28 +5,18 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy
-     name="UncertainDataEstimator"
-     class="ttkUncertainDataEstimator"
-     label="TTK UncertainDataEstimator">
+   <SourceProxy 
+     name="IdentifyByScalarField" 
+     class="ttkIdentifyByScalarField" 
+     label="TTK IdentifyByScalarField">
      <Documentation
-        long_help="TTK plugin that takes an input ensemble data set (represented
-by a list of scalar fields) and which computes various vertexwise statistics
-(PDF estimation, bounds, moments, etc.)."
-        short_help="TTK plugin that takes an input ensemble data set
-(represented
-by a list of scalar fields) and which computes various vertexwise statistics
-(PDF estimation, bounds, moments, etc.).">
-          TTK plugin that takes an input ensemble data set (represented
-by a list of scalar fields) and which computes various vertexwise statistics
-(PDF estimation, bounds, moments, etc.).
-
-See also MandatoryCriticalPoints.
+        long_help="TTK identifyByScalarField plugin."
+        short_help="TTK identifyByScalarField plugin.">
+          TTK identifyByScalarField plugin documentation.
      </Documentation>
      <InputProperty
         name="Input"
-        command="AddInputConnection"
-        multiple_input="1">
+        command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
@@ -42,42 +32,49 @@ See also MandatoryCriticalPoints.
         </Documentation>
       </InputProperty>
 
-
-
-      <IntVectorProperty name="Bound to Compute" command="BoundToCompute"
-      number_of_elements="1" default_values="0">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="Lower and Upper"/>
-          <Entry value="1" text="Lower only"/>
-          <Entry value="2" text="Upper only"/>
-        </EnumerationDomain>
+      <StringVectorProperty
+        name="ScalarField"
+        command="SetScalarField"
+        number_of_elements="1"
+        animateable="0"
+        label="Scalar Field"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
         <Documentation>
-          Set what boundaries to compute.
+          Select the scalar field to process.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty name="IncreasingOrder"
+        label="Increasing Order"
+        command="SetIncreasingOrder"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Order for the identification.
         </Documentation>
       </IntVectorProperty>
 
-      <PropertyGroup panel_widget="Line" label="Bound Fields">
-        <Property name="Bound to Compute" />
-      </PropertyGroup>
-
-
-      <IntVectorProperty
-         name="BinCount"
-         label="Bin count"
-         command="BinCount"
-         number_of_elements="1"
-         default_values="10">
-        <IntRangeDomain name="range" min="1" max="1000" />
-         <Documentation>
-          Thread number.
-         </Documentation>
+      <IntVectorProperty name="StartByOne"
+        label="Start By One"
+        command="SetStartByOne"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="default">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Start identication by one.
+        </Documentation>
       </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Probability Density Functions">
-        <Property name="BinCount" />
-      </PropertyGroup>
-
-
+      
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -89,7 +86,7 @@ See also MandatoryCriticalPoints.
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-
+      
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -103,12 +100,11 @@ See also MandatoryCriticalPoints.
             property="UseAllCores"
             value="0" />
         </Hints>
-
          <Documentation>
           Thread number.
          </Documentation>
       </IntVectorProperty>
-
+      
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
@@ -120,26 +116,21 @@ See also MandatoryCriticalPoints.
            Debug level.
          </Documentation>
       </IntVectorProperty>
-
+      
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="Bound to Compute" />
+        <Property name="ScalarField" />
+        <Property name="IncreasingOrder" />
+        <Property name="StartByOne" />
       </PropertyGroup>
-
+      
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-
-
-
-
-      <OutputPort name="Bound Fields" index="0" id="port0" />
-      <OutputPort name="Probabilities" index="1" id="port1" />
-      <OutputPort name="MeanField" index="2" id="port2" />
-
+      
       <Hints>
-        <ShowInMenu category="TTK - Uncertain Scalar Data" />
+        <ShowInMenu category="TTK - Misc" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

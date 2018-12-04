@@ -99,6 +99,9 @@ class ttkPersistenceCurve
     vtkSetMacro(ComputeSaddleConnectors, int);
     vtkGetMacro(ComputeSaddleConnectors, int);
 
+    vtkTable* GetOutput();
+    vtkTable* GetOutput(int);
+
     int getScalars(vtkDataSet* input);
     int getTriangulation(vtkDataSet* input);
     int getOffsets(vtkDataSet* input);

@@ -47,7 +47,7 @@ int main(int argc, char **argv){
   vtkSmartPointer<ttkPersistenceCurve> curve = 
     vtkSmartPointer<ttkPersistenceCurve>::New();
   curve->SetInputConnection(reader->GetOutputPort());
-  
+
   // 3. computing the persitence diagram
   vtkSmartPointer<ttkPersistenceDiagram> diagram = 
     vtkSmartPointer<ttkPersistenceDiagram>::New();
@@ -81,7 +81,7 @@ int main(int argc, char **argv){
     vtkSmartPointer<ttkMorseSmaleComplex>::New();
   morseSmaleComplex->SetInputConnection(
     topologicalSimplification->GetOutputPort());
-  
+ 
   // 8. saving the output data
   vtkSmartPointer<vtkTableWriter> curveWriter = 
     vtkSmartPointer<vtkTableWriter>::New();

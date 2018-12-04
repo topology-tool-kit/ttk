@@ -22,7 +22,7 @@ character):
 $ mkdir build
 $ cd build
 $ cmake ../ \
-  -DTTKBase_DIR=<path to installed cmake files for ttk base> 
+  -DTTKBase_DIR=<path to installed cmake files for ttk libraries> 
 $ make
 
 A typical value for TTKBase_DIR is "/usr/local/lib/cmake/ttk" (depending on the

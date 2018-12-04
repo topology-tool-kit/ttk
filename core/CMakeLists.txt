@@ -8,8 +8,11 @@ function(ttk_set_compile_options library)
     target_compile_options(${library} PRIVATE -Wall)
 
     if(Boost_FOUND)
-    target_include_directories(${library} PUBLIC ${Boost_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${Boost_LIBRARIES})
+      target_link_libraries(${library} PUBLIC Boost::boost)
+    endif()
+
+    if(Boost_LIBRARIES)
+      target_link_libraries(${library} PUBLIC Boost::system)
     endif()
 
     if (TTK_ENABLE_KAMIKAZE)
@@ -43,8 +46,7 @@ function(ttk_set_compile_options library)
 
     if (TTK_ENABLE_ZFP)
         target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZFP)
-        target_include_directories(${library} PUBLIC ${ZFP_INCLUDE_DIR})
-        target_link_libraries(${library} PUBLIC ${ZFP_LIBRARY})
+        target_link_libraries(${library} PUBLIC zfp::zfp)
     endif()
 
     if (TTK_ENABLE_ZLIB)
@@ -131,14 +133,14 @@ function(ttk_find_python)
   if(PYTHON_INCLUDE_DIRS)
     include_directories(${PYTHON_INCLUDE_DIRS})
 
-    if (${CMAKE_VERSION} VERSION_GREATER "3.12"
-      OR ${CMAKE_VERSION} VERSION_EQUAL "3.12")
-      string(REPLACE \".\" \" \"
-        PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-    else()
+#     if (${CMAKE_VERSION} VERSION_GREATER "3.12"
+#       OR ${CMAKE_VERSION} VERSION_EQUAL "3.12")
+#       string(REPLACE \".\" \" \"
+#         PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
+#     else()
       string(REPLACE "." " "
         PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-    endif()
+#     endif()
     separate_arguments(PYTHON_VERSION_LIST)
     list(GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
     list(GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
@@ -173,7 +175,6 @@ option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" OFF)
 
 option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" ON)
 
-
 option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)
 if(TTK_BUILD_DOCUMENTATION)
     find_package(Doxygen)
@@ -206,7 +207,9 @@ else()
   option(TTK_ENABLE_ZLIB "Enable Zlib support" ON)
 endif()
 
+# TODO: This should be in its own findpackage.cmake file!
 
+# START_FIND_GRAPHVIZ
 option(TTK_ENABLE_GRAPHVIZ "Enable GraphViz support" ON)
 if(TTK_ENABLE_GRAPHVIZ)
   find_path(GRAPHVIZ_INCLUDE_DIR
@@ -229,8 +232,7 @@ if(TTK_ENABLE_GRAPHVIZ)
   endif()
 endif()
 
-
-# START_FINDSQLITE3
+# START_FIND_SQLITE3
 find_path(SQLITE3_INCLUDE_DIR sqlite3.h
     PATHS
     /usr/include
@@ -265,39 +267,12 @@ else()
   message(STATUS "SQLITE3 not found, disabling SQLITE3 support in TTK.")
 endif()
 
-# START_FINDZFP
-find_path(ZFP_INCLUDE_DIR zfp.h
-    PATHS
-    $ENV{ZFP_ROOT_DIR}/include
-    /opt/zfp/include)
-set(ZFP_NAMES ${ZFP_NAMES} zfp)
-find_library(ZFP_LIBRARY
-    NAMES ${ZFP_NAMES}
-    PATHS $ENV{ZFP_ROOT_DIR}/lib /opt/zfp/lib)
-if (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
-  set(ZFP_LIBRARIES ${ZFP_LIBRARY})
-  set(ZFP_FOUND "YES")
-else (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
-  set(ZFP_FOUND "NO")
-endif (ZFP_LIBRARY AND ZFP_INCLUDE_DIR)
-if (ZFP_FOUND)
-  if (NOT ZFP_FIND_QUIETLY)
-    message(STATUS "Found ZFP: ${ZFP_LIBRARIES}")
-  endif (NOT ZFP_FIND_QUIETLY)
-else (ZFP_FOUND)
-  if (ZFP_FIND_REQUIRED)
-    message(FATAL_ERROR "Could not find ZFP library...")
-  endif (ZFP_FIND_REQUIRED)
-endif (ZFP_FOUND)
-mark_as_advanced(
-    ZFP_LIBRARY
-    ZFP_INCLUDE_DIR)
-# END_FINDZFP
-if (ZFP_FOUND)
-  option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
-else()
+find_package(ZFP)
+if(NOT ZFP_INCLUDE_DIRS)
   option(TTK_ENABLE_ZFP "Enable ZFP support" OFF)
   message(STATUS "ZFP not found, disabling ZFP support in TTK.")
+else()
+  option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
 endif()
 
 if (NOT APPLE)
