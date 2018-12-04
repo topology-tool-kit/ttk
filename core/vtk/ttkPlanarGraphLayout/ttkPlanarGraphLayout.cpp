@@ -4,6 +4,7 @@
 #include <vtkAbstractArray.h>
 #include <vtkSmartPointer.h>
 #include <vtkFloatArray.h>
+#include <vtkLongArray.h>
 #include <vtkPointData.h>
 
 using namespace std;
@@ -36,60 +37,57 @@ int ttkPlanarGraphLayout::RequestData(
 
     // Copy input to output
     output->ShallowCopy(input);
-
     size_t nPoints = output->GetNumberOfPoints();
     size_t nEdges = output->GetNumberOfCells();
 
     // Check input fields
     auto outputPointData = output->GetPointData();
 
+    auto getErrorMsg = [](string arrayType, string arrayName){
+        stringstream msg;
+        msg << "[ttkPlanarGraphLayout] ERROR: Input point data does not have " << arrayType << " '" << arrayName << "'" << endl;
+        return msg.str();
+    };
+
     auto sequences = outputPointData->GetAbstractArray( this->GetSequenceFieldName().data() );
-    if(this->GetUsePointSequence() && !sequences){
-        stringstream msg;
-        msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetSequenceFieldName() << "'" <<endl;
-        dMsg(cout, msg.str(), fatalMsg);
+    if(this->GetUseSequences() && !sequences){
+        dMsg(cout, getErrorMsg("array", this->GetSequenceFieldName()), fatalMsg);
         return 0;
     }
 
-    auto sizes = outputPointData->GetAbstractArray( this->GetSizeFieldName().data() );
-    if(this->GetUsePointSize() && !sizes){
-        stringstream msg;
-        msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetSizeFieldName() << "'" <<endl;
-        dMsg(cout, msg.str(), fatalMsg);
+    auto sizes = vtkFloatArray::SafeDownCast( outputPointData->GetAbstractArray(this->GetSizeFieldName().data()) );
+    if(this->GetUseSizes() && !sizes){
+        dMsg(cout, getErrorMsg("vtkFloatArray", this->GetSizeFieldName()), fatalMsg);
         return 0;
     }
 
-    auto branches = outputPointData->GetAbstractArray( this->GetBranchFieldName().data() );
-    if(this->GetUsePointBranch() && !branches){
-        stringstream msg;
-        msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetSizeFieldName() << "'" <<endl;
-        dMsg(cout, msg.str(), fatalMsg);
+    auto branches = vtkLongArray::SafeDownCast( outputPointData->GetAbstractArray(this->GetBranchFieldName().data()) );
+    if(this->GetUseBranches() && !branches){
+        dMsg(cout, getErrorMsg("vtkLongArray", this->GetBranchFieldName()), fatalMsg);
         return 0;
     }
 
-    auto levels = outputPointData->GetAbstractArray( this->GetLevelFieldName().data() );
-    if(this->GetUsePointLevel() && !levels){
-        stringstream msg;
-        msg<<"[ttkPlanarGraphLayout] ERROR: Input point data does not have array '" << this->GetLevelFieldName() << "'" <<endl;
-        dMsg(cout, msg.str(), fatalMsg);
+    auto levels = vtkLongArray::SafeDownCast( outputPointData->GetAbstractArray( this->GetLevelFieldName().data()) );
+    if(this->GetUseLevels() && !levels){
+        dMsg(cout, getErrorMsg("vtkLongArray", this->GetLevelFieldName()), fatalMsg);
         return 0;
     }
 
     // Initialize output field
     vtkSmartPointer<vtkFloatArray> outputField = vtkSmartPointer<vtkFloatArray>::New();
     outputField->SetName( this->GetOutputFieldName().data() );
-    outputField->SetNumberOfComponents(1);
-    outputField->SetNumberOfValues(nPoints);
+    outputField->SetNumberOfComponents(2); // (x,y) position
+    outputField->SetNumberOfValues( nPoints*2 );
 
-    // Compute layout
-    switch(sequences->GetDataType()){
+    // Compute layout with base code
+    switch( this->GetUseSequences() ? sequences->GetDataType() : VTK_CHAR){
         ttkTemplateMacro({
             int status = planarGraphLayout.execute<vtkIdType TTK_COMMA VTK_TT>(
                 // Input
-                (VTK_TT*) sequences->GetVoidPointer(0),
-                !this->GetUsePointSize()    ? nullptr : (float*)     sizes->GetVoidPointer(0),
-                !this->GetUsePointBranch()  ? nullptr : (vtkIdType*) branches->GetVoidPointer(0),
-                !this->GetUsePointLevel()   ? nullptr : (vtkIdType*) levels->GetVoidPointer(0),
+                !this->GetUseSequences() ? nullptr : (VTK_TT*)    sequences->GetVoidPointer(0),
+                !this->GetUseSizes()     ? nullptr : (float*)     sizes->GetVoidPointer(0),
+                !this->GetUseBranches()  ? nullptr : (vtkIdType*) branches->GetVoidPointer(0),
+                !this->GetUseLevels()    ? nullptr : (vtkIdType*) levels->GetVoidPointer(0),
                 output->GetCells()->GetPointer(),
                 nPoints,
                 nEdges,

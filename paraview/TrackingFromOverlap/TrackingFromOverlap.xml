@@ -10,7 +10,6 @@ Related publication:
 'Nested Tracking Graphs'.
 Jonas Lukasczyk, Gunther Weber, Ross Maciejewski, Christoph Garth, and Heike Leitte.
 Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
-
                 </Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">

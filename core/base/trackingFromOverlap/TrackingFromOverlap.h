@@ -26,7 +26,7 @@
 using namespace std;
 
 typedef unsigned char topologyType;
-typedef long long idType;
+typedef long long int idType;
 
 typedef boost::variant<
     double, float, long long, unsigned long long, long, unsigned long, int, unsigned int, short, unsigned short, char, signed char, unsigned char
@@ -40,20 +40,15 @@ struct Node {
     float y;
     float z;
 
-    sizeType inDegree;
-    sizeType outDegree;
-
     idType branchID;
     idType maxPredID;
     idType maxSuccID;
 
     Node(
         sizeType size=0, float x=0, float y=0, float z=0,
-        sizeType inDegree=0, sizeType outDegree=0,
-        idType branchID=numeric_limits<idType>::max(), idType maxPredID=-1, idType maxSuccID=-1
-    ) : size(size), x(x), y(y), z(z), inDegree(inDegree), outDegree(outDegree), branchID(branchID), maxPredID(maxPredID), maxSuccID(maxSuccID) {}
+        idType branchID=-1, idType maxPredID=-1, idType maxSuccID=-1
+    ) : size(size), x(x), y(y), z(z), branchID(branchID), maxPredID(maxPredID), maxSuccID(maxSuccID) {}
 };
-
 
 typedef vector<idType> Edges; // [index0, index1, overlap, branch,...]
 typedef vector<Node> Nodes;
@@ -124,9 +119,6 @@ namespace ttk{
                         auto n1Index = edges[i+1];
                         auto& n0 = nodes0[ n0Index ];
                         auto& n1 = nodes1[ n1Index ];
-
-                        n0.outDegree++;
-                        n1.inDegree++;
 
                         sizeType n0MaxSuccSize = n0.maxSuccID!=-1 ? nodes1[ n0.maxSuccID ].size : 0;
                         sizeType n1MaxPredSize = n1.maxPredID!=-1 ? nodes0[ n1.maxPredID ].size : 0;

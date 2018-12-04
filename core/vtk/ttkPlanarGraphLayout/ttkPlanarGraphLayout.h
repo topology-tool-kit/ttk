@@ -1,13 +1,18 @@
 /// \ingroup vtk
 /// \class ttkPlanarGraphLayout
-/// \author Wiebke Koepp (wiebke.koepp@gmail.com) and Jonas Lukasczyk (jl@jluk.de)
-/// \date 01.11.2018
+/// \author Jonas Lukasczyk (jl@jluk.de)
+/// \date 01.12.2018
 ///
 /// \brief TTK VTK-filter that computes a planar graph layout.
 ///
-/// VTK wrapping code for the @PlanarGraphLayout package.
+/// This filter computes a planar graph layout of a 'vtkUnstructuredGrid'. To improve the quality of the layout it is possible to pass additional field data to the algorithm:
 ///
-/// This filter computes a planar graph layout of a vtkUnstructuredGrid.
+/// 1) Sequences: Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).
+/// 2) Sizes: Points cover space on the y-axis based on their size.
+/// 3) Branches: Points with the same branch label are positioned on straight lines.
+/// 4) Levels: The layout of points with the same level label are computed individually and afterwards nested based on the level hierarchy. This makes it possible to draw nested graphs where each level is a layer of the resulting graph.
+///
+/// VTK wrapping code for the @PlanarGraphLayout package.
 ///
 /// \param Input Graph. (vtkUnstructuredGrid)
 /// \param Output Graph (vtkUnstructuredGrid)
@@ -36,26 +41,28 @@ class ttkPlanarGraphLayout
         static ttkPlanarGraphLayout* New();
         vtkTypeMacro(ttkPlanarGraphLayout, vtkUnstructuredGridAlgorithm)
 
-        vtkSetMacro(UsePointSequence, bool);
-        vtkGetMacro(UsePointSequence, bool);
+        // getters and setters for optional field data
+        vtkSetMacro(UseSequences, bool);
+        vtkGetMacro(UseSequences, bool);
         vtkSetMacro(SequenceFieldName, std::string);
         vtkGetMacro(SequenceFieldName, std::string);
 
-        vtkSetMacro(UsePointSize, bool);
-        vtkGetMacro(UsePointSize, bool);
+        vtkSetMacro(UseSizes, bool);
+        vtkGetMacro(UseSizes, bool);
         vtkSetMacro(SizeFieldName, std::string);
         vtkGetMacro(SizeFieldName, std::string);
 
-        vtkSetMacro(UsePointBranch, bool);
-        vtkGetMacro(UsePointBranch, bool);
+        vtkSetMacro(UseBranches, bool);
+        vtkGetMacro(UseBranches, bool);
         vtkSetMacro(BranchFieldName, std::string);
         vtkGetMacro(BranchFieldName, std::string);
 
-        vtkSetMacro(UsePointLevel, bool);
-        vtkGetMacro(UsePointLevel, bool);
+        vtkSetMacro(UseLevels, bool);
+        vtkGetMacro(UseLevels, bool);
         vtkSetMacro(LevelFieldName, std::string);
         vtkGetMacro(LevelFieldName, std::string);
 
+        // getters and setters for output field name
         vtkSetMacro(OutputFieldName, std::string);
         vtkGetMacro(OutputFieldName, std::string);
 
@@ -76,26 +83,32 @@ class ttkPlanarGraphLayout
         // end of default ttk setters
 
         int FillInputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); break;
+                default: return 0;
+            }
             return 1;
         }
 
         int FillOutputPortInformation(int port, vtkInformation *info) override {
-            switch(port)
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+            switch(port){
+                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); break;
+                default: return 0;
+            }
             return 1;
         }
 
     protected:
 
         ttkPlanarGraphLayout(){
-            SetUsePointSequence(true);
-            SetSequenceFieldName("SequenceIndex");
-            SetUsePointSize(false);
-            SetSizeFieldName("Size");
-            SetUsePointLevel(false);
-            SetLevelFieldName("LevelIndex");
+            SetUseSequences(false);
+            SetSequenceFieldName("");
+            SetUseSizes(false);
+            SetSizeFieldName("");
+            SetUseBranches(false);
+            SetBranchFieldName("");
+            SetUseLevels(false);
+            SetLevelFieldName("");
 
             SetOutputFieldName("Layout");
 
@@ -113,20 +126,20 @@ class ttkPlanarGraphLayout
 
     private:
 
-        bool UsePointSequence;
+        // optional field data
+        bool UseSequences;
         std::string SequenceFieldName;
-
-        bool UsePointSize;
+        bool UseSizes;
         std::string SizeFieldName;
-
-        bool UsePointBranch;
+        bool UseBranches;
         std::string BranchFieldName;
-
-        bool UsePointLevel;
+        bool UseLevels;
         std::string LevelFieldName;
 
+        // output field name
         std::string OutputFieldName;
 
+        // base code
         ttk::PlanarGraphLayout planarGraphLayout;
 
         bool needsToAbort() override { return GetAbortExecute(); };

@@ -75,16 +75,8 @@ template<typename labelType> int finalize(
         prepArray(size, "Size", 1, nNodes);
         auto sizeData = (float*) size->GetVoidPointer(0);
 
-        auto inDegree = vtkSmartPointer<vtkIdTypeArray>::New();
-        prepArray(inDegree, "InDegree", 1, nNodes);
-        auto inDegreeData = (vtkIdType*) inDegree->GetVoidPointer(0);
-
-        auto outDegree = vtkSmartPointer<vtkIdTypeArray>::New();
-        prepArray(outDegree, "OutDegree", 1, nNodes);
-        auto outDegreeData = (vtkIdType*) outDegree->GetVoidPointer(0);
-
         auto branch = vtkSmartPointer<vtkIdTypeArray>::New();
-        prepArray(branch, "BranchId_Point", 1, nNodes);
+        prepArray(branch, "BranchId", 1, nNodes);
         auto branchData = (vtkIdType*) branch->GetVoidPointer(0);
 
         auto label = vtkSmartPointer<vtkDataArray>::Take(
@@ -104,11 +96,8 @@ template<typename labelType> int finalize(
                     sequenceData[q2]  = t;
                     levelData[q2] = l;
                     sizeData[q2]  = node.size;
-                    labelData[q2] = boost::get<labelType>( node.label );
-
-                    inDegreeData[q2] = node.inDegree;
-                    outDegreeData[q2] = node.outDegree;
                     branchData[q2] = node.branchID;
+                    labelData[q2] = boost::get<labelType>( node.label );
 
                     q2++;
                 }
@@ -122,8 +111,6 @@ template<typename labelType> int finalize(
         pointData->AddArray( level );
         pointData->AddArray( size );
         pointData->AddArray( label );
-        pointData->AddArray( inDegree );
-        pointData->AddArray( outDegree );
         pointData->AddArray( branch );
     }
 
@@ -164,7 +151,7 @@ template<typename labelType> int finalize(
 
         auto branch = vtkSmartPointer<vtkIdTypeArray>::New();
         branch->SetNumberOfValues( nEdgesT + nEdgesN );
-        branch->SetName("BranchId_Cell");
+        branch->SetName("BranchId");
         auto branchData = (vtkIdType*) branch->GetVoidPointer(0);
 
         auto type = vtkSmartPointer<vtkIdTypeArray>::New();
