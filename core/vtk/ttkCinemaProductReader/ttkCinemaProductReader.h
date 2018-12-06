@@ -58,7 +58,7 @@ class ttkCinemaProductReader
         int FillInputPortInformation(int port, vtkInformation* info) override {
             switch(port){
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable"); break;
-                case 1: return 0;
+                default: return 0;
             }
             return 1;
         }
@@ -66,7 +66,7 @@ class ttkCinemaProductReader
         int FillOutputPortInformation(int port, vtkInformation* info) override {
             switch(port){
                 case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
-                case 1: return 0;
+                default: return 0;
             }
             return 1;
         }

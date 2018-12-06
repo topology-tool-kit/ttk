@@ -6,10 +6,9 @@
 
 #include <vtkPointData.h>
 #include <vtkCellData.h>
-#include <vtkDoubleArray.h>
-#include <vtkUnsignedLongLongArray.h>
-#include <vtkUnsignedIntArray.h>
-#include <vtkUnsignedCharArray.h>
+#include <vtkFloatArray.h>
+#include <vtkLongLongArray.h>
+#include <vtkCharArray.h>
 #include <vtkIdTypeArray.h>
 
 using namespace std;
@@ -31,7 +30,6 @@ void getNumberOfLevelsAndTimesteps(vtkMultiBlockDataSet* mb, size_t& nL, size_t&
     nT = timesteps->GetNumberOfBlocks();
 };
 
-
 // =============================================================================
 // Finalize
 // =============================================================================
@@ -49,6 +47,12 @@ template<typename labelType> int finalize(
     size_t nL = levelTimeNodesMap.size();
     size_t nT = levelTimeNodesMap[0].size();
 
+    auto prepArray = [](vtkAbstractArray* array, string name, size_t nComponents, size_t nValues){
+        array->SetName(name.data());
+        array->SetNumberOfComponents( nComponents );
+        array->SetNumberOfTuples( nValues );
+    };
+
     // Add Points
     {
         size_t nNodes = 0;
@@ -60,30 +64,26 @@ template<typename labelType> int finalize(
         points->SetNumberOfPoints( nNodes );
         auto pointCoords = (float*) points->GetVoidPointer(0);
 
-        auto time = vtkSmartPointer<vtkUnsignedIntArray>::New();
-        time->SetName("TimeIndex");
-        time->SetNumberOfComponents(1);
-        time->SetNumberOfTuples( nNodes );
-        auto timeData = (unsigned int*) time->GetVoidPointer(0);
+        auto sequence = vtkSmartPointer<vtkLongLongArray>::New();
+        prepArray(sequence, "SequenceIndex", 1, nNodes);
+        auto sequenceData = (long long*) sequence->GetVoidPointer(0);
 
-        auto level = vtkSmartPointer<vtkUnsignedIntArray>::New();
-        level->SetName("LevelIndex");
-        level->SetNumberOfComponents(1);
-        level->SetNumberOfTuples( nNodes );
-        auto levelData = (unsigned int*) level->GetVoidPointer(0);
+        auto level = vtkSmartPointer<vtkLongLongArray>::New();
+        prepArray(level, "LevelIndex", 1, nNodes);
+        auto levelData = (long long*) level->GetVoidPointer(0);
 
-        auto size = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
-        size->SetName("Size");
-        size->SetNumberOfComponents(1);
-        size->SetNumberOfTuples( nNodes );
-        auto sizeData = (unsigned long long*) size->GetVoidPointer(0);
+        auto size = vtkSmartPointer<vtkFloatArray>::New();
+        prepArray(size, "Size", 1, nNodes);
+        auto sizeData = (float*) size->GetVoidPointer(0);
+
+        auto branch = vtkSmartPointer<vtkLongLongArray>::New();
+        prepArray(branch, "BranchId", 1, nNodes);
+        auto branchData = (long long*) branch->GetVoidPointer(0);
 
         auto label = vtkSmartPointer<vtkDataArray>::Take(
             vtkDataArray::CreateDataArray( labelTypeId )
         );
-        label->SetName( labelFieldName.data() );
-        label->SetNumberOfComponents(1);
-        label->SetNumberOfTuples( nNodes );
+        prepArray(label, labelFieldName, 1, nNodes);
         auto labelData = (labelType*) label->GetVoidPointer(0);
 
         size_t q1=0, q2=0;
@@ -94,10 +94,12 @@ template<typename labelType> int finalize(
                     pointCoords[q1++] = node.y;
                     pointCoords[q1++] = node.z;
 
-                    timeData[q2]  = (unsigned int)t;
-                    levelData[q2] = (unsigned int)l;
+                    sequenceData[q2]  = t;
+                    levelData[q2] = l;
                     sizeData[q2]  = node.size;
+                    branchData[q2] = node.branchID;
                     labelData[q2] = boost::get<labelType>( node.label );
+
                     q2++;
                 }
             }
@@ -106,10 +108,11 @@ template<typename labelType> int finalize(
         trackingGraph->SetPoints(points);
 
         auto pointData = trackingGraph->GetPointData();
-        pointData->AddArray( time );
+        pointData->AddArray( sequence );
         pointData->AddArray( level );
         pointData->AddArray( size );
         pointData->AddArray( label );
+        pointData->AddArray( branch );
     }
 
     // Add Cells
@@ -130,27 +133,29 @@ template<typename labelType> int finalize(
         if(nT>1)
             for(size_t t=0; t<nT-1; t++)
                 for(size_t l=0; l<nL; l++)
-                    nEdgesT += levelTimeEdgesTMap[l][t].size()/3;
+                    nEdgesT += levelTimeEdgesTMap[l][t].size()/4;
 
         size_t nEdgesN = 0;
         if(nL>1)
             for(size_t l=0; l<nL-1; l++)
                 for(size_t t=0; t<nT; t++)
-                    nEdgesN += timeLevelEdgesNMap[t][l].size()/3;
+                    nEdgesN += timeLevelEdgesNMap[t][l].size()/4;
 
         auto cells = vtkSmartPointer<vtkIdTypeArray>::New();
-        cells->SetNumberOfTuples( 3*nEdgesT + 3*nEdgesN );
+        cells->SetNumberOfValues( 3*nEdgesT + 3*nEdgesN );
         auto cellIds = (vtkIdType*) cells->GetVoidPointer(0);
 
-        auto overlap = vtkSmartPointer<vtkUnsignedLongLongArray>::New();
-        overlap->SetNumberOfTuples( nEdgesT + nEdgesN );
-        overlap->SetName("Overlap");
-        auto overlapData = (unsigned long long*) overlap->GetVoidPointer(0);
+        auto overlap = vtkSmartPointer<vtkFloatArray>::New();
+        prepArray(overlap, "Overlap", 1, nEdgesT+nEdgesN);
+        auto overlapData = (float*) overlap->GetVoidPointer(0);
 
-        auto type = vtkSmartPointer<vtkUnsignedCharArray>::New();
-        type->SetNumberOfTuples( nEdgesT + nEdgesN );
-        type->SetName("Type");
-        auto typeData = (unsigned char*) type->GetVoidPointer(0);
+        auto branch = vtkSmartPointer<vtkLongLongArray>::New();
+        prepArray(branch, "BranchId", 1, nEdgesT+nEdgesN);
+        auto branchData = (long long*) branch->GetVoidPointer(0);
+
+        auto type = vtkSmartPointer<vtkCharArray>::New();
+        prepArray(type, "Type", 1, nEdgesT+nEdgesN);
+        auto typeData = (char*) type->GetVoidPointer(0);
 
         size_t q0=0, q1=0;
 
@@ -164,7 +169,9 @@ template<typename labelType> int finalize(
                         cellIds[q0++] = (vtkIdType) (timeLevelOffsetMap[ (t-1)*nL+l ] + edges[i++]);
                         cellIds[q0++] = (vtkIdType) (timeLevelOffsetMap[ (t  )*nL+l ] + edges[i++]);
                         typeData[q1] = 0;
-                        overlapData[q1++] = edges[i++];
+                        overlapData[q1] = edges[i++];
+                        branchData[q1] = edges[i++];
+                        q1++;
                     }
                 }
             }
@@ -180,7 +187,9 @@ template<typename labelType> int finalize(
                         cellIds[q0++] = (vtkIdType) (timeLevelOffsetMap[ temp+(l-1) ] + edges[i++]);
                         cellIds[q0++] = (vtkIdType) (timeLevelOffsetMap[ temp+(l  ) ] + edges[i++]);
                         typeData[q1] = 1;
-                        overlapData[q1++] = edges[i++];
+                        overlapData[q1] = edges[i++];
+                        branchData[q1] = edges[i++];
+                        q1++;
                     }
                 }
             }
@@ -189,8 +198,10 @@ template<typename labelType> int finalize(
         cellArray->SetCells(nEdgesT + nEdgesN, cells);
         trackingGraph->SetCells(VTK_LINE, cellArray);
 
-        trackingGraph->GetCellData()->AddArray( overlap );
-        trackingGraph->GetCellData()->AddArray( type );
+        auto cellData = trackingGraph->GetCellData();
+        cellData->AddArray( type );
+        cellData->AddArray( overlap );
+        cellData->AddArray( branch );
     }
 
     return 1;
@@ -617,6 +628,25 @@ int ttkTrackingFromOverlap::computeNestingTrees(vtkMultiBlockDataSet* data){
     return 1;
 }
 
+// =============================================================================
+// Compute Branches
+// =============================================================================
+int ttkTrackingFromOverlap::computeBranches(){
+
+    size_t nL = this->levelTimeEdgesTMap.size();
+
+    for(size_t l=0; l<nL; l++)
+        this->trackingFromOverlap.computeBranches(
+            this->levelTimeEdgesTMap[l],
+            this->levelTimeNodesMap[l]
+        );
+
+    return 1;
+}
+
+// =============================================================================
+// Request Data
+// =============================================================================
 int ttkTrackingFromOverlap::RequestData(
     vtkInformation* request,
     vtkInformationVector** inputVector,
@@ -693,6 +723,10 @@ int ttkTrackingFromOverlap::RequestData(
         // Get Output
         vtkInformation* outInfo = outputVector->GetInformationObject(0);
         auto trackingGraph = outInfo->Get(vtkDataObject::DATA_OBJECT());
+
+        // Compute Branches
+        if( !this->computeBranches() )
+            return 0;
 
         // Mesh Graph
         if( !this->meshNestedTrackingGraph(trackingGraph) )

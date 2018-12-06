@@ -8,7 +8,10 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkBlockAggregator)
 
-int ttkBlockAggregator::AggregateBlock(vtkDataObject* dataObject, vtkMultiBlockDataSet* mb, size_t index, bool useShallowCopy){
+int ttkBlockAggregator::AggregateBlock(vtkDataObject* dataObject, bool useShallowCopy){
+
+    size_t nBlocks = this->AggregatedMultiBlockDataSet->GetNumberOfBlocks();
+
     auto temp0 = vtkSmartPointer<vtkMultiBlockDataSet>::New();
     temp0->SetBlock(0, dataObject);
 
@@ -19,7 +22,12 @@ int ttkBlockAggregator::AggregateBlock(vtkDataObject* dataObject, vtkMultiBlockD
     else
         temp1->DeepCopy( temp0 );
 
-    mb->SetBlock(index, temp1->GetBlock(0));
+    this->AggregatedMultiBlockDataSet->SetBlock(nBlocks, temp1->GetBlock(0));
+
+    // Print status
+    stringstream msg;
+    msg << "[ttkBlockAggregator] Added block at index " << nBlocks << endl;
+    dMsg(cout, msg.str(), infoMsg);
 
     return 1;
 }
@@ -37,35 +45,36 @@ int ttkBlockAggregator::RequestData(
         dMsg(cout, msg.str(), infoMsg);
     }
 
-    // Get Input and Output
+    // Get Input
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+    auto firstInput = inInfo->Get( vtkDataObject::DATA_OBJECT() );
 
     // Get iteration information
-    double i = inInfo->Get( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP() );
+    double iteration = inInfo->Get( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP() );
+    double nIterations = firstInput->GetInformation()->Get( vtkDataObject::DATA_TIME_STEP() );
 
     // First timestep
-    if(this->GetForceReset() || i==0 || this->AggregatedMultiBlockDataSet==nullptr)
+    if(this->GetForceReset() || iteration==0 || this->AggregatedMultiBlockDataSet==nullptr)
         this->AggregatedMultiBlockDataSet = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
-    size_t nBlocks = this->AggregatedMultiBlockDataSet->GetNumberOfBlocks();
+    bool useShallowCopy = this->GetForceReset() && nIterations<1;
+
     for(size_t i=0; i<5; i++){
         vtkInformationVector* inVector = inputVector[i];
-
         if(inVector->GetNumberOfInformationObjects()!=1) continue;
-
 
         vtkInformation* inInfo = inVector->GetInformationObject(0);
         auto input = inInfo->Get( vtkDataObject::DATA_OBJECT() );
         if(input){
-            size_t index = nBlocks + i;
 
-            // Add block
-            this->AggregateBlock(input, this->AggregatedMultiBlockDataSet, index, true);
+            auto inputAsMB = vtkMultiBlockDataSet::SafeDownCast( input );
 
-            // Print status
-            stringstream msg;
-            msg << "[ttkBlockAggregator] Added block at index " << index << endl;
-            dMsg(cout, msg.str(), infoMsg);
+            if(this->GetFlattenInput() && inputAsMB){
+                auto nBlocks = inputAsMB->GetNumberOfBlocks();
+                for(size_t j=0; j<nBlocks; j++)
+                    this->AggregateBlock(inputAsMB->GetBlock(j), useShallowCopy);
+            } else
+                this->AggregateBlock(input, useShallowCopy);
         }
     }
 

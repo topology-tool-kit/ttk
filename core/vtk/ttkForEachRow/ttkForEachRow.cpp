@@ -1,6 +1,9 @@
 #include <ttkForEachRow.h>
 
 #include <vtkTable.h>
+#include <vtkFieldData.h>
+#include <vtkDoubleArray.h>
+#include <vtkUnsignedLongLongArray.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
 using namespace std;
@@ -35,10 +38,15 @@ int ttkForEachRow::RequestData(
 
     // Print status
     {
+        string divider = "================================================================================";
+
         stringstream msg;
-        msg << "================================================================================" << endl
-            << "[ttkForEachRow]  Iteration: " << index << endl;
-        dMsg(cout, msg.str(), infoMsg);
+        msg << "[ttkForEachRow]  Iteration: " << index << "   ";
+        size_t n = divider.length()-msg.str().length();
+        for(size_t i=0; i<n; i++)
+            msg<<"/";
+        msg<<endl;
+        dMsg(cout, divider + "\n" + msg.str(), infoMsg);
     }
 
     // Get Input and Output
@@ -46,13 +54,20 @@ int ttkForEachRow::RequestData(
     auto outputTable = vtkTable::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
     // Propagate number of rows downstream
+    auto iterationInformation = vtkSmartPointer<vtkDoubleArray>::New();
+    iterationInformation->SetName( "_ttk_IterationInfo" );
+    iterationInformation->SetNumberOfValues(2);
+    iterationInformation->SetValue(0, index);
+    iterationInformation->SetValue(1, inputTable->GetNumberOfRows());
+    outputTable->GetFieldData()->AddArray( iterationInformation );
+
     outputTable->GetInformation()->Set( vtkDataObject::DATA_TIME_STEP(), inputTable->GetNumberOfRows() );
 
     // Extract row at index
     size_t n = inputTable->GetNumberOfColumns();
     for(size_t i=0; i<n; i++){
         auto column = inputTable->GetColumn(i);
-        auto newColumn = vtkAbstractArray::CreateArray( column->GetDataType() );
+        auto newColumn = vtkSmartPointer<vtkAbstractArray>::Take( column->NewInstance() );
         newColumn->SetName( column->GetName() );
         newColumn->SetNumberOfTuples( 1 );
         newColumn->SetVariantValue(0, column->GetVariantValue( index ) );

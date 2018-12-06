@@ -1,6 +1,8 @@
 #include <ttkEndFor.h>
 
 #include <vtkMultiBlockDataSet.h>
+#include <vtkFieldData.h>
+#include <vtkDoubleArray.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
 using namespace std;
@@ -23,10 +25,6 @@ int ttkEndFor::RequestUpdateExtent(
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
 ){
-    // Print status
-    stringstream msg;
-    msg << "[ttkEndFor] Next Iteration: "<< this->nextIndex << endl;
-    dMsg(cout, msg.str(), infoMsg);
 
     // Request next index
     vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
@@ -41,25 +39,36 @@ int ttkEndFor::RequestData(
     vtkInformationVector* outputVector
 ){
     // Print status
-    {
-        stringstream msg;
-        msg<<"================================================================================"<<endl;
-        dMsg(cout, msg.str(), infoMsg);
-    }
+    string divider = "================================================================================";
+    dMsg(cout, divider + "\n", infoMsg);
 
     // Get Input
-    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-    auto input = inInfo->Get( vtkDataObject::DATA_OBJECT() );
+    vtkInformation* inInfo = inputVector[1]->GetInformationObject(0);
+    auto inputFor = inInfo->Get( vtkDataObject::DATA_OBJECT() );
 
     // Get iteration information
-    double i = inInfo->Get( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP() );
-    double n = input->GetInformation()->Get( vtkDataObject::DATA_TIME_STEP() );
-
-    this->nextIndex = i+1;
+    auto iterationInformation = vtkDoubleArray::SafeDownCast( inputFor->GetFieldData()->GetAbstractArray("_ttk_IterationInfo") );
+    if(!iterationInformation){
+        dMsg(cout, "[ttkEndFor] ERROR: Unable to retrieve iteration information (is the input the start of the for loop?).\n", fatalMsg);
+        return 0;
+    }
+    this->nextIndex = iterationInformation->GetValue(0) + 1;
+    double n = iterationInformation->GetValue(1);
 
     if(this->nextIndex<n){
         // Request Next Element
         request->Set( vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING(), 1 );
+
+        // Print status
+        {
+            stringstream msg;
+            msg << "[ttkEndFor] Next Iteration: "<< this->nextIndex<<"   ";
+            size_t n = divider.length()-msg.str().length();
+            for(size_t i=0; i<n; i++)
+                msg<<"\\";
+            msg<<endl;
+            dMsg(cout, msg.str(), infoMsg);
+        }
     } else {
         // Stop iterations
         request->Remove( vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING() );

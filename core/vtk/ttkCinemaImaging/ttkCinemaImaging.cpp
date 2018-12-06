@@ -249,6 +249,8 @@ int ttkCinemaImaging::RequestData(
     // Iterate over Locations
     double camPosition[3] = {0,0,0};
     size_t n = inputGrid->GetNumberOfPoints();
+    auto inputGridPointData = inputGrid->GetPointData();
+    size_t nInputGridPointData = inputGridPointData->GetNumberOfArrays();
 
     for(size_t i=0; i<n; i++){
         // Set Camera Position
@@ -318,6 +320,17 @@ int ttkCinemaImaging::RequestData(
             cu->SetValue(1, upd[1]);
             cu->SetValue(2, upd[2]);
             outputImageFD->AddArray( cu );
+
+            for(size_t j=0; j<nInputGridPointData; j++){
+                auto array = inputGridPointData->GetAbstractArray(j);
+                auto newArray = vtkSmartPointer<vtkAbstractArray>::Take( array->NewInstance() );
+                newArray->SetName( array->GetName() );
+                newArray->SetNumberOfTuples(1);
+                newArray->SetNumberOfComponents( array->GetNumberOfComponents() );
+                array->GetTuples(i,i, newArray);
+
+                outputImageFD->AddArray( newArray );
+            }
         }
 
         // Add Point Data

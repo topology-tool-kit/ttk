@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="MeshGraph" class="ttkMeshGraph" label="TTK MeshGraph">
+            <Documentation long_help="TTK MeshGraph" short_help="TTK MeshGraph">This filter generates for each one dimensional cell (edge) of a 'vtkUnstructuredGrid' a two dimensional cell by mapping a size value to the width of the input cell. The output is a 'vtkUnstructuredGrid' consisting of a set of either quadratic quads or linear polygons.</Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkUnstructuredGrid" />
+                </DataTypeDomain>
+                <InputArrayDomain name="input_array" attribute_type="point" />
+                <Documentation>Input Graph.</Documentation>
+            </InputProperty>
+
+            <IntVectorProperty name="UseVariableSize" label="Use Variable Size" command="SetUseVariableSize" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>Use variable edge sizes.</Documentation>
+            </IntVectorProperty>
+            <StringVectorProperty name="SizeFieldName" label="" command="SetSizeFieldName" number_of_elements="1" animateable="0" default_values="Size">
+                <ArrayListDomain name="array_list" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseVariableSize" value="1" />
+                </Hints>
+                <Documentation>Scalar field that contains point sizes.</Documentation>
+            </StringVectorProperty>
+
+            <DoubleVectorProperty name="SizeScale" label="Size Scale" command="SetSizeScale" number_of_elements="1" default_values="1">
+                <Documentation>A constant factor that is multiplied with the size values to conveniently scale the width of edges.</Documentation>
+            </DoubleVectorProperty>
+            <IntVectorProperty name="SizeAxis" label="Size Axis" command="SetSizeAxis" number_of_elements="1" default_values="1">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="X"/>
+                    <Entry value="1" text="Y"/>
+                    <Entry value="2" text="Z"/>
+                </EnumerationDomain>
+                <Documentation>Axis on which to map size values.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="UseQuadraticCells" label="Use Quadratic Cells" command="SetUseQuadraticCells" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Mesh graph with quadratic cells or linear polygons.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="Subdivisions" label="Subdivisions" command="SetSubdivisions" number_of_elements="1" default_values="0">
+                <IntRangeDomain name="range" min="0" max="10" />
+                <Documentation>Number of edge subdivisions for linear polygons.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseQuadraticCells" value="0" />
+                </Hints>
+            </IntVectorProperty>
+            <IntVectorProperty name="UseTetrahedralize" label="Tetrahedralize Output" command="SetTetrahedralize" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Tetrahedralize meshed graph because VTK has problems with concave polygons.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseQuadraticCells" value="0" />
+                </Hints>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <BooleanDomain name="bool" />
+                <Documentation>Use all available cores.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="1" max="100" />
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
+                </Hints>
+                <Documentation>Thread number.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="0" max="100" />
+                <Documentation>Debug level.</Documentation>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="UseVariableSize" />
+                <Property name="SizeFieldName" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="SizeAxis" />
+                <Property name="SizeScale" />
+                <Property name="UseQuadraticCells" />
+                <Property name="Subdivisions" />
+                <Property name="UseTetrahedralize" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Testing">
+                <Property name="UseAllCores" />
+                <Property name="ThreadNumber" />
+                <Property name="DebugLevel" />
+            </PropertyGroup>
+
+            <Hints>
+                <ShowInMenu category="TTK - Misc" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

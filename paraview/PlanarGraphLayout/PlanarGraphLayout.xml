@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="PlanarGraphLayout" class="ttkPlanarGraphLayout" label="TTK PlanarGraphLayout">
+            <Documentation long_help="TTK PlanarGraphLayout" short_help="TTK PlanarGraphLayout">
+This filter computes a planar graph layout of a 'vtkUnstructuredGrid'. To improve the quality of the layout it is possible to pass additional field data to the algorithm:
+
+1) Sequences: Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).
+
+2) Sizes: Points cover space on the y-axis based on their size.
+
+3) Branches: Points with the same branch label are positioned on straight lines.
+
+4) Levels: The layout of points with the same level label are computed individually and afterwards nested based on the level hierarchy. This makes it possible to draw nested graphs where each level is a layer of the resulting graph.
+
+Related publication:
+
+'Nested Tracking Graphs'.
+Jonas Lukasczyk, Gunther Weber, Ross Maciejewski, Christoph Garth, and Heike Leitte.
+Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
+            </Documentation>
+
+            <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkUnstructuredGrid" />
+                </DataTypeDomain>
+                <InputArrayDomain name="input_array" attribute_type="point" />
+                <Documentation>Graph.</Documentation>
+            </InputProperty>
+
+            <IntVectorProperty name="UseSequences" label="Use Sequences" command="SetUseSequences" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).</Documentation>
+            </IntVectorProperty>
+            <StringVectorProperty name="SequenceFieldName" command="SetSequenceFieldName" number_of_elements="1" animateable="0" label="" default_values="SequenceIndex">
+                <ArrayListDomain name="array_list" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Sequence scalar field.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseSequences" value="1" />
+                </Hints>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="UseSizes" label="Use Sizes" command="SetUseSizes" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>Points cover space on the y-axis based on their size.</Documentation>
+            </IntVectorProperty>
+            <StringVectorProperty name="SizeFieldName" command="SetSizeFieldName" number_of_elements="1" animateable="0" label="" default_values="Size">
+                <ArrayListDomain name="array_list" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Size scalar field.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseSizes" value="1" />
+                </Hints>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="UseBranches" label="Use Branches" command="SetUseBranches" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>Points with the same branch label are positioned on straight lines.</Documentation>
+            </IntVectorProperty>
+            <StringVectorProperty name="BranchFieldName" command="SetBranchFieldName" number_of_elements="1" animateable="0" label="" default_values="BranchId">
+                <ArrayListDomain name="array_list" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Branch scalar field.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseBranches" value="1" />
+                </Hints>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="UseLevels" label="Use Levels" command="SetUseLevels" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>The layout of points with the same level label are computed individually and afterwards nested based on the level hierarchy.</Documentation>
+            </IntVectorProperty>
+            <StringVectorProperty name="LevelFieldName" command="SetLevelFieldName" number_of_elements="1" animateable="0" label="" default_values="LevelIndex">
+                <ArrayListDomain name="array_list" input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>Level scalar field.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseLevels" value="1" />
+                </Hints>
+            </StringVectorProperty>
+
+            <StringVectorProperty name="OutputFieldName" command="SetOutputFieldName" number_of_elements="1" animateable="0" label="Output Field Name" default_values="Layout">
+                <Documentation>Name of the output scalar field.</Documentation>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <BooleanDomain name="bool" />
+                <Documentation>Use all available cores.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="1" max="100" />
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
+                </Hints>
+                <Documentation>Thread number.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="0" max="100" />
+                <Documentation>Debug level.</Documentation>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="UseSequences" />
+                <Property name="SequenceFieldName" />
+                <Property name="UseSizes" />
+                <Property name="SizeFieldName" />
+                <Property name="UseBranches" />
+                <Property name="BranchFieldName" />
+                <Property name="UseLevels" />
+                <Property name="LevelFieldName" />
+            </PropertyGroup>
+
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="OutputFieldName" />
+            </PropertyGroup>
+
+            <PropertyGroup panel_widget="Line" label="Testing">
+                <Property name="UseAllCores" />
+                <Property name="ThreadNumber" />
+                <Property name="DebugLevel" />
+            </PropertyGroup>
+
+            <Hints>
+                <ShowInMenu category="TTK - Misc" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

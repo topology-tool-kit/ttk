@@ -1,6 +1,7 @@
 #include <ttkCinemaReader.h>
 
 #include <vtkTable.h>
+#include <vtkSmartPointer.h>
 #include <vtkDelimitedTextReader.h>
 #include <vtkFieldData.h>
 #include <vtkStringArray.h>
@@ -33,6 +34,9 @@ int ttkCinemaReader::RequestData (
     reader->SetHaveHeaders(true);
     reader->SetFieldDelimiterCharacters(",");
     reader->Update();
+
+    if(reader->GetLastError().compare("")!=0)
+        return 0;
 
     // Copy Information to Output
     vtkInformation* outInfo = outputVector->GetInformationObject(0);

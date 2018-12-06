@@ -3,11 +3,11 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2018
 ///
-/// \brief TTK %trackingFromOverlap processing package.
+/// \brief TTK %trackingFromOverlap processing package that tracks labled point sets.
 ///
-/// %TrackingFromOverlap is a TTK processing package that provides algorithms to identify and track features of labled point sets across time (and optionally levels) based on spatial overlap, where two points overlap iff their corresponding coordinates are equal.
+/// %TrackingFromOverlap is a TTK processing package that provides algorithms to track labled point sets across time (and optionally levels) based on spatial overlap, where two points overlap iff their corresponding coordinates are equal.
 ///
-/// Related publication:
+/// \b Related \b publication: \n
 /// 'Nested Tracking Graphs'
 /// Jonas Lukasczyk, Gunther Weber, Ross Maciejewski, Christoph Garth, and Heike Leitte.
 /// Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
@@ -25,22 +25,32 @@
 
 using namespace std;
 
+typedef unsigned char topologyType;
+typedef long long int idType;
+
 typedef boost::variant<
     double, float, long long, unsigned long long, long, unsigned long, int, unsigned int, short, unsigned short, char, signed char, unsigned char
 > labelTypeVariant;
+typedef float sizeType;
 
 struct Node {
     labelTypeVariant label;
-    unsigned long long size;
+    sizeType size;
     float x;
     float y;
     float z;
 
-    Node(unsigned long long size=0, float x=0, float y=0, float z=0)
-        : size(size), x(x), y(y), z(z) {}
+    idType branchID;
+    idType maxPredID;
+    idType maxSuccID;
+
+    Node(
+        sizeType size=0, float x=0, float y=0, float z=0,
+        idType branchID=-1, idType maxPredID=-1, idType maxSuccID=-1
+    ) : size(size), x(x), y(y), z(z), branchID(branchID), maxPredID(maxPredID), maxSuccID(maxSuccID) {}
 };
 
-typedef vector<size_t> Edges; // [index0, index1, overlap...]
+typedef vector<idType> Edges; // [index0, index1, overlap, branch,...]
 typedef vector<Node> Nodes;
 
 struct CoordinateComparator {
@@ -66,7 +76,7 @@ namespace ttk{
             ~TrackingFromOverlap(){};
 
             // This function sorts points based on their x, y, and then z coordinate
-            inline int sortCoordinates(
+            int sortCoordinates(
                 const float* pointCoordinates,
                 const size_t nPoints,
                 vector<size_t>& sortedIndicies
@@ -79,6 +89,104 @@ namespace ttk{
                     sortedIndicies[i] = i;
                 CoordinateComparator c = CoordinateComparator(pointCoordinates);
                 sort(sortedIndicies.begin(), sortedIndicies.end(), c);
+
+                stringstream msg;
+                msg << "done (" << t.getElapsedTime() << " s)." <<endl;
+                dMsg(cout, msg.str(), timeMsg);
+
+                return 1;
+            }
+
+            int computeBranches(
+                vector<Edges>& timeEdgesMap,
+                vector<Nodes>& timeNodesMap
+            ) const {
+                dMsg(cout, "[ttkTrackingFromOverlap] Computing branches  ... ", timeMsg);
+                Timer t;
+
+                size_t nT = timeNodesMap.size();
+
+                // Compute max pred and succ
+                for(size_t t=1; t<nT; t++){
+                    auto& nodes0 = timeNodesMap[t-1];
+                    auto& nodes1 = timeNodesMap[t];
+                    auto& edges = timeEdgesMap[t-1];
+
+                    size_t nE = edges.size();
+
+                    for(size_t i=0; i<nE; i+=4){
+                        auto n0Index = edges[i];
+                        auto n1Index = edges[i+1];
+                        auto& n0 = nodes0[ n0Index ];
+                        auto& n1 = nodes1[ n1Index ];
+
+                        sizeType n0MaxSuccSize = n0.maxSuccID!=-1 ? nodes1[ n0.maxSuccID ].size : 0;
+                        sizeType n1MaxPredSize = n1.maxPredID!=-1 ? nodes0[ n1.maxPredID ].size : 0;
+                        if( n0MaxSuccSize < n1.size )
+                            n0.maxSuccID = n1Index;
+                        if( n1MaxPredSize < n0.size )
+                            n1.maxPredID = n0Index;
+                    }
+                }
+
+                // Label first nodes of branches
+                idType branchCounter = 0;
+
+                for(size_t t=0; t<nT; t++)
+                    for(auto& n: timeNodesMap[t])
+                        n.branchID = n.maxPredID==-1 ? branchCounter++ : -1;
+
+                for(size_t t=1; t<nT; t++){
+                    auto& nodes0 = timeNodesMap[t-1];
+                    auto& nodes1 = timeNodesMap[t];
+
+                    for(size_t i=0; i<nodes1.size(); i++){
+                        auto& n1 = nodes1[i];
+                        if( n1.maxPredID!=-1 && ((idType)i)!=nodes0[ n1.maxPredID ].maxSuccID )
+                            n1.branchID = branchCounter++;
+                    }
+                }
+
+                // Propagate branch labels
+                for(size_t t=1; t<nT; t++){
+                    auto& nodes0 = timeNodesMap[t-1];
+                    auto& nodes1 = timeNodesMap[t];
+                    auto& edges = timeEdgesMap[t-1];
+
+                    size_t nE = edges.size();
+
+                    for(size_t i=0; i<nE; i+=4){
+                        auto n0Index = edges[i];
+                        auto n1Index = edges[i+1];
+                        auto& n0 = nodes0[ n0Index ];
+                        auto& n1 = nodes1[ n1Index ];
+
+                        if(n1.branchID==-1 && n0Index==n1.maxPredID)
+                            n1.branchID = n0.branchID;
+                    }
+                }
+
+                // Label edges
+                for(size_t t=1; t<nT; t++){
+                    auto& nodes0 = timeNodesMap[t-1];
+                    auto& nodes1 = timeNodesMap[t];
+                    auto& edges = timeEdgesMap[t-1];
+
+                    size_t nE = edges.size();
+
+                    for(size_t i=0; i<nE; i+=4){
+                        auto n0Index = edges[i];
+                        auto n1Index = edges[i+1];
+                        auto& n0 = nodes0[ n0Index ];
+                        auto& n1 = nodes1[ n1Index ];
+
+                        edges[i+3] = n0.branchID == n1.branchID
+                            ? n0.branchID
+                            : n0.maxSuccID == n1Index
+                                ? n0.branchID
+                                : n1.branchID;
+                    }
+                }
 
                 stringstream msg;
                 msg << "done (" << t.getElapsedTime() << " s)." <<endl;
@@ -305,14 +413,14 @@ template<typename labelType> int ttk::TrackingFromOverlap::computeOverlap(
     // Pack Output
     // -------------------------------------------------------------------------
     {
-        size_t nEdges3 = nEdges*3;
-        edges.resize( nEdges3 );
+        edges.resize( nEdges*4 );
         size_t q=0;
         for(auto& it0: edgesMap){
             for(auto& it1: it0.second){
                 edges[q++] = it0.first;
                 edges[q++] = it1.first;
                 edges[q++] = it1.second;
+                edges[q++] = -1;
             }
         }
     }
