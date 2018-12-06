@@ -55,14 +55,14 @@ function(ttk_set_compile_options library)
         target_link_libraries(${library} PUBLIC ${ZLIB_LIBRARY})
     endif()
 
-    if (TTK_ENABLE_GRAPHVIZ)
-		target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
-		target_include_directories(${library} PUBLIC ${GRAPHVIZ_INCLUDE_DIR})
-		target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CDT_LIBRARY})
-		target_link_libraries(${library} PUBLIC ${GRAPHVIZ_GVC_LIBRARY})
-		target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CGRAPH_LIBRARY})
-		target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
-	endif()
+    if (TTK_ENABLE_GRAPHVIZ AND GRAPHVIZ_FOUND)
+        target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
+        target_include_directories(${library} PUBLIC ${GRAPHVIZ_INCLUDE_DIR})
+        target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CDT_LIBRARY})
+        target_link_libraries(${library} PUBLIC ${GRAPHVIZ_GVC_LIBRARY})
+        target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CGRAPH_LIBRARY})
+        target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
+    endif()
 
     if (TTK_ENABLE_SQLITE3)
         target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
@@ -210,27 +210,56 @@ endif()
 # TODO: This should be in its own findpackage.cmake file!
 
 # START_FIND_GRAPHVIZ
-option(TTK_ENABLE_GRAPHVIZ "Enable GraphViz support" ON)
-if(TTK_ENABLE_GRAPHVIZ)
-  find_path(GRAPHVIZ_INCLUDE_DIR
+find_path(
+    GRAPHVIZ_INCLUDE_DIR
     NAMES graphviz/cgraph.h
-    HINTS ${_GRAPHVIZ_INCLUDE_DIR})
-  find_library(GRAPHVIZ_CDT_LIBRARY
+    HINTS ${_GRAPHVIZ_INCLUDE_DIR}
+)
+
+find_library(
+    GRAPHVIZ_CDT_LIBRARY
     NAMES cdt
-    HINTS ${_GRAPHVIZ_LIBRARY_DIR})
-  find_library(GRAPHVIZ_GVC_LIBRARY
+    HINTS ${_GRAPHVIZ_LIBRARY_DIR}
+)
+
+find_library(
+    GRAPHVIZ_GVC_LIBRARY
     NAMES gvc
-    HINTS ${_GRAPHVIZ_LIBRARY_DIR})
-  find_library(GRAPHVIZ_CGRAPH_LIBRARY
+    HINTS ${_GRAPHVIZ_LIBRARY_DIR}
+)
+
+find_library(
+    GRAPHVIZ_CGRAPH_LIBRARY
     NAMES cgraph
-    HINTS ${_GRAPHVIZ_LIBRARY_DIR})
-  find_library(GRAPHVIZ_PATHPLAN_LIBRARY
+    HINTS ${_GRAPHVIZ_LIBRARY_DIR}
+)
+
+find_library(
+    GRAPHVIZ_PATHPLAN_LIBRARY
     NAMES pathplan
-    HINTS ${_GRAPHVIZ_LIBRARY_DIR})
-  if(NOT GRAPHVIZ_INCLUDE_DIR)
-    message(WARNING "GraphViz not found, disabling GraphViz support in TTK.")
-  endif()
+    HINTS ${_GRAPHVIZ_LIBRARY_DIR}
+)
+
+if(
+    GRAPHVIZ_INCLUDE_DIR
+    AND GRAPHVIZ_CDT_LIBRARY
+    AND GRAPHVIZ_GVC_LIBRARY
+    AND GRAPHVIZ_CGRAPH_LIBRARY
+    AND GRAPHVIZ_PATHPLAN_LIBRARY
+)
+    set(GRAPHVIZ_FOUND "YES")
+else()
+    set(GRAPHVIZ_FOUND "NO")
 endif()
+
+if(GRAPHVIZ_FOUND)
+    option(TTK_ENABLE_GRAPHVIZ "Enable GraphViz support" ON)
+    message(STATUS "GraphViz found")
+else()
+    option(TTK_ENABLE_GRAPHVIZ "Enable GraphViz support" OFF)
+    message(WARNING "GraphViz not found, disabling GraphViz support in TTK.")
+endif()
+# END_FIND_GRAPHVIZ
 
 # START_FIND_SQLITE3
 find_path(SQLITE3_INCLUDE_DIR sqlite3.h
