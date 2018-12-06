@@ -709,8 +709,6 @@ template <typename topoType, typename dataType> int ttk::MeshGraph::mapInputPoin
         size_t subdivisionOffset = nInputPoints*2;
         size_t nSubdivisionPoints = nSubdivisions*2;
 
-        dataType nSubdivisionsP1 = ((dataType)nSubdivisions)+1;
-
         #ifdef TTK_ENABLE_OPENMP
         #pragma omp parallel for num_threads(threadNumber_)
         #endif

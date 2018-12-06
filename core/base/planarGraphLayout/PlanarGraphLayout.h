@@ -146,7 +146,7 @@ namespace ttk{
 
                     return 1;
                 #else
-                    dMsg(cout, "[ttkPlanarGraphLayout] ERROR: This filter requires GraphViz to compute the layout.\n", fatalMsg);
+                    dMsg(cout, "[ttkPlanarGraphLayout] ERROR: This filter requires GraphViz to compute a layout.\n", fatalMsg);
                     return 0;
                 #endif
             };
@@ -450,8 +450,8 @@ template <typename topoType, typename idType, typename sequenceType> int ttk::Pl
             << "[ttkPlanarGraphLayout]  - "<< nEdges << " edges" << endl;
         if(useSequences) msg << "[ttkPlanarGraphLayout]  - using sequences" << endl;
         if(useSizes)     msg << "[ttkPlanarGraphLayout]  - using sizes" << endl;
-        if(useBranches)   msg << "[ttkPlanarGraphLayout]  - using branches" << endl;
-        if(useLevels)        msg << "[ttkPlanarGraphLayout]  - using levels" << endl;
+        if(useBranches)  msg << "[ttkPlanarGraphLayout]  - using branches" << endl;
+        if(useLevels)    msg << "[ttkPlanarGraphLayout]  - using levels" << endl;
         dMsg(cout, msg.str(), infoMsg);
     }
 

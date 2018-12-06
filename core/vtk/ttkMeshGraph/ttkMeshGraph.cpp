@@ -147,6 +147,7 @@ int ttkMeshGraph::RequestData(
             auto oArray = vtkDataArray::CreateDataArray( iArray->GetDataType() );
             oArray->SetName( iArray->GetName() );
             oArray->SetNumberOfValues( nOutputPoints );
+            oPointData->AddArray( oArray );
 
             switch( iArray->GetDataType() ){
                 ttkTemplateMacro({
@@ -161,10 +162,9 @@ int ttkMeshGraph::RequestData(
                         this->GetUseQuadraticCells(),
                         this->GetSubdivisions()
                     );
+                    if(status!=1) return 0;
                 });
             }
-
-            oPointData->AddArray( oArray );
         }
     }
 
@@ -180,6 +180,7 @@ int ttkMeshGraph::RequestData(
             auto oArray = vtkSmartPointer<vtkDataArray>::Take( vtkDataArray::CreateDataArray(iArray->GetDataType()) );
             oArray->SetName( iArray->GetName() );
             oArray->SetNumberOfValues( nOutputCells );
+            oCellData->AddArray( oArray );
 
             switch( iArray->GetDataType() ){
                 ttkTemplateMacro({
@@ -192,10 +193,9 @@ int ttkMeshGraph::RequestData(
                         this->GetUseQuadraticCells(),
                         this->GetSubdivisions()
                     );
+                    if(status!=1) return 0;
                 });
             }
-
-            oCellData->AddArray( oArray );
         }
     }
 
