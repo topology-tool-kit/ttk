@@ -7,12 +7,21 @@
 ///
 /// VTK wrapping code for the @TrackingFromOverlap package.
 ///
-/// This filter identifies and tracks features of labled vtkPointSets across time (and optionally levels) based on spatial overlap, where two points overlap iff their corresponding coordinates are equal. This filter can be executed iteratively and can generate nested tracking graphs.
+/// This filter identifies and tracks labled vtkPointSets across time (and optionally levels) based on spatial overlap, where two points overlap iff their corresponding coordinates are equal. This filter can be executed iteratively and can generate nested tracking graphs.
 ///
-/// Related publication:
+/// This filter can be used as any other VTK filter (for instance, by using the
+/// sequence of calls SetInputData(), Update(), GetOutput()).
+///
+/// See the related ParaView example state files for usage examples within a
+/// VTK pipeline.
+///
+/// \b Related \b publication: \n
 /// 'Nested Tracking Graphs'.
 /// Jonas Lukasczyk, Gunther Weber, Ross Maciejewski, Christoph Garth, and Heike Leitte.
 /// Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
+///
+/// \param Input A \b vtkMultiBlockDataSet that holds the labeled \b vtkPointSets and has one of the following forms:\n{t_0,...,t_n} or {l_0:{t_0,...,t_n}, ... , l_m:{t_0,...,t_n}} where \b t_i is the \b vtkPointSet of timestep \b i, and \b l_j is a \b vtkMultiBlockDataSet that holds all timesteps of level \b j.
+/// \param Output A \b vtkUnstructuredGrid that represents the (nested) tracking graph embedded in the spatial domain.
 ///
 /// sa ttk::TrackingFromOverlap
 

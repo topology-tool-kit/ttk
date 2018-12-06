@@ -3,11 +3,11 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2018
 ///
-/// \brief TTK %trackingFromOverlap processing package.
+/// \brief TTK %trackingFromOverlap processing package that tracks labled point sets.
 ///
-/// %TrackingFromOverlap is a TTK processing package that provides algorithms to identify and track features of labled point sets across time (and optionally levels) based on spatial overlap, where two points overlap iff their corresponding coordinates are equal.
+/// %TrackingFromOverlap is a TTK processing package that provides algorithms to track labled point sets across time (and optionally levels) based on spatial overlap, where two points overlap iff their corresponding coordinates are equal.
 ///
-/// Related publication:
+/// \b Related \b publication: \n
 /// 'Nested Tracking Graphs'
 /// Jonas Lukasczyk, Gunther Weber, Ross Maciejewski, Christoph Garth, and Heike Leitte.
 /// Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.

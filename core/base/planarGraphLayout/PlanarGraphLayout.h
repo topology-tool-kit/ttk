@@ -5,12 +5,16 @@
 ///
 /// \brief TTK %planarGraphLayout processing package.
 ///
-/// %PlanarGraphLayout is a TTK processing package that computes a planar graph layout. To improve the quality of the layout it is possible to pass additional data to the algorithm:
+/// %PlanarGraphLayout is a TTK processing package that computes a planar graph layout of a \b vtkUnstructuredGrid. To improve the quality of the layout it is possible to pass additional field data to the algorithm:\n
+/// \b 1) \b Sequences: Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).
+/// \b 1) \b Sizes: Points cover space on the y-axis based on their size.
+/// \b 1) \b Branches: Points with the same branch label are positioned on straight lines.
+/// \b 1) \b Levels: The layout of points with the same level label are computed individually and afterwards nested based on the level hierarchy. This makes it possible to draw nested graphs where each level is a layer of the resulting graph.
 ///
-/// 1) Sequences: Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).
-/// 2) Sizes: Points cover space on the y-axis based on their size.
-/// 3) Branches: Points with the same branch label are positioned on straight lines.
-/// 4) Levels: The layout of points with the same level label are computed individually and afterwards nested based on the level hierarchy. This makes it possible to draw nested graphs where each level is a layer of the resulting graph.
+/// \b Related \b publication: \n
+/// 'Nested Tracking Graphs'
+/// Jonas Lukasczyk, Gunther Weber, Ross Maciejewski, Christoph Garth, and Heike Leitte.
+/// Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
 ///
 
 #pragma once

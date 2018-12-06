@@ -5,17 +5,27 @@
 ///
 /// \brief TTK VTK-filter that computes a planar graph layout.
 ///
-/// This filter computes a planar graph layout of a 'vtkUnstructuredGrid'. To improve the quality of the layout it is possible to pass additional field data to the algorithm:
-///
-/// 1) Sequences: Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).
-/// 2) Sizes: Points cover space on the y-axis based on their size.
-/// 3) Branches: Points with the same branch label are positioned on straight lines.
-/// 4) Levels: The layout of points with the same level label are computed individually and afterwards nested based on the level hierarchy. This makes it possible to draw nested graphs where each level is a layer of the resulting graph.
-///
 /// VTK wrapping code for the @PlanarGraphLayout package.
 ///
-/// \param Input Graph. (vtkUnstructuredGrid)
-/// \param Output Graph (vtkUnstructuredGrid)
+/// This filter computes a planar graph layout of a \b vtkUnstructuredGrid. To improve the quality of the layout it is possible to pass additional field data to the algorithm:\n
+/// \b 1) \b Sequences: Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).
+/// \b 1) \b Sizes: Points cover space on the y-axis based on their size.
+/// \b 1) \b Branches: Points with the same branch label are positioned on straight lines.
+/// \b 1) \b Levels: The layout of points with the same level label are computed individually and afterwards nested based on the level hierarchy. This makes it possible to draw nested graphs where each level is a layer of the resulting graph.
+///
+/// \b Related \b publication: \n
+/// 'Nested Tracking Graphs'.
+/// Jonas Lukasczyk, Gunther Weber, Ross Maciejewski, Christoph Garth, and Heike Leitte.
+/// Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposium on Visualization). Vol. 36. No. 3. 2017.
+///
+/// This filter can be used as any other VTK filter (for instance, by using the
+/// sequence of calls SetInputData(), Update(), GetOutput()).
+///
+/// See the related ParaView example state files for usage examples within a
+/// VTK pipeline.
+///
+/// \param Input A \b vtkUnstructuredGrid that represents a graph.
+/// \param Output The input \b vtkUnstructuredGrid with an additional point data field that records the computed layout. Note: to project the graph based on the comptued layout use either the \b ttkProjectFromField filter or the \b vtkCalculator.
 ///
 /// \sa ttk::PlanarGraphLayout
 

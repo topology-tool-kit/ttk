@@ -700,8 +700,9 @@ template <typename topoType, typename dataType> int ttk::MeshGraph::mapInputPoin
         #endif
         for(size_t i=0; i<nInputPoints; i++){
             size_t offset = i*2;
-            outputPointData[offset  ] = inputPointData[i];
-            outputPointData[offset+1] = inputPointData[i];
+            auto& v = inputPointData[i];
+            outputPointData[offset  ] = v;
+            outputPointData[offset+1] = v;
         }
 
         // Intermediate Points
@@ -715,22 +716,14 @@ template <typename topoType, typename dataType> int ttk::MeshGraph::mapInputPoin
         #endif
         for(size_t i=0; i<nInputCells; i++){
             size_t q = i*3+1;
-            topoType c0 = inputTopology[q++]*2;
-            topoType c3 = inputTopology[q]*2;
-
+            topoType c0 = inputTopology[q  ];
             dataType c0V = inputPointData[c0];
-            dataType c3V = inputPointData[c3];
-            dataType cD = (c3V-c0V)/nSubdivisionsP1;
 
             size_t temp = subdivisionOffset + i*nSubdivisionPoints;
-
             for(size_t j=0; j<nSubdivisions; j++){
                 size_t q2 = temp + j*2;
-
-                outputPointData[ q2   ] = cD;
-                outputPointData[ q2+1 ] = cD;
-
-                cD+=cD;
+                outputPointData[ q2   ] = c0V;
+                outputPointData[ q2+1 ] = c0V;
             }
         }
     }
