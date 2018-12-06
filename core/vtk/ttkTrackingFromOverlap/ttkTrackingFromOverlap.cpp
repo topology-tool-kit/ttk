@@ -50,7 +50,7 @@ template<typename labelType> int finalize(
     auto prepArray = [](vtkAbstractArray* array, string name, size_t nComponents, size_t nValues){
         array->SetName(name.data());
         array->SetNumberOfComponents( nComponents );
-        array->SetNumberOfValues( nValues );
+        array->SetNumberOfTuples( nValues );
     };
 
     // Add Points
@@ -146,18 +146,15 @@ template<typename labelType> int finalize(
         auto cellIds = (vtkIdType*) cells->GetVoidPointer(0);
 
         auto overlap = vtkSmartPointer<vtkFloatArray>::New();
-        overlap->SetNumberOfValues( nEdgesT + nEdgesN );
-        overlap->SetName("Overlap");
+        prepArray(overlap, "Overlap", 1, nEdgesT+nEdgesN);
         auto overlapData = (float*) overlap->GetVoidPointer(0);
 
         auto branch = vtkSmartPointer<vtkLongLongArray>::New();
-        branch->SetNumberOfValues( nEdgesT + nEdgesN );
-        branch->SetName("BranchId");
+        prepArray(branch, "BranchId", 1, nEdgesT+nEdgesN);
         auto branchData = (long long*) branch->GetVoidPointer(0);
 
         auto type = vtkSmartPointer<vtkCharArray>::New();
-        type->SetNumberOfValues( nEdgesT + nEdgesN );
-        type->SetName("Type");
+        prepArray(type, "Type", 1, nEdgesT+nEdgesN);
         auto typeData = (char*) type->GetVoidPointer(0);
 
         size_t q0=0, q1=0;
