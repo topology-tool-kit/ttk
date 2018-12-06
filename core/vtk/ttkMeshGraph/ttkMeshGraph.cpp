@@ -146,7 +146,8 @@ int ttkMeshGraph::RequestData(
 
             auto oArray = vtkDataArray::CreateDataArray( iArray->GetDataType() );
             oArray->SetName( iArray->GetName() );
-            oArray->SetNumberOfValues( nOutputPoints );
+            oArray->SetNumberOfTuples( nOutputPoints );
+            oArray->SetNumberOfComponents( 1 );
             oPointData->AddArray( oArray );
 
             switch( iArray->GetDataType() ){
@@ -179,7 +180,8 @@ int ttkMeshGraph::RequestData(
 
             auto oArray = vtkSmartPointer<vtkDataArray>::Take( vtkDataArray::CreateDataArray(iArray->GetDataType()) );
             oArray->SetName( iArray->GetName() );
-            oArray->SetNumberOfValues( nOutputCells );
+            oArray->SetNumberOfTuples( nOutputCells );
+            oArray->SetNumberOfComponents( 1 );
             oCellData->AddArray( oArray );
 
             switch( iArray->GetDataType() ){
