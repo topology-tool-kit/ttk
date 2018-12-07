@@ -88,6 +88,8 @@ int ttkEndFor::RequestData(
         vtkInformation* outInfo = outputVector->GetInformationObject(0);
         auto output = outInfo->Get(vtkDataObject::DATA_OBJECT());
         output->ShallowCopy(input);
+
+        output->GetFieldData()->RemoveArray( "_ttk_IterationInfo" );
     }
 
     return 1;

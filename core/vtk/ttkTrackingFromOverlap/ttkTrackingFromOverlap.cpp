@@ -10,6 +10,7 @@
 #include <vtkLongLongArray.h>
 #include <vtkCharArray.h>
 #include <vtkIdTypeArray.h>
+#include <vtkDoubleArray.h>
 
 using namespace std;
 using namespace ttk;
@@ -306,9 +307,7 @@ int ttkTrackingFromOverlap::packInputData(vtkDataObject* inputDataObject, vtkMul
         }
     } else if(inputAsPS) {
         auto level = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-        auto time = vtkSmartPointer<vtkMultiBlockDataSet>::New();
-        time->SetBlock(0, inputAsPS);
-        level->SetBlock(0, time);
+        level->SetBlock(0, inputAsPS);
         packedInput->SetBlock(0, level);
     } else { // Unexpected input structure
         error = true;
@@ -670,11 +669,18 @@ int ttkTrackingFromOverlap::RequestData(
     auto inputObject = inInfo->Get(vtkDataObject::DATA_OBJECT());
 
     // Get iteration information
-    double iteration = inInfo->Get( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP() );
-    double nIterations = inputObject->GetInformation()->Get( vtkDataObject::DATA_TIME_STEP() );
+    auto iterationInformation = vtkDoubleArray::SafeDownCast( inputObject->GetFieldData()->GetAbstractArray("_ttk_IterationInfo") );
 
-    bool useStreamingOverTime = nIterations>0;
+    bool useStreamingOverTime = iterationInformation!=nullptr;
 
+    double iteration = 0;
+    double nIterations = 0;
+    if(useStreamingOverTime){
+        iteration = iterationInformation->GetValue(0);
+        nIterations = iterationInformation->GetValue(1);
+    }
+
+    // On first iteration reset
     if(!useStreamingOverTime || iteration==0)
         this->reset();
 

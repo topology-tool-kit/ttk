@@ -50,8 +50,16 @@ int ttkBlockAggregator::RequestData(
     auto firstInput = inInfo->Get( vtkDataObject::DATA_OBJECT() );
 
     // Get iteration information
-    double iteration = inInfo->Get( vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP() );
-    double nIterations = firstInput->GetInformation()->Get( vtkDataObject::DATA_TIME_STEP() );
+    auto iterationInformation = vtkDoubleArray::SafeDownCast( inputObject->GetFieldData()->GetAbstractArray("_ttk_IterationInfo") );
+
+    bool useStreamingOverTime = iterationInformation!=nullptr;
+
+    double iteration = 0;
+    double nIterations = 0;
+    if(useStreamingOverTime){
+        iteration = iterationInformation->GetValue(0);
+        nIterations = iterationInformation->GetValue(1);
+    }
 
     // First timestep
     if(this->GetForceReset() || iteration==0 || this->AggregatedMultiBlockDataSet==nullptr)
