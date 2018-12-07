@@ -5,11 +5,9 @@
             <Documentation long_help="TTK IcoSphere" short_help="TTK IcoSphere"></Documentation>
 
             <IntVectorProperty name="Subdivisions" label="Subdivisions" command="SetSubdivisions" number_of_elements="1" default_values="0">
-                <IntRangeDomain name="range" min="0" max="5" />
                 <Documentation>Number of subdevisions.</Documentation>
             </IntVectorProperty>
-            <DoubleVectorProperty name="Radius" label="Radius" command="SetRadius" number_of_elements="1" default_values="1">
-                <DoubleRangeDomain name="range" min="0" max="100" />
+            <DoubleVectorProperty name="Radius" label="Radius" command="SetRadius" number_of_elements="1" default_values="0.5">
                 <Documentation>Radius</Documentation>
             </DoubleVectorProperty>
             <DoubleVectorProperty name="Center" label="Center" command="SetCenter" number_of_elements="3" default_values="0 0 0">

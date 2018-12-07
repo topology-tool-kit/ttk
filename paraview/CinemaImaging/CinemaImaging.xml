@@ -28,7 +28,7 @@
             <IntVectorProperty name="Resolution" label="Resolution" command="SetResolution" number_of_elements="2" default_values="256 256">
                 <Documentation>Resolution</Documentation>
             </IntVectorProperty>
-            <DoubleVectorProperty name="CamNearFar" label="CamNearFar" command="SetCamNearFar" number_of_elements="2" default_values="0.1 2">
+            <DoubleVectorProperty name="CamNearFar" label="CamNearFar" command="SetCamNearFar" number_of_elements="2" default_values="0.1 1">
                 <Documentation>CamNearFar</Documentation>
             </DoubleVectorProperty>
             <DoubleVectorProperty name="CamFocus" label="CamFocus" command="SetCamFocus" number_of_elements="3" default_values="0 0 0">
@@ -67,6 +67,8 @@
             </PropertyGroup>
 
             <Hints>
+                <View type="RenderView" also_show_in_current_view="0" />
+                <RepresentationType view="RenderView" type="Surface" also_show_in_current_view="0" />
                 <ShowInMenu category="TTK - Cinema" />
             </Hints>
         </SourceProxy>
