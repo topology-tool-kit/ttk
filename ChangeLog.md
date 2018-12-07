@@ -1,9 +1,11 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
-- Nested Tracking Graph (EuroVis 2017 paper)
+- Nested Tracking Graphs (EuroVis 2017 paper)
+- Planar graph layout module
 - Improved tracking from overlap (modular, templated, streaming support)
 - New identifier sorter (for example to select the N most persistent features)
+- Memory footprint improvement for the discrete gradient
 - Bug fixes
 
 ### 0.9.7
