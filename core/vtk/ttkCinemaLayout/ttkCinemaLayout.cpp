@@ -35,28 +35,51 @@ int ttkCinemaLayout::RequestData (
 
     // Determine Grid Size
     size_t nBlocks = inputMB->GetNumberOfBlocks();
-    size_t n = ceil( sqrt(nBlocks) );
 
-    auto firstBlock = vtkDataSet::SafeDownCast( inputMB->GetBlock(0) );
-    if(firstBlock==nullptr){
-        stringstream msg;
-        msg << "[ttkCinemaLayout] ERROR: This filter can only arrange vtkDataSet objects"<<endl;
-        dMsg(cout, msg.str(), fatalMsg);
-        return 0;
-    }
-    double* bounds = firstBlock->GetBounds();
-    double width = bounds[1]-bounds[0];
-    double height = bounds[3]-bounds[2];
+    int columnAxis = this->GetColumnAxis();
+    int rowAxis = this->GetRowAxis();
 
     // Iterate over blocks and arrange images on the
+    size_t nRows = this->GetNumberOfRows()<1 ? 0 : (size_t) this->GetNumberOfRows();
+    size_t nColumns = nRows==0
+        ? ceil( sqrt(nBlocks) )
+        : (nBlocks % nRows) == 0
+            ? nBlocks/nRows
+            : ceil(nBlocks/nRows);
     size_t i = 0;
     double y = 0;
+
+    double width = 0;
+    double height = 0;
+
+    for(size_t i=0; i<nBlocks; i++){
+        auto block = vtkDataSet::SafeDownCast( inputMB->GetBlock(i) );
+        if(block==nullptr){
+            stringstream msg;
+            msg << "[ttkCinemaLayout] ERROR: This filter can only arrange vtkDataSet objects"<<endl;
+            dMsg(cout, msg.str(), fatalMsg);
+            return 0;
+        }
+        double bounds[6];
+        block->GetBounds( bounds );
+        width = max(width, bounds[ 2*columnAxis + 1 ] - bounds[ 2*columnAxis ]);
+        height = max(height, bounds[ 2*rowAxis + 1 ] - bounds[ 2*rowAxis ]);
+    }
+
+    width += width*(this->GetColumnGap()/100);
+    height += height*(this->GetRowGap()/100);
+
     while(i<nBlocks){
-        for(size_t x=0; x<n && i<nBlocks; x++){
-            auto block = vtkDataSet::SafeDownCast( inputMB->GetBlock(i) );
+        for(size_t x=0; x<nColumns && i<nBlocks; x++){
+
+            double translation[3] = {0,0,0};
+            translation[ rowAxis    ] = y;
+            translation[ columnAxis ] = x*width;
 
             auto transform = vtkSmartPointer<vtkTransform>::New();
-            transform->Translate(x*width,y,0);
+            transform->Translate( translation );
+
+            auto block = vtkDataSet::SafeDownCast( inputMB->GetBlock(i) );
 
             auto transformFilter = vtkSmartPointer<vtkTransformFilter>::New();
             transformFilter->SetTransform( transform );
