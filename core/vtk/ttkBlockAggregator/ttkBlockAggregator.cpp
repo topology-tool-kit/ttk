@@ -2,6 +2,8 @@
 
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkFieldData.h>
+#include <vtkDoubleArray.h>
 
 using namespace std;
 using namespace ttk;
@@ -50,7 +52,7 @@ int ttkBlockAggregator::RequestData(
     auto firstInput = inInfo->Get( vtkDataObject::DATA_OBJECT() );
 
     // Get iteration information
-    auto iterationInformation = vtkDoubleArray::SafeDownCast( inputObject->GetFieldData()->GetAbstractArray("_ttk_IterationInfo") );
+    auto iterationInformation = vtkDoubleArray::SafeDownCast( firstInput->GetFieldData()->GetAbstractArray("_ttk_IterationInfo") );
 
     bool useStreamingOverTime = iterationInformation!=nullptr;
 
@@ -62,7 +64,7 @@ int ttkBlockAggregator::RequestData(
     }
 
     // First timestep
-    if(this->GetForceReset() || iteration==0 || this->AggregatedMultiBlockDataSet==nullptr)
+    if(!useStreamingOverTime || this->GetForceReset() || iteration==0 || this->AggregatedMultiBlockDataSet==nullptr)
         this->AggregatedMultiBlockDataSet = vtkSmartPointer<vtkMultiBlockDataSet>::New();
 
     bool useShallowCopy = this->GetForceReset() && nIterations<1;
