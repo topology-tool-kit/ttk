@@ -21,9 +21,6 @@ Type:
                     <Group name="sources" />
                     <Group name="filters" />
                 </ProxyGroupDomain>
-                <DataTypeDomain name="input_type">
-                    <DataType value="vtkMultiBlockDataSet" />
-                </DataTypeDomain>
                 <InputArrayDomain name="input_array" attribute_type="point" />
                 <Documentation>A vtkMultiBlockDataSet that represents a sequence of vtkPointSets. Optionally: a vtkMultiBlockDataSet that contains multiple sequences, where each sequence corresponds to a level.</Documentation>
             </InputProperty>
