@@ -634,6 +634,8 @@ namespace ttk
 
          orderedTriangle oTriangle;
 
+         // TODO  SORT TRANGLES HERE ?
+
          for (idCell t = 0; t < nbAdjTriangles; ++t) {
             // Classify current cell
             idCell curTriangleid;
