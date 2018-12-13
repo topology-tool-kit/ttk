@@ -1,8 +1,18 @@
 include(functions.cmake)
 
-find_package(VTK REQUIRED)
+# find VTK, if none provided but paraview is given,
+# use the VTK provided by paraview with a message
+find_package(VTK QUIET)
+if(NOT DEFINED VTK_USE_FILE)
+   find_package(ParaView)
+   if(NOT DEFINED VTK_USE_FILE)
+      message(FATAL_ERROR "No VTK Provided, you sould use VTK_DIR")
+   else()
+      message(STATUS "No VTK provided, fallback to ParaView")
+   endif()
+endif()
 include(${VTK_USE_FILE})
-include_directories(${VTK_INCLUDE_DIRS})
+# include_directories(${VTK_INCLUDE_DIRS})
 
 set(VTKWRAPPER_LIB_LIST "")
 file(GLOB VTKWRAPPER_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ttk*)
@@ -15,6 +25,7 @@ endforeach()
 
 # Add a bundle library that will just link all the TTK vtkWrappers
 add_library(ttkAll INTERFACE)
+target_include_directories(ttkAll INTERFACE ${VTK_INCLUDE_DIRS})
 target_link_libraries(ttkAll INTERFACE ${VTKWRAPPER_LIB_LIST})
 
 install(TARGETS ttkAll
