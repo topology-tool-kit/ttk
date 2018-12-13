@@ -55,8 +55,8 @@ namespace ttk
 
          // containers
          // vitsit
-         std::vector<idEdge>                  lowerStarEdges, upperStarEdges;
-         std::vector<DynGraphNode<idVertex>*> lowerComp, upperComp;
+         Star star;
+         Comp comp;
 
          while (!isJoin && !isSplit && !localProp->empty()) {
             localProp->nextVertex();
@@ -92,13 +92,11 @@ namespace ttk
             graph_.setNbArcActive(curVert, localProp->getNbArcs());
 #endif
 
-            lowerStarEdges.clear();
-            upperStarEdges.clear();
-            std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
+            visitStar(localProp, star);
 
             if (propagations_.hasVisitedOpposite(curVert, localProp) /*&& !graph_.isNode(curVert)*/) {
                bool ignoreVert = false;
-               for (auto edge : lowerStarEdges) {
+               for (auto edge : star.lower) {
                   const idSuperArc tmpLowArc = dynGraph(localProp).getSubtreeArc(edge);
                   if (tmpLowArc != nullSuperArc && !graph_.getArc(tmpLowArc).isVisible() &&
                       graph_.getArc(tmpLowArc).getPropagation() == localProp) {
@@ -119,9 +117,9 @@ namespace ttk
             if (valences_.lower[curVert] < 2 && valences_.upper[curVert] < 2) {
 
                // not a local min (for local min, currentArc is already set)
-               if(lowerStarEdges.size()) {
+               if(star.lower.size()) {
                   // not a min nor a saddle: 1 CC below
-                  currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
+                  currentArc = dynGraph(localProp).getSubtreeArc(star.lower[0]);
                   if (currentArc == nullSuperArc) {
                      PRINT("n-" << curVert);
                      continue;
@@ -137,12 +135,12 @@ namespace ttk
                lazyUpdatePreimage(localProp, currentArc);
 
                // ensure we will always recover this arc from the upper neighbors
-               for (const idEdge dgNode : upperStarEdges) {
+               for (const idEdge dgNode : star.upper) {
                   dynGraph(localProp).setCorArc(dgNode, currentArc);
                }
             } else {
                // locally apply the lazy one the current growing arc
-               for (const idEdge e : lowerStarEdges) {
+               for (const idEdge e : star.lower) {
                   const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
                   if (a != nullSuperArc && graph_.getArc(a).isVisible() && graph_.getArc(a).getPropagation()->getId() == localProp->getId()) {
                      lazyApply(localProp, a);
@@ -151,15 +149,15 @@ namespace ttk
 #else
             {
 #endif
-               lowerComp = lowerComps(lowerStarEdges, localProp);
+               comp.lower = lowerComps(star.lower, localProp);
 
-               if (lowerComp.size() > 1) {
+               if (comp.lower.size() > 1) {
                   isJoin = true;
-                  isJoinLast = checkLast(localProp, lowerStarEdges);
+                  isJoinLast = checkLast(localProp, star.lower);
                   break;
                } else {
-                  if (lowerComp.size()) {
-                     currentArc = lowerComp[0]->getCorArc();
+                  if (comp.lower.size()) {
+                     currentArc = comp.lower[0]->getCorArc();
                      if (currentArc == nullSuperArc) {
                         PRINT("n--" << curVert);
                         continue;
@@ -168,12 +166,12 @@ namespace ttk
                   mergeIn = visit(localProp, currentArc);
                }
                updatePreimage(localProp, currentArc);
-               upperComp = upperComps(upperStarEdges, localProp);
-               if (upperComp.size() > 1) {
+               comp.upper = upperComps(star.upper, localProp);
+               if (comp.upper.size() > 1) {
                   isSplit = true;
                }
 
-               if (!isJoin && !isSplit && upperComp.size()){
+               if (!isJoin && !isSplit && comp.upper.size()){
                   // this arc is not empty (not saddle not max)
                   graph_.getArc(currentArc).visit(curVert);
                }
@@ -190,7 +188,7 @@ namespace ttk
             }
 
             // stop on leaves
-            if (!upperStarEdges.size()) {
+            if (!star.upper.size()) {
                // We have reached a local extrema (max from this propagation)
                const idNode leafNode = graph_.makeNode(curVert);
                graph_.closeArc(currentArc, leafNode);
@@ -225,7 +223,7 @@ namespace ttk
             }
 
             // add upper star for futur visit
-            localGrowth(localProp, upperStarEdges);
+            localGrowth(localProp, star.upper);
          } // end propagation while
 
          // get the corresponging critical point on which
@@ -286,19 +284,19 @@ namespace ttk
             {
                // here to solve a 1 over thousands execution bug in parallel
                // TODO Still required ??
-               std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
-               lowerComp = lowerComps(lowerStarEdges, localProp);
+               visitStar(localProp, star);
+               comp.lower = lowerComps(star.lower, localProp);
             }
             saddleNode = graph_.getNodeId(upVert);
-            idSuperArc visibleMerged = mergeAtSaddle(saddleNode, localProp, lowerComp);
+            idSuperArc visibleMerged = mergeAtSaddle(saddleNode, localProp, comp.lower);
             localProp->lessArc(visibleMerged-1);
 
-            localGrowth(localProp, upperStarEdges);
+            localGrowth(localProp, star.upper);
 
             joinParentArc = graph_.openArc(saddleNode, localProp);
             visit(localProp, joinParentArc);
             updatePreimage(localProp, joinParentArc);
-            upperComp = upperComps(upperStarEdges, localProp);
+            comp.upper = upperComps(star.upper, localProp);
 
             // do not propagate
             if (hideFromHere) {
@@ -308,7 +306,7 @@ namespace ttk
             }
 
             // split detection required after the merge
-            if (upperComp.size() > 1) {
+            if (comp.upper.size() > 1) {
                // this node is both join and split
                isSplit = true;
                // will be replaced be new arcs of the split
@@ -353,9 +351,9 @@ namespace ttk
          }
 
          if (isSplit) {
-            splitAtSaddle(localProp, upperComp, hideFromHere);
+            splitAtSaddle(localProp, comp.upper, hideFromHere);
             if (!hideFromHere){
-               localProp->moreArc(upperComp.size());
+               localProp->moreArc(comp.upper.size());
             }
          }
 
@@ -397,8 +395,8 @@ namespace ttk
       template<typename ScalarType>
       void FTRGraph<ScalarType>::growthSequential(const idVertex begin, const idVertex stop)
       {
-         std::vector<idEdge>                  lowerStarEdges, upperStarEdges;
-         std::vector<DynGraphNode<idVertex>*> lowerComp, upperComp;
+         Star star;
+         Comp comp;
 
          const bool     fromMin         = begin < stop;
          Propagation*   localProp = newPropagation(scalars_->getSortedVert(begin), fromMin);
@@ -408,9 +406,7 @@ namespace ttk
             localProp->setCurvert(curVert);  // never use Fibo Heap here
 
             idSuperArc currentArc = nullSuperArc;
-            lowerStarEdges.clear();
-            upperStarEdges.clear();
-            std::tie(lowerStarEdges, upperStarEdges) = visitStar(localProp);
+            visitStar(localProp, star);
 
             if (valences_.lower[curVert] == 0) { // min
                const idNode minNode = graph_.makeNode(curVert);
@@ -421,16 +417,16 @@ namespace ttk
             if (valences_.lower[curVert] < 2 && valences_.upper[curVert] < 2) {
 
                // simple reeb regular, lazyness
-               if(lowerStarEdges.size()) {
+               if(star.lower.size()) {
                   // not a min nor a saddle: 1 CC below (need findSubtree)
-                  currentArc = dynGraph(localProp).getSubtreeArc(lowerStarEdges[0]);
+                  currentArc = dynGraph(localProp).getSubtreeArc(star.lower[0]);
                   if(valences_.upper[curVert] && valences_.lower[curVert]){
                      // not saddle neither extrema
                      graph_.getArc(currentArc).visit(curVert);
                   }
                }
-               if (upperStarEdges.size()) {
-                  for (const idEdge dgNode : upperStarEdges) {
+               if (star.upper.size()) {
+                  for (const idEdge dgNode : star.upper) {
                      dynGraph(localProp).setCorArc(dgNode, currentArc);
                   }
                } else { // max
@@ -444,7 +440,7 @@ namespace ttk
             } else {
 
                // locally aply the lazy one the current growing arc
-               for (const idEdge e : lowerStarEdges) {
+               for (const idEdge e : star.lower) {
                   const idSuperArc a = dynGraph(localProp).getNode(e)->findRootArc();
                   if (!lazy_.isEmpty(a)) {
                      // process lazy
@@ -460,13 +456,13 @@ namespace ttk
             {
 #endif
                bool isJoin = false;
-               lowerComp = lowerComps(lowerStarEdges, localProp);
-               if (lowerComp.size() == 1) {  // regular
-                  currentArc = lowerComp[0]->getCorArc();
-               } else if (lowerComp.size() > 1) {  // join saddle
+               comp.lower = lowerComps(star.lower, localProp);
+               if (comp.lower.size() == 1) {  // regular
+                  currentArc = comp.lower[0]->getCorArc();
+               } else if (comp.lower.size() > 1) {  // join saddle
                   const idNode sadNode = graph_.makeNode(curVert);
                   currentArc           = graph_.openArc(sadNode, localProp);
-                  mergeAtSaddle(sadNode, lowerComp);
+                  mergeAtSaddle(sadNode, comp.lower);
                   isJoin = true;
                }
 
@@ -474,11 +470,11 @@ namespace ttk
                propagations_.visit(curVert, localProp);
                updatePreimage(localProp, currentArc);
 
-               upperComp = upperComps(upperStarEdges, localProp);
-               if (!upperComp.size()) { // max
+               comp.upper = upperComps(star.upper, localProp);
+               if (!comp.upper.size()) { // max
                   const idNode maxNode = graph_.makeNode(curVert);
                   graph_.closeArc(currentArc, maxNode);
-               } else if (upperComp.size() < 2) {
+               } else if (comp.upper.size() < 2) {
                   if (!isJoin) {
                      // this arc is not empty
                      graph_.getArc(currentArc).visit(curVert);
@@ -490,22 +486,22 @@ namespace ttk
                      const idNode splitNode = graph_.makeNode(curVert);
                      graph_.closeArc(currentArc, splitNode);
                   }
-                  splitAtSaddle(localProp, upperComp);
+                  splitAtSaddle(localProp, comp.upper);
                }
             }
          } // end for each vertex
       }
 
       template <typename ScalarType>
-      std::pair<std::vector<idEdge>, std::vector<idEdge>> FTRGraph<ScalarType>::visitStar(
-          const Propagation* const localProp) const
+      void FTRGraph<ScalarType>::visitStar(const Propagation* const localProp, Star& star) const
       {
-         // TODO re-use the same vectors per thread
-         std::vector<idEdge> lowerStar, upperStar;
+
+         star.lower.clear();
+         star.upper.clear();
 
          const idEdge nbAdjEdges = mesh_.getVertexEdgeNumber(localProp->getCurVertex());
-         lowerStar.reserve(nbAdjEdges);
-         upperStar.reserve(nbAdjEdges);
+         star.lower.reserve(nbAdjEdges);
+         star.upper.reserve(nbAdjEdges);
 
          for (idEdge e = 0; e < nbAdjEdges; ++e) {
             idEdge edgeId;
@@ -513,13 +509,11 @@ namespace ttk
             idVertex edgeLowerVert, edgeUpperVert;
             std::tie(edgeLowerVert, edgeUpperVert) = mesh_.getOrderedEdge(edgeId, localProp->goUp());
             if (edgeLowerVert == localProp->getCurVertex()) {
-               upperStar.emplace_back(edgeId);
+               star.upper.emplace_back(edgeId);
             } else {
-               lowerStar.emplace_back(edgeId);
+               star.lower.emplace_back(edgeId);
             }
          }
-
-         return {lowerStar, upperStar};
       }
 
       template <typename ScalarType>
@@ -537,9 +531,9 @@ namespace ttk
       }
 
       template <typename ScalarType>
-      bool FTRGraph<ScalarType>::checkStop(const std::vector<DynGraphNode<idVertex>*>& lowerComp)
+      bool FTRGraph<ScalarType>::checkStop(const std::vector<DynGraphNode<idVertex>*>& compVect)
       {
-         for (const auto* dgNode : lowerComp) {
+         for (const auto* dgNode : compVect) {
             const idSuperArc arc = dgNode->getCorArc();
             if (arc != nullSuperArc && !graph_.getArc(arc).isVisible()) {
                return true;
@@ -875,7 +869,7 @@ namespace ttk
 
       template <typename ScalarType>
       bool FTRGraph<ScalarType>::checkLast(Propagation* const         localProp,
-                                           const std::vector<idEdge>& lowerStarEdges)
+                                           const std::vector<idEdge>& starVect)
       {
          const idVertex curSaddle = localProp->getCurVertex();
          AtomicUF*      curId     = localProp->getId();
@@ -885,7 +879,7 @@ namespace ttk
           // Using propagation id allows to decrement by the number of time this propagation
           // has reached the saddle, even if the propagation take care of several of these arcs
           // (after a Hole-split).
-          for (idEdge edgeId : lowerStarEdges) {
+          for (idEdge edgeId : starVect) {
              const idSuperArc edgeArc = dynGraph(localProp).getSubtreeArc(edgeId);
              if (edgeArc == nullSuperArc) {
                 continue;
@@ -919,7 +913,7 @@ namespace ttk
 
          if (oldVal == -1) {
             // First task to touch this saddle, compute the valence
-            idVertex totalVal = lowerStarEdges.size();
+            idVertex totalVal = starVect.size();
             valence  newVal   = 0;
             if (localProp->goUp()) {
 #ifdef TTK_ENABLE_OPENMP
@@ -947,17 +941,17 @@ namespace ttk
       template <typename ScalarType>
       idSuperArc FTRGraph<ScalarType>::mergeAtSaddle(
           const idNode saddleId, Propagation* localProp,
-          const std::vector<DynGraphNode<idVertex>*>& lowerComp)
+          const std::vector<DynGraphNode<idVertex>*>& compVect)
       {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-         if (lowerComp.size() < 2) {
+         if (compVect.size() < 2) {
             std::cerr << "[FTR]: merge at saddle with only one lower CC" << std::endl;
          }
 #endif
 
          idSuperArc visibleClosed = 0;
-         for(auto* dgNode : lowerComp) {
+         for(auto* dgNode : compVect) {
             // read in the history (lower comp already contains roots)
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
@@ -973,18 +967,18 @@ namespace ttk
 
       template <typename ScalarType>
       idSuperArc FTRGraph<ScalarType>::mergeAtSaddle(
-          const idNode saddleId, const std::vector<DynGraphNode<idVertex>*>& lowerComp)
+          const idNode saddleId, const std::vector<DynGraphNode<idVertex>*>& compVect)
       {
          // version for the sequential arc growth, do not merge the propagations
 
 #ifndef TTK_ENABLE_KAMIKAZE
-         if (lowerComp.size() < 2) {
+         if (compVect.size() < 2) {
             std::cerr << "[FTR]: merge at saddle with only one lower CC" << std::endl;
          }
 #endif
 
          idSuperArc visibleClosed = 0;
-         for(auto* dgNode : lowerComp) {
+         for(auto* dgNode : compVect) {
             const idSuperArc endingArc = dgNode->getCorArc();
             graph_.closeArc(endingArc, saddleId);
             PRINT("/"<<graph_.printArc(endingArc));
@@ -1063,13 +1057,13 @@ namespace ttk
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::splitAtSaddle(
-          Propagation* const localProp, const std::vector<DynGraphNode<idVertex>*>& upperComp,
+          Propagation* const localProp, const std::vector<DynGraphNode<idVertex>*>& compVect,
           const bool hidden)
       {
          const idVertex curVert = localProp->getCurVertex();
          const idNode   curNode = graph_.getNodeId(curVert);
 
-         for (auto* dgNode : upperComp) {
+         for (auto* dgNode : compVect) {
             const idSuperArc newArc = graph_.openArc(curNode, localProp);
             dgNode->setRootArc(newArc);
             visit(localProp, newArc);

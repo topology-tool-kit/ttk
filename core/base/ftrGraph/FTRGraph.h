@@ -58,6 +58,16 @@ namespace ttk
          LocalForest<idVertex> up, down;
       };
 
+      struct Star
+      {
+         std::vector<idEdge> lower, upper;
+      };
+
+      struct Comp
+      {
+         std::vector<DynGraphNode<idVertex>*> lower, upper;
+      };
+
       template<typename ScalarType>
       class FTRGraph : virtual public Debug, public Allocable
       {
@@ -282,11 +292,8 @@ namespace ttk
          // the direction of the growth: increasing scalar value.
          void growthSequential(const idVertex begin, const idVertex stop);
 
-         /// visit the star of v and create two vector,
-         /// first one contains edges finishing at v (lower star)
-         /// second one contains edges starting at v (upper star)
-         std::pair<std::vector<idEdge>, std::vector<idEdge>> visitStar(
-             const Propagation* const localProp) const;
+         /// visit the star of v and fill the two vectors in Star,
+         void visitStar(const Propagation* const localProp, Star& star) const;
 
          /// Consider edges ending at the vertex v, one by one,
          /// and find their corresponding components in the current
