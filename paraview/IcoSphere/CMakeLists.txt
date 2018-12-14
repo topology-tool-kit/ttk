@@ -1,6 +1,5 @@
 ttk_add_paraview_plugin(ttkIcoSphere
 	SOURCES ${VTKWRAPPER_DIR}/ttkIcoSphere/ttkIcoSphere.cpp
-	PLUGIN_VERSION 1.0
 	PLUGIN_XML IcoSphere.xml
 	LINK icoSphere)
 

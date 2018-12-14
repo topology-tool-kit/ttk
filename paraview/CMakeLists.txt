@@ -5,15 +5,15 @@ include(${PARAVIEW_USE_FILE})
 include_directories(${PARAVIEW_INCLUDE_DIRS})
 
 if (MSVC)
-set(TTK_INSTALL_PLUGIN_DIR
-	"$ENV{PARAVIEW_BIN}/plugins"
-	CACHE PATH
-	"Directory where TTK ParaView plugins will be installed")
+	set(TTK_INSTALL_PLUGIN_DIR
+		"$ENV{PARAVIEW_BIN}/plugins"
+		CACHE PATH
+		"Directory where TTK ParaView plugins will be installed")
 else()
-set(TTK_INSTALL_PLUGIN_DIR
-	"${VTK_INSTALL_PREFIX}/lib/plugins"
-	CACHE PATH
-	"Directory where TTK ParaView plugins will be installed")
+	set(TTK_INSTALL_PLUGIN_DIR
+		"${VTK_INSTALL_PREFIX}/lib/plugins"
+		CACHE PATH
+		"Directory where TTK ParaView plugins will be installed")
 endif()
 
 set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/../core/vtk/")
@@ -30,6 +30,12 @@ if (MSVC)
 	target_compile_definitions(ttkPVTriangulation PUBLIC TTK_PLUGIN)
 endif()
 
+set(TTK_PV_XML     "" CACHE INTERNAL "")
+set(TTK_PV_SOURCES "" CACHE INTERNAL "")
+set(TTK_PV_LINKS   "" CACHE INTERNAL "")
+set(TTK_PV_DIRS    "" CACHE INTERNAL "")
+set(TTK_VTKWRAPPER_DIRS    "" CACHE INTERNAL "")
+
 # traverse sub-directories
 file(GLOB PARAVIEW_PLUGIN_DIRS *)
 foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
@@ -40,4 +46,25 @@ foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
 	endif()
 endforeach()
 
+# Build the ParaView plugin, if we're building with ParaView
+# and this wrapper library has a plugin
+add_paraview_plugin(TTKPVPlugin ${PROJECT_VERSION}
+	SERVER_MANAGER_XML ${TTK_PV_XML}
+	SERVER_MANAGER_SOURCES ${TTK_PV_SOURCES} ${TTK_TRIANGULATION_SRCS})
 
+if (MSVC)
+	target_compile_definitions(TTKPVPlugin PUBLIC TTK_PLUGIN)
+endif()
+
+# dependency on wrappers
+file(GLOB VTKWRAPPER_DIRS ${VTKWRAPPER_DIR}/*)
+foreach(VTKWRAPPER ${VTKWRAPPER_DIRS})
+	if (IS_DIRECTORY ${VTKWRAPPER})
+		list(APPEND TTK_VTKWRAPPER_DIRS ${VTKWRAPPER})
+	endif()
+endforeach()
+target_include_directories(TTKPVPlugin PUBLIC ${TTK_VTKWRAPPER_DIRS})
+
+target_link_libraries(TTKPVPlugin PUBLIC ${VTK_LIBRARIES} ${TTK_PV_LINKS} ttkPVTriangulation)
+
+install(TARGETS TTKPVPlugin DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
