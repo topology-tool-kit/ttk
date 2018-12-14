@@ -172,8 +172,8 @@ template <typename topoType, typename sizeType> int ttk::MeshGraph::execute(
         dMsg(cout, msg.str(), infoMsg);
     }
 
-    auto getInputPointData = inputPointSizes!=nullptr
-        ? [](
+    auto getInputPointData =
+        [](
             const size_t& pointIndex,
             const float* inputPoints,
             const sizeType* inputPointSizes,
@@ -185,21 +185,7 @@ template <typename topoType, typename sizeType> int ttk::MeshGraph::execute(
             data[1] = inputPoints[i++];
             data[2] = inputPoints[i];
 
-            data[3] = ((float) inputPointSizes[pointIndex]) * sizeScale;
-        }
-        : [](
-            const size_t& pointIndex,
-            const float* inputPoints,
-            const sizeType* inputPointSizes,
-            const float& sizeScale,
-            float data[4]
-        ) {
-            size_t i= pointIndex*3;
-            data[0] = inputPoints[i++];
-            data[1] = inputPoints[i++];
-            data[2] = inputPoints[i];
-
-            data[3] = sizeScale;
+            data[3] = (inputPointSizes!=nullptr)?((float) inputPointSizes[pointIndex]) * sizeScale:sizeScale;
         };
 
     // -------------------------------------------------------------------------
@@ -434,35 +420,21 @@ template <typename topoType, typename sizeType> int ttk::MeshGraph::execute2(
         dMsg(cout, msg.str(), infoMsg);
     }
 
-    auto getInputPointData = inputPointSizes!=nullptr
-        ? [](
-            const size_t& pointIndex,
-            const float* inputPoints,
-            const sizeType* inputPointSizes,
-            const float& sizeScale,
-            float data[4]
-        ) {
-            size_t i= pointIndex*3;
-            data[0] = inputPoints[i++];
-            data[1] = inputPoints[i++];
-            data[2] = inputPoints[i];
+    auto getInputPointData =
+       [](
+             const size_t& pointIndex,
+             const float* inputPoints,
+             const sizeType* inputPointSizes,
+             const float& sizeScale,
+             float data[4]
+         ) {
+          size_t i= pointIndex*3;
+          data[0] = inputPoints[i++];
+          data[1] = inputPoints[i++];
+          data[2] = inputPoints[i];
 
-            data[3] = ((float) inputPointSizes[pointIndex]) * sizeScale;
-        }
-        : [](
-            const size_t& pointIndex,
-            const float* inputPoints,
-            const sizeType* inputPointSizes,
-            const float& sizeScale,
-            float data[4]
-        ) {
-            size_t i= pointIndex*3;
-            data[0] = inputPoints[i++];
-            data[1] = inputPoints[i++];
-            data[2] = inputPoints[i];
-
-            data[3] = sizeScale;
-        };
+          data[3] = (inputPointSizes!=nullptr)?((float) inputPointSizes[pointIndex]) * sizeScale : sizeScale;
+       };
 
     size_t subdivisionOffset = nInputPoints*2;
     size_t nSubdivisionPoints = nSubdivisions*2;
