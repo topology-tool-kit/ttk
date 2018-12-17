@@ -1,6 +1,3 @@
-option(TTK_FORCE_VTK_PARAVIEW "Force to use the VTK bundled into ParaView" OFF)
-mark_as_advanced(TTK_FORCE_VTK_PARAVIEW)
-
 # find VTK, if none provided but paraview is given,
 # use the VTK provided by paraview with a message
 if(NOT ${TTK_FORCE_VTK_PARAVIEW})
