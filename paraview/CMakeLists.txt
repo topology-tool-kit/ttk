@@ -1,5 +1,8 @@
 include(functions.cmake)
 
+option(TTK_BUILD_STANDALONE_PARAVIEW_PLUGINS "Build one plugin per TTK filter" OFF)
+mark_as_advanced(TTK_BUILD_STANDALONE_PARAVIEW_PLUGINS)
+
 find_package(ParaView REQUIRED)
 include(${PARAVIEW_USE_FILE})
 include_directories(${PARAVIEW_INCLUDE_DIRS})
@@ -46,25 +49,27 @@ foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
 	endif()
 endforeach()
 
-# Build the ParaView plugin, if we're building with ParaView
-# and this wrapper library has a plugin
-add_paraview_plugin(TTKPVPlugin ${PROJECT_VERSION}
-	SERVER_MANAGER_XML ${TTK_PV_XML}
-	SERVER_MANAGER_SOURCES ${TTK_PV_SOURCES} ${TTK_TRIANGULATION_SRCS})
+if (NOT TTK_BUILD_STANDALONE_PARAVIEW_PLUGINS)
+	# Build the ParaView plugin, if we're building with ParaView
+	# and this wrapper library has a plugin
+	add_paraview_plugin(TTKPVPlugin ${PROJECT_VERSION}
+		SERVER_MANAGER_XML ${TTK_PV_XML}
+		SERVER_MANAGER_SOURCES ${TTK_PV_SOURCES} ${TTK_TRIANGULATION_SRCS})
 
-if (MSVC)
-	target_compile_definitions(TTKPVPlugin PUBLIC TTK_PLUGIN)
-endif()
-
-# dependency on wrappers
-file(GLOB VTKWRAPPER_DIRS ${VTKWRAPPER_DIR}/*)
-foreach(VTKWRAPPER ${VTKWRAPPER_DIRS})
-	if (IS_DIRECTORY ${VTKWRAPPER})
-		list(APPEND TTK_VTKWRAPPER_DIRS ${VTKWRAPPER})
+	if (MSVC)
+		target_compile_definitions(TTKPVPlugin PUBLIC TTK_PLUGIN)
 	endif()
-endforeach()
-target_include_directories(TTKPVPlugin PUBLIC ${TTK_VTKWRAPPER_DIRS})
 
-target_link_libraries(TTKPVPlugin PUBLIC ${VTK_LIBRARIES} ${TTK_PV_LINKS} ttkPVTriangulation)
+	# dependency on wrappers
+	file(GLOB VTKWRAPPER_DIRS ${VTKWRAPPER_DIR}/*)
+	foreach(VTKWRAPPER ${VTKWRAPPER_DIRS})
+		if (IS_DIRECTORY ${VTKWRAPPER})
+			list(APPEND TTK_VTKWRAPPER_DIRS ${VTKWRAPPER})
+		endif()
+	endforeach()
+	target_include_directories(TTKPVPlugin PUBLIC ${TTK_VTKWRAPPER_DIRS})
 
-install(TARGETS TTKPVPlugin DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
+	target_link_libraries(TTKPVPlugin PUBLIC ${VTK_LIBRARIES} ${TTK_PV_LINKS} ttkPVTriangulation)
+
+	install(TARGETS TTKPVPlugin DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
+endif()
