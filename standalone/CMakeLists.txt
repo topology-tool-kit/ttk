@@ -4,15 +4,16 @@ mark_as_advanced(TTK_FORCE_VTK_PARAVIEW)
 # find VTK, if none provided but paraview is given,
 # use the VTK provided by paraview with a message
 if(NOT ${TTK_FORCE_VTK_PARAVIEW})
-   find_package(VTK QUIET)
+	find_package(VTK QUIET)
 endif()
 if(NOT DEFINED VTK_USE_FILE)
-   find_package(ParaView)
-   if(NOT DEFINED VTK_USE_FILE)
-      message(FATAL_ERROR "No VTK Provided, you sould use VTK_DIR")
-   else()
-      message(STATUS "No VTK provided, fallback to ParaView")
-   endif()
+	find_package(ParaView)
+	if(NOT DEFINED VTK_USE_FILE)
+		# VTK error message
+		find_package(VTK REQUIRED)
+	else()
+		message(STATUS "No VTK provided, fallback to ParaView")
+	endif()
 endif()
 include(${VTK_USE_FILE})
 
