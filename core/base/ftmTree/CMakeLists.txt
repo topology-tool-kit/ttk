@@ -6,6 +6,7 @@ ttk_add_base_library(ftmTree
 	LINK triangulation geometry)
 
 option(TTK_ENABLE_FTM_TREE_PROCESS_SPEED "Enable FTM tree process speed" OFF)
+mark_as_advanced(TTK_ENABLE_FTM_TREE_PROCESS_SPEED)
 option(TTK_ENABLE_FTM_TREE_STATS_TIME    "Enable FTM tree stats on tasks processing" OFF)
 mark_as_advanced(TTK_ENABLE_FTM_TREE_STATS_TIME)
 

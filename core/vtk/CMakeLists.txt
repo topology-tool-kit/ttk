@@ -1,6 +1,6 @@
 include(functions.cmake)
 
-option(TTK_FORCE_VTK_PARAVIEW "Force to use the VTK bundled into ParaView" OFF)
+option(TTK_FORCE_VTK_PARAVIEW "Force to use the VTK bundled from ParaView" OFF)
 mark_as_advanced(TTK_FORCE_VTK_PARAVIEW)
 
 # find VTK, if none provided but paraview is given,

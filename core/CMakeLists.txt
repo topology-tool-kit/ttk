@@ -10,10 +10,13 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif()
 
 option(TTK_ENABLE_64BIT_IDS "Enable processing on large datasets" OFF)
+mark_as_advanced(TTK_ENABLE_64BIT_IDS)
 
 option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" OFF)
+mark_as_advanced(TTK_ENABLE_KAMIKAZE)
 
 option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" ON)
+mark_as_advanced(TTK_ENABLE_CPU_OPTIMIZATION)
 
 option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)
 if(TTK_BUILD_DOCUMENTATION)
