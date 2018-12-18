@@ -52,12 +52,12 @@ endforeach()
 if (NOT TTK_BUILD_STANDALONE_PARAVIEW_PLUGINS)
 	# Build the ParaView plugin, if we're building with ParaView
 	# and this wrapper library has a plugin
-	add_paraview_plugin(TTKPVPlugin ${PROJECT_VERSION}
+	add_paraview_plugin(TopologyToolKit ${PROJECT_VERSION}
 		SERVER_MANAGER_XML ${TTK_PV_XML}
 		SERVER_MANAGER_SOURCES ${TTK_PV_SOURCES} ${TTK_TRIANGULATION_SRCS})
 
 	if (MSVC)
-		target_compile_definitions(TTKPVPlugin PUBLIC TTK_PLUGIN)
+		target_compile_definitions(TopologyToolKit PUBLIC TTK_PLUGIN)
 	endif()
 
 	# dependency on wrappers
@@ -67,9 +67,9 @@ if (NOT TTK_BUILD_STANDALONE_PARAVIEW_PLUGINS)
 			list(APPEND TTK_VTKWRAPPER_DIRS ${VTKWRAPPER})
 		endif()
 	endforeach()
-	target_include_directories(TTKPVPlugin PUBLIC ${TTK_VTKWRAPPER_DIRS})
+	target_include_directories(TopologyToolKit PUBLIC ${TTK_VTKWRAPPER_DIRS})
 
-	target_link_libraries(TTKPVPlugin PUBLIC ${VTK_LIBRARIES} ${TTK_PV_LINKS} ttkPVTriangulation)
+	target_link_libraries(TopologyToolKit PUBLIC ${VTK_LIBRARIES} ${TTK_PV_LINKS} ttkPVTriangulation)
 
-	install(TARGETS TTKPVPlugin DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
+	install(TARGETS TopologyToolKit DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
 endif()
