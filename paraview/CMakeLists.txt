@@ -1,54 +1,22 @@
-# Function to create the ParaView plugin for a TTK ParaView plugin
+include(functions.cmake)
 
-# Options:
-# SOURCES: Specify the list of source files for the library
-# LINK: Specify the link dependencies of the library
-# PLUGIN_VERSION: Specify ParaView plugin version
-# PLUGIN_XML: Specify ParaView plugin XML file
-#
-# ttk_add_paraview_plugin(<library_name>
-#     SOURCES <source list>
-#     PLUGIN_VERSION <version>
-#     PLUGIN_XML <XML file for the plugin>
-#     LINK <libraries to link>)
-#
-function(ttk_add_paraview_plugin library)
-	cmake_parse_arguments(ARG "" "PLUGIN_XML;PLUGIN_VERSION"
-		"SOURCES;LINK" ${ARGN})
-
-	# Build the ParaView plugin, if we're building with ParaView
-	# and this wrapper library has a plugin
-	set(plugin_name "${library}Plugin")
-	add_paraview_plugin(${plugin_name} ${ARG_PLUGIN_VERSION}
-		SERVER_MANAGER_XML ${ARG_PLUGIN_XML}
-		SERVER_MANAGER_SOURCES ${ARG_SOURCES} ${TTK_TRIANGULATION_SRCS})
-	target_link_libraries(${plugin_name} PUBLIC ${VTK_LIBRARIES} ${ARG_LINK} ttkPVTriangulation)
-
-	if (MSVC)
-		target_compile_definitions(${plugin_name} PUBLIC TTK_PLUGIN)				
-	endif()	
-
-	target_include_directories(${plugin_name} PUBLIC
-		$<BUILD_INTERFACE:${VTKWRAPPER_DIR}/${library}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
-
-	install(TARGETS ${plugin_name} DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
-endfunction()
+option(TTK_BUILD_STANDALONE_PARAVIEW_PLUGINS "Build one plugin per TTK filter" OFF)
+mark_as_advanced(TTK_BUILD_STANDALONE_PARAVIEW_PLUGINS)
 
 find_package(ParaView REQUIRED)
 include(${PARAVIEW_USE_FILE})
 include_directories(${PARAVIEW_INCLUDE_DIRS})
 
 if (MSVC)
-set(TTK_INSTALL_PLUGIN_DIR
-	"$ENV{PARAVIEW_BIN}/plugins"
-	CACHE PATH
-	"Directory where TTK ParaView plugins will be installed")
+	set(TTK_INSTALL_PLUGIN_DIR
+		"$ENV{PARAVIEW_BIN}/plugins"
+		CACHE PATH
+		"Directory where TTK ParaView plugins will be installed")
 else()
-set(TTK_INSTALL_PLUGIN_DIR
-	"${VTK_INSTALL_PREFIX}/lib/plugins"
-	CACHE PATH
-	"Directory where TTK ParaView plugins will be installed")
+	set(TTK_INSTALL_PLUGIN_DIR
+		"${VTK_INSTALL_PREFIX}/lib/plugins"
+		CACHE PATH
+		"Directory where TTK ParaView plugins will be installed")
 endif()
 
 set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/../core/vtk/")
@@ -62,9 +30,16 @@ set_target_properties(ttkPVTriangulation PROPERTIES POSITION_INDEPENDENT_CODE TR
 target_include_directories(ttkPVTriangulation PUBLIC
 	$<BUILD_INTERFACE:${VTKWRAPPER_DIR}/ttkTriangulation>)
 if (MSVC)
-	target_compile_definitions(ttkPVTriangulation PUBLIC TTK_PLUGIN)				
-endif()	
+	target_compile_definitions(ttkPVTriangulation PUBLIC TTK_PLUGIN)
+endif()
 
+set(TTK_PV_XML     "" CACHE INTERNAL "")
+set(TTK_PV_SOURCES "" CACHE INTERNAL "")
+set(TTK_PV_LINKS   "" CACHE INTERNAL "")
+set(TTK_PV_DIRS    "" CACHE INTERNAL "")
+set(TTK_VTKWRAPPER_DIRS    "" CACHE INTERNAL "")
+
+# traverse sub-directories
 file(GLOB PARAVIEW_PLUGIN_DIRS *)
 foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
 	if (IS_DIRECTORY ${PARAVIEW_PLUGIN})
@@ -74,4 +49,27 @@ foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
 	endif()
 endforeach()
 
+if (NOT TTK_BUILD_STANDALONE_PARAVIEW_PLUGINS)
+	# Build the ParaView plugin, if we're building with ParaView
+	# and this wrapper library has a plugin
+	add_paraview_plugin(TopologyToolKit ${PROJECT_VERSION}
+		SERVER_MANAGER_XML ${TTK_PV_XML}
+		SERVER_MANAGER_SOURCES ${TTK_PV_SOURCES} ${TTK_TRIANGULATION_SRCS})
 
+	if (MSVC)
+		target_compile_definitions(TopologyToolKit PUBLIC TTK_PLUGIN)
+	endif()
+
+	# dependency on wrappers
+	file(GLOB VTKWRAPPER_DIRS ${VTKWRAPPER_DIR}/*)
+	foreach(VTKWRAPPER ${VTKWRAPPER_DIRS})
+		if (IS_DIRECTORY ${VTKWRAPPER})
+			list(APPEND TTK_VTKWRAPPER_DIRS ${VTKWRAPPER})
+		endif()
+	endforeach()
+	target_include_directories(TopologyToolKit PUBLIC ${TTK_VTKWRAPPER_DIRS})
+
+	target_link_libraries(TopologyToolKit PUBLIC ${VTK_LIBRARIES} ${TTK_PV_LINKS} ttkPVTriangulation)
+
+	install(TARGETS TopologyToolKit DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
+endif()

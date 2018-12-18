@@ -1,52 +1,22 @@
-# Function to create the library and install targets
-# for a TTK VTK Wrapper library. The VTK Libraries will
-# automatically be linked.
-# Options:
-# SOURCES: Specify the list of source files for the library
-# HEADERS: Specify the list of header files to install for the library
-# LINK: Specify the link dependencies of the library
-#
-# To build a VTK Wrapper library:
-# ttk_add_vtk_library(<library_name>
-#     SOURCES <source list>
-#     HEADERS <headers to install>
-#     LINK <libraries to link>)
-#
+include(functions.cmake)
 
-function(ttk_add_vtk_library library)
-	cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LINK" ${ARGN})
+option(TTK_FORCE_VTK_PARAVIEW "Force to use the VTK bundled from ParaView" OFF)
+mark_as_advanced(TTK_FORCE_VTK_PARAVIEW)
 
-	set(CMAKE_SKIP_BUILD_RPATH TRUE)
-	set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-	set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
-	set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-	# Build the VTK Wrapper
-	add_library(${library} SHARED ${ARG_SOURCES})
-	target_link_libraries(${library} PUBLIC ${VTK_LIBRARIES} ${ARG_LINK})
-
-	target_include_directories(${library} PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-		$<INSTALL_INTERFACE:include/ttk/vtk>)
-
-	ttk_set_compile_options(${library})
-
-	if (MSVC)
-		target_compile_definitions(${library} PUBLIC vtkFiltersCore_EXPORTS)		
+# find VTK, if none provided but paraview is given,
+# use the VTK provided by paraview with a message
+if(NOT ${TTK_FORCE_VTK_PARAVIEW})
+	find_package(VTK QUIET)
+endif()
+if(NOT DEFINED VTK_USE_FILE)
+	find_package(ParaView)
+	if(NOT DEFINED VTK_USE_FILE)
+		# VTK error message
+		find_package(VTK REQUIRED)
+	else()
+		message(STATUS "No VTK provided, fallback to ParaView")
 	endif()
-
-	install(TARGETS ${library}
-		EXPORT TTKVTKTargets
-		RUNTIME DESTINATION bin/ttk
-		ARCHIVE DESTINATION lib/ttk
-		LIBRARY DESTINATION lib/ttk)
-
-	if (ARG_HEADERS)
-		install(FILES ${ARG_HEADERS} DESTINATION include/ttk/vtk)
-	endif()
-endfunction()
-
-find_package(VTK REQUIRED)
+endif()
 include(${VTK_USE_FILE})
 include_directories(${VTK_INCLUDE_DIRS})
 
@@ -61,6 +31,7 @@ endforeach()
 
 # Add a bundle library that will just link all the TTK vtkWrappers
 add_library(ttkAll INTERFACE)
+target_include_directories(ttkAll INTERFACE ${VTK_INCLUDE_DIRS})
 target_link_libraries(ttkAll INTERFACE ${VTKWRAPPER_LIB_LIST})
 
 install(TARGETS ttkAll
