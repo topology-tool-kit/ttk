@@ -26,6 +26,8 @@
 
 namespace ttk
 {
+namespace cf
+{
 
   // one segment: like a std::vector<vertex>
   class Segment
@@ -87,6 +89,7 @@ namespace ttk
      // when and how to compact ?
      std::vector<vertex> segmentation_;  // SimplexId only ?
   };
+}
 }
 
 #endif /* end of include guard: SEGMENTATION_H_ */

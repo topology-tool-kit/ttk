@@ -26,6 +26,8 @@
 
 namespace ttk
 {
+namespace cf
+{
    class ExtendedUnionFind
    {
      private:
@@ -146,6 +148,7 @@ namespace ttk
       };
 
    };
+}
 }
 
 #endif /* end of include guard: EXTENDEDUF_H */

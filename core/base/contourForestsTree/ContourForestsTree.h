@@ -34,6 +34,8 @@
 
 namespace ttk
 {
+namespace cf
+{
    class ContourForestsTree : public MergeTree
    {
       friend class ContourForests;
@@ -120,6 +122,7 @@ namespace ttk
 
       // }
    };
+}
 }
 
 #endif  // CONTOURTREE_H

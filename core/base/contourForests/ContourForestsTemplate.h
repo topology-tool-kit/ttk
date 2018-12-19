@@ -22,8 +22,10 @@
 
 #include "ContourForests.h"
 
-// TODO
-// Template wrapper
+namespace ttk
+{
+namespace cf
+{
 
 // ------------------- Contour Forests
 
@@ -525,5 +527,8 @@ speedProcess.cend());
 }
 
 //}
+
+}
+}
 
 #endif /* end of include guard: _CONTOURFORESTSTEMPLATE_H */

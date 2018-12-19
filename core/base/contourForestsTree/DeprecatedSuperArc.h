@@ -29,6 +29,8 @@
 
 namespace ttk
 {
+namespace cf
+{
 
    class SuperArc
    {
@@ -449,6 +451,7 @@ make_move_iterator(b));
 
       //}
     };
+}
 }
 
 #endif /* end of include guard: SUPERARC_H */

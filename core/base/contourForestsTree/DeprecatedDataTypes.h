@@ -26,6 +26,8 @@
 
 namespace ttk
 {
+namespace cf
+{
 
    // Types
    // --------
@@ -58,7 +60,7 @@ namespace ttk
    // QUESTION impact on performance using max (0 would be faster alloacted)
    static const idSuperArc     nullSuperArc       = std::numeric_limits<idSuperArc>::max();
    static const idNode         nullNodes          = std::numeric_limits<idNode>::max();
-   static const SimplexId       nullVertex         = std::numeric_limits<SimplexId>::max();
+   static const SimplexId      nullVertex         = std::numeric_limits<SimplexId>::max();
    static const idCorresp      nullCorresp        = std::numeric_limits<idCorresp>::max();
    static const idSegment      nullSegment        = std::numeric_limits<idSegment>::max();
    static const idInterface    nullInterface      = std::numeric_limits<idInterface>::max();
@@ -78,6 +80,7 @@ namespace ttk
    enum class TreeComponent { Arc = -1, Local_minimum, Saddle1, Saddle2, Local_maximum };
 
    enum class ArcType { Min_arc = 0, Max_arc, Saddle1_arc, Saddle2_arc, Saddle1_saddle2_arc };
+}
 }
 
 #endif /* end of include guard: DATATYPES_H */

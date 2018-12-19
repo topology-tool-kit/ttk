@@ -9,6 +9,7 @@
 
 using namespace std;
 using namespace ttk;
+using namespace cf;
 
 // Constructors & destructors
 
@@ -1734,13 +1735,13 @@ bool MergeTree::verifyTree(void)
 
 // Operators
 
-ostream &ttk::operator<<(ostream &o, SuperArc const &a)
+ostream &ttk::cf::operator<<(ostream &o, SuperArc const &a)
 {
    o << a.getDownNodeId() << " <>> " << a.getUpNodeId();
    return o;
 }
 
-ostream &ttk::operator<<(ostream &o, Node const &n)
+ostream &ttk::cf::operator<<(ostream &o, Node const &n)
 {
    o << n.getNumberOfDownSuperArcs() << " .-. " << n.getNumberOfUpSuperArcs();
    return o;

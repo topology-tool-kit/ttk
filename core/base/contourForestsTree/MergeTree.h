@@ -51,6 +51,8 @@
 
 namespace ttk
 {
+namespace cf
+{
    class MergeTree : virtual public Debug
    {
       friend class ContourForests;
@@ -824,7 +826,9 @@ bool>> &pairs, const SimplexId &orig,
    std::ostream &operator<<(std::ostream &o, Node const &n);
    std::ostream &operator<<(std::ostream &o, SuperArc const &a);
 
-#include <MergeTreeTemplate.h>
 }
+}
+
+#include <MergeTreeTemplate.h>
 
 #endif /* end of include guard: MERGETREE_H */

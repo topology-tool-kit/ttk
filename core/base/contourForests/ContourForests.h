@@ -26,6 +26,8 @@
 
 namespace ttk
 {
+namespace cf
+{
    // Classes Interface
    //         ContourForests
 
@@ -276,7 +278,8 @@ parallelParams_.nbInterfaces)
       // }
    };
 
-#include <ContourForestsTemplate.h>
 }
+}
+#include <ContourForestsTemplate.h>
 
 #endif
