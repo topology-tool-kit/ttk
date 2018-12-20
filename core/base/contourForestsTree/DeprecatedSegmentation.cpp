@@ -11,6 +11,7 @@
 
 using namespace std;
 using namespace ttk;
+using namespace cf;
 
 // -------
 // Segment

@@ -12,6 +12,7 @@
 
 using namespace std;
 using namespace ttk;
+using namespace cf;
 
 Interface::Interface(const SimplexId &seed) : seed_(seed)
 {

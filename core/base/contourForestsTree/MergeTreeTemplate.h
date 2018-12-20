@@ -23,6 +23,10 @@
 
 #include "MergeTree.h"
 
+namespace ttk
+{
+namespace cf
+{
 // Init
 // {
 
@@ -844,6 +848,8 @@ getValue<scalarType>(term)));
 }
 
 // }
+}
+}
 
 #endif /* end of include guard: MERGETREETEMPLATE_H */
 

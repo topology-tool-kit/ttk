@@ -12,6 +12,7 @@
 
 using namespace std;
 using namespace ttk;
+using namespace cf;
 
 ContourForestsTree::ContourForestsTree(
   Params *const params, Triangulation *mesh,

@@ -23,6 +23,8 @@
 
 namespace ttk
 {
+namespace cf
+{
    // Compute parameters (global)
    struct Params {
       int           debugLevel;
@@ -134,6 +136,7 @@ forward_(false)
           return sorted_iterator(segmentRevIterator(segmentBegin));
       }
    };
+}
 }
 
 #endif /* end of include guard: STRUCTURES_H */

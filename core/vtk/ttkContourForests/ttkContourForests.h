@@ -32,7 +32,7 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 ///
-/// \sa ttk::ContourForests
+/// \sa ttk::cf::ContourForests
 
 #ifndef _TTK_CONTOURTREE_H
 #define _TTK_CONTOURTREE_H
@@ -142,7 +142,7 @@ class ttkContourForests
     void getTree();
     void updateTree();
     ttk::CriticalType getNodeType(ttk::SimplexId id);
-    ttk::CriticalType getNodeType(ttk::SimplexId id, ttk::TreeType type, ttk::MergeTree* tree);
+    ttk::CriticalType getNodeType(ttk::SimplexId id, ttk::cf::TreeType type, ttk::cf::MergeTree* tree);
     void getCriticalPoints();
     void clearTree();
 
@@ -186,8 +186,8 @@ class ttkContourForests
     std::string inputOffsetScalarFieldName_;
     bool isLoaded_;
     bool lessPartition_;
-    ttk::MergeTree* tree_;
-    ttk::ContourForests* contourTree_;
+    ttk::cf::MergeTree* tree_;
+    ttk::cf::ContourForests* contourTree_;
     vtkPolyData* skeletonNodes_;
     vtkPolyData* skeletonArcs_;
     vtkDataSet* segmentation_;
@@ -200,7 +200,7 @@ class ttkContourForests
     bool useInputOffsetScalarField_;
     bool varyingMesh_;
     bool varyingDataValues_;
-    ttk::TreeType treeType_;
+    ttk::cf::TreeType treeType_;
     std::string scalarField_;
     bool showMin_;
     bool showMax_;
