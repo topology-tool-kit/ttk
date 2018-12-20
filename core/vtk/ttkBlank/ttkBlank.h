@@ -167,6 +167,6 @@ class ttkBlank
     bool                  SomeOption;
     std::string           ScalarField;
     vtkDataArray          *outputScalarField_;
-    ttk::Blank            blank_;
+    ttk::blank::Blank     blank_;
     
 };

@@ -2,6 +2,7 @@
 
 using namespace std;
 using namespace ttk;
+using namespace blank;
 
 Blank::Blank(){
 
