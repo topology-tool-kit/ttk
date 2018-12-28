@@ -104,7 +104,9 @@ int ttk::TrackingFromFields::performDiagramComputation(
   const ttk::Wrapper *wrapper)
 {
 
-  #pragma omp parallel for num_threads(threadNumber_)
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for (int i = 0; i < fieldNumber; ++i)
   {
     ttk::PersistenceDiagram persistenceDiagram_;
