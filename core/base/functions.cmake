@@ -96,6 +96,10 @@ function(ttk_add_base_template_library library)
 		target_include_directories(${library} INTERFACE ${GRAPHVIZ_INCLUDE_DIR})
 	endif()
 
+    if (TTK_ENABLE_SCIKIT_LEARN)
+      target_compile_definitions(${library} INTERFACE TTK_ENABLE_SCIKIT_LEARN)
+    endif()
+	
     if (TTK_ENABLE_SQLITE3)
 		target_compile_definitions(${library} INTERFACE TTK_ENABLE_SQLITE3)
 		target_include_directories(${library} INTERFACE ${SQLITE3_INCLUDE_DIR})
@@ -116,10 +120,6 @@ function(ttk_add_base_template_library library)
 
   if (TTK_ENABLE_64BIT_IDS)
       target_compile_definitions(${library} INTERFACE TTK_ENABLE_64BIT_IDS)
-	endif()
-
-	if (PYTHON_NUMPY_INCLUDE_DIR)
-    target_compile_definitions(${library} INTERFACE TTK_PYTHON_FOUND)
 	endif()
 
 	install(TARGETS ${library}

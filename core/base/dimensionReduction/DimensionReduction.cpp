@@ -2,7 +2,7 @@
 #define VALUE_TO_STRING(x) #x
 #define VALUE(x) VALUE_TO_STRING(x)
 
-#ifdef TTK_PYTHON_FOUND
+#ifdef TTK_ENABLE_SCIKIT_LEARN
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include<Python.h>
 #include<numpy/arrayobject.h>
@@ -21,7 +21,7 @@ DimensionReduction::DimensionReduction():
   embedding_{nullptr},
   majorVersion_{'0'}
 {
-#ifdef TTK_PYTHON_FOUND
+#ifdef TTK_ENABLE_SCIKIT_LEARN
   auto finalize_callback=[](){
     Py_Finalize();
   };
@@ -51,11 +51,15 @@ DimensionReduction::~DimensionReduction(){
 }
 
 bool DimensionReduction::isPythonFound() const{
-#ifdef TTK_PYTHON_FOUND
+#ifdef TTK_ENABLE_SCIKIT_LEARN
   return true;
 #else
   stringstream msg;
-  msg << "[DimensionReduction] Warning: Python/Numpy not found :(" << endl;
+  msg << "[DimensionReduction] "
+    << "Warning: scikit-learn support disabled :(" << endl;
+  msg << "[DimensionReduction] "  
+    << "Python/Numpy may not be installed properly." 
+    << endl;
   msg << "[DimensionReduction] Features disabled..." << endl;
   dMsg(cerr, msg.str(), fatalMsg);
   return false;
@@ -63,7 +67,7 @@ bool DimensionReduction::isPythonFound() const{
 }
 
 int DimensionReduction::execute() const{
-#ifdef TTK_PYTHON_FOUND
+#ifdef TTK_ENABLE_SCIKIT_LEARN
 #ifndef TTK_ENABLE_KAMIKAZE
   if(majorVersion_<'3') return -1;
   if(modulePath_.length()<=0) return -1;

@@ -64,6 +64,10 @@ function(ttk_set_compile_options library)
         target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
     endif()
 
+    if (TTK_ENABLE_SCIKIT_LEARN)
+      target_compile_definitions(${library} PUBLIC TTK_ENABLE_SCIKIT_LEARN)
+    endif()
+    
     if (TTK_ENABLE_SQLITE3)
         target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
         target_include_directories(${library} PUBLIC ${SQLITE3_INCLUDE_DIR})
@@ -74,10 +78,6 @@ function(ttk_set_compile_options library)
         target_compile_definitions(${library} PUBLIC TTK_ENABLE_64BIT_IDS)
     endif()
 
-    if (PYTHON_NUMPY_INCLUDE_DIR)
-    target_compile_definitions(${library} PUBLIC TTK_PYTHON_FOUND)
-    endif()
-
 endfunction()
 
 
@@ -85,6 +85,9 @@ endfunction()
 
 function(ttk_find_python)
   find_package(PythonLibs QUIET)
+  
+  
+  
   if(PYTHON_INCLUDE_DIRS)
     include_directories(${PYTHON_INCLUDE_DIRS})
 
@@ -104,13 +107,31 @@ function(ttk_find_python)
       CACHE INTERNAL "TTK_PYTHON_MAJOR_VERSION")
     set(TTK_PYTHON_MINOR_VERSION "${PYTHON_MINOR_VERSION}"
       CACHE INTERNAL "TTK_PYTHON_MINOR_VERSION")
+      
+    if(TTK_PYTHON_MAJOR_VERSION)
+      message(STATUS "Python version: ${TTK_PYTHON_MAJOR_VERSION}.${TTK_PYTHON_MINOR_VERSION}")
+    else()
+      message(STATUS "Python version: NOT-FOUND")
+    endif()
 
     find_path(PYTHON_NUMPY_INCLUDE_DIR numpy/arrayobject.h PATHS
       ${PYTHON_INCLUDE_DIRS}
       /usr/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include/
       /usr/local/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include)
     if(PYTHON_NUMPY_INCLUDE_DIR)
-      include_directories(${PYTHON_NUMPY_INCLUDE_DIR})
+        message(STATUS "Numpy headers: ${PYTHON_NUMPY_INCLUDE_DIR}")
+        include_directories(${PYTHON_NUMPY_INCLUDE_DIR})
+    else()
+        message(STATUS "Numpy headers: NOT-FOUND")
     endif()
   endif()
+  
+  if(PYTHON_NUMPY_INCLUDE_DIR)
+    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" ON)
+  else()
+    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
+    message(STATUS 
+      "Improper python/numpy setup. Disabling sckikit-learn support in TTK.")
+  endif()
+  
 endfunction()

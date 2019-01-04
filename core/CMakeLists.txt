@@ -40,6 +40,9 @@ endif()
 find_package(Boost COMPONENTS system)
 if(NOT Boost_FOUND)
   find_package(Boost REQUIRED)
+  if(Boost_FOUND)
+    message(STATUS "BOOST_INCLUDE_DIR: ${Boost_INCLUDE_DIR}")
+  endif()
 endif()
 
 find_package(ZLIB)
@@ -100,7 +103,7 @@ if(GRAPHVIZ_FOUND)
     message(STATUS "GraphViz found")
 else()
     option(TTK_ENABLE_GRAPHVIZ "Enable GraphViz support" OFF)
-    message(WARNING "GraphViz not found, disabling GraphViz support in TTK.")
+    message(STATUS "GraphViz not found, disabling GraphViz support in TTK.")
 endif()
 # END_FIND_GRAPHVIZ
 
