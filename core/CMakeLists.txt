@@ -150,6 +150,11 @@ else()
   option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
 endif()
 
+# scikit-learn support is disabled by default for now under MacOs
+if(APPLE)
+  option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
+endif()
+
 if (NOT APPLE)
     if (MSVC)
           option(TTK_ENABLE_OPENMP "Enable OpenMP support" FALSE)
