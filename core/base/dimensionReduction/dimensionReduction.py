@@ -32,6 +32,11 @@ def doIt(X, method, ncomponents, nneighbors, njobs, rstate, params):
     from sklearn import manifold
     from sklearn import decomposition
     import numpy as np
+    from sys import platform
+    
+    if platform == "darwin":
+        import sklearn
+        sklearn.utils.parallel_backend('threading')
 
     if rstate > 0:
         np.random.seed(0)
