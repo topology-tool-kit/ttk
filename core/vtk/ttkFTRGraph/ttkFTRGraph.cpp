@@ -248,6 +248,7 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet*>& inputs, std::vector<vtkDataSet*>
    vtkUnstructuredGrid* outputSkeletonNodes = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
    vtkUnstructuredGrid* outputSkeletonArcs  = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
    vtkDataSet*          outputSegmentation  = outputs[2];
+   outputSegmentation->ShallowCopy(inputs[0]);
 
    // Skeleton
    Graph graph;
@@ -270,7 +271,6 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet*>& inputs, std::vector<vtkDataSet*>
    if (debugLevel_) {
       cout << "Launch on field : " << ScalarField << endl;
    }
-
 
    // compute graph
    switch (inputScalars_->GetDataType()) {
@@ -306,14 +306,11 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet*>& inputs, std::vector<vtkDataSet*>
 #endif
    }
 
-   if (GetWithSegmentation()) {
-      outputSegmentation->ShallowCopy(inputs[0]);
-      if (getSegmentation(graph, outputSegmentation)) {
+   if (GetWithSegmentation() && getSegmentation(graph, outputSegmentation)) {
 #ifndef TTK_ENABLE_KAMIKAZE
-         cerr << "[ttkFTRGraph] Error : wrong properties on segmentation." << endl;
-         return -9;
+      cerr << "[ttkFTRGraph] Error : wrong properties on segmentation." << endl;
+      return -9;
 #endif
-      }
    }
 
    UpdateProgress(1);
