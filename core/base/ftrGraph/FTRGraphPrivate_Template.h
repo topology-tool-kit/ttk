@@ -1033,9 +1033,9 @@ namespace ttk
          Propagation* remainProp = newPropagation(curVert, localProp->goUp());
          while(!localProp->empty()) {
             localProp->nextVertex();
-            const idVertex curVert = localProp->getCurVertex();
-            if (bfsVerts_[curVert] != curVert) {
-               remainProp->addNewVertex(curVert);
+            const idVertex curVertTmp = localProp->getCurVertex();
+            if (bfsVerts_[curVertTmp] != curVert) {
+               remainProp->addNewVertex(curVertTmp);
             }
          }
 

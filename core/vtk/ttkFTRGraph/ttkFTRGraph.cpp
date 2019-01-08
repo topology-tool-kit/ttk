@@ -174,7 +174,6 @@ int ttkFTRGraph::addSampledSkeletonArc(const Graph& graph, const idSuperArc arcI
 
    float  sum[3]{};
    int    chunk       = 0;
-   double avgScal     = 0;
    double scalarLimit = scalarMin + delta;
 
    for (const idVertex regV : arc.segmentation()) {
@@ -188,18 +187,16 @@ int ttkFTRGraph::addSampledSkeletonArc(const Graph& graph, const idSuperArc arcI
          sum[0] += pointCoord[0];
          sum[1] += pointCoord[1];
          sum[2] += pointCoord[2];
-         avgScal += scalar;
          ++chunk;
       } else {
          if (chunk) {
             sum[0] /= chunk;
             sum[1] /= chunk;
             sum[2] /= chunk;
-            avgScal /= chunk;
 
             // do not use memorized points as even if a point already exisit it is from another
             // vertex and should not be used
-            pointIds[1] = points->InsertNextPoint(pointCoord);
+            pointIds[1] = points->InsertNextPoint(sum);
             arcData.points.emplace(regV, pointIds[1]);
             arcData.setPointInfo(graph, arcId, pointIds[1], true);
 
@@ -216,7 +213,6 @@ int ttkFTRGraph::addSampledSkeletonArc(const Graph& graph, const idSuperArc arcI
          sum[0]  = 0;
          sum[1]  = 0;
          sum[2]  = 0;
-         avgScal = 0;
          chunk   = 0;
       }
    }
