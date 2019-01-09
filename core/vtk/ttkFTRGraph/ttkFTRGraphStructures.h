@@ -150,7 +150,8 @@ struct VertData : public ObjectData {
 
    void addArrays(vtkDataSet* segmentation, ttk::ftr::Params params)
    {
-      segmentation->GetPointData()->SetScalars(ids);
+      segmentation->GetPointData()->AddArray(ids);
+      segmentation->GetPointData()->SetActiveScalars(ids->GetName());
       segmentation->GetPointData()->AddArray(regionType);
 #ifdef TTK_ENABLE_FTR_VERT_STATS
       segmentation->GetPointData()->AddArray(touch);
