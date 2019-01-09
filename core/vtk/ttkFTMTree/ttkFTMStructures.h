@@ -467,7 +467,8 @@ struct VertData: public WrapperData {
       if (!params.segm)
          return;
 
-      pointData->SetScalars(ids);
+      pointData->AddArray(ids);
+      pointData->SetActiveScalars(ids->GetName());
 
       if (params.advStats) {
          pointData->AddArray(sizeRegion);
