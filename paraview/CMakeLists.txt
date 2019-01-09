@@ -33,11 +33,11 @@ if (MSVC)
 	target_compile_definitions(ttkPVTriangulation PUBLIC TTK_PLUGIN)
 endif()
 
-set(TTK_PV_XML     "" CACHE INTERNAL "")
-set(TTK_PV_SOURCES "" CACHE INTERNAL "")
-set(TTK_PV_LINKS   "" CACHE INTERNAL "")
-set(TTK_PV_DIRS    "" CACHE INTERNAL "")
-set(TTK_VTKWRAPPER_DIRS    "" CACHE INTERNAL "")
+set_property(GLOBAL PROPERTY TTK_PV_XML     "")
+set_property(GLOBAL PROPERTY TTK_PV_SOURCES "")
+set_property(GLOBAL PROPERTY TTK_PV_LINKS   "")
+set_property(GLOBAL PROPERTY TTK_PV_DIRS    "")
+set_property(GLOBAL PROPERTY TTK_VTKWRAPPER_DIRS    "")
 
 # traverse sub-directories
 file(GLOB PARAVIEW_PLUGIN_DIRS *)
