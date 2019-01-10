@@ -33,11 +33,9 @@ if (MSVC)
 	target_compile_definitions(ttkPVTriangulation PUBLIC TTK_PLUGIN)
 endif()
 
-set_property(GLOBAL PROPERTY TTK_PV_XML     "")
-set_property(GLOBAL PROPERTY TTK_PV_SOURCES "")
-set_property(GLOBAL PROPERTY TTK_PV_LINKS   "")
-set_property(GLOBAL PROPERTY TTK_PV_DIRS    "")
-set_property(GLOBAL PROPERTY TTK_VTKWRAPPER_DIRS    "")
+set(TTK_PV_XML     "" CACHE INTERNAL "")
+set(TTK_PV_SOURCES "" CACHE INTERNAL "")
+set(TTK_PV_LINKS   "" CACHE INTERNAL "")
 
 # traverse sub-directories
 file(GLOB PARAVIEW_PLUGIN_DIRS *)
@@ -50,6 +48,8 @@ foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
 endforeach()
 
 if (NOT TTK_BUILD_STANDALONE_PARAVIEW_PLUGINS)
+
+   set_property(GLOBAL PROPERTY TTK_VTKWRAPPER_DIRS    "")
 	# Build the ParaView plugin, if we're building with ParaView
 	# and this wrapper library has a plugin
 	add_paraview_plugin(TopologyToolKit ${PROJECT_VERSION}
