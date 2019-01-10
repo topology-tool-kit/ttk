@@ -24,7 +24,11 @@ function(ttk_add_paraview_plugin library)
 	list(APPEND TTK_PV_XML     ${CMAKE_CURRENT_SOURCE_DIR}/${ARG_PLUGIN_XML})
 	list(APPEND TTK_PV_SOURCES ${ARG_SOURCES})
 	list(APPEND TTK_PV_LINKS   ${ARG_LINK})
-	list(APPEND TTK_PV_DIRS    ${CMAKE_CURRENT_SOURCE_DIR})
+
+	# make the list available in the global scope
+	set(TTK_PV_XML ${TTK_PV_XML} CACHE INTERNAL "")
+	set(TTK_PV_SOURCES ${TTK_PV_SOURCES} CACHE INTERNAL "")
+	set(TTK_PV_LINKS ${TTK_PV_LINKS} CACHE INTERNAL "")
 
 	if (TTK_BUILD_STANDALONE_PARAVIEW_PLUGINS)
 		# Build the ParaView plugin, if we're building with ParaView
