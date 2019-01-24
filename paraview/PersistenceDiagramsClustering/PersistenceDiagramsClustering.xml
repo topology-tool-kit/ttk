@@ -192,7 +192,7 @@ between matched critical points.
       <DoubleVectorProperty
           name="Lambda"
           label="Extremas weight in blending"
-          command="Lambda"
+          command="SetLambda"
           number_of_elements="1"
           default_values="1"
           panel_visibility="advanced"

@@ -33,6 +33,7 @@ namespace ttk{
 		dataType getMostPersistent();
 		dataType getLessPersistent();
 		std::vector<std::vector<dataType>> getMinDiagonalPrices();
+		std::vector<std::vector<dataType>> getMinPrices();
 
 		dataType computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim=0.0001);
 		dataType computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim=0.0001);
@@ -50,7 +51,12 @@ namespace ttk{
 		void initializeCentroidsKMeanspp();
 		void initializeAcceleratedKMeans();
 
-		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence, dataType min_persistence, std::vector<std::vector<dataType>> initial_diagonal_prices, int min_points_to_add);
+		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence, 
+		        dataType min_persistence, 
+		        std::vector<std::vector<dataType>> initial_diagonal_prices, 
+		        std::vector<std::vector<dataType>> initial_off_diagonal_points, 
+		        int min_points_to_add, 
+		        bool add_points_to_barycenter);
 
 		std::vector<std::vector<dataType>> getDistanceMatrix();
 		void getCentroidDistanceMatrix();
@@ -125,7 +131,9 @@ namespace ttk{
     inline void setDeterministic(const bool deterministic){
 			deterministic_ = deterministic;
 		}
-
+    inline void setDebugLevel(const int debugLevel){
+      debugLevel_ = debugLevel;
+    }
 		inline void printClustering(){
 			for(int c=0; c<k_; ++c){
 				std::cout<<"Cluster "<< c << " : [";
@@ -160,7 +168,7 @@ namespace ttk{
     double                lambda_;
 
 	  int 					k_;
-
+      int debugLevel_;
       int                   numberOfInputs_;
       int                   threadNumber_;
 	  bool                  use_progressive_;

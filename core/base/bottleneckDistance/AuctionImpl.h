@@ -27,19 +27,27 @@ void ttk::Auction<dataType>::runAuctionRound(int& n_biddings, const int kdt_inde
 		int idx_reassigned;
 		if(b.isDiagonal()){
 			if(use_kdt_){
+                // std::cout << "kdT diag bidding" << std::endl;
 				idx_reassigned = b.runDiagonalKDTBidding(all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_, correspondance_kdt_map_, diagonal_queue_, kdt_index);
+                // std::cout<< "done"<<std::endl;
 			}
 			else{
+                // std::cout << " diag bidding" << std::endl;
 				idx_reassigned = b.runDiagonalBidding(all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_, diagonal_queue_);
+                // std::cout<< "done"<<std::endl;
 			}
 		}
 		else{
 			if(use_kdt_){
 				// We can use the kd-tree to speed up the search
+                // std::cout << "kdT bidding" << std::endl;
 				idx_reassigned = b.runKDTBidding(all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_, kdt_, kdt_index);
-			}
+                // std::cout<< "done"<<std::endl;
+            }
 			else{
+                // std::cout << " bidding" << std::endl;
 				idx_reassigned = b.runBidding(all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_);
+                // std::cout<< "done"<<std::endl;
 			}
 		}
 		/*if(n_biddings>-1){

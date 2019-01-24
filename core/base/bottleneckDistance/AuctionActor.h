@@ -616,7 +616,7 @@ namespace ttk{
 				}
 			}
 		}
-
+        // std::cout << "got here 1" << std::endl;
 		std::pair<int, dataType> second_pair;
 		if(non_empty_goods && diagonal_queue.size()>0){
 			bool updated_second_pair = false;
@@ -636,6 +636,7 @@ namespace ttk{
 			}
 		}
 
+        // std::cout << "got here 1/2" << std::endl;
 		Good<dataType>* best_good;
 		dataType best_val = 0;
 		dataType second_val = 0;
@@ -644,6 +645,7 @@ namespace ttk{
 			second_val = diagonal_queue.size()>0? -second_pair.second : best_val;
 			best_good = &(goods->get(best_pair.first));
 		}
+        // std::cout << "got here 2" << std::endl;
 
 		// And now check for the corresponding twin bidder
 		bool is_twin=false;
@@ -671,6 +673,7 @@ namespace ttk{
 			second_val = best_val;
 		}
 
+        // std::cout << "got here 3" << std::endl;
 		if(second_val==std::numeric_limits<dataType>::lowest()){
 			// There is only one acceptable good for the bidder
 			second_val=best_val;
@@ -686,10 +689,12 @@ namespace ttk{
 		this->setProperty(best_good);
 		this->setPricePaid(new_price);
 
+        // std::cout << "got here 4" << std::endl;
 		// Assign best_good to bidder and unassign the previous owner of best_good if need be
 		int idx_reassigned = best_good->getOwner();
 		best_good->assign(this->position_in_auction_, new_price);
 		if(is_twin){
+            // std::cout << "got here 5" << std::endl;
 			// Update weight in KDTree if the closest good is in it
 			correspondance_kdt_map[best_good->id_]->updateWeight(new_price, kdt_index);
 			if(non_empty_goods){
@@ -697,11 +702,13 @@ namespace ttk{
 			}
 		}
 		else{
+        // std::cout << "got here 6" << std::endl;
 			if(non_empty_goods){
 				std::get<1>(best_pair) = new_price;
 				diagonal_queue.push(best_pair);
 			}
 		}
+        // std::cout << "left that function" << std::endl;
 		return idx_reassigned;
 	}
 
@@ -721,11 +728,15 @@ namespace ttk{
 			coordinates.push_back((1-geometricalFactor)*this->coords_y_);
 			coordinates.push_back((1-geometricalFactor)*this->coords_z_);
 		}
+
+        // std::cout<<"got to 1"<<std::endl;
 		kdt->getKClosest(2, coordinates, neighbours, costs, kdt_index);
+        // std::cout<<"got to 2"<<std::endl;
 		dataType best_val, second_val;
 		KDTree<dataType>* closest_kdt;
 		Good<dataType>* best_good;
 		if(costs.size()==2){
+            // std::cout<<"got to 735"<<std::endl;
 			std::vector<int> idx(2);
 			idx[0] = 0;
 			idx[1] = 1;
@@ -738,13 +749,14 @@ namespace ttk{
 			second_val = -costs[idx[1]];
 		}
 		else{
+        // std::cout<<"got to 748"<<std::endl;
 			// If the kdtree contains only one point
 			closest_kdt = neighbours[0];
 			best_good = &(goods->get(closest_kdt->id_));
 			best_val = -costs[0];
 			second_val = best_val;
 		}
-
+        // std::cout<<"got to 755"<<std::endl;
 		// And now check for the corresponding twin bidder
 		bool twin_chosen = false;
 		Good<dataType>& g = twinGood;
@@ -760,6 +772,7 @@ namespace ttk{
 			second_val=val;
 		}
 
+        // std::cout << "got here 2" << std::endl;
 		if(second_val==std::numeric_limits<dataType>::lowest()){
 			// There is only one acceptable good for the bidder
 			second_val=best_val;
@@ -775,6 +788,8 @@ namespace ttk{
 		this->setPricePaid(new_price);
 		// Assign best_good to bidder and unassign the previous owner of best_good if need be
 		int idx_reassigned = best_good->getOwner();
+
+        // std::cout << "got here 3" << std::endl;
 		best_good->assign(this->position_in_auction_, new_price);
 		// Update the price in the KDTree
 		if(!twin_chosen){

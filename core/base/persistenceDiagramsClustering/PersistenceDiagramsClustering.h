@@ -119,7 +119,9 @@ namespace ttk{
     inline void setPairTypeClustering(const int pairTypeClustering){
 			pairTypeClustering_ = pairTypeClustering;
 		}
-
+    inline void setDebugLevel(const int debugLevel){
+      debugLevel_ = debugLevel;
+    }
 		template<typename type>
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;
@@ -130,6 +132,8 @@ namespace ttk{
     protected:
       // Critical pairs used for clustering
       // 0:min-saddles ; 1:saddles-saddles ; 2:sad-max ; else : all
+
+      int                 debugLevel_;
       int         pairTypeClustering_;
       bool        deterministic_;
 	  int 					wasserstein_;
@@ -250,6 +254,7 @@ template <typename dataType>
 	KMeans.setTimeLimit(time_limit_);
 	KMeans.setGeometricalFactor(alpha_);
   KMeans.setLambda(lambda_);
+    KMeans.setDebugLevel(debugLevel_);
 	KMeans.setKMeanspp(use_kmeanspp_);
 	KMeans.setK(n_clusters_);
 
