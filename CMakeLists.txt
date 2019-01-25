@@ -7,8 +7,8 @@ option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
 
 include(functions.cmake)
 
-if (TTK_BUILD_STANDALONE_APPS)
-	set(TTK_BUILD_VTK_WRAPPERS ON)
+if (NOT TTK_BUILD_VTK_WRAPPERS)
+  set(TTK_BUILD_STANDALONE_APPS OFF)
 endif()
 
 add_subdirectory(core)
