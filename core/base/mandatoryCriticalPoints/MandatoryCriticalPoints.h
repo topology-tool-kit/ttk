@@ -422,6 +422,15 @@ namespace ttk{
         }
         return 0;
       }
+      
+      inline int setDebugLevel(const int &debugLevel){
+        upperJoinTree_.setDebugLevel(debugLevel);
+        lowerJoinTree_.setDebugLevel(debugLevel);
+        upperSplitTree_.setDebugLevel(debugLevel);
+        lowerSplitTree_.setDebugLevel(debugLevel);
+        debugLevel_ = debugLevel;
+        return 0;
+      }
 
       inline int setLowerBoundFieldPointer(void *data){
         inputLowerBoundField_ = data;
