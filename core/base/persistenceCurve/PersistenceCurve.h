@@ -53,6 +53,7 @@ namespace ttk{
         triangulation_ = data;
         if(triangulation_){
            ftm::FTMTreePP contourTree;
+           contourTree.setDebugLevel(debugLevel_);
            contourTree.setupTriangulation(triangulation_);
 
            triangulation_->preprocessBoundaryVertices();
@@ -139,6 +140,7 @@ int ttk::PersistenceCurve::execute() const{
 
   // get contour tree
   ftm::FTMTreePP contourTree;
+  contourTree.setDebugLevel(debugLevel_);
   contourTree.setupTriangulation(triangulation_, false);
   contourTree.setVertexScalars(inputScalars_);
   contourTree.setTreeType(ftm::TreeType::Join_Split);
