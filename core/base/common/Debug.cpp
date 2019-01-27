@@ -2,13 +2,14 @@
 
 bool ttk::welcomeMsg_ = true;
 bool ttk::goodbyeMsg_ = true;
-int ttk::globalDebugLevel_ = -INT_MAX;
+int ttk::globalDebugLevel_ = 0;
 
 using namespace std;
 using namespace ttk;
 
 Debug::Debug() {
-  debugLevel_ = 0;
+  
+  debugLevel_ = ttk::globalDebugLevel_;
 
   // avoid warnings
   if(goodbyeMsg_) goodbyeMsg_ = true;
