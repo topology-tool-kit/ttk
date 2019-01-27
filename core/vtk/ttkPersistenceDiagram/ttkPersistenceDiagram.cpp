@@ -24,8 +24,6 @@ vtkStandardNewMacro(ttkPersistenceDiagram)
   ForceInputOffsetScalarField = false;
   ComputeSaddleConnectors = false;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
   ShowInsideDomain = false;
   computeDiagram_= true;
 

@@ -32,6 +32,7 @@
 int main(int argc, char **argv){
 
   ttk::CommandLineParser parser;
+  ttk::globalDebugLevel_ = 3;
   
   std::string inputFilePath;
 

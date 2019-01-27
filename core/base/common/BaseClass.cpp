@@ -9,6 +9,8 @@ BaseClass::BaseClass():
 {
 #ifdef TTK_ENABLE_OPENMP
   threadNumber_=omp_get_num_procs();
+#else
+  threadNumber_ = 1;
 #endif
 }
 

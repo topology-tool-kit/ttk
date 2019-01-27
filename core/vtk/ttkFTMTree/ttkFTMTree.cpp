@@ -692,8 +692,6 @@ ttkFTMTree::ttkFTMTree()
    SetNumberOfInputPorts(1);
    SetNumberOfOutputPorts(3);
    UseAllCores = true;
-   ThreadNumber = 1;
-   debugLevel_ = 3;
 }
 
 ttkFTMTree::~ttkFTMTree()

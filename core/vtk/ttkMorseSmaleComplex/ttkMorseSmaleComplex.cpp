@@ -33,8 +33,6 @@ vtkStandardNewMacro(ttkMorseSmaleComplex)
     hasUpdatedMesh_{}
 {
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(4);
 }

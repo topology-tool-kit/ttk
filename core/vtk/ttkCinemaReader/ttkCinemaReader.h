@@ -68,7 +68,6 @@ class ttkCinemaReader
             DatabasePath = "";
 
             UseAllCores = true;
-            ThreadNumber = 1;
 
             SetNumberOfInputPorts(0);
             SetNumberOfOutputPorts(1);

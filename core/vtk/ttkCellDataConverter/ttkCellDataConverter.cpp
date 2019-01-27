@@ -13,8 +13,6 @@ ttkCellDataConverter::ttkCellDataConverter(){
   OutputType = 0;
   UseNormalization = false;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkCellDataConverter::~ttkCellDataConverter(){

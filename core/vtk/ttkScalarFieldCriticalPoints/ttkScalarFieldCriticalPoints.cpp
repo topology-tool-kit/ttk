@@ -18,8 +18,6 @@ ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints(){
   OffsetField = ttk::OffsetScalarFieldName;
 
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints(){

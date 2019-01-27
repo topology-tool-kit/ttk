@@ -84,8 +84,6 @@ class ttkPointMerger
       DistanceThreshold = 0.001;
       BoundaryOnly = true;
       UseAllCores = true;
-      ThreadNumber = 1;
-      debugLevel_ = 3;
     }
     
     ~ttkPointMerger(){};

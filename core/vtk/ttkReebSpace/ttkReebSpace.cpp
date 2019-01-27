@@ -41,8 +41,6 @@ ttkReebSpace::ttkReebSpace(){
   SimplificationCriterion = 1;
   
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
   ForceInputOffsetScalarField = false;
   
   uComponent_ = NULL;

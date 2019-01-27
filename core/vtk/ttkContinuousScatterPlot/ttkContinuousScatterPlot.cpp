@@ -22,8 +22,6 @@ ttkContinuousScatterPlot::ttkContinuousScatterPlot():
   VcomponentId = 1;
   triangulation_ = NULL;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ =3;
 }
 
 ttkContinuousScatterPlot::~ttkContinuousScatterPlot(){

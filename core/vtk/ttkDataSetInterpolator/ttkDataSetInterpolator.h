@@ -75,8 +75,6 @@ class ttkDataSetInterpolator
 
     ttkDataSetInterpolator(){
       UseAllCores = true;
-      ThreadNumber = 1;
-      debugLevel_ = 3;
 
       SetNumberOfInputPorts(2);
       SetNumberOfOutputPorts(1);

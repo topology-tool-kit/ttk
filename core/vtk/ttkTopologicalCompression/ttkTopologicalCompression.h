@@ -124,8 +124,6 @@ class ttkTopologicalCompression
       outputScalarField_ = nullptr;
       outputOffsetField_ = nullptr;
       UseAllCores = true;
-      ThreadNumber = 1;
-      debugLevel_ = 3;
     }
     
     ~ttkTopologicalCompression()

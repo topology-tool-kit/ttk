@@ -307,7 +307,6 @@ class ttkDimensionReduction
       pca_MaxIteration="auto";
 
       UseAllCores = true;
-      ThreadNumber = 1;
 
       outputData_=new std::vector<std::vector<double>>;
     }

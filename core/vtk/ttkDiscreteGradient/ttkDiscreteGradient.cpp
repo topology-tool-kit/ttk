@@ -8,7 +8,6 @@ vtkStandardNewMacro(ttkDiscreteGradient)
 
   ttkDiscreteGradient::ttkDiscreteGradient():
     UseAllCores{true},
-    ThreadNumber{1},
     ScalarField{},
     InputOffsetScalarFieldName{},
     ForceInputOffsetScalarField{false},
@@ -27,7 +26,6 @@ vtkStandardNewMacro(ttkDiscreteGradient)
     inputOffsets_{},
     hasUpdatedMesh_{}
 {
-  debugLevel_ = 3;
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(2);
 }

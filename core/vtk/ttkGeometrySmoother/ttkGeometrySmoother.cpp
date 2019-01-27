@@ -16,8 +16,6 @@ ttkGeometrySmoother::ttkGeometrySmoother(){
   ForceInputMaskScalarField = false;
   InputMask = ttk::MaskScalarFieldName;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkGeometrySmoother::~ttkGeometrySmoother(){

@@ -11,8 +11,6 @@ ttkIdentifiers::ttkIdentifiers(){
   CellFieldName = "CellIdentifiers";
   VertexFieldName = ttk::VertexScalarFieldName;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkIdentifiers::~ttkIdentifiers(){

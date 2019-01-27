@@ -71,8 +71,6 @@ ttkContourForests::ttkContourForests()
   partitionNum_ = -1;
 
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 
   // VTK Interface //
   SetNumberOfInputPorts(1);

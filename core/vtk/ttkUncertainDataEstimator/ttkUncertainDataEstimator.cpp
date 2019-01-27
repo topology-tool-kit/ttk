@@ -16,8 +16,6 @@ ttkUncertainDataEstimator::ttkUncertainDataEstimator(){
   outputMeanField_ = NULL;
 
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);

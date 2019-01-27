@@ -7,8 +7,6 @@ vtkStandardNewMacro(ttkComponentSize)
 
 ttkComponentSize::ttkComponentSize(){
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 
   connectivityFilter_ = vtkSmartPointer<vtkConnectivityFilter>::New();
   vertexNumbers_ = vtkSmartPointer<vtkDoubleArray>::New();

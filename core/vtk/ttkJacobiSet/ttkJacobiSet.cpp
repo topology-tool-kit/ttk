@@ -18,8 +18,6 @@ ttkJacobiSet::ttkJacobiSet(){
   EdgeIds = false;
   VertexScalars = false;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkJacobiSet::~ttkJacobiSet(){
