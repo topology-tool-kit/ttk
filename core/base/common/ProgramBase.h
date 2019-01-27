@@ -21,7 +21,7 @@ namespace ttk{
       ProgramBase(){
         
         lastObject_ = true;
-        globalDebugLevel_ = debugLevel_;
+        ttk::globalDebugLevel_ = 3;
         
         outputPath_ = "output";
         ttkModule_ = NULL;
