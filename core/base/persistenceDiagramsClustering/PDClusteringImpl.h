@@ -18,7 +18,8 @@
 using namespace ttk;
 
 template <typename dataType>
-int PDClustering<dataType>::execute(){
+int PDClustering<dataType>::execute(std::vector<std::vector<diagramTuple>>& final_centroids){
+	
 	Timer t;
 	{
 	bool converged = false;
@@ -92,8 +93,11 @@ int PDClustering<dataType>::execute(){
 				epsilon_=epsilon_candidate;
 			}
 
-			std::cout<< "Iteration "<< n_iterations_<<", Epsilon = "<< epsilon_<< std::endl;
-			std::cout<< "Max shift : "<< max_shift << std::endl;
+            if(debugLevel_>1){
+			    std::cout<< "Iteration "<< n_iterations_<<", Epsilon = "<< epsilon_<< std::endl;
+			    std::cout<< "Max shift : "<< max_shift << std::endl;
+            }
+
 			dataType rho = epsilon_>0 ? std::sqrt(8.0*epsilon_) : -1;
 			if(use_progressive_ && n_iterations_>1 && min_persistence>rho && !diagrams_complete){
 				if(epsilon_<5e-5){
@@ -133,24 +137,34 @@ int PDClustering<dataType>::execute(){
 				min_cost=cost_;
 			}
 			else if(n_iterations_>2 && epsilon_<epsilon0/500. && !use_progressive_){
-				converged = true;
+                converged = true;
 			}
-			std::cout<< "Cost = "<< cost_<< std::endl;
-			printClustering();
+			if(debugLevel_>1){
+			    std::cout<< "Cost = "<< cost_<< std::endl;
+			    printClustering();
+            }
 		}
 		total_time +=t_inside.getElapsedTime();
 		if(total_time>time_limit_){
 			converged = true;
 			diagrams_complete = true;
 		}
-	std::cout<<"== Iteration "<< n_iterations_ <<" == complete : "<<diagrams_complete<<" , progressive : "<<use_progressive_<<" , converged : "<<converged<<std::endl;
-	std::cout<<"                 min_persistence : "<<min_persistence<<" , eps_candidate : "<<epsilon_candidate2<<std::endl;
-	std::cout<<"                 lowest_persistence : "<<lowest_persistence<<std::endl;
+	
+	// std::cout<<"== Iteration "<< n_iterations_ <<" == complete : "<<diagrams_complete<<" , progressive : "<<use_progressive_<<" , converged : "<<converged<<std::endl;
+	// std::cout<<"                 min_persistence : "<<min_persistence<<" , eps_candidate : "<<epsilon_candidate2<<" , epsilon0 : "<<epsilon0<<std::endl;
+	// std::cout<<"                 lowest_persistence : "<<lowest_persistence<<std::endl;
+	// std::cout<<"                 cost : "<<cost_<<" , min_cost : "<<min_cost<<std::endl;
+	// std::cout<<"                 time limit passed ?  : "<< (bool)(total_time>time_limit_) <<" , eps min passed? : "<<(bool)(epsilon_<epsilon0/500.)<<std::endl;
 	}
+    std::cout<<"Final Cost : "<<min_cost<<std::endl;
+    printOldClustering();
 	}// End of timer
 
 
     // Filling the final centroids for output
+    
+    final_centroids.resize(k_);
+
     for(int c=0; c<k_; ++c){
 	    if(do_min_){
 	        for(int i=0; i<centroids_min_[c].size(); ++i){
@@ -508,7 +522,7 @@ void PDClustering<dataType>::initializeCentroids(){
 template <typename dataType>
 void PDClustering<dataType>::initializeCentroidsKMeanspp(){
 	std::vector<int> indexes_clusters;
-	int random_idx = rand() % numberOfInputs_;
+	int random_idx = deterministic_ ? 0 : rand() % numberOfInputs_;
 	indexes_clusters.push_back(random_idx);
 
 	if(do_min_){
@@ -527,9 +541,11 @@ void PDClustering<dataType>::initializeCentroidsKMeanspp(){
 	while((int) indexes_clusters.size()<k_){
 		std::vector<dataType> min_distance_to_centroid(numberOfInputs_);
 		std::vector<dataType> probabilities(numberOfInputs_);
+		
 		// Uncomment for a deterministic algorithm
-		// dataType maximal_distance = 0;
-		//int candidate_centroid = -1;
+		dataType maximal_distance = 0;
+		int candidate_centroid = -1;
+
 		for(int i=0; i<numberOfInputs_; i++){
 			min_distance_to_centroid[i] = std::numeric_limits<dataType>::max();
 			if(std::find(indexes_clusters.begin(), indexes_clusters.end(), i) != indexes_clusters.end()){
@@ -558,17 +574,20 @@ void PDClustering<dataType>::initializeCentroidsKMeanspp(){
 			probabilities[i] = pow(min_distance_to_centroid[i], 2);
 
 			// The following block is useful in case of need for a deterministic algoritm
-			/*if(min_distance_to_centroid[i]>maximal_distance){
+			if( deterministic_ && min_distance_to_centroid[i]>maximal_distance ){
 				maximal_distance = min_distance_to_centroid[i];
 				candidate_centroid = i;
-			}*/
+			}
 
 		}
 		// Comment the following four lines to make it deterministic
 		std::random_device rd;
 		std::mt19937 gen(rd());
 		std::discrete_distribution<int> distribution (probabilities.begin(),probabilities.end());
-		int candidate_centroid = distribution(gen);
+		
+		if( !deterministic_ ) {
+            candidate_centroid = distribution(gen);
+        }
 
 		indexes_clusters.push_back(candidate_centroid);
 		if(do_min_){
@@ -640,15 +659,15 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getDistanceMatrix(){
 			dataType distance = 0;
 			if(do_min_){
 				D2_min = centroids_min_[c];
-				distance += computeDistance(D1_min, D2_min, 0.01);
+				distance += computeDistance(D1_min, D2_min, 0.001);
 			}
 			if(do_sad_){
 				D2_sad = centroids_saddle_[c];
-				distance += computeDistance(D1_sad, D2_sad, 0.01);
+				distance += computeDistance(D1_sad, D2_sad, 0.001);
 			}
 			if(do_max_){
 				D2_max = centroids_max_[c];
-				distance += computeDistance(D1_max, D2_max, 0.01);
+				distance += computeDistance(D1_max, D2_max, 0.001);
 			}
 			D[i].push_back(distance);
 		}
@@ -727,7 +746,8 @@ void PDClustering<dataType>::updateClusters(){
 	}
 	for(int c=0; c<k_; ++c){
 		if(clustering_[c].size()==0){
-			clustering_[c].push_back( rand() % numberOfInputs_);
+		    int candidate_tmp = deterministic_ ? 0 : rand() % numberOfInputs_;
+			clustering_[c].push_back( candidate_tmp );
 		}
 	}
 	return ;
@@ -794,8 +814,15 @@ void PDClustering<dataType>::acceleratedUpdateClusters(){
 		for(int c=0; c<k_; ++c){
 			if(inv_clustering_[i]==-1){
 				// If not yet assigned, assign it first to a random cluster
-				std::cout << "ASSIGNED TO A RANDOM CLUSTER" << '\n';
-				inv_clustering_[i] = rand() % (k_);
+
+				if(deterministic_){
+				    inv_clustering_[i] = i % k_;
+                }
+                else{
+                    std::cout << " - ASSIGNED TO A RANDOM CLUSTER " << '\n';
+                    inv_clustering_[i] = rand() % (k_);
+                }
+
 				r_[i] = true;
 				if(do_min_){
 					centroids_with_price_min_[i] = centroidWithZeroPrices(centroids_min_[inv_clustering_[i]]);
@@ -876,9 +903,9 @@ void PDClustering<dataType>::acceleratedUpdateClusters(){
 		if(clustering_[c].size()==0){
 			std::cout<< "Adding artificial centroid because a cluster was empty" <<std::endl;
 			bool idx_acceptable = false;
-			int idx;
+			int idx=-1;
 			while(!idx_acceptable){
-				idx = rand() % k_;
+				idx = deterministic_ ? idx+1 : rand() % k_;
 				if(inv_clustering_[idx]<k_ && inv_clustering_[idx]>=0  && clustering_[inv_clustering_[idx]].size()>1){
 					idx_acceptable = true;
 					int cluster_removal = inv_clustering_[idx];
@@ -1079,6 +1106,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 			barycenter_computer.setNumberOfInputs(diagrams_c_sad.size());
 			barycenter_computer.setDiagramType(1);
 			barycenter_computer.setUseProgressive(false);
+			barycenter_computer.setDeterministic(true);
 			barycenter_computer.setGeometricalFactor(geometrical_factor_);
 
 			barycenter_computer.setCurrentBidders(diagrams_c_sad);
@@ -1149,6 +1177,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 			barycenter_computer.setNumberOfInputs(diagrams_c_max.size());
 			barycenter_computer.setDiagramType(2);
 			barycenter_computer.setUseProgressive(false);
+			barycenter_computer.setDeterministic(true);
 			barycenter_computer.setGeometricalFactor(geometrical_factor_);
 
 			barycenter_computer.setCurrentBidders(diagrams_c_max);
@@ -1459,7 +1488,7 @@ dataType PDClustering<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 				compteur_for_adding_points++;
 
 			}
-			if(debugLevel_>2)
+			if(debugLevel_>3)
 			    std::cout<< " Diagram " << i << " size : " << current_bidder_diagrams_min_[i].size() << std::endl;
 		}
 	}

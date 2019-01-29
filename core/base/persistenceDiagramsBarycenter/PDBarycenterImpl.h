@@ -538,6 +538,7 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 						g.setPrice(initial_off_diagonal_prices[k]);
 						g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
 						barycenter_goods_[k].addGood(g);
+
 					}
 				}
 			}

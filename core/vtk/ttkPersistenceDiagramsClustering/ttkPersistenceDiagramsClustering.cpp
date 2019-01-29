@@ -48,7 +48,7 @@ int ttkPersistenceDiagramsClustering::updateProgress(const float &progress){
 
 
 
-int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
+int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, vtkUnstructuredGrid *outputCentroids, int numInputs){
 	// Get arrays from input datas
 	//vtkDataArray* inputDiagram[numInputs] = { NULL };
 	vector<vtkUnstructuredGrid*> inputDiagram(numInputs);
@@ -69,14 +69,15 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 
 			string wassersteinMetric = WassersteinMetric;
 			persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
-      persistenceDiagramsClustering.setDeterministic(Deterministic);
-      persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
+            persistenceDiagramsClustering.setDeterministic(Deterministic);
+            persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
 			persistenceDiagramsClustering.setNumberOfInputs(numInputs);
+			persistenceDiagramsClustering.setDebugLevel(DebugLevel);
 			persistenceDiagramsClustering.setTimeLimit(TimeLimit);
 			persistenceDiagramsClustering.setUseProgressive(UseProgressive);
 			persistenceDiagramsClustering.setThreadNumber(ThreadNumber);
 			persistenceDiagramsClustering.setAlpha(Alpha);
-      persistenceDiagramsClustering.setLambda(Lambda);
+            persistenceDiagramsClustering.setLambda(Lambda);
 			persistenceDiagramsClustering.setNumberOfClusters(NumberOfClusters);
 			persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
 			persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
@@ -91,8 +92,10 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, int numInputs){
 			persistenceDiagramsClustering.setDiagrams((void *) &intermediateDiagrams);
 
 
-			std::vector<macroDiagramTuple> barycenter;
-			std::vector<std::vector<macroMatchingTuple>> matchings = persistenceDiagramsClustering.execute(&barycenter);
+            std::vector<std::vector<macroDiagramTuple>> final_centroids;
+			std::vector<std::vector<macroMatchingTuple>> matchings = 
+			    persistenceDiagramsClustering.execute(&final_centroids);
+			outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(&final_centroids));
 		}
 		));
 	}
@@ -140,7 +143,11 @@ int ttkPersistenceDiagramsClustering::RequestData(vtkInformation *request,
 	}
   }
   // TODO Set output
-  doIt(input, numInputs);
+  vtkInformation* outInfo1;
+  outInfo1 = outputVector->GetInformationObject(0);
+  vtkDataSet* output1 = vtkDataSet::SafeDownCast(outInfo1->Get(vtkDataObject::DATA_OBJECT()));
+  vtkUnstructuredGrid* output_centroids = vtkUnstructuredGrid::SafeDownCast(output1);
+  doIt(input, output_centroids, numInputs);
 
   delete[] input;
 

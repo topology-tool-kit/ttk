@@ -28,7 +28,7 @@ namespace ttk{
 		~PDClustering(){};
 
 
-		int execute();
+		int execute(std::vector<std::vector<diagramTuple>>& final_centroids);
 
 		dataType getMostPersistent();
 		dataType getLessPersistent();
@@ -134,19 +134,34 @@ namespace ttk{
     inline void setDebugLevel(const int debugLevel){
       debugLevel_ = debugLevel;
     }
-		inline void printClustering(){
-			for(int c=0; c<k_; ++c){
-				std::cout<<"Cluster "<< c << " : [";
-				for(unsigned int idx=0; idx<clustering_[c].size(); ++idx){
-					if(idx==clustering_[c].size()-1){
-						std::cout<< clustering_[c][idx]<< "]" <<std::endl;
-					}
-					else{
-						std::cout<< clustering_[c][idx]<< ", ";
-					}
+
+    inline void printClustering(){
+		for(int c=0; c<k_; ++c){
+			std::cout<<"Cluster "<< c << " : [";
+			for(unsigned int idx=0; idx<clustering_[c].size(); ++idx){
+				if(idx==clustering_[c].size()-1){
+					std::cout<< clustering_[c][idx]<< "]" <<std::endl;
+				}
+				else{
+					std::cout<< clustering_[c][idx]<< ", ";
 				}
 			}
 		}
+    }
+
+    inline void printOldClustering(){
+		for(int c=0; c<k_; ++c){
+			std::cout<<"Cluster "<< c << " : [";
+			for(unsigned int idx=0; idx<old_clustering_[c].size(); ++idx){
+				if(idx==old_clustering_[c].size()-1){
+					std::cout<< old_clustering_[c][idx]<< "]" <<std::endl;
+				}
+				else{
+					std::cout<< old_clustering_[c][idx]<< ", ";
+				}
+			}
+		}
+	}
 
 
 		template<typename type>

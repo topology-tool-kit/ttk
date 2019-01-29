@@ -180,6 +180,7 @@ template <typename dataType>
   std::vector<std::vector<matchingTuple>>
     PersistenceDiagramsBarycenter<dataType>::execute(
       std::vector<diagramTuple>* barycenter){
+
 	Timer t;
 	{
 	std::vector<std::vector<diagramTuple> > *intermediateDiagrams =

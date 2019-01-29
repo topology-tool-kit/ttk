@@ -55,13 +55,14 @@ namespace ttk{
 			inputData_ = NULL;
 			numberOfInputs_ = 0;
 			threadNumber_ = 1;
+			debugLevel_=2;
 		};
 
 		~PersistenceDiagramsClustering(){};
 
 
 		std::vector<std::vector<matchingTuple> >
-		execute(std::vector<diagramTuple>* barycenter);
+		execute(std::vector<std::vector<diagramTuple>>* centroids);
 
 		inline int setDiagrams(void *data){
 			inputData_ = data;
@@ -162,7 +163,7 @@ namespace ttk{
 template <typename dataType>
   std::vector<std::vector<matchingTuple>>
     PersistenceDiagramsClustering<dataType>::execute(
-      std::vector<diagramTuple>* barycenter){
+      std::vector<std::vector<diagramTuple>>* final_centroids){
 
 	std::cout<< "Launching execute..." << std::endl;
 	Timer t;
@@ -253,14 +254,15 @@ template <typename dataType>
 	KMeans.setUseKDTree(true);
 	KMeans.setTimeLimit(time_limit_);
 	KMeans.setGeometricalFactor(alpha_);
-  KMeans.setLambda(lambda_);
+    KMeans.setLambda(lambda_);
+    KMeans.setDeterministic(deterministic_);
     KMeans.setDebugLevel(debugLevel_);
 	KMeans.setKMeanspp(use_kmeanspp_);
 	KMeans.setK(n_clusters_);
 
 	KMeans.setDiagrams(&data_min, &data_sad, &data_max);
 	KMeans.setDos(do_min, do_sad, do_max);
-	KMeans.execute();
+	KMeans.execute(*final_centroids);
 
 
 

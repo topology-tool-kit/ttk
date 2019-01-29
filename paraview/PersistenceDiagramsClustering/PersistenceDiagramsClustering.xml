@@ -235,7 +235,7 @@ line segments in 3D.
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -249,6 +249,8 @@ line segments in 3D.
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
+
+      <OutputPort name="Centroids" index="0" id="port0" />
 
       <Hints>
         <ShowInMenu category="TTK - Uncertain Scalar Data" />
