@@ -100,7 +100,6 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, vtkUnstructuredGr
 			
 			std::vector<int> inv_clustering = 
                 persistenceDiagramsClustering.execute(&final_centroids);
-            std::cout<<"what's up in here"<<std::endl;
 			outputClusters->ShallowCopy(createOutputClusteredDiagrams(intermediateDiagrams, inv_clustering, max_dimension_total));
 			outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(&final_centroids, inv_clustering, max_dimension_total));
 		}

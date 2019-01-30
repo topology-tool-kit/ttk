@@ -678,7 +678,7 @@ std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> PDBarycenter<dataTy
 	// Correspondance map : position in barycenter_goods_ --> KDT node
 
 	std::vector<KDTree<dataType>*> correspondance_kdt_map = kdt->build(coordinates.data(), barycenter_goods_[0].size(), dimension, weights, barycenter_goods_.size());
-	if(debugLevel_>2)
+	if(debugLevel_>3)
 		std::cout<<"[Building KD-Tree] Time elapsed : " << t.getElapsedTime() << " s."<<std::endl;
 	return std::make_pair(kdt, correspondance_kdt_map);
 }
@@ -919,7 +919,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
     timers.resize(100);
     NB_BIDDERS.resize(100);
     NB_BIDDINGS.resize(100);
-    for(int i=0; i< timers.size(); i++){
+    for(unsigned int i=0; i< timers.size(); i++){
         timers[i].resize(numberOfInputs_);
         NB_BIDDERS[i].resize(numberOfInputs_);
         NB_BIDDINGS[i].resize(numberOfInputs_);
@@ -1139,7 +1139,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
 		if(debugLevel_>2)
 			std::cout << "Size of diagram " << d << " : " << current_bidder_diagrams_[d].size() << std::endl;
 	}
-
+    
+    /*
     ofstream times_file;
     stringstream filename1;
     stringstream filename2;
@@ -1150,8 +1151,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
 
     if(debugLevel_>10){
         times_file.open(filename1.str(), ios::out);
-        for(auto i=0; i<timers.size(); i++){
-            for (auto j=0; j<timers[i].size(); j++) {
+        for(unsigned int  i=0; i<timers.size(); i++){
+            for (unsigned int j=0; j<timers[i].size(); j++) {
                 times_file << NB_BIDDERS[i][j] << "\t";
             }
             times_file << "\n";
@@ -1159,8 +1160,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
         times_file.close();
 
         times_file.open(filename2.str(), ios::out);
-        for(auto i=0; i<timers.size(); i++){
-            for (auto j=0; j<timers[i].size(); j++) {
+        for(unsigned int i=0; i<timers.size(); i++){
+            for (unsigned int j=0; j<timers[i].size(); j++) {
                 times_file << timers[i][j] << "\t";
             }
             times_file << "\n";
@@ -1168,8 +1169,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
         times_file.close();
 
         times_file.open(filename3.str(), ios::out);
-        for(auto i=0; i<timers.size(); i++){
-            for (auto j=0; j<timers[i].size(); j++) {
+        for(unsigned int i=0; i<timers.size(); i++){
+            for (unsigned int j=0; j<timers[i].size(); j++) {
                 times_file << NB_BIDDINGS[i][j] << "\t";
             }
             times_file << "\n";
@@ -1179,6 +1180,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
     if(debugLevel_>-3){
         std::cout << "Total number of Auction rounds : " << nb_of_auctions<< std::endl;
     }
+    */
 	return corrected_matchings;
 }
 #endif

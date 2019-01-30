@@ -26,7 +26,6 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 	bool diagrams_complete= !use_progressive_;
 	n_iterations_ = 0;
 	double total_time = 0;
-	dataType epsilon_candidate2;
 
 	//dataType cost = std::numeric_limits<dataType>::max();
 	setBidderDiagrams();
@@ -52,9 +51,10 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 	for(int c=0; c<3; ++c){
 		for(int i=0; i<numberOfInputs_; i++){
 			min_diag_price[c].push_back(0);
+			min_off_diag_price[c].push_back(0);
 		}
 	}
-	min_persistence = enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price, min_diag_price, min_points_to_add, false);
+	min_persistence = enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price, min_off_diag_price, min_points_to_add, false);
 	min_points_to_add = 10;
 	if(min_persistence<=lowest_persistence){
 		diagrams_complete = true;
@@ -77,7 +77,9 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 	else{
 		updateClusters();
 	}
-	printClustering();
+	if(debugLevel_>1){
+	    printClustering();
+    }
 
 	while(!converged || (!diagrams_complete && use_progressive_)){
 		Timer t_inside;{
@@ -108,7 +110,6 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 					use_progressive_=false;
 				}
 				dataType epsilon_candidate = pow(min_persistence, 2)/8.;
-				epsilon_candidate2=epsilon_candidate;
 				if(epsilon_candidate>epsilon_){
 					// Should always be the case except if min_persistence is equal to zero
 					epsilon_ = epsilon_candidate;
@@ -146,24 +147,29 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 		}
 		total_time +=t_inside.getElapsedTime();
 		if(total_time>time_limit_){
+		    min_cost=cost_;
 			converged = true;
 			diagrams_complete = true;
 		}
-	
-	// std::cout<<"== Iteration "<< n_iterations_ <<" == complete : "<<diagrams_complete<<" , progressive : "<<use_progressive_<<" , converged : "<<converged<<std::endl;
-	// std::cout<<"                 min_persistence : "<<min_persistence<<" , eps_candidate : "<<epsilon_candidate2<<" , epsilon0 : "<<epsilon0<<std::endl;
-	// std::cout<<"                 lowest_persistence : "<<lowest_persistence<<std::endl;
-	// std::cout<<"                 cost : "<<cost_<<" , min_cost : "<<min_cost<<std::endl;
-	// std::cout<<"                 time limit passed ?  : "<< (bool)(total_time>time_limit_) <<" , eps min passed? : "<<(bool)(epsilon_<epsilon0/500.)<<std::endl;
+        if(debugLevel_>4){
+            std::cout<<"== Iteration "<< n_iterations_ <<" == complete : "<<diagrams_complete<<" , progressive : "<<use_progressive_<<" , converged : "<<converged<<std::endl;
+            std::cout<<"                 min_persistence : "<<min_persistence<<" , epsilon0 : "<<epsilon0<<std::endl;
+            std::cout<<"                 lowest_persistence : "<<lowest_persistence<<std::endl;
+            std::cout<<"                 cost : "<<cost_<<" , min_cost : "<<min_cost<<std::endl;
+            std::cout<<"                 time limit passed ?  : "<< (bool)(total_time>time_limit_) <<" , eps min passed? : "<<(bool)(epsilon_<epsilon0/500.)<<std::endl;
+        }
 	}
-    std::cout<<"Final Cost : "<<min_cost<<std::endl;
-    clustering_=old_clustering_;
-    invertClusters();
+    std::cout<<"[PersistenceDiagramsClustering] Final Cost : "<<min_cost<<std::endl;
+    if(!use_progressive_){
+        clustering_=old_clustering_; // reverting to last clustering
+    }
+    invertClusters(); // this is to pass the old inverse clustering to paraview
+    printClustering();
 	}// End of timer
 
 
     // Filling the final centroids for output
-    
+
     final_centroids.resize(k_);
 
     for(int c=0; c<k_; ++c){
@@ -1037,7 +1043,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 			barycenter_computer.setUseProgressive(false);
 			barycenter_computer.setDeterministic(true);
 			barycenter_computer.setGeometricalFactor(geometrical_factor_);
-
+            barycenter_computer.setDebugLevel(debugLevel_);
 			barycenter_computer.setCurrentBidders(diagrams_c_min);
 			barycenter_computer.setCurrentBarycenter(centroids_with_price_min);
 			std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair;
@@ -1109,7 +1115,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 			barycenter_computer.setUseProgressive(false);
 			barycenter_computer.setDeterministic(true);
 			barycenter_computer.setGeometricalFactor(geometrical_factor_);
-
+            barycenter_computer.setDebugLevel(debugLevel_);
 			barycenter_computer.setCurrentBidders(diagrams_c_sad);
 			barycenter_computer.setCurrentBarycenter(centroids_with_price_sad);
 			std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair;
@@ -1180,7 +1186,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 			barycenter_computer.setUseProgressive(false);
 			barycenter_computer.setDeterministic(true);
 			barycenter_computer.setGeometricalFactor(geometrical_factor_);
-
+            barycenter_computer.setDebugLevel(debugLevel_);
 			barycenter_computer.setCurrentBidders(diagrams_c_max);
 			barycenter_computer.setCurrentBarycenter(centroids_with_price_max);
 			std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair;

@@ -353,7 +353,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 
 	vtkSmartPointer<vtkIntArray> nodeType =
 		vtkSmartPointer<vtkIntArray>::New();
-	nodeType->SetName("nodeType");
+	nodeType->SetName("CriticalType");
 
 	vtkSmartPointer<vtkDoubleArray> persistenceScalars =
 		vtkSmartPointer<vtkDoubleArray>::New();
@@ -361,7 +361,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsBarycenter::createPer
 
 	vtkSmartPointer<vtkIntArray> pairType =
 		vtkSmartPointer<vtkIntArray>::New();
-	pairType->SetName("pairType");
+	pairType->SetName("PairType");
 
 	vtkSmartPointer<vtkFloatArray> coordsScalars=
 		vtkSmartPointer<vtkFloatArray>::New();
@@ -482,7 +482,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 	vtkSmartPointer<vtkIntArray> nodeType =
 		vtkSmartPointer<vtkIntArray>::New();
-	nodeType->SetName("nodeType");
+	nodeType->SetName("CriticalType");
 
 	vtkSmartPointer<vtkDoubleArray> persistenceScalars =
 		vtkSmartPointer<vtkDoubleArray>::New();
@@ -502,7 +502,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 	vtkSmartPointer<vtkIntArray> pairType =
 		vtkSmartPointer<vtkIntArray>::New();
-	pairType->SetName("pairType");
+	pairType->SetName("PairType");
 
 	vtkSmartPointer<vtkFloatArray> coordsScalars=
 		vtkSmartPointer<vtkFloatArray>::New();

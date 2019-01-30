@@ -459,9 +459,9 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
         std::vector<int> inv_clustering,
          double max_dimension)
 {
-    if(debugLevel_>0)
+    if(debugLevel_>3){
         std::cout<<"Creating vtk diagrams"<<std::endl;
-
+    }
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
 	vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
@@ -469,7 +469,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
 
 	vtkSmartPointer<vtkIntArray> nodeType =
 		vtkSmartPointer<vtkIntArray>::New();
-	nodeType->SetName("nodeType");
+	nodeType->SetName("CriticalType");
 
 	vtkSmartPointer<vtkDoubleArray> persistenceScalars =
 		vtkSmartPointer<vtkDoubleArray>::New();
@@ -489,7 +489,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
 
 	vtkSmartPointer<vtkIntArray> pairType =
 		vtkSmartPointer<vtkIntArray>::New();
-	pairType->SetName("pairType");
+	pairType->SetName("PairType");
 
 	vtkSmartPointer<vtkFloatArray> coordsScalars=
 		vtkSmartPointer<vtkFloatArray>::New();
@@ -624,7 +624,9 @@ vtkSmartPointer<vtkUnstructuredGrid>
     std::vector<int> inv_clustering,
     double max_dimension)
 {
-	printf("Creating vtk Outputs");
+    if(debugLevel_>3){
+    std::cout<<"Creating vtk Outputs"<<std::endl;
+    }
 	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
 	vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
@@ -632,7 +634,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 	vtkSmartPointer<vtkIntArray> nodeType =
 		vtkSmartPointer<vtkIntArray>::New();
-	nodeType->SetName("nodeType");
+	nodeType->SetName("CriticalType");
 
 	vtkSmartPointer<vtkDoubleArray> persistenceScalars =
 		vtkSmartPointer<vtkDoubleArray>::New();
@@ -656,7 +658,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 	vtkSmartPointer<vtkIntArray> pairType =
 		vtkSmartPointer<vtkIntArray>::New();
-	pairType->SetName("pairType");
+	pairType->SetName("PairType");
 
 	vtkSmartPointer<vtkFloatArray> coordsScalars=
 		vtkSmartPointer<vtkFloatArray>::New();
@@ -670,7 +672,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 	for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j){
 		std::vector<diagramTuple> *diagram = &(all_CTDiagrams[j]);
         
-        int c = inv_clustering[j];
+        unsigned int c = inv_clustering[j];
         if(c+1>cluster_size.size()){
             cluster_size.resize(c+1);
             cluster_size[c]=1;

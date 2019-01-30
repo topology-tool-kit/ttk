@@ -165,12 +165,13 @@ template <typename dataType>
     PersistenceDiagramsClustering<dataType>::execute(
       std::vector<std::vector<diagramTuple>>* final_centroids){
 
-	std::cout<< "Launching execute..." << std::endl;
 	Timer t;
 	{
+	if(debugLevel_>0){
+	    std::cout<< "[PersistenceDiagramsClustering] Clustering " <<  numberOfInputs_ <<" diagrams in "<<n_clusters_<<" clusters."<<std::endl;
+    }
 	std::vector<std::vector<diagramTuple> > *intermediateDiagrams = (std::vector<std::vector<diagramTuple> > *) inputData_;
-	std::cout<< "Number of diagrams : " <<  numberOfInputs_ << std::endl;
-	std::vector<std::vector<diagramTuple> > data_min(numberOfInputs_);
+    std::vector<std::vector<diagramTuple> > data_min(numberOfInputs_);
 	std::vector<std::vector<diagramTuple> > data_sad(numberOfInputs_);
 	std::vector<std::vector<diagramTuple> > data_max(numberOfInputs_);
 
@@ -226,22 +227,22 @@ template <typename dataType>
 
   switch(pairTypeClustering_){
   case(0):
-  std::cout << "[ttkPersistenceDiagramsClustering] Only MIN-SAD Pairs" << '\n';
+  std::cout << "[PersistenceDiagramsClustering] Only MIN-SAD Pairs" << '\n';
     do_max = false;
     do_sad = false;
     break;
   case(1):
-    std::cout << "[ttkPersistenceDiagramsClustering] Only SAD-SAD Pairs" << '\n';
+    std::cout << "[PersistenceDiagramsClustering] Only SAD-SAD Pairs" << '\n';
     do_max = false;
     do_min = false;
     break;
   case(2):
-  std::cout << "[ttkPersistenceDiagramsClustering] Only SAD-MAX Pairs" << '\n';
+  std::cout << "[PersistenceDiagramsClustering] Only SAD-MAX Pairs" << '\n';
     do_min = false;
     do_sad = false;
     break;
   default:
-  std::cout << "[ttkPersistenceDiagramsClustering] All critical pairs : global clustering" << '\n';
+  std::cout << "[PersistenceDiagramsClustering] All critical pairs : global clustering" << '\n';
   break;
   }
 
