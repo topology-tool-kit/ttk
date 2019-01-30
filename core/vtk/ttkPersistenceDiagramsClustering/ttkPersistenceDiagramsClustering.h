@@ -144,7 +144,7 @@ class ttkPersistenceDiagramsClustering
     ~ttkPersistenceDiagramsClustering();
 
 	template <typename dataType>
-    int getPersistenceDiagram(
+    double getPersistenceDiagram(
       std::vector<diagramTuple>* diagram,
       vtkUnstructuredGrid *CTPersistenceDiagram_,
       const double spacing,
@@ -154,8 +154,12 @@ class ttkPersistenceDiagramsClustering
     int FillOutputPortInformation(int port, vtkInformation *info);
     
 	template<typename dataType>
+    vtkSmartPointer<vtkUnstructuredGrid> createOutputClusteredDiagrams(
+        std::vector<std::vector<diagramTuple>>& all_CTDiagrams, std::vector<int> inv_clustering, double max_dimension);
+
+	template<typename dataType>
     vtkSmartPointer<vtkUnstructuredGrid> createOutputCentroids(
-        std::vector<std::vector<diagramTuple>>* final_centroids);
+        std::vector<std::vector<diagramTuple>>* final_centroids, std::vector<int> inv_clustering, double max_dimension);
 
     int RequestData(vtkInformation *request,
       vtkInformationVector **inputVector, vtkInformationVector *outputVector);
@@ -183,7 +187,8 @@ class ttkPersistenceDiagramsClustering
 
     // base code features
     int doIt(vtkDataSet **input,
-            vtkUnstructuredGrid * outputCentroids,
+            vtkUnstructuredGrid *outputClusters,
+            vtkUnstructuredGrid *outputCentroids,
              int numInputs);
 
     bool needsToAbort();
@@ -193,7 +198,7 @@ class ttkPersistenceDiagramsClustering
 };
 
 template <typename dataType>
-int ttkPersistenceDiagramsClustering::getPersistenceDiagram(
+double ttkPersistenceDiagramsClustering::getPersistenceDiagram(
   std::vector<diagramTuple>* diagram,
   vtkUnstructuredGrid *CTPersistenceDiagram_,
   const double spacing,
@@ -251,6 +256,7 @@ int ttkPersistenceDiagramsClustering::getPersistenceDiagram(
 
   diagram->resize(pairingsSize);
   int nbNonCompact = 0;
+  double max_dimension=0;
 
   for (int i = 0; i < pairingsSize; ++i) {
 
@@ -289,6 +295,9 @@ int ttkPersistenceDiagramsClustering::getPersistenceDiagram(
                       (dataType) birthScalars->GetValue(2*i);
     dataType value2 = (!deathScalars) ? (dataType) y2 :
                       (dataType) deathScalars->GetValue(2*i+1);
+    
+    if(value1 > max_dimension)  max_dimension = value1;
+    if(value2 > max_dimension)  max_dimension = value2;
 
     if (pairIdentifier != -1 && pairIdentifier < pairingsSize)
       diagram->at(pairIdentifier) = std::make_tuple(
@@ -323,7 +332,7 @@ int ttkPersistenceDiagramsClustering::getPersistenceDiagram(
   }
 
 
-  return 0;
+  return max_dimension;
 }
     
     
@@ -446,7 +455,9 @@ int ttkPersistenceDiagramsClustering::getPersistenceDiagram(
 
 template <typename dataType>
 vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOutputCentroids(
-         std::vector<std::vector<diagramTuple>>* final_centroids)
+         std::vector<std::vector<diagramTuple>>* final_centroids,
+        std::vector<int> inv_clustering,
+         double max_dimension)
 {
     if(debugLevel_>0)
         std::cout<<"Creating vtk diagrams"<<std::endl;
@@ -474,7 +485,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
 
 	vtkSmartPointer<vtkIntArray> idOfDiagramPoint =
 		vtkSmartPointer<vtkIntArray>::New();
-	idOfDiagramPoint->SetName("ID of Diagram");
+	idOfDiagramPoint->SetName("ID of Cluster");
 
 	vtkSmartPointer<vtkIntArray> pairType =
 		vtkSmartPointer<vtkIntArray>::New();
@@ -494,8 +505,9 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
 		for (unsigned int i = 0; i < diagram->size(); ++i) {
 			vtkIdType ids[2];
 			diagramTuple t = diagram->at(i);
-			double x1 = std::get<6>(t);
+			double x1 = std::get<6>(t); 
 			double y1 = x1;
+			x1 += 1.1*max_dimension*j; 
 			double z1 = 1;  // Change 1 to j if you want to isolate the diagrams
 
 			float coords1[3];
@@ -503,7 +515,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
 			coords1[1] = std::get<8>(t);
 			coords1[2] = std::get<9>(t);
 
-			double x2 = std::get<6>(t);
+			double x2 = std::get<6>(t) + 1.1*max_dimension*j;
 			double y2 = std::get<10>(t);
 			double z2 = 1;  // Change 1 to j if you want to isolate the
 
@@ -605,5 +617,182 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
 }
 
 
+template <typename dataType>
+vtkSmartPointer<vtkUnstructuredGrid>
+  ttkPersistenceDiagramsClustering::createOutputClusteredDiagrams(
+    std::vector<std::vector<diagramTuple> > &all_CTDiagrams,
+    std::vector<int> inv_clustering,
+    double max_dimension)
+{
+	printf("Creating vtk Outputs");
+	vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
+	vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram =
+		vtkSmartPointer<vtkUnstructuredGrid>::New();
+
+	vtkSmartPointer<vtkIntArray> nodeType =
+		vtkSmartPointer<vtkIntArray>::New();
+	nodeType->SetName("nodeType");
+
+	vtkSmartPointer<vtkDoubleArray> persistenceScalars =
+		vtkSmartPointer<vtkDoubleArray>::New();
+	persistenceScalars->SetName("Persistence");
+
+	vtkSmartPointer<vtkIntArray> idOfPair =
+		vtkSmartPointer<vtkIntArray>::New();
+	idOfPair->SetName("ID of Pair");
+
+	vtkSmartPointer<vtkDoubleArray> persistenceScalarsPoint =
+		vtkSmartPointer<vtkDoubleArray>::New();
+	persistenceScalarsPoint->SetName("Persistence");
+
+	vtkSmartPointer<vtkIntArray> idOfDiagramPoint =
+		vtkSmartPointer<vtkIntArray>::New();
+	idOfDiagramPoint->SetName("ID of Diagram");
+
+	vtkSmartPointer<vtkIntArray> idOfCluster =
+		vtkSmartPointer<vtkIntArray>::New();
+	idOfCluster->SetName("ID of Cluster");
+
+	vtkSmartPointer<vtkIntArray> pairType =
+		vtkSmartPointer<vtkIntArray>::New();
+	pairType->SetName("pairType");
+
+	vtkSmartPointer<vtkFloatArray> coordsScalars=
+		vtkSmartPointer<vtkFloatArray>::New();
+	coordsScalars->SetNumberOfComponents(3);
+	coordsScalars->SetName("Coordinates");
+
+
+    std::vector<int> cluster_size;
+
+	int count = 0;
+	for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j){
+		std::vector<diagramTuple> *diagram = &(all_CTDiagrams[j]);
+        
+        int c = inv_clustering[j];
+        if(c+1>cluster_size.size()){
+            cluster_size.resize(c+1);
+            cluster_size[c]=1;
+        }
+        else{
+            cluster_size[c]++;
+        }
+		// First, add diagram points to the global input diagram
+		for (unsigned int i = 0; i < diagram->size(); ++i) {
+			vtkIdType ids[2];
+			diagramTuple t = diagram->at(i);
+			double x1 = std::get<6>(t);
+			double y1 = x1;
+			x1 +=  1.1*max_dimension*c;
+			double z1 = 1-cluster_size[c];  // Change 1 to j if you want to isolate the diagrams
+
+			float coords1[3];
+			coords1[0] = std::get<7>(t);
+			coords1[1] = std::get<8>(t);
+			coords1[2] = std::get<9>(t);
+
+			double x2 = std::get<6>(t) + (1.1*max_dimension*c);
+			double y2 = std::get<10>(t);
+			double z2 = 1-cluster_size[c];  // Change 1 to j if you want to isolate the
+
+			float coords2[3];
+			coords2[0] = std::get<11>(t);
+			coords2[1] = std::get<12>(t);
+			coords2[2] = std::get<13>(t);
+
+			idOfPair->InsertTuple1(count, i);
+
+			points->InsertNextPoint(x1, y1, z1);
+			coordsScalars->InsertTuple3(2*count, coords1[0], coords1[1], coords1[2]);
+			idOfDiagramPoint->InsertTuple1(2*count, j);
+            // std::cout<<"\nMAX DIM \n"<<max_dimension<<std::endl;
+			idOfCluster->InsertTuple1(2*count, c);
+			const ttk::CriticalType n1Type = std::get<1>(t);
+			switch (n1Type) {
+				case BLocalMin:
+					nodeType->InsertTuple1(2*count, 0);
+					break;
+
+				case BSaddle1:
+					nodeType->InsertTuple1(2*count, 1);
+					break;
+
+				case BSaddle2:
+					nodeType->InsertTuple1(2*count, 2);
+					break;
+
+				case BLocalMax:
+					nodeType->InsertTuple1(2*count, 3);
+					break;
+				default:
+					nodeType->InsertTuple1(2*count, 0);
+			}
+
+			points->InsertNextPoint(x2, y2, z2);
+			coordsScalars->InsertTuple3(2*count+1, coords2[0], coords2[1], coords2[2]);
+			idOfDiagramPoint->InsertTuple1(2*count+1, j);
+			idOfCluster->InsertTuple1(2*count+1, c);
+			const ttk::CriticalType n2Type = std::get<3>(t);
+			switch (n2Type) {
+				case BLocalMin:
+					nodeType->InsertTuple1(2*count+1, 0);
+					break;
+
+				case BSaddle1:
+					nodeType->InsertTuple1(2*count+1, 1);
+					break;
+
+				case BSaddle2:
+					nodeType->InsertTuple1(2*count+1, 2);
+					break;
+
+				case BLocalMax:
+					nodeType->InsertTuple1(2*count+1, 3);
+					break;
+				default:
+					nodeType->InsertTuple1(2*count+1, 0);
+			}
+
+			ids[0] = 2*count;
+			ids[1] = 2*count+1;
+
+			persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
+			persistenceScalars->InsertTuple1(count, y2-x2);
+			persistenceScalarsPoint->InsertTuple1(2*count, y2-x2);
+			persistenceScalarsPoint->InsertTuple1(2*count+1, y2-x2);
+			const ttk::SimplexId type = std::get<5>(t);
+			switch (type) {
+				case 0:
+					pairType->InsertTuple1(count, 0);
+					break;
+
+				case 1:
+					pairType->InsertTuple1(count, 1);
+					break;
+
+				case 2:
+					pairType->InsertTuple1(count, 2);
+					break;
+				default:
+					pairType->InsertTuple1(count, 0);
+			}
+			count++;
+		}
+	}
+
+	persistenceDiagram->SetPoints(points);
+	persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
+	persistenceDiagram->GetCellData()->AddArray(pairType);
+	persistenceDiagram->GetCellData()->AddArray(idOfPair);
+	persistenceDiagram->GetPointData()->AddArray(nodeType);
+	persistenceDiagram->GetPointData()->AddArray(coordsScalars);
+	persistenceDiagram->GetPointData()->AddArray(idOfDiagramPoint);
+	persistenceDiagram->GetPointData()->AddArray(idOfCluster);
+	persistenceDiagram->GetPointData()->AddArray(persistenceScalarsPoint);
+
+
+  return persistenceDiagram;
+}
 
 #endif // _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H

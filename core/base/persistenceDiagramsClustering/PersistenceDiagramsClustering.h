@@ -61,7 +61,7 @@ namespace ttk{
 		~PersistenceDiagramsClustering(){};
 
 
-		std::vector<std::vector<matchingTuple> >
+		std::vector<int>
 		execute(std::vector<std::vector<diagramTuple>>* centroids);
 
 		inline int setDiagrams(void *data){
@@ -161,7 +161,7 @@ namespace ttk{
 
 
 template <typename dataType>
-  std::vector<std::vector<matchingTuple>>
+  std::vector<int>
     PersistenceDiagramsClustering<dataType>::execute(
       std::vector<std::vector<diagramTuple>>* final_centroids){
 
@@ -178,7 +178,7 @@ template <typename dataType>
 	std::vector<std::vector<int>> data_sad_idx(numberOfInputs_);
 	std::vector<std::vector<int>> data_max_idx(numberOfInputs_);
 
-	std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
+	std::vector<int> inv_clustering(numberOfInputs_);
 
 	bool do_min = false;
 	bool do_sad = false;
@@ -262,7 +262,7 @@ template <typename dataType>
 
 	KMeans.setDiagrams(&data_min, &data_sad, &data_max);
 	KMeans.setDos(do_min, do_sad, do_max);
-	KMeans.execute(*final_centroids);
+	inv_clustering = KMeans.execute(*final_centroids);
 
 
 
@@ -272,7 +272,7 @@ template <typename dataType>
 		<< " thread(s))."
 		<< std::endl;
 	dMsg(std::cout, msg.str(), timeMsg);
-	return all_matchings;
+	return inv_clustering;
 	}
 
 }

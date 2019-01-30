@@ -28,7 +28,7 @@ namespace ttk{
 		~PDClustering(){};
 
 
-		int execute(std::vector<std::vector<diagramTuple>>& final_centroids);
+        std::vector<int> execute(std::vector<std::vector<diagramTuple>>& final_centroids);
 
 		dataType getMostPersistent();
 		dataType getLessPersistent();

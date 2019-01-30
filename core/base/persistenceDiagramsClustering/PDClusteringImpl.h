@@ -18,7 +18,7 @@
 using namespace ttk;
 
 template <typename dataType>
-int PDClustering<dataType>::execute(std::vector<std::vector<diagramTuple>>& final_centroids){
+std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagramTuple>>& final_centroids){
 	
 	Timer t;
 	{
@@ -157,7 +157,8 @@ int PDClustering<dataType>::execute(std::vector<std::vector<diagramTuple>>& fina
 	// std::cout<<"                 time limit passed ?  : "<< (bool)(total_time>time_limit_) <<" , eps min passed? : "<<(bool)(epsilon_<epsilon0/500.)<<std::endl;
 	}
     std::cout<<"Final Cost : "<<min_cost<<std::endl;
-    printOldClustering();
+    clustering_=old_clustering_;
+    invertClusters();
 	}// End of timer
 
 
@@ -212,7 +213,7 @@ int PDClustering<dataType>::execute(std::vector<std::vector<diagramTuple>>& fina
             }
 	    }
     }
-	return 0;
+	return inv_clustering_;
 }
 
 template <typename dataType>

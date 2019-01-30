@@ -250,7 +250,10 @@ line segments in 3D.
         <Property name="DebugLevel" />
       </PropertyGroup>
 
-      <OutputPort name="Centroids" index="0" id="port0" />
+
+
+      <OutputPort name="Clustered Diagrams" index="0" id="port0" />
+      <OutputPort name="Cluster Centroids" index="1" id="port1" />
 
       <Hints>
         <ShowInMenu category="TTK - Uncertain Scalar Data" />

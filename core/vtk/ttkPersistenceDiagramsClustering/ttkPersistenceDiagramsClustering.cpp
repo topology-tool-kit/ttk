@@ -21,7 +21,7 @@ ttkPersistenceDiagramsClustering::ttkPersistenceDiagramsClustering(){
   UseOutputMatching = true;
 
   SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(1);
+  SetNumberOfOutputPorts(2);
 
 }
 
@@ -48,7 +48,7 @@ int ttkPersistenceDiagramsClustering::updateProgress(const float &progress){
 
 
 
-int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, vtkUnstructuredGrid *outputCentroids, int numInputs){
+int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, vtkUnstructuredGrid *outputClusters, vtkUnstructuredGrid *outputCentroids, int numInputs){
 	// Get arrays from input datas
 	//vtkDataArray* inputDiagram[numInputs] = { NULL };
 	vector<vtkUnstructuredGrid*> inputDiagram(numInputs);
@@ -84,18 +84,25 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, vtkUnstructuredGr
 
 			std::vector<std::vector<macroDiagramTuple> >
 				intermediateDiagrams(numInputs);
+			double max_dimension_total=0;
 			for(int i = 0; i < numInputs; i++){
 				double Spacing = 0;
-				getPersistenceDiagram<VTK_TT>(
+				double max_dimension = getPersistenceDiagram<VTK_TT>(
 				&(intermediateDiagrams[i]), inputDiagram[i], Spacing, 0);
+				if(max_dimension_total<max_dimension){
+                    max_dimension_total=max_dimension;
+				}
 			}
 			persistenceDiagramsClustering.setDiagrams((void *) &intermediateDiagrams);
 
 
             std::vector<std::vector<macroDiagramTuple>> final_centroids;
-			std::vector<std::vector<macroMatchingTuple>> matchings = 
-			    persistenceDiagramsClustering.execute(&final_centroids);
-			outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(&final_centroids));
+			
+			std::vector<int> inv_clustering = 
+                persistenceDiagramsClustering.execute(&final_centroids);
+            std::cout<<"what's up in here"<<std::endl;
+			outputClusters->ShallowCopy(createOutputClusteredDiagrams(intermediateDiagrams, inv_clustering, max_dimension_total));
+			outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(&final_centroids, inv_clustering, max_dimension_total));
 		}
 		));
 	}
@@ -146,9 +153,14 @@ int ttkPersistenceDiagramsClustering::RequestData(vtkInformation *request,
   vtkInformation* outInfo1;
   outInfo1 = outputVector->GetInformationObject(0);
   vtkDataSet* output1 = vtkDataSet::SafeDownCast(outInfo1->Get(vtkDataObject::DATA_OBJECT()));
-  vtkUnstructuredGrid* output_centroids = vtkUnstructuredGrid::SafeDownCast(output1);
-  doIt(input, output_centroids, numInputs);
+  vtkUnstructuredGrid* output_clusters = vtkUnstructuredGrid::SafeDownCast(output1);
 
+  vtkInformation* outInfo2;
+  outInfo2 = outputVector->GetInformationObject(1);
+  vtkDataSet* output2 = vtkDataSet::SafeDownCast(outInfo2->Get(vtkDataObject::DATA_OBJECT()));
+  vtkUnstructuredGrid* output_centroids = vtkUnstructuredGrid::SafeDownCast(output2);
+
+  doIt(input, output_clusters, output_centroids, numInputs);
   delete[] input;
 
   {
