@@ -104,7 +104,8 @@ namespace ttk{
       CommandLineParser(){
         setArgument("d", &(ttk::globalDebugLevel_),
           "Global debug level", true);
-        setArgument("t", &threadNumber_, "Thread number", true);
+        setArgument("t", &ttk::globalThreadNumber_, 
+          "Global thread number", true);
       };
       
       ~CommandLineParser(){};
