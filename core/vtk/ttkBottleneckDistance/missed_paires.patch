@@ -1,0 +1,19 @@
+diff --git a/core/vtk/ttkBottleneckDistance/ttkBottleneckDistance.h b/core/vtk/ttkBottleneckDistance/ttkBottleneckDistance.h
+index 79c07c6..f835c9f 100644
+--- a/core/vtk/ttkBottleneckDistance/ttkBottleneckDistance.h
++++ b/core/vtk/ttkBottleneckDistance/ttkBottleneckDistance.h
+@@ -386,6 +386,14 @@ int ttkBottleneckDistance::getPersistenceDiagram(
+     return -2;
+ 
+   auto pairingsSize = (int) pairIdentifierScalars->GetNumberOfTuples();
++  
++ // FIX : no more missed pairs
++ for(int pair_index = 0; pair_index < pairingsSize; pair_index++){
++    const float index_of_pair = pair_index;
++    if(*pairIdentifierScalars->GetTuple(pair_index)!=-1)    // do not alter the diagonal
++        pairIdentifierScalars->SetTuple(pair_index, &index_of_pair);
++  }
++  
+   auto s = (float) 0.0;
+ 
+   if (!deathScalars != !birthScalars) return -2;

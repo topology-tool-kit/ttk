@@ -209,22 +209,27 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input, vtkDataSet *outputBoundF
 
 
   // Calling the executing package
+
   if(numFields>0){
     switch(inputScalarField[0]->GetDataType()){
+
 
       vtkTemplateMacro(
       {
         UncertainDataEstimator uncertainDataEstimator;
         uncertainDataEstimator.setWrapper(this);
 
+
         uncertainDataEstimator.setVertexNumber(
           outputBoundFields->GetNumberOfPoints());
+
 
         uncertainDataEstimator.setNumberOfInputs(numFields);
         for (int i = 0; i<numFields; i++) {
           uncertainDataEstimator.setInputDataPointer(i,
           inputScalarField[i]->GetVoidPointer(0));
         }
+
 
         uncertainDataEstimator.setComputeLowerBound(computeLowerBound_);
         uncertainDataEstimator.setComputeUpperBound(computeUpperBound_);
@@ -238,6 +243,7 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input, vtkDataSet *outputBoundF
 
         uncertainDataEstimator.setOutputMeanField(
           outputMeanField_->GetVoidPointer(0));
+
 
         uncertainDataEstimator.setBinCount(binCount_);
         for (int b = 0; b<binCount_; b++) {

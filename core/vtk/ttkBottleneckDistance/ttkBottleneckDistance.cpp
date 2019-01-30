@@ -122,6 +122,7 @@ int ttkBottleneckDistance::doIt(
   // Call package
   int status = 0;
 
+
 //  switch (dataType1) {
 //    vtkTemplateMacro(({
   // TODO template my methods

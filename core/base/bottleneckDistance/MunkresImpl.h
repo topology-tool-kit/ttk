@@ -526,16 +526,22 @@ int Munkres::affect(
   int nbR = rowSize;
 
   matchings.clear();
-
-  for (int r = 0; r < nbR; ++r)
-    for (int c = 0; c < nbC; ++c)
+  for (int r = 0; r < nbR; ++r){
+    for (int c = 0; c < nbC; ++c){
       if (M[r][c] == 1) {
-        matchingTuple t = std::make_tuple(r, c, C[r][c]);
-        matchings.push_back(t);
-        // Use row cover to match to last column diagonal.
-        if (r < nbR - 1)
+        if (r < nbR - 1){
           rowCover[r] = true;
+          matchingTuple t = std::make_tuple(r, c, C[r][c]);
+          matchings.push_back(t);
+          // Use row cover to match to last column diagonal.
+        }
+        else{
+          matchingTuple t = std::make_tuple(-1, c, C[r][c]);
+          matchings.push_back(t);
+        }
       }
+    }
+  }
 
   // Clear row cover
   for (int r = 0; r < nbR - 1; ++r) {
