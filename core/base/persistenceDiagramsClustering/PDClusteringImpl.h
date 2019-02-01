@@ -94,7 +94,7 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 				epsilon_=epsilon_candidate;
 			}
 
-            if(debugLevel_>1){
+            if(debugLevel_>3){
 			    std::cout<< "Iteration "<< n_iterations_<<", Epsilon = "<< epsilon_<< std::endl;
 			    std::cout<< "Max shift : "<< max_shift << std::endl;
             }
@@ -139,7 +139,7 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 			else if(n_iterations_>2 && epsilon_<epsilon0/500. && !use_progressive_){
                 converged = true;
 			}
-			if(debugLevel_>1){
+			if(debugLevel_>3){
 			    std::cout<< "Cost = "<< cost_<< std::endl;
 			    printClustering();
             }
@@ -150,7 +150,7 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 			converged = true;
 			diagrams_complete = true;
 		}
-        if(debugLevel_>4){
+        if(debugLevel_>5){
             std::cout<<"== Iteration "<< n_iterations_ <<" == complete : "<<diagrams_complete<<" , progressive : "<<use_progressive_<<" , converged : "<<converged<<std::endl;
             std::cout<<"                 min_persistence : "<<min_persistence<<" , epsilon0 : "<<epsilon0<<std::endl;
             std::cout<<"                 lowest_persistence : "<<lowest_persistence<<std::endl;
@@ -788,7 +788,7 @@ void PDClustering<dataType>::invertInverseClusters(){
 
 	// Check if a cluster was left without diagram
 	for(int c=0; c<k_; ++c){
-		if(clustering_[c].size() == 0){
+		if(clustering_[c].size() == 0 && debugLevel_>4){
 			std::cout<< "Problem in invertInverseClusters()... \nCluster " << c << " was left with no diagram attached to it... " << std::endl;
 		}
 	}
@@ -825,7 +825,7 @@ void PDClustering<dataType>::acceleratedUpdateClusters(){
 				    inv_clustering_[i] = i % k_;
                 }
                 else{
-                    std::cout << " - ASSIGNED TO A RANDOM CLUSTER " << '\n';
+                    //std::cout << " - ASSIGNED TO A RANDOM CLUSTER " << '\n';
                     inv_clustering_[i] = rand() % (k_);
                 }
 
@@ -907,7 +907,9 @@ void PDClustering<dataType>::acceleratedUpdateClusters(){
 	invertInverseClusters();
 	for(int c=0; c<k_; ++c){
 		if(clustering_[c].size()==0){
-			std::cout<< "Adding artificial centroid because a cluster was empty" <<std::endl;
+			if(debugLevel_>=5){
+			    std::cout<< "Adding artificial centroid because a cluster was empty" <<std::endl;
+            }
 			bool idx_acceptable = false;
 			int idx=-1;
 			while(!idx_acceptable){
@@ -1494,7 +1496,7 @@ dataType PDClustering<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 				compteur_for_adding_points++;
 
 			}
-			if(debugLevel_>3)
+			if(debugLevel_>6)
 			    std::cout<< " Diagram " << i << " size : " << current_bidder_diagrams_min_[i].size() << std::endl;
 		}
 	}
@@ -1540,7 +1542,7 @@ dataType PDClustering<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 				}
 				compteur_for_adding_points++;
 			}
-			if(debugLevel_>2)
+			if(debugLevel_>6)
                 std::cout<< " Diagram " << i << " size : " << current_bidder_diagrams_saddle_[i].size() << std::endl;
 		}
 	}
@@ -1589,7 +1591,7 @@ dataType PDClustering<dataType>::enrichCurrentBidderDiagrams(dataType previous_m
 				}
 				compteur_for_adding_points++;
 			}
-			if(debugLevel_>2)
+			if(debugLevel_>6)
                 std::cout<< " Diagram " << i << " size : " << current_bidder_diagrams_max_[i].size() << std::endl;
 		}
 	}
