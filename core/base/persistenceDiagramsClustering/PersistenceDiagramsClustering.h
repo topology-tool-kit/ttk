@@ -260,7 +260,6 @@ template <typename dataType>
     KMeans.setDebugLevel(debugLevel_);
 	KMeans.setKMeanspp(use_kmeanspp_);
 	KMeans.setK(n_clusters_);
-
 	KMeans.setDiagrams(&data_min, &data_sad, &data_max);
 	KMeans.setDos(do_min, do_sad, do_max);
 	inv_clustering = KMeans.execute(*final_centroids);

@@ -235,7 +235,7 @@ line segments in 3D.
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetDebugLevel"
+         command="SetdebugLevel_"
          number_of_elements="1"
          default_values="1" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />

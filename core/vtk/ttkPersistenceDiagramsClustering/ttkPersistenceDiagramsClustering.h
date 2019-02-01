@@ -74,7 +74,7 @@ class ttkPersistenceDiagramsClustering
     vtkTypeMacro(ttkPersistenceDiagramsClustering, vtkDataSetAlgorithm);
 
     // default ttk setters
-    vtkSetMacro(DebugLevel, int);
+    vtkSetMacro(debugLevel_, int);
 
     void SetThreads(){
       if(!UseAllCores)
@@ -167,7 +167,6 @@ class ttkPersistenceDiagramsClustering
 
   private:
     int                   PairTypeClustering;
-    int                   DebugLevel;
     bool                  Deterministic;
     bool                  UseAllCores;
     int                   ThreadNumber;
@@ -313,7 +312,7 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(
       nbNonCompact++;
       if (nbNonCompact == 0) {
         std::stringstream msg;
-        msg << "[TTKPersistenceDiagramBarycenter] Diagram pair identifiers "
+        msg << "[TTKPersistenceDiagramClustering] Diagram pair identifiers "
             << "must be compact (not exceed the diagram size). "
             << std::endl;
         dMsg(std::cout, msg.str(), timeMsg);
@@ -324,7 +323,7 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(
   if (nbNonCompact > 0) {
     {
       std::stringstream msg;
-      msg << "[TTKPersistenceDiagramBarycenter] Missed "
+      msg << "[TTKPersistenceDiagramClustering] Missed "
           << nbNonCompact << " pairs due to non-compactness."
           << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);

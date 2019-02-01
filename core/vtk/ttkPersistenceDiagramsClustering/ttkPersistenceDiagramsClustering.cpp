@@ -72,7 +72,7 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, vtkUnstructuredGr
             persistenceDiagramsClustering.setDeterministic(Deterministic);
             persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
 			persistenceDiagramsClustering.setNumberOfInputs(numInputs);
-			persistenceDiagramsClustering.setDebugLevel(DebugLevel);
+			persistenceDiagramsClustering.setDebugLevel(debugLevel_);
 			persistenceDiagramsClustering.setTimeLimit(TimeLimit);
 			persistenceDiagramsClustering.setUseProgressive(UseProgressive);
 			persistenceDiagramsClustering.setThreadNumber(ThreadNumber);

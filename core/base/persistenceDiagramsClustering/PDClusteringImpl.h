@@ -19,7 +19,6 @@ using namespace ttk;
 
 template <typename dataType>
 std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagramTuple>>& final_centroids){
-	
 	Timer t;
 	{
 	bool converged = false;

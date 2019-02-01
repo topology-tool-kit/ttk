@@ -1,6 +1,5 @@
 ttk_add_paraview_plugin(ttkPersistenceDiagramsClustering
 	SOURCES ${VTKWRAPPER_DIR}/ttkPersistenceDiagramsClustering/ttkPersistenceDiagramsClustering.cpp
-	PLUGIN_VERSION 1.0
 	PLUGIN_XML PersistenceDiagramsClustering.xml
 	LINK persistenceDiagramsClustering)
 

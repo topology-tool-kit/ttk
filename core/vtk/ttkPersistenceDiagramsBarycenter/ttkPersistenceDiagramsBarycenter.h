@@ -175,7 +175,6 @@ class ttkPersistenceDiagramsBarycenter
 
 
   private:
-    int                   debugLevel_;
     bool                  Deterministic;
     bool                  UseAllCores;
     int                   ThreadNumber;
