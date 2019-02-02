@@ -43,6 +43,7 @@
 
             <Hints>
                 <RepresentationType view="RenderView" type="Wireframe" />
+                <ShowInMenu category="TTK" />
             </Hints>
         </SourceProxy>
     </ProxyGroup>
