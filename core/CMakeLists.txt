@@ -150,6 +150,13 @@ else()
   option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
 endif()
 
+find_package(Eigen3)
+if(EIGEN3_FOUND)
+  option(TTK_ENABLE_EIGEN "Enable Eigen3 support" ON)
+else()
+  option(TTK_ENABLE_EIGEN "Enable Eigen3 support" OFF)
+endif()
+
 # scikit-learn support is disabled by default for now under MacOs
 if(APPLE)
   option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)

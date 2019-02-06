@@ -49,6 +49,11 @@ function(ttk_set_compile_options library)
         target_link_libraries(${library} PUBLIC zfp::zfp)
     endif()
 
+    if(TTK_ENABLE_EIGEN)
+      target_compile_definitions(${library} PUBLIC TTK_ENABLE_EIGEN)
+      target_link_libraries(${library} PUBLIC Eigen3::Eigen)
+    endif()
+
     if (TTK_ENABLE_ZLIB)
         target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZLIB)
         target_include_directories(${library} PUBLIC ${ZLIB_INCLUDE_DIR})
