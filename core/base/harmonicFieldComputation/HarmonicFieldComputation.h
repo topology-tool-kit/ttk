@@ -1,8 +1,8 @@
-/// \ingroup base
+/// ingroup base
 /// \class ttk::HarmonicFieldComputation
 /// \author Julien Tierny <julien.tierny@lip6.fr>
-/// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
-/// \date February 2016
+/// \author Pierre Guillou <pierre.guillou@lip6.fr>
+/// \date February 2019
 ///
 /// \brief TTK processing package for the topological simplification of scalar
 /// data.
@@ -13,56 +13,23 @@
 /// analysis when outlier critical points can be easily identified. It is
 /// also useful for data simplification.
 ///
-/// \b Related \b publication \n
-/// "Generalized Topological Simplification of Scalar Fields on Surfaces" \n
-/// Julien Tierny, Valerio Pascucci \n
-/// Proc. of IEEE VIS 2012.\n
-/// IEEE Transactions on Visualization and Computer Graphics, 2012.
-///
-/// \sa ttkHarmonicFieldComputation.cpp %for a usage example.
+/// \sa ttkHarmonicFieldComputation.cpp % for a usage example.
 
-#ifndef _HARMONICFIELDCOMPUTATION_H
-#define _HARMONICFIELDCOMPUTATION_H
+#pragma once
 
 // base code includes
-#include <Wrapper.h>
-
 #include <Triangulation.h>
+#include <Wrapper.h>
 #include <cmath>
 #include <set>
 #include <tuple>
 #include <type_traits>
 
+#ifdef TTK_ENABLE_EIGEN
+#include <Eigen/Dense>
+#endif // TTK_ENABLE_EIGEN
+
 namespace ttk {
-
-struct SweepCmp {
-private:
-  bool isIncreasingOrder_;
-
-public:
-  SweepCmp() : isIncreasingOrder_{} {}
-
-  SweepCmp(bool isIncreasingOrder) : isIncreasingOrder_{isIncreasingOrder} {}
-
-  int setIsIncreasingOrder(bool isIncreasingOrder) {
-    isIncreasingOrder_ = isIncreasingOrder;
-    return 0;
-  }
-
-  template <typename dataType>
-  bool operator()(const std::tuple<dataType, SimplexId, SimplexId> &v0,
-                  const std::tuple<dataType, SimplexId, SimplexId> &v1) const {
-    if (isIncreasingOrder_) {
-      return (std::get<0>(v0) < std::get<0>(v1) or
-              (std::get<0>(v0) == std::get<0>(v1) and
-               std::get<1>(v0) < std::get<1>(v1)));
-    } else {
-      return (std::get<0>(v0) > std::get<0>(v1) or
-              (std::get<0>(v0) == std::get<0>(v1) and
-               std::get<1>(v0) > std::get<1>(v1)));
-    }
-  };
-};
 
 class HarmonicFieldComputation : public Debug {
 
@@ -70,88 +37,6 @@ public:
   HarmonicFieldComputation();
 
   ~HarmonicFieldComputation();
-
-  template <typename dataType>
-  bool isLowerThan(SimplexId a, SimplexId b, dataType *scalars,
-                   SimplexId *offsets) const;
-
-  template <typename dataType>
-  bool isHigherThan(SimplexId a, SimplexId b, dataType *scalars,
-                    SimplexId *offsets) const;
-
-  template <typename dataType>
-  int getCriticalType(SimplexId vertexId, dataType *scalars,
-                      SimplexId *offsets) const;
-
-  template <typename dataType>
-  int getCriticalPoints(dataType *scalars, SimplexId *offsets,
-                        std::vector<SimplexId> &minList,
-                        std::vector<SimplexId> &maxList) const;
-
-  template <typename dataType>
-  int getCriticalPoints(dataType *scalars, SimplexId *offsets,
-                        std::vector<SimplexId> &minList,
-                        std::vector<SimplexId> &maxList,
-                        std::vector<bool> &blackList) const;
-
-  template <typename dataType>
-  int addPerturbation(dataType *scalars, SimplexId *offsets) const;
-
-  template <typename dataType, typename idType> int execute() const;
-
-  inline int setupTriangulation(Triangulation *triangulation) {
-    triangulation_ = triangulation;
-    if (triangulation_) {
-      vertexNumber_ = triangulation_->getNumberOfVertices();
-      triangulation_->preprocessVertexNeighbors();
-    }
-    return 0;
-  }
-
-  inline int setVertexNumber(SimplexId vertexNumber) {
-    vertexNumber_ = vertexNumber;
-    return 0;
-  }
-
-  inline int setConstraintNumber(SimplexId constraintNumber) {
-    constraintNumber_ = constraintNumber;
-    return 0;
-  }
-
-  inline int setInputScalarFieldPointer(void *data) {
-    inputScalarFieldPointer_ = data;
-    return 0;
-  }
-
-  inline int setVertexIdentifierScalarFieldPointer(void *data) {
-    vertexIdentifierScalarFieldPointer_ = data;
-    return 0;
-  }
-
-  inline int setInputOffsetScalarFieldPointer(void *data) {
-    inputOffsetScalarFieldPointer_ = data;
-    return 0;
-  }
-
-  inline int setConsiderIdentifierAsBlackList(bool onOff) {
-    considerIdentifierAsBlackList_ = onOff;
-    return 0;
-  }
-
-  inline int setAddPerturbation(bool onOff) {
-    addPerturbation_ = onOff;
-    return 0;
-  }
-
-  inline int setOutputScalarFieldPointer(void *data) {
-    outputScalarFieldPointer_ = data;
-    return 0;
-  }
-
-  inline int setOutputOffsetScalarFieldPointer(void *data) {
-    outputOffsetScalarFieldPointer_ = data;
-    return 0;
-  }
 
 protected:
   Triangulation *triangulation_;
@@ -169,50 +54,6 @@ protected:
 
 // if the package is a pure template typename, uncomment the following line
 // #include                  <HarmonicFieldComputation.cpp>
-
-template <typename dataType>
-bool ttk::HarmonicFieldComputation::isLowerThan(SimplexId a, SimplexId b,
-                                                dataType *scalars,
-                                                SimplexId *offsets) const {
-  return (scalars[a] < scalars[b] or
-          (scalars[a] == scalars[b] and offsets[a] < offsets[b]));
-}
-
-template <typename dataType>
-bool ttk::HarmonicFieldComputation::isHigherThan(SimplexId a, SimplexId b,
-                                                 dataType *scalars,
-                                                 SimplexId *offsets) const {
-  return (scalars[a] > scalars[b] or
-          (scalars[a] == scalars[b] and offsets[a] > offsets[b]));
-}
-
-template <typename dataType>
-int ttk::HarmonicFieldComputation::getCriticalType(SimplexId vertex,
-                                                   dataType *scalars,
-                                                   SimplexId *offsets) const {
-  bool isMinima{true};
-  bool isMaxima{true};
-  SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(vertex);
-  for (SimplexId i = 0; i < neighborNumber; ++i) {
-    SimplexId neighbor;
-    triangulation_->getVertexNeighbor(vertex, i, neighbor);
-
-    if (isLowerThan<dataType>(neighbor, vertex, scalars, offsets))
-      isMinima = false;
-    if (isHigherThan<dataType>(neighbor, vertex, scalars, offsets))
-      isMaxima = false;
-    if (!isMinima and !isMaxima) {
-      return 0;
-    }
-  }
-
-  if (isMinima)
-    return -1;
-  if (isMaxima)
-    return 1;
-
-  return 0;
-}
 
 template <typename dataType>
 int ttk::HarmonicFieldComputation::getCriticalPoints(
@@ -307,16 +148,10 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   Timer t;
 
-  // pre-processing
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for (SimplexId k = 0; k < vertexNumber_; ++k) {
-    scalars[k] = inputScalars[k];
-    if (std::isnan((double)scalars[k]))
-      scalars[k] = 0;
-
-    offsets[k] = inputOffsets[k];
+  {
+    std::stringstream msg;
+    msg << "[HarmonicFieldComputation] Beginnning computation" << std::endl;
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
 
   // get the user extremum list
@@ -337,27 +172,9 @@ int ttk::HarmonicFieldComputation::execute() const {
   getCriticalPoints<dataType>(scalars, offsets, authorizedMinima,
                               authorizedMaxima, extrema);
 
-  {
-    std::stringstream msg;
-    msg << "[HarmonicFieldComputation] Maintaining " << constraintNumber_
-        << " constraints (" << authorizedMinima.size() << " minima and "
-        << authorizedMaxima.size() << " maxima)." << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
-  }
-
-  // declare the tuple-comparison functor
-  SweepCmp cmp;
-
   // processing
   int iteration{};
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
-
-    {
-      std::stringstream msg;
-      msg << "[HarmonicFieldComputation] Starting simplifying iteration #" << i
-          << "..." << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
-    }
 
     for (int j = 0; j < 2; ++j) {
 
@@ -438,48 +255,14 @@ int ttk::HarmonicFieldComputation::execute() const {
       needForMoreIterations = true;
     if (minima.size() > authorizedMinima.size())
       needForMoreIterations = true;
-
-    {
-      std::stringstream msg;
-      msg << "[HarmonicFieldComputation] Current status: " << minima.size()
-          << " minima, " << maxima.size() << " maxima." << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
-    }
-
-    if (!needForMoreIterations) {
-      for (SimplexId k : minima) {
-        if (!authorizedExtrema[k]) {
-          needForMoreIterations = true;
-          break;
-        }
-      }
-    }
-    if (!needForMoreIterations) {
-      for (SimplexId k : maxima) {
-        if (!authorizedExtrema[k]) {
-          needForMoreIterations = true;
-          break;
-        }
-      }
-    }
-
-    // optional adding of perturbation
-    if (addPerturbation_)
-      addPerturbation<dataType>(scalars, offsets);
-
-    ++iteration;
-    if (!needForMoreIterations)
-      break;
   }
 
   {
     std::stringstream msg;
-    msg << "[HarmonicFieldComputation] Scalar field simplified"
-        << " in " << t.getElapsedTime() << " s. (" << threadNumber_
-        << " threads(s), " << iteration << " ite.)." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    msg << "[HarmonicFieldComputation] Ending computation after"
+        << t.getElapsedTime() << std::endl;
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
 
   return 0;
 }
-#endif // HARMONICFIELDCOMPUTATION_H
