@@ -9,6 +9,9 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 
+# Generate a compilation database
+SET(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
+
 option(TTK_ENABLE_64BIT_IDS "Enable processing on large datasets" OFF)
 mark_as_advanced(TTK_ENABLE_64BIT_IDS)
 
