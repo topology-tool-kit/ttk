@@ -26,7 +26,7 @@
 #include <type_traits>
 
 #ifdef TTK_ENABLE_EIGEN
-#include <Eigen/Dense>
+#include <Eigen/Sparse>
 #endif // TTK_ENABLE_EIGEN
 
 namespace ttk {

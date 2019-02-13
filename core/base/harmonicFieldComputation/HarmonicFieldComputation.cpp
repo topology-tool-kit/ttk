@@ -1,9 +1,6 @@
 #include <HarmonicFieldComputation.h>
 
-using namespace std;
-using namespace ttk;
-
-HarmonicFieldComputation::HarmonicFieldComputation()
+ttk::HarmonicFieldComputation::HarmonicFieldComputation()
     : triangulation_{}, vertexNumber_{}, constraintNumber_{},
       inputScalarFieldPointer_{}, vertexIdentifierScalarFieldPointer_{},
       inputOffsetScalarFieldPointer_{}, considerIdentifierAsBlackList_{},
@@ -11,6 +8,9 @@ HarmonicFieldComputation::HarmonicFieldComputation()
       outputOffsetScalarFieldPointer_{} {
   considerIdentifierAsBlackList_ = false;
   addPerturbation_ = false;
+#ifdef TTK_ENABLE_OPENMP
+  Eigen::SetNbThreads(threadNumber_);
+#endif // TTK_ENABLE_OPENMP
 }
 
-HarmonicFieldComputation::~HarmonicFieldComputation() {}
+ttk::HarmonicFieldComputation::~HarmonicFieldComputation() {}
