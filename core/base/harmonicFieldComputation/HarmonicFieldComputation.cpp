@@ -1,16 +1,12 @@
 #include <HarmonicFieldComputation.h>
 
 ttk::HarmonicFieldComputation::HarmonicFieldComputation()
-    : triangulation_{}, vertexNumber_{}, constraintNumber_{},
-      inputScalarFieldPointer_{}, vertexIdentifierScalarFieldPointer_{},
-      inputOffsetScalarFieldPointer_{}, considerIdentifierAsBlackList_{},
-      addPerturbation_{}, outputScalarFieldPointer_{},
-      outputOffsetScalarFieldPointer_{} {
-  considerIdentifierAsBlackList_ = false;
-  addPerturbation_ = false;
-#ifdef TTK_ENABLE_OPENMP
-  Eigen::SetNbThreads(threadNumber_);
-#endif // TTK_ENABLE_OPENMP
+    : vertexNumber_{}, constraintNumber_{}, useCotanMethod_{false},
+      triangulation_{}, inputScalarFieldPointer_{},
+      outputScalarFieldPointer_{} {
+#if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_OPENMP)
+  Eigen::setNbThreads(threadNumber_);
+#endif // TTK_ENABLE_OPENMP && TTK_ENABLE_EIGEN
 }
 
 ttk::HarmonicFieldComputation::~HarmonicFieldComputation() {}

@@ -327,18 +327,9 @@ int ttkHarmonicFieldComputation::doIt(vector<vtkDataSet *> &inputs,
       inputScalars_->GetVoidPointer(0));
   harmonicFieldComputation_.setVertexIdentifierScalarFieldPointer(
       identifiers_->GetVoidPointer(0));
-  harmonicFieldComputation_.setConsiderIdentifierAsBlackList(
-      ConsiderIdentifierAsBlackList);
-  harmonicFieldComputation_.setAddPerturbation(AddPerturbation);
-
-  harmonicFieldComputation_.setInputOffsetScalarFieldPointer(
-      inputOffsets_->GetVoidPointer(0));
 
   harmonicFieldComputation_.setOutputScalarFieldPointer(
       outputScalars->GetVoidPointer(0));
-
-  harmonicFieldComputation_.setOutputOffsetScalarFieldPointer(
-      outputOffsets->GetVoidPointer(0));
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if (identifiers_->GetDataType() != inputOffsets_->GetDataType()) {
@@ -352,9 +343,9 @@ int ttkHarmonicFieldComputation::doIt(vector<vtkDataSet *> &inputs,
   switch (inputScalars_->GetDataType()) {
     ttkTemplateMacro({
       if (inputOffsets_->GetDataType() == VTK_INT)
-        ret = harmonicFieldComputation_.execute<VTK_TT TTK_COMMA int>();
+        ret = harmonicFieldComputation_.execute<VTK_TT>();
       if (inputOffsets_->GetDataType() == VTK_ID_TYPE)
-        ret = harmonicFieldComputation_.execute<VTK_TT TTK_COMMA vtkIdType>();
+        ret = harmonicFieldComputation_.execute<VTK_TT>();
     });
   }
 #ifndef TTK_ENABLE_KAMIKAZE
