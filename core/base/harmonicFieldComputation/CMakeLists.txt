@@ -5,3 +5,5 @@ ttk_add_base_library(harmonicFieldComputation
                      HarmonicFieldComputation.h
                      LINK
                      triangulation)
+
+target_compile_options(harmonicFieldComputation PRIVATE -Wextra -pedantic)
