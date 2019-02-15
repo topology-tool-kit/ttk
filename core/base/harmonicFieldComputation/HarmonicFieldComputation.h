@@ -100,22 +100,24 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
   std::vector<TripletType> triplets;
 #define USE_SYMMETRIC_LAPLACIAN
 #ifdef USE_SYMMETRIC_LAPLACIAN
-  for (size_t i = 0; i < vertexNumber_; i++) {
+  for (size_t i = 0; i < vertexNumber_; ++i) {
+    // TODO are mesh vertices ID in [|0; vertexNumber_ - 1|]?
     size_t nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
     triplets.emplace_back(TripletType(i, i, double(nneigh)));
     // rest: neighbors mapping
-    for (size_t j = 0; j < nneigh; j++) {
+    for (size_t j = 0; j < nneigh; ++j) {
       SimplexId neighid = -1;
       triangulation_->getVertexNeighbor(i, j, neighid);
       triplets.emplace_back(TripletType(i, neighid, -1.0));
     }
   }
 #else
-  for (size_t i = 0; i < vertexNumber_; i++) {
+  for (size_t i = 0; i < vertexNumber_; ++j) {
+    // TODO are mesh vertices ID in [|0; vertexNumber_ - 1|]?
     triplets.emplace_back(TripletType(i, i, 1.0));
     size_t nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
     // rest: neighbors mapping
-    for (size_t j = 0; j < nneigh; j++) {
+    for (size_t j = 0; j < nneigh; ++j) {
       SimplexId neighid = -1;
       triangulation_->getVertexNeighbor(i, j, neighid);
       triplets.emplace_back(TripletType(i, j, -1.0 / double(nneigh)));
@@ -149,7 +151,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   // get unique constraint vertices
   std::set<SimplexId> identifiersSet;
-  for (size_t i = 0; i < constraintNumber_; i++) {
+  for (size_t i = 0; i < constraintNumber_; ++i) {
     identifiersSet.insert(identifiers[i]);
   }
   // contains vertices with constraints
@@ -162,6 +164,7 @@ int ttk::HarmonicFieldComputation::execute() const {
   // constraints vector
   SpVec constraints(vertexNumber_);
   for (auto i : identifiersVec) {
+    // TODO are constraints values in outputScalarFieldPointer_?
     constraints.coeffRef(i) = sf[i];
   }
 
@@ -190,7 +193,8 @@ int ttk::HarmonicFieldComputation::execute() const {
     break;
   }
 
-  for (size_t i = 0; i < vertexNumber_; i++) {
+  for (size_t i = 0; i < vertexNumber_; ++i) {
+    // TODO avoid copy here
     sf[i] = sol.coeffRef(i, 0);
   }
 
