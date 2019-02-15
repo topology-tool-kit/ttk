@@ -140,9 +140,9 @@ int ttk::HarmonicFieldComputation::execute() const {
       static_cast<scalarFieldType *>(outputScalarFieldPointer_);
 
   Timer t;
+  stringstream msg;
 
   {
-    stringstream msg;
     msg << "[HarmonicFieldComputation] Beginnning computation" << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
@@ -194,14 +194,20 @@ int ttk::HarmonicFieldComputation::execute() const {
     sf[i] = sol.coeffRef(i, 0);
   }
 
-#endif // TTK_ENABLE_EIGEN
-
   {
-    stringstream msg;
     msg << "[HarmonicFieldComputation] Ending computation after"
         << t.getElapsedTime() << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
+
+#else
+  {
+    msg << "[HarmonicFieldComputation] Eigen support disabled, computation "
+           "skipped "
+        << endl;
+    dMsg(cout, msg.str(), advancedInfoMsg);
+  }
+#endif // TTK_ENABLE_EIGEN
 
   return 0;
 }
