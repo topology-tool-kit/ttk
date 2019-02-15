@@ -74,6 +74,9 @@ public:
 
   template <typename scalarFieldType> int execute() const;
 
+  template <typename SparseMatrixType, typename TripletsType>
+  SparseMatrixType compute_laplacian() const;
+
 protected:
   size_t vertexNumber_;
   size_t constraintNumber_;
@@ -89,6 +92,38 @@ protected:
 using SpMat = Eigen::SparseMatrix<double>;
 using Tri = Eigen::Triplet<double>;
 #endif // TTK_ENABLE_EIGEN
+
+template <typename SparseMatrixType, typename TripletType>
+SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
+  SparseMatrixType lap(vertexNumber_, vertexNumber_);
+  std::vector<TripletType> triplets;
+#define USE_SYMMETRIC_LAPLACIAN
+#ifdef USE_SYMMETRIC_LAPLACIAN
+  for (size_t i = 0; i < vertexNumber_; i++) {
+    size_t nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
+    triplets.emplace_back(TripletType(i, i, double(nneigh)));
+    // rest: neighbors mapping
+    for (size_t j = 0; j < nneigh; j++) {
+      SimplexId neighid = -1;
+      triangulation_->getVertexNeighbor(i, j, neighid);
+      triplets.emplace_back(TripletType(i, neighid, -1.0));
+    }
+  }
+#else
+  for (size_t i = 0; i < vertexNumber_; i++) {
+    triplets.emplace_back(TripletType(i, i, 1.0));
+    size_t nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
+    // rest: neighbors mapping
+    for (size_t j = 0; j < nneigh; j++) {
+      SimplexId neighid = -1;
+      triangulation_->getVertexNeighbor(i, j, neighid);
+      triplets.emplace_back(TripletType(i, j, -1.0 / double(nneigh)));
+    }
+  }
+#endif // USE_SYMMETRIC_LAPLACIAN
+  lap.setFromTriplets(triplets.begin(), triplets.end());
+  return lap;
+}
 
 // if the package is a pure template typename, uncomment the following line
 // #include                  <HarmonicFieldComputation.cpp>
