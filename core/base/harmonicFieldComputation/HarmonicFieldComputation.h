@@ -90,6 +90,7 @@ protected:
 
 #ifdef TTK_ENABLE_EIGEN
 using SpMat = Eigen::SparseMatrix<double>;
+using SpVec = Eigen::SparseVector<double>;
 using Tri = Eigen::Triplet<double>;
 #endif // TTK_ENABLE_EIGEN
 
@@ -134,7 +135,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   // scalar field constraints vertices
   SimplexId *identifiers = static_cast<SimplexId *>(inputScalarFieldPointer_);
-  // scalar field
+  // scalar field: 0 everywhere except on constraint vertices
   scalarFieldType *sf =
       static_cast<scalarFieldType *>(outputScalarFieldPointer_);
 
@@ -146,15 +147,54 @@ int ttk::HarmonicFieldComputation::execute() const {
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
-  std::fill(sf, sf + vertexNumber_,
-            std::numeric_limits<scalarFieldType>::max());
-
+  // get unique constraint vertices
   std::set<SimplexId> identifiersSet;
   for (size_t i = 0; i < constraintNumber_; i++) {
     identifiersSet.insert(identifiers[i]);
   }
+  // contains vertices with constraints
   std::vector<SimplexId> identifiersVec(identifiersSet.begin(),
                                         identifiersSet.end());
+
+#ifdef TTK_ENABLE_EIGEN
+  SpMat lap = compute_laplacian<SpMat, Tri>();
+
+  // constraints vector
+  SpVec constraints(vertexNumber_);
+  for (auto i : identifiersVec) {
+    constraints.coeffRef(i) = sf[i];
+  }
+
+  // penalty matrix
+  SpMat penalty(vertexNumber_, vertexNumber_);
+  double alpha = 10.0e8;
+  for (auto i : identifiersVec) {
+    penalty.insert(i, i) = alpha;
+  }
+
+  Eigen::SimplicialCholesky<SpMat> solver(lap - penalty);
+  SpMat sol = solver.solve(penalty * constraints);
+
+  switch (solver.info()) {
+  case Eigen::ComputationInfo::Success:
+    cout << "Success!" << endl;
+    break;
+  case Eigen::ComputationInfo::NumericalIssue:
+    cout << "Numerical Issue!" << endl;
+    break;
+  case Eigen::ComputationInfo::NoConvergence:
+    cout << "No Convergence!" << endl;
+    break;
+  case Eigen::ComputationInfo::InvalidInput:
+    cout << "Invalid Input!" << endl;
+    break;
+  }
+
+  for (size_t i = 0; i < vertexNumber_; i++) {
+    sf[i] = sol.coeffRef(i, 0);
+  }
+
+#endif // TTK_ENABLE_EIGEN
 
   {
     stringstream msg;
