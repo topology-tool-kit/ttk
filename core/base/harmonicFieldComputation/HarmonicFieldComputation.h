@@ -22,7 +22,6 @@
 #include <type_traits>
 
 #ifdef TTK_ENABLE_EIGEN
-#include <Eigen/IterativeLinearSolvers>
 #include <Eigen/Sparse>
 #endif // TTK_ENABLE_EIGEN
 
@@ -85,6 +84,11 @@ protected:
   void *vertexIdentifierScalarFieldPointer_;
 };
 } // namespace ttk
+
+#ifdef TTK_ENABLE_EIGEN
+using SpMat = Eigen::SparseMatrix<double>;
+using Tri = Eigen::Triplet<double>;
+#endif // TTK_ENABLE_EIGEN
 
 // if the package is a pure template typename, uncomment the following line
 // #include                  <HarmonicFieldComputation.cpp>
