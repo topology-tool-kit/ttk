@@ -1,18 +1,39 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="sources">
         <SourceProxy name="GaussianPointCloud" class="ttkGaussianPointCloud" label="TTK GaussianPointCloud">
-            <Documentation long_help="TTK GaussianPointCloud" short_help="TTK GaussianPointCloud"></Documentation>
+            <Documentation long_help="TTK GaussianPointCloud" short_help="TTK 
+GaussianPointCloud">
+              This module generates a 1D, 2D or 3D point cloud by randomly 
+              casting samples from a Gaussian distribution.
+              </Documentation>
 
-            <IntVectorProperty name="Subdivisions" label="Subdivisions" command="SetSubdivisions" number_of_elements="1" default_values="0">
-                <Documentation>Number of subdevisions.</Documentation>
+            <IntVectorProperty name="NumberOfSamples"
+              label="Number of Samples"
+              command="SetNumberOfSamples"
+              number_of_elements="1"
+              default_values="1000"
+              >
+              <IntRangeDomain name="range" min="1" max="1000000" />
+              <Documentation>
+                Number of samples to cast.
+              </Documentation>
             </IntVectorProperty>
-            <DoubleVectorProperty name="Radius" label="Radius" command="SetRadius" number_of_elements="1" default_values="0.5">
-                <Documentation>Radius</Documentation>
-            </DoubleVectorProperty>
-            <DoubleVectorProperty name="Center" label="Center" command="SetCenter" number_of_elements="3" default_values="0 0 0">
-                <Documentation>Center</Documentation>
-            </DoubleVectorProperty>
+            
+            <IntVectorProperty name="Dimension"
+              label="Dimension"
+              command="SetDimension"
+              number_of_elements="1"
+              default_values="2"
+              >
+              <EnumerationDomain name="Enum">
+                <Entry value="1" text="1"/>
+                <Entry value="2" text="2"/>
+                <Entry value="3" text="3"/>
+              </EnumerationDomain>
+              <Documentation>
+                Dimension of the point cloud.
+              </Documentation>
+            </IntVectorProperty>
 
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
                 <BooleanDomain name="bool" />
@@ -31,9 +52,8 @@
             </IntVectorProperty>
 
             <PropertyGroup panel_widget="Line" label="Output Options">
-                <Property name="Subdivisions" />
-                <Property name="Radius" />
-                <Property name="Center" />
+                <Property name="NumberOfSamples" />
+                <Property name="Dimension" />
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Testing">
                 <Property name="UseAllCores" />
@@ -42,7 +62,6 @@
             </PropertyGroup>
 
             <Hints>
-                <RepresentationType view="RenderView" type="Wireframe" />
                 <ShowInMenu category="TTK" />
             </Hints>
         </SourceProxy>
