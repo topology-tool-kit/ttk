@@ -28,7 +28,7 @@ namespace ttk{
       template <class dataType>
         int castSample(const int &dimension,
           dataType &x, dataType &y, dataType &z) const;
-      
+
       // Execute the sampling
       template <class dataType>
         int generate(const int &dimension, const int &numberOfSamples,
@@ -39,23 +39,23 @@ namespace ttk{
 template <class dataType>
   int ttk::GaussianPointCloud::castSample(const int &dimension,
     dataType &x, dataType &y, dataType &z) const{
-  
+
   std::random_device rd{};
   std::mt19937 gen{rd()};
 
   dataType u, v, w;
-  
+
   uniform_real_distribution<dataType> uniformDistribution(-1, 1);
   u = uniformDistribution(gen);
   v = (dimension >= 2 ? uniformDistribution(gen) : 0);
   w = (dimension == 3 ? uniformDistribution(gen) : 0);
-  
+
   dataType norm = sqrt(u*u + v*v + w*w);
-  
+
   normal_distribution<dataType> normalDistribution{0,1};
-  
+
   dataType gaussianScale = normalDistribution(gen);
-  
+
   x = (u/norm)*gaussianScale;
   y = (v/norm)*gaussianScale;
   z = (w/norm)*gaussianScale;
@@ -67,18 +67,18 @@ template <class dataType>
   int ttk::GaussianPointCloud::generate(const int &dimension,
     const int &numberOfSamples, 
     void *outputData) const{
-      
+
   Timer t;
- 
+
   dataType *data = (dataType *) outputData;
-  
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < numberOfSamples; i++){
     castSample<dataType>(dimension, data[3*i], data[3*i + 1], data[3*i + 2]);
   }
-  
+
   {
     stringstream msg;
     msg << "[GaussianPointCloud] " << numberOfSamples 
@@ -87,6 +87,6 @@ template <class dataType>
       << std::endl;
     dMsg(std::cout, msg.str(), timeMsg);
   }
-  
+
   return 0;
 }

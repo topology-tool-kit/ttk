@@ -18,7 +18,7 @@ GaussianPointCloud">
                 Number of samples to cast.
               </Documentation>
             </IntVectorProperty>
-            
+
             <IntVectorProperty name="Dimension"
               label="Dimension"
               command="SetDimension"

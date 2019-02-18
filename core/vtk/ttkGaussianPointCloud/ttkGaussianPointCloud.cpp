@@ -1,7 +1,5 @@
 #include <ttkGaussianPointCloud.h>
 
-#include <vtkSmartPointer.h>
-
 using namespace std;
 using namespace ttk;
 
@@ -11,7 +9,7 @@ int ttkGaussianPointCloud::RequestData(
     vtkInformation *request,
     vtkInformationVector **inputVector,
     vtkInformationVector *outputVector){
-  
+
   Memory m;
 
   // Print status
@@ -29,16 +27,16 @@ int ttkGaussianPointCloud::RequestData(
 
   auto points = vtkSmartPointer<vtkPoints>::New();
   points->SetNumberOfPoints(NumberOfSamples);
-  
+
   // Set Wrapper
   gaussianPointCloud_.setWrapper(this);
-  
+
   if(points->GetDataType() == VTK_FLOAT){
     gaussianPointCloud_.generate<float>(
       Dimension, NumberOfSamples, 
       points->GetVoidPointer(0));
   }
-  
+
   if(points->GetDataType() == VTK_DOUBLE){
     gaussianPointCloud_.generate<double>(
       Dimension, NumberOfSamples, 
@@ -46,7 +44,6 @@ int ttkGaussianPointCloud::RequestData(
   }
 
   domain->SetPoints(points);
-
 
   // Print status
   {

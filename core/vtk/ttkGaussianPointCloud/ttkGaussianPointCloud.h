@@ -35,7 +35,7 @@ class ttkGaussianPointCloud
 
     vtkSetMacro(Dimension, int);
     vtkGetMacro(Dimension, int);
-    
+
     vtkSetMacro(NumberOfSamples, int);
     vtkGetMacro(NumberOfSamples, int);
 
@@ -56,17 +56,13 @@ class ttkGaussianPointCloud
     }
     // end of default ttk setters
 
-//     int FillInputPortInformation(int port, vtkInformation* info) override {
-//       return 0;
-//     }
-
     int FillOutputPortInformation(int port, vtkInformation* info) override {
-        
+
       if(!port){
         info->Set(
           vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); 
       }
-      
+
       return 1;
     }
 
@@ -78,11 +74,11 @@ class ttkGaussianPointCloud
       NumberOfSamples = 1000;
 
       UseAllCores = true;
-      
+
       SetNumberOfInputPorts(0);
       SetNumberOfOutputPorts(1);
     }
-    
+
     ~ttkGaussianPointCloud(){};
 
     bool UseAllCores;
@@ -93,7 +89,7 @@ class ttkGaussianPointCloud
       vtkInformationVector *outputVector) override;
 
   private:
-        
+
     int Dimension;
     int NumberOfSamples;
     ttk::GaussianPointCloud gaussianPointCloud_;
