@@ -15,87 +15,6 @@ ttk::GaussianPointCloud::~GaussianPointCloud(){}
 
 using namespace std;
 
-Vertex normalizeVertex(Vertex& a){
-    Vertex result;
-
-    float length = sqrt( get<0>(a)*get<0>(a) + get<1>(a)*get<1>(a) + get<2>(a)*get<2>(a) );
-
-    get<0>(result) = get<0>(a)/length;
-    get<1>(result) = get<1>(a)/length;
-    get<2>(result) = get<2>(a)/length;
-
-    return result;
-}
-
-Vertex addVertices(Vertex& a, Vertex& b){
-    Vertex result;
-
-    get<0>(result) = get<0>(a)+get<0>(b);
-    get<1>(result) = get<1>(a)+get<1>(b);
-    get<2>(result) = get<2>(a)+get<2>(b);
-
-    return result;
-}
-
-IndexType vertex_for_edge(EdgeVertexMap& edgeVertexMap, VertexList& vertices, IndexType first, IndexType second){
-    EdgeVertexMap::key_type key(first, second);
-    if( key.first > key.second )
-        swap(key.first, key.second);
-
-    auto inserted = edgeVertexMap.insert({key, vertices.size()});
-    if(inserted.second){
-        auto& edge0 = vertices[first];
-        auto& edge1 = vertices[second];
-        auto temp = addVertices(
-            edge0,
-            edge1
-        );
-        auto vertex = normalizeVertex( temp );
-        vertices.push_back(vertex);
-    }
-
-    return inserted.first->second;
-}
-
-TriangleList subdivide(VertexList& vertices, TriangleList& triangles) {
-    EdgeVertexMap edgeVertexMap;
-    TriangleList results;
-
-    size_t maxIndex = triangles.size();
-
-    for(size_t i=0; i<maxIndex; i++) {
-        Triangle& each = triangles[i];
-
-        IndexType mid[3];
-
-        mid[0] = vertex_for_edge(
-            edgeVertexMap,
-            vertices,
-            get<0>(each),
-            get<1>(each)
-        );
-        mid[1] = vertex_for_edge(
-            edgeVertexMap,
-            vertices,
-            get<1>(each),
-            get<2>(each)
-        );
-        mid[2] = vertex_for_edge(
-            edgeVertexMap,
-            vertices,
-            get<2>(each),
-            get<0>(each)
-        );
-
-        results.push_back( make_tuple(get<0>(each), mid[0], mid[2]) );
-        results.push_back( make_tuple(get<1>(each), mid[1], mid[0]) );
-        results.push_back( make_tuple(get<2>(each), mid[2], mid[1]) );
-        results.push_back( make_tuple(      mid[0], mid[1], mid[2]) );
-    }
-    return results;
-}
-
-
 int ttk::GaussianPointCloud::generate(
     // Input
     size_t subdivisions,
@@ -126,8 +45,8 @@ int ttk::GaussianPointCloud::generate(
         make_tuple(6,1,10),make_tuple(9,0,11),make_tuple(9,11,2),make_tuple(9,2,5),make_tuple(7,2,11)
     };
 
-    for(size_t i=0; i<subdivisions; i++)
-        triangles = subdivide(vertices, triangles);
+//     for(size_t i=0; i<subdivisions; i++)
+//         triangles = subdivide(vertices, triangles);
 
     size_t n = vertices.size();
     for(size_t i=0; i<n; i++){
