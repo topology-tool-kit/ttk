@@ -111,8 +111,6 @@ template <class dataType> int ttk::ScalarFieldSmoother::smooth(
 
   for(int it = 0; it < numberOfIterations; it++){
 #ifdef TTK_ENABLE_OPENMP
-    omp_lock_t writeLock;
-    omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
     for(SimplexId i = 0; i < vertexNumber; i++){
@@ -139,18 +137,17 @@ template <class dataType> int ttk::ScalarFieldSmoother::smooth(
 
         if(debugLevel_ > advancedInfoMsg){
 #ifdef TTK_ENABLE_OPENMP
-          omp_set_lock(&writeLock);
+#pragma omp critical
 #endif
-          // update the progress bar of the wrapping code
-          if((wrapper_)
-            &&(!(count % ((numberOfIterations*vertexNumber)/10)))){
-            wrapper_->updateProgress((count + 1.0)
-              /(numberOfIterations*vertexNumber));
+          {
+            // update the progress bar of the wrapping code
+            if ((wrapper_) &&
+                (!(count % ((numberOfIterations * vertexNumber) / 10)))) {
+              wrapper_->updateProgress((count + 1.0) /
+                                       (numberOfIterations * vertexNumber));
+            }
+            count++;
           }
-          count++;
-#ifdef TTK_ENABLE_OPENMP
-          omp_unset_lock(&writeLock);
-#endif
         }
       }
     }
@@ -168,9 +165,6 @@ template <class dataType> int ttk::ScalarFieldSmoother::smooth(
       }
     }
     
-#ifdef TTK_ENABLE_OPENMP
-    omp_destroy_lock(&writeLock);
-#endif
   }
   
   {

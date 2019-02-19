@@ -71,8 +71,6 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
 //   }
   
 #ifdef TTK_ENABLE_OPENMP
-  omp_lock_t writeLock;
-  omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
   for(SimplexId i = 0; i < vertexNumber; i++){
@@ -84,18 +82,15 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg){
 #ifdef TTK_ENABLE_OPENMP
-        omp_set_lock(&writeLock);
+#pragma omp critical
 #endif
-        if((wrapper_)
-          &&(!(count % ((vertexNumber)/10)))){
-          wrapper_->updateProgress((count + 1.0)
-            /(2*vertexNumber));
-        }
+        {
+          if ((wrapper_) && (!(count % ((vertexNumber) / 10)))) {
+            wrapper_->updateProgress((count + 1.0) / (2 * vertexNumber));
+          }
 
-        count++;
-#ifdef TTK_ENABLE_OPENMP
-        omp_unset_lock(&writeLock);
-#endif
+          count++;
+        }
       }
     }
   } 
@@ -112,26 +107,19 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output){
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg){
 #ifdef TTK_ENABLE_OPENMP
-        omp_set_lock(&writeLock);
+#pragma omp critical
 #endif
-        if((wrapper_)
-          &&(!(count % ((cellNumber)/10)))){
-          wrapper_->updateProgress(1 + (count + 1.0) 
-            /(2*cellNumber));
-        }
+        {
+          if ((wrapper_) && (!(count % ((cellNumber) / 10)))) {
+            wrapper_->updateProgress(1 + (count + 1.0) / (2 * cellNumber));
+          }
 
-        count++;
-#ifdef TTK_ENABLE_OPENMP
-        omp_unset_lock(&writeLock);
-#endif
+          count++;
+        }
       }
     }
   }
   
-#ifdef TTK_ENABLE_OPENMP
-  omp_destroy_lock(&writeLock);
-#endif
- 
   output->GetPointData()->AddArray(vertexIdentifiers);
   output->GetCellData()->AddArray(cellIdentifiers);
   
