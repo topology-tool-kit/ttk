@@ -13,12 +13,8 @@ vtkStandardNewMacro(ttkHarmonicFieldComputation)
 
   ScalarFieldId = 0;
   OffsetFieldId = -1;
-  ForceInputOffsetScalarField = false;
-  AddPerturbation = false;
   OutputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
-  ForceInputVertexScalarField = false;
   InputVertexScalarFieldName = ttk::VertexScalarFieldName;
-  ConsiderIdentifierAsBlackList = false;
   InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
 
   UseAllCores = true;
@@ -117,7 +113,7 @@ int ttkHarmonicFieldComputation::getScalars(vtkDataSet *input) {
 }
 
 int ttkHarmonicFieldComputation::getIdentifiers(vtkPointSet *input) {
-  if (ForceInputVertexScalarField and InputVertexScalarFieldName.length())
+  if (InputVertexScalarFieldName.length())
     identifiers_ =
         input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
   else if (input->GetPointData()->GetArray(ttk::VertexScalarFieldName))
@@ -136,7 +132,7 @@ int ttkHarmonicFieldComputation::getIdentifiers(vtkPointSet *input) {
 }
 
 int ttkHarmonicFieldComputation::getOffsets(vtkDataSet *input) {
-  if (ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
+  if (InputOffsetScalarFieldName.length()) {
     inputOffsets_ =
         input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
   } else if (OffsetFieldId != -1 and

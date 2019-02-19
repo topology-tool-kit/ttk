@@ -83,23 +83,11 @@ public:
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
-
-  vtkSetMacro(ConsiderIdentifierAsBlackList, int);
-  vtkGetMacro(ConsiderIdentifierAsBlackList, int);
-
-  vtkSetMacro(AddPerturbation, int);
-  vtkGetMacro(AddPerturbation, int);
-
   vtkSetMacro(InputOffsetScalarFieldName, std::string);
   vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
   vtkSetMacro(OutputOffsetScalarFieldName, std::string);
   vtkGetMacro(OutputOffsetScalarFieldName, std::string);
-
-  vtkSetMacro(ForceInputVertexScalarField, int);
-  vtkGetMacro(ForceInputVertexScalarField, int);
 
   vtkSetMacro(InputVertexScalarFieldName, std::string);
   vtkGetMacro(InputVertexScalarFieldName, std::string);
@@ -116,7 +104,7 @@ protected:
 
   TTK_SETUP();
 
-  int FillInputPortInformation(int port, vtkInformation *info);
+  int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
   int ScalarFieldId;
@@ -124,11 +112,7 @@ private:
   std::string ScalarField;
   std::string InputOffsetScalarFieldName;
   std::string OutputOffsetScalarFieldName;
-  bool ForceInputVertexScalarField;
   std::string InputVertexScalarFieldName;
-  bool ForceInputOffsetScalarField;
-  bool ConsiderIdentifierAsBlackList;
-  bool AddPerturbation;
   bool hasUpdatedMesh_;
 
   ttk::HarmonicFieldComputation harmonicFieldComputation_;
