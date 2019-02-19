@@ -97,10 +97,21 @@ public:
   int getIdentifiers(vtkPointSet *input);
   int getOffsets(vtkDataSet *input);
 
+  // default copy constructor
+  ttkHarmonicFieldComputation(const ttkHarmonicFieldComputation &) = delete;
+  // default move constructor
+  ttkHarmonicFieldComputation(ttkHarmonicFieldComputation &&) = delete;
+  // default copy assignment operator
+  ttkHarmonicFieldComputation &
+  operator=(const ttkHarmonicFieldComputation &) = delete;
+  // default move assignment operator
+  ttkHarmonicFieldComputation &
+  operator=(ttkHarmonicFieldComputation &&) = delete;
+
 protected:
   ttkHarmonicFieldComputation();
 
-  ~ttkHarmonicFieldComputation();
+  ~ttkHarmonicFieldComputation() override;
 
   TTK_SETUP();
 
