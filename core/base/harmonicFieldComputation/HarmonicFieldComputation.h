@@ -1,7 +1,7 @@
-/// ingroup base
+/// \ingroup base
 /// \class ttk::HarmonicFieldComputation
-/// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
+/// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date February 2019
 ///
 /// \brief TTK processing package for the topological simplification of scalar
@@ -25,11 +25,6 @@
 #include <Eigen/Sparse>
 #endif // TTK_ENABLE_EIGEN
 
-using std::cout;
-using std::endl;
-using std::size_t;
-using std::stringstream;
-
 namespace ttk {
 
 class HarmonicFieldComputation : public Debug {
@@ -37,7 +32,17 @@ class HarmonicFieldComputation : public Debug {
 public:
   HarmonicFieldComputation();
 
-  ~HarmonicFieldComputation();
+  // default destructor
+  ~HarmonicFieldComputation() override = default;
+  // default copy constructor
+  HarmonicFieldComputation(const HarmonicFieldComputation &) = default;
+  // default move constructor
+  HarmonicFieldComputation(HarmonicFieldComputation &&) = default;
+  // default copy assignment operator
+  HarmonicFieldComputation &
+  operator=(const HarmonicFieldComputation &) = default;
+  // default move assignment operator
+  HarmonicFieldComputation &operator=(HarmonicFieldComputation &&) = default;
 
   inline int setVertexNumber(SimplexId vertexNumber) {
     vertexNumber_ = vertexNumber;
@@ -53,7 +58,7 @@ public:
   }
   inline int setupTriangulation(Triangulation *triangulation) {
     triangulation_ = triangulation;
-    if (triangulation_) {
+    if (triangulation_ != nullptr) {
       vertexNumber_ = triangulation_->getNumberOfVertices();
       triangulation_->preprocessVertexNeighbors();
     }
@@ -135,11 +140,15 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 template <typename scalarFieldType>
 int ttk::HarmonicFieldComputation::execute() const {
 
+  using std::cout;
+  using std::endl;
+  using std::size_t;
+  using std::stringstream;
+
   // scalar field constraints vertices
-  SimplexId *identifiers = static_cast<SimplexId *>(inputScalarFieldPointer_);
+  auto *identifiers = static_cast<SimplexId *>(inputScalarFieldPointer_);
   // scalar field: 0 everywhere except on constraint vertices
-  scalarFieldType *sf =
-      static_cast<scalarFieldType *>(outputScalarFieldPointer_);
+  auto *sf = static_cast<scalarFieldType *>(outputScalarFieldPointer_);
 
   Timer t;
   stringstream msg;
