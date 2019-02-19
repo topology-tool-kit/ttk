@@ -12,5 +12,3 @@ target_link_libraries(ttkPointMergerGui ${VTK_LIBRARIES}
 	ttkPointMerger ttkProgramBase ttkUserInterfaceBase)
 
 install(TARGETS ttkPointMergerGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
-install(DIRECTORY textures DESTINATION ${TTK_INSTALL_BINARY_DIR})
-

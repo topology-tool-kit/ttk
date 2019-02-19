@@ -12,5 +12,3 @@ target_link_libraries(ttkManifoldCheckGui ${VTK_LIBRARIES}
 	ttkManifoldCheck ttkProgramBase ttkUserInterfaceBase)
 
 install(TARGETS ttkManifoldCheckGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
-install(DIRECTORY textures DESTINATION ${TTK_INSTALL_BINARY_DIR})
-
