@@ -109,7 +109,7 @@ int DimensionReduction::execute() const{
    string modulePath;
 
   if(PyArray_API==NULL){
-    import_array();
+    import_array1(-1);
   }
 
   // convert the input matrix into a NumPy array.
