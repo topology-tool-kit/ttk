@@ -21,3 +21,5 @@ foreach(STANDALONE ${STANDALONE_DIRS})
 		add_subdirectory(${STANDALONE})
 	endif()
 endforeach()
+
+install(DIRECTORY textures DESTINATION ${TTK_INSTALL_BINARY_DIR})

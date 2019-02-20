@@ -12,5 +12,3 @@ target_link_libraries(ttkBlankGui ${VTK_LIBRARIES}
 	ttkBlank ttkProgramBase ttkUserInterfaceBase)
 
 install(TARGETS ttkBlankGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
-install(DIRECTORY textures DESTINATION ${TTK_INSTALL_BINARY_DIR})
-
