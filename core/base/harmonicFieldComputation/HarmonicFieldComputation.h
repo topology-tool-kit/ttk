@@ -106,7 +106,6 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 #define USE_SYMMETRIC_LAPLACIAN
 #ifdef USE_SYMMETRIC_LAPLACIAN
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
-    // TODO are mesh vertices ID in [|0; vertexNumber_ - 1|]?
     SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
     triplets.emplace_back(TripletType(i, i, double(nneigh)));
     // rest: neighbors mapping
@@ -118,7 +117,6 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
   }
 #else
   for (SimplexId i = 0; i < vertexNumber_; ++j) {
-    // TODO are mesh vertices ID in [|0; vertexNumber_ - 1|]?
     triplets.emplace_back(TripletType(i, i, 1.0));
     SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
     // rest: neighbors mapping
