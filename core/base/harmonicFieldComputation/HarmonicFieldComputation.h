@@ -82,6 +82,9 @@ public:
   template <typename SparseMatrixType, typename TripletsType>
   SparseMatrixType compute_laplacian() const;
 
+  template <typename SparseMatrixType, typename TripletsType>
+  SparseMatrixType compute_laplacian_with_cotan_weights() const;
+
 protected:
   SimplexId vertexNumber_;
   SimplexId constraintNumber_;
@@ -128,6 +131,14 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
   }
 #endif // USE_SYMMETRIC_LAPLACIAN
   lap.setFromTriplets(triplets.begin(), triplets.end());
+  return lap;
+}
+
+template <typename SparseMatrixType, typename TripletType>
+SparseMatrixType
+ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
+  SparseMatrixType lap(vertexNumber_, vertexNumber_);
+  // TODO
   return lap;
 }
 
