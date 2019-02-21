@@ -56,6 +56,8 @@
 
 #include <ttkTriangulation.h>
 
+enum HarmonicFieldType { Float = 0, Double };
+
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkHarmonicFieldComputation
 #else
@@ -83,14 +85,14 @@ public:
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
 
-  vtkSetMacro(InputOffsetScalarFieldName, std::string);
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
-
-  vtkSetMacro(OutputOffsetScalarFieldName, std::string);
-  vtkGetMacro(OutputOffsetScalarFieldName, std::string);
-
   vtkSetMacro(InputVertexScalarFieldName, std::string);
   vtkGetMacro(InputVertexScalarFieldName, std::string);
+
+  vtkSetMacro(OutputVertexScalarFieldName, std::string);
+  vtkGetMacro(OutputVertexScalarFieldName, std::string);
+
+  vtkSetMacro(OutputVertexScalarFieldType, int);
+  vtkGetMacro(OutputVertexScalarFieldType, int);
 
   int getTriangulation(vtkDataSet *input);
   int getScalars(vtkDataSet *input);
@@ -111,25 +113,20 @@ public:
 protected:
   ttkHarmonicFieldComputation();
 
-  ~ttkHarmonicFieldComputation() override;
+  ~ttkHarmonicFieldComputation() override = default;
 
   TTK_SETUP();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
-  int ScalarFieldId;
-  int OffsetFieldId;
   std::string ScalarField;
-  std::string InputOffsetScalarFieldName;
-  std::string OutputOffsetScalarFieldName;
   std::string InputVertexScalarFieldName;
-  bool hasUpdatedMesh_;
+  std::string OutputVertexScalarFieldName;
+  int OutputVertexScalarFieldType;
 
-  ttk::HarmonicFieldComputation harmonicFieldComputation_;
+  ttk::HarmonicFieldComputation harmonicField_;
   ttk::Triangulation *triangulation_;
   vtkDataArray *identifiers_;
-  vtkDataArray *inputScalars_;
-  vtkDataArray *offsets_;
-  vtkDataArray *inputOffsets_;
+  vtkDataArray *constraints_;
 };
