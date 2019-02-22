@@ -94,8 +94,12 @@ public:
   vtkSetMacro(OutputScalarFieldType, int);
   vtkGetMacro(OutputScalarFieldType, int);
 
+  // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
+  // get array of identifiers on the mesh
   int getIdentifiers(vtkPointSet *input);
+  // get constraint values on identifiers
+  int getConstraints(vtkDataSet *input);
 
   // default copy constructor
   ttkHarmonicFieldComputation(const ttkHarmonicFieldComputation &) = delete;
@@ -121,9 +125,15 @@ private:
   std::string ScalarField;
   std::string InputScalarFieldName;
   std::string OutputScalarFieldName;
-  int OutputScalarFieldType;
 
+  // enum: float or double
+  int OutputScalarFieldType;
+  // worker object
   ttk::HarmonicFieldComputation harmonicField_;
+  // teh mesh
   ttk::Triangulation *triangulation_;
+  // points on the mesh where constraints_ are set
   vtkDataArray *identifiers_;
+  // scalar field constraint values on identifiers_
+  vtkDataArray *constraints_;
 };

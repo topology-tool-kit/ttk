@@ -96,14 +96,25 @@ public:
   SparseMatrixType compute_laplacian_with_cotan_weights() const;
 
 protected:
+  // number of vertices in the mesh
   SimplexId vertexNumber_;
+  // number of constraints
   SimplexId constraintNumber_;
+  // cotan weights vs simple laplacian resolution
   bool useCotanMethod_;
+  // the mesh
   Triangulation *triangulation_;
+  // array of mesh points with scalar constraints
+  // should be of constraintNumber_ size
   void *sources_;
+  // array of scalar constraints on sources_
+  // should be of constraintNumber_ size
   void *constraints_;
+  // output of harmonic field computation
   void *outputScalarFieldPointer_;
+  // ??
   void *outputIdentifiers_;
+  // ??
   void *outputSegmentation_;
 };
 } // namespace ttk
