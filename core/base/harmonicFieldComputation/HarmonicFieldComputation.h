@@ -161,8 +161,82 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 template <typename SparseMatrixType, typename TripletType>
 SparseMatrixType
 ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
+  std::stringstream msg;
+  using std::cout;
+  using std::endl;
+
+  msg << "[HarmonicFieldComputation] Beginning graph laplacian computation"
+      << endl;
+  dMsg(cout, msg.str(), advancedInfoMsg);
+
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
-  // TODO
+  std::vector<TripletType> triplets;
+
+  // symmetric laplacian version
+  for (SimplexId i = 0; i < vertexNumber_; ++i) {
+    SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
+    triplets.emplace_back(TripletType(i, i, double(nneigh)));
+  }
+  lap.setFromTriplets(triplets.begin(), triplets.end());
+
+  // rest: cotan weights
+  for (SimplexId i = 0; i < vertexNumber_; ++i) {
+    SimplexId nedges = triangulation_->getVertexEdgeNumber(i);
+    for (SimplexId j = 0; j < nedges; ++j) {
+      SimplexId edge;
+      triangulation_->getVertexEdge(i, j, edge);
+      SimplexId neigh;
+      // get the neighbor corresponding to the current edge
+      for (SimplexId k = 0; k < 2; k++) {
+        triangulation_->getEdgeVertex(edge, k, neigh);
+        if (neigh != i) {
+          break;
+        }
+      }
+
+      // skip computation if already done
+      if (lap.coeffReff(i, neigh) != 0) {
+        break;
+      }
+
+      SimplexId ntriangles = triangulation_->getEdgeTriangleNumber(edge);
+      std::vector<double> cotans(ntriangles);
+      for (SimplexId k = 0; k < ntriangles; k++) {
+        SimplexId triangle;
+        triangulation_->getEdgeTriangle(edge, k, triangle);
+        SimplexId thirdNeigh;
+        // assume a triangle has only 3 vertices
+        // TODO 3D case
+        for (SimplexId l = 0; l < 3; l++) {
+          triangulation_->getTriangleEdge(triangle, l, thirdNeigh);
+          if (thirdNeigh != i && thirdNeigh != neigh) {
+            break;
+          }
+        }
+        float coordsf[9];
+        triangulation_->getVertexPoint(i, coordsf[0], coordsf[1], coordsf[2]);
+        triangulation_->getVertexPoint(neigh, coordsf[3], coordsf[4],
+                                       coordsf[5]);
+        triangulation_->getVertexPoint(thirdNeigh, coordsf[6], coordsf[7],
+                                       coordsf[8]);
+        double coords[9];
+        for (SimplexId k = 0; k < 9; k++) {
+          coords[k] = double(coordsf[k]);
+        }
+        double angle = ttk::Geometry::angle(&coords[6],  // thirdNeigh
+                                            &coords[0],  // i
+                                            &coords[6],  // thirdNeigh
+                                            &coords[3]); // neigh
+        cotans.emplace_back(std::tan(1.0 / angle));
+      }
+
+      // fill laplacian matrix also for neighbor
+      lap.coeffRef(i, neigh) = .5 * (cotans[0] + cotans[1]);
+      lap.coeffRef(neigh, i) = .5 * (cotans[0] + cotans[1]);
+    }
+  }
+  msg << "[HarmonicFieldComputation] Graph laplacian computed" << endl;
+  dMsg(cout, msg.str(), advancedInfoMsg);
   return lap;
 }
 
