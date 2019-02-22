@@ -2,7 +2,7 @@
 
 ttk::HarmonicFieldComputation::HarmonicFieldComputation()
     : vertexNumber_{}, constraintNumber_{}, useCotanMethod_{false},
-      triangulation_{}, inputScalarFieldPointer_{}, outputScalarFieldPointer_{},
+      triangulation_{}, constraints_{}, outputScalarFieldPointer_{},
       vertexIdentifierScalarFieldPointer_{} {
 #if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_OPENMP)
   Eigen::setNbThreads(threadNumber_);

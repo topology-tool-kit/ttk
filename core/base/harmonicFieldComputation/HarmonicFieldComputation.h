@@ -64,8 +64,8 @@ public:
     }
     return 0;
   }
-  inline int setInputScalarFieldPointer(void *data) {
-    inputScalarFieldPointer_ = data;
+  inline int setConstraints(void *data) {
+    constraints_ = data;
     return 0;
   }
   inline int setVertexIdentifierScalarFieldPointer(void *data) {
@@ -100,7 +100,7 @@ protected:
   SimplexId constraintNumber_;
   bool useCotanMethod_;
   Triangulation *triangulation_;
-  void *inputScalarFieldPointer_;
+  void *constraints_;
   void *outputScalarFieldPointer_;
   void *vertexIdentifierScalarFieldPointer_;
   void *outputIdentifiers_;
@@ -166,7 +166,7 @@ int ttk::HarmonicFieldComputation::execute() const {
   using std::stringstream;
 
   // scalar field constraints vertices
-  auto *identifiers = static_cast<SimplexId *>(inputScalarFieldPointer_);
+  auto *identifiers = static_cast<SimplexId *>(constraints_);
   // scalar field: 0 everywhere except on constraint vertices
   auto *sf = static_cast<scalarFieldType *>(outputScalarFieldPointer_);
 
