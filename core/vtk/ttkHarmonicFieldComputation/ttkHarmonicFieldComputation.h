@@ -85,19 +85,17 @@ public:
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
 
-  vtkSetMacro(InputVertexScalarFieldName, std::string);
-  vtkGetMacro(InputVertexScalarFieldName, std::string);
+  vtkSetMacro(InputScalarFieldName, std::string);
+  vtkGetMacro(InputScalarFieldName, std::string);
 
-  vtkSetMacro(OutputVertexScalarFieldName, std::string);
-  vtkGetMacro(OutputVertexScalarFieldName, std::string);
+  vtkSetMacro(OutputScalarFieldName, std::string);
+  vtkGetMacro(OutputScalarFieldName, std::string);
 
-  vtkSetMacro(OutputVertexScalarFieldType, int);
-  vtkGetMacro(OutputVertexScalarFieldType, int);
+  vtkSetMacro(OutputScalarFieldType, int);
+  vtkGetMacro(OutputScalarFieldType, int);
 
   int getTriangulation(vtkDataSet *input);
-  int getScalars(vtkDataSet *input);
   int getIdentifiers(vtkPointSet *input);
-  int getOffsets(vtkDataSet *input);
 
   // default copy constructor
   ttkHarmonicFieldComputation(const ttkHarmonicFieldComputation &) = delete;
@@ -121,12 +119,11 @@ protected:
 
 private:
   std::string ScalarField;
-  std::string InputVertexScalarFieldName;
-  std::string OutputVertexScalarFieldName;
-  int OutputVertexScalarFieldType;
+  std::string InputScalarFieldName;
+  std::string OutputScalarFieldName;
+  int OutputScalarFieldType;
 
   ttk::HarmonicFieldComputation harmonicField_;
   ttk::Triangulation *triangulation_;
   vtkDataArray *identifiers_;
-  vtkDataArray *constraints_;
 };

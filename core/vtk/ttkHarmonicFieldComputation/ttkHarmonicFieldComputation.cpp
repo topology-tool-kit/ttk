@@ -5,12 +5,12 @@ vtkStandardNewMacro(ttkHarmonicFieldComputation);
 ttkHarmonicFieldComputation::ttkHarmonicFieldComputation()
     : triangulation_{}, identifiers_{} {
 
-  SetNumberOfInputPorts(2); // TODO
+  SetNumberOfInputPorts(3);
 
-  InputVertexScalarFieldName =
+  InputScalarFieldName =
       std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
-  OutputVertexScalarFieldName = "OutputHarmonicField";
-  OutputVertexScalarFieldType = HarmonicFieldType::Float;
+  OutputScalarFieldName = "OutputHarmonicField";
+  OutputScalarFieldType = HarmonicFieldType::Float;
 
   ThreadNumber = threadNumber_;
   UseAllCores = true;
@@ -61,59 +61,11 @@ int ttkHarmonicFieldComputation::getTriangulation(vtkDataSet *input) {
   return 0;
 }
 
-int ttkHarmonicFieldComputation::getScalars(vtkDataSet *input) {
-#ifndef TTK_ENABLE_KAMIKAZE
-  if (input == nullptr) {
-    cerr << "[ttkHarmonicFieldComputation] Error: input pointer is NULL."
-         << endl;
-    return -1;
-  }
-
-  if (input->GetNumberOfPoints() == 0) {
-    cerr << "[ttkHarmonicFieldComputation] Error: input has no point." << endl;
-    return -1;
-  }
-#endif
-
-  vtkPointData *pointData = input->GetPointData();
-  vtkDataArray *inputScalars_;
-  int ScalarFieldId;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if (pointData == nullptr) {
-    cerr << "[ttkHarmonicFieldComputation] Error: input has no point data."
-         << endl;
-    return -1;
-  }
-#endif
-
-  if (ScalarField.length() != 0) {
-    inputScalars_ = pointData->GetArray(ScalarField.data());
-  } else {
-    inputScalars_ = pointData->GetArray(ScalarFieldId);
-    if (inputScalars_ != nullptr) {
-      ScalarField = inputScalars_->GetName();
-    }
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if (inputScalars_ == nullptr) {
-    cerr << "[ttkHarmonicFieldComputation] Error: input scalar field pointer "
-            "is null."
-         << endl;
-    return -3;
-  }
-#endif
-
-  return 0;
-}
-
 int ttkHarmonicFieldComputation::getIdentifiers(vtkPointSet *input) {
   auto vsfn = static_cast<const char *>(ttk::VertexScalarFieldName);
 
-  if (InputVertexScalarFieldName.length() != 0) {
-    identifiers_ =
-        input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
+  if (InputScalarFieldName.length() != 0) {
+    identifiers_ = input->GetPointData()->GetArray(InputScalarFieldName.data());
   } else if (input->GetPointData()->GetArray(vsfn) != nullptr) {
     identifiers_ = input->GetPointData()->GetArray(vsfn);
   }
@@ -214,15 +166,13 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
 
   harmonicField_.setVertexNumber(numberOfPointsInDomain);
   harmonicField_.setConstraintNumber(numberOfPointsInSources);
-
-  harmonicField_.setVertexIdentifierScalarFieldPointer(
-      identifiers_->GetVoidPointer(0));
+  harmonicField_.setConstraints(identifiers_->GetVoidPointer(0));
   harmonicField_.setOutputIdentifiers(origin->GetVoidPointer(0));
   harmonicField_.setOutputSegmentation(seg->GetVoidPointer(0));
 
   vtkDataArray *harmonicScalars{};
 
-  switch (OutputVertexScalarFieldType) {
+  switch (OutputScalarFieldType) {
   case HarmonicFieldType::Float:
     harmonicScalars = vtkFloatArray::New();
     break;
@@ -248,11 +198,11 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
 
   harmonicScalars->SetNumberOfComponents(1);
   harmonicScalars->SetNumberOfTuples(numberOfPointsInDomain);
-  harmonicScalars->SetName(OutputVertexScalarFieldName.data());
+  harmonicScalars->SetName(OutputScalarFieldName.data());
   harmonicField_.setOutputScalarFieldPointer(
       harmonicScalars->GetVoidPointer(0));
 
-  switch (OutputVertexScalarFieldType) {
+  switch (OutputScalarFieldType) {
   case HarmonicFieldType::Float:
     res |= harmonicField_.execute<float>();
     break;
