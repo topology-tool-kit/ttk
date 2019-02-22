@@ -82,6 +82,48 @@ int ttkHarmonicFieldComputation::getIdentifiers(vtkPointSet *input) {
   return 0;
 }
 
+int ttkHarmonicFieldComputation::getConstraints(vtkDataSet *input) {
+#ifndef TTK_ENABLE_KAMIKAZE
+  if (input == nullptr) {
+    cerr << "[ttkHarmonicFieldComputation] Error: NULL input pointer." << endl;
+    return -1;
+  }
+  if (input->GetNumberOfPoints() == 0) {
+    cerr << "[ttkHarmonicFieldComputation] Error: input has no points." << endl;
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  vtkPointData *data = input->GetPointData();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if (data == nullptr) {
+    cerr << "[ttkHarmonicFieldComputation] Error: input has no data points."
+         << endl;
+    return -2;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  if (ScalarField.length() != 0) {
+    constraints_ = data->GetArray(ScalarField.data());
+  } else {
+    constraints_ = data->GetArray(0);
+    if (constraints_)
+      ScalarField = constraints_->GetName();
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if (!constraints_) {
+    cerr << "[ttkHarmonicFieldComputation] Error: NULL input scalar field "
+            "pointer."
+         << endl;
+    return -3;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  return 0;
+}
+
 int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
                                       std::vector<vtkDataSet *> &outputs) {
 
@@ -132,6 +174,8 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
+  res |= getConstraints(constraints);
+
   auto origin = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
 
   if (origin != nullptr) {
@@ -166,7 +210,8 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
 
   harmonicField_.setVertexNumber(numberOfPointsInDomain);
   harmonicField_.setConstraintNumber(numberOfPointsInSources);
-  harmonicField_.setConstraints(identifiers_->GetVoidPointer(0));
+  harmonicField_.setSources(identifiers_->GetVoidPointer(0));
+  harmonicField_.setConstraints(constraints_->GetVoidPointer(0));
   harmonicField_.setOutputIdentifiers(origin->GetVoidPointer(0));
   harmonicField_.setOutputSegmentation(seg->GetVoidPointer(0));
 
