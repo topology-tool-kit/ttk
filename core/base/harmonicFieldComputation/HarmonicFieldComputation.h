@@ -14,6 +14,7 @@
 #pragma once
 
 // base code includes
+#include <Geometry.h>
 #include <Triangulation.h>
 #include <Wrapper.h>
 #include <cmath>
