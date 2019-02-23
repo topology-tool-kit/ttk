@@ -48,11 +48,23 @@ void FTMTree_CT::build(TreeType tt)
 
    initComp();
 
-   // if(bothMT){
-   //    DebugTimer precomputeTime;
-   //    leafSearch();
-   //    printTime(precomputeTime, "leafSearch", -1, 3);
-   // }
+   if(bothMT){
+      // single leaf search for both tree
+      // When executed from CT, both minima and maxima are extracted
+      DebugTimer precomputeTime;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel num_threads(threadNumber_)
+#endif
+      {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp single nowait
+#endif
+         {
+            leafSearch();
+         }
+      }
+      printTime(precomputeTime, "leafSearch", -1, 3);
+   }
 
    // JT & ST
 #ifdef TTK_ENABLE_OPENMP
