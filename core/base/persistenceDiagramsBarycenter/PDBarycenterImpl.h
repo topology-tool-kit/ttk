@@ -10,7 +10,6 @@
 #include <cmath>
 #include          <BottleneckDistance.h>
 
-
 using namespace ttk;
 
 template <typename dataType>
@@ -877,6 +876,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
 		previous_matchings = std::move(all_matchings);
 		// END OF TIMER
 		total_time += t.getElapsedTime();
+        std::cout<<"Time elapsed so far : "<<total_time<<std::endl;
 
 		for(unsigned int i=0; i<barycenter_goods_.size(); ++i){
 			for(int j=0; j<barycenter_goods_[i].size(); ++j){
@@ -913,18 +913,19 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
 template <typename dataType>
 std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBiddingBarycenter(std::vector<diagramTuple>& barycenter){
 	double total_time = 0;
-    vector<vector<float>> timers;
-    vector<vector<int>> NB_BIDDERS;
-    vector<vector<int>> NB_BIDDINGS;
-    timers.resize(100);
-    NB_BIDDERS.resize(100);
-    NB_BIDDINGS.resize(100);
-    for(unsigned int i=0; i< timers.size(); i++){
-        timers[i].resize(numberOfInputs_);
-        NB_BIDDERS[i].resize(numberOfInputs_);
-        NB_BIDDINGS[i].resize(numberOfInputs_);
-    }
-
+    // vector<vector<float>> timers;
+    // vector<vector<int>> NB_BIDDERS;
+    // vector<vector<int>> NB_BIDDINGS;
+    // timers.resize(100);
+    // NB_BIDDERS.resize(100);
+    // NB_BIDDINGS.resize(100);
+    // for(unsigned int i=0; i< timers.size(); i++){
+    //     timers[i].resize(numberOfInputs_);
+    //     NB_BIDDERS[i].resize(numberOfInputs_);
+    //     NB_BIDDINGS[i].resize(numberOfInputs_);
+    // }
+    
+    double time_passed_doing_test_computations=0;
     int nb_of_auctions = 0;
 	std::vector<std::vector<matchingTuple>> previous_matchings;
 
@@ -1021,14 +1022,14 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
 		total_cost = 0;
 		if(!epsilon_decreases_){
 			epsilon = epsilon_0;
-			if(debugLevel_>9){
-			    runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
-							&min_diag_price,  &min_price, &all_matchings, use_kdt, &(timers[nb_of_auctions]), &(NB_BIDDERS[nb_of_auctions]), &(NB_BIDDINGS[nb_of_auctions]));
-            }
-            else{
+			// if(debugLevel_>9){
+			//     runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
+			// 				&min_diag_price,  &min_price, &all_matchings, use_kdt, &(timers[nb_of_auctions]), &(NB_BIDDERS[nb_of_auctions]), &(NB_BIDDINGS[nb_of_auctions]));
+            // }
+            // else{
 			    runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
 							&min_diag_price,  &min_price, &all_matchings, use_kdt);
-            }
+            // }
 			nb_of_auctions ++;
 
 		}
@@ -1045,18 +1046,32 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
 			epsilon = epsilon_0;
 		}
 		else{
-			if(debugLevel_>9){
-			    runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
-							&min_diag_price,  &min_price, &all_matchings, use_kdt, &(timers[nb_of_auctions]), &(NB_BIDDERS[nb_of_auctions]), &(NB_BIDDINGS[nb_of_auctions]));
-            }
-            else{
+			// if(debugLevel_>9){
+			//     runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
+			// 				&min_diag_price,  &min_price, &all_matchings, use_kdt, &(timers[nb_of_auctions]), &(NB_BIDDERS[nb_of_auctions]), &(NB_BIDDINGS[nb_of_auctions]));
+            // }
+            // else{
 			    runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map,
 							&min_diag_price,  &min_price, &all_matchings, use_kdt);
-            }
+            // }
             nb_of_auctions ++;
 		}
 		if(debugLevel_>1)
-			std::cout<< "Barycenter cost : "<< total_cost << std::endl;
+			std::cout<< "[PersistenceDiagramsBarycenter] Barycenter cost : "<< total_cost << std::endl;
+
+        if(converged){
+		Timer t2;
+        {
+            dataType real_total_cost;
+            real_total_cost = computeRealCost();
+            // std::cout<< "Real cost : "<<real_total_cost<<std::endl;
+                std::cout<< "Total real cost : "<<real_total_cost<<std::endl;
+        double time_real_cost_computation = t2.getElapsedTime();
+        time_passed_doing_test_computations += time_real_cost_computation;
+        }
+        }
+
+
 		delete kdt;
 
 		if(converged){
@@ -1066,7 +1081,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
 		if(!finished){
 			dataType max_shift = updateBarycenter(all_matchings);
 
-			if(debugLevel_>1)
+			if(debugLevel_>2)
 				std::cout<< "Barycenter size : "<< barycenter_goods_[0].size() << std::endl;
 
 			if(epsilon_decreases_){
@@ -1082,11 +1097,11 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
 				}
 			}
 
-			if(!use_progressive_ && min_cost>total_cost){
+			if(!use_progressive_ && epsilon<epsilon_0/500. && min_cost>total_cost){
 				min_cost = total_cost;
 				last_min_cost_obtained = 0;
 			}
-			else if(!use_progressive_){
+			else if(!use_progressive_ && epsilon<epsilon_0/500. ){
 				last_min_cost_obtained += 1;
 			}
 
@@ -1099,13 +1114,16 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
 		previous_matchings = std::move(all_matchings);
 		previous_min_persistence = min_persistence;
 
-		}  // End of timer
 
-		total_time += t.getElapsedTime();
+		total_time += t.getElapsedTime(); //-time_real_cost_computation;
+        }  // End of timer
+        if(debugLevel_>2){
+            std::cout<<"Time elapsed so far : "<<total_time<<std::endl;
+        }
 		if(total_time>0.1*time_limit_){
 			setUseProgressive(false);
 		}
-		if(total_time>time_limit_){
+		if(total_time > 0.9*time_limit_){
 			converged=true;
 		}
 
@@ -1136,7 +1154,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
     cost_ = total_cost;
 	std::vector<std::vector<matchingTuple>> corrected_matchings = correctMatchings(previous_matchings);
 	for(unsigned int d=0; d<current_bidder_diagrams_.size(); ++d){
-		if(debugLevel_>2)
+		if(debugLevel_>3)
 			std::cout << "Size of diagram " << d << " : " << current_bidder_diagrams_[d].size() << std::endl;
 	}
     
@@ -1181,6 +1199,28 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
         std::cout << "Total number of Auction rounds : " << nb_of_auctions<< std::endl;
     }
     */
+
+    std::cout<<"Time passed doing test computations : "<<time_passed_doing_test_computations<<std::endl;
 	return corrected_matchings;
 }
+template <typename dataType>
+dataType PDBarycenter<dataType>::computeRealCost(){
+    dataType total_real_cost = 0;
+    std::vector<matchingTuple> fake_matchings;
+    // for(int j=0; j<barycenter_goods_[0].size(); j++){
+    //     Good<dataType> good_tmp = barycenter_goods_[0].get(j).copy();
+    //     good_tmp.setPrice(0);
+    //     current_barycenter.addGood(good_tmp);
+    // }
+    for(int i=0; i<numberOfInputs_; i++){
+        Auction<dataType> auction(wasserstein_, geometrical_factor_, lambda_, 0.01, true);
+        GoodDiagram<dataType> current_barycenter = barycenter_goods_[0];
+        BidderDiagram<dataType> current_bidder_diagram = current_bidder_diagrams_[i];
+        auction.BuildAuctionDiagrams(&(current_bidder_diagram) , &(current_barycenter));
+        dataType cost = auction.run(&fake_matchings);
+        total_real_cost += cost;
+    }
+    return total_real_cost;
+}
+
 #endif

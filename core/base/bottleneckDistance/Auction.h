@@ -54,17 +54,18 @@ namespace ttk {
 		KDTree<dataType>* kdt_;
 		std::vector<KDTree<dataType>*> correspondance_kdt_map_;
 
-		Auction(int wasserstein, double geometricalFactor, double lambda, double delta_lim, bool use_kdTree=true) {
+		Auction(int wasserstein, double geometricalFactor, double lambda, double delta_lim, bool use_kdTree) {
             n_bidders_ = 0;
             n_goods_ = 0;
 			epsilon_ = 1;
 			wasserstein_ = wasserstein;
 			delta_lim_ = delta_lim;
 			geometricalFactor_ = geometricalFactor;
-      lambda_ = lambda;
+            lambda_ = lambda;
 			use_kdt_ = use_kdTree;
 			diagonal_goods_ = new GoodDiagram<dataType>;
 			delete_bidders_ = true;
+			delete_kdTree_ = true;
 			bidders_ = new BidderDiagram<dataType>;
 			goods_ = new GoodDiagram<dataType>;
         };
@@ -75,6 +76,7 @@ namespace ttk {
        dataType initial_diag_price, bool use_kdTree=true) {
          
 			delete_bidders_ = false;
+			delete_kdTree_ = false;
 			bidders_ = bidders;
 			goods_ = goods;
 			diagonal_goods_ = new GoodDiagram<dataType>;
@@ -122,6 +124,9 @@ namespace ttk {
 
 		~Auction() {
 			delete diagonal_goods_;
+			if(delete_kdTree_){
+			    delete kdt_;
+			}
 			if(delete_bidders_){
 				delete bidders_;
 				delete goods_;
@@ -353,6 +358,7 @@ namespace ttk {
 		std::priority_queue<std::pair<int, dataType>, std::vector<std::pair<int, dataType>>, Compare<dataType>> diagonal_queue_;
 		std::list<int> unassignedBidders_;
 		bool delete_bidders_;
+		bool delete_kdTree_;
 
 		int n_bidders_;
 		int n_goods_;

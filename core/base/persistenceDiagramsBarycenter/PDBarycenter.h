@@ -87,6 +87,8 @@ namespace ttk{
 
 		dataType updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings);
 
+		dataType computeRealCost();
+
 		bool hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings,
 									std::vector<std::vector<matchingTuple>>& previous_matchings);
 		std::vector<std::vector<matchingTuple>> correctMatchings(std::vector<std::vector<matchingTuple>> previous_matchings);
@@ -209,6 +211,7 @@ namespace ttk{
         dataType getCost(){
             return cost_;
         }
+
 		template <typename type>
 		static type abs(const type var) {
 			return (var >= 0) ? var : -var;

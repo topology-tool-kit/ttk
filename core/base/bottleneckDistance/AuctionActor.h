@@ -60,7 +60,9 @@ namespace ttk{
       geom_pair_length_[1] = 0;
       geom_pair_length_[2] = 0;
 		}
-		~AuctionActor() {};
+		~AuctionActor() {
+		    // delete geom_pair_length_;
+		};
 
 
 		void SetCoordinates(dataType& x, dataType& y);

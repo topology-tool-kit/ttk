@@ -3,3 +3,6 @@ ttk_add_base_library(persistenceDiagramsBarycenter
     HEADERS PersistenceDiagramsBarycenter.h 
 	LINK common persistenceDiagram bottleneckDistance kdTree)
 
+# if (NOT (CMAKE_BUILD_TYPE MATCHES Debug))
+#     set (CMAKE_BUILD_TYPE Debug)
+# endif()

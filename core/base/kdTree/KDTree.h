@@ -78,6 +78,11 @@ namespace ttk{
 		~KDTree(){
 			delete left_;
 			delete right_;
+			// coordinates_.resize(0);
+			// coords_min_.resize(0);
+			// coords_max_.resize(0);
+			// weight_.resize(0);
+			// min_subweights_.resize(0);
 		}
 
 		
