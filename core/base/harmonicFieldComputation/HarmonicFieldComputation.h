@@ -275,16 +275,16 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   // constraints vector
   SpVec constraints(vertexNumber_);
-  for (auto i : identifiersVec) {
-    // TODO are constraints values in outputScalarFieldPointer_?
-    constraints.coeffRef(i) = sf[i];
+  for (size_t i = 0; i < identifiersVec.size(); i++) {
+    // put constraint at identifier index
+    constraints.coeffRef(identifiersVec[i]) = sf[i];
   }
 
   // penalty matrix
   SpMat penalty(vertexNumber_, vertexNumber_);
-  double alpha = 10.0e8;
+  const double alpha = 10.0e8;
   for (auto i : identifiersVec) {
-    penalty.insert(i, i) = alpha;
+    penalty.coeffRef(i, i) = alpha;
   }
 
   Eigen::SimplicialCholesky<SpMat> solver(lap - penalty);
@@ -309,9 +309,11 @@ int ttk::HarmonicFieldComputation::execute() const {
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
+  auto outputScalarField =
+      static_cast<scalarFieldType *>(outputScalarFieldPointer_);
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
     // TODO avoid copy here
-    sf[i] = sol.coeffRef(i, 0);
+    outputScalarField[i] = std::abs(sol.coeffRef(i, 0));
   }
 
   {
