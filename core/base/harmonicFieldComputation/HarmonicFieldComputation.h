@@ -272,7 +272,13 @@ int ttk::HarmonicFieldComputation::execute() const {
   using SpVec = Eigen::SparseVector<scalarFieldType>;
   using Tri = Eigen::Triplet<scalarFieldType>;
 
-  SpMat lap = compute_laplacian<SpMat, Tri>();
+  // graph laplacian of current mesh
+  SpMat lap;
+  if (useCotanMethod_) {
+    lap = compute_laplacian_with_cotan_weights<SpMat, Tri>();
+  } else {
+    lap = compute_laplacian<SpMat, Tri>();
+  }
 
   // constraints vector
   SpVec constraints(vertexNumber_);
