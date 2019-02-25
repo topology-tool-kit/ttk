@@ -78,16 +78,6 @@ public:
     return 0;
   }
 
-  inline int setOutputIdentifiers(void *data) {
-    outputIdentifiers_ = data;
-    return 0;
-  }
-
-  inline int setOutputSegmentation(void *data) {
-    outputSegmentation_ = data;
-    return 0;
-  }
-
   template <typename scalarFieldType> int execute() const;
 
   template <typename SparseMatrixType, typename TripletsType>
@@ -113,10 +103,6 @@ protected:
   void *constraints_;
   // output of harmonic field computation
   void *outputScalarFieldPointer_;
-  // ??
-  void *outputIdentifiers_;
-  // ??
-  void *outputSegmentation_;
 };
 } // namespace ttk
 
