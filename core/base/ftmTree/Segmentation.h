@@ -150,9 +150,9 @@ namespace ftm
 
       inline SimplexId count(void) const
       {
-         size_t res = 0;
+         SimplexId res = 0;
          for (const auto& reg : segmentsIn_) {
-            res += abs(distance(reg.segmentBegin, reg.segmentEnd));
+            res += labs(distance(reg.segmentBegin, reg.segmentEnd));
          }
          return res;
       }

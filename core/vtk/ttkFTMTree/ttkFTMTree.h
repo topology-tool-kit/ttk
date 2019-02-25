@@ -134,13 +134,13 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public ttk::Wrapper
    int getSkeletonNodes(vtkUnstructuredGrid* outputSkeletonNodes);
 
    int addDirectSkeletonArc(const ttk::ftm::idSuperArc arcId, const int cc, vtkPoints* points,
-                            vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+                            vtkUnstructuredGrid* skeletonArcs, ttk::ftm::ArcData& arcData);
 
    int addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId, const int cc, vtkPoints* points,
-                             vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+                             vtkUnstructuredGrid* skeletonArcs, ttk::ftm::ArcData& arcData);
 
    int addCompleteSkeletonArc(const ttk::ftm::idSuperArc arcId, const int cc, vtkPoints* points,
-                              vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+                              vtkUnstructuredGrid* skeletonArcs, ttk::ftm::ArcData& arcData);
 
    int getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs);
 
@@ -163,23 +163,22 @@ class ttkFTMTree : public vtkDataSetAlgorithm, public ttk::Wrapper
    virtual int FillOutputPortInformation(int port, vtkInformation* info) override;
 
   private:
-
    std::string ScalarField;
-   bool   ForceInputOffsetScalarField;
+   bool        ForceInputOffsetScalarField;
    std::string InputOffsetScalarFieldName;
-   int    ScalarFieldId;
-   int    OffsetFieldId;
+   int         ScalarFieldId;
+   int         OffsetFieldId;
 
    ttk::ftm::Params params_;
 
-   int                            nbCC_;
-   std::vector<vtkDataSet*>            connected_components_;
+   int                                      nbCC_;
+   std::vector<vtkDataSet*>                 connected_components_;
    std::vector<ttk::Triangulation*>         triangulation_;
-   std::vector<LocalFTM>               ftmTree_;
-   std::vector<vtkDataArray*>          inputScalars_;
-   std::vector<std::vector<ttk::SimplexId>>  offsets_;
+   std::vector<ttk::ftm::LocalFTM>          ftmTree_;
+   std::vector<vtkDataArray*>               inputScalars_;
+   std::vector<std::vector<ttk::SimplexId>> offsets_;
 
-   bool                   hasUpdatedMesh_;
+   bool hasUpdatedMesh_;
 };
 
 #endif  // _VTK_CONTOURFORESTS_H
