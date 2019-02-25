@@ -150,15 +150,16 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
    int getSkeletonNodes(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonNodes);
 
    int addDirectSkeletonArc(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc arcId,
-                            vtkPoints* points, vtkUnstructuredGrid* skeletonArcs, ArcData& arcData);
+                            vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
+                            ttk::ftr::ArcData& arcData);
 
    int addSampledSkeletonArc(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc arcId,
                              vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
-                             ArcData& arcData);
+                             ttk::ftr::ArcData& arcData);
 
    int addCompleteSkeletonArc(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc arcId,
                               vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
-                              ArcData& arcData);
+                              ttk::ftr::ArcData& arcData);
 
    int getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonArcs);
 

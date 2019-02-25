@@ -33,8 +33,9 @@ int ttkFTRGraph::FillOutputPortInformation(int port, vtkInformation* info)
    return 1;
 }
 
-int ttkFTRGraph::addCompleteSkeletonArc(const Graph& graph, const idSuperArc arcId, vtkPoints* points,
-                                        vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+int ttkFTRGraph::addCompleteSkeletonArc(const Graph& graph, const idSuperArc arcId,
+                                        vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
+                                        ttk::ftr::ArcData& arcData)
 {
    const SuperArc& arc = graph.getArc(arcId);
    float           pointCoord[3];
@@ -99,7 +100,7 @@ int ttkFTRGraph::addCompleteSkeletonArc(const Graph& graph, const idSuperArc arc
 }
 
 int ttkFTRGraph::addDirectSkeletonArc(const Graph& graph, const idSuperArc arcId, vtkPoints* points,
-                                      vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+                                      vtkUnstructuredGrid* skeletonArcs, ttk::ftr::ArcData& arcData)
 {
    float        pointCoord[3];
    const idNode upNodeId   = graph.getArc(arcId).getUpNodeId();
@@ -140,8 +141,9 @@ int ttkFTRGraph::addDirectSkeletonArc(const Graph& graph, const idSuperArc arcId
    return 0;
 }
 
-int ttkFTRGraph::addSampledSkeletonArc(const Graph& graph, const idSuperArc arcId, vtkPoints* points,
-                                       vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+int ttkFTRGraph::addSampledSkeletonArc(const Graph& graph, const idSuperArc arcId,
+                                       vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
+                                       ttk::ftr::ArcData& arcData)
 {
    const SuperArc& arc = graph.getArc(arcId);
    float           pointCoord[3];
@@ -394,8 +396,8 @@ int ttkFTRGraph::getScalars()
 
 int ttkFTRGraph::getSegmentation(const ttk::ftr::Graph& graph, vtkDataSet* outputSegmentation)
 {
-   const idVertex numberOfVertices = mesh_->GetNumberOfPoints();
-   VertData vertData(numberOfVertices);
+   const idVertex     numberOfVertices = mesh_->GetNumberOfPoints();
+   ttk::ftr::VertData vertData(numberOfVertices);
 
    // TODO parallel
    for (idVertex v = 0; v < numberOfVertices; ++v) {
@@ -424,7 +426,7 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGr
          break;
    }
 
-   ArcData arcData(nbFinArc);
+   ttk::ftr::ArcData                    arcData(nbFinArc);
    vtkSmartPointer<vtkUnstructuredGrid> arcs   = vtkSmartPointer<vtkUnstructuredGrid>::New();
    vtkSmartPointer<vtkPoints>           points = vtkSmartPointer<vtkPoints>::New();
 
@@ -455,7 +457,7 @@ int ttkFTRGraph::getSkeletonNodes(const Graph& graph, vtkUnstructuredGrid* outpu
 {
    const idNode nbNodes = graph.getNumberOfNodes();
 
-   NodeData nodeData(nbNodes);
+   ttk::ftr::NodeData                   nodeData(nbNodes);
    vtkSmartPointer<vtkUnstructuredGrid> nodes  = vtkSmartPointer<vtkUnstructuredGrid>::New();
    vtkSmartPointer<vtkPoints>           points = vtkSmartPointer<vtkPoints>::New();
 
@@ -472,7 +474,6 @@ int ttkFTRGraph::getSkeletonNodes(const Graph& graph, vtkUnstructuredGrid* outpu
    nodes->SetPoints(points);
    nodeData.addArrays(nodes->GetPointData(), params_);
 
-   outputSkeletonNodes->ShallowCopy(nodes);
    return 0;
 }
 

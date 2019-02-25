@@ -14,6 +14,9 @@
 #include "FTRCommon.h"
 #include "Graph.h"
 
+namespace ttk {
+namespace ftr {
+
 /// Vertex / Node / Arc data inherit from this
 /// master structure.
 struct ObjectData {
@@ -158,4 +161,7 @@ struct VertData : public ObjectData {
       segmentation->GetPointData()->AddArray(arcActif);
 #endif
    }
+
+};
+};
 };
