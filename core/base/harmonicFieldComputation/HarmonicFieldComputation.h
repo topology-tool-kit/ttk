@@ -189,7 +189,7 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
       }
 
       // skip computation if already done
-      if (lap.coeffReff(i, neigh) != 0) {
+      if (lap.coeffRef(i, neigh) != 0) {
         break;
       }
 
