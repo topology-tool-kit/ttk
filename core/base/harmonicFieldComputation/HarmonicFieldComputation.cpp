@@ -1,7 +1,7 @@
 #include <HarmonicFieldComputation.h>
 
 ttk::HarmonicFieldComputation::HarmonicFieldComputation()
-    : vertexNumber_{}, constraintNumber_{}, useCotanMethod_{false},
+    : vertexNumber_{}, constraintNumber_{}, useCotanWeights_{false},
       triangulation_{}, sources_{}, constraints_{},
       outputScalarFieldPointer_{} {
 #if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_OPENMP)

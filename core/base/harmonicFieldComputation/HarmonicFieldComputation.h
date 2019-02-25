@@ -53,8 +53,8 @@ public:
     constraintNumber_ = constraintNumber;
     return 0;
   }
-  inline int setUseCotanMethod(bool useCotanMethod) {
-    useCotanMethod_ = useCotanMethod;
+  inline int setUseCotanWeights(bool useCotanWeights) {
+    useCotanWeights_ = useCotanWeights;
     return 0;
   }
   inline int setupTriangulation(Triangulation *triangulation) {
@@ -92,7 +92,7 @@ protected:
   // number of constraints
   SimplexId constraintNumber_;
   // cotan weights vs simple laplacian resolution
-  bool useCotanMethod_;
+  bool useCotanWeights_;
   // the mesh
   Triangulation *triangulation_;
   // array of mesh points with scalar constraints
@@ -267,7 +267,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   // graph laplacian of current mesh
   SpMat lap;
-  if (useCotanMethod_) {
+  if (useCotanWeights_) {
     lap = compute_laplacian_with_cotan_weights<SpMat, Tri>();
   } else {
     lap = compute_laplacian<SpMat, Tri>();
