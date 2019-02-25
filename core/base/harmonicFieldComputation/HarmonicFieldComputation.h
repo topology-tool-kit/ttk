@@ -246,9 +246,9 @@ int ttk::HarmonicFieldComputation::execute() const {
   using std::stringstream;
 
   // scalar field constraints vertices
-  auto *identifiers = static_cast<SimplexId *>(sources_);
+  auto identifiers = static_cast<SimplexId *>(sources_);
   // scalar field: 0 everywhere except on constraint vertices
-  auto *sf = static_cast<scalarFieldType *>(constraints_);
+  auto sf = static_cast<scalarFieldType *>(constraints_);
 
   Timer t;
   stringstream msg;

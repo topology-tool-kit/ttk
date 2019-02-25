@@ -82,11 +82,11 @@ public:
     SetThreads();
   }
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
   vtkSetMacro(InputScalarFieldName, std::string);
   vtkGetMacro(InputScalarFieldName, std::string);
+
+  vtkSetMacro(InputIdentifiersFieldName, std::string);
+  vtkGetMacro(InputIdentifiersFieldName, std::string);
 
   vtkSetMacro(OutputScalarFieldName, std::string);
   vtkGetMacro(OutputScalarFieldName, std::string);
@@ -94,12 +94,15 @@ public:
   vtkSetMacro(OutputScalarFieldType, int);
   vtkGetMacro(OutputScalarFieldType, int);
 
+  vtkSetMacro(ForceInputScalarField, int);
+  vtkGetMacro(ForceInputScalarField, int);
+
   // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
   // get array of identifiers on the mesh
   int getIdentifiers(vtkPointSet *input);
   // get constraint values on identifiers
-  int getConstraints(vtkDataSet *input);
+  int getConstraints(vtkPointSet *input);
 
   // default copy constructor
   ttkHarmonicFieldComputation(const ttkHarmonicFieldComputation &) = delete;
@@ -122,9 +125,14 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
-  std::string ScalarField;
+  // user-defined input constraints (float) scalar field name
   std::string InputScalarFieldName;
+  // output scalar field
   std::string OutputScalarFieldName;
+  // let the user choose a different identifier scalar field
+  bool ForceInputScalarField;
+  // user-defined input identifier (SimplexId) scalar field name
+  std::string InputIdentifiersFieldName;
 
   // enum: float or double
   int OutputScalarFieldType;

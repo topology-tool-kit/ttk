@@ -38,9 +38,9 @@
       </InputProperty>
 
       <InputProperty
-          name="Sources"
+          name="Constraints"
           port_index="1"
-          label="Input sources"
+          label="Input constraints"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
@@ -50,32 +50,24 @@
           <DataType value="vtkPointSet"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Sources" function="FieldDataSelection" />
-        </InputArrayDomain>
-        <Documentation>
-          Constraint sources for the harmonic field.
-        </Documentation>
-      </InputProperty>
-
-      <InputProperty
-          name="Constraints"
-          port_index="2"
-          label="Input constraints"
-          command="SetInputConnection">
-        <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
-        </ProxyGroupDomain>
-        <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
-        </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
           <Property name="Constraints" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
-          Scalar constraints on constraint sources for the harmonic field.
+          Harmonic field constraints.
         </Documentation>
       </InputProperty>
+
+      <IntVectorProperty
+          name="ForceInputScalarField"
+          label="Force Input Scalar Field"
+          command="SetForceInputScalarField"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
 
       <StringVectorProperty
           name="InputScalarFieldName"
@@ -125,7 +117,7 @@
         command="SetOutputScalarFieldName"
         label="Output field name"
         number_of_elements="1"
-        default_values="OutputDistanceField">
+        default_values="OutputHarmonicField">
         <Documentation>
           Select the name of the output scalar field.
         </Documentation>
@@ -185,6 +177,7 @@
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Constraints" />
+        <Property name="ForceInputScalarField" />
         <Property name="InputScalarFieldName" />
       </PropertyGroup>
 
