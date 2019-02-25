@@ -141,13 +141,15 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 template <typename SparseMatrixType, typename TripletType>
 SparseMatrixType
 ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
-  std::stringstream msg;
   using std::cout;
   using std::endl;
 
-  msg << "[HarmonicFieldComputation] Beginning graph laplacian computation"
-      << endl;
-  dMsg(cout, msg.str(), advancedInfoMsg);
+  {
+    std::stringstream msg;
+    msg << "[HarmonicFieldComputation] Beginning graph laplacian computation"
+        << endl;
+    dMsg(cout, msg.str(), advancedInfoMsg);
+  }
 
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
   std::vector<TripletType> triplets;
@@ -215,8 +217,13 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
       lap.coeffRef(neigh, i) = .5 * (cotans[0] + cotans[1]);
     }
   }
-  msg << "[HarmonicFieldComputation] Graph laplacian computed" << endl;
-  dMsg(cout, msg.str(), advancedInfoMsg);
+
+  {
+    std::stringstream msg;
+    msg << "[HarmonicFieldComputation] Graph laplacian computed" << endl;
+    dMsg(cout, msg.str(), advancedInfoMsg);
+  }
+
   return lap;
 }
 
@@ -237,9 +244,9 @@ int ttk::HarmonicFieldComputation::execute() const {
   auto sf = static_cast<scalarFieldType *>(constraints_);
 
   Timer t;
-  stringstream msg;
 
   {
+    stringstream msg;
     msg << "[HarmonicFieldComputation] Beginnning computation" << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
@@ -283,19 +290,23 @@ int ttk::HarmonicFieldComputation::execute() const {
   Eigen::SimplicialCholesky<SpMat> solver(lap - penalty);
   SpMat sol = solver.solve(penalty * constraints);
 
-  switch (solver.info()) {
-  case Eigen::ComputationInfo::Success:
-    cout << "Success!" << endl;
-    break;
-  case Eigen::ComputationInfo::NumericalIssue:
-    cout << "Numerical Issue!" << endl;
-    break;
-  case Eigen::ComputationInfo::NoConvergence:
-    cout << "No Convergence!" << endl;
-    break;
-  case Eigen::ComputationInfo::InvalidInput:
-    cout << "Invalid Input!" << endl;
-    break;
+  {
+    stringstream msg;
+    switch (solver.info()) {
+    case Eigen::ComputationInfo::Success:
+      msg << "[HarmonicFieldComputation] Success!" << endl;
+      break;
+    case Eigen::ComputationInfo::NumericalIssue:
+      msg << "[HarmonicFieldComputation] Numerical Issue!" << endl;
+      break;
+    case Eigen::ComputationInfo::NoConvergence:
+      msg << "[HarmonicFieldComputation] No Convergence!" << endl;
+      break;
+    case Eigen::ComputationInfo::InvalidInput:
+      msg << "[HarmonicFieldComputation] Invalid Input!" << endl;
+      break;
+    }
+    dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
@@ -304,17 +315,20 @@ int ttk::HarmonicFieldComputation::execute() const {
   }
 
   {
-    msg << "[HarmonicFieldComputation] Ending computation after"
-        << t.getElapsedTime() << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+    stringstream msg;
+    msg << "[HarmonicFieldComputation] Ending computation after "
+        << t.getElapsedTime() << "s (" << threadNumber_ << " thread(s))"
+        << endl;
+    dMsg(cout, msg.str(), infoMsg);
   }
 
 #else
   {
+    stringstream msg;
     msg << "[HarmonicFieldComputation] Eigen support disabled, computation "
            "skipped "
         << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+    dMsg(cout, msg.str(), infoMsg);
   }
 #endif // TTK_ENABLE_EIGEN
 
