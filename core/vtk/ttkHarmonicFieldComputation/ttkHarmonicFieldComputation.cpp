@@ -166,6 +166,7 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
   harmonicField_.setConstraintNumber(numberOfPointsInSources);
   harmonicField_.setSources(identifiers_->GetVoidPointer(0));
   harmonicField_.setConstraints(constraints_->GetVoidPointer(0));
+  harmonicField_.setUseCotanWeights(UseCotanWeights);
 
   vtkDataArray *harmonicScalarField{};
 

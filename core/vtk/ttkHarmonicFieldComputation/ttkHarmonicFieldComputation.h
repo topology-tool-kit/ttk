@@ -94,8 +94,11 @@ public:
   vtkSetMacro(OutputScalarFieldType, int);
   vtkGetMacro(OutputScalarFieldType, int);
 
-  vtkSetMacro(ForceInputScalarField, int);
-  vtkGetMacro(ForceInputScalarField, int);
+  vtkSetMacro(ForceInputScalarField, bool);
+  vtkGetMacro(ForceInputScalarField, bool);
+
+  vtkSetMacro(UseCotanWeights, bool);
+  vtkGetMacro(UseCotanWeights, bool);
 
   // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
@@ -131,6 +134,8 @@ private:
   std::string OutputScalarFieldName;
   // let the user choose a different identifier scalar field
   bool ForceInputScalarField;
+  // graph laplacian variant
+  bool UseCotanWeights;
   // user-defined input identifier (SimplexId) scalar field name
   std::string InputIdentifiersFieldName;
 
