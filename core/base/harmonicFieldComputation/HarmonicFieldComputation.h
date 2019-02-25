@@ -159,9 +159,12 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
     SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
     triplets.emplace_back(TripletType(i, i, double(nneigh)));
   }
-  lap.setFromTriplets(triplets.begin(), triplets.end());
 
   // rest: cotan weights
+  triangulation_->preprocessVertexEdges();
+  triangulation_->preprocessEdgeTriangles();
+  triangulation_->preprocessTriangleEdges();
+
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
     SimplexId nedges = triangulation_->getVertexEdgeNumber(i);
     for (SimplexId j = 0; j < nedges; ++j) {
@@ -176,13 +179,8 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
         }
       }
 
-      // skip computation if already done
-      if (lap.coeffRef(i, neigh) != 0) {
-        break;
-      }
-
       SimplexId ntriangles = triangulation_->getEdgeTriangleNumber(edge);
-      std::vector<double> cotans(ntriangles);
+      std::vector<double> cotans;
       for (SimplexId k = 0; k < ntriangles; k++) {
         SimplexId triangle;
         triangulation_->getEdgeTriangle(edge, k, triangle);
@@ -213,10 +211,12 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
       }
 
       // fill laplacian matrix also for neighbor
-      lap.coeffRef(i, neigh) = .5 * (cotans[0] + cotans[1]);
-      lap.coeffRef(neigh, i) = .5 * (cotans[0] + cotans[1]);
+      triplets.emplace_back(
+          TripletType(i, neigh, 0.5 * (cotans[0] + cotans[1])));
     }
   }
+
+  lap.setFromTriplets(triplets.begin(), triplets.end());
 
   {
     std::stringstream msg;

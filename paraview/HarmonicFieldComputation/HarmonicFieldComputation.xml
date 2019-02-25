@@ -69,6 +69,17 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+          name="UseCotanWeights"
+          label="Use cotan weights method"
+          command="SetUseCotanWeights"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
       <StringVectorProperty
           name="InputScalarFieldName"
           command="SetInputScalarFieldName"
