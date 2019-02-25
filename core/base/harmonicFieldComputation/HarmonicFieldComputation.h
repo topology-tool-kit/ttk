@@ -120,12 +120,6 @@ protected:
 };
 } // namespace ttk
 
-#ifdef TTK_ENABLE_EIGEN
-using SpMat = Eigen::SparseMatrix<double>;
-using SpVec = Eigen::SparseVector<double>;
-using Tri = Eigen::Triplet<double>;
-#endif // TTK_ENABLE_EIGEN
-
 template <typename SparseMatrixType, typename TripletType>
 SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
@@ -274,6 +268,10 @@ int ttk::HarmonicFieldComputation::execute() const {
                                         identifiersSet.end());
 
 #ifdef TTK_ENABLE_EIGEN
+  using SpMat = Eigen::SparseMatrix<scalarFieldType>;
+  using SpVec = Eigen::SparseVector<scalarFieldType>;
+  using Tri = Eigen::Triplet<scalarFieldType>;
+
   SpMat lap = compute_laplacian<SpMat, Tri>();
 
   // constraints vector
