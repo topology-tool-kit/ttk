@@ -3,7 +3,7 @@
 vtkStandardNewMacro(ttkHarmonicFieldComputation);
 
 ttkHarmonicFieldComputation::ttkHarmonicFieldComputation()
-    : triangulation_{}, identifiers_{} {
+    : triangulation_{}, identifiers_{}, constraints_{} {
 
   SetNumberOfInputPorts(2);
 
@@ -114,7 +114,7 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
 
   int res = 0;
 
-  res |= getTriangulation(domain);
+  res += getTriangulation(domain);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if (res != 0) {
@@ -123,7 +123,7 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  res |= getIdentifiers(identifiers);
+  res += getIdentifiers(identifiers);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if (res != 0) {
@@ -132,7 +132,7 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  res |= getConstraints(identifiers);
+  res += getConstraints(identifiers);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if (res != 0) {
@@ -202,10 +202,10 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
 
   switch (OutputScalarFieldType) {
   case HarmonicFieldType::Float:
-    res |= harmonicField_.execute<float>();
+    res += harmonicField_.execute<float>();
     break;
   case HarmonicFieldType::Double:
-    res |= harmonicField_.execute<double>();
+    res += harmonicField_.execute<double>();
     break;
   default:
     break;
