@@ -114,6 +114,9 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
 
   int res = 0;
 
+  // set this early, since it should trigger some triangulation pre-processing
+  harmonicField_.setUseCotanWeights(UseCotanWeights);
+
   res += getTriangulation(domain);
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -166,7 +169,6 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
   harmonicField_.setConstraintNumber(numberOfPointsInSources);
   harmonicField_.setSources(identifiers_->GetVoidPointer(0));
   harmonicField_.setConstraints(constraints_->GetVoidPointer(0));
-  harmonicField_.setUseCotanWeights(UseCotanWeights);
 
   vtkDataArray *harmonicScalarField{};
 

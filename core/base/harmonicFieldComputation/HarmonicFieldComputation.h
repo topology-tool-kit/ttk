@@ -63,6 +63,10 @@ public:
       vertexNumber_ = triangulation_->getNumberOfVertices();
       triangulation_->preprocessVertexNeighbors();
     }
+    if (useCotanWeights_) {
+      // cotan weights method needs more pre-processing
+      triangulation_->preprocessEdgeTriangles();
+    }
     return 0;
   }
   inline int setSources(void *data) {
@@ -151,71 +155,84 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
+  // laplacian matrix with cotan weights
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
+  // used to fill more efficiently the matrix
   std::vector<TripletType> triplets;
 
-  // symmetric laplacian version
-  for (SimplexId i = 0; i < vertexNumber_; ++i) {
-    SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
-    triplets.emplace_back(TripletType(i, i, double(nneigh)));
-  }
+  // iterate over all edges
+  SimplexId edgesNumber = triangulation_->getNumberOfEdges();
 
-  // rest: cotan weights
-  triangulation_->preprocessVertexEdges();
-  triangulation_->preprocessEdgeTriangles();
-  triangulation_->preprocessTriangleEdges();
+  // hold sum of cotan weights for every vertex
+  std::vector<double> vertexWeightSum(vertexNumber_, 0.0);
 
-  for (SimplexId i = 0; i < vertexNumber_; ++i) {
-    SimplexId nedges = triangulation_->getVertexEdgeNumber(i);
-    for (SimplexId j = 0; j < nedges; ++j) {
-      SimplexId edge;
-      triangulation_->getVertexEdge(i, j, edge);
-      SimplexId neigh;
-      // get the neighbor corresponding to the current edge
-      for (SimplexId k = 0; k < 2; k++) {
-        triangulation_->getEdgeVertex(edge, k, neigh);
-        if (neigh != i) {
+  for (SimplexId i = 0; i < edgesNumber; ++i) {
+
+    // the two vertices of the current edge (+ a third)
+    std::vector<SimplexId> edgeVertices(3);
+    for (SimplexId j = 0; j < 2; ++j) {
+      triangulation_->getEdgeVertex(i, j, edgeVertices[j]);
+    }
+
+    // get the triangles that share the current edge
+    SimplexId trianglesNumber = triangulation_->getEdgeTriangleNumber(i);
+    std::vector<SimplexId> edgeTriangles(trianglesNumber);
+    for (SimplexId j = 0; j < trianglesNumber; ++j) {
+      triangulation_->getEdgeTriangle(i, j, edgeTriangles[j]);
+    }
+
+    // iterate over current edge triangles
+    std::vector<double> angles;
+
+    for (const auto &j : edgeTriangles) {
+
+      // get the third vertex of the triangle
+      SimplexId thirdNeigh;
+      for (SimplexId k = 0; k < 3; ++k) {
+        triangulation_->getTriangleVertex(j, k, thirdNeigh);
+        if (thirdNeigh != edgeVertices[0] && thirdNeigh != edgeVertices[1]) {
+          edgeVertices[2] = thirdNeigh;
           break;
         }
       }
-
-      SimplexId ntriangles = triangulation_->getEdgeTriangleNumber(edge);
-      std::vector<double> cotans;
-      for (SimplexId k = 0; k < ntriangles; k++) {
-        SimplexId triangle;
-        triangulation_->getEdgeTriangle(edge, k, triangle);
-        SimplexId thirdNeigh;
-        // assume a triangle has only 3 vertices
-        // TODO 3D case
-        for (SimplexId l = 0; l < 3; l++) {
-          triangulation_->getTriangleEdge(triangle, l, thirdNeigh);
-          if (thirdNeigh != i && thirdNeigh != neigh) {
-            break;
-          }
-        }
-        float coordsf[9];
-        triangulation_->getVertexPoint(i, coordsf[0], coordsf[1], coordsf[2]);
-        triangulation_->getVertexPoint(neigh, coordsf[3], coordsf[4],
-                                       coordsf[5]);
-        triangulation_->getVertexPoint(thirdNeigh, coordsf[6], coordsf[7],
-                                       coordsf[8]);
-        double coords[9];
-        for (SimplexId k = 0; k < 9; k++) {
-          coords[k] = double(coordsf[k]);
-        }
-        double angle = ttk::Geometry::angle(&coords[6],  // thirdNeigh
-                                            &coords[0],  // i
-                                            &coords[6],  // thirdNeigh
-                                            &coords[3]); // neigh
-        cotans.emplace_back(std::tan(1.0 / angle));
+      // compute the 3D coords of the three vertices
+      float coordsf[9];
+      for (SimplexId k = 0; k < 3; ++k) {
+        triangulation_->getVertexPoint(edgeVertices[k], coordsf[3 * k],
+                                       coordsf[3 * k + 1], coordsf[3 * k + 2]);
       }
-
-      // fill laplacian matrix also for neighbor
-      triplets.emplace_back(
-          TripletType(i, neigh, 0.5 * (cotans[0] + cotans[1])));
+      double coords[9];
+      for (SimplexId k = 0; k < 9; k++) {
+        coords[k] = double(coordsf[k]);
+      }
+      angles.emplace_back(ttk::Geometry::angle(&coords[6], // edgeVertices[2]
+                                               &coords[0], // edgeVertices[0]
+                                               &coords[6], // edgeVertices[2]
+                                               &coords[3]) // edgeVertices[1]
+      );
     }
+
+    double cotan_weight =
+        0.5 * (std::tan(1.0 / angles[0]) + std::tan(1.0 / angles[1]));
+
+    // since we iterate over the edges, fill the laplacian matrix
+    // symmetrically for the two vertices
+    triplets.emplace_back(
+        TripletType(edgeVertices[0], edgeVertices[1], -cotan_weight));
+    triplets.emplace_back(
+        TripletType(edgeVertices[1], edgeVertices[0], -cotan_weight));
+
+    // store the cotan weight sum for the two vertices of the current edge
+    vertexWeightSum[edgeVertices[0]] += cotan_weight;
+    vertexWeightSum[edgeVertices[1]] += cotan_weight;
   }
 
+  // on the diagonal: sum of cotan weights for every vertex
+  for (SimplexId i = 0; i < vertexNumber_; ++i) {
+    triplets.emplace_back(TripletType(i, i, vertexWeightSum[i]));
+  }
+
+  // put triplets into lap
   lap.setFromTriplets(triplets.begin(), triplets.end());
 
   {
@@ -282,7 +299,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   // penalty matrix
   SpMat penalty(vertexNumber_, vertexNumber_);
-  const double alpha = 10.0e8;
+  const double alpha = 1.0e8;
   for (auto i : identifiersVec) {
     penalty.coeffRef(i, i) = alpha;
   }
