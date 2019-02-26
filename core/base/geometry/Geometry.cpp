@@ -8,10 +8,6 @@
 using namespace std;
 using namespace ttk;
 
-Geometry::Geometry() {}
-
-Geometry::~Geometry() {}
-
 double Geometry::angle(const double *vA0, const double *vA1, const double *vB0,
                        const double *vB1) {
 
