@@ -8,20 +8,19 @@
 using namespace std;
 using namespace ttk;
 
-double Geometry::angle(const double *vA0, const double *vA1, const double *vB0,
-                       const double *vB1) {
-
+template <typename T>
+T Geometry::angle(const T *vA0, const T *vA1, const T *vB0, const T *vB1) {
   return M_PI - acos(dotProduct(vA0, vA1, vB0, vB1) /
                      (magnitude(vA0, vA1) * magnitude(vB0, vB1)));
 }
 
-bool Geometry::areVectorsColinear(const double *vA0, const double *vA1,
-                                  const double *vB0, const double *vB1,
-                                  vector<double> *coefficients,
-                                  const double *tolerance) {
+template <typename T>
+bool Geometry::areVectorsColinear(const T *vA0, const T *vA1, const T *vB0,
+                                  const T *vB1, vector<T> *coefficients,
+                                  const T *tolerance) {
 
   int aNullComponents = 0, bNullComponents = 0;
-  vector<double> a(3), b(3);
+  vector<T> a(3), b(3);
   for (int i = 0; i < 3; i++) {
     a[i] = vA1[i] - vA0[i];
     if (fabs(a[i]) < pow10(-FLT_DIG))
@@ -43,7 +42,7 @@ bool Geometry::areVectorsColinear(const double *vA0, const double *vA1,
   }
 
   bool useDenominatorA = false;
-  double sumA = 0, sumB = 0;
+  T sumA = 0, sumB = 0;
   for (int i = 0; i < 3; i++) {
     sumA += fabs(a[i]);
     sumB += fabs(b[i]);
@@ -52,9 +51,9 @@ bool Geometry::areVectorsColinear(const double *vA0, const double *vA1,
     useDenominatorA = true;
   }
 
-  vector<double> k(3, 0);
+  vector<T> k(3, 0);
 
-  double maxDenominator = 0;
+  T maxDenominator = 0;
   int isNan = -1, maximizer = 0;
   for (int i = 0; i < 3; i++) {
     if (useDenominatorA) {
@@ -82,7 +81,7 @@ bool Geometry::areVectorsColinear(const double *vA0, const double *vA1,
     }
   }
 
-  double colinearityThreshold;
+  T colinearityThreshold;
 
   colinearityThreshold = pow10(-FLT_DIG);
   if (tolerance)
@@ -111,19 +110,19 @@ bool Geometry::areVectorsColinear(const double *vA0, const double *vA1,
   return false;
 }
 
-int Geometry::computeBarycentricCoordinates(const double *p0, const double *p1,
-                                            const double *p,
-                                            vector<double> &baryCentrics,
+template <typename T>
+int Geometry::computeBarycentricCoordinates(const T *p0, const T *p1,
+                                            const T *p, vector<T> &baryCentrics,
                                             const int &dimension) {
 
   baryCentrics.resize(2);
 
   int bestI = 0;
-  double maxDenominator = 0;
+  T maxDenominator = 0;
 
   for (int i = 0; i < dimension; i++) {
 
-    double denominator = fabs(p0[i] - p1[i]);
+    T denominator = fabs(p0[i] - p1[i]);
     if (!i) {
       maxDenominator = denominator;
       bestI = i;
@@ -141,7 +140,7 @@ int Geometry::computeBarycentricCoordinates(const double *p0, const double *p1,
   baryCentrics[1] = 1 - baryCentrics[0];
 
   // check if the point lies in the edge
-  vector<float> test(dimension);
+  vector<T> test(dimension);
   for (int i = 0; i < dimension; i++)
     test[i] = baryCentrics[0] * p0[i] + baryCentrics[1] * p1[i];
 
@@ -153,17 +152,17 @@ int Geometry::computeBarycentricCoordinates(const double *p0, const double *p1,
 
   return 0;
 }
-
-int Geometry::computeBarycentricCoordinates(const double *p0, const double *p1,
-                                            const double *p2, const double *p,
-                                            vector<double> &baryCentrics) {
+template <typename T>
+int Geometry::computeBarycentricCoordinates(const T *p0, const T *p1,
+                                            const T *p2, const T *p,
+                                            vector<T> &baryCentrics) {
 
   baryCentrics.resize(3);
 
   // find the pair of coordinates that maximize the sum of the denominators
   // (more stable computations)
   int bestI = 0, bestJ = 1;
-  double maxDenominator = 0;
+  T maxDenominator = 0;
 
   for (int i = 0; i < 2; i++) {
     for (int j = i + 1; j < 3; j++) {
@@ -173,7 +172,7 @@ int Geometry::computeBarycentricCoordinates(const double *p0, const double *p1,
       baryCentrics[1] =
           (p1[j] - p2[j]) * (p0[i] - p2[i]) + (p2[i] - p1[i]) * (p0[j] - p2[j]);
 
-      double denominator = fabs(baryCentrics[0]);
+      T denominator = fabs(baryCentrics[0]);
 
       if (fabs(baryCentrics[1]) < denominator)
         denominator = fabs(baryCentrics[1]);
@@ -208,7 +207,7 @@ int Geometry::computeBarycentricCoordinates(const double *p0, const double *p1,
   baryCentrics[2] = 1 - baryCentrics[0] - baryCentrics[1];
 
   // check if the point lies in the triangle
-  vector<float> test(3);
+  vector<T> test(3);
   for (int i = 0; i < 3; i++)
     test[i] = baryCentrics[0] * p0[i] + baryCentrics[1] * p1[i] +
               baryCentrics[2] * p2[i];
@@ -223,30 +222,13 @@ int Geometry::computeBarycentricCoordinates(const double *p0, const double *p1,
   return 0;
 }
 
-int Geometry::computeBarycentricCoordinates(const float *p0, const float *p1,
-                                            const float *p2, const float *p,
-                                            vector<double> &baryCentrics) {
+template <typename T>
+bool Geometry::computeSegmentIntersection(const T &xA, const T &yA, const T &xB,
+                                          const T &yB, const T &xC, const T &yC,
+                                          const T &xD, const T &yD, T &x,
+                                          T &y) {
 
-  vector<double> P0(3), P1(3), P2(3), P(3);
-
-  for (int i = 0; i < 3; i++) {
-    P0[i] = p0[i];
-    P1[i] = p1[i];
-    P2[i] = p2[i];
-    P[i] = p[i];
-  }
-
-  return computeBarycentricCoordinates(P0.data(), P1.data(), P2.data(),
-                                       P.data(), baryCentrics);
-}
-
-bool Geometry::computeSegmentIntersection(const double &xA, const double &yA,
-                                          const double &xB, const double &yB,
-                                          const double &xC, const double &yC,
-                                          const double &xD, const double &yD,
-                                          double &x, double &y) {
-
-  double d = (xA - xB) * (yC - yD) - (yA - yB) * (xC - xD);
+  T d = (xA - xB) * (yC - yD) - (yA - yB) * (xC - xD);
 
   if (fabs(d) < pow(10, -DBL_DIG))
     return false;
@@ -266,10 +248,11 @@ bool Geometry::computeSegmentIntersection(const double &xA, const double &yA,
   return true;
 }
 
-int Geometry::computeTriangleArea(const double *p0, const double *p1,
-                                  const double *p2, double &area) {
+template <typename T>
+int Geometry::computeTriangleArea(const T *p0, const T *p1, const T *p2,
+                                  T &area) {
 
-  vector<double> cross;
+  vector<T> cross;
 
   crossProduct(p0, p1, p1, p2, cross);
 
@@ -278,8 +261,9 @@ int Geometry::computeTriangleArea(const double *p0, const double *p1,
   return 0;
 }
 
-int Geometry::computeTriangleAngles(const double *p0, const double *p1,
-                                    const double *p2, vector<double> &angles) {
+template <typename T>
+int Geometry::computeTriangleAngles(const T *p0, const T *p1, const T *p2,
+                                    vector<T> &angles) {
 
   angles.resize(3);
 
@@ -290,13 +274,13 @@ int Geometry::computeTriangleAngles(const double *p0, const double *p1,
   return 0;
 }
 
-int Geometry::crossProduct(const double *vA0, const double *vA1,
-                           const double *vB0, const double *vB1,
-                           vector<double> &crossProduct) {
+template <typename T>
+int Geometry::crossProduct(const T *vA0, const T *vA1, const T *vB0,
+                           const T *vB1, vector<T> &crossProduct) {
 
   crossProduct.resize(3);
 
-  vector<double> a(3), b(3);
+  vector<T> a(3), b(3);
 
   for (int i = 0; i < 3; i++) {
     a[i] = vA1[i] - vA0[i];
@@ -311,30 +295,18 @@ int Geometry::crossProduct(const double *vA0, const double *vA1,
   return 0;
 }
 
-int Geometry::crossProduct(const double *vA, const double *vB,
-                           double *crossProduct) {
+template <typename T>
+int Geometry::crossProduct(const T *vA, const T *vB, T *crossProduct) {
   crossProduct[0] = vA[1] * vB[2] - vA[2] * vB[1];
   crossProduct[1] = vA[2] * vB[0] - vA[0] * vB[2];
   crossProduct[2] = vA[0] * vB[1] - vA[1] * vB[0];
   return 0;
 }
 
-double Geometry::distance(const double *p0, const double *p1,
-                          const int &dimension) {
+template <typename T>
+T Geometry::distance(const T *p0, const T *p1, const int &dimension) {
 
-  double distance = 0;
-
-  for (int i = 0; i < dimension; i++) {
-    distance += (p0[i] - p1[i]) * (p0[i] - p1[i]);
-  }
-
-  return sqrt(distance);
-}
-
-double Geometry::distance(const float *p0, const float *p1,
-                          const int &dimension) {
-
-  double distance = 0;
+  T distance = 0;
 
   for (int i = 0; i < dimension; i++) {
     distance += (p0[i] - p1[i]) * (p0[i] - p1[i]);
@@ -343,22 +315,23 @@ double Geometry::distance(const float *p0, const float *p1,
   return sqrt(distance);
 }
 
-double Geometry::dotProduct(const double *vA0, const double *vA1,
-                            const double *vB0, const double *vB1) {
+template <typename T>
+T Geometry::dotProduct(const T *vA0, const T *vA1, const T *vB0, const T *vB1) {
 
-  double dotProduct = 0;
+  T dotProduct = 0;
   for (int i = 0; i < 3; i++)
     dotProduct += (vA1[i] - vA0[i]) * (vB1[i] - vB0[i]);
 
   return dotProduct;
 }
 
-double Geometry::dotProduct(const double *vA, const double *vB) {
+template <typename T> T Geometry::dotProduct(const T *vA, const T *vB) {
   return vA[0] * vB[0] + vA[1] * vB[1] + vA[2] * vB[2];
 }
 
+template <typename T>
 int Geometry::getBoundingBox(const vector<vector<float>> &points,
-                             vector<pair<double, double>> &bBox) {
+                             vector<pair<T, T>> &bBox) {
 
   if (!points.size())
     return -1;
@@ -389,10 +362,11 @@ int Geometry::getBoundingBox(const vector<vector<float>> &points,
   return 0;
 }
 
-bool Geometry::isPointInTriangle(const double *p0, const double *p1,
-                                 const double *p2, const double *p) {
+template <typename T>
+bool Geometry::isPointInTriangle(const T *p0, const T *p1, const T *p2,
+                                 const T *p) {
 
-  vector<double> barycentrics;
+  vector<T> barycentrics;
 
   Geometry::computeBarycentricCoordinates(p0, p1, p2, p, barycentrics);
 
@@ -406,28 +380,11 @@ bool Geometry::isPointInTriangle(const double *p0, const double *p1,
   return true;
 }
 
-bool Geometry::isPointInTriangle(const float *p0, const float *p1,
-                                 const float *p2, const float *p) {
+template <typename T>
+bool Geometry::isPointOnSegment(const T &x, const T &y, const T &xA,
+                                const T &yA, const T &xB, const T &yB) {
 
-  vector<double> barycentrics;
-
-  Geometry::computeBarycentricCoordinates(p0, p1, p2, p, barycentrics);
-
-  for (int i = 0; i < (int)barycentrics.size(); i++) {
-    if (barycentrics[i] < -pow10(-FLT_DIG))
-      return false;
-    if (barycentrics[i] > 1 + pow10(-FLT_DIG))
-      return false;
-  }
-
-  return true;
-}
-
-bool Geometry::isPointOnSegment(const double &x, const double &y,
-                                const double &xA, const double &yA,
-                                const double &xB, const double &yB) {
-
-  vector<double> pA(2), pB(2), p(2);
+  vector<T> pA(2), pB(2), p(2);
 
   pA[0] = xA;
   pA[1] = yA;
@@ -441,10 +398,11 @@ bool Geometry::isPointOnSegment(const double &x, const double &y,
   return Geometry::isPointOnSegment(p.data(), pA.data(), pB.data(), 2);
 }
 
-bool Geometry::isPointOnSegment(const double *p, const double *pA,
-                                const double *pB, const int &dimension) {
+template <typename T>
+bool Geometry::isPointOnSegment(const T *p, const T *pA, const T *pB,
+                                const int &dimension) {
 
-  vector<double> baryCentrics;
+  vector<T> baryCentrics;
 
   Geometry::computeBarycentricCoordinates(pA, pB, p, baryCentrics, dimension);
 
@@ -454,12 +412,13 @@ bool Geometry::isPointOnSegment(const double *p, const double *pA,
            (baryCentrics[1] < 1 + pow10(-DBL_DIG))));
 }
 
-bool Geometry::isTriangleColinear(const double *p0, const double *p1,
-                                  const double *p2, const double *tolerance) {
+template <typename T>
+bool Geometry::isTriangleColinear(const T *p0, const T *p1, const T *p2,
+                                  const T *tolerance) {
 
   bool maxDecision = false;
-  double maxCoefficient = 0;
-  vector<double> coefficients(3);
+  T maxCoefficient = 0;
+  vector<T> coefficients(3);
 
   bool decision = areVectorsColinear(p0, p1, p1, p2, &coefficients, tolerance);
   maxDecision = decision;
@@ -494,9 +453,9 @@ bool Geometry::isTriangleColinear(const double *p0, const double *p1,
   return maxDecision;
 }
 
-double Geometry::magnitude(const double *v) {
+template <typename T> T Geometry::magnitude(const T *v) {
 
-  double mag = 0;
+  T mag = 0;
 
   for (int i = 0; i < 3; i++) {
     mag += v[i] * v[i];
@@ -505,9 +464,9 @@ double Geometry::magnitude(const double *v) {
   return sqrt(mag);
 }
 
-double Geometry::magnitude(const double *o, const double *d) {
+template <typename T> T Geometry::magnitude(const T *o, const T *d) {
 
-  double mag = 0;
+  T mag = 0;
 
   for (int i = 0; i < 3; i++) {
     mag += (o[i] - d[i]) * (o[i] - d[i]);
@@ -515,3 +474,114 @@ double Geometry::magnitude(const double *o, const double *d) {
 
   return sqrt(mag);
 }
+
+// explicit instantiations for double
+
+template double Geometry::angle<double>(double const *, double const *,
+                                        double const *, double const *);
+template bool
+Geometry::areVectorsColinear<double>(double const *, double const *,
+                                     double const *, double const *,
+                                     std::vector<double> *, double const *);
+template int Geometry::computeBarycentricCoordinates<double>(
+    double const *, double const *, double const *, std::vector<double> &,
+    int const &);
+// template int Geometry::computeBarycentricCoordinates<double>(
+//     double const &, double const &, double const &, double const &,
+//     double const &, double const &, std::vector<double> &);
+template int
+Geometry::computeBarycentricCoordinates<double>(double const *, double const *,
+                                                double const *, double const *,
+                                                std::vector<double> &);
+template bool Geometry::computeSegmentIntersection<double>(
+    double const &, double const &, double const &, double const &,
+    double const &, double const &, double const &, double const &, double &,
+    double &);
+template int Geometry::computeTriangleAngles<double>(double const *,
+                                                     double const *,
+                                                     double const *,
+                                                     std::vector<double> &);
+template int Geometry::computeTriangleArea<double>(double const *,
+                                                   double const *,
+                                                   double const *, double &);
+template int Geometry::crossProduct<double>(double const *, double const *,
+                                            double const *, double const *,
+                                            std::vector<double> &);
+template int Geometry::crossProduct<double>(double const *, double const *,
+                                            double *);
+template double Geometry::distance<double>(double const *, double const *,
+                                           int const &);
+template double Geometry::dotProduct<double>(double const *, double const *,
+                                             double const *, double const *);
+template double Geometry::dotProduct<double>(double const *, double const *);
+template int
+Geometry::getBoundingBox<double>(std::vector<std::vector<float>> const &,
+                                 std::vector<std::pair<double, double>> &);
+template bool Geometry::isPointInTriangle<double>(double const *,
+                                                  double const *,
+                                                  double const *,
+                                                  double const *);
+template bool Geometry::isPointOnSegment<double>(double const &, double const &,
+                                                 double const &, double const &,
+                                                 double const &,
+                                                 double const &);
+template bool Geometry::isPointOnSegment<double>(double const *, double const *,
+                                                 double const *, int const &);
+template bool Geometry::isTriangleColinear<double>(double const *,
+                                                   double const *,
+                                                   double const *,
+                                                   double const *);
+template double Geometry::magnitude<double>(double const *);
+template double Geometry::magnitude<double>(double const *, double const *);
+
+// explicit instantiations for float
+
+template float Geometry::angle<float>(float const *, float const *,
+                                      float const *, float const *);
+template bool Geometry::areVectorsColinear<float>(float const *, float const *,
+                                                  float const *, float const *,
+                                                  std::vector<float> *,
+                                                  float const *);
+template int Geometry::computeBarycentricCoordinates<float>(
+    float const *, float const *, float const *, std::vector<float> &,
+    int const &);
+// template int Geometry::computeBarycentricCoordinates<float>(
+//     float const &, float const &, float const &, float const &,
+//     float const &, float const &, std::vector<float> &);
+template int
+Geometry::computeBarycentricCoordinates<float>(float const *, float const *,
+                                               float const *, float const *,
+                                               std::vector<float> &);
+template bool Geometry::computeSegmentIntersection<float>(
+    float const &, float const &, float const &, float const &, float const &,
+    float const &, float const &, float const &, float &, float &);
+template int Geometry::computeTriangleAngles<float>(float const *,
+                                                    float const *,
+                                                    float const *,
+                                                    std::vector<float> &);
+template int Geometry::computeTriangleArea<float>(float const *, float const *,
+                                                  float const *, float &);
+template int Geometry::crossProduct<float>(float const *, float const *,
+                                           float const *, float const *,
+                                           std::vector<float> &);
+template int Geometry::crossProduct<float>(float const *, float const *,
+                                           float *);
+template float Geometry::distance<float>(float const *, float const *,
+                                         int const &);
+template float Geometry::dotProduct<float>(float const *, float const *,
+                                           float const *, float const *);
+template float Geometry::dotProduct<float>(float const *, float const *);
+template int
+Geometry::getBoundingBox<float>(std::vector<std::vector<float>> const &,
+                                std::vector<std::pair<float, float>> &);
+template bool Geometry::isPointInTriangle<float>(float const *, float const *,
+                                                 float const *, float const *);
+template bool Geometry::isPointOnSegment<float>(float const &, float const &,
+                                                float const &, float const &,
+                                                float const &, float const &);
+template bool Geometry::isPointOnSegment<float>(float const *, float const *,
+                                                float const *, int const &);
+template bool Geometry::isTriangleColinear<float>(float const *, float const *,
+                                                  float const *, float const *);
+template float Geometry::magnitude<float>(float const *);
+template float Geometry::magnitude<float>(float const *, float const *);
