@@ -196,14 +196,10 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
         }
       }
       // compute the 3D coords of the three vertices
-      float coordsf[9];
+      float coords[9];
       for (SimplexId k = 0; k < 3; ++k) {
-        triangulation_->getVertexPoint(edgeVertices[k], coordsf[3 * k],
-                                       coordsf[3 * k + 1], coordsf[3 * k + 2]);
-      }
-      double coords[9];
-      for (SimplexId k = 0; k < 9; k++) {
-        coords[k] = double(coordsf[k]);
+        triangulation_->getVertexPoint(edgeVertices[k], coords[3 * k],
+                                       coords[3 * k + 1], coords[3 * k + 2]);
       }
       angles.emplace_back(ttk::Geometry::angle(&coords[6], // edgeVertices[2]
                                                &coords[0], // edgeVertices[0]
