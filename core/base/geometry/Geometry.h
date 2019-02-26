@@ -130,9 +130,10 @@ int crossProduct(const T *vA0, const T *vA1, const T *vB0, const T *vB1,
 /// Compute the cross product of two 3D std::vectors
 /// \param vA xyz coordinates of vA std::vector
 /// \param vB xyz coordinates of vB std::vector
-/// \param vC Output cross product.
+/// \param crossProduct Output cross product.
 /// \return Returns 0 upon success, negative values otherwise.
-template <typename T> int crossProduct(const T *vA, const T *vB, T *vC);
+template <typename T>
+int crossProduct(const T *vA, const T *vB, T *crossProduct);
 
 /// Compute the Euclidean distance between two points
 /// \param p0 xyz coordinates of the first input point.

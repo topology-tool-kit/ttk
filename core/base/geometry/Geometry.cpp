@@ -23,15 +23,18 @@ bool Geometry::areVectorsColinear(const T *vA0, const T *vA1, const T *vB0,
   vector<T> a(3), b(3);
   for (int i = 0; i < 3; i++) {
     a[i] = vA1[i] - vA0[i];
-    if (fabs(a[i]) < pow10(-FLT_DIG))
+    if (fabs(a[i]) < pow10(-FLT_DIG)) {
       aNullComponents++;
+    }
     b[i] = vB1[i] - vB0[i];
-    if (fabs(b[i]) < pow10(-FLT_DIG))
+    if (fabs(b[i]) < pow10(-FLT_DIG)) {
       bNullComponents++;
+    }
   }
 
-  if ((aNullComponents == 3) || (bNullComponents == 3))
+  if ((aNullComponents == 3) || (bNullComponents == 3)) {
     return true;
+  }
 
   // check for axis aligned vectors
   if ((aNullComponents > 1) || (bNullComponents > 1)) {
@@ -84,8 +87,9 @@ bool Geometry::areVectorsColinear(const T *vA0, const T *vA1, const T *vB0,
   T colinearityThreshold;
 
   colinearityThreshold = pow10(-FLT_DIG);
-  if (tolerance)
+  if (tolerance) {
     colinearityThreshold = *tolerance;
+  }
 
   if (coefficients) {
     (*coefficients) = k;
@@ -101,8 +105,9 @@ bool Geometry::areVectorsColinear(const T *vA0, const T *vA1, const T *vB0,
     }
   } else {
     if (fabs(1 - fabs(k[(isNan + 1) % 3] / k[(isNan + 2) % 3])) <
-        colinearityThreshold)
+        colinearityThreshold) {
       return true;
+    }
   }
 
   k[0] = k[1] = k[2] = 0;
@@ -141,13 +146,15 @@ int Geometry::computeBarycentricCoordinates(const T *p0, const T *p1,
 
   // check if the point lies in the edge
   vector<T> test(dimension);
-  for (int i = 0; i < dimension; i++)
+  for (int i = 0; i < dimension; i++) {
     test[i] = baryCentrics[0] * p0[i] + baryCentrics[1] * p1[i];
+  }
 
   if ((!((fabs(test[0] - p[0]) < pow(10, -FLT_DIG + 1)) &&
          (fabs(test[1] - p[1]) < pow(10, -FLT_DIG + 1))))) {
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 2; i++) {
       baryCentrics[i] = -baryCentrics[i];
+    }
   }
 
   return 0;
@@ -174,8 +181,9 @@ int Geometry::computeBarycentricCoordinates(const T *p0, const T *p1,
 
       T denominator = fabs(baryCentrics[0]);
 
-      if (fabs(baryCentrics[1]) < denominator)
+      if (fabs(baryCentrics[1]) < denominator) {
         denominator = fabs(baryCentrics[1]);
+      }
 
       if ((i == 0) && (j == 1)) {
         maxDenominator = denominator;
@@ -208,15 +216,17 @@ int Geometry::computeBarycentricCoordinates(const T *p0, const T *p1,
 
   // check if the point lies in the triangle
   vector<T> test(3);
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 3; i++) {
     test[i] = baryCentrics[0] * p0[i] + baryCentrics[1] * p1[i] +
               baryCentrics[2] * p2[i];
+  }
 
   if (!((fabs(test[0] - p[0]) < pow(10, -FLT_DIG)) &&
         (fabs(test[1] - p[1]) < pow(10, -FLT_DIG)) &&
         (fabs(test[2] - p[2]) < pow(10, -FLT_DIG)))) {
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < 3; i++) {
       baryCentrics[i] = -1 - baryCentrics[i];
+    }
   }
 
   return 0;
@@ -230,20 +240,23 @@ bool Geometry::computeSegmentIntersection(const T &xA, const T &yA, const T &xB,
 
   T d = (xA - xB) * (yC - yD) - (yA - yB) * (xC - xD);
 
-  if (fabs(d) < pow(10, -DBL_DIG))
+  if (fabs(d) < pow(10, -DBL_DIG)) {
     return false;
+  }
 
   x = ((xC - xD) * (xA * yB - yA * xB) - (xA - xB) * (xC * yD - yC * xD)) / d;
 
   y = ((yC - yD) * (xA * yB - yA * xB) - (yA - yB) * (xC * yD - yC * xD)) / d;
 
   if ((x < std::min(xA, xB) - pow10(-FLT_DIG)) ||
-      (x > std::max(xA, xB) + pow10(-FLT_DIG)))
+      (x > std::max(xA, xB) + pow10(-FLT_DIG))) {
     return false;
+  }
 
   if ((x < std::min(xC, xD) - pow10(-FLT_DIG)) ||
-      (x > std::max(xC, xD) + pow10(-FLT_DIG)))
+      (x > std::max(xC, xD) + pow10(-FLT_DIG))) {
     return false;
+  }
 
   return true;
 }
@@ -319,8 +332,9 @@ template <typename T>
 T Geometry::dotProduct(const T *vA0, const T *vA1, const T *vB0, const T *vB1) {
 
   T dotProduct = 0;
-  for (int i = 0; i < 3; i++)
+  for (int i = 0; i < 3; i++) {
     dotProduct += (vA1[i] - vA0[i]) * (vB1[i] - vB0[i]);
+  }
 
   return dotProduct;
 }
@@ -333,16 +347,17 @@ template <typename T>
 int Geometry::getBoundingBox(const vector<vector<float>> &points,
                              vector<pair<T, T>> &bBox) {
 
-  if (!points.size())
+  if (points.empty()) {
     return -1;
+  }
 
   int dimension = points[0].size();
 
   bBox.resize(dimension);
 
-  for (SimplexId i = 0; i < (SimplexId)points.size(); i++) {
+  for (SimplexId i = 0; i < static_cast<SimplexId>(points.size()); i++) {
 
-    if (!i) {
+    if (i == 0) {
       for (int j = 0; j < dimension; j++) {
         bBox[j].first = points[i][j];
         bBox[j].second = points[i][j];
@@ -370,11 +385,13 @@ bool Geometry::isPointInTriangle(const T *p0, const T *p1, const T *p2,
 
   Geometry::computeBarycentricCoordinates(p0, p1, p2, p, barycentrics);
 
-  for (int i = 0; i < (int)barycentrics.size(); i++) {
-    if (barycentrics[i] < -pow10(-DBL_DIG))
+  for (int i = 0; i < static_cast<int>(barycentrics.size()); i++) {
+    if (barycentrics[i] < -pow10(-DBL_DIG)) {
       return false;
-    if (barycentrics[i] > 1 + pow10(-DBL_DIG))
+    }
+    if (barycentrics[i] > 1 + pow10(-DBL_DIG)) {
       return false;
+    }
   }
 
   return true;
