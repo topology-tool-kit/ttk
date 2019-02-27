@@ -84,10 +84,12 @@ public:
 
   template <typename scalarFieldType> int execute() const;
 
-  template <typename SparseMatrixType, typename TripletsType>
+  template <typename SparseMatrixType, typename TripletType,
+            typename scalarFieldType>
   SparseMatrixType compute_laplacian() const;
 
-  template <typename SparseMatrixType, typename TripletsType>
+  template <typename SparseMatrixType, typename TripletType,
+            typename scalarFieldType>
   SparseMatrixType compute_laplacian_with_cotan_weights() const;
 
 protected:
@@ -110,15 +112,17 @@ protected:
 };
 } // namespace ttk
 
-template <typename SparseMatrixType, typename TripletType>
+template <typename SparseMatrixType, typename TripletType,
+          typename scalarFieldType>
 SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
+
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
   std::vector<TripletType> triplets;
 #define USE_SYMMETRIC_LAPLACIAN
 #ifdef USE_SYMMETRIC_LAPLACIAN
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
     SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
-    triplets.emplace_back(TripletType(i, i, double(nneigh)));
+    triplets.emplace_back(TripletType(i, i, scalarFieldType(nneigh)));
     // rest: neighbors mapping
     for (SimplexId j = 0; j < nneigh; ++j) {
       SimplexId neighid = -1;
@@ -134,7 +138,7 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
     for (SimplexId j = 0; j < nneigh; ++j) {
       SimplexId neighid = -1;
       triangulation_->getVertexNeighbor(i, j, neighid);
-      triplets.emplace_back(TripletType(i, j, -1.0 / double(nneigh)));
+      triplets.emplace_back(TripletType(i, j, -1.0 / scalarFieldType(nneigh)));
     }
   }
 #endif // USE_SYMMETRIC_LAPLACIAN
@@ -142,7 +146,8 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
   return lap;
 }
 
-template <typename SparseMatrixType, typename TripletType>
+template <typename SparseMatrixType, typename TripletType,
+          typename scalarFieldType>
 SparseMatrixType
 ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
   using std::cout;
@@ -164,7 +169,7 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
   SimplexId edgesNumber = triangulation_->getNumberOfEdges();
 
   // hold sum of cotan weights for every vertex
-  std::vector<double> vertexWeightSum(vertexNumber_, 0.0);
+  std::vector<scalarFieldType> vertexWeightSum(vertexNumber_, 0.0);
 
   for (SimplexId i = 0; i < edgesNumber; ++i) {
 
@@ -182,7 +187,7 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
     }
 
     // iterate over current edge triangles
-    std::vector<double> angles;
+    std::vector<scalarFieldType> angles;
 
     for (const auto &j : edgeTriangles) {
 
@@ -208,7 +213,7 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
       );
     }
 
-    double cotan_weight =
+    scalarFieldType cotan_weight =
         0.5 * (std::tan(1.0 / angles[0]) + std::tan(1.0 / angles[1]));
 
     // since we iterate over the edges, fill the laplacian matrix
@@ -276,14 +281,14 @@ int ttk::HarmonicFieldComputation::execute() const {
 #ifdef TTK_ENABLE_EIGEN
   using SpMat = Eigen::SparseMatrix<scalarFieldType>;
   using SpVec = Eigen::SparseVector<scalarFieldType>;
-  using Tri = Eigen::Triplet<scalarFieldType>;
 
   // graph laplacian of current mesh
   SpMat lap;
   if (useCotanWeights_) {
-    lap = compute_laplacian_with_cotan_weights<SpMat, Tri>();
+    lap = compute_laplacian_with_cotan_weights<SpMat, TripletType,
+                                               scalarFieldType>();
   } else {
-    lap = compute_laplacian<SpMat, Tri>();
+    lap = compute_laplacian<SpMat, TripletType, scalarFieldType>();
   }
 
   // constraints vector
@@ -295,7 +300,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   // penalty matrix
   SpMat penalty(vertexNumber_, vertexNumber_);
-  const double alpha = 1.0e8;
+  const scalarFieldType alpha = 1.0e8;
   for (auto i : identifiersVec) {
     penalty.coeffRef(i, i) = alpha;
   }
