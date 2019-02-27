@@ -214,7 +214,7 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
     }
 
     scalarFieldType cotan_weight =
-        0.5 * (std::tan(1.0 / angles[0]) + std::tan(1.0 / angles[1]));
+        1.0 / std::tan(angles[0]) + 1.0 / std::tan(angles[1]);
 
     // since we iterate over the edges, fill the laplacian matrix
     // symmetrically for the two vertices
