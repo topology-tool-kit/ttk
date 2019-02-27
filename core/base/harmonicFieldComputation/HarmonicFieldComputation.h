@@ -180,7 +180,9 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
     }
 
     // get the triangles that share the current edge
+    // in 2D only 2, in 3D, maybe more...
     SimplexId trianglesNumber = triangulation_->getEdgeTriangleNumber(i);
+    // stores the triangles ID for every triangle around the current edge
     std::vector<SimplexId> edgeTriangles(trianglesNumber);
     for (SimplexId j = 0; j < trianglesNumber; ++j) {
       triangulation_->getEdgeTriangle(i, j, edgeTriangles[j]);
@@ -193,9 +195,12 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
 
       // get the third vertex of the triangle
       SimplexId thirdNeigh;
+      // a triangle has only three vertices
       for (SimplexId k = 0; k < 3; ++k) {
         triangulation_->getTriangleVertex(j, k, thirdNeigh);
         if (thirdNeigh != edgeVertices[0] && thirdNeigh != edgeVertices[1]) {
+          // store the third vertex ID into the edgeVertices array to
+          // be more easily handled
           edgeVertices[2] = thirdNeigh;
           break;
         }
@@ -213,8 +218,12 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
       );
     }
 
-    scalarFieldType cotan_weight =
-        1.0 / std::tan(angles[0]) + 1.0 / std::tan(angles[1]);
+    // cotan weights for every triangle around the current edge
+    scalarFieldType cotan_weight = 0.0;
+    // C++ has no map statement until C++17 (std::transform)
+    for (auto &angle : angles) {
+      cotan_weight += 1.0 / std::tan(angle);
+    }
 
     // since we iterate over the edges, fill the laplacian matrix
     // symmetrically for the two vertices
