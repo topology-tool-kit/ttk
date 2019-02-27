@@ -76,6 +76,8 @@ int DimensionReduction::execute() const{
   if(!matrix_) return -1;
 #endif
 
+  Timer t;
+  
   const int numberOfComponents=std::max(2,numberOfComponents_);
   const int numberOfNeighbors=std::max(1,numberOfNeighbors_);
 
@@ -309,7 +311,9 @@ int DimensionReduction::execute() const{
   pNRows=PyList_GetItem(pReturn, 0);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNRows){
-    cerr << "[SpectralEmbedding] Python error: function returned invalid number of rows." << endl;
+    cerr 
+      << "[DimensionReduction] Python error: function returned invalid number "
+      << "of rows." << endl;
     goto collect_garbage;
   }
 #endif
@@ -317,7 +321,8 @@ int DimensionReduction::execute() const{
   pNColumns=PyList_GetItem(pReturn, 1);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNColumns){
-    cerr << "[SpectralEmbedding] Python error: function returned invalid number of columns." << endl;
+    cerr << "[DimensionReduction] Python error: function returned invalid "
+      << "number of columns." << endl;
     goto collect_garbage;
   }
 #endif
@@ -325,7 +330,8 @@ int DimensionReduction::execute() const{
   pEmbedding=PyList_GetItem(pReturn, 2);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pEmbedding){
-    cerr << "[SpectralEmbedding] Python error: function returned invalid embedding data." << endl;
+    cerr << "[DimensionReduction] Python error: function returned invalid"
+      << " embedding data." << endl;
     goto collect_garbage;
   }
 #endif
@@ -351,6 +357,34 @@ int DimensionReduction::execute() const{
   // normal control-flow
   for(auto i : gc)
     Py_DECREF(i);
+
+  {
+    stringstream msg;
+    msg << "[DimensionReduction] ";
+    switch(method_){
+      case 0:
+        msg << "SE";
+        break;
+      case 1:
+        msg << "LLE";
+        break;
+      case 2:
+        msg << "MDS";
+        break; 
+      case 3:
+        msg << "t-SNE";
+        break;
+      case 4:
+        msg << "IsoMap";
+        break;
+      case 5:
+        msg << "PCA";
+        break;
+    }
+    msg << " computed in " << t.getElapsedTime() << " s." << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
+
   return 0;
 
   // error control-flow
@@ -362,5 +396,6 @@ collect_garbage:
   return -1;
 
 #endif
+
   return 0;
 }

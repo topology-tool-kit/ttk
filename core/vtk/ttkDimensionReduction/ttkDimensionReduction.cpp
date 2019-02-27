@@ -139,12 +139,5 @@ int ttkDimensionReduction::RequestData(vtkInformation *request,
 
   doIt(input, output);
 
-  {
-    stringstream msg;
-    msg << "[ttkDimensionReduction] Memory usage: " << m.getElapsedUsage()
-      << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
   return 1;
 }
