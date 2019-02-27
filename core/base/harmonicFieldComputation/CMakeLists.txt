@@ -6,5 +6,3 @@ ttk_add_base_library(harmonicFieldComputation
                      LINK
                      geometry
                      triangulation)
-
-target_compile_options(harmonicFieldComputation PRIVATE -Wextra -pedantic)
