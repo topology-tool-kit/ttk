@@ -265,12 +265,17 @@ int ttk::HarmonicFieldComputation::execute() const {
   using std::endl;
   using std::stringstream;
 
+#ifdef TTK_ENABLE_EIGEN
+  using SpMat = Eigen::SparseMatrix<scalarFieldType>;
+  using SpVec = Eigen::SparseVector<scalarFieldType>;
+  using TripletType = Eigen::Triplet<scalarFieldType>;
+
+  Timer t;
+
   // scalar field constraints vertices
   auto identifiers = static_cast<SimplexId *>(sources_);
   // scalar field: 0 everywhere except on constraint vertices
   auto sf = static_cast<scalarFieldType *>(constraints_);
-
-  Timer t;
 
   {
     stringstream msg;
@@ -286,11 +291,6 @@ int ttk::HarmonicFieldComputation::execute() const {
   // contains vertices with constraints
   std::vector<SimplexId> identifiersVec(identifiersSet.begin(),
                                         identifiersSet.end());
-
-#ifdef TTK_ENABLE_EIGEN
-  using SpMat = Eigen::SparseMatrix<scalarFieldType>;
-  using SpVec = Eigen::SparseVector<scalarFieldType>;
-  using TripletType = Eigen::Triplet<scalarFieldType>;
 
   // graph laplacian of current mesh
   SpMat lap;
