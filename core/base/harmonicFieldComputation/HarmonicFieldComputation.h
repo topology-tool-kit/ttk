@@ -281,6 +281,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 #ifdef TTK_ENABLE_EIGEN
   using SpMat = Eigen::SparseMatrix<scalarFieldType>;
   using SpVec = Eigen::SparseVector<scalarFieldType>;
+  using TripletType = Eigen::Triplet<scalarFieldType>;
 
   // graph laplacian of current mesh
   SpMat lap;
@@ -301,9 +302,12 @@ int ttk::HarmonicFieldComputation::execute() const {
   // penalty matrix
   SpMat penalty(vertexNumber_, vertexNumber_);
   const scalarFieldType alpha = 1.0e8;
+  std::vector<TripletType> triplets;
+  triplets.reserve(identifiersVec.size());
   for (auto i : identifiersVec) {
-    penalty.coeffRef(i, i) = alpha;
+    triplets.emplace_back(TripletType(i, i, alpha));
   }
+  penalty.setFromTriplets(triplets.begin(), triplets.end());
 
   Eigen::SimplicialCholesky<SpMat> solver(lap - penalty);
   SpMat sol = solver.solve(penalty * constraints);
