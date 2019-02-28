@@ -175,7 +175,7 @@ class ttkTrackingFromPersistenceDiagrams
     vtkUnstructuredGrid   *outputMesh_;
 
     template <typename dataType>
-    int doIt(vtkDataSet **input,
+      int doIt(std::vector<vtkDataSet *> &input,
              vtkUnstructuredGrid *outputMean,
              int numInputs);
 
@@ -188,7 +188,7 @@ class ttkTrackingFromPersistenceDiagrams
 
 template <typename dataType>
 int ttkTrackingFromPersistenceDiagrams::doIt(
-  vtkDataSet **input,
+  std::vector<vtkDataSet *> &input,
   vtkUnstructuredGrid *mesh,
   int numInputs)
 {
