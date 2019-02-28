@@ -170,14 +170,14 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
   harmonicField_.setSources(identifiers_->GetVoidPointer(0));
   harmonicField_.setConstraints(constraints_->GetVoidPointer(0));
 
-  vtkDataArray *harmonicScalarField{};
+  vtkSmartPointer<vtkDataArray> harmonicScalarField{};
 
   switch (OutputScalarFieldType) {
   case HarmonicFieldType::Float:
-    harmonicScalarField = vtkFloatArray::New();
+    harmonicScalarField = vtkSmartPointer<vtkFloatArray>::New();
     break;
   case HarmonicFieldType::Double:
-    harmonicScalarField = vtkDoubleArray::New();
+    harmonicScalarField = vtkSmartPointer<vtkDoubleArray>::New();
     break;
   default:
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -227,7 +227,6 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
   // update result
   output->ShallowCopy(domain);
   output->GetPointData()->AddArray(harmonicScalarField);
-  harmonicScalarField->Delete();
 
   std::stringstream msg;
   msg << "[ttkHarmonicFieldComputation] Memory usage: " << m.getElapsedUsage()
