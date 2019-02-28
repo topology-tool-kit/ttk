@@ -119,7 +119,12 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
   std::vector<TripletType> triplets;
 #define USE_SYMMETRIC_LAPLACIAN
+
 #ifdef USE_SYMMETRIC_LAPLACIAN
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
     SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
     triplets.emplace_back(TripletType(i, i, scalarFieldType(nneigh)));
@@ -130,7 +135,12 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
       triplets.emplace_back(TripletType(i, neighid, -1.0));
     }
   }
-#else
+
+#else // USE_SYMMETRIC_LAPLACIAN
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for (SimplexId i = 0; i < vertexNumber_; ++j) {
     triplets.emplace_back(TripletType(i, i, 1.0));
     SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
@@ -142,6 +152,7 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
     }
   }
 #endif // USE_SYMMETRIC_LAPLACIAN
+
   lap.setFromTriplets(triplets.begin(), triplets.end());
   return lap;
 }
@@ -171,6 +182,9 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
   // hold sum of cotan weights for every vertex
   std::vector<scalarFieldType> vertexWeightSum(vertexNumber_, 0.0);
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for (SimplexId i = 0; i < edgesNumber; ++i) {
 
     // the two vertices of the current edge (+ a third)
