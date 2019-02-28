@@ -28,7 +28,7 @@
 
 namespace ttk {
 
-enum SolvingMethodType { Auto, Cholesky, Iterative };
+enum SolvingMethodType { Auto = 0, Cholesky = 1, Iterative = 2 };
 
 class HarmonicFieldComputation : public Debug {
 
