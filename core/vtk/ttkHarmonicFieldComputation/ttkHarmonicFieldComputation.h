@@ -100,6 +100,9 @@ public:
   vtkSetMacro(UseCotanWeights, bool);
   vtkGetMacro(UseCotanWeights, bool);
 
+  vtkSetMacro(SolvingMethod, int);
+  vtkGetMacro(SolvingMethod, int);
+
   // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
   // get array of identifiers on the mesh
@@ -138,6 +141,8 @@ private:
   bool UseCotanWeights;
   // user-defined input identifier (SimplexId) scalar field name
   std::string InputIdentifiersFieldName;
+  // user-selected solving method
+  int SolvingMethod;
 
   // enum: float or double
   int OutputScalarFieldType;

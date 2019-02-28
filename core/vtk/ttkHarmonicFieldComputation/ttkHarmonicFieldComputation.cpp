@@ -3,7 +3,8 @@
 vtkStandardNewMacro(ttkHarmonicFieldComputation);
 
 ttkHarmonicFieldComputation::ttkHarmonicFieldComputation()
-    : triangulation_{}, identifiers_{}, constraints_{} {
+    : UseCotanWeights{false}, SolvingMethod{0}, triangulation_{},
+      identifiers_{}, constraints_{} {
 
   SetNumberOfInputPorts(2);
 
@@ -169,6 +170,7 @@ int ttkHarmonicFieldComputation::doIt(std::vector<vtkDataSet *> &inputs,
   harmonicField_.setConstraintNumber(numberOfPointsInSources);
   harmonicField_.setSources(identifiers_->GetVoidPointer(0));
   harmonicField_.setConstraints(constraints_->GetVoidPointer(0));
+  harmonicField_.setSolvingMethod(SolvingMethod);
 
   vtkSmartPointer<vtkDataArray> harmonicScalarField{};
 
