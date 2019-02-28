@@ -41,10 +41,6 @@ int BottleneckDistance::computeBottleneck(
   const int wasserstein = (wasserstein_ == "inf") ? -1 : stoi(wasserstein_);
   if (wasserstein < 0 && wasserstein != -1) return -4;
 
-  // Needed for distance computation.
-  const double maxDistance =
-      this->computeGeometricalRange<dataType>(CTDiagram1, CTDiagram2, d1Size, d2Size);
-
   // Needed to limit computation time.
   const dataType zeroThresh =
       this->computeMinimumRelevantPersistence<dataType>(CTDiagram1, CTDiagram2, d1Size, d2Size);
@@ -95,7 +91,7 @@ int BottleneckDistance::computeBottleneck(
 
   std::function<dataType (const diagramTuple, const diagramTuple)>
       distanceFunction =
-      [maxDistance, wasserstein, px, py, pz, pe, ps]
+      [wasserstein, px, py, pz, pe, ps]
           (const diagramTuple a, const diagramTuple b) -> dataType
       {
         BNodeType ta1 = std::get<1>(a);
