@@ -28,7 +28,7 @@
 
 namespace ttk {
 
-enum SolverType { Auto, Cholesky, Iterative };
+enum SolvingMethodType { Auto, Cholesky, Iterative };
 
 class HarmonicFieldComputation : public Debug {
 
@@ -83,15 +83,15 @@ public:
     outputScalarFieldPointer_ = data;
     return 0;
   }
-  inline int setSolverType(int solverType) {
-    solverType_ = static_cast<SolverType>(solverType);
+  inline int setSolvingMethod(int solvingMethod) {
+    solvingMethod_ = static_cast<SolvingMethodType>(solvingMethod);
     return 0;
   }
 
-  SolverType findBestSolver() const;
+  SolvingMethodType findBestSolver() const;
 
   template <typename SparseMatrixType, typename SparseVectorType,
-            typename solverType>
+            typename SolverType>
   int solve(SparseMatrixType const &lap, SparseMatrixType const &penalty,
             SparseVectorType const &constraints, SparseMatrixType &sol) const;
 
@@ -123,7 +123,7 @@ protected:
   // output of harmonic field computation
   void *outputScalarFieldPointer_;
   // user-selected solver
-  SolverType solverType_;
+  SolvingMethodType solvingMethod_;
 };
 } // namespace ttk
 
@@ -326,12 +326,12 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
 // #include                  <HarmonicFieldComputation.cpp>
 
 template <typename SparseMatrixType, typename SparseVectorType,
-          typename solverType>
+          typename SolverType>
 int ttk::HarmonicFieldComputation::solve(SparseMatrixType const &lap,
                                          SparseMatrixType const &penalty,
                                          SparseVectorType const &constraints,
                                          SparseMatrixType &sol) const {
-  solverType solver(lap - penalty);
+  SolverType solver(lap - penalty);
   sol = solver.solve(penalty * constraints);
   return solver.info();
 }
