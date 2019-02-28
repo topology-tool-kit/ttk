@@ -1354,7 +1354,10 @@ int SubLevelSetTree::getPersistenceDiagram(vector<pair<double, double> > &diagra
   return 0;
 }
 
-int SubLevelSetTree::getPersistencePairs(vector<pair<pair<int,int>,double>> &pairs) const{
+int SubLevelSetTree::getPersistencePairs(
+    vector<pair<pair<int, int>, double>> &pairs,
+    std::vector<std::pair<std::pair<int, int>, double>> *mergePairs,
+    std::vector<std::pair<std::pair<int, int>, double>> *splitPairs) const {
 
   Timer t;
   
@@ -2904,10 +2907,10 @@ int ContourTree::clearSkeleton(){
   return 0;
 }
 
-int ContourTree::getPersistencePairs(vector<pair<pair<int,int>,double>>* pairs,
+int ContourTree::getPersistencePairs(vector<pair<pair<int,int>,double>>& pairs,
 				     vector<pair<pair<int,int>,double>>* mergePairs,
 				     vector<pair<pair<int,int>,double>>* splitPairs) const{
-  if(pairs->size())
+  if(pairs.size())
     return 0;
   
   bool isLocalMerge=false;
@@ -2945,16 +2948,16 @@ int ContourTree::getPersistencePairs(vector<pair<pair<int,int>,double>>* pairs,
     }
   }
 
-  pairs->resize(mergePairs->size() + splitPairs->size());
+  pairs.resize(mergePairs->size() + splitPairs->size());
 
   for(unsigned int i=0; i<mergePairs->size(); ++i)
-    (*pairs)[i]=(*mergePairs)[i];
+    pairs[i]=(*mergePairs)[i];
 
   unsigned int shift=mergePairs->size();
   for(unsigned int i=0; i<splitPairs->size(); ++i)
-    (*pairs)[shift+i]=(*splitPairs)[i];
+    pairs[shift+i]=(*splitPairs)[i];
   
-  std::sort(pairs->begin(), pairs->end(), _pCmp);
+  std::sort(pairs.begin(), pairs.end(), _pCmp);
 
   if(isLocalMerge)
     delete mergePairs;
@@ -2975,7 +2978,7 @@ int ContourTree::getPersistencePlot(vector<pair<double,int>>& plot,
   }
 
   if(!pairs->size())
-    getPersistencePairs(pairs,mergePairs,splitPairs);
+    getPersistencePairs(*pairs,mergePairs,splitPairs);
   
   plot.resize(pairs->size());
   
@@ -3005,7 +3008,7 @@ int ContourTree::getPersistenceDiagram(vector<pair<double, double> > &diagram,
   }
 
   if(!pairs->size())
-    getPersistencePairs(pairs,mergePairs,splitPairs);
+    getPersistencePairs(*pairs,mergePairs,splitPairs);
   
   // fast fix :(
   diagram.resize(pairs->size());
