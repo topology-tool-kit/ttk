@@ -226,7 +226,6 @@ class ttkContourForests
     double deltaScalar_;
     ttk::SimplexId numberOfVertices_;
     ttk::Triangulation *triangulation_;
-    std::vector<std::vector<ttk::SimplexId>>* vertexNeighbors_;
     std::vector<ttk::SimplexId>* vertexSoSoffsets_;
     std::vector<ttk::SimplexId>* criticalPoints_;
     std::vector<double>* vertexScalars_;

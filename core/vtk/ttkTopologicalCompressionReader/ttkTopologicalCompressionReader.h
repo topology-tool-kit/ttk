@@ -90,7 +90,6 @@ class ttkTopologicalCompressionReader
     int                              DataExtent[6];
     double                           DataSpacing[3];
     double                           DataOrigin[3];
-    double                           Tolerance;
     bool                             ZFPOnly;
     int                              SQMethod;
 
