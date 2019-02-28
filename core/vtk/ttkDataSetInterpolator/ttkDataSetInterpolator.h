@@ -84,7 +84,7 @@ class ttkDataSetInterpolator
 
     int RequestData(vtkInformation *request, 
         vtkInformationVector **inputVector,
-        vtkInformationVector *outputVector);
+        vtkInformationVector *outputVector) override;
 
   private:
 
@@ -92,6 +92,6 @@ class ttkDataSetInterpolator
     int                   ThreadNumber;
 
     int doIt(vtkDataSet* source, vtkDataSet* target, vtkDataSet* output);
-    bool needsToAbort();
-    int updateProgress(const float &progress);
+    bool needsToAbort() override;
+    int updateProgress(const float &progress) override;
 };

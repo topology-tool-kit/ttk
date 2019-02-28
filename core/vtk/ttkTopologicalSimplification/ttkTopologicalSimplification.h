@@ -135,7 +135,7 @@ class ttkTopologicalSimplification
     
     TTK_SETUP();
 
-    int FillInputPortInformation(int port, vtkInformation* info);
+    int FillInputPortInformation(int port, vtkInformation* info) override;
 
     
   private:

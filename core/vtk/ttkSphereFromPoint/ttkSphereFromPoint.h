@@ -90,7 +90,7 @@ class ttkSphereFromPoint
     
     /// Over-ride the input data type to vtkDataSet.
     int FillOutputPortInformation(int port,
-      vtkInformation *info){
+      vtkInformation *info) override {
       info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
       return 1;
     }
@@ -102,7 +102,7 @@ class ttkSphereFromPoint
     ~ttkSphereFromPoint();
     
     int RequestData(vtkInformation *request, 
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
     
     
   private:
@@ -124,9 +124,9 @@ class ttkSphereFromPoint
     // base code features
     int doIt(vtkDataSet *input, vtkPolyData *output);
     
-    bool needsToAbort();
+    bool needsToAbort() override;
     
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
    
 };
 

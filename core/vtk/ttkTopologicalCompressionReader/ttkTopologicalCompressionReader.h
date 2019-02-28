@@ -74,7 +74,7 @@ class ttkTopologicalCompressionReader
     virtual int RequestInformation(
       vtkInformation *request,
       vtkInformationVector **inputVector,
-      vtkInformationVector *outputVector);
+      vtkInformationVector *outputVector) override;
 
     // TTK management.
     void BuildMesh();

@@ -183,7 +183,7 @@ class ttkPersistenceDiagram
     ttkPersistenceDiagram();
     ~ttkPersistenceDiagram();
 
-    int FillOutputPortInformation(int port, vtkInformation* info);
+    int FillOutputPortInformation(int port, vtkInformation* info) override;
 
     TTK_SETUP();
 

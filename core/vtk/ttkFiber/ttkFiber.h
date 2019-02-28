@@ -91,7 +91,7 @@ class ttkFiber
     vtkGetMacro(Vvalue, double);
     vtkSetMacro(Vvalue, double);
     
-    int FillOutputPortInformation(int port, vtkInformation *info){
+    int FillOutputPortInformation(int port, vtkInformation *info) override {
       info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData"); 
       return 1;
     }
@@ -103,7 +103,7 @@ class ttkFiber
     ~ttkFiber();
     
     int RequestData(vtkInformation *request, 
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
     
     
   private:
@@ -117,9 +117,9 @@ class ttkFiber
     // base code features
     int doIt(vtkDataSet *input, vtkPolyData *output);
     
-    bool needsToAbort();
+    bool needsToAbort() override;
     
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
    
 };
 

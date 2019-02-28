@@ -214,8 +214,8 @@ class ttkMandatoryCriticalPoints
 
     ~ttkMandatoryCriticalPoints();
 
-    int FillInputPortInformation(int port, vtkInformation *info);
-    int FillOutputPortInformation(int port, vtkInformation *info);
+    int FillInputPortInformation(int port, vtkInformation *info) override;
+    int FillOutputPortInformation(int port, vtkInformation *info) override;
 
     TTK_PIPELINE_REQUEST();
     TTK_OUTPUT_MANAGEMENT();
@@ -279,9 +279,9 @@ class ttkMandatoryCriticalPoints
     // base code features
     int doIt(std::vector<vtkDataSet *> &inputs, std::vector<vtkDataSet *> &outputs);
 
-    bool needsToAbort();
+    bool needsToAbort() override;
 
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
 
 };
 

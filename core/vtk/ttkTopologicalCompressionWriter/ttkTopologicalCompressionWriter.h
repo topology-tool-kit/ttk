@@ -127,8 +127,8 @@ class ttkTopologicalCompressionWriter
     // Regular writer management.
     ttkTopologicalCompressionWriter();
     ~ttkTopologicalCompressionWriter();
-    virtual int FillInputPortInformation(int port, vtkInformation *info);
-    void WriteData();
+    virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+    void WriteData() override;
 
     // TTK management.
     vtkDataArray* GetInputScalarField(vtkImageData *vti);

@@ -205,7 +205,7 @@ class ttkReebSpace
     
     ~ttkReebSpace();
     
-    virtual int FillOutputPortInformation(int port, vtkInformation *info){
+    virtual int FillOutputPortInformation(int port, vtkInformation *info) override {
       
       if(port == 0){
         // 0-sheets, corners of jacobi set segments

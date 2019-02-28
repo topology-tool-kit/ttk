@@ -91,7 +91,7 @@ class ttkIdentifiers
     ~ttkIdentifiers();
     
     int RequestData(vtkInformation *request, 
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
     
     
   private:
@@ -103,9 +103,9 @@ class ttkIdentifiers
     // base code features
     int doIt(vtkDataSet *input, vtkDataSet *output);
     
-    bool needsToAbort();
+    bool needsToAbort() override;
     
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
    
 };
 

@@ -131,11 +131,11 @@ class ttkUncertainDataEstimator
 
     ~ttkUncertainDataEstimator();
 
-    int FillInputPortInformation(int port, vtkInformation *info);
-    int FillOutputPortInformation(int port, vtkInformation *info);
+    int FillInputPortInformation(int port, vtkInformation *info) override;
+    int FillOutputPortInformation(int port, vtkInformation *info) override;
 
     int RequestData(vtkInformation *request,
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 
 
   private:
@@ -158,9 +158,9 @@ class ttkUncertainDataEstimator
              vtkDataSet *outputMean,
              int numInputs);
 
-    bool needsToAbort();
+    bool needsToAbort() override;
 
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
 
 };
 
