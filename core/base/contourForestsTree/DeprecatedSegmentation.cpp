@@ -143,7 +143,6 @@ void ArcRegion::createSegmentation(const idSuperArc& thisArc)
 
     while(added){
        added = false;
-       segmentIterator addVert;
        for (unsigned i = 0; i < nbSegments; i++) {
            auto&& head = heads[i];
            auto&& end  = ends[i];

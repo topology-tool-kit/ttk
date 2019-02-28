@@ -85,7 +85,7 @@ namespace ftm
          st_->setupTriangulation(m, false);
       }
 
-      inline int setDebugLevel(const int d)
+      inline int setDebugLevel(const int &d)
       {
          Debug::setDebugLevel(d);
          jt_->setDebugLevel(d);
