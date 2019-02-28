@@ -1048,9 +1048,9 @@ criticalPoints) const{
         vertexId=dmt2Saddle2PL_[cellId];
 
         if(vertexId==-1){
-          SimplexId v0;
-          SimplexId v1;
-          SimplexId v2;
+          SimplexId v0 = 0;
+          SimplexId v1 = 0;
+          SimplexId v2 = 0;
           if(dimensionality_==2){
             inputTriangulation_->getCellVertex(cellId, 0, v0);
             inputTriangulation_->getCellVertex(cellId, 1, v1);
@@ -1171,9 +1171,9 @@ int DiscreteGradient::setAugmentedCriticalPoints(const std::vector<Cell>& critic
         vertexId=dmt2Saddle2PL_[cellId];
 
         if(vertexId==-1){
-          SimplexId v0;
-          SimplexId v1;
-          SimplexId v2;
+          SimplexId v0 = 0;
+          SimplexId v1 = 0;
+          SimplexId v2 = 0;
           if(dimensionality_==2){
             inputTriangulation_->getCellVertex(cellId, 0, v0);
             inputTriangulation_->getCellVertex(cellId, 1, v1);
