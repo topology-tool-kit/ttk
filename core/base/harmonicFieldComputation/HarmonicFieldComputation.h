@@ -28,6 +28,8 @@
 
 namespace ttk {
 
+enum SolverType { Auto, Cholesky, Iterative };
+
 class HarmonicFieldComputation : public Debug {
 
 public:
@@ -81,6 +83,17 @@ public:
     outputScalarFieldPointer_ = data;
     return 0;
   }
+  inline int setSolverType(int solverType) {
+    solverType_ = static_cast<SolverType>(solverType);
+    return 0;
+  }
+
+  SolverType findBestSolver() const;
+
+  template <typename SparseMatrixType, typename SparseVectorType,
+            typename solverType>
+  int solve(SparseMatrixType const &lap, SparseMatrixType const &penalty,
+            SparseVectorType const &constraints, SparseMatrixType &sol) const;
 
   template <typename scalarFieldType> int execute() const;
 
@@ -109,6 +122,8 @@ protected:
   void *constraints_;
   // output of harmonic field computation
   void *outputScalarFieldPointer_;
+  // user-selected solver
+  SolverType solverType_;
 };
 } // namespace ttk
 
@@ -310,6 +325,17 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
 // if the package is a pure template typename, uncomment the following line
 // #include                  <HarmonicFieldComputation.cpp>
 
+template <typename SparseMatrixType, typename SparseVectorType,
+          typename solverType>
+int ttk::HarmonicFieldComputation::solve(SparseMatrixType const &lap,
+                                         SparseMatrixType const &penalty,
+                                         SparseVectorType const &constraints,
+                                         SparseMatrixType &sol) const {
+  solverType solver(lap - penalty);
+  sol = solver.solve(penalty * constraints);
+  return solver.info();
+}
+
 // main routine
 template <typename scalarFieldType>
 int ttk::HarmonicFieldComputation::execute() const {
@@ -371,12 +397,32 @@ int ttk::HarmonicFieldComputation::execute() const {
   }
   penalty.setFromTriplets(triplets.begin(), triplets.end());
 
-  Eigen::SimplicialCholesky<SpMat> solver(lap - penalty);
-  SpMat sol = solver.solve(penalty * constraints);
+  SpMat sol;
+  int res;
+
+  SolverType sl = solverType_;
+  if (solverType_ == Auto) {
+    sl = findBestSolver();
+  }
+
+  switch (sl) {
+  case Cholesky:
+    res = solve<SpMat, SpVec, Eigen::SimplicialCholesky<SpMat>>(
+        lap, penalty, constraints, sol);
+    break;
+  case Iterative:
+    res = solve<SpMat, SpVec,
+                Eigen::ConjugateGradient<SpMat, Eigen::Upper | Eigen::Lower>>(
+        lap, penalty, constraints, sol);
+    break;
+  case Auto:
+    break;
+  }
 
   {
     stringstream msg;
-    switch (solver.info()) {
+    auto info = static_cast<Eigen::ComputationInfo>(res);
+    switch (info) {
     case Eigen::ComputationInfo::Success:
       msg << "[HarmonicFieldComputation] Success!" << endl;
       break;
