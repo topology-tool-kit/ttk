@@ -58,7 +58,7 @@ int MorseSmaleComplex3D::getAscendingSeparatrices1(const vector<Cell>& criticalP
           const SimplexId separatrixIndex=4*i+shift;
 
           separatricesGeometry[separatrixIndex]=std::move(vpath);
-          separatrices[separatrixIndex]=std::move(Separatrix(true,saddle,lastCell,false,separatrixIndex));
+          separatrices[separatrixIndex] = Separatrix(true,saddle,lastCell,false,separatrixIndex);
         }
       }
     }
@@ -97,7 +97,7 @@ int MorseSmaleComplex3D::getSaddleConnectors(const vector<Cell>& criticalPoints,
         if(!isMultiConnected and lastCell.dim_==saddle2.dim_ and lastCell.id_==saddle2.id_){
           const SimplexId separatrixIndex=separatrices.size();
           separatricesGeometry.push_back(std::move(vpath));
-          separatrices.push_back(std::move(Separatrix(true,saddle1,saddle2,false,separatrixIndex)));
+          separatrices.push_back(Separatrix(true,saddle1,saddle2,false,separatrixIndex));
         }
       }
     }
@@ -140,7 +140,7 @@ int MorseSmaleComplex3D::getAscendingSeparatrices2(const vector<Cell>& criticalP
     discreteGradient_.getAscendingWall(saddle1.id_, saddle1, isVisited, &wall, &separatricesSaddles[i]);
 
     separatricesGeometry[i]=std::move(wall);
-    separatrices[i]=std::move(Separatrix(true,saddle1,emptyCell,false,i));
+    separatrices[i] = Separatrix(true,saddle1,emptyCell,false,i);
   }
 
   return 0;
@@ -180,7 +180,7 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(const vector<Cell>& critical
     discreteGradient_.getDescendingWall(saddle2.id_, saddle2, isVisited, &wall, &separatricesSaddles[i]);
 
     separatricesGeometry[i]=std::move(wall);
-    separatrices[i]=std::move(Separatrix(true,saddle2,emptyCell,false,i));
+    separatrices[i] = Separatrix(true,saddle2,emptyCell,false,i);
   }
 
   return 0;
