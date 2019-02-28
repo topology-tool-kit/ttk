@@ -2,6 +2,7 @@
 function(ttk_print_summary)
     message(STATUS "ttk options -----------------------------------------------------------------")
     message(STATUS "TTK_ENABLE_CPU_OPTIMIZATION: ${TTK_ENABLE_CPU_OPTIMIZATION}")
+    message(STATUS "TTK_ENABLE_EIGEN: ${TTK_ENABLE_EIGEN}")
     message(STATUS "TTK_ENABLE_GRAPHVIZ: ${TTK_ENABLE_GRAPHVIZ}")
     message(STATUS "TTK_ENABLE_KAMIKAZE: ${TTK_ENABLE_KAMIKAZE}")
     message(STATUS "TTK_ENABLE_MPI: ${TTK_ENABLE_MPI}")
