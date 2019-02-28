@@ -160,7 +160,12 @@ namespace ttk
          // printGraph(4);
          // std::cout << dynGraphs_.up.printNbCC() << std::endl;
 #endif
-         std::cout << "arcs : " << graph_.getNumberOfVisibleArcs() << " / " << graph_.getNumberOfArcs() << std::endl;
+         {
+            std::stringstream msg;
+            msg << "[FTR Graph]: " << graph_.getNumberOfVisibleArcs() << " arcs ("
+                << graph_.getNumberOfArcs() << ")" << std::endl;
+            dMsg(std::cout, msg.str(), advancedInfoMsg);
+         }
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS
          std::cout << "propTimes_ :" << std::endl;
@@ -235,18 +240,18 @@ namespace ttk
          nbProp_ = graph_.getNumberOfLeaves();
          propTimes_.resize(nbProp_);
 #endif
-         std::cout << "find: " << graph_.getNumberOfLeaves() << " leaves" << std::endl;
+         {
+            std::stringstream msg;
+            msg << "[FTR Graph]: " << graph_.getNumberOfLeaves() << " leaves" << std::endl;
+            dMsg(std::cout, msg.str(), infoMsg);
+         }
       }
 
       template <typename ScalarType>
       void FTRGraph<ScalarType>::criticalSearch()
       {
          const bool addMin = true;
-#ifdef TTK_FTR_SINGLE_SWEEP
-         const bool addMax = false;
-#else
-         const bool addMax = true;
-#endif
+         const bool addMax = !params_.singleSweep;
 
          TaskChunk leafChunkParams(scalars_->getSize());
          leafChunkParams.grainSize = 10000;
@@ -293,7 +298,11 @@ namespace ttk
          nbProp_ = graph_.getNumberOfLeaves();
          propTimes_.resize(nbProp_);
 #endif
-         std::cout << "find: " << graph_.getNumberOfLeaves() << " leaves" << std::endl;
+         {
+            std::stringstream msg;
+            msg << "[FTR Graph]: " << graph_.getNumberOfLeaves() << " leaves" << std::endl;
+            dMsg(std::cout, msg.str(), infoMsg);
+         }
       }
 
       template <typename ScalarType>

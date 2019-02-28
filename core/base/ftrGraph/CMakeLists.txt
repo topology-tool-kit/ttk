@@ -18,11 +18,8 @@ if(OPENMP_FOUND)
    mark_as_advanced(TTK_ENABLE_FTR_PRIORITY)
 endif()
 
-option (TTK_FTR_SINGLE_SWEEP "Only sweep from minima" OFF)
-mark_as_advanced(TTK_FTR_SINGLE_SWEEP)
-
-option (TTK_DISABLE_FTR_LAZY "Disable the lazyness optimization" OFF)
-mark_as_advanced(TTK_DISABLE_FTR_LAZY)
+# option (TTK_DISABLE_FTR_LAZY "Disable the lazyness optimization" OFF)
+# mark_as_advanced(TTK_DISABLE_FTR_LAZY)
 
 option (TTK_ENABLE_FTR_TASK_STATS "print propagations death time (min only)" OFF)
 mark_as_advanced(TTK_ENABLE_FTR_TASK_STATS)
@@ -51,13 +48,9 @@ if (TTK_ENABLE_FTR_PRIORITY)
    target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_PRIORITY)
 endif()
 
-if(TTK_FTR_SINGLE_SWEEP)
-   target_compile_definitions(ftrGraph PUBLIC TTK_FTR_SINGLE_SWEEP)
-endif()
-
-if(TTK_DISABLE_FTR_LAZY)
-   target_compile_definitions(ftrGraph PUBLIC TTK_DISABLE_FTR_LAZY)
-endif()
+# if(TTK_DISABLE_FTR_LAZY)
+#    target_compile_definitions(ftrGraph PUBLIC TTK_DISABLE_FTR_LAZY)
+# endif()
 
 if(TTK_ENABLE_FTR_TASK_STATS)
    target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_TASK_STATS)

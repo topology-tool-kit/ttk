@@ -110,14 +110,14 @@
         </IntVectorProperty>
 
         <IntVectorProperty
-           name="Modified"
-           label="Modified"
-           command="SetDummy"
+           name="SingleSweep"
+           label="Use single sweep"
+           command="SetSingleSweep"
            number_of_elements="1"
-           default_values="1" panel_visibility="advanced">
+           default_values="0" panel_visibility="advanced">
            <BooleanDomain name="bool"/>
            <Documentation>
-              Direct call to Modified()
+             Use the less efficient (but maybe more robust) single sweep version
            </Documentation>
         </IntVectorProperty>
 
@@ -153,7 +153,7 @@
         </PropertyGroup>
 
         <PropertyGroup panel_widget="Line" label="Testing">
-           <Property name="Modified" />
+           <Property name="SingleSweep" />
            <Property name="UseAllCores" />
            <Property name="ThreadNumber" />
            <Property name="DebugLevel" />

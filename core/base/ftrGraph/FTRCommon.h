@@ -35,6 +35,7 @@ namespace ttk
    {
       // Compute parameters (global)
       struct Params {
+         bool singleSweep = false;
          bool segm        = true;
          bool normalize   = true;
          bool advStats    = true;

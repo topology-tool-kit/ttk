@@ -99,6 +99,17 @@ class ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
 
    vtkSetMacro(Dummy, bool);
 
+   void SetSingleSweep(const bool ss)
+   {
+     params_.singleSweep = ss;
+     Modified();
+   }
+
+   bool GetSingleSweep(void) const
+   {
+     return params_.singleSweep;
+   }
+
    void SetWithSegmentation(const bool segm)
    {
       params_.segm = segm;
