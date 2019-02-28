@@ -116,41 +116,76 @@ template <typename SparseMatrixType, typename TripletType,
           typename scalarFieldType>
 SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 
+  // laplacian matrix
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
-  std::vector<TripletType> triplets;
+  // number of edges in mesh
+  SimplexId edgeNumber = triangulation_->getNumberOfEdges();
+  // number of triplets to insert into laplacian matrix: vertexNumber_
+  // values on the diagonal + 2 values per edge
+  std::vector<TripletType> triplets(vertexNumber_ + 2 * edgeNumber);
+
 #define USE_SYMMETRIC_LAPLACIAN
 
 #ifdef USE_SYMMETRIC_LAPLACIAN
 
+  // on the diagonal: number of neighbors
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
     SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
-    triplets.emplace_back(TripletType(i, i, scalarFieldType(nneigh)));
-    // rest: neighbors mapping
-    for (SimplexId j = 0; j < nneigh; ++j) {
-      SimplexId neighid = -1;
-      triangulation_->getVertexNeighbor(i, j, neighid);
-      triplets.emplace_back(TripletType(i, neighid, -1.0));
+    triplets[i] = TripletType(i, i, scalarFieldType(nneigh));
+  }
+
+  // neighbors mapping: loop over edges
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for (SimplexId i = 0; i < edgeNumber; ++i) {
+    // the two vertices of the current edge
+    std::vector<SimplexId> edgeVertices(2);
+    for (SimplexId j = 0; j < 2; ++j) {
+      triangulation_->getEdgeVertex(i, j, edgeVertices[j]);
     }
+    // fill triplets for both vertices of current edge
+    triplets[vertexNumber_ + 2 * i] =
+        TripletType(edgeVertices[0], edgeVertices[1], -1.0);
+    triplets[vertexNumber_ + 2 * i + 1] =
+        TripletType(edgeVertices[1], edgeVertices[0], -1.0);
   }
 
 #else // USE_SYMMETRIC_LAPLACIAN
 
+  // on the diagonal: 1.0
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for (SimplexId i = 0; i < vertexNumber_; ++j) {
-    triplets.emplace_back(TripletType(i, i, 1.0));
-    SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
-    // rest: neighbors mapping
-    for (SimplexId j = 0; j < nneigh; ++j) {
-      SimplexId neighid = -1;
-      triangulation_->getVertexNeighbor(i, j, neighid);
-      triplets.emplace_back(TripletType(i, j, -1.0 / scalarFieldType(nneigh)));
-    }
+  for (SimplexId i = 0; i < vertexNumber_; ++i) {
+    triplets[i] = TripletType(i, i, 1.0);
   }
+
+  // neighbors mapping: loop over edges
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for (SimplexId i = 0; i < edgeNumber; ++i) {
+    // the two vertices of the current edge
+    std::vector<SimplexId> edgeVertices(2);
+    for (SimplexId j = 0; j < 2; ++j) {
+      triangulation_->getEdgeVertex(i, j, edgeVertices[j]);
+    }
+    SimplexId nneigh0 =
+        triangulation_->getVertexNeighborNumber(edgeVertices[0]);
+    SimplexId nneigh1 =
+        triangulation_->getVertexNeighborNumber(edgeVertices[1]);
+
+    // fill triplets for both vertices of current edge
+    triplets[vertexNumber_ + 2 * i] =
+        TripletType(edgeVertices[0], edgeVertices[1], -1.0 / nneigh0);
+    triplets[vertexNumber_ + 2 * i + 1] =
+        TripletType(edgeVertices[1], edgeVertices[0], -1.0 / nneigh1);
+  }
+
 #endif // USE_SYMMETRIC_LAPLACIAN
 
   lap.setFromTriplets(triplets.begin(), triplets.end());
@@ -173,11 +208,12 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
 
   // laplacian matrix with cotan weights
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
-  // used to fill more efficiently the matrix
-  std::vector<TripletType> triplets;
 
   // iterate over all edges
   SimplexId edgesNumber = triangulation_->getNumberOfEdges();
+
+  // used to fill more efficiently the matrix
+  std::vector<TripletType> triplets(vertexNumber_ + 2 * edgesNumber);
 
   // hold sum of cotan weights for every vertex
   std::vector<scalarFieldType> vertexWeightSum(vertexNumber_, 0.0);
@@ -241,10 +277,10 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
 
     // since we iterate over the edges, fill the laplacian matrix
     // symmetrically for the two vertices
-    triplets.emplace_back(
-        TripletType(edgeVertices[0], edgeVertices[1], -cotan_weight));
-    triplets.emplace_back(
-        TripletType(edgeVertices[1], edgeVertices[0], -cotan_weight));
+    triplets[2 * i] =
+        TripletType(edgeVertices[0], edgeVertices[1], -cotan_weight);
+    triplets[2 * i + 1] =
+        TripletType(edgeVertices[1], edgeVertices[0], -cotan_weight);
 
     // store the cotan weight sum for the two vertices of the current edge
     vertexWeightSum[edgeVertices[0]] += cotan_weight;
@@ -252,8 +288,11 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
   }
 
   // on the diagonal: sum of cotan weights for every vertex
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
-    triplets.emplace_back(TripletType(i, i, vertexWeightSum[i]));
+    triplets[2 * edgesNumber + i] = TripletType(i, i, vertexWeightSum[i]);
   }
 
   // put triplets into lap
