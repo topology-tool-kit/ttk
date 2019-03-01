@@ -64,6 +64,7 @@ public:
     if (triangulation_ != nullptr) {
       vertexNumber_ = triangulation_->getNumberOfVertices();
       triangulation_->preprocessVertexNeighbors();
+      edgeNumber_ = triangulation_->getNumberOfEdges();
     }
     if (useCotanWeights_) {
       // cotan weights method needs more pre-processing
@@ -108,6 +109,8 @@ public:
 protected:
   // number of vertices in the mesh
   SimplexId vertexNumber_;
+  // number of edges in the mesh
+  SimplexId edgeNumber_;
   // number of constraints
   SimplexId constraintNumber_;
   // cotan weights vs simple laplacian resolution
@@ -133,11 +136,10 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 
   // laplacian matrix
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
-  // number of edges in mesh
-  SimplexId edgeNumber = triangulation_->getNumberOfEdges();
+
   // number of triplets to insert into laplacian matrix: vertexNumber_
   // values on the diagonal + 2 values per edge
-  std::vector<TripletType> triplets(vertexNumber_ + 2 * edgeNumber);
+  std::vector<TripletType> triplets(vertexNumber_ + 2 * edgeNumber_);
 
 #define USE_SYMMETRIC_LAPLACIAN
 
@@ -156,7 +158,7 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for (SimplexId i = 0; i < edgeNumber; ++i) {
+  for (SimplexId i = 0; i < edgeNumber_; ++i) {
     // the two vertices of the current edge
     std::vector<SimplexId> edgeVertices(2);
     for (SimplexId j = 0; j < 2; ++j) {
@@ -224,19 +226,17 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
   // laplacian matrix with cotan weights
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
 
-  // iterate over all edges
-  SimplexId edgesNumber = triangulation_->getNumberOfEdges();
-
   // used to fill more efficiently the matrix
-  std::vector<TripletType> triplets(vertexNumber_ + 2 * edgesNumber);
+  std::vector<TripletType> triplets(vertexNumber_ + 2 * edgeNumber_);
 
   // hold sum of cotan weights for every vertex
   std::vector<scalarFieldType> vertexWeightSum(vertexNumber_, 0.0);
 
+  // iterate over all edges
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for (SimplexId i = 0; i < edgesNumber; ++i) {
+  for (SimplexId i = 0; i < edgeNumber_; ++i) {
 
     // the two vertices of the current edge (+ a third)
     std::vector<SimplexId> edgeVertices(3);
@@ -307,7 +307,7 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
-    triplets[2 * edgesNumber + i] = TripletType(i, i, vertexWeightSum[i]);
+    triplets[2 * edgeNumber_ + i] = TripletType(i, i, vertexWeightSum[i]);
   }
 
   // put triplets into lap
