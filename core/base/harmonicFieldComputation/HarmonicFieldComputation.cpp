@@ -146,8 +146,18 @@ int ttk::HarmonicFieldComputation::execute() const {
   {
     stringstream msg;
     msg << "[HarmonicFieldComputation] Ending computation after "
-        << t.getElapsedTime() << "s (" << threadNumber_ << " thread(s))"
-        << endl;
+        << t.getElapsedTime() << "s (";
+    if (useCotanWeights_) {
+      msg << "cotan weights, ";
+    } else {
+      msg << "discrete laplacian, ";
+    }
+    if (sm == Iterative) {
+      msg << "iterative solver, ";
+    } else {
+      msg << "Cholesky, ";
+    }
+    msg << threadNumber_ << " thread(s))" << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
 
