@@ -6,7 +6,14 @@ ttk::HarmonicFieldComputation::HarmonicFieldComputation()
       outputScalarFieldPointer_{}, solvingMethod_{Cholesky} {}
 
 ttk::SolvingMethodType ttk::HarmonicFieldComputation::findBestSolver() const {
-  // TODO
+
+  // number of edges for switching between Cholesky factorization and
+  // Iterate (conjugate gradients) method
+  SimplexId threshold = 500000;
+
+  if (edgeNumber_ > threshold) {
+    return ttk::SolvingMethodType::Iterative;
+  }
   return ttk::SolvingMethodType::Cholesky;
 }
 
