@@ -120,9 +120,27 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   auto outputScalarField =
       static_cast<scalarFieldType *>(outputScalarFieldPointer_);
+
+  // fill output array with 0
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for (SimplexId i = 0; i < vertexNumber_; ++i) {
-    // TODO avoid copy here
-    outputScalarField[i] = std::abs(sol.coeffRef(i, 0));
+    outputScalarField[i] = 0.0;
+  }
+
+  // pointer to array of sparse values
+  scalarFieldType const *solCoeffs = sol.valuePtr();
+  // pointer to array of indices of sparse values
+  SimplexId const *solIndices = sol.innerIndexPtr();
+
+  // copy solver solution into output array
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for (SimplexId i = 0; i < vertexNumber_; ++i) {
+    // cannot avoid copy here...
+    outputScalarField[i] = std::abs(solCoeffs[solIndices[i]]);
   }
 
   {
