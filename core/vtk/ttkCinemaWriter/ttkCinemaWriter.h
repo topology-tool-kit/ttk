@@ -36,8 +36,8 @@ class ttkCinemaWriter
         vtkSetMacro(OverrideDatabase, bool);
         vtkGetMacro(OverrideDatabase, bool);
 
-        vtkSetMacro(CompressionLevel, int);
-        vtkGetMacro(CompressionLevel, int);
+        vtkSetMacro(CompressLevel, int);
+        vtkGetMacro(CompressLevel, int);
 
         // default ttk setters
         vtkSetMacro(debugLevel_, int);
@@ -76,7 +76,7 @@ class ttkCinemaWriter
         ttkCinemaWriter(){
             SetDatabasePath("");
             SetOverrideDatabase(true);
-            SetCompressionLevel(9);
+            SetCompressLevel(9);
 
             UseAllCores = false;
 
@@ -96,7 +96,7 @@ class ttkCinemaWriter
 
         std::string DatabasePath;
         bool OverrideDatabase;
-        int CompressionLevel;
+        int CompressLevel;
 
         bool needsToAbort() override { return GetAbortExecute(); };
         int updateProgress(const float &progress) override {

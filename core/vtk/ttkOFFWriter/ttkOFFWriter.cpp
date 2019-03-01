@@ -27,7 +27,7 @@ void ttkOFFWriter::PrintSelf(ostream &os, vtkIndent indent){
   this->Superclass::PrintSelf(os, indent);
 
   os << indent << "File Name: " 
-    << (this->FileName ? this->FileName : "(none)") << endl;
+    << (this->Filename ? this->Filename : "(none)") << endl;
 }
 
 // }}}
@@ -35,19 +35,19 @@ void ttkOFFWriter::PrintSelf(ostream &os, vtkIndent indent){
 // {{{
 
 ttkOFFWriter::ttkOFFWriter(){
-  FileName = NULL;
+  Filename = NULL;
   Stream = NULL;
 }
 
 ttkOFFWriter::~ttkOFFWriter(){
-  SetFileName(NULL);
+  SetFilename(NULL);
   if(Stream)
     delete Stream;
 }
 
 int ttkOFFWriter::OpenFile(){
 
-  ofstream *f = new ofstream(FileName, ios::out);
+  ofstream *f = new ofstream(Filename, ios::out);
   
   if(!f->fail()){
     Stream = f;
