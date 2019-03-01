@@ -3,11 +3,7 @@
 ttk::HarmonicFieldComputation::HarmonicFieldComputation()
     : vertexNumber_{}, edgeNumber_{}, constraintNumber_{},
       useCotanWeights_{false}, triangulation_{}, sources_{}, constraints_{},
-      outputScalarFieldPointer_{}, solvingMethod_{Cholesky} {
-#if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_OPENMP)
-  Eigen::setNbThreads(threadNumber_);
-#endif // TTK_ENABLE_OPENMP && TTK_ENABLE_EIGEN
-}
+      outputScalarFieldPointer_{}, solvingMethod_{Cholesky} {}
 
 ttk::SolvingMethodType ttk::HarmonicFieldComputation::findBestSolver() const {
   // TODO
@@ -23,6 +19,11 @@ int ttk::HarmonicFieldComputation::execute() const {
   using std::stringstream;
 
 #ifdef TTK_ENABLE_EIGEN
+
+#ifdef TTK_ENABLE_OPENMP
+  Eigen::setNbThreads(threadNumber_);
+#endif // TTK_ENABLE_OPENMP
+
   using SpMat = Eigen::SparseMatrix<scalarFieldType>;
   using SpVec = Eigen::SparseVector<scalarFieldType>;
   using TripletType = Eigen::Triplet<scalarFieldType>;
