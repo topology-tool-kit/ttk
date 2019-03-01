@@ -893,21 +893,24 @@ namespace ttk
 
           valence oldVal = 0;
           if (localProp->goUp()) {
+             // for gcc 4.8 and old openMP
+             valence* const vd = &graph_.valDown_[curSaddle];
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
 #endif
             {
-               oldVal = graph_.valDown_[curSaddle];
-               graph_.valDown_[curSaddle] -= decr;
+               oldVal = *vd;
+               *vd -= decr;
             }
 
          } else {
+             valence* const vu = &graph_.valUp_[curSaddle];
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
 #endif
             {
-               oldVal = graph_.valUp_[curSaddle];
-               graph_.valUp_[curSaddle] -= decr;
+               oldVal = *vu;
+               *vu -= decr;
             }
          }
 
