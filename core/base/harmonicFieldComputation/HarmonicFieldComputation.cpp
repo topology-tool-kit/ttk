@@ -66,16 +66,6 @@ int ttk::HarmonicFieldComputation::execute() const {
     constraints.coeffRef(identifiersVec[i]) = sf[i];
   }
 
-  // penalty matrix
-  SpMat penalty(vertexNumber_, vertexNumber_);
-  const scalarFieldType alpha = 1.0e6;
-  std::vector<TripletType> triplets;
-  triplets.reserve(identifiersVec.size());
-  for (auto i : identifiersVec) {
-    triplets.emplace_back(TripletType(i, i, alpha));
-  }
-  penalty.setFromTriplets(triplets.begin(), triplets.end());
-
   SpMat sol;
   int res;
 
@@ -83,6 +73,21 @@ int ttk::HarmonicFieldComputation::execute() const {
   if (solvingMethod_ == Auto) {
     sm = findBestSolver();
   }
+
+  // penalty matrix
+  SpMat penalty(vertexNumber_, vertexNumber_);
+
+  scalarFieldType alpha = 1.0e6; // cholesky factorisation
+  if (sm == Iterative) {
+    alpha = 1.0e3; // decrease penalty for conjugate gradients
+  }
+
+  std::vector<TripletType> triplets;
+  triplets.reserve(identifiersVec.size());
+  for (auto i : identifiersVec) {
+    triplets.emplace_back(TripletType(i, i, alpha));
+  }
+  penalty.setFromTriplets(triplets.begin(), triplets.end());
 
   switch (sm) {
   case Cholesky:
