@@ -411,11 +411,6 @@ namespace ttk
                                   const std::vector<DynGraphNode<idVertex>*>& lowerComp);
 
          // At a split saddle, assign new arcs at each CC in the DynGraph,
-         // compute the new localPropagation for each using a BFS
-         // and launch the new propagation.
-         Propagation* splitAtSaddleBFS(Propagation* const localProp);
-
-         // At a split saddle, assign new arcs at each CC in the DynGraph,
          // and launch a new propagation taking care of these arcs simultaneously
          // if hidden is true, new arcs are created hidden
          void splitAtSaddle(Propagation* const                          localProp,
@@ -475,7 +470,6 @@ namespace ttk
 
 // Implementation
 #include "FTRGraph_Template.h"
-#include "FTRGraphBFS_Template.h"
 #include "FTRGraphPrint_Template.h"
 #include "FTRGraphPrivate_Template.h"
 

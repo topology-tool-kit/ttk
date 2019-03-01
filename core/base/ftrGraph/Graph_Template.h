@@ -2,8 +2,9 @@
 #define GRAPH_TEMPLATE_H
 
 #ifndef NDEBUG
-#include<sstream>
-#define DEBUG(msg) {std::stringstream s; s << msg << std::endl; std::cout << s.str();}
+// #include<sstream>
+// #define DEBUG(msg) {std::stringstream s; s << msg << std::endl; std::cout << s.str();}
+#define DEBUG(msg)
 #else
 #define DEBUG(msg)
 #endif

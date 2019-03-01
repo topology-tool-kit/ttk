@@ -10,8 +10,8 @@
 
 // trick to print a full line in an atomic operation, avoid mixed up redulsts in parallel
 #ifndef NDEBUG
-#define PRINT(msg) {std::stringstream s; s << msg << std::endl; std::cout << s.str();}
-// #define PRINT(msg)
+// #define PRINT(msg) {std::stringstream s; s << msg << std::endl; std::cout << s.str();}
+#define PRINT(msg)
 #else
 #define PRINT(msg)
 #endif
@@ -987,72 +987,6 @@ namespace ttk
             }
          }
          return visibleClosed;
-      }
-
-      template <typename ScalarType>
-      Propagation* FTRGraph<ScalarType>::splitAtSaddleBFS(Propagation* const localProp)
-      {
-         const idVertex curVert = localProp->getCurVertex();
-         const idNode   curNode = graph_.getNodeId(curVert);
-
-         std::vector<std::tuple<idSuperArc, Propagation*>> bfsResults;
-         bfsResults.reserve(4);
-         const idCell nbTriNeigh = mesh_.getVertexTriangleNumber(curVert);
-         for(idCell t = 0; t < nbTriNeigh; ++t) {
-            idCell neighTriangle;
-            mesh_.getVertexTriangle(curVert, t, neighTriangle);
-            const orderedTriangle oNeighTriangle =
-                mesh_.getOrderedTriangle(neighTriangle, localProp->goUp());
-            // only if curVert is not the highest point
-            if (bfsCells_[neighTriangle] != curVert &&
-                getVertPosInTriangle(oNeighTriangle, localProp) != vertPosInTriangle::End) {
-               const idVertex endTri          = getEndVertexInTriangle(oNeighTriangle, localProp);
-
-               // BFS to add vertices in the current propagation for each seed
-               // and its corresponfing arc
-               Propagation*     newProp = newPropagation(curVert, localProp->goUp());
-               const idSuperArc newArc  = graph_.openArc(curNode, newProp);
-
-               // give this arc to the DG component
-               const idEdge crossedEdge = getEdgeFromOTri(oNeighTriangle, curVert, endTri);
-               updateDynGraphCurArc(curVert, crossedEdge, newArc, newProp);
-
-               // fill newProp using a BFS on the current seed
-               bfsPropagation(curVert, neighTriangle, newProp, newArc);
-               // remove the already processed first vertex
-               newProp->nextVertex();
-               newProp->removeDuplicates(curVert);
-               if (!newProp->empty()) {
-                  bfsResults.emplace_back(std::make_tuple(newArc, newProp));
-               } else {
-                  graph_.getArc(newArc).hide();
-               }
-            }
-         }
-
-         Propagation* remainProp = newPropagation(curVert, localProp->goUp());
-         while(!localProp->empty()) {
-            localProp->nextVertex();
-            const idVertex curVertTmp = localProp->getCurVertex();
-            if (bfsVerts_[curVertTmp] != curVert) {
-               remainProp->addNewVertex(curVertTmp);
-            }
-         }
-
-         // one growth per connected components
-         for (auto& bfsRes : bfsResults) {
-            const auto arc  = std::get<0>(bfsRes);
-            const auto prop = std::get<1>(bfsRes);
-            graph_.visit(curVert, arc);
-            propagations_.visit(curVert, localProp);
-            // why is the firstprivate required here ?
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(curVert, prop, arc) OPTIONAL_PRIORITY(PriorityLevel::Low)
-#endif
-            growthFromSeed(curVert, prop, arc);
-         }
-
-         return remainProp;
       }
 
       template <typename ScalarType>
