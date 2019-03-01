@@ -67,7 +67,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   // penalty matrix
   SpMat penalty(vertexNumber_, vertexNumber_);
-  const scalarFieldType alpha = 1.0e8;
+  const scalarFieldType alpha = 1.0e6;
   std::vector<TripletType> triplets;
   triplets.reserve(identifiersVec.size());
   for (auto i : identifiersVec) {
