@@ -12,16 +12,18 @@ int main(int argc, char **argv)
    vtkProgram<ttkFTRGraph> program;
 
    int scalarFieldId = 0;
+   bool singleSweep = false;
 
    program.parser_.setArgument("f", &scalarFieldId, "Scalar field id", true);
+   program.parser_.setOption("s", &singleSweep, "Single sweep");
 
-   int ret = 0;
-   ret     = program.init(argc, argv);
+   auto ret = program.init(argc, argv);
 
    if (ret != 0)
       return ret;
 
    program.ttkObject_->SetScalarFieldId(scalarFieldId);
+   program.ttkObject_->SetSingleSweep(singleSweep);
 
    // execute data processing
    ret = program.run();
