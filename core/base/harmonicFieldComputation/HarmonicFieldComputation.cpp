@@ -3,7 +3,8 @@
 ttk::HarmonicFieldComputation::HarmonicFieldComputation()
     : vertexNumber_{}, edgeNumber_{}, constraintNumber_{},
       useCotanWeights_{false}, triangulation_{}, sources_{}, constraints_{},
-      outputScalarFieldPointer_{}, solvingMethod_{Cholesky} {}
+      outputScalarFieldPointer_{}, solvingMethod_{
+                                       ttk::SolvingMethodUserType::Cholesky} {}
 
 ttk::SolvingMethodType ttk::HarmonicFieldComputation::findBestSolver() const {
 
@@ -73,19 +74,25 @@ int ttk::HarmonicFieldComputation::execute() const {
     constraints.coeffRef(identifiersVec[i]) = sf[i];
   }
 
-  SpMat sol;
-  int res;
+  SolvingMethodType sm;
 
-  SolvingMethodType sm = solvingMethod_;
-  if (solvingMethod_ == Auto) {
+  switch (solvingMethod_) {
+  case ttk::SolvingMethodUserType::Auto:
     sm = findBestSolver();
+    break;
+  case ttk::SolvingMethodUserType::Cholesky:
+    sm = ttk::SolvingMethodType::Cholesky;
+    break;
+  case ttk::SolvingMethodUserType::Iterative:
+    sm = ttk::SolvingMethodType::Iterative;
+    break;
   }
 
   // penalty matrix
   SpMat penalty(vertexNumber_, vertexNumber_);
 
   scalarFieldType alpha = 1.0e6; // cholesky factorisation
-  if (sm == Iterative) {
+  if (sm == ttk::SolvingMethodType::Iterative) {
     alpha = 1.0e3; // decrease penalty for conjugate gradients
   }
 
@@ -96,18 +103,18 @@ int ttk::HarmonicFieldComputation::execute() const {
   }
   penalty.setFromTriplets(triplets.begin(), triplets.end());
 
+  int res;
+  SpMat sol;
+
   switch (sm) {
-  case Cholesky:
+  case ttk::SolvingMethodType::Cholesky:
     res = solve<SpMat, SpVec, Eigen::SimplicialCholesky<SpMat>>(
         lap, penalty, constraints, sol);
     break;
-  case Iterative:
+  case ttk::SolvingMethodType::Iterative:
     res = solve<SpMat, SpVec,
                 Eigen::ConjugateGradient<SpMat, Eigen::Upper | Eigen::Lower>>(
         lap, penalty, constraints, sol);
-    break;
-  case Auto:
-    res = Eigen::ComputationInfo::InvalidInput;
     break;
   }
 
@@ -155,7 +162,7 @@ int ttk::HarmonicFieldComputation::execute() const {
     } else {
       msg << "discrete laplacian, ";
     }
-    if (sm == Iterative) {
+    if (sm == ttk::SolvingMethodType::Iterative) {
       msg << "iterative solver, ";
     } else {
       msg << "Cholesky, ";

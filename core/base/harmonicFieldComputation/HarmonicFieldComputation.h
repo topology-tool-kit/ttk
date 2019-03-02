@@ -28,7 +28,8 @@
 
 namespace ttk {
 
-enum SolvingMethodType { Auto = 0, Cholesky = 1, Iterative = 2 };
+enum struct SolvingMethodUserType { Auto = 0, Cholesky = 1, Iterative = 2 };
+enum struct SolvingMethodType { Cholesky, Iterative };
 
 class HarmonicFieldComputation : public Debug {
 
@@ -85,7 +86,7 @@ public:
     return 0;
   }
   inline int setSolvingMethod(int solvingMethod) {
-    solvingMethod_ = static_cast<SolvingMethodType>(solvingMethod);
+    solvingMethod_ = static_cast<SolvingMethodUserType>(solvingMethod);
     return 0;
   }
 
@@ -126,7 +127,7 @@ protected:
   // output of harmonic field computation
   void *outputScalarFieldPointer_;
   // user-selected solver
-  SolvingMethodType solvingMethod_;
+  SolvingMethodUserType solvingMethod_;
 };
 } // namespace ttk
 
