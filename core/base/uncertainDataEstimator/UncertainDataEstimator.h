@@ -439,8 +439,6 @@ template <class dataType> int ttk::UncertainDataEstimator::execute() const{
 
 
 #ifdef TTK_ENABLE_OPENMP
-  omp_lock_t writeLock;
-  omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
 
@@ -478,18 +476,15 @@ template <class dataType> int ttk::UncertainDataEstimator::execute() const{
       // Update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg){
 #ifdef TTK_ENABLE_OPENMP
-        omp_set_lock(&writeLock);
+#pragma omp critical
 #endif
-        if((wrapper_)
-          &&(!(count % ((vertexNumber_)/10)))){
-          wrapper_->updateProgress((count + 1.0)
-            /vertexNumber_);
-        }
+        {
+          if ((wrapper_) && (!(count % ((vertexNumber_) / 10)))) {
+            wrapper_->updateProgress((count + 1.0) / vertexNumber_);
+          }
 
-        count++;
-#ifdef TTK_ENABLE_OPENMP
-        omp_unset_lock(&writeLock);
-#endif
+          count++;
+        }
       }
     }
   }
@@ -539,12 +534,6 @@ template <class dataType> int ttk::UncertainDataEstimator::execute() const{
     }
     outputMeanField[v] = sum / static_cast<double>(numberOfInputs_);
   }
-
-
-
-#ifdef TTK_ENABLE_OPENMP
-  omp_destroy_lock(&writeLock);
-#endif
 
   {
     std::stringstream msg;

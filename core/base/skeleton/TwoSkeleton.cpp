@@ -451,8 +451,6 @@ int TwoSkeleton::buildTriangleList(const SimplexId &vertexNumber,
     // the following open-mp processing is only relevant for embarassingly 
     // parallel algorithms (such as smoothing) -- to adapt
 #ifdef TTK_ENABLE_OPENMP
-    omp_lock_t writeLock;
-    omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
     for(SimplexId i = 0; i < (SimplexId) cellNumber; i++){
@@ -514,26 +512,19 @@ int TwoSkeleton::buildTriangleList(const SimplexId &vertexNumber,
         // update the progress bar of the wrapping code -- to adapt
         if(debugLevel_ > advancedInfoMsg){
 #ifdef TTK_ENABLE_OPENMP
-          omp_set_lock(&writeLock);
+#pragma omp critical
 #endif
-          if((wrapper_)
-            &&(!(count % ((cellNumber)/10)))){
-            wrapper_->updateProgress((count + 1.0)
-              /cellNumber);
-          }
+          {
+            if ((wrapper_) && (!(count % ((cellNumber) / 10)))) {
+              wrapper_->updateProgress((count + 1.0) / cellNumber);
+            }
 
-          count++;
-#ifdef TTK_ENABLE_OPENMP
-          omp_unset_lock(&writeLock);
-#endif
+            count++;
+          }
         }
       }
     }
     
-#ifdef TTK_ENABLE_OPENMP
-    omp_destroy_lock(&writeLock);
-#endif
-  
     Timer mergeTimer;
     // now merge the lists
     vector<vector<pair<vector<SimplexId>, SimplexId > > > mainTriangleTable(vertexNumber);
