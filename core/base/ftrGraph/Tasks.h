@@ -15,73 +15,74 @@
 
 #include <tuple>
 #ifndef TTK_ENABLE_KAMIKAZE
-#include<iostream>
+#include <iostream>
 #endif
 
-namespace ttk
-{
-   namespace ftr
-   {
+namespace ttk {
+  namespace ftr {
 
-      // At least one of nbTasks or grainSize need to be given
-      // to use this structure
-      struct TaskChunk
-      {
-         idVertex      nbElemt   = 0;
-         idPropagation nbTasks   = 0;
-         idVertex      grainSize = 0;
+    // At least one of nbTasks or grainSize need to be given
+    // to use this structure
+    struct TaskChunk {
+      idVertex nbElemt = 0;
+      idPropagation nbTasks = 0;
+      idVertex grainSize = 0;
 
-         explicit TaskChunk(const idVertex nbel) : nbElemt{nbel}
-         {
-         }
-      };
+      explicit TaskChunk(const idVertex nbel) : nbElemt{nbel} {
+      }
+    };
 
-      // Stateless class, toolbox
-      class Tasks
-      {
-        public:
-         /// This function gives the size of a chunk and the number
-         /// of chunk to divide the number of element (nbElemt)
-         /// in chunk of grainSize elements OR in nbTasks chunks
-         /// \pre nbElemt is the number of element to visit and
-         /// ONLY ONE of nbTasks or grainSize should be set.
-         static std::tuple<idVertex, idPropagation> getChunk(const TaskChunk& params)
-         {
+    // Stateless class, toolbox
+    class Tasks {
+    public:
+      /// This function gives the size of a chunk and the number
+      /// of chunk to divide the number of element (nbElemt)
+      /// in chunk of grainSize elements OR in nbTasks chunks
+      /// \pre nbElemt is the number of element to visit and
+      /// ONLY ONE of nbTasks or grainSize should be set.
+      static std::tuple<idVertex, idPropagation>
+        getChunk(const TaskChunk &params) {
 #ifndef TTK_ENABLE_KAMIKAZE
-            if (!params.nbElemt) {
-               std::cerr << "[FTR Graph]: getChunk called with nbElemnt null" << std::endl;
-            }
-            if(!params.nbTasks and !params.grainSize) {
-               std::cerr << "[FTR Graph]: getChunk called with neither nbtasks nor grainSize" << std::endl;
-            }
-            if(params.nbTasks and params.grainSize) {
-               std::cerr << "[FTR Graph]: getChunk called with both nbtasks and grainSize" << std::endl;
-            }
+        if(!params.nbElemt) {
+          std::cerr << "[FTR Graph]: getChunk called with nbElemnt null"
+                    << std::endl;
+        }
+        if(!params.nbTasks and !params.grainSize) {
+          std::cerr
+            << "[FTR Graph]: getChunk called with neither nbtasks nor grainSize"
+            << std::endl;
+        }
+        if(params.nbTasks and params.grainSize) {
+          std::cerr
+            << "[FTR Graph]: getChunk called with both nbtasks and grainSize"
+            << std::endl;
+        }
 #endif
-            const idVertex grainSize =
-                (params.grainSize) ? params.grainSize : params.nbElemt / params.nbTasks;
-            const idPropagation nbTasks =
-                params.nbElemt / grainSize + (params.nbElemt % grainSize != 0);
+        const idVertex grainSize = (params.grainSize)
+                                     ? params.grainSize
+                                     : params.nbElemt / params.nbTasks;
+        const idPropagation nbTasks
+          = params.nbElemt / grainSize + (params.nbElemt % grainSize != 0);
 
-            return std::make_tuple(grainSize, nbTasks);
-         }
+        return std::make_tuple(grainSize, nbTasks);
+      }
 
-         static idVertex getBegin(const idPropagation chunkId, const idVertex grainSize,
-                                  const idVertex offset = 0)
-         {
-            return offset +  grainSize * chunkId;
-         }
+      static idVertex getBegin(const idPropagation chunkId,
+                               const idVertex grainSize,
+                               const idVertex offset = 0) {
+        return offset + grainSize * chunkId;
+      }
 
-         static idVertex getEnd(const idPropagation chunkId, const idVertex grainSize,
-                                const idVertex maxEnd = nullVertex)
-         {
-            const idVertex computedEnd = grainSize * (chunkId + 1);
-            return std::min(maxEnd, computedEnd);
-         }
-      };
+      static idVertex getEnd(const idPropagation chunkId,
+                             const idVertex grainSize,
+                             const idVertex maxEnd = nullVertex) {
+        const idVertex computedEnd = grainSize * (chunkId + 1);
+        return std::min(maxEnd, computedEnd);
+      }
+    };
 
-      // Explain priority explicitely
-      enum PriorityLevel { Min = 0, Low, Average, High, Higher, Max };
-   }
-}
+    // Explain priority explicitely
+    enum PriorityLevel { Min = 0, Low, Average, High, Higher, Max };
+  } // namespace ftr
+} // namespace ttk
 

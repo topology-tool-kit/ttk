@@ -30,162 +30,162 @@
 #include <vtkUnstructuredGrid.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
+class VTKFILTERSCORE_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm,
+                                          public ttk::Wrapper
 #else
-class ttkFTRGraph : public vtkDataSetAlgorithm, public ttk::Wrapper
+class ttkFTRGraph : public vtkDataSetAlgorithm,
+                    public ttk::Wrapper
 #endif
 {
-  private:
-   std::string ScalarField;
-   bool        UseInputOffsetScalarField;
-   std::string InputOffsetScalarFieldName;
-   int         ScalarFieldId;
-   int         OffsetFieldId;
+private:
+  std::string ScalarField;
+  bool UseInputOffsetScalarField;
+  std::string InputOffsetScalarFieldName;
+  int ScalarFieldId;
+  int OffsetFieldId;
 
-   ttk::ftr::Params params_;
+  ttk::ftr::Params params_;
 
-   vtkDataSet*                     mesh_;
-   ttk::Triangulation*             triangulation_;
-   vtkDataArray*                   inputScalars_;
-   std::vector<ttk::ftr::idVertex> offsets_;
+  vtkDataSet *mesh_;
+  ttk::Triangulation *triangulation_;
+  vtkDataArray *inputScalars_;
+  std::vector<ttk::ftr::idVertex> offsets_;
 
-   bool hasUpdatedMesh_;
-   bool Dummy;
+  bool hasUpdatedMesh_;
+  bool Dummy;
 
-  public:
-   static ttkFTRGraph* New();
+public:
+  static ttkFTRGraph *New();
 
-   vtkTypeMacro(ttkFTRGraph, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkFTRGraph, vtkDataSetAlgorithm);
 
-   // default ttk setters
-   vtkSetMacro(debugLevel_, int);
+  // default ttk setters
+  vtkSetMacro(debugLevel_, int);
 
-   void SetThreadNumber(int threadNumber)
-   {
-      ThreadNumber = threadNumber;
+  void SetThreadNumber(int threadNumber) {
+    ThreadNumber = threadNumber;
 #ifdef TTK_FTR_SINGLE_LAZY_SEQ
-      ThreadNumber = 1;
-      UseAllCores = 0;
-      std::cout << "single lazy list: sequential execution" << std::endl;
+    ThreadNumber = 1;
+    UseAllCores = 0;
+    std::cout << "single lazy list: sequential execution" << std::endl;
 #endif
-      SetThreads();
-   }
+    SetThreads();
+  }
 
-   void SetUseAllCores(bool onOff)
-   {
+  void SetUseAllCores(bool onOff) {
 #ifdef TTK_FTR_SINGLE_LAZY_SEQ
-      ThreadNumber = 1;
-      UseAllCores = 0;
+    ThreadNumber = 1;
+    UseAllCores = 0;
 #endif
-      UseAllCores = onOff;
-      SetThreads();
-   }
-   // end of default ttk setters
+    UseAllCores = onOff;
+    SetThreads();
+  }
+  // end of default ttk setters
 
-   vtkSetMacro(ScalarField, std::string);
-   vtkGetMacro(ScalarField, std::string);
+  vtkSetMacro(ScalarField, std::string);
+  vtkGetMacro(ScalarField, std::string);
 
-   vtkSetMacro(UseInputOffsetScalarField, int);
-   vtkGetMacro(UseInputOffsetScalarField, int);
+  vtkSetMacro(UseInputOffsetScalarField, int);
+  vtkGetMacro(UseInputOffsetScalarField, int);
 
-   vtkSetMacro(InputOffsetScalarFieldName, std::string);
-   vtkGetMacro(InputOffsetScalarFieldName, std::string);
+  vtkSetMacro(InputOffsetScalarFieldName, std::string);
+  vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
-   vtkSetMacro(ScalarFieldId, int);
-   vtkGetMacro(ScalarFieldId, int);
+  vtkSetMacro(ScalarFieldId, int);
+  vtkGetMacro(ScalarFieldId, int);
 
-   vtkSetMacro(OffsetFieldId, int);
-   vtkGetMacro(OffsetFieldId, int);
+  vtkSetMacro(OffsetFieldId, int);
+  vtkGetMacro(OffsetFieldId, int);
 
-   vtkSetMacro(Dummy, bool);
+  vtkSetMacro(Dummy, bool);
 
-   void SetSingleSweep(const bool ss)
-   {
-     params_.singleSweep = ss;
-     Modified();
-   }
+  void SetSingleSweep(const bool ss) {
+    params_.singleSweep = ss;
+    Modified();
+  }
 
-   bool GetSingleSweep(void) const
-   {
-     return params_.singleSweep;
-   }
+  bool GetSingleSweep(void) const {
+    return params_.singleSweep;
+  }
 
-   void SetWithSegmentation(const bool segm)
-   {
-      params_.segm = segm;
-      Modified();
-   }
+  void SetWithSegmentation(const bool segm) {
+    params_.segm = segm;
+    Modified();
+  }
 
-   bool GetWithSegmentation(void) const
-   {
-      return params_.segm;
-   }
+  bool GetWithSegmentation(void) const {
+    return params_.segm;
+  }
 
-   void SetWithNormalize(const bool norm)
-   {
-      params_.normalize = norm;
-      Modified();
-   }
+  void SetWithNormalize(const bool norm) {
+    params_.normalize = norm;
+    Modified();
+  }
 
-   bool GetWithNormalize(void) const
-   {
-      return params_.normalize;
-   }
+  bool GetWithNormalize(void) const {
+    return params_.normalize;
+  }
 
-   void SetWithAdvStats(const bool adv)
-   {
-      params_.advStats = adv;
-      Modified();
-   }
+  void SetWithAdvStats(const bool adv) {
+    params_.advStats = adv;
+    Modified();
+  }
 
-   bool GetWithAdvStats(void) const
-   {
-      return params_.advStats;
-   }
+  bool GetWithAdvStats(void) const {
+    return params_.advStats;
+  }
 
-   void SetSampling(int lvl)
-   {
-      params_.samplingLvl = lvl;
-      Modified();
-   }
+  void SetSampling(int lvl) {
+    params_.samplingLvl = lvl;
+    Modified();
+  }
 
-   int GetSuperArcSamplingLevel(void) const
-   {
-      return params_.samplingLvl;
-   }
+  int GetSuperArcSamplingLevel(void) const {
+    return params_.samplingLvl;
+  }
 
-   int setupTriangulation();
-   int getScalars();
-   int getOffsets();
+  int setupTriangulation();
+  int getScalars();
+  int getOffsets();
 
-   int getSkeletonNodes(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonNodes);
+  int getSkeletonNodes(const ttk::ftr::Graph &graph,
+                       vtkUnstructuredGrid *outputSkeletonNodes);
 
-   int addDirectSkeletonArc(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc arcId,
-                            vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
-                            ttk::ftr::ArcData& arcData);
+  int addDirectSkeletonArc(const ttk::ftr::Graph &graph,
+                           const ttk::ftr::idSuperArc arcId,
+                           vtkPoints *points,
+                           vtkUnstructuredGrid *skeletonArcs,
+                           ttk::ftr::ArcData &arcData);
 
-   int addSampledSkeletonArc(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc arcId,
-                             vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
-                             ttk::ftr::ArcData& arcData);
+  int addSampledSkeletonArc(const ttk::ftr::Graph &graph,
+                            const ttk::ftr::idSuperArc arcId,
+                            vtkPoints *points,
+                            vtkUnstructuredGrid *skeletonArcs,
+                            ttk::ftr::ArcData &arcData);
 
-   int addCompleteSkeletonArc(const ttk::ftr::Graph& graph, const ttk::ftr::idSuperArc arcId,
-                              vtkPoints* points, vtkUnstructuredGrid* skeletonArcs,
-                              ttk::ftr::ArcData& arcData);
+  int addCompleteSkeletonArc(const ttk::ftr::Graph &graph,
+                             const ttk::ftr::idSuperArc arcId,
+                             vtkPoints *points,
+                             vtkUnstructuredGrid *skeletonArcs,
+                             ttk::ftr::ArcData &arcData);
 
-   int getSkeletonArcs(const ttk::ftr::Graph& graph, vtkUnstructuredGrid* outputSkeletonArcs);
+  int getSkeletonArcs(const ttk::ftr::Graph &graph,
+                      vtkUnstructuredGrid *outputSkeletonArcs);
 
-   int getSegmentation(const ttk::ftr::Graph& graph, vtkDataSet* outputSegmentation);
+  int getSegmentation(const ttk::ftr::Graph &graph,
+                      vtkDataSet *outputSegmentation);
 
-  protected:
-   ttkFTRGraph();
-   ~ttkFTRGraph();
+protected:
+  ttkFTRGraph();
+  ~ttkFTRGraph();
 
-   TTK_SETUP();
+  TTK_SETUP();
 
-   void identify(vtkDataSet* ds) const;
+  void identify(vtkDataSet *ds) const;
 
-   virtual int FillInputPortInformation(int port, vtkInformation* info) override;
-   virtual int FillOutputPortInformation(int port, vtkInformation* info) override;
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  virtual int FillOutputPortInformation(int port,
+                                        vtkInformation *info) override;
 };
 
-#endif  // VTK_FTRGRAPH_H_
+#endif // VTK_FTRGRAPH_H_

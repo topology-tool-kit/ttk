@@ -3,7 +3,8 @@
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2018-01-22
 ///
-///\brief TTK processing package that manage a paralle version of vector *Same as in FTM: Common ?*
+///\brief TTK processing package that manage a paralle version of vector *Same
+///as in FTM: Common ?*
 
 #ifndef ATOMICVECTOR_H
 #define ATOMICVECTOR_H
@@ -19,199 +20,181 @@
 #include <typeinfo>
 #endif
 
-namespace ttk
-{
-   template <typename type>
-   class AtomicVector : public std::vector<type>
-   {
-     private:
-      std::size_t nextId;
+namespace ttk {
+  template <typename type>
+  class AtomicVector : public std::vector<type> {
+  private:
+    std::size_t nextId;
 
-     public:
-      explicit AtomicVector(const std::size_t initSize = 1) : std::vector<type>(), nextId(0)
-      {
+  public:
+    explicit AtomicVector(const std::size_t initSize = 1)
+      : std::vector<type>(), nextId(0) {
 #ifndef TTK_ENABLE_KAMIKAZE
-         if (!initSize) {
-            std::cout << "Caution, Atomic vector need a non-0 init size !" << std::endl;
-            std::vector<type>::resize(initSize);
-         } else
+      if(!initSize) {
+        std::cout << "Caution, Atomic vector need a non-0 init size !"
+                  << std::endl;
+        std::vector<type>::resize(initSize);
+      } else
 #endif
-         {
-            std::vector<type>::resize(initSize);
-         }
-      }
-
-      // copy constructor
-      AtomicVector(const AtomicVector &other) : std::vector<type>(other), nextId(other.nextId)
       {
+        std::vector<type>::resize(initSize);
+      }
+    }
+
+    // copy constructor
+    AtomicVector(const AtomicVector &other)
+      : std::vector<type>(other), nextId(other.nextId) {
 #ifndef TTK_ENABLE_KAMIKAZE
-         if (!std::vector<type>::size()) {
-            reserve(1);
-         }
-#endif
+      if(!std::vector<type>::size()) {
+        reserve(1);
       }
+#endif
+    }
 
-      // move constructor
-      AtomicVector(AtomicVector &&other) = default;
+    // move constructor
+    AtomicVector(AtomicVector &&other) = default;
 
-      virtual ~AtomicVector() = default;
+    virtual ~AtomicVector() = default;
 
-      // ---
-      // STL
-      // ---
+    // ---
+    // STL
+    // ---
 
-      void reserve(const std::size_t &newSize, const bool fromOther = false)
-      {
-         if (newSize > std::vector<type>::size()) {
+    void reserve(const std::size_t &newSize, const bool fromOther = false) {
+      if(newSize > std::vector<type>::size()) {
 #ifndef TTK_ENABLE_KAMIKAZE
 #ifdef TTK_ENABLE_OPENMP
-            if (omp_in_parallel()) {
-               // WARNING: In parallel we do not want to make reserve as it can lead to
-               // data race, we should not enter here
+        if(omp_in_parallel()) {
+          // WARNING: In parallel we do not want to make reserve as it can lead
+          // to data race, we should not enter here
 #pragma omp critical(AtomicUFReserve)
-               {
-                  // if (fromOther)
-                  //    std::cout << " a function in the class ";
-                  // std::cout << "call RE-Reserve in AtomicVector " << nextId;
-                  // std::cout << " ! Data Race may occurs ! " << typeid(this).name() << std::endl;
+          {
+            // if (fromOther)
+            //    std::cout << " a function in the class ";
+            // std::cout << "call RE-Reserve in AtomicVector " << nextId;
+            // std::cout << " ! Data Race may occurs ! " << typeid(this).name()
+            // << std::endl;
 
-                  std::vector<type>::resize(newSize);
-               }
+            std::vector<type>::resize(newSize);
+          }
 
-            } else
+        } else
 #endif
 #endif
-            {
-               std::vector<type>::resize(newSize);
-            }
-         }
+        {
+          std::vector<type>::resize(newSize);
+        }
       }
+    }
 
-      void reset(const std::size_t &nId = 0)
-      {
+    void reset(const std::size_t &nId = 0) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
 #endif
-         nextId = nId;
-      }
+      nextId = nId;
+    }
 
-      void clear(void)
-      {
-         reset();
+    void clear(void) {
+      reset();
 
-         // Remove old content
-         std::size_t oldSize = std::vector<type>::size();
-         std::vector<type>::clear();
-         reserve(oldSize, true);
-      }
+      // Remove old content
+      std::size_t oldSize = std::vector<type>::size();
+      std::vector<type>::clear();
+      reserve(oldSize, true);
+    }
 
-      std::size_t getNext(void)
-      {
-         std::size_t resId;
+    std::size_t getNext(void) {
+      std::size_t resId;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
 #endif
-         resId = nextId++;
+      resId = nextId++;
 
-         if (nextId == std::vector<type>::size()) {
-            reserve(std::vector<type>::size() * 2, true);
-         }
-
-         return resId;
+      if(nextId == std::vector<type>::size()) {
+        reserve(std::vector<type>::size() * 2, true);
       }
 
-      std::size_t size(void) const
-      {
-         return nextId;
-      }
+      return resId;
+    }
 
-      bool empty(void) const
-      {
-         return nextId == 0;
-      }
+    std::size_t size(void) const {
+      return nextId;
+    }
 
-      void push_back(const type &elmt)
-      {
-         const auto &curPos = getNext();
-         (*this)[curPos]    = elmt;
-      }
+    bool empty(void) const {
+      return nextId == 0;
+    }
 
-      void emplace_back(const type &elmt)
-      {
-         // Not really constructed in place
-         // here to ensure vector compatibility
-         const auto &curPos = getNext();
-         (*this)[curPos]    = elmt;
-      }
+    void push_back(const type &elmt) {
+      const auto &curPos = getNext();
+      (*this)[curPos] = elmt;
+    }
 
-      void pop_back(void)
-      {
+    void emplace_back(const type &elmt) {
+      // Not really constructed in place
+      // here to ensure vector compatibility
+      const auto &curPos = getNext();
+      (*this)[curPos] = elmt;
+    }
+
+    void pop_back(void) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
 #endif
-         --nextId;
-      }
+      --nextId;
+    }
 
-      // --------
-      // OPERATOR
-      // --------
+    // --------
+    // OPERATOR
+    // --------
 
-      AtomicVector<type> &operator=(const AtomicVector<type> &other)
-      {
-         std::vector<type>::operator=(other);
-         nextId                     = other.nextId;
-         return *this;
-      }
+    AtomicVector<type> &operator=(const AtomicVector<type> &other) {
+      std::vector<type>::operator=(other);
+      nextId = other.nextId;
+      return *this;
+    }
 
-      AtomicVector<type> &operator=(AtomicVector<type> &&other)
-      {
-         std::vector<type>::operator=(std::move(other));
-         nextId                     = std::move(other.nextId);
-         return *this;
-      }
+    AtomicVector<type> &operator=(AtomicVector<type> &&other) {
+      std::vector<type>::operator=(std::move(other));
+      nextId = std::move(other.nextId);
+      return *this;
+    }
 
+    // ---------
+    // ITERATORS
+    // ---------
+    // allow foreach on the vector
 
-      // ---------
-      // ITERATORS
-      // ---------
-      // allow foreach on the vector
+    typedef typename std::vector<type>::iterator iterator;
+    typedef typename std::vector<type>::const_iterator const_iterator;
 
-      typedef typename std::vector<type>::iterator       iterator;
-      typedef typename std::vector<type>::const_iterator const_iterator;
+    iterator end() {
+      return this->begin() + nextId;
+    }
 
-      iterator end()
-      {
-         return this->begin() + nextId;
-      }
+    const_iterator end() const {
+      return this->begin() + nextId;
+    }
 
-      const_iterator end() const
-      {
-         return this->begin() + nextId;
-      }
+    const_iterator cend() const {
+      return this->cbegin() + nextId;
+    }
 
-      const_iterator cend() const
-      {
-         return this->cbegin() + nextId;
-      }
+    typedef typename std::vector<type>::reverse_iterator riterator;
+    typedef typename std::vector<type>::const_reverse_iterator const_riterator;
 
-      typedef typename std::vector<type>::reverse_iterator       riterator;
-      typedef typename std::vector<type>::const_reverse_iterator const_riterator;
+    riterator rbegin() {
+      return this->rend() - (nextId - 1);
+    }
 
-      riterator rbegin()
-      {
-         return this->rend() - (nextId - 1);
-      }
+    const_riterator rbegin() const {
+      return this->rend() - (nextId - 1);
+    }
 
-      const_riterator rbegin() const
-      {
-         return this->rend() - (nextId - 1);
-      }
-
-      const_riterator crbegin() const
-      {
-         return this->crend() - (nextId - 1);
-      }
-   };
-}
+    const_riterator crbegin() const {
+      return this->crend() - (nextId - 1);
+    }
+  };
+} // namespace ttk
 
 #endif /* end of include guard: ATOMICVECTOR_H */

@@ -23,58 +23,45 @@ using namespace ftr;
 // Segment
 // -------
 
-Segment::Segment(idVertex size) : vertices_(size, nullVertex)
-{
+Segment::Segment(idVertex size) : vertices_(size, nullVertex) {
 }
 
-Segment::Segment()
-{
+Segment::Segment() {
 }
 
-segm_const_it Segment::begin(void) const
-{
-   return vertices_.begin();
+segm_const_it Segment::begin(void) const {
+  return vertices_.begin();
 }
 
-segm_it Segment::begin(void)
-{
-   return vertices_.begin();
+segm_it Segment::begin(void) {
+  return vertices_.begin();
 }
 
-
-segm_const_it Segment::end(void) const
-{
-   return vertices_.end();
+segm_const_it Segment::end(void) const {
+  return vertices_.end();
 }
 
-segm_it Segment::end(void)
-{
-   return vertices_.end();
+segm_it Segment::end(void) {
+  return vertices_.end();
 }
 
-idVertex Segment::size(void) const
-{
-   return vertices_.size();
+idVertex Segment::size(void) const {
+  return vertices_.size();
 }
 
-void Segment::reserve(const idVertex size)
-{
-   vertices_.reserve(size);
+void Segment::reserve(const idVertex size) {
+  vertices_.reserve(size);
 }
 
-void Segment::emplace_back(const idVertex v)
-{
-   vertices_.emplace_back(v);
+void Segment::emplace_back(const idVertex v) {
+  vertices_.emplace_back(v);
 }
 
-idVertex Segment::operator[](const size_t& idx) const
-{
-   return vertices_[idx];
+idVertex Segment::operator[](const size_t &idx) const {
+  return vertices_[idx];
 }
 
-idVertex& Segment::operator[](const size_t& idx)
-{
-   return vertices_[idx];
+idVertex &Segment::operator[](const size_t &idx) {
+  return vertices_[idx];
 }
-
 
