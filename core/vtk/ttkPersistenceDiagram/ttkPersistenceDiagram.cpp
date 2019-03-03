@@ -24,8 +24,6 @@ vtkStandardNewMacro(ttkPersistenceDiagram)
   ForceInputOffsetScalarField = false;
   ComputeSaddleConnectors = false;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
   ShowInsideDomain = false;
   computeDiagram_= true;
 
@@ -246,9 +244,8 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   vector<tuple<Cell,Cell>> dmt_pairs;
-  persistenceDiagram_.setDMTPairs(&dmt_pairs);
-
   persistenceDiagram_.setWrapper(this);
+  persistenceDiagram_.setDMTPairs(&dmt_pairs);
   persistenceDiagram_.setInputScalars(inputScalars_->GetVoidPointer(0));
   persistenceDiagram_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
   persistenceDiagram_.setComputeSaddleConnectors(ComputeSaddleConnectors);
@@ -393,6 +390,6 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
       << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }
-  
+
   return 0;
 }

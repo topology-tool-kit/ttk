@@ -36,6 +36,9 @@
                 <Property name="ThreadNumber" />
                 <Property name="DebugLevel" />
             </PropertyGroup>
+            <Hints>
+              <ShowInMenu category="TTK" />
+            </Hints>
         </SourceProxy>
     </ProxyGroup>
 </ServerManagerConfiguration>

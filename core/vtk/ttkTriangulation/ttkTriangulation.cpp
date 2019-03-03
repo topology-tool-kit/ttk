@@ -21,6 +21,7 @@ ttkTriangulation::~ttkTriangulation(){
 int ttkTriangulation::allocate(){
 
   triangulation_ = new Triangulation;
+  triangulation_->setDebugLevel(0);
   hasAllocated_ = true;
   
   return 0;
@@ -57,8 +58,6 @@ Triangulation* ttkTriangulation::getTriangulation(vtkDataSet *other){
   if(!other)
     return NULL;
 
-  string dataType = other->GetClassName();
-  
   ttkTriangulation *otherTriangulation = 
     dynamic_cast<ttkTriangulation *>(other);
   

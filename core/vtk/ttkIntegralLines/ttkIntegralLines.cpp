@@ -22,8 +22,6 @@ vtkStandardNewMacro(ttkIntegralLines)
   ForceInputVertexScalarField = false;
   InputVertexScalarFieldName = ttk::VertexScalarFieldName;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkIntegralLines::~ttkIntegralLines(){

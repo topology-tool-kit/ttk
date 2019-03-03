@@ -21,7 +21,7 @@ namespace ttk{
       ProgramBase(){
         
         lastObject_ = true;
-        globalDebugLevel_ = debugLevel_;
+        ttk::globalDebugLevel_ = 3;
         
         outputPath_ = "output";
         ttkModule_ = NULL;
@@ -42,9 +42,9 @@ namespace ttk{
           "Output file name base (no extension)", true);
         
         parser_.parse(argc, argv);
-        debugLevel_ = globalDebugLevel_;
+        debugLevel_ = ttk::globalDebugLevel_;
 
-        threadNumber_ = parser_.getThreadNumber();
+        threadNumber_ = ttk::globalThreadNumber_;
         
         int ret = 0;
         ret = load(inputPaths);
@@ -60,7 +60,7 @@ namespace ttk{
         if(!ttkModule_)
           return -1;
         
-        ttkModule_->setDebugLevel(globalDebugLevel_);
+        ttkModule_->setDebugLevel(debugLevel_);
         ttkModule_->setThreadNumber(threadNumber_);
           
         return execute();

@@ -1,0 +1,69 @@
+<ServerManagerConfiguration>
+    <ProxyGroup name="sources">
+        <SourceProxy name="GaussianPointCloud" class="ttkGaussianPointCloud" label="TTK GaussianPointCloud">
+            <Documentation long_help="TTK GaussianPointCloud" short_help="TTK 
+GaussianPointCloud">
+              This module generates a 1D, 2D or 3D point cloud by randomly 
+              casting samples from a Gaussian distribution.
+              </Documentation>
+
+            <IntVectorProperty name="NumberOfSamples"
+              label="Number of Samples"
+              command="SetNumberOfSamples"
+              number_of_elements="1"
+              default_values="1000"
+              >
+              <IntRangeDomain name="range" min="1" max="1000000" />
+              <Documentation>
+                Number of samples to cast.
+              </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="Dimension"
+              label="Dimension"
+              command="SetDimension"
+              number_of_elements="1"
+              default_values="2"
+              >
+              <EnumerationDomain name="Enum">
+                <Entry value="1" text="1"/>
+                <Entry value="2" text="2"/>
+                <Entry value="3" text="3"/>
+              </EnumerationDomain>
+              <Documentation>
+                Dimension of the point cloud.
+              </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <BooleanDomain name="bool" />
+                <Documentation>Use all available cores.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="1" max="100" />
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
+                </Hints>
+                <Documentation>Thread number.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
+                <IntRangeDomain name="range" min="0" max="100" />
+                <Documentation>Debug level.</Documentation>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="NumberOfSamples" />
+                <Property name="Dimension" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Testing">
+                <Property name="UseAllCores" />
+                <Property name="ThreadNumber" />
+                <Property name="DebugLevel" />
+            </PropertyGroup>
+
+            <Hints>
+                <ShowInMenu category="TTK" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

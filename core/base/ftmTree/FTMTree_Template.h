@@ -27,8 +27,8 @@
 // PROCESS
 // -------
 
-  template <typename scalarType,typename idType>
-void ftm::FTMTree::build(void)
+template <typename scalarType, typename idType>
+void ttk::ftm::FTMTree::build(void)
 {
    // -----
    // INPUT

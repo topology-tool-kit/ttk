@@ -16,8 +16,6 @@ ttkScalarFieldSmoother::ttkScalarFieldSmoother(){
   outputScalarField_ = NULL;
 
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
   
 }
 

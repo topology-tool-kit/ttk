@@ -10,8 +10,6 @@ ttkRangePolygon::ttkRangePolygon(){
   ClosedLoop = false;
   NumberOfIterations = 0;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkRangePolygon::~ttkRangePolygon(){

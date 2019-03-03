@@ -10,8 +10,6 @@ ttkMeshSubdivision::ttkMeshSubdivision(){
   // init
   IterationNumber = 1;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkMeshSubdivision::~ttkMeshSubdivision(){

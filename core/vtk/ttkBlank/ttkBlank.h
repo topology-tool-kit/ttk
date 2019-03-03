@@ -143,8 +143,6 @@ class ttkBlank
       outputScalarField_ = NULL;
       
       UseAllCores = true;
-      ThreadNumber = 1;
-      debugLevel_ = 3;
       
       // TODO-1
       // Specify the number of input and output ports.

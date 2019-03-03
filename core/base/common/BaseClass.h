@@ -15,6 +15,9 @@
 #include<DataTypes.h>
 
 namespace ttk {
+  
+  extern int globalThreadNumber_;
+  
   class Wrapper;
 
   class BaseClass {

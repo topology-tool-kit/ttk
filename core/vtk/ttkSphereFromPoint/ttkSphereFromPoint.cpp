@@ -20,8 +20,6 @@ ttkSphereFromPoint::ttkSphereFromPoint(){
   masterAppender_ = NULL;
 
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkSphereFromPoint::~ttkSphereFromPoint(){
@@ -124,8 +122,6 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
   SimplexId count = 0;
   
 #ifdef TTK_ENABLE_OPENMP
-  omp_lock_t writeLock;
-  omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++){
@@ -275,16 +271,15 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
  
       if(debugLevel_ > 3){
 #ifdef TTK_ENABLE_OPENMP
-        omp_set_lock(&writeLock);
-#endif   
-        if(!(count % (input->GetNumberOfPoints()/10))){
-          updateProgress((count + 1.0)/input->GetNumberOfPoints());
-        }
-
-        count++;
-#ifdef TTK_ENABLE_OPENMP
-        omp_unset_lock(&writeLock);
+#pragma omp critical
 #endif
+        {
+          if (!(count % (input->GetNumberOfPoints() / 10))) {
+            updateProgress((count + 1.0) / input->GetNumberOfPoints());
+          }
+
+          count++;
+        }
       }
     }
   }
@@ -295,10 +290,6 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output){
         appenderList_[i]->GetOutputPort());
   }
   masterAppender_->Update();
-  
-#ifdef TTK_ENABLE_OPENMP
-  omp_destroy_lock(&writeLock);
-#endif
   
   output->ShallowCopy(masterAppender_->GetOutput());
 

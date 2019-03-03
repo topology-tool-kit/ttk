@@ -20,8 +20,6 @@ ttkMandatoryCriticalPoints::ttkMandatoryCriticalPoints(){
   mandatorySplitTreePoints_ = NULL;
 
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 
   computeMinimumOutput_ = false;
   computeJoinSaddleOutput_ = false;

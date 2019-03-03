@@ -7,8 +7,6 @@ vtkStandardNewMacro(ttkFiberSurface)
 
 ttkFiberSurface::ttkFiberSurface(){
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
   RangeCoordinates = true;
   EdgeParameterization = true;
   EdgeIds = true;

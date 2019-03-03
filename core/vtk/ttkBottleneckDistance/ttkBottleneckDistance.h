@@ -197,7 +197,6 @@ protected:
   {
     // settings
     UseAllCores = false;
-    ThreadNumber = 1;
     SetNumberOfInputPorts(2);
     SetNumberOfOutputPorts(3);
 

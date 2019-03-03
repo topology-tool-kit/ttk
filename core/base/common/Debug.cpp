@@ -2,16 +2,31 @@
 
 bool ttk::welcomeMsg_ = true;
 bool ttk::goodbyeMsg_ = true;
-int ttk::globalDebugLevel_ = -INT_MAX;
+int ttk::globalDebugLevel_ = 0;
 
 using namespace std;
 using namespace ttk;
 
 Debug::Debug() {
-  debugLevel_ = infoMsg;
+  
+  debugLevel_ = ttk::globalDebugLevel_;
 
   // avoid warnings
   if(goodbyeMsg_) goodbyeMsg_ = true;
+  
+}
+
+Debug::~Debug(){
+  if((lastObject_)&&(ttk::goodbyeMsg_)){
+    stringstream msg;
+    msg << "[Common] Goodbye :)" << endl;
+    dMsg(cout, msg.str(), 1);
+    ttk::goodbyeMsg_ = false;
+  }
+}
+
+int Debug::dMsg(ostream &stream, string msg,
+  const int &debugLevel) const{
 
   if((ttk::welcomeMsg_)&&(debugLevel_)){
     ttk::welcomeMsg_ = false;
@@ -38,20 +53,7 @@ Debug::Debug() {
     s << "[Common] Welcome!" << endl;
     dMsg(cout, s.str(), 1);
   }
-}
-
-Debug::~Debug(){
-  if((lastObject_)&&(ttk::goodbyeMsg_)){
-    stringstream msg;
-    msg << "[Common] Goodbye :)" << endl;
-    dMsg(cout, msg.str(), 1);
-    ttk::goodbyeMsg_ = false;
-  }
-}
-
-int Debug::dMsg(ostream &stream, string msg,
-  const int &debugLevel) const{
-
+    
   if((debugLevel_ >= debugLevel)
     ||(globalDebugLevel_ >= debugLevel))
     stream << msg.data() << flush;

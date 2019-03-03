@@ -122,8 +122,6 @@ class ttkTriangulationRequest
 
     ttkTriangulationRequest(){
       UseAllCores=true;
-      ThreadNumber = 1;
-      debugLevel_ = 3;
       SimplexType=0;
       SimplexIdentifier=0;
       RequestType=0;

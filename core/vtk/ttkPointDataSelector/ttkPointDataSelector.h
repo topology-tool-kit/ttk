@@ -115,8 +115,6 @@ class ttkPointDataSelector
     ttkPointDataSelector(){
       UseAllCores = true;
       RenameSelected = false;
-      ThreadNumber = 1;
-      debugLevel_ = 3;
       RegexpString = "*";
       SelectedFieldName = "SelectedField";
 

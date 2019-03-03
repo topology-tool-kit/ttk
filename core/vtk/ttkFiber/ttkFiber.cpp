@@ -10,8 +10,6 @@ ttkFiber::ttkFiber(){
   Vvalue = 0;
 
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkFiber::~ttkFiber(){

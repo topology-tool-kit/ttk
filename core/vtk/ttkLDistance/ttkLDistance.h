@@ -102,8 +102,6 @@ class ttkLDistance
       ScalarFieldId2 = 1;
       outputScalarField_ = NULL;
       UseAllCores = true;
-      ThreadNumber = 1;
-      debugLevel_ = 3;
       result = -1.;
     }
     

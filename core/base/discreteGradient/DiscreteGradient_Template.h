@@ -3358,6 +3358,7 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
   const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
 
   ftm::FTMTree contourTree;
+  contourTree.setDebugLevel(debugLevel_);
   contourTree.setupTriangulation(inputTriangulation_, false);
   contourTree.setVertexScalars(scalars);
   contourTree.setTreeType(ftm::TreeType::Contour);

@@ -279,8 +279,6 @@ std::endl;
       //parallelData_.trees.clear();
    }
 
-   std::cout << "Tree computed ..." << std::endl;
-
    return 0;
 }
 

@@ -26,8 +26,6 @@ vtkStandardNewMacro(ttkTopologicalSimplification)
   InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
 
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkTopologicalSimplification::~ttkTopologicalSimplification(){

@@ -89,8 +89,6 @@ template <class dataTypeU, class dataTypeV>
   }
   
 #ifdef TTK_ENABLE_OPENMP
-  omp_lock_t writeLock;
-  omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
   for(SimplexId i = 0; i < (SimplexId) edgeList_->size(); i++){
@@ -154,26 +152,19 @@ template <class dataTypeU, class dataTypeV>
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg){
 #ifdef TTK_ENABLE_OPENMP
-        omp_set_lock(&writeLock);
+#pragma omp critical
 #endif
-        if((wrapper_)
-          &&(!(count % ((vertexNumber_)/10)))){
-          wrapper_->updateProgress((count + 1.0)
-            /vertexNumber_);
-        }
+        {
+          if ((wrapper_) && (!(count % ((vertexNumber_) / 10)))) {
+            wrapper_->updateProgress((count + 1.0) / vertexNumber_);
+          }
 
-        count++;
-#ifdef TTK_ENABLE_OPENMP
-        omp_unset_lock(&writeLock);
-#endif
+          count++;
+        }
       }
     }
   }
    
-#ifdef TTK_ENABLE_OPENMP
-  omp_destroy_lock(&writeLock);
-#endif
-  
   {
     std::stringstream msg;
     msg << "[JacobiSet] Edge-fans computed in "
@@ -370,8 +361,6 @@ template <class dataTypeU, class dataTypeV>
   std::vector<std::vector<std::pair<SimplexId, char> > > threadedCriticalTypes(threadNumber_);
 
 #ifdef TTK_ENABLE_OPENMP
-  omp_lock_t writeLock;
-  omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_) 
 #endif
   for(SimplexId i = 0; i < (SimplexId) edgeList_->size(); i++){
@@ -444,18 +433,15 @@ template <class dataTypeU, class dataTypeV>
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg){
 #ifdef TTK_ENABLE_OPENMP
-        omp_set_lock(&writeLock);
+#pragma omp critical
 #endif
-        if((wrapper_)
-          &&(!(count % ((vertexNumber_)/10)))){
-          wrapper_->updateProgress((count + 1.0)
-            /vertexNumber_);
-        }
+        {
+          if ((wrapper_) && (!(count % ((vertexNumber_) / 10)))) {
+            wrapper_->updateProgress((count + 1.0) / vertexNumber_);
+          }
 
-        count++;
-#ifdef TTK_ENABLE_OPENMP
-        omp_unset_lock(&writeLock);
-#endif
+          count++;
+        }
       }
     }
   }
@@ -467,10 +453,6 @@ template <class dataTypeU, class dataTypeV>
     }
   }
   
-#ifdef TTK_ENABLE_OPENMP
-  omp_destroy_lock(&writeLock);
-#endif
- 
   if(debugLevel_ >= Debug::infoMsg){
     SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0, 
       monkeySaddleNumber = 0;

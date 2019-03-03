@@ -15,8 +15,6 @@ ttkTextureMapFromField::ttkTextureMapFromField(){
   textureCoordinates_ = NULL;
 
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 }
 
 ttkTextureMapFromField::~ttkTextureMapFromField(){
@@ -96,8 +94,6 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
   SimplexId count = 0;
   
 #ifdef TTK_ENABLE_OPENMP
-  omp_lock_t writeLock;
-  omp_init_lock(&writeLock);
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < output->GetNumberOfPoints(); i++){
@@ -132,23 +128,18 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
     
       if(debugLevel_ > 3){
 #ifdef TTK_ENABLE_OPENMP
-        omp_set_lock(&writeLock);
+#pragma omp critical
 #endif
-        if(!(count % (output->GetNumberOfPoints()/10))){
-          updateProgress((count + 1.0)/output->GetNumberOfPoints());
-        }
+        {
+          if (!(count % (output->GetNumberOfPoints() / 10))) {
+            updateProgress((count + 1.0) / output->GetNumberOfPoints());
+          }
 
-        count++;
-#ifdef TTK_ENABLE_OPENMP
-        omp_unset_lock(&writeLock);
-#endif
+          count++;
+        }
       }
     }
   }
-  
-#ifdef TTK_ENABLE_OPENMP
-  omp_destroy_lock(&writeLock);
-#endif
   
   output->GetPointData()->SetTCoords(textureCoordinates_);
  

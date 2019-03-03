@@ -331,9 +331,11 @@ int ttkFTMTree::doIt(vector<vtkDataSet*>& inputs, vector<vtkDataSet*>& outputs)
     }
     getOffsets();
 
-   if(debugLevel_) {
-       cout << "Launch on field : " << ScalarField << endl;
-   }
+  {
+    stringstream msg;
+    msg << "[ttkFTMTree] Launch on field: " << ScalarField << endl;
+    dMsg(cout, msg.str(), timeMsg);
+  }
 
    ftm::idNode acc_nbNodes = 0;
 
@@ -693,8 +695,6 @@ ttkFTMTree::ttkFTMTree()
    SetNumberOfInputPorts(1);
    SetNumberOfOutputPorts(3);
    UseAllCores = true;
-   ThreadNumber = 1;
-   debugLevel_ = 3;
 }
 
 ttkFTMTree::~ttkFTMTree()

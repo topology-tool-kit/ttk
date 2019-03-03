@@ -94,8 +94,6 @@ class ttkImportEmbeddingFromTable
 
     ttkImportEmbeddingFromTable(){
       UseAllCores = true;
-      ThreadNumber = 1;
-      debugLevel_ = 3;
 
       SetNumberOfInputPorts(2);
     }

@@ -1,15 +1,18 @@
 #include<BaseClass.h>
 
+#ifdef TTK_ENABLE_OPENMP
+int ttk::globalThreadNumber_=omp_get_num_procs();
+#else
+int ttk::globalThreadNumber_ = 1;
+#endif
+
 using namespace ttk;
 
 BaseClass::BaseClass():
   lastObject_{false},
-  threadNumber_{1},
   wrapper_{nullptr}
 {
-#ifdef TTK_ENABLE_OPENMP
-  threadNumber_=omp_get_num_procs();
-#endif
+  threadNumber_ = ttk::globalThreadNumber_;
 }
 
 int BaseClass::setWrapper(const Wrapper *wrapper){

@@ -71,15 +71,13 @@ ttkContourForests::ttkContourForests()
   partitionNum_ = -1;
 
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 
   // VTK Interface //
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);
 
   triangulation_ = NULL;
-  vtkWarningMacro("[ContourForests]: DEPRECATED This plugin will be removed in a futur release, please use FTM instead");
+  
 }
 
 ttkContourForests::~ttkContourForests()
@@ -1477,6 +1475,10 @@ void ttkContourForests::updateTree()
 int ttkContourForests::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
 
+  if(debugLevel_){
+    vtkWarningMacro("[ttkContourForests]: DEPRECATED This plugin will be removed in a futur elease, please use FTM instead");
+  }
+  
   Memory m;
 
 #ifndef TTK_ENABLE_KAMIKAZE

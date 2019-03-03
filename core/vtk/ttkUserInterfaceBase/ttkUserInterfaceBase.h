@@ -142,7 +142,7 @@ template <class ttkModule>
     virtual int run(){
       
       ttkObject_->setDebugLevel(ttk::globalDebugLevel_);
-      ttkObject_->setThreadNumber(parser_.getThreadNumber());
+      ttkObject_->setThreadNumber(ttk::globalThreadNumber_);
       
       return ttkUserInterfaceBase::run();
     }

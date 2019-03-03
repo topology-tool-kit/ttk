@@ -148,6 +148,8 @@ int main(int argc, char **argv) {
   std::string inputFilePath;
   ttk::CommandLineParser parser;
   
+  ttk::globalDebugLevel_ = 3;
+
   // register the arguments to the command line parser
   parser.setArgument("i", &inputFilePath, "Path to input OFF file");
   // parse

@@ -28,8 +28,6 @@ vtkStandardNewMacro(ttkPersistenceCurve)
   ForceInputOffsetScalarField = false;
   ComputeSaddleConnectors = false;
   UseAllCores = true;
-  ThreadNumber = 1;
-  debugLevel_ = 3;
 
   inputTriangulation_ = vtkSmartPointer<ttkTriangulationFilter>::New();
 }

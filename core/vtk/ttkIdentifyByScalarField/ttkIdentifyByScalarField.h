@@ -100,8 +100,6 @@ class ttkIdentifyByScalarField
 
     ttkIdentifyByScalarField(){
       UseAllCores = true;
-      ThreadNumber = 1;
-      debugLevel_ = 3;
       IncreasingOrder = false;
       StartByOne = false;
       ScalarFieldId=0;

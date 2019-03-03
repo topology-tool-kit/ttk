@@ -202,6 +202,7 @@ ftm::TreeType::Split, v0);
 
 template <typename scalarType, typename idType>
 int ttk::PersistenceDiagram::execute() const{
+  
   // get data
   std::vector<std::tuple<ttk::SimplexId,ttk::CriticalType,ttk::SimplexId,ttk::CriticalType,scalarType,ttk::SimplexId>>& CTDiagram=
     *static_cast<std::vector<std::tuple<ttk::SimplexId,ttk::CriticalType,ttk::SimplexId,ttk::CriticalType,scalarType,ttk::SimplexId>>*>(CTDiagram_);
