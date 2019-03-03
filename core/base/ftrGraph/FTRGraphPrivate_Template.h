@@ -919,20 +919,23 @@ namespace ttk
             idVertex totalVal = starVect.size();
             valence  newVal   = 0;
             if (localProp->goUp()) {
+             valence* const vd = &graph_.valDown_[curSaddle];
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
 #endif
                {
-                  newVal = graph_.valDown_[curSaddle];
-                  graph_.valDown_[curSaddle] += (totalVal + 1);
+                  newVal = *vd;
+                  *vd += (totalVal + 1);
                }
+
             } else {
+             valence* const vu = &graph_.valUp_[curSaddle];
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
 #endif
                {
-                  newVal = graph_.valUp_[curSaddle];
-                  graph_.valUp_[curSaddle] += (totalVal + 1);
+                  newVal = *vu;
+                  *vu += (totalVal + 1);
                }
             }
             oldVal = decr + newVal + (totalVal + 1);
