@@ -4,6 +4,7 @@
 // local includes
 #include "FTRGraph.h"
 #include "Tasks.h"
+#include "FTRGraph_Template.h"
 
 // c++ incldues
 #include <unordered_map>
