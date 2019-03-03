@@ -87,7 +87,7 @@ int ImplicitTriangulation::setInputGrid(const float &xOrigin, const float &yOrig
     tetshift_[0]=(xDim-1)*6; tetshift_[1]=(xDim-1)*(yDim-1)*6;
 
     // Numbers
-    vertexNumber_=xDim*yDim*zDim;
+    vertexNumber_=static_cast<SimplexId>(xDim)*static_cast<SimplexId>(yDim)*static_cast<SimplexId>(zDim);
     edgeNumber_=0;
     for(int k=0; k<7; ++k) edgeNumber_+=esetdims_[k];
     triangleNumber_=0;
