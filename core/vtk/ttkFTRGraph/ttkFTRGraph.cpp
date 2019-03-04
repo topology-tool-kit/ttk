@@ -294,6 +294,7 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
     vtkTemplateMacro({
       ttk::ftr::FTRGraph<VTK_TT> ftrGraph_(triangulation_);
       // common parameters
+      ftrGraph_.setWrapper(this);
       ftrGraph_.setParams(params_);
       // reeb graph parameters
       ftrGraph_.setScalars(inputScalars_->GetVoidPointer(0));
