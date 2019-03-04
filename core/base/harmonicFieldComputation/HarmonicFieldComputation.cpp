@@ -9,11 +9,12 @@ ttk::HarmonicFieldComputation::HarmonicFieldComputation()
 
 ttk::SolvingMethodType ttk::HarmonicFieldComputation::findBestSolver() const {
 
-  // number of edges for switching between Cholesky factorization and
-  // Iterate (conjugate gradients) method
+  // for switching between Cholesky factorization and Iterate
+  // (conjugate gradients) method
   SimplexId threshold = 500000;
 
-  if(edgeNumber_ > threshold) {
+  // compare threshold to number of non-zero values in laplacian matrix
+  if(2 * edgeNumber_ + vertexNumber_ > threshold) {
     return ttk::SolvingMethodType::Iterative;
   }
   return ttk::SolvingMethodType::Cholesky;
