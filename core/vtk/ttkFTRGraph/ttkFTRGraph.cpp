@@ -508,6 +508,8 @@ int ttkFTRGraph::getSkeletonNodes(const Graph &graph,
   nodes->SetPoints(points);
   nodeData.addArrays(nodes->GetPointData(), params_);
 
+  outputSkeletonNodes->ShallowCopy(nodes);
+
   return 0;
 }
 
