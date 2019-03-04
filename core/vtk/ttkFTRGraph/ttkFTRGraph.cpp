@@ -345,11 +345,19 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
 }
 
 int ttkFTRGraph::getOffsets() {
+
   vtkDataArray *inputOffsets;
-  inputOffsets = mesh_->GetPointData()->GetArray(OffsetFieldId);
+
+  inputOffsets = mesh_->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
   if(inputOffsets) {
     InputOffsetScalarFieldName = inputOffsets->GetName();
     UseInputOffsetScalarField = true;
+  } else {
+    inputOffsets = mesh_->GetPointData()->GetArray(OffsetFieldId);
+    if(inputOffsets) {
+      InputOffsetScalarFieldName = inputOffsets->GetName();
+      UseInputOffsetScalarField = true;
+    }
   }
 
   const idVertex numberOfVertices = mesh_->GetNumberOfPoints();

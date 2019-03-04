@@ -54,12 +54,14 @@
         <IntVectorProperty
            name="UseInputOffsetScalarField"
            command="SetUseInputOffsetScalarField"
-           label="Use Input Offset Scalar Field"
+           label="Force Input Offset Scalar Field"
            number_of_elements="1"
            default_values="0">
            <BooleanDomain name="bool"/>
            <Documentation>
-              Use an input offset field (to disambiguate flat plateaus).
+              Check this box to force the usage of a specific input 
+              scalar field as vertex offset (used to disambiguate flat 
+              plateaus).
            </Documentation>
         </IntVectorProperty>
 
@@ -72,12 +74,17 @@
            >
            <ArrayListDomain
               name="array_list"
-              default_values="0"
-              data_type="VTK_INT">
-              <RequiredProperties>
+             default_values="0">
+            <RequiredProperties>
                  <Property name="Input" function="Input" />
               </RequiredProperties>
            </ArrayListDomain>
+           <Hints>
+             <PropertyWidgetDecorator type="GenericDecorator"
+                                      mode="visibility"
+                                      property="UseInputOffsetScalarField"
+                                      value="1" />
+             </Hints>
            <Documentation>
               Select the input offset scalar field to process.
            </Documentation>
@@ -150,6 +157,10 @@
            <Property name="UseInputOffsetScalarField" />
            <Property name="InputOffsetScalarFieldName" />
            <Property name="ArcSampling" />
+        </PropertyGroup>
+        
+        <PropertyGroup panel_widget="Line" label="Output options">
+          <Property name="ArcSampling" />
         </PropertyGroup>
 
         <PropertyGroup panel_widget="Line" label="Testing">
