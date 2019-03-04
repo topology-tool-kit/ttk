@@ -1477,7 +1477,7 @@ int ttkContourForests::doIt(vector<vtkDataSet *> &inputs,
 
   if(debugLevel_){
     vtkWarningMacro("[ttkContourForests]: DEPRECATED This plugin will be "
-                    "removed in a futur elease, please use FTM instead for "
+                    "removed in a future release, please use FTM instead for "
                     "contour trees and FTR for Reeb graphs.");
   }
 

@@ -25,9 +25,10 @@ ContourForests::ContourForests()
 {
    params_->treeType = TreeType::Contour;
    stringstream msg;
-   msg << "[ContourForests]: DEPRECATED This module will be removed in a futur "
-    << "release, please use FTM instead" << endl;
-  dMsg(cerr, msg.str(), timeMsg);
+   msg << "[ContourForests]: DEPRECATED This module will be removed in a future"
+       << "release, please use FTM instead for contour trees"
+       << " and FTR for Reeb graphs." << endl;
+   dMsg(cerr, msg.str(), timeMsg);
 }
 
 ContourForests::~ContourForests()
