@@ -99,7 +99,9 @@ namespace ftm
          if (begin >= stop)
             return;
 
+#ifdef TTK_ENABLE_OPENMP
          static const long int MINSIZE = 10;
+#endif
 
          long int   left  = begin - 1;
          long int   right = stop + 1;

@@ -36,7 +36,8 @@ int ttkFTMTree::FillOutputPortInformation(int port, vtkInformation* info)
 }
 
 int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId, const int cc, vtkPoints* points,
-                                       vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+                                       vtkUnstructuredGrid* skeletonArcs,
+                                       ttk::ftm::ArcData&   arcData)
 {
    FTMTree_MT*   tree     = ftmTree_[cc].tree.getTree(GetTreeType());
    vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray(ttk::VertexScalarFieldName);
@@ -96,7 +97,7 @@ int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId, const int cc
 }
 
 int ttkFTMTree::addDirectSkeletonArc(const idSuperArc arcId, const int cc, vtkPoints* points,
-                                     vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+                                     vtkUnstructuredGrid* skeletonArcs, ttk::ftm::ArcData& arcData)
 {
    FTMTree_MT* tree = ftmTree_[cc].tree.getTree(GetTreeType());
    vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray(ttk::VertexScalarFieldName);
@@ -139,7 +140,7 @@ int ttkFTMTree::addDirectSkeletonArc(const idSuperArc arcId, const int cc, vtkPo
 }
 
 int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId, const int cc, vtkPoints* points,
-                                      vtkUnstructuredGrid* skeletonArcs, ArcData& arcData)
+                                      vtkUnstructuredGrid* skeletonArcs, ttk::ftm::ArcData& arcData)
 {
    FTMTree_MT* tree = ftmTree_[cc].tree.getTree(GetTreeType());
    vtkDataArray* idMapper = connected_components_[cc]->GetPointData()->GetArray(ttk::VertexScalarFieldName);
@@ -511,7 +512,7 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid* outputSkeletonArcs)
    vtkSmartPointer<vtkUnstructuredGrid> skeletonArcs = vtkSmartPointer<vtkUnstructuredGrid>::New();
    vtkSmartPointer<vtkPoints>           points       = vtkSmartPointer<vtkPoints>::New();
 
-   ArcData arcData;
+   ttk::ftm::ArcData arcData;
    arcData.init(ftmTree_, params_);
 
    const int       samplingLevel = params_.samplingLvl;
