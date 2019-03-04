@@ -28,7 +28,7 @@ namespace ttk {
       idVertex size_;
 
       ScalarType *values_;
-      idVertex *offsets_;
+      SimplexId *offsets_;
 
       bool externalOffsets_;
 
@@ -74,14 +74,14 @@ namespace ttk {
         values_ = values;
       }
 
-      void setOffsets(idVertex *sos) {
+      void setOffsets(SimplexId *sos) {
         externalOffsets_ = sos;
         offsets_ = sos;
       }
 
       void alloc() {
         if(!externalOffsets_) {
-          offsets_ = new idVertex[size_];
+          offsets_ = new SimplexId[size_];
         }
         vertices_.resize(size_);
         mirror_.resize(size_);
@@ -93,7 +93,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(static, size_ / threadNumber_)
 #endif
-          for(idVertex i = 0; i < size_; i++) {
+          for(SimplexId i = 0; i < size_; i++) {
             offsets_[i] = i;
           }
         }
