@@ -75,7 +75,8 @@ namespace ttk {
 
       explicit ArcData(const ttk::ftr::idSuperArc nbArcs) {
         ids = allocArray<vtkIntArray>("ArcId", nbArcs);
-        reg = allocArray<vtkCharArray>("RegularMask", nbArcs + 1);
+        reg = allocArray<vtkCharArray>(ttk::MaskScalarFieldName,
+          nbArcs + 1);
 #ifndef NDEBUG
         fromUp = allocArray<vtkUnsignedCharArray>("growUp", nbArcs);
 #endif
