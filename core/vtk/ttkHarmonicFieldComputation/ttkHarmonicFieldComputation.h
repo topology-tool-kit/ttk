@@ -103,6 +103,9 @@ public:
   vtkSetMacro(SolvingMethod, int);
   vtkGetMacro(SolvingMethod, int);
 
+  vtkSetMacro(Alpha, double);
+  vtkGetMacro(Alpha, double);
+
   // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
   // get array of identifiers on the mesh
@@ -143,6 +146,8 @@ private:
   std::string InputIdentifiersFieldName;
   // user-selected solving method
   int SolvingMethod;
+  // penalty value
+  double Alpha;
 
   // enum: float or double
   int OutputScalarFieldType;

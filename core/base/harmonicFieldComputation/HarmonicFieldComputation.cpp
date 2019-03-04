@@ -3,8 +3,8 @@
 ttk::HarmonicFieldComputation::HarmonicFieldComputation()
   : vertexNumber_{}, edgeNumber_{}, constraintNumber_{},
     useCotanWeights_{false}, triangulation_{}, sources_{}, constraints_{},
-    outputScalarFieldPointer_{}, solvingMethod_{
-                                   ttk::SolvingMethodUserType::Cholesky} {
+    outputScalarFieldPointer_{},
+    solvingMethod_{ttk::SolvingMethodUserType::Cholesky}, alpha_{} {
 }
 
 ttk::SolvingMethodType ttk::HarmonicFieldComputation::findBestSolver() const {
@@ -93,7 +93,7 @@ int ttk::HarmonicFieldComputation::execute() const {
   // penalty matrix
   SpMat penalty(vertexNumber_, vertexNumber_);
   // penalty value
-  scalarFieldType alpha = 1.0e6;
+  scalarFieldType alpha(alpha_);
 
   std::vector<TripletType> triplets;
   triplets.reserve(identifiersVec.size());

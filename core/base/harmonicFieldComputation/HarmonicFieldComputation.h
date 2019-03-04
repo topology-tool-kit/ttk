@@ -89,6 +89,10 @@ namespace ttk {
       solvingMethod_ = static_cast<SolvingMethodUserType>(solvingMethod);
       return 0;
     }
+    inline int setAlpha(double alpha) {
+      alpha_ = alpha;
+      return 0;
+    }
 
     SolvingMethodType findBestSolver() const;
 
@@ -134,6 +138,8 @@ namespace ttk {
     void *outputScalarFieldPointer_;
     // user-selected solver
     SolvingMethodUserType solvingMethod_;
+    // penalty value
+    double alpha_;
   };
 } // namespace ttk
 

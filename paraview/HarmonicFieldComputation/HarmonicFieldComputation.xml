@@ -102,6 +102,22 @@
         </Documentation>
       </IntVectorProperty>
 
+      <DoubleVectorProperty
+          name="Alpha"
+          label="Penalty value"
+          command="SetAlpha"
+          number_of_elements="1"
+          default_values="1e5"
+          panel_visibility="advanced"
+          >
+        <Documentation>
+          This property allow the user to select a penalty value for
+          solving the harmonic equation. A lower penalty should lead
+          to a better harmonic solution at the expense of computation
+          time.
+        </Documentation>
+      </DoubleVectorProperty>
+
       <StringVectorProperty
           name="InputScalarFieldName"
           command="SetInputScalarFieldName"
