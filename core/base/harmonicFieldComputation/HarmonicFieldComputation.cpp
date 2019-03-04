@@ -76,7 +76,7 @@ int ttk::HarmonicFieldComputation::execute() const {
     constraints.coeffRef(identifiersVec[i]) = sf[i];
   }
 
-  SolvingMethodType sm;
+  auto sm = ttk::SolvingMethodType::Cholesky;
 
   switch(solvingMethod_) {
     case ttk::SolvingMethodUserType::Auto:
@@ -102,7 +102,7 @@ int ttk::HarmonicFieldComputation::execute() const {
   }
   penalty.setFromTriplets(triplets.begin(), triplets.end());
 
-  int res;
+  int res = 0;
   SpMat sol;
 
   switch(sm) {
