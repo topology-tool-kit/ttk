@@ -8,7 +8,7 @@
      <SourceProxy
         name="FTRGraph"
         class="ttkFTRGraph"
-        label="TTK FTRGraph">
+        label="TTK Reeb graph (FTR)">
         <Documentation
            long_help="TTK fTRGraph plugin."
            short_help="TTK fTRGraph plugin.">
