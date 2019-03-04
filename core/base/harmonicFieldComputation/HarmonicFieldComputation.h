@@ -89,8 +89,8 @@ namespace ttk {
       solvingMethod_ = static_cast<SolvingMethodUserType>(solvingMethod);
       return 0;
     }
-    inline int setAlpha(double alpha) {
-      alpha_ = alpha;
+    inline int setLogAlpha(double logAlpha) {
+      logAlpha_ = logAlpha;
       return 0;
     }
 
@@ -138,8 +138,8 @@ namespace ttk {
     void *outputScalarFieldPointer_;
     // user-selected solver
     SolvingMethodUserType solvingMethod_;
-    // penalty value
-    double alpha_;
+    // log10 of penalty value
+    double logAlpha_;
   };
 } // namespace ttk
 

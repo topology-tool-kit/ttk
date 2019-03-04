@@ -103,11 +103,11 @@
       </IntVectorProperty>
 
       <DoubleVectorProperty
-          name="Alpha"
+          name="LogAlpha"
           label="Penalty value"
-          command="SetAlpha"
+          command="SetLogAlpha"
           number_of_elements="1"
-          default_values="1e5"
+          default_values="5"
           panel_visibility="advanced"
           >
         <Documentation>
