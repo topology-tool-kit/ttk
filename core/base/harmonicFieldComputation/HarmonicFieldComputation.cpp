@@ -91,11 +91,8 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   // penalty matrix
   SpMat penalty(vertexNumber_, vertexNumber_);
-
-  scalarFieldType alpha = 1.0e6; // cholesky factorisation
-  if(sm == ttk::SolvingMethodType::Iterative) {
-    alpha = 1.0e3; // decrease penalty for conjugate gradients
-  }
+  // penalty value
+  scalarFieldType alpha = 1.0e6;
 
   std::vector<TripletType> triplets;
   triplets.reserve(identifiersVec.size());
