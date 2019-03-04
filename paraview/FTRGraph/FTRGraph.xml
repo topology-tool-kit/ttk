@@ -138,7 +138,7 @@
            label="Debug Level"
            command="SetdebugLevel_"
            number_of_elements="1"
-           default_values="2" panel_visibility="advanced">
+           default_values="3" panel_visibility="advanced">
            <IntRangeDomain name="range" min="0" max="100" />
            <Documentation>
               Debug level.

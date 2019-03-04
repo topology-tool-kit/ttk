@@ -285,8 +285,10 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
   getScalars();
   getOffsets();
 
-  if(debugLevel_) {
-    cout << "Launch on field : " << ScalarField << endl;
+  {
+    std::stringstream msg;
+    msg << "[ttkFTRGraph] Launch on field: " << ScalarField << std::endl;
+    dMsg(cout, msg.str(), infoMsg);
   }
 
   // compute graph
