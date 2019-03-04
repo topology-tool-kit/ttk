@@ -63,8 +63,8 @@ class VTKFILTERSCORE_EXPORT ttkHarmonicFieldComputation
 #else
 class ttkHarmonicFieldComputation
 #endif
-    : public vtkDataSetAlgorithm,
-      public ttk::Wrapper {
+  : public vtkDataSetAlgorithm,
+    public ttk::Wrapper {
 
 public:
   static ttkHarmonicFieldComputation *New();
@@ -115,11 +115,11 @@ public:
   // default move constructor
   ttkHarmonicFieldComputation(ttkHarmonicFieldComputation &&) = delete;
   // default copy assignment operator
-  ttkHarmonicFieldComputation &
-  operator=(const ttkHarmonicFieldComputation &) = delete;
+  ttkHarmonicFieldComputation &operator=(const ttkHarmonicFieldComputation &)
+    = delete;
   // default move assignment operator
-  ttkHarmonicFieldComputation &
-  operator=(ttkHarmonicFieldComputation &&) = delete;
+  ttkHarmonicFieldComputation &operator=(ttkHarmonicFieldComputation &&)
+    = delete;
 
 protected:
   ttkHarmonicFieldComputation();

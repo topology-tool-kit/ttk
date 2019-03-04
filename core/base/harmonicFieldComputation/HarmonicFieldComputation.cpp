@@ -1,10 +1,11 @@
 #include <HarmonicFieldComputation.h>
 
 ttk::HarmonicFieldComputation::HarmonicFieldComputation()
-    : vertexNumber_{}, edgeNumber_{}, constraintNumber_{},
-      useCotanWeights_{false}, triangulation_{}, sources_{}, constraints_{},
-      outputScalarFieldPointer_{}, solvingMethod_{
-                                       ttk::SolvingMethodUserType::Cholesky} {}
+  : vertexNumber_{}, edgeNumber_{}, constraintNumber_{},
+    useCotanWeights_{false}, triangulation_{}, sources_{}, constraints_{},
+    outputScalarFieldPointer_{}, solvingMethod_{
+                                   ttk::SolvingMethodUserType::Cholesky} {
+}
 
 ttk::SolvingMethodType ttk::HarmonicFieldComputation::findBestSolver() const {
 
@@ -12,7 +13,7 @@ ttk::SolvingMethodType ttk::HarmonicFieldComputation::findBestSolver() const {
   // Iterate (conjugate gradients) method
   SimplexId threshold = 500000;
 
-  if (edgeNumber_ > threshold) {
+  if(edgeNumber_ > threshold) {
     return ttk::SolvingMethodType::Iterative;
   }
   return ttk::SolvingMethodType::Cholesky;
@@ -51,16 +52,16 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   // get unique constraint vertices
   std::set<SimplexId> identifiersSet;
-  for (SimplexId i = 0; i < constraintNumber_; ++i) {
+  for(SimplexId i = 0; i < constraintNumber_; ++i) {
     identifiersSet.insert(identifiers[i]);
   }
   // contains vertices with constraints
-  std::vector<SimplexId> identifiersVec(identifiersSet.begin(),
-                                        identifiersSet.end());
+  std::vector<SimplexId> identifiersVec(
+    identifiersSet.begin(), identifiersSet.end());
 
   // graph laplacian of current mesh
   SpMat lap;
-  if (useCotanWeights_) {
+  if(useCotanWeights_) {
     lap = compute_laplacian_with_cotan_weights<SpMat, TripletType,
                                                scalarFieldType>();
   } else {
@@ -69,36 +70,36 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   // constraints vector
   SpVec constraints(vertexNumber_);
-  for (size_t i = 0; i < identifiersVec.size(); i++) {
+  for(size_t i = 0; i < identifiersVec.size(); i++) {
     // put constraint at identifier index
     constraints.coeffRef(identifiersVec[i]) = sf[i];
   }
 
   SolvingMethodType sm;
 
-  switch (solvingMethod_) {
-  case ttk::SolvingMethodUserType::Auto:
-    sm = findBestSolver();
-    break;
-  case ttk::SolvingMethodUserType::Cholesky:
-    sm = ttk::SolvingMethodType::Cholesky;
-    break;
-  case ttk::SolvingMethodUserType::Iterative:
-    sm = ttk::SolvingMethodType::Iterative;
-    break;
+  switch(solvingMethod_) {
+    case ttk::SolvingMethodUserType::Auto:
+      sm = findBestSolver();
+      break;
+    case ttk::SolvingMethodUserType::Cholesky:
+      sm = ttk::SolvingMethodType::Cholesky;
+      break;
+    case ttk::SolvingMethodUserType::Iterative:
+      sm = ttk::SolvingMethodType::Iterative;
+      break;
   }
 
   // penalty matrix
   SpMat penalty(vertexNumber_, vertexNumber_);
 
   scalarFieldType alpha = 1.0e6; // cholesky factorisation
-  if (sm == ttk::SolvingMethodType::Iterative) {
+  if(sm == ttk::SolvingMethodType::Iterative) {
     alpha = 1.0e3; // decrease penalty for conjugate gradients
   }
 
   std::vector<TripletType> triplets;
   triplets.reserve(identifiersVec.size());
-  for (auto i : identifiersVec) {
+  for(auto i : identifiersVec) {
     triplets.emplace_back(TripletType(i, i, alpha));
   }
   penalty.setFromTriplets(triplets.begin(), triplets.end());
@@ -106,40 +107,40 @@ int ttk::HarmonicFieldComputation::execute() const {
   int res;
   SpMat sol;
 
-  switch (sm) {
-  case ttk::SolvingMethodType::Cholesky:
-    res = solve<SpMat, SpVec, Eigen::SimplicialCholesky<SpMat>>(
+  switch(sm) {
+    case ttk::SolvingMethodType::Cholesky:
+      res = solve<SpMat, SpVec, Eigen::SimplicialCholesky<SpMat>>(
         lap, penalty, constraints, sol);
-    break;
-  case ttk::SolvingMethodType::Iterative:
-    res = solve<SpMat, SpVec,
-                Eigen::ConjugateGradient<SpMat, Eigen::Upper | Eigen::Lower>>(
+      break;
+    case ttk::SolvingMethodType::Iterative:
+      res = solve<SpMat, SpVec,
+                  Eigen::ConjugateGradient<SpMat, Eigen::Upper | Eigen::Lower>>(
         lap, penalty, constraints, sol);
-    break;
+      break;
   }
 
   {
     stringstream msg;
     auto info = static_cast<Eigen::ComputationInfo>(res);
-    switch (info) {
-    case Eigen::ComputationInfo::Success:
-      msg << "[HarmonicFieldComputation] Success!" << endl;
-      break;
-    case Eigen::ComputationInfo::NumericalIssue:
-      msg << "[HarmonicFieldComputation] Numerical Issue!" << endl;
-      break;
-    case Eigen::ComputationInfo::NoConvergence:
-      msg << "[HarmonicFieldComputation] No Convergence!" << endl;
-      break;
-    case Eigen::ComputationInfo::InvalidInput:
-      msg << "[HarmonicFieldComputation] Invalid Input!" << endl;
-      break;
+    switch(info) {
+      case Eigen::ComputationInfo::Success:
+        msg << "[HarmonicFieldComputation] Success!" << endl;
+        break;
+      case Eigen::ComputationInfo::NumericalIssue:
+        msg << "[HarmonicFieldComputation] Numerical Issue!" << endl;
+        break;
+      case Eigen::ComputationInfo::NoConvergence:
+        msg << "[HarmonicFieldComputation] No Convergence!" << endl;
+        break;
+      case Eigen::ComputationInfo::InvalidInput:
+        msg << "[HarmonicFieldComputation] Invalid Input!" << endl;
+        break;
     }
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
-  auto outputScalarField =
-      static_cast<scalarFieldType *>(outputScalarFieldPointer_);
+  auto outputScalarField
+    = static_cast<scalarFieldType *>(outputScalarFieldPointer_);
 
   // convert to dense Eigen matrix
   Eigen::Matrix<scalarFieldType, Eigen::Dynamic, 1> solDense(sol);
@@ -148,7 +149,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for (SimplexId i = 0; i < vertexNumber_; ++i) {
+  for(SimplexId i = 0; i < vertexNumber_; ++i) {
     // cannot avoid copy here...
     outputScalarField[i] = solDense(i, 0);
   }
@@ -157,12 +158,12 @@ int ttk::HarmonicFieldComputation::execute() const {
     stringstream msg;
     msg << "[HarmonicFieldComputation] Ending computation after "
         << t.getElapsedTime() << "s (";
-    if (useCotanWeights_) {
+    if(useCotanWeights_) {
       msg << "cotan weights, ";
     } else {
       msg << "discrete laplacian, ";
     }
-    if (sm == ttk::SolvingMethodType::Iterative) {
+    if(sm == ttk::SolvingMethodType::Iterative) {
       msg << "iterative solver, ";
     } else {
       msg << "Cholesky, ";

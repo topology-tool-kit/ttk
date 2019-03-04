@@ -28,110 +28,117 @@
 
 namespace ttk {
 
-enum struct SolvingMethodUserType { Auto = 0, Cholesky = 1, Iterative = 2 };
-enum struct SolvingMethodType { Cholesky, Iterative };
+  enum struct SolvingMethodUserType { Auto = 0, Cholesky = 1, Iterative = 2 };
+  enum struct SolvingMethodType { Cholesky, Iterative };
 
-class HarmonicFieldComputation : public Debug {
+  class HarmonicFieldComputation : public Debug {
 
-public:
-  HarmonicFieldComputation();
+  public:
+    HarmonicFieldComputation();
 
-  // default destructor
-  ~HarmonicFieldComputation() override = default;
-  // default copy constructor
-  HarmonicFieldComputation(const HarmonicFieldComputation &) = default;
-  // default move constructor
-  HarmonicFieldComputation(HarmonicFieldComputation &&) = default;
-  // default copy assignment operator
-  HarmonicFieldComputation &
-  operator=(const HarmonicFieldComputation &) = default;
-  // default move assignment operator
-  HarmonicFieldComputation &operator=(HarmonicFieldComputation &&) = default;
+    // default destructor
+    ~HarmonicFieldComputation() override = default;
+    // default copy constructor
+    HarmonicFieldComputation(const HarmonicFieldComputation &) = default;
+    // default move constructor
+    HarmonicFieldComputation(HarmonicFieldComputation &&) = default;
+    // default copy assignment operator
+    HarmonicFieldComputation &operator=(const HarmonicFieldComputation &)
+      = default;
+    // default move assignment operator
+    HarmonicFieldComputation &operator=(HarmonicFieldComputation &&) = default;
 
-  inline int setVertexNumber(SimplexId vertexNumber) {
-    vertexNumber_ = vertexNumber;
-    return 0;
-  }
-  inline int setConstraintNumber(SimplexId constraintNumber) {
-    constraintNumber_ = constraintNumber;
-    return 0;
-  }
-  inline int setUseCotanWeights(bool useCotanWeights) {
-    useCotanWeights_ = useCotanWeights;
-    return 0;
-  }
-  inline int setupTriangulation(Triangulation *triangulation) {
-    triangulation_ = triangulation;
-    if (triangulation_ != nullptr) {
-      vertexNumber_ = triangulation_->getNumberOfVertices();
-      triangulation_->preprocessVertexNeighbors();
-      edgeNumber_ = triangulation_->getNumberOfEdges();
+    inline int setVertexNumber(SimplexId vertexNumber) {
+      vertexNumber_ = vertexNumber;
+      return 0;
     }
-    if (useCotanWeights_) {
-      // cotan weights method needs more pre-processing
-      triangulation_->preprocessEdgeTriangles();
+    inline int setConstraintNumber(SimplexId constraintNumber) {
+      constraintNumber_ = constraintNumber;
+      return 0;
     }
-    return 0;
-  }
-  inline int setSources(void *data) {
-    sources_ = data;
-    return 0;
-  }
-  inline int setConstraints(void *data) {
-    constraints_ = data;
-    return 0;
-  }
-  inline int setOutputScalarFieldPointer(void *data) {
-    outputScalarFieldPointer_ = data;
-    return 0;
-  }
-  inline int setSolvingMethod(int solvingMethod) {
-    solvingMethod_ = static_cast<SolvingMethodUserType>(solvingMethod);
-    return 0;
-  }
+    inline int setUseCotanWeights(bool useCotanWeights) {
+      useCotanWeights_ = useCotanWeights;
+      return 0;
+    }
+    inline int setupTriangulation(Triangulation *triangulation) {
+      triangulation_ = triangulation;
+      if(triangulation_ != nullptr) {
+        vertexNumber_ = triangulation_->getNumberOfVertices();
+        triangulation_->preprocessVertexNeighbors();
+        edgeNumber_ = triangulation_->getNumberOfEdges();
+      }
+      if(useCotanWeights_) {
+        // cotan weights method needs more pre-processing
+        triangulation_->preprocessEdgeTriangles();
+      }
+      return 0;
+    }
+    inline int setSources(void *data) {
+      sources_ = data;
+      return 0;
+    }
+    inline int setConstraints(void *data) {
+      constraints_ = data;
+      return 0;
+    }
+    inline int setOutputScalarFieldPointer(void *data) {
+      outputScalarFieldPointer_ = data;
+      return 0;
+    }
+    inline int setSolvingMethod(int solvingMethod) {
+      solvingMethod_ = static_cast<SolvingMethodUserType>(solvingMethod);
+      return 0;
+    }
 
-  SolvingMethodType findBestSolver() const;
+    SolvingMethodType findBestSolver() const;
 
-  template <typename SparseMatrixType, typename SparseVectorType,
-            typename SolverType>
-  int solve(SparseMatrixType const &lap, SparseMatrixType const &penalty,
-            SparseVectorType const &constraints, SparseMatrixType &sol) const;
+    template <typename SparseMatrixType,
+              typename SparseVectorType,
+              typename SolverType>
+    int solve(SparseMatrixType const &lap,
+              SparseMatrixType const &penalty,
+              SparseVectorType const &constraints,
+              SparseMatrixType &sol) const;
 
-  template <typename scalarFieldType> int execute() const;
+    template <typename scalarFieldType>
+    int execute() const;
 
-  template <typename SparseMatrixType, typename TripletType,
-            typename scalarFieldType>
-  SparseMatrixType compute_laplacian() const;
+    template <typename SparseMatrixType,
+              typename TripletType,
+              typename scalarFieldType>
+    SparseMatrixType compute_laplacian() const;
 
-  template <typename SparseMatrixType, typename TripletType,
-            typename scalarFieldType>
-  SparseMatrixType compute_laplacian_with_cotan_weights() const;
+    template <typename SparseMatrixType,
+              typename TripletType,
+              typename scalarFieldType>
+    SparseMatrixType compute_laplacian_with_cotan_weights() const;
 
-protected:
-  // number of vertices in the mesh
-  SimplexId vertexNumber_;
-  // number of edges in the mesh
-  SimplexId edgeNumber_;
-  // number of constraints
-  SimplexId constraintNumber_;
-  // cotan weights vs simple laplacian resolution
-  bool useCotanWeights_;
-  // the mesh
-  Triangulation *triangulation_;
-  // array of mesh points with scalar constraints
-  // should be of constraintNumber_ size
-  void *sources_;
-  // array of scalar constraints on sources_
-  // should be of constraintNumber_ size
-  void *constraints_;
-  // output of harmonic field computation
-  void *outputScalarFieldPointer_;
-  // user-selected solver
-  SolvingMethodUserType solvingMethod_;
-};
+  protected:
+    // number of vertices in the mesh
+    SimplexId vertexNumber_;
+    // number of edges in the mesh
+    SimplexId edgeNumber_;
+    // number of constraints
+    SimplexId constraintNumber_;
+    // cotan weights vs simple laplacian resolution
+    bool useCotanWeights_;
+    // the mesh
+    Triangulation *triangulation_;
+    // array of mesh points with scalar constraints
+    // should be of constraintNumber_ size
+    void *sources_;
+    // array of scalar constraints on sources_
+    // should be of constraintNumber_ size
+    void *constraints_;
+    // output of harmonic field computation
+    void *outputScalarFieldPointer_;
+    // user-selected solver
+    SolvingMethodUserType solvingMethod_;
+  };
 } // namespace ttk
 
-template <typename SparseMatrixType, typename TripletType,
+template <typename SparseMatrixType,
+          typename TripletType,
           typename scalarFieldType>
 SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 
@@ -150,7 +157,7 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for (SimplexId i = 0; i < vertexNumber_; ++i) {
+  for(SimplexId i = 0; i < vertexNumber_; ++i) {
     SimplexId nneigh = triangulation_->getVertexNeighborNumber(SimplexId(i));
     triplets[i] = TripletType(i, i, scalarFieldType(nneigh));
   }
@@ -159,17 +166,17 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for (SimplexId i = 0; i < edgeNumber_; ++i) {
+  for(SimplexId i = 0; i < edgeNumber_; ++i) {
     // the two vertices of the current edge
     std::vector<SimplexId> edgeVertices(2);
-    for (SimplexId j = 0; j < 2; ++j) {
+    for(SimplexId j = 0; j < 2; ++j) {
       triangulation_->getEdgeVertex(i, j, edgeVertices[j]);
     }
     // fill triplets for both vertices of current edge
-    triplets[vertexNumber_ + 2 * i] =
-        TripletType(edgeVertices[0], edgeVertices[1], -1.0);
-    triplets[vertexNumber_ + 2 * i + 1] =
-        TripletType(edgeVertices[1], edgeVertices[0], -1.0);
+    triplets[vertexNumber_ + 2 * i]
+      = TripletType(edgeVertices[0], edgeVertices[1], -1.0);
+    triplets[vertexNumber_ + 2 * i + 1]
+      = TripletType(edgeVertices[1], edgeVertices[0], -1.0);
   }
 
 #else // USE_SYMMETRIC_LAPLACIAN
@@ -178,7 +185,7 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for (SimplexId i = 0; i < vertexNumber_; ++i) {
+  for(SimplexId i = 0; i < vertexNumber_; ++i) {
     triplets[i] = TripletType(i, i, 1.0);
   }
 
@@ -186,22 +193,22 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for (SimplexId i = 0; i < edgeNumber; ++i) {
+  for(SimplexId i = 0; i < edgeNumber; ++i) {
     // the two vertices of the current edge
     std::vector<SimplexId> edgeVertices(2);
-    for (SimplexId j = 0; j < 2; ++j) {
+    for(SimplexId j = 0; j < 2; ++j) {
       triangulation_->getEdgeVertex(i, j, edgeVertices[j]);
     }
-    SimplexId nneigh0 =
-        triangulation_->getVertexNeighborNumber(edgeVertices[0]);
-    SimplexId nneigh1 =
-        triangulation_->getVertexNeighborNumber(edgeVertices[1]);
+    SimplexId nneigh0
+      = triangulation_->getVertexNeighborNumber(edgeVertices[0]);
+    SimplexId nneigh1
+      = triangulation_->getVertexNeighborNumber(edgeVertices[1]);
 
     // fill triplets for both vertices of current edge
-    triplets[vertexNumber_ + 2 * i] =
-        TripletType(edgeVertices[0], edgeVertices[1], -1.0 / nneigh0);
-    triplets[vertexNumber_ + 2 * i + 1] =
-        TripletType(edgeVertices[1], edgeVertices[0], -1.0 / nneigh1);
+    triplets[vertexNumber_ + 2 * i]
+      = TripletType(edgeVertices[0], edgeVertices[1], -1.0 / nneigh0);
+    triplets[vertexNumber_ + 2 * i + 1]
+      = TripletType(edgeVertices[1], edgeVertices[0], -1.0 / nneigh1);
   }
 
 #endif // USE_SYMMETRIC_LAPLACIAN
@@ -210,10 +217,11 @@ SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
   return lap;
 }
 
-template <typename SparseMatrixType, typename TripletType,
+template <typename SparseMatrixType,
+          typename TripletType,
           typename scalarFieldType>
 SparseMatrixType
-ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
+  ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
   using std::cout;
   using std::endl;
 
@@ -237,11 +245,11 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for (SimplexId i = 0; i < edgeNumber_; ++i) {
+  for(SimplexId i = 0; i < edgeNumber_; ++i) {
 
     // the two vertices of the current edge (+ a third)
     std::vector<SimplexId> edgeVertices(3);
-    for (SimplexId j = 0; j < 2; ++j) {
+    for(SimplexId j = 0; j < 2; ++j) {
       triangulation_->getEdgeVertex(i, j, edgeVertices[j]);
     }
 
@@ -250,21 +258,21 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
     SimplexId trianglesNumber = triangulation_->getEdgeTriangleNumber(i);
     // stores the triangles ID for every triangle around the current edge
     std::vector<SimplexId> edgeTriangles(trianglesNumber);
-    for (SimplexId j = 0; j < trianglesNumber; ++j) {
+    for(SimplexId j = 0; j < trianglesNumber; ++j) {
       triangulation_->getEdgeTriangle(i, j, edgeTriangles[j]);
     }
 
     // iterate over current edge triangles
     std::vector<scalarFieldType> angles;
 
-    for (const auto &j : edgeTriangles) {
+    for(const auto &j : edgeTriangles) {
 
       // get the third vertex of the triangle
       SimplexId thirdNeigh;
       // a triangle has only three vertices
-      for (SimplexId k = 0; k < 3; ++k) {
+      for(SimplexId k = 0; k < 3; ++k) {
         triangulation_->getTriangleVertex(j, k, thirdNeigh);
-        if (thirdNeigh != edgeVertices[0] && thirdNeigh != edgeVertices[1]) {
+        if(thirdNeigh != edgeVertices[0] && thirdNeigh != edgeVertices[1]) {
           // store the third vertex ID into the edgeVertices array to
           // be more easily handled
           edgeVertices[2] = thirdNeigh;
@@ -273,9 +281,9 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
       }
       // compute the 3D coords of the three vertices
       float coords[9];
-      for (SimplexId k = 0; k < 3; ++k) {
-        triangulation_->getVertexPoint(edgeVertices[k], coords[3 * k],
-                                       coords[3 * k + 1], coords[3 * k + 2]);
+      for(SimplexId k = 0; k < 3; ++k) {
+        triangulation_->getVertexPoint(
+          edgeVertices[k], coords[3 * k], coords[3 * k + 1], coords[3 * k + 2]);
       }
       angles.emplace_back(ttk::Geometry::angle(&coords[6], // edgeVertices[2]
                                                &coords[0], // edgeVertices[0]
@@ -287,16 +295,16 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
     // cotan weights for every triangle around the current edge
     scalarFieldType cotan_weight = 0.0;
     // C++ has no map statement until C++17 (std::transform)
-    for (auto &angle : angles) {
+    for(auto &angle : angles) {
       cotan_weight += 1.0 / std::tan(angle);
     }
 
     // since we iterate over the edges, fill the laplacian matrix
     // symmetrically for the two vertices
-    triplets[2 * i] =
-        TripletType(edgeVertices[0], edgeVertices[1], -cotan_weight);
-    triplets[2 * i + 1] =
-        TripletType(edgeVertices[1], edgeVertices[0], -cotan_weight);
+    triplets[2 * i]
+      = TripletType(edgeVertices[0], edgeVertices[1], -cotan_weight);
+    triplets[2 * i + 1]
+      = TripletType(edgeVertices[1], edgeVertices[0], -cotan_weight);
 
     // store the cotan weight sum for the two vertices of the current edge
     vertexWeightSum[edgeVertices[0]] += cotan_weight;
@@ -307,7 +315,7 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for (SimplexId i = 0; i < vertexNumber_; ++i) {
+  for(SimplexId i = 0; i < vertexNumber_; ++i) {
     triplets[2 * edgeNumber_ + i] = TripletType(i, i, vertexWeightSum[i]);
   }
 
@@ -326,7 +334,8 @@ ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
 // if the package is a pure template typename, uncomment the following line
 // #include                  <HarmonicFieldComputation.cpp>
 
-template <typename SparseMatrixType, typename SparseVectorType,
+template <typename SparseMatrixType,
+          typename SparseVectorType,
           typename SolverType>
 int ttk::HarmonicFieldComputation::solve(SparseMatrixType const &lap,
                                          SparseMatrixType const &penalty,
