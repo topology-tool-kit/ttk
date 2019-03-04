@@ -1476,9 +1476,11 @@ int ttkContourForests::doIt(vector<vtkDataSet *> &inputs,
   vector<vtkDataSet *> &outputs){
 
   if(debugLevel_){
-    vtkWarningMacro("[ttkContourForests]: DEPRECATED This plugin will be removed in a futur elease, please use FTM instead");
+    vtkWarningMacro("[ttkContourForests]: DEPRECATED This plugin will be "
+                    "removed in a futur elease, please use FTM instead for "
+                    "contour trees and FTR for Reeb graphs.");
   }
-  
+
   Memory m;
 
 #ifndef TTK_ENABLE_KAMIKAZE

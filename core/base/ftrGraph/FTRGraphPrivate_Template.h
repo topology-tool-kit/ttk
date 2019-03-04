@@ -912,6 +912,9 @@ namespace ttk {
         }
       }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-value"
+
       valence oldVal = 0;
       if(localProp->goUp()) {
         // for gcc 4.8 and old openMP
@@ -961,6 +964,8 @@ namespace ttk {
         }
         oldVal = decr + newVal + (totalVal + 1);
       }
+
+#pragma GCC diagnostic pop
 
       return oldVal == decr;
     }
