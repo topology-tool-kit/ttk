@@ -896,9 +896,9 @@ namespace ttk{
           TwoSkeleton twoSkeleton;
           twoSkeleton.setWrapper(this);
 
-          twoSkeleton.buildTriangleList(
-            vertexNumber_, cellNumber_, cellArray_,
-            &triangleList_, &triangleStarList_);
+          twoSkeleton.buildTriangleList(vertexNumber_, cellNumber_, cellArray_,
+                                        &triangleList_, &triangleStarList_,
+                                        &cellTriangleList_);
         }
 
         return 0;
