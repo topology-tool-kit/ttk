@@ -1,9 +1,9 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-        name="HarmonicFieldComputation"
-        class="ttkHarmonicFieldComputation"
-        label="TTK HarmonicFieldComputation">
+        name="HarmonicField"
+        class="ttkHarmonicField"
+        label="TTK HarmonicField">
       <Documentation
           long_help="TTK plugin for harmonic field computations."
           short_help="TTK plugin for harmonic field computations.">

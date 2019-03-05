@@ -1,8 +1,8 @@
-ttk_add_base_library(harmonicFieldComputation
+ttk_add_base_library(harmonicField
                      SOURCES
-                     HarmonicFieldComputation.cpp
+                     HarmonicField.cpp
                      HEADERS
-                     HarmonicFieldComputation.h
+                     HarmonicField.h
                      LINK
                      geometry
                      triangulation)

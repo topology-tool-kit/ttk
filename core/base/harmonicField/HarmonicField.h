@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::HarmonicFieldComputation
+/// \class ttk::HarmonicField
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date February 2019
@@ -9,7 +9,7 @@
 ///
 ///
 ///
-/// \sa ttkHarmonicFieldComputation.cpp % for a usage example.
+/// \sa ttkHarmonicField.cpp % for a usage example.
 
 #pragma once
 
@@ -31,22 +31,21 @@ namespace ttk {
   enum struct SolvingMethodUserType { Auto = 0, Cholesky = 1, Iterative = 2 };
   enum struct SolvingMethodType { Cholesky, Iterative };
 
-  class HarmonicFieldComputation : public Debug {
+  class HarmonicField : public Debug {
 
   public:
-    HarmonicFieldComputation();
+    HarmonicField();
 
     // default destructor
-    ~HarmonicFieldComputation() override = default;
+    ~HarmonicField() override = default;
     // default copy constructor
-    HarmonicFieldComputation(const HarmonicFieldComputation &) = default;
+    HarmonicField(const HarmonicField &) = default;
     // default move constructor
-    HarmonicFieldComputation(HarmonicFieldComputation &&) = default;
+    HarmonicField(HarmonicField &&) = default;
     // default copy assignment operator
-    HarmonicFieldComputation &operator=(const HarmonicFieldComputation &)
-      = default;
+    HarmonicField &operator=(const HarmonicField &) = default;
     // default move assignment operator
-    HarmonicFieldComputation &operator=(HarmonicFieldComputation &&) = default;
+    HarmonicField &operator=(HarmonicField &&) = default;
 
     inline int setVertexNumber(SimplexId vertexNumber) {
       vertexNumber_ = vertexNumber;
@@ -146,7 +145,7 @@ namespace ttk {
 template <typename SparseMatrixType,
           typename TripletType,
           typename scalarFieldType>
-SparseMatrixType ttk::HarmonicFieldComputation::compute_laplacian() const {
+SparseMatrixType ttk::HarmonicField::compute_laplacian() const {
 
   // laplacian matrix
   SparseMatrixType lap(vertexNumber_, vertexNumber_);
@@ -227,14 +226,13 @@ template <typename SparseMatrixType,
           typename TripletType,
           typename scalarFieldType>
 SparseMatrixType
-  ttk::HarmonicFieldComputation::compute_laplacian_with_cotan_weights() const {
+  ttk::HarmonicField::compute_laplacian_with_cotan_weights() const {
   using std::cout;
   using std::endl;
 
   {
     std::stringstream msg;
-    msg << "[HarmonicFieldComputation] Beginning graph laplacian computation"
-        << endl;
+    msg << "[HarmonicField] Beginning graph laplacian computation" << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
@@ -330,7 +328,7 @@ SparseMatrixType
 
   {
     std::stringstream msg;
-    msg << "[HarmonicFieldComputation] Graph laplacian computed" << endl;
+    msg << "[HarmonicField] Graph laplacian computed" << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
@@ -338,15 +336,15 @@ SparseMatrixType
 }
 
 // if the package is a pure template typename, uncomment the following line
-// #include                  <HarmonicFieldComputation.cpp>
+// #include                  <HarmonicField.cpp>
 
 template <typename SparseMatrixType,
           typename SparseVectorType,
           typename SolverType>
-int ttk::HarmonicFieldComputation::solve(SparseMatrixType const &lap,
-                                         SparseMatrixType const &penalty,
-                                         SparseVectorType const &constraints,
-                                         SparseMatrixType &sol) const {
+int ttk::HarmonicField::solve(SparseMatrixType const &lap,
+                              SparseMatrixType const &penalty,
+                              SparseVectorType const &constraints,
+                              SparseMatrixType &sol) const {
   SolverType solver(lap - penalty);
   sol = solver.solve(penalty * constraints);
   return solver.info();

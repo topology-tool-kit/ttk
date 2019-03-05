@@ -1,5 +1,5 @@
 /// \ingroup vtk
-/// \class ttkHarmonicFieldComputation
+/// \class ttkHarmonicField
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \date February 2019
 ///
@@ -29,7 +29,7 @@
 /// \sa ttkIntegralLines
 /// \sa ttkFTMTree
 /// \sa ttkIdentifiers
-/// \sa ttk::HarmonicFieldComputation
+/// \sa ttk::HarmonicField
 
 #pragma once
 
@@ -51,7 +51,7 @@
 #include <vtkUnsignedShortArray.h>
 
 // ttk code includes
-#include <HarmonicFieldComputation.h>
+#include <HarmonicField.h>
 #include <ttkWrapper.h>
 
 #include <ttkTriangulation.h>
@@ -59,16 +59,16 @@
 enum HarmonicFieldType { Float = 0, Double };
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkHarmonicFieldComputation
+class VTKFILTERSCORE_EXPORT ttkHarmonicField
 #else
-class ttkHarmonicFieldComputation
+class ttkHarmonicField
 #endif
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
 public:
-  static ttkHarmonicFieldComputation *New();
-  vtkTypeMacro(ttkHarmonicFieldComputation, vtkDataSetAlgorithm);
+  static ttkHarmonicField *New();
+  vtkTypeMacro(ttkHarmonicField, vtkDataSetAlgorithm);
 
   vtkSetMacro(debugLevel_, int);
 
@@ -114,20 +114,18 @@ public:
   int getConstraints(vtkPointSet *input);
 
   // default copy constructor
-  ttkHarmonicFieldComputation(const ttkHarmonicFieldComputation &) = delete;
+  ttkHarmonicField(const ttkHarmonicField &) = delete;
   // default move constructor
-  ttkHarmonicFieldComputation(ttkHarmonicFieldComputation &&) = delete;
+  ttkHarmonicField(ttkHarmonicField &&) = delete;
   // default copy assignment operator
-  ttkHarmonicFieldComputation &operator=(const ttkHarmonicFieldComputation &)
-    = delete;
+  ttkHarmonicField &operator=(const ttkHarmonicField &) = delete;
   // default move assignment operator
-  ttkHarmonicFieldComputation &operator=(ttkHarmonicFieldComputation &&)
-    = delete;
+  ttkHarmonicField &operator=(ttkHarmonicField &&) = delete;
 
 protected:
-  ttkHarmonicFieldComputation();
+  ttkHarmonicField();
 
-  ~ttkHarmonicFieldComputation() override = default;
+  ~ttkHarmonicField() override = default;
 
   TTK_SETUP();
 
@@ -152,7 +150,7 @@ private:
   // enum: float or double
   int OutputScalarFieldType;
   // worker object
-  ttk::HarmonicFieldComputation harmonicField_;
+  ttk::HarmonicField harmonicField_;
   // teh mesh
   ttk::Triangulation *triangulation_;
   // points on the mesh where constraints_ are set

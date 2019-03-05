@@ -1,13 +1,13 @@
-#include <HarmonicFieldComputation.h>
+#include <HarmonicField.h>
 
-ttk::HarmonicFieldComputation::HarmonicFieldComputation()
+ttk::HarmonicField::HarmonicField()
   : vertexNumber_{}, edgeNumber_{}, constraintNumber_{},
     useCotanWeights_{false}, triangulation_{}, sources_{}, constraints_{},
     outputScalarFieldPointer_{},
     solvingMethod_{ttk::SolvingMethodUserType::Auto}, logAlpha_{5} {
 }
 
-ttk::SolvingMethodType ttk::HarmonicFieldComputation::findBestSolver() const {
+ttk::SolvingMethodType ttk::HarmonicField::findBestSolver() const {
 
   // for switching between Cholesky factorization and Iterate
   // (conjugate gradients) method
@@ -22,7 +22,7 @@ ttk::SolvingMethodType ttk::HarmonicFieldComputation::findBestSolver() const {
 
 // main routine
 template <typename scalarFieldType>
-int ttk::HarmonicFieldComputation::execute() const {
+int ttk::HarmonicField::execute() const {
 
   using std::cout;
   using std::endl;
@@ -47,7 +47,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   {
     stringstream msg;
-    msg << "[HarmonicFieldComputation] Beginnning computation" << endl;
+    msg << "[HarmonicField] Beginnning computation" << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
@@ -122,16 +122,16 @@ int ttk::HarmonicFieldComputation::execute() const {
     auto info = static_cast<Eigen::ComputationInfo>(res);
     switch(info) {
       case Eigen::ComputationInfo::Success:
-        msg << "[HarmonicFieldComputation] Success!" << endl;
+        msg << "[HarmonicField] Success!" << endl;
         break;
       case Eigen::ComputationInfo::NumericalIssue:
-        msg << "[HarmonicFieldComputation] Numerical Issue!" << endl;
+        msg << "[HarmonicField] Numerical Issue!" << endl;
         break;
       case Eigen::ComputationInfo::NoConvergence:
-        msg << "[HarmonicFieldComputation] No Convergence!" << endl;
+        msg << "[HarmonicField] No Convergence!" << endl;
         break;
       case Eigen::ComputationInfo::InvalidInput:
-        msg << "[HarmonicFieldComputation] Invalid Input!" << endl;
+        msg << "[HarmonicField] Invalid Input!" << endl;
         break;
     }
     dMsg(cout, msg.str(), advancedInfoMsg);
@@ -154,8 +154,8 @@ int ttk::HarmonicFieldComputation::execute() const {
 
   {
     stringstream msg;
-    msg << "[HarmonicFieldComputation] Ending computation after "
-        << t.getElapsedTime() << "s (";
+    msg << "[HarmonicField] Ending computation after " << t.getElapsedTime()
+        << "s (";
     if(useCotanWeights_) {
       msg << "cotan weights, ";
     } else {
@@ -173,7 +173,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 #else
   {
     stringstream msg;
-    msg << "[HarmonicFieldComputation] Eigen support disabled, computation "
+    msg << "[HarmonicField] Eigen support disabled, computation "
            "skipped "
         << endl;
     dMsg(cout, msg.str(), infoMsg);
@@ -184,5 +184,5 @@ int ttk::HarmonicFieldComputation::execute() const {
 }
 
 // explicit instantiations for double and float types
-template int ttk::HarmonicFieldComputation::execute<double>() const;
-template int ttk::HarmonicFieldComputation::execute<float>() const;
+template int ttk::HarmonicField::execute<double>() const;
+template int ttk::HarmonicField::execute<float>() const;
