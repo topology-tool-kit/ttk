@@ -105,6 +105,18 @@
         </IntVectorProperty>
 
         <IntVectorProperty
+           name="SingleSweep"
+           label="Use single sweep"
+           command="SetSingleSweep"
+           number_of_elements="1"
+           default_values="0" panel_visibility="advanced">
+           <BooleanDomain name="bool"/>
+           <Documentation>
+             Use the less efficient (but maybe more robust) single sweep version
+           </Documentation>
+        </IntVectorProperty>
+        
+        <IntVectorProperty
            name="UseAllCores"
            label="Use All Cores"
            command="SetUseAllCores"
@@ -117,24 +129,18 @@
         </IntVectorProperty>
 
         <IntVectorProperty
-           name="SingleSweep"
-           label="Use single sweep"
-           command="SetSingleSweep"
-           number_of_elements="1"
-           default_values="0" panel_visibility="advanced">
-           <BooleanDomain name="bool"/>
-           <Documentation>
-             Use the less efficient (but maybe more robust) single sweep version
-           </Documentation>
-        </IntVectorProperty>
-
-        <IntVectorProperty
            name="ThreadNumber"
            label="Thread Number"
            command="SetThreadNumber"
            number_of_elements="1"
            default_values="1" panel_visibility="advanced">
            <IntRangeDomain name="range" min="1" max="100" />
+           <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                    mode="visibility"
+                    property="UseAllCores"
+                    value="0" />
+           </Hints>
            <Documentation>
               Thread number.
            </Documentation>
