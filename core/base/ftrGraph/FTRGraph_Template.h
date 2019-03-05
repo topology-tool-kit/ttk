@@ -144,7 +144,7 @@ namespace ttk {
       graph_.arcs2nodes<ScalarType>(scalars_);
       printTime(postProcTime, "[FTR Graph]: postProcess: ", advancedInfoMsg);
 
-      printTime(finTime, "[FTR Graph]: final time: ", timeMsg);
+      printTime(finTime, "[FTR Graph]: *TOTAL* time: ", timeMsg);
 #ifdef GPROFILE
       ProfilerStop();
 #endif
@@ -184,15 +184,6 @@ namespace ttk {
                 << std::endl;
       std::cout << "avoided: " << graph_.getNbAvoided() << std::endl;
 #endif
-
-      // Message user
-      {
-        std::stringstream msg;
-        msg << "[FTR Graph] Data-set (" << mesh_.getNumberOfVertices()
-            << " points) processed in " << t.getElapsedTime() << " s. ("
-            << params_.threadNumber << " thread(s))." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
-      }
     }
 
     // protected
