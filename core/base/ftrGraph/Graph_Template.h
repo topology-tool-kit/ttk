@@ -177,7 +177,11 @@ namespace ttk {
       const idVertex nbVerts = s->getSize();
       const idSuperArc nbArcs = getNumberOfArcs();
       std::vector<idVertex> arcSizes(getNumberOfArcs(), 0);
-      std::cout << "build arc segmentation..." << std::endl;
+      {
+        std::stringstream msg;
+        msg << "[FTR Graph]: Building arc segmentation..." << std::endl;
+        dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+      }
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for

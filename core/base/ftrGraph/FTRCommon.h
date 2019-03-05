@@ -8,6 +8,7 @@
 #pragma once
 
 #include "DataTypesFTR.h"
+#include <Debug.h>
 
 #ifdef __APPLE__
 #include <algorithm>
@@ -60,7 +61,7 @@ namespace ttk {
     /// Force the class to use functions alloc and init
     /// alloc is used for all system allocation
     /// init is used to fill arrays that needs to be
-    class Allocable {
+    class Allocable : public Debug {
     protected:
       /// Allocation may depends on the number of vertices
       idVertex nbElmt_ = nullVertex;

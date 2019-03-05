@@ -62,7 +62,7 @@ namespace ttk {
     };
 
     template <typename ScalarType>
-    class FTRGraph : virtual public Debug, public Allocable {
+    class FTRGraph : public Allocable {
     private:
       // Exernal fields
       Params params_;
