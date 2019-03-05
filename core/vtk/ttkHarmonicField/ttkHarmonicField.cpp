@@ -13,7 +13,7 @@ ttkHarmonicField::ttkHarmonicField()
   OutputScalarFieldName = "OutputHarmonicField";
   OutputScalarFieldType = HarmonicFieldType::Float;
 
-  ForceInputScalarField = false;
+  ForceConstraintIdentifiers = false;
   ThreadNumber = threadNumber_;
   UseAllCores = true;
   InputIdentifiersFieldName
@@ -64,7 +64,7 @@ int ttkHarmonicField::getTriangulation(vtkDataSet *input) {
 int ttkHarmonicField::getIdentifiers(vtkPointSet *input) {
   auto vsfn = static_cast<const char *>(ttk::VertexScalarFieldName);
 
-  if(ForceInputScalarField && InputIdentifiersFieldName.length() != 0) {
+  if(ForceConstraintIdentifiers && InputIdentifiersFieldName.length() != 0) {
     identifiers_
       = input->GetPointData()->GetArray(InputIdentifiersFieldName.data());
   } else if(input->GetPointData()->GetArray(vsfn) != nullptr) {

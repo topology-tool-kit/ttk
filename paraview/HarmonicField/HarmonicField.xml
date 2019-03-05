@@ -57,15 +57,39 @@
         </Documentation>
       </InputProperty>
 
+      <StringVectorProperty
+          name="InputConstraintFieldName"
+          command="SetInputScalarFieldName"
+          label="Constraint value field"
+          number_of_elements="1"
+          animateable="0"
+          >
+        <ArrayListDomain
+            name="array_list"
+            default_values="0"
+            >
+          <RequiredProperties>
+            <Property
+                name="Constraints"
+                function="Input"
+                />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the constraint value scalar field.
+        </Documentation>
+      </StringVectorProperty>
+
       <IntVectorProperty
-          name="ForceInputScalarField"
-          label="Force Input Scalar Field"
-          command="SetForceInputScalarField"
+          name="ForceConstraintIdentifiers"
+          label="Force Constraint Identifiers"
+          command="SetForceConstraintIdentifiers"
           number_of_elements="1"
           default_values="0"
           panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
+          Use a non-default identifiers field for the constraint.
         </Documentation>
       </IntVectorProperty>
 
@@ -119,9 +143,9 @@
       </DoubleVectorProperty>
 
       <StringVectorProperty
-          name="InputScalarFieldName"
-          command="SetInputScalarFieldName"
-          label="Vertex identifier field"
+          name="InputIdentifiersFieldName"
+          command="SetInputIdentifiersFieldName"
+          label="Constraint identifier field"
           number_of_elements="1"
           animateable="0"
           panel_visibility="advanced"
@@ -138,7 +162,7 @@
           <PropertyWidgetDecorator
               type="GenericDecorator"
               mode="visibility"
-              property="ForceInputScalarField"
+              property="ForceConstraintIdentifiers"
               value="1" />
         </Hints>
         <Documentation>
@@ -225,9 +249,10 @@
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="Constraints" />
-        <Property name="ForceInputScalarField" />
-        <Property name="InputScalarFieldName" />
+        <Property name="UseCotanWeights" />
+        <Property name="SolvingMethod" />
+        <Property name="InputConstraintFieldName" />
+        <Property name="ForceConstraintIdentifiers" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">

@@ -94,8 +94,8 @@ public:
   vtkSetMacro(OutputScalarFieldType, int);
   vtkGetMacro(OutputScalarFieldType, int);
 
-  vtkSetMacro(ForceInputScalarField, bool);
-  vtkGetMacro(ForceInputScalarField, bool);
+  vtkSetMacro(ForceConstraintIdentifiers, bool);
+  vtkGetMacro(ForceConstraintIdentifiers, bool);
 
   vtkSetMacro(UseCotanWeights, bool);
   vtkGetMacro(UseCotanWeights, bool);
@@ -137,7 +137,7 @@ private:
   // output scalar field
   std::string OutputScalarFieldName;
   // let the user choose a different identifier scalar field
-  bool ForceInputScalarField;
+  bool ForceConstraintIdentifiers;
   // graph laplacian variant
   bool UseCotanWeights;
   // user-defined input identifier (SimplexId) scalar field name
