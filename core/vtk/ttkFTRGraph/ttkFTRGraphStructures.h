@@ -73,9 +73,9 @@ namespace ttk {
 #endif
       std::map<ttk::ftr::idVertex, vtkIdType> points;
 
-      ArcData(const ttk::ftr::idSuperArc nbArcs, const ttk::ftr::idNode nbNodes) {
+      ArcData(const ttk::ftr::idSuperArc nbArcs) {
         ids = allocArray<vtkIntArray>("ArcId", nbArcs);
-        reg = allocArray<vtkCharArray>(ttk::MaskScalarFieldName, nbNodes);
+        reg = allocArray<vtkCharArray>(ttk::MaskScalarFieldName, nbArcs * 2);
 #ifndef NDEBUG
         fromUp = allocArray<vtkUnsignedCharArray>("growUp", nbArcs);
 #endif
