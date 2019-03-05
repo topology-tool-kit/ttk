@@ -4,7 +4,7 @@ ttk::HarmonicFieldComputation::HarmonicFieldComputation()
   : vertexNumber_{}, edgeNumber_{}, constraintNumber_{},
     useCotanWeights_{false}, triangulation_{}, sources_{}, constraints_{},
     outputScalarFieldPointer_{},
-    solvingMethod_{ttk::SolvingMethodUserType::Cholesky}, logAlpha_{} {
+    solvingMethod_{ttk::SolvingMethodUserType::Auto}, logAlpha_{5} {
 }
 
 ttk::SolvingMethodType ttk::HarmonicFieldComputation::findBestSolver() const {
