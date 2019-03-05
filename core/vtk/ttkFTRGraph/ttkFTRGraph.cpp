@@ -442,6 +442,8 @@ int ttkFTRGraph::getSegmentation(const ttk::ftr::Graph &graph,
 int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph &graph,
                                  vtkUnstructuredGrid *outputSkeletonArcs) {
   const idSuperArc nbArcs = graph.getNumberOfArcs();
+  const idNode nbNodes = graph.getNumberOfNodes();
+
   idSuperArc nbFinArc = 0;
   switch(params_.samplingLvl) {
     case -1:
@@ -456,7 +458,7 @@ int ttkFTRGraph::getSkeletonArcs(const ttk::ftr::Graph &graph,
       break;
   }
 
-  ttk::ftr::ArcData arcData(nbFinArc);
+  ttk::ftr::ArcData arcData(nbFinArc, nbNodes);
   vtkSmartPointer<vtkUnstructuredGrid> arcs
     = vtkSmartPointer<vtkUnstructuredGrid>::New();
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
