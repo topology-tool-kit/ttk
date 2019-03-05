@@ -149,7 +149,7 @@ int ttk::HarmonicFieldComputation::execute() const {
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < vertexNumber_; ++i) {
     // cannot avoid copy here...
-    outputScalarField[i] = solDense(i, 0);
+    outputScalarField[i] = -solDense(i, 0);
   }
 
   {
