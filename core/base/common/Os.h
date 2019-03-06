@@ -157,4 +157,7 @@ namespace ttk {
   };
 } // namespace ttk
 
+// statement to mark parameters as unused
+#define TTK_UNUSED(X) (void)(X)
+
 #endif
