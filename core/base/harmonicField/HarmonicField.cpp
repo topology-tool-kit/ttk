@@ -23,6 +23,7 @@ ttk::SolvingMethodType ttk::HarmonicField::findBestSolver() const {
 template <typename scalarFieldType>
 int ttk::HarmonicField::execute() const {
 
+  using std::cerr;
   using std::cout;
   using std::endl;
   using std::stringstream;
@@ -172,10 +173,16 @@ int ttk::HarmonicField::execute() const {
 #else
   {
     stringstream msg;
+    msg << "[HarmonicField]" << endl;
+    msg << "[HarmonicField]" << endl;
     msg << "[HarmonicField] Eigen support disabled, computation "
-           "skipped "
+           "skipped!"
         << endl;
-    dMsg(cout, msg.str(), infoMsg);
+    msg << "[HarmonicField] Please re-compile TTK with Eigen support to enable"
+        << " this feature." << endl;
+    msg << "[HarmonicField]" << endl;
+    msg << "[HarmonicField]" << endl;
+    dMsg(cerr, msg.str(), infoMsg);
   }
 #endif // TTK_ENABLE_EIGEN
 
