@@ -15,6 +15,23 @@ int ttk::SurfaceQuadrangulation::execute() const {
 
   Timer t;
 
+  MorseSmaleComplex msc{};
+  SimplexId criticalPointsNumber{};
+  std::vector<float> criticalPoints;
+  std::vector<char> cpCellDims;
+  std::vector<SimplexId> cpCellIds;
+  std::vector<float> cpCellScalars;
+  std::vector<char> cpIsOnBoundary;
+  std::vector<SimplexId> cpPLVertexIdentifiers;
+  std::vector<SimplexId> cpManifoldSize;
+
+  msc.setupTriangulation(triangulation_);
+  msc.setInputScalarField(inputScalarFieldPointer_);
+  msc.setInputOffsets(inputOffsetIdentifiersFieldPointer_);
+  msc.setOutputCriticalPoints(
+    &criticalPointsNumber, &criticalPoints, &cpCellDims, &cpCellIds,
+    &cpCellScalars, &cpIsOnBoundary, &cpPLVertexIdentifiers, &cpManifoldSize);
+
   {
     stringstream msg;
     msg << "[SurfaceQuadrangulation] Ending computation after "
