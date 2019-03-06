@@ -5,16 +5,10 @@
         class="ttkSurfaceQuadrangulation"
         label="TTK SurfaceQuadrangulation">
       <Documentation
-          long_help="TTK plugin for harmonic field computations."
-          short_help="TTK plugin for harmonic field computations.">
-        This plugin takes a list of sources (a set of points with
-        their global identifiers attached to them) with a scalar
-        constraint on each of them and computes an harmonic field by
-        solving a laplacian equation.
-        Related publication
-        "Dynamic harmonic fields for surface processing"
-        Kai Xu, Hao Zhang, Daniel Cohen-Or, Yueshan Xiong
-        Computers and Graphics 2009.
+          long_help="TTK plugin for surface quadrangulation."
+          short_help="TTK plugin for surface quadrangulation.">
+        This plugin tries to approximate a triangular 2D mesh by a
+        quadrangular one.
       </Documentation>
 
       <InputProperty
@@ -37,66 +31,23 @@
         </Documentation>
       </InputProperty>
 
-      <InputProperty
-          name="Constraints"
-          port_index="1"
-          label="Input Constraints"
-          command="SetInputConnection">
-        <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
-        </ProxyGroupDomain>
-        <DataTypeDomain name="input_type">
-          <DataType value="vtkPointSet"/>
-        </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Constraints" function="FieldDataSelection" />
-        </InputArrayDomain>
-        <Documentation>
-          Harmonic field constraints.
-        </Documentation>
-      </InputProperty>
-
-      <StringVectorProperty
-          name="InputConstraintFieldName"
-          command="SetInputScalarFieldName"
-          label="Constraint Values"
-          number_of_elements="1"
-          animateable="0"
-          >
-        <ArrayListDomain
-            name="array_list"
-            default_values="0"
-            >
-          <RequiredProperties>
-            <Property
-                name="Constraints"
-                function="Input"
-                />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Documentation>
-          Select the constraint value scalar field.
-        </Documentation>
-      </StringVectorProperty>
-
       <IntVectorProperty
-          name="ForceConstraintIdentifiers"
-          label="Force Constraint Identifiers"
-          command="SetForceConstraintIdentifiers"
+          name="ForceInputIdentifiersField"
+          label="Force Input Identifiers Field"
+          command="SetForceInputIdentifiersField"
           number_of_elements="1"
           default_values="0"
           panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Use a non-default identifiers field for the constraint.
+          Use a non-default identifiers field.
         </Documentation>
       </IntVectorProperty>
-      
+
       <StringVectorProperty
           name="InputIdentifiersFieldName"
           command="SetInputIdentifiersFieldName"
-          label="Constraint Identifiers"
+          label="Identifiers Field Name"
           number_of_elements="1"
           animateable="0"
           panel_visibility="advanced"
@@ -105,97 +56,16 @@
             name="array_list"
             default_values="0"
             >
-          <RequiredProperties>
-            <Property name="Constraints" function="Input" />
-          </RequiredProperties>
         </ArrayListDomain>
         <Hints>
           <PropertyWidgetDecorator
               type="GenericDecorator"
               mode="visibility"
-              property="ForceConstraintIdentifiers"
+              property="ForceInputIdentifiersField"
               value="1" />
         </Hints>
         <Documentation>
           Select the vertex identifier scalar field in the sources.
-        </Documentation>
-      </StringVectorProperty>
-
-      <IntVectorProperty
-          name="UseCotanWeights"
-          label="Use Cotangent Weights"
-          command="SetUseCotanWeights"
-          number_of_elements="1"
-          default_values="1">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use the more precise cotangent weights matrix instead of the
-          laplacian graph.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-          name="SolvingMethod"
-          label="Solver"
-          command="SetSolvingMethod"
-          number_of_elements="1"
-          default_values="0">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="Auto"/>
-          <Entry value="1" text="Cholesky"/>
-          <Entry value="2" text="Iterative"/>
-        </EnumerationDomain>
-        <Documentation>
-          This property allows the user to select a solving
-          method. Cholesky simply decomposes the laplacian matrix, and
-          Iterative uses the Conjugate Gradients Iterative method to
-          solve the laplacian equation. Auto triggers a heuristic
-          which will try to select the best option between the two former.
-        </Documentation>
-      </IntVectorProperty>
-
-      <DoubleVectorProperty
-          name="LogAlpha"
-          label="Penalty"
-          command="SetLogAlpha"
-          number_of_elements="1"
-          default_values="5"
-          >
-        <Documentation>
-          This property allows the user to select a penalty value for
-          solving the harmonic equation. A lower penalty should lead
-          to a better harmonic solution at the expense of computation
-          time.
-        </Documentation>
-      </DoubleVectorProperty>
-
-      
-
-      <IntVectorProperty
-        name="OutputScalarFieldType"
-        label="Output Field Type"
-        command="SetOutputScalarFieldType"
-        number_of_elements="1"
-        default_values="0" 
-        panel_visibility="advanced">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="Float" />
-          <Entry value="1" text="Double" />
-        </EnumerationDomain>
-        <Documentation>
-          Select the type of the output scalar field.
-        </Documentation>
-      </IntVectorProperty>
-
-      <StringVectorProperty
-        name="OutputScalarFieldName"
-        command="SetOutputScalarFieldName"
-        label="Output Field Name"
-        number_of_elements="1"
-        default_values="OutputSurfaceQuadrangulation"
-        panel_visibility="advanced">
-        <Documentation>
-          Select the name of the output scalar field.
         </Documentation>
       </StringVectorProperty>
 
@@ -252,20 +122,12 @@
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="UseCotanWeights" />
-        <Property name="SolvingMethod" />
-        <Property name="InputConstraintFieldName" />
-        <Property name="ForceConstraintIdentifiers" />
-        <Property name="LogAlpha" />
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="OutputScalarFieldType"/>
-        <Property name="OutputScalarFieldName"/>
+        <Property name="InputIdentifiersFieldName" />
+        <Property name="ForceInputIdentifiersField" />
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Scalar Data" />
+        <ShowInMenu category="TTK - Misc" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>
