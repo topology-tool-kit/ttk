@@ -1,9 +1,8 @@
 #include <HarmonicField.h>
 
 ttk::HarmonicField::HarmonicField()
-  : vertexNumber_{}, edgeNumber_{}, constraintNumber_{},
-    useCotanWeights_{false}, triangulation_{}, sources_{}, constraints_{},
-    outputScalarFieldPointer_{},
+  : vertexNumber_{}, edgeNumber_{}, constraintNumber_{}, useCotanWeights_{true},
+    triangulation_{}, sources_{}, constraints_{}, outputScalarFieldPointer_{},
     solvingMethod_{ttk::SolvingMethodUserType::Auto}, logAlpha_{5} {
 }
 

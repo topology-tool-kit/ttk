@@ -3,7 +3,7 @@
 vtkStandardNewMacro(ttkHarmonicField);
 
 ttkHarmonicField::ttkHarmonicField()
-  : UseCotanWeights{false}, SolvingMethod{0}, LogAlpha{5}, triangulation_{},
+  : UseCotanWeights{true}, SolvingMethod{0}, LogAlpha{5}, triangulation_{},
     identifiers_{}, constraints_{} {
 
   SetNumberOfInputPorts(2);
