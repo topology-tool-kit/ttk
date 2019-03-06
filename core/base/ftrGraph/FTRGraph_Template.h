@@ -58,9 +58,10 @@ namespace ttk {
       omp_set_nested(1);
 #ifdef TTK_ENABLE_FTR_PRIORITY
       if(omp_get_max_task_priority() < PriorityLevel::Max) {
-        std::cout << "[FTR Graph]: Warning, OpenMP max priority is lower than 5"
-                  << std::endl;
-        // std::cout << "  you can use $OMP_MAX_TASK_PRIORITY" << std::endl;
+        std::stringstream msg;
+        msg << "[FTR Graph]: Warning, OpenMP max priority is lower than 5"
+            << std::endl;
+        dMsg(std::cerr, msg.str(), infoMsg);
       }
 #endif
 #endif
