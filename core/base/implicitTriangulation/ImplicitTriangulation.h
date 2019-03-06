@@ -199,7 +199,7 @@ SimplexId &triangleId) const;
 
       int setInputGrid(const float &xOrigin, const float &yOrigin, const float &zOrigin,
           const float &xSpacing, const float &ySpacing, const float &zSpacing,
-          const int &xDim, const int &yDim, const int &zDim);
+          const SimplexId &xDim, const SimplexId &yDim, const SimplexId &zDim);
 
     protected:
       int dimensionality_;//
