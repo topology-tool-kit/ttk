@@ -85,6 +85,9 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   surfaceQuadrangulation_.setVertexNumber(numberOfPointsInDomain);
 
+  std::vector<ttk::SimplexId> outputVertices;
+  std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> outputEdges;
+
   vtkSmartPointer<vtkDataArray> outputQuadrangulation{};
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -94,9 +97,6 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
     return -8;
   }
 #endif
-
-  outputQuadrangulation->SetNumberOfComponents(1);
-  outputQuadrangulation->SetNumberOfTuples(numberOfPointsInDomain);
 
   res += surfaceQuadrangulation_.execute();
 
@@ -111,6 +111,10 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 #endif
 
   // update result
+  outputQuadrangulation->SetNumberOfComponents(1);
+  outputQuadrangulation->SetVoidArray(
+    static_cast<void *>(outputVertices.data()), outputVertices.size(), 1);
+
   output->ShallowCopy(domain);
   output->GetPointData()->AddArray(outputQuadrangulation);
 
