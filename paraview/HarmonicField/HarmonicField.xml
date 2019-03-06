@@ -146,10 +146,10 @@
           <Entry value="2" text="Iterative"/>
         </EnumerationDomain>
         <Documentation>
-          This property allow the user to select a solving
+          This property allows the user to select a solving
           method. Cholesky simply decomposes the laplacian matrix, and
           Iterative uses the Conjugate Gradients Iterative method to
-          solve the laplacian equation. Auto triggers an heuristic
+          solve the laplacian equation. Auto triggers a heuristic
           which will try to select the best option between the two former.
         </Documentation>
       </IntVectorProperty>
@@ -162,7 +162,7 @@
           default_values="5"
           >
         <Documentation>
-          This property allow the user to select a penalty value for
+          This property allows the user to select a penalty value for
           solving the harmonic equation. A lower penalty should lead
           to a better harmonic solution at the expense of computation
           time.
