@@ -20,7 +20,8 @@ ttkSurfaceQuadrangulation::ttkSurfaceQuadrangulation()
     = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
 }
 
-int ttkSurfaceQuadrangulation::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkSurfaceQuadrangulation::FillInputPortInformation(int port,
+                                                        vtkInformation *info) {
 
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
@@ -104,7 +105,7 @@ int ttkSurfaceQuadrangulation::getConstraints(vtkPointSet *input) {
 }
 
 int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
-                           std::vector<vtkDataSet *> &outputs) {
+                                    std::vector<vtkDataSet *> &outputs) {
 
   ttk::Memory m;
 
@@ -158,7 +159,8 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(numberOfPointsInSources == 0) {
-    cerr << "[ttkSurfaceQuadrangulation] Error: sources have no points." << endl;
+    cerr << "[ttkSurfaceQuadrangulation] Error: sources have no points."
+         << endl;
     return -4;
   }
 #endif
@@ -181,7 +183,8 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
       break;
     default:
 #ifndef TTK_ENABLE_KAMIKAZE
-      cerr << "[ttkSurfaceQuadrangulation] Error: Unknown scalar field type" << endl;
+      cerr << "[ttkSurfaceQuadrangulation] Error: Unknown scalar field type"
+           << endl;
       return -7;
 #endif // TTK_ENABLE_KAMIKAZE
       break;
@@ -189,7 +192,8 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(harmonicScalarField == nullptr) {
-    cerr << "[ttkSurfaceQuadrangulation] Error: vtkArray allocation problem." << endl;
+    cerr << "[ttkSurfaceQuadrangulation] Error: vtkArray allocation problem."
+         << endl;
     return -8;
   }
 #endif
@@ -227,8 +231,8 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   output->GetPointData()->AddArray(harmonicScalarField);
 
   std::stringstream msg;
-  msg << "[ttkSurfaceQuadrangulation] Memory usage: " << m.getElapsedUsage() << " MB."
-      << endl;
+  msg << "[ttkSurfaceQuadrangulation] Memory usage: " << m.getElapsedUsage()
+      << " MB." << endl;
   dMsg(cout, msg.str(), memoryMsg);
 
   return 0;

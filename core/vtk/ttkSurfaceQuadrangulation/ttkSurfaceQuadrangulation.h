@@ -118,7 +118,8 @@ public:
   // default move constructor
   ttkSurfaceQuadrangulation(ttkSurfaceQuadrangulation &&) = delete;
   // default copy assignment operator
-  ttkSurfaceQuadrangulation &operator=(const ttkSurfaceQuadrangulation &) = delete;
+  ttkSurfaceQuadrangulation &operator=(const ttkSurfaceQuadrangulation &)
+    = delete;
   // default move assignment operator
   ttkSurfaceQuadrangulation &operator=(ttkSurfaceQuadrangulation &&) = delete;
 

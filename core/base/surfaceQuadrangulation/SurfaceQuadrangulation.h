@@ -232,7 +232,8 @@ SparseMatrixType
 
   {
     std::stringstream msg;
-    msg << "[SurfaceQuadrangulation] Beginning graph laplacian computation" << endl;
+    msg << "[SurfaceQuadrangulation] Beginning graph laplacian computation"
+        << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
@@ -342,9 +343,9 @@ template <typename SparseMatrixType,
           typename SparseVectorType,
           typename SolverType>
 int ttk::SurfaceQuadrangulation::solve(SparseMatrixType const &lap,
-                              SparseMatrixType const &penalty,
-                              SparseVectorType const &constraints,
-                              SparseMatrixType &sol) const {
+                                       SparseMatrixType const &penalty,
+                                       SparseVectorType const &constraints,
+                                       SparseMatrixType &sol) const {
   SolverType solver(lap - penalty);
   sol = solver.solve(penalty * constraints);
   return solver.info();

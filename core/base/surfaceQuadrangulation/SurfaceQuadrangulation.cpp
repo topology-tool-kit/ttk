@@ -154,8 +154,8 @@ int ttk::SurfaceQuadrangulation::execute() const {
 
   {
     stringstream msg;
-    msg << "[SurfaceQuadrangulation] Ending computation after " << t.getElapsedTime()
-        << "s (";
+    msg << "[SurfaceQuadrangulation] Ending computation after "
+        << t.getElapsedTime() << "s (";
     if(useCotanWeights_) {
       msg << "cotan weights, ";
     } else {
@@ -178,7 +178,8 @@ int ttk::SurfaceQuadrangulation::execute() const {
     msg << "[SurfaceQuadrangulation] Eigen support disabled, computation "
            "skipped!"
         << endl;
-    msg << "[SurfaceQuadrangulation] Please re-compile TTK with Eigen support to enable"
+    msg << "[SurfaceQuadrangulation] Please re-compile TTK with Eigen support "
+           "to enable"
         << " this feature." << endl;
     msg << "[SurfaceQuadrangulation]" << endl;
     msg << "[SurfaceQuadrangulation]" << endl;
