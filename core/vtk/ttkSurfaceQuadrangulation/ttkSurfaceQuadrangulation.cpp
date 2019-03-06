@@ -3,9 +3,9 @@
 vtkStandardNewMacro(ttkSurfaceQuadrangulation);
 
 ttkSurfaceQuadrangulation::ttkSurfaceQuadrangulation()
-  : InputOffsetIdentifiersFieldName{}, ForceInputIdentifierField{false},
+  : InputOffsetIdentifiersFieldName{}, ForceInputIdentifiersField{false},
     SubdivisionLevel{5}, RelaxationIterations{100}, surfaceQuadrangulation_{},
-    triangulation_{} {
+    triangulation_{}, scalarField_{}, offsetIdentifiersField_{} {
 
   InputScalarFieldName
     = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
@@ -55,6 +55,41 @@ int ttkSurfaceQuadrangulation::getTriangulation(vtkDataSet *input) {
   return 0;
 }
 
+int ttkSurfaceQuadrangulation::getScalarField(vtkDataSet *input) {
+
+  if(InputScalarFieldName.length() != 0) {
+    scalarField_ = input->GetPointData()->GetArray(InputScalarFieldName.data());
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(scalarField_ == nullptr) {
+    cerr << "[ttkSurfaceQuadrangulation] Error: wrong scalar field." << endl;
+    return -1;
+  }
+#endif
+
+  return 0;
+}
+
+int ttkSurfaceQuadrangulation::getOffsetIdentifiersField(vtkDataSet *input) {
+
+  if(ForceInputIdentifiersField
+     && InputOffsetIdentifiersFieldName.length() != 0) {
+    offsetIdentifiersField_
+      = input->GetPointData()->GetArray(InputOffsetIdentifiersFieldName.data());
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(offsetIdentifiersField_ == nullptr) {
+    cerr << "[ttkSurfaceQuadrangulation] Error: wrong offset identifiers field."
+         << endl;
+    return -1;
+  }
+#endif
+
+  return 0;
+}
+
 int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
                                     std::vector<vtkDataSet *> &outputs) {
 
@@ -83,7 +118,15 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
+  res += getScalarField(domain);
+  res += getOffsetIdentifiersField(domain);
+
   surfaceQuadrangulation_.setVertexNumber(numberOfPointsInDomain);
+  surfaceQuadrangulation_.setSubdivisionLevel(SubdivisionLevel);
+  surfaceQuadrangulation_.setRelaxationIterations(RelaxationIterations);
+  surfaceQuadrangulation_.setInputScalarFieldPointer(scalarField_);
+  surfaceQuadrangulation_.setInputOffsetIdentifiersFieldPointer(
+    offsetIdentifiersField_);
 
   std::vector<ttk::SimplexId> outputVertices;
   std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> outputEdges;

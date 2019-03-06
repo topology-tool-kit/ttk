@@ -53,6 +53,22 @@ namespace ttk {
       }
       return 0;
     }
+    inline int setSubdivisionLevel(unsigned int value) {
+      subdivisionLevel_ = value;
+      return 0;
+    }
+    inline int setRelaxationIterations(unsigned int value) {
+      relaxationIterations_ = value;
+      return 0;
+    }
+    inline int setInputScalarFieldPointer(void *pointer) {
+      inputScalarFieldPointer_ = pointer;
+      return 0;
+    }
+    inline int setInputOffsetIdentifiersFieldPointer(void *pointer) {
+      inputOffsetIdentifiersFieldPointer_ = pointer;
+      return 0;
+    }
 
     int execute() const;
 
@@ -61,6 +77,16 @@ namespace ttk {
     SimplexId vertexNumber_;
     // triangular input mesh
     Triangulation *triangulation_;
+
+    // number of subdivisions of the Morse-Smale Complex cells
+    unsigned int subdivisionLevel_;
+    // number of relaxation iterations
+    unsigned int relaxationIterations_;
+
+    // input scalar field
+    void *inputScalarFieldPointer_;
+    // input offset field for identifiers
+    void *inputOffsetIdentifiersFieldPointer_;
   };
 } // namespace ttk
 

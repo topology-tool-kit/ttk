@@ -81,8 +81,8 @@ public:
   vtkSetMacro(InputOffsetIdentifiersFieldName, std::string);
   vtkGetMacro(InputOffsetIdentifiersFieldName, std::string);
 
-  vtkSetMacro(ForceInputIdentifierField, bool);
-  vtkGetMacro(ForceInputIdentifierField, bool);
+  vtkSetMacro(ForceInputIdentifiersField, bool);
+  vtkGetMacro(ForceInputIdentifiersField, bool);
 
   vtkSetMacro(SubdivisionLevel, unsigned int);
   vtkGetMacro(SubdivisionLevel, unsigned int);
@@ -92,8 +92,10 @@ public:
 
   // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
-  // get array of identifiers on the mesh
-  int getIdentifiers(vtkPointSet *input);
+  // get scalar field array
+  int getScalarField(vtkDataSet *input);
+  // get offset identifiers array
+  int getOffsetIdentifiersField(vtkDataSet *input);
 
   // default copy constructor
   ttkSurfaceQuadrangulation(const ttkSurfaceQuadrangulation &) = delete;
@@ -122,7 +124,7 @@ private:
   // user-defined input offset identifier (SimplexId) scalar field name
   std::string InputOffsetIdentifiersFieldName;
   // let the user choose a different identifier scalar field
-  bool ForceInputIdentifierField;
+  bool ForceInputIdentifiersField;
   // number of subdivisions of the Morse-Smale Complex cells
   unsigned int SubdivisionLevel;
   // number of relaxation iterations
@@ -132,4 +134,8 @@ private:
   ttk::SurfaceQuadrangulation surfaceQuadrangulation_;
   // input triangular mesh
   ttk::Triangulation *triangulation_;
+  // VTK array containing the scalar field (elevation, etc.)
+  vtkDataArray *scalarField_;
+  // VTK array containing the offset identifiers field
+  vtkDataArray *offsetIdentifiersField_;
 };

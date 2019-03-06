@@ -1,7 +1,9 @@
 #include <SurfaceQuadrangulation.h>
 
 ttk::SurfaceQuadrangulation::SurfaceQuadrangulation()
-  : vertexNumber_{}, triangulation_{} {
+  : vertexNumber_{}, triangulation_{}, subdivisionLevel_{5},
+    relaxationIterations_{100}, inputScalarFieldPointer_{},
+    inputOffsetIdentifiersFieldPointer_{} {
 }
 
 // main routine
