@@ -4,11 +4,9 @@ vtkStandardNewMacro(ttkSurfaceQuadrangulation);
 
 ttkSurfaceQuadrangulation::ttkSurfaceQuadrangulation()
   : InputOffsetIdentifiersFieldName{}, ForceInputIdentifiersField{false},
-    SubdivisionLevel{5}, RelaxationIterations{100}, surfaceQuadrangulation_{},
-    triangulation_{}, scalarField_{}, offsetIdentifiersField_{} {
-
-  InputScalarFieldName
-    = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
+    ForceInputOffsetIdentifiersField{false}, SubdivisionLevel{5},
+    RelaxationIterations{100}, surfaceQuadrangulation_{}, triangulation_{},
+    scalarField_{}, identifiersField_{}, offsetIdentifiersField_{} {
 
   InputIdentifiersFieldName
     = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
@@ -57,13 +55,60 @@ int ttkSurfaceQuadrangulation::getTriangulation(vtkDataSet *input) {
 
 int ttkSurfaceQuadrangulation::getScalarField(vtkDataSet *input) {
 
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(input == nullptr) {
+    cerr << "[ttkSurfaceQuadrangulation] Error: input pointer is NULL." << endl;
+    return -1;
+  }
+
+  if(input->GetNumberOfPoints() == 0) {
+    cerr << "[ttkSurfaceQuadrangulation] Error: input has no point." << endl;
+    return -1;
+  }
+#endif
+
+  vtkPointData *pointData = input->GetPointData();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(pointData == nullptr) {
+    cerr << "[ttkSurfaceQuadrangulation] Error: input has no point data."
+         << endl;
+    return -1;
+  }
+#endif
+
   if(InputScalarFieldName.length() != 0) {
-    scalarField_ = input->GetPointData()->GetArray(InputScalarFieldName.data());
+    scalarField_ = pointData->GetArray(InputScalarFieldName.data());
+  } else {
+    scalarField_ = pointData->GetArray(0);
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(scalarField_ == nullptr) {
-    cerr << "[ttkSurfaceQuadrangulation] Error: wrong scalar field." << endl;
+    cerr
+      << "[ttkSurfaceQuadrangulation] Error: NULL input scalar field pointer."
+      << endl;
+    return -1;
+  }
+#endif
+
+  return 0;
+}
+
+int ttkSurfaceQuadrangulation::getIdentifiersField(vtkDataSet *input) {
+  vtkPointData *pointData = input->GetPointData();
+  auto vsfn = static_cast<const char *>(ttk::VertexScalarFieldName);
+
+  if(ForceInputIdentifiersField && InputIdentifiersFieldName.length() != 0) {
+    identifiersField_ = pointData->GetArray(InputIdentifiersFieldName.data());
+  } else if(pointData->GetArray(vsfn) != nullptr) {
+    identifiersField_ = pointData->GetArray(vsfn);
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(identifiersField_ == nullptr) {
+    cerr << "[ttkSurfaceQuadrangulation] Error: wrong identifiers scalar field."
+         << endl;
     return -1;
   }
 #endif
@@ -72,11 +117,14 @@ int ttkSurfaceQuadrangulation::getScalarField(vtkDataSet *input) {
 }
 
 int ttkSurfaceQuadrangulation::getOffsetIdentifiersField(vtkDataSet *input) {
+  auto osfn = static_cast<const char *>(ttk::OffsetScalarFieldName);
 
-  if(ForceInputIdentifiersField
+  if(ForceInputOffsetIdentifiersField
      && InputOffsetIdentifiersFieldName.length() != 0) {
     offsetIdentifiersField_
       = input->GetPointData()->GetArray(InputOffsetIdentifiersFieldName.data());
+  } else if(input->GetPointData()->GetArray(osfn) != nullptr) {
+    offsetIdentifiersField_ = input->GetPointData()->GetArray(osfn);
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -119,7 +167,17 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 #endif
 
   res += getScalarField(domain);
+  res += getIdentifiersField(domain);
   res += getOffsetIdentifiersField(domain);
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  // something wrong when getting scalar fields from VTK
+  if(res != 0) {
+    cerr << "[ttkSurfaceQuadrangulation] Error: Wrong scalar field selected"
+         << endl;
+    return -4;
+  }
+#endif
 
   surfaceQuadrangulation_.setVertexNumber(numberOfPointsInDomain);
   surfaceQuadrangulation_.setSubdivisionLevel(SubdivisionLevel);
@@ -130,16 +188,6 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   std::vector<ttk::SimplexId> outputVertices;
   std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> outputEdges;
-
-  vtkSmartPointer<vtkDataArray> outputQuadrangulation{};
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(outputQuadrangulation == nullptr) {
-    cerr << "[ttkSurfaceQuadrangulation] Error: vtkArray allocation problem."
-         << endl;
-    return -8;
-  }
-#endif
 
   res += surfaceQuadrangulation_.execute();
 
@@ -154,6 +202,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 #endif
 
   // update result
+  vtkSmartPointer<vtkDataArray> outputQuadrangulation{};
   outputQuadrangulation->SetNumberOfComponents(1);
   outputQuadrangulation->SetVoidArray(
     static_cast<void *>(outputVertices.data()), outputVertices.size(), 1);
