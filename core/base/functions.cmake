@@ -87,6 +87,10 @@ function(ttk_add_base_template_library library)
 		target_link_libraries(${library} INTERFACE ${MPI_CXX_LIBRARIES})
 	endif()
 
+    if(TTK_ENABLE_EIGEN)
+      target_link_libraries(${library} INTERFACE Eigen3::Eigen)
+    endif()
+	
     if (TTK_ENABLE_ZFP)
       target_link_libraries(${library} INTERFACE zfp::zfp)
 	  endif()

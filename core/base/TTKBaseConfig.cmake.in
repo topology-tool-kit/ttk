@@ -4,12 +4,25 @@ include(CMakeFindDependencyMacro)
 find_dependency(Boost REQUIRED COMPONENTS system)
 
 # Was TTK built with optional dependencies?
+
+if (@TTK_ENABLE_EIGEN@)
+  find_dependency(EIGEN REQUIRED NO_MODULE)
+endif()
+
+if (@TTK_ENABLE_GRAPHVIZ@)
+  find_dependency(GRAPHVIZ REQUIRED)
+endif()
+
 if (@TTK_ENABLE_MPI@)
-    find_package(MPI REQUIRED)
+  find_package(MPI REQUIRED)
 endif()
 
 if (@TTK_ENABLE_OPENMP@)
 	find_dependency(OpenMP REQUIRED)
+endif()
+
+if (@TTK_ENABLE_SQLITE3@)
+  find_dependency(SQLITE3 REQUIRED)
 endif()
 
 if (@TTK_ENABLE_ZFP@)
