@@ -19,7 +19,7 @@
 
       <InputProperty
           name="Domain"
-          label="Input geometry"
+          label="Input Geometry"
           port_index="0"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -40,7 +40,7 @@
       <InputProperty
           name="Constraints"
           port_index="1"
-          label="Input constraints"
+          label="Input Constraints"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
@@ -60,7 +60,7 @@
       <StringVectorProperty
           name="InputConstraintFieldName"
           command="SetInputScalarFieldName"
-          label="Constraint value field"
+          label="Constraint Values"
           number_of_elements="1"
           animateable="0"
           >
@@ -92,60 +92,11 @@
           Use a non-default identifiers field for the constraint.
         </Documentation>
       </IntVectorProperty>
-
-      <IntVectorProperty
-          name="UseCotanWeights"
-          label="Use cotan weights method"
-          command="SetUseCotanWeights"
-          number_of_elements="1"
-          default_values="0">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use the more precise cotangent weights matrix instead of the
-          laplacian graph.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-          name="SolvingMethod"
-          label="Solving method"
-          command="SetSolvingMethod"
-          number_of_elements="1"
-          default_values="0">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="Auto"/>
-          <Entry value="1" text="Cholesky"/>
-          <Entry value="2" text="Iterative"/>
-        </EnumerationDomain>
-        <Documentation>
-          This property allow the user to select a solving
-          method. Cholesky simply decomposes the laplacian matrix, and
-          Iterative uses the Conjugate Gradients Iterative method to
-          solve the laplacian equation. Auto triggers an heuristic
-          which will try to select the best option between the two former.
-        </Documentation>
-      </IntVectorProperty>
-
-      <DoubleVectorProperty
-          name="LogAlpha"
-          label="Penalty value"
-          command="SetLogAlpha"
-          number_of_elements="1"
-          default_values="5"
-          panel_visibility="advanced"
-          >
-        <Documentation>
-          This property allow the user to select a penalty value for
-          solving the harmonic equation. A lower penalty should lead
-          to a better harmonic solution at the expense of computation
-          time.
-        </Documentation>
-      </DoubleVectorProperty>
-
+      
       <StringVectorProperty
           name="InputIdentifiersFieldName"
           command="SetInputIdentifiersFieldName"
-          label="Constraint identifier field"
+          label="Constraint Identifiers"
           number_of_elements="1"
           animateable="0"
           panel_visibility="advanced"
@@ -171,11 +122,62 @@
       </StringVectorProperty>
 
       <IntVectorProperty
+          name="UseCotanWeights"
+          label="Use Cotangent Weights"
+          command="SetUseCotanWeights"
+          number_of_elements="1"
+          default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use the more precise cotangent weights matrix instead of the
+          laplacian graph.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="SolvingMethod"
+          label="Solver"
+          command="SetSolvingMethod"
+          number_of_elements="1"
+          default_values="0">
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Auto"/>
+          <Entry value="1" text="Cholesky"/>
+          <Entry value="2" text="Iterative"/>
+        </EnumerationDomain>
+        <Documentation>
+          This property allow the user to select a solving
+          method. Cholesky simply decomposes the laplacian matrix, and
+          Iterative uses the Conjugate Gradients Iterative method to
+          solve the laplacian equation. Auto triggers an heuristic
+          which will try to select the best option between the two former.
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="LogAlpha"
+          label="Penalty"
+          command="SetLogAlpha"
+          number_of_elements="1"
+          default_values="5"
+          >
+        <Documentation>
+          This property allow the user to select a penalty value for
+          solving the harmonic equation. A lower penalty should lead
+          to a better harmonic solution at the expense of computation
+          time.
+        </Documentation>
+      </DoubleVectorProperty>
+
+      
+
+      <IntVectorProperty
         name="OutputScalarFieldType"
-        label="Output field type"
+        label="Output Field Type"
         command="SetOutputScalarFieldType"
         number_of_elements="1"
-        default_values="0" >
+        default_values="0" 
+        panel_visibility="advanced">
         <EnumerationDomain name="enum">
           <Entry value="0" text="Float" />
           <Entry value="1" text="Double" />
@@ -188,9 +190,10 @@
       <StringVectorProperty
         name="OutputScalarFieldName"
         command="SetOutputScalarFieldName"
-        label="Output field name"
+        label="Output Field Name"
         number_of_elements="1"
-        default_values="OutputHarmonicField">
+        default_values="OutputHarmonicField"
+        panel_visibility="advanced">
         <Documentation>
           Select the name of the output scalar field.
         </Documentation>
@@ -253,6 +256,7 @@
         <Property name="SolvingMethod" />
         <Property name="InputConstraintFieldName" />
         <Property name="ForceConstraintIdentifiers" />
+        <Property name="LogAlpha" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
@@ -261,7 +265,7 @@
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Scalar Data" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>
