@@ -12,5 +12,3 @@ target_link_libraries(ttkFTRGraphGui ${VTK_LIBRARIES}
 	ttkFTRGraph ttkProgramBase ttkUserInterfaceBase)
 
 install(TARGETS ttkFTRGraphGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
-install(DIRECTORY textures DESTINATION ${TTK_INSTALL_BINARY_DIR})
-
