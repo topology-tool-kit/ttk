@@ -46,7 +46,7 @@ namespace ttk {
 
       explicit NodeData(const ttk::ftr::idVertex nbNodes) {
         ids = allocArray<vtkIntArray>("VertexId", nbNodes);
-        types = allocArray<vtkIntArray>("NodeType", nbNodes);
+        types = allocArray<vtkIntArray>("CriticalType", nbNodes);
         scalars = allocArray<vtkDoubleArray>("Scalar", nbNodes);
       }
 
