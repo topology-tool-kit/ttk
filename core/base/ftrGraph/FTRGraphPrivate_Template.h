@@ -829,28 +829,10 @@ namespace ttk {
     template <typename ScalarType>
     void FTRGraph<ScalarType>::lazyApply(Propagation *const localProp,
                                          const idSuperArc a) {
-      auto comp = [localProp](const idVertex a, const idVertex b) {
-        return localProp->compare(a, b);
-      };
-
       auto add = lazy_.addGetNext(a);
-      auto del = lazy_.delGetNext(a);
-      while(add != nullLink || del != nullLink) {
-        if(del == nullLink) {
-          updateLazyAdd(localProp, add, a);
-          add = lazy_.addGetNext(a);
-        } else if(add == nullLink || mesh_.compareLinks(del, add, comp)) {
-          updateLazyDel(localProp, del, a);
-          del = lazy_.delGetNext(a);
-        } else if(mesh_.compareLinks(add, del, comp)) {
-          updateLazyAdd(localProp, add, a);
-          add = lazy_.addGetNext(a);
-        } else {
-          // same arc in both list, should be added and removed so we jus ignore
-          // it (add and del cant be null both of them at the same time)
-          add = lazy_.addGetNext(a);
-          del = lazy_.delGetNext(a);
-        }
+      while(add != nullLink) {
+        updateLazyAdd(localProp, add, a);
+        add = lazy_.addGetNext(a);
       }
     }
 

@@ -20,6 +20,7 @@
 
 namespace ttk {
   namespace ftr {
+
     template <typename Type>
     struct DynGraphNode;
 

@@ -172,6 +172,7 @@ namespace ttk {
     template <typename Type>
     std::tuple<DynGraphNode<Type> *, DynGraphNode<Type> *>
       DynGraphNode<Type>::findMinWeightRoot() const {
+
       DynGraphNode *minNode = const_cast<DynGraphNode<Type> *>(this);
       auto minW = minNode->weight_;
       DynGraphNode *curNode = minNode->parent_;
