@@ -3,6 +3,10 @@
 
 #include <vtkTexture.h>
 
+#ifndef TTK_INSTALL_ASSETS_DIR
+#define TTK_INSTALL_ASSETS_DIR "."
+#endif // TTK_INSTALL_ASSETS_DIR
+
 using namespace std;
 using namespace ttk;
 
@@ -84,7 +88,7 @@ ttkUserInterfaceBase::ttkUserInterfaceBase() {
   texture_ = vtkSmartPointer<vtkTexture>::New();
 
   pngReader_->SetFileName(
-    "textures/png/scalarFieldTexturePaleInterleavedRules.png");
+    TTK_INSTALL_ASSETS_DIR "/textures/png/scalarFieldTexturePaleInterleavedRules.png");
   pngReader_->Update();
   hasTexture_ = 
     !((pngReader_->GetOutput()->GetNumberOfPoints() == 1)
