@@ -180,8 +180,8 @@ std::vector<std::string> OsCall::listFilesInDirectory(const std::string &directo
                     filesInDir.push_back(directoryName + "/" + std::string(dirEntry->d_name));
             }
         }
+        closedir(d);
     }
-    closedir(d);
 #endif
 
     std::sort(filesInDir.begin(), filesInDir.end());
