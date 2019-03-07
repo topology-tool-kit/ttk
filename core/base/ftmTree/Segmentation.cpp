@@ -16,7 +16,7 @@
 #include <algorithm>
 #include <iterator>
 
-#include "Segmentation.h"
+#include "FTMTree_Segmentation.h"
 
 using namespace std;
 using namespace ttk;

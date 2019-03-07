@@ -12,7 +12,7 @@
 #define PROPAGATIONS_H
 
 // local includes
-#include "AtomicVector.h"
+#include "FTRGraph_AtomicVector.h"
 #include "DataTypesFTR.h"
 #include "Propagation.h"
 

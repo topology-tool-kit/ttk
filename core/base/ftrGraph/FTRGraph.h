@@ -18,7 +18,7 @@
 #include <Triangulation.h>
 
 // local includes
-#include "AtomicVector.h"
+#include "FTRGraph_AtomicVector.h"
 #include "DataTypesFTR.h"
 #include "DynamicGraph.h"
 #include "FTRCommon.h"

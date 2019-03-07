@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <iterator>
 
-#include "Segmentation.h"
+#include "FTRGraph_Segmentation.h"
 
 using namespace std;
 using namespace ttk;

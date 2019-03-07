@@ -43,7 +43,7 @@
 #include <Wrapper.h>
 
 #include "AtomicUF.h"
-#include "AtomicVector.h"
+#include "FTMTree_AtomicVector.h"
 #include "FTMTree_DataTypes.h"
 #include "Node.h"
 #include "Structures.h"

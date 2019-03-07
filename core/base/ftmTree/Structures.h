@@ -16,7 +16,7 @@
 
 #include <boost/heap/fibonacci_heap.hpp>
 
-#include "AtomicVector.h"
+#include "FTMTree_AtomicVector.h"
 #include "FTMTree_DataTypes.h"
 
 // todo remove

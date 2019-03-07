@@ -17,7 +17,7 @@
 #include "AtomicUF.h"
 #include "DataTypesFTR.h"
 #include "Scalars.h"
-#include "Segmentation.h"
+#include "FTRGraph_Segmentation.h"
 
 // c++ includes
 #ifndef TTK_ENABLE_KAMIKAZE

@@ -13,7 +13,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include "AtomicVector.h"
+#include "FTRGraph_AtomicVector.h"
 #include "DataTypesFTR.h"
 #include "FTRCommon.h"
 #include "Node.h"

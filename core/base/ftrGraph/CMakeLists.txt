@@ -31,9 +31,9 @@ mark_as_advanced(TTK_ENABLE_FTR_VERT_STATS)
 
 ttk_add_base_library(ftrGraph
    SOURCES Graph.cpp Mesh.cpp Segmentation.cpp
-   HEADERS AtomicVector.h FTRGraph.h FTRGraph_Template.h
+   HEADERS FTRGraph_AtomicVector.h FTRGraph.h FTRGraph_Template.h
            FTRGraphPrint_Template.h FTRGraphPrivate_Template.h DynamicGraph.h
-           Lazy.h Mesh.h Propagation.h Propagations.h Scalars.h Segmentation.h
+           Lazy.h Mesh.h Propagation.h Propagations.h Scalars.h FTRGraph_Segmentation.h
            LINK triangulation ${profiler_lib})
 
 target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})
