@@ -58,7 +58,7 @@ namespace ttk {
     };
 
     struct Comp {
-      std::vector<DynGraphNode<idVertex> *> lower, upper;
+      std::set<DynGraphNode<idVertex> *> lower, upper;
     };
 
     template <typename ScalarType>
@@ -283,13 +283,13 @@ namespace ttk {
       /// and find their corresponding components in the current
       /// preimage graph, each representing a component.
       /// \ret the set of uniques representing components
-      std::vector<DynGraphNode<idVertex> *>
+      std::set<DynGraphNode<idVertex> *>
         lowerComps(const std::vector<idEdge> &finishingEdges,
                    const Propagation *const localProp);
 
       /// Symetric to lowerComps
       /// \ref lowerComps
-      std::vector<DynGraphNode<idVertex> *>
+      std::set<DynGraphNode<idVertex> *>
         upperComps(const std::vector<idEdge> &startingEdges,
                    const Propagation *const localProp);
 
@@ -400,20 +400,20 @@ namespace ttk {
       idSuperArc
         mergeAtSaddle(const idNode saddleId,
                       Propagation *localProp,
-                      const std::vector<DynGraphNode<idVertex> *> &lowerComp);
+                      const std::set<DynGraphNode<idVertex> *> &lowerComp);
 
       // At a join saddle, close onped arcs only
       // do not touch local propagations
       // return the number of visible arcs merging
       idSuperArc
         mergeAtSaddle(const idNode saddleId,
-                      const std::vector<DynGraphNode<idVertex> *> &lowerComp);
+                      const std::set<DynGraphNode<idVertex> *> &lowerComp);
 
       // At a split saddle, assign new arcs at each CC in the DynGraph,
       // and launch a new propagation taking care of these arcs simultaneously
       // if hidden is true, new arcs are created hidden
       void splitAtSaddle(Propagation *const localProp,
-                         const std::vector<DynGraphNode<idVertex> *> &upperComp,
+                         const std::set<DynGraphNode<idVertex> *> &upperComp,
                          const bool hidden = false);
 
       // Retrun one triangle by upper CC of the vertex v

@@ -145,7 +145,14 @@ namespace ttk {
       graph_.arcs2nodes<ScalarType>(scalars_);
       printTime(postProcTime, "[FTR Graph]: postProcess: ", advancedInfoMsg);
 
+      // std::cout << "nb verts: " << mesh_.getNumberOfVertices() << std::endl;
+      // std::cout << "nb triangle: " << mesh_.getNumberOfVertices() << std::endl;
+      // std::cout << "nb nodes: " << graph_.getNumberOfNodes() << std::endl;
+      // std::cout << "nb leaves: " << graph_.getNumberOfLeaves() << std::endl;
+      // std::cout << "nb  arcs: " << graph_.getNumberOfVisibleArcs() << std::endl;
+
       printTime(finTime, "[FTR Graph]: *TOTAL* time: ", timeMsg);
+
 #ifdef GPROFILE
       ProfilerStop();
 #endif
