@@ -20,7 +20,7 @@
 
 #include "FTMTree_DataTypes.h"
 #include "FTMTree_Segmentation.h"
-#include "Structures.h"
+#include "FTMTree_Structures.h"
 
 namespace ttk
 {

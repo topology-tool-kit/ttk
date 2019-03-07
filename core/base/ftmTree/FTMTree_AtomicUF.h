@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "FTMTree_DataTypes.h"
-#include "Structures.h"
+#include "FTMTree_Structures.h"
 
 namespace ttk
 {
