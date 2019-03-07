@@ -28,6 +28,7 @@ namespace ttk {
       idVertex size_;
 
       ScalarType *values_;
+      std::vector<SimplexId> *vOffsets_;
       SimplexId *offsets_;
 
       bool externalOffsets_;
@@ -37,8 +38,8 @@ namespace ttk {
 
     public:
       Scalars()
-        : size_(nullVertex), values_(nullptr), offsets_(nullptr),
-          externalOffsets_(false), vertices_(), mirror_() {
+        : size_(nullVertex), values_(nullptr), vOffsets_(nullptr),
+          offsets_(nullptr), externalOffsets_(false), vertices_(), mirror_() {
       }
 
       // Heavy, prevent using it
@@ -48,6 +49,18 @@ namespace ttk {
         if(!externalOffsets_) {
           delete[] offsets_;
         }
+      }
+
+      ScalarType* getScalars() {
+        return values_;
+      }
+
+      std::vector<SimplexId> *getVOffsets() {
+        return vOffsets_;
+      }
+
+      SimplexId* getOffsets() {
+        return offsets_;
       }
 
       idVertex getSize(void) const {
@@ -74,9 +87,12 @@ namespace ttk {
         values_ = values;
       }
 
-      void setOffsets(SimplexId *sos) {
+      void setOffsets(std::vector<SimplexId> *sos) {
         externalOffsets_ = sos;
-        offsets_ = sos;
+        vOffsets_ = sos;
+        if(vOffsets_) {
+          offsets_ = vOffsets_->data();
+        }
       }
 
       void alloc() {

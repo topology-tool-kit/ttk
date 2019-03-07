@@ -34,7 +34,7 @@ ttk_add_base_library(ftrGraph
    HEADERS AtomicVector.h FTRGraph.h FTRGraph_Template.h
            FTRGraphPrint_Template.h FTRGraphPrivate_Template.h DynamicGraph.h
            Lazy.h Mesh.h Propagation.h Propagations.h Scalars.h Segmentation.h
-           LINK triangulation ${profiler_lib})
+           LINK triangulation scalarFieldCriticalPoints ${profiler_lib})
 
 target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})
 

@@ -28,6 +28,9 @@
 #include "Propagations.h"
 #include "Scalars.h"
 
+// other baseCode
+#include "ScalarFieldCriticalPoints.h"
+
 #ifndef TTK_DISABLE_FTR_LAZY
 #include "Lazy.h"
 #endif
@@ -78,11 +81,6 @@ namespace ttk {
 #ifndef TTK_DISABLE_FTR_LAZY
       Lazy lazy_;
 #endif
-
-      // BFS history arrays
-      std::vector<idCell> bfsCells_;
-      std::vector<idEdge> bfsEdges_;
-      std::vector<idVertex> bfsVerts_;
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS
       // Stats
@@ -190,7 +188,7 @@ namespace ttk {
       /// them in a morse discret geometry compliant way.
       /// This is explained in the TTK report.
       /// Set the array to use here
-      void setVertexSoSoffsets(idVertex *sos) {
+      void setVertexSoSoffsets(std::vector<SimplexId> *sos) {
         scalars_->setOffsets(sos);
       }
 
@@ -220,9 +218,6 @@ namespace ttk {
 
     protected:
       // Build functions
-
-      /// Find the extrema from which the local propagations will start
-      void leafSearch();
 
       // classify critical points, marks saddle in join/split vectors
       // and add min/max or both as leaves.

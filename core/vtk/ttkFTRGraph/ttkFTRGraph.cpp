@@ -300,7 +300,7 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
       ftrGraph_.setParams(params_);
       // reeb graph parameters
       ftrGraph_.setScalars(inputScalars_->GetVoidPointer(0));
-      ftrGraph_.setVertexSoSoffsets(offsets_.data());
+      ftrGraph_.setVertexSoSoffsets(&offsets_);
       // build
       ftrGraph_.build();
       // get output

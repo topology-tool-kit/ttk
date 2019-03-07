@@ -112,11 +112,6 @@ namespace ttk {
 #pragma omp single nowait
 #endif
         {
-          // DebugTimer timeLeafSearch;
-          // leafSearch();
-          // printTime(timeLeafSearch, "[FTR Graph]: leaf search time: ",
-          // timeMsg);
-
           DebugTimer timeCritSearch;
           criticalSearch();
           printTime(timeCritSearch, "[FTR Graph]: leaf search time ", timeMsg);
@@ -197,73 +192,17 @@ namespace ttk {
     // protected
 
     template <typename ScalarType>
-    void FTRGraph<ScalarType>::leafSearch() {
-      TaskChunk leafChunkParams(scalars_->getSize());
-      leafChunkParams.grainSize = 10000;
-      auto leafChunk = Tasks::getChunk(leafChunkParams);
-
-      for(idPropagation leafChunkId = 0; leafChunkId < std::get<1>(leafChunk);
-          ++leafChunkId) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(leafChunkId)
-#endif
-        {
-          const idVertex lowerBound
-            = Tasks::getBegin(leafChunkId, std::get<0>(leafChunk));
-          const idVertex upperBound = Tasks::getEnd(
-            leafChunkId, std::get<0>(leafChunk), scalars_->getSize());
-
-          for(idVertex v = lowerBound; v < upperBound; ++v) {
-            const valence vNeighNumber = mesh_.getVertexNeighborNumber(v);
-            bool isMax = false;
-            bool isMin = true;
-
-            for(valence n = 0; n < vNeighNumber; ++n) {
-              idVertex neigh;
-              mesh_.getVertexNeighbor(v, n, neigh);
-
-              if(scalars_->isHigher(neigh, v)) {
-                isMax = false;
-              } else {
-                isMin = false;
-              }
-            }
-
-            // v is a minimum, add it to the leaves
-            if(isMin || isMax) {
-              graph_.addLeaf(v, isMin);
-            }
-          }
-        } // end task
-      }
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp taskwait
-#endif
-#ifdef TTK_ENABLE_FTR_TASK_STATS
-      // Stats
-      nbProp_ = graph_.getNumberOfLeaves();
-      propTimes_.resize(nbProp_);
-#endif
-      {
-        std::stringstream msg;
-        msg << "[FTR Graph]: " << graph_.getNumberOfLeaves() << " leaves"
-            << std::endl;
-        dMsg(std::cout, msg.str(), infoMsg);
-      }
-    }
-
-    template <typename ScalarType>
     void FTRGraph<ScalarType>::criticalSearch() {
       const bool addMin = true;
       const bool addMax = !params_.singleSweep;
 
+      ScalarFieldCriticalPoints<ScalarType> critPoints;
+      critPoints.setScalarValues(scalars_->getScalars());
+      critPoints.setSosOffsets(scalars_->getVOffsets());
+
       TaskChunk leafChunkParams(scalars_->getSize());
       leafChunkParams.grainSize = 10000;
       auto leafChunk = Tasks::getChunk(leafChunkParams);
-
-      auto comp = [&](const idVertex a, const idVertex b) {
-        return scalars_->isLower(a, b);
-      };
 
       for(idPropagation leafChunkId = 0; leafChunkId < std::get<1>(leafChunk);
           ++leafChunkId) {
@@ -277,17 +216,10 @@ namespace ttk {
             leafChunkId, std::get<0>(leafChunk), scalars_->getSize());
 
           // each task uses its local forests
-          LocalForests localForests;
-          localForests.up.setNumberOfNodes(60);
-          localForests.up.init();
-          localForests.up.alloc();
-          localForests.down.setNumberOfNodes(60);
-          localForests.down.init();
-          localForests.down.alloc();
-
           for(idVertex v = lowerBound; v < upperBound; ++v) {
             std::tie(valences_.lower[v], valences_.upper[v])
-              = getLinkNbCC(v, localForests, comp);
+              = critPoints.getNumberOfLowerUpperComponents(
+                v, mesh_.getTriangulation());
 
             // leaf cases
             if(addMin && valences_.lower[v] == 0) {
@@ -383,11 +315,6 @@ namespace ttk {
       valences_.lower.resize(mesh_.getNumberOfVertices());
       valences_.upper.resize(mesh_.getNumberOfVertices());
 
-#ifdef TTK_ENABLE_FTR_BFS
-      bfsCells_.resize(mesh_.getNumberOfTriangles());
-      bfsEdges_.resize(mesh_.getNumberOfEdges());
-      bfsVerts_.resize(mesh_.getNumberOfVertices());
-#endif
     }
 
     template <typename ScalarType>
@@ -401,12 +328,6 @@ namespace ttk {
 
 #ifndef TTK_DISABLE_FTR_LAZY
       lazy_.init();
-#endif
-
-#ifdef TTK_ENABLE_FTR_BFS
-      fillVector<idCell>(bfsCells_, nullCell);
-      fillVector<idEdge>(bfsEdges_, nullEdge);
-      fillVector<idVertex>(bfsVerts_, nullVertex);
 #endif
 
       // Stats
