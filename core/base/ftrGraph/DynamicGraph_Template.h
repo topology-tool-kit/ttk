@@ -1,7 +1,7 @@
 #ifndef DYNAMICGRAPH_TEMPLATE_H
 #define DYNAMICGRAPH_TEMPLATE_H
 
-#include "DynamicGraph.h"
+#include "FTRGraph_DynamicGraph.h"
 
 #include <sstream>
 

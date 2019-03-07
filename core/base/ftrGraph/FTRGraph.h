@@ -20,16 +20,16 @@
 // local includes
 #include "FTRGraph_AtomicVector.h"
 #include "DataTypesFTR.h"
-#include "DynamicGraph.h"
+#include "FTRGraph_DynamicGraph.h"
 #include "FTRCommon.h"
 #include "Graph.h"
-#include "Mesh.h"
-#include "Propagation.h"
-#include "Propagations.h"
-#include "Scalars.h"
+#include "FTRGraph_Mesh.h"
+#include "FTRGraph_Propagation.h"
+#include "FTRGraph_Propagations.h"
+#include "FTRGraph_Scalars.h"
 
 #ifndef TTK_DISABLE_FTR_LAZY
-#include "Lazy.h"
+#include "FTRGraph_Lazy.h"
 #endif
 
 // c++ includes

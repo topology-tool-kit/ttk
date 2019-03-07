@@ -13,7 +13,7 @@
 #define FTR_SEGMENTATION_H_
 
 #include "DataTypesFTR.h"
-#include "Scalars.h"
+#include "FTRGraph_Scalars.h"
 
 #ifndef TTK_ENABLE_KAMIKAZE
 #include <iostream>

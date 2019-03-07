@@ -14,7 +14,7 @@
 // local includes
 #include "FTRGraph_AtomicVector.h"
 #include "DataTypesFTR.h"
-#include "Propagation.h"
+#include "FTRGraph_Propagation.h"
 
 // c++ includes
 #include <vector>

@@ -17,8 +17,8 @@
 #include "DataTypesFTR.h"
 #include "FTRCommon.h"
 #include "Node.h"
-#include "Propagation.h"
-#include "Scalars.h"
+#include "FTRGraph_Propagation.h"
+#include "FTRGraph_Scalars.h"
 #include "SuperArc.h"
 
 #ifndef TTK_ENABLE_KAMIKAZE

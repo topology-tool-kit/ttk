@@ -1,4 +1,4 @@
-#include "Mesh.h"
+#include "FTRGraph_Mesh.h"
 
 using namespace std;
 using namespace ttk;

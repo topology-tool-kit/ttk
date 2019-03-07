@@ -2,7 +2,7 @@
 #define FTRGRAPH_TEMPLATE_H
 
 #include "FTRGraph.h"
-#include "Propagation.h"
+#include "FTRGraph_Propagation.h"
 #include "Tasks.h"
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS

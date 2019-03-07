@@ -16,7 +16,7 @@
 // local includes
 #include "AtomicUF.h"
 #include "DataTypesFTR.h"
-#include "Scalars.h"
+#include "FTRGraph_Scalars.h"
 #include "FTRGraph_Segmentation.h"
 
 // c++ includes
