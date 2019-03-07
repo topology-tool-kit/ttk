@@ -107,7 +107,7 @@ int ttkSurfaceQuadrangulation::getIdentifiersField(vtkDataSet *input) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(identifiersField_ == nullptr) {
-    cerr << "[ttkSurfaceQuadrangulation] Error: wrong identifiers scalar field."
+    cerr << "[ttkSurfaceQuadrangulation] Error: wrong identifiers field."
          << endl;
     return -1;
   }
@@ -117,14 +117,22 @@ int ttkSurfaceQuadrangulation::getIdentifiersField(vtkDataSet *input) {
 }
 
 int ttkSurfaceQuadrangulation::getOffsetIdentifiersField(vtkDataSet *input) {
+  vtkPointData *pointData = input->GetPointData();
   auto osfn = static_cast<const char *>(ttk::OffsetScalarFieldName);
+  auto vsfn = static_cast<const char *>(ttk::VertexScalarFieldName);
 
   if(ForceInputOffsetIdentifiersField
      && InputOffsetIdentifiersFieldName.length() != 0) {
     offsetIdentifiersField_
-      = input->GetPointData()->GetArray(InputOffsetIdentifiersFieldName.data());
-  } else if(input->GetPointData()->GetArray(osfn) != nullptr) {
-    offsetIdentifiersField_ = input->GetPointData()->GetArray(osfn);
+      = pointData->GetArray(InputOffsetIdentifiersFieldName.data());
+  } else if(pointData->GetArray(osfn) != nullptr) {
+    offsetIdentifiersField_ = pointData->GetArray(osfn);
+  } else if(pointData->GetArray(vsfn) != nullptr) {
+    // take the identifiers scalar field
+    offsetIdentifiersField_ = pointData->GetArray(vsfn);
+  } else {
+    // take the first array in the dataset
+    offsetIdentifiersField_ = pointData->GetArray(0);
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -173,7 +181,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong when getting scalar fields from VTK
   if(res != 0) {
-    cerr << "[ttkSurfaceQuadrangulation] Error: Wrong scalar field selected"
+    cerr << "[ttkSurfaceQuadrangulation] Error: Wrong scalar field selected."
          << endl;
     return -4;
   }
@@ -187,7 +195,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
     offsetIdentifiersField_);
 
   std::vector<ttk::SimplexId> outputVertices;
-  std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> outputEdges;
+  std::vector<std::vector<ttk::SimplexId>> outputEdges;
 
   res += surfaceQuadrangulation_.execute();
 
@@ -202,13 +210,13 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 #endif
 
   // update result
-  vtkSmartPointer<vtkDataArray> outputQuadrangulation{};
+  auto outputQuadrangulation = vtkSmartPointer<vtkIntArray>::New();
   outputQuadrangulation->SetNumberOfComponents(1);
   outputQuadrangulation->SetVoidArray(
     static_cast<void *>(outputVertices.data()), outputVertices.size(), 1);
 
   output->ShallowCopy(domain);
-  output->GetPointData()->AddArray(outputQuadrangulation);
+  // output->GetPointData()->AddArray(outputQuadrangulation);
 
   std::stringstream msg;
   msg << "[ttkSurfaceQuadrangulation] Memory usage: " << m.getElapsedUsage()
