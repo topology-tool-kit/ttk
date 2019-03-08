@@ -3329,7 +3329,7 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
 
   // get the node type of a contour tree node (for compatibility with
   // ScalarFieldCriticalPoints)
-  auto getNodeType=[&](const ftm::FTMTree_MT* tree, const ftm::Node* node){
+  auto getNodeType=[&](const ftm::Node* node) {
     const int upDegree   = node->getNumberOfUpSuperArcs();
     const int downDegree = node->getNumberOfDownSuperArcs();
     const int degree = upDegree + downDegree;
@@ -3373,7 +3373,7 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
     const ftm::Node* node = tree->getNode(nodeId);
     const SimplexId vertexId = node->getVertexId();
 
-    cpset.push_back(std::make_pair(vertexId, getNodeType(tree,node)));
+    cpset.push_back(std::make_pair(vertexId, getNodeType(node)));
   }
 
   std::vector<char> isPL;
