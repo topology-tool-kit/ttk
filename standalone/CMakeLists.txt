@@ -22,4 +22,4 @@ foreach(STANDALONE ${STANDALONE_DIRS})
 	endif()
 endforeach()
 
-install(DIRECTORY textures DESTINATION ${TTK_INSTALL_BINARY_DIR})
+install(DIRECTORY textures DESTINATION share/ttk)
