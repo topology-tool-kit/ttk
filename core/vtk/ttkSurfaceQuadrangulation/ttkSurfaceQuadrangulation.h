@@ -95,12 +95,9 @@ public:
 
   // fill triangulation_ array
   int getTriangulation(vtkDataSet *input);
-  // fill scalarField_ array
-  int getScalarField(vtkDataSet *input);
-  // fill identifiersField_ array
-  int getIdentifiersField(vtkDataSet *input);
-  // fill offsetIdentifiersField_ array
-  int getOffsetIdentifiersField(vtkDataSet *input);
+  // get data from Morse-Smale Complex
+  int getCriticalPoints(vtkUnstructuredGrid *input);
+  int getSeparatrices(vtkUnstructuredGrid *input);
 
   // default copy constructor
   ttkSurfaceQuadrangulation(const ttkSurfaceQuadrangulation &) = delete;
@@ -120,6 +117,7 @@ protected:
   TTK_SETUP();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
 private:
   // user-defined input constraints (float) scalar field name
@@ -139,12 +137,10 @@ private:
 
   // worker object
   ttk::SurfaceQuadrangulation surfaceQuadrangulation_;
-  // input triangular mesh
-  ttk::Triangulation *triangulation_;
-  // VTK array containing the scalar field (elevation, etc.)
-  vtkDataArray *scalarField_;
-  // VTK array containing the identifiers field (3D point -> SimplexId)
-  vtkDataArray *identifiersField_;
-  // VTK array containing the offset identifiers field
-  vtkDataArray *offsetIdentifiersField_;
+  // critical points from Morse-Smale Complex
+  vtkPoints *criticalPoints_;
+  // TTKIdentifiers of critical points on the original mesh
+  vtkDataArray *criticalPointsIdentifiers_;
+  // 1-separatrices from Morse-Smale Complex
+  vtkDataArray *separatrices_;
 };

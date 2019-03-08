@@ -7,13 +7,13 @@
       <Documentation
           long_help="TTK plugin for surface quadrangulation."
           short_help="TTK plugin for surface quadrangulation.">
-        This plugin tries to approximate a triangular 2D mesh by a
-        quadrangular one.
+        This plugin outputs a very raw quadrangulation from a
+        Morse-Smale Complex of a triangular surfacic mesh.
       </Documentation>
 
       <InputProperty
-          name="Domain"
-          label="Input Geometry"
+          name="criticalPoints"
+          label="Morse-Smale critical points"
           port_index="0"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -21,10 +21,30 @@
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
+          <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Domain" function="FieldDataSelection" />
+          <Property name="CriticalPoints" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="separatrices"
+          label="Morse-Smale separatrices"
+          port_index="1"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Separatrices" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
           Data-set to process.
