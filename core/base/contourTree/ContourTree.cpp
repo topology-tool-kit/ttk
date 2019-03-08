@@ -1956,14 +1956,13 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
   
   //   if((simplificationThreshold < 0)||(simplificationThreshold > 1))
   //     return -1;
-  
-  bool defaultMetric = false;
-  
-  if(!metric){
-    metric = new PersistenceMetric;
-    defaultMetric = true;
+
+  PersistenceMetric defaultMetric;
+
+  if(metric == nullptr) {
+    metric = &defaultMetric;
   }
- 
+
   metric->tree_ = this;
  
   //   double unNormalizedThreshold = simplificationThreshold
@@ -2189,9 +2188,6 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
 	<< endl;
     dMsg(cout, msg.str(), 3);
   }
-  
-  if(defaultMetric)
-    delete metric;
   
   return 0;
 }
