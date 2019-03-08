@@ -1,0 +1,15 @@
+Checks: >-
+  *,
+  -fuchsia-*,
+  -cppcoreguidelines-pro-type-const-cast,
+  -llvm-header-guard,
+  -google-runtime-references,
+  -google-runtime-int,
+  -*-braces-around-statements,
+  -modernize-use-trailing-return-type,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -readability-magic-numbers,
+  -readability-isolate-declaration
+FormatStyle: file
