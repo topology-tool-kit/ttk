@@ -18,7 +18,6 @@
 #include "FTRCommon.h"
 
 // c++ includes
-#include <deque>
 #include <set>
 #include <vector>
 
