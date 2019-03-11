@@ -29,7 +29,7 @@ const scalars) const{
 
       case 1:
         for(int i=0; i<2; ++i){
-          SimplexId vertexId;
+          SimplexId vertexId = -1;
           inputTriangulation_->getEdgeVertex(cell.id_,i,vertexId);
           const dataType vertexScalar=scalars[vertexId];
 
@@ -40,7 +40,7 @@ const scalars) const{
 
       case 2:
         for(int i=0; i<3; ++i){
-          SimplexId vertexId;
+          SimplexId vertexId = -1;
           inputTriangulation_->getCellVertex(cell.id_,i,vertexId);
           const dataType vertexScalar=scalars[vertexId];
 
@@ -58,7 +58,7 @@ const scalars) const{
 
       case 1:
         for(int i=0; i<2; ++i){
-          SimplexId vertexId;
+          SimplexId vertexId = -1;
           inputTriangulation_->getEdgeVertex(cell.id_,i,vertexId);
           const dataType vertexScalar=scalars[vertexId];
 
@@ -69,7 +69,7 @@ const scalars) const{
 
       case 2:
         for(int i=0; i<3; ++i){
-          SimplexId vertexId;
+          SimplexId vertexId = -1;
           inputTriangulation_->getTriangleVertex(cell.id_,i,vertexId);
           const dataType vertexScalar=scalars[vertexId];
 
@@ -80,7 +80,7 @@ const scalars) const{
 
       case 3:
         for(int i=0; i<4; ++i){
-          SimplexId vertexId;
+          SimplexId vertexId = -1;
           inputTriangulation_->getCellVertex(cell.id_,i,vertexId);
           const dataType vertexScalar=scalars[vertexId];
 
