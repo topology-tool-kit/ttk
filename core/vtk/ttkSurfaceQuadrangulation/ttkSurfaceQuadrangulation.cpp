@@ -138,6 +138,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
+  surfaceQuadrangulation_.setSeparatriceNumber(separatrixId_->GetNumberOfValues());
   surfaceQuadrangulation_.setSepId(separatrixId_->GetVoidPointer(0));
   surfaceQuadrangulation_.setSepSourceId(
     separatrixSourceId_->GetVoidPointer(0));

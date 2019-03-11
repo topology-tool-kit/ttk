@@ -59,6 +59,9 @@ namespace ttk {
     inline void setCriticalPointsIdentifiers(void *address) {
       criticalPointsIdentifiers_ = static_cast<SimplexId *>(address);
     }
+    inline void setSeparatriceNumber(unsigned int value) {
+      separatriceNumber_ = value;
+    }
     inline void setSepId(void *address) {
       sepId_ = static_cast<SimplexId *>(address);
     }
@@ -95,6 +98,7 @@ namespace ttk {
     // critical point identifiers in the source mesh
     SimplexId *criticalPointsIdentifiers_;
 
+    SimplexId separatriceNumber_;
     SimplexId *sepId_;
     SimplexId *sepSourceId_;
     SimplexId *sepDestId_;

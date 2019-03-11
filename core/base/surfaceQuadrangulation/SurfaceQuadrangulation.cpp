@@ -2,8 +2,8 @@
 
 ttk::SurfaceQuadrangulation::SurfaceQuadrangulation()
   : vertexNumber_{}, subdivisionLevel_{5}, relaxationIterations_{100},
-    criticalPointsNumber_{}, criticalPoints_{},
-    criticalPointsIdentifiers_{}, sepId_{}, sepSourceId_{}, sepDestId_{} {
+    criticalPointsNumber_{}, criticalPoints_{}, criticalPointsIdentifiers_{},
+    separatriceNumber_{}, sepId_{}, sepSourceId_{}, sepDestId_{} {
 }
 
 // main routine
