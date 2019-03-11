@@ -18,14 +18,14 @@
 #include "FTRCommon.h"
 
 // c++ includes
-#include <deque>
+#include <set>
 #include <vector>
 
 namespace ttk {
   namespace ftr {
     class Lazy : public Allocable {
     private:
-      std::vector<std::deque<linkEdge>> lazyAdd_, lazyDel_;
+      std::vector<std::set<linkEdge>> lazyAdd_;
 
     public:
       Lazy() {
@@ -33,7 +33,6 @@ namespace ttk {
 
       void alloc() override {
         lazyAdd_.resize(nbElmt_);
-        lazyDel_.resize(nbElmt_);
       }
 
       void init() override {
@@ -41,12 +40,15 @@ namespace ttk {
       }
 
       void addEmplace(const idEdge e0, const idEdge e1, const idSuperArc a) {
-        lazyAdd_[a].emplace_back(std::make_pair(e0, e1));
+        lazyAdd_[a].emplace(std::make_pair(e0, e1));
       }
 
       void delEmplace(const idEdge e0, const idEdge e1, const idSuperArc a) {
-        // here the arc would be a non sense.
-        lazyDel_[a].emplace_back(std::make_pair(e0, e1));
+        const auto p = std::make_pair(e0, e1);
+        auto it = lazyAdd_[a].find(p);
+        if (it != lazyAdd_[a].end()) {
+          lazyAdd_[a].erase(it);
+        }
       }
 
       // return the head of lazyAdd / lazyDel (or a null link if empty)
@@ -55,24 +57,14 @@ namespace ttk {
         if(lazyAdd_[a].empty()) {
           return nullLink;
         } else {
-          linkEdge add = lazyAdd_[a].front();
-          lazyAdd_[a].pop_front();
+          linkEdge add = *lazyAdd_[a].begin();
+          lazyAdd_[a].erase(lazyAdd_[a].begin());
           return add;
         }
       }
 
-      linkEdge delGetNext(const idSuperArc a) {
-        if(lazyDel_[a].empty()) {
-          return nullLink;
-        } else {
-          linkEdge del = lazyDel_[a].front();
-          lazyDel_[a].pop_front();
-          return del;
-        }
-      }
-
       bool isEmpty(const idSuperArc a) {
-        return lazyAdd_[a].empty() && (lazyDel_[a].empty());
+        return lazyAdd_[a].empty();
       }
 
       // const decltype(lazyAdd_)& addEach() const

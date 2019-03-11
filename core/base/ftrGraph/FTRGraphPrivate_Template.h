@@ -161,7 +161,7 @@ namespace ttk {
             break;
           } else {
             if(comp.lower.size()) {
-              currentArc = comp.lower[0]->getCorArc();
+              currentArc = (*comp.lower.begin())->getCorArc();
               if(currentArc == nullSuperArc) {
                 PRINT("n--" << curVert);
                 continue;
@@ -459,7 +459,7 @@ namespace ttk {
           bool isJoin = false;
           comp.lower = lowerComps(star.lower, localProp);
           if(comp.lower.size() == 1) { // regular
-            currentArc = comp.lower[0]->getCorArc();
+            currentArc = (*comp.lower.begin())->getCorArc();
           } else if(comp.lower.size() > 1) { // join saddle
             const idNode sadNode = graph_.makeNode(curVert);
             currentArc = graph_.openArc(sadNode, localProp);
@@ -520,16 +520,16 @@ namespace ttk {
     }
 
     template <typename ScalarType>
-    std::vector<DynGraphNode<idVertex> *> FTRGraph<ScalarType>::lowerComps(
+    std::set<DynGraphNode<idVertex> *> FTRGraph<ScalarType>::lowerComps(
       const std::vector<idEdge> &finishingEdges,
       const Propagation *const localProp) {
       return dynGraph(localProp).findRoot(finishingEdges);
     }
 
     template <typename ScalarType>
-    std::vector<DynGraphNode<idVertex> *>
-      FTRGraph<ScalarType>::upperComps(const std::vector<idEdge> &startingEdges,
-                                       const Propagation *const localProp) {
+    std::set<DynGraphNode<idVertex> *> FTRGraph<ScalarType>::upperComps(
+        const std::vector<idEdge> &startingEdges,
+        const Propagation *const localProp) {
       return dynGraph(localProp).findRoot(startingEdges);
     }
 
@@ -829,28 +829,10 @@ namespace ttk {
     template <typename ScalarType>
     void FTRGraph<ScalarType>::lazyApply(Propagation *const localProp,
                                          const idSuperArc a) {
-      auto comp = [localProp](const idVertex a, const idVertex b) {
-        return localProp->compare(a, b);
-      };
-
       auto add = lazy_.addGetNext(a);
-      auto del = lazy_.delGetNext(a);
-      while(add != nullLink || del != nullLink) {
-        if(del == nullLink) {
-          updateLazyAdd(localProp, add, a);
-          add = lazy_.addGetNext(a);
-        } else if(add == nullLink || mesh_.compareLinks(del, add, comp)) {
-          updateLazyDel(localProp, del, a);
-          del = lazy_.delGetNext(a);
-        } else if(mesh_.compareLinks(add, del, comp)) {
-          updateLazyAdd(localProp, add, a);
-          add = lazy_.addGetNext(a);
-        } else {
-          // same arc in both list, should be added and removed so we jus ignore
-          // it (add and del cant be null both of them at the same time)
-          add = lazy_.addGetNext(a);
-          del = lazy_.delGetNext(a);
-        }
+      while(add != nullLink) {
+        updateLazyAdd(localProp, add, a);
+        add = lazy_.addGetNext(a);
       }
     }
 
@@ -974,7 +956,7 @@ namespace ttk {
     idSuperArc FTRGraph<ScalarType>::mergeAtSaddle(
       const idNode saddleId,
       Propagation *localProp,
-      const std::vector<DynGraphNode<idVertex> *> &compVect) {
+      const std::set<DynGraphNode<idVertex> *> &compVect) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(compVect.size() < 2) {
@@ -1001,7 +983,7 @@ namespace ttk {
     template <typename ScalarType>
     idSuperArc FTRGraph<ScalarType>::mergeAtSaddle(
       const idNode saddleId,
-      const std::vector<DynGraphNode<idVertex> *> &compVect) {
+      const std::set<DynGraphNode<idVertex> *> &compVect) {
       // version for the sequential arc growth, do not merge the propagations
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -1026,7 +1008,7 @@ namespace ttk {
     template <typename ScalarType>
     void FTRGraph<ScalarType>::splitAtSaddle(
       Propagation *const localProp,
-      const std::vector<DynGraphNode<idVertex> *> &compVect,
+      const std::set<DynGraphNode<idVertex> *> &compVect,
       const bool hidden) {
       const idVertex curVert = localProp->getCurVertex();
       const idNode curNode = graph_.getNodeId(curVert);

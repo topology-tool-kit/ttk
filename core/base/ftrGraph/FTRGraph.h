@@ -28,6 +28,9 @@
 #include "Propagations.h"
 #include "Scalars.h"
 
+// other baseCode
+#include "ScalarFieldCriticalPoints.h"
+
 #ifndef TTK_DISABLE_FTR_LAZY
 #include "Lazy.h"
 #endif
@@ -58,7 +61,7 @@ namespace ttk {
     };
 
     struct Comp {
-      std::vector<DynGraphNode<idVertex> *> lower, upper;
+      std::set<DynGraphNode<idVertex> *> lower, upper;
     };
 
     template <typename ScalarType>
@@ -78,11 +81,6 @@ namespace ttk {
 #ifndef TTK_DISABLE_FTR_LAZY
       Lazy lazy_;
 #endif
-
-      // BFS history arrays
-      std::vector<idCell> bfsCells_;
-      std::vector<idEdge> bfsEdges_;
-      std::vector<idVertex> bfsVerts_;
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS
       // Stats
@@ -190,7 +188,7 @@ namespace ttk {
       /// them in a morse discret geometry compliant way.
       /// This is explained in the TTK report.
       /// Set the array to use here
-      void setVertexSoSoffsets(idVertex *sos) {
+      void setVertexSoSoffsets(std::vector<SimplexId> *sos) {
         scalars_->setOffsets(sos);
       }
 
@@ -220,9 +218,6 @@ namespace ttk {
 
     protected:
       // Build functions
-
-      /// Find the extrema from which the local propagations will start
-      void leafSearch();
 
       // classify critical points, marks saddle in join/split vectors
       // and add min/max or both as leaves.
@@ -283,13 +278,13 @@ namespace ttk {
       /// and find their corresponding components in the current
       /// preimage graph, each representing a component.
       /// \ret the set of uniques representing components
-      std::vector<DynGraphNode<idVertex> *>
+      std::set<DynGraphNode<idVertex> *>
         lowerComps(const std::vector<idEdge> &finishingEdges,
                    const Propagation *const localProp);
 
       /// Symetric to lowerComps
       /// \ref lowerComps
-      std::vector<DynGraphNode<idVertex> *>
+      std::set<DynGraphNode<idVertex> *>
         upperComps(const std::vector<idEdge> &startingEdges,
                    const Propagation *const localProp);
 
@@ -400,20 +395,20 @@ namespace ttk {
       idSuperArc
         mergeAtSaddle(const idNode saddleId,
                       Propagation *localProp,
-                      const std::vector<DynGraphNode<idVertex> *> &lowerComp);
+                      const std::set<DynGraphNode<idVertex> *> &lowerComp);
 
       // At a join saddle, close onped arcs only
       // do not touch local propagations
       // return the number of visible arcs merging
       idSuperArc
         mergeAtSaddle(const idNode saddleId,
-                      const std::vector<DynGraphNode<idVertex> *> &lowerComp);
+                      const std::set<DynGraphNode<idVertex> *> &lowerComp);
 
       // At a split saddle, assign new arcs at each CC in the DynGraph,
       // and launch a new propagation taking care of these arcs simultaneously
       // if hidden is true, new arcs are created hidden
       void splitAtSaddle(Propagation *const localProp,
-                         const std::vector<DynGraphNode<idVertex> *> &upperComp,
+                         const std::set<DynGraphNode<idVertex> *> &upperComp,
                          const bool hidden = false);
 
       // Retrun one triangle by upper CC of the vertex v

@@ -79,6 +79,10 @@ namespace ttk {
         tri_ = tri;
       }
 
+      Triangulation* getTriangulation() {
+        return tri_;
+      }
+
       void alloc(void) override {
         edgesSortId_.resize(nbEdges_);
         trianglesSortId_.resize(nbTriangles_);
@@ -91,9 +95,8 @@ namespace ttk {
         tri_->preprocessVertexNeighbors();
         tri_->preprocessVertexEdges();
         tri_->preprocessVertexTriangles();
+        tri_->preprocessVertexStars();
         tri_->preprocessTriangleEdges();
-        tri_->preprocessEdgeTriangles();
-        tri_->preprocessTriangles();
 
         nbVerts_ = tri_->getNumberOfVertices();
         nbEdges_ = tri_->getNumberOfEdges();
@@ -101,6 +104,10 @@ namespace ttk {
       }
 
       // Facade Triangulation
+
+      inline SimplexId getDimensionality(void) const {
+        return tri_->getDimensionality();
+      }
 
       inline idVertex getNumberOfVertices(void) const {
         return nbVerts_;

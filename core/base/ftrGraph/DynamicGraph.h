@@ -17,9 +17,11 @@
 #include "FTRCommon.h"
 
 #include <vector>
+#include <set>
 
 namespace ttk {
   namespace ftr {
+
     template <typename Type>
     struct DynGraphNode;
 
@@ -132,16 +134,13 @@ namespace ttk {
 
       /// \brief findRoot but using ids of the nodes in a vector
       template <typename type>
-      std::vector<DynGraphNode<Type> *>
+      std::set<DynGraphNode<Type> *>
         findRoot(const std::vector<type> &nodesIds) {
-        std::vector<DynGraphNode<Type> *> roots;
-        roots.reserve(nodesIds.size());
+
+        std::set<DynGraphNode<Type> *> roots;
         for(auto n : nodesIds) {
-          roots.emplace_back(findRoot(n));
+          roots.emplace(findRoot(n));
         }
-        std::sort(roots.begin(), roots.end());
-        const auto it = std::unique(roots.begin(), roots.end());
-        roots.erase(it, roots.end());
         return roots;
       }
 
