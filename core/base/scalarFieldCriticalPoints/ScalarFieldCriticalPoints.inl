@@ -346,30 +346,35 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
   std::tie(downValence, upValence)
     = getNumberOfLowerUpperComponents(vertexId, triangulation);
 
-  if((downValence == 1) && (upValence == 1))
+  if(downValence == 0 && upValence == 1) {
+    return static_cast<char>(CriticalType::Local_minimum);
+  } else if (downValence == 1 && upValence == 0) {
+    return static_cast<char>(CriticalType::Local_maximum);
+  } else if(downValence == 1 && upValence == 1) {
     // regular point
     return static_cast<char>(CriticalType::Regular);
-  else {
+  } else {
     // saddles
     if(dimension_ == 2) {
-      if((downValence > 2) || (upValence > 2)) {
-        // monkey saddle
-        return static_cast<char>(CriticalType::Degenerate);
-      } else {
+      if((downValence == 2 && upValence == 1)
+         || (downValence == 1 && upValence == 2)) {
         // regular saddle
         return static_cast<char>(CriticalType::Saddle1);
+      } else {
+        // monkey saddle, saddle + extremum
+        return static_cast<char>(CriticalType::Degenerate);
         // NOTE: you may have multi-saddles on the boundary in that
         // configuration
-        // to make this computation 100% correct, one would need to disambiguate
-        // boundary from interior vertices
+        // to make this computation 100% correct, one would need to
+        // disambiguate boundary from interior vertices
       }
     } else if(dimension_ == 3) {
-      if((downValence == 2) && (upValence == 1)) {
+      if(downValence == 2 && upValence == 1) {
         return static_cast<char>(CriticalType::Saddle1);
-      } else if((downValence == 1) && (upValence == 2)) {
+      } else if(downValence == 1 && upValence == 2) {
         return static_cast<char>(CriticalType::Saddle2);
       } else {
-        // monkey saddle
+        // monkey saddle, saddle + extremum
         return static_cast<char>(CriticalType::Degenerate);
         // NOTE: we may have a similar effect in 3D (TODO)
       }
