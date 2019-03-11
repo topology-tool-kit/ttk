@@ -68,15 +68,32 @@ int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
 }
 
 int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
-  separatrices_ = input->GetPointData()->GetArray(0);
 
-  input->Print(cout);
+  // get separatrices points
+  separatrices_ = input->GetPoints();
+
+  auto cellData = input->GetCellData();
+  separatrixId_ = cellData->GetArray("SeparatrixId");
+  separatrixSourceId_ = cellData->GetArray("SourceId");
+  separatrixDestinationId_ = cellData->GetArray("DestinationId");
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(separatrices_ == nullptr) {
-    cerr << MODULE_ERROR_S "wrong Morse-Smale separatrices points" << endl;
+    cerr << MODULE_ERROR_S "wrong Morse-Smale separatrices points." << endl;
+    return -1;
   }
-  return -1;
+  if(separatrixId_ == nullptr) {
+    cerr << MODULE_ERROR_S "wrong separatrices id." << endl;
+    return -1;
+  }
+  if(separatrixSourceId_ == nullptr) {
+    cerr << MODULE_ERROR_S "wrong separatrices source id." << endl;
+    return -1;
+  }
+  if(separatrixDestinationId_ == nullptr) {
+    cerr << MODULE_ERROR_S "wrong separatrices destination id." << endl;
+    return -1;
+  }
 #endif // TTK_ENABLE_KAMIKAZE
 
   return 0;

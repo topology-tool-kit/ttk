@@ -26,6 +26,7 @@
 #pragma once
 
 // VTK includes -- to adapt
+#include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -142,5 +143,8 @@ private:
   // TTKIdentifiers of critical points on the original mesh
   vtkDataArray *criticalPointsIdentifiers_;
   // 1-separatrices from Morse-Smale Complex
-  vtkDataArray *separatrices_;
+  vtkPoints *separatrices_;
+  vtkDataArray *separatrixId_;
+  vtkDataArray *separatrixSourceId_;
+  vtkDataArray *separatrixDestinationId_;
 };
