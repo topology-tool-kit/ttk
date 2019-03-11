@@ -357,7 +357,8 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     // saddles
     if(dimension_ == 2) {
       if((downValence == 2 && upValence == 1)
-         || (downValence == 1 && upValence == 2)) {
+         || (downValence == 1 && upValence == 2)
+         || (downValence == 2 && upValence == 2)) {
         // regular saddle
         return static_cast<char>(CriticalType::Saddle1);
       } else {
