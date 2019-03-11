@@ -41,52 +41,63 @@ namespace ttk {
     // default move assignment operator
     SurfaceQuadrangulation &operator=(SurfaceQuadrangulation &&) = default;
 
-    inline int setVertexNumber(SimplexId vertexNumber) {
+    inline void setVertexNumber(SimplexId vertexNumber) {
       vertexNumber_ = vertexNumber;
-      return 0;
     }
-    inline int setupTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
-      if(triangulation_ != nullptr) {
-        vertexNumber_ = triangulation_->getNumberOfVertices();
-        triangulation_->preprocessVertexNeighbors();
-      }
-      return 0;
-    }
-    inline int setSubdivisionLevel(unsigned int value) {
+    inline void setSubdivisionLevel(unsigned int value) {
       subdivisionLevel_ = value;
-      return 0;
     }
-    inline int setRelaxationIterations(unsigned int value) {
+    inline void setRelaxationIterations(unsigned int value) {
       relaxationIterations_ = value;
-      return 0;
     }
-    inline int setInputScalarFieldPointer(void *pointer) {
-      inputScalarFieldPointer_ = pointer;
-      return 0;
+    inline void setCriticalPointsNumber(unsigned int value) {
+      criticalPointsNumber_ = value;
     }
-    inline int setInputOffsetIdentifiersFieldPointer(void *pointer) {
-      inputOffsetIdentifiersFieldPointer_ = pointer;
-      return 0;
+    inline void setCriticalPoints(void *address) {
+      criticalPoints_ = static_cast<Points *>(address);
+    }
+    inline void setCriticalPointsIdentifiers(void *address) {
+      criticalPointsIdentifiers_ = static_cast<SimplexId *>(address);
+    }
+    inline void setSepId(void *address) {
+      sepId_ = static_cast<SimplexId *>(address);
+    }
+    inline void setSepSourceId(void *address) {
+      sepSourceId_ = static_cast<SimplexId *>(address);
+    }
+    inline void setSepDestId(void *address) {
+      sepDestId_ = static_cast<SimplexId *>(address);
     }
 
     int execute() const;
 
+  private:
+    // vtkPoint instance with interleaved coordinates (AoS)
+    struct Points {
+      float x;
+      float y;
+      float z;
+    };
+
   protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_;
-    // triangular input mesh
-    Triangulation *triangulation_;
 
     // number of subdivisions of the Morse-Smale Complex cells
     unsigned int subdivisionLevel_;
     // number of relaxation iterations
     unsigned int relaxationIterations_;
 
-    // input scalar field
-    void *inputScalarFieldPointer_;
-    // input offset field for identifiers
-    void *inputOffsetIdentifiersFieldPointer_;
+    // number of critical points from the Morse-Smale complex
+    SimplexId criticalPointsNumber_;
+    // interleaved array of critical points coordinates
+    Points *criticalPoints_;
+    // critical point identifiers in the source mesh
+    SimplexId *criticalPointsIdentifiers_;
+
+    SimplexId *sepId_;
+    SimplexId *sepSourceId_;
+    SimplexId *sepDestId_;
   };
 } // namespace ttk
 

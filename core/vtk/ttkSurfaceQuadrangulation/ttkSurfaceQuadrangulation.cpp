@@ -9,7 +9,8 @@ ttkSurfaceQuadrangulation::ttkSurfaceQuadrangulation()
   : UseAllCores{true}, ThreadNumber{}, ForceInputIdentifiersField{false},
     ForceInputOffsetIdentifiersField{false}, SubdivisionLevel{5},
     RelaxationIterations{100}, criticalPoints_{}, criticalPointsIdentifiers_{},
-    separatrices_{} {
+    separatrices_{}, separatrixId_{}, separatrixSourceId_{},
+    separatrixDestinationId_{} {
 
   InputIdentifiersFieldName
     = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
@@ -104,13 +105,16 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   ttk::Memory m;
 
-  auto criticalPoints = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
-  auto separatrices = vtkUnstructuredGrid::SafeDownCast(inputs[1]);
+  surfaceQuadrangulation_.setSubdivisionLevel(SubdivisionLevel);
+  surfaceQuadrangulation_.setRelaxationIterations(RelaxationIterations);
+
+  auto cp = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
+  auto spr = vtkUnstructuredGrid::SafeDownCast(inputs[1]);
   auto output = vtkPolyData::SafeDownCast(outputs[0]);
 
   int res = 0;
 
-  res += getCriticalPoints(criticalPoints);
+  res += getCriticalPoints(cp);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(res != 0) {
@@ -119,7 +123,13 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  res += getSeparatrices(separatrices);
+  surfaceQuadrangulation_.setCriticalPointsNumber(
+    criticalPoints_->GetNumberOfPoints());
+  surfaceQuadrangulation_.setCriticalPoints(criticalPoints_->GetVoidPointer(0));
+  surfaceQuadrangulation_.setCriticalPointsIdentifiers(
+    criticalPointsIdentifiers_->GetVoidPointer(0));
+
+  res += getSeparatrices(spr);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(res != 0) {
@@ -128,8 +138,11 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  surfaceQuadrangulation_.setSubdivisionLevel(SubdivisionLevel);
-  surfaceQuadrangulation_.setRelaxationIterations(RelaxationIterations);
+  surfaceQuadrangulation_.setSepId(separatrixId_->GetVoidPointer(0));
+  surfaceQuadrangulation_.setSepSourceId(
+    separatrixSourceId_->GetVoidPointer(0));
+  surfaceQuadrangulation_.setSepDestId(
+    separatrixDestinationId_->GetVoidPointer(0));
 
   std::vector<ttk::SimplexId> outputVertices;
   std::vector<std::vector<ttk::SimplexId>> outputEdges;
