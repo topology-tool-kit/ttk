@@ -285,12 +285,6 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
   getScalars();
   getOffsets();
 
-  {
-    std::stringstream msg;
-    msg << "[ttkFTRGraph] Launch on field: " << ScalarField << std::endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
-
   // compute graph
   switch(inputScalars_->GetDataType()) {
     vtkTemplateMacro({
@@ -302,6 +296,12 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
       ftrGraph_.setScalars(inputScalars_->GetVoidPointer(0));
       ftrGraph_.setVertexSoSoffsets(&offsets_);
       // build
+      {
+        std::stringstream msg;
+        msg << "[ttkFTRGraph] Starting computation on field: " << ScalarField
+            << std::endl;
+        dMsg(cout, msg.str(), infoMsg);
+      }
       ftrGraph_.build();
       // get output
       graph = std::move(ftrGraph_.extractOutputGraph());
