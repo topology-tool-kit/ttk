@@ -30,11 +30,11 @@ mark_as_advanced(TTK_ENABLE_FTR_VERT_STATS)
 # create lib
 
 ttk_add_base_library(ftrGraph
-   SOURCES Graph.cpp Mesh.cpp Segmentation.cpp
-   HEADERS AtomicVector.h FTRGraph.h FTRGraph_Template.h
-           FTRGraphPrint_Template.h FTRGraphPrivate_Template.h DynamicGraph.h
-           Lazy.h Mesh.h Propagation.h Propagations.h Scalars.h Segmentation.h
-           LINK triangulation scalarFieldCriticalPoints ${profiler_lib})
+  SOURCES Graph.cpp Mesh.cpp FTRSegmentation.cpp
+  HEADERS FTRAtomicVector.h FTRGraph.h FTRGraph_Template.h
+          FTRGraphPrint_Template.h FTRGraphPrivate_Template.h DynamicGraph.h
+          FTRLazy.h Mesh.h FTRPropagation.h FTRPropagations.h FTRScalars.h FTRSegmentation.h
+  LINK triangulation scalarFieldCriticalPoints ${profiler_lib})
 
 target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})
 

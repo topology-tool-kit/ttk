@@ -42,12 +42,12 @@
 #include <Triangulation.h>
 #include <Wrapper.h>
 
-#include "AtomicUF.h"
-#include "AtomicVector.h"
-#include "FTMTree_DataTypes.h"
-#include "Node.h"
-#include "Structures.h"
-#include "SuperArc.h"
+#include "FTMAtomicUF.h"
+#include "FTMAtomicVector.h"
+#include "FTMDataTypes.h"
+#include "FTMNode.h"
+#include "FTMStructures.h"
+#include "FTMSuperArc.h"
 
 namespace ttk
 {

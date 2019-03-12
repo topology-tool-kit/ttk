@@ -2,8 +2,8 @@
 #define FTRGRAPH_TEMPLATE_H
 
 #include "FTRGraph.h"
-#include "Propagation.h"
-#include "Tasks.h"
+#include "FTRPropagation.h"
+#include "FTRTasks.h"
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS
 #include <iterator>

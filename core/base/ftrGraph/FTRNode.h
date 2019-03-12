@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "DataTypesFTR.h"
+#include "FTRDataTypes.h"
 
 #include <vector>
 

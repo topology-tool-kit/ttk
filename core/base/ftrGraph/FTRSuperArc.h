@@ -14,10 +14,10 @@
 #define FTR_SUPERARC_H
 
 // local includes
-#include "AtomicUF.h"
-#include "DataTypesFTR.h"
-#include "Scalars.h"
-#include "Segmentation.h"
+#include "FTRAtomicUF.h"
+#include "FTRDataTypes.h"
+#include "FTRScalars.h"
+#include "FTRSegmentation.h"
 
 // c++ includes
 #ifndef TTK_ENABLE_KAMIKAZE

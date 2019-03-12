@@ -18,21 +18,21 @@
 #include <Triangulation.h>
 
 // local includes
-#include "AtomicVector.h"
-#include "DataTypesFTR.h"
+#include "FTRAtomicVector.h"
+#include "FTRDataTypes.h"
 #include "DynamicGraph.h"
 #include "FTRCommon.h"
 #include "Graph.h"
 #include "Mesh.h"
-#include "Propagation.h"
-#include "Propagations.h"
-#include "Scalars.h"
+#include "FTRPropagation.h"
+#include "FTRPropagations.h"
+#include "FTRScalars.h"
 
 // other baseCode
 #include "ScalarFieldCriticalPoints.h"
 
 #ifndef TTK_DISABLE_FTR_LAZY
-#include "Lazy.h"
+#include "FTRLazy.h"
 #endif
 
 // c++ includes

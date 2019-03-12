@@ -13,13 +13,13 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include "AtomicVector.h"
-#include "DataTypesFTR.h"
+#include "FTRAtomicVector.h"
+#include "FTRDataTypes.h"
 #include "FTRCommon.h"
-#include "Node.h"
-#include "Propagation.h"
-#include "Scalars.h"
-#include "SuperArc.h"
+#include "FTRNode.h"
+#include "FTRPropagation.h"
+#include "FTRScalars.h"
+#include "FTRSuperArc.h"
 
 #ifndef TTK_ENABLE_KAMIKAZE
 #include <iostream>
