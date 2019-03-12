@@ -138,13 +138,4 @@ private:
 
   // worker object
   ttk::SurfaceQuadrangulation surfaceQuadrangulation_;
-  // critical points from Morse-Smale Complex
-  vtkPoints *criticalPoints_;
-  // TTKIdentifiers of critical points on the original mesh
-  vtkDataArray *criticalPointsIdentifiers_;
-  // 1-separatrices from Morse-Smale Complex
-  vtkPoints *separatrices_;
-  vtkDataArray *separatrixId_;
-  vtkDataArray *separatrixSourceId_;
-  vtkDataArray *separatrixDestinationId_;
 };

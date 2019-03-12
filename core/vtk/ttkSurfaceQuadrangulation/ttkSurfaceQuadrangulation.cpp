@@ -8,9 +8,7 @@ vtkStandardNewMacro(ttkSurfaceQuadrangulation);
 ttkSurfaceQuadrangulation::ttkSurfaceQuadrangulation()
   : UseAllCores{true}, ThreadNumber{}, ForceInputIdentifiersField{false},
     ForceInputOffsetIdentifiersField{false}, SubdivisionLevel{5},
-    RelaxationIterations{100}, criticalPoints_{}, criticalPointsIdentifiers_{},
-    separatrices_{}, separatrixId_{}, separatrixSourceId_{},
-    separatrixDestinationId_{} {
+    RelaxationIterations{100} {
 
   InputIdentifiersFieldName
     = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
@@ -43,27 +41,35 @@ int ttkSurfaceQuadrangulation::FillOutputPortInformation(int port,
 int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
 
   // store handler to points
-  criticalPoints_ = input->GetPoints();
+  auto cp = input->GetPoints();
 
   // store handle to points identifiers
   auto vsfn = static_cast<const char *>(ttk::VertexScalarFieldName);
   auto pointData = input->GetPointData();
-
-  if(pointData->GetArray(vsfn) != nullptr) {
-    criticalPointsIdentifiers_ = pointData->GetArray(vsfn);
-  }
+  auto cpi = pointData->GetArray(vsfn);
+  auto cpci = pointData->GetArray("CellId");
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(criticalPoints_ == nullptr) {
+  if(cp == nullptr) {
     cerr << MODULE_ERROR_S "wrong Morse-Smale critical points" << endl;
     return -1;
   }
-  if(criticalPointsIdentifiers_ == nullptr) {
+  if(cpi == nullptr) {
     cerr << MODULE_ERROR_S "wrong Morse-Smale critical points identifiers"
          << endl;
     return -2;
   }
+  if(cpci == nullptr) {
+    cerr << MODULE_ERROR_S "wrong Morse-Smale critical points cell identifiers"
+         << endl;
+    return -2;
+  }
 #endif // TTK_ENABLE_KAMIKAZE
+
+  surfaceQuadrangulation_.setCriticalPointsNumber(cp->GetNumberOfPoints());
+  surfaceQuadrangulation_.setCriticalPoints(cp->GetVoidPointer(0));
+  surfaceQuadrangulation_.setCriticalPointsIdentifiers(cpi->GetVoidPointer(0));
+  surfaceQuadrangulation_.setCriticalPointsCellIds(cpci->GetVoidPointer(0));
 
   return 0;
 }
@@ -71,31 +77,38 @@ int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
 int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
 
   // get separatrices points
-  separatrices_ = input->GetPoints();
+  auto separatrices = input->GetPoints();
+  // auto pointData = input->GetPointData();
+  // auto sepCellIds = pointData->GetArray("CellId");
 
   auto cellData = input->GetCellData();
-  separatrixId_ = cellData->GetArray("SeparatrixId");
-  separatrixSourceId_ = cellData->GetArray("SourceId");
-  separatrixDestinationId_ = cellData->GetArray("DestinationId");
+  auto sepId = cellData->GetArray("SeparatrixId");
+  auto sepSourceId = cellData->GetArray("SourceId");
+  auto sepDestId = cellData->GetArray("DestinationId");
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(separatrices_ == nullptr) {
+  if(separatrices == nullptr) {
     cerr << MODULE_ERROR_S "wrong Morse-Smale separatrices points." << endl;
     return -1;
   }
-  if(separatrixId_ == nullptr) {
+  if(sepId == nullptr) {
     cerr << MODULE_ERROR_S "wrong separatrices id." << endl;
     return -1;
   }
-  if(separatrixSourceId_ == nullptr) {
+  if(sepSourceId == nullptr) {
     cerr << MODULE_ERROR_S "wrong separatrices source id." << endl;
     return -1;
   }
-  if(separatrixDestinationId_ == nullptr) {
+  if(sepDestId == nullptr) {
     cerr << MODULE_ERROR_S "wrong separatrices destination id." << endl;
     return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
+
+  surfaceQuadrangulation_.setSeparatriceNumber(sepId->GetNumberOfValues());
+  surfaceQuadrangulation_.setSepId(sepId->GetVoidPointer(0));
+  surfaceQuadrangulation_.setSepSourceId(sepSourceId->GetVoidPointer(0));
+  surfaceQuadrangulation_.setSepDestId(sepDestId->GetVoidPointer(0));
 
   return 0;
 }
@@ -112,6 +125,11 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   auto spr = vtkUnstructuredGrid::SafeDownCast(inputs[1]);
   auto output = vtkPolyData::SafeDownCast(outputs[0]);
 
+  outputs[0]->Print(cout);
+
+  // to be shallow copied to output
+  auto outPoly = vtkSmartPointer<vtkPolyData>::New();
+
   int res = 0;
 
   res += getCriticalPoints(cp);
@@ -123,12 +141,6 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  surfaceQuadrangulation_.setCriticalPointsNumber(
-    criticalPoints_->GetNumberOfPoints());
-  surfaceQuadrangulation_.setCriticalPoints(criticalPoints_->GetVoidPointer(0));
-  surfaceQuadrangulation_.setCriticalPointsIdentifiers(
-    criticalPointsIdentifiers_->GetVoidPointer(0));
-
   res += getSeparatrices(spr);
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -138,15 +150,8 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  surfaceQuadrangulation_.setSeparatriceNumber(separatrixId_->GetNumberOfValues());
-  surfaceQuadrangulation_.setSepId(separatrixId_->GetVoidPointer(0));
-  surfaceQuadrangulation_.setSepSourceId(
-    separatrixSourceId_->GetVoidPointer(0));
-  surfaceQuadrangulation_.setSepDestId(
-    separatrixDestinationId_->GetVoidPointer(0));
-
-  std::vector<ttk::SimplexId> outputVertices;
-  std::vector<std::vector<ttk::SimplexId>> outputEdges;
+  std::vector<vtkIdType> outArray;
+  surfaceQuadrangulation_.setOutputCells(&outArray);
 
   res += surfaceQuadrangulation_.execute();
 
@@ -160,16 +165,21 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 #endif
 
   // update result
-  auto outputQuadrangulation = vtkSmartPointer<vtkIntArray>::New();
-  outputQuadrangulation->SetNumberOfComponents(1);
-  outputQuadrangulation->SetVoidArray(
-    static_cast<void *>(outputVertices.data()), outputVertices.size(), 1);
+  outPoly->SetPoints(cp->GetPoints());
 
-  // output->GetPointData()->AddArray(outputQuadrangulation);
+  auto test = vtkSmartPointer<vtkIdTypeArray>::New();
+  test->SetArray(outArray.data(), outArray.size(), 1);
+  auto cells = vtkSmartPointer<vtkCellArray>::New();
+  cells->SetCells(outArray.size(), test);
+  outPoly->SetPolys(cells);
 
-  std::stringstream msg;
-  msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;
-  dMsg(cout, msg.str(), memoryMsg);
+  // output->ShallowCopy(outPoly);
+
+  {
+    std::stringstream msg;
+    msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;
+    dMsg(cout, msg.str(), memoryMsg);
+  }
 
   return 0;
 }

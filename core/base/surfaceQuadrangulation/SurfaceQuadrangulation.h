@@ -59,6 +59,9 @@ namespace ttk {
     inline void setCriticalPointsIdentifiers(void *address) {
       criticalPointsIdentifiers_ = static_cast<SimplexId *>(address);
     }
+    inline void setCriticalPointsCellIds(void *address) {
+      criticalPointsCellIds_ = static_cast<SimplexId *>(address);
+    }
     inline void setSeparatriceNumber(unsigned int value) {
       separatriceNumber_ = value;
     }
@@ -70,6 +73,9 @@ namespace ttk {
     }
     inline void setSepDestId(void *address) {
       sepDestId_ = static_cast<SimplexId *>(address);
+    }
+    inline void setOutputCells(std::vector<long long> *cells) {
+      outputCells_ = cells;
     }
 
     int execute() const;
@@ -97,11 +103,15 @@ namespace ttk {
     Points *criticalPoints_;
     // critical point identifiers in the source mesh
     SimplexId *criticalPointsIdentifiers_;
+    SimplexId *criticalPointsCellIds_;
 
     SimplexId separatriceNumber_;
     SimplexId *sepId_;
     SimplexId *sepSourceId_;
     SimplexId *sepDestId_;
+
+    // array of output polygons
+    std::vector<long long> *outputCells_;
   };
 } // namespace ttk
 
