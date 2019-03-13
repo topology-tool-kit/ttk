@@ -3,7 +3,7 @@
 
 // local includes
 #include "FTRGraph.h"
-#include "Tasks.h"
+#include "FTRTasks.h"
 #include "FTRGraph_Template.h"
 
 // c++ incldues

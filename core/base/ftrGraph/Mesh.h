@@ -16,7 +16,7 @@
 #include <Triangulation.h>
 
 // local includes
-#include "DataTypesFTR.h"
+#include "FTRDataTypes.h"
 #include "FTRCommon.h"
 
 // c++ includes

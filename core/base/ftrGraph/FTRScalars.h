@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DataTypesFTR.h"
+#include "FTRDataTypes.h"
 #include "FTRCommon.h"
 
 #include <iostream>

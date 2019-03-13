@@ -18,9 +18,9 @@
 
 #include <Debug.h>
 
-#include "FTMTree_DataTypes.h"
-#include "Segmentation.h"
-#include "Structures.h"
+#include "FTMDataTypes.h"
+#include "FTMSegmentation.h"
+#include "FTMStructures.h"
 
 namespace ttk
 {

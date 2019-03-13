@@ -14,7 +14,7 @@
 #define PROPAGATION_H
 
 // local include
-#include "AtomicUF.h"
+#include "FTRAtomicUF.h"
 #include "FTRCommon.h"
 
 // base code includes

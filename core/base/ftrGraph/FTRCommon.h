@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include "DataTypesFTR.h"
+#include "FTRDataTypes.h"
+
 #include <Debug.h>
 
 #ifdef __APPLE__

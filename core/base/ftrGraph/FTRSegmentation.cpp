@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <iterator>
 
-#include "Segmentation.h"
+#include "FTRSegmentation.h"
 
 using namespace std;
 using namespace ttk;

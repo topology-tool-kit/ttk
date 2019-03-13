@@ -27,7 +27,7 @@
 // ttk code includes
 #include <FTMTree.h>
 #include <ttkWrapper.h>
-#include<ttkFTMStructures.h>
+#include <ttkFTMStructures.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm, public ttk::Wrapper

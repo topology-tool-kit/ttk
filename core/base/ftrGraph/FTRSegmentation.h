@@ -12,8 +12,8 @@
 #ifndef FTR_SEGMENTATION_H_
 #define FTR_SEGMENTATION_H_
 
-#include "DataTypesFTR.h"
-#include "Scalars.h"
+#include "FTRDataTypes.h"
+#include "FTRScalars.h"
 
 #ifndef TTK_ENABLE_KAMIKAZE
 #include <iostream>

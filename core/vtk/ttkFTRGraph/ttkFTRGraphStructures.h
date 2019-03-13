@@ -10,7 +10,7 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
-#include "DataTypesFTR.h"
+#include "FTRDataTypes.h"
 #include "FTRCommon.h"
 #include "Graph.h"
 
