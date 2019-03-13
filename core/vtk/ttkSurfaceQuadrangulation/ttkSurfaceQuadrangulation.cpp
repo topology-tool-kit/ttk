@@ -39,6 +39,7 @@ int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
   auto pointData = input->GetPointData();
   auto cpi = pointData->GetArray(vsfn);
   auto cpci = pointData->GetArray("CellId");
+  auto cpType = pointData->GetArray("CellDimension");
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(cp == nullptr) {
@@ -53,7 +54,11 @@ int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
   if(cpci == nullptr) {
     cerr << MODULE_ERROR_S "wrong Morse-Smale critical points cell identifiers"
          << endl;
-    return -2;
+    return -3;
+  }
+  if(cpType == nullptr) {
+    cerr << MODULE_ERROR_S "wrong Morse-Smale critical points type" << endl;
+    return -4;
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
@@ -61,6 +66,7 @@ int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
   surfaceQuadrangulation_.setCriticalPoints(cp->GetVoidPointer(0));
   surfaceQuadrangulation_.setCriticalPointsIdentifiers(cpi->GetVoidPointer(0));
   surfaceQuadrangulation_.setCriticalPointsCellIds(cpci->GetVoidPointer(0));
+  surfaceQuadrangulation_.setCriticalPointsType(cpType->GetVoidPointer(0));
 
   return 0;
 }
@@ -69,8 +75,6 @@ int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
 
   // get separatrices points
   auto separatrices = input->GetPoints();
-  // auto pointData = input->GetPointData();
-  // auto sepCellIds = pointData->GetArray("CellId");
 
   auto cellData = input->GetCellData();
   auto sepId = cellData->GetArray("SeparatrixId");
