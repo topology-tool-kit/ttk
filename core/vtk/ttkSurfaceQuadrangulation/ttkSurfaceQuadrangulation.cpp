@@ -29,15 +29,6 @@ int ttkSurfaceQuadrangulation::FillInputPortInformation(int port,
   return 0;
 }
 
-int ttkSurfaceQuadrangulation::FillOutputPortInformation(int port,
-                                                         vtkInformation *info) {
-  if(port == 0) {
-    // surface
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
-  }
-  return 0;
-}
-
 int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
 
   // store handler to points
@@ -123,12 +114,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   auto cp = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
   auto spr = vtkUnstructuredGrid::SafeDownCast(inputs[1]);
-  auto output = vtkPolyData::SafeDownCast(outputs[0]);
-
-  outputs[0]->Print(cout);
-
-  // to be shallow copied to output
-  auto outPoly = vtkSmartPointer<vtkPolyData>::New();
+  auto output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
 
   int res = 0;
 
