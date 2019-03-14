@@ -52,44 +52,6 @@
       </InputProperty>
 
       <IntVectorProperty
-          name="ForceInputIdentifiersField"
-          label="Force Input Identifiers Field"
-          command="SetForceInputIdentifiersField"
-          number_of_elements="1"
-          default_values="0"
-          panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use a non-default identifiers field.
-        </Documentation>
-      </IntVectorProperty>
-
-      <StringVectorProperty
-          name="InputIdentifiersFieldName"
-          command="SetInputIdentifiersFieldName"
-          label="Identifiers Field Name"
-          number_of_elements="1"
-          animateable="0"
-          panel_visibility="advanced"
-          >
-        <ArrayListDomain
-            name="array_list"
-            default_values="0"
-            >
-        </ArrayListDomain>
-        <Hints>
-          <PropertyWidgetDecorator
-              type="GenericDecorator"
-              mode="visibility"
-              property="ForceInputIdentifiersField"
-              value="1" />
-        </Hints>
-        <Documentation>
-          Select the vertex identifier scalar field in the sources.
-        </Documentation>
-      </StringVectorProperty>
-
-      <IntVectorProperty
           name="UseAllCores"
           command="SetUseAllCores"
           label="Use All Cores"
@@ -139,11 +101,6 @@
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="InputIdentifiersFieldName" />
-        <Property name="ForceInputIdentifiersField" />
       </PropertyGroup>
 
       <Hints>
