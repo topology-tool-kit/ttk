@@ -73,27 +73,6 @@ public:
     SetThreads();
   }
 
-  vtkSetMacro(InputScalarFieldName, std::string);
-  vtkGetMacro(InputScalarFieldName, std::string);
-
-  vtkSetMacro(InputIdentifiersFieldName, std::string);
-  vtkGetMacro(InputIdentifiersFieldName, std::string);
-
-  vtkSetMacro(InputOffsetIdentifiersFieldName, std::string);
-  vtkGetMacro(InputOffsetIdentifiersFieldName, std::string);
-
-  vtkSetMacro(ForceInputIdentifiersField, bool);
-  vtkGetMacro(ForceInputIdentifiersField, bool);
-
-  vtkSetMacro(ForceInputOffsetIdentifiersField, bool);
-  vtkGetMacro(ForceInputOffsetIdentifiersField, bool);
-
-  vtkSetMacro(SubdivisionLevel, unsigned int);
-  vtkGetMacro(SubdivisionLevel, unsigned int);
-
-  vtkSetMacro(RelaxationIterations, unsigned int);
-  vtkGetMacro(RelaxationIterations, unsigned int);
-
   // fill triangulation_ array
   int getTriangulation(vtkDataSet *input);
   // get data from Morse-Smale Complex
@@ -120,24 +99,8 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
-  // user-defined input constraints (float) scalar field name
-  std::string InputScalarFieldName;
-  // user-defined input identifier (SimplexId) scalar field name
-  std::string InputIdentifiersFieldName;
-  // user-defined input offset identifier (SimplexId) scalar field name
-  std::string InputOffsetIdentifiersFieldName;
-  // let the user choose a different identifier scalar field
-  bool ForceInputIdentifiersField;
-  // let the user choose an offset identifier scalar field
-  bool ForceInputOffsetIdentifiersField;
-  // number of subdivisions of the Morse-Smale Complex cells
-  unsigned int SubdivisionLevel;
-  // number of relaxation iterations
-  unsigned int RelaxationIterations;
-
   // worker object
   ttk::SurfaceQuadrangulation surfaceQuadrangulation_;
   // output vector of interleaved quadrangles
   std::vector<vtkIdType> outQuadrangles_;
-
 };

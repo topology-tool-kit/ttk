@@ -41,36 +41,22 @@ namespace ttk {
     // default move assignment operator
     SurfaceQuadrangulation &operator=(SurfaceQuadrangulation &&) = default;
 
-    inline void setVertexNumber(SimplexId vertexNumber) {
-      vertexNumber_ = vertexNumber;
-    }
-    inline void setSubdivisionLevel(unsigned int value) {
-      subdivisionLevel_ = value;
-    }
-    inline void setRelaxationIterations(unsigned int value) {
-      relaxationIterations_ = value;
-    }
     inline void setCriticalPointsNumber(unsigned int value) {
       criticalPointsNumber_ = value;
-    }
-    inline void setCriticalPoints(void *address) {
-      criticalPoints_ = static_cast<Points *>(address);
-    }
-    inline void setCriticalPointsIdentifiers(void *address) {
-      criticalPointsIdentifiers_ = static_cast<SimplexId *>(address);
     }
     inline void setCriticalPointsCellIds(void *address) {
       criticalPointsCellIds_ = static_cast<SimplexId *>(address);
     }
-    inline void setCriticalPointsType(void *address) {
-      criticalPointsType_ = static_cast<SimplexId *>(address);
-    }
     inline void setSeparatriceNumber(unsigned int value) {
       separatriceNumber_ = value;
     }
-    inline void setSepId(void *address) {
-      sepId_ = static_cast<SimplexId *>(address);
+    inline void
+      setSeparatrices(unsigned int number, void *sources, void *dests) {
+      separatriceNumber_ = number;
+      sepSourceId_ = static_cast<SimplexId *>(sources);
+      sepDestId_ = static_cast<SimplexId *>(dests);
     }
+
     inline void setSepSourceId(void *address) {
       sepSourceId_ = static_cast<SimplexId *>(address);
     }
@@ -92,26 +78,16 @@ namespace ttk {
     };
 
   protected:
-    // number of vertices in the mesh
-    SimplexId vertexNumber_;
-
-    // number of subdivisions of the Morse-Smale Complex cells
-    unsigned int subdivisionLevel_;
-    // number of relaxation iterations
-    unsigned int relaxationIterations_;
-
     // number of critical points from the Morse-Smale complex
     SimplexId criticalPointsNumber_;
-    // interleaved array of critical points coordinates
-    Points *criticalPoints_;
-    // critical point identifiers in the source mesh
-    SimplexId *criticalPointsIdentifiers_;
+    // mapping points id -> cells id
     SimplexId *criticalPointsCellIds_;
-    SimplexId *criticalPointsType_;
 
+    // number of separatrices
     SimplexId separatriceNumber_;
-    SimplexId *sepId_;
+    // unordered list of cells id sources
     SimplexId *sepSourceId_;
+    // unordered list of cells id destinations
     SimplexId *sepDestId_;
 
     // array of output polygons
