@@ -12,8 +12,8 @@
       </Documentation>
 
       <InputProperty
-          name="criticalPoints"
-          label="Morse-Smale critical points"
+          name="mesh"
+          label="2D original surface"
           port_index="0"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -24,7 +24,7 @@
           <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="CriticalPoints" function="FieldDataSelection" />
+          <Property name="Mesh" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
           Data-set to process.
@@ -32,8 +32,8 @@
       </InputProperty>
 
       <InputProperty
-          name="separatrices"
-          label="Morse-Smale separatrices"
+          name="quadrangles"
+          label="Morse-Smale-based quadrangles to refine"
           port_index="1"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -44,7 +44,7 @@
           <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Separatrices" function="FieldDataSelection" />
+          <Property name="Quadrangles" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
           Data-set to process.

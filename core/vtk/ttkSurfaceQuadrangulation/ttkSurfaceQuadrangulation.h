@@ -73,8 +73,6 @@ public:
     SetThreads();
   }
 
-  // fill triangulation_ array
-  int getTriangulation(vtkDataSet *input);
   // get data from Morse-Smale Complex
   int getCriticalPoints(vtkUnstructuredGrid *input);
   int getSeparatrices(vtkUnstructuredGrid *input);
