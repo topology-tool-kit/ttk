@@ -45,9 +45,6 @@ int ttk::SurfaceQuadrangulation::execute() const {
   size_t i, j, k, l;
 
   // iterate twice over sources
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
   for(i = 0; i < sepMappingSources.size(); i++) {
     // skip if no dests
     if(sepMappingSources[i].size() == 0) {
@@ -72,17 +69,12 @@ int ttk::SurfaceQuadrangulation::execute() const {
         j = common_dests[0];
         l = common_dests[1];
 
-        // fill output vector one thread at a time
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif // TTK_ENABLE_OPENMP
-        {
-          outputCells_->emplace_back(4);
-          outputCells_->emplace_back(i);
-          outputCells_->emplace_back(j);
-          outputCells_->emplace_back(k);
-          outputCells_->emplace_back(l);
-        }
+        // fill output vector
+        outputCells_->emplace_back(4);
+        outputCells_->emplace_back(i);
+        outputCells_->emplace_back(j);
+        outputCells_->emplace_back(k);
+        outputCells_->emplace_back(l);
       }
     }
   }
