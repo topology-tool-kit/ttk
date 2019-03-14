@@ -1,0 +1,154 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="QuadrangulationSubdivision"
+        class="ttkQuadrangulationSubdivision"
+        label="TTK QuadrangulationSubdivision">
+      <Documentation
+          long_help="TTK plugin for surface quadrangulation."
+          short_help="TTK plugin for surface quadrangulation.">
+        This plugin outputs a very raw quadrangulation from a
+        Morse-Smale Complex of a triangular surfacic mesh.
+      </Documentation>
+
+      <InputProperty
+          name="criticalPoints"
+          label="Morse-Smale critical points"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="CriticalPoints" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="separatrices"
+          label="Morse-Smale separatrices"
+          port_index="1"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Separatrices" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+          name="ForceInputIdentifiersField"
+          label="Force Input Identifiers Field"
+          command="SetForceInputIdentifiersField"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use a non-default identifiers field.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+          name="InputIdentifiersFieldName"
+          command="SetInputIdentifiersFieldName"
+          label="Identifiers Field Name"
+          number_of_elements="1"
+          animateable="0"
+          panel_visibility="advanced"
+          >
+        <ArrayListDomain
+            name="array_list"
+            default_values="0"
+            >
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="ForceInputIdentifiersField"
+              value="1" />
+        </Hints>
+        <Documentation>
+          Select the vertex identifier scalar field in the sources.
+        </Documentation>
+      </StringVectorProperty>
+
+      <IntVectorProperty
+          name="UseAllCores"
+          command="SetUseAllCores"
+          label="Use All Cores"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced"
+          >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use all available cores.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ThreadNumber"
+          command="SetThreadNumber"
+          label="Thread Number"
+          number_of_elements="1"
+          default_values="1" panel_visibility="advanced"
+          >
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="UseAllCores"
+              value="0" />
+        </Hints>
+        <Documentation>
+          Thread number.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="DebugLevel"
+          command="SetdebugLevel_"
+          label="Debug Level"
+          number_of_elements="1"
+          default_values="3" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Debug level.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="InputIdentifiersFieldName" />
+        <Property name="ForceInputIdentifiersField" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
