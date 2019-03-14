@@ -90,6 +90,29 @@
       </StringVectorProperty>
 
       <IntVectorProperty
+          name="SubdivisionLevel"
+          label="Level of subdivisions"
+          command="SetSubdivisionLevel"
+          number_of_elements="1"
+          default_values="5">
+        <Documentation>
+          Number of subdivisions of the original quadrangular
+          mesh. The higher the value, the more precise the output.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="RelaxationIterations"
+          label="Number of relaxation iterations"
+          command="SetSubdivisionLevel"
+          number_of_elements="1"
+          default_values="100">
+        <Documentation>
+          Number of relaxation iterations.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
           name="UseAllCores"
           command="SetUseAllCores"
           label="Use All Cores"
