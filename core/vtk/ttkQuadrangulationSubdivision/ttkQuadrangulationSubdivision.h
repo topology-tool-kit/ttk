@@ -105,10 +105,12 @@ public:
   // default move constructor
   ttkQuadrangulationSubdivision(ttkQuadrangulationSubdivision &&) = delete;
   // default copy assignment operator
-  ttkQuadrangulationSubdivision &operator=(const ttkQuadrangulationSubdivision &)
+  ttkQuadrangulationSubdivision &
+    operator=(const ttkQuadrangulationSubdivision &)
     = delete;
   // default move assignment operator
-  ttkQuadrangulationSubdivision &operator=(ttkQuadrangulationSubdivision &&) = delete;
+  ttkQuadrangulationSubdivision &operator=(ttkQuadrangulationSubdivision &&)
+    = delete;
 
 protected:
   ttkQuadrangulationSubdivision();

@@ -19,8 +19,8 @@ ttkQuadrangulationSubdivision::ttkQuadrangulationSubdivision()
   SetNumberOfOutputPorts(1);
 }
 
-int ttkQuadrangulationSubdivision::FillInputPortInformation(int port,
-                                                        vtkInformation *info) {
+int ttkQuadrangulationSubdivision::FillInputPortInformation(
+  int port, vtkInformation *info) {
 
   if(port == 0 || port == 1) {
     // Morse-Smale Complex output
@@ -29,7 +29,8 @@ int ttkQuadrangulationSubdivision::FillInputPortInformation(int port,
   return 0;
 }
 
-int ttkQuadrangulationSubdivision::getCriticalPoints(vtkUnstructuredGrid *input) {
+int ttkQuadrangulationSubdivision::getCriticalPoints(
+  vtkUnstructuredGrid *input) {
 
   // store handler to points
   auto cp = input->GetPoints();
@@ -64,7 +65,8 @@ int ttkQuadrangulationSubdivision::getCriticalPoints(vtkUnstructuredGrid *input)
 
   quadrangulationSubdivision_.setCriticalPointsNumber(cp->GetNumberOfPoints());
   quadrangulationSubdivision_.setCriticalPoints(cp->GetVoidPointer(0));
-  quadrangulationSubdivision_.setCriticalPointsIdentifiers(cpi->GetVoidPointer(0));
+  quadrangulationSubdivision_.setCriticalPointsIdentifiers(
+    cpi->GetVoidPointer(0));
   quadrangulationSubdivision_.setCriticalPointsCellIds(cpci->GetVoidPointer(0));
   quadrangulationSubdivision_.setCriticalPointsType(cpType->GetVoidPointer(0));
 
@@ -109,7 +111,7 @@ int ttkQuadrangulationSubdivision::getSeparatrices(vtkUnstructuredGrid *input) {
 }
 
 int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
-                                    std::vector<vtkDataSet *> &outputs) {
+                                        std::vector<vtkDataSet *> &outputs) {
 
   ttk::Memory m;
 

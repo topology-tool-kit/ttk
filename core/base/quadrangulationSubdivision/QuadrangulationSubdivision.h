@@ -37,9 +37,11 @@ namespace ttk {
     // default move constructor
     QuadrangulationSubdivision(QuadrangulationSubdivision &&) = default;
     // default copy assignment operator
-    QuadrangulationSubdivision &operator=(const QuadrangulationSubdivision &) = default;
+    QuadrangulationSubdivision &operator=(const QuadrangulationSubdivision &)
+      = default;
     // default move assignment operator
-    QuadrangulationSubdivision &operator=(QuadrangulationSubdivision &&) = default;
+    QuadrangulationSubdivision &operator=(QuadrangulationSubdivision &&)
+      = default;
 
     inline void setVertexNumber(SimplexId vertexNumber) {
       vertexNumber_ = vertexNumber;
