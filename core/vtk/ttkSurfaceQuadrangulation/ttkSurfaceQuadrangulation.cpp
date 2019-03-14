@@ -140,10 +140,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  // holds the quadrangles values, memory will be freed at the end of
-  // the function
-  std::vector<vtkIdType> outTempVector;
-  surfaceQuadrangulation_.setOutputCells(&outTempVector);
+  surfaceQuadrangulation_.setOutputCells(&outQuadrangles_);
 
   res += surfaceQuadrangulation_.execute();
 
@@ -159,19 +156,13 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   // update result: get critical points from input
   output->SetPoints(cp->GetPoints());
   // number of data in outTempVector
-  size_t nOutData = outTempVector.size();
-
-  // memory copy neeeded here because the vector will free its memory
-  // at the end of the function
-  auto outRawData = new long long[nOutData];
-  std::copy(outTempVector.begin(), outTempVector.end(), outRawData);
+  size_t nOutData = outQuadrangles_.size();
 
   // vtkDataArray containing quadrangles values
   auto outArray = vtkSmartPointer<vtkIdTypeArray>::New();
 
-  // outArray now manages the memory allocated by outRawData
-  outArray->SetArray(
-    outRawData, nOutData, 0, vtkIdTypeArray::VTK_DATA_ARRAY_DELETE);
+  // outArray points to outQuadrangles_ data, but does not deallocate it
+  outArray->SetArray(outQuadrangles_.data(), nOutData, 1);
 
   // vtkCellArray of quadrangle values containing outArray
   auto cells = vtkSmartPointer<vtkCellArray>::New();
