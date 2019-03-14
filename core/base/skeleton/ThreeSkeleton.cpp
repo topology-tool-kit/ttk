@@ -334,26 +334,26 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
         }
         
         for(SimplexId l = pos0; l < (SimplexId) (*localVertexStars)[v0].size(); l++){
-          if((*localVertexStars)[v0][l] < biggest){
+          if((*localVertexStars)[v0][l] < biggest
+             && pos0 < (SimplexId)(*localVertexStars)[v0].size() - 1) {
             pos0++;
-          }
-          else{
+          } else {
             break;
           }
         }
         for(SimplexId l = pos1; l < (SimplexId) (*localVertexStars)[v1].size(); l++){
-          if((*localVertexStars)[v1][l] < biggest){
+          if((*localVertexStars)[v1][l] < biggest
+             && pos1 < (SimplexId)(*localVertexStars)[v1].size() - 1) {
             pos1++;
-          }
-          else{
+          } else {
             break;
           }
         }
         for(SimplexId l = pos2; l < (SimplexId) (*localVertexStars)[v2].size(); l++){
-          if((*localVertexStars)[v2][l] < biggest){
+          if((*localVertexStars)[v2][l] < biggest
+             && pos2 < (SimplexId)(*localVertexStars)[v2].size() - 1) {
             pos2++;
-          }
-          else{
+          } else {
             break;
           }
         }
