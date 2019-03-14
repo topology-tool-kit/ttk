@@ -41,28 +41,24 @@ int ttk::SurfaceQuadrangulation::execute() const {
     }
   }
 
-  // for each source, iterate over each dest
+  // quadrangle vertices: source, dest, source, dest
+  size_t i, j, k, l;
+
+  // iterate twice over sources
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < sepMappingSources.size(); i++) {
-    for(auto &j : sepMappingSources[i]) {
-      // find in sources the ones that have j as dest
-      size_t k;
-      for(k = 0; k < sepMappingSources.size(); k++) {
-        if(k == i) {
-          continue;
-        }
-        auto beg = sepMappingSources[k].begin();
-        auto end = sepMappingSources[k].end();
-        if(std::find(beg, end, j) != end) {
-          break;
-        }
-      }
-      // skip this iteration if no k found
-      if(k == sepMappingSources.size()) {
+  for(i = 0; i < sepMappingSources.size(); i++) {
+    // skip if no dests
+    if(sepMappingSources[i].size() == 0) {
+      continue;
+    }
+    for(k = 0; k < sepMappingSources.size(); k++) {
+      // skip same source or if no dests
+      if(k == i || sepMappingSources[k].size() == 0) {
         continue;
       }
+
       // list of common dests to i and k
       vector<SimplexId> common_dests;
       std::set_intersection(
@@ -70,19 +66,11 @@ int ttk::SurfaceQuadrangulation::execute() const {
         sepMappingSources[k].begin(), sepMappingSources[k].end(),
         std::back_inserter(common_dests));
 
-      // find a fourth vertex that is a common dest to i and k but not j
-      if(common_dests.size() > 1) {
+      // find at least two common dests: j and l
+      if(common_dests.size() >= 2) {
         // gotcha!
-        SimplexId l;
-        for(auto &other_dest : common_dests) {
-          if(other_dest == j) {
-            // skip second vertex
-            continue;
-          }
-          l = other_dest;
-          // we don't need more than four vertices
-          break;
-        }
+        j = common_dests[0];
+        l = common_dests[1];
 
         // fill output vector one thread at a time
 #ifdef TTK_ENABLE_OPENMP
