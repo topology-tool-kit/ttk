@@ -45,7 +45,9 @@ int ttk::SurfaceQuadrangulation::execute() const {
     if(sepMappingSources[i].empty()) {
       continue;
     }
-    for(k = 0; k < sepMappingSources.size(); k++) {
+    // begin second loop at i+1 to avoid duplicates and improve
+    // performance
+    for(k = i + 1; k < sepMappingSources.size(); k++) {
       // skip same source or if no dests
       if(k == i || sepMappingSources[k].empty()) {
         continue;
