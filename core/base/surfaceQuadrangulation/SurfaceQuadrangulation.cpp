@@ -22,14 +22,14 @@ int ttk::SurfaceQuadrangulation::execute() const {
   }
 
   // separatrices sources -> list of destinations mapping
-  vector<vector<SimplexId>> sepMappingSources(sepMappingSet.size());
+  vector<std::set<SimplexId>> sepMappingSources(sepMappingSet.size());
 
   for(auto &p : sepMappingSet) {
     for(SimplexId i = 0; i < criticalPointsNumber_; i++) {
       if(p.first == criticalPointsCellIds_[i]) {
         for(SimplexId j = 0; j < criticalPointsNumber_; j++) {
           if(p.second == criticalPointsCellIds_[j]) {
-            sepMappingSources[i].emplace_back(j);
+            sepMappingSources[i].insert(j);
           }
         }
       }
