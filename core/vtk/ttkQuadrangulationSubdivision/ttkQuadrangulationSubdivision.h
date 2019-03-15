@@ -116,7 +116,11 @@ protected:
 
   TTK_SETUP();
 
-  int getTriangulation(const vtkDataSet *const);
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  int getTriangulation(vtkUnstructuredGrid *input);
+
+  int getQuadVertices(vtkUnstructuredGrid *input);
 
 private:
   // user-defined input constraints (float) scalar field name
@@ -134,8 +138,10 @@ private:
   // number of relaxation iterations
   unsigned int RelaxationIterations;
 
-  // worker object
-  ttk::QuadrangulationSubdivision quadrangulationSubdivision_;
+  // base worker object
+  ttk::QuadrangulationSubdivision baseWorker_;
   // output vector of interleaved quadrangles
   std::vector<vtkIdType> outQuadrangles_;
+  // output vector of quadrangle vertices
+  std::vector<float> outVertices_;
 };
