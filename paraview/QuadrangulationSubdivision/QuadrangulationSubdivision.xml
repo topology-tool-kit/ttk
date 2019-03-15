@@ -14,7 +14,7 @@
       <InputProperty
           name="mesh"
           label="2D original surface"
-          port_index="0"
+          port_index="1"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
@@ -33,8 +33,8 @@
 
       <InputProperty
           name="quadrangles"
-          label="Morse-Smale-based quadrangles to refine"
-          port_index="1"
+          label="Input coarse quadrangulation"
+          port_index="0"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
