@@ -69,14 +69,6 @@ namespace ttk {
 
     int execute() const;
 
-  private:
-    // vtkPoint instance with interleaved coordinates (AoS)
-    struct Points {
-      float x;
-      float y;
-      float z;
-    };
-
   protected:
     // number of critical points from the Morse-Smale complex
     SimplexId criticalPointsNumber_;
