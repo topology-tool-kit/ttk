@@ -124,7 +124,8 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 #endif
 
   // update result: get critical points from input
-  output->SetPoints(cp->GetPoints());
+  output->ShallowCopy(cp);
+
   // number of data in outTempVector
   size_t nOutData = outQuadrangles_.size();
 
