@@ -2,8 +2,8 @@
 
 ttk::QuadrangulationSubdivision::QuadrangulationSubdivision()
   : vertexNumber_{}, subdivisionLevel_{5}, relaxationIterations_{100},
-    inputQuadVertexNumber_{}, inputQuadrangles_{}, triangulation_{},
-    outputQuads_{} {
+    inputQuadVertexNumber_{}, inputQuadrangles_{}, inputQuadIdentifiers_{},
+    triangulation_{}, outputQuads_{}, outputPointNumber_{}, outputPoints_{} {
 }
 
 // main routine

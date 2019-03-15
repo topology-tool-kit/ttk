@@ -53,7 +53,10 @@ namespace ttk {
       inputQuadVertexNumber_ = value;
     }
     inline void setInputQuadrangles(void *const address) {
-      inputQuadrangles_ = static_cast<SimplexId *>(address);
+      inputQuadrangles_ = static_cast<long long *>(address);
+    }
+    inline void setInputQuadIdentifiers(void *const address) {
+      inputQuadIdentifiers_ = static_cast<SimplexId *>(address);
     }
     inline void setupTriangulation(Triangulation *const triangl) {
       triangulation_ = triangl;
@@ -65,8 +68,22 @@ namespace ttk {
     inline void setOutputQuads(std::vector<long long> *const quads) {
       outputQuads_ = quads;
     }
+    inline void setOutputPointNumber(unsigned int value) {
+      outputPointNumber_ = value;
+    }
+    inline void setOutputPoints(void *const address) {
+      outputPoints_ = static_cast<Points *>(address);
+    }
 
     int execute() const;
+
+  private:
+    // vtkPoint instance with interleaved coordinates (AoS)
+    struct Points {
+      float x;
+      float y;
+      float z;
+    };
 
   protected:
     // number of vertices in the mesh
@@ -80,12 +97,17 @@ namespace ttk {
     // number of vertices in the input quadrangles
     unsigned int inputQuadVertexNumber_;
     // input quadrangles
-    SimplexId *inputQuadrangles_;
+    long long *inputQuadrangles_;
+    // TTK identifiers of input quadrangles vertices
+    SimplexId *inputQuadIdentifiers_;
     // input triangulation
     Triangulation *triangulation_;
 
     // array of output quadrangles
     std::vector<long long> *outputQuads_;
+    unsigned int outputPointNumber_;
+    // array of output quadrangle vertices
+    Points *outputPoints_;
   };
 } // namespace ttk
 
