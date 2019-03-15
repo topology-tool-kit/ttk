@@ -116,6 +116,8 @@ protected:
 
   TTK_SETUP();
 
+  int getTriangulation(const vtkDataSet *const);
+
 private:
   // user-defined input constraints (float) scalar field name
   std::string InputScalarFieldName;
