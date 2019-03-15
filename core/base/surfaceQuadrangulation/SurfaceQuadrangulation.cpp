@@ -62,16 +62,24 @@ int ttk::SurfaceQuadrangulation::execute() const {
 
       // find at least two common dests: j and l
       if(common_dests.size() >= 2) {
-        // gotcha!
-        j = common_dests[0];
-        l = common_dests[1];
 
-        // fill output vector
-        outputCells_->emplace_back(4);
-        outputCells_->emplace_back(i);
-        outputCells_->emplace_back(j);
-        outputCells_->emplace_back(k);
-        outputCells_->emplace_back(l);
+        // iterate over all possible common dests
+        for(size_t m = 0; m < common_dests.size(); m++) {
+          // avoid duplicates by beginning at m+1
+          for(size_t n = m + 1; n < common_dests.size(); n++) {
+
+            // gotcha!
+            j = common_dests[m];
+            l = common_dests[n];
+
+            // fill output vector
+            outputCells_->emplace_back(4);
+            outputCells_->emplace_back(i);
+            outputCells_->emplace_back(j);
+            outputCells_->emplace_back(k);
+            outputCells_->emplace_back(l);
+          }
+        }
       }
     }
   }
