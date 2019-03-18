@@ -21,49 +21,49 @@ int ttk::SurfaceQuadrangulation::execute() const {
     sepMappingSet.insert(std::make_pair(sepSourceId_[i], sepDestId_[i]));
   }
 
-  // separatrices sources -> list of destinations mapping
-  vector<std::set<SimplexId>> sepMappingSources(sepMappingSet.size());
+  // separatrices: destinations (extrema) -> sources (saddle points)
+  vector<std::set<SimplexId>> sepMappingDests(sepMappingSet.size());
 
   for(auto &p : sepMappingSet) {
     for(SimplexId i = 0; i < criticalPointsNumber_; i++) {
       if(p.first == criticalPointsCellIds_[i]) {
         for(SimplexId j = 0; j < criticalPointsNumber_; j++) {
           if(p.second == criticalPointsCellIds_[j]) {
-            sepMappingSources[i].insert(j);
+            sepMappingDests[j].insert(i);
           }
         }
       }
     }
   }
 
-  // quadrangle vertices: source, dest, source, dest
+  // quadrangle vertices: dest, source, dest, source
   size_t i, j, k, l;
 
-  // iterate twice over sources
-  for(i = 0; i < sepMappingSources.size(); i++) {
-    // skip if no dests
-    if(sepMappingSources[i].empty()) {
+  // iterate twice over dests
+  for(i = 0; i < sepMappingDests.size(); i++) {
+    // skip if no sources
+    if(sepMappingDests[i].empty()) {
       continue;
     }
     // begin second loop at i+1 to avoid duplicates and improve
     // performance
-    for(k = i + 1; k < sepMappingSources.size(); k++) {
-      // skip same source or if no dests
-      if(k == i || sepMappingSources[k].empty()) {
+    for(k = i + 1; k < sepMappingDests.size(); k++) {
+      // skip same dest or if no sources
+      if(k == i || sepMappingDests[k].empty()) {
         continue;
       }
 
-      // list of common dests to i and k
+      // list of common sources to i and k
       vector<SimplexId> common_dests;
       std::set_intersection(
-        sepMappingSources[i].begin(), sepMappingSources[i].end(),
-        sepMappingSources[k].begin(), sepMappingSources[k].end(),
+        sepMappingDests[i].begin(), sepMappingDests[i].end(),
+        sepMappingDests[k].begin(), sepMappingDests[k].end(),
         std::back_inserter(common_dests));
 
-      // find at least two common dests: j and l
+      // find at least two common sources: j and l
       if(common_dests.size() >= 2) {
 
-        // iterate over all possible common dests
+        // iterate over all possible common sources
         for(size_t m = 0; m < common_dests.size(); m++) {
           // avoid duplicates by beginning at m+1
           for(size_t n = m + 1; n < common_dests.size(); n++) {
@@ -80,6 +80,18 @@ int ttk::SurfaceQuadrangulation::execute() const {
             outputCells_->emplace_back(l);
           }
         }
+      } else if(common_dests.size() == 1
+                && (sepMappingDests[i].size() == 1
+                    || sepMappingDests[k].size() == 1)) {
+        // we have degenerate quadrangles: i, j, k, j
+        j = common_dests[0];
+
+        // fill output vector
+        outputCells_->emplace_back(4);
+        outputCells_->emplace_back(i);
+        outputCells_->emplace_back(j);
+        outputCells_->emplace_back(k);
+        outputCells_->emplace_back(j);
       }
     }
   }
