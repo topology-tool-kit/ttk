@@ -39,8 +39,11 @@ namespace ttk{
   const char OffsetFieldVName[]="ttkOffsetFieldV";
 
   /// default value for critical index
-  enum class CriticalType { 
+  enum class CriticalType {
     Local_minimum = 0, Saddle1, Saddle2, Local_maximum, Degenerate, Regular };
+  /// number of different critical types
+  const int CriticalTypeNumber = 6;
+
 }
 
 #endif // _DATATYPES_H

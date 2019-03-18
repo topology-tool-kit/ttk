@@ -3490,7 +3490,7 @@ int DiscreteGradient::reverseGradient(){
       }
     }
 
-    std::vector<SimplexId> numberOfPLInteriorCriticalPoints(numberOfDimensions,0);
+    std::vector<SimplexId> numberOfPLInteriorCriticalPoints(CriticalTypeNumber, 0);
     for(auto& criticalPoint : criticalPoints){
       const SimplexId criticalPointId=criticalPoint.first;
       const char criticalPointType=criticalPoint.second;
