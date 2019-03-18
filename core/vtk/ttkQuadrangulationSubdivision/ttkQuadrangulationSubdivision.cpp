@@ -58,18 +58,30 @@ int ttkQuadrangulationSubdivision::getQuadVertices(
   auto cells = input->GetCells();
 
   TTK_ABORT_KK(cells == nullptr, "invalid input quadrangle cells", -3);
+  TTK_ABORT_KK(
+    cells->GetData() == nullptr, "invalid input quadrangle cell data", -4);
+
+  auto points = input->GetPoints();
+
+  TTK_ABORT_KK(points == nullptr, "invalid input critical points", -5);
+  TTK_ABORT_KK(
+    points->GetData() == nullptr, "invalid input quadrangle cell data", -6);
 
   auto pointData = input->GetPointData();
   auto identifiers = pointData->GetArray(
     static_cast<const char *>(ttk::VertexScalarFieldName));
 
-  TTK_ABORT_KK(pointData == nullptr, "invalid input quadrangle point data", -4);
+  TTK_ABORT_KK(pointData == nullptr, "invalid input quadrangle point data", -7);
   TTK_ABORT_KK(identifiers == nullptr,
-               "invalid input quadrangle vertices identifiers", -4);
+               "invalid input quadrangle vertices identifiers", -8);
 
-  baseWorker_.setInputQuadranglesNumber(cells->GetNumberOfCells());
-  baseWorker_.setInputQuadrangles(cells->GetData()->GetVoidPointer(0));
-  baseWorker_.setInputQuadIdentifiers(identifiers->GetVoidPointer(0));
+  auto address = static_cast<vtkIdType *>(cells->GetData()->GetVoidPointer(0));
+
+  baseWorker_.setInputQuads(
+    cells->GetData()->GetVoidPointer(0), cells->GetNumberOfCells());
+  baseWorker_.setInputVertices(
+    points->GetData()->GetVoidPointer(0), points->GetNumberOfPoints());
+  baseWorker_.setInputVertexIdentifiers(identifiers->GetVoidPointer(0));
 
   return 0;
 }
@@ -81,6 +93,7 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
   baseWorker_.setSubdivisionLevel(SubdivisionLevel);
   baseWorker_.setRelaxationIterations(RelaxationIterations);
+  baseWorker_.setOutputPoints(&outVertices_);
   baseWorker_.setOutputQuads(&outQuadrangles_);
 
   auto quads = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
@@ -97,36 +110,28 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
   TTK_ABORT_KK(res != 0, "Cannot get quad vertices", -2);
 
-  // output points
-  auto points = vtkSmartPointer<vtkPoints>::New();
-  // total number of points after subdivision:
-  // critical points +  MSC edges * (5 ^ SubdivisionLevel),
-  // given that MSC edges = 5 values / quad
-  // and that each subdivision generates 5 new points
-  vtkIdType numPoints = quads->GetNumberOfPoints()
-                        + quads->GetNumberOfCells() / 5
-                            * static_cast<vtkIdType>(pow(5, SubdivisionLevel));
-  points->SetNumberOfPoints(numPoints);
-  // pass to base worker
-  baseWorker_.setOutputPointNumber(numPoints);
-  baseWorker_.setOutputPoints(points->GetVoidPointer(0));
-
   res += baseWorker_.execute();
 
   TTK_ABORT_KK(
     res != 0, "QuadrangulationSubdivision.execute() error code: " << res, -3);
 
-  auto outArray = vtkSmartPointer<vtkIdTypeArray>::New();
+  auto outArrayQuads = vtkSmartPointer<vtkIdTypeArray>::New();
   auto cells = vtkSmartPointer<vtkCellArray>::New();
 
   // outArray points to outQuadrangles_ data, but does not deallocate it
-  outArray->SetArray(outQuadrangles_.data(), outQuadrangles_.size(), 1);
+  outArrayQuads->SetArray(outQuadrangles_.data(), outQuadrangles_.size(), 1);
 
   // vtkCellArray of quadrangle values containing outArray
-  cells->SetCells(outQuadrangles_.size(), outArray);
+  cells->SetCells(outQuadrangles_.size(), outArrayQuads);
 
   // update output: get quadrangle values
   output->SetCells(VTK_QUAD, cells);
+
+  auto outArrayVerts = vtkSmartPointer<vtkFloatArray>::New();
+  // outArrayVerts does not own the memory its points to
+  outArrayVerts->SetArray(outVertices_.data(), outVertices_.size(), 1);
+  auto points = vtkSmartPointer<vtkPoints>::New();
+  points->SetData(outArrayVerts);
 
   // update output: get quadrangle vertices
   output->SetPoints(points);

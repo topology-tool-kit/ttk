@@ -49,14 +49,16 @@ namespace ttk {
     inline void setRelaxationIterations(const unsigned int value) {
       relaxationIterations_ = value;
     }
-    inline void setInputQuadranglesNumber(const unsigned int value) {
-      inputQuadVertexNumber_ = value;
+    inline void setInputQuads(void *const address, unsigned int size) {
+      inputQuads_ = reinterpret_cast<Quad *>(address);
+      inputQuadNumber_ = size / 5; // 5 values per quad: 1 number and 4 indices
     }
-    inline void setInputQuadrangles(void *const address) {
-      inputQuadrangles_ = static_cast<long long *>(address);
+    inline void setInputVertices(void *const address, unsigned int size) {
+      inputVertices_ = reinterpret_cast<Point *>(address);
+      inputVertexNumber_ = size;
     }
-    inline void setInputQuadIdentifiers(void *const address) {
-      inputQuadIdentifiers_ = static_cast<SimplexId *>(address);
+    inline void setInputVertexIdentifiers(void *const address) {
+      inputVertexIdentifiers_ = static_cast<SimplexId *>(address);
     }
     inline void setupTriangulation(Triangulation *const triangl) {
       triangulation_ = triangl;
@@ -66,24 +68,45 @@ namespace ttk {
       }
     }
     inline void setOutputQuads(std::vector<long long> *const quads) {
-      outputQuads_ = quads;
+      outputQuads_ = reinterpret_cast<std::vector<Quad> *>(quads);
     }
-    inline void setOutputPointNumber(unsigned int value) {
-      outputPointNumber_ = value;
-    }
-    inline void setOutputPoints(void *const address) {
-      outputPoints_ = static_cast<Points *>(address);
+    inline void setOutputPoints(std::vector<float> *const address) {
+      outputPoints_ = reinterpret_cast<std::vector<Point> *>(address);
     }
 
-    int execute() const;
+    int execute();
 
   private:
     // vtkPoint instance with interleaved coordinates (AoS)
-    struct Points {
+    struct Point {
       float x;
       float y;
       float z;
+      Point operator+(Point other) {
+        Point res;
+        res.x = x + other.x;
+        res.y = y + other.y;
+        res.z = z + other.z;
+        return res;
+      }
+      Point operator*(float scalar) {
+        Point res;
+        res.x = x * scalar;
+        res.y = y * scalar;
+        res.z = z * scalar;
+        return res;
+      }
     };
+    // VTK_QUAD representation with vtkIdType
+    struct Quad {
+      long long n; // number of vertices, 4
+      long long i; // index of first vertex
+      long long j; // second vertex
+      long long k; // third vertex
+      long long l; // fourth vertex
+    };
+
+    int subdivise();
 
   protected:
     // number of vertices in the mesh
@@ -94,20 +117,25 @@ namespace ttk {
     // number of relaxation iterations
     unsigned int relaxationIterations_;
 
-    // number of vertices in the input quadrangles
-    unsigned int inputQuadVertexNumber_;
+    // number of input quadrangles
+    unsigned int inputQuadNumber_;
     // input quadrangles
-    long long *inputQuadrangles_;
+    Quad *inputQuads_;
+
+    // number of input points (quad vertices)
+    unsigned int inputVertexNumber_;
+    // input quadrangle vertices (3D coordinates)
+    Point *inputVertices_;
     // TTK identifiers of input quadrangles vertices
-    SimplexId *inputQuadIdentifiers_;
+    SimplexId *inputVertexIdentifiers_;
+
     // input triangulation
     Triangulation *triangulation_;
 
     // array of output quadrangles
-    std::vector<long long> *outputQuads_;
-    unsigned int outputPointNumber_;
+    std::vector<Quad> *outputQuads_;
     // array of output quadrangle vertices
-    Points *outputPoints_;
+    std::vector<Point> *outputPoints_;
   };
 } // namespace ttk
 
