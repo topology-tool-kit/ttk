@@ -6,24 +6,20 @@ ttk::QuadrangulationSubdivision::QuadrangulationSubdivision()
     outputPoints_{} {
 }
 
-int ttk::QuadrangulationSubdivision::subdivise() {
+int ttk::QuadrangulationSubdivision::subdivise(
+  std::vector<Quad> &currQuads, const std::vector<Quad> &prevQuads) {
 
   using edgeType = std::pair<long long, long long>;
   using vertexType = std::pair<long long, Point>;
   std::map<edgeType, vertexType> processedEdges;
 
-  std::vector<Quad> outQuads;
-
-  // five values per quad
-  for(size_t i = 0; i < inputQuadNumber_; i++) {
-
-    auto q = inputQuads_[i];
+  for(auto &q : prevQuads) {
     assert(q.n == 4); // magic number...
 
-    Point *pi = &inputVertices_[q.i];
-    Point *pj = &inputVertices_[q.j];
-    Point *pk = &inputVertices_[q.k];
-    Point *pl = &inputVertices_[q.l];
+    Point *pi = &(*outputPoints_)[q.i];
+    Point *pj = &(*outputPoints_)[q.j];
+    Point *pk = &(*outputPoints_)[q.k];
+    Point *pl = &(*outputPoints_)[q.l];
 
     // middles of edges
     auto ij = std::make_pair(q.i, q.j);
@@ -64,13 +60,13 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     outputPoints_->emplace_back(bary);
 
     // add the four new quads
-    outputQuads_->emplace_back(Quad{
+    currQuads.emplace_back(Quad{
       4, q.i, processedEdges[ij].first, baryIdx, processedEdges[li].first});
-    outputQuads_->emplace_back(Quad{
+    currQuads.emplace_back(Quad{
       4, q.j, processedEdges[jk].first, baryIdx, processedEdges[ij].first});
-    outputQuads_->emplace_back(Quad{
+    currQuads.emplace_back(Quad{
       4, q.k, processedEdges[kl].first, baryIdx, processedEdges[jk].first});
-    outputQuads_->emplace_back(Quad{
+    currQuads.emplace_back(Quad{
       4, q.l, processedEdges[li].first, baryIdx, processedEdges[kl].first});
   }
 
@@ -85,16 +81,31 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   Timer t;
 
+  outputQuads_->clear();
+  outputPoints_->clear();
+
   // store input points (MSC critical points)
   for(size_t i = 0; i < inputVertexNumber_; i++) {
     outputPoints_->emplace_back(inputVertices_[i]);
   }
 
+  std::vector<Quad> tmp0, tmp1;
+
+  // copy input quads into vector
+  for(size_t i = 0; i < inputQuadNumber_; i++) {
+    tmp0.emplace_back(inputQuads_[i]);
+  }
+
   // main loop
-  for(size_t i = 0; i < subdivisionLevel_; i++) {
+  for(size_t i = 0; i < subdivisionLevel_ / 2; i++) {
     // 1. we subdivise each quadrangle by creating five new points, at
     // the center of each edge (4) and at the barycenter of the four
     // vertices (1).
+
+    subdivise(tmp1, tmp0);
+    tmp0.clear();
+    subdivise(tmp0, tmp1);
+    tmp1.clear();
 
     // 2. we project every new point on the original 2D mesh, finding
     // the nearest triangle
@@ -105,7 +116,17 @@ int ttk::QuadrangulationSubdivision::execute() {
     // we must end by a projection!
   }
 
-  subdivise();
+  switch(subdivisionLevel_ % 2) {
+    case 0:
+      outputQuads_->reserve(tmp0.size());
+      for(auto &q : tmp0) {
+        outputQuads_->emplace_back(q);
+      }
+      break;
+    case 1:
+      subdivise(*outputQuads_, tmp0);
+      break;
+  }
 
   {
     std::stringstream msg;

@@ -106,7 +106,8 @@ namespace ttk {
       long long l; // fourth vertex
     };
 
-    int subdivise();
+    int subdivise(std::vector<Quad> &currQuads,
+                  const std::vector<Quad> &prevQuads);
 
   protected:
     // number of vertices in the mesh
