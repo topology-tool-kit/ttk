@@ -16,7 +16,7 @@ vtkStandardNewMacro(ttkQuadrangulationSubdivision);
 
 ttkQuadrangulationSubdivision::ttkQuadrangulationSubdivision()
   : UseAllCores{true}, ThreadNumber{}, ForceInputIdentifiersField{false},
-    ForceInputOffsetIdentifiersField{false}, SubdivisionLevel{5},
+    ForceInputOffsetIdentifiersField{false}, SubdivisionLevel{3},
     RelaxationIterations{100} {
 
   InputIdentifiersFieldName

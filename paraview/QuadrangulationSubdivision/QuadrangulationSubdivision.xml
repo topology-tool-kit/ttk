@@ -94,7 +94,7 @@
           label="Level of subdivisions"
           command="SetSubdivisionLevel"
           number_of_elements="1"
-          default_values="5">
+          default_values="3">
         <Documentation>
           Number of subdivisions of the original quadrangular
           mesh. The higher the value, the more precise the output.

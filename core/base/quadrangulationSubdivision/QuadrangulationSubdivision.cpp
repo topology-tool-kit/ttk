@@ -1,7 +1,7 @@
 #include <QuadrangulationSubdivision.h>
 
 ttk::QuadrangulationSubdivision::QuadrangulationSubdivision()
-  : vertexNumber_{}, subdivisionLevel_{5}, relaxationIterations_{100},
+  : vertexNumber_{}, subdivisionLevel_{3}, relaxationIterations_{100},
     inputQuads_{}, inputVertexIdentifiers_{}, triangulation_{}, outputQuads_{},
     outputPoints_{} {
 }
