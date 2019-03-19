@@ -127,11 +127,10 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   // update output: get quadrangle values
   output->SetCells(VTK_QUAD, cells);
 
-  auto outArrayVerts = vtkSmartPointer<vtkFloatArray>::New();
-  // outArrayVerts does not own the memory its points to
-  outArrayVerts->SetArray(outVertices_.data(), outVertices_.size(), 1);
   auto points = vtkSmartPointer<vtkPoints>::New();
-  points->SetData(outArrayVerts);
+  for(size_t i = 0; i < outVertices_.size(); i+=3) {
+    points->InsertNextPoint(&outVertices_[i]);
+  }
 
   // update output: get quadrangle vertices
   output->SetPoints(points);
