@@ -130,7 +130,8 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   {
     std::stringstream msg;
-    msg << "[QuadrangulationSubdivision] Ending computation after "
+    msg << "[QuadrangulationSubdivision] Produced " << outputQuads_->size()
+        << " quadrangles with " << outputPoints_->size() << " points in "
         << t.getElapsedTime() << "s (" << threadNumber_ << " thread(s))"
         << endl;
     dMsg(cout, msg.str(), infoMsg);
