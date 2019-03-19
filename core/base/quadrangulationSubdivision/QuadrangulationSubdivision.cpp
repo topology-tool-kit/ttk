@@ -9,7 +9,10 @@ ttk::QuadrangulationSubdivision::QuadrangulationSubdivision()
 int ttk::QuadrangulationSubdivision::subdivise() {
 
   using edgeType = std::pair<long long, long long>;
-  std::map<edgeType, ttk::QuadrangulationSubdivision::Point> processedEdges;
+  using vertexType = std::pair<long long, Point>;
+  std::map<edgeType, vertexType> processedEdges;
+
+  std::vector<Quad> outQuads;
 
   // five values per quad
   for(size_t i = 0; i < inputQuadNumber_; i++) {
@@ -17,59 +20,58 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     auto q = inputQuads_[i];
     assert(q.n == 4); // magic number...
 
-    Point quadVertices[4];
-
-    // get current quad 3D coordinates
-    triangulation_->getVertexPoint(inputVertexIdentifiers_[q.i],
-                                   quadVertices[0].x, quadVertices[0].y,
-                                   quadVertices[0].z);
-    triangulation_->getVertexPoint(inputVertexIdentifiers_[q.j],
-                                   quadVertices[1].x, quadVertices[1].y,
-                                   quadVertices[1].z);
-    triangulation_->getVertexPoint(inputVertexIdentifiers_[q.k],
-                                   quadVertices[2].x, quadVertices[2].y,
-                                   quadVertices[2].z);
-    triangulation_->getVertexPoint(inputVertexIdentifiers_[q.l],
-                                   quadVertices[3].x, quadVertices[3].y,
-                                   quadVertices[3].z);
+    Point *pi = &inputVertices_[q.i];
+    Point *pj = &inputVertices_[q.j];
+    Point *pk = &inputVertices_[q.k];
+    Point *pl = &inputVertices_[q.l];
 
     // middles of edges
     auto ij = std::make_pair(q.i, q.j);
-    auto midij = (quadVertices[0] + quadVertices[1]) * 0.5;
+    auto midij = (*pi + *pj) * 0.5;
     if(processedEdges.find(ij) == processedEdges.end()) {
-      processedEdges.insert(std::make_pair(ij, midij));
+      processedEdges.insert(
+        std::make_pair(ij, std::make_pair(outputPoints_->size(), midij)));
       outputPoints_->emplace_back(midij);
     }
 
     auto jk = std::make_pair(q.j, q.k);
-    auto midjk = (quadVertices[1] + quadVertices[2]) * 0.5;
+    auto midjk = (*pj + *pk) * 0.5;
     if(processedEdges.find(jk) == processedEdges.end()) {
-      processedEdges.insert(std::make_pair(jk, midjk));
+      processedEdges.insert(
+        std::make_pair(jk, std::make_pair(outputPoints_->size(), midjk)));
       outputPoints_->emplace_back(midjk);
     }
 
     auto kl = std::make_pair(q.k, q.l);
-    auto midkl = (quadVertices[2] + quadVertices[3]) * 0.5;
+    auto midkl = (*pk + *pl) * 0.5;
     if(processedEdges.find(kl) == processedEdges.end()) {
-      processedEdges.insert(std::make_pair(kl, midkl));
+      processedEdges.insert(
+        std::make_pair(kl, std::make_pair(outputPoints_->size(), midkl)));
       outputPoints_->emplace_back(midkl);
     }
 
     auto li = std::make_pair(q.l, q.i);
-    auto midli = (quadVertices[3] + quadVertices[0]) * 0.5;
+    auto midli = (*pl + *pi) * 0.5;
     if(processedEdges.find(li) == processedEdges.end()) {
-      processedEdges.insert(std::make_pair(li, midli));
+      processedEdges.insert(
+        std::make_pair(li, std::make_pair(outputPoints_->size(), midli)));
       outputPoints_->emplace_back(midli);
     }
 
     // quad barycenter
-    auto bary
-      = (quadVertices[0] + quadVertices[1] + quadVertices[2] + quadVertices[3])
-        * 0.25;
+    auto bary = (*pi + *pj + *pk + *pl) * 0.25;
+    long long baryIdx = outputPoints_->size();
     outputPoints_->emplace_back(bary);
 
     // add the four new quads
-    // TODO
+    outputQuads_->emplace_back(Quad{
+      4, q.i, processedEdges[ij].first, baryIdx, processedEdges[li].first});
+    outputQuads_->emplace_back(Quad{
+      4, q.j, processedEdges[jk].first, baryIdx, processedEdges[ij].first});
+    outputQuads_->emplace_back(Quad{
+      4, q.k, processedEdges[kl].first, baryIdx, processedEdges[jk].first});
+    outputQuads_->emplace_back(Quad{
+      4, q.l, processedEdges[li].first, baryIdx, processedEdges[kl].first});
   }
 
   return 0;
@@ -82,6 +84,11 @@ int ttk::QuadrangulationSubdivision::execute() {
   using std::endl;
 
   Timer t;
+
+  // store input points (MSC critical points)
+  for(size_t i = 0; i < inputVertexNumber_; i++) {
+    outputPoints_->emplace_back(inputVertices_[i]);
+  }
 
   // main loop
   for(size_t i = 0; i < subdivisionLevel_; i++) {
