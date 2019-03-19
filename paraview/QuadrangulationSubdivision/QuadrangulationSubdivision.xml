@@ -104,7 +104,7 @@
       <IntVectorProperty
           name="RelaxationIterations"
           label="Number of relaxation iterations"
-          command="SetSubdivisionLevel"
+          command="SetRelaxationIterations"
           number_of_elements="1"
           default_values="100">
         <Documentation>
