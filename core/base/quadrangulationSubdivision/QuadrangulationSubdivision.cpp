@@ -73,6 +73,68 @@ int ttk::QuadrangulationSubdivision::subdivise(
   return 0;
 }
 
+int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
+
+  for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
+
+    std::vector<SimplexId> potTriangles;
+
+    // iterate over all triangles of the input mesh
+    for(SimplexId j = 0; j < triangulation_->getNumberOfTriangles(); j++) {
+      SimplexId a, b, c;
+      triangulation_->getTriangleVertex(j, 0, a);
+      triangulation_->getTriangleVertex(j, 1, b);
+      triangulation_->getTriangleVertex(j, 2, c);
+
+      Point pa, pb, pc;
+
+      triangulation_->getVertexPoint(a, pa.x, pa.y, pa.z);
+      triangulation_->getVertexPoint(b, pb.x, pb.y, pb.z);
+      triangulation_->getVertexPoint(c, pc.x, pc.y, pc.z);
+
+      std::vector<float> baryCentrics;
+
+      ttk::Geometry::computeBarycentricCoordinates(
+        &pa.x, &pb.x, &pc.x, &(*outputPoints_)[i].x, baryCentrics);
+
+      // find every triangle with barycentric coordinates in [0,1]
+      if(std::all_of(baryCentrics.begin(), baryCentrics.end(),
+                     [](float &c) { return c >= 0 && c <= 1; })) {
+        potTriangles.emplace_back(j);
+      }
+    }
+
+    SimplexId nearestTriangle;
+
+    if(potTriangles.size() > 1) {
+
+      std::pair<SimplexId, float> nearestTriangleDist = std::make_pair(-1, 0.0);
+
+      // find the nearest triangle
+      for(auto &t : potTriangles) {
+        // compute the distance between any vertex of the current
+        // triangle and the current quad point
+        SimplexId v;
+        triangulation_->getTriangleVertex(t, 0, v);
+        Point pv;
+        triangulation_->getVertexPoint(v, pv.x, pv.y, pv.z);
+        float dist = ttk::Geometry::distance(&(*outputPoints_)[i].x, &pv.x);
+
+        if(dist < nearestTriangleDist.second
+           || nearestTriangleDist.first == -1) {
+          nearestTriangleDist.first = t;
+          nearestTriangleDist.second = dist;
+        }
+      }
+      nearestTriangle = nearestTriangleDist.first;
+    } else {
+      nearestTriangle = potTriangles[0];
+    }
+  }
+
+  return 0;
+}
+
 // main routine
 int ttk::QuadrangulationSubdivision::execute() {
 

@@ -109,6 +109,8 @@ namespace ttk {
     int subdivise(std::vector<Quad> &currQuads,
                   const std::vector<Quad> &prevQuads);
 
+    int project(const size_t firstPointIdx);
+
   protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_;
