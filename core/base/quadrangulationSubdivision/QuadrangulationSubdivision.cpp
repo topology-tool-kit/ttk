@@ -130,6 +130,28 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
     } else {
       nearestTriangle = potTriangles[0];
     }
+
+    {
+      // recompute the barycentrics coordinates for the nearest triangle...
+      SimplexId a, b, c;
+      triangulation_->getTriangleVertex(nearestTriangle, 0, a);
+      triangulation_->getTriangleVertex(nearestTriangle, 1, b);
+      triangulation_->getTriangleVertex(nearestTriangle, 2, c);
+
+      Point pa, pb, pc;
+
+      triangulation_->getVertexPoint(a, pa.x, pa.y, pa.z);
+      triangulation_->getVertexPoint(b, pb.x, pb.y, pb.z);
+      triangulation_->getVertexPoint(c, pc.x, pc.y, pc.z);
+
+      std::vector<float> baryCentrics;
+
+      ttk::Geometry::computeBarycentricCoordinates(
+        &pa.x, &pb.x, &pc.x, &(*outputPoints_)[i].x, baryCentrics);
+
+      (*outputPoints_)[i]
+        = pa * baryCentrics[0] + pb * baryCentrics[1] + pc * baryCentrics[2];
+    }
   }
 
   return 0;
