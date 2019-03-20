@@ -99,6 +99,9 @@ namespace ttk {
       Point operator-(Point other) {
         return *this + other * (-1);
       }
+      Point operator/(float scalar) {
+        return (*this * (1.0 / scalar));
+      }
     };
     // VTK_QUAD representation with vtkIdType
     struct Quad {

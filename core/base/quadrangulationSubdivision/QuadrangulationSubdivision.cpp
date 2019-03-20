@@ -100,11 +100,13 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
       // triangle normal: cross product of two edges
       std::vector<float> crossP;
       Geometry::crossProduct(&pa.x, &pb.x, &pa.x, &pc.x, crossP);
-      Point *norm = reinterpret_cast<Point *>(crossP.data());
+      Point norm = {crossP[0], crossP[1], crossP[2]};
+      // unitary vector
+      norm = norm / Geometry::magnitude(crossP.data());
 
       Point tmp = *curr - pa;
       // projected point into triangle point
-      Point proj = *curr - *norm * Geometry::dotProduct(&norm->x, &tmp.x);
+      Point proj = *curr - norm * Geometry::dotProduct(&norm.x, &tmp.x);
 
       // find every triangle with proj in it
       if(Geometry::isPointInTriangle(&pa.x, &pb.x, &pc.x, &proj.x)) {
