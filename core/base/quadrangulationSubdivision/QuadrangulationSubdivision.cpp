@@ -106,14 +106,9 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
       // projected point into triangle point
       Point proj = *curr - *norm * Geometry::dotProduct(&norm->x, &tmp.x);
 
-      // barycentric coordinates of projection into current triangle
-      std::vector<float> baryCentrics;
-      Geometry::computeBarycentricCoordinates(
-        &pa.x, &pb.x, &pc.x, &proj.x, baryCentrics);
+      // find every triangle with proj in it
+      if(Geometry::isPointInTriangle(&pa.x, &pb.x, &pc.x, &proj.x)) {
 
-      // find every triangle with barycentric coordinates in [0,1]
-      if(std::all_of(baryCentrics.begin(), baryCentrics.end(),
-                     [](float &c) { return c >= 0 && c <= 1; })) {
         // distance to proj
         float dist = Geometry::distance(&curr->x, &proj.x);
         if(nearestTriangleDist.first < 0 || dist < nearestTriangleDist.first) {
