@@ -96,6 +96,9 @@ namespace ttk {
         res.z = z * scalar;
         return res;
       }
+      Point operator-(Point other) {
+        return *this + other * (-1);
+      }
     };
     // VTK_QUAD representation with vtkIdType
     struct Quad {
