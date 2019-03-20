@@ -102,8 +102,9 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
       Geometry::crossProduct(&pa.x, &pb.x, &pa.x, &pc.x, crossP);
       Point *norm = reinterpret_cast<Point *>(crossP.data());
 
+      Point tmp = *curr - pa;
       // projected point into triangle point
-      Point proj = *curr + *norm * (-Geometry::dotProduct(&norm->x, &curr->x));
+      Point proj = *curr - *norm * Geometry::dotProduct(&norm->x, &tmp.x);
 
       // barycentric coordinates of projection into current triangle
       std::vector<float> baryCentrics;
@@ -114,7 +115,7 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
       if(std::all_of(baryCentrics.begin(), baryCentrics.end(),
                      [](float &c) { return c >= 0 && c <= 1; })) {
         // distance to proj
-        float dist = ttk::Geometry::distance(&curr->x, &proj.x);
+        float dist = Geometry::distance(&curr->x, &proj.x);
         if(nearestTriangleDist.first < 0 || dist < nearestTriangleDist.first) {
           nearestTriangleDist.first = dist;
           nearestTriangleDist.second = proj;
