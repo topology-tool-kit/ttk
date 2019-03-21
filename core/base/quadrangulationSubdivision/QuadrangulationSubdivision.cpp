@@ -98,11 +98,13 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
       triangulation_->getVertexPoint(c, pc.x, pc.y, pc.z);
 
       // triangle normal: cross product of two edges
-      std::vector<float> crossP;
-      Geometry::crossProduct(&pa.x, &pb.x, &pa.x, &pc.x, crossP);
-      Point norm = {crossP[0], crossP[1], crossP[2]};
-      // unitary vector
-      norm = norm / Geometry::magnitude(crossP.data());
+      Point crossP;
+      // ab, ac vectors
+      Point ab = pb - pa, ac = pc - pa;
+      // compute ab ^ ac
+      Geometry::crossProduct(&ab.x, &ac.x, &crossP.x);
+      // unitary normal vector
+      Point norm = crossP / Geometry::magnitude(&crossP.x);
 
       Point tmp = *curr - pa;
       // projected point into triangle point
