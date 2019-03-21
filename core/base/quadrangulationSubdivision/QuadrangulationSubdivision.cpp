@@ -145,26 +145,40 @@ int ttk::QuadrangulationSubdivision::execute() {
     outputPoints_->emplace_back(inputVertices_[i]);
   }
 
-  std::vector<Quad> tmp0, tmp1;
+  // vector of input quadrangles copied from the inputQuads_ array
+  std::vector<Quad> inputQuadsVert;
+  // loop variables: pointers to quadrangle vectors
+  std::vector<Quad> *tmp0 = &inputQuadsVert, *tmp1 = outputQuads_;
+  // holds the subdivision bounds in the outputPoints_ vector
+  std::vector<size_t> newPointsRange;
+  newPointsRange.emplace_back(outputPoints_->size());
 
   // copy input quads into vector
   for(size_t i = 0; i < inputQuadNumber_; i++) {
-    tmp0.emplace_back(inputQuads_[i]);
+    inputQuadsVert.emplace_back(inputQuads_[i]);
   }
 
   // main loop
-  for(size_t i = 0; i < subdivisionLevel_ / 2; i++) {
+  for(size_t i = 0; i < subdivisionLevel_; i++) {
     // 1. we subdivise each quadrangle by creating five new points, at
     // the center of each edge (4) and at the barycenter of the four
     // vertices (1).
 
-    subdivise(tmp1, tmp0);
-    tmp0.clear();
-    subdivise(tmp0, tmp1);
-    tmp1.clear();
+    // index of first point inserted in the outputPoints_ vector
+    // during subdivision
+
+    subdivise(*tmp1, *tmp0);
+    tmp0->clear();
+
+    auto swap = tmp0;
+    tmp0 = tmp1;
+    tmp1 = swap;
 
     // 2. we project every new point on the original 2D mesh, finding
     // the nearest triangle
+
+    project(newPointsRange.back());
+    newPointsRange.emplace_back(outputPoints_->size());
 
     // 3. we "relax" the new points, i.e. we replace it by the
     // barycenter of its four neighbors
@@ -172,16 +186,14 @@ int ttk::QuadrangulationSubdivision::execute() {
     // we must end by a projection!
   }
 
-  switch(subdivisionLevel_ % 2) {
-    case 0:
-      outputQuads_->reserve(tmp0.size());
-      for(auto &q : tmp0) {
-        outputQuads_->emplace_back(q);
-      }
-      break;
-    case 1:
-      subdivise(*outputQuads_, tmp0);
-      break;
+  // remainder iteration: since we used outputQuads_ to store
+  // temporary quadrangles data, we sometimes need to copy the true
+  // output quadrangles into it
+  if(subdivisionLevel_ % 2 == 0) {
+    outputQuads_->reserve(tmp0->size());
+    for(auto &q : *tmp0) {
+      outputQuads_->emplace_back(q);
+    }
   }
 
   {
