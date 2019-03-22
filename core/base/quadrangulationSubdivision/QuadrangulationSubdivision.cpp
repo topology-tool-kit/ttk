@@ -25,17 +25,19 @@ int ttk::QuadrangulationSubdivision::subdivise(
     Point *pl = &(*outputPoints_)[q.l];
 
     // middles of edges
-    auto ij = std::make_pair(q.i, q.j);
     auto midij = (*pi + *pj) * 0.5;
-    auto jk = std::make_pair(q.j, q.k);
     auto midjk = (*pj + *pk) * 0.5;
-    auto kl = std::make_pair(q.k, q.l);
     auto midkl = (*pk + *pl) * 0.5;
-    auto li = std::make_pair(q.l, q.i);
     auto midli = (*pl + *pi) * 0.5;
 
     // quad barycenter
     auto bary = (*pi + *pj + *pk + *pl) * 0.25;
+
+    // order edges to avoid duplicates (ij vs. ji)
+    auto ij = std::make_pair(std::min(q.i, q.j), std::max(q.i, q.j));
+    auto jk = std::make_pair(std::min(q.j, q.k), std::max(q.j, q.k));
+    auto kl = std::make_pair(std::min(q.k, q.l), std::max(q.k, q.l));
+    auto li = std::make_pair(std::min(q.l, q.i), std::max(q.l, q.i));
 
     // add to outputPoints_ after computing new point coordinates to
     // avoid invalidating pointers
