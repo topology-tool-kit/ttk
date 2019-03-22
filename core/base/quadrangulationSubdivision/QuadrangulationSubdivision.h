@@ -118,6 +118,8 @@ namespace ttk {
 
     int project(const size_t firstPointIdx);
 
+    int relax();
+
     int projInTriangle(Point *const p,
                        const SimplexId trId,
                        Point &pa,
