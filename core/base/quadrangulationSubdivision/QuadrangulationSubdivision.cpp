@@ -78,6 +78,30 @@ int ttk::QuadrangulationSubdivision::subdivise(
 
 int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
 
+  // holds the barycenter coordinate of every triangle of the input mesh
+  std::vector<Point> triangleBary(triangulation_->getNumberOfTriangles());
+
+  // compute input triangles barycenters
+  for(SimplexId j = 0; j < triangulation_->getNumberOfTriangles(); j++) {
+
+    // get triangle vertices
+    SimplexId a, b, c;
+    triangulation_->getTriangleVertex(j, 0, a);
+    triangulation_->getTriangleVertex(j, 1, b);
+    triangulation_->getTriangleVertex(j, 2, c);
+
+    // get coordinates of triangle vertices
+    Point pa, pb, pc;
+    triangulation_->getVertexPoint(a, pa.x, pa.y, pa.z);
+    triangulation_->getVertexPoint(b, pb.x, pb.y, pb.z);
+    triangulation_->getVertexPoint(c, pc.x, pc.y, pc.z);
+
+    // get triangle barycenter
+    Point bary = (pa + pb + pc) * 1.0 / 3.0;
+    triangleBary[j] = bary;
+  }
+
+  // main loop
   for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
 
     // current point to project
@@ -88,23 +112,11 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
     // iterate over all triangles of the input mesh, find the nearest triangle
     for(SimplexId j = 0; j < triangulation_->getNumberOfTriangles(); j++) {
 
-      // get triangle vertices
-      SimplexId a, b, c;
-      triangulation_->getTriangleVertex(j, 0, a);
-      triangulation_->getTriangleVertex(j, 1, b);
-      triangulation_->getTriangleVertex(j, 2, c);
-
-      // get coordinates of triangle vertices
-      Point pa, pb, pc;
-      triangulation_->getVertexPoint(a, pa.x, pa.y, pa.z);
-      triangulation_->getVertexPoint(b, pb.x, pb.y, pb.z);
-      triangulation_->getVertexPoint(c, pc.x, pc.y, pc.z);
-
       // get triangle barycenter
-      Point bary = (pa + pb + pc) * 1.0 / 3.0;
+      Point *bary = &triangleBary[j];
 
       // get distance to triangle barycenter
-      float dist = Geometry::distance(&curr->x, &bary.x);
+      float dist = Geometry::distance(&curr->x, &bary->x);
 
       if(nearestTriangleDist.first < 0.0 || dist < nearestTriangleDist.first) {
         nearestTriangleDist.first = dist;
