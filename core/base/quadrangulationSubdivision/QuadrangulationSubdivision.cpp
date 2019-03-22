@@ -276,6 +276,14 @@ int ttk::QuadrangulationSubdivision::execute() {
     }
   }
 
+  {
+    std::stringstream msg;
+    msg << "[QuadrangulationSubdivision] Begin iterations of "
+           "relaxation-projection on "
+        << outputPoints_->size() << " points" << endl;
+    dMsg(cout, msg.str(), detailedInfoMsg);
+  }
+
   // 3. we "relax" the new points, i.e. we replace it by the
   // barycenter of its four neighbors
   for(size_t i = 0; i < relaxationIterations_; i++) {
