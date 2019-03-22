@@ -117,62 +117,60 @@ int ttk::QuadrangulationSubdivision::projInTriangle(Point *const p,
 
 int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
 
-  // holds the barycenter coordinate of every triangle of the input mesh
-  std::vector<Point> triangleBary(triangulation_->getNumberOfTriangles());
-
-  // compute input triangles barycenters
-  for(SimplexId j = 0; j < triangulation_->getNumberOfTriangles(); j++) {
-
-    // get triangle vertices
-    SimplexId a, b, c;
-    triangulation_->getTriangleVertex(j, 0, a);
-    triangulation_->getTriangleVertex(j, 1, b);
-    triangulation_->getTriangleVertex(j, 2, c);
-
-    // get coordinates of triangle vertices
-    Point pa, pb, pc;
-    triangulation_->getVertexPoint(a, pa.x, pa.y, pa.z);
-    triangulation_->getVertexPoint(b, pb.x, pb.y, pb.z);
-    triangulation_->getVertexPoint(c, pc.x, pc.y, pc.z);
-
-    // get triangle barycenter
-    Point bary = (pa + pb + pc) * 1.0 / 3.0;
-    triangleBary[j] = bary;
-  }
-
   // main loop
   for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
 
     // current point to project
     Point *curr = &(*outputPoints_)[i];
-    // holds the distance to the nearest triangle
-    std::pair<float, SimplexId> nearestTriangleDist = std::make_pair(-1.0, -1);
+    // holds the distance to the nearest vertex
+    std::pair<float, SimplexId> nearestVertex = std::make_pair(-1.0, -1);
 
-    // iterate over all triangles of the input mesh, find the nearest triangle
-    for(SimplexId j = 0; j < triangulation_->getNumberOfTriangles(); j++) {
+    // iterate over all vertices of the input mesh, find the nearest one
+    for(SimplexId j = 0; j < triangulation_->getNumberOfVertices(); j++) {
 
-      // get triangle barycenter
-      Point *bary = &triangleBary[j];
+      // get vertex coordinates
+      Point inMesh;
+      triangulation_->getVertexPoint(j, inMesh.x, inMesh.y, inMesh.z);
 
-      // get square distance to triangle barycenter
-      float dist = (curr->x - bary->x) * (curr->x - bary->x)
-                   + (curr->y - bary->y) * (curr->y - bary->y)
-                   + (curr->z - bary->z) * (curr->z - bary->z);
+      // get square distance to vertex
+      float dist = (curr->x - inMesh.x) * (curr->x - inMesh.x)
+                   + (curr->y - inMesh.y) * (curr->y - inMesh.y)
+                   + (curr->z - inMesh.z) * (curr->z - inMesh.z);
 
-      if(nearestTriangleDist.first < 0.0 || dist < nearestTriangleDist.first) {
-        nearestTriangleDist.first = dist;
-        nearestTriangleDist.second = j;
+      if(nearestVertex.first < 0.0 || dist < nearestVertex.first) {
+        nearestVertex.first = dist;
+        nearestVertex.second = j;
       }
     }
 
-    // projected point into triangle point
+    // projected point into triangle
     Point proj;
-    // triangle vertices
-    Point pa, pb, pc;
-    projInTriangle(curr, nearestTriangleDist.second, pa, pb, pc, proj);
+    // found a projection in one triangle
+    bool success = false;
+    // number of triangles around nearest vertex
+    SimplexId triangleNumber
+      = triangulation_->getVertexTriangleNumber(nearestVertex.second);
 
+    // iterate over nearest vertex triangles, find a projection
+    for(SimplexId j = 0; j < triangleNumber; j++) {
+      Point pa, pb, pc;
+      SimplexId tid;
+      triangulation_->getVertexTriangle(nearestVertex.second, j, tid);
+      projInTriangle(curr, tid, pa, pb, pc, proj);
 
-    // replace curr in outputPoints_ by its projection in the nearest triangle
+      if(Geometry::isPointInTriangle(&pa.x, &pb.x, &pc.x, &proj.x)) {
+        success = true;
+        break;
+      }
+    }
+
+    if(!success) {
+      // replace proj by the nearest vertex
+      triangulation_->getVertexPoint(
+        nearestVertex.second, proj.x, proj.y, proj.z);
+    }
+
+    // replace curr in outputPoints_ by its projection
     *curr = proj;
   }
 

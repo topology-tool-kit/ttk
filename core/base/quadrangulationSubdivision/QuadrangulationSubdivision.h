@@ -65,6 +65,7 @@ namespace ttk {
       if(triangulation_ != nullptr) {
         vertexNumber_ = triangulation_->getNumberOfVertices();
         triangulation_->preprocessVertexNeighbors();
+        triangulation_->preprocessVertexTriangles();
       }
     }
     inline void setOutputQuads(std::vector<long long> *const quads) {
