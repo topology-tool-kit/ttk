@@ -117,6 +117,13 @@ namespace ttk {
 
     int project(const size_t firstPointIdx);
 
+    int projInTriangle(Point *const p,
+                       const SimplexId trId,
+                       Point &pa,
+                       Point &pb,
+                       Point &pc,
+                       Point &proj) const;
+
   protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_;
