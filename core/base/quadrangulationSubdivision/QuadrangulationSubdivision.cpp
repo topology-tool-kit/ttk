@@ -120,8 +120,10 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
       // get triangle barycenter
       Point *bary = &triangleBary[j];
 
-      // get distance to triangle barycenter
-      float dist = Geometry::distance(&curr->x, &bary->x);
+      // get square distance to triangle barycenter
+      float dist = (curr->x - bary->x) * (curr->x - bary->x)
+                   + (curr->y - bary->y) * (curr->y - bary->y)
+                   + (curr->z - bary->z) * (curr->z - bary->z);
 
       if(nearestTriangleDist.first < 0.0 || dist < nearestTriangleDist.first) {
         nearestTriangleDist.first = dist;
