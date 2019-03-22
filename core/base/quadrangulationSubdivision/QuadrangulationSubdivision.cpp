@@ -179,6 +179,36 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
 
 int ttk::QuadrangulationSubdivision::relax() {
 
+  // maps every vertex to its quad neighbors
+  std::vector<std::set<size_t>> quadNeighbors(outputPoints_->size());
+
+  for(size_t i = inputVertexNumber_; i < outputPoints_->size(); i++) {
+    for(auto &q : *outputQuads_) {
+      if(static_cast<size_t>(q.i) == i || static_cast<size_t>(q.k) == i) {
+        quadNeighbors[i].insert(q.j);
+        quadNeighbors[i].insert(q.l);
+      }
+      if(static_cast<size_t>(q.j) == i || static_cast<size_t>(q.l) == i) {
+        quadNeighbors[i].insert(q.k);
+        quadNeighbors[i].insert(q.i);
+      }
+    }
+  }
+
+  // loop over output points, do not touch input MSC critical points
+  for(size_t i = inputVertexNumber_; i < outputPoints_->size(); i++) {
+    Point *curr = &(*outputPoints_)[i];
+
+    // barycenter of curr neighbors
+    Point relax{};
+    for(auto &neigh : quadNeighbors[i]) {
+      relax = relax + (*outputPoints_)[neigh];
+    }
+    relax = relax * 1.0 / quadNeighbors[i].size();
+
+    *curr = relax;
+  }
+
   return 0;
 }
 
