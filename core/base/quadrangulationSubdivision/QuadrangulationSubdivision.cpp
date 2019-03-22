@@ -266,15 +266,6 @@ int ttk::QuadrangulationSubdivision::execute() {
     newPointsRange.emplace_back(outputPoints_->size());
   }
 
-  // 3. we "relax" the new points, i.e. we replace it by the
-  // barycenter of its four neighbors
-  for(size_t i = 0; i < relaxationIterations_; i++) {
-    relax();
-
-    // project all points except MSC critical points
-    project(newPointsRange.front());
-  }
-
   // remainder iteration: since we used outputQuads_ to store
   // temporary quadrangles data, we sometimes need to copy the true
   // output quadrangles into it
@@ -283,6 +274,15 @@ int ttk::QuadrangulationSubdivision::execute() {
     for(auto &q : *tmp0) {
       outputQuads_->emplace_back(q);
     }
+  }
+
+  // 3. we "relax" the new points, i.e. we replace it by the
+  // barycenter of its four neighbors
+  for(size_t i = 0; i < relaxationIterations_; i++) {
+    relax();
+
+    // project all points except MSC critical points
+    project(newPointsRange.front());
   }
 
   {
