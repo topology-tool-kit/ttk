@@ -13,6 +13,9 @@ int ttk::QuadrangulationSubdivision::subdivise(
   using vertexType = std::pair<long long, Point>;
   std::map<edgeType, vertexType> processedEdges;
 
+  // avoid reallocation in loop, causing invalid pointers
+  outputPoints_->reserve(outputPoints_->size() * 5);
+
   for(auto &q : prevQuads) {
     assert(q.n == 4); // magic number...
 
