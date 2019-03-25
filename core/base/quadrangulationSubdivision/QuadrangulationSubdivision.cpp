@@ -125,7 +125,7 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
     // current point to project
     Point *curr = &(*outputPoints_)[i];
     // holds the distance to the nearest vertex
-    std::pair<float, SimplexId> nearestVertex = std::make_pair(-1.0, -1);
+    std::pair<float, SimplexId> nearestVertex = std::make_pair(-1.0f, -1);
 
     // iterate over all vertices of the input mesh, find the nearest one
     for(SimplexId j = 0; j < triangulation_->getNumberOfVertices(); j++) {
@@ -139,7 +139,7 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
                    + (curr->y - inMesh.y) * (curr->y - inMesh.y)
                    + (curr->z - inMesh.z) * (curr->z - inMesh.z);
 
-      if(nearestVertex.first < 0.0 || dist < nearestVertex.first) {
+      if(nearestVertex.first < 0.0f || dist < nearestVertex.first) {
         nearestVertex.first = dist;
         nearestVertex.second = j;
       }
@@ -243,7 +243,7 @@ int ttk::QuadrangulationSubdivision::relax() {
     for(auto &neigh : quadNeighbors[i]) {
       relax = relax + (*outputPoints_)[neigh];
     }
-    relax = relax * 1.0 / quadNeighbors[i].size();
+    relax = relax * 1.0f / quadNeighbors[i].size();
 
     *curr = relax;
   }

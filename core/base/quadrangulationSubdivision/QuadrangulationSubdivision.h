@@ -101,7 +101,7 @@ namespace ttk {
         return *this + other * (-1);
       }
       Point operator/(float scalar) {
-        return (*this * (1.0 / scalar));
+        return (*this * (1.0f / scalar));
       }
     };
     // VTK_QUAD representation with vtkIdType
