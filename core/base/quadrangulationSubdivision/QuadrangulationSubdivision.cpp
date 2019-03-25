@@ -19,10 +19,15 @@ int ttk::QuadrangulationSubdivision::subdivise(
   for(auto &q : prevQuads) {
     assert(q.n == 4); // magic number...
 
-    Point *pi = &(*outputPoints_)[q.i];
-    Point *pj = &(*outputPoints_)[q.j];
-    Point *pk = &(*outputPoints_)[q.k];
-    Point *pl = &(*outputPoints_)[q.l];
+    auto i = static_cast<size_t>(q.i);
+    auto j = static_cast<size_t>(q.j);
+    auto k = static_cast<size_t>(q.k);
+    auto l = static_cast<size_t>(q.l);
+
+    Point *pi = &(*outputPoints_)[i];
+    Point *pj = &(*outputPoints_)[j];
+    Point *pk = &(*outputPoints_)[k];
+    Point *pl = &(*outputPoints_)[l];
 
     // middles of edges
     auto midij = (*pi + *pj) * 0.5;
@@ -66,7 +71,7 @@ int ttk::QuadrangulationSubdivision::subdivise(
     }
 
     // barycenter index in outputPoints_
-    long long baryIdx = outputPoints_->size();
+    auto baryIdx = static_cast<long long>(outputPoints_->size());
     outputPoints_->emplace_back(bary);
 
     // add the four new quads
@@ -221,15 +226,19 @@ int ttk::QuadrangulationSubdivision::relax() {
   // maps every vertex to its quad neighbors
   std::vector<std::set<size_t>> quadNeighbors(outputPoints_->size());
 
-  for(size_t i = inputVertexNumber_; i < outputPoints_->size(); i++) {
+  for(size_t a = inputVertexNumber_; a < outputPoints_->size(); a++) {
     for(auto &q : *outputQuads_) {
-      if(static_cast<size_t>(q.i) == i || static_cast<size_t>(q.k) == i) {
-        quadNeighbors[i].insert(q.j);
-        quadNeighbors[i].insert(q.l);
+      auto i = static_cast<size_t>(q.i);
+      auto j = static_cast<size_t>(q.j);
+      auto k = static_cast<size_t>(q.k);
+      auto l = static_cast<size_t>(q.l);
+      if(i == a || k == a) {
+        quadNeighbors[a].insert(j);
+        quadNeighbors[a].insert(l);
       }
-      if(static_cast<size_t>(q.j) == i || static_cast<size_t>(q.l) == i) {
-        quadNeighbors[i].insert(q.k);
-        quadNeighbors[i].insert(q.i);
+      if(j == a || l == a) {
+        quadNeighbors[a].insert(k);
+        quadNeighbors[a].insert(i);
       }
     }
   }
@@ -243,7 +252,7 @@ int ttk::QuadrangulationSubdivision::relax() {
     for(auto &neigh : quadNeighbors[i]) {
       relax = relax + (*outputPoints_)[neigh];
     }
-    relax = relax * 1.0f / quadNeighbors[i].size();
+    relax = relax * (1.0f / static_cast<float>(quadNeighbors[i].size()));
 
     *curr = relax;
   }
