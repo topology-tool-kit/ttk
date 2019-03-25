@@ -149,21 +149,58 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
     Point proj;
     // found a projection in one triangle
     bool success = false;
+
+    // list of triangle IDs to test to find a potential projection
+    std::queue<SimplexId> trianglesToTest;
+    // list of triangle IDs already tested
+    std::set<SimplexId> trianglesTested;
+
     // number of triangles around nearest vertex
     SimplexId triangleNumber
       = triangulation_->getVertexTriangleNumber(nearestVertex.second);
-
-    // iterate over nearest vertex triangles, find a projection
+    // init pipeline by checking every triangle around selected vertex
     for(SimplexId j = 0; j < triangleNumber; j++) {
-      Point pa, pb, pc;
-      SimplexId tid;
-      triangulation_->getVertexTriangle(nearestVertex.second, j, tid);
-      projInTriangle(curr, tid, pa, pb, pc, proj);
+      SimplexId ntid;
+      triangulation_->getVertexTriangle(nearestVertex.second, j, ntid);
+      trianglesToTest.push(ntid);
+    }
 
-      if(Geometry::isPointInTriangle(&pa.x, &pb.x, &pc.x, &proj.x)) {
-        success = true;
-        break;
+    while(!trianglesToTest.empty()) {
+      SimplexId tid = trianglesToTest.front();
+      // check if already tested
+      if(trianglesTested.find(tid) == trianglesTested.end()) {
+
+        Point pa, pb, pc;
+        // compute projection position
+        projInTriangle(curr, tid, pa, pb, pc, proj);
+        // check if projection in triangle
+        if(Geometry::isPointInTriangle(&pa.x, &pb.x, &pc.x, &proj.x)) {
+          success = true;
+          break;
+        } else {
+          // (re-)compute barycentric coords of projection
+          std::vector<float> baryCoords;
+          Geometry::computeBarycentricCoordinates(
+            &pa.x, &pb.x, &pc.x, &proj.x, baryCoords);
+          // find the biggest value in the barycoords to get the next
+          // vertex to check
+          auto max = std::max(baryCoords.begin(), baryCoords.end());
+          // next vertex in the input triangular mesh to check
+          SimplexId next;
+          triangulation_->getVertexTriangle(
+            tid, max - baryCoords.begin(), next);
+          auto tnum = triangulation_->getVertexTriangleNumber(next);
+          for(SimplexId j = 0; j < tnum; j++) {
+            // next triangle to test
+            SimplexId ntid;
+            triangulation_->getVertexTriangle(next, j, ntid);
+            trianglesToTest.push(ntid);
+          }
+        }
+        trianglesTested.insert(tid);
       }
+
+      trianglesToTest.pop();
     }
 
     if(!success) {
