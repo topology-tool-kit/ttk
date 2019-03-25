@@ -113,11 +113,49 @@ namespace ttk {
       long long l; // fourth vertex
     };
 
+    /**
+     * @brief Subdivise a quadrangular mesh
+     *
+     * Add five new points per existing quadrangle:
+     * - four at the middle of the four quadrangle edges
+     * - one at the quadrangle barycenter
+     *
+     * The points are generated once, no duplicate is generated when
+     * considering two quadrangles sharing an edge.
+     *
+     * New quadrangles using these new points are then generated
+     * out-of-place in an output vector of quadrangles.
+     *
+     * @param[out] currQuads vector of newly generated quadrangles
+     * @param[in] prevQuads vector of input quadrangles to be subdivised
+     * @return 0 in case of success
+     */
     int subdivise(std::vector<Quad> &currQuads,
                   const std::vector<Quad> &prevQuads);
 
+    /**
+     * @brief Project a generated quadrangle vertex into the
+     * triangular input mesh
+     *
+     * Project a subset of the current quadrangular mesh onto the
+     * triangular input mesh.
+     *
+     * @param[in] firstPointIdx beginning index in outputPoints_
+     * vector of the range of points to be projected
+     * @return 0 in case of success
+     */
     int project(const size_t firstPointIdx);
 
+    /**
+     * @brief Relax every generated point of a quadrangular mesh
+     *
+     * Take every generated point of the current quadrangular mesh,
+     * and move its position to the barycenter of its neighbors.
+     *
+     * Keep the input Morse-Smale Complex critical points untouched.
+     *
+     * @return 0 in case of success
+     */
     int relax();
 
     int projInTriangle(Point *const p,
