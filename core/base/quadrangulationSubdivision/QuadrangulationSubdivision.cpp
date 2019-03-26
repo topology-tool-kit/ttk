@@ -132,6 +132,9 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
   Timer t;
 
   // main loop
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
 
     // current point to project
@@ -204,6 +207,9 @@ int ttk::QuadrangulationSubdivision::relax() {
   // maps every vertex to its quad neighbors
   std::vector<std::set<size_t>> quadNeighbors(outputPoints_->size());
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for(size_t a = inputVertexNumber_; a < outputPoints_->size(); a++) {
     for(auto &q : *outputQuads_) {
       auto i = static_cast<size_t>(q.i);
@@ -222,6 +228,9 @@ int ttk::QuadrangulationSubdivision::relax() {
   }
 
   // loop over output points, do not touch input MSC critical points
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = inputVertexNumber_; i < outputPoints_->size(); i++) {
     Point *curr = &(*outputPoints_)[i];
 
