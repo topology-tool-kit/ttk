@@ -28,8 +28,8 @@ namespace ttk {
   class QuadrangulationSubdivision : public Debug {
 
   public:
-    QuadrangulationSubdivision();
-
+    // default constructor
+    QuadrangulationSubdivision() = default;
     // default destructor
     ~QuadrangulationSubdivision() override = default;
     // default copy constructor

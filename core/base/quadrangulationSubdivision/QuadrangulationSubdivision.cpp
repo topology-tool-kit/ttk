@@ -1,11 +1,5 @@
 #include <QuadrangulationSubdivision.h>
 
-ttk::QuadrangulationSubdivision::QuadrangulationSubdivision()
-  : vertexNumber_{}, subdivisionLevel_{3}, relaxationIterations_{100},
-    inputQuads_{}, inputVertexIdentifiers_{}, triangulation_{}, outputQuads_{},
-    outputPoints_{} {
-}
-
 int ttk::QuadrangulationSubdivision::subdivise(
   std::vector<Quad> &currQuads, const std::vector<Quad> &prevQuads) {
 
