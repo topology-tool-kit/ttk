@@ -1,11 +1,15 @@
 #include <QuadrangulationSubdivision.h>
 
+#define MODULE_S "[QuadrangulationSubdivision] "
+
 int ttk::QuadrangulationSubdivision::subdivise(
   std::vector<Quad> &currQuads, const std::vector<Quad> &prevQuads) {
 
   using edgeType = std::pair<long long, long long>;
   using vertexType = std::pair<long long, Point>;
   std::map<edgeType, vertexType> processedEdges;
+
+  Timer t;
 
   // avoid reallocation in loop, causing invalid pointers
   outputPoints_->reserve(outputPoints_->size() * 5);
@@ -79,6 +83,14 @@ int ttk::QuadrangulationSubdivision::subdivise(
       4, q.l, processedEdges[li].first, baryIdx, processedEdges[kl].first});
   }
 
+  {
+    std::stringstream msg;
+    msg << MODULE_S "Subdivised " << prevQuads.size() << " quads into "
+        << currQuads.size() << " new quads (" << outputPoints_->size()
+        << " points) in " << t.getElapsedTime() << "s" << std::endl;
+    dMsg(std::cout, msg.str(), detailedInfoMsg);
+  }
+
   return 0;
 }
 
@@ -117,6 +129,7 @@ int ttk::QuadrangulationSubdivision::projInTriangle(Point *const p,
 }
 
 int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
+  Timer t;
 
   // main loop
   for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
@@ -212,10 +225,18 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
     *curr = proj;
   }
 
+  {
+    std::stringstream msg;
+    msg << MODULE_S "Projected " << outputPoints_->size() - firstPointIdx
+        << " points in " << t.getElapsedTime() << "s" << std::endl;
+    dMsg(std::cout, msg.str(), detailedInfoMsg);
+  }
+
   return 0;
 }
 
 int ttk::QuadrangulationSubdivision::relax() {
+  Timer t;
 
   // maps every vertex to its quad neighbors
   std::vector<std::set<size_t>> quadNeighbors(outputPoints_->size());
@@ -249,6 +270,13 @@ int ttk::QuadrangulationSubdivision::relax() {
     relax = relax * (1.0f / static_cast<float>(quadNeighbors[i].size()));
 
     *curr = relax;
+  }
+
+  {
+    std::stringstream msg;
+    msg << MODULE_S "Relaxed " << outputPoints_->size() - inputVertexNumber_
+        << " points in " << t.getElapsedTime() << "s" << std::endl;
+    dMsg(std::cout, msg.str(), detailedInfoMsg);
   }
 
   return 0;
@@ -316,14 +344,6 @@ int ttk::QuadrangulationSubdivision::execute() {
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[QuadrangulationSubdivision] Begin iterations of "
-           "relaxation-projection on "
-        << outputPoints_->size() << " points" << endl;
-    dMsg(cout, msg.str(), detailedInfoMsg);
-  }
-
   // 3. we "relax" the new points, i.e. we replace it by the
   // barycenter of its four neighbors
   for(size_t i = 0; i < relaxationIterations_; i++) {
@@ -335,10 +355,9 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   {
     std::stringstream msg;
-    msg << "[QuadrangulationSubdivision] Produced " << outputQuads_->size()
-        << " quadrangles with " << outputPoints_->size() << " points in "
-        << t.getElapsedTime() << "s (" << threadNumber_ << " thread(s))"
-        << endl;
+    msg << MODULE_S "Produced " << outputQuads_->size() << " quadrangles with "
+        << outputPoints_->size() << " points in " << t.getElapsedTime() << "s ("
+        << threadNumber_ << " thread(s))" << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
 
