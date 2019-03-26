@@ -50,11 +50,11 @@ namespace ttk {
       relaxationIterations_ = value;
     }
     inline void setInputQuads(void *const address, unsigned int size) {
-      inputQuads_ = reinterpret_cast<Quad *>(address);
+      inputQuads_ = static_cast<Quad *>(address);
       inputQuadNumber_ = size / 5; // 5 values per quad: 1 number and 4 indices
     }
     inline void setInputVertices(void *const address, unsigned int size) {
-      inputVertices_ = reinterpret_cast<Point *>(address);
+      inputVertices_ = static_cast<Point *>(address);
       inputVertexNumber_ = size;
     }
     inline void setInputVertexIdentifiers(void *const address) {
@@ -83,14 +83,14 @@ namespace ttk {
       float x;
       float y;
       float z;
-      Point operator+(Point other) {
+      Point operator+(const Point other) {
         Point res{};
         res.x = x + other.x;
         res.y = y + other.y;
         res.z = z + other.z;
         return res;
       }
-      Point operator*(float scalar) {
+      Point operator*(const float scalar) {
         Point res{};
         res.x = x * scalar;
         res.y = y * scalar;
@@ -100,7 +100,7 @@ namespace ttk {
       Point operator-(Point other) {
         return *this + other * (-1);
       }
-      Point operator/(float scalar) {
+      Point operator/(const float scalar) {
         return (*this * (1.0f / scalar));
       }
     };
@@ -144,7 +144,7 @@ namespace ttk {
      * vector of the range of points to be projected
      * @return 0 in case of success
      */
-    int project(const size_t firstPointIdx);
+    int project(size_t firstPointIdx);
 
     /**
      * @brief Relax every generated point of a quadrangular mesh

@@ -75,8 +75,6 @@ int ttkQuadrangulationSubdivision::getQuadVertices(
   TTK_ABORT_KK(identifiers == nullptr,
                "invalid input quadrangle vertices identifiers", -8);
 
-  auto address = static_cast<vtkIdType *>(cells->GetData()->GetVoidPointer(0));
-
   baseWorker_.setInputQuads(
     cells->GetData()->GetVoidPointer(0), cells->GetNumberOfCells());
   baseWorker_.setInputVertices(
