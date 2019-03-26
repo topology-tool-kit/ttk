@@ -84,14 +84,14 @@ namespace ttk {
       float y;
       float z;
       Point operator+(Point other) {
-        Point res;
+        Point res{};
         res.x = x + other.x;
         res.y = y + other.y;
         res.z = z + other.z;
         return res;
       }
       Point operator*(float scalar) {
-        Point res;
+        Point res{};
         res.x = x * scalar;
         res.y = y * scalar;
         res.z = z * scalar;

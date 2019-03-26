@@ -107,7 +107,7 @@ int ttk::QuadrangulationSubdivision::projInTriangle(Point *const p,
   triangulation_->getVertexPoint(c, pc.x, pc.y, pc.z);
 
   // triangle normal: cross product of two edges
-  Point crossP;
+  Point crossP{};
   // ab, ac vectors
   Point ab = pb - pa, ac = pc - pa;
   // compute ab ^ ac
@@ -136,7 +136,7 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
     for(SimplexId j = 0; j < triangulation_->getNumberOfVertices(); j++) {
 
       // get vertex coordinates
-      Point inMesh;
+      Point inMesh{};
       triangulation_->getVertexPoint(j, inMesh.x, inMesh.y, inMesh.z);
 
       // get square distance to vertex
@@ -151,7 +151,7 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
     }
 
     // projected point into triangle
-    Point proj;
+    Point proj{};
     // found a projection in one triangle
     bool success = false;
 
@@ -175,7 +175,7 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
       // check if already tested
       if(trianglesTested.find(tid) == trianglesTested.end()) {
 
-        Point pa, pb, pc;
+        Point pa{}, pb{}, pc{};
         // compute projection position
         projInTriangle(curr, tid, pa, pb, pc, proj);
         // check if projection in triangle
