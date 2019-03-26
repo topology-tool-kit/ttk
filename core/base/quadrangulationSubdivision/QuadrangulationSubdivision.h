@@ -167,32 +167,32 @@ namespace ttk {
 
   protected:
     // number of vertices in the mesh
-    SimplexId vertexNumber_;
+    SimplexId vertexNumber_{};
 
     // wanted number of subdivisions of the input quadrangles
-    unsigned int subdivisionLevel_;
+    unsigned int subdivisionLevel_{3};
     // number of relaxation iterations
-    unsigned int relaxationIterations_;
+    unsigned int relaxationIterations_{100};
 
     // number of input quadrangles
-    unsigned int inputQuadNumber_;
+    unsigned int inputQuadNumber_{};
     // input quadrangles
-    Quad *inputQuads_;
+    Quad *inputQuads_{};
 
     // number of input points (quad vertices)
-    unsigned int inputVertexNumber_;
+    unsigned int inputVertexNumber_{};
     // input quadrangle vertices (3D coordinates)
-    Point *inputVertices_;
+    Point *inputVertices_{};
     // TTK identifiers of input quadrangles vertices
-    SimplexId *inputVertexIdentifiers_;
+    SimplexId *inputVertexIdentifiers_{};
 
     // input triangulation
-    Triangulation *triangulation_;
+    Triangulation *triangulation_{};
 
     // array of output quadrangles
-    std::vector<Quad> *outputQuads_;
+    std::vector<Quad> *outputQuads_{};
     // array of output quadrangle vertices
-    std::vector<Point> *outputPoints_;
+    std::vector<Point> *outputPoints_{};
   };
 } // namespace ttk
 
