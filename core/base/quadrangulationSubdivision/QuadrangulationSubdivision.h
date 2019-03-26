@@ -158,6 +158,16 @@ namespace ttk {
      */
     int relax();
 
+    /**
+     * @brief Store for every quad vertex its neighbors
+     *
+     * Each quad vertex should be linked to four other vertices. This
+     * functions stores into the quadNeighbors_ member this relation.
+     *
+     * @return 0 in case of success
+     */
+    int getQuadNeighbors();
+
   protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_{};
@@ -186,6 +196,8 @@ namespace ttk {
     std::vector<Quad> *outputQuads_{};
     // array of output quadrangle vertices
     std::vector<Point> *outputPoints_{};
+    // array mapping quadrangle neighbors
+    std::vector<std::set<size_t>> quadNeighbors_{};
   };
 } // namespace ttk
 

@@ -190,11 +190,11 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
   return 0;
 }
 
-int ttk::QuadrangulationSubdivision::relax() {
+int ttk::QuadrangulationSubdivision::getQuadNeighbors() {
   Timer t;
 
-  // maps every vertex to its quad neighbors
-  std::vector<std::set<size_t>> quadNeighbors(outputPoints_->size());
+  quadNeighbors_.clear();
+  quadNeighbors_.resize(outputPoints_->size());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -206,15 +206,29 @@ int ttk::QuadrangulationSubdivision::relax() {
       auto k = static_cast<size_t>(q.k);
       auto l = static_cast<size_t>(q.l);
       if(i == a || k == a) {
-        quadNeighbors[a].insert(j);
-        quadNeighbors[a].insert(l);
+        quadNeighbors_[a].insert(j);
+        quadNeighbors_[a].insert(l);
       }
       if(j == a || l == a) {
-        quadNeighbors[a].insert(k);
-        quadNeighbors[a].insert(i);
+        quadNeighbors_[a].insert(k);
+        quadNeighbors_[a].insert(i);
       }
     }
   }
+
+  {
+    std::stringstream msg;
+    msg << MODULE_S "Computed neighbors mapping of "
+        << outputPoints_->size() - inputVertexNumber_ << " points in "
+        << t.getElapsedTime() << "s" << std::endl;
+    dMsg(std::cout, msg.str(), detailedInfoMsg);
+  }
+
+  return 0;
+}
+
+int ttk::QuadrangulationSubdivision::relax() {
+  Timer t;
 
   // loop over output points, do not touch input MSC critical points
 #ifdef TTK_ENABLE_OPENMP
@@ -225,10 +239,10 @@ int ttk::QuadrangulationSubdivision::relax() {
 
     // barycenter of curr neighbors
     Point relax{};
-    for(auto &neigh : quadNeighbors[i]) {
+    for(auto &neigh : quadNeighbors_[i]) {
       relax = relax + (*outputPoints_)[neigh];
     }
-    relax = relax * (1.0f / static_cast<float>(quadNeighbors[i].size()));
+    relax = relax * (1.0f / static_cast<float>(quadNeighbors_[i].size()));
 
     *curr = relax;
   }
@@ -304,6 +318,9 @@ int ttk::QuadrangulationSubdivision::execute() {
       outputQuads_->emplace_back(q);
     }
   }
+
+  // retrieve mapping between every vertex and its neighbors
+  getQuadNeighbors();
 
   // 3. we "relax" the new points, i.e. we replace it by the
   // barycenter of its four neighbors
