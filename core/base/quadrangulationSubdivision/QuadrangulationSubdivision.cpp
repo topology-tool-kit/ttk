@@ -94,40 +94,6 @@ int ttk::QuadrangulationSubdivision::subdivise(
   return 0;
 }
 
-int ttk::QuadrangulationSubdivision::projInTriangle(Point *const p,
-                                                    const SimplexId trId,
-                                                    Point &pa,
-                                                    Point &pb,
-                                                    Point &pc,
-                                                    Point &proj) const {
-
-  // get triangle vertices
-  SimplexId a, b, c;
-  triangulation_->getTriangleVertex(trId, 0, a);
-  triangulation_->getTriangleVertex(trId, 1, b);
-  triangulation_->getTriangleVertex(trId, 2, c);
-
-  // get coordinates of triangle vertices
-  triangulation_->getVertexPoint(a, pa.x, pa.y, pa.z);
-  triangulation_->getVertexPoint(b, pb.x, pb.y, pb.z);
-  triangulation_->getVertexPoint(c, pc.x, pc.y, pc.z);
-
-  // triangle normal: cross product of two edges
-  Point crossP{};
-  // ab, ac vectors
-  Point ab = pb - pa, ac = pc - pa;
-  // compute ab ^ ac
-  Geometry::crossProduct(&ab.x, &ac.x, &crossP.x);
-  // unitary normal vector
-  Point norm = crossP / Geometry::magnitude(&crossP.x);
-
-  Point tmp = *p - pa;
-  // projected point into triangle point
-  proj = *p - norm * Geometry::dotProduct(&norm.x, &tmp.x);
-
-  return 0;
-}
-
 int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
   Timer t;
 
@@ -170,10 +136,33 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
 
     // iterate over nearest vertex triangles, find a projection
     for(SimplexId j = 0; j < triangleNumber; j++) {
-      Point pa{}, pb{}, pc{};
       SimplexId tid;
       triangulation_->getVertexTriangle(nearestVertex.second, j, tid);
-      projInTriangle(curr, tid, pa, pb, pc, proj);
+
+      // get triangle vertices
+      SimplexId a, b, c;
+      triangulation_->getTriangleVertex(tid, 0, a);
+      triangulation_->getTriangleVertex(tid, 1, b);
+      triangulation_->getTriangleVertex(tid, 2, c);
+
+      // get coordinates of triangle vertices
+      Point pa{}, pb{}, pc{};
+      triangulation_->getVertexPoint(a, pa.x, pa.y, pa.z);
+      triangulation_->getVertexPoint(b, pb.x, pb.y, pb.z);
+      triangulation_->getVertexPoint(c, pc.x, pc.y, pc.z);
+
+      // triangle normal: cross product of two edges
+      Point crossP{};
+      // ab, ac vectors
+      Point ab = pb - pa, ac = pc - pa;
+      // compute ab ^ ac
+      Geometry::crossProduct(&ab.x, &ac.x, &crossP.x);
+      // unitary normal vector
+      Point norm = crossP / Geometry::magnitude(&crossP.x);
+
+      Point tmp = *curr - pa;
+      // projected point into triangle point
+      proj = *curr - norm * Geometry::dotProduct(&norm.x, &tmp.x);
 
       if(Geometry::isPointInTriangle(&pa.x, &pb.x, &pc.x, &proj.x)) {
         success = true;
