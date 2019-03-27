@@ -130,26 +130,43 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
     Point proj{};
     // found a projection in one triangle
     bool success = false;
+    // list of triangle IDs to test to find a potential projection
+    std::queue<SimplexId> trianglesToTest;
+    // list of triangle IDs already tested
+    // (takes more memory to reduce computation time)
+    std::vector<bool> trianglesTested(
+      triangulation_->getNumberOfTriangles(), false);
+
     // number of triangles around nearest vertex
     SimplexId triangleNumber
       = triangulation_->getVertexTriangleNumber(nearestVertex.second);
-
-    // iterate over nearest vertex triangles, find a projection
+    // init pipeline by checking in every triangle around selected vertex
     for(SimplexId j = 0; j < triangleNumber; j++) {
-      SimplexId tid;
-      triangulation_->getVertexTriangle(nearestVertex.second, j, tid);
+      SimplexId ntid;
+      triangulation_->getVertexTriangle(nearestVertex.second, j, ntid);
+      trianglesToTest.push(ntid);
+    }
+
+    while(!trianglesToTest.empty()) {
+      SimplexId tid = trianglesToTest.front();
+      trianglesToTest.pop();
+
+      // skip if already tested
+      if(trianglesTested[tid]) {
+        continue;
+      }
 
       // get triangle vertices
-      SimplexId a, b, c;
-      triangulation_->getTriangleVertex(tid, 0, a);
-      triangulation_->getTriangleVertex(tid, 1, b);
-      triangulation_->getTriangleVertex(tid, 2, c);
+      SimplexId tverts[3];
+      triangulation_->getTriangleVertex(tid, 0, tverts[0]);
+      triangulation_->getTriangleVertex(tid, 1, tverts[1]);
+      triangulation_->getTriangleVertex(tid, 2, tverts[2]);
 
       // get coordinates of triangle vertices
       Point pa{}, pb{}, pc{};
-      triangulation_->getVertexPoint(a, pa.x, pa.y, pa.z);
-      triangulation_->getVertexPoint(b, pb.x, pb.y, pb.z);
-      triangulation_->getVertexPoint(c, pc.x, pc.y, pc.z);
+      triangulation_->getVertexPoint(tverts[0], pa.x, pa.y, pa.z);
+      triangulation_->getVertexPoint(tverts[1], pb.x, pb.y, pb.z);
+      triangulation_->getVertexPoint(tverts[2], pc.x, pc.y, pc.z);
 
       // triangle normal: cross product of two edges
       Point crossP{};
@@ -161,17 +178,64 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
       Point norm = crossP / Geometry::magnitude(&crossP.x);
 
       Point tmp = *curr - pa;
-      // projected point into triangle point
+      // projected point into triangle
       proj = *curr - norm * Geometry::dotProduct(&norm.x, &tmp.x);
 
+      // check if projection in triangle
       if(Geometry::isPointInTriangle(&pa.x, &pb.x, &pc.x, &proj.x)) {
         success = true;
+        // should we check if we have the nearest triangle?
         break;
+      }
+
+      // mark triangle as tested
+      trianglesTested[tid] = true;
+
+      // (re-)compute barycentric coords of projection
+      std::vector<float> baryCoords;
+      Geometry::computeBarycentricCoordinates(
+        &pa.x, &pb.x, &pc.x, &proj.x, baryCoords);
+
+      // extrema values in baryCoords
+      auto extrema = std::minmax_element(baryCoords.begin(), baryCoords.end());
+
+      // find the nearest triangle vertices (with the highest/positive
+      // values in baryCoords) from proj
+      std::vector<SimplexId> vertices(2);
+      vertices[0] = tverts[extrema.second - baryCoords.begin()];
+      for(size_t j = 0; j < baryCoords.size(); j++) {
+        if(j != static_cast<size_t>(extrema.first - baryCoords.begin())
+           && j != static_cast<size_t>(extrema.second - baryCoords.begin())) {
+          vertices[1] = tverts[j];
+        }
+      }
+      vertices[1] = tverts[extrema.second - baryCoords.begin()];
+
+      // triangles to test next
+      std::set<SimplexId> common_triangles;
+
+      // look for triangles sharing the two edges with max values in baryCoords
+      for(auto &vert : vertices) {
+        SimplexId tnum = triangulation_->getVertexTriangleNumber(vert);
+        for(SimplexId j = 0; j < tnum; j++) {
+          SimplexId trid;
+          triangulation_->getVertexTriangle(vert, j, trid);
+          if(trid == tid) {
+            continue;
+          }
+          common_triangles.insert(trid);
+        }
+      }
+
+      for(auto &ntid : common_triangles) {
+        if(!trianglesTested[ntid]) {
+          trianglesToTest.push(ntid);
+        }
       }
     }
 
     if(!success) {
-      // replace proj by the nearest vertex
+      // replace proj by the nearest vertex?
       triangulation_->getVertexPoint(
         nearestVertex.second, proj.x, proj.y, proj.z);
     }
