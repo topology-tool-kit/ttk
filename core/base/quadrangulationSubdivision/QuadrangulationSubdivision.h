@@ -173,6 +173,38 @@ namespace ttk {
      */
     int getQuadNeighbors();
 
+    /**
+     * @brief Find nearest vertex in triangular input mesh
+     *
+     * @param[in] i input index of quadrangle vertex somewhere in space
+     *
+     * @return nearest input vertex SimplexId (according to euclidian distance)
+     */
+    SimplexId findNearestInputVertex(const SimplexId i) const;
+
+    /**
+     * @brief Find the middle of two input vertices in the input
+     * surface
+     *
+     * Use a limited shortest path algorithm between m and n and
+     * return the middle vertex
+     *
+     * @param[in] m first input vertex
+     * @param[in] n second input vertex
+     *
+     * @return surfacic middle of m and n
+     */
+    SimplexId findVerticesMiddle(const SimplexId &m, const SimplexId &n);
+
+    /**
+     * @brief Compute the projection in the nearest triangle
+     *
+     * @param[in] i input index of quadrangle vertex
+     *
+     * @return coordinates of projection
+     */
+    Point findProjectionInTriangle(const SimplexId i) const;
+
   protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_{};
