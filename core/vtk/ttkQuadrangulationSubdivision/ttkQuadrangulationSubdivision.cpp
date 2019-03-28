@@ -79,7 +79,8 @@ int ttkQuadrangulationSubdivision::getQuadVertices(
     cells->GetData()->GetVoidPointer(0), cells->GetNumberOfCells());
   baseWorker_.setInputVertices(
     points->GetData()->GetVoidPointer(0), points->GetNumberOfPoints());
-  baseWorker_.setInputVertexIdentifiers(identifiers->GetVoidPointer(0));
+  baseWorker_.setInputVertexIdentifiers(
+    identifiers->GetVoidPointer(0), identifiers->GetNumberOfValues());
 
   return 0;
 }
@@ -126,7 +127,7 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   output->SetCells(VTK_QUAD, cells);
 
   auto points = vtkSmartPointer<vtkPoints>::New();
-  for(size_t i = 0; i < outVertices_.size(); i+=3) {
+  for(size_t i = 0; i < outVertices_.size(); i += 3) {
     points->InsertNextPoint(&outVertices_[i]);
   }
 

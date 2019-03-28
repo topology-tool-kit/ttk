@@ -57,8 +57,13 @@ namespace ttk {
       inputVertices_ = static_cast<Point *>(address);
       inputVertexNumber_ = size;
     }
-    inline void setInputVertexIdentifiers(void *const address) {
-      inputVertexIdentifiers_ = static_cast<SimplexId *>(address);
+    inline void setInputVertexIdentifiers(void *const address,
+                                          unsigned int size) {
+      nearestVertexIdentifier_.resize(size);
+      auto inputVertexIdentifiers = static_cast<SimplexId *>(address);
+      for(size_t i = 0; i < size; i++) {
+        nearestVertexIdentifier_[i] = inputVertexIdentifiers[i];
+      }
     }
     inline void setupTriangulation(Triangulation *const triangl) {
       triangulation_ = triangl;
@@ -186,8 +191,6 @@ namespace ttk {
     unsigned int inputVertexNumber_{};
     // input quadrangle vertices (3D coordinates)
     Point *inputVertices_{};
-    // TTK identifiers of input quadrangles vertices
-    SimplexId *inputVertexIdentifiers_{};
 
     // input triangulation
     Triangulation *triangulation_{};
@@ -198,6 +201,8 @@ namespace ttk {
     std::vector<Point> *outputPoints_{};
     // array mapping quadrangle neighbors
     std::vector<std::set<size_t>> quadNeighbors_{};
+    // array of nearest input vertex TTK identifier
+    std::vector<SimplexId> nearestVertexIdentifier_{};
   };
 } // namespace ttk
 
