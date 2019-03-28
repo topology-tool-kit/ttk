@@ -83,24 +83,24 @@ namespace ttk {
       float x;
       float y;
       float z;
-      Point operator+(const Point other) {
+      Point operator+(const Point other) const {
         Point res{};
         res.x = x + other.x;
         res.y = y + other.y;
         res.z = z + other.z;
         return res;
       }
-      Point operator*(const float scalar) {
+      Point operator*(const float scalar) const {
         Point res{};
         res.x = x * scalar;
         res.y = y * scalar;
         res.z = z * scalar;
         return res;
       }
-      Point operator-(Point other) {
+      Point operator-(Point other) const {
         return *this + other * (-1);
       }
-      Point operator/(const float scalar) {
+      Point operator/(const float scalar) const {
         return (*this * (1.0f / scalar));
       }
     };
