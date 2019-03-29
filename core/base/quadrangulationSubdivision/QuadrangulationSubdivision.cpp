@@ -128,7 +128,7 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findNearestInputVertex(
 ttk::SimplexId
   ttk::QuadrangulationSubdivision::findVerticesMiddle(const ttk::SimplexId &m,
                                                       const ttk::SimplexId &n) {
-  Point M, N;
+  Point M{}, N{};
   triangulation_->getVertexPoint(m, M.x, M.y, M.z);
   triangulation_->getVertexPoint(n, N.x, N.y, N.z);
 
@@ -155,14 +155,14 @@ ttk::SimplexId
     auto elem = pq.top();
     pq.pop();
     auto a = elem.second;
-    Point A;
+    Point A{};
     triangulation_->getVertexPoint(a, A.x, A.y, A.z);
 
     auto nneigh = triangulation_->getVertexNeighborNumber(a);
     for(SimplexId j = 0; j < nneigh; j++) {
-      SimplexId b;
+      SimplexId b{};
       triangulation_->getVertexNeighbor(a, j, b);
-      Point B;
+      Point B{};
       triangulation_->getVertexPoint(b, B.x, B.y, B.z);
       float distAB
         = powf(B.x - A.x, 2.0f) + powf(B.y - A.y, 2.0f) + powf(B.z - A.z, 2.0f);

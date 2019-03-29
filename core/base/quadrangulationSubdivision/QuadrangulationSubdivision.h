@@ -180,7 +180,7 @@ namespace ttk {
      *
      * @return nearest input vertex SimplexId (according to euclidian distance)
      */
-    SimplexId findNearestInputVertex(const SimplexId i) const;
+    SimplexId findNearestInputVertex(SimplexId i) const;
 
     /**
      * @brief Find the middle of two input vertices in the input
@@ -203,7 +203,7 @@ namespace ttk {
      *
      * @return coordinates of projection
      */
-    Point findProjectionInTriangle(const SimplexId i) const;
+    Point findProjectionInTriangle(SimplexId i) const;
 
   protected:
     // number of vertices in the mesh
