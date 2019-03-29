@@ -51,7 +51,7 @@ namespace ttk {
     }
     inline void setInputQuads(void *const address, unsigned int size) {
       inputQuads_ = static_cast<Quad *>(address);
-      inputQuadNumber_ = size / 5; // 5 values per quad: 1 number and 4 indices
+      inputQuadNumber_ = size;
     }
     inline void setInputVertices(void *const address, unsigned int size) {
       inputVertices_ = static_cast<Point *>(address);
