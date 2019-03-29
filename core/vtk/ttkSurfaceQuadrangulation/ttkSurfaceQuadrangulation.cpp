@@ -126,18 +126,11 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   // update result: get critical points from input
   output->ShallowCopy(cp);
 
-  // number of data in outTempVector
-  size_t nOutData = outQuadrangles_.size();
-
-  // vtkDataArray containing quadrangles values
-  auto outArray = vtkSmartPointer<vtkIdTypeArray>::New();
-
-  // outArray points to outQuadrangles_ data, but does not deallocate it
-  outArray->SetArray(outQuadrangles_.data(), nOutData, 1);
-
   // vtkCellArray of quadrangle values containing outArray
   auto cells = vtkSmartPointer<vtkCellArray>::New();
-  cells->SetCells(nOutData, outArray);
+  for(size_t i = 0; i < outQuadrangles_.size() / 5; i++) {
+    cells->InsertNextCell(4, &outQuadrangles_[5 * i + 1]);
+  }
 
   // update output: get quadrangle values
   output->SetCells(VTK_QUAD, cells);
