@@ -114,14 +114,11 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   TTK_ABORT_KK(
     res != 0, "QuadrangulationSubdivision.execute() error code: " << res, -3);
 
-  auto outArrayQuads = vtkSmartPointer<vtkIdTypeArray>::New();
   auto cells = vtkSmartPointer<vtkCellArray>::New();
 
-  // outArray points to outQuadrangles_ data, but does not deallocate it
-  outArrayQuads->SetArray(outQuadrangles_.data(), outQuadrangles_.size(), 1);
-
-  // vtkCellArray of quadrangle values containing outArray
-  cells->SetCells(outQuadrangles_.size(), outArrayQuads);
+  for(size_t i = 0; i < outQuadrangles_.size() / 5; i++) {
+    cells->InsertNextCell(4, &outQuadrangles_[5 * i + 1]);
+  }
 
   // update output: get quadrangle values
   output->SetCells(VTK_QUAD, cells);
