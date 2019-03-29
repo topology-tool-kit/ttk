@@ -7,6 +7,7 @@ int ttk::QuadrangulationSubdivision::subdivise(
 
   using edgeType = std::pair<long long, long long>;
   using vertexType = std::pair<long long, Point>;
+  using std::make_pair;
   std::map<edgeType, vertexType> processedEdges;
 
   Timer t;
@@ -37,34 +38,34 @@ int ttk::QuadrangulationSubdivision::subdivise(
     auto bary = (*pi + *pj + *pk + *pl) * 0.25;
 
     // order edges to avoid duplicates (ij vs. ji)
-    auto ij = std::make_pair(std::min(q.i, q.j), std::max(q.i, q.j));
-    auto jk = std::make_pair(std::min(q.j, q.k), std::max(q.j, q.k));
-    auto kl = std::make_pair(std::min(q.k, q.l), std::max(q.k, q.l));
-    auto li = std::make_pair(std::min(q.l, q.i), std::max(q.l, q.i));
+    auto ij = make_pair(std::min(q.i, q.j), std::max(q.i, q.j));
+    auto jk = make_pair(std::min(q.j, q.k), std::max(q.j, q.k));
+    auto kl = make_pair(std::min(q.k, q.l), std::max(q.k, q.l));
+    auto li = make_pair(std::min(q.l, q.i), std::max(q.l, q.i));
 
     // add to outputPoints_ after computing new point coordinates to
     // avoid invalidating pointers
     if(processedEdges.find(ij) == processedEdges.end()) {
       processedEdges.insert(
-        std::make_pair(ij, std::make_pair(outputPoints_->size(), midij)));
+        make_pair(ij, make_pair(outputPoints_->size(), midij)));
       outputPoints_->emplace_back(midij);
     }
 
     if(processedEdges.find(jk) == processedEdges.end()) {
       processedEdges.insert(
-        std::make_pair(jk, std::make_pair(outputPoints_->size(), midjk)));
+        make_pair(jk, make_pair(outputPoints_->size(), midjk)));
       outputPoints_->emplace_back(midjk);
     }
 
     if(processedEdges.find(kl) == processedEdges.end()) {
       processedEdges.insert(
-        std::make_pair(kl, std::make_pair(outputPoints_->size(), midkl)));
+        make_pair(kl, make_pair(outputPoints_->size(), midkl)));
       outputPoints_->emplace_back(midkl);
     }
 
     if(processedEdges.find(li) == processedEdges.end()) {
       processedEdges.insert(
-        std::make_pair(li, std::make_pair(outputPoints_->size(), midli)));
+        make_pair(li, make_pair(outputPoints_->size(), midli)));
       outputPoints_->emplace_back(midli);
     }
 
