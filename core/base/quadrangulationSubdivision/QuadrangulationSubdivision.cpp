@@ -126,8 +126,8 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findNearestInputVertex(
 }
 
 ttk::SimplexId
-  ttk::QuadrangulationSubdivision::findVerticesMiddle(const ttk::SimplexId &m,
-                                                      const ttk::SimplexId &n) {
+  ttk::QuadrangulationSubdivision::findVerticesMiddle(const ttk::SimplexId m,
+                                                      const ttk::SimplexId n) {
   Point M{}, N{};
   triangulation_->getVertexPoint(m, M.x, M.y, M.z);
   triangulation_->getVertexPoint(n, N.x, N.y, N.z);

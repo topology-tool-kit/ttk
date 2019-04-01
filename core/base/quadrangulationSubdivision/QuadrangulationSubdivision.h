@@ -194,7 +194,7 @@ namespace ttk {
      *
      * @return surfacic middle of m and n
      */
-    SimplexId findVerticesMiddle(const SimplexId &m, const SimplexId &n);
+    SimplexId findVerticesMiddle(const SimplexId m, const SimplexId n);
 
     /**
      * @brief Compute the projection in the nearest triangle
