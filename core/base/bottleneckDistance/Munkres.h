@@ -95,7 +95,7 @@ namespace ttk {
       for (int c = 0; c < colSize; ++c) {
         msg << colCover[c] << "  ";
       }
-      msg << std::endl << "   | ";;
+      msg << std::endl << "   | ";
       for (int c = 0; c < colSize; ++c) {
         msg << "---";
       }

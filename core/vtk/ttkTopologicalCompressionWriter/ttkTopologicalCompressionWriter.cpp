@@ -157,7 +157,7 @@ void ttkTopologicalCompressionWriter::WriteData()
     return;
   }
 
-  int dt = vti->GetPointData()->GetArray(inputScalarField->GetName())->GetDataType();;
+  int dt = vti->GetPointData()->GetArray(inputScalarField->GetName())->GetDataType();
   double *vp = (double*) vti->GetPointData()->GetArray(inputScalarField->GetName())->GetVoidPointer(0);
 
   topologicalCompression.setFileName(FileName);
