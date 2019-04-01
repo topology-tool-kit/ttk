@@ -117,12 +117,12 @@ const Segment& Segments::operator[](size_t idx) const
 
 ArcRegion::ArcRegion(const segmentIterator& s)
 {
-    segmentsIn_.emplace_front(Region{s, s});
+    segmentsIn_.emplace_front(Region{s, s, bool()});
 }
 
 void ArcRegion::addSegment(const segmentIterator& begin, const segmentIterator& end)
 {
-    segmentsIn_.emplace_front(Region{begin, end});
+    segmentsIn_.emplace_front(Region{begin, end, bool()});
 }
 
 void ArcRegion::createSegmentation(const idSuperArc& thisArc)
