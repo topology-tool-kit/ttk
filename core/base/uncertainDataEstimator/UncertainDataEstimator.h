@@ -38,8 +38,7 @@ namespace ttk{
       #endif
       const dataType *inputData =
         reinterpret_cast<const dataType*>(voidPointer);
-      SimplexId numberOfVertices =
-        static_cast<SimplexId>(numberOfVertices_);
+      auto numberOfVertices = static_cast<size_t>(numberOfVertices_);
       /* Initialize if first call since a change */
       if (!(upperBound_.size()==numberOfVertices) || !(lowerBound_.size()==numberOfVertices)) {
         upperBound_.resize(numberOfVertices);
@@ -162,7 +161,7 @@ namespace ttk{
         /* Initialize */
         probability_.resize(numberOfBins_);
         double dx = (rangeMax_-rangeMin_) / static_cast<double>(numberOfBins_);
-        for (size_t i=0 ; i < numberOfBins_ ; i++) {
+        for (size_t i=0 ; i < static_cast<size_t>(numberOfBins_) ; i++) {
           probability_[i].resize(numberOfVertices_);
           binValue_[i] = rangeMin_+(dx/2.0)+(static_cast<double>(i)*dx);
         }
