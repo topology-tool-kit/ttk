@@ -2,6 +2,15 @@
 
 #define MODULE_S "[ttkSurfaceQuadrangulation] "
 #define MODULE_ERROR_S MODULE_S "Error: "
+#ifndef TTK_ENABLE_KAMIKAZE
+#define TTK_ABORT_KK(COND, MSG, RET)    \
+  if(COND) {                            \
+    cerr << MODULE_ERROR_S MSG << endl; \
+    return RET;                         \
+  }
+#else // TTK_ENABLE_KAMIKAZE
+#define TTK_ABORT_KK(COND, MSG, RET)
+#endif // TTK_ENABLE_KAMIKAZE
 
 vtkStandardNewMacro(ttkSurfaceQuadrangulation);
 
@@ -33,17 +42,8 @@ int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
   auto pointData = input->GetPointData();
   auto cpci = pointData->GetArray("CellId");
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(cp == nullptr) {
-    cerr << MODULE_ERROR_S "wrong Morse-Smale critical points" << endl;
-    return -1;
-  }
-  if(cpci == nullptr) {
-    cerr << MODULE_ERROR_S "wrong Morse-Smale critical points cell identifiers"
-         << endl;
-    return -3;
-  }
-#endif // TTK_ENABLE_KAMIKAZE
+  TTK_ABORT_KK(cp == nullptr, "wrong Morse-Smale critical points", -1);
+  TTK_ABORT_KK(cpci == nullptr, "wrong critical points cell identifiers", -2);
 
   surfaceQuadrangulation_.setCriticalPointsNumber(cp->GetNumberOfPoints());
   surfaceQuadrangulation_.setCriticalPointsCellIds(cpci->GetVoidPointer(0));
@@ -60,20 +60,10 @@ int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
   auto sepSourceId = cellData->GetArray("SourceId");
   auto sepDestId = cellData->GetArray("DestinationId");
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(separatrices == nullptr) {
-    cerr << MODULE_ERROR_S "wrong Morse-Smale separatrices points." << endl;
-    return -1;
-  }
-  if(sepSourceId == nullptr) {
-    cerr << MODULE_ERROR_S "wrong separatrices source id." << endl;
-    return -1;
-  }
-  if(sepDestId == nullptr) {
-    cerr << MODULE_ERROR_S "wrong separatrices destination id." << endl;
-    return -1;
-  }
-#endif // TTK_ENABLE_KAMIKAZE
+  TTK_ABORT_KK(
+    separatrices == nullptr, "wrong Morse-Smale separatrices points", -1);
+  TTK_ABORT_KK(sepSourceId == nullptr, "wrong separatrices source id", -2);
+  TTK_ABORT_KK(sepDestId == nullptr, "wrong separatrices desination id", -3);
 
   surfaceQuadrangulation_.setSeparatrices(sepSourceId->GetNumberOfValues(),
                                           sepSourceId->GetVoidPointer(0),
@@ -94,34 +84,18 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   res += getCriticalPoints(cp);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(res != 0) {
-    cerr << MODULE_ERROR_S "wrong points." << endl;
-    return -1;
-  }
-#endif
+  TTK_ABORT_KK(res != 0, "wrong points", -1);
 
   res += getSeparatrices(spr);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(res != 0) {
-    cerr << MODULE_ERROR_S "wrong separatrices." << endl;
-    return -1;
-  }
-#endif
+  TTK_ABORT_KK(res != 0, "wrong separatrices", -1);
 
   surfaceQuadrangulation_.setOutputCells(&outQuadrangles_);
 
   res += surfaceQuadrangulation_.execute();
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  // something wrong in base/SurfaceQuadrangulation
-  if(res != 0) {
-    cerr << MODULE_S "SurfaceQuadrangulation.execute() error code: " << res
-         << endl;
-    return -9;
-  }
-#endif
+  TTK_ABORT_KK(
+    res != 0, "SurfaceQuadrangulation.execute() error code: " << res, -9);
 
   // update result: get critical points from input
   output->ShallowCopy(cp);
