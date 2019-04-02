@@ -63,6 +63,10 @@ namespace ttk {
     inline void setSepDestId(void *address) {
       sepDestId_ = static_cast<SimplexId *>(address);
     }
+    inline void setSegmentation(unsigned int number, void* address) {
+      segmentationNumber_ = number;
+      segmentation_ = static_cast<SimplexId *>(address);
+    }
     inline void setOutputCells(std::vector<long long> *cells) {
       outputCells_ = cells;
     }
@@ -81,6 +85,10 @@ namespace ttk {
     SimplexId *sepSourceId_;
     // unordered list of cells id destinations
     SimplexId *sepDestId_;
+    // number of vertices in segmentation
+    unsigned int segmentationNumber_;
+    // TTK identifiers -> quad for every vertex segmentation
+    SimplexId *segmentation_;
 
     // array of output polygons
     std::vector<long long> *outputCells_;

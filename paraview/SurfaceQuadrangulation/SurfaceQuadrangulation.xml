@@ -51,6 +51,26 @@
         </Documentation>
       </InputProperty>
 
+      <InputProperty
+          name="segmentation"
+          label="Morse-Smale segmentation"
+          port_index="2"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Segmentation" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
       <IntVectorProperty
           name="UseAllCores"
           command="SetUseAllCores"

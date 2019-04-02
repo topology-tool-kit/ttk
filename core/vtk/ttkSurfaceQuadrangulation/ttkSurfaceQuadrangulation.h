@@ -76,6 +76,7 @@ public:
   // get data from Morse-Smale Complex
   int getCriticalPoints(vtkUnstructuredGrid *input);
   int getSeparatrices(vtkUnstructuredGrid *input);
+  int getSegmentation(vtkUnstructuredGrid *input);
 
   // default copy constructor
   ttkSurfaceQuadrangulation(const ttkSurfaceQuadrangulation &) = delete;

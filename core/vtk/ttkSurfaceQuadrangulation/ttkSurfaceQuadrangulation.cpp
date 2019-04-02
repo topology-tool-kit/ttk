@@ -17,8 +17,8 @@ vtkStandardNewMacro(ttkSurfaceQuadrangulation);
 ttkSurfaceQuadrangulation::ttkSurfaceQuadrangulation()
   : UseAllCores{true}, ThreadNumber{} {
 
-  // critical points + 1-separatrices
-  SetNumberOfInputPorts(2);
+  // critical points + 1-separatrices + segmentation
+  SetNumberOfInputPorts(3);
   // quad mesh (containing ttkVertexIdentifiers of critical points)
   SetNumberOfOutputPorts(1);
 }
@@ -71,6 +71,20 @@ int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
   return 0;
 }
 
+int ttkSurfaceQuadrangulation::getSegmentation(vtkUnstructuredGrid *input) {
+
+  auto segmentation = input->GetPointData();
+  auto segmf = segmentation->GetArray("MorseSmaleManifold");
+
+  TTK_ABORT_KK(segmentation == nullptr, "wrong Morse-Smale segmentation", -1);
+  TTK_ABORT_KK(segmf == nullptr, "wrong segmentation manifold data", -1);
+
+  surfaceQuadrangulation_.setSegmentation(
+    segmf->GetNumberOfValues(), segmf->GetVoidPointer(0));
+
+  return 0;
+}
+
 int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
                                     std::vector<vtkDataSet *> &outputs) {
 
@@ -78,6 +92,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   auto cp = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
   auto spr = vtkUnstructuredGrid::SafeDownCast(inputs[1]);
+  auto seg = vtkUnstructuredGrid::SafeDownCast(inputs[2]);
   auto output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
 
   int res = 0;
