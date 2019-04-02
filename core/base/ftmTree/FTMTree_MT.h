@@ -718,11 +718,11 @@ namespace ftm
       template <typename type>
       void initVector(std::vector<type> *&vect, const type val)
       {
-         int s = vect->size();
+         auto s = vect->size();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(static)
 #endif
-         for (int i = 0; i < s; i++) {
+         for (typename std::vector<type>::size_type i = 0; i < s; i++) {
             (*vect)[i] = val;
          }
       }
