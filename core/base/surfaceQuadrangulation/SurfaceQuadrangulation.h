@@ -47,6 +47,12 @@ namespace ttk {
     inline void setCriticalPointsCellIds(void *address) {
       criticalPointsCellIds_ = static_cast<SimplexId *>(address);
     }
+    inline void setCriticalPointsIdentifiers(void *address) {
+      criticalPointsIdentifier_ = static_cast<SimplexId *>(address);
+    }
+    inline void setCriticalPointsType(void *address) {
+      criticalPointsType_ = static_cast<unsigned char *>(address);
+    }
     inline void setSeparatriceNumber(unsigned int value) {
       separatriceNumber_ = value;
     }
@@ -63,7 +69,7 @@ namespace ttk {
     inline void setSepDestId(void *address) {
       sepDestId_ = static_cast<SimplexId *>(address);
     }
-    inline void setSegmentation(unsigned int number, void* address) {
+    inline void setSegmentation(unsigned int number, void *address) {
       segmentationNumber_ = number;
       segmentation_ = static_cast<SimplexId *>(address);
     }
@@ -71,13 +77,27 @@ namespace ttk {
       outputCells_ = cells;
     }
 
+    inline void setupTriangulation(Triangulation *const triangl) {
+      triangulation_ = triangl;
+      if(triangulation_ != nullptr) {
+        triangulation_->preprocessVertexNeighbors();
+        triangulation_->preprocessVertexTriangles();
+      }
+    }
+
     int execute() const;
 
   protected:
+    Triangulation *triangulation_;
+
     // number of critical points from the Morse-Smale complex
     SimplexId criticalPointsNumber_;
     // mapping points id -> cells id
     SimplexId *criticalPointsCellIds_;
+    // mapping point id -> TTK identifier
+    SimplexId *criticalPointsIdentifier_;
+    // critical point type: 0 minimum, 1 saddle point, 2 maximum
+    unsigned char *criticalPointsType_;
 
     // number of separatrices
     SimplexId separatriceNumber_;

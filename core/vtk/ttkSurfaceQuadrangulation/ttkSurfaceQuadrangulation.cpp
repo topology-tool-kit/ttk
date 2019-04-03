@@ -41,12 +41,18 @@ int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
   // store handle to points identifiers
   auto pointData = input->GetPointData();
   auto cpci = pointData->GetArray("CellId");
+  auto cpcd = pointData->GetArray("CellDimension");
+  auto cpid = pointData->GetArray(ttk::VertexScalarFieldName);
 
   TTK_ABORT_KK(cp == nullptr, "wrong Morse-Smale critical points", -1);
   TTK_ABORT_KK(cpci == nullptr, "wrong critical points cell identifiers", -2);
+  TTK_ABORT_KK(cpcd == nullptr, "wrong critical points cell dimension", -3);
+  TTK_ABORT_KK(cpci == nullptr, "wrong critical points identifiers", -4);
 
   surfaceQuadrangulation_.setCriticalPointsNumber(cp->GetNumberOfPoints());
   surfaceQuadrangulation_.setCriticalPointsCellIds(cpci->GetVoidPointer(0));
+  surfaceQuadrangulation_.setCriticalPointsType(cpcd->GetVoidPointer(0));
+  surfaceQuadrangulation_.setCriticalPointsIdentifiers(cpid->GetVoidPointer(0));
 
   return 0;
 }
@@ -77,10 +83,16 @@ int ttkSurfaceQuadrangulation::getSegmentation(vtkUnstructuredGrid *input) {
   auto segmf = segmentation->GetArray("MorseSmaleManifold");
 
   TTK_ABORT_KK(segmentation == nullptr, "wrong Morse-Smale segmentation", -1);
-  TTK_ABORT_KK(segmf == nullptr, "wrong segmentation manifold data", -1);
+  TTK_ABORT_KK(segmf == nullptr, "wrong segmentation manifold data", -2);
 
   surfaceQuadrangulation_.setSegmentation(
     segmf->GetNumberOfValues(), segmf->GetVoidPointer(0));
+
+  triangulation_ = ttkTriangulation::getTriangulation(input);
+  TTK_ABORT_KK(triangulation_ == nullptr, "invalid triangulation", -3);
+  triangulation_->setWrapper(this);
+  surfaceQuadrangulation_.setWrapper(this);
+  surfaceQuadrangulation_.setupTriangulation(triangulation_);
 
   return 0;
 }
@@ -104,6 +116,10 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   res += getSeparatrices(spr);
 
   TTK_ABORT_KK(res != 0, "wrong separatrices", -1);
+
+  res += getSegmentation(seg);
+
+  TTK_ABORT_KK(res != 0, "wrong segmentation", -1);
 
   surfaceQuadrangulation_.setOutputCells(&outQuadrangles_);
 

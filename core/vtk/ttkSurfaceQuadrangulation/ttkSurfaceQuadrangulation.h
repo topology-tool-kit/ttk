@@ -102,4 +102,6 @@ private:
   ttk::SurfaceQuadrangulation surfaceQuadrangulation_;
   // output vector of interleaved quadrangles
   std::vector<vtkIdType> outQuadrangles_;
+  // triangulation
+  ttk::Triangulation *triangulation_;
 };
