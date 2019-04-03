@@ -5,6 +5,61 @@ ttk::SurfaceQuadrangulation::SurfaceQuadrangulation()
     sepSourceId_{}, sepDestId_{}, outputCells_{} {
 }
 
+bool ttk::SurfaceQuadrangulation::hasCommonManifold(
+  const std::vector<size_t> &verts) const {
+
+  // get the manifold of every neighbors of our input vector points
+  std::vector<std::set<SimplexId>> common_manifolds(verts.size());
+
+  // TTK identifiers of input vertices
+  std::vector<SimplexId> vertsId(verts.size());
+
+  std::transform(verts.begin(), verts.end(), vertsId.begin(),
+                 [&](size_t a) { return criticalPointsIdentifier_[a]; });
+
+  // iterate around a neighborhood around the critical points to store
+  // their manifold index
+  for(size_t i = 0; i < verts.size(); ++i) {
+
+    std::set<SimplexId> processedNeighbors;
+    std::queue<SimplexId> neighborsToProcess;
+
+    neighborsToProcess.push(vertsId[i]);
+
+    while(!neighborsToProcess.empty()) {
+      auto curr = neighborsToProcess.front();
+      neighborsToProcess.pop();
+      common_manifolds[i].insert(segmentation_[curr]);
+      processedNeighbors.insert(curr);
+      auto nneigh = triangulation_->getVertexNeighborNumber(vertsId[i]);
+      for(SimplexId j = 0; j < nneigh; ++j) {
+        SimplexId next;
+        triangulation_->getVertexNeighbor(curr, j, next);
+        if(processedNeighbors.find(next) == processedNeighbors.end()) {
+          neighborsToProcess.push(next);
+        }
+      }
+      if(processedNeighbors.size() > 20) {
+        break;
+      }
+    }
+  }
+
+  // intersect every set to get a unique common manifold
+  std::set<SimplexId> curr;
+  auto last = common_manifolds[0];
+
+  for(size_t i = 1; i < common_manifolds.size(); ++i) {
+    std::set_intersection(last.begin(), last.end(), common_manifolds[i].begin(),
+                          common_manifolds[i].end(),
+                          std::inserter(curr, curr.begin()));
+    std::swap(last, curr);
+    curr.clear();
+  }
+
+  return !last.empty();
+}
+
 // main routine
 int ttk::SurfaceQuadrangulation::execute() const {
 
@@ -13,6 +68,9 @@ int ttk::SurfaceQuadrangulation::execute() const {
   using std::vector;
 
   Timer t;
+
+  // clear output
+  outputCells_->clear();
 
   // unique separatrices source -> destination mapping
   std::set<std::pair<SimplexId, SimplexId>> sepMappingSet;
@@ -53,6 +111,12 @@ int ttk::SurfaceQuadrangulation::execute() const {
         continue;
       }
 
+      // skip if same type (we are looking for quadrangles containing
+      // one minimum, one maximum and two saddle points)
+      if(criticalPointsType_[k] == criticalPointsType_[i]) {
+        continue;
+      }
+
       // list of common sources to i and k
       vector<SimplexId> common_dests;
       std::set_intersection(
@@ -72,12 +136,20 @@ int ttk::SurfaceQuadrangulation::execute() const {
             j = common_dests[m];
             l = common_dests[n];
 
+            // check for a common shared manifold (looking around
+            // saddle points only seems to be sufficient)
+            std::vector<size_t> verts{j, l};
+
+            bool validQuad = hasCommonManifold(verts);
+
             // fill output vector
-            outputCells_->emplace_back(4);
-            outputCells_->emplace_back(i);
-            outputCells_->emplace_back(j);
-            outputCells_->emplace_back(k);
-            outputCells_->emplace_back(l);
+            if(validQuad) {
+              outputCells_->emplace_back(4);
+              outputCells_->emplace_back(i);
+              outputCells_->emplace_back(j);
+              outputCells_->emplace_back(k);
+              outputCells_->emplace_back(l);
+            }
           }
         }
       } else if(common_dests.size() == 1
@@ -96,9 +168,25 @@ int ttk::SurfaceQuadrangulation::execute() const {
     }
   }
 
+  // total number of manifolds
+  int nseg = 0;
+  // compute max + 1 of segmentation indices
+  for(size_t i = 0; i < segmentationNumber_; ++i) {
+    if(segmentation_[i] > nseg) {
+      nseg = segmentation_[i];
+    }
+  }
+  nseg++;
+
+  // number of produced quads
+  size_t quadNumber = outputCells_->size() / 5;
+
+  // check that we got the right number of quadrangles
+  assert(quadNumber == static_cast<size_t>(nseg));
+
   {
     std::stringstream msg;
-    msg << "[SurfaceQuadrangulation] Ending computation after "
+    msg << "[SurfaceQuadrangulation] Produced " << quadNumber << " after "
         << t.getElapsedTime() << "s (" << threadNumber_ << " thread(s))"
         << endl;
     dMsg(cout, msg.str(), infoMsg);

@@ -87,6 +87,9 @@ namespace ttk {
 
     int execute() const;
 
+  private:
+    bool hasCommonManifold(const std::vector<size_t> &verts) const;
+
   protected:
     Triangulation *triangulation_;
 
