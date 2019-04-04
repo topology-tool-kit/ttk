@@ -2,10 +2,10 @@
 #include <queue>
 
 template <typename T>
-int ttk::Dijkstra::dijkstra(const ttk::SimplexId source,
-                            ttk::Triangulation &triangulation,
-                            std::vector<T> &outputDists,
-                            const std::vector<ttk::SimplexId> *bounds) {
+int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
+                                ttk::Triangulation &triangulation,
+                                std::vector<T> &outputDists,
+                                const std::vector<ttk::SimplexId> *bounds) {
 
   // should we process the whole mesh or stop at some point?
   bool processAllVertices = (bounds == nullptr);
@@ -78,14 +78,14 @@ int ttk::Dijkstra::dijkstra(const ttk::SimplexId source,
 
 // explicit intantiations for floating-point types
 template int
-  ttk::Dijkstra::dijkstra<float>(const ttk::SimplexId source,
-                                 ttk::Triangulation &triangulation,
-                                 std::vector<float> &outputDists,
-                                 const std::vector<ttk::SimplexId> *bounds
-                                 = nullptr);
+  ttk::Dijkstra::shortestPath<float>(const ttk::SimplexId source,
+                                     ttk::Triangulation &triangulation,
+                                     std::vector<float> &outputDists,
+                                     const std::vector<ttk::SimplexId> *bounds
+                                     = nullptr);
 template int
-  ttk::Dijkstra::dijkstra<double>(const ttk::SimplexId source,
-                                  ttk::Triangulation &triangulation,
-                                  std::vector<double> &outputDists,
-                                  const std::vector<ttk::SimplexId> *bounds
-                                  = nullptr);
+  ttk::Dijkstra::shortestPath<double>(const ttk::SimplexId source,
+                                      ttk::Triangulation &triangulation,
+                                      std::vector<double> &outputDists,
+                                      const std::vector<ttk::SimplexId> *bounds
+                                      = nullptr);

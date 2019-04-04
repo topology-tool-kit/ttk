@@ -22,10 +22,10 @@ namespace ttk {
      * @return 0 in case of success
      */
     template <typename T>
-    int dijkstra(const SimplexId source,
-                 Triangulation &triangulation,
-                 std::vector<T> &outputDists,
-                 const std::vector<SimplexId> *bounds = nullptr);
+    int shortestPath(const SimplexId source,
+                     Triangulation &triangulation,
+                     std::vector<T> &outputDists,
+                     const std::vector<SimplexId> *bounds = nullptr);
 
   } // namespace Dijkstra
 } // namespace ttk
