@@ -15,12 +15,14 @@ int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
   // list all reached bounds
   std::vector<bool> reachedBounds;
 
+  // alloc and fill reachedBounds
   if(!processAllVertices) {
     reachedBounds.resize(bounds->size(), false);
   }
 
-  // map vertex TTK id -> if already visited
-  std::vector<bool> visited(vertexNumber);
+  // preprocess output vector
+  outputDists.clear();
+  outputDists.resize(vertexNumber, std::numeric_limits<T>::infinity());
 
   // link vertex and current distance to source
   using pq_t = std::pair<T, SimplexId>;
@@ -28,18 +30,15 @@ int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
   // priority queue storing pairs of (distance, vertices TTK id)
   std::priority_queue<pq_t, std::vector<pq_t>, std::greater<pq_t>> pq;
 
-  // map TTK id to current distance to source
-  std::vector<T> dists(vertexNumber, std::numeric_limits<T>::infinity());
-
   // init pipeline
-  pq.push(std::make_pair(T(0.0f), source));
-  dists[source] = 0.0f;
+  pq.push(std::make_pair(T(0.0F), source));
+  outputDists[source] = T(0.0F);
 
   while(!pq.empty()) {
     auto elem = pq.top();
     pq.pop();
     auto vert = elem.second;
-    float vCoords[3];
+    std::array<float, 3> vCoords{};
     triangulation.getVertexPoint(vert, vCoords[0], vCoords[1], vCoords[2]);
 
     auto nneigh = triangulation.getVertexNeighborNumber(vert);
@@ -49,12 +48,12 @@ int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
       SimplexId neigh{};
       triangulation.getVertexNeighbor(vert, i, neigh);
       // neighbor coordinates
-      float nCoords[3];
+      std::array<float, 3> nCoords{};
       triangulation.getVertexPoint(neigh, nCoords[0], nCoords[1], nCoords[2]);
       // (square) distance between vertex and neighbor
-      T distVN = Geometry::distance(&vCoords[0], &nCoords[0]);
-      if(dists[neigh] > dists[vert] + distVN) {
-        dists[neigh] = dists[vert] + distVN;
+      T distVN = Geometry::distance(vCoords.data(), nCoords.data());
+      if(outputDists[neigh] > outputDists[vert] + distVN) {
+        outputDists[neigh] = outputDists[vert] + distVN;
         if(!processAllVertices) {
           // check if neigh in bounds
           auto it = std::find(bounds->begin(), bounds->end(), neigh);
@@ -68,7 +67,7 @@ int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
             break;
           }
         }
-        pq.push(std::make_pair(dists[neigh], neigh));
+        pq.push(std::make_pair(outputDists[neigh], neigh));
       }
     }
   }
