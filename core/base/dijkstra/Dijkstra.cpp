@@ -1,4 +1,6 @@
 #include <Dijkstra.h>
+#include <array>
+#include <functional>
 #include <queue>
 
 template <typename T>
@@ -80,11 +82,9 @@ template int
   ttk::Dijkstra::shortestPath<float>(const ttk::SimplexId source,
                                      ttk::Triangulation &triangulation,
                                      std::vector<float> &outputDists,
-                                     const std::vector<ttk::SimplexId> *bounds
-                                     = nullptr);
+                                     const std::vector<ttk::SimplexId> *bounds);
 template int
   ttk::Dijkstra::shortestPath<double>(const ttk::SimplexId source,
                                       ttk::Triangulation &triangulation,
                                       std::vector<double> &outputDists,
-                                      const std::vector<ttk::SimplexId> *bounds
-                                      = nullptr);
+                                      const std::vector<ttk::SimplexId> *bounds);
