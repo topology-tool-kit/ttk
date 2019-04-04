@@ -51,15 +51,6 @@ int ttk::HarmonicField::execute() const {
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
-  // get unique constraint vertices
-  std::set<SimplexId> identifiersSet;
-  for(SimplexId i = 0; i < constraintNumber_; ++i) {
-    identifiersSet.insert(identifiers[i]);
-  }
-  // contains vertices with constraints
-  std::vector<SimplexId> identifiersVec(
-    identifiersSet.begin(), identifiersSet.end());
-
   // graph laplacian of current mesh
   SpMat lap;
   if(useCotanWeights_) {
@@ -71,9 +62,9 @@ int ttk::HarmonicField::execute() const {
 
   // constraints vector
   SpVec constraints(vertexNumber_);
-  for(size_t i = 0; i < identifiersVec.size(); i++) {
+  for(SimplexId i = 0; i < constraintNumber_; i++) {
     // put constraint at identifier index
-    constraints.coeffRef(identifiersVec[i]) = sf[i];
+    constraints.coeffRef(identifiers[i]) = sf[i];
   }
 
   auto sm = ttk::SolvingMethodType::Cholesky;
@@ -96,9 +87,9 @@ int ttk::HarmonicField::execute() const {
   const scalarFieldType alpha = pow10(logAlpha_);
 
   std::vector<TripletType> triplets;
-  triplets.reserve(identifiersVec.size());
-  for(auto i : identifiersVec) {
-    triplets.emplace_back(TripletType(i, i, alpha));
+  triplets.reserve(constraintNumber_);
+  for(SimplexId i = 0; i < constraintNumber_; ++i) {
+    triplets.emplace_back(TripletType(identifiers[i], identifiers[i], alpha));
   }
   penalty.setFromTriplets(triplets.begin(), triplets.end());
 
