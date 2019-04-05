@@ -51,6 +51,31 @@ int ttk::HarmonicField::execute() const {
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
+  // filter unique constraint identifiers
+  std::set<SimplexId> uniqueIdentifiersSet;
+  for(SimplexId i = 0; i < constraintNumber_; ++i) {
+    uniqueIdentifiersSet.insert(identifiers[i]);
+  }
+
+  // vector of unique constraint identifiers
+  std::vector<SimplexId> uniqueIdentifiers(
+    uniqueIdentifiersSet.begin(), uniqueIdentifiersSet.end());
+  // vector of unique constraint values
+  std::vector<scalarFieldType> uniqueValues(uniqueIdentifiers.size());
+
+  // put identifier corresponding constraints in vector
+  for(size_t i = 0; i < uniqueIdentifiers.size(); ++i) {
+    for(SimplexId j = 0; j < constraintNumber_; ++j) {
+      if(uniqueIdentifiers[i] == identifiers[j]) {
+        uniqueValues[i] = sf[j];
+        break;
+      }
+    }
+  }
+
+  // unique constraint number
+  size_t uniqueConstraintNumber = uniqueValues.size();
+
   // graph laplacian of current mesh
   SpMat lap;
   if(useCotanWeights_) {
@@ -62,9 +87,9 @@ int ttk::HarmonicField::execute() const {
 
   // constraints vector
   SpVec constraints(vertexNumber_);
-  for(SimplexId i = 0; i < constraintNumber_; i++) {
+  for(size_t i = 0; i < uniqueConstraintNumber; ++i) {
     // put constraint at identifier index
-    constraints.coeffRef(identifiers[i]) = sf[i];
+    constraints.coeffRef(uniqueIdentifiers[i]) = uniqueValues[i];
   }
 
   auto sm = ttk::SolvingMethodType::Cholesky;
@@ -87,9 +112,10 @@ int ttk::HarmonicField::execute() const {
   const scalarFieldType alpha = pow10(logAlpha_);
 
   std::vector<TripletType> triplets;
-  triplets.reserve(constraintNumber_);
-  for(SimplexId i = 0; i < constraintNumber_; ++i) {
-    triplets.emplace_back(TripletType(identifiers[i], identifiers[i], alpha));
+  triplets.reserve(uniqueConstraintNumber);
+  for(size_t i = 0; i < uniqueConstraintNumber; ++i) {
+    triplets.emplace_back(
+      TripletType(uniqueIdentifiers[i], uniqueIdentifiers[i], alpha));
   }
   penalty.setFromTriplets(triplets.begin(), triplets.end());
 
