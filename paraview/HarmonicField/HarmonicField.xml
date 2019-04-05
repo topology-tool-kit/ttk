@@ -169,24 +169,6 @@
         </Documentation>
       </DoubleVectorProperty>
 
-      
-
-      <IntVectorProperty
-        name="OutputScalarFieldType"
-        label="Output Field Type"
-        command="SetOutputScalarFieldType"
-        number_of_elements="1"
-        default_values="0" 
-        panel_visibility="advanced">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="Float" />
-          <Entry value="1" text="Double" />
-        </EnumerationDomain>
-        <Documentation>
-          Select the type of the output scalar field.
-        </Documentation>
-      </IntVectorProperty>
-
       <StringVectorProperty
         name="OutputScalarFieldName"
         command="SetOutputScalarFieldName"
@@ -260,7 +242,6 @@
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="OutputScalarFieldType"/>
         <Property name="OutputScalarFieldName"/>
       </PropertyGroup>
 
