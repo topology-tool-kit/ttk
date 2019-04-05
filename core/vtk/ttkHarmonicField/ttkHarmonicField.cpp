@@ -100,6 +100,14 @@ int ttkHarmonicField::getConstraints(vtkPointSet *input) {
   }
 #endif
 
+  if(constraints_->IsA("vtkDoubleArray")) {
+    OutputScalarFieldType = HarmonicFieldType::Double;
+  } else if(constraints_->IsA("vtkFloatArray")) {
+    OutputScalarFieldType = HarmonicFieldType::Float;
+  } else {
+    return -2;
+  }
+
   return 0;
 }
 
