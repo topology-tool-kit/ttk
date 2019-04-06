@@ -84,11 +84,12 @@ int ttkHarmonicField::getIdentifiers(vtkPointSet *input) {
 
 int ttkHarmonicField::getConstraints(vtkPointSet *input) {
   auto osfn = static_cast<const char *>(ttk::OffsetScalarFieldName);
+  auto pointData = input->GetPointData();
 
   if(InputScalarFieldName.length() != 0) {
-    constraints_ = input->GetPointData()->GetArray(InputScalarFieldName.data());
-  } else if(input->GetPointData()->GetArray(osfn) != nullptr) {
-    constraints_ = input->GetPointData()->GetArray(osfn);
+    constraints_ = pointData->GetArray(InputScalarFieldName.data());
+  } else if(pointData->GetArray(osfn) != nullptr) {
+    constraints_ = pointData->GetArray(osfn);
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -99,6 +100,14 @@ int ttkHarmonicField::getConstraints(vtkPointSet *input) {
     return -1;
   }
 #endif
+
+  if(constraints_->IsA("vtkDoubleArray")) {
+    OutputScalarFieldType = HarmonicFieldType::Double;
+  } else if(constraints_->IsA("vtkFloatArray")) {
+    OutputScalarFieldType = HarmonicFieldType::Float;
+  } else {
+    return -2;
+  }
 
   return 0;
 }

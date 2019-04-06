@@ -51,14 +51,30 @@ int ttk::HarmonicField::execute() const {
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
-  // get unique constraint vertices
-  std::set<SimplexId> identifiersSet;
+  // filter unique constraint identifiers
+  std::set<SimplexId> uniqueIdentifiersSet;
   for(SimplexId i = 0; i < constraintNumber_; ++i) {
-    identifiersSet.insert(identifiers[i]);
+    uniqueIdentifiersSet.insert(identifiers[i]);
   }
-  // contains vertices with constraints
-  std::vector<SimplexId> identifiersVec(
-    identifiersSet.begin(), identifiersSet.end());
+
+  // vector of unique constraint identifiers
+  std::vector<SimplexId> uniqueIdentifiers(
+    uniqueIdentifiersSet.begin(), uniqueIdentifiersSet.end());
+  // vector of unique constraint values
+  std::vector<scalarFieldType> uniqueValues(uniqueIdentifiers.size());
+
+  // put identifier corresponding constraints in vector
+  for(size_t i = 0; i < uniqueIdentifiers.size(); ++i) {
+    for(SimplexId j = 0; j < constraintNumber_; ++j) {
+      if(uniqueIdentifiers[i] == identifiers[j]) {
+        uniqueValues[i] = sf[j];
+        break;
+      }
+    }
+  }
+
+  // unique constraint number
+  size_t uniqueConstraintNumber = uniqueValues.size();
 
   // graph laplacian of current mesh
   SpMat lap;
@@ -71,9 +87,9 @@ int ttk::HarmonicField::execute() const {
 
   // constraints vector
   SpVec constraints(vertexNumber_);
-  for(size_t i = 0; i < identifiersVec.size(); i++) {
+  for(size_t i = 0; i < uniqueConstraintNumber; ++i) {
     // put constraint at identifier index
-    constraints.coeffRef(identifiersVec[i]) = sf[i];
+    constraints.coeffRef(uniqueIdentifiers[i]) = uniqueValues[i];
   }
 
   auto sm = ttk::SolvingMethodType::Cholesky;
@@ -96,9 +112,10 @@ int ttk::HarmonicField::execute() const {
   const scalarFieldType alpha = pow10(logAlpha_);
 
   std::vector<TripletType> triplets;
-  triplets.reserve(identifiersVec.size());
-  for(auto i : identifiersVec) {
-    triplets.emplace_back(TripletType(i, i, alpha));
+  triplets.reserve(uniqueConstraintNumber);
+  for(size_t i = 0; i < uniqueConstraintNumber; ++i) {
+    triplets.emplace_back(
+      TripletType(uniqueIdentifiers[i], uniqueIdentifiers[i], alpha));
   }
   penalty.setFromTriplets(triplets.begin(), triplets.end());
 
