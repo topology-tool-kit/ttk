@@ -1,5 +1,4 @@
 ttk_add_base_library(distanceField
 	SOURCES DistanceField.cpp
 	HEADERS DistanceField.h
-	LINK geometry triangulation)
-
+	LINK dijkstra triangulation)
