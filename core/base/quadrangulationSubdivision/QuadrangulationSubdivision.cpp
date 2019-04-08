@@ -342,7 +342,8 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
   return 0;
 }
 
-int ttk::QuadrangulationSubdivision::getQuadNeighbors() {
+int ttk::QuadrangulationSubdivision::getQuadNeighbors(
+  const bool secondNeighbors) {
   Timer t;
 
   quadNeighbors_.clear();
@@ -357,13 +358,33 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors() {
       auto j = static_cast<size_t>(q.j);
       auto k = static_cast<size_t>(q.k);
       auto l = static_cast<size_t>(q.l);
-      if(i == a || k == a) {
-        quadNeighbors_[a].insert(j);
-        quadNeighbors_[a].insert(l);
-      }
-      if(j == a || l == a) {
-        quadNeighbors_[a].insert(k);
-        quadNeighbors_[a].insert(i);
+      if(secondNeighbors) {
+        if(i == a) {
+          quadNeighbors_[a].insert(j);
+          quadNeighbors_[a].insert(k);
+          quadNeighbors_[a].insert(l);
+        } else if(j == a) {
+          quadNeighbors_[a].insert(i);
+          quadNeighbors_[a].insert(k);
+          quadNeighbors_[a].insert(l);
+        } else if(k == a) {
+          quadNeighbors_[a].insert(i);
+          quadNeighbors_[a].insert(j);
+          quadNeighbors_[a].insert(l);
+        } else if(l == a) {
+          quadNeighbors_[a].insert(i);
+          quadNeighbors_[a].insert(j);
+          quadNeighbors_[a].insert(k);
+        }
+      } else {
+        if(i == a || k == a) {
+          quadNeighbors_[a].insert(j);
+          quadNeighbors_[a].insert(l);
+        }
+        if(j == a || l == a) {
+          quadNeighbors_[a].insert(k);
+          quadNeighbors_[a].insert(i);
+        }
       }
     }
   }
