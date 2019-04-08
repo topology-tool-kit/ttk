@@ -112,9 +112,9 @@ class ttkPersistenceCurve
     ~ttkPersistenceCurve();
 
     int RequestData(vtkInformation *request,
-        vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+        vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 
-    int FillOutputPortInformation(int port, vtkInformation* info);
+    int FillOutputPortInformation(int port, vtkInformation* info) override;
 
     template <typename vtkArrayType, typename scalarType>
       int getPersistenceCurve(ttk::ftm::TreeType treeType, 
@@ -153,8 +153,8 @@ class ttkPersistenceCurve
         vtkTable* outputMSCPersistenceCurve,
         vtkTable* outputSTPersistenceCurve,
         vtkTable* outputCTPersistenceCurve);
-    bool needsToAbort();
-    int updateProgress(const float &progress);
+    bool needsToAbort() override;
+    int updateProgress(const float &progress) override;
 };
 
 template <typename vtkArrayType, typename scalarType>

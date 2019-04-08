@@ -29,7 +29,7 @@ const scalars) const{
 
       case 1:
         for(int i=0; i<2; ++i){
-          SimplexId vertexId;
+          SimplexId vertexId = -1;
           inputTriangulation_->getEdgeVertex(cell.id_,i,vertexId);
           const dataType vertexScalar=scalars[vertexId];
 
@@ -40,7 +40,7 @@ const scalars) const{
 
       case 2:
         for(int i=0; i<3; ++i){
-          SimplexId vertexId;
+          SimplexId vertexId = -1;
           inputTriangulation_->getCellVertex(cell.id_,i,vertexId);
           const dataType vertexScalar=scalars[vertexId];
 
@@ -58,7 +58,7 @@ const scalars) const{
 
       case 1:
         for(int i=0; i<2; ++i){
-          SimplexId vertexId;
+          SimplexId vertexId = -1;
           inputTriangulation_->getEdgeVertex(cell.id_,i,vertexId);
           const dataType vertexScalar=scalars[vertexId];
 
@@ -69,7 +69,7 @@ const scalars) const{
 
       case 2:
         for(int i=0; i<3; ++i){
-          SimplexId vertexId;
+          SimplexId vertexId = -1;
           inputTriangulation_->getTriangleVertex(cell.id_,i,vertexId);
           const dataType vertexScalar=scalars[vertexId];
 
@@ -80,7 +80,7 @@ const scalars) const{
 
       case 3:
         for(int i=0; i<4; ++i){
-          SimplexId vertexId;
+          SimplexId vertexId = -1;
           inputTriangulation_->getCellVertex(cell.id_,i,vertexId);
           const dataType vertexScalar=scalars[vertexId];
 
@@ -1048,9 +1048,9 @@ criticalPoints) const{
         vertexId=dmt2Saddle2PL_[cellId];
 
         if(vertexId==-1){
-          SimplexId v0;
-          SimplexId v1;
-          SimplexId v2;
+          SimplexId v0 = 0;
+          SimplexId v1 = 0;
+          SimplexId v2 = 0;
           if(dimensionality_==2){
             inputTriangulation_->getCellVertex(cellId, 0, v0);
             inputTriangulation_->getCellVertex(cellId, 1, v1);
@@ -1171,9 +1171,9 @@ int DiscreteGradient::setAugmentedCriticalPoints(const std::vector<Cell>& critic
         vertexId=dmt2Saddle2PL_[cellId];
 
         if(vertexId==-1){
-          SimplexId v0;
-          SimplexId v1;
-          SimplexId v2;
+          SimplexId v0 = 0;
+          SimplexId v1 = 0;
+          SimplexId v2 = 0;
           if(dimensionality_==2){
             inputTriangulation_->getCellVertex(cellId, 0, v0);
             inputTriangulation_->getCellVertex(cellId, 1, v1);
@@ -3329,7 +3329,7 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
 
   // get the node type of a contour tree node (for compatibility with
   // ScalarFieldCriticalPoints)
-  auto getNodeType=[&](const ftm::FTMTree_MT* tree, const ftm::Node* node){
+  auto getNodeType=[&](const ftm::Node* node) {
     const int upDegree   = node->getNumberOfUpSuperArcs();
     const int downDegree = node->getNumberOfDownSuperArcs();
     const int degree = upDegree + downDegree;
@@ -3373,7 +3373,7 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
     const ftm::Node* node = tree->getNode(nodeId);
     const SimplexId vertexId = node->getVertexId();
 
-    cpset.push_back(std::make_pair(vertexId, getNodeType(tree,node)));
+    cpset.push_back(std::make_pair(vertexId, getNodeType(node)));
   }
 
   std::vector<char> isPL;

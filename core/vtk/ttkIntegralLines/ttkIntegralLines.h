@@ -108,8 +108,8 @@ class ttkIntegralLines
     
     TTK_SETUP();
 
-    int FillInputPortInformation(int port, vtkInformation* info);
-    int FillOutputPortInformation(int port, vtkInformation* info);
+    int FillInputPortInformation(int port, vtkInformation* info) override;
+    int FillOutputPortInformation(int port, vtkInformation* info) override;
 
   private:
 

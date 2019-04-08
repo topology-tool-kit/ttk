@@ -88,7 +88,7 @@ class ttkProjectionFromField
     ~ttkProjectionFromField();
     
     int RequestData(vtkInformation *request, 
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
     
     
   private:
@@ -102,9 +102,9 @@ class ttkProjectionFromField
     // base code features
     int doIt(vtkPointSet *input, vtkPointSet *output);
     
-    bool needsToAbort();
+    bool needsToAbort() override;
     
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
    
 };
 

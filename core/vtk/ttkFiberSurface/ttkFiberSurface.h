@@ -122,7 +122,7 @@ class ttkFiberSurface
     vtkGetMacro(PointMergeDistanceThreshold, double);
     vtkSetMacro(PointMergeDistanceThreshold, double);
    
-    int FillInputPortInformation(int port, vtkInformation *info){
+    int FillInputPortInformation(int port, vtkInformation *info) override {
 
       switch (port) {
         case 0:
@@ -138,7 +138,7 @@ class ttkFiberSurface
       return 0;  
     }
     
-    int FillOutputPortInformation(int port, vtkInformation *info){
+    int FillOutputPortInformation(int port, vtkInformation *info) override {
       info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData"); 
       return 1;
     }

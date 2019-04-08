@@ -24,6 +24,7 @@
 #include<Wrapper.h>
 #include<Geometry.h>
 #include<Triangulation.h>
+#include <Dijkstra.h>
 
 // std includes
 #include<limits>
@@ -94,15 +95,6 @@ namespace ttk{
 }
 
 template <typename dataType>
-dataType ttk::DistanceField::getDistance(const SimplexId a, const SimplexId b) const{
-  float p0[3];
-  triangulation_->getVertexPoint(a,p0[0],p0[1],p0[2]);
-  float p1[3];
-  triangulation_->getVertexPoint(b,p1[0],p1[1],p1[2]);
-  return Geometry::distance(p0,p1,3);
-}
-
-template <typename dataType>
 int ttk::DistanceField::execute() const{
   SimplexId* identifiers=static_cast<SimplexId*>(vertexIdentifierScalarFieldPointer_);
   dataType* dist=static_cast<dataType*>(outputScalarFieldPointer_);
@@ -123,62 +115,14 @@ int ttk::DistanceField::execute() const{
     sources.push_back(s);
   isSource.clear();
 
-  // comparison lambda
-  auto cmp=[](const std::pair<dataType,SimplexId>& a, const std::pair<dataType,SimplexId>& 
-b){
-    if(a.first != b.first) return a.first<b.first;
-    else return a.second<b.second;
-  };
-
   // prepare output
   std::vector<std::vector<dataType>> scalars(sources.size());
-  for(auto& k : scalars)
-    k.resize(vertexNumber_, std::numeric_limits<dataType>::max());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i=0; i< (SimplexId) sources.size(); ++i){
-    std::vector<bool> visited(vertexNumber_,false);
-    std::set<std::pair<dataType,SimplexId>,decltype(cmp)> S(cmp);
-
-    {
-      const SimplexId s=sources[i];
-      scalars[i][s]=0;
-      visited[s]=true;
-
-      const SimplexId neighborNumber=triangulation_->getVertexNeighborNumber(s);
-      for(SimplexId k=0; k<neighborNumber; ++k){
-        SimplexId neighbor;
-        triangulation_->getVertexNeighbor(s,k,neighbor);
-        if(!visited[neighbor]){
-          scalars[i][neighbor]=getDistance<dataType>(s,neighbor);
-          S.emplace(scalars[i][neighbor],neighbor);
-        }
-      }
-    }
-
-    while(!S.empty()){
-      auto it=S.begin();
-      const SimplexId vertex=it->second;
-
-      if(!visited[vertex]){
-        const dataType vertexScalar=scalars[i][vertex];
-        const SimplexId neighborNumber=triangulation_->getVertexNeighborNumber(vertex);
-        for(SimplexId k=0; k<neighborNumber; ++k){
-          SimplexId neighbor;
-          triangulation_->getVertexNeighbor(vertex,k,neighbor);
-
-          const dataType delta=getDistance<dataType>(vertex,neighbor);
-          if(vertexScalar+delta<scalars[i][neighbor]){
-            scalars[i][neighbor]=vertexScalar+delta;
-            S.emplace(scalars[i][neighbor],neighbor);
-          }
-        }
-        visited[vertex]=true;
-      }
-      S.erase(it);
-    }
+  for(SimplexId i = 0; i < (SimplexId)sources.size(); ++i) {
+    Dijkstra::shortestPath<dataType>(sources[i], *triangulation_, scalars[i]);
   }
 
 #ifdef TTK_ENABLE_OPENMP

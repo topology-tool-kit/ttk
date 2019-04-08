@@ -57,7 +57,7 @@ int MorseSmaleComplex2D::getAscendingSeparatrices1(const vector<Cell>& criticalP
           const SimplexId separatrixIndex=4*i+shift;
 
           separatricesGeometry[separatrixIndex]=std::move(vpath);
-          separatrices[separatrixIndex]=std::move(Separatrix(true,saddle,lastCell,false,separatrixIndex));
+          separatrices[separatrixIndex] = Separatrix(true,saddle,lastCell,false,separatrixIndex);
         }
       }
     }

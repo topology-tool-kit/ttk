@@ -346,10 +346,13 @@ const;
     //   - extremum vertex Id (first.first)
     //   - std::paired saddle Id (first.second)
     // - persistence (second)
-    virtual int 
-      getPersistencePairs(
-        std::vector<std::pair<std::pair<int,int>,double>>& pairs) const;
-      
+    virtual int getPersistencePairs(
+        std::vector<std::pair<std::pair<int, int>, double>> &pairs,
+        std::vector<std::pair<std::pair<int, int>, double>> *mergePairs =
+            nullptr,
+        std::vector<std::pair<std::pair<int, int>, double>> *splitPairs =
+            nullptr) const;
+
     int getPersistencePlot(std::vector<std::pair<double,int>> &plot,
 			   std::vector<std::pair<std::pair<int,int>,double>>* 
 persistencePairs=nullptr) const;
@@ -521,8 +524,7 @@ persistencePairs=nullptr) const;
     inline const SubLevelSetTree* getMergeTree() const{
       return &mergeTree_;};
     
-    int getPersistencePairs(std::vector<std::pair<std::pair<int,int>,double>>* 
-pairs,
+    int getPersistencePairs(std::vector<std::pair<std::pair<int,int>,double>>& pairs,
 			    std::vector<std::pair<std::pair<int,int>,double>>* mergePairs=nullptr,
 			    std::vector<std::pair<std::pair<int,int>,double>>* splitPairs=nullptr) 
 const;

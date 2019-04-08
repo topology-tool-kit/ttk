@@ -105,7 +105,7 @@ class ttkMeshSubdivision
     ~ttkMeshSubdivision();
     
     int RequestData(vtkInformation *request, 
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
     
     
   private:
@@ -117,9 +117,9 @@ class ttkMeshSubdivision
     // base code features
     int doIt(vtkUnstructuredGrid *input, vtkUnstructuredGrid *output);
     
-    bool needsToAbort();
+    bool needsToAbort() override;
     
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
    
 };
 

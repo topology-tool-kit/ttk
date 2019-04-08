@@ -457,7 +457,6 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     std::stringstream msg;
     msg << "[ScalarFieldCriticalPoints] Vertex #" << vertexId << " lower link ("
         << lowerCount << " vertices)" << std::endl;
-    ;
 
     msg << "[ScalarFieldCriticalPoints] Vertex #" << vertexId << " upper link ("
         << upperCount << " vertices)" << std::endl;

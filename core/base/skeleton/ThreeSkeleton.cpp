@@ -354,20 +354,24 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
             break;
           }
         }
-        
-        if(((*localVertexStars)[v0][pos0]
-          == (*localVertexStars)[v1][pos1])
-          &&((*localVertexStars)[v0][pos0]
-          == (*localVertexStars)[v2][pos2])){
-          
-          if((*localVertexStars)[v0][pos0] != i){
-            intersection = (*localVertexStars)[v0][pos0];
-            break;
+
+        if((pos0 < (SimplexId)(*localVertexStars)[v0].size())
+           && (pos1 < (SimplexId)(*localVertexStars)[v1].size())
+           && (pos2 < (SimplexId)(*localVertexStars)[v2].size())) {
+
+          if(((*localVertexStars)[v0][pos0] == (*localVertexStars)[v1][pos1])
+             && ((*localVertexStars)[v0][pos0]
+                 == (*localVertexStars)[v2][pos2])) {
+
+            if((*localVertexStars)[v0][pos0] != i) {
+              intersection = (*localVertexStars)[v0][pos0];
+              break;
+            }
+
+            pos0++;
+            pos1++;
+            pos2++;
           }
-        
-          pos0++;
-          pos1++;
-          pos2++;
         }
       }
      

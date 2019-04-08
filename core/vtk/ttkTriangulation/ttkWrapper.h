@@ -61,8 +61,8 @@
 #endif
 
 #ifndef _MSC_VER 
-#define ttkTemplateMacro(s) vtkTemplateMacro((s));
-#define ttkTemplate2Macro(s) vtkTemplate2Macro((s));
+#define ttkTemplateMacro(s) vtkTemplateMacro((s))
+#define ttkTemplate2Macro(s) vtkTemplate2Macro((s))
 #else
 #define ttkTemplateMacro(s) vtkTemplateMacro(s);
 #define ttkTemplate2Macro(s) vtkTemplate2Macro(s);

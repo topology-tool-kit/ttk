@@ -26,7 +26,7 @@
                 <BooleanDomain name="bool" />
                 <Documentation>Determines if the filter replaces (true) or appends (false) database content.</Documentation>
             </IntVectorProperty>
-            <IntVectorProperty name="CompressionLevel" label="Compression Level" command="SetCompressionLevel" number_of_elements="1" default_values="9">
+            <IntVectorProperty name="CompressionLevel" label="Compression Level" command="SetCompressLevel" number_of_elements="1" default_values="9">
                 <IntRangeDomain name="range" min="0" max="9" />
                 <Documentation>Determines the compression level form 0 (fast + large files) to 9 (slow + small files).</Documentation>
             </IntVectorProperty>

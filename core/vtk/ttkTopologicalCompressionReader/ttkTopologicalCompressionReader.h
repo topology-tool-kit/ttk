@@ -74,7 +74,7 @@ class ttkTopologicalCompressionReader
     virtual int RequestInformation(
       vtkInformation *request,
       vtkInformationVector **inputVector,
-      vtkInformationVector *outputVector);
+      vtkInformationVector *outputVector) override;
 
     // TTK management.
     void BuildMesh();
@@ -90,7 +90,6 @@ class ttkTopologicalCompressionReader
     int                              DataExtent[6];
     double                           DataSpacing[3];
     double                           DataOrigin[3];
-    double                           Tolerance;
     bool                             ZFPOnly;
     int                              SQMethod;
 

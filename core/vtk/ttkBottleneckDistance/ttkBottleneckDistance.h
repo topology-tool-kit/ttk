@@ -120,7 +120,7 @@ public:
   vtkGetMacro(result, double);
 
   // Override input types.
-  int FillInputPortInformation(int port, vtkInformation *info) {
+  int FillInputPortInformation(int port, vtkInformation *info) override {
     switch (port) {
       case 0:
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
@@ -135,7 +135,7 @@ public:
   }
 
   // Override output types.
-  int FillOutputPortInformation(int port, vtkInformation *info) {
+  int FillOutputPortInformation(int port, vtkInformation *info) override {
     switch (port) {
       case 0:
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");

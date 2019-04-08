@@ -88,15 +88,13 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(vtkInformation *request,
   }
 
   // Get input data
-  auto input = new vtkDataSet*[numInputs];
+  std::vector<vtkDataSet*> input(numInputs);
   for (int i = 0; i < numInputs; i++)
   {
     input[i] = vtkDataSet::GetData(inputVector[0], i);
   }
 
   doIt<double>(input, mesh, numInputs);
-
-  delete input;
 
   {
     std::stringstream msg;

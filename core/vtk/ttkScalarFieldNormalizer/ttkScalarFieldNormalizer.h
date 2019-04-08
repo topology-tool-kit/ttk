@@ -91,11 +91,10 @@ class ttkScalarFieldNormalizer
     ~ttkScalarFieldNormalizer();
     
     int normalize(vtkDataArray *input, vtkDataArray *output) const;
-    
-    int RequestData(vtkInformation *request, 
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
-    
-    
+
+    int RequestData(vtkInformation *request, vtkInformationVector **inputVector,
+                    vtkInformationVector *outputVector) override;
+
   private:
     
     bool                  UseAllCores;
@@ -106,9 +105,9 @@ class ttkScalarFieldNormalizer
     // base code features
     int doIt(vtkDataSet *input, vtkDataSet *output);
     
-    bool needsToAbort();
+    bool needsToAbort() override;
     
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
    
 };
 

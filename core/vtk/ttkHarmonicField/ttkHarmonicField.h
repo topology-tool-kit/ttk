@@ -91,9 +91,6 @@ public:
   vtkSetMacro(OutputScalarFieldName, std::string);
   vtkGetMacro(OutputScalarFieldName, std::string);
 
-  vtkSetMacro(OutputScalarFieldType, int);
-  vtkGetMacro(OutputScalarFieldType, int);
-
   vtkSetMacro(ForceConstraintIdentifiers, bool);
   vtkGetMacro(ForceConstraintIdentifiers, bool);
 
