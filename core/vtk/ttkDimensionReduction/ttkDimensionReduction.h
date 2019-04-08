@@ -316,13 +316,13 @@ class ttkDimensionReduction
     };
 
     int RequestData(vtkInformation *request,
-        vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+        vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
 
   private:
 
     int doIt(vtkTable* input, vtkTable* output);
-    bool needsToAbort();
-    int updateProgress(const float &progress);
+    bool needsToAbort() override;
+    int updateProgress(const float &progress) override;
 
     // default
     int NumberOfComponents;

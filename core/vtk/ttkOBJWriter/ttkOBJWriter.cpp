@@ -27,7 +27,7 @@ void ttkOBJWriter::PrintSelf(ostream &os, vtkIndent indent){
   this->Superclass::PrintSelf(os, indent);
 
   os << indent << "File Name: " 
-    << (this->FileName ? this->FileName : "(none)") << endl;
+    << (this->Filename ? this->Filename : "(none)") << endl;
 }
 
 // }}}
@@ -35,19 +35,19 @@ void ttkOBJWriter::PrintSelf(ostream &os, vtkIndent indent){
 // {{{
 
 ttkOBJWriter::ttkOBJWriter(){
-  FileName = NULL;
+  Filename = NULL;
   Stream = NULL;
 }
 
 ttkOBJWriter::~ttkOBJWriter(){
-  SetFileName(NULL);
+  SetFilename(NULL);
   if(Stream)
     delete Stream;
 }
 
 int ttkOBJWriter::OpenFile(){
 
-  ofstream *f = new ofstream(FileName, ios::out);
+  ofstream *f = new ofstream(Filename, ios::out);
   
   if(!f->fail()){
     Stream = f;
@@ -70,7 +70,7 @@ void ttkOBJWriter::WriteData(){
   
   if(this->OpenFile()){
     cerr << "[ttkOBJWriter] Could not open file `"
-      << FileName << "' :(" << endl; 
+      << Filename << "' :(" << endl;
     return;
   }
   

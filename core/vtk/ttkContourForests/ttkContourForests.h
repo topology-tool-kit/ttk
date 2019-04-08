@@ -130,8 +130,8 @@ class ttkContourForests
     ~ttkContourForests();
     
     // VTK Interface //
-    virtual int FillInputPortInformation(int port, vtkInformation* info);
-    virtual int FillOutputPortInformation(int port, vtkInformation* info);
+    virtual int FillInputPortInformation(int port, vtkInformation* info) override;
+    virtual int FillOutputPortInformation(int port, vtkInformation* info) override;
 
     // Base //
     int vtkDataSetToStdVector(vtkDataSet* input);
@@ -172,9 +172,9 @@ class ttkContourForests
     
     int doIt(std::vector<vtkDataSet *> &inputs, std::vector<vtkDataSet *> &outputs);
     
-    bool needsToAbort();
+    bool needsToAbort() override;
       
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
    
     
   private:
@@ -226,7 +226,6 @@ class ttkContourForests
     double deltaScalar_;
     ttk::SimplexId numberOfVertices_;
     ttk::Triangulation *triangulation_;
-    std::vector<std::vector<ttk::SimplexId>>* vertexNeighbors_;
     std::vector<ttk::SimplexId>* vertexSoSoffsets_;
     std::vector<ttk::SimplexId>* criticalPoints_;
     std::vector<double>* vertexScalars_;

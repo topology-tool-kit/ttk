@@ -31,8 +31,8 @@ class ttkOFFWriter
 
     // Description:
     // Specify file name of the .abc file.
-    vtkSetStringMacro(FileName);
-    vtkGetStringMacro(FileName);
+    vtkSetStringMacro(Filename);
+    vtkGetStringMacro(Filename);
 
   protected:
     ttkOFFWriter();
@@ -41,7 +41,7 @@ class ttkOFFWriter
     int OpenFile();
     virtual void WriteData() override;
     
-    char *FileName;
+    char *Filename;
     ofstream *Stream;
     
   private:

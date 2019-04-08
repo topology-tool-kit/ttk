@@ -69,11 +69,6 @@ namespace ttk{
       /// Save the output(s) of the TTK module.
       virtual int save() const = 0;
       
-      virtual int setTTKmodule(Debug *ttkModule){
-        ttkModule_ = ttkModule;
-        return -1;
-      }
-     
       CommandLineParser             parser_;
       
       

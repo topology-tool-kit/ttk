@@ -105,9 +105,11 @@ class ttkCinemaLayout
         bool UseAllCores;
         int ThreadNumber;
 
-        int RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+        int RequestData(vtkInformation *request,
+                        vtkInformationVector **inputVector,
+                        vtkInformationVector *outputVector) override;
 
-    private:
+      private:
 
         bool needsToAbort() override { return GetAbortExecute();};
         int updateProgress(const float &progress) override {

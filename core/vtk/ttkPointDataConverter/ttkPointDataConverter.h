@@ -106,8 +106,8 @@ Double=0,
     ttkPointDataConverter();    
     ~ttkPointDataConverter();
 
-    int RequestData(vtkInformation *request, 
-		      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+    int RequestData(vtkInformation *request, vtkInformationVector **inputVector,
+                    vtkInformationVector *outputVector) override;
 
     template<typename A, typename B, typename C>
       int convert(vtkDataArray* inputData, vtkDataSet* output);
@@ -121,8 +121,8 @@ Double=0,
     
     // base code features
     int doIt(vtkDataSet *input, vtkDataSet *output);
-    bool needsToAbort();
-    int updateProgress(const float &progress);   
+    bool needsToAbort() override;
+    int updateProgress(const float &progress) override;
 };
 
 #endif // _TTK_POINTDATACONVERTER_H

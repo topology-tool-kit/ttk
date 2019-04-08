@@ -147,7 +147,7 @@ class ttkTrackingFromFields
 
     TTK_SETUP();
 
-    virtual int FillOutputPortInformation(int port, vtkInformation* info);
+    virtual int FillOutputPortInformation(int port, vtkInformation* info) override;
 
   private:
 

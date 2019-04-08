@@ -36,7 +36,7 @@ class ttkCustomInteractor : public vtkInteractorStyleTrackballCamera{
     
     vtkTypeMacro(ttkCustomInteractor, vtkInteractorStyleTrackballCamera);
     
-    virtual void OnKeyPress();
+    virtual void OnKeyPress() override;
     
     inline int setUserInterface(ttkUserInterfaceBase *userInterface){
       

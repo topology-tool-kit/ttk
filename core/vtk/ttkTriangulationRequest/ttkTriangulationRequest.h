@@ -90,7 +90,7 @@ class ttkTriangulationRequest
     vtkSetMacro(KeepAllDataArrays, bool);
     vtkGetMacro(KeepAllDataArrays, bool);
 
-    int FillInputPortInformation(int port, vtkInformation *info){
+    int FillInputPortInformation(int port, vtkInformation *info) override {
 
       switch(port){
         case 0:
@@ -104,7 +104,7 @@ class ttkTriangulationRequest
       return 1;
     }
 
-    int FillOutputPortInformation(int port, vtkInformation *info){
+    int FillOutputPortInformation(int port, vtkInformation *info) override {
 
       switch(port){
         case 0:

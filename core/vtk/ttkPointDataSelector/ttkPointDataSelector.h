@@ -85,7 +85,7 @@ class ttkPointDataSelector
       Modified();
     }
 
-    int FillInputPortInformation(int port, vtkInformation *info){
+    int FillInputPortInformation(int port, vtkInformation *info) override {
       switch(port){
         case 0:
           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
@@ -97,7 +97,7 @@ class ttkPointDataSelector
       return 1;
     }
 
-    int FillOutputPortInformation(int port, vtkInformation *info){
+    int FillOutputPortInformation(int port, vtkInformation *info) override {
 
       switch(port){
         case 0:
@@ -131,7 +131,7 @@ class ttkPointDataSelector
 
     int RequestData(vtkInformation *request,
         vtkInformationVector **inputVector,
-        vtkInformationVector *outputVector);
+        vtkInformationVector *outputVector) override;
 
   private:
 
@@ -144,6 +144,6 @@ class ttkPointDataSelector
     vtkDataArray             *localFieldCopy_;
 
     int doIt(vtkDataSet *input, vtkDataSet *output);
-    bool needsToAbort();
-    int updateProgress(const float &progress);
+    bool needsToAbort() override;
+    int updateProgress(const float &progress) override;
 };

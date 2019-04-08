@@ -1587,7 +1587,7 @@ bool MergeTree::verifyTree(void)
             ++nbArcsVisibles;
             const idNode &up  = arc.getUpNodeId();
             const idNode &down  = arc.getDownNodeId();
-            if(up == nullSuperArc || down == nullSuperArc){
+            if(up == nullNodes || down == nullNodes){
                 res = false;
                 cout << "[Verif]: arc id : " << aid << "have a null boundary :";
                 cout << " down :" << down << " up:" << up << endl;
@@ -1645,7 +1645,7 @@ bool MergeTree::verifyTree(void)
                    res = false;
                    const idNode upnode = arc.getUpNodeId();
                    const idNode downnode = arc.getDownNodeId();
-                   if(upnode == nullSuperArc || downnode == nullSuperArc){
+                   if(upnode == nullNodes || downnode == nullNodes){
                       cout << "[Verif]: arc id : " << node.getUpSuperArcId(ua);
                       cout << "have a null boundary :";
                       cout << " down :" << downnode << " up:" << upnode << endl;
@@ -1666,7 +1666,7 @@ bool MergeTree::verifyTree(void)
                    res = false;
                    const idNode upnode = arc.getUpNodeId();
                    const idNode downnode = arc.getDownNodeId();
-                   if(upnode == nullSuperArc || downnode == nullSuperArc){
+                   if(upnode == nullNodes || downnode == nullNodes){
                       cout << "[Verif]: arc id : " << node.getDownSuperArcId(da);
                       cout << "have a null boundary :";
                       cout << " down :" << downnode << " up:" << upnode << endl;

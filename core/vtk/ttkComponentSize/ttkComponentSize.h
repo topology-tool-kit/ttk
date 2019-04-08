@@ -81,7 +81,7 @@ class ttkComponentSize
     
     /// Over-ride the input data type to vtkDataSet.
     int FillOutputPortInformation(int port,
-      vtkInformation *info){
+      vtkInformation *info) override {
       info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
       return 1;
     }
@@ -94,7 +94,7 @@ class ttkComponentSize
     ~ttkComponentSize();
     
     int RequestData(vtkInformation *request, 
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
+      vtkInformationVector **inputVector, vtkInformationVector *outputVector) override;
     
     
   private:
@@ -110,9 +110,9 @@ class ttkComponentSize
     // base code features
     int doIt(vtkPointSet *input, vtkUnstructuredGrid *output);
     
-    bool needsToAbort();
+    bool needsToAbort() override;
     
-    int updateProgress(const float &progress);
+    int updateProgress(const float &progress) override;
    
 };
 

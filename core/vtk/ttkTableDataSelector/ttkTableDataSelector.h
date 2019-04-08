@@ -79,7 +79,7 @@ class ttkTableDataSelector
       Modified();
     }
 
-    int FillInputPortInformation(int port, vtkInformation *info){
+    int FillInputPortInformation(int port, vtkInformation *info) override {
       switch(port){
         case 0:
           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
@@ -91,7 +91,7 @@ class ttkTableDataSelector
       return 1;
     }
 
-    int FillOutputPortInformation(int port, vtkInformation *info){
+    int FillOutputPortInformation(int port, vtkInformation *info) override {
 
       switch(port){
         case 0:
@@ -117,7 +117,7 @@ class ttkTableDataSelector
 
     int RequestData(vtkInformation *request,
         vtkInformationVector **inputVector,
-        vtkInformationVector *outputVector);
+        vtkInformationVector *outputVector) override;
 
   private:
 
@@ -126,6 +126,6 @@ class ttkTableDataSelector
     std::vector<std::string> ScalarFields;
 
     int doIt(vtkTable *input, vtkTable *output);
-    bool needsToAbort();
-    int updateProgress(const float &progress);
+    bool needsToAbort() override;
+    int updateProgress(const float &progress) override;
 };

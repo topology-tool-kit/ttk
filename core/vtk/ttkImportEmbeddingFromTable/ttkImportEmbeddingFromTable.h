@@ -81,7 +81,7 @@ class ttkImportEmbeddingFromTable
     vtkSetMacro(Embedding2D, bool);
     vtkGetMacro(Embedding2D, bool);
 
-    int FillInputPortInformation(int port, vtkInformation *info){
+    int FillInputPortInformation(int port, vtkInformation *info) override {
       if(port == 0)
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
       if(port == 1)
@@ -102,7 +102,7 @@ class ttkImportEmbeddingFromTable
 
     int RequestData(vtkInformation *request,
         vtkInformationVector **inputVector,
-        vtkInformationVector *outputVector);
+        vtkInformationVector *outputVector) override;
 
   private:
 
@@ -115,6 +115,6 @@ class ttkImportEmbeddingFromTable
     int ThreadNumber;
 
     int doIt(vtkPointSet* inputDataSet, vtkTable* inputTable,  vtkPointSet* output);
-    bool needsToAbort();
-    int updateProgress(const float &progress);
+    bool needsToAbort() override;
+    int updateProgress(const float &progress) override;
 };
