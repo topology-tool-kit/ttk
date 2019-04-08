@@ -45,7 +45,7 @@ void ftm::FTMTree_MT::sortInput(void)
    auto indirect_sort = [&](const size_t &a, const size_t &b) { return isLower<scalarType,idType>(a, b); };
 
    sortedVect->resize(nbVertices, 0);
-   std::iota(sortedVect->begin(), sortedVect->end(), 0);
+   std::iota(sortedVect->begin(), sortedVect->end(), static_cast<SimplexId>(0));
 
 // #pragma omp parallel
 // #pragma omp single
