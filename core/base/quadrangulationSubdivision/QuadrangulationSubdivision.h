@@ -169,12 +169,14 @@ namespace ttk {
      * Each quad vertex should be linked to four other vertices. This
      * functions stores into the quadNeighbors_ member this relation.
      *
+     * @param[in] quads Quadrangular mesh to find neighbors in
      * @param[in] secondNeighbors Also store secondary neighbors (quad third
      * vertex)
      *
      * @return 0 in case of success
      */
-    int getQuadNeighbors(const bool secondNeighbors = false);
+    int getQuadNeighbors(const std::vector<Quad> &quads,
+                         const bool secondNeighbors = false);
 
     /**
      * @brief Find nearest vertex in triangular input mesh

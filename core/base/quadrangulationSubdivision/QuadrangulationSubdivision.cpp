@@ -343,7 +343,7 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
 }
 
 int ttk::QuadrangulationSubdivision::getQuadNeighbors(
-  const bool secondNeighbors) {
+  const std::vector<Quad> &quads, const bool secondNeighbors) {
   Timer t;
 
   quadNeighbors_.clear();
@@ -353,7 +353,7 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t a = inputVertexNumber_; a < outputPoints_->size(); a++) {
-    for(auto &q : *outputQuads_) {
+    for(auto &q : quads) {
       auto i = static_cast<size_t>(q.i);
       auto j = static_cast<size_t>(q.j);
       auto k = static_cast<size_t>(q.k);
@@ -493,7 +493,7 @@ int ttk::QuadrangulationSubdivision::execute() {
   }
 
   // retrieve mapping between every vertex and its neighbors
-  getQuadNeighbors();
+  getQuadNeighbors(*outputQuads_);
 
   // 3. we "relax" the new points, i.e. we replace it by the
   // barycenter of its four neighbors
