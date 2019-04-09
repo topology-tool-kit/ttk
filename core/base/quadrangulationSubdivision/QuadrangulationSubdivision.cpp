@@ -42,8 +42,7 @@ int ttk::QuadrangulationSubdivision::subdivise(
   // avoid reallocation in loop, causing invalid pointers
   outputPoints_->reserve(outputPoints_->size() * 5);
 
-  // holds geodesic distance to every other quad vertex sharing a quad
-  std::vector<std::vector<float>> vertexDistance(outputPoints_->size());
+  vertexDistance_.resize(outputPoints_->size());
 
   // get all other vertices sharing a quad
   getQuadNeighbors(prevQuads, true);
@@ -51,14 +50,18 @@ int ttk::QuadrangulationSubdivision::subdivise(
   // compute shortest distance from every vertex to all other that share a quad
   for(size_t i = 0; i < outputPoints_->size(); ++i) {
 
-    // do not propagate on the whole mesh
-    std::vector<SimplexId> bounds;
-    for(auto &p : quadNeighbors_[i]) {
-      bounds.emplace_back(nearestVertexIdentifier_[p]);
-    }
+    // skip if already computed on a coarser subdivision
+    if(vertexDistance_[i].empty()) {
 
-    Dijkstra::shortestPath(
-      nearestVertexIdentifier_[i], *triangulation_, vertexDistance[i], &bounds);
+      // do not propagate on the whole mesh
+      std::vector<SimplexId> bounds;
+      for(auto &p : quadNeighbors_[i]) {
+        bounds.emplace_back(nearestVertexIdentifier_[p]);
+      }
+
+      Dijkstra::shortestPath(nearestVertexIdentifier_[i], *triangulation_,
+                             vertexDistance_[i], &bounds);
+    }
   }
 
   for(auto &q : prevQuads) {
@@ -70,10 +73,10 @@ int ttk::QuadrangulationSubdivision::subdivise(
     auto l = static_cast<size_t>(q.l);
 
     // middles of edges
-    auto ijid = minVecAdd(vertexDistance[i], vertexDistance[j]);
-    auto jkid = minVecAdd(vertexDistance[j], vertexDistance[k]);
-    auto klid = minVecAdd(vertexDistance[k], vertexDistance[l]);
-    auto liid = minVecAdd(vertexDistance[l], vertexDistance[i]);
+    auto ijid = minVecAdd(vertexDistance_[i], vertexDistance_[j]);
+    auto jkid = minVecAdd(vertexDistance_[j], vertexDistance_[k]);
+    auto klid = minVecAdd(vertexDistance_[k], vertexDistance_[l]);
+    auto liid = minVecAdd(vertexDistance_[l], vertexDistance_[i]);
 
     Point midij;
     triangulation_->getVertexPoint(ijid, midij.x, midij.y, midij.z);
@@ -85,8 +88,8 @@ int ttk::QuadrangulationSubdivision::subdivise(
     triangulation_->getVertexPoint(liid, midli.x, midli.y, midli.z);
 
     // quad barycenter
-    auto baryid = minVecAdd4(vertexDistance[i], vertexDistance[j],
-                             vertexDistance[k], vertexDistance[l]);
+    auto baryid = minVecAdd4(vertexDistance_[i], vertexDistance_[j],
+                             vertexDistance_[k], vertexDistance_[l]);
     Point bary;
     triangulation_->getVertexPoint(baryid, bary.x, bary.y, bary.z);
 

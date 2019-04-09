@@ -226,6 +226,8 @@ namespace ttk {
     std::vector<std::set<size_t>> quadNeighbors_{};
     // array of nearest input vertex TTK identifier
     std::vector<SimplexId> nearestVertexIdentifier_{};
+    // holds geodesic distance to every other quad vertex sharing a quad
+    std::vector<std::vector<float>> vertexDistance_{};
   };
 } // namespace ttk
 
