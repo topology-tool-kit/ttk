@@ -1,6 +1,33 @@
+#include <Dijkstra.h>
 #include <QuadrangulationSubdivision.h>
 
 #define MODULE_S "[QuadrangulationSubdivision] "
+
+static ttk::SimplexId minVecAdd(const std::vector<float> vec0,
+                                const std::vector<float> vec1) {
+  std::vector<float> sum(vec0.size());
+
+  std::transform(
+    vec0.begin(), vec0.end(), vec1.begin(), sum.begin(), std::plus<float>());
+
+  return std::min_element(sum.begin(), sum.end()) - sum.begin();
+}
+
+static ttk::SimplexId minVecAdd4(const std::vector<float> vec0,
+                                 const std::vector<float> vec1,
+                                 const std::vector<float> vec2,
+                                 const std::vector<float> vec3) {
+  std::vector<float> sum(vec0.size());
+
+  std::transform(
+    vec0.begin(), vec0.end(), vec1.begin(), sum.begin(), std::plus<float>());
+  std::transform(
+    vec2.begin(), vec2.end(), sum.begin(), sum.begin(), std::plus<float>());
+  std::transform(
+    vec3.begin(), vec3.end(), sum.begin(), sum.begin(), std::plus<float>());
+
+  return std::min_element(sum.begin(), sum.end()) - sum.begin();
+}
 
 int ttk::QuadrangulationSubdivision::subdivise(
   std::vector<Quad> &currQuads, const std::vector<Quad> &prevQuads) {
@@ -15,6 +42,25 @@ int ttk::QuadrangulationSubdivision::subdivise(
   // avoid reallocation in loop, causing invalid pointers
   outputPoints_->reserve(outputPoints_->size() * 5);
 
+  // holds geodesic distance to every other quad vertex sharing a quad
+  std::vector<std::vector<float>> vertexDistance(outputPoints_->size());
+
+  // get all other vertices sharing a quad
+  getQuadNeighbors(prevQuads, true);
+
+  // compute shortest distance from every vertex to all other that share a quad
+  for(size_t i = 0; i < outputPoints_->size(); ++i) {
+
+    // do not propagate on the whole mesh
+    std::vector<SimplexId> bounds;
+    for(auto &p : quadNeighbors_[i]) {
+      bounds.emplace_back(nearestVertexIdentifier_[p]);
+    }
+
+    Dijkstra::shortestPath(
+      nearestVertexIdentifier_[i], *triangulation_, vertexDistance[i], &bounds);
+  }
+
   for(auto &q : prevQuads) {
     assert(q.n == 4); // magic number...
 
@@ -23,19 +69,26 @@ int ttk::QuadrangulationSubdivision::subdivise(
     auto k = static_cast<size_t>(q.k);
     auto l = static_cast<size_t>(q.l);
 
-    Point *pi = &(*outputPoints_)[i];
-    Point *pj = &(*outputPoints_)[j];
-    Point *pk = &(*outputPoints_)[k];
-    Point *pl = &(*outputPoints_)[l];
-
     // middles of edges
-    auto midij = (*pi + *pj) * 0.5;
-    auto midjk = (*pj + *pk) * 0.5;
-    auto midkl = (*pk + *pl) * 0.5;
-    auto midli = (*pl + *pi) * 0.5;
+    auto ijid = minVecAdd(vertexDistance[i], vertexDistance[j]);
+    auto jkid = minVecAdd(vertexDistance[j], vertexDistance[k]);
+    auto klid = minVecAdd(vertexDistance[k], vertexDistance[l]);
+    auto liid = minVecAdd(vertexDistance[l], vertexDistance[i]);
+
+    Point midij;
+    triangulation_->getVertexPoint(ijid, midij.x, midij.y, midij.z);
+    Point midjk;
+    triangulation_->getVertexPoint(jkid, midjk.x, midjk.y, midjk.z);
+    Point midkl;
+    triangulation_->getVertexPoint(klid, midkl.x, midkl.y, midkl.z);
+    Point midli;
+    triangulation_->getVertexPoint(liid, midli.x, midli.y, midli.z);
 
     // quad barycenter
-    auto bary = (*pi + *pj + *pk + *pl) * 0.25;
+    auto baryid = minVecAdd4(vertexDistance[i], vertexDistance[j],
+                             vertexDistance[k], vertexDistance[l]);
+    Point bary;
+    triangulation_->getVertexPoint(baryid, bary.x, bary.y, bary.z);
 
     // order edges to avoid duplicates (ij vs. ji)
     auto ij = make_pair(std::min(q.i, q.j), std::max(q.i, q.j));
@@ -49,29 +102,34 @@ int ttk::QuadrangulationSubdivision::subdivise(
       processedEdges.insert(
         make_pair(ij, make_pair(outputPoints_->size(), midij)));
       outputPoints_->emplace_back(midij);
+      nearestVertexIdentifier_.emplace_back(ijid);
     }
 
     if(processedEdges.find(jk) == processedEdges.end()) {
       processedEdges.insert(
         make_pair(jk, make_pair(outputPoints_->size(), midjk)));
       outputPoints_->emplace_back(midjk);
+      nearestVertexIdentifier_.emplace_back(jkid);
     }
 
     if(processedEdges.find(kl) == processedEdges.end()) {
       processedEdges.insert(
         make_pair(kl, make_pair(outputPoints_->size(), midkl)));
       outputPoints_->emplace_back(midkl);
+      nearestVertexIdentifier_.emplace_back(klid);
     }
 
     if(processedEdges.find(li) == processedEdges.end()) {
       processedEdges.insert(
         make_pair(li, make_pair(outputPoints_->size(), midli)));
       outputPoints_->emplace_back(midli);
+      nearestVertexIdentifier_.emplace_back(liid);
     }
 
     // barycenter index in outputPoints_
     auto baryIdx = static_cast<long long>(outputPoints_->size());
     outputPoints_->emplace_back(bary);
+    nearestVertexIdentifier_.emplace_back(baryid);
 
     // add the four new quads
     currQuads.emplace_back(Quad{
@@ -401,8 +459,6 @@ int ttk::QuadrangulationSubdivision::execute() {
 
     // 2. we project every new point on the original 2D mesh, finding
     // the nearest triangle
-
-    project(newPointsRange.back());
     newPointsRange.emplace_back(outputPoints_->size());
   }
 
