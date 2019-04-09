@@ -182,8 +182,6 @@ int ttk::SurfaceQuadrangulation::execute() const {
     }
   }
 
-  // minimun manifold id
-  int minSegId = 0;
   // maximum manifold id
   int maxSegId = 0;
   // compute max + 1 of segmentation indices
@@ -191,12 +189,9 @@ int ttk::SurfaceQuadrangulation::execute() const {
     if(segmentation_[i] > maxSegId) {
       maxSegId = segmentation_[i];
     }
-    if(segmentation_[i] < minSegId) {
-      minSegId = segmentation_[i];
-    }
   }
   // total number of manifolds
-  int nseg = maxSegId - minSegId + 1;
+  int nseg = maxSegId + 1;
 
   // number of produced quads
   size_t quadNumber = outputCells_->size() / 5;
