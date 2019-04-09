@@ -349,51 +349,40 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
   quadNeighbors_.clear();
   quadNeighbors_.resize(outputPoints_->size());
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t a = inputVertexNumber_; a < outputPoints_->size(); a++) {
-    for(auto &q : quads) {
-      auto i = static_cast<size_t>(q.i);
-      auto j = static_cast<size_t>(q.j);
-      auto k = static_cast<size_t>(q.k);
-      auto l = static_cast<size_t>(q.l);
-      if(secondNeighbors) {
-        if(i == a) {
-          quadNeighbors_[a].insert(j);
-          quadNeighbors_[a].insert(k);
-          quadNeighbors_[a].insert(l);
-        } else if(j == a) {
-          quadNeighbors_[a].insert(i);
-          quadNeighbors_[a].insert(k);
-          quadNeighbors_[a].insert(l);
-        } else if(k == a) {
-          quadNeighbors_[a].insert(i);
-          quadNeighbors_[a].insert(j);
-          quadNeighbors_[a].insert(l);
-        } else if(l == a) {
-          quadNeighbors_[a].insert(i);
-          quadNeighbors_[a].insert(j);
-          quadNeighbors_[a].insert(k);
-        }
-      } else {
-        if(i == a || k == a) {
-          quadNeighbors_[a].insert(j);
-          quadNeighbors_[a].insert(l);
-        }
-        if(j == a || l == a) {
-          quadNeighbors_[a].insert(k);
-          quadNeighbors_[a].insert(i);
-        }
-      }
+  for(auto &q : quads) {
+    auto i = static_cast<size_t>(q.i);
+    auto j = static_cast<size_t>(q.j);
+    auto k = static_cast<size_t>(q.k);
+    auto l = static_cast<size_t>(q.l);
+    if(secondNeighbors) {
+      quadNeighbors_[i].insert(j);
+      quadNeighbors_[i].insert(k);
+      quadNeighbors_[i].insert(l);
+      quadNeighbors_[j].insert(i);
+      quadNeighbors_[j].insert(k);
+      quadNeighbors_[j].insert(l);
+      quadNeighbors_[k].insert(i);
+      quadNeighbors_[k].insert(j);
+      quadNeighbors_[k].insert(l);
+      quadNeighbors_[l].insert(i);
+      quadNeighbors_[l].insert(j);
+      quadNeighbors_[l].insert(k);
+    } else {
+      quadNeighbors_[i].insert(j);
+      quadNeighbors_[i].insert(l);
+      quadNeighbors_[k].insert(j);
+      quadNeighbors_[k].insert(l);
+      quadNeighbors_[j].insert(k);
+      quadNeighbors_[j].insert(i);
+      quadNeighbors_[l].insert(k);
+      quadNeighbors_[l].insert(i);
     }
   }
 
   {
     std::stringstream msg;
-    msg << MODULE_S "Computed neighbors mapping of "
-        << outputPoints_->size() - inputVertexNumber_ << " points in "
-        << t.getElapsedTime() << "s" << std::endl;
+    msg << MODULE_S "Computed neighbors mapping of " << outputPoints_->size()
+        << " points in " << t.getElapsedTime() << "s" << std::endl;
     dMsg(std::cout, msg.str(), detailedInfoMsg);
   }
 
