@@ -188,20 +188,6 @@ namespace ttk {
     SimplexId findNearestInputVertex(SimplexId i) const;
 
     /**
-     * @brief Find the middle of two input vertices in the input
-     * surface
-     *
-     * Use a limited shortest path algorithm between m and n and
-     * return the middle vertex
-     *
-     * @param[in] m first input vertex
-     * @param[in] n second input vertex
-     *
-     * @return surfacic middle of m and n
-     */
-    SimplexId findVerticesMiddle(const SimplexId m, const SimplexId n);
-
-    /**
      * @brief Compute the projection in the nearest triangle
      *
      * @param[in] i input index of quadrangle vertex
