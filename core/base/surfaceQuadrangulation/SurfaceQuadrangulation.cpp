@@ -57,6 +57,20 @@ bool ttk::SurfaceQuadrangulation::hasCommonManifold(
     curr.clear();
   }
 
+  {
+    std::stringstream msg;
+    msg << "[SurfaceQuadrangulation] Common manifolds between vertices";
+    for(auto &id : vertsId) {
+      msg << " " << id;
+    }
+    msg << ":";
+    for(auto &elem : last) {
+      msg << " " << elem;
+    }
+    msg << std::endl;
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
+  }
+
   return !last.empty();
 }
 
