@@ -298,7 +298,7 @@ void FTMTree_MT::build(const bool ct)
    int nbProcessed = 0;
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
    // count process
-   for (int i = 0; i < scalars_->size; i++) {
+   for (SimplexId i = 0; i < scalars_->size; i++) {
        if((*mt_data_.vert2tree)[i] != nullCorresp)
            ++nbProcessed;
    }
@@ -774,7 +774,7 @@ void FTMTree_MT::leafGrowth()
    for (idNode n = 0; n < nbLeaves; ++n)
    {
       const idNode l = (*mt_data_.leaves)[n];
-      int          v = getNode(l)->getVertexId();
+      SimplexId    v = getNode(l)->getVertexId();
       // for each node: get vert, create uf and lauch
       (*mt_data_.ufs)[v] = new AtomicUF(v);
 
