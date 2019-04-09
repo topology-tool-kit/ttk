@@ -25,7 +25,7 @@ namespace ttk {
     int shortestPath(const SimplexId source,
                      Triangulation &triangulation,
                      std::vector<T> &outputDists,
-                     const std::vector<SimplexId> *bounds = nullptr);
+                     const std::vector<SimplexId> &bounds = std::vector<SimplexId>());
 
   } // namespace Dijkstra
 } // namespace ttk

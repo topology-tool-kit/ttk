@@ -7,10 +7,10 @@ template <typename T>
 int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
                                 ttk::Triangulation &triangulation,
                                 std::vector<T> &outputDists,
-                                const std::vector<ttk::SimplexId> *bounds) {
+                                const std::vector<ttk::SimplexId> &bounds) {
 
   // should we process the whole mesh or stop at some point?
-  bool processAllVertices = (bounds == nullptr);
+  bool processAllVertices = bounds.empty();
   // total number of vertices in the mesh
   size_t vertexNumber = triangulation.getNumberOfVertices();
 
@@ -19,7 +19,7 @@ int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
 
   // alloc and fill reachedBounds
   if(!processAllVertices) {
-    reachedBounds.resize(bounds->size(), false);
+    reachedBounds.resize(bounds.size(), false);
   }
 
   // preprocess output vector
@@ -58,10 +58,10 @@ int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
         outputDists[neigh] = outputDists[vert] + distVN;
         if(!processAllVertices) {
           // check if neigh in bounds
-          auto it = std::find(bounds->begin(), bounds->end(), neigh);
-          if(it != bounds->end()) {
+          auto it = std::find(bounds.begin(), bounds.end(), neigh);
+          if(it != bounds.end()) {
             // mark it as found
-            reachedBounds[it - bounds->begin()] = true;
+            reachedBounds[it - bounds.begin()] = true;
           }
           // break if all are found
           if(std::all_of(reachedBounds.begin(), reachedBounds.end(),
@@ -82,9 +82,9 @@ template int
   ttk::Dijkstra::shortestPath<float>(const ttk::SimplexId source,
                                      ttk::Triangulation &triangulation,
                                      std::vector<float> &outputDists,
-                                     const std::vector<ttk::SimplexId> *bounds);
+                                     const std::vector<ttk::SimplexId> &bounds);
 template int ttk::Dijkstra::shortestPath<double>(
   const ttk::SimplexId source,
   ttk::Triangulation &triangulation,
   std::vector<double> &outputDists,
-  const std::vector<ttk::SimplexId> *bounds);
+  const std::vector<ttk::SimplexId> &bounds);
