@@ -156,36 +156,6 @@ int ttk::QuadrangulationSubdivision::subdivise(
   return 0;
 }
 
-ttk::SimplexId ttk::QuadrangulationSubdivision::findNearestInputVertex(
-  const ttk::SimplexId i) const {
-
-  // current point to project
-  Point *vert = &(*outputPoints_)[i];
-
-  // holds the distance to the nearest vertex
-  std::pair<float, SimplexId> nearestVertex = std::make_pair(-1.0f, -1);
-
-  // iterate over all vertices of the input mesh, find the nearest one
-  for(SimplexId j = 0; j < triangulation_->getNumberOfVertices(); j++) {
-
-    // get vertex coordinates
-    Point inMesh{};
-    triangulation_->getVertexPoint(j, inMesh.x, inMesh.y, inMesh.z);
-
-    // get square distance to vertex
-    float dist = (vert->x - inMesh.x) * (vert->x - inMesh.x)
-                 + (vert->y - inMesh.y) * (vert->y - inMesh.y)
-                 + (vert->z - inMesh.z) * (vert->z - inMesh.z);
-
-    if(nearestVertex.first < 0.0f || dist < nearestVertex.first) {
-      nearestVertex.first = dist;
-      nearestVertex.second = j;
-    }
-  }
-
-  return nearestVertex.second;
-}
-
 ttk::QuadrangulationSubdivision::Point
   ttk::QuadrangulationSubdivision::findProjectionInTriangle(
     const ttk::SimplexId i) const {
@@ -321,9 +291,6 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
-
-    nearestVertexIdentifier_[i] = findNearestInputVertex(i);
-
     // replace curr in outputPoints_ by its projection
     (*outputPoints_)[i] = findProjectionInTriangle(i);
   }

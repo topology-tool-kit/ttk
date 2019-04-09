@@ -179,15 +179,6 @@ namespace ttk {
                          const bool secondNeighbors = false);
 
     /**
-     * @brief Find nearest vertex in triangular input mesh
-     *
-     * @param[in] i input index of quadrangle vertex somewhere in space
-     *
-     * @return nearest input vertex SimplexId (according to euclidian distance)
-     */
-    SimplexId findNearestInputVertex(SimplexId i) const;
-
-    /**
      * @brief Compute the projection in the nearest triangle
      *
      * @param[in] i input index of quadrangle vertex
