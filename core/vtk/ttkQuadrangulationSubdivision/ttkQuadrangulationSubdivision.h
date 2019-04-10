@@ -132,26 +132,26 @@ private:
   // user-defined input constraints (float) scalar field name
   std::string InputScalarFieldName;
   // user-defined input identifier (SimplexId) scalar field name
-  std::string InputIdentifiersFieldName;
+  std::string InputIdentifiersFieldName{ttk::VertexScalarFieldName};
   // user-defined input offset identifier (SimplexId) scalar field name
   std::string InputOffsetIdentifiersFieldName;
   // let the user choose a different identifier scalar field
-  bool ForceInputIdentifiersField;
+  bool ForceInputIdentifiersField{false};
   // let the user choose an offset identifier scalar field
-  bool ForceInputOffsetIdentifiersField;
+  bool ForceInputOffsetIdentifiersField{false};
   // number of subdivisions of the Morse-Smale Complex cells
-  unsigned int SubdivisionLevel;
+  unsigned int SubdivisionLevel{3};
   // number of relaxation iterations
-  unsigned int RelaxationIterations;
+  unsigned int RelaxationIterations{100};
   // lock input extrema
   bool LockInputExtrema{true};
   // lock all input vertices
   bool LockAllInputVertices{true};
 
   // base worker object
-  ttk::QuadrangulationSubdivision baseWorker_;
+  ttk::QuadrangulationSubdivision baseWorker_{};
   // output vector of interleaved quadrangles
-  std::vector<vtkIdType> outQuadrangles_;
+  std::vector<vtkIdType> outQuadrangles_{};
   // output vector of quadrangle vertices
-  std::vector<float> outVertices_;
+  std::vector<float> outVertices_{};
 };

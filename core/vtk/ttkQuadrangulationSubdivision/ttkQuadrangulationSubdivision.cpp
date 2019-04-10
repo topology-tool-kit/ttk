@@ -15,12 +15,7 @@
 vtkStandardNewMacro(ttkQuadrangulationSubdivision);
 
 ttkQuadrangulationSubdivision::ttkQuadrangulationSubdivision()
-  : UseAllCores{true}, ThreadNumber{}, ForceInputIdentifiersField{false},
-    ForceInputOffsetIdentifiersField{false}, SubdivisionLevel{3},
-    RelaxationIterations{100} {
-
-  InputIdentifiersFieldName
-    = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
+  : UseAllCores{true}, ThreadNumber{} {
 
   // MSC quadrangulation + initial 2D mesh
   SetNumberOfInputPorts(2);
