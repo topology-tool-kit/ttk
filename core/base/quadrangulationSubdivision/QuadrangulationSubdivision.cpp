@@ -57,13 +57,18 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
   return std::min_element(sum.begin(), sum.end()) - sum.begin();
 }
 
-int ttk::QuadrangulationSubdivision::subdivise(
-  std::vector<Quad> &currQuads, const std::vector<Quad> &prevQuads) {
+int ttk::QuadrangulationSubdivision::subdivise() {
 
   using edgeType = std::pair<long long, long long>;
   using vertexType = std::pair<long long, Point>;
   using std::make_pair;
   std::map<edgeType, vertexType> processedEdges;
+
+  // deep copy of coarse input quads
+  auto prevQuads(*outputQuads_);
+
+  // clear input quads buffer before re-writing it
+  outputQuads_->clear();
 
   Timer t;
 
@@ -166,20 +171,20 @@ int ttk::QuadrangulationSubdivision::subdivise(
     nearestVertexIdentifier_.emplace_back(baryid);
 
     // add the four new quads
-    currQuads.emplace_back(Quad{
+    outputQuads_->emplace_back(Quad{
       4, q.i, processedEdges[ij].first, baryIdx, processedEdges[li].first});
-    currQuads.emplace_back(Quad{
+    outputQuads_->emplace_back(Quad{
       4, q.j, processedEdges[jk].first, baryIdx, processedEdges[ij].first});
-    currQuads.emplace_back(Quad{
+    outputQuads_->emplace_back(Quad{
       4, q.k, processedEdges[kl].first, baryIdx, processedEdges[jk].first});
-    currQuads.emplace_back(Quad{
+    outputQuads_->emplace_back(Quad{
       4, q.l, processedEdges[li].first, baryIdx, processedEdges[kl].first});
   }
 
   {
     std::stringstream msg;
     msg << MODULE_S "Subdivised " << prevQuads.size() << " quads into "
-        << currQuads.size() << " new quads (" << outputPoints_->size()
+        << outputQuads_->size() << " new quads (" << outputPoints_->size()
         << " points) in " << t.getElapsedTime() << "s" << std::endl;
     dMsg(std::cout, msg.str(), detailedInfoMsg);
   }
@@ -459,7 +464,7 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   // copy input quads into vector
   for(size_t i = 0; i < inputQuadNumber_; i++) {
-    inputQuadsVert.emplace_back(inputQuads_[i]);
+    outputQuads_->emplace_back(inputQuads_[i]);
   }
 
   // main loop
@@ -467,30 +472,7 @@ int ttk::QuadrangulationSubdivision::execute() {
     // 1. we subdivise each quadrangle by creating five new points, at
     // the center of each edge (4) and at the barycenter of the four
     // vertices (1).
-
-    // index of first point inserted in the outputPoints_ vector
-    // during subdivision
-
-    subdivise(*tmp1, *tmp0);
-    tmp0->clear();
-
-    auto swap = tmp0;
-    tmp0 = tmp1;
-    tmp1 = swap;
-
-    // 2. we project every new point on the original 2D mesh, finding
-    // the nearest triangle
-    newPointsRange.emplace_back(outputPoints_->size());
-  }
-
-  // remainder iteration: since we used outputQuads_ to store
-  // temporary quadrangles data, we sometimes need to copy the true
-  // output quadrangles into it
-  if(subdivisionLevel_ % 2 == 0) {
-    outputQuads_->reserve(tmp0->size());
-    for(auto &q : *tmp0) {
-      outputQuads_->emplace_back(q);
-    }
+    subdivise();
   }
 
   // retrieve mapping between every vertex and its neighbors

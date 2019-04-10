@@ -137,12 +137,9 @@ namespace ttk {
      * New quadrangles using these new points are then generated
      * out-of-place in an output vector of quadrangles.
      *
-     * @param[out] currQuads vector of newly generated quadrangles
-     * @param[in] prevQuads vector of input quadrangles to be subdivised
      * @return 0 in case of success
      */
-    int subdivise(std::vector<Quad> &currQuads,
-                  const std::vector<Quad> &prevQuads);
+    int subdivise();
 
     /**
      * @brief Project a generated quadrangle vertex into the
