@@ -78,7 +78,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
   vertexDistance_.resize(outputPoints_->size());
 
   // get all other vertices sharing a quad
-  getQuadNeighbors(prevQuads, true);
+  getQuadNeighbors(prevQuads, quadNeighbors_, true);
 
   // compute shortest distance from every vertex to all other that share a quad
 #ifdef TTK_ENABLE_OPENMP
@@ -374,7 +374,9 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx,
 }
 
 int ttk::QuadrangulationSubdivision::getQuadNeighbors(
-  const std::vector<Quad> &quads, const bool secondNeighbors) {
+  const std::vector<Quad> &quads,
+  std::vector<std::set<size_t>> &neighbors,
+  const bool secondNeighbors) {
   Timer t;
 
   quadNeighbors_.clear();
@@ -386,27 +388,27 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
     auto k = static_cast<size_t>(q.k);
     auto l = static_cast<size_t>(q.l);
     if(secondNeighbors) {
-      quadNeighbors_[i].insert(j);
-      quadNeighbors_[i].insert(k);
-      quadNeighbors_[i].insert(l);
-      quadNeighbors_[j].insert(i);
-      quadNeighbors_[j].insert(k);
-      quadNeighbors_[j].insert(l);
-      quadNeighbors_[k].insert(i);
-      quadNeighbors_[k].insert(j);
-      quadNeighbors_[k].insert(l);
-      quadNeighbors_[l].insert(i);
-      quadNeighbors_[l].insert(j);
-      quadNeighbors_[l].insert(k);
+      neighbors[i].insert(j);
+      neighbors[i].insert(k);
+      neighbors[i].insert(l);
+      neighbors[j].insert(i);
+      neighbors[j].insert(k);
+      neighbors[j].insert(l);
+      neighbors[k].insert(i);
+      neighbors[k].insert(j);
+      neighbors[k].insert(l);
+      neighbors[l].insert(i);
+      neighbors[l].insert(j);
+      neighbors[l].insert(k);
     } else {
-      quadNeighbors_[i].insert(j);
-      quadNeighbors_[i].insert(l);
-      quadNeighbors_[k].insert(j);
-      quadNeighbors_[k].insert(l);
-      quadNeighbors_[j].insert(k);
-      quadNeighbors_[j].insert(i);
-      quadNeighbors_[l].insert(k);
-      quadNeighbors_[l].insert(i);
+      neighbors[i].insert(j);
+      neighbors[i].insert(l);
+      neighbors[k].insert(j);
+      neighbors[k].insert(l);
+      neighbors[j].insert(k);
+      neighbors[j].insert(i);
+      neighbors[l].insert(k);
+      neighbors[l].insert(i);
     }
   }
 
@@ -488,7 +490,7 @@ int ttk::QuadrangulationSubdivision::execute() {
   }
 
   // retrieve mapping between every vertex and its neighbors
-  getQuadNeighbors(*outputQuads_);
+  getQuadNeighbors(*outputQuads_, quadNeighbors_);
 
   size_t firstPointIdx = inputVertexNumber_;
   if(!lockAllInputVertices) {

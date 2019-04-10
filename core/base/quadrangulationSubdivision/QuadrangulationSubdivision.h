@@ -183,6 +183,7 @@ namespace ttk {
      * @return 0 in case of success
      */
     int getQuadNeighbors(const std::vector<Quad> &quads,
+                         std::vector<std::set<size_t>> &neighbors,
                          const bool secondNeighbors = false);
 
     /**
