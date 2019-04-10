@@ -61,7 +61,7 @@ int ttk::QuadrangulationSubdivision::subdivise(
       }
 
       Dijkstra::shortestPath(nearestVertexIdentifier_[i], *triangulation_,
-                             vertexDistance_[i], &bounds);
+                             vertexDistance_[i], bounds);
     }
   }
 
