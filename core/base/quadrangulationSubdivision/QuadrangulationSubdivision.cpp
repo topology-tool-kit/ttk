@@ -315,8 +315,6 @@ ttk::QuadrangulationSubdivision::Point
 int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
   Timer t;
 
-  nearestVertexIdentifier_.resize(outputPoints_->size());
-
   // main loop
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
