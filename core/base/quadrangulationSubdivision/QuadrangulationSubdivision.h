@@ -165,9 +165,11 @@ namespace ttk {
      *
      * Keep the input Morse-Smale Complex critical points untouched.
      *
+     * @param[in] firstPointIdx beginning index in outputPoints_
+     * vector of the range of points to be projected
      * @return 0 in case of success
      */
-    int relax();
+    int relax(size_t firstPointIdx);
 
     /**
      * @brief Store for every quad vertex its neighbors

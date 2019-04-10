@@ -402,7 +402,7 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
   return 0;
 }
 
-int ttk::QuadrangulationSubdivision::relax() {
+int ttk::QuadrangulationSubdivision::relax(const size_t firstPointIdx) {
   Timer t;
 
   // outputPoints_ deep copy
@@ -412,7 +412,7 @@ int ttk::QuadrangulationSubdivision::relax() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = inputVertexNumber_; i < outputPoints_->size(); i++) {
+  for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
     // barycenter of curr neighbors
     Point relax{};
     for(auto &neigh : quadNeighbors_[i]) {
@@ -499,7 +499,7 @@ int ttk::QuadrangulationSubdivision::execute() {
   // 3. we "relax" the new points, i.e. we replace it by the
   // barycenter of its four neighbors
   for(size_t i = 0; i < relaxationIterations_; i++) {
-    relax();
+    relax(inputVertexNumber_);
 
     // project all points except MSC critical points
     project(newPointsRange.front());
