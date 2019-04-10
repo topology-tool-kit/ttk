@@ -113,6 +113,30 @@
       </IntVectorProperty>
 
       <IntVectorProperty
+          name="LockInputExtrema"
+          label="Lock extraordinary vertices"
+          command="SetLockInputExtrema"
+          number_of_elements="1"
+          default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Lock position of extraordinary input vertices
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="LockAllInputVertices"
+          label="Lock all coarse vertices"
+          command="SetLockAllInputVertices"
+          number_of_elements="1"
+          default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Lock position of input vertices
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
           name="UseAllCores"
           command="SetUseAllCores"
           label="Use All Cores"

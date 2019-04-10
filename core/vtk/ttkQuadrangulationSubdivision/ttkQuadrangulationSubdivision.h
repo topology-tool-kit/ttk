@@ -94,6 +94,12 @@ public:
   vtkSetMacro(RelaxationIterations, unsigned int);
   vtkGetMacro(RelaxationIterations, unsigned int);
 
+  vtkSetMacro(LockInputExtrema, bool);
+  vtkGetMacro(LockInputExtrema, bool);
+
+  vtkSetMacro(LockAllInputVertices, bool);
+  vtkGetMacro(LockAllInputVertices, bool);
+
   // fill triangulation_ array
   int getTriangulation(vtkDataSet *input);
 
@@ -137,6 +143,10 @@ private:
   unsigned int SubdivisionLevel;
   // number of relaxation iterations
   unsigned int RelaxationIterations;
+  // lock input extrema
+  bool LockInputExtrema{true};
+  // lock all input vertices
+  bool LockAllInputVertices{true};
 
   // base worker object
   ttk::QuadrangulationSubdivision baseWorker_;
