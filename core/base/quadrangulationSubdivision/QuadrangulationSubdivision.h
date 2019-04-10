@@ -49,6 +49,12 @@ namespace ttk {
     inline void setRelaxationIterations(const unsigned int value) {
       relaxationIterations_ = value;
     }
+    inline void setLockInputExtrema(const bool value) {
+      lockInputExtrema = value;
+    }
+    inline void setLockAllInputVertices(const bool value) {
+      lockAllInputVertices = value;
+    }
     inline void setInputQuads(void *const address, unsigned int size) {
       inputQuads_ = static_cast<Quad *>(address);
       inputQuadNumber_ = size;
@@ -226,6 +232,10 @@ namespace ttk {
     unsigned int subdivisionLevel_{3};
     // number of relaxation iterations
     unsigned int relaxationIterations_{100};
+    // lock input extrema
+    bool lockInputExtrema{true};
+    // lock all input vertices
+    bool lockAllInputVertices{true};
 
     // number of input quadrangles
     unsigned int inputQuadNumber_{};

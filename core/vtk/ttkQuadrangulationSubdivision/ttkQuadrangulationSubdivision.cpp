@@ -85,8 +85,16 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
   ttk::Memory m;
 
+  // ensure consistency of dependent options before passing them to
+  // base layer
+  if(LockAllInputVertices) {
+    LockInputExtrema = true;
+  }
+
   baseWorker_.setSubdivisionLevel(SubdivisionLevel);
   baseWorker_.setRelaxationIterations(RelaxationIterations);
+  baseWorker_.setLockInputExtrema(LockInputExtrema);
+  baseWorker_.setLockAllInputVertices(LockAllInputVertices);
   baseWorker_.setOutputPoints(&outVertices_);
   baseWorker_.setOutputQuads(&outQuadrangles_);
 
