@@ -185,7 +185,7 @@ namespace ttk {
      *
      * @return coordinates of projection
      */
-    Point findProjectionInTriangle(SimplexId i) const;
+    Point findProjectionInTriangle(SimplexId i);
 
     /**
      * @brief Find the middle of a quad edge using Dijkstra

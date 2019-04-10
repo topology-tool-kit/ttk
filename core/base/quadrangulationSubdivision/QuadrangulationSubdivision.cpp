@@ -189,7 +189,7 @@ int ttk::QuadrangulationSubdivision::subdivise(
 
 ttk::QuadrangulationSubdivision::Point
   ttk::QuadrangulationSubdivision::findProjectionInTriangle(
-    const ttk::SimplexId i) const {
+    const ttk::SimplexId i) {
 
   // current point to project
   Point *vert = &(*outputPoints_)[i];
@@ -204,6 +204,21 @@ ttk::QuadrangulationSubdivision::Point
   // (takes more memory to reduce computation time)
   std::vector<bool> trianglesTested(
     triangulation_->getNumberOfTriangles(), false);
+
+  float min_dist = std::numeric_limits<float>::infinity();
+  SimplexId minId = 0;
+
+  // find neareast vertex and stores
+  for(SimplexId j = 0; j < vertexNumber_; ++j) {
+    Point p{};
+    triangulation_->getVertexPoint(j, p.x, p.y, p.z);
+    float curr_dist = Geometry::distance(&vert->x, &p.x);
+    if(curr_dist < min_dist) {
+      min_dist = curr_dist;
+      minId = j;
+    }
+  }
+  nearestVertexIdentifier_[i] = minId;
 
   // number of triangles around nearest vertex
   SimplexId triangleNumber
