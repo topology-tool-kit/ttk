@@ -384,21 +384,22 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
 int ttk::QuadrangulationSubdivision::relax() {
   Timer t;
 
+  // outputPoints_ deep copy
+  auto tmp(*outputPoints_);
+
   // loop over output points, do not touch input MSC critical points
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = inputVertexNumber_; i < outputPoints_->size(); i++) {
-    Point *curr = &(*outputPoints_)[i];
-
     // barycenter of curr neighbors
     Point relax{};
     for(auto &neigh : quadNeighbors_[i]) {
-      relax = relax + (*outputPoints_)[neigh];
+      relax = relax + tmp[neigh];
     }
     relax = relax * (1.0f / static_cast<float>(quadNeighbors_[i].size()));
 
-    *curr = relax;
+    (*outputPoints_)[i] = relax;
   }
 
   {
