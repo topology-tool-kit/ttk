@@ -460,6 +460,33 @@ int ttk::QuadrangulationSubdivision::relax(const size_t firstPointIdx,
   return 0;
 }
 
+int ttk::QuadrangulationSubdivision::findExtraordinaryVertices(
+  std::vector<size_t> &output) {
+
+  // clear output
+  output.clear();
+
+  // hold input quads in a vector
+  std::vector<Quad> inputQuads(inputQuadNumber_);
+
+  std::vector<std::set<size_t>> neighbors;
+
+  // copy input quads into vector
+  for(size_t i = 0; i < inputQuadNumber_; i++) {
+    inputQuads.emplace_back(inputQuads_[i]);
+  }
+
+  getQuadNeighbors(inputQuads, neighbors);
+
+  for(size_t i = 0; i < neighbors.size(); ++i) {
+    if(neighbors[i].size() > 4) {
+      output.emplace_back(i);
+    }
+  }
+
+  return 0;
+}
+
 // main routine
 int ttk::QuadrangulationSubdivision::execute() {
 

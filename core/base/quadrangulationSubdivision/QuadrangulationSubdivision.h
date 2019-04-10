@@ -226,6 +226,15 @@ namespace ttk {
                            const std::vector<float> vec2,
                            const std::vector<float> vec3) const;
 
+    /**
+     * @brief Find input vertices with more than 4 neighbors
+     *
+     * @param[out] output vector of input extraordinary point indices
+     *
+     * @return 0 in case of success
+     */
+    int findExtraordinaryVertices(std::vector<size_t> &output);
+
   protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_{};
