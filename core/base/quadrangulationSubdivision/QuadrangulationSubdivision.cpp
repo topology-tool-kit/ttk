@@ -317,7 +317,8 @@ ttk::QuadrangulationSubdivision::Point
   return proj;
 }
 
-int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
+int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx,
+                                             const std::set<size_t> &filtered) {
   Timer t;
 
   // compute nearest vertex in triangular mesh and stores it in
@@ -326,6 +327,12 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
+
+    // skip computation if i in filtered
+    if(std::find(filtered.begin(), filtered.end(), i) != filtered.end()) {
+      continue;
+    }
+
     const Point *vert = &(*outputPoints_)[i];
     // distance to triangular mesh vertex
     float min_dist = std::numeric_limits<float>::infinity();
@@ -346,6 +353,12 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
+
+    // skip computation if i in filtered
+    if(std::find(filtered.begin(), filtered.end(), i) != filtered.end()) {
+      continue;
+    }
+
     // replace curr in outputPoints_ by its projection
     (*outputPoints_)[i] = findProjectionInTriangle(i);
   }
@@ -407,7 +420,8 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
   return 0;
 }
 
-int ttk::QuadrangulationSubdivision::relax(const size_t firstPointIdx) {
+int ttk::QuadrangulationSubdivision::relax(const size_t firstPointIdx,
+                                           const std::set<size_t> &filtered) {
   Timer t;
 
   // outputPoints_ deep copy
@@ -418,6 +432,12 @@ int ttk::QuadrangulationSubdivision::relax(const size_t firstPointIdx) {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
+
+    // skip computation if i in filtered
+    if(std::find(filtered.begin(), filtered.end(), i) != filtered.end()) {
+      continue;
+    }
+
     // barycenter of curr neighbors
     Point relax{};
     for(auto &neigh : quadNeighbors_[i]) {
@@ -482,11 +502,11 @@ int ttk::QuadrangulationSubdivision::execute() {
   // "relax" the new points, i.e. replace it by the barycenter of its
   // four neighbors
   for(size_t i = 0; i < relaxationIterations_; i++) {
-    relax(firstPointIdx);
+    relax(firstPointIdx, std::set<size_t>());
 
     // project all points on the nearest triangle (except MSC critical
     // points)
-    project(firstPointIdx);
+    project(firstPointIdx, std::set<size_t>());
   }
 
   {

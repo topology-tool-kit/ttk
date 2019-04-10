@@ -150,9 +150,10 @@ namespace ttk {
      *
      * @param[in] firstPointIdx beginning index in outputPoints_
      * vector of the range of points to be projected
+     * @param[in] filtered set of indices that should not be projected
      * @return 0 in case of success
      */
-    int project(size_t firstPointIdx);
+    int project(size_t firstPointIdx, const std::set<size_t> &filtered);
 
     /**
      * @brief Relax every generated point of a quadrangular mesh
@@ -164,9 +165,10 @@ namespace ttk {
      *
      * @param[in] firstPointIdx beginning index in outputPoints_
      * vector of the range of points to be projected
+     * @param[in] filtered set of indices that should not be projected
      * @return 0 in case of success
      */
-    int relax(size_t firstPointIdx);
+    int relax(size_t firstPointIdx, const std::set<size_t> &filtered);
 
     /**
      * @brief Store for every quad vertex its neighbors
