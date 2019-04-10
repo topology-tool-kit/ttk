@@ -205,21 +205,6 @@ ttk::QuadrangulationSubdivision::Point
   std::vector<bool> trianglesTested(
     triangulation_->getNumberOfTriangles(), false);
 
-  float min_dist = std::numeric_limits<float>::infinity();
-  SimplexId minId = 0;
-
-  // find neareast vertex and stores
-  for(SimplexId j = 0; j < vertexNumber_; ++j) {
-    Point p{};
-    triangulation_->getVertexPoint(j, p.x, p.y, p.z);
-    float curr_dist = Geometry::distance(&vert->x, &p.x);
-    if(curr_dist < min_dist) {
-      min_dist = curr_dist;
-      minId = j;
-    }
-  }
-  nearestVertexIdentifier_[i] = minId;
-
   // number of triangles around nearest vertex
   SimplexId triangleNumber
     = triangulation_->getVertexTriangleNumber(nearestVertexIdentifier_[i]);
@@ -329,6 +314,27 @@ ttk::QuadrangulationSubdivision::Point
 
 int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx) {
   Timer t;
+
+  // compute nearest vertex in triangular mesh and stores it in
+  // nearestVertexIdentifier_
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
+    const Point *vert = &(*outputPoints_)[i];
+    // distance to triangular mesh vertex
+    float min_dist = std::numeric_limits<float>::infinity();
+    // iterate over the whole triangular mesh
+    for(SimplexId j = 0; j < vertexNumber_; ++j) {
+      Point p{};
+      triangulation_->getVertexPoint(j, p.x, p.y, p.z);
+      float curr_dist = Geometry::distance(&vert->x, &p.x);
+      if(curr_dist < min_dist) {
+        min_dist = curr_dist;
+        nearestVertexIdentifier_[i] = j;
+      }
+    }
+  }
 
   // main loop
 #ifdef TTK_ENABLE_OPENMP
