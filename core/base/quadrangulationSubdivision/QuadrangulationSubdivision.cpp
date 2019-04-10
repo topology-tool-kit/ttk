@@ -461,8 +461,8 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   // main loop
   for(size_t i = 0; i < subdivisionLevel_; i++) {
-    // 1. we subdivise each quadrangle by creating five new points, at
-    // the center of each edge (4) and at the barycenter of the four
+    // subdivise each quadrangle by creating five new points, at the
+    // center of each edge (4) and at the barycenter of the four
     // vertices (1).
     subdivise();
   }
@@ -470,13 +470,23 @@ int ttk::QuadrangulationSubdivision::execute() {
   // retrieve mapping between every vertex and its neighbors
   getQuadNeighbors(*outputQuads_);
 
-  // 3. we "relax" the new points, i.e. we replace it by the
-  // barycenter of its four neighbors
-  for(size_t i = 0; i < relaxationIterations_; i++) {
-    relax(inputVertexNumber_);
+  size_t firstPointIdx = inputVertexNumber_;
+  if(!lockAllInputVertices) {
+    if(lockInputExtrema) {
+      // TODO
+    } else {
+      firstPointIdx = 0;
+    }
+  }
 
-    // project all points except MSC critical points
-    project(inputVertexNumber_);
+  // "relax" the new points, i.e. replace it by the barycenter of its
+  // four neighbors
+  for(size_t i = 0; i < relaxationIterations_; i++) {
+    relax(firstPointIdx);
+
+    // project all points on the nearest triangle (except MSC critical
+    // points)
+    project(firstPointIdx);
   }
 
   {
