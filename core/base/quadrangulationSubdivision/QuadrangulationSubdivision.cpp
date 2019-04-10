@@ -7,8 +7,20 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findEdgeMiddle(
   const std::vector<float> vec0, const std::vector<float> vec1) const {
   std::vector<float> sum(vec0.size());
 
-  std::transform(
-    vec0.begin(), vec0.end(), vec1.begin(), sum.begin(), std::plus<float>());
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < vec0.size(); ++i) {
+    float a = vec0[i];
+    float b = vec1[i];
+    // stay on the shortest path between a and b
+    sum[i] = a + b;
+    if(a != std::numeric_limits<float>::infinity()
+       && b != std::numeric_limits<float>::infinity()) {
+      // try to get the middle of the shortest path
+      sum[i] += std::abs(a - b);
+    }
+  }
 
   return std::min_element(sum.begin(), sum.end()) - sum.begin();
 }
@@ -20,12 +32,27 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
   const std::vector<float> vec3) const {
   std::vector<float> sum(vec0.size());
 
-  std::transform(
-    vec0.begin(), vec0.end(), vec1.begin(), sum.begin(), std::plus<float>());
-  std::transform(
-    vec2.begin(), vec2.end(), sum.begin(), sum.begin(), std::plus<float>());
-  std::transform(
-    vec3.begin(), vec3.end(), sum.begin(), sum.begin(), std::plus<float>());
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < vec0.size(); ++i) {
+    float a = vec0[i];
+    float b = vec1[i];
+    float c = vec2[i];
+    float d = vec3[i];
+    // try to be near the four vertices
+    sum[i] = a + b + c + d;
+    if(a != std::numeric_limits<float>::infinity()
+       && c != std::numeric_limits<float>::infinity()) {
+      // try to be on the AC diagonal
+      sum[i] += std::abs(a - c);
+    }
+    if(b != std::numeric_limits<float>::infinity()
+       && d != std::numeric_limits<float>::infinity()) {
+      // try to be on the BD diagonal
+      sum[i] += std::abs(b - d);
+    }
+  }
 
   return std::min_element(sum.begin(), sum.end()) - sum.begin();
 }
@@ -49,6 +76,9 @@ int ttk::QuadrangulationSubdivision::subdivise(
   getQuadNeighbors(prevQuads, true);
 
   // compute shortest distance from every vertex to all other that share a quad
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < outputPoints_->size(); ++i) {
 
     // skip if already computed on a coarser subdivision
