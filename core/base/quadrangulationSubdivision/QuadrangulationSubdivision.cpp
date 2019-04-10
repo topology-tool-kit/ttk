@@ -454,14 +454,6 @@ int ttk::QuadrangulationSubdivision::execute() {
     outputPoints_->emplace_back(inputVertices_[i]);
   }
 
-  // vector of input quadrangles copied from the inputQuads_ array
-  std::vector<Quad> inputQuadsVert;
-  // loop variables: pointers to quadrangle vectors
-  std::vector<Quad> *tmp0 = &inputQuadsVert, *tmp1 = outputQuads_;
-  // holds the subdivision bounds in the outputPoints_ vector
-  std::vector<size_t> newPointsRange;
-  newPointsRange.emplace_back(outputPoints_->size());
-
   // copy input quads into vector
   for(size_t i = 0; i < inputQuadNumber_; i++) {
     outputQuads_->emplace_back(inputQuads_[i]);
@@ -484,7 +476,7 @@ int ttk::QuadrangulationSubdivision::execute() {
     relax(inputVertexNumber_);
 
     // project all points except MSC critical points
-    project(newPointsRange.front());
+    project(inputVertexNumber_);
   }
 
   {
