@@ -73,14 +73,8 @@ public:
     SetThreads();
   }
 
-  vtkSetMacro(InputScalarFieldName, std::string);
-  vtkGetMacro(InputScalarFieldName, std::string);
-
   vtkSetMacro(InputIdentifiersFieldName, std::string);
   vtkGetMacro(InputIdentifiersFieldName, std::string);
-
-  vtkSetMacro(InputOffsetIdentifiersFieldName, std::string);
-  vtkGetMacro(InputOffsetIdentifiersFieldName, std::string);
 
   vtkSetMacro(ForceInputIdentifiersField, bool);
   vtkGetMacro(ForceInputIdentifiersField, bool);
@@ -129,12 +123,8 @@ protected:
   int getQuadVertices(vtkUnstructuredGrid *input);
 
 private:
-  // user-defined input constraints (float) scalar field name
-  std::string InputScalarFieldName;
   // user-defined input identifier (SimplexId) scalar field name
   std::string InputIdentifiersFieldName{ttk::VertexScalarFieldName};
-  // user-defined input offset identifier (SimplexId) scalar field name
-  std::string InputOffsetIdentifiersFieldName;
   // let the user choose a different identifier scalar field
   bool ForceInputIdentifiersField{false};
   // let the user choose an offset identifier scalar field
