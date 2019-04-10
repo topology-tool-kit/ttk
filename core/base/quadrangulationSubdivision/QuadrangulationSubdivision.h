@@ -187,6 +187,37 @@ namespace ttk {
      */
     Point findProjectionInTriangle(SimplexId i) const;
 
+    /**
+     * @brief Find the middle of a quad edge using Dijkstra
+     *
+     * Minimize the sum of the distance to the two edge vertices, and the
+     * distance absolute difference
+     *
+     * @param[in] vec0 Vector of distances from first edge vertex
+     * @param[in] vec1 Vector of distances from second edge vertex
+     *
+     * @return TTK identifier of potential edge middle
+     */
+    SimplexId findEdgeMiddle(const std::vector<float> vec0,
+                             const std::vector<float> vec1) const;
+
+    /**
+     * @brief Find a quad barycenter using Dijkstra
+     *
+     * Minimize the sum of the distance to every vertex of the current quad.
+     *
+     * @param[in] vec0 Vector of distances from first quad vertex
+     * @param[in] vec1 Vector of distances from second quad vertex
+     * @param[in] vec2 Vector of distances from third quad vertex
+     * @param[in] vec3 Vector of distances from fourth quad vertex
+     *
+     * @return TTK identifier of potential barycenter
+     */
+    SimplexId findQuadBary(const std::vector<float> vec0,
+                           const std::vector<float> vec1,
+                           const std::vector<float> vec2,
+                           const std::vector<float> vec3) const;
+
   protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_{};

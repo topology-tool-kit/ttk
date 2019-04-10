@@ -3,8 +3,8 @@
 
 #define MODULE_S "[QuadrangulationSubdivision] "
 
-static ttk::SimplexId minVecAdd(const std::vector<float> vec0,
-                                const std::vector<float> vec1) {
+ttk::SimplexId ttk::QuadrangulationSubdivision::findEdgeMiddle(
+  const std::vector<float> vec0, const std::vector<float> vec1) const {
   std::vector<float> sum(vec0.size());
 
   std::transform(
@@ -13,10 +13,11 @@ static ttk::SimplexId minVecAdd(const std::vector<float> vec0,
   return std::min_element(sum.begin(), sum.end()) - sum.begin();
 }
 
-static ttk::SimplexId minVecAdd4(const std::vector<float> vec0,
-                                 const std::vector<float> vec1,
-                                 const std::vector<float> vec2,
-                                 const std::vector<float> vec3) {
+ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
+  const std::vector<float> vec0,
+  const std::vector<float> vec1,
+  const std::vector<float> vec2,
+  const std::vector<float> vec3) const {
   std::vector<float> sum(vec0.size());
 
   std::transform(
@@ -73,10 +74,10 @@ int ttk::QuadrangulationSubdivision::subdivise(
     auto l = static_cast<size_t>(q.l);
 
     // middles of edges
-    auto ijid = minVecAdd(vertexDistance_[i], vertexDistance_[j]);
-    auto jkid = minVecAdd(vertexDistance_[j], vertexDistance_[k]);
-    auto klid = minVecAdd(vertexDistance_[k], vertexDistance_[l]);
-    auto liid = minVecAdd(vertexDistance_[l], vertexDistance_[i]);
+    auto ijid = findEdgeMiddle(vertexDistance_[i], vertexDistance_[j]);
+    auto jkid = findEdgeMiddle(vertexDistance_[j], vertexDistance_[k]);
+    auto klid = findEdgeMiddle(vertexDistance_[k], vertexDistance_[l]);
+    auto liid = findEdgeMiddle(vertexDistance_[l], vertexDistance_[i]);
 
     Point midij;
     triangulation_->getVertexPoint(ijid, midij.x, midij.y, midij.z);
@@ -88,8 +89,8 @@ int ttk::QuadrangulationSubdivision::subdivise(
     triangulation_->getVertexPoint(liid, midli.x, midli.y, midli.z);
 
     // quad barycenter
-    auto baryid = minVecAdd4(vertexDistance_[i], vertexDistance_[j],
-                             vertexDistance_[k], vertexDistance_[l]);
+    auto baryid = findQuadBary(vertexDistance_[i], vertexDistance_[j],
+                               vertexDistance_[k], vertexDistance_[l]);
     Point bary;
     triangulation_->getVertexPoint(baryid, bary.x, bary.y, bary.z);
 
