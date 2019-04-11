@@ -123,18 +123,18 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     auto klid = findEdgeMiddle(k, l);
     auto liid = findEdgeMiddle(l, i);
 
-    Point midij;
+    Point midij{};
     triangulation_->getVertexPoint(ijid, midij.x, midij.y, midij.z);
-    Point midjk;
+    Point midjk{};
     triangulation_->getVertexPoint(jkid, midjk.x, midjk.y, midjk.z);
-    Point midkl;
+    Point midkl{};
     triangulation_->getVertexPoint(klid, midkl.x, midkl.y, midkl.z);
-    Point midli;
+    Point midli{};
     triangulation_->getVertexPoint(liid, midli.x, midli.y, midli.z);
 
     // quad barycenter
     auto baryid = findQuadBary(i, j, k, l);
-    Point bary;
+    Point bary{};
     triangulation_->getVertexPoint(baryid, bary.x, bary.y, bary.z);
 
     // order edges to avoid duplicates (ij vs. ji)
@@ -238,21 +238,24 @@ ttk::QuadrangulationSubdivision::Point
     }
 
     // get triangle vertices
-    SimplexId tverts[3];
+    std::array<SimplexId, 3> tverts;
     triangulation_->getTriangleVertex(tid, 0, tverts[0]);
     triangulation_->getTriangleVertex(tid, 1, tverts[1]);
     triangulation_->getTriangleVertex(tid, 2, tverts[2]);
 
     // get coordinates of triangle vertices
-    Point pa{}, pb{}, pc{};
+    Point pa{};
     triangulation_->getVertexPoint(tverts[0], pa.x, pa.y, pa.z);
+    Point pb{};
     triangulation_->getVertexPoint(tverts[1], pb.x, pb.y, pb.z);
+    Point pc{};
     triangulation_->getVertexPoint(tverts[2], pc.x, pc.y, pc.z);
 
     // triangle normal: cross product of two edges
     Point crossP{};
     // ab, ac vectors
-    Point ab = pb - pa, ac = pc - pa;
+    Point ab = pb - pa;
+    Point ac = pc - pa;
     // compute ab ^ ac
     Geometry::crossProduct(&ab.x, &ac.x, &crossP.x);
     // unitary normal vector
@@ -336,7 +339,7 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered) {
   for(size_t i = 0; i < outputPoints_->size(); i++) {
 
     // skip computation if i in filtered
-    if(std::find(filtered.begin(), filtered.end(), i) != filtered.end()) {
+    if(filtered.find(i) != filtered.end()) {
       continue;
     }
 
@@ -362,7 +365,7 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered) {
   for(size_t i = 0; i < outputPoints_->size(); i++) {
 
     // skip computation if i in filtered
-    if(std::find(filtered.begin(), filtered.end(), i) != filtered.end()) {
+    if(filtered.find(i) != filtered.end()) {
       continue;
     }
 
@@ -442,7 +445,7 @@ int ttk::QuadrangulationSubdivision::relax(const std::set<size_t> &filtered) {
   for(size_t i = 0; i < outputPoints_->size(); i++) {
 
     // skip computation if i in filtered
-    if(std::find(filtered.begin(), filtered.end(), i) != filtered.end()) {
+    if(filtered.find(i) != filtered.end()) {
       continue;
     }
 
@@ -451,7 +454,7 @@ int ttk::QuadrangulationSubdivision::relax(const std::set<size_t> &filtered) {
     for(auto &neigh : quadNeighbors_[i]) {
       relax = relax + tmp[neigh];
     }
-    relax = relax * (1.0f / static_cast<float>(quadNeighbors_[i].size()));
+    relax = relax * (1.0F / static_cast<float>(quadNeighbors_[i].size()));
 
     (*outputPoints_)[i] = relax;
   }
