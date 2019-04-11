@@ -3,22 +3,24 @@
 
 #define MODULE_S "[QuadrangulationSubdivision] "
 
-ttk::SimplexId ttk::QuadrangulationSubdivision::findEdgeMiddle(
-  const std::vector<float> vec0, const std::vector<float> vec1) const {
-  std::vector<float> sum(vec0.size());
+ttk::SimplexId
+  ttk::QuadrangulationSubdivision::findEdgeMiddle(const size_t a,
+                                                  const size_t b) const {
+
+  std::vector<float> sum(vertexDistance_[a].size());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < vec0.size(); ++i) {
-    float a = vec0[i];
-    float b = vec1[i];
+  for(size_t i = 0; i < sum.size(); ++i) {
+    float m = vertexDistance_[a][i];
+    float n = vertexDistance_[b][i];
     // stay on the shortest path between a and b
-    sum[i] = a + b;
-    if(a != std::numeric_limits<float>::infinity()
-       && b != std::numeric_limits<float>::infinity()) {
+    sum[i] = m + n;
+    if(m != std::numeric_limits<float>::infinity()
+       && n != std::numeric_limits<float>::infinity()) {
       // try to get the middle of the shortest path
-      sum[i] += std::abs(a - b);
+      sum[i] += std::abs(m - n);
     }
   }
 
@@ -26,31 +28,29 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findEdgeMiddle(
 }
 
 ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
-  const std::vector<float> vec0,
-  const std::vector<float> vec1,
-  const std::vector<float> vec2,
-  const std::vector<float> vec3) const {
-  std::vector<float> sum(vec0.size());
+  const size_t a, const size_t b, const size_t c, const size_t d) const {
+
+  std::vector<float> sum(vertexDistance_[a].size());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < vec0.size(); ++i) {
-    float a = vec0[i];
-    float b = vec1[i];
-    float c = vec2[i];
-    float d = vec3[i];
+  for(size_t i = 0; i < sum.size(); ++i) {
+    float m = vertexDistance_[a][i];
+    float n = vertexDistance_[b][i];
+    float o = vertexDistance_[c][i];
+    float p = vertexDistance_[d][i];
     // try to be near the four vertices
-    sum[i] = a + b + c + d;
-    if(a != std::numeric_limits<float>::infinity()
-       && c != std::numeric_limits<float>::infinity()) {
+    sum[i] = m + n + o + p;
+    if(m != std::numeric_limits<float>::infinity()
+       && o != std::numeric_limits<float>::infinity()) {
       // try to be on the AC diagonal
-      sum[i] += std::abs(a - c);
+      sum[i] += std::abs(m - o);
     }
-    if(b != std::numeric_limits<float>::infinity()
-       && d != std::numeric_limits<float>::infinity()) {
+    if(n != std::numeric_limits<float>::infinity()
+       && p != std::numeric_limits<float>::infinity()) {
       // try to be on the BD diagonal
-      sum[i] += std::abs(b - d);
+      sum[i] += std::abs(n - p);
     }
   }
 
@@ -109,10 +109,10 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     auto l = static_cast<size_t>(q.l);
 
     // middles of edges
-    auto ijid = findEdgeMiddle(vertexDistance_[i], vertexDistance_[j]);
-    auto jkid = findEdgeMiddle(vertexDistance_[j], vertexDistance_[k]);
-    auto klid = findEdgeMiddle(vertexDistance_[k], vertexDistance_[l]);
-    auto liid = findEdgeMiddle(vertexDistance_[l], vertexDistance_[i]);
+    auto ijid = findEdgeMiddle(i, j);
+    auto jkid = findEdgeMiddle(j, k);
+    auto klid = findEdgeMiddle(k, l);
+    auto liid = findEdgeMiddle(l, i);
 
     Point midij;
     triangulation_->getVertexPoint(ijid, midij.x, midij.y, midij.z);
@@ -124,8 +124,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     triangulation_->getVertexPoint(liid, midli.x, midli.y, midli.z);
 
     // quad barycenter
-    auto baryid = findQuadBary(vertexDistance_[i], vertexDistance_[j],
-                               vertexDistance_[k], vertexDistance_[l]);
+    auto baryid = findQuadBary(i, j, k, l);
     Point bary;
     triangulation_->getVertexPoint(baryid, bary.x, bary.y, bary.z);
 
