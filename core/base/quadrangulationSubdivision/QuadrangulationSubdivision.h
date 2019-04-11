@@ -148,12 +148,10 @@ namespace ttk {
      * Project a subset of the current quadrangular mesh onto the
      * triangular input mesh.
      *
-     * @param[in] firstPointIdx beginning index in outputPoints_
-     * vector of the range of points to be projected
-     * @param[in] filtered set of indices that should not be projected
+     * @param[in] filtered Set of indices that should not be projected
      * @return 0 in case of success
      */
-    int project(size_t firstPointIdx, const std::set<size_t> &filtered);
+    int project(const std::set<size_t> &filtered);
 
     /**
      * @brief Relax every generated point of a quadrangular mesh
@@ -161,14 +159,10 @@ namespace ttk {
      * Take every generated point of the current quadrangular mesh,
      * and move its position to the barycenter of its neighbors.
      *
-     * Keep the input Morse-Smale Complex critical points untouched.
-     *
-     * @param[in] firstPointIdx beginning index in outputPoints_
-     * vector of the range of points to be projected
-     * @param[in] filtered set of indices that should not be projected
+     * @param[in] filtered Set of indices that should not be projected
      * @return 0 in case of success
      */
-    int relax(size_t firstPointIdx, const std::set<size_t> &filtered);
+    int relax(const std::set<size_t> &filtered);
 
     /**
      * @brief Store for every quad vertex its neighbors

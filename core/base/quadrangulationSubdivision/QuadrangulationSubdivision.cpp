@@ -316,8 +316,7 @@ ttk::QuadrangulationSubdivision::Point
   return proj;
 }
 
-int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx,
-                                             const std::set<size_t> &filtered) {
+int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered) {
   Timer t;
 
   // compute nearest vertex in triangular mesh and stores it in
@@ -325,7 +324,7 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
+  for(size_t i = 0; i < outputPoints_->size(); i++) {
 
     // skip computation if i in filtered
     if(std::find(filtered.begin(), filtered.end(), i) != filtered.end()) {
@@ -351,7 +350,7 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
+  for(size_t i = 0; i < outputPoints_->size(); i++) {
 
     // skip computation if i in filtered
     if(std::find(filtered.begin(), filtered.end(), i) != filtered.end()) {
@@ -364,7 +363,7 @@ int ttk::QuadrangulationSubdivision::project(const size_t firstPointIdx,
 
   {
     std::stringstream msg;
-    msg << MODULE_S "Projected " << outputPoints_->size() - firstPointIdx
+    msg << MODULE_S "Projected " << outputPoints_->size() - filtered.size()
         << " points in " << t.getElapsedTime() << "s" << std::endl;
     dMsg(std::cout, msg.str(), detailedInfoMsg);
   }
@@ -421,8 +420,7 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
   return 0;
 }
 
-int ttk::QuadrangulationSubdivision::relax(const size_t firstPointIdx,
-                                           const std::set<size_t> &filtered) {
+int ttk::QuadrangulationSubdivision::relax(const std::set<size_t> &filtered) {
   Timer t;
 
   // outputPoints_ deep copy
@@ -432,7 +430,7 @@ int ttk::QuadrangulationSubdivision::relax(const size_t firstPointIdx,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = firstPointIdx; i < outputPoints_->size(); i++) {
+  for(size_t i = 0; i < outputPoints_->size(); i++) {
 
     // skip computation if i in filtered
     if(std::find(filtered.begin(), filtered.end(), i) != filtered.end()) {
@@ -531,23 +529,14 @@ int ttk::QuadrangulationSubdivision::execute() {
   // retrieve mapping between every vertex and its neighbors
   getQuadNeighbors(*outputQuads_, quadNeighbors_);
 
-  size_t firstPointIdx = inputVertexNumber_;
-  if(!lockAllInputVertices) {
-    if(lockInputExtrema) {
-      // TODO
-    } else {
-      firstPointIdx = 0;
-    }
-  }
-
   // "relax" the new points, i.e. replace it by the barycenter of its
   // four neighbors
   for(size_t i = 0; i < relaxationIterations_; i++) {
-    relax(firstPointIdx, std::set<size_t>());
+    relax(filtered);
 
     // project all points on the nearest triangle (except MSC critical
     // points)
-    project(firstPointIdx, std::set<size_t>());
+    project(filtered);
   }
 
   {
