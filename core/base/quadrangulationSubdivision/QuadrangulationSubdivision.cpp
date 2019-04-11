@@ -9,6 +9,9 @@ ttk::SimplexId
 
   std::vector<float> sum(vertexDistance_[a].size());
 
+  // euclidian barycenter of a and b
+  Point edgeEuclBary = ((*outputPoints_)[a] + (*outputPoints_)[b]) * 0.5F;
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -22,6 +25,12 @@ ttk::SimplexId
       // try to get the middle of the shortest path
       sum[i] += std::abs(m - n);
     }
+
+    // get the euclidian distance to AB
+    Point curr{};
+    triangulation_->getVertexPoint(i, curr.x, curr.y, curr.z);
+    // try to minimize the euclidian distance to AB too
+    sum[i] += Geometry::distance(&curr.x, &edgeEuclBary.x);
   }
 
   return std::min_element(sum.begin(), sum.end()) - sum.begin();
