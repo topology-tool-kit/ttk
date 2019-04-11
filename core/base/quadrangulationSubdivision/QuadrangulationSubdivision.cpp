@@ -506,6 +506,20 @@ int ttk::QuadrangulationSubdivision::execute() {
     outputQuads_->emplace_back(inputQuads_[i]);
   }
 
+  // vertices to filter from relaxation, projection
+  std::set<size_t> filtered{};
+  if(!lockAllInputVertices) {
+    if(lockInputExtrema) {
+      // get extraordinary vertices
+      findExtraordinaryVertices(filtered);
+    }
+  } else {
+    // fill vector with all input points indices from 0 to inputVertexNumber_
+    for(size_t i = 0; i < inputVertexNumber_; ++i) {
+      filtered.insert(i);
+    }
+  }
+
   // main loop
   for(size_t i = 0; i < subdivisionLevel_; i++) {
     // subdivise each quadrangle by creating five new points, at the
