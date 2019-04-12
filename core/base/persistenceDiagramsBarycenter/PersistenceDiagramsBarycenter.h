@@ -1,14 +1,3 @@
-/// \ingroup base
-/// \class ttk::PersistenceDiagramsBarycenter
-/// \author Michael Michaux <michauxmichael89@gmail.com>
-/// \date August 2016.
-///
-/// \brief TTK processing package that takes an input ensemble data set
-/// (represented by a list of scalar fields) and which computes various
-/// vertexwise statistics (PDF estimation, bounds, moments, etc.)
-///
-/// \sa ttkPersistenceDiagramsBarycenter.cpp %for a usage example.
-
 #ifndef _PERSISTENCEDIAGRAMSBARYCENTER_H
 #define _PERSISTENCEDIAGRAMSBARYCENTER_H
 
@@ -52,9 +41,16 @@ namespace ttk{
 		PersistenceDiagramsBarycenter(){
 			wasserstein_ = 2;
 			alpha_ = 1;
+			lambda_ = 1;
 			inputData_ = NULL;
 			numberOfInputs_ = 0;
 			threadNumber_ = 1;
+			time_limit_ = 1;
+			deterministic_ = 1;
+			reinit_prices_ = 1;
+			epsilon_decreases_ = 1;
+			debugLevel_ = 1;
+			use_progressive_ = 1;
 		};
 
 		~PersistenceDiagramsBarycenter(){};
@@ -248,6 +244,12 @@ template <typename dataType>
     matching_min, matching_sad, matching_max;
 
     dataType total_cost = 0;
+    if(do_min && do_max){
+    time_limit_ = time_limit_/2;
+    }
+    if(do_sad){
+    time_limit_=time_limit_/3;
+    }
 	/*omp_set_num_threads(1);
 	#ifdef TTK_ENABLE_OPENMP
 	#pragma omp parallel sections

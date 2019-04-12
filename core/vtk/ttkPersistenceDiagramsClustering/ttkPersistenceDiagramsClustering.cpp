@@ -19,6 +19,15 @@ ttkPersistenceDiagramsClustering::ttkPersistenceDiagramsClustering(){
   UseAllCores = false;
   WassersteinMetric = "2";
   UseOutputMatching = true;
+  NumberOfClusters=1;
+  Deterministic = 1;
+  ThreadNumber = 1;
+  PairTypeClustering  = -1;
+  UseProgressive = 1;
+  UseAccelerated = 0;
+  UseKmeansppInit = 0;
+  Alpha = 1;
+  Lambda = 1;
 
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(2);
@@ -134,7 +143,8 @@ int ttkPersistenceDiagramsClustering::RequestData(vtkInformation *request,
   Memory m;
 
   // Number of input files
-  int numInputs = inputVector[0]->GetNumberOfInformationObjects();
+  int numInputs = numberOfInputsFromCommandLine;
+  // int numInputs = inputVector[0]->GetNumberOfInformationObjects();
   {
     stringstream msg;
     dMsg(cout, msg.str(), infoMsg);
@@ -143,7 +153,7 @@ int ttkPersistenceDiagramsClustering::RequestData(vtkInformation *request,
   vtkDataSet* *input = new vtkDataSet*[numInputs];
   for(int i=0 ; i<numInputs ; ++i)
   {
-    input[i] = vtkDataSet::GetData(inputVector[0], i);
+    input[i] = vtkDataSet::GetData(inputVector[i], 0);
 	if(!input[i]){
 		std::cout<<"No data in input["<<i<<"]"<<std::endl;
 	}

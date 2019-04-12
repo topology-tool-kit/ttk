@@ -1,7 +1,3 @@
-/// \ingroup base
-/// \class ttk::AuctioActor
-/// \author Joseph Budin <joseph.budin@polytechnique.edu>
-/// \date 4th June 2018
 
 #ifndef _AUCTIONACTOR_H
 #define _AUCTIONACTOR_H

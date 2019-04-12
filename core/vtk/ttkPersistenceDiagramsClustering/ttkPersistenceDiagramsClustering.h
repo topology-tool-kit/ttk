@@ -1,29 +1,3 @@
-/// \ingroup vtk
-/// \class ttkPersistenceDiagramsClustering
-/// \author Michael Michaux <michauxmichael89@gmail.com>
-/// \date August 2016.
-///
-/// \brief TTK VTK-filter that takes an input ensemble data set
-/// (represented by a list of scalar fields) and which computes various
-/// vertexwise statistics (PDF estimation, bounds, moments, etc.)
-///
-/// \param Input0 Input ensemble scalar field #0 (vtkDataSet)
-/// \param Input1 Input ensemble scalar field #1 (vtkDataSet)\n
-/// ...\n
-/// \param InputN Input ensemble scalar field #N (vtkDataSet)
-/// \param Output0 Lower and upper bound fields (vtkDataSet)
-/// \param Output1 Histogram estimations of the vertex probability density
-/// functions (vtkDataSet)
-/// \param Output2 Mean field (vtkDataSet)
-///
-/// This filter can be used as any other VTK filter (for instance, by using the
-/// sequence of calls SetInputData(), Update(), GetOutput()).
-///
-/// See the corresponding ParaView state file example for a usage example
-/// within a VTK pipeline.
-///
-/// \sa vtkMandatoryCriticalPoints
-/// \sa ttk::PersistenceDiagramsClustering
 #ifndef _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H
 #define _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H
 
@@ -68,7 +42,10 @@ class ttkPersistenceDiagramsClustering
   : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
-
+     void setNumberOfInputsFromCommandLine(int number){
+        numberOfInputsFromCommandLine = number;
+        SetNumberOfInputPorts(number);
+        }
     static ttkPersistenceDiagramsClustering* New();
 
     vtkTypeMacro(ttkPersistenceDiagramsClustering, vtkDataSetAlgorithm);
@@ -166,6 +143,7 @@ class ttkPersistenceDiagramsClustering
 
 
   private:
+    int                 numberOfInputsFromCommandLine;
     int                   PairTypeClustering;
     bool                  Deterministic;
     bool                  UseAllCores;
@@ -253,7 +231,7 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(
       || !persistenceScalars || !extremumIndexScalars || !points)
     return -2;
 
-  diagram->resize(pairingsSize);
+  diagram->resize(pairingsSize+1);
   int nbNonCompact = 0;
   double max_dimension=0;
 
@@ -298,16 +276,39 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(
     if(value1 > max_dimension)  max_dimension = value1;
     if(value2 > max_dimension)  max_dimension = value2;
 
-    if (pairIdentifier != -1 && pairIdentifier < pairingsSize)
-      diagram->at(pairIdentifier) = std::make_tuple(
-        vertexId1, (BNodeType) nodeType1,
-        vertexId2, (BNodeType) nodeType2,
-        (dataType) persistence,
-        pairType,
-        value1, coordX1, coordY1, coordZ1,
-        value2, coordX2, coordY2, coordZ2
-      );
+    if (pairIdentifier != -1 && pairIdentifier < pairingsSize){
+        if(pairIdentifier ==0){
+            diagram->at(0) = std::make_tuple(
+                vertexId1, (BNodeType) 0,
+                vertexId2, (BNodeType) 1,
+                (dataType) persistence,
+                pairType,
+                value1, coordX1, coordY1, coordZ1,
+                value2, coordX2, coordY2, coordZ2
+            );
 
+            diagram->at(pairingsSize) = std::make_tuple(
+                vertexId1, (BNodeType) 1,
+                vertexId2, (BNodeType) 3,
+                (dataType) persistence,
+                pairType,
+                value1, coordX1, coordY1, coordZ1,
+                value2, coordX2, coordY2, coordZ2
+            );
+
+        }
+        else
+        {
+            diagram->at(pairIdentifier) = std::make_tuple(
+                vertexId1, (BNodeType) nodeType1,
+                vertexId2, (BNodeType) nodeType2,
+                (dataType) persistence,
+                pairType,
+                value1, coordX1, coordY1, coordZ1,
+                value2, coordX2, coordY2, coordZ2
+            );
+        }
+    }
     if (pairIdentifier >= pairingsSize) {
       nbNonCompact++;
       if (nbNonCompact == 0) {
@@ -514,7 +515,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
 			coords1[1] = std::get<8>(t);
 			coords1[2] = std::get<9>(t);
 
-			double x2 = std::get<6>(t) + 1.1*max_dimension*j;
+			double x2 = std::get<6>(t) ;
 			double y2 = std::get<10>(t);
 			double z2 = 1;  // Change 1 to j if you want to isolate the
 
@@ -549,7 +550,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
 					nodeType->InsertTuple1(2*count, 0);
 			}
 
-			points->InsertNextPoint(x2, y2, z2);
+			points->InsertNextPoint(x2+ 1.1*max_dimension*j, y2, z2);
 			coordsScalars->InsertTuple3(2*count+1, coords2[0], coords2[1], coords2[2]);
 			idOfDiagramPoint->InsertTuple1(2*count+1, j);
 			const ttk::CriticalType n2Type = std::get<3>(t);

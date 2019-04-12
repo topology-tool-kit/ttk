@@ -18,6 +18,15 @@ vtkStandardNewMacro(ttkPersistenceDiagramsBarycenter)
 ttkPersistenceDiagramsBarycenter::ttkPersistenceDiagramsBarycenter(){
   WassersteinMetric = "2";
   UseAllCores = false;
+  ThreadNumber  = 1;
+  EpsilonDecreases = 1;
+  TimeLimit = 1;
+  UseProgressive = 1;
+  numberOfInputsFromCommandLine = 1;
+  EarlyStoppage = 1;
+  Alpha = 1;
+  Lambda = 1;
+  ReinitPrices = 1;
   UseOutputMatching = true;
 
   SetNumberOfInputPorts(1);
@@ -132,9 +141,12 @@ int ttkPersistenceDiagramsBarycenter::FillOutputPortInformation(int port, vtkInf
 int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
   vtkInformationVector **inputVector, vtkInformationVector *outputVector){
   Memory m;
-
+    
+  int numInputs = numberOfInputsFromCommandLine;
   // Number of input files
-  int numInputs = inputVector[0]->GetNumberOfInformationObjects();
+  // int numInputs = inputVector[0]->GetNumberOfInformationObjects();
+  // std::cout<<"NUMBER OF INPUTS "<<numInputs<<"  "<<
+  //     inputVector[1]->GetNumberOfInformationObjects()<<std::endl;
   {
     stringstream msg;
     dMsg(cout, msg.str(), infoMsg);
@@ -143,7 +155,7 @@ int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
   vtkDataSet* *input = new vtkDataSet*[numInputs];
   for(int i=0 ; i<numInputs ; i++)
   {
-    input[i] = vtkDataSet::GetData(inputVector[0], i);
+    input[i] = vtkDataSet::GetData(inputVector[i], 0);
 	if(!input[i]){
 		std::cout<<"No data in input["<<i<<"]"<<std::endl;
 	}

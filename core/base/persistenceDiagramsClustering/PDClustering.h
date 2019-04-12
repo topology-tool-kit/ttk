@@ -20,7 +20,7 @@ namespace ttk{
 			geometrical_factor_ = 1;
 			threadNumber_ = 1;
 			use_progressive_ = true;
-      deterministic_ = false;
+            deterministic_ = true;
 			time_limit_ = std::numeric_limits<double>::max();
 			epsilon_min_ = 1e-5;
 		};

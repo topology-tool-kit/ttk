@@ -1,6 +1,3 @@
-/// \ingroup base
-/// \class ttk::Auction
-/// \author Joseph Budin <joseph.budin@polytechnique.edu>
 
 #ifndef _AUCTION_H
 #define _AUCTION_H
@@ -51,6 +48,11 @@ namespace ttk {
   {
 
     public:
+
+        inline int getAugmentedNumberOfBidders(){
+            return bidders_->size();
+        }
+
 		KDTree<dataType>* kdt_;
 		std::vector<KDTree<dataType>*> correspondance_kdt_map_;
 

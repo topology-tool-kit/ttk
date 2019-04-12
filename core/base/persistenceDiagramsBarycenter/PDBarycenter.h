@@ -16,17 +16,17 @@ namespace ttk{
 	public:
 
 		PDBarycenter(){
-			wasserstein_ = 2;
-			geometrical_factor_ = 1;
-      method_ = "Partial Bidding";
-			threadNumber_ = 1;
-			use_progressive_ = true;
-			time_limit_ = std::numeric_limits<double>::max();
-			epsilon_min_ = 1e-5;
-			reinit_prices_=true;
-      deterministic_ = false;
-			epsilon_decreases_=true;
-			early_stoppage_=true;
+            wasserstein_ = 2;
+            geometrical_factor_ = 1;
+            method_ = "Partial Bidding";
+            threadNumber_ = 1;
+            use_progressive_ = true;
+            time_limit_ = std::numeric_limits<double>::max();
+            epsilon_min_ = 1e-6;
+            reinit_prices_=true;
+            deterministic_ = false;
+            epsilon_decreases_=true;
+            early_stoppage_=true;
 		};
 
 		~PDBarycenter(){};
@@ -88,7 +88,7 @@ namespace ttk{
 		dataType updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings);
 
 		dataType computeRealCost();
-
+        bool isPrecisionObjectiveMet();
 		bool hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings,
 									std::vector<std::vector<matchingTuple>>& previous_matchings);
 		std::vector<std::vector<matchingTuple>> correctMatchings(std::vector<std::vector<matchingTuple>> previous_matchings);
@@ -136,6 +136,7 @@ namespace ttk{
 
 		inline int setNumberOfInputs(int numberOfInputs){
 			numberOfInputs_ = numberOfInputs;
+			precision_objective_.resize(numberOfInputs_);
 			return 0;
 		}
 
@@ -221,6 +222,7 @@ namespace ttk{
 
     protected:
 
+    std::vector<bool> precision_objective_;
     // to kill any randomness
     bool                    deterministic_;
 

@@ -1,14 +1,3 @@
-/// \ingroup base
-/// \class ttk::PersistenceDiagramsClustering
-/// \author Michael Michaux <michauxmichael89@gmail.com>
-/// \date August 2016.
-///
-/// \brief TTK processing package that takes an input ensemble data set
-/// (represented by a list of scalar fields) and which computes various
-/// vertexwise statistics (PDF estimation, bounds, moments, etc.)
-///
-/// \sa ttkPersistenceDiagramsClustering.cpp %for a usage example.
-
 #ifndef _PERSISTENCEDIAGRAMSCLUSTERING_H
 #define _PERSISTENCEDIAGRAMSCLUSTERING_H
 
@@ -52,6 +41,9 @@ namespace ttk{
 
 		PersistenceDiagramsClustering(){
 			wasserstein_ = 2;
+			use_progressive_=1;
+			use_kmeanspp_=0;
+			use_accelerated_=0;
 			inputData_ = NULL;
 			numberOfInputs_ = 0;
 			threadNumber_ = 1;

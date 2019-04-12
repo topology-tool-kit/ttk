@@ -1,29 +1,3 @@
-/// \ingroup vtk
-/// \class ttkPersistenceDiagramsBarycenter
-/// \author Michael Michaux <michauxmichael89@gmail.com>
-/// \date August 2016.
-///
-/// \brief TTK VTK-filter that takes an input ensemble data set
-/// (represented by a list of scalar fields) and which computes various
-/// vertexwise statistics (PDF estimation, bounds, moments, etc.)
-///
-/// \param Input0 Input ensemble scalar field #0 (vtkDataSet)
-/// \param Input1 Input ensemble scalar field #1 (vtkDataSet)\n
-/// ...\n
-/// \param InputN Input ensemble scalar field #N (vtkDataSet)
-/// \param Output0 Lower and upper bound fields (vtkDataSet)
-/// \param Output1 Histogram estimations of the vertex probability density
-/// functions (vtkDataSet)
-/// \param Output2 Mean field (vtkDataSet)
-///
-/// This filter can be used as any other VTK filter (for instance, by using the
-/// sequence of calls SetInputData(), Update(), GetOutput()).
-///
-/// See the corresponding ParaView state file example for a usage example
-/// within a VTK pipeline.
-///
-/// \sa vtkMandatoryCriticalPoints
-/// \sa ttk::PersistenceDiagramsBarycenter
 #ifndef _TTK_PERSISTENCEDIAGRAMSBARYCENTER_H
 #define _TTK_PERSISTENCEDIAGRAMSBARYCENTER_H
 
@@ -68,7 +42,11 @@ class ttkPersistenceDiagramsBarycenter
   : public vtkDataSetAlgorithm, public ttk::Wrapper{
 
   public:
-
+    
+    void setNumberOfInputsFromCommandLine(int number){
+        numberOfInputsFromCommandLine = number;
+        SetNumberOfInputPorts(number);
+    }
     static ttkPersistenceDiagramsBarycenter* New();
 
     vtkTypeMacro(ttkPersistenceDiagramsBarycenter, vtkDataSetAlgorithm);
@@ -175,6 +153,7 @@ class ttkPersistenceDiagramsBarycenter
 
 
   private:
+    int                   numberOfInputsFromCommandLine;
     bool                  Deterministic;
     bool                  UseAllCores;
     int                   ThreadNumber;
@@ -254,7 +233,7 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
   //auto s = (float) 0.0;
 
   if (!deathScalars != !birthScalars) return -2;
-  //bool Is3D = !(!deathScalars && !birthScalars);
+  // bool Is3D = !(!deathScalars && !birthScalars);
   //if (!Is3D && diagramNumber == 1) s = (float) spacing;
 
   if (pairingsSize < 1 || !vertexIdentifierScalars
@@ -262,7 +241,7 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
       || !persistenceScalars || !extremumIndexScalars || !points)
     return -2;
 
-  diagram->resize(pairingsSize);
+  diagram->resize(pairingsSize+1);
   int nbNonCompact = 0;
 
   for (int i = 0; i < pairingsSize; ++i) {
@@ -303,7 +282,29 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
     dataType value2 = (!deathScalars) ? (dataType) y2 :
                       (dataType) deathScalars->GetValue(2*i+1);
 
-    if (pairIdentifier != -1 && pairIdentifier < pairingsSize)
+    if (pairIdentifier != -1 && pairIdentifier < pairingsSize){
+        if(pairIdentifier ==0){
+            diagram->at(0) = std::make_tuple(
+                vertexId1, (BNodeType) 0,
+                vertexId2, (BNodeType) 1,
+                (dataType) persistence,
+                pairType,
+                value1, coordX1, coordY1, coordZ1,
+                value2, coordX2, coordY2, coordZ2
+            );
+
+            diagram->at(pairingsSize) = std::make_tuple(
+                vertexId1, (BNodeType) 1,
+                vertexId2, (BNodeType) 3,
+                (dataType) persistence,
+                pairType,
+                value1, coordX1, coordY1, coordZ1,
+                value2, coordX2, coordY2, coordZ2
+            );
+
+        }
+        else
+        {
       diagram->at(pairIdentifier) = std::make_tuple(
         vertexId1, (BNodeType) nodeType1,
         vertexId2, (BNodeType) nodeType2,
@@ -312,7 +313,8 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
         value1, coordX1, coordY1, coordZ1,
         value2, coordX2, coordY2, coordZ2
       );
-
+        }
+    }
     if (pairIdentifier >= pairingsSize) {
       nbNonCompact++;
       if (nbNonCompact == 0) {
