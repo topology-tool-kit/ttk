@@ -185,9 +185,9 @@ int ttk::SurfaceQuadrangulation::execute() const {
   // maximum manifold id
   int maxSegId = 0;
   // compute max + 1 of segmentation indices
-  for(size_t i = 0; i < segmentationNumber_; ++i) {
-    if(segmentation_[i] > maxSegId) {
-      maxSegId = segmentation_[i];
+  for(size_t a = 0; a < segmentationNumber_; ++a) {
+    if(segmentation_[a] > maxSegId) {
+      maxSegId = segmentation_[a];
     }
   }
   // total number of manifolds
