@@ -300,11 +300,11 @@ ttk::QuadrangulationSubdivision::Point
 
     // look for triangles sharing the two edges with max values in
     // baryCoords
-    for(auto &vert : vertices) {
-      SimplexId tnum = triangulation_->getVertexTriangleNumber(vert);
+    for(auto &avert : vertices) {
+      SimplexId tnum = triangulation_->getVertexTriangleNumber(avert);
       for(SimplexId j = 0; j < tnum; j++) {
         SimplexId trid;
-        triangulation_->getVertexTriangle(vert, j, trid);
+        triangulation_->getVertexTriangle(avert, j, trid);
         if(trid == tid) {
           continue;
         }
