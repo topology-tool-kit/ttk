@@ -1870,7 +1870,7 @@ int DiscreteGradient::processSaddleMaximumConnections(
               pl2dmt_saddle[vertexId] = dmt_saddleId;
               if(dimensionality_ == 2)
                 dmt1Saddle2PL_[dmt_saddleId] = vertexId;
-              else if(dimensionality_ == 2)
+              else if(dimensionality_ == 3)
                 dmt2Saddle2PL_[dmt_saddleId] = vertexId;
               vpath.invalidate();
               toRemoveSaddle = -1;
