@@ -24,10 +24,10 @@
 #include                  <PersistenceDiagramsClustering.cpp>
 #include                  <Wrapper.h>
 #include                  <PersistenceDiagram.h>
-#include 				  <PersistenceDiagramsBarycenter.h>
+#include                  <PersistenceDiagramsBarycenter.h>
 #include 				  <limits>
 #include 				  <PDClusteringImpl.h>
-#include				  <PDClustering.h>
+#include 				  <PDClustering.h>
 
 
 using namespace std;
@@ -87,9 +87,9 @@ namespace ttk{
 		inline void setAlpha(const double alpha){
 			alpha_ = alpha;
 		}
-    inline void setLambda(const double lambda){
-      lambda_ = lambda;
-    }
+        inline void setLambda(const double lambda){
+        lambda_ = lambda;
+        }
 
 		inline void setTimeLimit(const double time_limit){
 			time_limit_ = time_limit;
@@ -238,23 +238,23 @@ template <typename dataType>
   break;
   }
 
-	PDClustering<dataType> KMeans = PDClustering<dataType>();
-	KMeans.setWasserstein(wasserstein_);
-	KMeans.setThreadNumber(threadNumber_);
-	KMeans.setNumberOfInputs(numberOfInputs_);
-	KMeans.setUseProgressive(use_progressive_);
-	KMeans.setAccelerated(use_accelerated_);
-	KMeans.setUseKDTree(true);
-	KMeans.setTimeLimit(time_limit_);
-	KMeans.setGeometricalFactor(alpha_);
+    PDClustering<dataType> KMeans = PDClustering<dataType>();
+    KMeans.setWasserstein(wasserstein_);
+    KMeans.setThreadNumber(threadNumber_);
+    KMeans.setNumberOfInputs(numberOfInputs_);
+    KMeans.setUseProgressive(use_progressive_);
+    KMeans.setAccelerated(use_accelerated_);
+    KMeans.setUseKDTree(true);
+    KMeans.setTimeLimit(time_limit_);
+    KMeans.setGeometricalFactor(alpha_);
     KMeans.setLambda(lambda_);
     KMeans.setDeterministic(deterministic_);
     KMeans.setDebugLevel(debugLevel_);
-	KMeans.setKMeanspp(use_kmeanspp_);
-	KMeans.setK(n_clusters_);
-	KMeans.setDiagrams(&data_min, &data_sad, &data_max);
-	KMeans.setDos(do_min, do_sad, do_max);
-	inv_clustering = KMeans.execute(*final_centroids);
+    KMeans.setKMeanspp(use_kmeanspp_);
+    KMeans.setK(n_clusters_);
+    KMeans.setDiagrams(&data_min, &data_sad, &data_max);
+    KMeans.setDos(do_min, do_sad, do_max);
+    inv_clustering = KMeans.execute(*final_centroids);
 
 
 

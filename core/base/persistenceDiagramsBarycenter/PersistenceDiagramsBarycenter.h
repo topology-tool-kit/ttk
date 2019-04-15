@@ -296,14 +296,14 @@ template <typename dataType>
 				bary_sad.setUseProgressive(use_progressive_);
 				bary_sad.setTimeLimit(time_limit_);
 				bary_sad.setGeometricalFactor(alpha_);
-        bary_sad.setLambda(lambda_);
-        bary_sad.setDebugLevel(debugLevel_);
-        bary_sad.setMethod(method_);
+                bary_sad.setLambda(lambda_);
+                bary_sad.setDebugLevel(debugLevel_);
+                bary_sad.setMethod(method_);
 				bary_sad.setEarlyStoppage(early_stoppage_);
 				bary_sad.setEpsilonDecreases(epsilon_decreases_);
-        bary_sad.setDeterministic(deterministic_);
-				bary_sad.setReinitPrices(reinit_prices_);
-        bary_sad.setDiagrams(&data_sad);
+                bary_sad.setDeterministic(deterministic_);
+                bary_sad.setReinitPrices(reinit_prices_);
+                bary_sad.setDiagrams(&data_sad);
 				matching_sad = bary_sad.execute(barycenter_sad);
 				total_cost += bary_sad.getCost();
 			}
