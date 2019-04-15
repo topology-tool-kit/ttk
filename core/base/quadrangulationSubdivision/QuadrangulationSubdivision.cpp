@@ -41,6 +41,12 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
 
   std::vector<float> sum(vertexDistance_[*quadVertices.begin()].size());
 
+  Point quadEuclBary{};
+  for(auto &id : quadVertices) {
+    quadEuclBary = quadEuclBary + (*outputPoints_)[id];
+  }
+  quadEuclBary = quadEuclBary / quadVertices.size();
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -50,6 +56,12 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
     for(auto &id : quadVertices) {
       sum[i] += vertexDistance_[id][i];
     }
+
+    // get the euclidian distance to quadEuclBary
+    Point curr{};
+    triangulation_->getVertexPoint(i, curr.x, curr.y, curr.z);
+    // try to minimize the euclidian distance to quadEuclBary too
+    sum[i] += 10.0F * Geometry::distance(&curr.x, &quadEuclBary.x);
   }
 
   return std::min_element(sum.begin(), sum.end()) - sum.begin();
