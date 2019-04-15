@@ -207,17 +207,12 @@ namespace ttk {
      *
      * Minimize the sum of the distance to every vertex of the current quad.
      *
-     * @param[in] a First quad vertex
-     * @param[in] b Second quad vertex
-     * @param[in] c Third quad vertex
-     * @param[in] d Fourth quad vertex
+     * @param[in] quadVertices Set of quad vertices point ids in which to
+     * find a barycenter
      *
      * @return TTK identifier of potential barycenter
      */
-    SimplexId findQuadBary(const size_t a,
-                           const size_t b,
-                           const size_t c,
-                           const size_t d) const;
+    SimplexId findQuadBary(const std::set<size_t> quadVertices) const;
 
     /**
      * @brief Find input vertices with more than 4 neighbors

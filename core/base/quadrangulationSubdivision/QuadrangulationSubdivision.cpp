@@ -37,29 +37,18 @@ ttk::SimplexId
 }
 
 ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
-  const size_t a, const size_t b, const size_t c, const size_t d) const {
+  const std::set<size_t> quadVertices) const {
 
-  std::vector<float> sum(vertexDistance_[a].size());
+  std::vector<float> sum(vertexDistance_[*quadVertices.begin()].size());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < sum.size(); ++i) {
-    float m = vertexDistance_[a][i];
-    float n = vertexDistance_[b][i];
-    float o = vertexDistance_[c][i];
-    float p = vertexDistance_[d][i];
+
     // try to be near the four vertices
-    sum[i] = m + n + o + p;
-    if(m != std::numeric_limits<float>::infinity()
-       && o != std::numeric_limits<float>::infinity()) {
-      // try to be on the AC diagonal
-      sum[i] += std::abs(m - o);
-    }
-    if(n != std::numeric_limits<float>::infinity()
-       && p != std::numeric_limits<float>::infinity()) {
-      // try to be on the BD diagonal
-      sum[i] += std::abs(n - p);
+    for(auto &id : quadVertices) {
+      sum[i] += vertexDistance_[id][i];
     }
   }
 
@@ -133,7 +122,8 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     triangulation_->getVertexPoint(liid, midli.x, midli.y, midli.z);
 
     // quad barycenter
-    auto baryid = findQuadBary(i, j, k, l);
+    std::set<size_t> quadVertices{i, j, k, l};
+    auto baryid = findQuadBary(quadVertices);
     Point bary{};
     triangulation_->getVertexPoint(baryid, bary.x, bary.y, bary.z);
 
