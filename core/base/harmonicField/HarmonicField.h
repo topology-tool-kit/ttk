@@ -311,8 +311,13 @@ SparseMatrixType
       = TripletType(edgeVertices[1], edgeVertices[0], -cotan_weight);
 
     // store the cotan weight sum for the two vertices of the current edge
-    vertexWeightSum[edgeVertices[0]] += cotan_weight;
-    vertexWeightSum[edgeVertices[1]] += cotan_weight;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+    {
+      vertexWeightSum[edgeVertices[0]] += cotan_weight;
+      vertexWeightSum[edgeVertices[1]] += cotan_weight;
+    }
   }
 
   // on the diagonal: sum of cotan weights for every vertex
