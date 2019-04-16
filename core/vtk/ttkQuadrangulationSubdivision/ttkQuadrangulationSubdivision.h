@@ -146,4 +146,9 @@ private:
   std::vector<float> outVertices_{};
   // output vector of quadrangle vertex valences
   std::vector<ttk::SimplexId> outVertexValences_{};
+  // output vector of vertex (debug) info
+  // 0 - input (critical) point
+  // 1 - edge middle
+  // 2 - quadrangle barycenter
+  std::vector<ttk::SimplexId> outVertexType_{};
 };

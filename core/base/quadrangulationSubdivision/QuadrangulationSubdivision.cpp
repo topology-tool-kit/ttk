@@ -151,6 +151,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
       processedEdges.insert(
         make_pair(ij, make_pair(outputPoints_->size(), midij)));
       outputPoints_->emplace_back(midij);
+      outputVertType_->emplace_back(1);
       nearestVertexIdentifier_.emplace_back(ijid);
     }
 
@@ -158,6 +159,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
       processedEdges.insert(
         make_pair(jk, make_pair(outputPoints_->size(), midjk)));
       outputPoints_->emplace_back(midjk);
+      outputVertType_->emplace_back(1);
       nearestVertexIdentifier_.emplace_back(jkid);
     }
 
@@ -165,6 +167,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
       processedEdges.insert(
         make_pair(kl, make_pair(outputPoints_->size(), midkl)));
       outputPoints_->emplace_back(midkl);
+      outputVertType_->emplace_back(1);
       nearestVertexIdentifier_.emplace_back(klid);
     }
 
@@ -172,12 +175,14 @@ int ttk::QuadrangulationSubdivision::subdivise() {
       processedEdges.insert(
         make_pair(li, make_pair(outputPoints_->size(), midli)));
       outputPoints_->emplace_back(midli);
+      outputVertType_->emplace_back(1);
       nearestVertexIdentifier_.emplace_back(liid);
     }
 
     // barycenter index in outputPoints_
     auto baryIdx = static_cast<long long>(outputPoints_->size());
     outputPoints_->emplace_back(bary);
+    outputVertType_->emplace_back(2);
     nearestVertexIdentifier_.emplace_back(baryid);
 
     // add the four new quads
@@ -507,6 +512,7 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   outputQuads_->clear();
   outputPoints_->clear();
+  outputVertType_->clear();
 
   // store input points (MSC critical points)
   for(size_t i = 0; i < inputVertexNumber_; i++) {
@@ -517,6 +523,10 @@ int ttk::QuadrangulationSubdivision::execute() {
   for(size_t i = 0; i < inputQuadNumber_; i++) {
     outputQuads_->emplace_back(inputQuads_[i]);
   }
+
+  // fill outputInfos_ with input data (critical points)
+  outputVertType_->resize(outputPoints_->size());
+  std::fill(outputVertType_->begin(), outputVertType_->end(), 0);
 
   // vertices to filter from relaxation, projection
   std::set<size_t> filtered{};
