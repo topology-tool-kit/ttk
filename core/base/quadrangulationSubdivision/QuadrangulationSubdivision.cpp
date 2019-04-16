@@ -336,6 +336,21 @@ ttk::QuadrangulationSubdivision::Point
     }
   }
 
+  // display the number of triangles checked
+#if 0
+  auto ntriangles
+    = std::count(trianglesTested.begin(), trianglesTested.end(), true);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+  {
+    std::stringstream msg;
+    msg << MODULE_S "Point " << i << "checked " << ntriangles
+        << " triangles: " << success << std::endl;
+    dMsg(std::cout, msg.str(), detailedInfoMsg);
+  }
+#endif
+
   if(!success) {
     // replace proj by the nearest vertex?
     triangulation_->getVertexPoint(
