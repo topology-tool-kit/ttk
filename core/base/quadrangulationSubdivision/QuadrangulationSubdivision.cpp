@@ -272,8 +272,23 @@ ttk::QuadrangulationSubdivision::Point
     // projected point into triangle
     proj = *vert - norm * Geometry::dotProduct(&norm.x, &tmp.x);
 
+    // compute barycentric coords of projection
+    std::vector<float> baryCoords;
+    Geometry::computeBarycentricCoordinates(
+      &pa.x, &pb.x, &pc.x, &proj.x, baryCoords);
+
     // check if projection in triangle
-    if(Geometry::isPointInTriangle(&pa.x, &pb.x, &pc.x, &proj.x)) {
+    bool inTriangle = true;
+    for(auto &coord : baryCoords) {
+      if(coord < powf(10, -FLT_DIG)) {
+        inTriangle = false;
+      }
+      if(coord > 1 + powf(10, -FLT_DIG)) {
+        inTriangle = false;
+      }
+    }
+
+    if(inTriangle) {
       success = true;
       // should we check if we have the nearest triangle?
       break;
@@ -281,11 +296,6 @@ ttk::QuadrangulationSubdivision::Point
 
     // mark triangle as tested
     trianglesTested[tid] = true;
-
-    // (re-)compute barycentric coords of projection
-    std::vector<float> baryCoords;
-    Geometry::computeBarycentricCoordinates(
-      &pa.x, &pb.x, &pc.x, &proj.x, baryCoords);
 
     // extrema values in baryCoords
     auto extrema = std::minmax_element(baryCoords.begin(), baryCoords.end());
