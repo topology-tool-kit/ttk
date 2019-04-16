@@ -97,6 +97,7 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   baseWorker_.setLockAllInputVertices(LockAllInputVertices);
   baseWorker_.setOutputPoints(&outVertices_);
   baseWorker_.setOutputQuads(&outQuadrangles_);
+  baseWorker_.setOutputValences(&outVertexValences_);
 
   auto quads = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
   auto mesh = vtkUnstructuredGrid::SafeDownCast(inputs[1]);
@@ -133,6 +134,13 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
   // update output: get quadrangle vertices
   output->SetPoints(points);
+
+  // add data array of points valences
+  auto valences = vtkSmartPointer<vtkIntArray>::New();
+  valences->SetName("Valence");
+  valences->SetVoidArray(
+    outVertexValences_.data(), outVertexValences_.size(), 1);
+  output->GetPointData()->AddArray(valences);
 
   {
     std::stringstream msg;

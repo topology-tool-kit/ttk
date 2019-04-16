@@ -85,6 +85,9 @@ namespace ttk {
     inline void setOutputPoints(std::vector<float> *const address) {
       outputPoints_ = reinterpret_cast<std::vector<Point> *>(address);
     }
+    inline void setOutputValences(std::vector<SimplexId> *const address) {
+      outputValences_ = address;
+    }
 
     int execute();
 
@@ -253,6 +256,8 @@ namespace ttk {
     std::vector<Quad> *outputQuads_{};
     // array of output quadrangle vertices
     std::vector<Point> *outputPoints_{};
+    // array of output quadrangle vertex valences
+    std::vector<SimplexId> *outputValences_{};
     // array mapping quadrangle neighbors
     std::vector<std::set<size_t>> quadNeighbors_{};
     // array of nearest input vertex TTK identifier

@@ -553,6 +553,12 @@ int ttk::QuadrangulationSubdivision::execute() {
     project(filtered);
   }
 
+  // compute valence of every quadrangle vertex
+  outputValences_->resize(outputPoints_->size());
+  std::transform(
+    quadNeighbors_.begin(), quadNeighbors_.end(), outputValences_->begin(),
+    [&](const std::set<size_t> &neighbors) { return neighbors.size(); });
+
   {
     std::stringstream msg;
     msg << MODULE_S "Produced " << outputQuads_->size() << " quadrangles with "

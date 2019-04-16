@@ -144,4 +144,6 @@ private:
   std::vector<vtkIdType> outQuadrangles_{};
   // output vector of quadrangle vertices
   std::vector<float> outVertices_{};
+  // output vector of quadrangle vertex valences
+  std::vector<ttk::SimplexId> outVertexValences_{};
 };
