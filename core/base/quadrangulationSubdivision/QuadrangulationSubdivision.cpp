@@ -37,9 +37,11 @@ ttk::SimplexId
 }
 
 ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
-  const std::set<size_t> quadVertices) const {
+  const std::set<size_t> &quadVertices,
+  const std::vector<SimplexId> &edgeMiddles) const {
 
-  std::vector<float> sum(vertexDistance_[*quadVertices.begin()].size());
+  std::vector<float> sum(vertexDistance_[*quadVertices.begin()].size(),
+                         std::numeric_limits<float>::infinity());
 
   Point quadEuclBary{};
   for(auto &id : quadVertices) {
@@ -47,21 +49,50 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
   }
   quadEuclBary = quadEuclBary / quadVertices.size();
 
+  std::vector<std::vector<float>> edgeMiddleDist(edgeMiddles.size());
+  std::vector<SimplexId> bounds(quadVertices.size());
+  std::transform(quadVertices.begin(), quadVertices.end(), bounds.begin(),
+                 [&](const size_t &a) { return nearestVertexIdentifier_[a]; });
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < edgeMiddles.size(); ++i) {
+    Dijkstra::shortestPath(
+      edgeMiddles[i], *triangulation_, edgeMiddleDist[i], bounds);
+  }
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < sum.size(); ++i) {
+
+    // skip following computation if too far from any parent quad vertex
+    bool skip = std::any_of(
+      quadVertices.begin(), quadVertices.end(), [&](const size_t &a) {
+        return vertexDistance_[a][i] == std::numeric_limits<float>::infinity();
+      });
+
+    if(skip) {
+      continue;
+    }
+
+    sum[i] = 0.0F;
 
     // try to be near the four vertices
     for(auto &id : quadVertices) {
       sum[i] += vertexDistance_[id][i];
     }
 
+    for(auto &dist : edgeMiddleDist) {
+      sum[i] += dist[i];
+    }
+
     // get the euclidian distance to quadEuclBary
     Point curr{};
     triangulation_->getVertexPoint(i, curr.x, curr.y, curr.z);
     // try to minimize the euclidian distance to quadEuclBary too
-    sum[i] += 10.0F * Geometry::distance(&curr.x, &quadEuclBary.x);
+    sum[i] += Geometry::distance(&curr.x, &quadEuclBary.x);
   }
 
   return std::min_element(sum.begin(), sum.end()) - sum.begin();
@@ -133,9 +164,11 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     Point midli{};
     triangulation_->getVertexPoint(liid, midli.x, midli.y, midli.z);
 
-    // quad barycenter
     std::set<size_t> quadVertices{i, j, k, l};
-    auto baryid = findQuadBary(quadVertices);
+    std::vector<SimplexId> edgeMiddles{ijid, jkid, klid, liid};
+    // barycenter TTK identifier
+    auto baryid = findQuadBary(quadVertices, edgeMiddles);
+    // barycenter 3D coordinates
     Point bary{};
     triangulation_->getVertexPoint(baryid, bary.x, bary.y, bary.z);
 
