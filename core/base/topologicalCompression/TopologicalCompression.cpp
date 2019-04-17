@@ -225,9 +225,9 @@ double ttk::TopologicalCompression::ReadDouble(
   int ret = (int) std::fread(&d, sizeof(double), 1, fm);
   if (!ret) {
     std::stringstream msg;
-    ttk::Debug d;
+    ttk::Debug dbg;
     msg << "[TopologicalCompression] Error reading double!" << std::endl;
-    d.dMsg(std::cerr, msg.str(), ttk::Debug::fatalMsg);
+    dbg.dMsg(std::cerr, msg.str(), ttk::Debug::fatalMsg);
   }
   return d;
 }
@@ -238,9 +238,9 @@ void ttk::TopologicalCompression::WriteDouble(
   int ret = (int) std::fwrite(&d, sizeof(double), 1, fm);
   if (!ret) {
     std::stringstream msg;
-    ttk::Debug d;
+    ttk::Debug dbg;
     msg << "[TopologicalCompression] Error writing double!" << std::endl;
-    d.dMsg(std::cerr, msg.str(), ttk::Debug::fatalMsg);
+    dbg.dMsg(std::cerr, msg.str(), ttk::Debug::fatalMsg);
   }
 }
 

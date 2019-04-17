@@ -619,8 +619,8 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(const std::vector<Separa
           outputSeparatrices2_cells_->push_back(vertexNumber);
 
           float point[3];
-          for(SimplexId i=0; i<vertexNumber; ++i){
-            const SimplexId tetraId=polygon[i];
+          for(SimplexId j=0; j<vertexNumber; ++j){
+            const SimplexId tetraId=polygon[j];
             discreteGradient_.getCellIncenter(dcg::Cell(3,tetraId), point);
 
             if(isVisited[tetraId]==-1){

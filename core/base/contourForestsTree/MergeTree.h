@@ -189,9 +189,9 @@ true)
       // .....................{
 
       template <typename scalarType>
-      inline const scalarType &getValue(const SimplexId &idNode) const
+      inline const scalarType &getValue(const SimplexId &nodeId) const
       {
-         return (((scalarType *)scalars_->values))[idNode];
+         return (((scalarType *)scalars_->values))[nodeId];
       }
 
       template <typename scalarType>

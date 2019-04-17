@@ -270,9 +270,9 @@ int BottleneckDistance::computeBottleneck(
   int numberOfMismatches = 0;
   for (int m = 0, ms = (int) matchings.size(); m < ms; ++m)
   {
-    matchingTuple t = matchings[m];
-    int i = transposeOriginal ? std::get<1>(t) : std::get<0>(t);
-    int j = transposeOriginal ? std::get<0>(t) : std::get<1>(t);
+    matchingTuple mt = matchings[m];
+    int i = transposeOriginal ? std::get<1>(mt) : std::get<0>(mt);
+    int j = transposeOriginal ? std::get<0>(mt) : std::get<1>(mt);
     //dataType val = std::get<2>(t);
 
     diagramTuple t1 = CTDiagram1[i];

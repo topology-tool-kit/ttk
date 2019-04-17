@@ -361,9 +361,9 @@ namespace ftm
       // scalar
 
       template <typename scalarType>
-      inline const scalarType &getValue(SimplexId idNode) const
+      inline const scalarType &getValue(SimplexId nodeId) const
       {
-         return (((scalarType *)scalars_->values))[idNode];
+         return (((scalarType *)scalars_->values))[nodeId];
       }
 
       template <typename scalarType>

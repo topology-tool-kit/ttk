@@ -478,7 +478,7 @@ template <class dataTypeU, class dataTypeV>
   // post-process for further interaction
   if((totalArea_ == -1)||(totalVolume_ == -1)||(totalHyperVolume_ == -1)){
     
-    Timer t;
+    Timer tm;
     
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -497,7 +497,7 @@ template <class dataTypeU, class dataTypeV>
     {
       std::stringstream msg;
       msg << "[ReebSpace] Geometrical measures computed in "
-        << t.getElapsedTime() << " s. (" << threadNumber_
+        << tm.getElapsedTime() << " s. (" << threadNumber_
         << " thread(s))" << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
     }

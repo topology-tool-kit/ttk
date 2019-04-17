@@ -716,12 +716,12 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
     msg << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
     for(int i=0 ; i<numberOfPoints ; i++) {
-      stringstream msg;
-      msg << "  (" << i << ") :"
+      stringstream msg2;
+      msg2 << "  (" << i << ") :"
         << "  x = " << (*xCoord)[i]
         << "  y = " << (*yCoord)[i];
-      msg << endl;
-      dMsg(cout, msg.str(), advancedInfoMsg);
+      msg2 << endl;
+      dMsg(cout, msg2.str(), advancedInfoMsg);
     }
   }
 
@@ -910,23 +910,23 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(const PointType pointType
       queue<int> superArcQueue;
       superArcQueue.push(rootSuperArcId);
       while(isMandatory && (!superArcQueue.empty())) {
-        int superArcId = superArcQueue.front();
+        int spaId = superArcQueue.front();
         superArcQueue.pop();
-        if(isSuperArcAlreadyVisited[superArcId]) {
+        if(isSuperArcAlreadyVisited[spaId]) {
           isMandatory = false;
         } else {
           int downNodeId =
-          secondTree->getSuperArc(superArcId)->getDownNodeId();
+          secondTree->getSuperArc(spaId)->getDownNodeId();
           int numberOfDownSuperArcs =
           secondTree->getNode(downNodeId)->getNumberOfDownSuperArcs();
           if(numberOfDownSuperArcs > 0) {
-            for(int i=0 ; i<numberOfDownSuperArcs ; i++) {
+            for(int j=0 ; j<numberOfDownSuperArcs ; j++) {
               superArcQueue.push(
-                secondTree->getNode(downNodeId)->getDownSuperArcId(i)
+                secondTree->getNode(downNodeId)->getDownSuperArcId(j)
               );
             }
           }
-          subTreeSuperArcId.push_back(superArcId);
+          subTreeSuperArcId.push_back(spaId);
         }
       }
     }
@@ -956,11 +956,11 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(const PointType pointType
       }
       // Mark the super arc from the root of the sub tree to the global root
       int upNodeId = secondTree->getSuperArc(rootSuperArcId)->getUpNodeId();
-      int superArcId = secondTree->getNode(upNodeId)->getUpSuperArcId(0);
-      while( (superArcId != -1) && !(isSuperArcAlreadyVisited[superArcId]) ) {
-        isSuperArcAlreadyVisited[superArcId] = true;
-        upNodeId = secondTree->getSuperArc(superArcId)->getUpNodeId();
-        superArcId = secondTree->getNode(upNodeId)->getUpSuperArcId(0);
+      int spaId = secondTree->getNode(upNodeId)->getUpSuperArcId(0);
+      while( (spaId != -1) && !(isSuperArcAlreadyVisited[spaId]) ) {
+        isSuperArcAlreadyVisited[spaId] = true;
+        upNodeId = secondTree->getSuperArc(spaId)->getUpNodeId();
+        spaId = secondTree->getNode(upNodeId)->getUpSuperArcId(0);
       }
     }
 
@@ -1547,13 +1547,13 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     (*mandatorySaddleVertex)[i].first = lowerTree->getNode(nodeId)->getVertexId();
     for(unsigned int j=0 ; j<lowComponent[i].size() ; j++) {
       // First saddle
-      int nodeId = lowerSaddleList[lowComponent[i][j]];
-      double nodeScalar = lowerTree->getNodeScalar(nodeId);
+      int nId = lowerSaddleList[lowComponent[i][j]];
+      double nodeScalar = lowerTree->getNodeScalar(nId);
       double refScalar = 0;
       lowerTree->getVertexScalar((*mandatorySaddleVertex)[i].first, refScalar);
       if( nodeScalar < refScalar ) {
         (*mandatorySaddleVertex)[i].first =
-        lowerTree->getNode(nodeId)->getVertexId();
+        lowerTree->getNode(nId)->getVertexId();
       }
     }
 
@@ -1571,13 +1571,13 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     (*mandatorySaddleVertex)[i].second = upperTree->getNode(nodeId)->getVertexId();
     for(unsigned int j=0 ; j<uppComponent[i].size() ; j++) {
       // First saddle
-      int nodeId = upperSaddleList[uppComponent[i][j]];
-      double nodeScalar = upperTree->getNodeScalar(nodeId);
+      int nId = upperSaddleList[uppComponent[i][j]];
+      double nodeScalar = upperTree->getNodeScalar(nId);
       double refScalar = 0;
       upperTree->getVertexScalar((*mandatorySaddleVertex)[i].second, refScalar);
       if( nodeScalar > refScalar ) {
         (*mandatorySaddleVertex)[i].second =
-        upperTree->getNode(nodeId)->getVertexId();
+        upperTree->getNode(nId)->getVertexId();
       }
     }
   }
@@ -1652,20 +1652,20 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   }
   if(debugLevel_ > advancedInfoMsg) {
     stringstream title;
-    stringstream pointType;
+    stringstream pointTypeMsg;
     title << "[MandatoryCriticalPoints] List of ";
     if(lowerTree->isJoinTree()){
       title << "join saddles : ";
-      pointType << "Join Saddle";
+      pointTypeMsg << "Join Saddle";
     } else {
       title << "split saddles : ";
-      pointType << "Split Saddle";
+      pointTypeMsg << "Split Saddle";
     }
     title << endl;
     dMsg(cout, title.str(), advancedInfoMsg);
     for(int i=0 ; i<(int)mandatorySaddleVertex->size() ; i++) {
       stringstream msg;
-      msg << "  -> " << pointType.str() << " (";
+      msg << "  -> " << pointTypeMsg.str() << " (";
       msg << setw(3) << right << i << ")";
       msg << "  Vertices  <";
       msg << setw(9) << right << (*mandatorySaddleVertex)[i].first << " ; ";
@@ -1874,9 +1874,9 @@ int MandatoryCriticalPoints::simplify(const double &normalizedThreshold,
     dMsg(cout, msg.str(), advancedInfoMsg);
     for(size_t i=0 ; i<extremumSimplified->size() ; i++) {
       if((*extremumSimplified)[i]) {
-        stringstream msg;
-        msg << "    (" << i << ")" << endl;
-        dMsg(cout, msg.str(), advancedInfoMsg);
+        stringstream msg2;
+        msg2 << "    (" << i << ")" << endl;
+        dMsg(cout, msg2.str(), advancedInfoMsg);
       }
     }
   }
@@ -1901,9 +1901,9 @@ int MandatoryCriticalPoints::simplify(const double &normalizedThreshold,
     dMsg(cout, msg.str(), advancedInfoMsg);
     for(size_t i=0 ; i<saddleSimplified->size() ; i++) {
       if((*saddleSimplified)[i]) {
-        stringstream msg;
-        msg << "    (" << i << ")" << endl;
-        dMsg(cout, msg.str(), advancedInfoMsg);
+        stringstream msg2;
+        msg2 << "    (" << i << ")" << endl;
+        dMsg(cout, msg2.str(), advancedInfoMsg);
       }
     }
   }

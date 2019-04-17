@@ -505,10 +505,10 @@ int ZeroSkeleton::buildVertexNeighbors(const SimplexId &vertexNumber,
   }
   
   if(!localEdgeList->size()){
-    OneSkeleton oneSkeleton;
-    oneSkeleton.setDebugLevel(debugLevel_);
-    oneSkeleton.setThreadNumber(threadNumber_);
-    oneSkeleton.buildEdgeList(vertexNumber, cellNumber, cellArray, 
+    OneSkeleton osk;
+    osk.setDebugLevel(debugLevel_);
+    osk.setThreadNumber(threadNumber_);
+    osk.buildEdgeList(vertexNumber, cellNumber, cellArray,
       *localEdgeList);
   }
  
