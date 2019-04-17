@@ -1,8 +1,9 @@
 ttk_add_base_library(harmonicField
-                     SOURCES
-                     HarmonicField.cpp
-                     HEADERS
-                     HarmonicField.h
-                     LINK
-                     geometry
-                     triangulation)
+  SOURCES
+    HarmonicField.cpp
+  HEADERS
+    HarmonicField.h
+  LINK
+    geometry
+    triangulation
+    )

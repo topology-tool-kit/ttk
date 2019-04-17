@@ -1,4 +1,9 @@
 ttk_add_vtk_library(ttkPointMerger
-	SOURCES ttkPointMerger.cpp
-	HEADERS ttkPointMerger.h
-	LINK ttkTriangulation geometry)
+  SOURCES
+    ttkPointMerger.cpp
+  HEADERS
+    ttkPointMerger.h
+  LINK
+    ttkTriangulation
+    geometry
+    )

@@ -1,4 +1,8 @@
 ttk_add_base_library(gaussianPointCloud
-	SOURCES GaussianPointCloud.cpp
-	HEADERS GaussianPointCloud.h
-	LINK triangulation)
+  SOURCES
+    GaussianPointCloud.cpp
+  HEADERS
+    GaussianPointCloud.h
+  LINK
+    triangulation
+    )
