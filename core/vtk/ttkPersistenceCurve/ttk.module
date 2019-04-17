@@ -1,0 +1,11 @@
+NAME
+  ttkPersistenceCurve
+SOURCES
+  ttkPersistenceCurve.cpp
+HEADERS
+  ttkPersistenceCurve.h
+DEPENDS
+  persistenceCurve
+  ttkTriangulation
+XMLS
+  PersistenceCurve.xml

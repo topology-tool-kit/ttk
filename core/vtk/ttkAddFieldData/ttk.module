@@ -1,0 +1,10 @@
+NAME
+  ttkAddFieldData
+SOURCES
+  ttkAddFieldData.cpp
+HEADERS
+  ttkAddFieldData.h
+DEPENDS
+  ttkTriangulation
+XMLS
+  AddFieldData.xml

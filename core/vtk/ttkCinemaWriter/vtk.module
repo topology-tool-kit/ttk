@@ -1,0 +1,8 @@
+NAME
+ ttkCinemaWriter
+DEPENDS
+  VTK::FiltersCore
+  VTK::IOParallelXML
+PRIVATE_DEPENDS
+  VTK::CommonCore
+

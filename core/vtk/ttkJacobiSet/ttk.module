@@ -1,0 +1,11 @@
+NAME
+  ttkJacobiSet
+SOURCES
+  ttkJacobiSet.cpp
+HEADERS
+  ttkJacobiSet.h
+DEPENDS
+  jacobiSet
+  ttkTriangulation
+XMLS
+  JacobiSet.xml

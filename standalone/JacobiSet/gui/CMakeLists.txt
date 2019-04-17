@@ -10,4 +10,4 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 add_executable(ttkJacobiSetGui main.cpp)
 target_link_libraries(ttkJacobiSetGui ttkJacobiSet ttkUserInterfaceBase)
 
-install(TARGETS ttkJacobiSetGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})

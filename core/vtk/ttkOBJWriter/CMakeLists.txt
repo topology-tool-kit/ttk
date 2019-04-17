@@ -1,10 +1,7 @@
-ttk_add_vtk_library(ttkOBJWriter
-  SOURCES
-    ttkOBJWriter.cpp
-  HEADERS
-    ttkOBJWriter.h
-    )
+ttk_add_vtk_module()
 
-if (MSVC)
+# TODO remove ?
+if(MSVC)
   target_compile_definitions(ttkOBJWriter PUBLIC vtkIOLegacy_EXPORTS)
 endif()
+

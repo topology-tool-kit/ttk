@@ -1,0 +1,13 @@
+NAME
+  ttkFTMTree
+SOURCES
+  ttkFTMTree.cpp
+HEADERS
+  ttkFTMTree.h
+  ttkFTMStructures.h
+DEPENDS
+  ftmTree
+  geometry
+  ttkTriangulation
+XMLS
+  FTMTree.xml

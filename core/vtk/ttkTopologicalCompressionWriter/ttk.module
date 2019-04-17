@@ -1,0 +1,11 @@
+NAME
+  ttkTopologicalCompressionWriter
+SOURCES
+  ttkTopologicalCompressionWriter.cpp
+HEADERS
+  ttkTopologicalCompressionWriter.h
+DEPENDS
+  ttkTriangulation
+  topologicalCompression
+XMLS
+  TopologicalCompressionWriter.xml

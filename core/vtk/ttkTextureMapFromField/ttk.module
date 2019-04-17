@@ -1,0 +1,11 @@
+NAME
+  ttkTextureMapFromField
+SOURCES
+  ttkTextureMapFromField.cpp
+HEADERS
+  ttkTextureMapFromField.h
+DEPENDS
+  common
+  ttkTriangulation
+XMLS
+  TextureMapFromField.xml

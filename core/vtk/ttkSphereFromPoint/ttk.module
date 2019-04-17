@@ -1,0 +1,11 @@
+NAME
+  ttkSphereFromPoint
+SOURCES
+  ttkSphereFromPoint.cpp
+HEADERS
+  ttkSphereFromPoint.h
+DEPENDS
+  common
+  ttkTriangulation
+XMLS
+  SphereFromPoint.xml

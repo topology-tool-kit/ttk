@@ -1,0 +1,7 @@
+NAME
+ ttkContinuousScatterPlot
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore
+

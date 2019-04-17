@@ -1,0 +1,12 @@
+NAME
+  ttkTriangulation
+SOURCES
+  ttkTriangulation.cpp
+  ttkWrapper.cpp
+HEADERS
+  ttkTriangulation.h
+  ttkWrapper.h
+DEPENDS
+  triangulation
+XMLS
+  Triangulation.xml

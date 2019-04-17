@@ -10,5 +10,5 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 add_executable(ttkMeshSubdivisionCmd main.cpp)
 target_link_libraries(ttkMeshSubdivisionCmd ttkMeshSubdivision ttkProgramBase)
 
-install(TARGETS ttkMeshSubdivisionCmd RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
 

@@ -1,0 +1,11 @@
+NAME
+  ttkIdentifierRandomizer
+SOURCES
+  ttkIdentifierRandomizer.cpp
+HEADERS
+  ttkIdentifierRandomizer.h
+DEPENDS
+  common
+  ttkTriangulation
+XMLS
+  IdentifierRandomizer.xml

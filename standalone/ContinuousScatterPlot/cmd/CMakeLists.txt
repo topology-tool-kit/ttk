@@ -11,5 +11,5 @@ add_executable(ttkContinuousScatterPlotCmd main.cpp)
 target_link_libraries(ttkContinuousScatterPlotCmd ttkContinuousScatterPlot
                       ttkProgramBase)
 
-install(TARGETS ttkContinuousScatterPlotCmd RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
 

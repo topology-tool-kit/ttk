@@ -1,0 +1,10 @@
+NAME
+  ttkCinemaLayout
+SOURCES
+  ttkCinemaLayout.cpp
+HEADERS
+  ttkCinemaLayout.h
+DEPENDS
+  ttkTriangulation
+XMLS
+  CinemaLayout.xml

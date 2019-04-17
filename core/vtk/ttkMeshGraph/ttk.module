@@ -1,0 +1,11 @@
+NAME
+  ttkMeshGraph
+SOURCES
+  ttkMeshGraph.cpp
+HEADERS
+  ttkMeshGraph.h
+DEPENDS
+  meshGraph
+  ttkTriangulation
+XMLS
+  MeshGraph.xml

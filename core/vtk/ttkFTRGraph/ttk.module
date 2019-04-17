@@ -1,0 +1,11 @@
+NAME
+  ttkFTRGraph
+SOURCES
+  ttkFTRGraph.cpp
+HEADERS
+  ttkFTRGraph.h
+DEPENDS
+  ftrGraph
+  ttkTriangulation
+XMLS
+  FTRGraph.xml

@@ -1,0 +1,11 @@
+NAME
+  ttkHarmonicField
+SOURCES
+  ttkHarmonicField.cpp
+HEADERS
+  ttkHarmonicField.h
+DEPENDS
+  harmonicField
+  ttkTriangulation
+XMLS
+  HarmonicField.xml

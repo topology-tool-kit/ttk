@@ -1,0 +1,11 @@
+NAME
+  ttkTopologicalCompressionReader
+SOURCES
+  ttkTopologicalCompressionReader.cpp
+HEADERS
+  ttkTopologicalCompressionReader.h
+DEPENDS
+  ttkTriangulation
+  topologicalCompression
+XMLS
+  TopologicalCompressionReader.xml

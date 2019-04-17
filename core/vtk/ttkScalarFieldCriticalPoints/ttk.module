@@ -1,0 +1,11 @@
+NAME
+  ttkScalarFieldCriticalPoints
+SOURCES
+  ttkScalarFieldCriticalPoints.cpp
+HEADERS
+  ttkScalarFieldCriticalPoints.h
+DEPENDS
+  scalarFieldCriticalPoints
+  ttkTriangulation
+XMLS
+  ScalarFieldCriticalPoints.xml

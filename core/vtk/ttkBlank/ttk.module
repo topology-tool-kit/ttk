@@ -1,0 +1,11 @@
+NAME
+  ttkBlank
+SOURCES
+  ttkBlank.cpp
+HEADERS
+  ttkBlank.h
+DEPENDS
+  blank
+  ttkTriangulation
+XMLS
+  Blank.xml

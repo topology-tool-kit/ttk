@@ -1,0 +1,11 @@
+NAME
+  ttkDiscreteGradient
+SOURCES
+  ttkDiscreteGradient.cpp
+HEADERS
+  ttkDiscreteGradient.h
+DEPENDS
+  discreteGradient
+  ttkTriangulation
+XMLS
+  DiscreteGradient.xml

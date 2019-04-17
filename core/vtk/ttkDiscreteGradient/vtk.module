@@ -1,0 +1,7 @@
+NAME
+ ttkDiscreteGradient
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore
+

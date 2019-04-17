@@ -1,0 +1,11 @@
+NAME
+  ttkDepthImageBasedGeometryApproximation
+SOURCES
+  ttkDepthImageBasedGeometryApproximation.cpp
+HEADERS
+  ttkDepthImageBasedGeometryApproximation.h
+DEPENDS
+  depthImageBasedGeometryApproximation
+  ttkTriangulation
+XMLS
+  DepthImageBasedGeometryApproximation.xml

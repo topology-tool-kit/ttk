@@ -1,0 +1,11 @@
+NAME
+  ttkIdentifiers
+SOURCES
+  ttkIdentifiers.cpp
+  HEADERS
+  ttkIdentifiers.h
+DEPENDS
+  common
+  ttkTriangulation
+XMLS
+  Identifiers.xml

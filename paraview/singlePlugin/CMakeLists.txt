@@ -1,0 +1,9 @@
+paraview_add_plugin(TopologyToolKit
+  VERSION "1.0"
+  REQUIRED_ON_CLIENT
+  REQUIRED_ON_SERVER
+  MODULES
+    ${TTK_MODULES}
+  MODULE_FILES
+    ${TTK_MODULE_FILES}
+    )

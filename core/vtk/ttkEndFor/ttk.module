@@ -1,0 +1,10 @@
+NAME
+  ttkEndFor
+SOURCES
+  ttkEndFor.cpp
+HEADERS
+  ttkEndFor.h
+DEPENDS
+  ttkTriangulation
+XMLS
+  EndFor.xml

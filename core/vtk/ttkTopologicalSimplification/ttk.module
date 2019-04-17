@@ -1,0 +1,11 @@
+NAME
+  ttkTopologicalSimplification
+SOURCES
+  ttkTopologicalSimplification.cpp
+HEADERS
+  ttkTopologicalSimplification.h
+DEPENDS
+  topologicalSimplification
+  ttkTriangulation
+XMLS
+  TopologicalSimplification.xml

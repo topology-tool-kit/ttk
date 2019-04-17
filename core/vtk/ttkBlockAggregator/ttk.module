@@ -1,0 +1,10 @@
+NAME
+  ttkBlockAggregator
+SOURCES
+  ttkBlockAggregator.cpp
+HEADERS
+  ttkBlockAggregator.h
+DEPENDS
+  ttkTriangulation
+XMLS
+  BlockAggregator.xml

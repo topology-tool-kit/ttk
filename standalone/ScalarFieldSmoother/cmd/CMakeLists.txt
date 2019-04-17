@@ -8,7 +8,8 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_executable(ttkScalarFieldSmootherCmd main.cpp)
-target_link_libraries(ttkScalarFieldSmootherCmd ttkScalarFieldSmoother ttkProgramBase)
+target_link_libraries(ttkScalarFieldSmootherCmd ttkScalarFieldSmoother
+                      ttkProgramBase)
 
-install(TARGETS ttkScalarFieldSmootherCmd RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
 

@@ -1,0 +1,10 @@
+NAME
+  ttkIdentifyByScalarField
+SOURCES
+  ttkIdentifyByScalarField.cpp
+HEADERS
+  ttkIdentifyByScalarField.h
+DEPENDS
+  ttkTriangulation
+XMLS
+  IdentifyByScalarField.xml

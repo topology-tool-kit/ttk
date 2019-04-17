@@ -1,0 +1,11 @@
+NAME
+  ttkScalarFieldSmoother
+SOURCES
+  ttkScalarFieldSmoother.cpp
+HEADERS
+  ttkScalarFieldSmoother.h
+DEPENDS
+  scalarFieldSmoother
+  ttkTriangulation
+XMLS
+  ScalarFieldSmoother.xml

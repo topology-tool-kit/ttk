@@ -1,0 +1,11 @@
+NAME
+  ttkIntegralLines
+SOURCES
+  ttkIntegralLines.cpp
+HEADERS
+  ttkIntegralLines.h
+DEPENDS
+  integralLines
+  ttkTriangulation
+XMLS
+  IntegralLines.xml

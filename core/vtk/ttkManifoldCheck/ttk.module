@@ -1,0 +1,11 @@
+NAME
+  ttkManifoldCheck
+SOURCES
+  ttkManifoldCheck.cpp
+HEADERS
+  ttkManifoldCheck.h
+DEPENDS
+  manifoldCheck
+  ttkTriangulation
+XMLS
+  ManifoldCheck.xml

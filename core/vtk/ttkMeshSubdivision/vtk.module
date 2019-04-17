@@ -1,0 +1,7 @@
+NAME
+ ttkMeshSubdivision
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore
+

@@ -10,4 +10,4 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 add_executable(ttkContourForestsCmd main.cpp)
 target_link_libraries(ttkContourForestsCmd ttkContourForests ttkProgramBase)
 
-install(TARGETS ttkContourForestsCmd RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})

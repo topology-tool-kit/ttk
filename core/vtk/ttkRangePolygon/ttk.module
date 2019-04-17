@@ -1,0 +1,11 @@
+NAME
+  ttkRangePolygon
+SOURCES
+  ttkRangePolygon.cpp
+HEADERS
+  ttkRangePolygon.h
+DEPENDS
+  scalarFieldSmoother
+  ttkTriangulation
+XMLS
+  RangePolygon.xml

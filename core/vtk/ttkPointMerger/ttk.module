@@ -1,0 +1,11 @@
+NAME
+  ttkPointMerger
+SOURCES
+  ttkPointMerger.cpp
+HEADERS
+  ttkPointMerger.h
+DEPENDS
+  ttkTriangulation
+  geometry
+XMLS
+  PointMerger.xml

@@ -1,0 +1,10 @@
+NAME
+  ttkCinemaImaging
+SOURCES
+  ttkCinemaImaging.cpp
+HEADERS
+  ttkCinemaImaging.h
+DEPENDS
+  ttkTriangulation
+XMLS
+  CinemaImaging.xml

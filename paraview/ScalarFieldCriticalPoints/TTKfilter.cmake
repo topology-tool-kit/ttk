@@ -1,0 +1,1 @@
+ttk_register_pv_filter(pvScalarFieldCriticalPoints ttkScalarFieldCriticalPoints)

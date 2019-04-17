@@ -1,0 +1,11 @@
+NAME
+  ttkDimensionReduction
+SOURCES
+  ttkDimensionReduction.cpp
+HEADERS
+  ttkDimensionReduction.h
+DEPENDS
+  dimensionReduction
+  ttkTriangulation
+XMLS
+  DimensionReduction.xml

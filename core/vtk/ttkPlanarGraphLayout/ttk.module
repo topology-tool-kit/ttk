@@ -1,0 +1,11 @@
+NAME
+  ttkPlanarGraphLayout
+SOURCES
+  ttkPlanarGraphLayout.cpp
+HEADERS
+  ttkPlanarGraphLayout.h
+DEPENDS
+  planarGraphLayout
+  ttkTriangulation
+XMLS
+  PlanarGraphLayout.xml

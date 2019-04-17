@@ -1,0 +1,11 @@
+NAME
+  ttkCinemaQuery
+SOURCES
+  ttkCinemaQuery.cpp
+HEADERS
+  ttkCinemaQuery.h
+DEPENDS
+  cinemaQuery
+  ttkTriangulation
+XMLS
+  CinemaQuery.xml

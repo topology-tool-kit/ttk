@@ -1,0 +1,11 @@
+NAME
+  ttkMandatoryCriticalPoints
+SOURCES
+  ttkMandatoryCriticalPoints.cpp
+HEADERS
+  ttkMandatoryCriticalPoints.h
+DEPENDS
+  mandatoryCriticalPoints
+  ttkTriangulation
+XMLS
+  MandatoryCriticalPoints.xml

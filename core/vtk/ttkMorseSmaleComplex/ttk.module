@@ -1,0 +1,11 @@
+NAME
+  ttkMorseSmaleComplex
+SOURCES
+  ttkMorseSmaleComplex.cpp
+HEADERS
+  ttkMorseSmaleComplex.h
+DEPENDS
+  morseSmaleComplex
+  ttkTriangulation
+XMLS
+  MorseSmaleComplex.xml

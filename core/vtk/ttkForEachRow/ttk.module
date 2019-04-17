@@ -1,0 +1,10 @@
+NAME
+  ttkForEachRow
+SOURCES
+  ttkForEachRow.cpp
+HEADERS
+  ttkForEachRow.h
+DEPENDS
+  ttkTriangulation
+XMLS
+  ForEachRow.xml

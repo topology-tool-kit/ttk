@@ -1,0 +1,11 @@
+NAME
+  ttkIcoSphere
+SOURCES
+  ttkIcoSphere.cpp
+HEADERS
+  ttkIcoSphere.h
+DEPENDS
+  icoSphere
+  ttkTriangulation
+XMLS
+  IcoSphere.xml

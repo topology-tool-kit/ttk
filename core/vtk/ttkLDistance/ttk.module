@@ -1,0 +1,11 @@
+NAME
+  ttkLDistance
+SOURCES
+  ttkLDistance.cpp
+HEADERS
+  ttkLDistance.h
+DEPENDS
+  lDistance
+  ttkTriangulation
+XMLS
+  LDistance.xml

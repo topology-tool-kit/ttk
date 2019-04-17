@@ -1,0 +1,11 @@
+NAME
+  ttkGaussianPointCloud
+SOURCES
+  ttkGaussianPointCloud.cpp
+HEADERS
+  ttkGaussianPointCloud.h
+DEPENDS
+  gaussianPointCloud
+  ttkTriangulation
+XMLS
+  GaussianPointCloud.xml

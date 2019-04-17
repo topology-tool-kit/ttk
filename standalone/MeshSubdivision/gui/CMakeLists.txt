@@ -8,7 +8,8 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_executable(ttkMeshSubdivisionGui main.cpp)
-target_link_libraries(ttkMeshSubdivisionGui ttkMeshSubdivision ttkUserInterfaceBase)
+target_link_libraries(ttkMeshSubdivisionGui ttkMeshSubdivision
+                      ttkUserInterfaceBase)
 
-install(TARGETS ttkMeshSubdivisionGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
 

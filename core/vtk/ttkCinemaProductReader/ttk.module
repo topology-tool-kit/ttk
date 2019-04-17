@@ -1,0 +1,10 @@
+NAME
+  ttkCinemaProductReader
+SOURCES
+  ttkCinemaProductReader.cpp
+HEADERS
+  ttkCinemaProductReader.h
+DEPENDS
+  ttkTriangulation
+XMLS
+  CinemaProductReader.xml

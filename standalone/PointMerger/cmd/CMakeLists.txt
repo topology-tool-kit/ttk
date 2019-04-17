@@ -8,7 +8,6 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_executable(ttkPointMergerCmd main.cpp)
-target_link_libraries(ttkPointMergerCmd ${VTK_LIBRARIES}
-                      ttkPointMerger ttkProgramBase)
+target_link_libraries(ttkPointMergerCmd ttkPointMerger ttkProgramBase)
 
-install(TARGETS ttkPointMergerCmd RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})

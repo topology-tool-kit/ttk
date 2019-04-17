@@ -1,0 +1,11 @@
+NAME
+  ttkProjectionFromField
+SOURCES
+  ttkProjectionFromField.cpp
+HEADERS
+  ttkProjectionFromField.h
+DEPENDS
+  common
+  ttkTriangulation
+XMLS
+  ProjectionFromField.xml

@@ -11,5 +11,5 @@ add_executable(ttkMandatoryCriticalPointsCmd main.cpp)
 target_link_libraries(ttkMandatoryCriticalPointsCmd ttkMandatoryCriticalPoints
                       ttkProgramBase)
 
-install(TARGETS ttkMandatoryCriticalPointsCmd RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
 
