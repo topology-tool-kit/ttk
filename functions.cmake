@@ -31,6 +31,5 @@ function(ttk_print_summary)
     message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
     message(STATUS "TTK_INSTALL_PLUGIN_DIR: ${TTK_INSTALL_PLUGIN_DIR}")
     message(STATUS "-----------------------------------------------------------------------------")
-
 endfunction()
 

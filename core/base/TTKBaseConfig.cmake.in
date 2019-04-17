@@ -14,7 +14,7 @@ if (@TTK_ENABLE_MPI@)
 endif()
 
 if (@TTK_ENABLE_OPENMP@)
-	find_dependency(OpenMP REQUIRED)
+  find_dependency(OpenMP REQUIRED)
 endif()
 
 if (@TTK_ENABLE_ZFP@)
@@ -22,7 +22,7 @@ if (@TTK_ENABLE_ZFP@)
 endif()
 
 if (@TTK_ENABLE_ZLIB@)
-	find_dependency(ZLIB REQUIRED)
+  find_dependency(ZLIB REQUIRED)
 endif()
 
 

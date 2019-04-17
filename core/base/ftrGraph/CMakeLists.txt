@@ -9,13 +9,13 @@ if(ENABLE_PROFILING)
 endif()
 
 if(OPENMP_FOUND)
-   option(TTK_ENABLE_FTR_PRIORITY "Gives tasks priority, high perf improvement" OFF)
+  option(TTK_ENABLE_FTR_PRIORITY "Gives tasks priority, high perf improvement" OFF)
 
-   if (OpenMP_CXX_VERSION_MAJOR GREATER_EQUAL 4 AND OpenMP_CXX_VERSION_MINOR GREATER_EQUAL 5)
-      set(TTK_ENABLE_FTR_PRIORITY ON CACHE BOOL "Enable priorities on opnemp tasks" FORCE)
-   endif()
+  if (OpenMP_CXX_VERSION_MAJOR GREATER_EQUAL 4 AND OpenMP_CXX_VERSION_MINOR GREATER_EQUAL 5)
+    set(TTK_ENABLE_FTR_PRIORITY ON CACHE BOOL "Enable priorities on opnemp tasks" FORCE)
+  endif()
 
-   mark_as_advanced(TTK_ENABLE_FTR_PRIORITY)
+  mark_as_advanced(TTK_ENABLE_FTR_PRIORITY)
 endif()
 
 # option (TTK_DISABLE_FTR_LAZY "Disable the lazyness optimization" OFF)
@@ -30,22 +30,39 @@ mark_as_advanced(TTK_ENABLE_FTR_VERT_STATS)
 # create lib
 
 ttk_add_base_library(ftrGraph
-  SOURCES Graph.cpp Mesh.cpp FTRSegmentation.cpp
-  HEADERS FTRAtomicVector.h FTRGraph.h FTRGraph_Template.h
-          FTRGraphPrint_Template.h FTRGraphPrivate_Template.h DynamicGraph.h
-          FTRLazy.h Mesh.h FTRPropagation.h FTRPropagations.h FTRScalars.h FTRSegmentation.h
-  LINK triangulation scalarFieldCriticalPoints ${profiler_lib})
+  SOURCES
+    Graph.cpp
+    Mesh.cpp
+    FTRSegmentation.cpp
+  HEADERS
+    FTRAtomicVector.h
+    FTRGraph.h
+    FTRGraph_Template.h
+    FTRGraphPrint_Template.h
+    FTRGraphPrivate_Template.h
+    DynamicGraph.h
+    FTRLazy.h
+    Mesh.h
+    FTRPropagation.h
+    FTRPropagations.h
+    FTRScalars.h
+    FTRSegmentation.h
+  LINK
+    triangulation
+    scalarFieldCriticalPoints
+    ${profiler_lib}
+    )
 
 target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})
 
 # target definitions
 
 if(ENABLE_PROFILING)
-   target_compile_definitions(ftrGraph PUBLIC GPROFILE=1)
+  target_compile_definitions(ftrGraph PUBLIC GPROFILE=1)
 endif()
 
 if (TTK_ENABLE_FTR_PRIORITY)
-   target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_PRIORITY)
+  target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_PRIORITY)
 endif()
 
 # if(TTK_DISABLE_FTR_LAZY)
@@ -53,9 +70,9 @@ endif()
 # endif()
 
 if(TTK_ENABLE_FTR_TASK_STATS)
-   target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_TASK_STATS)
+  target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_TASK_STATS)
 endif()
 
 if(TTK_ENABLE_FTR_VERT_STATS)
-   target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_VERT_STATS)
+  target_compile_definitions(ftrGraph PUBLIC TTK_ENABLE_FTR_VERT_STATS)
 endif()

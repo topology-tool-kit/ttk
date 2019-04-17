@@ -14,11 +14,11 @@ endif()
 add_subdirectory(core)
 
 if (TTK_BUILD_PARAVIEW_PLUGINS)
-	add_subdirectory(paraview)
+  add_subdirectory(paraview)
 endif()
 
 if (TTK_BUILD_STANDALONE_APPS)
-	add_subdirectory(standalone)
+  add_subdirectory(standalone)
 endif()
 
 ttk_print_summary()
