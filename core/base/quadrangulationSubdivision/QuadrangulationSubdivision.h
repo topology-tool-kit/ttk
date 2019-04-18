@@ -91,6 +91,12 @@ namespace ttk {
     inline void setOutputInfos(std::vector<SimplexId> *const address) {
       outputVertType_ = address;
     }
+    inline void setTrianglesChecked(std::vector<SimplexId> *const address) {
+      trianglesChecked_ = address;
+    }
+    inline void setProjSucceeded(std::vector<SimplexId> *const address) {
+      projSucceeded_ = address;
+    }
 
     int execute();
 
@@ -155,9 +161,11 @@ namespace ttk {
      * triangular input mesh.
      *
      * @param[in] filtered Set of indices that should not be projected
+     * @param[in] lastIter Indicate last projection iteration for
+     * post-processing
      * @return 0 in case of success
      */
-    int project(const std::set<size_t> &filtered);
+    int project(const std::set<size_t> &filtered, const bool lastIter = false);
 
     /**
      * @brief Relax every generated point of a quadrangular mesh
@@ -190,10 +198,13 @@ namespace ttk {
      * @brief Compute the projection in the nearest triangle
      *
      * @param[in] i input index of quadrangle vertex
+     * @param[in] lastIter Indicate last projection iteration for
+     * post-processing
      *
      * @return coordinates of projection
      */
-    Point findProjectionInTriangle(SimplexId i);
+    Point findProjectionInTriangle(const SimplexId i,
+                                   const bool lastIter = false);
 
     /**
      * @brief Find the middle of a quad edge using Dijkstra
@@ -271,6 +282,10 @@ namespace ttk {
     std::vector<SimplexId> nearestVertexIdentifier_{};
     // holds geodesic distance to every other quad vertex sharing a quad
     std::vector<std::vector<float>> vertexDistance_{};
+    // number of triangles checked per quad vertex for the last projection
+    std::vector<SimplexId> *trianglesChecked_{};
+    // last projection success per quad vertex
+    std::vector<SimplexId> *projSucceeded_{};
   };
 } // namespace ttk
 

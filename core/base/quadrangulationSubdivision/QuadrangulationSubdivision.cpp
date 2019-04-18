@@ -242,7 +242,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
 
 ttk::QuadrangulationSubdivision::Point
   ttk::QuadrangulationSubdivision::findProjectionInTriangle(
-    const ttk::SimplexId i) {
+    const ttk::SimplexId i, const bool lastIter) {
 
   // current point to project
   Point *vert = &(*outputPoints_)[i];
@@ -369,32 +369,32 @@ ttk::QuadrangulationSubdivision::Point
     }
   }
 
-  // display the number of triangles checked
-#if 0
-  auto ntriangles
-    = std::count(trianglesTested.begin(), trianglesTested.end(), true);
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif // TTK_ENABLE_OPENMP
-  {
-    std::stringstream msg;
-    msg << MODULE_S "Point " << i << "checked " << ntriangles
-        << " triangles: " << success << std::endl;
-    dMsg(std::cout, msg.str(), detailedInfoMsg);
-  }
-#endif
-
   if(!success) {
     // replace proj by the nearest vertex?
     triangulation_->getVertexPoint(
       nearestVertexIdentifier_[i], proj.x, proj.y, proj.z);
   }
 
+  // fill in debug info
+  if(lastIter) {
+    (*trianglesChecked_)[i]
+      = std::count(trianglesTested.begin(), trianglesTested.end(), true);
+    (*projSucceeded_)[i] = success ? 1 : 0;
+  }
+
   return proj;
 }
 
-int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered) {
+int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
+                                             const bool lastIter) {
   Timer t;
+
+  if(lastIter) {
+    trianglesChecked_->clear();
+    projSucceeded_->clear();
+    trianglesChecked_->resize(outputPoints_->size());
+    projSucceeded_->resize(outputPoints_->size());
+  }
 
   // compute nearest vertex in triangular mesh and stores it in
   // nearestVertexIdentifier_
@@ -435,7 +435,7 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered) {
     }
 
     // replace curr in outputPoints_ by its projection
-    (*outputPoints_)[i] = findProjectionInTriangle(i);
+    (*outputPoints_)[i] = findProjectionInTriangle(i, lastIter);
   }
 
   {
@@ -618,7 +618,7 @@ int ttk::QuadrangulationSubdivision::execute() {
 
     // project all points on the nearest triangle (except MSC critical
     // points)
-    project(filtered);
+    project(filtered, (i == relaxationIterations_ - 1));
   }
 
   // compute valence of every quadrangle vertex

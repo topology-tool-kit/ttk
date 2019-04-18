@@ -99,6 +99,8 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   baseWorker_.setOutputQuads(&outQuadrangles_);
   baseWorker_.setOutputValences(&outVertexValences_);
   baseWorker_.setOutputInfos(&outVertexType_);
+  baseWorker_.setTrianglesChecked(&trianglesChecked_);
+  baseWorker_.setProjSucceeded(&projSucceeded_);
 
   auto quads = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
   auto mesh = vtkUnstructuredGrid::SafeDownCast(inputs[1]);
@@ -148,6 +150,21 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   infos->SetName("Type");
   infos->SetVoidArray(outVertexType_.data(), outVertexType_.size(), 1);
   output->GetPointData()->AddArray(infos);
+
+  if(RelaxationIterations > 0) {
+    // add data array of number of triangles checked
+    auto trChecked = vtkSmartPointer<vtkIntArray>::New();
+    trChecked->SetName("Triangles checked");
+    trChecked->SetVoidArray(
+      trianglesChecked_.data(), trianglesChecked_.size(), 1);
+    output->GetPointData()->AddArray(trChecked);
+
+    // add data array of projection success
+    auto projSucc = vtkSmartPointer<vtkIntArray>::New();
+    projSucc->SetName("Projection");
+    projSucc->SetVoidArray(projSucceeded_.data(), projSucceeded_.size(), 1);
+    output->GetPointData()->AddArray(projSucc);
+  }
 
   {
     std::stringstream msg;
