@@ -43,12 +43,6 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
   std::vector<float> sum(vertexDistance_[*quadVertices.begin()].size(),
                          std::numeric_limits<float>::infinity());
 
-  Point quadEuclBary{};
-  for(auto &id : quadVertices) {
-    quadEuclBary = quadEuclBary + (*outputPoints_)[id];
-  }
-  quadEuclBary = quadEuclBary / quadVertices.size();
-
   std::vector<std::vector<float>> edgeMiddleDist(edgeMiddles.size());
   std::vector<SimplexId> bounds(quadVertices.size());
   std::transform(quadVertices.begin(), quadVertices.end(), bounds.begin(),
@@ -92,12 +86,6 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
     // try to be on the diagonals intersection
     sum[i] += std::abs(m - o);
     sum[i] += std::abs(n - p);
-
-    // get the euclidian distance to quadEuclBary
-    Point curr{};
-    triangulation_->getVertexPoint(i, curr.x, curr.y, curr.z);
-    // try to minimize the euclidian distance to quadEuclBary too
-    sum[i] += Geometry::distance(&curr.x, &quadEuclBary.x);
   }
 
   return std::min_element(sum.begin(), sum.end()) - sum.begin();
