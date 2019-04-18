@@ -47,8 +47,7 @@ namespace ttk {
       };
 
       sortedVect->resize(nbVertices, 0);
-      std::iota(
-        sortedVect->begin(), sortedVect->end(), static_cast<SimplexId>(0));
+      std::iota(sortedVect->begin(), sortedVect->end(), SimplexId{0});
 
       // #pragma omp parallel
       // #pragma omp single

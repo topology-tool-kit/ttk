@@ -1684,7 +1684,7 @@ int FiberSurface::snapVertexBarycentrics(
     Triangle *t = &(
       (*polygonEdgeTriangleLists_[triangles[i].first])[triangles[i].second]);
 
-    for(int j = 0; j < (int)3; j++) {
+    for(int j = 0; j < 3; j++) {
       SimplexId vertexId = t->vertexIds_[j];
 
       // check for each triangle of the tet

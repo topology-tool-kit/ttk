@@ -372,7 +372,7 @@ namespace ttk {
 
       inline SuperArc *getSuperArc(idSuperArc i) {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)i >= mt_data_.superArcs->size()) {
+        if(i >= mt_data_.superArcs->size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << mt_data_.superArcs->size() << std::endl;
           return nullptr;
@@ -383,7 +383,7 @@ namespace ttk {
 
       inline const SuperArc *getSuperArc(idSuperArc i) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)i >= mt_data_.superArcs->size()) {
+        if(i >= mt_data_.superArcs->size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << mt_data_.superArcs->size() << std::endl;
           return nullptr;
@@ -419,7 +419,7 @@ namespace ttk {
 
       inline idNode getLeave(const idNode id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)id > (mt_data_.leaves->size())) {
+        if(id > mt_data_.leaves->size()) {
           std::stringstream msg;
           msg << "[MergTree] getLeaves out of bounds : " << id << std::endl;
           err(msg.str(), fatalMsg);

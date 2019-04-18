@@ -528,7 +528,7 @@ idSuperArc MergeTree::openSuperArc(const idNode &downNodeId,
   }
 #endif
 
-  idSuperArc newSuperArcId = (idSuperArc)treeData_.superArcs.size();
+  idSuperArc newSuperArcId = treeData_.superArcs.size();
   treeData_.superArcs.emplace_back(downNodeId, nullNodes, overlapB, overlapA,
                                    treeData_.partition, treeData_.partition);
   treeData_.nodes[downNodeId].addUpSuperArcId(newSuperArcId);
@@ -543,7 +543,7 @@ idSuperArc MergeTree::makeSuperArc(const idNode &downNodeId,
                                    const bool overlapA,
                                    pair<SimplexId, bool> *vertexList,
                                    SimplexId vertexSize) {
-  idSuperArc newSuperArcId = (idSuperArc)treeData_.superArcs.size();
+  idSuperArc newSuperArcId = treeData_.superArcs.size();
 
   if(downNodeId != upNodeId) {
     treeData_.superArcs.emplace_back(downNodeId, upNodeId, overlapB, overlapA,

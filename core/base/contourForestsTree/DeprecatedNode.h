@@ -95,16 +95,15 @@ namespace ttk {
       // ............................{
 
       inline idSuperArc getNumberOfDownSuperArcs() const {
-        return (idSuperArc)vect_downSuperArcList_.size();
+        return vect_downSuperArcList_.size();
       }
 
       inline idSuperArc getNumberOfUpSuperArcs() const {
-        return (idSuperArc)vect_upSuperArcList_.size();
+        return vect_upSuperArcList_.size();
       }
 
       inline idSuperArc getNumberOfSuperArcs() const {
-        return (idSuperArc)(vect_upSuperArcList_.size()
-                            + vect_downSuperArcList_.size());
+        return vect_upSuperArcList_.size() + vect_downSuperArcList_.size();
       }
 
       inline idSuperArc getDownSuperArcId(const idSuperArc &neighborId) const {

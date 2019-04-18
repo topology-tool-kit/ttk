@@ -357,7 +357,7 @@ void FTMTree_MT::buildSegmentation() {
         = min(nbArcs, (arcChunkId + 1) * arcChunkSize);
       for(idSuperArc a = lowerBound; a < upperBound; ++a) {
         sizes[a]
-          = max((SimplexId)0, (*mt_data_.superArcs)[a].getNbVertSeen() - 1);
+          = max(SimplexId{0}, (*mt_data_.superArcs)[a].getNbVertSeen() - 1);
       }
     }
   }
@@ -1287,7 +1287,7 @@ SimplexId FTMTree_MT::trunk(const bool ct) {
   const auto &nbScalars = scalars_->size;
 
   // trunkVerts
-  trunkVerts.reserve(max((SimplexId)10, nbScalars / 500));
+  trunkVerts.reserve(max(SimplexId{10}, nbScalars / 500));
   for(SimplexId v = 0; v < nbScalars; ++v) {
     if((*mt_data_.openedNodes)[v]) {
       trunkVerts.emplace_back(v);
