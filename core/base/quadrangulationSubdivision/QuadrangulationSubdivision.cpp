@@ -37,7 +37,7 @@ ttk::SimplexId
 }
 
 ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
-  const std::set<size_t> &quadVertices,
+  const std::vector<size_t> &quadVertices,
   const std::vector<SimplexId> &edgeMiddles) const {
 
   std::vector<float> sum(vertexDistance_[*quadVertices.begin()].size(),
@@ -77,16 +77,21 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
       continue;
     }
 
-    sum[i] = 0.0F;
+    float m = vertexDistance_[quadVertices[0]][i];
+    float n = vertexDistance_[quadVertices[1]][i];
+    float o = vertexDistance_[quadVertices[2]][i];
+    float p = vertexDistance_[quadVertices[3]][i];
 
-    // try to be near the four vertices
-    for(auto &id : quadVertices) {
-      sum[i] += vertexDistance_[id][i];
-    }
+    // try to be "near" the four parent vertices
+    sum[i] = m + n + o + p;
 
     for(auto &dist : edgeMiddleDist) {
       sum[i] += dist[i];
     }
+
+    // try to be on the diagonals intersection
+    sum[i] += std::abs(m - o);
+    sum[i] += std::abs(n - p);
 
     // get the euclidian distance to quadEuclBary
     Point curr{};
@@ -164,7 +169,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     Point midli{};
     triangulation_->getVertexPoint(liid, midli.x, midli.y, midli.z);
 
-    std::set<size_t> quadVertices{i, j, k, l};
+    std::vector<size_t> quadVertices{i, j, k, l};
     std::vector<SimplexId> edgeMiddles{ijid, jkid, klid, liid};
     // barycenter TTK identifier
     auto baryid = findQuadBary(quadVertices, edgeMiddles);
