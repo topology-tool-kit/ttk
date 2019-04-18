@@ -37,8 +37,7 @@ ttk::SimplexId
 }
 
 ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
-  const std::vector<size_t> &quadVertices,
-  const std::vector<SimplexId> &edgeMiddles) const {
+  const std::vector<size_t> &quadVertices) const {
 
   std::vector<float> sum(vertexDistance_[*quadVertices.begin()].size(),
                          std::numeric_limits<float>::infinity());
@@ -141,9 +140,8 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     triangulation_->getVertexPoint(liid, midli.x, midli.y, midli.z);
 
     std::vector<size_t> quadVertices{i, j, k, l};
-    std::vector<SimplexId> edgeMiddles{ijid, jkid, klid, liid};
     // barycenter TTK identifier
-    auto baryid = findQuadBary(quadVertices, edgeMiddles);
+    auto baryid = findQuadBary(quadVertices);
     // barycenter 3D coordinates
     Point bary{};
     triangulation_->getVertexPoint(baryid, bary.x, bary.y, bary.z);

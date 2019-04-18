@@ -226,12 +226,10 @@ namespace ttk {
      *
      * @param[in] quadVertices Vector of quad vertices point ids in which to
      * find a barycenter
-     * @param[in] edgeMiddles Vector of parent quad edges middle identifiers
      *
      * @return TTK identifier of potential barycenter
      */
-    SimplexId findQuadBary(const std::vector<size_t> &quadVertices,
-                           const std::vector<SimplexId> &edgeMiddles) const;
+    SimplexId findQuadBary(const std::vector<size_t> &quadVertices) const;
 
     /**
      * @brief Find input vertices with more than 4 neighbors
