@@ -30,8 +30,8 @@ namespace ttk{
 
         std::vector<int> execute(std::vector<std::vector<diagramTuple>>& final_centroids);
 
-		dataType getMostPersistent();
-		dataType getLessPersistent();
+		dataType getMostPersistent(int type=-1);
+		dataType getLessPersistent(int type=-1);
 		std::vector<std::vector<dataType>> getMinDiagonalPrices();
 		std::vector<std::vector<dataType>> getMinPrices();
 
@@ -51,8 +51,8 @@ namespace ttk{
 		void initializeCentroidsKMeanspp();
 		void initializeAcceleratedKMeans();
 
-		dataType enrichCurrentBidderDiagrams(dataType previous_min_persistence, 
-		        dataType min_persistence, 
+        std::vector<dataType> enrichCurrentBidderDiagrams(std::vector<dataType> previous_min_persistence, 
+		        std::vector<dataType> min_persistence, 
 		        std::vector<std::vector<dataType>> initial_diagonal_prices, 
 		        std::vector<std::vector<dataType>> initial_off_diagonal_points, 
 		        int min_points_to_add, 
@@ -66,7 +66,7 @@ namespace ttk{
 		void invertInverseClusters();
 
 		void acceleratedUpdateClusters();
-		dataType updateCentroidsPosition();
+        std::vector<dataType> updateCentroidsPosition();
 
 
 		inline int setDiagrams(std::vector<std::vector<diagramTuple> > *data_min, std::vector<std::vector<diagramTuple> > *data_saddle, std::vector<std::vector<diagramTuple> > *data_max){
@@ -199,7 +199,7 @@ namespace ttk{
 	  double                time_limit_;
 
 	  dataType              epsilon_min_;
-	  dataType              epsilon_;
+      std::vector<double>              epsilon_;
 	  dataType              cost_;
 
 	  std::vector<std::vector<diagramTuple>> *inputDiagramsMin_;

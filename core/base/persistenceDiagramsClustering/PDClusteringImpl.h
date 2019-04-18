@@ -25,7 +25,7 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 	bool converged = false;
     std::vector<bool> diagrams_complete(3);
     for (int c = 0; c < 3; c++) {
-        diagrams_complete[c]= (!use_progressive_)||(!original_dos_[c]);
+        diagrams_complete[c]= (!use_progressive_)||(!original_dos[c]);
     }
     bool all_diagrams_complete = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
 	n_iterations_ = 0;
@@ -36,22 +36,24 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 	cost_ = std::numeric_limits<dataType>::max();
 	dataType min_cost = std::numeric_limits<dataType>::max();
 	dataType last_min_cost_obtained=-1;
-	epsilon_ = pow(getMostPersistent(), 2)/8.;
-    dataType epsilon0 = epsilon_;
+    std::vector<dataType> epsilon0(3);
     std::vector<dataType> epsilon_candidate(3);
     std::vector<dataType> rho(3);
 
 	// Getting current diagrams (with only at most min_points_to_add points)
-	dataType max_persistence = getMostPersistent();
+    std::vector<dataType> max_persistence(3);
     std::vector<dataType> lowest_persistence(3);
-	lowest_persistence[0] = getLessPersistent();
-	lowest_persistence[1] = getLessPersistent();
-	lowest_persistence[2] = getLessPersistent();
+    std::vector<dataType> min_persistence(3);
+
+    for(int i_crit = 0 ; i_crit < 3 ; i_crit++){
+        max_persistence[i_crit] = getMostPersistent(0);
+        lowest_persistence[i_crit] = getLessPersistent(0);
+        min_persistence[i_crit] = 0;
+        epsilon_[i_crit] = pow(max_persistence[i_crit],2)/8.;
+        epsilon0[i_crit] = epsilon_[i_crit];
+    }
 	int min_points_to_add = 50;
-	dataType min_persistence[3];
-	min_persistence[0]=0;
-	min_persistence[1]=0;
-	min_persistence[2]=0;
+	
 	if(use_progressive_){
 		 // min_persistence = max_persistence/2.;
 		// min_persistence = 0;
@@ -67,7 +69,7 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 			min_off_diag_price[c].push_back(0);
 		}
 	}
-	min_persistence = enrichCurrentBidderDiagrams(2*max_persistence, min_persistence, min_diag_price, min_off_diag_price, min_points_to_add, false);
+	min_persistence = enrichCurrentBidderDiagrams(max_persistence, min_persistence, min_diag_price, min_off_diag_price, min_points_to_add, false);
 	min_points_to_add = 10;
 	for(int c=0;c<3;c++){
 	    if(min_persistence[c] <= lowest_persistence[c]){
@@ -105,40 +107,49 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 		Timer t_inside;{
 			n_iterations_++;
             // std::cout<<"update centroids positions"<<endl;
-			dataType max_shift = updateCentroidsPosition();
+            std::vector<dataType> max_shift_vec = updateCentroidsPosition();
             // std::cout<<"centroids positions updated"<<endl;
-			if(epsilon_[0]<1e-6 && epsilon_[1]<1e-6 &&  epsilon_[2]<1e-6 ){
-				converged=true;
-			}
-
-            for(int i_crit =0 ; i_crit<3 ; i_crit++){
-                epsilon_candidate[i_crit]std::max(std::min(max_shift/8., epsilon0[i_crit]/pow(n_iterations_, 2)), epsilon_[i_crit]/5.);
             
+            if(epsilon_[0]<1e-6) do_min_ = false;
+            if(epsilon_[1]<1e-6) do_sad_ = false;
+            if(epsilon_[2]<1e-6) do_max_ = false;
+
+
+            for(int i_crit = 0 ; i_crit < 3 ; i_crit++){
+                epsilon_candidate[i_crit] = std::max(std::min(max_shift_vec[i_crit]/8., epsilon0[i_crit]/pow(n_iterations_, 2)), epsilon_[i_crit]/5.);
+
                 if(epsilon_candidate[i_crit]<epsilon_[i_crit]){
                     epsilon_[i_crit]=epsilon_candidate[i_crit];
                 }
                 rho[i_crit] = epsilon_[i_crit] >0 ? std::sqrt(8.0*epsilon_[i_crit]) : -1;
 
             if(debugLevel_>1){
-			    std::cout<< "Iteration "<< n_iterations_<<", Epsilon = "<< epsilon_<< std::endl;
-			    std::cout<< "Max shift : "<< max_shift << std::endl;
+			    std::cout<< "Iteration "<< n_iterations_<<", Epsilon = "<< epsilon_[0]<< " "<< epsilon_[1]<<" "<< epsilon_[2]<< std::endl;
+			    // std::cout<< "Max shift : "<< max_shift << std::endl;
             }
             }
 
 
-			if(use_progressive_ && n_iterations_>1 && min_persistence>rho && !diagrams_complete){
+			if(use_progressive_ && n_iterations_>1 && min_persistence>rho && !all_diagrams_complete){
 				if(epsilon_[0]<1e-6 && epsilon_[1]<1e-6 &&  epsilon_[2]<1e-6 ){
 					// Add all remaining points for final convergence.
-					min_persistence = 0;
+					min_persistence[0] = 0;
+					min_persistence[1] = 0;
+					min_persistence[2] = 0;
 					min_points_to_add = std::numeric_limits<int>::max();
-					diagrams_complete = true;
+					diagrams_complete[0] = true;
+					diagrams_complete[1] = true;
+					diagrams_complete[2] = true;
+					all_diagrams_complete = true;
 					use_progressive_=false;
 				}
-				dataType epsilon_candidate = pow(min_persistence, 2)/8.;
-				if(epsilon_candidate>epsilon_){
-					// Should always be the case except if min_persistence is equal to zero
-					epsilon_ = epsilon_candidate;
-				}
+                for(int i_crit =0 ; i_crit<3 ; i_crit++){
+                    epsilon_candidate[i_crit] = pow(min_persistence[i_crit], 2)/8.;
+                    if(epsilon_candidate[i_crit]>epsilon_[i_crit]){
+                        // Should always be the case except if min_persistence is equal to zero
+                        epsilon_[i_crit] = epsilon_candidate[i_crit];
+                    }
+                }
 
 
 				min_diag_price = getMinDiagonalPrices();
@@ -146,10 +157,12 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
                 // std::cout << "enrich :" << std::endl;
 				min_persistence = enrichCurrentBidderDiagrams(min_persistence, rho,  min_diag_price,min_off_diag_price, min_points_to_add, true);
                 // std::cout << "enrich done" << std::endl;
-				if(min_persistence<=lowest_persistence){
-					use_progressive_=false;
-					diagrams_complete = true;
-				}
+
+                for(int i_crit =0 ; i_crit<3 ; i_crit++){
+                    if(min_persistence[i_crit]<=lowest_persistence[i_crit]){
+                        diagrams_complete[i_crit] = true;
+                    }
+                }
 				// TODO Enrich barycenter using median diagonal and off-diagonal prices
 			}
             // std::cout<<"going to NOT update clusters"<<std::endl;
@@ -167,36 +180,44 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
             // else if(n_iterations_>2 && epsilon_<epsilon0/1000. && cost_>min_cost){
             //     converged=true;
             // }
-			if(cost_<min_cost && n_iterations_>2 && diagrams_complete && epsilon_<epsilon0/500.){
+            bool precision_criterion_reached = epsilon_[0]<epsilon0[0]/500. && epsilon_[0]<epsilon0[0]/500. && epsilon_[0]<epsilon0[0]/500.;
+
+			if(cost_<min_cost && n_iterations_>2 && all_diagrams_complete && precision_criterion_reached){
 				min_cost=cost_;
 				last_min_cost_obtained =0;
 			}
-			else if(n_iterations_>2 && epsilon_<epsilon0/500. && !use_progressive_){
+			else if(n_iterations_>2 && precision_criterion_reached && !use_progressive_){
                 last_min_cost_obtained +=1;
 			}
 			if(debugLevel_>1){
 			    std::cout<< "Cost = "<< cost_<< std::endl;
 			    printClustering();
             }
-		    converged = converged || (diagrams_complete && last_min_cost_obtained > 1 && (epsilon_<epsilon0/500. || epsilon_<epsilon_min_));
+		    converged = converged || (all_diagrams_complete && last_min_cost_obtained > 1 && (precision_criterion_reached) );
 		}
 		total_time +=t_inside.getElapsedTime();
         // std::cout<<"total_cost_ "<<cost_<<"times "<<total_time<<" "<<t_inside.getElapsedTime()<<" "<<time_limit_<<std::endl;
 		if(total_time+t_inside.getElapsedTime()>0.9*time_limit_){
 		    min_cost=cost_;
 			converged = true;
-			diagrams_complete = true;
+			all_diagrams_complete = true;
+			diagrams_complete[0] = true ;
+			diagrams_complete[1] = true ;
+			diagrams_complete[2] = true ;
 		}
         if(total_time>0.1*time_limit_){
-            diagrams_complete=true;
+			all_diagrams_complete = true;
+			diagrams_complete[0] = true ;
+			diagrams_complete[1] = true ;
+			diagrams_complete[2] = true ;
             use_progressive_=false;
         }
         if(debugLevel_>4){
-            std::cout<<"== Iteration "<< n_iterations_ <<" == complete : "<<diagrams_complete<<" , progressive : "<<use_progressive_<<" , converged : "<<converged<<std::endl;
-            std::cout<<"                 min_persistence : "<<min_persistence<<" , epsilon0 : "<<epsilon0<<std::endl;
-            std::cout<<"                 lowest_persistence : "<<lowest_persistence<<std::endl;
+            std::cout<<"== Iteration "<< n_iterations_ <<" == complete : "<<all_diagrams_complete<<" , progressive : "<<use_progressive_<<" , converged : "<<converged<<std::endl;
+            // std::cout<<"                 min_persistence : "<<min_persistence<<" , epsilon0 : "<<epsilon0<<std::endl;
+            // std::cout<<"                 lowest_persistence : "<<lowest_persistence<<std::endl;
             std::cout<<"                 cost : "<<cost_<<" , min_cost : "<<min_cost<<std::endl;
-            std::cout<<"                 time limit passed ?  : "<< (bool)(total_time>time_limit_) <<" , eps min passed? : "<<(bool)(epsilon_<epsilon0/500.)<<std::endl;
+            // std::cout<<"                 time limit passed ?  : "<< (bool)(total_time>time_limit_) <<" , eps min passed? : "<<(bool)(epsilon_<epsilon0/500.)<<std::endl;
         }
 	}
     std::cout<<"[PersistenceDiagramsClustering] Final Cost : "<<min_cost<<std::endl;
@@ -284,9 +305,9 @@ std::vector<int>  PDClustering<dataType>::execute(std::vector<std::vector<diagra
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::getMostPersistent(){
+dataType PDClustering<dataType>::getMostPersistent(int type){
 	dataType max_persistence = 0;
-	if(do_min_){
+	if( (do_min_&&type==-1) || type==0 ){
 		for(unsigned int i=0; i< bidder_diagrams_min_.size(); ++i){
 			for(int j=0; j< bidder_diagrams_min_[i].size(); ++j){
 				Bidder<dataType> b = bidder_diagrams_min_[i].get(j);
@@ -298,7 +319,7 @@ dataType PDClustering<dataType>::getMostPersistent(){
 		}
 	}
 
-	if(do_sad_){
+	if( (do_sad_&&type==-1) || type==1 ){
 		for(unsigned int i=0; i< bidder_diagrams_saddle_.size(); ++i){
 			for(int j=0; j< bidder_diagrams_saddle_[i].size(); ++j){
 				Bidder<dataType> b = bidder_diagrams_saddle_[i].get(j);
@@ -310,7 +331,7 @@ dataType PDClustering<dataType>::getMostPersistent(){
 		}
 	}
 
-	if(do_max_){
+	if( (do_max_&&type==-1) || type==2 ){
 		for(unsigned int i=0; i< bidder_diagrams_max_.size(); ++i){
 			for(int j=0; j< bidder_diagrams_max_[i].size(); ++j){
 				Bidder<dataType> b = bidder_diagrams_max_[i].get(j);
@@ -326,9 +347,11 @@ dataType PDClustering<dataType>::getMostPersistent(){
 
 
 template <typename dataType>
-dataType PDClustering<dataType>::getLessPersistent(){
+dataType PDClustering<dataType>::getLessPersistent(int type){
+    // type == -1 : query the min of all the types of diagrams.
+    // type = 0 : min,  1 : sad,   2 : max
 	dataType min_persistence = std::numeric_limits<dataType>::max();
-	if(do_min_){
+	if( (do_min_ && type==-1) || type==0){
 		for(unsigned int i=0; i< bidder_diagrams_min_.size(); ++i){
 			for(int j=0; j< bidder_diagrams_min_[i].size(); ++j){
 				Bidder<dataType> b = bidder_diagrams_min_[i].get(j);
@@ -340,7 +363,7 @@ dataType PDClustering<dataType>::getLessPersistent(){
 		}
 	}
 
-	if(do_sad_){
+	if( (do_sad_ && type == -1) || type==1){
 		for(unsigned int i=0; i< bidder_diagrams_saddle_.size(); ++i){
 			for(int j=0; j< bidder_diagrams_saddle_[i].size(); ++j){
 				Bidder<dataType> b = bidder_diagrams_saddle_[i].get(j);
@@ -352,7 +375,7 @@ dataType PDClustering<dataType>::getLessPersistent(){
 		}
 	}
 
-	if(do_max_){
+	if( (do_max_ && type == -1) || type==2){
 		for(unsigned int i=0; i< bidder_diagrams_max_.size(); ++i){
 			for(int j=0; j< bidder_diagrams_max_[i].size(); ++j){
 				Bidder<dataType> b = bidder_diagrams_max_[i].get(j);
@@ -1059,8 +1082,11 @@ void PDClustering<dataType>::acceleratedUpdateClusters(){
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::updateCentroidsPosition(){
+std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(){
 	dataType max_shift = 0;
+	dataType max_shift_c_min = 0;
+	dataType max_shift_c_sad = 0;
+	dataType max_shift_c_max = 0;
 	dataType max_wasserstein_shift = 0;
 	cost_ = 0;
     // std::cout<<"here 1"<<std::endl;
@@ -1195,7 +1221,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 										use_kdt);
             std::cout<<"min : runned, now updating barycenter"<<std::endl; 
 			cost_ += total_cost;
-			dataType max_shift_c_min = barycenter_computer.updateBarycenter(all_matchings);
+			 max_shift_c_min = barycenter_computer.updateBarycenter(all_matchings);
             // std::cout<<"min : barycenter updated"<<std::endl; 
 			if(max_shift_c_min>max_shift){
 				max_shift = max_shift_c_min;
@@ -1263,7 +1289,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 
             // std::cout<<"sad : run matchings"<<std::endl;
 			barycenter_computer.runMatching(&total_cost,
-										epsilon_,
+										epsilon_[1],
 										sizes,
 										kdt,
 										&correspondance_kdt_map,
@@ -1272,7 +1298,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 										&all_matchings,
 										use_kdt);
             // std::cout<<"sad : runned, now updating barycenter"<<std::endl; 
-			dataType max_shift_c_sad = barycenter_computer.updateBarycenter(all_matchings);
+			 max_shift_c_sad = barycenter_computer.updateBarycenter(all_matchings);
 		    cost_ += total_cost;
             // std::cout<<"sad : barycenter updated"<<std::endl; 
 			if(max_shift_c_sad>max_shift){
@@ -1337,7 +1363,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 
             // std::cout<<"max : run matchings"<<std::endl;
 			barycenter_computer.runMatching(&total_cost,
-										epsilon_,
+										epsilon_[2],
 										sizes,
 										kdt,
 										&correspondance_kdt_map,
@@ -1347,7 +1373,7 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 										use_kdt);
             // std::cout<<"max : runned, now updating barycenter"<<std::endl; 
 			cost_ += total_cost;
-			dataType max_shift_c_max = barycenter_computer.updateBarycenter(all_matchings);
+			 max_shift_c_max = barycenter_computer.updateBarycenter(all_matchings);
             // std::cout<<"max: barycenter updated"<<std::endl; 
 			if(max_shift_c_max>max_shift){
 				max_shift = max_shift_c_max;
@@ -1398,7 +1424,11 @@ dataType PDClustering<dataType>::updateCentroidsPosition(){
 	// which should logically not really happen...
 	// This is supposed to be only a temporary patch...
     // std::cout<<"shifts : "<<max_shift<<" "<<max_wasserstein_shift<<std::endl;
-	return max_shift; //std::min(max_shift, max_wasserstein_shift);
+    std::vector<dataType> max_shift_vector(3);
+    max_shift_vector[0] = max_shift_c_min;
+    max_shift_vector[1] = max_shift_c_sad;
+    max_shift_vector[2] = max_shift_c_max;
+	return max_shift_vector; //std::min(max_shift, max_wasserstein_shift);
 }
 
 
@@ -1469,7 +1499,7 @@ void PDClustering<dataType>::setBidderDiagrams(){
 
 
 template <typename dataType>
-std::vector<datatype> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::vector<datatype>previous_min_persistence, 
+std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::vector<dataType>previous_min_persistence, 
                                                             std::vector<dataType> min_persistence,
                                                             std::vector<std::vector<dataType>> initial_diagonal_prices, 
                                                             std::vector<std::vector<dataType>> initial_off_diagonal_prices,
@@ -1485,21 +1515,21 @@ std::vector<datatype> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::v
     int max_diagram_size_max =0;
 	if(do_min_){
 		for(int i=0; i<numberOfInputs_; i++){
-			if(current_bidder_diagrams_min_[i].size()>max_diagram_size){
+			if(current_bidder_diagrams_min_[i].size()>max_diagram_size_min){
 				max_diagram_size_min = current_bidder_diagrams_min_[i].size();
 			}
 		}
 	}
 	if(do_sad_){
 		for(int i=0; i<numberOfInputs_; i++){
-			if(current_bidder_diagrams_saddle_[i].size()>max_diagram_size){
+			if(current_bidder_diagrams_saddle_[i].size()>max_diagram_size_sad){
 				max_diagram_size_sad = current_bidder_diagrams_saddle_[i].size();
 			}
 		}
 	}
 	if(do_max_){
 		for(int i=0; i<numberOfInputs_; i++){
-			if(current_bidder_diagrams_max_[i].size()>max_diagram_size){
+			if(current_bidder_diagrams_max_[i].size()>max_diagram_size_max){
 				max_diagram_size_max = current_bidder_diagrams_max_[i].size();
 			}
 		}
@@ -1522,7 +1552,7 @@ std::vector<datatype> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::v
 			for(int j=0; j<bidder_diagrams_min_[i].size(); j++){
 				Bidder<dataType> b = bidder_diagrams_min_[i].get(j);
 				dataType persistence = b.getPersistence();
-				if(persistence>=min_persistence && persistence<previous_min_persistence){
+				if(persistence>=min_persistence[0] && persistence<=previous_min_persistence[0]){
 					candidates_to_be_added_min[i].push_back(j);
 					idx_min[i].push_back(idx_min[i].size());
 					persistences.push_back(persistence);
@@ -1548,7 +1578,7 @@ std::vector<datatype> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::v
 			for(int j=0; j<bidder_diagrams_saddle_[i].size(); j++){
 				Bidder<dataType> b = bidder_diagrams_saddle_[i].get(j);
 				dataType persistence = b.getPersistence();
-				if(persistence>=min_persistence && persistence<previous_min_persistence){
+				if(persistence>=min_persistence[1] && persistence<=previous_min_persistence[1]){
 					candidates_to_be_added_sad[i].push_back(j);
 					idx_sad[i].push_back(idx_sad[i].size());
 					persistences.push_back(persistence);
@@ -1573,7 +1603,7 @@ std::vector<datatype> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::v
 			for(int j=0; j<bidder_diagrams_max_[i].size(); j++){
 				Bidder<dataType> b = bidder_diagrams_max_[i].get(j);
 				dataType persistence = b.getPersistence();
-				if(persistence>=min_persistence && persistence<previous_min_persistence){
+				if(persistence>=min_persistence[2] && persistence<=previous_min_persistence[2]){
 					candidates_to_be_added_max[i].push_back(j);
 					idx_max[i].push_back(idx_max[i].size());
 					persistences.push_back(persistence);
