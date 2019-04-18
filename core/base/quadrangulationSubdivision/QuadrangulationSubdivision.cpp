@@ -43,19 +43,6 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
   std::vector<float> sum(vertexDistance_[*quadVertices.begin()].size(),
                          std::numeric_limits<float>::infinity());
 
-  std::vector<std::vector<float>> edgeMiddleDist(edgeMiddles.size());
-  std::vector<SimplexId> bounds(quadVertices.size());
-  std::transform(quadVertices.begin(), quadVertices.end(), bounds.begin(),
-                 [&](const size_t &a) { return nearestVertexIdentifier_[a]; });
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < edgeMiddles.size(); ++i) {
-    Dijkstra::shortestPath(
-      edgeMiddles[i], *triangulation_, edgeMiddleDist[i], bounds);
-  }
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -78,10 +65,6 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
 
     // try to be "near" the four parent vertices
     sum[i] = m + n + o + p;
-
-    for(auto &dist : edgeMiddleDist) {
-      sum[i] += dist[i];
-    }
 
     // try to be on the diagonals intersection
     sum[i] += std::abs(m - o);
