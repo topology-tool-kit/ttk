@@ -201,9 +201,9 @@ int ttk::SurfaceQuadrangulation::execute() const {
 
   {
     std::stringstream msg;
-    msg << "[SurfaceQuadrangulation] Produced " << quadNumber << " quadrangles after"
-        << t.getElapsedTime() << "s (" << threadNumber_ << " thread(s))"
-        << endl;
+    msg << "[SurfaceQuadrangulation] Produced " << quadNumber
+        << " quadrangles after " << t.getElapsedTime() << "s (" << threadNumber_
+        << " thread(s))" << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
 
