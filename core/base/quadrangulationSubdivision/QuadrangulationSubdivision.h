@@ -206,6 +206,8 @@ namespace ttk {
     Point findProjectionInTriangle(const SimplexId i,
                                    const bool lastIter = false);
 
+    Point findTriangleQuadNormal(size_t a, bool lastIter = false);
+
     /**
      * @brief Find the middle of a quad edge using Dijkstra
      *

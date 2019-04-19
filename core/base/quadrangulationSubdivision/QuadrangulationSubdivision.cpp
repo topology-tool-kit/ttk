@@ -354,6 +354,138 @@ ttk::QuadrangulationSubdivision::Point
   return proj;
 }
 
+ttk::QuadrangulationSubdivision::Point
+  ttk::QuadrangulationSubdivision::findTriangleQuadNormal(const size_t a,
+                                                          const bool lastIter) {
+
+  // current vertex 3d coordinates
+  Point pa = outputPoints_->at(a);
+
+  Point res{};
+
+  // current vertex quadrangulation neighbors
+  std::vector<size_t> neighs(
+    quadNeighbors_[a].begin(), quadNeighbors_[a].end());
+
+  // triangle normals around current quadrangulation vertex
+  std::vector<Point> normals{};
+
+  // for each couple of consecutive neighbors, compute triangle normal
+  // with current point
+  for(size_t i = 0; i < neighs.size() - 1; ++i) {
+    Point pb = outputPoints_->at(neighs[i]);
+    Point pc = outputPoints_->at(neighs[i + 1]);
+
+    // triangle normal: cross product of two edges
+    Point crossP{};
+    // ab, ac vectors
+    Point ab = pb - pa;
+    Point ac = pc - pa;
+    // compute ab ^ ac
+    Geometry::crossProduct(&ab.x, &ac.x, &crossP.x);
+    // unitary normal vector
+    normals.emplace_back(crossP / Geometry::magnitude(&crossP.x));
+  }
+
+  // remainder iteration
+  {
+    Point pb = outputPoints_->at(neighs[neighs.size() - 1]);
+    Point pc = outputPoints_->at(neighs[0]);
+
+    // triangle normal: cross product of two edges
+    Point crossP{};
+    // ab, ac vectors
+    Point ab = pb - pa;
+    Point ac = pc - pa;
+    // compute ab ^ ac
+    Geometry::crossProduct(&ab.x, &ac.x, &crossP.x);
+    // unitary normal vector
+    normals.emplace_back(crossP / Geometry::magnitude(&crossP.x));
+  }
+
+  // compute mean of normals
+  Point normalsMean
+    = std::accumulate(normals.begin(), normals.end(), Point{},
+                      [&](const Point &m, const Point &n) { return m + n; })
+      / normals.size();
+
+  // pair of triangle ids - projection coordinates
+  std::vector<std::pair<SimplexId, Point>> trianglesProj{};
+
+  // loop over every input triangle
+  for(SimplexId i = 0; i < triangulation_->getNumberOfTriangles(); ++i) {
+    // check if projection along normalsMean in triangle plane is in triangle
+
+    // any vertex of triangle
+    SimplexId vert;
+    Point pm{}, pn{}, po{};
+    triangulation_->getTriangleVertex(i, 0, vert);
+    triangulation_->getVertexPoint(vert, pm.x, pm.y, pm.z);
+    triangulation_->getTriangleVertex(i, 1, vert);
+    triangulation_->getVertexPoint(vert, pn.x, pn.y, pn.z);
+    triangulation_->getTriangleVertex(i, 2, vert);
+    triangulation_->getVertexPoint(vert, po.x, po.y, po.z);
+
+    Point tmp = pa - pm;
+    // projected point into triangle
+
+    Point proj
+      = pa - normalsMean * Geometry::dotProduct(&normalsMean.x, &tmp.x);
+
+    // compute barycentric coords of projection
+    std::vector<float> baryCoords;
+    Geometry::computeBarycentricCoordinates(
+      &pm.x, &pn.x, &po.x, &proj.x, baryCoords);
+
+    // check if projection in triangle
+    bool inTriangle = true;
+    for(auto &coord : baryCoords) {
+      if(coord < powf(10, -FLT_DIG)) {
+        inTriangle = false;
+      }
+      if(coord > 1 + powf(10, -FLT_DIG)) {
+        inTriangle = false;
+      }
+    }
+
+    if(inTriangle) {
+      trianglesProj.emplace_back(std::make_pair(i, proj));
+    }
+  }
+
+  if(trianglesProj.empty()) {
+    triangulation_->getVertexPoint(
+      nearestVertexIdentifier_[a], res.x, res.y, res.z);
+    return res;
+  }
+
+  // distance to triangle projections
+  std::vector<float> distsToProj(trianglesProj.size());
+
+  std::transform(trianglesProj.begin(), trianglesProj.end(),
+                 distsToProj.begin(),
+                 [&](const std::pair<SimplexId, Point> &m) {
+                   Point pm = m.second;
+                   // compute euclidian distance to point
+                   return Geometry::distance(&pa.x, &pm.x);
+                 });
+
+  auto i = std::min_element(distsToProj.begin(), distsToProj.end())
+           - distsToProj.begin();
+  res = trianglesProj[i].second;
+
+  // update nearestVertexIdentifier_ with some vertex from nearest triangle
+  triangulation_->getTriangleVertex(
+    trianglesProj[i].first, 0, nearestVertexIdentifier_[a]);
+
+  // fill in debug info
+  if(lastIter) {
+    projSucceeded_->at(a) = !trianglesProj.empty();
+  }
+
+  return res;
+}
+
 int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
                                              const bool lastIter) {
   Timer t;
@@ -377,7 +509,7 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
     }
 
     // replace curr in outputPoints_ by its projection
-    (*outputPoints_)[i] = findProjectionInTriangle(i, lastIter);
+    outputPoints_->at(i) = findTriangleQuadNormal(i, lastIter);
   }
 
   {
