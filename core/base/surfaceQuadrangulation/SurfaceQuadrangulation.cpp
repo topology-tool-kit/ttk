@@ -111,6 +111,9 @@ int ttk::SurfaceQuadrangulation::execute() const {
   // quadrangle vertices: dest, source, dest, source
   size_t i, j, k, l;
 
+  // number of degenerate quadrangles
+  size_t ndegen = 0;
+
   // iterate twice over dests
   for(i = 0; i < sepMappingDests.size(); i++) {
     // skip if no sources
@@ -171,6 +174,7 @@ int ttk::SurfaceQuadrangulation::execute() const {
                     || sepMappingDests[k].size() == 1)) {
         // we have degenerate quadrangles: i, j, k, j
         j = common_dests[0];
+        ndegen++;
 
         // fill output vector
         outputCells_->emplace_back(4);
@@ -196,14 +200,19 @@ int ttk::SurfaceQuadrangulation::execute() const {
   // number of produced quads
   size_t quadNumber = outputCells_->size() / 5;
 
-  // check that we got the right number of quadrangles
-  assert(quadNumber == static_cast<size_t>(nseg));
+  // print number of quadrangles wrt number of MSC segmentation
+  {
+    std::stringstream msg;
+    msg << "[SurfaceQuadrangulation] " << quadNumber << " quads (" << ndegen
+        << " degenerated, " << nseg << " manifolds)" << endl;
+    dMsg(cout, msg.str(), detailedInfoMsg);
+  }
 
   {
     std::stringstream msg;
     msg << "[SurfaceQuadrangulation] Produced " << quadNumber
-        << " quadrangles after " << t.getElapsedTime() << "s (" << threadNumber_
-        << " thread(s))" << endl;
+        << " quadrangles after " << t.getElapsedTime() << " s. ("
+        << threadNumber_ << " thread(s))." << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
 
