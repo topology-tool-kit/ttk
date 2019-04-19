@@ -152,39 +152,23 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     auto kl = make_pair(std::min(q.k, q.l), std::max(q.k, q.l));
     auto li = make_pair(std::min(q.l, q.i), std::max(q.l, q.i));
 
-    // add to outputPoints_ after computing new point coordinates to
-    // avoid invalidating pointers
-    if(processedEdges.find(ij) == processedEdges.end()) {
-      processedEdges.insert(
-        make_pair(ij, make_pair(outputPoints_->size(), midij)));
-      outputPoints_->emplace_back(midij);
-      outputVertType_->emplace_back(1);
-      nearestVertexIdentifier_.emplace_back(ijid);
-    }
+#define PROCESS_EDGE_MIDDLE(PARENT_PAIR, POINT_3D, TTK_ID)                 \
+  /* check if edge already processed by a neighbor quad */                 \
+  if(processedEdges.find(PARENT_PAIR) == processedEdges.end()) {           \
+    processedEdges.insert(                                                 \
+      make_pair(PARENT_PAIR, make_pair(outputPoints_->size(), POINT_3D))); \
+    /* add new point 3d coordinates to vector of output points */          \
+    outputPoints_->emplace_back(POINT_3D);                                 \
+    /* new point is an edge middle */                                      \
+    outputVertType_->emplace_back(1);                                      \
+    /* store also TTK identifier of triangular mesh vertex */              \
+    nearestVertexIdentifier_.emplace_back(TTK_ID);                         \
+  }
 
-    if(processedEdges.find(jk) == processedEdges.end()) {
-      processedEdges.insert(
-        make_pair(jk, make_pair(outputPoints_->size(), midjk)));
-      outputPoints_->emplace_back(midjk);
-      outputVertType_->emplace_back(1);
-      nearestVertexIdentifier_.emplace_back(jkid);
-    }
-
-    if(processedEdges.find(kl) == processedEdges.end()) {
-      processedEdges.insert(
-        make_pair(kl, make_pair(outputPoints_->size(), midkl)));
-      outputPoints_->emplace_back(midkl);
-      outputVertType_->emplace_back(1);
-      nearestVertexIdentifier_.emplace_back(klid);
-    }
-
-    if(processedEdges.find(li) == processedEdges.end()) {
-      processedEdges.insert(
-        make_pair(li, make_pair(outputPoints_->size(), midli)));
-      outputPoints_->emplace_back(midli);
-      outputVertType_->emplace_back(1);
-      nearestVertexIdentifier_.emplace_back(liid);
-    }
+    PROCESS_EDGE_MIDDLE(ij, midij, ijid);
+    PROCESS_EDGE_MIDDLE(jk, midjk, jkid);
+    PROCESS_EDGE_MIDDLE(kl, midkl, klid);
+    PROCESS_EDGE_MIDDLE(li, midli, liid);
 
     // barycenter index in outputPoints_
     auto baryIdx = static_cast<long long>(outputPoints_->size());
