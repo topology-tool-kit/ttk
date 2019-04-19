@@ -215,6 +215,8 @@ ttk::QuadrangulationSubdivision::Point
   // (takes more memory to reduce computation time)
   std::vector<bool> trianglesTested(
     triangulation_->getNumberOfTriangles(), false);
+  // vertex in triangle with highest barycentric coordinate
+  SimplexId nearestVertex = nearestVertexIdentifier_[i];
 
   // number of triangles around nearest vertex
   SimplexId triangleNumber
@@ -303,6 +305,9 @@ ttk::QuadrangulationSubdivision::Point
     }
     vertices[1] = tverts[extrema.second - baryCoords.begin()];
 
+    // store vertex with highest barycentric coordinate
+    nearestVertex = vertices[0];
+
     // triangles to test next
     std::set<SimplexId> common_triangles;
 
@@ -325,6 +330,11 @@ ttk::QuadrangulationSubdivision::Point
         trianglesToTest.push(ntid);
       }
     }
+  }
+
+  if (success) {
+    // replace in nearestVertexIdentifier_ by nearest vertex in projected triangle
+    nearestVertexIdentifier_[i] = nearestVertex;
   }
 
   if(!success) {
@@ -352,33 +362,6 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
     projSucceeded_->clear();
     trianglesChecked_->resize(outputPoints_->size());
     projSucceeded_->resize(outputPoints_->size());
-  }
-
-  // compute nearest vertex in triangular mesh and stores it in
-  // nearestVertexIdentifier_
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < outputPoints_->size(); i++) {
-
-    // skip computation if i in filtered
-    if(filtered.find(i) != filtered.end()) {
-      continue;
-    }
-
-    const Point *vert = &(*outputPoints_)[i];
-    // distance to triangular mesh vertex
-    float min_dist = std::numeric_limits<float>::infinity();
-    // iterate over the whole triangular mesh
-    for(SimplexId j = 0; j < vertexNumber_; ++j) {
-      Point p{};
-      triangulation_->getVertexPoint(j, p.x, p.y, p.z);
-      float curr_dist = Geometry::distance(&vert->x, &p.x);
-      if(curr_dist < min_dist) {
-        min_dist = curr_dist;
-        nearestVertexIdentifier_[i] = j;
-      }
-    }
   }
 
   // main loop
