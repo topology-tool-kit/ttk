@@ -238,7 +238,7 @@ ttk::QuadrangulationSubdivision::Point
     }
 
     // get triangle vertices
-    std::array<SimplexId, 3> tverts;
+    std::array<SimplexId, 3> tverts{};
     triangulation_->getTriangleVertex(tid, 0, tverts[0]);
     triangulation_->getTriangleVertex(tid, 1, tverts[1]);
     triangulation_->getTriangleVertex(tid, 2, tverts[2]);
@@ -332,8 +332,9 @@ ttk::QuadrangulationSubdivision::Point
     }
   }
 
-  if (success) {
-    // replace in nearestVertexIdentifier_ by nearest vertex in projected triangle
+  if(success) {
+    // replace in nearestVertexIdentifier_ by nearest vertex in projected
+    // triangle
     nearestVertexIdentifier_[i] = nearestVertex;
   }
 

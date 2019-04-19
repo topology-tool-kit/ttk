@@ -124,7 +124,7 @@ namespace ttk {
         return *this + other * (-1);
       }
       Point operator/(const float scalar) const {
-        return (*this * (1.0f / scalar));
+        return (*this * (1.0F / scalar));
       }
     };
     // VTK_QUAD representation with vtkIdType
@@ -165,7 +165,7 @@ namespace ttk {
      * post-processing
      * @return 0 in case of success
      */
-    int project(const std::set<size_t> &filtered, const bool lastIter = false);
+    int project(const std::set<size_t> &filtered, bool lastIter = false);
 
     /**
      * @brief Relax every generated point of a quadrangular mesh
@@ -192,7 +192,7 @@ namespace ttk {
      */
     int getQuadNeighbors(const std::vector<Quad> &quads,
                          std::vector<std::set<size_t>> &neighbors,
-                         const bool secondNeighbors = false);
+                         bool secondNeighbors = false);
 
     /**
      * @brief Compute the projection in the nearest triangle
@@ -217,7 +217,7 @@ namespace ttk {
      *
      * @return TTK identifier of potential edge middle
      */
-    SimplexId findEdgeMiddle(const size_t a, const size_t b) const;
+    SimplexId findEdgeMiddle(size_t a, size_t b) const;
 
     /**
      * @brief Find a quad barycenter using Dijkstra
@@ -240,7 +240,6 @@ namespace ttk {
      */
     int findExtraordinaryVertices(std::set<size_t> &output);
 
-  protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_{};
 
