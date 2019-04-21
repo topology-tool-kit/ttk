@@ -566,10 +566,8 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
           << std::endl;
       dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
     }
-    if(fflush(fp))
-      fclose(fp);
-    else
-      fclose(fp);
+    fflush(fp);
+    fclose(fp);
     return -1;
   }
 
@@ -622,10 +620,8 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   WriteUnsignedCharArray(fp, source, destLen);
 #endif
 
-  if(fflush(fp))
-    fclose(fp);
-  else
-    fclose(fp);
+  fflush(fp);
+  fclose(fp);
 
   return ret;
 }
