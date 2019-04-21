@@ -176,7 +176,6 @@ int ZeroSkeleton::buildVertexLink(const SimplexId &vertexId, const SimplexId &ce
           for(SimplexId n = 0; n < (SimplexId) faceIds.size(); n++){
             vertexLink[i*(verticesPerCell) + n] = faceIds[n];
           }
-          hasPivotVertex = true;
           break;
         }
       }

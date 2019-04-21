@@ -564,7 +564,6 @@ void ContourForests::unifyTree(const char treetype)
 
       for (idSuperArc upArcPos = 0; upArcPos < nbUpArc; upArcPos++) {
           // reset partition / node and tree
-         currentPartition = refPartition;
          currentTree      = getTreePart(refPartition);
          currentNodeId    = refNodeId;
          currentNode      = currentTree->getNode(currentNodeId);

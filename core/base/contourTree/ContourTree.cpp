@@ -2006,7 +2006,7 @@ int SubLevelSetTree::simplify(const double &simplificationThreshold,
   vector<pair<real,int> > regularNodeList;
   
   int arcToSimplify = -1;
-  double currentScore = 0, minScore = maxScalar_ - minScalar_;
+  double currentScore = 0, minScore;
   
   do{
    
@@ -2541,14 +2541,12 @@ int ContourTree::combineTrees(){
 
     for(int i = 0; i < mergeTree_.getNumberOfNodes(); i++){
       mergeNode = mergeTree_.getNode(i);
-      splitNode = splitTree_.getVertexNode(mergeNode->getVertexId());
       if(isNodeEligible(mergeNode)){
         nodeQueue.push(mergeNode);
       }
     }
     for(int i = 0; i < splitTree_.getNumberOfNodes(); i++){
       splitNode = splitTree_.getNode(i);
-      mergeNode = mergeTree_.getVertexNode(splitNode->getVertexId());
       if(isNodeEligible(splitNode)){
         nodeQueue.push(splitNode);
       }
