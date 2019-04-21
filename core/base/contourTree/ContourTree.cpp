@@ -2562,6 +2562,12 @@ int ContourTree::combineTrees(){
       n0 = nodeQueue.front();
       nodeQueue.pop();
 
+#ifndef TTK_ENABLE_KAMIKAZE
+      if (n0 == nullptr) {
+        continue;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
+
       if((mergeTree_.getNode(n0 - mergeTree_.getNode(0)) == n0)
 	 &&(isNodeEligible(n0))){
         // merge node
@@ -2775,6 +2781,12 @@ int ContourTree::finalizeSuperArc(const int &nodeId, const int &arcId){
 }
 
 bool ContourTree::isNodeEligible(const Node *n) const{
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if (n == nullptr) {
+    return false;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
 
   const Node *merge = NULL, *split = NULL;
 

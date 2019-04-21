@@ -66,9 +66,11 @@ int ttkBlank::doIt(vector<vtkDataSet *> &inputs, vector<vtkDataSet *> &outputs){
         outputScalarField_ = vtkIdTypeArray::New();
         break;
         
+    default:
       stringstream msg;
       msg << "[ttkBlank] Unsupported data type :(" << endl;
       dMsg(cerr, msg.str(), fatalMsg);
+      return -3;
     }
   }
   outputScalarField_->SetNumberOfTuples(input->GetNumberOfPoints());

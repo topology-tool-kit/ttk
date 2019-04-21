@@ -1547,6 +1547,12 @@ int ttkContourForests::doIt(vector<vtkDataSet *> &inputs,
 
   // Skeleton //
   if (varyingMesh_ || varyingDataValues_ || toComputeSkeleton_) {
+#ifndef TTK_ENABLE_KAMIKAZE
+    if (tree_ == nullptr) {
+      cerr << "[ttkContourForests] Error: MergeTree pointer is NULL." << endl;
+      return -2;
+    }
+#endif // TTK_ENABLE_KAMIKAZE
     clearSkeleton();
     getSkeleton();
   }

@@ -336,6 +336,12 @@ template <typename topoType, typename idType> int ttk::PlanarGraphLayout::comput
     float* layout
 ) const{
 
+#ifndef TTK_ENABLE_KAMIKAZE
+    if (sizes == nullptr || levels == nullptr) {
+        return -1;
+    }
+#endif // TTK_ENABLE_KAMIKAZE
+
     // Comparator that sorts children based on layout.y
     struct ChildrenComparator {
         const float* layout;
