@@ -34,20 +34,17 @@ typedef boost::variant<
 typedef float sizeType;
 
 struct Node {
-    labelTypeVariant label;
-    sizeType size;
-    float x;
-    float y;
-    float z;
+    labelTypeVariant label{};
+    sizeType size{};
+    float x{};
+    float y{};
+    float z{};
 
-    idType branchID;
-    idType maxPredID;
-    idType maxSuccID;
+    idType branchID{-1};
+    idType maxPredID{-1};
+    idType maxSuccID{-1};
 
-    Node(
-        sizeType size=0, float x=0, float y=0, float z=0,
-        idType branchID=-1, idType maxPredID=-1, idType maxSuccID=-1
-    ) : size(size), x(x), y(y), z(z), branchID(branchID), maxPredID(maxPredID), maxSuccID(maxSuccID) {}
+    Node() = default;
 };
 
 typedef vector<idType> Edges; // [index0, index1, overlap, branch,...]
@@ -56,7 +53,7 @@ typedef vector<Node> Nodes;
 struct CoordinateComparator {
     const float* coordinates;
 
-    CoordinateComparator(const float* coordinates) : coordinates(coordinates){};
+    CoordinateComparator(const float* coords) : coordinates(coords){};
 
     inline bool operator() (const size_t& i, const size_t& j) {
         size_t ic = i*3;
@@ -102,7 +99,7 @@ namespace ttk{
                 vector<Nodes>& timeNodesMap
             ) const {
                 dMsg(cout, "[ttkTrackingFromOverlap] Computing branches  ... ", timeMsg);
-                Timer t;
+                Timer tm;
 
                 size_t nT = timeNodesMap.size();
 
@@ -189,7 +186,7 @@ namespace ttk{
                 }
 
                 stringstream msg;
-                msg << "done (" << t.getElapsedTime() << " s)." <<endl;
+                msg << "done (" << tm.getElapsedTime() << " s)." <<endl;
                 dMsg(cout, msg.str(), timeMsg);
 
                 return 1;
@@ -329,7 +326,7 @@ template<typename labelType> int ttk::TrackingFromOverlap::computeOverlap(
        >0: p0Coords < p1Coords
        <0: p0Coords > p1Coords
     */
-    auto compare = [](const float* pointCoordinates0, const float* pointCoordinates1, size_t p0, size_t p1) {
+    auto compare = [&](size_t p0, size_t p1) {
         size_t p0CoordIndex = p0*3;
         size_t p1CoordIndex = p1*3;
 
@@ -365,8 +362,6 @@ template<typename labelType> int ttk::TrackingFromOverlap::computeOverlap(
 
         // Determine point configuration
         int c = compare(
-            pointCoordinates0,
-            pointCoordinates1,
             pointIndex0,
             pointIndex1
         );
