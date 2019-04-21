@@ -212,7 +212,7 @@ class TopologicalCompression : public Debug
     }
 
     // IO management.
-    static int log2(int val);
+    static unsigned int log2(int val);
     inline static bool cmp(
         const std::tuple<double, int> &a,
         const std::tuple<double, int> &b)

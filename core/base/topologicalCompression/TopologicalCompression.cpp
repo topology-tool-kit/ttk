@@ -151,12 +151,12 @@ void ttk::TopologicalCompression::CompressWithZlib(
 
 #endif
 
-int ttk::TopologicalCompression::log2(
+unsigned int ttk::TopologicalCompression::log2(
     int val)
 {
   if (val == 0) return UINT_MAX;
   if (val == 1) return 0;
-  int ret = 0;
+  unsigned int ret = 0;
   while (val > 1) {
     val >>= 1;
     ret++;
@@ -312,7 +312,14 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
   numberOfBytesRead += sizeof(int);
   numberOfSegments = ReadInt(fm);
 
-  int numberOfBitsPerSegment = log2(numberOfSegments) + 1;
+  unsigned int numberOfBitsPerSegment = log2(numberOfSegments) + 1;
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  // avoid left shift with negative operand
+  if (numberOfBitsPerSegment == 0) {
+    return -2;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
 
   // [MEDIUM] TODO: support long int
   if (numberOfBitsPerSegment > 32) return -3;
@@ -408,7 +415,7 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
 
   // Compute number of bits per segment
   // (can be deduced at read-time from numberOfSegments)
-  int numberOfBitsPerSegment = log2(numberOfSegments) + 1;
+  unsigned int numberOfBitsPerSegment = log2(numberOfSegments) + 1;
 
   // [MEDIUM] TODO: support long int
   if (numberOfBitsPerSegment > 32) return -3;
