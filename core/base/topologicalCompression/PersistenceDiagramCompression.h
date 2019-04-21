@@ -14,7 +14,7 @@ int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
   int nVertices,
   double zfpBitBudget)
 {
-  auto log2 = ttk::TopologicalCompression::log2;
+  using ttk::TopologicalCompression;
 
   int totalSize = 0;
 
@@ -98,7 +98,7 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(
     int nz = 1 + dataExtent[5] - dataExtent[4];
 
     std::vector<double> dataVector(toCompress, toCompress + (nx * ny * nz));
-    auto CompressWithZFP = ttk::TopologicalCompression::CompressWithZFP;
+    using ttk::TopologicalCompression;
     numberOfBytesWritten +=
       CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpBitBudget);
 
@@ -136,9 +136,7 @@ template <typename dataType>
 int ttk::TopologicalCompression::ReadPersistenceGeometry(
     FILE *fm)
 {
-  auto CropIntervals = ttk::TopologicalCompression::CropIntervals<double>;
-  auto cmp = ttk::TopologicalCompression::cmp;
-  auto ReadPersistenceIndex = ttk::TopologicalCompression::ReadPersistenceIndex;
+  using ttk::TopologicalCompression;
 
   int sqMethod = sqMethodInt_;
   bool zfpOnly = zfpOnly_;
@@ -208,7 +206,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   } else {
     #ifdef TTK_ENABLE_ZFP
     // 2.b. (2.) Read with ZFP.
-    auto CompressWithZFP = ttk::TopologicalCompression::CompressWithZFP;
+    using ttk::TopologicalCompression;
     numberOfBytesRead += zfpBitBudget * vertexNumber;
     CompressWithZFP(fm, true, decompressedData_, nx, ny, nz, zfpBitBudget);
     {
