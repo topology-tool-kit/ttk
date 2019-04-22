@@ -204,7 +204,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     vertexIds->SetName(ttk::VertexScalarFieldName);
     
     for(SimplexId i = 0; i < (SimplexId) criticalPoints_.size(); i++){
-      vertexIds->SetTuple1(i, (SimplexId) criticalPoints_[i].first);
+      vertexIds->SetTuple1(i, criticalPoints_[i].first);
     }
       
     output->GetPointData()->AddArray(vertexIds);

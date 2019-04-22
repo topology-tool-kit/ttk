@@ -20,7 +20,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
     vtkInformationVector** inputVector,
     vtkInformationVector* outputVector
 ){
-    Memory m;
+    Memory mem;
     Timer t;
 
     // Print status
@@ -42,8 +42,8 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
     auto outputMBD = vtkMultiBlockDataSet::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
 
     // Process each depth image individually
-    size_t n = inputMBD->GetNumberOfBlocks();
-    for(size_t i=0; i<n; i++){
+    size_t nBlocks = inputMBD->GetNumberOfBlocks();
+    for(size_t i=0; i<nBlocks; i++){
         // Get vtkImageData
         auto inputImage = vtkImageData::SafeDownCast( inputMBD->GetBlock(i) );
 
@@ -107,11 +107,11 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
             points->SetNumberOfPoints( n );
 
             auto pointCoords = (float*) points->GetVoidPointer(0);
-            size_t i=0;
+            size_t j=0;
             for(auto& x: vertices){
-                pointCoords[i++] = get<0>(x);
-                pointCoords[i++] = get<1>(x);
-                pointCoords[i++] = get<2>(x);
+                pointCoords[j++] = get<0>(x);
+                pointCoords[j++] = get<1>(x);
+                pointCoords[j++] = get<2>(x);
             }
 
             mesh->SetPoints( points );
@@ -124,15 +124,15 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
             auto outPointData = mesh->GetPointData();
             size_t m = indicies.size();
 
-            for(size_t i=0; i<n; i++){
-                auto inArray = inPointData->GetArray(i);
+            for(size_t j=0; j<n; j++){
+                auto inArray = inPointData->GetArray(j);
 
                 auto outArray = vtkDataArray::CreateDataArray( inArray->GetDataType() );
                 outArray->SetName( inArray->GetName() );
                 outArray->SetNumberOfTuples( m );
 
-                for(size_t j=0; j<m; j++){
-                    outArray->SetTuple(j, inArray->GetTuple(indicies[j]));
+                for(size_t k=0; k<m; k++){
+                    outArray->SetTuple(k, inArray->GetTuple(indicies[k]));
                 }
 
                 outPointData->AddArray( outArray );
@@ -154,13 +154,13 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
             double* triangleDistortionsScalarsData = (double*) triangleDistortionsScalars->GetVoidPointer(0);
 
             size_t q=0;
-            for(size_t i=0; i<triangles.size(); i++){
+            for(size_t j=0; j<triangles.size(); j++){
                 cellIds[q++] = 3;
-                cellIds[q++] = (vtkIdType) get<0>(triangles[i]);
-                cellIds[q++] = (vtkIdType) get<1>(triangles[i]);
-                cellIds[q++] = (vtkIdType) get<2>(triangles[i]);
+                cellIds[q++] = (vtkIdType) get<0>(triangles[j]);
+                cellIds[q++] = (vtkIdType) get<1>(triangles[j]);
+                cellIds[q++] = (vtkIdType) get<2>(triangles[j]);
 
-                triangleDistortionsScalarsData[i] = triangleDistortions[i];
+                triangleDistortionsScalarsData[j] = triangleDistortions[j];
             }
 
             auto cellArray = vtkSmartPointer<vtkCellArray>::New();
@@ -171,16 +171,16 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
         }
 
         outputMBD->SetBlock(i,mesh);
-        this->updateProgress( ((float)i)/((float)(n-1)) );
+        this->updateProgress( ((float)i)/((float)(nBlocks-1)) );
     }
 
     // Print status
     {
         stringstream msg;
         msg << "[ttkDepthImageBasedGeometryApproximation] --------------------------------------" << endl
-            << "[ttkDepthImageBasedGeometryApproximation] " << n << " Images processed" << endl
+            << "[ttkDepthImageBasedGeometryApproximation] " << nBlocks << " Images processed" << endl
             << "[ttkDepthImageBasedGeometryApproximation]   Time: " << t.getElapsedTime() << " s" << endl
-            << "[ttkDepthImageBasedGeometryApproximation] Memory: " << m.getElapsedUsage() << " MB" << endl;
+            << "[ttkDepthImageBasedGeometryApproximation] Memory: " << mem.getElapsedUsage() << " MB" << endl;
         dMsg(cout, msg.str(), timeMsg);
     }
 

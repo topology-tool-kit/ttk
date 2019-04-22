@@ -72,11 +72,11 @@ int ttkIcoSphere::RequestData(
 
         size_t q=0;
         for(size_t i=0; i<triangles.size(); i++){
-            auto& t = triangles[i];
+            auto& tr = triangles[i];
             cellIds[q++] = 3;
-            cellIds[q++] = (vtkIdType) get<0>(t);
-            cellIds[q++] = (vtkIdType) get<1>(t);
-            cellIds[q++] = (vtkIdType) get<2>(t);
+            cellIds[q++] = get<0>(tr);
+            cellIds[q++] = get<1>(tr);
+            cellIds[q++] = get<2>(tr);
         }
 
         auto cellArray = vtkSmartPointer<vtkCellArray>::New();

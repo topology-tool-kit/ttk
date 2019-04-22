@@ -46,8 +46,6 @@ int ttkCinemaLayout::RequestData (
         : (nBlocks % nRows) == 0
             ? nBlocks/nRows
             : ceil(nBlocks/nRows);
-    size_t i = 0;
-    double y = 0;
 
     double width = 0;
     double height = 0;
@@ -69,6 +67,8 @@ int ttkCinemaLayout::RequestData (
     width += width*(this->GetColumnGap()/100);
     height += height*(this->GetRowGap()/100);
 
+    size_t i = 0;
+    double y = 0;
     while(i<nBlocks){
         for(size_t x=0; x<nColumns && i<nBlocks; x++){
 

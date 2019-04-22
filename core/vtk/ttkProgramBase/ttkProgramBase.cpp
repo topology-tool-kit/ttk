@@ -59,7 +59,7 @@ int ttkProgramBase::save() const{
   if(!vtkWrapper_)
     return -1;
 
-  for(int i = 0; i < (int) vtkWrapper_->GetNumberOfOutputPorts(); i++){
+  for(int i = 0; i < vtkWrapper_->GetNumberOfOutputPorts(); i++){
     
     if(vtkWrapper_->GetOutput(i)){
   

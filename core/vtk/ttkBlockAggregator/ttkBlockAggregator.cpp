@@ -48,8 +48,8 @@ int ttkBlockAggregator::RequestData(
     }
 
     // Get Input
-    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-    auto firstInput = inInfo->Get( vtkDataObject::DATA_OBJECT() );
+    vtkInformation* inInfoObj = inputVector[0]->GetInformationObject(0);
+    auto firstInput = inInfoObj->Get( vtkDataObject::DATA_OBJECT() );
 
     // Get iteration information
     auto iterationInformation = vtkDoubleArray::SafeDownCast( firstInput->GetFieldData()->GetAbstractArray("_ttk_IterationInfo") );

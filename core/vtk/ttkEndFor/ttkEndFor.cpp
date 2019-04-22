@@ -43,8 +43,8 @@ int ttkEndFor::RequestData(
     dMsg(cout, divider + "\n", infoMsg);
 
     // Get Input
-    vtkInformation* inInfo = inputVector[1]->GetInformationObject(0);
-    auto inputFor = inInfo->Get( vtkDataObject::DATA_OBJECT() );
+    vtkInformation* inInfo0 = inputVector[1]->GetInformationObject(0);
+    auto inputFor = inInfo0->Get( vtkDataObject::DATA_OBJECT() );
 
     // Get iteration information
     auto iterationInformation = vtkDoubleArray::SafeDownCast( inputFor->GetFieldData()->GetAbstractArray("_ttk_IterationInfo") );
@@ -63,8 +63,8 @@ int ttkEndFor::RequestData(
         {
             stringstream msg;
             msg << "[ttkEndFor] Next Iteration: "<< this->nextIndex<<"   ";
-            size_t n = divider.length()-msg.str().length();
-            for(size_t i=0; i<n; i++)
+            size_t padd = divider.length()-msg.str().length();
+            for(size_t i=0; i<padd; i++)
                 msg<<"\\";
             msg<<endl;
             dMsg(cout, msg.str(), infoMsg);
@@ -82,8 +82,8 @@ int ttkEndFor::RequestData(
         }
 
         // Copy input to output
-        vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
-        auto input = inInfo->Get(vtkDataObject::DATA_OBJECT());
+        vtkInformation* inInfo1 = inputVector[0]->GetInformationObject(0);
+        auto input = inInfo1->Get(vtkDataObject::DATA_OBJECT());
 
         vtkInformation* outInfo = outputVector->GetInformationObject(0);
         auto output = outInfo->Get(vtkDataObject::DATA_OBJECT());

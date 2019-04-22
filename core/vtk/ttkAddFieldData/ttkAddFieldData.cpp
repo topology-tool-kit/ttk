@@ -151,21 +151,21 @@ int ttkAddFieldData::RequestData(
         dMsg(cout, "[ttkAddFieldData] Adding point/cell/field data from second input ... ", timeMsg);
 
         // Check if second input exists
-        auto inInfo = inputVector[1]->GetInformationObject(0);
-        if(inInfo){
+        auto inInfoObj = inputVector[1]->GetInformationObject(0);
+        if(inInfoObj){
             // Vector that stores all vtkFieldData sources
             vector<vtkFieldData*> candidates(3);
 
             // Get Second Input
-            auto input = inInfo->Get(vtkDataObject::DATA_OBJECT());
+            auto input2 = inInfoObj->Get(vtkDataObject::DATA_OBJECT());
 
             // If second input exists add its field data to candidates
-            if(input){
-                candidates[2] = input->GetFieldData();
+            if(input2){
+                candidates[2] = input2->GetFieldData();
 
                 // If second input is a vtkDataSet then also add point/cell data to candidates
-                if(input->IsA("vtkDataSet")){
-                    auto inputAsDataSet = vtkDataSet::SafeDownCast( input );
+                if(input2->IsA("vtkDataSet")){
+                    auto inputAsDataSet = vtkDataSet::SafeDownCast( input2 );
                     candidates[0] = (vtkFieldData*) inputAsDataSet->GetPointData();
                     candidates[1] = (vtkFieldData*) inputAsDataSet->GetCellData();
                 }

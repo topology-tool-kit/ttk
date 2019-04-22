@@ -61,14 +61,14 @@ int ttkMeshSubdivision::doIt(vtkUnstructuredGrid *input,
       vtkSmartPointer<vtkGenericCell>::New();
     tmpGrid->GetCell(0, threadCell);
     double value = 0;
-    for(int i = 0; i < tmpGrid->GetPointData()->GetNumberOfArrays(); i++){
-      if(tmpGrid->GetPointData()->GetArray(i)->GetNumberOfComponents() == 1){
-        tmpGrid->GetPointData()->GetArray(i)->GetTuple(0, &value);
+    for(int j = 0; j < tmpGrid->GetPointData()->GetNumberOfArrays(); j++){
+      if(tmpGrid->GetPointData()->GetArray(j)->GetNumberOfComponents() == 1){
+        tmpGrid->GetPointData()->GetArray(j)->GetTuple(0, &value);
       }
     }
-    for(int i = 0; i < tmpGrid->GetCellData()->GetNumberOfArrays(); i++){
-      if(tmpGrid->GetCellData()->GetArray(i)->GetNumberOfComponents() == 1){
-        tmpGrid->GetCellData()->GetArray(i)->GetTuple(0, &value);
+    for(int j = 0; j < tmpGrid->GetCellData()->GetNumberOfArrays(); j++){
+      if(tmpGrid->GetCellData()->GetArray(j)->GetNumberOfComponents() == 1){
+        tmpGrid->GetCellData()->GetArray(j)->GetTuple(0, &value);
       }
     }
     
@@ -121,13 +121,13 @@ int ttkMeshSubdivision::doIt(vtkUnstructuredGrid *input,
           newPoints[j][pointCounter][l] = p[l];
         
         // copy the point data
-        double value;
+        double val;
         for(int l = 0; l < tmpGrid->GetPointData()->GetNumberOfArrays(); l++){
           if(tmpGrid->GetPointData()->GetArray(l)->GetNumberOfComponents() 
             == 1){
             tmpGrid->GetPointData()->GetArray(l)->GetTuple(
-              cell->GetPointId(k), &value);
-            newPointData[j][pointCounter][l] = value;
+              cell->GetPointId(k), &val);
+            newPointData[j][pointCounter][l] = val;
           }
         }
         
@@ -139,7 +139,7 @@ int ttkMeshSubdivision::doIt(vtkUnstructuredGrid *input,
         
       vector<SimplexId> edgeMap(cell->GetNumberOfEdges());
       // 1) create the edge list and create one new vertex per edge
-      for(int k = 0; k < (int) cell->GetNumberOfEdges(); k++){
+      for(int k = 0; k < cell->GetNumberOfEdges(); k++){
         
         vtkCell *edge = cell->GetEdge(k);
         double p0[3], p1[3];
@@ -170,7 +170,7 @@ int ttkMeshSubdivision::doIt(vtkUnstructuredGrid *input,
 
       // 2) create the face list and create one new vertex per face
       vector<SimplexId> faceMap(cell->GetNumberOfFaces());
-      for(int k = 0; k < (int) cell->GetNumberOfFaces(); k++){
+      for(int k = 0; k < cell->GetNumberOfFaces(); k++){
         
         vtkCell *face = cell->GetFace(k);
         newPoints[j][pointCounter].resize(3, 0);
@@ -183,15 +183,15 @@ int ttkMeshSubdivision::doIt(vtkUnstructuredGrid *input,
           }
           
           // take care of the point data
-          double value = 0;
+          double val = 0;
           for(int m = 0; m < tmpGrid->GetPointData()->GetNumberOfArrays(); m++){
             
             if(tmpGrid->GetPointData()->GetArray(m)->GetNumberOfComponents() 
               == 1){
               tmpGrid->GetPointData()->GetArray(m)->GetTuple(
-                face->GetPointId(l), &value);
+                face->GetPointId(l), &val);
               newPointData[j][pointCounter][m] += 
-                (1/((double) face->GetNumberOfPoints()))*value;
+                (1/((double) face->GetNumberOfPoints()))*val;
             }
           }
         }
@@ -214,14 +214,14 @@ int ttkMeshSubdivision::doIt(vtkUnstructuredGrid *input,
           newPoints[j][pointCounter][l] += p[l];
         
         // take care of the point data
-        double value = 0;
+        double val = 0;
         for(int l = 0; l < tmpGrid->GetPointData()->GetNumberOfArrays(); l++){
           
           if(tmpGrid->GetPointData()->GetArray(l)->GetNumberOfComponents()== 1){
             tmpGrid->GetPointData()->GetArray(l)->GetTuple(
-              cell->GetPointId(k), &value);
+              cell->GetPointId(k), &val);
             newPointData[j][pointCounter][l] += 
-              (1/((double) cell->GetNumberOfPoints()))*value;
+              (1/((double) cell->GetNumberOfPoints()))*val;
           }
         }
       }
@@ -320,7 +320,6 @@ int ttkMeshSubdivision::doIt(vtkUnstructuredGrid *input,
               newCells[j][k]->InsertNextId(faceMap[l]);
               
               firstFace = l;
-              vtkCell *face = cell->GetFace(l);
               for(int n = 0; n < face->GetNumberOfPoints(); n++){
                 firstFaceVertices.push_back(face->GetPointId(n));
               }

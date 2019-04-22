@@ -344,12 +344,12 @@ template <typename topoType, typename idType> int ttk::PlanarGraphLayout::comput
 
     // Comparator that sorts children based on layout.y
     struct ChildrenComparator {
-        const float* layout;
+        const float* layout_;
 
-        ChildrenComparator(const float* layout) : layout(layout){};
+        ChildrenComparator(const float* layout) : layout_(layout){};
 
         inline bool operator() (const size_t& i, const size_t& j) {
-            return layout[i*2+1]<layout[j*2+1];
+            return layout_[i*2+1]<layout_[j*2+1];
         }
     };
 
@@ -472,8 +472,8 @@ template <typename topoType, typename idType, typename sequenceType> int ttk::Pl
         for(size_t i=0; i<nPoints; i++)
             sequenceValueToIndexMap[ pointSequences[i] ] = 0;
         size_t i=0;
-        for(auto& t: sequenceValueToIndexMap)
-            t.second = i++;
+        for(auto& el: sequenceValueToIndexMap)
+            el.second = i++;
     }
 
     // Get number of levels
