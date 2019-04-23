@@ -363,18 +363,43 @@ ttk::QuadrangulationSubdivision::Point
 
   Point res{};
 
-  // current vertex quadrangulation neighbors
-  std::vector<size_t> neighs(
-    quadNeighbors_[a].begin(), quadNeighbors_[a].end());
+  // find all quads that have a as vertex
+  std::vector<Quad> quads{};
+  for(auto &q : *outputQuads_) {
+    auto _a = static_cast<long long>(a);
+    if(q.i == _a || q.j == _a || q.k == _a || q.l == _a) {
+      quads.emplace_back(q);
+    }
+  }
+
+  std::set<std::array<size_t, 2>> couples{};
+
+  // find couple of neighbors of a sharing a quad
+  for(auto &q : quads) {
+    auto _a = static_cast<long long>(a);
+    std::array<size_t, 2> tmp{};
+    if(q.i == _a) {
+      tmp[0] = static_cast<size_t>(q.l);
+      tmp[1] = static_cast<size_t>(q.j);
+    } else if(q.j == _a) {
+      tmp[0] = static_cast<size_t>(q.i);
+      tmp[1] = static_cast<size_t>(q.k);
+    } else if(q.k == _a) {
+      tmp[0] = static_cast<size_t>(q.j);
+      tmp[1] = static_cast<size_t>(q.l);
+    } else if(q.l == _a) {
+      tmp[0] = static_cast<size_t>(q.k);
+      tmp[1] = static_cast<size_t>(q.i);
+    }
+    couples.insert(tmp);
+  }
 
   // triangle normals around current quadrangulation vertex
   std::vector<Point> normals{};
 
-  // for each couple of consecutive neighbors, compute triangle normal
-  // with current point
-  for(size_t i = 0; i < neighs.size() - 1; ++i) {
-    Point pb = outputPoints_->at(neighs[i]);
-    Point pc = outputPoints_->at(neighs[i + 1]);
+  for(auto &t : couples) {
+    Point pb = outputPoints_->at(t[0]);
+    Point pc = outputPoints_->at(t[1]);
 
     // triangle normal: cross product of two edges
     Point crossP{};
@@ -387,27 +412,19 @@ ttk::QuadrangulationSubdivision::Point
     normals.emplace_back(crossP / Geometry::magnitude(&crossP.x));
   }
 
-  // remainder iteration
-  {
-    Point pb = outputPoints_->at(neighs[neighs.size() - 1]);
-    Point pc = outputPoints_->at(neighs[0]);
-
-    // triangle normal: cross product of two edges
-    Point crossP{};
-    // ab, ac vectors
-    Point ab = pb - pa;
-    Point ac = pc - pa;
-    // compute ab ^ ac
-    Geometry::crossProduct(&ab.x, &ac.x, &crossP.x);
-    // unitary normal vector
-    normals.emplace_back(crossP / Geometry::magnitude(&crossP.x));
+  // ensure normals have same direction
+  for(size_t i = 1; i < normals.size(); ++i) {
+    auto dotProd = Geometry::dotProduct(&normals[0].x, &normals[i].x);
+    if(dotProd < 0.0F) {
+      normals[i] = normals[i] * -1.0F;
+    }
   }
 
   // compute mean of normals
   Point normalsMean
     = std::accumulate(normals.begin(), normals.end(), Point{},
                       [&](const Point &m, const Point &n) { return m + n; })
-      / normals.size();
+      / static_cast<float>(normals.size());
 
   // pair of triangle ids - projection coordinates
   std::vector<std::pair<SimplexId, Point>> trianglesProj{};
@@ -416,15 +433,17 @@ ttk::QuadrangulationSubdivision::Point
   for(SimplexId i = 0; i < triangulation_->getNumberOfTriangles(); ++i) {
     // check if projection along normalsMean in triangle plane is in triangle
 
-    // any vertex of triangle
-    SimplexId vert;
+    // get triangle vertices
+    std::array<SimplexId, 3> tverts{};
+    triangulation_->getTriangleVertex(i, 0, tverts[0]);
+    triangulation_->getTriangleVertex(i, 1, tverts[1]);
+    triangulation_->getTriangleVertex(i, 2, tverts[2]);
+
+    // get coordinates of triangle vertices
     Point pm{}, pn{}, po{};
-    triangulation_->getTriangleVertex(i, 0, vert);
-    triangulation_->getVertexPoint(vert, pm.x, pm.y, pm.z);
-    triangulation_->getTriangleVertex(i, 1, vert);
-    triangulation_->getVertexPoint(vert, pn.x, pn.y, pn.z);
-    triangulation_->getTriangleVertex(i, 2, vert);
-    triangulation_->getVertexPoint(vert, po.x, po.y, po.z);
+    triangulation_->getVertexPoint(tverts[0], pm.x, pm.y, pm.z);
+    triangulation_->getVertexPoint(tverts[1], pn.x, pn.y, pn.z);
+    triangulation_->getVertexPoint(tverts[2], po.x, po.y, po.z);
 
     Point tmp = pa - pm;
     // projected point into triangle
