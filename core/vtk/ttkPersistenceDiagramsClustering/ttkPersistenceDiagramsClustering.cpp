@@ -16,6 +16,7 @@ using namespace ttk;
 vtkStandardNewMacro(ttkPersistenceDiagramsClustering)
 
 ttkPersistenceDiagramsClustering::ttkPersistenceDiagramsClustering(){
+// std::cout<<"constructor"<<std::endl;
   UseAllCores = false;
   WassersteinMetric = "2";
   UseOutputMatching = true;
@@ -23,6 +24,7 @@ ttkPersistenceDiagramsClustering::ttkPersistenceDiagramsClustering(){
   Deterministic = 1;
   ThreadNumber = 1;
   PairTypeClustering  = -1;
+  numberOfInputsFromCommandLine=1;
   UseProgressive = 1;
   UseAccelerated = 0;
   UseKmeansppInit = 0;
@@ -59,6 +61,7 @@ int ttkPersistenceDiagramsClustering::updateProgress(const float &progress){
 
 int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, vtkUnstructuredGrid *outputClusters, vtkUnstructuredGrid *outputCentroids, int numInputs){
 	// Get arrays from input datas
+    // std::cout<<"STARTING doIt"<<std::endl;
 	//vtkDataArray* inputDiagram[numInputs] = { NULL };
 	vector<vtkUnstructuredGrid*> inputDiagram(numInputs);
 	for(int i=0 ; i<numInputs ; ++i){
@@ -77,6 +80,9 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, vtkUnstructuredGr
 			persistenceDiagramsClustering.setWrapper(this);
 
 			string wassersteinMetric = WassersteinMetric;
+
+            // std::cout<<"setting the PersistenceDiagramsClustering parameters"<<std::endl;
+
 			persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
             persistenceDiagramsClustering.setDeterministic(Deterministic);
             persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
@@ -107,6 +113,8 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet** input, vtkUnstructuredGr
 
             std::vector<std::vector<macroDiagramTuple>> final_centroids;
 			
+            
+            // std::cout<<"launching execute PerssistenceDiagramsCLustering"<<std::endl;
 			std::vector<int> inv_clustering = 
                 persistenceDiagramsClustering.execute(&final_centroids);
 			outputClusters->ShallowCopy(createOutputClusteredDiagrams(intermediateDiagrams, inv_clustering, max_dimension_total));
@@ -143,8 +151,12 @@ int ttkPersistenceDiagramsClustering::RequestData(vtkInformation *request,
   Memory m;
 
   // Number of input files
+  // std::cout<<"requestData"<<std::endl;
   int numInputs = numberOfInputsFromCommandLine;
-  // int numInputs = inputVector[0]->GetNumberOfInformationObjects();
+  if(numInputs ==1){
+    numInputs = inputVector[0]->GetNumberOfInformationObjects();
+    // std::cout<<"1 inputs with "<< numInputs <<" objects"<<std::endl;
+  }
   {
     stringstream msg;
     dMsg(cout, msg.str(), infoMsg);
@@ -153,12 +165,18 @@ int ttkPersistenceDiagramsClustering::RequestData(vtkInformation *request,
   vtkDataSet* *input = new vtkDataSet*[numInputs];
   for(int i=0 ; i<numInputs ; ++i)
   {
-    input[i] = vtkDataSet::GetData(inputVector[i], 0);
+    if(numberOfInputsFromCommandLine>1){
+        input[i] = vtkDataSet::GetData(inputVector[i], 0);
+    }
+    else{
+        input[i] = vtkDataSet::GetData(inputVector[0], i);
+    }
 	if(!input[i]){
 		std::cout<<"No data in input["<<i<<"]"<<std::endl;
 	}
   }
   // TODO Set output
+  // std::cout<<"settings outputs"<<std::endl;
   vtkInformation* outInfo1;
   outInfo1 = outputVector->GetInformationObject(0);
   vtkDataSet* output1 = vtkDataSet::SafeDownCast(outInfo1->Get(vtkDataObject::DATA_OBJECT()));

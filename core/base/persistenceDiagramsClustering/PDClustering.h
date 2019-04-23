@@ -23,6 +23,7 @@ namespace ttk{
             deterministic_ = true;
 			time_limit_ = std::numeric_limits<double>::max();
 			epsilon_min_ = 1e-5;
+			epsilon_.resize(3);
 		};
 
 		~PDClustering(){};
@@ -68,7 +69,11 @@ namespace ttk{
 		void acceleratedUpdateClusters();
         std::vector<dataType> updateCentroidsPosition();
 
-
+        inline void resetDosToOriginalValues(){
+            do_min_ = original_dos[0];
+            do_sad_ = original_dos[1];
+            do_max_ = original_dos[2];
+        }
 		inline int setDiagrams(std::vector<std::vector<diagramTuple> > *data_min, std::vector<std::vector<diagramTuple> > *data_saddle, std::vector<std::vector<diagramTuple> > *data_max){
 			inputDiagramsMin_ = data_min;
 			inputDiagramsSaddle_ = data_saddle;

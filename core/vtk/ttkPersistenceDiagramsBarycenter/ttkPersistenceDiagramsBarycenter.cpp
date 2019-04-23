@@ -143,8 +143,10 @@ int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
   Memory m;
     
   int numInputs = numberOfInputsFromCommandLine;
+  if(numInputs==1){
+      numInputs = inputVector[0]->GetNumberOfInformationObjects();
+  }
   // Number of input files
-  // int numInputs = inputVector[0]->GetNumberOfInformationObjects();
   // std::cout<<"NUMBER OF INPUTS "<<numInputs<<"  "<<
   //     inputVector[1]->GetNumberOfInformationObjects()<<std::endl;
   {
@@ -155,7 +157,12 @@ int ttkPersistenceDiagramsBarycenter::RequestData(vtkInformation *request,
   vtkDataSet* *input = new vtkDataSet*[numInputs];
   for(int i=0 ; i<numInputs ; i++)
   {
-    input[i] = vtkDataSet::GetData(inputVector[i], 0);
+    if(numberOfInputsFromCommandLine>1){
+        input[i] = vtkDataSet::GetData(inputVector[i], 0);
+    }
+    else{
+        input[i] = vtkDataSet::GetData(inputVector[0], i);
+    }
 	if(!input[i]){
 		std::cout<<"No data in input["<<i<<"]"<<std::endl;
 	}
