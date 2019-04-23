@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
   string wasserstein;
   double alpha = 1.0;
   double spacing = 5.0;
-  bool useMatchingMesh;
+  bool useMatchingMesh = false;
 
   bool persistence = false;
 
