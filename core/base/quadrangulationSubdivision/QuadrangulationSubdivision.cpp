@@ -323,9 +323,9 @@ ttk::QuadrangulationSubdivision::Point
 
     // triangle normal: cross product of two edges
     Point crossP{};
-    // mn, no vectors
+    // mn, mo vectors
     Point mn = pn - pm;
-    Point mo = po - pn;
+    Point mo = po - pm;
     // compute mn ^ mo
     Geometry::crossProduct(&mn.x, &mo.x, &crossP.x);
     // unitary normal vector
@@ -363,7 +363,7 @@ ttk::QuadrangulationSubdivision::Point
 
     } else { // compute euclidian projection of a in triangle plane
 
-      auto tmp = pm - pa;
+      auto tmp = pa - pm;
       // projection
       res = pa - normTri * Geometry::dotProduct(&normTri.x, &tmp.x);
     }
