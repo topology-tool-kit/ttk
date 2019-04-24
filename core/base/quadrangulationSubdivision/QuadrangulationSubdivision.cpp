@@ -429,10 +429,8 @@ ttk::QuadrangulationSubdivision::Point
     }
   }
 
-  // fallback to old projection code
-  if(normals.empty()) {
-    return findProjectionInTriangle(a, inputPoints, lastIter);
-  }
+  // fallback to euclidian projection code if no normals
+  bool intersect = !normals.empty();
 
   // compute mean of normals
   Point normalsMean = std::accumulate(normals.begin(), normals.end(), Point{},
@@ -491,32 +489,42 @@ ttk::QuadrangulationSubdivision::Point
     // unitary normal vector
     Point normTri = crossP / Geometry::magnitude(&crossP.x);
 
-    auto denom = Geometry::dotProduct(&normalsMean.x, &normTri.x);
+    if(intersect) { // compute intersection of triangle plane and line (a,
+                    // normalsMean)
 
-    // check if triangle plane is parallel to quad normal
-    if(std::abs(denom) < powf(10, -FLT_DIG)) {
-      // skip this iteration after filling pipeline
-      trianglesTested[i] = true;
-      // fill pipeline with neighboring triangles
-      for(auto &vert : tverts) {
-        auto ntr = triangulation_->getVertexTriangleNumber(vert);
-        for(SimplexId j = 0; j < ntr; ++j) {
-          SimplexId tid;
-          triangulation_->getVertexTriangle(vert, j, tid);
-          if(tid != i) {
-            trianglesToTest.push(tid);
+      auto denom = Geometry::dotProduct(&normalsMean.x, &normTri.x);
+
+      // check if triangle plane is parallel to quad normal
+      if(std::abs(denom) < powf(10, -FLT_DIG)) {
+        // skip this iteration after filling pipeline
+        trianglesTested[i] = true;
+        // fill pipeline with neighboring triangles
+        for(auto &vert : tverts) {
+          auto ntr = triangulation_->getVertexTriangleNumber(vert);
+          for(SimplexId j = 0; j < ntr; ++j) {
+            SimplexId tid;
+            triangulation_->getVertexTriangle(vert, j, tid);
+            if(tid != i) {
+              trianglesToTest.push(tid);
+            }
           }
         }
+        continue;
       }
-      continue;
+
+      // use formula from Wikipedia: line-plane intersection
+      auto tmp = pm - pa;
+      auto alpha = Geometry::dotProduct(&tmp.x, &normTri.x) / denom;
+
+      // intersection
+      res = pa + normalsMean * alpha;
+
+    } else { // compute euclidian projection of a in triangle plane
+
+      auto tmp = pm - pa;
+      // projection
+      res = pa - normTri * Geometry::dotProduct(&normTri.x, &tmp.x);
     }
-
-    // use formula from Wikipedia: line-plane intersection
-    auto tmp = pm - pa;
-    auto alpha = Geometry::dotProduct(&tmp.x, &normTri.x) / denom;
-
-    // intersection of triangle plane and (a, normalsMean) line
-    res = pa + normalsMean * alpha;
 
     // compute barycentric coords of projection
     std::vector<float> baryCoords;
@@ -601,7 +609,7 @@ ttk::QuadrangulationSubdivision::Point
   if(lastIter) {
     trianglesChecked_->at(a)
       = std::count(trianglesTested.begin(), trianglesTested.end(), true);
-    projSucceeded_->at(a) = success ? 1 : 0;
+    projSucceeded_->at(a) = success ? (intersect ? 1 : 2) : 0;
   }
 
   return res;
