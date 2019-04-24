@@ -254,13 +254,27 @@ int ttkTriangulation::setInputData(vtkDataSet* dataSet){
         (float *)
         ((vtkPolyData *) dataSet)->GetPoints()->GetVoidPointer(0));
     }
+
     if(((vtkPolyData *) dataSet)->GetPolys()){
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
-		triangulation_->setInputCells(dataSet->GetNumberOfCells(),
-			((vtkPolyData *)dataSet)->GetPolys()->GetPointer());
+      if(((vtkPolyData *)dataSet)->GetPolys()->GetPointer()) {
+        // 2D
+        triangulation_->setInputCells(
+          dataSet->GetNumberOfCells(),
+          ((vtkPolyData *)dataSet)->GetPolys()->GetPointer());
+      } else if(((vtkPolyData *)dataSet)->GetLines()->GetPointer()) {
+        // 1D
+        triangulation_->setInputCells(
+          dataSet->GetNumberOfCells(),
+          ((vtkPolyData *)dataSet)->GetLines()->GetPointer());
+      }
 #else
 		int* pt = ((vtkPolyData *)dataSet)->GetPolys()->GetPointer();
-		long long extra_pt = *pt;
+    if(!pt) {
+      // 1D
+      pt = ((vtkPolyData *)dataSet)->GetLines()->GetPointer();
+    }
+    long long extra_pt = *pt;
 		triangulation_->setInputCells(dataSet->GetNumberOfCells(),
 			&extra_pt);
 #endif
