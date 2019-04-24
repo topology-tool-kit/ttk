@@ -201,19 +201,16 @@ namespace ttk {
     /**
      * @brief Compute the projection in the nearest triangle
      *
-     * @param[in] i input index of quadrangle vertex
+     * @param[in] a input index of quadrangle vertex
+     * @param[in] inputPoints input quadrangle points array
      * @param[in] lastIter Indicate last projection iteration for
      * post-processing
      *
      * @return coordinates of projection
      */
-    Point findProjectionInTriangle(const SimplexId i,
-                                   const std::vector<Point> &inputPoints,
-                                   const bool lastIter = false);
-
-    Point findTriangleQuadNormal(size_t a,
-                                 const std::vector<Point> &inputPoints,
-                                 bool lastIter = false);
+    Point findProjection(size_t a,
+                         const std::vector<Point> &inputPoints,
+                         bool lastIter = false);
 
     /**
      * @brief Find the middle of a quad edge using Dijkstra
