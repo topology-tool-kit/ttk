@@ -445,11 +445,30 @@ ttk::QuadrangulationSubdivision::Point
     triangulation_->getVertexPoint(tverts[1], pn.x, pn.y, pn.z);
     triangulation_->getVertexPoint(tverts[2], po.x, po.y, po.z);
 
-    Point tmp = pa - pm;
-    // projected point into triangle
+    // triangle normal: cross product of two edges
+    Point crossP{};
+    // ab, ac vectors
+    Point mn = pn - pm;
+    Point mo = po - pn;
+    // compute ab ^ ac
+    Geometry::crossProduct(&mn.x, &mo.x, &crossP.x);
+    // unitary normal vector
+    Point normTri = crossP / Geometry::magnitude(&crossP.x);
 
-    Point proj
-      = pa - normalsMean * Geometry::dotProduct(&normalsMean.x, &tmp.x);
+    auto denom = Geometry::dotProduct(&normalsMean.x, &normTri.x);
+
+    // check if denom == 0.0F
+    if(denom < powf(10, -FLT_DIG)) {
+      // quad normal means is parallel to triangle plane, no intersection point
+      continue;
+    }
+
+    // use formula from Wikipedia: line-plane intersection
+    auto tmp = pm - pa;
+    auto alpha = Geometry::dotProduct(&tmp.x, &normTri.x) / denom;
+
+    // intersection of triangle plane and (a, normalsMean) line
+    Point proj = pa + normalsMean * alpha;
 
     // compute barycentric coords of projection
     std::vector<float> baryCoords;
