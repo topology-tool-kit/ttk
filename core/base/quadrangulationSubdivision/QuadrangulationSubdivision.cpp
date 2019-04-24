@@ -281,14 +281,14 @@ ttk::QuadrangulationSubdivision::Point
       }
     }
 
+    // mark triangle as tested
+    trianglesTested[tid] = true;
+
     if(inTriangle) {
       success = true;
       // should we check if we have the nearest triangle?
       break;
     }
-
-    // mark triangle as tested
-    trianglesTested[tid] = true;
 
     // extrema values in baryCoords
     auto extrema = std::minmax_element(baryCoords.begin(), baryCoords.end());
@@ -503,14 +503,14 @@ ttk::QuadrangulationSubdivision::Point
       }
     }
 
+    // mark triangle as tested
+    trianglesTested[i] = true;
+
     if(inTriangle) {
       success = true;
       // should we check if we have the nearest triangle?
       break;
     }
-
-    // mark triangle as tested
-    trianglesTested[i] = true;
 
     // extrema values in baryCoords
     auto extrema = std::minmax_element(baryCoords.begin(), baryCoords.end());
