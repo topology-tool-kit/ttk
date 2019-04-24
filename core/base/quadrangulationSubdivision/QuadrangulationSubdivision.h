@@ -126,6 +126,10 @@ namespace ttk {
       Point operator/(const float scalar) const {
         return (*this * (1.0F / scalar));
       }
+      friend std::ostream &operator<<(std::ostream &stream, const Point &pt) {
+        stream << pt.x << " " << pt.y << " " << pt.z;
+        return stream;
+      }
     };
     // VTK_QUAD representation with vtkIdType
     struct Quad {
