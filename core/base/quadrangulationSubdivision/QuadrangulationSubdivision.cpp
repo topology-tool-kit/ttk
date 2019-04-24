@@ -425,6 +425,11 @@ ttk::QuadrangulationSubdivision::Point
     }
   }
 
+  // fallback to old projection code
+  if(normals.empty()) {
+    return findProjectionInTriangle(a, lastIter);
+  }
+
   // compute mean of normals
   Point normalsMean = std::accumulate(normals.begin(), normals.end(), Point{},
                                       std::plus<Point>())
