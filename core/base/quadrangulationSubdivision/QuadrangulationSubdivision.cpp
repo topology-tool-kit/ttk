@@ -200,10 +200,12 @@ int ttk::QuadrangulationSubdivision::subdivise() {
 
 ttk::QuadrangulationSubdivision::Point
   ttk::QuadrangulationSubdivision::findProjectionInTriangle(
-    const ttk::SimplexId i, const bool lastIter) {
+    const ttk::SimplexId i,
+    const std::vector<Point> &inputPoints,
+    const bool lastIter) {
 
   // current point to project
-  Point *vert = &(*outputPoints_)[i];
+  const Point *vert = &inputPoints[i];
 
   // projected point into triangle
   Point proj{};
@@ -355,11 +357,13 @@ ttk::QuadrangulationSubdivision::Point
 }
 
 ttk::QuadrangulationSubdivision::Point
-  ttk::QuadrangulationSubdivision::findTriangleQuadNormal(const size_t a,
-                                                          const bool lastIter) {
+  ttk::QuadrangulationSubdivision::findTriangleQuadNormal(
+    const size_t a,
+    const std::vector<Point> &inputPoints,
+    const bool lastIter) {
 
   // current vertex 3d coordinates
-  Point pa = outputPoints_->at(a);
+  Point pa = inputPoints[a];
 
   Point res{};
 
@@ -398,8 +402,8 @@ ttk::QuadrangulationSubdivision::Point
   std::vector<Point> normals{};
 
   for(auto &t : couples) {
-    Point pb = outputPoints_->at(t[0]);
-    Point pc = outputPoints_->at(t[1]);
+    Point pb = inputPoints[t[0]];
+    Point pc = inputPoints[t[1]];
 
     // triangle normal: cross product of two edges
     Point crossP{};
@@ -427,7 +431,7 @@ ttk::QuadrangulationSubdivision::Point
 
   // fallback to old projection code
   if(normals.empty()) {
-    return findProjectionInTriangle(a, lastIter);
+    return findProjectionInTriangle(a, inputPoints, lastIter);
   }
 
   // compute mean of normals
@@ -614,6 +618,10 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
     projSucceeded_->resize(outputPoints_->size());
   }
 
+  // outputPoints_ deep copy to avoid OpenMP data races in
+  // findTriangleQuadNormal
+  auto inputPoints(*outputPoints_);
+
   // main loop
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -626,7 +634,7 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
     }
 
     // replace curr in outputPoints_ by its projection
-    outputPoints_->at(i) = findTriangleQuadNormal(i, lastIter);
+    outputPoints_->at(i) = findTriangleQuadNormal(i, inputPoints, lastIter);
   }
 
   {
