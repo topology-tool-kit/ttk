@@ -408,8 +408,13 @@ ttk::QuadrangulationSubdivision::Point
     Point ac = pc - pa;
     // compute ab ^ ac
     Geometry::crossProduct(&ab.x, &ac.x, &crossP.x);
-    // unitary normal vector
-    normals.emplace_back(crossP / Geometry::magnitude(&crossP.x));
+    // magnitude
+    auto mag = Geometry::magnitude(&crossP.x);
+    // ensure normal not null
+    if(mag > powf(10, -FLT_DIG)) {
+      // unitary normal vector
+      normals.emplace_back(crossP / mag);
+    }
   }
 
   // ensure normals have same direction
@@ -469,15 +474,33 @@ ttk::QuadrangulationSubdivision::Point
 
     // triangle normal: cross product of two edges
     Point crossP{};
-    // ab, ac vectors
+    // mn, no vectors
     Point mn = pn - pm;
     Point mo = po - pn;
-    // compute ab ^ ac
+    // compute mn ^ mo
     Geometry::crossProduct(&mn.x, &mo.x, &crossP.x);
     // unitary normal vector
     Point normTri = crossP / Geometry::magnitude(&crossP.x);
 
     auto denom = Geometry::dotProduct(&normalsMean.x, &normTri.x);
+
+    // check if triangle plane is parallel to quad normal
+    if(std::abs(denom) < powf(10, -FLT_DIG)) {
+      // skip this iteration after filling pipeline
+      trianglesTested[i] = true;
+      // fill pipeline with neighboring triangles
+      for(auto &vert : tverts) {
+        auto ntr = triangulation_->getVertexTriangleNumber(vert);
+        for(SimplexId j = 0; j < ntr; ++j) {
+          SimplexId tid;
+          triangulation_->getVertexTriangle(vert, j, tid);
+          if(tid != i) {
+            trianglesToTest.push(tid);
+          }
+        }
+      }
+      continue;
+    }
 
     // use formula from Wikipedia: line-plane intersection
     auto tmp = pm - pa;
