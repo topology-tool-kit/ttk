@@ -421,10 +421,9 @@ ttk::QuadrangulationSubdivision::Point
   }
 
   // compute mean of normals
-  Point normalsMean
-    = std::accumulate(normals.begin(), normals.end(), Point{},
-                      [&](const Point &m, const Point &n) { return m + n; })
-      / static_cast<float>(normals.size());
+  Point normalsMean = std::accumulate(normals.begin(), normals.end(), Point{},
+                                      std::plus<Point>())
+                      / static_cast<float>(normals.size());
 
   // found a projection in one triangle
   bool success = false;
