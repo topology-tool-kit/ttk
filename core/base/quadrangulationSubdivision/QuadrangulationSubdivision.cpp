@@ -426,12 +426,35 @@ ttk::QuadrangulationSubdivision::Point
                       [&](const Point &m, const Point &n) { return m + n; })
       / static_cast<float>(normals.size());
 
-  // pair of triangle ids - projection coordinates
-  std::vector<std::pair<SimplexId, Point>> trianglesProj{};
+  // found a projection in one triangle
+  bool success = false;
+  // list of triangle IDs to test to find a potential projection
+  std::queue<SimplexId> trianglesToTest;
+  // list of triangle IDs already tested
+  // (takes more memory to reduce computation time)
+  std::vector<bool> trianglesTested(
+    triangulation_->getNumberOfTriangles(), false);
+  // vertex in triangle with highest barycentric coordinate
+  SimplexId nearestVertex = nearestVertexIdentifier_[a];
 
-  // loop over every input triangle
-  for(SimplexId i = 0; i < triangulation_->getNumberOfTriangles(); ++i) {
-    // check if projection along normalsMean in triangle plane is in triangle
+  // number of triangles around nearest vertex
+  SimplexId triangleNumber
+    = triangulation_->getVertexTriangleNumber(nearestVertex);
+  // init pipeline by checking in every triangle around selected vertex
+  for(SimplexId j = 0; j < triangleNumber; j++) {
+    SimplexId ntid;
+    triangulation_->getVertexTriangle(nearestVertex, j, ntid);
+    trianglesToTest.push(ntid);
+  }
+
+  while(!trianglesToTest.empty()) {
+    SimplexId i = trianglesToTest.front();
+    trianglesToTest.pop();
+
+    // skip if already tested
+    if(trianglesTested[i]) {
+      continue;
+    }
 
     // get triangle vertices
     std::array<SimplexId, 3> tverts{};
@@ -457,23 +480,17 @@ ttk::QuadrangulationSubdivision::Point
 
     auto denom = Geometry::dotProduct(&normalsMean.x, &normTri.x);
 
-    // check if denom == 0.0F
-    if(denom < powf(10, -FLT_DIG)) {
-      // quad normal means is parallel to triangle plane, no intersection point
-      continue;
-    }
-
     // use formula from Wikipedia: line-plane intersection
     auto tmp = pm - pa;
     auto alpha = Geometry::dotProduct(&tmp.x, &normTri.x) / denom;
 
     // intersection of triangle plane and (a, normalsMean) line
-    Point proj = pa + normalsMean * alpha;
+    res = pa + normalsMean * alpha;
 
     // compute barycentric coords of projection
     std::vector<float> baryCoords;
     Geometry::computeBarycentricCoordinates(
-      &pm.x, &pn.x, &po.x, &proj.x, baryCoords);
+      &pm.x, &pn.x, &po.x, &res.x, baryCoords);
 
     // check if projection in triangle
     bool inTriangle = true;
@@ -487,38 +504,73 @@ ttk::QuadrangulationSubdivision::Point
     }
 
     if(inTriangle) {
-      trianglesProj.emplace_back(std::make_pair(i, proj));
+      success = true;
+      // should we check if we have the nearest triangle?
+      break;
+    }
+
+    // mark triangle as tested
+    trianglesTested[i] = true;
+
+    // extrema values in baryCoords
+    auto extrema = std::minmax_element(baryCoords.begin(), baryCoords.end());
+
+    // find the nearest triangle vertices (with the highest/positive
+    // values in baryCoords) from proj
+    std::vector<SimplexId> vertices(2);
+    vertices[0] = tverts[extrema.second - baryCoords.begin()];
+    for(size_t j = 0; j < baryCoords.size(); j++) {
+      if(j != static_cast<size_t>(extrema.first - baryCoords.begin())
+         && j != static_cast<size_t>(extrema.second - baryCoords.begin())) {
+        vertices[1] = tverts[j];
+      }
+    }
+    vertices[1] = tverts[extrema.second - baryCoords.begin()];
+
+    // store vertex with highest barycentric coordinate
+    nearestVertex = vertices[0];
+
+    // triangles to test next
+    std::set<SimplexId> common_triangles;
+
+    // look for triangles sharing the two edges with max values in
+    // baryCoords
+    for(auto &avert : vertices) {
+      SimplexId tnum = triangulation_->getVertexTriangleNumber(avert);
+      for(SimplexId j = 0; j < tnum; j++) {
+        SimplexId tid;
+        triangulation_->getVertexTriangle(avert, j, tid);
+        if(tid == i) {
+          continue;
+        }
+        common_triangles.insert(tid);
+      }
+    }
+
+    for(auto &ntid : common_triangles) {
+      if(!trianglesTested[ntid]) {
+        trianglesToTest.push(ntid);
+      }
     }
   }
 
-  if(trianglesProj.empty()) {
-    triangulation_->getVertexPoint(
-      nearestVertexIdentifier_[a], res.x, res.y, res.z);
-    return res;
+  if(success) {
+    // replace in nearestVertexIdentifier_ by nearest vertex in projected
+    // triangle
+    nearestVertexIdentifier_[a] = nearestVertex;
   }
 
-  // distance to triangle projections
-  std::vector<float> distsToProj(trianglesProj.size());
-
-  std::transform(trianglesProj.begin(), trianglesProj.end(),
-                 distsToProj.begin(),
-                 [&](const std::pair<SimplexId, Point> &m) {
-                   Point pm = m.second;
-                   // compute euclidian distance to point
-                   return Geometry::distance(&pa.x, &pm.x);
-                 });
-
-  auto i = std::min_element(distsToProj.begin(), distsToProj.end())
-           - distsToProj.begin();
-  res = trianglesProj[i].second;
-
-  // update nearestVertexIdentifier_ with some vertex from nearest triangle
-  triangulation_->getTriangleVertex(
-    trianglesProj[i].first, 0, nearestVertexIdentifier_[a]);
+  if(!success) {
+    // replace proj by the nearest vertex?
+    triangulation_->getVertexPoint(
+      nearestVertexIdentifier_[a], res.x, res.y, res.z);
+  }
 
   // fill in debug info
   if(lastIter) {
-    projSucceeded_->at(a) = !trianglesProj.empty();
+    trianglesChecked_->at(a)
+      = std::count(trianglesTested.begin(), trianglesTested.end(), true);
+    projSucceeded_->at(a) = success ? 1 : 0;
   }
 
   return res;
