@@ -192,7 +192,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     msg << MODULE_S "Subdivised " << prevQuads.size() << " quads into "
         << outputQuads_->size() << " new quads (" << outputPoints_->size()
         << " points) in " << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), detailedInfoMsg);
+    dMsg(std::cout, msg.str(), infoMsg);
   }
 
   return 0;
@@ -491,7 +491,7 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
     std::stringstream msg;
     msg << MODULE_S "Projected " << outputPoints_->size() - filtered.size()
         << " points in " << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), detailedInfoMsg);
+    dMsg(std::cout, msg.str(), infoMsg);
   }
 
   return 0;
