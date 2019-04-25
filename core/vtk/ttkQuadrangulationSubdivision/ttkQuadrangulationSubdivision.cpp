@@ -95,6 +95,7 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   baseWorker_.setRelaxationIterations(RelaxationIterations);
   baseWorker_.setLockInputExtrema(LockInputExtrema);
   baseWorker_.setLockAllInputVertices(LockAllInputVertices);
+  baseWorker_.setReverseProjection(ReverseProjection);
   baseWorker_.setOutputPoints(&outVertices_);
   baseWorker_.setOutputQuads(&outQuadrangles_);
   baseWorker_.setOutputValences(&outVertexValences_);

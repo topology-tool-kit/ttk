@@ -55,6 +55,9 @@ namespace ttk {
     inline void setLockAllInputVertices(const bool value) {
       lockAllInputVertices = value;
     }
+    inline void setReverseProjection(const bool value) {
+      reverseProjection_ = value;
+    }
     inline void setInputQuads(void *const address, unsigned int size) {
       inputQuads_ = static_cast<Quad *>(address);
       inputQuadNumber_ = size;
@@ -257,6 +260,8 @@ namespace ttk {
     bool lockInputExtrema{true};
     // lock all input vertices
     bool lockAllInputVertices{true};
+    // projection method
+    bool reverseProjection_{true};
 
     // number of input quadrangles
     unsigned int inputQuadNumber_{};

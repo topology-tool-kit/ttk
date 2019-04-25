@@ -272,7 +272,7 @@ ttk::QuadrangulationSubdivision::Point
   }
 
   // fallback to euclidian projection code if no normals
-  bool intersect = !normals.empty();
+  bool intersect = reverseProjection_ && !normals.empty();
 
   // compute mean of normals
   Point normalsMean = std::accumulate(normals.begin(), normals.end(), Point{},
