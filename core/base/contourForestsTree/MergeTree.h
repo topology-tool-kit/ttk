@@ -207,7 +207,6 @@ namespace ttk {
         if((size_t)i >= treeData_.superArcs.size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << treeData_.superArcs.size() << std::endl;
-          return nullptr;
         }
 #endif
         return &(treeData_.superArcs[i]);
