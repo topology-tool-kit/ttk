@@ -19,47 +19,22 @@
 #endif // __GNUC__
 #endif // TTK_ENABLE_EIGEN
 
-ttk::SolvingMethodType ttk::EigenField::findBestSolver() const {
-
-  // for switching between Cholesky factorization and Iterate
-  // (conjugate gradients) method
-  const SimplexId threshold = 500000;
-
-  // compare threshold to number of non-zero values in laplacian matrix
-  if(2 * edgeNumber_ + vertexNumber_ > threshold) {
-    return ttk::SolvingMethodType::Iterative;
-  }
-  return ttk::SolvingMethodType::Cholesky;
-}
-
-template <typename SparseMatrixType,
-          typename SparseVectorType,
-          typename SolverType>
-int ttk::EigenField::solve(SparseMatrixType const &lap,
-                              SparseMatrixType const &penalty,
-                              SparseVectorType const &constraints,
-                              SparseMatrixType &sol) const {
-  SolverType solver(lap - penalty);
-  sol = solver.solve(penalty * constraints);
-  return solver.info();
-}
-
 template <typename scalarFieldType,
           typename SparseMatrixType = Eigen::SparseMatrix<scalarFieldType>,
           typename VectorType
           = Eigen::Matrix<scalarFieldType, Eigen::Dynamic, 1>>
 int ttk::EigenField::eigenfunctions(const SparseMatrixType A,
-                                       VectorType &eigenVector,
-                                       const size_t eigenNumber) const {
+                                    VectorType &eigenVector) const {
 
   auto n = A.cols();
-  auto m = eigenNumber;
+  auto m = eigenNumber_;
+  const size_t minEigenNumber = 20;
 
-  if(eigenNumber == 0) {
+  if(eigenNumber_ == 0) {
     // default value
     m = n / 1000;
-  } else if(eigenNumber < 20) {
-    m = 20;
+  } else if(eigenNumber_ < minEigenNumber) {
+    m = minEigenNumber;
   }
 
   // A is square
@@ -104,16 +79,7 @@ int ttk::EigenField::execute() const {
   Eigen::setNbThreads(threadNumber_);
 #endif // TTK_ENABLE_OPENMP
 
-  using SpMat = Eigen::SparseMatrix<scalarFieldType>;
-  using SpVec = Eigen::SparseVector<scalarFieldType>;
-  using TripletType = Eigen::Triplet<scalarFieldType>;
-
   Timer t;
-
-  // scalar field constraints vertices
-  auto identifiers = static_cast<SimplexId *>(sources_);
-  // scalar field: 0 everywhere except on constraint vertices
-  auto sf = static_cast<scalarFieldType *>(constraints_);
 
   {
     stringstream msg;
@@ -121,113 +87,25 @@ int ttk::EigenField::execute() const {
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
-  // filter unique constraint identifiers
-  std::set<SimplexId> uniqueIdentifiersSet;
-  for(SimplexId i = 0; i < constraintNumber_; ++i) {
-    uniqueIdentifiersSet.insert(identifiers[i]);
-  }
-
-  // vector of unique constraint identifiers
-  std::vector<SimplexId> uniqueIdentifiers(
-    uniqueIdentifiersSet.begin(), uniqueIdentifiersSet.end());
-  // vector of unique constraint values
-  std::vector<scalarFieldType> uniqueValues(uniqueIdentifiers.size());
-
-  // put identifier corresponding constraints in vector
-  for(size_t i = 0; i < uniqueIdentifiers.size(); ++i) {
-    for(SimplexId j = 0; j < constraintNumber_; ++j) {
-      if(uniqueIdentifiers[i] == identifiers[j]) {
-        uniqueValues[i] = sf[j];
-        break;
-      }
-    }
-  }
-
-  // unique constraint number
-  size_t uniqueConstraintNumber = uniqueValues.size();
-
   // graph laplacian of current mesh
+  using SpMat = Eigen::SparseMatrix<scalarFieldType>;
   SpMat lap;
-  if(useCotanWeights_) {
-    Laplacian::cotanWeights<scalarFieldType>(lap, *triangulation_);
-  } else {
-    Laplacian::discreteLaplacian<scalarFieldType>(lap, *triangulation_);
-  }
+  Laplacian::cotanWeights<scalarFieldType>(lap, *triangulation_);
 
-  {
-    Timer te;
+  using Vect = Eigen::Matrix<scalarFieldType, Eigen::Dynamic, 1>;
+  Vect out(lap.rows());
 
-    using Vect = Eigen::Matrix<scalarFieldType, Eigen::Dynamic, 1>;
-    Vect out(lap.rows());
+  auto res = eigenfunctions<scalarFieldType>(lap, out);
 
-    eigenfunctions<scalarFieldType>(lap, out, size_t(logAlpha_));
-
-    auto outputScalarField
-      = static_cast<scalarFieldType *>(outputScalarFieldPointer_);
+  auto outputScalarField
+    = static_cast<scalarFieldType *>(outputScalarFieldPointer_);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      // cannot avoid copy here...
-      outputScalarField[i] = out(i, 0);
-    }
-
-    stringstream msg;
-    msg << "[EigenField] Laplacian eigenvalues " << te.getElapsedTime()
-        << "s (discrete laplacian, " << threadNumber_ << " thread(s))" << endl;
-    dMsg(cout, msg.str(), infoMsg);
-
-    return 0;
-  }
-
-  // constraints vector
-  SpVec constraints(vertexNumber_);
-  for(size_t i = 0; i < uniqueConstraintNumber; ++i) {
-    // put constraint at identifier index
-    constraints.coeffRef(uniqueIdentifiers[i]) = uniqueValues[i];
-  }
-
-  auto sm = ttk::SolvingMethodType::Cholesky;
-
-  switch(solvingMethod_) {
-    case ttk::SolvingMethodUserType::Auto:
-      sm = findBestSolver();
-      break;
-    case ttk::SolvingMethodUserType::Cholesky:
-      sm = ttk::SolvingMethodType::Cholesky;
-      break;
-    case ttk::SolvingMethodUserType::Iterative:
-      sm = ttk::SolvingMethodType::Iterative;
-      break;
-  }
-
-  // penalty matrix
-  SpMat penalty(vertexNumber_, vertexNumber_);
-  // penalty value
-  const scalarFieldType alpha = pow10(logAlpha_);
-
-  std::vector<TripletType> triplets;
-  triplets.reserve(uniqueConstraintNumber);
-  for(size_t i = 0; i < uniqueConstraintNumber; ++i) {
-    triplets.emplace_back(
-      TripletType(uniqueIdentifiers[i], uniqueIdentifiers[i], alpha));
-  }
-  penalty.setFromTriplets(triplets.begin(), triplets.end());
-
-  int res = 0;
-  SpMat sol;
-
-  switch(sm) {
-    case ttk::SolvingMethodType::Cholesky:
-      res = solve<SpMat, SpVec, Eigen::SimplicialCholesky<SpMat>>(
-        lap, penalty, constraints, sol);
-      break;
-    case ttk::SolvingMethodType::Iterative:
-      res = solve<SpMat, SpVec,
-                  Eigen::ConjugateGradient<SpMat, Eigen::Upper | Eigen::Lower>>(
-        lap, penalty, constraints, sol);
-      break;
+  for(SimplexId i = 0; i < vertexNumber_; ++i) {
+    // cannot avoid copy here...
+    outputScalarField[i] = out(i, 0);
   }
 
   {
@@ -250,36 +128,10 @@ int ttk::EigenField::execute() const {
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
-  auto outputScalarField
-    = static_cast<scalarFieldType *>(outputScalarFieldPointer_);
-
-  // convert to dense Eigen matrix
-  Eigen::Matrix<scalarFieldType, Eigen::Dynamic, 1> solDense(sol);
-
-  // copy solver solution into output array
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < vertexNumber_; ++i) {
-    // cannot avoid copy here...
-    outputScalarField[i] = -solDense(i, 0);
-  }
-
   {
     stringstream msg;
     msg << "[EigenField] Ending computation after " << t.getElapsedTime()
-        << "s (";
-    if(useCotanWeights_) {
-      msg << "cotan weights, ";
-    } else {
-      msg << "discrete laplacian, ";
-    }
-    if(sm == ttk::SolvingMethodType::Iterative) {
-      msg << "iterative solver, ";
-    } else {
-      msg << "Cholesky, ";
-    }
-    msg << threadNumber_ << " thread(s))" << endl;
+        << "s (" << threadNumber_ << " thread(s))" << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
 
