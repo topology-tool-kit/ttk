@@ -1,12 +1,12 @@
 #include <EigenField.h>
 #include <Laplacian.h>
 
-#ifdef TTK_ENABLE_EIGEN
-#include <Eigen/Sparse>
-#endif // TTK_ENABLE_EIGEN
+#define MODULE_S "[EigenField] "
 
-#ifdef TTK_ENABLE_EIGEN
+#if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_SPECTRA)
 #include <Eigen/Eigenvalues>
+#include <Eigen/Sparse>
+
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
@@ -17,17 +17,40 @@
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif // __GNUC__
-#endif // TTK_ENABLE_EIGEN
 
-template <typename scalarFieldType,
-          typename SparseMatrixType = Eigen::SparseMatrix<scalarFieldType>,
-          typename VectorType
-          = Eigen::Matrix<scalarFieldType, Eigen::Dynamic, 1>>
-int ttk::EigenField::eigenfunctions(const SparseMatrixType A,
-                                    VectorType &eigenVector) const {
+#endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
 
-  auto n = A.cols();
+// main routine
+template <typename T>
+int ttk::EigenField::execute() const {
+
+  Timer t;
+
+#if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_SPECTRA)
+
+#ifdef TTK_ENABLE_OPENMP
+  Eigen::setNbThreads(threadNumber_);
+#endif // TTK_ENABLE_OPENMP
+
+  using SpMat = Eigen::SparseMatrix<T>;
+  using DMat = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
+
+  {
+    std::stringstream msg;
+    msg << MODULE_S "Beginnning computation" << std::endl;
+    dMsg(std::cout, msg.str(), detailedInfoMsg);
+  }
+
+  // graph laplacian of current mesh
+  SpMat lap;
+  // compute graph laplacian using cotangent weights
+  Laplacian::cotanWeights<T>(lap, *triangulation_);
+  // lap is square
+  eigen_plain_assert(lap.cols() == lap.rows());
+
+  auto n = lap.cols();
   auto m = eigenNumber_;
+  // threshold: minimal number of eigenpairs to get a converging solution
   const size_t minEigenNumber = 20;
 
   if(eigenNumber_ == 0) {
@@ -37,119 +60,71 @@ int ttk::EigenField::eigenfunctions(const SparseMatrixType A,
     m = minEigenNumber;
   }
 
-  // A is square
-  eigen_plain_assert(n == A.rows());
+  Spectra::SparseGenMatProd<T> op(lap);
+  Spectra::SymEigsSolver<T, Spectra::LARGEST_ALGE, decltype(op)> solver(
+    &op, m, 2 * m);
 
-  Spectra::SparseGenMatProd<scalarFieldType> op(A);
-  Spectra::SymEigsSolver<scalarFieldType, Spectra::LARGEST_ALGE, decltype(op)>
-    eigs(&op, m, 2 * m);
+  solver.init();
 
-  eigs.init();
-  int nconv = eigs.compute();
-
-  int ret = eigs.info();
-
-  // Retrieve results
-  if(ret == Spectra::SUCCESSFUL) {
-    eigenVector = eigs.eigenvectors().col(m - 1);
-  } else if(ret == Spectra::NOT_CONVERGING) {
-    std::cout << "not converging" << std::endl;
-    if(nconv > 0) {
-      eigenVector = eigs.eigenvectors().col(nconv - 1);
-    }
-  } else if(ret == Spectra::NUMERICAL_ISSUE) {
-    std::cout << "numerical issue" << std::endl;
-  }
-
-  return ret;
-}
-
-// main routine
-template <typename scalarFieldType>
-int ttk::EigenField::execute() const {
-
-  using std::cerr;
-  using std::cout;
-  using std::endl;
-  using std::stringstream;
-
-#ifdef TTK_ENABLE_EIGEN
-
-#ifdef TTK_ENABLE_OPENMP
-  Eigen::setNbThreads(threadNumber_);
-#endif // TTK_ENABLE_OPENMP
-
-  Timer t;
+  // number of eigenpairs correctly computed
+  int nconv = solver.compute();
 
   {
-    stringstream msg;
-    msg << "[EigenField] Beginnning computation" << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+    std::stringstream msg;
+    switch(solver.info()) {
+      case Spectra::COMPUTATION_INFO::SUCCESSFUL:
+        msg << MODULE_S "Success!" << std::endl;
+        break;
+      case Spectra::COMPUTATION_INFO::NUMERICAL_ISSUE:
+        msg << MODULE_S "Numerical Issue!" << std::endl;
+        break;
+      case Spectra::COMPUTATION_INFO::NOT_CONVERGING:
+        msg << MODULE_S "No Convergence! (" << nconv << " out of "
+            << eigenNumber_ << " values computed)" << std::endl;
+        break;
+      case Spectra::COMPUTATION_INFO::NOT_COMPUTED:
+        msg << MODULE_S "Invalid Input!" << std::endl;
+        break;
+    }
+    dMsg(std::cout, msg.str(), detailedInfoMsg);
   }
 
-  // graph laplacian of current mesh
-  using SpMat = Eigen::SparseMatrix<scalarFieldType>;
-  SpMat lap;
-  Laplacian::cotanWeights<scalarFieldType>(lap, *triangulation_);
+  DMat eigenvectors = solver.eigenvectors();
 
-  using Vect = Eigen::Matrix<scalarFieldType, Eigen::Dynamic, 1>;
-  Vect out(lap.rows());
-
-  auto res = eigenfunctions<scalarFieldType>(lap, out);
-
-  auto outputScalarField
-    = static_cast<scalarFieldType *>(outputScalarFieldPointer_);
+  auto outputScalarField = static_cast<T *>(outputScalarFieldPointer_);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < vertexNumber_; ++i) {
     // cannot avoid copy here...
-    outputScalarField[i] = out(i, 0);
+    outputScalarField[i] = eigenvectors(i, 0);
   }
 
   {
-    stringstream msg;
-    auto info = static_cast<Eigen::ComputationInfo>(res);
-    switch(info) {
-      case Eigen::ComputationInfo::Success:
-        msg << "[EigenField] Success!" << endl;
-        break;
-      case Eigen::ComputationInfo::NumericalIssue:
-        msg << "[EigenField] Numerical Issue!" << endl;
-        break;
-      case Eigen::ComputationInfo::NoConvergence:
-        msg << "[EigenField] No Convergence!" << endl;
-        break;
-      case Eigen::ComputationInfo::InvalidInput:
-        msg << "[EigenField] Invalid Input!" << endl;
-        break;
-    }
-    dMsg(cout, msg.str(), advancedInfoMsg);
-  }
-
-  {
-    stringstream msg;
-    msg << "[EigenField] Ending computation after " << t.getElapsedTime()
-        << "s (" << threadNumber_ << " thread(s))" << endl;
-    dMsg(cout, msg.str(), infoMsg);
+    std::stringstream msg;
+    msg << MODULE_S "Ending computation after " << t.getElapsedTime() << "s ("
+        << threadNumber_ << " thread(s))" << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
   }
 
 #else
+
   {
-    stringstream msg;
-    msg << "[EigenField]" << endl;
-    msg << "[EigenField]" << endl;
-    msg << "[EigenField] Eigen support disabled, computation "
-           "skipped!"
-        << endl;
-    msg << "[EigenField] Please re-compile TTK with Eigen support to enable"
-        << " this feature." << endl;
-    msg << "[EigenField]" << endl;
-    msg << "[EigenField]" << endl;
-    dMsg(cerr, msg.str(), infoMsg);
+    std::stringstream msg;
+    msg << MODULE_S << std::endl;
+    msg << MODULE_S << std::endl;
+    msg << MODULE_S "Spectra support disabled, computation skipped!"
+        << std::endl;
+    msg << MODULE_S "Please re-compile TTK with Eigen AND Spectra support to "
+                    "enable this feature."
+        << std::endl;
+    msg << MODULE_S << std::endl;
+    msg << MODULE_S << std::endl;
+    dMsg(std::cerr, msg.str(), infoMsg);
   }
-#endif // TTK_ENABLE_EIGEN
+
+#endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
 
   return 0;
 }

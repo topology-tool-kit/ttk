@@ -17,9 +17,6 @@
 #include <Geometry.h>
 #include <Triangulation.h>
 #include <Wrapper.h>
-#include <cmath>
-#include <set>
-#include <tuple>
 
 namespace ttk {
 
@@ -55,13 +52,7 @@ namespace ttk {
       eigenNumber_ = eigenNumber;
     }
 
-    template <typename scalarFieldType,
-              typename SparseMatrixType,
-              typename VectorType>
-    int eigenfunctions(SparseMatrixType A,
-                       VectorType &eigenVector) const;
-
-    template <typename scalarFieldType>
+    template <typename T>
     int execute() const;
 
   private:
@@ -74,4 +65,5 @@ namespace ttk {
     // log10 of penalty value
     size_t eigenNumber_{20};
   };
+
 } // namespace ttk
