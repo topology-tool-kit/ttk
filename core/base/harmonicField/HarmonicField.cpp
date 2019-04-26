@@ -1,4 +1,6 @@
 #include <HarmonicField.h>
+#include <Laplacian.h>
+
 #ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Eigenvalues>
 #if defined(__GNUC__)
@@ -137,10 +139,9 @@ int ttk::HarmonicField::execute() const {
   // graph laplacian of current mesh
   SpMat lap;
   if(useCotanWeights_) {
-    lap = compute_laplacian_with_cotan_weights<SpMat, TripletType,
-                                               scalarFieldType>();
+    Laplacian::cotanWeights<scalarFieldType>(lap, *triangulation_);
   } else {
-    lap = compute_laplacian<SpMat, TripletType, scalarFieldType>();
+    Laplacian::discreteLaplacian<scalarFieldType>(lap, *triangulation_);
   }
 
   {
