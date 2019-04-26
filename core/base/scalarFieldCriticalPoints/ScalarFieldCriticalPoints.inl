@@ -318,11 +318,11 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
     upperList[i] = upperList[i]->find();
 
   std::vector<UnionFind *>::iterator it;
-  sort(lowerList.begin(), lowerList.end());
+  std::sort(lowerList.begin(), lowerList.end());
   it = unique(lowerList.begin(), lowerList.end());
   lowerList.resize(distance(lowerList.begin(), it));
 
-  sort(upperList.begin(), upperList.end());
+  std::sort(upperList.begin(), upperList.end());
   it = unique(upperList.begin(), upperList.end());
   upperList.resize(distance(upperList.begin(), it));
 
