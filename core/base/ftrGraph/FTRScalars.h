@@ -153,7 +153,7 @@ namespace ttk {
   schedule(static, size_ / threadNumber_)
 #endif
           for(idVertex i = 0; i < size_; i++) {
-            if(::std::isnan(values_[i])) {
+            if(::std::isnan((double) values_[i])) {
               values_[i] = 0;
             }
           }
