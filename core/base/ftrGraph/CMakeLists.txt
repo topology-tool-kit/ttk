@@ -53,8 +53,6 @@ ttk_add_base_library(ftrGraph
     ${profiler_lib}
     )
 
-target_include_directories(ftrGraph PUBLIC ${Boost_INCLUDE_DIR})
-
 # target definitions
 
 if(ENABLE_PROFILING)
