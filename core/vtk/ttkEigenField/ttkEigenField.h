@@ -82,26 +82,11 @@ public:
     SetThreads();
   }
 
-  vtkSetMacro(InputScalarFieldName, std::string);
-  vtkGetMacro(InputScalarFieldName, std::string);
-
-  vtkSetMacro(InputIdentifiersFieldName, std::string);
-  vtkGetMacro(InputIdentifiersFieldName, std::string);
-
   vtkSetMacro(OutputScalarFieldName, std::string);
   vtkGetMacro(OutputScalarFieldName, std::string);
 
-  vtkSetMacro(ForceConstraintIdentifiers, bool);
-  vtkGetMacro(ForceConstraintIdentifiers, bool);
-
-  vtkSetMacro(UseCotanWeights, bool);
-  vtkGetMacro(UseCotanWeights, bool);
-
-  vtkSetMacro(SolvingMethod, int);
-  vtkGetMacro(SolvingMethod, int);
-
-  vtkSetMacro(LogAlpha, double);
-  vtkGetMacro(LogAlpha, double);
+  vtkSetMacro(EigenNumber, size_t);
+  vtkGetMacro(EigenNumber, size_t);
 
   // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
@@ -129,29 +114,15 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
-  // user-defined input constraints (float) scalar field name
-  std::string InputScalarFieldName;
   // output scalar field
-  std::string OutputScalarFieldName;
-  // let the user choose a different identifier scalar field
-  bool ForceConstraintIdentifiers;
-  // graph laplacian variant
-  bool UseCotanWeights;
-  // user-defined input identifier (SimplexId) scalar field name
-  std::string InputIdentifiersFieldName;
-  // user-selected solving method
-  int SolvingMethod;
-  // penalty value
-  double LogAlpha;
+  std::string OutputScalarFieldName{"OutputEigenField"};
+  // number of eigenpairs to compute
+  size_t EigenNumber{20};
 
   // enum: float or double
-  int OutputScalarFieldType;
+  int OutputScalarFieldType{EigenFieldType::Float};
   // worker object
-  ttk::EigenField eigenField_;
+  ttk::EigenField baseWorker_{};
   // teh mesh
-  ttk::Triangulation *triangulation_;
-  // points on the mesh where constraints_ are set
-  vtkDataArray *identifiers_;
-  // scalar field constraint values on identifiers_
-  vtkDataArray *constraints_;
+  ttk::Triangulation *triangulation_{};
 };

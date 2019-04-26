@@ -2,22 +2,8 @@
 
 vtkStandardNewMacro(ttkEigenField);
 
-ttkEigenField::ttkEigenField()
-  : UseCotanWeights{true}, SolvingMethod{0}, LogAlpha{5}, triangulation_{},
-    identifiers_{}, constraints_{} {
-
+ttkEigenField::ttkEigenField() {
   SetNumberOfInputPorts(2);
-
-  InputScalarFieldName
-    = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
-  OutputScalarFieldName = "OutputEigenField";
-  OutputScalarFieldType = EigenFieldType::Float;
-
-  ForceConstraintIdentifiers = false;
-  ThreadNumber = threadNumber_;
-  UseAllCores = true;
-  InputIdentifiersFieldName
-    = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
 }
 
 int ttkEigenField::FillInputPortInformation(int port, vtkInformation *info) {
@@ -45,8 +31,8 @@ int ttkEigenField::getTriangulation(vtkDataSet *input) {
 #endif
 
   triangulation_->setWrapper(this);
-  eigenField_.setWrapper(this);
-  eigenField_.setupTriangulation(triangulation_);
+  baseWorker_.setWrapper(this);
+  baseWorker_.setupTriangulation(triangulation_);
   Modified();
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -61,59 +47,8 @@ int ttkEigenField::getTriangulation(vtkDataSet *input) {
   return 0;
 }
 
-int ttkEigenField::getIdentifiers(vtkPointSet *input) {
-  auto vsfn = static_cast<const char *>(ttk::VertexScalarFieldName);
-
-  if(ForceConstraintIdentifiers && InputIdentifiersFieldName.length() != 0) {
-    identifiers_
-      = input->GetPointData()->GetArray(InputIdentifiersFieldName.data());
-  } else if(input->GetPointData()->GetArray(vsfn) != nullptr) {
-    identifiers_ = input->GetPointData()->GetArray(vsfn);
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(identifiers_ == nullptr) {
-    cerr << "[ttkEigenField] Error: wrong vertex identifier "
-            "scalar field."
-         << endl;
-    return -1;
-  }
-#endif
-  return 0;
-}
-
-int ttkEigenField::getConstraints(vtkPointSet *input) {
-  auto osfn = static_cast<const char *>(ttk::OffsetScalarFieldName);
-  auto pointData = input->GetPointData();
-
-  if(InputScalarFieldName.length() != 0) {
-    constraints_ = pointData->GetArray(InputScalarFieldName.data());
-  } else if(pointData->GetArray(osfn) != nullptr) {
-    constraints_ = pointData->GetArray(osfn);
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(constraints_ == nullptr) {
-    cerr << "[ttkEigenField] Error: wrong constraint "
-            "scalar field."
-         << endl;
-    return -1;
-  }
-#endif
-
-  if(constraints_->IsA("vtkDoubleArray")) {
-    OutputScalarFieldType = EigenFieldType::Double;
-  } else if(constraints_->IsA("vtkFloatArray")) {
-    OutputScalarFieldType = EigenFieldType::Float;
-  } else {
-    return -2;
-  }
-
-  return 0;
-}
-
 int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
-                           std::vector<vtkDataSet *> &outputs) {
+                        std::vector<vtkDataSet *> &outputs) {
 
   ttk::Memory m;
 
@@ -123,33 +58,12 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
 
   int res = 0;
 
-  // set this early, since it should trigger some triangulation pre-processing
-  eigenField_.setUseCotanWeights(UseCotanWeights);
-
   res += getTriangulation(domain);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(res != 0) {
     cerr << "[ttkEigenField] Error: wrong triangulation." << endl;
     return -1;
-  }
-#endif
-
-  res += getIdentifiers(identifiers);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(res != 0) {
-    cerr << "[ttkEigenField] Error: wrong identifiers." << endl;
-    return -2;
-  }
-#endif
-
-  res += getConstraints(identifiers);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(res != 0) {
-    cerr << "[ttkEigenField] Error: wrong constraints." << endl;
-    return -2;
   }
 #endif
 
@@ -162,31 +76,16 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  const ttk::SimplexId numberOfPointsInSources
-    = identifiers->GetNumberOfPoints();
+  baseWorker_.setEigenNumber(EigenNumber);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(numberOfPointsInSources == 0) {
-    cerr << "[ttkEigenField] Error: sources have no points." << endl;
-    return -4;
-  }
-#endif
-
-  eigenField_.setVertexNumber(numberOfPointsInDomain);
-  eigenField_.setConstraintNumber(numberOfPointsInSources);
-  eigenField_.setSources(identifiers_->GetVoidPointer(0));
-  eigenField_.setConstraints(constraints_->GetVoidPointer(0));
-  eigenField_.setSolvingMethod(SolvingMethod);
-  eigenField_.setLogAlpha(LogAlpha);
-
-  vtkSmartPointer<vtkDataArray> harmonicScalarField{};
+  vtkSmartPointer<vtkDataArray> eigenScalarField{};
 
   switch(OutputScalarFieldType) {
     case EigenFieldType::Float:
-      harmonicScalarField = vtkSmartPointer<vtkFloatArray>::New();
+      eigenScalarField = vtkSmartPointer<vtkFloatArray>::New();
       break;
     case EigenFieldType::Double:
-      harmonicScalarField = vtkSmartPointer<vtkDoubleArray>::New();
+      eigenScalarField = vtkSmartPointer<vtkDoubleArray>::New();
       break;
     default:
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -197,25 +96,24 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(harmonicScalarField == nullptr) {
+  if(eigenScalarField == nullptr) {
     cerr << "[ttkEigenField] Error: vtkArray allocation problem." << endl;
     return -8;
   }
 #endif
 
-  harmonicScalarField->SetNumberOfComponents(1);
-  harmonicScalarField->SetNumberOfTuples(numberOfPointsInDomain);
-  harmonicScalarField->SetName(OutputScalarFieldName.data());
+  eigenScalarField->SetNumberOfComponents(1);
+  eigenScalarField->SetNumberOfTuples(numberOfPointsInDomain);
+  eigenScalarField->SetName(OutputScalarFieldName.data());
 
-  eigenField_.setOutputScalarFieldPointer(
-    harmonicScalarField->GetVoidPointer(0));
+  baseWorker_.setOutputScalarFieldPointer(eigenScalarField->GetVoidPointer(0));
 
   switch(OutputScalarFieldType) {
     case EigenFieldType::Float:
-      res += eigenField_.execute<float>();
+      res += baseWorker_.execute<float>();
       break;
     case EigenFieldType::Double:
-      res += eigenField_.execute<double>();
+      res += baseWorker_.execute<double>();
       break;
     default:
       break;
@@ -233,7 +131,7 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
 
   // update result
   output->ShallowCopy(domain);
-  output->GetPointData()->AddArray(harmonicScalarField);
+  output->GetPointData()->AddArray(eigenScalarField);
 
   std::stringstream msg;
   msg << "[ttkEigenField] Memory usage: " << m.getElapsedUsage() << " MB."
