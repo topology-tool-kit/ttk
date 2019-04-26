@@ -19,23 +19,29 @@
 #endif // __GNUC__
 #endif // TTK_ENABLE_EIGEN
 
-ttk::HarmonicField::HarmonicField()
-  : vertexNumber_{}, edgeNumber_{}, constraintNumber_{}, useCotanWeights_{true},
-    triangulation_{}, sources_{}, constraints_{}, outputScalarFieldPointer_{},
-    solvingMethod_{ttk::SolvingMethodUserType::Auto}, logAlpha_{5} {
-}
-
 ttk::SolvingMethodType ttk::HarmonicField::findBestSolver() const {
 
   // for switching between Cholesky factorization and Iterate
   // (conjugate gradients) method
-  SimplexId threshold = 500000;
+  const SimplexId threshold = 500000;
 
   // compare threshold to number of non-zero values in laplacian matrix
   if(2 * edgeNumber_ + vertexNumber_ > threshold) {
     return ttk::SolvingMethodType::Iterative;
   }
   return ttk::SolvingMethodType::Cholesky;
+}
+
+template <typename SparseMatrixType,
+          typename SparseVectorType,
+          typename SolverType>
+int ttk::HarmonicField::solve(SparseMatrixType const &lap,
+                              SparseMatrixType const &penalty,
+                              SparseVectorType const &constraints,
+                              SparseMatrixType &sol) const {
+  SolverType solver(lap - penalty);
+  sol = solver.solve(penalty * constraints);
+  return solver.info();
 }
 
 template <typename scalarFieldType,

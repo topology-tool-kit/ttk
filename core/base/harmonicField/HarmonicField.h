@@ -30,8 +30,9 @@ namespace ttk {
   class HarmonicField : public Debug {
 
   public:
-    HarmonicField();
 
+    // default constructor
+    HarmonicField() = default;
     // default destructor
     ~HarmonicField() override = default;
     // default copy constructor
@@ -109,43 +110,28 @@ namespace ttk {
                        VectorType &eigenVector,
                        size_t eigenNumber = 0) const;
 
-  protected:
+  private:
     // number of vertices in the mesh
-    SimplexId vertexNumber_;
+    SimplexId vertexNumber_{};
     // number of edges in the mesh
-    SimplexId edgeNumber_;
+    SimplexId edgeNumber_{};
     // number of constraints
-    SimplexId constraintNumber_;
+    SimplexId constraintNumber_{};
     // cotan weights vs simple laplacian resolution
-    bool useCotanWeights_;
+    bool useCotanWeights_{true};
     // the mesh
-    Triangulation *triangulation_;
+    Triangulation *triangulation_{};
     // array of mesh points with scalar constraints
     // should be of constraintNumber_ size
-    void *sources_;
+    void *sources_{};
     // array of scalar constraints on sources_
     // should be of constraintNumber_ size
-    void *constraints_;
+    void *constraints_{};
     // output of harmonic field computation
-    void *outputScalarFieldPointer_;
+    void *outputScalarFieldPointer_{};
     // user-selected solver
-    SolvingMethodUserType solvingMethod_;
+    SolvingMethodUserType solvingMethod_{ttk::SolvingMethodUserType::Auto};
     // log10 of penalty value
-    double logAlpha_;
+    double logAlpha_{5};
   };
 } // namespace ttk
-
-// if the package is a pure template typename, uncomment the following line
-// #include                  <HarmonicField.cpp>
-
-template <typename SparseMatrixType,
-          typename SparseVectorType,
-          typename SolverType>
-int ttk::HarmonicField::solve(SparseMatrixType const &lap,
-                              SparseMatrixType const &penalty,
-                              SparseVectorType const &constraints,
-                              SparseMatrixType &sol) const {
-  SolverType solver(lap - penalty);
-  sol = solver.solve(penalty * constraints);
-  return solver.info();
-}
