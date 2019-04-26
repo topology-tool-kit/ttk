@@ -24,6 +24,10 @@ namespace ttk{
 			time_limit_ = std::numeric_limits<double>::max();
 			epsilon_min_ = 1e-5;
 			epsilon_.resize(3);
+			precision_criterion_ = false;
+			cost_min_=0;
+			cost_max_=0;
+			cost_sad_=0;
 		};
 
 		~PDClustering(){};
@@ -51,6 +55,7 @@ namespace ttk{
 		void initializeCentroids();
 		void initializeCentroidsKMeanspp();
 		void initializeAcceleratedKMeans();
+		void initializeBarycenterComputers();
 
         std::vector<dataType> enrichCurrentBidderDiagrams(std::vector<dataType> previous_min_persistence, 
 		        std::vector<dataType> min_persistence, 
@@ -183,6 +188,13 @@ namespace ttk{
 
 
     protected:
+
+    std::vector<PDBarycenter<dataType>> barycenter_computer_min_;
+    std::vector<PDBarycenter<dataType>> barycenter_computer_sad_;
+    std::vector<PDBarycenter<dataType>> barycenter_computer_max_;
+
+    bool 	barycenter_inputs_reset_flag;
+    bool	precision_criterion_;
     bool           deterministic_;
 	  int 					wasserstein_;
 	  double                geometrical_factor_;
@@ -206,6 +218,9 @@ namespace ttk{
 	  dataType              epsilon_min_;
       std::vector<double>              epsilon_;
 	  dataType              cost_;
+	  dataType              cost_min_;
+	  dataType              cost_sad_;
+	  dataType              cost_max_;
 
 	  std::vector<std::vector<diagramTuple>> *inputDiagramsMin_;
 	  std::vector<std::vector<diagramTuple>> *inputDiagramsSaddle_;

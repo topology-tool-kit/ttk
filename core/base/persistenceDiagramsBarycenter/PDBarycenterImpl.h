@@ -910,7 +910,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
 		barycenter.push_back(t);
 	}
 
-    cost_ = sqrt(total_cost);
+	cost_ = total_cost;
 	std::vector<std::vector<matchingTuple>> corrected_matchings = correctMatchings(previous_matchings);
 	for(unsigned int d=0; d<current_bidder_diagrams_.size(); ++d){
 		if(debugLevel_>1)
