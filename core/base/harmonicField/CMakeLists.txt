@@ -8,6 +8,3 @@ ttk_add_base_library(harmonicField
     laplacian
     triangulation
     )
-
-target_include_directories(harmonicField PRIVATE "/home/pierre/Projects/extern/spectra/include")
-#target_compile_options(harmonicField PRIVATE "-O1")

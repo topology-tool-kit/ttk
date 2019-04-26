@@ -30,7 +30,6 @@ namespace ttk {
   class HarmonicField : public Debug {
 
   public:
-
     // default constructor
     HarmonicField() = default;
     // default destructor
@@ -102,13 +101,6 @@ namespace ttk {
 
     template <typename scalarFieldType>
     int execute() const;
-
-    template <typename scalarFieldType,
-              typename SparseMatrixType,
-              typename VectorType>
-    int eigenfunctions(SparseMatrixType A,
-                       VectorType &eigenVector,
-                       size_t eigenNumber = 0) const;
 
   private:
     // number of vertices in the mesh
