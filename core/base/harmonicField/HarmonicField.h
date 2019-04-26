@@ -22,10 +22,6 @@
 #include <tuple>
 #include <type_traits>
 
-#ifdef TTK_ENABLE_EIGEN
-#include <Eigen/Sparse>
-#endif // TTK_ENABLE_EIGEN
-
 namespace ttk {
 
   enum struct SolvingMethodUserType { Auto = 0, Cholesky = 1, Iterative = 2 };

@@ -2,6 +2,10 @@
 #include <Laplacian.h>
 
 #ifdef TTK_ENABLE_EIGEN
+#include <Eigen/Sparse>
+#endif // TTK_ENABLE_EIGEN
+
+#ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Eigenvalues>
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
