@@ -3,18 +3,14 @@
 vtkStandardNewMacro(ttkEigenField);
 
 ttkEigenField::ttkEigenField() {
-  SetNumberOfInputPorts(2);
+  SetNumberOfInputPorts(1);
 }
 
 int ttkEigenField::FillInputPortInformation(int port, vtkInformation *info) {
-
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
   }
-  if(port == 1) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
-  }
-  return 1;
+  return 0;
 }
 
 int ttkEigenField::getTriangulation(vtkDataSet *input) {
@@ -53,7 +49,6 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   ttk::Memory m;
 
   vtkDataSet *domain = vtkDataSet::SafeDownCast(inputs[0]);
-  vtkPointSet *identifiers = vtkPointSet::SafeDownCast(inputs[1]);
   vtkDataSet *output = vtkDataSet::SafeDownCast(outputs[0]);
 
   int res = 0;
