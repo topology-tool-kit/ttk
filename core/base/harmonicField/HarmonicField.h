@@ -116,6 +116,13 @@ namespace ttk {
               typename scalarFieldType>
     SparseMatrixType compute_laplacian_with_cotan_weights() const;
 
+    template <typename scalarFieldType,
+              typename SparseMatrixType,
+              typename VectorType>
+    int eigenfunctions(SparseMatrixType A,
+                       VectorType &eigenVector,
+                       size_t eigenNumber = 0) const;
+
   protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_;

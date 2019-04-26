@@ -1,4 +1,17 @@
 #include <HarmonicField.h>
+#ifdef TTK_ENABLE_EIGEN
+#include <Eigen/Eigenvalues>
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#endif // __GNUC__
+#include <Spectra/MatOp/SparseGenMatProd.h>
+#include <Spectra/SymEigsSolver.h>
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif // __GNUC__
+#endif // TTK_ENABLE_EIGEN
 
 ttk::HarmonicField::HarmonicField()
   : vertexNumber_{}, edgeNumber_{}, constraintNumber_{}, useCotanWeights_{true},
@@ -17,6 +30,51 @@ ttk::SolvingMethodType ttk::HarmonicField::findBestSolver() const {
     return ttk::SolvingMethodType::Iterative;
   }
   return ttk::SolvingMethodType::Cholesky;
+}
+
+template <typename scalarFieldType,
+          typename SparseMatrixType = Eigen::SparseMatrix<scalarFieldType>,
+          typename VectorType
+          = Eigen::Matrix<scalarFieldType, Eigen::Dynamic, 1>>
+int ttk::HarmonicField::eigenfunctions(const SparseMatrixType A,
+                                       VectorType &eigenVector,
+                                       const size_t eigenNumber) const {
+
+  auto n = A.cols();
+  auto m = eigenNumber;
+
+  if(eigenNumber == 0) {
+    // default value
+    m = n / 1000;
+  } else if(eigenNumber < 20) {
+    m = 20;
+  }
+
+  // A is square
+  eigen_plain_assert(n == A.rows());
+
+  Spectra::SparseGenMatProd<scalarFieldType> op(A);
+  Spectra::SymEigsSolver<scalarFieldType, Spectra::LARGEST_ALGE, decltype(op)>
+    eigs(&op, m, 2 * m);
+
+  eigs.init();
+  int nconv = eigs.compute();
+
+  int ret = eigs.info();
+
+  // Retrieve results
+  if(ret == Spectra::SUCCESSFUL) {
+    eigenVector = eigs.eigenvectors().col(m - 1);
+  } else if(ret == Spectra::NOT_CONVERGING) {
+    std::cout << "not converging" << std::endl;
+    if(nconv > 0) {
+      eigenVector = eigs.eigenvectors().col(nconv - 1);
+    }
+  } else if(ret == Spectra::NUMERICAL_ISSUE) {
+    std::cout << "numerical issue" << std::endl;
+  }
+
+  return ret;
 }
 
 // main routine
@@ -83,6 +141,33 @@ int ttk::HarmonicField::execute() const {
                                                scalarFieldType>();
   } else {
     lap = compute_laplacian<SpMat, TripletType, scalarFieldType>();
+  }
+
+  {
+    Timer te;
+
+    using Vect = Eigen::Matrix<scalarFieldType, Eigen::Dynamic, 1>;
+    Vect out(lap.rows());
+
+    eigenfunctions<scalarFieldType>(lap, out, size_t(logAlpha_));
+
+    auto outputScalarField
+      = static_cast<scalarFieldType *>(outputScalarFieldPointer_);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < vertexNumber_; ++i) {
+      // cannot avoid copy here...
+      outputScalarField[i] = out(i, 0);
+    }
+
+    stringstream msg;
+    msg << "[HarmonicField] Laplacian eigenvalues " << te.getElapsedTime()
+        << "s (discrete laplacian, " << threadNumber_ << " thread(s))" << endl;
+    dMsg(cout, msg.str(), infoMsg);
+
+    return 0;
   }
 
   // constraints vector
