@@ -7,25 +7,30 @@
 namespace ttk {
   namespace Laplacian {
     /**
-     * @brief Compute the Laplacian shortest path from source
+     * @brief Compute the Laplacian matrix of the graph
      *
-     * @param[in] source Source vertex from which to compute the Laplacian
-     * algorithm
+     * @param[out] output Laplacian matrix
      * @param[in] triangulation Access to neighbor vertices, should be already
      * preprocessed
-     * @param[out] outputDists Vector of distances to source for every vertex in
-     * the mesh
-     * @param[in] bounds Pointer to a vector of vertices that will
-     * stop the algorithm once all are reached, set it to nullptr for
-     * processing the whole mesh
      *
      * @return 0 in case of success
      */
-    template <typename T>
-    int shortestPath(const SimplexId source,
-                     Triangulation &triangulation,
-                     std::vector<T> &outputDists,
-                     const std::vector<SimplexId> &bounds = std::vector<SimplexId>());
+    template <typename T, typename SparseMatrixType>
+    int discreteLaplacian(SparseMatrixType &output,
+                          Triangulation &triangulation);
+
+    /**
+     * @brief Compute the Laplacian matrix of the graph using the
+     * cotangente weights method
+     *
+     * @param[out] output Laplacian matrix
+     * @param[in] triangulation Access to neighbor vertices, should be already
+     * preprocessed
+     *
+     * @return 0 in case of success
+     */
+    template <typename T, typename SparseMatrixType>
+    int cotanWeights(SparseMatrixType &output, Triangulation &triangulation);
 
   } // namespace Laplacian
 } // namespace ttk
