@@ -72,9 +72,6 @@ int ttk::EigenField::execute() const {
   {
     std::stringstream msg;
     switch(solver.info()) {
-      case Spectra::COMPUTATION_INFO::SUCCESSFUL:
-        msg << MODULE_S "Success!" << std::endl;
-        break;
       case Spectra::COMPUTATION_INFO::NUMERICAL_ISSUE:
         msg << MODULE_S "Numerical Issue!" << std::endl;
         break;
@@ -85,8 +82,10 @@ int ttk::EigenField::execute() const {
       case Spectra::COMPUTATION_INFO::NOT_COMPUTED:
         msg << MODULE_S "Invalid Input!" << std::endl;
         break;
+      default:
+        break;
     }
-    dMsg(std::cout, msg.str(), detailedInfoMsg);
+    dMsg(std::cout, msg.str(), infoMsg);
   }
 
   DMat eigenvectors = solver.eigenvectors();
