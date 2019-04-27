@@ -96,8 +96,10 @@ int ttk::EigenField::execute() const {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < vertexNumber_; ++i) {
+    for(size_t j = 0; j < eigenNumber_; ++j) {
     // cannot avoid copy here...
-    outputScalarField[i] = eigenvectors(i, 0);
+      outputScalarField[i * eigenNumber_ + j] = eigenvectors(i, j);
+    }
   }
 
   {

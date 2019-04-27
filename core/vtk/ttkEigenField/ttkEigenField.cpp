@@ -79,7 +79,7 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
 
   TTK_ABORT_KK(eigenScalarField == nullptr, "vtkArray allocation problem", -3);
 
-  eigenScalarField->SetNumberOfComponents(1);
+  eigenScalarField->SetNumberOfComponents(EigenNumber);
   eigenScalarField->SetNumberOfTuples(vertexNumber);
   eigenScalarField->SetName(OutputScalarFieldName.data());
 
