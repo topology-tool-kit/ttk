@@ -1,5 +1,17 @@
 #include <ttkEigenField.h>
 
+#define MODULE_S "[ttkEigenField] "
+#define MODULE_ERROR_S MODULE_S "Error: "
+#ifndef TTK_ENABLE_KAMIKAZE
+#define TTK_ABORT_KK(COND, MSG, RET)    \
+  if(COND) {                            \
+    cerr << MODULE_ERROR_S MSG << endl; \
+    return RET;                         \
+  }
+#else // TTK_ENABLE_KAMIKAZE
+#define TTK_ABORT_KK(COND, MSG, RET)
+#endif // TTK_ENABLE_KAMIKAZE
+
 vtkStandardNewMacro(ttkEigenField);
 
 ttkEigenField::ttkEigenField() {
@@ -17,28 +29,16 @@ int ttkEigenField::getTriangulation(vtkDataSet *input) {
 
   triangulation_ = ttkTriangulation::getTriangulation(input);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(triangulation_ == nullptr) {
-    cerr << "[ttkEigenField] Error: input triangulation pointer "
-            "is NULL."
-         << endl;
-    return -1;
-  }
-#endif
+  TTK_ABORT_KK(
+    triangulation_ == nullptr, "input triangulation pointer is NULL.", -1);
 
   triangulation_->setWrapper(this);
   baseWorker_.setWrapper(this);
   baseWorker_.setupTriangulation(triangulation_);
   Modified();
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(triangulation_->isEmpty()) {
-    cerr << "[ttkEigenField] Error: ttkTriangulation allocation "
-            "problem."
-         << endl;
-    return -1;
-  }
-#endif
+  TTK_ABORT_KK(
+    triangulation_->isEmpty(), "ttkTriangulation allocation problem.", -2);
 
   return 0;
 }
@@ -55,21 +55,11 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
 
   res += getTriangulation(domain);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(res != 0) {
-    cerr << "[ttkEigenField] Error: wrong triangulation." << endl;
-    return -1;
-  }
-#endif
+  TTK_ABORT_KK(res != 0, "wrong triangulation", -1);
 
-  const ttk::SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
+  const auto numberOfPointsInDomain = domain->GetNumberOfPoints();
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(numberOfPointsInDomain == 0) {
-    cerr << "[ttkEigenField] Error: domain has no points." << endl;
-    return -3;
-  }
-#endif
+  TTK_ABORT_KK(numberOfPointsInDomain == 0, "domain has no points", -2);
 
   baseWorker_.setEigenNumber(EigenNumber);
 
@@ -83,19 +73,11 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
       eigenScalarField = vtkSmartPointer<vtkDoubleArray>::New();
       break;
     default:
-#ifndef TTK_ENABLE_KAMIKAZE
-      cerr << "[ttkEigenField] Error: Unknown scalar field type" << endl;
-      return -7;
-#endif // TTK_ENABLE_KAMIKAZE
+      TTK_ABORT_KK(true, "unknown scalar field type", -7);
       break;
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(eigenScalarField == nullptr) {
-    cerr << "[ttkEigenField] Error: vtkArray allocation problem." << endl;
-    return -8;
-  }
-#endif
+  TTK_ABORT_KK(eigenScalarField == nullptr, "vtkArray allocation problem", -3);
 
   eigenScalarField->SetNumberOfComponents(1);
   eigenScalarField->SetNumberOfTuples(numberOfPointsInDomain);
@@ -114,15 +96,7 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
       break;
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  // something wrong in base/EigenField
-  if(res != 0) {
-    cerr << "[ttkEigenField] EigenField.execute() "
-            "error code: "
-         << res << endl;
-    return -9;
-  }
-#endif
+  TTK_ABORT_KK(res != 0, "EigenField execute error code " << res, -4);
 
   // update result
   output->ShallowCopy(domain);
