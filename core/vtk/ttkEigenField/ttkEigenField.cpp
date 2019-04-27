@@ -57,9 +57,9 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
 
   TTK_ABORT_KK(res != 0, "wrong triangulation", -1);
 
-  const auto numberOfPointsInDomain = domain->GetNumberOfPoints();
+  const auto vertexNumber = domain->GetNumberOfPoints();
 
-  TTK_ABORT_KK(numberOfPointsInDomain == 0, "domain has no points", -2);
+  TTK_ABORT_KK(vertexNumber == 0, "domain has no points", -2);
 
   baseWorker_.setEigenNumber(EigenNumber);
 
@@ -80,7 +80,7 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   TTK_ABORT_KK(eigenScalarField == nullptr, "vtkArray allocation problem", -3);
 
   eigenScalarField->SetNumberOfComponents(1);
-  eigenScalarField->SetNumberOfTuples(numberOfPointsInDomain);
+  eigenScalarField->SetNumberOfTuples(vertexNumber);
   eigenScalarField->SetName(OutputScalarFieldName.data());
 
   baseWorker_.setOutputScalarFieldPointer(eigenScalarField->GetVoidPointer(0));
