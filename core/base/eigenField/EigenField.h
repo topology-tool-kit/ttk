@@ -45,8 +45,8 @@ namespace ttk {
         triangulation_->preprocessEdgeTriangles();
       }
     }
-    inline void setOutputScalarFieldPointer(void *data) {
-      outputScalarFieldPointer_ = data;
+    inline void setOutputFieldPointer(void *data) {
+      outputFieldPointer_ = data;
     }
     inline void setEigenNumber(unsigned int eigenNumber) {
       eigenNumber_ = eigenNumber;
@@ -61,7 +61,7 @@ namespace ttk {
     // number of vertices in the mesh
     SimplexId vertexNumber_{};
     // output eigenfunctions scalar fields
-    void *outputScalarFieldPointer_{};
+    void *outputFieldPointer_{};
     // number of eigenfunctions to compute
     unsigned int eigenNumber_{20};
   };

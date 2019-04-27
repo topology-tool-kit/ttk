@@ -84,7 +84,7 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   eigenFunctions->SetNumberOfTuples(vertexNumber);
   eigenFunctions->SetName(OutputFieldName.data());
 
-  baseWorker_.setOutputScalarFieldPointer(eigenFunctions->GetVoidPointer(0));
+  baseWorker_.setOutputFieldPointer(eigenFunctions->GetVoidPointer(0));
 
   switch(OutputFieldType) {
     case EigenFieldType::Float:

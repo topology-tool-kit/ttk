@@ -90,15 +90,15 @@ int ttk::EigenField::execute() const {
 
   DMat eigenvectors = solver.eigenvectors();
 
-  auto outputScalarField = static_cast<T *>(outputScalarFieldPointer_);
+  auto outputEigenFunctions = static_cast<T *>(outputFieldPointer_);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < vertexNumber_; ++i) {
     for(size_t j = 0; j < eigenNumber_; ++j) {
-    // cannot avoid copy here...
-      outputScalarField[i * eigenNumber_ + j] = eigenvectors(i, j);
+      // cannot avoid copy here...
+      outputEigenFunctions[i * eigenNumber_ + j] = eigenvectors(i, j);
     }
   }
 
