@@ -17,7 +17,7 @@ namespace ttk {
      */
     template <typename T, typename SparseMatrixType>
     int discreteLaplacian(SparseMatrixType &output,
-                          Triangulation &triangulation);
+                          const Triangulation &triangulation);
 
     /**
      * @brief Compute the Laplacian matrix of the graph using the
@@ -30,7 +30,8 @@ namespace ttk {
      * @return 0 in case of success
      */
     template <typename T, typename SparseMatrixType>
-    int cotanWeights(SparseMatrixType &output, Triangulation &triangulation);
+    int cotanWeights(SparseMatrixType &output,
+                     const Triangulation &triangulation);
 
   } // namespace Laplacian
 } // namespace ttk

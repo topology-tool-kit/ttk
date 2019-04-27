@@ -6,7 +6,7 @@
 
 template <typename T, typename SparseMatrixType = Eigen::SparseMatrix<T>>
 int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
-                                      Triangulation &triangulation) {
+                                      const Triangulation &triangulation) {
 
   using Triplet = Eigen::Triplet<T>;
   auto vertexNumber = triangulation.getNumberOfVertices();
@@ -61,7 +61,7 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
 
 template <typename T, typename SparseMatrixType = Eigen::SparseMatrix<T>>
 int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
-                                 Triangulation &triangulation) {
+                                 const Triangulation &triangulation) {
 
   using Triplet = Eigen::Triplet<T>;
   auto vertexNumber = triangulation.getNumberOfVertices();
@@ -176,16 +176,16 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
 // explicit intantiations for floating-point types
 template int
   ttk::Laplacian::discreteLaplacian<float>(Eigen::SparseMatrix<float> &output,
-                                           Triangulation &triangulation);
+                                           const Triangulation &triangulation);
 template int
   ttk::Laplacian::discreteLaplacian<double>(Eigen::SparseMatrix<double> &output,
-                                            Triangulation &triangulation);
+                                            const Triangulation &triangulation);
 
 template int
   ttk::Laplacian::cotanWeights<float>(Eigen::SparseMatrix<float> &output,
-                                      Triangulation &triangulation);
+                                      const Triangulation &triangulation);
 template int
   ttk::Laplacian::cotanWeights<double>(Eigen::SparseMatrix<double> &output,
-                                       Triangulation &triangulation);
+                                       const Triangulation &triangulation);
 
 #endif // TTK_ENABLE_EIGEN
