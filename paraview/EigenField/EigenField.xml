@@ -35,7 +35,7 @@
         </Documentation>
       </InputProperty>
 
-      <DoubleVectorProperty
+      <IntVectorProperty
           name="EigenNumber"
           label="Number of eigenfunctions to compute"
           command="SetEigenNumber"
@@ -45,7 +45,7 @@
         <Documentation>
           Select the number of eigenfunctions to compute.
         </Documentation>
-      </DoubleVectorProperty>
+      </IntVectorProperty>
 
       <StringVectorProperty
         name="OutputScalarFieldName"

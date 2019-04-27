@@ -48,7 +48,7 @@ namespace ttk {
     inline void setOutputScalarFieldPointer(void *data) {
       outputScalarFieldPointer_ = data;
     }
-    inline void setEigenNumber(size_t eigenNumber) {
+    inline void setEigenNumber(unsigned int eigenNumber) {
       eigenNumber_ = eigenNumber;
     }
 
@@ -60,10 +60,10 @@ namespace ttk {
     Triangulation *triangulation_{};
     // number of vertices in the mesh
     SimplexId vertexNumber_{};
-    // output of harmonic field computation
+    // output eigenfunctions scalar fields
     void *outputScalarFieldPointer_{};
-    // log10 of penalty value
-    size_t eigenNumber_{20};
+    // number of eigenfunctions to compute
+    unsigned int eigenNumber_{20};
   };
 
 } // namespace ttk

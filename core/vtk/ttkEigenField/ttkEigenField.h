@@ -85,8 +85,8 @@ public:
   vtkSetMacro(OutputScalarFieldName, std::string);
   vtkGetMacro(OutputScalarFieldName, std::string);
 
-  vtkSetMacro(EigenNumber, size_t);
-  vtkGetMacro(EigenNumber, size_t);
+  vtkSetMacro(EigenNumber, unsigned int);
+  vtkGetMacro(EigenNumber, unsigned int);
 
   // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
@@ -117,7 +117,7 @@ private:
   // output scalar field
   std::string OutputScalarFieldName{"OutputEigenField"};
   // number of eigenpairs to compute
-  size_t EigenNumber{20};
+  unsigned int EigenNumber{20};
 
   // enum: float or double
   int OutputScalarFieldType{EigenFieldType::Float};
