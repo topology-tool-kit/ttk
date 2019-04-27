@@ -1,18 +1,17 @@
 /// \ingroup vtk
 /// \class ttkEigenField
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
-/// \date February 2019
+/// \author Julien Tierny <julien.tierny@lip6.fr>
+/// \date April 2019
 ///
-/// \brief TTK VTK-filter for harmonic field computations.
+/// \brief TTK VTK-filter for eigenfunctions computation.
 ///
-/// The current filter takes a list of sources with attached scalar
-/// values and produces a scalar harmonic field fulfilling these
-/// constraints.
+/// This plugin computes the first eigenfunctions of a given
+/// triangular surface mesh.
 ///
-/// \param Input0 Input geometry, either 2D or 3D, either regular grid
-/// or triangulation (vtkDataSet)
-/// \param Input1 List of critical point constraints (vtkPointSet)
-/// \param Output Output harmonic scalar field (vtkDataSet)
+/// \param Input0 Input 2D geometry, either regular grid or
+/// triangulation (vtkDataSet)
+/// \param Output Output eigenfunctions (vtkDataSet)
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
@@ -21,14 +20,11 @@
 /// VTK pipeline.
 ///
 /// \b Related \b publication \n
-/// "Dynamic harmonic fields for surface processing" \n
-/// Kai Xu, Hao Zhang, Daniel Cohen-Or, Yueshan Xiong \n
-/// Computers & Graphics 2009. \n
+///  "Spectral surface quadrangulation"
+///  Shen Dong, Peer-Timo Bremer, Michael Garland, Valerio Pascucci, John C. Hart
+///  SIGGRAPH 2006
 ///
-/// \sa ttkScalarFieldCriticalPoints
-/// \sa ttkIntegralLines
-/// \sa ttkFTMTree
-/// \sa ttkIdentifiers
+/// \sa ttkHarmonicField
 /// \sa ttk::EigenField
 
 #pragma once

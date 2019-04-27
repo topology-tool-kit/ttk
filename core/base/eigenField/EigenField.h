@@ -2,12 +2,10 @@
 /// \class ttk::EigenField
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \author Julien Tierny <julien.tierny@lip6.fr>
-/// \date February 2019
+/// \date April 2019
 ///
-/// \brief TTK processing package for the topological simplification of scalar
-/// data.
-///
-///
+/// \brief TTK processing package for computing eigenfunctions of a
+/// triangular mesh.
 ///
 /// \sa ttkEigenField.cpp % for a usage example.
 
