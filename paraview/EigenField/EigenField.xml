@@ -48,14 +48,14 @@
       </IntVectorProperty>
 
       <StringVectorProperty
-        name="OutputScalarFieldName"
-        command="SetOutputScalarFieldName"
+        name="OutputFieldName"
+        command="SetOutputFieldName"
         label="Output scalar field name"
         number_of_elements="1"
-        default_values="OutputEigenField"
+        default_values="OutputEigenFunctions"
         panel_visibility="advanced">
         <Documentation>
-          Select the name of the output scalar field.
+          Select the name of the output eigenfunctions field.
         </Documentation>
       </StringVectorProperty>
 
@@ -113,7 +113,7 @@
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="EigenNumber" />
-        <Property name="OutputScalarFieldName"/>
+        <Property name="OutputFieldName"/>
       </PropertyGroup>
 
       <Hints>

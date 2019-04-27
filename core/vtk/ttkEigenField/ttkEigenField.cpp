@@ -63,29 +63,30 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
 
   baseWorker_.setEigenNumber(EigenNumber);
 
-  vtkSmartPointer<vtkDataArray> eigenScalarField{};
+  // array of eigenfunctions
+  vtkSmartPointer<vtkDataArray> eigenFunctions{};
 
-  switch(OutputScalarFieldType) {
+  switch(OutputFieldType) {
     case EigenFieldType::Float:
-      eigenScalarField = vtkSmartPointer<vtkFloatArray>::New();
+      eigenFunctions = vtkSmartPointer<vtkFloatArray>::New();
       break;
     case EigenFieldType::Double:
-      eigenScalarField = vtkSmartPointer<vtkDoubleArray>::New();
+      eigenFunctions = vtkSmartPointer<vtkDoubleArray>::New();
       break;
     default:
-      TTK_ABORT_KK(true, "unknown scalar field type", -7);
+      TTK_ABORT_KK(true, "unknown field type", -7);
       break;
   }
 
-  TTK_ABORT_KK(eigenScalarField == nullptr, "vtkArray allocation problem", -3);
+  TTK_ABORT_KK(eigenFunctions == nullptr, "vtkArray allocation problem", -3);
 
-  eigenScalarField->SetNumberOfComponents(EigenNumber);
-  eigenScalarField->SetNumberOfTuples(vertexNumber);
-  eigenScalarField->SetName(OutputScalarFieldName.data());
+  eigenFunctions->SetNumberOfComponents(EigenNumber);
+  eigenFunctions->SetNumberOfTuples(vertexNumber);
+  eigenFunctions->SetName(OutputFieldName.data());
 
-  baseWorker_.setOutputScalarFieldPointer(eigenScalarField->GetVoidPointer(0));
+  baseWorker_.setOutputScalarFieldPointer(eigenFunctions->GetVoidPointer(0));
 
-  switch(OutputScalarFieldType) {
+  switch(OutputFieldType) {
     case EigenFieldType::Float:
       res += baseWorker_.execute<float>();
       break;
@@ -100,7 +101,7 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
 
   // update result
   output->ShallowCopy(domain);
-  output->GetPointData()->AddArray(eigenScalarField);
+  output->GetPointData()->AddArray(eigenFunctions);
 
   std::stringstream msg;
   msg << "[ttkEigenField] Memory usage: " << m.getElapsedUsage() << " MB."

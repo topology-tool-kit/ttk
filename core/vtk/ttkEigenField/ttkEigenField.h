@@ -82,8 +82,8 @@ public:
     SetThreads();
   }
 
-  vtkSetMacro(OutputScalarFieldName, std::string);
-  vtkGetMacro(OutputScalarFieldName, std::string);
+  vtkSetMacro(OutputFieldName, std::string);
+  vtkGetMacro(OutputFieldName, std::string);
 
   vtkSetMacro(EigenNumber, unsigned int);
   vtkGetMacro(EigenNumber, unsigned int);
@@ -114,13 +114,13 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
-  // output scalar field
-  std::string OutputScalarFieldName{"OutputEigenField"};
+  // output field name
+  std::string OutputFieldName{"OutputEigenFunctions"};
   // number of eigenpairs to compute
   unsigned int EigenNumber{20};
 
   // enum: float or double
-  int OutputScalarFieldType{EigenFieldType::Float};
+  int OutputFieldType{EigenFieldType::Float};
   // worker object
   ttk::EigenField baseWorker_{};
   // teh mesh
