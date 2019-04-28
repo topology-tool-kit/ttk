@@ -29,13 +29,13 @@ int ThreeSkeleton::buildCellEdges(const SimplexId &vertexNumber,
     
   Timer t;
   
-  bool localEdgeListAlloc = false, localVertexEdgesAlloc = false;
-  vector<pair<SimplexId, SimplexId> > *localEdgeList = edgeList;
-  vector<vector<SimplexId> > *localVertexEdges = vertexEdges;
+  auto localEdgeList = edgeList;
+  auto localVertexEdges = vertexEdges;
+  vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
+  vector<vector<SimplexId>> defaultVertexEdges{};
   
   if(!localEdgeList){
-    localEdgeList = new vector<pair<SimplexId, SimplexId> >();
-    localEdgeListAlloc = true;
+    localEdgeList = &defaultEdgeList;
   }
   
   if(!localEdgeList->size()){
@@ -48,8 +48,7 @@ int ThreeSkeleton::buildCellEdges(const SimplexId &vertexNumber,
   }
   
   if(!localVertexEdges){
-    localVertexEdges = new vector<vector<SimplexId> >();
-    localVertexEdgesAlloc = true;
+    localVertexEdges = &defaultVertexEdges;
   }
   
   if(!localVertexEdges->size()){
@@ -103,11 +102,6 @@ int ThreeSkeleton::buildCellEdges(const SimplexId &vertexNumber,
     }
   }
   
-  if(localEdgeListAlloc)
-    delete localEdgeList;
-  if(localVertexEdgesAlloc)
-    delete localVertexEdges;
-  
   {
     stringstream msg;
     msg << "[ThreeSkeleton] Cell edges built in " 
@@ -128,11 +122,10 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(const SimplexId &vertexNumber
 
   Timer t;
     
-  bool localTriangleStarsAlloc = false;
-  vector<vector<SimplexId> > *localTriangleStars = triangleStars;
+  auto localTriangleStars = triangleStars;
+  vector<vector<SimplexId>> defaultTriangleStars{};
   if(!localTriangleStars){
-    localTriangleStars = new vector<vector<SimplexId> >();
-    localTriangleStarsAlloc = true;
+    localTriangleStars = &defaultTriangleStars;
   }
   
   if(!localTriangleStars->size()){
@@ -216,9 +209,6 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(const SimplexId &vertexNumber
     }
   }
   
-  if(localTriangleStarsAlloc)
-    delete localTriangleStars;
-  
   {
     stringstream msg;
     msg << "[ThreeSkeleton] Cell neighbors (" << cellNumber
@@ -275,12 +265,11 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
     
   Timer t;
     
-  bool localVertexStarsAlloc = false;
-  vector<vector<SimplexId> > *localVertexStars = vertexStars;
+  auto localVertexStars = vertexStars;
+  vector<vector<SimplexId>> defaultVertexStars{};
   
   if(!localVertexStars){
-    localVertexStars = new vector<vector<SimplexId> >();
-    localVertexStarsAlloc = true;
+    localVertexStars = &defaultVertexStars;
   }
   
   if(!localVertexStars->size()){
@@ -380,9 +369,6 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
       }
     }
   }
-  
-  if(localVertexStarsAlloc)
-    delete localVertexStars;
   
   {
     stringstream msg;

@@ -199,11 +199,10 @@ int ZeroSkeleton::buildVertexLinks(const SimplexId &vertexNumber,
     
   Timer t;
   
-  bool localVertexStarAlloc = false;
-  vector<vector<SimplexId> > *localVertexStars = vertexStars;
+  auto localVertexStars = vertexStars;
+  vector<vector<SimplexId>> defaultVertexStars{};
   if(!localVertexStars){
-    localVertexStars = new vector<vector<SimplexId> >();
-    localVertexStarAlloc = true;
+    localVertexStars = &defaultVertexStars;
   }
   
   if((SimplexId) localVertexStars->size() != vertexNumber){
@@ -358,9 +357,6 @@ int ZeroSkeleton::buildVertexLinks(const SimplexId &vertexNumber,
     dMsg(cout, msg.str(), Debug::advancedInfoMsg);
   }
   
-  if(localVertexStarAlloc)
-    delete localVertexStars;
-  
   {
     stringstream msg;
     msg << "[ZeroSkeleton] Vertex links built in " 
@@ -495,13 +491,10 @@ int ZeroSkeleton::buildVertexNeighbors(const SimplexId &vertexNumber,
   
   oneSkeleton.resize(vertexNumber);
   
-  bool localAlloc = false;
-  vector<pair<SimplexId, SimplexId> > *localEdgeList = edgeList;
-  
+  auto localEdgeList = edgeList;
+  vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
   if(!localEdgeList){
-    
-    localEdgeList = new vector<pair<SimplexId, SimplexId> >();
-    localAlloc = true;
+    localEdgeList = &defaultEdgeList;
   }
   
   if(!localEdgeList->size()){
@@ -518,9 +511,6 @@ int ZeroSkeleton::buildVertexNeighbors(const SimplexId &vertexNumber,
     oneSkeleton[(*localEdgeList)[i].second].push_back(
       (*localEdgeList)[i].first);
   }
-  
-  if(localAlloc)
-    delete localEdgeList;
   
   {
     stringstream msg;

@@ -18,12 +18,11 @@ int TwoSkeleton::buildCellNeighborsFromVertices(const SimplexId &vertexNumber,
 
   Timer t;
   
-  bool localVertexStarsAlloc = false;
-  vector<vector<SimplexId> > *localVertexStars = vertexStars;
-  
+  auto localVertexStars = vertexStars;
+  vector<vector<SimplexId>> defaultVertexStars{};
+
   if(!localVertexStars){
-    localVertexStars = new vector<vector<SimplexId> >();
-    localVertexStarsAlloc = true;
+    localVertexStars = &defaultVertexStars;
   }
   
   if(!localVertexStars->size()){
@@ -106,9 +105,6 @@ int TwoSkeleton::buildCellNeighborsFromVertices(const SimplexId &vertexNumber,
     }
   }
   
-  if(localVertexStarsAlloc)
-    delete localVertexStars;
-  
   {
     stringstream msg;
     msg << "[TwoSkeleton] Cell neighbors (" << cellNumber
@@ -148,40 +144,32 @@ int TwoSkeleton::buildEdgeTriangles(const SimplexId &vertexNumber,
   // vertexStarList: this guy we can compute if provided but we don't actually
   // need it.
   
-  bool localEdgeListAlloc = false;
-  vector<pair<SimplexId, SimplexId> > *localEdgeList = edgeList;
-  
+  auto localEdgeList = edgeList;
+  vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
   if(!localEdgeList){
-    localEdgeList = new vector<pair<SimplexId, SimplexId> >();
-    localEdgeListAlloc = true;
+    localEdgeList = &defaultEdgeList;
   }
   
-  bool localEdgeStarListAlloc = false;
-  vector<vector<SimplexId> > *localEdgeStarList = edgeStarList;
-  
+  auto localEdgeStarList = edgeStarList;
+  vector<vector<SimplexId>> defaultEdgeStarList{};
   if(!localEdgeStarList){
-    localEdgeStarList = new vector<vector<SimplexId> >();
-    localEdgeStarListAlloc = true;
+    localEdgeStarList = &defaultEdgeStarList;
   }
   
-  bool localTriangleListAlloc = false;
-  vector<vector<SimplexId> > *localTriangleList = triangleList;
-  
+  auto localTriangleList = triangleList;
+  vector<vector<SimplexId>> defaultTriangleList{};
   if(!localTriangleList){
-    localTriangleList = new vector<vector<SimplexId> >();
-    localTriangleListAlloc = true;
+    localTriangleList = &defaultTriangleList;
   }
   
   // NOTE:
   // triangleStarList: this guy we can compute if provided but we don't actually
   // need it.
   
-  bool localCellTriangleListAlloc = false;
-  vector<vector<SimplexId> > *localCellTriangleList = cellTriangleList;
-  
+  auto localCellTriangleList = cellTriangleList;
+  vector<vector<SimplexId>> defaultCellTriangleList{};
   if(!localCellTriangleList){
-    localCellTriangleList = new vector<vector<SimplexId> >();
-    localCellTriangleListAlloc = true;
+    localCellTriangleList = &defaultCellTriangleList;
   }
   
   OneSkeleton oneSkeleton;
@@ -268,22 +256,6 @@ int TwoSkeleton::buildEdgeTriangles(const SimplexId &vertexNumber,
   SimplexId edgeNumber = localEdgeList->size();
   SimplexId triangleNumber = localTriangleList->size();
   
-  if(localEdgeListAlloc){
-    delete localEdgeList;
-  }
-  
-  if(localEdgeStarListAlloc){
-    delete localEdgeStarList;
-  }
-  
-  if(localTriangleListAlloc){
-    delete localTriangleList;
-  }
-  
-  if(localCellTriangleListAlloc){
-    delete localCellTriangleList;
-  }
-    
   {
     stringstream msg;
     msg << "[TwoSkeleton] Edge triangles (" << edgeNumber
@@ -650,11 +622,10 @@ int TwoSkeleton::buildTriangleEdgeList(const SimplexId &vertexNumber,
 
   Timer t;
   
-  bool localEdgeListAlloc = false;
-  vector<pair<SimplexId, SimplexId> > *localEdgeList = edgeList;
+  auto localEdgeList = edgeList;
+  vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
   if(!localEdgeList){
-    localEdgeList = new vector<pair<SimplexId, SimplexId> >();
-    localEdgeListAlloc = true;
+    localEdgeList = &defaultEdgeList;
   }
   
   if(!localEdgeList->size()){
@@ -666,11 +637,10 @@ int TwoSkeleton::buildTriangleEdgeList(const SimplexId &vertexNumber,
       (*localEdgeList));
   }
   
-  bool localVertexEdgeListAlloc = false;
-  vector<vector<SimplexId> > *localVertexEdgeList = vertexEdgeList;
+  auto localVertexEdgeList = vertexEdgeList;
+  vector<vector<SimplexId>> defaultVertexEdgeList{};
   if(!localVertexEdgeList){
-    localVertexEdgeList = new vector<vector<SimplexId> >();
-    localVertexEdgeListAlloc = true;
+    localVertexEdgeList = &defaultVertexEdgeList;
   }
   
   if(!localVertexEdgeList->size()){
@@ -687,11 +657,10 @@ int TwoSkeleton::buildTriangleEdgeList(const SimplexId &vertexNumber,
   // triangleStarList and cellTriangleList: we do not need these guys but we 
   // can compute them for free optionally.
   
-  bool localTriangleListAlloc = false;
-  vector<vector<SimplexId> > *localTriangleList = triangleList;
+  auto localTriangleList = triangleList;
+  vector<vector<SimplexId>> defaultTriangleList{};
   if(!localTriangleList){
-    localTriangleList = new vector<vector<SimplexId> >();
-    localTriangleListAlloc = true;
+    localTriangleList = &defaultTriangleList;
   }
   if(!localTriangleList->size()){
     
@@ -749,18 +718,6 @@ int TwoSkeleton::buildTriangleEdgeList(const SimplexId &vertexNumber,
   
   SimplexId triangleNumber = localTriangleList->size();
   SimplexId edgeNumber = localEdgeList->size();
-  
-  if(localEdgeListAlloc){
-    delete localEdgeList;
-  }
-  
-  if(localVertexEdgeListAlloc){
-    delete localVertexEdgeList;
-  }
-  
-  if(localTriangleListAlloc){
-    delete localTriangleList;
-  }
   
   {
     stringstream msg;
