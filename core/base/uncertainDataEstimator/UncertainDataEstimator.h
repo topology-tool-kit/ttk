@@ -274,7 +274,7 @@ namespace ttk{
       /// Execute the package.
       /// \return Returns 0 upon success, negative values otherwise.
       template <class dataType>
-        int execute() const;
+        int execute();
 
       /// Pass a pointer to an input array representing a scalarfield.
       /// The array is expected to be correctly allocated. idx in [0,numberOfInputs_[
@@ -312,7 +312,7 @@ namespace ttk{
         return 0;
       }
 
-      inline int setOutputProbability(int idx, void *data){
+      inline int setOutputProbability(int idx, double *data){
         if(idx < binCount_){
           outputProbability_[idx] = data;
         }
@@ -348,15 +348,13 @@ namespace ttk{
 
       inline int setBinCount(const int &binCount){
         binCount_ = binCount;
-        if(outputProbability_)
-          free(outputProbability_);
-        outputProbability_ = (void **) malloc(binCount*sizeof(void *));
+        outputProbability_.clear();
+        outputProbability_.resize(binCount);
         for(int b=0 ; b<binCount ; b++)
           outputProbability_[b] = NULL;
 
-        if(binValues_)
-          free(binValues_);
-        binValues_ = (double *) malloc(binCount*sizeof(double));
+        binValues_.clear();
+        binValues_.resize(binCount);
 
         return 0;
       }
@@ -367,9 +365,8 @@ namespace ttk{
       /// \return Returns 0 upon success, negative values otherwise
       inline int setNumberOfInputs(int numberOfInputs){
         numberOfInputs_ = numberOfInputs;
-        if(inputData_)
-          free(inputData_);
-        inputData_ = (void **) malloc(numberOfInputs*sizeof(void *));
+        inputData_.clear();
+        inputData_.resize(numberOfInputs);
         for(int i=0 ; i<numberOfInputs ; i++){
           inputData_[i] = NULL;
         }
@@ -389,13 +386,13 @@ namespace ttk{
       SimplexId                   vertexNumber_;
       int                   numberOfInputs_;
       int                   binCount_;
-      double                *binValues_; //TODO : std::vector<double>
+      std::vector<double>   binValues_{};
       bool                  computeLowerBound_;
       bool                  computeUpperBound_;
-      void                  **inputData_; //TODO : std::vector<void*>
+      std::vector<void*>    inputData_{};
       void                  *outputLowerBoundField_;
       void                  *outputUpperBoundField_;
-      void                  **outputProbability_; //TODO : std::vector<void*>
+      std::vector<double *> outputProbability_{};
       void                  *outputMeanField_;
   };
 }
@@ -404,7 +401,7 @@ namespace ttk{
 // #include                  <UncertainDataEstimator.cpp>
 
 // template functions
-template <class dataType> int ttk::UncertainDataEstimator::execute() const{
+template <class dataType> int ttk::UncertainDataEstimator::execute() {
 
   Timer t;
 
@@ -414,8 +411,6 @@ template <class dataType> int ttk::UncertainDataEstimator::execute() const{
     return -1;
   if(!vertexNumber_)
     return -2;
-  if(!inputData_)
-    return -3;
 
   for(int i=0 ; i<numberOfInputs_ ; i++){
       if(!inputData_[i])
@@ -432,8 +427,7 @@ template <class dataType> int ttk::UncertainDataEstimator::execute() const{
   // Pointers type casting
   dataType *outputLowerBoundField = (dataType *) outputLowerBoundField_;
   dataType *outputUpperBoundField = (dataType *) outputUpperBoundField_;
-  double **outputProbability = (double **) outputProbability_;
-  dataType **inputData = (dataType **) inputData_;
+  dataType **inputData = (dataType **) inputData_.data();
   double *outputMeanField = static_cast<double*>(outputMeanField_);
 
 
@@ -520,7 +514,7 @@ template <class dataType> int ttk::UncertainDataEstimator::execute() const{
       for(int i=0 ; i<numberOfInputs_ ; i++){
         idx = (int) floor((inputData[i][v]-range[0])*binCount_/(range[1]-range[0]));
         idx = (idx==binCount_) ? binCount_-1 : idx;
-        outputProbability[idx][v] += increment;
+        outputProbability_[idx][v] += increment;
       }
     }
   }
