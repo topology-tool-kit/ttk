@@ -28,7 +28,7 @@ vtkStandardNewMacro(ttkDimensionReduction)
           inputData.push_back(arr->GetVariantValue(i).ToDouble());
       }
 
-      outputData_->clear();
+      outputData_.clear();
 
       dimensionReduction_.setWrapper(this);
       dimensionReduction_.setInputModulePath(ModulePath);
@@ -78,7 +78,7 @@ vtkStandardNewMacro(ttkDimensionReduction)
           pca_SVDSolver,
           pca_Tolerance,
           pca_MaxIteration);
-      dimensionReduction_.setOutputComponents(outputData_);
+      dimensionReduction_.setOutputComponents(&outputData_);
       const int errorCode=dimensionReduction_.execute();
 
       if(!errorCode){
@@ -88,7 +88,7 @@ vtkStandardNewMacro(ttkDimensionReduction)
         for(int i=0; i<NumberOfComponents; ++i){
           string s = "Component_" + to_string(i);
           vtkSmartPointer<vtkDoubleArray> arr=vtkSmartPointer<vtkDoubleArray>::New();
-          arr->SetVoidArray((*outputData_)[i].data(), numberOfRows, 1);
+          arr->SetVoidArray(outputData_[i].data(), numberOfRows, 1);
           arr->SetName(s.data());
           output->AddColumn(arr);
         }
