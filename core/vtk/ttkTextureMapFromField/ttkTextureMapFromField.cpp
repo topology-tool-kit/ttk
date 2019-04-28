@@ -1,4 +1,5 @@
 #include                  <ttkTextureMapFromField.h>
+#include <array>
 
 using namespace std;
 using namespace ttk;
@@ -86,10 +87,7 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
   inputScalarFieldU->GetRange(uRange);
   inputScalarFieldV->GetRange(vRange);
  
-  double **coordinates = new double*[threadNumber_];
-  for(ThreadId i = 0; i < threadNumber_; i++){
-    coordinates[i] = new double[2];
-  }
+  std::vector<std::array<double, 2>> coordinates(threadNumber_);
 
   SimplexId count = 0;
   
@@ -124,7 +122,7 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
         }
       } 
       
-      textureCoordinates_->SetTuple(i, coordinates[threadId]);
+      textureCoordinates_->SetTuple(i, coordinates[threadId].data());
     
       if(debugLevel_ > 3){
 #ifdef TTK_ENABLE_OPENMP
@@ -143,11 +141,6 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output){
   
   output->GetPointData()->SetTCoords(textureCoordinates_);
  
-  for(ThreadId i = 0; i < threadNumber_; i++){
-    delete coordinates[i];
-  }
-  delete[] coordinates;
-
   {
     stringstream msg;
     msg << "[ttkTextureMapFromField] Texture map computed in " 
