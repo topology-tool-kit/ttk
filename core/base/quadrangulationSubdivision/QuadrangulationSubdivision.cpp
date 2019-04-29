@@ -187,6 +187,13 @@ int ttk::QuadrangulationSubdivision::subdivise() {
       4, q.l, processedEdges[li].first, baryIdx, processedEdges[kl].first});
   }
 
+  // output subdivision level
+  auto currSubd = outputSubdivision_->back() + 1;
+  auto subdBeg = outputSubdivision_->size();
+  outputSubdivision_->resize(outputPoints_->size());
+  std::fill(
+    outputSubdivision_->begin() + subdBeg, outputSubdivision_->end(), currSubd);
+
   {
     std::stringstream msg;
     msg << MODULE_S "Subdivised " << prevQuads.size() << " quads into "
@@ -622,6 +629,7 @@ int ttk::QuadrangulationSubdivision::execute() {
   outputPoints_->clear();
   outputValences_->clear();
   outputVertType_->clear();
+  outputSubdivision_->clear();
   quadNeighbors_.clear();
   vertexDistance_.clear();
   trianglesChecked_->clear();
@@ -640,6 +648,10 @@ int ttk::QuadrangulationSubdivision::execute() {
   // fill outputInfos_ with input data (critical points)
   outputVertType_->resize(outputPoints_->size());
   std::fill(outputVertType_->begin(), outputVertType_->end(), 0);
+
+  // fill outputSubdivision with input data
+  outputSubdivision_->resize(outputPoints_->size());
+  std::fill(outputSubdivision_->begin(), outputSubdivision_->end(), 0);
 
   // vertices to filter from relaxation, projection
   std::set<size_t> filtered{};

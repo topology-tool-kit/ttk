@@ -94,6 +94,9 @@ namespace ttk {
     inline void setOutputInfos(std::vector<SimplexId> *const address) {
       outputVertType_ = address;
     }
+    inline void setOutputSubdivision(std::vector<SimplexId> *const address) {
+      outputSubdivision_ = address;
+    }
     inline void setTrianglesChecked(std::vector<SimplexId> *const address) {
       trianglesChecked_ = address;
     }
@@ -280,16 +283,19 @@ namespace ttk {
     std::vector<Quad> *outputQuads_{};
     // array of output quadrangle vertices
     std::vector<Point> *outputPoints_{};
-    // array of output quadrangle vertex valences
-    std::vector<SimplexId> *outputValences_{};
-    // array of output quadrangle vertex type
-    std::vector<SimplexId> *outputVertType_{};
     // array mapping quadrangle neighbors
     std::vector<std::set<size_t>> quadNeighbors_{};
     // array of nearest input vertex TTK identifier
     std::vector<SimplexId> nearestVertexIdentifier_{};
     // holds geodesic distance to every other quad vertex sharing a quad
     std::vector<std::vector<float>> vertexDistance_{};
+
+    // array of output quadrangle vertex valences
+    std::vector<SimplexId> *outputValences_{};
+    // array of output quadrangle vertex type
+    std::vector<SimplexId> *outputVertType_{};
+    // array of output vertex subdivision level
+    std::vector<SimplexId> *outputSubdivision_{};
     // number of triangles checked per quad vertex for the last projection
     std::vector<SimplexId> *trianglesChecked_{};
     // last projection success per quad vertex

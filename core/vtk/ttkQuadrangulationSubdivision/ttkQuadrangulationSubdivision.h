@@ -156,6 +156,8 @@ private:
   // 1 - edge middle
   // 2 - quadrangle barycenter
   std::vector<ttk::SimplexId> outVertexType_{};
+  // subdivision level that generated the points
+  std::vector<ttk::SimplexId> outSubdvisionLevel_{};
   // number of triangles checked during last projection
   std::vector<ttk::SimplexId> trianglesChecked_{};
   // success of last projection

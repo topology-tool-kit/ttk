@@ -100,6 +100,7 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   baseWorker_.setOutputQuads(&outQuadrangles_);
   baseWorker_.setOutputValences(&outVertexValences_);
   baseWorker_.setOutputInfos(&outVertexType_);
+  baseWorker_.setOutputSubdivision(&outSubdvisionLevel_);
   baseWorker_.setTrianglesChecked(&trianglesChecked_);
   baseWorker_.setProjSucceeded(&projSucceeded_);
 
@@ -151,6 +152,11 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   infos->SetName("Type");
   infos->SetVoidArray(outVertexType_.data(), outVertexType_.size(), 1);
   output->GetPointData()->AddArray(infos);
+
+  auto subd = vtkSmartPointer<vtkIntArray>::New();
+  subd->SetName("Subdivision");
+  subd->SetVoidArray(outSubdvisionLevel_.data(), outSubdvisionLevel_.size(), 1);
+  output->GetPointData()->AddArray(subd);
 
   if(RelaxationIterations > 0) {
     // add data array of number of triangles checked
