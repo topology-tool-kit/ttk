@@ -617,9 +617,15 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   Timer t;
 
+  // clear output variables
   outputQuads_->clear();
   outputPoints_->clear();
+  outputValences_->clear();
   outputVertType_->clear();
+  quadNeighbors_.clear();
+  vertexDistance_.clear();
+  trianglesChecked_->clear();
+  projSucceeded_->clear();
 
   // store input points (MSC critical points)
   for(size_t i = 0; i < inputVertexNumber_; i++) {
