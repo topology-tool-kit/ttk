@@ -23,9 +23,6 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Mesh" function="FieldDataSelection" />
-        </InputArrayDomain>
         <Documentation>
           Data-set to process.
         </Documentation>
@@ -43,9 +40,6 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Quadrangles" function="FieldDataSelection" />
-        </InputArrayDomain>
         <Documentation>
           Data-set to process.
         </Documentation>
