@@ -225,32 +225,38 @@ ttk::QuadrangulationSubdivision::Point
     }
   }
 
-  std::set<std::array<size_t, 2>> couples{};
+  // store for each quad around a the two neighbors and the third
+  // vertex in this order
+  std::set<std::array<size_t, 3>> neighsQuad{};
 
   // find couple of neighbors of a sharing a quad
   for(auto &q : quads) {
     auto _a = static_cast<long long>(a);
-    std::array<size_t, 2> tmp{};
+    std::array<size_t, 3> tmp{};
     if(q.i == _a) {
       tmp[0] = static_cast<size_t>(q.l);
       tmp[1] = static_cast<size_t>(q.j);
+      tmp[2] = static_cast<size_t>(q.k);
     } else if(q.j == _a) {
       tmp[0] = static_cast<size_t>(q.i);
       tmp[1] = static_cast<size_t>(q.k);
+      tmp[2] = static_cast<size_t>(q.l);
     } else if(q.k == _a) {
       tmp[0] = static_cast<size_t>(q.j);
       tmp[1] = static_cast<size_t>(q.l);
+      tmp[2] = static_cast<size_t>(q.i);
     } else if(q.l == _a) {
       tmp[0] = static_cast<size_t>(q.k);
       tmp[1] = static_cast<size_t>(q.i);
+      tmp[2] = static_cast<size_t>(q.j);
     }
-    couples.insert(tmp);
+    neighsQuad.insert(tmp);
   }
 
   // triangle normals around current quadrangulation vertex
   std::vector<Point> normals{};
 
-  for(auto &t : couples) {
+  for(auto &t : neighsQuad) {
     Point pb = inputPoints[t[0]];
     Point pc = inputPoints[t[1]];
 
@@ -278,8 +284,33 @@ ttk::QuadrangulationSubdivision::Point
     }
   }
 
+  // if quads around current point are coplanar
+  bool coplanar = true;
+
+  // for each quad that contains a, project fourth vertex into the
+  // three first vertices (a and its two direct neighbors) to compare
+  // the distance between the fourth vertex and its projection to the
+  // mean distance between a and its neighbors
+  for(auto &nq : neighsQuad) {
+    Point crossP{};
+    Point ab = inputPoints[nq[0]] - pa;
+    Point ac = inputPoints[nq[1]] - pa;
+    // compute ab ^ ac
+    Geometry::crossProduct(&ab.x, &ac.x, &crossP.x);
+    Point unitNorm = crossP / Geometry::magnitude(&crossP.x);
+    Point ad = inputPoints[nq[2]] - pa;
+    Point proj = pa - unitNorm * Geometry::dotProduct(&unitNorm.x, &ad.x);
+    auto dist = Geometry::distance(&pa.x, &proj.x);
+    const auto threshold
+      = 0.25 * (Geometry::magnitude(&ab.x) + Geometry::magnitude(&ac.x));
+    if(dist > threshold) {
+      coplanar = false;
+      break;
+    }
+  }
+
   // fallback to euclidian projection code if no normals
-  bool doReverseProj = reverseProjection_ && !normals.empty();
+  bool doReverseProj = reverseProjection_ && !normals.empty() && coplanar;
 
   // compute mean of normals
   Point normalsMean = std::accumulate(normals.begin(), normals.end(), Point{},
