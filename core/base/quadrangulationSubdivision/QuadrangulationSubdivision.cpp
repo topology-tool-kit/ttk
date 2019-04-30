@@ -279,7 +279,7 @@ ttk::QuadrangulationSubdivision::Point
   }
 
   // fallback to euclidian projection code if no normals
-  bool intersect = reverseProjection_ && !normals.empty();
+  bool doReverseProj = reverseProjection_ && !normals.empty();
 
   // compute mean of normals
   Point normalsMean = std::accumulate(normals.begin(), normals.end(), Point{},
@@ -338,8 +338,8 @@ ttk::QuadrangulationSubdivision::Point
     // unitary normal vector
     Point normTri = crossP / Geometry::magnitude(&crossP.x);
 
-    if(intersect) { // compute intersection of triangle plane and line (a,
-                    // normalsMean)
+    // compute intersection of triangle plane and line (a, normalsMean)
+    if(doReverseProj) {
 
       auto denom = Geometry::dotProduct(&normalsMean.x, &normTri.x);
 
@@ -368,7 +368,9 @@ ttk::QuadrangulationSubdivision::Point
       // intersection
       res = pa + normalsMean * alpha;
 
-    } else { // compute euclidian projection of a in triangle plane
+    }
+    // compute euclidian projection of a in triangle plane
+    else {
 
       auto tmp = pa - pm;
       // projection
@@ -458,7 +460,7 @@ ttk::QuadrangulationSubdivision::Point
   if(lastIter) {
     trianglesChecked_->at(a)
       = std::count(trianglesTested.begin(), trianglesTested.end(), true);
-    projSucceeded_->at(a) = success ? (intersect ? 1 : 2) : 0;
+    projSucceeded_->at(a) = success ? (doReverseProj ? 1 : 2) : 0;
   }
 
   return res;
