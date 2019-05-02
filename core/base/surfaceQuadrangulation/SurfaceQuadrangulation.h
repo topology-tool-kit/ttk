@@ -91,7 +91,6 @@ namespace ttk {
   private:
     bool hasCommonManifold(const std::vector<size_t> &verts) const;
 
-  protected:
     Triangulation *triangulation_{};
 
     // number of critical points from the Morse-Smale complex
