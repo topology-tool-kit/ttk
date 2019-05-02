@@ -97,6 +97,7 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   stats->SetComponentName(2, "Sum");
 
   baseWorker_.setOutputFieldPointer(eigenFunctions->GetVoidPointer(0));
+  baseWorker_.setOutputStatistics(stats->GetVoidPointer(0));
 
   switch(OutputFieldType) {
     case EigenFieldType::Float:
@@ -110,46 +111,6 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   }
 
   TTK_ABORT_KK(res != 0, "EigenField execute error code " << res, -4);
-
-  // compute statistics
-  switch(OutputFieldType) {
-    case EigenFieldType::Float: {
-      auto outp = static_cast<float *>(stats->GetVoidPointer(0));
-      for(size_t i = 0; i < vertexNumber; ++i) {
-        // outp index
-        auto k = statsComp * i;
-        // GetTuple returns a double* pointer
-        auto inp = eigenFunctions->GetTuple(i);
-        outp[k] = float(inp[0]);
-        outp[k + 1] = outp[k];
-        outp[k + 2] = outp[k];
-        for(size_t j = 1; j < EigenNumber; ++j) {
-          outp[k] = std::min<float>(outp[k], float(inp[j]));
-          outp[k + 1] = std::max<float>(outp[k + 1], float(inp[j]));
-          outp[k + 2] += float(inp[j]);
-        }
-      }
-    } break;
-    case EigenFieldType::Double: {
-      auto outp = static_cast<double *>(stats->GetVoidPointer(0));
-      for(size_t i = 0; i < statsComp * vertexNumber; i += statsComp) {
-        // outp index
-        auto k = statsComp * i;
-        // GetTuple returns a double* pointer
-        auto inp = eigenFunctions->GetTuple(i);
-        outp[k] = inp[0];
-        outp[k + 1] = outp[k];
-        outp[k + 2] = outp[k];
-        for(size_t j = 1; j < EigenNumber; ++j) {
-          outp[k] = std::min<double>(outp[k], inp[j]);
-          outp[k + 1] = std::max<double>(outp[k + 1], inp[j]);
-          outp[k + 2] += inp[j];
-        }
-      }
-    } break;
-    default:
-      break;
-  }
 
   // update result
   output->ShallowCopy(domain);

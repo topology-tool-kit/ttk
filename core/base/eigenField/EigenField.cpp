@@ -102,6 +102,34 @@ int ttk::EigenField::execute() const {
     }
   }
 
+  if(outputStatistics_ != nullptr) {
+
+    // number of statistics components
+    const int statsComp = 3;
+
+    auto outputStats = static_cast<T *>(outputStatistics_);
+
+    // compute statistics on eigenfunctions
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < vertexNumber_; ++i) {
+      auto k = i * statsComp;
+      // init current tuple computation
+      outputStats[k] = outputEigenFunctions[i * eigenNumber_];
+      outputStats[k + 1] = outputEigenFunctions[i * eigenNumber_];
+      outputStats[k + 2] = outputEigenFunctions[i * eigenNumber_];
+      // loop from 1
+      for(size_t j = 1; j < eigenNumber_; ++j) {
+        outputStats[k] = std::min<T>(
+          outputEigenFunctions[i * eigenNumber_ + j], outputStats[k]);
+        outputStats[k + 1] = std::max<T>(
+          outputEigenFunctions[i * eigenNumber_ + j], outputStats[k]);
+        outputStats[k + 2] += outputEigenFunctions[i * eigenNumber_ + j];
+      }
+    }
+  }
+
   {
     std::stringstream msg;
     msg << MODULE_S "Ending computation after " << t.getElapsedTime() << "s ("

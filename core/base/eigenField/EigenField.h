@@ -46,6 +46,9 @@ namespace ttk {
     inline void setOutputFieldPointer(void *data) {
       outputFieldPointer_ = data;
     }
+    inline void setOutputStatistics(void *data) {
+      outputStatistics_ = data;
+    }
     inline void setEigenNumber(unsigned int eigenNumber) {
       eigenNumber_ = eigenNumber;
     }
@@ -60,6 +63,8 @@ namespace ttk {
     SimplexId vertexNumber_{};
     // output eigenfunctions scalar fields
     void *outputFieldPointer_{};
+    // output statistics array
+    void *outputStatistics_{};
     // number of eigenfunctions to compute
     unsigned int eigenNumber_{20};
   };
