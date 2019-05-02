@@ -89,13 +89,12 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   eigenFunctions->SetName(OutputFieldName.data());
 
   stats->SetName("Statistics");
-  const int statsComp = 4;
+  const int statsComp = 3;
   stats->SetNumberOfComponents(statsComp);
   stats->SetNumberOfTuples(vertexNumber);
   stats->SetComponentName(0, "Min");
   stats->SetComponentName(1, "Max");
   stats->SetComponentName(2, "Sum");
-  stats->SetComponentName(3, "Average");
 
   baseWorker_.setOutputFieldPointer(eigenFunctions->GetVoidPointer(0));
 
@@ -129,7 +128,6 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
           outp[k + 1] = std::max<float>(outp[k + 1], float(inp[j]));
           outp[k + 2] += float(inp[j]);
         }
-        outp[k + 3] = outp[k + 2] / EigenNumber;
       }
     } break;
     case EigenFieldType::Double: {
@@ -147,7 +145,6 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
           outp[k + 1] = std::max<double>(outp[k + 1], inp[j]);
           outp[k + 2] += inp[j];
         }
-        outp[k + 3] = outp[k + 2] / EigenNumber;
       }
     } break;
     default:
