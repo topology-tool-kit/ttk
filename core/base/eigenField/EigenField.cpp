@@ -12,7 +12,7 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif // __GNUC__
-#include <Spectra/MatOp/SparseGenMatProd.h>
+#include <Spectra/MatOp/SparseSymMatProd.h>
 #include <Spectra/SymEigsSolver.h>
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
@@ -60,7 +60,7 @@ int ttk::EigenField::execute() const {
     m = minEigenNumber;
   }
 
-  Spectra::SparseGenMatProd<T> op(lap);
+  Spectra::SparseSymMatProd<T> op(lap);
   Spectra::SymEigsSolver<T, Spectra::LARGEST_ALGE, decltype(op)> solver(
     &op, m, 2 * m);
 
