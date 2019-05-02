@@ -72,6 +72,19 @@
       </InputProperty>
 
       <IntVectorProperty
+          name="DualQuadrangulation"
+          label="Dual Quadrangulation"
+          command="SetDualQuadrangulation"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Prefer using a dual quadrangulation that only uses extrema
+          (no saddle point is used as a quadrangle vertex)
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
           name="UseAllCores"
           command="SetUseAllCores"
           label="Use All Cores"
@@ -121,6 +134,10 @@
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="DualQuadrangulation" />
       </PropertyGroup>
 
       <Hints>

@@ -73,6 +73,9 @@ public:
     SetThreads();
   }
 
+  vtkGetMacro(DualQuadrangulation, bool);
+  vtkSetMacro(DualQuadrangulation, bool);
+
   // get data from Morse-Smale Complex
   int getCriticalPoints(vtkUnstructuredGrid *input);
   int getSeparatrices(vtkUnstructuredGrid *input);
@@ -104,4 +107,6 @@ private:
   std::vector<vtkIdType> outQuadrangles_;
   // triangulation
   ttk::Triangulation *triangulation_;
+  // if dual quadrangulation
+  bool DualQuadrangulation{false};
 };

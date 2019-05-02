@@ -74,6 +74,9 @@ namespace ttk {
       segmentationNumber_ = number;
       segmentation_ = static_cast<SimplexId *>(address);
     }
+    inline void setDualQuadrangulation(const bool input) {
+      dualQuadrangulation_ = input;
+    }
     inline void setOutputCells(std::vector<long long> *cells) {
       outputCells_ = cells;
     }
@@ -112,6 +115,8 @@ namespace ttk {
     unsigned int segmentationNumber_{};
     // TTK identifiers -> quad for every vertex segmentation
     SimplexId *segmentation_{};
+    // if dual quadrangulation
+    bool dualQuadrangulation_{false};
 
     // array of output polygons
     std::vector<long long> *outputCells_{};
