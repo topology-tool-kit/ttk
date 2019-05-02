@@ -89,12 +89,13 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   eigenFunctions->SetName(OutputFieldName.data());
 
   stats->SetName("Statistics");
-  const int statsComp = 3;
+  const int statsComp = 4;
   stats->SetNumberOfComponents(statsComp);
   stats->SetNumberOfTuples(vertexNumber);
   stats->SetComponentName(0, "Min");
   stats->SetComponentName(1, "Max");
   stats->SetComponentName(2, "Sum");
+  stats->SetComponentName(3, "Average");
 
   baseWorker_.setOutputFieldPointer(eigenFunctions->GetVoidPointer(0));
   baseWorker_.setOutputStatistics(stats->GetVoidPointer(0));

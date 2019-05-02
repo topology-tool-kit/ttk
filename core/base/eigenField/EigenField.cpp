@@ -105,7 +105,7 @@ int ttk::EigenField::execute() const {
   if(outputStatistics_ != nullptr) {
 
     // number of statistics components
-    const int statsComp = 3;
+    const int statsComp = 4;
 
     auto outputStats = static_cast<T *>(outputStatistics_);
 
@@ -127,6 +127,7 @@ int ttk::EigenField::execute() const {
           outputEigenFunctions[i * eigenNumber_ + j], outputStats[k]);
         outputStats[k + 2] += outputEigenFunctions[i * eigenNumber_ + j];
       }
+      outputStats[k + 3] = outputStats[k + 2] / eigenNumber_;
     }
   }
 
