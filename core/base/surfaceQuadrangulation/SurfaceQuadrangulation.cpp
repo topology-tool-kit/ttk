@@ -103,21 +103,19 @@ int ttk::SurfaceQuadrangulation::execute() const {
     }
   }
 
-  // quadrangle vertices: dest, source, dest, source
-  size_t i, j, k, l;
 
   // number of degenerate quadrangles
   size_t ndegen = 0;
 
   // iterate twice over dests
-  for(i = 0; i < sepMappingDests.size(); i++) {
+  for(size_t i = 0; i < sepMappingDests.size(); i++) {
     // skip if no sources
     if(sepMappingDests[i].empty()) {
       continue;
     }
     // begin second loop at i+1 to avoid duplicates and improve
     // performance
-    for(k = i + 1; k < sepMappingDests.size(); k++) {
+    for(size_t k = i + 1; k < sepMappingDests.size(); k++) {
       // skip same dest or if no sources
       if(k == i || sepMappingDests[k].empty()) {
         continue;
@@ -145,8 +143,8 @@ int ttk::SurfaceQuadrangulation::execute() const {
           for(size_t n = m + 1; n < common_dests.size(); n++) {
 
             // gotcha!
-            j = common_dests[m];
-            l = common_dests[n];
+            size_t j = common_dests[m];
+            size_t l = common_dests[n];
 
             // check for a common shared manifold (looking around
             // saddle points only seems to be sufficient)
@@ -168,7 +166,7 @@ int ttk::SurfaceQuadrangulation::execute() const {
                 && (sepMappingDests[i].size() == 1
                     || sepMappingDests[k].size() == 1)) {
         // we have degenerate quadrangles: i, j, k, j
-        j = common_dests[0];
+        size_t j = common_dests[0];
         ndegen++;
 
         // fill output vector
