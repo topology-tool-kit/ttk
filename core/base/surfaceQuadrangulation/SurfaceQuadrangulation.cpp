@@ -1,10 +1,5 @@
 #include <SurfaceQuadrangulation.h>
 
-ttk::SurfaceQuadrangulation::SurfaceQuadrangulation()
-  : criticalPointsNumber_{}, criticalPointsCellIds_{}, separatriceNumber_{},
-    sepSourceId_{}, sepDestId_{}, outputCells_{} {
-}
-
 bool ttk::SurfaceQuadrangulation::hasCommonManifold(
   const std::vector<size_t> &verts) const {
 

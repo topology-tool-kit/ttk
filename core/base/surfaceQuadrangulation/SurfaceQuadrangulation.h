@@ -28,8 +28,9 @@ namespace ttk {
   class SurfaceQuadrangulation : public Debug {
 
   public:
-    SurfaceQuadrangulation();
 
+    // default constructor
+    SurfaceQuadrangulation() = default;
     // default destructor
     ~SurfaceQuadrangulation() override = default;
     // default copy constructor
@@ -91,30 +92,30 @@ namespace ttk {
     bool hasCommonManifold(const std::vector<size_t> &verts) const;
 
   protected:
-    Triangulation *triangulation_;
+    Triangulation *triangulation_{};
 
     // number of critical points from the Morse-Smale complex
-    SimplexId criticalPointsNumber_;
+    SimplexId criticalPointsNumber_{};
     // mapping points id -> cells id
-    SimplexId *criticalPointsCellIds_;
+    SimplexId *criticalPointsCellIds_{};
     // mapping point id -> TTK identifier
-    SimplexId *criticalPointsIdentifier_;
+    SimplexId *criticalPointsIdentifier_{};
     // critical point type: 0 minimum, 1 saddle point, 2 maximum
-    unsigned char *criticalPointsType_;
+    unsigned char *criticalPointsType_{};
 
     // number of separatrices
-    SimplexId separatriceNumber_;
+    SimplexId separatriceNumber_{};
     // unordered list of cells id sources
-    SimplexId *sepSourceId_;
+    SimplexId *sepSourceId_{};
     // unordered list of cells id destinations
-    SimplexId *sepDestId_;
+    SimplexId *sepDestId_{};
     // number of vertices in segmentation
-    unsigned int segmentationNumber_;
+    unsigned int segmentationNumber_{};
     // TTK identifiers -> quad for every vertex segmentation
-    SimplexId *segmentation_;
+    SimplexId *segmentation_{};
 
     // array of output polygons
-    std::vector<long long> *outputCells_;
+    std::vector<long long> *outputCells_{};
   };
 } // namespace ttk
 
