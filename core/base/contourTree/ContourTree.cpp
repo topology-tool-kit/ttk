@@ -1316,10 +1316,9 @@ int SubLevelSetTree::closeSuperArc(const int &superArcId, const int &nodeId){
 int SubLevelSetTree::getPersistenceDiagram(vector<pair<double, double> > &diagram,
 					   vector<pair<pair<int,int>,double>>* pairs) const{
  
-  bool isLocal=false;
+  vector<pair<pair<int,int>,double>> defaultPairs{};
   if(!pairs){
-    pairs=new vector<pair<pair<int,int>,double>>;
-    isLocal=true;
+    pairs=&defaultPairs;
   }
 
   if(!pairs->size())
@@ -1348,9 +1347,6 @@ int SubLevelSetTree::getPersistenceDiagram(vector<pair<double, double> > &diagra
  
   std::sort(diagram.begin(), diagram.end(), _pPairCmp);
 
-  if(isLocal)
-    delete pairs;
-  
   return 0;
 }
 
@@ -1515,10 +1511,10 @@ int SubLevelSetTree::getPersistencePairs(
 
 int SubLevelSetTree::getPersistencePlot(vector<pair<double,int>> &plot,
 					vector<pair<pair<int,int>,double>>* persistencePairs) const{
-  bool isLocal=false;
+
+  vector<pair<pair<int,int>,double>> defaultPersistencePairs{};
   if(!persistencePairs){
-    persistencePairs=new vector<pair<pair<int,int>,double>>;
-    isLocal=true;
+    persistencePairs=&defaultPersistencePairs;
   }
 
   if(!persistencePairs->size())
@@ -1533,9 +1529,6 @@ int SubLevelSetTree::getPersistencePlot(vector<pair<double,int>> &plot,
     }
     plot[i].second = persistencePairs->size() - i;
   }
-
-  if(isLocal)
-    delete persistencePairs;
 
   return 0;
 }
@@ -2919,15 +2912,13 @@ int ContourTree::getPersistencePairs(vector<pair<pair<int,int>,double>>& pairs,
   if(pairs.size())
     return 0;
   
-  bool isLocalMerge=false;
+  vector<pair<pair<int,int>,double>> defaultMergePairs{};
   if(!mergePairs){
-    mergePairs=new vector<pair<pair<int,int>,double>>;
-    isLocalMerge=true;
+    mergePairs=&defaultMergePairs;
   }
-  bool isLocalSplit=false;
+  vector<pair<pair<int,int>,double>> defaultSplitPairs{};
   if(!splitPairs){
-    splitPairs=new vector<pair<pair<int,int>,double>>;
-    isLocalSplit=true;
+    splitPairs=&defaultSplitPairs;
   }
 
   if(!mergePairs->size() || !splitPairs->size()){
@@ -2965,11 +2956,6 @@ int ContourTree::getPersistencePairs(vector<pair<pair<int,int>,double>>& pairs,
   
   std::sort(pairs.begin(), pairs.end(), _pCmp);
 
-  if(isLocalMerge)
-    delete mergePairs;
-  if(isLocalSplit)
-    delete splitPairs;
-    
   return 0;
 }
 
@@ -2977,10 +2963,10 @@ int ContourTree::getPersistencePlot(vector<pair<double,int>>& plot,
 				    vector<pair<pair<int,int>,double>>* mergePairs,
 				    vector<pair<pair<int,int>,double>>* splitPairs,
 				    vector<pair<pair<int,int>,double>>* pairs) const{
-  bool isLocal=false;
+
+  vector<pair<pair<int,int>,double>> defaultPairs{};
   if(!pairs){
-    pairs=new vector<pair<pair<int,int>,double>>;
-    isLocal=true;
+    pairs=&defaultPairs;
   }
 
   if(!pairs->size())
@@ -2996,9 +2982,6 @@ int ContourTree::getPersistencePlot(vector<pair<double,int>>& plot,
     plot[i].second = pairs->size() - i;
   }
 
-  if(isLocal)
-    delete pairs;
-
   return 0;
 }
 
@@ -3007,10 +2990,9 @@ int ContourTree::getPersistenceDiagram(vector<pair<double, double> > &diagram,
 				       vector<pair<pair<int,int>,double>>* splitPairs,
 				       vector<pair<pair<int,int>,double>>* pairs) const{
 
-  bool isLocal=false;
+  vector<pair<pair<int,int>,double>> defaultPairs{};
   if(!pairs){
-    pairs=new vector<pair<pair<int,int>,double>>;
-    isLocal=true;
+    pairs=&defaultPairs;
   }
 
   if(!pairs->size())
@@ -3039,9 +3021,6 @@ int ContourTree::getPersistenceDiagram(vector<pair<double, double> > &diagram,
  
   std::sort(diagram.begin(), diagram.end(), _pPairCmp);
 
-  if(isLocal)
-    delete pairs;
-  
   return 0;
 }
 
