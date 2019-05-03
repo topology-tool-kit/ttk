@@ -190,7 +190,24 @@ option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 
 if (TTK_ENABLE_OPENMP)
   find_package(OpenMP REQUIRED)
+  if(OPENMP_FOUND)
+    option(TTK_ENABLE_OMP_PRIORITY "Gives tasks priority, high perf improvement" OFF)
+
+    if (OpenMP_CXX_VERSION_MAJOR GREATER_EQUAL 4 AND OpenMP_CXX_VERSION_MINOR GREATER_EQUAL 5)
+      set(TTK_ENABLE_OMP_PRIORITY ON CACHE BOOL "Enable priorities on opnemp tasks" FORCE)
+    endif()
+
+    mark_as_advanced(TTK_ENABLE_OMP_PRIORITY)
+
+  endif()
+else()
+  if(TTK_ENABLE_OMP_PRIORITY)
+    # priorities are only meaningful when openmp is on
+    set(TTK_ENABLE_OMP_PRIORITY OFF CACHE BOOL "Enable priorities on opnemp tasks" FORCE)
+  endif()
 endif()
+
+
 
 if (TTK_ENABLE_MPI)
   find_package(MPI REQUIRED)

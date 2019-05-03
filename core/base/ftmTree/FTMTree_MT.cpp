@@ -26,9 +26,14 @@
 #define HIGHER
 #endif
 
+#ifdef TTK_ENABLE_OMP_PRIORITY
+#define OPTIONAL_PRIORITY(value) priority(value)
+#else
+#define OPTIONAL_PRIORITY(value)
+#endif
+
 using namespace std;
 using namespace ttk;
-
 using namespace ftm;
 
 DebugTimer _launchGlobalTime;
@@ -54,6 +59,10 @@ FTMTree_MT::FTMTree_MT(Params *const params, Triangulation *mesh, Scalars *const
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
    mt_data_.activeTasksStats = nullptr;
+#endif
+
+#ifdef TTK_ENABLE_OMP_PRIORITY
+   mt_data_.prior = false;
 #endif
 }
 
@@ -334,7 +343,7 @@ void FTMTree_MT::buildSegmentation()
    for(idSuperArc arcChunkId = 0; arcChunkId < arcChunkNb; ++arcChunkId){
        // WHY shared(sizes) is needed ??
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(arcChunkId) shared(sizes)
+#pragma omp task firstprivate(arcChunkId) shared(sizes) OPTIONAL_PRIORITY(isPrior())
 #endif
        {
            const idSuperArc lowerBound = arcChunkId*arcChunkSize;
@@ -366,7 +375,7 @@ void FTMTree_MT::buildSegmentation()
    for (SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId)
    {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(chunkId) shared(posSegm)
+#pragma omp task firstprivate(chunkId) shared(posSegm) OPTIONAL_PRIORITY(isPrior())
 #endif
        {
           const SimplexId lowerBound = chunkId * chunkSize;
@@ -407,7 +416,7 @@ void FTMTree_MT::buildSegmentation()
       for (idSuperArc a = 0; a < nbArcs; ++a) {
          if (posSegm[a]) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(a)
+#pragma omp task firstprivate(a) OPTIONAL_PRIORITY(isPrior())
 #endif
             mt_data_.segments_[a].sort(scalars_);
          }
@@ -423,7 +432,7 @@ void FTMTree_MT::buildSegmentation()
           // CT computation, we have already the vert list
           if ((*mt_data_.trunkSegments)[a].size()) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(a)
+#pragma omp task firstprivate(a) OPTIONAL_PRIORITY(isPrior())
 #endif
              mt_data_.segments_[a].createFromList(scalars_, (*mt_data_.trunkSegments)[a],
                                                   mt_data_.treeType == TreeType::Split);
@@ -442,7 +451,7 @@ void FTMTree_MT::buildSegmentation()
    // ST have a segmentation sorted in ascending order as JT
    for(idSuperArc arcChunkId = 0; arcChunkId < arcChunkNb; ++arcChunkId){
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(arcChunkId)
+#pragma omp task firstprivate(arcChunkId) OPTIONAL_PRIORITY(isPrior())
 #endif
       {
          const idSuperArc lowerBound = arcChunkId * arcChunkSize;
@@ -779,7 +788,7 @@ void FTMTree_MT::leafGrowth()
       (*mt_data_.ufs)[v] = new AtomicUF(v);
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied
+#pragma omp task untied OPTIONAL_PRIORITY(isPrior())
 #endif
       arcGrowth(v, n);
    }
@@ -801,7 +810,7 @@ int FTMTree_MT::leafSearch()
       // Extrema extract and launch tasks
       for (SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(chunkId)
+#pragma omp task firstprivate(chunkId) OPTIONAL_PRIORITY(isPrior())
 #endif
          {
             const SimplexId lowerBound = chunkId * chunkSize;
@@ -1347,7 +1356,7 @@ SimplexId FTMTree_MT::trunkCTSegmentation(const vector<SimplexId> &trunkVerts,
    mt_data_.trunkSegments->resize(getNumberOfSuperArcs());
    for (SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(chunkId, lastVertInRange) shared(trunkVerts)
+#pragma omp task firstprivate(chunkId, lastVertInRange) shared(trunkVerts) OPTIONAL_PRIORITY(isPrior())
 #endif
       {
          vector<SimplexId> regularList;
@@ -1436,7 +1445,7 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
    SimplexId tot             = 0;
    for (SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(chunkId) shared(trunkVerts, tot)
+#pragma omp task firstprivate(chunkId) shared(trunkVerts, tot) OPTIONAL_PRIORITY(isPrior())
 #endif
       {
          idNode   lastVertInRange = 0;
