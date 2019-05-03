@@ -161,5 +161,9 @@ private:
   // number of triangles checked during last projection
   std::vector<ttk::SimplexId> trianglesChecked_{};
   // success of last projection
+  // 0 - not projected (critical point)
+  // 1 - projection alongside quadrangle normal
+  // 2 - projection alongside triangle normal
+  // 3 - failed projection
   std::vector<ttk::SimplexId> projSucceeded_{};
 };

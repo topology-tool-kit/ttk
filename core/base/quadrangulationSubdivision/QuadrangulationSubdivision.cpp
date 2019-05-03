@@ -479,7 +479,7 @@ ttk::QuadrangulationSubdivision::Point
   if(lastIter) {
     trianglesChecked_->at(a)
       = std::count(trianglesTested.begin(), trianglesTested.end(), true);
-    projSucceeded_->at(a) = success ? (doReverseProj ? 1 : 2) : 0;
+    projSucceeded_->at(a) = success ? (doReverseProj ? 1 : 2) : 3;
   }
 
   return res;
