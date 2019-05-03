@@ -309,18 +309,26 @@ ttk::QuadrangulationSubdivision::Point
   ttk::QuadrangulationSubdivision::findProjection(
     const size_t a,
     const std::vector<Point> &inputPoints,
-    const bool lastIter) {
+    const bool lastIter,
+    const bool tryQuadNormalProj) {
 
   // current vertex 3d coordinates
   Point pa = inputPoints[a];
 
   Point res{};
 
-  // compute mean of normals
-  Point normalsMean = getQuadNormal(a, inputPoints);
-
   // fallback to euclidian projection code if no normals
-  bool doReverseProj = reverseProjection_ && (!std::isnan(normalsMean.x));
+  bool doReverseProj = reverseProjection_ || tryQuadNormalProj;
+
+  // quad normal in a
+  Point normalsMean{};
+
+  if(doReverseProj) {
+    // compute mean of normals
+    normalsMean = getQuadNormal(a, inputPoints);
+
+    doReverseProj = !std::isnan(normalsMean.x);
+  }
 
   // found a projection in one triangle
   bool success = false;
@@ -487,9 +495,13 @@ ttk::QuadrangulationSubdivision::Point
   }
 
   if(!success) {
-    // replace proj by the nearest vertex?
-    triangulation_->getVertexPoint(
-      nearestVertexIdentifier_[a], res.x, res.y, res.z);
+    if(!tryQuadNormalProj && !reverseProjection_) {
+      findProjection(a, inputPoints, lastIter, true);
+    } else {
+      // replace proj by the nearest vertex?
+      triangulation_->getVertexPoint(
+        nearestVertexIdentifier_[a], res.x, res.y, res.z);
+    }
   }
 
   // fill in debug info
