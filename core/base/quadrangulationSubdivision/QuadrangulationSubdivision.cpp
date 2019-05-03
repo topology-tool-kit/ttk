@@ -206,15 +206,12 @@ int ttk::QuadrangulationSubdivision::subdivise() {
 }
 
 ttk::QuadrangulationSubdivision::Point
-  ttk::QuadrangulationSubdivision::findProjection(
-    const size_t a,
-    const std::vector<Point> &inputPoints,
-    const bool lastIter) {
+  ttk::QuadrangulationSubdivision::getQuadNormal(
+    const size_t a, const std::vector<Point> &inputPoints) {
+  Point quadNormal{};
 
   // current vertex 3d coordinates
   Point pa = inputPoints[a];
-
-  Point res{};
 
   // find all quads that have a as vertex
   std::vector<Quad> quads{};
@@ -279,8 +276,15 @@ ttk::QuadrangulationSubdivision::Point
     }
   }
 
-  // if current point and quad neighbors are somehow aligned
-  bool aligned = true;
+  if(!normals.empty()) {
+    // compute mean of normals
+    quadNormal = std::accumulate(
+      normals.begin(), normals.end(), Point{}, std::plus<Point>());
+    quadNormal = quadNormal / static_cast<float>(normals.size());
+  } else {
+    // set error value directly in output variable...
+    quadNormal.x = NAN;
+  }
 
   // for each quad that contains a, compute the angle between a and
   // its two neighbors
@@ -292,18 +296,31 @@ ttk::QuadrangulationSubdivision::Point
     const auto threshold = M_PI * 0.75F; // au pif...
 
     if(bac > threshold) {
-      aligned = false;
+      // set error value directly in output variable...
+      quadNormal.x = NAN;
       break;
     }
   }
 
-  // fallback to euclidian projection code if no normals
-  bool doReverseProj = reverseProjection_ && !normals.empty() && aligned;
+  return quadNormal;
+}
+
+ttk::QuadrangulationSubdivision::Point
+  ttk::QuadrangulationSubdivision::findProjection(
+    const size_t a,
+    const std::vector<Point> &inputPoints,
+    const bool lastIter) {
+
+  // current vertex 3d coordinates
+  Point pa = inputPoints[a];
+
+  Point res{};
 
   // compute mean of normals
-  Point normalsMean = std::accumulate(normals.begin(), normals.end(), Point{},
-                                      std::plus<Point>())
-                      / static_cast<float>(normals.size());
+  Point normalsMean = getQuadNormal(a, inputPoints);
+
+  // fallback to euclidian projection code if no normals
+  bool doReverseProj = reverseProjection_ && (!std::isnan(normalsMean.x));
 
   // found a projection in one triangle
   bool success = false;

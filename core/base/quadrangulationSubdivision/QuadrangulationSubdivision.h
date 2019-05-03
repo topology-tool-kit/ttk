@@ -205,6 +205,16 @@ namespace ttk {
                          bool secondNeighbors = false);
 
     /**
+     * @brief Compute the normal of the quadrangulation at point a
+     *
+     * @param[in] a input index of quadrangle vertex
+     * @param[in] inputPoints input quadrangle points array
+     *
+     * @return normal to quad surface at point a
+     */
+    Point getQuadNormal(size_t a, const std::vector<Point> &inputPoints);
+
+    /**
      * @brief Compute the projection in the nearest triangle
      *
      * @param[in] a input index of quadrangle vertex
