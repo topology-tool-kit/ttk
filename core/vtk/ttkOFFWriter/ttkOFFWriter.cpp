@@ -36,24 +36,20 @@ void ttkOFFWriter::PrintSelf(ostream &os, vtkIndent indent){
 
 ttkOFFWriter::ttkOFFWriter(){
   Filename = NULL;
-  Stream = NULL;
 }
 
 ttkOFFWriter::~ttkOFFWriter(){
   SetFilename(NULL);
-  if(Stream)
-    delete Stream;
 }
 
 int ttkOFFWriter::OpenFile(){
 
-  ofstream *f = new ofstream(Filename, ios::out);
+  ofstream f(Filename, ios::out);
   
-  if(!f->fail()){
-    Stream = f;
+  if(!f.fail()){
+    Stream = std::move(f);
   }
   else{
-    delete f;
     return -1;
   }
   
@@ -74,33 +70,33 @@ void ttkOFFWriter::WriteData(){
     return;
   }
   
-  (*Stream) << "OFF" << endl;
-  (*Stream) << dataSet->GetNumberOfPoints() << " " 
+  Stream << "OFF" << endl;
+  Stream << dataSet->GetNumberOfPoints() << " "
     << dataSet->GetNumberOfCells() << " 0" << endl;
     
   double p[3];
   for(vtkIdType i = 0; i < dataSet->GetNumberOfPoints(); i++){
     dataSet->GetPoint(i, p);
-    (*Stream) << p[0] << " " << p[1] << " " << p[2] << " ";
+    Stream << p[0] << " " << p[1] << " " << p[2] << " ";
    
     // by default, store everything
     // use the field selector to select a subset
     for(int j = 0; j < dataSet->GetPointData()->GetNumberOfArrays(); j++){
       vtkDataArray *array = dataSet->GetPointData()->GetArray(j);
       for(int k = 0; k < array->GetNumberOfComponents(); k++){
-        (*Stream) << array->GetComponent(i, k) << " ";
+        Stream << array->GetComponent(i, k) << " ";
       }
     }
     
-    (*Stream) << endl;
+    Stream << endl;
   }
   
   for(vtkIdType i = 0; i < dataSet->GetNumberOfCells(); i++){
     vtkCell *c = dataSet->GetCell(i);
    
-    (*Stream) << c->GetNumberOfPoints() << " ";
+    Stream << c->GetNumberOfPoints() << " ";
     for(int j = 0; j < c->GetNumberOfPoints(); j++){
-      (*Stream) << c->GetPointId(j) << " ";
+      Stream << c->GetPointId(j) << " ";
     }
     
     // by default, store everything
@@ -108,11 +104,11 @@ void ttkOFFWriter::WriteData(){
     for(int j = 0; j < dataSet->GetCellData()->GetNumberOfArrays(); j++){
       vtkDataArray *array = dataSet->GetCellData()->GetArray(j);
       for(int k = 0; k < array->GetNumberOfComponents(); k++){
-        (*Stream) << array->GetComponent(i, k) << " ";
+        Stream << array->GetComponent(i, k) << " ";
       }
     }
     
-    (*Stream) << endl;
+    Stream << endl;
   }
 }
 
