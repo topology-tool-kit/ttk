@@ -1,4 +1,8 @@
+#include <Geometry.h>
 #include <SurfaceQuadrangulation.h>
+#include <cmath>
+#include <queue>
+#include <set>
 
 bool ttk::SurfaceQuadrangulation::hasCommonManifold(
   const std::vector<size_t> &verts) const {
