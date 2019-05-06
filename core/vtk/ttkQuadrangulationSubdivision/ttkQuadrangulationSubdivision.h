@@ -141,7 +141,7 @@ private:
   // lock all input vertices
   bool LockAllInputVertices{true};
   // projection method
-  bool ReverseProjection{true};
+  bool ReverseProjection{false};
 
   // base worker object
   ttk::QuadrangulationSubdivision baseWorker_{};

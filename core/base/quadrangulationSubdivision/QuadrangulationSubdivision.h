@@ -269,7 +269,7 @@ namespace ttk {
     // lock all input vertices
     bool lockAllInputVertices{true};
     // projection method
-    bool reverseProjection_{true};
+    bool reverseProjection_{false};
 
     // number of input quadrangles
     unsigned int inputQuadNumber_{};

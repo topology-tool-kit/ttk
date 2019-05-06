@@ -135,7 +135,7 @@
           label="Use reverse projection"
           command="SetReverseProjection"
           number_of_elements="1"
-          default_values="1">
+          default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
           Prefer reverse projection using quadrangle normal instead of
