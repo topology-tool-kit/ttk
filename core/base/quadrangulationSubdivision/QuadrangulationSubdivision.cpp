@@ -286,22 +286,6 @@ ttk::QuadrangulationSubdivision::Point
     quadNormal.x = NAN;
   }
 
-  // for each quad that contains a, compute the angle between a and
-  // its two neighbors
-  for(auto &t : couples) {
-    Point pb = inputPoints[t[0]];
-    Point pc = inputPoints[t[1]];
-
-    auto bac = Geometry::angle(&pa.x, &pb.x, &pa.x, &pc.x);
-    const auto threshold = M_PI * 0.75F; // au pif...
-
-    if(bac > threshold) {
-      // set error value directly in output variable...
-      quadNormal.x = NAN;
-      break;
-    }
-  }
-
   return quadNormal;
 }
 
