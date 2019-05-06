@@ -1,5 +1,10 @@
 #include <Dijkstra.h>
+#include <Geometry.h>
 #include <QuadrangulationSubdivision.h>
+#include <cassert>
+#include <cmath>
+#include <numeric>
+#include <queue>
 
 #define MODULE_S "[QuadrangulationSubdivision] "
 

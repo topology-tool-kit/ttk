@@ -14,14 +14,9 @@
 #pragma once
 
 // base code includes
-#include <Geometry.h>
-#include <MorseSmaleComplex.h>
 #include <Triangulation.h>
 #include <Wrapper.h>
-#include <cmath>
 #include <set>
-#include <tuple>
-#include <type_traits>
 
 namespace ttk {
 
