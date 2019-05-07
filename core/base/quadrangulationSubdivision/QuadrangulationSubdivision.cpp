@@ -485,8 +485,9 @@ ttk::QuadrangulationSubdivision::Point
   if(!success) {
     if(!reverseProjection_) {
       reverseProjection_ = true;
-      findProjection(a, inputPoints, lastIter);
+      res = findProjection(a, inputPoints, lastIter);
       reverseProjection_ = false;
+      return res;
     } else {
       // replace proj by the nearest vertex?
       triangulation_->getVertexPoint(
