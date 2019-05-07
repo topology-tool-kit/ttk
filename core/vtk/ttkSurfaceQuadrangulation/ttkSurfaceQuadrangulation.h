@@ -102,11 +102,11 @@ protected:
 
 private:
   // worker object
-  ttk::SurfaceQuadrangulation surfaceQuadrangulation_;
+  ttk::SurfaceQuadrangulation surfaceQuadrangulation_{};
   // output vector of interleaved quadrangles
-  std::vector<vtkIdType> outQuadrangles_;
+  std::vector<vtkIdType> outQuadrangles_{};
   // triangulation
-  ttk::Triangulation *triangulation_;
+  ttk::Triangulation *triangulation_{};
   // if dual quadrangulation
   bool DualQuadrangulation{false};
 };
