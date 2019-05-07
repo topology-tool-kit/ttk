@@ -311,7 +311,9 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
 
   if(varyingMesh_) {
     segmentation_ = input->NewInstance();
-    segmentation_->ShallowCopy(input);
+    if(segmentation_ != nullptr) {
+      segmentation_->ShallowCopy(input);
+    }
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
