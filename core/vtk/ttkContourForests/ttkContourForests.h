@@ -226,11 +226,11 @@ class ttkContourForests
     double deltaScalar_;
     ttk::SimplexId numberOfVertices_;
     ttk::Triangulation *triangulation_;
-    std::vector<ttk::SimplexId>* vertexSoSoffsets_;
-    std::vector<ttk::SimplexId>* criticalPoints_;
-    std::vector<double>* vertexScalars_;
-    std::vector<std::vector<double>>* inputScalars_;
-    std::vector<std::string>* inputScalarsName_;
+    std::vector<ttk::SimplexId> vertexSoSoffsets_{};
+    std::vector<ttk::SimplexId> criticalPoints_{};
+    std::vector<double> *vertexScalars_{};
+    std::vector<std::vector<double>> inputScalars_{};
+    std::vector<std::string> inputScalarsName_{};
 
     // treeType, SuperArc, several vertices list.
     std::vector<std::vector<std::vector<std::vector<ttk::SimplexId>>>>*    samples_;
