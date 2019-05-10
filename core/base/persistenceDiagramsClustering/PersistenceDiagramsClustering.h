@@ -268,7 +268,6 @@ template <typename dataType>
 	}
 
 }
-
 }
 
 #endif

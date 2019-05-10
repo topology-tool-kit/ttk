@@ -72,7 +72,7 @@ namespace ttk{
 		void invertInverseClusters();
 
 		void acceleratedUpdateClusters();
-        std::vector<dataType> updateCentroidsPosition();
+                std::vector<dataType> updateCentroidsPosition(std::vector<std::vector<dataType>>* min_price, std::vector<std::vector<dataType>>* min_diag_price);
 
         inline void resetDosToOriginalValues(){
             do_min_ = original_dos[0];

@@ -285,15 +285,6 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
     if (pairIdentifier != -1 && pairIdentifier < pairingsSize){
         if(pairIdentifier ==0){
             diagram->at(0) = std::make_tuple(
-                vertexId1, (BNodeType) 0,
-                vertexId2, (BNodeType) 1,
-                (dataType) persistence,
-                pairType,
-                value1, coordX1, coordY1, coordZ1,
-                value2, coordX2, coordY2, coordZ2
-            );
-
-            diagram->at(pairingsSize) = std::make_tuple(
                 vertexId1, (BNodeType) 1,
                 vertexId2, (BNodeType) 3,
                 (dataType) persistence,
@@ -301,6 +292,15 @@ int ttkPersistenceDiagramsBarycenter::getPersistenceDiagram(
                 value1, coordX1, coordY1, coordZ1,
                 value2, coordX2, coordY2, coordZ2
             );
+
+//             diagram->at(pairingsSize) = std::make_tuple(
+//                 vertexId1, (BNodeType) 1,
+//                 vertexId2, (BNodeType) 3,
+//                 (dataType) persistence,
+//                 pairType,
+//                 value1, coordX1, coordY1, coordZ1,
+//                 value2, coordX2, coordY2, coordZ2
+//             );
 
         }
         else

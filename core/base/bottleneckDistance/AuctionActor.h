@@ -134,29 +134,23 @@ namespace ttk{
     return pow(geom_pair_length_[0], wasserstein) + pow(geom_pair_length_[1], wasserstein) + pow(geom_pair_length_[2], wasserstein);
   }
 
-	template<typename dataType>
-	dataType AuctionActor<dataType>::cost(AuctionActor& g, int& wasserstein, double& geometricalFactor){
-		if(is_diagonal_ && g.isDiagonal()){
-			return 0;
-		}
-		else if(is_diagonal_){
-			return geometricalFactor * ( 2*pow(abs<dataType>(g.y_/2 - g.x_/2) , wasserstein)  ) +
-      (1-geometricalFactor)* getPairGeometricalLength(wasserstein);
-		}
-    else if(g.isDiagonal()){
-			return geometricalFactor * ( 2*pow(abs<dataType>(y_/2 - x_/2) , wasserstein)  ) +
-      (1-geometricalFactor) * g.getPairGeometricalLength(wasserstein);
-		}
-    else{
-        return geometricalFactor * (pow(abs<dataType>(x_ - g.x_) , wasserstein) + pow(abs<dataType>(y_ - g.y_), wasserstein)) +
-            (1 - geometricalFactor) * (pow(abs<dataType>(coords_x_ - g.coords_x_) , wasserstein) +
-                pow(abs<dataType>(coords_y_ - g.coords_y_) , wasserstein) +
-                pow(abs<dataType>(coords_z_ - g.coords_z_) , wasserstein));
+  template <typename dataType>
+  dataType AuctionActor<dataType>::cost(AuctionActor& g, int& wasserstein, double& geometricalFactor)
+  {
+      if(is_diagonal_ && g.isDiagonal()) {
+          return 0;
+      } else if(is_diagonal_) {
+          return geometricalFactor * (2 * pow(abs<dataType>(g.y_ / 2 - g.x_ / 2), wasserstein)) + (1 - geometricalFactor) * getPairGeometricalLength(wasserstein);
+      } else if(g.isDiagonal()) {
+          return geometricalFactor * (2 * pow(abs<dataType>(y_ / 2 - x_ / 2), wasserstein)) + (1 - geometricalFactor) * g.getPairGeometricalLength(wasserstein);
+      } else {
+          return geometricalFactor * (pow(abs<dataType>(x_ - g.x_), wasserstein) + pow(abs<dataType>(y_ - g.y_), wasserstein)) +
+              (1 - geometricalFactor) *
+              (pow(abs<dataType>(coords_x_ - g.coords_x_), wasserstein) + pow(abs<dataType>(coords_y_ - g.coords_y_), wasserstein) + pow(abs<dataType>(coords_z_ - g.coords_z_), wasserstein));
+      }
+  }
 
-		}
-	}
-
-	template<typename dataType>
+        template<typename dataType>
 	dataType AuctionActor<dataType>::cost(AuctionActor* g, int& wasserstein, double& geometricalFactor){
 		return this->cost(*g, wasserstein, geometricalFactor);
 	}
