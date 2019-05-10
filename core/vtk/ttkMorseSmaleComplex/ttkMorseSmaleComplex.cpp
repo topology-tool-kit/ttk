@@ -306,7 +306,7 @@ int ttkMorseSmaleComplex::dispatch(
     cellIds->SetNumberOfComponents(1);
     cellIds->SetName("CellId");
 
-    vtkDataArray *cellScalars = inputScalars->NewInstance();
+    vtkSmartPointer<vtkDataArray> cellScalars{inputScalars->NewInstance()};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!cellScalars) {
       cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
@@ -488,7 +488,8 @@ int ttkMorseSmaleComplex::dispatch(
     separatrixTypes->SetNumberOfComponents(1);
     separatrixTypes->SetName("SeparatrixType");
 
-    vtkDataArray *separatrixFunctionMaxima = inputScalars->NewInstance();
+    vtkSmartPointer<vtkDataArray> separatrixFunctionMaxima{
+      inputScalars->NewInstance()};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!separatrixFunctionMaxima) {
       cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
@@ -499,7 +500,8 @@ int ttkMorseSmaleComplex::dispatch(
     separatrixFunctionMaxima->SetNumberOfComponents(1);
     separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
 
-    vtkDataArray *separatrixFunctionMinima = inputScalars->NewInstance();
+    vtkSmartPointer<vtkDataArray> separatrixFunctionMinima{
+      inputScalars->NewInstance()};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!separatrixFunctionMinima) {
       cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
@@ -510,7 +512,8 @@ int ttkMorseSmaleComplex::dispatch(
     separatrixFunctionMinima->SetNumberOfComponents(1);
     separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
 
-    vtkDataArray *separatrixFunctionDiffs = inputScalars->NewInstance();
+    vtkSmartPointer<vtkDataArray> separatrixFunctionDiffs{
+      inputScalars->NewInstance()};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!separatrixFunctionDiffs) {
       cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
@@ -575,7 +578,7 @@ int ttkMorseSmaleComplex::dispatch(
       ptr += (separatrices1_cells[ptr] + 1);
     }
 
-    vtkPointData *pointData = outputSeparatrices1->GetPointData();
+    auto pointData = outputSeparatrices1->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pointData) {
       cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
@@ -588,7 +591,7 @@ int ttkMorseSmaleComplex::dispatch(
     pointData->AddArray(cellDimensions);
     pointData->AddArray(cellIds);
 
-    vtkCellData *cellData = outputSeparatrices1->GetCellData();
+    auto cellData = outputSeparatrices1->GetCellData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!cellData) {
       cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
@@ -657,7 +660,8 @@ int ttkMorseSmaleComplex::dispatch(
     separatrixTypes->SetNumberOfComponents(1);
     separatrixTypes->SetName("SeparatrixType");
 
-    vtkDataArray *separatrixFunctionMaxima = inputScalars->NewInstance();
+    vtkSmartPointer<vtkDataArray> separatrixFunctionMaxima{
+      inputScalars->NewInstance()};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!separatrixFunctionMaxima) {
       cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
@@ -668,7 +672,8 @@ int ttkMorseSmaleComplex::dispatch(
     separatrixFunctionMaxima->SetNumberOfComponents(1);
     separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
 
-    vtkDataArray *separatrixFunctionMinima = inputScalars->NewInstance();
+    vtkSmartPointer<vtkDataArray> separatrixFunctionMinima{
+      inputScalars->NewInstance()};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!separatrixFunctionMinima) {
       cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
@@ -679,7 +684,8 @@ int ttkMorseSmaleComplex::dispatch(
     separatrixFunctionMinima->SetNumberOfComponents(1);
     separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
 
-    vtkDataArray *separatrixFunctionDiffs = inputScalars->NewInstance();
+    vtkSmartPointer<vtkDataArray> separatrixFunctionDiffs{
+      inputScalars->NewInstance()};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!separatrixFunctionDiffs) {
       cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
@@ -747,7 +753,7 @@ int ttkMorseSmaleComplex::dispatch(
       ptr += (separatrices2_cells[ptr] + 1);
     }
 
-    vtkCellData *cellData = outputSeparatrices2->GetCellData();
+    auto cellData = outputSeparatrices2->GetCellData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!cellData) {
       cerr << "[ttkMorseSmaleComplex] Error : "
