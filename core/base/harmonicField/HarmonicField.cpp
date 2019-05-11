@@ -51,8 +51,6 @@ int ttk::HarmonicField::execute() const {
 
   Timer t;
 
-  // scalar field constraints vertices
-  auto identifiers = static_cast<SimplexId *>(sources_);
   // scalar field: 0 everywhere except on constraint vertices
   auto sf = static_cast<scalarFieldType *>(constraints_);
 
@@ -65,7 +63,7 @@ int ttk::HarmonicField::execute() const {
   // filter unique constraint identifiers
   std::set<SimplexId> uniqueIdentifiersSet;
   for(SimplexId i = 0; i < constraintNumber_; ++i) {
-    uniqueIdentifiersSet.insert(identifiers[i]);
+    uniqueIdentifiersSet.insert(sources_[i]);
   }
 
   // vector of unique constraint identifiers
@@ -77,7 +75,7 @@ int ttk::HarmonicField::execute() const {
   // put identifier corresponding constraints in vector
   for(size_t i = 0; i < uniqueIdentifiers.size(); ++i) {
     for(SimplexId j = 0; j < constraintNumber_; ++j) {
-      if(uniqueIdentifiers[i] == identifiers[j]) {
+      if(uniqueIdentifiers[i] == sources_[j]) {
         uniqueValues[i] = sf[j];
         break;
       }

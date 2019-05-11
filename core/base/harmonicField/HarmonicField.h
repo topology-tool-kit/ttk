@@ -43,19 +43,19 @@ namespace ttk {
     // default move assignment operator
     HarmonicField &operator=(HarmonicField &&) = default;
 
-    inline int setVertexNumber(SimplexId vertexNumber) {
+    inline int setVertexNumber(const SimplexId vertexNumber) {
       vertexNumber_ = vertexNumber;
       return 0;
     }
-    inline int setConstraintNumber(SimplexId constraintNumber) {
+    inline int setConstraintNumber(const SimplexId constraintNumber) {
       constraintNumber_ = constraintNumber;
       return 0;
     }
-    inline int setUseCotanWeights(bool useCotanWeights) {
+    inline int setUseCotanWeights(const bool useCotanWeights) {
       useCotanWeights_ = useCotanWeights;
       return 0;
     }
-    inline int setupTriangulation(Triangulation *triangulation) {
+    inline int setupTriangulation(Triangulation *const triangulation) {
       triangulation_ = triangulation;
       if(triangulation_ != nullptr) {
         vertexNumber_ = triangulation_->getNumberOfVertices();
@@ -68,23 +68,23 @@ namespace ttk {
       }
       return 0;
     }
-    inline int setSources(void *data) {
-      sources_ = data;
+    inline int setSources(void *const data) {
+      sources_ = static_cast<SimplexId *>(data);
       return 0;
     }
-    inline int setConstraints(void *data) {
+    inline int setConstraints(void *const data) {
       constraints_ = data;
       return 0;
     }
-    inline int setOutputScalarFieldPointer(void *data) {
+    inline int setOutputScalarFieldPointer(void *const data) {
       outputScalarFieldPointer_ = data;
       return 0;
     }
-    inline int setSolvingMethod(int solvingMethod) {
+    inline int setSolvingMethod(const int solvingMethod) {
       solvingMethod_ = static_cast<SolvingMethodUserType>(solvingMethod);
       return 0;
     }
-    inline int setLogAlpha(double logAlpha) {
+    inline int setLogAlpha(const double logAlpha) {
       logAlpha_ = logAlpha;
       return 0;
     }
@@ -115,7 +115,7 @@ namespace ttk {
     Triangulation *triangulation_{};
     // array of mesh points with scalar constraints
     // should be of constraintNumber_ size
-    void *sources_{};
+    SimplexId *sources_{};
     // array of scalar constraints on sources_
     // should be of constraintNumber_ size
     void *constraints_{};
