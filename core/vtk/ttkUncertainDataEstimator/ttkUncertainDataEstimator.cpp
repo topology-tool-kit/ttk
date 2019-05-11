@@ -211,47 +211,44 @@ int ttkUncertainDataEstimator::doIt(const std::vector<vtkDataSet *> &input,
 
   // Calling the executing package
   if(numFields > 0) {
+    UncertainDataEstimator uncertainDataEstimator;
+    uncertainDataEstimator.setWrapper(this);
+
+    uncertainDataEstimator.setVertexNumber(
+      outputBoundFields->GetNumberOfPoints());
+
+    uncertainDataEstimator.setNumberOfInputs(numFields);
+    for(int i = 0; i < numFields; i++) {
+      uncertainDataEstimator.setInputDataPointer(
+        i, inputScalarField[i]->GetVoidPointer(0));
+    }
+
+    uncertainDataEstimator.setComputeLowerBound(computeLowerBound_);
+    uncertainDataEstimator.setComputeUpperBound(computeUpperBound_);
+
+    uncertainDataEstimator.setOutputLowerBoundField(
+      outputLowerBoundScalarField_->GetVoidPointer(0));
+
+    uncertainDataEstimator.setOutputUpperBoundField(
+      outputUpperBoundScalarField_->GetVoidPointer(0));
+
+    uncertainDataEstimator.setOutputMeanField(
+      outputMeanField_->GetVoidPointer(0));
+
+    uncertainDataEstimator.setBinCount(binCount_);
+    for(int b = 0; b < binCount_; b++) {
+      uncertainDataEstimator.setOutputProbability(
+        b, outputProbabilityScalarField_[b]->GetPointer(0));
+    }
+
     switch(inputScalarField[0]->GetDataType()) {
+      vtkTemplateMacro(uncertainDataEstimator.execute<VTK_TT>());
+    }
 
-      vtkTemplateMacro({
-        UncertainDataEstimator uncertainDataEstimator;
-        uncertainDataEstimator.setWrapper(this);
-
-        uncertainDataEstimator.setVertexNumber(
-          outputBoundFields->GetNumberOfPoints());
-
-        uncertainDataEstimator.setNumberOfInputs(numFields);
-        for(int i = 0; i < numFields; i++) {
-          uncertainDataEstimator.setInputDataPointer(
-            i, inputScalarField[i]->GetVoidPointer(0));
-        }
-
-        uncertainDataEstimator.setComputeLowerBound(computeLowerBound_);
-        uncertainDataEstimator.setComputeUpperBound(computeUpperBound_);
-
-        uncertainDataEstimator.setOutputLowerBoundField(
-          outputLowerBoundScalarField_->GetVoidPointer(0));
-
-        uncertainDataEstimator.setOutputUpperBoundField(
-          outputUpperBoundScalarField_->GetVoidPointer(0));
-
-        uncertainDataEstimator.setOutputMeanField(
-          outputMeanField_->GetVoidPointer(0));
-
-        uncertainDataEstimator.setBinCount(binCount_);
-        for(int b = 0; b < binCount_; b++) {
-          uncertainDataEstimator.setOutputProbability(
-            b, outputProbabilityScalarField_[b]->GetPointer(0));
-        }
-
-        uncertainDataEstimator.execute<VTK_TT>();
-
-        for(int b = 0; b < binCount_; b++) {
-          stringstream name;
-          name << setprecision(8) << uncertainDataEstimator.getBinValue(b);
-          outputProbabilityScalarField_[b]->SetName(name.str().c_str());
-        }
-      });
+    for(int b = 0; b < binCount_; b++) {
+      stringstream name;
+      name << setprecision(8) << uncertainDataEstimator.getBinValue(b);
+      outputProbabilityScalarField_[b]->SetName(name.str().c_str());
     }
   }
 

@@ -84,20 +84,17 @@ vtkStandardNewMacro(ttkDepthImageBasedGeometryApproximation)
 
     // Approximate geometry
     switch(depthValues->GetDataType()) {
-      vtkTemplateMacro({
-        depthImageBasedGeometryApproximation_.execute<VTK_TT>(
-          // Input
-          (VTK_TT *)depthValues->GetVoidPointer(0),
-          (double *)camPosition->GetVoidPointer(0),
-          (double *)camDirection->GetVoidPointer(0),
-          (double *)camUp->GetVoidPointer(0),
-          (double *)camRes->GetVoidPointer(0),
-          (double *)camNearFar->GetVoidPointer(0),
-          (double *)camHeight->GetVoidPointer(0), this->GetSubsampling(),
+      vtkTemplateMacro(depthImageBasedGeometryApproximation_.execute<VTK_TT>(
+        // Input
+        (VTK_TT *)depthValues->GetVoidPointer(0),
+        (double *)camPosition->GetVoidPointer(0),
+        (double *)camDirection->GetVoidPointer(0),
+        (double *)camUp->GetVoidPointer(0), (double *)camRes->GetVoidPointer(0),
+        (double *)camNearFar->GetVoidPointer(0),
+        (double *)camHeight->GetVoidPointer(0), this->GetSubsampling(),
 
-          // Output
-          indicies, vertices, triangles, triangleDistortions);
-      });
+        // Output
+        indicies, vertices, triangles, triangleDistortions));
     }
 
     // Represent approximated geometry via VTK
