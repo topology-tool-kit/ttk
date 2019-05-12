@@ -129,8 +129,8 @@ namespace ftm
          CurrentState *s       = data_.states[0];
          const auto &  nbState = data_.states.size();
 
-         for (valence i = 1; i < nbState; ++i) {
-            s->merge(*data_.states[i]);
+         for(valence i = 1; i < (valence)nbState; ++i) {
+           s->merge(*data_.states[i]);
          }
 
          data_.states.reset(1);

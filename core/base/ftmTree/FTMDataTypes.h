@@ -54,7 +54,7 @@ namespace ftm
    using idTask = TaskId;
 
    /// \brief for vertex up/down valence
-   using valence = unsigned char;
+   using valence = SimplexId;
 
    // For tasks:
    // Set using scalar value comparison
