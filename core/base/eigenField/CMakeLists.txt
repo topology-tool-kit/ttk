@@ -16,6 +16,8 @@ if (EIGEN3_FOUND)
   else()
     option(TTK_ENABLE_SPECTRA "Enable Spectra support" ON)
   endif()
+else()
+  option(TTK_ENABLE_SPECTRA "Enable Spectra support" OFF)
 endif()
 
 if(TTK_ENABLE_SPECTRA)
