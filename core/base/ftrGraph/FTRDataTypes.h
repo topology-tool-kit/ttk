@@ -36,7 +36,7 @@ namespace ttk {
     /// \brief for threads identifiers
     using idThread = idNode;
     /// \brief for vertex up/down valence
-    using valence = signed char;
+    using valence = SimplexId;
     /// \brief retains history
     using idSegmentation = long int;
 
