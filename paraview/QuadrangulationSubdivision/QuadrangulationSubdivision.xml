@@ -135,6 +135,7 @@
           label="Use reverse projection"
           command="SetReverseProjection"
           number_of_elements="1"
+          panel_visibility="advanced"
           default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
