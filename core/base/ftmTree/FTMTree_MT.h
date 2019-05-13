@@ -83,16 +83,22 @@ namespace ftm
       // opened nodes
       std::vector<char> *openedNodes;
 
-#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-      std::vector<ActiveTask> *activeTasksStats;
-#endif
-
       // current nb of tasks
       idNode activeTasks;
 
       // Segmentation, stay empty for Contour tree as
       // they are created by Merge Tree
       Segments segments_;
+
+#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
+      std::vector<ActiveTask> *activeTasksStats;
+#endif
+
+#ifdef TTK_ENABLE_OMP_PRIORITY
+      // Is this MT to be computed with greater task priority than others
+      bool prior;
+#endif
+
    };
 
    class FTMTree_MT : virtual public Debug
@@ -339,6 +345,18 @@ namespace ftm
       {
           params_->normalize = normalize;
       }
+
+#ifdef TTK_ENABLE_OMP_PRIORITY
+      inline void setPrior(void)
+      {
+         mt_data_.prior = true;
+      }
+
+      inline bool isPrior(void) const
+      {
+         return mt_data_.prior;
+      }
+#endif
 
       // scalar
 

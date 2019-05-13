@@ -66,6 +66,16 @@ void FTMTree_CT::build(TreeType tt)
       printTime(precomputeTime, "leafSearch", -1, 3);
    }
 
+#ifdef TTK_ENABLE_OMP_PRIORITY
+   {
+     // Set priority
+     if (st_->getNumberOfLeaves() < jt_->getNumberOfLeaves())
+       st_->setPrior();
+     else
+       jt_->setPrior();
+   }
+#endif
+
    // JT & ST
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(threadNumber_)
@@ -76,9 +86,15 @@ void FTMTree_CT::build(TreeType tt)
 #endif
        {
           if (tt == TreeType::Join || bothMT) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task untied if (threadNumber_ > 1)
+#endif
              jt_->build(tt == TreeType::Contour);
           }
           if (tt == TreeType::Split || bothMT) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp task untied if (threadNumber_ > 1)
+#endif
              st_->build(tt == TreeType::Contour);
           }
        }

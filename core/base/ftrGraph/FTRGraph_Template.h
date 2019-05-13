@@ -12,7 +12,7 @@
 #include <iterator>
 #endif
 
-#ifdef TTK_ENABLE_FTR_PRIORITY
+#ifdef TTK_ENABLE_OMP_PRIORITY
 #define OPTIONAL_PRIORITY(value) priority(value)
 #else
 #define OPTIONAL_PRIORITY(value)
@@ -56,7 +56,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       omp_set_num_threads(params_.threadNumber);
       omp_set_nested(1);
-#ifdef TTK_ENABLE_FTR_PRIORITY
+#ifdef TTK_ENABLE_OMP_PRIORITY
       if(omp_get_max_task_priority() < PriorityLevel::Max) {
         std::stringstream msg;
         msg << "[FTR Graph]: Warning, OpenMP max priority is lower than 5"
