@@ -84,6 +84,9 @@ public:
   vtkSetMacro(EigenNumber, unsigned int);
   vtkGetMacro(EigenNumber, unsigned int);
 
+  vtkSetMacro(ComputeStatistics, bool);
+  vtkGetMacro(ComputeStatistics, bool);
+
   // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
   // get array of identifiers on the mesh
@@ -114,6 +117,8 @@ private:
   std::string OutputFieldName{"OutputEigenFunctions"};
   // number of eigenpairs to compute
   unsigned int EigenNumber{20};
+  // if statistics are to be computed
+  bool ComputeStatistics{false};
 
   // enum: float or double
   int OutputFieldType{EigenFieldType::Float};

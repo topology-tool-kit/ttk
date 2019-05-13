@@ -52,6 +52,9 @@ namespace ttk {
     inline void setEigenNumber(unsigned int eigenNumber) {
       eigenNumber_ = eigenNumber;
     }
+    inline void setComputeStatistics(bool value) {
+      computeStatistics_ = value;
+    }
 
     template <typename T>
     int execute() const;
@@ -67,6 +70,8 @@ namespace ttk {
     void *outputStatistics_{};
     // number of eigenfunctions to compute
     unsigned int eigenNumber_{20};
+    // if statistics should be computed
+    bool computeStatistics_{false};
   };
 
 } // namespace ttk

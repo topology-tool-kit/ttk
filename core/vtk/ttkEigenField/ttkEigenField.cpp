@@ -62,6 +62,7 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   TTK_ABORT_KK(vertexNumber == 0, "domain has no points", -2);
 
   baseWorker_.setEigenNumber(EigenNumber);
+  baseWorker_.setComputeStatistics(ComputeStatistics);
 
   // array of eigenfunctions
   vtkSmartPointer<vtkDataArray> eigenFunctions{};
@@ -88,14 +89,16 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   eigenFunctions->SetNumberOfTuples(vertexNumber);
   eigenFunctions->SetName(OutputFieldName.data());
 
-  stats->SetName("Statistics");
-  const int statsComp = 4;
-  stats->SetNumberOfComponents(statsComp);
-  stats->SetNumberOfTuples(vertexNumber);
-  stats->SetComponentName(0, "Min");
-  stats->SetComponentName(1, "Max");
-  stats->SetComponentName(2, "Sum");
-  stats->SetComponentName(3, "Average");
+  if(ComputeStatistics) {
+    stats->SetName("Statistics");
+    const int statsComp = 4;
+    stats->SetNumberOfComponents(statsComp);
+    stats->SetNumberOfTuples(vertexNumber);
+    stats->SetComponentName(0, "Min");
+    stats->SetComponentName(1, "Max");
+    stats->SetComponentName(2, "Sum");
+    stats->SetComponentName(3, "Average");
+  }
 
   baseWorker_.setOutputFieldPointer(eigenFunctions->GetVoidPointer(0));
   baseWorker_.setOutputStatistics(stats->GetVoidPointer(0));
@@ -116,7 +119,10 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   // update result
   output->ShallowCopy(domain);
   output->GetPointData()->AddArray(eigenFunctions);
-  output->GetPointData()->AddArray(stats);
+
+  if (ComputeStatistics) {
+    output->GetPointData()->AddArray(stats);
+  }
 
   std::stringstream msg;
   msg << "[ttkEigenField] Memory usage: " << m.getElapsedUsage() << " MB."

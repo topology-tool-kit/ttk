@@ -102,7 +102,7 @@ int ttk::EigenField::execute() const {
     }
   }
 
-  if(outputStatistics_ != nullptr) {
+  if(computeStatistics_ && outputStatistics_ != nullptr) {
 
     // number of statistics components
     const int statsComp = 4;

@@ -44,6 +44,20 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+          name="ComputeStatistics"
+          label="Compute statistics"
+          command="SetComputeStatistics"
+          number_of_elements="1"
+          default_values="0"
+          >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Also compute statistics (min, max, sum, average) on
+          generated eigenfunctions.
+        </Documentation>
+      </IntVectorProperty>
+
       <StringVectorProperty
         name="OutputFieldName"
         command="SetOutputFieldName"
@@ -114,6 +128,7 @@
 
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="OutputFieldName"/>
+        <Property name="ComputeStatistics"/>
       </PropertyGroup>
 
       <Hints>
