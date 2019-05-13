@@ -34,7 +34,7 @@
 
       <IntVectorProperty
           name="EigenNumber"
-          label="Number of eigenfunctions to compute"
+          label="Number of eigenfunctions"
           command="SetEigenNumber"
           number_of_elements="1"
           default_values="20"
@@ -110,6 +110,9 @@
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="EigenNumber" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="OutputFieldName"/>
       </PropertyGroup>
 
