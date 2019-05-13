@@ -155,6 +155,194 @@ int ttkDiscreteGradient::getOffsets(vtkDataSet *input) {
   return 0;
 }
 
+template <typename VTK_TT>
+int ttkDiscreteGradient::dispatch(
+  vtkUnstructuredGrid *outputCriticalPoints,
+  SimplexId criticalPoints_numberOfPoints,
+  vector<float> criticalPoints_points,
+  vector<char> criticalPoints_points_cellDimensions,
+  vector<SimplexId> criticalPoints_points_cellIds,
+  vector<char> criticalPoints_points_isOnBoundary,
+  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers,
+  vector<SimplexId> criticalPoints_points_manifoldSize) {
+
+  int ret = 0;
+  vector<VTK_TT> criticalPoints_points_cellScalars;
+  const int dimensionality = triangulation_->getDimensionality();
+
+  discreteGradient_.setOutputCriticalPoints(
+    &criticalPoints_numberOfPoints, &criticalPoints_points,
+    &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
+    &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
+    &criticalPoints_points_PLVertexIdentifiers,
+    &criticalPoints_points_manifoldSize);
+
+  if(inputOffsets_->GetDataType() == VTK_INT)
+    ret = discreteGradient_.buildGradient<VTK_TT, int>();
+  if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
+    ret = discreteGradient_.buildGradient<VTK_TT, vtkIdType>();
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(ret) {
+    cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient() "
+            "error code : "
+         << ret << endl;
+    return -1;
+  }
+#endif
+
+  if(AllowSecondPass) {
+    if(inputOffsets_->GetDataType() == VTK_INT)
+      ret = discreteGradient_.buildGradient2<VTK_TT, int>();
+    if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
+      ret = discreteGradient_.buildGradient2<VTK_TT, vtkIdType>();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(ret) {
+      cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient2() "
+              "error code : "
+           << ret << endl;
+      return -1;
+    }
+#endif
+  }
+
+  if(dimensionality == 3 and AllowThirdPass) {
+    if(inputOffsets_->GetDataType() == VTK_INT)
+      ret = discreteGradient_.buildGradient3<VTK_TT, int>();
+    if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
+      ret = discreteGradient_.buildGradient3<VTK_TT, vtkIdType>();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(ret) {
+      cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient2() "
+              "error code : "
+           << ret << endl;
+      return -1;
+    }
+#endif
+  }
+
+  if(inputOffsets_->GetDataType() == VTK_INT)
+    ret = discreteGradient_.reverseGradient<VTK_TT, int>();
+  if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
+    ret = discreteGradient_.reverseGradient<VTK_TT, vtkIdType>();
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(ret) {
+    cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.reverseGradient() "
+            "error code : "
+         << ret << endl;
+    return -1;
+  }
+#endif
+
+  // critical points
+  {
+    if(inputOffsets_->GetDataType() == VTK_INT)
+      discreteGradient_.setCriticalPoints<VTK_TT, int>();
+    if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
+      discreteGradient_.setCriticalPoints<VTK_TT, vtkIdType>();
+
+    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!points) {
+      cerr << "[ttkDiscreteGradient] Error : vtkPoints allocation problem."
+           << endl;
+      return -1;
+    }
+#endif
+
+    vtkSmartPointer<vtkCharArray> cellDimensions
+      = vtkSmartPointer<vtkCharArray>::New();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!cellDimensions) {
+      cerr << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem."
+           << endl;
+      return -1;
+    }
+#endif
+    cellDimensions->SetNumberOfComponents(1);
+    cellDimensions->SetName("CellDimension");
+
+    vtkSmartPointer<ttkSimplexIdTypeArray> cellIds
+      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!cellIds) {
+      cerr << "[ttkDiscreteGradient] Error : ttkSimplexIdTypeArray allocation "
+              "problem."
+           << endl;
+      return -1;
+    }
+#endif
+    cellIds->SetNumberOfComponents(1);
+    cellIds->SetName("CellId");
+
+    vtkDataArray *cellScalars = inputScalars_->NewInstance();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!cellScalars) {
+      cerr << "[ttkDiscreteGradient] Error : vtkDataArray allocation problem."
+           << endl;
+      return -1;
+    }
+#endif
+    cellScalars->SetNumberOfComponents(1);
+    cellScalars->SetName(ScalarField.data());
+
+    vtkSmartPointer<vtkCharArray> isOnBoundary
+      = vtkSmartPointer<vtkCharArray>::New();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!isOnBoundary) {
+      cerr << "[vtkMorseSmaleComplex] Error : vtkCharArray allocation problem."
+           << endl;
+      return -1;
+    }
+#endif
+    isOnBoundary->SetNumberOfComponents(1);
+    isOnBoundary->SetName("IsOnBoundary");
+
+    vtkSmartPointer<ttkSimplexIdTypeArray> PLVertexIdentifiers
+      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!PLVertexIdentifiers) {
+      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
+           << "problem." << endl;
+      return -1;
+    }
+#endif
+    PLVertexIdentifiers->SetNumberOfComponents(1);
+    PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
+
+    for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
+      points->InsertNextPoint(criticalPoints_points[3 * i],
+                              criticalPoints_points[3 * i + 1],
+                              criticalPoints_points[3 * i + 2]);
+
+      cellDimensions->InsertNextTuple1(criticalPoints_points_cellDimensions[i]);
+      cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
+      cellScalars->InsertNextTuple1(criticalPoints_points_cellScalars[i]);
+      isOnBoundary->InsertNextTuple1(criticalPoints_points_isOnBoundary[i]);
+      PLVertexIdentifiers->InsertNextTuple1(
+        criticalPoints_points_PLVertexIdentifiers[i]);
+    }
+    outputCriticalPoints->SetPoints(points);
+
+    vtkPointData *pointData = outputCriticalPoints->GetPointData();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(!pointData) {
+      cerr << "[ttkDiscreteGradient] Error : outputCriticalPoints has no point "
+              "data."
+           << endl;
+      return -1;
+    }
+#endif
+
+    pointData->AddArray(cellDimensions);
+    pointData->AddArray(cellIds);
+    pointData->AddArray(cellScalars);
+    pointData->AddArray(isOnBoundary);
+    pointData->AddArray(PLVertexIdentifiers);
+  }
+
+  return ret;
+}
+
 int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
                               vector<vtkDataSet *> &outputs) {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -255,441 +443,21 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     &gradientGlyphs_points_pairOrigins, &gradientGlyphs_numberOfCells,
     &gradientGlyphs_cells, &gradientGlyphs_cells_pairTypes);
 
-  const int dimensionality = triangulation_->getDimensionality();
-
   switch(inputScalars_->GetDataType()) {
-#ifndef _MSC_VER
-    vtkTemplateMacro(({
-      vector<VTK_TT> criticalPoints_points_cellScalars;
-
-      discreteGradient_.setOutputCriticalPoints(
-        &criticalPoints_numberOfPoints, &criticalPoints_points,
-        &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
-        &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
-        &criticalPoints_points_PLVertexIdentifiers,
-        &criticalPoints_points_manifoldSize);
-
-      if(inputOffsets_->GetDataType() == VTK_INT)
-        ret = discreteGradient_.buildGradient<VTK_TT, int>();
-      if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-        ret = discreteGradient_.buildGradient<VTK_TT, vtkIdType>();
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(ret) {
-        cerr << "[ttkDiscreteGradient] Error : "
-                "DiscreteGradient.buildGradient() error code : "
-             << ret << endl;
-        return -1;
-      }
-#endif
-
-      if(AllowSecondPass) {
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          ret = discreteGradient_.buildGradient2<VTK_TT, int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          ret = discreteGradient_.buildGradient2<VTK_TT, vtkIdType>();
-#ifndef TTK_ENABLE_KAMIKAZE
-        if(ret) {
-          cerr << "[ttkDiscreteGradient] Error : "
-                  "DiscreteGradient.buildGradient2() error code : "
-               << ret << endl;
-          return -1;
-        }
-#endif
-      }
-
-      if(dimensionality == 3 and AllowThirdPass) {
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          ret = discreteGradient_.buildGradient3<VTK_TT, int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          ret = discreteGradient_.buildGradient3<VTK_TT, vtkIdType>();
-#ifndef TTK_ENABLE_KAMIKAZE
-        if(ret) {
-          cerr << "[ttkDiscreteGradient] Error : "
-                  "DiscreteGradient.buildGradient2() error code : "
-               << ret << endl;
-          return -1;
-        }
-#endif
-      }
-
-      if(inputOffsets_->GetDataType() == VTK_INT)
-        ret = discreteGradient_.reverseGradient<VTK_TT, int>();
-      if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-        ret = discreteGradient_.reverseGradient<VTK_TT, vtkIdType>();
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(ret) {
-        cerr << "[ttkDiscreteGradient] Error : "
-                "DiscreteGradient.reverseGradient() error code : "
-             << ret << endl;
-        return -1;
-      }
-#endif
-
-      // critical points
-      {
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          discreteGradient_.setCriticalPoints<VTK_TT, int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          discreteGradient_.setCriticalPoints<VTK_TT, vtkIdType>();
-
-        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-        if(!points) {
-          cerr << "[ttkDiscreteGradient] Error : vtkPoints allocation problem."
-               << endl;
-          return -1;
-        }
-#endif
-
-        vtkSmartPointer<vtkCharArray> cellDimensions
-          = vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-        if(!cellDimensions) {
-          cerr
-            << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem."
-            << endl;
-          return -1;
-        }
-#endif
-        cellDimensions->SetNumberOfComponents(1);
-        cellDimensions->SetName("CellDimension");
-
-        vtkSmartPointer<ttkSimplexIdTypeArray> cellIds
-          = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-        if(!cellIds) {
-          cerr << "[ttkDiscreteGradient] Error : ttkSimplexIdTypeArray "
-                  "allocation problem."
-               << endl;
-          return -1;
-        }
-#endif
-        cellIds->SetNumberOfComponents(1);
-        cellIds->SetName("CellId");
-
-        vtkDataArray *cellScalars = inputScalars_->NewInstance();
-#ifndef TTK_ENABLE_KAMIKAZE
-        if(!cellScalars) {
-          cerr
-            << "[ttkDiscreteGradient] Error : vtkDataArray allocation problem."
-            << endl;
-          return -1;
-        }
-#endif
-        cellScalars->SetNumberOfComponents(1);
-        cellScalars->SetName(ScalarField.data());
-
-        vtkSmartPointer<vtkCharArray> isOnBoundary
-          = vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-        if(!isOnBoundary) {
-          cerr
-            << "[vtkMorseSmaleComplex] Error : vtkCharArray allocation problem."
-            << endl;
-          return -1;
-        }
-#endif
-        isOnBoundary->SetNumberOfComponents(1);
-        isOnBoundary->SetName("IsOnBoundary");
-
-        vtkSmartPointer<ttkSimplexIdTypeArray> PLVertexIdentifiers
-          = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-        if(!PLVertexIdentifiers) {
-          cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray "
-                  "allocation "
-               << "problem." << endl;
-          return -1;
-        }
-#endif
-        PLVertexIdentifiers->SetNumberOfComponents(1);
-        PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
-
-        for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
-          points->InsertNextPoint(criticalPoints_points[3 * i],
-                                  criticalPoints_points[3 * i + 1],
-                                  criticalPoints_points[3 * i + 2]);
-
-          cellDimensions->InsertNextTuple1(
-            criticalPoints_points_cellDimensions[i]);
-          cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
-          cellScalars->InsertNextTuple1(criticalPoints_points_cellScalars[i]);
-          isOnBoundary->InsertNextTuple1(criticalPoints_points_isOnBoundary[i]);
-          PLVertexIdentifiers->InsertNextTuple1(
-            criticalPoints_points_PLVertexIdentifiers[i]);
-        }
-        outputCriticalPoints->SetPoints(points);
-
-        vtkPointData *pointData = outputCriticalPoints->GetPointData();
-#ifndef TTK_ENABLE_KAMIKAZE
-        if(!pointData) {
-          cerr << "[ttkDiscreteGradient] Error : outputCriticalPoints has no "
-                  "point data."
-               << endl;
-          return -1;
-        }
-#endif
-
-        pointData->AddArray(cellDimensions);
-        pointData->AddArray(cellIds);
-        pointData->AddArray(cellScalars);
-        pointData->AddArray(isOnBoundary);
-        pointData->AddArray(PLVertexIdentifiers);
-      }
-    }));
-#else
-#ifndef TTK_ENABLE_KAMIKAZE
-    vtkTemplateMacro({
-      vector<VTK_TT> criticalPoints_points_cellScalars;
-
-      discreteGradient_.setOutputCriticalPoints(
-        &criticalPoints_numberOfPoints, &criticalPoints_points,
-        &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
-        &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
-        &criticalPoints_points_PLVertexIdentifiers,
-        &criticalPoints_points_manifoldSize);
-
-      if(inputOffsets_->GetDataType() == VTK_INT)
-        ret = discreteGradient_.buildGradient<VTK_TT TTK_COMMA int>();
-      if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-        ret = discreteGradient_.buildGradient<VTK_TT TTK_COMMA vtkIdType>();
-      if(ret) {
-        cerr << "[ttkDiscreteGradient] Error : "
-                "DiscreteGradient.buildGradient() error code : "
-             << ret << endl;
-        return -1;
-      }
-
-      if(AllowSecondPass) {
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          ret = discreteGradient_.buildGradient2<VTK_TT TTK_COMMA int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          ret = discreteGradient_.buildGradient2<VTK_TT TTK_COMMA vtkIdType>();
-        if(ret) {
-          cerr << "[ttkDiscreteGradient] Error : "
-                  "DiscreteGradient.buildGradient2() error code : "
-               << ret << endl;
-          return -1;
-        }
-      }
-
-      if(dimensionality == 3 and AllowThirdPass) {
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          ret = discreteGradient_.buildGradient3<VTK_TT TTK_COMMA int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          ret = discreteGradient_.buildGradient3<VTK_TT TTK_COMMA vtkIdType>();
-        if(ret) {
-          cerr << "[ttkDiscreteGradient] Error : "
-                  "DiscreteGradient.buildGradient2() error code : "
-               << ret << endl;
-          return -1;
-        }
-      }
-
-      if(inputOffsets_->GetDataType() == VTK_INT)
-        ret = discreteGradient_.reverseGradient<VTK_TT TTK_COMMA int>();
-      if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-        ret = discreteGradient_.reverseGradient<VTK_TT TTK_COMMA vtkIdType>();
-      if(ret) {
-        cerr << "[ttkDiscreteGradient] Error : "
-                "DiscreteGradient.reverseGradient() error code : "
-             << ret << endl;
-        return -1;
-      }
-
-      // critical points
-      {
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          discreteGradient_.setCriticalPoints<VTK_TT TTK_COMMA int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          discreteGradient_.setCriticalPoints<VTK_TT TTK_COMMA vtkIdType>();
-
-        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-        if(!points) {
-          cerr << "[ttkDiscreteGradient] Error : vtkPoints allocation problem."
-               << endl;
-          return -1;
-        }
-
-        vtkSmartPointer<vtkCharArray> cellDimensions
-          = vtkSmartPointer<vtkCharArray>::New();
-        if(!cellDimensions) {
-          cerr
-            << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem."
-            << endl;
-          return -1;
-        }
-        cellDimensions->SetNumberOfComponents(1);
-        cellDimensions->SetName("CellDimension");
-
-        vtkSmartPointer<ttkSimplexIdTypeArray> cellIds
-          = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-        if(!cellIds) {
-          cerr << "[ttkDiscreteGradient] Error : ttkSimplexIdTypeArray "
-                  "allocation problem."
-               << endl;
-          return -1;
-        }
-        cellIds->SetNumberOfComponents(1);
-        cellIds->SetName("CellId");
-
-        vtkDataArray *cellScalars = inputScalars_->NewInstance();
-        if(!cellScalars) {
-          cerr
-            << "[ttkDiscreteGradient] Error : vtkDataArray allocation problem."
-            << endl;
-          return -1;
-        }
-        cellScalars->SetNumberOfComponents(1);
-        cellScalars->SetName(ScalarField.data());
-
-        vtkSmartPointer<vtkCharArray> isOnBoundary
-          = vtkSmartPointer<vtkCharArray>::New();
-        if(!isOnBoundary) {
-          cerr
-            << "[vtkMorseSmaleComplex] Error : vtkCharArray allocation problem."
-            << endl;
-          return -1;
-        }
-        isOnBoundary->SetNumberOfComponents(1);
-        isOnBoundary->SetName("IsOnBoundary");
-
-        vtkSmartPointer<ttkSimplexIdTypeArray> PLVertexIdentifiers
-          = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-        if(!PLVertexIdentifiers) {
-          cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray "
-                  "allocation "
-               << "problem." << endl;
-          return -1;
-        }
-        PLVertexIdentifiers->SetNumberOfComponents(1);
-        PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
-
-        for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
-          points->InsertNextPoint(criticalPoints_points[3 * i],
-                                  criticalPoints_points[3 * i + 1],
-                                  criticalPoints_points[3 * i + 2]);
-
-          cellDimensions->InsertNextTuple1(
-            criticalPoints_points_cellDimensions[i]);
-          cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
-          cellScalars->InsertNextTuple1(criticalPoints_points_cellScalars[i]);
-          isOnBoundary->InsertNextTuple1(criticalPoints_points_isOnBoundary[i]);
-          PLVertexIdentifiers->InsertNextTuple1(
-            criticalPoints_points_PLVertexIdentifiers[i]);
-        }
-        outputCriticalPoints->SetPoints(points);
-
-        vtkPointData *pointData = outputCriticalPoints->GetPointData();
-        if(!pointData) {
-          cerr << "[ttkDiscreteGradient] Error : outputCriticalPoints has no "
-                  "point data."
-               << endl;
-          return -1;
-        }
-
-        pointData->AddArray(cellDimensions);
-        pointData->AddArray(cellIds);
-        pointData->AddArray(cellScalars);
-        pointData->AddArray(isOnBoundary);
-        pointData->AddArray(PLVertexIdentifiers);
-      }
-    });
-#else
-    vtkTemplateMacro({
-      vector<VTK_TT> criticalPoints_points_cellScalars;
-
-      discreteGradient_.setOutputCriticalPoints(
-        &criticalPoints_numberOfPoints, &criticalPoints_points,
-        &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
-        &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
-        &criticalPoints_points_PLVertexIdentifiers,
-        &criticalPoints_points_manifoldSize);
-
-      if(inputOffsets_->GetDataType() == VTK_INT)
-        ret = discreteGradient_.buildGradient<VTK_TT TTK_COMMA int>();
-      if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-        ret = discreteGradient_.buildGradient<VTK_TT TTK_COMMA vtkIdType>();
-
-      if(AllowSecondPass) {
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          ret = discreteGradient_.buildGradient2<VTK_TT TTK_COMMA int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          ret = discreteGradient_.buildGradient2<VTK_TT TTK_COMMA vtkIdType>();
-      }
-
-      if(dimensionality == 3 and AllowThirdPass) {
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          ret = discreteGradient_.buildGradient3<VTK_TT TTK_COMMA int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          ret = discreteGradient_.buildGradient3<VTK_TT TTK_COMMA vtkIdType>();
-      }
-
-      if(inputOffsets_->GetDataType() == VTK_INT)
-        discreteGradient_.reverseGradient<VTK_TT TTK_COMMA int>();
-      if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-        discreteGradient_.reverseGradient<VTK_TT TTK_COMMA vtkIdType>();
-
-      // critical points
-      {
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          discreteGradient_.setCriticalPoints<VTK_TT TTK_COMMA int>();
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          discreteGradient_.setCriticalPoints<VTK_TT TTK_COMMA vtkIdType>();
-
-        vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-
-        vtkSmartPointer<vtkCharArray> cellDimensions
-          = vtkSmartPointer<vtkCharArray>::New();
-        cellDimensions->SetNumberOfComponents(1);
-        cellDimensions->SetName("CellDimension");
-
-        vtkSmartPointer<ttkSimplexIdTypeArray> cellIds
-          = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-        cellIds->SetNumberOfComponents(1);
-        cellIds->SetName("CellId");
-
-        vtkDataArray *cellScalars = inputScalars_->NewInstance();
-        cellScalars->SetNumberOfComponents(1);
-        cellScalars->SetName(ScalarField.data());
-
-        vtkSmartPointer<vtkCharArray> isOnBoundary
-          = vtkSmartPointer<vtkCharArray>::New();
-        isOnBoundary->SetNumberOfComponents(1);
-        isOnBoundary->SetName("IsOnBoundary");
-
-        vtkSmartPointer<ttkSimplexIdTypeArray> PLVertexIdentifiers
-          = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-        PLVertexIdentifiers->SetNumberOfComponents(1);
-        PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
-
-        for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
-          points->InsertNextPoint(criticalPoints_points[3 * i],
-                                  criticalPoints_points[3 * i + 1],
-                                  criticalPoints_points[3 * i + 2]);
-
-          cellDimensions->InsertNextTuple1(
-            criticalPoints_points_cellDimensions[i]);
-          cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
-          cellScalars->InsertNextTuple1(criticalPoints_points_cellScalars[i]);
-          isOnBoundary->InsertNextTuple1(criticalPoints_points_isOnBoundary[i]);
-          PLVertexIdentifiers->InsertNextTuple1(
-            criticalPoints_points_PLVertexIdentifiers[i]);
-        }
-        outputCriticalPoints->SetPoints(points);
-
-        vtkPointData *pointData = outputCriticalPoints->GetPointData();
-
-        pointData->AddArray(cellDimensions);
-        pointData->AddArray(cellIds);
-        pointData->AddArray(cellScalars);
-        pointData->AddArray(isOnBoundary);
-        pointData->AddArray(PLVertexIdentifiers);
-      }
-    });
-#endif
-#endif
+    vtkTemplateMacro(
+      ret = dispatch<VTK_TT>(
+        outputCriticalPoints, criticalPoints_numberOfPoints,
+        criticalPoints_points, criticalPoints_points_cellDimensions,
+        criticalPoints_points_cellIds, criticalPoints_points_isOnBoundary,
+        criticalPoints_points_PLVertexIdentifiers,
+        criticalPoints_points_manifoldSize));
   }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(ret != 0) {
+    return -1;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
 
   // gradient glyphs
   if(ComputeGradientGlyphs) {
