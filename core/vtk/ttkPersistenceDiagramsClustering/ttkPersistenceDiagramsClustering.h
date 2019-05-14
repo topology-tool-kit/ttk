@@ -286,14 +286,14 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(
                 value2, coordX2, coordY2, coordZ2
             );
 
-            // diagram->at(pairingsSize) = std::make_tuple(
-            //     vertexId1, (BNodeType) 1,
-            //     vertexId2, (BNodeType) 3,
-            //     (dataType) persistence,
-            //     pairType,
-            //     value1, coordX1, coordY1, coordZ1,
-            //     value2, coordX2, coordY2, coordZ2
-            // );
+            diagram->at(pairingsSize) = std::make_tuple(
+                vertexId1, (BNodeType) 0,
+                vertexId2, (BNodeType) 1,
+                (dataType) persistence,
+                pairType,
+                value1, coordX1, coordY1, coordZ1,
+                value2, coordX2, coordY2, coordZ2
+            );
 
         }
         else

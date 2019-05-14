@@ -126,7 +126,7 @@ namespace ttk {
 
 		~Auction() {
 			delete diagonal_goods_;
-			if(delete_kdTree_){
+			if(delete_kdTree_ && use_kdt_){
 			    delete kdt_;
 			}
 			if(delete_bidders_){
@@ -144,8 +144,8 @@ namespace ttk {
 		void BuildAuctionDiagrams(BidderDiagram<dataType> *BD, GoodDiagram<dataType> *GD){
 			n_bidders_ = BD->size();
 			n_goods_ = GD->size();
-
 			delete_bidders_ = false;
+			// delete_kdTree_ = false;
 			bidders_ = BD;
 			goods_ = GD;
 
@@ -199,7 +199,7 @@ namespace ttk {
 				bidders_->addBidder(b);
 			}
 			if(bidders_->size()>0){
-				use_kdt_ = use_kdt_;
+				use_kdt_ = true;
 				this->buildKDTree();
 			}
 			else{
