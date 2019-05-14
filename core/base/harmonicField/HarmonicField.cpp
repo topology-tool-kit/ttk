@@ -1,22 +1,33 @@
 #include <HarmonicField.h>
+#include <Laplacian.h>
 
-ttk::HarmonicField::HarmonicField()
-  : vertexNumber_{}, edgeNumber_{}, constraintNumber_{}, useCotanWeights_{true},
-    triangulation_{}, sources_{}, constraints_{}, outputScalarFieldPointer_{},
-    solvingMethod_{ttk::SolvingMethodUserType::Auto}, logAlpha_{5} {
-}
+#ifdef TTK_ENABLE_EIGEN
+#include <Eigen/Sparse>
+#endif // TTK_ENABLE_EIGEN
 
 ttk::SolvingMethodType ttk::HarmonicField::findBestSolver() const {
 
   // for switching between Cholesky factorization and Iterate
   // (conjugate gradients) method
-  SimplexId threshold = 500000;
+  const SimplexId threshold = 500000;
 
   // compare threshold to number of non-zero values in laplacian matrix
   if(2 * edgeNumber_ + vertexNumber_ > threshold) {
     return ttk::SolvingMethodType::Iterative;
   }
   return ttk::SolvingMethodType::Cholesky;
+}
+
+template <typename SparseMatrixType,
+          typename SparseVectorType,
+          typename SolverType>
+int ttk::HarmonicField::solve(SparseMatrixType const &lap,
+                              SparseMatrixType const &penalty,
+                              SparseVectorType const &constraints,
+                              SparseMatrixType &sol) const {
+  SolverType solver(lap - penalty);
+  sol = solver.solve(penalty * constraints);
+  return solver.info();
 }
 
 // main routine
@@ -40,8 +51,6 @@ int ttk::HarmonicField::execute() const {
 
   Timer t;
 
-  // scalar field constraints vertices
-  auto identifiers = static_cast<SimplexId *>(sources_);
   // scalar field: 0 everywhere except on constraint vertices
   auto sf = static_cast<scalarFieldType *>(constraints_);
 
@@ -54,7 +63,7 @@ int ttk::HarmonicField::execute() const {
   // filter unique constraint identifiers
   std::set<SimplexId> uniqueIdentifiersSet;
   for(SimplexId i = 0; i < constraintNumber_; ++i) {
-    uniqueIdentifiersSet.insert(identifiers[i]);
+    uniqueIdentifiersSet.insert(sources_[i]);
   }
 
   // vector of unique constraint identifiers
@@ -66,7 +75,7 @@ int ttk::HarmonicField::execute() const {
   // put identifier corresponding constraints in vector
   for(size_t i = 0; i < uniqueIdentifiers.size(); ++i) {
     for(SimplexId j = 0; j < constraintNumber_; ++j) {
-      if(uniqueIdentifiers[i] == identifiers[j]) {
+      if(uniqueIdentifiers[i] == sources_[j]) {
         uniqueValues[i] = sf[j];
         break;
       }
@@ -79,10 +88,9 @@ int ttk::HarmonicField::execute() const {
   // graph laplacian of current mesh
   SpMat lap;
   if(useCotanWeights_) {
-    lap = compute_laplacian_with_cotan_weights<SpMat, TripletType,
-                                               scalarFieldType>();
+    Laplacian::cotanWeights<scalarFieldType>(lap, *triangulation_);
   } else {
-    lap = compute_laplacian<SpMat, TripletType, scalarFieldType>();
+    Laplacian::discreteLaplacian<scalarFieldType>(lap, *triangulation_);
   }
 
   // constraints vector

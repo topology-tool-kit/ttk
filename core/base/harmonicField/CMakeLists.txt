@@ -5,5 +5,6 @@ ttk_add_base_library(harmonicField
     HarmonicField.h
   LINK
     geometry
+    laplacian
     triangulation
     )
