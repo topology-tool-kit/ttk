@@ -37,8 +37,8 @@ int ttk::EigenField::execute() const {
 
   {
     std::stringstream msg;
-    msg << MODULE_S "Beginnning computation" << std::endl;
-    dMsg(std::cout, msg.str(), detailedInfoMsg);
+    msg << MODULE_S "Beginnning computation..." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   // graph laplacian of current mesh
