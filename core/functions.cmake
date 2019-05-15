@@ -5,7 +5,15 @@
 # ttk_set_compile_options(<library_name>)
 #
 function(ttk_set_compile_options library)
-  target_compile_options(${library} PRIVATE -Wall)
+
+  # compilation flags
+  if (NOT MSVC)
+    # GCC and Clang
+    target_compile_options(${library} PRIVATE -Wall)
+  else()
+    # MSVC
+    target_compile_options(${library} PRIVATE /W4)
+  endif()
 
   if(Boost_FOUND)
     target_link_libraries(${library} PUBLIC Boost::boost)

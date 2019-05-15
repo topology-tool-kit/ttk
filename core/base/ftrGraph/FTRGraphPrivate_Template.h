@@ -894,8 +894,10 @@ namespace ttk {
         }
       }
 
+#if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-value"
+#endif // __GNUC__
 
       valence oldVal = 0;
       if(localProp->goUp()) {
@@ -947,7 +949,9 @@ namespace ttk {
         oldVal = decr + newVal + (totalVal + 1);
       }
 
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
+#endif // __GNUC__
 
       return oldVal == decr;
     }
