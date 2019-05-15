@@ -89,10 +89,6 @@ public:
 
   // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
-  // get array of identifiers on the mesh
-  int getIdentifiers(vtkPointSet *input);
-  // get constraint values on identifiers
-  int getConstraints(vtkPointSet *input);
 
   // default copy constructor
   ttkEigenField(const ttkEigenField &) = delete;
