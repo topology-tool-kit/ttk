@@ -140,12 +140,18 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
   // separatrices: destinations (extrema) -> sources (saddle points)
   std::vector<std::set<SimplexId>> sepMappingDests(sepEdges.size());
 
+  // number of separatrices coming out of this edge
+  std::vector<size_t> pointSepNumber(criticalPointsNumber_);
+
   for(auto &p : sepEdges) {
     for(SimplexId i = 0; i < criticalPointsNumber_; i++) {
       if(p.first == criticalPointsCellIds_[i]) {
         for(SimplexId j = 0; j < criticalPointsNumber_; j++) {
           if(p.second == criticalPointsCellIds_[j]) {
             sepMappingDests[j].insert(i);
+            pointSepNumber[j]++;
+            // should we also use the saddle points valence?
+            pointSepNumber[i]++;
           }
         }
       }
@@ -224,7 +230,112 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
     }
   }
 
+  // post-processing: try to detect missing or extra quadrangles by
+  // comparing separatrices number coming out of extrema
+
+  // number of quads that have the critical point as a vertex
+  std::vector<size_t> pointQuadNumber(criticalPointsNumber_);
+
+  for(size_t i = 0; i < outputCells_->size() / 5; ++i) {
+    pointQuadNumber[outputCells_->at(5 * i + 1)]++;
+    pointQuadNumber[outputCells_->at(5 * i + 2)]++;
+    pointQuadNumber[outputCells_->at(5 * i + 3)]++;
+    pointQuadNumber[outputCells_->at(5 * i + 4)]++;
+  }
+
+  // critical points with valence less than the number of quads around
+  std::vector<SimplexId> badPoints{};
+
+  for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
+    // should we only detect missing quadrangles, or extra quadrangles too?
+    if(pointQuadNumber[i] < pointSepNumber[i]) {
+      badPoints.emplace_back(static_cast<size_t>(i));
+    }
+  }
+
+  // quads that have several (at least two?) bad vertices
+  std::vector<size_t> badQuads{};
+
+  for(size_t i = 0; i < outputCells_->size() / 5; ++i) {
+    // number of bad vertices in quad
+    size_t nbadpoints = 0;
+    for(size_t j = 5 * i + 1; j < 5 * (i + 1); ++j) {
+      if(std::find(badPoints.begin(), badPoints.end(), outputCells_->at(j))
+         != badPoints.end()) {
+        nbadpoints++;
+      }
+    }
+    if(nbadpoints >= 2) {
+      badQuads.emplace_back(i);
+    }
+  }
+
+  // subdivise bad quads alongside separatrices
+  for(auto &q : badQuads) {
+    auto i = outputCells_->at(5 * q + 1);
+    auto j = outputCells_->at(5 * q + 2);
+    auto k = outputCells_->at(5 * q + 3);
+    auto l = outputCells_->at(5 * q + 4);
+    std::cout << i << " " << j << " " << findSeparatrixMiddle(j, i)
+              << std::endl;
+    break;
+    findSeparatrixMiddle(j, k);
+    findSeparatrixMiddle(l, i);
+    findSeparatrixMiddle(l, k);
+  }
+
   return 0;
+}
+
+ttk::SimplexId
+  ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t src,
+                                                    const size_t dst) const {
+  std::vector<std::pair<SimplexId, size_t>> sepFlatEdgesPos{};
+
+  for(SimplexId i = 0; i < separatriceNumber_; ++i) {
+    if(sepMask_[i] == 1) {
+      continue;
+    }
+    sepFlatEdgesPos.emplace_back(std::make_pair(sepCellIds_[i], i));
+  }
+
+  size_t a = 0, b = 0;
+
+  for(size_t i = 0; i < sepFlatEdgesPos.size(); ++i) {
+    auto p = sepFlatEdgesPos[i];
+    auto q = sepFlatEdgesPos[i + 1];
+    if(p.first == criticalPointsCellIds_[src]
+       && q.first == criticalPointsCellIds_[dst]) {
+      a = p.second;
+      b = q.second;
+      break;
+    }
+  }
+
+  std::vector<float> distFromA(b - a + 1);
+  std::array<float, 3> prev{}, curr{};
+
+  triangulation_->getVertexPoint(src, curr[0], curr[1], curr[2]);
+
+  for(size_t i = 1; i < b - a + 1; ++i) {
+    if(i % 2 == 0) {
+      distFromA[i] = std::numeric_limits<float>::infinity();
+      continue;
+    }
+    prev = std::move(curr);
+    triangulation_->getVertexPoint(
+      sepCellIds_[a + i], curr[0], curr[1], curr[2]);
+    distFromA[i]
+      = distFromA[i - 2] + ttk::Geometry::distance(&curr[0], &prev[0]);
+  }
+
+  auto distAB = distFromA.back();
+  for(auto &el : distFromA) {
+    el = std::abs(el - distAB / 2.0);
+  }
+
+  return sepCellIds_[a + std::min_element(distFromA.begin(), distFromA.end())
+                     - distFromA.begin()];
 }
 
 // main routine

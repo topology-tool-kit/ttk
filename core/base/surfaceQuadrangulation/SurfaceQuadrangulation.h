@@ -83,6 +83,16 @@ namespace ttk {
     bool hasCommonManifold(const std::vector<size_t> &verts) const;
 
     /**
+     * @brief Find the middle of the separatrix specified by its vertices
+     *
+     * @param[in] src Index in critical points array of separatrix source
+     * @param[in] dst Index in critical points array of separatrix destination
+     *
+     * @return Index of middle point in triangulation
+     */
+    SimplexId findSeparatrixMiddle(const size_t src, const size_t dst) const;
+
+    /**
      * @brief Perform the quadrangulation
      *
      * The direct quadrangulation links extrema to saddle points to
