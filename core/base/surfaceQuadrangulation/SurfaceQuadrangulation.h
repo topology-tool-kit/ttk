@@ -22,7 +22,6 @@ namespace ttk {
   class SurfaceQuadrangulation : public Debug {
 
   public:
-
     // default constructor
     SurfaceQuadrangulation() = default;
     // default destructor
@@ -51,19 +50,14 @@ namespace ttk {
     inline void setSeparatriceNumber(unsigned int value) {
       separatriceNumber_ = value;
     }
-    inline void
-      setSeparatrices(unsigned int number, void *sources, void *dests) {
+    inline void setSeparatrices(const unsigned int number,
+                                void *const cellIds,
+                                void *const mask) {
       separatriceNumber_ = number;
-      sepSourceId_ = static_cast<SimplexId *>(sources);
-      sepDestId_ = static_cast<SimplexId *>(dests);
+      sepCellIds_ = static_cast<SimplexId *>(cellIds);
+      sepMask_ = static_cast<unsigned char *>(mask);
     }
 
-    inline void setSepSourceId(void *address) {
-      sepSourceId_ = static_cast<SimplexId *>(address);
-    }
-    inline void setSepDestId(void *address) {
-      sepDestId_ = static_cast<SimplexId *>(address);
-    }
     inline void setSegmentation(unsigned int number, void *address) {
       segmentationNumber_ = number;
       segmentation_ = static_cast<SimplexId *>(address);
@@ -99,12 +93,12 @@ namespace ttk {
     // critical point type: 0 minimum, 1 saddle point, 2 maximum
     unsigned char *criticalPointsType_{};
 
-    // number of separatrices
+    // number of separatrices data
     SimplexId separatriceNumber_{};
-    // unordered list of cells id sources
-    SimplexId *sepSourceId_{};
-    // unordered list of cells id destinations
-    SimplexId *sepDestId_{};
+    // separatrices points cellIds (to be linked to critical points cellIds)
+    SimplexId *sepCellIds_{};
+    // separatrices mask scalar field (0 for critical points, 1 otherwise)
+    unsigned char *sepMask_{};
     // number of vertices in segmentation
     unsigned int segmentationNumber_{};
     // TTK identifiers -> quad for every vertex segmentation

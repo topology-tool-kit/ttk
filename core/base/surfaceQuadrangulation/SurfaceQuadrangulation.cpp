@@ -85,11 +85,29 @@ int ttk::SurfaceQuadrangulation::execute() const {
   // clear output
   outputCells_->clear();
 
-  // unique separatrices source -> destination mapping
-  std::set<std::pair<SimplexId, SimplexId>> sepMappingSet;
+  // filter sepCellIds_ array according to sepMask_
+  std::vector<SimplexId> sepFlatEdges{};
 
-  for(SimplexId i = 0; i < separatriceNumber_; i++) {
-    sepMappingSet.insert(std::make_pair(sepSourceId_[i], sepDestId_[i]));
+  for(SimplexId i = 0; i < separatriceNumber_; ++i) {
+    if(sepMask_[i] == 1) {
+      continue;
+    }
+    sepFlatEdges.emplace_back(sepCellIds_[i]);
+  }
+
+  if(sepFlatEdges.size() % 2 != 0) {
+    std::stringstream msg;
+    msg << "[SurfaceQuadrangulation] Error: odd number of separatrices edges" << endl;
+    dMsg(cout, msg.str(), infoMsg);
+    return -1;
+  }
+
+  // holds separatrices edges for every separatrix
+  std::vector<std::pair<SimplexId, SimplexId>> sepEdges{};
+
+  for(size_t i = 0; i < sepFlatEdges.size() / 2; ++i) {
+    sepEdges.emplace_back(
+      std::make_pair(sepFlatEdges[2 * i], sepFlatEdges[2 * i + 1]));
   }
 
   // number of degenerate quadrangles
@@ -102,7 +120,7 @@ int ttk::SurfaceQuadrangulation::execute() const {
     // maps sources to vector of destinations
     std::map<SimplexId, std::vector<SimplexId>> sourceDests{};
 
-    for(auto &p : sepMappingSet) {
+    for(auto &p : sepEdges) {
       SimplexId i;
       for(i = 0; i < criticalPointsNumber_; i++) {
         if(p.first == criticalPointsCellIds_[i]) {
@@ -154,9 +172,9 @@ int ttk::SurfaceQuadrangulation::execute() const {
     // quadrangle vertices are either extrema or saddle points
 
     // separatrices: destinations (extrema) -> sources (saddle points)
-    vector<std::set<SimplexId>> sepMappingDests(sepMappingSet.size());
+    vector<std::set<SimplexId>> sepMappingDests(sepEdges.size());
 
-    for(auto &p : sepMappingSet) {
+    for(auto &p : sepEdges) {
       for(SimplexId i = 0; i < criticalPointsNumber_; i++) {
         if(p.first == criticalPointsCellIds_[i]) {
           for(SimplexId j = 0; j < criticalPointsNumber_; j++) {

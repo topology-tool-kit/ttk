@@ -59,21 +59,21 @@ int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
 
 int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
 
-  // get separatrices points
+  // check if separatrices have points
   auto separatrices = input->GetPoints();
-
-  auto cellData = input->GetCellData();
-  auto sepSourceId = cellData->GetArray("SourceId");
-  auto sepDestId = cellData->GetArray("DestinationId");
-
   TTK_ABORT_KK(
-    separatrices == nullptr, "wrong Morse-Smale separatrices points", -1);
-  TTK_ABORT_KK(sepSourceId == nullptr, "wrong separatrices source id", -2);
-  TTK_ABORT_KK(sepDestId == nullptr, "wrong separatrices desination id", -3);
+    separatrices == nullptr, "no points in Morse-Smale separatrices", -1);
 
-  surfaceQuadrangulation_.setSeparatrices(sepSourceId->GetNumberOfValues(),
-                                          sepSourceId->GetVoidPointer(0),
-                                          sepDestId->GetVoidPointer(0));
+  // get separatrices point data
+  auto pointData = input->GetPointData();
+  auto id = pointData->GetArray("CellId");
+  auto mask = pointData->GetArray(ttk::MaskScalarFieldName);
+
+  TTK_ABORT_KK(id == nullptr, "wrong separatrices cell id", -2);
+  TTK_ABORT_KK(mask == nullptr, "wrong separatrices mask", -3);
+
+  surfaceQuadrangulation_.setSeparatrices(
+    id->GetNumberOfValues(), id->GetVoidPointer(0), mask->GetVoidPointer(0));
   return 0;
 }
 
