@@ -82,6 +82,32 @@ namespace ttk {
   private:
     bool hasCommonManifold(const std::vector<size_t> &verts) const;
 
+    /**
+     * @brief Perform the quadrangulation
+     *
+     * The direct quadrangulation links extrema to saddle points to
+     * make quadrangles.
+     *
+     * @param[in] sepEdges vector of separatrices edges
+     * @param[out] ndegen number of degenerate quadrangles produced
+     * @return 0 in case of success
+     */
+    int quadrangulate(
+      const std::vector<std::pair<SimplexId, SimplexId>> &sepEdges,
+      size_t &ndegen) const;
+
+    /**
+     * @brief Perform the dual quadrangulation
+     *
+     * The dual quadrangulation uses only extrema and no saddle points
+     * to output a coarser quadrangulation.
+     *
+     * @param[in] sepEdges vector of separatrices edges
+     * @return 0 in case of success
+     */
+    int dualQuadrangulate(
+      const std::vector<std::pair<SimplexId, SimplexId>> &sepEdges) const;
+
     Triangulation *triangulation_{};
 
     // number of critical points from the Morse-Smale complex

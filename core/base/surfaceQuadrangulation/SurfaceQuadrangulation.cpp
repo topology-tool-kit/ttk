@@ -73,6 +73,160 @@ bool ttk::SurfaceQuadrangulation::hasCommonManifold(
   return !last.empty();
 }
 
+int ttk::SurfaceQuadrangulation::dualQuadrangulate(
+  const std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> &sepEdges)
+  const {
+
+  // quadrangles vertices are only extrema
+
+  // maps sources (saddle points) to vector of their destinations (extrema)
+  std::map<SimplexId, std::vector<SimplexId>> sourceDests{};
+
+  for(auto &p : sepEdges) {
+    SimplexId i;
+    for(i = 0; i < criticalPointsNumber_; i++) {
+      if(p.first == criticalPointsCellIds_[i]) {
+        break;
+      }
+    }
+    SimplexId j;
+    for(j = 0; j < criticalPointsNumber_; j++) {
+      if(p.second == criticalPointsCellIds_[j]) {
+        break;
+      }
+    }
+
+    auto &v = sourceDests[i];
+    v.emplace_back(j);
+  }
+
+  for(auto &elt : sourceDests) {
+    auto extrema = elt.second;
+    if(extrema.size() == 4) {
+      auto i = extrema[0];
+      auto j = i;
+      auto k = i;
+      auto l = i;
+      // filter extrema by nature (minimum: 0 or maximum: 2)
+      if(criticalPointsType_[extrema[1]] == criticalPointsType_[i]) {
+        j = extrema[2];
+        k = extrema[1];
+        l = extrema[3];
+      } else if(criticalPointsType_[extrema[2]] == criticalPointsType_[i]) {
+        j = extrema[1];
+        k = extrema[2];
+        l = extrema[3];
+      } else if(criticalPointsType_[extrema[3]] == criticalPointsType_[i]) {
+        j = extrema[2];
+        k = extrema[3];
+        l = extrema[1];
+      }
+      outputCells_->emplace_back(4);
+      outputCells_->emplace_back(i);
+      outputCells_->emplace_back(j);
+      outputCells_->emplace_back(k);
+      outputCells_->emplace_back(l);
+    }
+  }
+
+  return 0;
+}
+
+int ttk::SurfaceQuadrangulation::quadrangulate(
+  const std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> &sepEdges,
+  size_t &ndegen) const {
+  // quadrangle vertices are either extrema or saddle points
+
+  // separatrices: destinations (extrema) -> sources (saddle points)
+  std::vector<std::set<SimplexId>> sepMappingDests(sepEdges.size());
+
+  for(auto &p : sepEdges) {
+    for(SimplexId i = 0; i < criticalPointsNumber_; i++) {
+      if(p.first == criticalPointsCellIds_[i]) {
+        for(SimplexId j = 0; j < criticalPointsNumber_; j++) {
+          if(p.second == criticalPointsCellIds_[j]) {
+            sepMappingDests[j].insert(i);
+          }
+        }
+      }
+    }
+  }
+
+  // iterate twice over dests
+  for(size_t i = 0; i < sepMappingDests.size(); i++) {
+    // skip if no sources
+    if(sepMappingDests[i].empty()) {
+      continue;
+    }
+    // begin second loop at i+1 to avoid duplicates and improve
+    // performance
+    for(size_t k = i + 1; k < sepMappingDests.size(); k++) {
+      // skip same dest or if no sources
+      if(k == i || sepMappingDests[k].empty()) {
+        continue;
+      }
+
+      // skip if same type (we are looking for quadrangles containing
+      // one minimum, one maximum and two saddle points)
+      if(criticalPointsType_[k] == criticalPointsType_[i]) {
+        continue;
+      }
+
+      // list of common sources to i and k
+      std::vector<SimplexId> common_dests;
+      std::set_intersection(
+        sepMappingDests[i].begin(), sepMappingDests[i].end(),
+        sepMappingDests[k].begin(), sepMappingDests[k].end(),
+        std::back_inserter(common_dests));
+
+      // find at least two common sources: j and l
+      if(common_dests.size() >= 2) {
+
+        // iterate over all possible common sources
+        for(size_t m = 0; m < common_dests.size(); m++) {
+          // avoid duplicates by beginning at m+1
+          for(size_t n = m + 1; n < common_dests.size(); n++) {
+
+            // gotcha!
+            size_t j = common_dests[m];
+            size_t l = common_dests[n];
+
+            // check for a common shared manifold (looking around
+            // saddle points only seems to be sufficient)
+            std::vector<size_t> verts{j, l};
+
+            bool validQuad = hasCommonManifold(verts);
+
+            // fill output vector
+            if(validQuad) {
+              outputCells_->emplace_back(4);
+              outputCells_->emplace_back(i);
+              outputCells_->emplace_back(j);
+              outputCells_->emplace_back(k);
+              outputCells_->emplace_back(l);
+            }
+          }
+        }
+      } else if(common_dests.size() == 1
+                && (sepMappingDests[i].size() == 1
+                    || sepMappingDests[k].size() == 1)) {
+        // we have degenerate quadrangles: i, j, k, j
+        size_t j = common_dests[0];
+        ndegen++;
+
+        // fill output vector
+        outputCells_->emplace_back(4);
+        outputCells_->emplace_back(i);
+        outputCells_->emplace_back(j);
+        outputCells_->emplace_back(k);
+        outputCells_->emplace_back(j);
+      }
+    }
+  }
+
+  return 0;
+}
+
 // main routine
 int ttk::SurfaceQuadrangulation::execute() const {
 
@@ -97,7 +251,8 @@ int ttk::SurfaceQuadrangulation::execute() const {
 
   if(sepFlatEdges.size() % 2 != 0) {
     std::stringstream msg;
-    msg << "[SurfaceQuadrangulation] Error: odd number of separatrices edges" << endl;
+    msg << "[SurfaceQuadrangulation] Error: odd number of separatrices edges"
+        << endl;
     dMsg(cout, msg.str(), infoMsg);
     return -1;
   }
@@ -114,149 +269,10 @@ int ttk::SurfaceQuadrangulation::execute() const {
   size_t ndegen = 0;
 
   if(dualQuadrangulation_) {
-
-    // quadrangles vertices are only extrema
-
-    // maps sources to vector of destinations
-    std::map<SimplexId, std::vector<SimplexId>> sourceDests{};
-
-    for(auto &p : sepEdges) {
-      SimplexId i;
-      for(i = 0; i < criticalPointsNumber_; i++) {
-        if(p.first == criticalPointsCellIds_[i]) {
-          break;
-        }
-      }
-      SimplexId j;
-      for(j = 0; j < criticalPointsNumber_; j++) {
-        if(p.second == criticalPointsCellIds_[j]) {
-          break;
-        }
-      }
-
-      auto &v = sourceDests[i];
-      v.emplace_back(j);
-    }
-
-    for(auto &elt : sourceDests) {
-      auto extrema = elt.second;
-      if(extrema.size() == 4) {
-        auto i = extrema[0];
-        auto j = i;
-        auto k = i;
-        auto l = i;
-        // filter extrema by nature (minimum: 0 or maximum: 2)
-        if(criticalPointsType_[extrema[1]] == criticalPointsType_[i]) {
-          j = extrema[2];
-          k = extrema[1];
-          l = extrema[3];
-        } else if(criticalPointsType_[extrema[2]] == criticalPointsType_[i]) {
-          j = extrema[1];
-          k = extrema[2];
-          l = extrema[3];
-        } else if(criticalPointsType_[extrema[3]] == criticalPointsType_[i]) {
-          j = extrema[2];
-          k = extrema[3];
-          l = extrema[1];
-        }
-        outputCells_->emplace_back(4);
-        outputCells_->emplace_back(i);
-        outputCells_->emplace_back(j);
-        outputCells_->emplace_back(k);
-        outputCells_->emplace_back(l);
-      }
-    }
-
-  } else { // classic quadrangulation with saddle points
-
-    // quadrangle vertices are either extrema or saddle points
-
-    // separatrices: destinations (extrema) -> sources (saddle points)
-    vector<std::set<SimplexId>> sepMappingDests(sepEdges.size());
-
-    for(auto &p : sepEdges) {
-      for(SimplexId i = 0; i < criticalPointsNumber_; i++) {
-        if(p.first == criticalPointsCellIds_[i]) {
-          for(SimplexId j = 0; j < criticalPointsNumber_; j++) {
-            if(p.second == criticalPointsCellIds_[j]) {
-              sepMappingDests[j].insert(i);
-            }
-          }
-        }
-      }
-    }
-
-    // iterate twice over dests
-    for(size_t i = 0; i < sepMappingDests.size(); i++) {
-      // skip if no sources
-      if(sepMappingDests[i].empty()) {
-        continue;
-      }
-      // begin second loop at i+1 to avoid duplicates and improve
-      // performance
-      for(size_t k = i + 1; k < sepMappingDests.size(); k++) {
-        // skip same dest or if no sources
-        if(k == i || sepMappingDests[k].empty()) {
-          continue;
-        }
-
-        // skip if same type (we are looking for quadrangles containing
-        // one minimum, one maximum and two saddle points)
-        if(criticalPointsType_[k] == criticalPointsType_[i]) {
-          continue;
-        }
-
-        // list of common sources to i and k
-        vector<SimplexId> common_dests;
-        std::set_intersection(
-          sepMappingDests[i].begin(), sepMappingDests[i].end(),
-          sepMappingDests[k].begin(), sepMappingDests[k].end(),
-          std::back_inserter(common_dests));
-
-        // find at least two common sources: j and l
-        if(common_dests.size() >= 2) {
-
-          // iterate over all possible common sources
-          for(size_t m = 0; m < common_dests.size(); m++) {
-            // avoid duplicates by beginning at m+1
-            for(size_t n = m + 1; n < common_dests.size(); n++) {
-
-              // gotcha!
-              size_t j = common_dests[m];
-              size_t l = common_dests[n];
-
-              // check for a common shared manifold (looking around
-              // saddle points only seems to be sufficient)
-              std::vector<size_t> verts{j, l};
-
-              bool validQuad = hasCommonManifold(verts);
-
-              // fill output vector
-              if(validQuad) {
-                outputCells_->emplace_back(4);
-                outputCells_->emplace_back(i);
-                outputCells_->emplace_back(j);
-                outputCells_->emplace_back(k);
-                outputCells_->emplace_back(l);
-              }
-            }
-          }
-        } else if(common_dests.size() == 1
-                  && (sepMappingDests[i].size() == 1
-                      || sepMappingDests[k].size() == 1)) {
-          // we have degenerate quadrangles: i, j, k, j
-          size_t j = common_dests[0];
-          ndegen++;
-
-          // fill output vector
-          outputCells_->emplace_back(4);
-          outputCells_->emplace_back(i);
-          outputCells_->emplace_back(j);
-          outputCells_->emplace_back(k);
-          outputCells_->emplace_back(j);
-        }
-      }
-    }
+    dualQuadrangulate(sepEdges);
+  } else {
+    // direct quadrangulation with saddle points
+    quadrangulate(sepEdges, ndegen);
   }
 
   // maximum manifold id
