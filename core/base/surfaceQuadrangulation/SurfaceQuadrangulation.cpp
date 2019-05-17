@@ -312,19 +312,20 @@ ttk::SimplexId
     }
   }
 
-  std::vector<float> distFromA(b - a + 1);
-  std::array<float, 3> prev{}, curr{};
+  const int dim = 3;
 
-  triangulation_->getVertexPoint(src, curr[0], curr[1], curr[2]);
+  std::vector<float> distFromA(b - a + 1);
+  std::array<float, dim> prev{}, curr{};
+
+  curr[0] = sepPoints_[dim * a];
+  curr[1] = sepPoints_[dim * a + 1];
+  curr[2] = sepPoints_[dim * a + 2];
 
   for(size_t i = 1; i < b - a + 1; ++i) {
-    if(i % 2 == 0) {
-      distFromA[i] = std::numeric_limits<float>::infinity();
-      continue;
-    }
     prev = std::move(curr);
-    triangulation_->getVertexPoint(
-      sepCellIds_[a + i], curr[0], curr[1], curr[2]);
+    curr[0] = sepPoints_[dim * (a + i)];
+    curr[1] = sepPoints_[dim * (a + i) + 1];
+    curr[2] = sepPoints_[dim * (a + i) + 2];
     distFromA[i]
       = distFromA[i - 2] + ttk::Geometry::distance(&curr[0], &prev[0]);
   }
