@@ -52,10 +52,12 @@ namespace ttk {
     }
     inline void setSeparatrices(const unsigned int number,
                                 void *const cellIds,
-                                void *const mask) {
+                                void *const mask,
+                                void *const points) {
       separatriceNumber_ = number;
       sepCellIds_ = static_cast<SimplexId *>(cellIds);
       sepMask_ = static_cast<unsigned char *>(mask);
+      sepPoints_ = static_cast<float *>(points);
     }
 
     inline void setSegmentation(unsigned int number, void *address) {
@@ -65,8 +67,10 @@ namespace ttk {
     inline void setDualQuadrangulation(const bool input) {
       dualQuadrangulation_ = input;
     }
-    inline void setOutputCells(std::vector<long long> *cells) {
+    inline void setOutputQuads(std::vector<long long> *cells,
+                               std::vector<float> *points) {
       outputCells_ = cells;
+      outputPoints_ = points;
     }
 
     inline void setupTriangulation(Triangulation *const triangl) {
@@ -135,6 +139,8 @@ namespace ttk {
     SimplexId *sepCellIds_{};
     // separatrices mask scalar field (0 for critical points, 1 otherwise)
     unsigned char *sepMask_{};
+    // separatrices points
+    float *sepPoints_{};
     // number of vertices in segmentation
     unsigned int segmentationNumber_{};
     // TTK identifiers -> quad for every vertex segmentation
@@ -144,6 +150,8 @@ namespace ttk {
 
     // array of output polygons
     std::vector<long long> *outputCells_{};
+    // array of output edges (critical points and more...)
+    std::vector<float> *outputPoints_{};
   };
 } // namespace ttk
 

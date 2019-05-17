@@ -73,7 +73,8 @@ int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
   TTK_ABORT_KK(mask == nullptr, "wrong separatrices mask", -3);
 
   surfaceQuadrangulation_.setSeparatrices(
-    id->GetNumberOfValues(), id->GetVoidPointer(0), mask->GetVoidPointer(0));
+    id->GetNumberOfValues(), id->GetVoidPointer(0), mask->GetVoidPointer(0),
+    separatrices->GetVoidPointer(0));
   return 0;
 }
 
@@ -121,7 +122,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   TTK_ABORT_KK(res != 0, "wrong segmentation", -1);
 
-  surfaceQuadrangulation_.setOutputCells(&outQuadrangles_);
+  surfaceQuadrangulation_.setOutputQuads(&outQuadrangles_, &outQuadPoints_);
   surfaceQuadrangulation_.setDualQuadrangulation(DualQuadrangulation);
 
   res += surfaceQuadrangulation_.execute();
