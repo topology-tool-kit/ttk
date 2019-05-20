@@ -279,71 +279,89 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
     sepFlatEdgesPos.emplace_back(std::make_pair(sepCellIds_[i], i));
   }
 
+  std::map<std::pair<size_t, size_t>, size_t> sepMiddles{};
+
   // subdivise bad quads alongside separatrices
   for(auto &q : badQuads) {
     auto i = outputCells_->at(5 * q + 1);
     auto j = outputCells_->at(5 * q + 2);
     auto k = outputCells_->at(5 * q + 3);
     auto l = outputCells_->at(5 * q + 4);
-    findSeparatrixMiddle(j, i, sepFlatEdgesPos);
-    findSeparatrixMiddle(j, k, sepFlatEdgesPos);
-    findSeparatrixMiddle(l, i, sepFlatEdgesPos);
-    findSeparatrixMiddle(l, k, sepFlatEdgesPos);
+    findSeparatrixMiddle(j, i, sepFlatEdgesPos, sepMiddles);
+    findSeparatrixMiddle(j, k, sepFlatEdgesPos, sepMiddles);
+    findSeparatrixMiddle(l, i, sepFlatEdgesPos, sepMiddles);
+    findSeparatrixMiddle(l, k, sepFlatEdgesPos, sepMiddles);
   }
 
   return 0;
 }
 
-ttk::SimplexId ttk::SurfaceQuadrangulation::findSeparatrixMiddle(
+size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(
   const size_t src,
   const size_t dst,
-  const std::vector<std::pair<SimplexId, size_t>> &sepFlatEdgesPos) const {
+  const std::vector<std::pair<SimplexId, size_t>> &sepFlatEdgesPos,
+  std::map<std::pair<size_t, size_t>, size_t> &sepMiddles) const {
 
   // indices in separatrices point data
-  size_t a = 0, b = 0;
+  std::vector<std::pair<size_t, size_t>> sepBounds{};
 
   for(size_t i = 0; i < sepFlatEdgesPos.size(); ++i) {
     auto p = sepFlatEdgesPos[i];
     auto q = sepFlatEdgesPos[i + 1];
     if(p.first == criticalPointsCellIds_[src]
        && q.first == criticalPointsCellIds_[dst]) {
-      a = p.second;
-      b = q.second;
-      break;
+      sepBounds.emplace_back(std::make_pair(p.second, q.second));
     }
   }
 
   const int dim = 3;
 
-  std::vector<float> distFromA(b - a + 1);
-  std::array<float, dim> prev{}, curr{};
+  for(auto &p : sepBounds) {
+    auto a = p.first;
+    auto b = p.second;
 
-  curr[0] = sepPoints_[dim * a];
-  curr[1] = sepPoints_[dim * a + 1];
-  curr[2] = sepPoints_[dim * a + 2];
+    // check if middle already computed
+    auto cached = sepMiddles.find(std::make_pair(a, b));
+    if(cached != sepMiddles.end()) {
+      continue;
+    }
 
-  for(size_t i = 1; i < b - a + 1; ++i) {
-    prev = std::move(curr);
-    curr[0] = sepPoints_[dim * (a + i)];
-    curr[1] = sepPoints_[dim * (a + i) + 1];
-    curr[2] = sepPoints_[dim * (a + i) + 2];
-    distFromA[i]
-      = distFromA[i - 1] + ttk::Geometry::distance(&curr[0], &prev[0]);
+    std::vector<float> distFromA(b - a + 1);
+    std::array<float, dim> prev{}, curr{};
+
+    curr[0] = sepPoints_[dim * a];
+    curr[1] = sepPoints_[dim * a + 1];
+    curr[2] = sepPoints_[dim * a + 2];
+
+    // integrate distances at every point of this separatrix
+    for(size_t i = 1; i < b - a + 1; ++i) {
+      prev = std::move(curr);
+      curr[0] = sepPoints_[dim * (a + i)];
+      curr[1] = sepPoints_[dim * (a + i) + 1];
+      curr[2] = sepPoints_[dim * (a + i) + 2];
+      distFromA[i]
+        = distFromA[i - 1] + ttk::Geometry::distance(&curr[0], &prev[0]);
+    }
+
+    auto distAB = distFromA.back();
+    for(auto &el : distFromA) {
+      el = std::abs(el - distAB / 2.0);
+    }
+
+    // index in separatrices point data array of separatrix middle
+    auto id = a + std::min_element(distFromA.begin(), distFromA.end())
+              - distFromA.begin();
+
+    // new point!
+    outputPoints_->emplace_back(sepPoints_[dim * id]);
+    outputPoints_->emplace_back(sepPoints_[dim * id + 1]);
+    outputPoints_->emplace_back(sepPoints_[dim * id + 2]);
+
+    // put separatrix bounds and middle id in cache
+    sepMiddles.insert(std::make_pair(std::make_pair(a, b), id));
   }
 
-  auto distAB = distFromA.back();
-  for(auto &el : distFromA) {
-    el = std::abs(el - distAB / 2.0);
-  }
-
-  auto id = a + std::min_element(distFromA.begin(), distFromA.end())
-            - distFromA.begin();
-
-  outputPoints_->emplace_back(sepPoints_[dim * id]);
-  outputPoints_->emplace_back(sepPoints_[dim * id + 1]);
-  outputPoints_->emplace_back(sepPoints_[dim * id + 2]);
-
-  return id;
+  return 0;
 }
 
 // main routine
