@@ -194,7 +194,7 @@ if (TTK_ENABLE_OPENMP)
     option(TTK_ENABLE_OMP_PRIORITY "Gives tasks priority, high perf improvement" OFF)
 
     if (OpenMP_CXX_VERSION_MAJOR GREATER_EQUAL 4 AND OpenMP_CXX_VERSION_MINOR GREATER_EQUAL 5)
-      set(TTK_ENABLE_OMP_PRIORITY ON CACHE BOOL "Enable priorities on opnemp tasks" FORCE)
+      set(TTK_ENABLE_OMP_PRIORITY OFF CACHE BOOL "Enable priorities on opnemp tasks" FORCE)
     endif()
 
     mark_as_advanced(TTK_ENABLE_OMP_PRIORITY)
