@@ -270,26 +270,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
     }
   }
 
-  // subdivise bad quads alongside separatrices
-  for(auto &q : badQuads) {
-    auto i = outputCells_->at(5 * q + 1);
-    auto j = outputCells_->at(5 * q + 2);
-    auto k = outputCells_->at(5 * q + 3);
-    auto l = outputCells_->at(5 * q + 4);
-    std::cout << i << " " << j << " " << findSeparatrixMiddle(j, i)
-              << std::endl;
-    break;
-    findSeparatrixMiddle(j, k);
-    findSeparatrixMiddle(l, i);
-    findSeparatrixMiddle(l, k);
-  }
-
-  return 0;
-}
-
-ttk::SimplexId
-  ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t src,
-                                                    const size_t dst) const {
   std::vector<std::pair<SimplexId, size_t>> sepFlatEdgesPos{};
 
   for(SimplexId i = 0; i < separatriceNumber_; ++i) {
@@ -299,6 +279,27 @@ ttk::SimplexId
     sepFlatEdgesPos.emplace_back(std::make_pair(sepCellIds_[i], i));
   }
 
+  // subdivise bad quads alongside separatrices
+  for(auto &q : badQuads) {
+    auto i = outputCells_->at(5 * q + 1);
+    auto j = outputCells_->at(5 * q + 2);
+    auto k = outputCells_->at(5 * q + 3);
+    auto l = outputCells_->at(5 * q + 4);
+    findSeparatrixMiddle(j, i, sepFlatEdgesPos);
+    findSeparatrixMiddle(j, k, sepFlatEdgesPos);
+    findSeparatrixMiddle(l, i, sepFlatEdgesPos);
+    findSeparatrixMiddle(l, k, sepFlatEdgesPos);
+  }
+
+  return 0;
+}
+
+ttk::SimplexId ttk::SurfaceQuadrangulation::findSeparatrixMiddle(
+  const size_t src,
+  const size_t dst,
+  const std::vector<std::pair<SimplexId, size_t>> &sepFlatEdgesPos) const {
+
+  // indices in separatrices point data
   size_t a = 0, b = 0;
 
   for(size_t i = 0; i < sepFlatEdgesPos.size(); ++i) {
@@ -327,7 +328,7 @@ ttk::SimplexId
     curr[1] = sepPoints_[dim * (a + i) + 1];
     curr[2] = sepPoints_[dim * (a + i) + 2];
     distFromA[i]
-      = distFromA[i - 2] + ttk::Geometry::distance(&curr[0], &prev[0]);
+      = distFromA[i - 1] + ttk::Geometry::distance(&curr[0], &prev[0]);
   }
 
   auto distAB = distFromA.back();
@@ -335,8 +336,14 @@ ttk::SimplexId
     el = std::abs(el - distAB / 2.0);
   }
 
-  return sepCellIds_[a + std::min_element(distFromA.begin(), distFromA.end())
-                     - distFromA.begin()];
+  auto id = a + std::min_element(distFromA.begin(), distFromA.end())
+            - distFromA.begin();
+
+  outputPoints_->emplace_back(sepPoints_[dim * id]);
+  outputPoints_->emplace_back(sepPoints_[dim * id + 1]);
+  outputPoints_->emplace_back(sepPoints_[dim * id + 2]);
+
+  return id;
 }
 
 // main routine
@@ -350,6 +357,7 @@ int ttk::SurfaceQuadrangulation::execute() const {
 
   // clear output
   outputCells_->clear();
+  outputPoints_->clear();
 
   // filter sepCellIds_ array according to sepMask_
   std::vector<SimplexId> sepFlatEdges{};

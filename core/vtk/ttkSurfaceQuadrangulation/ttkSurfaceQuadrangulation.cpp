@@ -130,8 +130,21 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   TTK_ABORT_KK(
     res != 0, "SurfaceQuadrangulation.execute() error code: " << res, -9);
 
-  // update result: get critical points from input
-  output->ShallowCopy(cp);
+
+  // output points: critical points + generated separatrices middles
+  auto points = vtkSmartPointer<vtkPoints>::New();
+
+  // copy critical points
+  for(size_t i = 0; i < cp->GetNumberOfPoints(); i++) {
+    points->InsertNextPoint(cp->GetPoints()->GetPoint(i));
+  }
+
+  // copy separatrices middles
+  for(size_t i = 0; i < outQuadPoints_.size() / 3; i++) {
+    points->InsertNextPoint(&outQuadPoints_[3 * i]);
+  }
+
+  output->SetPoints(points);
 
   // vtkCellArray of quadrangle values containing outArray
   auto cells = vtkSmartPointer<vtkCellArray>::New();

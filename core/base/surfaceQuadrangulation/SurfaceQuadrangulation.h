@@ -91,10 +91,14 @@ namespace ttk {
      *
      * @param[in] src Index in critical points array of separatrix source
      * @param[in] dst Index in critical points array of separatrix destination
+     * @param[in] sepFlatEdgesPos Vector of pairs cell id -> array index
      *
      * @return Index of middle point in triangulation
      */
-    SimplexId findSeparatrixMiddle(const size_t src, const size_t dst) const;
+    SimplexId findSeparatrixMiddle(
+      const size_t src,
+      const size_t dst,
+      const std::vector<std::pair<SimplexId, size_t>> &sepFlatEdgesPos) const;
 
     /**
      * @brief Perform the quadrangulation
