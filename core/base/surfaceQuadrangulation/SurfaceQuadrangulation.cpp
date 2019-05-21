@@ -279,6 +279,24 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
     sepFlatEdgesPos.emplace_back(std::make_pair(sepCellIds_[i], i));
   }
 
+  // duplicate separatrices bounds
+  std::vector<
+    std::pair<std::pair<SimplexId, size_t>, std::pair<SimplexId, size_t>>>
+    dupSep{};
+
+  for(size_t i = 0; i < sepFlatEdgesPos.size() / 2; ++i) {
+    for(size_t j = i + 1; j < sepFlatEdgesPos.size() / 2; ++j) {
+      if(sepFlatEdgesPos[2 * i].first == sepFlatEdgesPos[2 * j].first
+         && sepFlatEdgesPos[2 * i + 1].first
+              == sepFlatEdgesPos[2 * j + 1].first) {
+        dupSep.emplace_back(
+          std::make_pair(sepFlatEdgesPos[2 * i], sepFlatEdgesPos[2 * i + 1]));
+        dupSep.emplace_back(
+          std::make_pair(sepFlatEdgesPos[2 * j], sepFlatEdgesPos[2 * j + 1]));
+      }
+    }
+  }
+
   std::map<std::pair<size_t, size_t>, size_t> sepMiddles{};
 
   // subdivise bad quads alongside separatrices
