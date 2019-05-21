@@ -233,62 +233,26 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
   // post-processing: try to detect missing or extra quadrangles by
   // comparing separatrices number coming out of extrema
 
-  // number of quads that have the critical point as a vertex
-  std::vector<size_t> pointQuadNumber(criticalPointsNumber_);
-
-  for(size_t i = 0; i < outputCells_->size() / 5; ++i) {
-    pointQuadNumber[outputCells_->at(5 * i + 1)]++;
-    pointQuadNumber[outputCells_->at(5 * i + 2)]++;
-    pointQuadNumber[outputCells_->at(5 * i + 3)]++;
-    pointQuadNumber[outputCells_->at(5 * i + 4)]++;
-  }
-
-  // critical points with valence less than the number of quads around
-  std::vector<SimplexId> badPoints{};
-
-  for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
-    // should we only detect missing quadrangles, or extra quadrangles too?
-    if(pointQuadNumber[i] < pointSepNumber[i]) {
-      badPoints.emplace_back(static_cast<size_t>(i));
-    }
-  }
-
-  // quads that have several (at least two?) bad vertices
-  std::vector<size_t> badQuads{};
-
-  for(size_t i = 0; i < outputCells_->size() / 5; ++i) {
-    // number of bad vertices in quad
-    size_t nbadpoints = 0;
-    for(size_t j = 5 * i + 1; j < 5 * (i + 1); ++j) {
-      if(std::find(badPoints.begin(), badPoints.end(), outputCells_->at(j))
-         != badPoints.end()) {
-        nbadpoints++;
-      }
-    }
-    if(nbadpoints >= 2) {
-      badQuads.emplace_back(i);
-    }
-  }
-
-  std::vector<std::pair<SimplexId, size_t>> sepFlatEdgesPos{};
+  // separatrices bounds indices and cell ids
+  std::vector<std::pair<size_t, SimplexId>> sepFlatEdgesPos{};
 
   for(SimplexId i = 0; i < separatriceNumber_; ++i) {
     if(sepMask_[i] == 1) {
       continue;
     }
-    sepFlatEdgesPos.emplace_back(std::make_pair(sepCellIds_[i], i));
+    sepFlatEdgesPos.emplace_back(std::make_pair(i, sepCellIds_[i]));
   }
 
   // duplicate separatrices bounds
   std::vector<
-    std::pair<std::pair<SimplexId, size_t>, std::pair<SimplexId, size_t>>>
+    std::pair<std::pair<size_t, SimplexId>, std::pair<size_t, SimplexId>>>
     dupSep{};
 
   for(size_t i = 0; i < sepFlatEdgesPos.size() / 2; ++i) {
     for(size_t j = i + 1; j < sepFlatEdgesPos.size() / 2; ++j) {
-      if(sepFlatEdgesPos[2 * i].first == sepFlatEdgesPos[2 * j].first
-         && sepFlatEdgesPos[2 * i + 1].first
-              == sepFlatEdgesPos[2 * j + 1].first) {
+      if(sepFlatEdgesPos[2 * i].second == sepFlatEdgesPos[2 * j].second
+         && sepFlatEdgesPos[2 * i + 1].second
+              == sepFlatEdgesPos[2 * j + 1].second) {
         dupSep.emplace_back(
           std::make_pair(sepFlatEdgesPos[2 * i], sepFlatEdgesPos[2 * i + 1]));
         dupSep.emplace_back(
@@ -297,89 +261,59 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
     }
   }
 
-  std::map<std::pair<size_t, size_t>, size_t> sepMiddles{};
+  // store sep bounds -> middle id in (separatrices array/output points)
+  std::map<std::pair<size_t, size_t>, std::pair<size_t, size_t>> sepMiddles{};
 
-  // subdivise bad quads alongside separatrices
-  for(auto &q : badQuads) {
-    auto i = outputCells_->at(5 * q + 1);
-    auto j = outputCells_->at(5 * q + 2);
-    auto k = outputCells_->at(5 * q + 3);
-    auto l = outputCells_->at(5 * q + 4);
-    findSeparatrixMiddle(j, i, sepFlatEdgesPos, sepMiddles);
-    findSeparatrixMiddle(j, k, sepFlatEdgesPos, sepMiddles);
-    findSeparatrixMiddle(l, i, sepFlatEdgesPos, sepMiddles);
-    findSeparatrixMiddle(l, k, sepFlatEdgesPos, sepMiddles);
+  // generate new points at the middle of duplicate separatrices
+  for(auto &p : dupSep) {
+    auto a = p.first.first;
+    auto b = p.second.first;
+    auto mid = findSeparatrixMiddle(a, b);
+    // store separatrix bounds and middle id
+    sepMiddles.insert(std::make_pair(
+      std::make_pair(a, b), std::make_pair(mid, outputPoints_->size() - 1)));
   }
 
   return 0;
 }
 
-size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(
-  const size_t src,
-  const size_t dst,
-  const std::vector<std::pair<SimplexId, size_t>> &sepFlatEdgesPos,
-  std::map<std::pair<size_t, size_t>, size_t> &sepMiddles) const {
-
-  // indices in separatrices point data
-  std::vector<std::pair<size_t, size_t>> sepBounds{};
-
-  for(size_t i = 0; i < sepFlatEdgesPos.size(); ++i) {
-    auto p = sepFlatEdgesPos[i];
-    auto q = sepFlatEdgesPos[i + 1];
-    if(p.first == criticalPointsCellIds_[src]
-       && q.first == criticalPointsCellIds_[dst]) {
-      sepBounds.emplace_back(std::make_pair(p.second, q.second));
-    }
-  }
+size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
+                                                         const size_t b) const {
 
   const int dim = 3;
 
-  for(auto &p : sepBounds) {
-    auto a = p.first;
-    auto b = p.second;
+  std::vector<float> distFromA(b - a + 1);
+  std::array<float, dim> prev{}, curr{};
 
-    // check if middle already computed
-    auto cached = sepMiddles.find(std::make_pair(a, b));
-    if(cached != sepMiddles.end()) {
-      continue;
-    }
+  curr[0] = sepPoints_[dim * a];
+  curr[1] = sepPoints_[dim * a + 1];
+  curr[2] = sepPoints_[dim * a + 2];
 
-    std::vector<float> distFromA(b - a + 1);
-    std::array<float, dim> prev{}, curr{};
-
-    curr[0] = sepPoints_[dim * a];
-    curr[1] = sepPoints_[dim * a + 1];
-    curr[2] = sepPoints_[dim * a + 2];
-
-    // integrate distances at every point of this separatrix
-    for(size_t i = 1; i < b - a + 1; ++i) {
-      prev = std::move(curr);
-      curr[0] = sepPoints_[dim * (a + i)];
-      curr[1] = sepPoints_[dim * (a + i) + 1];
-      curr[2] = sepPoints_[dim * (a + i) + 2];
-      distFromA[i]
-        = distFromA[i - 1] + ttk::Geometry::distance(&curr[0], &prev[0]);
-    }
-
-    auto distAB = distFromA.back();
-    for(auto &el : distFromA) {
-      el = std::abs(el - distAB / 2.0);
-    }
-
-    // index in separatrices point data array of separatrix middle
-    auto id = a + std::min_element(distFromA.begin(), distFromA.end())
-              - distFromA.begin();
-
-    // new point!
-    outputPoints_->emplace_back(sepPoints_[dim * id]);
-    outputPoints_->emplace_back(sepPoints_[dim * id + 1]);
-    outputPoints_->emplace_back(sepPoints_[dim * id + 2]);
-
-    // put separatrix bounds and middle id in cache
-    sepMiddles.insert(std::make_pair(std::make_pair(a, b), id));
+  // integrate distances at every point of this separatrix
+  for(size_t i = 1; i < b - a + 1; ++i) {
+    prev = std::move(curr);
+    curr[0] = sepPoints_[dim * (a + i)];
+    curr[1] = sepPoints_[dim * (a + i) + 1];
+    curr[2] = sepPoints_[dim * (a + i) + 2];
+    distFromA[i]
+      = distFromA[i - 1] + ttk::Geometry::distance(&curr[0], &prev[0]);
   }
 
-  return 0;
+  auto distAB = distFromA.back();
+  for(auto &el : distFromA) {
+    el = std::abs(el - distAB / 2.0);
+  }
+
+  // index in separatrices point data array of separatrix middle
+  auto id = a + std::min_element(distFromA.begin(), distFromA.end())
+            - distFromA.begin();
+
+  // new point!
+  outputPoints_->emplace_back(sepPoints_[dim * id]);
+  outputPoints_->emplace_back(sepPoints_[dim * id + 1]);
+  outputPoints_->emplace_back(sepPoints_[dim * id + 2]);
+
+  return id;
 }
 
 // main routine

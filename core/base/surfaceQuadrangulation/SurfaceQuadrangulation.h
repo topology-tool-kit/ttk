@@ -87,20 +87,14 @@ namespace ttk {
     bool hasCommonManifold(const std::vector<size_t> &verts) const;
 
     /**
-     * @brief Find the middle of the separatrix specified by its vertices
+     * @brief Find the middle of the separatrix specified by its bounds
      *
-     * @param[in] src Index in critical points array of separatrix source
-     * @param[in] dst Index in critical points array of separatrix destination
-     * @param[in] sepFlatEdgesPos Vector of pairs cell id -> array index
-     * @param[in,out] sepMiddles Cache of separatrices middles
+     * @param[in] a Index in separatrices array of separatrix source
+     * @param[in] b Index in separatrices array of separatrix destination
      *
      * @return Index of separatrice source
      */
-    size_t findSeparatrixMiddle(
-      const size_t src,
-      const size_t dst,
-      const std::vector<std::pair<SimplexId, size_t>> &sepFlatEdgesPos,
-      std::map<std::pair<size_t, size_t>, size_t> &sepMiddles) const;
+    size_t findSeparatrixMiddle(const size_t a, const size_t b) const;
 
     /**
      * @brief Perform the quadrangulation
