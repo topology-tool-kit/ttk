@@ -199,6 +199,9 @@ public:
   template <typename VTK_TT>
   int deleteDiagram();
 
+  template <typename VTK_TT>
+  int dispatch();
+
 protected:
   ttkPersistenceDiagram();
   ~ttkPersistenceDiagram();
