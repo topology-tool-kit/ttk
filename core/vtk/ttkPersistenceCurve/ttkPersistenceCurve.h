@@ -106,6 +106,9 @@ public:
   int getTriangulation(vtkDataSet *input);
   int getOffsets(vtkDataSet *input);
 
+  template <typename VTK_TT>
+  int dispatch();
+
 protected:
   ttkPersistenceCurve();
   ~ttkPersistenceCurve();
