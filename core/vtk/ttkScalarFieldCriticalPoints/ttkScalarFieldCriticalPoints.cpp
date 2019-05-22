@@ -23,6 +23,35 @@ vtkStandardNewMacro(ttkScalarFieldCriticalPoints)
 ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() {
 }
 
+template <typename VTK_TT>
+int ttkScalarFieldCriticalPoints::dispatch(Triangulation *triangulation,
+                                           void *scalarValues,
+                                           const SimplexId vertexNumber) {
+  ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
+  criticalPoints.setupTriangulation(triangulation);
+  int domainDimension = triangulation->getCellVertexNumber(0) - 1;
+
+  criticalPoints.setWrapper(this);
+  criticalPoints.setDomainDimension(domainDimension);
+  // set up input
+  // 1 -- vertex values
+  criticalPoints.setScalarValues(scalarValues);
+  criticalPoints.setVertexNumber(vertexNumber);
+
+  // 2 -- set offsets (here, let the baseCode class fill it for us)
+  criticalPoints.setSosOffsets(&sosOffsets_);
+
+  // 3 -- set the connectivity
+  criticalPoints.setupTriangulation(triangulation);
+
+  // set up output
+  criticalPoints.setOutput(&criticalPoints_);
+
+  criticalPoints.execute();
+
+  return 0;
+}
+
 int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
                                        vector<vtkDataSet *> &outputs) {
   Memory m;
@@ -121,37 +150,9 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
 
   switch(inputScalarField->GetDataType()) {
-
-    vtkTemplateMacro({
-      ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
-      criticalPoints.setupTriangulation(triangulation);
-    });
-  }
-
-  int domainDimension = triangulation->getCellVertexNumber(0) - 1;
-
-  switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro({
-      ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
-
-      criticalPoints.setWrapper(this);
-      criticalPoints.setDomainDimension(domainDimension);
-      // set up input
-      // 1 -- vertex values
-      criticalPoints.setScalarValues(inputScalarField->GetVoidPointer(0));
-      criticalPoints.setVertexNumber(input->GetNumberOfPoints());
-
-      // 2 -- set offsets (here, let the baseCode class fill it for us)
-      criticalPoints.setSosOffsets(&sosOffsets_);
-
-      // 3 -- set the connectivity
-      criticalPoints.setupTriangulation(triangulation);
-
-      // set up output
-      criticalPoints.setOutput(&criticalPoints_);
-
-      criticalPoints.execute();
-    });
+    vtkTemplateMacro(dispatch<VTK_TT>(triangulation,
+                                      inputScalarField->GetVoidPointer(0),
+                                      input->GetNumberOfPoints()));
   }
 
   // allocate the output
