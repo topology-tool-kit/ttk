@@ -44,6 +44,8 @@ namespace ttk {
           { curTime = sweepStart_.getElapsedTime(); }
           propTimes_[curProp - 1] = curTime;
         }
+#else
+        TTK_UNUSED(seed);
 #endif
         return;
       }

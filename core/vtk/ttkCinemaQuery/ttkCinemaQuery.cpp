@@ -150,6 +150,7 @@ vtkStandardNewMacro(ttkCinemaQuery)
   // -------------------------------------------------------------------------
   {
 #if VTK_MAJOR_VERSION <= 7
+    TTK_UNUSED(outTable);
     stringstream msg;
     msg << "[ttkCinemaQuery] ERROR: VTK version too old." << endl
         << "[ttkCinemaQuery]        This filter requires vtkDelimitedTextReader"

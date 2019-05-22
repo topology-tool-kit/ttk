@@ -94,6 +94,8 @@ namespace ttk {
         ids->SetTuple1(skeletonCell, a);
 #ifndef NDEBUG
         fromUp->SetTuple1(skeletonCell, graph.getArc(a).getFromUp());
+#else
+        TTK_UNUSED(graph);
 #endif
       }
 

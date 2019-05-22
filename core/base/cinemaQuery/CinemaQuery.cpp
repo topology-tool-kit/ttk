@@ -131,6 +131,10 @@ int ttk::CinemaQuery::execute(const string &sqlTableDefinition,
   }
 
 #else
+  TTK_UNUSED(sqlTableDefinition);
+  TTK_UNUSED(sqlTableRows);
+  TTK_UNUSED(sqlQuery);
+  TTK_UNUSED(resultCSV);
   dMsg(
     cout, "[ttkCinemaQuery] ERROR: This filter requires Sqlite3.\n", fatalMsg);
 #endif

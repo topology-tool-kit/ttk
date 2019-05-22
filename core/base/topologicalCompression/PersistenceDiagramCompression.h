@@ -101,6 +101,8 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
       += CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpBitBudget);
 
 #else
+    TTK_UNUSED(dataExtent);
+    TTK_UNUSED(toCompress);
     {
       std::stringstream msg;
       msg << "[TopologicalCompression] Attempted to write with ZFP but ZFP is "

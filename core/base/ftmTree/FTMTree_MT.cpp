@@ -1120,6 +1120,8 @@ int FTMTree_MT::printTime(DebugTimer &t,
       nbScalars = scalars_->size;
     }
     int speed = nbScalars / t.getElapsedTime();
+#else
+    TTK_UNUSED(nbScalars);
 #endif
     for(int i = 3; i < debugLevel; i++)
       st << "-";

@@ -1,6 +1,6 @@
 #include <PlanarGraphLayout.h>
 
-#if TTK_ENABLE_GRAPHVIZ
+#ifdef TTK_ENABLE_GRAPHVIZ
 #include <graphviz/cgraph.h>
 #include <graphviz/gvc.h>
 #endif
@@ -13,7 +13,7 @@ int ttk::PlanarGraphLayout::computeDotLayout(
 
   // Output
   float *layout) const {
-#if TTK_ENABLE_GRAPHVIZ
+#ifdef TTK_ENABLE_GRAPHVIZ
   Timer t;
 
   dMsg(cout, "[ttkPlanarGraphLayout] Computing layout ... ", timeMsg);
@@ -56,6 +56,10 @@ int ttk::PlanarGraphLayout::computeDotLayout(
 
   return 1;
 #else
+  TTK_UNUSED(nodeIndicies);
+  TTK_UNUSED(dotString);
+  TTK_UNUSED(layout);
+
   dMsg(cout,
        "[ttkPlanarGraphLayout] ERROR: This filter requires GraphViz to compute "
        "a layout.\n",

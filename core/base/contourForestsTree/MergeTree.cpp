@@ -487,6 +487,8 @@ void MergeTree::parallelInitNodeValence(const int nbThreadValence) {
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(nbThreadValence)
+#else
+   TTK_UNUSED(nbThreadValence);
 #endif
   for(idNode n = 0; n < nbNodes; n++) {
     short downVal = 0, upVal = 0;

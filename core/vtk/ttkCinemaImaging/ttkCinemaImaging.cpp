@@ -76,7 +76,6 @@ vtkStandardNewMacro(ttkCinemaImaging)
   auto toPoly = vtkSmartPointer<vtkCompositeDataGeometryFilter>::New();
   toPoly->SetInputData(inputMultiBlock);
   toPoly->Update();
-  auto poly = toPoly->GetOutput();
 
   // Camera
   auto camera = vtkSmartPointer<vtkCamera>::New();
@@ -171,6 +170,8 @@ vtkStandardNewMacro(ttkCinemaImaging)
         }
       }
     };
+
+    auto poly = toPoly->GetOutput();
 
     // Add Point Data Passes
     addValuePasses(poly->GetPointData(), 0);
