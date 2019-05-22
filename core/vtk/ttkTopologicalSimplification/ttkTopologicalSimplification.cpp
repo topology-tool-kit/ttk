@@ -178,6 +178,18 @@ int ttkTopologicalSimplification::getOffsets(vtkDataSet *input) {
   return 0;
 }
 
+template <typename VTK_TT>
+int ttkTopologicalSimplification::dispatch() {
+  int ret = 0;
+  if(inputOffsets_->GetDataType() == VTK_INT) {
+    ret = topologicalSimplification_.execute<VTK_TT, int>();
+  }
+  if(inputOffsets_->GetDataType() == VTK_ID_TYPE) {
+    ret = topologicalSimplification_.execute<VTK_TT, vtkIdType>();
+  }
+  return ret;
+}
+
 int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
                                        vector<vtkDataSet *> &outputs) {
 
@@ -351,12 +363,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   switch(inputScalars_->GetDataType()) {
-    ttkTemplateMacro({
-      if(inputOffsets_->GetDataType() == VTK_INT)
-        ret = topologicalSimplification_.execute<VTK_TT TTK_COMMA int>();
-      if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-        ret = topologicalSimplification_.execute<VTK_TT TTK_COMMA vtkIdType>();
-    });
+    ttkTemplateMacro(ret = dispatch<VTK_TT>());
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode

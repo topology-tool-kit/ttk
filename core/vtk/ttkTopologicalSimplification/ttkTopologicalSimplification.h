@@ -125,6 +125,9 @@ public:
   int getIdentifiers(vtkPointSet *input);
   int getOffsets(vtkDataSet *input);
 
+  template <typename VTK_TT>
+  int dispatch();
+
 protected:
   ttkTopologicalSimplification();
 
