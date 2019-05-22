@@ -190,16 +190,16 @@ int Editor::init(int &argc, char **argv) {
     if(!num.empty() && !den.empty()) {
       try {
         fraction = stoi(num);
-      } catch(invalid_argument &e) {
+      } catch(invalid_argument & /*e*/) {
         fraction = 1;
-      } catch(out_of_range &e) {
+      } catch(out_of_range & /*e*/) {
         fraction = 1;
       }
       try {
         numberOfFractions = stoi(den);
-      } catch(invalid_argument &e) {
+      } catch(invalid_argument & /*e*/) {
         numberOfFractions = 1;
-      } catch(out_of_range &e) {
+      } catch(out_of_range & /*e*/) {
         numberOfFractions = 1;
       }
       if(!(numberOfFractions > 0) || !(fraction > 0)
