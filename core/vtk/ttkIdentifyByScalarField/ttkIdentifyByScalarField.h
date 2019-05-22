@@ -97,6 +97,9 @@ public:
 
   int getScalars(vtkDataSet *input);
 
+  template <typename VTK_TT>
+  int dispatch(std::vector<ttk::SimplexId> &inputIds);
+
 protected:
   ttkIdentifyByScalarField() {
     UseAllCores = true;

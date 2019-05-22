@@ -43,6 +43,22 @@ vtkStandardNewMacro(ttkIdentifyByScalarField)
   return 0;
 }
 
+template <typename VTK_TT>
+int ttkIdentifyByScalarField::dispatch(vector<SimplexId> &inputIds) {
+  VTK_TT *arr = static_cast<VTK_TT *>(inputScalars_->GetVoidPointer(0));
+
+  auto greater_cmp = [=](int a, int b) { return arr[a] > arr[b]; };
+  auto lower_cmp = [=](int a, int b) { return arr[a] < arr[b]; };
+
+  if(IncreasingOrder) {
+    std::sort(inputIds.begin(), inputIds.end(), lower_cmp);
+  } else {
+    std::sort(inputIds.begin(), inputIds.end(), greater_cmp);
+  }
+
+  return 0;
+}
+
 int ttkIdentifyByScalarField::doIt(vector<vtkDataSet *> &inputs,
                                    vector<vtkDataSet *> &outputs) {
   Memory m;
@@ -86,18 +102,7 @@ int ttkIdentifyByScalarField::doIt(vector<vtkDataSet *> &inputs,
   vector<SimplexId> inputIds(numberOfCells);
   std::iota(inputIds.begin(), inputIds.end(), 0);
   switch(inputScalars_->GetDataType()) {
-    ttkTemplateMacro({
-      VTK_TT *arr = static_cast<VTK_TT *>(inputScalars_->GetVoidPointer(0));
-
-      auto greater_cmp = [arr](int a, int b) { return arr[a] > arr[b]; };
-
-      auto lower_cmp = [arr](int a, int b) { return arr[a] < arr[b]; };
-
-      if(IncreasingOrder)
-        std::sort(inputIds.begin(), inputIds.end(), lower_cmp);
-      else
-        std::sort(inputIds.begin(), inputIds.end(), greater_cmp);
-    });
+    ttkTemplateMacro(dispatch<VTK_TT>(inputIds));
   }
 
   vtkSmartPointer<ttkSimplexIdTypeArray> ids
