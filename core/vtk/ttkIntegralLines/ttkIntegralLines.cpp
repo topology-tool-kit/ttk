@@ -233,6 +233,18 @@ int ttkIntegralLines::getTrajectories(vtkDataSet *input,
   return 0;
 }
 
+template <typename VTK_TT>
+int ttkIntegralLines::dispatch() {
+  int ret = 0;
+  if(inputOffsets_->GetDataType() == VTK_INT) {
+    ret = integralLines_.execute<VTK_TT, int>();
+  }
+  if(inputOffsets_->GetDataType() == VTK_ID_TYPE) {
+    ret = integralLines_.execute<VTK_TT, vtkIdType>();
+  }
+  return ret;
+}
+
 int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
                            vector<vtkDataSet *> &outputs) {
   //                            vtkPointSet* seeds, vtkUnstructuredGrid*
@@ -320,12 +332,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   integralLines_.setOutputTrajectories(&trajectories);
 
   switch(inputScalars_->GetDataType()) {
-    ttkTemplateMacro({
-      if(inputOffsets_->GetDataType() == VTK_INT)
-        ret = integralLines_.execute<VTK_TT TTK_COMMA int>();
-      if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-        ret = integralLines_.execute<VTK_TT TTK_COMMA vtkIdType>();
-    });
+    ttkTemplateMacro(ret = dispatch<VTK_TT>());
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
