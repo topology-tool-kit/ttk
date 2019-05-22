@@ -175,6 +175,9 @@ public:
   int getSegmentation(const ttk::ftr::Graph &graph,
                       vtkDataSet *outputSegmentation);
 
+  template <typename VTK_TT>
+  int dispatch(ttk::ftr::Graph &graph);
+
 protected:
   ttkFTRGraph();
   ~ttkFTRGraph();
