@@ -7,9 +7,23 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-add_executable(ttkMorseSmaleComplexCmd main.cpp)
-target_link_libraries(ttkMorseSmaleComplexCmd ttkMorseSmaleComplex
-                      ttkProgramBase)
+if(NOT DEFINED TTK_BUILD_MORSESMALECOMPLEX_FILTER)
+  # Allows to disable each filter
+  option(TTK_BUILD_MORSESMALECOMPLEX_FILTER "Build the filter MorseSmaleComplex" ON)
+  mark_as_advanced(TTK_BUILD_MORSESMALECOMPLEX_FILTER)
+endif()
 
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
-
+if(${TTK_BUILD_MORSESMALECOMPLEX_FILTER})
+  add_executable(ttkMorseSmaleComplexCmd main.cpp)
+  target_link_libraries(ttkMorseSmaleComplexCmd
+    PRIVATE
+      ttkMorseSmaleComplex
+      ttkProgramBase
+      )
+  install(
+    TARGETS
+      ${PROJECT_NAME}
+    RUNTIME DESTINATION
+      ${TTK_INSTALL_BINARY_DIR}
+      )
+endif()

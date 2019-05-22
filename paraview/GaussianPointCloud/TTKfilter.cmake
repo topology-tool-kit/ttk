@@ -1,1 +1,7 @@
-ttk_register_pv_filter(pvGaussianPointCloud ttkGaussianPointCloud)
+# Allows to disable each filter
+option(TTK_BUILD_GAUSSIANPOINTCLOUD_FILTER "Build the GaussianPointCloud filter" ON)
+mark_as_advanced(TTK_BUILD_GAUSSIANPOINTCLOUD_FILTER)
+
+if(${TTK_BUILD_GAUSSIANPOINTCLOUD_FILTER})
+  ttk_register_pv_filter(pvGaussianPointCloud ttkGaussianPointCloud)
+endif()

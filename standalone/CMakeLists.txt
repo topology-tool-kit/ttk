@@ -1,7 +1,11 @@
 set(TTK_INSTALL_BINARY_DIR "bin")
 
-include(../core/vtk/ttkProgramBase/TTKWrapper.cmake)
-include(../core/vtk/ttkUserInterfaceBase/TTKWrapper.cmake)
+if(NOT TARGET ttkProgramBase)
+  include(../core/vtk/ttkProgramBase/TTKWrapper.cmake)
+endif()
+if(NOT TARGET ttkUserInterfaceBase)
+  include(../core/vtk/ttkUserInterfaceBase/TTKWrapper.cmake)
+endif()
 
 file(GLOB STANDALONE_DIRS */cmd */gui)
 foreach(STANDALONE ${STANDALONE_DIRS})

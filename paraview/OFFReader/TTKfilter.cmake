@@ -1,1 +1,7 @@
-ttk_register_pv_filter(pvOFFReader ttkOFFReader)
+# Allows to disable each filter
+option(TTK_BUILD_OFFREADER_FILTER "Build the OFFReader filter" ON)
+mark_as_advanced(TTK_BUILD_OFFREADER_FILTER)
+
+if(${TTK_BUILD_OFFREADER_FILTER})
+  ttk_register_pv_filter(pvOFFReader ttkOFFReader)
+endif()
