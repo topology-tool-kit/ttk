@@ -33,7 +33,11 @@ ttkPersistenceDiagram::~ttkPersistenceDiagram() {
   if(offsets_)
     offsets_->Delete();
 
-  deleteDiagram();
+  if(CTDiagram_ and inputScalars_) {
+    switch(inputScalars_->GetDataType()) {
+      ttkTemplateMacro(deleteDiagram<VTK_TT>());
+    }
+  }
 }
 
 int ttkPersistenceDiagram::FillOutputPortInformation(int port,
@@ -160,18 +164,12 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet *input) {
   return 0;
 }
 
+template <typename VTK_TT>
 int ttkPersistenceDiagram::deleteDiagram() {
-  if(CTDiagram_ and inputScalars_) {
-    switch(inputScalars_->GetDataType()) {
-      ttkTemplateMacro({
-        using tuple_t
-          = tuple<SimplexId TTK_COMMA CriticalType TTK_COMMA SimplexId TTK_COMMA
-                    CriticalType TTK_COMMA VTK_TT TTK_COMMA SimplexId>;
-        vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
-        delete CTDiagram;
-      });
-    }
-  }
+  using tuple_t = tuple<SimplexId, CriticalType, SimplexId, CriticalType,
+                        VTK_TT, SimplexId>;
+  vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
+  delete CTDiagram;
   return 0;
 }
 

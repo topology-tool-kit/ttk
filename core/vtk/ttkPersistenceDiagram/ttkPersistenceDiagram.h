@@ -196,6 +196,7 @@ public:
                                  scalarType,
                                  ttk::SimplexId>> &diagram);
 
+  template <typename VTK_TT>
   int deleteDiagram();
 
 protected:
