@@ -230,8 +230,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   // set the Reeb space functor
   switch(vtkTemplate2PackMacro(
     uComponent_->GetDataType(), vComponent_->GetDataType())) {
-    ttkTemplate2Macro(baseCall<VTK_T1 TTK_COMMA VTK_T2>(
-      input, uComponent_, offsetFieldU_, vComponent_, offsetFieldV_));
+    ttkTemplate2Macro((baseCall<VTK_T1, VTK_T2>(
+      input, uComponent_, offsetFieldU_, vComponent_, offsetFieldV_)));
   }
 
   // prepare the output

@@ -166,7 +166,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
   switch(vtkTemplate2PackMacro(
     uComponent->GetDataType(), vComponent->GetDataType())) {
     ttkTemplate2Macro(
-      baseCall<VTK_T1 TTK_COMMA VTK_T2>(input, uComponent, vComponent));
+      (baseCall<VTK_T1, VTK_T2>(input, uComponent, vComponent)));
   }
 
   vtkSmartPointer<vtkCharArray> edgeTypes

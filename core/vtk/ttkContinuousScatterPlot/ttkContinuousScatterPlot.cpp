@@ -202,8 +202,7 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   continuousScatterPlot.setOutputMask(&validPointMask_);
   switch(vtkTemplate2PackMacro(
     inputScalars1_->GetDataType(), inputScalars2_->GetDataType())) {
-    ttkTemplate2Macro(
-      ret = continuousScatterPlot.execute<VTK_T1 TTK_COMMA VTK_T2>());
+    ttkTemplate2Macro((ret = continuousScatterPlot.execute<VTK_T1, VTK_T2>()));
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE

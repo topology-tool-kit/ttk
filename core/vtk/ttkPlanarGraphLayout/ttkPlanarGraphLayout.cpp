@@ -113,18 +113,17 @@ vtkStandardNewMacro(ttkPlanarGraphLayout)
   // Compute layout with base code
   switch(vtkTemplate2PackMacro(branchType, sequenceType)) {
     ttkTemplate2Macro(
-      status
-      = planarGraphLayout.execute<vtkIdType TTK_COMMA VTK_T1 TTK_COMMA VTK_T2>(
-        // Input
-        !this->GetUseSequences() ? nullptr
-                                 : (VTK_T2 *)sequences->GetVoidPointer(0),
-        !this->GetUseSizes() ? nullptr : (float *)sizes->GetVoidPointer(0),
-        !this->GetUseBranches() ? nullptr
-                                : (VTK_T1 *)branches->GetVoidPointer(0),
-        !this->GetUseLevels() ? nullptr : (VTK_T1 *)levels->GetVoidPointer(0),
-        output->GetCells()->GetPointer(), nPoints, nEdges,
-        // Output
-        (float *)outputField->GetVoidPointer(0)));
+      (status = planarGraphLayout.execute<vtkIdType, VTK_T1, VTK_T2>(
+         // Input
+         !this->GetUseSequences() ? nullptr
+                                  : (VTK_T2 *)sequences->GetVoidPointer(0),
+         !this->GetUseSizes() ? nullptr : (float *)sizes->GetVoidPointer(0),
+         !this->GetUseBranches() ? nullptr
+                                 : (VTK_T1 *)branches->GetVoidPointer(0),
+         !this->GetUseLevels() ? nullptr : (VTK_T1 *)levels->GetVoidPointer(0),
+         output->GetCells()->GetPointer(), nPoints, nEdges,
+         // Output
+         (float *)outputField->GetVoidPointer(0))));
   }
   if(status != 1)
     return 0;
