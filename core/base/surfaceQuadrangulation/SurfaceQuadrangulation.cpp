@@ -411,7 +411,29 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
   outputPoints_->emplace_back(sepPoints_[dim * id]);
   outputPoints_->emplace_back(sepPoints_[dim * id + 1]);
   outputPoints_->emplace_back(sepPoints_[dim * id + 2]);
-  outputPointsIds_->emplace_back(sepCellIds_[id]);
+
+  // new point identifier (on the triangular mesh)
+  switch(sepCellDims_[id]) {
+    case 0:
+      outputPointsIds_->emplace_back(sepCellIds_[id]);
+      break;
+    case 1: {
+      // take the first vertex of the edge
+      SimplexId pos;
+      triangulation_->getEdgeVertex(sepCellIds_[id], 0, pos);
+      outputPointsIds_->emplace_back(pos);
+      break;
+    }
+    case 2: {
+      // take the first vertex of the triangle
+      SimplexId pos;
+      triangulation_->getTriangleVertex(sepCellIds_[id], 0, pos);
+      outputPointsIds_->emplace_back(pos);
+      break;
+    }
+    default:
+      break;
+  }
 
   return id;
 }
@@ -430,8 +452,9 @@ int ttk::SurfaceQuadrangulation::execute() const {
   outputPoints_->clear();
   outputPointsIds_->clear();
 
+  // fill in critical points identifiers
   for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
-    outputPointsIds_->emplace_back(criticalPointsCellIds_[i]);
+    outputPointsIds_->emplace_back(criticalPointsIdentifier_[i]);
   }
 
   // filter sepCellIds_ array according to sepMask_

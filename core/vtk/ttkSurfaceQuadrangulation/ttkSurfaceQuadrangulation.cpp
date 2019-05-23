@@ -67,14 +67,16 @@ int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
   // get separatrices point data
   auto pointData = input->GetPointData();
   auto id = pointData->GetArray("CellId");
+  auto dim = pointData->GetArray("CellDimension");
   auto mask = pointData->GetArray(ttk::MaskScalarFieldName);
 
   TTK_ABORT_KK(id == nullptr, "wrong separatrices cell id", -2);
-  TTK_ABORT_KK(mask == nullptr, "wrong separatrices mask", -3);
+  TTK_ABORT_KK(dim == nullptr, "wrong separatrices cell dimension", -3);
+  TTK_ABORT_KK(mask == nullptr, "wrong separatrices mask", -4);
 
   surfaceQuadrangulation_.setSeparatrices(
-    id->GetNumberOfValues(), id->GetVoidPointer(0), mask->GetVoidPointer(0),
-    separatrices->GetVoidPointer(0));
+    id->GetNumberOfValues(), id->GetVoidPointer(0), dim->GetVoidPointer(0),
+    mask->GetVoidPointer(0), separatrices->GetVoidPointer(0));
   return 0;
 }
 

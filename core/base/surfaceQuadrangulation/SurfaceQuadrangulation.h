@@ -52,10 +52,12 @@ namespace ttk {
     }
     inline void setSeparatrices(const unsigned int number,
                                 void *const cellIds,
+                                void *const cellDims,
                                 void *const mask,
                                 void *const points) {
       separatriceNumber_ = number;
       sepCellIds_ = static_cast<SimplexId *>(cellIds);
+      sepCellDims_ = static_cast<unsigned char *>(cellDims);
       sepMask_ = static_cast<unsigned char *>(mask);
       sepPoints_ = static_cast<float *>(points);
     }
@@ -141,6 +143,8 @@ namespace ttk {
     SimplexId *sepCellIds_{};
     // separatrices mask scalar field (0 for critical points, 1 otherwise)
     unsigned char *sepMask_{};
+    // separatrices cell dimension: 0 for vertices, 1 for edges, 2 for triangles
+    unsigned char *sepCellDims_{};
     // separatrices points
     float *sepPoints_{};
     // number of vertices in segmentation
