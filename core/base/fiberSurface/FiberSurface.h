@@ -231,7 +231,7 @@ namespace ttk {
     }
 
   protected:
-    typedef struct _intersectionTriangle {
+    struct IntersectionTriangle {
       SimplexId caseId_;
       // use negative values for new triangles
       SimplexId triangleId_;
@@ -242,7 +242,7 @@ namespace ttk {
       double t_[3];
       double p_[3][3];
       std::pair<double, double> intersection_;
-    } IntersectionTriangle;
+    };
 
     template <class dataTypeU, class dataTypeV>
     inline int computeBaseTriangle(

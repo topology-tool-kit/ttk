@@ -138,8 +138,8 @@ namespace ttk {
     // ---------
     // allow foreach on the vector
 
-    typedef typename std::vector<type>::iterator iterator;
-    typedef typename std::vector<type>::const_iterator const_iterator;
+    using iterator = typename std::vector<type>::iterator;
+    using const_iterator = typename std::vector<type>::const_iterator;
 
     iterator end() {
       return this->begin() + nextId;
@@ -149,8 +149,8 @@ namespace ttk {
       return this->cbegin() + nextId;
     }
 
-    typedef typename std::vector<type>::reverse_iterator riterator;
-    typedef typename std::vector<type>::const_reverse_iterator const_riterator;
+    using riterator = typename std::vector<type>::reverse_iterator;
+    using const_riterator = typename std::vector<type>::const_reverse_iterator;
 
     riterator rbegin() {
       return this->rend() - (nextId - 1);
