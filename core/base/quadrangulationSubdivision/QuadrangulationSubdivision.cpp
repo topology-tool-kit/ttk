@@ -157,23 +157,25 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     auto kl = make_pair(std::min(q.k, q.l), std::max(q.k, q.l));
     auto li = make_pair(std::min(q.l, q.i), std::max(q.l, q.i));
 
-#define PROCESS_EDGE_MIDDLE(PARENT_PAIR, POINT_3D, TTK_ID)                 \
-  /* check if edge already processed by a neighbor quad */                 \
-  if(processedEdges.find(PARENT_PAIR) == processedEdges.end()) {           \
-    processedEdges.insert(                                                 \
-      make_pair(PARENT_PAIR, make_pair(outputPoints_->size(), POINT_3D))); \
-    /* add new point 3d coordinates to vector of output points */          \
-    outputPoints_->emplace_back(POINT_3D);                                 \
-    /* new point is an edge middle */                                      \
-    outputVertType_->emplace_back(1);                                      \
-    /* store also TTK identifier of triangular mesh vertex */              \
-    nearestVertexIdentifier_.emplace_back(TTK_ID);                         \
-  }
+    auto process_edge_middle = [&](const std::pair<long long, long long> &pair,
+                                   const Point &pt, const SimplexId id) {
+      /* check if edge already processed by a neighbor quad */
+      if(processedEdges.find(pair) == processedEdges.end()) {
+        processedEdges.insert(
+          make_pair(pair, make_pair(outputPoints_->size(), pt)));
+        /* add new point 3d coordinates to vector of output points */
+        outputPoints_->emplace_back(pt);
+        /* new point is an edge middle */
+        outputVertType_->emplace_back(1);
+        /* store also TTK identifier of triangular mesh vertex */
+        nearestVertexIdentifier_.emplace_back(id);
+      }
+    };
 
-    PROCESS_EDGE_MIDDLE(ij, midij, ijid);
-    PROCESS_EDGE_MIDDLE(jk, midjk, jkid);
-    PROCESS_EDGE_MIDDLE(kl, midkl, klid);
-    PROCESS_EDGE_MIDDLE(li, midli, liid);
+    process_edge_middle(ij, midij, ijid);
+    process_edge_middle(jk, midjk, jkid);
+    process_edge_middle(kl, midkl, klid);
+    process_edge_middle(li, midli, liid);
 
     // barycenter index in outputPoints_
     auto baryIdx = static_cast<long long>(outputPoints_->size());
