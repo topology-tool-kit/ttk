@@ -411,6 +411,7 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
   outputPoints_->emplace_back(sepPoints_[dim * id]);
   outputPoints_->emplace_back(sepPoints_[dim * id + 1]);
   outputPoints_->emplace_back(sepPoints_[dim * id + 2]);
+  outputPointsIds_->emplace_back(sepCellIds_[id]);
 
   return id;
 }
@@ -427,6 +428,11 @@ int ttk::SurfaceQuadrangulation::execute() const {
   // clear output
   outputCells_->clear();
   outputPoints_->clear();
+  outputPointsIds_->clear();
+
+  for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
+    outputPointsIds_->emplace_back(criticalPointsCellIds_[i]);
+  }
 
   // filter sepCellIds_ array according to sepMask_
   std::vector<SimplexId> sepFlatEdges{};

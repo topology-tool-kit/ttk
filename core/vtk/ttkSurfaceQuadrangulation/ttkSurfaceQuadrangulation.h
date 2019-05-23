@@ -105,8 +105,10 @@ private:
   ttk::SurfaceQuadrangulation surfaceQuadrangulation_{};
   // output vector of interleaved quadrangles
   std::vector<vtkIdType> outQuadrangles_{};
-  // output vector of quadrangle edges (critical points + ...)
+  // output vector of quadrangle vertices (critical points + ...)
   std::vector<float> outQuadPoints_{};
+  // output vector of quadrange vertices ids
+  std::vector<ttk::SimplexId> outPointsIds_{};
   // triangulation
   ttk::Triangulation *triangulation_{};
   // if dual quadrangulation

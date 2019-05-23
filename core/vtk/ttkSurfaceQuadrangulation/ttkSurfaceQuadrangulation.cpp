@@ -122,14 +122,14 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   TTK_ABORT_KK(res != 0, "wrong segmentation", -1);
 
-  surfaceQuadrangulation_.setOutputQuads(&outQuadrangles_, &outQuadPoints_);
+  surfaceQuadrangulation_.setOutputQuads(
+    &outQuadrangles_, &outQuadPoints_, &outPointsIds_);
   surfaceQuadrangulation_.setDualQuadrangulation(DualQuadrangulation);
 
   res += surfaceQuadrangulation_.execute();
 
   TTK_ABORT_KK(
     res != 0, "SurfaceQuadrangulation.execute() error code: " << res, -9);
-
 
   // output points: critical points + generated separatrices middles
   auto points = vtkSmartPointer<vtkPoints>::New();
@@ -145,6 +145,12 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   }
 
   output->SetPoints(points);
+
+  // quad vertices identifiers
+  auto identifiers = vtkSmartPointer<vtkIntArray>::New();
+  identifiers->SetName(ttk::VertexScalarFieldName);
+  identifiers->SetVoidArray(outPointsIds_.data(), outPointsIds_.size(), 1);
+  output->GetPointData()->AddArray(identifiers);
 
   // vtkCellArray of quadrangle values containing outArray
   auto cells = vtkSmartPointer<vtkCellArray>::New();

@@ -67,10 +67,12 @@ namespace ttk {
     inline void setDualQuadrangulation(const bool input) {
       dualQuadrangulation_ = input;
     }
-    inline void setOutputQuads(std::vector<long long> *cells,
-                               std::vector<float> *points) {
+    inline void setOutputQuads(std::vector<long long> *const cells,
+                               std::vector<float> *const points,
+                               std::vector<SimplexId> *const ids) {
       outputCells_ = cells;
       outputPoints_ = points;
+      outputPointsIds_ = ids;
     }
 
     inline void setupTriangulation(Triangulation *const triangl) {
@@ -152,6 +154,8 @@ namespace ttk {
     std::vector<long long> *outputCells_{};
     // array of output vertices (generated middles of duplicated separatrices)
     std::vector<float> *outputPoints_{};
+    // array of output vertices identifiers
+    std::vector<SimplexId> *outputPointsIds_{};
   };
 } // namespace ttk
 
