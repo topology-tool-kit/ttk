@@ -230,8 +230,14 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
     }
   }
 
+  return 0;
+}
+
+int ttk::SurfaceQuadrangulation::postProcess() const {
   // post-processing: try to detect missing or extra quadrangles by
   // comparing separatrices number coming out of extrema
+
+  // TODO remove extra quadrangles?
 
   // separatrices bounds indices and cell ids
   std::vector<std::pair<size_t, SimplexId>> sepFlatEdgesPos{};
@@ -491,6 +497,7 @@ int ttk::SurfaceQuadrangulation::execute() const {
   } else {
     // direct quadrangulation with saddle points
     quadrangulate(sepEdges, ndegen);
+    postProcess();
   }
 
   // maximum manifold id

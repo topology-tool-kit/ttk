@@ -126,6 +126,16 @@ namespace ttk {
     int dualQuadrangulate(
       const std::vector<std::pair<SimplexId, SimplexId>> &sepEdges) const;
 
+    /**
+     * @brief Post-process quadrangulation
+     *
+     * Find duplicate separatrices coming from the same vertices and
+     * generate new quads that try to map tubular topologies.
+     *
+     * @return 0 in case of success
+     */
+    int postProcess() const;
+
     Triangulation *triangulation_{};
 
     // number of critical points from the Morse-Smale complex
