@@ -150,7 +150,7 @@ namespace ttk {
 
     // array of output polygons
     std::vector<long long> *outputCells_{};
-    // array of output edges (critical points and more...)
+    // array of output vertices (generated middles of duplicated separatrices)
     std::vector<float> *outputPoints_{};
   };
 } // namespace ttk

@@ -261,17 +261,116 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
     }
   }
 
-  // store sep bounds -> middle id in (separatrices array/output points)
-  std::map<std::pair<size_t, size_t>, std::pair<size_t, size_t>> sepMiddles{};
+  // store sep bounds -> middle id in output points
+  std::map<std::pair<size_t, size_t>, size_t> sepMiddles{};
 
   // generate new points at the middle of duplicate separatrices
   for(auto &p : dupSep) {
     auto a = p.first.first;
     auto b = p.second.first;
-    auto mid = findSeparatrixMiddle(a, b);
+    findSeparatrixMiddle(a, b);
     // store separatrix bounds and middle id
-    sepMiddles.insert(std::make_pair(
-      std::make_pair(a, b), std::make_pair(mid, outputPoints_->size() - 1)));
+    sepMiddles.insert(
+      std::make_pair(std::make_pair(a, b),
+                     outputPoints_->size() / 3 + criticalPointsNumber_ - 1));
+  }
+
+  // for every pair of critical points belonging to a duplicate edge,
+  // the indices of the corresponding separatrices in the separatrices array
+  std::map<std::pair<SimplexId, SimplexId>,
+           std::vector<std::pair<size_t, size_t>>>
+    points2Seps{};
+
+  for(const auto &p : sepMiddles) {
+    points2Seps[std::make_pair(
+                  sepCellIds_[p.first.first], sepCellIds_[p.first.second])]
+      .emplace_back(p.first);
+  }
+
+  // ad-hoc quad data structure
+  struct Quad {
+    long long i;
+    long long j;
+    long long k;
+    long long l;
+  };
+
+  auto generateNewQuads = [&](Quad *const q, const SimplexId v0,
+                              const SimplexId v1, const SimplexId v2,
+                              const SimplexId v3,
+                              const std::pair<SimplexId, SimplexId> &edge0,
+                              const std::pair<SimplexId, SimplexId> &edge1) {
+    std::vector<SimplexId> mids0{}, mids1{};
+
+    for(const auto &p : points2Seps[edge0]) {
+      mids0.emplace_back(sepMiddles[p]);
+    }
+    for(const auto &p : points2Seps[edge1]) {
+      mids1.emplace_back(sepMiddles[p]);
+    }
+
+    float *pt0 = &outputPoints_->at(3 * (mids0[0] - criticalPointsNumber_));
+    float *pt10 = &outputPoints_->at(3 * (mids1[0] - criticalPointsNumber_));
+    float *pt11 = &outputPoints_->at(3 * (mids1[1] - criticalPointsNumber_));
+
+    auto dist00 = Geometry::distance(pt0, pt10);
+    auto dist01 = Geometry::distance(pt0, pt11);
+
+    if(dist01 < dist00) {
+      std::swap(mids1[0], mids1[1]);
+    }
+
+    // first new quad replaces the old one
+    q->i = v0;
+    q->j = mids0[0];
+    q->k = mids1[0];
+    q->l = v3;
+
+    // other new quads are placed at the end of the output vector
+    outputCells_->emplace_back(4);
+    outputCells_->emplace_back(v1);
+    outputCells_->emplace_back(mids0[0]);
+    outputCells_->emplace_back(mids1[0]);
+    outputCells_->emplace_back(v2);
+    outputCells_->emplace_back(4);
+    outputCells_->emplace_back(v0);
+    outputCells_->emplace_back(mids0[1]);
+    outputCells_->emplace_back(mids1[1]);
+    outputCells_->emplace_back(v3);
+    outputCells_->emplace_back(4);
+    outputCells_->emplace_back(v1);
+    outputCells_->emplace_back(mids0[1]);
+    outputCells_->emplace_back(mids1[1]);
+    outputCells_->emplace_back(v2);
+  };
+
+  // store current number of quads
+  auto nquads = outputCells_->size();
+
+  // subdivise quadrangles
+  for(size_t i = 0; i < nquads / 5; ++i) {
+    auto q = reinterpret_cast<Quad *>(&outputCells_->at(5 * i + 1));
+    // bounds indices in separatrices array
+    auto qi = criticalPointsCellIds_[q->i];
+    auto qj = criticalPointsCellIds_[q->j];
+    auto qk = criticalPointsCellIds_[q->k];
+    auto ql = criticalPointsCellIds_[q->l];
+
+    // edges (sep sources before dests)
+    auto ij = std::make_pair(qj, qi);
+    auto jk = std::make_pair(qj, qk);
+    auto kl = std::make_pair(ql, qk);
+    auto li = std::make_pair(ql, qi);
+
+    auto pse = points2Seps.end();
+    if(points2Seps.find(ij) != pse && points2Seps.find(kl) != pse) {
+      // from i to l
+      generateNewQuads(q, q->i, q->j, q->k, q->l, ij, kl);
+    }
+    if(points2Seps.find(jk) != pse && points2Seps.find(li) != pse) {
+      // rotated: from j to i
+      generateNewQuads(q, q->j, q->k, q->l, q->i, jk, li);
+    }
   }
 
   return 0;
