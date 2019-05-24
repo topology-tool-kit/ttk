@@ -469,7 +469,7 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
 
   // integrate distances at every point of this separatrix
   for(size_t i = 1; i < b - a + 1; ++i) {
-    prev = std::move(curr);
+    std::swap(curr, prev);
     curr[0] = sepPoints_[dim * (a + i)];
     curr[1] = sepPoints_[dim * (a + i) + 1];
     curr[2] = sepPoints_[dim * (a + i) + 2];
