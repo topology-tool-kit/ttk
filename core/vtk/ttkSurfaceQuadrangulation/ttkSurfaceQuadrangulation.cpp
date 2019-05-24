@@ -49,10 +49,9 @@ int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
   TTK_ABORT_KK(cpcd == nullptr, "wrong critical points cell dimension", -3);
   TTK_ABORT_KK(cpci == nullptr, "wrong critical points identifiers", -4);
 
-  surfaceQuadrangulation_.setCriticalPointsNumber(cp->GetNumberOfPoints());
-  surfaceQuadrangulation_.setCriticalPointsCellIds(cpci->GetVoidPointer(0));
-  surfaceQuadrangulation_.setCriticalPointsType(cpcd->GetVoidPointer(0));
-  surfaceQuadrangulation_.setCriticalPointsIdentifiers(cpid->GetVoidPointer(0));
+  surfaceQuadrangulation_.setCriticalPoints(
+    cp->GetNumberOfPoints(), cp->GetVoidPointer(0), cpid->GetVoidPointer(0),
+    cpci->GetVoidPointer(0), cpcd->GetVoidPointer(0));
 
   return 0;
 }

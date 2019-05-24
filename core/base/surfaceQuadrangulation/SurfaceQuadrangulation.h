@@ -35,21 +35,18 @@ namespace ttk {
     // default move assignment operator
     SurfaceQuadrangulation &operator=(SurfaceQuadrangulation &&) = default;
 
-    inline void setCriticalPointsNumber(unsigned int value) {
-      criticalPointsNumber_ = value;
+    inline void setCriticalPoints(const unsigned int number,
+                                  void *const points,
+                                  void *const ids,
+                                  void *const cellIds,
+                                  void *const type) {
+      criticalPointsNumber_ = number;
+      criticalPoints_ = static_cast<float *>(points);
+      criticalPointsIdentifier_ = static_cast<SimplexId *>(ids);
+      criticalPointsCellIds_ = static_cast<SimplexId *>(cellIds);
+      criticalPointsType_ = static_cast<unsigned char *>(type);
     }
-    inline void setCriticalPointsCellIds(void *address) {
-      criticalPointsCellIds_ = static_cast<SimplexId *>(address);
-    }
-    inline void setCriticalPointsIdentifiers(void *address) {
-      criticalPointsIdentifier_ = static_cast<SimplexId *>(address);
-    }
-    inline void setCriticalPointsType(void *address) {
-      criticalPointsType_ = static_cast<unsigned char *>(address);
-    }
-    inline void setSeparatriceNumber(unsigned int value) {
-      separatriceNumber_ = value;
-    }
+
     inline void setSeparatrices(const unsigned int number,
                                 void *const cellIds,
                                 void *const cellDims,
@@ -140,6 +137,8 @@ namespace ttk {
 
     // number of critical points from the Morse-Smale complex
     SimplexId criticalPointsNumber_{};
+    // critical points 3d coordinates
+    float *criticalPoints_{};
     // mapping points id -> cells id
     SimplexId *criticalPointsCellIds_{};
     // mapping point id -> TTK identifier
