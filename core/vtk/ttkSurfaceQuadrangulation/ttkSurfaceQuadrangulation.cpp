@@ -123,8 +123,6 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   TTK_ABORT_KK(res != 0, "wrong segmentation", -1);
 
-  surfaceQuadrangulation_.setOutputQuads(
-    &outQuadrangles_, &outQuadPoints_, &outPointsIds_);
   surfaceQuadrangulation_.setDualQuadrangulation(DualQuadrangulation);
 
   res += surfaceQuadrangulation_.execute();

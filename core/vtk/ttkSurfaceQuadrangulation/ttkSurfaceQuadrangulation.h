@@ -101,8 +101,6 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
 private:
-  // worker object
-  ttk::SurfaceQuadrangulation surfaceQuadrangulation_{};
   // output vector of interleaved quadrangles
   std::vector<vtkIdType> outQuadrangles_{};
   // output vector of quadrangle vertices (critical points + ...)
@@ -113,4 +111,7 @@ private:
   ttk::Triangulation *triangulation_{};
   // if dual quadrangulation
   bool DualQuadrangulation{false};
+  // worker object
+  ttk::SurfaceQuadrangulation surfaceQuadrangulation_{
+    outQuadrangles_, outQuadPoints_, outPointsIds_};
 };

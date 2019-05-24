@@ -23,7 +23,13 @@ namespace ttk {
 
   public:
     // default constructor
-    SurfaceQuadrangulation() = default;
+    SurfaceQuadrangulation() = delete;
+    // constructor to use
+    SurfaceQuadrangulation(std::vector<long long> &cells,
+                           std::vector<float> &points,
+                           std::vector<SimplexId> &ids)
+      : outputCells_{cells}, outputPoints_{points}, outputPointsIds_{ids} {
+    }
     // default destructor
     ~SurfaceQuadrangulation() override = default;
     // default copy constructor
@@ -31,9 +37,9 @@ namespace ttk {
     // default move constructor
     SurfaceQuadrangulation(SurfaceQuadrangulation &&) = default;
     // default copy assignment operator
-    SurfaceQuadrangulation &operator=(const SurfaceQuadrangulation &) = default;
+    SurfaceQuadrangulation &operator=(const SurfaceQuadrangulation &) = delete;
     // default move assignment operator
-    SurfaceQuadrangulation &operator=(SurfaceQuadrangulation &&) = default;
+    SurfaceQuadrangulation &operator=(SurfaceQuadrangulation &&) = delete;
 
     inline void setCriticalPoints(const unsigned int number,
                                   void *const points,
@@ -66,14 +72,6 @@ namespace ttk {
     inline void setDualQuadrangulation(const bool input) {
       dualQuadrangulation_ = input;
     }
-    inline void setOutputQuads(std::vector<long long> *const cells,
-                               std::vector<float> *const points,
-                               std::vector<SimplexId> *const ids) {
-      outputCells_ = cells;
-      outputPoints_ = points;
-      outputPointsIds_ = ids;
-    }
-
     inline void setupTriangulation(Triangulation *const triangl) {
       triangulation_ = triangl;
       if(triangulation_ != nullptr) {
@@ -164,11 +162,11 @@ namespace ttk {
     bool dualQuadrangulation_{false};
 
     // array of output polygons
-    std::vector<long long> *outputCells_{};
+    std::vector<long long> &outputCells_;
     // array of output vertices (generated middles of duplicated separatrices)
-    std::vector<float> *outputPoints_{};
+    std::vector<float> &outputPoints_;
     // array of output vertices identifiers
-    std::vector<SimplexId> *outputPointsIds_{};
+    std::vector<SimplexId> &outputPointsIds_;
   };
 } // namespace ttk
 

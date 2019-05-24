@@ -121,11 +121,11 @@ int ttk::SurfaceQuadrangulation::dualQuadrangulate(
         k = extrema[3];
         l = extrema[1];
       }
-      outputCells_->emplace_back(4);
-      outputCells_->emplace_back(i);
-      outputCells_->emplace_back(j);
-      outputCells_->emplace_back(k);
-      outputCells_->emplace_back(l);
+      outputCells_.emplace_back(4);
+      outputCells_.emplace_back(i);
+      outputCells_.emplace_back(j);
+      outputCells_.emplace_back(k);
+      outputCells_.emplace_back(l);
     }
   }
 
@@ -205,11 +205,11 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
 
             // fill output vector
             if(validQuad) {
-              outputCells_->emplace_back(4);
-              outputCells_->emplace_back(i);
-              outputCells_->emplace_back(j);
-              outputCells_->emplace_back(k);
-              outputCells_->emplace_back(l);
+              outputCells_.emplace_back(4);
+              outputCells_.emplace_back(i);
+              outputCells_.emplace_back(j);
+              outputCells_.emplace_back(k);
+              outputCells_.emplace_back(l);
             }
           }
         }
@@ -221,11 +221,11 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
         ndegen++;
 
         // fill output vector
-        outputCells_->emplace_back(4);
-        outputCells_->emplace_back(i);
-        outputCells_->emplace_back(j);
-        outputCells_->emplace_back(k);
-        outputCells_->emplace_back(j);
+        outputCells_.emplace_back(4);
+        outputCells_.emplace_back(i);
+        outputCells_.emplace_back(j);
+        outputCells_.emplace_back(k);
+        outputCells_.emplace_back(j);
       }
     }
   }
@@ -277,7 +277,7 @@ int ttk::SurfaceQuadrangulation::postProcess() const {
     findSeparatrixMiddle(a, b);
     // store separatrix bounds and middle id
     sepMiddles.insert(
-      std::make_pair(std::make_pair(a, b), outputPoints_->size() / 3 - 1));
+      std::make_pair(std::make_pair(a, b), outputPoints_.size() / 3 - 1));
   }
 
   // for every pair of critical points belonging to a duplicate edge,
@@ -314,9 +314,9 @@ int ttk::SurfaceQuadrangulation::postProcess() const {
           mids1.emplace_back(sepMiddles[p]);
         }
 
-        float *pt0 = &outputPoints_->at(3 * mids0[0]);
-        float *pt10 = &outputPoints_->at(3 * mids1[0]);
-        float *pt11 = &outputPoints_->at(3 * mids1[1]);
+        float *pt0 = &outputPoints_[3 * mids0[0]];
+        float *pt10 = &outputPoints_[3 * mids1[0]];
+        float *pt11 = &outputPoints_[3 * mids1[1]];
 
         auto dist00 = Geometry::distance(pt0, pt10);
         auto dist01 = Geometry::distance(pt0, pt11);
@@ -332,21 +332,21 @@ int ttk::SurfaceQuadrangulation::postProcess() const {
         q->l = v3;
 
         // other new quads are placed at the end of the output vector
-        outputCells_->emplace_back(4);
-        outputCells_->emplace_back(v1);
-        outputCells_->emplace_back(mids0[0]);
-        outputCells_->emplace_back(mids1[0]);
-        outputCells_->emplace_back(v2);
-        outputCells_->emplace_back(4);
-        outputCells_->emplace_back(v0);
-        outputCells_->emplace_back(mids0[1]);
-        outputCells_->emplace_back(mids1[1]);
-        outputCells_->emplace_back(v3);
-        outputCells_->emplace_back(4);
-        outputCells_->emplace_back(v1);
-        outputCells_->emplace_back(mids0[1]);
-        outputCells_->emplace_back(mids1[1]);
-        outputCells_->emplace_back(v2);
+        outputCells_.emplace_back(4);
+        outputCells_.emplace_back(v1);
+        outputCells_.emplace_back(mids0[0]);
+        outputCells_.emplace_back(mids1[0]);
+        outputCells_.emplace_back(v2);
+        outputCells_.emplace_back(4);
+        outputCells_.emplace_back(v0);
+        outputCells_.emplace_back(mids0[1]);
+        outputCells_.emplace_back(mids1[1]);
+        outputCells_.emplace_back(v3);
+        outputCells_.emplace_back(4);
+        outputCells_.emplace_back(v1);
+        outputCells_.emplace_back(mids0[1]);
+        outputCells_.emplace_back(mids1[1]);
+        outputCells_.emplace_back(v2);
       };
 
   auto fixCurrentQuad
@@ -359,13 +359,13 @@ int ttk::SurfaceQuadrangulation::postProcess() const {
           mids.emplace_back(sepMiddles[p]);
         }
 
-        if(outputPoints_ == nullptr) {
-          // avoid potential null pointer dereference
+        if(mids.size() < 2) {
+          // avoid potential null dereference warning
           return;
         }
 
-        float *pt0 = &outputPoints_->at(3 * mids[0]);
-        float *pt1 = &outputPoints_->at(3 * mids[1]);
+        float *pt0 = &outputPoints_[3 * mids[0]];
+        float *pt1 = &outputPoints_[3 * mids[1]];
 
         // idea: sort [v0, v1, mid[0] and mid[1]] according to
         // distance to v2 and v3 to choose the best quadrangle with
@@ -416,11 +416,11 @@ int ttk::SurfaceQuadrangulation::postProcess() const {
       };
 
   // store current number of quads
-  auto nquads = outputCells_->size();
+  auto nquads = outputCells_.size();
 
   // subdivise quadrangles
   for(size_t i = 0; i < nquads / 5; ++i) {
-    auto q = reinterpret_cast<Quad *>(&outputCells_->at(5 * i + 1));
+    auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i + 1]);
     // bounds indices in separatrices array
     auto qi = criticalPointsCellIds_[q->i];
     auto qj = criticalPointsCellIds_[q->j];
@@ -487,27 +487,27 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
             - distFromA.begin();
 
   // new point!
-  outputPoints_->emplace_back(sepPoints_[dim * id]);
-  outputPoints_->emplace_back(sepPoints_[dim * id + 1]);
-  outputPoints_->emplace_back(sepPoints_[dim * id + 2]);
+  outputPoints_.emplace_back(sepPoints_[dim * id]);
+  outputPoints_.emplace_back(sepPoints_[dim * id + 1]);
+  outputPoints_.emplace_back(sepPoints_[dim * id + 2]);
 
   // new point identifier (on the triangular mesh)
   switch(sepCellDims_[id]) {
     case 0:
-      outputPointsIds_->emplace_back(sepCellIds_[id]);
+      outputPointsIds_.emplace_back(sepCellIds_[id]);
       break;
     case 1: {
       // take the first vertex of the edge
       SimplexId pos;
       triangulation_->getEdgeVertex(sepCellIds_[id], 0, pos);
-      outputPointsIds_->emplace_back(pos);
+      outputPointsIds_.emplace_back(pos);
       break;
     }
     case 2: {
       // take the first vertex of the triangle
       SimplexId pos;
       triangulation_->getTriangleVertex(sepCellIds_[id], 0, pos);
-      outputPointsIds_->emplace_back(pos);
+      outputPointsIds_.emplace_back(pos);
       break;
     }
     default:
@@ -527,18 +527,18 @@ int ttk::SurfaceQuadrangulation::execute() const {
   Timer t;
 
   // clear output
-  outputCells_->clear();
-  outputPoints_->clear();
-  outputPointsIds_->clear();
-  outputPoints_->resize(3 * criticalPointsNumber_);
-  outputPointsIds_->resize(criticalPointsNumber_);
+  outputCells_.clear();
+  outputPoints_.clear();
+  outputPointsIds_.clear();
+  outputPoints_.resize(3 * criticalPointsNumber_);
+  outputPointsIds_.resize(criticalPointsNumber_);
 
   // fill in critical points 3d coordinates and identifiers
   for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
-    outputPoints_->at(3 * i) = criticalPoints_[3 * i];
-    outputPoints_->at(3 * i + 1) = criticalPoints_[3 * i + 1];
-    outputPoints_->at(3 * i + 2) = criticalPoints_[3 * i + 2];
-    outputPointsIds_->at(i) = criticalPointsIdentifier_[i];
+    outputPoints_[3 * i] = criticalPoints_[3 * i];
+    outputPoints_[3 * i + 1] = criticalPoints_[3 * i + 1];
+    outputPoints_[3 * i + 2] = criticalPoints_[3 * i + 2];
+    outputPointsIds_[i] = criticalPointsIdentifier_[i];
   }
 
   // filter sepCellIds_ array according to sepMask_
@@ -590,7 +590,7 @@ int ttk::SurfaceQuadrangulation::execute() const {
   int nseg = maxSegId + 1;
 
   // number of produced quads
-  size_t quadNumber = outputCells_->size() / 5;
+  size_t quadNumber = outputCells_.size() / 5;
 
   // print number of quadrangles wrt number of MSC segmentation
   {
