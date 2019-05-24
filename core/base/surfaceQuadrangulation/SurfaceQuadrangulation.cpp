@@ -349,6 +349,72 @@ int ttk::SurfaceQuadrangulation::postProcess() const {
         outputCells_->emplace_back(v2);
       };
 
+  auto fixCurrentQuad
+    = [&](Quad *const q, const SimplexId v0, const SimplexId v1,
+          const SimplexId v2, const SimplexId v3,
+          const std::pair<SimplexId, SimplexId> &edge) {
+        std::vector<SimplexId> mids{};
+
+        for(const auto &p : points2Seps[edge]) {
+          mids.emplace_back(sepMiddles[p]);
+        }
+
+        if(outputPoints_ == nullptr) {
+          // avoid potential null pointer dereference
+          return;
+        }
+
+        float *pt0 = &outputPoints_->at(3 * mids[0]);
+        float *pt1 = &outputPoints_->at(3 * mids[1]);
+
+        // idea: sort [v0, v1, mid[0] and mid[1]] according to
+        // distance to v2 and v3 to choose the best quadrangle with
+        // the shortest distance between its vertices
+
+        // distances from v2 to v0, v1, mid[0], mid[1]
+        std::vector<float> dists0(mids.size() + 2);
+        // distances from v3 to v0, v1, mid[0], mid[1]
+        std::vector<float> dists1(mids.size() + 2);
+
+        float *pv0 = &criticalPoints_[3 * v0];
+        float *pv1 = &criticalPoints_[3 * v1];
+        float *pv2 = &criticalPoints_[3 * v2];
+        float *pv3 = &criticalPoints_[3 * v3];
+
+        dists0[0] = Geometry::distance(pv2, pv0);
+        dists0[1] = Geometry::distance(pv2, pv1);
+        dists0[2] = Geometry::distance(pv2, pt0);
+        dists0[3] = Geometry::distance(pv2, pt1);
+
+        dists1[0] = Geometry::distance(pv3, pv0);
+        dists1[1] = Geometry::distance(pv3, pv1);
+        dists1[2] = Geometry::distance(pv3, pt0);
+        dists1[3] = Geometry::distance(pv3, pt1);
+
+        std::vector<float> distssum(dists0.size());
+        std::transform(dists0.begin(), dists0.end(), dists1.begin(),
+                       distssum.begin(), std::plus<float>());
+
+        // pick one critical point and one sep middle nearest to v2 and v3
+        if(distssum[0] < distssum[1]) {
+          q->i = v0;
+          if(distssum[2] < distssum[3]) {
+            q->j = mids[0];
+          } else {
+            q->j = mids[1];
+          }
+        } else {
+          q->j = v1;
+          if(distssum[2] < distssum[3]) {
+            q->i = mids[0];
+          } else {
+            q->i = mids[1];
+          }
+        }
+        q->k = v2;
+        q->l = v3;
+      };
+
   // store current number of quads
   auto nquads = outputCells_->size();
 
@@ -371,10 +437,18 @@ int ttk::SurfaceQuadrangulation::postProcess() const {
     if(points2Seps.find(ij) != pse && points2Seps.find(kl) != pse) {
       // from i to l
       generateNewQuads(q, q->i, q->j, q->k, q->l, ij, kl);
+    } else if(points2Seps.find(ij) != pse) {
+      fixCurrentQuad(q, q->i, q->j, q->k, q->l, ij);
+    } else if(points2Seps.find(kl) != pse) {
+      fixCurrentQuad(q, q->k, q->l, q->i, q->j, kl);
     }
     if(points2Seps.find(jk) != pse && points2Seps.find(li) != pse) {
       // rotated: from j to i
       generateNewQuads(q, q->j, q->k, q->l, q->i, jk, li);
+    } else if(points2Seps.find(jk) != pse) {
+      fixCurrentQuad(q, q->j, q->k, q->l, q->i, jk);
+    } else if(points2Seps.find(li) != pse) {
+      fixCurrentQuad(q, q->l, q->i, q->j, q->k, li);
     }
   }
 
