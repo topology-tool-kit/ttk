@@ -23,13 +23,7 @@ namespace ttk {
 
   public:
     // default constructor
-    SurfaceQuadrangulation() = delete;
-    // constructor to use
-    SurfaceQuadrangulation(std::vector<long long> &cells,
-                           std::vector<float> &points,
-                           std::vector<SimplexId> &ids)
-      : outputCells_{cells}, outputPoints_{points}, outputPointsIds_{ids} {
-    }
+    SurfaceQuadrangulation() = default;
     // default destructor
     ~SurfaceQuadrangulation() override = default;
     // default copy constructor
@@ -37,9 +31,9 @@ namespace ttk {
     // default move constructor
     SurfaceQuadrangulation(SurfaceQuadrangulation &&) = default;
     // default copy assignment operator
-    SurfaceQuadrangulation &operator=(const SurfaceQuadrangulation &) = delete;
+    SurfaceQuadrangulation &operator=(const SurfaceQuadrangulation &) = default;
     // default move assignment operator
-    SurfaceQuadrangulation &operator=(SurfaceQuadrangulation &&) = delete;
+    SurfaceQuadrangulation &operator=(SurfaceQuadrangulation &&) = default;
 
     inline void setCriticalPoints(const unsigned int number,
                                   void *const points,
@@ -79,8 +73,17 @@ namespace ttk {
         triangulation_->preprocessVertexTriangles();
       }
     }
+    inline std::vector<long long> &getOutputCells() {
+      return outputCells_;
+    }
+    inline std::vector<float> &getOutputPoints() {
+      return outputPoints_;
+    }
+    inline std::vector<SimplexId> &getOutputPointsIds() {
+      return outputPointsIds_;
+    }
 
-    int execute() const;
+    int execute();
 
   private:
     bool hasCommonManifold(const std::vector<size_t> &verts) const;
@@ -93,7 +96,7 @@ namespace ttk {
      *
      * @return Index of separatrice source
      */
-    size_t findSeparatrixMiddle(const size_t a, const size_t b) const;
+    size_t findSeparatrixMiddle(const size_t a, const size_t b);
 
     /**
      * @brief Perform the quadrangulation
@@ -107,7 +110,7 @@ namespace ttk {
      */
     int quadrangulate(
       const std::vector<std::pair<SimplexId, SimplexId>> &sepEdges,
-      size_t &ndegen) const;
+      size_t &ndegen);
 
     /**
      * @brief Perform the dual quadrangulation
@@ -119,7 +122,7 @@ namespace ttk {
      * @return 0 in case of success
      */
     int dualQuadrangulate(
-      const std::vector<std::pair<SimplexId, SimplexId>> &sepEdges) const;
+      const std::vector<std::pair<SimplexId, SimplexId>> &sepEdges);
 
     /**
      * @brief Post-process quadrangulation
@@ -129,7 +132,7 @@ namespace ttk {
      *
      * @return 0 in case of success
      */
-    int postProcess() const;
+    int postProcess();
 
     Triangulation *triangulation_{};
 
@@ -162,11 +165,11 @@ namespace ttk {
     bool dualQuadrangulation_{false};
 
     // array of output polygons
-    std::vector<long long> &outputCells_;
+    std::vector<long long> outputCells_{};
     // array of output vertices (generated middles of duplicated separatrices)
-    std::vector<float> &outputPoints_;
+    std::vector<float> outputPoints_{};
     // array of output vertices identifiers
-    std::vector<SimplexId> &outputPointsIds_;
+    std::vector<SimplexId> outputPointsIds_{};
   };
 } // namespace ttk
 

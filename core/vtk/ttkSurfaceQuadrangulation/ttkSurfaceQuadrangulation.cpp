@@ -130,23 +130,27 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   TTK_ABORT_KK(
     res != 0, "SurfaceQuadrangulation.execute() error code: " << res, -9);
 
+  auto &outQuadrangles = surfaceQuadrangulation_.getOutputCells();
+  auto &outQuadPoints = surfaceQuadrangulation_.getOutputPoints();
+  auto &outPointsIds = surfaceQuadrangulation_.getOutputPointsIds();
+
   // output points: critical points + generated separatrices middles
   auto points = vtkSmartPointer<vtkPoints>::New();
-  for(size_t i = 0; i < outQuadPoints_.size() / 3; i++) {
-    points->InsertNextPoint(&outQuadPoints_[3 * i]);
+  for(size_t i = 0; i < outQuadPoints.size() / 3; i++) {
+    points->InsertNextPoint(&outQuadPoints[3 * i]);
   }
   output->SetPoints(points);
 
   // quad vertices identifiers
   auto identifiers = vtkSmartPointer<vtkIntArray>::New();
   identifiers->SetName(ttk::VertexScalarFieldName);
-  identifiers->SetVoidArray(outPointsIds_.data(), outPointsIds_.size(), 1);
+  identifiers->SetVoidArray(outPointsIds.data(), outPointsIds.size(), 1);
   output->GetPointData()->AddArray(identifiers);
 
   // vtkCellArray of quadrangle values containing outArray
   auto cells = vtkSmartPointer<vtkCellArray>::New();
-  for(size_t i = 0; i < outQuadrangles_.size() / 5; i++) {
-    cells->InsertNextCell(4, &outQuadrangles_[5 * i + 1]);
+  for(size_t i = 0; i < outQuadrangles.size() / 5; i++) {
+    cells->InsertNextCell(4, &outQuadrangles[5 * i + 1]);
   }
 
   // update output: get quadrangle values

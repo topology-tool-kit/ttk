@@ -74,8 +74,7 @@ bool ttk::SurfaceQuadrangulation::hasCommonManifold(
 }
 
 int ttk::SurfaceQuadrangulation::dualQuadrangulate(
-  const std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> &sepEdges)
-  const {
+  const std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> &sepEdges) {
 
   // quadrangles vertices are only extrema
 
@@ -134,7 +133,7 @@ int ttk::SurfaceQuadrangulation::dualQuadrangulate(
 
 int ttk::SurfaceQuadrangulation::quadrangulate(
   const std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> &sepEdges,
-  size_t &ndegen) const {
+  size_t &ndegen) {
   // quadrangle vertices are either extrema or saddle points
 
   // separatrices: destinations (extrema) -> sources (saddle points)
@@ -233,7 +232,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
   return 0;
 }
 
-int ttk::SurfaceQuadrangulation::postProcess() const {
+int ttk::SurfaceQuadrangulation::postProcess() {
   // post-processing: try to detect missing or extra quadrangles by
   // comparing separatrices number coming out of extrema
 
@@ -456,7 +455,7 @@ int ttk::SurfaceQuadrangulation::postProcess() const {
 }
 
 size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
-                                                         const size_t b) const {
+                                                         const size_t b) {
 
   const int dim = 3;
 
@@ -518,7 +517,7 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
 }
 
 // main routine
-int ttk::SurfaceQuadrangulation::execute() const {
+int ttk::SurfaceQuadrangulation::execute() {
 
   using std::cout;
   using std::endl;
