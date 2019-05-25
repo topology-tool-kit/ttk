@@ -143,8 +143,6 @@ private:
   // projection method
   bool ReverseProjection{false};
 
-  // base worker object
-  ttk::QuadrangulationSubdivision baseWorker_{};
   // output vector of interleaved quadrangles
   std::vector<vtkIdType> outQuadrangles_{};
   // output vector of quadrangle vertices
@@ -166,4 +164,9 @@ private:
   // 2 - projection alongside triangle normal
   // 3 - failed projection
   std::vector<ttk::SimplexId> projSucceeded_{};
+
+  // base worker object
+  ttk::QuadrangulationSubdivision baseWorker_{
+    outQuadrangles_,     outVertices_,      outVertexValences_, outVertexType_,
+    outSubdvisionLevel_, trianglesChecked_, projSucceeded_};
 };

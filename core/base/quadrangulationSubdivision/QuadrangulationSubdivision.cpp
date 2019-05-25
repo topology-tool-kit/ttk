@@ -15,7 +15,7 @@ ttk::SimplexId
   std::vector<float> sum(vertexDistance_[a].size());
 
   // euclidian barycenter of a and b
-  Point edgeEuclBary = ((*outputPoints_)[a] + (*outputPoints_)[b]) * 0.5F;
+  Point edgeEuclBary = (outputPoints_[a] + outputPoints_[b]) * 0.5F;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -86,17 +86,17 @@ int ttk::QuadrangulationSubdivision::subdivise() {
   std::map<edgeType, vertexType> processedEdges;
 
   // deep copy of coarse input quads
-  auto prevQuads(*outputQuads_);
+  auto prevQuads(outputQuads_);
 
   // clear input quads buffer before re-writing it
-  outputQuads_->clear();
+  outputQuads_.clear();
 
   Timer t;
 
   // avoid reallocation in loop, causing invalid pointers
-  outputPoints_->reserve(outputPoints_->size() * 5);
+  outputPoints_.reserve(outputPoints_.size() * 5);
 
-  vertexDistance_.resize(outputPoints_->size());
+  vertexDistance_.resize(outputPoints_.size());
 
   // get all other vertices sharing a quad
   getQuadNeighbors(prevQuads, quadNeighbors_, true);
@@ -105,7 +105,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < outputPoints_->size(); ++i) {
+  for(size_t i = 0; i < outputPoints_.size(); ++i) {
 
     // skip if already computed on a coarser subdivision
     if(vertexDistance_[i].empty()) {
@@ -162,11 +162,11 @@ int ttk::QuadrangulationSubdivision::subdivise() {
       /* check if edge already processed by a neighbor quad */
       if(processedEdges.find(pair) == processedEdges.end()) {
         processedEdges.insert(
-          make_pair(pair, make_pair(outputPoints_->size(), pt)));
+          make_pair(pair, make_pair(outputPoints_.size(), pt)));
         /* add new point 3d coordinates to vector of output points */
-        outputPoints_->emplace_back(pt);
+        outputPoints_.emplace_back(pt);
         /* new point is an edge middle */
-        outputVertType_->emplace_back(1);
+        outputVertType_.emplace_back(1);
         /* store also TTK identifier of triangular mesh vertex */
         nearestVertexIdentifier_.emplace_back(id);
       }
@@ -178,33 +178,33 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     process_edge_middle(li, midli, liid);
 
     // barycenter index in outputPoints_
-    auto baryIdx = static_cast<long long>(outputPoints_->size());
-    outputPoints_->emplace_back(bary);
-    outputVertType_->emplace_back(2);
+    auto baryIdx = static_cast<long long>(outputPoints_.size());
+    outputPoints_.emplace_back(bary);
+    outputVertType_.emplace_back(2);
     nearestVertexIdentifier_.emplace_back(baryid);
 
     // add the four new quads
-    outputQuads_->emplace_back(Quad{
+    outputQuads_.emplace_back(Quad{
       4, q.i, processedEdges[ij].first, baryIdx, processedEdges[li].first});
-    outputQuads_->emplace_back(Quad{
+    outputQuads_.emplace_back(Quad{
       4, q.j, processedEdges[jk].first, baryIdx, processedEdges[ij].first});
-    outputQuads_->emplace_back(Quad{
+    outputQuads_.emplace_back(Quad{
       4, q.k, processedEdges[kl].first, baryIdx, processedEdges[jk].first});
-    outputQuads_->emplace_back(Quad{
+    outputQuads_.emplace_back(Quad{
       4, q.l, processedEdges[li].first, baryIdx, processedEdges[kl].first});
   }
 
   // output subdivision level
-  auto currSubd = outputSubdivision_->back() + 1;
-  auto subdBeg = outputSubdivision_->size();
-  outputSubdivision_->resize(outputPoints_->size());
+  auto currSubd = outputSubdivision_.back() + 1;
+  auto subdBeg = outputSubdivision_.size();
+  outputSubdivision_.resize(outputPoints_.size());
   std::fill(
-    outputSubdivision_->begin() + subdBeg, outputSubdivision_->end(), currSubd);
+    outputSubdivision_.begin() + subdBeg, outputSubdivision_.end(), currSubd);
 
   {
     std::stringstream msg;
     msg << MODULE_S "Subdivised " << prevQuads.size() << " quads into "
-        << outputQuads_->size() << " new quads (" << outputPoints_->size()
+        << outputQuads_.size() << " new quads (" << outputPoints_.size()
         << " points) in " << t.getElapsedTime() << " s." << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
   }
@@ -222,7 +222,7 @@ ttk::QuadrangulationSubdivision::Point
 
   // find all quads that have a as vertex
   std::vector<Quad> quads{};
-  for(auto &q : *outputQuads_) {
+  for(auto &q : outputQuads_) {
     auto _a = static_cast<long long>(a);
     if(q.i == _a || q.j == _a || q.k == _a || q.l == _a) {
       quads.emplace_back(q);
@@ -499,9 +499,9 @@ ttk::QuadrangulationSubdivision::Point
 
   // fill in debug info
   if(lastIter) {
-    trianglesChecked_->at(a)
+    trianglesChecked_[a]
       = std::count(trianglesTested.begin(), trianglesTested.end(), true);
-    projSucceeded_->at(a) = success ? (doReverseProj ? 1 : 2) : 3;
+    projSucceeded_[a] = success ? (doReverseProj ? 1 : 2) : 3;
   }
 
   return res;
@@ -512,21 +512,21 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
   Timer t;
 
   if(lastIter) {
-    trianglesChecked_->clear();
-    projSucceeded_->clear();
-    trianglesChecked_->resize(outputPoints_->size());
-    projSucceeded_->resize(outputPoints_->size());
+    trianglesChecked_.clear();
+    projSucceeded_.clear();
+    trianglesChecked_.resize(outputPoints_.size());
+    projSucceeded_.resize(outputPoints_.size());
   }
 
   // outputPoints_ deep copy to avoid OpenMP data races in
   // findTriangleQuadNormal
-  auto inputPoints(*outputPoints_);
+  auto inputPoints(outputPoints_);
 
   // main loop
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < outputPoints_->size(); i++) {
+  for(size_t i = 0; i < outputPoints_.size(); i++) {
 
     // skip computation if i in filtered
     if(filtered.find(i) != filtered.end()) {
@@ -534,12 +534,12 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
     }
 
     // replace curr in outputPoints_ by its projection
-    outputPoints_->at(i) = findProjection(i, inputPoints, lastIter);
+    outputPoints_[i] = findProjection(i, inputPoints, lastIter);
   }
 
   {
     std::stringstream msg;
-    msg << MODULE_S "Projected " << outputPoints_->size() - filtered.size()
+    msg << MODULE_S "Projected " << outputPoints_.size() - filtered.size()
         << " points in " << t.getElapsedTime() << " s." << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
   }
@@ -554,7 +554,7 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
   Timer t;
 
   quadNeighbors_.clear();
-  quadNeighbors_.resize(outputPoints_->size());
+  quadNeighbors_.resize(outputPoints_.size());
 
   for(auto &q : quads) {
     auto i = static_cast<size_t>(q.i);
@@ -588,7 +588,7 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
 
   {
     std::stringstream msg;
-    msg << MODULE_S "Computed neighbors mapping of " << outputPoints_->size()
+    msg << MODULE_S "Computed neighbors mapping of " << outputPoints_.size()
         << " points in " << t.getElapsedTime() << " s." << std::endl;
     dMsg(std::cout, msg.str(), detailedInfoMsg);
   }
@@ -600,13 +600,13 @@ int ttk::QuadrangulationSubdivision::relax(const std::set<size_t> &filtered) {
   Timer t;
 
   // outputPoints_ deep copy
-  auto tmp(*outputPoints_);
+  auto tmp(outputPoints_);
 
   // loop over output points, do not touch input MSC critical points
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < outputPoints_->size(); i++) {
+  for(size_t i = 0; i < outputPoints_.size(); i++) {
 
     // skip computation if i in filtered
     if(filtered.find(i) != filtered.end()) {
@@ -620,12 +620,12 @@ int ttk::QuadrangulationSubdivision::relax(const std::set<size_t> &filtered) {
     }
     relax = relax * (1.0F / static_cast<float>(quadNeighbors_[i].size()));
 
-    (*outputPoints_)[i] = relax;
+    outputPoints_[i] = relax;
   }
 
   {
     std::stringstream msg;
-    msg << MODULE_S "Relaxed " << outputPoints_->size() - inputVertexNumber_
+    msg << MODULE_S "Relaxed " << outputPoints_.size() - inputVertexNumber_
         << " points in " << t.getElapsedTime() << " s." << std::endl;
     dMsg(std::cout, msg.str(), detailedInfoMsg);
   }
@@ -646,7 +646,7 @@ int ttk::QuadrangulationSubdivision::findExtraordinaryVertices(
 
   // use outputQuads_ here because it contains the input quadrangles before
   // subdivision wrt function call position in execute()
-  getQuadNeighbors(*outputQuads_, neighbors);
+  getQuadNeighbors(outputQuads_, neighbors);
 
   const size_t NORMAL_VALENCE = 4;
 
@@ -668,33 +668,33 @@ int ttk::QuadrangulationSubdivision::execute() {
   Timer t;
 
   // clear output variables
-  outputQuads_->clear();
-  outputPoints_->clear();
-  outputValences_->clear();
-  outputVertType_->clear();
-  outputSubdivision_->clear();
+  outputQuads_.clear();
+  outputPoints_.clear();
+  outputValences_.clear();
+  outputVertType_.clear();
+  outputSubdivision_.clear();
   quadNeighbors_.clear();
   vertexDistance_.clear();
-  trianglesChecked_->clear();
-  projSucceeded_->clear();
+  trianglesChecked_.clear();
+  projSucceeded_.clear();
 
   // store input points (MSC critical points)
   for(size_t i = 0; i < inputVertexNumber_; i++) {
-    outputPoints_->emplace_back(inputVertices_[i]);
+    outputPoints_.emplace_back(inputVertices_[i]);
   }
 
   // copy input quads into vector
   for(size_t i = 0; i < inputQuadNumber_; i++) {
-    outputQuads_->emplace_back(inputQuads_[i]);
+    outputQuads_.emplace_back(inputQuads_[i]);
   }
 
   // fill outputInfos_ with input data (critical points)
-  outputVertType_->resize(outputPoints_->size());
-  std::fill(outputVertType_->begin(), outputVertType_->end(), 0);
+  outputVertType_.resize(outputPoints_.size());
+  std::fill(outputVertType_.begin(), outputVertType_.end(), 0);
 
   // fill outputSubdivision with input data
-  outputSubdivision_->resize(outputPoints_->size());
-  std::fill(outputSubdivision_->begin(), outputSubdivision_->end(), 0);
+  outputSubdivision_.resize(outputPoints_.size());
+  std::fill(outputSubdivision_.begin(), outputSubdivision_.end(), 0);
 
   // vertices to filter from relaxation, projection
   std::set<size_t> filtered{};
@@ -719,7 +719,7 @@ int ttk::QuadrangulationSubdivision::execute() {
   }
 
   // retrieve mapping between every vertex and its neighbors
-  getQuadNeighbors(*outputQuads_, quadNeighbors_);
+  getQuadNeighbors(outputQuads_, quadNeighbors_);
 
   // "relax" the new points, i.e. replace it by the barycenter of its
   // four neighbors
@@ -732,15 +732,15 @@ int ttk::QuadrangulationSubdivision::execute() {
   }
 
   // compute valence of every quadrangle vertex
-  outputValences_->resize(outputPoints_->size());
+  outputValences_.resize(outputPoints_.size());
   std::transform(
-    quadNeighbors_.begin(), quadNeighbors_.end(), outputValences_->begin(),
+    quadNeighbors_.begin(), quadNeighbors_.end(), outputValences_.begin(),
     [&](const std::set<size_t> &neighbors) { return neighbors.size(); });
 
   {
     std::stringstream msg;
-    msg << MODULE_S "Produced " << outputQuads_->size() << " quadrangles with "
-        << outputPoints_->size() << " points in " << t.getElapsedTime()
+    msg << MODULE_S "Produced " << outputQuads_.size() << " quadrangles with "
+        << outputPoints_.size() << " points in " << t.getElapsedTime()
         << " s. (" << threadNumber_ << " thread(s))." << endl;
     dMsg(cout, msg.str(), infoMsg);
   }

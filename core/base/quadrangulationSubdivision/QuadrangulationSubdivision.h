@@ -24,7 +24,21 @@ namespace ttk {
 
   public:
     // default constructor
-    QuadrangulationSubdivision() = default;
+    QuadrangulationSubdivision() = delete;
+    QuadrangulationSubdivision(std::vector<long long> &outQuads,
+                               std::vector<float> &outPoints,
+                               std::vector<SimplexId> &outVals,
+                               std::vector<SimplexId> &outVertTypes,
+                               std::vector<SimplexId> &outSubd,
+                               std::vector<SimplexId> &trChecked,
+                               std::vector<SimplexId> &projSucc)
+      : outputQuads_{reinterpret_cast<std::vector<Quad> &>(outQuads)},
+        outputPoints_{reinterpret_cast<std::vector<Point> &>(outPoints)},
+        outputValences_{outVals}, outputVertType_{outVertTypes},
+        outputSubdivision_{outSubd}, trianglesChecked_{trChecked},
+        projSucceeded_{projSucc} {
+    }
+
     // default destructor
     ~QuadrangulationSubdivision() override = default;
     // default copy constructor
@@ -33,10 +47,10 @@ namespace ttk {
     QuadrangulationSubdivision(QuadrangulationSubdivision &&) = default;
     // default copy assignment operator
     QuadrangulationSubdivision &operator=(const QuadrangulationSubdivision &)
-      = default;
+      = delete;
     // default move assignment operator
     QuadrangulationSubdivision &operator=(QuadrangulationSubdivision &&)
-      = default;
+      = delete;
 
     inline void setSubdivisionLevel(const unsigned int value) {
       subdivisionLevel_ = value;
@@ -77,28 +91,6 @@ namespace ttk {
         triangulation_->preprocessVertexTriangles();
       }
     }
-    inline void setOutputQuads(std::vector<long long> *const quads) {
-      outputQuads_ = reinterpret_cast<std::vector<Quad> *>(quads);
-    }
-    inline void setOutputPoints(std::vector<float> *const address) {
-      outputPoints_ = reinterpret_cast<std::vector<Point> *>(address);
-    }
-    inline void setOutputValences(std::vector<SimplexId> *const address) {
-      outputValences_ = address;
-    }
-    inline void setOutputInfos(std::vector<SimplexId> *const address) {
-      outputVertType_ = address;
-    }
-    inline void setOutputSubdivision(std::vector<SimplexId> *const address) {
-      outputSubdivision_ = address;
-    }
-    inline void setTrianglesChecked(std::vector<SimplexId> *const address) {
-      trianglesChecked_ = address;
-    }
-    inline void setProjSucceeded(std::vector<SimplexId> *const address) {
-      projSucceeded_ = address;
-    }
-
     int execute();
 
   private:
@@ -285,9 +277,9 @@ namespace ttk {
     Triangulation *triangulation_{};
 
     // array of output quadrangles
-    std::vector<Quad> *outputQuads_{};
+    std::vector<Quad> &outputQuads_;
     // array of output quadrangle vertices
-    std::vector<Point> *outputPoints_{};
+    std::vector<Point> &outputPoints_;
     // array mapping quadrangle neighbors
     std::vector<std::set<size_t>> quadNeighbors_{};
     // array of nearest input vertex TTK identifier
@@ -296,15 +288,15 @@ namespace ttk {
     std::vector<std::vector<float>> vertexDistance_{};
 
     // array of output quadrangle vertex valences
-    std::vector<SimplexId> *outputValences_{};
+    std::vector<SimplexId> &outputValences_;
     // array of output quadrangle vertex type
-    std::vector<SimplexId> *outputVertType_{};
+    std::vector<SimplexId> &outputVertType_;
     // array of output vertex subdivision level
-    std::vector<SimplexId> *outputSubdivision_{};
+    std::vector<SimplexId> &outputSubdivision_;
     // number of triangles checked per quad vertex for the last projection
-    std::vector<SimplexId> *trianglesChecked_{};
+    std::vector<SimplexId> &trianglesChecked_;
     // last projection success per quad vertex
-    std::vector<SimplexId> *projSucceeded_{};
+    std::vector<SimplexId> &projSucceeded_;
   };
 } // namespace ttk
 
