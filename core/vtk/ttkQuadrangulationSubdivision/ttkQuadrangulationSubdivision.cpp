@@ -116,18 +116,24 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   TTK_ABORT_KK(
     res != 0, "QuadrangulationSubdivision.execute() error code: " << res, -3);
 
+  auto &outQuadrangles = baseWorker_.getOutputQuads();
+  auto &outVertices = baseWorker_.getOutputPoints();
+  auto &outVertexValences = baseWorker_.getOutputValences();
+  auto &outVertexType = baseWorker_.getOutputVertType();
+  auto &outSubdvisionLevel = baseWorker_.getOutputSubdivision();
+
   auto cells = vtkSmartPointer<vtkCellArray>::New();
 
-  for(size_t i = 0; i < outQuadrangles_.size() / 5; i++) {
-    cells->InsertNextCell(4, &outQuadrangles_[5 * i + 1]);
+  for(size_t i = 0; i < outQuadrangles.size() / 5; i++) {
+    cells->InsertNextCell(4, &outQuadrangles[5 * i + 1]);
   }
 
   // update output: get quadrangle values
   output->SetCells(VTK_QUAD, cells);
 
   auto points = vtkSmartPointer<vtkPoints>::New();
-  for(size_t i = 0; i < outVertices_.size(); i += 3) {
-    points->InsertNextPoint(&outVertices_[i]);
+  for(size_t i = 0; i < outVertices.size(); i += 3) {
+    points->InsertNextPoint(&outVertices[i]);
   }
 
   // update output: get quadrangle vertices
@@ -136,33 +142,35 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   // add data array of points valences
   auto valences = vtkSmartPointer<vtkIntArray>::New();
   valences->SetName("Valence");
-  valences->SetVoidArray(
-    outVertexValences_.data(), outVertexValences_.size(), 1);
+  valences->SetVoidArray(outVertexValences.data(), outVertexValences.size(), 1);
   output->GetPointData()->AddArray(valences);
 
   // add data array of points infos
   auto infos = vtkSmartPointer<vtkIntArray>::New();
   infos->SetName("Type");
-  infos->SetVoidArray(outVertexType_.data(), outVertexType_.size(), 1);
+  infos->SetVoidArray(outVertexType.data(), outVertexType.size(), 1);
   output->GetPointData()->AddArray(infos);
 
   auto subd = vtkSmartPointer<vtkIntArray>::New();
   subd->SetName("Subdivision");
-  subd->SetVoidArray(outSubdvisionLevel_.data(), outSubdvisionLevel_.size(), 1);
+  subd->SetVoidArray(outSubdvisionLevel.data(), outSubdvisionLevel.size(), 1);
   output->GetPointData()->AddArray(subd);
 
   if(RelaxationIterations > 0) {
+    auto &trianglesChecked = baseWorker_.getTrianglesChecked();
+    auto &projSucceeded = baseWorker_.getProjSucceeded();
+
     // add data array of number of triangles checked
     auto trChecked = vtkSmartPointer<vtkIntArray>::New();
     trChecked->SetName("Triangles checked");
     trChecked->SetVoidArray(
-      trianglesChecked_.data(), trianglesChecked_.size(), 1);
+      trianglesChecked.data(), trianglesChecked.size(), 1);
     output->GetPointData()->AddArray(trChecked);
 
     // add data array of projection success
     auto projSucc = vtkSmartPointer<vtkIntArray>::New();
     projSucc->SetName("Projection");
-    projSucc->SetVoidArray(projSucceeded_.data(), projSucceeded_.size(), 1);
+    projSucc->SetVoidArray(projSucceeded.data(), projSucceeded.size(), 1);
     output->GetPointData()->AddArray(projSucc);
   }
 

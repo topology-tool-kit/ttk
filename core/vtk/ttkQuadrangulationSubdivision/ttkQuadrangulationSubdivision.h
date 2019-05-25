@@ -143,30 +143,6 @@ private:
   // projection method
   bool ReverseProjection{false};
 
-  // output vector of interleaved quadrangles
-  std::vector<vtkIdType> outQuadrangles_{};
-  // output vector of quadrangle vertices
-  std::vector<float> outVertices_{};
-  // output vector of quadrangle vertex valences
-  std::vector<ttk::SimplexId> outVertexValences_{};
-  // output vector of vertex (debug) info
-  // 0 - input (critical) point
-  // 1 - edge middle
-  // 2 - quadrangle barycenter
-  std::vector<ttk::SimplexId> outVertexType_{};
-  // subdivision level that generated the points
-  std::vector<ttk::SimplexId> outSubdvisionLevel_{};
-  // number of triangles checked during last projection
-  std::vector<ttk::SimplexId> trianglesChecked_{};
-  // success of last projection
-  // 0 - not projected (critical point)
-  // 1 - projection alongside quadrangle normal
-  // 2 - projection alongside triangle normal
-  // 3 - failed projection
-  std::vector<ttk::SimplexId> projSucceeded_{};
-
   // base worker object
-  ttk::QuadrangulationSubdivision baseWorker_{
-    outQuadrangles_,     outVertices_,      outVertexValences_, outVertexType_,
-    outSubdvisionLevel_, trianglesChecked_, projSucceeded_};
+  ttk::QuadrangulationSubdivision baseWorker_{};
 };
