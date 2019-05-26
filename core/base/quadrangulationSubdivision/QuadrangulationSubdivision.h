@@ -70,22 +70,6 @@ namespace ttk {
     inline std::vector<float> &getOutputPoints() {
       return reinterpret_cast<std::vector<float> &>(outputPoints_);
     }
-    inline std::vector<SimplexId> &getOutputValences() {
-      return outputValences_;
-    }
-    inline std::vector<SimplexId> &getOutputVertType() {
-      return outputVertType_;
-    }
-    inline std::vector<SimplexId> &getOutputSubdivision() {
-      return outputSubdivision_;
-    }
-    inline std::vector<SimplexId> &getTrianglesChecked() {
-      return trianglesChecked_;
-    }
-    inline std::vector<SimplexId> &getProjSucceeded() {
-      return projSucceeded_;
-    }
-
   private:
     // vtkPoint instance with interleaved coordinates (AoS)
     struct Point {
@@ -280,6 +264,7 @@ namespace ttk {
     // holds geodesic distance to every other quad vertex sharing a quad
     std::vector<std::vector<float>> vertexDistance_{};
 
+  public:
     // array of output quadrangle vertex valences
     std::vector<SimplexId> outputValences_{};
     // array of output quadrangle vertex type
