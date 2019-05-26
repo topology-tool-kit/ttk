@@ -60,15 +60,6 @@ namespace ttk {
         triangulation_->preprocessVertexTriangles();
       }
     }
-    inline std::vector<long long> &getOutputCells() {
-      return outputCells_;
-    }
-    inline std::vector<float> &getOutputPoints() {
-      return outputPoints_;
-    }
-    inline std::vector<SimplexId> &getOutputPointsIds() {
-      return outputPointsIds_;
-    }
 
     int execute();
 
@@ -151,6 +142,7 @@ namespace ttk {
     // if dual quadrangulation
     bool dualQuadrangulation_{false};
 
+  public:
     // array of output polygons
     std::vector<long long> outputCells_{};
     // array of output vertices (generated middles of duplicated separatrices)

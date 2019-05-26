@@ -130,9 +130,9 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   TTK_ABORT_KK(
     res != 0, "SurfaceQuadrangulation.execute() error code: " << res, -9);
 
-  auto &outQuadrangles = surfaceQuadrangulation_.getOutputCells();
-  auto &outQuadPoints = surfaceQuadrangulation_.getOutputPoints();
-  auto &outPointsIds = surfaceQuadrangulation_.getOutputPointsIds();
+  auto &outQuadrangles = surfaceQuadrangulation_.outputCells_;
+  auto &outQuadPoints = surfaceQuadrangulation_.outputPoints_;
+  auto &outPointsIds = surfaceQuadrangulation_.outputPointsIds_;
 
   // output points: critical points + generated separatrices middles
   auto points = vtkSmartPointer<vtkPoints>::New();
