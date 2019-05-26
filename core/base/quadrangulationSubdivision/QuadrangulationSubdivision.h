@@ -23,21 +23,6 @@ namespace ttk {
   class QuadrangulationSubdivision : public Debug {
 
   public:
-    // default constructor
-    QuadrangulationSubdivision() = default;
-    // default destructor
-    ~QuadrangulationSubdivision() override = default;
-    // default copy constructor
-    QuadrangulationSubdivision(const QuadrangulationSubdivision &) = default;
-    // default move constructor
-    QuadrangulationSubdivision(QuadrangulationSubdivision &&) = default;
-    // default copy assignment operator
-    QuadrangulationSubdivision &operator=(const QuadrangulationSubdivision &)
-      = default;
-    // default move assignment operator
-    QuadrangulationSubdivision &operator=(QuadrangulationSubdivision &&)
-      = default;
-
     inline void setSubdivisionLevel(const unsigned int value) {
       subdivisionLevel_ = value;
     }
