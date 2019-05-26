@@ -22,19 +22,6 @@ namespace ttk {
   class SurfaceQuadrangulation : public Debug {
 
   public:
-    // default constructor
-    SurfaceQuadrangulation() = default;
-    // default destructor
-    ~SurfaceQuadrangulation() override = default;
-    // default copy constructor
-    SurfaceQuadrangulation(const SurfaceQuadrangulation &) = default;
-    // default move constructor
-    SurfaceQuadrangulation(SurfaceQuadrangulation &&) = default;
-    // default copy assignment operator
-    SurfaceQuadrangulation &operator=(const SurfaceQuadrangulation &) = default;
-    // default move assignment operator
-    SurfaceQuadrangulation &operator=(SurfaceQuadrangulation &&) = default;
-
     inline void setCriticalPoints(const unsigned int number,
                                   void *const points,
                                   void *const ids,
