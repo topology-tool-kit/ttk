@@ -221,7 +221,6 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
 
       if (!pointDataWritten) {
           this->WritePointData(points, NULL, NULL, colors, fp);
-          pointDataWritten = 1;
       }
       else {
           fprintf(fp, "            coord  USE VTKcoordinates\n");

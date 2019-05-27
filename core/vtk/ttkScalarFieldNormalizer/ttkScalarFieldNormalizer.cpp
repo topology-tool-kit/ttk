@@ -220,9 +220,11 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output){
         outputScalarField_ = vtkIdTypeArray::New();
         break;
         
+    default:
       stringstream msg;
       msg << "[ttkScalarFieldNormalizer] Unsupported data type :(" << endl;
       dMsg(cerr, msg.str(), fatalMsg);
+      return -2;
     }
     outputScalarField_->SetNumberOfTuples(input->GetNumberOfPoints());
     outputScalarField_->SetName(inputScalarField->GetName());

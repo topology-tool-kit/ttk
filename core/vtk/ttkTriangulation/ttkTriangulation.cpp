@@ -42,6 +42,8 @@ int ttkTriangulation::deepCopy(vtkDataObject *other){
     // the other object has already been enhanced 
     // copy the triangulation object from the other
     (*triangulation_) = *(otherTriangulation->triangulation_);
+  } else {
+    triangulation_ = nullptr;
   }
   
   // populate the data-structure

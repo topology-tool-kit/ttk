@@ -319,6 +319,11 @@ void MergeTree::processVertex(const SimplexId &             currentVertex,
       }
 
    } else {
+#ifndef TTK_ENABLE_KAMIKAZE
+     if (seed == nullptr) {
+         return;
+      }
+#endif //TTK_ENABLE_KAMIKAZE
       // regular node
       currentArc = (idSuperArc)seed->find()->getData();
       updateCorrespondingArc(currentVertex, currentArc);

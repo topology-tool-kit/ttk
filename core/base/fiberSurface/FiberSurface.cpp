@@ -414,7 +414,6 @@ int FiberSurface::computeTriangleIntersection(const SimplexId &tetId,
     p0a.data(), p1a.data())){
     if(!foundA){
       pA = p1b;
-      foundA = true;
     }
     else if(!foundB){
       // check it's far enough from pA
@@ -422,7 +421,6 @@ int FiberSurface::computeTriangleIntersection(const SimplexId &tetId,
         ||(fabs(pA[1] - p1b[1]) > pow10(-DBL_DIG+4))
         ||(fabs(pA[2] - p1b[2]) > pow10(-DBL_DIG+4))){
         pB = p1b;
-        foundB = true;
       }
     }
   }

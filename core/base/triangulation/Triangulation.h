@@ -97,6 +97,9 @@ namespace ttk{
         const int &localEdgeId, SimplexId &edgeId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        edgeId = -1;
+
         if(isEmptyCheck())
           return -1;
         
@@ -245,6 +248,9 @@ namespace ttk{
         const int &localNeighborId, SimplexId &neighborId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        neighborId = -1;
+
         if(isEmptyCheck())
           return -1;
         
@@ -370,6 +376,9 @@ namespace ttk{
         const int &localTriangleId, SimplexId &triangleId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        triangleId = -1;
+
         if(isEmptyCheck())
           return -1;
         
@@ -523,6 +532,9 @@ namespace ttk{
         const int &localVertexId, SimplexId &vertexId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        vertexId = -1;
+
         if(isEmptyCheck())
           return -1;
 #endif
@@ -626,6 +638,9 @@ namespace ttk{
       inline int getEdgeLink(const SimplexId &edgeId, 
         const int &localLinkId, SimplexId &linkId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        linkId = -1;
+
         if(isEmptyCheck())
           return -1;
           
@@ -756,6 +771,9 @@ namespace ttk{
       inline int getEdgeStar(const SimplexId &edgeId,
         const int &localStarId, SimplexId &starId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        starId = -1;
+
         if(isEmptyCheck())
           return -1;
         
@@ -892,6 +910,9 @@ namespace ttk{
         const int &localTriangleId, SimplexId &triangleId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        triangleId = -1;
+
         if(isEmptyCheck())
           return -1;
           
@@ -1043,6 +1064,9 @@ namespace ttk{
       inline int getEdgeVertex(const SimplexId &edgeId, 
         const int &localVertexId, SimplexId &vertexId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        vertexId = -1;
+
         if(isEmptyCheck())
           return -1;
         
@@ -1259,6 +1283,9 @@ namespace ttk{
       inline int getTriangleEdge(const SimplexId &triangleId, 
         const int &localEdgeId, SimplexId &edgeId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        edgeId = -1;
+
         if(isEmptyCheck())
           return -1;
         
@@ -1410,6 +1437,9 @@ namespace ttk{
       inline int getTriangleLink(const SimplexId &triangleId, 
         const int &localLinkId, SimplexId &linkId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        linkId = -1;
+
         if(isEmptyCheck())
           return -1;
           
@@ -1540,6 +1570,9 @@ namespace ttk{
       inline int getTriangleStar(const SimplexId &triangleId,
         const int &localStarId, SimplexId &starId) const{
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        starId = -1;
+
         if(isEmptyCheck())
           return -1;
           
@@ -1668,6 +1701,9 @@ namespace ttk{
         const int &localVertexId, SimplexId &vertexId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        vertexId = -1;
+
         if(isEmptyCheck())
           return -1;
         
@@ -1719,6 +1755,9 @@ namespace ttk{
         const int &localEdgeId, SimplexId &edgeId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        edgeId = -1;
+
         if(isEmptyCheck())
           return -1;
           
@@ -1863,6 +1902,9 @@ namespace ttk{
         const int &localLinkId, SimplexId &linkId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        linkId = -1;
+
         if(isEmptyCheck())
           return -1;
           
@@ -1982,6 +2024,9 @@ namespace ttk{
         const int &localNeighborId, SimplexId &neighborId) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        neighborId = -1;
+
         if(isEmptyCheck())
           return -1;
           
@@ -2086,6 +2131,11 @@ namespace ttk{
         float &x, float &y, float &z) const{
           
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variables before early return
+        x = NAN;
+        y = NAN;
+        z = NAN;
+
         if(isEmptyCheck())
           return -1;
 #endif
@@ -2116,6 +2166,9 @@ namespace ttk{
         const int &localStarId, SimplexId &starId) const{
         
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        starId = -1;
+
         if(isEmptyCheck())
           return -1;
           
@@ -2238,6 +2291,9 @@ namespace ttk{
         const int &localTriangleId, SimplexId &triangleId) const{
          
 #ifndef TTK_ENABLE_KAMIKAZE
+        // initialize output variable before early return
+        triangleId = -1;
+
         if(isEmptyCheck())
           return -1;
           

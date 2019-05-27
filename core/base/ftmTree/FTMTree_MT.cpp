@@ -1116,13 +1116,13 @@ void FTMTree_MT::printParams(void) const
 
 int FTMTree_MT::printTime(DebugTimer &t, const string &s, SimplexId nbScalars, const int debugLevel) const
 {
-   if (nbScalars == -1) {
-      nbScalars = scalars_->size;
-   }
 
    if (debugLevel_ >= debugLevel) {
       stringstream st;
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
+      if (nbScalars == -1) {
+         nbScalars = scalars_->size;
+      }
       int          speed = nbScalars / t.getElapsedTime();
 #endif
       for (int i = 3; i < debugLevel; i++)
