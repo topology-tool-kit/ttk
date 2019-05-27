@@ -417,6 +417,9 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // store current number of quads
   auto nquads = outputCells_.size() / 5;
 
+  // store points that face a tube ending
+  std::set<SimplexId> facingPointsIds{};
+
   // subdivise quadrangles
   for(size_t i = 0; i < nquads; ++i) {
     auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i + 1]);
@@ -437,17 +440,98 @@ int ttk::SurfaceQuadrangulation::postProcess() {
       // from i to l
       generateNewQuads(q, q->i, q->j, q->k, q->l, ij, kl);
     } else if(points2Seps.find(ij) != pse) {
-      fixCurrentQuad(q, q->i, q->j, q->k, q->l, ij);
+      facingPointsIds.emplace(qk);
+      facingPointsIds.emplace(ql);
+      // fixCurrentQuad(q, q->i, q->j, q->k, q->l, ij);
     } else if(points2Seps.find(kl) != pse) {
-      fixCurrentQuad(q, q->k, q->l, q->i, q->j, kl);
+      facingPointsIds.emplace(qi);
+      facingPointsIds.emplace(qj);
+      // fixCurrentQuad(q, q->k, q->l, q->i, q->j, kl);
     }
     if(points2Seps.find(jk) != pse && points2Seps.find(li) != pse) {
       // rotated: from j to i
       generateNewQuads(q, q->j, q->k, q->l, q->i, jk, li);
     } else if(points2Seps.find(jk) != pse) {
-      fixCurrentQuad(q, q->j, q->k, q->l, q->i, jk);
+      facingPointsIds.emplace(ql);
+      facingPointsIds.emplace(qi);
+      // fixCurrentQuad(q, q->j, q->k, q->l, q->i, jk);
     } else if(points2Seps.find(li) != pse) {
-      fixCurrentQuad(q, q->l, q->i, q->j, q->k, li);
+      facingPointsIds.emplace(qj);
+      facingPointsIds.emplace(qk);
+      // fixCurrentQuad(q, q->l, q->i, q->j, q->k, li);
+    }
+  }
+
+  // clusters of points facing tube endings
+  std::vector<std::set<SimplexId>> facingPointsClustered{};
+
+  for(size_t i = 0; i < sepFlatEdgesPos.size() / 2; ++i) {
+    auto sepBeg = sepFlatEdgesPos[2 * i].second;
+    auto sepEnd = sepFlatEdgesPos[2 * i + 1].second;
+    auto foundSepBeg = facingPointsIds.find(sepBeg) != facingPointsIds.end();
+    auto foundSepEnd = facingPointsIds.find(sepEnd) != facingPointsIds.end();
+    if(foundSepBeg && foundSepEnd) {
+      bool inserted = false;
+      for(auto &s : facingPointsClustered) {
+        if(s.find(sepBeg) != s.end()) {
+          s.insert(sepEnd);
+          inserted = true;
+        } else if(s.find(sepEnd) != s.end()) {
+          s.insert(sepBeg);
+          inserted = true;
+        }
+      }
+      if(!inserted) {
+        std::set<SimplexId> ids{sepBeg, sepEnd};
+        facingPointsClustered.emplace_back(ids);
+      }
+    }
+  }
+
+  // bounds of duplicate separatrices
+  std::set<SimplexId> dupSepPoints{};
+
+  for(const auto &p : dupSep) {
+    dupSepPoints.insert(p.first.second);
+    dupSepPoints.insert(p.second.second);
+  }
+
+  // find the fourth point
+  for(size_t i = 0; i < nquads; ++i) {
+    auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i + 1]);
+
+    std::array<SimplexId, 4> quadVertices{
+      criticalPointsCellIds_[q->i], criticalPointsCellIds_[q->j],
+      criticalPointsCellIds_[q->k], criticalPointsCellIds_[q->l]};
+
+    auto nVertsDup = std::count_if(
+      quadVertices.begin(), quadVertices.end(), [&](const SimplexId a) {
+        return dupSepPoints.find(a) != dupSepPoints.end();
+      });
+
+    if(nVertsDup != 1) {
+      continue;
+    }
+
+    for(auto &s : facingPointsClustered) {
+      if(s.size() == 4) {
+        continue;
+      }
+
+      auto nVertsFacing = std::count_if(
+        quadVertices.begin(), quadVertices.end(),
+        [&](const SimplexId a) { return s.find(a) != s.end(); });
+      if(nVertsFacing != 2) {
+        continue;
+      }
+
+      auto fourthVert = std::find_if(
+        quadVertices.begin(), quadVertices.end(), [&](const SimplexId a) {
+          return dupSepPoints.find(a) == dupSepPoints.end()
+                 && s.find(a) == s.end();
+        });
+
+      s.insert(*fourthVert);
     }
   }
 
