@@ -187,7 +187,7 @@ class ttkContourForests
     bool isLoaded_;
     bool lessPartition_;
     ttk::cf::MergeTree* tree_;
-    ttk::cf::ContourForests* contourTree_;
+    ttk::cf::ContourForests contourTree_;
     vtkPolyData* skeletonNodes_;
     vtkPolyData* skeletonArcs_;
     vtkDataSet* segmentation_;

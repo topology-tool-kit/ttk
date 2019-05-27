@@ -17,7 +17,7 @@ ttkContourForests::ttkContourForests()
     // Here the given number of core only serve for preprocess,
     // a clean tree append before the true process and re-set
     // the good number of threads
-    contourTree_{new ContourForests()},
+    contourTree_{},
     skeletonNodes_{vtkPolyData::New()},
     skeletonArcs_{vtkPolyData::New()},
     segmentation_{},
@@ -53,8 +53,8 @@ ttkContourForests::ttkContourForests()
     deltaScalar_{},
     numberOfVertices_{}
 {
-  contourTree_->setWrapper(this);
-  contourTree_->setDebugLevel(debugLevel_);
+  contourTree_.setWrapper(this);
+  contourTree_.setDebugLevel(debugLevel_);
   UseAllCores = false;
   useInputOffsetScalarField_ = false;
   SetTreeType(2);
@@ -76,7 +76,6 @@ ttkContourForests::ttkContourForests()
 ttkContourForests::~ttkContourForests()
 {
   // Base //
-  delete contourTree_;
   if(skeletonNodes_)
     skeletonNodes_->Delete();
   if(skeletonArcs_)
@@ -107,10 +106,8 @@ void ttkContourForests::clearSegmentation()
 void ttkContourForests::clearTree()
 {
   tree_ = nullptr;
-  delete contourTree_;
-  contourTree_ = new ContourForests();
-  contourTree_->setWrapper(this);
-  contourTree_->setDebugLevel(debugLevel_);
+  contourTree_.setWrapper(this);
+  contourTree_.setDebugLevel(debugLevel_);
 }
 
 // transmit abort signals -- to copy paste in other wrappers
@@ -1405,28 +1402,24 @@ void ttkContourForests::getTree()
 {
   setDebugLevel(debugLevel_);
   // sequential params
-  contourTree_->setDebugLevel(debugLevel_);
-  contourTree_->setupTriangulation(triangulation_);
-  contourTree_->setVertexScalars(
+  contourTree_.setDebugLevel(debugLevel_);
+  contourTree_.setupTriangulation(triangulation_);
+  contourTree_.setVertexScalars(
       vtkInputScalars_->GetVoidPointer(0));
   if(!vertexSoSoffsets_.empty()){
-    contourTree_->setVertexSoSoffsets(vertexSoSoffsets_);
+    contourTree_.setVertexSoSoffsets(vertexSoSoffsets_);
   }
-  contourTree_->setTreeType(treeType_);
+  contourTree_.setTreeType(treeType_);
   // parallel params
-  contourTree_->setLessPartition(lessPartition_);
-  contourTree_->setThreadNumber(threadNumber_);
-  contourTree_->setPartitionNum(partitionNum_);
+  contourTree_.setLessPartition(lessPartition_);
+  contourTree_.setThreadNumber(threadNumber_);
+  contourTree_.setPartitionNum(partitionNum_);
   // simplification params
-  contourTree_->setSimplificationMethod(simplificationType_);
-  contourTree_->setSimplificationThreshold(simplificationThreshold_);
+  contourTree_.setSimplificationMethod(simplificationType_);
+  contourTree_.setSimplificationThreshold(simplificationThreshold_);
   // build
   switch(vtkInputScalars_->GetDataType()){
-// #ifndef _MSC_VER
-// 	  vtkTemplateMacro(({ contourTree_->build<VTK_TT>(); }));
-// #else
-	  vtkTemplateMacro({ contourTree_->build<VTK_TT>(); });
-// #endif
+    vtkTemplateMacro(contourTree_.build<VTK_TT>());
   }
 
   // ce qui est fait n'est plus à faire
@@ -1438,17 +1431,17 @@ void ttkContourForests::updateTree()
   // polymorphic tree
   switch (treeType_) {
     case TreeType::Join:
-      tree_ = contourTree_->getJoinTree();
+      tree_ = contourTree_.getJoinTree();
       break;
     case TreeType::Split:
-      tree_ = contourTree_->getSplitTree();
+      tree_ = contourTree_.getSplitTree();
       break;
     case TreeType::JoinAndSplit:
-      tree_ = contourTree_->getJoinTree();
-      tree_ = contourTree_->getSplitTree();
+      tree_ = contourTree_.getJoinTree();
+      tree_ = contourTree_.getSplitTree();
       break;
     case TreeType::Contour:
-      tree_ = contourTree_;
+      tree_ = &contourTree_;
       break;
   }
 
