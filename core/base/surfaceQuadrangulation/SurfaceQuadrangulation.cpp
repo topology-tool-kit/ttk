@@ -415,10 +415,10 @@ int ttk::SurfaceQuadrangulation::postProcess() {
       };
 
   // store current number of quads
-  auto nquads = outputCells_.size();
+  auto nquads = outputCells_.size() / 5;
 
   // subdivise quadrangles
-  for(size_t i = 0; i < nquads / 5; ++i) {
+  for(size_t i = 0; i < nquads; ++i) {
     auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i + 1]);
     // bounds indices in separatrices array
     auto qi = criticalPointsCellIds_[q->i];
