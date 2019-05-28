@@ -2,9 +2,46 @@
 #include <SurfaceQuadrangulation.h>
 #include <cmath>
 #include <queue>
-#include <set>
 
-bool ttk::SurfaceQuadrangulation::hasCommonManifold(
+std::set<ttk::SimplexId>
+  ttk::SurfaceQuadrangulation::manifoldsAround(const SimplexId vert) const {
+
+  // set of manifolds indices around vert
+  std::set<SimplexId> manifolds{};
+  // set of processed neighbors
+  std::set<SimplexId> processedNeighbors{};
+  // queue of neighbors to process
+  std::queue<SimplexId> neighborsToProcess{};
+  // maximum number of neighbors to process
+  const size_t maxProcessedNeighbors = 20;
+
+  neighborsToProcess.push(vert);
+
+  // search in a neighborhood around vert to store the manifolds
+  // indices of the encountered neighbors
+
+  while(!neighborsToProcess.empty()) {
+    auto curr = neighborsToProcess.front();
+    neighborsToProcess.pop();
+    manifolds.insert(segmentation_[curr]);
+    processedNeighbors.insert(curr);
+    auto nneigh = triangulation_->getVertexNeighborNumber(vert);
+    for(SimplexId j = 0; j < nneigh; ++j) {
+      SimplexId next;
+      triangulation_->getVertexNeighbor(curr, j, next);
+      if(processedNeighbors.find(next) == processedNeighbors.end()) {
+        neighborsToProcess.push(next);
+      }
+    }
+    if(processedNeighbors.size() > maxProcessedNeighbors) {
+      break;
+    }
+  }
+
+  return manifolds;
+}
+
+std::set<ttk::SimplexId> ttk::SurfaceQuadrangulation::commonManifolds(
   const std::vector<size_t> &verts) const {
 
   // get the manifold of every neighbors of our input vector points
@@ -16,32 +53,8 @@ bool ttk::SurfaceQuadrangulation::hasCommonManifold(
   std::transform(verts.begin(), verts.end(), vertsId.begin(),
                  [&](size_t a) { return criticalPointsIdentifier_[a]; });
 
-  // iterate around a neighborhood around the critical points to store
-  // their manifold index
   for(size_t i = 0; i < verts.size(); ++i) {
-
-    std::set<SimplexId> processedNeighbors;
-    std::queue<SimplexId> neighborsToProcess;
-
-    neighborsToProcess.push(vertsId[i]);
-
-    while(!neighborsToProcess.empty()) {
-      auto curr = neighborsToProcess.front();
-      neighborsToProcess.pop();
-      common_manifolds[i].insert(segmentation_[curr]);
-      processedNeighbors.insert(curr);
-      auto nneigh = triangulation_->getVertexNeighborNumber(vertsId[i]);
-      for(SimplexId j = 0; j < nneigh; ++j) {
-        SimplexId next;
-        triangulation_->getVertexNeighbor(curr, j, next);
-        if(processedNeighbors.find(next) == processedNeighbors.end()) {
-          neighborsToProcess.push(next);
-        }
-      }
-      if(processedNeighbors.size() > 20) {
-        break;
-      }
-    }
+    common_manifolds[i] = manifoldsAround(vertsId[i]);
   }
 
   // intersect every set to get a unique common manifold
@@ -70,7 +83,7 @@ bool ttk::SurfaceQuadrangulation::hasCommonManifold(
     dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
 
-  return !last.empty();
+  return last;
 }
 
 int ttk::SurfaceQuadrangulation::dualQuadrangulate(
@@ -200,7 +213,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(
             // saddle points only seems to be sufficient)
             std::vector<size_t> verts{j, l};
 
-            bool validQuad = hasCommonManifold(verts);
+            bool validQuad = !commonManifolds(verts).empty();
 
             // fill output vector
             if(validQuad) {
