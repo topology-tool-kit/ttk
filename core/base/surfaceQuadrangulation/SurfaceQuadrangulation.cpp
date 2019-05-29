@@ -394,31 +394,31 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
   }
 
   // index in separatrices point data array of separatrix middle
-  auto id = a + std::min_element(distFromA.begin(), distFromA.end())
-            - distFromA.begin();
+  auto pos = a + std::min_element(distFromA.begin(), distFromA.end())
+             - distFromA.begin();
 
   // new point!
-  outputPoints_.emplace_back(sepPoints_[dim * id]);
-  outputPoints_.emplace_back(sepPoints_[dim * id + 1]);
-  outputPoints_.emplace_back(sepPoints_[dim * id + 2]);
+  outputPoints_.emplace_back(sepPoints_[dim * pos]);
+  outputPoints_.emplace_back(sepPoints_[dim * pos + 1]);
+  outputPoints_.emplace_back(sepPoints_[dim * pos + 2]);
+
+  SimplexId id = pos;
 
   // new point identifier (on the triangular mesh)
-  switch(sepCellDims_[id]) {
+  switch(sepCellDims_[pos]) {
     case 0:
-      outputPointsIds_.emplace_back(sepCellIds_[id]);
+      outputPointsIds_.emplace_back(sepCellIds_[pos]);
       break;
     case 1: {
       // take the first vertex of the edge
-      SimplexId pos;
-      triangulation_->getEdgeVertex(sepCellIds_[id], 0, pos);
-      outputPointsIds_.emplace_back(pos);
+      triangulation_->getEdgeVertex(sepCellIds_[pos], 0, id);
+      outputPointsIds_.emplace_back(id);
       break;
     }
     case 2: {
       // take the first vertex of the triangle
-      SimplexId pos;
-      triangulation_->getTriangleVertex(sepCellIds_[id], 0, pos);
-      outputPointsIds_.emplace_back(pos);
+      triangulation_->getTriangleVertex(sepCellIds_[pos], 0, id);
+      outputPointsIds_.emplace_back(id);
       break;
     }
     default:
