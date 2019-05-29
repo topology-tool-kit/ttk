@@ -25,7 +25,7 @@ std::set<ttk::SimplexId>
     neighborsToProcess.pop();
     manifolds.insert(segmentation_[curr]);
     processedNeighbors.insert(curr);
-    auto nneigh = triangulation_->getVertexNeighborNumber(vert);
+    auto nneigh = triangulation_->getVertexNeighborNumber(curr);
     for(SimplexId j = 0; j < nneigh; ++j) {
       SimplexId next;
       triangulation_->getVertexNeighbor(curr, j, next);
