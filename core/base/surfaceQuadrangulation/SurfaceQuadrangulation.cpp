@@ -324,7 +324,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   auto nquads = outputCells_.size() / 5;
 
   // if vertex is on a separatrix
-  std::vector<bool> onSep(triangulation_->getNumberOfVertices(), false);
+  std::vector<bool> onSep(segmentationNumber_, false);
 
   // iterate over separatrices lines to fill in onSep vector
   for(SimplexId i = 0; i < separatriceNumber_; ++i) {
@@ -337,31 +337,95 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     }
   }
 
-  // subdivise quadrangles
+  // rectified Morse-Smale cells
+  std::vector<SimplexId> morseManRect(segmentationNumber_, -1);
+
+  // number of Morse-Smale cells
+  auto maxManId = 0;
+  // compute max of manifold indices
+  for(size_t a = 0; a < segmentationNumber_; ++a) {
+    if(segmentation_[a] >= maxManId) {
+      maxManId = segmentation_[a] + 1;
+    }
+  }
+
+  // rectify Morse-Smale cells indices
   for(size_t i = 0; i < nquads; ++i) {
     auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i + 1]);
     // bounds indices in separatrices array
-    auto qi = criticalPointsCellIds_[q->i];
-    auto qj = criticalPointsCellIds_[q->j];
-    auto qk = criticalPointsCellIds_[q->k];
-    auto ql = criticalPointsCellIds_[q->l];
+    std::vector<SimplexId> qVerts{
+      criticalPointsCellIds_[q->i], criticalPointsCellIds_[q->j],
+      criticalPointsCellIds_[q->k], criticalPointsCellIds_[q->l]};
 
-    // edges (sep sources before dests)
-    auto ij = std::make_pair(qj, qi);
-    auto jk = std::make_pair(qj, qk);
-    auto kl = std::make_pair(ql, qk);
-    auto li = std::make_pair(ql, qi);
+    auto nDupVerts
+      = std::count_if(qVerts.begin(), qVerts.end(), [&](const SimplexId a) {
+          return dupSepPoints.find(a) != dupSepPoints.end();
+        });
 
-    auto pse = points2Seps.end();
-    if(points2Seps.find(ij) != pse && points2Seps.find(kl) != pse) {
-      // from i to l
-
-      // breadth-first search from a saddle point
-    }
-    if(points2Seps.find(jk) != pse && points2Seps.find(li) != pse) {
-      // rotated: from j to i
+    if(nDupVerts == 4) {
+      auto saddles = std::vector<size_t>{
+        static_cast<size_t>(q->j), static_cast<size_t>(q->l)};
+      rectifyManifoldIndex(
+        morseManRect, onSep, *commonManifolds(saddles).begin(), maxManId);
     }
   }
+
+  // fill in the rest of the segmentation
+  for(size_t i = 0; i < segmentationNumber_; ++i) {
+    if(morseManRect[i] == -1) {
+      morseManRect[i] = segmentation_[i];
+    }
+  }
+
+  return 0;
+}
+
+int ttk::SurfaceQuadrangulation::rectifyManifoldIndex(
+  std::vector<SimplexId> &morseManRect,
+  const std::vector<bool> &onSep,
+  const SimplexId sharedManifold,
+  SimplexId &maxManifoldId) const {
+
+  std::queue<SimplexId> toProcess{};
+
+  // look for the first vertex meeting constraints
+  for(size_t i = 0; i < segmentationNumber_; ++i) {
+    if(segmentation_[i] == sharedManifold && !onSep[i]
+       && morseManRect[i] == -1) {
+      toProcess.push(i);
+      break;
+    }
+  }
+
+  auto isCandidate = [&](const SimplexId a) {
+    return segmentation_[a] == sharedManifold && !onSep[a]
+           && morseManRect[a] == -1;
+  };
+
+  // breadth-first search
+  while(!toProcess.empty()) {
+    auto curr = toProcess.front();
+    toProcess.pop();
+
+    if(!isCandidate(curr)) {
+      continue;
+    }
+
+    morseManRect[curr] = maxManifoldId;
+
+    auto nneigh = triangulation_->getVertexNeighborNumber(curr);
+    for(SimplexId j = 0; j < nneigh; ++j) {
+      SimplexId next;
+      triangulation_->getVertexNeighbor(curr, j, next);
+
+      if(isCandidate(next)) {
+        toProcess.push(next);
+      }
+    }
+  }
+
+  // update total number of cells
+  maxManifoldId++;
 
   return 0;
 }
