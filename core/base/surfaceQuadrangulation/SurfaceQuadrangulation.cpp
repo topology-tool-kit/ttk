@@ -431,10 +431,6 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
 // main routine
 int ttk::SurfaceQuadrangulation::execute() {
 
-  using std::cout;
-  using std::endl;
-  using std::vector;
-
   Timer t;
 
   // clear output
@@ -465,8 +461,8 @@ int ttk::SurfaceQuadrangulation::execute() {
   if(sepFlatEdges.size() % 2 != 0) {
     std::stringstream msg;
     msg << "[SurfaceQuadrangulation] Error: odd number of separatrices edges"
-        << endl;
-    dMsg(cout, msg.str(), infoMsg);
+        << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
     return -1;
   }
 
@@ -507,15 +503,15 @@ int ttk::SurfaceQuadrangulation::execute() {
   {
     std::stringstream msg;
     msg << "[SurfaceQuadrangulation] " << quadNumber << " quads (" << ndegen
-        << " degenerated, " << nseg << " manifolds)" << endl;
-    dMsg(cout, msg.str(), detailedInfoMsg);
+        << " degenerated, " << nseg << " manifolds)" << std::endl;
+    dMsg(std::cout, msg.str(), detailedInfoMsg);
   }
 
   {
     std::stringstream msg;
     msg << "[SurfaceQuadrangulation] Produced " << quadNumber
-        << " quadrangles after " << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), infoMsg);
+        << " quadrangles after " << t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
   }
 
   return 0;
