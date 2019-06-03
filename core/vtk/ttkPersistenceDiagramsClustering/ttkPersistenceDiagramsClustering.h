@@ -272,11 +272,12 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(
     dataType value2 = (!deathScalars) ? (dataType) y2 :
                       (dataType) deathScalars->GetValue(2*i+1);
     
-    if(value1 > max_dimension)  max_dimension = value1;
-    if(value2 > max_dimension)  max_dimension = value2;
+    // if(value1 > max_dimension)  max_dimension = value1;
+    // if(value2 > max_dimension)  max_dimension = value2;
 
     if (pairIdentifier != -1 && pairIdentifier < pairingsSize){
         if(pairIdentifier ==0){
+	    max_dimension = (dataType) persistence;
             diagram->at(0) = std::make_tuple(
                 vertexId1, (BNodeType) 1,
                 vertexId2, (BNodeType) 3,

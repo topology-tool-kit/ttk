@@ -25,6 +25,9 @@ namespace ttk{
 			epsilon_min_ = 1e-5;
 			epsilon_.resize(3);
 			precision_criterion_ = false;
+			precision_min_ = false;
+			precision_sad_ = false;
+			precision_max_ = false;
 			cost_min_=0;
 			cost_max_=0;
 			cost_sad_=0;
@@ -56,6 +59,8 @@ namespace ttk{
 		void initializeCentroidsKMeanspp();
 		void initializeAcceleratedKMeans();
 		void initializeBarycenterComputers();
+		void printDistancesToFile();
+		void printPricesToFile(int);
 
         std::vector<dataType> enrichCurrentBidderDiagrams(std::vector<dataType> previous_min_persistence, 
 		        std::vector<dataType> min_persistence, 
@@ -150,7 +155,7 @@ namespace ttk{
     inline void setDebugLevel(const int debugLevel){
       debugLevel_ = debugLevel;
     }
-
+  
     inline void printClustering(){
 		for(int c=0; c<k_; ++c){
 			std::cout<<"Cluster "<< c << " : [";
@@ -195,6 +200,9 @@ namespace ttk{
 
     bool 	barycenter_inputs_reset_flag;
     bool	precision_criterion_;
+    bool	precision_max_;
+    bool	precision_min_;
+    bool	precision_sad_;
     bool           deterministic_;
 	  int 					wasserstein_;
 	  double                geometrical_factor_;

@@ -35,11 +35,11 @@ namespace ttk{
 			coords_y_ = 0;
 			coords_z_ = 0;
 			is_diagonal_ = false;
-      geom_pair_length_ = new double[3];
-      geom_pair_length_[0] = 0;
-      geom_pair_length_[1] = 0;
-      geom_pair_length_[2] = 0;
-  		}
+                        // geom_pair_length_.resize(3);
+                        // geom_pair_length_[0] = 0;
+                        // geom_pair_length_[1] = 0;
+                        // geom_pair_length_[2] = 0;
+                }
 
 		AuctionActor(dataType x, dataType y, bool is_diagonal, int id) {
 			id_ = id;
@@ -51,13 +51,13 @@ namespace ttk{
 			coords_y_ = 0;
 			coords_z_ = 0;
 
-      geom_pair_length_ = new double[3];
-      geom_pair_length_[0] = 0;
-      geom_pair_length_[1] = 0;
-      geom_pair_length_[2] = 0;
-		}
-		~AuctionActor() {
-		    // delete geom_pair_length_;
+                        // geom_pair_length_.resize(3);
+                        // geom_pair_length_[0] = 0;
+                        // geom_pair_length_[1] = 0;
+                        // geom_pair_length_[2] = 0;
+                }
+                ~AuctionActor() {
+		    //delete geom_pair_length_;
 		};
 
 
@@ -82,7 +82,7 @@ namespace ttk{
 
 	protected:
 		bool is_diagonal_;
-    double* geom_pair_length_;
+		std::array<double,3> geom_pair_length_{};
 
 
 

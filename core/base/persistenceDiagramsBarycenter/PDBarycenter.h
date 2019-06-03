@@ -22,7 +22,7 @@ namespace ttk{
             threadNumber_ = 1;
             use_progressive_ = true;
             time_limit_ = std::numeric_limits<double>::max();
-            epsilon_min_ = 1e-6;
+            epsilon_min_ = 5e-7;
             reinit_prices_=true;
             deterministic_ = false;
             epsilon_decreases_=true;
@@ -88,7 +88,7 @@ namespace ttk{
 		dataType updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings);
 
 		dataType computeRealCost();
-        bool isPrecisionObjectiveMet();
+        bool isPrecisionObjectiveMet(dataType,int);
 		bool hasBarycenterConverged(std::vector<std::vector<matchingTuple>>& matchings,
 									std::vector<std::vector<matchingTuple>>& previous_matchings);
 		std::vector<std::vector<matchingTuple>> correctMatchings(std::vector<std::vector<matchingTuple>> previous_matchings);
@@ -136,7 +136,8 @@ namespace ttk{
 
 		inline int setNumberOfInputs(int numberOfInputs){
 			numberOfInputs_ = numberOfInputs;
-			precision_objective_.resize(numberOfInputs_);
+			// precision_objective_.resize(numberOfInputs_);
+			precision_.resize(numberOfInputs_);
 			return 0;
 		}
 
@@ -222,47 +223,49 @@ namespace ttk{
 
     protected:
 
-    std::vector<bool> precision_objective_;
-    // to kill any randomness
-    bool                    deterministic_;
+    // std::vector<bool> precision_objective_;
+     std::vector<dataType> precision_;
 
-    std::string                    method_;
-	  int 					wasserstein_;
+     // to kill any randomness
+     bool deterministic_;
 
-    double                geometrical_factor_;
+     std::string method_;
+     int wasserstein_;
 
-    // lambda_ : 0<=lambda<=1
-    // parametrizes the point used for the physical (critical) coordinates of the persistence paired
-    // lambda_ = 1 : extremum (min if pair min-sad, max if pair sad-max)
-    // lambda_ = 0 : saddle (awful stability)
-    // lambda_ = 1/2 : middle of the 2 critical points of the pair (bad stability)
-    double                lambda_;
+     double geometrical_factor_;
 
-	  int					diagramType_;
-	  BNodeType 			nt1_;
-	  BNodeType 			nt2_;
-      dataType                cost_;
-      int                   numberOfInputs_;
-      int                   threadNumber_;
-	  bool                  use_progressive_;
-	  double                time_limit_;
-	  float                 epsilon_min_;
-	  std::vector<std::vector<diagramTuple>> *inputDiagrams_;
+     // lambda_ : 0<=lambda<=1
+     // parametrizes the point used for the physical (critical) coordinates of the persistence paired
+     // lambda_ = 1 : extremum (min if pair min-sad, max if pair sad-max)
+     // lambda_ = 0 : saddle (awful stability)
+     // lambda_ = 1/2 : middle of the 2 critical points of the pair (bad stability)
+     double lambda_;
 
-      int points_added_;
-	  int points_deleted_;
+     int diagramType_;
+     BNodeType nt1_;
+     BNodeType nt2_;
+     dataType cost_;
+     int numberOfInputs_;
+     int threadNumber_;
+     bool use_progressive_;
+     double time_limit_;
+     float epsilon_min_;
+     std::vector<std::vector<diagramTuple>>* inputDiagrams_;
 
-    std::vector<std::vector<dataType>>      all_matchings_;
- 	  std::vector<std::vector<dataType>>      all_old_matchings_;
-    std::vector<BidderDiagram<dataType>>    bidder_diagrams_;
-	  std::vector<BidderDiagram<dataType>>    current_bidder_diagrams_;
-	  std::vector<std::vector<int>>           current_bidder_ids_;
-    std::vector<GoodDiagram<dataType>>	  barycenter_goods_;
+     int points_added_;
+     int points_deleted_;
 
-	  bool reinit_prices_;
-	  bool epsilon_decreases_;
-	  bool early_stoppage_;
-    int debugLevel_;
+     std::vector<std::vector<dataType>> all_matchings_;
+     std::vector<std::vector<dataType>> all_old_matchings_;
+     std::vector<BidderDiagram<dataType>> bidder_diagrams_;
+     std::vector<BidderDiagram<dataType>> current_bidder_diagrams_;
+     std::vector<std::vector<int>> current_bidder_ids_;
+     std::vector<GoodDiagram<dataType>> barycenter_goods_;
+
+     bool reinit_prices_;
+     bool epsilon_decreases_;
+     bool early_stoppage_;
+     int debugLevel_;
   };
 }
 

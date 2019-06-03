@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
   int kmeanspp = 1;
   int accelerated=1;
   int pairType = -1;
+  int randomness = 0;
 
   // register these arguments to the command line parser
   program.parser_.setArgument("P", &pairType,
@@ -32,6 +33,8 @@ int main(int argc, char **argv) {
     "Number of Clusters", true);
   program.parser_.setArgument("T", &timeLimit,
     "Time Limit for Computation, in seconds. No time limit by default", true);
+  program.parser_.setArgument("R", &randomness,
+    "Randomness", true);
   program.parser_.setArgument("G", &geometry_penalization,
     "Geometry Penalization, bet 0. and 1., 1. means no lifting", true);
 
@@ -50,6 +53,8 @@ int main(int argc, char **argv) {
   if(timeLimit==-1){
     timeLimit = 999999999999;
   }
+  int deterministic = 1-randomness;
+  program.ttkObject_->SetDeterministic(deterministic);
   program.ttkObject_->SetUseAccelerated(accelerated);
   program.ttkObject_->SetPairTypeClustering(pairType);
   program.ttkObject_->SetUseKmeansppInit(kmeanspp);
@@ -62,9 +67,9 @@ program.ttkObject_->setNumberOfInputsFromCommandLine(program.getNumberOfInputs()
 // program.ttkObject_->AddInputConnection(0,program.ttkObject_->GetInputAlgorithm(0,0));
   
   // execute data processing
-  ret = program.run();
-  
-  if(ret != 0)
+ret = program.run();
+
+if(ret != 0)
     return ret;
  
   // save the output

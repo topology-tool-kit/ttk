@@ -20,6 +20,7 @@ ttkPersistenceDiagramsClustering::ttkPersistenceDiagramsClustering(){
   UseAllCores = false;
   WassersteinMetric = "2";
   UseOutputMatching = true;
+  TimeLimit=9999;
   NumberOfClusters=1;
   Deterministic = 1;
   ThreadNumber = 1;

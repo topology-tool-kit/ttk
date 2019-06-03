@@ -159,7 +159,7 @@ template <typename dataType>
 
 	Timer t;
 	{
-	if(debugLevel_>0){
+	if(debugLevel_>1){
 	    std::cout<< "[PersistenceDiagramsClustering] Clustering " <<  numberOfInputs_ <<" diagrams in "<<n_clusters_<<" clusters."<<std::endl;
     }
 	std::vector<std::vector<diagramTuple> > *intermediateDiagrams = (std::vector<std::vector<diagramTuple> > *) inputData_;

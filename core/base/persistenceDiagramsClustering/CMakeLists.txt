@@ -3,4 +3,4 @@ ttk_add_base_library(persistenceDiagramsClustering
     HEADERS PersistenceDiagramsClustering.h 
 	LINK common persistenceDiagram bottleneckDistance kdTree persistenceDiagramsBarycenter)
 
-# target_compile_options(persistenceDiagramsClustering PRIVATE -Wextra -pedantic)
+    target_compile_options(persistenceDiagramsClustering PRIVATE -Wall -Wextra)
