@@ -1073,6 +1073,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
                 }
                 // bool identicalMatchings = hasBarycenterConverged(all_matchings, previous_matchings);
                 bool precisionObjectiveMet = isPrecisionObjectiveMet(0.01, 0);
+                // bool precisionObjectiveMet = (epsilon<epsilon_0/500.);
                 std::cout << "precision objective met ? " << precisionObjectiveMet << "  and epsilon " << epsilon << " and cost : " << total_cost << std::endl;
                 // std::cout<<"identical matchings ? "<<identicalMatchings<<" epsilon : "<<epsilon<<" cost "<<total_cost<<std::endl;
                 if(!use_progressive_ && precisionObjectiveMet /*epsilon<epsilon_0/500.*/ && min_cost > total_cost) {
