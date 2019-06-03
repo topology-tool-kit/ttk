@@ -2,11 +2,6 @@ cmake_minimum_required(VERSION 3.2)
 
 project(ttkMandatoryCriticalPointsCmd)
 
-set(CMAKE_SKIP_BUILD_RPATH TRUE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 if(NOT DEFINED TTK_BUILD_MANDATORYCRITICALPOINTS_FILTER)
   # Allows to disable each filter
   option(TTK_BUILD_MANDATORYCRITICALPOINTS_FILTER "Build the filter MandatoryCriticalPoints" ON)
@@ -14,12 +9,16 @@ if(NOT DEFINED TTK_BUILD_MANDATORYCRITICALPOINTS_FILTER)
 endif()
 
 if(${TTK_BUILD_MANDATORYCRITICALPOINTS_FILTER})
-  add_executable(ttkMandatoryCriticalPointsCmd main.cpp)
-  target_link_libraries(ttkMandatoryCriticalPointsCmd
+  add_executable(${PROJECT_NAME} main.cpp)
+  target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkMandatoryCriticalPoints
       ttkProgramBase
       )
+  set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+      INSTALL_RPATH
+        "${CMAKE_INSTALL_PREFIX}/lib64/TopologyToolKit;${CMAKE_INSTALL_PREFIX}/lib/ttk")
   install(
     TARGETS
       ${PROJECT_NAME}

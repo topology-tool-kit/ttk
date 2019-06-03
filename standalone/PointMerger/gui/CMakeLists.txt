@@ -2,11 +2,6 @@ cmake_minimum_required(VERSION 3.2)
 
 project(ttkPointMergerGui)
 
-set(CMAKE_SKIP_BUILD_RPATH TRUE)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 if(NOT DEFINED TTK_BUILD_POINTMERGER_FILTER)
   # Allows to disable each filter
   option(TTK_BUILD_POINTMERGER_FILTER "Build the filter PointMerger" ON)
@@ -14,13 +9,17 @@ if(NOT DEFINED TTK_BUILD_POINTMERGER_FILTER)
 endif()
 
 if(${TTK_BUILD_POINTMERGER_FILTER})
-  add_executable(ttkPointMergerGui main.cpp)
-  target_link_libraries(ttkPointMergerGui
+  add_executable(${PROJECT_NAME} main.cpp)
+  target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkPointMerger
       ttkProgramBase
       ttkUserInterfaceBase
       )
+  set_target_properties(${PROJECT_NAME}
+    PROPERTIES
+      INSTALL_RPATH
+        "${CMAKE_INSTALL_PREFIX}/lib64/TopologyToolKit;${CMAKE_INSTALL_PREFIX}/lib/ttk")
   install(
     TARGETS
       ${PROJECT_NAME}

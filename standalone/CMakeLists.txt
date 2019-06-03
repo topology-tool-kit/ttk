@@ -7,6 +7,12 @@ if(NOT TARGET ttkUserInterfaceBase)
   include(../core/vtk/ttkUserInterfaceBase/TTKWrapper.cmake)
 endif()
 
+# TODO investigate (mac)
+# set(CMAKE_SKIP_BUILD_RPATH TRUE)
+# set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 file(GLOB STANDALONE_DIRS */cmd */gui)
 foreach(STANDALONE ${STANDALONE_DIRS})
   if(IS_DIRECTORY ${STANDALONE})

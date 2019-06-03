@@ -9,22 +9,22 @@ if [ -z "${Name}" ]; then
   echo "  $0 <Name, first letter in uppercase, no space>"
   echo "Example:"
   echo "  $0 HelloWorld"
-  exit -1
+ exit 1
 fi
 
 # check for dependencies
-SED=`which sed 2> /dev/null`
+SED=$(command -v sed 2> /dev/null)
 if [ -z "$SED" ]; then
   echo "Error: Please install sed."
-  exit -1
+  exit 2
 fi
 
 # check for paths
 if [ ! -e "scripts/createTTKmodule.sh" ]; then
   echo "Error: Please run this script from the top of the source tree"
-  exit -1
+  exit 3
 fi
 
 echo "Creating TTK module ${Name}..."
 
-scripts/cloneTTKmodule.sh Blank ${Name}
+scripts/cloneTTKmodule.sh Blank "${Name}"
