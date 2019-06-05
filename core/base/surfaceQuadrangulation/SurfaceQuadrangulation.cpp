@@ -341,13 +341,8 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   std::vector<SimplexId> morseManRect(segmentationNumber_, -1);
 
   // number of Morse-Smale cells
-  auto maxManId = 0;
-  // compute max of manifold indices
-  for(size_t a = 0; a < segmentationNumber_; ++a) {
-    if(segmentation_[a] >= maxManId) {
-      maxManId = segmentation_[a] + 1;
-    }
-  }
+  auto maxManId
+    = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
 
   // rectify Morse-Smale cells indices
   for(size_t i = 0; i < nquads; ++i) {
@@ -550,13 +545,9 @@ int ttk::SurfaceQuadrangulation::execute() {
   }
 
   // maximum manifold id
-  int maxSegId = 0;
-  // compute max + 1 of segmentation indices
-  for(size_t a = 0; a < segmentationNumber_; ++a) {
-    if(segmentation_[a] > maxSegId) {
-      maxSegId = segmentation_[a];
-    }
-  }
+  auto maxSegId
+    = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
+
   // total number of manifolds
   int nseg = maxSegId + 1;
 
