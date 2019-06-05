@@ -379,6 +379,94 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     }
   }
 
+  // for each output quad, its barycenter position in outputPoints_
+  std::vector<size_t> cellBary(outputCells_.size());
+
+  auto sepFromPoints = [&](const long long src, const long long dst) {
+    for(size_t i = 0; i < numSeps; ++i) {
+      if(sepCellIds_[sepBegs[i]] == criticalPointsCellIds_[src]
+         && sepCellIds_[sepEnds[i]] == criticalPointsCellIds_[dst]) {
+        return i;
+      }
+    }
+    return numSeps;
+  };
+
+  std::vector<bool> boundary(onSep.size(), false);
+  std::transform(onSep.begin(), onSep.end(), boundary.begin(),
+                 [](const SimplexId a) { return a != -1; });
+
+  std::vector<std::vector<float>> outputDists(4);
+
+  // hold quad subdivision
+  decltype(outputCells_) quadSubd{};
+  quadSubd.reserve(4 * outputCells_.size());
+
+  for(size_t i = 0; i < nquads; ++i) {
+    auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i + 1]);
+    std::vector<size_t> quadSeps
+      = {sepFromPoints(q->j, q->i), sepFromPoints(q->j, q->k),
+         sepFromPoints(q->l, q->k), sepFromPoints(q->l, q->i)};
+
+    // TODO if dup separatrice
+
+    std::vector<size_t> sepMids(quadSeps.size());
+    std::vector<SimplexId> midsNearestVertex(quadSeps.size());
+    for(size_t j = 0; j < quadSeps.size(); ++j) {
+      sepMids[j] = sepMiddle[quadSeps[j]];
+      midsNearestVertex[j] = sepMidNearestVertex[quadSeps[j]];
+    }
+
+    for(size_t j = 0; j < quadSeps.size(); ++j) {
+      Dijkstra::shortestPath(midsNearestVertex[j], *triangulation_,
+                             outputDists[j], midsNearestVertex);
+    }
+
+    std::vector<float> sum(outputDists[0].size());
+    for(size_t j = 0; j < sum.size(); ++j) {
+      auto m = outputDists[0][j];
+      auto n = outputDists[1][j];
+      auto o = outputDists[2][j];
+      auto p = outputDists[3][j];
+      // cost to minimize
+      sum[j] = m + n + o + p; // + std::abs(m - o) + std::abs(n - p);
+    }
+
+    auto baryId = std::min_element(sum.begin(), sum.end()) - sum.begin();
+    auto baryPos = outputPointsIds_.size();
+    {
+      float x, y, z;
+      triangulation_->getVertexPoint(baryId, x, y, z);
+      outputPoints_.emplace_back(x);
+      outputPoints_.emplace_back(y);
+      outputPoints_.emplace_back(z);
+      outputPointsIds_.emplace_back(baryId);
+    }
+
+    quadSubd.emplace_back(4);
+    quadSubd.emplace_back(q->i);
+    quadSubd.emplace_back(sepMids[3]); // li
+    quadSubd.emplace_back(baryPos);
+    quadSubd.emplace_back(sepMids[0]); // ij
+    quadSubd.emplace_back(4);
+    quadSubd.emplace_back(q->j);
+    quadSubd.emplace_back(sepMids[0]); // ij
+    quadSubd.emplace_back(baryPos);
+    quadSubd.emplace_back(sepMids[1]); // jk
+    quadSubd.emplace_back(4);
+    quadSubd.emplace_back(q->k);
+    quadSubd.emplace_back(sepMids[1]); // jk
+    quadSubd.emplace_back(baryPos);
+    quadSubd.emplace_back(sepMids[2]); // kl
+    quadSubd.emplace_back(4);
+    quadSubd.emplace_back(q->l);
+    quadSubd.emplace_back(sepMids[2]); // kl
+    quadSubd.emplace_back(baryPos);
+    quadSubd.emplace_back(sepMids[3]); // li
+  }
+
+  outputCells_ = std::move(quadSubd);
+
   return 0;
 }
 
