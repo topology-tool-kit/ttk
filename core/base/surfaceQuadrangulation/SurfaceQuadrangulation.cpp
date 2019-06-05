@@ -296,7 +296,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   }
 
   // if output points are on a duplicate separatrix
-  std::vector<bool> pointsDupSep(outputPoints_.size(), false);
+  std::vector<bool> pointsDupSep(outputPointsIds_.size(), false);
 
   for(size_t i = 0; i < numSeps; ++i) {
     if(sepDup[i] != -1) {
@@ -363,7 +363,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     auto nDupVerts = std::count_if(
       &q->i, &q->l + 1, [&](const long long a) { return pointsDupSep[a]; });
 
-    if(nDupVerts == 4) {
+    if(nDupVerts >= 2) {
       auto saddles = std::vector<size_t>{
         static_cast<size_t>(q->j), static_cast<size_t>(q->l)};
       rectifyManifoldIndex(morseManRect, onSep,
