@@ -128,14 +128,16 @@ namespace ttk {
      * @param[in,out] morseManRect Vertex to new Morse-Smale cell index
      * @param[in] onSep Index of separatrix under vertices (or -1)
      * @param[in] sharedManifold Cell index to tag
-     * @param[in] maxManifoldId New tag to apply on cell
+     * @param[in,out] maxManifoldId New tag to apply on cell
+     * @param[out] sepsIndex For each cell stores bordering separatrices indices
      *
      * @return 0
      */
     int rectifyManifoldIndex(std::vector<SimplexId> &morseManRect,
                              const std::vector<SimplexId> &onSep,
                              const SimplexId sharedManifold,
-                             SimplexId &maxManifoldId) const;
+                             SimplexId &maxManifoldId,
+                             std::vector<SimplexId> &sepsIndex) const;
 
     /**
      * @brief Post-process quadrangulation

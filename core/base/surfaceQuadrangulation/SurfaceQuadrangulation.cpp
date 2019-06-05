@@ -317,9 +317,6 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     long long l;
   };
 
-  // store current number of quads
-  auto nquads = outputCells_.size() / 5;
-
   // for each vertex on a separatrix, the index of the separatrix
   std::vector<SimplexId> onSep(segmentationNumber_, -1);
 
@@ -348,6 +345,12 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   auto maxManId
     = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
 
+  // store current number of quads
+  auto nquads = outputCells_.size() / 5;
+
+  // for each cell, the indices of the bordering separatrices
+  std::vector<std::vector<SimplexId>> cellSeps(2 * nquads);
+
   // rectify Morse-Smale cells indices
   for(size_t i = 0; i < nquads; ++i) {
     auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i + 1]);
@@ -362,8 +365,9 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     if(nDupVerts == 4) {
       auto saddles = std::vector<size_t>{
         static_cast<size_t>(q->j), static_cast<size_t>(q->l)};
-      rectifyManifoldIndex(
-        morseManRect, onSep, *commonManifolds(saddles).begin(), maxManId);
+      rectifyManifoldIndex(morseManRect, onSep,
+                           *commonManifolds(saddles).begin(), maxManId,
+                           cellSeps[i]);
     }
   }
 
@@ -381,9 +385,11 @@ int ttk::SurfaceQuadrangulation::rectifyManifoldIndex(
   std::vector<SimplexId> &morseManRect,
   const std::vector<SimplexId> &onSep,
   const SimplexId sharedManifold,
-  SimplexId &maxManifoldId) const {
+  SimplexId &maxManifoldId,
+  std::vector<SimplexId> &sepsIndex) const {
 
   std::queue<SimplexId> toProcess{};
+  std::vector<SimplexId> borderSeps{};
 
   // look for the first vertex meeting constraints
   for(size_t i = 0; i < segmentationNumber_; ++i) {
@@ -418,6 +424,33 @@ int ttk::SurfaceQuadrangulation::rectifyManifoldIndex(
       if(isCandidate(next)) {
         toProcess.push(next);
       }
+
+      // store reached separatrices indices
+      if(onSep[next] != -1) {
+        borderSeps.emplace_back(onSep[next]);
+      }
+    }
+  }
+
+  // histogram of border separatrices indices
+  std::map<SimplexId, int> hist{};
+
+  // post-process borderSeps to find the most common separatrices indices
+  for(const auto &v : borderSeps) {
+    hist[v]++;
+  }
+
+  // reverse histogram to sort map by values
+  std::map<int, SimplexId> revHist{};
+  for(const auto &p : hist) {
+    revHist[p.second] = p.first;
+  }
+
+  const size_t sepsPerCell = 4;
+  for(auto it = revHist.rbegin(); it != revHist.rend(); ++it) {
+    sepsIndex.emplace_back(it->second);
+    if(sepsIndex.size() == sepsPerCell) {
+      break;
     }
   }
 
