@@ -252,64 +252,61 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // TODO remove extra quadrangles?
 
   // separatrices bounds indices and cell ids
-  std::vector<std::pair<size_t, SimplexId>> sepFlatEdgesPos{};
+  std::vector<size_t> sepFlatEdges{};
 
   for(SimplexId i = 0; i < separatriceNumber_; ++i) {
     if(sepMask_[i] == 1) {
       continue;
     }
-    sepFlatEdgesPos.emplace_back(std::make_pair(i, sepCellIds_[i]));
+    sepFlatEdges.emplace_back(i);
   }
 
-  // store sep bounds -> middle id in output points
-  std::map<std::pair<size_t, size_t>, size_t> sepMiddles{};
+  // number of separatrices
+  auto numSeps = sepFlatEdges.size() / 2;
+  // index of separatrices beginnings in separatrices arrays
+  std::vector<size_t> sepBegs(numSeps);
+  // index of separatrices endings in separatrices arrays
+  std::vector<size_t> sepEnds(numSeps);
+  // separatrices middles index in output points array
+  std::vector<size_t> sepMiddle(numSeps);
+  // separatrices middles nearest vertex id
+  std::vector<SimplexId> sepMidNearestVertex(numSeps);
+  // store duplicate separatrix id, -1 if no duplicate
+  std::vector<SimplexId> sepDup(numSeps, -1);
 
-  // generate points at separatrices middles
-  for(size_t i = 0; i < sepFlatEdgesPos.size() / 2; ++i) {
-    auto a = sepFlatEdgesPos[2 * i].first;
-    auto b = sepFlatEdgesPos[2 * i + 1].first;
-    findSeparatrixMiddle(a, b);
-    // store separatrix bounds and middle id
-    sepMiddles.insert(
-      std::make_pair(std::make_pair(a, b), outputPoints_.size() / 3 - 1));
+  // fill in data arrays
+  for(size_t i = 0; i < numSeps; ++i) {
+    // separatrices bounds
+    sepBegs[i] = sepFlatEdges[2 * i];
+    sepEnds[i] = sepFlatEdges[2 * i + 1];
+    // separatrices middles
+    sepMiddle[i] = outputPoints_.size() / 3; // before insertion at next line
+    sepMidNearestVertex[i] = findSeparatrixMiddle(sepBegs[i], sepEnds[i]);
   }
 
-  // duplicate separatrices bounds
-  std::vector<
-    std::pair<std::pair<size_t, SimplexId>, std::pair<size_t, SimplexId>>>
-    dupSep{};
-
-  for(size_t i = 0; i < sepFlatEdgesPos.size() / 2; ++i) {
-    for(size_t j = i + 1; j < sepFlatEdgesPos.size() / 2; ++j) {
-      if(sepFlatEdgesPos[2 * i].second == sepFlatEdgesPos[2 * j].second
-         && sepFlatEdgesPos[2 * i + 1].second
-              == sepFlatEdgesPos[2 * j + 1].second) {
-        dupSep.emplace_back(
-          std::make_pair(sepFlatEdgesPos[2 * i], sepFlatEdgesPos[2 * i + 1]));
-        dupSep.emplace_back(
-          std::make_pair(sepFlatEdgesPos[2 * j], sepFlatEdgesPos[2 * j + 1]));
+  for(size_t i = 0; i < numSeps; ++i) {
+    for(size_t j = i + 1; j < numSeps; ++j) {
+      if(sepCellIds_[sepBegs[i]] == sepCellIds_[sepBegs[j]]
+         && sepCellIds_[sepEnds[i]] == sepCellIds_[sepEnds[j]]) {
+        sepDup[i] = j;
+        sepDup[j] = i;
       }
     }
   }
 
-  // set of bounds of duplicate separatrices
-  std::set<SimplexId> dupSepPoints{};
+  // if output points are on a duplicate separatrix
+  std::vector<bool> pointsDupSep(outputPoints_.size(), false);
 
-  for(const auto &p : dupSep) {
-    dupSepPoints.insert(p.first.second);
-    dupSepPoints.insert(p.second.second);
-  }
-
-  // for every pair of critical points belonging to a duplicate edge,
-  // the indices of the corresponding separatrices in the separatrices array
-  std::map<std::pair<SimplexId, SimplexId>,
-           std::vector<std::pair<size_t, size_t>>>
-    points2Seps{};
-
-  for(const auto &p : sepMiddles) {
-    points2Seps[std::make_pair(
-                  sepCellIds_[p.first.first], sepCellIds_[p.first.second])]
-      .emplace_back(p.first);
+  for(size_t i = 0; i < numSeps; ++i) {
+    if(sepDup[i] != -1) {
+      for(SimplexId j = 0; j < criticalPointsNumber_; ++j) {
+        if(criticalPointsCellIds_[j] == sepCellIds_[sepBegs[i]]
+           || criticalPointsCellIds_[j] == sepCellIds_[sepEnds[i]]) {
+          pointsDupSep[j] = true;
+        }
+      }
+      pointsDupSep[sepMiddle[i]] = true;
+    }
   }
 
   // ad-hoc quad data structure
@@ -352,10 +349,8 @@ int ttk::SurfaceQuadrangulation::postProcess() {
       criticalPointsCellIds_[q->i], criticalPointsCellIds_[q->j],
       criticalPointsCellIds_[q->k], criticalPointsCellIds_[q->l]};
 
-    auto nDupVerts
-      = std::count_if(qVerts.begin(), qVerts.end(), [&](const SimplexId a) {
-          return dupSepPoints.find(a) != dupSepPoints.end();
-        });
+    auto nDupVerts = std::count_if(
+      &q->i, &q->l + 1, [&](const long long a) { return pointsDupSep[a]; });
 
     if(nDupVerts == 4) {
       auto saddles = std::vector<size_t>{
