@@ -320,17 +320,24 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // store current number of quads
   auto nquads = outputCells_.size() / 5;
 
-  // if vertex is on a separatrix
-  std::vector<bool> onSep(segmentationNumber_, false);
+  // for each vertex on a separatrix, the index of the separatrix
+  std::vector<SimplexId> onSep(segmentationNumber_, -1);
 
-  // iterate over separatrices lines to fill in onSep vector
-  for(SimplexId i = 0; i < separatriceNumber_; ++i) {
-    if(sepCellDims_[i] == 1) {
-      SimplexId vertId;
-      triangulation_->getEdgeVertex(sepCellIds_[i], 0, vertId);
-      onSep[vertId] = true;
-      triangulation_->getEdgeVertex(sepCellIds_[i], 1, vertId);
-      onSep[vertId] = true;
+  {
+    size_t currSep = 0;
+    // iterate over separatrices lines to fill in onSep vector
+    for(SimplexId i = 0; i < separatriceNumber_; ++i) {
+      if(sepMask_[i] == 0) {
+        currSep
+          = std::find(sepBegs.begin(), sepBegs.end(), i) - sepBegs.begin();
+      }
+      if(sepCellDims_[i] == 1) {
+        SimplexId vertId;
+        triangulation_->getEdgeVertex(sepCellIds_[i], 0, vertId);
+        onSep[vertId] = static_cast<SimplexId>(currSep);
+        triangulation_->getEdgeVertex(sepCellIds_[i], 1, vertId);
+        onSep[vertId] = static_cast<SimplexId>(currSep);
+      }
     }
   }
 
@@ -372,7 +379,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
 int ttk::SurfaceQuadrangulation::rectifyManifoldIndex(
   std::vector<SimplexId> &morseManRect,
-  const std::vector<bool> &onSep,
+  const std::vector<SimplexId> &onSep,
   const SimplexId sharedManifold,
   SimplexId &maxManifoldId) const {
 
@@ -380,7 +387,7 @@ int ttk::SurfaceQuadrangulation::rectifyManifoldIndex(
 
   // look for the first vertex meeting constraints
   for(size_t i = 0; i < segmentationNumber_; ++i) {
-    if(segmentation_[i] == sharedManifold && !onSep[i]
+    if(segmentation_[i] == sharedManifold && onSep[i] == -1
        && morseManRect[i] == -1) {
       toProcess.push(i);
       break;
@@ -388,7 +395,7 @@ int ttk::SurfaceQuadrangulation::rectifyManifoldIndex(
   }
 
   auto isCandidate = [&](const SimplexId a) {
-    return segmentation_[a] == sharedManifold && !onSep[a]
+    return segmentation_[a] == sharedManifold && onSep[a] == -1
            && morseManRect[a] == -1;
   };
 
