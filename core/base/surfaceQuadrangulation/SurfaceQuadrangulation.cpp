@@ -1,3 +1,4 @@
+#include <Dijkstra.h>
 #include <Geometry.h>
 #include <SurfaceQuadrangulation.h>
 #include <cmath>
