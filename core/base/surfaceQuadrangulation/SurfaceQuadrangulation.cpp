@@ -443,6 +443,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
       outputPoints_.emplace_back(y);
       outputPoints_.emplace_back(z);
       outputPointsIds_.emplace_back(baryId);
+      outputPointsTypes_.emplace_back(2);
     }
 
     subd->emplace_back(Quad{4, q->i, sepMids[3], baryPos, sepMids[0]});
@@ -594,6 +595,8 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
       break;
   }
 
+  outputPointsTypes_.emplace_back(1);
+
   return id;
 }
 
@@ -608,6 +611,7 @@ int ttk::SurfaceQuadrangulation::execute() {
   outputPointsIds_.clear();
   outputPoints_.resize(3 * criticalPointsNumber_);
   outputPointsIds_.resize(criticalPointsNumber_);
+  outputPointsTypes_.resize(criticalPointsNumber_);
 
   // fill in critical points 3d coordinates and identifiers
   for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
@@ -615,6 +619,7 @@ int ttk::SurfaceQuadrangulation::execute() {
     outputPoints_[3 * i + 1] = criticalPoints_[3 * i + 1];
     outputPoints_[3 * i + 2] = criticalPoints_[3 * i + 2];
     outputPointsIds_[i] = criticalPointsIdentifier_[i];
+    outputPointsTypes_[i] = 0;
   }
 
   // filter sepCellIds_ array according to sepMask_

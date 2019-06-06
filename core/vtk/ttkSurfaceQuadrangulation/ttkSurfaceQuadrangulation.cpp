@@ -133,6 +133,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   auto &outQuadrangles = surfaceQuadrangulation_.outputCells_;
   auto &outQuadPoints = surfaceQuadrangulation_.outputPoints_;
   auto &outPointsIds = surfaceQuadrangulation_.outputPointsIds_;
+  auto &outPointsType = surfaceQuadrangulation_.outputPointsTypes_;
 
   // output points: critical points + generated separatrices middles
   auto points = vtkSmartPointer<vtkPoints>::New();
@@ -146,6 +147,12 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   identifiers->SetName(ttk::VertexScalarFieldName);
   identifiers->SetVoidArray(outPointsIds.data(), outPointsIds.size(), 1);
   output->GetPointData()->AddArray(identifiers);
+
+  // quad vertices type
+  auto type = vtkSmartPointer<vtkIntArray>::New();
+  type->SetName("Vertex Type");
+  type->SetVoidArray(outPointsType.data(), outPointsType.size(), 1);
+  output->GetPointData()->AddArray(type);
 
   // vtkCellArray of quadrangle values containing outArray
   auto cells = vtkSmartPointer<vtkCellArray>::New();

@@ -186,6 +186,8 @@ namespace ttk {
     std::vector<float> outputPoints_{};
     // array of output vertices identifiers
     std::vector<SimplexId> outputPointsIds_{};
+    // 0: critical points, 1: edge middle, 2: quad barycenter
+    std::vector<SimplexId> outputPointsTypes_{};
   };
 } // namespace ttk
 
