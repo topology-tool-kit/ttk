@@ -393,10 +393,6 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     return numSeps;
   };
 
-  std::vector<bool> boundary(onSep.size(), false);
-  std::transform(onSep.begin(), onSep.end(), boundary.begin(),
-                 [](const SimplexId a) { return a != -1; });
-
   std::vector<std::vector<float>> outputDists(4);
 
   // hold quad subdivision
@@ -419,19 +415,30 @@ int ttk::SurfaceQuadrangulation::postProcess() {
       midsNearestVertex[j] = sepMidNearestVertex[quadSeps[j]];
     }
 
+    // find barycenter of current cell (c.f. QuadrangulationSubdivision.cpp)
+
+    std::vector<SimplexId> bounds{
+      criticalPointsIdentifier_[q->i], criticalPointsIdentifier_[q->j],
+      criticalPointsIdentifier_[q->k], criticalPointsIdentifier_[q->l]};
+
     for(size_t j = 0; j < quadSeps.size(); ++j) {
-      Dijkstra::shortestPath(midsNearestVertex[j], *triangulation_,
-                             outputDists[j], midsNearestVertex);
+      Dijkstra::shortestPath(
+        midsNearestVertex[j], *triangulation_, outputDists[j], bounds);
     }
 
-    std::vector<float> sum(outputDists[0].size());
+    auto inf = std::numeric_limits<float>::infinity();
+    std::vector<float> sum(outputDists[0].size(), inf);
+
     for(size_t j = 0; j < sum.size(); ++j) {
       auto m = outputDists[0][j];
       auto n = outputDists[1][j];
       auto o = outputDists[2][j];
       auto p = outputDists[3][j];
+      if(m == inf || n == inf || o == inf || p == inf) {
+        continue;
+      }
       // cost to minimize
-      sum[j] = m + n + o + p; // + std::abs(m - o) + std::abs(n - p);
+      sum[j] = m + n + o + p;
     }
 
     auto baryId = std::min_element(sum.begin(), sum.end()) - sum.begin();
