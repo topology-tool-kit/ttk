@@ -310,8 +310,9 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     }
   }
 
-  // ad-hoc quad data structure
+  // ad-hoc quad data structure (see QuadrangulationSubdivision.h)
   struct Quad {
+    long long n;
     long long i;
     long long j;
     long long k;
@@ -354,7 +355,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
   // rectify Morse-Smale cells indices
   for(size_t i = 0; i < nquads; ++i) {
-    auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i + 1]);
+    auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i]);
     // bounds indices in separatrices array
     std::vector<SimplexId> qVerts{
       criticalPointsCellIds_[q->i], criticalPointsCellIds_[q->j],
@@ -401,16 +402,17 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // hold quad subdivision
   decltype(outputCells_) quadSubd{};
   quadSubd.reserve(4 * outputCells_.size());
+  auto subd = reinterpret_cast<std::vector<Quad> *>(&quadSubd);
 
   for(size_t i = 0; i < nquads; ++i) {
-    auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i + 1]);
+    auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i]);
     std::vector<size_t> quadSeps
       = {sepFromPoints(q->j, q->i), sepFromPoints(q->j, q->k),
          sepFromPoints(q->l, q->k), sepFromPoints(q->l, q->i)};
 
     // TODO if dup separatrice
 
-    std::vector<size_t> sepMids(quadSeps.size());
+    std::vector<long long> sepMids(quadSeps.size());
     std::vector<SimplexId> midsNearestVertex(quadSeps.size());
     for(size_t j = 0; j < quadSeps.size(); ++j) {
       sepMids[j] = sepMiddle[quadSeps[j]];
@@ -433,7 +435,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     }
 
     auto baryId = std::min_element(sum.begin(), sum.end()) - sum.begin();
-    auto baryPos = outputPointsIds_.size();
+    long long baryPos = outputPointsIds_.size();
     {
       float x, y, z;
       triangulation_->getVertexPoint(baryId, x, y, z);
@@ -443,26 +445,10 @@ int ttk::SurfaceQuadrangulation::postProcess() {
       outputPointsIds_.emplace_back(baryId);
     }
 
-    quadSubd.emplace_back(4);
-    quadSubd.emplace_back(q->i);
-    quadSubd.emplace_back(sepMids[3]); // li
-    quadSubd.emplace_back(baryPos);
-    quadSubd.emplace_back(sepMids[0]); // ij
-    quadSubd.emplace_back(4);
-    quadSubd.emplace_back(q->j);
-    quadSubd.emplace_back(sepMids[0]); // ij
-    quadSubd.emplace_back(baryPos);
-    quadSubd.emplace_back(sepMids[1]); // jk
-    quadSubd.emplace_back(4);
-    quadSubd.emplace_back(q->k);
-    quadSubd.emplace_back(sepMids[1]); // jk
-    quadSubd.emplace_back(baryPos);
-    quadSubd.emplace_back(sepMids[2]); // kl
-    quadSubd.emplace_back(4);
-    quadSubd.emplace_back(q->l);
-    quadSubd.emplace_back(sepMids[2]); // kl
-    quadSubd.emplace_back(baryPos);
-    quadSubd.emplace_back(sepMids[3]); // li
+    subd->emplace_back(Quad{4, q->i, sepMids[3], baryPos, sepMids[0]});
+    subd->emplace_back(Quad{4, q->j, sepMids[0], baryPos, sepMids[1]});
+    subd->emplace_back(Quad{4, q->k, sepMids[1], baryPos, sepMids[2]});
+    subd->emplace_back(Quad{4, q->l, sepMids[2], baryPos, sepMids[3]});
   }
 
   outputCells_ = std::move(quadSubd);
