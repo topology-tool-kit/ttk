@@ -4,6 +4,8 @@
 #ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Sparse>
 
+#include <array>
+
 template <typename T, typename SparseMatrixType = Eigen::SparseMatrix<T>>
 int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
                                       const Triangulation &triangulation) {
