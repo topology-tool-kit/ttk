@@ -149,6 +149,28 @@ namespace ttk {
      */
     int postProcess();
 
+    /**
+     * @brief Find the Morse-Smale cell around a given vertex
+     *
+     * Perform a breadth-first search from a vertex limited by
+     * Morse-Smale separatrices.
+     *
+     * @param[in] src Source vertex to begin the iteration
+     * @param[in,out] vertexCells Cell identifier linked to every vertex (or -1)
+     * @param[in,out] cellIds List of cell identifiers (to generate new cells)
+     * @param[out] cellSeps Separatrices bordering the current cell
+     * @param[in] vertexSepMask If a vertex in on a separatrix
+     * @param[in] withNewCellId Should we generate another cell?
+     *
+     * @return 0
+     */
+    int detectCells(const SimplexId src,
+                    std::vector<SimplexId> &vertexCells,
+                    std::vector<SimplexId> &cellIds,
+                    std::vector<std::vector<SimplexId>> &cellSeps,
+                    const std::vector<SimplexId> &vertexSepMask,
+                    const bool withNewCellId = false) const;
+
     Triangulation *triangulation_{};
 
     // number of critical points from the Morse-Smale complex

@@ -464,6 +464,88 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   return 0;
 }
 
+int ttk::SurfaceQuadrangulation::detectCells(
+  const SimplexId src,
+  std::vector<SimplexId> &vertexCells,
+  std::vector<SimplexId> &cellIds,
+  std::vector<std::vector<SimplexId>> &cellSeps,
+  const std::vector<SimplexId> &vertexSepMask,
+  const bool withNewCellId) const {
+
+  std::queue<SimplexId> toProcess{};
+  toProcess.push(src);
+  std::vector<SimplexId> borderSeps{};
+
+  auto cellId = segmentation_[src];
+  auto newCellId = cellId;
+  if(withNewCellId) {
+    newCellId = cellIds.back() + 1;
+  }
+  cellIds.emplace_back(newCellId);
+
+  auto isCandidate = [&](const SimplexId a) {
+    return segmentation_[a] == cellId && vertexSepMask[a] == -1
+           && vertexCells[a] == -1;
+  };
+
+  while(!toProcess.empty()) {
+    auto curr = toProcess.front();
+    toProcess.pop();
+
+    if(!isCandidate(curr)) {
+      continue;
+    }
+
+    vertexCells[curr] = newCellId;
+
+    auto nneigh = triangulation_->getVertexNeighborNumber(curr);
+    for(SimplexId j = 0; j < nneigh; ++j) {
+      SimplexId next;
+      triangulation_->getVertexNeighbor(curr, j, next);
+
+      if(isCandidate(next)) {
+        toProcess.push(next);
+      }
+
+      // store reached separatrices indices
+      if(vertexSepMask[next] != -1) {
+        borderSeps.emplace_back(vertexSepMask[next]);
+      }
+    }
+  }
+
+  // histogram of border separatrices indices
+  std::map<SimplexId, int> hist{};
+
+  // post-process borderSeps to find the most common separatrices indices
+  for(const auto &v : borderSeps) {
+    hist[v]++;
+  }
+
+  // map dumped into vector
+  std::vector<std::pair<SimplexId, int>> histVec{};
+  histVec.reserve(hist.size());
+
+  for(const auto &p : hist) {
+    histVec.emplace_back(p);
+  }
+
+  // sort by value, descending order
+  std::sort(
+    histVec.begin(), histVec.end(),
+    [&](const std::pair<SimplexId, int> &a,
+        const std::pair<SimplexId, int> &b) { return a.second > b.second; });
+
+  // get the four first values
+  const size_t sepsPerCell = std::min<size_t>(histVec.size(), 4);
+  cellSeps.resize(cellSeps.size() + 1);
+  for(size_t i = 0; i < sepsPerCell; ++i) {
+    cellSeps.back().emplace_back(histVec[i].first);
+  }
+
+  return 0;
+}
+
 int ttk::SurfaceQuadrangulation::rectifyManifoldIndex(
   std::vector<SimplexId> &morseManRect,
   const std::vector<SimplexId> &onSep,
