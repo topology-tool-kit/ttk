@@ -354,30 +354,25 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // for each cell, the indices of the bordering separatrices
   std::vector<std::vector<SimplexId>> cellSeps{};
 
-  auto findCellsSeps = [&](const bool secondPass) {
-    std::vector<SimplexId> srcs{};
-    auto minCellId
-      = *std::min_element(segmentation_, segmentation_ + segmentationNumber_);
-    auto maxCellId
-      = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
+  auto findCellsSeps = [&]() {
+    bool notFinished = true;
+    size_t pos = 0;
 
-    for(SimplexId i = minCellId; i <= maxCellId; ++i) {
-      // look for the first vertex meeting constraints
-      for(size_t j = 0; j < segmentationNumber_; ++j) {
-        if(segmentation_[j] == i && onSep[j] == -1 && morseManRect[j] == -1) {
-          srcs.emplace_back(j);
+    while(notFinished) {
+      for(size_t j = pos; j < segmentationNumber_; ++j) {
+        if(onSep[j] == -1 && morseManRect[j] == -1) {
+          pos = j;
           break;
         }
+        if(j == segmentationNumber_ - 1) {
+          notFinished = false;
+        }
       }
-    }
-    // breadth-first search for every source
-    for(const auto &src : srcs) {
-      detectCells(src, morseManRect, cellIds, cellSeps, onSep, secondPass);
+      detectCells(pos, morseManRect, cellSeps, onSep);
     }
   };
 
-  findCellsSeps(false);
-  findCellsSeps(true);
+  findCellsSeps();
 
   return 0;
 
@@ -496,21 +491,15 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 int ttk::SurfaceQuadrangulation::detectCells(
   const SimplexId src,
   std::vector<SimplexId> &vertexCells,
-  std::vector<SimplexId> &cellIds,
   std::vector<std::vector<SimplexId>> &cellSeps,
-  const std::vector<SimplexId> &vertexSepMask,
-  const bool withNewCellId) const {
+  const std::vector<SimplexId> &vertexSepMask) const {
 
   std::queue<SimplexId> toProcess{};
   toProcess.push(src);
   std::vector<SimplexId> borderSeps{};
 
   auto cellId = segmentation_[src];
-  auto newCellId = cellId;
-  if(withNewCellId) {
-    newCellId = cellIds.back() + 1;
-  }
-  cellIds.emplace_back(newCellId);
+  SimplexId newCellId = cellSeps.size();
 
   auto isCandidate = [&](const SimplexId a) {
     return segmentation_[a] == cellId && vertexSepMask[a] == -1
