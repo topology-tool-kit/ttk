@@ -342,6 +342,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
   // rectified Morse-Smale cells
   std::vector<SimplexId> morseManRect(segmentationNumber_, -1);
+  std::vector<SimplexId> cellIds{};
 
   // number of Morse-Smale cells
   auto maxManId
@@ -351,7 +352,34 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   auto nquads = outputCells_.size() / 5;
 
   // for each cell, the indices of the bordering separatrices
-  std::vector<std::vector<SimplexId>> cellSeps(2 * nquads);
+  std::vector<std::vector<SimplexId>> cellSeps{};
+
+  auto findCellsSeps = [&](const bool secondPass) {
+    std::vector<SimplexId> srcs{};
+    auto minCellId
+      = *std::min_element(segmentation_, segmentation_ + segmentationNumber_);
+    auto maxCellId
+      = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
+
+    for(SimplexId i = minCellId; i <= maxCellId; ++i) {
+      // look for the first vertex meeting constraints
+      for(size_t j = 0; j < segmentationNumber_; ++j) {
+        if(segmentation_[j] == i && onSep[j] == -1 && morseManRect[j] == -1) {
+          srcs.emplace_back(j);
+          break;
+        }
+      }
+    }
+    // breadth-first search for every source
+    for(const auto &src : srcs) {
+      detectCells(src, morseManRect, cellIds, cellSeps, onSep, secondPass);
+    }
+  };
+
+  findCellsSeps(false);
+  findCellsSeps(true);
+
+  return 0;
 
   // rectify Morse-Smale cells indices
   for(size_t i = 0; i < nquads; ++i) {
@@ -383,6 +411,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // for each output quad, its barycenter position in outputPoints_
   std::vector<size_t> cellBary(outputCells_.size());
 
+  // find separatrix index from vertices
   auto sepFromPoints = [&](const long long src, const long long dst) {
     for(size_t i = 0; i < numSeps; ++i) {
       if(sepCellIds_[sepBegs[i]] == criticalPointsCellIds_[src]
