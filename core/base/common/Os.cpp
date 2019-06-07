@@ -226,36 +226,11 @@ namespace ttk {
   }
 
   int OsCall::rmDir(const std::string &directoryName) {
-
-#ifdef _WIN32
-    // NOTE:
-    // the directory will be deleted with this call
-    // only if it's empty...
-    return _rmdir(directoryName.data());
-#else
-    std::stringstream cmd;
-    cmd << "rm -R " << directoryName << " 2> /dev/null";
-    return system(cmd.str().data());
-#endif
+    return std::remove(directoryName.c_str());
   }
 
   int OsCall::rmFile(const std::string &fileName) {
-
-    std::stringstream cmd;
-
-#ifdef _WIN32
-    cmd << "del";
-#else
-    cmd << "rm";
-#endif
-
-    cmd << " " << fileName;
-
-#ifndef _WIN32
-    cmd << " 2> /dev/null";
-#endif
-
-    return system(cmd.str().data());
+    return std::remove(fileName.c_str());
   }
 
 } // namespace ttk
