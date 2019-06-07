@@ -549,12 +549,13 @@ int ttk::SurfaceQuadrangulation::detectCells(
     [&](const std::pair<SimplexId, int> &a,
         const std::pair<SimplexId, int> &b) { return a.second > b.second; });
 
-  // get the four first values
-  const size_t sepsPerCell = std::min<size_t>(histVec.size(), 4);
-  cellSeps.resize(cellSeps.size() + 1);
-  for(size_t i = 0; i < sepsPerCell; ++i) {
-    cellSeps.back().emplace_back(histVec[i].first);
+  std::vector<SimplexId> sepIds(histVec.size());
+  for(size_t i = 0; i < histVec.size(); ++i) {
+    sepIds[i] = histVec[i].first;
   }
+
+  // return all reached separatrices by importance order
+  cellSeps.emplace_back(sepIds);
 
   return 0;
 }
