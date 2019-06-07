@@ -342,7 +342,6 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
   // rectified Morse-Smale cells
   std::vector<SimplexId> morseManRect(segmentationNumber_, -1);
-  std::vector<SimplexId> cellIds{};
 
   // number of Morse-Smale cells
   auto maxManId
@@ -354,25 +353,21 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // for each cell, the indices of the bordering separatrices
   std::vector<std::vector<SimplexId>> cellSeps{};
 
-  auto findCellsSeps = [&]() {
-    bool notFinished = true;
-    size_t pos = 0;
+  bool notFinished = true;
+  size_t pos = 0;
 
-    while(notFinished) {
-      for(size_t j = pos; j < segmentationNumber_; ++j) {
-        if(onSep[j] == -1 && morseManRect[j] == -1) {
-          pos = j;
-          break;
-        }
-        if(j == segmentationNumber_ - 1) {
-          notFinished = false;
-        }
+  while(notFinished) {
+    for(size_t j = pos; j < segmentationNumber_; ++j) {
+      if(onSep[j] == -1 && morseManRect[j] == -1) {
+        pos = j;
+        break;
       }
-      detectCells(pos, morseManRect, cellSeps, onSep);
+      if(j == segmentationNumber_ - 1) {
+        notFinished = false;
+      }
     }
-  };
-
-  findCellsSeps();
+    detectCells(pos, morseManRect, cellSeps, onSep);
+  }
 
   return 0;
 
