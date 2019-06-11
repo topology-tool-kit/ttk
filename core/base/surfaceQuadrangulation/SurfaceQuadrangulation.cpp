@@ -369,6 +369,114 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     detectCells(pos, morseManRect, cellSeps, onSep);
   }
 
+  // hold quad subdivision
+  decltype(outputCells_) outQ{};
+  outQ.reserve(5 * cellSeps.size());
+  auto quads = reinterpret_cast<std::vector<Quad> *>(&outQ);
+
+  for(const auto &c : cellSeps) {
+
+    std::vector<long long> srcs(c.size());
+    std::vector<long long> dsts(c.size());
+
+    for(size_t i = 0; i < c.size(); ++i) {
+      auto src = sepCellIds_[sepBegs[c[i]]];
+      auto dst = sepCellIds_[sepEnds[c[i]]];
+      for(long long j = 0; j < criticalPointsNumber_; ++j) {
+        if(criticalPointsCellIds_[j] == src) {
+          srcs[i] = j;
+        }
+        if(criticalPointsCellIds_[j] == dst) {
+          dsts[i] = j;
+        }
+      }
+    }
+
+    bool found = false;
+
+    // iterate over first dest
+    for(size_t i = 0; i < c.size(); ++i) {
+      auto vi = dsts[i];
+
+      // iterate over second dest from i + 1
+      for(size_t k = i + 1; k < c.size(); ++k) {
+        auto vk = dsts[k];
+        // skip same extrema type
+        if(criticalPointsType_[vi] == criticalPointsType_[vk]) {
+          continue;
+        }
+        // at least four separatrices leading to these two extrema
+        if(std::count(dsts.begin(), dsts.end(), vi)
+             + std::count(dsts.begin(), dsts.end(), vk)
+           < 4) {
+          continue;
+        }
+        // find two (one if degenerate) common sources
+        std::set<SimplexId> srcs_i{};
+        std::set<SimplexId> srcs_k{};
+        std::vector<SimplexId> common_srcs_ik{};
+        for(size_t j = 0; j < c.size(); ++j) {
+          if(dsts[j] == vi) {
+            srcs_i.insert(srcs[j]);
+          }
+          if(dsts[j] == vk) {
+            srcs_k.insert(srcs[j]);
+          }
+        }
+        std::set_intersection(srcs_i.begin(), srcs_i.end(), srcs_k.begin(),
+                              srcs_k.end(), std::back_inserter(common_srcs_ik));
+        if(common_srcs_ik.size() > 1) {
+          quads->emplace_back(
+            Quad{4, vi, common_srcs_ik[0], vk, common_srcs_ik[1]});
+          found = true;
+          break;
+        }
+      }
+      if(found) {
+        // stop at the first correct quad
+        break;
+      }
+    }
+
+    if(!found) { // not found: degenerate case
+      // take the first two distinct extrema (separatrices with higher weight)
+      for(size_t i = 0; i < c.size(); ++i) {
+        auto vi = dsts[0];
+        decltype(vi) vk{};
+        for(size_t k = i + 1; k < dsts.size(); ++k) {
+          vk = dsts[k];
+          // skip same critical point type
+          if(criticalPointsCellIds_[vi] == criticalPointsCellIds_[vk]) {
+            continue;
+          }
+          // we need at least 3 separatrices leading to these extrema
+          if(std::count(dsts.begin(), dsts.end(), vi)
+               + std::count(dsts.begin(), dsts.end(), vk)
+             < 3) {
+            continue;
+          }
+          // count saddle point occurences
+          int count_vj = 0;
+          for(size_t j = i; j < srcs.size(); ++j) {
+            if(dsts[j] == vi || dsts[j] == vk) {
+              count_vj++;
+            }
+          }
+          // one saddle point for three separatrices
+          if(count_vj < 3) {
+            continue;
+          }
+          auto vj = srcs[i];
+          found = true;
+          quads->emplace_back(Quad{4, vi, vj, vk, vj});
+        }
+        if(found) {
+          break;
+        }
+      }
+    }
+  }
+
   return 0;
 
   // rectify Morse-Smale cells indices
