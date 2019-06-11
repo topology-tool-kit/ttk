@@ -394,6 +394,30 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
     bool found = false;
 
+    // deal here with "small" cells bordered by less than 4 seps
+    if(c.size() < 2) {
+      continue; // don't bother with those cells
+    } else if(c.size() < 4) {
+      // pray for finding four different indices!
+      std::set<long long> src_set(srcs.begin(), srcs.end());
+      std::set<long long> dst_set(dsts.begin(), dsts.end());
+      if(src_set.size() >= 2 && dst_set.size() >= 2) {
+        // take two first distinct sources and dests
+        auto vi = dsts[0];
+        auto vk = *std::find_if_not(
+          dsts.begin(), dsts.end(), [&](const long long a) { return a == vi; });
+        auto vj = srcs[0];
+        auto vl = *std::find_if_not(
+          srcs.begin(), srcs.end(), [&](const long long a) { return a == vj; });
+        quads->emplace_back(Quad{4, vi, vj, vk, vl});
+        found = true;
+      }
+      continue;
+    }
+
+    // normal case: find a pair of extrema and a pair of saddle points
+    // with four separatrices linking one another
+
     // iterate over first dest
     for(size_t i = 0; i < c.size(); ++i) {
       auto vi = dsts[i];
