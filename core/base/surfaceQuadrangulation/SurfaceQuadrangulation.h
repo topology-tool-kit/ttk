@@ -98,14 +98,14 @@ namespace ttk {
     int dualQuadrangulate();
 
     /**
-     * @brief Post-process quadrangulation
+     * @brief Subdivise quadrangulation
      *
      * Find duplicate separatrices coming from the same vertices and
      * generate new quads that try to map tubular topologies.
      *
      * @return 0 in case of success
      */
-    int postProcess();
+    int subdivise();
 
     /**
      * @brief Find the Morse-Smale cell around a given vertex

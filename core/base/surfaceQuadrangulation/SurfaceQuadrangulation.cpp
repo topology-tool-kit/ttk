@@ -377,7 +377,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   return 0;
 }
 
-int ttk::SurfaceQuadrangulation::postProcess() {
+int ttk::SurfaceQuadrangulation::subdivise() {
 
   // for each output quad, its barycenter position in outputPoints_
   std::vector<size_t> cellBary(outputCells_.size());
