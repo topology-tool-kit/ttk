@@ -121,25 +121,6 @@ namespace ttk {
       const std::vector<std::pair<SimplexId, SimplexId>> &sepEdges);
 
     /**
-     * @brief Tag all points inside a Morse-Smale cell limited by separatrices
-     *
-     * Used to deduplicate Morse-Smale cells.
-     *
-     * @param[in,out] morseManRect Vertex to new Morse-Smale cell index
-     * @param[in] onSep Index of separatrix under vertices (or -1)
-     * @param[in] sharedManifold Cell index to tag
-     * @param[in,out] maxManifoldId New tag to apply on cell
-     * @param[out] sepsIndex For each cell stores bordering separatrices indices
-     *
-     * @return 0
-     */
-    int rectifyManifoldIndex(std::vector<SimplexId> &morseManRect,
-                             const std::vector<SimplexId> &onSep,
-                             const SimplexId sharedManifold,
-                             SimplexId &maxManifoldId,
-                             std::vector<SimplexId> &sepsIndex) const;
-
-    /**
      * @brief Post-process quadrangulation
      *
      * Find duplicate separatrices coming from the same vertices and

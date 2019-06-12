@@ -541,33 +541,6 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
   return 0;
 
-  // rectify Morse-Smale cells indices
-  for(size_t i = 0; i < nquads; ++i) {
-    auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i]);
-    // bounds indices in separatrices array
-    std::vector<SimplexId> qVerts{
-      criticalPointsCellIds_[q->i], criticalPointsCellIds_[q->j],
-      criticalPointsCellIds_[q->k], criticalPointsCellIds_[q->l]};
-
-    auto nDupVerts = std::count_if(
-      &q->i, &q->l + 1, [&](const long long a) { return pointsDupSep[a]; });
-
-    if(nDupVerts >= 2) {
-      auto saddles = std::vector<size_t>{
-        static_cast<size_t>(q->j), static_cast<size_t>(q->l)};
-      rectifyManifoldIndex(morseManRect, onSep,
-                           *commonManifolds(saddles).begin(), maxManId,
-                           cellSeps[i]);
-    }
-  }
-
-  // fill in the rest of the segmentation
-  for(size_t i = 0; i < segmentationNumber_; ++i) {
-    if(morseManRect[i] == -1) {
-      morseManRect[i] = segmentation_[i];
-    }
-  }
-
   // for each output quad, its barycenter position in outputPoints_
   std::vector<size_t> cellBary(outputCells_.size());
 
@@ -723,85 +696,6 @@ int ttk::SurfaceQuadrangulation::detectCells(
 
   // return all reached separatrices by importance order
   cellSeps.emplace_back(sepIds);
-
-  return 0;
-}
-
-int ttk::SurfaceQuadrangulation::rectifyManifoldIndex(
-  std::vector<SimplexId> &morseManRect,
-  const std::vector<SimplexId> &onSep,
-  const SimplexId sharedManifold,
-  SimplexId &maxManifoldId,
-  std::vector<SimplexId> &sepsIndex) const {
-
-  std::queue<SimplexId> toProcess{};
-  std::vector<SimplexId> borderSeps{};
-
-  // look for the first vertex meeting constraints
-  for(size_t i = 0; i < segmentationNumber_; ++i) {
-    if(segmentation_[i] == sharedManifold && onSep[i] == -1
-       && morseManRect[i] == -1) {
-      toProcess.push(i);
-      break;
-    }
-  }
-
-  auto isCandidate = [&](const SimplexId a) {
-    return segmentation_[a] == sharedManifold && onSep[a] == -1
-           && morseManRect[a] == -1;
-  };
-
-  // breadth-first search
-  while(!toProcess.empty()) {
-    auto curr = toProcess.front();
-    toProcess.pop();
-
-    if(!isCandidate(curr)) {
-      continue;
-    }
-
-    morseManRect[curr] = maxManifoldId;
-
-    auto nneigh = triangulation_->getVertexNeighborNumber(curr);
-    for(SimplexId j = 0; j < nneigh; ++j) {
-      SimplexId next;
-      triangulation_->getVertexNeighbor(curr, j, next);
-
-      if(isCandidate(next)) {
-        toProcess.push(next);
-      }
-
-      // store reached separatrices indices
-      if(onSep[next] != -1) {
-        borderSeps.emplace_back(onSep[next]);
-      }
-    }
-  }
-
-  // histogram of border separatrices indices
-  std::map<SimplexId, int> hist{};
-
-  // post-process borderSeps to find the most common separatrices indices
-  for(const auto &v : borderSeps) {
-    hist[v]++;
-  }
-
-  // reverse histogram to sort map by values
-  std::map<int, SimplexId> revHist{};
-  for(const auto &p : hist) {
-    revHist[p.second] = p.first;
-  }
-
-  const size_t sepsPerCell = 4;
-  for(auto it = revHist.rbegin(); it != revHist.rend(); ++it) {
-    sepsIndex.emplace_back(it->second);
-    if(sepsIndex.size() == sepsPerCell) {
-      break;
-    }
-  }
-
-  // update total number of cells
-  maxManifoldId++;
 
   return 0;
 }
