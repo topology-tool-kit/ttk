@@ -466,9 +466,8 @@ int ttk::SurfaceQuadrangulation::postProcess() {
       // take the first two distinct extrema (separatrices with higher weight)
       for(size_t i = 0; i < c.size(); ++i) {
         auto vi = dsts[0];
-        decltype(vi) vk{};
         for(size_t k = i + 1; k < dsts.size(); ++k) {
-          vk = dsts[k];
+          auto vk = dsts[k];
           // skip same critical point type
           if(criticalPointsCellIds_[vi] == criticalPointsCellIds_[vk]) {
             continue;
@@ -482,7 +481,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
           // count saddle point occurences
           int count_vj = 0;
           for(size_t j = i; j < srcs.size(); ++j) {
-            if(dsts[j] == vi || dsts[j] == vk) {
+            if(srcs[j] == srcs[i] && (dsts[j] == vi || dsts[j] == vk)) {
               count_vj++;
             }
           }
