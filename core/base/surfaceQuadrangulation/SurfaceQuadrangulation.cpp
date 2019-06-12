@@ -353,20 +353,27 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // for each cell, the indices of the bordering separatrices
   std::vector<std::vector<SimplexId>> cellSeps{};
 
-  bool notFinished = true;
+  // for each cell, the MorseSmaleManifold index
+  std::vector<SimplexId> cellId{};
+
+  bool finished = false;
   size_t pos = 0;
 
-  while(notFinished) {
+  while(true) {
     for(size_t j = pos; j < segmentationNumber_; ++j) {
       if(onSep[j] == -1 && morseManRect[j] == -1) {
         pos = j;
         break;
       }
       if(j == segmentationNumber_ - 1) {
-        notFinished = false;
+        finished = true;
       }
     }
+    if(finished) {
+      break;
+    }
     detectCells(pos, morseManRect, cellSeps, onSep);
+    cellId.emplace_back(segmentation_[pos]);
   }
 
   // hold quad subdivision
