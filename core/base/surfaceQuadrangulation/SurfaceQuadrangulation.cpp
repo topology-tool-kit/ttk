@@ -634,29 +634,21 @@ int ttk::SurfaceQuadrangulation::execute() {
     quadrangulate(ndegen);
   }
 
-  // maximum manifold id
-  auto maxSegId
-    = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
-
-  // total number of manifolds
-  int nseg = maxSegId + 1;
-
   // number of produced quads
   size_t quadNumber = outputCells_.size() / 5;
-
-  // print number of quadrangles wrt number of MSC segmentation
-  {
-    std::stringstream msg;
-    msg << "[SurfaceQuadrangulation] " << quadNumber << " quads (" << ndegen
-        << " degenerated, " << nseg << " manifolds)" << std::endl;
-    dMsg(std::cout, msg.str(), detailedInfoMsg);
-  }
 
   {
     std::stringstream msg;
     msg << "[SurfaceQuadrangulation] Produced " << quadNumber
         << " quadrangles after " << t.getElapsedTime() << " s." << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
+  }
+
+  {
+    std::stringstream msg;
+    msg << "[SurfaceQuadrangulation] " << quadNumber << " quads (" << ndegen
+        << " degenerated)" << std::endl;
+    dMsg(std::cout, msg.str(), detailedInfoMsg);
   }
 
   return 0;
