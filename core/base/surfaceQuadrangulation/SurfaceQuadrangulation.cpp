@@ -343,13 +343,6 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // rectified Morse-Smale cells
   std::vector<SimplexId> morseManRect(segmentationNumber_, -1);
 
-  // number of Morse-Smale cells
-  auto maxManId
-    = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
-
-  // store current number of quads
-  auto nquads = outputCells_.size() / 5;
-
   // for each cell, the indices of the bordering separatrices
   std::vector<std::vector<SimplexId>> cellSeps{};
 
@@ -375,6 +368,17 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     detectCells(pos, morseManRect, cellSeps, onSep);
     cellId.emplace_back(segmentation_[pos]);
   }
+
+  // find separatrix index from vertices
+  auto sepFromPoints = [&](const long long src, const long long dst) {
+    for(size_t i = 0; i < numSeps; ++i) {
+      if(sepCellIds_[sepBegs[i]] == criticalPointsCellIds_[src]
+         && sepCellIds_[sepEnds[i]] == criticalPointsCellIds_[dst]) {
+        return i;
+      }
+    }
+    return numSeps;
+  };
 
   // hold quad subdivision
   decltype(outputCells_) outQ{};
@@ -539,23 +543,15 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // for each output quad, its barycenter position in outputPoints_
   std::vector<size_t> cellBary(outputCells_.size());
 
-  // find separatrix index from vertices
-  auto sepFromPoints = [&](const long long src, const long long dst) {
-    for(size_t i = 0; i < numSeps; ++i) {
-      if(sepCellIds_[sepBegs[i]] == criticalPointsCellIds_[src]
-         && sepCellIds_[sepEnds[i]] == criticalPointsCellIds_[dst]) {
-        return i;
-      }
-    }
-    return numSeps;
-  };
-
   std::vector<std::vector<float>> outputDists(4);
 
   // hold quad subdivision
   decltype(outputCells_) quadSubd{};
   quadSubd.reserve(4 * outputCells_.size());
   auto subd = reinterpret_cast<std::vector<Quad> *>(&quadSubd);
+
+  // store current number of quads
+  auto nquads = outputCells_.size() / 5;
 
   for(size_t i = 0; i < nquads; ++i) {
     auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i]);
