@@ -168,12 +168,6 @@ namespace ttk {
     std::vector<size_t> sepBegs_{};
     // index of separatrices endings in separatrices arrays
     std::vector<size_t> sepEnds_{};
-    // separatrices middles index in output points array
-    std::vector<size_t> sepMiddle_{};
-    // separatrices middles nearest vertex id
-    std::vector<SimplexId> sepMidNearestVertex_{};
-    // store duplicate separatrix id, -1 if no duplicate
-    std::vector<SimplexId> sepDup_{};
     // sub-segmentation of Morse-Smale cells
     std::vector<SimplexId> morseSeg_{};
 

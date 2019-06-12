@@ -204,10 +204,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   // clear data members
   sepBegs_.resize(numSeps);
   sepEnds_.resize(numSeps);
-  sepMiddle_.resize(numSeps);
-  sepMidNearestVertex_.resize(numSeps);
-  sepDup_.resize(numSeps);
-  std::fill(sepDup_.begin(), sepDup_.end(), -1);
   morseSeg_.resize(segmentationNumber_);
   std::fill(morseSeg_.begin(), morseSeg_.end(), -1);
 
@@ -216,34 +212,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     // separatrices bounds
     sepBegs_[i] = sepFlatEdges[2 * i];
     sepEnds_[i] = sepFlatEdges[2 * i + 1];
-    // separatrices middles
-    sepMiddle_[i] = outputPoints_.size() / 3; // before insertion at next line
-    sepMidNearestVertex_[i] = findSeparatrixMiddle(sepBegs_[i], sepEnds_[i]);
-  }
-
-  for(size_t i = 0; i < numSeps; ++i) {
-    for(size_t j = i + 1; j < numSeps; ++j) {
-      if(sepCellIds_[sepBegs_[i]] == sepCellIds_[sepBegs_[j]]
-         && sepCellIds_[sepEnds_[i]] == sepCellIds_[sepEnds_[j]]) {
-        sepDup_[i] = j;
-        sepDup_[j] = i;
-      }
-    }
-  }
-
-  // if output points are on a duplicate separatrix
-  std::vector<bool> pointsDupSep(outputPointsIds_.size(), false);
-
-  for(size_t i = 0; i < numSeps; ++i) {
-    if(sepDup_[i] != -1) {
-      for(SimplexId j = 0; j < criticalPointsNumber_; ++j) {
-        if(criticalPointsCellIds_[j] == sepCellIds_[sepBegs_[i]]
-           || criticalPointsCellIds_[j] == sepCellIds_[sepEnds_[i]]) {
-          pointsDupSep[j] = true;
-        }
-      }
-      pointsDupSep[sepMiddle_[i]] = true;
-    }
   }
 
   // for each vertex on a separatrix, the index of the separatrix
@@ -520,6 +488,44 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
 
 int ttk::SurfaceQuadrangulation::subdivise() {
 
+  // separatrices middles index in output points array
+  std::vector<SimplexId> sepMiddle(sepBegs_.size());
+  // separatrices middles nearest vertex id
+  std::vector<SimplexId> sepMidNearestVertex(sepBegs_.size());
+  // store duplicate separatrix id, -1 if no duplicate
+  std::vector<SimplexId> sepDup(sepBegs_.size(), -1);
+
+  for(size_t i = 0; i < sepMidNearestVertex.size(); ++i) {
+    // separatrices middles
+    sepMiddle[i] = outputPoints_.size() / 3; // before insertion at next line
+    sepMidNearestVertex[i] = findSeparatrixMiddle(sepBegs_[i], sepEnds_[i]);
+  }
+
+  for(size_t i = 0; i < sepBegs_.size(); ++i) {
+    for(size_t j = i + 1; j < sepBegs_.size(); ++j) {
+      if(sepCellIds_[sepBegs_[i]] == sepCellIds_[sepBegs_[j]]
+         && sepCellIds_[sepEnds_[i]] == sepCellIds_[sepEnds_[j]]) {
+        sepDup[i] = j;
+        sepDup[j] = i;
+      }
+    }
+  }
+
+  // if output points are on a duplicate separatrix
+  std::vector<bool> pointsDupSep(outputPointsIds_.size(), false);
+
+  for(size_t i = 0; i < sepDup.size(); ++i) {
+    if(sepDup[i] != -1) {
+      for(SimplexId j = 0; j < criticalPointsNumber_; ++j) {
+        if(criticalPointsCellIds_[j] == sepCellIds_[sepBegs_[i]]
+           || criticalPointsCellIds_[j] == sepCellIds_[sepEnds_[i]]) {
+          pointsDupSep[j] = true;
+        }
+      }
+      pointsDupSep[sepMiddle[i]] = true;
+    }
+  }
+
   // for each output quad, its barycenter position in outputPoints_
   std::vector<size_t> cellBary(outputCells_.size());
 
@@ -544,8 +550,8 @@ int ttk::SurfaceQuadrangulation::subdivise() {
     std::vector<long long> sepMids(quadSeps.size());
     std::vector<SimplexId> midsNearestVertex(quadSeps.size());
     for(size_t j = 0; j < quadSeps.size(); ++j) {
-      sepMids[j] = sepMiddle_[quadSeps[j]];
-      midsNearestVertex[j] = sepMidNearestVertex_[quadSeps[j]];
+      sepMids[j] = sepMiddle[quadSeps[j]];
+      midsNearestVertex[j] = sepMidNearestVertex[quadSeps[j]];
     }
 
     // find barycenter of current cell (c.f. QuadrangulationSubdivision.cpp)
