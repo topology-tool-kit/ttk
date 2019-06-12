@@ -1,6 +1,7 @@
 #include <Dijkstra.h>
 #include <Geometry.h>
 #include <QuadrangulationSubdivision.h>
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <numeric>
