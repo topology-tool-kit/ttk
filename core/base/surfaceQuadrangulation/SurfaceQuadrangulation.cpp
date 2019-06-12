@@ -108,6 +108,83 @@ size_t ttk::SurfaceQuadrangulation::sepFromPoints(const long long src,
   return sepBegs_.size();
 }
 
+int ttk::SurfaceQuadrangulation::detectCells(
+  const SimplexId src,
+  std::vector<SimplexId> &vertexCells,
+  std::vector<std::vector<SimplexId>> &cellSeps,
+  const std::vector<SimplexId> &vertexSepMask) const {
+
+  std::queue<SimplexId> toProcess{};
+  toProcess.push(src);
+  std::vector<SimplexId> borderSeps{};
+
+  auto cellId = segmentation_[src];
+  SimplexId newCellId = cellSeps.size();
+
+  auto isCandidate = [&](const SimplexId a) {
+    return segmentation_[a] == cellId && vertexSepMask[a] == -1
+           && vertexCells[a] == -1;
+  };
+
+  while(!toProcess.empty()) {
+    auto curr = toProcess.front();
+    toProcess.pop();
+
+    if(!isCandidate(curr)) {
+      continue;
+    }
+
+    vertexCells[curr] = newCellId;
+
+    auto nneigh = triangulation_->getVertexNeighborNumber(curr);
+    for(SimplexId j = 0; j < nneigh; ++j) {
+      SimplexId next;
+      triangulation_->getVertexNeighbor(curr, j, next);
+
+      if(isCandidate(next)) {
+        toProcess.push(next);
+      }
+
+      // store reached separatrices indices
+      if(vertexSepMask[next] != -1) {
+        borderSeps.emplace_back(vertexSepMask[next]);
+      }
+    }
+  }
+
+  // histogram of border separatrices indices
+  std::map<SimplexId, int> hist{};
+
+  // post-process borderSeps to find the most common separatrices indices
+  for(const auto &v : borderSeps) {
+    hist[v]++;
+  }
+
+  // map dumped into vector
+  std::vector<std::pair<SimplexId, int>> histVec{};
+  histVec.reserve(hist.size());
+
+  for(const auto &p : hist) {
+    histVec.emplace_back(p);
+  }
+
+  // sort by value, descending order
+  std::sort(
+    histVec.begin(), histVec.end(),
+    [&](const std::pair<SimplexId, int> &a,
+        const std::pair<SimplexId, int> &b) { return a.second > b.second; });
+
+  std::vector<SimplexId> sepIds(histVec.size());
+  for(size_t i = 0; i < histVec.size(); ++i) {
+    sepIds[i] = histVec[i].first;
+  }
+
+  // return all reached separatrices by importance order
+  cellSeps.emplace_back(sepIds);
+
+  return 0;
+}
+
 int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   // quadrangle vertices are either extrema or saddle points
 
@@ -377,6 +454,70 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   return 0;
 }
 
+size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
+                                                         const size_t b) {
+
+  const int dim = 3;
+
+  std::vector<float> distFromA(b - a + 1);
+  std::array<float, dim> prev{}, curr{};
+
+  curr[0] = sepPoints_[dim * a];
+  curr[1] = sepPoints_[dim * a + 1];
+  curr[2] = sepPoints_[dim * a + 2];
+
+  // integrate distances at every point of this separatrix
+  for(size_t i = 1; i < b - a + 1; ++i) {
+    std::swap(curr, prev);
+    curr[0] = sepPoints_[dim * (a + i)];
+    curr[1] = sepPoints_[dim * (a + i) + 1];
+    curr[2] = sepPoints_[dim * (a + i) + 2];
+    distFromA[i]
+      = distFromA[i - 1] + ttk::Geometry::distance(&curr[0], &prev[0]);
+  }
+
+  auto distAB = distFromA.back();
+  for(auto &el : distFromA) {
+    el = std::abs(el - distAB / 2.0);
+  }
+
+  // index in separatrices point data array of separatrix middle
+  auto pos = a + std::min_element(distFromA.begin(), distFromA.end())
+             - distFromA.begin();
+
+  // new point!
+  outputPoints_.emplace_back(sepPoints_[dim * pos]);
+  outputPoints_.emplace_back(sepPoints_[dim * pos + 1]);
+  outputPoints_.emplace_back(sepPoints_[dim * pos + 2]);
+
+  SimplexId id = pos;
+
+  // new point identifier (on the triangular mesh)
+  switch(sepCellDims_[pos]) {
+    case 0:
+      outputPointsIds_.emplace_back(sepCellIds_[pos]);
+      break;
+    case 1: {
+      // take the first vertex of the edge
+      triangulation_->getEdgeVertex(sepCellIds_[pos], 0, id);
+      outputPointsIds_.emplace_back(id);
+      break;
+    }
+    case 2: {
+      // take the first vertex of the triangle
+      triangulation_->getTriangleVertex(sepCellIds_[pos], 0, id);
+      outputPointsIds_.emplace_back(id);
+      break;
+    }
+    default:
+      break;
+  }
+
+  outputPointsTypes_.emplace_back(1);
+
+  return id;
+}
+
 int ttk::SurfaceQuadrangulation::subdivise() {
 
   // for each output quad, its barycenter position in outputPoints_
@@ -459,147 +600,6 @@ int ttk::SurfaceQuadrangulation::subdivise() {
   outputCells_ = std::move(quadSubd);
 
   return 0;
-}
-
-int ttk::SurfaceQuadrangulation::detectCells(
-  const SimplexId src,
-  std::vector<SimplexId> &vertexCells,
-  std::vector<std::vector<SimplexId>> &cellSeps,
-  const std::vector<SimplexId> &vertexSepMask) const {
-
-  std::queue<SimplexId> toProcess{};
-  toProcess.push(src);
-  std::vector<SimplexId> borderSeps{};
-
-  auto cellId = segmentation_[src];
-  SimplexId newCellId = cellSeps.size();
-
-  auto isCandidate = [&](const SimplexId a) {
-    return segmentation_[a] == cellId && vertexSepMask[a] == -1
-           && vertexCells[a] == -1;
-  };
-
-  while(!toProcess.empty()) {
-    auto curr = toProcess.front();
-    toProcess.pop();
-
-    if(!isCandidate(curr)) {
-      continue;
-    }
-
-    vertexCells[curr] = newCellId;
-
-    auto nneigh = triangulation_->getVertexNeighborNumber(curr);
-    for(SimplexId j = 0; j < nneigh; ++j) {
-      SimplexId next;
-      triangulation_->getVertexNeighbor(curr, j, next);
-
-      if(isCandidate(next)) {
-        toProcess.push(next);
-      }
-
-      // store reached separatrices indices
-      if(vertexSepMask[next] != -1) {
-        borderSeps.emplace_back(vertexSepMask[next]);
-      }
-    }
-  }
-
-  // histogram of border separatrices indices
-  std::map<SimplexId, int> hist{};
-
-  // post-process borderSeps to find the most common separatrices indices
-  for(const auto &v : borderSeps) {
-    hist[v]++;
-  }
-
-  // map dumped into vector
-  std::vector<std::pair<SimplexId, int>> histVec{};
-  histVec.reserve(hist.size());
-
-  for(const auto &p : hist) {
-    histVec.emplace_back(p);
-  }
-
-  // sort by value, descending order
-  std::sort(
-    histVec.begin(), histVec.end(),
-    [&](const std::pair<SimplexId, int> &a,
-        const std::pair<SimplexId, int> &b) { return a.second > b.second; });
-
-  std::vector<SimplexId> sepIds(histVec.size());
-  for(size_t i = 0; i < histVec.size(); ++i) {
-    sepIds[i] = histVec[i].first;
-  }
-
-  // return all reached separatrices by importance order
-  cellSeps.emplace_back(sepIds);
-
-  return 0;
-}
-
-size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
-                                                         const size_t b) {
-
-  const int dim = 3;
-
-  std::vector<float> distFromA(b - a + 1);
-  std::array<float, dim> prev{}, curr{};
-
-  curr[0] = sepPoints_[dim * a];
-  curr[1] = sepPoints_[dim * a + 1];
-  curr[2] = sepPoints_[dim * a + 2];
-
-  // integrate distances at every point of this separatrix
-  for(size_t i = 1; i < b - a + 1; ++i) {
-    std::swap(curr, prev);
-    curr[0] = sepPoints_[dim * (a + i)];
-    curr[1] = sepPoints_[dim * (a + i) + 1];
-    curr[2] = sepPoints_[dim * (a + i) + 2];
-    distFromA[i]
-      = distFromA[i - 1] + ttk::Geometry::distance(&curr[0], &prev[0]);
-  }
-
-  auto distAB = distFromA.back();
-  for(auto &el : distFromA) {
-    el = std::abs(el - distAB / 2.0);
-  }
-
-  // index in separatrices point data array of separatrix middle
-  auto pos = a + std::min_element(distFromA.begin(), distFromA.end())
-             - distFromA.begin();
-
-  // new point!
-  outputPoints_.emplace_back(sepPoints_[dim * pos]);
-  outputPoints_.emplace_back(sepPoints_[dim * pos + 1]);
-  outputPoints_.emplace_back(sepPoints_[dim * pos + 2]);
-
-  SimplexId id = pos;
-
-  // new point identifier (on the triangular mesh)
-  switch(sepCellDims_[pos]) {
-    case 0:
-      outputPointsIds_.emplace_back(sepCellIds_[pos]);
-      break;
-    case 1: {
-      // take the first vertex of the edge
-      triangulation_->getEdgeVertex(sepCellIds_[pos], 0, id);
-      outputPointsIds_.emplace_back(id);
-      break;
-    }
-    case 2: {
-      // take the first vertex of the triangle
-      triangulation_->getTriangleVertex(sepCellIds_[pos], 0, id);
-      outputPointsIds_.emplace_back(id);
-      break;
-    }
-    default:
-      break;
-  }
-
-  outputPointsTypes_.emplace_back(1);
-
-  return id;
 }
 
 // main routine
