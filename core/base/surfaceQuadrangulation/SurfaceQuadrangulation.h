@@ -93,11 +93,9 @@ namespace ttk {
      * The dual quadrangulation uses only extrema and no saddle points
      * to output a coarser quadrangulation.
      *
-     * @param[in] sepEdges vector of separatrices edges
      * @return 0 in case of success
      */
-    int dualQuadrangulate(
-      const std::vector<std::pair<SimplexId, SimplexId>> &sepEdges);
+    int dualQuadrangulate();
 
     /**
      * @brief Post-process quadrangulation

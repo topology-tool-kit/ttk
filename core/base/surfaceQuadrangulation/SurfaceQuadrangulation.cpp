@@ -5,10 +5,35 @@
 #include <cmath>
 #include <queue>
 
-int ttk::SurfaceQuadrangulation::dualQuadrangulate(
-  const std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> &sepEdges) {
+int ttk::SurfaceQuadrangulation::dualQuadrangulate() {
 
   // quadrangles vertices are only extrema
+
+  // filter sepCellIds_ array according to sepMask_
+  std::vector<SimplexId> sepFlatEdges{};
+
+  for(SimplexId i = 0; i < separatriceNumber_; ++i) {
+    if(sepMask_[i] == 1) {
+      continue;
+    }
+    sepFlatEdges.emplace_back(sepCellIds_[i]);
+  }
+
+  if(sepFlatEdges.size() % 2 != 0) {
+    std::stringstream msg;
+    msg << "[SurfaceQuadrangulation] Error: odd number of separatrices edges"
+        << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
+    return -1;
+  }
+
+  // holds separatrices edges for every separatrix
+  std::vector<std::pair<SimplexId, SimplexId>> sepEdges{};
+
+  for(size_t i = 0; i < sepFlatEdges.size() / 2; ++i) {
+    sepEdges.emplace_back(
+      std::make_pair(sepFlatEdges[2 * i], sepFlatEdges[2 * i + 1]));
+  }
 
   // maps sources (saddle points) to vector of their destinations (extrema)
   std::map<SimplexId, std::vector<SimplexId>> sourceDests{};
@@ -599,37 +624,11 @@ int ttk::SurfaceQuadrangulation::execute() {
     outputPointsTypes_[i] = 0;
   }
 
-  // filter sepCellIds_ array according to sepMask_
-  std::vector<SimplexId> sepFlatEdges{};
-
-  for(SimplexId i = 0; i < separatriceNumber_; ++i) {
-    if(sepMask_[i] == 1) {
-      continue;
-    }
-    sepFlatEdges.emplace_back(sepCellIds_[i]);
-  }
-
-  if(sepFlatEdges.size() % 2 != 0) {
-    std::stringstream msg;
-    msg << "[SurfaceQuadrangulation] Error: odd number of separatrices edges"
-        << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-    return -1;
-  }
-
-  // holds separatrices edges for every separatrix
-  std::vector<std::pair<SimplexId, SimplexId>> sepEdges{};
-
-  for(size_t i = 0; i < sepFlatEdges.size() / 2; ++i) {
-    sepEdges.emplace_back(
-      std::make_pair(sepFlatEdges[2 * i], sepFlatEdges[2 * i + 1]));
-  }
-
   // number of degenerate quadrangles
   size_t ndegen = 0;
 
   if(dualQuadrangulation_) {
-    dualQuadrangulate(sepEdges);
+    dualQuadrangulate();
   } else {
     // direct quadrangulation with saddle points
     quadrangulate(ndegen);
