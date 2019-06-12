@@ -532,18 +532,16 @@ int ttk::SurfaceQuadrangulation::subdivise() {
   std::array<std::vector<float>, 4> outputDists{};
 
   // hold quad subdivision
-  decltype(outputCells_) quadSubd{};
-  quadSubd.reserve(4 * outputCells_.size());
-  auto subd = reinterpret_cast<std::vector<Quad> *>(&quadSubd);
+  decltype(outputCells_) outputSubd{};
+  outputSubd.reserve(4 * outputCells_.size());
+  auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
+  auto qsubd = reinterpret_cast<std::vector<Quad> *>(&outputSubd);
 
-  // store current number of quads
-  auto nquads = outputCells_.size() / 5;
-
-  for(size_t i = 0; i < nquads; ++i) {
-    auto q = reinterpret_cast<Quad *>(&outputCells_[5 * i]);
+  for(size_t i = 0; i < quads->size(); ++i) {
+    auto q = quads->at(i);
     std::vector<size_t> quadSeps
-      = {sepFromPoints(q->j, q->i), sepFromPoints(q->j, q->k),
-         sepFromPoints(q->l, q->k), sepFromPoints(q->l, q->i)};
+      = {sepFromPoints(q.j, q.i), sepFromPoints(q.j, q.k),
+         sepFromPoints(q.l, q.k), sepFromPoints(q.l, q.i)};
 
     // TODO? if dup separatrice
 
@@ -558,8 +556,8 @@ int ttk::SurfaceQuadrangulation::subdivise() {
 
     // bound Dijkstra by parent quad vertices
     std::vector<SimplexId> bounds{
-      criticalPointsIdentifier_[q->i], criticalPointsIdentifier_[q->j],
-      criticalPointsIdentifier_[q->k], criticalPointsIdentifier_[q->l]};
+      criticalPointsIdentifier_[q.i], criticalPointsIdentifier_[q.j],
+      criticalPointsIdentifier_[q.k], criticalPointsIdentifier_[q.l]};
 
     for(size_t j = 0; j < quadSeps.size(); ++j) {
       Dijkstra::shortestPath(
@@ -597,13 +595,14 @@ int ttk::SurfaceQuadrangulation::subdivise() {
       outputPointsTypes_.emplace_back(2);
     }
 
-    subd->emplace_back(Quad{4, q->i, sepMids[3], baryPos, sepMids[0]});
-    subd->emplace_back(Quad{4, q->j, sepMids[0], baryPos, sepMids[1]});
-    subd->emplace_back(Quad{4, q->k, sepMids[1], baryPos, sepMids[2]});
-    subd->emplace_back(Quad{4, q->l, sepMids[2], baryPos, sepMids[3]});
+    qsubd->emplace_back(Quad{4, q.i, sepMids[3], baryPos, sepMids[0]});
+    qsubd->emplace_back(Quad{4, q.j, sepMids[0], baryPos, sepMids[1]});
+    qsubd->emplace_back(Quad{4, q.k, sepMids[1], baryPos, sepMids[2]});
+    qsubd->emplace_back(Quad{4, q.l, sepMids[2], baryPos, sepMids[3]});
   }
 
-  outputCells_ = std::move(quadSubd);
+  // overwrite old quads
+  outputCells_ = std::move(outputSubd);
 
   return 0;
 }
