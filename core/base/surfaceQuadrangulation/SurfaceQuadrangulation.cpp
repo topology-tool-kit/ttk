@@ -1,6 +1,7 @@
 #include <Dijkstra.h>
 #include <Geometry.h>
 #include <SurfaceQuadrangulation.h>
+#include <array>
 #include <cmath>
 #include <queue>
 
@@ -543,7 +544,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   // for each output quad, its barycenter position in outputPoints_
   std::vector<size_t> cellBary(outputCells_.size());
 
-  std::vector<std::vector<float>> outputDists(4);
+  std::array<std::vector<float>, 4> outputDists{};
 
   // hold quad subdivision
   decltype(outputCells_) quadSubd{};
