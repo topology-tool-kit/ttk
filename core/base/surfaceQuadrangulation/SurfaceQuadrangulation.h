@@ -67,24 +67,6 @@ namespace ttk {
 
   private:
     /**
-     * @brief Return a set of Morse-Smale manifolds indices near vert
-     *
-     * @param[in] vert Vertex index (in triangulation) to test
-     *
-     * @return Set of manifolds indices
-     */
-    std::set<SimplexId> manifoldsAround(const SimplexId vert) const;
-
-    /**
-     * @brief Get the common Morse-Smale manifolds shared by input vertices
-     *
-     * @param[in] verts List of vertices to test
-     *
-     * @return Set of common manifolds
-     */
-    std::set<SimplexId> commonManifolds(const std::vector<size_t> &verts) const;
-
-    /**
      * @brief Find the middle of the separatrix specified by its bounds
      *
      * @param[in] a Index in separatrices array of separatrix source
