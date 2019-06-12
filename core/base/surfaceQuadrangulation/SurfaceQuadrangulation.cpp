@@ -571,6 +571,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
     // find barycenter of current cell (c.f. QuadrangulationSubdivision.cpp)
 
+    // bound Dijkstra by parent quad vertices
     std::vector<SimplexId> bounds{
       criticalPointsIdentifier_[q->i], criticalPointsIdentifier_[q->j],
       criticalPointsIdentifier_[q->k], criticalPointsIdentifier_[q->l]};
@@ -584,6 +585,10 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     std::vector<float> sum(outputDists[0].size(), inf);
 
     for(size_t j = 0; j < sum.size(); ++j) {
+      // skip if vertex j not in cell i
+      if(morseManRect[j] != static_cast<SimplexId>(i)) {
+        continue;
+      }
       auto m = outputDists[0][j];
       auto n = outputDists[1][j];
       auto o = outputDists[2][j];
