@@ -370,6 +370,25 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     cellId.emplace_back(segmentation_[pos]);
   }
 
+  // missing cells?
+  // find them and store their bordering separatrices
+  auto minCellId
+    = *std::min_element(segmentation_, segmentation_ + segmentationNumber_);
+  auto maxCellId
+    = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
+  for(SimplexId i = minCellId; i <= maxCellId; ++i) {
+    if(std::find(cellId.begin(), cellId.end(), i) == cellId.end()) {
+      std::set<SimplexId> sepIds{};
+      for(size_t j = 0; j < segmentationNumber_; ++j) {
+        if(segmentation_[j] == i && onSep[j] != -1) {
+          sepIds.emplace(onSep[j]);
+        }
+      }
+      cellSeps.emplace_back(sepIds.begin(), sepIds.end());
+      cellId.emplace_back(i);
+    }
+  }
+
   // find separatrix index from vertices
   auto sepFromPoints = [&](const long long src, const long long dst) {
     for(size_t i = 0; i < numSeps; ++i) {
