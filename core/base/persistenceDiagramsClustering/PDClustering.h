@@ -61,6 +61,7 @@ namespace ttk{
 		void initializeBarycenterComputers();
 		void printDistancesToFile();
 		void printPricesToFile(int);
+		dataType computeRealCost();
 
         std::vector<dataType> enrichCurrentBidderDiagrams(std::vector<dataType> previous_min_persistence, 
 		        std::vector<dataType> min_persistence, 

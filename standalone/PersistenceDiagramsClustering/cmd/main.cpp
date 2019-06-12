@@ -9,7 +9,6 @@ using namespace ttk;
 
 int main(int argc, char **argv) {
 
-  cout<<"HELLO"<<endl;
   vtkProgram<ttkPersistenceDiagramsClustering> program;
   
   // specify local parameters to the TTK module with default values.
@@ -21,8 +20,11 @@ int main(int argc, char **argv) {
   int accelerated=1;
   int pairType = -1;
   int randomness = 0;
+  int use_prog=1;
 
   // register these arguments to the command line parser
+  program.parser_.setArgument("U",&use_prog,
+      "use progressivity", true);
   program.parser_.setArgument("P", &pairType,
         "Set the type of critical pairs considered in the clustering. \n\t\t\t-1 : all critical pairs\n\t\t\t 0 : only min-saddle pairs \n\t\t\t 1 : onlysaddle-saddle pairs\n\t\t\t 2 : only saddle-max pairs\n\t\t", true);
   program.parser_.setArgument("A", &accelerated,
@@ -54,6 +56,7 @@ int main(int argc, char **argv) {
     timeLimit = 999999999999;
   }
   int deterministic = 1-randomness;
+  program.ttkObject_->SetUseProgressive(use_prog);
   program.ttkObject_->SetDeterministic(deterministic);
   program.ttkObject_->SetUseAccelerated(accelerated);
   program.ttkObject_->SetPairTypeClustering(pairType);

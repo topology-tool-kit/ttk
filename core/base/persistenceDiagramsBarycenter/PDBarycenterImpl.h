@@ -52,7 +52,7 @@ void PDBarycenter<dataType>::runMatching(dataType* total_cost, dataType epsilon,
         std::vector<matchingTuple> matchings;
         dataType cost = auction.getMatchingsAndDistance(&matchings, true);
         all_matchings->at(i) = matchings;
-        (*total_cost) += cost;
+        (*total_cost) += cost*cost;
 
         // if(cost <= ((1.01 * 1.01) * (cost - epsilon * auction.getAugmentedNumberOfBidders()))) {
         //     precision_objective_[i] = true;
@@ -184,9 +184,9 @@ void PDBarycenter<dataType>::runMatchingAuction(dataType* total_cost, std::vecto
         dataType cost = auction.run(&matchings);
         all_matchings->at(i) = matchings;
         // std::cout << "cost of matching " << i <<" : "<<cost<<std::endl;
-        (*total_cost) += cost;
         // std::cout << "now total : " << *total_cost<<std::endl;
 
+        (*total_cost) += cost*cost;
         // std::cout<< "Barycenter cost for diagram " << i <<" : "<< cost << std::endl;
         // std::cout<< "Number of biddings : " << n_biddings << std::endl;
         // Resizes the diagram which was enrich with diagonal bidders during the auction
@@ -405,7 +405,7 @@ dataType PDBarycenter<dataType>::updateBarycenter(std::vector<std::vector<matchi
         }
         barycenter_goods_[j] = new_barycenter;
     }
-    if(debugLevel_ > 2)
+    if(debugLevel_ > 5)
         std::cout << "Points deleted : " << points_deleted_ << " Points added : " << points_added_ << std::endl;
 
     // std::cout<<"TIME OF UPDATE : "<< t_update.getElapsedTime()<<std::endl;
@@ -874,7 +874,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBa
         barycenter.push_back(t);
     }
 
-    cost_ = total_cost;
+    cost_ = sqrt(total_cost);
     std::vector<std::vector<matchingTuple>> corrected_matchings = correctMatchings(previous_matchings);
     for(unsigned int d = 0; d < current_bidder_diagrams_.size(); ++d) {
         if(debugLevel_ > 1)
@@ -967,8 +967,8 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
                 epsilon = epsilon_min_;
                 converged = true;
             }
-            if(debugLevel_ > 0)
-                std::cout << "epsilon : " << epsilon << std::endl;
+            // if(debugLevel_ > 0)
+            //     std::cout << "epsilon : " << epsilon << std::endl;
             std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair;
             bool use_kdt = false;
             // If the barycenter is empty, do not compute the kdt (or it will crash :/)
@@ -1072,9 +1072,9 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
                     }
                 }
                 // bool identicalMatchings = hasBarycenterConverged(all_matchings, previous_matchings);
-                bool precisionObjectiveMet = isPrecisionObjectiveMet(0.01, 0);
+                bool precisionObjectiveMet = (epsilon<epsilon_0/500.);//isPrecisionObjectiveMet(0.01, 0);
                 // bool precisionObjectiveMet = (epsilon<epsilon_0/500.);
-                std::cout << "precision objective met ? " << precisionObjectiveMet << "  and epsilon " << epsilon << " and cost : " << total_cost << std::endl;
+                // std::cout << "precision objective met ? " << precisionObjectiveMet << "  and epsilon " << epsilon << " and cost : " << total_cost << std::endl;
                 // std::cout<<"identical matchings ? "<<identicalMatchings<<" epsilon : "<<epsilon<<" cost "<<total_cost<<std::endl;
                 if(!use_progressive_ && precisionObjectiveMet /*epsilon<epsilon_0/500.*/ && min_cost > total_cost) {
                     min_cost = total_cost;
@@ -1127,7 +1127,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
         barycenter.push_back(t);
     }
 
-    cost_ = total_cost;
+    cost_ = sqrt(total_cost);
     std::vector<std::vector<matchingTuple>> corrected_matchings = correctMatchings(previous_matchings);
     for(unsigned int d = 0; d < current_bidder_diagrams_.size(); ++d) {
         if(debugLevel_ > 3)

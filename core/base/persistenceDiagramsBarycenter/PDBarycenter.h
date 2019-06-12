@@ -22,7 +22,7 @@ namespace ttk{
             threadNumber_ = 1;
             use_progressive_ = true;
             time_limit_ = std::numeric_limits<double>::max();
-            epsilon_min_ = 5e-7;
+            epsilon_min_ = 1e-5;
             reinit_prices_=true;
             deterministic_ = false;
             epsilon_decreases_=true;

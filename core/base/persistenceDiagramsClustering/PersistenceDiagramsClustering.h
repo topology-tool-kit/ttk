@@ -219,22 +219,30 @@ template <typename dataType>
 
   switch(pairTypeClustering_){
   case(0):
-  std::cout << "[PersistenceDiagramsClustering] Only MIN-SAD Pairs" << '\n';
+  if(debugLevel_>2){
+    std::cout << "[PersistenceDiagramsClustering] Only MIN-SAD Pairs" << '\n';
+  }
     do_max = false;
     do_sad = false;
     break;
   case(1):
-    std::cout << "[PersistenceDiagramsClustering] Only SAD-SAD Pairs" << '\n';
+    if(debugLevel_>2){
+      std::cout << "[PersistenceDiagramsClustering] Only SAD-SAD Pairs" << '\n';
+    }
     do_max = false;
     do_min = false;
     break;
   case(2):
-  std::cout << "[PersistenceDiagramsClustering] Only SAD-MAX Pairs" << '\n';
+  if(debugLevel_>2){
+    std::cout << "[PersistenceDiagramsClustering] Only SAD-MAX Pairs" << '\n';
+  }
     do_min = false;
     do_sad = false;
     break;
   default:
-  std::cout << "[PersistenceDiagramsClustering] All critical pairs : global clustering" << '\n';
+  if(debugLevel_>2){
+    std::cout << "[PersistenceDiagramsClustering] All critical pairs : global clustering" << '\n';
+  }
   break;
   }
 
