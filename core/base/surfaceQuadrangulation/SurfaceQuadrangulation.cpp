@@ -206,6 +206,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   sepEnds_.resize(numSeps);
   morseSeg_.resize(segmentationNumber_);
   std::fill(morseSeg_.begin(), morseSeg_.end(), -1);
+  cellId_.clear();
 
   // fill in data arrays
   for(size_t i = 0; i < numSeps; ++i) {
@@ -238,9 +239,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   // for each cell, the indices of the bordering separatrices
   std::vector<std::vector<SimplexId>> cellSeps{};
 
-  // for each cell, the MorseSmaleManifold index
-  std::vector<SimplexId> cellId{};
-
   bool finished = false;
   size_t pos = 0;
 
@@ -258,7 +256,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
       break;
     }
     detectCells(pos, morseSeg_, cellSeps, onSep);
-    cellId.emplace_back(segmentation_[pos]);
+    cellId_.emplace_back(segmentation_[pos]);
   }
 
   // missing cells?
@@ -268,7 +266,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   auto maxCellId
     = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
   for(SimplexId i = minCellId; i <= maxCellId; ++i) {
-    if(std::find(cellId.begin(), cellId.end(), i) == cellId.end()) {
+    if(std::find(cellId_.begin(), cellId_.end(), i) == cellId_.end()) {
       std::set<SimplexId> sepIds{};
       for(size_t j = 0; j < segmentationNumber_; ++j) {
         if(segmentation_[j] == i && onSep[j] != -1) {
@@ -276,7 +274,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         }
       }
       cellSeps.emplace_back(sepIds.begin(), sepIds.end());
-      cellId.emplace_back(i);
+      cellId_.emplace_back(i);
     }
   }
 
@@ -569,7 +567,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
 
     for(size_t j = 0; j < sum.size(); ++j) {
       // skip if vertex j not in cell i
-      if(morseSeg_[j] != static_cast<SimplexId>(i)) {
+      if(segmentation_[j] != cellId_[i]) {
         continue;
       }
       auto m = outputDists[0][j];

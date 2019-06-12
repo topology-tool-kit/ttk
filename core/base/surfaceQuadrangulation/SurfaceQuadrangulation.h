@@ -170,6 +170,8 @@ namespace ttk {
     std::vector<size_t> sepEnds_{};
     // sub-segmentation of Morse-Smale cells
     std::vector<SimplexId> morseSeg_{};
+    // for each cell, the corresponding MorseSmaleManifold index
+    std::vector<SimplexId> cellId_{};
 
   public:
     // array of output polygons
