@@ -100,13 +100,10 @@ namespace ttk {
      * The direct quadrangulation links extrema to saddle points to
      * make quadrangles.
      *
-     * @param[in] sepEdges vector of separatrices edges
      * @param[out] ndegen number of degenerate quadrangles produced
      * @return 0 in case of success
      */
-    int quadrangulate(
-      const std::vector<std::pair<SimplexId, SimplexId>> &sepEdges,
-      size_t &ndegen);
+    int quadrangulate(size_t &ndegen);
 
     /**
      * @brief Perform the dual quadrangulation
@@ -148,6 +145,15 @@ namespace ttk {
                     std::vector<std::vector<SimplexId>> &cellSeps,
                     const std::vector<SimplexId> &vertexSepMask) const;
 
+    /** @brief Find separatrix index from vertices
+     *
+     * @param[in] src Source index in critical points array
+     * @param[in] dst Destination index in critical points array
+     *
+     * @return separatrix index
+     */
+    size_t sepFromPoints(const long long src, const long long dst) const;
+
     Triangulation *triangulation_{};
 
     // number of critical points from the Morse-Smale complex
@@ -177,6 +183,19 @@ namespace ttk {
     SimplexId *segmentation_{};
     // if dual quadrangulation
     bool dualQuadrangulation_{false};
+
+    // index of separatrices beginnings in separatrices arrays
+    std::vector<size_t> sepBegs_{};
+    // index of separatrices endings in separatrices arrays
+    std::vector<size_t> sepEnds_{};
+    // separatrices middles index in output points array
+    std::vector<size_t> sepMiddle_{};
+    // separatrices middles nearest vertex id
+    std::vector<SimplexId> sepMidNearestVertex_{};
+    // store duplicate separatrix id, -1 if no duplicate
+    std::vector<SimplexId> sepDup_{};
+    // sub-segmentation of Morse-Smale cells
+    std::vector<SimplexId> morseSeg_{};
 
   public:
     // array of output polygons

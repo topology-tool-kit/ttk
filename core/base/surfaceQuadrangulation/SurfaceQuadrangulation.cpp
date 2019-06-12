@@ -146,112 +146,28 @@ int ttk::SurfaceQuadrangulation::dualQuadrangulate(
   return 0;
 }
 
-int ttk::SurfaceQuadrangulation::quadrangulate(
-  const std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> &sepEdges,
-  size_t &ndegen) {
-  // quadrangle vertices are either extrema or saddle points
+// ad-hoc quad data structure (see QuadrangulationSubdivision.h)
+struct Quad {
+  long long n;
+  long long i;
+  long long j;
+  long long k;
+  long long l;
+};
 
-  // separatrices: destinations (extrema) -> sources (saddle points)
-  std::vector<std::set<SimplexId>> sepMappingDests(sepEdges.size());
-
-  // number of separatrices coming out of this edge
-  std::vector<size_t> pointSepNumber(criticalPointsNumber_);
-
-  for(auto &p : sepEdges) {
-    for(SimplexId i = 0; i < criticalPointsNumber_; i++) {
-      if(p.first == criticalPointsCellIds_[i]) {
-        for(SimplexId j = 0; j < criticalPointsNumber_; j++) {
-          if(p.second == criticalPointsCellIds_[j]) {
-            sepMappingDests[j].insert(i);
-            pointSepNumber[j]++;
-            // should we also use the saddle points valence?
-            pointSepNumber[i]++;
-          }
-        }
-      }
+size_t ttk::SurfaceQuadrangulation::sepFromPoints(const long long src,
+                                                  const long long dst) const {
+  for(size_t i = 0; i < sepBegs_.size(); ++i) {
+    if(sepCellIds_[sepBegs_[i]] == criticalPointsCellIds_[src]
+       && sepCellIds_[sepEnds_[i]] == criticalPointsCellIds_[dst]) {
+      return i;
     }
   }
-
-  // iterate twice over dests
-  for(size_t i = 0; i < sepMappingDests.size(); i++) {
-    // skip if no sources
-    if(sepMappingDests[i].empty()) {
-      continue;
-    }
-    // begin second loop at i+1 to avoid duplicates and improve
-    // performance
-    for(size_t k = i + 1; k < sepMappingDests.size(); k++) {
-      // skip same dest or if no sources
-      if(k == i || sepMappingDests[k].empty()) {
-        continue;
-      }
-
-      // skip if same type (we are looking for quadrangles containing
-      // one minimum, one maximum and two saddle points)
-      if(criticalPointsType_[k] == criticalPointsType_[i]) {
-        continue;
-      }
-
-      // list of common sources to i and k
-      std::vector<SimplexId> common_dests;
-      std::set_intersection(
-        sepMappingDests[i].begin(), sepMappingDests[i].end(),
-        sepMappingDests[k].begin(), sepMappingDests[k].end(),
-        std::back_inserter(common_dests));
-
-      // find at least two common sources: j and l
-      if(common_dests.size() >= 2) {
-
-        // iterate over all possible common sources
-        for(size_t m = 0; m < common_dests.size(); m++) {
-          // avoid duplicates by beginning at m+1
-          for(size_t n = m + 1; n < common_dests.size(); n++) {
-
-            // gotcha!
-            size_t j = common_dests[m];
-            size_t l = common_dests[n];
-
-            // check for a common shared manifold (looking around
-            // saddle points only seems to be sufficient)
-            std::vector<size_t> verts{j, l};
-
-            bool validQuad = !commonManifolds(verts).empty();
-
-            // fill output vector
-            if(validQuad) {
-              outputCells_.emplace_back(4);
-              outputCells_.emplace_back(i);
-              outputCells_.emplace_back(j);
-              outputCells_.emplace_back(k);
-              outputCells_.emplace_back(l);
-            }
-          }
-        }
-      } else if(common_dests.size() == 1
-                && (sepMappingDests[i].size() == 1
-                    || sepMappingDests[k].size() == 1)) {
-        // we have degenerate quadrangles: i, j, k, j
-        size_t j = common_dests[0];
-        ndegen++;
-
-        // fill output vector
-        outputCells_.emplace_back(4);
-        outputCells_.emplace_back(i);
-        outputCells_.emplace_back(j);
-        outputCells_.emplace_back(k);
-        outputCells_.emplace_back(j);
-      }
-    }
-  }
-
-  return 0;
+  return sepBegs_.size();
 }
 
-int ttk::SurfaceQuadrangulation::postProcess() {
-  // post-processing: try to detect missing or extra quadrangles by
-  // comparing separatrices number coming out of extrema
-
-  // TODO remove extra quadrangles?
+int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
+  // quadrangle vertices are either extrema or saddle points
 
   // separatrices bounds indices and cell ids
   std::vector<size_t> sepFlatEdges{};
@@ -265,33 +181,33 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
   // number of separatrices
   auto numSeps = sepFlatEdges.size() / 2;
-  // index of separatrices beginnings in separatrices arrays
-  std::vector<size_t> sepBegs(numSeps);
-  // index of separatrices endings in separatrices arrays
-  std::vector<size_t> sepEnds(numSeps);
-  // separatrices middles index in output points array
-  std::vector<size_t> sepMiddle(numSeps);
-  // separatrices middles nearest vertex id
-  std::vector<SimplexId> sepMidNearestVertex(numSeps);
-  // store duplicate separatrix id, -1 if no duplicate
-  std::vector<SimplexId> sepDup(numSeps, -1);
+
+  // clear data members
+  sepBegs_.resize(numSeps);
+  sepEnds_.resize(numSeps);
+  sepMiddle_.resize(numSeps);
+  sepMidNearestVertex_.resize(numSeps);
+  sepDup_.resize(numSeps);
+  std::fill(sepDup_.begin(), sepDup_.end(), -1);
+  morseSeg_.resize(segmentationNumber_);
+  std::fill(morseSeg_.begin(), morseSeg_.end(), -1);
 
   // fill in data arrays
   for(size_t i = 0; i < numSeps; ++i) {
     // separatrices bounds
-    sepBegs[i] = sepFlatEdges[2 * i];
-    sepEnds[i] = sepFlatEdges[2 * i + 1];
+    sepBegs_[i] = sepFlatEdges[2 * i];
+    sepEnds_[i] = sepFlatEdges[2 * i + 1];
     // separatrices middles
-    sepMiddle[i] = outputPoints_.size() / 3; // before insertion at next line
-    sepMidNearestVertex[i] = findSeparatrixMiddle(sepBegs[i], sepEnds[i]);
+    sepMiddle_[i] = outputPoints_.size() / 3; // before insertion at next line
+    sepMidNearestVertex_[i] = findSeparatrixMiddle(sepBegs_[i], sepEnds_[i]);
   }
 
   for(size_t i = 0; i < numSeps; ++i) {
     for(size_t j = i + 1; j < numSeps; ++j) {
-      if(sepCellIds_[sepBegs[i]] == sepCellIds_[sepBegs[j]]
-         && sepCellIds_[sepEnds[i]] == sepCellIds_[sepEnds[j]]) {
-        sepDup[i] = j;
-        sepDup[j] = i;
+      if(sepCellIds_[sepBegs_[i]] == sepCellIds_[sepBegs_[j]]
+         && sepCellIds_[sepEnds_[i]] == sepCellIds_[sepEnds_[j]]) {
+        sepDup_[i] = j;
+        sepDup_[j] = i;
       }
     }
   }
@@ -300,25 +216,16 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   std::vector<bool> pointsDupSep(outputPointsIds_.size(), false);
 
   for(size_t i = 0; i < numSeps; ++i) {
-    if(sepDup[i] != -1) {
+    if(sepDup_[i] != -1) {
       for(SimplexId j = 0; j < criticalPointsNumber_; ++j) {
-        if(criticalPointsCellIds_[j] == sepCellIds_[sepBegs[i]]
-           || criticalPointsCellIds_[j] == sepCellIds_[sepEnds[i]]) {
+        if(criticalPointsCellIds_[j] == sepCellIds_[sepBegs_[i]]
+           || criticalPointsCellIds_[j] == sepCellIds_[sepEnds_[i]]) {
           pointsDupSep[j] = true;
         }
       }
-      pointsDupSep[sepMiddle[i]] = true;
+      pointsDupSep[sepMiddle_[i]] = true;
     }
   }
-
-  // ad-hoc quad data structure (see QuadrangulationSubdivision.h)
-  struct Quad {
-    long long n;
-    long long i;
-    long long j;
-    long long k;
-    long long l;
-  };
 
   // for each vertex on a separatrix, the index of the separatrix
   std::vector<SimplexId> onSep(segmentationNumber_, -1);
@@ -329,7 +236,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     for(SimplexId i = 0; i < separatriceNumber_; ++i) {
       if(sepMask_[i] == 0) {
         currSep
-          = std::find(sepBegs.begin(), sepBegs.end(), i) - sepBegs.begin();
+          = std::find(sepBegs_.begin(), sepBegs_.end(), i) - sepBegs_.begin();
       }
       if(sepCellDims_[i] == 1) {
         SimplexId vertId;
@@ -340,9 +247,6 @@ int ttk::SurfaceQuadrangulation::postProcess() {
       }
     }
   }
-
-  // rectified Morse-Smale cells
-  std::vector<SimplexId> morseManRect(segmentationNumber_, -1);
 
   // for each cell, the indices of the bordering separatrices
   std::vector<std::vector<SimplexId>> cellSeps{};
@@ -355,7 +259,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
   while(true) {
     for(size_t j = pos; j < segmentationNumber_; ++j) {
-      if(onSep[j] == -1 && morseManRect[j] == -1) {
+      if(onSep[j] == -1 && morseSeg_[j] == -1) {
         pos = j;
         break;
       }
@@ -366,7 +270,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     if(finished) {
       break;
     }
-    detectCells(pos, morseManRect, cellSeps, onSep);
+    detectCells(pos, morseSeg_, cellSeps, onSep);
     cellId.emplace_back(segmentation_[pos]);
   }
 
@@ -389,21 +293,9 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     }
   }
 
-  // find separatrix index from vertices
-  auto sepFromPoints = [&](const long long src, const long long dst) {
-    for(size_t i = 0; i < numSeps; ++i) {
-      if(sepCellIds_[sepBegs[i]] == criticalPointsCellIds_[src]
-         && sepCellIds_[sepEnds[i]] == criticalPointsCellIds_[dst]) {
-        return i;
-      }
-    }
-    return numSeps;
-  };
-
   // hold quad subdivision
-  decltype(outputCells_) outQ{};
-  outQ.reserve(5 * cellSeps.size());
-  auto quads = reinterpret_cast<std::vector<Quad> *>(&outQ);
+  outputCells_.reserve(5 * cellSeps.size());
+  auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
 
   for(const auto &c : cellSeps) {
 
@@ -411,8 +303,8 @@ int ttk::SurfaceQuadrangulation::postProcess() {
     std::vector<long long> dsts(c.size());
 
     for(size_t i = 0; i < c.size(); ++i) {
-      auto src = sepCellIds_[sepBegs[c[i]]];
-      auto dst = sepCellIds_[sepEnds[c[i]]];
+      auto src = sepCellIds_[sepBegs_[c[i]]];
+      auto dst = sepCellIds_[sepEnds_[c[i]]];
       for(long long j = 0; j < criticalPointsNumber_; ++j) {
         if(criticalPointsCellIds_[j] == src) {
           srcs[i] = j;
@@ -531,6 +423,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
           auto vj = srcs[i];
           found = true;
           quads->emplace_back(Quad{4, vi, vj, vk, vj});
+          ndegen++;
         }
         if(found) {
           break;
@@ -540,6 +433,9 @@ int ttk::SurfaceQuadrangulation::postProcess() {
   }
 
   return 0;
+}
+
+int ttk::SurfaceQuadrangulation::postProcess() {
 
   // for each output quad, its barycenter position in outputPoints_
   std::vector<size_t> cellBary(outputCells_.size());
@@ -560,13 +456,13 @@ int ttk::SurfaceQuadrangulation::postProcess() {
       = {sepFromPoints(q->j, q->i), sepFromPoints(q->j, q->k),
          sepFromPoints(q->l, q->k), sepFromPoints(q->l, q->i)};
 
-    // TODO if dup separatrice
+    // TODO? if dup separatrice
 
     std::vector<long long> sepMids(quadSeps.size());
     std::vector<SimplexId> midsNearestVertex(quadSeps.size());
     for(size_t j = 0; j < quadSeps.size(); ++j) {
-      sepMids[j] = sepMiddle[quadSeps[j]];
-      midsNearestVertex[j] = sepMidNearestVertex[quadSeps[j]];
+      sepMids[j] = sepMiddle_[quadSeps[j]];
+      midsNearestVertex[j] = sepMidNearestVertex_[quadSeps[j]];
     }
 
     // find barycenter of current cell (c.f. QuadrangulationSubdivision.cpp)
@@ -586,7 +482,7 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
     for(size_t j = 0; j < sum.size(); ++j) {
       // skip if vertex j not in cell i
-      if(morseManRect[j] != static_cast<SimplexId>(i)) {
+      if(morseSeg_[j] != static_cast<SimplexId>(i)) {
         continue;
       }
       auto m = outputDists[0][j];
@@ -819,8 +715,7 @@ int ttk::SurfaceQuadrangulation::execute() {
     dualQuadrangulate(sepEdges);
   } else {
     // direct quadrangulation with saddle points
-    quadrangulate(sepEdges, ndegen);
-    postProcess();
+    quadrangulate(ndegen);
   }
 
   // maximum manifold id
