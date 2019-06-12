@@ -425,27 +425,6 @@ int ttk::SurfaceQuadrangulation::postProcess() {
 
     bool found = false;
 
-    // deal here with "small" cells bordered by less than 4 seps
-    if(c.size() < 2) {
-      continue; // don't bother with those cells
-    } else if(c.size() < 4) {
-      // pray for finding four different indices!
-      std::set<long long> src_set(srcs.begin(), srcs.end());
-      std::set<long long> dst_set(dsts.begin(), dsts.end());
-      if(src_set.size() >= 2 && dst_set.size() >= 2) {
-        // take two first distinct sources and dests
-        auto vi = dsts[0];
-        auto vk = *std::find_if_not(
-          dsts.begin(), dsts.end(), [&](const long long a) { return a == vi; });
-        auto vj = srcs[0];
-        auto vl = *std::find_if_not(
-          srcs.begin(), srcs.end(), [&](const long long a) { return a == vj; });
-        quads->emplace_back(Quad{4, vi, vj, vk, vl});
-        found = true;
-      }
-      continue;
-    }
-
     // normal case: find a pair of extrema and a pair of saddle points
     // with four separatrices linking one another
 
@@ -493,7 +472,36 @@ int ttk::SurfaceQuadrangulation::postProcess() {
       }
     }
 
-    if(!found) { // not found: degenerate case
+    if(!found) {
+      // look at the three first separatrices, try to find a missing fourth
+      if(c.size() >= 3) {
+        auto vi = dsts[0];
+        auto vj = srcs[0];
+        decltype(vi) vk{};
+        decltype(vj) vl{};
+        for(size_t k = 1; k < 3; ++k) {
+          if(criticalPointsCellIds_[dsts[k]] != criticalPointsCellIds_[vi]) {
+            vk = dsts[k];
+            break;
+          }
+        }
+        for(size_t l = 1; l < 3; ++l) {
+          if(srcs[l] != vj) {
+            vl = srcs[l];
+            break;
+          }
+        }
+        // ensure ij, jk, kl and li separatrices exist
+        if(sepFromPoints(vj, vi) < numSeps && sepFromPoints(vj, vk) < numSeps
+           && sepFromPoints(vl, vi) < numSeps
+           && sepFromPoints(vl, vk) < numSeps) {
+          quads->emplace_back(Quad{4, vi, vj, vk, vl});
+          found = true;
+          continue;
+        }
+      }
+
+      // degenerate case:
       // take the first two distinct extrema (separatrices with higher weight)
       for(size_t i = 0; i < c.size(); ++i) {
         auto vi = dsts[0];
