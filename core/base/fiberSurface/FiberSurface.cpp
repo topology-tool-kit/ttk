@@ -1496,7 +1496,7 @@ int FiberSurface::mergeVertices(const double &distanceThreshold) const {
             tmpList[i - 1].meshEdge_ = tmpList[i].meshEdge_;
           }
           if((tmpList[i].meshEdge_.first == -1)
-             && (tmpList[i].meshEdge_.first != -1)) {
+             && (tmpList[i - 1].meshEdge_.first != -1)) {
             tmpList[i].meshEdge_ = tmpList[i - 1].meshEdge_;
           }
         }
