@@ -461,6 +461,11 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         }
       }
     }
+    if(!found) {
+      std::stringstream msg;
+      msg << "[SurfaceQuadrangulation] Missing quadrangle" << std::endl;
+      dMsg(std::cout, msg.str(), detailedInfoMsg);
+    }
   }
 
   return 0;
