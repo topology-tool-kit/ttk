@@ -282,6 +282,9 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   outputCells_.reserve(5 * cellSeps.size());
   auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
 
+  // for each cell the detected separatrices sources and destinations
+  std::vector<std::vector<long long>> cellSrcs{}, cellDsts{};
+
   for(const auto &c : cellSeps) {
 
     std::vector<long long> srcs(c.size());
@@ -299,6 +302,8 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         }
       }
     }
+    cellSrcs.emplace_back(srcs);
+    cellDsts.emplace_back(dsts);
 
     bool found = false;
 
@@ -340,17 +345,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           auto vj = common_srcs_ik[0];
           auto vl = common_srcs_ik[1];
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
-          // store separatrices ij, jk, kl and li indices
-          std::vector<size_t> seps{};
-          for(size_t j = 0; j < c.size(); ++j) {
-            if((srcs[j] == vj && dsts[j] == vi)
-               || (srcs[j] == vj && dsts[j] == vk)
-               || (srcs[j] == vl && dsts[j] == vi)
-               || (srcs[j] == vl && dsts[j] == vk)) {
-              seps.emplace_back(c[j]);
-            }
-          }
-          quadSeps_.emplace_back(seps);
           found = true;
           break;
         }
@@ -364,12 +358,10 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     if(!found) {
       // look at the three first separatrices, try to find a missing fourth
       if(c.size() >= 3) {
-        std::vector<size_t> seps{};
         auto vi = dsts[0];
         auto vj = srcs[0];
         decltype(vi) vk{};
         decltype(vj) vl{};
-        seps.emplace_back(c[0]);
         for(size_t k = 1; k < 3; ++k) {
           if(criticalPointsCellIds_[dsts[k]] != criticalPointsCellIds_[vi]) {
             vk = dsts[k];
@@ -386,36 +378,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         if(sepFromPoints(vj, vk) < numSeps && sepFromPoints(vl, vi) < numSeps
            && sepFromPoints(vl, vk) < numSeps) {
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
-          std::set<std::pair<size_t, size_t>> foundSeps{};
-          auto jk = std::make_pair(vj, vk);
-          auto kl = std::make_pair(vl, vk);
-          auto li = std::make_pair(vl, vi);
-          for(size_t i = 0; i < c.size(); ++i) {
-            if(srcs[i] == vj && dsts[i] == vk) {
-              foundSeps.emplace(jk);
-              seps.emplace_back(c[i]);
-            }
-            if(srcs[i] == vl && dsts[i] == vi) {
-              foundSeps.emplace(li);
-              seps.emplace_back(c[i]);
-            }
-            if(srcs[i] == vl && dsts[i] == vk) {
-              foundSeps.emplace(kl);
-              seps.emplace_back(c[i]);
-            }
-          }
-          // find n store missing separatrix index
-          if(foundSeps.find(jk) != foundSeps.end()
-             && foundSeps.find(kl) != foundSeps.end()) {
-            seps.emplace_back(sepFromPoints(vl, vi));
-          } else if(foundSeps.find(kl) != foundSeps.end()
-                    && foundSeps.find(li) != foundSeps.end()) {
-            seps.emplace_back(sepFromPoints(vj, vk));
-          } else if(foundSeps.find(jk) != foundSeps.end()
-                    && foundSeps.find(li) != foundSeps.end()) {
-            seps.emplace_back(sepFromPoints(vl, vk));
-          }
-          quadSeps_.emplace_back(seps);
           found = true;
           continue;
         }
@@ -437,13 +399,11 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
              < 3) {
             continue;
           }
-          std::vector<size_t> seps{};
           // count saddle point occurences
           int count_vj = 0;
           for(size_t j = i; j < srcs.size(); ++j) {
             if(srcs[j] == srcs[i] && (dsts[j] == vi || dsts[j] == vk)) {
               count_vj++;
-              seps.emplace_back(c[j]);
             }
           }
           // one saddle point for three separatrices
@@ -453,7 +413,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           auto vj = srcs[i];
           found = true;
           quads->emplace_back(Quad{4, vi, vj, vk, vj});
-          quadSeps_.emplace_back(seps);
           ndegen++;
         }
         if(found) {
@@ -466,6 +425,31 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
       msg << "[SurfaceQuadrangulation] Missing quadrangle" << std::endl;
       dMsg(std::cout, msg.str(), detailedInfoMsg);
     }
+  }
+
+  // find & order separatrices bordering quadrangles
+  for(size_t i = 0; i < quads->size(); ++i) {
+    auto c = cellSeps[i];
+    auto srcs = cellSrcs[i];
+    auto dsts = cellDsts[i];
+    auto q = quads->at(i);
+    std::vector<size_t> seps{};
+
+    auto findSep = [&](const long long src, const long long dst) {
+      for(size_t j = 0; j < c.size(); ++j) {
+        if(srcs[j] == src && dsts[j] == dst) {
+          seps.emplace_back(c[j]);
+          break;
+        }
+      }
+    };
+
+    findSep(q.j, q.i);
+    findSep(q.j, q.k);
+    findSep(q.l, q.k);
+    findSep(q.l, q.i);
+
+    quadSeps_.emplace_back(seps);
   }
 
   return 0;
