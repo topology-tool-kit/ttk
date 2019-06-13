@@ -592,7 +592,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
       criticalPointsIdentifier_[q.i], criticalPointsIdentifier_[q.j],
       criticalPointsIdentifier_[q.k], criticalPointsIdentifier_[q.l]};
 
-    for(size_t j = 0; j < quadSeps.size(); ++j) {
+    for(size_t j = 0; j < outputDists.size(); ++j) {
       Dijkstra::shortestPath(
         midsNearestVertex[j], *triangulation_, outputDists[j], bounds);
     }
