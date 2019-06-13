@@ -439,9 +439,11 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
       for(size_t j = 0; j < c.size(); ++j) {
         if(srcs[j] == src && dsts[j] == dst) {
           seps.emplace_back(c[j]);
-          break;
+          return;
         }
       }
+      // if not found in cell seps, try first one from src to dst
+      seps.emplace_back(sepFromPoints(src, dst));
     };
 
     findSep(q.j, q.i);
