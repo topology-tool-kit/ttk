@@ -523,40 +523,11 @@ int ttk::SurfaceQuadrangulation::subdivise() {
 
   // separatrices middles index in output points array
   std::vector<SimplexId> sepMiddle(sepBegs_.size());
-  // separatrices middles nearest vertex id
-  std::vector<SimplexId> sepMidNearestVertex(sepBegs_.size());
-  // store duplicate separatrix id, -1 if no duplicate
-  std::vector<SimplexId> sepDup(sepBegs_.size(), -1);
 
-  for(size_t i = 0; i < sepMidNearestVertex.size(); ++i) {
+  for(size_t i = 0; i < sepMiddle.size(); ++i) {
     // separatrices middles
     sepMiddle[i] = outputPoints_.size() / 3; // before insertion at next line
-    sepMidNearestVertex[i] = findSeparatrixMiddle(sepBegs_[i], sepEnds_[i]);
-  }
-
-  for(size_t i = 0; i < sepBegs_.size(); ++i) {
-    for(size_t j = i + 1; j < sepBegs_.size(); ++j) {
-      if(sepCellIds_[sepBegs_[i]] == sepCellIds_[sepBegs_[j]]
-         && sepCellIds_[sepEnds_[i]] == sepCellIds_[sepEnds_[j]]) {
-        sepDup[i] = j;
-        sepDup[j] = i;
-      }
-    }
-  }
-
-  // if output points are on a duplicate separatrix
-  std::vector<bool> pointsDupSep(outputPointsIds_.size(), false);
-
-  for(size_t i = 0; i < sepDup.size(); ++i) {
-    if(sepDup[i] != -1) {
-      for(SimplexId j = 0; j < criticalPointsNumber_; ++j) {
-        if(criticalPointsCellIds_[j] == sepCellIds_[sepBegs_[i]]
-           || criticalPointsCellIds_[j] == sepCellIds_[sepEnds_[i]]) {
-          pointsDupSep[j] = true;
-        }
-      }
-      pointsDupSep[sepMiddle[i]] = true;
-    }
+    findSeparatrixMiddle(sepBegs_[i], sepEnds_[i]);
   }
 
   // for each output quad, its barycenter position in outputPoints_
@@ -572,17 +543,13 @@ int ttk::SurfaceQuadrangulation::subdivise() {
 
   for(size_t i = 0; i < quads->size(); ++i) {
     auto q = quads->at(i);
-    std::vector<size_t> quadSeps
-      = {sepFromPoints(q.j, q.i), sepFromPoints(q.j, q.k),
-         sepFromPoints(q.l, q.k), sepFromPoints(q.l, q.i)};
+    auto seps = quadSeps_[i];
 
-    // TODO? if dup separatrice
-
-    std::vector<long long> sepMids(quadSeps.size());
-    std::vector<SimplexId> midsNearestVertex(quadSeps.size());
-    for(size_t j = 0; j < quadSeps.size(); ++j) {
-      sepMids[j] = sepMiddle[quadSeps[j]];
-      midsNearestVertex[j] = sepMidNearestVertex[quadSeps[j]];
+    std::vector<long long> sepMids(seps.size());
+    std::vector<SimplexId> midsNearestVertex(seps.size());
+    for(size_t j = 0; j < seps.size(); ++j) {
+      sepMids[j] = sepMiddle[seps[j]];
+      midsNearestVertex[j] = outputPointsIds_[sepMiddle[seps[j]]];
     }
 
     // find barycenter of current cell (c.f. QuadrangulationSubdivision.cpp)
