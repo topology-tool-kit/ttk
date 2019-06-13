@@ -172,6 +172,8 @@ namespace ttk {
     std::vector<SimplexId> morseSeg_{};
     // for each cell, the corresponding MorseSmaleManifold index
     std::vector<SimplexId> cellId_{};
+    // indices of separatrices that border quads
+    std::vector<std::vector<size_t>> quadSeps_{};
 
   public:
     // array of output polygons

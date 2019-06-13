@@ -337,8 +337,20 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         std::set_intersection(srcs_i.begin(), srcs_i.end(), srcs_k.begin(),
                               srcs_k.end(), std::back_inserter(common_srcs_ik));
         if(common_srcs_ik.size() > 1) {
-          quads->emplace_back(
-            Quad{4, vi, common_srcs_ik[0], vk, common_srcs_ik[1]});
+          auto vj = common_srcs_ik[0];
+          auto vl = common_srcs_ik[1];
+          quads->emplace_back(Quad{4, vi, vj, vk, vl});
+          // store separatrices ij, jk, kl and li indices
+          std::vector<size_t> seps{};
+          for(size_t j = 0; j < c.size(); ++j) {
+            if((srcs[j] == vj && dsts[j] == vi)
+               || (srcs[j] == vj && dsts[j] == vk)
+               || (srcs[j] == vl && dsts[j] == vi)
+               || (srcs[j] == vl && dsts[j] == vk)) {
+              seps.emplace_back(c[j]);
+            }
+          }
+          quadSeps_.emplace_back(seps);
           found = true;
           break;
         }
@@ -352,10 +364,12 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     if(!found) {
       // look at the three first separatrices, try to find a missing fourth
       if(c.size() >= 3) {
+        std::vector<size_t> seps{};
         auto vi = dsts[0];
         auto vj = srcs[0];
         decltype(vi) vk{};
         decltype(vj) vl{};
+        seps.emplace_back(c[0]);
         for(size_t k = 1; k < 3; ++k) {
           if(criticalPointsCellIds_[dsts[k]] != criticalPointsCellIds_[vi]) {
             vk = dsts[k];
@@ -368,11 +382,40 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
             break;
           }
         }
-        // ensure ij, jk, kl and li separatrices exist
-        if(sepFromPoints(vj, vi) < numSeps && sepFromPoints(vj, vk) < numSeps
-           && sepFromPoints(vl, vi) < numSeps
+        // ensure jk, kl and li separatrices exist
+        if(sepFromPoints(vj, vk) < numSeps && sepFromPoints(vl, vi) < numSeps
            && sepFromPoints(vl, vk) < numSeps) {
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
+          std::set<std::pair<size_t, size_t>> foundSeps{};
+          auto jk = std::make_pair(vj, vk);
+          auto kl = std::make_pair(vl, vk);
+          auto li = std::make_pair(vl, vi);
+          for(size_t i = 0; i < c.size(); ++i) {
+            if(srcs[i] == vj && dsts[i] == vk) {
+              foundSeps.emplace(jk);
+              seps.emplace_back(c[i]);
+            }
+            if(srcs[i] == vl && dsts[i] == vi) {
+              foundSeps.emplace(li);
+              seps.emplace_back(c[i]);
+            }
+            if(srcs[i] == vl && dsts[i] == vk) {
+              foundSeps.emplace(kl);
+              seps.emplace_back(c[i]);
+            }
+          }
+          // find n store missing separatrix index
+          if(foundSeps.find(jk) != foundSeps.end()
+             && foundSeps.find(kl) != foundSeps.end()) {
+            seps.emplace_back(sepFromPoints(vl, vi));
+          } else if(foundSeps.find(kl) != foundSeps.end()
+                    && foundSeps.find(li) != foundSeps.end()) {
+            seps.emplace_back(sepFromPoints(vj, vk));
+          } else if(foundSeps.find(jk) != foundSeps.end()
+                    && foundSeps.find(li) != foundSeps.end()) {
+            seps.emplace_back(sepFromPoints(vl, vk));
+          }
+          quadSeps_.emplace_back(seps);
           found = true;
           continue;
         }
@@ -394,11 +437,13 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
              < 3) {
             continue;
           }
+          std::vector<size_t> seps{};
           // count saddle point occurences
           int count_vj = 0;
           for(size_t j = i; j < srcs.size(); ++j) {
             if(srcs[j] == srcs[i] && (dsts[j] == vi || dsts[j] == vk)) {
               count_vj++;
+              seps.emplace_back(c[j]);
             }
           }
           // one saddle point for three separatrices
@@ -408,6 +453,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           auto vj = srcs[i];
           found = true;
           quads->emplace_back(Quad{4, vi, vj, vk, vj});
+          quadSeps_.emplace_back(seps);
           ndegen++;
         }
         if(found) {
