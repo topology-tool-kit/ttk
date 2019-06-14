@@ -123,7 +123,7 @@ namespace ttk {
     int detectCells(const SimplexId src,
                     std::vector<SimplexId> &vertexCells,
                     std::vector<std::vector<SimplexId>> &cellSeps,
-                    const std::vector<SimplexId> &vertexSepMask) const;
+                    const std::vector<SimplexId> &vertexSepMask);
 
     /** @brief Find separatrix index from vertices
      *

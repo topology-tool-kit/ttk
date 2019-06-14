@@ -112,7 +112,7 @@ int ttk::SurfaceQuadrangulation::detectCells(
   const SimplexId src,
   std::vector<SimplexId> &vertexCells,
   std::vector<std::vector<SimplexId>> &cellSeps,
-  const std::vector<SimplexId> &vertexSepMask) const {
+  const std::vector<SimplexId> &vertexSepMask) {
 
   std::vector<bool> cellMask(vertexCells.size(), false);
 
@@ -194,6 +194,8 @@ int ttk::SurfaceQuadrangulation::detectCells(
 
   // return all reached separatrices by importance order
   cellSeps.emplace_back(sepIds);
+  // link this cell to MorseSmale Manifold index
+  cellId_.emplace_back(segmentation_[src]);
 
   return 0;
 }
@@ -269,12 +271,8 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     if(finished) {
       break;
     }
-    int res = detectCells(pos, morseSeg_, cellSeps, onSep);
-    if(res == 0) {
-      cellId_.emplace_back(segmentation_[pos]);
-    } else {
-      pos++;
-    }
+    detectCells(pos, morseSeg_, cellSeps, onSep);
+    pos++;
   }
 
   // missing cells?
