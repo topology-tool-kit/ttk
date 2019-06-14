@@ -640,6 +640,7 @@ int ttk::SurfaceQuadrangulation::execute() {
   } else {
     // direct quadrangulation with saddle points
     quadrangulate(ndegen);
+    subdivise();
   }
 
   // number of produced quads
