@@ -114,6 +114,8 @@ int ttk::SurfaceQuadrangulation::detectCells(
   std::vector<std::vector<SimplexId>> &cellSeps,
   const std::vector<SimplexId> &vertexSepMask) const {
 
+  std::vector<bool> cellMask(vertexCells.size(), false);
+
   std::queue<SimplexId> toProcess{};
   toProcess.push(src);
   std::vector<SimplexId> borderSeps{};
@@ -122,8 +124,7 @@ int ttk::SurfaceQuadrangulation::detectCells(
   SimplexId newCellId = cellSeps.size();
 
   auto isCandidate = [&](const SimplexId a) {
-    return segmentation_[a] == cellId && vertexSepMask[a] == -1
-           && vertexCells[a] == -1;
+    return segmentation_[a] == cellId && vertexSepMask[a] == -1 && !cellMask[a];
   };
 
   while(!toProcess.empty()) {
@@ -134,7 +135,7 @@ int ttk::SurfaceQuadrangulation::detectCells(
       continue;
     }
 
-    vertexCells[curr] = newCellId;
+    cellMask[curr] = true;
 
     auto nneigh = triangulation_->getVertexNeighborNumber(curr);
     for(SimplexId j = 0; j < nneigh; ++j) {
@@ -158,6 +159,18 @@ int ttk::SurfaceQuadrangulation::detectCells(
   // post-process borderSeps to find the most common separatrices indices
   for(const auto &v : borderSeps) {
     hist[v]++;
+  }
+
+  // filter out small cells
+  if(hist.size() < 3) {
+    return 1;
+  }
+
+  // copy sub-segmentation into output
+  for(size_t i = 0; i < vertexCells.size(); ++i) {
+    if(cellMask[i]) {
+      vertexCells[i] = newCellId;
+    }
   }
 
   // map dumped into vector
@@ -256,8 +269,12 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     if(finished) {
       break;
     }
-    detectCells(pos, morseSeg_, cellSeps, onSep);
-    cellId_.emplace_back(segmentation_[pos]);
+    int res = detectCells(pos, morseSeg_, cellSeps, onSep);
+    if(res == 0) {
+      cellId_.emplace_back(segmentation_[pos]);
+    } else {
+      pos++;
+    }
   }
 
   // missing cells?
@@ -274,8 +291,10 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           sepIds.emplace(onSep[j]);
         }
       }
-      cellSeps.emplace_back(sepIds.begin(), sepIds.end());
-      cellId_.emplace_back(i);
+      if(sepIds.size() > 2) {
+        cellSeps.emplace_back(sepIds.begin(), sepIds.end());
+        cellId_.emplace_back(i);
+      }
     }
   }
 
