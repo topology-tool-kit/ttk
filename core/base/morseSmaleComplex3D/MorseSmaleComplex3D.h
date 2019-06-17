@@ -173,7 +173,7 @@ std::vector<Separatrix>& separatrices,
     return -1;
   }
 #endif
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionMaxima_);
   std::vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMinima=
@@ -303,7 +303,7 @@ int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(const std::vector<Se
   }
 #endif
 
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMinima=
@@ -550,7 +550,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(const std::vector<Separa
   }
 #endif
 
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMinima=
@@ -696,7 +696,7 @@ int ttk::MorseSmaleComplex3D::omp_setDescendingSeparatrices2(const std::vector<S
   }
 #endif
 
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMinima=
@@ -934,7 +934,7 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(const std::vector<Separ
   }
 #endif
 
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices2_cells_separatrixFunctionMaxima_);
   std::vector<dataType>* outputSeparatrices2_cells_separatrixFunctionMinima=
@@ -1232,13 +1232,13 @@ template<typename dataType, typename idType>
 int ttk::MorseSmaleComplex3D::computePersistencePairs(const std::vector<std::tuple<SimplexId, SimplexId, dataType>>& JTPairs,
     const std::vector<std::tuple<SimplexId, SimplexId, dataType>>& STPairs,
     std::vector<std::tuple<SimplexId,SimplexId,dataType>>& pl_saddleSaddlePairs){
-  dataType* scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* scalars=static_cast<const dataType*>(inputScalarField_);
   const SimplexId numberOfVertices=inputTriangulation_->getNumberOfVertices();
 
   // get original list of critical points
   std::vector<std::pair<SimplexId,char>> pl_criticalPoints;
   {
-    const SimplexId* const offsets=static_cast<SimplexId*>(inputOffsets_);
+    const SimplexId* const offsets=static_cast<const SimplexId*>(inputOffsets_);
     std::vector<SimplexId> sosOffsets(numberOfVertices);
     for(SimplexId i=0; i<numberOfVertices; ++i)
       sosOffsets[i]=offsets[i];

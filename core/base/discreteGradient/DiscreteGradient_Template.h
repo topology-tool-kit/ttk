@@ -866,8 +866,8 @@ template <typename dataType, typename idType>
 int DiscreteGradient::buildGradient(){
   Timer t;
 
-  const idType* const offsets=static_cast<idType*>(inputOffsets_);
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const idType* const offsets=static_cast<const idType*>(inputOffsets_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
 
   const int numberOfDimensions=getNumberOfDimensions();
 
@@ -920,8 +920,8 @@ template <typename dataType, typename idType>
 int DiscreteGradient::buildGradient2(){
   Timer t;
 
-  const idType* const offsets=static_cast<idType*>(inputOffsets_);
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const idType* const offsets=static_cast<const idType*>(inputOffsets_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
 
   for(int i=1; i<dimensionality_; ++i)
     assignGradient2<dataType,idType>(i, scalars, offsets, gradient_[i]);
@@ -943,8 +943,8 @@ template <typename dataType, typename idType>
 int DiscreteGradient::buildGradient3(){
   Timer t;
 
-  const idType* const offsets=static_cast<idType*>(inputOffsets_);
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const idType* const offsets=static_cast<const idType*>(inputOffsets_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
 
   for(int i=2; i<dimensionality_; ++i)
     assignGradient3<dataType,idType>(i, scalars, offsets, gradient_[i]);
@@ -979,8 +979,8 @@ criticalPoints) const{
     return -1;
   }
 #endif
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-  const idType* const offsets=static_cast<idType*>(inputOffsets_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
+  const idType* const offsets=static_cast<const idType*>(inputOffsets_);
   std::vector<dataType>* outputCriticalPoints_points_cellScalars=
     static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
 
@@ -1103,8 +1103,8 @@ int DiscreteGradient::setAugmentedCriticalPoints(const std::vector<Cell>& critic
                                                  std::vector<SimplexId>& maxSeeds,
                                                  SimplexId* ascendingManifold,
                                                  SimplexId* descendingManifold) const{
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
-  const idType* const offsets=static_cast<idType*>(inputOffsets_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
+  const idType* const offsets=static_cast<const idType*>(inputOffsets_);
   std::vector<dataType>* outputCriticalPoints_points_cellScalars=
     static_cast<std::vector<dataType>*>(outputCriticalPoints_points_cellScalars_);
   (*outputCriticalPoints_numberOfPoints_)=0;
@@ -1580,7 +1580,7 @@ isRemovableMaximum,
                                                      std::vector<CriticalPoint>& criticalPoints) const{
   Timer t;
 
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
 
   const int maximumDim=dimensionality_;
   const int saddleDim=maximumDim-1;
@@ -1755,7 +1755,7 @@ int DiscreteGradient::processSaddleMaximumConnections(const int iterationThresho
                                                       std::vector<CriticalPoint>& criticalPoints){
   Timer t;
 
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
 
   SimplexId numberOfSaddleCandidates=0;
   if(dimensionality_==2)
@@ -2145,7 +2145,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(const
                                                          std::vector<SimplexId>& saddle2Index) const{
   Timer t;
 
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
 
   const int maximumDim=dimensionality_;
   const int saddle2Dim=maximumDim-1;
@@ -2312,7 +2312,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(const int
                                                       std::vector<SimplexId>& saddle2Index){
   Timer t;
 
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
 
   const SimplexId numberOfEdges=inputTriangulation_->getNumberOfEdges();
   const SimplexId numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
@@ -2740,7 +2740,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(const
                                                          std::vector<SimplexId>& saddle2Index) const{
   Timer t;
 
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
 
   const int maximumDim=dimensionality_;
   const int saddle2Dim=maximumDim-1;
@@ -2907,7 +2907,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(const int
                                                       std::vector<SimplexId>& saddle2Index){
   Timer t;
 
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
 
   const SimplexId numberOfEdges=inputTriangulation_->getNumberOfEdges();
   const SimplexId numberOfTriangles=inputTriangulation_->getNumberOfTriangles();
@@ -3354,8 +3354,8 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary){
 
   std::vector<std::pair<SimplexId,char>> cpset;
 
-  idType* const offsets=static_cast<idType*>(inputOffsets_);
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const idType* const offsets=static_cast<const idType*>(inputOffsets_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
 
   ftm::FTMTree contourTree;
   contourTree.setDebugLevel(debugLevel_);
@@ -3454,7 +3454,7 @@ int DiscreteGradient::reverseGradient(){
 
   // get the PL critical points
   if(ReverseSaddleMaximumConnection or ReverseSaddleSaddleConnection){
-    const idType* const offsets=static_cast<idType*>(inputOffsets_);
+    const idType* const offsets=static_cast<const idType*>(inputOffsets_);
     std::vector<SimplexId> sosOffsets(numberOfVertices_);
     for(SimplexId i=0; i<numberOfVertices_; ++i)
       sosOffsets[i]=offsets[i];

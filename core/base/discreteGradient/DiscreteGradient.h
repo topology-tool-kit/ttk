@@ -755,7 +755,7 @@ according to them.
       /**
        * Set the input scalar function.
        */
-      inline int setInputScalarField(void *const data) {
+      inline int setInputScalarField(const void *const data) {
         inputScalarField_ = data;
         return 0;
       }
@@ -795,7 +795,7 @@ according to them.
       /**
        * Set the input offset function.
        */
-      inline int setInputOffsets(void *const data) {
+      inline int setInputOffsets(const void *const data) {
         inputOffsets_ = data;
         return 0;
       }
@@ -1055,8 +1055,8 @@ tetra identifier.
       std::vector<SimplexId> dmt1Saddle2PL_;
       std::vector<SimplexId> dmt2Saddle2PL_;
 
-      void *inputScalarField_;
-      void *inputOffsets_;
+      const void *inputScalarField_;
+      const void *inputOffsets_;
       Triangulation *inputTriangulation_;
 
       SimplexId *outputCriticalPoints_numberOfPoints_;
