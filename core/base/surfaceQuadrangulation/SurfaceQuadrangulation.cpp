@@ -5,6 +5,8 @@
 #include <cmath>
 #include <queue>
 
+#define MODULE_S "[SurfaceQuadrangulation] "
+
 int ttk::SurfaceQuadrangulation::dualQuadrangulate() {
 
   // quadrangles vertices are only extrema
@@ -21,8 +23,7 @@ int ttk::SurfaceQuadrangulation::dualQuadrangulate() {
 
   if(sepFlatEdges.size() % 2 != 0) {
     std::stringstream msg;
-    msg << "[SurfaceQuadrangulation] Error: odd number of separatrices edges"
-        << std::endl;
+    msg << MODULE_S "Error: odd number of separatrices edges" << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
     return -1;
   }
@@ -440,7 +441,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     }
     if(!found) {
       std::stringstream msg;
-      msg << "[SurfaceQuadrangulation] Missing quadrangle" << std::endl;
+      msg << MODULE_S "Missing quadrangle" << std::endl;
       dMsg(std::cout, msg.str(), detailedInfoMsg);
     }
   }
@@ -610,8 +611,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
 
     if(verticesInCell == 0) {
       std::stringstream msg;
-      msg << "[SurfaceQuadrangulation] Barycenter in cell " << i
-          << " not found." << std::endl;
+      msg << MODULE_S "Barycenter in cell " << i << " not found." << std::endl;
       dMsg(std::cout, msg.str(), detailedInfoMsg);
     }
 
@@ -677,15 +677,15 @@ int ttk::SurfaceQuadrangulation::execute() {
 
   {
     std::stringstream msg;
-    msg << "[SurfaceQuadrangulation] Produced " << quadNumber
-        << " quadrangles after " << t.getElapsedTime() << " s." << std::endl;
+    msg << MODULE_S "Produced " << quadNumber << " quadrangles after "
+        << t.getElapsedTime() << " s." << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
   }
 
   {
     std::stringstream msg;
-    msg << "[SurfaceQuadrangulation] " << quadNumber << " quads (" << ndegen
-        << " degenerated)" << std::endl;
+    msg << MODULE_S << quadNumber << " quads (" << ndegen << " degenerated)"
+        << std::endl;
     dMsg(std::cout, msg.str(), detailedInfoMsg);
   }
 
