@@ -600,7 +600,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
         continue;
       }
       // cost to minimize
-      sum[j] = m + n + o + p;
+      sum[j] = m + n + o + p + std::abs(m - o) + std::abs(n - p);
     }
 
     auto baryId = std::min_element(sum.begin(), sum.end()) - sum.begin();
