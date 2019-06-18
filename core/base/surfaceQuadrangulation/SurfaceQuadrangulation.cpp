@@ -589,7 +589,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
 
     for(size_t j = 0; j < sum.size(); ++j) {
       // skip if vertex j not in cell i
-      if(segmentation_[j] != cellId_[i]) {
+      if(morseSeg_[j] != static_cast<SimplexId>(i)) {
         continue;
       }
       auto m = outputDists[0][j];
