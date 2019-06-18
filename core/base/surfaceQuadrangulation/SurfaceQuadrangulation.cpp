@@ -603,6 +603,18 @@ int ttk::SurfaceQuadrangulation::subdivise() {
       sum[j] = m + n + o + p + std::abs(m - o) + std::abs(n - p);
     }
 
+    size_t verticesInCell
+      = segmentationNumber_
+        - std::count(
+          sum.begin(), sum.end(), std::numeric_limits<float>::infinity());
+
+    if(verticesInCell == 0) {
+      std::stringstream msg;
+      msg << "[SurfaceQuadrangulation] Barycenter in cell " << i
+          << " not found." << std::endl;
+      dMsg(std::cout, msg.str(), detailedInfoMsg);
+    }
+
     auto baryId = std::min_element(sum.begin(), sum.end()) - sum.begin();
     long long baryPos = outputPointsIds_.size();
     {
