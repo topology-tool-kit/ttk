@@ -326,6 +326,22 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
 
     bool found = false;
 
+    // optimisation: try first to only consider the first four separatrices
+
+    if(c.size() >= 4) {
+      std::set<SimplexId> srcs_set(srcs.begin(), std::next(srcs.begin(), 4));
+      std::set<SimplexId> dsts_set(dsts.begin(), std::next(dsts.begin(), 4));
+      if(srcs_set.size() == 2 && dsts_set.size() == 2) {
+        auto vi = *dsts_set.begin();
+        auto vj = *srcs_set.begin();
+        auto vk = *std::next(dsts_set.begin());
+        auto vl = *std::next(srcs_set.begin());
+        quads->emplace_back(Quad{4, vi, vj, vk, vl});
+        found = true;
+        continue;
+      }
+    }
+
     // normal case: find a pair of extrema and a pair of saddle points
     // with four separatrices linking one another
 
