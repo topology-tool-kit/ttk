@@ -576,6 +576,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
     // separatrices middles
     sepMiddle[i] = outputPoints_.size() / 3; // before insertion at next line
     findSeparatrixMiddle(sepBegs_[i], sepEnds_[i]);
+    outputPointsCells_.emplace_back(i);
   }
 
   // for each output quad, its barycenter position in outputPoints_
@@ -652,6 +653,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
       outputPoints_.emplace_back(z);
       outputPointsIds_.emplace_back(baryId);
       outputPointsTypes_.emplace_back(2);
+      outputPointsCells_.emplace_back(i);
     }
 
     qsubd->emplace_back(Quad{4, q.i, sepMids[3], baryPos, sepMids[0]});
@@ -675,9 +677,11 @@ int ttk::SurfaceQuadrangulation::execute() {
   outputCells_.clear();
   outputPoints_.clear();
   outputPointsIds_.clear();
+  outputPointsCells_.clear();
   outputPoints_.resize(3 * criticalPointsNumber_);
   outputPointsIds_.resize(criticalPointsNumber_);
   outputPointsTypes_.resize(criticalPointsNumber_);
+  outputPointsCells_.resize(criticalPointsNumber_);
 
   // fill in critical points 3d coordinates and identifiers
   for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
@@ -686,6 +690,7 @@ int ttk::SurfaceQuadrangulation::execute() {
     outputPoints_[3 * i + 2] = criticalPoints_[3 * i + 2];
     outputPointsIds_[i] = criticalPointsIdentifier_[i];
     outputPointsTypes_[i] = 0;
+    outputPointsCells_[i] = criticalPointsCellIds_[i];
   }
 
   // number of degenerate quadrangles

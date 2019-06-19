@@ -184,6 +184,9 @@ namespace ttk {
     std::vector<SimplexId> outputPointsIds_{};
     // 0: critical points, 1: edge middle, 2: quad barycenter
     std::vector<SimplexId> outputPointsTypes_{};
+    // for critical points, their cell id, for sep middles, the sep id
+    // and for barycenters the parent quad id
+    std::vector<SimplexId> outputPointsCells_{};
   };
 } // namespace ttk
 
