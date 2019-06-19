@@ -511,6 +511,10 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
   std::vector<float> distFromA(b - a + 1);
   std::array<float, dim> prev{}, curr{};
 
+  if(distFromA.empty()) {
+    return 0;
+  }
+
   curr[0] = sepPoints_[dim * a];
   curr[1] = sepPoints_[dim * a + 1];
   curr[2] = sepPoints_[dim * a + 2];
