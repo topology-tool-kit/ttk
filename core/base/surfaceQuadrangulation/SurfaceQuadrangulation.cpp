@@ -360,9 +360,20 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         }
         std::set_intersection(srcs_i.begin(), srcs_i.end(), srcs_k.begin(),
                               srcs_k.end(), std::back_inserter(common_srcs_ik));
-        if(common_srcs_ik.size() > 1) {
-          auto vj = common_srcs_ik[0];
-          auto vl = common_srcs_ik[1];
+        // reorder common_srcs_ik according to srcs vector
+        std::vector<SimplexId> common_srcs_ik_ordered{};
+        for(const auto &s : srcs) {
+          if(std::find(common_srcs_ik.begin(), common_srcs_ik.end(), s)
+               != common_srcs_ik.end()
+             && std::find(common_srcs_ik_ordered.begin(),
+                          common_srcs_ik_ordered.end(), s)
+                  == common_srcs_ik_ordered.end()) {
+            common_srcs_ik_ordered.emplace_back(s);
+          }
+        }
+        if(common_srcs_ik_ordered.size() > 1) {
+          auto vj = common_srcs_ik_ordered[0];
+          auto vl = common_srcs_ik_ordered[1];
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
           found = true;
           break;
