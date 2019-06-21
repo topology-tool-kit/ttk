@@ -701,7 +701,7 @@ int ttk::SurfaceQuadrangulation::execute() {
     outputPoints_[3 * i + 2] = criticalPoints_[3 * i + 2];
     outputPointsIds_[i] = criticalPointsIdentifier_[i];
     outputPointsTypes_[i] = 0;
-    outputPointsCells_[i] = criticalPointsCellIds_[i];
+    outputPointsCells_[i] = i;
   }
 
   // number of degenerate quadrangles
