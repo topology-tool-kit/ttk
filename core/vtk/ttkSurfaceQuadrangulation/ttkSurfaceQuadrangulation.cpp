@@ -151,13 +151,13 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   // quad vertices type
   auto type = vtkSmartPointer<vtkIntArray>::New();
-  type->SetName("Vertex Type");
+  type->SetName("QuadVertType");
   type->SetVoidArray(outPointsType.data(), outPointsType.size(), 1);
   output->GetPointData()->AddArray(type);
 
   // quad vertices cells
   auto cellid = vtkSmartPointer<vtkIntArray>::New();
-  cellid->SetName("Cell Id");
+  cellid->SetName("QuadCellId");
   cellid->SetVoidArray(outPointsCells.data(), outPointsCells.size(), 1);
   output->GetPointData()->AddArray(cellid);
 
