@@ -612,6 +612,9 @@ int ttk::SurfaceQuadrangulation::subdivise() {
       criticalPointsIdentifier_[q.i], criticalPointsIdentifier_[q.j],
       criticalPointsIdentifier_[q.k], criticalPointsIdentifier_[q.l]};
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < outputDists.size(); ++j) {
       Dijkstra::shortestPath(
         midsNearestVertex[j], *triangulation_, outputDists[j], bounds);
@@ -620,6 +623,9 @@ int ttk::SurfaceQuadrangulation::subdivise() {
     auto inf = std::numeric_limits<float>::infinity();
     std::vector<float> sum(outputDists[0].size(), inf);
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < sum.size(); ++j) {
       // skip if vertex j not in cell i
       if(morseSeg_[j] != static_cast<SimplexId>(i)) {
