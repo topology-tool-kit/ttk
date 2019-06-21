@@ -114,15 +114,15 @@ protected:
   /// Compute the squared distance between input field vertex v and input point p.
   float compDist2(SimplexId v, std::size_t p) const;
 
-  // TODO docu
+  /// Compute the contour for one point (given by its cell) passing the isovalue and isBelow flag.
   template<typename scalarT>
   int compOneContour(SimplexId cCenter, float isovalue, int flag) const;
 
-  // TODO docu
+  /// Does cell `c` contain the `isovalue`?
   template<typename scalarT>
   bool checkContains(SimplexId c, float isovalue) const;
 
-  // TODO docu
+  /// Enqueue the neighbors of cell `c` into the queue `q` that have not yet been visited.
   void enqueueNeighbors(SimplexId c, std::stack<SimplexId>& q,
                         const std::set<SimplexId>& visited) const;
 

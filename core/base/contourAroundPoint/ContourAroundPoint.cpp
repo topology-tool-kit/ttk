@@ -66,7 +66,7 @@ int ttk::ContourAroundPoint::setupConstraints(float* coords, float* isovalues, s
 
 ttk::SimplexId ttk::ContourAroundPoint::findCell(std::size_t p) const
 {
-  // NOTE This whole method is just a hack. Eventually, the best solution would probalby be to
+  // NOTE This whole method is just a hack. Eventually, the best solution would probably be to
   // use a `vtkAbstractCellLocator` in the wrapped algorithm and pass an array with the cell index
   // for each point to this module.
   // This implementation is based on a naive nearest neighbor search.

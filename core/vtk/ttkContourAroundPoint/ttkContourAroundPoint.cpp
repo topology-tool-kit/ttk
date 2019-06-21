@@ -102,7 +102,7 @@ bool ttkContourAroundPoint::preprocessConstraints(vtkUnstructuredGrid* nodes,
 
   auto pData = nodes->GetPointData();
 //  auto sizeBuf = getBuffer<float>(pData, "RegionSize", VTK_FLOAT, "float");
-  auto sizeBuf = getBuffer<int>(pData, "RegionSize", VTK_INT, "int"); // TODO ask
+  auto sizeBuf = getBuffer<int>(pData, "RegionSize", VTK_INT, "int"); // TODO Document precise meaning
   auto codeBuf = getBuffer<int>(pData, "CriticalType", VTK_INT, "int");
   auto scalarBuf = getBuffer<float>(pData, "Scalar", VTK_FLOAT, "float");
   if(!sizeBuf || !codeBuf || !scalarBuf)
@@ -192,8 +192,6 @@ bool ttkContourAroundPoint::preprocessConstraints(vtkUnstructuredGrid* nodes,
 
   return true;
 }
-
-
 
 //------------------------------------------------------------------------------------------------//
 
