@@ -470,6 +470,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
       std::stringstream msg;
       msg << MODULE_S "Missing quadrangle" << std::endl;
       dMsg(std::cout, msg.str(), detailedInfoMsg);
+      return 1;
     }
   }
 
@@ -710,8 +711,23 @@ int ttk::SurfaceQuadrangulation::execute() {
     dualQuadrangulate();
   } else {
     // direct quadrangulation with saddle points
-    quadrangulate(ndegen);
-    subdivise();
+    int ret = quadrangulate(ndegen);
+
+    if(ret == 0) {
+      subdivise();
+    } else {
+      // clean, log & early return
+      outputCells_.clear();
+      outputPoints_.clear();
+      outputPointsIds_.clear();
+      outputPointsCells_.clear();
+      std::stringstream msg;
+      msg << MODULE_S "Error: unable to generate quadrangulation from current "
+                      "Morse-Smale complex"
+          << std::endl;
+      dMsg(std::cout, msg.str(), infoMsg);
+      return 1;
+    }
   }
 
   // number of produced quads
