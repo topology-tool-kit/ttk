@@ -18,10 +18,8 @@ using namespace ttk;
 
 using namespace ftm;
 
-FTMTreePP::FTMTreePP() : FTMTree()
-{
+FTMTreePP::FTMTreePP() : FTMTree() {
 }
 
-FTMTreePP::~FTMTreePP()
-{
+FTMTreePP::~FTMTreePP() {
 }

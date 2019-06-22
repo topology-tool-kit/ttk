@@ -3,8 +3,8 @@
 
 // local includes
 #include "FTRGraph.h"
-#include "FTRTasks.h"
 #include "FTRGraph_Template.h"
+#include "FTRTasks.h"
 
 // c++ incldues
 #include <unordered_map>
@@ -527,9 +527,9 @@ namespace ttk {
     }
 
     template <typename ScalarType>
-    std::set<DynGraphNode<idVertex> *> FTRGraph<ScalarType>::upperComps(
-        const std::vector<idEdge> &startingEdges,
-        const Propagation *const localProp) {
+    std::set<DynGraphNode<idVertex> *>
+      FTRGraph<ScalarType>::upperComps(const std::vector<idEdge> &startingEdges,
+                                       const Propagation *const localProp) {
       return dynGraph(localProp).findRoot(startingEdges);
     }
 

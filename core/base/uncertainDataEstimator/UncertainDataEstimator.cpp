@@ -1,9 +1,9 @@
-#include                  <UncertainDataEstimator.h>
+#include <UncertainDataEstimator.h>
 
 using namespace std;
 using namespace ttk;
 
-UncertainDataEstimator::UncertainDataEstimator(){
+UncertainDataEstimator::UncertainDataEstimator() {
 
   inputData_ = NULL;
   outputLowerBoundField_ = NULL;
@@ -15,7 +15,7 @@ UncertainDataEstimator::UncertainDataEstimator(){
   binCount_ = 0;
 }
 
-UncertainDataEstimator::~UncertainDataEstimator(){
+UncertainDataEstimator::~UncertainDataEstimator() {
   if(inputData_)
     free(inputData_);
   if(binValues_)
@@ -23,4 +23,3 @@ UncertainDataEstimator::~UncertainDataEstimator(){
   if(outputProbability_)
     free(outputProbability_);
 }
-

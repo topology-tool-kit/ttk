@@ -21,8 +21,8 @@
 ///
 /// \b Related \b publication \n
 ///  "Spectral surface quadrangulation"
-///  Shen Dong, Peer-Timo Bremer, Michael Garland, Valerio Pascucci, John C. Hart
-///  SIGGRAPH 2006
+///  Shen Dong, Peer-Timo Bremer, Michael Garland, Valerio Pascucci, John C.
+///  Hart SIGGRAPH 2006
 ///
 /// \sa ttkHarmonicField
 /// \sa ttk::EigenField

@@ -24,65 +24,66 @@
 // Init
 // ----
 
-namespace ttk
-{
-namespace ftm
-{
+namespace ttk {
+  namespace ftm {
 
-template <typename scalarType, typename idType>
-void ftm::FTMTree_MT::sortInput(void)
-{
-   const auto &nbVertices = scalars_->size;
+    template <typename scalarType, typename idType>
+    void ftm::FTMTree_MT::sortInput(void) {
+      const auto &nbVertices = scalars_->size;
 
-   auto *sortedVect = scalars_->sortedVertices.get();
-   if (sortedVect == nullptr) {
-      sortedVect = new std::vector<SimplexId>(0);
-      scalars_->sortedVertices.reset(sortedVect);
-   } else {
-      sortedVect->clear();
-   }
+      auto *sortedVect = scalars_->sortedVertices.get();
+      if(sortedVect == nullptr) {
+        sortedVect = new std::vector<SimplexId>(0);
+        scalars_->sortedVertices.reset(sortedVect);
+      } else {
+        sortedVect->clear();
+      }
 
-   auto indirect_sort = [&](const size_t &a, const size_t &b) { return isLower<scalarType,idType>(a, b); };
+      auto indirect_sort = [&](const size_t &a, const size_t &b) {
+        return isLower<scalarType, idType>(a, b);
+      };
 
-   sortedVect->resize(nbVertices, 0);
-   std::iota(sortedVect->begin(), sortedVect->end(), static_cast<SimplexId>(0));
+      sortedVect->resize(nbVertices, 0);
+      std::iota(
+        sortedVect->begin(), sortedVect->end(), static_cast<SimplexId>(0));
 
-// #pragma omp parallel
-// #pragma omp single
-//    scalars_->qsort<SimplexId>(sortedVect->data(), 0, scalars_->size -1, indirect_sort);
+      // #pragma omp parallel
+      // #pragma omp single
+      //    scalars_->qsort<SimplexId>(sortedVect->data(), 0, scalars_->size -1,
+      //    indirect_sort);
 
 #ifdef TTK_ENABLE_OPENMP
-# ifdef __clang__
-   std::cout << "Caution, outside GCC, sequential sort" << std::endl;
-   std::sort(sortedVect->begin(), sortedVect->end(), indirect_sort);
-# else
-   __gnu_parallel::sort(sortedVect->begin(), sortedVect->end(), indirect_sort);
-# endif
+#ifdef __clang__
+      std::cout << "Caution, outside GCC, sequential sort" << std::endl;
+      std::sort(sortedVect->begin(), sortedVect->end(), indirect_sort);
 #else
-   std::sort(sortedVect->begin(), sortedVect->end(), indirect_sort);
+      __gnu_parallel::sort(
+        sortedVect->begin(), sortedVect->end(), indirect_sort);
+#endif
+#else
+      std::sort(sortedVect->begin(), sortedVect->end(), indirect_sort);
 #endif
 
-   auto *mirrorVert = scalars_->mirrorVertices.get();
-   if (mirrorVert == nullptr) {
-      mirrorVert = new std::vector<SimplexId>(0);
-      scalars_->mirrorVertices.reset(mirrorVert);
-   } else {
-      mirrorVert->clear();
-   }
+      auto *mirrorVert = scalars_->mirrorVertices.get();
+      if(mirrorVert == nullptr) {
+        mirrorVert = new std::vector<SimplexId>(0);
+        scalars_->mirrorVertices.reset(mirrorVert);
+      } else {
+        mirrorVert->clear();
+      }
 
-   scalars_->mirrorVertices->resize(nbVertices);
+      scalars_->mirrorVertices->resize(nbVertices);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
-   for (SimplexId i = 0; i < nbVertices; i++) {
-      (*scalars_->mirrorVertices)[(*sortedVect)[i]] = i;
-   }
-}
+      for(SimplexId i = 0; i < nbVertices; i++) {
+        (*scalars_->mirrorVertices)[(*sortedVect)[i]] = i;
+      }
+    }
 
-}
-}
+  } // namespace ftm
+} // namespace ttk
 // Process
 
 #endif /* end of include guard: FTMTREE_MT_TPL_H */
-

@@ -32,26 +32,24 @@
 #include "ExtendedUF.h"
 #include "MergeTree.h"
 
-namespace ttk
-{
-namespace cf
-{
-   class ContourForestsTree : public MergeTree
-   {
+namespace ttk {
+  namespace cf {
+    class ContourForestsTree : public MergeTree {
       friend class ContourForests;
 
-     protected:
+    protected:
       MergeTree *jt_, *st_;
 
-     public:
-
+    public:
       // -----------------
       // Constructors
       // -----------------
       // {
 
-      ContourForestsTree(Params *const params, Triangulation * mesh, Scalars *const scalars,
-                         idPartition part=nullPartition);
+      ContourForestsTree(Params *const params,
+                         Triangulation *mesh,
+                         Scalars *const scalars,
+                         idPartition part = nullPartition);
       virtual ~ContourForestsTree();
 
       // }
@@ -60,11 +58,10 @@ namespace cf
       // -----------------
       // {
 
-      void flush(void)
-      {
-         MergeTree::flush();
-         jt_->flush();
-         st_->flush();
+      void flush(void) {
+        MergeTree::flush();
+        jt_->flush();
+        st_->flush();
       }
 
       // }
@@ -73,31 +70,28 @@ namespace cf
       // -----------------
       // {
 
-      inline MergeTree* getJoinTree(void) const
-      {
-         return jt_;
+      inline MergeTree *getJoinTree(void) const {
+        return jt_;
       }
 
-      inline MergeTree* getSplitTree(void) const 
-      {
-         return st_;
+      inline MergeTree *getSplitTree(void) const {
+        return st_;
       }
 
-      inline MergeTree* getTree(const TreeType & tt)
-      {
-          switch (tt) {
-              case TreeType::JoinAndSplit:
-              case TreeType::Split:
-                  return getSplitTree();
-                  break;
-              case TreeType::Join:
-                  return getJoinTree();
-                  break;
-              case TreeType::Contour:
-                  return this;
-                  break;
-          }
-           return this;
+      inline MergeTree *getTree(const TreeType &tt) {
+        switch(tt) {
+          case TreeType::JoinAndSplit:
+          case TreeType::Split:
+            return getSplitTree();
+            break;
+          case TreeType::Join:
+            return getJoinTree();
+            break;
+          case TreeType::Contour:
+            return this;
+            break;
+        }
+        return this;
       }
 
       // }
@@ -109,8 +103,7 @@ namespace cf
       /// \brief Combine tree with Natarajan's algorithm
       int combine(const SimplexId &seed0, const SimplexId &seed1);
 
-     private:
-
+    private:
       // -----------------
       // PROCESS
       // -----------------
@@ -121,8 +114,8 @@ namespace cf
       void initDataMT(void);
 
       // }
-   };
-}
-}
+    };
+  } // namespace cf
+} // namespace ttk
 
-#endif  // CONTOURTREE_H
+#endif // CONTOURTREE_H

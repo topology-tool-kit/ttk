@@ -1,5 +1,5 @@
-#include <Os.h>
 #include <Debug.h>
+#include <Os.h>
 
 #ifdef _WIN32
 
@@ -27,13 +27,13 @@
 #include <unistd.h>
 #endif
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <sstream>
 
 namespace ttk {
 
-int OsCall::getCurrentDirectory(std::string &directoryPath) {
+  int OsCall::getCurrentDirectory(std::string &directoryPath) {
 #ifdef _WIN32
     directoryPath = _getcwd(NULL, 0);
 #else
@@ -42,9 +42,9 @@ int OsCall::getCurrentDirectory(std::string &directoryPath) {
     directoryPath += "/";
 
     return 0;
-}
+  }
 
-float OsCall::getMemoryInstantUsage() {
+  float OsCall::getMemoryInstantUsage() {
 #ifdef __linux__
     // horrible hack since getrusage() doesn't seem to work well under
     // linux
@@ -52,24 +52,24 @@ float OsCall::getMemoryInstantUsage() {
     procFileName << "/proc/" << getpid() << "/statm";
 
     std::ifstream procFile(procFileName.str().data(), std::ios::in);
-    if (procFile) {
-        float memoryUsage;
-        procFile >> memoryUsage;
-        procFile.close();
-        return memoryUsage / 1024.0;
+    if(procFile) {
+      float memoryUsage;
+      procFile >> memoryUsage;
+      procFile.close();
+      return memoryUsage / 1024.0;
     }
 #endif
     return 0;
-}
+  }
 
-int OsCall::getNumberOfCores() {
+  int OsCall::getNumberOfCores() {
 #ifdef TTK_ENABLE_OPENMP
     return omp_get_num_procs();
 #endif
     return 1;
-}
+  }
 
-double OsCall::getTimeStamp() {
+  double OsCall::getTimeStamp() {
 #ifdef _WIN32
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
@@ -91,10 +91,11 @@ double OsCall::getTimeStamp() {
     gettimeofday(&stamp, NULL);
     return (stamp.tv_sec * 1000000 + stamp.tv_usec) / 1000000.0;
 #endif
-}
+  }
 
-std::vector<std::string> OsCall::listFilesInDirectory(const std::string &directoryName,
-                                                      const std::string &extension) {
+  std::vector<std::string>
+    OsCall::listFilesInDirectory(const std::string &directoryName,
+                                 const std::string &extension) {
 
     std::vector<std::string> filesInDir;
 
@@ -102,19 +103,23 @@ std::vector<std::string> OsCall::listFilesInDirectory(const std::string &directo
 
 #ifdef UNICODE
     auto toWString = [](const std::string &str) {
-        if (str.empty()) return std::wstring();
-        int wcharCount = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
-        std::wstring wstr;
-        wstr.resize(wcharCount);
-        MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &wstr[0], wcharCount);
-        return wstr;
+      if(str.empty())
+        return std::wstring();
+      int wcharCount
+        = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
+      std::wstring wstr;
+      wstr.resize(wcharCount);
+      MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &wstr[0], wcharCount);
+      return wstr;
     };
     auto toString = [](const WCHAR wstr[]) {
-        int charCount = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
-        std::string str;
-        str.resize(charCount);
-        WideCharToMultiByte(CP_UTF8, 0, wstr, -1, &str[0], charCount, nullptr, nullptr);
-        return str;
+      int charCount = WideCharToMultiByte(
+        CP_UTF8, 0, wstr, -1, nullptr, 0, nullptr, nullptr);
+      std::string str;
+      str.resize(charCount);
+      WideCharToMultiByte(
+        CP_UTF8, 0, wstr, -1, &str[0], charCount, nullptr, nullptr);
+      return str;
     };
 #else
     auto toWString = [](const std::string &str) { return str; };
@@ -124,91 +129,100 @@ std::vector<std::string> OsCall::listFilesInDirectory(const std::string &directo
     WIN32_FIND_DATA FindFileData;
     char *buffer;
     buffer = _getcwd(NULL, 0);
-    if ((buffer = _getcwd(NULL, 0)) == NULL)
-        perror("_getcwd error");
+    if((buffer = _getcwd(NULL, 0)) == NULL)
+      perror("_getcwd error");
     else {
-        free(buffer);
+      free(buffer);
     }
 
-    HANDLE hFind = FindFirstFile(toWString(directoryName).c_str(), &FindFileData);
-    if (hFind == INVALID_HANDLE_VALUE) {
-        std::stringstream msg;
-        msg << "[Os] Could not open directory `" << directoryName << "'. Error: " << GetLastError()
-            << std::endl;
-        Debug d;
-        d.dMsg(std::cerr, msg.str(), 0);
+    HANDLE hFind
+      = FindFirstFile(toWString(directoryName).c_str(), &FindFileData);
+    if(hFind == INVALID_HANDLE_VALUE) {
+      std::stringstream msg;
+      msg << "[Os] Could not open directory `" << directoryName
+          << "'. Error: " << GetLastError() << std::endl;
+      Debug d;
+      d.dMsg(std::cerr, msg.str(), 0);
     } else {
-        const std::string filename = toString(FindFileData.cFileName);
+      const std::string filename = toString(FindFileData.cFileName);
 
-        std::string entryExtension(filename);
-        entryExtension = entryExtension.substr(entryExtension.find_last_of('.') + 1);
+      std::string entryExtension(filename);
+      entryExtension
+        = entryExtension.substr(entryExtension.find_last_of('.') + 1);
 
-        if (entryExtension == extension) filesInDir.push_back(filename);
-        std::string dir = directoryName;
-        dir.resize(dir.size() - 1);
-        while (FindNextFile(hFind, &FindFileData)) {
-            if (extension.size()) {
-                std::string entryExtension(filename);
-                entryExtension = entryExtension.substr(entryExtension.find_last_of('.') + 1);
-                if (entryExtension == extension) filesInDir.push_back(dir + filename);
-            } else {
-                if ((filename != ".") && (filename != "..")) {
-                    filesInDir.push_back(directoryName + "/" + filename);
-                }
-            }
+      if(entryExtension == extension)
+        filesInDir.push_back(filename);
+      std::string dir = directoryName;
+      dir.resize(dir.size() - 1);
+      while(FindNextFile(hFind, &FindFileData)) {
+        if(extension.size()) {
+          std::string entryExtension(filename);
+          entryExtension
+            = entryExtension.substr(entryExtension.find_last_of('.') + 1);
+          if(entryExtension == extension)
+            filesInDir.push_back(dir + filename);
+        } else {
+          if((filename != ".") && (filename != "..")) {
+            filesInDir.push_back(directoryName + "/" + filename);
+          }
         }
+      }
     }
     FindClose(hFind);
 #else
     DIR *d = opendir((directoryName + "/").data());
-    if (!d) {
-        std::stringstream msg;
-        msg << "[Os] Could not open directory `" << directoryName << "'..." << std::endl;
-        Debug d;
-        d.dMsg(std::cerr, msg.str(), 0);
+    if(!d) {
+      std::stringstream msg;
+      msg << "[Os] Could not open directory `" << directoryName << "'..."
+          << std::endl;
+      Debug d;
+      d.dMsg(std::cerr, msg.str(), 0);
     } else {
-        struct dirent *dirEntry;
-        while ((dirEntry = readdir(d)) != NULL) {
-            if (extension.size()) {
-                std::string entryExtension(dirEntry->d_name);
-                entryExtension = entryExtension.substr(entryExtension.find_last_of('.') + 1);
-                if (entryExtension == extension)
-                    filesInDir.push_back(directoryName + "/" + std::string(dirEntry->d_name));
-            } else {
-                if ((std::string(dirEntry->d_name) != ".") &&
-                    (std::string(dirEntry->d_name) != ".."))
-                    filesInDir.push_back(directoryName + "/" + std::string(dirEntry->d_name));
-            }
+      struct dirent *dirEntry;
+      while((dirEntry = readdir(d)) != NULL) {
+        if(extension.size()) {
+          std::string entryExtension(dirEntry->d_name);
+          entryExtension
+            = entryExtension.substr(entryExtension.find_last_of('.') + 1);
+          if(entryExtension == extension)
+            filesInDir.push_back(directoryName + "/"
+                                 + std::string(dirEntry->d_name));
+        } else {
+          if((std::string(dirEntry->d_name) != ".")
+             && (std::string(dirEntry->d_name) != ".."))
+            filesInDir.push_back(directoryName + "/"
+                                 + std::string(dirEntry->d_name));
         }
-        closedir(d);
+      }
+      closedir(d);
     }
 #endif
 
     std::sort(filesInDir.begin(), filesInDir.end());
 
     return filesInDir;
-}
+  }
 
-int OsCall::mkDir(const std::string &directoryName) {
+  int OsCall::mkDir(const std::string &directoryName) {
 
 #ifdef _WIN32
     return _mkdir(directoryName.data());
 #else
     return mkdir(directoryName.data(), 0777);
 #endif
-}
+  }
 
-int OsCall::nearbyint(const double &x) {
+  int OsCall::nearbyint(const double &x) {
     const double upperBound = ceil(x);
     const double lowerBound = floor(x);
 
-    if (upperBound - x <= x - lowerBound)
-        return (int)upperBound;
+    if(upperBound - x <= x - lowerBound)
+      return (int)upperBound;
     else
-        return (int)lowerBound;
-}
+      return (int)lowerBound;
+  }
 
-int OsCall::rmDir(const std::string &directoryName) {
+  int OsCall::rmDir(const std::string &directoryName) {
 
 #ifdef _WIN32
     // NOTE:
@@ -220,9 +234,9 @@ int OsCall::rmDir(const std::string &directoryName) {
     cmd << "rm -R " << directoryName << " 2> /dev/null";
     return system(cmd.str().data());
 #endif
-}
+  }
 
-int OsCall::rmFile(const std::string &fileName) {
+  int OsCall::rmFile(const std::string &fileName) {
 
     std::stringstream cmd;
 
@@ -239,6 +253,6 @@ int OsCall::rmFile(const std::string &fileName) {
 #endif
 
     return system(cmd.str().data());
-}
+  }
 
-}  // namespace ttk
+} // namespace ttk

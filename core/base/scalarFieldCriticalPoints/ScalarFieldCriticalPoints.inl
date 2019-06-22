@@ -227,12 +227,12 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
   // shortcut, if min or max do not construct the complete star
   if(!forceNonManifoldCheck && lowerNeighbors.empty()) {
     // minimum
-    return std::make_pair(0,1);
+    return std::make_pair(0, 1);
   }
 
   if(!forceNonManifoldCheck && upperNeighbors.empty()) {
     // maximum
-    return std::make_pair(1,0);
+    return std::make_pair(1, 0);
   }
 
   // now do the actual work
@@ -348,7 +348,7 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
 
   if(downValence == 0 && upValence == 1) {
     return static_cast<char>(CriticalType::Local_minimum);
-  } else if (downValence == 1 && upValence == 0) {
+  } else if(downValence == 1 && upValence == 0) {
     return static_cast<char>(CriticalType::Local_maximum);
   } else if(downValence == 1 && upValence == 1) {
     // regular point

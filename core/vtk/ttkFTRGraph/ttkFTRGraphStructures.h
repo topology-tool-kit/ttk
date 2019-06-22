@@ -10,8 +10,8 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
-#include "FTRDataTypes.h"
 #include "FTRCommon.h"
+#include "FTRDataTypes.h"
 #include "Graph.h"
 
 namespace ttk {

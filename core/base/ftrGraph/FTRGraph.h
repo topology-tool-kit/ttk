@@ -18,15 +18,15 @@
 #include <Triangulation.h>
 
 // local includes
-#include "FTRAtomicVector.h"
-#include "FTRDataTypes.h"
 #include "DynamicGraph.h"
+#include "FTRAtomicVector.h"
 #include "FTRCommon.h"
-#include "Graph.h"
-#include "Mesh.h"
+#include "FTRDataTypes.h"
 #include "FTRPropagation.h"
 #include "FTRPropagations.h"
 #include "FTRScalars.h"
+#include "Graph.h"
+#include "Mesh.h"
 
 // other baseCode
 #include "ScalarFieldCriticalPoints.h"

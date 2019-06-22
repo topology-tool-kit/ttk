@@ -4,8 +4,8 @@
 /// \brief Command line program for critical point computation.
 
 // include the local headers
-#include                  <ttkScalarFieldCriticalPoints.h>
-#include                  <ttkProgramBase.h>
+#include <ttkProgramBase.h>
+#include <ttkScalarFieldCriticalPoints.h>
 
 using namespace std;
 using namespace ttk;
@@ -18,14 +18,14 @@ int main(int argc, char **argv) {
   int scalarFieldId = 0, offsetFieldId = -1;
 
   // register these arguments to the command line parser
-  program.parser_.setArgument("F", &scalarFieldId,
-    "Input scalar field identifier", true);
-  program.parser_.setArgument("O", &offsetFieldId,
-    "Input vertex offset field identifier", true);
+  program.parser_.setArgument(
+    "F", &scalarFieldId, "Input scalar field identifier", true);
+  program.parser_.setArgument(
+    "O", &offsetFieldId, "Input vertex offset field identifier", true);
 
   int ret = 0;
   ret = program.init(argc, argv);
- 
+
   if(ret != 0)
     return ret;
 
@@ -34,15 +34,14 @@ int main(int argc, char **argv) {
   program.ttkObject_->SetScalarFieldId(scalarFieldId);
   program.ttkObject_->SetOffsetFieldId(offsetFieldId);
 
-  
   // execute data processing
   ret = program.run();
-  
+
   if(ret != 0)
     return ret;
- 
+
   // save the output
   ret = program.save();
-  
+
   return ret;
 }

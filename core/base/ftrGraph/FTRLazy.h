@@ -14,8 +14,8 @@
 #pragma once
 
 // local includes
-#include "FTRDataTypes.h"
 #include "FTRCommon.h"
+#include "FTRDataTypes.h"
 
 // c++ includes
 #include <set>
@@ -46,7 +46,7 @@ namespace ttk {
       void delEmplace(const idEdge e0, const idEdge e1, const idSuperArc a) {
         const auto p = std::make_pair(e0, e1);
         auto it = lazyAdd_[a].find(p);
-        if (it != lazyAdd_[a].end()) {
+        if(it != lazyAdd_[a].end()) {
           lazyAdd_[a].erase(it);
         }
       }

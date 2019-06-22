@@ -21,120 +21,118 @@
 #define _TTK_DISCRETEGRADIENT_H
 
 // VTK includes
-#include<vtkCharArray.h>
-#include<vtkDataArray.h>
-#include<vtkDataSet.h>
-#include<vtkDataSetAlgorithm.h>
-#include<vtkDoubleArray.h>
-#include<vtkFiltersCoreModule.h>
-#include<vtkFloatArray.h>
-#include<vtkInformation.h>
-#include<vtkIntArray.h>
-#include<vtkObjectFactory.h>
-#include<vtkPointData.h>
-#include<vtkCellData.h>
-#include<vtkSmartPointer.h>
-#include<vtkInformationVector.h>
-#include<vtkLine.h>
+#include <vtkCellData.h>
+#include <vtkCharArray.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkDataSetAlgorithm.h>
+#include <vtkDoubleArray.h>
+#include <vtkFiltersCoreModule.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkIntArray.h>
+#include <vtkLine.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkSmartPointer.h>
 
 // ttk code includes
-#include<DiscreteGradient.h>
-#include<ttkWrapper.h>
+#include <DiscreteGradient.h>
+#include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkDiscreteGradient
 #else
 class ttkDiscreteGradient
 #endif
-  : public vtkDataSetAlgorithm, public ttk::Wrapper{
+  : public vtkDataSetAlgorithm,
+    public ttk::Wrapper {
 
-  public:
+public:
+  static ttkDiscreteGradient *New();
 
-    static ttkDiscreteGradient* New();
+  vtkTypeMacro(ttkDiscreteGradient, vtkDataSetAlgorithm);
 
-    vtkTypeMacro(ttkDiscreteGradient, vtkDataSetAlgorithm);
+  // default ttk setters
+  vtkSetMacro(debugLevel_, int);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+  void SetThreadNumber(int threadNumber) {
+    ThreadNumber = threadNumber;
+    SetThreads();
+  }
 
-    void SetThreadNumber(int threadNumber){
-      ThreadNumber = threadNumber;
-      SetThreads();
-    }
+  void SetUseAllCores(bool onOff) {
+    UseAllCores = onOff;
+    SetThreads();
+  }
+  // end of default ttk setters
 
-    void SetUseAllCores(bool onOff){
-      UseAllCores = onOff;
-      SetThreads();
-    }
-    // end of default ttk setters
+  vtkSetMacro(ScalarField, std::string);
+  vtkGetMacro(ScalarField, std::string);
 
-    vtkSetMacro(ScalarField, std::string);
-    vtkGetMacro(ScalarField, std::string);
+  vtkSetMacro(ForceInputOffsetScalarField, int);
+  vtkGetMacro(ForceInputOffsetScalarField, int);
 
-    vtkSetMacro(ForceInputOffsetScalarField, int);
-    vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(InputOffsetScalarFieldName, std::string);
+  vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
-    vtkSetMacro(InputOffsetScalarFieldName, std::string);
-    vtkGetMacro(InputOffsetScalarFieldName, std::string);
+  vtkSetMacro(ReverseSaddleMaximumConnection, int);
+  vtkGetMacro(ReverseSaddleMaximumConnection, int);
 
-    vtkSetMacro(ReverseSaddleMaximumConnection, int);
-    vtkGetMacro(ReverseSaddleMaximumConnection, int);
+  vtkSetMacro(ReverseSaddleSaddleConnection, int);
+  vtkGetMacro(ReverseSaddleSaddleConnection, int);
 
-    vtkSetMacro(ReverseSaddleSaddleConnection, int);
-    vtkGetMacro(ReverseSaddleSaddleConnection, int);
+  vtkSetMacro(AllowSecondPass, int);
+  vtkGetMacro(AllowSecondPass, int);
 
-    vtkSetMacro(AllowSecondPass, int);
-    vtkGetMacro(AllowSecondPass, int);
+  vtkSetMacro(AllowThirdPass, int);
+  vtkGetMacro(AllowThirdPass, int);
 
-    vtkSetMacro(AllowThirdPass, int);
-    vtkGetMacro(AllowThirdPass, int);
+  vtkSetMacro(ComputeGradientGlyphs, int);
+  vtkGetMacro(ComputeGradientGlyphs, int);
 
-    vtkSetMacro(ComputeGradientGlyphs, int);
-    vtkGetMacro(ComputeGradientGlyphs, int);
+  vtkSetMacro(IterationThreshold, int);
+  vtkGetMacro(IterationThreshold, int);
 
-    vtkSetMacro(IterationThreshold, int);
-    vtkGetMacro(IterationThreshold, int);
+  vtkSetMacro(ScalarFieldId, int);
+  vtkGetMacro(ScalarFieldId, int);
 
-    vtkSetMacro(ScalarFieldId, int);
-    vtkGetMacro(ScalarFieldId, int);
+  vtkSetMacro(OffsetFieldId, int);
+  vtkGetMacro(OffsetFieldId, int);
 
-    vtkSetMacro(OffsetFieldId, int);
-    vtkGetMacro(OffsetFieldId, int);
+  int setupTriangulation(vtkDataSet *input);
+  int getScalars(vtkDataSet *input);
+  int getOffsets(vtkDataSet *input);
 
-    int setupTriangulation(vtkDataSet* input);
-    int getScalars(vtkDataSet* input);
-    int getOffsets(vtkDataSet* input);
+protected:
+  ttkDiscreteGradient();
+  ~ttkDiscreteGradient();
 
-  protected:
+  TTK_SETUP();
 
-    ttkDiscreteGradient();
-    ~ttkDiscreteGradient();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-    TTK_SETUP();
+private:
+  std::string ScalarField;
+  std::string InputOffsetScalarFieldName;
+  bool ForceInputOffsetScalarField;
+  bool ReverseSaddleMaximumConnection;
+  bool ReverseSaddleSaddleConnection;
+  bool AllowSecondPass;
+  bool AllowThirdPass;
+  bool ComputeGradientGlyphs;
+  int IterationThreshold;
+  int ScalarFieldId;
+  int OffsetFieldId;
 
-    int FillInputPortInformation(int port, vtkInformation* info) override;
-    int FillOutputPortInformation(int port, vtkInformation* info) override;
-
-  private:
-
-    std::string ScalarField;
-    std::string InputOffsetScalarFieldName;
-    bool ForceInputOffsetScalarField;
-    bool ReverseSaddleMaximumConnection;
-    bool ReverseSaddleSaddleConnection;
-    bool AllowSecondPass;
-    bool AllowThirdPass;
-    bool ComputeGradientGlyphs;
-    int IterationThreshold;
-    int ScalarFieldId;
-    int OffsetFieldId;
-
-    ttk::Triangulation* triangulation_;
-    ttk::dcg::DiscreteGradient discreteGradient_;
-    vtkDataArray* inputScalars_;
-    ttkSimplexIdTypeArray* offsets_;
-    vtkDataArray* inputOffsets_;
-    bool hasUpdatedMesh_;
+  ttk::Triangulation *triangulation_;
+  ttk::dcg::DiscreteGradient discreteGradient_;
+  vtkDataArray *inputScalars_;
+  ttkSimplexIdTypeArray *offsets_;
+  vtkDataArray *inputOffsets_;
+  bool hasUpdatedMesh_;
 };
 
 #endif // _TTK_DISCRETEGRADIENT_H

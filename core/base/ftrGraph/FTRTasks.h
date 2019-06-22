@@ -85,4 +85,3 @@ namespace ttk {
     enum PriorityLevel { Min = 0, Low, Average, High, Higher, Max };
   } // namespace ftr
 } // namespace ttk
-

@@ -23,74 +23,71 @@ vtkStandardNewMacro(ttkOBJWriter);
 // Public
 // {{{
 
-void ttkOBJWriter::PrintSelf(ostream &os, vtkIndent indent){
+void ttkOBJWriter::PrintSelf(ostream &os, vtkIndent indent) {
   this->Superclass::PrintSelf(os, indent);
 
-  os << indent << "File Name: " 
-    << (this->Filename ? this->Filename : "(none)") << endl;
+  os << indent << "File Name: " << (this->Filename ? this->Filename : "(none)")
+     << endl;
 }
 
 // }}}
 // Protected
 // {{{
 
-ttkOBJWriter::ttkOBJWriter(){
+ttkOBJWriter::ttkOBJWriter() {
   Filename = NULL;
   Stream = NULL;
 }
 
-ttkOBJWriter::~ttkOBJWriter(){
+ttkOBJWriter::~ttkOBJWriter() {
   SetFilename(NULL);
   if(Stream)
     delete Stream;
 }
 
-int ttkOBJWriter::OpenFile(){
+int ttkOBJWriter::OpenFile() {
 
   ofstream *f = new ofstream(Filename, ios::out);
-  
-  if(!f->fail()){
+
+  if(!f->fail()) {
     Stream = f;
-  }
-  else{
+  } else {
     delete f;
     return -1;
   }
-  
+
   return 0;
 }
 
-void ttkOBJWriter::WriteData(){
-  
-  vtkDataSet *dataSet = 
-    vtkDataSet::SafeDownCast(this->GetInput());
-    
+void ttkOBJWriter::WriteData() {
+
+  vtkDataSet *dataSet = vtkDataSet::SafeDownCast(this->GetInput());
+
   if(!dataSet)
     return;
-  
-  if(this->OpenFile()){
-    cerr << "[ttkOBJWriter] Could not open file `"
-      << Filename << "' :(" << endl;
+
+  if(this->OpenFile()) {
+    cerr << "[ttkOBJWriter] Could not open file `" << Filename << "' :("
+         << endl;
     return;
   }
-  
+
   double p[3];
-  for(vtkIdType i = 0; i < dataSet->GetNumberOfPoints(); i++){
+  for(vtkIdType i = 0; i < dataSet->GetNumberOfPoints(); i++) {
     dataSet->GetPoint(i, p);
-    (*Stream) << "v " <<  p[0] << " " << p[1] << " " << p[2] << " " << endl;
+    (*Stream) << "v " << p[0] << " " << p[1] << " " << p[2] << " " << endl;
   }
-  
-  for(vtkIdType i = 0; i < dataSet->GetNumberOfCells(); i++){
+
+  for(vtkIdType i = 0; i < dataSet->GetNumberOfCells(); i++) {
     vtkCell *c = dataSet->GetCell(i);
-   
+
     (*Stream) << "f ";
-    for(int j = 0; j < c->GetNumberOfPoints(); j++){
+    for(int j = 0; j < c->GetNumberOfPoints(); j++) {
       (*Stream) << c->GetPointId(j) + 1 << " ";
     }
-    
+
     (*Stream) << endl;
   }
 }
-
 
 // }}}

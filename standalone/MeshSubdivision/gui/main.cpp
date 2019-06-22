@@ -4,8 +4,8 @@
 /// \brief GUI program for mesh subdivision.
 
 // include the local headers
-#include                  <ttkMeshSubdivision.h>
-#include                  <ttkUserInterfaceBase.h>
+#include <ttkMeshSubdivision.h>
+#include <ttkUserInterfaceBase.h>
 
 using namespace std;
 using namespace ttk;
@@ -18,9 +18,9 @@ int main(int argc, char **argv) {
   int iterationNumber = 1;
 
   // register these arguments to the command line parser
-  program.parser_.setArgument("I", &iterationNumber,
-    "Number of subdivision iterations", true);
-  
+  program.parser_.setArgument(
+    "I", &iterationNumber, "Number of subdivision iterations", true);
+
   int ret = 0;
   ret = program.init(argc, argv);
 
@@ -31,8 +31,7 @@ int main(int argc, char **argv) {
   // to execution.
   program.ttkObject_->SetIterationNumber(iterationNumber);
 
-
   program.run();
-  
+
   return 0;
 }

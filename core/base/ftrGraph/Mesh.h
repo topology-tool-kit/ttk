@@ -16,8 +16,8 @@
 #include <Triangulation.h>
 
 // local includes
-#include "FTRDataTypes.h"
 #include "FTRCommon.h"
+#include "FTRDataTypes.h"
 
 // c++ includes
 #include <vector>
@@ -79,7 +79,7 @@ namespace ttk {
         tri_ = tri;
       }
 
-      Triangulation* getTriangulation() {
+      Triangulation *getTriangulation() {
         return tri_;
       }
 
@@ -223,4 +223,3 @@ namespace ttk {
     };
   } // namespace ftr
 } // namespace ttk
-

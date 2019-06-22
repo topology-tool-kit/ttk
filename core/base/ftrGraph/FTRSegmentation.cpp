@@ -64,4 +64,3 @@ idVertex Segment::operator[](const size_t &idx) const {
 idVertex &Segment::operator[](const size_t &idx) {
   return vertices_[idx];
 }
-

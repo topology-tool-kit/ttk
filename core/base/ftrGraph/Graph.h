@@ -14,8 +14,8 @@
 #define GRAPH_H
 
 #include "FTRAtomicVector.h"
-#include "FTRDataTypes.h"
 #include "FTRCommon.h"
+#include "FTRDataTypes.h"
 #include "FTRNode.h"
 #include "FTRPropagation.h"
 #include "FTRScalars.h"

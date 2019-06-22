@@ -83,8 +83,8 @@ template int
                                      ttk::Triangulation &triangulation,
                                      std::vector<float> &outputDists,
                                      const std::vector<ttk::SimplexId> *bounds);
-template int
-  ttk::Dijkstra::shortestPath<double>(const ttk::SimplexId source,
-                                      ttk::Triangulation &triangulation,
-                                      std::vector<double> &outputDists,
-                                      const std::vector<ttk::SimplexId> *bounds);
+template int ttk::Dijkstra::shortestPath<double>(
+  const ttk::SimplexId source,
+  ttk::Triangulation &triangulation,
+  std::vector<double> &outputDists,
+  const std::vector<ttk::SimplexId> *bounds);

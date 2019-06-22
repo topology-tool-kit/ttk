@@ -1,7 +1,7 @@
 #pragma once
 
-#include "FTRDataTypes.h"
 #include "FTRCommon.h"
+#include "FTRDataTypes.h"
 
 #include <iostream>
 #include <memory>
@@ -51,7 +51,7 @@ namespace ttk {
         }
       }
 
-      ScalarType* getScalars() {
+      ScalarType *getScalars() {
         return values_;
       }
 
@@ -59,7 +59,7 @@ namespace ttk {
         return vOffsets_;
       }
 
-      SimplexId* getOffsets() {
+      SimplexId *getOffsets() {
         return offsets_;
       }
 
@@ -153,7 +153,7 @@ namespace ttk {
   schedule(static, size_ / threadNumber_)
 #endif
           for(idVertex i = 0; i < size_; i++) {
-            if(::std::isnan((double) values_[i])) {
+            if(::std::isnan((double)values_[i])) {
               values_[i] = 0;
             }
           }

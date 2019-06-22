@@ -1,4 +1,4 @@
-#include                  "TopologicalCompression.h"
+#include "TopologicalCompression.h"
 
 // General.
 ttk::TopologicalCompression::TopologicalCompression() {
@@ -18,61 +18,54 @@ ttk::TopologicalCompression::~TopologicalCompression() {
 
 #ifdef TTK_ENABLE_ZFP
 
-int ttk::TopologicalCompression::CompressWithZFP(
-    FILE *file,
-    bool decompress,
-    std::vector<double>& array,
-    int nx,
-    int ny,
-    int nz,
-    double rate)
-{
-  return ttk::TopologicalCompression::
-    compressZFPInternal(array.data(), nx, ny, nz, rate, decompress, file);
+int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
+                                                 bool decompress,
+                                                 std::vector<double> &array,
+                                                 int nx,
+                                                 int ny,
+                                                 int nz,
+                                                 double rate) {
+  return ttk::TopologicalCompression::compressZFPInternal(
+    array.data(), nx, ny, nz, rate, decompress, file);
 }
 
-int ttk::TopologicalCompression::compressZFPInternal(
-    double* array, int nx, int ny, int nz, double rate,
-    bool decompress, FILE *file)
-{
-  int status = 0;    // return value: 0 = success
-  zfp_type type;     // array scalar type
-  zfp_field* field;  // array meta data
-  zfp_stream* zfp;   // compressed stream
-  void* buffer;      // storage for compressed stream
-  size_t bufsize;    // byte size of compressed buffer
-  bitstream* stream; // bit stream to write to or read from
-  size_t zfpsize;    // byte size of compressed stream
+int ttk::TopologicalCompression::compressZFPInternal(double *array,
+                                                     int nx,
+                                                     int ny,
+                                                     int nz,
+                                                     double rate,
+                                                     bool decompress,
+                                                     FILE *file) {
+  int status = 0; // return value: 0 = success
+  zfp_type type; // array scalar type
+  zfp_field *field; // array meta data
+  zfp_stream *zfp; // compressed stream
+  void *buffer; // storage for compressed stream
+  size_t bufsize; // byte size of compressed buffer
+  bitstream *stream; // bit stream to write to or read from
+  size_t zfpsize; // byte size of compressed stream
 
   int n1 = 0;
   int n2 = 0;
   bool is2D = nx == 1 || ny == 1 || nz == 1;
-  if (is2D)
-  {
-    if (nx + ny == 2 || ny + nz == 2 || nx + nz == 2)
-    {
+  if(is2D) {
+    if(nx + ny == 2 || ny + nz == 2 || nx + nz == 2) {
       fprintf(stderr, "One-dimensional arrays not supported.\n");
       return 0;
     }
 
     n1 = nx != 1 ? nx : ny;
-    n2 = nx != 1 && ny != 1 ?  ny : nz;
+    n2 = nx != 1 && ny != 1 ? ny : nz;
   }
 
   // allocate meta data for the 3D array a[nz][ny][nx]
   type = zfp_type_double;
 
-  if (is2D)
-  {
-    field = zfp_field_2d(array, type,
-                         (unsigned int) n1,
-                         (unsigned int) n2);
-  } else
-  {
-    field = zfp_field_3d(array, type,
-                         (unsigned int) nx,
-                         (unsigned int) ny,
-                         (unsigned int) nz);
+  if(is2D) {
+    field = zfp_field_2d(array, type, (unsigned int)n1, (unsigned int)n2);
+  } else {
+    field = zfp_field_3d(
+      array, type, (unsigned int)nx, (unsigned int)ny, (unsigned int)nz);
   }
 
   // allocate meta data for a compressed stream
@@ -93,25 +86,23 @@ int ttk::TopologicalCompression::compressZFPInternal(
   zfp_stream_rewind(zfp);
 
   // compress or decompress entire array
-  if (decompress) {
+  if(decompress) {
     // read compressed stream and decompress array
     // zfpsize = fread(buffer, 1, bufsize, stdin);
     zfpsize = fread(buffer, 1, bufsize, file);
-    if (!zfp_decompress(zfp, field)) {
+    if(!zfp_decompress(zfp, field)) {
       fprintf(stderr, "decompression failed\n");
       status = 1;
     }
-  }
-  else {
+  } else {
     // compress array and output compressed stream
     zfpsize = zfp_compress(zfp, field);
-    if (!zfpsize) {
+    if(!zfpsize) {
       fprintf(stderr, "compression failed\n");
       status = 1;
-    }
-    else
+    } else
       fwrite(buffer, 1, zfpsize, file);
-      // fwrite(buffer, 1, zfpsize, stdout);
+    // fwrite(buffer, 1, zfpsize, stdout);
   }
 
   // clean up
@@ -121,7 +112,7 @@ int ttk::TopologicalCompression::compressZFPInternal(
   free(buffer);
   // free(array);
 
-  if (status != 0) {
+  if(status != 0) {
     ttk::Debug d;
     std::stringstream msg;
     msg << "[TopologicalCompression] Encountered a problem with ZFP."
@@ -129,21 +120,19 @@ int ttk::TopologicalCompression::compressZFPInternal(
     d.dMsg(std::cout, msg.str(), ttk::Debug::fatalMsg);
   }
 
-  return (int) zfpsize;
+  return (int)zfpsize;
 }
 
 #endif
 
 #ifdef TTK_ENABLE_ZLIB
 
-void ttk::TopologicalCompression::CompressWithZlib(
-    bool decompress,
-    Bytef *dest,
-    uLongf *destLen,
-    const Bytef *source,
-    uLong sourceLen)
-{
-  if (decompress)
+void ttk::TopologicalCompression::CompressWithZlib(bool decompress,
+                                                   Bytef *dest,
+                                                   uLongf *destLen,
+                                                   const Bytef *source,
+                                                   uLong sourceLen) {
+  if(decompress)
     uncompress(dest, destLen, source, sourceLen);
   else
     compress(dest, destLen, source, sourceLen);
@@ -151,13 +140,13 @@ void ttk::TopologicalCompression::CompressWithZlib(
 
 #endif
 
-unsigned int ttk::TopologicalCompression::log2(
-    int val)
-{
-  if (val == 0) return UINT_MAX;
-  if (val == 1) return 0;
+unsigned int ttk::TopologicalCompression::log2(int val) {
+  if(val == 0)
+    return UINT_MAX;
+  if(val == 1)
+    return 0;
   unsigned int ret = 0;
-  while (val > 1) {
+  while(val > 1) {
     val >>= 1;
     ret++;
   }
@@ -166,12 +155,10 @@ unsigned int ttk::TopologicalCompression::log2(
 
 // IO.
 
-bool ttk::TopologicalCompression::ReadBool(
-    FILE *fm)
-{
+bool ttk::TopologicalCompression::ReadBool(FILE *fm) {
   bool b;
-  int ret = (int) std::fread(&b, sizeof(bool), 1, fm);
-  if (!ret) {
+  int ret = (int)std::fread(&b, sizeof(bool), 1, fm);
+  if(!ret) {
     std::stringstream msg;
     ttk::Debug d;
     msg << "[TopologicalCompression] Error reading boolean!" << std::endl;
@@ -180,11 +167,9 @@ bool ttk::TopologicalCompression::ReadBool(
   return b;
 }
 
-void ttk::TopologicalCompression::WriteBool(
-    FILE *fm, bool b)
-{
-  int ret = (int) std::fwrite(&b, sizeof(bool), 1, fm);
-  if (!ret) {
+void ttk::TopologicalCompression::WriteBool(FILE *fm, bool b) {
+  int ret = (int)std::fwrite(&b, sizeof(bool), 1, fm);
+  if(!ret) {
     std::stringstream msg;
     ttk::Debug d;
     msg << "[TopologicalCompression] Error writing boolean!" << std::endl;
@@ -192,12 +177,10 @@ void ttk::TopologicalCompression::WriteBool(
   }
 }
 
-int ttk::TopologicalCompression::ReadInt(
-    FILE *fm)
-{
+int ttk::TopologicalCompression::ReadInt(FILE *fm) {
   int i;
-  int ret = (int) std::fread(&i, sizeof(int), 1, fm);
-  if (!ret) {
+  int ret = (int)std::fread(&i, sizeof(int), 1, fm);
+  if(!ret) {
     std::stringstream msg;
     ttk::Debug d;
     msg << "[TopologicalCompression] Error reading integer!" << std::endl;
@@ -206,11 +189,9 @@ int ttk::TopologicalCompression::ReadInt(
   return i;
 }
 
-void ttk::TopologicalCompression::WriteInt(
-    FILE *fm, int i)
-{
-  int ret = (int) std::fwrite(&i, sizeof(int), 1, fm);
-  if (!ret) {
+void ttk::TopologicalCompression::WriteInt(FILE *fm, int i) {
+  int ret = (int)std::fwrite(&i, sizeof(int), 1, fm);
+  if(!ret) {
     std::stringstream msg;
     ttk::Debug d;
     msg << "[TopologicalCompression] Error writing integer!" << std::endl;
@@ -218,12 +199,10 @@ void ttk::TopologicalCompression::WriteInt(
   }
 }
 
-double ttk::TopologicalCompression::ReadDouble(
-    FILE *fm)
-{
+double ttk::TopologicalCompression::ReadDouble(FILE *fm) {
   double d;
-  int ret = (int) std::fread(&d, sizeof(double), 1, fm);
-  if (!ret) {
+  int ret = (int)std::fread(&d, sizeof(double), 1, fm);
+  if(!ret) {
     std::stringstream msg;
     ttk::Debug d;
     msg << "[TopologicalCompression] Error reading double!" << std::endl;
@@ -232,11 +211,9 @@ double ttk::TopologicalCompression::ReadDouble(
   return d;
 }
 
-void ttk::TopologicalCompression::WriteDouble(
-    FILE *fm, double d)
-{
-  int ret = (int) std::fwrite(&d, sizeof(double), 1, fm);
-  if (!ret) {
+void ttk::TopologicalCompression::WriteDouble(FILE *fm, double d) {
+  int ret = (int)std::fwrite(&d, sizeof(double), 1, fm);
+  if(!ret) {
     std::stringstream msg;
     ttk::Debug d;
     msg << "[TopologicalCompression] Error writing double!" << std::endl;
@@ -244,12 +221,10 @@ void ttk::TopologicalCompression::WriteDouble(
   }
 }
 
-unsigned long ttk::TopologicalCompression::ReadUnsignedLong(
-    FILE *fm)
-{
+unsigned long ttk::TopologicalCompression::ReadUnsignedLong(FILE *fm) {
   unsigned long ul;
-  int ret = (int) std::fread(&ul, sizeof(unsigned long), 1, fm);
-  if (!ret) {
+  int ret = (int)std::fread(&ul, sizeof(unsigned long), 1, fm);
+  if(!ret) {
     std::stringstream msg;
     ttk::Debug d;
     msg << "[TopologicalCompression] Error reading long!" << std::endl;
@@ -258,11 +233,10 @@ unsigned long ttk::TopologicalCompression::ReadUnsignedLong(
   return ul;
 }
 
-void ttk::TopologicalCompression::WriteUnsignedLong(
-    FILE *fm, unsigned long ul)
-{
-  int ret = (int) std::fwrite(&ul, sizeof(unsigned long), 1, fm);
-  if (!ret) {
+void ttk::TopologicalCompression::WriteUnsignedLong(FILE *fm,
+                                                    unsigned long ul) {
+  int ret = (int)std::fwrite(&ul, sizeof(unsigned long), 1, fm);
+  if(!ret) {
     std::stringstream msg;
     ttk::Debug d;
     msg << "[TopologicalCompression] Error writing long!" << std::endl;
@@ -270,13 +244,11 @@ void ttk::TopologicalCompression::WriteUnsignedLong(
   }
 }
 
-void ttk::TopologicalCompression::ReadUnsignedCharArray(
-    FILE *fm,
-    unsigned char *buffer,
-    size_t length)
-{
-  int ret = (int) std::fread(buffer, sizeof(unsigned char), length, fm);
-  if (!ret) {
+void ttk::TopologicalCompression::ReadUnsignedCharArray(FILE *fm,
+                                                        unsigned char *buffer,
+                                                        size_t length) {
+  int ret = (int)std::fread(buffer, sizeof(unsigned char), length, fm);
+  if(!ret) {
     std::stringstream msg;
     ttk::Debug d;
     msg << "[TopologicalCompression] Error reading char array!" << std::endl;
@@ -284,11 +256,11 @@ void ttk::TopologicalCompression::ReadUnsignedCharArray(
   }
 }
 
-void ttk::TopologicalCompression::WriteUnsignedCharArray(
-    FILE *fm, unsigned char* buffer, size_t length)
-{
-  int ret = (int) std::fwrite(buffer, sizeof(unsigned char), length, fm);
-  if (!ret) {
+void ttk::TopologicalCompression::WriteUnsignedCharArray(FILE *fm,
+                                                         unsigned char *buffer,
+                                                         size_t length) {
+  int ret = (int)std::fwrite(buffer, sizeof(unsigned char), length, fm);
+  if(!ret) {
     std::stringstream msg;
     ttk::Debug d;
     msg << "[TopologicalCompression] Error writing char array!" << std::endl;
@@ -297,11 +269,10 @@ void ttk::TopologicalCompression::WriteUnsignedCharArray(
 }
 
 int ttk::TopologicalCompression::ReadCompactSegmentation(
-    FILE *fm,
-    std::vector<int>& segmentation,
-    int &numberOfVertices,
-    int &numberOfSegments)
-{
+  FILE *fm,
+  std::vector<int> &segmentation,
+  int &numberOfVertices,
+  int &numberOfSegments) {
   auto ReadInt = ttk::TopologicalCompression::ReadInt;
 
   int numberOfBytesRead = 0;
@@ -316,13 +287,14 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
 
 #ifndef TTK_ENABLE_KAMIKAZE
   // avoid left shift with negative operand
-  if (numberOfBitsPerSegment == 0) {
+  if(numberOfBitsPerSegment == 0) {
     return -2;
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
   // [MEDIUM] TODO: support long int
-  if (numberOfBitsPerSegment > 32) return -3;
+  if(numberOfBitsPerSegment > 32)
+    return -3;
 
   // Decode
   int currentCell = 0;
@@ -330,24 +302,24 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
   int maskerRank = 0;
   int oldCompressedInt = 0;
 
-  while (currentCell < numberOfVertices) {
+  while(currentCell < numberOfVertices) {
 
     int compressedInt;
     numberOfBytesRead += sizeof(int);
     compressedInt = ReadInt(fm);
 
-    while (offset + numberOfBitsPerSegment <= 32) {
+    while(offset + numberOfBitsPerSegment <= 32) {
 
       // Size of segment < size of compressed int
       int currentSegment = compressedInt;
 
-      if (maskerRank == 0) {
+      if(maskerRank == 0) {
         currentSegment <<= (32 - offset - numberOfBitsPerSegment);
 
-        if (currentSegment < 0) {
+        if(currentSegment < 0) {
           currentSegment &= 2147483647;
           currentSegment >>= (32 - numberOfBitsPerSegment);
-          currentSegment |= (1<<(numberOfBitsPerSegment - 1));
+          currentSegment |= (1 << (numberOfBitsPerSegment - 1));
         } else {
           currentSegment >>= (32 - numberOfBitsPerSegment);
         }
@@ -355,23 +327,23 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
         offset += numberOfBitsPerSegment;
       }
 
-        // Got overlapping mask.
+      // Got overlapping mask.
       else {
         currentSegment <<= (32 - offset);
-        if (currentSegment < 0) {
+        if(currentSegment < 0) {
           currentSegment &= 2147483647;
           currentSegment >>= (32 - numberOfBitsPerSegment);
-          currentSegment |= (1<<(numberOfBitsPerSegment - 1));
+          currentSegment |= (1 << (numberOfBitsPerSegment - 1));
         } else {
           currentSegment >>= (32 - numberOfBitsPerSegment);
         }
 
         int nextSegment = currentSegment;
 
-        if (oldCompressedInt < 0) {
+        if(oldCompressedInt < 0) {
           oldCompressedInt &= 2147483647;
           oldCompressedInt >>= maskerRank;
-          oldCompressedInt |= (1<<(32-maskerRank-1));
+          oldCompressedInt |= (1 << (32 - maskerRank - 1));
         } else {
           oldCompressedInt >>= maskerRank;
         }
@@ -382,13 +354,12 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
 
       segmentation.push_back(currentSegment);
       currentCell++; // Go to next cell.
-
     }
 
     // Overlapping mask into next container.
     {
       oldCompressedInt = compressedInt;
-      if (offset == 32) {
+      if(offset == 32) {
         maskerRank = 0;
       } else {
         maskerRank = offset;
@@ -396,7 +367,6 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
       }
       offset %= 32;
     }
-
   }
 
   return numberOfBytesRead;
@@ -404,11 +374,7 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
 
 // Returns number of bytes written.
 int ttk::TopologicalCompression::WriteCompactSegmentation(
-    FILE *fm,
-    int *segmentation,
-    int numberOfVertices,
-    int numberOfSegments)
-{
+  FILE *fm, int *segmentation, int numberOfVertices, int numberOfSegments) {
   auto WriteInt = ttk::TopologicalCompression::WriteInt;
 
   int numberOfBytesWritten = 0;
@@ -418,25 +384,26 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
   unsigned int numberOfBitsPerSegment = log2(numberOfSegments) + 1;
 
   // [MEDIUM] TODO: support long int
-  if (numberOfBitsPerSegment > 32) return -3;
+  if(numberOfBitsPerSegment > 32)
+    return -3;
 
   // Encode
   int currentCell = 0;
   int offset = 0;
   int maskerRank = 0;
-  while (currentCell < numberOfVertices) {
+  while(currentCell < numberOfVertices) {
 
     // Create next container.
     int compressedInt = 0;
 
     // Write regularly all segments until one overlaps
     // two containers.
-    while (offset + numberOfBitsPerSegment <= 32) {
+    while(offset + numberOfBitsPerSegment <= 32) {
 
       int currentSegment = segmentation[currentCell];
 
       // If applicable, fill last part of current segment.
-      if (maskerRank != 0) {
+      if(maskerRank != 0) {
         // Always a positive int.
         currentSegment = currentSegment >> (numberOfBitsPerSegment - offset);
         // (numberOfBitsPerSegment - maskerRank - 1);
@@ -450,11 +417,10 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
       }
 
       currentCell++; // Next cell.
-
     }
 
     // Test for overflow filling last part of current container.
-    if (currentCell >= numberOfVertices) {
+    if(currentCell >= numberOfVertices) {
       numberOfBytesWritten += sizeof(int);
       WriteInt(fm, compressedInt);
       break;
@@ -465,7 +431,7 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
     {
       int currentSegment = segmentation[currentCell];
 
-      if (offset == 32) {
+      if(offset == 32) {
         // currentCell++;
       } else {
         int cursor = (currentSegment << offset);
@@ -487,14 +453,13 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
 }
 
 int ttk::TopologicalCompression::ReadPersistenceIndex(
-    FILE *fm,
-    std::vector<std::tuple<double, int>>& mappings,
-    std::vector<std::tuple<double, int>>& mappingsSortedPerValue,
-    std::vector<std::tuple<int, double, int>>& constraints,
-    double &min,
-    double &max,
-    int &nbConstraints)
-{
+  FILE *fm,
+  std::vector<std::tuple<double, int>> &mappings,
+  std::vector<std::tuple<double, int>> &mappingsSortedPerValue,
+  std::vector<std::tuple<int, double, int>> &constraints,
+  double &min,
+  double &max,
+  int &nbConstraints) {
   int numberOfBytesRead = 0;
 
   // 1.a. Read mapping.
@@ -502,7 +467,7 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
   numberOfBytesRead += sizeof(int);
   mappingSize = ReadInt(fm);
 
-  for (int i = 0; i < mappingSize; ++i) {
+  for(int i = 0; i < mappingSize; ++i) {
     int idv;
     numberOfBytesRead += sizeof(int);
     idv = ReadInt(fm);
@@ -523,7 +488,7 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
   numberOfBytesRead += sizeof(int);
   nbConstraints = ReadInt(fm);
 
-  for (int i = 0; i < nbConstraints; ++i) {
+  for(int i = 0; i < nbConstraints; ++i) {
     int idVertex;
     double value;
     int vertexType;
@@ -537,13 +502,15 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
     numberOfBytesRead += sizeof(int);
     vertexType = ReadInt(fm);
 
-    if (i == 0) {
+    if(i == 0) {
       min = value;
       max = value;
     }
 
-    if (value < min) min = value;
-    if (value > max) max = value;
+    if(value < min)
+      min = value;
+    if(value > max)
+      max = value;
 
     constraints.push_back(std::make_tuple(idVertex, value, vertexType));
   }
@@ -552,37 +519,36 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
 }
 
 int ttk::TopologicalCompression::WritePersistenceIndex(
-    FILE *fm,
-    std::vector<std::tuple<double, int>>& mapping,
-    std::vector<std::tuple<int, double, int>>& constraints)
-{
+  FILE *fm,
+  std::vector<std::tuple<double, int>> &mapping,
+  std::vector<std::tuple<int, double, int>> &constraints) {
   int numberOfBytesWritten = 0;
 
   // Size.
-  auto mappingSize = (int) mapping.size();
+  auto mappingSize = (int)mapping.size();
   numberOfBytesWritten += sizeof(int);
   WriteInt(fm, mappingSize);
 
   // Segmentation values for each particular index.
-  for (int i = 0; i < mappingSize; ++i) {
+  for(int i = 0; i < mappingSize; ++i) {
     std::tuple<double, int> t = mapping[i];
     int idv = std::get<1>(t);
     numberOfBytesWritten += sizeof(int);
     WriteInt(fm, idv);
 
-    auto value = (double) std::get<0>(t);
+    auto value = (double)std::get<0>(t);
     numberOfBytesWritten += sizeof(double);
     WriteDouble(fm, value);
   }
 
-  auto nbConstraints = (int) constraints.size();
+  auto nbConstraints = (int)constraints.size();
   numberOfBytesWritten += sizeof(int);
   WriteInt(fm, nbConstraints);
 
-  for (int i = 0; i < nbConstraints; ++i) {
+  for(int i = 0; i < nbConstraints; ++i) {
     std::tuple<int, double, int> t = constraints[i];
     int idVertex = std::get<0>(t);
-    auto value = (double) std::get<1>(t);
+    auto value = (double)std::get<1>(t);
     int vertexType = std::get<2>(t);
 
     numberOfBytesWritten += sizeof(int);

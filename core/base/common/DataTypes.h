@@ -8,7 +8,7 @@
 #ifndef _DATATYPES_H
 #define _DATATYPES_H
 
-namespace ttk{
+namespace ttk {
   /// \brief Identifier type for simplices of any dimension.
   using LongSimplexId = long long int;
 
@@ -26,24 +26,30 @@ namespace ttk{
   using TaskId = int;
 
   /// default name for mask scalar field
-  const char MaskScalarFieldName[]="ttkMaskScalarField";
+  const char MaskScalarFieldName[] = "ttkMaskScalarField";
 
   /// default name for vertex scalar field
-  const char VertexScalarFieldName[]="ttkVertexScalarField";
+  const char VertexScalarFieldName[] = "ttkVertexScalarField";
 
   /// default name for offset scalar field
-  const char OffsetScalarFieldName[]="ttkOffsetScalarField";
+  const char OffsetScalarFieldName[] = "ttkOffsetScalarField";
 
   /// default name for bivariate offset fields
-  const char OffsetFieldUName[]="ttkOffsetFieldU";
-  const char OffsetFieldVName[]="ttkOffsetFieldV";
+  const char OffsetFieldUName[] = "ttkOffsetFieldU";
+  const char OffsetFieldVName[] = "ttkOffsetFieldV";
 
   /// default value for critical index
   enum class CriticalType {
-    Local_minimum = 0, Saddle1, Saddle2, Local_maximum, Degenerate, Regular };
+    Local_minimum = 0,
+    Saddle1,
+    Saddle2,
+    Local_maximum,
+    Degenerate,
+    Regular
+  };
   /// number of different critical types
   const int CriticalTypeNumber = 6;
 
-}
+} // namespace ttk
 
 #endif // _DATATYPES_H

@@ -20,22 +20,19 @@
 #include <Triangulation.h>
 #include <Wrapper.h>
 
-#include "FTMTree_CT.h"
 #include "FTMDataTypes.h"
+#include "FTMTree_CT.h"
 
-namespace ttk
-{
-namespace ftm
-{
+namespace ttk {
+  namespace ftm {
 
-  /**
-   * Compute the join tree, split tree or contour tree of a function on a triangulation.
-   * TTK assumes that the input dataset is made of only one connected component.
-   */
-   class FTMTree : public FTMTree_CT
-   {
-     public:
-
+    /**
+     * Compute the join tree, split tree or contour tree of a function on a
+     * triangulation. TTK assumes that the input dataset is made of only one
+     * connected component.
+     */
+    class FTMTree : public FTMTree_CT {
+    public:
       // -----------------
       // CONSTRUCTORS
       // -----------------
@@ -49,14 +46,13 @@ namespace ftm
 
       // Initialize structures then build tree
       // Need triangulation, scalars and all params set before call
-      template <typename scalarType,typename idType>
+      template <typename scalarType, typename idType>
       void build(void);
-
-   };
+    };
 
 #include "FTMTree_Template.h"
 
-}
-}
+  } // namespace ftm
+} // namespace ttk
 
-#endif  // TASKEDTREE_H
+#endif // TASKEDTREE_H

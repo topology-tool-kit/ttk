@@ -12,8 +12,8 @@
 #pragma once
 
 // VTK includes
-#include <vtkUnstructuredGridAlgorithm.h>
 #include <vtkInformation.h>
+#include <vtkUnstructuredGridAlgorithm.h>
 
 // TTK includes
 #include <IcoSphere.h>
@@ -24,79 +24,85 @@ class VTKFILTERSCORE_EXPORT ttkIcoSphere
 #else
 class ttkIcoSphere
 #endif
-: public vtkUnstructuredGridAlgorithm, public ttk::Wrapper{
+  : public vtkUnstructuredGridAlgorithm,
+    public ttk::Wrapper {
 
-    public:
+public:
+  static ttkIcoSphere *New();
+  vtkTypeMacro(ttkIcoSphere, vtkUnstructuredGridAlgorithm)
 
-        static ttkIcoSphere* New();
-        vtkTypeMacro(ttkIcoSphere, vtkUnstructuredGridAlgorithm)
+    vtkSetMacro(Subdivisions, int);
+  vtkGetMacro(Subdivisions, int);
 
-        vtkSetMacro(Subdivisions, int);
-        vtkGetMacro(Subdivisions, int);
+  vtkSetVector3Macro(Center, float);
+  vtkGetVector3Macro(Center, float);
 
-        vtkSetVector3Macro(Center, float);
-        vtkGetVector3Macro(Center, float);
+  vtkSetMacro(Radius, float);
+  vtkGetMacro(Radius, float);
 
-        vtkSetMacro(Radius, float);
-        vtkGetMacro(Radius, float);
+  // default ttk setters
+  vtkSetMacro(debugLevel_, int);
+  void SetThreads() {
+    threadNumber_
+      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
+    Modified();
+  }
+  void SetThreadNumber(int threadNumber) {
+    ThreadNumber = threadNumber;
+    SetThreads();
+  }
+  void SetUseAllCores(bool onOff) {
+    UseAllCores = onOff;
+    SetThreads();
+  }
+  // end of default ttk setters
 
-        // default ttk setters
-        vtkSetMacro(debugLevel_, int);
-        void SetThreads(){
-            threadNumber_ = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-            Modified();
-        }
-        void SetThreadNumber(int threadNumber){
-            ThreadNumber = threadNumber;
-            SetThreads();
-        }
-        void SetUseAllCores(bool onOff){
-            UseAllCores = onOff;
-            SetThreads();
-        }
-        // end of default ttk setters
+  int FillInputPortInformation(int port, vtkInformation *info) override {
+    return 0;
+  }
 
-        int FillInputPortInformation(int port, vtkInformation* info) override {
-            return 0;
-        }
+  int FillOutputPortInformation(int port, vtkInformation *info) override {
+    switch(port) {
+      case 0:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        break;
+      default:
+        return 0;
+    }
+    return 1;
+  }
 
-        int FillOutputPortInformation(int port, vtkInformation* info) override {
-            switch(port){
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid"); break;
-                default: return 0;
-            }
-            return 1;
-        }
+protected:
+  ttkIcoSphere() {
+    SetSubdivisions(0);
+    float center[3] = {0, 0, 0};
+    SetCenter(center);
+    SetRadius(1);
 
-    protected:
+    UseAllCores = false;
+    SetNumberOfInputPorts(0);
+    SetNumberOfOutputPorts(1);
+  }
+  ~ttkIcoSphere(){};
 
-        ttkIcoSphere(){
-            SetSubdivisions( 0 );
-            float center[3] = {0,0,0};
-            SetCenter( center );
-            SetRadius( 1 );
+  bool UseAllCores;
+  int ThreadNumber;
 
-            UseAllCores = false;
-            SetNumberOfInputPorts(0);
-            SetNumberOfOutputPorts(1);
-        }
-        ~ttkIcoSphere(){};
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
-        bool UseAllCores;
-        int ThreadNumber;
+private:
+  int Subdivisions;
+  float Center[3];
+  float Radius;
+  ttk::IcoSphere icoSphere_;
 
-        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
-
-    private:
-
-        int Subdivisions;
-        float Center[3];
-        float Radius;
-        ttk::IcoSphere icoSphere_;
-
-        bool needsToAbort() override { return GetAbortExecute(); };
-        int updateProgress(const float &progress) override {
-            UpdateProgress(progress);
-            return 0;
-        };
+  bool needsToAbort() override {
+    return GetAbortExecute();
+  };
+  int updateProgress(const float &progress) override {
+    UpdateProgress(progress);
+    return 0;
+  };
 };

@@ -161,4 +161,3 @@ void Graph::init() {
   fillVector<idSuperArc>(nbArcActif_, 0);
 #endif
 }
-

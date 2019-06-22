@@ -120,7 +120,7 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
   output->ShallowCopy(domain);
   output->GetPointData()->AddArray(eigenFunctions);
 
-  if (ComputeStatistics) {
+  if(ComputeStatistics) {
     output->GetPointData()->AddArray(stats);
   }
 

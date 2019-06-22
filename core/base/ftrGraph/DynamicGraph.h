@@ -16,8 +16,8 @@
 
 #include "FTRCommon.h"
 
-#include <vector>
 #include <set>
+#include <vector>
 
 namespace ttk {
   namespace ftr {

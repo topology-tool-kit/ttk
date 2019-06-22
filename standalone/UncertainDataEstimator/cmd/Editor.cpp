@@ -1,11 +1,10 @@
-#include                  <Editor.h>
+#include <Editor.h>
 
-Editor::Editor(){
+Editor::Editor() {
 
   input_ = NULL;
   // reader_ = NULL;
   lastObject_ = true;
-
 
   rawReader_ = NULL;
 
@@ -14,7 +13,7 @@ Editor::Editor(){
   // uncertainDataEstimator_ = ttkUncertainDataEstimator::New();
 }
 
-Editor::~Editor(){
+Editor::~Editor() {
   if(rawReader_) {
     rawReader_->Delete();
   }
@@ -55,70 +54,71 @@ int Editor::execute() {
   // uncertainDataEstimator_->Update();
   //
   // input_->ShallowCopy(uncertainDataEstimator_->GetOutput());
-
 }
 
-int Editor::init(int &argc, char **argv){
+int Editor::init(int &argc, char **argv) {
 
   CommandLineParser parser;
 
   // Input directory
-  parser.setArgument("l", &inputDirectory_,
-    "Path to the input data set");
+  parser.setArgument("l", &inputDirectory_, "Path to the input data set");
 
   // Fraction of input to consider
   string fraction_str;
   parser.setArgument("c", &fraction_str,
-    "Takes only a part of the input file (syntax : \"num/den\") (default : \"1/1\")", true);
+                     "Takes only a part of the input file (syntax : "
+                     "\"num/den\") (default : \"1/1\")",
+                     true);
 
   // Output directory
-  parser.setArgument("o", &outputDirectory_,
-    "Path to the output directory (default : .)", true);
+  parser.setArgument(
+    "o", &outputDirectory_, "Path to the output directory (default : .)", true);
   parser.setArgument("p", &outputPrefix_,
-    "Prefix for output files (default : \"output\")", true);
+                     "Prefix for output files (default : \"output\")", true);
 
   // Input file format
-  parser.setArgument("f", &inputFormat_,
-    "Format of input files (raw, vti or vtu)");
+  parser.setArgument(
+    "f", &inputFormat_, "Format of input files (raw, vti or vtu)");
 
   /* Input raw file options */
-  parser.setOption("be", &isBigEndian_,
+  parser.setOption(
+    "be", &isBigEndian_,
     "Set the byte order to big endian (default : little endian)");
 
-  parser.setOption("ll", &isLowerLeft_,
-    "Set the starting point of data at the lower left");
+  parser.setOption(
+    "ll", &isLowerLeft_, "Set the starting point of data at the lower left");
 
-  parser.setArgument("s", &scalarType_,
-    "Set the scalar type (default : double)", true);
+  parser.setArgument(
+    "s", &scalarType_, "Set the scalar type (default : double)", true);
 
   parser.setArgument("n", &dimension_,
-    "Set the dimension of the file (2D or 3D) (default : 3)", true);
+                     "Set the dimension of the file (2D or 3D) (default : 3)",
+                     true);
 
-  parser.setArgument("x", &nx_,
-    "X dimension for raw files (default : 1)", true);
-  parser.setArgument("y", &ny_,
-    "Y dimension for raw files (default : 1)", true);
-  parser.setArgument("z", &nz_,
-    "Z dimension for raw files (default : 1)", true);
+  parser.setArgument(
+    "x", &nx_, "X dimension for raw files (default : 1)", true);
+  parser.setArgument(
+    "y", &ny_, "Y dimension for raw files (default : 1)", true);
+  parser.setArgument(
+    "z", &nz_, "Z dimension for raw files (default : 1)", true);
 
-  parser.setArgument("dx", &dx_,
-    "X spacing for raw files (default : 1.0)", true);
-  parser.setArgument("dy", &dy_,
-    "Y spacing for raw files (default : 1.0)", true);
-  parser.setArgument("dz", &dz_,
-    "Z spacing for raw files (default : 1.0)", true);
+  parser.setArgument(
+    "dx", &dx_, "X spacing for raw files (default : 1.0)", true);
+  parser.setArgument(
+    "dy", &dy_, "Y spacing for raw files (default : 1.0)", true);
+  parser.setArgument(
+    "dz", &dz_, "Z spacing for raw files (default : 1.0)", true);
 
-  parser.setArgument("ox", &ox_,
-    "X origin for raw files (default : 0.0)", true);
-  parser.setArgument("oy", &oy_,
-    "Y origin for raw files (default : 0.0)", true);
-  parser.setArgument("oz", &oz_,
-    "Z origin for raw files (default : 0.0)", true);
-
+  parser.setArgument(
+    "ox", &ox_, "X origin for raw files (default : 0.0)", true);
+  parser.setArgument(
+    "oy", &oy_, "Y origin for raw files (default : 0.0)", true);
+  parser.setArgument(
+    "oz", &oz_, "Z origin for raw files (default : 0.0)", true);
 
   // Number of bin for histograms
-  parser.setArgument("b", &numberOfBins_,
-    "Number of bins for histograms (default : 0)", true);
+  parser.setArgument(
+    "b", &numberOfBins_, "Number of bins for histograms (default : 0)", true);
 
   // Thread number
   {
@@ -166,7 +166,8 @@ int Editor::init(int &argc, char **argv){
     if(inputDirectory_.back() == '/') {
       inputDirectory_.pop_back();
     }
-    inputFileName_ = OsCall::listFilesInDirectory(inputDirectory_, inputFormat_);
+    inputFileName_
+      = OsCall::listFilesInDirectory(inputDirectory_, inputFormat_);
   }
   int fraction, numberOfFractions;
   if(fraction_str.empty()) {
@@ -175,7 +176,7 @@ int Editor::init(int &argc, char **argv){
   } else {
     string num, den;
     bool slashFound(false);
-    for(size_t i=0 ; i<fraction_str.size() ; i++) {
+    for(size_t i = 0; i < fraction_str.size(); i++) {
       if(fraction_str[i] != '/') {
         if(!slashFound) {
           num.push_back(fraction_str[i]);
@@ -189,20 +190,20 @@ int Editor::init(int &argc, char **argv){
     if(!num.empty() && !den.empty()) {
       try {
         fraction = stoi(num);
-      } catch(invalid_argument& e) {
+      } catch(invalid_argument &e) {
         fraction = 1;
-      } catch(out_of_range& e) {
+      } catch(out_of_range &e) {
         fraction = 1;
       }
       try {
         numberOfFractions = stoi(den);
-      } catch(invalid_argument& e) {
+      } catch(invalid_argument &e) {
         numberOfFractions = 1;
-      } catch(out_of_range& e) {
+      } catch(out_of_range &e) {
         numberOfFractions = 1;
       }
-      if(!(numberOfFractions>0) || !(fraction>0)
-        || (numberOfFractions < fraction)) {
+      if(!(numberOfFractions > 0) || !(fraction > 0)
+         || (numberOfFractions < fraction)) {
         fraction = 1;
         numberOfFractions = 1;
       }
@@ -214,8 +215,8 @@ int Editor::init(int &argc, char **argv){
   }
   if(inputFileName_.empty()) {
     stringstream msg;
-    msg << "No " << inputFormat_
-      << " file in directory " << inputDirectory_ << endl;
+    msg << "No " << inputFormat_ << " file in directory " << inputDirectory_
+        << endl;
     dMsg(cerr, msg.str(), fatalMsg);
     return -1;
   } else {
@@ -223,10 +224,11 @@ int Editor::init(int &argc, char **argv){
     double numberOfFiles = static_cast<double>(inputFileName_.size());
     double num = static_cast<double>(fraction);
     double den = static_cast<double>(numberOfFractions);
-    int first = static_cast<int>( (numberOfFiles*(num-1.0)/den) + 0.5 );
-    int last = static_cast<int>( (numberOfFiles*num/den) - 0.5 );
+    int first = static_cast<int>((numberOfFiles * (num - 1.0) / den) + 0.5);
+    int last = static_cast<int>((numberOfFiles * num / den) - 0.5);
     vector<string> newList;
-    newList.insert(newList.begin(), inputFileName_.begin()+first, inputFileName_.begin()+last+1);
+    newList.insert(newList.begin(), inputFileName_.begin() + first,
+                   inputFileName_.begin() + last + 1);
     inputFileName_.swap(newList);
   }
 
@@ -261,9 +263,9 @@ int Editor::init(int &argc, char **argv){
 
   if(debugLevel_ > infoMsg) {
     stringstream msg;
-    msg  << "[Editor] Directory = " << inputDirectory_ << endl;
-    msg << "[Editor] " << inputFileName_.size()
-    << " " << inputFormat_ << " files found in directory" << endl;
+    msg << "[Editor] Directory = " << inputDirectory_ << endl;
+    msg << "[Editor] " << inputFileName_.size() << " " << inputFormat_
+        << " files found in directory" << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
 
@@ -285,7 +287,7 @@ int Editor::initRawReader() {
     } else {
       rawReader_->FileLowerLeftOff();
     }
-    rawReader_->SetDataExtent(0, nx_-1, 0, ny_-1, 0, nz_-1);
+    rawReader_->SetDataExtent(0, nx_ - 1, 0, ny_ - 1, 0, nz_ - 1);
     rawReader_->SetDataSpacing(dx_, dy_, dz_);
     rawReader_->SetDataOrigin(ox_, oy_, oz_);
     // Scalar type
@@ -345,31 +347,31 @@ int Editor::loadData(const string &fileName) {
 
   } else {
     // XML formats
-    if (inputFormat_ == "vtu") {
+    if(inputFormat_ == "vtu") {
       if(input_) {
         input_->Delete();
         input_ = NULL;
       }
       input_ = readXMLFile<vtkXMLUnstructuredGridReader>(fileName);
-    } else if (inputFormat_ == "vtp") {
+    } else if(inputFormat_ == "vtp") {
       if(input_) {
         input_->Delete();
         input_ = NULL;
       }
       input_ = readXMLFile<vtkXMLPolyDataReader>(fileName);
-    } else if (inputFormat_ == "vts") {
+    } else if(inputFormat_ == "vts") {
       if(input_) {
         input_->Delete();
         input_ = NULL;
       }
       input_ = readXMLFile<vtkXMLStructuredGridReader>(fileName);
-    } else if (inputFormat_ == "vtr") {
+    } else if(inputFormat_ == "vtr") {
       if(input_) {
         input_->Delete();
         input_ = NULL;
       }
       input_ = readXMLFile<vtkXMLRectilinearGridReader>(fileName);
-    } else if (inputFormat_ == "vti") {
+    } else if(inputFormat_ == "vti") {
       if(input_) {
         input_->Delete();
         input_ = NULL;
@@ -377,7 +379,8 @@ int Editor::loadData(const string &fileName) {
       input_ = readXMLFile<vtkXMLImageDataReader>(fileName);
     } else {
       stringstream msg;
-      msg << "[Editor] File format " << inputFormat_ << " not supported" << endl;
+      msg << "[Editor] File format " << inputFormat_ << " not supported"
+          << endl;
       dMsg(cerr, msg.str(), fatalMsg);
       return -2;
     }
@@ -386,11 +389,8 @@ int Editor::loadData(const string &fileName) {
   if(input_) {
     stringstream msg;
     msg << "[Editor] Reading file " << fileName << endl;
-    msg << "[Editor]   done! (read "
-      << input_->GetNumberOfPoints()
-      << " vertices, "
-      << input_->GetNumberOfCells()
-      << " cells)" << endl;
+    msg << "[Editor]   done! (read " << input_->GetNumberOfPoints()
+        << " vertices, " << input_->GetNumberOfCells() << " cells)" << endl;
     dMsg(cout, msg.str(), infoMsg);
   } else {
     stringstream msg;
@@ -428,10 +428,10 @@ int Editor::loadData(const string &fileName) {
   // }
 }
 
-int Editor::saveData() const{
+int Editor::saveData() const {
   if(inputFormat_ == "raw") {
-    vtkSmartPointer<vtkXMLImageDataWriter> imageWriter =
-      vtkSmartPointer<vtkXMLImageDataWriter>::New();
+    vtkSmartPointer<vtkXMLImageDataWriter> imageWriter
+      = vtkSmartPointer<vtkXMLImageDataWriter>::New();
 
     stringstream fileName;
     fileName << outputDirectory_;
@@ -464,9 +464,8 @@ int Editor::saveData() const{
     //   input_ = readXMLFile<vtkDataSetReader>(fileName);
     // } else {
     //   stringstream msg;
-    //   msg << "[Editor] File format " << inputFormat_ << " not supported" << endl;
-    //   dMsg(cerr, msg.str(), fatalMsg);
-    //   return -2;
+    //   msg << "[Editor] File format " << inputFormat_ << " not supported" <<
+    //   endl; dMsg(cerr, msg.str(), fatalMsg); return -2;
     // }
   }
 

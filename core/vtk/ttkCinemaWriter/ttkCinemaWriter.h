@@ -5,15 +5,16 @@
 ///
 /// \brief TTK VTK-filter that writes input to disk.
 ///
-/// This filter stores the input as a VTK dataset to disk and updates the data.csv file of a Cinema Spec D database.
+/// This filter stores the input as a VTK dataset to disk and updates the
+/// data.csv file of a Cinema Spec D database.
 ///
 /// \param Input vtkDataSet to be stored (vtkDataSet)
 
 #pragma once
 
 // VTK includes
-#include <vtkXMLPMultiBlockDataWriter.h>
 #include <vtkInformation.h>
+#include <vtkXMLPMultiBlockDataWriter.h>
 
 // TTK includes
 #include <ttkWrapper.h>
@@ -23,84 +24,91 @@ class VTKFILTERSCORE_EXPORT ttkCinemaWriter
 #else
 class ttkCinemaWriter
 #endif
-: public vtkXMLPMultiBlockDataWriter, public ttk::Wrapper{
+  : public vtkXMLPMultiBlockDataWriter,
+    public ttk::Wrapper {
 
-    public:
+public:
+  static ttkCinemaWriter *New();
+  vtkTypeMacro(ttkCinemaWriter, vtkXMLPMultiBlockDataWriter)
 
-        static ttkCinemaWriter* New();
-        vtkTypeMacro(ttkCinemaWriter, vtkXMLPMultiBlockDataWriter)
+    vtkSetMacro(DatabasePath, std::string);
+  vtkGetMacro(DatabasePath, std::string);
 
-        vtkSetMacro(DatabasePath, std::string);
-        vtkGetMacro(DatabasePath, std::string);
+  vtkSetMacro(OverrideDatabase, bool);
+  vtkGetMacro(OverrideDatabase, bool);
 
-        vtkSetMacro(OverrideDatabase, bool);
-        vtkGetMacro(OverrideDatabase, bool);
+  vtkSetMacro(CompressLevel, int);
+  vtkGetMacro(CompressLevel, int);
 
-        vtkSetMacro(CompressLevel, int);
-        vtkGetMacro(CompressLevel, int);
+  // default ttk setters
+  vtkSetMacro(debugLevel_, int);
+  void SetThreads() {
+    threadNumber_
+      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
+    Modified();
+  }
+  void SetThreadNumber(int threadNumber) {
+    ThreadNumber = threadNumber;
+    SetThreads();
+  }
+  void SetUseAllCores(bool onOff) {
+    UseAllCores = onOff;
+    SetThreads();
+  }
+  // end of default ttk setters
 
-        // default ttk setters
-        vtkSetMacro(debugLevel_, int);
-        void SetThreads(){
-            threadNumber_ = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-            Modified();
-        }
-        void SetThreadNumber(int threadNumber){
-            ThreadNumber = threadNumber;
-            SetThreads();
-        }
-        void SetUseAllCores(bool onOff){
-            UseAllCores = onOff;
-            SetThreads();
-        }
-        // end of default ttk setters
+  int FillInputPortInformation(int port, vtkInformation *info) override {
+    switch(port) {
+      case 0:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+        break;
+      default:
+        return 0;
+    }
+    return 1;
+  }
 
-        int FillInputPortInformation(int port, vtkInformation* info) override {
-            switch(port){
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
-                default: return 0;
-            }
-            return 1;
-        }
+  int FillOutputPortInformation(int port, vtkInformation *info) override {
+    switch(port) {
+      case 0:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
+        break;
+      default:
+        return 0;
+    }
+    return 1;
+  }
 
-        int FillOutputPortInformation(int port, vtkInformation* info) override {
-            switch(port){
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData"); break;
-                default: return 0;
-            }
-            return 1;
-        }
+protected:
+  ttkCinemaWriter() {
+    SetDatabasePath("");
+    SetOverrideDatabase(true);
+    SetCompressLevel(9);
 
-    protected:
+    UseAllCores = false;
 
-        ttkCinemaWriter(){
-            SetDatabasePath("");
-            SetOverrideDatabase(true);
-            SetCompressLevel(9);
+    SetNumberOfInputPorts(1);
+    SetNumberOfOutputPorts(1);
+  }
+  ~ttkCinemaWriter(){};
 
-            UseAllCores = false;
+  bool UseAllCores;
+  int ThreadNumber;
 
-            SetNumberOfInputPorts(1);
-            SetNumberOfOutputPorts(1);
-        }
-        ~ttkCinemaWriter(){};
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
-        bool UseAllCores;
-        int ThreadNumber;
+private:
+  std::string DatabasePath;
+  bool OverrideDatabase;
+  int CompressLevel;
 
-        int RequestData(vtkInformation *request,
-                        vtkInformationVector **inputVector,
-                        vtkInformationVector *outputVector) override;
-
-      private:
-
-        std::string DatabasePath;
-        bool OverrideDatabase;
-        int CompressLevel;
-
-        bool needsToAbort() override { return GetAbortExecute(); };
-        int updateProgress(const float &progress) override {
-            UpdateProgress(progress);
-            return 0;
-        };
+  bool needsToAbort() override {
+    return GetAbortExecute();
+  };
+  int updateProgress(const float &progress) override {
+    UpdateProgress(progress);
+    return 0;
+  };
 };

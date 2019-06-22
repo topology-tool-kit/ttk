@@ -1,11 +1,10 @@
-#include                  <ttkTrackingFromPersistenceDiagrams.h>
+#include <ttkTrackingFromPersistenceDiagrams.h>
 
 vtkStandardNewMacro(ttkTrackingFromPersistenceDiagrams)
 
-using dataType = double;
+  using dataType = double;
 
-ttkTrackingFromPersistenceDiagrams::ttkTrackingFromPersistenceDiagrams()
-{
+ttkTrackingFromPersistenceDiagrams::ttkTrackingFromPersistenceDiagrams() {
   outputMesh_ = nullptr;
   UseAllCores = false;
 
@@ -30,25 +29,22 @@ ttkTrackingFromPersistenceDiagrams::ttkTrackingFromPersistenceDiagrams()
   SetNumberOfOutputPorts(1);
 }
 
-ttkTrackingFromPersistenceDiagrams::~ttkTrackingFromPersistenceDiagrams()
-{
-  if (outputMesh_)
+ttkTrackingFromPersistenceDiagrams::~ttkTrackingFromPersistenceDiagrams() {
+  if(outputMesh_)
     outputMesh_->Delete();
 }
 
 // transmit abort signals -- to copy paste in other wrappers
-bool ttkTrackingFromPersistenceDiagrams::needsToAbort()
-{
+bool ttkTrackingFromPersistenceDiagrams::needsToAbort() {
   return GetAbortExecute() > 0;
 }
 
 // transmit progress status -- to copy paste in other wrappers
-int ttkTrackingFromPersistenceDiagrams::updateProgress(const float &progress)
-{
+int ttkTrackingFromPersistenceDiagrams::updateProgress(const float &progress) {
   {
     std::stringstream msg;
-    msg << "[ttkTrackingFromPersistenceDiagrams] " << progress*100
-      << "% processed...." << std::endl;
+    msg << "[ttkTrackingFromPersistenceDiagrams] " << progress * 100
+        << "% processed...." << std::endl;
     dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
 
@@ -56,41 +52,45 @@ int ttkTrackingFromPersistenceDiagrams::updateProgress(const float &progress)
   return 0;
 }
 
-int ttkTrackingFromPersistenceDiagrams::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkTrackingFromPersistenceDiagrams::FillInputPortInformation(
+  int port, vtkInformation *info) {
   info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
   return 1;
 }
 
-int ttkTrackingFromPersistenceDiagrams::FillOutputPortInformation(int port, vtkInformation *info) {
-  if (port == 0)
+int ttkTrackingFromPersistenceDiagrams::FillOutputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0)
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
   return 1;
 }
 
-int ttkTrackingFromPersistenceDiagrams::RequestData(vtkInformation *request,
-  vtkInformationVector **inputVector, vtkInformationVector *outputVector)
-{
+int ttkTrackingFromPersistenceDiagrams::RequestData(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
   ttk::Memory m;
 
   // Output pointers informations
-  vtkInformation* outInfo;
+  vtkInformation *outInfo;
 
   // Unified bound fields
   outInfo = outputVector->GetInformationObject(0);
-  vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::SafeDownCast(outInfo->Get(vtkUnstructuredGrid::DATA_OBJECT()));
+  vtkUnstructuredGrid *mesh = vtkUnstructuredGrid::SafeDownCast(
+    outInfo->Get(vtkUnstructuredGrid::DATA_OBJECT()));
 
   // Number of input files
   int numInputs = inputVector[0]->GetNumberOfInformationObjects();
   {
     std::stringstream msg;
-    msg << "[ttkTrackingFromPersistenceDiagrams] Number of inputs: " << numInputs << std::endl;
+    msg << "[ttkTrackingFromPersistenceDiagrams] Number of inputs: "
+        << numInputs << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
   }
 
   // Get input data
-  std::vector<vtkDataSet*> input(numInputs);
-  for (int i = 0; i < numInputs; i++)
-  {
+  std::vector<vtkDataSet *> input(numInputs);
+  for(int i = 0; i < numInputs; i++) {
     input[i] = vtkDataSet::GetData(inputVector[0], i);
   }
 
@@ -98,8 +98,8 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(vtkInformation *request,
 
   {
     std::stringstream msg;
-    msg << "[ttkTrackingFromPersistenceDiagrams] Memory usage: " << m.getElapsedUsage()
-      << " MB." << std::endl;
+    msg << "[ttkTrackingFromPersistenceDiagrams] Memory usage: "
+        << m.getElapsedUsage() << " MB." << std::endl;
     dMsg(std::cout, msg.str(), memoryMsg);
   }
 

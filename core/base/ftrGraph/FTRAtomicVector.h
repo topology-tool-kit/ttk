@@ -4,7 +4,7 @@
 /// \date 2018-01-22
 ///
 ///\brief TTK processing package that manage a paralle version of vector *Same
-///as in FTM: Common ?*
+/// as in FTM: Common ?*
 
 #ifndef ATOMICVECTOR_H
 #define ATOMICVECTOR_H

@@ -141,10 +141,11 @@ namespace ttk {
       printTime(postProcTime, "[FTR Graph]: postProcess: ", advancedInfoMsg);
 
       // std::cout << "nb verts: " << mesh_.getNumberOfVertices() << std::endl;
-      // std::cout << "nb triangle: " << mesh_.getNumberOfVertices() << std::endl;
-      // std::cout << "nb nodes: " << graph_.getNumberOfNodes() << std::endl;
-      // std::cout << "nb leaves: " << graph_.getNumberOfLeaves() << std::endl;
-      // std::cout << "nb  arcs: " << graph_.getNumberOfVisibleArcs() << std::endl;
+      // std::cout << "nb triangle: " << mesh_.getNumberOfVertices() <<
+      // std::endl; std::cout << "nb nodes: " << graph_.getNumberOfNodes() <<
+      // std::endl; std::cout << "nb leaves: " << graph_.getNumberOfLeaves() <<
+      // std::endl; std::cout << "nb  arcs: " << graph_.getNumberOfVisibleArcs()
+      // << std::endl;
 
       printTime(finTime, "[FTR Graph]: *TOTAL* time: ", timeMsg);
 
@@ -314,7 +315,6 @@ namespace ttk {
 
       valences_.lower.resize(mesh_.getNumberOfVertices());
       valences_.upper.resize(mesh_.getNumberOfVertices());
-
     }
 
     template <typename ScalarType>

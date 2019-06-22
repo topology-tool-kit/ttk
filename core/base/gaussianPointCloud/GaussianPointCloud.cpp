@@ -2,9 +2,8 @@
 
 using namespace ttk;
 
-GaussianPointCloud::GaussianPointCloud(){
+GaussianPointCloud::GaussianPointCloud() {
 }
 
-GaussianPointCloud::~GaussianPointCloud(){
+GaussianPointCloud::~GaussianPointCloud() {
 }
-

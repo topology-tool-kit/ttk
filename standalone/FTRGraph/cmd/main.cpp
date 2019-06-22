@@ -7,31 +7,30 @@
 #include <ttkFTRGraph.h>
 #include <ttkProgramBase.h>
 
-int main(int argc, char **argv)
-{
-   vtkProgram<ttkFTRGraph> program;
+int main(int argc, char **argv) {
+  vtkProgram<ttkFTRGraph> program;
 
-   int scalarFieldId = 0;
-   bool singleSweep = false;
+  int scalarFieldId = 0;
+  bool singleSweep = false;
 
-   program.parser_.setArgument("f", &scalarFieldId, "Scalar field id", true);
-   program.parser_.setOption("s", &singleSweep, "Single sweep");
+  program.parser_.setArgument("f", &scalarFieldId, "Scalar field id", true);
+  program.parser_.setOption("s", &singleSweep, "Single sweep");
 
-   auto ret = program.init(argc, argv);
+  auto ret = program.init(argc, argv);
 
-   if (ret != 0)
-      return ret;
+  if(ret != 0)
+    return ret;
 
-   program.ttkObject_->SetScalarFieldId(scalarFieldId);
-   program.ttkObject_->SetSingleSweep(singleSweep);
+  program.ttkObject_->SetScalarFieldId(scalarFieldId);
+  program.ttkObject_->SetSingleSweep(singleSweep);
 
-   // execute data processing
-   ret = program.run();
+  // execute data processing
+  ret = program.run();
 
-   if (ret != 0)
-      return ret;
+  if(ret != 0)
+    return ret;
 
-   ret = program.save();
+  ret = program.save();
 
-   return ret;
+  return ret;
 }
