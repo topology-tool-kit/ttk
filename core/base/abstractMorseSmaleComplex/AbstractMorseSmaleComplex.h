@@ -253,7 +253,7 @@ namespace ttk{
       /**
        * Set the input scalar field associated on the points of the data set.
        */
-      inline int setInputScalarField(void* const data){
+      inline int setInputScalarField(const void* const data){
         inputScalarField_=data;
         discreteGradient_.setInputScalarField(inputScalarField_);
         return 0;
@@ -263,7 +263,7 @@ namespace ttk{
        * Set the input offset field associated on the points of the data set
        * (if none, identifiers are used instead).
        */
-      inline int setInputOffsets(void* const data){
+      inline int setInputOffsets(const void* const data){
         inputOffsets_=data;
         discreteGradient_.setInputOffsets(inputOffsets_);
         return 0;
@@ -436,9 +436,9 @@ namespace ttk{
 
       dcg::DiscreteGradient discreteGradient_;
 
-      void* inputScalarField_;
+      const void* inputScalarField_;
       Triangulation* inputTriangulation_;
-      void* inputOffsets_;
+      const void* inputOffsets_;
 
       SimplexId* outputCriticalPoints_numberOfPoints_;
       std::vector<float>* outputCriticalPoints_points_;
@@ -509,7 +509,7 @@ std::vector<Separatrix>& separatrices,
     return -1;
   }
 #endif
-  const dataType* const scalars=static_cast<dataType*>(inputScalarField_);
+  const dataType* const scalars=static_cast<const dataType*>(inputScalarField_);
   std::vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMaxima=
     static_cast<std::vector<dataType>*>(outputSeparatrices1_cells_separatrixFunctionMaxima_);
   std::vector<dataType>* outputSeparatrices1_cells_separatrixFunctionMinima=
