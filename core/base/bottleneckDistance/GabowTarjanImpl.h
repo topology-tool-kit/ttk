@@ -125,8 +125,9 @@ dataType GabowTarjan::Distance(dataType maxLevel) {
 
     if(guessEdge >= nbEdges) {
       std::stringstream msg;
+      ttk::Debug d;
       msg << "[Gabow-Tarjan] ran out of edges." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
     }
 
     // Add the edges with the current weight (distance) to the connection matrix
@@ -161,8 +162,9 @@ dataType GabowTarjan::Distance(dataType maxLevel) {
     // Temporarily augment matching.
     {
       std::stringstream msg;
+      ttk::Debug d;
       msg << "[Gabow-Tarjan] Guessing for " << guessEdge << "..." << std::endl;
-      dMsg(std::cout, msg.str(), infoMsg);
+      d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
     }
 
     matching = 0;
@@ -179,8 +181,9 @@ dataType GabowTarjan::Distance(dataType maxLevel) {
       // Ended binary search.
       if(oldGuessEdge == guessEdge) {
         std::stringstream msg;
+        ttk::Debug d;
         msg << "[Gabow-Tarjan] Binary search success." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
         return Edges[(guessEdge > 0 ? guessEdge - 1 : guessEdge)].weight;
       }
 
@@ -189,9 +192,10 @@ dataType GabowTarjan::Distance(dataType maxLevel) {
       // Check if we did not run out of edges. This should never happen.
       if(firstNotAddedEdge == nbEdges) {
         std::stringstream msg;
+        ttk::Debug d;
         msg << "[Gabow-Tarjan] Not enough edges to find the matching!"
             << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
         // return -1;
         return currentWeight;
       }
@@ -204,8 +208,9 @@ dataType GabowTarjan::Distance(dataType maxLevel) {
       // Ended binary search.
       if(oldGuessEdge == guessEdge) {
         std::stringstream msg;
+        ttk::Debug d;
         msg << "[Gabow-Tarjan] Binary search success." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
         return Edges[(guessEdge > 0 ? guessEdge - 1 : guessEdge)].weight;
       }
     }
@@ -221,6 +226,7 @@ void GabowTarjan::printCurrentMatching() {
 
   {
     std::stringstream msg;
+    ttk::Debug d;
     msg << "Assignment matrix: " << std::endl;
     for(int i = 0; i < size; ++i) {
       int k = Pair[i];
@@ -232,17 +238,18 @@ void GabowTarjan::printCurrentMatching() {
       msg << std::endl;
     }
     msg << "/Assignment matrix." << std::endl << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
+    d.dMsg(std::cout, msg.str(), ttk::Debug::advancedInfoMsg);
   }
 
   {
     std::stringstream msg;
+    ttk::Debug d;
     msg << "Missed:" << std::endl;
     for(unsigned int i = 0; i < missedPlaces.size(); ++i) {
       msg << missedPlaces.at(i) << " ";
     }
     msg << std::endl << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
   }
 }
 
@@ -252,8 +259,9 @@ int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
   double d = Distance<dataType>(1);
   {
     std::stringstream msg;
+    ttk::Debug m;
     msg << "[Gabow-Tarjan] Computed distance " << d << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    m.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
   }
 
   // Fill matchings.
@@ -267,9 +275,10 @@ int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
     int j = Pair[i] - MaxSize;
     if(j <= -1 || (j < (int)Size2 && Pair[j + MaxSize] != (int)i)) {
       std::stringstream msg;
+      ttk::Debug d;
       msg << "[Gabow-Tarjan] Hopcroft-Karp built an invalid matching."
           << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
       // return -1;
     }
 
@@ -289,9 +298,10 @@ int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
     int i = Pair[j] - MaxSize - Size2;
     if(i > -1 && (i >= (int)Size1 || Pair[i + MaxSize + Size2] != (int)j)) {
       std::stringstream msg;
+      ttk::Debug d;
       msg << "[Gabow-Tarjan] Hopcroft-Karp built an invalid matching."
           << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
       // return -1;
     }
 
