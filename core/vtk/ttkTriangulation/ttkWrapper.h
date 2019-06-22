@@ -34,6 +34,7 @@
   vtkTemplate2MacroCase1(VTK_CHAR, char, call);                             \
   vtkTemplate2MacroCase1(VTK_SIGNED_CHAR, signed char, call);               \
   vtkTemplate2MacroCase1(VTK_UNSIGNED_CHAR, unsigned char, call)
+#ifndef vtkTemplate2MacroCase1
 #define vtkTemplate2MacroCase1(type1N, type1, call)                            \
   vtkTemplate2MacroCase2(type1N, type1, VTK_DOUBLE, double, call);             \
   vtkTemplate2MacroCase2(type1N, type1, VTK_FLOAT, float, call);               \
@@ -52,16 +53,19 @@
   vtkTemplate2MacroCase2(type1N, type1, VTK_CHAR, char, call);                 \
   vtkTemplate2MacroCase2(type1N, type1, VTK_SIGNED_CHAR, signed char, call);   \
   vtkTemplate2MacroCase2(type1N, type1, VTK_UNSIGNED_CHAR, unsigned char, call)
+#endif
 #define vtkTemplate2MacroCase2(type1N, type1, type2N, type2, call) \
   case vtkTemplate2PackMacro(type1N, type2N): {                    \
     typedef type1 VTK_T1;                                          \
     typedef type2 VTK_T2;                                          \
     call;                                                          \
   }; break
+#ifndef vtkTemplate2PackMacro
 #define vtkTemplate2PackMacro(type1N, type2N) \
   ((((type1N)&0xFF) << 8) | ((type2N)&0xFF))
 #endif
-
+#endif
+  
 #ifndef _MSC_VER
 #define ttkTemplateMacro(s) vtkTemplateMacro((s))
 #define ttkTemplate2Macro(s) vtkTemplate2Macro((s))
