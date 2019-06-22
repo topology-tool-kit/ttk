@@ -65,7 +65,7 @@
   ((((type1N)&0xFF) << 8) | ((type2N)&0xFF))
 #endif
 #endif
-  
+
 #ifndef _MSC_VER
 #define ttkTemplateMacro(s) vtkTemplateMacro((s))
 #define ttkTemplate2Macro(s) vtkTemplate2Macro((s))

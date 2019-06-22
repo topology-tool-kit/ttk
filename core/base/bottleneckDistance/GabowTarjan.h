@@ -1,8 +1,8 @@
 #ifndef _GABOWTARJAN_H
 #define _GABOWTARJAN_H
 
-#include <Debug.h>
 #include "MatchingGraph.h"
+#include <Debug.h>
 #include <algorithm>
 #include <iostream>
 #include <map>

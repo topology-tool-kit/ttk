@@ -837,7 +837,8 @@ int ImplicitTriangulation::getVertexTriangle(const SimplexId &vertexId,
     if(0 < p[0] and p[0] < nbvoxels_[0]) {
       if(0 < p[1] and p[1] < nbvoxels_[1]) {
         if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleABCDEFGH(p, localTriangleId); // abcdefgh
+          triangleId
+            = getVertexTriangleABCDEFGH(p, localTriangleId); // abcdefgh
         else if(p[2] == 0)
           triangleId = getVertexTriangleABDC(p, localTriangleId); // abdc
         else
