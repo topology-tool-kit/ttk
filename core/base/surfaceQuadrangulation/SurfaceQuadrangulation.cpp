@@ -111,11 +111,10 @@ size_t ttk::SurfaceQuadrangulation::sepFromPoints(const long long src,
 
 int ttk::SurfaceQuadrangulation::detectCells(
   const SimplexId src,
-  std::vector<SimplexId> &vertexCells,
   std::vector<std::vector<SimplexId>> &cellSeps,
   const std::vector<SimplexId> &vertexSepMask) {
 
-  std::vector<bool> cellMask(vertexCells.size(), false);
+  std::vector<bool> cellMask(morseSeg_.size(), false);
 
   std::queue<SimplexId> toProcess{};
   toProcess.push(src);
@@ -168,9 +167,9 @@ int ttk::SurfaceQuadrangulation::detectCells(
   }
 
   // copy sub-segmentation into output
-  for(size_t i = 0; i < vertexCells.size(); ++i) {
+  for(size_t i = 0; i < morseSeg_.size(); ++i) {
     if(cellMask[i]) {
-      vertexCells[i] = newCellId;
+      morseSeg_[i] = newCellId;
     }
   }
 
@@ -272,7 +271,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     if(finished) {
       break;
     }
-    detectCells(pos, morseSeg_, cellSeps, onSep);
+    detectCells(pos, cellSeps, onSep);
     pos++;
   }
 

@@ -114,14 +114,12 @@ namespace ttk {
      * Morse-Smale separatrices.
      *
      * @param[in] src Source vertex to begin the iteration
-     * @param[in,out] vertexCells Cell identifier linked to every vertex (or -1)
      * @param[out] cellSeps Separatrices bordering the current cell
      * @param[in] vertexSepMask If a vertex in on a separatrix
      *
      * @return 0
      */
     int detectCells(const SimplexId src,
-                    std::vector<SimplexId> &vertexCells,
                     std::vector<std::vector<SimplexId>> &cellSeps,
                     const std::vector<SimplexId> &vertexSepMask);
 
