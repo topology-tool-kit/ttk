@@ -24,7 +24,7 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
-/// See the related ParaView example state files for usage examples within a 
+/// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
 /// \b Related \b publication \n
@@ -73,169 +73,169 @@
 class VTKFILTERSCORE_EXPORT ttkContourForests
 #else
 class ttkContourForests
-#endif 
-  : public vtkDataSetAlgorithm, public ttk::Wrapper{
-    
-    
-  public:
-    
-    static ttkContourForests* New();
+#endif
+  : public vtkDataSetAlgorithm,
+    public ttk::Wrapper {
 
-    vtkTypeMacro(ttkContourForests, vtkDataSetAlgorithm);
+public:
+  static ttkContourForests *New();
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+  vtkTypeMacro(ttkContourForests, vtkDataSetAlgorithm);
 
-    vtkSetMacro(FieldId, int);
+  // default ttk setters
+  vtkSetMacro(debugLevel_, int);
 
-    void SetThreadNumber(int threadNumber);
-    void SetDebugLevel(int d);
-    void SetUseAllCores(bool onOff);
-    // end of default ttk setters
+  vtkSetMacro(FieldId, int);
 
-    vtkGetMacro(scalarField_, std::string);
-    void SetScalarField(std::string scalarField);
+  void SetThreadNumber(int threadNumber);
+  void SetDebugLevel(int d);
+  void SetUseAllCores(bool onOff);
+  // end of default ttk setters
 
-    vtkGetMacro(useInputOffsetScalarField_, int);
-    void SetForceInputOffsetScalarField(bool onOff);
+  vtkGetMacro(scalarField_, std::string);
+  void SetScalarField(std::string scalarField);
 
-    vtkSetMacro(inputOffsetScalarFieldName_, std::string);
-    vtkGetMacro(inputOffsetScalarFieldName_, std::string);
+  vtkGetMacro(useInputOffsetScalarField_, int);
+  void SetForceInputOffsetScalarField(bool onOff);
 
-    vtkSetMacro(InputOffsetFieldId, int);
-    vtkGetMacro(InputOffsetFieldId, int);
+  vtkSetMacro(inputOffsetScalarFieldName_, std::string);
+  vtkGetMacro(inputOffsetScalarFieldName_, std::string);
 
-    void SetTreeType(int tree);
+  vtkSetMacro(InputOffsetFieldId, int);
+  vtkGetMacro(InputOffsetFieldId, int);
 
-    void ShowMin(bool state);
-    void ShowMax(bool state);
-    void ShowSaddle1(bool state);
-    void ShowSaddle2(bool state);
+  void SetTreeType(int tree);
 
-    void ShowArc(bool state);
-    void SetArcResolution(int arcResolution);
-    void SetPartitionNumber(int partitionNum);
-    void SetLessPartition(bool l);
+  void ShowMin(bool state);
+  void ShowMax(bool state);
+  void ShowSaddle1(bool state);
+  void ShowSaddle2(bool state);
 
-    void SetSkeletonSmoothing(double skeletonSmooth);
+  void ShowArc(bool state);
+  void SetArcResolution(int arcResolution);
+  void SetPartitionNumber(int partitionNum);
+  void SetLessPartition(bool l);
 
-    void SetSimplificationType(int type);
+  void SetSkeletonSmoothing(double skeletonSmooth);
 
-    void SetSimplificationThreshold(double simplificationThreshold);
+  void SetSimplificationType(int type);
 
-    
-  protected:
-    
-    ttkContourForests();
-    ~ttkContourForests();
-    
-    // VTK Interface //
-    virtual int FillInputPortInformation(int port, vtkInformation* info) override;
-    virtual int FillOutputPortInformation(int port, vtkInformation* info) override;
+  void SetSimplificationThreshold(double simplificationThreshold);
 
-    // Base //
-    int vtkDataSetToStdVector(vtkDataSet* input);
-    bool isCoincident(float p1[], double p2[]);
-    bool isCoincident(double p1[], double p2[]);
+protected:
+  ttkContourForests();
+  ~ttkContourForests();
 
-    // ContourForestsTree //
-    void getTree();
-    void updateTree();
-    ttk::CriticalType getNodeType(ttk::SimplexId id);
-    ttk::CriticalType getNodeType(ttk::SimplexId id, ttk::cf::TreeType type, ttk::cf::MergeTree* tree);
-    void getCriticalPoints();
-    void clearTree();
+  // VTK Interface //
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
+  virtual int FillOutputPortInformation(int port,
+                                        vtkInformation *info) override;
 
-    // Skeleton //
-    void getSkeleton();
-    void clearSkeleton();
-    void getSkeletonNodes();
-    void getSkeletonArcs();
-    int getSkeletonScalars(const std::vector<double>& scalars,
-        std::vector<std::vector<double> >& skeletonScalars) const;
+  // Base //
+  int vtkDataSetToStdVector(vtkDataSet *input);
+  bool isCoincident(float p1[], double p2[]);
+  bool isCoincident(double p1[], double p2[]);
 
-    // Segmentation //
-    void getSegmentation(vtkDataSet* input);
-    void clearSegmentation();
+  // ContourForestsTree //
+  void getTree();
+  void updateTree();
+  ttk::CriticalType getNodeType(ttk::SimplexId id);
+  ttk::CriticalType getNodeType(ttk::SimplexId id,
+                                ttk::cf::TreeType type,
+                                ttk::cf::MergeTree *tree);
+  void getCriticalPoints();
+  void clearTree();
 
-    int sample(unsigned int samplingLevel);
+  // Skeleton //
+  void getSkeleton();
+  void clearSkeleton();
+  void getSkeletonNodes();
+  void getSkeletonArcs();
+  int getSkeletonScalars(
+    const std::vector<double> &scalars,
+    std::vector<std::vector<double>> &skeletonScalars) const;
 
-    int computeBarycenters();
-    void computeSkeleton(unsigned int arcRes);
-    void smoothSkeleton(unsigned int skeletonSmoothing);
-    void smooth(const ttk::SimplexId idArc, bool order);
+  // Segmentation //
+  void getSegmentation(vtkDataSet *input);
+  void clearSegmentation();
 
-    TTK_PIPELINE_REQUEST();
-    TTK_OUTPUT_MANAGEMENT();
-   
-    void SetThreads();
-    
-    int doIt(std::vector<vtkDataSet *> &inputs, std::vector<vtkDataSet *> &outputs);
-    
-    bool needsToAbort() override;
-      
-    int updateProgress(const float &progress) override;
-   
-    
-  private:
-    // Base //
-    bool UseAllCores;
-    ttk::ThreadId ThreadNumber;
-    int FieldId;
-    int InputOffsetFieldId;
-    std::string inputOffsetScalarFieldName_;
-    bool isLoaded_;
-    bool lessPartition_;
-    ttk::cf::MergeTree* tree_;
-    ttk::cf::ContourForests contourTree_;
-    vtkPolyData* skeletonNodes_;
-    vtkPolyData* skeletonArcs_;
-    vtkDataSet* segmentation_;
+  int sample(unsigned int samplingLevel);
 
-    // Void //
-    vtkUnstructuredGrid* voidUnstructuredGrid_;
-    vtkPolyData* voidPolyData_;
+  int computeBarycenters();
+  void computeSkeleton(unsigned int arcRes);
+  void smoothSkeleton(unsigned int skeletonSmoothing);
+  void smooth(const ttk::SimplexId idArc, bool order);
 
-    // Configuration //
-    bool useInputOffsetScalarField_;
-    bool varyingMesh_;
-    bool varyingDataValues_;
-    ttk::cf::TreeType treeType_;
-    std::string scalarField_;
-    bool showMin_;
-    bool showMax_;
-    bool showSaddle1_;
-    bool showSaddle2_;
-    bool showArc_;
-    unsigned int arcResolution_;
-    int partitionNum_;
-    unsigned int skeletonSmoothing_;
-    int simplificationType_;
-    double simplificationThreshold_;
-    double simplificationThresholdBuffer_;
+  TTK_PIPELINE_REQUEST();
+  TTK_OUTPUT_MANAGEMENT();
 
-    // Computation handles
-    bool toUpdateVertexSoSoffsets_;
-    bool toComputeContourTree_;
-    bool toUpdateTree_;
-    bool toComputeSkeleton_;
-    bool toComputeSegmentation_;
+  void SetThreads();
 
-    // Convenient storage //
-    vtkDataArray* vtkInputScalars_;
-    double deltaScalar_;
-    ttk::SimplexId numberOfVertices_;
-    ttk::Triangulation *triangulation_;
-    std::vector<ttk::SimplexId> vertexSoSoffsets_{};
-    std::vector<ttk::SimplexId> criticalPoints_{};
-    std::vector<double> *vertexScalars_{};
-    std::vector<std::vector<double>> inputScalars_{};
-    std::vector<std::string> inputScalarsName_{};
+  int doIt(std::vector<vtkDataSet *> &inputs,
+           std::vector<vtkDataSet *> &outputs);
 
-    // treeType, SuperArc, several vertices list.
-    std::vector<std::vector<std::vector<std::vector<ttk::SimplexId>>>>*    samples_;
-    std::vector<std::vector<std::vector<std::vector<double>>>>* barycenters_;
+  bool needsToAbort() override;
 
+  int updateProgress(const float &progress) override;
+
+private:
+  // Base //
+  bool UseAllCores;
+  ttk::ThreadId ThreadNumber;
+  int FieldId;
+  int InputOffsetFieldId;
+  std::string inputOffsetScalarFieldName_;
+  bool isLoaded_;
+  bool lessPartition_;
+  ttk::cf::MergeTree *tree_;
+  ttk::cf::ContourForests contourTree_;
+  vtkPolyData *skeletonNodes_;
+  vtkPolyData *skeletonArcs_;
+  vtkDataSet *segmentation_;
+
+  // Void //
+  vtkUnstructuredGrid *voidUnstructuredGrid_;
+  vtkPolyData *voidPolyData_;
+
+  // Configuration //
+  bool useInputOffsetScalarField_;
+  bool varyingMesh_;
+  bool varyingDataValues_;
+  ttk::cf::TreeType treeType_;
+  std::string scalarField_;
+  bool showMin_;
+  bool showMax_;
+  bool showSaddle1_;
+  bool showSaddle2_;
+  bool showArc_;
+  unsigned int arcResolution_;
+  int partitionNum_;
+  unsigned int skeletonSmoothing_;
+  int simplificationType_;
+  double simplificationThreshold_;
+  double simplificationThresholdBuffer_;
+
+  // Computation handles
+  bool toUpdateVertexSoSoffsets_;
+  bool toComputeContourTree_;
+  bool toUpdateTree_;
+  bool toComputeSkeleton_;
+  bool toComputeSegmentation_;
+
+  // Convenient storage //
+  vtkDataArray *vtkInputScalars_;
+  double deltaScalar_;
+  ttk::SimplexId numberOfVertices_;
+  ttk::Triangulation *triangulation_;
+  std::vector<ttk::SimplexId> vertexSoSoffsets_{};
+  std::vector<ttk::SimplexId> criticalPoints_{};
+  std::vector<double> *vertexScalars_{};
+  std::vector<std::vector<double>> inputScalars_{};
+  std::vector<std::string> inputScalarsName_{};
+
+  // treeType, SuperArc, several vertices list.
+  std::vector<std::vector<std::vector<std::vector<ttk::SimplexId>>>> *samples_;
+  std::vector<std::vector<std::vector<std::vector<double>>>> *barycenters_;
 };
 
-#endif  // _TTK_CONTOURTREE_H
+#endif // _TTK_CONTOURTREE_H
