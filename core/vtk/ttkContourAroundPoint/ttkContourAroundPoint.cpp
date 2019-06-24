@@ -7,6 +7,7 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 
+#include <vtkAOSDataArrayTemplate.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
 
