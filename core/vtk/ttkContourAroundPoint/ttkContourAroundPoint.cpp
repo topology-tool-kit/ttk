@@ -9,8 +9,10 @@
 
 #if VTK_MAJOR_VERSION >= 7
 #include <vtkAOSDataArrayTemplate.h>
+#define VTK_AOS_DATA_ARRAY_TEMPLATE vtkAOSDataArrayTemplate
 #else
 #include <vtkDataArrayTemplate.h>
+#define VTK_AOS_DATA_ARRAY_TEMPLATE vtkDataArrayTemplate
 #endif
 
 #include <vtkFloatArray.h>
@@ -272,7 +274,7 @@ bool ttkContourAroundPoint::postprocess()
   const int wantSave = 0;
   // Use `delete[]` instead of the VTK default `free()`.
   // (The enum is independent of the template type - just use float.)
-  const int delMethod = vtkAOSDataArrayTemplate<float>::DeleteMethod::VTK_DATA_ARRAY_DELETE;
+  const int delMethod = VTK_AOS_DATA_ARRAY_TEMPLATE<float>::DeleteMethod::VTK_DATA_ARRAY_DELETE;
 
   auto points = vtkSmartPointer<vtkPoints>::New();
   auto coordArr = vtkSmartPointer<vtkFloatArray>::New();
