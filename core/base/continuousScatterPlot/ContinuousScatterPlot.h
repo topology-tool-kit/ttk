@@ -426,13 +426,13 @@ int ttk::ContinuousScatterPlot::execute() const {
           const double o[3]{scalarMin_[0] + i * sampling[0],
                             scalarMin_[1] + j * sampling[1], 1};
           for(unsigned int k = 0; k < triangles.size(); ++k) {
-            const auto &triangle = triangles[k];
+            const auto &tr = triangles[k];
 
             // get triangle info
             double p0[3];
             if(isInTriangle) {
-              p0[0] = scalars1[triangle[0]];
-              p0[1] = scalars2[triangle[0]];
+              p0[0] = scalars1[tr[0]];
+              p0[1] = scalars2[tr[0]];
             } else {
               p0[0] = imaginaryPosition[0];
               p0[1] = imaginaryPosition[1];
@@ -440,9 +440,9 @@ int ttk::ContinuousScatterPlot::execute() const {
             p0[2] = 0;
 
             const double p1[3]{
-              (double)scalars1[triangle[1]], (double)scalars2[triangle[1]], 0};
+              (double)scalars1[tr[1]], (double)scalars2[tr[1]], 0};
             const double p2[3]{
-              (double)scalars1[triangle[2]], (double)scalars2[triangle[2]], 0};
+              (double)scalars1[tr[2]], (double)scalars2[tr[2]], 0};
             const double e1[3]{p1[0] - p0[0], p1[1] - p0[1], 0};
             const double e2[3]{p2[0] - p0[0], p2[1] - p0[1], 0};
 

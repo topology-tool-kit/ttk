@@ -413,13 +413,12 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points,
                                      FILE *fp) {
 
   double *p;
-  int i;
   unsigned char *c;
 
   // write out the points
   fprintf(fp, "            coord DEF VTKcoordinates Coordinate {\n");
   fprintf(fp, "              point [\n");
-  for(i = 0; i < points->GetNumberOfPoints(); i++) {
+  for(int i = 0; i < points->GetNumberOfPoints(); i++) {
     p = points->GetPoint(i);
     fprintf(fp, "              %g %g %g,\n", p[0], p[1], p[2]);
   }
@@ -431,7 +430,7 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points,
 
     fprintf(fp, "            normal DEF VTKnormals Normal {\n");
     fprintf(fp, "              vector [\n");
-    for(i = 0; i < normals->GetNumberOfTuples(); i++) {
+    for(int i = 0; i < normals->GetNumberOfTuples(); i++) {
       p = normals->GetTuple(i);
       fprintf(fp, "           %g %g %g,\n", p[0], p[1], p[2]);
     }
@@ -443,7 +442,7 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points,
   if(tcoords) {
     fprintf(fp, "            texCoord DEF VTKtcoords TextureCoordinate {\n");
     fprintf(fp, "              point [\n");
-    for(i = 0; i < tcoords->GetNumberOfTuples(); i++) {
+    for(int i = 0; i < tcoords->GetNumberOfTuples(); i++) {
       p = tcoords->GetTuple(i);
       fprintf(fp, "           %g %g,\n", p[0], p[1]);
     }
@@ -472,7 +471,7 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points,
   if(colors) {
     fprintf(fp, "            color DEF VTKcolors Color {\n");
     fprintf(fp, "              color [\n");
-    for(i = 0; i < colors->GetNumberOfTuples(); i++) {
+    for(int i = 0; i < colors->GetNumberOfTuples(); i++) {
       c = colors->GetPointer(4 * i);
       fprintf(
         fp, "           %g %g %g,\n", c[0] / 255.0, c[1] / 255.0, c[2] / 255.0);

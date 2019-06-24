@@ -180,18 +180,16 @@ int ttk::MeshGraph::execute(
     dMsg(cout, msg.str(), infoMsg);
   }
 
-  auto getInputPointData =
-    [](const size_t &pointIndex, const float *inputPoints,
-       const sizeType *inputPointSizes, const float &sizeScale, float data[4]) {
-      size_t i = pointIndex * 3;
-      data[0] = inputPoints[i++];
-      data[1] = inputPoints[i++];
-      data[2] = inputPoints[i];
+  auto getInputPointData = [&](const size_t &pointIndex, float data[4]) {
+    size_t i = pointIndex * 3;
+    data[0] = inputPoints[i++];
+    data[1] = inputPoints[i++];
+    data[2] = inputPoints[i];
 
-      data[3] = (inputPointSizes != nullptr)
-                  ? ((float)inputPointSizes[pointIndex]) * sizeScale
-                  : sizeScale;
-    };
+    data[3] = (inputPointSizes != nullptr)
+                ? ((float)inputPointSizes[pointIndex]) * sizeScale
+                : sizeScale;
+  };
 
   // -------------------------------------------------------------------------
   // Compute Output Point Locations
@@ -213,7 +211,7 @@ int ttk::MeshGraph::execute(
 #endif
     for(size_t i = 0; i < nInputPoints; i++) {
       float data[4];
-      getInputPointData(i, inputPoints, inputPointSizes, sizeScale, data);
+      getInputPointData(i, data);
 
       size_t q = i * 9; // i*3*3
       // a
@@ -241,37 +239,36 @@ int ttk::MeshGraph::execute(
     // ---------------------------------------------------------------------
 
     // Lambda function that linearly interpolates two point locations
-    auto getMidPoint = [](const size_t &m, const size_t &i, const size_t &j,
-                          float *outputPoints) {
+    auto getMidPoint = [&](const size_t &m, const size_t &i, const size_t &j) {
       size_t mp = m * 3;
       size_t ip = i * 3;
       size_t jp = j * 3;
-      for(size_t i = 0; i < 3; i++)
-        outputPoints[mp + i]
-          = (outputPoints[ip + i] + outputPoints[jp + i]) / 2;
+      for(size_t k = 0; k < 3; k++)
+        outputPoints[mp + k]
+          = (outputPoints[ip + k] + outputPoints[jp + k]) / 2;
     };
 
     // Lambda function that computes the output location of a mid point on a
     // bezier curve
-    auto getMidPoint2 = [](const size_t &m, const size_t &p0, const size_t &p1,
-                           const size_t &sizeAxis, float *outputPoints) {
-      auto bezierPoint = [](float &m, const float &p0, const float &p2) {
-        m = 0.5 * (0.5 * p0 + 0.5 * m) + 0.5 * (0.5 * m + 0.5 * p2);
-      };
+    auto getMidPoint2
+      = [&](const size_t &m, const size_t &p0, const size_t &p1) {
+          auto bezierPoint = [](float &n, const float &q0, const float &q2) {
+            n = 0.5 * (0.5 * q0 + 0.5 * n) + 0.5 * (0.5 * n + 0.5 * q2);
+          };
 
-      size_t mi = m * 3;
-      size_t p0i = p0 * 3; // first point
-      size_t p1i = p1 * 3; // second point
+          size_t mi = m * 3;
+          size_t p0i = p0 * 3; // first point
+          size_t p1i = p1 * 3; // second point
 
-      for(size_t i = 0; i < 3; i++)
-        outputPoints[mi + i]
-          = (outputPoints[p0i + i] + outputPoints[p1i + i]) / 2;
-      outputPoints[mi + sizeAxis] = outputPoints[p0i + sizeAxis];
+          for(size_t i = 0; i < 3; i++)
+            outputPoints[mi + i]
+              = (outputPoints[p0i + i] + outputPoints[p1i + i]) / 2;
+          outputPoints[mi + sizeAxis] = outputPoints[p0i + sizeAxis];
 
-      for(size_t i = 0; i < 3; i++)
-        bezierPoint(
-          outputPoints[mi + i], outputPoints[p0i + i], outputPoints[p1i + i]);
-    };
+          for(size_t i = 0; i < 3; i++)
+            bezierPoint(outputPoints[mi + i], outputPoints[p0i + i],
+                        outputPoints[p1i + i]);
+        };
 
 // Iterate over input cells and generate new points
 #ifdef TTK_ENABLE_OPENMP
@@ -300,16 +297,16 @@ int ttk::MeshGraph::execute(
       size_t m1a1 = offset + 5;
       size_t c = offset + 6;
 
-      getMidPoint(m0, a0, b0, outputPoints);
-      getMidPoint(m1, a1, b1, outputPoints);
+      getMidPoint(m0, a0, b0);
+      getMidPoint(m1, a1, b1);
 
-      getMidPoint(c, m0, m1, outputPoints);
+      getMidPoint(c, m0, m1);
 
-      getMidPoint2(a0m0, a0, m0, sizeAxis, outputPoints);
-      getMidPoint2(m0b0, b0, m0, sizeAxis, outputPoints);
+      getMidPoint2(a0m0, a0, m0);
+      getMidPoint2(m0b0, b0, m0);
 
-      getMidPoint2(b1m1, b1, m1, sizeAxis, outputPoints);
-      getMidPoint2(m1a1, a1, m1, sizeAxis, outputPoints);
+      getMidPoint2(b1m1, b1, m1);
+      getMidPoint2(m1a1, a1, m1);
     }
 
     // Print Status
@@ -427,18 +424,16 @@ int ttk::MeshGraph::execute2(
     dMsg(cout, msg.str(), infoMsg);
   }
 
-  auto getInputPointData =
-    [](const size_t &pointIndex, const float *inputPoints,
-       const sizeType *inputPointSizes, const float &sizeScale, float data[4]) {
-      size_t i = pointIndex * 3;
-      data[0] = inputPoints[i++];
-      data[1] = inputPoints[i++];
-      data[2] = inputPoints[i];
+  auto getInputPointData = [&](const size_t &pointIndex, float data[4]) {
+    size_t i = pointIndex * 3;
+    data[0] = inputPoints[i++];
+    data[1] = inputPoints[i++];
+    data[2] = inputPoints[i];
 
-      data[3] = (inputPointSizes != nullptr)
-                  ? ((float)inputPointSizes[pointIndex]) * sizeScale
-                  : sizeScale;
-    };
+    data[3] = (inputPointSizes != nullptr)
+                ? ((float)inputPointSizes[pointIndex]) * sizeScale
+                : sizeScale;
+  };
 
   size_t subdivisionOffset = nInputPoints * 2;
   size_t nSubdivisionPoints = nSubdivisions * 2;
@@ -463,7 +458,7 @@ int ttk::MeshGraph::execute2(
 #endif
     for(size_t i = 0; i < nInputPoints; i++) {
       float data[4];
-      getInputPointData(i, inputPoints, inputPointSizes, sizeScale, data);
+      getInputPointData(i, data);
 
       size_t q = i * 6;
       outputPoints[q] = data[0];
@@ -484,10 +479,9 @@ int ttk::MeshGraph::execute2(
     size_t q = subdivisionOffset * 3;
     float nSubdivisionsP1 = nSubdivisions + 1;
 
-    auto computeBezierPoint = [](float *outputPoints, const size_t &no0,
-                                 const size_t &no1, const size_t &sizeAxis,
-                                 const size_t &subdivisionOffset,
-                                 const float lambda) {
+    auto computeBezierPoint = [&](const size_t &no0, const size_t &no1,
+                                  const size_t &subdOffset,
+                                  const float lambda) {
       float lambdaI = 1 - lambda;
 
       float lambda_2 = lambda * lambda;
@@ -506,7 +500,7 @@ int ttk::MeshGraph::execute2(
       m1[sizeAxis] = outputPoints[no1 + sizeAxis];
 
       for(size_t i = 0; i < 3; i++)
-        outputPoints[subdivisionOffset + i]
+        outputPoints[subdOffset + i]
           = lambdaI_3 * outputPoints[no0 + i] + 3 * lambdaI_2 * lambda * m0[i]
             + 3 * lambdaI * lambda_2 * m1[i] + lambda_3 * outputPoints[no1 + i];
     };
@@ -524,10 +518,8 @@ int ttk::MeshGraph::execute2(
 
       size_t q2 = q + i * outputPointsSubdivisonOffset;
       for(float j = 1; j <= nSubdivisions; j++) {
-        computeBezierPoint(
-          outputPoints, no0, no1, sizeAxis, q2, j / nSubdivisionsP1);
-        computeBezierPoint(outputPoints, no0 + 3, no1 + 3, sizeAxis, q2 + 3,
-                           j / nSubdivisionsP1);
+        computeBezierPoint(no0, no1, q2, j / nSubdivisionsP1);
+        computeBezierPoint(no0 + 3, no1 + 3, q2 + 3, j / nSubdivisionsP1);
 
         q2 += 6;
       }

@@ -495,11 +495,10 @@ int ZeroSkeleton::buildVertexNeighbors(
   }
 
   if(!localEdgeList->size()) {
-    OneSkeleton oneSkeleton;
-    oneSkeleton.setDebugLevel(debugLevel_);
-    oneSkeleton.setThreadNumber(threadNumber_);
-    oneSkeleton.buildEdgeList(
-      vertexNumber, cellNumber, cellArray, *localEdgeList);
+    OneSkeleton osk;
+    osk.setDebugLevel(debugLevel_);
+    osk.setThreadNumber(threadNumber_);
+    osk.buildEdgeList(vertexNumber, cellNumber, cellArray, *localEdgeList);
   }
 
   for(SimplexId i = 0; i < (SimplexId)localEdgeList->size(); i++) {

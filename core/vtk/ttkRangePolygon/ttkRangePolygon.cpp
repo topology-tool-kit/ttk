@@ -129,7 +129,7 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
       vtkTemplateMacro({ smoother.smooth<VTK_TT>(NumberOfIterations); });
     }
 
-    for(int i = 0; i < (int)output->GetPointData()->GetNumberOfArrays(); i++) {
+    for(int i = 0; i < output->GetPointData()->GetNumberOfArrays(); i++) {
       vtkDataArray *field = output->GetPointData()->GetArray(i);
 
       switch(field->GetDataType()) {

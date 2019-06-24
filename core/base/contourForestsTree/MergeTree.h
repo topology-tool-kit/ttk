@@ -176,8 +176,8 @@ namespace ttk {
       // .....................{
 
       template <typename scalarType>
-      inline const scalarType &getValue(const SimplexId &idNode) const {
-        return (((scalarType *)scalars_->values))[idNode];
+      inline const scalarType &getValue(const SimplexId &nodeId) const {
+        return (((scalarType *)scalars_->values))[nodeId];
       }
 
       template <typename scalarType>
