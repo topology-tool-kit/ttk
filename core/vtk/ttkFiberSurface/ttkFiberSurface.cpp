@@ -183,7 +183,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 
   switch(vtkTemplate2PackMacro(
     dataUfield->GetDataType(), dataVfield->GetDataType())) {
-    ttkTemplate2Macro((dispatch<VTK_T1, VTK_T2>()));
+    vtkTemplate2Macro((dispatch<VTK_T1, VTK_T2>()));
   }
 
   // prepare the VTK output

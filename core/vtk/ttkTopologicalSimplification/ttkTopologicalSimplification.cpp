@@ -363,7 +363,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   switch(inputScalars_->GetDataType()) {
-    ttkTemplateMacro(ret = dispatch<VTK_TT>());
+    vtkTemplateMacro(ret = dispatch<VTK_TT>());
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode

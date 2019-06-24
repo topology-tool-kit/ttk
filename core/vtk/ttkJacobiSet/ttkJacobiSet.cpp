@@ -165,7 +165,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
   // set the jacobi functor
   switch(vtkTemplate2PackMacro(
     uComponent->GetDataType(), vComponent->GetDataType())) {
-    ttkTemplate2Macro(
+    vtkTemplate2Macro(
       (baseCall<VTK_T1, VTK_T2>(input, uComponent, vComponent)));
   }
 

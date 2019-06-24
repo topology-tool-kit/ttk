@@ -112,7 +112,7 @@ vtkStandardNewMacro(ttkPlanarGraphLayout)
 
   // Compute layout with base code
   switch(vtkTemplate2PackMacro(branchType, sequenceType)) {
-    ttkTemplate2Macro(
+    vtkTemplate2Macro(
       (status = planarGraphLayout.execute<vtkIdType, VTK_T1, VTK_T2>(
          // Input
          !this->GetUseSequences() ? nullptr

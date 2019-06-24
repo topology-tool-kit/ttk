@@ -81,7 +81,7 @@ vtkStandardNewMacro(ttkMeshGraph)
   if(this->GetUseQuadraticCells()) {
     // Quadratic cells
     switch(sizeType) {
-      ttkTemplateMacro(
+      vtkTemplateMacro(
         (status = meshGraph.execute<vtkIdType, VTK_TT>(
            // Input
            (float *)input->GetPoints()->GetVoidPointer(0),
@@ -98,7 +98,7 @@ vtkStandardNewMacro(ttkMeshGraph)
   } else {
     // Linear Polygons
     switch(sizeType) {
-      ttkTemplateMacro(
+      vtkTemplateMacro(
         (status = meshGraph.execute2<vtkIdType, VTK_TT>(
            // Input
            (float *)input->GetPoints()->GetVoidPointer(0),
@@ -147,7 +147,7 @@ vtkStandardNewMacro(ttkMeshGraph)
       oPointData->AddArray(oArray);
 
       switch(iArray->GetDataType()) {
-        ttkTemplateMacro(
+        vtkTemplateMacro(
           (status
            = meshGraph.mapInputPointDataToOutputPointData<vtkIdType, VTK_TT>(
              inputCells->GetPointer(), nInputPoints, nInputCells,
@@ -180,7 +180,7 @@ vtkStandardNewMacro(ttkMeshGraph)
       oCellData->AddArray(oArray);
 
       switch(iArray->GetDataType()) {
-        ttkTemplateMacro(
+        vtkTemplateMacro(
           (status
            = meshGraph.mapInputCellDataToOutputCellData<vtkIdType, VTK_TT>(
              nInputCells,

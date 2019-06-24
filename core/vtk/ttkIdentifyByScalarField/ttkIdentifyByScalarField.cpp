@@ -102,7 +102,7 @@ int ttkIdentifyByScalarField::doIt(vector<vtkDataSet *> &inputs,
   vector<SimplexId> inputIds(numberOfCells);
   std::iota(inputIds.begin(), inputIds.end(), 0);
   switch(inputScalars_->GetDataType()) {
-    ttkTemplateMacro(dispatch<VTK_TT>(inputIds));
+    vtkTemplateMacro(dispatch<VTK_TT>(inputIds));
   }
 
   vtkSmartPointer<ttkSimplexIdTypeArray> ids

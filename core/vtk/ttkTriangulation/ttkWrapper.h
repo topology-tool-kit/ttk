@@ -66,9 +66,6 @@
 #endif
 #endif
 
-#define ttkTemplateMacro(s) vtkTemplateMacro(s)
-#define ttkTemplate2Macro(s) vtkTemplate2Macro(s)
-
 #ifdef TTK_ENABLE_64BIT_IDS
 using ttkSimplexIdTypeArray = vtkIdTypeArray;
 #else

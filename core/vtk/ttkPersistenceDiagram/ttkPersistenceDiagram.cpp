@@ -35,7 +35,7 @@ ttkPersistenceDiagram::~ttkPersistenceDiagram() {
 
   if(CTDiagram_ and inputScalars_) {
     switch(inputScalars_->GetDataType()) {
-      ttkTemplateMacro(deleteDiagram<VTK_TT>());
+      vtkTemplateMacro(deleteDiagram<VTK_TT>());
     }
   }
 }

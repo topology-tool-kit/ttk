@@ -332,7 +332,7 @@ int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
   integralLines_.setOutputTrajectories(&trajectories);
 
   switch(inputScalars_->GetDataType()) {
-    ttkTemplateMacro(ret = dispatch<VTK_TT>());
+    vtkTemplateMacro(ret = dispatch<VTK_TT>());
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
