@@ -321,11 +321,10 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
 
   Timer t;
 
-  bool localEdgeListAlloc = false;
-  vector<pair<SimplexId, SimplexId>> *localEdgeList = edgeList;
+  auto localEdgeList = edgeList;
+  vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
   if(!localEdgeList) {
-    localEdgeList = new vector<pair<SimplexId, SimplexId>>();
-    localEdgeListAlloc = true;
+    localEdgeList = &defaultEdgeList;
   }
 
   if(!localEdgeList->size()) {
@@ -336,11 +335,10 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
   for(SimplexId i = 0; i < (SimplexId)starList.size(); i++)
     starList[i].reserve(16);
 
-  bool localVertexStarAlloc = false;
-  vector<vector<SimplexId>> *localVertexStars = vertexStars;
+  auto localVertexStars = vertexStars;
+  vector<vector<SimplexId>> defaultVertexStars{};
   if(!localVertexStars) {
-    localVertexStars = new vector<vector<SimplexId>>();
-    localVertexStarAlloc = true;
+    localVertexStars = &defaultVertexStars;
   }
   if((SimplexId)localVertexStars->size() != vertexNumber) {
     ZeroSkeleton zeroSkeleton;
@@ -376,11 +374,6 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
       }
     }
   }
-
-  if(localEdgeListAlloc)
-    delete localEdgeList;
-  if(localVertexStarAlloc)
-    delete localVertexStars;
 
   {
     stringstream msg;

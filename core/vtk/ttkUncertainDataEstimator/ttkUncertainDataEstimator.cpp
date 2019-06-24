@@ -12,7 +12,6 @@ vtkStandardNewMacro(ttkUncertainDataEstimator)
   // init
   outputLowerBoundScalarField_ = NULL;
   outputUpperBoundScalarField_ = NULL;
-  outputProbabilityScalarField_ = NULL;
   outputMeanField_ = NULL;
 
   UseAllCores = true;
@@ -27,12 +26,10 @@ ttkUncertainDataEstimator::~ttkUncertainDataEstimator() {
     outputLowerBoundScalarField_->Delete();
   if(outputUpperBoundScalarField_)
     outputUpperBoundScalarField_->Delete();
-  if(outputProbabilityScalarField_) {
-    for(int b = 0; b < allocatedBinCount_; b++) {
-      outputProbabilityScalarField_[b]->Delete();
-    }
-    free(outputProbabilityScalarField_);
+  for(int b = 0; b < allocatedBinCount_; b++) {
+    outputProbabilityScalarField_[b]->Delete();
   }
+  outputProbabilityScalarField_.clear();
   if(outputMeanField_) {
     outputMeanField_->Delete();
   }
@@ -57,7 +54,7 @@ int ttkUncertainDataEstimator::updateProgress(const float &progress) {
   return 0;
 }
 
-int ttkUncertainDataEstimator::doIt(vtkDataSet **input,
+int ttkUncertainDataEstimator::doIt(const std::vector<vtkDataSet *> &input,
                                     vtkDataSet *outputBoundFields,
                                     vtkDataSet *outputProbability,
                                     vtkDataSet *outputMean,
@@ -151,15 +148,12 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input,
   // Allocate the memory for the output probability scalar fields
   // Delete existing arrays
   cout << "Bin Count = " << binCount_ << endl;
-  if(outputProbabilityScalarField_) {
-    for(int b = 0; b < allocatedBinCount_; b++) {
-      outputProbabilityScalarField_[b]->Delete();
-    }
-    free(outputProbabilityScalarField_);
+  for(int b = 0; b < allocatedBinCount_; b++) {
+    outputProbabilityScalarField_[b]->Delete();
   }
+  outputProbabilityScalarField_.clear();
   // Allocate array of vtkDoubleArray*
-  outputProbabilityScalarField_
-    = (vtkDoubleArray **)malloc(binCount_ * sizeof(vtkDoubleArray *));
+  outputProbabilityScalarField_.resize(binCount_);
   allocatedBinCount_ = binCount_;
   // Delete the pointer to the input field
   int numberOfArrays = outputProbability->GetPointData()->GetNumberOfArrays();
@@ -247,7 +241,7 @@ int ttkUncertainDataEstimator::doIt(vtkDataSet **input,
         uncertainDataEstimator.setBinCount(binCount_);
         for(int b = 0; b < binCount_; b++) {
           uncertainDataEstimator.setOutputProbability(
-            b, outputProbabilityScalarField_[b]->GetVoidPointer(0));
+            b, outputProbabilityScalarField_[b]->GetPointer(0));
         }
 
         uncertainDataEstimator.execute<VTK_TT>();
@@ -313,12 +307,11 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
     dMsg(cout, msg.str(), infoMsg);
   }
   // Get input datas
-  vtkDataSet **input = new vtkDataSet *[numInputs];
+  std::vector<vtkDataSet *> input(numInputs);
   for(int i = 0; i < numInputs; i++) {
     input[i] = vtkDataSet::GetData(inputVector[0], i);
   }
   doIt(input, boundFields, probability, mean, numInputs);
-  delete[] input;
 
   {
     stringstream msg;

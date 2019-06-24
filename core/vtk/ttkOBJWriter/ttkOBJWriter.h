@@ -41,7 +41,7 @@ protected:
   virtual void WriteData() override;
 
   char *Filename;
-  ofstream *Stream;
+  ofstream Stream{};
 
 private:
   ttkOBJWriter(const ttkOBJWriter &) = delete;

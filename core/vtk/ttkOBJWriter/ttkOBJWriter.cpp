@@ -36,23 +36,19 @@ void ttkOBJWriter::PrintSelf(ostream &os, vtkIndent indent) {
 
 ttkOBJWriter::ttkOBJWriter() {
   Filename = NULL;
-  Stream = NULL;
 }
 
 ttkOBJWriter::~ttkOBJWriter() {
   SetFilename(NULL);
-  if(Stream)
-    delete Stream;
 }
 
 int ttkOBJWriter::OpenFile() {
 
-  ofstream *f = new ofstream(Filename, ios::out);
+  ofstream f(Filename, ios::out);
 
-  if(!f->fail()) {
-    Stream = f;
+  if(!f.fail()) {
+    Stream = std::move(f);
   } else {
-    delete f;
     return -1;
   }
 
@@ -75,18 +71,18 @@ void ttkOBJWriter::WriteData() {
   double p[3];
   for(vtkIdType i = 0; i < dataSet->GetNumberOfPoints(); i++) {
     dataSet->GetPoint(i, p);
-    (*Stream) << "v " << p[0] << " " << p[1] << " " << p[2] << " " << endl;
+    Stream << "v " << p[0] << " " << p[1] << " " << p[2] << " " << endl;
   }
 
   for(vtkIdType i = 0; i < dataSet->GetNumberOfCells(); i++) {
     vtkCell *c = dataSet->GetCell(i);
 
-    (*Stream) << "f ";
+    Stream << "f ";
     for(int j = 0; j < c->GetNumberOfPoints(); j++) {
-      (*Stream) << c->GetPointId(j) + 1 << " ";
+      Stream << c->GetPointId(j) + 1 << " ";
     }
 
-    (*Stream) << endl;
+    Stream << endl;
   }
 }
 
