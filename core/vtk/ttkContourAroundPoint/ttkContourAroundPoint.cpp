@@ -7,7 +7,12 @@
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
 
+#if VTK_MAJOR_VERSION >= 7
 #include <vtkAOSDataArrayTemplate.h>
+#else
+#include <vtkDataArrayTemplate.h>
+#endif
+
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
 
