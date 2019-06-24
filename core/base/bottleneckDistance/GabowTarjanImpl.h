@@ -256,11 +256,11 @@ void GabowTarjan::printCurrentMatching() {
 template <typename dataType>
 int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
   // Compute distance.
-  double d = Distance<dataType>(1);
+  double dist = Distance<dataType>(1);
   {
     std::stringstream msg;
     ttk::Debug m;
-    msg << "[Gabow-Tarjan] Computed distance " << d << std::endl;
+    msg << "[Gabow-Tarjan] Computed distance " << dist << std::endl;
     m.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
   }
 
