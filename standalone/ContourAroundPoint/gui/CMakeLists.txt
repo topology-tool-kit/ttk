@@ -12,5 +12,3 @@ target_link_libraries(ttkContourAroundPointGui ${VTK_LIBRARIES}
 	ttkContourAroundPoint ttkProgramBase ttkUserInterfaceBase)
 
 install(TARGETS ttkContourAroundPointGui RUNTIME DESTINATION ${TTK_INSTALL_BINARY_DIR})
-install(DIRECTORY textures DESTINATION ${TTK_INSTALL_BINARY_DIR})
-
