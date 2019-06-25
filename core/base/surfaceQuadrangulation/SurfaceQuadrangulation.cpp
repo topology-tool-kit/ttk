@@ -328,16 +328,26 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     // optimisation: try first to only consider the first four separatrices
 
     if(c.size() >= 4) {
-      std::set<SimplexId> srcs_set(srcs.begin(), std::next(srcs.begin(), 4));
-      std::set<SimplexId> dsts_set(dsts.begin(), std::next(dsts.begin(), 4));
+      auto sbeg = srcs.begin();
+      auto send = std::next(srcs.begin(), 4);
+      auto dbeg = dsts.begin();
+      auto dend = std::next(dsts.begin(), 4);
+      std::set<SimplexId> srcs_set(sbeg, send);
+      std::set<SimplexId> dsts_set(dbeg, dend);
       if(srcs_set.size() == 2 && dsts_set.size() == 2) {
         auto vi = *dsts_set.begin();
         auto vj = *srcs_set.begin();
         auto vk = *std::next(dsts_set.begin());
         auto vl = *std::next(srcs_set.begin());
-        quads->emplace_back(Quad{4, vi, vj, vk, vl});
-        found = true;
-        continue;
+        // check that every vertex appears twice
+        if(std::count(sbeg, send, vj) == 2 && std::count(sbeg, send, vk) == 2
+           && std::count(dbeg, dend, vi) == 2
+           && std::count(dbeg, dend, vl) == 2) {
+          quads->emplace_back(Quad{4, vi, vj, vk, vl});
+          quadSeps_.emplace_back(c.begin(), std::next(c.begin(), 4));
+          found = true;
+          continue;
+        }
       }
     }
 
@@ -377,12 +387,13 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
                               srcs_k.end(), std::back_inserter(common_srcs_ik));
         // reorder common_srcs_ik according to srcs vector
         std::vector<SimplexId> common_srcs_ik_ordered{};
+        auto cikb = common_srcs_ik.begin();
+        auto cike = common_srcs_ik.end();
+        auto cikob = common_srcs_ik_ordered.begin();
+        auto cikoe = common_srcs_ik_ordered.end();
         for(const auto &s : srcs) {
-          if(std::find(common_srcs_ik.begin(), common_srcs_ik.end(), s)
-               != common_srcs_ik.end()
-             && std::find(common_srcs_ik_ordered.begin(),
-                          common_srcs_ik_ordered.end(), s)
-                  == common_srcs_ik_ordered.end()) {
+          if(std::find(cikb, cike, s) != cike
+             && std::find(cikob, cikoe, s) == cikoe) {
             common_srcs_ik_ordered.emplace_back(s);
           }
         }
@@ -390,6 +401,25 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           auto vj = common_srcs_ik_ordered[0];
           auto vl = common_srcs_ik_ordered[1];
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
+          // find separatrices indices
+          std::vector<size_t> seps{};
+
+          auto findSep = [&](const long long src, const long long dst) {
+            for(size_t j = 0; j < c.size(); ++j) {
+              if(srcs[j] == src && dsts[j] == dst) {
+                seps.emplace_back(c[j]);
+                return;
+              }
+            }
+            // if not found in cell seps, try first one from src to dst
+            seps.emplace_back(sepFromPoints(src, dst));
+          };
+
+          findSep(vj, vi);
+          findSep(vj, vk);
+          findSep(vl, vk);
+          findSep(vl, vi);
+          quadSeps_.emplace_back(seps);
           found = true;
           break;
         }
@@ -420,9 +450,13 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           }
         }
         // ensure jk, kl and li separatrices exist
-        if(sepFromPoints(vj, vk) < numSeps && sepFromPoints(vl, vi) < numSeps
-           && sepFromPoints(vl, vk) < numSeps) {
+        auto jk = sepFromPoints(vj, vk);
+        auto kl = sepFromPoints(vl, vk);
+        auto li = sepFromPoints(vl, vi);
+        if(jk < numSeps && kl < numSeps && li < numSeps) {
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
+          quadSeps_.emplace_back(
+            std::vector<size_t>{static_cast<size_t>(c[0]), jk, kl, li});
           found = true;
           continue;
         }
@@ -446,8 +480,11 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           }
           // count saddle point occurences
           int count_vj = 0;
+          // store corresponding seps indices
+          std::vector<size_t> seps{};
           for(size_t j = i; j < srcs.size(); ++j) {
             if(srcs[j] == srcs[i] && (dsts[j] == vi || dsts[j] == vk)) {
+              seps.emplace_back(j);
               count_vj++;
             }
           }
@@ -458,7 +495,9 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           auto vj = srcs[i];
           found = true;
           quads->emplace_back(Quad{4, vi, vj, vk, vj});
+          quadSeps_.emplace_back(seps);
           ndegen++;
+          break;
         }
         if(found) {
           break;
@@ -471,33 +510,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
       dMsg(std::cout, msg.str(), detailedInfoMsg);
       return 1;
     }
-  }
-
-  // find & order separatrices bordering quadrangles
-  for(size_t i = 0; i < quads->size(); ++i) {
-    auto c = cellSeps[i];
-    auto srcs = cellSrcs[i];
-    auto dsts = cellDsts[i];
-    auto q = quads->at(i);
-    std::vector<size_t> seps{};
-
-    auto findSep = [&](const long long src, const long long dst) {
-      for(size_t j = 0; j < c.size(); ++j) {
-        if(srcs[j] == src && dsts[j] == dst) {
-          seps.emplace_back(c[j]);
-          return;
-        }
-      }
-      // if not found in cell seps, try first one from src to dst
-      seps.emplace_back(sepFromPoints(src, dst));
-    };
-
-    findSep(q.j, q.i);
-    findSep(q.j, q.k);
-    findSep(q.l, q.k);
-    findSep(q.l, q.i);
-
-    quadSeps_.emplace_back(seps);
   }
 
   return 0;
