@@ -129,6 +129,19 @@ computation (type "inf" for the Bottleneck distance).
 		  three times the decided limit.
 		  A low value of Time Limit will yield approximate results. Use with caution.
         </Documentation>
+
+        </DoubleVectorProperty>
+
+        <DoubleVectorProperty
+          name="spacing_"
+          label="Spacing"
+          command="SetSpacing"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced"
+          >
+        <Documentation>
+        </Documentation>
       </DoubleVectorProperty>
 
 	  <IntVectorProperty
