@@ -111,7 +111,7 @@ size_t ttk::SurfaceQuadrangulation::sepFromPoints(const long long src,
 
 int ttk::SurfaceQuadrangulation::detectCells(
   const SimplexId src,
-  std::vector<std::vector<SimplexId>> &cellSeps,
+  std::vector<std::vector<size_t>> &cellSeps,
   const std::vector<SimplexId> &vertexSepMask) {
 
   std::vector<bool> cellMask(morseSeg_.size(), false);
@@ -187,7 +187,7 @@ int ttk::SurfaceQuadrangulation::detectCells(
     [&](const std::pair<SimplexId, int> &a,
         const std::pair<SimplexId, int> &b) { return a.second > b.second; });
 
-  std::vector<SimplexId> sepIds(histVec.size());
+  std::vector<size_t> sepIds(histVec.size());
   for(size_t i = 0; i < histVec.size(); ++i) {
     sepIds[i] = histVec[i].first;
   }
@@ -253,7 +253,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   }
 
   // for each cell, the indices of the bordering separatrices
-  std::vector<std::vector<SimplexId>> cellSeps{};
+  std::vector<std::vector<size_t>> cellSeps{};
 
   bool finished = false;
   size_t pos = 0;
@@ -305,21 +305,11 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
 
   for(const auto &c : cellSeps) {
 
-    std::vector<long long> srcs(c.size());
-    std::vector<long long> dsts(c.size());
+    std::vector<long long> srcs{};
+    std::vector<long long> dsts{};
 
-    for(size_t i = 0; i < c.size(); ++i) {
-      auto src = sepCellIds_[sepBegs_[c[i]]];
-      auto dst = sepCellIds_[sepEnds_[c[i]]];
-      for(long long j = 0; j < criticalPointsNumber_; ++j) {
-        if(criticalPointsCellIds_[j] == src) {
-          srcs[i] = j;
-        }
-        if(criticalPointsCellIds_[j] == dst) {
-          dsts[i] = j;
-        }
-      }
-    }
+    findSepsVertices(c, srcs, dsts);
+
     cellSrcs.emplace_back(srcs);
     cellDsts.emplace_back(dsts);
 
@@ -640,21 +630,10 @@ int ttk::SurfaceQuadrangulation::subdivise() {
     // deal with degenerate case here
     if(q.j == q.l) {
 
-      std::vector<long long> srcs(seps.size());
-      std::vector<long long> dsts(seps.size());
+      std::vector<long long> srcs{};
+      std::vector<long long> dsts{};
 
-      for(size_t j = 0; j < seps.size(); ++j) {
-        auto src = sepCellIds_[sepBegs_[seps[j]]];
-        auto dst = sepCellIds_[sepEnds_[seps[j]]];
-        for(long long k = 0; k < criticalPointsNumber_; ++k) {
-          if(criticalPointsCellIds_[k] == src) {
-            srcs[j] = k;
-          }
-          if(criticalPointsCellIds_[k] == dst) {
-            dsts[j] = k;
-          }
-        }
-      }
+      findSepsVertices(seps, srcs, dsts);
 
       // identify the extremum that is twice dest
       int count_vi = 0, count_vk = 0;
