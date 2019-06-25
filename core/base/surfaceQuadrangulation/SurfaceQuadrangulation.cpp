@@ -487,7 +487,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           std::vector<size_t> seps{};
           for(size_t j = i; j < srcs.size(); ++j) {
             if(srcs[j] == srcs[i] && (dsts[j] == vi || dsts[j] == vk)) {
-              seps.emplace_back(j);
+              seps.emplace_back(c[j]);
               count_vj++;
             }
           }
@@ -612,6 +612,52 @@ int ttk::SurfaceQuadrangulation::subdivise() {
   for(size_t i = 0; i < quads->size(); ++i) {
     auto q = quads->at(i);
     auto seps = quadSeps_[i];
+
+    // deal with degenerate case here
+    if(q.j == q.l) {
+
+      std::vector<long long> srcs(seps.size());
+      std::vector<long long> dsts(seps.size());
+
+      for(size_t j = 0; j < seps.size(); ++j) {
+        auto src = sepCellIds_[sepBegs_[seps[j]]];
+        auto dst = sepCellIds_[sepEnds_[seps[j]]];
+        for(long long k = 0; k < criticalPointsNumber_; ++k) {
+          if(criticalPointsCellIds_[k] == src) {
+            srcs[j] = k;
+          }
+          if(criticalPointsCellIds_[k] == dst) {
+            dsts[j] = k;
+          }
+        }
+      }
+
+      // identify the extremum that is twice dest
+      int count_vi = 0, count_vk = 0;
+      for(const auto &s : dsts) {
+        if(s == q.i) {
+          count_vi++;
+        }
+        if(s == q.k) {
+          count_vk++;
+        }
+      }
+      // extremum index
+      long long extr = count_vi > count_vk ? q.i : q.k;
+      // the two seps from j to extr
+      std::vector<size_t> borderseps{};
+      for(size_t j = 0; j < seps.size(); ++j) {
+        if(dsts[j] == extr && srcs[j] == q.j) {
+          borderseps.emplace_back(seps[j]);
+        }
+      }
+
+      // only one quadrangle : j, mid1(j,extr), extr, mid2(j,extr)
+      qsubd->emplace_back(
+        Quad{4, q.j, sepMiddle[borderseps[0]], extr, sepMiddle[borderseps[1]]});
+
+      continue;
+    }
 
     std::vector<long long> sepMids(seps.size());
     std::vector<SimplexId> midsNearestVertex(seps.size());
