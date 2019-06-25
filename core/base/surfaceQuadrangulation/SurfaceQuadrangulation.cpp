@@ -385,21 +385,24 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         }
         std::set_intersection(srcs_i.begin(), srcs_i.end(), srcs_k.begin(),
                               srcs_k.end(), std::back_inserter(common_srcs_ik));
-        // reorder common_srcs_ik according to srcs vector
-        std::vector<SimplexId> common_srcs_ik_ordered{};
-        auto cikb = common_srcs_ik.begin();
-        auto cike = common_srcs_ik.end();
-        auto cikob = common_srcs_ik_ordered.begin();
-        auto cikoe = common_srcs_ik_ordered.end();
-        for(const auto &s : srcs) {
-          if(std::find(cikb, cike, s) != cike
-             && std::find(cikob, cikoe, s) == cikoe) {
-            common_srcs_ik_ordered.emplace_back(s);
+        if(common_srcs_ik.size() > 2) {
+          // reorder common_srcs_ik according to srcs vector
+          std::vector<SimplexId> common_srcs_ik_ordered{};
+          auto cikb = common_srcs_ik.begin();
+          auto cike = common_srcs_ik.end();
+          for(const auto &s : srcs) {
+            auto cikob = common_srcs_ik_ordered.begin();
+            auto cikoe = common_srcs_ik_ordered.end();
+            if(std::find(cikb, cike, s) != cike
+               && std::find(cikob, cikoe, s) == cikoe) {
+              common_srcs_ik_ordered.emplace_back(s);
+            }
           }
+          common_srcs_ik = std::move(common_srcs_ik_ordered);
         }
-        if(common_srcs_ik_ordered.size() > 1) {
-          auto vj = common_srcs_ik_ordered[0];
-          auto vl = common_srcs_ik_ordered[1];
+        if(common_srcs_ik.size() > 1) {
+          auto vj = common_srcs_ik[0];
+          auto vl = common_srcs_ik[1];
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
           // find separatrices indices
           std::vector<size_t> seps{};
