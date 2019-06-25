@@ -77,6 +77,19 @@ namespace ttk {
     size_t findSeparatrixMiddle(const size_t a, const size_t b);
 
     /**
+     * @brief Find the extremities of a set of separatrices
+     *
+     * @param[in] seps Input vector of separatrices indices
+     * @param[out] srcs Output vector of separatrices sources
+     * @param[out] dsts Output vector of separatrices destinations
+     *
+     * @return 0
+     */
+    int findSepsVertices(const std::vector<size_t> &seps,
+                         std::vector<long long> &srcs,
+                         std::vector<long long> &dsts) const;
+
+    /**
      * @brief Perform the quadrangulation
      *
      * The direct quadrangulation links extrema to saddle points to

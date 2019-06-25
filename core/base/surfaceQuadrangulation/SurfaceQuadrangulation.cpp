@@ -586,6 +586,30 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
   return id;
 }
 
+int ttk::SurfaceQuadrangulation::findSepsVertices(
+  const std::vector<size_t> &seps,
+  std::vector<long long> &srcs,
+  std::vector<long long> &dsts) const {
+
+  srcs.resize(seps.size());
+  dsts.resize(seps.size());
+
+  for(size_t i = 0; i < seps.size(); ++i) {
+    auto src = sepCellIds_[sepBegs_[seps[i]]];
+    auto dst = sepCellIds_[sepEnds_[seps[i]]];
+    for(long long j = 0; j < criticalPointsNumber_; ++j) {
+      if(criticalPointsCellIds_[j] == src) {
+        srcs[i] = j;
+      }
+      if(criticalPointsCellIds_[j] == dst) {
+        dsts[i] = j;
+      }
+    }
+  }
+
+  return 0;
+}
+
 int ttk::SurfaceQuadrangulation::subdivise() {
 
   // separatrices middles index in output points array
