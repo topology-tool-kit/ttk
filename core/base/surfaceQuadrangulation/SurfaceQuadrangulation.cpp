@@ -683,6 +683,15 @@ int ttk::SurfaceQuadrangulation::execute() {
 
   Timer t;
 
+  // sanity check
+  if(separatriceNumber_ == 0) {
+    std::stringstream msg;
+    msg << MODULE_S "Error: cannot perform quadrangulation without separatrices"
+        << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
+    return 1;
+  }
+
   // clear output
   outputCells_.clear();
   outputPoints_.clear();
