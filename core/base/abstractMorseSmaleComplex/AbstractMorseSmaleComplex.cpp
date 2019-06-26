@@ -263,7 +263,7 @@ int AbstractMorseSmaleComplex::setDescendingSegmentation(
 }
 
 int AbstractMorseSmaleComplex::setFinalSegmentation(
-  const SimplexId numberOfMaxima,
+  const SimplexId /*numberOfMaxima*/,
   const SimplexId numberOfMinima,
   const SimplexId *const ascendingManifold,
   const SimplexId *const descendingManifold,

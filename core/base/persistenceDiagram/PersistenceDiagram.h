@@ -173,7 +173,7 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
                          ttk::CriticalType,
                          scalarType,
                          ttk::SimplexId>> &diagram,
-  scalarType *scalars) const {
+  scalarType * /*scalars*/) const {
   const ttk::SimplexId numberOfPairs = pairs.size();
   diagram.resize(numberOfPairs);
   for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {

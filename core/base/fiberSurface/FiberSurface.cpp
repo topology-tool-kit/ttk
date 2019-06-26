@@ -1676,7 +1676,7 @@ int FiberSurface::snapVertexBarycentrics(
 int FiberSurface::snapVertexBarycentrics(
   const SimplexId &tetId,
   const vector<pair<SimplexId, SimplexId>> &triangles,
-  const double &distanceThreshold) const {
+  const double & /*distanceThreshold*/) const {
 
   for(SimplexId i = 0; i < (SimplexId)triangles.size(); i++) {
 

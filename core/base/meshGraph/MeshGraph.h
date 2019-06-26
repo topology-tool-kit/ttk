@@ -696,7 +696,7 @@ int ttk::MeshGraph::mapInputCellDataToOutputCellData(
   dataType *outputCellData,
 
   const bool &useQuadraticCells,
-  const size_t &nSubdivisions) const {
+  const size_t & /*nSubdivisions*/) const {
 
   if(useQuadraticCells) {
 #ifdef TTK_ENABLE_OPENMP

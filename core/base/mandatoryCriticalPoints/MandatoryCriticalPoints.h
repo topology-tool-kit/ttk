@@ -385,7 +385,7 @@ namespace ttk {
 
     int outputMaximum(const int &id,
                       const bool &reset = true,
-                      const bool &parallel = true) {
+                      const bool & /*parallel*/ = true) {
       int *output = (int *)outputMandatoryMaximum_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++)
@@ -404,7 +404,7 @@ namespace ttk {
 
     int outputMinimum(const int &id,
                       const bool &reset = true,
-                      const bool &parallel = true) {
+                      const bool & /*parallel*/ = true) {
       int *output = (int *)outputMandatoryMinimum_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++)

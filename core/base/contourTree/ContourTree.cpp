@@ -144,10 +144,10 @@ void SuperArc::sortRegularNodes(const vector<double> *vertexScalars,
     std::sort(regularNodeList_.rbegin(), regularNodeList_.rend(), cmp);
 }
 
-double
-  PersistenceMetric::computeSuperArcMetric(const int &downVertexId,
-                                           const int &upVertexId,
-                                           const vector<int> &interiorNodeIds) {
+double PersistenceMetric::computeSuperArcMetric(
+  const int &downVertexId,
+  const int &upVertexId,
+  const vector<int> & /*interiorNodeIds*/) {
 
   if(!tree_)
     return -DBL_MAX;
@@ -1328,8 +1328,8 @@ int SubLevelSetTree::getPersistenceDiagram(
 
 int SubLevelSetTree::getPersistencePairs(
   vector<pair<pair<int, int>, double>> &pairs,
-  std::vector<std::pair<std::pair<int, int>, double>> *mergePairs,
-  std::vector<std::pair<std::pair<int, int>, double>> *splitPairs) const {
+  std::vector<std::pair<std::pair<int, int>, double>> * /*mergePairs*/,
+  std::vector<std::pair<std::pair<int, int>, double>> * /*splitPairs*/) const {
 
   Timer t;
 

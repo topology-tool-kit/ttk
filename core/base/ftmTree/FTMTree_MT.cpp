@@ -879,7 +879,7 @@ idNode FTMTree_MT::makeNode(SimplexId vertexId, SimplexId term) {
   return newNodeId;
 }
 
-idNode FTMTree_MT::makeNode(const Node *const n, SimplexId term) {
+idNode FTMTree_MT::makeNode(const Node *const n, SimplexId /*term*/) {
   return makeNode(n->getVertexId());
 }
 

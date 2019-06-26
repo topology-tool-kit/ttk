@@ -46,7 +46,7 @@ namespace ttk {
                         const int &id,
                         SimplexId &triangleId) const;
 
-    SimplexId getCellTriangleNumber(const SimplexId &cellId) const {
+    SimplexId getCellTriangleNumber(const SimplexId & /*cellId*/) const {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
@@ -139,7 +139,7 @@ namespace ttk {
                         const int &id,
                         SimplexId &edgeId) const;
 
-    SimplexId getTriangleEdgeNumber(const SimplexId &triangleId) const {
+    SimplexId getTriangleEdgeNumber(const SimplexId & /*triangleId*/) const {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;
@@ -966,7 +966,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexStar2dA(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return p[0] * 2 + p[1] * tshift_[0];
 }
 
@@ -996,7 +996,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexStar2dD(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return (p[0] - 1) * 2 + (p[1] - 1) * tshift_[0] + 1;
 }
 
@@ -1078,7 +1078,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexLink2dA(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return esetshift_[1] + p[0] + p[1] * eshift_[4]; // D1::bc
 }
 
@@ -1108,7 +1108,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexLink2dD(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return esetshift_[1] + p[0] + (p[1] - 1) * eshift_[4] - 1; // D1::bc
 }
 
@@ -2811,7 +2811,7 @@ inline ttk::SimplexId
 }
 
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleA(const SimplexId p[3],
+  ttk::ImplicitTriangulation::getVertexTriangleA(const SimplexId /*p*/[3],
                                                  const int id) const {
   switch(id) {
     case 0:

@@ -26,10 +26,10 @@ int ttk::TopologicalCompression::computeOther() {
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::compressForOther(int vertexNumber,
-                                                  dataType *inputData,
-                                                  dataType *outputData,
-                                                  const double &tol) {
+int ttk::TopologicalCompression::compressForOther(int /*vertexNumber*/,
+                                                  dataType * /*inputData*/,
+                                                  dataType * /*outputData*/,
+                                                  const double & /*tol*/) {
   ttk::Timer t;
 
   // Code me
@@ -56,7 +56,7 @@ int ttk::TopologicalCompression::compressForOther(int vertexNumber,
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::WriteOtherTopology(FILE *fm) {
+int ttk::TopologicalCompression::WriteOtherTopology(FILE * /*fm*/) {
   std::cout << "[TopologicalCompression] Writing Other index / topology."
             << std::endl;
 
@@ -66,7 +66,7 @@ int ttk::TopologicalCompression::WriteOtherTopology(FILE *fm) {
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::WriteOtherGeometry(FILE *fm) {
+int ttk::TopologicalCompression::WriteOtherGeometry(FILE * /*fm*/) {
   std::cout
     << "[ttkTopologicalCompressionReader] Writing Other buffer / geometry."
     << std::endl;
@@ -77,7 +77,7 @@ int ttk::TopologicalCompression::WriteOtherGeometry(FILE *fm) {
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::ReadOtherTopology(FILE *fm) {
+int ttk::TopologicalCompression::ReadOtherTopology(FILE * /*fm*/) {
   std::cout
     << "[ttkTopologicalCompressionReader] Reading Other index / topology."
     << std::endl;
@@ -87,7 +87,7 @@ int ttk::TopologicalCompression::ReadOtherTopology(FILE *fm) {
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::ReadOtherGeometry(FILE *fm) {
+int ttk::TopologicalCompression::ReadOtherGeometry(FILE * /*fm*/) {
   std::cout
     << "[ttkTopologicalCompressionReader] Reading Other buffer / geometry."
     << std::endl;

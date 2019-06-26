@@ -3092,8 +3092,8 @@ int ImplicitTriangulation::getTetrahedronNeighbors(
   return 0;
 }
 
-SimplexId
-  ImplicitTriangulation::getCellVertexNumber(const SimplexId &cellId) const {
+SimplexId ImplicitTriangulation::getCellVertexNumber(
+  const SimplexId & /*cellId*/) const {
   return dimensionality_ + 1;
 }
 
@@ -3111,7 +3111,7 @@ int ImplicitTriangulation::getCellVertex(const SimplexId &cellId,
 }
 
 SimplexId
-  ImplicitTriangulation::getCellEdgeNumber(const SimplexId &cellId) const {
+  ImplicitTriangulation::getCellEdgeNumber(const SimplexId & /*cellId*/) const {
   if(dimensionality_ == 3)
     return 6;
   else if(dimensionality_ == 2)

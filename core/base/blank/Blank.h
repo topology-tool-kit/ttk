@@ -131,7 +131,7 @@ namespace ttk {
 
 // template functions
 template <class dataType>
-int ttk::blank::Blank::execute(const int &argument) const {
+int ttk::blank::Blank::execute(const int & /*argument*/) const {
 
   Timer t;
 

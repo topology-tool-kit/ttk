@@ -519,7 +519,7 @@ int Munkres::stepSix(int &step) // ~ 35% perf
 }
 
 template <typename dataType>
-int Munkres::stepSeven(int &step) {
+int Munkres::stepSeven(int & /*step*/) {
   std::stringstream msg;
   msg << "[Munkres] Step 7 over." << std::endl;
   dMsg(std::cout, msg.str(), advancedInfoMsg);

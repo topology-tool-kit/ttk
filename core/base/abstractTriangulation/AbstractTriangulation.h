@@ -395,7 +395,7 @@ namespace ttk {
                                const std::string tableName = "",
                                std::stringstream *msg = NULL) const;
 
-    int updateProgress(const float &progress) {
+    int updateProgress(const float & /*progress*/) {
       return 0;
     };
 

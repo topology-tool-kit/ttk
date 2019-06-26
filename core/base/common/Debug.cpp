@@ -71,7 +71,7 @@ int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
   return 0;
 }
 
-int Debug::err(const string msg, const int &debugLevel) const {
+int Debug::err(const string msg, const int & /*debugLevel*/) const {
   return dMsg(cerr, msg, 0);
 }
 

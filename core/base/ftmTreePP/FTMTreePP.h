@@ -176,7 +176,7 @@ void ttk::ftm::FTMTreePP::computePairs(
 
 template <typename scalarType>
 void ttk::ftm::FTMTreePP::sortPairs(
-  ftm::FTMTree_MT *tree,
+  ftm::FTMTree_MT * /*tree*/,
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs) {
   auto comp = [&](const std::tuple<SimplexId, SimplexId, scalarType> a,
                   const std::tuple<SimplexId, SimplexId, scalarType> b) {

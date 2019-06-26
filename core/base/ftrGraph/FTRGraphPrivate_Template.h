@@ -777,7 +777,7 @@ namespace ttk {
 
     template <typename ScalarType>
     void FTRGraph<ScalarType>::updateLazyStart(const orderedTriangle &oTriangle,
-                                               Propagation *const localProp,
+                                               Propagation *const /*localProp*/,
                                                const idSuperArc curArc) {
       lazy_.addEmplace(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
     }
@@ -822,7 +822,7 @@ namespace ttk {
     template <typename ScalarType>
     void FTRGraph<ScalarType>::updateLazyDel(const Propagation *const localProp,
                                              const linkEdge edge,
-                                             const idSuperArc arc) {
+                                             const idSuperArc /*arc*/) {
       dynGraph(localProp).removeEdge(std::get<0>(edge), std::get<1>(edge));
     }
 

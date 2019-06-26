@@ -412,7 +412,7 @@ void MergeTree::updateSegmentation() {
   }
 }
 
-void MergeTree::parallelUpdateSegmentation(const bool ct) {
+void MergeTree::parallelUpdateSegmentation(const bool /*ct*/) {
   // REMOVE THIS FUNCTION AND USE BOOL
   auto compL
     = [&](const pair<SimplexId, bool> &a, const pair<SimplexId, bool> &b) {

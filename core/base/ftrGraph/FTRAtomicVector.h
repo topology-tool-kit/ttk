@@ -60,7 +60,7 @@ namespace ttk {
     // STL
     // ---
 
-    void reserve(const std::size_t &newSize, const bool fromOther = false) {
+    void reserve(const std::size_t &newSize, const bool /*fromOther*/ = false) {
       if(newSize > std::vector<type>::size()) {
 #ifndef TTK_ENABLE_KAMIKAZE
 #ifdef TTK_ENABLE_OPENMP
