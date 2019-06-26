@@ -522,7 +522,7 @@ idSuperArc MergeTree::openSuperArc(const idNode &downNodeId,
                                    const bool overlapB,
                                    const bool overlapA) {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(downNodeId < 0 || (size_t)downNodeId >= getNumberOfNodes()) {
+  if(downNodeId >= getNumberOfNodes()) {
     cout << "[Merge Tree] openSuperArc on a inexisting node !" << endl;
     return -2;
   }
@@ -572,12 +572,12 @@ void MergeTree::closeSuperArc(const idSuperArc &superArcId,
                               const bool overlapA) {
 #ifndef TTK_ENABLE_KAMIKAZE
 
-  if(superArcId < 0 || (size_t)superArcId >= getNumberOfSuperArcs()) {
+  if(superArcId >= getNumberOfSuperArcs()) {
     cout << "[Merge Tree] closeSuperArc on a inexisting arc !" << endl;
     return;
   }
 
-  if(upNodeId < 0 || (size_t)upNodeId >= getNumberOfNodes()) {
+  if(upNodeId >= getNumberOfNodes()) {
     cout << "[Merge Tree] closeOpenedArc on a inexisting node !" << endl;
     return;
   }

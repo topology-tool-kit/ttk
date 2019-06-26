@@ -159,8 +159,7 @@ namespace ttk {
       }
       const size_t newTrianglesPerParent{6};
       const size_t nOutTriangles = this->getNumberOfTriangles();
-      if(nOutTriangles < 0
-         || nOutTriangles != newTrianglesPerParent * nTriangles_) {
+      if(nOutTriangles != newTrianglesPerParent * nTriangles_) {
         return 1;
       }
       for(SimplexId i = 0; i < nTriangles_; ++i) {

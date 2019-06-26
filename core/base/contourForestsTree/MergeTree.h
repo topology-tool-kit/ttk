@@ -278,7 +278,7 @@ namespace ttk {
 
       inline const idNode &getLeave(const idNode &id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((id < 0) || (size_t)id > (treeData_.leaves.size())) {
+        if(id > treeData_.leaves.size()) {
           std::stringstream msg;
           msg << "[MergTree] getLeaves out of bounds : " << id << std::endl;
           err(msg.str(), fatalMsg);

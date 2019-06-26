@@ -152,7 +152,7 @@ int ttkExtract::ExtractBlocks(vtkDataObject *output,
 
     for(size_t i = 0; i < indices.size(); i++) {
       size_t blockIndex = (size_t)indices[i];
-      if(0 <= blockIndex && blockIndex < inputAsMB->GetNumberOfBlocks()) {
+      if(blockIndex < inputAsMB->GetNumberOfBlocks()) {
         auto block = inputAsMB->GetBlock(blockIndex);
         auto copy = vtkSmartPointer<vtkDataObject>::Take(block->NewInstance());
         copy->ShallowCopy(block);
@@ -172,7 +172,7 @@ int ttkExtract::ExtractBlocks(vtkDataObject *output,
     }
 
     size_t blockIndex = (size_t)indices[0];
-    if(0 <= blockIndex && blockIndex < inputAsMB->GetNumberOfBlocks()) {
+    if(blockIndex < inputAsMB->GetNumberOfBlocks()) {
       auto block = inputAsMB->GetBlock(blockIndex);
       if(output->GetDataObjectType() != block->GetDataObjectType()) {
         this->printErr("BlockType does not match OutputType");
@@ -888,7 +888,7 @@ int ttkExtract::ExtractArrayValues(vtkDataObject *output,
     for(size_t i = 0; i < nValues; i++) {
       size_t index = (size_t)indices[i];
       size_t inputArraySize = inputArray->GetNumberOfTuples();
-      if(0 <= index && index < inputArraySize) {
+      if(index < inputArraySize) {
         outputArray->SetTuple(i, index, inputArray);
       } else {
         this->printErr("Index out of range (" + std::to_string(i) + "/"
