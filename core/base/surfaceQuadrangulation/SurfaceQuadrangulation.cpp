@@ -268,7 +268,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         finished = true;
       }
     }
-    if(finished) {
+    if(finished || pos >= segmentationNumber_) {
       break;
     }
     detectCells(pos, cellSeps, onSep);
