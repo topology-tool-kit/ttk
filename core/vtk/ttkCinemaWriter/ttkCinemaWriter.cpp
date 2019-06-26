@@ -22,9 +22,9 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkCinemaWriter)
 
-  int ttkCinemaWriter::RequestData(vtkInformation *request,
+  int ttkCinemaWriter::RequestData(vtkInformation * /*request*/,
                                    vtkInformationVector **inputVector,
-                                   vtkInformationVector *outputVector) {
+                                   vtkInformationVector * /*outputVector*/) {
   Timer t;
   double t0 = 0;
   Memory m;

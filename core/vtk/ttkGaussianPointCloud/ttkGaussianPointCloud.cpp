@@ -5,9 +5,10 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkGaussianPointCloud)
 
-  int ttkGaussianPointCloud::RequestData(vtkInformation *request,
-                                         vtkInformationVector **inputVector,
-                                         vtkInformationVector *outputVector) {
+  int ttkGaussianPointCloud::RequestData(
+    vtkInformation * /*request*/,
+    vtkInformationVector ** /*inputVector*/,
+    vtkInformationVector *outputVector) {
 
   Memory m;
 

@@ -83,7 +83,7 @@ int ttkDataSetToTable::doIt(vtkDataSet *input, vtkTable *output) {
   return 0;
 }
 
-int ttkDataSetToTable::RequestData(vtkInformation *request,
+int ttkDataSetToTable::RequestData(vtkInformation * /*request*/,
                                    vtkInformationVector **inputVector,
                                    vtkInformationVector *outputVector) {
   Memory m;

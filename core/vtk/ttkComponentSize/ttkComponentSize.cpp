@@ -119,7 +119,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output) {
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkComponentSize::RequestData(vtkInformation *request,
+int ttkComponentSize::RequestData(vtkInformation * /*request*/,
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
 

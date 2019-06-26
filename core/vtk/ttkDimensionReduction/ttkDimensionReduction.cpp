@@ -108,7 +108,7 @@ int ttkDimensionReduction::updateProgress(const float &progress) {
   return 0;
 }
 
-int ttkDimensionReduction::RequestData(vtkInformation *request,
+int ttkDimensionReduction::RequestData(vtkInformation * /*request*/,
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 

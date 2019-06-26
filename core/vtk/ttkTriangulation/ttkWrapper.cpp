@@ -78,7 +78,7 @@ int ttkTriangulationFilter::RequestDataObject(
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkTriangulationFilter::RequestData(vtkInformation *request,
+int ttkTriangulationFilter::RequestData(vtkInformation * /*request*/,
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

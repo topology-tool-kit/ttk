@@ -84,7 +84,7 @@ void ttkAddFieldData::ClearFieldDataArrays() {
 // =============================================================================
 // RequestData
 // =============================================================================
-int ttkAddFieldData::RequestData(vtkInformation *request,
+int ttkAddFieldData::RequestData(vtkInformation * /*request*/,
                                  vtkInformationVector **inputVector,
                                  vtkInformationVector *outputVector) {
   // Print Status

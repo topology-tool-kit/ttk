@@ -74,7 +74,7 @@ int ttkDataSetInterpolator::updateProgress(const float &progress) {
   return 0;
 }
 
-int ttkDataSetInterpolator::RequestData(vtkInformation *request,
+int ttkDataSetInterpolator::RequestData(vtkInformation * /*request*/,
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

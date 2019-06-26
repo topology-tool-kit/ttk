@@ -137,7 +137,7 @@ public:
     return 0;
   }
 
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
+  int FillOutputPortInformation(int /*port*/, vtkInformation *info) override {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   }

@@ -80,7 +80,7 @@ public:
   // end of default ttk setters
 
   /// Over-ride the input data type to vtkDataSet.
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
+  int FillOutputPortInformation(int /*port*/, vtkInformation *info) override {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }

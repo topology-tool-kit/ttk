@@ -11,8 +11,8 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkCinemaReader)
 
-  int ttkCinemaReader::RequestData(vtkInformation *request,
-                                   vtkInformationVector **inputVector,
+  int ttkCinemaReader::RequestData(vtkInformation * /*request*/,
+                                   vtkInformationVector ** /*inputVector*/,
                                    vtkInformationVector *outputVector) {
   Timer t;
   Memory m;

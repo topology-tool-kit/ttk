@@ -12,7 +12,7 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkMeshGraph)
 
-  int ttkMeshGraph::RequestData(vtkInformation *request,
+  int ttkMeshGraph::RequestData(vtkInformation * /*request*/,
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
   Timer t;

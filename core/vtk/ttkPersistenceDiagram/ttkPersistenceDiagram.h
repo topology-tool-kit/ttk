@@ -273,7 +273,7 @@ int ttkPersistenceDiagram::setPersistenceDiagramInfo(
 
 template <typename scalarType>
 int ttkPersistenceDiagram::getPersistenceDiagram(
-  ttk::ftm::TreeType treeType,
+  ttk::ftm::TreeType /*treeType*/,
   const std::vector<std::tuple<ttk::SimplexId,
                                ttk::CriticalType,
                                ttk::SimplexId,
@@ -423,7 +423,7 @@ int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(
 
 template <typename scalarType>
 int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
-  ttk::ftm::TreeType treeType,
+  ttk::ftm::TreeType /*treeType*/,
   const std::vector<std::tuple<ttk::SimplexId,
                                ttk::CriticalType,
                                ttk::SimplexId,

@@ -102,7 +102,7 @@ int ttkImportEmbeddingFromTable::doIt(vtkPointSet *inputDataSet,
 }
 
 int ttkImportEmbeddingFromTable::RequestData(
-  vtkInformation *request,
+  vtkInformation * /*request*/,
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
   Memory m;

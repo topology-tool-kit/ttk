@@ -403,7 +403,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
   return 0;
 }
 
-int ttkPersistenceCurve::RequestData(vtkInformation *request,
+int ttkPersistenceCurve::RequestData(vtkInformation * /*request*/,
                                      vtkInformationVector **inputVector,
                                      vtkInformationVector *outputVector) {
 

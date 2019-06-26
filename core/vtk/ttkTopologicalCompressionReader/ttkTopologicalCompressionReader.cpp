@@ -29,14 +29,14 @@ ttkTopologicalCompressionReader::ttkTopologicalCompressionReader() {
 }
 
 int ttkTopologicalCompressionReader::FillOutputPortInformation(
-  int port, vtkInformation *info) {
+  int /*port*/, vtkInformation *info) {
   info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
   return 1;
 }
 
 int ttkTopologicalCompressionReader::RequestInformation(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
+  vtkInformation * /*request*/,
+  vtkInformationVector ** /*inputVector*/,
   vtkInformationVector *outputVector) {
   if(FileName == nullptr) {
     return 1;
@@ -82,8 +82,8 @@ int ttkTopologicalCompressionReader::RequestInformation(
 }
 
 int ttkTopologicalCompressionReader::RequestData(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
+  vtkInformation * /*request*/,
+  vtkInformationVector ** /*inputVector*/,
   vtkInformationVector *outputVector) {
   // Initialize
   if(FileName == nullptr) {

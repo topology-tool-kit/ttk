@@ -8,8 +8,8 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkIcoSphere)
 
-  int ttkIcoSphere::RequestData(vtkInformation *request,
-                                vtkInformationVector **inputVector,
+  int ttkIcoSphere::RequestData(vtkInformation * /*request*/,
+                                vtkInformationVector ** /*inputVector*/,
                                 vtkInformationVector *outputVector) {
   Memory m;
   Timer t;

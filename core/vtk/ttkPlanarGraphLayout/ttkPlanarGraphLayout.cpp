@@ -12,7 +12,7 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkPlanarGraphLayout)
 
-  int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
+  int ttkPlanarGraphLayout::RequestData(vtkInformation * /*request*/,
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
   // Print status

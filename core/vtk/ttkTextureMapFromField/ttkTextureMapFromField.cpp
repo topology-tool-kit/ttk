@@ -148,7 +148,7 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output) {
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkTextureMapFromField::RequestData(vtkInformation *request,
+int ttkTextureMapFromField::RequestData(vtkInformation * /*request*/,
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

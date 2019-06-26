@@ -106,7 +106,7 @@ int ttkFiber::doIt(vtkDataSet *input, vtkPolyData *output) {
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkFiber::RequestData(vtkInformation *request,
+int ttkFiber::RequestData(vtkInformation * /*request*/,
                           vtkInformationVector **inputVector,
                           vtkInformationVector *outputVector) {
 

@@ -100,7 +100,7 @@ public:
   vtkGetMacro(NumberOfIterations, int);
   vtkSetMacro(NumberOfIterations, int);
 
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
+  int FillOutputPortInformation(int /*port*/, vtkInformation *info) override {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }

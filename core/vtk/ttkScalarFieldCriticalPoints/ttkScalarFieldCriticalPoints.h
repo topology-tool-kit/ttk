@@ -103,7 +103,7 @@ public:
   vtkGetMacro(OffsetField, std::string);
   vtkSetMacro(OffsetField, std::string);
 
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
+  int FillOutputPortInformation(int /*port*/, vtkInformation *info) override {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }

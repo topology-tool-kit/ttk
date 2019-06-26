@@ -133,7 +133,7 @@ int ttkProjectionFromField::doIt(vtkPointSet *input, vtkPointSet *output) {
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkProjectionFromField::RequestData(vtkInformation *request,
+int ttkProjectionFromField::RequestData(vtkInformation * /*request*/,
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 

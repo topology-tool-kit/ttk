@@ -45,8 +45,8 @@ ttkOFFReader::ttkOFFReader() {
   this->points_ = vtkSmartPointer<vtkPoints>::New();
 }
 
-int ttkOFFReader::RequestData(vtkInformation *request,
-                              vtkInformationVector **inputVector,
+int ttkOFFReader::RequestData(vtkInformation * /*request*/,
+                              vtkInformationVector ** /*inputVector*/,
                               vtkInformationVector *outputVector) {
   ifstream offFile(FileName, ios::in);
 

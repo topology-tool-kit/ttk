@@ -25,7 +25,7 @@ vtkStandardNewMacro(ttkForEachRow)
     request, inputVector, outputVector);
 }
 
-int ttkForEachRow::RequestData(vtkInformation *request,
+int ttkForEachRow::RequestData(vtkInformation * /*request*/,
                                vtkInformationVector **inputVector,
                                vtkInformationVector *outputVector) {
   // Get current row index

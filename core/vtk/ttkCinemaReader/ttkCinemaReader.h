@@ -52,7 +52,8 @@ public:
   }
   // end of default ttk setters
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
+  int FillInputPortInformation(int /*port*/,
+                               vtkInformation * /*info*/) override {
     return 0;
   }
 

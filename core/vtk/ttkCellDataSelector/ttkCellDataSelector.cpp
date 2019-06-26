@@ -126,7 +126,7 @@ int ttkCellDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
   return 0;
 }
 
-int ttkCellDataSelector::RequestData(vtkInformation *request,
+int ttkCellDataSelector::RequestData(vtkInformation * /*request*/,
                                      vtkInformationVector **inputVector,
                                      vtkInformationVector *outputVector) {
 

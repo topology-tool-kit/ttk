@@ -122,7 +122,7 @@ int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
   return 0;
 }
 
-int ttkPointDataSelector::RequestData(vtkInformation *request,
+int ttkPointDataSelector::RequestData(vtkInformation * /*request*/,
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
   Memory m;

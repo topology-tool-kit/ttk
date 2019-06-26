@@ -10,7 +10,7 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkCinemaLayout)
 
-  int ttkCinemaLayout::RequestData(vtkInformation *request,
+  int ttkCinemaLayout::RequestData(vtkInformation * /*request*/,
                                    vtkInformationVector **inputVector,
                                    vtkInformationVector *outputVector) {
   Timer t;

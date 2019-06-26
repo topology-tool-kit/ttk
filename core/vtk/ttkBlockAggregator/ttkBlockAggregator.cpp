@@ -35,7 +35,7 @@ vtkStandardNewMacro(ttkBlockAggregator)
   return 1;
 }
 
-int ttkBlockAggregator::RequestData(vtkInformation *request,
+int ttkBlockAggregator::RequestData(vtkInformation * /*request*/,
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
   // Print status

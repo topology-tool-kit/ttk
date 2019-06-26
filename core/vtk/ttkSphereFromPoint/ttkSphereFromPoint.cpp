@@ -289,7 +289,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output) {
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkSphereFromPoint::RequestData(vtkInformation *request,
+int ttkSphereFromPoint::RequestData(vtkInformation * /*request*/,
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
 

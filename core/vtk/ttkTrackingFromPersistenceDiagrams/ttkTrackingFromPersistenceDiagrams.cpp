@@ -53,7 +53,7 @@ int ttkTrackingFromPersistenceDiagrams::updateProgress(const float &progress) {
 }
 
 int ttkTrackingFromPersistenceDiagrams::FillInputPortInformation(
-  int port, vtkInformation *info) {
+  int /*port*/, vtkInformation *info) {
   info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
   return 1;
 }
@@ -66,7 +66,7 @@ int ttkTrackingFromPersistenceDiagrams::FillOutputPortInformation(
 }
 
 int ttkTrackingFromPersistenceDiagrams::RequestData(
-  vtkInformation *request,
+  vtkInformation * /*request*/,
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
   ttk::Memory m;

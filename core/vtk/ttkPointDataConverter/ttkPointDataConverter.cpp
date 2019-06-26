@@ -168,7 +168,7 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkPointDataConverter::RequestData(vtkInformation *request,
+int ttkPointDataConverter::RequestData(vtkInformation * /*request*/,
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 

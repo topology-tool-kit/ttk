@@ -131,7 +131,7 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output) {
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkIdentifiers::RequestData(vtkInformation *request,
+int ttkIdentifiers::RequestData(vtkInformation * /*request*/,
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
 

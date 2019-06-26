@@ -168,7 +168,7 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkCellDataConverter::RequestData(vtkInformation *request,
+int ttkCellDataConverter::RequestData(vtkInformation * /*request*/,
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 

@@ -13,7 +13,7 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkCinemaProductReader)
 
-  int ttkCinemaProductReader::RequestData(vtkInformation *request,
+  int ttkCinemaProductReader::RequestData(vtkInformation * /*request*/,
                                           vtkInformationVector **inputVector,
                                           vtkInformationVector *outputVector) {
   // Print status

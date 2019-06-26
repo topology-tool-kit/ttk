@@ -120,7 +120,7 @@ public:
   vtkSetMacro(VertexScalars, bool);
   vtkGetMacro(VertexScalars, bool);
 
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
+  int FillOutputPortInformation(int /*port*/, vtkInformation *info) override {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }

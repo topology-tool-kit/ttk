@@ -19,9 +19,9 @@ vtkStandardNewMacro(ttkEndFor)
     request, inputVector, outputVector);
 }
 
-int ttkEndFor::RequestUpdateExtent(vtkInformation *request,
+int ttkEndFor::RequestUpdateExtent(vtkInformation * /*request*/,
                                    vtkInformationVector **inputVector,
-                                   vtkInformationVector *outputVector) {
+                                   vtkInformationVector * /*outputVector*/) {
 
   // Request next index
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);

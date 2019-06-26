@@ -68,7 +68,7 @@ int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
   return 0;
 }
 
-int ttkTableDataSelector::RequestData(vtkInformation *request,
+int ttkTableDataSelector::RequestData(vtkInformation * /*request*/,
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
   Memory m;

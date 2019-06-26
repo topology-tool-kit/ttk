@@ -54,8 +54,11 @@ public:
   }
   // end of default ttk setters
 
-  void SetFilepathColumnName(
-    int idx, int port, int connection, int fieldAssociation, const char *name) {
+  void SetFilepathColumnName(int /*idx*/,
+                             int /*port*/,
+                             int /*connection*/,
+                             int /*fieldAssociation*/,
+                             const char *name) {
     this->FilepathColumnName = std::string(name);
     this->Modified();
   };

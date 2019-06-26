@@ -154,43 +154,44 @@ protected:                                                             \
                                                                        \
 public:
 
-#define TTK_PIPELINE_REQUEST()                                                 \
-protected:                                                                     \
-  std::vector<vtkSmartPointer<ttkTriangulationFilter>> inputTriangulations_;   \
-  int RequestData(vtkInformation *request, vtkInformationVector **inputVector, \
-                  vtkInformationVector *outputVector) override {               \
-                                                                               \
-    if((int)inputTriangulations_.size() != GetNumberOfInputPorts()) {          \
-      inputTriangulations_.resize(GetNumberOfInputPorts());                    \
-      for(int i = 0; i < (int)inputTriangulations_.size(); i++) {              \
-        inputTriangulations_[i]                                                \
-          = vtkSmartPointer<ttkTriangulationFilter>::New();                    \
-      }                                                                        \
-    }                                                                          \
-                                                                               \
-    std::vector<vtkDataSet *> inputs(GetNumberOfInputPorts(), NULL);           \
-    std::vector<vtkDataSet *> outputs(GetNumberOfOutputPorts(), NULL);         \
-                                                                               \
-    for(int i = 0; i < GetNumberOfInputPorts(); i++) {                         \
-      vtkDataSet *input = vtkDataSet::GetData(inputVector[i]);                 \
-      if(input) {                                                              \
-        inputTriangulations_[i]->SetInputData(input);                          \
-        inputTriangulations_[i]->Update();                                     \
-        inputs[i] = inputTriangulations_[i]->GetOutput();                      \
-      }                                                                        \
-    }                                                                          \
-    for(int i = 0; i < GetNumberOfOutputPorts(); i++) {                        \
-      outputs[i] = vtkDataSet::SafeDownCast(                                   \
-                                                                               \
-        outputVector->GetInformationObject(i)->Get(                            \
-          vtkDataObject::DATA_OBJECT()));                                      \
-    }                                                                          \
-                                                                               \
-    if(((int)inputs.size() == GetNumberOfInputPorts())                         \
-       && ((int)outputs.size() == GetNumberOfOutputPorts()))                   \
-      doIt(inputs, outputs);                                                   \
-                                                                               \
-    return 1;                                                                  \
+#define TTK_PIPELINE_REQUEST()                                               \
+protected:                                                                   \
+  std::vector<vtkSmartPointer<ttkTriangulationFilter>> inputTriangulations_; \
+  int RequestData(vtkInformation * /*request*/,                              \
+                  vtkInformationVector **inputVector,                        \
+                  vtkInformationVector *outputVector) override {             \
+                                                                             \
+    if((int)inputTriangulations_.size() != GetNumberOfInputPorts()) {        \
+      inputTriangulations_.resize(GetNumberOfInputPorts());                  \
+      for(int i = 0; i < (int)inputTriangulations_.size(); i++) {            \
+        inputTriangulations_[i]                                              \
+          = vtkSmartPointer<ttkTriangulationFilter>::New();                  \
+      }                                                                      \
+    }                                                                        \
+                                                                             \
+    std::vector<vtkDataSet *> inputs(GetNumberOfInputPorts(), NULL);         \
+    std::vector<vtkDataSet *> outputs(GetNumberOfOutputPorts(), NULL);       \
+                                                                             \
+    for(int i = 0; i < GetNumberOfInputPorts(); i++) {                       \
+      vtkDataSet *input = vtkDataSet::GetData(inputVector[i]);               \
+      if(input) {                                                            \
+        inputTriangulations_[i]->SetInputData(input);                        \
+        inputTriangulations_[i]->Update();                                   \
+        inputs[i] = inputTriangulations_[i]->GetOutput();                    \
+      }                                                                      \
+    }                                                                        \
+    for(int i = 0; i < GetNumberOfOutputPorts(); i++) {                      \
+      outputs[i] = vtkDataSet::SafeDownCast(                                 \
+                                                                             \
+        outputVector->GetInformationObject(i)->Get(                          \
+          vtkDataObject::DATA_OBJECT()));                                    \
+    }                                                                        \
+                                                                             \
+    if(((int)inputs.size() == GetNumberOfInputPorts())                       \
+       && ((int)outputs.size() == GetNumberOfOutputPorts()))                 \
+      doIt(inputs, outputs);                                                 \
+                                                                             \
+    return 1;                                                                \
   }
 
 #define TTK_SETUP()                                                         \

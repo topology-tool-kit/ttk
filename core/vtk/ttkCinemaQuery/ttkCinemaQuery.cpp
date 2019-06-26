@@ -17,7 +17,7 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkCinemaQuery)
 
-  int ttkCinemaQuery::RequestData(vtkInformation *request,
+  int ttkCinemaQuery::RequestData(vtkInformation * /*request*/,
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
   // Print Status

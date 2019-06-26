@@ -247,7 +247,7 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output) {
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
+int ttkScalarFieldNormalizer::RequestData(vtkInformation * /*request*/,
                                           vtkInformationVector **inputVector,
                                           vtkInformationVector *outputVector) {
 

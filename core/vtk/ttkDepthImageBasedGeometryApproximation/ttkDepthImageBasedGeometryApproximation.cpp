@@ -16,7 +16,7 @@ using namespace ttk;
 vtkStandardNewMacro(ttkDepthImageBasedGeometryApproximation)
 
   int ttkDepthImageBasedGeometryApproximation::RequestData(
-    vtkInformation *request,
+    vtkInformation * /*request*/,
     vtkInformationVector **inputVector,
     vtkInformationVector *outputVector) {
   Memory mem;

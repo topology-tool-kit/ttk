@@ -508,7 +508,7 @@ int ttkMeshSubdivision::doIt(vtkUnstructuredGrid *input,
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkMeshSubdivision::RequestData(vtkInformation *request,
+int ttkMeshSubdivision::RequestData(vtkInformation * /*request*/,
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
 
