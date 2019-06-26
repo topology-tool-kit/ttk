@@ -655,9 +655,11 @@ int ttk::SurfaceQuadrangulation::subdivise() {
         }
       }
 
-      // only one quadrangle : j, mid1(j,extr), extr, mid2(j,extr)
-      qsubd->emplace_back(
-        Quad{4, q.j, sepMiddle[borderseps[0]], extr, sepMiddle[borderseps[1]]});
+      if(borderseps.size() >= 2) {
+        // only one quadrangle : j, mid1(j,extr), extr, mid2(j,extr)
+        qsubd->emplace_back(Quad{
+          4, q.j, sepMiddle[borderseps[0]], extr, sepMiddle[borderseps[1]]});
+      }
 
       continue;
     }
