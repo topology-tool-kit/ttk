@@ -26,20 +26,6 @@ else:
     sys.exit() 
 
 
-# -- Importing TTK python modules
-import platform
-
-print("[python] Loading TTK modules...")
-if platform.system() == "Linux":
-    LoadPlugin("libTopologyToolKit.so", ns=globals())
-elif platform.system() == "Windows":
-    LoadPlugin("libTopologyToolKit.dll", ns=globals())
-else:
-    LoadPlugin("libTopologyToolKit.dylib", ns=globals())
-
-print("[python] TTK modules loaded!")
-
-
 # -- TTK pipeline
 
 # 1. loading the input data
