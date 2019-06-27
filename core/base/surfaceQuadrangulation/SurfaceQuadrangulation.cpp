@@ -744,6 +744,47 @@ int ttk::SurfaceQuadrangulation::subdivise() {
   return 0;
 }
 
+bool ttk::SurfaceQuadrangulation::checkSurfaceCloseness() const {
+  bool triangulationClosed = true;
+  // sweep over all vertices to check if one is on a boundary
+  for(size_t i = 0; i < segmentationNumber_; ++i) {
+    if(triangulation_->isVertexOnBoundary(i)) {
+      triangulationClosed = false;
+      break;
+    }
+  }
+  // quadrangles edges -> quadrangles
+  std::map<std::pair<long long, long long>, std::set<size_t>> quadEdges{};
+
+  // sweep over quadrangulation edges
+  auto quads = reinterpret_cast<const std::vector<Quad> *>(&outputCells_);
+  for(size_t i = 0; i < quads->size(); ++i) {
+    auto q = quads->at(i);
+    quadEdges[std::make_pair(q.j, q.i)].emplace(i);
+    quadEdges[std::make_pair(q.j, q.k)].emplace(i);
+    quadEdges[std::make_pair(q.l, q.i)].emplace(i);
+    quadEdges[std::make_pair(q.l, q.k)].emplace(i);
+  }
+
+  bool quadrangulationClosed = true;
+  for(const auto &e : quadEdges) {
+    if(e.second.size() < 2) {
+      quadrangulationClosed = false;
+      break;
+    }
+  }
+
+  // each edge should be shared by two different quadrangles
+  return triangulationClosed == quadrangulationClosed;
+}
+
+void ttk::SurfaceQuadrangulation::clearData() {
+  outputCells_.clear();
+  outputPoints_.clear();
+  outputPointsIds_.clear();
+  outputPointsCells_.clear();
+}
+
 // main routine
 int ttk::SurfaceQuadrangulation::execute() {
 
@@ -759,10 +800,7 @@ int ttk::SurfaceQuadrangulation::execute() {
   }
 
   // clear output
-  outputCells_.clear();
-  outputPoints_.clear();
-  outputPointsIds_.clear();
-  outputPointsCells_.clear();
+  clearData();
   outputPoints_.resize(3 * criticalPointsNumber_);
   outputPointsIds_.resize(criticalPointsNumber_);
   outputPointsTypes_.resize(criticalPointsNumber_);
@@ -791,10 +829,7 @@ int ttk::SurfaceQuadrangulation::execute() {
       subdivise();
     } else {
       // clean, log & early return
-      outputCells_.clear();
-      outputPoints_.clear();
-      outputPointsIds_.clear();
-      outputPointsCells_.clear();
+      clearData();
       std::stringstream msg;
       msg << MODULE_S "Error: unable to generate quadrangulation from current "
                       "Morse-Smale complex"
@@ -802,6 +837,17 @@ int ttk::SurfaceQuadrangulation::execute() {
       dMsg(std::cout, msg.str(), infoMsg);
       return 1;
     }
+  }
+
+  if(!checkSurfaceCloseness()) {
+    // clean, log & early return
+    clearData();
+    std::stringstream msg;
+    msg << MODULE_S
+      "Error: output surface does not match input surface closeness"
+        << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
+    return 1;
   }
 
   // number of produced quads

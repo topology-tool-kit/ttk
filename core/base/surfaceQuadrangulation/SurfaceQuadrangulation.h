@@ -60,6 +60,7 @@ namespace ttk {
       if(triangulation_ != nullptr) {
         triangulation_->preprocessVertexNeighbors();
         triangulation_->preprocessVertexTriangles();
+        triangulation_->preprocessBoundaryVertices();
       }
     }
 
@@ -144,6 +145,10 @@ namespace ttk {
      * @return separatrix index
      */
     size_t sepFromPoints(const long long src, const long long dst) const;
+
+    bool checkSurfaceCloseness() const;
+
+    void clearData();
 
     Triangulation *triangulation_{};
 
