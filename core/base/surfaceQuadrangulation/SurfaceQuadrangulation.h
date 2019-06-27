@@ -150,6 +150,8 @@ namespace ttk {
 
     void clearData();
 
+    int subdiviseDegenerateQuads();
+
     Triangulation *triangulation_{};
 
     // number of critical points from the Morse-Smale complex
@@ -184,6 +186,8 @@ namespace ttk {
     std::vector<size_t> sepBegs_{};
     // index of separatrices endings in separatrices arrays
     std::vector<size_t> sepEnds_{};
+    // separatrices middles index in output points array
+    std::vector<SimplexId> sepMids_{};
     // sub-segmentation of Morse-Smale cells
     std::vector<SimplexId> morseSeg_{};
     // for each cell, the corresponding MorseSmaleManifold index

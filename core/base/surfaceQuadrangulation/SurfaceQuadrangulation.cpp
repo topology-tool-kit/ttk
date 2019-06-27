@@ -600,14 +600,65 @@ int ttk::SurfaceQuadrangulation::findSepsVertices(
   return 0;
 }
 
+int ttk::SurfaceQuadrangulation::subdiviseDegenerateQuads() {
+  // hold quad subdivision
+  decltype(outputCells_) outputSubd{};
+  outputSubd.reserve(4 * outputCells_.size());
+  auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
+  auto qsubd = reinterpret_cast<std::vector<Quad> *>(&outputSubd);
+
+  for(size_t i = 0; i < quads->size(); ++i) {
+    auto q = quads->at(i);
+    auto seps = quadSeps_[i];
+
+    // don't deal with normal quadrangles
+    if(q.j != q.l) {
+      continue;
+    }
+
+    std::vector<long long> srcs{};
+    std::vector<long long> dsts{};
+
+    findSepsVertices(seps, srcs, dsts);
+
+    // identify the extremum that is twice dest
+    int count_vi = 0, count_vk = 0;
+    for(const auto &s : dsts) {
+      if(s == q.i) {
+        count_vi++;
+      }
+      if(s == q.k) {
+        count_vk++;
+      }
+    }
+    // extremum index
+    long long extr = count_vi > count_vk ? q.i : q.k;
+    // the two seps from j to extr
+    std::vector<size_t> borderseps{};
+    for(size_t j = 0; j < seps.size(); ++j) {
+      if(dsts[j] == extr && srcs[j] == q.j) {
+        borderseps.emplace_back(seps[j]);
+      }
+    }
+
+    if(borderseps.size() >= 2) {
+      // only one quadrangle : j, mid1(j,extr), extr, mid2(j,extr)
+      qsubd->emplace_back(
+        Quad{4, q.j, sepMids_[borderseps[0]], extr, sepMids_[borderseps[1]]});
+    }
+
+  }
+  return 0;
+}
+
 int ttk::SurfaceQuadrangulation::subdivise() {
 
   // separatrices middles index in output points array
-  std::vector<SimplexId> sepMiddle(sepBegs_.size());
+  sepMids_.resize(sepBegs_.size());
 
-  for(size_t i = 0; i < sepMiddle.size(); ++i) {
+  for(size_t i = 0; i < sepMids_.size(); ++i) {
     // separatrices middles
-    sepMiddle[i] = outputPoints_.size() / 3; // before insertion at next line
+    sepMids_[i] = outputPoints_.size() / 3; // before insertion at next line
     findSeparatrixMiddle(sepBegs_[i], sepEnds_[i]);
     outputPointsCells_.emplace_back(i);
   }
@@ -627,48 +678,16 @@ int ttk::SurfaceQuadrangulation::subdivise() {
     auto q = quads->at(i);
     auto seps = quadSeps_[i];
 
-    // deal with degenerate case here
+    // skip degenerate case here
     if(q.j == q.l) {
-
-      std::vector<long long> srcs{};
-      std::vector<long long> dsts{};
-
-      findSepsVertices(seps, srcs, dsts);
-
-      // identify the extremum that is twice dest
-      int count_vi = 0, count_vk = 0;
-      for(const auto &s : dsts) {
-        if(s == q.i) {
-          count_vi++;
-        }
-        if(s == q.k) {
-          count_vk++;
-        }
-      }
-      // extremum index
-      long long extr = count_vi > count_vk ? q.i : q.k;
-      // the two seps from j to extr
-      std::vector<size_t> borderseps{};
-      for(size_t j = 0; j < seps.size(); ++j) {
-        if(dsts[j] == extr && srcs[j] == q.j) {
-          borderseps.emplace_back(seps[j]);
-        }
-      }
-
-      if(borderseps.size() >= 2) {
-        // only one quadrangle : j, mid1(j,extr), extr, mid2(j,extr)
-        qsubd->emplace_back(Quad{
-          4, q.j, sepMiddle[borderseps[0]], extr, sepMiddle[borderseps[1]]});
-      }
-
       continue;
     }
 
     std::vector<long long> sepMids(seps.size());
     std::vector<SimplexId> midsNearestVertex(seps.size());
     for(size_t j = 0; j < seps.size(); ++j) {
-      sepMids[j] = sepMiddle[seps[j]];
-      midsNearestVertex[j] = outputPointsIds_[sepMiddle[seps[j]]];
+      sepMids[j] = sepMids_[seps[j]];
+      midsNearestVertex[j] = outputPointsIds_[sepMids_[seps[j]]];
     }
 
     // find barycenter of current cell (c.f. QuadrangulationSubdivision.cpp)
@@ -737,6 +756,8 @@ int ttk::SurfaceQuadrangulation::subdivise() {
     qsubd->emplace_back(Quad{4, q.k, sepMids[1], baryPos, sepMids[2]});
     qsubd->emplace_back(Quad{4, q.l, sepMids[2], baryPos, sepMids[3]});
   }
+
+  subdiviseDegenerateQuads();
 
   // overwrite old quads
   outputCells_ = std::move(outputSubd);
