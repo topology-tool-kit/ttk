@@ -16,7 +16,17 @@ Proc. of IEEE VIS 2017.
 To run this example, first install TTK on your system 
 (https://topology-tool-kit.github.io/installation.html).
 
+Next, before launching the script, make sure to properly define the environment
+variables PYTHONPATH and LD_LIBRARY_PATH.
+
+For instance, under Linux, with Python 3.6, this can be done as follows, assuming that you installed ParaView and TTK to /usr/local:
+$ export PYTHONPATH="/usr/local/lib/python3.6/site-packages/"
+$ export LD_LIBRARY_PATH="/usr/local/lib/:/usr/local/lib/plugins"
+
 Then, from the current directory, enter the following command (omit the '$'
 character):
 $ ./ttkExample-python.py ../data/inputData.vtu
 
+Alternatively, you can also use the ParaView python wrapper (which will
+automatically position environment variables correctly):
+$ pvpython ttkExample-python.py ../data/inputData.vtu

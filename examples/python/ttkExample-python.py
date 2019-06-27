@@ -1,4 +1,4 @@
-#!/usr/bin/env pvpython
+#!/usr/bin/env python
 
 #/// \ingroup examples
 #/// \author Julien Tierny <julien.tierny@lip6.fr>
@@ -24,6 +24,23 @@ if len(sys.argv) == 2:
 else:
     print("Missing mandatory argument: Path to input VTU file")
     sys.exit() 
+
+
+# -- Importing TTK python modules
+import platform
+
+print("[python] Loading TTK modules...")
+if platform.system() == "Linux":
+    LoadPlugin("libTopologyToolKit.so", ns=globals())
+elif platform.system() == "Windows":
+    LoadPlugin("libTopologyToolKit.dll", ns=globals())
+else:
+    LoadPlugin("libTopologyToolKit.dylib", ns=globals())
+
+print("[python] TTK modules loaded!")
+
+
+# -- TTK pipeline
 
 # 1. loading the input data
 inputData = XMLUnstructuredGridReader(FileName=[inputFilePath])
