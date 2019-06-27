@@ -150,7 +150,7 @@ namespace ttk {
 
     void clearData();
 
-    int subdiviseDegenerateQuads();
+    std::vector<long long> subdiviseDegenerateQuads();
 
     Triangulation *triangulation_{};
 
