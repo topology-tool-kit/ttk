@@ -68,7 +68,7 @@ orderedEdge Mesh::getOrderedEdge(const idEdge e,
   idVertex v0, v1;
   tri_->getEdgeVertex(e, 0, v0);
   tri_->getEdgeVertex(e, 1, v1);
-  if(edgesSortId_[e] == increasingOrder) {
+  if(edgesSortId_[e] == static_cast<edgeScheme>(increasingOrder)) {
     return std::make_tuple(v0, v1);
   } else {
     return std::make_tuple(v1, v0);
@@ -81,7 +81,7 @@ void Mesh::getOrderedEdge(const idEdge e,
   idVertex v0, v1;
   tri_->getEdgeVertex(e, 0, v0);
   tri_->getEdgeVertex(e, 1, v1);
-  if(edgesSortId_[e] == increasingOrder) {
+  if(edgesSortId_[e] == static_cast<edgeScheme>(increasingOrder)) {
     std::get<0>(oEdge) = v0;
     std::get<1>(oEdge) = v1;
   } else {
