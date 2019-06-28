@@ -112,8 +112,8 @@ public:
   vtkSetMacro(Method, int);
   vtkGetMacro(Method, int);
 
-  vtkSetMacro(KeepAllDataArrays, int);
-  vtkGetMacro(KeepAllDataArrays, int);
+  vtkSetMacro(KeepAllDataArrays, bool);
+  vtkGetMacro(KeepAllDataArrays, bool);
 
   // SE && MDS
   vtkSetMacro(InputIsADistanceMatrix, bool);
