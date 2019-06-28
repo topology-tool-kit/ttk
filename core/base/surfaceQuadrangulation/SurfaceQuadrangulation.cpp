@@ -767,7 +767,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
 }
 
 bool ttk::SurfaceQuadrangulation::checkSurfaceCloseness() const {
-  bool triangulationClosed = true;
+  bool triangulationClosed{true};
   // sweep over all vertices to check if one is on a boundary
   for(size_t i = 0; i < segmentationNumber_; ++i) {
     if(triangulation_->isVertexOnBoundary(i)) {
@@ -788,7 +788,7 @@ bool ttk::SurfaceQuadrangulation::checkSurfaceCloseness() const {
     quadEdges[std::make_pair(q.l, q.k)].emplace(i);
   }
 
-  bool quadrangulationClosed = true;
+  bool quadrangulationClosed{true};
   for(const auto &e : quadEdges) {
     if(e.second.size() < 2) {
       quadrangulationClosed = false;
