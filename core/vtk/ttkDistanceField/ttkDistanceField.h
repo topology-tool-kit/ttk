@@ -81,8 +81,8 @@ public:
   vtkSetMacro(OutputScalarFieldName, std::string);
   vtkGetMacro(OutputScalarFieldName, std::string);
 
-  vtkSetMacro(ForceInputVertexScalarField, int);
-  vtkGetMacro(ForceInputVertexScalarField, int);
+  vtkSetMacro(ForceInputVertexScalarField, bool);
+  vtkGetMacro(ForceInputVertexScalarField, bool);
 
   vtkSetMacro(InputVertexScalarFieldName, std::string);
   vtkGetMacro(InputVertexScalarFieldName, std::string);

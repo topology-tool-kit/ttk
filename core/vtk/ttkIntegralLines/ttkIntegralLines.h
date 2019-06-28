@@ -82,14 +82,14 @@ public:
   vtkSetMacro(OutputScalarFieldType, int);
   vtkGetMacro(OutputScalarFieldType, int);
 
-  vtkSetMacro(ForceInputVertexScalarField, int);
-  vtkGetMacro(ForceInputVertexScalarField, int);
+  vtkSetMacro(ForceInputVertexScalarField, bool);
+  vtkGetMacro(ForceInputVertexScalarField, bool);
 
   vtkSetMacro(InputVertexScalarFieldName, std::string);
   vtkGetMacro(InputVertexScalarFieldName, std::string);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
   vtkSetMacro(OffsetScalarFieldName, std::string);
   vtkGetMacro(OffsetScalarFieldName, std::string);
@@ -122,7 +122,7 @@ private:
   bool ForceInputVertexScalarField;
   std::string InputVertexScalarFieldName;
   int OffsetScalarFieldId;
-  int ForceInputOffsetScalarField;
+  bool ForceInputOffsetScalarField;
   std::string OffsetScalarFieldName;
 
   ttk::Triangulation *triangulation_;

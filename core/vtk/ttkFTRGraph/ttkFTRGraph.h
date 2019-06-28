@@ -85,8 +85,8 @@ public:
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
 
-  vtkSetMacro(UseInputOffsetScalarField, int);
-  vtkGetMacro(UseInputOffsetScalarField, int);
+  vtkSetMacro(UseInputOffsetScalarField, bool);
+  vtkGetMacro(UseInputOffsetScalarField, bool);
 
   vtkSetMacro(InputOffsetScalarFieldName, std::string);
   vtkGetMacro(InputOffsetScalarFieldName, std::string);

@@ -71,26 +71,26 @@ public:
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
   vtkSetMacro(InputOffsetScalarFieldName, std::string);
   vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
-  vtkSetMacro(ReverseSaddleMaximumConnection, int);
-  vtkGetMacro(ReverseSaddleMaximumConnection, int);
+  vtkSetMacro(ReverseSaddleMaximumConnection, bool);
+  vtkGetMacro(ReverseSaddleMaximumConnection, bool);
 
-  vtkSetMacro(ReverseSaddleSaddleConnection, int);
-  vtkGetMacro(ReverseSaddleSaddleConnection, int);
+  vtkSetMacro(ReverseSaddleSaddleConnection, bool);
+  vtkGetMacro(ReverseSaddleSaddleConnection, bool);
 
-  vtkSetMacro(AllowSecondPass, int);
-  vtkGetMacro(AllowSecondPass, int);
+  vtkSetMacro(AllowSecondPass, bool);
+  vtkGetMacro(AllowSecondPass, bool);
 
-  vtkSetMacro(AllowThirdPass, int);
-  vtkGetMacro(AllowThirdPass, int);
+  vtkSetMacro(AllowThirdPass, bool);
+  vtkGetMacro(AllowThirdPass, bool);
 
-  vtkSetMacro(ComputeGradientGlyphs, int);
-  vtkGetMacro(ComputeGradientGlyphs, int);
+  vtkSetMacro(ComputeGradientGlyphs, bool);
+  vtkGetMacro(ComputeGradientGlyphs, bool);
 
   vtkSetMacro(IterationThreshold, int);
   vtkGetMacro(IterationThreshold, int);
