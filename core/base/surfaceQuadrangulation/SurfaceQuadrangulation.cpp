@@ -827,7 +827,14 @@ int ttk::SurfaceQuadrangulation::subdivise() {
     if(verticesInCell == 0) {
       std::stringstream msg;
       msg << MODULE_S "Barycenter in cell " << i << " not found." << std::endl;
-      dMsg(std::cout, msg.str(), detailedInfoMsg);
+      dMsg(std::cout, msg.str(), infoMsg);
+    }
+
+    const size_t thresholdVertsInCell{50};
+    if(verticesInCell <= thresholdVertsInCell) {
+      std::stringstream msg;
+      msg << MODULE_S "Small cell detected" << std::endl;
+      dMsg(std::cout, msg.str(), infoMsg);
     }
 
     auto baryId = std::min_element(sum.begin(), sum.end()) - sum.begin();
