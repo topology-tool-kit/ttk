@@ -632,21 +632,113 @@ std::vector<long long> ttk::SurfaceQuadrangulation::subdiviseDegenerateQuads() {
       }
     }
     // extremum index
-    long long extr = count_vi > count_vk ? q.i : q.k;
-    // the two seps from j to extr
+    long long vert2Seps = count_vi > count_vk ? q.i : q.k;
+    long long vert1Sep = count_vi > count_vk ? q.k : q.i;
+    // the two seps from j to vert2Seps
     std::vector<size_t> borderseps{};
     for(size_t j = 0; j < seps.size(); ++j) {
-      if(dsts[j] == extr && srcs[j] == q.j) {
+      if(dsts[j] == vert2Seps && srcs[j] == q.j) {
         borderseps.emplace_back(seps[j]);
       }
     }
 
-    if(borderseps.size() >= 2) {
-      // only one quadrangle : j, mid1(j,extr), extr, mid2(j,extr)
-      qsubd->emplace_back(
-        Quad{4, q.j, sepMids_[borderseps[0]], extr, sepMids_[borderseps[1]]});
+    if(borderseps.size() < 2) {
+      continue;
     }
 
+    // find a midpoint between the two extrema on the triangulation
+
+    std::vector<SimplexId> boundi{criticalPointsIdentifier_[q.i]};
+    std::vector<SimplexId> boundk{criticalPointsIdentifier_[q.k]};
+    std::array<std::vector<float>, 6> outputDists{};
+
+    Dijkstra::shortestPath(
+      criticalPointsIdentifier_[q.i], *triangulation_, outputDists[0], boundk);
+    Dijkstra::shortestPath(
+      criticalPointsIdentifier_[q.k], *triangulation_, outputDists[1], boundi);
+
+    auto inf = std::numeric_limits<float>::infinity();
+    std::vector<float> sum(outputDists[0].size(), inf);
+
+    for(size_t j = 0; j < sum.size(); ++j) {
+      auto m = outputDists[0][j];
+      auto n = outputDists[1][j];
+      if(m == inf || n == inf) {
+        continue;
+      }
+      // cost to minimize
+      sum[j] = m + n + std::abs(m - n);
+    }
+
+    auto insertNewPoint
+      = [&](const SimplexId a, const size_t idx, const SimplexId type) {
+          float x, y, z;
+          triangulation_->getVertexPoint(a, x, y, z);
+          outputPoints_.emplace_back(x);
+          outputPoints_.emplace_back(y);
+          outputPoints_.emplace_back(z);
+          outputPointsIds_.emplace_back(a);
+          outputPointsTypes_.emplace_back(type);
+          outputPointsCells_.emplace_back(idx);
+          return outputPointsIds_.size() - 1;
+        };
+
+    auto v0 = std::min_element(sum.begin(), sum.end()) - sum.begin();
+    long long v0Pos = insertNewPoint(v0, i, 3);
+
+    // find two other points
+
+    std::vector<SimplexId> bounds{criticalPointsIdentifier_[q.i],
+                                  criticalPointsIdentifier_[q.j],
+                                  criticalPointsIdentifier_[q.k]};
+
+    auto m0Pos = sepMids_[borderseps[0]];
+    auto m1Pos = sepMids_[borderseps[1]];
+    auto m0 = outputPointsIds_[m0Pos];
+    auto m1 = outputPointsIds_[m1Pos];
+
+    Dijkstra::shortestPath(criticalPointsIdentifier_[vert1Sep], *triangulation_,
+                           outputDists[2], bounds);
+    Dijkstra::shortestPath(v0, *triangulation_, outputDists[3], bounds);
+    Dijkstra::shortestPath(m0, *triangulation_, outputDists[4], bounds);
+    Dijkstra::shortestPath(m1, *triangulation_, outputDists[5], bounds);
+
+    std::fill(sum.begin(), sum.end(), inf);
+
+    for(size_t j = 0; j < sum.size(); ++j) {
+      auto m = outputDists[2][j];
+      auto n = outputDists[3][j];
+      auto o = outputDists[4][j];
+      if(m == inf || n == inf || o == inf) {
+        continue;
+      }
+      // cost to minimize
+      sum[j] = m + n + o + std::abs(m - n) + std::abs(m - o) + std::abs(n - o);
+    }
+
+    auto v1 = std::min_element(sum.begin(), sum.end()) - sum.begin();
+    long long v1Pos = insertNewPoint(v1, i, 4);
+    std::fill(sum.begin(), sum.end(), inf);
+
+    for(size_t j = 0; j < sum.size(); ++j) {
+      auto m = outputDists[2][j];
+      auto n = outputDists[3][j];
+      auto o = outputDists[5][j];
+      if(m == inf || n == inf || o == inf) {
+        continue;
+      }
+      // cost to minimize
+      sum[j] = m + n + o + std::abs(m - n) + std::abs(m - o) + std::abs(n - o);
+    }
+
+    auto v2 = std::min_element(sum.begin(), sum.end()) - sum.begin();
+    long long v2Pos = insertNewPoint(v2, i, 4);
+
+    qsubd->emplace_back(Quad{4, vert2Seps, m0Pos, v1Pos, v0Pos});
+    qsubd->emplace_back(Quad{4, vert2Seps, m1Pos, v2Pos, v0Pos});
+    qsubd->emplace_back(Quad{4, q.j, m0Pos, v1Pos, vert1Sep});
+    qsubd->emplace_back(Quad{4, q.j, m1Pos, v2Pos, vert1Sep});
+    qsubd->emplace_back(Quad{4, vert1Sep, v1Pos, v0Pos, v2Pos});
   }
   return outputSubd;
 }
