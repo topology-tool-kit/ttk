@@ -874,10 +874,27 @@ bool ttk::SurfaceQuadrangulation::checkSurfaceCloseness() const {
   auto quads = reinterpret_cast<const std::vector<Quad> *>(&outputCells_);
   for(size_t i = 0; i < quads->size(); ++i) {
     auto q = quads->at(i);
-    quadEdges[std::make_pair(q.j, q.i)].emplace(i);
-    quadEdges[std::make_pair(q.j, q.k)].emplace(i);
-    quadEdges[std::make_pair(q.l, q.i)].emplace(i);
-    quadEdges[std::make_pair(q.l, q.k)].emplace(i);
+    // store edges in order
+    if(q.i < q.j) {
+      quadEdges[std::make_pair(q.i, q.j)].emplace(i);
+    } else {
+      quadEdges[std::make_pair(q.j, q.i)].emplace(i);
+    }
+    if(q.j < q.k) {
+      quadEdges[std::make_pair(q.j, q.k)].emplace(i);
+    } else {
+      quadEdges[std::make_pair(q.k, q.j)].emplace(i);
+    }
+    if(q.k < q.l) {
+      quadEdges[std::make_pair(q.k, q.l)].emplace(i);
+    } else {
+      quadEdges[std::make_pair(q.l, q.k)].emplace(i);
+    }
+    if(q.l < q.i) {
+      quadEdges[std::make_pair(q.l, q.i)].emplace(i);
+    } else {
+      quadEdges[std::make_pair(q.i, q.l)].emplace(i);
+    }
   }
 
   bool quadrangulationClosed{true};
