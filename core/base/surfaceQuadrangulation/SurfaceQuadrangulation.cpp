@@ -110,9 +110,7 @@ size_t ttk::SurfaceQuadrangulation::sepFromPoints(const long long src,
 }
 
 int ttk::SurfaceQuadrangulation::detectCells(
-  const SimplexId src,
-  std::vector<std::vector<size_t>> &cellSeps,
-  const std::vector<SimplexId> &vertexSepMask) {
+  const SimplexId src, const std::vector<SimplexId> &vertexSepMask) {
 
   std::vector<bool> cellMask(morseSeg_.size(), false);
 
@@ -121,7 +119,7 @@ int ttk::SurfaceQuadrangulation::detectCells(
   std::vector<SimplexId> borderSeps{};
 
   auto cellId = segmentation_[src];
-  SimplexId newCellId = cellSeps.size();
+  SimplexId newCellId = cellSeps_.size();
 
   auto isCandidate = [&](const SimplexId a) {
     return segmentation_[a] == cellId && vertexSepMask[a] == -1 && !cellMask[a];
@@ -193,7 +191,7 @@ int ttk::SurfaceQuadrangulation::detectCells(
   }
 
   // return all reached separatrices by importance order
-  cellSeps.emplace_back(sepIds);
+  cellSeps_.emplace_back(sepIds);
   // link this cell to MorseSmale Manifold index
   cellId_.emplace_back(segmentation_[src]);
 
@@ -252,9 +250,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     }
   }
 
-  // for each cell, the indices of the bordering separatrices
-  std::vector<std::vector<size_t>> cellSeps{};
-
   bool finished = false;
   size_t pos = 0;
 
@@ -271,7 +266,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     if(finished || pos >= segmentationNumber_) {
       break;
     }
-    detectCells(pos, cellSeps, onSep);
+    detectCells(pos, onSep);
     pos++;
   }
 
@@ -290,20 +285,20 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         }
       }
       if(sepIds.size() > 2) {
-        cellSeps.emplace_back(sepIds.begin(), sepIds.end());
+        cellSeps_.emplace_back(sepIds.begin(), sepIds.end());
         cellId_.emplace_back(i);
       }
     }
   }
 
   // hold quad subdivision
-  outputCells_.reserve(5 * cellSeps.size());
+  outputCells_.reserve(5 * cellSeps_.size());
   auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
 
   // for each cell the detected separatrices sources and destinations
   std::vector<std::vector<long long>> cellSrcs{}, cellDsts{};
 
-  for(const auto &c : cellSeps) {
+  for(const auto &c : cellSeps_) {
 
     std::vector<long long> srcs{};
     std::vector<long long> dsts{};

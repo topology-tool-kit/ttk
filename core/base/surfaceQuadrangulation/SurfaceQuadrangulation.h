@@ -128,13 +128,11 @@ namespace ttk {
      * Morse-Smale separatrices.
      *
      * @param[in] src Source vertex to begin the iteration
-     * @param[out] cellSeps Separatrices bordering the current cell
      * @param[in] vertexSepMask If a vertex in on a separatrix
      *
      * @return 0
      */
     int detectCells(const SimplexId src,
-                    std::vector<std::vector<size_t>> &cellSeps,
                     const std::vector<SimplexId> &vertexSepMask);
 
     /** @brief Find separatrix index from vertices
@@ -192,6 +190,8 @@ namespace ttk {
     std::vector<SimplexId> morseSeg_{};
     // for each cell, the corresponding MorseSmaleManifold index
     std::vector<SimplexId> cellId_{};
+    // for each cell, the indices of the bordering separatrices
+    std::vector<std::vector<size_t>> cellSeps_{};
     // indices of separatrices that border quads
     std::vector<std::vector<size_t>> quadSeps_{};
 
