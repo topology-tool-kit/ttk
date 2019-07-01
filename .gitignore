@@ -1,4 +1,20 @@
+# hidden files
+.*
+!.gitignore
+# temporary and backup files
+*~
+*.bak
+*.old
+*.autosave
 *.swp
-build/
+*.kate-swp
+# allow in-source builds
+build
+build-debug
+build-release
+install
+install-debug
+install-release
 doc/html
-
+# project files specific to a local user
+CMakeLists.txt.user

@@ -1,0 +1,175 @@
+<ServerManagerConfiguration>
+  <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it. -->
+  <ProxyGroup name="filters">
+    <SourceProxy 
+      name="ContourAroundPoint"
+      class="ttkContourAroundPoint"
+      label="TTK ContourAroundPoint">
+      <Documentation
+        long_help="For a set of points, draw a contour around each one to highlight it. The filter was originally intended for extreme points in a scalar field. It is typically applied in a pipeline after TTKTopologicalSimplification and TTKMergeandContourTreeFTM.
+        
+        Related publication: 'Topology-based Feature Detection in Climate Data', Christopher P Kappe, Michael Boettinger, Heike Leitte, Visualization in Environmental Sciences (EnvirVis), 2019 (accepted, yet to be published).
+        
+        If you get errors or strange results for netCDF lat-lon input data, deselect 'Spherical Coordinates' and select 'Output Type' 'Image'."
+        short_help="TTK contourAroundPoint plugin.">
+        TTK contourAroundPoint plugin.
+      </Documentation>
+      
+      <InputProperty  command="SetInputConnection"
+        name="Domain" port_index="0">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Domain" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Domain in which the contours are computed.
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty  command="SetInputConnection"
+        name="Nodes" port_index="1">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Nodes" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Points (like "Skeleton Nodes" from "TTKMergeandContourTreeFTM") with the following data
+          arrays: CriticalType: int, Scalar: float.
+        </Documentation>
+      </InputProperty>
+      
+      <InputProperty  command="SetInputConnection"
+        name="Arcs" port_index="2">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Arcs" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Cells (like "Skeleton Arcs" from "TTKMergeandContourTreeFTM") with the following data
+          arrays: downNodeId: int, upNodeId: int.
+        </Documentation>
+      </InputProperty>
+      
+      <DoubleVectorProperty
+        name="ui_sizeFilter"
+        label="Size filter"
+        command="Setui_sizeFilter"
+        number_of_elements="1"
+        default_values="7" >
+        <DoubleRangeDomain name="range" min="0" max="10000" />
+         <Documentation>
+           Filter out small regions. 0 --> unfiltered, 10000 --> empty output.
+         </Documentation>
+      </DoubleVectorProperty>
+      
+      <DoubleVectorProperty
+        name="ui_extension"
+        label="Contour extension"
+        command="Setui_extension"
+        number_of_elements="1"
+        default_values="67" >
+        <DoubleRangeDomain name="range" min="0" max="100" />
+         <Documentation>
+           Extension of the contour. 0 --> only the point, 100 --> touching the nearest contour.
+         </Documentation>
+      </DoubleVectorProperty>
+      
+      <StringVectorProperty
+        name="ui_scalars"
+        command="Setui_scalars"
+        number_of_elements="1"
+        animateable="0"
+        label="Scalars">
+        <ArrayListDomain
+          name="array_list"
+          default_values="0">
+          <RequiredProperties>
+            <Property name="Domain" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>
+          Select the scalar variable to consider.
+        </Documentation>
+      </StringVectorProperty>
+      
+      <IntVectorProperty
+        name="UseAllCores"
+        label="Use All Cores"
+        command="SetUseAllCores"
+        number_of_elements="1"
+        default_values="1" panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+          <Documentation>
+            Use all available cores.
+          </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+         name="ThreadNumber"
+         label="Thread Number"
+         command="SetThreadNumber"
+         number_of_elements="1"
+         default_values="1" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="UseAllCores"
+            value="0" />
+        </Hints>
+         <Documentation>
+           Thread number.
+         </Documentation>
+      </IntVectorProperty>
+      
+      <IntVectorProperty
+        name="DebugLevel"
+        label="Debug Level"
+        command="SetdebugLevel_"
+        number_of_elements="1"
+        default_values="3" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+          <Documentation>
+            Debug level.
+          </Documentation>
+      </IntVectorProperty>
+      
+      <PropertyGroup panel_widget="Line" label="Input Parameters">
+        <Property name="ui_sizeFilter" />
+        <Property name="ui_extension" />
+        <Property name="ui_scalars" />
+      </PropertyGroup>
+      
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
+      
+      <Hints>
+        <ShowInMenu category="TTK - Scalar Data" />
+      </Hints>
+   </SourceProxy>
+ </ProxyGroup>
+</ServerManagerConfiguration>
