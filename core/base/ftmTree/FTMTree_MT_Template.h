@@ -17,7 +17,7 @@
 #define FTMTREE_MT_TPL_H
 
 #include <functional>
-#if (defined(__GNUC__) && !defined(__clang__))
+#if(defined(__GNUC__) && !defined(__clang__))
 #include <parallel/algorithm>
 #endif
 

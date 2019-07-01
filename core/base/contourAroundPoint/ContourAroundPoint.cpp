@@ -2,8 +2,8 @@
 
 //#include <Triangulation.h>
 
-int ttk::ContourAroundPoint::setupDomain(Triangulation* triangulation, void* scalars)
-{
+int ttk::ContourAroundPoint::setupDomain(Triangulation *triangulation,
+                                         void *scalars) {
   msg(std::string(60, '-').c_str());
 
   _inpFieldTriangulation = triangulation;
@@ -18,13 +18,13 @@ int ttk::ContourAroundPoint::setupDomain(Triangulation* triangulation, void* sca
   const SimplexId nc = triangulation->getNumberOfCells();
 
 #ifndef NDEBUG
-  for(SimplexId c = 0; c < nc; ++c)
-  {
+  for(SimplexId c = 0; c < nc; ++c) {
     const SimplexId lnv = triangulation->getCellVertexNumber(c);
     if(lnv == _inpNvPerC)
       continue;
     std::ostringstream stream;
-    stream << "Cell " << c << " has " << lnv << " vertices but it should be " << _inpNvPerC;
+    stream << "Cell " << c << " has " << lnv << " vertices but it should be "
+           << _inpNvPerC;
     err(stream.str().c_str());
     return -3;
   }
@@ -32,13 +32,15 @@ int ttk::ContourAroundPoint::setupDomain(Triangulation* triangulation, void* sca
 
   {
     std::ostringstream stream;
-    stream << "Number of input cells: " << nc << "  number of vertices per cell: " << _inpNvPerC;
+    stream << "Number of input cells: " << nc
+           << "  number of vertices per cell: " << _inpNvPerC;
     msg(stream.str().c_str());
   }
 
   // Call all the required precondition functions here!
   triangulation->preprocessVertexStars(); // for findCell --> getVertexStar
-  triangulation->preprocessCellNeighbors(); // for compOneContour --> getCellNeighbor
+  triangulation
+    ->preprocessCellNeighbors(); // for compOneContour --> getCellNeighbor
   triangulation->preprocessCellEdges(); // for addOutput --> getCellEdge
   triangulation->preprocessEdges(); //  i.a. for addOutput --> getEdgeVertex
   return 0;
@@ -46,9 +48,10 @@ int ttk::ContourAroundPoint::setupDomain(Triangulation* triangulation, void* sca
 
 //------------------------------------------------------------------------------------------------//
 
-int ttk::ContourAroundPoint::setupConstraints(float* coords, float* isovalues, std::size_t np,
-                                              int* flags)
-{
+int ttk::ContourAroundPoint::setupConstraints(float *coords,
+                                              float *isovalues,
+                                              std::size_t np,
+                                              int *flags) {
   _inpPointCoords = coords;
   _inpPointIsovals = isovalues;
   _np = np;
@@ -64,17 +67,15 @@ int ttk::ContourAroundPoint::setupConstraints(float* coords, float* isovalues, s
 
 //------------------------------------------------------------------------------------------------//
 
-ttk::SimplexId ttk::ContourAroundPoint::findCell(std::size_t p) const
-{
-  // NOTE This whole method is just a hack. Eventually, the best solution would probably be to
-  // use a `vtkAbstractCellLocator` in the wrapped algorithm and pass an array with the cell index
-  // for each point to this module.
-  // This implementation is based on a naive nearest neighbor search.
+ttk::SimplexId ttk::ContourAroundPoint::findCell(std::size_t p) const {
+  // NOTE This whole method is just a hack. Eventually, the best solution would
+  // probably be to use a `vtkAbstractCellLocator` in the wrapped algorithm and
+  // pass an array with the cell index for each point to this module. This
+  // implementation is based on a naive nearest neighbor search.
   SimplexId minv = 0;
   float mind = compDist2(minv, p);
   const auto nv = _inpFieldTriangulation->getNumberOfVertices();
-  for(SimplexId v = 1; v < nv; ++v)
-  {
+  for(SimplexId v = 1; v < nv; ++v) {
     const auto d = compDist2(v, p);
     if(d < mind) {
       minv = v;
@@ -86,41 +87,40 @@ ttk::SimplexId ttk::ContourAroundPoint::findCell(std::size_t p) const
 #ifndef NDEBUG
   const auto errCode =
 #endif
-  _inpFieldTriangulation->getVertexStar(minv, 0, c);
+    _inpFieldTriangulation->getVertexStar(minv, 0, c);
   assert(errCode == 0);
   return c;
 }
 
 //------------------------------------------------------------------------------------------------//
 
-float ttk::ContourAroundPoint::compDist2(SimplexId v, std::size_t p) const
-{
+float ttk::ContourAroundPoint::compDist2(SimplexId v, std::size_t p) const {
   float vx, vy, vz;
 #ifndef NDEBUG
   const auto errCode =
 #endif
-  _inpFieldTriangulation->getVertexPoint(v, vx, vy, vz);
+    _inpFieldTriangulation->getVertexPoint(v, vx, vy, vz);
   assert(errCode == 0);
-  const auto pCoords = &(_inpPointCoords[p*3]);
+  const auto pCoords = &(_inpPointCoords[p * 3]);
   const float dx = pCoords[0] - vx;
   const float dy = pCoords[1] - vy;
   const float dz = pCoords[2] - vz;
-  return dx*dx + dy*dy + dz*dz;
+  return dx * dx + dy * dy + dz * dz;
 }
 
 //------------------------------------------------------------------------------------------------//
 
-void ttk::ContourAroundPoint::enqueueNeighbors(SimplexId c, std::stack<SimplexId>& q,
-                                               const std::set<SimplexId>& visited) const
-{
+void ttk::ContourAroundPoint::enqueueNeighbors(
+  SimplexId c,
+  std::stack<SimplexId> &q,
+  const std::set<SimplexId> &visited) const {
   const SimplexId numNei = _inpFieldTriangulation->getCellNeighborNumber(c);
-  for(SimplexId i = 0; i < numNei; ++i)
-  {
+  for(SimplexId i = 0; i < numNei; ++i) {
     SimplexId nei;
 #ifndef NDEBUG
     const auto errCode =
 #endif
-    _inpFieldTriangulation->getCellNeighbor(c, i, nei);
+      _inpFieldTriangulation->getCellNeighbor(c, i, nei);
     assert(errCode == 0);
     if(visited.count(nei) == 0)
       q.push(nei);
@@ -129,9 +129,12 @@ void ttk::ContourAroundPoint::enqueueNeighbors(SimplexId c, std::stack<SimplexId
 
 //------------------------------------------------------------------------------------------------//
 
-void ttk::ContourAroundPoint::getOutputField(float*& coords, SimplexId& nv, SimplexId*& cinfos,
-                                             SimplexId& nc, float*& scalars, int*& flags)
-{
+void ttk::ContourAroundPoint::getOutputField(float *&coords,
+                                             SimplexId &nv,
+                                             SimplexId *&cinfos,
+                                             SimplexId &nc,
+                                             float *&scalars,
+                                             int *&flags) {
   nv = _outFieldScalars.size();
   assert(SimplexId(_outFieldCoords.size()) == nv * 3);
 
@@ -144,7 +147,8 @@ void ttk::ContourAroundPoint::getOutputField(float*& coords, SimplexId& nv, Simp
   nc = _outFieldCinfos.size() / nvPerC;
   {
     std::ostringstream stream;
-    stream << "Number of output cells: " << nc << "  number of vertices per cell: " << nvPerC;
+    stream << "Number of output cells: " << nc
+           << "  number of vertices per cell: " << nvPerC;
     msg(stream.str().c_str());
   }
   cinfos = new SimplexId[nc * (nvPerC + 1)];

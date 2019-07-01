@@ -4,8 +4,8 @@
 /// \brief dummy program example.
 
 // include the local headers
-#include                  <ttkContourAroundPoint.h>
-#include                  <ttkProgramBase.h>
+#include <ttkContourAroundPoint.h>
+#include <ttkProgramBase.h>
 
 using namespace std;
 using namespace ttk;
@@ -13,20 +13,18 @@ using namespace ttk;
 int main(int argc, char **argv) {
 
   vtkProgram<ttkContourAroundPoint> program;
-  
+
   // specify local parameters to the TTK module with default values.
   double ui_sizeFilter = 7.;
   double ui_extension = 67.;
-//  string ui_scalars = "tas";
+  //  string ui_scalars = "tas";
 
   // register these arguments to the command line parser
-  program.parser_.setArgument("S", &ui_sizeFilter,
-    "Size filter", true);
-  program.parser_.setArgument("E", &ui_extension,
-    "Extension", true);
-//  program.parser_.setOption("D", &ui_scalars,
-//    "Scalar variable");
-  
+  program.parser_.setArgument("S", &ui_sizeFilter, "Size filter", true);
+  program.parser_.setArgument("E", &ui_extension, "Extension", true);
+  //  program.parser_.setOption("D", &ui_scalars,
+  //    "Scalar variable");
+
   int ret = 0;
   ret = program.init(argc, argv);
   if(ret != 0)
@@ -36,16 +34,16 @@ int main(int argc, char **argv) {
   // to execution.
   program.ttkObject_->Setui_sizeFilter(ui_sizeFilter);
   program.ttkObject_->Setui_extension(ui_extension);
-//  program.ttkObject_->Setui_scalars(ui_scalars);
-  
+  //  program.ttkObject_->Setui_scalars(ui_scalars);
+
   // execute data processing
   ret = program.run();
   if(ret != 0)
     return ret;
- 
+
   // save the output
   // if you want a different kind of output, re-implement the function save().
   ret = program.save();
-  
+
   return ret;
 }
