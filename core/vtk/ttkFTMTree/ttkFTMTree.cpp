@@ -319,24 +319,24 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
           0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
         threshold->ThresholdBetween(cc, cc);
         threshold->Update();
-        connected_components_[cc] = ttkUnstructuredGrid::New();
+        connected_components_[cc] = vtkSmartPointer<ttkUnstructuredGrid>::New();
         connected_components_[cc]->ShallowCopy(threshold->GetOutput());
       }
     } else {
-      connected_components_[0] = ttkUnstructuredGrid::New();
+      connected_components_[0] = vtkSmartPointer<ttkUnstructuredGrid>::New();
       connected_components_[0]->ShallowCopy(input);
     }
   } else if(inputs[0]->IsA("vtkPolyData")) {
     // NOTE: CC check should not be implemented on a per vtk module layer.
     nbCC_ = 1;
     connected_components_.resize(nbCC_);
-    connected_components_[0] = ttkPolyData::New();
+    connected_components_[0] = vtkSmartPointer<ttkPolyData>::New();
     connected_components_[0]->ShallowCopy(inputs[0]);
     identify(connected_components_[0]);
   } else {
     nbCC_ = 1;
     connected_components_.resize(nbCC_);
-    connected_components_[0] = ttkImageData::New();
+    connected_components_[0] = vtkSmartPointer<ttkImageData>::New();
     connected_components_[0]->ShallowCopy(inputs[0]);
     identify(connected_components_[0]);
   }

@@ -172,7 +172,7 @@ private:
   ttk::ftm::Params params_;
 
   int nbCC_;
-  std::vector<vtkDataSet *> connected_components_;
+  std::vector<vtkSmartPointer<vtkDataSet>> connected_components_;
   std::vector<ttk::Triangulation *> triangulation_;
   std::vector<ttk::ftm::LocalFTM> ftmTree_;
   std::vector<vtkDataArray *> inputScalars_;
