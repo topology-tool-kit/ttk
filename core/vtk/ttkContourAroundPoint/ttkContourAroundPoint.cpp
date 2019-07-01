@@ -4,7 +4,6 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
-#include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 
 #if VTK_MAJOR_VERSION >= 7
@@ -72,7 +71,7 @@ bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
   const auto errorCode
     = _wrappedModule.setupDomain(triangulation, scalars->GetVoidPointer(0));
   if(errorCode < 0) {
-    vtkErrorMacro("_wrappedModule.setupDomain failed with code " + errorCode);
+    vtkErrorMacro("_wrappedModule.setupDomain failed with code " << errorCode);
     return false;
   }
 
@@ -198,7 +197,7 @@ bool ttkContourAroundPoint::preprocessConstraints(vtkUnstructuredGrid *nodes,
   const auto errorCode = _wrappedModule.setupConstraints(
     _coords.data(), _isovals.data(), _isovals.size(), _flags.data());
   if(errorCode < 0) {
-    vtkErrorMacro("setInputPoints failed with code " + errorCode);
+    vtkErrorMacro("setInputPoints failed with code " << errorCode);
     return false;
   }
 
@@ -215,7 +214,7 @@ bool ttkContourAroundPoint::process() {
   }
   if(errorCode < 0) {
     vtkErrorMacro("_wrappedModule.execute failed with code "
-                  + errorCode) return false;
+                  << errorCode) return false;
   }
 
   return true;
