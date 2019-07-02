@@ -3,6 +3,7 @@
 #include <SurfaceQuadrangulation.h>
 #include <array>
 #include <cmath>
+#include <numeric>
 #include <queue>
 
 #define MODULE_S "[SurfaceQuadrangulation] "
@@ -326,46 +327,52 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   }
 
   for(const auto &c : sharedCells) {
-    // try to find at least three common separatrices
-    std::vector<size_t> last(cellSeps_[c[0]]);
-    std::vector<size_t> curr{};
-    for(size_t i = 1; i < c.size(); ++i) {
-      std::set_intersection(last.begin(), last.end(), cellSeps_[c[i]].begin(),
-                            cellSeps_[c[i]].end(), std::back_inserter(curr));
-      std::swap(last, curr);
-      curr.clear();
+
+    std::vector<size_t> cellSize(c.size());
+
+    // mesure the size of every cell
+    for(size_t i = 0; i < c.size(); ++i) {
+      for(size_t j = 0; j < segmentationNumber_; ++j) {
+        if(morseSeg_[j] == static_cast<SimplexId>(c[i])) {
+          cellSize[i]++;
+        }
+      }
     }
-    if(last.size() > 2) {
-      // we should merge everything into c[0]
-      for(size_t i = 1; i < c.size(); ++i) {
-        for(size_t j = 0; j < segmentationNumber_; ++j) {
-          if(morseSeg_[j] == static_cast<SimplexId>(c[i])) {
-            morseSeg_[j] = c[0];
-          }
+
+    const int minCellSize = 100;
+    if(std::accumulate(cellSize.begin(), cellSize.end(), 0) > minCellSize) {
+      continue;
+    }
+
+    // small cells: we should merge everything into c[0]
+    for(size_t i = 1; i < c.size(); ++i) {
+      for(size_t j = 0; j < segmentationNumber_; ++j) {
+        if(morseSeg_[j] == static_cast<SimplexId>(c[i])) {
+          morseSeg_[j] = c[0];
         }
       }
-      // search for separatrices in the whole area
-      std::map<size_t, int> hist{};
-      for(size_t i = 0; i < segmentationNumber_; ++i) {
-        if(morseSeg_[i] != static_cast<SimplexId>(c[0])) {
-          continue;
-        }
-        auto nneigh = triangulation_->getVertexNeighborNumber(i);
-        for(SimplexId j = 0; j < nneigh; ++j) {
-          SimplexId next;
-          triangulation_->getVertexNeighbor(i, j, next);
-          if(onSep[next] != -1) {
-            hist[onSep[next]]++;
-          }
+    }
+    // search for separatrices in the whole area
+    std::map<size_t, int> hist{};
+    for(size_t i = 0; i < segmentationNumber_; ++i) {
+      if(morseSeg_[i] != static_cast<SimplexId>(c[0])) {
+        continue;
+      }
+      auto nneigh = triangulation_->getVertexNeighborNumber(i);
+      for(SimplexId j = 0; j < nneigh; ++j) {
+        SimplexId next;
+        triangulation_->getVertexNeighbor(i, j, next);
+        if(onSep[next] != -1) {
+          hist[onSep[next]]++;
         }
       }
-      auto sortedSeps = sortHistWeight(hist);
-      cellSeps_[c[0]] = sortedSeps;
-      // cleanup merged cells
-      for(size_t i = 1; i < c.size(); ++i) {
-        cellId_.erase(std::next(cellId_.begin(), c[i]));
-        cellSeps_.erase(std::next(cellSeps_.begin(), c[i]));
-      }
+    }
+    auto sortedSeps = sortHistWeight(hist);
+    cellSeps_[c[0]] = sortedSeps;
+    // cleanup merged cells
+    for(size_t i = 1; i < c.size(); ++i) {
+      cellId_.erase(std::next(cellId_.begin(), c[i]));
+      cellSeps_.erase(std::next(cellSeps_.begin(), c[i]));
     }
   }
 
