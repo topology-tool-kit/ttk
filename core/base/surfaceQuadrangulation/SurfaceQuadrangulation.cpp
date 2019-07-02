@@ -326,8 +326,10 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     }
   }
 
-  for(const auto &c : sharedCells) {
+  // store duplicate merged cell indices
+  std::vector<size_t> cellsToRemove{};
 
+  for(const auto &c : sharedCells) {
     std::vector<size_t> cellSize(c.size());
 
     // mesure the size of every cell
@@ -371,8 +373,21 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     cellSeps_[c[0]] = sortedSeps;
     // cleanup merged cells
     for(size_t i = 1; i < c.size(); ++i) {
-      cellId_.erase(std::next(cellId_.begin(), c[i]));
-      cellSeps_.erase(std::next(cellSeps_.begin(), c[i]));
+      cellsToRemove.emplace_back(c[i]);
+    }
+  }
+
+  // actually remove duplicate merged cells
+  if(!cellsToRemove.empty()) {
+
+    // sort cell indices by decreasing order
+    std::sort(cellsToRemove.begin(), cellsToRemove.end());
+    std::reverse(cellsToRemove.begin(), cellsToRemove.end());
+
+    // remove the end first
+    for(const auto i : cellsToRemove) {
+      cellId_.erase(std::next(cellId_.begin(), i));
+      cellSeps_.erase(std::next(cellSeps_.begin(), i));
     }
   }
 
