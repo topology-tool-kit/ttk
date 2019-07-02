@@ -109,6 +109,35 @@ size_t ttk::SurfaceQuadrangulation::sepFromPoints(const long long src,
   return sepBegs_.size();
 }
 
+/**
+ * @brief Sort map keys according to decreasing values
+ */
+inline std::vector<size_t> sortHistWeight(std::map<size_t, int> hist) {
+  // dump map into vector
+  std::vector<std::pair<size_t, int>> histVec{};
+  histVec.reserve(hist.size());
+
+  for(const auto &p : hist) {
+    histVec.emplace_back(p);
+  }
+
+  // sort by value, descending order
+  std::sort(
+    histVec.begin(), histVec.end(),
+    [&](const std::pair<size_t, int> &a, const std::pair<size_t, int> &b) {
+      return a.second > b.second;
+    });
+
+  std::vector<size_t> res(histVec.size());
+
+  // extract identifiers only
+  for(size_t i = 0; i < histVec.size(); ++i) {
+    res[i] = histVec[i].first;
+  }
+
+  return res;
+}
+
 int ttk::SurfaceQuadrangulation::detectCells(
   const SimplexId src, const std::vector<SimplexId> &vertexSepMask) {
 
@@ -152,7 +181,7 @@ int ttk::SurfaceQuadrangulation::detectCells(
   }
 
   // histogram of border separatrices indices
-  std::map<SimplexId, int> hist{};
+  std::map<size_t, int> hist{};
 
   // post-process borderSeps to find the most common separatrices indices
   for(const auto &v : borderSeps) {
@@ -171,24 +200,7 @@ int ttk::SurfaceQuadrangulation::detectCells(
     }
   }
 
-  // map dumped into vector
-  std::vector<std::pair<SimplexId, int>> histVec{};
-  histVec.reserve(hist.size());
-
-  for(const auto &p : hist) {
-    histVec.emplace_back(p);
-  }
-
-  // sort by value, descending order
-  std::sort(
-    histVec.begin(), histVec.end(),
-    [&](const std::pair<SimplexId, int> &a,
-        const std::pair<SimplexId, int> &b) { return a.second > b.second; });
-
-  std::vector<size_t> sepIds(histVec.size());
-  for(size_t i = 0; i < histVec.size(); ++i) {
-    sepIds[i] = histVec[i].first;
-  }
+  auto sepIds = sortHistWeight(hist);
 
   // return all reached separatrices by importance order
   cellSeps_.emplace_back(sepIds);
