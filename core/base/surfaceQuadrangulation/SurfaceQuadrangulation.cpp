@@ -211,6 +211,103 @@ int ttk::SurfaceQuadrangulation::detectCells(
   return 0;
 }
 
+int ttk::SurfaceQuadrangulation::mergeSmallCells(
+  const std::vector<SimplexId> &vertexSepMask) {
+  // fuse two (small) cells sharing their cellId and at least three separatrices
+
+  // detect cells sharing the same cell id
+  std::vector<std::vector<size_t>> sharedCells{};
+  for(size_t i = 0; i < cellId_.size(); ++i) {
+    // check if i not already included
+    bool skip = false;
+    for(const auto &s : sharedCells) {
+      if(std::find(s.begin(), s.end(), i) != s.end()) {
+        skip = true;
+      }
+    }
+    if(skip) {
+      continue;
+    }
+
+    std::set<size_t> shared_i{i};
+    for(size_t j = i + 1; j < cellId_.size(); ++j) {
+      if(cellId_[j] == cellId_[i]) {
+        shared_i.emplace(j);
+      }
+    }
+    if(shared_i.size() > 1) {
+      sharedCells.emplace_back(shared_i.begin(), shared_i.end());
+    }
+  }
+
+  // store duplicate merged cell indices
+  std::vector<size_t> cellsToRemove{};
+
+  for(const auto &c : sharedCells) {
+    std::vector<size_t> cellSize(c.size());
+
+    // mesure the size of every cell
+    for(size_t i = 0; i < c.size(); ++i) {
+      for(size_t j = 0; j < segmentationNumber_; ++j) {
+        if(morseSeg_[j] == static_cast<SimplexId>(c[i])) {
+          cellSize[i]++;
+        }
+      }
+    }
+
+    const int minCellSize = 100;
+    if(std::accumulate(cellSize.begin(), cellSize.end(), 0) > minCellSize) {
+      continue;
+    }
+
+    // small cells: we should merge everything into c[0]
+    for(size_t i = 1; i < c.size(); ++i) {
+      for(size_t j = 0; j < segmentationNumber_; ++j) {
+        if(morseSeg_[j] == static_cast<SimplexId>(c[i])) {
+          morseSeg_[j] = c[0];
+        }
+      }
+    }
+    // search for separatrices in the whole area
+    std::map<size_t, int> hist{};
+    for(size_t i = 0; i < segmentationNumber_; ++i) {
+      if(morseSeg_[i] != static_cast<SimplexId>(c[0])) {
+        continue;
+      }
+      auto nneigh = triangulation_->getVertexNeighborNumber(i);
+      for(SimplexId j = 0; j < nneigh; ++j) {
+        SimplexId next;
+        triangulation_->getVertexNeighbor(i, j, next);
+        if(vertexSepMask[next] != -1) {
+          hist[vertexSepMask[next]]++;
+        }
+      }
+    }
+    auto sortedSeps = sortHistWeight(hist);
+    cellSeps_[c[0]] = sortedSeps;
+    // cleanup merged cells
+    for(size_t i = 1; i < c.size(); ++i) {
+      cellsToRemove.emplace_back(c[i]);
+    }
+  }
+
+  // actually remove duplicate merged cells
+  if(!cellsToRemove.empty()) {
+
+    // sort cell indices by decreasing order
+    std::sort(cellsToRemove.begin(), cellsToRemove.end());
+    std::reverse(cellsToRemove.begin(), cellsToRemove.end());
+
+    // remove the end first
+    for(const auto i : cellsToRemove) {
+      cellId_.erase(std::next(cellId_.begin(), i));
+      cellSeps_.erase(std::next(cellSeps_.begin(), i));
+    }
+  }
+
+  return 0;
+}
+
 int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   // quadrangle vertices are either extrema or saddle points
 
@@ -305,97 +402,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     }
   }
 
-  // fuse two (small) cells sharing their cellId and at least three separatrices
-
-  // detect cells sharing the same cell id
-  std::vector<std::vector<size_t>> sharedCells{};
-  for(size_t i = 0; i < cellId_.size(); ++i) {
-    // check if i not already included
-    bool skip = false;
-    for(const auto &s : sharedCells) {
-      if(std::find(s.begin(), s.end(), i) != s.end()) {
-        skip = true;
-      }
-    }
-    if(skip) {
-      continue;
-    }
-
-    std::set<size_t> shared_i{i};
-    for(size_t j = i + 1; j < cellId_.size(); ++j) {
-      if(cellId_[j] == cellId_[i]) {
-        shared_i.emplace(j);
-      }
-    }
-    if(shared_i.size() > 1) {
-      sharedCells.emplace_back(shared_i.begin(), shared_i.end());
-    }
-  }
-
-  // store duplicate merged cell indices
-  std::vector<size_t> cellsToRemove{};
-
-  for(const auto &c : sharedCells) {
-    std::vector<size_t> cellSize(c.size());
-
-    // mesure the size of every cell
-    for(size_t i = 0; i < c.size(); ++i) {
-      for(size_t j = 0; j < segmentationNumber_; ++j) {
-        if(morseSeg_[j] == static_cast<SimplexId>(c[i])) {
-          cellSize[i]++;
-        }
-      }
-    }
-
-    const int minCellSize = 100;
-    if(std::accumulate(cellSize.begin(), cellSize.end(), 0) > minCellSize) {
-      continue;
-    }
-
-    // small cells: we should merge everything into c[0]
-    for(size_t i = 1; i < c.size(); ++i) {
-      for(size_t j = 0; j < segmentationNumber_; ++j) {
-        if(morseSeg_[j] == static_cast<SimplexId>(c[i])) {
-          morseSeg_[j] = c[0];
-        }
-      }
-    }
-    // search for separatrices in the whole area
-    std::map<size_t, int> hist{};
-    for(size_t i = 0; i < segmentationNumber_; ++i) {
-      if(morseSeg_[i] != static_cast<SimplexId>(c[0])) {
-        continue;
-      }
-      auto nneigh = triangulation_->getVertexNeighborNumber(i);
-      for(SimplexId j = 0; j < nneigh; ++j) {
-        SimplexId next;
-        triangulation_->getVertexNeighbor(i, j, next);
-        if(onSep[next] != -1) {
-          hist[onSep[next]]++;
-        }
-      }
-    }
-    auto sortedSeps = sortHistWeight(hist);
-    cellSeps_[c[0]] = sortedSeps;
-    // cleanup merged cells
-    for(size_t i = 1; i < c.size(); ++i) {
-      cellsToRemove.emplace_back(c[i]);
-    }
-  }
-
-  // actually remove duplicate merged cells
-  if(!cellsToRemove.empty()) {
-
-    // sort cell indices by decreasing order
-    std::sort(cellsToRemove.begin(), cellsToRemove.end());
-    std::reverse(cellsToRemove.begin(), cellsToRemove.end());
-
-    // remove the end first
-    for(const auto i : cellsToRemove) {
-      cellId_.erase(std::next(cellId_.begin(), i));
-      cellSeps_.erase(std::next(cellSeps_.begin(), i));
-    }
-  }
+  mergeSmallCells(onSep);
 
   // hold quad subdivision
   outputCells_.reserve(5 * cellSeps_.size());

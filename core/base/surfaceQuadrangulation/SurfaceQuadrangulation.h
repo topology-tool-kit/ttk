@@ -135,6 +135,15 @@ namespace ttk {
     int detectCells(const SimplexId src,
                     const std::vector<SimplexId> &vertexSepMask);
 
+    /**
+     * @brief Merge small cells sharing a Morse Manifold index
+     *
+     * @param[in] vertexSepMask If a vertex in on a separatrix
+     *
+     * @return 0
+     */
+    int mergeSmallCells(const std::vector<SimplexId> &vertexSepMask);
+
     /** @brief Find separatrix index from vertices
      *
      * @param[in] src Source index in critical points array
