@@ -311,11 +311,16 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   std::vector<std::vector<size_t>> sharedCells{};
   for(size_t i = 0; i < cellId_.size(); ++i) {
     // check if i not already included
+    bool skip = false;
     for(const auto &s : sharedCells) {
       if(std::find(s.begin(), s.end(), i) != s.end()) {
-        continue;
+        skip = true;
       }
     }
+    if(skip) {
+      continue;
+    }
+
     std::set<size_t> shared_i{i};
     for(size_t j = i + 1; j < cellId_.size(); ++j) {
       if(cellId_[j] == cellId_[i]) {
