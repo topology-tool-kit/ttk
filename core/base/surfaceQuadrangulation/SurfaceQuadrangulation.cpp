@@ -113,7 +113,7 @@ size_t ttk::SurfaceQuadrangulation::sepFromPoints(const long long src,
 /**
  * @brief Sort map keys according to decreasing values
  */
-inline std::vector<size_t> sortHistWeight(std::map<size_t, int> hist) {
+inline std::vector<size_t> sortHistWeight(const std::map<size_t, int> &hist) {
   // dump map into vector
   std::vector<std::pair<size_t, int>> histVec{};
   histVec.reserve(hist.size());
@@ -255,8 +255,8 @@ int ttk::SurfaceQuadrangulation::mergeSmallCells(
       }
     }
 
-    const int minCellSize = 100;
-    if(std::accumulate(cellSize.begin(), cellSize.end(), 0) > minCellSize) {
+    const size_t minCellSize{100};
+    if(std::accumulate(cellSize.begin(), cellSize.end(), 0UL) > minCellSize) {
       continue;
     }
 
@@ -443,7 +443,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
            && std::count(dbeg, dend, vl) == 2) {
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
           quadSeps_.emplace_back(c.begin(), std::next(c.begin(), 4));
-          found = true;
           continue;
         }
       }
@@ -558,7 +557,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
           quadSeps_.emplace_back(
             std::vector<size_t>{static_cast<size_t>(c[0]), jk, kl, li});
-          found = true;
           continue;
         }
       }
@@ -792,7 +790,7 @@ std::vector<long long> ttk::SurfaceQuadrangulation::subdiviseDegenerateQuads() {
         };
 
     auto v0 = std::min_element(sum.begin(), sum.end()) - sum.begin();
-    long long v0Pos = insertNewPoint(v0, i, 3);
+    auto v0Pos = static_cast<long long>(insertNewPoint(v0, i, 3));
 
     // find two other points
 
@@ -825,7 +823,7 @@ std::vector<long long> ttk::SurfaceQuadrangulation::subdiviseDegenerateQuads() {
     }
 
     auto v1 = std::min_element(sum.begin(), sum.end()) - sum.begin();
-    long long v1Pos = insertNewPoint(v1, i, 4);
+    auto v1Pos = static_cast<long long>(insertNewPoint(v1, i, 4));
     std::fill(sum.begin(), sum.end(), inf);
 
     for(size_t j = 0; j < sum.size(); ++j) {
@@ -840,7 +838,7 @@ std::vector<long long> ttk::SurfaceQuadrangulation::subdiviseDegenerateQuads() {
     }
 
     auto v2 = std::min_element(sum.begin(), sum.end()) - sum.begin();
-    long long v2Pos = insertNewPoint(v2, i, 4);
+    auto v2Pos = static_cast<long long>(insertNewPoint(v2, i, 4));
 
     qsubd->emplace_back(Quad{4, vert2Seps, m0Pos, v1Pos, v0Pos});
     qsubd->emplace_back(Quad{4, vert2Seps, m1Pos, v2Pos, v0Pos});
