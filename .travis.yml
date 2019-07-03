@@ -7,7 +7,6 @@ addons:
             - ubuntu-toolchain-r-test
         packages:
             - cmake
-            - qt4-dev-tools 
             - libboost-all-dev
             - g++-6
             - python2.7
@@ -15,6 +14,7 @@ addons:
             - libvtk6-dev
             - libpq-dev
             - doxygen
+            - qt5-default
 git:
     depth: 3
 
@@ -69,12 +69,12 @@ before_install:
     - export CC=gcc-6
     - export CXX=g++-6
     - mkdir ext && cd ext
-    - wget "https://cmake.org/files/v3.9/cmake-3.9.2-Linux-x86_64.sh"
-    - chmod +x ./cmake-3.9.2-Linux-x86_64.sh
-    - printf "y\ny" | ./cmake-3.9.2-Linux-x86_64.sh > /dev/null
-    - export PATH=`pwd`/cmake-3.9.2-Linux-x86_64/bin/:$PATH
+    - wget "https://cmake.org/files/v3.12/cmake-3.12.0-Linux-x86_64.sh"
+    - chmod +x ./cmake-3.12.0-Linux-x86_64.sh
+    - yes | ./cmake-3.12.0-Linux-x86_64.sh > /dev/null
+    - export PATH=`pwd`/cmake-3.12.0-Linux-x86_64/bin/:$PATH
     - ../.travis-setup-dependencies.sh
-    - export ParaView_DIR=`pwd`/ParaView-v5.4.0/install/lib/cmake/paraview-5.4/
+    - export ParaView_DIR=`pwd`/ParaView-nightly/install/lib/cmake/paraview-5.6/
     - cd ../
     # fixes broken vtk package in trusty
     - sudo ln -sf /usr/lib/x86_64-linux-gnu/libpq.so.5 /usr/lib/libpq.so
