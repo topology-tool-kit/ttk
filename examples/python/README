@@ -26,10 +26,8 @@ $ export LD_LIBRARY_PATH="/usr/local/lib/"
 $ export PV_PLUGIN_PATH="/usr/local/lib/plugins"
 $ export PYTHONPATH="/usr/local/lib/python3.6/site-packages/"
 
-Then, from the current directory, enter the following command (omit the '$'
-character):
+Then, from the current directory, enter the following command (omit the '$' character):
 $ ./ttkExample-python.py ../data/inputData.vtu
 
-Alternatively, you can also use the ParaView python wrapper (which will
-automatically position environment variables correctly):
+Alternatively, you can also use the ParaView python wrapper (which will automatically position environment variables correctly):
 $ pvpython ttkExample-python.py ../data/inputData.vtu
