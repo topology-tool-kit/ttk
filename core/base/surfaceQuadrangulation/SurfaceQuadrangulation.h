@@ -206,6 +206,8 @@ namespace ttk {
     std::vector<SimplexId> sepMids_{};
     // sub-segmentation of Morse-Smale cells
     std::vector<SimplexId> morseSeg_{};
+    // for each cell, the corresponding index in morseSeg_
+    std::vector<SimplexId> cellId_{};
     // for each cell, the corresponding MorseSmaleManifold index
     std::vector<SimplexId> cellMMId_{};
     // for each cell, the indices of the bordering separatrices

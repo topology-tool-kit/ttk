@@ -207,6 +207,8 @@ int ttk::SurfaceQuadrangulation::detectCells(
   cellSeps_.emplace_back(sepIds);
   // link this cell to MorseSmale Manifold index
   cellMMId_.emplace_back(segmentation_[src]);
+  // add new cell index
+  cellId_.emplace_back(newCellId);
 
   return 0;
 }
@@ -300,6 +302,7 @@ int ttk::SurfaceQuadrangulation::mergeSmallCells(
 
     // remove the end first
     for(const auto i : cellsToRemove) {
+      cellId_.erase(std::next(cellId_.begin(), i));
       cellMMId_.erase(std::next(cellMMId_.begin(), i));
       cellSeps_.erase(std::next(cellSeps_.begin(), i));
     }
@@ -367,6 +370,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   sepEnds_.resize(numSeps);
   morseSeg_.resize(segmentationNumber_);
   std::fill(morseSeg_.begin(), morseSeg_.end(), -1);
+  cellId_.clear();
   cellMMId_.clear();
   cellSeps_.clear();
   quadSeps_.clear();
@@ -436,6 +440,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
       if(sepIds.size() > 2) {
         cellSeps_.emplace_back(sepIds.begin(), sepIds.end());
         cellMMId_.emplace_back(i);
+        cellId_.emplace_back(cellId_.back() + 1);
       }
     }
   }
@@ -464,7 +469,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
       std::vector<size_t> sepsToRemove{};
       for(size_t i = 0; i < srcs.size(); ++i) {
         auto cellsAroundSrc = cellsAround(criticalPointsIdentifier_[srcs[i]]);
-        if(std::find(cellsAroundSrc.begin(), cellsAroundSrc.end(), a)
+        if(std::find(cellsAroundSrc.begin(), cellsAroundSrc.end(), cellId_[a])
            == cellsAroundSrc.end()) {
           sepsToRemove.emplace_back(i);
         }
