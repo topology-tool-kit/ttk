@@ -411,12 +411,14 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   // for each cell the detected separatrices sources and destinations
   std::vector<std::vector<long long>> cellSrcs{}, cellDsts{};
 
-  for(const auto &c : cellSeps_) {
+  for(size_t a = 0; a < cellSeps_.size(); ++a) {
+
+    auto &cs = cellSeps_[a];
 
     std::vector<long long> srcs{};
     std::vector<long long> dsts{};
 
-    findSepsVertices(c, srcs, dsts);
+    findSepsVertices(cs, srcs, dsts);
 
     cellSrcs.emplace_back(srcs);
     cellDsts.emplace_back(dsts);
@@ -425,7 +427,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
 
     // optimisation: try first to only consider the first four separatrices
 
-    if(c.size() >= 4) {
+    if(cs.size() >= 4) {
       auto sbeg = srcs.begin();
       auto send = std::next(srcs.begin(), 4);
       auto dbeg = dsts.begin();
@@ -442,7 +444,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
            && std::count(dbeg, dend, vi) == 2
            && std::count(dbeg, dend, vl) == 2) {
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
-          quadSeps_.emplace_back(c.begin(), std::next(c.begin(), 4));
+          quadSeps_.emplace_back(cs.begin(), std::next(cs.begin(), 4));
           continue;
         }
       }
@@ -452,11 +454,11 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     // with four separatrices linking one another
 
     // iterate over first dest
-    for(size_t i = 0; i < c.size(); ++i) {
+    for(size_t i = 0; i < cs.size(); ++i) {
       auto vi = dsts[i];
 
       // iterate over second dest from i + 1
-      for(size_t k = i + 1; k < c.size(); ++k) {
+      for(size_t k = i + 1; k < cs.size(); ++k) {
         auto vk = dsts[k];
         // skip same extrema type
         if(criticalPointsType_[vi] == criticalPointsType_[vk]) {
@@ -472,7 +474,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         std::set<SimplexId> srcs_i{};
         std::set<SimplexId> srcs_k{};
         std::vector<SimplexId> common_srcs_ik{};
-        for(size_t j = 0; j < c.size(); ++j) {
+        for(size_t j = 0; j < cs.size(); ++j) {
           if(dsts[j] == vi) {
             srcs_i.insert(srcs[j]);
           }
@@ -505,9 +507,9 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           std::vector<size_t> seps{};
 
           auto findSep = [&](const long long src, const long long dst) {
-            for(size_t j = 0; j < c.size(); ++j) {
+            for(size_t j = 0; j < cs.size(); ++j) {
               if(srcs[j] == src && dsts[j] == dst) {
-                seps.emplace_back(c[j]);
+                seps.emplace_back(cs[j]);
                 return;
               }
             }
@@ -532,7 +534,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
 
     if(!found) {
       // look at the three first separatrices, try to find a missing fourth
-      if(c.size() >= 3) {
+      if(cs.size() >= 3) {
         auto vi = dsts[0];
         auto vj = srcs[0];
         decltype(vi) vk{};
@@ -555,15 +557,14 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
         auto li = sepFromPoints(vl, vi);
         if(jk < numSeps && kl < numSeps && li < numSeps) {
           quads->emplace_back(Quad{4, vi, vj, vk, vl});
-          quadSeps_.emplace_back(
-            std::vector<size_t>{static_cast<size_t>(c[0]), jk, kl, li});
+          quadSeps_.emplace_back(std::vector<size_t>{cs[0], jk, kl, li});
           continue;
         }
       }
 
       // degenerate case:
       // take the first two distinct extrema (separatrices with higher weight)
-      for(size_t i = 0; i < c.size(); ++i) {
+      for(size_t i = 0; i < cs.size(); ++i) {
         auto vi = dsts[0];
         for(size_t k = i + 1; k < dsts.size(); ++k) {
           auto vk = dsts[k];
@@ -583,7 +584,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
           std::vector<size_t> seps{};
           for(size_t j = i; j < srcs.size(); ++j) {
             if(srcs[j] == srcs[i] && (dsts[j] == vi || dsts[j] == vk)) {
-              seps.emplace_back(c[j]);
+              seps.emplace_back(cs[j]);
               count_vj++;
             }
           }
