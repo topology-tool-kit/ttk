@@ -68,6 +68,15 @@ namespace ttk {
 
   private:
     /**
+     * @brief Return a set of cells indices near vert
+     *
+     * @param[in] vert Vertex index (in triangulation) to test
+     *
+     * @return Set of manifolds indices
+     */
+    std::set<SimplexId> cellsAround(const SimplexId vert) const;
+
+    /**
      * @brief Find the middle of the separatrix specified by its bounds
      *
      * @param[in] a Index in separatrices array of separatrix source

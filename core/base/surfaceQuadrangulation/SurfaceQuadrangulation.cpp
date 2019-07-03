@@ -308,6 +308,44 @@ int ttk::SurfaceQuadrangulation::mergeSmallCells(
   return 0;
 }
 
+std::set<ttk::SimplexId>
+  ttk::SurfaceQuadrangulation::cellsAround(const SimplexId vert) const {
+
+  // set of manifolds indices around vert
+  std::set<SimplexId> cellsId{};
+  // set of processed neighbors
+  std::set<SimplexId> processedNeighbors{};
+  // queue of neighbors to process
+  std::queue<SimplexId> neighborsToProcess{};
+  // maximum number of neighbors to process
+  const size_t maxProcessedNeighbors = 50;
+
+  neighborsToProcess.push(vert);
+
+  // search in a neighborhood around vert to store the manifolds
+  // indices of the encountered neighbors
+
+  while(!neighborsToProcess.empty()) {
+    auto curr = neighborsToProcess.front();
+    neighborsToProcess.pop();
+    cellsId.insert(morseSeg_[curr]);
+    processedNeighbors.insert(curr);
+    auto nneigh = triangulation_->getVertexNeighborNumber(curr);
+    for(SimplexId j = 0; j < nneigh; ++j) {
+      SimplexId next;
+      triangulation_->getVertexNeighbor(curr, j, next);
+      if(processedNeighbors.find(next) == processedNeighbors.end()) {
+        neighborsToProcess.push(next);
+      }
+    }
+    if(processedNeighbors.size() > maxProcessedNeighbors) {
+      break;
+    }
+  }
+
+  return cellsId;
+}
+
 int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   // quadrangle vertices are either extrema or saddle points
 
@@ -419,6 +457,26 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     std::vector<long long> dsts{};
 
     findSepsVertices(cs, srcs, dsts);
+
+    // filter out separatrices whose sources are not in contact with
+    // the current cell
+    if(cs.size() > 5) {
+      std::vector<size_t> sepsToRemove{};
+      for(size_t i = 0; i < srcs.size(); ++i) {
+        auto cellsAroundSrc = cellsAround(criticalPointsIdentifier_[srcs[i]]);
+        if(std::find(cellsAroundSrc.begin(), cellsAroundSrc.end(), a)
+           == cellsAroundSrc.end()) {
+          sepsToRemove.emplace_back(i);
+        }
+      }
+      // remove the end first
+      std::sort(sepsToRemove.rbegin(), sepsToRemove.rend());
+      for(const auto i : sepsToRemove) {
+        srcs.erase(std::next(srcs.begin(), i));
+        dsts.erase(std::next(dsts.begin(), i));
+        cs.erase(std::next(cs.begin(), i));
+      }
+    }
 
     cellSrcs.emplace_back(srcs);
     cellDsts.emplace_back(dsts);
