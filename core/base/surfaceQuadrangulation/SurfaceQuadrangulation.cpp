@@ -206,7 +206,7 @@ int ttk::SurfaceQuadrangulation::detectCells(
   // return all reached separatrices by importance order
   cellSeps_.emplace_back(sepIds);
   // link this cell to MorseSmale Manifold index
-  cellId_.emplace_back(segmentation_[src]);
+  cellMMId_.emplace_back(segmentation_[src]);
 
   return 0;
 }
@@ -217,7 +217,7 @@ int ttk::SurfaceQuadrangulation::mergeSmallCells(
 
   // detect cells sharing the same cell id
   std::vector<std::vector<size_t>> sharedCells{};
-  for(size_t i = 0; i < cellId_.size(); ++i) {
+  for(size_t i = 0; i < cellMMId_.size(); ++i) {
     // check if i not already included
     bool skip = false;
     for(const auto &s : sharedCells) {
@@ -230,8 +230,8 @@ int ttk::SurfaceQuadrangulation::mergeSmallCells(
     }
 
     std::set<size_t> shared_i{i};
-    for(size_t j = i + 1; j < cellId_.size(); ++j) {
-      if(cellId_[j] == cellId_[i]) {
+    for(size_t j = i + 1; j < cellMMId_.size(); ++j) {
+      if(cellMMId_[j] == cellMMId_[i]) {
         shared_i.emplace(j);
       }
     }
@@ -300,7 +300,7 @@ int ttk::SurfaceQuadrangulation::mergeSmallCells(
 
     // remove the end first
     for(const auto i : cellsToRemove) {
-      cellId_.erase(std::next(cellId_.begin(), i));
+      cellMMId_.erase(std::next(cellMMId_.begin(), i));
       cellSeps_.erase(std::next(cellSeps_.begin(), i));
     }
   }
@@ -367,7 +367,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   sepEnds_.resize(numSeps);
   morseSeg_.resize(segmentationNumber_);
   std::fill(morseSeg_.begin(), morseSeg_.end(), -1);
-  cellId_.clear();
+  cellMMId_.clear();
   cellSeps_.clear();
   quadSeps_.clear();
 
@@ -426,7 +426,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   auto maxCellId
     = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
   for(SimplexId i = minCellId; i <= maxCellId; ++i) {
-    if(std::find(cellId_.begin(), cellId_.end(), i) == cellId_.end()) {
+    if(std::find(cellMMId_.begin(), cellMMId_.end(), i) == cellMMId_.end()) {
       std::set<SimplexId> sepIds{};
       for(size_t j = 0; j < segmentationNumber_; ++j) {
         if(segmentation_[j] == i && onSep[j] != -1) {
@@ -435,7 +435,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
       }
       if(sepIds.size() > 2) {
         cellSeps_.emplace_back(sepIds.begin(), sepIds.end());
-        cellId_.emplace_back(i);
+        cellMMId_.emplace_back(i);
       }
     }
   }
