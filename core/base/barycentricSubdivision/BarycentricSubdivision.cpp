@@ -14,29 +14,32 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
     return 1;
   }
 
-  const SimplexId newPoints{inputTriangl_->getNumberOfVertices()
-                            + inputTriangl_->getNumberOfEdges()
-                            + inputTriangl_->getNumberOfTriangles()};
+  const SimplexId nVerts{inputTriangl_->getNumberOfVertices()};
+  const SimplexId nEdges{inputTriangl_->getNumberOfEdges()};
+  const SimplexId nTriangles{inputTriangl_->getNumberOfTriangles()};
+  const SimplexId newPoints{nVerts + nEdges + nTriangles};
   const size_t dataPerPoint{3};
   points_.clear();
-  points_.resize(inputTriangl_->getNumberOfVertices() * dataPerPoint);
+  points_.resize(nVerts * dataPerPoint);
 
   const size_t dataPerCell{4};
   const size_t newTrianglesPerParent{6};
   cells_.clear();
-  cells_.reserve(inputTriangl_->getNumberOfTriangles() * dataPerCell
-                 * newTrianglesPerParent);
+  cells_.reserve(nTriangles * dataPerCell * newTrianglesPerParent);
+
+  pointDim_.clear();
+  pointDim_.resize(nVerts);
+  pointDim_.reserve(newPoints);
 
   // copy input points
-  std::copy(inputPoints_,
-            inputPoints_ + inputTriangl_->getNumberOfVertices() * dataPerPoint,
-            points_.begin());
+  std::copy(
+    inputPoints_, inputPoints_ + nVerts * dataPerPoint, points_.begin());
 
   // reserve memory for new points
   points_.reserve(newPoints * dataPerPoint);
 
   // generate edge middles
-  for(SimplexId i = 0; i < inputTriangl_->getNumberOfEdges(); ++i) {
+  for(SimplexId i = 0; i < nEdges; ++i) {
     // edge vertices
     SimplexId a{}, b{};
     inputTriangl_->getEdgeVertex(i, 0, a);
@@ -53,10 +56,11 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
     points_.emplace_back(mid[0]);
     points_.emplace_back(mid[1]);
     points_.emplace_back(mid[2]);
+    pointDim_.emplace_back(1);
   }
 
   // generate triangle barycenters
-  for(SimplexId i = 0; i < inputTriangl_->getNumberOfTriangles(); ++i) {
+  for(SimplexId i = 0; i < nTriangles; ++i) {
     // triangle vertices
     SimplexId a{}, b{}, c{};
     inputTriangl_->getTriangleVertex(i, 0, a);
@@ -75,10 +79,11 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
     points_.emplace_back(bary[0]);
     points_.emplace_back(bary[1]);
     points_.emplace_back(bary[2]);
+    pointDim_.emplace_back(2);
   }
 
   // subdivise every triangle
-  for(SimplexId i = 0; i < inputTriangl_->getNumberOfTriangles(); ++i) {
+  for(SimplexId i = 0; i < nTriangles; ++i) {
     // id of triangle barycenter
     SimplexId bary = inputTriangl_->getNumberOfVertices()
                      + inputTriangl_->getNumberOfEdges() + i;

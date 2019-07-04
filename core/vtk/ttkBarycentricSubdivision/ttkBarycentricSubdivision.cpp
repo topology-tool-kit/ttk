@@ -79,6 +79,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   // output variables
   auto &outPoints = baseWorker_.points_;
   auto &outCells = baseWorker_.cells_;
+  auto &outPointDim = baseWorker_.pointDim_;
 
   // generated 3D coordinates
   auto points = vtkSmartPointer<vtkPoints>::New();
@@ -94,6 +95,12 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     cells->InsertNextCell(3, &outCells[dataPerCell * i + 1]);
   }
   output->SetCells(VTK_TRIANGLE, cells);
+
+  // vertex dimension
+  auto type = vtkSmartPointer<vtkIntArray>::New();
+  type->SetName("VertexDim");
+  type->SetVoidArray(outPointDim.data(), outPointDim.size(), 1);
+  output->GetPointData()->AddArray(type);
 
   {
     std::stringstream msg;
