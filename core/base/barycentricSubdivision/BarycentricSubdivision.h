@@ -25,15 +25,17 @@ namespace ttk {
     template <class dataType>
     int execute() const;
 
-    inline int setupTriangulation(Triangulation *const triangulation) {
+    inline void setOutputTriangulation(Triangulation *const triangulation) {
+      outputTriangl_ = triangulation;
+    }
+
+    inline void setupTriangulation(Triangulation *const triangulation) {
       inputTriangl_ = triangulation;
       if(inputTriangl_ != nullptr) {
         inputTriangl_->preprocessVertexNeighbors();
         inputTriangl_->preprocessEdges();
         inputTriangl_->preprocessTriangles();
       }
-
-      return 0;
     }
 
   private:
