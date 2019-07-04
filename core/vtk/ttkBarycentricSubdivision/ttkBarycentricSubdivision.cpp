@@ -19,10 +19,11 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
   ttk::Memory m;
 
-  vtkDataSet *input = inputs[0];
-  vtkDataSet *output = outputs[0];
+  auto input = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
+  auto output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
 
-  ttk::Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
+  auto triangulation = ttkTriangulation::getTriangulation(input);
+  auto triangulationSubdivision{new ttk::Triangulation};
 
   if(triangulation == nullptr) {
     return -1;
@@ -31,9 +32,10 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   triangulation->setWrapper(this);
   baseWorker_.setupTriangulation(triangulation);
   baseWorker_.setWrapper(this);
+  baseWorker_.setOutputTriangulation(triangulationSubdivision);
+  baseWorker_.setInputPoints(input->GetPoints()->GetVoidPointer(0));
 
-  vtkSmartPointer<vtkDataArray> inputScalarField
-    = input->GetPointData()->GetArray(0);
+  auto inputScalarField = input->GetPointData()->GetArray(0);
 
   if(inputScalarField == nullptr) {
     return -2;
@@ -73,6 +75,25 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   switch(inputScalarField->GetDataType()) {
     ttkTemplateMacro(baseWorker_.execute());
   }
+
+  // output variables
+  auto &outPoints = baseWorker_.points_;
+  auto &outCells = baseWorker_.cells_;
+
+  // generated 3D coordinates
+  auto points = vtkSmartPointer<vtkPoints>::New();
+  for(size_t i = 0; i < outPoints.size() / 3; i++) {
+    points->InsertNextPoint(&outPoints[3 * i]);
+  }
+  output->SetPoints(points);
+
+  // generated triangles
+  const size_t dataPerCell = 4;
+  auto cells = vtkSmartPointer<vtkCellArray>::New();
+  for(size_t i = 0; i < outCells.size() / dataPerCell; i++) {
+    cells->InsertNextCell(3, &outCells[dataPerCell * i + 1]);
+  }
+  output->SetCells(VTK_TRIANGLE, cells);
 
   {
     std::stringstream msg;
