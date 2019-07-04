@@ -25,8 +25,8 @@ namespace ttk {
     inline void setOutputTriangulation(Triangulation *const triangulation) {
       outputTriangl_ = triangulation;
     }
-    inline void setInputPoints(const LongSimplexId *const addr) {
-      inputPoints_ = addr;
+    inline void setInputPoints(const void *const addr) {
+      inputPoints_ = static_cast<const float *>(addr);
     }
     inline void setupTriangulation(Triangulation *const triangulation) {
       inputTriangl_ = triangulation;
@@ -46,7 +46,7 @@ namespace ttk {
     // input triangulation
     Triangulation *inputTriangl_{};
     // array of input points coordinates
-    const LongSimplexId *inputPoints_{};
+    const float *inputPoints_{};
     // list of input point data
     std::vector<void *> pointData_{};
     // list of input cell data
