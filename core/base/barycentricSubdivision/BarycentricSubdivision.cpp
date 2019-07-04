@@ -28,12 +28,20 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
   cells_.clear();
   cells_.resize(nTriangles * dataPerCell * newTrianglesPerParent);
 
+  pointId_.clear();
+  pointId_.resize(newPoints);
+
   pointDim_.clear();
   pointDim_.resize(newPoints);
 
   // copy input points
   std::copy(
     inputPoints_, inputPoints_ + nVerts * dataPerPoint, points_.begin());
+
+  // set input point ids
+  for(SimplexId i = 0; i < nVerts; ++i) {
+    pointId_[i] = i;
+  }
 
   // reserve memory for new points
   points_.reserve(newPoints * dataPerPoint);
@@ -57,6 +65,7 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
     points_[offset + 0] = mid[0];
     points_[offset + 1] = mid[1];
     points_[offset + 2] = mid[2];
+    pointId_[nVerts + i] = i;
     pointDim_[nVerts + i] = 1;
   }
 
@@ -81,6 +90,7 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
     points_[offset + 0] = bary[0];
     points_[offset + 1] = bary[1];
     points_[offset + 2] = bary[2];
+    pointId_[nVerts + nEdges + i] = i;
     pointDim_[nVerts + nEdges + i] = 2;
   }
 

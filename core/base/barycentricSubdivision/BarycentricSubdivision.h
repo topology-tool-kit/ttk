@@ -60,6 +60,8 @@ namespace ttk {
     std::vector<LongSimplexId> cells_{};
     // output triangulation built on output points & output cells
     Triangulation *outputTriangl_{};
+    // generated point cell id
+    std::vector<SimplexId> pointId_{};
     // generated points dimension: 0 vertex of parent triangulation, 1 edge
     // middle, 2 triangle barycenter
     std::vector<SimplexId> pointDim_{};
