@@ -66,7 +66,7 @@ public:
     SetThreads();
   }
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
+  int FillInputPortInformation(int /*port*/, vtkInformation *info) override {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }
