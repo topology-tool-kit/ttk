@@ -118,12 +118,31 @@ int ttk::BarycentricSubdivision::buildOutputTriangulation() {
   }
 
   // ensure output triangulation allocated by caller
-  if (outputTriangl_ == nullptr) {
+  if(outputTriangl_ == nullptr) {
     return 2;
   }
 
   outputTriangl_->setInputPoints(points_.size(), points_.data());
   outputTriangl_->setInputCells(cells_.size(), cells_.data());
+
+  return 0;
+}
+
+int ttk::BarycentricSubdivision::execute() {
+
+  Timer t;
+
+  SimplexId vertexNumber = inputTriangl_->getNumberOfVertices();
+  subdiviseTriangulation();
+  buildOutputTriangulation();
+
+  {
+    std::stringstream msg;
+    msg << "[BarycentricSubdivision] Data-set (" << vertexNumber
+        << " points) processed in " << t.getElapsedTime() << " s. ("
+        << threadNumber_ << " thread(s))." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
+  }
 
   return 0;
 }

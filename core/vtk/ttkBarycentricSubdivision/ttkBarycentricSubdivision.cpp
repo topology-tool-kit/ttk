@@ -32,58 +32,46 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   baseWorker_.setupTriangulation(triangulation);
   baseWorker_.setWrapper(this);
 
-  vtkSmartPointer<vtkDataArray> inputScalarField{};
+  vtkSmartPointer<vtkDataArray> inputScalarField
+    = input->GetPointData()->GetArray(0);
 
-  if(ScalarField.length() >= 0) {
-    inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
-  } else {
-    inputScalarField = input->GetPointData()->GetArray(0);
-  }
-
-  if(!inputScalarField) {
+  if(inputScalarField == nullptr) {
     return -2;
   }
 
-  // allocate the memory for the output scalar field
-  if(!outputScalarField_) {
-    switch(inputScalarField->GetDataType()) {
-      case VTK_CHAR:
-        outputScalarField_ = vtkCharArray::New();
-        break;
-      case VTK_DOUBLE:
-        outputScalarField_ = vtkDoubleArray::New();
-        break;
-      case VTK_FLOAT:
-        outputScalarField_ = vtkFloatArray::New();
-        break;
-      case VTK_INT:
-        outputScalarField_ = vtkIntArray::New();
-        break;
-      case VTK_ID_TYPE:
-        outputScalarField_ = vtkIdTypeArray::New();
-        break;
-      default:
-        std::stringstream msg;
-        msg << MODULE_S "Unsupported data type :(" << std::endl;
-        dMsg(std::cerr, msg.str(), fatalMsg);
-        return -3;
-    }
-  }
-  outputScalarField_->SetNumberOfTuples(input->GetNumberOfPoints());
-  outputScalarField_->SetName(inputScalarField->GetName());
+  vtkSmartPointer<vtkDataArray> outputScalarField{};
 
-  // on the output, replace the field array by a pointer to its processed
-  // version
-  if(ScalarField.length()>=0) {
-    output->GetPointData()->RemoveArray(ScalarField.data());
-  } else {
-    output->GetPointData()->RemoveArray(0);
+  // allocate the memory for the output scalar field
+  switch(inputScalarField->GetDataType()) {
+    case VTK_CHAR:
+      outputScalarField = vtkCharArray::New();
+      break;
+    case VTK_DOUBLE:
+      outputScalarField = vtkDoubleArray::New();
+      break;
+    case VTK_FLOAT:
+      outputScalarField = vtkFloatArray::New();
+      break;
+    case VTK_INT:
+      outputScalarField = vtkIntArray::New();
+      break;
+    case VTK_ID_TYPE:
+      outputScalarField = vtkIdTypeArray::New();
+      break;
+    default:
+      std::stringstream msg;
+      msg << MODULE_S "Unsupported data type :(" << std::endl;
+      dMsg(std::cerr, msg.str(), fatalMsg);
+      return -3;
   }
-  output->GetPointData()->AddArray(outputScalarField_);
+
+  outputScalarField->SetNumberOfTuples(input->GetNumberOfPoints());
+  outputScalarField->SetName(inputScalarField->GetName());
+  output->GetPointData()->AddArray(outputScalarField);
 
   // calling the executing package
   switch(inputScalarField->GetDataType()) {
-    ttkTemplateMacro(baseWorker_.execute<VTK_TT>());
+    ttkTemplateMacro(baseWorker_.execute());
   }
 
   {

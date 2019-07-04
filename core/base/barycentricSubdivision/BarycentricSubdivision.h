@@ -22,13 +22,12 @@ namespace ttk {
   class BarycentricSubdivision : public Debug {
 
   public:
-    template <class dataType>
-    int execute() const;
-
     inline void setOutputTriangulation(Triangulation *const triangulation) {
       outputTriangl_ = triangulation;
     }
-
+    inline void setInputPoints(const LongSimplexId *const addr) {
+      inputPoints_ = addr;
+    }
     inline void setupTriangulation(Triangulation *const triangulation) {
       inputTriangl_ = triangulation;
       if(inputTriangl_ != nullptr) {
@@ -37,6 +36,8 @@ namespace ttk {
         inputTriangl_->preprocessTriangles();
       }
     }
+
+    int execute();
 
   private:
     int subdiviseTriangulation();
@@ -51,6 +52,7 @@ namespace ttk {
     // list of input cell data
     std::vector<void *> cellData_{};
 
+  public:
     // output 3D coordinates of generated points: old points first, then edge
     // middles, then triangle barycenters
     std::vector<float> points_{};
@@ -60,20 +62,3 @@ namespace ttk {
     Triangulation *outputTriangl_{};
   };
 } // namespace ttk
-
-template <class dataType>
-int ttk::BarycentricSubdivision::execute() const {
-
-  Timer t;
-
-  SimplexId vertexNumber = inputTriangl_->getNumberOfVertices();
-  {
-    std::stringstream msg;
-    msg << "[BarycentricSubdivision] Data-set (" << vertexNumber
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
-
-  return 0;
-}
