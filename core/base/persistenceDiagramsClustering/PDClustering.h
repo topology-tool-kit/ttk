@@ -43,10 +43,10 @@ namespace ttk{
 		std::vector<std::vector<dataType>> getMinDiagonalPrices();
 		std::vector<std::vector<dataType>> getMinPrices();
 
-		dataType computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim=0.0001);
-		dataType computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim=0.0001);
-		dataType computeDistance(BidderDiagram<dataType>* D1, GoodDiagram<dataType>* D2, dataType delta_lim=0.0001);
-		dataType computeDistance(GoodDiagram<dataType>& D1, GoodDiagram<dataType>& D2, dataType delta_lim=0.0001);
+		dataType computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim);
+		dataType computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim);
+		dataType computeDistance(BidderDiagram<dataType>* D1, GoodDiagram<dataType>* D2, dataType delta_lim);
+		dataType computeDistance(GoodDiagram<dataType>& D1, GoodDiagram<dataType>& D2, dataType delta_lim);
 
 		GoodDiagram<dataType> centroidWithZeroPrices(GoodDiagram<dataType> centroid);
 		BidderDiagram<dataType> centroidToDiagram(GoodDiagram<dataType> centroid);
@@ -60,6 +60,7 @@ namespace ttk{
 		void initializeAcceleratedKMeans();
 		void initializeBarycenterComputers();
 		void printDistancesToFile();
+		void printRealDistancesToFile();
 		void printPricesToFile(int);
 		dataType computeRealCost();
 
@@ -67,7 +68,7 @@ namespace ttk{
 		        std::vector<dataType> min_persistence, 
 		        std::vector<std::vector<dataType>> initial_diagonal_prices, 
 		        std::vector<std::vector<dataType>> initial_off_diagonal_points, 
-		        int min_points_to_add, 
+		        std::vector<int> min_points_to_add, 
 		        bool add_points_to_barycenter);
 
 		std::vector<std::vector<dataType>> getDistanceMatrix();

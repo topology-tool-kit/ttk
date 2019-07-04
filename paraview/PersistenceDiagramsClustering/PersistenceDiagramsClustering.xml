@@ -22,7 +22,8 @@ by a list of scalar fields) and which computes various vertexwise statistics
 (PDF estimation, bounds, moments, etc.).
 
 See also MandatoryCriticalPoints.
-     </Documentation>
+    </Documentation>
+
      <InputProperty
         name="Input"
         command="AddInputConnection"
@@ -43,6 +44,24 @@ See also MandatoryCriticalPoints.
       </InputProperty>
 
 
+       <IntVectorProperty
+          name="Method"
+          label="Algorithm"
+          command="SetMethod"
+          number_of_elements="1"
+         default_values="0" 
+         panel_visibility="advanced" >
+		 <EnumerationDomain name="enum">
+          <Entry value="0" text="Progressive approach"/>
+          <Entry value="1" text="Classical Auction approach (one cluster only)"/>
+        </EnumerationDomain>
+        <Documentation>
+          Type of algorithm for the computation of the barycenter.
+		  The Auction algorithm is computationally less expensive than
+		  the Munkres Algorithm.
+        </Documentation>
+      </IntVectorProperty>
+
       <IntVectorProperty
       name="Critical pairs"
       label="Critical pairs used for the clustering"
@@ -56,40 +75,56 @@ See also MandatoryCriticalPoints.
           <Entry value="2" text="saddle-max pairs"/>
           <!-- <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/> -->
         </EnumerationDomain>
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="0" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance
           computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </IntVectorProperty>
 
-	  <IntVectorProperty
+      <IntVectorProperty
           name="NumberOfClusters"
           label="Number of clusters"
           command="SetNumberOfClusters"
           number_of_elements="1"
-          default_values="2" >
+          default_values="1" >
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="0" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
         <Documentation>
           Number of clusters to compute.
         </Documentation>
       </IntVectorProperty>
 
-	   <StringVectorProperty
+        <StringVectorProperty
           name="n"
           label="p parameter"
           command="SetWassersteinMetric"
           number_of_elements="1"
-          default_values="2" >
+          default_values="2" 
+          panel_visibility="advanced">
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance
 computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
-	        <IntVectorProperty
+
+      <IntVectorProperty
           name="Deterministic"
           label="Kill randomness"
           command="SetDeterministic"
           number_of_elements="1"
-          default_values="0"
+          default_values="1"
          panel_visibility = "advanced" >
         <BooleanDomain name="bool"/>
          <Documentation>
@@ -99,7 +134,7 @@ computation (type "inf" for the Bottleneck distance).
       </IntVectorProperty>
 
 
-	  <IntVectorProperty
+        <IntVectorProperty
         name="UseProgressive"
         command="SetUseProgressive"
         label="Compute Progressive Barycenter"
@@ -107,13 +142,38 @@ computation (type "inf" for the Bottleneck distance).
         default_values="1"
         panel_visibility="advanced">
         <BooleanDomain name="bool"/>
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="0" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
         <Documentation>
           If set to true, the barycenter is computed progressively (starting with most persistent pairs).
 		  The option may turn useful coupled with Time Limit since the Barycenter will be computed with only a portion of the
 		  input points if computation time gets too important.
         </Documentation>
-      </IntVectorProperty>
 
+        </IntVectorProperty>
+
+        <IntVectorProperty
+        name="UseInterruptible"
+        command="SetUseInterruptible"
+        label="Interruptible algorithm"
+        number_of_elements="1"
+        default_values="1"
+        >
+        <BooleanDomain name="bool"/>
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
 
 	  <DoubleVectorProperty
           name="TimeLimit"
@@ -121,8 +181,14 @@ computation (type "inf" for the Bottleneck distance).
           command="SetTimeLimit"
           number_of_elements="1"
           default_values="1"
-          panel_visibility="advanced"
           >
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="UseInterruptible"
+                                   value="1" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
         <Documentation>
           Maximal time of computation for the computation of the barycenter.
 		  Since Min/Saddle, Saddle/Saddle and Saddle/Max pairs are treated separatly, the actual computation time could be
@@ -131,6 +197,24 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
 
         </DoubleVectorProperty>
+        
+      <IntVectorProperty
+        name="UseSpacing"
+        command="SetUseSpacing"
+        label="Display clusters as stars"
+        number_of_elements="1"
+        default_values="0"
+          >
+        <BooleanDomain name="bool"/>
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="0" />
+        </Hints>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
 
         <DoubleVectorProperty
           name="spacing_"
@@ -138,8 +222,13 @@ computation (type "inf" for the Bottleneck distance).
           command="SetSpacing"
           number_of_elements="1"
           default_values="0"
-          panel_visibility="advanced"
           >
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="UseSpacing"
+                                   value="1" />
+        </Hints>
         <Documentation>
         </Documentation>
       </DoubleVectorProperty>
@@ -148,8 +237,9 @@ computation (type "inf" for the Bottleneck distance).
          name="UseAccelerated"
          label="Use Accelerated KMeans"
          command="SetUseAccelerated"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
+            number_of_elements="1"
+            default_values="1" 
+            panel_visibility="advanced">
         <BooleanDomain name="bool"/>
          <Documentation>
           Whether or not to use the triangular inequality too fasten the computation of the
@@ -163,7 +253,8 @@ computation (type "inf" for the Bottleneck distance).
          label="KMeanspp Initialization"
          command="SetUseKmeansppInit"
          number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
+            default_values="1" 
+            panel_visibility="advanced">
         <BooleanDomain name="bool"/>
          <Documentation>
           If activated, the clustering is initialized cleverly. The option may avoid local minima at the cost
@@ -171,17 +262,10 @@ computation (type "inf" for the Bottleneck distance).
          </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
+      <!-- <PropertyGroup panel_widget="Line" label="Geometric Lifting"> -->
+      <!--   <Property name="Alpha" /> -->
+      <!--   <Property name="Lambda" /> -->
+      <!-- </PropertyGroup> -->
 
 
       <DoubleVectorProperty
@@ -219,30 +303,36 @@ between matched critical points.
         </Documentation>
       </DoubleVectorProperty>
 
+      <!-- <PropertyGroup panel_widget="Line" label="Testing"> -->
+      <!--   <Property name="UseAllCores" /> -->
+      <!--   <Property name="ThreadNumber" /> -->
+      <!--   <Property name="DebugLevel" /> -->
+      <!-- </PropertyGroup> -->
+
+      <IntVectorProperty
+         name="UseAllCores"
+         label="Use All Cores"
+         command="SetUseAllCores"
+         number_of_elements="1"
+        default_values="1"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+         <Documentation>
+          Use all available cores.
+         </Documentation>
+      </IntVectorProperty>
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
          command="SetThreadNumber"
          number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
+        default_values="1" 
+        panel_visibility="advanced">
         <IntRangeDomain name="range" min="1" max="100" />
          <Documentation>
           Thread number.
          </Documentation>
-      </IntVectorProperty>
-
-	  <IntVectorProperty
-        name="Output matchings"
-        command="SetUseOutputMatching"
-        label="Display the matchings with line segments"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Display the matching between pairs of the persistence diagrams with
-line segments in 3D.
-        </Documentation>
       </IntVectorProperty>
 
       <IntVectorProperty
@@ -250,18 +340,16 @@ line segments in 3D.
          label="Debug Level"
          command="SetdebugLevel_"
          number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
+        default_values="1" 
+        panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
          <Documentation>
            Debug level.
          </Documentation>
-      </IntVectorProperty>
+       </IntVectorProperty>
 
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
+
+
 
 
 

@@ -82,13 +82,18 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
             epsilon0[i_crit] = epsilon_[i_crit];
         }
         // std::cout<<"checkpoint"<<std::endl;
-        int min_points_to_add = 10;
+        std::vector<int> min_points_to_add(3);
+        min_points_to_add[0] = 10;
+        min_points_to_add[1] = 10;
+        min_points_to_add[2] = 10;
 
         if (use_progressive_) {
             // min_persistence = max_persistence/2.;
             // min_persistence = 0;
         } else {
-            min_points_to_add = std::numeric_limits<int>::max();
+            min_points_to_add[0] = std::numeric_limits<int>::max();
+            min_points_to_add[1] = std::numeric_limits<int>::max();
+            min_points_to_add[2] = std::numeric_limits<int>::max();
         }
         std::vector<std::vector<dataType>> min_diag_price(3);
         std::vector<std::vector<dataType>> min_off_diag_price(3);
@@ -102,7 +107,11 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
         // cout<<"enrich with rho : "<<min_persistence[2]<<endl;//"  and barycenter size : "<<centroids_max_[0].size()<<endl;
         min_persistence = enrichCurrentBidderDiagrams(max_persistence, min_persistence, min_diag_price, min_off_diag_price, min_points_to_add, false);
         // std::cout << "first enrich done" << std::endl;
-        min_points_to_add = 10;
+        
+        min_points_to_add[0] = 10;
+        min_points_to_add[1] = 10;
+        min_points_to_add[2] = 10;
+
         for (int c = 0; c < 3; c++) {
             if (min_persistence[c] <= lowest_persistence[c]) {
                 diagrams_complete[c] = true;
@@ -179,16 +188,21 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
                             }
                         }
                     }
-                    if (epsilon_[0] < 1e-5 && epsilon_[1] < 1e-5 && epsilon_[2] < 1e-5) {
+
+                    if(epsilon_[0] < 5e-5) {
                         // Add all remaining points for final convergence.
                         min_persistence[0] = 0;
+                        min_points_to_add[0] = std::numeric_limits<int>::max();
+                    }
+                    if(epsilon_[1] < 5e-5) {
+                        // Add all remaining points for final convergence.
                         min_persistence[1] = 0;
+                        min_points_to_add[1] = std::numeric_limits<int>::max();
+                    }
+                    if(epsilon_[2] < 5e-5) {
+                        // Add all remaining points for final convergence.
                         min_persistence[2] = 0;
-                        min_points_to_add = std::numeric_limits<int>::max();
-                        // diagrams_complete[0] = true;
-                        // diagrams_complete[1] = true;
-                        // diagrams_complete[2] = true;
-                        use_progressive_ = false;
+                        min_points_to_add[2] = std::numeric_limits<int>::max();
                     }
 
                     // std::cout << "enrich :" << std::endl;
@@ -433,6 +447,7 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
     }
 
     // printDistancesToFile();
+    // printRealDistancesToFile();
 
     return inv_clustering_;
 }
@@ -1742,7 +1757,7 @@ void PDClustering<dataType>::setBidderDiagrams()
 template <typename dataType>
 std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::vector<dataType> previous_min_persistence, std::vector<dataType> min_persistence,
                                                                           std::vector<std::vector<dataType>> initial_diagonal_prices, std::vector<std::vector<dataType>> initial_off_diagonal_prices,
-                                                                          int min_points_to_add, bool add_points_to_barycenter)
+                                                                          std::vector<int> min_points_to_add, bool add_points_to_barycenter)
 {
 
     // for(int i=0; i<initial_diagonal_prices.size();i++){
@@ -1783,9 +1798,9 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::v
             }
         }
     }
-    int max_points_to_add_min = std::max(min_points_to_add, min_points_to_add + (int)(max_diagram_size_min / 10));
-    int max_points_to_add_sad = std::max(min_points_to_add, min_points_to_add + (int)(max_diagram_size_sad / 10));
-    int max_points_to_add_max = std::max(min_points_to_add, min_points_to_add + (int)(max_diagram_size_max / 10));
+    int max_points_to_add_min = std::max(min_points_to_add[0], min_points_to_add[0] + (int)(max_diagram_size_min / 10));
+    int max_points_to_add_sad = std::max(min_points_to_add[1], min_points_to_add[1] + (int)(max_diagram_size_sad / 10));
+    int max_points_to_add_max = std::max(min_points_to_add[2], min_points_to_add[2] + (int)(max_diagram_size_max / 10));
     // cout<<"\n max points to add for first min bidder "<<max_points_to_add_min<<endl;
     // 2. Get which points can be added, deduce the new minimal persistence
     std::vector<std::vector<int>> candidates_to_be_added_min(numberOfInputs_);
@@ -2125,6 +2140,37 @@ void PDClustering<dataType>::printDistancesToFile(){
     lfile.close();
     ufile.close();
     approx_file.close();
+}
+
+
+template <typename dataType>
+void PDClustering<dataType>::printRealDistancesToFile(){
+    cout << "Computing real distances to every clusters" << endl;
+    ofstream file("a_real_mat.txt");
+    if(file.is_open()) {
+        for(int c = 0; c < k_; c++) {
+            for(int i : clustering_[c]) {
+                dataType distance = 0;
+                if(original_dos[0]) {
+                    GoodDiagram<dataType> centroid_min = centroidWithZeroPrices(centroids_min_[c]);
+                    distance += computeDistance(bidder_diagrams_min_[i], centroid_min, 0.01);
+                }
+                if(original_dos[1]) {
+                    GoodDiagram<dataType> centroid_saddle = centroidWithZeroPrices(centroids_saddle_[c]);
+                    distance += computeDistance(bidder_diagrams_saddle_[i], centroid_saddle, 0.01);
+                }
+                if(original_dos[2]) {
+                    GoodDiagram<dataType> centroid_max = centroidWithZeroPrices(centroids_max_[c]);
+                    distance += computeDistance(bidder_diagrams_max_[i], centroid_max, 0.01);
+                }
+                file << distance << " ";
+            }
+            file << "\n";
+        }
+        file.close();
+    } else {
+        cout << "file not open" << endl;
+    }
 }
 
 template <typename dataType>

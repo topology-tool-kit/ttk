@@ -33,6 +33,7 @@
 
 // ttk code includes
 #include <PersistenceDiagramsClustering.h>
+#include <PersistenceDiagramsBarycenter.h>
 #include <Wrapper.h>
 #include <ttkWrapper.h>
 
@@ -177,9 +178,32 @@ class ttkPersistenceDiagramsClustering
 
     void SetSpacing(double spacing){
       Spacing=spacing;
+      oldSpacing=spacing;
       Modified();
     }
     vtkGetMacro(Spacing, double);
+
+    void SetUseSpacing(bool useSpacing){
+      UseSpacing = useSpacing;
+      if(UseSpacing==false){
+        Spacing=0;
+      }
+      else{
+        Spacing=oldSpacing;
+      }
+      Modified();
+    }
+
+    vtkGetMacro(UseSpacing,bool);
+
+    vtkSetMacro(UseInterruptible, bool);
+    vtkGetMacro(UseInterruptible, bool);
+
+    void SetMethod(int method){
+      Method=method;
+      Modified();
+    }
+    vtkGetMacro(Method, double);
 
    protected:
     ttkPersistenceDiagramsClustering();
@@ -220,6 +244,10 @@ class ttkPersistenceDiagramsClustering
     double Alpha;
     double Lambda;
     double Spacing;
+    double oldSpacing;
+    bool UseSpacing;
+    bool UseInterruptible;
+    int Method; // 0 = progressive approach, 1 = Auction approach
     double max_dimension_total_;
 
     bool needUpdate_;
@@ -277,7 +305,7 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(std::vector<diagr
     if(pairingsSize < 1 || !vertexIdentifierScalars || !pairIdentifierScalars || !nodeTypeScalars || !persistenceScalars || !extremumIndexScalars || !points)
         return -2;
 
-    diagram->resize(pairingsSize + 1);
+    diagram->resize(pairingsSize);
     int nbNonCompact = 0;
     double max_dimension = 0;
 
@@ -324,10 +352,10 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(std::vector<diagr
             if(pairIdentifier == 0) {
                 max_dimension = (dataType)persistence;
                 diagram->at(0) =
-                    std::make_tuple(vertexId1, (BNodeType)1, vertexId2, (BNodeType)3, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
+                    std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)3, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
 
-                diagram->at(pairingsSize) =
-                    std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)1, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
+                // diagram->at(pairingsSize) =
+                //     std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)1, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
 
             } else {
                 diagram->at(pairIdentifier) = std::make_tuple(vertexId1, (BNodeType)nodeType1, vertexId2, (BNodeType)nodeType2, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1,
@@ -515,7 +543,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
             diagramTuple t = diagram->at(i);
             double x1 = std::get<6>(t);
             double y1 = x1;
-            if(spacing != 0) {
+            if( UseSpacing && spacing != 0) {
                 x1 += 3*(abs(spacing)+ 0.2) * max_dimension * j;
             }
             double z1 = 0;  // Change 1 to j if you want to isolate the diagrams
@@ -559,7 +587,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
                 default:
                     nodeType->InsertTuple1(2 * count, 0);
             }
-	    if(spacing != 0){
+	    if( UseSpacing && spacing != 0){
 	      points->InsertNextPoint(x2 + 3*(abs(spacing) + 0.2) * max_dimension * j, y2, z2);
 	    }
 	    else{
@@ -664,16 +692,25 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
     coordsScalars->SetName("Coordinates");
 
     std::vector<int> cluster_size;
-    if(spacing != 0) {
+    std::vector<int> idxInCluster(all_CTDiagrams.size());
+    for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
+      idxInCluster[j]=0;
+    }
+    //RE-Invert clusters 
+    if( spacing>0) {
         for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
             unsigned int c = inv_clustering[j];
             if(c + 1 > cluster_size.size()) {
                 cluster_size.resize(c + 1);
                 cluster_size[c] = 1;
+                idxInCluster[j] = 0;
             } else {
                 cluster_size[c]++;
+                idxInCluster[j] = cluster_size[c]-1;
             }
         }
+
+
     }
     int count = 0;
     for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
@@ -697,7 +734,8 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
             double z2 = 0;
             if(spacing>0){
               // cout<<"j "<<j<<" size "<<cluster_size[inv_clustering[j]]<<endl;
-              double angle = 2 * 3.1415926 * (double)j / cluster_size[inv_clustering[j]];
+              // cout<<"count "<<count_diagram<<endl;
+              double angle = 2 * 3.1415926 * (double)(idxInCluster[j]) / cluster_size[inv_clustering[j]];
               x1 += (abs(spacing )+.2) *3* max_dimension * c + spacing*max_dimension*cos(angle);
               x2 += (abs(spacing )+.2) *3* max_dimension * c + spacing*max_dimension*cos(angle);
               y1 +=  spacing*max_dimension*sin(angle);

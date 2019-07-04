@@ -20,9 +20,12 @@ int main(int argc, char **argv) {
   int accelerated=1;
   int pairType = -1;
   int randomness = 0;
+  int method = 0;
   int use_prog=1;
 
   // register these arguments to the command line parser
+  program.parser_.setArgument("M",&method,
+      "Select algorithm", true);
   program.parser_.setArgument("U",&use_prog,
       "use progressivity", true);
   program.parser_.setArgument("P", &pairType,
@@ -56,6 +59,7 @@ int main(int argc, char **argv) {
     timeLimit = 999999999999;
   }
   int deterministic = 1-randomness;
+  program.ttkObject_->SetMethod(method);
   program.ttkObject_->SetUseProgressive(use_prog);
   program.ttkObject_->SetDeterministic(deterministic);
   program.ttkObject_->SetUseAccelerated(accelerated);
