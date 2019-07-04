@@ -42,16 +42,20 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
+#ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkBarycentricSubdivision
+#else
+class ttkBarycentricSubdivision
+#endif
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
 public:
   static ttkBarycentricSubdivision *New();
-  vtkTypeMacro(ttkBarycentricSubdivision, vtkDataSetAlgorithm)
+  vtkTypeMacro(ttkBarycentricSubdivision, vtkDataSetAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+  // default ttk setters
+  vtkSetMacro(debugLevel_, int);
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -130,25 +134,11 @@ public:
 
 protected:
   ttkBarycentricSubdivision() {
-
-    // init
-    SomeIntegerArgument = 1;
-    SomeDoubleArgument = 1;
-    SomeOption = true;
-    outputScalarField_ = NULL;
-
-    UseAllCores = true;
-
-    // TODO-1
-    // Specify the number of input and output ports.
-    // By default, this filter has one input and one output.
-    // In this example, we define 2 inputs and 2 outputs.
-    //       SetNumberOfInputPorts(2);
-    //       SetNumberOfOutputPorts(2);
-    // end of TODO-1
+    SetNumberOfInputPorts(1);
+    SetNumberOfOutputPorts(1);
   }
 
-  ~ttkBarycentricSubdivision(){};
+  ~ttkBarycentricSubdivision() = default;
 
   TTK_SETUP();
 
@@ -158,5 +148,7 @@ private:
   bool SomeOption;
   std::string ScalarField;
   vtkDataArray *outputScalarField_;
-  ttk::barycentricSubdivision::BarycentricSubdivision barycentricSubdivision_;
+
+  // base worker
+  ttk::BarycentricSubdivision baseWorker_{};
 };

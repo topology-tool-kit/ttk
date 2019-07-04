@@ -1,27 +1,36 @@
 #include <ttkBarycentricSubdivision.h>
 
-using namespace std;
-using namespace ttk;
-using namespace barycentricSubdivision;
+#define MODULE_S "[ttkBarycentricSubdivision] "
+#define MODULE_ERROR_S MODULE_S "Error: "
+#ifndef TTK_ENABLE_KAMIKAZE
+#define TTK_ABORT_KK(COND, MSG, RET)    \
+  if(COND) {                            \
+    cerr << MODULE_ERROR_S MSG << endl; \
+    return RET;                         \
+  }
+#else // TTK_ENABLE_KAMIKAZE
+#define TTK_ABORT_KK(COND, MSG, RET)
+#endif // TTK_ENABLE_KAMIKAZE
 
-vtkStandardNewMacro(ttkBarycentricSubdivision)
+vtkStandardNewMacro(ttkBarycentricSubdivision);
 
-  int ttkBarycentricSubdivision::doIt(vector<vtkDataSet *> &inputs,
-                                      vector<vtkDataSet *> &outputs) {
+int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
+                                    std::vector<vtkDataSet *> &outputs) {
 
-  Memory m;
+  ttk::Memory m;
 
   vtkDataSet *input = inputs[0];
   vtkDataSet *output = outputs[0];
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
+  ttk::Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
 
-  if(!triangulation)
+  if(!triangulation) {
     return -1;
+  }
 
   triangulation->setWrapper(this);
-  barycentricSubdivision_.setupTriangulation(triangulation);
-  barycentricSubdivision_.setWrapper(this);
+  baseWorker_.setupTriangulation(triangulation);
+  baseWorker_.setWrapper(this);
 
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
@@ -39,8 +48,9 @@ vtkStandardNewMacro(ttkBarycentricSubdivision)
     inputScalarField = input->GetPointData()->GetArray(0);
   }
 
-  if(!inputScalarField)
+  if(!inputScalarField) {
     return -2;
+  }
 
   // allocate the memory for the output scalar field
   if(!outputScalarField_) {
@@ -67,8 +77,8 @@ vtkStandardNewMacro(ttkBarycentricSubdivision)
         break;
 
       default:
-        stringstream msg;
-        msg << "[ttkBarycentricSubdivision] Unsupported data type :(" << endl;
+        std::stringstream msg;
+        msg << MODULE_S "Unsupported data type :(" << endl;
         dMsg(cerr, msg.str(), fatalMsg);
         return -3;
     }
@@ -86,19 +96,15 @@ vtkStandardNewMacro(ttkBarycentricSubdivision)
   output->GetPointData()->AddArray(outputScalarField_);
 
   // calling the executing package
-  barycentricSubdivision_.setInputDataPointer(
-    inputScalarField->GetVoidPointer(0));
-  barycentricSubdivision_.setOutputDataPointer(
-    outputScalarField_->GetVoidPointer(0));
+  baseWorker_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
+  baseWorker_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
   switch(inputScalarField->GetDataType()) {
-    ttkTemplateMacro(
-      barycentricSubdivision_.execute<VTK_TT>(SomeIntegerArgument));
+    ttkTemplateMacro(baseWorker_.execute<VTK_TT>(SomeIntegerArgument));
   }
 
   {
-    stringstream msg;
-    msg << "[ttkBarycentricSubdivision] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
+    std::stringstream msg;
+    msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }
 

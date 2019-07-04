@@ -5,5 +5,5 @@ ttk_add_base_library(barycentricSubdivision
     BarycentricSubdivision.h
   LINK
     triangulation
+    geometry
     )
-
