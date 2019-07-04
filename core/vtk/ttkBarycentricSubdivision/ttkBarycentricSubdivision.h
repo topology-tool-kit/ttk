@@ -65,72 +65,11 @@ public:
     UseAllCores = onOff;
     SetThreads();
   }
-  // end of default ttk setters
 
-  // TODO-4
-  // set-getters macros to define from each variable you want to access from
-  // the outside (in particular from paraview) - to adapt.
-  // Note that the XML file for the ParaView plug-in specification needs to be
-  // edited accordingly.
-  vtkSetMacro(SomeIntegerArgument, int);
-  vtkGetMacro(SomeIntegerArgument, int);
-
-  vtkSetMacro(SomeDoubleArgument, double);
-  vtkGetMacro(SomeDoubleArgument, double);
-
-  vtkSetMacro(SomeOption, bool);
-  vtkGetMacro(SomeOption, bool);
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-  // end of TODO-4
-
-  // TODO-2
-  // Over-ride the input types.
-  // By default, this filter has one input and one output, of the same type.
-  // Here, you can re-define the input types, on a per input basis.
-  // In this example, the first input type is forced to vtkUnstructuredGrid.
-  // The second input type is forced to vtkImageData.
-  //     int FillInputPortInformation(int port, vtkInformation *info) override {
-  //
-  //       switch(port){
-  //         case 0:
-  //           info->Set(vtkDataObject::DATA_TYPE_NAME(),
-  //           "vtkUnstructuredGrid"); break;
-  //         case 1:
-  //           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
-  //           break;
-  //         default:
-  //           break;
-  //       }
-  //
-  //       return 1;
-  //     }
-  // end of TODO-2
-
-  // TODO-3
-  // Over-ride the output types.
-  // By default, this filter has one input and one output, of the same type.
-  // Here, you can re-define the output types, on a per output basis.
-  // In this example, the first output type is forced to vtkUnstructuredGrid.
-  // The second output type is forced to vtkImageData.
-  //     int FillOutputPortInformation(int port, vtkInformation *info) override
-  //     {
-  //
-  //       switch(port){
-  //         case 0:
-  //           info->Set(vtkDataObject::DATA_TYPE_NAME(),
-  //           "vtkUnstructuredGrid"); break;
-  //         case 1:
-  //           info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
-  //           break;
-  //         default:
-  //           break;
-  //       }
-  //
-  //       return 1;
-  //     }
-  // end of TODO-3
+  int FillInputPortInformation(int port, vtkInformation *info) override {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
 
 protected:
   ttkBarycentricSubdivision() {
@@ -138,17 +77,9 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkBarycentricSubdivision() = default;
-
   TTK_SETUP();
 
 private:
-  int SomeIntegerArgument;
-  double SomeDoubleArgument;
-  bool SomeOption;
-  std::string ScalarField;
-  vtkDataArray *outputScalarField_;
-
   // base worker
   ttk::BarycentricSubdivision baseWorker_{};
 };
