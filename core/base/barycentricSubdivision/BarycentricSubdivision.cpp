@@ -28,8 +28,8 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
                  * newTrianglesPerParent);
 
   // copy input points
-  std::copy(pointSet_,
-            pointSet_ + inputTriangl_->getNumberOfVertices() * dataPerPoint,
+  std::copy(inputPoints_,
+            inputPoints_ + inputTriangl_->getNumberOfVertices() * dataPerPoint,
             points_.begin());
 
   // reserve memory for new points
@@ -107,6 +107,23 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
       cells_.emplace_back(bary);
     }
   }
+
+  return 0;
+}
+
+int ttk::BarycentricSubdivision::buildOutputTriangulation() {
+  // ensure subdivision is already performed
+  if(points_.empty() || cells_.empty()) {
+    return 1;
+  }
+
+  // ensure output triangulation allocated by caller
+  if (outputTriangl_ == nullptr) {
+    return 2;
+  }
+
+  outputTriangl_->setInputPoints(points_.size(), points_.data());
+  outputTriangl_->setInputCells(cells_.size(), cells_.data());
 
   return 0;
 }
