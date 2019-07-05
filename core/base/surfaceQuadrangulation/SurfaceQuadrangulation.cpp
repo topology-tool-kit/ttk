@@ -494,28 +494,39 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
         auto curr = toProcess.front();
         toProcess.pop();
 
-        // stop condition
+        // check for saddle at vertices
         SimplexId a, b, c;
         newT.getTriangleVertex(tr, 0, a);
         newT.getTriangleVertex(tr, 1, b);
         newT.getTriangleVertex(tr, 2, c);
-        if(saddlesId.find(a) != saddlesId.end()) {
-        } else if(saddlesId.find(b) != saddlesId.end()) {
-        } else if(saddlesId.find(c) != saddlesId.end()) {
+        bool hasSaddle{false};
+        if(saddlesId.find(a) != saddlesId.end()
+           || saddlesId.find(b) != saddlesId.end()
+           || saddlesId.find(c) != saddlesId.end()) {
+          hasSaddle = true;
         }
 
-        auto ne = newT.getTriangleEdgeNumber(curr);
-        for(SimplexId k = 0; k < ne; ++k) {
-          SimplexId e;
-          newT.getTriangleEdge(curr, k, e);
-          SimplexId e0, e1;
-          newT.getEdgeVertex(e, 0, e0);
-          newT.getEdgeVertex(e, 1, e1);
-          // skip edges on separatrices
-          if(onSep[e0] != -1 && onSep[e1] != -1) {
-            continue;
-          }
-          // push the triangle
+        // check for separatrices on edges
+        SimplexId e0, e1, e2;
+        newT.getTriangleEdge(curr, 0, e0);
+        newT.getTriangleEdge(curr, 1, e1);
+        newT.getTriangleEdge(curr, 2, e2);
+
+        std::set<SimplexId> seps{};
+        if(edgeOnSep[e0] != -1 && edgeOnSep[e1] != -1) {
+          seps.emplace(edgeOnSep[e0]);
+          seps.emplace(edgeOnSep[e1]);
+        } else if(edgeOnSep[e1] != -1 && edgeOnSep[e2] != -1) {
+          seps.emplace(edgeOnSep[e0]);
+          seps.emplace(edgeOnSep[e2]);
+        } else if(edgeOnSep[e0] != -1 && edgeOnSep[e2] != -1) {
+          seps.emplace(edgeOnSep[e0]);
+          seps.emplace(edgeOnSep[e2]);
+        }
+
+        if(hasSaddle && seps.size() == 2) {
+          // check that seps are different from beginning
+          break;
         }
 
         processed[curr] = true;
