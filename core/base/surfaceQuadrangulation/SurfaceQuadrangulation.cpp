@@ -368,21 +368,61 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
 
   // store separatrix index on subdivised triangulation vertices
   std::vector<SimplexId> onSep(newT.getNumberOfVertices(), -1);
+  // store separatrix index on subdivised triangulation edges
+  std::vector<SimplexId> edgeOnSep(newT.getNumberOfEdges(), -1);
   // count the number of critical points encountered
   size_t critPoints{0};
+  if(sepMask_[0] == 0) {
+    critPoints++;
+  }
 
-  for(SimplexId i = 0; i < separatriceNumber_; ++i) {
+  auto critPointId = [&](const SimplexId a) {
+    if(sepCellDims_[a] == 0) {
+      return sepCellIds_[a];
+    } else if(sepCellDims_[a] == 1) {
+      return nVerts + sepCellIds_[a];
+    } else if(sepCellDims_[a] == 2) {
+      return nVerts + nEdges + sepCellIds_[a];
+    }
+    return -1;
+  };
+
+  // init first vertex id
+  SimplexId prev{critPointId(0)};
+
+  // begin loop at one to get the first edge
+  for(SimplexId i = 1; i < separatriceNumber_; ++i) {
+
+    // for computing the separatrix id
     if(sepMask_[i] == 0) {
       critPoints++;
     }
+
     // current separatrix id is critPoints // 2
-    if(sepCellDims_[i] == 0) {
-      onSep[sepCellIds_[i]] = critPoints >> 1;
-    } else if(sepCellDims_[i] == 1) {
-      onSep[nVerts + sepCellIds_[i]] = critPoints >> 1;
-    } else if(sepCellDims_[i] == 2) {
-      onSep[nVerts + nEdges + sepCellIds_[i]] = critPoints >> 1;
+    auto currSepId = critPoints >> 1;
+
+    // current point
+    SimplexId curr{critPointId(i)};
+
+    // update value on vertex TODO
+    onSep[curr] = currSepId;
+
+    // get edge id
+    auto ne = newT.getVertexEdgeNumber(curr);
+    for(SimplexId j = 0; j < ne; ++j) {
+      SimplexId e{};
+      newT.getVertexEdge(curr, j, e);
+      SimplexId e0{}, e1{};
+      newT.getEdgeVertex(e, 0, e0);
+      newT.getEdgeVertex(e, 1, e1);
+
+      if((e0 == prev && e1 == curr) || (e1 == prev && e0 == curr)) {
+        edgeOnSep[e] = currSepId;
+        break;
+      }
     }
+
+    prev = curr;
   }
 
   // store saddle points id in the subdivised triangulation
