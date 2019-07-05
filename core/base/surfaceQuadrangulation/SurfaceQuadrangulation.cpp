@@ -351,6 +351,141 @@ std::set<ttk::SimplexId>
   return cellsId;
 }
 
+int ttk::SurfaceQuadrangulation::sweepOverCells() {
+  BarycentricSubdivision bs{};
+  Triangulation newT{};
+
+  bs.setupTriangulation(triangulation_);
+  bs.setOutputTriangulation(&newT);
+  bs.setInputPoints(inputPoints_);
+  bs.execute();
+
+  newT.preprocessVertexNeighbors();
+
+  auto nVerts = triangulation_->getNumberOfVertices();
+  auto nEdges = triangulation_->getNumberOfEdges();
+  auto nTriangles = triangulation_->getNumberOfTriangles();
+
+  // store separatrix index on subdivised triangulation vertices
+  std::vector<SimplexId> onSep(newT.getNumberOfVertices(), -1);
+  // count the number of critical points encountered
+  size_t critPoints{0};
+
+  for(SimplexId i = 0; i < separatriceNumber_; ++i) {
+    if(sepMask_[i] == 0) {
+      critPoints++;
+    }
+    // current separatrix id is critPoints // 2
+    if(sepCellDims_[i] == 0) {
+      onSep[sepCellIds_[i]] = critPoints >> 1;
+    } else if(sepCellDims_[i] == 1) {
+      onSep[nVerts + sepCellIds_[i]] = critPoints >> 1;
+    } else if(sepCellDims_[i] == 2) {
+      onSep[nVerts + nEdges + sepCellIds_[i]] = critPoints >> 1;
+    }
+  }
+
+  // store saddle points id in the subdivised triangulation
+  std::set<SimplexId> saddlesId{};
+
+  for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
+    // keep only saddle points
+    if(criticalPointsType_[i] != 1) {
+      continue;
+    }
+    saddlesId.emplace(nVerts + criticalPointsCellIds_[i]);
+  }
+
+  // look around the saddle points
+  for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
+    // keep only saddle points
+    if(criticalPointsType_[i] != 1) {
+      continue;
+    }
+    SimplexId saddle = nVerts + criticalPointsCellIds_[i];
+    auto nn = newT.getVertexNeighborNumber(saddle);
+    if(nn != 4) {
+      std::cout << "different number of neighbors: " << nn << std::endl;
+    }
+
+    std::set<SimplexId> sepsAround{};
+
+    for(SimplexId j = 0; j < nn; ++j) {
+      SimplexId neigh;
+      newT.getVertexNeighbor(saddle, j, neigh);
+      sepsAround.emplace(onSep[neigh]);
+    }
+
+    if(sepsAround.size() != 4) {
+      std::cout << "different seps ids around " << criticalPointsCellIds_[i]
+                << std::endl;
+    }
+
+    // propagate from triangles around saddle
+    std::vector<bool> processed(nTriangles, false);
+
+    auto nt = newT.getVertexTriangleNumber(saddle);
+    for(SimplexId j = 0; j < nt; ++j) {
+      std::queue<SimplexId> toProcess{};
+      SimplexId tr;
+      newT.getVertexTriangle(saddle, j, tr);
+
+      std::set<size_t> sepIds{};
+      toProcess.push(tr);
+      {
+        SimplexId a, b, c;
+        newT.getTriangleVertex(tr, 0, a);
+        newT.getTriangleVertex(tr, 1, b);
+        newT.getTriangleVertex(tr, 2, c);
+
+        if(a == i) {
+          sepIds.emplace(onSep[b]);
+          sepIds.emplace(onSep[c]);
+        } else if(b == i) {
+          sepIds.emplace(onSep[a]);
+          sepIds.emplace(onSep[c]);
+        } else if(c == i) {
+          sepIds.emplace(onSep[a]);
+          sepIds.emplace(onSep[b]);
+        }
+      }
+
+      while(!toProcess.empty()) {
+        auto curr = toProcess.front();
+        toProcess.pop();
+
+        // stop condition
+        SimplexId a, b, c;
+        newT.getTriangleVertex(tr, 0, a);
+        newT.getTriangleVertex(tr, 1, b);
+        newT.getTriangleVertex(tr, 2, c);
+        if(saddlesId.find(a) != saddlesId.end()) {
+        } else if(saddlesId.find(b) != saddlesId.end()) {
+        } else if(saddlesId.find(c) != saddlesId.end()) {
+        }
+
+        auto ne = newT.getTriangleEdgeNumber(curr);
+        for(SimplexId k = 0; k < ne; ++k) {
+          SimplexId e;
+          newT.getTriangleEdge(curr, k, e);
+          SimplexId e0, e1;
+          newT.getEdgeVertex(e, 0, e0);
+          newT.getEdgeVertex(e, 1, e1);
+          // skip edges on separatrices
+          if(onSep[e0] != -1 && onSep[e1] != -1) {
+            continue;
+          }
+          // push the triangle
+        }
+
+        processed[curr] = true;
+      }
+    }
+  }
+
+  return 0;
+}
+
 int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   // quadrangle vertices are either extrema or saddle points
 
@@ -383,6 +518,8 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     sepBegs_[i] = sepFlatEdges[2 * i];
     sepEnds_[i] = sepFlatEdges[2 * i + 1];
   }
+
+  sweepOverCells();
 
   // for each vertex on a separatrix, the index of the separatrix
   std::vector<SimplexId> onSep(segmentationNumber_, -1);

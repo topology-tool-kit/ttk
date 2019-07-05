@@ -165,6 +165,8 @@ namespace ttk {
      */
     size_t sepFromPoints(const long long src, const long long dst) const;
 
+    int sweepOverCells();
+
     bool checkSurfaceCloseness() const;
 
     void clearData();
