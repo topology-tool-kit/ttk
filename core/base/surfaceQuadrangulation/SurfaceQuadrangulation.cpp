@@ -436,6 +436,46 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
     saddlesId.emplace(nVerts + criticalPointsCellIds_[i]);
   }
 
+  auto getTriangleEdges
+    = [&](const SimplexId tr, SimplexId &e0, SimplexId &e1, SimplexId &e2) {
+        newT.getTriangleEdge(tr, 0, e0);
+        newT.getTriangleEdge(tr, 1, e1);
+        newT.getTriangleEdge(tr, 2, e2);
+      };
+
+  auto sepIdAroundTriangle = [&](const SimplexId tr) {
+    SimplexId e0{}, e1{}, e2{};
+    getTriangleEdges(tr, e0, e1, e2);
+
+    std::set<SimplexId> sepId{};
+    if(edgeOnSep[e0] != -1 && edgeOnSep[e1] != -1) {
+      sepId.emplace(edgeOnSep[e0]);
+      sepId.emplace(edgeOnSep[e1]);
+    } else if(edgeOnSep[e1] != -1 && edgeOnSep[e2] != -1) {
+      sepId.emplace(edgeOnSep[e0]);
+      sepId.emplace(edgeOnSep[e2]);
+    } else if(edgeOnSep[e0] != -1 && edgeOnSep[e2] != -1) {
+      sepId.emplace(edgeOnSep[e0]);
+      sepId.emplace(edgeOnSep[e2]);
+    }
+    return sepId;
+  };
+
+  auto hasTriangleSaddle = [&](const SimplexId tr) {
+    SimplexId a, b, c;
+    newT.getTriangleVertex(tr, 0, a);
+    newT.getTriangleVertex(tr, 1, b);
+    newT.getTriangleVertex(tr, 2, c);
+    if(saddlesId.find(a) != saddlesId.end()
+       || saddlesId.find(b) != saddlesId.end()
+       || saddlesId.find(c) != saddlesId.end()) {
+      return true;
+    }
+    return false;
+  };
+
+  std::vector<std::set<SimplexId>> quadSeps{};
+
   // look around the saddle points
   for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
     // keep only saddle points
@@ -464,72 +504,56 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
     // propagate from triangles around saddle
     std::vector<bool> processed(nTriangles, false);
 
-    auto nt = newT.getVertexTriangleNumber(saddle);
-    for(SimplexId j = 0; j < nt; ++j) {
+    for(SimplexId j = 0; j < newT.getVertexTriangleNumber(saddle); ++j) {
       std::queue<SimplexId> toProcess{};
       SimplexId tr;
       newT.getVertexTriangle(saddle, j, tr);
 
-      std::set<size_t> sepIds{};
-      toProcess.push(tr);
-      {
-        SimplexId a, b, c;
-        newT.getTriangleVertex(tr, 0, a);
-        newT.getTriangleVertex(tr, 1, b);
-        newT.getTriangleVertex(tr, 2, c);
+      std::set<SimplexId> sepIdBeg = sepIdAroundTriangle(tr);
 
-        if(a == i) {
-          sepIds.emplace(onSep[b]);
-          sepIds.emplace(onSep[c]);
-        } else if(b == i) {
-          sepIds.emplace(onSep[a]);
-          sepIds.emplace(onSep[c]);
-        } else if(c == i) {
-          sepIds.emplace(onSep[a]);
-          sepIds.emplace(onSep[b]);
-        }
-      }
+      toProcess.push(tr);
 
       while(!toProcess.empty()) {
         auto curr = toProcess.front();
         toProcess.pop();
 
         // check for saddle at vertices
-        SimplexId a, b, c;
-        newT.getTriangleVertex(tr, 0, a);
-        newT.getTriangleVertex(tr, 1, b);
-        newT.getTriangleVertex(tr, 2, c);
-        bool hasSaddle{false};
-        if(saddlesId.find(a) != saddlesId.end()
-           || saddlesId.find(b) != saddlesId.end()
-           || saddlesId.find(c) != saddlesId.end()) {
-          hasSaddle = true;
-        }
+        bool hasSaddle = hasTriangleSaddle(curr);
 
         // check for separatrices on edges
-        SimplexId e0, e1, e2;
-        newT.getTriangleEdge(curr, 0, e0);
-        newT.getTriangleEdge(curr, 1, e1);
-        newT.getTriangleEdge(curr, 2, e2);
+        auto sepIdEnd = sepIdAroundTriangle(curr);
 
-        std::set<SimplexId> seps{};
-        if(edgeOnSep[e0] != -1 && edgeOnSep[e1] != -1) {
-          seps.emplace(edgeOnSep[e0]);
-          seps.emplace(edgeOnSep[e1]);
-        } else if(edgeOnSep[e1] != -1 && edgeOnSep[e2] != -1) {
-          seps.emplace(edgeOnSep[e0]);
-          seps.emplace(edgeOnSep[e2]);
-        } else if(edgeOnSep[e0] != -1 && edgeOnSep[e2] != -1) {
-          seps.emplace(edgeOnSep[e0]);
-          seps.emplace(edgeOnSep[e2]);
-        }
-
-        if(hasSaddle && seps.size() == 2) {
+        if(hasSaddle && sepIdEnd.size() == 2) {
           // check that seps are different from beginning
-          break;
+          std::vector<SimplexId> cellSeps{};
+          std::set_union(sepIdBeg.begin(), sepIdBeg.end(), sepIdEnd.begin(),
+                         sepIdEnd.end(), std::back_inserter(cellSeps));
+          if(cellSeps.size() > 2) {
+            // found it
+            quadSeps.emplace_back(cellSeps.begin(), cellSeps.end());
+            break;
+          }
         }
 
         processed[curr] = true;
+
+        // look for neighboring triangles
+        std::array<SimplexId, 3> edges{};
+        getTriangleEdges(curr, edges[0], edges[1], edges[2]);
+        for(const auto e : edges) {
+          // do not cross separatrices
+          if(edgeOnSep[e] != -1) {
+            continue;
+          }
+          for(SimplexId k = 0; k < newT.getEdgeTriangleNumber(e); ++k) {
+            SimplexId neigh{};
+            newT.getEdgeTriangle(e, k, neigh);
+            // push only non processed triangles
+            if(!processed[neigh]) {
+              toProcess.push(neigh);
+            }
+          }
+        }
       }
     }
   }
