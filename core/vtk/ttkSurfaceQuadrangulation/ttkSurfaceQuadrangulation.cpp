@@ -95,6 +95,7 @@ int ttkSurfaceQuadrangulation::getSegmentation(vtkUnstructuredGrid *input) {
   triangulation_->setWrapper(this);
   surfaceQuadrangulation_.setWrapper(this);
   surfaceQuadrangulation_.setupTriangulation(triangulation_);
+  surfaceQuadrangulation_.setInputPoints(input->GetPoints()->GetVoidPointer(0));
 
   return 0;
 }

@@ -55,6 +55,9 @@ namespace ttk {
     inline void setDualQuadrangulation(const bool input) {
       dualQuadrangulation_ = input;
     }
+    inline void setInputPoints(const void *const addr) {
+      inputPoints_ = static_cast<const float *>(addr);
+    }
     inline void setupTriangulation(Triangulation *const triangl) {
       triangulation_ = triangl;
       if(triangulation_ != nullptr) {
@@ -169,6 +172,9 @@ namespace ttk {
     std::vector<long long> subdiviseDegenerateQuads();
 
     Triangulation *triangulation_{};
+
+    // array of input points coordinates
+    const float *inputPoints_{};
 
     // number of critical points from the Morse-Smale complex
     SimplexId criticalPointsNumber_{};
