@@ -1,6 +1,8 @@
+#include <BarycentricSubdivision.h>
 #include <Dijkstra.h>
 #include <Geometry.h>
 #include <SurfaceQuadrangulation.h>
+
 #include <array>
 #include <cmath>
 #include <numeric>
