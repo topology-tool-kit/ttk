@@ -368,7 +368,6 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
 
   auto nVerts = triangulation_->getNumberOfVertices();
   auto nEdges = triangulation_->getNumberOfEdges();
-  auto nTriangles = triangulation_->getNumberOfTriangles();
 
   // store separatrix index on subdivised triangulation vertices
   std::vector<SimplexId> onSep(newT.getNumberOfVertices(), -1);
@@ -506,7 +505,7 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
     }
 
     // propagate from triangles around saddle
-    std::vector<bool> processed(nTriangles, false);
+    std::vector<bool> processed(newT.getNumberOfTriangles(), false);
 
     for(SimplexId j = 0; j < newT.getVertexTriangleNumber(saddle); ++j) {
       std::queue<SimplexId> toProcess{};
@@ -520,6 +519,11 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
       while(!toProcess.empty()) {
         auto curr = toProcess.front();
         toProcess.pop();
+
+        // skip already processed
+        if(processed[curr]) {
+          continue;
+        }
 
         // check for saddle at vertices
         bool hasSaddle = hasTriangleSaddle(curr);
