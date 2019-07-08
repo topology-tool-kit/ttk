@@ -338,11 +338,6 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   // clear data members
   sepBegs_.resize(numSeps);
   sepEnds_.resize(numSeps);
-  morseSeg_.resize(segmentationNumber_);
-  std::fill(morseSeg_.begin(), morseSeg_.end(), -1);
-  cellId_.clear();
-  cellMMId_.clear();
-  cellSeps_.clear();
   quadSeps_.clear();
 
   // fill in data arrays
