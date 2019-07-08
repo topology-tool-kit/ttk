@@ -361,6 +361,10 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
   bs.execute();
 
   newT.preprocessVertexNeighbors();
+  newT.preprocessVertexEdges();
+  newT.preprocessVertexTriangles();
+  newT.preprocessEdgeTriangles();
+  newT.preprocessTriangleEdges();
 
   auto nVerts = triangulation_->getNumberOfVertices();
   auto nEdges = triangulation_->getNumberOfEdges();
