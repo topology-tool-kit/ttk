@@ -477,8 +477,6 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
     return false;
   };
 
-  std::vector<std::set<SimplexId>> quadSeps{};
-
   // look around the saddle points
   for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
     // keep only saddle points
@@ -507,6 +505,9 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
     // propagate from triangles around saddle
     std::vector<bool> processed(newT.getNumberOfTriangles(), false);
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
     for(SimplexId j = 0; j < newT.getVertexTriangleNumber(saddle); ++j) {
       std::queue<SimplexId> toProcess{};
       SimplexId tr;
@@ -531,19 +532,19 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
         // check for separatrices on edges
         auto sepIdEnd = sepIdAroundTriangle(curr);
 
+        processed[curr] = true;
+
         if(hasSaddle && sepIdEnd.size() == 2) {
           // check that seps are different from beginning
-          std::vector<SimplexId> cellSeps{};
+          std::vector<size_t> cellSeps{};
           std::set_union(sepIdBeg.begin(), sepIdBeg.end(), sepIdEnd.begin(),
                          sepIdEnd.end(), std::back_inserter(cellSeps));
           if(cellSeps.size() > 2) {
             // found it
-            quadSeps.emplace_back(cellSeps.begin(), cellSeps.end());
+            quadSeps_.emplace_back(cellSeps);
             break;
           }
         }
-
-        processed[curr] = true;
 
         // look for neighboring triangles
         std::array<SimplexId, 3> edges{};
@@ -565,7 +566,6 @@ int ttk::SurfaceQuadrangulation::sweepOverCells() {
       }
     }
   }
-
   return 0;
 }
 
