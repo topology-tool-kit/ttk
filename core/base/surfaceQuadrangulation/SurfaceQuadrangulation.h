@@ -71,15 +71,6 @@ namespace ttk {
 
   private:
     /**
-     * @brief Return a set of cells indices near vert
-     *
-     * @param[in] vert Vertex index (in triangulation) to test
-     *
-     * @return Set of manifolds indices
-     */
-    std::set<SimplexId> cellsAround(const SimplexId vert) const;
-
-    /**
      * @brief Find the middle of the separatrix specified by its bounds
      *
      * @param[in] a Index in separatrices array of separatrix source
@@ -132,38 +123,6 @@ namespace ttk {
      * @return 0 in case of success
      */
     int subdivise();
-
-    /**
-     * @brief Find the Morse-Smale cell around a given vertex
-     *
-     * Perform a breadth-first search from a vertex limited by
-     * Morse-Smale separatrices.
-     *
-     * @param[in] src Source vertex to begin the iteration
-     * @param[in] vertexSepMask If a vertex in on a separatrix
-     *
-     * @return 0
-     */
-    int detectCells(const SimplexId src,
-                    const std::vector<SimplexId> &vertexSepMask);
-
-    /**
-     * @brief Merge small cells sharing a Morse Manifold index
-     *
-     * @param[in] vertexSepMask If a vertex in on a separatrix
-     *
-     * @return 0
-     */
-    int mergeSmallCells(const std::vector<SimplexId> &vertexSepMask);
-
-    /** @brief Find separatrix index from vertices
-     *
-     * @param[in] src Source index in critical points array
-     * @param[in] dst Destination index in critical points array
-     *
-     * @return separatrix index
-     */
-    size_t sepFromPoints(const long long src, const long long dst) const;
 
     int sweepOverCells();
 
