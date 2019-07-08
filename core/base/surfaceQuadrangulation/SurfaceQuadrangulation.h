@@ -124,7 +124,7 @@ namespace ttk {
      */
     int subdivise();
 
-    int sweepOverCells();
+    int detectCellSeps();
 
     bool checkSurfaceCloseness() const;
 

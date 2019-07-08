@@ -101,7 +101,7 @@ struct Quad {
   long long l;
 };
 
-int ttk::SurfaceQuadrangulation::sweepOverCells() {
+int ttk::SurfaceQuadrangulation::detectCellSeps() {
   BarycentricSubdivision bs{};
   Triangulation newT{};
 
@@ -333,7 +333,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
     sepEnds_[i] = sepFlatEdges[2 * i + 1];
   }
 
-  sweepOverCells();
+  detectCellSeps();
 
   outputCells_.reserve(5 * quadSeps_.size());
   auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
