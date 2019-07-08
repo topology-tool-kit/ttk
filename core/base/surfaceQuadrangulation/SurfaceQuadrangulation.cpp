@@ -604,291 +604,42 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
 
   sweepOverCells();
 
-  // for each vertex on a separatrix, the index of the separatrix
-  std::vector<SimplexId> onSep(segmentationNumber_, -1);
-
-  {
-    size_t currSep = 0;
-    // iterate over separatrices lines to fill in onSep vector
-    for(SimplexId i = 0; i < separatriceNumber_; ++i) {
-      if(sepMask_[i] == 0) {
-        currSep
-          = std::find(sepBegs_.begin(), sepBegs_.end(), i) - sepBegs_.begin();
-      }
-      if(sepCellDims_[i] == 1) {
-        SimplexId vertId;
-        triangulation_->getEdgeVertex(sepCellIds_[i], 0, vertId);
-        onSep[vertId] = static_cast<SimplexId>(currSep);
-        triangulation_->getEdgeVertex(sepCellIds_[i], 1, vertId);
-        onSep[vertId] = static_cast<SimplexId>(currSep);
-      }
-    }
-  }
-
-  bool finished = false;
-  size_t pos = 0;
-
-  while(true) {
-    for(size_t j = pos; j < segmentationNumber_; ++j) {
-      if(onSep[j] == -1 && morseSeg_[j] == -1) {
-        pos = j;
-        break;
-      }
-      if(j == segmentationNumber_ - 1) {
-        finished = true;
-      }
-    }
-    if(finished || pos >= segmentationNumber_) {
-      break;
-    }
-    detectCells(pos, onSep);
-    pos++;
-  }
-
-  // missing cells?
-  // find them and store their bordering separatrices
-  auto minCellId
-    = *std::min_element(segmentation_, segmentation_ + segmentationNumber_);
-  auto maxCellId
-    = *std::max_element(segmentation_, segmentation_ + segmentationNumber_);
-  for(SimplexId i = minCellId; i <= maxCellId; ++i) {
-    if(std::find(cellMMId_.begin(), cellMMId_.end(), i) == cellMMId_.end()) {
-      std::set<SimplexId> sepIds{};
-      for(size_t j = 0; j < segmentationNumber_; ++j) {
-        if(segmentation_[j] == i && onSep[j] != -1) {
-          sepIds.emplace(onSep[j]);
-        }
-      }
-      if(sepIds.size() > 2) {
-        cellSeps_.emplace_back(sepIds.begin(), sepIds.end());
-        cellMMId_.emplace_back(i);
-        cellId_.emplace_back(cellId_.back() + 1);
-      }
-    }
-  }
-
-  mergeSmallCells(onSep);
-
-  // hold quad subdivision
-  outputCells_.reserve(5 * cellSeps_.size());
+  outputCells_.reserve(5 * quadSeps_.size());
   auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
 
-  // for each cell the detected separatrices sources and destinations
-  std::vector<std::vector<long long>> cellSrcs{}, cellDsts{};
+  for(size_t a = 0; a < quadSeps_.size(); ++a) {
 
-  for(size_t a = 0; a < cellSeps_.size(); ++a) {
-
-    auto &cs = cellSeps_[a];
+    auto &cs = quadSeps_[a];
 
     std::vector<long long> srcs{};
     std::vector<long long> dsts{};
 
     findSepsVertices(cs, srcs, dsts);
 
+    // remove duplicates
+    std::set<long long> srcs_set(srcs.begin(), srcs.end());
+    std::set<long long> dsts_set(dsts.begin(), dsts.end());
+    srcs.assign(srcs_set.begin(), srcs_set.end());
+    dsts.assign(dsts_set.begin(), dsts_set.end());
+
     // filter out separatrices whose sources are not in contact with
     // the current cell
-    if(cs.size() > 5) {
-      std::vector<size_t> sepsToRemove{};
-      for(size_t i = 0; i < srcs.size(); ++i) {
-        auto cellsAroundSrc = cellsAround(criticalPointsIdentifier_[srcs[i]]);
-        if(std::find(cellsAroundSrc.begin(), cellsAroundSrc.end(), cellId_[a])
-           == cellsAroundSrc.end()) {
-          sepsToRemove.emplace_back(i);
-        }
-      }
-      // remove the end first
-      std::sort(sepsToRemove.rbegin(), sepsToRemove.rend());
-      for(const auto i : sepsToRemove) {
-        srcs.erase(std::next(srcs.begin(), i));
-        dsts.erase(std::next(dsts.begin(), i));
-        cs.erase(std::next(cs.begin(), i));
-      }
+
+    bool found = true;
+
+    if(dsts.size() != 2) {
+      found = false;
     }
 
-    cellSrcs.emplace_back(srcs);
-    cellDsts.emplace_back(dsts);
-
-    bool found = false;
-
-    // optimisation: try first to only consider the first four separatrices
-
-    if(cs.size() >= 4) {
-      auto sbeg = srcs.begin();
-      auto send = std::next(srcs.begin(), 4);
-      auto dbeg = dsts.begin();
-      auto dend = std::next(dsts.begin(), 4);
-      std::set<SimplexId> srcs_set(sbeg, send);
-      std::set<SimplexId> dsts_set(dbeg, dend);
-      if(srcs_set.size() == 2 && dsts_set.size() == 2) {
-        auto vi = *dsts_set.begin();
-        auto vj = *srcs_set.begin();
-        auto vk = *std::next(dsts_set.begin());
-        auto vl = *std::next(srcs_set.begin());
-        // check that every vertex appears twice
-        if(std::count(sbeg, send, vj) == 2 && std::count(sbeg, send, vk) == 2
-           && std::count(dbeg, dend, vi) == 2
-           && std::count(dbeg, dend, vl) == 2) {
-          quads->emplace_back(Quad{4, vi, vj, vk, vl});
-          quadSeps_.emplace_back(cs.begin(), std::next(cs.begin(), 4));
-          continue;
-        }
-      }
+    if(srcs.size() == 2) {
+      quads->emplace_back(Quad{4, dsts[0], srcs[0], dsts[1], srcs[1]});
+    } else if(srcs.size() == 1) {
+      quads->emplace_back(Quad{4, dsts[0], srcs[0], dsts[1], srcs[0]});
+      ndegen++;
+    } else {
+      found = false;
     }
 
-    // normal case: find a pair of extrema and a pair of saddle points
-    // with four separatrices linking one another
-
-    // iterate over first dest
-    for(size_t i = 0; i < cs.size(); ++i) {
-      auto vi = dsts[i];
-
-      // iterate over second dest from i + 1
-      for(size_t k = i + 1; k < cs.size(); ++k) {
-        auto vk = dsts[k];
-        // skip same extrema type
-        if(criticalPointsType_[vi] == criticalPointsType_[vk]) {
-          continue;
-        }
-        // at least four separatrices leading to these two extrema
-        if(std::count(dsts.begin(), dsts.end(), vi)
-             + std::count(dsts.begin(), dsts.end(), vk)
-           < 4) {
-          continue;
-        }
-        // find two (one if degenerate) common sources
-        std::set<SimplexId> srcs_i{};
-        std::set<SimplexId> srcs_k{};
-        std::vector<SimplexId> common_srcs_ik{};
-        for(size_t j = 0; j < cs.size(); ++j) {
-          if(dsts[j] == vi) {
-            srcs_i.insert(srcs[j]);
-          }
-          if(dsts[j] == vk) {
-            srcs_k.insert(srcs[j]);
-          }
-        }
-        std::set_intersection(srcs_i.begin(), srcs_i.end(), srcs_k.begin(),
-                              srcs_k.end(), std::back_inserter(common_srcs_ik));
-        if(common_srcs_ik.size() > 2) {
-          // reorder common_srcs_ik according to srcs vector
-          std::vector<SimplexId> common_srcs_ik_ordered{};
-          auto cikb = common_srcs_ik.begin();
-          auto cike = common_srcs_ik.end();
-          for(const auto &s : srcs) {
-            auto cikob = common_srcs_ik_ordered.begin();
-            auto cikoe = common_srcs_ik_ordered.end();
-            if(std::find(cikb, cike, s) != cike
-               && std::find(cikob, cikoe, s) == cikoe) {
-              common_srcs_ik_ordered.emplace_back(s);
-            }
-          }
-          common_srcs_ik = std::move(common_srcs_ik_ordered);
-        }
-        if(common_srcs_ik.size() > 1) {
-          auto vj = common_srcs_ik[0];
-          auto vl = common_srcs_ik[1];
-          quads->emplace_back(Quad{4, vi, vj, vk, vl});
-          // find separatrices indices
-          std::vector<size_t> seps{};
-
-          auto findSep = [&](const long long src, const long long dst) {
-            for(size_t j = 0; j < cs.size(); ++j) {
-              if(srcs[j] == src && dsts[j] == dst) {
-                seps.emplace_back(cs[j]);
-                return;
-              }
-            }
-            // if not found in cell seps, try first one from src to dst
-            seps.emplace_back(sepFromPoints(src, dst));
-          };
-
-          findSep(vj, vi);
-          findSep(vj, vk);
-          findSep(vl, vk);
-          findSep(vl, vi);
-          quadSeps_.emplace_back(seps);
-          found = true;
-          break;
-        }
-      }
-      if(found) {
-        // stop at the first correct quad
-        break;
-      }
-    }
-
-    if(!found) {
-      // look at the three first separatrices, try to find a missing fourth
-      if(cs.size() >= 3) {
-        auto vi = dsts[0];
-        auto vj = srcs[0];
-        decltype(vi) vk{};
-        decltype(vj) vl{};
-        for(size_t k = 1; k < 3; ++k) {
-          if(criticalPointsCellIds_[dsts[k]] != criticalPointsCellIds_[vi]) {
-            vk = dsts[k];
-            break;
-          }
-        }
-        for(size_t l = 1; l < 3; ++l) {
-          if(srcs[l] != vj) {
-            vl = srcs[l];
-            break;
-          }
-        }
-        // ensure jk, kl and li separatrices exist
-        auto jk = sepFromPoints(vj, vk);
-        auto kl = sepFromPoints(vl, vk);
-        auto li = sepFromPoints(vl, vi);
-        if(jk < numSeps && kl < numSeps && li < numSeps) {
-          quads->emplace_back(Quad{4, vi, vj, vk, vl});
-          quadSeps_.emplace_back(std::vector<size_t>{cs[0], jk, kl, li});
-          continue;
-        }
-      }
-
-      // degenerate case:
-      // take the first two distinct extrema (separatrices with higher weight)
-      for(size_t i = 0; i < cs.size(); ++i) {
-        auto vi = dsts[0];
-        for(size_t k = i + 1; k < dsts.size(); ++k) {
-          auto vk = dsts[k];
-          // skip same critical point type
-          if(criticalPointsCellIds_[vi] == criticalPointsCellIds_[vk]) {
-            continue;
-          }
-          // we need at least 3 separatrices leading to these extrema
-          if(std::count(dsts.begin(), dsts.end(), vi)
-               + std::count(dsts.begin(), dsts.end(), vk)
-             < 3) {
-            continue;
-          }
-          // count saddle point occurences
-          int count_vj = 0;
-          // store corresponding seps indices
-          std::vector<size_t> seps{};
-          for(size_t j = i; j < srcs.size(); ++j) {
-            if(srcs[j] == srcs[i] && (dsts[j] == vi || dsts[j] == vk)) {
-              seps.emplace_back(cs[j]);
-              count_vj++;
-            }
-          }
-          // one saddle point for three separatrices
-          if(count_vj < 3) {
-            continue;
-          }
-          auto vj = srcs[i];
-          found = true;
-          quads->emplace_back(Quad{4, vi, vj, vk, vj});
-          quadSeps_.emplace_back(seps);
-          ndegen++;
-          break;
-        }
-        if(found) {
-          break;
-        }
-      }
-    }
     if(!found) {
       std::stringstream msg;
       msg << MODULE_S "Missing quadrangle" << std::endl;
