@@ -947,10 +947,6 @@ int ttk::SurfaceQuadrangulation::subdivise() {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < sum.size(); ++j) {
-      // skip if vertex j not in cell i
-      if(morseSeg_[j] != static_cast<SimplexId>(i)) {
-        continue;
-      }
       auto m = outputDists[0][j];
       auto n = outputDists[1][j];
       auto o = outputDists[2][j];
@@ -993,10 +989,28 @@ int ttk::SurfaceQuadrangulation::subdivise() {
       outputPointsCells_.emplace_back(i);
     }
 
-    qsubd->emplace_back(Quad{4, q.i, sepMids[3], baryPos, sepMids[0]});
-    qsubd->emplace_back(Quad{4, q.j, sepMids[0], baryPos, sepMids[1]});
-    qsubd->emplace_back(Quad{4, q.k, sepMids[1], baryPos, sepMids[2]});
-    qsubd->emplace_back(Quad{4, q.l, sepMids[2], baryPos, sepMids[3]});
+    std::vector<long long> srcs{};
+    std::vector<long long> dsts{};
+
+    findSepsVertices(seps, srcs, dsts);
+
+    auto sepsQuadVertex = [&](const size_t a, const size_t b) {
+      if(srcs[a] == srcs[b]) {
+        qsubd->emplace_back(Quad{4, srcs[a], sepMids[a], baryPos, sepMids[b]});
+      }
+      if(dsts[a] == dsts[b]) {
+        qsubd->emplace_back(Quad{4, dsts[a], sepMids[a], baryPos, sepMids[b]});
+      }
+    };
+
+    // test every pair of current quad seps for a common vertex, if yes, use
+    // their middles and the quad barycenter
+    sepsQuadVertex(0, 1);
+    sepsQuadVertex(0, 2);
+    sepsQuadVertex(0, 3);
+    sepsQuadVertex(1, 2);
+    sepsQuadVertex(1, 3);
+    sepsQuadVertex(2, 3);
   }
 
   auto degenSubd = subdiviseDegenerateQuads();
