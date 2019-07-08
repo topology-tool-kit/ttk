@@ -171,6 +171,10 @@ namespace ttk {
     std::vector<size_t> sepEnds_{};
     // separatrices middles index in output points array
     std::vector<SimplexId> sepMids_{};
+    // sub-segmentation of Morse-Smale cells
+    std::vector<SimplexId> morseSeg_{};
+    // for each cell, the corresponding index in morseSeg_
+    std::vector<SimplexId> cellId_{};
     // indices of separatrices that border quads
     std::vector<std::vector<size_t>> quadSeps_{};
 

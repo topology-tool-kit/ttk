@@ -230,6 +230,12 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
             || saddlesId.find(c) != saddlesId.end());
   };
 
+  // current saddle point index
+  size_t sadid{};
+
+  // propagate from triangles around saddle
+  std::vector<bool> processed(newT.getNumberOfTriangles(), false);
+
   // look around the saddle points
   for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
     // keep only saddle points
@@ -238,13 +244,12 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
     }
     SimplexId saddle = nVerts + criticalPointsCellIds_[i];
 
-    // propagate from triangles around saddle
-    std::vector<bool> processed(newT.getNumberOfTriangles(), false);
+    auto sadtri = newT.getVertexTriangleNumber(saddle);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId j = 0; j < newT.getVertexTriangleNumber(saddle); ++j) {
+    for(SimplexId j = 0; j < sadtri; ++j) {
       std::queue<SimplexId> toProcess{};
       SimplexId tr;
       newT.getVertexTriangle(saddle, j, tr);
@@ -277,8 +282,35 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
                          sepIdEnd.end(), std::back_inserter(cellSeps));
           if(cellSeps.size() > 2) {
             // found it
-            quadSeps_.emplace_back(cellSeps);
-            break;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+            {
+              // keep indices in sync
+              quadSeps_.emplace_back(cellSeps);
+              cellId_.emplace_back(sadid * sadtri + j);
+            }
+          }
+        }
+
+        // mark vertices from the original mesh with cell id
+        for(SimplexId k = 0; k < 3; ++k) {
+          SimplexId vert{};
+          newT.getTriangleVertex(curr, k, vert);
+          if(vert >= nVerts) {
+            continue;
+          }
+          bool vertOnSep = false;
+          for(SimplexId l = 0; l < newT.getVertexEdgeNumber(vert); ++l) {
+            SimplexId e{};
+            newT.getVertexEdge(vert, l, e);
+            if(edgeOnSep[e] != -1) {
+              vertOnSep = true;
+              break;
+            }
+          }
+          if(!vertOnSep) {
+            morseSeg_[vert] = sadid * sadtri + j;
           }
         }
 
@@ -301,6 +333,7 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
         }
       }
     }
+    sadid++;
   }
   return 0;
 }
@@ -324,6 +357,9 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   // clear data members
   sepBegs_.resize(numSeps);
   sepEnds_.resize(numSeps);
+  morseSeg_.resize(segmentationNumber_);
+  std::fill(morseSeg_.begin(), morseSeg_.end(), -1);
+  cellId_.clear();
   quadSeps_.clear();
 
   // fill in data arrays
@@ -676,6 +712,10 @@ int ttk::SurfaceQuadrangulation::subdivise() {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < sum.size(); ++j) {
+      // skip if vertex j not in cell i
+      if(morseSeg_[j] != cellId_[i]) {
+        continue;
+      }
       auto m = outputDists[0][j];
       auto n = outputDists[1][j];
       auto o = outputDists[2][j];
