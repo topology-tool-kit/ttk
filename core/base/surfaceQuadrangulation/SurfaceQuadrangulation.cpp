@@ -10,88 +10,6 @@
 
 #define MODULE_S "[SurfaceQuadrangulation] "
 
-int ttk::SurfaceQuadrangulation::dualQuadrangulate() {
-
-  // quadrangles vertices are only extrema
-
-  // filter sepCellIds_ array according to sepMask_
-  std::vector<SimplexId> sepFlatEdges{};
-
-  for(SimplexId i = 0; i < separatriceNumber_; ++i) {
-    if(sepMask_[i] == 1) {
-      continue;
-    }
-    sepFlatEdges.emplace_back(sepCellIds_[i]);
-  }
-
-  if(sepFlatEdges.size() % 2 != 0) {
-    std::stringstream msg;
-    msg << MODULE_S "Error: odd number of separatrices edges" << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-    return -1;
-  }
-
-  // holds separatrices edges for every separatrix
-  std::vector<std::pair<SimplexId, SimplexId>> sepEdges{};
-
-  for(size_t i = 0; i < sepFlatEdges.size() / 2; ++i) {
-    sepEdges.emplace_back(
-      std::make_pair(sepFlatEdges[2 * i], sepFlatEdges[2 * i + 1]));
-  }
-
-  // maps sources (saddle points) to vector of their destinations (extrema)
-  std::map<SimplexId, std::vector<SimplexId>> sourceDests{};
-
-  for(auto &p : sepEdges) {
-    SimplexId i;
-    for(i = 0; i < criticalPointsNumber_; i++) {
-      if(p.first == criticalPointsCellIds_[i]) {
-        break;
-      }
-    }
-    SimplexId j;
-    for(j = 0; j < criticalPointsNumber_; j++) {
-      if(p.second == criticalPointsCellIds_[j]) {
-        break;
-      }
-    }
-
-    auto &v = sourceDests[i];
-    v.emplace_back(j);
-  }
-
-  for(auto &elt : sourceDests) {
-    auto extrema = elt.second;
-    if(extrema.size() == 4) {
-      auto i = extrema[0];
-      auto j = i;
-      auto k = i;
-      auto l = i;
-      // filter extrema by nature (minimum: 0 or maximum: 2)
-      if(criticalPointsType_[extrema[1]] == criticalPointsType_[i]) {
-        j = extrema[2];
-        k = extrema[1];
-        l = extrema[3];
-      } else if(criticalPointsType_[extrema[2]] == criticalPointsType_[i]) {
-        j = extrema[1];
-        k = extrema[2];
-        l = extrema[3];
-      } else if(criticalPointsType_[extrema[3]] == criticalPointsType_[i]) {
-        j = extrema[2];
-        k = extrema[3];
-        l = extrema[1];
-      }
-      outputCells_.emplace_back(4);
-      outputCells_.emplace_back(i);
-      outputCells_.emplace_back(j);
-      outputCells_.emplace_back(k);
-      outputCells_.emplace_back(l);
-    }
-  }
-
-  return 0;
-}
-
 // ad-hoc quad data structure (see QuadrangulationSubdivision.h)
 struct Quad {
   long long n;
@@ -792,6 +710,110 @@ int ttk::SurfaceQuadrangulation::subdivise() {
   return 0;
 }
 
+int ttk::SurfaceQuadrangulation::dualQuadrangulate() {
+
+  // iterate over separatrices middles to build quadrangles around
+  // them: the separatrix vertices and two barycenters
+
+  auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
+  std::vector<long long> dualQuads{};
+  auto dquads = reinterpret_cast<std::vector<Quad> *>(&dualQuads);
+
+  auto quadNeighbors = [&](const long long a) {
+    std::set<long long> neighs{};
+    for(const auto &q : *quads) {
+      if(a == q.i || a == q.k) {
+        neighs.emplace(q.j);
+        neighs.emplace(q.l);
+      }
+      if(a == q.j || a == q.l) {
+        neighs.emplace(q.i);
+        neighs.emplace(q.k);
+      }
+    }
+    return neighs;
+  };
+
+  for(size_t i = 0; i < outputPointsIds_.size(); ++i) {
+    // only keep sep middles
+    if(outputPointsTypes_[i] != 1) {
+      continue;
+    }
+
+    // get a list of direct neighbors
+    auto neighs = quadNeighbors(i);
+
+    // skip sep middle between single extremum and saddle in
+    // degenerate cell (point not used)
+    if(neighs.empty()) {
+      continue;
+    }
+
+    // neighs should contain exactly 4 indices, two corresponding to
+    // critical points, and two for generated points, mostly cell
+    // barycenters
+    std::vector<long long> crit{}, gen{};
+    for(const auto n : neighs) {
+      if(n < criticalPointsNumber_) {
+        crit.emplace_back(n);
+      } else {
+        gen.emplace_back(n);
+      }
+    }
+
+    dquads->emplace_back(Quad{4, crit[0], gen[0], crit[1], gen[1]});
+  }
+
+  // for degenerate quadrangles, iterate over the single extremum, and
+  // use the three generated points v0, v1 and v2
+  for(size_t i = 0; i < outputPointsIds_.size(); ++i) {
+
+    // only keep v0 points in degenerate cells
+    if(outputPointsTypes_[i] != 3) {
+      continue;
+    }
+
+    // v0 has 3 neighbors: v1, v2 and the double extremum
+
+    auto v0neighs = quadNeighbors(i);
+    std::vector<long long> crit{}, gen{};
+    for(const auto n : v0neighs) {
+      if(n < criticalPointsNumber_) {
+        crit.emplace_back(n);
+      } else {
+        gen.emplace_back(n);
+      }
+    }
+
+    // v1 has 3 neighbors: v0, a sep middle and the single extremum
+
+    // follow v1 to get the single extremum
+    auto v1neighs = quadNeighbors(gen[0]);
+    long long single{};
+    for(const auto n : v1neighs) {
+      if(n < criticalPointsNumber_) {
+        single = n;
+      }
+    }
+
+    // the single extremum has 3 neighbors: v1, v2 and the saddle
+
+    // follow single to find saddle
+    auto sneighs = quadNeighbors(single);
+    for(const auto n : sneighs) {
+      if(n < criticalPointsNumber_) {
+        crit.emplace_back(n);
+      }
+    }
+
+    dquads->emplace_back(Quad{4, crit[0], gen[0], crit[1], gen[1]});
+  }
+
+  outputCells_ = std::move(dualQuads);
+
+  return 0;
+}
+
 bool ttk::SurfaceQuadrangulation::checkSurfaceCloseness() const {
   bool triangulationClosed{true};
   // sweep over all vertices to check if one is on a boundary
@@ -884,24 +906,24 @@ int ttk::SurfaceQuadrangulation::execute() {
   // number of degenerate quadrangles
   size_t ndegen = 0;
 
+  // direct quadrangulation with saddle points
+  int ret = quadrangulate(ndegen);
+
+  if(ret == 0) {
+    subdivise();
+  } else {
+    // clean, log & early return
+    clearData();
+    std::stringstream msg;
+    msg << MODULE_S "Error: unable to generate quadrangulation from current "
+                    "Morse-Smale complex"
+        << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
+    return 1;
+  }
+
   if(dualQuadrangulation_) {
     dualQuadrangulate();
-  } else {
-    // direct quadrangulation with saddle points
-    int ret = quadrangulate(ndegen);
-
-    if(ret == 0) {
-      subdivise();
-    } else {
-      // clean, log & early return
-      clearData();
-      std::stringstream msg;
-      msg << MODULE_S "Error: unable to generate quadrangulation from current "
-                      "Morse-Smale complex"
-          << std::endl;
-      dMsg(std::cout, msg.str(), infoMsg);
-      return 1;
-    }
   }
 
   if(!checkSurfaceCloseness()) {
