@@ -124,10 +124,28 @@ namespace ttk {
      */
     int subdivise();
 
+    /**
+     * @brief Link four separatrices to a cell
+     *
+     * Perform a breadth-first search from saddle points on a
+     * barycentric subdivision of the triangulation to detect the four
+     * separatrices around the current cell
+     *
+     * @return 0
+     */
     int detectCellSeps();
 
+    /**
+     * @brief Compare the closeness of the input triangulation and the
+     * output triangulation
+     *
+     * @return True if the two surfaces are both close or both open
+     */
     bool checkSurfaceCloseness() const;
 
+    /**
+     * @brief Clear data
+     */
     void clearData();
 
     /**
