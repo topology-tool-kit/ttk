@@ -128,8 +128,12 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   res += surfaceQuadrangulation_.execute();
 
-  TTK_ABORT_KK(
-    res != 0, "SurfaceQuadrangulation.execute() error code: " << res, -9);
+  if(res != 0) {
+    vtkWarningMacro(MODULE_ERROR_S
+                    "Consider another (eigen) function, persistence threshold "
+                    "or refine your input triangulation");
+    return res;
+  }
 
   auto &outQuadrangles = surfaceQuadrangulation_.outputCells_;
   auto &outQuadPoints = surfaceQuadrangulation_.outputPoints_;
