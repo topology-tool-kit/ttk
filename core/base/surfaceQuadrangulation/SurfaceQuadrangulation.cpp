@@ -508,10 +508,8 @@ int ttk::SurfaceQuadrangulation::findSepsVertices(
   return 0;
 }
 
-std::vector<long long> ttk::SurfaceQuadrangulation::subdiviseDegenerateQuads() {
-  // hold quad subdivision
-  decltype(outputCells_) outputSubd{};
-  outputSubd.reserve(4 * outputCells_.size());
+int ttk::SurfaceQuadrangulation::subdiviseDegenerateQuads(
+  std::vector<long long> &outputSubd) {
   auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
   auto qsubd = reinterpret_cast<std::vector<Quad> *>(&outputSubd);
 
@@ -648,7 +646,7 @@ std::vector<long long> ttk::SurfaceQuadrangulation::subdiviseDegenerateQuads() {
     qsubd->emplace_back(Quad{4, q.j, m1Pos, v2Pos, vert1Sep});
     qsubd->emplace_back(Quad{4, vert1Sep, v1Pos, v0Pos, v2Pos});
   }
-  return outputSubd;
+  return 0;
 }
 
 int ttk::SurfaceQuadrangulation::subdivise() {
@@ -782,8 +780,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
     sepsQuadVertex(2, 3);
   }
 
-  auto degenSubd = subdiviseDegenerateQuads();
-  std::copy(degenSubd.begin(), degenSubd.end(), std::back_inserter(outputSubd));
+  subdiviseDegenerateQuads(outputSubd);
 
   // overwrite old quads
   outputCells_ = std::move(outputSubd);

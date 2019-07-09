@@ -130,7 +130,14 @@ namespace ttk {
 
     void clearData();
 
-    std::vector<long long> subdiviseDegenerateQuads();
+    /**
+     * @brief Subdivise degenerate quads in the quadrangulation
+     *
+     * @param[out] outputSubd Quad subdivision to be completed
+     *
+     * @return 0
+     */
+    int subdiviseDegenerateQuads(std::vector<long long> &outputSubd);
 
     Triangulation *triangulation_{};
 
