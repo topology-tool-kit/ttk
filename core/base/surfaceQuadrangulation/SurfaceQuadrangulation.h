@@ -48,9 +48,6 @@ namespace ttk {
       sepPoints_ = static_cast<float *>(points);
     }
 
-    inline void setSegmentation(unsigned int /*number*/, void *address) {
-      segmentation_ = static_cast<SimplexId *>(address);
-    }
     inline void setDualQuadrangulation(const bool input) {
       dualQuadrangulation_ = input;
     }
@@ -187,8 +184,6 @@ namespace ttk {
     unsigned char *sepCellDims_{};
     // separatrices points
     float *sepPoints_{};
-    // TTK identifiers -> quad for every vertex segmentation
-    SimplexId *segmentation_{};
     // if dual quadrangulation
     bool dualQuadrangulation_{false};
     // display result despite error

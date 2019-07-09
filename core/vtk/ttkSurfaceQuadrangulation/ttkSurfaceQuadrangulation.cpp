@@ -79,17 +79,7 @@ int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
   return 0;
 }
 
-int ttkSurfaceQuadrangulation::getSegmentation(vtkUnstructuredGrid *input) {
-
-  auto segmentation = input->GetPointData();
-  auto segmf = segmentation->GetArray("MorseSmaleManifold");
-
-  TTK_ABORT_KK(segmentation == nullptr, "wrong Morse-Smale segmentation", -1);
-  TTK_ABORT_KK(segmf == nullptr, "wrong segmentation manifold data", -2);
-
-  surfaceQuadrangulation_.setSegmentation(
-    segmf->GetNumberOfValues(), segmf->GetVoidPointer(0));
-
+int ttkSurfaceQuadrangulation::getTriangulation(vtkUnstructuredGrid *input) {
   triangulation_ = ttkTriangulation::getTriangulation(input);
   TTK_ABORT_KK(triangulation_ == nullptr, "invalid triangulation", -3);
   triangulation_->setWrapper(this);
@@ -120,7 +110,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   TTK_ABORT_KK(res != 0, "wrong separatrices", -1);
 
-  res += getSegmentation(seg);
+  res += getTriangulation(seg);
 
   TTK_ABORT_KK(res != 0, "wrong segmentation", -1);
 
