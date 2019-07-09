@@ -48,8 +48,7 @@ namespace ttk {
       sepPoints_ = static_cast<float *>(points);
     }
 
-    inline void setSegmentation(unsigned int number, void *address) {
-      segmentationNumber_ = number;
+    inline void setSegmentation(unsigned int /*number*/, void *address) {
       segmentation_ = static_cast<SimplexId *>(address);
     }
     inline void setDualQuadrangulation(const bool input) {
@@ -65,6 +64,7 @@ namespace ttk {
         triangulation_->preprocessVertexTriangles();
         triangulation_->preprocessBoundaryVertices();
       }
+      verticesNumber_ = triangulation_->getNumberOfVertices();
     }
 
     int execute();
@@ -158,7 +158,8 @@ namespace ttk {
     int subdiviseDegenerateQuads(std::vector<long long> &outputSubd);
 
     Triangulation *triangulation_{};
-
+    // number of vertices in triangulation
+    SimplexId verticesNumber_{};
     // array of input points coordinates
     const float *inputPoints_{};
 
@@ -183,8 +184,6 @@ namespace ttk {
     unsigned char *sepCellDims_{};
     // separatrices points
     float *sepPoints_{};
-    // number of vertices in segmentation
-    unsigned int segmentationNumber_{};
     // TTK identifiers -> quad for every vertex segmentation
     SimplexId *segmentation_{};
     // if dual quadrangulation

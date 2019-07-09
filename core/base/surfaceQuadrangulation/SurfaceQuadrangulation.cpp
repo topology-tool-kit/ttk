@@ -116,7 +116,6 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
   newT.preprocessEdgeTriangles();
   newT.preprocessTriangleEdges();
 
-  auto nVerts = triangulation_->getNumberOfVertices();
   auto nEdges = triangulation_->getNumberOfEdges();
 
   // store separatrix index on subdivised triangulation vertices
@@ -135,10 +134,10 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
       return sepCellIds_[a];
     }
     if(sepCellDims_[a] == 1) {
-      return nVerts + sepCellIds_[a];
+      return verticesNumber_ + sepCellIds_[a];
     }
     if(sepCellDims_[a] == 2) {
-      return nVerts + nEdges + sepCellIds_[a];
+      return verticesNumber_ + nEdges + sepCellIds_[a];
     }
     return -1;
   };
@@ -190,7 +189,7 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
     if(criticalPointsType_[i] != 1) {
       continue;
     }
-    saddlesId.emplace(nVerts + criticalPointsCellIds_[i]);
+    saddlesId.emplace(verticesNumber_ + criticalPointsCellIds_[i]);
   }
 
   auto getTriangleEdges
@@ -242,7 +241,7 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
     if(criticalPointsType_[i] != 1) {
       continue;
     }
-    SimplexId saddle = nVerts + criticalPointsCellIds_[i];
+    SimplexId saddle = verticesNumber_ + criticalPointsCellIds_[i];
 
     auto sadtri = newT.getVertexTriangleNumber(saddle);
 
@@ -297,7 +296,7 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
         for(SimplexId k = 0; k < 3; ++k) {
           SimplexId vert{};
           newT.getTriangleVertex(curr, k, vert);
-          if(vert >= nVerts) {
+          if(vert >= verticesNumber_) {
             continue;
           }
           bool vertOnSep = false;
@@ -357,7 +356,7 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   // clear data members
   sepBegs_.resize(numSeps);
   sepEnds_.resize(numSeps);
-  morseSeg_.resize(segmentationNumber_);
+  morseSeg_.resize(verticesNumber_);
   std::fill(morseSeg_.begin(), morseSeg_.end(), -1);
   cellId_.clear();
   quadSeps_.clear();
@@ -726,7 +725,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
     }
 
     size_t verticesInCell
-      = segmentationNumber_
+      = verticesNumber_
         - std::count(
           sum.begin(), sum.end(), std::numeric_limits<float>::infinity());
 
@@ -796,7 +795,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
 bool ttk::SurfaceQuadrangulation::checkSurfaceCloseness() const {
   bool triangulationClosed{true};
   // sweep over all vertices to check if one is on a boundary
-  for(size_t i = 0; i < segmentationNumber_; ++i) {
+  for(SimplexId i = 0; i < verticesNumber_; ++i) {
     if(triangulation_->isVertexOnBoundary(i)) {
       triangulationClosed = false;
       break;
