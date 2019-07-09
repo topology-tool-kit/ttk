@@ -730,12 +730,6 @@ int ttk::SurfaceQuadrangulation::subdivise() {
         - std::count(
           sum.begin(), sum.end(), std::numeric_limits<float>::infinity());
 
-    if(verticesInCell == 0) {
-      std::stringstream msg;
-      msg << MODULE_S "Barycenter in cell " << i << " not found." << std::endl;
-      dMsg(std::cout, msg.str(), infoMsg);
-    }
-
     const size_t thresholdVertsInCell{50};
     if(verticesInCell <= thresholdVertsInCell) {
       std::stringstream msg;
@@ -743,7 +737,18 @@ int ttk::SurfaceQuadrangulation::subdivise() {
       dMsg(std::cout, msg.str(), infoMsg);
     }
 
-    auto baryId = std::min_element(sum.begin(), sum.end()) - sum.begin();
+    SimplexId baryId{};
+    if(verticesInCell == 0) {
+      std::stringstream msg;
+      msg << MODULE_S "Barycenter in cell " << i << " not found." << std::endl;
+      dMsg(std::cout, msg.str(), infoMsg);
+
+      // snap bary on sepMids[0]
+      baryId = outputPointsIds_[sepMids[0]];
+    } else {
+      baryId = std::min_element(sum.begin(), sum.end()) - sum.begin();
+    }
+
     long long baryPos = outputPointsIds_.size();
     {
       float x, y, z;
