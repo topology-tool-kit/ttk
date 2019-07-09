@@ -2,14 +2,15 @@
 #include "Geometry.h"
 #include <array>
 
+#define MODULE_S "[BarycentricSubdivision] "
+
 int ttk::BarycentricSubdivision::subdiviseTriangulation() {
 
   // not implemented for dimension >= 3
   if(inputTriangl_->getDimensionality() >= 3) {
     std::stringstream msg;
-    msg
-      << "Barycentric subdivision not yet implemented for dimension 3 and above"
-      << std::endl;
+    msg << MODULE_S "Not yet implemented for dimension 3 and above"
+        << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
     return 1;
   }
@@ -155,9 +156,9 @@ int ttk::BarycentricSubdivision::execute() {
 
   {
     std::stringstream msg;
-    msg << "[BarycentricSubdivision] Data-set (" << vertexNumber
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
+    msg << MODULE_S "Data-set (" << vertexNumber << " points) processed in "
+        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
+        << std::endl;
     dMsg(std::cout, msg.str(), timeMsg);
   }
 
