@@ -35,10 +35,10 @@ namespace ttk{
 
 		~PDClustering(){};
 
+                std::vector<int> execute(std::vector<std::vector<diagramTuple>>& final_centroids, vector<vector<vector<vector<matchingTuple>>>>& all_matchings);
 
-        std::vector<int> execute(std::vector<std::vector<diagramTuple>>& final_centroids);
-
-		dataType getMostPersistent(int type=-1);
+                dataType getMostPersistent(int type=-1);
+                vector<vector<int>> get_centroids_sizes();
 		dataType getLessPersistent(int type=-1);
 		std::vector<std::vector<dataType>> getMinDiagonalPrices();
 		std::vector<std::vector<dataType>> getMinPrices();
@@ -60,6 +60,7 @@ namespace ttk{
 		void initializeAcceleratedKMeans();
 		void initializeBarycenterComputers();
 		void printDistancesToFile();
+		void printMatchings(std::vector<std::vector<std::vector<matchingTuple>>>);
 		void printRealDistancesToFile();
 		void printPricesToFile(int);
 		dataType computeRealCost();
@@ -79,7 +80,7 @@ namespace ttk{
 		void invertInverseClusters();
 
 		void acceleratedUpdateClusters();
-                std::vector<dataType> updateCentroidsPosition(std::vector<std::vector<dataType>>* min_price, std::vector<std::vector<dataType>>* min_diag_price, std::vector<std::vector<std::vector<matchingTuple>>>& all_matchings);
+                std::vector<dataType> updateCentroidsPosition(std::vector<std::vector<dataType>>* min_price, std::vector<std::vector<dataType>>* min_diag_price, std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>& all_matchings);
 
         inline void resetDosToOriginalValues(){
             do_min_ = original_dos[0];
@@ -259,6 +260,8 @@ namespace ttk{
 	  std::vector<std::vector<int>>           clustering_;
 	  std::vector<std::vector<int>>           old_clustering_;
 	  std::vector<int>                        inv_clustering_;
+
+	  std::vector<std::vector<int>>		centroids_sizes_;
 
 	  std::vector<bool>                       r_;
 	  std::vector<dataType>                   u_;

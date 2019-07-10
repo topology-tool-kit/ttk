@@ -217,6 +217,11 @@ class ttkPersistenceDiagramsClustering
     int FillOutputPortInformation(int port, vtkInformation* info);
 
     template <typename dataType>
+      vtkSmartPointer<vtkUnstructuredGrid> createMatchings(const
+          vector<vector<diagramTuple>>* final_centroids,vector<int>
+          inv_clustering, std::vector<std::vector<diagramTuple>>
+          &all_CTDiagrams, const vector<vector<vector<matchingTuple>>>* matchings, int max_dimension, double spacing);
+    template <typename dataType>
     vtkSmartPointer<vtkUnstructuredGrid> createOutputClusteredDiagrams(std::vector<std::vector<diagramTuple>>& all_CTDiagrams, std::vector<int> inv_clustering, double max_dimension, double spacing);
 
     template <typename dataType>
@@ -229,6 +234,7 @@ class ttkPersistenceDiagramsClustering
     // std::vector<std::vector<diagramTuple>>
       void* intermediateDiagrams_;
     // std::vector<std::vector<diagramTuple>> 
+      void* all_matchings_;
       void* final_centroids_;
     std::vector<int> inv_clustering_;
 
@@ -263,7 +269,7 @@ class ttkPersistenceDiagramsClustering
     double TimeLimit;
 
     // base code features
-    int doIt(vtkDataSet** input, vtkUnstructuredGrid* outputClusters, vtkUnstructuredGrid* outputCentroids, int numInputs);
+    int doIt(vtkDataSet** input, vtkUnstructuredGrid* outputClusters, vtkUnstructuredGrid* outputCentroids,vtkUnstructuredGrid* outputMatchings, int numInputs);
 
     bool needsToAbort();
 
@@ -839,5 +845,86 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
 
     return persistenceDiagram;
 }
+
+template <typename dataType>
+vtkSmartPointer<vtkUnstructuredGrid>
+  ttkPersistenceDiagramsClustering::createMatchings(
+    const vector<vector<diagramTuple>>* final_centroids,
+    vector<int> inv_clustering,
+    std::vector<std::vector<diagramTuple>> &all_CTDiagrams,
+    const vector<vector<vector<matchingTuple>>>* all_matchings,
+    int max_dimension,
+    double spacing)
+{
+	printf("Creating vtk Matching");
+	vtkSmartPointer<vtkPoints> matchingPoints = vtkSmartPointer<vtkPoints>::New();
+
+	vtkSmartPointer<vtkUnstructuredGrid> matchingMesh =
+		vtkSmartPointer<vtkUnstructuredGrid>::New();
+
+	vtkSmartPointer<vtkIntArray> idOfDiagramMatchingPoint =
+		vtkSmartPointer<vtkIntArray>::New();
+	idOfDiagramMatchingPoint->SetName("ID of Diagram");
+
+	vtkSmartPointer<vtkIntArray> idOfPoint =
+		vtkSmartPointer<vtkIntArray>::New();
+	idOfPoint->SetName("ID of Point");
+
+	vtkSmartPointer<vtkIntArray> idOfDiagramMatching =
+		vtkSmartPointer<vtkIntArray>::New();
+	idOfDiagramMatching->SetName("ID of Diagram");
+
+	vtkSmartPointer<vtkDoubleArray> cost =
+		vtkSmartPointer<vtkDoubleArray>::New();
+	cost->SetName("Cost");
+
+	int count=0;
+        for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
+            std::vector<diagramTuple>* diagram = &(all_CTDiagrams[j]);
+            std::vector<matchingTuple> matchings_j = all_matchings->at(inv_clustering[j])[j];
+            for(unsigned int i = 0; i < matchings_j.size(); ++i) {
+                vtkIdType ids[2];
+                ids[0] = 2 * count;
+                ids[1] = 2 * count + 1;
+
+                matchingTuple m = matchings_j[i];
+                int bidder_id = std::get<0>(m);
+                int good_id = std::get<1>(m);
+
+                diagramTuple t1 = final_centroids->at(inv_clustering[j])[good_id];
+                double x1 = std::get<6>(t1);
+                double y1 = std::get<10>(t1);
+                double z1 = 0;
+
+                diagramTuple t2 = diagram->at(bidder_id);
+                double x2 = std::get<6>(t2);
+                double y2 = std::get<10>(t2);
+                double z2 = 1;  // Change 1 to j if you want to isolate the diagrams
+
+                if(y2 > x2) {
+                    matchingPoints->InsertNextPoint(x1, y1, z1);
+                    matchingPoints->InsertNextPoint(x2, y2, z2);
+                    matchingMesh->InsertNextCell(VTK_LINE, 2, ids);
+                    idOfDiagramMatching->InsertTuple1(count, j);
+                    cost->InsertTuple1(count, std::get<2>(m));
+                    idOfDiagramMatchingPoint->InsertTuple1(2 * count, j);
+                    idOfDiagramMatchingPoint->InsertTuple1(2 * count + 1, j);
+                    idOfPoint->InsertTuple1(2 * count + 1, good_id);
+                    idOfPoint->InsertTuple1(2 * count + 1, bidder_id);
+
+                    count++;
+                }
+            }
+        }
+
+        matchingMesh->SetPoints(matchingPoints);
+	matchingMesh->GetPointData()->AddArray(idOfDiagramMatchingPoint);
+	matchingMesh->GetPointData()->AddArray(idOfPoint);
+	matchingMesh->GetCellData()->AddArray(idOfDiagramMatching);
+	matchingMesh->GetCellData()->AddArray(cost);
+
+  return matchingMesh;
+}
+
 
 #endif  // _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H

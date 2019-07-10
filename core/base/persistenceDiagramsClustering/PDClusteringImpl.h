@@ -18,8 +18,13 @@
 using namespace ttk;
 
 template <typename dataType>
-std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagramTuple>>& final_centroids)
+std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagramTuple>>& final_centroids, vector<vector<vector<vector<matchingTuple>>>>& all_matchings)
 {
+    // std::vector<std::vector<std::vector<matchingTuple>>> all_matchings;
+    all_matchings.resize(k_);
+    for(int c=0; c<k_; c++){
+        all_matchings[c].resize(3);
+    }
     Timer t;
     {
         // PARTICULARITIES FOR THE CASE OF ONE UNIQUE CLUSTER
@@ -27,9 +32,7 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
             use_accelerated_ = false;
             use_kmeanspp_ = false;
         }
-        
-        std::vector<std::vector<std::vector<matchingTuple>>> all_matchings;
-        all_matchings.resize(3);
+
 
         std::vector<bool*> current_prec;
         current_prec.push_back(&precision_min_);
@@ -72,7 +75,6 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
 
         // std::cout<<"checkpoint"<<std::endl;
         for (int i_crit = 0; i_crit < 3; i_crit++) {
-
             // std::cout<<"checkpoint"<<i_crit<<std::endl;
             max_persistence[i_crit] = 2*getMostPersistent(i_crit);
             lowest_persistence[i_crit] = getLessPersistent(i_crit);
@@ -391,6 +393,13 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
     // Filling the final centroids for output
 
     final_centroids.resize(k_);
+    centroids_sizes_.resize(k_);
+    for(int c=0; c<k_; c++){
+        centroids_sizes_[c].resize(3);
+        if(do_min_) centroids_sizes_[c][0] = centroids_min_[c].size();
+        if(do_min_) centroids_sizes_[c][1] = centroids_saddle_[c].size();
+        if(do_min_) centroids_sizes_[c][2] = centroids_max_[c].size();
+    }
 
     for (int c = 0; c < k_; ++c) {
         if (do_min_) {
@@ -446,11 +455,113 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
         }
     }
 
+
+    // CORRECT MATCHINGS :
+    // printMatchings(all_matchings);
+    // correctMatchings(all_matchings);
     // printDistancesToFile();
     // printRealDistancesToFile();
 
     return inv_clustering_;
 }
+
+// template <typename dataType>
+// void PDClustering<dataType>::correctMatchings(std::vector<std::vector<matchingTuple>>& previous_matchings)
+// {
+//     // std::vector<std::vector<matchingTuple>> corrected_matchings(numberOfInputs_);
+//     for(int i = 0; i < numberOfInputs_; i++) {
+//         // 1. Invert the current_bidder_ids_ vector
+//         std::vector<int> new_to_old_id(current_bidder_diagrams_min_[i].size());
+//         for(unsigned int j = 0; j < current_bidder_ids_[i].size(); j++) {
+//             int new_id = current_bidder_ids_[i][j];
+//             if(new_id >= 0) {
+//                 new_to_old_id[new_id] = j;
+//         }
+//             }
+//         // 2. Reconstruct the matchings
+//         std::vector<matchingTuple> matchings_diagram_i;
+//         for(unsigned int j = 0; j < previous_matchings[i].size(); j++) {
+//             matchingTuple m = previous_matchings[i][j];
+//             int new_id = std::get<0>(m);
+//             if(new_id >= 0 && std::get<1>(m) >= 0) {
+//                 std::get<0>(m) = new_to_old_id[new_id];
+//                 matchings_diagram_i.push_back(m);
+//             }
+//         }
+//         corrected_matchings[i] = matchings_diagram_i;
+//     }
+
+
+//     for(int i = 0; i < numberOfInputs_; i++) {
+//         // 1. Invert the current_bidder_ids_ vector
+//         std::vector<int> new_to_old_id(current_bidder_diagrams_[i].size());
+//         for(unsigned int j = 0; j < current_bidder_ids_[i].size(); j++) {
+//             int new_id = current_bidder_ids_[i][j];
+//             if(new_id >= 0) {
+//                 new_to_old_id[new_id] = j;
+//             }
+//         }
+//         // 2. Reconstruct the matchings
+//         std::vector<matchingTuple> matchings_diagram_i;
+//         for(unsigned int j = 0; j < previous_matchings[i].size(); j++) {
+//             matchingTuple m = previous_matchings[i][j];
+//             int new_id = std::get<0>(m);
+//             if(new_id >= 0 && std::get<1>(m) >= 0) {
+//                 std::get<0>(m) = new_to_old_id[new_id];
+//                 matchings_diagram_i.push_back(m);
+//             }
+//         }
+//         corrected_matchings[i] = matchings_diagram_i;
+//     }
+//     for(int i = 0; i < numberOfInputs_; i++) {
+//         // 1. Invert the current_bidder_ids_ vector
+//         std::vector<int> new_to_old_id(current_bidder_diagrams_[i].size());
+//         for(unsigned int j = 0; j < current_bidder_ids_[i].size(); j++) {
+//             int new_id = current_bidder_ids_[i][j];
+//             if(new_id >= 0) {
+//                 new_to_old_id[new_id] = j;
+//             }
+//         }
+//         // 2. Reconstruct the matchings
+//         std::vector<matchingTuple> matchings_diagram_i;
+//         for(unsigned int j = 0; j < previous_matchings[i].size(); j++) {
+//             matchingTuple m = previous_matchings[i][j];
+//             int new_id = std::get<0>(m);
+//             if(new_id >= 0 && std::get<1>(m) >= 0) {
+//                 std::get<0>(m) = new_to_old_id[new_id];
+//                 matchings_diagram_i.push_back(m);
+//             }
+//         }
+//         corrected_matchings[i] = matchings_diagram_i;
+//     }
+// }
+
+template <typename dataType>
+void PDClustering<dataType>::printMatchings(vector<vector<vector<matchingTuple>>> matchings)
+{
+    cout << "\n MATCHINGS : " << endl;
+    for(int d = 0; d < 3; d++) {
+        if(original_dos[d]) {
+            cout << "\n Diagram type : " << d << endl;
+            for(int i = 0; i < matchings[d].size(); i++) {
+
+                for(int j = 0; j < matchings[d][i].size(); j++) {
+                    std::cout << get<0>(matchings[d][i][j]) << " ";
+                    std::cout << get<1>(matchings[d][i][j]) << " ";
+                    std::cout << get<2>(matchings[d][i][j]) << "  |   ";
+                }
+                cout << "\n";
+            }
+        }
+    }
+}
+
+
+template <typename dataType>
+vector<vector<int>> PDClustering<dataType>::get_centroids_sizes(){
+    return centroids_sizes_;
+}
+
 
 template <typename dataType>
 dataType PDClustering<dataType>::getMostPersistent(int type)
@@ -1261,7 +1372,7 @@ void PDClustering<dataType>::acceleratedUpdateClusters()
 }
 
 template <typename dataType>
-std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vector<std::vector<dataType>>* min_price,std::vector<std::vector<dataType>>* min_diag_price, std::vector<std::vector<std::vector<matchingTuple>>>& all_matchings)
+std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vector<std::vector<dataType>>* min_price,std::vector<std::vector<dataType>>* min_diag_price, std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>& all_matchings)
 {
     dataType max_shift = 0;
     std::vector<dataType> max_shift_vector(3);
@@ -1389,7 +1500,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                     barycenter_computer_min_[c].setNumberOfInputs(diagrams_c_min.size());
                     barycenter_computer_min_[c].setCurrentBidders(diagrams_c_min);
                     barycenter_computer_min_[c].setCurrentBarycenter(centroids_with_price_min);
-                    all_matchings[0].resize(diagrams_c_min.size());
+                    all_matchings[c][0].resize(diagrams_c_min.size());
                     // cout << "all done" << endl;
                 } else {
                     // cout << "keeping same inputs" << endl;
@@ -1398,7 +1509,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                         sizes[i] = barycenter_computer_min_[c].getCurrentBidders().at(i).size();
                     }
                     diagrams_c_min.resize(barycenter_computer_min_[c].getCurrentBidders().size());
-                    all_matchings[0].resize(barycenter_computer_min_[c].getCurrentBidders().size());
+                    all_matchings[c][0].resize(barycenter_computer_min_[c].getCurrentBidders().size());
                     // cout<<"all done : size of diagmin :"<<diagrams_c_min.size()<<endl;
                 }
                 // cout << "more bs" << endl;
@@ -1423,14 +1534,14 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                 // cout<<"min time_preprocess_bary "<<time_preprocess_bary.getElapsedTime()<<endl;
                 // cout<<"time_matchings min ";
                 // cout<<"run matchings "<<endl;
-                barycenter_computer_min_[c].runMatching(&total_cost, epsilon_[0], sizes, kdt, &correspondance_kdt_map, &(min_diag_price->at(0)), &(min_price->at(0)), &(all_matchings[0]), use_kdt);
+                barycenter_computer_min_[c].runMatching(&total_cost, epsilon_[0], sizes, kdt, &correspondance_kdt_map, &(min_diag_price->at(0)), &(min_price->at(0)), &(all_matchings[c][0]), use_kdt);
 
                 // cout<<"matchings done"<<endl;
                 // std::cout<<"min : runned, now updating barycenter"<<std::endl;
                 precision_min = barycenter_computer_min_[c].isPrecisionObjectiveMet(0.01,0);
                 cost_min_ += total_cost;
                 Timer time_update;
-                max_shift_c_min = barycenter_computer_min_[c].updateBarycenter(all_matchings[0]);
+                max_shift_c_min = barycenter_computer_min_[c].updateBarycenter(all_matchings[c][0]);
                 // cout<<"time update min "<<time_update.getElapsedTime()<<endl;
                 // std::cout<<"min : barycenter updated"<<std::endl;
                 if (max_shift_c_min > max_shift_vector[0]) {
@@ -1486,13 +1597,13 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                     barycenter_computer_sad_[c].setNumberOfInputs(diagrams_c_min.size());
                     barycenter_computer_sad_[c].setCurrentBidders(diagrams_c_min);
                     barycenter_computer_sad_[c].setCurrentBarycenter(centroids_with_price_sad);
-                    all_matchings[1].resize(diagrams_c_min.size());
+                    all_matchings[c][1].resize(diagrams_c_min.size());
                 } else {
                     sizes.resize(barycenter_computer_sad_[c].getCurrentBidders().size());
                     for (unsigned int i = 0; i < barycenter_computer_sad_[c].getCurrentBidders().size(); i++) {
                         sizes[i] = barycenter_computer_sad_[c].getCurrentBidders().at(i).size();
                     }
-                    all_matchings[1].resize(barycenter_computer_sad_[c].getCurrentBidders().size());
+                    all_matchings[c][1].resize(barycenter_computer_sad_[c].getCurrentBidders().size());
                     diagrams_c_min.resize(barycenter_computer_sad_[c].getCurrentBidders().size());
                 }
 
@@ -1513,9 +1624,9 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                 std::vector<KDTree<dataType>*>& correspondance_kdt_map = pair.second;
 
                 // std::cout<<"sad : run matchings"<<std::endl;
-                barycenter_computer_sad_[c].runMatching(&total_cost, epsilon_[1], sizes, kdt, &correspondance_kdt_map, &(min_diag_price->at(1)), &(min_price->at(1)), &(all_matchings[1]), use_kdt);
+                barycenter_computer_sad_[c].runMatching(&total_cost, epsilon_[1], sizes, kdt, &correspondance_kdt_map, &(min_diag_price->at(1)), &(min_price->at(1)), &(all_matchings[c][1]), use_kdt);
                 precision_sad = barycenter_computer_sad_[c].isPrecisionObjectiveMet(0.01,0);
-                max_shift_c_sad = barycenter_computer_sad_[c].updateBarycenter(all_matchings[1]);
+                max_shift_c_sad = barycenter_computer_sad_[c].updateBarycenter(all_matchings[c][1]);
                 // std::cout<<"sad : runned, now updating barycenter"<<std::endl;
                 cost_sad_ += total_cost;
                 // std::cout<<"sad : barycenter updated"<<std::endl;
@@ -1560,7 +1671,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                     barycenter_computer_max_[c].setNumberOfInputs(diagrams_c_min.size());
                     barycenter_computer_max_[c].setCurrentBidders(diagrams_c_min);
                     barycenter_computer_max_[c].setCurrentBarycenter(centroids_with_price_max);
-                    all_matchings[2].resize(diagrams_c_min.size());
+                    all_matchings[c][2].resize(diagrams_c_min.size());
                     // cout<<"SIZE OF diagrams_min "<<diagrams_c_min.size()<<endl;
                 } else {
                     sizes.resize(barycenter_computer_max_[c].getCurrentBidders().size());
@@ -1569,7 +1680,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                     }
 
                     diagrams_c_min.resize(barycenter_computer_max_[c].getCurrentBidders().size());
-                    all_matchings[2].resize(barycenter_computer_max_[c].getCurrentBidders().size());
+                    all_matchings[c][2].resize(barycenter_computer_max_[c].getCurrentBidders().size());
                 }
 
                 // std::vector<dataType> min_diag_price(barycenter_computer_max_[c].getCurrentBidders().size());
@@ -1611,7 +1722,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                 // cout<<endl;
                 // cout<<"running matchings max"<<endl;
                 // cout<<"size centroid "<<centroids_with_price_max[c].size()<<endl;
-                barycenter_computer_max_[c].runMatching(&total_cost, epsilon_[2], sizes, kdt, &correspondance_kdt_map, &(min_diag_price->at(2)), &(min_price->at(2)), &(all_matchings[2]), use_kdt);
+                barycenter_computer_max_[c].runMatching(&total_cost, epsilon_[2], sizes, kdt, &correspondance_kdt_map, &(min_diag_price->at(2)), &(min_price->at(2)), &(all_matchings[c][2]), use_kdt);
                 precision_max = barycenter_computer_max_[c].isPrecisionObjectiveMet(0.01,0);
                 // cout<<"\n matchings :"<<endl;
                 // for(int ii=0;ii<all_matchings.size();ii++){
@@ -1624,7 +1735,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                 // std::cout<<"max : runned, now updating barycenter"<<std::endl;
                 cost_max_ += total_cost;
                 Timer time_update;
-                max_shift_c_max = barycenter_computer_max_[c].updateBarycenter(all_matchings[2]);
+                max_shift_c_max = barycenter_computer_max_[c].updateBarycenter(all_matchings[c][2]);
                 // cout<<"time update max "<<time_update.getElapsedTime()<<endl;
                 // std::cout<<"max: barycenter updated"<<std::endl;
                 if (max_shift_c_max > max_shift_vector[2]) {
@@ -1676,6 +1787,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
             }
             // cout<<"there end"<<endl;
         }
+
     }
     // Normally return max_shift, but it seems there is a bug
     // yielding max_shift > 100 * max_wasserstein_shift

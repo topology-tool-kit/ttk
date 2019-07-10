@@ -39,9 +39,10 @@ vtkStandardNewMacro(ttkPersistenceDiagramsClustering)
 
     final_centroids_ = NULL;
     intermediateDiagrams_ = NULL;
+    all_matchings_=NULL;
 
     SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(2);
+    SetNumberOfOutputPorts(3);
 }
 
 ttkPersistenceDiagramsClustering::~ttkPersistenceDiagramsClustering()
@@ -67,7 +68,7 @@ int ttkPersistenceDiagramsClustering::updateProgress(const float &progress)
     return 0;
 }
 
-int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input, vtkUnstructuredGrid *outputClusters, vtkUnstructuredGrid *outputCentroids, int numInputs)
+int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input, vtkUnstructuredGrid *outputClusters, vtkUnstructuredGrid *outputCentroids, vtkUnstructuredGrid *outputMatchings, int numInputs)
 {
     // Get arrays from input datas
     // std::cout<<"STARTING doIt"<<std::endl;
@@ -86,6 +87,7 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input, vtkUnstructuredGr
 
         vtkTemplateMacro(({
             vector<vector<macroDiagramTuple>> *intermediateDiagrams;
+            vector<vector<vector<macroMatchingTuple>>> *all_matchings;
             vector<vector<macroDiagramTuple>> *final_centroids;
             if(needUpdate_) {
                 if(intermediateDiagrams_) {
@@ -99,10 +101,17 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input, vtkUnstructuredGr
                     delete tmpPTR;
                 }
                 final_centroids_ = new vector<vector<macroDiagramTuple>>;
+
+                if(all_matchings_){
+                    vector<vector<vector<macroMatchingTuple>>> *tmpPTR = (vector<vector<vector<macroMatchingTuple>>> *) all_matchings_;
+                    delete tmpPTR;
+                }
+                all_matchings_ = new vector<vector<vector<macroMatchingTuple>>>(3);
             }
 
             final_centroids = (vector<vector<macroDiagramTuple>> *)final_centroids_;
             intermediateDiagrams = (vector<vector<macroDiagramTuple>> *)intermediateDiagrams_;
+            all_matchings = (vector<vector<vector<macroMatchingTuple>>> *)all_matchings_;
 
             if(needUpdate_) {
 
@@ -140,8 +149,8 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input, vtkUnstructuredGr
                     persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
 
                     persistenceDiagramsClustering.setDiagrams((void *)intermediateDiagrams);
-
-                    inv_clustering_ = persistenceDiagramsClustering.execute(final_centroids);
+                    cout<<"execute1"<<endl;
+                    inv_clustering_ = persistenceDiagramsClustering.execute(final_centroids, all_matchings);
 
                     needUpdate_ = false;
                 }
@@ -184,6 +193,7 @@ cout<<"diagrams"<<endl;
 cout<<"centroids"<<endl;
 
             outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(final_centroids, inv_clustering_, max_dimension_total_, Spacing));
+            outputMatchings->ShallowCopy(createMatchings(final_centroids, inv_clustering_, *intermediateDiagrams, all_matchings, max_dimension_total_, Spacing));
         }));
     }
 
@@ -252,7 +262,12 @@ int ttkPersistenceDiagramsClustering::RequestData(vtkInformation *request, vtkIn
     vtkDataSet *output2 = vtkDataSet::SafeDownCast(outInfo2->Get(vtkDataObject::DATA_OBJECT()));
     vtkUnstructuredGrid *output_centroids = vtkUnstructuredGrid::SafeDownCast(output2);
 
-    doIt(input, output_clusters, output_centroids, numInputs);
+    vtkInformation *outInfo3;
+    outInfo3 = outputVector->GetInformationObject(2);
+    vtkDataSet *output3 = vtkDataSet::SafeDownCast(outInfo3->Get(vtkDataObject::DATA_OBJECT()));
+    vtkUnstructuredGrid *output_matchings = vtkUnstructuredGrid::SafeDownCast(output3);
+
+    doIt(input, output_clusters, output_centroids, output_matchings,  numInputs);
     delete[] input;
 
     {

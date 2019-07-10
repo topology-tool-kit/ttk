@@ -54,7 +54,8 @@ namespace ttk{
 
 
 		std::vector<int>
-		execute(std::vector<std::vector<diagramTuple>>* centroids);
+		execute(std::vector<std::vector<diagramTuple>>* centroids,
+		    vector<vector<vector<matchingTuple>>>* all_matchings);
 
 		inline int setDiagrams(void *data){
 			inputData_ = data;
@@ -145,8 +146,6 @@ namespace ttk{
       int points_added_;
 	  int points_deleted_;
 
-      std::vector<std::vector<dataType>>      all_matchings_;
- 	  std::vector<std::vector<dataType>>      all_old_matchings_;
       std::vector<BidderDiagram<dataType>>    bidder_diagrams_;
       std::vector<GoodDiagram<dataType>>	  barycenter_goods_;
   };
@@ -155,7 +154,8 @@ namespace ttk{
 template <typename dataType>
   std::vector<int>
     PersistenceDiagramsClustering<dataType>::execute(
-      std::vector<std::vector<diagramTuple>>* final_centroids){
+      std::vector<std::vector<diagramTuple>>* final_centroids,
+      vector<vector<vector<matchingTuple>>>* all_matchings){
 
 	Timer t;
 	{
@@ -245,7 +245,8 @@ template <typename dataType>
   }
   break;
   }
-
+    
+    vector<vector<vector<vector<matchingTuple>>>> all_matchings_per_type_and_cluster;
     PDClustering<dataType> KMeans = PDClustering<dataType>();
     KMeans.setWasserstein(wasserstein_);
     KMeans.setThreadNumber(threadNumber_);
@@ -262,8 +263,9 @@ template <typename dataType>
     KMeans.setK(n_clusters_);
     KMeans.setDiagrams(&data_min, &data_sad, &data_max);
     KMeans.setDos(do_min, do_sad, do_max);
-    inv_clustering = KMeans.execute(*final_centroids);
-
+    cout<<"execute2"<<endl;
+    inv_clustering = KMeans.execute(*final_centroids, all_matchings_per_type_and_cluster);
+    vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
 
 
 	std::stringstream msg;
@@ -272,9 +274,48 @@ template <typename dataType>
 		<< " thread(s))."
 		<< std::endl;
 	dMsg(std::cout, msg.str(), timeMsg);
-	return inv_clustering;
+
+	/// Reconstruct matchings
+	//
+	cout<<"Reconstruction of matchings"<<endl;
+	all_matchings->resize(n_clusters_);
+	for(int c=0; c<n_clusters_; c++){
+	  all_matchings->at(c).resize(numberOfInputs_);
+	}
+	for(int i=0; i<numberOfInputs_; i++){
+	    if(do_min) {
+		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[inv_clustering[i]][0][i].size(); j++) {
+		    matchingTuple t = all_matchings_per_type_and_cluster[inv_clustering[i]][0][i][j];
+		    int bidder_id = std::get<0>(t);
+		    std::get<0>(t) = data_min_idx[i][bidder_id];
+		    all_matchings->at(inv_clustering[i])[i].push_back(t);
+		}
+	    }
+
+	    if(do_sad) {
+		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[inv_clustering[i]][1][i].size(); j++) {
+		    matchingTuple t = all_matchings_per_type_and_cluster[inv_clustering[i]][1][i][j];
+		    int bidder_id = std::get<0>(t);
+		    std::get<0>(t) = data_sad_idx[i][bidder_id];
+		    std::get<1>(t) = std::get<1>(t) + centroids_sizes[inv_clustering[i]][0];
+		    all_matchings->at(inv_clustering[i])[i].push_back(t);
+		}
+	    }
+
+	    if(do_max) {
+		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[inv_clustering[i]][2][i].size(); j++) {
+		    matchingTuple t = all_matchings_per_type_and_cluster[inv_clustering[i]][2][i][j];
+		    int bidder_id = std::get<0>(t);
+		    std::get<0>(t) = data_max_idx[i][bidder_id];
+		    std::get<1>(t) = std::get<1>(t) + centroids_sizes[inv_clustering[i]][0] + centroids_sizes[inv_clustering[i]][1];
+		    all_matchings->at(inv_clustering[i])[i].push_back(t);
+		}
+	    }
 	}
 
+	cout<<"Reconstruction of matchings done"<<endl;
+                      return inv_clustering;
+        }
 }
 }
 
