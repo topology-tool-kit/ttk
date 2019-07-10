@@ -34,6 +34,7 @@ namespace ttk {
         inputTriangl_->preprocessVertexNeighbors();
         inputTriangl_->preprocessEdges();
         inputTriangl_->preprocessTriangles();
+        inputTriangl_->preprocessTriangleEdges();
       }
     }
 
