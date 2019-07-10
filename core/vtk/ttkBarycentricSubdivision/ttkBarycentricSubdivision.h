@@ -32,6 +32,7 @@
 #include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkCellData.h>
 #include <vtkSmartPointer.h>
 
 // TTK code includes

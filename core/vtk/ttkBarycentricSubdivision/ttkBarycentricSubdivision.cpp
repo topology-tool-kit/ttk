@@ -35,45 +35,93 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   baseWorker_.setOutputTriangulation(triangulationSubdivision);
   baseWorker_.setInputPoints(input->GetPoints()->GetVoidPointer(0));
 
-  auto inputScalarField = input->GetPointData()->GetArray(0);
+  // generate the new triangulation
+  baseWorker_.execute();
 
-  if(inputScalarField == nullptr) {
-    return -2;
+  auto npointdata = input->GetPointData()->GetNumberOfArrays();
+  auto ncelldata = input->GetCellData()->GetNumberOfArrays();
+
+  auto allocateScalarField = [&](vtkDataArray *const inputScalarField) {
+    vtkSmartPointer<vtkDataArray> outputScalarField{};
+
+    // allocate the memory for the output scalar field
+    switch(inputScalarField->GetDataType()) {
+      case VTK_CHAR:
+        outputScalarField = vtkCharArray::New();
+        break;
+      case VTK_DOUBLE:
+        outputScalarField = vtkDoubleArray::New();
+        break;
+      case VTK_FLOAT:
+        outputScalarField = vtkFloatArray::New();
+        break;
+      case VTK_INT:
+        outputScalarField = vtkIntArray::New();
+        break;
+      case VTK_ID_TYPE:
+        outputScalarField = vtkIdTypeArray::New();
+        break;
+      default:
+        break;
+    }
+    return outputScalarField;
+  };
+
+  const auto outPointsNumber = baseWorker_.getNumberOfVertices();
+
+  for(size_t i = 0; i < npointdata; ++i) {
+    auto inputScalarField = input->GetPointData()->GetArray(i);
+    if(inputScalarField == nullptr) {
+      return -2;
+    }
+
+#define DISPATCH_INTERPOLATE_DIS(CASE, TYPE)                      \
+  case CASE:                                                      \
+    baseWorker_.interpolateDiscreteScalarField<TYPE>(             \
+      static_cast<TYPE *>(inputScalarField->GetVoidPointer(0)),   \
+      static_cast<TYPE *>(outputScalarField->GetVoidPointer(0))); \
+    break
+#define DISPATCH_INTERPOLATE_CONT(CASE, TYPE)                     \
+  case CASE:                                                      \
+    baseWorker_.interpolateContinuousScalarField<TYPE>(           \
+      static_cast<TYPE *>(inputScalarField->GetVoidPointer(0)),   \
+      static_cast<TYPE *>(outputScalarField->GetVoidPointer(0))); \
+    break
+
+    auto outputScalarField = allocateScalarField(inputScalarField);
+    // only for scalar fields
+    outputScalarField->SetNumberOfComponents(1);
+    outputScalarField->SetNumberOfTuples(outPointsNumber);
+    outputScalarField->SetName(inputScalarField->GetName());
+    output->GetPointData()->AddArray(outputScalarField);
+    switch(inputScalarField->GetDataType()) {
+      DISPATCH_INTERPOLATE_DIS(VTK_CHAR, char);
+      DISPATCH_INTERPOLATE_DIS(VTK_INT, int);
+      DISPATCH_INTERPOLATE_DIS(VTK_ID_TYPE, vtkIdType);
+      DISPATCH_INTERPOLATE_CONT(VTK_FLOAT, float);
+      DISPATCH_INTERPOLATE_CONT(VTK_DOUBLE, double);
+    }
+    output->GetPointData()->AddArray(outputScalarField);
   }
 
-  vtkSmartPointer<vtkDataArray> outputScalarField{};
+  for(size_t i = 0; i < ncelldata; ++i) {
+    auto inputScalarField = input->GetCellData()->GetArray(i);
+    if(inputScalarField == nullptr) {
+      return -2;
+    }
 
-  // allocate the memory for the output scalar field
-  switch(inputScalarField->GetDataType()) {
-    case VTK_CHAR:
-      outputScalarField = vtkCharArray::New();
-      break;
-    case VTK_DOUBLE:
-      outputScalarField = vtkDoubleArray::New();
-      break;
-    case VTK_FLOAT:
-      outputScalarField = vtkFloatArray::New();
-      break;
-    case VTK_INT:
-      outputScalarField = vtkIntArray::New();
-      break;
-    case VTK_ID_TYPE:
-      outputScalarField = vtkIdTypeArray::New();
-      break;
-    default:
-      std::stringstream msg;
-      msg << MODULE_S "Unsupported data type :(" << std::endl;
-      dMsg(std::cerr, msg.str(), fatalMsg);
-      return -3;
-  }
-
-  outputScalarField->SetNumberOfTuples(input->GetNumberOfPoints());
-  outputScalarField->SetName(inputScalarField->GetName());
-  output->GetPointData()->AddArray(outputScalarField);
-
-  // calling the executing package
-  switch(inputScalarField->GetDataType()) {
-    ttkTemplateMacro(baseWorker_.execute());
+    auto outputScalarField = allocateScalarField(inputScalarField);
+    // only for scalar fields
+    outputScalarField->SetNumberOfComponents(1);
+    outputScalarField->SetNumberOfTuples(outPointsNumber);
+    outputScalarField->SetName(inputScalarField->GetName());
+    output->GetPointData()->AddArray(outputScalarField);
+    switch(inputScalarField->GetDataType()) {
+      ttkTemplateMacro(baseWorker_.interpolateCellDataField<VTK_TT>(
+        static_cast<VTK_TT *>(inputScalarField->GetVoidPointer(0)),
+        static_cast<VTK_TT *>(outputScalarField->GetVoidPointer(0))));
+    }
+    output->GetCellData()->AddArray(outputScalarField);
   }
 
   // output variables
