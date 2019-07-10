@@ -140,7 +140,7 @@ int ttk::BarycentricSubdivision::buildOutputTriangulation() {
     return 2;
   }
 
-  outputTriangl_->setInputPoints(points_.size(), points_.data());
+  outputTriangl_->setInputPoints(points_.size() / 3, points_.data());
   outputTriangl_->setInputCells(cells_.size() / 4, cells_.data());
 
   return 0;
