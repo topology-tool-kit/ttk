@@ -81,11 +81,15 @@ int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
 
 int ttkSurfaceQuadrangulation::getTriangulation(vtkUnstructuredGrid *input) {
   triangulation_ = ttkTriangulation::getTriangulation(input);
-  TTK_ABORT_KK(triangulation_ == nullptr, "invalid triangulation", -3);
+  TTK_ABORT_KK(triangulation_ == nullptr, "invalid triangulation", -1);
+
+  auto points = input->GetPoints();
+  TTK_ABORT_KK(points == nullptr, "wrong points", -2);
+
   triangulation_->setWrapper(this);
   surfaceQuadrangulation_.setWrapper(this);
   surfaceQuadrangulation_.setupTriangulation(triangulation_);
-  surfaceQuadrangulation_.setInputPoints(input->GetPoints()->GetVoidPointer(0));
+  surfaceQuadrangulation_.setInputPoints(points->GetVoidPointer(0));
 
   return 0;
 }
