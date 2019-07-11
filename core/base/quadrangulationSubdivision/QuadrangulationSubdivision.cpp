@@ -479,6 +479,14 @@ ttk::QuadrangulationSubdivision::Point
     }
   }
 
+  size_t trChecked
+    = std::count(trianglesTested.begin(), trianglesTested.end(), true);
+  const size_t maxTrChecked = 100;
+
+  if(success && trChecked > maxTrChecked) {
+    success = false;
+  }
+
   if(success) {
     // replace in nearestVertexIdentifier_ by nearest vertex in projected
     // triangle
@@ -500,8 +508,7 @@ ttk::QuadrangulationSubdivision::Point
 
   // fill in debug info
   if(lastIter) {
-    trianglesChecked_[a]
-      = std::count(trianglesTested.begin(), trianglesTested.end(), true);
+    trianglesChecked_[a] = trChecked;
     projSucceeded_[a] = success ? (doReverseProj ? 1 : 2) : 3;
   }
 
