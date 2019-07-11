@@ -25,6 +25,7 @@
 #include <vtkDataSetAlgorithm.h>
 #include <vtkFieldData.h>
 #include <vtkInformation.h>
+#include <vtkPointData.h>
 
 // TTK includes
 #include <ContourAroundPoint.hpp>
@@ -100,7 +101,7 @@ public:
   /// debugLevel-specific prefix and include a line end after the message.
   virtual int dMsg(std::ostream &stream,
                    std::string msg,
-                   const int &debugLevel = infoMsg) const {
+                   const int &debugLevel = infoMsg) const override {
     if(debugLevel > debugLevel_ && debugLevel > ttk::globalDebugLevel_)
       return 0;
     stream << "[ttkContourAroundPoint] ";
