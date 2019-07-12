@@ -9,15 +9,11 @@ namespace ttk {
     /**
      * @brief Compute the Dijkstra shortest path from source
      *
-     * @param[in] source Source vertex from which to compute the Dijkstra
-     * algorithm
-     * @param[in] triangulation Access to neighbor vertices, should be already
-     * preprocessed
-     * @param[out] outputDists Vector of distances to source for every vertex in
-     * the mesh
-     * @param[in] bounds Pointer to a vector of vertices that will
-     * stop the algorithm once all are reached, set it to nullptr for
-     * processing the whole mesh
+     * @param[in] source Source vertex for the Dijkstra algorithm
+     * @param[in] triangulation Access to neighbor vertices
+     * @param[out] outputDists Distances to source for every mesh vertex
+     * @param[in] bounds Stop the algorithim if all vertices are reached
+     * @param[in] mask Vector masking the triangulation
      *
      * @return 0 in case of success
      */
@@ -25,7 +21,9 @@ namespace ttk {
     int shortestPath(const SimplexId source,
                      Triangulation &triangulation,
                      std::vector<T> &outputDists,
-                     const std::vector<SimplexId> &bounds = std::vector<SimplexId>());
+                     const std::vector<SimplexId> &bounds
+                     = std::vector<SimplexId>(),
+                     const std::vector<bool> &mask = std::vector<bool>());
 
   } // namespace Dijkstra
 } // namespace ttk

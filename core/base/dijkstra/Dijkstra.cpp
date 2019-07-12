@@ -7,12 +7,20 @@ template <typename T>
 int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
                                 ttk::Triangulation &triangulation,
                                 std::vector<T> &outputDists,
-                                const std::vector<ttk::SimplexId> &bounds) {
+                                const std::vector<ttk::SimplexId> &bounds,
+                                const std::vector<bool> &mask) {
 
   // should we process the whole mesh or stop at some point?
   bool processAllVertices = bounds.empty();
   // total number of vertices in the mesh
   size_t vertexNumber = triangulation.getNumberOfVertices();
+  // is there a mask?
+  bool isMask = !mask.empty();
+
+  // check mask size
+  if(isMask && mask.size() != vertexNumber) {
+    return 1;
+  }
 
   // list all reached bounds
   std::vector<bool> reachedBounds;
@@ -49,6 +57,12 @@ int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
       // neighbor Id
       SimplexId neigh{};
       triangulation.getVertexNeighbor(vert, i, neigh);
+
+      // limit to masked vertices
+      if(isMask && !mask[neigh]) {
+        continue;
+      }
+
       // neighbor coordinates
       std::array<float, 3> nCoords{};
       triangulation.getVertexPoint(neigh, nCoords[0], nCoords[1], nCoords[2]);
@@ -82,9 +96,11 @@ template int
   ttk::Dijkstra::shortestPath<float>(const ttk::SimplexId source,
                                      ttk::Triangulation &triangulation,
                                      std::vector<float> &outputDists,
-                                     const std::vector<ttk::SimplexId> &bounds);
-template int ttk::Dijkstra::shortestPath<double>(
-  const ttk::SimplexId source,
-  ttk::Triangulation &triangulation,
-  std::vector<double> &outputDists,
-  const std::vector<ttk::SimplexId> &bounds);
+                                     const std::vector<ttk::SimplexId> &bounds,
+                                     const std::vector<bool> &mask);
+template int
+  ttk::Dijkstra::shortestPath<double>(const ttk::SimplexId source,
+                                      ttk::Triangulation &triangulation,
+                                      std::vector<double> &outputDists,
+                                      const std::vector<ttk::SimplexId> &bounds,
+                                      const std::vector<bool> &mask);
