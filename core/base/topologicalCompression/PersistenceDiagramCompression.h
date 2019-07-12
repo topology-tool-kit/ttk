@@ -10,18 +10,18 @@ int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
   std::vector<std::tuple<double, int>> &mapping,
   std::vector<std::tuple<int, double, int>> &criticalConstraints,
   bool zfpOnly,
-  int nbSegments,
-  int nbVertices,
+  int nSegments,
+  int nVertices,
   double zfpBitBudget) {
-  auto log2 = ttk::TopologicalCompression::log2;
+  using ttk::TopologicalCompression;
 
   int totalSize = 0;
 
   if(!(zfpOnly)) {
     // Topological segments.
-    int numberOfBitsPerSegment = log2(nbSegments) + 1;
+    int numberOfBitsPerSegment = log2(nSegments) + 1;
     double nbCharPerSegment = (double)numberOfBitsPerSegment / 8.0;
-    totalSize += (sizeof(int) * 2 + std::ceil(nbCharPerSegment * nbVertices));
+    totalSize += (sizeof(int) * 2 + std::ceil(nbCharPerSegment * nVertices));
 
     // Geometrical mapping.
     auto mappingSize = (int)mapping.size();
@@ -32,7 +32,7 @@ int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
   }
 
   totalSize += (zfpBitBudget <= 64 && zfpBitBudget > 0)
-                 ? (nbVertices * std::ceil(zfpBitBudget / 2.0))
+                 ? (nVertices * std::ceil(zfpBitBudget / 2.0))
                  : 0;
   totalSize += 2;
   // * 16 -> 32 bpd
@@ -96,7 +96,7 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
     int nz = 1 + dataExtent[5] - dataExtent[4];
 
     std::vector<double> dataVector(toCompress, toCompress + (nx * ny * nz));
-    auto CompressWithZFP = ttk::TopologicalCompression::CompressWithZFP;
+    using ttk::TopologicalCompression;
     numberOfBytesWritten
       += CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpBitBudget);
 
@@ -132,9 +132,7 @@ int ttk::TopologicalCompression::ReadPersistenceTopology(FILE *fm) {
 
 template <typename dataType>
 int ttk::TopologicalCompression::ReadPersistenceGeometry(FILE *fm) {
-  auto CropIntervals = ttk::TopologicalCompression::CropIntervals<double>;
-  auto cmp = ttk::TopologicalCompression::cmp;
-  auto ReadPersistenceIndex = ttk::TopologicalCompression::ReadPersistenceIndex;
+  using ttk::TopologicalCompression;
 
   int sqMethod = sqMethodInt_;
   bool zfpOnly = zfpOnly_;
@@ -207,7 +205,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(FILE *fm) {
   } else {
 #ifdef TTK_ENABLE_ZFP
     // 2.b. (2.) Read with ZFP.
-    auto CompressWithZFP = ttk::TopologicalCompression::CompressWithZFP;
+    using ttk::TopologicalCompression;
     numberOfBytesRead += zfpBitBudget * vertexNumber;
     CompressWithZFP(fm, true, decompressedData_, nx, ny, nz, zfpBitBudget);
     {
@@ -748,8 +746,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         segments.push_back(std::make_tuple(v1, i1));
       } else {
         // Subdivide.
-        double nbSegments = std::ceil(diff / maxError);
-        for(int j = 0, nbs = (int)nbSegments; j < nbs; ++j) {
+        double nSegments = std::ceil(diff / maxError);
+        for(int j = 0, nbs = (int)nSegments; j < nbs; ++j) {
           dataType sample = v0 + j * maxError;
           int int1 = i1;
           segments.push_back(std::make_tuple(sample, int1));
@@ -1034,7 +1032,6 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   }
 
   {
-    std::stringstream msg;
     if(indexLast > -1) {
       if(indexLast + 1 != (int)mapping_.size()) {
         std::stringstream msg;
@@ -1045,10 +1042,11 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       }
     }
 
-    int nbSegments = indexLast > -1 ? indexLast + 1 : (int)segments.size() - 1;
-    this->nbSegments = nbSegments;
+    int nSegments = indexLast > -1 ? indexLast + 1 : (int)segments.size() - 1;
+    this->nbSegments = nSegments;
     this->nbVertices = vertexNumber;
-    msg << "[TopologicalCompression] Affected " << nbSegments << " segment"
+    std::stringstream msg;
+    msg << "[TopologicalCompression] Affected " << nSegments << " segment"
         << (nbSegments > 1 ? "s" : "") << "." << std::endl;
     msg << "[TopologicalCompression] Data-set (" << vertexNumber
         << " points) processed in " << t1.getElapsedTime() << " s. ("

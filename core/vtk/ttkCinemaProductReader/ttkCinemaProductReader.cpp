@@ -27,7 +27,7 @@ vtkStandardNewMacro(ttkCinemaProductReader)
   }
 
   Timer t;
-  Memory m;
+  Memory mem;
 
   // Prepare Input and Output
   vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
@@ -135,8 +135,8 @@ vtkStandardNewMacro(ttkCinemaProductReader)
         << endl;
     msg << "[ttkCinemaProductReader]   time: " << t.getElapsedTime() << " s."
         << endl;
-    msg << "[ttkCinemaProductReader] memory: " << m.getElapsedUsage() << " MB."
-        << endl;
+    msg << "[ttkCinemaProductReader] memory: " << mem.getElapsedUsage()
+        << " MB." << endl;
     dMsg(cout, msg.str(), timeMsg);
   }
 

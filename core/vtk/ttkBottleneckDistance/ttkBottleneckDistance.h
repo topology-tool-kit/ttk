@@ -464,8 +464,8 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
   const std::vector<diagramTuple> &diagram1,
   const std::vector<diagramTuple> &diagram2,
   const std::vector<matchingTuple> &matchings,
-  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_,
-  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_) {
+  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1,
+  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2) {
 
   auto diagramSize1 = (BIdVertex)diagram1.size();
   auto diagramSize2 = (BIdVertex)diagram2.size();
@@ -494,12 +494,12 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
 
     // Last cell = junction
     if(diagramSize1
-       < CTPersistenceDiagram1_->GetCellData()->GetNumberOfTuples()) {
+       < CTPersistenceDiagram1->GetCellData()->GetNumberOfTuples()) {
       matchingIdentifiers1->InsertTuple1(diagramSize1, -1);
       matchingIdentifiers1->InsertTuple1(diagramSize1 + 1, -1);
     }
     if(diagramSize2
-       < CTPersistenceDiagram2_->GetCellData()->GetNumberOfTuples()) {
+       < CTPersistenceDiagram2->GetCellData()->GetNumberOfTuples()) {
       matchingIdentifiers2->InsertTuple1(diagramSize2, -1);
       matchingIdentifiers2->InsertTuple1(diagramSize2 + 1, -1);
     }
@@ -515,8 +515,8 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
       pairingIndex++;
     }
 
-    CTPersistenceDiagram1_->GetCellData()->AddArray(matchingIdentifiers1);
-    CTPersistenceDiagram2_->GetCellData()->AddArray(matchingIdentifiers2);
+    CTPersistenceDiagram1->GetCellData()->AddArray(matchingIdentifiers1);
+    CTPersistenceDiagram2->GetCellData()->AddArray(matchingIdentifiers2);
   }
 
   return 0;

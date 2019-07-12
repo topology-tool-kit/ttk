@@ -476,7 +476,7 @@ inline int ttk::ReebSpace::execute() {
   // post-process for further interaction
   if((totalArea_ == -1) || (totalVolume_ == -1) || (totalHyperVolume_ == -1)) {
 
-    Timer t;
+    Timer tm;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -495,7 +495,7 @@ inline int ttk::ReebSpace::execute() {
     {
       std::stringstream msg;
       msg << "[ReebSpace] Geometrical measures computed in "
-          << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))"
+          << tm.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))"
           << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
     }

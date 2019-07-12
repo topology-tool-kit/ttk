@@ -5,7 +5,6 @@
 
 // Process a row of a query resultCSV and append it to a string
 static int processRow(void *data, int argc, char **argv, char **azColName) {
-  int i;
 
   // Get output string as reference
   string &resultCSV = *((string *)data);
@@ -18,7 +17,7 @@ static int processRow(void *data, int argc, char **argv, char **azColName) {
   }
 
   // Append row content to string
-  for(i = 0; i < argc; i++)
+  for(int i = 0; i < argc; i++)
     resultCSV += (i > 0 ? "," : "") + string(argv[i]);
   resultCSV += "\n";
 

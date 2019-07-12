@@ -48,7 +48,7 @@ vtkStandardNewMacro(ttkCinemaImaging)
     dMsg(cout, msg.str(), infoMsg);
   }
 
-  Memory m;
+  Memory mem;
   Timer t;
   double t0 = 0;
 
@@ -143,11 +143,8 @@ vtkStandardNewMacro(ttkCinemaImaging)
     auto valuePassCollection = vtkSmartPointer<vtkRenderPassCollection>::New();
 
     // Lambda function that generates vtkValuePasses for Point or Cell Data
-    auto addValuePasses = [](
-                            vtkRenderPassCollection *valuePassCollection,
-                            vector<pair<vtkValuePass *, string>> &valuePassList,
-                            vtkFieldData *data,
-                            int pointDataFlag // 0: Point Data, 1: Cell Data
+    auto addValuePasses = [&](vtkFieldData *data,
+                              int pointDataFlag // 0: Point Data, 1: Cell Data
                           ) {
       double minmax[2];
       size_t n = data->GetNumberOfArrays();
@@ -176,10 +173,10 @@ vtkStandardNewMacro(ttkCinemaImaging)
     };
 
     // Add Point Data Passes
-    addValuePasses(valuePassCollection, valuePassList, poly->GetPointData(), 0);
+    addValuePasses(poly->GetPointData(), 0);
 
     // Add Cell Data Passes
-    addValuePasses(valuePassCollection, valuePassList, poly->GetCellData(), 1);
+    addValuePasses(poly->GetCellData(), 1);
 
     // Build Render Sequence
     {
@@ -366,7 +363,7 @@ vtkStandardNewMacro(ttkCinemaImaging)
     msg << "[ttkCinemaImaging] " << n << " Images rendered" << endl;
     msg << "[ttkCinemaImaging]   time: " << (t.getElapsedTime() - t0) << " s"
         << endl;
-    msg << "[ttkCinemaImaging] memory: " << m.getElapsedUsage() << " MB"
+    msg << "[ttkCinemaImaging] memory: " << mem.getElapsedUsage() << " MB"
         << endl;
     dMsg(cout, msg.str(), timeMsg);
   }

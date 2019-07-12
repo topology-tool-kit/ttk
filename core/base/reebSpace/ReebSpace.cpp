@@ -590,14 +590,14 @@ int ReebSpace::compute3sheets(vector<vector<vector<SimplexId>>> &tetTriangles) {
                     SimplexId y = tetTriangles[tetId][m][1];
                     SimplexId z = tetTriangles[tetId][m][2];
 
-                    FiberSurface::Triangle *t
+                    FiberSurface::Triangle *tr
                       = &(originalData_.sheet2List_[x].triangleList_[y][z]);
 
                     bool cuttingTriangle = false;
                     for(int n = 0; n < 3; n++) {
                       FiberSurface::Vertex *v
                         = &(originalData_.sheet2List_[x]
-                              .vertexList_[y][t->vertexIds_[n]]);
+                              .vertexList_[y][tr->vertexIds_[n]]);
 
                       if(((v->meshEdge_.first == vertexId)
                           && (v->meshEdge_.second == otherVertexId))
@@ -611,7 +611,7 @@ int ReebSpace::compute3sheets(vector<vector<vector<SimplexId>>> &tetTriangles) {
 
                     if(cuttingTriangle) {
 
-                      SimplexId polygonId = t->polygonEdgeId_;
+                      SimplexId polygonId = tr->polygonEdgeId_;
                       SimplexId edgeId = jacobi2edges_[polygonId];
                       if(originalData_.edgeTypes_[edgeId] == 1) {
                         // this is a saddle Jacobi edge

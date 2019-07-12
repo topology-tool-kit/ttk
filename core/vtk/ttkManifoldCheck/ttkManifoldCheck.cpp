@@ -8,7 +8,7 @@ vtkStandardNewMacro(ttkManifoldCheck)
   int ttkManifoldCheck::doIt(vector<vtkDataSet *> &inputs,
                              vector<vtkDataSet *> &outputs) {
 
-  Memory m;
+  Memory mem;
 
   vtkDataSet *input = inputs[0];
   vtkDataSet *output = outputs[0];
@@ -34,9 +34,11 @@ vtkStandardNewMacro(ttkManifoldCheck)
     &triangleLinkComponentNumber_);
   manifoldCheck_.execute();
 
-  stringstream msg;
-  msg << "[ttkManifoldCheck] Preparing VTK output..." << endl;
-  dMsg(cout, msg.str(), Debug::timeMsg);
+  {
+    stringstream msg;
+    msg << "[ttkManifoldCheck] Preparing VTK output..." << endl;
+    dMsg(cout, msg.str(), Debug::timeMsg);
+  }
 
   vtkSmartPointer<ttkSimplexIdTypeArray> vertexPointArray
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
@@ -260,8 +262,8 @@ vtkStandardNewMacro(ttkManifoldCheck)
 
   {
     stringstream msg;
-    msg << "[ttkManifoldCheck] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
+    msg << "[ttkManifoldCheck] Memory usage: " << mem.getElapsedUsage()
+        << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }
 

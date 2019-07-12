@@ -175,8 +175,8 @@ namespace ttk {
       std::stringstream msg;
       msg << "[Os] Could not open directory `" << directoryName << "'..."
           << std::endl;
-      Debug d;
-      d.dMsg(std::cerr, msg.str(), 0);
+      Debug dbg;
+      dbg.dMsg(std::cerr, msg.str(), 0);
     } else {
       struct dirent *dirEntry;
       while((dirEntry = readdir(d)) != NULL) {

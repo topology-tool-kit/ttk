@@ -271,9 +271,9 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
 
   int numberOfMismatches = 0;
   for(int m = 0, ms = (int)matchings.size(); m < ms; ++m) {
-    matchingTuple t = matchings[m];
-    int i = transposeOriginal ? std::get<1>(t) : std::get<0>(t);
-    int j = transposeOriginal ? std::get<0>(t) : std::get<1>(t);
+    matchingTuple mt = matchings[m];
+    int i = transposeOriginal ? std::get<1>(mt) : std::get<0>(mt);
+    int j = transposeOriginal ? std::get<0>(mt) : std::get<1>(mt);
     // dataType val = std::get<2>(t);
 
     diagramTuple t1 = CTDiagram1[i];
@@ -308,11 +308,11 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   dataType affectationD = d;
   d = wasserstein > 0
         ? pow(
-            d + addedMaxPersistence + addedMinPersistence + addedSadPersistence,
-            (1.0 / (double)wasserstein))
+          d + addedMaxPersistence + addedMinPersistence + addedSadPersistence,
+          (1.0 / (double)wasserstein))
         : std::max(
-            d, std::max(addedMaxPersistence,
-                        std::max(addedMinPersistence, addedSadPersistence)));
+          d, std::max(addedMaxPersistence,
+                      std::max(addedMinPersistence, addedSadPersistence)));
 
   {
     std::stringstream msg;

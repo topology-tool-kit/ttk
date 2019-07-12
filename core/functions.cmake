@@ -9,7 +9,7 @@ function(ttk_set_compile_options library)
   # compilation flags
   if (NOT MSVC)
     # GCC and Clang
-    target_compile_options(${library} PRIVATE -Wall)
+    target_compile_options(${library} PRIVATE -Wall -Wshadow)
   else()
     # MSVC
     target_compile_options(${library} PRIVATE /W4)
