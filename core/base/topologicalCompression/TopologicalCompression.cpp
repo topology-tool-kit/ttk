@@ -40,7 +40,6 @@ int ttk::TopologicalCompression::compressZFPInternal(double *array,
   zfp_type type; // array scalar type
   zfp_field *field; // array meta data
   zfp_stream *zfp; // compressed stream
-  void *buffer; // storage for compressed stream
   size_t bufsize; // byte size of compressed buffer
   bitstream *stream; // bit stream to write to or read from
   size_t zfpsize; // byte size of compressed stream
@@ -78,10 +77,10 @@ int ttk::TopologicalCompression::compressZFPInternal(double *array,
 
   // allocate buffer for compressed data
   bufsize = zfp_stream_maximum_size(zfp, field);
-  buffer = malloc(bufsize);
+  std::vector<unsigned char> buffer(bufsize);
 
   // associate bit stream with allocated buffer
-  stream = stream_open(buffer, bufsize);
+  stream = stream_open(buffer.data(), bufsize);
   zfp_stream_set_bit_stream(zfp, stream);
   zfp_stream_rewind(zfp);
 
@@ -89,7 +88,7 @@ int ttk::TopologicalCompression::compressZFPInternal(double *array,
   if(decompress) {
     // read compressed stream and decompress array
     // zfpsize = fread(buffer, 1, bufsize, stdin);
-    zfpsize = fread(buffer, 1, bufsize, file);
+    zfpsize = fread(buffer.data(), 1, bufsize, file);
     if(!zfp_decompress(zfp, field)) {
       fprintf(stderr, "decompression failed\n");
       status = 1;
@@ -101,7 +100,7 @@ int ttk::TopologicalCompression::compressZFPInternal(double *array,
       fprintf(stderr, "compression failed\n");
       status = 1;
     } else
-      fwrite(buffer, 1, zfpsize, file);
+      fwrite(buffer.data(), 1, zfpsize, file);
     // fwrite(buffer, 1, zfpsize, stdout);
   }
 
@@ -109,7 +108,6 @@ int ttk::TopologicalCompression::compressZFPInternal(double *array,
   zfp_field_free(field);
   zfp_stream_close(zfp);
   stream_close(stream);
-  free(buffer);
   // free(array);
 
   if(status != 0) {

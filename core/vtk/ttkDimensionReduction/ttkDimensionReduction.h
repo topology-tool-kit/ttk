@@ -306,13 +306,10 @@ protected:
     pca_MaxIteration = "auto";
 
     UseAllCores = true;
-
-    outputData_ = new std::vector<std::vector<double>>;
   }
 
   ~ttkDimensionReduction() {
-    delete outputData_;
-  };
+  }
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
@@ -389,5 +386,5 @@ private:
   ttk::DimensionReduction dimensionReduction_;
 
   std::vector<std::string> ScalarFields;
-  std::vector<std::vector<double>> *outputData_;
+  std::vector<std::vector<double>> outputData_{};
 };

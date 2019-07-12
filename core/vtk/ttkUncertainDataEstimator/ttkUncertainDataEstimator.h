@@ -143,11 +143,11 @@ private:
   int allocatedBinCount_;
   vtkDataArray *outputLowerBoundScalarField_;
   vtkDataArray *outputUpperBoundScalarField_;
-  vtkDoubleArray **outputProbabilityScalarField_;
+  std::vector<vtkDoubleArray *> outputProbabilityScalarField_{};
   vtkDoubleArray *outputMeanField_;
 
   // base code features
-  int doIt(vtkDataSet **input,
+  int doIt(const std::vector<vtkDataSet *> &input,
            vtkDataSet *outputBoundFields,
            vtkDataSet *ouputProbability,
            vtkDataSet *outputMean,

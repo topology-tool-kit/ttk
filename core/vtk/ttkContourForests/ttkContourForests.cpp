@@ -14,7 +14,7 @@ ttkContourForests::ttkContourForests()
     // Here the given number of core only serve for preprocess,
     // a clean tree append before the true process and re-set
     // the good number of threads
-    contourTree_{new ContourForests()}, skeletonNodes_{vtkPolyData::New()},
+    contourTree_{}, skeletonNodes_{vtkPolyData::New()},
     skeletonArcs_{vtkPolyData::New()}, segmentation_{},
 
     // Void //
@@ -33,15 +33,9 @@ ttkContourForests::ttkContourForests()
     toUpdateTree_{true}, toComputeSkeleton_{true}, toComputeSegmentation_{true},
 
     // Convenient storage //
-    deltaScalar_{}, numberOfVertices_{},
-    vertexSoSoffsets_{new vector<SimplexId>},
-    criticalPoints_{new vector<SimplexId>}, vertexScalars_{nullptr},
-    inputScalars_{new vector<vector<double>>},
-    inputScalarsName_{new vector<string>},
-    samples_{new vector<vector<vector<vector<SimplexId>>>>},
-    barycenters_{new vector<vector<vector<vector<double>>>>} {
-  contourTree_->setWrapper(this);
-  contourTree_->setDebugLevel(debugLevel_);
+    deltaScalar_{}, numberOfVertices_{} {
+  contourTree_.setWrapper(this);
+  contourTree_.setDebugLevel(debugLevel_);
   UseAllCores = false;
   useInputOffsetScalarField_ = false;
   SetTreeType(2);
@@ -61,7 +55,6 @@ ttkContourForests::ttkContourForests()
 
 ttkContourForests::~ttkContourForests() {
   // Base //
-  delete contourTree_;
   if(skeletonNodes_)
     skeletonNodes_->Delete();
   if(skeletonArcs_)
@@ -71,14 +64,6 @@ ttkContourForests::~ttkContourForests() {
   // Void //
   voidUnstructuredGrid_->Delete();
   voidPolyData_->Delete();
-
-  // Convenient storage //
-  delete vertexSoSoffsets_;
-  delete criticalPoints_;
-  delete inputScalars_;
-  delete inputScalarsName_;
-  delete samples_;
-  delete barycenters_;
 }
 
 void ttkContourForests::clearSkeleton() {
@@ -97,10 +82,8 @@ void ttkContourForests::clearSegmentation() {
 
 void ttkContourForests::clearTree() {
   tree_ = nullptr;
-  delete contourTree_;
-  contourTree_ = new ContourForests();
-  contourTree_->setWrapper(this);
-  contourTree_->setDebugLevel(debugLevel_);
+  contourTree_.setWrapper(this);
+  contourTree_.setDebugLevel(debugLevel_);
 }
 
 // transmit abort signals -- to copy paste in other wrappers
@@ -348,7 +331,7 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
 #endif
 
   varyingDataValues_ = (vtkInputScalars_->GetMTime() > GetMTime());
-  if(varyingMesh_ || varyingDataValues_ || !inputScalarsName_->size()) {
+  if(varyingMesh_ || varyingDataValues_ || inputScalarsName_.empty()) {
     if(input->GetPointData()) {
       int numberOfArrays = input->GetPointData()->GetNumberOfArrays();
       int numberOfScalarArrays{};
@@ -363,8 +346,8 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
         }
       }
 
-      inputScalars_->resize(numberOfScalarArrays);
-      inputScalarsName_->resize(numberOfScalarArrays);
+      inputScalars_.resize(numberOfScalarArrays);
+      inputScalarsName_.resize(numberOfScalarArrays);
 
       int k{};
       for(int i = 0; i < numberOfArrays; ++i) {
@@ -372,11 +355,11 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
         if(inputArray) {
           if(inputArray->GetNumberOfTuples() == numberOfVertices_
              && inputArray->GetNumberOfComponents() == 1) {
-            (*inputScalars_)[k].resize(numberOfVertices_);
-            (*inputScalarsName_)[k] = inputArray->GetName();
+            inputScalars_[k].resize(numberOfVertices_);
+            inputScalarsName_[k] = inputArray->GetName();
 
             for(SimplexId j = 0; j < numberOfVertices_; ++j) {
-              (*inputScalars_)[k][j] = inputArray->GetTuple1(j);
+              inputScalars_[k][j] = inputArray->GetTuple1(j);
             }
 
             ++k;
@@ -388,12 +371,12 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
   }
 
   if(scalarField_.size() == 0) {
-    vertexScalars_ = &((*inputScalars_)[FieldId]);
-    scalarField_ = (*inputScalarsName_)[FieldId];
+    vertexScalars_ = &(inputScalars_[FieldId]);
+    scalarField_ = inputScalarsName_[FieldId];
   } else {
-    for(unsigned int i = 0; i < inputScalarsName_->size(); ++i) {
-      if((*inputScalarsName_)[i] == scalarField_) {
-        vertexScalars_ = &((*inputScalars_)[i]);
+    for(unsigned int i = 0; i < inputScalarsName_.size(); ++i) {
+      if(inputScalarsName_[i] == scalarField_) {
+        vertexScalars_ = &(inputScalars_[i]);
         FieldId = i;
       }
     }
@@ -409,9 +392,9 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
   triangulation_->setWrapper(this);
 
   // offsets
-  if(varyingMesh_ || varyingDataValues_ || !vertexSoSoffsets_->size()) {
+  if(varyingMesh_ || varyingDataValues_ || !vertexSoSoffsets_.size()) {
 
-    vertexSoSoffsets_->clear();
+    vertexSoSoffsets_.clear();
 
     if((InputOffsetFieldId != -1) && (inputOffsetScalarFieldName_.empty())) {
       if(input->GetPointData()->GetArray(InputOffsetFieldId)) {
@@ -434,9 +417,9 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
             << endl;
         dMsg(cerr, msg.str(), Debug::infoMsg);
       } else {
-        vertexSoSoffsets_->resize(offsets->GetNumberOfTuples());
-        for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_->size(); ++i) {
-          (*vertexSoSoffsets_)[i] = offsets->GetTuple1(i);
+        vertexSoSoffsets_.resize(offsets->GetNumberOfTuples());
+        for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
+          vertexSoSoffsets_[i] = offsets->GetTuple1(i);
         }
       }
     } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
@@ -451,16 +434,16 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
             << endl;
         dMsg(cerr, msg.str(), Debug::infoMsg);
       } else {
-        vertexSoSoffsets_->resize(offsets->GetNumberOfTuples());
-        for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_->size(); ++i) {
-          (*vertexSoSoffsets_)[i] = offsets->GetTuple1(i);
+        vertexSoSoffsets_.resize(offsets->GetNumberOfTuples());
+        for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
+          vertexSoSoffsets_[i] = offsets->GetTuple1(i);
         }
       }
     }
-    if(vertexSoSoffsets_->empty()) {
-      vertexSoSoffsets_->resize(numberOfVertices_);
-      for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_->size(); ++i) {
-        (*vertexSoSoffsets_)[i] = i;
+    if(vertexSoSoffsets_.empty()) {
+      vertexSoSoffsets_.resize(numberOfVertices_);
+      for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
+        vertexSoSoffsets_[i] = i;
       }
     }
     toUpdateVertexSoSoffsets_ = false;
@@ -471,10 +454,10 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
     msg << "[ttkContourForests] Convenient data storage has been loaded."
         << endl;
     msg << "[ttkContourForests]   Number of input scalars: "
-        << inputScalars_->size() << endl;
+        << inputScalars_.size() << endl;
     msg << "[ttkContourForests]   Input scalars name:" << endl;
-    for(unsigned int i = 0; i < inputScalarsName_->size(); ++i)
-      msg << "[ttkContourForests]     " << (*inputScalarsName_)[i] << endl;
+    for(unsigned int i = 0; i < inputScalarsName_.size(); ++i)
+      msg << "[ttkContourForests]     " << inputScalarsName_[i] << endl;
     msg << "[ttkContourForests]   Active scalar name: " << scalarField_ << endl;
     msg << "[ttkContourForests]   Number of tuples: " << vertexScalars_->size()
         << endl;
@@ -483,7 +466,7 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
     msg << "[ttkContourForests]   Number of vertices: " << numberOfVertices_
         << endl;
     msg << "[ttkContourForests]   Vertex offsets: " << boolalpha
-        << (bool)vertexSoSoffsets_->size() << endl;
+        << (bool)vertexSoSoffsets_.size() << endl;
     dMsg(cout, msg.str(), detailedInfoMsg);
   }
 
@@ -532,9 +515,9 @@ void ttkContourForests::getSkeletonArcs() {
   float point1[3];
   vector<double> point2(3);
   // get skeleton scalars
-  vector<vector<vector<double>>> skeletonScalars(inputScalars_->size());
-  for(unsigned int f = 0; f < inputScalars_->size(); ++f)
-    getSkeletonScalars((*inputScalars_)[f], skeletonScalars[f]);
+  vector<vector<vector<double>>> skeletonScalars(inputScalars_.size());
+  for(unsigned int f = 0; f < inputScalars_.size(); ++f)
+    getSkeletonScalars(inputScalars_[f], skeletonScalars[f]);
 
   double inputScalar;
   SuperArc *a;
@@ -589,11 +572,11 @@ void ttkContourForests::getSkeletonArcs() {
             vtkPolyData *lineData = line->GetOutput();
 
             // Point data //
-            for(unsigned int f = 0; f < inputScalars_->size(); ++f) {
+            for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
               inputScalar = skeletonScalars[f][i][j];
 
               scalars = vtkDoubleArray::New();
-              scalars->SetName((*inputScalarsName_)[f].data());
+              scalars->SetName(inputScalarsName_[f].data());
               for(unsigned int k = 0; k < 2; ++k)
                 scalars->InsertTuple1(k, inputScalar);
               lineData->GetPointData()->AddArray(scalars);
@@ -656,12 +639,12 @@ void ttkContourForests::getSkeletonArcs() {
           vtkPolyData *lineData = line->GetOutput();
 
           // Point data //
-          for(unsigned int f = 0; f < inputScalars_->size(); ++f) {
+          for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
             inputScalar = skeletonScalars
               [f][i][(*barycenters_)[static_cast<int>(treeType_)][i].size()];
 
             scalars = vtkDoubleArray::New();
-            scalars->SetName((*inputScalarsName_)[f].data());
+            scalars->SetName(inputScalarsName_[f].data());
             for(unsigned int k = 0; k < 2; ++k)
               scalars->InsertTuple1(k, inputScalar);
             lineData->GetPointData()->AddArray(scalars);
@@ -723,11 +706,11 @@ void ttkContourForests::getSkeletonArcs() {
           vtkPolyData *lineData = line->GetOutput();
 
           // Point data //
-          for(unsigned int f = 0; f < inputScalars_->size(); ++f) {
+          for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
             inputScalar = skeletonScalars[f][i][0];
 
             scalars = vtkDoubleArray::New();
-            scalars->SetName((*inputScalarsName_)[f].data());
+            scalars->SetName(inputScalarsName_[f].data());
             for(unsigned int k = 0; k < 2; ++k)
               scalars->InsertTuple1(k, inputScalar);
             lineData->GetPointData()->AddArray(scalars);
@@ -857,10 +840,10 @@ void ttkContourForests::getSkeletonNodes() {
   float point[3];
 
   double scalar{};
-  vector<vtkDoubleArray *> scalars(inputScalars_->size());
-  for(unsigned int f = 0; f < inputScalars_->size(); ++f) {
+  vector<vtkDoubleArray *> scalars(inputScalars_.size());
+  for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
     scalars[f] = vtkDoubleArray::New();
-    scalars[f]->SetName((*inputScalarsName_)[f].data());
+    scalars[f]->SetName(inputScalarsName_[f].data());
   }
 
   ttkSimplexIdTypeArray *nodeIdentifierScalars = ttkSimplexIdTypeArray::New();
@@ -877,8 +860,8 @@ void ttkContourForests::getSkeletonNodes() {
   regionSizeScalars->SetName("RegionSize");
 
   SimplexId identifier{};
-  for(unsigned i = 0; i < criticalPoints_->size(); ++i) {
-    SimplexId nodeId = (*criticalPoints_)[i];
+  for(unsigned i = 0; i < criticalPoints_.size(); ++i) {
+    SimplexId nodeId = criticalPoints_[i];
     if(tree_->getNode(nodeId)->isHidden())
       continue;
     SimplexId vertexId = tree_->getNode(nodeId)->getVertexId();
@@ -896,8 +879,8 @@ void ttkContourForests::getSkeletonNodes() {
       points->InsertPoint(identifier, point);
 
       // Scalars
-      for(unsigned int f = 0; f < inputScalars_->size(); ++f) {
-        scalar = (*inputScalars_)[f][vertexId];
+      for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
+        scalar = inputScalars_[f][vertexId];
         scalars[f]->InsertTuple1(identifier, scalar);
       }
 
@@ -926,14 +909,14 @@ void ttkContourForests::getSkeletonNodes() {
     }
   }
   skeletonNodes_->SetPoints(points);
-  for(unsigned int f = 0; f < inputScalars_->size(); ++f)
+  for(unsigned int f = 0; f < inputScalars_.size(); ++f)
     skeletonNodes_->GetPointData()->AddArray(scalars[f]);
   skeletonNodes_->GetPointData()->AddArray(nodeIdentifierScalars);
   skeletonNodes_->GetPointData()->AddArray(vertexIdentifierScalars);
   skeletonNodes_->GetPointData()->AddArray(nodeTypeScalars);
   skeletonNodes_->GetPointData()->AddArray(regionSizeScalars);
 
-  for(unsigned int f = 0; f < inputScalars_->size(); ++f)
+  for(unsigned int f = 0; f < inputScalars_.size(); ++f)
     scalars[f]->Delete();
   nodeIdentifierScalars->Delete();
   vertexIdentifierScalars->Delete();
@@ -981,7 +964,7 @@ CriticalType
 void ttkContourForests::getCriticalPoints() {
   vector<bool> isCriticalPoint(numberOfVertices_);
 
-  criticalPoints_->clear();
+  criticalPoints_.clear();
   for(SimplexId i = 0; i < numberOfVertices_; ++i)
     isCriticalPoint[i] = false;
 
@@ -996,14 +979,14 @@ void ttkContourForests::getCriticalPoints() {
       SimplexId up_vId = tree_->getNode(upId)->getVertexId();
       if(!isCriticalPoint[up_vId]) {
         isCriticalPoint[up_vId] = true;
-        criticalPoints_->push_back(upId);
+        criticalPoints_.push_back(upId);
       }
 
       SimplexId downId = a->getDownNodeId();
       SimplexId down_vId = tree_->getNode(downId)->getVertexId();
       if(!isCriticalPoint[down_vId]) {
         isCriticalPoint[down_vId] = true;
-        criticalPoints_->push_back(downId);
+        criticalPoints_.push_back(downId);
       }
     }
   }
@@ -1280,8 +1263,8 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
   }
 
   // nodes
-  for(SimplexId it = 0; it < (SimplexId)criticalPoints_->size(); ++it) {
-    SimplexId nodeId = (*criticalPoints_)[it];
+  for(SimplexId it = 0; it < (SimplexId)criticalPoints_.size(); ++it) {
+    SimplexId nodeId = criticalPoints_[it];
     SimplexId vertexId = tree_->getNode(nodeId)->getVertexId();
 
     // RegionType
@@ -1409,27 +1392,23 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
 void ttkContourForests::getTree() {
   setDebugLevel(debugLevel_);
   // sequential params
-  contourTree_->setDebugLevel(debugLevel_);
-  contourTree_->setupTriangulation(triangulation_);
-  contourTree_->setVertexScalars(vtkInputScalars_->GetVoidPointer(0));
-  if(vertexSoSoffsets_) {
-    contourTree_->setVertexSoSoffsets(*vertexSoSoffsets_);
+  contourTree_.setDebugLevel(debugLevel_);
+  contourTree_.setupTriangulation(triangulation_);
+  contourTree_.setVertexScalars(vtkInputScalars_->GetVoidPointer(0));
+  if(!vertexSoSoffsets_.empty()) {
+    contourTree_.setVertexSoSoffsets(vertexSoSoffsets_);
   }
-  contourTree_->setTreeType(treeType_);
+  contourTree_.setTreeType(treeType_);
   // parallel params
-  contourTree_->setLessPartition(lessPartition_);
-  contourTree_->setThreadNumber(threadNumber_);
-  contourTree_->setPartitionNum(partitionNum_);
+  contourTree_.setLessPartition(lessPartition_);
+  contourTree_.setThreadNumber(threadNumber_);
+  contourTree_.setPartitionNum(partitionNum_);
   // simplification params
-  contourTree_->setSimplificationMethod(simplificationType_);
-  contourTree_->setSimplificationThreshold(simplificationThreshold_);
+  contourTree_.setSimplificationMethod(simplificationType_);
+  contourTree_.setSimplificationThreshold(simplificationThreshold_);
   // build
   switch(vtkInputScalars_->GetDataType()) {
-    // #ifndef _MSC_VER
-    // 	  vtkTemplateMacro(({ contourTree_->build<VTK_TT>(); }));
-    // #else
-    vtkTemplateMacro({ contourTree_->build<VTK_TT>(); });
-    // #endif
+    vtkTemplateMacro(contourTree_.build<VTK_TT>());
   }
 
   // ce qui est fait n'est plus à faire
@@ -1440,17 +1419,17 @@ void ttkContourForests::updateTree() {
   // polymorphic tree
   switch(treeType_) {
     case TreeType::Join:
-      tree_ = contourTree_->getJoinTree();
+      tree_ = contourTree_.getJoinTree();
       break;
     case TreeType::Split:
-      tree_ = contourTree_->getSplitTree();
+      tree_ = contourTree_.getSplitTree();
       break;
     case TreeType::JoinAndSplit:
-      tree_ = contourTree_->getJoinTree();
-      tree_ = contourTree_->getSplitTree();
+      tree_ = contourTree_.getJoinTree();
+      tree_ = contourTree_.getSplitTree();
       break;
     case TreeType::Contour:
-      tree_ = contourTree_;
+      tree_ = &contourTree_;
       break;
   }
 
