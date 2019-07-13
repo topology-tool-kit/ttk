@@ -13,6 +13,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 // base code includes
 #include <Triangulation.h>
 #include <Wrapper.h>
@@ -61,6 +63,8 @@ namespace ttk {
      */
     template <typename T>
     int interpolateContinuousScalarField(const T *data, T *output) {
+      static_assert(
+        std::is_floating_point<T>::value, "Floating point type required.");
       if(inputTriangl_ == nullptr || outputTriangl_ == nullptr) {
         return 1;
       }
@@ -107,6 +111,7 @@ namespace ttk {
      */
     template <typename T>
     int interpolateDiscreteScalarField(const T *data, T *output) {
+      static_assert(std::is_integral<T>::value, "Integral type required.");
       if(inputTriangl_ == nullptr || outputTriangl_ == nullptr) {
         return 1;
       }
