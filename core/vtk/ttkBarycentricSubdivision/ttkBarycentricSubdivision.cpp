@@ -38,8 +38,8 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   // generate the new triangulation
   baseWorker_.execute();
 
-  auto npointdata = input->GetPointData()->GetNumberOfArrays();
-  auto ncelldata = input->GetCellData()->GetNumberOfArrays();
+  size_t npointdata = input->GetPointData()->GetNumberOfArrays();
+  size_t ncelldata = input->GetCellData()->GetNumberOfArrays();
 
   auto allocateScalarField = [&](vtkDataArray *const inputScalarField) {
     vtkSmartPointer<vtkDataArray> outputScalarField{};

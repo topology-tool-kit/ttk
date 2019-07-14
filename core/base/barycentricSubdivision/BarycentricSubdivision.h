@@ -141,13 +141,13 @@ namespace ttk {
         return 1;
       }
       const size_t newTrianglesPerParent{6};
-      const auto nInTriangles = inputTriangl_->getNumberOfTriangles();
-      const auto nOutTriangles = outputTriangl_->getNumberOfTriangles();
+      const size_t nInTriangles = inputTriangl_->getNumberOfTriangles();
+      const size_t nOutTriangles = outputTriangl_->getNumberOfTriangles();
       if(nOutTriangles < 0
          || nOutTriangles != newTrianglesPerParent * nInTriangles) {
         return 1;
       }
-      for(SimplexId i = 0; i < nInTriangles; ++i) {
+      for(size_t i = 0; i < nInTriangles; ++i) {
         output[i * newTrianglesPerParent + 0] = data[i];
         output[i * newTrianglesPerParent + 1] = data[i];
         output[i * newTrianglesPerParent + 2] = data[i];
