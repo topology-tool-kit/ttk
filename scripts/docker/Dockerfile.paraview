@@ -1,0 +1,46 @@
+FROM ubuntu:18.04
+
+MAINTAINER Christoph Garth <garth@cs.uni-kl.de>
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+COPY build /root/
+
+# install OSMesa
+COPY mesa.sh /root/
+RUN  /root/build /root/mesa.sh
+
+# install OSPRay
+COPY ospray.sh /root/
+RUN  /root/build /root/ospray.sh
+
+# install ParaView
+ARG paraview=5.6.1
+ENV PARAVIEW_VERSION=${paraview}
+
+COPY paraview.sh /root/
+RUN  /root/build /root/paraview.sh
+
+ENV PV_PLUGIN_PATH=/usr/lib/paraview-5.6/plugins
+ENV PYTHONPATH=/usr/lib/python3.7/site-packages
+
+EXPOSE 11111
+
+# install ZFP
+COPY zfp.sh /root
+RUN  /root/build /root/zfp.sh
+
+# install Spectra
+COPY spectra.sh /root
+RUN  /root/build /root/spectra.sh
+
+# set up a non-root user
+RUN adduser --disabled-password --gecos '' paraview \
+ && adduser paraview sudo \
+ && echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
+USER paraview
+WORKDIR /home/paraview
+
+# run pvserver by default
+CMD /usr/bin/pvserver
