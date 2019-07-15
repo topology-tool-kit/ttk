@@ -219,21 +219,6 @@ int Geometry::computeBarycentricCoordinates(
 
   baryCentrics[2] = 1 - baryCentrics[0] - baryCentrics[1];
 
-  // check if the point lies in the triangle
-  vector<T> test(3);
-  for(int i = 0; i < 3; i++) {
-    test[i] = baryCentrics[0] * p0[i] + baryCentrics[1] * p1[i]
-              + baryCentrics[2] * p2[i];
-  }
-
-  if(!((fabs(test[0] - p[0]) < pow(10, -FLT_DIG))
-       && (fabs(test[1] - p[1]) < pow(10, -FLT_DIG))
-       && (fabs(test[2] - p[2]) < pow(10, -FLT_DIG)))) {
-    for(int i = 0; i < 3; i++) {
-      baryCentrics[i] = -1 - baryCentrics[i];
-    }
-  }
-
   return 0;
 }
 
