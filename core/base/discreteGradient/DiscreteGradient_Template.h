@@ -2932,6 +2932,13 @@ int DiscreteGradient::processSaddleSaddleConnections2(
   std::vector<SimplexId> &saddle2Index) {
   Timer t;
 
+  {
+    std::stringstream msg;
+    msg << "[DiscreteGradient] Saddle connector persistence threshold: "
+        << SaddleConnectorsPersistenceThreshold << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
+  }
+
   const dataType *const scalars
     = static_cast<const dataType *>(inputScalarField_);
 
