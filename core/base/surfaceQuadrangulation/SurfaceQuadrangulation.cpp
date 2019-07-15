@@ -612,12 +612,34 @@ int ttk::SurfaceQuadrangulation::subdivise() {
       criticalPointsIdentifier_[q.i], criticalPointsIdentifier_[q.j],
       criticalPointsIdentifier_[q.k], criticalPointsIdentifier_[q.l]};
 
+    // Dijkstra propagation mask
+    std::vector<bool> mask(morseSeg_.size(), false);
+    // restrict Dijkstra propagation to current cell
+    for(size_t j = 0; j < morseSeg_.size(); ++j) {
+      if(morseSeg_[j] == cellId_[i]) {
+        mask[j] = true;
+      }
+    }
+    // also allow to propagate on separatrices
+    for(const auto s : seps) {
+      for(size_t j = sepBegs_[s]; j <= sepEnds_[s]; ++j) {
+        if(sepCellDims_[j] == 1) {
+          auto e = sepCellIds_[j];
+          SimplexId e0{}, e1{};
+          triangulation_->getEdgeVertex(e, 0, e0);
+          triangulation_->getEdgeVertex(e, 1, e1);
+          mask[e0] = true;
+          mask[e1] = true;
+        }
+      }
+    }
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(size_t j = 0; j < outputDists.size(); ++j) {
-      Dijkstra::shortestPath(
-        midsNearestVertex[j], *triangulation_, outputDists.at(j), bounds);
+      Dijkstra::shortestPath(midsNearestVertex[j], *triangulation_,
+                             outputDists.at(j), std::vector<SimplexId>(), mask);
     }
 
     auto inf = std::numeric_limits<float>::infinity();
