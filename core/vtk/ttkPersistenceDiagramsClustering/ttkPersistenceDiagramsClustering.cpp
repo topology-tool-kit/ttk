@@ -191,8 +191,8 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input, vtkUnstructuredGr
 cout<<"diagrams"<<endl;
             outputClusters->ShallowCopy(createOutputClusteredDiagrams(*intermediateDiagrams, inv_clustering_, max_dimension_total_, Spacing));
 cout<<"centroids"<<endl;
-
             outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(final_centroids, inv_clustering_, max_dimension_total_, Spacing));
+            cout<<"matchings"<<endl;
             outputMatchings->ShallowCopy(createMatchings(final_centroids, inv_clustering_, *intermediateDiagrams, all_matchings, max_dimension_total_, Spacing));
         }));
     }

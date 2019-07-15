@@ -265,6 +265,7 @@ template <typename dataType>
     KMeans.setDos(do_min, do_sad, do_max);
     cout<<"execute2"<<endl;
     inv_clustering = KMeans.execute(*final_centroids, all_matchings_per_type_and_cluster);
+    cout<<"execute2 done"<<endl;
     vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
 
 
@@ -277,21 +278,26 @@ template <typename dataType>
 
 	/// Reconstruct matchings
 	//
-	cout<<"Reconstruction of matchings"<<endl;
+	cout<<"Reconstruction of matchings : "<<n_clusters_<<endl;
 	all_matchings->resize(n_clusters_);
 	for(int c=0; c<n_clusters_; c++){
 	  all_matchings->at(c).resize(numberOfInputs_);
 	}
 	for(int i=0; i<numberOfInputs_; i++){
 	    if(do_min) {
+	      cout<<"test1 : "<<endl;
 		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[inv_clustering[i]][0][i].size(); j++) {
+	      cout<<"test2 : "<<i<<" "<<j<<" "<< all_matchings_per_type_and_cluster[inv_clustering[i]][0][i].size()<<endl;
 		    matchingTuple t = all_matchings_per_type_and_cluster[inv_clustering[i]][0][i][j];
+	      cout<<"test3"<<endl;
 		    int bidder_id = std::get<0>(t);
 		    std::get<0>(t) = data_min_idx[i][bidder_id];
+	      cout<<"test4"<<endl;
 		    all_matchings->at(inv_clustering[i])[i].push_back(t);
 		}
 	    }
 
+	      cout<<"test5"<<endl;
 	    if(do_sad) {
 		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[inv_clustering[i]][1][i].size(); j++) {
 		    matchingTuple t = all_matchings_per_type_and_cluster[inv_clustering[i]][1][i][j];

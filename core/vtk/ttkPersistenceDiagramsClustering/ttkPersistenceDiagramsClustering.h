@@ -879,10 +879,15 @@ vtkSmartPointer<vtkUnstructuredGrid>
 	cost->SetName("Cost");
 
 	int count=0;
+	cout<<"started loop"<<endl;
         for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
+            cout<<" j = "<<j<<endl;
             std::vector<diagramTuple>* diagram = &(all_CTDiagrams[j]);
+            cout<<"matchings size "<<all_matchings->size()<<"  "<<endl;
             std::vector<matchingTuple> matchings_j = all_matchings->at(inv_clustering[j])[j];
             for(unsigned int i = 0; i < matchings_j.size(); ++i) {
+                cout<<" i = "<<i<<endl;
+
                 vtkIdType ids[2];
                 ids[0] = 2 * count;
                 ids[1] = 2 * count + 1;
@@ -890,30 +895,35 @@ vtkSmartPointer<vtkUnstructuredGrid>
                 matchingTuple m = matchings_j[i];
                 int bidder_id = std::get<0>(m);
                 int good_id = std::get<1>(m);
-
+                  cout << "  get tuple1"<< endl;
                 diagramTuple t1 = final_centroids->at(inv_clustering[j])[good_id];
+                  cout << "  done"<< endl;
                 double x1 = std::get<6>(t1);
                 double y1 = std::get<10>(t1);
                 double z1 = 0;
 
-                diagramTuple t2 = diagram->at(bidder_id);
-                double x2 = std::get<6>(t2);
-                double y2 = std::get<10>(t2);
-                double z2 = 1;  // Change 1 to j if you want to isolate the diagrams
+                  cout << " get tuple2 : size "<<diagram->size()<<" , id "<<bidder_id<< endl;
+               if(bidder_id<diagram->size()){
+                   diagramTuple t2 = diagram->at(bidder_id);
+                   cout << "done" << endl;
+                   double x2 = std::get<6>(t2);
+                   double y2 = std::get<10>(t2);
+                   double z2 = 1;  // Change 1 to j if you want to isolate the diagrams
 
-                if(y2 > x2) {
-                    matchingPoints->InsertNextPoint(x1, y1, z1);
-                    matchingPoints->InsertNextPoint(x2, y2, z2);
-                    matchingMesh->InsertNextCell(VTK_LINE, 2, ids);
-                    idOfDiagramMatching->InsertTuple1(count, j);
-                    cost->InsertTuple1(count, std::get<2>(m));
-                    idOfDiagramMatchingPoint->InsertTuple1(2 * count, j);
-                    idOfDiagramMatchingPoint->InsertTuple1(2 * count + 1, j);
-                    idOfPoint->InsertTuple1(2 * count + 1, good_id);
-                    idOfPoint->InsertTuple1(2 * count + 1, bidder_id);
+                   if(y2 > x2) {
+                       matchingPoints->InsertNextPoint(x1, y1, z1);
+                       matchingPoints->InsertNextPoint(x2, y2, z2);
+                       matchingMesh->InsertNextCell(VTK_LINE, 2, ids);
+                       idOfDiagramMatching->InsertTuple1(count, j);
+                       cost->InsertTuple1(count, std::get<2>(m));
+                       idOfDiagramMatchingPoint->InsertTuple1(2 * count, j);
+                       idOfDiagramMatchingPoint->InsertTuple1(2 * count + 1, j);
+                       idOfPoint->InsertTuple1(2 * count + 1, good_id);
+                       idOfPoint->InsertTuple1(2 * count + 1, bidder_id);
 
-                    count++;
-                }
+                       count++;
+                   }
+               }
             }
         }
 
