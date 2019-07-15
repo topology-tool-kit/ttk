@@ -749,6 +749,7 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
             }
             else if(DisplayMethod==2){
               z2=spacing;
+              z1 = spacing;
             }
 
             float coords2[3];

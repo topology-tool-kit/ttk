@@ -462,10 +462,6 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
 
 
     // CORRECT MATCHINGS :
-    cout<<"matchings cluster 0"<<endl;
-    printMatchings(all_matchings_per_type_and_cluster[0]);
-    cout<<"matchings cluster 2 "<<endl;
-    printMatchings(all_matchings_per_type_and_cluster[1]);
     // correctMatchings(all_matchings);
     // printDistancesToFile();
     // printRealDistancesToFile();
@@ -538,7 +534,7 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
 //             if(new_id >= 0 && std::get<1>(m) >= 0) {
 //                 std::get<0>(m) = new_to_old_id[new_id];
 //                 matchings_diagram_i.push_back(m);
-//             }
+//
 //         }
 //         corrected_matchings[i] = matchings_diagram_i;
 //     }

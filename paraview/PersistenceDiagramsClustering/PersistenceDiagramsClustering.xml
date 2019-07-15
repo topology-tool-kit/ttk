@@ -214,6 +214,7 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </IntVectorProperty>
 
+
         <DoubleVectorProperty
           name="spacing_"
           label="Spacing"
@@ -221,27 +222,21 @@ computation (type "inf" for the Bottleneck distance).
           number_of_elements="1"
           default_values="0"
           >
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
+          <Hints>
+        <PropertyWidgetDecorator type="CompositeDecorator">
+        <Expression type="or">
+        <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
                                    property="DisplayMethod"
-                                   value="1" />
-        </Hints>
-        <Documentation>
-        </Documentation>
-      </DoubleVectorProperty>
-        <DoubleVectorProperty
-          name="spacing_"
-          label="Spacing"
-          command="SetSpacing"
-          number_of_elements="1"
-          default_values="0"
-          >
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
+                                   value="1" >
+                           </PropertyWidgetDecorator>
+        <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
                                    property="DisplayMethod"
-                                   value="2" />
+                                   value="2" >
+                           </PropertyWidgetDecorator>
+        </Expression>
+                           </PropertyWidgetDecorator>
         </Hints>
         <Documentation>
         </Documentation>
