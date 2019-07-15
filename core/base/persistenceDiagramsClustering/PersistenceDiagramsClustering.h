@@ -279,44 +279,96 @@ template <typename dataType>
 	/// Reconstruct matchings
 	//
 	cout<<"Reconstruction of matchings : "<<n_clusters_<<endl;
-	all_matchings->resize(n_clusters_);
+
+        std::vector<int> cluster_size;
+        std::vector<int> idxInCluster(numberOfInputs_);
+
+        for(unsigned int j = 0; j < numberOfInputs_; ++j) {
+            unsigned int c = inv_clustering[j];
+            if(c + 1 > cluster_size.size()) {
+                cluster_size.resize(c + 1);
+                cluster_size[c] = 1;
+                idxInCluster[j] = 0;
+            } else {
+                cluster_size[c]++;
+                idxInCluster[j] = cluster_size[c] - 1;
+            }
+        }
+
+        all_matchings->resize(n_clusters_);
 	for(int c=0; c<n_clusters_; c++){
 	  all_matchings->at(c).resize(numberOfInputs_);
 	}
 	for(int i=0; i<numberOfInputs_; i++){
-	    if(do_min) {
-	      cout<<"test1 : "<<endl;
-		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[inv_clustering[i]][0][i].size(); j++) {
-	      cout<<"test2 : "<<i<<" "<<j<<" "<< all_matchings_per_type_and_cluster[inv_clustering[i]][0][i].size()<<endl;
-		    matchingTuple t = all_matchings_per_type_and_cluster[inv_clustering[i]][0][i][j];
-	      cout<<"test3"<<endl;
+	  unsigned int c = inv_clustering[i];
+	  // cout<<"CLUSTER : "<<inv_clustering[i]<<endl;
+	  // LARGEST PAIR MUST BE FIRST
+          if(do_max) {
+              matchingTuple t = all_matchings_per_type_and_cluster[c][2][idxInCluster[i]][0];
+              int bidder_id = std::get<0>(t);
+              if(bidder_id >= 0 && bidder_id < data_max[i].size()) {
+                  std::get<0>(t) = data_max_idx[i][bidder_id];
+                  if(std::get<1>(t) >= 0) {
+                      std::get<1>(t) = std::get<1>(t) + centroids_sizes[c][0] + centroids_sizes[c][1];
+                  } else {
+                      std::get<1>(t) = -1;
+                  }
+                  all_matchings->at(inv_clustering[i])[i].push_back(t);
+              }
+          }
+
+            if(do_min) {
+		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[c][0][idxInCluster[i]].size(); j++) {
+		    matchingTuple t = all_matchings_per_type_and_cluster[c][0][idxInCluster[i]][j];
 		    int bidder_id = std::get<0>(t);
-		    std::get<0>(t) = data_min_idx[i][bidder_id];
-	      cout<<"test4"<<endl;
-		    all_matchings->at(inv_clustering[i])[i].push_back(t);
+		    if(bidder_id>=0 && bidder_id<data_min[i].size()){
+		      std::get<0>(t) = data_min_idx[i][bidder_id];
+		      // cout<<" IDS :  "<<bidder_id<<" "<<std::get<0>(t)<<endl;
+		      if(std::get<1>(t)<0){
+                          std::get<1>(t) = -1;
+                      }
+		      all_matchings->at(inv_clustering[i])[i].push_back(t);
+		    }
 		}
 	    }
 
-	      cout<<"test5"<<endl;
 	    if(do_sad) {
-		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[inv_clustering[i]][1][i].size(); j++) {
-		    matchingTuple t = all_matchings_per_type_and_cluster[inv_clustering[i]][1][i][j];
+		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[c][1][idxInCluster[i]].size(); j++) {
+		    matchingTuple t = all_matchings_per_type_and_cluster[c][1][idxInCluster[i]][j];
 		    int bidder_id = std::get<0>(t);
-		    std::get<0>(t) = data_sad_idx[i][bidder_id];
-		    std::get<1>(t) = std::get<1>(t) + centroids_sizes[inv_clustering[i]][0];
-		    all_matchings->at(inv_clustering[i])[i].push_back(t);
+		    if(bidder_id>=0 && bidder_id<data_sad[i].size()){
+		      std::get<0>(t) = data_sad_idx[i][bidder_id];
+		      if(std::get<1>(t)>=0){
+		      std::get<1>(t) = std::get<1>(t) + centroids_sizes[c][0];
+		      }
+		      else{
+			std::get<1>(t)=-1;
+		      }
+		      all_matchings->at(inv_clustering[i])[i].push_back(t);
+		    }
 		}
 	    }
 
 	    if(do_max) {
-		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[inv_clustering[i]][2][i].size(); j++) {
-		    matchingTuple t = all_matchings_per_type_and_cluster[inv_clustering[i]][2][i][j];
+		for(unsigned int j = 1; j < all_matchings_per_type_and_cluster[c][2][idxInCluster[i]].size(); j++) {
+		    matchingTuple t = all_matchings_per_type_and_cluster[c][2][idxInCluster[i]][j];
 		    int bidder_id = std::get<0>(t);
-		    std::get<0>(t) = data_max_idx[i][bidder_id];
-		    std::get<1>(t) = std::get<1>(t) + centroids_sizes[inv_clustering[i]][0] + centroids_sizes[inv_clustering[i]][1];
-		    all_matchings->at(inv_clustering[i])[i].push_back(t);
+		    if(bidder_id>=0 && bidder_id<data_max[i].size()){
+		      std::get<0>(t) = data_max_idx[i][bidder_id];
+		      if(std::get<1>(t)>=0){
+			std::get<1>(t) = std::get<1>(t) + centroids_sizes[c][0] + centroids_sizes[c][1];
+		      }
+		      else{
+			std::get<1>(t)=-1;
+		      }
+		      all_matchings->at(inv_clustering[i])[i].push_back(t);
+		    }
 		}
 	    }
+	}
+	cout<<"datamax "<<data_max_idx[1].size()<<endl;
+	for(int ii=0; ii<data_max_idx[1].size(); ii++){
+	cout<<" "<<data_max_idx[1][ii]<<" ,";
 	}
 
 	cout<<"Reconstruction of matchings done"<<endl;

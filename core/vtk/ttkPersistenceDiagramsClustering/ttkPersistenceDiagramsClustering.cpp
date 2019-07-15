@@ -30,12 +30,12 @@ vtkStandardNewMacro(ttkPersistenceDiagramsClustering)
     UseKmeansppInit = 0;
     Alpha = 1;
     Lambda = 1;
-    Spacing = 0;
-    oldSpacing = 0;
+    Spacing = 1;
+    oldSpacing = 1;
     Method = 0;
     needUpdate_ = true;
     UseInterruptible=true;
-    UseSpacing=false;
+    DisplayMethod=0;
 
     final_centroids_ = NULL;
     intermediateDiagrams_ = NULL;

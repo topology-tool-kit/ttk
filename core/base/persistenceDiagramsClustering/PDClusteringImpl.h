@@ -462,7 +462,10 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
 
 
     // CORRECT MATCHINGS :
-    // printMatchings(all_matchings);
+    cout<<"matchings cluster 0"<<endl;
+    printMatchings(all_matchings_per_type_and_cluster[0]);
+    cout<<"matchings cluster 2 "<<endl;
+    printMatchings(all_matchings_per_type_and_cluster[1]);
     // correctMatchings(all_matchings);
     // printDistancesToFile();
     // printRealDistancesToFile();
@@ -548,7 +551,7 @@ void PDClustering<dataType>::printMatchings(vector<vector<vector<matchingTuple>>
     for(int d = 0; d < 3; d++) {
         if(original_dos[d]) {
             cout << "\n Diagram type : " << d << endl;
-            for(int i = 0; i < matchings[d].size(); i++) {
+            for(int i = 1; i < 2 /*matchings[d].size()*/; i++) {
 
                 for(int j = 0; j < matchings[d][i].size(); j++) {
                     std::cout << get<0>(matchings[d][i][j]) << " ";
@@ -1541,17 +1544,13 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                 // cout<<"time_matchings min ";
                 // cout<<"run matchings "<<endl;
                 barycenter_computer_min_[c].runMatching(&total_cost, epsilon_[0], sizes, kdt, &correspondance_kdt_map, &(min_diag_price->at(0)), &(min_price->at(0)), &(all_matchings), use_kdt);
-                cout<<"SIZE : "<<all_matchings[28].size()<<endl;
                 for(int ii=0; ii<all_matchings.size(); ii++){
                     all_matchings_per_type_and_cluster[c][0][ii].resize(all_matchings[ii].size());
-                    cout<<"compare sizes : "<<ii<<" "<<all_matchings[ii].size()<<" "<<all_matchings_per_type_and_cluster[c][0][ii].size()<<endl;
                     all_matchings_per_type_and_cluster[c][0][ii] = all_matchings[ii];
                 }
                 for(int ii=all_matchings.size(); ii<numberOfInputs_;  ii++){
                     all_matchings_per_type_and_cluster[c][0][ii].resize(0);
                 }
-                cout<<"SIZE 2 : "<<all_matchings_per_type_and_cluster[c][0][28].size()<<endl;
-                cout<<"SIZE 2 : "<<all_matchings_per_type_and_cluster[c][0][28].size()<<endl;
                 // cout<<"matchings done"<<endl;
                 // std::cout<<"min : runned, now updating barycenter"<<std::endl;
                 precision_min = barycenter_computer_min_[c].isPrecisionObjectiveMet(0.01,0);
@@ -1594,7 +1593,6 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                     // cout<<"heredend"<<endl;
 
                 delete kdt;
-                cout<<"SIZE 3 : "<<all_matchings_per_type_and_cluster[c][0][28].size()<<endl;
             }
 
             // std::cout<<"here 3"<<std::endl;
