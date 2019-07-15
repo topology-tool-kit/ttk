@@ -448,29 +448,36 @@ ttk::QuadrangulationSubdivision::Point
       if(j != static_cast<size_t>(extrema.first - baryCoords.begin())
          && j != static_cast<size_t>(extrema.second - baryCoords.begin())) {
         vertices[1] = tverts[j];
+        break;
       }
     }
-    vertices[1] = tverts[extrema.second - baryCoords.begin()];
 
     // store vertex with highest barycentric coordinate
     nearestVertex = vertices[0];
 
-    // triangles to test next
-    std::set<SimplexId> common_triangles;
+    // triangles around vertices[0] and vertices[1]
+    std::array<std::set<SimplexId>, 2> vertsTriangles{};
 
-    // look for triangles sharing the two edges with max values in
-    // baryCoords
-    for(auto &avert : vertices) {
-      SimplexId tnum = triangulation_->getVertexTriangleNumber(avert);
-      for(SimplexId j = 0; j < tnum; j++) {
+    // get triangles around vertices
+    for(size_t j = 0; j < vertices.size(); ++j) {
+      SimplexId tnum = triangulation_->getVertexTriangleNumber(vertices[j]);
+      for(SimplexId k = 0; k < tnum; k++) {
         SimplexId tid;
-        triangulation_->getVertexTriangle(avert, j, tid);
+        triangulation_->getVertexTriangle(vertices[j], k, tid);
         if(tid == i) {
           continue;
         }
-        common_triangles.insert(tid);
+        vertsTriangles[j].insert(tid);
       }
     }
+
+    // triangles to test next
+    std::vector<SimplexId> common_triangles;
+
+    // look for triangles sharing the vertices with max values in baryCoords
+    std::set_intersection(vertsTriangles[0].begin(), vertsTriangles[0].end(),
+                          vertsTriangles[1].begin(), vertsTriangles[1].end(),
+                          std::back_inserter(common_triangles));
 
     for(auto &ntid : common_triangles) {
       if(!trianglesTested[ntid]) {
