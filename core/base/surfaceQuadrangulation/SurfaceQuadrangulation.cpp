@@ -151,7 +151,7 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
   size_t sadid{};
 
   // propagate from triangles around saddle
-  std::vector<bool> processed(newT.getNumberOfTriangles(), false);
+  std::vector<SimplexId> processed(newT.getNumberOfTriangles(), -1);
 
   // look around the saddle points
   for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
@@ -172,6 +172,8 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
       newT.getVertexTriangle(saddle, j, tr);
 
       std::set<SimplexId> sepIdBeg = sepIdAroundTriangle(tr);
+      // current iteration id
+      SimplexId iter = sadid *sadtri +j;
 
       toProcess.push(tr);
 
@@ -179,18 +181,32 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
         auto curr = toProcess.front();
         toProcess.pop();
 
-        // skip already processed
-        if(processed[curr]) {
+        // mark current triangle, skip already processed
+#ifdef TTK_ENABLE_OPENMP
+        if(processed[curr] == -1 || processed[curr] > iter) {
+#pragma omp atomic write
+          processed[curr] = iter;
+        }
+        // skip if curr marked by thread
+        else if(processed[curr] == iter) {
           continue;
         }
+        // stop BFS if thread with higher iteration id has reached curr
+        else if(processed[curr] < iter) {
+          break;
+        }
+#else
+        if(processed[curr] != -1) {
+          continue;
+        }
+        processed[curr] = 0;
+#endif // TTK_ENABLE_OPENMP
 
         // check for saddle at vertices
         bool hasSaddle = hasTriangleSaddle(curr);
 
         // check for separatrices on edges
         auto sepIdEnd = sepIdAroundTriangle(curr);
-
-        processed[curr] = true;
 
         if(hasSaddle && sepIdEnd.size() == 2) {
           // check that seps are different from beginning
@@ -205,7 +221,7 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
             {
               // keep indices in sync
               quadSeps_.emplace_back(cellSeps);
-              cellId_.emplace_back(sadid * sadtri + j);
+              cellId_.emplace_back(iter);
             }
           }
         }
@@ -227,7 +243,10 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
             }
           }
           if(!vertOnSep) {
-            morseSeg_[vert] = sadid * sadtri + j;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic write
+#endif // TTK_ENABLE_OPENMP
+            morseSeg_[vert] = iter;
           }
         }
 
@@ -243,9 +262,19 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
             SimplexId neigh{};
             newT.getEdgeTriangle(e, k, neigh);
             // push only non processed triangles
-            if(!processed[neigh]) {
+            if(processed[neigh] == -1) {
               toProcess.push(neigh);
             }
+#ifdef TTK_ENABLE_OPENMP
+            // push if neigh marked during a previous iteration
+            else if(processed[neigh] > iter) {
+              toProcess.push(neigh);
+            }
+            // stop pushing neighbors if curr marked in a newer iteration
+            else if(processed[neigh] < iter) {
+              break;
+            }
+#endif // TTK_ENABLE_OPENMP
           }
         }
       }
