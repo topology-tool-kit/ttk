@@ -160,6 +160,14 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
       outputScalarField_ = vtkIdTypeArray::New();
       break;
 
+    case VTK_SHORT:
+      outputScalarField_ = vtkShortArray::New();
+      break;
+
+    case VTK_UNSIGNED_CHAR:
+      outputScalarField_ = vtkUnsignedCharArray::New();
+      break;
+
     case VTK_UNSIGNED_SHORT:
       outputScalarField_ = vtkUnsignedShortArray::New();
       break;

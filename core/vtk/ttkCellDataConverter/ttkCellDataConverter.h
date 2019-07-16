@@ -22,6 +22,7 @@
 
 // VTK includes -- to adapt
 #include <vtkCellData.h>
+#include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetAlgorithm.h>
@@ -32,6 +33,7 @@
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
+#include <vtkShortArray.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
@@ -50,10 +52,12 @@ class ttkCellDataConverter
     public ttk::Wrapper {
 
   enum SupportedType {
-    Double = 0,
+    Char = 0,
+    Double,
     Float,
     Int,
     IdType,
+    Short,
     UnsignedShort,
     UnsignedChar,
   };

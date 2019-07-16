@@ -35,6 +35,8 @@
 #include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkShortArray.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
 // ttk code includes

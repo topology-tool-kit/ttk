@@ -93,11 +93,30 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
   if(OutputType == SupportedType::Float or OutputType == SupportedType::Double)
     UseNormalization = false;
 
-  if(InputType == VTK_DOUBLE) {
-    if(OutputType == SupportedType::Float)
+  if(InputType == VTK_CHAR) {
+    if(OutputType == SupportedType::Double)
+      convert<char, double, vtkDoubleArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Float)
+      convert<char, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Int)
+      convert<char, int, vtkIntArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Short)
+      convert<char, short, vtkShortArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::UnsignedShort)
+      convert<char, unsigned short, vtkUnsignedShortArray>(
+        inputScalarField, output);
+    else if(OutputType == SupportedType::UnsignedChar)
+      convert<char, unsigned char, vtkUnsignedCharArray>(
+        inputScalarField, output);
+  } else if(InputType == VTK_DOUBLE) {
+    if(OutputType == SupportedType::Char)
+      convert<double, char, vtkCharArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Float)
       convert<double, float, vtkFloatArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Int)
       convert<double, int, vtkIntArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Short)
+      convert<double, short, vtkShortArray>(inputScalarField, output);
     else if(OutputType == SupportedType::UnsignedShort)
       convert<double, unsigned short, vtkUnsignedShortArray>(
         inputScalarField, output);
@@ -105,10 +124,14 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<double, unsigned char, vtkUnsignedCharArray>(
         inputScalarField, output);
   } else if(InputType == VTK_FLOAT) {
-    if(OutputType == SupportedType::Double)
+    if(OutputType == SupportedType::Char)
+      convert<float, char, vtkCharArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Double)
       convert<float, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Int)
       convert<float, int, vtkIntArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Short)
+      convert<float, short, vtkShortArray>(inputScalarField, output);
     else if(OutputType == SupportedType::UnsignedShort)
       convert<float, unsigned short, vtkUnsignedShortArray>(
         inputScalarField, output);
@@ -116,10 +139,14 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<float, unsigned char, vtkUnsignedCharArray>(
         inputScalarField, output);
   } else if(InputType == VTK_INT) {
-    if(OutputType == SupportedType::Double)
+    if(OutputType == SupportedType::Char)
+      convert<int, char, vtkCharArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Double)
       convert<int, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<int, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Short)
+      convert<int, short, vtkShortArray>(inputScalarField, output);
     else if(OutputType == SupportedType::UnsignedShort)
       convert<int, unsigned short, vtkUnsignedShortArray>(
         inputScalarField, output);
@@ -127,33 +154,60 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<int, unsigned char, vtkUnsignedCharArray>(
         inputScalarField, output);
   } else if(InputType == VTK_ID_TYPE) {
-    if(OutputType == SupportedType::Double)
+    if(OutputType == SupportedType::Char)
+      convert<vtkIdType, char, vtkCharArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Double)
       convert<vtkIdType, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<vtkIdType, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Short)
+      convert<vtkIdType, short, vtkShortArray>(inputScalarField, output);
     else if(OutputType == SupportedType::UnsignedShort)
       convert<vtkIdType, unsigned short, vtkUnsignedShortArray>(
         inputScalarField, output);
     else if(OutputType == SupportedType::UnsignedChar)
       convert<vtkIdType, unsigned char, vtkUnsignedCharArray>(
         inputScalarField, output);
+  } else if(InputType == VTK_SHORT) {
+    if(OutputType == SupportedType::Char)
+      convert<short, char, vtkCharArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Double)
+      convert<short, double, vtkDoubleArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Float)
+      convert<short, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Int)
+      convert<short, int, vtkIntArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::UnsignedShort)
+      convert<short, unsigned short, vtkUnsignedShortArray>(
+        inputScalarField, output);
+    else if(OutputType == SupportedType::UnsignedChar)
+      convert<short, unsigned char, vtkUnsignedCharArray>(
+        inputScalarField, output);
   } else if(InputType == VTK_UNSIGNED_SHORT) {
-    if(OutputType == SupportedType::Double)
+    if(OutputType == SupportedType::Char)
+      convert<unsigned short, char, vtkCharArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Double)
       convert<unsigned short, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<unsigned short, float, vtkFloatArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Int)
       convert<unsigned short, int, vtkIntArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Short)
+      convert<unsigned short, short, vtkShortArray>(inputScalarField, output);
     else if(OutputType == SupportedType::UnsignedChar)
       convert<unsigned short, unsigned char, vtkUnsignedCharArray>(
         inputScalarField, output);
   } else if(InputType == VTK_UNSIGNED_CHAR) {
-    if(OutputType == SupportedType::Double)
+    if(OutputType == SupportedType::Char)
+      convert<unsigned char, char, vtkCharArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Double)
       convert<unsigned char, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<unsigned char, float, vtkFloatArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Int)
       convert<unsigned char, int, vtkIntArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Short)
+      convert<unsigned char, short, vtkShortArray>(inputScalarField, output);
     else if(OutputType == SupportedType::UnsignedShort)
       convert<unsigned char, unsigned short, vtkUnsignedShortArray>(
         inputScalarField, output);

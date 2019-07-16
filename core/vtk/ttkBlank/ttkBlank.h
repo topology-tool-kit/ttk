@@ -31,7 +31,10 @@
 #include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkShortArray.h>
 #include <vtkSmartPointer.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedShortArray.h>
 
 // ttk code includes
 #include <Blank.h>
