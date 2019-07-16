@@ -39,6 +39,7 @@ build_pkgs \
 runtime_pkgs \
 	libboost-system1.62	\
 	python3-numpy		\
+	python3-sklearn		\
 	libsqlite3-0		\
 	graphviz		\
 	libgomp1
