@@ -5,7 +5,7 @@
 #include <cassert>
 #include <cmath>
 #include <numeric>
-#include <queue>
+#include <stack>
 
 #define MODULE_S "[QuadrangulationSubdivision] "
 
@@ -324,7 +324,7 @@ ttk::QuadrangulationSubdivision::Point
   // found a projection in one triangle
   bool success = false;
   // list of triangle IDs to test to find a potential projection
-  std::queue<SimplexId> trianglesToTest;
+  std::stack<SimplexId> trianglesToTest;
   // list of triangle IDs already tested
   // (takes more memory to reduce computation time)
   std::vector<bool> trianglesTested(
@@ -343,7 +343,7 @@ ttk::QuadrangulationSubdivision::Point
   }
 
   while(!trianglesToTest.empty()) {
-    SimplexId i = trianglesToTest.front();
+    SimplexId i = trianglesToTest.top();
     trianglesToTest.pop();
 
     // skip if already tested
