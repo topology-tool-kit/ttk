@@ -147,19 +147,22 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
             || saddlesId.find(c) != saddlesId.end());
   };
 
-  // current saddle point index
-  size_t sadid{};
-
   // propagate from triangles around saddle
   std::vector<SimplexId> processed(newT.getNumberOfTriangles(), -1);
 
-  // look around the saddle points
+  // store the saddles id
+  std::vector<SimplexId> saddles{};
+
   for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
     // keep only saddle points
-    if(criticalPointsType_[i] != 1) {
-      continue;
+    if(criticalPointsType_[i] == 1) {
+      saddles.emplace_back(verticesNumber_ + criticalPointsCellIds_[i]);
     }
-    SimplexId saddle = verticesNumber_ + criticalPointsCellIds_[i];
+  }
+
+  // look around the saddle points
+  for(size_t i = 0; i < saddles.size(); ++i) {
+    SimplexId saddle = saddles[i];
 
     auto sadtri = newT.getVertexTriangleNumber(saddle);
 
@@ -173,7 +176,7 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
 
       std::set<SimplexId> sepIdBeg = sepIdAroundTriangle(tr);
       // current iteration id
-      SimplexId iter = sadid *sadtri +j;
+      SimplexId iter = i * sadtri + j;
 
       toProcess.push(tr);
 
@@ -279,7 +282,6 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
         }
       }
     }
-    sadid++;
   }
   return 0;
 }
