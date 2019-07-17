@@ -1,10 +1,14 @@
 #! /bin/bash
 
+set -e
+
 echo "### build ZFP ###"
 
 build_pkgs \
-	build-essentials	\
-	cmake			\
+	build-essential	\
+	curl		\
+	ca-certificates \
+	cmake		\
 	ninja-build
 
 BUILD_DIR=/root/zfp-build
@@ -13,7 +17,7 @@ BUILD_DIR=/root/zfp-build
 mkdir -p $BUILD_DIR
 
 fetch_url https://codeload.github.com/LLNL/zfp/tar.gz/0.5.5 \
-    | tar zvx -C $BUILD_DIR --strip-components 1
+    | tar zx -C $BUILD_DIR --strip-components 1
 
 # actually compile
 mkdir -p $BUILD_DIR/build
