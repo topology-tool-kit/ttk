@@ -217,7 +217,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
 
 ttk::QuadrangulationSubdivision::Point
   ttk::QuadrangulationSubdivision::getQuadNormal(
-    const size_t a, const std::vector<Point> &inputPoints) {
+    const size_t a, const std::vector<Point> &inputPoints) const {
   Point quadNormal{};
 
   // current vertex 3d coordinates

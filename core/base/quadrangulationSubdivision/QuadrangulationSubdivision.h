@@ -177,7 +177,7 @@ namespace ttk {
      *
      * @return normal to quad surface at point a
      */
-    Point getQuadNormal(size_t a, const std::vector<Point> &inputPoints);
+    Point getQuadNormal(size_t a, const std::vector<Point> &inputPoints) const;
 
     /**
      * @brief Compute the projection in the nearest triangle
