@@ -19,14 +19,14 @@ if(MSVC)
     "$ENV{PARAVIEW_BIN}/plugins"
     CACHE
     PATH
-    "Directory where TTK ParaView plugins will be installed"
+      "Directory where TTK ParaView plugins will be installed"
     )
 else()
   set(TTK_INSTALL_PLUGIN_DIR
     "${VTK_INSTALL_PREFIX}/lib/plugins"
     CACHE
     PATH
-    "Directory where TTK ParaView plugins will be installed"
+      "Directory where TTK ParaView plugins will be installed"
     )
 endif()
 
@@ -45,18 +45,27 @@ set("PARAVIEW_PLUGIN_ENABLE_TopologyToolKit"
 
 paraview_plugin_scan(
   PLUGIN_FILES
-  "singlePlugin/paraview.plugin"
+    "singlePlugin/paraview.plugin"
   PROVIDES_PLUGINS
     plugins
   )
 
 paraview_plugin_build(
+  PLUGINS
+    ${plugins}
+  TARGET
+    TTKPVPlugin
   RUNTIME_DESTINATION
     "${CMAKE_INSTALL_BINDIR}"
   LIBRARY_DESTINATION
     "${CMAKE_INSTALL_LIBDIR}"
   LIBRARY_SUBDIRECTORY
-    ""
-  PLUGINS
-    ${plugins}
+    "${PARAVIEW_PLUGIN_SUBDIR}"
+  )
+
+install(
+  TARGETS
+    TTKPVPlugin
+  DESTINATION
+    ${TTK_INSTALL_PLUGIN_DIR}
   )
