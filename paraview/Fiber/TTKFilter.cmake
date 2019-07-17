@@ -1,5 +1,5 @@
 # Allows to disable each filter
-option(TTK_BUILD_FIBER_FILTER "Build the Fiber filter" ON)
+option(TTK_BUILD_FIBER_FILTER "Build the Fiber filter" ${TTK_ENABLE_FILTER_DEFAULT})
 mark_as_advanced(TTK_BUILD_FIBER_FILTER)
 
 if(${TTK_BUILD_FIBER_FILTER})

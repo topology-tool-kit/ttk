@@ -1,5 +1,5 @@
 # Allows to disable each filter
-option(TTK_BUILD_TRACKINGFROMOVERLAP_FILTER "Build the TrackingFromOverlap filter" ON)
+option(TTK_BUILD_TRACKINGFROMOVERLAP_FILTER "Build the TrackingFromOverlap filter" ${TTK_ENABLE_FILTER_DEFAULT})
 mark_as_advanced(TTK_BUILD_TRACKINGFROMOVERLAP_FILTER)
 
 if(${TTK_BUILD_TRACKINGFROMOVERLAP_FILTER})

@@ -1,5 +1,5 @@
 # Allows to disable each filter
-option(TTK_BUILD_CONTOURFORESTS_FILTER "Build the ContourForests filter" ON)
+option(TTK_BUILD_CONTOURFORESTS_FILTER "Build the ContourForests filter" ${TTK_ENABLE_FILTER_DEFAULT})
 mark_as_advanced(TTK_BUILD_CONTOURFORESTS_FILTER)
 
 if(${TTK_BUILD_CONTOURFORESTS_FILTER})

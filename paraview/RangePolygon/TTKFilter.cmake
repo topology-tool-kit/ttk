@@ -1,5 +1,5 @@
 # Allows to disable each filter
-option(TTK_BUILD_RANGEPOLYGON_FILTER "Build the RangePolygon filter" ON)
+option(TTK_BUILD_RANGEPOLYGON_FILTER "Build the RangePolygon filter" ${TTK_ENABLE_FILTER_DEFAULT})
 mark_as_advanced(TTK_BUILD_RANGEPOLYGON_FILTER)
 
 if(${TTK_BUILD_RANGEPOLYGON_FILTER})

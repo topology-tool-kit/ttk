@@ -1,5 +1,5 @@
 # Allows to disable each filter
-option(TTK_BUILD_DIMENSIONREDUCTION_FILTER "Build the DimensionReduction filter" ON)
+option(TTK_BUILD_DIMENSIONREDUCTION_FILTER "Build the DimensionReduction filter" ${TTK_ENABLE_FILTER_DEFAULT})
 mark_as_advanced(TTK_BUILD_DIMENSIONREDUCTION_FILTER)
 
 if(${TTK_BUILD_DIMENSIONREDUCTION_FILTER})

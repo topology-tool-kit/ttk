@@ -5,6 +5,9 @@ project(ttk VERSION 0.9.8 LANGUAGES CXX C)
 option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" ON)
 option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON)
 option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
+option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
+
+mark_as_advanced(TTK_WHITELIST_MODE)
 
 if(NOT TTK_BUILD_VTK_WRAPPERS)
   set(TTK_BUILD_STANDALONE_APPS OFF)
@@ -35,6 +38,7 @@ add_subdirectory(core)
 if(TTK_BUILD_PARAVIEW_PLUGINS)
   # This option allows to build the TopologyToolKit.so file for paraview
   option(BUILD_SHARED_LIBS "Build TTK as shared lib" ON)
+  set(TTK_ENABLE_FILTER_DEFAULT $<NOT:${TTK_WHITELIST_MODE}> CACHE INTERNAL "Default value for each filter build")
   include(CMake/ParaViewFilter.cmake)
   add_subdirectory(paraview)
 endif()

@@ -1,5 +1,5 @@
 # Allows to disable each filter
-option(TTK_BUILD_MESHGRAPH_FILTER "Build the MeshGraph filter" ON)
+option(TTK_BUILD_MESHGRAPH_FILTER "Build the MeshGraph filter" ${TTK_ENABLE_FILTER_DEFAULT})
 mark_as_advanced(TTK_BUILD_MESHGRAPH_FILTER)
 
 if(${TTK_BUILD_MESHGRAPH_FILTER})
