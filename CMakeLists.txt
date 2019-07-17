@@ -13,10 +13,6 @@ if(NOT TTK_BUILD_VTK_WRAPPERS)
   set(TTK_BUILD_STANDALONE_APPS OFF)
 endif()
 
-if(TTK_BUILD_PARAVIEW_PLUGINS)
-  set(TTK_BUILD_VTK_WRAPPERS ON)
-endif()
-
 # find dependencies
 include(config.cmake)
 
@@ -46,9 +42,13 @@ endif()
 # VTK Wrappers
 # ------------
 
+include(CMake/VTKWrapper.cmake)
 if(TTK_BUILD_VTK_WRAPPERS)
-  include(CMake/VTKWrapper.cmake)
   add_subdirectory(core/vtk)
+elseif(TTK_BUILD_PARAVIEW_PLUGINS)
+  # even without the TTK VTK wrappers, we need
+  # the triangulation target for paraview filters
+  include(core/vtk/ttkTriangulation/TTKWrapper.cmake)
 endif()
 
 # Standalones
