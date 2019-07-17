@@ -505,7 +505,6 @@ ttk::QuadrangulationSubdivision::Point
       reverseProjection_ = true;
       res = findProjection(a, inputPoints, lastIter);
       reverseProjection_ = false;
-      return res;
     } else {
       // replace proj by the nearest vertex?
       std::vector<float> dists(vertexNumber_);
