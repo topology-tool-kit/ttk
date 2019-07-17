@@ -226,6 +226,11 @@ namespace ttk {
      */
     int findExtraordinaryVertices(std::set<size_t> &output);
 
+    /**
+     * @brief Clear buffers
+     */
+    void clearData();
+
     // number of vertices in the mesh
     SimplexId vertexNumber_{};
 

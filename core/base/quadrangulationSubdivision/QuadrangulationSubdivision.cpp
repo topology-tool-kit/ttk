@@ -681,13 +681,7 @@ int ttk::QuadrangulationSubdivision::findExtraordinaryVertices(
   return 0;
 }
 
-// main routine
-int ttk::QuadrangulationSubdivision::execute() {
-
-
-  Timer t;
-
-  // clear output variables
+void ttk::QuadrangulationSubdivision::clearData() {
   outputQuads_.clear();
   outputPoints_.clear();
   outputValences_.clear();
@@ -697,6 +691,15 @@ int ttk::QuadrangulationSubdivision::execute() {
   vertexDistance_.clear();
   trianglesChecked_.clear();
   projSucceeded_.clear();
+}
+
+// main routine
+int ttk::QuadrangulationSubdivision::execute() {
+
+  Timer t;
+
+  // clear output variables
+  clearData();
 
   // store input points (MSC critical points)
   for(size_t i = 0; i < inputVertexNumber_; i++) {
