@@ -70,6 +70,7 @@ namespace ttk {
     inline std::vector<float> &getOutputPoints() {
       return reinterpret_cast<std::vector<float> &>(outputPoints_);
     }
+
   private:
     // vtkPoint instance with interleaved coordinates (AoS)
     struct Point {
@@ -166,7 +167,7 @@ namespace ttk {
      */
     int getQuadNeighbors(const std::vector<Quad> &quads,
                          std::vector<std::set<size_t>> &neighbors,
-                         bool secondNeighbors = false);
+                         bool secondNeighbors = false) const;
 
     /**
      * @brief Compute the normal of the quadrangulation at point a

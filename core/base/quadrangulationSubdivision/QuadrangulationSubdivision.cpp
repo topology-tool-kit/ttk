@@ -100,6 +100,8 @@ int ttk::QuadrangulationSubdivision::subdivise() {
   vertexDistance_.resize(outputPoints_.size());
 
   // get all other vertices sharing a quad
+  quadNeighbors_.clear();
+  quadNeighbors_.resize(outputPoints_.size());
   getQuadNeighbors(prevQuads, quadNeighbors_, true);
 
   // compute shortest distance from every vertex to all other that share a quad
@@ -571,11 +573,8 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
 int ttk::QuadrangulationSubdivision::getQuadNeighbors(
   const std::vector<Quad> &quads,
   std::vector<std::set<size_t>> &neighbors,
-  const bool secondNeighbors) {
+  const bool secondNeighbors) const {
   Timer t;
-
-  quadNeighbors_.clear();
-  quadNeighbors_.resize(outputPoints_.size());
 
   for(auto &q : quads) {
     auto i = static_cast<size_t>(q.i);
@@ -741,6 +740,8 @@ int ttk::QuadrangulationSubdivision::execute() {
   }
 
   // retrieve mapping between every vertex and its neighbors
+  quadNeighbors_.clear();
+  quadNeighbors_.resize(outputPoints_.size());
   getQuadNeighbors(outputQuads_, quadNeighbors_);
 
   // "relax" the new points, i.e. replace it by the barycenter of its
