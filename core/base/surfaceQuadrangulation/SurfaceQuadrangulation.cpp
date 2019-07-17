@@ -443,11 +443,15 @@ int ttk::SurfaceQuadrangulation::findSepsVertices(
   for(size_t i = 0; i < seps.size(); ++i) {
     auto src = sepCellIds_[sepBegs_[seps[i]]];
     auto dst = sepCellIds_[sepEnds_[seps[i]]];
+    auto src_dim = sepCellDims_[sepBegs_[seps[i]]];
+    auto dst_dim = sepCellDims_[sepEnds_[seps[i]]];
     for(long long j = 0; j < criticalPointsNumber_; ++j) {
-      if(criticalPointsCellIds_[j] == src) {
+      if(criticalPointsCellIds_[j] == src
+         && criticalPointsType_[j] == src_dim) {
         srcs[i] = j;
       }
-      if(criticalPointsCellIds_[j] == dst) {
+      if(criticalPointsCellIds_[j] == dst
+         && criticalPointsType_[j] == dst_dim) {
         dsts[i] = j;
       }
     }
