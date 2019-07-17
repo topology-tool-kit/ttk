@@ -684,8 +684,6 @@ int ttk::QuadrangulationSubdivision::findExtraordinaryVertices(
 // main routine
 int ttk::QuadrangulationSubdivision::execute() {
 
-  using std::cout;
-  using std::endl;
 
   Timer t;
 
@@ -763,8 +761,8 @@ int ttk::QuadrangulationSubdivision::execute() {
     std::stringstream msg;
     msg << MODULE_S "Produced " << outputQuads_.size() << " quadrangles with "
         << outputPoints_.size() << " points in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), infoMsg);
+        << " s. (" << threadNumber_ << " thread(s))." << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
   }
 
   return 0;
