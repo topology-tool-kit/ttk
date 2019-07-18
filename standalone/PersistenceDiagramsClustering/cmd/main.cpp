@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
   int randomness = 0;
   int method = 0;
   int use_prog=1;
+  int write_distances=0;
 
   // register these arguments to the command line parser
   program.parser_.setArgument("M",&method,
@@ -42,6 +43,8 @@ int main(int argc, char **argv) {
     "Randomness", true);
   program.parser_.setArgument("G", &geometry_penalization,
     "Geometry Penalization, bet 0. and 1., 1. means no lifting", true);
+  program.parser_.setArgument("write-distances", &write_distances,
+    "0 : don't write - 1 : write accelerated KMeans approximations - 2 : compute and write actual distances", true);
 
   // program.parser_.printArgs();
   // std::cout<<"number of args "<<program.parser_.getNumberOfArgs()<<std::endl;
@@ -68,6 +71,7 @@ int main(int argc, char **argv) {
   program.ttkObject_->SetTimeLimit(timeLimit);
   program.ttkObject_->SetAlpha(geometry_penalization);
   program.ttkObject_->SetNumberOfClusters(numberOfClusters);
+  program.ttkObject_->SetDistanceWritingOptions(write_distances);
     
 
 program.ttkObject_->setNumberOfInputsFromCommandLine(program.getNumberOfInputs());

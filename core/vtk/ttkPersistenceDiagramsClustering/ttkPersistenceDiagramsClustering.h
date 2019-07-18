@@ -116,7 +116,7 @@ class ttkPersistenceDiagramsClustering
 
     void SetThreadNumber(int data)
     {
-      ThreadNumber = data;
+        ThreadNumber = data;
         Modified();
         needUpdate_ = true;
     }
@@ -124,11 +124,29 @@ class ttkPersistenceDiagramsClustering
 
     void SetAlpha(double data)
     {
-        Alpha = data;
+        if(data>0 && data<=1){
+
+          Alpha = data;
+        }
+        else if(data>1){
+          Alpha = 1;
+        }
+        else{
+          Alpha = 0.001;
+        }
         Modified();
         needUpdate_ = true;
     }
     vtkGetMacro(Alpha, double);
+
+    void SetDeltaLim(double data)
+    {
+        DeltaLim = data;
+        Modified();
+        needUpdate_ = true;
+    }
+
+    vtkGetMacro(DeltaLim, double);
 
     void SetLambda(double data)
     {
@@ -196,11 +214,33 @@ class ttkPersistenceDiagramsClustering
 
     vtkGetMacro(DisplayMethod,bool);
 
-    vtkSetMacro(UseInterruptible, bool);
+    void SetUseAdditionalPrecision(bool data)
+    {
+        UseAdditionalPrecision = data;
+        Modified();
+        needUpdate_ = true;
+    }
+    vtkGetMacro(UseAdditionalPrecision, bool);
+
+    void SetDistanceWritingOptions(int data)
+    {
+        DistanceWritingOptions = data;
+        Modified();
+        needUpdate_ = true;
+    }
+    vtkGetMacro(DistanceWritingOptions, int);
+
+    void SetUseInterruptible(bool data)
+    {
+        UseInterruptible = data;
+        Modified();
+        needUpdate_ = true;
+    }
     vtkGetMacro(UseInterruptible, bool);
 
     void SetMethod(int method){
       Method=method;
+      needUpdate_ = true;
       Modified();
     }
     vtkGetMacro(Method, double);
@@ -247,7 +287,10 @@ class ttkPersistenceDiagramsClustering
     bool UseAllCores;
     int ThreadNumber;
     bool UseOutputMatching;
+    bool UseAdditionalPrecision;
+    int DistanceWritingOptions;
     double Alpha;
+    double DeltaLim;
     double Lambda;
     double Spacing;
     double oldSpacing;
@@ -361,7 +404,7 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(std::vector<diagr
                     std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)3, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
 
                 // diagram->at(pairingsSize) =
-                //     std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)1, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
+                //     std::make_tuple(vertexId1, (BNodeType)1, vertexId2, (BNodeType)3, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
 
             } else {
                 diagram->at(pairIdentifier) = std::make_tuple(vertexId1, (BNodeType)nodeType1, vertexId2, (BNodeType)nodeType2, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1,
@@ -524,13 +567,13 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
     persistenceScalars->SetName("Persistence");
 
     vtkSmartPointer<vtkIntArray> idOfPair = vtkSmartPointer<vtkIntArray>::New();
-    idOfPair->SetName("ID of Pair");
+    idOfPair->SetName("PairID");
 
     vtkSmartPointer<vtkDoubleArray> persistenceScalarsPoint = vtkSmartPointer<vtkDoubleArray>::New();
     persistenceScalarsPoint->SetName("Persistence");
 
     vtkSmartPointer<vtkIntArray> idOfDiagramPoint = vtkSmartPointer<vtkIntArray>::New();
-    idOfDiagramPoint->SetName("ID of Cluster");
+    idOfDiagramPoint->SetName("ClusterID");
 
     vtkSmartPointer<vtkIntArray> pairType = vtkSmartPointer<vtkIntArray>::New();
     pairType->SetName("PairType");
@@ -679,16 +722,16 @@ vtkSmartPointer<vtkUnstructuredGrid> ttkPersistenceDiagramsClustering::createOut
     persistenceScalars->SetName("Persistence");
 
     vtkSmartPointer<vtkIntArray> idOfPair = vtkSmartPointer<vtkIntArray>::New();
-    idOfPair->SetName("ID of Pair");
+    idOfPair->SetName("PairID");
 
     vtkSmartPointer<vtkDoubleArray> persistenceScalarsPoint = vtkSmartPointer<vtkDoubleArray>::New();
     persistenceScalarsPoint->SetName("Persistence");
 
     vtkSmartPointer<vtkIntArray> idOfDiagramPoint = vtkSmartPointer<vtkIntArray>::New();
-    idOfDiagramPoint->SetName("ID of Diagram");
+    idOfDiagramPoint->SetName("DiagramID");
 
     vtkSmartPointer<vtkIntArray> idOfCluster = vtkSmartPointer<vtkIntArray>::New();
-    idOfCluster->SetName("ID of Cluster");
+    idOfCluster->SetName("ClusterID");
 
     vtkSmartPointer<vtkIntArray> pairType = vtkSmartPointer<vtkIntArray>::New();
     pairType->SetName("PairType");
@@ -868,19 +911,19 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 	vtkSmartPointer<vtkIntArray> idOfDiagramMatchingPoint =
 		vtkSmartPointer<vtkIntArray>::New();
-	idOfDiagramMatchingPoint->SetName("ID of Diagram");
+	idOfDiagramMatchingPoint->SetName("DiagramID");
 
 	vtkSmartPointer<vtkIntArray> idOfPoint =
 		vtkSmartPointer<vtkIntArray>::New();
-	idOfPoint->SetName("ID of Point");
+	idOfPoint->SetName("PointID");
 
 	vtkSmartPointer<vtkIntArray> idOfDiagramMatching =
 		vtkSmartPointer<vtkIntArray>::New();
-	idOfDiagramMatching->SetName("ID of Diagram");
+	idOfDiagramMatching->SetName("DiagramID");
 
 	vtkSmartPointer<vtkIntArray> idOfCluster =
 		vtkSmartPointer<vtkIntArray>::New();
-	idOfCluster->SetName("ClusterId");
+	idOfCluster->SetName("ClusterID");
 
         vtkSmartPointer<vtkDoubleArray> cost = vtkSmartPointer<vtkDoubleArray>::New();
         cost->SetName("Cost");

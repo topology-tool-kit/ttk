@@ -38,10 +38,35 @@ void PDBarycenter<dataType>::runMatching(dataType* total_cost, dataType epsilon,
     // #pragma omp parallel for schedule(dynamic, 1)
     // #endif
     // std::vector<dataType> precision_(numberOfInputs_);
+    //
+    // cout<<"TEST"<<endl;
+    // cout << " FUCKIN BARYCENTER " << endl;
+    // for(int i1 = 0; i1 < current_bidder_diagrams_.size(); i1++) {
+    //     for(int i2 = 0; i2 < barycenter_goods_.size(); i2++) {
+    //         Good<dataType> g = barycenter_goods_[0].get(i2);
+    //         cout << " good " << i1 << " " << i2 << " " << g.x_ << " " << g.y_ << " " << g.id_ << endl;
+    //     }
+    // }
+
+    // cout << " FUCKIN DIAGRAMS " << endl;
+    // for(int i1 = 0; i1 < current_bidder_diagrams_.size(); i1++) {
+    //     for(int i2 = 0; i2 < current_bidder_diagrams_[i1].size(); i2++) {
+    //         Bidder<dataType> b = current_bidder_diagrams_[i1].get(i2);
+    //         cout << " bidder " << i1 << " " << i2 << " " << b.x_ << " " << b.y_ << " " << b.id_ << endl;
+    //     }
+    // }
+
     for(int i = 0; i < numberOfInputs_; i++) {
         // cout<<"input "<<i<<" sizes : "<<current_bidder_diagrams_.size()<<" "<<barycenter_goods_.size()<<" "<<min_diag_price->size()<<endl;
         Auction<dataType> auction = Auction<dataType>(&current_bidder_diagrams_.at(i), &barycenter_goods_.at(i), wasserstein_, geometrical_factor_, lambda_, 0.01, kdt, *correspondance_kdt_map,
                                                       epsilon, min_diag_price->at(i), use_kdt);
+        // cout<<"\n RUN MATCHINGS : "<<i<<endl;
+        // cout<<use_kdt<<endl;
+        // cout<<epsilon<<endl;
+        // cout<<geometrical_factor_<<endl;
+        // cout<<wasserstein_<<endl;
+        // cout<<min_diag_price->at(i)<<endl;
+        // cout<<min_price->at(i)<<endl;
         int n_biddings = 0;
         auction.buildUnassignedBidders();
         auction.reinitializeGoods();
@@ -53,6 +78,10 @@ void PDBarycenter<dataType>::runMatching(dataType* total_cost, dataType epsilon,
         dataType cost = auction.getMatchingsAndDistance(&matchings, true);
         all_matchings->at(i) = matchings;
         (*total_cost) += cost*cost;
+
+        // cout<<auction.getMinimalDiagonalPrice()<<endl;
+        // cout<<getMinimalPrice(i)<<endl;
+        // cout<<cost<<endl;
 
         // if(cost <= ((1.01 * 1.01) * (cost - epsilon * auction.getAugmentedNumberOfBidders()))) {
         //     precision_objective_[i] = true;
@@ -623,6 +652,20 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence)
         size = barycenter_goods_[0].size();
         iter++;
     }
+    // for(int i = 0; i < numberOfInputs_; i++) {
+    //     GoodDiagram<dataType> goods;
+    //     int count = 0;
+    //     for(unsigned int j = 0; j < current_bidder_diagrams_[0].size(); j++) {
+    //         // Add bidder to bidders
+    //         Bidder<dataType> = current_bidder_diagrams_[0].get(j);
+    //         Good<dataType> g = Good<dataType>(current_bidder_diagrams_[0].get(j), count, lambda_);
+    //         if(g.getPersistence() >= min_persistence) {
+    //             goods.addGood(g);
+    //             count++;
+    //         }
+    //     }
+    //         barycenter_goods_.push_back(goods);
+    // }
 }
 
 template <typename dataType>
@@ -971,12 +1014,11 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
             //     std::cout << "epsilon : " << epsilon << std::endl;
             std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> pair;
             bool use_kdt = false;
-            // If the barycenter is empty, do not compute the kdt (or it will crash :/)
-            // TODO Fix KDTree to handle empty inputs...
             if(barycenter_goods_[0].size() > 0) {
                 pair = this->getKDTree();
                 use_kdt = true;
             }
+
             KDTree<dataType>* kdt = pair.first;
             std::vector<KDTree<dataType>*>& correspondance_kdt_map = pair.second;
 
@@ -1010,12 +1052,27 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
                 }
                 epsilon = epsilon_0;
             } else {
+
+                // cout<<" FUCKIN BARYCENTER "<<endl;
+                // for(int i2 = 0; i2 < barycenter_goods_.size(); i2++) {
+                //     Good<dataType> g = barycenter_goods_[0].get(i2);
+                //     cout << " good "  << i2 << " " << g.x_ << " " << g.y_ << " " << g.id_ << endl;
+                // }
+
+                // cout<<" FUCKIN DIAGRAMS "<<endl;
+                // for(int i1 = 0; i1<current_bidder_diagrams_.size(); i1++){
+                //     for(int i2 = 0; i2<current_bidder_diagrams_[i1].size(); i2++){
+                //         Bidder<dataType> b = current_bidder_diagrams_[i1].get(i2);
+                //         cout << " bidder " << i1 << " " << i2 << " " << b.x_ << " " << b.y_ << " " <<b.id_ << endl;
+                //     }
+                // }
+
                 // cout<<"sizes :"<<endl;
                 // for(int ii=0;ii<sizes.size();ii++){
                 // cout<<" "<<sizes[ii];}
                 // cout<<"\n"<<endl;
-                // cout<<" sizes bidders : "<<current_bidder_diagrams_[0].size()<<" "<<current_bidder_diagrams_[1].size()<<endl;
-                // cout<<"use kdt : "<<use_kdt<<endl;
+                // // cout<<" sizes bidders : "<<current_bidder_diagrams_[0].size()<<" "<<current_bidder_diagrams_[1].size()<<endl;
+                // // cout<<"use kdt : "<<use_kdt<<endl;
                 // cout<<"min price ";
                 // for(int ii=0; ii<min_price.size(); ii++){
                 //   cout<<" "<<min_price[ii];
@@ -1024,6 +1081,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
                 // for(int ii=0; ii<min_diag_price.size(); ii++){
                 //   cout<<" "<<min_diag_price[ii];
                 // }
+                // std::cout << "\nEPSILON FOR MATCHINGS: " << epsilon << std::endl;
                 runMatching(&total_cost, epsilon, sizes, kdt, &correspondance_kdt_map, &min_diag_price, &min_price, &all_matchings, use_kdt);
                 // cout<<"\n matchings :"<<endl;
                 // for(int ii=0;ii<all_matchings.size();ii++){
@@ -1034,7 +1092,7 @@ std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executePartialBi
                 // cout<<"\n"<<endl;
             }
             if(debugLevel_ > 1)
-                std::cout << "[PersistenceDiagramsBarycenter] Barycenter cost : " << total_cost << std::endl;
+                std::cout << "[PersistenceDiagramsBarycenter] Barycenter cost : " << sqrt(total_cost) << std::endl;
 
             // if(converged){
             // Timer t2;

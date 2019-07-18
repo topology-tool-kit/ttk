@@ -29,12 +29,15 @@ vtkStandardNewMacro(ttkPersistenceDiagramsClustering)
     UseAccelerated = 0;
     UseKmeansppInit = 0;
     Alpha = 1;
+    DeltaLim = 0.01;
     Lambda = 1;
     Spacing = 1;
     oldSpacing = 1;
     Method = 0;
     needUpdate_ = true;
     UseInterruptible=true;
+    UseAdditionalPrecision=false;
+    DistanceWritingOptions=0;
     DisplayMethod=0;
 
     final_centroids_ = NULL;
@@ -143,13 +146,15 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input, vtkUnstructuredGr
                     persistenceDiagramsClustering.setUseProgressive(UseProgressive);
                     persistenceDiagramsClustering.setThreadNumber(ThreadNumber);
                     persistenceDiagramsClustering.setAlpha(Alpha);
+                    persistenceDiagramsClustering.setDeltaLim(DeltaLim);
+                    persistenceDiagramsClustering.setUseDeltaLim(UseAdditionalPrecision);
                     persistenceDiagramsClustering.setLambda(Lambda);
                     persistenceDiagramsClustering.setNumberOfClusters(NumberOfClusters);
                     persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
                     persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
+                    persistenceDiagramsClustering.setDistanceWritingOptions(DistanceWritingOptions);
 
                     persistenceDiagramsClustering.setDiagrams((void *)intermediateDiagrams);
-                    cout<<"execute1"<<endl;
                     inv_clustering_ = persistenceDiagramsClustering.execute(final_centroids, all_matchings);
 
                     needUpdate_ = false;
@@ -182,17 +187,14 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input, vtkUnstructuredGr
 
                     persistenceDiagramsBarycenter.setDiagrams((void *)intermediateDiagrams);
 
-                    std::vector<std::vector<macroMatchingTuple>> matchings = persistenceDiagramsBarycenter.execute(&(final_centroids->at(0)));
+                    persistenceDiagramsBarycenter.execute(&(final_centroids->at(0)), all_matchings);
 
                     needUpdate_ = false;
                 }
             }
 
-cout<<"diagrams"<<endl;
             outputClusters->ShallowCopy(createOutputClusteredDiagrams(*intermediateDiagrams, inv_clustering_, max_dimension_total_, Spacing));
-cout<<"centroids"<<endl;
             outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(final_centroids, inv_clustering_, max_dimension_total_, Spacing));
-            cout<<"matchings"<<endl;
             outputMatchings->ShallowCopy(createMatchings(final_centroids, inv_clustering_, *intermediateDiagrams, all_matchings, max_dimension_total_, Spacing));
         }));
     }

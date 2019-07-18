@@ -113,8 +113,21 @@ namespace ttk{
     inline void setPairTypeClustering(const int pairTypeClustering){
 			pairTypeClustering_ = pairTypeClustering;
 		}
+
     inline void setDebugLevel(const int debugLevel){
       debugLevel_ = debugLevel;
+    }
+
+    inline void setUseDeltaLim(const bool useDeltaLim){
+      useDeltaLim_ = useDeltaLim;
+    }
+
+    inline void setDistanceWritingOptions(const int distanceWritingOptions){
+      distanceWritingOptions_ = distanceWritingOptions;
+    }
+
+    inline void setDeltaLim(const double deltaLim){
+      deltaLim_ = deltaLim;
     }
 		template<typename type>
 		static type abs(const type var) {
@@ -127,27 +140,30 @@ namespace ttk{
       // Critical pairs used for clustering
       // 0:min-saddles ; 1:saddles-saddles ; 2:sad-max ; else : all
 
-      int                 debugLevel_;
-      int         pairTypeClustering_;
-      bool        deterministic_;
-	  int 					wasserstein_;
-	  int 					n_clusters_;
+     double deltaLim_;
+     bool useDeltaLim_;
+     int distanceWritingOptions_;
+     int debugLevel_;
+     int pairTypeClustering_;
+     bool deterministic_;
+     int wasserstein_;
+     int n_clusters_;
 
-      int                   numberOfInputs_;
-      void*                 inputData_; //TODO : std::vector<void*>
-      int 					threadNumber_;
-	  bool                  use_progressive_;
-	  bool                  use_accelerated_;
-	  bool                  use_kmeanspp_;
-	  double                alpha_;
-    double                lambda_;
-	  double                time_limit_;
+     int numberOfInputs_;
+     void* inputData_;  // TODO : std::vector<void*>
+     int threadNumber_;
+     bool use_progressive_;
+     bool use_accelerated_;
+     bool use_kmeanspp_;
+     double alpha_;
+     double lambda_;
+     double time_limit_;
 
-      int points_added_;
-	  int points_deleted_;
+     int points_added_;
+     int points_deleted_;
 
-      std::vector<BidderDiagram<dataType>>    bidder_diagrams_;
-      std::vector<GoodDiagram<dataType>>	  barycenter_goods_;
+     std::vector<BidderDiagram<dataType>> bidder_diagrams_;
+     std::vector<GoodDiagram<dataType>> barycenter_goods_;
   };
 
 
@@ -259,13 +275,14 @@ template <typename dataType>
     KMeans.setLambda(lambda_);
     KMeans.setDeterministic(deterministic_);
     KMeans.setDebugLevel(debugLevel_);
+    KMeans.setDeltaLim(deltaLim_);
+    KMeans.setUseDeltaLim(useDeltaLim_);
+    KMeans.setDistanceWritingOptions(distanceWritingOptions_);
     KMeans.setKMeanspp(use_kmeanspp_);
     KMeans.setK(n_clusters_);
     KMeans.setDiagrams(&data_min, &data_sad, &data_max);
     KMeans.setDos(do_min, do_sad, do_max);
-    cout<<"execute2"<<endl;
     inv_clustering = KMeans.execute(*final_centroids, all_matchings_per_type_and_cluster);
-    cout<<"execute2 done"<<endl;
     vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
 
 
@@ -278,7 +295,6 @@ template <typename dataType>
 
 	/// Reconstruct matchings
 	//
-	cout<<"Reconstruction of matchings : "<<n_clusters_<<endl;
 
         std::vector<int> cluster_size;
         std::vector<int> idxInCluster(numberOfInputs_);
@@ -366,13 +382,8 @@ template <typename dataType>
 		}
 	    }
 	}
-	cout<<"datamax "<<data_max_idx[1].size()<<endl;
-	for(int ii=0; ii<data_max_idx[1].size(); ii++){
-	cout<<" "<<data_max_idx[1][ii]<<" ,";
-	}
 
-	cout<<"Reconstruction of matchings done"<<endl;
-                      return inv_clustering;
+        return inv_clustering;
         }
 }
 }

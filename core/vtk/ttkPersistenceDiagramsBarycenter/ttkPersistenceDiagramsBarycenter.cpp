@@ -104,8 +104,8 @@ int ttkPersistenceDiagramsBarycenter::doIt(vtkDataSet** input, vtkUnstructuredGr
 
 
 			std::vector<macroDiagramTuple> barycenter;
-			std::vector<std::vector<macroMatchingTuple>> matchings =
-				persistenceDiagramsBarycenter.execute(&barycenter);
+			std::vector<std::vector<macroMatchingTuple>> matchings;
+			  // = 	persistenceDiagramsBarycenter.execute(&barycenter);
 
 			outputBarycenter->ShallowCopy(createPersistenceDiagram<VTK_TT>(&barycenter));
 			outputMatchings->ShallowCopy(createMatchings(&matchings, &barycenter,

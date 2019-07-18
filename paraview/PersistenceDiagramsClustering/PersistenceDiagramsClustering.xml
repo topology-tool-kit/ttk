@@ -196,6 +196,38 @@ computation (type "inf" for the Bottleneck distance).
 		  A low value of Time Limit will yield approximate results. Use with caution.
         </Documentation>
 
+      </DoubleVectorProperty>
+
+        <IntVectorProperty
+        name="UseAdditionalPrecision"
+        command="SetUseAdditionalPrecision"
+        label="Force minimum precision on matchings"
+        number_of_elements="1"
+        default_values="0"
+        >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+	  <DoubleVectorProperty
+          name="DeltaLim"
+          label="Minimal relative precision"
+          command="SetDeltaLim"
+          number_of_elements="1"
+          default_values="0.01"
+          >
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="UseAdditionalPrecision"
+                                   value="1" />
+          <!-- enable this widget when <property> equals <value> -->
+        </Hints>
+        <Documentation>
+        Minimal precision for the approximation of the Wasserstein distance used in the assignment between diagrams.
+        </Documentation>
+
         </DoubleVectorProperty>
         
       <IntVectorProperty
@@ -364,6 +396,7 @@ between matched critical points.
 
       <OutputPort name="Clustered Diagrams" index="0" id="port0" />
       <OutputPort name="Cluster Centroids" index="1" id="port1" />
+      <OutputPort name="Matchings" index="2" id="port2" />
 
       <Hints>
         <ShowInMenu category="TTK - Uncertain Scalar Data" />
