@@ -679,6 +679,88 @@ int ttk::QuadrangulationSubdivision::findExtraordinaryVertices(
   return 0;
 }
 
+bool ttk::QuadrangulationSubdivision::checkBadProjectionTube() const {
+  // Compute the minimum euclidian distance between every point. If
+  // several non-neighboring points are nearer than direct neighbors,
+  // there is some overlab.
+  Timer t;
+
+  std::vector<std::set<size_t>> neighbors(outputPoints_.size());
+  getQuadNeighbors(outputQuads_, neighbors);
+  std::vector<std::set<size_t>> secondNeighbors(outputPoints_.size());
+  getQuadNeighbors(outputQuads_, secondNeighbors, true);
+
+  std::map<std::pair<size_t, size_t>, float> quadVertsDists{};
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  // compute euclidian distance between every quadrangle point
+  for(size_t i = 0; i < outputPoints_.size(); ++i) {
+    for(size_t j = i + 1; j < outputPoints_.size(); ++j) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+      quadVertsDists[std::make_pair(i, j)]
+        = Geometry::distance(&outputPoints_[i].x, &outputPoints_[j].x);
+    }
+  }
+
+  size_t count{};
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < outputPoints_.size(); ++i) {
+    // compute minimal distance to neighbors
+    float minDistNeigh{std::numeric_limits<float>::infinity()};
+    for(const auto n : neighbors[i]) {
+      std::pair<size_t, size_t> in{};
+      if(i < n) {
+        in = std::make_pair(i, n);
+      } else {
+        in = std::make_pair(n, i);
+      }
+      if(quadVertsDists[in] < minDistNeigh) {
+        minDistNeigh = quadVertsDists[in];
+      }
+    }
+
+    // compute minimal distance to points that aren't neighbors
+    float minDistPoint{std::numeric_limits<float>::infinity()};
+    for(size_t j = 0; j < outputPoints_.size(); ++j) {
+      // skip itself and neighbors
+      if(j == i || secondNeighbors[i].find(j) != secondNeighbors[i].end()) {
+        continue;
+      }
+      std::pair<size_t, size_t> ij{};
+      if(i < j) {
+        ij = std::make_pair(i, j);
+      } else {
+        ij = std::make_pair(j, i);
+      }
+      if(quadVertsDists[ij] < minDistPoint) {
+        minDistPoint = quadVertsDists[ij];
+      }
+    }
+
+    if(minDistPoint < minDistNeigh) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic update
+#endif // TTK_ENABLE_OPENMP
+      count++;
+    }
+  }
+  const size_t maxNearPoints{10};
+
+  std::stringstream msg;
+  msg << MODULE_S "Points nearer than direct neighbors: " << count << " (in "
+      << t.getElapsedTime() << "s)" << std::endl;
+  dMsg(std::cout, msg.str(), detailedInfoMsg);
+
+  return !(count > maxNearPoints);
+}
+
 void ttk::QuadrangulationSubdivision::clearData() {
   outputQuads_.clear();
   outputPoints_.clear();
@@ -759,6 +841,11 @@ int ttk::QuadrangulationSubdivision::execute() {
   std::transform(
     quadNeighbors_.begin(), quadNeighbors_.end(), outputValences_.begin(),
     [&](const std::set<size_t> &neighbors) { return neighbors.size(); });
+
+  if(!checkBadProjectionTube()) {
+    clearData();
+    return 1;
+  }
 
   {
     std::stringstream msg;

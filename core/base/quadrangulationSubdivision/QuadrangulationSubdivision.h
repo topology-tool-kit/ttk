@@ -228,6 +228,14 @@ namespace ttk {
     int findExtraordinaryVertices(std::set<size_t> &output);
 
     /**
+     * @brief Look for tubular sections around which the subdivision
+     * is not properly projected.
+     *
+     * @return true if no bad projection found
+     */
+    bool checkBadProjectionTube() const;
+
+    /**
      * @brief Clear buffers
      */
     void clearData();
