@@ -984,14 +984,16 @@ int ttk::SurfaceQuadrangulation::execute() {
   }
 
   if(!checkSurfaceCloseness()) {
-    // clean, log & early return
-    clearData();
+    // log, clean & early return
     std::stringstream msg;
     msg << MODULE_S
       "Error: output surface does not match input surface closeness"
         << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
-    return 1;
+    if(!showResError_) {
+      clearData();
+      return 1;
+    }
   }
 
   // number of produced quads

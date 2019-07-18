@@ -76,6 +76,9 @@ public:
   vtkGetMacro(DualQuadrangulation, bool);
   vtkSetMacro(DualQuadrangulation, bool);
 
+  vtkSetMacro(ShowResError, bool);
+  vtkGetMacro(ShowResError, bool);
+
   // get data from Morse-Smale Complex
   int getCriticalPoints(vtkUnstructuredGrid *input);
   int getSeparatrices(vtkUnstructuredGrid *input);
@@ -105,6 +108,9 @@ private:
   ttk::Triangulation *triangulation_{};
   // if dual quadrangulation
   bool DualQuadrangulation{false};
+  // show result despite error
+  bool ShowResError{false};
+
   // worker object
   ttk::SurfaceQuadrangulation surfaceQuadrangulation_{};
 };

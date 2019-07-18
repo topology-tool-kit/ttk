@@ -125,6 +125,7 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   TTK_ABORT_KK(res != 0, "wrong segmentation", -1);
 
   surfaceQuadrangulation_.setDualQuadrangulation(DualQuadrangulation);
+  surfaceQuadrangulation_.setShowResError(ShowResError);
 
   res += surfaceQuadrangulation_.execute();
 
@@ -132,7 +133,9 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
     vtkWarningMacro(MODULE_ERROR_S
                     "Consider another (eigen) function, persistence threshold "
                     "or refine your input triangulation");
-    return res;
+    if(!ShowResError) {
+      return res;
+    }
   }
 
   auto &outQuadrangles = surfaceQuadrangulation_.outputCells_;

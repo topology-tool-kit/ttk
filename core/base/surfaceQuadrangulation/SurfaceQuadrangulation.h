@@ -54,6 +54,9 @@ namespace ttk {
     inline void setDualQuadrangulation(const bool input) {
       dualQuadrangulation_ = input;
     }
+    inline void setShowResError(const bool value) {
+      showResError_ = value;
+    }
     inline void setInputPoints(const void *const addr) {
       inputPoints_ = static_cast<const float *>(addr);
     }
@@ -188,6 +191,8 @@ namespace ttk {
     SimplexId *segmentation_{};
     // if dual quadrangulation
     bool dualQuadrangulation_{false};
+    // display result despite error
+    bool showResError_{false};
 
     // index of separatrices beginnings in separatrices arrays
     std::vector<size_t> sepBegs_{};
