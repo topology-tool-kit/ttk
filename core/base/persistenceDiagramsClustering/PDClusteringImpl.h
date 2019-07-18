@@ -262,19 +262,26 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
                     }
                 }
 
-                if (epsilon_[0] < epsilon_min_ && diagrams_complete[0]){
+                if (epsilon_[0] < epsilon_min_ /*&& diagrams_complete[0]*/){
                     do_min_ = false;
                     epsilon_[0] = epsilon_min_;
+                    diagrams_complete[0]=true;
                 }
-                if (epsilon_[1] < epsilon_min_ && diagrams_complete[1]){
+                if (epsilon_[1] < epsilon_min_ /*&& diagrams_complete[1]*/){
                    do_sad_ = false;
                    epsilon_[1] = epsilon_min_;
+                    diagrams_complete[0]=true;
                 }
-                if (epsilon_[2] < epsilon_min_ && diagrams_complete[2]){
+                if (epsilon_[2] < epsilon_min_ /*&& diagrams_complete[2]*/){
                     do_max_ = false;
                     epsilon_[2] = epsilon_min_;
+                    diagrams_complete[0]=true;
                 }
 
+                if(diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2]) {
+                    use_progressive_ = false;
+                    all_diagrams_complete = true;
+                }
                 // std::cout<<"going to NOT update clusters"<<std::endl;
                 if (use_accelerated_) {
                     // std::cout<<"update clusters"<<std::endl;
