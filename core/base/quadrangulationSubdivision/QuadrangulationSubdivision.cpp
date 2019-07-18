@@ -86,11 +86,8 @@ int ttk::QuadrangulationSubdivision::subdivise() {
   using std::make_pair;
   std::map<edgeType, vertexType> processedEdges;
 
-  // deep copy of coarse input quads
-  auto prevQuads(outputQuads_);
-
-  // clear input quads buffer before re-writing it
-  outputQuads_.clear();
+  // temp storage for quad subdivision
+  std::vector<Quad> tmp{};
 
   Timer t;
 
@@ -102,7 +99,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
   // get all other vertices sharing a quad
   quadNeighbors_.clear();
   quadNeighbors_.resize(outputPoints_.size());
-  getQuadNeighbors(prevQuads, quadNeighbors_, true);
+  getQuadNeighbors(outputQuads_, quadNeighbors_, true);
 
   // compute shortest distance from every vertex to all other that share a quad
 #ifdef TTK_ENABLE_OPENMP
@@ -124,7 +121,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     }
   }
 
-  for(auto &q : prevQuads) {
+  for(auto &q : outputQuads_) {
     assert(q.n == 4); // magic number...
 
     auto i = static_cast<size_t>(q.i);
@@ -187,13 +184,13 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     nearestVertexIdentifier_.emplace_back(baryid);
 
     // add the four new quads
-    outputQuads_.emplace_back(Quad{
+    tmp.emplace_back(Quad{
       4, q.i, processedEdges[ij].first, baryIdx, processedEdges[li].first});
-    outputQuads_.emplace_back(Quad{
+    tmp.emplace_back(Quad{
       4, q.j, processedEdges[jk].first, baryIdx, processedEdges[ij].first});
-    outputQuads_.emplace_back(Quad{
+    tmp.emplace_back(Quad{
       4, q.k, processedEdges[kl].first, baryIdx, processedEdges[jk].first});
-    outputQuads_.emplace_back(Quad{
+    tmp.emplace_back(Quad{
       4, q.l, processedEdges[li].first, baryIdx, processedEdges[kl].first});
   }
 
@@ -206,11 +203,13 @@ int ttk::QuadrangulationSubdivision::subdivise() {
 
   {
     std::stringstream msg;
-    msg << MODULE_S "Subdivised " << prevQuads.size() << " quads into "
-        << outputQuads_.size() << " new quads (" << outputPoints_.size()
+    msg << MODULE_S "Subdivised " << outputQuads_.size() << " quads into "
+        << tmp.size() << " new quads (" << outputPoints_.size()
         << " points) in " << t.getElapsedTime() << " s." << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
   }
+
+  outputQuads_ = std::move(tmp);
 
   return 0;
 }
@@ -541,9 +540,8 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
     projSucceeded_.resize(outputPoints_.size());
   }
 
-  // outputPoints_ deep copy to avoid OpenMP data races in
-  // findTriangleQuadNormal
-  auto inputPoints(outputPoints_);
+  // temp storage for projected points
+  std::vector<Point> tmp(outputPoints_.size());
 
   // main loop
 #ifdef TTK_ENABLE_OPENMP
@@ -553,12 +551,15 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
 
     // skip computation if i in filtered
     if(filtered.find(i) != filtered.end()) {
+      tmp[i] = outputPoints_[i];
       continue;
     }
 
     // replace curr in outputPoints_ by its projection
-    outputPoints_[i] = findProjection(i, inputPoints, lastIter);
+    tmp[i] = findProjection(i, outputPoints_, lastIter);
   }
+
+  outputPoints_ = std::move(tmp);
 
   {
     std::stringstream msg;
@@ -619,8 +620,8 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
 int ttk::QuadrangulationSubdivision::relax(const std::set<size_t> &filtered) {
   Timer t;
 
-  // outputPoints_ deep copy
-  auto tmp(outputPoints_);
+  // temp storage for relaxed points
+  std::vector<Point> tmp(outputPoints_.size());
 
   // loop over output points, do not touch input MSC critical points
 #ifdef TTK_ENABLE_OPENMP
@@ -630,18 +631,21 @@ int ttk::QuadrangulationSubdivision::relax(const std::set<size_t> &filtered) {
 
     // skip computation if i in filtered
     if(filtered.find(i) != filtered.end()) {
+      tmp[i] = outputPoints_[i];
       continue;
     }
 
     // barycenter of curr neighbors
     Point relax{};
     for(auto &neigh : quadNeighbors_[i]) {
-      relax = relax + tmp[neigh];
+      relax = relax + outputPoints_[neigh];
     }
     relax = relax * (1.0F / static_cast<float>(quadNeighbors_[i].size()));
 
-    outputPoints_[i] = relax;
+    tmp[i] = relax;
   }
+
+  outputPoints_ = std::move(tmp);
 
   {
     std::stringstream msg;
