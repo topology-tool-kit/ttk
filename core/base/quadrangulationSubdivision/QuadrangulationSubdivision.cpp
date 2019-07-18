@@ -215,12 +215,11 @@ int ttk::QuadrangulationSubdivision::subdivise() {
 }
 
 ttk::QuadrangulationSubdivision::Point
-  ttk::QuadrangulationSubdivision::getQuadNormal(
-    const size_t a, const std::vector<Point> &inputPoints) const {
+  ttk::QuadrangulationSubdivision::getQuadNormal(const size_t a) const {
   Point quadNormal{};
 
   // current vertex 3d coordinates
-  Point pa = inputPoints[a];
+  Point pa = outputPoints_[a];
 
   // find all quads that have a as vertex
   std::vector<Quad> quads{};
@@ -258,8 +257,8 @@ ttk::QuadrangulationSubdivision::Point
   std::vector<Point> normals{};
 
   for(auto &t : couples) {
-    Point pb = inputPoints[t[0]];
-    Point pc = inputPoints[t[1]];
+    Point pb = outputPoints_[t[0]];
+    Point pc = outputPoints_[t[1]];
 
     // triangle normal: cross product of two edges
     Point crossP{};
@@ -299,13 +298,11 @@ ttk::QuadrangulationSubdivision::Point
 }
 
 ttk::QuadrangulationSubdivision::Point
-  ttk::QuadrangulationSubdivision::findProjection(
-    const size_t a,
-    const std::vector<Point> &inputPoints,
-    const bool lastIter) {
+  ttk::QuadrangulationSubdivision::findProjection(const size_t a,
+                                                  const bool lastIter) {
 
   // current vertex 3d coordinates
-  Point pa = inputPoints[a];
+  Point pa = outputPoints_[a];
 
   Point res{};
 
@@ -317,7 +314,7 @@ ttk::QuadrangulationSubdivision::Point
 
   if(doReverseProj) {
     // compute mean of normals
-    normalsMean = getQuadNormal(a, inputPoints);
+    normalsMean = getQuadNormal(a);
 
     doReverseProj = !std::isnan(normalsMean.x);
   }
@@ -504,7 +501,7 @@ ttk::QuadrangulationSubdivision::Point
   if(!success) {
     if(!reverseProjection_) {
       reverseProjection_ = true;
-      res = findProjection(a, inputPoints, lastIter);
+      res = findProjection(a, lastIter);
       reverseProjection_ = false;
       return res;
     }
@@ -556,7 +553,7 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
     }
 
     // replace curr in outputPoints_ by its projection
-    tmp[i] = findProjection(i, outputPoints_, lastIter);
+    tmp[i] = findProjection(i, lastIter);
   }
 
   outputPoints_ = std::move(tmp);
