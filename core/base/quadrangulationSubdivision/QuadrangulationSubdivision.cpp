@@ -843,8 +843,15 @@ int ttk::QuadrangulationSubdivision::execute() {
     [&](const std::set<size_t> &neighbors) { return neighbors.size(); });
 
   if(!checkBadProjectionTube()) {
-    clearData();
-    return 1;
+    // log, clean & early return
+    std::stringstream msg;
+    msg << MODULE_S "Error: quadrangulation may have fold over itself"
+        << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
+    if(!showResError_) {
+      clearData();
+      return 1;
+    }
   }
 
   {

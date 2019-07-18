@@ -145,6 +145,20 @@
       </IntVectorProperty>
 
       <IntVectorProperty
+          name="ShowResError"
+          label="Show output despite error"
+          command="SetShowResError"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Show the quadrangulation result even though errors were
+          detected during computation
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
           name="UseAllCores"
           command="SetUseAllCores"
           label="Use All Cores"
@@ -194,6 +208,7 @@
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
+        <Property name="ShowResError" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Input options">
