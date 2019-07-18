@@ -270,12 +270,12 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
                 if (epsilon_[1] < epsilon_min_ /*&& diagrams_complete[1]*/){
                    do_sad_ = false;
                    epsilon_[1] = epsilon_min_;
-                    diagrams_complete[0]=true;
+                    diagrams_complete[1]=true;
                 }
                 if (epsilon_[2] < epsilon_min_ /*&& diagrams_complete[2]*/){
                     do_max_ = false;
                     epsilon_[2] = epsilon_min_;
-                    diagrams_complete[0]=true;
+                    diagrams_complete[2]=true;
                 }
 
                 if(diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2]) {
@@ -320,9 +320,9 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
                     std::cout << "                 costsad : " << cost_sad_ << " , min_cost_sad : " << min_cost_sad << std::endl;
                     std::cout << "                 costmax : " << cost_max_ << " , min_cost_max : " << min_cost_max << std::endl;
                     // std::cout << " sizes of barycenter : "<<centroids_min_.size()<<" "<<centroids_saddle_.size()<<" "<<centroids_max_[0].size()<<std::endl;
-                    for(int i_input=0;i_input<numberOfInputs_;i_input++){
-                        std::cout << "   sizes of bidder "<<i_input<<" : "<<current_bidder_diagrams_min_.size()<<" "<<current_bidder_diagrams_saddle_.size()<<" "<<current_bidder_diagrams_max_[i_input].size()<<std::endl;
-                    }
+                    // for(int i_input=0;i_input<numberOfInputs_;i_input++){
+                    //     std::cout << "   sizes of bidder "<<i_input<<" : "<<current_bidder_diagrams_min_.size()<<" "<<current_bidder_diagrams_saddle_.size()<<" "<<current_bidder_diagrams_max_[i_input].size()<<std::endl;
+                    // }
                 }
 
 
