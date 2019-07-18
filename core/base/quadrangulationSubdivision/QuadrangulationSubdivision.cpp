@@ -506,18 +506,18 @@ ttk::QuadrangulationSubdivision::Point
       reverseProjection_ = true;
       res = findProjection(a, inputPoints, lastIter);
       reverseProjection_ = false;
-    } else {
-      // replace proj by the nearest vertex?
-      std::vector<float> dists(vertexNumber_);
-      for(SimplexId i = 0; i < vertexNumber_; ++i) {
-        Point pv{};
-        triangulation_->getVertexPoint(i, pv.x, pv.y, pv.z);
-        dists[i] = Geometry::distance(&pa.x, &pv.x);
-      }
-      auto min = std::min_element(dists.begin(), dists.end()) - dists.begin();
-      triangulation_->getVertexPoint(min, res.x, res.y, res.z);
-      nearestVertexIdentifier_[a] = min;
+      return res;
     }
+    // replace proj by the nearest vertex?
+    std::vector<float> dists(vertexNumber_);
+    for(SimplexId i = 0; i < vertexNumber_; ++i) {
+      Point pv{};
+      triangulation_->getVertexPoint(i, pv.x, pv.y, pv.z);
+      dists[i] = Geometry::distance(&pa.x, &pv.x);
+    }
+    auto min = std::min_element(dists.begin(), dists.end()) - dists.begin();
+    triangulation_->getVertexPoint(min, res.x, res.y, res.z);
+    nearestVertexIdentifier_[a] = min;
   }
 
   // fill in debug info
