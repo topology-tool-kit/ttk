@@ -131,20 +131,6 @@
       </IntVectorProperty>
 
       <IntVectorProperty
-          name="ReverseProjection"
-          label="Use reverse projection"
-          command="SetReverseProjection"
-          number_of_elements="1"
-          panel_visibility="advanced"
-          default_values="0">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Prefer reverse projection using quadrangle normal instead of
-          euclidian projection into the triangles plane.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
           name="ShowResError"
           label="Show output despite error"
           command="SetShowResError"
