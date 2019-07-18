@@ -114,8 +114,14 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
   res += baseWorker_.execute();
 
-  TTK_ABORT_KK(
-    res != 0, "QuadrangulationSubdivision.execute() error code: " << res, -3);
+  if(res != 0) {
+    vtkWarningMacro(
+      MODULE_ERROR_S
+      "Consider additional relaxation iterations or a higher (eigen) function");
+    if(!ShowResError) {
+      return res;
+    }
+  }
 
   auto &outQuadrangles = baseWorker_.getOutputQuads();
   auto &outVertices = baseWorker_.getOutputPoints();
