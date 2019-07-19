@@ -297,10 +297,12 @@ ttk::QuadrangulationSubdivision::Point
   return quadNormal;
 }
 
-ttk::QuadrangulationSubdivision::Point
-  ttk::QuadrangulationSubdivision::findProjection(const size_t a,
-                                                  const bool forceReverseProj,
-                                                  const bool lastIter) {
+std::tuple<ttk::QuadrangulationSubdivision::Point,
+           ttk::SimplexId,
+           size_t,
+           ttk::SimplexId>
+  ttk::QuadrangulationSubdivision::findProjection(
+    const size_t a, const bool forceReverseProj) const {
 
   // current vertex 3d coordinates
   Point pa = outputPoints_[a];
@@ -493,15 +495,9 @@ ttk::QuadrangulationSubdivision::Point
     success = false;
   }
 
-  if(success) {
-    // replace in nearestVertexIdentifier_ by nearest vertex in projected
-    // triangle
-    nearestVertexIdentifier_[a] = nearestVertex;
-  }
-
   if(!success) {
     if(!forceReverseProj) {
-      return findProjection(a, true, lastIter);
+      return findProjection(a, true);
     }
     // replace proj by the nearest vertex?
     std::vector<float> dists(vertexNumber_);
@@ -512,16 +508,12 @@ ttk::QuadrangulationSubdivision::Point
     }
     auto min = std::min_element(dists.begin(), dists.end()) - dists.begin();
     triangulation_->getVertexPoint(min, res.x, res.y, res.z);
-    nearestVertexIdentifier_[a] = min;
+    nearestVertex = min;
   }
 
-  // fill in debug info
-  if(lastIter) {
-    trianglesChecked_[a] = trChecked;
-    projSucceeded_[a] = success ? (doReverseProj ? 1 : 2) : 3;
-  }
+  SimplexId projSucess = success ? (doReverseProj ? 1 : 2) : 3;
 
-  return res;
+  return std::make_tuple(res, nearestVertex, trChecked, projSucess);
 }
 
 int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
@@ -551,7 +543,16 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
     }
 
     // replace curr in outputPoints_ by its projection
-    tmp[i] = findProjection(i, reverseProjection_, lastIter);
+    auto res = findProjection(i, reverseProjection_);
+
+    tmp[i] = std::get<0>(res);
+    nearestVertexIdentifier_[i] = std::get<1>(res);
+
+    if(lastIter) {
+      // fill in debug info
+      trianglesChecked_[i] = std::get<2>(res);
+      projSucceeded_[i] = std::get<3>(res);
+    }
   }
 
   outputPoints_ = std::move(tmp);
