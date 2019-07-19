@@ -83,7 +83,6 @@ int ttk::QuadrangulationSubdivision::subdivise() {
 
   using edgeType = std::pair<long long, long long>;
   using vertexType = std::pair<long long, Point>;
-  using std::make_pair;
   std::map<edgeType, vertexType> processedEdges;
 
   // temp storage for quad subdivision
@@ -152,17 +151,16 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     triangulation_->getVertexPoint(baryid, bary.x, bary.y, bary.z);
 
     // order edges to avoid duplicates (ij vs. ji)
-    auto ij = make_pair(std::min(q.i, q.j), std::max(q.i, q.j));
-    auto jk = make_pair(std::min(q.j, q.k), std::max(q.j, q.k));
-    auto kl = make_pair(std::min(q.k, q.l), std::max(q.k, q.l));
-    auto li = make_pair(std::min(q.l, q.i), std::max(q.l, q.i));
+    auto ij = std::make_pair(std::min(q.i, q.j), std::max(q.i, q.j));
+    auto jk = std::make_pair(std::min(q.j, q.k), std::max(q.j, q.k));
+    auto kl = std::make_pair(std::min(q.k, q.l), std::max(q.k, q.l));
+    auto li = std::make_pair(std::min(q.l, q.i), std::max(q.l, q.i));
 
     auto process_edge_middle = [&](const std::pair<long long, long long> &pair,
                                    const Point &pt, const SimplexId id) {
       /* check if edge already processed by a neighbor quad */
       if(processedEdges.find(pair) == processedEdges.end()) {
-        processedEdges.insert(
-          make_pair(pair, make_pair(outputPoints_.size(), pt)));
+        processedEdges[pair] = std::make_pair(outputPoints_.size(), pt);
         /* add new point 3d coordinates to vector of output points */
         outputPoints_.emplace_back(pt);
         /* new point is an edge middle */
