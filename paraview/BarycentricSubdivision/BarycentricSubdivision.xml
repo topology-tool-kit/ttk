@@ -12,7 +12,14 @@
      <Documentation
         long_help="TTK barycentricSubdivision plugin."
         short_help="TTK barycentricSubdivision plugin.">
-          TTK barycentricSubdivision plugin documentation.
+       BarycentricSubdivision generates a new, finer triangulation
+       from an input triangulation. Every triangle is divided in six
+       new triangles using the 3 edges middles and the triangle
+       barycenter.
+       Scalar data on vertices (point data) with continuous values
+       (float/double) can be interpolated on the new
+       triangulation. Scalar data on input triangles can be replicated
+       on the new triangles.
      </Documentation>
      <InputProperty
         name="Input"

@@ -1,12 +1,18 @@
 /// \ingroup base
 /// \class ttk::BarycentricSubdivision
-/// \author Pierre Guillou (pierre.guillou@lip6.fr
+/// \author Pierre Guillou (pierre.guillou@lip6.fr)
 /// \date July 2019
 ///
-/// \brief TTK %barycentricSubdivision processing package.
+/// \brief Subdivise a triangulation according to triangle barycenter
 ///
-/// %BarycentricSubdivision is a TTK processing package that takes a scalar
-/// field on the input and produces a scalar field on the output.
+/// %BarycentricSubdivision generates a new, finer triangulation from
+/// an input triangulation. Every triangle is divided in six new
+/// triangles using the 3 edges middles and the triangle barycenter.
+///
+/// Scalar data on vertices (point data) with continuous values
+/// (float/double) can be interpolated on the new
+/// triangulation. Scalar data on input triangles can be replicated on
+/// the new triangles.
 ///
 /// \sa ttk::Triangulation
 /// \sa ttkBarycentricSubdivision.cpp %for a usage example.
