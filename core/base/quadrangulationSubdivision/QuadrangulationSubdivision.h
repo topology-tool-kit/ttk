@@ -185,12 +185,13 @@ namespace ttk {
      * @brief Compute the projection in the nearest triangle
      *
      * @param[in] a input index of quadrangle vertex
+     * @param[in] forceReverseProj Try reverse projection
      * @param[in] lastIter Indicate last projection iteration for
      * post-processing
      *
      * @return coordinates of projection
      */
-    Point findProjection(size_t a, bool lastIter = false);
+    Point findProjection(size_t a, bool forceReverseProj, bool lastIter = false);
 
     /**
      * @brief Find the middle of a quad edge using Dijkstra
