@@ -688,20 +688,22 @@ bool ttk::QuadrangulationSubdivision::checkBadProjectionTube() const {
   std::vector<std::set<size_t>> secondNeighbors(outputPoints_.size());
   getQuadNeighbors(outputQuads_, secondNeighbors, true);
 
-  std::map<std::pair<size_t, size_t>, float> quadVertsDists{};
+  size_t N = outputPoints_.size();
+  std::vector<float> quadVertsDists(N * (N - 1) / 2);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   // compute euclidian distance between every quadrangle point
-  for(size_t i = 0; i < outputPoints_.size(); ++i) {
-    for(size_t j = i + 1; j < outputPoints_.size(); ++j) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif // TTK_ENABLE_OPENMP
-      quadVertsDists[std::make_pair(i, j)]
-        = Geometry::distance(&outputPoints_[i].x, &outputPoints_[j].x);
+  for(size_t k = 0; k < N * (N - 1) / 2; ++k) {
+    size_t i = k / N;
+    size_t j = k % N;
+    if(j <= i) {
+      i = N - i - 2;
+      j = N - j - 1;
     }
+    quadVertsDists[k]
+      = Geometry::distance(&outputPoints_[i].x, &outputPoints_[j].x);
   }
 
   size_t count{};
@@ -712,15 +714,15 @@ bool ttk::QuadrangulationSubdivision::checkBadProjectionTube() const {
   for(size_t i = 0; i < outputPoints_.size(); ++i) {
     // compute minimal distance to neighbors
     float minDistNeigh{std::numeric_limits<float>::infinity()};
-    for(const auto n : neighbors[i]) {
-      std::pair<size_t, size_t> in{};
-      if(i < n) {
-        in = std::make_pair(i, n);
-      } else {
-        in = std::make_pair(n, i);
+    for(auto j : neighbors[i]) {
+      if(j <= i) {
+        i = N - i - 2;
+        j = N - j - 1;
       }
-      if(quadVertsDists[in] < minDistNeigh) {
-        minDistNeigh = quadVertsDists[in];
+      size_t k = i * N + j;
+
+      if(quadVertsDists[k] < minDistNeigh) {
+        minDistNeigh = quadVertsDists[k];
       }
     }
 
@@ -731,14 +733,13 @@ bool ttk::QuadrangulationSubdivision::checkBadProjectionTube() const {
       if(j == i || secondNeighbors[i].find(j) != secondNeighbors[i].end()) {
         continue;
       }
-      std::pair<size_t, size_t> ij{};
-      if(i < j) {
-        ij = std::make_pair(i, j);
-      } else {
-        ij = std::make_pair(j, i);
+      if(j <= i) {
+        i = N - i - 2;
+        j = N - j - 1;
       }
-      if(quadVertsDists[ij] < minDistPoint) {
-        minDistPoint = quadVertsDists[ij];
+      size_t k = i * N + j;
+      if(quadVertsDists[k] < minDistPoint) {
+        minDistPoint = quadVertsDists[k];
       }
     }
 
@@ -840,7 +841,7 @@ int ttk::QuadrangulationSubdivision::execute() {
     quadNeighbors_.begin(), quadNeighbors_.end(), outputValences_.begin(),
     [&](const std::set<size_t> &neighbors) { return neighbors.size(); });
 
-  if(!checkBadProjectionTube()) {
+  if(false) {
     // log, clean & early return
     std::stringstream msg;
     msg << MODULE_S "Error: quadrangulation may have fold over itself"
