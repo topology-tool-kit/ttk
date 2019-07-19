@@ -654,7 +654,7 @@ int ttk::QuadrangulationSubdivision::relax(const std::set<size_t> &filtered) {
 }
 
 int ttk::QuadrangulationSubdivision::findExtraordinaryVertices(
-  std::set<size_t> &output) {
+  std::set<size_t> &output) const {
 
   // clear output
   output.clear();

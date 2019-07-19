@@ -226,7 +226,7 @@ namespace ttk {
      *
      * @return 0 in case of success
      */
-    int findExtraordinaryVertices(std::set<size_t> &output);
+    int findExtraordinaryVertices(std::set<size_t> &output) const;
 
     /**
      * @brief Look for tubular sections around which the subdivision
