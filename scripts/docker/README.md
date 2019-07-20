@@ -1,8 +1,8 @@
 # Paraview + TTK Docker Image
 
-This docker image contains an installation of the [Topology Tool Kit (TTK)](topology-tool-kit.github.io) and [ParaView](paraview.org) server built from source. Specifically:
+This docker image contains an installation of the [Topology Tool Kit (TTK)](http://topology-tool-kit.github.io) and [ParaView](http://www.paraview.org) server built from source. Specifically:
 
-- ParaView server with offscreen rendering using either [OSMesa](www.mesa3d.org/osmesa.html) or [OSPRay](ospray.org).
+- ParaView server with offscreen rendering using either [OSMesa](http://www.mesa3d.org/osmesa.html) or [OSPRay](http://www.ospray.org).
 - TTK for ParaView plugins are installed.
 
 It is supposed to be used in conjunction with a local ParaView GUI.
