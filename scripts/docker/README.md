@@ -11,7 +11,7 @@ It is supposed to be used in conjunction with a local ParaView GUI.
 
 ```docker run -it --rm -P -v "$(pwd)/data:/home/paraview/data" topologytoolkit/ttk:5.6.1-master```
 
-will start `pvserver` version 5.6.0 with TTK version 0.9.7 and listen on the default port 11111 for connections from a ParaView GUI. The directory `$(pwd)/data` will be mounted under `/home/paraview/data` in the container.
+will start `pvserver` version 5.6.1 with TTK (current master version) and listen on the default port 11111 for connections from a ParaView GUI. The directory `$(pwd)/data` will be mounted under `/home/paraview/data` in the container.
 
 If the container is executed on a remote host, consider using the command
 ```
