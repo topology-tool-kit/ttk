@@ -309,8 +309,11 @@ template <typename dataType>
                 cluster_size[c]++;
                 idxInCluster[j] = cluster_size[c] - 1;
             }
+            if(debugLevel_>20){
+            cout<<"id in cluster "<<idxInCluster[j]<<endl;
+	    }
         }
-
+      
         all_matchings->resize(n_clusters_);
 	for(int c=0; c<n_clusters_; c++){
 	  all_matchings->at(c).resize(numberOfInputs_);

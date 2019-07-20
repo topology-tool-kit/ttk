@@ -353,8 +353,13 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(std::vector<diagr
 
     if(pairingsSize < 1 || !vertexIdentifierScalars || !pairIdentifierScalars || !nodeTypeScalars || !persistenceScalars || !extremumIndexScalars || !points)
         return -2;
-
-    diagram->resize(pairingsSize);
+    
+    if(NumberOfClusters==1){
+      diagram->resize(pairingsSize);
+    }
+    else{
+      diagram->resize(pairingsSize+1);
+    }
     int nbNonCompact = 0;
     double max_dimension = 0;
 
@@ -400,11 +405,17 @@ double ttkPersistenceDiagramsClustering::getPersistenceDiagram(std::vector<diagr
         if(pairIdentifier != -1 && pairIdentifier < pairingsSize) {
             if(pairIdentifier == 0) {
                 max_dimension = (dataType)persistence;
+
+                if(NumberOfClusters==1){
                 diagram->at(0) =
                     std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)3, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
-
-                // diagram->at(pairingsSize) =
-                //     std::make_tuple(vertexId1, (BNodeType)1, vertexId2, (BNodeType)3, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
+                }
+                else{
+                diagram->at(0) =
+                    std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)1, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
+                diagram->at(pairingsSize) =
+                    std::make_tuple(vertexId1, (BNodeType)1, vertexId2, (BNodeType)3, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1, value2, coordX2, coordY2, coordZ2);
+                }
 
             } else {
                 diagram->at(pairIdentifier) = std::make_tuple(vertexId1, (BNodeType)nodeType1, vertexId2, (BNodeType)nodeType2, (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1,
