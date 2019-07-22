@@ -677,89 +677,6 @@ int ttk::QuadrangulationSubdivision::findExtraordinaryVertices(
   return 0;
 }
 
-bool ttk::QuadrangulationSubdivision::checkBadProjectionTube() const {
-  // Compute the minimum euclidian distance between every point. If
-  // several non-neighboring points are nearer than direct neighbors,
-  // there is some overlab.
-  Timer t;
-
-  std::vector<std::set<size_t>> neighbors(outputPoints_.size());
-  getQuadNeighbors(outputQuads_, neighbors);
-  std::vector<std::set<size_t>> secondNeighbors(outputPoints_.size());
-  getQuadNeighbors(outputQuads_, secondNeighbors, true);
-
-  size_t N = outputPoints_.size();
-  std::vector<float> quadVertsDists(N * (N - 1) / 2);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  // compute euclidian distance between every quadrangle point
-  for(size_t k = 0; k < N * (N - 1) / 2; ++k) {
-    size_t i = k / N;
-    size_t j = k % N;
-    if(j <= i) {
-      i = N - i - 2;
-      j = N - j - 1;
-    }
-    quadVertsDists[k]
-      = Geometry::distance(&outputPoints_[i].x, &outputPoints_[j].x);
-  }
-
-  size_t count{};
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < outputPoints_.size(); ++i) {
-    // compute minimal distance to neighbors
-    float minDistNeigh{std::numeric_limits<float>::infinity()};
-    for(auto j : neighbors[i]) {
-      if(j <= i) {
-        i = N - i - 2;
-        j = N - j - 1;
-      }
-      size_t k = i * N + j;
-
-      if(quadVertsDists[k] < minDistNeigh) {
-        minDistNeigh = quadVertsDists[k];
-      }
-    }
-
-    // compute minimal distance to points that aren't neighbors
-    float minDistPoint{std::numeric_limits<float>::infinity()};
-    for(size_t j = 0; j < outputPoints_.size(); ++j) {
-      // skip itself and neighbors
-      if(j == i || secondNeighbors[i].find(j) != secondNeighbors[i].end()) {
-        continue;
-      }
-      if(j <= i) {
-        i = N - i - 2;
-        j = N - j - 1;
-      }
-      size_t k = i * N + j;
-      if(quadVertsDists[k] < minDistPoint) {
-        minDistPoint = quadVertsDists[k];
-      }
-    }
-
-    if(minDistPoint < minDistNeigh) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic update
-#endif // TTK_ENABLE_OPENMP
-      count++;
-    }
-  }
-  const size_t maxNearPoints{10};
-
-  std::stringstream msg;
-  msg << MODULE_S "Points nearer than direct neighbors: " << count << " (in "
-      << t.getElapsedTime() << "s)" << std::endl;
-  dMsg(std::cout, msg.str(), detailedInfoMsg);
-
-  return !(count > maxNearPoints);
-}
-
 void ttk::QuadrangulationSubdivision::quadStatistics() {
   quadArea_.clear();
   quadArea_.resize(outputQuads_.size());
@@ -769,6 +686,8 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
   quadEdgesRatio_.resize(outputQuads_.size());
   quadAnglesRatio_.clear();
   quadAnglesRatio_.resize(outputQuads_.size());
+  pointsNearearNeighbors_.clear();
+  pointsNearearNeighbors_.resize(outputPoints_.size());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -810,6 +729,58 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
     };
     quadAnglesRatio_[i] = *std::min_element(angles.begin(), angles.end())
                           / *std::max_element(angles.begin(), angles.end());
+  }
+
+  // Compute the minimum euclidian distance between points in a
+  // neighborhood. If several non-neighboring points are nearer than
+  // direct neighbors, there may be some overlap.
+
+  std::vector<std::set<size_t>> secNeighbors(outputPoints_.size());
+  getQuadNeighbors(outputQuads_, secNeighbors, true);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < outputPoints_.size(); ++i) {
+    // compute minimal distance to neighbors
+    float minDistNeigh{std::numeric_limits<float>::infinity()};
+    // number of non-neighbors nearer than neighbors
+    size_t count{};
+
+    // store neighbors to neighbors
+    std::set<size_t> neighsneighs{};
+
+    for(const auto j : secNeighbors[i]) {
+      // compute minimun distance to quad neighbors
+      auto distNeigh
+        = Geometry::distance(&outputPoints_[i].x, &outputPoints_[j].x);
+      if(distNeigh < minDistNeigh) {
+        minDistNeigh = distNeigh;
+      }
+
+      // get neighbors to neighbors
+      std::vector<size_t> neighsJMinusI{};
+      // only keep neighbors of j that aren't neighbors of i
+      std::set_difference(secNeighbors[j].begin(), secNeighbors[j].end(),
+                          secNeighbors[i].begin(), secNeighbors[i].end(),
+                          std::back_inserter(neighsJMinusI));
+      // erase-remove current point
+      neighsJMinusI.erase(
+        std::remove(neighsJMinusI.begin(), neighsJMinusI.end(), i));
+      for(const auto k : neighsJMinusI) {
+        neighsneighs.emplace(k);
+      }
+    }
+
+    // count non-neighbors nearer than neighbors
+    for(const auto j : neighsneighs) {
+      auto dist = Geometry::distance(&outputPoints_[i].x, &outputPoints_[j].x);
+      if(dist < minDistNeigh) {
+        count++;
+      }
+    }
+    // store count
+    pointsNearearNeighbors_[i] = count;
   }
 }
 

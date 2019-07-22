@@ -204,6 +204,12 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     anglesRatio->SetVoidArray(baseWorker_.quadAnglesRatio_.data(),
                               baseWorker_.quadAnglesRatio_.size(), 1);
     output->GetCellData()->AddArray(anglesRatio);
+
+    auto densePoints = vtkSmartPointer<vtkIntArray>::New();
+    densePoints->SetName("Dense Points");
+    densePoints->SetVoidArray(baseWorker_.pointsNearearNeighbors_.data(),
+                              baseWorker_.pointsNearearNeighbors_.size(), 1);
+    output->GetPointData()->AddArray(densePoints);
   }
 
   {

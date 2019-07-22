@@ -238,14 +238,6 @@ namespace ttk {
     int findExtraordinaryVertices(std::set<size_t> &output) const;
 
     /**
-     * @brief Look for tubular sections around which the subdivision
-     * is not properly projected.
-     *
-     * @return true if no bad projection found
-     */
-    bool checkBadProjectionTube() const;
-
-    /**
      * @brief Compute statistics on generated quadrangles
      *
      * Computes:
@@ -327,6 +319,7 @@ namespace ttk {
     std::vector<float> quadDiagsRatio_{};
     std::vector<float> quadEdgesRatio_{};
     std::vector<float> quadAnglesRatio_{};
+    std::vector<SimplexId> pointsNearearNeighbors_{};
   };
 } // namespace ttk
 
