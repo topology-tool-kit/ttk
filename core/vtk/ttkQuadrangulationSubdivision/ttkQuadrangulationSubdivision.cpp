@@ -182,6 +182,32 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     output->GetPointData()->AddArray(projSucc);
   }
 
+  if(QuadStatistics) {
+    auto quadArea = vtkSmartPointer<vtkFloatArray>::New();
+    quadArea->SetName("Quad Area");
+    quadArea->SetVoidArray(
+      baseWorker_.quadArea_.data(), baseWorker_.quadArea_.size(), 1);
+    output->GetCellData()->AddArray(quadArea);
+
+    auto diagsRatio = vtkSmartPointer<vtkFloatArray>::New();
+    diagsRatio->SetName("Diagonals Ratio");
+    diagsRatio->SetVoidArray(baseWorker_.quadDiagsRatio_.data(),
+                             baseWorker_.quadDiagsRatio_.size(), 1);
+    output->GetCellData()->AddArray(diagsRatio);
+
+    auto edgesRatio = vtkSmartPointer<vtkFloatArray>::New();
+    edgesRatio->SetName("Edges Ratio");
+    edgesRatio->SetVoidArray(baseWorker_.quadEdgesRatio_.data(),
+                             baseWorker_.quadEdgesRatio_.size(), 1);
+    output->GetCellData()->AddArray(edgesRatio);
+
+    auto anglesRatio = vtkSmartPointer<vtkFloatArray>::New();
+    anglesRatio->SetName("Angles Ratio");
+    anglesRatio->SetVoidArray(baseWorker_.quadAnglesRatio_.data(),
+                              baseWorker_.quadAnglesRatio_.size(), 1);
+    output->GetCellData()->AddArray(anglesRatio);
+  }
+
   {
     std::stringstream msg;
     msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;

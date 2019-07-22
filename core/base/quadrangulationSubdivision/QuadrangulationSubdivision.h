@@ -240,6 +240,17 @@ namespace ttk {
     bool checkBadProjectionTube() const;
 
     /**
+     * @brief Compute statistics on generated quadrangles
+     *
+     * Computes:
+     * - quadrangle area
+     * - diagonals ratio
+     * - ratio between the shortest and the longest edges
+     * - ratio between the smallest and the biggest angles
+     */
+    void quadStatistics();
+
+    /**
      * @brief Clear buffers
      */
     void clearData();
@@ -304,6 +315,12 @@ namespace ttk {
     // 2 - projection alongside triangle normal
     // 3 - failed projection
     std::vector<SimplexId> projSucceeded_{};
+
+    // quadrangles statistics
+    std::vector<float> quadArea_{};
+    std::vector<float> quadDiagsRatio_{};
+    std::vector<float> quadEdgesRatio_{};
+    std::vector<float> quadAnglesRatio_{};
   };
 } // namespace ttk
 

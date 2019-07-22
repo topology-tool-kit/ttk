@@ -760,6 +760,59 @@ bool ttk::QuadrangulationSubdivision::checkBadProjectionTube() const {
   return !(count > maxNearPoints);
 }
 
+void ttk::QuadrangulationSubdivision::quadStatistics() {
+  quadArea_.clear();
+  quadArea_.resize(outputQuads_.size());
+  quadDiagsRatio_.clear();
+  quadDiagsRatio_.resize(outputQuads_.size());
+  quadEdgesRatio_.clear();
+  quadEdgesRatio_.resize(outputQuads_.size());
+  quadAnglesRatio_.clear();
+  quadAnglesRatio_.resize(outputQuads_.size());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < outputQuads_.size(); ++i) {
+    const auto &q = outputQuads_[i];
+    Point pi = outputPoints_[q.i];
+    Point pj = outputPoints_[q.j];
+    Point pk = outputPoints_[q.k];
+    Point pl = outputPoints_[q.l];
+
+    // quadrangle area
+    float area0{}, area1{};
+    Geometry::computeTriangleArea(&pi.x, &pj.x, &pk.x, area0);
+    Geometry::computeTriangleArea(&pi.x, &pk.x, &pl.x, area1);
+    quadArea_[i] = area0 + area1;
+
+    // diagonals ratio
+    auto diag0 = Geometry::distance(&pi.x, &pk.x);
+    auto diag1 = Geometry::distance(&pj.x, &pl.x);
+    quadDiagsRatio_[i] = std::min(diag0, diag1) / std::max(diag0, diag1);
+
+    // edges ratio
+    std::array<float, 4> edges{
+      Geometry::distance(&pi.x, &pj.x), // ij
+      Geometry::distance(&pj.x, &pk.x), // jk
+      Geometry::distance(&pk.x, &pl.x), // kl
+      Geometry::distance(&pl.x, &pi.x), // li
+    };
+    quadEdgesRatio_[i] = *std::min_element(edges.begin(), edges.end())
+                         / *std::max_element(edges.begin(), edges.end());
+
+    // angles ratio
+    std::array<float, 4> angles{
+      Geometry::angle(&pi.x, &pl.x, &pi.x, &pj.x), // lij
+      Geometry::angle(&pj.x, &pi.x, &pj.x, &pk.x), // ijk
+      Geometry::angle(&pk.x, &pj.x, &pk.x, &pl.x), // jkl
+      Geometry::angle(&pl.x, &pk.x, &pl.x, &pi.x), // kli
+    };
+    quadAnglesRatio_[i] = *std::min_element(angles.begin(), angles.end())
+                          / *std::max_element(angles.begin(), angles.end());
+  }
+}
+
 void ttk::QuadrangulationSubdivision::clearData() {
   outputQuads_.clear();
   outputPoints_.clear();
@@ -840,6 +893,10 @@ int ttk::QuadrangulationSubdivision::execute() {
   std::transform(
     quadNeighbors_.begin(), quadNeighbors_.end(), outputValences_.begin(),
     [&](const std::set<size_t> &neighbors) { return neighbors.size(); });
+
+  if(computeQuadsStats_) {
+    quadStatistics();
+  }
 
   if(false) {
     // log, clean & early return
