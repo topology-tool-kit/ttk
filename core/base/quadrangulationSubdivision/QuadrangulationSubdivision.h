@@ -71,11 +71,17 @@ namespace ttk {
     }
     int execute();
 
-    inline std::vector<long long> &getOutputQuads() {
-      return reinterpret_cast<std::vector<long long> &>(outputQuads_);
+    inline long long *getQuadBuf() {
+      return reinterpret_cast<long long *>(outputQuads_.data());
     }
-    inline std::vector<float> &getOutputPoints() {
-      return reinterpret_cast<std::vector<float> &>(outputPoints_);
+    inline size_t getQuadNumber() const {
+      return outputQuads_.size();
+    }
+    inline float *getPointsBuf() {
+      return reinterpret_cast<float *>(outputPoints_.data());
+    }
+    inline size_t getPointsNumber() const {
+      return outputPoints_.size();
     }
 
   private:

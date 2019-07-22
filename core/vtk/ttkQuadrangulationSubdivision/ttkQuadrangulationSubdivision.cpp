@@ -124,24 +124,22 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     }
   }
 
-  auto &outQuadrangles = baseWorker_.getOutputQuads();
-  auto &outVertices = baseWorker_.getOutputPoints();
   auto &outVertexValences = baseWorker_.outputValences_;
   auto &outVertexType = baseWorker_.outputVertType_;
   auto &outSubdvisionLevel = baseWorker_.outputSubdivision_;
 
   auto cells = vtkSmartPointer<vtkCellArray>::New();
 
-  for(size_t i = 0; i < outQuadrangles.size() / 5; i++) {
-    cells->InsertNextCell(4, &outQuadrangles[5 * i + 1]);
+  for(size_t i = 0; i < baseWorker_.getQuadNumber(); i++) {
+    cells->InsertNextCell(4, &baseWorker_.getQuadBuf()[5 * i + 1]);
   }
 
   // update output: get quadrangle values
   output->SetCells(VTK_QUAD, cells);
 
   auto points = vtkSmartPointer<vtkPoints>::New();
-  for(size_t i = 0; i < outVertices.size(); i += 3) {
-    points->InsertNextPoint(&outVertices[i]);
+  for(size_t i = 0; i < baseWorker_.getPointsNumber(); ++i) {
+    points->InsertNextPoint(&baseWorker_.getPointsBuf()[3 * i]);
   }
 
   // update output: get quadrangle vertices
