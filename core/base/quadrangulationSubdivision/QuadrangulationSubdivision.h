@@ -42,6 +42,9 @@ namespace ttk {
     inline void setShowResError(const bool value) {
       showResError_ = value;
     }
+    inline void setComputeQuadStats(const bool value) {
+      computeQuadsStats_ = value;
+    }
     inline void setInputQuads(void *const address, unsigned int size) {
       inputQuads_ = static_cast<Quad *>(address);
       inputQuadNumber_ = size;
@@ -256,6 +259,8 @@ namespace ttk {
     bool reverseProjection_{false};
     // display result despite error
     bool showResError_{false};
+    // compute quads statistics
+    bool computeQuadsStats_{false};
 
     // number of input quadrangles
     unsigned int inputQuadNumber_{};

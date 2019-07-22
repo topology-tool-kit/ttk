@@ -145,6 +145,19 @@
       </IntVectorProperty>
 
       <IntVectorProperty
+          name="QuadStatistics"
+          label="Quad Statistics"
+          command="SetQuadStatistics"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Show some geometrical statistics on generated quadrangles
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
           name="UseAllCores"
           command="SetUseAllCores"
           label="Use All Cores"
@@ -195,6 +208,7 @@
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
         <Property name="ShowResError" />
+        <Property name="QuadStatistics" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Input options">

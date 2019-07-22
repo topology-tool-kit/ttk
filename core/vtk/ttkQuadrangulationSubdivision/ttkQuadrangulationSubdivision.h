@@ -100,6 +100,9 @@ public:
   vtkSetMacro(ShowResError, bool);
   vtkGetMacro(ShowResError, bool);
 
+  vtkSetMacro(QuadStatistics, bool);
+  vtkGetMacro(QuadStatistics, bool);
+
   // fill triangulation_ array
   int getTriangulation(vtkDataSet *input);
 
@@ -147,6 +150,8 @@ private:
   bool ReverseProjection{false};
   // show result despite error
   bool ShowResError{false};
+  // display quadrangle statistics
+  bool QuadStatistics{false};
 
   // base worker object
   ttk::QuadrangulationSubdivision baseWorker_{};
