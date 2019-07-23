@@ -731,6 +731,17 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
                           / *std::max_element(angles.begin(), angles.end());
   }
 
+  // compute ratio between quad area and mean quad area
+
+  // global surface area
+  float sumArea{};
+  for(const auto a : quadArea_) {
+    sumArea += a;
+  }
+  for(auto &a : quadArea_) {
+    a *= quadArea_.size() / sumArea;
+  }
+
   // Compute the minimum euclidian distance between points in a
   // neighborhood. If several non-neighboring points are nearer than
   // direct neighbors, there may be some overlap.
