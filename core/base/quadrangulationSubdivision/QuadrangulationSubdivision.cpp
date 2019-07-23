@@ -866,7 +866,17 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   quadStatistics();
 
-  if(false) {
+  const bool criterion
+    = std::any_of(pointsNearearNeighbors_.begin(),
+                  pointsNearearNeighbors_.end(),
+                  [](const SimplexId a) { return a > 1; })
+      && (std::any_of(pointsNearearNeighbors_.begin(),
+                      pointsNearearNeighbors_.end(),
+                      [](const SimplexId a) { return a > 2; })
+          || std::any_of(quadArea_.begin(), quadArea_.end(),
+                         [](const float a) { return a > 6.0F; }));
+
+  if(criterion) {
     // log, clean & early return
     std::stringstream msg;
     msg << MODULE_S "Error: quadrangulation may have fold over itself"
