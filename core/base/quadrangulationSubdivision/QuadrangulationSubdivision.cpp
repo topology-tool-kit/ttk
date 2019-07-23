@@ -853,9 +853,7 @@ int ttk::QuadrangulationSubdivision::execute() {
     quadNeighbors_.begin(), quadNeighbors_.end(), outputValences_.begin(),
     [&](const std::set<size_t> &neighbors) { return neighbors.size(); });
 
-  if(computeQuadsStats_) {
-    quadStatistics();
-  }
+  quadStatistics();
 
   if(false) {
     // log, clean & early return
