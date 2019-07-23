@@ -747,9 +747,6 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
     // number of non-neighbors nearer than neighbors
     size_t count{};
 
-    // store neighbors to neighbors
-    std::set<size_t> neighsneighs{};
-
     for(const auto j : secNeighbors[i]) {
       // compute minimun distance to quad neighbors
       auto distNeigh
@@ -757,23 +754,14 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
       if(distNeigh < minDistNeigh) {
         minDistNeigh = distNeigh;
       }
-
-      // get neighbors to neighbors
-      std::vector<size_t> neighsJMinusI{};
-      // only keep neighbors of j that aren't neighbors of i
-      std::set_difference(secNeighbors[j].begin(), secNeighbors[j].end(),
-                          secNeighbors[i].begin(), secNeighbors[i].end(),
-                          std::back_inserter(neighsJMinusI));
-      // erase-remove current point
-      neighsJMinusI.erase(
-        std::remove(neighsJMinusI.begin(), neighsJMinusI.end(), i));
-      for(const auto k : neighsJMinusI) {
-        neighsneighs.emplace(k);
-      }
     }
 
     // count non-neighbors nearer than neighbors
-    for(const auto j : neighsneighs) {
+    for(size_t j = 0; j < outputPoints_.size(); ++j) {
+      // skip neighbors
+      if(i == j || secNeighbors[i].find(j) != secNeighbors[i].end()) {
+        continue;
+      }
       auto dist = Geometry::distance(&outputPoints_[i].x, &outputPoints_[j].x);
       if(dist < minDistNeigh) {
         count++;
