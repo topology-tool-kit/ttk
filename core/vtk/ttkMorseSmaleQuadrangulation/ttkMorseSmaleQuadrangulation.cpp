@@ -1,6 +1,6 @@
-#include <ttkSurfaceQuadrangulation.h>
+#include <ttkMorseSmaleQuadrangulation.h>
 
-#define MODULE_S "[ttkSurfaceQuadrangulation] "
+#define MODULE_S "[ttkMorseSmaleQuadrangulation] "
 #define MODULE_ERROR_S MODULE_S "Error: "
 #ifndef TTK_ENABLE_KAMIKAZE
 #define TTK_ABORT_KK(COND, MSG, RET)    \
@@ -12,9 +12,9 @@
 #define TTK_ABORT_KK(COND, MSG, RET)
 #endif // TTK_ENABLE_KAMIKAZE
 
-vtkStandardNewMacro(ttkSurfaceQuadrangulation);
+vtkStandardNewMacro(ttkMorseSmaleQuadrangulation);
 
-ttkSurfaceQuadrangulation::ttkSurfaceQuadrangulation()
+ttkMorseSmaleQuadrangulation::ttkMorseSmaleQuadrangulation()
   : UseAllCores{true}, ThreadNumber{} {
 
   // critical points + 1-separatrices + segmentation
@@ -23,8 +23,8 @@ ttkSurfaceQuadrangulation::ttkSurfaceQuadrangulation()
   SetNumberOfOutputPorts(1);
 }
 
-int ttkSurfaceQuadrangulation::FillInputPortInformation(int port,
-                                                        vtkInformation *info) {
+int ttkMorseSmaleQuadrangulation::FillInputPortInformation(
+  int port, vtkInformation *info) {
 
   if(port == 0 || port == 1) {
     // Morse-Smale Complex output
@@ -33,7 +33,8 @@ int ttkSurfaceQuadrangulation::FillInputPortInformation(int port,
   return 0;
 }
 
-int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
+int ttkMorseSmaleQuadrangulation::getCriticalPoints(
+  vtkUnstructuredGrid *input) {
 
   // store handler to points
   auto cp = input->GetPoints();
@@ -49,14 +50,14 @@ int ttkSurfaceQuadrangulation::getCriticalPoints(vtkUnstructuredGrid *input) {
   TTK_ABORT_KK(cpcd == nullptr, "wrong critical points cell dimension", -3);
   TTK_ABORT_KK(cpci == nullptr, "wrong critical points identifiers", -4);
 
-  surfaceQuadrangulation_.setCriticalPoints(
+  baseWorker_.setCriticalPoints(
     cp->GetNumberOfPoints(), cp->GetVoidPointer(0), cpid->GetVoidPointer(0),
     cpci->GetVoidPointer(0), cpcd->GetVoidPointer(0));
 
   return 0;
 }
 
-int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
+int ttkMorseSmaleQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
 
   // check if separatrices have points
   auto separatrices = input->GetPoints();
@@ -73,13 +74,13 @@ int ttkSurfaceQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
   TTK_ABORT_KK(dim == nullptr, "wrong separatrices cell dimension", -3);
   TTK_ABORT_KK(mask == nullptr, "wrong separatrices mask", -4);
 
-  surfaceQuadrangulation_.setSeparatrices(
-    id->GetNumberOfValues(), id->GetVoidPointer(0), dim->GetVoidPointer(0),
-    mask->GetVoidPointer(0), separatrices->GetVoidPointer(0));
+  baseWorker_.setSeparatrices(id->GetNumberOfValues(), id->GetVoidPointer(0),
+                              dim->GetVoidPointer(0), mask->GetVoidPointer(0),
+                              separatrices->GetVoidPointer(0));
   return 0;
 }
 
-int ttkSurfaceQuadrangulation::getTriangulation(vtkUnstructuredGrid *input) {
+int ttkMorseSmaleQuadrangulation::getTriangulation(vtkUnstructuredGrid *input) {
   triangulation_ = ttkTriangulation::getTriangulation(input);
   TTK_ABORT_KK(triangulation_ == nullptr, "invalid triangulation", -1);
 
@@ -87,15 +88,15 @@ int ttkSurfaceQuadrangulation::getTriangulation(vtkUnstructuredGrid *input) {
   TTK_ABORT_KK(points == nullptr, "wrong points", -2);
 
   triangulation_->setWrapper(this);
-  surfaceQuadrangulation_.setWrapper(this);
-  surfaceQuadrangulation_.setupTriangulation(triangulation_);
-  surfaceQuadrangulation_.setInputPoints(points->GetVoidPointer(0));
+  baseWorker_.setWrapper(this);
+  baseWorker_.setupTriangulation(triangulation_);
+  baseWorker_.setInputPoints(points->GetVoidPointer(0));
 
   return 0;
 }
 
-int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
-                                    std::vector<vtkDataSet *> &outputs) {
+int ttkMorseSmaleQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
+                                       std::vector<vtkDataSet *> &outputs) {
 
   ttk::Memory m;
 
@@ -118,10 +119,10 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
 
   TTK_ABORT_KK(res != 0, "wrong segmentation", -1);
 
-  surfaceQuadrangulation_.setDualQuadrangulation(DualQuadrangulation);
-  surfaceQuadrangulation_.setShowResError(ShowResError);
+  baseWorker_.setDualQuadrangulation(DualQuadrangulation);
+  baseWorker_.setShowResError(ShowResError);
 
-  res += surfaceQuadrangulation_.execute();
+  res += baseWorker_.execute();
 
   if(res != 0) {
     vtkWarningMacro(MODULE_ERROR_S
@@ -132,11 +133,11 @@ int ttkSurfaceQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
     }
   }
 
-  auto &outQuadrangles = surfaceQuadrangulation_.outputCells_;
-  auto &outQuadPoints = surfaceQuadrangulation_.outputPoints_;
-  auto &outPointsIds = surfaceQuadrangulation_.outputPointsIds_;
-  auto &outPointsType = surfaceQuadrangulation_.outputPointsTypes_;
-  auto &outPointsCells = surfaceQuadrangulation_.outputPointsCells_;
+  auto &outQuadrangles = baseWorker_.outputCells_;
+  auto &outQuadPoints = baseWorker_.outputPoints_;
+  auto &outPointsIds = baseWorker_.outputPointsIds_;
+  auto &outPointsType = baseWorker_.outputPointsTypes_;
+  auto &outPointsCells = baseWorker_.outputPointsCells_;
 
   // output points: critical points + generated separatrices middles
   auto points = vtkSmartPointer<vtkPoints>::New();

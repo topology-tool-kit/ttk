@@ -1,14 +1,14 @@
 #include <BarycentricSubdivision.h>
 #include <Dijkstra.h>
 #include <Geometry.h>
-#include <SurfaceQuadrangulation.h>
+#include <MorseSmaleQuadrangulation.h>
 
 #include <array>
 #include <cmath>
 #include <numeric>
 #include <queue>
 
-#define MODULE_S "[SurfaceQuadrangulation] "
+#define MODULE_S "[MorseSmaleQuadrangulation] "
 
 // ad-hoc quad data structure (see QuadrangulationSubdivision.h)
 struct Quad {
@@ -19,7 +19,7 @@ struct Quad {
   long long l;
 };
 
-int ttk::SurfaceQuadrangulation::detectCellSeps() {
+int ttk::MorseSmaleQuadrangulation::detectCellSeps() {
   BarycentricSubdivision bs{};
   Triangulation newT{};
 
@@ -287,7 +287,7 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
   return 0;
 }
 
-int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
+int ttk::MorseSmaleQuadrangulation::quadrangulate(size_t &ndegen) {
   // quadrangle vertices are either extrema or saddle points
 
   // separatrices bounds indices and cell ids
@@ -365,8 +365,8 @@ int ttk::SurfaceQuadrangulation::quadrangulate(size_t &ndegen) {
   return 0;
 }
 
-size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
-                                                         const size_t b) {
+size_t ttk::MorseSmaleQuadrangulation::findSeparatrixMiddle(const size_t a,
+                                                            const size_t b) {
 
   const int dim = 3;
 
@@ -433,7 +433,7 @@ size_t ttk::SurfaceQuadrangulation::findSeparatrixMiddle(const size_t a,
   return id;
 }
 
-int ttk::SurfaceQuadrangulation::findSepsVertices(
+int ttk::MorseSmaleQuadrangulation::findSepsVertices(
   const std::vector<size_t> &seps,
   std::vector<long long> &srcs,
   std::vector<long long> &dsts) const {
@@ -461,7 +461,7 @@ int ttk::SurfaceQuadrangulation::findSepsVertices(
   return 0;
 }
 
-int ttk::SurfaceQuadrangulation::subdiviseDegenerateQuads(
+int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
   std::vector<long long> &outputSubd) {
   auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
   auto qsubd = reinterpret_cast<std::vector<Quad> *>(&outputSubd);
@@ -602,7 +602,7 @@ int ttk::SurfaceQuadrangulation::subdiviseDegenerateQuads(
   return 0;
 }
 
-int ttk::SurfaceQuadrangulation::subdivise() {
+int ttk::MorseSmaleQuadrangulation::subdivise() {
 
   // separatrices middles index in output points array
   sepMids_.resize(sepBegs_.size());
@@ -768,7 +768,7 @@ int ttk::SurfaceQuadrangulation::subdivise() {
   return 0;
 }
 
-int ttk::SurfaceQuadrangulation::dualQuadrangulate() {
+int ttk::MorseSmaleQuadrangulation::dualQuadrangulate() {
 
   // iterate over separatrices middles to build quadrangles around
   // them: the separatrix vertices and two barycenters
@@ -872,7 +872,7 @@ int ttk::SurfaceQuadrangulation::dualQuadrangulate() {
   return 0;
 }
 
-bool ttk::SurfaceQuadrangulation::checkSurfaceCloseness() const {
+bool ttk::MorseSmaleQuadrangulation::checkSurfaceCloseness() const {
   bool triangulationClosed{true};
   // sweep over all vertices to check if one is on a boundary
   for(SimplexId i = 0; i < verticesNumber_; ++i) {
@@ -923,7 +923,7 @@ bool ttk::SurfaceQuadrangulation::checkSurfaceCloseness() const {
   return triangulationClosed == quadrangulationClosed;
 }
 
-void ttk::SurfaceQuadrangulation::clearData() {
+void ttk::MorseSmaleQuadrangulation::clearData() {
   outputCells_.clear();
   outputPoints_.clear();
   outputPointsIds_.clear();
@@ -931,7 +931,7 @@ void ttk::SurfaceQuadrangulation::clearData() {
 }
 
 // main routine
-int ttk::SurfaceQuadrangulation::execute() {
+int ttk::MorseSmaleQuadrangulation::execute() {
 
   Timer t;
 

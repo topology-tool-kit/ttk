@@ -1,12 +1,12 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-        name="SurfaceQuadrangulation"
-        class="ttkSurfaceQuadrangulation"
-        label="TTK SurfaceQuadrangulation">
+        name="MorseSmaleQuadrangulation"
+        class="ttkMorseSmaleQuadrangulation"
+        label="TTK MorseSmaleQuadrangulation">
       <Documentation
-          long_help="TTK plugin for surface quadrangulation."
-          short_help="TTK plugin for surface quadrangulation.">
+          long_help="TTK plugin for Morse-Smale quadrangulation."
+          short_help="TTK plugin for Morse-Smale quadrangulation.">
         This plugin outputs a very raw quadrangulation from a
         Morse-Smale Complex of a triangular surfacic mesh.
       </Documentation>

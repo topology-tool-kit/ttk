@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::SurfaceQuadrangulation
+/// \class ttk::MorseSmaleQuadrangulation
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \date March 2019
@@ -9,7 +9,7 @@
 ///
 ///
 ///
-/// \sa ttkSurfaceQuadrangulation.cpp % for a usage example.
+/// \sa ttkMorseSmaleQuadrangulation.cpp % for a usage example.
 
 #pragma once
 
@@ -21,7 +21,7 @@
 
 namespace ttk {
 
-  class SurfaceQuadrangulation : public Debug {
+  class MorseSmaleQuadrangulation : public Debug {
 
   public:
     inline void setCriticalPoints(const unsigned int number,
@@ -216,6 +216,3 @@ namespace ttk {
     std::vector<SimplexId> outputPointsCells_{};
   };
 } // namespace ttk
-
-// if the package is a pure template typename, uncomment the following line
-// #include                  <SurfaceQuadrangulation.cpp>

@@ -1,5 +1,5 @@
 /// \ingroup vtk
-/// \class ttkSurfaceQuadrangulation
+/// \class ttkMorseSmaleQuadrangulation
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
 /// \date March 2019
 ///
@@ -21,7 +21,7 @@
 /// \sa ttkIntegralLines
 /// \sa ttkFTMTree
 /// \sa ttkIdentifiers
-/// \sa ttk::SurfaceQuadrangulation
+/// \sa ttk::MorseSmaleQuadrangulation
 
 #pragma once
 
@@ -44,22 +44,22 @@
 #include <vtkUnsignedShortArray.h>
 
 // ttk code includes
-#include <SurfaceQuadrangulation.h>
+#include <MorseSmaleQuadrangulation.h>
 #include <ttkWrapper.h>
 
 #include <ttkTriangulation.h>
 
 #ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkSurfaceQuadrangulation
+class VTKFILTERSCORE_EXPORT ttkMorseSmaleQuadrangulation
 #else
-class ttkSurfaceQuadrangulation
+class ttkMorseSmaleQuadrangulation
 #endif
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
 public:
-  static ttkSurfaceQuadrangulation *New();
-  vtkTypeMacro(ttkSurfaceQuadrangulation, vtkDataSetAlgorithm);
+  static ttkMorseSmaleQuadrangulation *New();
+  vtkTypeMacro(ttkMorseSmaleQuadrangulation, vtkDataSetAlgorithm);
 
   vtkSetMacro(debugLevel_, int);
 
@@ -85,19 +85,20 @@ public:
   int getTriangulation(vtkUnstructuredGrid *input);
 
   // default copy constructor
-  ttkSurfaceQuadrangulation(const ttkSurfaceQuadrangulation &) = delete;
+  ttkMorseSmaleQuadrangulation(const ttkMorseSmaleQuadrangulation &) = delete;
   // default move constructor
-  ttkSurfaceQuadrangulation(ttkSurfaceQuadrangulation &&) = delete;
+  ttkMorseSmaleQuadrangulation(ttkMorseSmaleQuadrangulation &&) = delete;
   // default copy assignment operator
-  ttkSurfaceQuadrangulation &operator=(const ttkSurfaceQuadrangulation &)
+  ttkMorseSmaleQuadrangulation &operator=(const ttkMorseSmaleQuadrangulation &)
     = delete;
   // default move assignment operator
-  ttkSurfaceQuadrangulation &operator=(ttkSurfaceQuadrangulation &&) = delete;
+  ttkMorseSmaleQuadrangulation &operator=(ttkMorseSmaleQuadrangulation &&)
+    = delete;
 
 protected:
-  ttkSurfaceQuadrangulation();
+  ttkMorseSmaleQuadrangulation();
 
-  ~ttkSurfaceQuadrangulation() override = default;
+  ~ttkMorseSmaleQuadrangulation() override = default;
 
   TTK_SETUP();
 
@@ -112,5 +113,5 @@ private:
   bool ShowResError{false};
 
   // worker object
-  ttk::SurfaceQuadrangulation surfaceQuadrangulation_{};
+  ttk::MorseSmaleQuadrangulation baseWorker_{};
 };
