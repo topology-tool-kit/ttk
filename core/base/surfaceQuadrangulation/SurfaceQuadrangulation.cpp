@@ -36,8 +36,6 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
 
   auto nEdges = triangulation_->getNumberOfEdges();
 
-  // store separatrix index on subdivised triangulation vertices
-  std::vector<SimplexId> onSep(newT.getNumberOfVertices(), -1);
   // store separatrix index on subdivised triangulation edges
   std::vector<SimplexId> edgeOnSep(newT.getNumberOfEdges(), -1);
   // count the number of critical points encountered
@@ -77,9 +75,6 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
 
     // current point
     SimplexId curr{critPointId(i)};
-
-    // update value on vertex TODO
-    onSep[curr] = currSepId;
 
     // get edge id
     auto ne = newT.getVertexEdgeNumber(curr);
