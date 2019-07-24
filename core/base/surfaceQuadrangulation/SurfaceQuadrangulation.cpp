@@ -68,10 +68,16 @@ int ttk::SurfaceQuadrangulation::detectCellSeps() {
     // for computing the separatrix id
     if(sepMask_[i] == 0) {
       critPoints++;
+      // beginning of a new separatrix
+      if(critPoints % 2 == 1) {
+        prev = critPointId(i);
+        continue;
+      }
     }
 
     // current separatrix id is critPoints // 2
-    auto currSepId = critPoints / 2;
+    auto currSepId
+      = (critPoints % 2 == 0) ? critPoints / 2 - 1 : critPoints / 2;
 
     // current point
     SimplexId curr{critPointId(i)};
