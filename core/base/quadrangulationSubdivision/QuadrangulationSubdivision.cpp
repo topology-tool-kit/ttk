@@ -901,8 +901,16 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   quadStatistics();
 
-  const bool criterion
-    = *std::max_element(hausdorff_.begin(), hausdorff_.end()) > 200.F;
+  bool criterion = false;
+  for (size_t i = 0; i < outputPoints_.size(); ++i) {
+    if (outputValences_[i] > 4) {
+      continue;
+    }
+    if (hausdorff_[i] > 200.F) {
+      criterion = true;
+      break;
+    }
+  }
 
   if(criterion) {
     // log, clean & early return
