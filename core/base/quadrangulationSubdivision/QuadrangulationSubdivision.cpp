@@ -827,6 +827,12 @@ void ttk::QuadrangulationSubdivision::clearData() {
 // main routine
 int ttk::QuadrangulationSubdivision::execute() {
 
+  {
+    std::stringstream msg;
+    msg << MODULE_S "Beginning computation... " << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
+  }
+
   Timer t;
 
   // clear output variables
