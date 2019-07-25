@@ -315,6 +315,7 @@ namespace ttk {
     std::vector<float> quadEdgesRatio_{};
     std::vector<float> quadAnglesRatio_{};
     std::vector<SimplexId> pointsNearearNeighbors_{};
+    std::vector<float> hausdorff_{};
   };
 } // namespace ttk
 

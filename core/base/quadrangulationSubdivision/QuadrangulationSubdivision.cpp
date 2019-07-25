@@ -688,6 +688,8 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
   quadAnglesRatio_.resize(outputQuads_.size());
   pointsNearearNeighbors_.clear();
   pointsNearearNeighbors_.resize(outputPoints_.size());
+  hausdorff_.clear();
+  hausdorff_.resize(outputPoints_.size());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -740,6 +742,68 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
   }
   for(auto &a : quadArea_) {
     a *= quadArea_.size() / sumArea;
+  }
+
+  // compute the minimal distance from every triangulation point to
+  // every quadrangulation point
+
+  std::vector<size_t> triVertsDist(vertexNumber_);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < static_cast<size_t>(vertexNumber_); ++i) {
+    float minDist{std::numeric_limits<float>::infinity()};
+    Point p{};
+    triangulation_->getVertexPoint(i, p.x, p.y, p.z);
+
+    for(size_t j = 0; j < outputPoints_.size(); ++j) {
+      auto dist = Geometry::distance(&p.x, &outputPoints_[j].x);
+      if(dist < minDist) {
+        minDist = dist;
+        triVertsDist[i] = j;
+      }
+    }
+  }
+
+  // compute triangulation bounding box diagonal
+  Point pmin{std::numeric_limits<float>::infinity(),
+             std::numeric_limits<float>::infinity(),
+             std::numeric_limits<float>::infinity()};
+  Point pmax{-std::numeric_limits<float>::infinity(),
+             -std::numeric_limits<float>::infinity(),
+             -std::numeric_limits<float>::infinity()};
+
+  for(size_t i = 0; i < static_cast<size_t>(vertexNumber_); ++i) {
+    Point p{};
+    triangulation_->getVertexPoint(i, p.x, p.y, p.z);
+    pmax.x = std::max(pmax.x, p.x);
+    pmax.y = std::max(pmax.y, p.y);
+    pmax.z = std::max(pmax.z, p.z);
+    pmin.x = std::min(pmin.x, p.x);
+    pmin.y = std::min(pmin.y, p.y);
+    pmin.z = std::min(pmin.z, p.z);
+  }
+
+  auto bboxDiag = Geometry::distance(&pmin.x, &pmax.x);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < outputPoints_.size(); ++i) {
+    float maxDist{};
+    for(size_t j = 0; j < static_cast<size_t>(vertexNumber_); ++j) {
+      Point p{};
+      triangulation_->getVertexPoint(j, p.x, p.y, p.z);
+
+      if(triVertsDist[j] == i) {
+        auto dist = Geometry::distance(&p.x, &outputPoints_[i].x);
+        if(dist > maxDist) {
+          maxDist = dist;
+        }
+      }
+    }
+    hausdorff_[i] = maxDist / bboxDiag / vertexNumber_ * 1e8;
   }
 
   // Compute the minimum euclidian distance between points in a
