@@ -931,14 +931,7 @@ int ttk::QuadrangulationSubdivision::execute() {
   quadStatistics();
 
   const bool criterion
-    = std::any_of(pointsNearearNeighbors_.begin(),
-                  pointsNearearNeighbors_.end(),
-                  [](const SimplexId a) { return a > 1; })
-      && (std::any_of(pointsNearearNeighbors_.begin(),
-                      pointsNearearNeighbors_.end(),
-                      [](const SimplexId a) { return a > 2; })
-          || std::any_of(quadArea_.begin(), quadArea_.end(),
-                         [](const float a) { return a > 6.0F; }));
+    = *std::max_element(hausdorff_.begin(), hausdorff_.end()) > 200.F;
 
   if(criterion) {
     // log, clean & early return
