@@ -678,6 +678,8 @@ int ttk::QuadrangulationSubdivision::findExtraordinaryVertices(
 }
 
 void ttk::QuadrangulationSubdivision::quadStatistics() {
+  Timer t;
+
   quadArea_.clear();
   quadArea_.resize(outputQuads_.size());
   quadDiagsRatio_.clear();
@@ -803,6 +805,11 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
     }
     hausdorff_[i] = maxDist / bboxDiag / vertexNumber_ * 1e8;
   }
+
+  std::stringstream msg;
+  msg << MODULE_S "Computed quad statistics in " << t.getElapsedTime() << " s."
+      << std::endl;
+  dMsg(std::cout, msg.str(), detailedInfoMsg);
 }
 
 void ttk::QuadrangulationSubdivision::clearData() {
