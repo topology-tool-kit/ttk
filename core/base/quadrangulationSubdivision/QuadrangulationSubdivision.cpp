@@ -686,8 +686,6 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
   quadEdgesRatio_.resize(outputQuads_.size());
   quadAnglesRatio_.clear();
   quadAnglesRatio_.resize(outputQuads_.size());
-  pointsNearearNeighbors_.clear();
-  pointsNearearNeighbors_.resize(outputPoints_.size());
   hausdorff_.clear();
   hausdorff_.resize(outputPoints_.size());
 
@@ -804,46 +802,6 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
       }
     }
     hausdorff_[i] = maxDist / bboxDiag / vertexNumber_ * 1e8;
-  }
-
-  // Compute the minimum euclidian distance between points in a
-  // neighborhood. If several non-neighboring points are nearer than
-  // direct neighbors, there may be some overlap.
-
-  std::vector<std::set<size_t>> secNeighbors(outputPoints_.size());
-  getQuadNeighbors(outputQuads_, secNeighbors, true);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < outputPoints_.size(); ++i) {
-    // compute minimal distance to neighbors
-    float minDistNeigh{std::numeric_limits<float>::infinity()};
-    // number of non-neighbors nearer than neighbors
-    size_t count{};
-
-    for(const auto j : secNeighbors[i]) {
-      // compute minimun distance to quad neighbors
-      auto distNeigh
-        = Geometry::distance(&outputPoints_[i].x, &outputPoints_[j].x);
-      if(distNeigh < minDistNeigh) {
-        minDistNeigh = distNeigh;
-      }
-    }
-
-    // count non-neighbors nearer than neighbors
-    for(size_t j = 0; j < outputPoints_.size(); ++j) {
-      // skip neighbors
-      if(i == j || secNeighbors[i].find(j) != secNeighbors[i].end()) {
-        continue;
-      }
-      auto dist = Geometry::distance(&outputPoints_[i].x, &outputPoints_[j].x);
-      if(dist < minDistNeigh) {
-        count++;
-      }
-    }
-    // store count
-    pointsNearearNeighbors_[i] = count;
   }
 }
 
