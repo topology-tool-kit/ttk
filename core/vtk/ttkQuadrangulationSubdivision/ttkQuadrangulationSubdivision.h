@@ -97,6 +97,9 @@ public:
   vtkSetMacro(ReverseProjection, bool);
   vtkGetMacro(ReverseProjection, bool);
 
+  vtkSetMacro(HausdorffLevel, float);
+  vtkGetMacro(HausdorffLevel, float);
+
   vtkSetMacro(ShowResError, bool);
   vtkGetMacro(ShowResError, bool);
 
@@ -148,6 +151,8 @@ private:
   bool LockAllInputVertices{true};
   // projection method
   bool ReverseProjection{false};
+  // Hausdorff warning level
+  float HausdorffLevel{200.F};
   // show result despite error
   bool ShowResError{false};
   // display quadrangle statistics

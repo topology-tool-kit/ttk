@@ -97,6 +97,7 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   baseWorker_.setLockAllInputVertices(LockAllInputVertices);
   baseWorker_.setReverseProjection(ReverseProjection);
   baseWorker_.setShowResError(ShowResError);
+  baseWorker_.setHausdorffLevel(HausdorffLevel);
 
   auto quads = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
   auto mesh = vtkUnstructuredGrid::SafeDownCast(inputs[1]);

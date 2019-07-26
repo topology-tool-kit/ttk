@@ -130,6 +130,20 @@
         </Documentation>
       </IntVectorProperty>
 
+      <DoubleVectorProperty
+          name="HausdorffLevel"
+          label="Hausdorff Warning Level"
+          command="SetHausdorffLevel"
+          number_of_elements="1"
+          default_values="200"
+          >
+        <Documentation>
+          Set Hausdorff threshold level. Displays an error if max
+          Hausdorff distance to original triangulation if greater than
+          this value.
+        </Documentation>
+      </DoubleVectorProperty>
+
       <IntVectorProperty
           name="ShowResError"
           label="Show output despite error"
@@ -207,6 +221,7 @@
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
+        <Property name="HausdorffLevel" />
         <Property name="ShowResError" />
         <Property name="QuadStatistics" />
       </PropertyGroup>

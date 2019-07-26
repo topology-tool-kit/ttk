@@ -906,7 +906,7 @@ int ttk::QuadrangulationSubdivision::execute() {
     if (outputValences_[i] > 4) {
       continue;
     }
-    if (hausdorff_[i] > 200.F) {
+    if (hausdorff_[i] > hausdorffLevel_) {
       criterion = true;
       break;
     }

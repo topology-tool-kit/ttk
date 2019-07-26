@@ -42,6 +42,9 @@ namespace ttk {
     inline void setShowResError(const bool value) {
       showResError_ = value;
     }
+    inline void setHausdorffLevel(const float value) {
+      hausdorffLevel_ = value;
+    }
     inline void setInputQuads(void *const address, unsigned int size) {
       inputQuads_ = static_cast<Quad *>(address);
       inputQuadNumber_ = size;
@@ -265,6 +268,8 @@ namespace ttk {
     bool reverseProjection_{false};
     // display result despite error
     bool showResError_{false};
+    // Hausdorff warning level
+    float hausdorffLevel_{200.F};
 
     // number of input quadrangles
     unsigned int inputQuadNumber_{};
