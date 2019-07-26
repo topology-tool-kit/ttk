@@ -19,8 +19,10 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
     return -1;
   }
 
+#ifdef TTK_ENABLE_OPENMP
   // get thread number from triangulation?
   auto threadNumber = triangulation.getThreadNumber();
+#endif // TTK_ENABLE_OPENMP
 
   // clear output
   output.resize(vertexNumber, vertexNumber);
@@ -69,8 +71,10 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
   auto vertexNumber = triangulation.getNumberOfVertices();
   auto edgeNumber = triangulation.getNumberOfEdges();
 
+#ifdef TTK_ENABLE_OPENMP
   // get thread number from triangulation?
   auto threadNumber = triangulation.getThreadNumber();
+#endif // TTK_ENABLE_OPENMP
 
   // early return when input graph is empty
   if(vertexNumber <= 0) {
