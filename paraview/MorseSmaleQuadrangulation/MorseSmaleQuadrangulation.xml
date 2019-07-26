@@ -1,0 +1,163 @@
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy
+        name="MorseSmaleQuadrangulation"
+        class="ttkMorseSmaleQuadrangulation"
+        label="TTK MorseSmaleQuadrangulation">
+      <Documentation
+          long_help="TTK plugin for Morse-Smale quadrangulation."
+          short_help="TTK plugin for Morse-Smale quadrangulation.">
+        This plugin outputs a very raw quadrangulation from a
+        Morse-Smale Complex of a triangular surfacic mesh.
+      </Documentation>
+
+      <InputProperty
+          name="domain"
+          label="Domain"
+          port_index="2"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Domain" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="criticalPoints"
+          label="Morse-Smale critical points"
+          port_index="0"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="CriticalPoints" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <InputProperty
+          name="separatrices"
+          label="Morse-Smale separatrices"
+          port_index="1"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <InputArrayDomain name="input_scalars" number_of_components="1">
+          <Property name="Separatrices" function="FieldDataSelection" />
+        </InputArrayDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <IntVectorProperty
+          name="DualQuadrangulation"
+          label="Dual Quadrangulation"
+          command="SetDualQuadrangulation"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Prefer using a dual quadrangulation that only uses extrema
+          (no saddle point is used as a quadrangle vertex)
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ShowResError"
+          label="Show output despite error"
+          command="SetShowResError"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Show the quadrangulation result even though errors were
+          detected during computation
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="UseAllCores"
+          command="SetUseAllCores"
+          label="Use All Cores"
+          number_of_elements="1"
+          default_values="1"
+          panel_visibility="advanced"
+          >
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use all available cores.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="ThreadNumber"
+          command="SetThreadNumber"
+          label="Thread Number"
+          number_of_elements="1"
+          default_values="1" panel_visibility="advanced"
+          >
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="UseAllCores"
+              value="0" />
+        </Hints>
+        <Documentation>
+          Thread number.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="DebugLevel"
+          command="SetdebugLevel_"
+          label="Debug Level"
+          number_of_elements="1"
+          default_values="3" panel_visibility="advanced">
+        <IntRangeDomain name="range" min="0" max="100" />
+        <Documentation>
+          Debug level.
+        </Documentation>
+      </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+        <Property name="ShowResError" />
+      </PropertyGroup>
+
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="DualQuadrangulation" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
