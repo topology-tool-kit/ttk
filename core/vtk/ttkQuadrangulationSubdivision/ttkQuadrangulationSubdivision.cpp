@@ -207,7 +207,8 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
     auto hausDist = vtkSmartPointer<vtkFloatArray>::New();
     hausDist->SetName("Hausdorff");
-    hausDist->SetVoidArray(baseWorker_.hausdorff_.data(), baseWorker_.hausdorff_.size(), 1);
+    hausDist->SetVoidArray(
+      baseWorker_.hausdorff_.data(), baseWorker_.hausdorff_.size(), 1);
     output->GetPointData()->AddArray(hausDist);
   }
 

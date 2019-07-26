@@ -902,11 +902,11 @@ int ttk::QuadrangulationSubdivision::execute() {
   quadStatistics();
 
   bool criterion = false;
-  for (size_t i = 0; i < outputPoints_.size(); ++i) {
-    if (outputValences_[i] > 4) {
+  for(size_t i = 0; i < outputPoints_.size(); ++i) {
+    if(outputValences_[i] > 4) {
       continue;
     }
-    if (hausdorff_[i] > hausdorffLevel_) {
+    if(hausdorff_[i] > hausdorffLevel_) {
       criterion = true;
       break;
     }
