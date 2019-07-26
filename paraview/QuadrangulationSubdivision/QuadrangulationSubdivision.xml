@@ -135,6 +135,7 @@
           label="Hausdorff Warning Level"
           command="SetHausdorffLevel"
           number_of_elements="1"
+          panel_visibility="advanced"
           default_values="200"
           >
         <Documentation>
