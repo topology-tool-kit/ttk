@@ -74,7 +74,7 @@ int ttkMorseSmaleQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
   TTK_ABORT_KK(dim == nullptr, "wrong separatrices cell dimension", -3);
   TTK_ABORT_KK(mask == nullptr, "wrong separatrices mask", -4);
 
-  baseWorker_.setSeparatrices(id->GetNumberOfValues(), id->GetVoidPointer(0),
+  baseWorker_.setSeparatrices(id->GetNumberOfTuples(), id->GetVoidPointer(0),
                               dim->GetVoidPointer(0), mask->GetVoidPointer(0),
                               separatrices->GetVoidPointer(0));
   return 0;

@@ -75,7 +75,7 @@ int ttkQuadrangulationSubdivision::getQuadVertices(
   baseWorker_.setInputVertices(
     points->GetData()->GetVoidPointer(0), points->GetNumberOfPoints());
   baseWorker_.setInputVertexIdentifiers(
-    identifiers->GetVoidPointer(0), identifiers->GetNumberOfValues());
+    identifiers->GetVoidPointer(0), identifiers->GetNumberOfTuples());
 
   return 0;
 }
