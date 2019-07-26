@@ -23,7 +23,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   auto output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
 
   auto triangulation = ttkTriangulation::getTriangulation(input);
-  auto triangulationSubdivision{new ttk::Triangulation};
+  ttk::Triangulation triangulationSubdivision;
 
   if(triangulation == nullptr) {
     return -1;
@@ -32,7 +32,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   triangulation->setWrapper(this);
   baseWorker_.setupTriangulation(triangulation);
   baseWorker_.setWrapper(this);
-  baseWorker_.setOutputTriangulation(triangulationSubdivision);
+  baseWorker_.setOutputTriangulation(&triangulationSubdivision);
   baseWorker_.setInputPoints(input->GetPoints()->GetVoidPointer(0));
 
   // generate the new triangulation
@@ -47,19 +47,19 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     // allocate the memory for the output scalar field
     switch(inputScalarField->GetDataType()) {
       case VTK_CHAR:
-        outputScalarField = vtkCharArray::New();
+        outputScalarField = vtkSmartPointer<vtkCharArray>::New();
         break;
       case VTK_DOUBLE:
-        outputScalarField = vtkDoubleArray::New();
+        outputScalarField = vtkSmartPointer<vtkDoubleArray>::New();
         break;
       case VTK_FLOAT:
-        outputScalarField = vtkFloatArray::New();
+        outputScalarField = vtkSmartPointer<vtkFloatArray>::New();
         break;
       case VTK_INT:
-        outputScalarField = vtkIntArray::New();
+        outputScalarField = vtkSmartPointer<vtkIntArray>::New();
         break;
       case VTK_ID_TYPE:
-        outputScalarField = vtkIdTypeArray::New();
+        outputScalarField = vtkSmartPointer<vtkIdTypeArray>::New();
         break;
       default:
         break;
