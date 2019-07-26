@@ -106,9 +106,6 @@ public:
   vtkSetMacro(QuadStatistics, bool);
   vtkGetMacro(QuadStatistics, bool);
 
-  // fill triangulation_ array
-  int getTriangulation(vtkDataSet *input);
-
   // default copy constructor
   ttkQuadrangulationSubdivision(const ttkQuadrangulationSubdivision &) = delete;
   // default move constructor
