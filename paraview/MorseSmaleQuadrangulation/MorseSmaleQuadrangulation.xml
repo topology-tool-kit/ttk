@@ -83,15 +83,14 @@
 
       <IntVectorProperty
           name="ShowResError"
-          label="Show output despite error"
+          label="Force output despite warnings"
           command="SetShowResError"
           number_of_elements="1"
           panel_visibility="advanced"
           default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Show the quadrangulation result even though errors were
-          detected during computation
+          Produces an output despite warnings.
         </Documentation>
       </IntVectorProperty>
 
@@ -153,7 +152,7 @@
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Scalar Data" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>

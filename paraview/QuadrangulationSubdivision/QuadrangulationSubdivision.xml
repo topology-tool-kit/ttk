@@ -62,6 +62,7 @@
           name="InputIdentifiersFieldName"
           command="SetInputIdentifiersFieldName"
           label="Identifiers Field Name"
+          default_values="ttkVertexScalarField"
           number_of_elements="1"
           animateable="0"
           panel_visibility="advanced"
@@ -70,6 +71,9 @@
             name="array_list"
             default_values="0"
             >
+            <RequiredProperties> 
+              <Property name="quadrangles" function="Input" />
+            </RequiredProperties>
         </ArrayListDomain>
         <Hints>
           <PropertyWidgetDecorator
@@ -130,6 +134,34 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty
+          name="QuadStatistics"
+          label="Quad Statistics"
+          command="SetQuadStatistics"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Show some geometrical statistics on generated quadrangles
+        </Documentation>
+      </IntVectorProperty>
+
+
+      <IntVectorProperty
+          name="ShowResError"
+          label="Force output despite warnings"
+          command="SetShowResError"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Produces an output despite warnings.
+        </Documentation>
+      </IntVectorProperty>
+
+
       <DoubleVectorProperty
           name="HausdorffLevel"
           label="Hausdorff Warning Level"
@@ -145,32 +177,7 @@
         </Documentation>
       </DoubleVectorProperty>
 
-      <IntVectorProperty
-          name="ShowResError"
-          label="Show output despite error"
-          command="SetShowResError"
-          number_of_elements="1"
-          panel_visibility="advanced"
-          default_values="0">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Show the quadrangulation result even though errors were
-          detected during computation
-        </Documentation>
-      </IntVectorProperty>
 
-      <IntVectorProperty
-          name="QuadStatistics"
-          label="Quad Statistics"
-          command="SetQuadStatistics"
-          number_of_elements="1"
-          panel_visibility="advanced"
-          default_values="0">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Show some geometrical statistics on generated quadrangles
-        </Documentation>
-      </IntVectorProperty>
 
       <IntVectorProperty
           name="UseAllCores"
@@ -224,12 +231,16 @@
         <Property name="DebugLevel" />
         <Property name="HausdorffLevel" />
         <Property name="ShowResError" />
-        <Property name="QuadStatistics" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="InputIdentifiersFieldName" />
         <Property name="ForceInputIdentifiersField" />
+        <Property name="SubdivisionLevel" />
+        <Property name="RelaxationIterations" />
+        <Property name="LockInputExtrema" />
+        <Property name="LockAllInputVertices" />
+        <Property name="QuadStatistics" />
       </PropertyGroup>
 
       <Hints>
