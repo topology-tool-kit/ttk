@@ -50,7 +50,7 @@
 
       <InputProperty
           name="separatrices"
-          label="Morse-Smale separatrices"
+          label="Morse-Smale 1-separatrices"
           port_index="1"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">

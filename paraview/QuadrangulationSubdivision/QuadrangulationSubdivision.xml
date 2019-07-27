@@ -92,7 +92,7 @@
           label="Level of subdivisions"
           command="SetSubdivisionLevel"
           number_of_elements="1"
-          default_values="3">
+          default_values="1">
         <Documentation>
           Number of subdivisions of the original quadrangulation. The higher the value, the more precise the output.
         </Documentation>
@@ -103,7 +103,7 @@
           label="Number of relaxation iterations"
           command="SetRelaxationIterations"
           number_of_elements="1"
-          default_values="100">
+          default_values="10">
         <Documentation>
           Number of relaxation iterations.
         </Documentation>
@@ -114,7 +114,7 @@
           label="Lock extraordinary vertices"
           command="SetLockInputExtrema"
           number_of_elements="1"
-          default_values="1">
+          default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
           Lock the position of the input extraordinary vertices
@@ -126,7 +126,7 @@
           label="Lock all coarse vertices"
           command="SetLockAllInputVertices"
           number_of_elements="1"
-          default_values="1">
+          default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
           Lock the position of all input vertices

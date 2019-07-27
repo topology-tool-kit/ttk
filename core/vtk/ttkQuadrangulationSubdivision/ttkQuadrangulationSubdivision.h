@@ -139,13 +139,13 @@ private:
   // let the user choose an offset identifier scalar field
   bool ForceInputOffsetIdentifiersField{false};
   // number of subdivisions of the Morse-Smale Complex cells
-  unsigned int SubdivisionLevel{3};
+  unsigned int SubdivisionLevel{1};
   // number of relaxation iterations
-  unsigned int RelaxationIterations{100};
+  unsigned int RelaxationIterations{10};
   // lock input extrema
-  bool LockInputExtrema{true};
+  bool LockInputExtrema{false};
   // lock all input vertices
-  bool LockAllInputVertices{true};
+  bool LockAllInputVertices{false};
   // projection method
   bool ReverseProjection{false};
   // Hausdorff warning level

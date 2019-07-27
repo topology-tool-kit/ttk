@@ -257,13 +257,13 @@ namespace ttk {
     SimplexId vertexNumber_{};
 
     // wanted number of subdivisions of the input quadrangles
-    unsigned int subdivisionLevel_{3};
+    unsigned int subdivisionLevel_{1};
     // number of relaxation iterations
-    unsigned int relaxationIterations_{100};
+    unsigned int relaxationIterations_{10};
     // lock input extrema
-    bool lockInputExtrema{true};
+    bool lockInputExtrema{false};
     // lock all input vertices
-    bool lockAllInputVertices{true};
+    bool lockAllInputVertices{false};
     // projection method
     bool reverseProjection_{false};
     // display result despite error
