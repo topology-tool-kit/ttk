@@ -13,7 +13,7 @@
 
       <InputProperty
           name="domain"
-          label="Domain"
+          label="Triangulated surface"
           port_index="2"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -24,7 +24,7 @@
           <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
         <Documentation>
-          Data-set to process.
+          Input triangulated surface.
         </Documentation>
       </InputProperty>
 
@@ -44,7 +44,7 @@
           <Property name="CriticalPoints" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
-          Data-set to process.
+          Critical points of the input Morse-Smale complex.
         </Documentation>
       </InputProperty>
 
@@ -64,7 +64,7 @@
           <Property name="Separatrices" function="FieldDataSelection" />
         </InputArrayDomain>
         <Documentation>
-          Data-set to process.
+          Separatrices of the input Morse-Smale complex.
         </Documentation>
       </InputProperty>
 
@@ -76,8 +76,7 @@
           default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Prefer using a dual quadrangulation that only uses extrema
-          (no saddle point is used as a quadrangle vertex)
+          Produce a dual quadrangulation (1 vertex per extremum).
         </Documentation>
       </IntVectorProperty>
 

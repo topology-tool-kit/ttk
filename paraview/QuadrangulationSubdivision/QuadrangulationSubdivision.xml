@@ -13,7 +13,7 @@
 
       <InputProperty
           name="mesh"
-          label="2D original surface"
+          label="Triangulated surface"
           port_index="1"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -24,13 +24,13 @@
           <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
         <Documentation>
-          Data-set to process.
+          Input triangulated surface.
         </Documentation>
       </InputProperty>
 
       <InputProperty
           name="quadrangles"
-          label="Input coarse quadrangulation"
+          label="Coarse quadrangulation"
           port_index="0"
           command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -41,7 +41,7 @@
           <DataType value="vtkUnstructuredGrid"/>
         </DataTypeDomain>
         <Documentation>
-          Data-set to process.
+          Input coarse quadrangulation.
         </Documentation>
       </InputProperty>
 
@@ -94,8 +94,7 @@
           number_of_elements="1"
           default_values="3">
         <Documentation>
-          Number of subdivisions of the original quadrangular
-          mesh. The higher the value, the more precise the output.
+          Number of subdivisions of the original quadrangulation. The higher the value, the more precise the output.
         </Documentation>
       </IntVectorProperty>
 
@@ -118,7 +117,7 @@
           default_values="1">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Lock position of extraordinary input vertices
+          Lock the position of the input extraordinary vertices
         </Documentation>
       </IntVectorProperty>
 
@@ -130,7 +129,7 @@
           default_values="1">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Lock position of input vertices
+          Lock the position of all input vertices
         </Documentation>
       </IntVectorProperty>
 
@@ -143,7 +142,7 @@
           default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Show some geometrical statistics on generated quadrangles
+          Compute geometrical statistics on the output quadrangulation.
         </Documentation>
       </IntVectorProperty>
 
@@ -171,9 +170,7 @@
           default_values="200"
           >
         <Documentation>
-          Set Hausdorff threshold level. Displays an error if max
-          Hausdorff distance to original triangulation if greater than
-          this value.
+          Set Hausdorff warning level. Produces a warning if the maximum Hausdorff distance between the input triangulation and the output quadrangulation exceeds this value.
         </Documentation>
       </DoubleVectorProperty>
 
