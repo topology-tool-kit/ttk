@@ -37,7 +37,7 @@
           label="Number of eigenfunctions"
           command="SetEigenNumber"
           number_of_elements="1"
-          default_values="20"
+          default_values="500"
           >
         <Documentation>
           Select the number of eigenfunctions to compute.

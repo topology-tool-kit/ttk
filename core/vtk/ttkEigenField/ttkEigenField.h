@@ -112,7 +112,7 @@ private:
   // output field name
   std::string OutputFieldName{"OutputEigenFunctions"};
   // number of eigenpairs to compute
-  unsigned int EigenNumber{20};
+  unsigned int EigenNumber{500};
   // if statistics are to be computed
   bool ComputeStatistics{false};
 

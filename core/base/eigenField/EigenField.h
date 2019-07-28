@@ -69,7 +69,7 @@ namespace ttk {
     // output statistics array
     void *outputStatistics_{};
     // number of eigenfunctions to compute
-    unsigned int eigenNumber_{20};
+    unsigned int eigenNumber_{500};
     // if statistics should be computed
     bool computeStatistics_{false};
   };
