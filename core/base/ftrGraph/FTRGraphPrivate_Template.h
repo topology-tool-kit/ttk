@@ -259,7 +259,7 @@ namespace ttk {
       // reached node id and wether it has been created by this task or already
       // existed
       idNode saddleNode;
-      idSuperArc joinParentArc;
+      idSuperArc joinParentArc{};
       bool hideFromHere
         = false; // if true, new arc are hidden to stop propagation.
 

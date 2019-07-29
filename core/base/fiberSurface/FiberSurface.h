@@ -913,8 +913,8 @@ inline int ttk::FiberSurface::computeCase1(const SimplexId &polygonEdgeId,
   // now get the vertex coordinates
   for(int i = 0; i < 5; i++) {
 
-    SimplexId vertexId0, vertexId1;
-    double t;
+    SimplexId vertexId0 = -1, vertexId1 = -1;
+    double t{};
 
     if(!i) {
       // just take the pivot vertex
@@ -1098,8 +1098,8 @@ inline int ttk::FiberSurface::computeCase2(const SimplexId &polygonEdgeId,
   // now get the vertex coordinates
   for(int i = 0; i < 4; i++) {
 
-    SimplexId vertexId0, vertexId1;
-    double t;
+    SimplexId vertexId0 = -1, vertexId1 = -1;
+    double t{};
 
     switch(i) {
 
@@ -1249,8 +1249,8 @@ inline int ttk::FiberSurface::computeCase3(const SimplexId &polygonEdgeId,
   // now get the vertex coordinates
   for(int i = 0; i < 3; i++) {
 
-    SimplexId vertexId0, vertexId1;
-    double t;
+    SimplexId vertexId0 = -1, vertexId1 = -1;
+    double t{};
 
     if(!i) {
       // special case of the pivot vertex
@@ -1403,8 +1403,8 @@ inline int ttk::FiberSurface::computeCase4(const SimplexId &polygonEdgeId,
   // now get the vertex coordinates depending on the case
   for(int i = 0; i < 4; i++) {
 
-    SimplexId vertexId0, vertexId1;
-    double t;
+    SimplexId vertexId0 = -1, vertexId1 = -1;
+    double t{};
 
     if(i < 2) {
       if(!i) {
