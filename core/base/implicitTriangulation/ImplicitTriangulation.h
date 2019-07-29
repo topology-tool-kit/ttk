@@ -1616,8 +1616,6 @@ inline ttk::SimplexId
     return p[0] * 2 + p[1] * tshift_[0];
   else
     return p[0] * 2 + (p[1] - 1) * tshift_[0] + 1;
-
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -1632,7 +1630,6 @@ inline ttk::SimplexId
     return p[0] * 2 + p[1] * tshift_[0];
   else
     return (p[0] - 1) * 2 + p[1] * tshift_[0] + 1;
-  return -1;
 }
 
 inline void ttk::ImplicitTriangulation::vertexToPosition(const SimplexId vertex,
@@ -6911,7 +6908,6 @@ inline ttk::SimplexId
     else
       return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -6932,7 +6928,6 @@ inline ttk::SimplexId
     else
       return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -6955,7 +6950,6 @@ inline ttk::SimplexId
       return (p[0] / 2) + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1]
              + vshift_[0];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -6978,7 +6972,6 @@ inline ttk::SimplexId
       return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1]
              + vshift_[0];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -7002,7 +6995,6 @@ inline ttk::SimplexId
       return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0]
              + vshift_[1];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -7025,7 +7017,6 @@ inline ttk::SimplexId
       return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0]
              + vshift_[1];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
