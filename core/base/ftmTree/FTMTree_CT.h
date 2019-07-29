@@ -67,7 +67,6 @@ namespace ttk {
             return this;
             break;
           default:
-            return this;
             break;
         }
         return this;
