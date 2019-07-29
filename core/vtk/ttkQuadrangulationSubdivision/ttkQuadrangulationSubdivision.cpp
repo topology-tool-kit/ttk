@@ -116,9 +116,10 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   res += baseWorker_.execute();
 
   if(res != 0) {
-    vtkWarningMacro(
-      MODULE_ERROR_S
-      "Consider additional relaxation iterations or a higher (eigen) function");
+    vtkWarningMacro(MODULE_ERROR_S
+                    "Please increase the number of relaxation iterations, of "
+                    "subdivision levels or consider another function (higher "
+                    "eigenfunctions).");
     if(!ShowResError) {
       return res;
     }

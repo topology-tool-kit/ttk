@@ -915,8 +915,8 @@ int ttk::QuadrangulationSubdivision::execute() {
   if(criterion) {
     // log, clean & early return
     std::stringstream msg;
-    msg << MODULE_S "Error: quadrangulation may have fold over itself"
-        << std::endl;
+    msg << MODULE_S "Error: the output quadrangulation exceeds the provided"
+        << " Haussdorff distance tolerance." << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
     if(!showResError_) {
       clearData();
