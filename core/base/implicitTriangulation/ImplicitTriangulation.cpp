@@ -230,7 +230,7 @@ bool ImplicitTriangulation::isVertexOnBoundary(
 bool ImplicitTriangulation::isVertexOnBoundaryInternal(
   const SimplexId &vertexId) const {
   if(vertexId < 0 or vertexId >= vertexNumber_)
-    return -1;
+    return false;
 #endif
 
   if(dimensionality_ == 3) {
@@ -256,7 +256,7 @@ bool ImplicitTriangulation::isEdgeOnBoundary(const SimplexId &edgeId) const {
 bool ImplicitTriangulation::isEdgeOnBoundaryInternal(
   const SimplexId &edgeId) const {
   if(edgeId < 0 or edgeId >= edgeNumber_)
-    return -1;
+    return false;
 #endif
 
   if(dimensionality_ == 3) {
@@ -309,7 +309,7 @@ bool ImplicitTriangulation::isTriangleOnBoundary(
 bool ImplicitTriangulation::isTriangleOnBoundaryInternal(
   const SimplexId &triangleId) const {
   if(triangleId < 0 or triangleId >= triangleNumber_)
-    return -1;
+    return false;
 #endif
 
   if(dimensionality_ == 3)
