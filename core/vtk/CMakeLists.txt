@@ -17,7 +17,11 @@ if(NOT DEFINED VTK_USE_FILE)
     message(STATUS "No VTK provided, fallback to ParaView")
   endif()
 endif()
-include(${VTK_USE_FILE})
+
+if(DEFINED VTK_USE_FILE)
+    include(${VTK_USE_FILE})
+endif()
+
 include_directories(${VTK_INCLUDE_DIRS})
 
 set(VTKWRAPPER_LIB_LIST "")
