@@ -7,7 +7,13 @@ This docker image contains an installation of the [Topology Tool Kit (TTK)](http
 
 It is supposed to be used in conjunction with a local ParaView GUI.
 
-## Usage
+## Dummy usage
+
+To run Kitware's binary distribution of ParaView with TTK's docker, simply run:
+
+``` ./runParaViewTTKDocker.sh <Path to ParaView binary (version 5.6.1)>```
+
+## Advanced usage
 
 ```docker run -it --rm -p 11111:11111 -v "$HOME:/home/`whoami`/" --user $UID topologytoolkit/ttk:5.6.1-master```
 
