@@ -9,7 +9,7 @@ It is supposed to be used in conjunction with a local ParaView GUI.
 
 ## Usage
 
-```docker run -it --rm -p 11111:11111 -v "$(HOME):/home/`whoami`/" --user $UID topologytoolkit/ttk:5.6.1-master```
+```docker run -it --rm -p 11111:11111 -v "$HOME:/home/`whoami`/" --user $UID topologytoolkit/ttk:5.6.1-master```
 
 will start `pvserver` version 5.6.1 with TTK (current master version) and listen on the default port 11111 for connections from a ParaView GUI. The directory `$(pwd)/data` will be mounted under `/home/paraview/data` in the container.
 
