@@ -12,7 +12,10 @@ if(NOT DEFINED VTK_USE_FILE)
     message(STATUS "No VTK provided, fallback to ParaView")
   endif()
 endif()
-include(${VTK_USE_FILE})
+
+if(DEFINED VTK_USE_FILE)
+    include(${VTK_USE_FILE})
+endif()
 
 set(TTK_INSTALL_BINARY_DIR "bin")
 file(GLOB STANDALONE_DIRS */cmd */gui)
