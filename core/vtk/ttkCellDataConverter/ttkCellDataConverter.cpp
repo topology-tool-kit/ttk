@@ -98,6 +98,8 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<char, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<char, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::IdType)
+      convert<char, vtkIdType, vtkIdTypeArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Int)
       convert<char, int, vtkIntArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Short)
@@ -113,6 +115,8 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<double, char, vtkCharArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<double, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::IdType)
+      convert<char, vtkIdType, vtkIdTypeArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Int)
       convert<double, int, vtkIntArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Short)
@@ -128,6 +132,8 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<float, char, vtkCharArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Double)
       convert<float, double, vtkDoubleArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::IdType)
+      convert<char, vtkIdType, vtkIdTypeArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Int)
       convert<float, int, vtkIntArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Short)
@@ -145,6 +151,8 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<int, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<int, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::IdType)
+      convert<char, vtkIdType, vtkIdTypeArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Short)
       convert<int, short, vtkShortArray>(inputScalarField, output);
     else if(OutputType == SupportedType::UnsignedShort)
@@ -160,6 +168,8 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<vtkIdType, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<vtkIdType, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::IdType)
+      convert<char, vtkIdType, vtkIdTypeArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Short)
       convert<vtkIdType, short, vtkShortArray>(inputScalarField, output);
     else if(OutputType == SupportedType::UnsignedShort)
@@ -168,6 +178,26 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
     else if(OutputType == SupportedType::UnsignedChar)
       convert<vtkIdType, unsigned char, vtkUnsignedCharArray>(
         inputScalarField, output);
+  } else if(InputType == VTK_LONG) {
+    if(OutputType == SupportedType::Char)
+      convert<long long int, char, vtkCharArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Double)
+      convert<long long int, double, vtkDoubleArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Float)
+      convert<long long int, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::IdType)
+      convert<long long int, vtkIdType, vtkIdTypeArray>(
+        inputScalarField, output);
+    else if(OutputType == SupportedType::Int)
+      convert<long long int, int, vtkIntArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::Short)
+      convert<long long int, short, vtkShortArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::UnsignedShort)
+      convert<long long int, unsigned short, vtkUnsignedShortArray>(
+        inputScalarField, output);
+    else if(OutputType == SupportedType::UnsignedChar)
+      convert<long long int, unsigned char, vtkUnsignedCharArray>(
+        inputScalarField, output);
   } else if(InputType == VTK_SHORT) {
     if(OutputType == SupportedType::Char)
       convert<short, char, vtkCharArray>(inputScalarField, output);
@@ -175,6 +205,8 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<short, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<short, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::IdType)
+      convert<char, vtkIdType, vtkIdTypeArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Int)
       convert<short, int, vtkIntArray>(inputScalarField, output);
     else if(OutputType == SupportedType::UnsignedShort)
@@ -190,6 +222,8 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<unsigned short, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<unsigned short, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::IdType)
+      convert<char, vtkIdType, vtkIdTypeArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Int)
       convert<unsigned short, int, vtkIntArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Short)
@@ -204,6 +238,8 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<unsigned char, double, vtkDoubleArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Float)
       convert<unsigned char, float, vtkFloatArray>(inputScalarField, output);
+    else if(OutputType == SupportedType::IdType)
+      convert<char, vtkIdType, vtkIdTypeArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Int)
       convert<unsigned char, int, vtkIntArray>(inputScalarField, output);
     else if(OutputType == SupportedType::Short)
