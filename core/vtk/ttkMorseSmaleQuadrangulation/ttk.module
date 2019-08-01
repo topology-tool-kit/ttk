@@ -1,0 +1,11 @@
+NAME
+  ttkMorseSmaleQuadrangulation
+SOURCES
+  ttkMorseSmaleQuadrangulation.cpp
+HEADERS
+  ttkMorseSmaleQuadrangulation.h
+DEPENDS
+  morseSmaleQuadrangulation
+  ttkTriangulation
+XMLS
+  MorseSmaleQuadrangulation.xml

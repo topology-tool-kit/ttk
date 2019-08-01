@@ -4,7 +4,7 @@ macro(ttk_register_pv_filter pvFilter vtkModule)
   if(NOT EXISTS ${VTKWRAPPER_DIR}/${vtkModule}/vtk.module)
     message(FATAL_ERROR
       "Register a paraview filter without the corresponding vtk.module: "
-      ${vtkModule}
+      ${VTKWRAPPER_DIR}/${vtkModule}
       )
   endif()
   list(APPEND TTK_MODULES ${vtkModule})
