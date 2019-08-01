@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   icoSphere
   ttkTriangulation
-XMLS
-  IcoSphere.xml

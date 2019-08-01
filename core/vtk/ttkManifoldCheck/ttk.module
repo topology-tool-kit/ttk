@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   manifoldCheck
   ttkTriangulation
-XMLS
-  ManifoldCheck.xml

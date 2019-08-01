@@ -6,5 +6,3 @@ HEADERS
   ttkCellDataSelector.h
 DEPENDS
   common
-XMLS
-  CellDataSelector.xml

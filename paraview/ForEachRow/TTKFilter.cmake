@@ -3,5 +3,5 @@ option(TTK_BUILD_FOREACHROW_FILTER "Build the ForEachRow filter" ${TTK_ENABLE_FI
 mark_as_advanced(TTK_BUILD_FOREACHROW_FILTER)
 
 if(${TTK_BUILD_FOREACHROW_FILTER})
-  ttk_register_pv_filter(pvForEachRow ttkForEachRow)
+  ttk_register_pv_filter(ttkForEachRow ForEachRow.xml)
 endif()

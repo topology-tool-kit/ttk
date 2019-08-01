@@ -6,5 +6,3 @@ HEADERS
   ttkImportEmbeddingFromTable.h
 DEPENDS
   common
-XMLS
-  ImportEmbeddingFromTable.xml

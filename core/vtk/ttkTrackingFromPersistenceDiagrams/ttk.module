@@ -8,5 +8,3 @@ DEPENDS
   trackingFromPersistenceDiagrams
   bottleneckDistance
   ttkTriangulation
-XMLS
-  TrackingFromPersistenceDiagrams.xml

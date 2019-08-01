@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   harmonicField
   ttkTriangulation
-XMLS
-  HarmonicField.xml

@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   ttkTriangulation
   geometry
-XMLS
-  PointMerger.xml

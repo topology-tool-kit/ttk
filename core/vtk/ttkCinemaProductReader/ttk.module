@@ -6,5 +6,3 @@ HEADERS
   ttkCinemaProductReader.h
 DEPENDS
   ttkTriangulation
-XMLS
-  CinemaProductReader.xml

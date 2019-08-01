@@ -3,5 +3,5 @@ option(TTK_BUILD_CINEMAPRODUCTREADER_FILTER "Build the CinemaProductReader filte
 mark_as_advanced(TTK_BUILD_CINEMAPRODUCTREADER_FILTER)
 
 if(${TTK_BUILD_CINEMAPRODUCTREADER_FILTER})
-  ttk_register_pv_filter(pvCinemaProductReader ttkCinemaProductReader)
+  ttk_register_pv_filter(ttkCinemaProductReader CinemaProductReader.xml)
 endif()

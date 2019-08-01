@@ -6,5 +6,3 @@ HEADERS
   ttkBlockAggregator.h
 DEPENDS
   ttkTriangulation
-XMLS
-  BlockAggregator.xml

@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   depthImageBasedGeometryApproximation
   ttkTriangulation
-XMLS
-  DepthImageBasedGeometryApproximation.xml

@@ -6,5 +6,3 @@ HEADERS
   ttkCinemaLayout.h
 DEPENDS
   ttkTriangulation
-XMLS
-  CinemaLayout.xml

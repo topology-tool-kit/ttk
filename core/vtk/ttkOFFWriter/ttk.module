@@ -4,5 +4,3 @@ SOURCES
   ttkOFFWriter.cpp
 HEADERS
   ttkOFFWriter.h
-XMLS
-  OFFWriter.xml

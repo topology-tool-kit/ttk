@@ -6,5 +6,3 @@ HEADERS
   ttkPointDataConverter.h
 DEPENDS
   common
-XMLS
-  PointDataConverter.xml

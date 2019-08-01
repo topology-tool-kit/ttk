@@ -6,5 +6,3 @@ HEADERS
   ttkPointDataSelector.h
 DEPENDS
   common
-XMLS
-  PointDataSelector.xml

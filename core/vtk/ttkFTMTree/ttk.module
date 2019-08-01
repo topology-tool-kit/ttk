@@ -9,5 +9,3 @@ DEPENDS
   ftmTree
   geometry
   ttkTriangulation
-XMLS
-  FTMTree.xml

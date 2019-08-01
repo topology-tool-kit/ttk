@@ -3,5 +3,5 @@ option(TTK_BUILD_MANDATORYCRITICALPOINTS_FILTER "Build the MandatoryCriticalPoin
 mark_as_advanced(TTK_BUILD_MANDATORYCRITICALPOINTS_FILTER)
 
 if(${TTK_BUILD_MANDATORYCRITICALPOINTS_FILTER})
-  ttk_register_pv_filter(pvMandatoryCriticalPoints ttkMandatoryCriticalPoints)
+  ttk_register_pv_filter(ttkMandatoryCriticalPoints MandatoryCriticalPoints.xml)
 endif()

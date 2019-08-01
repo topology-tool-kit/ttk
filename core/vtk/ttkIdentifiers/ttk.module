@@ -7,5 +7,3 @@ SOURCES
 DEPENDS
   common
   ttkTriangulation
-XMLS
-  Identifiers.xml

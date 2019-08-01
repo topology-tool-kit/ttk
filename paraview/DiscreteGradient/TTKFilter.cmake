@@ -3,5 +3,5 @@ option(TTK_BUILD_DISCRETEGRADIENT_FILTER "Build the DiscreteGradient filter" ${T
 mark_as_advanced(TTK_BUILD_DISCRETEGRADIENT_FILTER)
 
 if(${TTK_BUILD_DISCRETEGRADIENT_FILTER})
-  ttk_register_pv_filter(pvDiscreteGradient ttkDiscreteGradient)
+  ttk_register_pv_filter(ttkDiscreteGradient DiscreteGradient.xml)
 endif()

@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   planarGraphLayout
   ttkTriangulation
-XMLS
-  PlanarGraphLayout.xml

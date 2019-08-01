@@ -4,5 +4,3 @@ SOURCES
   ttkOBJWriter.cpp
 HEADERS
   ttkOBJWriter.h
-XMLS
-  OBJWriter.xml

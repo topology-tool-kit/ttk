@@ -6,5 +6,3 @@ HEADERS
   ttkDataSetToTable.h
 DEPENDS
   common
-XMLS
-  DataSetToTable.xml

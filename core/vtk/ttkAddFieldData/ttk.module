@@ -6,5 +6,3 @@ HEADERS
   ttkAddFieldData.h
 DEPENDS
   ttkTriangulation
-XMLS
-  AddFieldData.xml

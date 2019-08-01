@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   contourAroundPoint
   ttkTriangulation
-XMLS
-  ContourAroundPoint.xml

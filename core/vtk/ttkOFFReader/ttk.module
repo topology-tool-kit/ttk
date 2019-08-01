@@ -4,5 +4,3 @@ SOURCES
   ttkOFFReader.cpp
 HEADERS
   ttkOFFReader.h
-XMLS
-  OFFReader.xml

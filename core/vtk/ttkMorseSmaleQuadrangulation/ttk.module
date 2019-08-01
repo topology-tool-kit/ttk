@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   morseSmaleQuadrangulation
   ttkTriangulation
-XMLS
-  MorseSmaleQuadrangulation.xml

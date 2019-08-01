@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   ftrGraph
   ttkTriangulation
-XMLS
-  FTRGraph.xml

@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   common
   ttkTriangulation
-XMLS
-  TextureMapFromField.xml

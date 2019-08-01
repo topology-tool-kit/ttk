@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   blank
   ttkTriangulation
-XMLS
-  Blank.xml

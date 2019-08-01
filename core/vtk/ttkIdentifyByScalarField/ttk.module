@@ -6,5 +6,3 @@ HEADERS
   ttkIdentifyByScalarField.h
 DEPENDS
   ttkTriangulation
-XMLS
-  IdentifyByScalarField.xml

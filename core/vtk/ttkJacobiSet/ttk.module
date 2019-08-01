@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   jacobiSet
   ttkTriangulation
-XMLS
-  JacobiSet.xml

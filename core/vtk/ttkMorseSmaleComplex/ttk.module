@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   morseSmaleComplex
   ttkTriangulation
-XMLS
-  MorseSmaleComplex.xml

@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   continuousScatterPlot
   ttkTriangulation
-XMLS
-  ContinuousScatterPlot.xml

@@ -6,5 +6,3 @@ HEADERS
   ttkForEachRow.h
 DEPENDS
   ttkTriangulation
-XMLS
-  ForEachRow.xml

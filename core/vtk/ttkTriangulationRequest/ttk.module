@@ -6,5 +6,3 @@ HEADERS
   ttkTriangulationRequest.h
 DEPENDS
   ttkTriangulation
-XMLS
-  TriangulationRequest.xml

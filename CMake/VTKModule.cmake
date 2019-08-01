@@ -21,7 +21,7 @@ endmacro()
 # also used to add the xml for paraview
 macro(ttk_add_vtk_module)
   ttk_parse_module_file()
-  cmake_parse_arguments("ARG" "" "NAME" "SOURCES;HEADERS;DEPENDS;XMLS" ${_ttk_module_file})
+  cmake_parse_arguments("ARG" "" "NAME" "SOURCES;HEADERS;DEPENDS" ${_ttk_module_file})
 
   if(NOT TARGET ${ARG_NAME})
     vtk_module_add_module(${ARG_NAME}
@@ -37,11 +37,5 @@ macro(ttk_add_vtk_module)
       ${VTK_LIBRARIES}
       ${ARG_DEPENDS}
     )
-
-  if(ParaView_FOUND)
-    paraview_add_server_manager_xmls(
-      XMLS ${ARG_XMLS}
-    )
-  endif()
 endmacro()
 

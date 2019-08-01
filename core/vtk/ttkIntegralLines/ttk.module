@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   integralLines
   ttkTriangulation
-XMLS
-  IntegralLines.xml

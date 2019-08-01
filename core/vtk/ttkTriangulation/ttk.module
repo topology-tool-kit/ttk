@@ -8,5 +8,3 @@ HEADERS
   ttkWrapper.h
 DEPENDS
   triangulation
-XMLS
-  Triangulation.xml

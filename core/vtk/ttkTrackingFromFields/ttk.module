@@ -8,5 +8,3 @@ DEPENDS
   trackingFromFields
   trackingFromPersistenceDiagrams
   ttkTrackingFromPersistenceDiagrams
-XMLS
-  TrackingFromFields.xml

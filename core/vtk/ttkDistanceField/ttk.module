@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   distanceField
   ttkTriangulation
-XMLS
-  DistanceField.xml

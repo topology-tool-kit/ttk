@@ -7,5 +7,3 @@ HEADERS
 DEPENDS
   ttkTriangulation
   topologicalCompression
-XMLS
-  TopologicalCompressionWriter.xml

@@ -9,5 +9,3 @@ DEPENDS
   contourForests
   contourForestsTree
   ttkTriangulation
-XMLS
-  ContourForests.xml

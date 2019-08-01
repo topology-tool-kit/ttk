@@ -3,6 +3,6 @@ option(TTK_BUILD_BARYCENTRIC_SUBDIVISION_FILTER "Build the BarycentricSubdivisio
 mark_as_advanced(TTK_BUILD_BARYCENTRIC_SUBDIVISION_FILTER)
 
 if(${TTK_BUILD_BARYCENTRIC_SUBDIVISION_FILTER})
-  ttk_register_pv_filter(pvBarycentricSubdivision ttkBarycentricSubdivision)
+  ttk_register_pv_filter(ttkBarycentricSubdivision BarycentricSubdivision.xml)
 endif()
 
