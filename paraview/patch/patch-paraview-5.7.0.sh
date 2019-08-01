@@ -68,7 +68,7 @@ cp "${PATCH_DIR}/icon16.png" \
 
 # processing example data-sets
 mkdir -p TTK/Data/
-cp "${PATCH_DIR}/data/*" TTK/Data/
+cp ${PATCH_DIR}/data/* TTK/Data/
 cp TTK/Data/*pvsm Qt/ApplicationComponents/Resources/ExampleVisualizations/
 cp TTK/Data/*png Qt/ApplicationComponents/Resources/Thumbnails/
 $PATCH_BIN CMakeLists.txt \
