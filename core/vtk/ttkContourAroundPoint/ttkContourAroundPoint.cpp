@@ -1,5 +1,7 @@
 #include <ttkContourAroundPoint.h>
 
+#include <vtkVersion.h>
+
 #include <vtkProbeFilter.h>
 
 #include <vtkCellData.h>
