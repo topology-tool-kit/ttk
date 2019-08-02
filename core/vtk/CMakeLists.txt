@@ -1,8 +1,8 @@
 # build VTK wrappers explicitely and export them
 file(GLOB VTKWRAPPER_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ttk*)
 foreach(VTKWRAPPER ${VTKWRAPPER_DIRS})
-  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${VTKWRAPPER}/TTKWrapper.cmake)
-    include(${VTKWRAPPER}/TTKWrapper.cmake)
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${VTKWRAPPER}/ttk.module)
+    ttk_register_vtk_filter(${CMAKE_CURRENT_SOURCE_DIR}/${VTKWRAPPER})
     list(APPEND TTK_INSTALL_TARGETS ${VTKWRAPPER})
   endif()
 endforeach()

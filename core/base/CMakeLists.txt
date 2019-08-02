@@ -1,15 +1,15 @@
 # traverse subdirectories
-set(LIB_LIST "")
+set(TTK_BASECODES "")
 file(GLOB BASECODE_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *)
 foreach(BASECODE ${BASECODE_DIRS})
   if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${BASECODE})
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/${BASECODE})
-    set(LIB_LIST "${BASECODE};${LIB_LIST}")
+    set(TTK_BASECODES "${BASECODE};${TTK_BASECODES}")
   endif()
 endforeach()
 
 add_library(baseAll INTERFACE)
-target_link_libraries(baseAll INTERFACE ${LIB_LIST})
+target_link_libraries(baseAll INTERFACE ${TTK_BASECODES})
 
 install(TARGETS baseAll
   EXPORT TTKBaseTargets

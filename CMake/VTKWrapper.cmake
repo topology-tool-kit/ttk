@@ -66,9 +66,9 @@ endfunction()
 
 # Use the ttk.module file and call the ttk_add_library function with the
 # current dir
-macro(ttk_register_vtk_filter)
-  ttk_parse_module_file()
-  cmake_parse_arguments( "ARG" "" "NAME" "SOURCES;HEADERS;DEPENDS;XMLS" ${_ttk_module_file})
+macro(ttk_register_vtk_filter filterPath)
+  ttk_parse_module_file(${filterPath}/ttk.module)
+  cmake_parse_arguments( "ARG" "" "NAME" "SOURCES;HEADERS;DEPENDS;XMLS" ${_ttkModuleFileContent})
 
   _ttk_add_vtk_library(${ARG_NAME}
     SOURCES
@@ -78,6 +78,6 @@ macro(ttk_register_vtk_filter)
     DEPENDS
       ${ARG_DEPENDS}
     CUR_FOLD
-      ${CMAKE_CURRENT_LIST_DIR}
+      ${filterPath}
   )
 endmacro()

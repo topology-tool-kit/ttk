@@ -1,27 +1,27 @@
-# read the ttk.module file and create a list named _ttk_module_file from it
+# read the ttk.module file and create a list named _ttkModuleFileContent from it
 # this list can then be parsed using the cmake_parse_arguments method
-macro(ttk_parse_module_file)
+macro(ttk_parse_module_file ttkModuleFile)
   # reconfigure when the module file is changed
   set_property(
     DIRECTORY
       "${CMAKE_CURRENT_SOURCE_DIR}"
     APPEND PROPERTY
     CMAKE_CONFIGURE_DEPENDS
-      ${CMAKE_CURRENT_LIST_DIR}/ttk.module
+      ${ttkModuleFile}
   )
   # add_custom_target(CHECK_FILE_LISTS ALL ${CMAKE_CURRENT_LIST_DIR}/ttk.module)
-  file(READ ${CMAKE_CURRENT_LIST_DIR}/ttk.module _ttk_module_file)
+  file(READ ${ttkModuleFile} _ttkModuleFileContent)
   # Replace comments.
-  string(REGEX REPLACE "#[^\n]*\n" "\n" _ttk_module_file "${_ttk_module_file}")
+  string(REGEX REPLACE "#[^\n]*\n" "\n" _ttkModuleFileContent "${_ttkModuleFileContent}")
   # Use argument splitting.
-  string(REGEX REPLACE "( |\n)+" ";" _ttk_module_file "${_ttk_module_file}")
+  string(REGEX REPLACE "( |\n)+" ";" _ttkModuleFileContent "${_ttkModuleFileContent}")
 endmacro()
 
 # add a new vtk module for the given name.
 # also used to add the xml for paraview
 macro(ttk_add_vtk_module)
-  ttk_parse_module_file()
-  cmake_parse_arguments("ARG" "" "NAME" "SOURCES;HEADERS;DEPENDS" ${_ttk_module_file})
+  ttk_parse_module_file(${CMAKE_CURRENT_LIST_DIR}/ttk.module)
+  cmake_parse_arguments("ARG" "" "NAME" "SOURCES;HEADERS;DEPENDS" ${_ttkModuleFileContent})
 
   if(NOT TARGET ${ARG_NAME})
     vtk_module_add_module(${ARG_NAME}

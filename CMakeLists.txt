@@ -10,7 +10,8 @@ option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
 mark_as_advanced(TTK_WHITELIST_MODE)
 
 if(NOT TTK_BUILD_VTK_WRAPPERS)
-  set(TTK_BUILD_STANDALONE_APPS OFF)
+  message(WARNING "Can't build standalones without the VTK wrappers: disable")
+  set(TTK_BUILD_STANDALONE_APPS OFF CACHE BOOL "Build the cmd and gui commands" FORCE)
 endif()
 
 # find dependencies

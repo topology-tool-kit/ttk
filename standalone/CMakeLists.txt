@@ -1,10 +1,10 @@
 set(TTK_INSTALL_BINARY_DIR "bin")
 
 if(NOT TARGET ttkProgramBase)
-  include(../core/vtk/ttkProgramBase/TTKWrapper.cmake)
+  ttk_register_vtk_filter("../core/vtk/ttkProgramBase")
 endif()
 if(NOT TARGET ttkUserInterfaceBase)
-  include(../core/vtk/ttkUserInterfaceBase/TTKWrapper.cmake)
+  ttk_register_vtk_filter("../core/vtk/ttkUserInterfaceBase")
 endif()
 
 # TODO investigate (mac)
