@@ -35,6 +35,9 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkPointMergerModule.h>
+
 // ttk code includes
 #include <Geometry.h>
 #include <ttkWrapper.h>
@@ -43,13 +46,8 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPointMerger
-#else
-class ttkPointMerger
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKPOINTMERGER_EXPORT ttkPointMerger : public vtkDataSetAlgorithm,
+                                             public ttk::Wrapper {
 
 public:
   static ttkPointMerger *New();
@@ -83,7 +81,7 @@ protected:
     UseAllCores = true;
   }
 
-  ~ttkPointMerger(){};
+  ~ttkPointMerger() override {};
 
   TTK_SETUP();
 

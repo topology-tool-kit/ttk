@@ -34,14 +34,13 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkIdentifyByScalarFieldModule.h>
+
 // ttk code includes
 #include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkIdentifyByScalarField
-#else
-class ttkIdentifyByScalarField
-#endif
+class TTKIDENTIFYBYSCALARFIELD_EXPORT ttkIdentifyByScalarField
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -108,7 +107,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkIdentifyByScalarField(){};
+  ~ttkIdentifyByScalarField() override {};
 
   TTK_SETUP();
 

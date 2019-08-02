@@ -20,14 +20,13 @@
 #include <vtkMultiBlockDataSetAlgorithm.h>
 #include <vtkSmartPointer.h>
 
+// VTK module
+#include <ttkBlockAggregatorModule.h>
+
 // TTK includes
 #include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkBlockAggregator
-#else
-class ttkBlockAggregator
-#endif
+class TTKBLOCKAGGREGATOR_EXPORT ttkBlockAggregator
   : public vtkMultiBlockDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -88,7 +87,7 @@ protected:
     SetNumberOfInputPorts(5);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkBlockAggregator(){};
+  ~ttkBlockAggregator() override{};
 
   bool UseAllCores;
   int ThreadNumber;

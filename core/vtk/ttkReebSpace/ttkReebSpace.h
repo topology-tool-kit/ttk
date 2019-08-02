@@ -60,6 +60,9 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkReebSpaceModule.h>
+
 // ttk code includes
 #include <ReebSpace.h>
 #include <ttkWrapper.h>
@@ -68,13 +71,8 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkReebSpace
-#else
-class ttkReebSpace
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKREEBSPACE_EXPORT ttkReebSpace : public vtkDataSetAlgorithm,
+                                         public ttk::Wrapper {
 
 public:
   static ttkReebSpace *New();
@@ -200,7 +198,7 @@ public:
 protected:
   ttkReebSpace();
 
-  ~ttkReebSpace();
+  ~ttkReebSpace() override;
 
   virtual int FillOutputPortInformation(int port,
                                         vtkInformation *info) override {

@@ -30,17 +30,16 @@
 #include <vtkSmartPointer.h>
 #include <vtkWriter.h>
 
+// VTK Module
+#include <ttkTopologicalCompressionWriterModule.h>
+
 // STD
 #include <fstream>
 #include <iostream>
 #include <limits.h>
 #include <string>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTopologicalCompressionWriter
-#else
-class ttkTopologicalCompressionWriter
-#endif
+class TTKTOPOLOGICALCOMPRESSIONWRITER_EXPORT ttkTopologicalCompressionWriter
   : public vtkWriter {
 
 public:

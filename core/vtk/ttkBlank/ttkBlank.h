@@ -36,6 +36,9 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK module
+#include <ttkBlankModule.h>
+
 // ttk code includes
 #include <Blank.h>
 #include <ttkWrapper.h>
@@ -44,13 +47,8 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkBlank
-#else
-class ttkBlank
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKBLANK_EXPORT ttkBlank : public vtkDataSetAlgorithm,
+                                 public ttk::Wrapper {
 
 public:
   static ttkBlank *New();
@@ -154,7 +152,7 @@ protected:
     // end of TODO-1
   }
 
-  ~ttkBlank(){};
+  ~ttkBlank() override{};
 
   TTK_SETUP();
 

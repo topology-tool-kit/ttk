@@ -23,17 +23,15 @@
 #include <vtkInformation.h>
 #include <vtkUnstructuredGridAlgorithm.h>
 
+// VTK Module
+#include <ttkMeshGraphModule.h>
+
 // TTK includes
 #include <MeshGraph.h>
 #include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkMeshGraph
-#else
-class ttkMeshGraph
-#endif
-  : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+class TTKMESHGRAPH_EXPORT ttkMeshGraph : public vtkUnstructuredGridAlgorithm,
+                                         public ttk::Wrapper {
 
 public:
   static ttkMeshGraph *New();
@@ -116,7 +114,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkMeshGraph(){};
+  ~ttkMeshGraph() override {};
 
   bool UseAllCores;
   int ThreadNumber;

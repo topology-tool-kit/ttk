@@ -50,6 +50,9 @@
 #include <vtkUnsignedShortArray.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkJacobiSetModule.h>
+
 // ttk code includes
 #include <JacobiSet.h>
 #include <ttkWrapper.h>
@@ -58,13 +61,8 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkJacobiSet
-#else
-class ttkJacobiSet
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKJACOBISET_EXPORT ttkJacobiSet : public vtkDataSetAlgorithm,
+                                         public ttk::Wrapper {
 
 public:
   static ttkJacobiSet *New();
@@ -128,7 +126,7 @@ public:
 protected:
   ttkJacobiSet();
 
-  ~ttkJacobiSet();
+  ~ttkJacobiSet() override;
 
   TTK_SETUP();
 

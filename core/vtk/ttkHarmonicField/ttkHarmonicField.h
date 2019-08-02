@@ -50,6 +50,9 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK Module
+#include <ttkHarmonicFieldModule.h>
+
 // ttk code includes
 #include <HarmonicField.h>
 #include <ttkWrapper.h>
@@ -58,13 +61,8 @@
 
 enum HarmonicFieldType { Float = 0, Double };
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkHarmonicField
-#else
-class ttkHarmonicField
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKHARMONICFIELD_EXPORT ttkHarmonicField : public vtkDataSetAlgorithm,
+                                                 public ttk::Wrapper {
 
 public:
   static ttkHarmonicField *New();

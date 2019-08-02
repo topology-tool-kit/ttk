@@ -44,15 +44,14 @@
 #include <vtkInformation.h>
 #include <vtkUnstructuredGridAlgorithm.h>
 
+// VTK Module
+#include <ttkPlanarGraphLayoutModule.h>
+
 // TTK includes
 #include <PlanarGraphLayout.h>
 #include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPlanarGraphLayout
-#else
-class ttkPlanarGraphLayout
-#endif
+class TTKPLANARGRAPHLAYOUT_EXPORT ttkPlanarGraphLayout
   : public vtkUnstructuredGridAlgorithm,
     public ttk::Wrapper {
 
@@ -142,7 +141,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkPlanarGraphLayout(){};
+  ~ttkPlanarGraphLayout() override {};
 
   bool UseAllCores;
   int ThreadNumber;

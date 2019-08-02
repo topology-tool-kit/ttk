@@ -59,6 +59,9 @@
 #include <vtkSphereSource.h>
 #include <vtkTable.h>
 
+// VTK Module
+#include <ttkContourForestsModule.h>
+
 // vtk wrapper includes
 #include <ttkWrapper.h>
 
@@ -69,11 +72,7 @@
 #include "ContourForestsTree.h"
 #include "DeprecatedDataTypes.h"
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkContourForests
-#else
-class ttkContourForests
-#endif
+class TTKCONTOURFORESTS_DEPRECATED_EXPORT ttkContourForests
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 

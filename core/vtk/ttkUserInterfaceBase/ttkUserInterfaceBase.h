@@ -60,7 +60,7 @@ class VTKFILTERSCORE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
 public:
   ttkUserInterfaceBase();
 
-  ~ttkUserInterfaceBase();
+  ~ttkUserInterfaceBase() override;
 
   int exportScene(const std::string &fileName = "output.wrl") const;
 

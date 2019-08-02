@@ -42,15 +42,14 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGridAlgorithm.h>
 
+// VTK Module
+#include <ttkTrackingFromOverlapModule.h>
+
 // TTK includes
 #include <TrackingFromOverlap.h>
 #include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTrackingFromOverlap
-#else
-class ttkTrackingFromOverlap
-#endif
+class TTKTRACKINGFROMOVERLAP_EXPORT ttkTrackingFromOverlap
   : public vtkUnstructuredGridAlgorithm,
     public ttk::Wrapper {
 
@@ -109,7 +108,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkTrackingFromOverlap(){};
+  ~ttkTrackingFromOverlap() override {};
 
   bool UseAllCores;
   int ThreadNumber;

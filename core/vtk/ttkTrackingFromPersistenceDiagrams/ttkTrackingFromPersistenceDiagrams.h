@@ -26,13 +26,12 @@
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTrackingFromPersistenceDiagrams
-#else
-class ttkTrackingFromPersistenceDiagrams
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+// VTK Module
+#include <ttkTrackingFromPersistenceDiagramsModule.h>
+
+class TTKTRACKINGFROMPERSISTENCEDIAGRAMS_EXPORT
+  ttkTrackingFromPersistenceDiagrams : public vtkDataSetAlgorithm,
+                                       public ttk::Wrapper {
 
 public:
   static ttkTrackingFromPersistenceDiagrams *New();
@@ -124,7 +123,7 @@ public:
 protected:
   ttkTrackingFromPersistenceDiagrams();
 
-  ~ttkTrackingFromPersistenceDiagrams();
+  ~ttkTrackingFromPersistenceDiagrams() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

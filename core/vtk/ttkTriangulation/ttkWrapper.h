@@ -223,13 +223,8 @@ protected:                                                                  \
   bool UseAllCores;                                                         \
   int ThreadNumber;
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTriangulationFilter
-#else
-class ttkTriangulationFilter
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class VTKFILTERSCORE_EXPORT ttkTriangulationFilter : public vtkDataSetAlgorithm,
+                                                     public ttk::Wrapper {
 
 public:
   static ttkTriangulationFilter *New();
@@ -238,7 +233,7 @@ public:
 
 protected:
   ttkTriangulationFilter();
-  ~ttkTriangulationFilter(){};
+  ~ttkTriangulationFilter() override {};
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

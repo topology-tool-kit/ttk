@@ -31,14 +31,13 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK Module
+#include <ttkPointDataSelectorModule.h>
+
 // ttk code includes
 #include <Wrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPointDataSelector
-#else
-class ttkPointDataSelector
-#endif
+class TTKPOINTDATASELECTOR_EXPORT ttkPointDataSelector
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -123,7 +122,7 @@ protected:
     localFieldCopy_ = NULL;
   }
 
-  ~ttkPointDataSelector() {
+  ~ttkPointDataSelector() override {
     if(localFieldCopy_)
       localFieldCopy_->Delete();
   };

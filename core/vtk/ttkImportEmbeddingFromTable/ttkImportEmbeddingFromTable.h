@@ -31,14 +31,13 @@
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
+// VTK Module
+#include <ttkImportEmbeddingFromTableModule.h>
+
 // ttk code includes
 #include <Wrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkImportEmbeddingFromTable
-#else
-class ttkImportEmbeddingFromTable
-#endif
+class TTKIMPORTEMBEDDINGFROMTABLE_EXPORT ttkImportEmbeddingFromTable
   : public vtkPointSetAlgorithm,
     public ttk::Wrapper {
 
@@ -97,7 +96,7 @@ protected:
     SetNumberOfInputPorts(2);
   }
 
-  ~ttkImportEmbeddingFromTable(){};
+  ~ttkImportEmbeddingFromTable() override {};
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

@@ -64,11 +64,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
-#ifndef TTK_PLUGIN
 class VTKCOMMONDATAMODEL_EXPORT ttkTriangulation : public ttk::Debug {
-#else
-class ttkTriangulation : public ttk::Debug {
-#endif
 
 public:
   ttkTriangulation();
@@ -197,13 +193,9 @@ protected:                                                       \
                                                                  \
 public:
 
-#ifndef TTK_PLUGIN
-class VTKCOMMONDATAMODEL_EXPORT ttkUnstructuredGrid :
-#else
-class ttkUnstructuredGrid :
-#endif
-  public ttkTriangulation,
-  public vtkUnstructuredGrid {
+class VTKCOMMONDATAMODEL_EXPORT ttkUnstructuredGrid
+  : public ttkTriangulation,
+    public vtkUnstructuredGrid {
 
 public:
   static ttkUnstructuredGrid *New();
@@ -218,16 +210,11 @@ public:
 protected:
   ttkUnstructuredGrid();
 
-  ~ttkUnstructuredGrid();
+  ~ttkUnstructuredGrid() override;
 };
 
-#ifndef TTK_PLUGIN
-class VTKCOMMONDATAMODEL_EXPORT ttkImageData :
-#else
-class ttkImageData :
-#endif
-  public ttkTriangulation,
-  public vtkImageData {
+class VTKCOMMONDATAMODEL_EXPORT ttkImageData : public ttkTriangulation,
+                                               public vtkImageData {
 
 public:
   static ttkImageData *New();
@@ -245,13 +232,8 @@ protected:
   ~ttkImageData();
 };
 
-#ifndef TTK_PLUGIN
-class VTKCOMMONDATAMODEL_EXPORT ttkPolyData :
-#else
-class ttkPolyData :
-#endif
-  public ttkTriangulation,
-  public vtkPolyData {
+class VTKCOMMONDATAMODEL_EXPORT ttkPolyData : public ttkTriangulation,
+                                              public vtkPolyData {
 
 public:
   static ttkPolyData *New();

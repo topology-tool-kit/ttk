@@ -16,16 +16,14 @@
 // VTK includes
 #include <vtkMultiBlockDataSetAlgorithm.h>
 
+// VTK Module
+#include <ttkForEachRowModule.h>
+
 // TTK includes
 #include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkForEachRow
-#else
-class ttkForEachRow
-#endif
-  : public vtkMultiBlockDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKFOREACHROW_EXPORT ttkForEachRow : public vtkMultiBlockDataSetAlgorithm,
+                                           public ttk::Wrapper {
 
 public:
   static ttkForEachRow *New();
@@ -77,7 +75,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkForEachRow(){};
+  ~ttkForEachRow() override {};
 
   bool UseAllCores;
   int ThreadNumber;

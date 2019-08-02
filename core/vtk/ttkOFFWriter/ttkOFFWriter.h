@@ -15,12 +15,7 @@
 #include <string>
 #include <vector>
 
-#ifndef TTK_PLUGIN
-class VTKIOLEGACY_EXPORT ttkOFFWriter
-#else
-class ttkOFFWriter
-#endif
-  : public vtkDataSetWriter {
+class VTKIOLEGACY_EXPORT ttkOFFWriter : public vtkDataSetWriter {
 
 public:
   vtkTypeMacro(ttkOFFWriter, vtkDataSetWriter);

@@ -22,17 +22,15 @@
 #include <vtkInformation.h>
 #include <vtkTableAlgorithm.h>
 
+// VTK Module
+#include <ttkCinemaQueryModule.h>
+
 // TTK includes
 #include <CinemaQuery.h>
 #include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaQuery
-#else
-class ttkCinemaQuery
-#endif
-  : public vtkTableAlgorithm,
-    public ttk::Wrapper {
+class TTKCINEMAQUERY_EXPORT ttkCinemaQuery : public vtkTableAlgorithm,
+                                             public ttk::Wrapper {
 
 public:
   static ttkCinemaQuery *New();
@@ -88,7 +86,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkCinemaQuery(){};
+  ~ttkCinemaQuery() override {};
 
   bool UseAllCores;
   int ThreadNumber;

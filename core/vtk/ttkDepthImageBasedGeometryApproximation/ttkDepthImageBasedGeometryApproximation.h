@@ -32,15 +32,15 @@
 #include <vtkInformation.h>
 #include <vtkMultiBlockDataSetAlgorithm.h>
 
+// VTK Module
+#include <ttkDepthImageBasedGeometryApproximationModule.h>
+
 // TTK includes
 #include <DepthImageBasedGeometryApproximation.h>
 #include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkDepthImageBasedGeometryApproximation
-#else
-class ttkDepthImageBasedGeometryApproximation
-#endif
+class TTKDEPTHIMAGEBASEDGEOMETRYAPPROXIMATION_EXPORT
+  ttkDepthImageBasedGeometryApproximation
   : public vtkMultiBlockDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -102,7 +102,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkDepthImageBasedGeometryApproximation(){};
+  ~ttkDepthImageBasedGeometryApproximation() override {};
 
   bool UseAllCores;
   int ThreadNumber;

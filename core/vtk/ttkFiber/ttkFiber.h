@@ -40,16 +40,14 @@
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkFiberModule.h>
+
 // ttk code includes
 #include <Wrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFiber
-#else
-class ttkFiber
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKFIBER_EXPORT ttkFiber : public vtkDataSetAlgorithm,
+                                 public ttk::Wrapper {
 
 public:
   static ttkFiber *New();
@@ -99,7 +97,7 @@ public:
 protected:
   ttkFiber();
 
-  ~ttkFiber();
+  ~ttkFiber() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

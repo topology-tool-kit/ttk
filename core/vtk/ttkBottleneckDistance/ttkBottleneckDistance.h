@@ -39,16 +39,15 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkBottleneckDistanceModule.h>
+
 // Misc.
 #include <cstdlib>
 #include <ctime>
 #include <random>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkBottleneckDistance
-#else
-class ttkBottleneckDistance
-#endif
+class TTKBOTTLENECKDISTANCE_EXPORT ttkBottleneckDistance
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -215,7 +214,7 @@ protected:
     CTPersistenceDiagram3_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
   }
 
-  ~ttkBottleneckDistance(){};
+  ~ttkBottleneckDistance() override{};
 
   TTK_SETUP();
 

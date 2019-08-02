@@ -17,14 +17,13 @@
 #include <vtkInformation.h>
 #include <vtkXMLPMultiBlockDataWriter.h>
 
+// VTK Module
+#include <ttkCinemaLayoutModule.h>
+
 // TTK includes
 #include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaLayout
-#else
-class ttkCinemaLayout
-#endif
+class TTKCINEMALAYOUT_EXPORT ttkCinemaLayout
   : public vtkXMLPMultiBlockDataWriter,
     public ttk::Wrapper {
 
@@ -99,7 +98,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkCinemaLayout(){};
+  ~ttkCinemaLayout() override {};
 
   int RowAxis;
   double RowGap;

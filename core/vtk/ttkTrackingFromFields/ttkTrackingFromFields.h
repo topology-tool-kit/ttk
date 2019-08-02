@@ -26,17 +26,16 @@
 
 #include <ttkTrackingFromPersistenceDiagrams.h>
 
+// VTK Module
+#include <ttkTrackingFromFieldsModule.h>
+
 #include <TrackingFromFields.h>
 #include <TrackingFromPersistenceDiagrams.h>
 
 #include <algorithm>
 #include <string>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTrackingFromFields
-#else
-class ttkTrackingFromFields
-#endif
+class TTKTRACKINGFROMFIELDS_EXPORT ttkTrackingFromFields
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -138,7 +137,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkTrackingFromFields() {
+  ~ttkTrackingFromFields() override {
     if(outputMesh_)
       outputMesh_->Delete();
   }

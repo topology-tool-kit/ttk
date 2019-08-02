@@ -16,16 +16,14 @@
 // VTK includes
 #include <vtkPassInputTypeAlgorithm.h>
 
+// VTK Module
+#include <ttkEndForModule.h>
+
 // TTK includes
 #include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkEndFor
-#else
-class ttkEndFor
-#endif
-  : public vtkPassInputTypeAlgorithm,
-    public ttk::Wrapper {
+class TTKENDFOR_EXPORT ttkEndFor : public vtkPassInputTypeAlgorithm,
+                                   public ttk::Wrapper {
 
 public:
   static ttkEndFor *New();
@@ -82,7 +80,7 @@ protected:
     SetNumberOfInputPorts(2);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkEndFor(){};
+  ~ttkEndFor() override {};
 
   bool UseAllCores;
   int ThreadNumber;

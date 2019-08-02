@@ -29,14 +29,11 @@
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm,
-                                          public ttk::Wrapper
-#else
-class ttkFTRGraph : public vtkDataSetAlgorithm,
-                    public ttk::Wrapper
-#endif
-{
+// VTK Module
+#include <ttkFTRGraphModule.h>
+
+class TTKFTRGRAPH_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm,
+                                       public ttk::Wrapper {
 private:
   std::string ScalarField;
   bool UseInputOffsetScalarField;
@@ -177,7 +174,7 @@ public:
 
 protected:
   ttkFTRGraph();
-  ~ttkFTRGraph();
+  ~ttkFTRGraph() override;
 
   TTK_SETUP();
 
