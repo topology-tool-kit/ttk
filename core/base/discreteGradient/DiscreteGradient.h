@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <queue>
 #include <set>
+#include <utility>
 
 namespace ttk {
   namespace dcg {
@@ -45,14 +46,9 @@ namespace ttk {
       explicit Cell(const int dim, const SimplexId id) : dim_{dim}, id_{id} {
       }
 
-      explicit Cell(const Cell &cell) : dim_{cell.dim_}, id_{cell.id_} {
-      }
+      Cell(const Cell &cell) = default;
 
-      Cell &operator=(const Cell &cell) {
-        dim_ = cell.dim_;
-        id_ = cell.id_;
-        return *this;
-      }
+      Cell &operator=(const Cell &cell) = default;
 
       int dim_;
       SimplexId id_;
@@ -67,9 +63,10 @@ namespace ttk {
       }
 
       explicit Segment(const bool orientation,
-                       const std::vector<Cell> &cells,
+                       std::vector<Cell> cells,
                        const bool isValid)
-        : orientation_{orientation}, cells_{cells}, isValid_{isValid} {
+        : orientation_{orientation}, cells_{std::move(cells)}, isValid_{
+                                                                 isValid} {
       }
 
       explicit Segment(const bool orientation,
@@ -78,12 +75,11 @@ namespace ttk {
         : orientation_{orientation}, cells_{cells}, isValid_{isValid} {
       }
 
-      explicit Segment(const Segment &segment)
-        : orientation_{segment.orientation_}, cells_{segment.cells_},
-          isValid_{segment.isValid_} {
-      }
+      Segment(const Segment &segment)
 
-      explicit Segment(Segment &&segment)
+        = default;
+
+      Segment(Segment &&segment)
         : orientation_{segment.orientation_}, cells_{segment.cells_},
           isValid_{segment.isValid_} {
       }
@@ -136,14 +132,15 @@ namespace ttk {
       }
 
       explicit VPath(const bool isValid,
-                     const std::vector<char> &states,
-                     const std::vector<SimplexId> &segments,
+                     std::vector<char> states,
+                     std::vector<SimplexId> segments,
                      const SimplexId source,
                      const SimplexId destination,
                      const SimplexId sourceSlot,
                      const SimplexId destinationSlot,
                      const double persistence)
-        : isValid_{isValid}, states_{states}, segments_{segments},
+        : isValid_{isValid}, states_{std::move(states)}, segments_{std::move(
+                                                           segments)},
           source_{source}, destination_{destination}, sourceSlot_{sourceSlot},
           destinationSlot_{destinationSlot}, persistence_{persistence} {
       }
@@ -161,15 +158,9 @@ namespace ttk {
           destinationSlot_{destinationSlot}, persistence_{persistence} {
       }
 
-      explicit VPath(const VPath &vpath)
-        : isValid_{vpath.isValid_}, states_{vpath.states_},
-          segments_{vpath.segments_}, source_{vpath.source_},
-          destination_{vpath.destination_}, sourceSlot_{vpath.sourceSlot_},
-          destinationSlot_{vpath.destinationSlot_}, persistence_{
-                                                      vpath.persistence_} {
-      }
+      VPath(const VPath &vpath) = default;
 
-      explicit VPath(VPath &&vpath)
+      VPath(VPath &&vpath)
         : isValid_{vpath.isValid_}, states_{vpath.states_},
           segments_{vpath.segments_}, source_{vpath.source_},
           destination_{vpath.destination_}, sourceSlot_{vpath.sourceSlot_},
@@ -221,21 +212,19 @@ namespace ttk {
       explicit CriticalPoint(const Cell &cell) : cell_{cell}, numberOfSlots_{} {
       }
 
-      explicit CriticalPoint(const Cell &cell,
-                             const std::vector<SimplexId> &vpaths)
-        : cell_{cell}, vpaths_{vpaths}, numberOfSlots_{} {
+      explicit CriticalPoint(const Cell &cell, std::vector<SimplexId> vpaths)
+        : cell_{cell}, vpaths_{std::move(vpaths)}, numberOfSlots_{} {
       }
 
       explicit CriticalPoint(const Cell &cell, std::vector<SimplexId> &&vpaths)
         : cell_{cell}, vpaths_{vpaths}, numberOfSlots_{} {
       }
 
-      explicit CriticalPoint(const CriticalPoint &criticalPoint)
-        : cell_{criticalPoint.cell_}, vpaths_{criticalPoint.vpaths_},
-          numberOfSlots_{criticalPoint.numberOfSlots_} {
-      }
+      CriticalPoint(const CriticalPoint &criticalPoint)
 
-      explicit CriticalPoint(CriticalPoint &&criticalPoint)
+        = default;
+
+      CriticalPoint(CriticalPoint &&criticalPoint)
         : cell_{criticalPoint.cell_}, vpaths_{criticalPoint.vpaths_},
           numberOfSlots_{criticalPoint.numberOfSlots_} {
       }
@@ -290,8 +279,9 @@ namespace ttk {
         const SimplexId vpathId1 = v1.second;
         const SimplexId vpathId2 = v2.second;
 
-        if(persistence1 != persistence2)
+        if(persistence1 != persistence2) {
           return (persistence1 < persistence2);
+        }
 
         return (vpathId1 < vpathId2);
       };
@@ -315,11 +305,13 @@ namespace ttk {
         const SimplexId saddleId1 = std::get<2>(v1);
         const SimplexId saddleId2 = std::get<2>(v2);
 
-        if(persistence1 != persistence2)
+        if(persistence1 != persistence2) {
           return (persistence1 < persistence2);
+        }
 
-        if(saddleId1 != saddleId2)
+        if(saddleId1 != saddleId2) {
           return (saddleId1 < saddleId2);
+        }
 
         return (vpathId1 < vpathId2);
       };
@@ -335,7 +327,7 @@ namespace ttk {
     public:
       explicit DiscreteGradient();
 
-      ~DiscreteGradient();
+      ~DiscreteGradient() override;
 
       /**
        * Impose a threshold on the number of simplification passes.
@@ -402,14 +394,14 @@ saddle-connectors.
 function value.
        */
       template <typename dataType>
-      dataType scalarMax(const Cell &cell, const dataType *const scalars) const;
+      dataType scalarMax(const Cell &cell, const dataType *scalars) const;
 
       /**
        * Return the scalar value of the point in the cell which has the lowest
 function value.
        */
       template <typename dataType>
-      dataType scalarMin(const Cell &cell, const dataType *const scalars) const;
+      dataType scalarMin(const Cell &cell, const dataType *scalars) const;
 
       /**
        * Compute the difference of function values of a pair of cells.
@@ -417,7 +409,7 @@ function value.
       template <typename dataType>
       dataType getPersistence(const Cell &up,
                               const Cell &down,
-                              const dataType *const scalars) const;
+                              const dataType *scalars) const;
 
       /**
        * Body of AssignGradient algorithm from "Parallel Computation of 3D
@@ -430,9 +422,9 @@ given dimension.
       inline std::vector<idType>
         G(SimplexId x, int dim, const idType *const offsets) const {
         std::vector<idType> res = std::vector<idType>();
-        if(dim == 0)
+        if(dim == 0) {
           res.push_back(offsets[x]);
-        else if(dim == 1) {
+        } else if(dim == 1) {
           for(int i = 0; i < 2; i++) {
             SimplexId vertexId;
             inputTriangulation_->getEdgeVertex(x, i, vertexId);
@@ -468,8 +460,9 @@ given dimension.
             }
           }
           if(xIsMax) {
-            if(res.size() == 1)
-              res.push_back(std::set<SimplexId>());
+            if(res.size() == 1) {
+              res.emplace_back();
+            }
             res[1].insert(edgeId);
           }
         }
@@ -487,8 +480,9 @@ given dimension.
             }
           }
           if(xIsMax) {
-            if(res.size() == 2)
-              res.push_back(std::set<SimplexId>());
+            if(res.size() == 2) {
+              res.emplace_back();
+            }
             res[2].insert(triangleId);
           }
         }
@@ -505,8 +499,9 @@ given dimension.
           for(SimplexId i = 0; i < 2; i++) {
             SimplexId vertexId;
             inputTriangulation_->getEdgeVertex(alpha, i, vertexId);
-            if(!isPaired[0].count(vertexId))
+            if(isPaired[0].count(vertexId) == 0U) {
               cnt++;
+            }
           }
           return cnt;
         } else // ==2
@@ -515,8 +510,10 @@ given dimension.
           for(SimplexId i = 0; i < 3; i++) {
             SimplexId edgeId;
             inputTriangulation_->getTriangleEdge(alpha, i, edgeId);
-            if(Lx[1].count(edgeId) && !isPaired[1].count(edgeId))
+            if((Lx[1].count(edgeId) != 0U)
+               && (isPaired[1].count(edgeId) == 0U)) {
               cnt++;
+            }
           }
           return cnt;
         }
@@ -531,16 +528,19 @@ given dimension.
           for(SimplexId i = 0; i < 2; i++) {
             SimplexId vertexId;
             inputTriangulation_->getEdgeVertex(cellId, i, vertexId);
-            if(!isPaired[0].count(vertexId))
+            if(isPaired[0].count(vertexId) == 0U) {
               return vertexId;
+            }
           }
         } else // ==2
         {
           for(SimplexId i = 0; i < 3; i++) {
             SimplexId edgeId;
             inputTriangulation_->getTriangleEdge(cellId, i, edgeId);
-            if(Lx[1].count(edgeId) && !isPaired[1].count(edgeId))
+            if((Lx[1].count(edgeId) != 0U)
+               && (isPaired[1].count(edgeId) == 0U)) {
               return edgeId;
+            }
           }
         }
         return -1;
@@ -548,8 +548,8 @@ given dimension.
 
       template <typename dataType, typename idType>
       int assignGradient(
-        const dataType *const scalars,
-        const idType *const offsets,
+        const dataType *scalars,
+        const idType *offsets,
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
         std::vector<std::vector<std::vector<char>>> &gradient) const;
 #else
@@ -564,9 +564,9 @@ Morse-Smale Complexes",
 unpaired cells.
        */
       template <typename dataType, typename idType>
-      int assignGradient2(const int alphaDim,
-                          const dataType *const scalars,
-                          const idType *const offsets,
+      int assignGradient2(int alphaDim,
+                          const dataType *scalars,
+                          const idType *offsets,
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                           std::vector<std::vector<char>> &gradient) const;
 #else
@@ -580,9 +580,9 @@ project,
 triangulation only).
        */
       template <typename dataType, typename idType>
-      int assignGradient3(const int alphaDim,
-                          const dataType *const scalars,
-                          const idType *const offsets,
+      int assignGradient3(int alphaDim,
+                          const dataType *scalars,
+                          const idType *offsets,
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
                           std::vector<std::vector<char>> &gradient) const;
 #else
@@ -617,7 +617,7 @@ triangulation only).
       template <typename dataType>
       int getRemovableMaxima(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
-        const bool allowBoundary,
+        bool allowBoundary,
         std::vector<char> &isRemovableMaximum,
         std::vector<SimplexId> &pl2dmt_maximum);
 
@@ -627,7 +627,7 @@ triangulation only).
       template <typename dataType>
       int getRemovableSaddles1(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
-        const bool allowBoundary,
+        bool allowBoundary,
         std::vector<char> &isRemovableSaddle,
         std::vector<SimplexId> &pl2dmt_saddle);
 
@@ -637,7 +637,7 @@ triangulation only).
       template <typename dataType>
       int getRemovableSaddles2(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
-        const bool allowBoundary,
+        bool allowBoundary,
         std::vector<char> &isRemovableSaddle,
         std::vector<SimplexId> &pl2dmt_saddle);
 
@@ -650,7 +650,7 @@ triangulation only).
       int initializeSaddleMaximumConnections(
         std::vector<char> &isRemovableMaximum,
         std::vector<char> &isRemovableSaddle,
-        const bool allowBruteForce,
+        bool allowBruteForce,
         std::vector<Segment> &segments,
         std::vector<VPath> &vpaths,
         std::vector<CriticalPoint> &criticalPoints) const;
@@ -671,7 +671,7 @@ paths reversal.
 and a sparse one (default).
        */
       template <typename dataType>
-      int computeCoefficients(const bool isDense,
+      int computeCoefficients(bool isDense,
                               std::vector<char> &denseCoefficients,
                               std::vector<Segment> &segments,
                               const CriticalPoint &source,
@@ -684,10 +684,10 @@ to be reversed.
        */
       template <typename dataType>
       int processSaddleMaximumConnections(
-        const int iterationThreshold,
+        int iterationThreshold,
         const std::vector<char> &isPL,
-        const bool allowBoundary,
-        const bool allowBruteForce,
+        bool allowBoundary,
+        bool allowBruteForce,
         std::set<std::pair<dataType, SimplexId>,
                  SaddleMaximumVPathComparator<dataType>> &S,
         std::vector<SimplexId> &pl2dmt_saddle,
@@ -712,9 +712,9 @@ the discrete gradient.
       int simplifySaddleMaximumConnections(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
         const std::vector<char> &isPL,
-        const int iterationThreshold,
-        const bool allowBoundary,
-        const bool allowBruteForce);
+        int iterationThreshold,
+        bool allowBoundary,
+        bool allowBruteForce);
 
       /**
        * Create initial Morse-Smale Complex structure and initialize the
@@ -725,7 +725,7 @@ the discrete gradient.
       int initializeSaddleSaddleConnections1(
         const std::vector<char> &isRemovableSaddle1,
         const std::vector<char> &isRemovableSaddle2,
-        const bool allowBruteForce,
+        bool allowBruteForce,
         std::vector<VPath> &vpaths,
         std::vector<CriticalPoint> &criticalPoints,
         std::vector<SimplexId> &saddle1Index,
@@ -747,11 +747,11 @@ the discrete gradient.
        */
       template <typename dataType>
       int processSaddleSaddleConnections1(
-        const int iterationThreshold,
+        int iterationThreshold,
         const std::vector<char> &isPL,
-        const bool allowBoundary,
-        const bool allowBruteForce,
-        const bool returnSaddleConnectors,
+        bool allowBoundary,
+        bool allowBruteForce,
+        bool returnSaddleConnectors,
         std::set<std::tuple<dataType, SimplexId, SimplexId>,
                  SaddleSaddleVPathComparator<dataType>> &S,
         std::vector<SimplexId> &pl2dmt_saddle1,
@@ -771,10 +771,10 @@ the discrete gradient.
       int simplifySaddleSaddleConnections1(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
         const std::vector<char> &isPL,
-        const int iterationThreshold,
-        const bool allowBoundary,
-        const bool allowBruteForce,
-        const bool returnSaddleConnectors);
+        int iterationThreshold,
+        bool allowBoundary,
+        bool allowBruteForce,
+        bool returnSaddleConnectors);
 
       /**
        * Create initial Morse-Smale Complex structure and initialize the
@@ -785,7 +785,7 @@ the discrete gradient.
       int initializeSaddleSaddleConnections2(
         const std::vector<char> &isRemovableSaddle1,
         const std::vector<char> &isRemovableSaddle2,
-        const bool allowBruteForce,
+        bool allowBruteForce,
         std::vector<VPath> &vpaths,
         std::vector<CriticalPoint> &criticalPoints,
         std::vector<SimplexId> &saddle1Index,
@@ -807,11 +807,11 @@ the discrete gradient.
        */
       template <typename dataType>
       int processSaddleSaddleConnections2(
-        const int iterationThreshold,
+        int iterationThreshold,
         const std::vector<char> &isPL,
-        const bool allowBoundary,
-        const bool allowBruteForce,
-        const bool returnSaddleConnectors,
+        bool allowBoundary,
+        bool allowBruteForce,
+        bool returnSaddleConnectors,
         std::set<std::tuple<dataType, SimplexId, SimplexId>,
                  SaddleSaddleVPathComparator<dataType>> &S,
         std::vector<SimplexId> &pl2dmt_saddle1,
@@ -831,10 +831,10 @@ the discrete gradient.
       int simplifySaddleSaddleConnections2(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
         const std::vector<char> &isPL,
-        const int iterationThreshold,
-        const bool allowBoundary,
-        const bool allowBruteForce,
-        const bool returnSaddleConnectors);
+        int iterationThreshold,
+        bool allowBoundary,
+        bool allowBruteForce,
+        bool returnSaddleConnectors);
 
       /**
        * Build the dense representation of the PL critical point list.
@@ -848,7 +848,7 @@ the discrete gradient.
 a given threshold is met.
        */
       template <typename dataType, typename idType>
-      int filterSaddleConnectors(const bool allowBoundary);
+      int filterSaddleConnectors(bool allowBoundary);
 
       /**
        * Highest-level simplification function, manage all the simplification
@@ -879,7 +879,7 @@ according to them.
        */
       inline int setupTriangulation(Triangulation *const data) {
         inputTriangulation_ = data;
-        if(inputTriangulation_) {
+        if(inputTriangulation_ != nullptr) {
           dimensionality_ = inputTriangulation_->getCellVertexNumber(0) - 1;
           numberOfVertices_ = inputTriangulation_->getNumberOfVertices();
 
@@ -982,7 +982,7 @@ triangulation (equal to dimensionality+1).
       /**
        * Get the number of cells of the given dimension.
        */
-      SimplexId getNumberOfCells(const int dimension) const;
+      SimplexId getNumberOfCells(int dimension) const;
 
       /**
        * Return true if the given cell is a minimum regarding the discrete
@@ -1012,7 +1012,7 @@ gradient, false otherwise.
        * Return true if the given cell is a critical point regarding the
 discrete gradient, false otherwise.
        */
-      bool isCellCritical(const int cellDim, const SimplexId cellId) const;
+      bool isCellCritical(int cellDim, SimplexId cellId) const;
       bool isCellCritical(const Cell &cell) const;
 
       /**
@@ -1036,7 +1036,7 @@ in the gradient.
        */
       int getAscendingPath(const Cell &cell,
                            std::vector<Cell> &vpath,
-                           const bool enableCycleDetector = false) const;
+                           bool enableCycleDetector = false) const;
 
       /**
        * Return the VPath terminating at the given cell.
@@ -1047,43 +1047,41 @@ in the gradient.
        * Return the VPath terminating at the given 2-saddle restricted to the
 2-separatrice of the 1-saddle.
        */
-      int getDescendingPathThroughWall(const wallId_t wallId,
+      int getDescendingPathThroughWall(wallId_t wallId,
                                        const Cell &saddle2,
                                        const Cell &saddle1,
                                        const std::vector<wallId_t> &isVisited,
-                                       std::vector<Cell> *const vpath,
-                                       const bool enableCycleDetector
-                                       = false) const;
+                                       std::vector<Cell> *vpath,
+                                       bool enableCycleDetector = false) const;
 
       /**
        * Return the VPath coming from the given 1-saddle restricted to the
 2-separatrice of the 2-saddle.
        */
-      bool getAscendingPathThroughWall(const wallId_t wallId,
+      bool getAscendingPathThroughWall(wallId_t wallId,
                                        const Cell &saddle1,
                                        const Cell &saddle2,
                                        const std::vector<wallId_t> &isVisited,
-                                       std::vector<Cell> *const vpath,
-                                       const bool enableCycleDetector
-                                       = false) const;
+                                       std::vector<Cell> *vpath,
+                                       bool enableCycleDetector = false) const;
 
       /**
        * Return the 2-separatrice terminating at the given 2-saddle.
        */
-      int getDescendingWall(const wallId_t wallId,
+      int getDescendingWall(wallId_t wallId,
                             const Cell &cell,
                             std::vector<wallId_t> &isVisited,
-                            std::vector<Cell> *const wall = nullptr,
-                            std::set<SimplexId> *const saddles = nullptr) const;
+                            std::vector<Cell> *wall = nullptr,
+                            std::set<SimplexId> *saddles = nullptr) const;
 
       /**
        * Return the 2-separatrice coming from the given 1-saddle.
        */
-      int getAscendingWall(const wallId_t wallId,
+      int getAscendingWall(wallId_t wallId,
                            const Cell &cell,
                            std::vector<wallId_t> &isVisited,
-                           std::vector<Cell> *const wall = nullptr,
-                           std::set<SimplexId> *const saddles = nullptr) const;
+                           std::vector<Cell> *wall = nullptr,
+                           std::set<SimplexId> *saddles = nullptr) const;
 
       /**
        * Reverse the given ascending VPath.
