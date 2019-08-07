@@ -33,8 +33,6 @@ DiscreteGradient::DiscreteGradient()
     outputPersistencePairs_{nullptr} {
 }
 
-DiscreteGradient::~DiscreteGradient() = default;
-
 int DiscreteGradient::getDimensionality() const {
   return dimensionality_;
 }

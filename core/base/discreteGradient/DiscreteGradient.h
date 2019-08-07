@@ -40,18 +40,13 @@ namespace ttk {
      * dimension.
      */
     struct Cell {
-      explicit Cell() : dim_{-1}, id_{-1} {
-      }
+      explicit Cell() = default;
 
       explicit Cell(const int dim, const SimplexId id) : dim_{dim}, id_{id} {
       }
 
-      Cell(const Cell &cell) = default;
-
-      Cell &operator=(const Cell &cell) = default;
-
-      int dim_;
-      SimplexId id_;
+      int dim_{-1};
+      SimplexId id_{-1};
     };
 
     /**
@@ -59,8 +54,7 @@ namespace ttk {
      * whether the segment has been reversed or not.
      */
     struct Segment {
-      explicit Segment() : orientation_{}, isValid_{} {
-      }
+      explicit Segment() = default;
 
       explicit Segment(const bool orientation,
                        std::vector<Cell> cells,
@@ -73,15 +67,6 @@ namespace ttk {
                        std::vector<Cell> &&cells,
                        const bool isValid)
         : orientation_{orientation}, cells_{cells}, isValid_{isValid} {
-      }
-
-      Segment(const Segment &segment)
-
-        = default;
-
-      Segment(Segment &&segment)
-        : orientation_{segment.orientation_}, cells_{segment.cells_},
-          isValid_{segment.isValid_} {
       }
 
       /**
@@ -104,9 +89,9 @@ namespace ttk {
         return 0;
       }
 
-      bool orientation_;
-      std::vector<Cell> cells_;
-      bool isValid_;
+      bool orientation_{};
+      std::vector<Cell> cells_{};
+      bool isValid_{};
     };
 
     /**
@@ -114,10 +99,7 @@ namespace ttk {
      * one.
      */
     struct VPath {
-      explicit VPath()
-        : isValid_{}, source_{-1}, destination_{-1}, sourceSlot_{-1},
-          destinationSlot_{-1}, persistence_{} {
-      }
+      explicit VPath() = default;
 
       explicit VPath(const bool isValid,
                      const SimplexId segmentId,
@@ -158,16 +140,6 @@ namespace ttk {
           destinationSlot_{destinationSlot}, persistence_{persistence} {
       }
 
-      VPath(const VPath &vpath) = default;
-
-      VPath(VPath &&vpath)
-        : isValid_{vpath.isValid_}, states_{vpath.states_},
-          segments_{vpath.segments_}, source_{vpath.source_},
-          destination_{vpath.destination_}, sourceSlot_{vpath.sourceSlot_},
-          destinationSlot_{vpath.destinationSlot_}, persistence_{
-                                                      vpath.persistence_} {
-      }
-
       /**
        * Invalidate this vpath so that it is ignored in the simplification
        * process, free memory for economy reasons.
@@ -192,22 +164,21 @@ namespace ttk {
         return 0;
       }
 
-      bool isValid_;
-      std::vector<char> states_;
-      std::vector<SimplexId> segments_;
-      SimplexId source_;
-      SimplexId destination_;
-      SimplexId sourceSlot_;
-      SimplexId destinationSlot_;
-      double persistence_;
+      bool isValid_{};
+      std::vector<char> states_{};
+      std::vector<SimplexId> segments_{};
+      SimplexId source_{-1};
+      SimplexId destination_{-1};
+      SimplexId sourceSlot_{-1};
+      SimplexId destinationSlot_{-1};
+      double persistence_{};
     };
 
     /**
      * Limit point of integral lines in the gradient.
      */
     struct CriticalPoint {
-      explicit CriticalPoint() : numberOfSlots_{} {
-      }
+      explicit CriticalPoint() = default;
 
       explicit CriticalPoint(const Cell &cell) : cell_{cell}, numberOfSlots_{} {
       }
@@ -218,15 +189,6 @@ namespace ttk {
 
       explicit CriticalPoint(const Cell &cell, std::vector<SimplexId> &&vpaths)
         : cell_{cell}, vpaths_{vpaths}, numberOfSlots_{} {
-      }
-
-      CriticalPoint(const CriticalPoint &criticalPoint)
-
-        = default;
-
-      CriticalPoint(CriticalPoint &&criticalPoint)
-        : cell_{criticalPoint.cell_}, vpaths_{criticalPoint.vpaths_},
-          numberOfSlots_{criticalPoint.numberOfSlots_} {
       }
 
       /**
@@ -260,9 +222,9 @@ namespace ttk {
         return 0;
       }
 
-      Cell cell_;
-      std::vector<SimplexId> vpaths_;
-      SimplexId numberOfSlots_;
+      Cell cell_{};
+      std::vector<SimplexId> vpaths_{};
+      SimplexId numberOfSlots_{};
     };
 
     /**
@@ -326,8 +288,6 @@ namespace ttk {
 
     public:
       explicit DiscreteGradient();
-
-      ~DiscreteGradient() override;
 
       /**
        * Impose a threshold on the number of simplification passes.
