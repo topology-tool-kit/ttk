@@ -179,331 +179,153 @@ dataType DiscreteGradient::getPersistence(const Cell &up,
 
 template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient(
-  const int alphaDim,
-  const dataType *const scalars,
+  const dataType *const /*scalars*/,
   const idType *const offsets,
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-  std::vector<std::vector<char>> &gradient) const {
+  std::vector<std::vector<std::vector<char>>> &gradient) const {
 #else
-  std::vector<std::vector<SimplexId>> &gradient) const {
+  std::vector<std::vector<std::vector<SimplexId>>> &gradient) const {
 #endif
-  const int betaDim = alphaDim + 1;
-  const SimplexId alphaNumber = gradient[alphaDim].size();
 
-  const auto sosLowerThan
-    = [&scalars, &offsets](const SimplexId a, const SimplexId b) {
-        if(scalars[a] != scalars[b])
-          return scalars[a] < scalars[b];
-        else
-          return offsets[a] < offsets[b];
+  /*=================================== Process lower stars
+   * ========================================*/
+
+  using std::pair;
+  using std::set;
+  using std::vector;
+
+  /*================================ Definition
+   * ==================================*/
+  auto &inputTriangulation = inputTriangulation_;
+  auto isLexicographicSmaller
+    = [](const vector<idType> &a, const vector<idType> &b) {
+        for(size_t i = 0; i < std::min(a.size(), b.size()); i++)
+          if(a[i] != b[i])
+            return a[i] < b[i];
+        return a.size() < b.size();
       };
+  auto pqGreater
+    = [&isLexicographicSmaller](const pair<SimplexId, vector<idType>> &a,
+                                const pair<SimplexId, vector<idType>> &b) {
+        return isLexicographicSmaller(b.second, a.second);
+      };
+  std::priority_queue<pair<SimplexId, vector<idType>>,
+                      vector<pair<SimplexId, vector<idType>>>,
+                      decltype(pqGreater)>
+    PQzero(pqGreater), PQone(pqGreater);
 
-  if(dimensionality_ == 2) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-    for(SimplexId alpha = 0; alpha < alphaNumber; ++alpha) {
-      if(alphaDim == 0) {
-        SimplexId minEdgeId{-1};
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        char minEdgeLocalId{-1};
-#endif
-        SimplexId minVertexId{-1};
-        const SimplexId edgeNumber
-          = inputTriangulation_->getVertexEdgeNumber(alpha);
-        for(SimplexId k = 0; k < edgeNumber; ++k) {
-          SimplexId edgeId;
-          inputTriangulation_->getVertexEdge(alpha, k, edgeId);
+  vector<set<SimplexId>> isPaired(dimensionality_ + 1, set<SimplexId>());
 
-          SimplexId vertexId;
-          inputTriangulation_->getEdgeVertex(edgeId, 0, vertexId);
-          if(vertexId == alpha)
-            inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
-
-          if(sosLowerThan(vertexId, alpha)) {
-            if(minVertexId == -1) {
-              minEdgeId = edgeId;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-              minEdgeLocalId = k;
-#endif
-              minVertexId = vertexId;
-            } else if(sosLowerThan(vertexId, minVertexId)) {
-              minEdgeId = edgeId;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-              minEdgeLocalId = k;
-#endif
-              minVertexId = vertexId;
-            }
-          }
-        }
-        if(minEdgeId != -1) {
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          gradient[alphaDim][alpha] = minEdgeLocalId;
-
-          char minAlphaLocalId{-1};
-          for(SimplexId k = 0; k < 2; ++k) {
-            SimplexId tmp;
-            inputTriangulation_->getEdgeVertex(minEdgeId, k, tmp);
-            if(tmp == alpha) {
-              minAlphaLocalId = k;
-              break;
-            }
-          }
-
-          gradient[betaDim][minEdgeId] = minAlphaLocalId;
-#else
-          gradient[alphaDim][alpha] = minEdgeId;
-          gradient[betaDim][minEdgeId] = alpha;
-#endif
-        }
-      } else if(alphaDim == 1) {
-        SimplexId v0;
-        SimplexId v1;
-        inputTriangulation_->getEdgeVertex(alpha, 0, v0);
-        inputTriangulation_->getEdgeVertex(alpha, 1, v1);
-
-        SimplexId minStarId{-1};
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        char minStarLocalId{-1};
-#endif
-        SimplexId minVertexId{-1};
-        const SimplexId starNumber
-          = inputTriangulation_->getEdgeStarNumber(alpha);
-        for(SimplexId k = 0; k < starNumber; ++k) {
-          SimplexId starId;
-          inputTriangulation_->getEdgeStar(alpha, k, starId);
-
-          SimplexId vertexId;
-          inputTriangulation_->getCellVertex(starId, 0, vertexId);
-          if(vertexId == v0 or vertexId == v1)
-            inputTriangulation_->getCellVertex(starId, 1, vertexId);
-          if(vertexId == v0 or vertexId == v1)
-            inputTriangulation_->getCellVertex(starId, 2, vertexId);
-
-          if(sosLowerThan(vertexId, v0) and sosLowerThan(vertexId, v1)) {
-            if(minVertexId == -1) {
-              minStarId = starId;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-              minStarLocalId = k;
-#endif
-              minVertexId = vertexId;
-            } else if(sosLowerThan(vertexId, minVertexId)) {
-              minStarId = starId;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-              minStarLocalId = k;
-#endif
-              minVertexId = vertexId;
-            }
-          }
-        }
-        if(minStarId != -1) {
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          gradient[alphaDim][alpha] = minStarLocalId;
-
-          char minAlphaLocalId{-1};
-          for(SimplexId k = 0; k < 3; ++k) {
-            SimplexId tmp;
-            inputTriangulation_->getCellEdge(minStarId, k, tmp);
-            if(tmp == alpha) {
-              minAlphaLocalId = k;
-              break;
-            }
-          }
-
-          gradient[betaDim][minStarId] = minAlphaLocalId;
-#else
-          gradient[alphaDim][alpha] = minStarId;
-          gradient[betaDim][minStarId] = alpha;
-#endif
-        }
-      }
+  auto V = [&](SimplexId alpha, int dimAlpha, SimplexId beta) {
+    gradient[dimAlpha][dimAlpha][alpha] = beta;
+    gradient[dimAlpha][dimAlpha + 1][beta] = alpha;
+    isPaired[dimAlpha].insert(alpha);
+    isPaired[dimAlpha + 1].insert(beta);
+  };
+  auto isEdgeOfTri
+    = [&inputTriangulation](SimplexId edgeId, SimplexId triId) -> bool {
+    SimplexId evId1, evId2;
+    inputTriangulation->getEdgeVertex(edgeId, 0, evId1);
+    inputTriangulation->getEdgeVertex(edgeId, 1, evId2);
+    int cnt = 0;
+    for(SimplexId i = 0; i < 3; i++) {
+      SimplexId vertexId;
+      inputTriangulation->getTriangleVertex(triId, i, vertexId);
+      if(vertexId == evId1 || vertexId == evId2)
+        cnt++;
     }
-  } else if(dimensionality_ == 3) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-    for(SimplexId alpha = 0; alpha < alphaNumber; ++alpha) {
-      if(alphaDim == 0) {
-        SimplexId minEdgeId{-1};
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        char minEdgeLocalId{-1};
-#endif
-        SimplexId minVertexId{-1};
-        const SimplexId edgeNumber
-          = inputTriangulation_->getVertexEdgeNumber(alpha);
-        for(SimplexId k = 0; k < edgeNumber; ++k) {
-          SimplexId edgeId;
-          inputTriangulation_->getVertexEdge(alpha, k, edgeId);
+    return cnt == 2;
+  };
+  /*===============================================================================*/
 
-          SimplexId vertexId;
-          inputTriangulation_->getEdgeVertex(edgeId, 0, vertexId);
-          if(vertexId == alpha)
-            inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
-
-          if(sosLowerThan(vertexId, alpha)) {
-            if(minVertexId == -1) {
-              minEdgeId = edgeId;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-              minEdgeLocalId = k;
-#endif
-              minVertexId = vertexId;
-            } else if(sosLowerThan(vertexId, minVertexId)) {
-              minEdgeId = edgeId;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-              minEdgeLocalId = k;
-#endif
-              minVertexId = vertexId;
-            }
+  /*============================= Calculate gradient
+   * ==============================*/
+  {
+    for(SimplexId x = 0; x < inputTriangulation_->getNumberOfVertices(); x++) {
+      auto Lx = L<idType>(x, offsets);
+      if(Lx.size() == 1)
+        isPaired[0].insert(x);
+      else {
+        /*======= Get delta which has minimal G value =======*/
+        bool first = true;
+        SimplexId delta;
+        vector<idType> Gmin;
+        for(auto s : Lx[1]) {
+          auto Gcur = G<idType>(s, 1, offsets);
+          if(first || isLexicographicSmaller(Gcur, Gmin)) {
+            first = false;
+            Gmin = Gcur;
+            delta = s;
           }
         }
-        if(minEdgeId != -1) {
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          gradient[alphaDim][alpha] = minEdgeLocalId;
+        /*===================================================*/
 
-          char minAlphaLocalId{-1};
-          for(SimplexId k = 0; k < 2; ++k) {
-            SimplexId tmp;
-            inputTriangulation_->getEdgeVertex(minEdgeId, k, tmp);
-            if(tmp == alpha) {
-              minAlphaLocalId = k;
-              break;
-            }
-          }
+        V(x, 0, delta);
+        for(auto alpha : Lx[1])
+          if(alpha != delta)
+            PQzero.push(make_pair(alpha, G<idType>(alpha, 1, offsets)));
 
-          gradient[betaDim][minEdgeId] = minAlphaLocalId;
-#else
-          gradient[alphaDim][alpha] = minEdgeId;
-          gradient[betaDim][minEdgeId] = alpha;
-#endif
+        /*=============== Add cofaces of delta ==============*/
+        SimplexId deltaVertexId1, deltaVertexId2;
+        inputTriangulation_->getEdgeVertex(delta, 0, deltaVertexId1);
+        inputTriangulation_->getEdgeVertex(delta, 1, deltaVertexId2);
+
+        if(Lx.size() > 2) {
+          for(SimplexId alpha : Lx[2])
+            if(isEdgeOfTri(delta, alpha)
+               && num_unpaired_faces(Lx, alpha, 2, isPaired) == 1)
+              PQone.push(make_pair(alpha, G<idType>(alpha, 2, offsets)));
         }
-      } else if(alphaDim == 1) {
-        SimplexId v0;
-        SimplexId v1;
-        inputTriangulation_->getEdgeVertex(alpha, 0, v0);
-        inputTriangulation_->getEdgeVertex(alpha, 1, v1);
-
-        SimplexId minTriangleId{-1};
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        char minTriangleLocalId{-1};
-#endif
-        SimplexId minVertexId{-1};
-        const SimplexId triangleNumber
-          = inputTriangulation_->getEdgeTriangleNumber(alpha);
-        for(SimplexId k = 0; k < triangleNumber; ++k) {
-          SimplexId starId;
-          inputTriangulation_->getEdgeTriangle(alpha, k, starId);
-
-          SimplexId vertexId;
-          inputTriangulation_->getTriangleVertex(starId, 0, vertexId);
-          if(vertexId == v0 or vertexId == v1)
-            inputTriangulation_->getTriangleVertex(starId, 1, vertexId);
-          if(vertexId == v0 or vertexId == v1)
-            inputTriangulation_->getTriangleVertex(starId, 2, vertexId);
-
-          if(sosLowerThan(vertexId, v0) and sosLowerThan(vertexId, v1)) {
-            if(minVertexId == -1) {
-              minTriangleId = starId;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-              minTriangleLocalId = k;
-#endif
-              minVertexId = vertexId;
-            } else if(sosLowerThan(vertexId, minVertexId)) {
-              minTriangleId = starId;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-              minTriangleLocalId = k;
-#endif
-              minVertexId = vertexId;
+        /*===================================================*/
+        while(PQone.size() || PQzero.size()) {
+          while(PQone.size()) {
+            auto cellPair = PQone.top();
+            PQone.pop();
+            SimplexId cellId = cellPair.first,
+                      cellDim = cellPair.second.size() - 1;
+            if(num_unpaired_faces(Lx, cellId, cellDim, isPaired) == 0)
+              PQzero.push(cellPair);
+            else {
+              SimplexId pairCellId = getPair(Lx, cellId, cellDim, isPaired);
+              SimplexId pairCellDim = cellDim - 1;
+              V(pairCellId, pairCellDim, cellId);
+              isPaired[pairCellDim].insert(pairCellId); // remove from PQzero
+              /*============= Add cofaces of pairCell to PQone ===============*/
+              if(pairCellDim == 1 && Lx.size() > 2) // pairCellDim >= 1
+              {
+                for(SimplexId beta : Lx[2]) {
+                  if(isEdgeOfTri(pairCellId, beta)
+                     && num_unpaired_faces(Lx, beta, 2, isPaired) == 1) {
+                    PQone.push(make_pair(beta, G<idType>(beta, 2, offsets)));
+                  }
+                }
+              }
+              /*================================================*/
             }
           }
-        }
-        if(minTriangleId != -1) {
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          gradient[alphaDim][alpha] = minTriangleLocalId;
-
-          char minAlphaLocalId{-1};
-          for(SimplexId k = 0; k < 3; ++k) {
-            SimplexId tmp;
-            inputTriangulation_->getTriangleEdge(minTriangleId, k, tmp);
-            if(tmp == alpha) {
-              minAlphaLocalId = k;
-              break;
+          if(PQzero.size()) {
+            auto cellPair = PQzero.top();
+            PQzero.pop();
+            SimplexId cellId = cellPair.first,
+                      cellDim = cellPair.second.size() - 1;
+            if(isPaired[cellDim].count(cellId))
+              continue;
+            isPaired[cellDim].insert(cellId);
+            if(cellDim == 1 && Lx.size() > 2) {
+              for(SimplexId alpha : Lx[2]) {
+                if(isEdgeOfTri(cellId, alpha)
+                   && num_unpaired_faces(Lx, alpha, 2, isPaired) == 1)
+                  PQone.push(make_pair(alpha, G<idType>(alpha, 2, offsets)));
+              }
             }
           }
-
-          gradient[betaDim][minTriangleId] = minAlphaLocalId;
-#else
-          gradient[alphaDim][alpha] = minTriangleId;
-          gradient[betaDim][minTriangleId] = alpha;
-#endif
-        }
-      } else if(alphaDim == 2) {
-        SimplexId v0;
-        SimplexId v1;
-        SimplexId v2;
-        inputTriangulation_->getTriangleVertex(alpha, 0, v0);
-        inputTriangulation_->getTriangleVertex(alpha, 1, v1);
-        inputTriangulation_->getTriangleVertex(alpha, 2, v2);
-
-        SimplexId minStarId{-1};
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        char minStarLocalId{-1};
-#endif
-        SimplexId minVertexId{-1};
-        const SimplexId starNumber
-          = inputTriangulation_->getTriangleStarNumber(alpha);
-        for(SimplexId k = 0; k < starNumber; ++k) {
-          SimplexId starId;
-          inputTriangulation_->getTriangleStar(alpha, k, starId);
-
-          SimplexId vertexId;
-          inputTriangulation_->getCellVertex(starId, 0, vertexId);
-          if(vertexId == v0 or vertexId == v1 or vertexId == v2)
-            inputTriangulation_->getCellVertex(starId, 1, vertexId);
-          if(vertexId == v0 or vertexId == v1 or vertexId == v2)
-            inputTriangulation_->getCellVertex(starId, 2, vertexId);
-          if(vertexId == v0 or vertexId == v1 or vertexId == v2)
-            inputTriangulation_->getCellVertex(starId, 3, vertexId);
-
-          if(sosLowerThan(vertexId, v0) and sosLowerThan(vertexId, v1)
-             and sosLowerThan(vertexId, v2)) {
-            if(minVertexId == -1) {
-              minStarId = starId;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-              minStarLocalId = k;
-#endif
-              minVertexId = vertexId;
-            } else if(sosLowerThan(vertexId, minVertexId)) {
-              minStarId = starId;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-              minStarLocalId = k;
-#endif
-              minVertexId = vertexId;
-            }
-          }
-        }
-        if(minStarId != -1) {
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          gradient[alphaDim][alpha] = minStarLocalId;
-
-          char minAlphaLocalId{-1};
-          for(SimplexId k = 0; k < 4; ++k) {
-            SimplexId tmp;
-            inputTriangulation_->getCellTriangle(minStarId, k, tmp);
-            if(tmp == alpha) {
-              minAlphaLocalId = k;
-              break;
-            }
-          }
-
-          gradient[betaDim][minStarId] = minAlphaLocalId;
-#else
-          gradient[alphaDim][alpha] = minStarId;
-          gradient[betaDim][minStarId] = alpha;
-#endif
         }
       }
     }
   }
+  /*===============================================================================*/
+
+  /*================================================================================================*/
 
   return 0;
 }
@@ -893,10 +715,12 @@ int DiscreteGradient::buildGradient() {
     gradient_[i].resize(numberOfDimensions);
     gradient_[i][i].resize(numberOfCells[i], -1);
     gradient_[i][i + 1].resize(numberOfCells[i + 1], -1);
-
-    // compute gradient pairs
-    assignGradient<dataType, idType>(i, scalars, offsets, gradient_[i]);
   }
+  /*=========================== move outside the loop
+   * =============================*/
+  // compute gradient pairs
+  assignGradient<dataType, idType>(scalars, offsets, gradient_);
+  /*===============================================================================*/
 
   {
     std::stringstream msg;

@@ -22,6 +22,7 @@
 #include <Wrapper.h>
 
 #include <algorithm>
+#include <queue>
 #include <set>
 
 namespace ttk {
@@ -425,14 +426,134 @@ Morse-Smale Complexes",
        * Compute the initial gradient field of the input scalar function for a
 given dimension.
        */
+      template <typename idType>
+      inline std::vector<idType>
+        G(SimplexId x, int dim, const idType *const offsets) const {
+        std::vector<idType> res = std::vector<idType>();
+        if(dim == 0)
+          res.push_back(offsets[x]);
+        else if(dim == 1) {
+          for(int i = 0; i < 2; i++) {
+            SimplexId vertexId;
+            inputTriangulation_->getEdgeVertex(x, i, vertexId);
+            res.push_back(offsets[vertexId]);
+          }
+        } else if(dim == 2) {
+          for(int i = 0; i < 3; i++) {
+            SimplexId vertexId;
+            inputTriangulation_->getTriangleVertex(x, i, vertexId);
+            res.push_back(offsets[vertexId]);
+          }
+        }
+        std::sort(res.begin(), res.end(), std::greater<idType>());
+        return res;
+      }
+
+      template <typename idType>
+      inline std::vector<std::set<SimplexId>>
+        L(SimplexId x, const idType *const offsets) const {
+        std::vector<std::set<SimplexId>> res(1, std::set<SimplexId>());
+        res[0].insert(x);
+        for(SimplexId i = 0; i < inputTriangulation_->getVertexEdgeNumber(x);
+            i++) {
+          SimplexId edgeId;
+          inputTriangulation_->getVertexEdge(x, i, edgeId);
+          bool xIsMax = true;
+          for(SimplexId j = 0; j < 2; j++) {
+            SimplexId vertexId;
+            inputTriangulation_->getEdgeVertex(edgeId, j, vertexId);
+            if(offsets[vertexId] > offsets[x]) {
+              xIsMax = false;
+              break;
+            }
+          }
+          if(xIsMax) {
+            if(res.size() == 1)
+              res.push_back(std::set<SimplexId>());
+            res[1].insert(edgeId);
+          }
+        }
+        for(SimplexId i = 0;
+            i < inputTriangulation_->getVertexTriangleNumber(x); i++) {
+          SimplexId triangleId;
+          inputTriangulation_->getVertexTriangle(x, i, triangleId);
+          bool xIsMax = true;
+          for(SimplexId j = 0; j < 3; j++) {
+            SimplexId vertexId;
+            inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
+            if(offsets[vertexId] > offsets[x]) {
+              xIsMax = false;
+              break;
+            }
+          }
+          if(xIsMax) {
+            if(res.size() == 2)
+              res.push_back(std::set<SimplexId>());
+            res[2].insert(triangleId);
+          }
+        }
+        return res;
+      }
+
+      inline SimplexId
+        num_unpaired_faces(std::vector<std::set<SimplexId>> &Lx,
+                           SimplexId alpha,
+                           int dimAlpha,
+                           std::vector<std::set<SimplexId>> &isPaired) const {
+        if(dimAlpha == 1) {
+          SimplexId cnt = 0;
+          for(SimplexId i = 0; i < 2; i++) {
+            SimplexId vertexId;
+            inputTriangulation_->getEdgeVertex(alpha, i, vertexId);
+            if(!isPaired[0].count(vertexId))
+              cnt++;
+          }
+          return cnt;
+        } else // ==2
+        {
+          SimplexId cnt = 0;
+          for(SimplexId i = 0; i < 3; i++) {
+            SimplexId edgeId;
+            inputTriangulation_->getTriangleEdge(alpha, i, edgeId);
+            if(Lx[1].count(edgeId) && !isPaired[1].count(edgeId))
+              cnt++;
+          }
+          return cnt;
+        }
+      }
+
+      inline SimplexId
+        getPair(std::vector<std::set<SimplexId>> &Lx,
+                SimplexId cellId,
+                int dimCell,
+                std::vector<std::set<SimplexId>> &isPaired) const {
+        if(dimCell == 1) {
+          for(SimplexId i = 0; i < 2; i++) {
+            SimplexId vertexId;
+            inputTriangulation_->getEdgeVertex(cellId, i, vertexId);
+            if(!isPaired[0].count(vertexId))
+              return vertexId;
+          }
+        } else // ==2
+        {
+          for(SimplexId i = 0; i < 3; i++) {
+            SimplexId edgeId;
+            inputTriangulation_->getTriangleEdge(cellId, i, edgeId);
+            if(Lx[1].count(edgeId) && !isPaired[1].count(edgeId))
+              return edgeId;
+          }
+        }
+        return -1;
+      }
+
       template <typename dataType, typename idType>
-      int assignGradient(const int alphaDim,
-                         const dataType *const scalars,
-                         const idType *const offsets,
+      int assignGradient(
+        const dataType *const scalars,
+        const idType *const offsets,
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-                         std::vector<std::vector<char>> &gradient) const;
+        std::vector<std::vector<std::vector<char>>> &gradient) const;
 #else
-                         std::vector<std::vector<SimplexId>> &gradient) const;
+        std::vector<std::vector<std::vector<SimplexId>>> &gradient) const;
 #endif
 
       /**
