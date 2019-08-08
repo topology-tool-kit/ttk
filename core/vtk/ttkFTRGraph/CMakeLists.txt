@@ -3,6 +3,7 @@ ttk_add_vtk_library(ttkFTRGraph
     ttkFTRGraph.cpp
   HEADERS
     ttkFTRGraph.h
+    ttkFTRGraphStructures.h
   LINK
     ftrGraph
     ttkTriangulation

@@ -25,18 +25,27 @@ ttk_add_base_library(ftrGraph
     Mesh.cpp
     FTRSegmentation.cpp
   HEADERS
+    FTRAtomicUF.h
     FTRAtomicVector.h
+    FTRCommon.h
+    FTRDataTypes.h
     FTRGraph.h
     FTRGraph_Template.h
     FTRGraphPrint_Template.h
     FTRGraphPrivate_Template.h
+    Graph.h
+    Graph_Template.h
     DynamicGraph.h
+    DynamicGraph_Template.h
     FTRLazy.h
+    FTRNode.h
     Mesh.h
     FTRPropagation.h
     FTRPropagations.h
     FTRScalars.h
     FTRSegmentation.h
+    FTRSuperArc.h
+    FTRTasks.h
   LINK
     triangulation
     scalarFieldCriticalPoints
