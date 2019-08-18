@@ -55,3 +55,88 @@ install(
   FILES "${CMAKE_CURRENT_BINARY_DIR}/TTKVTKConfig.cmake"
   DESTINATION lib/cmake/ttk
   )
+
+
+if (TTK_BUILD_VTK_PYTHON_MODULE)
+  # name of the python mudle
+  set(module ttk)
+  # VTK dependencies
+  set(module_depends 
+    vtkCommonExecutionModel
+    vtkIOParallelXML)
+  # guess relative python module path from VTK config
+  # python_module_path should be similar to lib/python-x.y/site-packages
+  file(RELATIVE_PATH python_module_path ${VTK_INSTALL_PREFIX} ${VTK_PYTHONPATH})
+
+  # get headers and dependencies of vtkwrappers
+  set(headers)
+  set(include_dirs)
+  set(link)
+  foreach (vtkwrapper ${VTKWRAPPER_LIB_LIST})
+    get_target_property(_source_dir ${vtkwrapper} SOURCE_DIR)
+    get_target_property(_headers_relative ${vtkwrapper} TTK_HEADERS)
+    get_target_property(_link ${vtkwrapper} TTK_LINK)
+    get_target_property(_sources_relative ${vtkwrapper} SOURCES)
+    set(include_dirs ${include_dirs} ${_source_dir})
+    set(link ${link} ${_link})
+    foreach (header ${_headers_relative})
+      if (IS_ABSOLUTE ${header})
+        set(headers ${headers} "${header}")
+      else ()
+        set(headers ${headers} "${_source_dir}/${header}")
+      endif ()  
+    endforeach ()
+  endforeach ()
+
+  # add dummy library (needed for vtk_wrap_hierarchy)
+  add_library(${module} EXCLUDE_FROM_ALL ${headers})
+  set_target_properties(${module} PROPERTIES LINKER_LANGUAGE CXX)
+  target_include_directories(${module} PUBLIC ${include_dirs})
+
+  # generate ttkHierarchy.txt
+  # only those classes, that have a full inheritance chain that ends in vtkObject will be wrapped
+  set(MODULE_HIERARCHY_NAME ${module}Hierarchy)
+  set(${module}_WRAP_DEPENDS ${module_depends})
+  include(vtkWrapHierarchy)
+  vtk_wrap_hierarchy(${module} ${CMAKE_CURRENT_BINARY_DIR} "${headers}")
+  set(KIT_HIERARCHY_FILE ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_HIERARCHY_NAME}.txt)
+  set(LIB_HIERARCHY_STAMP ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_HIERARCHY_NAME}.stamp.txt)
+
+  add_library(${module}Python MODULE ${module}PythonInit.cxx)
+  set_target_properties(${module}Python PROPERTIES PREFIX "")
+  target_include_directories(${module}Python PUBLIC ${include_dirs})
+
+  include(vtkWrapPython)
+  vtk_wrap_python3(${module}Python ${module}Python_SOURCES "${headers}")
+
+  add_library(${module}PythonD STATIC ${${module}Python_SOURCES})
+  set_target_properties(${module}PythonD PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+  target_include_directories(${module}PythonD PUBLIC ${include_dirs})
+  target_link_libraries(${module}PythonD ${VTKWRAPPER_LIB_LIST})
+  target_link_libraries(${module}PythonD
+    ${VTK_LIBRARIES}
+    vtkWrappingPythonCore
+    ${VTK_PYTHON_LIBRARIES})
+
+  # link against VTK PythonD modules
+  set(_pythond_libs)
+  foreach(vtk_module ${module_depends})
+    set(_pythond_libs ${_pythond_libs} ${vtk_module}PythonD)
+  endforeach()
+  target_link_libraries(${module}Python ${module}PythonD ${_pythond_libs})
+
+  set_target_properties(${module}Python PROPERTIES 
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${python_module_path}/${module})
+  install(TARGETS ${module}Python DESTINATION ${python_module_path}/${module})
+  # set rpath such that vtkwrappers can be found
+  set_target_properties(${module}Python PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
+
+  # generate __init__.py
+  set(module_py "from __future__ import absolute_import\nfrom .${module}Python import *\n")
+  file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/${python_module_path}/${module}/__init__.py"
+    CONTENT "${module_py}")
+  install(
+    FILES       "${CMAKE_BINARY_DIR}/${python_module_path}/${module}/__init__.py"
+    DESTINATION "${python_module_path}/${module}")
+endif()
