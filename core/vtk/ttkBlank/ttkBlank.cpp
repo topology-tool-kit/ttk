@@ -101,7 +101,7 @@ vtkStandardNewMacro(ttkBlank)
   blank_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
   blank_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
   switch(inputScalarField->GetDataType()) {
-    ttkTemplateMacro(blank_.execute<VTK_TT>(SomeIntegerArgument));
+    vtkTemplateMacro(blank_.execute<VTK_TT>(SomeIntegerArgument));
   }
 
   {

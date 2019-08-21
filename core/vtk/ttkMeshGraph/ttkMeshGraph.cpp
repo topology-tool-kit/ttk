@@ -81,39 +81,37 @@ vtkStandardNewMacro(ttkMeshGraph)
   if(this->GetUseQuadraticCells()) {
     // Quadratic cells
     switch(sizeType) {
-      ttkTemplateMacro({
-        status = meshGraph.execute<vtkIdType TTK_COMMA VTK_TT>(
-          // Input
-          (float *)input->GetPoints()->GetVoidPointer(0),
-          inputCells->GetPointer(), nInputPoints, nInputCells,
+      vtkTemplateMacro(
+        (status = meshGraph.execute<vtkIdType, VTK_TT>(
+           // Input
+           (float *)input->GetPoints()->GetVoidPointer(0),
+           inputCells->GetPointer(), nInputPoints, nInputCells,
 
-          this->GetUseVariableSize()
-            ? (VTK_TT *)inputPointSizes->GetVoidPointer(0)
-            : nullptr,
-          this->GetSizeScale(), this->GetSizeAxis(),
+           this->GetUseVariableSize()
+             ? (VTK_TT *)inputPointSizes->GetVoidPointer(0)
+             : nullptr,
+           this->GetSizeScale(), this->GetSizeAxis(),
 
-          // Output
-          outputVertices, (vtkIdType *)outputCells->GetVoidPointer(0));
-      });
+           // Output
+           outputVertices, (vtkIdType *)outputCells->GetVoidPointer(0))));
     }
   } else {
     // Linear Polygons
     switch(sizeType) {
-      ttkTemplateMacro({
-        status = meshGraph.execute2<vtkIdType TTK_COMMA VTK_TT>(
-          // Input
-          (float *)input->GetPoints()->GetVoidPointer(0),
-          inputCells->GetPointer(), nInputPoints, nInputCells,
-          this->GetSubdivisions(),
+      vtkTemplateMacro(
+        (status = meshGraph.execute2<vtkIdType, VTK_TT>(
+           // Input
+           (float *)input->GetPoints()->GetVoidPointer(0),
+           inputCells->GetPointer(), nInputPoints, nInputCells,
+           this->GetSubdivisions(),
 
-          this->GetUseVariableSize()
-            ? (VTK_TT *)inputPointSizes->GetVoidPointer(0)
-            : nullptr,
-          this->GetSizeScale(), this->GetSizeAxis(),
+           this->GetUseVariableSize()
+             ? (VTK_TT *)inputPointSizes->GetVoidPointer(0)
+             : nullptr,
+           this->GetSizeScale(), this->GetSizeAxis(),
 
-          // Output
-          outputVertices, (vtkIdType *)outputCells->GetVoidPointer(0));
-      });
+           // Output
+           outputVertices, (vtkIdType *)outputCells->GetVoidPointer(0))));
     }
   }
   if(status != 1)
@@ -149,20 +147,18 @@ vtkStandardNewMacro(ttkMeshGraph)
       oPointData->AddArray(oArray);
 
       switch(iArray->GetDataType()) {
-        ttkTemplateMacro({
-          status
-            = meshGraph
-                .mapInputPointDataToOutputPointData<vtkIdType TTK_COMMA VTK_TT>(
-                  inputCells->GetPointer(), nInputPoints, nInputCells,
+        vtkTemplateMacro(
+          (status
+           = meshGraph.mapInputPointDataToOutputPointData<vtkIdType, VTK_TT>(
+             inputCells->GetPointer(), nInputPoints, nInputCells,
 
-                  (VTK_TT *)iArray->GetVoidPointer(0),
-                  (VTK_TT *)oArray->GetVoidPointer(0),
+             (VTK_TT *)iArray->GetVoidPointer(0),
+             (VTK_TT *)oArray->GetVoidPointer(0),
 
-                  this->GetUseQuadraticCells(), this->GetSubdivisions());
-          if(status != 1)
-            return 0;
-        });
+             this->GetUseQuadraticCells(), this->GetSubdivisions())));
       }
+      if(status != 1)
+        return 0;
     }
   }
 
@@ -184,20 +180,18 @@ vtkStandardNewMacro(ttkMeshGraph)
       oCellData->AddArray(oArray);
 
       switch(iArray->GetDataType()) {
-        ttkTemplateMacro({
-          status
-            = meshGraph
-                .mapInputCellDataToOutputCellData<vtkIdType TTK_COMMA VTK_TT>(
-                  nInputCells,
+        vtkTemplateMacro(
+          (status
+           = meshGraph.mapInputCellDataToOutputCellData<vtkIdType, VTK_TT>(
+             nInputCells,
 
-                  (VTK_TT *)iArray->GetVoidPointer(0),
-                  (VTK_TT *)oArray->GetVoidPointer(0),
+             (VTK_TT *)iArray->GetVoidPointer(0),
+             (VTK_TT *)oArray->GetVoidPointer(0),
 
-                  this->GetUseQuadraticCells(), this->GetSubdivisions());
-          if(status != 1)
-            return 0;
-        });
+             this->GetUseQuadraticCells(), this->GetSubdivisions())));
       }
+      if(status != 1)
+        return 0;
     }
   }
 

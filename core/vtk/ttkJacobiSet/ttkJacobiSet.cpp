@@ -165,8 +165,8 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
   // set the jacobi functor
   switch(vtkTemplate2PackMacro(
     uComponent->GetDataType(), vComponent->GetDataType())) {
-    ttkTemplate2Macro(
-      baseCall<VTK_T1 TTK_COMMA VTK_T2>(input, uComponent, vComponent));
+    vtkTemplate2Macro(
+      (baseCall<VTK_T1, VTK_T2>(input, uComponent, vComponent)));
   }
 
   vtkSmartPointer<vtkCharArray> edgeTypes
@@ -238,190 +238,53 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
     for(int i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++) {
 
       vtkDataArray *scalarField = input->GetPointData()->GetArray(i);
+      vtkSmartPointer<vtkDataArray> scalarArray;
 
       switch(scalarField->GetDataType()) {
-
-        case VTK_CHAR: {
-          vtkSmartPointer<vtkCharArray> scalarArray
-            = vtkSmartPointer<vtkCharArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(2 * jacobiSet_.size());
-          scalarArray->SetName(scalarField->GetName());
-
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          pointCount = 0;
-          for(SimplexId j = 0; j < (SimplexId)jacobiSet_.size(); j++) {
-
-            SimplexId edgeId = jacobiSet_[j].first;
-            SimplexId vertexId0 = -1, vertexId1 = -1;
-            triangulation->getEdgeVertex(edgeId, 0, vertexId0);
-            triangulation->getEdgeVertex(edgeId, 1, vertexId1);
-
-            scalarField->GetTuple(vertexId0, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-
-            scalarField->GetTuple(vertexId1, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
-        case VTK_DOUBLE: {
-          vtkSmartPointer<vtkDoubleArray> scalarArray
-            = vtkSmartPointer<vtkDoubleArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(2 * jacobiSet_.size());
-          scalarArray->SetName(scalarField->GetName());
-
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          pointCount = 0;
-          for(SimplexId j = 0; j < (SimplexId)jacobiSet_.size(); j++) {
-
-            SimplexId edgeId = jacobiSet_[j].first;
-            SimplexId vertexId0 = -1, vertexId1 = -1;
-            triangulation->getEdgeVertex(edgeId, 0, vertexId0);
-            triangulation->getEdgeVertex(edgeId, 1, vertexId1);
-
-            scalarField->GetTuple(vertexId0, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-
-            scalarField->GetTuple(vertexId1, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
-        case VTK_FLOAT: {
-          vtkSmartPointer<vtkFloatArray> scalarArray
-            = vtkSmartPointer<vtkFloatArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(2 * jacobiSet_.size());
-          scalarArray->SetName(scalarField->GetName());
-
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          pointCount = 0;
-          for(SimplexId j = 0; j < (SimplexId)jacobiSet_.size(); j++) {
-
-            SimplexId edgeId = jacobiSet_[j].first;
-            SimplexId vertexId0 = -1, vertexId1 = -1;
-            triangulation->getEdgeVertex(edgeId, 0, vertexId0);
-            triangulation->getEdgeVertex(edgeId, 1, vertexId1);
-
-            scalarField->GetTuple(vertexId0, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-
-            scalarField->GetTuple(vertexId1, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
-        case VTK_INT: {
-          vtkSmartPointer<vtkIntArray> scalarArray
-            = vtkSmartPointer<vtkIntArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(2 * jacobiSet_.size());
-          scalarArray->SetName(scalarField->GetName());
-
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          pointCount = 0;
-          for(SimplexId j = 0; j < (SimplexId)jacobiSet_.size(); j++) {
-
-            SimplexId edgeId = jacobiSet_[j].first;
-            SimplexId vertexId0 = -1, vertexId1 = -1;
-            triangulation->getEdgeVertex(edgeId, 0, vertexId0);
-            triangulation->getEdgeVertex(edgeId, 1, vertexId1);
-
-            scalarField->GetTuple(vertexId0, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-
-            scalarField->GetTuple(vertexId1, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
-        case VTK_ID_TYPE: {
-          vtkSmartPointer<vtkIdTypeArray> scalarArray
-            = vtkSmartPointer<vtkIdTypeArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(2 * jacobiSet_.size());
-          scalarArray->SetName(scalarField->GetName());
-
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          pointCount = 0;
-          for(SimplexId j = 0; j < (SimplexId)jacobiSet_.size(); j++) {
-
-            SimplexId edgeId = jacobiSet_[j].first;
-            SimplexId vertexId0 = -1, vertexId1 = -1;
-            triangulation->getEdgeVertex(edgeId, 0, vertexId0);
-            triangulation->getEdgeVertex(edgeId, 1, vertexId1);
-
-            scalarField->GetTuple(vertexId0, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-
-            scalarField->GetTuple(vertexId1, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
-        case VTK_UNSIGNED_SHORT: {
-          vtkSmartPointer<vtkUnsignedShortArray> scalarArray
-            = vtkSmartPointer<vtkUnsignedShortArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(2 * jacobiSet_.size());
-          scalarArray->SetName(scalarField->GetName());
-
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          pointCount = 0;
-          for(SimplexId j = 0; j < (SimplexId)jacobiSet_.size(); j++) {
-
-            SimplexId edgeId = jacobiSet_[j].first;
-            SimplexId vertexId0 = -1, vertexId1 = -1;
-            triangulation->getEdgeVertex(edgeId, 0, vertexId0);
-            triangulation->getEdgeVertex(edgeId, 1, vertexId1);
-
-            scalarField->GetTuple(vertexId0, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-
-            scalarField->GetTuple(vertexId1, value);
-            scalarArray->SetTuple(pointCount, value);
-            pointCount++;
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
+        case VTK_CHAR:
+          scalarArray = vtkSmartPointer<vtkCharArray>::New();
+          break;
+        case VTK_DOUBLE:
+          scalarArray = vtkSmartPointer<vtkDoubleArray>::New();
+          break;
+        case VTK_FLOAT:
+          scalarArray = vtkSmartPointer<vtkFloatArray>::New();
+          break;
+        case VTK_INT:
+          scalarArray = vtkSmartPointer<vtkIntArray>::New();
+          break;
+        case VTK_ID_TYPE:
+          scalarArray = vtkSmartPointer<vtkIdTypeArray>::New();
+          break;
+        case VTK_UNSIGNED_SHORT:
+          scalarArray = vtkSmartPointer<vtkUnsignedShortArray>::New();
+          break;
         default: {
           stringstream msg;
           msg << "[ttkJacobiSet] Scalar attachment: "
               << "unsupported data type :(" << endl;
           dMsg(cerr, msg.str(), detailedInfoMsg);
-        } break;
+        }
+          return -4;
       }
+      scalarArray->SetNumberOfComponents(scalarField->GetNumberOfComponents());
+      scalarArray->SetNumberOfTuples(2 * jacobiSet_.size());
+      scalarArray->SetName(scalarField->GetName());
+      std::vector<double> value(scalarField->GetNumberOfComponents());
+      for(SimplexId j = 0; j < (SimplexId)jacobiSet_.size(); j++) {
+
+        SimplexId edgeId = jacobiSet_[j].first;
+        SimplexId vertexId0 = -1, vertexId1 = -1;
+        triangulation->getEdgeVertex(edgeId, 0, vertexId0);
+        triangulation->getEdgeVertex(edgeId, 1, vertexId1);
+
+        scalarField->GetTuple(vertexId0, value.data());
+        scalarArray->SetTuple(2 * j, value.data());
+
+        scalarField->GetTuple(vertexId1, value.data());
+        scalarArray->SetTuple(2 * j + 1, value.data());
+      }
+      output->GetPointData()->AddArray(scalarArray);
     }
   } else {
     for(int i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++) {

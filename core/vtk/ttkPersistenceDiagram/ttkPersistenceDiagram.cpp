@@ -33,7 +33,11 @@ ttkPersistenceDiagram::~ttkPersistenceDiagram() {
   if(offsets_)
     offsets_->Delete();
 
-  deleteDiagram();
+  if(CTDiagram_ and inputScalars_) {
+    switch(inputScalars_->GetDataType()) {
+      vtkTemplateMacro(deleteDiagram<VTK_TT>());
+    }
+  }
 }
 
 int ttkPersistenceDiagram::FillOutputPortInformation(int port,
@@ -160,19 +164,61 @@ int ttkPersistenceDiagram::getOffsets(vtkDataSet *input) {
   return 0;
 }
 
+template <typename VTK_TT>
 int ttkPersistenceDiagram::deleteDiagram() {
-  if(CTDiagram_ and inputScalars_) {
-    switch(inputScalars_->GetDataType()) {
-      ttkTemplateMacro({
-        using tuple_t
-          = tuple<SimplexId TTK_COMMA CriticalType TTK_COMMA SimplexId TTK_COMMA
-                    CriticalType TTK_COMMA VTK_TT TTK_COMMA SimplexId>;
-        vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
-        delete CTDiagram;
-      });
-    }
-  }
+  using tuple_t = tuple<SimplexId, CriticalType, SimplexId, CriticalType,
+                        VTK_TT, SimplexId>;
+  vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
+  delete CTDiagram;
   return 0;
+}
+
+template <typename VTK_TT>
+int ttkPersistenceDiagram::dispatch() {
+  int ret = 0;
+  using tuple_t = tuple<SimplexId, CriticalType, SimplexId, CriticalType,
+                        VTK_TT, SimplexId>;
+
+  if(CTDiagram_ && computeDiagram_) {
+    vector<tuple_t> *tmpDiagram = (vector<tuple_t> *)CTDiagram_;
+    delete tmpDiagram;
+    CTDiagram_ = new vector<tuple_t>();
+  } else if(!CTDiagram_) {
+    CTDiagram_ = new vector<tuple_t>();
+    computeDiagram_ = true;
+  }
+
+  vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
+
+  if(computeDiagram_) {
+    persistenceDiagram_.setOutputCTDiagram(CTDiagram);
+    if(inputOffsets_->GetDataType() == VTK_INT)
+      ret = persistenceDiagram_.execute<VTK_TT, int>();
+    if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
+      ret = persistenceDiagram_.execute<VTK_TT, vtkIdType>();
+#ifndef TTK_ENABLE_KAMIKAZE
+    if(ret) {
+      cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
+           << "error code : " << ret << endl;
+      return -4;
+    }
+#endif
+  }
+
+  if(ShowInsideDomain)
+    ret = getPersistenceDiagramInsideDomain<VTK_TT>(
+      ftm::TreeType::Contour, *CTDiagram);
+  else
+    ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(ret) {
+    cerr << "[ttkPersistenceDiagram] Error : "
+         << "build of contour tree persistence diagram has failed." << endl;
+    return -5;
+  }
+#endif
+
+  return ret;
 }
 
 int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
@@ -249,125 +295,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   persistenceDiagram_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
   persistenceDiagram_.setComputeSaddleConnectors(ComputeSaddleConnectors);
   switch(inputScalars_->GetDataType()) {
-#ifndef _MSC_VER
-    vtkTemplateMacro(({
-      using tuple_t = tuple<SimplexId, CriticalType, SimplexId, CriticalType,
-                            VTK_TT, SimplexId>;
-
-      if(CTDiagram_ and computeDiagram_) {
-        vector<tuple_t> *tmpDiagram = (vector<tuple_t> *)CTDiagram_;
-        delete tmpDiagram;
-        CTDiagram_ = new vector<tuple_t>();
-      } else if(!CTDiagram_) {
-        CTDiagram_ = new vector<tuple_t>();
-        computeDiagram_ = true;
-      }
-
-      vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
-
-      if(computeDiagram_) {
-        persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          ret = persistenceDiagram_.execute<VTK_TT, int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          ret = persistenceDiagram_.execute<VTK_TT, vtkIdType>();
-#ifndef TTK_ENABLE_KAMIKAZE
-        if(ret) {
-          cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
-               << "error code : " << ret << endl;
-          return -4;
-        }
-#endif
-      }
-
-      if(ShowInsideDomain)
-        ret = getPersistenceDiagramInsideDomain<VTK_TT>(
-          ftm::TreeType::Contour, *CTDiagram);
-      else
-        ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(ret) {
-        cerr << "[ttkPersistenceDiagram] Error : "
-             << "build of contour tree persistence diagram has failed." << endl;
-        return -5;
-      }
-#endif
-    }));
-#else
-#ifndef TTK_ENABLE_KAMIKAZE
-    vtkTemplateMacro({
-      using tuple_t
-        = tuple<SimplexId TTK_COMMA CriticalType TTK_COMMA SimplexId TTK_COMMA
-                  CriticalType TTK_COMMA VTK_TT TTK_COMMA SimplexId>;
-
-      if(CTDiagram_ and computeDiagram_) {
-        vector<tuple_t> *tmpDiagram = (vector<tuple_t> *)CTDiagram_;
-        delete tmpDiagram;
-        CTDiagram_ = new vector<tuple_t>();
-      } else if(!CTDiagram_) {
-        CTDiagram_ = new vector<tuple_t>();
-        computeDiagram_ = true;
-      }
-
-      vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
-
-      if(computeDiagram_) {
-        persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA vtkIdType>();
-        if(ret) {
-          cerr << "[ttkPersistenceDiagram] PersistenceDiagram.execute() "
-               << "error code : " << ret << endl;
-          return -4;
-        }
-      }
-
-      if(ShowInsideDomain)
-        ret = getPersistenceDiagramInsideDomain<VTK_TT>(
-          ftm::TreeType::Contour, *CTDiagram);
-      else
-        ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
-      if(ret) {
-        cerr << "[ttkPersistenceDiagram] Error : "
-             << "build of contour tree persistence diagram has failed." << endl;
-        return -5;
-      }
-    });
-#else
-    vtkTemplateMacro({
-      using tuple_t
-        = tuple<SimplexId TTK_COMMA CriticalType TTK_COMMA SimplexId TTK_COMMA
-                  CriticalType TTK_COMMA VTK_TT TTK_COMMA SimplexId>;
-
-      if(CTDiagram_ and computeDiagram_) {
-        vector<tuple_t> *tmpDiagram = (vector<tuple_t> *)CTDiagram_;
-        delete tmpDiagram;
-        CTDiagram_ = new vector<tuple_t>();
-      } else if(!CTDiagram_) {
-        CTDiagram_ = new vector<tuple_t>();
-        computeDiagram_ = true;
-      }
-
-      vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
-
-      if(computeDiagram_) {
-        persistenceDiagram_.setOutputCTDiagram(CTDiagram);
-        if(inputOffsets_->GetDataType() == VTK_INT)
-          ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA int>();
-        if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-          ret = persistenceDiagram_.execute<VTK_TT TTK_COMMA vtkIdType>();
-      }
-
-      if(ShowInsideDomain)
-        ret = getPersistenceDiagramInsideDomain<VTK_TT>(
-          ftm::TreeType::Contour, *CTDiagram);
-      else
-        ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, *CTDiagram);
-    });
-#endif
-#endif
+    vtkTemplateMacro(ret = dispatch<VTK_TT>());
   }
 
   outputCTPersistenceDiagram->ShallowCopy(CTPersistenceDiagram_);

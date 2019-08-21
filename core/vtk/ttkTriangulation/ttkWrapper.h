@@ -66,21 +66,11 @@
 #endif
 #endif
 
-#ifndef _MSC_VER
-#define ttkTemplateMacro(s) vtkTemplateMacro((s))
-#define ttkTemplate2Macro(s) vtkTemplate2Macro((s))
-#else
-#define ttkTemplateMacro(s) vtkTemplateMacro(s);
-#define ttkTemplate2Macro(s) vtkTemplate2Macro(s);
-#endif
-
 #ifdef TTK_ENABLE_64BIT_IDS
 using ttkSimplexIdTypeArray = vtkIdTypeArray;
 #else
 using ttkSimplexIdTypeArray = vtkIntArray;
 #endif
-
-#define TTK_COMMA ,
 
 // Macros for vtkWrappers
 #define TTK_POLY_DATA_NEW(i, ouputInformation, dataTYpe)           \

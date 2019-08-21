@@ -117,7 +117,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     outputScalarField->SetName(inputScalarField->GetName());
     output->GetPointData()->AddArray(outputScalarField);
     switch(inputScalarField->GetDataType()) {
-      ttkTemplateMacro(baseWorker_.interpolateCellDataField<VTK_TT>(
+      vtkTemplateMacro(baseWorker_.interpolateCellDataField<VTK_TT>(
         static_cast<VTK_TT *>(inputScalarField->GetVoidPointer(0)),
         static_cast<VTK_TT *>(outputScalarField->GetVoidPointer(0))));
     }

@@ -192,16 +192,14 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
   void *inputMaskPtr
     = (inputMaskField) ? inputMaskField->GetVoidPointer(0) : nullptr;
 
+  smoother_.setDimensionNumber(inputScalarField->GetNumberOfComponents());
+  smoother_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
+  smoother_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
+  smoother_.setMaskDataPointer(inputMaskPtr);
+
   // calling the smoothing package
   switch(inputScalarField->GetDataType()) {
-
-    vtkTemplateMacro({
-      smoother_.setDimensionNumber(inputScalarField->GetNumberOfComponents());
-      smoother_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
-      smoother_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
-      smoother_.setMaskDataPointer(inputMaskPtr);
-      smoother_.smooth<VTK_TT>(NumberOfIterations);
-    });
+    vtkTemplateMacro(smoother_.smooth<VTK_TT>(NumberOfIterations));
   }
 
   {

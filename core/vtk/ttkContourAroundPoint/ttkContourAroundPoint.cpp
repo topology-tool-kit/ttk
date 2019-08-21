@@ -212,7 +212,7 @@ bool ttkContourAroundPoint::process() {
   _wrappedModule.setWrapper(this);
   int errorCode = 0; // In TTK, negative is bad.
   switch(_scalarTypeCode) {
-    ttkTemplateMacro((errorCode = _wrappedModule.execute<VTK_TT>()));
+    vtkTemplateMacro((errorCode = _wrappedModule.execute<VTK_TT>()));
   }
   if(errorCode < 0) {
     vtkErrorMacro("_wrappedModule.execute failed with code "
