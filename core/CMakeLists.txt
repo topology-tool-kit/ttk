@@ -172,11 +172,13 @@ if(EIGEN3_FOUND)
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" ON)
 else()
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" OFF)
+  message(STATUS "Eigen not found, disabling Eigen support in TTK.")
 endif()
 
 # scikit-learn support is disabled by default for now under MacOs
 if(APPLE)
   option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
+  message(STATUS "Disabling scikit-learn support by default under MacOs.")
 endif()
 
 if (NOT APPLE)
