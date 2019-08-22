@@ -1663,7 +1663,7 @@ int DiscreteGradient::initializeSaddleMaximumConnections(
 
     std::vector<std::vector<Cell>> paths(starNumber);
     for(SimplexId j = 0; j < starNumber; ++j) {
-      SimplexId starId;
+      SimplexId starId{};
       if(maximumDim == 2)
         inputTriangulation_->getEdgeStar(saddleId, j, starId);
       else if(maximumDim == 3)
