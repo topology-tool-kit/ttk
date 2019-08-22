@@ -1,0 +1,26 @@
+Minimalist VTK-based python TTK example pipeline, including:
+-# The computation of a persistence curve
+-# The computation of a persistence diagram
+-# The selection of the most persistent pairs of the diagram
+-# The pre-simplification of the data according to this selection
+-# The computation of the Morse-Smale complex on this simplified data
+-# The storage of the output of this pipeline to disk.
+
+This example reproduces the Figure 1 of the TTK companion paper:
+"The Topology ToolKit", 
+J. Tierny, G. Favelier, J. Levine, C. Gueunet, M. Michaux.,
+IEEE Transactions on Visualization and Computer Graphics,
+Proc. of IEEE VIS 2017.
+
+
+To run this example, first install TTK on your system 
+(https://topology-tool-kit.github.io/installation.html).
+
+Next, before launching the script, make sure that you properly define the following environment variables:
+- PYTHONPATH (where TTK VTK python modules are installed)
+
+For instance, under Linux, with Python 3.6, this can be done as follows, assuming that you installed ParaView and TTK to /usr/local:
+$ export PYTHONPATH="/usr/local/lib/python3.6/site-packages/"
+
+Then, from the current directory, enter the following command (omit the '$' character):
+$ ./example.py ../data/inputData.vtu

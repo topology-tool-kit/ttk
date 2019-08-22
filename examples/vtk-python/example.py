@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 from vtk import (
     vtkDataObject,
@@ -6,7 +8,7 @@ from vtk import (
     vtkXMLUnstructuredGridReader,
     vtkXMLUnstructuredGridWriter,
 )
-from ttk import (
+from topologytoolkit import (
     ttkMorseSmaleComplex,
     ttkPersistenceCurve,
     ttkPersistenceDiagram,
@@ -17,7 +19,7 @@ if len(sys.argv) == 2:
     inputFilePath = sys.argv[1]
 else:
     print("Missing mandatory argument: Path to input VTU file")
-    sys.exit() 
+    sys.exit()
 
 # 1. loading the input data
 reader = vtkXMLUnstructuredGridReader()
@@ -35,14 +37,14 @@ diagram.SetInputConnection(reader.GetOutputPort())
 criticalPairs = vtkThreshold()
 criticalPairs.SetInputConnection(diagram.GetOutputPort())
 criticalPairs.SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, 'PairIdentifier')
+    0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, "PairIdentifier")
 criticalPairs.ThresholdBetween(-0.1, 999999)
 
 # 5. selecting the most persistent pairs
 persistentPairs = vtkThreshold()
 persistentPairs.SetInputConnection(criticalPairs.GetOutputPort())
 persistentPairs.SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, 'Persistence')
+    0, 0, 0, vtkDataObject.FIELD_ASSOCIATION_CELLS, "Persistence")
 persistentPairs.ThresholdBetween(0.05, 999999)
 
 # 6. simplifying the input data to remove non-persistent pairs
@@ -51,7 +53,7 @@ topologicalSimplification.SetInputConnection(0, reader.GetOutputPort())
 topologicalSimplification.SetInputConnection(1, persistentPairs.GetOutputPort())
 
 # 7. computing the Morse-Smale complex
-morseSmaleComplex = ttkMorseSmaleComplex();
+morseSmaleComplex = ttkMorseSmaleComplex()
 morseSmaleComplex.SetInputConnection(topologicalSimplification.GetOutputPort())
 
 # 8. saving the output data
