@@ -24,9 +24,8 @@ function(ttk_add_vtk_library library)
   # Build the VTK Wrapper
   add_library(${library} SHARED ${ARG_SOURCES})
   target_link_libraries(${library} PUBLIC ${VTK_LIBRARIES} ${ARG_LINK})
-  # add HEADERS and LINK paramters to target properties
+  # add HEADERS paramter to target properties
   set_target_properties(${library} PROPERTIES TTK_HEADERS "${ARG_HEADERS}")
-  set_target_properties(${library} PROPERTIES TTK_LINK "${ARG_LINK}")
 
   target_include_directories(${library} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

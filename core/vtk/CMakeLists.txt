@@ -56,29 +56,51 @@ install(
   DESTINATION lib/cmake/ttk
   )
 
+set(_build_vtk_python_default OFF)
+if (VTK_WRAP_PYTHON AND (${VTK_MAJOR_VERSION} EQUAL 8) AND (VTK_VERSION VERSION_LESS 8.90.0))
+  set(_build_vtk_python_default ON)
+endif()
+option(TTK_BUILD_VTK_PYTHON_MODULE "Build VTK Python Module" ${_build_vtk_python_default})
 
 if (TTK_BUILD_VTK_PYTHON_MODULE)
-  # name of the python mudle
-  set(module ttk)
+  if (NOT ((${VTK_MAJOR_VERSION} EQUAL 8) AND (VTK_VERSION VERSION_LESS 8.90.0)))
+    message(FATAL_ERROR "Building VTK Python module is only supported for VTK version 8.")
+  endif()
+  if (NOT VTK_WRAP_PYTHON)
+    message(FATAL_ERROR "VTK needs to be built with Python wrapping enabled in order to build the VTK Python module.")
+  endif()
+
+  # name of the python module
+  set(module topologytoolkit)
   # VTK dependencies
   set(module_depends 
     vtkCommonExecutionModel
     vtkIOParallelXML)
-  # guess relative python module path from VTK config
-  # python_module_path should be similar to lib/python-x.y/site-packages
-  file(RELATIVE_PATH python_module_path ${VTK_INSTALL_PREFIX} ${VTK_PYTHONPATH})
 
-  # get headers and dependencies of vtkwrappers
+  # find VTK prefix
+  if (VTK_INSTALL_PREFIX)
+    set(_vtk_path ${VTK_INSTALL_PREFIX})
+  elseif (VTK_DIR)
+    set(_vtk_path ${VTK_DIR})
+  else ()
+    set(_vtk_path ${ParaView_DIR})
+  endif()
+  if (_vtk_path AND VTK_PYTHONPATH)
+    # guess relative python module path from VTK config
+    file(RELATIVE_PATH _python_module_dir ${_vtk_path} ${VTK_PYTHONPATH})
+  endif()
+  set(TTK_PYTHON_MODULE_DIR
+    "${_python_module_dir}"
+    CACHE STRING
+    "Subdirectory where VTK Python module will be installed")
+
+  # get headers and include directories of vtkwrappers
   set(headers)
   set(include_dirs)
-  set(link)
   foreach (vtkwrapper ${VTKWRAPPER_LIB_LIST})
     get_target_property(_source_dir ${vtkwrapper} SOURCE_DIR)
     get_target_property(_headers_relative ${vtkwrapper} TTK_HEADERS)
-    get_target_property(_link ${vtkwrapper} TTK_LINK)
-    get_target_property(_sources_relative ${vtkwrapper} SOURCES)
     set(include_dirs ${include_dirs} ${_source_dir})
-    set(link ${link} ${_link})
     foreach (header ${_headers_relative})
       if (IS_ABSOLUTE ${header})
         set(headers ${headers} "${header}")
@@ -126,17 +148,17 @@ if (TTK_BUILD_VTK_PYTHON_MODULE)
   target_link_libraries(${module}Python ${module}PythonD ${_pythond_libs})
 
   set_target_properties(${module}Python PROPERTIES 
-    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${python_module_path}/${module})
-  install(TARGETS ${module}Python DESTINATION ${python_module_path}/${module})
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${TTK_PYTHON_MODULE_DIR}/${module})
+  install(TARGETS ${module}Python DESTINATION ${TTK_PYTHON_MODULE_DIR}/${module})
   # set rpath such that vtkwrappers can be found
   set_target_properties(${module}Python PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
 
   # generate __init__.py
   set(module_py "from __future__ import absolute_import\nfrom .${module}Python import *\n")
   file(GENERATE
-    OUTPUT "${CMAKE_BINARY_DIR}/${python_module_path}/${module}/__init__.py"
+    OUTPUT "${CMAKE_BINARY_DIR}/${TTK_PYTHON_MODULE_DIR}/${module}/__init__.py"
     CONTENT "${module_py}")
   install(
-    FILES       "${CMAKE_BINARY_DIR}/${python_module_path}/${module}/__init__.py"
-    DESTINATION "${python_module_path}/${module}")
+    FILES       "${CMAKE_BINARY_DIR}/${TTK_PYTHON_MODULE_DIR}/${module}/__init__.py"
+    DESTINATION "${TTK_PYTHON_MODULE_DIR}/${module}")
 endif()
