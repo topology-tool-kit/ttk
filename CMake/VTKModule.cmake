@@ -32,7 +32,7 @@ macro(ttk_add_vtk_module)
       )
   endif()
 
-  target_link_libraries(${ARG_NAME}
+  vtk_module_link(${ARG_NAME}
     PUBLIC
       ${VTK_LIBRARIES}
       ${ARG_DEPENDS}

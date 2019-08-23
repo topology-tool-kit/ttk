@@ -1,4 +1,3 @@
-# Allows to disable each filter
 option(TTK_BUILD_POINTMERGER_FILTER "Build the PointMerger filter" ${TTK_ENABLE_FILTER_DEFAULT})
 mark_as_advanced(TTK_BUILD_POINTMERGER_FILTER)
 

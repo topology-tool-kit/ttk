@@ -1,4 +1,3 @@
-# Allows to disable each filter
 option(TTK_BUILD_DATASETINTERPOLATOR_FILTER "Build the DataSetInterpolator filter" ${TTK_ENABLE_FILTER_DEFAULT})
 mark_as_advanced(TTK_BUILD_DATASETINTERPOLATOR_FILTER)
 

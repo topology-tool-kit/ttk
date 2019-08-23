@@ -1,4 +1,3 @@
-# Allows to disable each filter
 option(TTK_BUILD_COMPONENTSIZE_FILTER "Build the ComponentSize filter" ${TTK_ENABLE_FILTER_DEFAULT})
 mark_as_advanced(TTK_BUILD_COMPONENTSIZE_FILTER)
 

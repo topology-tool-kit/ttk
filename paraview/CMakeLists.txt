@@ -15,20 +15,15 @@ foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
   endif()
 endforeach()
 
-if(MSVC)
+if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
   set(TTK_INSTALL_PLUGIN_DIR
-    "$ENV{PARAVIEW_BIN}/plugins"
+    $ENV{PV_PLUGIN_PATH}
     CACHE
     PATH
-      "Directory where TTK ParaView plugins will be installed"
+      "Directory where the ParaView plugin will be installed"
     )
 else()
-  set(TTK_INSTALL_PLUGIN_DIR
-    "${VTK_INSTALL_PREFIX}/lib/plugins"
-    CACHE
-    PATH
-      "Directory where TTK ParaView plugins will be installed"
-    )
+  message(WARNING "Please, set the PV_PLUGIN_PATH environement variable, the TTK ParaView plugin will be built but not installed.")
 endif()
 
 include(GNUInstallDirs)
@@ -48,12 +43,14 @@ paraview_plugin_scan(
   PLUGIN_FILES
     "singlePlugin/paraview.plugin"
   PROVIDES_PLUGINS
-    plugins
+    TTK_PLUGINS
   )
 
 paraview_plugin_build(
   PLUGINS
-    ${plugins}
+    ${TTK_PLUGINS}
+  AUTOLOAD
+    ${TTK_PLUGINS}
   TARGET
     TTKPVPlugin
   RUNTIME_DESTINATION
@@ -64,9 +61,12 @@ paraview_plugin_build(
     "${PARAVIEW_PLUGIN_SUBDIR}"
   )
 
-install(
-  TARGETS
-    TTKPVPlugin
-  DESTINATION
-    ${TTK_INSTALL_PLUGIN_DIR}
-  )
+# TODO does not seems to work
+if(DEFINED TTK_INSTALL_PLUGIN_DIR)
+  install(
+    TARGETS
+      TTKPVPlugin
+    DESTINATION
+      ${TTK_INSTALL_PLUGIN_DIR}
+    )
+endif()

@@ -20,9 +20,10 @@ function(_ttk_add_vtk_library library)
   set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/ttk/")
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-  if(NOT TARGET ${ARG_NAME})
+  if(NOT TARGET ${library})
     # Build the VTK Wrapper
     list(TRANSFORM ARG_SOURCES PREPEND "${ARG_CUR_FOLD}/")
+    # TODO use vtk_module_add_module?
     add_library(${library} SHARED ${ARG_SOURCES})
 
     target_link_libraries(${library}

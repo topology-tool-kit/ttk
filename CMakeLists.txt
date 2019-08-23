@@ -9,7 +9,7 @@ option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
 
 mark_as_advanced(TTK_WHITELIST_MODE)
 
-if(NOT TTK_BUILD_VTK_WRAPPERS)
+if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)
   message(WARNING "Can't build standalones without the VTK wrappers: disable")
   set(TTK_BUILD_STANDALONE_APPS OFF CACHE BOOL "Build the cmd and gui commands" FORCE)
 endif()
@@ -50,11 +50,11 @@ endif()
 include(CMake/VTKWrapper.cmake)
 if(TTK_BUILD_VTK_WRAPPERS)
   add_subdirectory(core/vtk)
-elseif(TTK_BUILD_PARAVIEW_PLUGINS)
+# elseif(TTK_BUILD_PARAVIEW_PLUGINS)
   # even without the TTK VTK wrappers, we need
   # the triangulation target for paraview filters
-  include(core/vtk/ttkTriangulation/TTKWrapper.cmake)
-  install(TARGETS ttkTriangulation DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
+  # include(core/vtk/ttkTriangulation/TTKWrapper.cmake)
+  # install(TARGETS ttkTriangulation DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
 endif()
 
 # Standalones
