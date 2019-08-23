@@ -216,39 +216,47 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
       vtkDataArray *scalarField = input->GetPointData()->GetArray(i);
       vtkSmartPointer<vtkDataArray> scalarArray;
 
+      auto copyToScalarArray = [&]() {
+        scalarArray->SetNumberOfComponents(
+          scalarField->GetNumberOfComponents());
+        scalarArray->SetNumberOfTuples(criticalPoints_.size());
+        scalarArray->SetName(scalarField->GetName());
+        std::vector<double> value(scalarField->GetNumberOfComponents());
+        for(SimplexId j = 0; j < (SimplexId)criticalPoints_.size(); j++) {
+          scalarField->GetTuple(criticalPoints_[j].first, value.data());
+          scalarArray->SetTuple(j, value.data());
+        }
+        output->GetPointData()->AddArray(scalarArray);
+      };
+
       switch(scalarField->GetDataType()) {
         case VTK_CHAR:
           scalarArray = vtkSmartPointer<vtkCharArray>::New();
+          copyToScalarArray();
           break;
         case VTK_DOUBLE:
           scalarArray = vtkSmartPointer<vtkDoubleArray>::New();
+          copyToScalarArray();
           break;
         case VTK_FLOAT:
           scalarArray = vtkSmartPointer<vtkFloatArray>::New();
+          copyToScalarArray();
           break;
         case VTK_INT:
           scalarArray = vtkSmartPointer<vtkIntArray>::New();
+          copyToScalarArray();
           break;
         case VTK_ID_TYPE:
           scalarArray = vtkSmartPointer<vtkIdTypeArray>::New();
+          copyToScalarArray();
           break;
         default: {
           stringstream msg;
           msg << "[ttkScalarFieldCriticalPoints] Scalar attachment: "
               << "unsupported data type :(" << endl;
           dMsg(cerr, msg.str(), detailedInfoMsg);
-        }
-          return -1;
+        } break;
       }
-      scalarArray->SetNumberOfComponents(scalarField->GetNumberOfComponents());
-      scalarArray->SetNumberOfTuples(criticalPoints_.size());
-      scalarArray->SetName(scalarField->GetName());
-      std::vector<double> value(scalarField->GetNumberOfComponents());
-      for(SimplexId j = 0; j < (SimplexId)criticalPoints_.size(); j++) {
-        scalarField->GetTuple(criticalPoints_[j].first, value.data());
-        scalarArray->SetTuple(j, value.data());
-      }
-      output->GetPointData()->AddArray(scalarArray);
     }
   } else {
     for(SimplexId i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++) {
