@@ -15,6 +15,9 @@
 
 #include <DiscreteGradient.h>
 
+using ttk::dcg::Cell;
+using ttk::dcg::DiscreteGradient;
+
 template <typename dataType>
 dataType DiscreteGradient::scalarMax(const Cell &cell,
                                      const dataType *const scalars) const {

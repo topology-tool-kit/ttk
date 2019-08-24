@@ -1158,6 +1158,7 @@ tetra identifier.
       std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_;
     };
 
-#include <DiscreteGradient_Template.h>
   } // namespace dcg
 } // namespace ttk
+
+#include <DiscreteGradient_Template.h>
