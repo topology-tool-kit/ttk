@@ -190,14 +190,9 @@ dataType DiscreteGradient::getPersistence(const Cell &up,
 }
 
 template <typename dataType, typename idType>
-int DiscreteGradient::assignGradient(
-  const dataType *const /*scalars*/,
-  const idType *const offsets,
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-  std::vector<std::vector<std::vector<char>>> &gradient) const {
-#else
-  std::vector<std::vector<std::vector<SimplexId>>> &gradient) const {
-#endif
+int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
+                                     const idType *const offsets,
+                                     fullGradientType &gradient) const {
 
   /*=================================== Process lower stars
    * ========================================*/
@@ -352,15 +347,10 @@ int DiscreteGradient::assignGradient(
 }
 
 template <typename dataType, typename idType>
-int DiscreteGradient::assignGradient2(
-  const int alphaDim,
-  const dataType *const scalars,
-  const idType *const offsets,
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-  std::vector<std::vector<char>> &gradient) const {
-#else
-  std::vector<std::vector<SimplexId>> &gradient) const {
-#endif
+int DiscreteGradient::assignGradient2(const int alphaDim,
+                                      const dataType *const scalars,
+                                      const idType *const offsets,
+                                      gradientType &gradient) const {
   if(alphaDim > 0) {
     const int betaDim = alphaDim + 1;
     const SimplexId alphaNumber = gradient[alphaDim].size();
@@ -613,15 +603,10 @@ int DiscreteGradient::assignGradient2(
 }
 
 template <typename dataType, typename idType>
-int DiscreteGradient::assignGradient3(
-  const int alphaDim,
-  const dataType *const scalars,
-  const idType *const offsets,
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-  std::vector<std::vector<char>> &gradient) const {
-#else
-  std::vector<std::vector<SimplexId>> &gradient) const {
-#endif
+int DiscreteGradient::assignGradient3(const int alphaDim,
+                                      const dataType *const scalars,
+                                      const idType *const offsets,
+                                      gradientType &gradient) const {
   if(alphaDim > 0) {
     const int betaDim = alphaDim + 1;
     const SimplexId alphaNumber = gradient[alphaDim].size();

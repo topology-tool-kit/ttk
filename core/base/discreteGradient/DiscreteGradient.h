@@ -278,6 +278,13 @@ namespace ttk {
       };
     };
 
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+    using gradientType = std::vector<std::vector<char>>;
+#else
+    using gradientType = std::vector<std::vector<SimplexId>>;
+#endif
+    using fullGradientType = std::vector<gradientType>;
+
     /**
      * Compute and manage a discrete gradient of a function on a triangulation.
      * TTK assumes that the input dataset is made of only one connected
@@ -286,7 +293,6 @@ namespace ttk {
     class DiscreteGradient : public Debug {
 
     public:
-
       /**
        * Impose a threshold on the number of simplification passes.
        */
@@ -505,14 +511,9 @@ given dimension.
       }
 
       template <typename dataType, typename idType>
-      int assignGradient(
-        const dataType *scalars,
-        const idType *offsets,
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        std::vector<std::vector<std::vector<char>>> &gradient) const;
-#else
-        std::vector<std::vector<std::vector<SimplexId>>> &gradient) const;
-#endif
+      int assignGradient(const dataType *scalars,
+                         const idType *offsets,
+                         fullGradientType &gradient) const;
 
       /**
        * Body of AssignGradient2 algorithm from "Parallel Computation of 3D
@@ -525,11 +526,7 @@ unpaired cells.
       int assignGradient2(int alphaDim,
                           const dataType *scalars,
                           const idType *offsets,
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-                          std::vector<std::vector<char>> &gradient) const;
-#else
-                          std::vector<std::vector<SimplexId>> &gradient) const;
-#endif
+                          gradientType &gradient) const;
 
       /**
        * Brand new pass on the discrete gradient designed specifically for this
@@ -541,11 +538,7 @@ triangulation only).
       int assignGradient3(int alphaDim,
                           const dataType *scalars,
                           const idType *offsets,
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-                          std::vector<std::vector<char>> &gradient) const;
-#else
-                          std::vector<std::vector<SimplexId>> &gradient) const;
-#endif
+                          gradientType &gradient) const;
 
       /**
        * Compute the initial gradient field of the input scalar function on the
@@ -1125,11 +1118,7 @@ tetra identifier.
 
       int dimensionality_{-1};
       SimplexId numberOfVertices_{};
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-      std::vector<std::vector<std::vector<char>>> gradient_{};
-#else
-      std::vector<std::vector<std::vector<SimplexId>>> gradient_{};
-#endif
+      fullGradientType gradient_{};
       std::vector<SimplexId> dmtMax2PL_{};
       std::vector<SimplexId> dmt1Saddle2PL_{};
       std::vector<SimplexId> dmt2Saddle2PL_{};
