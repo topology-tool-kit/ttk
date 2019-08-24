@@ -1,8 +1,8 @@
 #include <DiscreteGradient.h>
 
 using namespace std;
-using namespace ttk;
-using namespace dcg;
+using ttk::SimplexId;
+using ttk::dcg::DiscreteGradient;
 
 int DiscreteGradient::getDimensionality() const {
   return dimensionality_;
