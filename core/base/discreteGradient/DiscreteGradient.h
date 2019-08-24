@@ -286,7 +286,6 @@ namespace ttk {
     class DiscreteGradient : public Debug {
 
     public:
-      explicit DiscreteGradient();
 
       /**
        * Impose a threshold on the number of simplification passes.
@@ -1117,45 +1116,46 @@ tetra identifier.
       int setGradientGlyphs() const;
 
     protected:
-      int IterationThreshold;
-      bool ReverseSaddleMaximumConnection;
-      bool ReverseSaddleSaddleConnection;
-      bool CollectPersistencePairs;
-      bool ReturnSaddleConnectors;
-      double SaddleConnectorsPersistenceThreshold;
+      int IterationThreshold{-1};
+      bool ReverseSaddleMaximumConnection{false};
+      bool ReverseSaddleSaddleConnection{false};
+      bool CollectPersistencePairs{false};
+      bool ReturnSaddleConnectors{false};
+      double SaddleConnectorsPersistenceThreshold{0.0};
 
-      int dimensionality_;
-      SimplexId numberOfVertices_;
+      int dimensionality_{-1};
+      SimplexId numberOfVertices_{};
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-      std::vector<std::vector<std::vector<char>>> gradient_;
+      std::vector<std::vector<std::vector<char>>> gradient_{};
 #else
-      std::vector<std::vector<std::vector<SimplexId>>> gradient_;
+      std::vector<std::vector<std::vector<SimplexId>>> gradient_{};
 #endif
-      std::vector<SimplexId> dmtMax2PL_;
-      std::vector<SimplexId> dmt1Saddle2PL_;
-      std::vector<SimplexId> dmt2Saddle2PL_;
+      std::vector<SimplexId> dmtMax2PL_{};
+      std::vector<SimplexId> dmt1Saddle2PL_{};
+      std::vector<SimplexId> dmt2Saddle2PL_{};
 
-      const void *inputScalarField_;
-      const void *inputOffsets_;
-      Triangulation *inputTriangulation_;
+      const void *inputScalarField_{};
+      const void *inputOffsets_{};
+      Triangulation *inputTriangulation_{};
 
-      SimplexId *outputCriticalPoints_numberOfPoints_;
-      std::vector<float> *outputCriticalPoints_points_;
-      std::vector<char> *outputCriticalPoints_points_cellDimensions_;
-      std::vector<SimplexId> *outputCriticalPoints_points_cellIds_;
-      void *outputCriticalPoints_points_cellScalars_;
-      std::vector<char> *outputCriticalPoints_points_isOnBoundary_;
-      std::vector<SimplexId> *outputCriticalPoints_points_PLVertexIdentifiers_;
-      std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_;
+      SimplexId *outputCriticalPoints_numberOfPoints_{};
+      std::vector<float> *outputCriticalPoints_points_{};
+      std::vector<char> *outputCriticalPoints_points_cellDimensions_{};
+      std::vector<SimplexId> *outputCriticalPoints_points_cellIds_{};
+      void *outputCriticalPoints_points_cellScalars_{};
+      std::vector<char> *outputCriticalPoints_points_isOnBoundary_{};
+      std::vector<SimplexId>
+        *outputCriticalPoints_points_PLVertexIdentifiers_{};
+      std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};
 
-      SimplexId *outputGradientGlyphs_numberOfPoints_;
-      std::vector<float> *outputGradientGlyphs_points_;
-      std::vector<char> *outputGradientGlyphs_points_pairOrigins_;
-      SimplexId *outputGradientGlyphs_numberOfCells_;
-      std::vector<SimplexId> *outputGradientGlyphs_cells_;
-      std::vector<char> *outputGradientGlyphs_cells_pairTypes_;
+      SimplexId *outputGradientGlyphs_numberOfPoints_{};
+      std::vector<float> *outputGradientGlyphs_points_{};
+      std::vector<char> *outputGradientGlyphs_points_pairOrigins_{};
+      SimplexId *outputGradientGlyphs_numberOfCells_{};
+      std::vector<SimplexId> *outputGradientGlyphs_cells_{};
+      std::vector<char> *outputGradientGlyphs_cells_pairTypes_{};
 
-      std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_;
+      std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_{};
     };
 
   } // namespace dcg

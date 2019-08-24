@@ -4,35 +4,6 @@ using namespace std;
 using namespace ttk;
 using namespace dcg;
 
-DiscreteGradient::DiscreteGradient()
-  : IterationThreshold{-1}, ReverseSaddleMaximumConnection{false},
-    ReverseSaddleSaddleConnection{false}, CollectPersistencePairs{false},
-    ReturnSaddleConnectors{false}, SaddleConnectorsPersistenceThreshold{0},
-
-    dimensionality_{-1}, numberOfVertices_{0},
-
-    inputScalarField_{nullptr}, inputOffsets_{nullptr},
-    inputTriangulation_{nullptr},
-
-    outputCriticalPoints_numberOfPoints_{nullptr},
-    outputCriticalPoints_points_{nullptr},
-    outputCriticalPoints_points_cellDimensions_{nullptr},
-    outputCriticalPoints_points_cellIds_{nullptr},
-    outputCriticalPoints_points_cellScalars_{nullptr},
-    outputCriticalPoints_points_isOnBoundary_{nullptr},
-    outputCriticalPoints_points_PLVertexIdentifiers_{nullptr},
-    outputCriticalPoints_points_manifoldSize_{nullptr},
-
-    outputGradientGlyphs_numberOfPoints_{nullptr},
-    outputGradientGlyphs_points_{nullptr},
-    outputGradientGlyphs_points_pairOrigins_{nullptr},
-    outputGradientGlyphs_numberOfCells_{nullptr},
-    outputGradientGlyphs_cells_{nullptr},
-    outputGradientGlyphs_cells_pairTypes_{nullptr},
-
-    outputPersistencePairs_{nullptr} {
-}
-
 int DiscreteGradient::getDimensionality() const {
   return dimensionality_;
 }
