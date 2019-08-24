@@ -11,8 +11,7 @@
 ///
 /// \sa ttk::Triangulation
 
-#ifndef _DISCRETEGRADIENT_TPL_H
-#define _DISCRETEGRADIENT_TPL_H
+#pragma once
 
 #include <DiscreteGradient.h>
 
@@ -3480,5 +3479,3 @@ int DiscreteGradient::reverseGradient() {
 
   return 0;
 }
-
-#endif // DISCRETEGRADIENT_TPL_H

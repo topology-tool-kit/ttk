@@ -11,8 +11,7 @@
 ///
 /// \sa ttk::Triangulation
 
-#ifndef _DISCRETEGRADIENT_H
-#define _DISCRETEGRADIENT_H
+#pragma once
 
 // base code includes
 #include <FTMTree.h>
@@ -1162,5 +1161,3 @@ tetra identifier.
 #include <DiscreteGradient_Template.h>
   } // namespace dcg
 } // namespace ttk
-
-#endif // DISCRETEGRADIENT_H
