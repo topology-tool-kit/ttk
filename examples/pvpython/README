@@ -1,4 +1,4 @@
-Minimalist python TTK example pipeline, including:
+Minimalist ParaView-based python TTK example pipeline, including:
 -# The computation of a persistence curve
 -# The computation of a persistence diagram
 -# The selection of the most persistent pairs of the diagram
@@ -27,7 +27,7 @@ $ export PV_PLUGIN_PATH="/usr/local/lib/plugins"
 $ export PYTHONPATH="/usr/local/lib/python3.6/site-packages/"
 
 Then, from the current directory, enter the following command (omit the '$' character):
-$ ./ttkExample-python.py ../data/inputData.vtu
+$ ./example.py ../data/inputData.vtu
 
 Alternatively, you can also use the ParaView python wrapper (which will automatically position environment variables correctly):
-$ pvpython ttkExample-python.py ../data/inputData.vtu
+$ pvpython example.py ../data/inputData.vtu
