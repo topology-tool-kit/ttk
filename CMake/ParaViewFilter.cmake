@@ -1,6 +1,5 @@
 # register a new filter to build in the TTK plugin
 # also deduce the location of the corresonding vtk.module file
-# TODO list of xml file?
 macro(ttk_register_pv_filter vtkModule xmlFile)
   if(NOT EXISTS ${VTKWRAPPER_DIR}/${vtkModule}/vtk.module)
     message(FATAL_ERROR

@@ -23,7 +23,6 @@ function(_ttk_add_vtk_library library)
   if(NOT TARGET ${library})
     # Build the VTK Wrapper
     list(TRANSFORM ARG_SOURCES PREPEND "${ARG_CUR_FOLD}/")
-    # TODO use vtk_module_add_module?
     add_library(${library} SHARED ${ARG_SOURCES})
 
     target_link_libraries(${library}

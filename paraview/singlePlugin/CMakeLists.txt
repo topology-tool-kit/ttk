@@ -8,4 +8,4 @@ paraview_add_plugin(TopologyToolKit
     ${TTK_MODULE_FILES}
   SERVER_MANAGER_XML
     ${TTK_XMLS}
-    )
+  )

@@ -51,8 +51,6 @@ paraview_plugin_build(
     ${TTK_PLUGINS}
   AUTOLOAD
     ${TTK_PLUGINS}
-  TARGET
-    TTKPVPlugin
   RUNTIME_DESTINATION
     "${CMAKE_INSTALL_BINDIR}"
   LIBRARY_DESTINATION
@@ -61,12 +59,14 @@ paraview_plugin_build(
     "${PARAVIEW_PLUGIN_SUBDIR}"
   )
 
-# TODO does not seems to work
 if(DEFINED TTK_INSTALL_PLUGIN_DIR)
+  # This only install the TopologyToolKit.so file
+  # Assume a system installation of TTK, otherwise
+  # filters so won't be found (no rpath management yet)
   install(
     TARGETS
-      TTKPVPlugin
+      ${TTK_PLUGINS}
     DESTINATION
-      ${TTK_INSTALL_PLUGIN_DIR}
+      "${TTK_INSTALL_PLUGIN_DIR}"
     )
 endif()
