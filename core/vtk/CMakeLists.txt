@@ -124,6 +124,15 @@ if (TTK_BUILD_VTK_PYTHON_MODULE)
   set(KIT_HIERARCHY_FILE ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_HIERARCHY_NAME}.txt)
   set(LIB_HIERARCHY_STAMP ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_HIERARCHY_NAME}.stamp.txt)
 
+  if (VTK_VERSION VERSION_LESS 8.2)
+    # workaround for build failing in VTK<8.2 due to "no rule to make Hierarchy.txt"
+
+    # dependency Hierarchy.stamp.txt causes execution of vtk_wrap_hierarchy
+    list(APPEND KIT_HIERARCHY_FILE "${CMAKE_CURRENT_BINARY_DIR}/${MODULE_HIERARCHY_NAME}.stamp.txt")
+    # add dummy command for Hierarchy.txt
+    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${MODULE_HIERARCHY_NAME}.txt" COMMAND "")
+  endif()
+
   add_library(${module}Python MODULE ${module}PythonInit.cxx)
   set_target_properties(${module}Python PROPERTIES PREFIX "")
   target_include_directories(${module}Python PUBLIC ${include_dirs})
