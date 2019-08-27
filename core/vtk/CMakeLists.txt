@@ -1,14 +1,6 @@
 include(functions.cmake)
 
-option(TTK_BUILD_VTK_PYTHON_MODULE "Build VTK Python Module" ON)
-
-if(${TTK_BUILD_VTK_PYTHON_MODULE})
-  option(TTK_FORCE_VTK_PARAVIEW 
-    "Force to use the VTK bundled from ParaView" ON)
-else()
-  option(TTK_FORCE_VTK_PARAVIEW
-    "Force to use the VTK bundled from ParaView" OFF)
-endif()
+option(TTK_FORCE_VTK_PARAVIEW "Force to use the VTK bundled from ParaView" ON)
 mark_as_advanced(TTK_FORCE_VTK_PARAVIEW)
 
 # find VTK, if none provided but paraview is given,
@@ -68,12 +60,11 @@ set(_build_vtk_python_default OFF)
 if (VTK_WRAP_PYTHON AND (${VTK_MAJOR_VERSION} EQUAL 8) AND (VTK_VERSION VERSION_LESS 8.90.0))
   set(_build_vtk_python_default ON)
 endif()
+option(TTK_BUILD_VTK_PYTHON_MODULE "Build VTK Python Module" ${_build_vtk_python_default})
 
 if (TTK_BUILD_VTK_PYTHON_MODULE)
   if (NOT ((${VTK_MAJOR_VERSION} EQUAL 8) AND (VTK_VERSION VERSION_LESS 8.90.0)))
-    message(STATUS "Building VTK Python module is only supported for VTK version 8.")
-    message(STATUS "Disabling VTK Python module build")
-    option(TTK_BUILD_VTK_PYTHON_MODULE "Build VTK Python Module" OFF
+    message(FATAL_ERROR "Building VTK Python module is only supported for VTK version 8.")
   endif()
   if (NOT VTK_WRAP_PYTHON)
     message(FATAL_ERROR "VTK needs to be built with Python wrapping enabled in order to build the VTK Python module.")
