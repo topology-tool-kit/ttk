@@ -1,5 +1,0 @@
-ttk_add_paraview_plugin(ttkPersistenceDiagramsBarycenter
-	SOURCES ${VTKWRAPPER_DIR}/ttkPersistenceDiagramsBarycenter/ttkPersistenceDiagramsBarycenter.cpp
-	PLUGIN_XML PersistenceDiagramsBarycenter.xml
-	LINK persistenceDiagramsBarycenter)
-
