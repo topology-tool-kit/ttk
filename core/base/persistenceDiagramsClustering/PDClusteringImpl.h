@@ -514,7 +514,7 @@ void PDClustering<dataType>::correctMatchings(vector<vector<vector<vector<matchi
                 for(unsigned int j = 0; j < previous_matchings[c][0][i].size(); j++) {
                     matchingTuple m = previous_matchings[c][0][i][j];
                     int new_id = std::get<0>(m);
-                    if(new_id >= 0 && std::get<1>(m) >= 0 && new_to_old_id[new_id]>0) {
+                    if(new_id >= 0 && std::get<1>(m) >= 0) {
                         std::get<0>(m) = new_to_old_id[new_id];
                         previous_matchings[c][0][i][j] = m;
                         cout << " diagram " << i <<" "<<diagram_id<<" "<< get<0>(m) << " " << get<1>(m) << " " << get<2>(m) << endl;
