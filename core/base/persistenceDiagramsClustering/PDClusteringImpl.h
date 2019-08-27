@@ -482,28 +482,33 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
 
     // CORRECT MATCHINGS :
     // correctMatchings(all_matchings);
-    printMatchings(all_matchings_per_type_and_cluster[0]);
+    // cout<<"\n current bidder ids \n"<<endl;
+    // for(int i=0; i<current_bidder_ids_min_[0].size(); i++){
+    //     cout<<i<<" "<<current_bidder_ids_min_[0][i]<<endl;
+    // }
+    // printMatchings(all_matchings_per_type_and_cluster[0]);
     correctMatchings(all_matchings_per_type_and_cluster);
+
+
     if(distanceWritingOptions_ == 1){
         printDistancesToFile();
     }
     else if(distanceWritingOptions_ == 2){
         printRealDistancesToFile();
     }
-    cout<<" final EPSILONS "<<epsilon_[0]<<" "<<epsilon_[1]<<" "<<epsilon_[2]<<endl;
+    // cout<<" final EPSILONS "<<epsilon_[0]<<" "<<epsilon_[1]<<" "<<epsilon_[2]<<endl;
     return inv_clustering_;
 }
 
 template <typename dataType>
 void PDClustering<dataType>::correctMatchings(vector<vector<vector<vector<matchingTuple>>>>& previous_matchings)
 {
-
     for(int c = 0; c < k_; c++) {
         for(int i = 0; i < clustering_[c].size(); i++) {
             int diagram_id = clustering_[c][i] ;
             if(original_dos[0]) {
                 // 1. Invert the current_bidder_ids_ vector
-                std::vector<int> new_to_old_id(current_bidder_diagrams_min_[diagram_id].size());
+                std::vector<int> new_to_old_id(current_bidder_diagrams_min_[diagram_id].size(), -1);
                 for(unsigned int j = 0; j < current_bidder_ids_min_[diagram_id].size(); j++) {
                     int new_id = current_bidder_ids_min_[diagram_id][j];
                     if(new_id >= 0) {
@@ -511,15 +516,21 @@ void PDClustering<dataType>::correctMatchings(vector<vector<vector<vector<matchi
                     }
                 }
                 // 2. Reconstruct the matchings
+                // cout<<"new to old "<<new_to_old_id.size()<<endl;
+                // for(int ii=0; ii<new_to_old_id.size();ii++){
+                // cout<<ii<<" "<<new_to_old_id[ii]<<endl;
+                // }
+                std::vector<matchingTuple> matchings_diagram_i;
                 for(unsigned int j = 0; j < previous_matchings[c][0][i].size(); j++) {
                     matchingTuple m = previous_matchings[c][0][i][j];
                     int new_id = std::get<0>(m);
                     if(new_id >= 0 && std::get<1>(m) >= 0) {
                         std::get<0>(m) = new_to_old_id[new_id];
-                        previous_matchings[c][0][i][j] = m;
-                        cout << " diagram " << i <<" "<<diagram_id<<" "<< get<0>(m) << " " << get<1>(m) << " " << get<2>(m) << endl;
+                        matchings_diagram_i.push_back(m);
                     }
                 }
+                previous_matchings[c][0][i].resize(matchings_diagram_i.size());
+                previous_matchings[c][0][i]=matchings_diagram_i;
             }
             if(original_dos[1]) {
                 // 1. Invert the current_bidder_ids_ vector
@@ -531,14 +542,28 @@ void PDClustering<dataType>::correctMatchings(vector<vector<vector<vector<matchi
                     }
                 }
                 // 2. Reconstruct the matchings
+                int zero_done=0;
+                std::vector<matchingTuple> matchings_diagram_i;
                 for(unsigned int j = 0; j < previous_matchings[c][1][i].size(); j++) {
                     matchingTuple m = previous_matchings[c][1][i][j];
                     int new_id = std::get<0>(m);
                     if(new_id >= 0 && std::get<1>(m) >= 0) {
-                        std::get<0>(m) = new_to_old_id[new_id];
-                        previous_matchings[c][1][i][j] = m;
+                        int old_id = new_to_old_id[new_id];
+                        if(old_id>0){
+                        std::get<0>(m) = old_id;
+                        matchings_diagram_i.push_back(m);
+                        }
+                        else{
+                            if(!zero_done){
+                                zero_done = 1;
+                                std::get<0>(m) = old_id;
+                                matchings_diagram_i.push_back(m);
+                            }
+                        }
                     }
                 }
+                previous_matchings[c][1][i].resize(matchings_diagram_i.size());
+                previous_matchings[c][1][i]=matchings_diagram_i;
             }
             if(original_dos[2]) {
                 // 1. Invert the current_bidder_ids_ vector
@@ -550,14 +575,28 @@ void PDClustering<dataType>::correctMatchings(vector<vector<vector<vector<matchi
                     }
                 }
                 // 2. Reconstruct the matchings
+                int zero_done=0;
+                std::vector<matchingTuple> matchings_diagram_i;
                 for(unsigned int j = 0; j < previous_matchings[c][2][i].size(); j++) {
                     matchingTuple m = previous_matchings[c][2][i][j];
                     int new_id = std::get<0>(m);
                     if(new_id >= 0 && std::get<1>(m) >= 0) {
-                        std::get<0>(m) = new_to_old_id[new_id];
-                        previous_matchings[c][2][i][j] = m;
+                        int old_id = new_to_old_id[new_id];
+                        if(old_id>0){
+                        std::get<0>(m) = old_id;
+                        matchings_diagram_i.push_back(m);
+                        }
+                        else{
+                            if(!zero_done){
+                                zero_done = 1;
+                                std::get<0>(m) = old_id;
+                                matchings_diagram_i.push_back(m);
+                            }
+                        }
                     }
                 }
+                previous_matchings[c][2][i].resize(matchings_diagram_i.size());
+                previous_matchings[c][2][i]=matchings_diagram_i;
             }
         }
     }
@@ -1959,6 +1998,7 @@ void PDClustering<dataType>::setBidderDiagrams()
                 ids[j] = -1;
             }
             current_bidder_ids_min_.push_back(ids);
+
         }
 
         if (do_sad_) {
