@@ -73,7 +73,7 @@ if (TTK_BUILD_VTK_PYTHON_MODULE)
   if (NOT ((${VTK_MAJOR_VERSION} EQUAL 8) AND (VTK_VERSION VERSION_LESS 8.90.0)))
     message(STATUS "Building VTK Python module is only supported for VTK version 8.")
     message(STATUS "Disabling VTK Python module build")
-    set(TTK_BUILD_VTK_PYTHON_MODULE OFF)
+    option(TTK_BUILD_VTK_PYTHON_MODULE "Build VTK Python Module" OFF
   endif()
   if (NOT VTK_WRAP_PYTHON)
     message(FATAL_ERROR "VTK needs to be built with Python wrapping enabled in order to build the VTK Python module.")
