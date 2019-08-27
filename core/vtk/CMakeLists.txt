@@ -1,6 +1,14 @@
 include(functions.cmake)
 
-option(TTK_FORCE_VTK_PARAVIEW "Force to use the VTK bundled from ParaView" OFF)
+option(TTK_BUILD_VTK_PYTHON_MODULE "Build VTK Python Module" ON)
+
+if(${TTK_BUILD_VTK_PYTHON_MODULE})
+  option(TTK_FORCE_VTK_PARAVIEW 
+    "Force to use the VTK bundled from ParaView" ON)
+else()
+  option(TTK_FORCE_VTK_PARAVIEW
+    "Force to use the VTK bundled from ParaView" OFF)
+endif()
 mark_as_advanced(TTK_FORCE_VTK_PARAVIEW)
 
 # find VTK, if none provided but paraview is given,
@@ -60,7 +68,6 @@ set(_build_vtk_python_default OFF)
 if (VTK_WRAP_PYTHON AND (${VTK_MAJOR_VERSION} EQUAL 8) AND (VTK_VERSION VERSION_LESS 8.90.0))
   set(_build_vtk_python_default ON)
 endif()
-option(TTK_BUILD_VTK_PYTHON_MODULE "Build VTK Python Module" ${_build_vtk_python_default})
 
 if (TTK_BUILD_VTK_PYTHON_MODULE)
   if (NOT ((${VTK_MAJOR_VERSION} EQUAL 8) AND (VTK_VERSION VERSION_LESS 8.90.0)))
@@ -123,15 +130,6 @@ if (TTK_BUILD_VTK_PYTHON_MODULE)
   vtk_wrap_hierarchy(${module} ${CMAKE_CURRENT_BINARY_DIR} "${headers}")
   set(KIT_HIERARCHY_FILE ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_HIERARCHY_NAME}.txt)
   set(LIB_HIERARCHY_STAMP ${CMAKE_CURRENT_BINARY_DIR}/${MODULE_HIERARCHY_NAME}.stamp.txt)
-
-  if (VTK_VERSION VERSION_LESS 8.2)
-    # workaround for build failing in VTK<8.2 due to "no rule to make Hierarchy.txt"
-
-    # dependency Hierarchy.stamp.txt causes execution of vtk_wrap_hierarchy
-    list(APPEND KIT_HIERARCHY_FILE "${CMAKE_CURRENT_BINARY_DIR}/${MODULE_HIERARCHY_NAME}.stamp.txt")
-    # add dummy command for Hierarchy.txt
-    add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${MODULE_HIERARCHY_NAME}.txt" COMMAND "")
-  endif()
 
   add_library(${module}Python MODULE ${module}PythonInit.cxx)
   set_target_properties(${module}Python PROPERTIES PREFIX "")
