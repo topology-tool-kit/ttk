@@ -22,7 +22,7 @@ namespace ttk{
 			use_progressive_ = true;
             deterministic_ = true;
 			time_limit_ = std::numeric_limits<double>::max();
-			epsilon_min_ = 1e-5;
+			epsilon_min_ = 1e-8;
 			epsilon_.resize(3);
 			precision_criterion_ = false;
 			precision_min_ = false;
@@ -45,8 +45,10 @@ namespace ttk{
 		std::vector<std::vector<dataType>> getMinDiagonalPrices();
 		std::vector<std::vector<dataType>> getMinPrices();
 
-		dataType computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim);
-		dataType computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim);
+                void correctMatchings(vector<vector<vector<vector<matchingTuple>>>>& previous_matchings);
+
+                    dataType computeDistance(BidderDiagram<dataType>& D1, BidderDiagram<dataType>& D2, dataType delta_lim);
+                dataType computeDistance(BidderDiagram<dataType> D1, GoodDiagram<dataType> D2, dataType delta_lim);
 		dataType computeDistance(BidderDiagram<dataType>* D1, GoodDiagram<dataType>* D2, dataType delta_lim);
 		dataType computeDistance(GoodDiagram<dataType>& D1, GoodDiagram<dataType>& D2, dataType delta_lim);
 
@@ -248,7 +250,10 @@ namespace ttk{
     dataType cost_min_;
     dataType cost_sad_;
     dataType cost_max_;
-
+    
+     std::vector<std::vector<int>> current_bidder_ids_min_;
+     std::vector<std::vector<int>> current_bidder_ids_sad_;
+     std::vector<std::vector<int>> current_bidder_ids_max_;
     std::vector<std::vector<diagramTuple>>* inputDiagramsMin_;
     std::vector<std::vector<diagramTuple>>* inputDiagramsSaddle_;
     std::vector<std::vector<diagramTuple>>* inputDiagramsMax_;

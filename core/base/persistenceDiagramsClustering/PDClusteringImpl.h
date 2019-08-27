@@ -272,6 +272,7 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
                 }
 
                 if (epsilon_[0] < epsilon_min_ /*&& diagrams_complete[0]*/){
+                    cout<<"[min barycenter] epsilon under minimal value "<<endl;
                     do_min_ = false;
                     epsilon_[0] = epsilon_min_;
                     diagrams_complete[0]=true;
@@ -282,6 +283,7 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
                     diagrams_complete[1]=true;
                 }
                 if (epsilon_[2] < epsilon_min_ /*&& diagrams_complete[2]*/){
+                    cout<<"[max barycenter] epsilon under minimal value "<<endl;
                     do_max_ = false;
                     epsilon_[2] = epsilon_min_;
                     diagrams_complete[2]=true;
@@ -480,6 +482,8 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
 
     // CORRECT MATCHINGS :
     // correctMatchings(all_matchings);
+    printMatchings(all_matchings_per_type_and_cluster[0]);
+    correctMatchings(all_matchings_per_type_and_cluster);
     if(distanceWritingOptions_ == 1){
         printDistancesToFile();
     }
@@ -490,76 +494,74 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
     return inv_clustering_;
 }
 
-// template <typename dataType>
-// void PDClustering<dataType>::correctMatchings(std::vector<std::vector<matchingTuple>>& previous_matchings)
-// {
-//     // std::vector<std::vector<matchingTuple>> corrected_matchings(numberOfInputs_);
-//     for(int i = 0; i < numberOfInputs_; i++) {
-//         // 1. Invert the current_bidder_ids_ vector
-//         std::vector<int> new_to_old_id(current_bidder_diagrams_min_[i].size());
-//         for(unsigned int j = 0; j < current_bidder_ids_[i].size(); j++) {
-//             int new_id = current_bidder_ids_[i][j];
-//             if(new_id >= 0) {
-//                 new_to_old_id[new_id] = j;
-//         }
-//             }
-//         // 2. Reconstruct the matchings
-//         std::vector<matchingTuple> matchings_diagram_i;
-//         for(unsigned int j = 0; j < previous_matchings[i].size(); j++) {
-//             matchingTuple m = previous_matchings[i][j];
-//             int new_id = std::get<0>(m);
-//             if(new_id >= 0 && std::get<1>(m) >= 0) {
-//                 std::get<0>(m) = new_to_old_id[new_id];
-//                 matchings_diagram_i.push_back(m);
-//             }
-//         }
-//         corrected_matchings[i] = matchings_diagram_i;
-//     }
+template <typename dataType>
+void PDClustering<dataType>::correctMatchings(vector<vector<vector<vector<matchingTuple>>>>& previous_matchings)
+{
 
-
-//     for(int i = 0; i < numberOfInputs_; i++) {
-//         // 1. Invert the current_bidder_ids_ vector
-//         std::vector<int> new_to_old_id(current_bidder_diagrams_[i].size());
-//         for(unsigned int j = 0; j < current_bidder_ids_[i].size(); j++) {
-//             int new_id = current_bidder_ids_[i][j];
-//             if(new_id >= 0) {
-//                 new_to_old_id[new_id] = j;
-//             }
-//         }
-//         // 2. Reconstruct the matchings
-//         std::vector<matchingTuple> matchings_diagram_i;
-//         for(unsigned int j = 0; j < previous_matchings[i].size(); j++) {
-//             matchingTuple m = previous_matchings[i][j];
-//             int new_id = std::get<0>(m);
-//             if(new_id >= 0 && std::get<1>(m) >= 0) {
-//                 std::get<0>(m) = new_to_old_id[new_id];
-//                 matchings_diagram_i.push_back(m);
-//             }
-//         }
-//         corrected_matchings[i] = matchings_diagram_i;
-//     }
-//     for(int i = 0; i < numberOfInputs_; i++) {
-//         // 1. Invert the current_bidder_ids_ vector
-//         std::vector<int> new_to_old_id(current_bidder_diagrams_[i].size());
-//         for(unsigned int j = 0; j < current_bidder_ids_[i].size(); j++) {
-//             int new_id = current_bidder_ids_[i][j];
-//             if(new_id >= 0) {
-//                 new_to_old_id[new_id] = j;
-//             }
-//         }
-//         // 2. Reconstruct the matchings
-//         std::vector<matchingTuple> matchings_diagram_i;
-//         for(unsigned int j = 0; j < previous_matchings[i].size(); j++) {
-//             matchingTuple m = previous_matchings[i][j];
-//             int new_id = std::get<0>(m);
-//             if(new_id >= 0 && std::get<1>(m) >= 0) {
-//                 std::get<0>(m) = new_to_old_id[new_id];
-//                 matchings_diagram_i.push_back(m);
-//
-//         }
-//         corrected_matchings[i] = matchings_diagram_i;
-//     }
-// }
+    for(int c = 0; c < k_; c++) {
+        for(int i = 0; i < clustering_[c].size(); i++) {
+            int diagram_id = clustering_[c][i] ;
+            if(original_dos[0]) {
+                // 1. Invert the current_bidder_ids_ vector
+                std::vector<int> new_to_old_id(current_bidder_diagrams_min_[diagram_id].size());
+                for(unsigned int j = 0; j < current_bidder_ids_min_[diagram_id].size(); j++) {
+                    int new_id = current_bidder_ids_min_[diagram_id][j];
+                    if(new_id >= 0) {
+                        new_to_old_id[new_id] = j;
+                    }
+                }
+                // 2. Reconstruct the matchings
+                for(unsigned int j = 0; j < previous_matchings[c][0][i].size(); j++) {
+                    matchingTuple m = previous_matchings[c][0][i][j];
+                    int new_id = std::get<0>(m);
+                    if(new_id >= 0 && std::get<1>(m) >= 0 && new_to_old_id[new_id]>0) {
+                        std::get<0>(m) = new_to_old_id[new_id];
+                        previous_matchings[c][0][i][j] = m;
+                        cout << " diagram " << i <<" "<<diagram_id<<" "<< get<0>(m) << " " << get<1>(m) << " " << get<2>(m) << endl;
+                    }
+                }
+            }
+            if(original_dos[1]) {
+                // 1. Invert the current_bidder_ids_ vector
+                std::vector<int> new_to_old_id(current_bidder_diagrams_saddle_[diagram_id].size());
+                for(unsigned int j = 0; j < current_bidder_ids_sad_[diagram_id].size(); j++) {
+                    int new_id = current_bidder_ids_sad_[diagram_id][j];
+                    if(new_id >= 0) {
+                        new_to_old_id[new_id] = j;
+                    }
+                }
+                // 2. Reconstruct the matchings
+                for(unsigned int j = 0; j < previous_matchings[c][1][i].size(); j++) {
+                    matchingTuple m = previous_matchings[c][1][i][j];
+                    int new_id = std::get<0>(m);
+                    if(new_id >= 0 && std::get<1>(m) >= 0) {
+                        std::get<0>(m) = new_to_old_id[new_id];
+                        previous_matchings[c][1][i][j] = m;
+                    }
+                }
+            }
+            if(original_dos[2]) {
+                // 1. Invert the current_bidder_ids_ vector
+                std::vector<int> new_to_old_id(current_bidder_diagrams_max_[diagram_id].size());
+                for(unsigned int j = 0; j < current_bidder_ids_max_[diagram_id].size(); j++) {
+                    int new_id = current_bidder_ids_max_[diagram_id][j];
+                    if(new_id >= 0) {
+                        new_to_old_id[new_id] = j;
+                    }
+                }
+                // 2. Reconstruct the matchings
+                for(unsigned int j = 0; j < previous_matchings[c][2][i].size(); j++) {
+                    matchingTuple m = previous_matchings[c][2][i][j];
+                    int new_id = std::get<0>(m);
+                    if(new_id >= 0 && std::get<1>(m) >= 0) {
+                        std::get<0>(m) = new_to_old_id[new_id];
+                        previous_matchings[c][2][i][j] = m;
+                    }
+                }
+            }
+        }
+    }
+}
 
 template <typename dataType>
 void PDClustering<dataType>::printMatchings(vector<vector<vector<matchingTuple>>> matchings)
@@ -568,8 +570,8 @@ void PDClustering<dataType>::printMatchings(vector<vector<vector<matchingTuple>>
     for(int d = 0; d < 3; d++) {
         if(original_dos[d]) {
             cout << "\n Diagram type : " << d << endl;
-            for(int i = 1; i < 2 /*matchings[d].size()*/; i++) {
-
+            for(int i = 0; i < matchings[d].size(); i++) {
+                cout<<" diagram "<<i<<" : ";
                 for(int j = 0; j < matchings[d][i].size(); j++) {
                     std::cout << get<0>(matchings[d][i][j]) << " ";
                     std::cout << get<1>(matchings[d][i][j]) << " ";
@@ -1820,7 +1822,6 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                 // // cout<<"running matchings max"<<endl;
                 // cout<<"size centroid "<<centroids_with_price_max[c].size()<<endl;
                 barycenter_computer_max_[c].runMatching(&total_cost, epsilon_[2], sizes, kdt, &correspondance_kdt_map, &(min_diag_price->at(2)), &(min_price->at(2)), &(all_matchings), use_kdt);
-
                 for(int ii=0; ii<all_matchings.size(); ii++){
                     all_matchings_per_type_and_cluster[c][2][ii].resize(all_matchings[ii].size());
                     all_matchings_per_type_and_cluster[c][2][ii] = all_matchings[ii];
@@ -1828,14 +1829,32 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                 for(int ii=all_matchings.size(); ii<numberOfInputs_;  ii++){
                     all_matchings_per_type_and_cluster[c][2][ii].resize(0);
                 }
-                precision_max = barycenter_computer_max_[c].isPrecisionObjectiveMet(deltaLim_,0);
-                // cout<<"\n matchings :"<<endl;
-                // for(int ii=0;ii<all_matchings.size();ii++){
-                //     for(int jj=0;jj<all_matchings[ii].size();jj++){
-                //         cout<<" "<< get<0>(all_matchings[ii][jj])<<" "<< get<1>(all_matchings[ii][jj])<<" "<< get<2>(all_matchings[ii][jj]);
+                // all_matchings_per_type_and_cluster[c][2].resize(all_matchings.size());
+                // for(int ii=0; ii<all_matchings.size(); ii++){
+                //     all_matchings_per_type_and_cluster[c][2][ii].resize(all_matchings[ii].size());
+                //     all_matchings_per_type_and_cluster[c][2][ii] = all_matchings[ii];
+                //     for(int jj=0; jj< all_matchings[ii].size(); jj++){
+                //         matchingTuple t = all_matchings[ii][jj];
+                //         // cout << "cluster " << c <<" "<< get<0>(all_matchings[ii][jj]) << " " << get<1>(all_matchings[ii][jj]) << " " << get<2>(all_matchings[ii][jj]) << endl;
+                //         // cout<<" tuple : "<<get<0>(t)<<" "<<get<1>(t)<<" "<<get<2>(t)<<endl;
+                //         all_matchings_per_type_and_cluster[c][2][ii][jj] = all_matchings[ii][jj];
+                //         // cout<<" "<< get<0>(all_matchings_per_type_and_cluster[c][2][ii][jj])<<" "<< get<1>(all_matchings_per_type_and_cluster[c][2][ii][jj])<<" "<< get<2>(all_matchings_per_type_and_cluster[c][2][ii][jj])<<endl;
                 //     }
                 // }
-                // cout<<"\n"<<endl;
+                // for(int ii=all_matchings.size(); ii<numberOfInputs_;  ii++){
+                //     all_matchings_per_type_and_cluster[c][2][ii].resize(0);
+                // }
+                precision_max = barycenter_computer_max_[c].isPrecisionObjectiveMet(deltaLim_,0);
+                // printMatchings(all_matchings_per_type_and_cluster[0]);
+                cout<<"\n matchings :"<<endl;
+                for(int ii=0;ii<1;ii++){
+                    cout << "diagram "<<ii<<" : ";
+                    for(int jj=0;jj<all_matchings[ii].size();jj++){
+                        cout<<" "<< get<0>(all_matchings[ii][jj])<<" "<< get<1>(all_matchings[ii][jj])<<" "<< get<2>(all_matchings[ii][jj])<<" | ";
+                    }
+                    cout<<endl;
+                }
+                cout<<"\n"<<endl;
 
                 // std::cout<<"max : runned, now updating barycenter"<<std::endl;
                 // cout<<" COST FROM MATCHINGS "<<sqrt(total_cost)<<endl;
@@ -1935,6 +1954,11 @@ void PDClustering<dataType>::setBidderDiagrams()
             bidder_diagrams_min_.push_back(bidders);
             current_bidder_diagrams_min_.push_back(BidderDiagram<dataType>());
             centroids_with_price_min_.push_back(GoodDiagram<dataType>());
+            std::vector<int> ids(bidders.size());
+            for(unsigned int j = 0; j < ids.size(); j++) {
+                ids[j] = -1;
+            }
+            current_bidder_ids_min_.push_back(ids);
         }
 
         if (do_sad_) {
@@ -1954,6 +1978,11 @@ void PDClustering<dataType>::setBidderDiagrams()
             bidder_diagrams_saddle_.push_back(bidders);
             current_bidder_diagrams_saddle_.push_back(BidderDiagram<dataType>());
             centroids_with_price_saddle_.push_back(GoodDiagram<dataType>());
+            std::vector<int> ids(bidders.size());
+            for(unsigned int j = 0; j < ids.size(); j++) {
+                ids[j] = -1;
+            }
+            current_bidder_ids_sad_.push_back(ids);
         }
 
         if (do_max_) {
@@ -1973,6 +2002,11 @@ void PDClustering<dataType>::setBidderDiagrams()
             bidder_diagrams_max_.push_back(bidders);
             current_bidder_diagrams_max_.push_back(BidderDiagram<dataType>());
             centroids_with_price_max_.push_back(GoodDiagram<dataType>());
+            std::vector<int> ids(bidders.size());
+            for(unsigned int j = 0; j < ids.size(); j++) {
+                ids[j] = -1;
+            }
+            current_bidder_ids_max_.push_back(ids);
         }
     }
     return;
@@ -2117,6 +2151,7 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::v
                     b.setDiagonalPrice(initial_diagonal_prices[0][i]);
                     // cout<<"\n   size before adding to "<<i<<"th bidder: "<<current_bidder_diagrams_min_[i].size()<<endl;
                     current_bidder_diagrams_min_[i].addBidder(b);
+                    current_bidder_ids_min_[i][candidates_to_be_added_min[i][idx_min[i][j]]] = current_bidder_diagrams_min_[i].size() - 1;
                     // cout<<"   size after adding "<<current_bidder_diagrams_min_[i].size()<<endl;
 
                     if (use_accelerated_ && n_iterations_ > 0) {
@@ -2172,6 +2207,7 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::v
                     b.setPositionInAuction(current_bidder_diagrams_saddle_[i].size());
                     b.setDiagonalPrice(initial_diagonal_prices[1][i]);
                     current_bidder_diagrams_saddle_[i].addBidder(b);
+                    current_bidder_ids_sad_[i][candidates_to_be_added_sad[i][idx_sad[i][j]]] = current_bidder_diagrams_saddle_[i].size() - 1;
 
                     if (use_accelerated_ && n_iterations_ > 0) {
                         for (int c = 0; c < k_; ++c) {
@@ -2221,6 +2257,7 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(std::v
                         b.setPositionInAuction(current_bidder_diagrams_max_[i].size());
                         b.setDiagonalPrice(initial_diagonal_prices[2][i]);
                         current_bidder_diagrams_max_[i].addBidder(b);
+                        current_bidder_ids_max_[i][candidates_to_be_added_max[i][idx_max[i][j]]] = current_bidder_diagrams_max_[i].size() - 1;
 
                         if (use_accelerated_ && n_iterations_ > 0) {
                             for (int c = 0; c < k_; ++c) {
@@ -2364,7 +2401,7 @@ void PDClustering<dataType>::initializeBarycenterComputers(vector<dataType> min_
             // barycenter_computer_max_[c].setCurrentBarycenter(centroids_with_price_min);
         }
     }
-    barycenter_inputs_reset_flag = true;
+    // barycenter_inputs_reset_flag = true;
     // cout<<" initialize barycenter computers done"<<endl;
 }
 
@@ -2496,5 +2533,6 @@ dataType PDClustering<dataType>::computeRealCost()
     }
     return total_real_cost_min+total_real_cost_sad+total_real_cost_max;
 }
+
 
 #endif

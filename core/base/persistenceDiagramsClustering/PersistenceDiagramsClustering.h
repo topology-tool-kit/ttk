@@ -295,7 +295,7 @@ template <typename dataType>
 
 	/// Reconstruct matchings
 	//
-
+	cout<<"centroids sizes : "<<centroids_sizes[0][0]<<" "<<centroids_sizes[0][1]<<" "<<centroids_sizes[0][2]<<endl;
         std::vector<int> cluster_size;
         std::vector<int> idxInCluster(numberOfInputs_);
 
@@ -335,7 +335,6 @@ template <typename dataType>
                   all_matchings->at(inv_clustering[i])[i].push_back(t);
               }
           }
-
             if(do_min) {
 		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[c][0][idxInCluster[i]].size(); j++) {
 		    matchingTuple t = all_matchings_per_type_and_cluster[c][0][idxInCluster[i]][j];
@@ -352,7 +351,7 @@ template <typename dataType>
 	    }
 
 	    if(do_sad) {
-		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[c][1][idxInCluster[i]].size(); j++) {
+		for(unsigned int j = 1; j < all_matchings_per_type_and_cluster[c][1][idxInCluster[i]].size(); j++) {
 		    matchingTuple t = all_matchings_per_type_and_cluster[c][1][idxInCluster[i]][j];
 		    int bidder_id = std::get<0>(t);
 		    if(bidder_id>=0 && bidder_id<data_sad[i].size()){
@@ -369,7 +368,7 @@ template <typename dataType>
 	    }
 
 	    if(do_max) {
-		for(unsigned int j = 1; j < all_matchings_per_type_and_cluster[c][2][idxInCluster[i]].size(); j++) {
+		for(unsigned int j = 0; j < all_matchings_per_type_and_cluster[c][2][idxInCluster[i]].size(); j++) {
 		    matchingTuple t = all_matchings_per_type_and_cluster[c][2][idxInCluster[i]][j];
 		    int bidder_id = std::get<0>(t);
 		    if(bidder_id>=0 && bidder_id<data_max[i].size()){
@@ -385,6 +384,8 @@ template <typename dataType>
 		}
 	    }
 	}
+
+
 
         return inv_clustering;
         }
