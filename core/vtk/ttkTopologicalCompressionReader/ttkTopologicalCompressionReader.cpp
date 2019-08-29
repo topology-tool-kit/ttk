@@ -28,27 +28,32 @@ ttkTopologicalCompressionReader::ttkTopologicalCompressionReader() {
   SetNumberOfOutputPorts(1);
 }
 
-int ttkTopologicalCompressionReader::FillOutputPortInformation(int port, vtkInformation *info)
-{
+int ttkTopologicalCompressionReader::FillOutputPortInformation(
+  int port, vtkInformation *info) {
   info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
   return 1;
 }
 
 int ttkTopologicalCompressionReader::RequestInformation(
-    vtkInformation *request,
-    vtkInformationVector **inputVector,
-    vtkInformationVector *outputVector)
-{
-  if (FileName == nullptr) { return 1; }
-  if (fp != nullptr) { return 1; }
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+  if(FileName == nullptr) {
+    return 1;
+  }
+  if(fp != nullptr) {
+    return 1;
+  }
   fp = fopen(FileName, "rb"); // binary mode
-  if (fp == nullptr) { return 1; }
+  if(fp == nullptr) {
+    return 1;
+  }
 
   // Fill spacing, origin, extent, scalar type
   // L8 tolerance, ZFP factor
   topologicalCompression.ReadMetaData<double>(fp);
   DataScalarType = topologicalCompression.getDataScalarType();
-  for (int i = 0; i < 3; ++i) {
+  for(int i = 0; i < 3; ++i) {
     DataSpacing[i] = topologicalCompression.getDataSpacing()[i];
     DataOrigin[i] = topologicalCompression.getDataOrigin()[i];
     DataExtent[i] = topologicalCompression.getDataExtent()[i];
@@ -63,8 +68,8 @@ int ttkTopologicalCompressionReader::RequestInformation(
   outInfo->Set(vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), DataExtent, 6);
 
   int numberOfVertices = 1;
-  for (int i = 0; i < 3; ++i)
-    numberOfVertices *= (1 + DataExtent[2*i + 1] - DataExtent[2*i]);
+  for(int i = 0; i < 3; ++i)
+    numberOfVertices *= (1 + DataExtent[2 * i + 1] - DataExtent[2 * i]);
   outInfo->Set(vtkDataObject::FIELD_NUMBER_OF_TUPLES(), numberOfVertices);
 
   vtkDataObject::SetPointDataActiveScalarInfo(outInfo, DataScalarType, 1);
@@ -77,20 +82,25 @@ int ttkTopologicalCompressionReader::RequestInformation(
 }
 
 int ttkTopologicalCompressionReader::RequestData(
-    vtkInformation *       request,
-    vtkInformationVector **inputVector,
-    vtkInformationVector * outputVector)
-{
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
   // Initialize
-  if (FileName == nullptr) { return 1; }
-  if (fp != nullptr) { return 1; }
+  if(FileName == nullptr) {
+    return 1;
+  }
+  if(fp != nullptr) {
+    return 1;
+  }
   fp = fopen(FileName, "rb"); // binary mode
-  if (fp == nullptr) { return 1; }
+  if(fp == nullptr) {
+    return 1;
+  }
 
   topologicalCompression.setFileName(FileName);
   topologicalCompression.ReadMetaData<double>(fp);
   DataScalarType = topologicalCompression.getDataScalarType();
-  for (int i = 0; i < 3; ++i) {
+  for(int i = 0; i < 3; ++i) {
     DataSpacing[i] = topologicalCompression.getDataSpacing()[i];
     DataOrigin[i] = topologicalCompression.getDataOrigin()[i];
     DataExtent[i] = topologicalCompression.getDataExtent()[i];
@@ -115,32 +125,33 @@ int ttkTopologicalCompressionReader::RequestData(
   decompressed = vtkSmartPointer<vtkDoubleArray>::New();
   decompressed->SetNumberOfTuples(vertexNumber);
   decompressed->SetName("Decompressed");
-  std::vector<double> decompressdeData = topologicalCompression.getDecompressedData();
-  for (int i = 0; i < vertexNumber; ++i)
+  std::vector<double> decompressdeData
+    = topologicalCompression.getDecompressedData();
+  for(int i = 0; i < vertexNumber; ++i)
     decompressed->SetTuple1(i, decompressdeData[i]);
   // decompressed->SetVoidArray(, vertexNumber, 0);
   mesh->GetPointData()->AddArray(decompressed);
 
-  if (SQMethod != 1 && SQMethod != 2 && !ZFPOnly)
-  {
+  if(SQMethod != 1 && SQMethod != 2 && !ZFPOnly) {
     vertexOffset = vtkSmartPointer<vtkIntArray>::New();
     vertexOffset->SetNumberOfTuples(vertexNumber);
     vertexOffset->SetName(ttk::OffsetScalarFieldName);
-    std::vector<int> voidOffsets = topologicalCompression.getDecompressedOffsets();
-    for (int i = 0; i < vertexNumber; ++i)
+    std::vector<int> voidOffsets
+      = topologicalCompression.getDecompressedOffsets();
+    for(int i = 0; i < vertexNumber; ++i)
       vertexOffset->SetTuple1(i, voidOffsets[i]);
-//    vertexOffset->SetVoidArray(
-//      topologicalCompression.getDecompressedOffsets(), vertexNumber, 0);
+    //    vertexOffset->SetVoidArray(
+    //      topologicalCompression.getDecompressedOffsets(), vertexNumber, 0);
     mesh->GetPointData()->AddArray(vertexOffset);
   }
 
   {
     ttk::Debug d;
     std::stringstream msg;
-    msg << "[ttkCompressionReader] Read " <<
-    mesh->GetNumberOfPoints() << " vertice(s)" << std::endl;
-    msg << "[ttkCompressionReader] Read " <<
-    mesh->GetNumberOfCells() << " cell(s)" << std::endl;
+    msg << "[ttkCompressionReader] Read " << mesh->GetNumberOfPoints()
+        << " vertice(s)" << std::endl;
+    msg << "[ttkCompressionReader] Read " << mesh->GetNumberOfCells()
+        << " cell(s)" << std::endl;
     d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
   }
 
@@ -149,14 +160,14 @@ int ttkTopologicalCompressionReader::RequestData(
   outInfo->Set(vtkStreamingDemandDrivenPipeline::UPDATE_NUMBER_OF_PIECES(), 1);
 
   // Set the output
-  vtkImageData *output = vtkImageData::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
+  vtkImageData *output
+    = vtkImageData::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
   output->ShallowCopy(mesh);
 
   return 1;
 }
 
-void ttkTopologicalCompressionReader::BuildMesh()
-{
+void ttkTopologicalCompressionReader::BuildMesh() {
   int nx = 1 + DataExtent[1] - DataExtent[0];
   int ny = 1 + DataExtent[3] - DataExtent[2];
   int nz = 1 + DataExtent[5] - DataExtent[4];
@@ -168,6 +179,6 @@ void ttkTopologicalCompressionReader::BuildMesh()
   mesh->GetPointData()->SetNumberOfTuples(nx * ny * nz);
 
   int numberOfVertices = 1;
-  for (int i = 0; i < 3; ++i)
+  for(int i = 0; i < 3; ++i)
     numberOfVertices *= (1 + DataExtent[2 * i + 1] - DataExtent[2 * i]);
 }

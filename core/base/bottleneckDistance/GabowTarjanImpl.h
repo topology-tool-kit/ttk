@@ -1,21 +1,20 @@
 #ifndef _GABOWTARJANIMPL_H
 #define _GABOWTARJANIMPL_H
 
+#include "MatchingGraph.h"
 #include <iostream>
 #include <vector>
-#include "MatchingGraph.h"
 
 template <typename dataType>
-bool GabowTarjan::DFS(int v)
-{
-  if (v < 0)
+bool GabowTarjan::DFS(int v) {
+  if(v < 0)
     return true;
 
   // for every adjacent vertex u of v
-  for (unsigned int i = 0; i < Connections[v].size(); ++i) {
+  for(unsigned int i = 0; i < Connections[v].size(); ++i) {
     int u = Connections[v][i];
-    if (Layers[Pair[u] + 1] == Layers[v + 1] + 1) {
-      if (DFS<dataType>(Pair[u])) {
+    if(Layers[Pair[u] + 1] == Layers[v + 1] + 1) {
+      if(DFS<dataType>(Pair[u])) {
         Pair[u] = v;
         Pair[v] = u;
         return true;
@@ -29,19 +28,17 @@ bool GabowTarjan::DFS(int v)
 }
 
 template <typename dataType>
-bool GabowTarjan::BFS()
-{
+bool GabowTarjan::BFS() {
   std::queue<int> vertexQueue;
 
   // For every vertex v given by PersistencePairs1
-  for (unsigned int v = 0; v < MaxSize; v++) {
+  for(unsigned int v = 0; v < MaxSize; v++) {
     // If its not paired to vertex in PersistencePairs2
-    if (Pair[v] < 0) {
+    if(Pair[v] < 0) {
       // Set its layer to 0 and put it in the queue
       Layers[v + 1] = 0;
       vertexQueue.push(v);
-    }
-    else {
+    } else {
       // Otherwise mark it as matched (set Layer to NIL)
       Layers[v + 1] = -1;
     }
@@ -51,22 +48,19 @@ bool GabowTarjan::BFS()
   Layers[0] = -1;
 
   // Search the vertices in the queue
-  while (!vertexQueue.empty())
-  {
+  while(!vertexQueue.empty()) {
     int v = vertexQueue.front();
     vertexQueue.pop();
-    if (Layers[v + 1] > Layers[0])
-    {
-      for (unsigned int i = 0; i < Connections[v].size(); ++i)
-      {
+    if(Layers[v + 1] > Layers[0]) {
+      for(unsigned int i = 0; i < Connections[v].size(); ++i) {
         int u = Connections[v][i];
         // Check if the vertex has an edge to the match vertex
-        if (Layers[Pair[u] + 1] < 0)
-        {
-          // Set the layer of the vertex (it can be NIL) which is matched to the matched vertex u
+        if(Layers[Pair[u] + 1] < 0) {
+          // Set the layer of the vertex (it can be NIL) which is matched to the
+          // matched vertex u
           Layers[Pair[u] + 1] = Layers[v + 1] + 1;
           // If the pairing vertex is not NIL add it into the queue
-          if (Pair[u] != -1)
+          if(Pair[u] != -1)
             vertexQueue.push(Pair[u]);
         }
       }
@@ -77,23 +71,18 @@ bool GabowTarjan::BFS()
 }
 
 template <typename dataType>
-void GabowTarjan::HopcroftKarp(unsigned int &matching)
-{
-  while (BFS<dataType>())
-    for (unsigned int vertex = 0; vertex < MaxSize; ++vertex)
-    {
-      if (Pair[vertex] == -1)
-      {
-        if (DFS<dataType>(vertex))
+void GabowTarjan::HopcroftKarp(unsigned int &matching) {
+  while(BFS<dataType>())
+    for(unsigned int vertex = 0; vertex < MaxSize; ++vertex) {
+      if(Pair[vertex] == -1) {
+        if(DFS<dataType>(vertex))
           ++matching;
       }
     }
 }
 
 template <typename dataType>
-dataType GabowTarjan::Distance(
-  dataType maxLevel)
-{
+dataType GabowTarjan::Distance(dataType maxLevel) {
   // Clear the pairing
   Pair.clear();
   Pair.assign(2 * MaxSize, -1);
@@ -116,7 +105,7 @@ dataType GabowTarjan::Distance(
   // First non added edge is an iterator pointing to the first edge
   // in Edges which was added to the Connections
   unsigned int firstNotAddedEdge = 0;
-  unsigned int nbEdges = (unsigned int) Edges.size();
+  unsigned int nbEdges = (unsigned int)Edges.size();
 
   unsigned int lowerBound = 0;
   unsigned int upperBound = nbEdges;
@@ -125,25 +114,24 @@ dataType GabowTarjan::Distance(
   std::map<int, int> offPairings;
 
   // Repeat till all the vertices are matched
-  while (matching < MaxSize)
-  {
+  while(matching < MaxSize) {
     // Save initial matching.
     matching0 = matching;
     unsigned int oldGuessEdge = guessEdge;
 
     currentWeight = Edges[guessEdge].weight;
-    while (Edges[guessEdge].weight == currentWeight && guessEdge < nbEdges)
+    while(Edges[guessEdge].weight == currentWeight && guessEdge < nbEdges)
       ++guessEdge;
 
-    if (guessEdge >= nbEdges) {
+    if(guessEdge >= nbEdges) {
       std::stringstream msg;
+      ttk::Debug d;
       msg << "[Gabow-Tarjan] ran out of edges." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
     }
 
     // Add the edges with the current weight (distance) to the connection matrix
-    while (firstNotAddedEdge >= guessEdge)
-    {
+    while(firstNotAddedEdge >= guessEdge) {
       int v1 = Edges[firstNotAddedEdge].v1;
       int v2 = Edges[firstNotAddedEdge].v2;
 
@@ -154,9 +142,9 @@ dataType GabowTarjan::Distance(
       --firstNotAddedEdge;
     }
 
-    // Edges[firstNotAddedEdge].weight == currentWeight && firstNotAddedEdge < nbEdges
-    while (firstNotAddedEdge < guessEdge)
-    {
+    // Edges[firstNotAddedEdge].weight == currentWeight && firstNotAddedEdge <
+    // nbEdges
+    while(firstNotAddedEdge < guessEdge) {
       int v1 = Edges[firstNotAddedEdge].v1;
       int v2 = Edges[firstNotAddedEdge].v2;
 
@@ -174,15 +162,16 @@ dataType GabowTarjan::Distance(
     // Temporarily augment matching.
     {
       std::stringstream msg;
+      ttk::Debug d;
       msg << "[Gabow-Tarjan] Guessing for " << guessEdge << "..." << std::endl;
-      dMsg(std::cout, msg.str(), infoMsg);
+      d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
     }
 
     matching = 0;
     HopcroftKarp<dataType>(matching);
     // printCurrentMatching<dataType>();
 
-    if (matching >= MaxSize) {
+    if(matching >= MaxSize) {
 
       // Reset matching.
       matching = matching0;
@@ -190,21 +179,23 @@ dataType GabowTarjan::Distance(
       guessEdge = (lowerBound + guessEdge) / 2;
 
       // Ended binary search.
-      if (oldGuessEdge == guessEdge) {
+      if(oldGuessEdge == guessEdge) {
         std::stringstream msg;
+        ttk::Debug d;
         msg << "[Gabow-Tarjan] Binary search success." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
-        return Edges[(guessEdge > 0 ? guessEdge-1 : guessEdge)].weight;
+        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+        return Edges[(guessEdge > 0 ? guessEdge - 1 : guessEdge)].weight;
       }
 
     } else {
 
       // Check if we did not run out of edges. This should never happen.
-      if (firstNotAddedEdge == nbEdges)
-      {
+      if(firstNotAddedEdge == nbEdges) {
         std::stringstream msg;
-        msg << "[Gabow-Tarjan] Not enough edges to find the matching!" << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        ttk::Debug d;
+        msg << "[Gabow-Tarjan] Not enough edges to find the matching!"
+            << std::endl;
+        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
         // return -1;
         return currentWeight;
       }
@@ -215,14 +206,14 @@ dataType GabowTarjan::Distance(
       // currentWeight = Edges[firstNotAddedEdge].weight;
 
       // Ended binary search.
-      if (oldGuessEdge == guessEdge) {
+      if(oldGuessEdge == guessEdge) {
         std::stringstream msg;
+        ttk::Debug d;
         msg << "[Gabow-Tarjan] Binary search success." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
-        return Edges[(guessEdge > 0 ? guessEdge-1 : guessEdge)].weight;
+        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+        return Edges[(guessEdge > 0 ? guessEdge - 1 : guessEdge)].weight;
       }
     }
-
   }
 
   return -1;
@@ -235,57 +226,63 @@ void GabowTarjan::printCurrentMatching() {
 
   {
     std::stringstream msg;
+    ttk::Debug d;
     msg << "Assignment matrix: " << std::endl;
-    for (int i = 0; i < size; ++i) {
+    for(int i = 0; i < size; ++i) {
       int k = Pair[i];
-      if (k < 0 || k > size) missedPlaces.push_back(i);
-      for (int j = 0; j < size; ++j) {
+      if(k < 0 || k > size)
+        missedPlaces.push_back(i);
+      for(int j = 0; j < size; ++j) {
         msg << (j == k ? "1 " : "0 ");
       }
       msg << std::endl;
     }
     msg << "/Assignment matrix." << std::endl << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
+    d.dMsg(std::cout, msg.str(), ttk::Debug::advancedInfoMsg);
   }
 
   {
     std::stringstream msg;
+    ttk::Debug d;
     msg << "Missed:" << std::endl;
-    for (unsigned int i = 0; i < missedPlaces.size(); ++i) {
+    for(unsigned int i = 0; i < missedPlaces.size(); ++i) {
       msg << missedPlaces.at(i) << " ";
     }
     msg << std::endl << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
   }
 }
 
 template <typename dataType>
-int GabowTarjan::run(std::vector<matchingTuple> &matchings)
-{
+int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
   // Compute distance.
-  double d = Distance<dataType>(1);
+  double dist = Distance<dataType>(1);
   {
     std::stringstream msg;
-    msg << "[Gabow-Tarjan] Computed distance " << d << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    ttk::Debug m;
+    msg << "[Gabow-Tarjan] Computed distance " << dist << std::endl;
+    m.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
   }
 
   // Fill matchings.
   matchings.clear();
-  auto C = (std::vector<std::vector<dataType>>*) Cptr;
+  auto C = (std::vector<std::vector<dataType>> *)Cptr;
 
-  for (unsigned int i = 0; i < Size1; ++i) {
-    if (Pair[i] == -1) continue;
+  for(unsigned int i = 0; i < Size1; ++i) {
+    if(Pair[i] == -1)
+      continue;
 
     int j = Pair[i] - MaxSize;
-    if (j <= -1 || (j < (int) Size2 && Pair[j + MaxSize] != (int) i)) {
+    if(j <= -1 || (j < (int)Size2 && Pair[j + MaxSize] != (int)i)) {
       std::stringstream msg;
-      msg << "[Gabow-Tarjan] Hopcroft-Karp built an invalid matching." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      ttk::Debug d;
+      msg << "[Gabow-Tarjan] Hopcroft-Karp built an invalid matching."
+          << std::endl;
+      d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
       // return -1;
     }
 
-    if (j >= (int) Size2) {
+    if(j >= (int)Size2) {
       matchingTuple t = std::make_tuple(i, j, (*C)[i][Size2]);
       matchings.push_back(t);
     } else {
@@ -294,18 +291,21 @@ int GabowTarjan::run(std::vector<matchingTuple> &matchings)
     }
   }
 
-  for (unsigned int j = Size1; j < MaxSize; ++j) {
-    if (Pair[j] == -1) continue;
+  for(unsigned int j = Size1; j < MaxSize; ++j) {
+    if(Pair[j] == -1)
+      continue;
 
     int i = Pair[j] - MaxSize - Size2;
-    if (i > -1 && (i >= (int) Size1 || Pair[i + MaxSize + Size2] != (int) j)) {
+    if(i > -1 && (i >= (int)Size1 || Pair[i + MaxSize + Size2] != (int)j)) {
       std::stringstream msg;
-      msg << "[Gabow-Tarjan] Hopcroft-Karp built an invalid matching." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      ttk::Debug d;
+      msg << "[Gabow-Tarjan] Hopcroft-Karp built an invalid matching."
+          << std::endl;
+      d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
       // return -1;
     }
 
-    if (i <= -1) {
+    if(i <= -1) {
       matchingTuple t = std::make_tuple(i, j - Size1, (*C)[Size1][j - Size1]);
       matchings.push_back(t);
     } else {

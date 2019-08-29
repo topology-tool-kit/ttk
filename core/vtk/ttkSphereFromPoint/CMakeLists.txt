@@ -1,4 +1,9 @@
 ttk_add_vtk_library(ttkSphereFromPoint
-	SOURCES ttkSphereFromPoint.cpp
-	HEADERS ttkSphereFromPoint.h
-	LINK common ttkTriangulation)
+  SOURCES
+    ttkSphereFromPoint.cpp
+  HEADERS
+    ttkSphereFromPoint.h
+  LINK
+    common
+    ttkTriangulation
+    )

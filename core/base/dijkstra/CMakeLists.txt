@@ -1,0 +1,9 @@
+ttk_add_base_library(dijkstra
+  SOURCES
+    Dijkstra.cpp
+  HEADERS
+    Dijkstra.h
+  LINK
+    geometry
+    triangulation
+    )

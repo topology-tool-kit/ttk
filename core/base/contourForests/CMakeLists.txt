@@ -1,4 +1,9 @@
 ttk_add_base_library(contourForests
-	SOURCES ContourForests.cpp
-	HEADERS ContourForests.h ContourForestsTemplate.h
-	LINK contourForestsTree)
+  SOURCES
+    ContourForests.cpp
+  HEADERS
+    ContourForests.h
+    ContourForestsTemplate.h
+  LINK
+    contourForestsTree
+    )

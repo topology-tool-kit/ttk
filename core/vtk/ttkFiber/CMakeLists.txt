@@ -1,4 +1,9 @@
 ttk_add_vtk_library(ttkFiber
-	SOURCES ttkFiber.cpp
-	HEADERS ttkFiber.h
-	LINK common ttkTriangulation)
+  SOURCES
+    ttkFiber.cpp
+  HEADERS
+    ttkFiber.h
+  LINK
+    common
+    ttkTriangulation
+    )

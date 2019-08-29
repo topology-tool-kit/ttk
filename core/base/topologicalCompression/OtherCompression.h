@@ -11,8 +11,7 @@
 #define TTK_OTHERCOMPRESSION_H
 
 template <typename dataType>
-int ttk::TopologicalCompression::ComputeTotalSizeForOther()
-{
+int ttk::TopologicalCompression::ComputeTotalSizeForOther() {
   // Should return the number of bytes to be written on the output file
   // sizeof(char) = 1 (byte)
   // use sizeof(int), sizeof(double) to get the number of bytes of
@@ -21,29 +20,24 @@ int ttk::TopologicalCompression::ComputeTotalSizeForOther()
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::computeOther()
-{
+int ttk::TopologicalCompression::computeOther() {
   // Code me
   return 0;
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::compressForOther(
-    int vertexNumber,
-    dataType *inputData,
-    dataType *outputData,
-    const double &tol)
-{
+int ttk::TopologicalCompression::compressForOther(int vertexNumber,
+                                                  dataType *inputData,
+                                                  dataType *outputData,
+                                                  const double &tol) {
   ttk::Timer t;
 
   // Code me
 
   {
     std::stringstream msg;
-    msg << "[TopologicalCompression] Other computed in "
-        << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))."
-        << std::endl;
+    msg << "[TopologicalCompression] Other computed in " << t.getElapsedTime()
+        << " s. (" << threadNumber_ << " thread(s))." << std::endl;
     dMsg(std::cout, msg.str(), timeMsg);
     t.reStart();
   }
@@ -53,8 +47,7 @@ int ttk::TopologicalCompression::compressForOther(
   {
     std::stringstream msg;
     msg << "[TopologicalCompression] Scalar field compressed in "
-        << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))."
+        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
         << std::endl;
     dMsg(std::cout, msg.str(), timeMsg);
   }
@@ -63,10 +56,9 @@ int ttk::TopologicalCompression::compressForOther(
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::WriteOtherTopology(
-    FILE *fm)
-{
-  std::cout << "[TopologicalCompression] Writing Other index / topology." << std::endl;
+int ttk::TopologicalCompression::WriteOtherTopology(FILE *fm) {
+  std::cout << "[TopologicalCompression] Writing Other index / topology."
+            << std::endl;
 
   // Code me
 
@@ -74,10 +66,10 @@ int ttk::TopologicalCompression::WriteOtherTopology(
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::WriteOtherGeometry(
-    FILE *fm)
-{
-  std::cout << "[ttkTopologicalCompressionReader] Writing Other buffer / geometry." << std::endl;
+int ttk::TopologicalCompression::WriteOtherGeometry(FILE *fm) {
+  std::cout
+    << "[ttkTopologicalCompressionReader] Writing Other buffer / geometry."
+    << std::endl;
 
   // Code me
 
@@ -85,22 +77,22 @@ int ttk::TopologicalCompression::WriteOtherGeometry(
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::ReadOtherTopology(
-    FILE *fm)
-{
-  std::cout << "[ttkTopologicalCompressionReader] Reading Other index / topology." << std::endl;
+int ttk::TopologicalCompression::ReadOtherTopology(FILE *fm) {
+  std::cout
+    << "[ttkTopologicalCompressionReader] Reading Other index / topology."
+    << std::endl;
   // Code me
 
   return 0;
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::ReadOtherGeometry(
-    FILE *fm)
-{
-  std::cout << "[ttkTopologicalCompressionReader] Reading Other buffer / geometry." << std::endl;
+int ttk::TopologicalCompression::ReadOtherGeometry(FILE *fm) {
+  std::cout
+    << "[ttkTopologicalCompressionReader] Reading Other buffer / geometry."
+    << std::endl;
   // Code me
   return 0;
 }
 
-#endif //TTK_OTHERCOMPRESSION_H
+#endif // TTK_OTHERCOMPRESSION_H

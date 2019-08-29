@@ -3,18 +3,21 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.11.2018
 ///
-/// \brief TTK VTK-filter that iteratively appends its input to a vtkMultiBlockDataSet.
+/// \brief TTK VTK-filter that iteratively appends its input to a
+/// vtkMultiBlockDataSet.
 ///
-/// This filter iteratively appends its input as a block to a vtkMultiBlockDataSet.
+/// This filter iteratively appends its input as a block to a
+/// vtkMultiBlockDataSet.
 ///
 /// \param Input vtkDataObject that will be added as a block (vtkDataObject).
-/// \param Output vtkMultiBlockDataSet containing all added blocks (vtkMultiBlockDataSet).
+/// \param Output vtkMultiBlockDataSet containing all added blocks
+/// (vtkMultiBlockDataSet).
 
 #pragma once
 
 // VTK includes
-#include <vtkMultiBlockDataSetAlgorithm.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkMultiBlockDataSetAlgorithm.h>
 #include <vtkSmartPointer.h>
 
 // TTK includes
@@ -25,78 +28,86 @@ class VTKFILTERSCORE_EXPORT ttkBlockAggregator
 #else
 class ttkBlockAggregator
 #endif
-: public vtkMultiBlockDataSetAlgorithm, public ttk::Wrapper{
+  : public vtkMultiBlockDataSetAlgorithm,
+    public ttk::Wrapper {
 
-    public:
+public:
+  static ttkBlockAggregator *New();
+  vtkTypeMacro(ttkBlockAggregator, vtkMultiBlockDataSetAlgorithm)
 
-        static ttkBlockAggregator* New();
-        vtkTypeMacro(ttkBlockAggregator, vtkMultiBlockDataSetAlgorithm)
+    vtkSetMacro(ForceReset, bool);
+  vtkGetMacro(ForceReset, bool);
 
-        vtkSetMacro(ForceReset, bool);
-        vtkGetMacro(ForceReset, bool);
+  vtkSetMacro(FlattenInput, bool);
+  vtkGetMacro(FlattenInput, bool);
 
-        vtkSetMacro(FlattenInput, bool);
-        vtkGetMacro(FlattenInput, bool);
+  // default ttk setters
+  vtkSetMacro(debugLevel_, int);
+  void SetThreads() {
+    threadNumber_
+      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
+    Modified();
+  }
+  void SetThreadNumber(int threadNumber) {
+    ThreadNumber = threadNumber;
+    SetThreads();
+  }
+  void SetUseAllCores(bool onOff) {
+    UseAllCores = onOff;
+    SetThreads();
+  }
+  // end of default ttk setters
 
-        // default ttk setters
-        vtkSetMacro(debugLevel_, int);
-        void SetThreads(){
-            threadNumber_ = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-            Modified();
-        }
-        void SetThreadNumber(int threadNumber){
-            ThreadNumber = threadNumber;
-            SetThreads();
-        }
-        void SetUseAllCores(bool onOff){
-            UseAllCores = onOff;
-            SetThreads();
-        }
-        // end of default ttk setters
+  int FillInputPortInformation(int port, vtkInformation *info) override {
+    if(port < 0 || port > 4)
+      return 0;
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
+    if(port > 0)
+      info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
+    return 1;
+  }
 
-        int FillInputPortInformation(int port, vtkInformation* info) override {
-            if(port<0 || port>4) return 0;
-            info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
-            if(port>0) info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
-            return 1;
-        }
+  int FillOutputPortInformation(int port, vtkInformation *info) override {
+    switch(port) {
+      case 0:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+        break;
+      default:
+        return 0;
+    }
+    return 1;
+  }
 
-        int FillOutputPortInformation(int port, vtkInformation* info) override {
-            switch(port){
-                case 0: info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet"); break;
-                default: return 0;
-            }
-            return 1;
-        }
+protected:
+  ttkBlockAggregator() {
+    SetForceReset(false);
+    SetFlattenInput(true);
 
-    protected:
+    UseAllCores = false;
 
-        ttkBlockAggregator(){
-            SetForceReset(false);
-            SetFlattenInput(true);
+    SetNumberOfInputPorts(5);
+    SetNumberOfOutputPorts(1);
+  }
+  ~ttkBlockAggregator(){};
 
-            UseAllCores = false;
+  bool UseAllCores;
+  int ThreadNumber;
 
-            SetNumberOfInputPorts(5);
-            SetNumberOfOutputPorts(1);
-        }
-        ~ttkBlockAggregator(){};
+  int AggregateBlock(vtkDataObject *dataObject, bool useShallowCopy);
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
-        bool UseAllCores;
-        int ThreadNumber;
+private:
+  bool ForceReset;
+  bool FlattenInput;
+  vtkSmartPointer<vtkMultiBlockDataSet> AggregatedMultiBlockDataSet;
 
-        int AggregateBlock(vtkDataObject* dataObject, bool useShallowCopy);
-        int RequestData(vtkInformation* request, vtkInformationVector** inputVector, vtkInformationVector* outputVector) override;
-
-    private:
-
-        bool ForceReset;
-        bool FlattenInput;
-        vtkSmartPointer<vtkMultiBlockDataSet> AggregatedMultiBlockDataSet;
-
-        bool needsToAbort() override { return GetAbortExecute(); };
-        int updateProgress(const float &progress) override {
-            UpdateProgress(progress);
-            return 0;
-        };
+  bool needsToAbort() override {
+    return GetAbortExecute();
+  };
+  int updateProgress(const float &progress) override {
+    UpdateProgress(progress);
+    return 0;
+  };
 };

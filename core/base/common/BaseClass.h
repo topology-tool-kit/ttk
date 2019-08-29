@@ -9,15 +9,15 @@
 #define _BASECLASS_H
 
 #ifdef TTK_ENABLE_OPENMP
-#include<omp.h>
+#include <omp.h>
 #endif
 
-#include<DataTypes.h>
+#include <DataTypes.h>
 
 namespace ttk {
-  
+
   extern int globalThreadNumber_;
-  
+
   class Wrapper;
 
   class BaseClass {
@@ -26,12 +26,12 @@ namespace ttk {
 
     virtual ~BaseClass(){};
 
-    int getThreadNumber() const{
+    int getThreadNumber() const {
       return threadNumber_;
     };
 
-    int setThreadNumber(const int threadNumber){
-      threadNumber_=threadNumber;
+    int setThreadNumber(const int threadNumber) {
+      threadNumber_ = threadNumber;
       return 0;
     }
 
@@ -50,6 +50,6 @@ namespace ttk {
     mutable int threadNumber_;
     Wrapper *wrapper_;
   };
-}
+} // namespace ttk
 
 #endif // _BASECLASS_H

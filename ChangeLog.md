@@ -1,13 +1,27 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+
+### 0.9.8
+- Updates for ParaView-5.6.1
+- ContourAroundPoint (EnvirVis 2019 paper)
+- Task-based Parallel Reeb Graphs with Dynamic ST-Trees (EGPGV 2019 paper)
 - Nested Tracking Graphs (EuroVis 2017 paper)
+- Morse-Smale quadrangulation (SIGGRAPH 2006 paper)
+- Harmonic scalar field design (SMI 2009 paper)
+- Eigen functions of the Laplace-Beltrami operator (cotan weights)
+- Eigen and spectra support
+- Barycentric subdivision
+- Updated python examples
+- Docker support
 - Planar graph layout module
 - Improved tracking from overlap (modular, templated, streaming support)
 - New identifier sorter (for example to select the N most persistent features)
 - Memory footprint improvement for the discrete gradient
 - New unified plugin library
+- Improved memory
 - Bug fixes
+- Clang-formatting
 
 ### 0.9.7
 - Updates for ParaView-5.6.0

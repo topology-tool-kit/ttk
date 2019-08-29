@@ -15,25 +15,23 @@
 
 using namespace std;
 
-namespace ttk{
+namespace ttk {
 
-    class IcoSphere : public Debug{
+  class IcoSphere : public Debug {
 
-        public:
+  public:
+    IcoSphere();
+    ~IcoSphere();
 
-            IcoSphere();
-            ~IcoSphere();
+    // Execute the geometry approximation.
+    int generate(
+      // Input
+      size_t subdivisions,
+      float radius,
+      float *center,
 
-            // Execute the geometry approximation.
-            int generate(
-                // Input
-                size_t subdivisions,
-                float radius,
-                float* center,
-
-                // Output
-                vector< tuple<float,float,float> >& vertices,
-                vector< tuple<long long,long long,long long> >& triangles
-            ) const;
-    };
-}
+      // Output
+      vector<tuple<float, float, float>> &vertices,
+      vector<tuple<long long, long long, long long>> &triangles) const;
+  };
+} // namespace ttk

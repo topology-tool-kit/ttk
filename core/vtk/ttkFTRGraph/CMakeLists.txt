@@ -1,0 +1,10 @@
+ttk_add_vtk_library(ttkFTRGraph
+  SOURCES
+    ttkFTRGraph.cpp
+  HEADERS
+    ttkFTRGraph.h
+    ttkFTRGraphStructures.h
+  LINK
+    ftrGraph
+    ttkTriangulation
+    )

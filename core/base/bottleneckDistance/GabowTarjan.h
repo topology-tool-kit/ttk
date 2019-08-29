@@ -1,19 +1,24 @@
 #ifndef _GABOWTARJAN_H
 #define _GABOWTARJAN_H
 
-#include <iostream>
-#include <vector>
 #include "MatchingGraph.h"
+#include <Debug.h>
+#include <algorithm>
+#include <iostream>
+#include <map>
+#include <queue>
+#include <vector>
 
 namespace ttk {
 
-class GabowTarjan : public Debug {
+  class GabowTarjan {
 
   public:
+    GabowTarjan() {
+    }
 
-    GabowTarjan() {}
-
-    ~GabowTarjan() {}
+    ~GabowTarjan() {
+    }
 
     template <typename dataType>
     dataType Distance(dataType maxLevel);
@@ -25,44 +30,44 @@ class GabowTarjan : public Debug {
     int run(std::vector<matchingTuple> &matchings);
 
     template <typename dataType>
-    inline void setInput(int rowSize_, int colSize_, void* C_)
-    {
+    inline void setInput(int rowSize_, int colSize_, void *C_) {
       Cptr = C_;
 
-      auto C = (std::vector<std::vector<dataType>>*) Cptr;
-      Size1 = (unsigned int) rowSize_ - 1;
-      Size2 = (unsigned int) colSize_ - 1;
-      if (Size1 <= 0 || Size2 <= 0) {
+      auto C = (std::vector<std::vector<dataType>> *)Cptr;
+      Size1 = (unsigned int)rowSize_ - 1;
+      Size2 = (unsigned int)colSize_ - 1;
+      if(Size1 <= 0 || Size2 <= 0) {
+        ttk::Debug d;
         std::stringstream msg;
         msg << "[Gabow-Tarjan] One or more empty diagram(s)." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
       }
 
       MaxSize = Size1 + Size2;
       Edges.clear();
 
       // Connect diagonal points.
-      for (unsigned int i = Size1; i < MaxSize; ++i)
-        for (unsigned int j = MaxSize + Size2; j < 2 * MaxSize; ++j)
-          Edges.emplace_back(Edge(i, j, (double) 0));
+      for(unsigned int i = Size1; i < MaxSize; ++i)
+        for(unsigned int j = MaxSize + Size2; j < 2 * MaxSize; ++j)
+          Edges.emplace_back(Edge(i, j, (double)0));
 
       // Connect real points.
-      for (unsigned int i = 0; i < Size1; ++i) {
+      for(unsigned int i = 0; i < Size1; ++i) {
         unsigned int k = MaxSize;
-        for (unsigned int j = 0; j < Size2; ++j) {
-          auto val = (double) (*C)[i][j];
+        for(unsigned int j = 0; j < Size2; ++j) {
+          auto val = (double)(*C)[i][j];
           Edges.emplace_back(Edge(i, k++, val));
         }
       }
 
       // Connect real points with their diagonal.
-      for (unsigned int i = 0; i < Size1; ++i) {
-        auto val = (double) (*C)[i][Size2];
+      for(unsigned int i = 0; i < Size1; ++i) {
+        auto val = (double)(*C)[i][Size2];
         Edges.emplace_back(Edge(i, MaxSize + Size2 + i, val));
       }
 
-      for (unsigned int j = 0, k = MaxSize; j < Size2; ++j, ++k) {
-        auto val = (double) (*C)[Size1][j];
+      for(unsigned int j = 0, k = MaxSize; j < Size2; ++j, ++k) {
+        auto val = (double)(*C)[Size1][j];
         Edges.emplace_back(Edge(Size1 + (k - MaxSize), k, val));
       }
 
@@ -81,7 +86,6 @@ class GabowTarjan : public Debug {
     }
 
   private:
-
     // Original cost matrix.
     void *Cptr;
 
@@ -110,7 +114,7 @@ class GabowTarjan : public Debug {
      * Connection matrix, gives edges between
      * vertices in the first and second diagram
      */
-    std::vector< std::vector<int> > Connections;
+    std::vector<std::vector<int>> Connections;
 
     /*
      * Layers used in the Hopcroft-Karp algorithm
@@ -131,11 +135,11 @@ class GabowTarjan : public Debug {
     // Hopcroft-Karp algorithm: find a maximal matching
     template <typename dataType>
     void HopcroftKarp(unsigned int &matching);
-};
+  };
 
 // Namespace ttk
 #include <GabowTarjanImpl.h>
 
-}
+} // namespace ttk
 
 #endif
