@@ -1,14 +1,3 @@
-/// \ingroup base
-/// \class ttk::PersistenceDiagramsBarycenter
-/// \author Michael Michaux <michauxmichael89@gmail.com>
-/// \date August 2016.
-///
-/// \brief TTK processing package that takes an input ensemble data set
-/// (represented by a list of scalar fields) and which computes various
-/// vertexwise statistics (PDF estimation, bounds, moments, etc.)
-///
-/// \sa ttkPersistenceDiagramsBarycenter.cpp %for a usage example.
-
 #ifndef _PERSISTENCEDIAGRAMSBARYCENTER_H
 #define _PERSISTENCEDIAGRAMSBARYCENTER_H
 
@@ -52,16 +41,23 @@ namespace ttk{
 		PersistenceDiagramsBarycenter(){
 			wasserstein_ = 2;
 			alpha_ = 1;
+			lambda_ = 1;
 			inputData_ = NULL;
 			numberOfInputs_ = 0;
 			threadNumber_ = 1;
+			time_limit_ = 1;
+			deterministic_ = 1;
+			reinit_prices_ = 1;
+			epsilon_decreases_ = 1;
+			debugLevel_ = 1;
+			use_progressive_ = 1;
 		};
 
 		~PersistenceDiagramsBarycenter(){};
 
 
-	std::vector<std::vector<matchingTuple> >
-      execute(std::vector<diagramTuple>* barycenter);
+		void
+      execute(std::vector<diagramTuple>* barycenter, vector<vector<vector<matchingTuple>>>* all_matchings);
 
 // 		inline int setDiagram(int idx, void* data){
 // 			if(idx < numberOfInputs_){
@@ -177,9 +173,10 @@ namespace ttk{
 
 
 template <typename dataType>
-  std::vector<std::vector<matchingTuple>>
+  void
     PersistenceDiagramsBarycenter<dataType>::execute(
-      std::vector<diagramTuple>* barycenter){
+      std::vector<diagramTuple>* barycenter,
+      vector<vector<vector<matchingTuple>>> *all_matchings){
 
 	Timer t;
 	{
@@ -194,7 +191,6 @@ template <typename dataType>
 	std::vector<std::vector<int>> data_sad_idx(numberOfInputs_);
 	std::vector<std::vector<int>> data_max_idx(numberOfInputs_);
 
-	std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
 
 	bool do_min = false;
 	bool do_sad = false;
@@ -248,6 +244,12 @@ template <typename dataType>
     matching_min, matching_sad, matching_max;
 
     dataType total_cost = 0;
+    if(do_min && do_max){
+    time_limit_ = time_limit_/2;
+    }
+    if(do_sad){
+    time_limit_=time_limit_/3;
+    }
 	/*omp_set_num_threads(1);
 	#ifdef TTK_ENABLE_OPENMP
 	#pragma omp parallel sections
@@ -294,14 +296,14 @@ template <typename dataType>
 				bary_sad.setUseProgressive(use_progressive_);
 				bary_sad.setTimeLimit(time_limit_);
 				bary_sad.setGeometricalFactor(alpha_);
-        bary_sad.setLambda(lambda_);
-        bary_sad.setDebugLevel(debugLevel_);
-        bary_sad.setMethod(method_);
+                bary_sad.setLambda(lambda_);
+                bary_sad.setDebugLevel(debugLevel_);
+                bary_sad.setMethod(method_);
 				bary_sad.setEarlyStoppage(early_stoppage_);
 				bary_sad.setEpsilonDecreases(epsilon_decreases_);
-        bary_sad.setDeterministic(deterministic_);
-				bary_sad.setReinitPrices(reinit_prices_);
-        bary_sad.setDiagrams(&data_sad);
+                bary_sad.setDeterministic(deterministic_);
+                bary_sad.setReinitPrices(reinit_prices_);
+                bary_sad.setDiagrams(&data_sad);
 				matching_sad = bary_sad.execute(barycenter_sad);
 				total_cost += bary_sad.getCost();
 			}
@@ -336,38 +338,51 @@ template <typename dataType>
 	//}
 
 	// Reconstruct matchings
-	for(int i=0; i<numberOfInputs_; i++){
+                        all_matchings->resize(1);
+                        all_matchings->at(0).resize(numberOfInputs_);
+                        for(int i = 0; i < numberOfInputs_; i++) {
 
-		if(do_min){
-			for(unsigned int j=0; j<matching_min[i].size(); j++){
-				matchingTuple t = matching_min[i][j];
-				int bidder_id = std::get<0>(t);
-				std::get<0>(t) = data_min_idx[i][bidder_id];
-				all_matchings[i].push_back(t);
-			}
-		}
+                            if(do_min) {
+                                for(unsigned int j = 0; j < matching_min[i].size(); j++) {
+                                    matchingTuple t = matching_min[i][j];
+                                    int bidder_id = std::get<0>(t);
+                                    std::get<0>(t) = data_min_idx[i][bidder_id];
+                                    if(std::get<1>(t) < 0) {
+                                        std::get<1>(t) = -1;
+                                    }
+                                    all_matchings->at(0)[i].push_back(t);
+                                }
+                            }
 
-		if(do_sad){
-			for(unsigned int j=0; j<matching_sad[i].size(); j++){
-				matchingTuple t = matching_sad[i][j];
-				int bidder_id = std::get<0>(t);
-				std::get<0>(t) = data_sad_idx[i][bidder_id];
-				std::get<1>(t) = std::get<1>(t) + barycenter_min.size();
-				all_matchings[i].push_back(t);
-			}
-		}
+                            if(do_sad) {
+                                for(unsigned int j = 0; j < matching_sad[i].size(); j++) {
+                                    matchingTuple t = matching_sad[i][j];
+                                    int bidder_id = std::get<0>(t);
+                                    std::get<0>(t) = data_sad_idx[i][bidder_id];
+                                    if(std::get<1>(t) >= 0) {
+                                        std::get<1>(t) = std::get<1>(t) + barycenter_min.size();
+                                    } else {
+                                        std::get<1>(t) = -1;
+                                    }
+                                    all_matchings->at(0)[i].push_back(t);
+                                }
+                            }
 
-		if(do_max){
-			for(unsigned int j=0; j<matching_max[i].size(); j++){
-				matchingTuple t = matching_max[i][j];
-				int bidder_id = std::get<0>(t);
-				std::get<0>(t) = data_max_idx[i][bidder_id];
-				std::get<1>(t) = std::get<1>(t) + barycenter_min.size() + barycenter_sad.size();
-				all_matchings[i].push_back(t);
-			}
-		}
-	}
-	// Reconstruct barcenter
+                            if(do_max) {
+                                for(unsigned int j = 0; j < matching_max[i].size(); j++) {
+                                    matchingTuple t = matching_max[i][j];
+                                    int bidder_id = std::get<0>(t);
+                                    std::get<0>(t) = data_max_idx[i][bidder_id];
+                                    if(std::get<1>(t) >= 0) {
+                                        std::get<1>(t) = std::get<1>(t) + barycenter_min.size() + barycenter_sad.size();
+                                    } else {
+                                        std::get<1>(t) = -1;
+                                    }
+                                    all_matchings->at(0)[i].push_back(t);
+                                }
+                            }
+                        }
+        // Reconstruct barcenter
 	for(unsigned int j=0; j<barycenter_min.size(); j++){
 		diagramTuple dt = barycenter_min[j];
 		barycenter->push_back(dt);
@@ -399,10 +414,10 @@ template <typename dataType>
 		cords_z2[i] = 0;
 	}
 
-	for(unsigned i=0; i<all_matchings.size(); i++){
+	for(unsigned i=0; i<all_matchings->at(0).size(); i++){
     std::vector<diagramTuple>* CTDiagram = &((*intermediateDiagrams)[i]);
-		for(unsigned j=0; j<all_matchings[i].size(); j++){
-			matchingTuple t = all_matchings[i][j];
+		for(unsigned j=0; j<all_matchings->at(0)[i].size(); j++){
+			matchingTuple t = all_matchings->at(0)[i][j];
 			int bidder_id = std::get<0>(t);
 			int bary_id = std::get<1>(t);
 
@@ -443,10 +458,9 @@ template <typename dataType>
 		<< " thread(s))."
 		<< std::endl;
 	dMsg(std::cout, msg.str(), timeMsg);
-	return all_matchings;
 	}
 
-}
+  }
 
 }
 
