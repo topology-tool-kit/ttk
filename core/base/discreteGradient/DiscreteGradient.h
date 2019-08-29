@@ -375,13 +375,6 @@ function value.
                               const Cell &down,
                               const dataType *scalars) const;
 
-      /**
-       * Body of AssignGradient algorithm from "Parallel Computation of 3D
-Morse-Smale Complexes",
-       * N. Shivashankar and V. Natarajan.
-       * Compute the initial gradient field of the input scalar function for a
-given dimension.
-       */
       template <typename idType>
       inline std::vector<idType>
         G(SimplexId x, int dim, const idType *const offsets) const {
@@ -510,6 +503,13 @@ given dimension.
         return -1;
       }
 
+      /**
+       * Body of AssignGradient algorithm from "Parallel Computation of 3D
+Morse-Smale Complexes",
+       * N. Shivashankar and V. Natarajan.
+       * Compute the initial gradient field of the input scalar function for a
+given dimension.
+       */
       template <typename dataType, typename idType>
       int assignGradient(const dataType *scalars,
                          const idType *offsets,
