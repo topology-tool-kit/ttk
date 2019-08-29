@@ -769,13 +769,6 @@ template <typename dataType, typename idType>
 int DiscreteGradient::buildGradient2() {
   Timer t;
 
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-
-  for(int i = 1; i < dimensionality_; ++i) {
-    assignGradient2<dataType, idType>(i, scalars, offsets, gradient_[i]);
-  }
-
   {
     std::stringstream msg;
     msg << "[DiscreteGradient] Data-set (" << numberOfVertices_
@@ -790,13 +783,6 @@ int DiscreteGradient::buildGradient2() {
 template <typename dataType, typename idType>
 int DiscreteGradient::buildGradient3() {
   Timer t;
-
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-
-  for(int i = 2; i < dimensionality_; ++i) {
-    assignGradient3<dataType, idType>(i, scalars, offsets, gradient_[i]);
-  }
 
   {
     std::stringstream msg;
