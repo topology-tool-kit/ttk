@@ -375,128 +375,168 @@ function value.
                               const Cell &down,
                               const dataType *scalars) const;
 
+      /**
+       * @brief Order the vertices in a cell according to their scalar
+       * field value
+       *
+       * @param[in] cell Cell Id
+       * @param[in] dim Cell dimension
+       * @param[in] offset Scalar field
+       */
       template <typename idType>
       inline std::vector<idType>
-        G(SimplexId x, int dim, const idType *const offsets) const {
-        std::vector<idType> res = std::vector<idType>();
+        G(SimplexId cell, int dim, const idType *const offset) const {
+        std::vector<idType> res{};
         if(dim == 0) {
-          res.push_back(offsets[x]);
+          res.emplace_back(offset[cell]);
         } else if(dim == 1) {
           for(int i = 0; i < 2; i++) {
-            SimplexId vertexId;
-            inputTriangulation_->getEdgeVertex(x, i, vertexId);
-            res.push_back(offsets[vertexId]);
+            SimplexId v;
+            inputTriangulation_->getEdgeVertex(cell, i, v);
+            res.emplace_back(offset[v]);
           }
         } else if(dim == 2) {
           for(int i = 0; i < 3; i++) {
-            SimplexId vertexId;
-            inputTriangulation_->getTriangleVertex(x, i, vertexId);
-            res.push_back(offsets[vertexId]);
+            SimplexId v;
+            inputTriangulation_->getTriangleVertex(cell, i, v);
+            res.emplace_back(offset[v]);
           }
         }
         std::sort(res.begin(), res.end(), std::greater<idType>());
         return res;
       }
 
+      /**
+       * Type alias for lower stars of a given cell
+       */
+      using lowerStarType = std::array<std::set<SimplexId>, 3>;
+
+      /**
+       * @brief Store the 1- and 2-cells around vertex for
+       * which offset at vertex is maximum
+       *
+       * @param[in] a Vertex Id
+       * @param[in] offset Scalar field
+       *
+       * @return Lower star as 3 sets of cells (0-cells, 1-cells and 2-cells)
+       */
       template <typename idType>
-      inline std::vector<std::set<SimplexId>>
-        L(SimplexId x, const idType *const offsets) const {
-        std::vector<std::set<SimplexId>> res(1, std::set<SimplexId>());
-        res[0].insert(x);
-        for(SimplexId i = 0; i < inputTriangulation_->getVertexEdgeNumber(x);
-            i++) {
+      inline lowerStarType lowerStar(SimplexId a,
+                                     const idType *const offset) const {
+        lowerStarType res{};
+        res[0].emplace(a);
+        const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
+        for(SimplexId i = 0; i < nedges; i++) {
           SimplexId edgeId;
-          inputTriangulation_->getVertexEdge(x, i, edgeId);
-          bool xIsMax = true;
+          inputTriangulation_->getVertexEdge(a, i, edgeId);
+          bool isMax = true;
           for(SimplexId j = 0; j < 2; j++) {
             SimplexId vertexId;
             inputTriangulation_->getEdgeVertex(edgeId, j, vertexId);
-            if(offsets[vertexId] > offsets[x]) {
-              xIsMax = false;
+            if(offset[vertexId] > offset[a]) {
+              isMax = false;
               break;
             }
           }
-          if(xIsMax) {
-            if(res.size() == 1) {
-              res.emplace_back();
-            }
-            res[1].insert(edgeId);
+          if(isMax) {
+            res[1].emplace(edgeId);
           }
         }
-        for(SimplexId i = 0;
-            i < inputTriangulation_->getVertexTriangleNumber(x); i++) {
+        const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
+        for(SimplexId i = 0; i < ntri; i++) {
           SimplexId triangleId;
-          inputTriangulation_->getVertexTriangle(x, i, triangleId);
-          bool xIsMax = true;
+          inputTriangulation_->getVertexTriangle(a, i, triangleId);
+          bool isMax = true;
           for(SimplexId j = 0; j < 3; j++) {
             SimplexId vertexId;
             inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
-            if(offsets[vertexId] > offsets[x]) {
-              xIsMax = false;
+            if(offset[vertexId] > offset[a]) {
+              isMax = false;
               break;
             }
           }
-          if(xIsMax) {
-            if(res.size() == 2) {
-              res.emplace_back();
-            }
-            res[2].insert(triangleId);
+          if(isMax) {
+            res[2].emplace(triangleId);
           }
         }
         return res;
       }
 
-      inline SimplexId
-        num_unpaired_faces(std::vector<std::set<SimplexId>> &Lx,
-                           SimplexId alpha,
-                           int dimAlpha,
-                           std::vector<std::set<SimplexId>> &isPaired) const {
-        if(dimAlpha == 1) {
-          SimplexId cnt = 0;
+      /**
+       * @brief Return the number of unpaired faces of a given cell in
+       * a lower star
+       *
+       * @param[in] cell Input cell
+       * @param[in] dim Input cell dimension
+       * @param[in] ls Input lower star
+       * @param[in] isPaired
+       *
+       * @return Number of unpaired faces
+       */
+      inline SimplexId numUnpairedFaces(
+        SimplexId cell,
+        int dim,
+        const lowerStarType &ls,
+        const std::vector<std::set<SimplexId>> &isPaired) const {
+
+        // number of unpaired faces
+        SimplexId count = 0;
+
+        if(dim == 1) {
           for(SimplexId i = 0; i < 2; i++) {
-            SimplexId vertexId;
-            inputTriangulation_->getEdgeVertex(alpha, i, vertexId);
-            if(isPaired[0].count(vertexId) == 0U) {
-              cnt++;
+            SimplexId v;
+            inputTriangulation_->getEdgeVertex(cell, i, v);
+            // check if v not in isPaired
+            if(isPaired[0].find(v) == isPaired[0].end()) {
+              count++;
             }
           }
-          return cnt;
-        } else // ==2
-        {
-          SimplexId cnt = 0;
+        } else if(dim == 2) {
           for(SimplexId i = 0; i < 3; i++) {
-            SimplexId edgeId;
-            inputTriangulation_->getTriangleEdge(alpha, i, edgeId);
-            if((Lx[1].count(edgeId) != 0U)
-               && (isPaired[1].count(edgeId) == 0U)) {
-              cnt++;
+            SimplexId e;
+            inputTriangulation_->getTriangleEdge(cell, i, e);
+            // check if e in ls but not in isPaired
+            if((ls[1].find(e) != ls[1].end())
+               && (isPaired[1].find(e) == isPaired[1].end())) {
+              count++;
             }
           }
-          return cnt;
         }
+        return count;
       }
 
+      /**
+       * @brief Get the input cell single unpaired face
+       *
+       * @param[in] cell Input cell
+       * @param[in] dim Input cell dimension
+       * @param[in] ls Input lower star
+       * @param[in] isPaired
+       *
+       * @return Paired cell of same dimension
+       */
       inline SimplexId
-        getPair(std::vector<std::set<SimplexId>> &Lx,
-                SimplexId cellId,
-                int dimCell,
-                std::vector<std::set<SimplexId>> &isPaired) const {
-        if(dimCell == 1) {
+        getPair(SimplexId cell,
+                int dim,
+                lowerStarType &ls,
+                const std::vector<std::set<SimplexId>> &isPaired) const {
+        if(dim == 1) {
           for(SimplexId i = 0; i < 2; i++) {
-            SimplexId vertexId;
-            inputTriangulation_->getEdgeVertex(cellId, i, vertexId);
-            if(isPaired[0].count(vertexId) == 0U) {
-              return vertexId;
+            SimplexId v;
+            inputTriangulation_->getEdgeVertex(cell, i, v);
+            // check if v not in isPaired
+            if(isPaired[0].find(v) == isPaired[0].end()) {
+              return v;
             }
           }
-        } else // ==2
-        {
+        } else if(dim == 2) {
           for(SimplexId i = 0; i < 3; i++) {
-            SimplexId edgeId;
-            inputTriangulation_->getTriangleEdge(cellId, i, edgeId);
-            if((Lx[1].count(edgeId) != 0U)
-               && (isPaired[1].count(edgeId) == 0U)) {
-              return edgeId;
+            SimplexId e;
+            inputTriangulation_->getTriangleEdge(cell, i, e);
+            // check if e in ls but not in isPaired
+            if((ls[1].find(e) != ls[1].end())
+               && (isPaired[1].find(e) == isPaired[1].end())) {
+              return e;
             }
           }
         }

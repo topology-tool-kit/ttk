@@ -194,16 +194,14 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
                                      const idType *const offsets,
                                      fullGradientType &gradient) const {
 
-  /*=================================== Process lower stars
-   * ========================================*/
+  // ProcessLowerStars
 
   using std::pair;
   using std::set;
   using std::vector;
 
-  /*================================ Definition
-   * ==================================*/
-  auto &inputTriangulation = inputTriangulation_;
+  /* Declarations */
+
   auto isLexicographicSmaller
     = [](const vector<idType> &a, const vector<idType> &b) {
         for(size_t i = 0; i < std::min(a.size(), b.size()); i++) {
@@ -213,125 +211,119 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
         }
         return a.size() < b.size();
       };
-  auto pqGreater
-    = [&isLexicographicSmaller](const pair<SimplexId, vector<idType>> &a,
-                                const pair<SimplexId, vector<idType>> &b) {
-        return isLexicographicSmaller(b.second, a.second);
-      };
-  std::priority_queue<pair<SimplexId, vector<idType>>,
-                      vector<pair<SimplexId, vector<idType>>>,
-                      decltype(pqGreater)>
-    PQzero(pqGreater), PQone(pqGreater);
+  auto pqGreater = [&](const pair<Cell, vector<idType>> &a,
+                       const pair<Cell, vector<idType>> &b) {
+    return isLexicographicSmaller(b.second, a.second);
+  };
+  std::priority_queue<pair<Cell, vector<idType>>,
+                      vector<pair<Cell, vector<idType>>>, decltype(pqGreater)>
+    pq0(pqGreater), pq1(pqGreater);
 
-  vector<set<SimplexId>> isPaired(dimensionality_ + 1, set<SimplexId>());
+  vector<set<SimplexId>> isPaired(dimensionality_ + 1);
 
   auto V = [&](SimplexId alpha, int dimAlpha, SimplexId beta) {
     gradient[dimAlpha][dimAlpha][alpha] = beta;
     gradient[dimAlpha][dimAlpha + 1][beta] = alpha;
-    isPaired[dimAlpha].insert(alpha);
-    isPaired[dimAlpha + 1].insert(beta);
+    isPaired[dimAlpha].emplace(alpha);
+    isPaired[dimAlpha + 1].emplace(beta);
   };
-  auto isEdgeOfTri
-    = [&inputTriangulation](SimplexId edgeId, SimplexId triId) -> bool {
-    SimplexId evId1, evId2;
-    inputTriangulation->getEdgeVertex(edgeId, 0, evId1);
-    inputTriangulation->getEdgeVertex(edgeId, 1, evId2);
-    int cnt = 0;
-    for(SimplexId i = 0; i < 3; i++) {
-      SimplexId vertexId;
-      inputTriangulation->getTriangleVertex(triId, i, vertexId);
-      if(vertexId == evId1 || vertexId == evId2) {
-        cnt++;
+
+  auto isEdgeInTriangle = [&](SimplexId edge, SimplexId triangle) {
+    auto nedges = inputTriangulation_->getTriangleEdgeNumber(triangle);
+    for(SimplexId i = 0; i < nedges; ++i) {
+      SimplexId e{};
+      inputTriangulation_->getTriangleEdge(triangle, i, e);
+      if(e == edge) {
+        return true;
       }
     }
-    return cnt == 2;
+    return false;
   };
-  /*===============================================================================*/
 
-  /*============================= Calculate gradient
-   * ==============================*/
-  {
-    for(SimplexId x = 0; x < inputTriangulation_->getNumberOfVertices(); x++) {
-      auto Lx = L<idType>(x, offsets);
-      if(Lx.size() == 1) {
-        isPaired[0].insert(x);
-      } else {
-        /*======= Get delta which has minimal G value =======*/
-        bool first = true;
-        SimplexId delta;
-        vector<idType> Gmin;
-        for(auto s : Lx[1]) {
-          auto Gcur = G<idType>(s, 1, offsets);
-          if(first || isLexicographicSmaller(Gcur, Gmin)) {
-            first = false;
-            Gmin = Gcur;
-            delta = s;
+  /* Compute gradient */
+
+  auto nverts = inputTriangulation_->getNumberOfVertices();
+  for(SimplexId x = 0; x < nverts; x++) {
+    auto Lx = lowerStar(x, offsets);
+    if(Lx[1].empty()) {
+      // x is a local minimum
+      isPaired[0].insert(x);
+    } else {
+      // get delta: 1-cell (edge) with minimal G value (steeper gradient)
+      SimplexId delta;
+      std::vector<idType> Gmin{};
+      // first iteration
+      bool first = true;
+      // compute minimum of G over Lx[1]
+      for(const auto s : Lx[1]) {
+        auto Gcur = G(s, 1, offsets);
+        if(first || isLexicographicSmaller(Gcur, Gmin)) {
+          first = false;
+          Gmin = Gcur;
+          delta = s;
+        }
+      }
+
+      // store x (0-cell) -> delta (1-cell) V-path
+      V(x, 0, delta);
+
+      // push every 1-cell in Lx that is not delta into pq0
+      for(auto alpha : Lx[1]) {
+        if(alpha != delta) {
+          pq0.push({Cell{1, alpha}, G<idType>(alpha, 1, offsets)});
+        }
+      }
+
+      // push every coface of delta in Lx (2-cells) such that
+      // numUnpairedFaces == 1 into pq1
+      if(!Lx[2].empty()) {
+        for(const auto alpha : Lx[2]) {
+          if(isEdgeInTriangle(delta, alpha)
+             && numUnpairedFaces(alpha, 2, Lx, isPaired) == 1) {
+            pq1.push({Cell{2, alpha}, G<idType>(alpha, 2, offsets)});
           }
         }
-        /*===================================================*/
+      }
 
-        V(x, 0, delta);
-        for(auto alpha : Lx[1]) {
-          if(alpha != delta) {
-            PQzero.push(make_pair(alpha, G<idType>(alpha, 1, offsets)));
-          }
-        }
-
-        /*=============== Add cofaces of delta ==============*/
-        SimplexId deltaVertexId1, deltaVertexId2;
-        inputTriangulation_->getEdgeVertex(delta, 0, deltaVertexId1);
-        inputTriangulation_->getEdgeVertex(delta, 1, deltaVertexId2);
-
-        if(Lx.size() > 2) {
-          for(SimplexId alpha : Lx[2]) {
-            if(isEdgeOfTri(delta, alpha)
-               && num_unpaired_faces(Lx, alpha, 2, isPaired) == 1) {
-              PQone.push(make_pair(alpha, G<idType>(alpha, 2, offsets)));
-            }
-          }
-        }
-        /*===================================================*/
-        while(!PQone.empty() || !PQzero.empty()) {
-          while(!PQone.empty()) {
-            auto cellPair = PQone.top();
-            PQone.pop();
-            SimplexId cellId = cellPair.first,
-                      cellDim = cellPair.second.size() - 1;
-            if(num_unpaired_faces(Lx, cellId, cellDim, isPaired) == 0) {
-              PQzero.push(cellPair);
-            } else {
-              SimplexId pairCellId = getPair(Lx, cellId, cellDim, isPaired);
-              SimplexId pairCellDim = cellDim - 1;
-              V(pairCellId, pairCellDim, cellId);
-              isPaired[pairCellDim].insert(pairCellId); // remove from PQzero
-              /*============= Add cofaces of pairCell to PQone ===============*/
-              if(pairCellDim == 1 && Lx.size() > 2) // pairCellDim >= 1
-              {
-                for(SimplexId beta : Lx[2]) {
-                  if(isEdgeOfTri(pairCellId, beta)
-                     && num_unpaired_faces(Lx, beta, 2, isPaired) == 1) {
-                    PQone.push(make_pair(beta, G<idType>(beta, 2, offsets)));
-                  }
+      while(!pq1.empty() || !pq0.empty()) {
+        while(!pq1.empty()) {
+          auto cellPair = pq1.top();
+          pq1.pop();
+          SimplexId cellId = cellPair.first.id_;
+          int cellDim = cellPair.first.dim_;
+          if(numUnpairedFaces(cellId, cellDim, Lx, isPaired) == 0) {
+            pq0.push(cellPair);
+          } else {
+            SimplexId pairCellId = getPair(cellId, cellDim, Lx, isPaired);
+            SimplexId pairCellDim = cellDim - 1;
+            V(pairCellId, pairCellDim, cellId);
+            isPaired[pairCellDim].insert(pairCellId); // remove from pq0
+            /* Add cofaces of pairCell to pq1 */
+            if(pairCellDim == 1 && Lx.size() > 2) // pairCellDim >= 1
+            {
+              for(SimplexId beta : Lx[2]) {
+                if(isEdgeInTriangle(pairCellId, beta)
+                   && numUnpairedFaces(beta, 2, Lx, isPaired) == 1) {
+                  pq1.push({Cell{2, beta}, G<idType>(beta, 2, offsets)});
                 }
               }
-              /*================================================*/
             }
           }
-          if(!PQzero.empty()) {
-            auto cellPair = PQzero.top();
-            PQzero.pop();
-            SimplexId cellId = cellPair.first,
-                      cellDim = cellPair.second.size() - 1;
-            if(isPaired[cellDim].count(cellId)) {
-              continue;
-            }
-            isPaired[cellDim].insert(cellId);
-            if(cellDim == 1 && Lx.size() > 2) {
-              for(SimplexId alpha : Lx[2]) {
-                if(isEdgeOfTri(cellId, alpha)
-                   && num_unpaired_faces(Lx, alpha, 2, isPaired) == 1) {
-                  PQone.push(make_pair(alpha, G<idType>(alpha, 2, offsets)));
-                }
+        }
+        if(!pq0.empty()) {
+          auto cellPair = pq0.top();
+          pq0.pop();
+          SimplexId cellId = cellPair.first.id_;
+          int cellDim = cellPair.first.dim_;
+          if(isPaired[cellDim].count(cellId)) {
+            continue;
+          }
+          isPaired[cellDim].insert(cellId);
+          if(cellDim == 1 && Lx.size() > 2) {
+            for(SimplexId alpha : Lx[2]) {
+              if(isEdgeInTriangle(cellId, alpha)
+                 && numUnpairedFaces(alpha, 2, Lx, isPaired) == 1) {
+                pq1.push({Cell{2, alpha}, G<idType>(alpha, 2, offsets)});
               }
             }
           }
@@ -339,9 +331,6 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
       }
     }
   }
-  /*===============================================================================*/
-
-  /*================================================================================================*/
 
   return 0;
 }
@@ -739,11 +728,10 @@ int DiscreteGradient::buildGradient() {
     gradient_[i][i].resize(numberOfCells[i], -1);
     gradient_[i][i + 1].resize(numberOfCells[i + 1], -1);
   }
-  /*=========================== move outside the loop
-   * =============================*/
+
+  /* move outside the loop */
   // compute gradient pairs
   assignGradient<dataType, idType>(scalars, offsets, gradient_);
-  /*===============================================================================*/
 
   {
     std::stringstream msg;
