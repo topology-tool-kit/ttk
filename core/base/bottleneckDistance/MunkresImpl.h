@@ -542,17 +542,7 @@ int Munkres::affect(std::vector<matchingTuple> &matchings,
         // Use row cover to match to last column diagonal.
         if(r < nbR - 1)
           rowCover[r] = true;
-          matchingTuple t = std::make_tuple(r, c, C[r][c]);
-          matchings.push_back(t);
-          // Use row cover to match to last column diagonal.
-        }
-        else{
-          matchingTuple t = std::make_tuple(-1, c, C[r][c]);
-          matchings.push_back(t);
-        }
       }
-    }
-  }
 
   // Clear row cover
   for(int r = 0; r < nbR - 1; ++r) {
