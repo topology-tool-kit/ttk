@@ -13,8 +13,25 @@ IEEE Transactions on Visualization and Computer Graphics,
 Proc. of IEEE VIS 2017.
 
 
-To run this example, first install TTK on your system 
-(https://topology-tool-kit.github.io/installation.html).
+To run this example, either install TTK using Conda (Linux and OSX) or manually install TTK on your system.
+
+Using Conda
+===========
+0) Install either miniconda (https://docs.conda.io/en/latest/miniconda.html) or 
+   anaconda (https://www.anaconda.com/distribution/) on your system.
+
+1) Create a conda environment and install the 'topologytoolkit' package from conda-forge:
+$ conda create -n ttk
+$ conda activate ttk
+$ conda install -c conda-forge topologytoolkit
+
+2) From the current directory, enter the following command (omit the '$' character):
+$ ./example.py ../data/inputData.vtu
+
+
+Manual Installation
+===================
+First install TTK on your system (https://topology-tool-kit.github.io/installation.html).
 
 Next, before launching the script, make sure that you properly define the following environment variables:
 - PYTHONPATH (where TTK VTK python modules are installed)
