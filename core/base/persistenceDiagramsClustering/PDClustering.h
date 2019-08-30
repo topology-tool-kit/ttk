@@ -100,7 +100,8 @@ namespace ttk {
       std::vector<std::vector<dataType>> *min_price,
       std::vector<std::vector<dataType>> *min_diag_price,
       std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
-        &all_matchings);
+        &all_matchings,
+        int only_matchings);
 
     inline void resetDosToOriginalValues() {
       do_min_ = original_dos[0];
