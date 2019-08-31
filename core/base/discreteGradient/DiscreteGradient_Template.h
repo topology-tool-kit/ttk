@@ -196,14 +196,10 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
 
   // ProcessLowerStars
 
-  using std::pair;
-  using std::set;
-  using std::vector;
-
   /* Declarations */
 
   auto isLexicographicSmaller
-    = [](const vector<idType> &a, const vector<idType> &b) {
+    = [](const std::vector<idType> &a, const std::vector<idType> &b) {
         for(size_t i = 0; i < std::min(a.size(), b.size()); i++) {
           if(a[i] != b[i]) {
             return a[i] < b[i];
@@ -211,15 +207,16 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
         }
         return a.size() < b.size();
       };
-  auto pqGreater = [&](const pair<Cell, vector<idType>> &a,
-                       const pair<Cell, vector<idType>> &b) {
+  auto pqGreater = [&](const std::pair<Cell, std::vector<idType>> &a,
+                       const std::pair<Cell, std::vector<idType>> &b) {
     return isLexicographicSmaller(b.second, a.second);
   };
-  std::priority_queue<pair<Cell, vector<idType>>,
-                      vector<pair<Cell, vector<idType>>>, decltype(pqGreater)>
+  std::priority_queue<std::pair<Cell, std::vector<idType>>,
+                      std::vector<std::pair<Cell, std::vector<idType>>>,
+                      decltype(pqGreater)>
     pq0(pqGreater), pq1(pqGreater);
 
-  vector<set<SimplexId>> isPaired(dimensionality_ + 1);
+  std::vector<std::set<SimplexId>> isPaired(dimensionality_ + 1);
 
   auto V = [&](Cell alpha, Cell beta) {
     gradient[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
