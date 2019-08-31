@@ -47,7 +47,7 @@
 
 // TTK includes
 #include <TrackingFromOverlap.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKTRACKINGFROMOVERLAP_EXPORT ttkTrackingFromOverlap
   : public vtkUnstructuredGridAlgorithm,

@@ -28,7 +28,7 @@
 
 // TTK includes
 #include <MeshGraph.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKMESHGRAPH_EXPORT ttkMeshGraph : public vtkUnstructuredGridAlgorithm,
                                          public ttk::Wrapper {

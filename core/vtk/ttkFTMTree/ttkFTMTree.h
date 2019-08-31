@@ -30,7 +30,7 @@
 // ttk code includes
 #include <FTMTree.h>
 #include <ttkFTMStructures.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKFTMTREE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm,
                                      public ttk::Wrapper {

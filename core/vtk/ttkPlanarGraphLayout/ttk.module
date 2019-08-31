@@ -6,4 +6,4 @@ HEADERS
   ttkPlanarGraphLayout.h
 DEPENDS
   planarGraphLayout
-  ttkTriangulation
+  ttkTriangulationFilter

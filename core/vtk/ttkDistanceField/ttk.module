@@ -6,4 +6,4 @@ HEADERS
   ttkDistanceField.h
 DEPENDS
   distanceField
-  ttkTriangulation
+  ttkTriangulationFilter

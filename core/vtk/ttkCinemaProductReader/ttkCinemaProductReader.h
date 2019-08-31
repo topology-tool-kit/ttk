@@ -26,7 +26,7 @@
 #include <ttkCinemaProductReaderModule.h>
 
 // TTK includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKCINEMAPRODUCTREADER_EXPORT ttkCinemaProductReader
   : public vtkMultiBlockDataSetAlgorithm,

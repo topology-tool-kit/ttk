@@ -20,7 +20,7 @@
 #include <ttkForEachRowModule.h>
 
 // TTK includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKFOREACHROW_EXPORT ttkForEachRow : public vtkMultiBlockDataSetAlgorithm,
                                            public ttk::Wrapper {

@@ -49,7 +49,7 @@
 
 // ttk code includes
 #include <IntegralLines.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public vtkDataSetAlgorithm,
                                                  public ttk::Wrapper {

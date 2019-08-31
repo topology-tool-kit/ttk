@@ -6,4 +6,4 @@ HEADERS
   ttkBlank.h
 DEPENDS
   blank
-  ttkTriangulation
+  ttkTriangulationFilter

@@ -49,7 +49,7 @@
 
 // TTK includes
 #include <PlanarGraphLayout.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKPLANARGRAPHLAYOUT_EXPORT ttkPlanarGraphLayout
   : public vtkUnstructuredGridAlgorithm,

@@ -55,7 +55,7 @@
 
 // ttk code includes
 #include <HarmonicField.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 #include <ttkTriangulation.h>
 

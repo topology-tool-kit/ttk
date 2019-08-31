@@ -44,7 +44,7 @@
 #include <ttkComponentSizeModule.h>
 
 // ttk code includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKCOMPONENTSIZE_EXPORT ttkComponentSize : public vtkPointSetAlgorithm,
                                                public ttk::Wrapper {

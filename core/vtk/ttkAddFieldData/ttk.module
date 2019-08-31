@@ -5,4 +5,4 @@ SOURCES
 HEADERS
   ttkAddFieldData.h
 DEPENDS
-  ttkTriangulation
+  ttkTriangulationFilter

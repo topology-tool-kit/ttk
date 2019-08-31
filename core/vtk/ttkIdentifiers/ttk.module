@@ -6,4 +6,4 @@ SOURCES
   ttkIdentifiers.h
 DEPENDS
   common
-  ttkTriangulation
+  ttkTriangulationFilter

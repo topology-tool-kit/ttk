@@ -20,7 +20,7 @@
 
 // TTK includes
 #include <IcoSphere.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKICOSPHERE_EXPORT ttkIcoSphere : public vtkUnstructuredGridAlgorithm,
                                          public ttk::Wrapper {

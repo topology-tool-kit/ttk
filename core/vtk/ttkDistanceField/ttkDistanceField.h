@@ -49,7 +49,7 @@
 
 // ttk code includes
 #include <DistanceField.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 enum DistanceType { Float = 0, Double };
 

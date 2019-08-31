@@ -32,7 +32,7 @@
 
 // TTK includes
 #include <ContourAroundPoint.hpp>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 // See the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.

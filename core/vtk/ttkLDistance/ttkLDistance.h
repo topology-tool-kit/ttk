@@ -38,7 +38,7 @@
 
 // ttk code includes
 #include <LDistance.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 // In this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.

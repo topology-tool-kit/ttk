@@ -27,7 +27,7 @@
 
 // TTK includes
 #include <CinemaQuery.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKCINEMAQUERY_EXPORT ttkCinemaQuery : public vtkTableAlgorithm,
                                              public ttk::Wrapper {

@@ -3,9 +3,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkScalarFieldSmoother)
+vtkStandardNewMacro(ttkScalarFieldSmoother);
 
-  ttkScalarFieldSmoother::ttkScalarFieldSmoother() {
+ttkScalarFieldSmoother::ttkScalarFieldSmoother() {
 
   // init
   NumberOfIterations = 1;

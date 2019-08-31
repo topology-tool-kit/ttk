@@ -48,7 +48,7 @@
 
 // ttk code includes
 #include <QuadrangulationSubdivision.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 #include <ttkTriangulation.h>
 

@@ -69,7 +69,7 @@
 
 // ttk code includes
 #include <MandatoryCriticalPoints.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 #include <queue>
 #include <utility>

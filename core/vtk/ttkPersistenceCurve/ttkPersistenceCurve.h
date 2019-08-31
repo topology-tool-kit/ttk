@@ -52,7 +52,7 @@
 
 // ttk code includes
 #include <PersistenceCurve.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKPERSISTENCECURVE_EXPORT ttkPersistenceCurve
   : public vtkDataSetAlgorithm,

@@ -23,7 +23,7 @@
 
 // ttk code includes
 #include <TopologicalCompression.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 // VTK includes -- to adapt
 #include <vtkCellData.h>

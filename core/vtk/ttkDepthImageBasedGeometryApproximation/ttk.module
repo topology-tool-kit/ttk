@@ -6,4 +6,4 @@ HEADERS
   ttkDepthImageBasedGeometryApproximation.h
 DEPENDS
   depthImageBasedGeometryApproximation
-  ttkTriangulation
+  ttkTriangulationFilter

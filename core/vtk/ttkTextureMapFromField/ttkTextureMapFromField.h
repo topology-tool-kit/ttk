@@ -40,7 +40,7 @@
 #include <ttkTextureMapFromFieldModule.h>
 
 // ttk code includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKTEXTUREMAPFROMFIELD_EXPORT ttkTextureMapFromField
   : public vtkDataSetAlgorithm,

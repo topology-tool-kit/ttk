@@ -25,9 +25,11 @@
 
 // base code includes
 #include <ProgramBase.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
-class VTKFILTERSCORE_EXPORT ttkProgramBase : public ttk::ProgramBase {
+#include <ttkProgramBaseModule.h>
+
+class TTKPROGRAMBASE_EXPORT ttkProgramBase : public ttk::ProgramBase {
 
 public:
   ttkProgramBase() {

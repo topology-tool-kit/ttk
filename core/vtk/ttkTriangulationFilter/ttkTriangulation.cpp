@@ -1,5 +1,5 @@
 #include <ttkTriangulation.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 using namespace std;
 using namespace ttk;

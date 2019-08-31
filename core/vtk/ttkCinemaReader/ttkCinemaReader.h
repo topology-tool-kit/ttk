@@ -21,7 +21,7 @@
 #include <ttkCinemaReaderModule.h>
 
 // TTK includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKCINEMAREADER_EXPORT ttkCinemaReader : public vtkTableReader,
                                                public ttk::Wrapper {

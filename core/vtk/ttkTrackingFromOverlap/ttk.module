@@ -6,4 +6,4 @@ HEADERS
   ttkTrackingFromOverlap.h
 DEPENDS
   trackingFromOverlap
-  ttkTriangulation
+  ttkTriangulationFilter

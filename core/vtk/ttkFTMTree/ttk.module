@@ -8,4 +8,4 @@ HEADERS
 DEPENDS
   ftmTree
   geometry
-  ttkTriangulation
+  ttkTriangulationFilter

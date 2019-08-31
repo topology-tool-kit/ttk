@@ -44,7 +44,7 @@
 
 // ttk code includes
 #include <ScalarFieldSmoother.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKSCALARFIELDSMOOTHER_EXPORT ttkScalarFieldSmoother
   : public vtkDataSetAlgorithm,

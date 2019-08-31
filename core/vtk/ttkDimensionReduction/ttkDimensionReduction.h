@@ -39,7 +39,7 @@
 
 // TTK includes
 #include <DimensionReduction.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKDIMENSIONREDUCTION_EXPORT ttkDimensionReduction
   : public vtkTableAlgorithm,

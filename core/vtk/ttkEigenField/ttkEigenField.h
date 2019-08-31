@@ -51,7 +51,7 @@
 
 // ttk code includes
 #include <EigenField.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 #include <ttkTriangulation.h>
 

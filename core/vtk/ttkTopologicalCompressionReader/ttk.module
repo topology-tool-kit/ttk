@@ -5,5 +5,5 @@ SOURCES
 HEADERS
   ttkTopologicalCompressionReader.h
 DEPENDS
-  ttkTriangulation
+  ttkTriangulationFilter
   topologicalCompression

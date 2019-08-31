@@ -6,7 +6,7 @@
 #include "FTRGraph.h"
 #include "Graph.h"
 #include "ttkFTRGraphStructures.h"
-#include "ttkWrapper.h"
+#include "ttkTriangulationFilter.h"
 
 // VTK includes
 #include <vtkCellData.h>

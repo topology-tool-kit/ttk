@@ -1,0 +1,11 @@
+NAME
+  ttkTriangulationFilter
+SOURCES
+  ttkTriangulationFilter.cpp
+  ttkTriangulation.cpp
+HEADERS
+  ttkTriangulationFilter.h
+  ttkTriangulation.h
+  macro.h
+DEPENDS
+  triangulation

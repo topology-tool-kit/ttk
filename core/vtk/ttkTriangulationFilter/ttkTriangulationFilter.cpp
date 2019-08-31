@@ -1,10 +1,11 @@
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkTriangulationFilter) // constructor
-  ttkTriangulationFilter::ttkTriangulationFilter() {
+vtkStandardNewMacro(ttkTriangulationFilter); // constructor
+
+ttkTriangulationFilter::ttkTriangulationFilter() {
 }
 
 // transmit abort signals -- to copy paste in other wrappers

@@ -49,7 +49,7 @@
 
 // ttk baseCode includes
 #include <ScalarFieldCriticalPoints.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.

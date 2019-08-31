@@ -56,7 +56,7 @@
 
 // ttk code includes
 #include <MorseSmaleComplex.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationFilter.h>
 
 class TTKMORSESMALECOMPLEX_EXPORT ttkMorseSmaleComplex
   : public vtkDataSetAlgorithm,

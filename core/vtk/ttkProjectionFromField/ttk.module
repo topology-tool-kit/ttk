@@ -6,4 +6,4 @@ HEADERS
   ttkProjectionFromField.h
 DEPENDS
   common
-  ttkTriangulation
+  ttkTriangulationFilter

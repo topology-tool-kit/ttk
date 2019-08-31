@@ -54,8 +54,6 @@
 // VTK includes
 #include <vtkCellArray.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
@@ -64,7 +62,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
-class VTKCOMMONDATAMODEL_EXPORT ttkTriangulation : public ttk::Debug {
+class ttkTriangulation : public ttk::Debug {
 
 public:
   ttkTriangulation();
@@ -93,7 +91,7 @@ public:
   /// \return Returns a pointer to a valid ttk::Triangulation object upon
   /// success, NULL otherwise.
   /// \sa ttk::Triangulation
-  /// \sa ttkWrapper
+  /// \sa ttkTriangulationFilter.h
   /// \sa ttkTriangulationFilter
   static ttk::Triangulation *getTriangulation(vtkDataSet *dataSet);
 
