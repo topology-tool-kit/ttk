@@ -221,11 +221,11 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
 
   vector<set<SimplexId>> isPaired(dimensionality_ + 1);
 
-  auto V = [&](SimplexId alpha, int dimAlpha, SimplexId beta) {
-    gradient[dimAlpha][dimAlpha][alpha] = beta;
-    gradient[dimAlpha][dimAlpha + 1][beta] = alpha;
-    isPaired[dimAlpha].emplace(alpha);
-    isPaired[dimAlpha + 1].emplace(beta);
+  auto V = [&](Cell alpha, Cell beta) {
+    gradient[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
+    gradient[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
+    isPaired[alpha.dim_].emplace(alpha.id_);
+    isPaired[alpha.dim_ + 1].emplace(beta.id_);
   };
 
   auto isEdgeInTriangle = [&](SimplexId edge, SimplexId triangle) {
@@ -256,7 +256,7 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
       bool first = true;
       // compute minimum of G over Lx[1]
       for(const auto s : Lx[1]) {
-        auto Gcur = G(s, 1, offsets);
+        auto Gcur = G(Cell{s, 1}, offsets);
         if(first || isLexicographicSmaller(Gcur, Gmin)) {
           first = false;
           Gmin = Gcur;
@@ -265,12 +265,13 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
       }
 
       // store x (0-cell) -> delta (1-cell) V-path
-      V(x, 0, delta);
+      V(Cell{x, 0}, Cell{delta, 1});
 
       // push every 1-cell in Lx that is not delta into pq0
       for(auto alpha : Lx[1]) {
+        Cell c{alpha, 1};
         if(alpha != delta) {
-          pq0.push({Cell{1, alpha}, G<idType>(alpha, 1, offsets)});
+          pq0.push({c, G(c, offsets)});
         }
       }
 
@@ -278,33 +279,33 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
       // numUnpairedFaces == 1 into pq1
       if(!Lx[2].empty()) {
         for(const auto alpha : Lx[2]) {
+          Cell c{alpha, 2};
           if(isEdgeInTriangle(delta, alpha)
-             && numUnpairedFaces(alpha, 2, Lx, isPaired) == 1) {
-            pq1.push({Cell{2, alpha}, G<idType>(alpha, 2, offsets)});
+             && numUnpairedFaces(c, Lx, isPaired) == 1) {
+            pq1.push({c, G(c, offsets)});
           }
         }
       }
 
       while(!pq1.empty() || !pq0.empty()) {
         while(!pq1.empty()) {
-          auto cellPair = pq1.top();
+          auto cp = pq1.top();
           pq1.pop();
-          SimplexId cellId = cellPair.first.id_;
-          int cellDim = cellPair.first.dim_;
-          if(numUnpairedFaces(cellId, cellDim, Lx, isPaired) == 0) {
-            pq0.push(cellPair);
+          Cell c0{cp.first};
+          if(numUnpairedFaces(c0, Lx, isPaired) == 0) {
+            pq0.push(cp);
           } else {
-            SimplexId pairCellId = getPair(cellId, cellDim, Lx, isPaired);
-            SimplexId pairCellDim = cellDim - 1;
-            V(pairCellId, pairCellDim, cellId);
-            isPaired[pairCellDim].insert(pairCellId); // remove from pq0
+            Cell c1{getPair(c0, Lx, isPaired), c0.dim_ - 1};
+            V(c1, c0);
+            isPaired[c1.dim_].insert(c1.id_); // remove from pq0
             /* Add cofaces of pairCell to pq1 */
-            if(pairCellDim == 1 && Lx.size() > 2) // pairCellDim >= 1
+            if(c1.dim_ == 1 && Lx.size() > 2) // pairCellDim >= 1
             {
               for(SimplexId beta : Lx[2]) {
-                if(isEdgeInTriangle(pairCellId, beta)
-                   && numUnpairedFaces(beta, 2, Lx, isPaired) == 1) {
-                  pq1.push({Cell{2, beta}, G<idType>(beta, 2, offsets)});
+                Cell c{beta, 2};
+                if(isEdgeInTriangle(c1.id_, beta)
+                   && numUnpairedFaces(c, Lx, isPaired) == 1) {
+                  pq1.push({c, G(c, offsets)});
                 }
               }
             }

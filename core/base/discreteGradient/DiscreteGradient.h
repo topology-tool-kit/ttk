@@ -379,26 +379,24 @@ function value.
        * @brief Order the vertices in a cell according to their scalar
        * field value
        *
-       * @param[in] cell Cell Id
-       * @param[in] dim Cell dimension
+       * @param[in] c Cell
        * @param[in] offset Scalar field
        */
       template <typename idType>
-      inline std::vector<idType>
-        G(SimplexId cell, int dim, const idType *const offset) const {
+      inline std::vector<idType> G(Cell c, const idType *const offset) const {
         std::vector<idType> res{};
-        if(dim == 0) {
-          res.emplace_back(offset[cell]);
-        } else if(dim == 1) {
+        if(c.dim_ == 0) {
+          res.emplace_back(offset[c.id_]);
+        } else if(c.dim_ == 1) {
           for(int i = 0; i < 2; i++) {
             SimplexId v;
-            inputTriangulation_->getEdgeVertex(cell, i, v);
+            inputTriangulation_->getEdgeVertex(c.id_, i, v);
             res.emplace_back(offset[v]);
           }
-        } else if(dim == 2) {
+        } else if(c.dim_ == 2) {
           for(int i = 0; i < 3; i++) {
             SimplexId v;
-            inputTriangulation_->getTriangleVertex(cell, i, v);
+            inputTriangulation_->getTriangleVertex(c.id_, i, v);
             res.emplace_back(offset[v]);
           }
         }
@@ -466,35 +464,33 @@ function value.
        * @brief Return the number of unpaired faces of a given cell in
        * a lower star
        *
-       * @param[in] cell Input cell
-       * @param[in] dim Input cell dimension
+       * @param[in] c Input cell
        * @param[in] ls Input lower star
        * @param[in] isPaired
        *
        * @return Number of unpaired faces
        */
       inline SimplexId numUnpairedFaces(
-        SimplexId cell,
-        int dim,
+        const Cell c,
         const lowerStarType &ls,
         const std::vector<std::set<SimplexId>> &isPaired) const {
 
         // number of unpaired faces
         SimplexId count = 0;
 
-        if(dim == 1) {
+        if(c.dim_ == 1) {
           for(SimplexId i = 0; i < 2; i++) {
             SimplexId v;
-            inputTriangulation_->getEdgeVertex(cell, i, v);
+            inputTriangulation_->getEdgeVertex(c.id_, i, v);
             // check if v not in isPaired
             if(isPaired[0].find(v) == isPaired[0].end()) {
               count++;
             }
           }
-        } else if(dim == 2) {
+        } else if(c.dim_ == 2) {
           for(SimplexId i = 0; i < 3; i++) {
             SimplexId e;
-            inputTriangulation_->getTriangleEdge(cell, i, e);
+            inputTriangulation_->getTriangleEdge(c.id_, i, e);
             // check if e in ls but not in isPaired
             if((ls[1].find(e) != ls[1].end())
                && (isPaired[1].find(e) == isPaired[1].end())) {
@@ -508,31 +504,29 @@ function value.
       /**
        * @brief Get the input cell single unpaired face
        *
-       * @param[in] cell Input cell
-       * @param[in] dim Input cell dimension
+       * @param[in] c Input cell
        * @param[in] ls Input lower star
        * @param[in] isPaired
        *
        * @return Paired cell of same dimension
        */
       inline SimplexId
-        getPair(SimplexId cell,
-                int dim,
+        getPair(Cell c,
                 lowerStarType &ls,
                 const std::vector<std::set<SimplexId>> &isPaired) const {
-        if(dim == 1) {
+        if(c.dim_ == 1) {
           for(SimplexId i = 0; i < 2; i++) {
             SimplexId v;
-            inputTriangulation_->getEdgeVertex(cell, i, v);
+            inputTriangulation_->getEdgeVertex(c.id_, i, v);
             // check if v not in isPaired
             if(isPaired[0].find(v) == isPaired[0].end()) {
               return v;
             }
           }
-        } else if(dim == 2) {
+        } else if(c.dim_ == 2) {
           for(SimplexId i = 0; i < 3; i++) {
             SimplexId e;
-            inputTriangulation_->getTriangleEdge(cell, i, e);
+            inputTriangulation_->getTriangleEdge(c.id_, i, e);
             // check if e in ls but not in isPaired
             if((ls[1].find(e) != ls[1].end())
                && (isPaired[1].find(e) == isPaired[1].end())) {
