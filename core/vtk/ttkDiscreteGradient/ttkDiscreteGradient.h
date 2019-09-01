@@ -42,7 +42,7 @@
 
 // ttk code includes
 #include <DiscreteGradient.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKDISCRETEGRADIENT_EXPORT ttkDiscreteGradient
   : public vtkDataSetAlgorithm,

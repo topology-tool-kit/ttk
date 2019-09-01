@@ -40,7 +40,7 @@
 
 // TTK code includes
 #include <BarycentricSubdivision.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKBARYCENTRICSUBDIVISION_EXPORT ttkBarycentricSubdivision
   : public vtkDataSetAlgorithm,

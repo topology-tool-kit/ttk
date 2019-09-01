@@ -55,7 +55,7 @@
 
 // ttk baseCode includes
 #include <ContinuousScatterPlot.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKCONTINUOUSSCATTERPLOT_EXPORT ttkContinuousScatterPlot
   : public vtkDataSetAlgorithm,

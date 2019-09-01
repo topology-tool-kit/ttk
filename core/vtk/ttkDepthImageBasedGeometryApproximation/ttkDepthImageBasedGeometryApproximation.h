@@ -37,7 +37,7 @@
 
 // TTK includes
 #include <DepthImageBasedGeometryApproximation.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKDEPTHIMAGEBASEDGEOMETRYAPPROXIMATION_EXPORT
   ttkDepthImageBasedGeometryApproximation

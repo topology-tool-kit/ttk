@@ -6,4 +6,4 @@ HEADERS
   ttkMeshGraph.h
 DEPENDS
   meshGraph
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm

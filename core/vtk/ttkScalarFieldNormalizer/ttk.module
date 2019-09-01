@@ -6,4 +6,4 @@ HEADERS
   ttkScalarFieldNormalizer.h
 DEPENDS
   common
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm

@@ -1,5 +1,5 @@
 NAME
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm
 DEPENDS
   VTK::FiltersCore
 PRIVATE_DEPENDS

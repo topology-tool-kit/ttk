@@ -60,7 +60,7 @@
 
 // ttk code includes
 #include <FiberSurface.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKFIBERSURFACE_EXPORT ttkFiberSurface : public vtkDataSetAlgorithm,
                                                public ttk::Wrapper {

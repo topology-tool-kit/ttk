@@ -36,7 +36,7 @@
 #include <ttkProjectionFromFieldModule.h>
 
 // ttk code includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKPROJECTIONFROMFIELD_EXPORT ttkProjectionFromField
   : public vtkPointSetAlgorithm,

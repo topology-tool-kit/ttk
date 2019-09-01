@@ -6,4 +6,4 @@ HEADERS
   ttkHarmonicField.h
 DEPENDS
   harmonicField
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm

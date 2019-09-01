@@ -6,4 +6,4 @@ HEADERS
   ttkFiber.h
 DEPENDS
   common
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm

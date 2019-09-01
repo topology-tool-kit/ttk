@@ -36,7 +36,7 @@
 #include <ttkIdentifierRandomizerModule.h>
 
 // ttk code includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.

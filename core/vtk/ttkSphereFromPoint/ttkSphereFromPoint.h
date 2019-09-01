@@ -38,7 +38,7 @@
 #include <ttkSphereFromPointModule.h>
 
 // ttk code includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKSPHEREFROMPOINT_EXPORT ttkSphereFromPoint : public vtkDataSetAlgorithm,
                                                      public ttk::Wrapper {

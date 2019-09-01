@@ -2,7 +2,7 @@ NAME
  ttkHelloWorld
 DEPENDS
   VTK::FiltersCore
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm
 PRIVATE_DEPENDS
   VTK::CommonCore
 

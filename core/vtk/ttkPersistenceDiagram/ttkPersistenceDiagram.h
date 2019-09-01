@@ -65,7 +65,7 @@
 
 // ttk code includes
 #include <PersistenceDiagram.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
   : public vtkDataSetAlgorithm,

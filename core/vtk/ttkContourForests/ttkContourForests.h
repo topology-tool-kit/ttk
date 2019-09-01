@@ -63,7 +63,7 @@
 #include <ttkContourForestsModule.h>
 
 // vtk wrapper includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // base code includes
 #include <Geometry.h>

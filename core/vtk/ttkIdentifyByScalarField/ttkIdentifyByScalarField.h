@@ -38,7 +38,7 @@
 #include <ttkIdentifyByScalarFieldModule.h>
 
 // ttk code includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKIDENTIFYBYSCALARFIELD_EXPORT ttkIdentifyByScalarField
   : public vtkDataSetAlgorithm,

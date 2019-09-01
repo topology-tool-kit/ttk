@@ -24,7 +24,7 @@
 #include <ttkBlockAggregatorModule.h>
 
 // TTK includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKBLOCKAGGREGATOR_EXPORT ttkBlockAggregator
   : public vtkMultiBlockDataSetAlgorithm,

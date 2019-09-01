@@ -5,7 +5,7 @@
 
 #include <TrackingFromPersistenceDiagrams.h>
 #include <Wrapper.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>

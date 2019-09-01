@@ -22,7 +22,7 @@
 
 // TTK includes
 #include <GaussianPointCloud.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKGAUSSIANPOINTCLOUD_EXPORT ttkGaussianPointCloud
   : public vtkUnstructuredGridAlgorithm,

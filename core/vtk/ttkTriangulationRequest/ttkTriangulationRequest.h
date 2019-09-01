@@ -22,7 +22,7 @@
 #pragma once
 
 // ttk code includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // VTK includes
 #include <vtkCharArray.h>

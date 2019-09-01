@@ -5,4 +5,4 @@ SOURCES
 HEADERS
   ttkCinemaWriter.h
 DEPENDS
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm

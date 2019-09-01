@@ -83,16 +83,16 @@ public:
 
   /// Retrieves a pointer to a ttk::Triangulation object from a vtkDataSet.
   /// \warning This function will return a non null pointer if and only if
-  /// the VTK data-set has undergone a ttkTriangulationFilter (i.e. if it
-  /// is the direct output of a ttkTriangulationFilter or if a
-  /// ttkTriangulationFilter has been called in an earlier stage of the
+  /// the VTK data-set has undergone a ttkTriangulationAlgorithm (i.e. if it
+  /// is the direct output of a ttkTriangulationAlgorithm or if a
+  /// ttkTriangulationAlgorithm has been called in an earlier stage of the
   /// pipeline).
   /// \param dataSet Input VTK data-set.
   /// \return Returns a pointer to a valid ttk::Triangulation object upon
   /// success, NULL otherwise.
   /// \sa ttk::Triangulation
-  /// \sa ttkTriangulationFilter.h
-  /// \sa ttkTriangulationFilter
+  /// \sa ttkTriangulationAlgorithm.h
+  /// \sa ttkTriangulationAlgorithm
   static ttk::Triangulation *getTriangulation(vtkDataSet *dataSet);
 
   /// Translates the current triangulation into a vtkUnstructuredGrid object.

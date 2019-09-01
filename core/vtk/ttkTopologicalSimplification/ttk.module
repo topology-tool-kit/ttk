@@ -6,4 +6,4 @@ HEADERS
   ttkTopologicalSimplification.h
 DEPENDS
   topologicalSimplification
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm

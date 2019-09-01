@@ -22,7 +22,7 @@
 #include <ttkAddFieldDataModule.h>
 
 // TTK includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKADDFIELDDATA_EXPORT ttkAddFieldData : public vtkPassInputTypeAlgorithm,
                                                public ttk::Wrapper {

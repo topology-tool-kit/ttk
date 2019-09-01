@@ -20,20 +20,20 @@
 
 #include <macro.h>
 
-#include <ttkTriangulationFilterModule.h>
+#include <ttkTriangulationAlgorithmModule.h>
 
-class TTKTRIANGULATIONFILTER_EXPORT ttkTriangulationFilter
+class TTKTRIANGULATIONALGORITHM_EXPORT ttkTriangulationAlgorithm
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
 public:
-  static ttkTriangulationFilter *New();
+  static ttkTriangulationAlgorithm *New();
 
-  vtkTypeMacro(ttkTriangulationFilter, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkTriangulationAlgorithm, vtkDataSetAlgorithm);
 
 protected:
-  ttkTriangulationFilter();
-  ~ttkTriangulationFilter() override {};
+  ttkTriangulationAlgorithm();
+  ~ttkTriangulationAlgorithm() override {};
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

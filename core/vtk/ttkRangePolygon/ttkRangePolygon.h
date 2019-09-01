@@ -68,7 +68,7 @@
 
 // ttk code includes
 #include <ScalarFieldSmoother.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKRANGEPOLYGON_EXPORT ttkRangePolygon : public vtkDataSetAlgorithm,
                                                public ttk::Wrapper {

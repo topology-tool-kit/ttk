@@ -1,10 +1,10 @@
 NAME
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm
 SOURCES
-  ttkTriangulationFilter.cpp
+  ttkTriangulationAlgorithm.cpp
   ttkTriangulation.cpp
 HEADERS
-  ttkTriangulationFilter.h
+  ttkTriangulationAlgorithm.h
   ttkTriangulation.h
   macro.h
 DEPENDS

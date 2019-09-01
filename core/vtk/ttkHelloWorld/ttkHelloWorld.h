@@ -1,18 +1,18 @@
 #pragma once
 
 #include <vtkInformation.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // VTK Module
 #include <ttkHelloWorldModule.h>
 
 class TTKHELLOWORLD_EXPORT ttkHelloWorld
-    : public ttkTriangulationFilter
+    : public ttkTriangulationAlgorithm
 {
 
     public:
         static ttkHelloWorld *New();
-        vtkTypeMacro(ttkHelloWorld, ttkTriangulationFilter);
+        vtkTypeMacro(ttkHelloWorld, ttkTriangulationAlgorithm);
 
     protected:
         ttkHelloWorld();

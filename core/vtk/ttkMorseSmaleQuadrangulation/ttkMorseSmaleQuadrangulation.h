@@ -48,7 +48,7 @@
 
 // ttk code includes
 #include <MorseSmaleQuadrangulation.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 #include <ttkTriangulation.h>
 

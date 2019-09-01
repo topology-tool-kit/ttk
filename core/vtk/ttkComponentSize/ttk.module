@@ -6,4 +6,4 @@ HEADERS
   ttkComponentSize.h
 DEPENDS
   common
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm

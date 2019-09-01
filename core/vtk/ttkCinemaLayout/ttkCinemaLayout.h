@@ -21,7 +21,7 @@
 #include <ttkCinemaLayoutModule.h>
 
 // TTK includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKCINEMALAYOUT_EXPORT ttkCinemaLayout
   : public vtkXMLPMultiBlockDataWriter,

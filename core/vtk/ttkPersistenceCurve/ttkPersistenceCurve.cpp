@@ -23,7 +23,7 @@ vtkStandardNewMacro(ttkPersistenceCurve)
   ComputeSaddleConnectors = false;
   UseAllCores = true;
 
-  inputTriangulation_ = vtkSmartPointer<ttkTriangulationFilter>::New();
+  inputTriangulation_ = vtkSmartPointer<ttkTriangulationAlgorithm>::New();
 }
 
 ttkPersistenceCurve::~ttkPersistenceCurve() {

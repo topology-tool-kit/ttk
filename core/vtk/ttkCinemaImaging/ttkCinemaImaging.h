@@ -28,7 +28,7 @@
 #include <ttkCinemaImagingModule.h>
 
 // TTK includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKCINEMAIMAGING_EXPORT ttkCinemaImaging
   : public vtkMultiBlockDataSetAlgorithm,

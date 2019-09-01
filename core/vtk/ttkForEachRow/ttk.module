@@ -5,4 +5,4 @@ SOURCES
 HEADERS
   ttkForEachRow.h
 DEPENDS
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm

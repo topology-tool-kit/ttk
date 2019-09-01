@@ -16,7 +16,7 @@ endmacro()
 macro(ttk_register_pv_module vtkModule)
   if(NOT EXISTS ${VTKWRAPPER_DIR}/${vtkModule}/vtk.module)
     message(FATAL_ERROR
-      "Register a paraview filter without the corresponding vtk.module: "
+      "Register a paraview module without the corresponding vtk.module: "
       ${VTKWRAPPER_DIR}/${vtkModule}
       )
   endif()

@@ -21,7 +21,7 @@
 
 // TTK includes
 #include <BottleneckDistance.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // VTK includes
 #include <vtkCellData.h>

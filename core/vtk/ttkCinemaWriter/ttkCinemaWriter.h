@@ -20,7 +20,7 @@
 #include <ttkCinemaWriterModule.h>
 
 // TTK includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKCINEMAWRITER_EXPORT ttkCinemaWriter
   : public vtkXMLPMultiBlockDataWriter,

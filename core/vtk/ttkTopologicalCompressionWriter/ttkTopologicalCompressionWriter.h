@@ -11,7 +11,7 @@
 
 // TTK
 #include <TopologicalCompression.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // VTK
 #include <vtkCellData.h>

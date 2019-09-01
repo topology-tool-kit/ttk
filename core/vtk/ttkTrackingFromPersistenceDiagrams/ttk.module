@@ -7,4 +7,4 @@ HEADERS
 DEPENDS
   trackingFromPersistenceDiagrams
   bottleneckDistance
-  ttkTriangulationFilter
+  ttkTriangulationAlgorithm

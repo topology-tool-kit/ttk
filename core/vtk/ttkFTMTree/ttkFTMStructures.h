@@ -2,7 +2,7 @@
 #define TTKFTMSTRUCTURES_H
 
 #include <FTMTree.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 #include <vtkCellData.h>
 #include <vtkDataArray.h>

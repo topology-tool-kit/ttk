@@ -71,7 +71,7 @@
 
 // ttk code includes
 #include <TopologicalSimplification.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 #include <ttkTriangulation.h>
 

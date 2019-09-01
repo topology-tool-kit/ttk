@@ -20,7 +20,7 @@
 #include <ttkEndForModule.h>
 
 // TTK includes
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKENDFOR_EXPORT ttkEndFor : public vtkPassInputTypeAlgorithm,
                                    public ttk::Wrapper {

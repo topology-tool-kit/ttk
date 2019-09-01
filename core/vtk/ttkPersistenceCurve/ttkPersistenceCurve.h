@@ -52,7 +52,7 @@
 
 // ttk code includes
 #include <PersistenceCurve.h>
-#include <ttkTriangulationFilter.h>
+#include <ttkTriangulationAlgorithm.h>
 
 class TTKPERSISTENCECURVE_EXPORT ttkPersistenceCurve
   : public vtkDataSetAlgorithm,
@@ -144,7 +144,7 @@ private:
   vtkDataArray *offsets_;
   vtkDataArray *inputOffsets_;
   bool varyingMesh_;
-  vtkSmartPointer<ttkTriangulationFilter> inputTriangulation_;
+  vtkSmartPointer<ttkTriangulationAlgorithm> inputTriangulation_;
 
   // base code features
   int doIt(vtkDataSet *input,

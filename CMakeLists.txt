@@ -54,7 +54,7 @@ if(TTK_BUILD_VTK_WRAPPERS)
   # even without the TTK VTK wrappers, we need
   # the triangulation target for paraview filters
   # include(core/vtk/ttkTriangulation/TTKWrapper.cmake)
-  # install(TARGETS ttkTriangulationFilter DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
+  # install(TARGETS ttkTriangulationAlgorithm DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
 endif()
 
 # Standalones

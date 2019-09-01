@@ -1,5 +1,11 @@
 #pragma once
 
+#include <vtkIdTypeArray.h>
+#include <vtkImageData.h>
+#include <vtkIntArray.h>
+#include <vtkPolyData.h>
+#include <vtkUnstructuredGrid.h>
+
 #if VTK_MAJOR_VERSION <= 8
 #define vtkTemplate2Macro(call)                                             \
   vtkTemplate2MacroCase1(VTK_DOUBLE, double, call);                         \
@@ -138,7 +144,7 @@ public:
 
 #define TTK_PIPELINE_REQUEST()                                                 \
 protected:                                                                     \
-  std::vector<vtkSmartPointer<ttkTriangulationFilter>> inputTriangulations_;   \
+  std::vector<vtkSmartPointer<ttkTriangulationAlgorithm>> inputTriangulations_;   \
   int RequestData(vtkInformation *request, vtkInformationVector **inputVector, \
                   vtkInformationVector *outputVector) override {               \
                                                                                \
@@ -146,7 +152,7 @@ protected:                                                                     \
       inputTriangulations_.resize(GetNumberOfInputPorts());                    \
       for(int i = 0; i < (int)inputTriangulations_.size(); i++) {              \
         inputTriangulations_[i]                                                \
-          = vtkSmartPointer<ttkTriangulationFilter>::New();                    \
+          = vtkSmartPointer<ttkTriangulationAlgorithm>::New();                    \
       }                                                                        \
     }                                                                          \
                                                                                \
