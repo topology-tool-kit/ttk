@@ -276,10 +276,10 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
       // numUnpairedFaces == 1 into pq1
       if(!Lx[2].empty()) {
         for(const auto alpha : Lx[2]) {
-          Cell c{2, alpha};
+          Cell c_alpha{2, alpha};
           if(isEdgeInTriangle(delta, alpha)
-             && numUnpairedFaces(c, Lx, isPaired) == 1) {
-            pq1.push({c, G(c, offsets)});
+             && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
+            pq1.push({c_alpha, G(c_alpha, offsets)});
           }
         }
       }
@@ -287,38 +287,38 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
       while(!pq1.empty() || !pq0.empty()) {
         while(!pq1.empty()) {
           auto cp = pq1.top();
+          Cell c_alpha{cp.first};
           pq1.pop();
-          Cell c0{cp.first};
-          if(numUnpairedFaces(c0, Lx, isPaired) == 0) {
+          if(numUnpairedFaces(c_alpha, Lx, isPaired) == 0) {
             pq0.push(cp);
           } else {
-            Cell c1{c0.dim_ - 1, getPair(c0, Lx, isPaired)};
-            V(c1, c0);
-            isPaired[c1.dim_].insert(c1.id_); // remove from pq0
-            /* Add cofaces of pairCell to pq1 */
-            if(c1.dim_ == 1 && !Lx[2].empty()) { // pairCellDim >= 1
+            Cell c_pair_alpha{c_alpha.dim_ - 1, getPair(c_alpha, Lx, isPaired)};
+            V(c_pair_alpha, c_alpha);
+            // add cofaces of c_pair_alpha to pq1
+            if(c_pair_alpha.dim_ == 1 && !Lx[2].empty()) {
               for(SimplexId beta : Lx[2]) {
-                Cell c{2, beta};
-                if(isEdgeInTriangle(c1.id_, beta)
-                   && numUnpairedFaces(c, Lx, isPaired) == 1) {
-                  pq1.push({c, G(c, offsets)});
+                Cell c_beta{2, beta};
+                if(isEdgeInTriangle(c_pair_alpha.id_, beta)
+                   && numUnpairedFaces(c_beta, Lx, isPaired) == 1) {
+                  pq1.push({c_beta, G(c_beta, offsets)});
                 }
               }
             }
           }
         }
         if(!pq0.empty()) {
-          auto cp = pq0.top();
+          Cell c_gamma{pq0.top().first};
           pq0.pop();
-          Cell c0{cp.first};
-          if(isPaired[c0.dim_].count(c0.id_)) {
+          // skip pair_alpha from pq0
+          if(isPaired[c_gamma.dim_].count(c_gamma.id_)) {
             continue;
           }
-          isPaired[c0.dim_].insert(c0.id_);
-          if(c0.dim_ == 1 && !Lx[2].empty()) {
+          // add gamma to is_paired
+          isPaired[c_gamma.dim_].insert(c_gamma.id_);
+          if(c_gamma.dim_ == 1 && !Lx[2].empty()) {
             for(SimplexId alpha : Lx[2]) {
               Cell c{2, alpha};
-              if(isEdgeInTriangle(c0.id_, alpha)
+              if(isEdgeInTriangle(c_gamma.id_, alpha)
                  && numUnpairedFaces(c, Lx, isPaired) == 1) {
                 pq1.push({c, G(c, offsets)});
               }
