@@ -296,8 +296,7 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
             V(c1, c0);
             isPaired[c1.dim_].insert(c1.id_); // remove from pq0
             /* Add cofaces of pairCell to pq1 */
-            if(c1.dim_ == 1 && Lx.size() > 2) // pairCellDim >= 1
-            {
+            if(c1.dim_ == 1 && !Lx[2].empty()) { // pairCellDim >= 1
               for(SimplexId beta : Lx[2]) {
                 Cell c{beta, 2};
                 if(isEdgeInTriangle(c1.id_, beta)
@@ -309,19 +308,19 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
           }
         }
         if(!pq0.empty()) {
-          auto cellPair = pq0.top();
+          auto cp = pq0.top();
           pq0.pop();
-          SimplexId cellId = cellPair.first.id_;
-          int cellDim = cellPair.first.dim_;
-          if(isPaired[cellDim].count(cellId)) {
+          Cell c0{cp.first};
+          if(isPaired[c0.dim_].count(c0.id_)) {
             continue;
           }
-          isPaired[cellDim].insert(cellId);
-          if(cellDim == 1 && Lx.size() > 2) {
+          isPaired[c0.dim_].insert(c0.id_);
+          if(c0.dim_ == 1 && !Lx[2].empty()) {
             for(SimplexId alpha : Lx[2]) {
-              if(isEdgeInTriangle(cellId, alpha)
-                 && numUnpairedFaces(alpha, 2, Lx, isPaired) == 1) {
-                pq1.push({Cell{2, alpha}, G<idType>(alpha, 2, offsets)});
+              Cell c{alpha, 2};
+              if(isEdgeInTriangle(c0.id_, alpha)
+                 && numUnpairedFaces(c, Lx, isPaired) == 1) {
+                pq1.push({c, G(c, offsets)});
               }
             }
           }
