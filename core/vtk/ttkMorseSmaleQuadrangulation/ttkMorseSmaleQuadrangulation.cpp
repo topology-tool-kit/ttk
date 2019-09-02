@@ -147,19 +147,19 @@ int ttkMorseSmaleQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   output->SetPoints(points);
 
   // quad vertices identifiers
-  auto identifiers = vtkSmartPointer<vtkIntArray>::New();
+  auto identifiers = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   identifiers->SetName(ttk::VertexScalarFieldName);
   identifiers->SetVoidArray(outPointsIds.data(), outPointsIds.size(), 1);
   output->GetPointData()->AddArray(identifiers);
 
   // quad vertices type
-  auto type = vtkSmartPointer<vtkIntArray>::New();
+  auto type = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   type->SetName("QuadVertType");
   type->SetVoidArray(outPointsType.data(), outPointsType.size(), 1);
   output->GetPointData()->AddArray(type);
 
   // quad vertices cells
-  auto cellid = vtkSmartPointer<vtkIntArray>::New();
+  auto cellid = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   cellid->SetName("QuadCellId");
   cellid->SetVoidArray(outPointsCells.data(), outPointsCells.size(), 1);
   output->GetPointData()->AddArray(cellid);
