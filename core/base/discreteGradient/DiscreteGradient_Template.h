@@ -253,7 +253,7 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
       bool first = true;
       // compute minimum of G over Lx[1]
       for(const auto s : Lx[1]) {
-        auto Gcur = G(Cell{s, 1}, offsets);
+        auto Gcur = G(Cell{1, s}, offsets);
         if(first || isLexicographicSmaller(Gcur, Gmin)) {
           first = false;
           Gmin = Gcur;
@@ -262,11 +262,11 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
       }
 
       // store x (0-cell) -> delta (1-cell) V-path
-      V(Cell{x, 0}, Cell{delta, 1});
+      V(Cell{0, x}, Cell{1, delta});
 
       // push every 1-cell in Lx that is not delta into pq0
       for(auto alpha : Lx[1]) {
-        Cell c{alpha, 1};
+        Cell c{1, alpha};
         if(alpha != delta) {
           pq0.push({c, G(c, offsets)});
         }
@@ -276,7 +276,7 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
       // numUnpairedFaces == 1 into pq1
       if(!Lx[2].empty()) {
         for(const auto alpha : Lx[2]) {
-          Cell c{alpha, 2};
+          Cell c{2, alpha};
           if(isEdgeInTriangle(delta, alpha)
              && numUnpairedFaces(c, Lx, isPaired) == 1) {
             pq1.push({c, G(c, offsets)});
@@ -292,13 +292,13 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
           if(numUnpairedFaces(c0, Lx, isPaired) == 0) {
             pq0.push(cp);
           } else {
-            Cell c1{getPair(c0, Lx, isPaired), c0.dim_ - 1};
+            Cell c1{c0.dim_ - 1, getPair(c0, Lx, isPaired)};
             V(c1, c0);
             isPaired[c1.dim_].insert(c1.id_); // remove from pq0
             /* Add cofaces of pairCell to pq1 */
             if(c1.dim_ == 1 && !Lx[2].empty()) { // pairCellDim >= 1
               for(SimplexId beta : Lx[2]) {
-                Cell c{beta, 2};
+                Cell c{2, beta};
                 if(isEdgeInTriangle(c1.id_, beta)
                    && numUnpairedFaces(c, Lx, isPaired) == 1) {
                   pq1.push({c, G(c, offsets)});
@@ -317,7 +317,7 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
           isPaired[c0.dim_].insert(c0.id_);
           if(c0.dim_ == 1 && !Lx[2].empty()) {
             for(SimplexId alpha : Lx[2]) {
-              Cell c{alpha, 2};
+              Cell c{2, alpha};
               if(isEdgeInTriangle(c0.id_, alpha)
                  && numUnpairedFaces(c, Lx, isPaired) == 1) {
                 pq1.push({c, G(c, offsets)});
