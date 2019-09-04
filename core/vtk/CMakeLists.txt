@@ -87,7 +87,11 @@ if (TTK_BUILD_VTK_PYTHON_MODULE)
   endif()
   if (_vtk_path AND VTK_PYTHONPATH)
     # guess relative python module path from VTK config
-    file(RELATIVE_PATH _python_module_dir ${_vtk_path} ${VTK_PYTHONPATH})
+    if (NOT IS_ABSOLUTE ${VTK_PYTHONPATH})
+      file(RELATIVE_PATH _python_module_dir ${_vtk_path} ${_vtk_path}/${VTK_PYTHONPATH})
+    else ()
+      file(RELATIVE_PATH _python_module_dir ${_vtk_path} ${VTK_PYTHONPATH})
+    endif ()
   endif()
   set(TTK_PYTHON_MODULE_DIR
     "${_python_module_dir}"
@@ -126,6 +130,9 @@ if (TTK_BUILD_VTK_PYTHON_MODULE)
 
   add_library(${module}Python MODULE ${module}PythonInit.cxx)
   set_target_properties(${module}Python PROPERTIES PREFIX "")
+  if (WIN32 AND NOT CYGWIN)
+    set_target_properties(${module}Python PROPERTIES SUFFIX ".pyd")
+  endif ()  
   target_include_directories(${module}Python PUBLIC ${include_dirs})
 
   include(vtkWrapPython)
