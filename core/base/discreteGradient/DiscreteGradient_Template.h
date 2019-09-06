@@ -198,24 +198,6 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
 
   /* Declarations */
 
-  auto isLexicographicSmaller
-    = [](const std::vector<idType> &a, const std::vector<idType> &b) {
-        for(size_t i = 0; i < std::min(a.size(), b.size()); i++) {
-          if(a[i] != b[i]) {
-            return a[i] < b[i];
-          }
-        }
-        return a.size() < b.size();
-      };
-  auto pqGreater = [&](const std::pair<Cell, std::vector<idType>> &a,
-                       const std::pair<Cell, std::vector<idType>> &b) {
-    return isLexicographicSmaller(b.second, a.second);
-  };
-  std::priority_queue<std::pair<Cell, std::vector<idType>>,
-                      std::vector<std::pair<Cell, std::vector<idType>>>,
-                      decltype(pqGreater)>
-    pq0(pqGreater), pq1(pqGreater);
-
   std::vector<std::set<SimplexId>> isPaired(dimensionality_ + 1);
 
   auto V = [&](Cell alpha, Cell beta) {
@@ -240,7 +222,31 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
   /* Compute gradient */
 
   auto nverts = inputTriangulation_->getNumberOfVertices();
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
+
+    auto isLexicographicSmaller
+      = [](const std::vector<idType> &a, const std::vector<idType> &b) {
+          for(size_t i = 0; i < std::min(a.size(), b.size()); i++) {
+            if(a[i] != b[i]) {
+              return a[i] < b[i];
+            }
+          }
+          return a.size() < b.size();
+        };
+
+    auto pqGreater = [&](const std::pair<Cell, std::vector<idType>> &a,
+                         const std::pair<Cell, std::vector<idType>> &b) {
+      return isLexicographicSmaller(b.second, a.second);
+    };
+    std::priority_queue<std::pair<Cell, std::vector<idType>>,
+                        std::vector<std::pair<Cell, std::vector<idType>>>,
+                        decltype(pqGreater)>
+      pq0(pqGreater), pq1(pqGreater);
+
     auto Lx = lowerStar(x, offsets);
     if(Lx[1].empty()) {
       // x is a local minimum
@@ -262,6 +268,9 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
       }
 
       // store x (0-cell) -> delta (1-cell) V-path
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
       V(Cell{0, x}, Cell{1, delta});
 
       // push every 1-cell in Lx that is not delta into pq0
@@ -293,6 +302,9 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
             pq0.push(cp);
           } else {
             Cell c_pair_alpha{c_alpha.dim_ - 1, getPair(c_alpha, Lx, isPaired)};
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
             V(c_pair_alpha, c_alpha);
             // add cofaces of c_pair_alpha to pq1
             if(c_pair_alpha.dim_ == 1 && !Lx[2].empty()) {
