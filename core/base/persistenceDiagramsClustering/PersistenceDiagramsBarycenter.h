@@ -21,13 +21,17 @@
 
 
 // base code includes
-#include                  <PersistenceDiagramsBarycenter.cpp>
-#include                  <Wrapper.h>
-#include                  <PersistenceDiagram.h>
-#include 				  <Auction.h>
-#include 				  <KDTree.h>
-#include 				  <limits>
-#include				  <PDBarycenter.h>
+#include <Wrapper.h>
+//
+#include <PersistenceDiagram.h>
+//
+#include <Auction.h>
+//
+#include <KDTree.h>
+//
+#include <limits>
+//
+#include <PDBarycenter.h>
 
 using namespace std;
 using namespace ttk;

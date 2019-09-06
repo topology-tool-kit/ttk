@@ -2,9 +2,11 @@
 #define _PDCLUSTERING_H
 
 #include 				  <Auction.h>
+//
 #include 				  <KDTree.h>
+//
 #include 				  <limits>
-#include 				  <PersistenceDiagramsClustering.h>
+//
 
 using namespace std;
 using namespace ttk;

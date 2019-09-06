@@ -2,8 +2,11 @@
 #define _PDBARYCENTER_H
 
 #include 				  <Auction.h>
+//
 #include 				  <KDTree.h>
+//
 #include 				  <limits>
+//
 #include 				  <PersistenceDiagramsBarycenter.h>
 
 using namespace std;

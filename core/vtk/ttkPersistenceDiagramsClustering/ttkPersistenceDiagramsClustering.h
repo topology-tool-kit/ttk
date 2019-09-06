@@ -33,8 +33,11 @@
 
 // ttk code includes
 #include <PersistenceDiagramsClustering.h>
+//
 #include <PersistenceDiagramsBarycenter.h>
+//
 #include <Wrapper.h>
+//
 #include <ttkWrapper.h>
 
 

@@ -6,13 +6,18 @@
 #define BSaddle1 ttk::CriticalType::Saddle1
 #define BSaddle2 ttk::CriticalType::Saddle2
 
-#include <PDClustering.h>
+//
 #include <stdlib.h> /* srand, rand */
+//
 #include <cmath>
+//
 
 #include <algorithm>
+//
 #include <iostream>
+//
 #include <iterator>
+//
 #include <random>
 
 using namespace ttk;

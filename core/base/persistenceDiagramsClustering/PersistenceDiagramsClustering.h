@@ -21,13 +21,17 @@
 
 
 // base code includes
-#include                  <PersistenceDiagramsClustering.cpp>
+//
 #include                  <Wrapper.h>
+//
 #include                  <PersistenceDiagram.h>
+//
 #include                  <PersistenceDiagramsBarycenter.h>
+//
 #include 				  <limits>
-#include 				  <PDClusteringImpl.h>
+//
 #include 				  <PDClustering.h>
+//
 
 
 using namespace std;
