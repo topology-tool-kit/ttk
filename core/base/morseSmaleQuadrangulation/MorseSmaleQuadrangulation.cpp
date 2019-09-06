@@ -45,7 +45,7 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps() {
   }
 
   // id of critical point in new triangulation
-  auto critPointId = [&](const SimplexId a) {
+  auto critPointId = [&](const SimplexId a) -> SimplexId {
     if(sepCellDims_[a] == 0) {
       return sepCellIds_[a];
     }

@@ -147,18 +147,18 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   output->SetPoints(points);
 
   // add data array of points valences
-  auto valences = vtkSmartPointer<vtkIntArray>::New();
+  auto valences = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   valences->SetName("Valence");
   valences->SetVoidArray(outVertexValences.data(), outVertexValences.size(), 1);
   output->GetPointData()->AddArray(valences);
 
   // add data array of points infos
-  auto infos = vtkSmartPointer<vtkIntArray>::New();
+  auto infos = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   infos->SetName("Type");
   infos->SetVoidArray(outVertexType.data(), outVertexType.size(), 1);
   output->GetPointData()->AddArray(infos);
 
-  auto subd = vtkSmartPointer<vtkIntArray>::New();
+  auto subd = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   subd->SetName("Subdivision");
   subd->SetVoidArray(outSubdvisionLevel.data(), outSubdvisionLevel.size(), 1);
   output->GetPointData()->AddArray(subd);
@@ -168,14 +168,14 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     auto &projSucceeded = baseWorker_.projSucceeded_;
 
     // add data array of number of triangles checked
-    auto trChecked = vtkSmartPointer<vtkIntArray>::New();
+    auto trChecked = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     trChecked->SetName("Triangles checked");
     trChecked->SetVoidArray(
       trianglesChecked.data(), trianglesChecked.size(), 1);
     output->GetPointData()->AddArray(trChecked);
 
     // add data array of projection success
-    auto projSucc = vtkSmartPointer<vtkIntArray>::New();
+    auto projSucc = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     projSucc->SetName("Projection");
     projSucc->SetVoidArray(projSucceeded.data(), projSucceeded.size(), 1);
     output->GetPointData()->AddArray(projSucc);

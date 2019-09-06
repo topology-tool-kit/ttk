@@ -146,13 +146,13 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   output->SetCells(VTK_TRIANGLE, cells);
 
   // cell id
-  auto cellId = vtkSmartPointer<vtkIntArray>::New();
+  auto cellId = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   cellId->SetName("CellId");
   cellId->SetVoidArray(outPointId.data(), outPointId.size(), 1);
   output->GetPointData()->AddArray(cellId);
 
   // cell dimension
-  auto cellDim = vtkSmartPointer<vtkIntArray>::New();
+  auto cellDim = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   cellDim->SetName("CellDimension");
   cellDim->SetVoidArray(outPointDim.data(), outPointDim.size(), 1);
   output->GetPointData()->AddArray(cellDim);
