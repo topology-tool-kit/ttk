@@ -22,7 +22,7 @@ namespace ttk{
 			use_progressive_ = true;
             deterministic_ = true;
 			time_limit_ = std::numeric_limits<double>::max();
-			epsilon_min_ = 1e-8;
+			epsilon_min_ = 1e-5;
 			epsilon_.resize(3);
 			precision_criterion_ = false;
 			precision_min_ = false;

@@ -15,17 +15,17 @@ using namespace ttk;
 template <typename dataType>
 std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::execute(std::vector<diagramTuple>& barycenter)
 {
-    if(method_ == "Munkres")
-        return executeMunkresBarycenter(barycenter);
-    else if(method_ == "Auction")
+    // if(method_ == "Munkres")
+    //     return executeMunkresBarycenter(barycenter);
+    // else if(method_ == "Auction")
         return executeAuctionBarycenter(barycenter);
-    else if(method_ == "Partial Bidding")
-        return executePartialBiddingBarycenter(barycenter);
-    else {
-        std::cout << "[PersistenceDiagramsBarycenter] Error : you need to select a valid matching algorithm" << '\n';
-        std::vector<std::vector<matchingTuple>> v(0);
-        return v;
-    }
+    // else if(method_ == "Partial Bidding")
+    //     return executePartialBiddingBarycenter(barycenter);
+    // else {
+    //     std::cout << "[PersistenceDiagramsBarycenter] Error : you need to select a valid matching algorithm" << '\n';
+    //     std::vector<std::vector<matchingTuple>> v(0);
+    //     return v;
+    // }
 }
 
 template <typename dataType>
@@ -603,101 +603,101 @@ std::pair<KDTree<dataType>*, std::vector<KDTree<dataType>*>> PDBarycenter<dataTy
     return std::make_pair(kdt, correspondance_kdt_map);
 }
 
-template <typename dataType>
-std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeMunkresBarycenter(std::vector<diagramTuple>& barycenter)
-{
-    double total_time = 0;
+// template <typename dataType>
+// std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeMunkresBarycenter(std::vector<diagramTuple>& barycenter)
+// {
+//     double total_time = 0;
 
-    std::vector<std::vector<matchingTuple>> previous_matchings;
-    dataType min_persistence = 0;
-    dataType min_cost = std::numeric_limits<dataType>::max();
-    int last_min_cost_obtained = 0;
+//     std::vector<std::vector<matchingTuple>> previous_matchings;
+//     dataType min_persistence = 0;
+//     dataType min_cost = std::numeric_limits<dataType>::max();
+//     int last_min_cost_obtained = 0;
 
-    this->setBidderDiagrams();
-    this->setInitialBarycenter(min_persistence);  // false for a determinist initialization
+//     this->setBidderDiagrams();
+//     this->setInitialBarycenter(min_persistence);  // false for a determinist initialization
 
-    dataType max_persistence = getMaxPersistence();
+//     dataType max_persistence = getMaxPersistence();
 
-    std::vector<dataType> min_diag_price(numberOfInputs_);
-    std::vector<dataType> min_price(numberOfInputs_);
-    for(int i = 0; i < numberOfInputs_; i++) {
-        min_diag_price[i] = 0;
-        min_price[i] = 0;
-    }
+//     std::vector<dataType> min_diag_price(numberOfInputs_);
+//     std::vector<dataType> min_price(numberOfInputs_);
+//     for(int i = 0; i < numberOfInputs_; i++) {
+//         min_diag_price[i] = 0;
+//         min_price[i] = 0;
+//     }
 
-    int min_points_to_add = std::numeric_limits<int>::max();
-    min_persistence = this->enrichCurrentBidderDiagrams(2 * max_persistence, min_persistence, min_diag_price, min_price, min_points_to_add, false);
+//     int min_points_to_add = std::numeric_limits<int>::max();
+//     min_persistence = this->enrichCurrentBidderDiagrams(2 * max_persistence, min_persistence, min_diag_price, min_price, min_points_to_add, false);
 
-    if(debugLevel_ > 1)
-        std::cout << "Barycenter size : " << barycenter_goods_[0].size() << std::endl;
+//     if(debugLevel_ > 1)
+//         std::cout << "Barycenter size : " << barycenter_goods_[0].size() << std::endl;
 
-    int n_iterations = 0;
+//     int n_iterations = 0;
 
-    bool converged = false;
-    bool finished = false;
-    dataType total_cost;
+//     bool converged = false;
+//     bool finished = false;
+//     dataType total_cost;
 
-    while(!finished) {
-        Timer t;
+//     while(!finished) {
+//         Timer t;
 
-        n_iterations += 1;
+//         n_iterations += 1;
 
-        std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
-        std::vector<int> sizes(numberOfInputs_);
-        for(int i = 0; i < numberOfInputs_; i++) {
-            sizes[i] = current_bidder_diagrams_[i].size();
-        }
-        total_cost = 0;
+//         std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
+//         std::vector<int> sizes(numberOfInputs_);
+//         for(int i = 0; i < numberOfInputs_; i++) {
+//             sizes[i] = current_bidder_diagrams_[i].size();
+//         }
+//         total_cost = 0;
 
-        barycenter.resize(0);
-        for(int j = 0; j < barycenter_goods_[0].size(); j++) {
-            Good<dataType>& g = barycenter_goods_[0].get(j);
-            diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_, g.getPersistence(), diagramType_, g.x_, 0, 0, 0, g.y_, 0, 0, 0);
-            barycenter.push_back(t);
-        }
+//         barycenter.resize(0);
+//         for(int j = 0; j < barycenter_goods_[0].size(); j++) {
+//             Good<dataType>& g = barycenter_goods_[0].get(j);
+//             diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_, g.getPersistence(), diagramType_, g.x_, 0, 0, 0, g.y_, 0, 0, 0);
+//             barycenter.push_back(t);
+//         }
 
-        runMatchingMunkres(&total_cost, &all_matchings, barycenter);
+//         runMatchingMunkres(&total_cost, &all_matchings, barycenter);
 
-        std::cout << "[PersistenceDiagramsBarycenter] Barycenter cost : " << total_cost << std::endl;
+//         std::cout << "[PersistenceDiagramsBarycenter] Barycenter cost : " << total_cost << std::endl;
 
-        if(converged) {
-            finished = true;
-        }
+//         if(converged) {
+//             finished = true;
+//         }
 
-        if(!finished) {
-            updateBarycenter(all_matchings);
-            if(debugLevel_ > 1)
-                std::cout << "Barycenter size : " << barycenter_goods_[0].size() << std::endl;
+//         if(!finished) {
+//             updateBarycenter(all_matchings);
+//             if(debugLevel_ > 1)
+//                 std::cout << "Barycenter size : " << barycenter_goods_[0].size() << std::endl;
 
-            if(min_cost > total_cost) {
-                min_cost = total_cost;
-                last_min_cost_obtained = 0;
-            } else {
-                last_min_cost_obtained += 1;
-            }
+//             if(min_cost > total_cost) {
+//                 min_cost = total_cost;
+//                 last_min_cost_obtained = 0;
+//             } else {
+//                 last_min_cost_obtained += 1;
+//             }
 
-            converged = converged || last_min_cost_obtained > 1;
-        }
+//             converged = converged || last_min_cost_obtained > 1;
+//         }
 
-        previous_matchings = std::move(all_matchings);
-        // END OF TIMER
-        total_time += t.getElapsedTime();
-    }
-    barycenter.resize(0);
-    for(int j = 0; j < barycenter_goods_[0].size(); j++) {
-        Good<dataType>& g = barycenter_goods_[0].get(j);
-        diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_, g.getPersistence(), diagramType_, g.x_, 0, 0, 0, g.y_, 0, 0, 0);
-        barycenter.push_back(t);
-    }
+//         previous_matchings = std::move(all_matchings);
+//         // END OF TIMER
+//         total_time += t.getElapsedTime();
+//     }
+//     barycenter.resize(0);
+//     for(int j = 0; j < barycenter_goods_[0].size(); j++) {
+//         Good<dataType>& g = barycenter_goods_[0].get(j);
+//         diagramTuple t = std::make_tuple(0, nt1_, 0, nt2_, g.getPersistence(), diagramType_, g.x_, 0, 0, 0, g.y_, 0, 0, 0);
+//         barycenter.push_back(t);
+//     }
 
-    cost_ = total_cost;
-    std::vector<std::vector<matchingTuple>> corrected_matchings = correctMatchings(previous_matchings);
-    for(unsigned int d = 0; d < current_bidder_diagrams_.size(); ++d) {
-        if(debugLevel_ > 1)
-            std::cout << "Size of diagram " << d << " : " << current_bidder_diagrams_[d].size() << std::endl;
-    }
-    return corrected_matchings;
-}
+//     cost_ = total_cost;
+//     std::vector<std::vector<matchingTuple>> corrected_matchings = correctMatchings(previous_matchings);
+//     for(unsigned int d = 0; d < current_bidder_diagrams_.size(); ++d) {
+//         if(debugLevel_ > 1)
+//             std::cout << "Size of diagram " << d << " : " << current_bidder_diagrams_[d].size() << std::endl;
+//     }
+//     return corrected_matchings;
+// }
 
 template <typename dataType>
 std::vector<std::vector<matchingTuple>> PDBarycenter<dataType>::executeAuctionBarycenter(std::vector<diagramTuple>& barycenter)

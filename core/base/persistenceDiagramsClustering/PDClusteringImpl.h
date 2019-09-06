@@ -22,7 +22,6 @@ std::vector<int> PDClustering<dataType>::execute(std::vector<std::vector<diagram
 {
     // std::vector<std::vector<std::vector<matchingTuple>>> all_matchings;
     //
-    cout<<distanceWritingOptions_<<" "<<use_accelerated_<<" "<<use_kmeanspp_<<endl;
     all_matchings_per_type_and_cluster.resize(k_);
     for(int c=0; c<k_; c++){
         all_matchings_per_type_and_cluster[c].resize(3);
