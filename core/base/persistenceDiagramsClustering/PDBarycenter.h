@@ -60,18 +60,6 @@ namespace ttk{
 						 std::vector<std::vector<matchingTuple>>* all_matchings,
 						 bool use_kdt);
 
-		void runMatching(dataType* total_cost,
-						 dataType epsilon,
-						 std::vector<int> sizes,
-						 KDTree<dataType>* kdt,
-						 std::vector<KDTree<dataType>*>* correspondance_kdt_map,
-						 std::vector<dataType>* min_diag_price,
-						 std::vector<dataType>* min_price,
-						 std::vector<std::vector<matchingTuple>>* all_matchings,
-						 bool use_kdt,
-						 vector<float>*,
-						 vector<int>*,
-						 vector<int>*);
 
    void runMatchingAuction(dataType* total_cost,
 						 std::vector<int> sizes,
@@ -81,9 +69,6 @@ namespace ttk{
 						 std::vector<std::vector<matchingTuple>>* all_matchings,
 						 bool use_kdt);
 
-    void runMatchingMunkres(dataType* total_cost,
-										 std::vector<std::vector<matchingTuple>>* all_matchings,
-                    std::vector<diagramTuple>& barycenter);
 
 		dataType updateBarycenter(std::vector<std::vector<matchingTuple>>& matchings);
 

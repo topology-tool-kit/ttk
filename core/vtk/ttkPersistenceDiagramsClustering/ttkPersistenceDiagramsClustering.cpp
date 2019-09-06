@@ -144,7 +144,7 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input, vtkUnstructuredGr
                     persistenceDiagramsClustering.setDebugLevel(debugLevel_);
                     persistenceDiagramsClustering.setTimeLimit(TimeLimit);
                     persistenceDiagramsClustering.setUseProgressive(UseProgressive);
-                    persistenceDiagramsClustering.setThreadNumber(ThreadNumber);
+                    persistenceDiagramsClustering.setThreadNumber(threadNumber_);
                     persistenceDiagramsClustering.setAlpha(Alpha);
                     persistenceDiagramsClustering.setDeltaLim(DeltaLim);
                     persistenceDiagramsClustering.setUseDeltaLim(UseAdditionalPrecision);
@@ -178,7 +178,7 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input, vtkUnstructuredGr
                     persistenceDiagramsBarycenter.setDeterministic(Deterministic);
                     persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
                     persistenceDiagramsBarycenter.setDebugLevel(debugLevel_);
-                    persistenceDiagramsBarycenter.setThreadNumber(ThreadNumber);
+                    persistenceDiagramsBarycenter.setThreadNumber(threadNumber_);
                     persistenceDiagramsBarycenter.setAlpha(Alpha);
                     persistenceDiagramsBarycenter.setLambda(Lambda);
                     // persistenceDiagramsBarycenter.setReinitPrices(ReinitPrices);

@@ -33,28 +33,11 @@ void PDBarycenter<dataType>::runMatching(dataType* total_cost, dataType epsilon,
                                          std::vector<dataType>* min_diag_price, std::vector<dataType>* min_price, std::vector<std::vector<matchingTuple>>* all_matchings, bool use_kdt)
 {
     Timer time_matchings;
-    // #ifdef TTK_ENABLE_OPENMP
-    // omp_set_num_threads(threadNumber_);
-    // #pragma omp parallel for schedule(dynamic, 1)
-    // #endif
-    // std::vector<dataType> precision_(numberOfInputs_);
-    //
-    // cout<<"TEST"<<endl;
-    // cout << " FUCKIN BARYCENTER " << endl;
-    // for(int i1 = 0; i1 < current_bidder_diagrams_.size(); i1++) {
-    //     for(int i2 = 0; i2 < barycenter_goods_.size(); i2++) {
-    //         Good<dataType> g = barycenter_goods_[0].get(i2);
-    //         cout << " good " << i1 << " " << i2 << " " << g.x_ << " " << g.y_ << " " << g.id_ << endl;
-    //     }
-    // }
+    #ifdef TTK_ENABLE_OPENMP
+    omp_set_num_threads(threadNumber_);
+    #pragma omp parallel for schedule(dynamic, 1)
+    #endif
 
-    // cout << " FUCKIN DIAGRAMS " << endl;
-    // for(int i1 = 0; i1 < current_bidder_diagrams_.size(); i1++) {
-    //     for(int i2 = 0; i2 < current_bidder_diagrams_[i1].size(); i2++) {
-    //         Bidder<dataType> b = current_bidder_diagrams_[i1].get(i2);
-    //         cout << " bidder " << i1 << " " << i2 << " " << b.x_ << " " << b.y_ << " " << b.id_ << endl;
-    //     }
-    // }
 
     for(int i = 0; i < numberOfInputs_; i++) {
         // cout<<"input "<<i<<" sizes : "<<current_bidder_diagrams_.size()<<" "<<barycenter_goods_.size()<<" "<<min_diag_price->size()<<endl;
@@ -110,93 +93,7 @@ void PDBarycenter<dataType>::runMatching(dataType* total_cost, dataType epsilon,
     // cout<<time_matchings.getElapsedTime()<<endl;
 }
 
-template <typename dataType>
-void PDBarycenter<dataType>::runMatching(dataType* total_cost, dataType epsilon, std::vector<int> sizes, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>* correspondance_kdt_map,
-                                         std::vector<dataType>* min_diag_price, std::vector<dataType>* min_price, std::vector<std::vector<matchingTuple>>* all_matchings, bool use_kdt,
-                                         vector<float>* timers, vector<int>* NB_BIDDERS, vector<int>* NB_BIDDINGS)
-{
-    //#ifdef TTK_ENABLE_OPENMP
-    // omp_set_num_threads(threadNumber_);
-    ////std::cout<<"\n\n number of threads : "<<threadNumber_<<" \n\n"<<std::endl;
-    //#pragma omp parallel for schedule(dynamic, 1)
-    //#endif
-    for(int i = 0; i < numberOfInputs_; i++) {
-        Timer t;
-        Auction<dataType> auction = Auction<dataType>(&current_bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_, geometrical_factor_, lambda_, 0.01, kdt, *correspondance_kdt_map, epsilon,
-                                                      (*min_diag_price)[i], use_kdt);
-        int n_biddings = 0;
-        auction.buildUnassignedBidders();
-        auction.reinitializeGoods();
-        auction.runAuctionRound(n_biddings, i);
-        auction.updateDiagonalPrices();
 
-        min_diag_price->at(i) = auction.getMinimalDiagonalPrice();
-        min_price->at(i) = getMinimalPrice(i);
-        std::vector<matchingTuple> matchings;
-        dataType cost = auction.getMatchingsAndDistance(&matchings, true);
-        all_matchings->at(i) = matchings;
-        (*total_cost) += cost * cost;
-        // std::cout<< "Barycenter cost for diagram " << i <<" : "<< cost << std::endl;
-        // std::cout<< "Number of biddings : " << n_biddings << std::endl;
-        // Resizes the diagram which was enrich with diagonal bidders during the auction
-        // TODO do this inside the auction !
-        (*NB_BIDDINGS)[i] = n_biddings;
-        current_bidder_diagrams_[i].bidders_.resize(sizes[i]);
-        (*NB_BIDDERS)[i] = current_bidder_diagrams_[i].bidders_.size();
-        (*timers)[i] = t.getElapsedTime();
-    }
-    /* print matchings
-            for(long unsigned int i=0; i<(*all_matchings).size(); i++){
-                for (long unsigned int j = 0; j < (*all_matchings)[i].size(); j++) {
-            std::cout << get<0>((*all_matchings)[i][j]) << " " ;
-            std::cout << get<1>((*all_matchings)[i][j]) << " " ;
-            std::cout << get<2>((*all_matchings)[i][j]) << "  |   " ;
-                }
-        std::cout << "\n" ;
-            }*/
-}
-
-template <typename dataType>
-void PDBarycenter<dataType>::runMatchingMunkres(dataType* total_cost, std::vector<std::vector<matchingTuple>>* all_matchings, std::vector<diagramTuple>& barycenter)
-{
-#ifdef TTK_ENABLE_OPENMP
-    omp_set_num_threads(threadNumber_);
-#pragma omp parallel for schedule(dynamic, 1)
-#endif
-    for(int i = 0; i < numberOfInputs_; i++) {
-        BottleneckDistance bottleneckDistance = BottleneckDistance();
-        // bottleneckDistance.setMethod(1); //Munkres algorithm
-        bottleneckDistance.setCTDiagram2(&barycenter);
-        bottleneckDistance.setCTDiagram1(&((*inputDiagrams_)[i]));
-        bottleneckDistance.setAlgorithm("ttk");
-        bottleneckDistance.setPersistencePercentThreshold(0.0);
-        bottleneckDistance.setPX(0.);
-        bottleneckDistance.setPY(0.);
-        bottleneckDistance.setPZ(0.);
-        bottleneckDistance.setPE(1.);
-        bottleneckDistance.setPS(1.);
-        bottleneckDistance.setWasserstein(std::to_string(wasserstein_));
-        bottleneckDistance.setOutputMatchings(&((*all_matchings)[i]));
-
-        bottleneckDistance.execute<dataType>(1.);
-
-        dataType cost = bottleneckDistance.getDistance();
-        // std::cout << "cost of matching " << i <<" : "<<cost<<std::endl;
-        (*total_cost) += cost;
-        // std::cout << "now total : " << *total_cost<<std::endl;
-    }
-    /* to print matchings
-    for(long unsigned int i=0; i<(*all_matchings).size(); i++){
-        for (long unsigned int j = 0; j < (*all_matchings)[i].size(); j++) {
-    std::cout << get<0>((*all_matchings)[i][j]) << " " ;
-    std::cout << get<1>((*all_matchings)[i][j]) << " " ;
-    std::cout << get<2>((*all_matchings)[i][j]) << "  |   " ;
-        }
-std::cout << "\n" ;
-    }
-std::cout<< std::endl;
-*/
-}
 
 template <typename dataType>
 void PDBarycenter<dataType>::runMatchingAuction(dataType* total_cost, std::vector<int> sizes, KDTree<dataType>* kdt, std::vector<KDTree<dataType>*>* correspondance_kdt_map,
