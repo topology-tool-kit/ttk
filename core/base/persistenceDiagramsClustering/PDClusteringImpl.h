@@ -1868,32 +1868,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(std::vecto
                 for(int ii=all_matchings.size(); ii<numberOfInputs_;  ii++){
                     all_matchings_per_type_and_cluster[c][2][ii].resize(0);
                 }
-                // all_matchings_per_type_and_cluster[c][2].resize(all_matchings.size());
-                // for(int ii=0; ii<all_matchings.size(); ii++){
-                //     all_matchings_per_type_and_cluster[c][2][ii].resize(all_matchings[ii].size());
-                //     all_matchings_per_type_and_cluster[c][2][ii] = all_matchings[ii];
-                //     for(int jj=0; jj< all_matchings[ii].size(); jj++){
-                //         matchingTuple t = all_matchings[ii][jj];
-                //         // cout << "cluster " << c <<" "<< get<0>(all_matchings[ii][jj]) << " " << get<1>(all_matchings[ii][jj]) << " " << get<2>(all_matchings[ii][jj]) << endl;
-                //         // cout<<" tuple : "<<get<0>(t)<<" "<<get<1>(t)<<" "<<get<2>(t)<<endl;
-                //         all_matchings_per_type_and_cluster[c][2][ii][jj] = all_matchings[ii][jj];
-                //         // cout<<" "<< get<0>(all_matchings_per_type_and_cluster[c][2][ii][jj])<<" "<< get<1>(all_matchings_per_type_and_cluster[c][2][ii][jj])<<" "<< get<2>(all_matchings_per_type_and_cluster[c][2][ii][jj])<<endl;
-                //     }
-                // }
-                // for(int ii=all_matchings.size(); ii<numberOfInputs_;  ii++){
-                //     all_matchings_per_type_and_cluster[c][2][ii].resize(0);
-                // }
                 precision_max = barycenter_computer_max_[c].isPrecisionObjectiveMet(deltaLim_,0);
-                // printMatchings(all_matchings_per_type_and_cluster[0]);
-                cout<<"\n matchings :"<<endl;
-                for(int ii=0;ii<1;ii++){
-                    cout << "diagram "<<ii<<" : ";
-                    for(int jj=0;jj<all_matchings[ii].size();jj++){
-                        cout<<" "<< get<0>(all_matchings[ii][jj])<<" "<< get<1>(all_matchings[ii][jj])<<" "<< get<2>(all_matchings[ii][jj])<<" | ";
-                    }
-                    cout<<endl;
-                }
-                cout<<"\n"<<endl;
 
                 // std::cout<<"max : runned, now updating barycenter"<<std::endl;
                 // cout<<" COST FROM MATCHINGS "<<sqrt(total_cost)<<endl;
