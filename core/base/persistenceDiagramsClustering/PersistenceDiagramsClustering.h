@@ -295,7 +295,6 @@ template <typename dataType>
 
 	/// Reconstruct matchings
 	//
-	cout<<"centroids sizes : "<<centroids_sizes[0][0]<<" "<<centroids_sizes[0][1]<<" "<<centroids_sizes[0][2]<<endl;
         std::vector<int> cluster_size;
         std::vector<int> idxInCluster(numberOfInputs_);
 

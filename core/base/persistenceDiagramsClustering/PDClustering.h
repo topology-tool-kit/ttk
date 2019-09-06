@@ -22,7 +22,7 @@ namespace ttk{
 			use_progressive_ = true;
             deterministic_ = true;
 			time_limit_ = std::numeric_limits<double>::max();
-			epsilon_min_ = 1e-5;
+			epsilon_min_ = 5e-5;
 			epsilon_.resize(3);
 			precision_criterion_ = false;
 			precision_min_ = false;
@@ -165,6 +165,12 @@ namespace ttk{
 
     inline void setUseDeltaLim(const bool UseDeltaLim){
       UseDeltaLim_ = UseDeltaLim;
+      if(UseDeltaLim_){
+	epsilon_min_ = 1e-8;
+      }
+      else{
+	epsilon_min_ = 5e-5;
+      }
     }
 
     inline void setDistanceWritingOptions(const int distanceWritingOptions){
