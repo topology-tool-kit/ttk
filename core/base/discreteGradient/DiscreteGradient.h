@@ -432,11 +432,13 @@ function value.
           for(SimplexId j = 0; j < 2; j++) {
             SimplexId vertexId;
             inputTriangulation_->getEdgeVertex(edgeId, j, vertexId);
+            if(vertexId == a) {
+              continue;
+            }
             if(scalars[vertexId] > scalars[a]
                || (scalars[vertexId] == scalars[a]
                    && offsets[vertexId] > offsets[a])) {
               isMax = false;
-              break;
             }
           }
           if(isMax) {
@@ -451,11 +453,13 @@ function value.
           for(SimplexId j = 0; j < 3; j++) {
             SimplexId vertexId;
             inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
+            if(vertexId == a) {
+              continue;
+            }
             if(scalars[vertexId] > scalars[a]
                || (scalars[vertexId] == scalars[a]
                    && offsets[vertexId] > offsets[a])) {
               isMax = false;
-              break;
             }
           }
           if(isMax) {
