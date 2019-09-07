@@ -418,9 +418,10 @@ function value.
        *
        * @return Lower star as 3 sets of cells (0-cells, 1-cells and 2-cells)
        */
-      template <typename idType>
+      template <typename dataType, typename idType>
       inline lowerStarType lowerStar(SimplexId a,
-                                     const idType *const offset) const {
+                                     const dataType *const scalars,
+                                     const idType *const offsets) const {
         lowerStarType res{};
         res[0].emplace(a);
         const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
@@ -431,7 +432,9 @@ function value.
           for(SimplexId j = 0; j < 2; j++) {
             SimplexId vertexId;
             inputTriangulation_->getEdgeVertex(edgeId, j, vertexId);
-            if(offset[vertexId] > offset[a]) {
+            if(scalars[vertexId] > scalars[a]
+               || (scalars[vertexId] == scalars[a]
+                   && offsets[vertexId] > offsets[a])) {
               isMax = false;
               break;
             }
@@ -448,7 +451,9 @@ function value.
           for(SimplexId j = 0; j < 3; j++) {
             SimplexId vertexId;
             inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
-            if(offset[vertexId] > offset[a]) {
+            if(scalars[vertexId] > scalars[a]
+               || (scalars[vertexId] == scalars[a]
+                   && offsets[vertexId] > offsets[a])) {
               isMax = false;
               break;
             }

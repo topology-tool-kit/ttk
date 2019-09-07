@@ -190,7 +190,7 @@ dataType DiscreteGradient::getPersistence(const Cell &up,
 }
 
 template <typename dataType, typename idType>
-int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
+int DiscreteGradient::assignGradient(const dataType *const scalars,
                                      const idType *const offsets,
                                      fullGradientType &gradient) const {
 
@@ -247,7 +247,7 @@ int DiscreteGradient::assignGradient(const dataType *const /*scalars*/,
                         decltype(pqGreater)>
       pq0(pqGreater), pq1(pqGreater);
 
-    auto Lx = lowerStar(x, offsets);
+    auto Lx = lowerStar(x, scalars, offsets);
     if(Lx[1].empty()) {
       // x is a local minimum
       isPaired[0].insert(x);
