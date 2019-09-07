@@ -154,15 +154,16 @@ int ttkDiscreteGradient::getOffsets(vtkDataSet *input) {
 }
 
 template <typename VTK_TT>
-int ttkDiscreteGradient::dispatch(
-  vtkUnstructuredGrid *outputCriticalPoints,
-  SimplexId criticalPoints_numberOfPoints,
-  vector<float> criticalPoints_points,
-  vector<char> criticalPoints_points_cellDimensions,
-  vector<SimplexId> criticalPoints_points_cellIds,
-  vector<char> criticalPoints_points_isOnBoundary,
-  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers,
-  vector<SimplexId> criticalPoints_points_manifoldSize) {
+int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
+
+  // critical points
+  SimplexId criticalPoints_numberOfPoints{};
+  vector<float> criticalPoints_points;
+  vector<char> criticalPoints_points_cellDimensions;
+  vector<SimplexId> criticalPoints_points_cellIds;
+  vector<char> criticalPoints_points_isOnBoundary;
+  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
+  vector<SimplexId> criticalPoints_points_manifoldSize;
 
   int ret = 0;
   vector<VTK_TT> criticalPoints_points_cellScalars;
@@ -378,15 +379,6 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  // critical points
-  SimplexId criticalPoints_numberOfPoints{};
-  vector<float> criticalPoints_points;
-  vector<char> criticalPoints_points_cellDimensions;
-  vector<SimplexId> criticalPoints_points_cellIds;
-  vector<char> criticalPoints_points_isOnBoundary;
-  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
-  vector<SimplexId> criticalPoints_points_manifoldSize;
-
   // gradient pairs
   SimplexId gradientGlyphs_numberOfPoints{};
   vector<float> gradientGlyphs_points;
@@ -407,13 +399,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     &gradientGlyphs_cells, &gradientGlyphs_cells_pairTypes);
 
   switch(inputScalars_->GetDataType()) {
-    vtkTemplateMacro(
-      ret = dispatch<VTK_TT>(
-        outputCriticalPoints, criticalPoints_numberOfPoints,
-        criticalPoints_points, criticalPoints_points_cellDimensions,
-        criticalPoints_points_cellIds, criticalPoints_points_isOnBoundary,
-        criticalPoints_points_PLVertexIdentifiers,
-        criticalPoints_points_manifoldSize));
+    vtkTemplateMacro(ret = dispatch<VTK_TT>(outputCriticalPoints));
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE

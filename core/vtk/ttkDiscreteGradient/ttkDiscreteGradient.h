@@ -105,15 +105,7 @@ protected:
 
 private:
   template <typename T>
-  int dispatch(
-    vtkUnstructuredGrid *outputCriticalPoints,
-    ttk::SimplexId criticalPoints_numberOfPoints,
-    std::vector<float> criticalPoints_points,
-    std::vector<char> criticalPoints_points_cellDimensions,
-    std::vector<ttk::SimplexId> criticalPoints_points_cellIds,
-    std::vector<char> criticalPoints_points_isOnBoundary,
-    std::vector<ttk::SimplexId> criticalPoints_points_PLVertexIdentifiers,
-    std::vector<ttk::SimplexId> criticalPoints_points_manifoldSize);
+  int dispatch(vtkUnstructuredGrid *outputCriticalPoints);
 
   std::string ScalarField;
   std::string InputOffsetScalarFieldName;
