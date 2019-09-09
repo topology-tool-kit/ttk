@@ -23,82 +23,75 @@
 #include <Triangulation.h>
 #include <Wrapper.h>
 
-#include "FTMTree_DataTypes.h"
+#include "FTMDataTypes.h"
 #include "FTMTree_MT.h"
 
-namespace ttk
-{
-namespace ftm
-{
+namespace ttk {
+  namespace ftm {
 
-   class FTMTree_CT : public FTMTree_MT
-   {
-     protected:
+    class FTMTree_CT : public FTMTree_MT {
+    protected:
       FTMTree_MT *jt_, *st_;
 
-     public:
-
+    public:
       // -----------------
       // Constructors
       // -----------------
 
-      FTMTree_CT(Params* const params, Triangulation* mesh, Scalars* const scalars);
+      FTMTree_CT(Params *const params,
+                 Triangulation *mesh,
+                 Scalars *const scalars);
       virtual ~FTMTree_CT();
 
       // -----------------
       // ACCESSOR
       // -----------------
 
-      inline FTMTree_MT* getJoinTree(void) const
-      {
-         return jt_;
+      inline FTMTree_MT *getJoinTree(void) const {
+        return jt_;
       }
 
-      inline FTMTree_MT* getSplitTree(void) const
-      {
-         return st_;
+      inline FTMTree_MT *getSplitTree(void) const {
+        return st_;
       }
 
-      inline FTMTree_MT* getTree(const TreeType tt)
-      {
-         switch (tt) {
-            case TreeType::Split:
-               return getSplitTree();
-               break;
-            case TreeType::Join:
-               return getJoinTree();
-               break;
-            case TreeType::Contour:
-               return this;
-               break;
-            default:
-               return this;
-               break;
-         }
-         return this;
+      inline FTMTree_MT *getTree(const TreeType tt) {
+        switch(tt) {
+          case TreeType::Split:
+            return getSplitTree();
+            break;
+          case TreeType::Join:
+            return getJoinTree();
+            break;
+          case TreeType::Contour:
+            return this;
+            break;
+          default:
+            return this;
+            break;
+        }
+        return this;
       }
 
-      inline void setupTriangulation(Triangulation* m, const bool preproc = true)
-      {
-         FTMTree_MT::setupTriangulation(m, preproc);
-         jt_->setupTriangulation(m, false);
-         st_->setupTriangulation(m, false);
+      inline void setupTriangulation(Triangulation *m,
+                                     const bool preproc = true) {
+        FTMTree_MT::setupTriangulation(m, preproc);
+        jt_->setupTriangulation(m, false);
+        st_->setupTriangulation(m, false);
       }
 
-      inline int setDebugLevel(const int d)
-      {
-         Debug::setDebugLevel(d);
-         jt_->setDebugLevel(d);
-         st_->setDebugLevel(d);
-         return 0;
+      inline int setDebugLevel(const int &d) {
+        Debug::setDebugLevel(d);
+        jt_->setDebugLevel(d);
+        st_->setDebugLevel(d);
+        return 0;
       }
 
-      inline int setThreadNumber(const int n)
-      {
-         Debug::setThreadNumber(n);
-         jt_->setThreadNumber(n);
-         st_->setThreadNumber(n);
-         return 0;
+      inline int setThreadNumber(const int n) {
+        Debug::setThreadNumber(n);
+        jt_->setThreadNumber(n);
+        st_->setThreadNumber(n);
+        return 0;
       }
 
       // -----------------
@@ -113,16 +106,16 @@ namespace ftm
 
       int combine();
 
-      void updateRegion(const ArcRegion& arcRegion, idSuperArc ctArc);
+      void updateRegion(const ArcRegion &arcRegion, idSuperArc ctArc);
 
-      void createCTArcSegmentation(idSuperArc ctArc, const bool isJT, idSuperArc xtArc);
+      void createCTArcSegmentation(idSuperArc ctArc,
+                                   const bool isJT,
+                                   idSuperArc xtArc);
 
       void finalizeSegmentation(void);
+    };
 
+  } // namespace ftm
+} // namespace ttk
 
-   };
-
-}
-}
-
-#endif  // CONTOURTREE_H
+#endif // CONTOURTREE_H

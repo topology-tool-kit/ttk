@@ -1,4 +1,9 @@
 ttk_add_vtk_library(ttkTopologicalCompressionReader
-	SOURCES ttkTopologicalCompressionReader.cpp
-  	HEADERS ttkTopologicalCompressionReader.h
-	LINK ttkTriangulation topologicalCompression)
+  SOURCES
+    ttkTopologicalCompressionReader.cpp
+  HEADERS
+    ttkTopologicalCompressionReader.h
+  LINK
+    ttkTriangulation
+    topologicalCompression
+    )

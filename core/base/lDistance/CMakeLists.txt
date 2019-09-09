@@ -1,5 +1,9 @@
 ttk_add_base_library(lDistance
-	SOURCES LDistance.cpp
-	HEADERS LDistance.h
-	LINK triangulation)
+  SOURCES
+    LDistance.cpp
+  HEADERS
+    LDistance.h
+  LINK
+    triangulation
+    )
 

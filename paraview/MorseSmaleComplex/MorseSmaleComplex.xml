@@ -254,7 +254,7 @@ Computer Graphics Forum, 2012.
          number_of_elements="1"
          default_values="0"
          panel_visibility="advanced">
-         <DoubleRangeDomain name="range" min="0.0" max="100.0" />
+         <DoubleRangeDomain name="range" min="0.0" max="100000.0" />
          <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"

@@ -10,10 +10,10 @@
 
 #pragma once
 
-#include <vtkFiltersCoreModule.h>
 #include "vtkPoints.h"
 #include "vtkSmartPointer.h"
 #include "vtkUnstructuredGridAlgorithm.h"
+#include <vtkFiltersCoreModule.h>
 
 #include <string>
 #include <vector>
@@ -21,42 +21,43 @@
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkOFFReader
 #else
-class ttkOFFReader 
+class ttkOFFReader
 #endif
-  : public vtkUnstructuredGridAlgorithm
-{
-  public:
-   vtkTypeMacro(ttkOFFReader, vtkUnstructuredGridAlgorithm);
-   void PrintSelf(ostream &os, vtkIndent indent) override;
+  : public vtkUnstructuredGridAlgorithm {
+public:
+  vtkTypeMacro(ttkOFFReader, vtkUnstructuredGridAlgorithm);
+  void PrintSelf(ostream &os, vtkIndent indent) override;
 
-   static ttkOFFReader *New();
+  static ttkOFFReader *New();
 
-   // Description:
-   // Specify file name of the .abc file.
-   vtkSetStringMacro(FileName);
-   vtkGetStringMacro(FileName);
+  // Description:
+  // Specify file name of the .abc file.
+  vtkSetStringMacro(FileName);
+  vtkGetStringMacro(FileName);
 
-  protected:
-   ttkOFFReader();
-   ~ttkOFFReader() = default;
+protected:
+  ttkOFFReader();
+  ~ttkOFFReader() = default;
 
-   int RequestData(vtkInformation *, vtkInformationVector **, vtkInformationVector *) override;
+  int RequestData(vtkInformation *,
+                  vtkInformationVector **,
+                  vtkInformationVector *) override;
 
-   int countVertsData(std::string line);
-   int countCellsData(std::string line);
-   int processLineVert(vtkIdType curLine, std::string &line);
-   int processLineCell(vtkIdType curLine, std::string &line);
+  int countVertsData(std::string line);
+  int countCellsData(std::string line);
+  int processLineVert(vtkIdType curLine, std::string &line);
+  int processLineCell(vtkIdType curLine, std::string &line);
 
-  private:
-   ttkOFFReader(const ttkOFFReader &) = delete;
-   void operator=(const ttkOFFReader &) = delete;
+private:
+  ttkOFFReader(const ttkOFFReader &) = delete;
+  void operator=(const ttkOFFReader &) = delete;
 
-   char *FileName;
-   vtkIdType  nbVerts_, nbCells_;
-   vtkIdType   nbVertsData_, nbCellsData_;
+  char *FileName;
+  vtkIdType nbVerts_, nbCells_;
+  vtkIdType nbVertsData_, nbCellsData_;
 
-   vtkSmartPointer<vtkUnstructuredGrid>         mesh_;
-   vtkSmartPointer<vtkPoints>                   points_;
-   std::vector<vtkSmartPointer<vtkDoubleArray>> vertScalars_;
-   std::vector<vtkSmartPointer<vtkDoubleArray>> cellScalars_;
+  vtkSmartPointer<vtkUnstructuredGrid> mesh_;
+  vtkSmartPointer<vtkPoints> points_;
+  std::vector<vtkSmartPointer<vtkDoubleArray>> vertScalars_;
+  std::vector<vtkSmartPointer<vtkDoubleArray>> cellScalars_;
 };

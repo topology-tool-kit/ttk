@@ -9,5 +9,7 @@ find_package(TTKBase REQUIRED)
 
 add_executable(ttkExample-c++ main.cpp)
 
-target_link_libraries(ttkExample-c++ PUBLIC
-  ttk::base::baseAll)
+target_link_libraries(ttkExample-c++
+  PUBLIC
+    ttk::base::baseAll
+    )

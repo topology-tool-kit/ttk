@@ -6,17 +6,17 @@ using namespace ttk;
 vtkStandardNewMacro(ttkTableDataSelector)
 
   // transmit abort signals
-  bool ttkTableDataSelector::needsToAbort(){
-    return GetAbortExecute();
-  }
+  bool ttkTableDataSelector::needsToAbort() {
+  return GetAbortExecute();
+}
 
 // transmit progress status
-int ttkTableDataSelector::updateProgress(const float &progress){
+int ttkTableDataSelector::updateProgress(const float &progress) {
 
   {
     stringstream msg;
-    msg << "[ttkTableDataSelector] " << progress*100 
-      << "% processed...." << endl;
+    msg << "[ttkTableDataSelector] " << progress * 100 << "% processed...."
+        << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
@@ -24,31 +24,35 @@ int ttkTableDataSelector::updateProgress(const float &progress){
   return 0;
 }
 
-int ttkTableDataSelector::doIt(vtkTable* input, vtkTable* output){
+int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
   Memory m;
 
   output->ShallowCopy(input);
 
-  vtkFieldData* inputRowData=input->GetRowData();
+  vtkFieldData *inputRowData = input->GetRowData();
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputRowData){
+  if(!inputRowData) {
     cerr << "[ttkTableDataSelector] Error: input has no row data." << endl;
     return -1;
   }
 #endif
 
-  vtkSmartPointer<vtkFieldData> outputRowData=vtkSmartPointer<vtkFieldData>::New();
+  vtkSmartPointer<vtkFieldData> outputRowData
+    = vtkSmartPointer<vtkFieldData>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!outputRowData){
-    cerr << "[ttkTableDataSelector] Error: vtkFieldData memory allocation problem." << endl;
+  if(!outputRowData) {
+    cerr
+      << "[ttkTableDataSelector] Error: vtkFieldData memory allocation problem."
+      << endl;
     return -1;
   }
 #endif
 
-  for(auto& scalar : ScalarFields){
-    if(scalar.length()>0){
-      vtkDataArray* arr=inputRowData->GetArray(scalar.data());
-      if(arr) outputRowData->AddArray(arr);
+  for(auto &scalar : ScalarFields) {
+    if(scalar.length() > 0) {
+      vtkDataArray *arr = inputRowData->GetArray(scalar.data());
+      if(arr)
+        outputRowData->AddArray(arr);
     }
   }
 
@@ -57,7 +61,7 @@ int ttkTableDataSelector::doIt(vtkTable* input, vtkTable* output){
   {
     stringstream msg;
     msg << "[ttkTableDataSelector] Memory usage: " << m.getElapsedUsage()
-      << " MB." << endl;
+        << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }
 
@@ -65,8 +69,8 @@ int ttkTableDataSelector::doIt(vtkTable* input, vtkTable* output){
 }
 
 int ttkTableDataSelector::RequestData(vtkInformation *request,
-    vtkInformationVector **inputVector,
-    vtkInformationVector *outputVector){
+                                      vtkInformationVector **inputVector,
+                                      vtkInformationVector *outputVector) {
   Memory m;
 
   vtkTable *input = vtkTable::GetData(inputVector[0]);
@@ -77,7 +81,7 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
   {
     stringstream msg;
     msg << "[ttkTableDataSelector] Memory usage: " << m.getElapsedUsage()
-      << " MB." << endl;
+        << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }
 

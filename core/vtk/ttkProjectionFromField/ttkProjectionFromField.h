@@ -10,10 +10,10 @@
 /// texture coordinates (vtkPointSet)
 /// \param Output Output projected data-set (vtkPointSet)
 ///
-/// This filter can be used as any other VTK filter (for instance, by using the 
+/// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
-/// See the related ParaView example state files for usage examples within a 
+/// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
 /// \sa vtkTextureMapFromField
@@ -21,91 +21,87 @@
 #ifndef _TTK_PROJECTION_FROM_FIELD_H
 #define _TTK_PROJECTION_FROM_FIELD_H
 
-// VTK includes 
-#include                  <vtkDataArray.h>
-#include                  <vtkFiltersCoreModule.h>
-#include                  <vtkInformation.h>
-#include                  <vtkObjectFactory.h>
-#include                  <vtkPointData.h>
-#include                  <vtkPointSet.h>
-#include                  <vtkPointSetAlgorithm.h>
-#include                  <vtkPoints.h>
-#include                  <vtkSmartPointer.h>
+// VTK includes
+#include <vtkDataArray.h>
+#include <vtkFiltersCoreModule.h>
+#include <vtkInformation.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPointSet.h>
+#include <vtkPointSetAlgorithm.h>
+#include <vtkPoints.h>
+#include <vtkSmartPointer.h>
 
 // ttk code includes
-#include                  <ttkWrapper.h>
+#include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
 class VTKFILTERSCORE_EXPORT ttkProjectionFromField
 #else
 class ttkProjectionFromField
 #endif
-  : public vtkPointSetAlgorithm, public ttk::Wrapper{
+  : public vtkPointSetAlgorithm,
+    public ttk::Wrapper {
 
-  public:
-      
-    static ttkProjectionFromField* New();
-    
-    vtkTypeMacro(ttkProjectionFromField, vtkPointSetAlgorithm);
+public:
+  static ttkProjectionFromField *New();
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+  vtkTypeMacro(ttkProjectionFromField, vtkPointSetAlgorithm);
 
-    void SetThreads(){
-      if(!UseAllCores)
-        threadNumber_ = ThreadNumber;
-      else{
-        threadNumber_ = ttk::OsCall::getNumberOfCores();
-      }
-      Modified();
+  // default ttk setters
+  vtkSetMacro(debugLevel_, int);
+
+  void SetThreads() {
+    if(!UseAllCores)
+      threadNumber_ = ThreadNumber;
+    else {
+      threadNumber_ = ttk::OsCall::getNumberOfCores();
     }
-    
-    void SetThreadNumber(int threadNumber){
-      ThreadNumber = threadNumber;
-      SetThreads();
-    }   
-    
-    void SetUseAllCores(bool onOff){
-      UseAllCores = onOff;
-      SetThreads();
-    }
-    // end of default ttk setters
-    
-    vtkSetMacro(UComponent, std::string);
-    vtkGetMacro(UComponent, std::string);
+    Modified();
+  }
 
-    vtkSetMacro(VComponent, std::string);
-    vtkGetMacro(VComponent, std::string);
-    
-    vtkSetMacro(UseTextureCoordinates, bool);
-    vtkGetMacro(UseTextureCoordinates, bool);
-    
-    
-  protected:
-    
-    ttkProjectionFromField();
-    
-    ~ttkProjectionFromField();
-    
-    int RequestData(vtkInformation *request, 
-      vtkInformationVector **inputVector, vtkInformationVector *outputVector);
-    
-    
-  private:
-    
-    bool                  UseAllCores;
-    ttk::ThreadId                   ThreadNumber;
-    bool                  UseTextureCoordinates;
-    std::string                UComponent, VComponent;
-    vtkSmartPointer<vtkPoints> pointSet_;
-    
-    // base code features
-    int doIt(vtkPointSet *input, vtkPointSet *output);
-    
-    bool needsToAbort();
-    
-    int updateProgress(const float &progress);
-   
+  void SetThreadNumber(int threadNumber) {
+    ThreadNumber = threadNumber;
+    SetThreads();
+  }
+
+  void SetUseAllCores(bool onOff) {
+    UseAllCores = onOff;
+    SetThreads();
+  }
+  // end of default ttk setters
+
+  vtkSetMacro(UComponent, std::string);
+  vtkGetMacro(UComponent, std::string);
+
+  vtkSetMacro(VComponent, std::string);
+  vtkGetMacro(VComponent, std::string);
+
+  vtkSetMacro(UseTextureCoordinates, bool);
+  vtkGetMacro(UseTextureCoordinates, bool);
+
+protected:
+  ttkProjectionFromField();
+
+  ~ttkProjectionFromField();
+
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
+
+private:
+  bool UseAllCores;
+  ttk::ThreadId ThreadNumber;
+  bool UseTextureCoordinates;
+  std::string UComponent, VComponent;
+  vtkSmartPointer<vtkPoints> pointSet_;
+
+  // base code features
+  int doIt(vtkPointSet *input, vtkPointSet *output);
+
+  bool needsToAbort() override;
+
+  int updateProgress(const float &progress) override;
 };
 
 #endif // _TTK_PROJECTION_FROM_FIELD_H

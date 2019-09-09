@@ -1,0 +1,188 @@
+
+<ServerManagerConfiguration>
+   <!-- This is the server manager configuration XML. It defines the interface to
+       our new filter. As a rule of thumb, try to locate the configuration for
+       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
+       that matches your filter and then model your xml on it -->
+  <ProxyGroup name="filters">
+     <SourceProxy
+        name="FTRGraph"
+        class="ttkFTRGraph"
+        label="TTK Reeb graph (FTR)">
+        <Documentation
+           long_help="TTK fTRGraph plugin."
+           short_help="TTK fTRGraph plugin.">
+           TTK fTRGraph plugin documentation.
+        </Documentation>
+        <InputProperty
+           name="Input"
+           command="SetInputConnection">
+           <ProxyGroupDomain name="groups">
+              <Group name="sources"/>
+              <Group name="filters"/>
+           </ProxyGroupDomain>
+           <DataTypeDomain name="input_type">
+              <DataType value="vtkDataSet"/>
+           </DataTypeDomain>
+           <InputArrayDomain name="input_scalars" number_of_components="1">
+              <Property name="Input" function="FieldDataSelection" />
+           </InputArrayDomain>
+           <Documentation>
+              Data-set to process.
+           </Documentation>
+        </InputProperty>
+
+        <StringVectorProperty
+           name="ScalarField"
+           command="SetScalarField"
+           number_of_elements="1"
+           animateable="0"
+           label="Scalar Field"
+           >
+           <ArrayListDomain
+              name="array_list"
+              default_values="0">
+              <RequiredProperties>
+                 <Property name="Input" function="Input" />
+              </RequiredProperties>
+           </ArrayListDomain>
+           <Documentation>
+              Select the scalar field to process.
+           </Documentation>
+        </StringVectorProperty>
+
+        <IntVectorProperty
+           name="UseInputOffsetScalarField"
+           command="SetUseInputOffsetScalarField"
+           label="Force Input Offset Scalar Field"
+           number_of_elements="1"
+           default_values="0">
+           <BooleanDomain name="bool"/>
+           <Documentation>
+              Check this box to force the usage of a specific input 
+              scalar field as vertex offset (used to disambiguate flat 
+              plateaus).
+           </Documentation>
+        </IntVectorProperty>
+
+        <StringVectorProperty
+           name="InputOffsetScalarFieldName"
+           command="SetInputOffsetScalarFieldName"
+           label="Input Offset"
+           number_of_elements="1"
+           animateable="0"
+           >
+           <ArrayListDomain
+              name="array_list"
+             default_values="0">
+            <RequiredProperties>
+                 <Property name="Input" function="Input" />
+              </RequiredProperties>
+           </ArrayListDomain>
+           <Hints>
+             <PropertyWidgetDecorator type="GenericDecorator"
+                                      mode="visibility"
+                                      property="UseInputOffsetScalarField"
+                                      value="1" />
+             </Hints>
+           <Documentation>
+              Select the input offset scalar field to process.
+           </Documentation>
+        </StringVectorProperty>
+
+        <IntVectorProperty
+           name="ArcSampling"
+           label="Arc samplig"
+           command="SetSampling"
+           number_of_elements="1"
+           default_values="0">
+           <IntRangeDomain name="range" min="-1" max="20" />
+           <Documentation>
+              Set arc sampling level. The sample create "sampleLvl" chunk
+              of element in an arc and add a point at the barycenters of these elements.
+              Special vaues: -1 will insert all regular arcs and 0 only the super arcs (faster)
+           </Documentation>
+        </IntVectorProperty>
+
+        <IntVectorProperty
+           name="SingleSweep"
+           label="Use single sweep"
+           command="SetSingleSweep"
+           number_of_elements="1"
+           default_values="0" panel_visibility="advanced">
+           <BooleanDomain name="bool"/>
+           <Documentation>
+             Use the less efficient (but maybe more robust) single sweep version
+           </Documentation>
+        </IntVectorProperty>
+        
+        <IntVectorProperty
+           name="UseAllCores"
+           label="Use All Cores"
+           command="SetUseAllCores"
+           number_of_elements="1"
+           default_values="1" panel_visibility="advanced">
+           <BooleanDomain name="bool"/>
+           <Documentation>
+              Use all available cores.
+           </Documentation>
+        </IntVectorProperty>
+
+        <IntVectorProperty
+           name="ThreadNumber"
+           label="Thread Number"
+           command="SetThreadNumber"
+           number_of_elements="1"
+           default_values="1" panel_visibility="advanced">
+           <IntRangeDomain name="range" min="1" max="100" />
+           <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                    mode="visibility"
+                    property="UseAllCores"
+                    value="0" />
+           </Hints>
+           <Documentation>
+              Thread number.
+           </Documentation>
+        </IntVectorProperty>
+
+        <IntVectorProperty
+           name="DebugLevel"
+           label="Debug Level"
+           command="SetdebugLevel_"
+           number_of_elements="1"
+           default_values="3" panel_visibility="advanced">
+           <IntRangeDomain name="range" min="0" max="100" />
+           <Documentation>
+              Debug level.
+           </Documentation>
+        </IntVectorProperty>
+
+        <PropertyGroup panel_widget="Line" label="Input options">
+           <Property name="ScalarField" />
+           <Property name="UseInputOffsetScalarField" />
+           <Property name="InputOffsetScalarFieldName" />
+           <Property name="ArcSampling" />
+        </PropertyGroup>
+        
+        <PropertyGroup panel_widget="Line" label="Output options">
+          <Property name="ArcSampling" />
+        </PropertyGroup>
+
+        <PropertyGroup panel_widget="Line" label="Testing">
+           <Property name="SingleSweep" />
+           <Property name="UseAllCores" />
+           <Property name="ThreadNumber" />
+           <Property name="DebugLevel" />
+        </PropertyGroup>
+
+        <OutputPort name="Skeleton Nodes" index="0" id="port0" />
+        <OutputPort name="Skeleton Arcs" index="1" id="port1" />
+        <OutputPort name="Segmentation" index="2" id="port2" />
+
+        <Hints>
+           <ShowInMenu category="TTK - Scalar Data" />
+        </Hints>
+     </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

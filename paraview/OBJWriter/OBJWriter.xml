@@ -18,7 +18,7 @@
         </InputProperty>
         <StringVectorProperty
           name="FileName"
-          command="SetFileName"
+          command="SetFilename"
           number_of_elements="1">
           <FileListDomain name="files"/>
           <Documentation>

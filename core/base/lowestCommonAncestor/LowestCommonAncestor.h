@@ -13,20 +13,19 @@
 #include <Debug.h>
 #include <RangeMinimumQuery.h>
 // STL includes
-#include <vector>
-#include <array>
-#include <stack>
-#include <cmath>
-#include <climits>
 #include <algorithm>
-#include <string>
+#include <array>
+#include <climits>
+#include <cmath>
 #include <sstream>
+#include <stack>
+#include <string>
+#include <vector>
 
 namespace ttk {
 
   class LowestCommonAncestor : public Debug {
   public:
-
     class Node {
     public:
       inline void setAncestor(const int &id) {
@@ -48,13 +47,13 @@ namespace ttk {
           return -1;
         }
       }
+
     protected:
       int ancestor_;
       std::vector<int> successor_;
     };
 
   public:
-
     /// Add a node in the tree
     /// \return Returns the id of the new node
     inline int addNode() {
@@ -65,8 +64,8 @@ namespace ttk {
     }
 
     inline void addNodes(const unsigned int &number) {
-      node_.resize(node_.size()+number);
-      for(unsigned int i=node_.size()-number ; i<node_.size() ; i++) {
+      node_.resize(node_.size() + number);
+      for(unsigned int i = node_.size() - number; i < node_.size(); i++) {
         node_[i].setAncestor(i);
       }
     }
@@ -77,41 +76,42 @@ namespace ttk {
     }
 
     /// \returns Returns a pointer to the id-th node
-    inline Node* getNode(const unsigned int &id) {
+    inline Node *getNode(const unsigned int &id) {
       if(id < node_.size()) {
-        return node_.data()+id;
+        return node_.data() + id;
       } else {
         return nullptr;
       }
     }
 
-    /// Preprocess the tree structure to answer the query() calls in constant time.
-    /// The preprocess takes linear time in number of nodes in the tree.
+    /// Preprocess the tree structure to answer the query() calls in constant
+    /// time. The preprocess takes linear time in number of nodes in the tree.
     int preprocess();
 
     /// Get the id of the lowest common ancestor of i and j.
-    /// \pre preprocess() must have been called after the last change in the tree.
+    /// \pre preprocess() must have been called after the last change in the
+    /// tree.
     inline int query(int i, int j) const {
-      if(nodeFirstAppearence_[i]>nodeFirstAppearence_[j]) {
-        std::swap(i,j);
+      if(nodeFirstAppearence_[i] > nodeFirstAppearence_[j]) {
+        std::swap(i, j);
       }
-      return
-        nodeOrder_[RMQuery(nodeFirstAppearence_[i], nodeFirstAppearence_[j])];
+      return nodeOrder_[RMQuery(
+        nodeFirstAppearence_[i], nodeFirstAppearence_[j])];
     }
 
   protected:
     int computeBlocs();
     int eulerianTransverse();
     int RMQuery(const int &i, const int &j) const;
-    inline unsigned int min_pos_3(const std::array<int,3> &triplet) const {
-      if (triplet[0] < triplet[1]) {
-        if (triplet[0] < triplet[2]) {
+    inline unsigned int min_pos_3(const std::array<int, 3> &triplet) const {
+      if(triplet[0] < triplet[1]) {
+        if(triplet[0] < triplet[2]) {
           return 0;
         } else {
           return 2;
         }
       } else {
-        if (triplet[1] < triplet[2]) {
+        if(triplet[1] < triplet[2]) {
           return 1;
         } else {
           return 2;
@@ -119,34 +119,31 @@ namespace ttk {
       }
     }
 
-
   protected:
     /* Tree structure */
-    std::vector<Node>                    node_;
+    std::vector<Node> node_;
 
     /* Eulerian Transverse */
-    std::vector<int>                     nodeOrder_;
-    std::vector<int>                     nodeDepth_;
-    std::vector<int>                     nodeFirstAppearence_;
+    std::vector<int> nodeOrder_;
+    std::vector<int> nodeDepth_;
+    std::vector<int> nodeFirstAppearence_;
 
     /* Range Minimum Query */
-    int                             blocSize_;
+    int blocSize_;
     // Boundaries of blocs
-    std::vector<std::pair<int,int> >          blocPartition_;
+    std::vector<std::pair<int, int>> blocPartition_;
     // Min values
-    std::vector<int>                     blocMinimumValue_;
+    std::vector<int> blocMinimumValue_;
     // RMQ of the blocMinimumValue_ vector
-    RangeMinimumQuery<int>          blocMinimumValueRMQ_;
+    RangeMinimumQuery<int> blocMinimumValueRMQ_;
     // Positions of min values
-    std::vector<int>                     blocMinimumPosition_;
+    std::vector<int> blocMinimumPosition_;
     // All queries for each possible bloc (positions)
-    std::vector<std::vector<std::vector<int> > >   normalizedBlocTable_;
+    std::vector<std::vector<std::vector<int>>> normalizedBlocTable_;
     // Corresponding normalized bloc for each bloc of nodeDepth_
-    std::vector<int>                     blocToNormalizedBloc_;
-
-
+    std::vector<int> blocToNormalizedBloc_;
   };
 
-}
+} // namespace ttk
 
 #endif

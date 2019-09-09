@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <vtkDataSetWriter.h>
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
-#include <vtkDataSetWriter.h>
 
 #include <string>
 #include <vector>
@@ -20,32 +20,30 @@ class VTKIOLEGACY_EXPORT ttkOBJWriter
 #else
 class ttkOBJWriter
 #endif
-  : public vtkDataSetWriter{
-  
-  public:
-    
-    vtkTypeMacro(ttkOBJWriter, vtkDataSetWriter);
-    void PrintSelf(ostream &os, vtkIndent indent) override;
+  : public vtkDataSetWriter {
 
-    static ttkOBJWriter *New();
+public:
+  vtkTypeMacro(ttkOBJWriter, vtkDataSetWriter);
+  void PrintSelf(ostream &os, vtkIndent indent) override;
 
-    // Description:
-    // Specify file name of the .abc file.
-    vtkSetStringMacro(FileName);
-    vtkGetStringMacro(FileName);
+  static ttkOBJWriter *New();
 
-  protected:
-    ttkOBJWriter();
-    ~ttkOBJWriter();
-    
-    int OpenFile();
-    virtual void WriteData() override;
-    
-    char *FileName;
-    ofstream *Stream;
-    
-  private:
-    ttkOBJWriter(const ttkOBJWriter &) = delete;
-    void operator=(const ttkOBJWriter &) = delete;
+  // Description:
+  // Specify file name of the .abc file.
+  vtkSetStringMacro(Filename);
+  vtkGetStringMacro(Filename);
 
+protected:
+  ttkOBJWriter();
+  ~ttkOBJWriter();
+
+  int OpenFile();
+  virtual void WriteData() override;
+
+  char *Filename;
+  ofstream Stream{};
+
+private:
+  ttkOBJWriter(const ttkOBJWriter &) = delete;
+  void operator=(const ttkOBJWriter &) = delete;
 };

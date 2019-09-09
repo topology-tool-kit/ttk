@@ -23,74 +23,67 @@ vtkStandardNewMacro(ttkOBJWriter);
 // Public
 // {{{
 
-void ttkOBJWriter::PrintSelf(ostream &os, vtkIndent indent){
+void ttkOBJWriter::PrintSelf(ostream &os, vtkIndent indent) {
   this->Superclass::PrintSelf(os, indent);
 
-  os << indent << "File Name: " 
-    << (this->FileName ? this->FileName : "(none)") << endl;
+  os << indent << "File Name: " << (this->Filename ? this->Filename : "(none)")
+     << endl;
 }
 
 // }}}
 // Protected
 // {{{
 
-ttkOBJWriter::ttkOBJWriter(){
-  FileName = NULL;
-  Stream = NULL;
+ttkOBJWriter::ttkOBJWriter() {
+  Filename = NULL;
 }
 
-ttkOBJWriter::~ttkOBJWriter(){
-  SetFileName(NULL);
-  if(Stream)
-    delete Stream;
+ttkOBJWriter::~ttkOBJWriter() {
+  SetFilename(NULL);
 }
 
-int ttkOBJWriter::OpenFile(){
+int ttkOBJWriter::OpenFile() {
 
-  ofstream *f = new ofstream(FileName, ios::out);
-  
-  if(!f->fail()){
-    Stream = f;
-  }
-  else{
-    delete f;
+  ofstream f(Filename, ios::out);
+
+  if(!f.fail()) {
+    Stream = std::move(f);
+  } else {
     return -1;
   }
-  
+
   return 0;
 }
 
-void ttkOBJWriter::WriteData(){
-  
-  vtkDataSet *dataSet = 
-    vtkDataSet::SafeDownCast(this->GetInput());
-    
+void ttkOBJWriter::WriteData() {
+
+  vtkDataSet *dataSet = vtkDataSet::SafeDownCast(this->GetInput());
+
   if(!dataSet)
     return;
-  
-  if(this->OpenFile()){
-    cerr << "[ttkOBJWriter] Could not open file `"
-      << FileName << "' :(" << endl; 
+
+  if(this->OpenFile()) {
+    cerr << "[ttkOBJWriter] Could not open file `" << Filename << "' :("
+         << endl;
     return;
   }
-  
+
   double p[3];
-  for(vtkIdType i = 0; i < dataSet->GetNumberOfPoints(); i++){
+  for(vtkIdType i = 0; i < dataSet->GetNumberOfPoints(); i++) {
     dataSet->GetPoint(i, p);
-    (*Stream) << "v " <<  p[0] << " " << p[1] << " " << p[2] << " " << endl;
+    Stream << "v " << p[0] << " " << p[1] << " " << p[2] << " " << endl;
   }
-  
-  for(vtkIdType i = 0; i < dataSet->GetNumberOfCells(); i++){
+
+  for(vtkIdType i = 0; i < dataSet->GetNumberOfCells(); i++) {
     vtkCell *c = dataSet->GetCell(i);
-   
-    (*Stream) << "f ";
-    for(int j = 0; j < c->GetNumberOfPoints(); j++){
-      (*Stream) << c->GetPointId(j) + 1 << " ";
+
+    Stream << "f ";
+    for(int j = 0; j < c->GetNumberOfPoints(); j++) {
+      Stream << c->GetPointId(j) + 1 << " ";
     }
-    
-    (*Stream) << endl;
+
+    Stream << endl;
   }
 }
-
 
 // }}}
