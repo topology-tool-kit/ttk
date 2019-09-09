@@ -211,13 +211,13 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input,
         }
       }
 
+      outputMatchings->ShallowCopy(
+        createMatchings(final_centroids, inv_clustering_, *intermediateDiagrams,
+                        all_matchings, max_dimension_total_, Spacing));
       outputClusters->ShallowCopy(createOutputClusteredDiagrams(
         *intermediateDiagrams, inv_clustering_, max_dimension_total_, Spacing));
       outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(
         final_centroids, inv_clustering_, max_dimension_total_, Spacing));
-      outputMatchings->ShallowCopy(
-        createMatchings(final_centroids, inv_clustering_, *intermediateDiagrams,
-                        all_matchings, max_dimension_total_, Spacing));
     }));
   }
 
