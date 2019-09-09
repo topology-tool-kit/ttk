@@ -8,8 +8,8 @@ vtkStandardNewMacro(ttkDiscreteGradient)
 
   ttkDiscreteGradient::ttkDiscreteGradient()
   : UseAllCores{true}, ScalarField{}, InputOffsetScalarFieldName{},
-    ForceInputOffsetScalarField{false}, ReverseSaddleMaximumConnection{true},
-    ReverseSaddleSaddleConnection{true}, AllowSecondPass{true},
+    ForceInputOffsetScalarField{false}, ReverseSaddleMaximumConnection{false},
+    ReverseSaddleSaddleConnection{false}, AllowSecondPass{true},
     AllowThirdPass{true}, ComputeGradientGlyphs{true}, IterationThreshold{-1},
     ScalarFieldId{}, OffsetFieldId{-1},
 
