@@ -1,3 +1,1 @@
-#include                  <PersistenceDiagramsClustering.h>
-
-
+#include <PersistenceDiagramsClustering.h>

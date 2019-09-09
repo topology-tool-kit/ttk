@@ -1,3 +1,1 @@
-#include                  <PersistenceDiagramsBarycenter.h>
-
-
+#include <PersistenceDiagramsBarycenter.h>

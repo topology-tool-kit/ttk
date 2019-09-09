@@ -113,7 +113,7 @@ int ttkPersistenceDiagram::getTriangulation(vtkDataSet *input) {
   }
 
   if(this->GetMTime() < input->GetMTime())
-    computeDiagram_=true;
+    computeDiagram_ = true;
 
   return 0;
 }
