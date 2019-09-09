@@ -4,15 +4,15 @@
 /// \brief GUI program for persistence diagram computation.
 
 // include the local headers
-#include                  <ttkPersistenceDiagramsClustering.h>
-#include                  <ttkUserInterfaceBase.h>
+#include <ttkPersistenceDiagramsClustering.h>
+#include <ttkUserInterfaceBase.h>
 
 using namespace std;
 using namespace ttk;
 
-//vtkUserInterface<ttkPersistenceDiagram> program;
+// vtkUserInterface<ttkPersistenceDiagram> program;
 
 int main(int argc, char **argv) {
-  
+
   return 0;
 }
