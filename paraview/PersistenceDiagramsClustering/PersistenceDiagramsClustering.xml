@@ -53,12 +53,12 @@ See also MandatoryCriticalPoints.
          panel_visibility="advanced" >
 		 <EnumerationDomain name="enum">
           <Entry value="0" text="Progressive approach"/>
-          <Entry value="1" text="Classical Auction approach (one cluster only)"/>
+          <Entry value="1" text="Classical Auction approach (one cluster only, SLOW)"/>
         </EnumerationDomain>
         <Documentation>
           Type of algorithm for the computation of the barycenter.
-		  The Auction algorithm is computationally less expensive than
-		  the Munkres Algorithm.
+		  The Auction algorithm is computationally more expensive than
+		  the progressive approach.
         </Documentation>
       </IntVectorProperty>
 
@@ -83,8 +83,7 @@ See also MandatoryCriticalPoints.
           <!-- enable this widget when <property> equals <value> -->
         </Hints>
         <Documentation>
-          Value of the parameter p for the Wp (p-th Wasserstein) distance
-          computation (type "inf" for the Bottleneck distance).
+            Specify the types of critical pairs to be taken into account for the clustering.
         </Documentation>
       </IntVectorProperty>
 
@@ -121,15 +120,14 @@ computation (type "inf" for the Bottleneck distance).
 
       <IntVectorProperty
           name="Deterministic"
-          label="Kill randomness"
+          label="Deterministic algorithm"
           command="SetDeterministic"
           number_of_elements="1"
           default_values="1"
          panel_visibility = "advanced" >
         <BooleanDomain name="bool"/>
          <Documentation>
-                 For a deterministic algorithm.
-                 Kill any randomness in the initialization of barycenters.
+                 Removes any randomness in the initialization of barycenters.
          </Documentation>
       </IntVectorProperty>
 
@@ -151,7 +149,7 @@ computation (type "inf" for the Bottleneck distance).
         </Hints>
         <Documentation>
           If set to true, the barycenter is computed progressively (starting with most persistent pairs).
-		  The option may turn useful coupled with Time Limit since the Barycenter will be computed with only a portion of the
+		  The option may turn useful coupled with Interruptible Algorithm since the Barycenter will be computed with only a portion of the
 		  input points if computation time gets too important.
         </Documentation>
 
@@ -172,6 +170,7 @@ computation (type "inf" for the Bottleneck distance).
                                    value="0" />
         </Hints>
         <Documentation>
+            Enforce a time limit for the computation.
         </Documentation>
       </IntVectorProperty>
 
@@ -191,9 +190,7 @@ computation (type "inf" for the Bottleneck distance).
         </Hints>
         <Documentation>
           Maximal time of computation for the computation of the barycenter.
-		  Since Min/Saddle, Saddle/Saddle and Saddle/Max pairs are treated separatly, the actual computation time could be
-		  three times the decided limit.
-		  A low value of Time Limit will yield approximate results. Use with caution.
+		  A low value of Time Limit will yield approximate results.
         </Documentation>
 
       </DoubleVectorProperty>
@@ -207,6 +204,7 @@ computation (type "inf" for the Bottleneck distance).
         >
         <BooleanDomain name="bool"/>
         <Documentation>
+            Force the final matchings to respect a given relative precision.
         </Documentation>
       </IntVectorProperty>
 
@@ -243,6 +241,7 @@ computation (type "inf" for the Bottleneck distance).
           <Entry value="2" text="Inspect matchings"/>
         </EnumerationDomain>
         <Documentation>
+            Choose the displaying of the result.
         </Documentation>
       </IntVectorProperty>
 
@@ -271,6 +270,7 @@ computation (type "inf" for the Bottleneck distance).
                            </PropertyWidgetDecorator>
         </Hints>
         <Documentation>
+            Ajust the spacing for the display of diagrams.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -315,7 +315,6 @@ computation (type "inf" for the Bottleneck distance).
           command="SetAlpha"
           number_of_elements="1"
           default_values="1"
-          panel_visibility="advanced"
           >
         <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
         <Documentation>
@@ -339,7 +338,7 @@ between matched critical points.
         <Documentation>
           Parametrizes the point used for the geometrical coordinates of the persistence pair.
           Set to 1 to choose the potential extremum, for an increased stability.
-          Set to 0 to choose the other point (saddle point). Not advised, awful stability.
+          Set to 0 to choose the other point (saddle point). This is not advised.
           Set to 0.5 to choose the geometrical middle of the pair points (bad stability)
         </Documentation>
       </DoubleVectorProperty>

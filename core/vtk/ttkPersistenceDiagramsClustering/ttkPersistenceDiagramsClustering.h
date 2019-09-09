@@ -960,7 +960,9 @@ vtkSmartPointer<vtkUnstructuredGrid>
     const vector<vector<vector<matchingTuple>>> *all_matchings,
     double max_dimension,
     double spacing) {
-  printf("Creating vtk Matching");
+  if(debugLevel_ > 3) {
+    std::cout << "Creating vtk Matchings" << std::endl;
+  }
   vtkSmartPointer<vtkPoints> matchingPoints = vtkSmartPointer<vtkPoints>::New();
 
   vtkSmartPointer<vtkUnstructuredGrid> matchingMesh
