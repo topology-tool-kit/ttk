@@ -229,7 +229,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
   for(SimplexId x = 0; x < nverts; x++) {
 
     auto isLexicographicSmaller
-      = [](const std::vector<idType> &a, const std::vector<idType> &b) {
+      = [](const std::vector<dataType> &a, const std::vector<dataType> &b) {
           for(size_t i = 0; i < std::min(a.size(), b.size()); i++) {
             if(a[i] != b[i]) {
               return a[i] < b[i];
@@ -238,12 +238,12 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
           return a.size() < b.size();
         };
 
-    auto pqGreater = [&](const std::pair<Cell, std::vector<idType>> &a,
-                         const std::pair<Cell, std::vector<idType>> &b) {
+    auto pqGreater = [&](const std::pair<Cell, std::vector<dataType>> &a,
+                         const std::pair<Cell, std::vector<dataType>> &b) {
       return isLexicographicSmaller(b.second, a.second);
     };
-    std::priority_queue<std::pair<Cell, std::vector<idType>>,
-                        std::vector<std::pair<Cell, std::vector<idType>>>,
+    std::priority_queue<std::pair<Cell, std::vector<dataType>>,
+                        std::vector<std::pair<Cell, std::vector<dataType>>>,
                         decltype(pqGreater)>
       pq0(pqGreater), pq1(pqGreater);
 
@@ -254,12 +254,12 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     } else {
       // get delta: 1-cell (edge) with minimal G value (steeper gradient)
       SimplexId delta;
-      std::vector<idType> Gmin{};
+      std::vector<dataType> Gmin{};
       // first iteration
       bool first = true;
       // compute minimum of G over Lx[1]
       for(const auto s : Lx[1]) {
-        auto Gcur = G(Cell{1, s}, offsets);
+        auto Gcur = G(Cell{1, s}, scalars);
         if(first || isLexicographicSmaller(Gcur, Gmin)) {
           first = false;
           Gmin = Gcur;
@@ -277,7 +277,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
       for(auto alpha : Lx[1]) {
         Cell c{1, alpha};
         if(alpha != delta) {
-          pq0.push({c, G(c, offsets)});
+          pq0.push({c, G(c, scalars)});
         }
       }
 
@@ -288,7 +288,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
           Cell c_alpha{2, alpha};
           if(isEdgeInTriangle(delta, alpha)
              && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
-            pq1.push({c_alpha, G(c_alpha, offsets)});
+            pq1.push({c_alpha, G(c_alpha, scalars)});
           }
         }
       }
@@ -312,7 +312,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
                 Cell c_beta{2, beta};
                 if(isEdgeInTriangle(c_pair_alpha.id_, beta)
                    && numUnpairedFaces(c_beta, Lx, isPaired) == 1) {
-                  pq1.push({c_beta, G(c_beta, offsets)});
+                  pq1.push({c_beta, G(c_beta, scalars)});
                 }
               }
             }
@@ -332,7 +332,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
               Cell c{2, alpha};
               if(isEdgeInTriangle(c_gamma.id_, alpha)
                  && numUnpairedFaces(c, Lx, isPaired) == 1) {
-                pq1.push({c, G(c, offsets)});
+                pq1.push({c, G(c, scalars)});
               }
             }
           }

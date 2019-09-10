@@ -380,27 +380,28 @@ function value.
        * field value
        *
        * @param[in] c Cell
-       * @param[in] offset Scalar field
+       * @param[in] scalars Scalar field
        */
-      template <typename idType>
-      inline std::vector<idType> G(Cell c, const idType *const offset) const {
-        std::vector<idType> res{};
+      template <typename dataType>
+      inline std::vector<dataType> G(Cell c,
+                                     const dataType *const scalars) const {
+        std::vector<dataType> res{};
         if(c.dim_ == 0) {
-          res.emplace_back(offset[c.id_]);
+          res.emplace_back(scalars[c.id_]);
         } else if(c.dim_ == 1) {
           for(int i = 0; i < 2; i++) {
             SimplexId v;
             inputTriangulation_->getEdgeVertex(c.id_, i, v);
-            res.emplace_back(offset[v]);
+            res.emplace_back(scalars[v]);
           }
         } else if(c.dim_ == 2) {
           for(int i = 0; i < 3; i++) {
             SimplexId v;
             inputTriangulation_->getTriangleVertex(c.id_, i, v);
-            res.emplace_back(offset[v]);
+            res.emplace_back(scalars[v]);
           }
         }
-        std::sort(res.begin(), res.end(), std::greater<idType>());
+        std::sort(res.begin(), res.end(), std::greater<dataType>());
         return res;
       }
 
