@@ -415,6 +415,10 @@ function value.
        * Type alias for lower stars of a given cell
        */
       using lowerStarType = std::array<std::set<SimplexId>, 4>;
+      /**
+       * Type alias for paired cells
+       */
+      using isPairedType = std::array<std::set<SimplexId>, 4>;
 
       /**
        * @brief Store the subcomplexes around vertex for which offset
@@ -521,10 +525,9 @@ function value.
        *
        * @return Number of unpaired faces
        */
-      inline SimplexId numUnpairedFaces(
-        const Cell c,
-        const lowerStarType &ls,
-        const std::vector<std::set<SimplexId>> &isPaired) const {
+      inline SimplexId numUnpairedFaces(const Cell c,
+                                        const lowerStarType &ls,
+                                        isPairedType &isPaired) const {
 
         // number of unpaired faces
         SimplexId count = 0;
@@ -572,9 +575,7 @@ function value.
        * @return Paired cell of lower dimension
        */
       inline SimplexId
-        getPair(Cell c,
-                lowerStarType &ls,
-                const std::vector<std::set<SimplexId>> &isPaired) const {
+        getPair(Cell c, lowerStarType &ls, isPairedType &isPaired) const {
         if(c.dim_ == 1) {
           for(SimplexId i = 0; i < 2; i++) {
             SimplexId v;

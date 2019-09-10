@@ -198,7 +198,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 
   /* Declarations */
 
-  std::vector<std::set<SimplexId>> isPaired(dimensionality_ + 1);
+  isPairedType isPaired{};
 
   auto V = [&](Cell alpha, Cell beta) {
     gradient[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
