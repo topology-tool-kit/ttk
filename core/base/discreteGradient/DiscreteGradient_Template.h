@@ -250,7 +250,12 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     auto Lx = lowerStar(x, scalars, offsets);
     if(Lx[1].empty()) {
       // x is a local minimum
-      isPaired[0].insert(x);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+      {
+        isPaired[0].insert(x);
+      }
     } else {
       // get delta: 1-cell (edge) with minimal G value (steeper gradient)
       SimplexId delta;
@@ -326,7 +331,12 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
             continue;
           }
           // add gamma to is_paired
-          isPaired[c_gamma.dim_].insert(c_gamma.id_);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+          {
+            isPaired[c_gamma.dim_].insert(c_gamma.id_);
+          }
           if(c_gamma.dim_ == 1 && !Lx[2].empty()) {
             for(SimplexId alpha : Lx[2]) {
               Cell c{2, alpha};
