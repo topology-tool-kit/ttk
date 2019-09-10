@@ -618,31 +618,6 @@ given dimension.
                          gradientType &gradient) const;
 
       /**
-       * Body of AssignGradient2 algorithm from "Parallel Computation of 3D
-Morse-Smale Complexes",
-       * N. Shivashankar and V. Natarajan.
-       * Second pass of AssignGradient algorithm, minimize the number of
-unpaired cells.
-       */
-      template <typename dataType, typename idType>
-      int assignGradient2(int alphaDim,
-                          const dataType *scalars,
-                          const idType *offsets,
-                          gradientSliceType &gradient) const;
-
-      /**
-       * Brand new pass on the discrete gradient designed specifically for this
-project,
-       * the goal is to minimize the number of unpaired cells further (3D
-triangulation only).
-       */
-      template <typename dataType, typename idType>
-      int assignGradient3(int alphaDim,
-                          const dataType *scalars,
-                          const idType *offsets,
-                          gradientSliceType &gradient) const;
-
-      /**
        * Compute the initial gradient field of the input scalar function on the
 triangulation.
        */
