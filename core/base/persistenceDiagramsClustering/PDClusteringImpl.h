@@ -275,7 +275,7 @@ std::vector<int> PDClustering<dataType>::execute(
         // cout<<"EPSILON FOR MATCHINGS : "<<epsilon_[2]<<endl;
         std::vector<dataType> max_shift_vec
           = updateCentroidsPosition(&min_off_diag_price, &min_diag_price,
-                                    all_matchings_per_type_and_cluster);
+                                    all_matchings_per_type_and_cluster, 0);
         // cout<<" update centroid done"<<endl;
         if(do_min_ && !UseDeltaLim_) {
           precision_min_ = (epsilon_[0] < epsilon0[0] / 500.);
@@ -285,6 +285,7 @@ std::vector<int> PDClustering<dataType>::execute(
         }
         if(do_max_ && !UseDeltaLim_) {
           precision_max_ = (epsilon_[2] < epsilon0[2] / 500.);
+
         }
 
         for(int i_crit = 0; i_crit < 3; i_crit++) {
@@ -306,18 +307,25 @@ std::vector<int> PDClustering<dataType>::execute(
         }
 
         if(epsilon_[0] < epsilon_min_ /*&& diagrams_complete[0]*/) {
-          cout << "[min barycenter] epsilon under minimal value " << endl;
+          if(debugLevel_>4){
+            cout << "[min barycenter] epsilon under minimal value " << endl;
+          }
           do_min_ = false;
           epsilon_[0] = epsilon_min_;
           diagrams_complete[0] = true;
         }
         if(epsilon_[1] < epsilon_min_ /*&& diagrams_complete[1]*/) {
+          if(debugLevel_>4){
+            cout << "[sad barycenter] epsilon under minimal value " << endl;
+          }
           do_sad_ = false;
           epsilon_[1] = epsilon_min_;
           diagrams_complete[1] = true;
         }
         if(epsilon_[2] < epsilon_min_ /*&& diagrams_complete[2]*/) {
-          cout << "[max barycenter] epsilon under minimal value " << endl;
+          if(debugLevel_>4){
+            cout << "[max barycenter] epsilon under minimal value " << endl;
+          }
           do_max_ = false;
           epsilon_[2] = epsilon_min_;
           diagrams_complete[2] = true;
@@ -477,6 +485,9 @@ std::vector<int> PDClustering<dataType>::execute(
         // passed? : "<<(bool)(epsilon_<epsilon0/500.)<<std::endl;
       }
     }
+    std::vector<dataType> max_shift_vec
+          = updateCentroidsPosition(&min_off_diag_price, &min_diag_price,
+                                    all_matchings_per_type_and_cluster, 1);
     resetDosToOriginalValues();
     if(debugLevel_ > 0) {
       std::cout << "[PersistenceDiagramsClustering] Final Cost : "
@@ -1613,7 +1624,8 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
   std::vector<std::vector<dataType>> *min_price,
   std::vector<std::vector<dataType>> *min_diag_price,
   std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
-    &all_matchings_per_type_and_cluster) {
+    &all_matchings_per_type_and_cluster,
+    int only_matchings) {
   barycenter_inputs_reset_flag = true;
   dataType max_shift = 0;
   std::vector<dataType> max_shift_vector(3);
@@ -1855,8 +1867,10 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
           = barycenter_computer_min_[c].isPrecisionObjectiveMet(deltaLim_, 0);
         cost_min_ += sqrt(total_cost);
         Timer time_update;
+        if(!only_matchings){
         max_shift_c_min
           = barycenter_computer_min_[c].updateBarycenter(all_matchings);
+        }
         // cout<<"time update min "<<time_update.getElapsedTime()<<endl;
         // std::cout<<"min : barycenter updated"<<std::endl;
         if(max_shift_c_min > max_shift_vector[0]) {
@@ -1972,8 +1986,10 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
 
         precision_sad
           = barycenter_computer_sad_[c].isPrecisionObjectiveMet(deltaLim_, 0);
+        if(!only_matchings){
         max_shift_c_sad
           = barycenter_computer_sad_[c].updateBarycenter(all_matchings);
+        }
         // std::cout<<"sad : runned, now updating barycenter"<<std::endl;
         cost_sad_ += sqrt(total_cost);
         // std::cout<<"sad : barycenter updated"<<std::endl;
@@ -2046,6 +2062,19 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
             barycenter_computer_max_[c].getCurrentBidders().size());
         }
 
+        // std::vector<dataType>
+        // min_diag_price(barycenter_computer_max_[c].getCurrentBidders().size());
+        // std::vector<dataType>
+        // min_price(barycenter_computer_max_[c].getCurrentBidders().size());
+        // for (unsigned int i = 0; i <
+        // barycenter_computer_max_[c].getCurrentBidders().size(); i++) {
+        //     min_diag_price[i] = 0;
+        //     min_price[i] = 0;
+        // }
+        // cout<<"one more test  :  centroids max size
+        // "<<centroids_with_price_max.size()<<"
+        // "<<centroids_with_price_max[0].size()<<endl;
+
         std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> pair;
         bool use_kdt = false;
         if(barycenter_computer_max_[c].getCurrentBarycenter()[0].size() > 0) {
@@ -2056,6 +2085,49 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         KDTree<dataType> *kdt = pair.first;
         std::vector<KDTree<dataType> *> &correspondance_kdt_map = pair.second;
 
+        // cout<<"max time_preprocess_bary
+        // "<<time_preprocess_bary.getElapsedTime()<<endl; std::cout<<"max : run
+        // matchings"<<std::endl;
+
+        // cout<<" FUCKIN BARYCENTER "<<endl;
+        // vector<GoodDiagram<dataType>> barycenterde =
+        // barycenter_computer_max_[c].getCurrentBarycenter(); for(int i2 = 0;
+        // i2 < barycenterde.size(); i2++) {
+        //     Good<dataType> g = barycenterde[0].get(i2);
+        //     cout << " good " << i2 << " " << g.x_ << " " << g.y_ << " " <<
+        //     g.id_ << endl;
+        // }
+
+        // cout<<" FUCKIN DIAGRAMS "<<endl;
+        // for(int i1 = 0; i1<diagrams_c_min.size(); i1++){
+        //     for(int i2 = 0; i2<diagrams_c_min[i1].size(); i2++){
+        //         Bidder<dataType> b = diagrams_c_min[i1].get(i2);
+        //         cout << " bidder " << i1 << " " << i2 << " " << b.x_ << " "
+        //         << b.y_ << " "<<b.id_ << endl;
+        //     }
+        // }
+
+        // cout<<"sizes :"<<endl;
+        // for(int ii=0;ii<sizes.size();ii++){
+        // cout<<" "<<sizes[ii];}
+        // cout<<"\n"<<endl;
+        // // cout<<"time_matchings max ";
+        // // cout<<" size bidders :
+        // "<<current_bidder_diagrams_max_[0].size()<<"
+        // "<<current_bidder_diagrams_max_[1].size()<<endl;
+        // // cout<<"use kdt : "<<use_kdt<<endl;
+
+        // cout<<"min price "<<endl;
+        // for(int ii=0; ii<min_price->at(2).size(); ii++){
+        //     cout<<" "<<(*min_price)[2][ii];
+        // }
+        // cout<<"min diag price ";
+        // for(int ii=0; ii<min_diag_price->at(2).size(); ii++){
+        //     cout<<" "<<(*min_diag_price)[2][ii];
+        // }
+        // cout<<endl;
+        // // cout<<"running matchings max"<<endl;
+        // cout<<"size centroid "<<centroids_with_price_max[c].size()<<endl;
         barycenter_computer_max_[c].runMatching(
           &total_cost, epsilon_[2], sizes, kdt, &correspondance_kdt_map,
           &(min_diag_price->at(2)), &(min_price->at(2)), &(all_matchings),
@@ -2079,8 +2151,10 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         //     cout<<"BARYCENTER SIZE BEFORE UPDATE
         //     "<<centroids_with_price_max[iii].size()<<endl;
         // }
+        if(!only_matchings){
         max_shift_c_max
           = barycenter_computer_max_[c].updateBarycenter(all_matchings);
+        }
         // cout<<"time update max "<<time_update.getElapsedTime()<<endl;
         // std::cout<<"max: barycenter updated"<<std::endl;
         if(max_shift_c_max > max_shift_vector[2]) {

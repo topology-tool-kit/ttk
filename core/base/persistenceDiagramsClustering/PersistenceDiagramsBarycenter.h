@@ -464,6 +464,4 @@ namespace ttk {
 
 // if the package is a pure template class, uncomment the following line
 
-#include <PDBarycenterImpl.h>
-
 #endif

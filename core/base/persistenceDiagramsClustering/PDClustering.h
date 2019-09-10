@@ -23,7 +23,7 @@ namespace ttk {
       use_progressive_ = true;
       deterministic_ = true;
       time_limit_ = std::numeric_limits<double>::max();
-      epsilon_min_ = 5e-5;
+      epsilon_min_ = 1e-8;
       epsilon_.resize(3);
       precision_criterion_ = false;
       precision_min_ = false;
@@ -103,7 +103,8 @@ namespace ttk {
       std::vector<std::vector<dataType>> *min_price,
       std::vector<std::vector<dataType>> *min_diag_price,
       std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
-        &all_matchings);
+        &all_matchings,
+        int only_matchings);
 
     inline void resetDosToOriginalValues() {
       do_min_ = original_dos[0];
