@@ -1039,7 +1039,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
       matchingTuple m = matchings_j[i];
       int bidder_id = std::get<0>(m);
       int good_id = std::get<1>(m);
-      if(good_id > -1) {
+      if(NumberOfClusters==1 && good_id > -1) {
         matchings_count[good_id] += 1;
         count_to_good.push_back(good_id);
       }
@@ -1107,8 +1107,10 @@ vtkSmartPointer<vtkUnstructuredGrid>
       }
     }
   }
-  for(int i = 0; i < count; i++) {
-    matchingCount->InsertTuple1(i, matchings_count[count_to_good[i]]);
+  if(NumberOfClusters==1 and all_CTDiagrams.size() == 2) {
+    for(int i = 0; i < count; i++) {
+      matchingCount->InsertTuple1(i, matchings_count[count_to_good[i]]);
+    }
   }
 
   matchingMesh->SetPoints(matchingPoints);
@@ -1118,7 +1120,9 @@ vtkSmartPointer<vtkUnstructuredGrid>
   matchingMesh->GetCellData()->AddArray(idOfCluster);
   matchingMesh->GetCellData()->AddArray(pairType);
   matchingMesh->GetCellData()->AddArray(cost);
-  matchingMesh->GetCellData()->AddArray(matchingCount);
+  if(NumberOfClusters==1 and all_CTDiagrams.size() == 2) {
+    matchingMesh->GetCellData()->AddArray(matchingCount);
+  }
 
   return matchingMesh;
 }
