@@ -411,11 +411,13 @@ function value.
       using lowerStarType = std::array<std::set<SimplexId>, 3>;
 
       /**
-       * @brief Store the 1- and 2-cells around vertex for
-       * which offset at vertex is maximum
+       * @brief Store the subcomplexes around vertex for which offset
+       * at vertex is maximum
        *
        * @param[in] a Vertex Id
-       * @param[in] offset Scalar field
+       * @param[in] scalars Scalar field
+       * @param[in] offset Offset field (for comparing vertices when on a scalar
+       * field plateau)
        *
        * @return Lower star as 3 sets of cells (0-cells, 1-cells and 2-cells)
        */
@@ -424,7 +426,11 @@ function value.
                                      const dataType *const scalars,
                                      const idType *const offsets) const {
         lowerStarType res{};
+
+        // a belongs to its lower star
         res[0].emplace(a);
+
+        // store lower edges
         const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
         for(SimplexId i = 0; i < nedges; i++) {
           SimplexId edgeId;
@@ -446,6 +452,8 @@ function value.
             res[1].emplace(edgeId);
           }
         }
+
+        // store lower triangles
         const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
         for(SimplexId i = 0; i < ntri; i++) {
           SimplexId triangleId;
