@@ -2046,19 +2046,6 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
             barycenter_computer_max_[c].getCurrentBidders().size());
         }
 
-        // std::vector<dataType>
-        // min_diag_price(barycenter_computer_max_[c].getCurrentBidders().size());
-        // std::vector<dataType>
-        // min_price(barycenter_computer_max_[c].getCurrentBidders().size());
-        // for (unsigned int i = 0; i <
-        // barycenter_computer_max_[c].getCurrentBidders().size(); i++) {
-        //     min_diag_price[i] = 0;
-        //     min_price[i] = 0;
-        // }
-        // cout<<"one more test  :  centroids max size
-        // "<<centroids_with_price_max.size()<<"
-        // "<<centroids_with_price_max[0].size()<<endl;
-
         std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> pair;
         bool use_kdt = false;
         if(barycenter_computer_max_[c].getCurrentBarycenter()[0].size() > 0) {
@@ -2069,49 +2056,6 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         KDTree<dataType> *kdt = pair.first;
         std::vector<KDTree<dataType> *> &correspondance_kdt_map = pair.second;
 
-        // cout<<"max time_preprocess_bary
-        // "<<time_preprocess_bary.getElapsedTime()<<endl; std::cout<<"max : run
-        // matchings"<<std::endl;
-
-        // cout<<" FUCKIN BARYCENTER "<<endl;
-        // vector<GoodDiagram<dataType>> barycenterde =
-        // barycenter_computer_max_[c].getCurrentBarycenter(); for(int i2 = 0;
-        // i2 < barycenterde.size(); i2++) {
-        //     Good<dataType> g = barycenterde[0].get(i2);
-        //     cout << " good " << i2 << " " << g.x_ << " " << g.y_ << " " <<
-        //     g.id_ << endl;
-        // }
-
-        // cout<<" FUCKIN DIAGRAMS "<<endl;
-        // for(int i1 = 0; i1<diagrams_c_min.size(); i1++){
-        //     for(int i2 = 0; i2<diagrams_c_min[i1].size(); i2++){
-        //         Bidder<dataType> b = diagrams_c_min[i1].get(i2);
-        //         cout << " bidder " << i1 << " " << i2 << " " << b.x_ << " "
-        //         << b.y_ << " "<<b.id_ << endl;
-        //     }
-        // }
-
-        // cout<<"sizes :"<<endl;
-        // for(int ii=0;ii<sizes.size();ii++){
-        // cout<<" "<<sizes[ii];}
-        // cout<<"\n"<<endl;
-        // // cout<<"time_matchings max ";
-        // // cout<<" size bidders :
-        // "<<current_bidder_diagrams_max_[0].size()<<"
-        // "<<current_bidder_diagrams_max_[1].size()<<endl;
-        // // cout<<"use kdt : "<<use_kdt<<endl;
-
-        // cout<<"min price "<<endl;
-        // for(int ii=0; ii<min_price->at(2).size(); ii++){
-        //     cout<<" "<<(*min_price)[2][ii];
-        // }
-        // cout<<"min diag price ";
-        // for(int ii=0; ii<min_diag_price->at(2).size(); ii++){
-        //     cout<<" "<<(*min_diag_price)[2][ii];
-        // }
-        // cout<<endl;
-        // // cout<<"running matchings max"<<endl;
-        // cout<<"size centroid "<<centroids_with_price_max[c].size()<<endl;
         barycenter_computer_max_[c].runMatching(
           &total_cost, epsilon_[2], sizes, kdt, &correspondance_kdt_map,
           &(min_diag_price->at(2)), &(min_price->at(2)), &(all_matchings),
