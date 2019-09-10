@@ -192,7 +192,7 @@ dataType DiscreteGradient::getPersistence(const Cell &up,
 template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient(const dataType *const scalars,
                                      const idType *const offsets,
-                                     fullGradientType &gradient) const {
+                                     gradientType &gradient) const {
 
   // ProcessLowerStars
 
@@ -358,7 +358,7 @@ template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient2(const int alphaDim,
                                       const dataType *const scalars,
                                       const idType *const offsets,
-                                      gradientType &gradient) const {
+                                      gradientSliceType &gradient) const {
   if(alphaDim > 0) {
     const int betaDim = alphaDim + 1;
     const SimplexId alphaNumber = gradient[alphaDim].size();
@@ -614,7 +614,7 @@ template <typename dataType, typename idType>
 int DiscreteGradient::assignGradient3(const int alphaDim,
                                       const dataType *const scalars,
                                       const idType *const offsets,
-                                      gradientType &gradient) const {
+                                      gradientSliceType &gradient) const {
   if(alphaDim > 0) {
     const int betaDim = alphaDim + 1;
     const SimplexId alphaNumber = gradient[alphaDim].size();

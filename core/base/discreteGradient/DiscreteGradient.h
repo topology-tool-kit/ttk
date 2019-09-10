@@ -279,11 +279,11 @@ namespace ttk {
     };
 
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-    using gradientType = std::vector<std::vector<char>>;
+    using gradientSliceType = std::vector<std::vector<char>>;
 #else
-    using gradientType = std::vector<std::vector<SimplexId>>;
+    using gradientSliceType = std::vector<std::vector<SimplexId>>;
 #endif
-    using fullGradientType = std::vector<gradientType>;
+    using gradientType = std::vector<gradientSliceType>;
 
     /**
      * Compute and manage a discrete gradient of a function on a triangulation.
@@ -618,7 +618,7 @@ given dimension.
       template <typename dataType, typename idType>
       int assignGradient(const dataType *scalars,
                          const idType *offsets,
-                         fullGradientType &gradient) const;
+                         gradientType &gradient) const;
 
       /**
        * Body of AssignGradient2 algorithm from "Parallel Computation of 3D
@@ -631,7 +631,7 @@ unpaired cells.
       int assignGradient2(int alphaDim,
                           const dataType *scalars,
                           const idType *offsets,
-                          gradientType &gradient) const;
+                          gradientSliceType &gradient) const;
 
       /**
        * Brand new pass on the discrete gradient designed specifically for this
@@ -643,7 +643,7 @@ triangulation only).
       int assignGradient3(int alphaDim,
                           const dataType *scalars,
                           const idType *offsets,
-                          gradientType &gradient) const;
+                          gradientSliceType &gradient) const;
 
       /**
        * Compute the initial gradient field of the input scalar function on the
@@ -1223,7 +1223,7 @@ tetra identifier.
 
       int dimensionality_{-1};
       SimplexId numberOfVertices_{};
-      fullGradientType gradient_{};
+      gradientType gradient_{};
       std::vector<SimplexId> dmtMax2PL_{};
       std::vector<SimplexId> dmt1Saddle2PL_{};
       std::vector<SimplexId> dmt2Saddle2PL_{};
