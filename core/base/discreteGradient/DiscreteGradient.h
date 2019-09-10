@@ -400,6 +400,12 @@ function value.
             inputTriangulation_->getTriangleVertex(c.id_, i, v);
             res.emplace_back(scalars[v]);
           }
+        } else if(c.dim_ == 3) {
+          for(int i = 0; i < 4; i++) {
+            SimplexId v;
+            inputTriangulation_->getCellVertex(c.id_, i, v);
+            res.emplace_back(scalars[v]);
+          }
         }
         std::sort(res.begin(), res.end(), std::greater<dataType>());
         return res;
@@ -408,7 +414,7 @@ function value.
       /**
        * Type alias for lower stars of a given cell
        */
-      using lowerStarType = std::array<std::set<SimplexId>, 3>;
+      using lowerStarType = std::array<std::set<SimplexId>, 4>;
 
       /**
        * @brief Store the subcomplexes around vertex for which offset
@@ -419,7 +425,8 @@ function value.
        * @param[in] offset Offset field (for comparing vertices when on a scalar
        * field plateau)
        *
-       * @return Lower star as 3 sets of cells (0-cells, 1-cells and 2-cells)
+       * @return Lower star as 4 sets of cells (0-cells, 1-cells, 2-cells and
+       * 3-cells)
        */
       template <typename dataType, typename idType>
       inline lowerStarType lowerStar(SimplexId a,
@@ -475,6 +482,32 @@ function value.
             res[2].emplace(triangleId);
           }
         }
+
+        // store lower tetra
+        if(dimensionality_ == 3) {
+          const auto ntetra = inputTriangulation_->getVertexStarNumber(a);
+          for(SimplexId i = 0; i < ntetra; ++i) {
+            SimplexId tetraId;
+            inputTriangulation_->getVertexStar(a, i, tetraId);
+            bool isMax = true;
+            for(SimplexId j = 0; j < 4; ++j) {
+              SimplexId vertexId;
+              inputTriangulation_->getCellVertex(tetraId, j, vertexId);
+              if(vertexId == a) {
+                continue;
+              }
+              if(scalars[vertexId] > scalars[a]
+                 || (scalars[vertexId] == scalars[a]
+                     && offsets[vertexId] > offsets[a])) {
+                isMax = false;
+              }
+            }
+            if(isMax) {
+              res[3].emplace(tetraId);
+            }
+          }
+        }
+
         return res;
       }
 
@@ -510,8 +543,18 @@ function value.
             SimplexId e;
             inputTriangulation_->getTriangleEdge(c.id_, i, e);
             // check if e in ls but not in isPaired
-            if((ls[1].find(e) != ls[1].end())
-               && (isPaired[1].find(e) == isPaired[1].end())) {
+            if(ls[1].find(e) != ls[1].end()
+               && isPaired[1].find(e) == isPaired[1].end()) {
+              count++;
+            }
+          }
+        } else if(c.dim_ == 3) {
+          for(SimplexId i = 0; i < 4; ++i) {
+            SimplexId t;
+            inputTriangulation_->getCellTriangle(c.id_, i, t);
+            // check if t in ls but not in isPaired
+            if(ls[2].find(t) != ls[2].end()
+               && isPaired[2].find(t) == isPaired[2].end()) {
               count++;
             }
           }
@@ -526,7 +569,7 @@ function value.
        * @param[in] ls Input lower star
        * @param[in] isPaired
        *
-       * @return Paired cell of same dimension
+       * @return Paired cell of lower dimension
        */
       inline SimplexId
         getPair(Cell c,
@@ -546,9 +589,18 @@ function value.
             SimplexId e;
             inputTriangulation_->getTriangleEdge(c.id_, i, e);
             // check if e in ls but not in isPaired
-            if((ls[1].find(e) != ls[1].end())
-               && (isPaired[1].find(e) == isPaired[1].end())) {
+            if(ls[1].find(e) != ls[1].end()
+               && isPaired[1].find(e) == isPaired[1].end()) {
               return e;
+            }
+          }
+        } else if(c.dim_ == 3) {
+          for(SimplexId i = 0; i < 4; ++i) {
+            SimplexId t;
+            inputTriangulation_->getCellTriangle(c.id_, i, t);
+            if(ls[2].find(t) != ls[2].end()
+               && isPaired[2].find(t) == isPaired[2].end()) {
+              return t;
             }
           }
         }
