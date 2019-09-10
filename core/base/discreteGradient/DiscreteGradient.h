@@ -416,9 +416,9 @@ function value.
        */
       using lowerStarType = std::array<std::set<SimplexId>, 4>;
       /**
-       * Type alias for paired cells
+       * Type alias for paired cells: one vector of fixed size per dimension
        */
-      using isPairedType = std::array<std::set<SimplexId>, 4>;
+      using isPairedType = std::array<std::vector<bool>, 4>;
 
       /**
        * @brief Store the subcomplexes around vertex for which offset
@@ -536,8 +536,8 @@ function value.
           for(SimplexId i = 0; i < 2; i++) {
             SimplexId v;
             inputTriangulation_->getEdgeVertex(c.id_, i, v);
-            // check if v not in isPaired
-            if(isPaired[0].find(v) == isPaired[0].end()) {
+            // check if v not paired
+            if(!isPaired[0][v]) {
               count++;
             }
           }
@@ -545,9 +545,8 @@ function value.
           for(SimplexId i = 0; i < 3; i++) {
             SimplexId e;
             inputTriangulation_->getTriangleEdge(c.id_, i, e);
-            // check if e in ls but not in isPaired
-            if(ls[1].find(e) != ls[1].end()
-               && isPaired[1].find(e) == isPaired[1].end()) {
+            // check if e in ls and not paired
+            if(ls[1].find(e) != ls[1].end() && !isPaired[1][e]) {
               count++;
             }
           }
@@ -555,9 +554,8 @@ function value.
           for(SimplexId i = 0; i < 4; ++i) {
             SimplexId t;
             inputTriangulation_->getCellTriangle(c.id_, i, t);
-            // check if t in ls but not in isPaired
-            if(ls[2].find(t) != ls[2].end()
-               && isPaired[2].find(t) == isPaired[2].end()) {
+            // check if t in ls and not paired
+            if(ls[2].find(t) != ls[2].end() && !isPaired[2][t]) {
               count++;
             }
           }
@@ -580,8 +578,8 @@ function value.
           for(SimplexId i = 0; i < 2; i++) {
             SimplexId v;
             inputTriangulation_->getEdgeVertex(c.id_, i, v);
-            // check if v not in isPaired
-            if(isPaired[0].find(v) == isPaired[0].end()) {
+            // check if v not paired
+            if(!isPaired[0][v]) {
               return v;
             }
           }
@@ -589,9 +587,8 @@ function value.
           for(SimplexId i = 0; i < 3; i++) {
             SimplexId e;
             inputTriangulation_->getTriangleEdge(c.id_, i, e);
-            // check if e in ls but not in isPaired
-            if(ls[1].find(e) != ls[1].end()
-               && isPaired[1].find(e) == isPaired[1].end()) {
+            // check if e in ls and not paired
+            if(ls[1].find(e) != ls[1].end() && !isPaired[1][e]) {
               return e;
             }
           }
@@ -599,8 +596,8 @@ function value.
           for(SimplexId i = 0; i < 4; ++i) {
             SimplexId t;
             inputTriangulation_->getCellTriangle(c.id_, i, t);
-            if(ls[2].find(t) != ls[2].end()
-               && isPaired[2].find(t) == isPaired[2].end()) {
+            // check if t in ls and not paired
+            if(ls[2].find(t) != ls[2].end() && !isPaired[2][t]) {
               return t;
             }
           }

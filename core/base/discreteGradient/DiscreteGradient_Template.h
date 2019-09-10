@@ -199,12 +199,18 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
   /* Declarations */
 
   isPairedType isPaired{};
+  isPaired[0].resize(inputTriangulation_->getNumberOfVertices(), false);
+  isPaired[1].resize(inputTriangulation_->getNumberOfEdges(), false);
+  isPaired[2].resize(inputTriangulation_->getNumberOfTriangles(), false);
+  if(dimensionality_ == 3) {
+    isPaired[3].resize(inputTriangulation_->getNumberOfCells(), false);
+  }
 
   auto V = [&](Cell alpha, Cell beta) {
     gradient[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
     gradient[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
-    isPaired[alpha.dim_].emplace(alpha.id_);
-    isPaired[alpha.dim_ + 1].emplace(beta.id_);
+    isPaired[alpha.dim_][alpha.id_] = true;
+    isPaired[alpha.dim_ + 1][beta.id_] = true;
   };
 
   auto isEdgeInTriangle = [&](SimplexId edge, SimplexId triangle) {
@@ -254,7 +260,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #pragma omp critical
 #endif // TTK_ENABLE_OPENMP
       {
-        isPaired[0].insert(x);
+        isPaired[0][x] = true;
       }
     } else {
       // get delta: 1-cell (edge) with minimal G value (steeper gradient)
@@ -327,7 +333,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
           Cell c_gamma{pq0.top().first};
           pq0.pop();
           // skip pair_alpha from pq0
-          if(isPaired[c_gamma.dim_].count(c_gamma.id_)) {
+          if(isPaired[c_gamma.dim_][c_gamma.id_]) {
             continue;
           }
           // add gamma to is_paired
@@ -335,7 +341,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #pragma omp critical
 #endif // TTK_ENABLE_OPENMP
           {
-            isPaired[c_gamma.dim_].insert(c_gamma.id_);
+            isPaired[c_gamma.dim_][c_gamma.id_] = true;
           }
           if(c_gamma.dim_ == 1 && !Lx[2].empty()) {
             for(SimplexId alpha : Lx[2]) {
