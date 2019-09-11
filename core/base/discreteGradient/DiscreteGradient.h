@@ -411,6 +411,7 @@ function value.
         return res;
       }
 
+    private:
       /**
        * Type alias for lower stars of a given cell
        */
@@ -573,7 +574,7 @@ function value.
        * @param[in] ls Input lower star
        * @param[in] isPaired
        *
-       * @return Paired cell of lower dimension
+       * @return Paired cell of immediate lower dimension
        */
       inline SimplexId
         getPair(Cell c, lowerStarType &ls, isPairedType &isPaired) const {
@@ -620,6 +621,7 @@ given dimension.
                          const idType *offsets,
                          gradientType &gradient) const;
 
+    public:
       /**
        * Compute the initial gradient field of the input scalar function on the
 triangulation.
