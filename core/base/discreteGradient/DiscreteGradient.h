@@ -441,6 +441,15 @@ function value.
         // a belongs to its lower star
         res[0].emplace(a);
 
+        const auto sosGreaterThan
+          = [&scalars, &offsets](const SimplexId m, const SimplexId n) {
+              if(scalars[m] != scalars[n]) {
+                return scalars[m] > scalars[n];
+              } else {
+                return offsets[m] > offsets[n];
+              }
+            };
+
         // store lower edges
         const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
         for(SimplexId i = 0; i < nedges; i++) {
@@ -453,9 +462,7 @@ function value.
             if(vertexId == a) {
               continue;
             }
-            if(scalars[vertexId] > scalars[a]
-               || (scalars[vertexId] == scalars[a]
-                   && offsets[vertexId] > offsets[a])) {
+            if(sosGreaterThan(vertexId, a)) {
               isMax = false;
             }
           }
@@ -476,9 +483,7 @@ function value.
             if(vertexId == a) {
               continue;
             }
-            if(scalars[vertexId] > scalars[a]
-               || (scalars[vertexId] == scalars[a]
-                   && offsets[vertexId] > offsets[a])) {
+            if(sosGreaterThan(vertexId, a)) {
               isMax = false;
             }
           }
@@ -500,9 +505,7 @@ function value.
               if(vertexId == a) {
                 continue;
               }
-              if(scalars[vertexId] > scalars[a]
-                 || (scalars[vertexId] == scalars[a]
-                     && offsets[vertexId] > offsets[a])) {
+              if(sosGreaterThan(vertexId, a)) {
                 isMax = false;
               }
             }
