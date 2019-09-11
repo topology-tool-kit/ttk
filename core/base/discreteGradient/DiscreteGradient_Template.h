@@ -213,17 +213,43 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     isPaired[alpha.dim_ + 1][beta.id_] = true;
   };
 
-  auto isEdgeInTriangle = [&](SimplexId edge, SimplexId triangle) {
-    auto nedges = inputTriangulation_->getTriangleEdgeNumber(triangle);
+  const auto isEdgeInTriangle
+    = [&](const SimplexId edge, const SimplexId triangle) {
+        auto nedges = inputTriangulation_->getTriangleEdgeNumber(triangle);
+        for(SimplexId i = 0; i < nedges; ++i) {
+          SimplexId e{};
+          inputTriangulation_->getTriangleEdge(triangle, i, e);
+          if(e == edge) {
+            return true;
+          }
+        }
+        return false;
+      };
+
+  const auto isEdgeInTetra = [&](const SimplexId edge, const SimplexId tetra) {
+    auto nedges = inputTriangulation_->getCellEdgeNumber(tetra);
     for(SimplexId i = 0; i < nedges; ++i) {
       SimplexId e{};
-      inputTriangulation_->getTriangleEdge(triangle, i, e);
+      inputTriangulation_->getCellEdge(tetra, i, e);
       if(e == edge) {
         return true;
       }
     }
     return false;
   };
+
+  const auto isTriangleInTetra
+    = [&](const SimplexId triangle, const SimplexId tetra) {
+        auto ntriangles = inputTriangulation_->getCellTriangleNumber(tetra);
+        for(SimplexId i = 0; i < ntriangles; ++i) {
+          SimplexId t{};
+          inputTriangulation_->getCellTriangle(tetra, i, t);
+          if(t == triangle) {
+            return true;
+          }
+        }
+        return false;
+      };
 
   /* Compute gradient */
 
@@ -292,12 +318,21 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
         }
       }
 
-      // push every coface of delta in Lx (2-cells) such that
-      // numUnpairedFaces == 1 into pq1
+      // push into pq1 every coface of delta in Lx (2-cells and
+      // 3-cells) such that numUnpairedFaces == 1
       if(!Lx[2].empty()) {
         for(const auto alpha : Lx[2]) {
           Cell c_alpha{2, alpha};
           if(isEdgeInTriangle(delta, alpha)
+             && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
+            pq1.push({c_alpha, G(c_alpha, scalars)});
+          }
+        }
+      }
+      if(!Lx[3].empty()) {
+        for(const auto alpha : Lx[3]) {
+          Cell c_alpha{3, alpha};
+          if(isEdgeInTetra(delta, alpha)
              && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
             pq1.push({c_alpha, G(c_alpha, scalars)});
           }
@@ -326,6 +361,14 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
                   pq1.push({c_beta, G(c_beta, scalars)});
                 }
               }
+            } else if(c_pair_alpha.dim_ == 2 && !Lx[3].empty()) {
+              for(SimplexId beta : Lx[3]) {
+                Cell c_beta{3, beta};
+                if(isTriangleInTetra(c_pair_alpha.id_, beta)
+                   && numUnpairedFaces(c_beta, Lx, isPaired) == 1) {
+                  pq1.push({c_beta, G(c_beta, scalars)});
+                }
+              }
             }
           }
         }
@@ -336,7 +379,8 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
           if(isPaired[c_gamma.dim_][c_gamma.id_]) {
             continue;
           }
-          // add gamma to is_paired
+          // gamma is a critical cell
+          // mark gamma as paired
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif // TTK_ENABLE_OPENMP
@@ -347,6 +391,15 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
             for(SimplexId alpha : Lx[2]) {
               Cell c{2, alpha};
               if(isEdgeInTriangle(c_gamma.id_, alpha)
+                 && numUnpairedFaces(c, Lx, isPaired) == 1) {
+                pq1.push({c, G(c, scalars)});
+              }
+            }
+          } else if(dimensionality_ == 3 && c_gamma.dim_ == 2
+                    && !Lx[3].empty()) {
+            for(SimplexId alpha : Lx[3]) {
+              Cell c{3, alpha};
+              if(isTriangleInTetra(c_gamma.id_, alpha)
                  && numUnpairedFaces(c, Lx, isPaired) == 1) {
                 pq1.push({c, G(c, scalars)});
               }
