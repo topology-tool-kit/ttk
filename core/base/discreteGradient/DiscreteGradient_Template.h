@@ -282,12 +282,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     auto Lx = lowerStar(x, scalars, offsets);
     if(Lx[1].empty()) {
       // x is a local minimum
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif // TTK_ENABLE_OPENMP
-      {
-        isPaired[0][x] = true;
-      }
+      isPaired[0][x] = true;
     } else {
       // get delta: 1-cell (edge) with minimal G value (steeper gradient)
       SimplexId delta;
@@ -345,6 +340,8 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
             pq0.push(cp);
           } else {
             Cell c_pair_alpha{c_alpha.dim_ - 1, getPair(c_alpha, Lx, isPaired)};
+
+            // store (pair_alpha) -> (alpha) V-path
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif // TTK_ENABLE_OPENMP
@@ -376,14 +373,11 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
           if(isPaired[c_gamma.dim_][c_gamma.id_]) {
             continue;
           }
+
           // gamma is a critical cell
           // mark gamma as paired
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif // TTK_ENABLE_OPENMP
-          {
-            isPaired[c_gamma.dim_][c_gamma.id_] = true;
-          }
+          isPaired[c_gamma.dim_][c_gamma.id_] = true;
+
           if(c_gamma.dim_ == 1) {
             for(SimplexId alpha : Lx[2]) {
               Cell c{2, alpha};
