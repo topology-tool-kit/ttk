@@ -320,22 +320,19 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 
       // push into pq1 every coface of delta in Lx (2-cells and
       // 3-cells) such that numUnpairedFaces == 1
-      if(!Lx[2].empty()) {
-        for(const auto alpha : Lx[2]) {
-          Cell c_alpha{2, alpha};
-          if(isEdgeInTriangle(delta, alpha)
-             && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
-            pq1.push({c_alpha, G(c_alpha, scalars)});
-          }
+      for(const auto alpha : Lx[2]) {
+        Cell c_alpha{2, alpha};
+        if(isEdgeInTriangle(delta, alpha)
+           && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
+          pq1.push({c_alpha, G(c_alpha, scalars)});
         }
       }
-      if(!Lx[3].empty()) {
-        for(const auto alpha : Lx[3]) {
-          Cell c_alpha{3, alpha};
-          if(isEdgeInTetra(delta, alpha)
-             && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
-            pq1.push({c_alpha, G(c_alpha, scalars)});
-          }
+
+      for(const auto alpha : Lx[3]) {
+        Cell c_alpha{3, alpha};
+        if(isEdgeInTetra(delta, alpha)
+           && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
+          pq1.push({c_alpha, G(c_alpha, scalars)});
         }
       }
 
@@ -353,7 +350,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #endif // TTK_ENABLE_OPENMP
             V(c_pair_alpha, c_alpha);
             // add cofaces of c_pair_alpha to pq1
-            if(c_pair_alpha.dim_ == 1 && !Lx[2].empty()) {
+            if(c_pair_alpha.dim_ == 1) {
               for(SimplexId beta : Lx[2]) {
                 Cell c_beta{2, beta};
                 if(isEdgeInTriangle(c_pair_alpha.id_, beta)
@@ -361,7 +358,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
                   pq1.push({c_beta, G(c_beta, scalars)});
                 }
               }
-            } else if(c_pair_alpha.dim_ == 2 && !Lx[3].empty()) {
+            } else if(c_pair_alpha.dim_ == 2) {
               for(SimplexId beta : Lx[3]) {
                 Cell c_beta{3, beta};
                 if(isTriangleInTetra(c_pair_alpha.id_, beta)
@@ -387,7 +384,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
           {
             isPaired[c_gamma.dim_][c_gamma.id_] = true;
           }
-          if(c_gamma.dim_ == 1 && !Lx[2].empty()) {
+          if(c_gamma.dim_ == 1) {
             for(SimplexId alpha : Lx[2]) {
               Cell c{2, alpha};
               if(isEdgeInTriangle(c_gamma.id_, alpha)
@@ -395,8 +392,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
                 pq1.push({c, G(c, scalars)});
               }
             }
-          } else if(dimensionality_ == 3 && c_gamma.dim_ == 2
-                    && !Lx[3].empty()) {
+          } else if(dimensionality_ == 3 && c_gamma.dim_ == 2) {
             for(SimplexId alpha : Lx[3]) {
               Cell c{3, alpha};
               if(isTriangleInTetra(c_gamma.id_, alpha)
