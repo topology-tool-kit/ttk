@@ -84,12 +84,6 @@ public:
   vtkSetMacro(ReverseSaddleSaddleConnection, bool);
   vtkGetMacro(ReverseSaddleSaddleConnection, bool);
 
-  vtkSetMacro(AllowSecondPass, bool);
-  vtkGetMacro(AllowSecondPass, bool);
-
-  vtkSetMacro(AllowThirdPass, bool);
-  vtkGetMacro(AllowThirdPass, bool);
-
   vtkSetMacro(ComputeGradientGlyphs, bool);
   vtkGetMacro(ComputeGradientGlyphs, bool);
 
@@ -132,8 +126,6 @@ private:
   bool ForceInputOffsetScalarField;
   bool ReverseSaddleMaximumConnection;
   bool ReverseSaddleSaddleConnection;
-  bool AllowSecondPass;
-  bool AllowThirdPass;
   bool ComputeGradientGlyphs;
   int IterationThreshold;
   int ScalarFieldId;

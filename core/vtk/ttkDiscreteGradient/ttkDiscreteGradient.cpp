@@ -9,9 +9,8 @@ vtkStandardNewMacro(ttkDiscreteGradient)
   ttkDiscreteGradient::ttkDiscreteGradient()
   : UseAllCores{true}, ScalarField{}, InputOffsetScalarFieldName{},
     ForceInputOffsetScalarField{false}, ReverseSaddleMaximumConnection{false},
-    ReverseSaddleSaddleConnection{false}, AllowSecondPass{true},
-    AllowThirdPass{true}, ComputeGradientGlyphs{true}, IterationThreshold{-1},
-    ScalarFieldId{}, OffsetFieldId{-1},
+    ReverseSaddleSaddleConnection{false}, ComputeGradientGlyphs{true},
+    IterationThreshold{-1}, ScalarFieldId{}, OffsetFieldId{-1},
 
     triangulation_{}, inputScalars_{}, offsets_{}, inputOffsets_{},
     hasUpdatedMesh_{} {
@@ -189,36 +188,6 @@ int ttkDiscreteGradient::dispatch(
     return -1;
   }
 #endif
-
-  if(AllowSecondPass) {
-    if(inputOffsets_->GetDataType() == VTK_INT)
-      ret = discreteGradient_.buildGradient2<VTK_TT, int>();
-    if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-      ret = discreteGradient_.buildGradient2<VTK_TT, vtkIdType>();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(ret) {
-      cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient2() "
-              "error code : "
-           << ret << endl;
-      return -1;
-    }
-#endif
-  }
-
-  if(dimensionality == 3 and AllowThirdPass) {
-    if(inputOffsets_->GetDataType() == VTK_INT)
-      ret = discreteGradient_.buildGradient3<VTK_TT, int>();
-    if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-      ret = discreteGradient_.buildGradient3<VTK_TT, vtkIdType>();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(ret) {
-      cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient2() "
-              "error code : "
-           << ret << endl;
-      return -1;
-    }
-#endif
-  }
 
   if(inputOffsets_->GetDataType() == VTK_INT)
     ret = discreteGradient_.reverseGradient<VTK_TT, int>();

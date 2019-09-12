@@ -595,21 +595,6 @@ triangulation.
       int buildGradient();
 
       /**
-       * Minimize the number of unpaired cells of any dimensions.
-       * Assume that buildGradient() has been called before.
-       */
-      template <typename dataType, typename idType>
-      int buildGradient2();
-
-      /**
-       * Minimize further the number of unpaired cells of any dimensions (3D
-triangulation only).
-       * Assume that buildGradient2() has been called before.
-       */
-      template <typename dataType, typename idType>
-      int buildGradient3();
-
-      /**
        * Get the list of maxima candidates for simplification.
        */
       template <typename dataType>

@@ -80,7 +80,6 @@ int ttk::MorseSmaleComplex2D::execute() {
   {
     Timer tmp;
     discreteGradient_.buildGradient<dataType, idType>();
-    discreteGradient_.buildGradient2<dataType, idType>();
 
     {
       std::stringstream msg;

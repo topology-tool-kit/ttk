@@ -94,30 +94,6 @@
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty name="AllowSecondPass"
-        label="Allow Second Pass"
-        command="SetAllowSecondPass"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Allow a second pass in the gradient reversal algorithm.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="AllowThirdPass"
-        label="Allow Third Pass"
-        command="SetAllowThirdPass"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Allow a third pass in the gradient reversal algorithm.
-        </Documentation>
-      </IntVectorProperty>
-
       <IntVectorProperty name="ReverseSaddleMaximumConnection"
         label="PL-compliant extrema"
         command="SetReverseSaddleMaximumConnection"
@@ -213,8 +189,6 @@
         <Property name="ScalarField" />
         <Property name="ForceInputOffsetScalarField"/>
         <Property name="InputOffsetScalarFieldName"/>
-        <Property name="AllowSecondPass"/>
-        <Property name="AllowThirdPass"/>
         <Property name="ReverseSaddleMaximumConnection"/>
         <Property name="ReverseSaddleSaddleConnection"/>
         <Property name="ComputeGradientGlyphs"/>

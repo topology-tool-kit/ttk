@@ -1270,8 +1270,6 @@ int ttk::MorseSmaleComplex3D::execute() {
   {
     Timer tmp;
     discreteGradient_.buildGradient<dataType, idType>();
-    discreteGradient_.buildGradient2<dataType, idType>();
-    discreteGradient_.buildGradient3<dataType, idType>();
 
     {
       std::stringstream msg;
@@ -1510,8 +1508,6 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
     discreteGradient_.setReverseSaddleSaddleConnection(true);
     discreteGradient_.setCollectPersistencePairs(false);
     discreteGradient_.buildGradient<dataType, idType>();
-    discreteGradient_.buildGradient2<dataType, idType>();
-    discreteGradient_.buildGradient3<dataType, idType>();
     discreteGradient_.reverseGradient<dataType, idType>(pl_criticalPoints);
 
     // collect saddle-saddle connections

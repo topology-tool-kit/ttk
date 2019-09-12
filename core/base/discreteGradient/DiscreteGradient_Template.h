@@ -452,18 +452,6 @@ int DiscreteGradient::buildGradient() {
 }
 
 template <typename dataType, typename idType>
-int DiscreteGradient::buildGradient2() {
-
-  return 0;
-}
-
-template <typename dataType, typename idType>
-int DiscreteGradient::buildGradient3() {
-
-  return 0;
-}
-
-template <typename dataType, typename idType>
 int DiscreteGradient::setCriticalPoints(
   const std::vector<Cell> &criticalPoints) const {
 #ifndef TTK_ENABLE_KAMIKAZE
