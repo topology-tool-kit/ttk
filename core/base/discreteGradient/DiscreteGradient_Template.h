@@ -226,18 +226,6 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
         return false;
       };
 
-  const auto isEdgeInTetra = [&](const SimplexId edge, const SimplexId tetra) {
-    auto nedges = inputTriangulation_->getCellEdgeNumber(tetra);
-    for(SimplexId i = 0; i < nedges; ++i) {
-      SimplexId e{};
-      inputTriangulation_->getCellEdge(tetra, i, e);
-      if(e == edge) {
-        return true;
-      }
-    }
-    return false;
-  };
-
   const auto isTriangleInTetra
     = [&](const SimplexId triangle, const SimplexId tetra) {
         auto ntriangles = inputTriangulation_->getCellTriangleNumber(tetra);
@@ -318,14 +306,6 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
       for(const auto alpha : Lx[2]) {
         Cell c_alpha{2, alpha};
         if(isEdgeInTriangle(delta, alpha)
-           && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
-          pq1.push({c_alpha, G(c_alpha, scalars)});
-        }
-      }
-
-      for(const auto alpha : Lx[3]) {
-        Cell c_alpha{3, alpha};
-        if(isEdgeInTetra(delta, alpha)
            && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
           pq1.push({c_alpha, G(c_alpha, scalars)});
         }
