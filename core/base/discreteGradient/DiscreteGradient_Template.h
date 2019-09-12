@@ -239,6 +239,21 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
         return false;
       };
 
+  auto isLexicographicSmaller
+    = [](const std::vector<dataType> &a, const std::vector<dataType> &b) {
+        for(size_t i = 0; i < std::min(a.size(), b.size()); i++) {
+          if(a[i] != b[i]) {
+            return a[i] < b[i];
+          }
+        }
+        return a.size() < b.size();
+      };
+
+  auto pqGreater = [&](const std::pair<Cell, std::vector<dataType>> &a,
+                       const std::pair<Cell, std::vector<dataType>> &b) {
+    return isLexicographicSmaller(b.second, a.second);
+  };
+
   /* Compute gradient */
 
   auto nverts = inputTriangulation_->getNumberOfVertices();
@@ -248,20 +263,6 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
 
-    auto isLexicographicSmaller
-      = [](const std::vector<dataType> &a, const std::vector<dataType> &b) {
-          for(size_t i = 0; i < std::min(a.size(), b.size()); i++) {
-            if(a[i] != b[i]) {
-              return a[i] < b[i];
-            }
-          }
-          return a.size() < b.size();
-        };
-
-    auto pqGreater = [&](const std::pair<Cell, std::vector<dataType>> &a,
-                         const std::pair<Cell, std::vector<dataType>> &b) {
-      return isLexicographicSmaller(b.second, a.second);
-    };
     std::priority_queue<std::pair<Cell, std::vector<dataType>>,
                         std::vector<std::pair<Cell, std::vector<dataType>>>,
                         decltype(pqGreater)>
