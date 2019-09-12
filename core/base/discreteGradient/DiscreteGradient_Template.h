@@ -258,10 +258,74 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 
   auto nverts = inputTriangulation_->getNumberOfVertices();
 
+  const auto sosGreaterThan
+    = [&scalars, &offsets](const SimplexId a, const SimplexId b) {
+        if(scalars[a] != scalars[b]) {
+          return scalars[a] > scalars[b];
+        } else {
+          return offsets[a] > offsets[b];
+        }
+      };
+
+  auto pqGreaterOpt = [&](const Cell &a, const Cell &b) {
+    if(a.dim_ == b.dim_) {
+      // there should be a shared facet between the two cells
+      // compare the vertices not in the shared facet
+      SimplexId m{-1}, n{-1};
+      std::vector<SimplexId> va(a.dim_ + 1), vb(a.dim_ + 1);
+
+      if(a.dim_ == 1) {
+        inputTriangulation_->getEdgeVertex(a.id_, 0, va[0]);
+        inputTriangulation_->getEdgeVertex(a.id_, 1, va[1]);
+        inputTriangulation_->getEdgeVertex(b.id_, 0, vb[0]);
+        inputTriangulation_->getEdgeVertex(b.id_, 1, vb[1]);
+
+      } else if(a.dim_ == 2) {
+        inputTriangulation_->getTriangleVertex(a.id_, 0, va[0]);
+        inputTriangulation_->getTriangleVertex(a.id_, 1, va[1]);
+        inputTriangulation_->getTriangleVertex(a.id_, 2, va[2]);
+        inputTriangulation_->getTriangleVertex(b.id_, 0, vb[0]);
+        inputTriangulation_->getTriangleVertex(b.id_, 1, vb[1]);
+        inputTriangulation_->getTriangleVertex(b.id_, 2, vb[2]);
+
+      } else if(a.dim_ == 3) {
+        inputTriangulation_->getCellVertex(a.id_, 0, va[0]);
+        inputTriangulation_->getCellVertex(a.id_, 1, va[1]);
+        inputTriangulation_->getCellVertex(a.id_, 2, va[2]);
+        inputTriangulation_->getCellVertex(a.id_, 3, va[3]);
+        inputTriangulation_->getCellVertex(b.id_, 0, vb[0]);
+        inputTriangulation_->getCellVertex(b.id_, 1, vb[1]);
+        inputTriangulation_->getCellVertex(b.id_, 2, vb[2]);
+        inputTriangulation_->getCellVertex(b.id_, 3, vb[3]);
+      }
+
+      for(size_t i = 0; i < va.size(); ++i) {
+        // m is in va but not in vb
+        if(std::find(vb.begin(), vb.end(), va[i]) == vb.end()) {
+          m = va[i];
+        }
+        // n is in vb but not in va
+        if(std::find(va.begin(), va.end(), vb[i]) == va.end()) {
+          n = vb[i];
+        }
+      }
+
+      return sosGreaterThan(m, n);
+    } else {
+      // the cell of greater dimension should contain the cell of
+      // smaller dimension
+      return a.dim_ < b.dim_;
+    }
+  };
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
+
+    std::priority_queue<Cell, std::vector<Cell>, decltype(pqGreaterOpt)> pqZero(
+      pqGreaterOpt),
+      pqOne(pqGreaterOpt);
 
     std::priority_queue<std::pair<Cell, std::vector<dataType>>,
                         std::vector<std::pair<Cell, std::vector<dataType>>>,
