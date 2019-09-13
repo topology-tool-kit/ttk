@@ -299,6 +299,10 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     }
   };
 
+  // Type alias for priority queues
+  using pqType
+    = std::priority_queue<Cell, std::vector<Cell>, decltype(orderCells)>;
+
   /* Compute gradient */
 
   auto nverts = inputTriangulation_->getNumberOfVertices();
@@ -308,9 +312,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
 
-    std::priority_queue<Cell, std::vector<Cell>, decltype(orderCells)> pqZero(
-      orderCells),
-      pqOne(orderCells);
+    pqType pqZero(orderCells), pqOne(orderCells);
 
     auto Lx = lowerStar(x, scalars, offsets);
     if(Lx[1].empty()) {
