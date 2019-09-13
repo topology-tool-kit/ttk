@@ -375,42 +375,6 @@ function value.
                               const Cell &down,
                               const dataType *scalars) const;
 
-      /**
-       * @brief Order the vertices in a cell according to their scalar
-       * field value
-       *
-       * @param[in] c Cell
-       * @param[in] scalars Scalar field
-       */
-      template <typename dataType>
-      inline std::vector<dataType> G(Cell c,
-                                     const dataType *const scalars) const {
-        std::vector<dataType> res{};
-        if(c.dim_ == 0) {
-          res.emplace_back(scalars[c.id_]);
-        } else if(c.dim_ == 1) {
-          for(int i = 0; i < 2; i++) {
-            SimplexId v;
-            inputTriangulation_->getEdgeVertex(c.id_, i, v);
-            res.emplace_back(scalars[v]);
-          }
-        } else if(c.dim_ == 2) {
-          for(int i = 0; i < 3; i++) {
-            SimplexId v;
-            inputTriangulation_->getTriangleVertex(c.id_, i, v);
-            res.emplace_back(scalars[v]);
-          }
-        } else if(c.dim_ == 3) {
-          for(int i = 0; i < 4; i++) {
-            SimplexId v;
-            inputTriangulation_->getCellVertex(c.id_, i, v);
-            res.emplace_back(scalars[v]);
-          }
-        }
-        std::sort(res.begin(), res.end(), std::greater<dataType>());
-        return res;
-      }
-
     private:
       /**
        * Type alias for lower stars of a given cell

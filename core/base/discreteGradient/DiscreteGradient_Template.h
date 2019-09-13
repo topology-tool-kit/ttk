@@ -239,25 +239,6 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
         return false;
       };
 
-  auto isLexicographicSmaller
-    = [](const std::vector<dataType> &a, const std::vector<dataType> &b) {
-        for(size_t i = 0; i < std::min(a.size(), b.size()); i++) {
-          if(a[i] != b[i]) {
-            return a[i] < b[i];
-          }
-        }
-        return a.size() < b.size();
-      };
-
-  auto pqGreater = [&](const std::pair<Cell, std::vector<dataType>> &a,
-                       const std::pair<Cell, std::vector<dataType>> &b) {
-    return isLexicographicSmaller(b.second, a.second);
-  };
-
-  /* Compute gradient */
-
-  auto nverts = inputTriangulation_->getNumberOfVertices();
-
   const auto sosGreaterThan
     = [&scalars, &offsets](const SimplexId a, const SimplexId b) {
         if(scalars[a] != scalars[b]) {
@@ -318,6 +299,10 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     }
   };
 
+  /* Compute gradient */
+
+  auto nverts = inputTriangulation_->getNumberOfVertices();
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -326,11 +311,6 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     std::priority_queue<Cell, std::vector<Cell>, decltype(orderCells)> pqZero(
       orderCells),
       pqOne(orderCells);
-
-    std::priority_queue<std::pair<Cell, std::vector<dataType>>,
-                        std::vector<std::pair<Cell, std::vector<dataType>>>,
-                        decltype(pqGreater)>
-      pq0(pqGreater), pq1(pqGreater);
 
     auto Lx = lowerStar(x, scalars, offsets);
     if(Lx[1].empty()) {
