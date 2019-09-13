@@ -175,6 +175,19 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
         </Documentation>
       </StringVectorProperty>
 
+      <IntVectorProperty
+        name="PeriodicBoundaryConditions"
+        command="SetPeriodicBoundaryConditions"
+        label="Periodic Boundary Conditions"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to use periodic boundary conditions for computation.
+        </Documentation>
+      </IntVectorProperty>
+
      <IntVectorProperty
          name="ConsiderIdentifierAsBlackList"
          command="SetConsiderIdentifierAsBlackList"
@@ -256,27 +269,28 @@ offset field for flat plateau disambiguation).
        </IntVectorProperty>
 
       
-			<PropertyGroup panel_widget="Line" label="Testing">
+      <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
 
-			<PropertyGroup panel_widget="Line" label="Input options">
-				<Property name="ScalarField"/>
-                <Property name="ForceInputVertexScalarField" />
-                <Property name="InputVertexScalarFieldName" />
-				<Property name="ForceInputOffsetScalarField"/>
-				<Property name="InputOffsetScalarFieldName"/>
-                <Property name="ForceInputVertexScalarField" />
-                <Property name="InputVertexScalarFieldName" />
-				<Property name="ConsiderIdentifierAsBlackList"/>
+      <PropertyGroup panel_widget="Line" label="Input options">
+	<Property name="ScalarField"/>
+        <Property name="ForceInputVertexScalarField" />
+        <Property name="InputVertexScalarFieldName" />
+	<Property name="ForceInputOffsetScalarField"/>
+	<Property name="InputOffsetScalarFieldName"/>
+        <Property name="ForceInputVertexScalarField" />
+        <Property name="InputVertexScalarFieldName" />
+	<Property name="ConsiderIdentifierAsBlackList"/>
+        <Property name="PeriodicBoundaryConditions"/>
       </PropertyGroup>
       
       <PropertyGroup panel_widget="Line" label="Output options">
-				<Property name="OutputOffsetScalarFieldName"/>
-				<Property name="AddPerturbation"/>
-			</PropertyGroup>
+	<Property name="OutputOffsetScalarFieldName"/>
+	<Property name="AddPerturbation"/>
+      </PropertyGroup>
 
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />

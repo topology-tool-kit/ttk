@@ -20,6 +20,7 @@ vtkStandardNewMacro(ttkTopologicalSimplification)
   InputVertexScalarFieldName = ttk::VertexScalarFieldName;
   ConsiderIdentifierAsBlackList = false;
   InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
+  PeriodicBoundaryConditions = false; 
 
   UseAllCores = true;
 }
@@ -54,6 +55,7 @@ int ttkTopologicalSimplification::getTriangulation(vtkDataSet *input) {
   }
 #endif
 
+  triangulation_->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
   triangulation_->setWrapper(this);
   topologicalSimplification_.setWrapper(this);
   topologicalSimplification_.setupTriangulation(triangulation_);

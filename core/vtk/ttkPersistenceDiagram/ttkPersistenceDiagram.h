@@ -141,6 +141,13 @@ public:
   }
   vtkGetMacro(ShowInsideDomain, int);
 
+  void SetPeriodicBoundaryConditions(int data) {
+    PeriodicBoundaryConditions = data;
+    Modified();
+    computeDiagram_ = true;
+  }
+  vtkGetMacro(PeriodicBoundaryConditions, int);
+
   int getScalars(vtkDataSet *input);
   int getTriangulation(vtkDataSet *input);
   int getOffsets(vtkDataSet *input);
@@ -216,6 +223,7 @@ private:
   bool ForceInputOffsetScalarField;
   bool ComputeSaddleConnectors;
   int ShowInsideDomain;
+  bool PeriodicBoundaryConditions;
 
   ttk::PersistenceDiagram persistenceDiagram_;
   ttk::Triangulation *triangulation_;

@@ -8,7 +8,7 @@ vtkStandardNewMacro(ttkMorseSmaleComplex)
 
   ttkMorseSmaleComplex::ttkMorseSmaleComplex()
   : ScalarField{}, InputOffsetScalarFieldName{ttk::OffsetScalarFieldName},
-    ForceInputOffsetScalarField{}, IterationThreshold{-1},
+    ForceInputOffsetScalarField{}, PeriodicBoundaryConditions{false}, IterationThreshold{-1},
     ReverseSaddleMaximumConnection{true}, ReverseSaddleSaddleConnection{true},
     ComputeCriticalPoints{true}, ComputeAscendingSeparatrices1{true},
     ComputeDescendingSeparatrices1{true}, ComputeSaddleConnectors{true},
@@ -72,6 +72,7 @@ int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet *input) {
   }
 #endif
 
+  triangulation_->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
   triangulation_->setWrapper(this);
   // setupTriangulation() is called first to select the correct algorithm (2D or
   // 3D)

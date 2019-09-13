@@ -97,6 +97,9 @@ public:
   vtkSetMacro(InputOffsetScalarFieldName, std::string);
   vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
+  vtkSetMacro(PeriodicBoundaryConditions, int);
+  vtkGetMacro(PeriodicBoundaryConditions, int);
+
   vtkSetMacro(IterationThreshold, int);
   vtkGetMacro(IterationThreshold, int);
 
@@ -195,6 +198,7 @@ private:
   std::string ScalarField;
   std::string InputOffsetScalarFieldName;
   bool ForceInputOffsetScalarField;
+  bool PeriodicBoundaryConditions;
   int IterationThreshold;
   bool ReverseSaddleMaximumConnection;
   bool ReverseSaddleSaddleConnection;

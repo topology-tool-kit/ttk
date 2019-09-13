@@ -39,6 +39,7 @@
 #include <AbstractTriangulation.h>
 #include <ExplicitTriangulation.h>
 #include <ImplicitTriangulation.h>
+#include <PeriodicImplicitTriangulation.h>
 
 namespace ttk {
 
@@ -3037,6 +3038,7 @@ namespace ttk {
     inline int setDebugLevel(const int &debugLevel) {
       explicitTriangulation_.setDebugLevel(debugLevel);
       implicitTriangulation_.setDebugLevel(debugLevel);
+      periodicImplicitTriangulation_.setDebugLevel(debugLevel);
       debugLevel_ = debugLevel;
       return 0;
     }
@@ -3100,16 +3102,39 @@ namespace ttk {
                             const SimplexId &yDim,
                             const SimplexId &zDim) {
 
-      abstractTriangulation_ = &implicitTriangulation_;
-
       gridDimensions_[0] = xDim;
       gridDimensions_[1] = yDim;
       gridDimensions_[2] = zDim;
 
-      return implicitTriangulation_.setInputGrid(xOrigin, yOrigin, zOrigin,
-                                                 xSpacing, ySpacing, zSpacing,
-                                                 xDim, yDim, zDim);
+      int ret = periodicImplicitTriangulation_.setInputGrid(
+            xOrigin, yOrigin, zOrigin,
+            xSpacing, ySpacing, zSpacing,
+            xDim, yDim, zDim);
+      int retPeriodic = implicitTriangulation_.setInputGrid(
+            xOrigin, yOrigin, zOrigin,
+            xSpacing, ySpacing, zSpacing,
+            xDim, yDim, zDim);
+        
+      if(usePeriodicBoundaries_){
+          abstractTriangulation_ = &periodicImplicitTriangulation_;
+          return ret;
+      } else {
+          abstractTriangulation_ = &implicitTriangulation_;
+          return retPeriodic;
+      }
       return 0;
+    }
+
+    inline void setPeriodicBoundaryConditions(const bool& usePeriodicBoundaries){
+        if (usePeriodicBoundaries == usePeriodicBoundaries_){
+            return ;
+        }
+        usePeriodicBoundaries_ = usePeriodicBoundaries;
+        if(usePeriodicBoundaries_){
+          abstractTriangulation_ = &periodicImplicitTriangulation_;
+        } else {
+          abstractTriangulation_ = &implicitTriangulation_;
+        }
     }
 
     /// Set the input 3D points of the triangulation.
@@ -3142,6 +3167,7 @@ namespace ttk {
     inline int setThreadNumber(const ThreadId &threadNumber) {
       explicitTriangulation_.setThreadNumber(threadNumber);
       implicitTriangulation_.setThreadNumber(threadNumber);
+      periodicImplicitTriangulation_.setThreadNumber(threadNumber);
       threadNumber_ = threadNumber;
       return 0;
     }
@@ -3151,6 +3177,7 @@ namespace ttk {
     inline int setWrapper(const Wrapper *wrapper) {
       explicitTriangulation_.setWrapper(wrapper);
       implicitTriangulation_.setWrapper(wrapper);
+      periodicImplicitTriangulation_.setWrapper(wrapper);
       return 0;
     }
 
@@ -3171,6 +3198,8 @@ namespace ttk {
     AbstractTriangulation *abstractTriangulation_;
     ExplicitTriangulation explicitTriangulation_;
     ImplicitTriangulation implicitTriangulation_;
+    PeriodicImplicitTriangulation periodicImplicitTriangulation_;
+    bool usePeriodicBoundaries_;
   };
 } // namespace ttk
 
