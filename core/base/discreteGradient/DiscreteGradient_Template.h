@@ -214,40 +214,42 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
   };
 
   const auto isEdgeInTriangle
-    = [&](const SimplexId edge, const SimplexId triangle) {
-        auto nedges = inputTriangulation_->getTriangleEdgeNumber(triangle);
-        for(SimplexId i = 0; i < nedges; ++i) {
-          SimplexId e{};
-          inputTriangulation_->getTriangleEdge(triangle, i, e);
-          if(e == edge) {
-            return true;
-          }
-        }
-        return false;
-      };
+    = [&](const SimplexId edge, const SimplexId triangle) -> bool {
+    auto nedges = inputTriangulation_->getTriangleEdgeNumber(triangle);
+    for(SimplexId i = 0; i < nedges; ++i) {
+      SimplexId e{};
+      inputTriangulation_->getTriangleEdge(triangle, i, e);
+      if(e == edge) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   const auto isTriangleInTetra
-    = [&](const SimplexId triangle, const SimplexId tetra) {
-        auto ntriangles = inputTriangulation_->getCellTriangleNumber(tetra);
-        for(SimplexId i = 0; i < ntriangles; ++i) {
-          SimplexId t{};
-          inputTriangulation_->getCellTriangle(tetra, i, t);
-          if(t == triangle) {
-            return true;
-          }
-        }
-        return false;
-      };
+    = [&](const SimplexId triangle, const SimplexId tetra) -> bool {
+    auto ntriangles = inputTriangulation_->getCellTriangleNumber(tetra);
+    for(SimplexId i = 0; i < ntriangles; ++i) {
+      SimplexId t{};
+      inputTriangulation_->getCellTriangle(tetra, i, t);
+      if(t == triangle) {
+        return true;
+      }
+    }
+    return false;
+  };
 
+  // Comparison functions for vertices
   const auto sosGreaterThan
-    = [&scalars, &offsets](const SimplexId a, const SimplexId b) {
-        if(scalars[a] != scalars[b]) {
-          return scalars[a] > scalars[b];
-        } else {
-          return offsets[a] > offsets[b];
-        }
-      };
+    = [&scalars, &offsets](const SimplexId a, const SimplexId b) -> bool {
+    if(scalars[a] != scalars[b]) {
+      return scalars[a] > scalars[b];
+    } else {
+      return offsets[a] > offsets[b];
+    }
+  };
 
+  // Comparison function for Cells inside priority queues
   auto orderCells = [&](const Cell &a, const Cell &b) -> bool {
     if(a.dim_ == b.dim_) {
       // there should be a shared facet between the two cells
@@ -334,6 +336,9 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
 
+    // Priority queues are pushed at the beginning and popped at the
+    // end. To pop the minimum, elements should be sorted in a
+    // decreasing order.
     pqType pqZero(orderCells), pqOne(orderCells);
 
     auto Lx = lowerStar(x, scalars, offsets);
@@ -390,6 +395,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #pragma omp critical
 #endif // TTK_ENABLE_OPENMP
             V(c_pair_alpha, c_alpha);
+
             // add cofaces of c_alpha and c_pair_alpha to pqOne
             insertCofacets(c_alpha, Lx, pqOne);
             insertCofacets(c_pair_alpha, Lx, pqOne);
