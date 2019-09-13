@@ -21,6 +21,7 @@
 #pragma once
 
 // VTK includes -- to adapt
+#include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -32,7 +33,6 @@
 #include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkCellData.h>
 #include <vtkSmartPointer.h>
 
 // TTK code includes

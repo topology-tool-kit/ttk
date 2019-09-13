@@ -20,7 +20,7 @@ vtkStandardNewMacro(ttkTopologicalSimplification)
   InputVertexScalarFieldName = ttk::VertexScalarFieldName;
   ConsiderIdentifierAsBlackList = false;
   InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
-  PeriodicBoundaryConditions = false; 
+  PeriodicBoundaryConditions = false;
 
   UseAllCores = true;
 }

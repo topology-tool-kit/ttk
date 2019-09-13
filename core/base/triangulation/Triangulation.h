@@ -3107,34 +3107,33 @@ namespace ttk {
       gridDimensions_[2] = zDim;
 
       int ret = periodicImplicitTriangulation_.setInputGrid(
-            xOrigin, yOrigin, zOrigin,
-            xSpacing, ySpacing, zSpacing,
-            xDim, yDim, zDim);
+        xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+        zDim);
       int retPeriodic = implicitTriangulation_.setInputGrid(
-            xOrigin, yOrigin, zOrigin,
-            xSpacing, ySpacing, zSpacing,
-            xDim, yDim, zDim);
-        
-      if(usePeriodicBoundaries_){
-          abstractTriangulation_ = &periodicImplicitTriangulation_;
-          return ret;
+        xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
+        zDim);
+
+      if(usePeriodicBoundaries_) {
+        abstractTriangulation_ = &periodicImplicitTriangulation_;
+        return ret;
       } else {
-          abstractTriangulation_ = &implicitTriangulation_;
-          return retPeriodic;
+        abstractTriangulation_ = &implicitTriangulation_;
+        return retPeriodic;
       }
       return 0;
     }
 
-    inline void setPeriodicBoundaryConditions(const bool& usePeriodicBoundaries){
-        if (usePeriodicBoundaries == usePeriodicBoundaries_){
-            return ;
-        }
-        usePeriodicBoundaries_ = usePeriodicBoundaries;
-        if(usePeriodicBoundaries_){
-          abstractTriangulation_ = &periodicImplicitTriangulation_;
-        } else {
-          abstractTriangulation_ = &implicitTriangulation_;
-        }
+    inline void
+      setPeriodicBoundaryConditions(const bool &usePeriodicBoundaries) {
+      if(usePeriodicBoundaries == usePeriodicBoundaries_) {
+        return;
+      }
+      usePeriodicBoundaries_ = usePeriodicBoundaries;
+      if(usePeriodicBoundaries_) {
+        abstractTriangulation_ = &periodicImplicitTriangulation_;
+      } else {
+        abstractTriangulation_ = &implicitTriangulation_;
+      }
     }
 
     /// Set the input 3D points of the triangulation.
