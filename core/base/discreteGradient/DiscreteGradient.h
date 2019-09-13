@@ -394,7 +394,7 @@ function value.
        * 3-cells)
        */
       template <typename dataType, typename idType>
-      inline lowerStarType lowerStar(SimplexId a,
+      inline lowerStarType lowerStar(const SimplexId a,
                                      const dataType *const scalars,
                                      const idType *const offsets) const {
         lowerStarType res{};

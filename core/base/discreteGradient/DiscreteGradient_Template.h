@@ -198,7 +198,8 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 
   /* Declarations */
 
-  auto V = [&](Cell alpha, Cell beta) {
+  const auto V = [&](const Cell alpha, const Cell beta) {
+    // beta.dim_ == alpha.dim_ + 1
     gradient[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
     gradient[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
   };
@@ -229,18 +230,8 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     return false;
   };
 
-  // Comparison functions for vertices
-  const auto sosLowerThan
-    = [&scalars, &offsets](const SimplexId a, const SimplexId b) -> bool {
-    if(scalars[a] != scalars[b]) {
-      return scalars[a] < scalars[b];
-    } else {
-      return offsets[a] < offsets[b];
-    }
-  };
-
   // Comparison function for Cells inside priority queues
-  auto orderCells = [&](const Cell &a, const Cell &b) -> bool {
+  const auto orderCells = [&](const Cell &a, const Cell &b) -> bool {
     if(a.dim_ == b.dim_) {
       // there should be a shared facet between the two cells
       // compare the vertices not in the shared facet
@@ -283,7 +274,13 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
         }
       }
 
-      return sosLowerThan(m, n);
+      // compare scalar field values on non common vertices
+      if(scalars[m] != scalars[n]) {
+        return scalars[m] < scalars[n];
+      } else {
+        return offsets[m] < offsets[n];
+      }
+
     } else {
       // the cell of greater dimension should contain the cell of
       // smaller dimension
