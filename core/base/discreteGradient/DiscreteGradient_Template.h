@@ -230,12 +230,12 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
   };
 
   // Comparison functions for vertices
-  const auto sosGreaterThan
+  const auto sosLowerThan
     = [&scalars, &offsets](const SimplexId a, const SimplexId b) -> bool {
     if(scalars[a] != scalars[b]) {
-      return scalars[a] > scalars[b];
+      return scalars[a] < scalars[b];
     } else {
-      return offsets[a] > offsets[b];
+      return offsets[a] < offsets[b];
     }
   };
 
@@ -283,7 +283,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
         }
       }
 
-      return sosGreaterThan(m, n);
+      return sosLowerThan(m, n);
     } else {
       // the cell of greater dimension should contain the cell of
       // smaller dimension
