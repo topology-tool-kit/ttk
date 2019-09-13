@@ -267,7 +267,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
         }
       };
 
-  auto pqGreaterOpt = [&](const Cell &a, const Cell &b) {
+  auto orderCells = [&](const Cell &a, const Cell &b) -> bool {
     if(a.dim_ == b.dim_) {
       // there should be a shared facet between the two cells
       // compare the vertices not in the shared facet
@@ -323,9 +323,9 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
 
-    std::priority_queue<Cell, std::vector<Cell>, decltype(pqGreaterOpt)> pqZero(
-      pqGreaterOpt),
-      pqOne(pqGreaterOpt);
+    std::priority_queue<Cell, std::vector<Cell>, decltype(orderCells)> pqZero(
+      orderCells),
+      pqOne(orderCells);
 
     std::priority_queue<std::pair<Cell, std::vector<dataType>>,
                         std::vector<std::pair<Cell, std::vector<dataType>>>,
@@ -338,17 +338,11 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
       isPaired[0][x] = true;
     } else {
       // get delta: 1-cell (edge) with minimal G value (steeper gradient)
-      SimplexId delta;
-      std::vector<dataType> Gmin{};
-      // first iteration
-      bool first = true;
-      // compute minimum of G over Lx[1]
+      Cell c_delta{1, *Lx[1].begin()};
       for(const auto s : Lx[1]) {
-        auto Gcur = G(Cell{1, s}, scalars);
-        if(first || isLexicographicSmaller(Gcur, Gmin)) {
-          first = false;
-          Gmin = Gcur;
-          delta = s;
+        Cell cs{1, s};
+        if(orderCells(cs, c_delta)) {
+          c_delta = cs;
         }
       }
 
@@ -356,12 +350,12 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif // TTK_ENABLE_OPENMP
-      V(Cell{0, x}, Cell{1, delta});
+      V(Cell{0, x}, c_delta);
 
       // push every 1-cell in Lx that is not delta into pq0
       for(auto alpha : Lx[1]) {
         Cell c{1, alpha};
-        if(alpha != delta) {
+        if(alpha != c_delta.id_) {
           pq0.push({c, G(c, scalars)});
         }
       }
@@ -370,7 +364,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
       // 3-cells) such that numUnpairedFaces == 1
       for(const auto alpha : Lx[2]) {
         Cell c_alpha{2, alpha};
-        if(isEdgeInTriangle(delta, alpha)
+        if(isEdgeInTriangle(c_delta.id_, alpha)
            && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
           pq1.push({c_alpha, G(c_alpha, scalars)});
         }
