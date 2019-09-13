@@ -315,6 +315,31 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     pqType pqZero(orderCells), pqOne(orderCells);
 
     auto Lx = lowerStar(x, scalars, offsets);
+
+    /**
+     * Insert into pqOne cofacets of cell c_alpha such as
+     * numUnpairedFaces == 1
+     */
+    auto insertCofacets = [&](const Cell &c_alpha) {
+      if(c_alpha.dim_ == 1) {
+        for(SimplexId beta : Lx[2]) {
+          Cell c_beta{2, beta};
+          if(isEdgeInTriangle(c_alpha.id_, beta)
+             && numUnpairedFaces(c_beta, Lx, isPaired) == 1) {
+            pqOne.push(c_beta);
+          }
+        }
+      } else if(c_alpha.dim_ == 2) {
+        for(SimplexId beta : Lx[3]) {
+          Cell c_beta{3, beta};
+          if(isTriangleInTetra(c_alpha.id_, beta)
+             && numUnpairedFaces(c_beta, Lx, isPaired) == 1) {
+            pqOne.push(c_beta);
+          }
+        }
+      }
+    };
+
     if(Lx[1].empty()) {
       // x is a local minimum
       isPaired[0][x] = true;
@@ -342,8 +367,9 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
         }
       }
 
-      // push into pqOne every coface of delta in Lx (2-cells and
-      // 3-cells) such that numUnpairedFaces == 1
+      // push into pqOne every coface of delta in Lx (2-cells only,
+      // 3-cells have not any facet paired yet) such that
+      // numUnpairedFaces == 1
       for(const auto alpha : Lx[2]) {
         Cell c_alpha{2, alpha};
         if(isEdgeInTriangle(c_delta.id_, alpha)
@@ -366,24 +392,9 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #pragma omp critical
 #endif // TTK_ENABLE_OPENMP
             V(c_pair_alpha, c_alpha);
-            // add cofaces of c_pair_alpha to pqOne
-            if(c_pair_alpha.dim_ == 1) {
-              for(SimplexId beta : Lx[2]) {
-                Cell c_beta{2, beta};
-                if(isEdgeInTriangle(c_pair_alpha.id_, beta)
-                   && numUnpairedFaces(c_beta, Lx, isPaired) == 1) {
-                  pqOne.push(c_beta);
-                }
-              }
-            } else if(c_pair_alpha.dim_ == 2) {
-              for(SimplexId beta : Lx[3]) {
-                Cell c_beta{3, beta};
-                if(isTriangleInTetra(c_pair_alpha.id_, beta)
-                   && numUnpairedFaces(c_beta, Lx, isPaired) == 1) {
-                  pqOne.push(c_beta);
-                }
-              }
-            }
+            // add cofaces of c_alpha and c_pair_alpha to pqOne
+            insertCofacets(c_alpha);
+            insertCofacets(c_pair_alpha);
           }
         }
         if(!pqZero.empty()) {
@@ -398,23 +409,8 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
           // mark gamma as paired
           isPaired[c_gamma.dim_][c_gamma.id_] = true;
 
-          if(c_gamma.dim_ == 1) {
-            for(SimplexId alpha : Lx[2]) {
-              Cell c{2, alpha};
-              if(isEdgeInTriangle(c_gamma.id_, alpha)
-                 && numUnpairedFaces(c, Lx, isPaired) == 1) {
-                pqOne.push(c);
-              }
-            }
-          } else if(dimensionality_ == 3 && c_gamma.dim_ == 2) {
-            for(SimplexId alpha : Lx[3]) {
-              Cell c{3, alpha};
-              if(isTriangleInTetra(c_gamma.id_, alpha)
-                 && numUnpairedFaces(c, Lx, isPaired) == 1) {
-                pqOne.push(c);
-              }
-            }
-          }
+          // add cofacets of c_gamma to pqOne
+          insertCofacets(c_gamma);
         }
       }
     }
