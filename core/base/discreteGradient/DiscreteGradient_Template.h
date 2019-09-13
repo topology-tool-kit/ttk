@@ -303,6 +303,28 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
   using pqType
     = std::priority_queue<Cell, std::vector<Cell>, decltype(orderCells)>;
 
+  // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
+  auto insertCofacets
+    = [&](const Cell &ca, const lowerStarType &ls, pqType &pqOne) {
+        if(ca.dim_ == 1) {
+          for(SimplexId beta : ls[2]) {
+            Cell cb{2, beta};
+            if(isEdgeInTriangle(ca.id_, beta)
+               && numUnpairedFaces(cb, ls, isPaired) == 1) {
+              pqOne.push(cb);
+            }
+          }
+        } else if(ca.dim_ == 2) {
+          for(SimplexId beta : ls[3]) {
+            Cell cb{3, beta};
+            if(isTriangleInTetra(ca.id_, beta)
+               && numUnpairedFaces(cb, ls, isPaired) == 1) {
+              pqOne.push(cb);
+            }
+          }
+        }
+      };
+
   /* Compute gradient */
 
   auto nverts = inputTriangulation_->getNumberOfVertices();
@@ -315,30 +337,6 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     pqType pqZero(orderCells), pqOne(orderCells);
 
     auto Lx = lowerStar(x, scalars, offsets);
-
-    /**
-     * Insert into pqOne cofacets of cell c_alpha such as
-     * numUnpairedFaces == 1
-     */
-    auto insertCofacets = [&](const Cell &c_alpha) {
-      if(c_alpha.dim_ == 1) {
-        for(SimplexId beta : Lx[2]) {
-          Cell c_beta{2, beta};
-          if(isEdgeInTriangle(c_alpha.id_, beta)
-             && numUnpairedFaces(c_beta, Lx, isPaired) == 1) {
-            pqOne.push(c_beta);
-          }
-        }
-      } else if(c_alpha.dim_ == 2) {
-        for(SimplexId beta : Lx[3]) {
-          Cell c_beta{3, beta};
-          if(isTriangleInTetra(c_alpha.id_, beta)
-             && numUnpairedFaces(c_beta, Lx, isPaired) == 1) {
-            pqOne.push(c_beta);
-          }
-        }
-      }
-    };
 
     if(Lx[1].empty()) {
       // x is a local minimum
@@ -393,8 +391,8 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 #endif // TTK_ENABLE_OPENMP
             V(c_pair_alpha, c_alpha);
             // add cofaces of c_alpha and c_pair_alpha to pqOne
-            insertCofacets(c_alpha);
-            insertCofacets(c_pair_alpha);
+            insertCofacets(c_alpha, Lx, pqOne);
+            insertCofacets(c_pair_alpha, Lx, pqOne);
           }
         }
         if(!pqZero.empty()) {
@@ -410,7 +408,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
           isPaired[c_gamma.dim_][c_gamma.id_] = true;
 
           // add cofacets of c_gamma to pqOne
-          insertCofacets(c_gamma);
+          insertCofacets(c_gamma, Lx, pqOne);
         }
       }
     }
