@@ -380,10 +380,6 @@ function value.
        * Type alias for lower stars of a given cell
        */
       using lowerStarType = std::array<std::set<SimplexId>, 4>;
-      /**
-       * Type alias for paired cells: one vector of fixed size per dimension
-       */
-      using isPairedType = std::array<std::vector<bool>, 4>;
 
       /**
        * @brief Store the subcomplexes around vertex for which offset
@@ -489,13 +485,13 @@ function value.
        *
        * @param[in] c Input cell
        * @param[in] ls Input lower star
-       * @param[in] isPaired
+       * @param[in] gradient Current discrete vector field
        *
        * @return Number of unpaired faces
        */
       inline SimplexId numUnpairedFaces(const Cell c,
                                         const lowerStarType &ls,
-                                        isPairedType &isPaired) const {
+                                        const gradientType &gradient) const {
 
         // number of unpaired faces
         SimplexId count = 0;
@@ -505,7 +501,7 @@ function value.
             SimplexId v;
             inputTriangulation_->getEdgeVertex(c.id_, i, v);
             // check if v not paired
-            if(!isPaired[0][v]) {
+            if(gradient[0][0][v] == -1) {
               count++;
             }
           }
@@ -514,7 +510,8 @@ function value.
             SimplexId e;
             inputTriangulation_->getTriangleEdge(c.id_, i, e);
             // check if e in ls and not paired
-            if(ls[1].find(e) != ls[1].end() && !isPaired[1][e]) {
+            if(ls[1].find(e) != ls[1].end() && gradient[1][1][e] == -1
+               && gradient[0][1][e] == -1) {
               count++;
             }
           }
@@ -523,7 +520,8 @@ function value.
             SimplexId t;
             inputTriangulation_->getCellTriangle(c.id_, i, t);
             // check if t in ls and not paired
-            if(ls[2].find(t) != ls[2].end() && !isPaired[2][t]) {
+            if(ls[2].find(t) != ls[2].end() && gradient[2][2][t] == -1
+               && gradient[1][2][t] == -1) {
               count++;
             }
           }
@@ -536,18 +534,19 @@ function value.
        *
        * @param[in] c Input cell
        * @param[in] ls Input lower star
-       * @param[in] isPaired
+       * @param[in] gradient Current discrete vector field
        *
        * @return Paired cell of immediate lower dimension
        */
-      inline SimplexId
-        getPair(Cell c, lowerStarType &ls, isPairedType &isPaired) const {
+      inline SimplexId getPair(const Cell c,
+                               const lowerStarType &ls,
+                               const gradientType &gradient) const {
         if(c.dim_ == 1) {
           for(SimplexId i = 0; i < 2; i++) {
             SimplexId v;
             inputTriangulation_->getEdgeVertex(c.id_, i, v);
             // check if v not paired
-            if(!isPaired[0][v]) {
+            if(gradient[0][0][v] == -1) {
               return v;
             }
           }
@@ -556,7 +555,8 @@ function value.
             SimplexId e;
             inputTriangulation_->getTriangleEdge(c.id_, i, e);
             // check if e in ls and not paired
-            if(ls[1].find(e) != ls[1].end() && !isPaired[1][e]) {
+            if(ls[1].find(e) != ls[1].end() && gradient[1][1][e] == -1
+               && gradient[0][1][e] == -1) {
               return e;
             }
           }
@@ -565,7 +565,8 @@ function value.
             SimplexId t;
             inputTriangulation_->getCellTriangle(c.id_, i, t);
             // check if t in ls and not paired
-            if(ls[2].find(t) != ls[2].end() && !isPaired[2][t]) {
+            if(ls[2].find(t) != ls[2].end() && gradient[2][2][t] == -1
+               && gradient[1][2][t] == -1) {
               return t;
             }
           }
