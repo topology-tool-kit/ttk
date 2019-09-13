@@ -384,8 +384,11 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
         if(!pqZero.empty()) {
           Cell c_gamma{pqZero.top()};
           pqZero.pop();
-          // skip pair_alpha from pqZero
-          if(gradient[c_gamma.dim_ - 1][c_gamma.dim_][c_gamma.id_] != -1) {
+          // skip pair_alpha from pqZero:
+          // c_gamma is not critical if already paired
+          if(gradient[c_gamma.dim_ - 1][c_gamma.dim_][c_gamma.id_] != -1
+             || (c_gamma.dim_ < dimensionality_
+                 && gradient[c_gamma.dim_][c_gamma.dim_][c_gamma.id_] != -1)) {
             continue;
           }
 
