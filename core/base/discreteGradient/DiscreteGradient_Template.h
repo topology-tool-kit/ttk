@@ -346,9 +346,6 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
       }
 
       // store x (0-cell) -> delta (1-cell) V-path
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif // TTK_ENABLE_OPENMP
       V(Cell{0, x}, c_delta);
 
       // push every 1-cell in Lx that is not delta into pqZero
@@ -380,9 +377,6 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
             Cell c_pair_alpha{c_alpha.dim_ - 1, getPair(c_alpha, Lx, gradient)};
 
             // store (pair_alpha) -> (alpha) V-path
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif // TTK_ENABLE_OPENMP
             V(c_pair_alpha, c_alpha);
 
             // add cofaces of c_alpha and c_pair_alpha to pqOne
