@@ -209,8 +209,13 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
     // beta.dim_ == alpha.dim_ + 1
     gradient[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
     gradient[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
-    isPaired[alpha.dim_][alpha.id_] = true;
-    isPaired[alpha.dim_ + 1][beta.id_] = true;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif // TTK_ENABLE_OPENMP
+    {
+      isPaired[alpha.dim_][alpha.id_] = true;
+      isPaired[alpha.dim_ + 1][beta.id_] = true;
+    }
   };
 
   const auto isEdgeInTriangle
