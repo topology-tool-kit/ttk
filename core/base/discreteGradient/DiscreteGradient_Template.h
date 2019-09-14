@@ -446,6 +446,79 @@ int DiscreteGradient::buildGradient() {
 }
 
 template <typename dataType, typename idType>
+inline ttk::SimplexId
+  DiscreteGradient::getCellGreaterVertex(const Cell c) const {
+
+  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
+
+  const auto sosGreaterThan
+    = [&scalars, &offsets](const SimplexId a, const SimplexId b) -> bool {
+    if(scalars[a] != scalars[b]) {
+      return scalars[a] > scalars[b];
+    } else {
+      return offsets[a] > offsets[b];
+    }
+  };
+
+  auto cellDim = c.dim_;
+  auto cellId = c.id_;
+
+  SimplexId vertexId = -1;
+  if(cellDim == 0) {
+    vertexId = cellId;
+  }
+
+  else if(cellDim == 1) {
+    SimplexId v0;
+    SimplexId v1;
+    inputTriangulation_->getEdgeVertex(cellId, 0, v0);
+    inputTriangulation_->getEdgeVertex(cellId, 1, v1);
+
+    if(sosGreaterThan(v0, v1)) {
+      vertexId = v0;
+    } else {
+      vertexId = v1;
+    }
+  }
+
+  else if(cellDim == 2) {
+    SimplexId v0{}, v1{}, v2{};
+    inputTriangulation_->getTriangleVertex(cellId, 0, v0);
+    inputTriangulation_->getTriangleVertex(cellId, 1, v1);
+    inputTriangulation_->getTriangleVertex(cellId, 2, v2);
+    if(sosGreaterThan(v0, v1) && sosGreaterThan(v0, v2)) {
+      vertexId = v0;
+    } else if(sosGreaterThan(v1, v0) && sosGreaterThan(v1, v2)) {
+      vertexId = v1;
+    } else {
+      vertexId = v2;
+    }
+  }
+
+  else if(cellDim == 3) {
+    SimplexId v0{}, v1{}, v2{}, v3{};
+    inputTriangulation_->getCellVertex(cellId, 0, v0);
+    inputTriangulation_->getCellVertex(cellId, 1, v1);
+    inputTriangulation_->getCellVertex(cellId, 2, v2);
+    inputTriangulation_->getCellVertex(cellId, 3, v3);
+    if(sosGreaterThan(v0, v1) && sosGreaterThan(v0, v2)
+       && sosGreaterThan(v0, v3)) {
+      vertexId = v0;
+    } else if(sosGreaterThan(v1, v0) && sosGreaterThan(v1, v2)
+              && sosGreaterThan(v1, v3)) {
+      vertexId = v1;
+    } else if(sosGreaterThan(v2, v0) && sosGreaterThan(v2, v1)
+              && sosGreaterThan(v2, v3)) {
+      vertexId = v2;
+    } else {
+      vertexId = v3;
+    }
+  }
+  return vertexId;
+}
+
+template <typename dataType, typename idType>
 int DiscreteGradient::setCriticalPoints(
   const std::vector<Cell> &criticalPoints) const {
 #ifndef TTK_ENABLE_KAMIKAZE

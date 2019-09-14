@@ -1162,6 +1162,13 @@ tetra identifier.
       int getCellIncenter(const Cell &cell, float incenter[3]) const;
 
       /**
+       * Get the vertex id of with the maximum scalar field value on
+       * the given cell. Compare offsets if scalar field is constant.
+       */
+      template <typename dataType, typename idType>
+      inline SimplexId getCellGreaterVertex(const Cell c) const;
+
+      /**
        * Build the geometric embedding of the given STL vector of cells.
        * The output data pointers are modified accordingly. This
        * function needs the following internal pointers to be set:
