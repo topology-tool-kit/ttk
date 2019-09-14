@@ -276,15 +276,15 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 
       // compare scalar field values on non common vertices
       if(scalars[m] != scalars[n]) {
-        return scalars[m] < scalars[n];
+        return scalars[m] > scalars[n];
       } else {
-        return offsets[m] < offsets[n];
+        return offsets[m] > offsets[n];
       }
 
     } else {
       // the cell of greater dimension should contain the cell of
       // smaller dimension
-      return a.dim_ < b.dim_;
+      return a.dim_ > b.dim_;
     }
   };
 
@@ -337,7 +337,8 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
       Cell c_delta{1, *Lx[1].begin()};
       for(const auto s : Lx[1]) {
         Cell cs{1, s};
-        if(orderCells(cs, c_delta)) {
+        if(orderCells(c_delta, cs)) {
+          // cs < c_delta
           c_delta = cs;
         }
       }
