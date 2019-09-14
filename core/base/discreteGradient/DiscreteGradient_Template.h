@@ -542,19 +542,9 @@ int DiscreteGradient::setCriticalPoints(
   }
 #endif
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
   auto *outputCriticalPoints_points_cellScalars
     = static_cast<std::vector<dataType> *>(
       outputCriticalPoints_points_cellScalars_);
-
-  const auto sosGreaterThan
-    = [&scalars, &offsets](const SimplexId a, const SimplexId b) {
-        if(scalars[a] != scalars[b]) {
-          return scalars[a] > scalars[b];
-        } else {
-          return offsets[a] > offsets[b];
-        }
-      };
 
   (*outputCriticalPoints_numberOfPoints_) = 0;
 
@@ -593,58 +583,8 @@ int DiscreteGradient::setCriticalPoints(
       outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
     }
     if(outputCriticalPoints_points_PLVertexIdentifiers_) {
-      SimplexId vertexId = -1;
-      if(!dmtMax2PL_.empty()) {
-        if(cellDim == 0) {
-          vertexId = cellId;
-        } else if(cellDim == dimensionality_) {
-          vertexId = dmtMax2PL_[cellId];
-        }
-      }
-
-      if(!dmt1Saddle2PL_.empty() and cellDim == 1) {
-        vertexId = dmt1Saddle2PL_[cellId];
-
-        if(vertexId == -1) {
-          SimplexId v0;
-          SimplexId v1;
-          inputTriangulation_->getEdgeVertex(cellId, 0, v0);
-          inputTriangulation_->getEdgeVertex(cellId, 1, v1);
-
-          if(sosGreaterThan(v0, v1)) {
-            vertexId = v0;
-          } else {
-            vertexId = v1;
-          }
-        }
-      }
-      if(!dmt2Saddle2PL_.empty() and cellDim == 2) {
-        vertexId = dmt2Saddle2PL_[cellId];
-
-        if(vertexId == -1) {
-          SimplexId v0 = 0;
-          SimplexId v1 = 0;
-          SimplexId v2 = 0;
-          if(dimensionality_ == 2) {
-            inputTriangulation_->getCellVertex(cellId, 0, v0);
-            inputTriangulation_->getCellVertex(cellId, 1, v1);
-            inputTriangulation_->getCellVertex(cellId, 2, v2);
-          } else if(dimensionality_ == 3) {
-            inputTriangulation_->getTriangleVertex(cellId, 0, v0);
-            inputTriangulation_->getTriangleVertex(cellId, 1, v1);
-            inputTriangulation_->getTriangleVertex(cellId, 2, v2);
-          }
-          if(sosGreaterThan(v0, v1) and sosGreaterThan(v0, v2)) {
-            vertexId = v0;
-          } else if(sosGreaterThan(v1, v0) and sosGreaterThan(v1, v2)) {
-            vertexId = v1;
-          } else {
-            vertexId = v2;
-          }
-        }
-      }
-
-      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertexId);
+      auto vertId = getCellGreaterVertex<dataType, idType>(cell);
+      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertId);
     }
 
     (*outputCriticalPoints_numberOfPoints_)++;
@@ -679,20 +619,10 @@ int DiscreteGradient::setAugmentedCriticalPoints(
   SimplexId *ascendingManifold,
   SimplexId *descendingManifold) const {
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
   auto *outputCriticalPoints_points_cellScalars
     = static_cast<std::vector<dataType> *>(
       outputCriticalPoints_points_cellScalars_);
   (*outputCriticalPoints_numberOfPoints_) = 0;
-
-  const auto sosGreaterThan
-    = [&scalars, &offsets](const SimplexId a, const SimplexId b) {
-        if(scalars[a] != scalars[b]) {
-          return scalars[a] > scalars[b];
-        } else {
-          return offsets[a] > offsets[b];
-        }
-      };
 
   const int numberOfDimensions = getNumberOfDimensions();
   std::vector<SimplexId> numberOfCriticalPointsByDimension(
@@ -729,58 +659,8 @@ int DiscreteGradient::setAugmentedCriticalPoints(
       outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
     }
     if(outputCriticalPoints_points_PLVertexIdentifiers_) {
-      SimplexId vertexId = -1;
-      if(!dmtMax2PL_.empty()) {
-        if(cellDim == 0) {
-          vertexId = cellId;
-        } else if(cellDim == dimensionality_) {
-          vertexId = dmtMax2PL_[cellId];
-        }
-      }
-
-      if(!dmt1Saddle2PL_.empty() and cellDim == 1) {
-        vertexId = dmt1Saddle2PL_[cellId];
-
-        if(vertexId == -1) {
-          SimplexId v0;
-          SimplexId v1;
-          inputTriangulation_->getEdgeVertex(cellId, 0, v0);
-          inputTriangulation_->getEdgeVertex(cellId, 1, v1);
-
-          if(sosGreaterThan(v0, v1)) {
-            vertexId = v0;
-          } else {
-            vertexId = v1;
-          }
-        }
-      }
-      if(!dmt2Saddle2PL_.empty() and cellDim == 2) {
-        vertexId = dmt2Saddle2PL_[cellId];
-
-        if(vertexId == -1) {
-          SimplexId v0 = 0;
-          SimplexId v1 = 0;
-          SimplexId v2 = 0;
-          if(dimensionality_ == 2) {
-            inputTriangulation_->getCellVertex(cellId, 0, v0);
-            inputTriangulation_->getCellVertex(cellId, 1, v1);
-            inputTriangulation_->getCellVertex(cellId, 2, v2);
-          } else if(dimensionality_ == 3) {
-            inputTriangulation_->getTriangleVertex(cellId, 0, v0);
-            inputTriangulation_->getTriangleVertex(cellId, 1, v1);
-            inputTriangulation_->getTriangleVertex(cellId, 2, v2);
-          }
-          if(sosGreaterThan(v0, v1) and sosGreaterThan(v0, v2)) {
-            vertexId = v0;
-          } else if(sosGreaterThan(v1, v0) and sosGreaterThan(v1, v2)) {
-            vertexId = v1;
-          } else {
-            vertexId = v2;
-          }
-        }
-      }
-
-      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertexId);
+      auto vertId = getCellGreaterVertex<dataType, idType>(cell);
+      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertId);
     }
 
     if(outputCriticalPoints_points_manifoldSize_) {
