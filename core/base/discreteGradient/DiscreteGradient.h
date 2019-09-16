@@ -383,7 +383,7 @@ function value.
       /**
        * Type alias for paired cells: one vector of fixed size per dimension
        */
-      using isPairedType = std::array<std::vector<bool>, 4>;
+      using isPairedType = std::array<std::set<SimplexId>, 4>;
 
       /**
        * @brief Store the subcomplexes around vertex for which offset
@@ -505,7 +505,7 @@ function value.
             SimplexId v;
             inputTriangulation_->getEdgeVertex(c.id_, i, v);
             // check if v not paired
-            if(!isPaired[0][v]) {
+            if(isPaired[0].find(v) == isPaired[0].end()) {
               count++;
             }
           }
@@ -514,7 +514,8 @@ function value.
             SimplexId e;
             inputTriangulation_->getTriangleEdge(c.id_, i, e);
             // check if e in ls and not paired
-            if(ls[1].find(e) != ls[1].end() && !isPaired[1][e]) {
+            if(ls[1].find(e) != ls[1].end()
+               && isPaired[1].find(e) == isPaired[1].end()) {
               count++;
             }
           }
@@ -523,7 +524,8 @@ function value.
             SimplexId t;
             inputTriangulation_->getCellTriangle(c.id_, i, t);
             // check if t in ls and not paired
-            if(ls[2].find(t) != ls[2].end() && !isPaired[2][t]) {
+            if(ls[2].find(t) != ls[2].end()
+               && isPaired[2].find(t) == isPaired[2].end()) {
               count++;
             }
           }
@@ -547,7 +549,7 @@ function value.
             SimplexId v;
             inputTriangulation_->getEdgeVertex(c.id_, i, v);
             // check if v not paired
-            if(!isPaired[0][v]) {
+            if(isPaired[0].find(v) == isPaired[0].end()) {
               return v;
             }
           }
@@ -556,7 +558,8 @@ function value.
             SimplexId e;
             inputTriangulation_->getTriangleEdge(c.id_, i, e);
             // check if e in ls and not paired
-            if(ls[1].find(e) != ls[1].end() && !isPaired[1][e]) {
+            if(ls[1].find(e) != ls[1].end()
+               && isPaired[1].find(e) == isPaired[1].end()) {
               return e;
             }
           }
@@ -565,7 +568,8 @@ function value.
             SimplexId t;
             inputTriangulation_->getCellTriangle(c.id_, i, t);
             // check if t in ls and not paired
-            if(ls[2].find(t) != ls[2].end() && !isPaired[2][t]) {
+            if(ls[2].find(t) != ls[2].end()
+               && isPaired[2].find(t) == isPaired[2].end()) {
               return t;
             }
           }
