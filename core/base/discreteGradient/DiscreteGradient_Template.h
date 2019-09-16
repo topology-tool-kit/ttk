@@ -190,11 +190,8 @@ dataType DiscreteGradient::getPersistence(const Cell &up,
 }
 
 template <typename dataType, typename idType>
-int DiscreteGradient::assignGradient(const dataType *const scalars,
-                                     const idType *const offsets,
-                                     gradientType &gradient) const {
-
-  // ProcessLowerStars
+int DiscreteGradient::processLowerStars(const dataType *const scalars,
+                                        const idType *const offsets) {
 
   /* Declarations */
   const auto isEdgeInTriangle
@@ -304,8 +301,8 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
 
     const auto V = [&](const Cell alpha, const Cell beta) {
       // beta.dim_ == alpha.dim_ + 1
-      gradient[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
-      gradient[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
+      gradient_[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
+      gradient_[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
       isPaired[alpha.dim_].emplace(alpha.id_);
       isPaired[beta.dim_].emplace(beta.id_);
     };
@@ -431,9 +428,8 @@ int DiscreteGradient::buildGradient() {
     gradient_[i][i + 1].resize(numberOfCells[i + 1], -1);
   }
 
-  /* move outside the loop */
   // compute gradient pairs
-  assignGradient<dataType, idType>(scalars, offsets, gradient_);
+  processLowerStars<dataType, idType>(scalars, offsets);
 
   {
     std::stringstream msg;

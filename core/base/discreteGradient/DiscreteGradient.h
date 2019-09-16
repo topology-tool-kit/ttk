@@ -578,16 +578,13 @@ function value.
       }
 
       /**
-       * Body of AssignGradient algorithm from "Parallel Computation of 3D
-Morse-Smale Complexes",
-       * N. Shivashankar and V. Natarajan.
-       * Compute the initial gradient field of the input scalar function for a
-given dimension.
+       * Implements the ProcessLowerStars algorithm from "Theory and
+       * Algorithms for Constructing Discrete Morse Complexes from
+       * Grayscale Digital Images", V. Robins, P. J. Wood,
+       * A. P. Sheppard
        */
       template <typename dataType, typename idType>
-      int assignGradient(const dataType *scalars,
-                         const idType *offsets,
-                         gradientType &gradient) const;
+      int processLowerStars(const dataType *scalars, const idType *offsets);
 
     public:
       /**
