@@ -35,10 +35,10 @@ using namespace ttk;
 
 namespace ttk {
   template <typename dataType>
-  class PersistenceDiagramsBarycenter : public Debug {
+  class PersistenceDiagramBarycenter : public Debug {
 
   public:
-    PersistenceDiagramsBarycenter() {
+    PersistenceDiagramBarycenter() {
       wasserstein_ = 2;
       alpha_ = 1;
       lambda_ = 1;
@@ -53,7 +53,7 @@ namespace ttk {
       use_progressive_ = 1;
     };
 
-    ~PersistenceDiagramsBarycenter(){};
+    ~PersistenceDiagramBarycenter(){};
 
     void execute(std::vector<diagramTuple> *barycenter,
                  vector<vector<vector<matchingTuple>>> *all_matchings);
@@ -168,7 +168,7 @@ namespace ttk {
   };
 
   template <typename dataType>
-  void PersistenceDiagramsBarycenter<dataType>::execute(
+  void PersistenceDiagramBarycenter<dataType>::execute(
     std::vector<diagramTuple> *barycenter,
     vector<vector<vector<matchingTuple>>> *all_matchings) {
 
@@ -453,7 +453,7 @@ namespace ttk {
                   << total_cost << std::endl;
       }
       std::stringstream msg;
-      msg << "[PersistenceDiagramsBarycenter] processed in "
+      msg << "[PersistenceDiagramBarycenter] processed in "
           << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
           << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);

@@ -1,7 +1,7 @@
 /// \brief Command line program for persistence diagram barycenters computation.
 
 // include the local headers
-#include <ttkPersistenceDiagramsClustering.h>
+#include <ttkPersistenceDiagramClustering.h>
 #include <ttkProgramBase.h>
 
 using namespace std;
@@ -9,7 +9,7 @@ using namespace ttk;
 
 int main(int argc, char **argv) {
 
-  vtkProgram<ttkPersistenceDiagramsClustering> program;
+  vtkProgram<ttkPersistenceDiagramClustering> program;
 
   // specify local parameters to the TTK module with default values.
   double timeLimit = -1;

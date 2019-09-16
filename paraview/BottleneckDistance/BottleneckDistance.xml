@@ -188,20 +188,20 @@ the extremum</Documentation>
       </DoubleVectorProperty>
 	  
 	  
-	  <DoubleVectorProperty
-          name="Delta_lim"
-          label="Precision threshold for the Auction algorithm"
-          command="SetDelta_lim"
-          number_of_elements="1"
-          default_values="0.01"
-          panel_visibility="advanced"
-          >
-        <Documentation>
-          Relative precision for the Auction algorithm. The distance computed beetween 
-the diagrams to match will be higher than the real one of at most the Precision 
-Threshold.
-        </Documentation>
-      </DoubleVectorProperty>
+	  <!-- <DoubleVectorProperty -->
+          <!-- name="Delta_lim" -->
+          <!-- label="Precision threshold for the Auction algorithm" -->
+          <!-- command="SetDelta_lim" -->
+          <!-- number_of_elements="1" -->
+          <!-- default_values="0.01" -->
+          <!-- panel_visibility="advanced" -->
+          <!-- > -->
+        <!-- <Documentation> -->
+          <!-- Relative precision for the Auction algorithm. The distance computed beetween --> 
+<!-- the diagrams to match will be higher than the real one of at most the Precision --> 
+<!-- Threshold. -->
+        <!-- </Documentation> -->
+      <!-- </DoubleVectorProperty> -->
 
 <!--
 	  

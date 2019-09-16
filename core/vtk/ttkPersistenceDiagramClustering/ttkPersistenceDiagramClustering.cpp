@@ -1,4 +1,4 @@
-#include <ttkPersistenceDiagramsClustering.h>
+#include <ttkPersistenceDiagramClustering.h>
 
 #ifndef macroDiagramTuple
 #define macroDiagramTuple                                                     \
@@ -14,10 +14,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkPersistenceDiagramsClustering)
+vtkStandardNewMacro(ttkPersistenceDiagramClustering)
 
-  ttkPersistenceDiagramsClustering::ttkPersistenceDiagramsClustering() {
-  // std::cout<<"constructor"<<std::endl;
+  ttkPersistenceDiagramClustering::ttkPersistenceDiagramClustering() {
   UseAllCores = false;
   WassersteinMetric = "2";
   UseOutputMatching = true;
@@ -39,6 +38,7 @@ vtkStandardNewMacro(ttkPersistenceDiagramsClustering)
   needUpdate_ = true;
   UseInterruptible = true;
   UseAdditionalPrecision = false;
+  ForceUseOfAlgorithm = false;
   DistanceWritingOptions = 0;
   DisplayMethod = 0;
 
@@ -50,19 +50,19 @@ vtkStandardNewMacro(ttkPersistenceDiagramsClustering)
   SetNumberOfOutputPorts(3);
 }
 
-ttkPersistenceDiagramsClustering::~ttkPersistenceDiagramsClustering() {
+ttkPersistenceDiagramClustering::~ttkPersistenceDiagramClustering() {
 }
 
 // transmit abort signals -- to copy paste in other wrappers
-bool ttkPersistenceDiagramsClustering::needsToAbort() {
+bool ttkPersistenceDiagramClustering::needsToAbort() {
   return GetAbortExecute();
 }
 
 // transmit progress status -- to copy paste in other wrappers
-int ttkPersistenceDiagramsClustering::updateProgress(const float &progress) {
+int ttkPersistenceDiagramClustering::updateProgress(const float &progress) {
   {
     stringstream msg;
-    msg << "[ttkPersistenceDiagramsClustering] " << progress * 100
+    msg << "[ttkPersistenceDiagramClustering] " << progress * 100
         << "% processed...." << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
@@ -71,14 +71,14 @@ int ttkPersistenceDiagramsClustering::updateProgress(const float &progress) {
   return 0;
 }
 
-int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input,
+int ttkPersistenceDiagramClustering::doIt(vtkDataSet **input,
                                            vtkUnstructuredGrid *outputClusters,
                                            vtkUnstructuredGrid *outputCentroids,
                                            vtkUnstructuredGrid *outputMatchings,
                                            int numInputs) {
   // Get arrays from input datas
-  // std::cout<<"STARTING doIt"<<std::endl;
   // vtkDataArray* inputDiagram[numInputs] = { NULL };
+  //
   //
   vector<vtkUnstructuredGrid *> inputDiagram(numInputs);
   for(int i = 0; i < numInputs; ++i) {
@@ -139,18 +139,17 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input,
 
         if(Method == 0) {
           // Progressive approach
-          PersistenceDiagramsClustering<VTK_TT> persistenceDiagramsClustering;
+          PersistenceDiagramClustering<VTK_TT> persistenceDiagramsClustering;
           persistenceDiagramsClustering.setWrapper(this);
 
           string wassersteinMetric = WassersteinMetric;
 
-          // std::cout<<"setting the PersistenceDiagramsClustering
-          // parameters"<<std::endl;
           if(!UseInterruptible) {
             TimeLimit = 999999999;
           }
           persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
           persistenceDiagramsClustering.setDeterministic(Deterministic);
+          persistenceDiagramsClustering.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
           persistenceDiagramsClustering.setPairTypeClustering(
             PairTypeClustering);
           persistenceDiagramsClustering.setNumberOfInputs(numInputs);
@@ -183,7 +182,7 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input,
           for(int i_input = 0; i_input < numInputs; i_input++) {
             inv_clustering_[i_input] = 0;
           }
-          PersistenceDiagramsBarycenter<VTK_TT> persistenceDiagramsBarycenter;
+          PersistenceDiagramBarycenter<VTK_TT> persistenceDiagramsBarycenter;
           persistenceDiagramsBarycenter.setWrapper(this);
 
           string wassersteinMetric = WassersteinMetric;
@@ -224,7 +223,7 @@ int ttkPersistenceDiagramsClustering::doIt(vtkDataSet **input,
   return 0;
 }
 
-int ttkPersistenceDiagramsClustering::FillInputPortInformation(
+int ttkPersistenceDiagramClustering::FillInputPortInformation(
   int port, vtkInformation *info) {
   if(!this->Superclass::FillInputPortInformation(port, info)) {
     return 0;
@@ -233,7 +232,7 @@ int ttkPersistenceDiagramsClustering::FillInputPortInformation(
   return 1;
 }
 
-int ttkPersistenceDiagramsClustering::FillOutputPortInformation(
+int ttkPersistenceDiagramClustering::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(!this->Superclass::FillOutputPortInformation(port, info)) {
     return 0;
@@ -244,18 +243,16 @@ int ttkPersistenceDiagramsClustering::FillOutputPortInformation(
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkPersistenceDiagramsClustering::RequestData(
+int ttkPersistenceDiagramClustering::RequestData(
   vtkInformation *request,
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
   Memory m;
 
   // Number of input files
-  // std::cout<<"requestData"<<std::endl;
   int numInputs = numberOfInputsFromCommandLine;
   if(numInputs == 1) {
     numInputs = inputVector[0]->GetNumberOfInformationObjects();
-    // std::cout<<"1 inputs with "<< numInputs <<" objects"<<std::endl;
   }
   {
     stringstream msg;
@@ -276,7 +273,6 @@ int ttkPersistenceDiagramsClustering::RequestData(
     }
   }
   // TODO Set output
-  // std::cout<<"settings outputs"<<std::endl;
   vtkInformation *outInfo1;
   outInfo1 = outputVector->GetInformationObject(0);
   vtkDataSet *output1
@@ -303,7 +299,7 @@ int ttkPersistenceDiagramsClustering::RequestData(
 
   {
     stringstream msg;
-    msg << "[ttkPersistenceDiagramsClustering] Memory usage: "
+    msg << "[ttkPersistenceDiagramClustering] Memory usage: "
         << m.getElapsedUsage() << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
   }

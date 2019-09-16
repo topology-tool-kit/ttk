@@ -29,6 +29,13 @@ std::vector<int> PDClustering<dataType>::execute(
     &all_matchings_per_type_and_cluster) {
   // std::vector<std::vector<std::vector<matchingTuple>>> all_matchings;
   //
+  /* if(numberOfInputs_==2 and k_==1){ */
+  /*   if(do_min_){ */
+  /*     computeDistanceAndMatchings(bidder_diagrams_min_[0], bidder_diagrams_max_[1]); */
+  /*   } */
+  /*   std::vector<int> result(2,0); */
+  /*   return result; */
+  /* } */
   all_matchings_per_type_and_cluster.resize(k_);
   for(int c = 0; c < k_; c++) {
     all_matchings_per_type_and_cluster[c].resize(3);
@@ -36,12 +43,19 @@ std::vector<int> PDClustering<dataType>::execute(
       all_matchings_per_type_and_cluster[c][i].resize(numberOfInputs_);
     }
   }
+  int matchings_only = false;
   Timer t;
   {
     // PARTICULARITIES FOR THE CASE OF ONE UNIQUE CLUSTER
     if(k_ <= 1) {
       use_accelerated_ = false;
       use_kmeanspp_ = false;
+      if(numberOfInputs_ == 2 and forceUseOfAlgorithm_ == false) {
+        use_progressive_ = false;
+        deterministic_ = true;
+        matchings_only = true;
+        time_limit_ = 99999999999;
+      }
     }
 
     std::vector<bool *> current_prec;
@@ -273,9 +287,9 @@ std::vector<int> PDClustering<dataType>::execute(
 
         // cout<<" update centroid "<<endl;
         // cout<<"EPSILON FOR MATCHINGS : "<<epsilon_[2]<<endl;
-        std::vector<dataType> max_shift_vec
-          = updateCentroidsPosition(&min_off_diag_price, &min_diag_price,
-                                    all_matchings_per_type_and_cluster, 0);
+        std::vector<dataType> max_shift_vec = updateCentroidsPosition(
+          &min_off_diag_price, &min_diag_price,
+          all_matchings_per_type_and_cluster, matchings_only);
         // cout<<" update centroid done"<<endl;
         if(do_min_ && !UseDeltaLim_) {
           precision_min_ = (epsilon_[0] < epsilon0[0] / 500.);
@@ -485,13 +499,15 @@ std::vector<int> PDClustering<dataType>::execute(
         // passed? : "<<(bool)(epsilon_<epsilon0/500.)<<std::endl;
       }
     }
-    std::vector<dataType> max_shift_vec
-          = updateCentroidsPosition(&min_off_diag_price, &min_diag_price,
-                                    all_matchings_per_type_and_cluster, 1);
     resetDosToOriginalValues();
     if(debugLevel_ > 0) {
-      std::cout << "[PersistenceDiagramsClustering] Final Cost : "
-                << min_cost_min + min_cost_sad + min_cost_max << std::endl;
+      if(matchings_only) {
+        std::cout << "[PersistenceDiagramClustering] Wasserstein distance : "
+                  << cost_min_ + cost_sad_ + cost_max_ << std::endl;
+      }else{
+        std::cout << "[PersistenceDiagramClustering] Final Cost : "
+          << min_cost_min + min_cost_sad + min_cost_max << std::endl;
+      }
     }
     // cout<<"TOTAL ELAPSED "<<total_time<<endl;
     // dataType real_cost=0;
@@ -507,6 +523,17 @@ std::vector<int> PDClustering<dataType>::execute(
     }
   } // End of timer
 
+  // CORRECT MATCHINGS :
+  // correctMatchings(all_matchings);
+  // cout<<"\n current bidder ids \n"<<endl;
+  // for(int i=0; i<current_bidder_ids_min_[0].size(); i++){
+  //     cout<<i<<" "<<current_bidder_ids_min_[0][i]<<endl;
+  // }
+  // printMatchings(all_matchings_per_type_and_cluster[0]);
+  if(matchings_only) {
+    computeBarycenterForTwo(all_matchings_per_type_and_cluster);
+  }
+  correctMatchings(all_matchings_per_type_and_cluster);
   // Filling the final centroids for output
 
   final_centroids.resize(k_);
@@ -581,14 +608,7 @@ std::vector<int> PDClustering<dataType>::execute(
     }
   }
 
-  // CORRECT MATCHINGS :
-  // correctMatchings(all_matchings);
-  // cout<<"\n current bidder ids \n"<<endl;
-  // for(int i=0; i<current_bidder_ids_min_[0].size(); i++){
-  //     cout<<i<<" "<<current_bidder_ids_min_[0][i]<<endl;
-  // }
-  // printMatchings(all_matchings_per_type_and_cluster[0]);
-  correctMatchings(all_matchings_per_type_and_cluster);
+
 
   if(distanceWritingOptions_ == 1) {
     printDistancesToFile();
@@ -1625,7 +1645,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
   std::vector<std::vector<dataType>> *min_diag_price,
   std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
     &all_matchings_per_type_and_cluster,
-    int only_matchings) {
+  int only_matchings) {
   barycenter_inputs_reset_flag = true;
   dataType max_shift = 0;
   std::vector<dataType> max_shift_vector(3);
@@ -1852,7 +1872,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         barycenter_computer_min_[c].runMatching(
           &total_cost, epsilon_[0], sizes, kdt, &correspondance_kdt_map,
           &(min_diag_price->at(0)), &(min_price->at(0)), &(all_matchings),
-          use_kdt);
+          use_kdt, only_matchings);
         for(int ii = 0; ii < all_matchings.size(); ii++) {
           all_matchings_per_type_and_cluster[c][0][ii].resize(
             all_matchings[ii].size());
@@ -1974,7 +1994,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         barycenter_computer_sad_[c].runMatching(
           &total_cost, epsilon_[1], sizes, kdt, &correspondance_kdt_map,
           &(min_diag_price->at(1)), &(min_price->at(1)), &(all_matchings),
-          use_kdt);
+          use_kdt, only_matchings);
         for(int ii = 0; ii < all_matchings.size(); ii++) {
           all_matchings_per_type_and_cluster[c][1][ii].resize(
             all_matchings[ii].size());
@@ -2131,7 +2151,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         barycenter_computer_max_[c].runMatching(
           &total_cost, epsilon_[2], sizes, kdt, &correspondance_kdt_map,
           &(min_diag_price->at(2)), &(min_price->at(2)), &(all_matchings),
-          use_kdt);
+          use_kdt, only_matchings);
         for(int ii = 0; ii < all_matchings.size(); ii++) {
           all_matchings_per_type_and_cluster[c][2][ii].resize(
             all_matchings[ii].size());
@@ -2934,6 +2954,180 @@ dataType PDClustering<dataType>::computeRealCost() {
     // cout<<"SO FAR REAL COST MAX : "<<total_real_cost_max<<endl;
   }
   return total_real_cost_min + total_real_cost_sad + total_real_cost_max;
+}
+
+template <typename dataType>
+void PDClustering<dataType>::computeBarycenterForTwo(
+  vector<vector<vector<vector<matchingTuple>>>>
+    &all_matchings_per_type_and_cluster) {
+
+  if(do_min_) {
+    std::vector<int> new_to_old_id(current_bidder_diagrams_min_[1].size());
+    // 1. Invert the current_bidder_ids_ vector
+    for(unsigned int j = 0; j < current_bidder_ids_min_[1].size(); j++) {
+      int new_id = current_bidder_ids_min_[1][j];
+      if(new_id >= 0) {
+        new_to_old_id[new_id] = j;
+      }
+    }
+    vector<matchingTuple> matching_to_add(0);
+    for(int i = 0; i < all_matchings_per_type_and_cluster[0][0][1].size();
+        i++) {
+      matchingTuple t = all_matchings_per_type_and_cluster[0][0][1][i];
+      int bidderId = get<0>(t);
+      int goodId = get<1>(t);
+      if(bidderId >= 0) {
+        Bidder<dataType> b
+          = bidder_diagrams_min_[1].get(new_to_old_id[bidderId]);
+        dataType bx = b.x_;
+        dataType by = b.y_;
+        if(goodId >= 0) {
+          Good<dataType> g = centroids_min_[0].get(goodId);
+          dataType gx = g.x_;
+          dataType gy = g.y_;
+          centroids_min_[0].get(goodId).x_ = (bx + gx) / 2;
+          centroids_min_[0].get(goodId).y_ = (by + gy) / 2;
+        } else {
+          dataType gx = (bx + by) / 2;
+          dataType gy = (bx + by) / 2;
+          gx = (gx + bx) / 2;
+          gy = (gy + by) / 2;
+          dataType cost
+            = pow((gx - bx), wasserstein_) + pow((gy - by), wasserstein_);
+          Good<dataType> g
+            = Good<dataType>(gx, gy, false, centroids_min_[0].size());
+          // g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
+          matchingTuple t2
+            = make_tuple(bidderId, centroids_min_[0].size(), cost);
+          centroids_min_[0].addGood(g);
+          matching_to_add.push_back(t2);
+        }
+      } else {
+        if(goodId >= 0) {
+          Good<dataType> g = centroids_min_[0].get(goodId);
+          dataType gx = (g.x_ + g.y_) / 2;
+          dataType gy = (g.x_ + g.y_) / 2;
+          centroids_min_[0].get(goodId).x_ = (gx + g.x_) / 2;
+          centroids_min_[0].get(goodId).y_ = (gy + g.y_) / 2;
+        }
+      }
+    }
+    for(int j = 0; j < matching_to_add.size(); j++) {
+      all_matchings_per_type_and_cluster[0][0][1].push_back(matching_to_add[j]);
+    }
+  }
+
+  if(do_sad_) {
+    std::vector<int> new_to_old_id(current_bidder_diagrams_saddle_[1].size());
+    // 1. Invert the current_bidder_ids_ vector
+    for(unsigned int j = 0; j < current_bidder_ids_sad_[1].size(); j++) {
+      int new_id = current_bidder_ids_sad_[1][j];
+      if(new_id >= 0) {
+        new_to_old_id[new_id] = j;
+      }
+    }
+    vector<matchingTuple> matching_to_add(0);
+    for(int i = 0; i < all_matchings_per_type_and_cluster[0][1][1].size();
+        i++) {
+      matchingTuple t = all_matchings_per_type_and_cluster[0][1][1][i];
+      int bidderId = get<0>(t);
+      int goodId = get<1>(t);
+      if(bidderId >= 0) {
+        Bidder<dataType> b
+          = bidder_diagrams_saddle_[1].get(new_to_old_id[bidderId]);
+        dataType bx = b.x_;
+        dataType by = b.y_;
+        if(goodId >= 0) {
+          Good<dataType> g = centroids_saddle_[0].get(goodId);
+          dataType gx = g.x_;
+          dataType gy = g.y_;
+          centroids_saddle_[0].get(goodId).x_ = (bx + gx) / 2;
+          centroids_saddle_[0].get(goodId).y_ = (by + gy) / 2;
+        } else {
+          dataType gx = (bx + by) / 2;
+          dataType gy = (bx + by) / 2;
+          gx = (gx + bx) / 2;
+          gy = (gy + by) / 2;
+          dataType cost
+            = pow((gx - bx), wasserstein_) + pow((gy - by), wasserstein_);
+          matchingTuple t2
+            = make_tuple(bidderId, centroids_saddle_[0].size(), cost);
+          Good<dataType> g
+            = Good<dataType>(gx, gy, false, centroids_saddle_[0].size());
+          // g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
+          centroids_saddle_[0].addGood(g);
+          matching_to_add.push_back(t2);
+        }
+      } else {
+        if(goodId >= 0) {
+          Good<dataType> g = centroids_saddle_[0].get(goodId);
+          dataType gx = (g.x_ + g.y_) / 2;
+          dataType gy = (g.x_ + g.y_) / 2;
+          centroids_saddle_[0].get(goodId).x_ = (gx + g.x_) / 2;
+          centroids_saddle_[0].get(goodId).y_ = (gy + g.y_) / 2;
+        }
+      }
+    }
+    for(int j = 0; j < matching_to_add.size(); j++) {
+      all_matchings_per_type_and_cluster[0][1][1].push_back(matching_to_add[j]);
+    }
+  }
+
+  if(do_max_) {
+    std::vector<int> new_to_old_id(current_bidder_diagrams_max_[1].size());
+    // 1. Invert the current_bidder_ids_ vector
+    for(unsigned int j = 0; j < current_bidder_ids_max_[1].size(); j++) {
+      int new_id = current_bidder_ids_max_[1][j];
+      if(new_id >= 0) {
+        new_to_old_id[new_id] = j;
+      }
+    }
+    vector<matchingTuple> matching_to_add(0);
+    for(int i = 0; i < all_matchings_per_type_and_cluster[0][2][1].size();
+        i++) {
+      matchingTuple t = all_matchings_per_type_and_cluster[0][2][1][i];
+      int bidderId = get<0>(t);
+      int goodId = get<1>(t);
+      if(bidderId >= 0) {
+        Bidder<dataType> b
+          = bidder_diagrams_max_[1].get(new_to_old_id[bidderId]);
+        dataType bx = b.x_;
+        dataType by = b.y_;
+        if(goodId >= 0) {
+          Good<dataType> g = centroids_max_[0].get(goodId);
+          dataType gx = g.x_;
+          dataType gy = g.y_;
+          centroids_max_[0].get(goodId).x_ = (bx + gx) / 2;
+          centroids_max_[0].get(goodId).y_ = (by + gy) / 2;
+        } else {
+          dataType gx = (bx + by) / 2;
+          dataType gy = (bx + by) / 2;
+          gx = (gx + bx) / 2;
+          gy = (gy + by) / 2;
+          dataType cost
+            = pow((gx - bx), wasserstein_) + pow((gy - by), wasserstein_);
+          matchingTuple t2
+            = make_tuple(bidderId, centroids_max_[0].size(), cost);
+          Good<dataType> g
+            = Good<dataType>(gx, gy, false, centroids_max_[0].size());
+          // g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
+          centroids_max_[0].addGood(g);
+          matching_to_add.push_back(t2);
+        }
+      } else {
+        if(goodId >= 0) {
+          Good<dataType> g = centroids_max_[0].get(goodId);
+          dataType gx = (g.x_ + g.y_) / 2;
+          dataType gy = (g.x_ + g.y_) / 2;
+          centroids_max_[0].get(goodId).x_ = (gx + g.x_) / 2;
+          centroids_max_[0].get(goodId).y_ = (gy + g.y_) / 2;
+        }
+      }
+    }
+    for(int j = 0; j < matching_to_add.size(); j++) {
+      all_matchings_per_type_and_cluster[0][2][1].push_back(matching_to_add[j]);
+    }
+  }
 }
 
 #endif

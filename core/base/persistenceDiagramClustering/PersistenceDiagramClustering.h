@@ -23,7 +23,7 @@
 //
 #include <PersistenceDiagram.h>
 //
-#include <PersistenceDiagramsBarycenter.h>
+#include <PersistenceDiagramBarycenter.h>
 //
 #include <limits>
 //
@@ -35,10 +35,10 @@ using namespace ttk;
 
 namespace ttk {
   template <typename dataType>
-  class PersistenceDiagramsClustering : public Debug {
+  class PersistenceDiagramClustering : public Debug {
 
   public:
-    PersistenceDiagramsClustering() {
+    PersistenceDiagramClustering() {
       wasserstein_ = 2;
       use_progressive_ = 1;
       use_kmeanspp_ = 0;
@@ -49,7 +49,7 @@ namespace ttk {
       debugLevel_ = 2;
     };
 
-    ~PersistenceDiagramsClustering(){};
+    ~PersistenceDiagramClustering(){};
 
     std::vector<int>
       execute(std::vector<std::vector<diagramTuple>> *centroids,
@@ -105,6 +105,9 @@ namespace ttk {
     inline void setNumberOfClusters(const int NumberOfClusters) {
       n_clusters_ = NumberOfClusters;
     }
+    inline void setForceUseOfAlgorithm(const bool forceUseOfAlgorithm) {
+      forceUseOfAlgorithm_ = forceUseOfAlgorithm;
+    }
     inline void setDeterministic(const bool deterministic) {
       deterministic_ = deterministic;
     }
@@ -141,6 +144,7 @@ namespace ttk {
     int distanceWritingOptions_;
     int debugLevel_;
     int pairTypeClustering_;
+    bool forceUseOfAlgorithm_;
     bool deterministic_;
     int wasserstein_;
     int n_clusters_;
@@ -163,14 +167,14 @@ namespace ttk {
   };
 
   template <typename dataType>
-  std::vector<int> PersistenceDiagramsClustering<dataType>::execute(
+  std::vector<int> PersistenceDiagramClustering<dataType>::execute(
     std::vector<std::vector<diagramTuple>> *final_centroids,
     vector<vector<vector<matchingTuple>>> *all_matchings) {
 
     Timer t;
     {
       if(debugLevel_ > 1) {
-        std::cout << "[PersistenceDiagramsClustering] Clustering "
+        std::cout << "[PersistenceDiagramClustering] Clustering "
                   << numberOfInputs_ << " diagrams in " << n_clusters_
                   << " clusters." << std::endl;
       }
@@ -232,7 +236,7 @@ namespace ttk {
       switch(pairTypeClustering_) {
         case(0):
           if(debugLevel_ > 2) {
-            std::cout << "[PersistenceDiagramsClustering] Only MIN-SAD Pairs"
+            std::cout << "[PersistenceDiagramClustering] Only MIN-SAD Pairs"
                       << '\n';
           }
           do_max = false;
@@ -240,7 +244,7 @@ namespace ttk {
           break;
         case(1):
           if(debugLevel_ > 2) {
-            std::cout << "[PersistenceDiagramsClustering] Only SAD-SAD Pairs"
+            std::cout << "[PersistenceDiagramClustering] Only SAD-SAD Pairs"
                       << '\n';
           }
           do_max = false;
@@ -248,7 +252,7 @@ namespace ttk {
           break;
         case(2):
           if(debugLevel_ > 2) {
-            std::cout << "[PersistenceDiagramsClustering] Only SAD-MAX Pairs"
+            std::cout << "[PersistenceDiagramClustering] Only SAD-MAX Pairs"
                       << '\n';
           }
           do_min = false;
@@ -256,7 +260,7 @@ namespace ttk {
           break;
         default:
           if(debugLevel_ > 2) {
-            std::cout << "[PersistenceDiagramsClustering] All critical pairs : "
+            std::cout << "[PersistenceDiagramClustering] All critical pairs : "
                          "global clustering"
                       << '\n';
           }
@@ -276,6 +280,7 @@ namespace ttk {
       KMeans.setGeometricalFactor(alpha_);
       KMeans.setLambda(lambda_);
       KMeans.setDeterministic(deterministic_);
+      KMeans.setForceUseOfAlgorithm(forceUseOfAlgorithm_);
       KMeans.setDebugLevel(debugLevel_);
       KMeans.setDeltaLim(deltaLim_);
       KMeans.setUseDeltaLim(useDeltaLim_);
@@ -289,7 +294,7 @@ namespace ttk {
       vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
 
       std::stringstream msg;
-      msg << "[PersistenceDiagramsClustering] processed in "
+      msg << "[PersistenceDiagramClustering] processed in "
           << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
           << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);

@@ -21,6 +21,7 @@ namespace ttk {
       geometrical_factor_ = 1;
       threadNumber_ = 1;
       use_progressive_ = true;
+      forceUseOfAlgorithm_ = false;
       deterministic_ = true;
       time_limit_ = std::numeric_limits<double>::max();
       epsilon_min_ = 1e-8;
@@ -97,6 +98,7 @@ namespace ttk {
     void updateClusters();
     void invertClusters();
     void invertInverseClusters();
+    void computeBarycenterForTwo(vector<vector<vector<vector<matchingTuple>>>>&);
 
     void acceleratedUpdateClusters();
     std::vector<dataType> updateCentroidsPosition(
@@ -104,7 +106,7 @@ namespace ttk {
       std::vector<std::vector<dataType>> *min_diag_price,
       std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
         &all_matchings,
-        int only_matchings);
+      int only_matchings);
 
     inline void resetDosToOriginalValues() {
       do_min_ = original_dos[0];
@@ -177,6 +179,9 @@ namespace ttk {
     inline void setLambda(const double lambda) {
       lambda_ = lambda;
     }
+    inline void setForceUseOfAlgorithm(const bool forceUseOfAlgorithm) {
+      forceUseOfAlgorithm_ = forceUseOfAlgorithm;
+    }
     inline void setDeterministic(const bool deterministic) {
       deterministic_ = deterministic;
     }
@@ -241,6 +246,7 @@ namespace ttk {
     bool precision_max_;
     bool precision_min_;
     bool precision_sad_;
+    bool forceUseOfAlgorithm_;
     bool deterministic_;
     int wasserstein_;
     double geometrical_factor_;

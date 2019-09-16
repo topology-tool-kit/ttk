@@ -6,9 +6,9 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="PersistenceDiagramsClustering"
-     class="ttkPersistenceDiagramsClustering"
-     label="TTK PersistenceDiagramsClustering">
+     name="PersistenceDiagramClustering"
+     class="ttkPersistenceDiagramClustering"
+     label="TTK PersistenceDiagramClustering">
      <Documentation
         long_help="TTK plugin that takes an input ensemble data set (represented
 by a list of scalar fields) and which computes various vertexwise statistics
@@ -60,6 +60,30 @@ See also MandatoryCriticalPoints.
 		  The Auction algorithm is computationally more expensive than
 		  the progressive approach.
         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+      name="ForceUseOfAlgorithm"
+      command="SetForceUseOfAlgorithm"
+      label="Force the progressive approach if 2 inputs"
+      number_of_elements="1"
+      default_values="0"
+      panel_visibility="advanced">
+      <BooleanDomain name="bool"/>
+        <Hints>
+        <PropertyWidgetDecorator type="GenericDecorator"
+                                  mode="visibility"
+                                  property="Method"
+                                  value="0" />
+        <!-- enable this widget when <property> equals <value> -->
+      </Hints>
+      <Documentation>
+        When there are only two input diagrams and one cluster, the progressive approach is not used by default to compute the barycenter.
+          Instead, the Auction Algorithm is used to compute the Wasserstein distance between the two diagrams, and the barycenter is deduced from
+          the corresponding assignments without additional computationnal cost.
+          This option forces the use of the progressive approach to compute the barycenter.
+      </Documentation>
+
       </IntVectorProperty>
 
       <IntVectorProperty

@@ -7,7 +7,7 @@
 //
 #include <limits>
 //
-#include <PersistenceDiagramsBarycenter.h>
+#include <PersistenceDiagramBarycenter.h>
 
 using namespace std;
 using namespace ttk;
@@ -64,7 +64,8 @@ namespace ttk {
                      std::vector<dataType> *min_diag_price,
                      std::vector<dataType> *min_price,
                      std::vector<std::vector<matchingTuple>> *all_matchings,
-                     bool use_kdt);
+                     bool use_kdt,
+                     int compute_only_distance);
 
     void runMatchingAuction(
       dataType *total_cost,
