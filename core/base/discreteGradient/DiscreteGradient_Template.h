@@ -372,13 +372,7 @@ int DiscreteGradient::assignGradient(const dataType *const scalars,
       // push into pqOne every coface of delta in Lx (2-cells only,
       // 3-cells have not any facet paired yet) such that
       // numUnpairedFaces == 1
-      for(const auto alpha : Lx[2]) {
-        Cell c_alpha{2, alpha};
-        if(isEdgeInTriangle(c_delta.id_, alpha)
-           && numUnpairedFaces(c_alpha, Lx, isPaired) == 1) {
-          pqOne.push(c_alpha);
-        }
-      }
+      insertCofacets(c_delta, Lx, pqOne);
 
       while(!pqOne.empty() || !pqZero.empty()) {
         while(!pqOne.empty()) {
