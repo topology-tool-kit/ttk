@@ -168,7 +168,7 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
     double geoDistance = (px * pow(abs(x2 - x1), w) + py * pow(abs(y2 - y1), w)
                           + pz * pow(abs(z2 - z1), w));
     double val = infDistance + geoDistance;
-    return pow(val/2, 1 / w);
+    return pow(val, 1 / w);
   };
 
   const bool transposeMin = nbRowMin > nbColMin;

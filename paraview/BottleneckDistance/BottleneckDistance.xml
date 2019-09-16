@@ -102,43 +102,6 @@
           computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
-	  
-      <!--	  
-	   <DoubleVectorProperty
-          name="PersistencePercentage"
-          label="Percentage of Maximal Persistence kept"
-          command="SetPersistencePercentage"
-          number_of_elements="1"
-          default_values="0.01"
-          panel_visibility="advanced"
-          >
-        <Documentation>
-          Relative persistence threshold used to select pairs of persistence for the Auction. 
-		  Set to 0 to keep all persistence pairs, set to p (lower than 1) to keep only pairs with persistence higher
-		  than p x max_persistence.
-        </Documentation>
-      </DoubleVectorProperty>
--->
-<!--
-     <IntVectorProperty
-          name="Method"
-          label="Method for the auction"
-          command="SetMethod"
-          number_of_elements="1"
-          default_values="1" >
-		 <EnumerationDomain name="enum">
-          <Entry value="1" text="Exact Munkres Algorithm"/>
-          <Entry value="2" text="Approximate Auction Algorithm"/>
-        </EnumerationDomain>
-        <Documentation>
-          Type of algorithm for the computation of the matching. 
-		  Either the exact Munkres algorithm or the Approximate Auction
-		  Algorithm.
-		  The Auction algorithm is computationally less expensive than 
-		  the Munkres Algorithm.
-        </Documentation>
-      </IntVectorProperty>
-    -->
 
       <DoubleVectorProperty
       name="spe"
@@ -186,41 +149,7 @@ the extremum</Documentation>
         <Documentation>Importance weight for the Y component of 
 the extremum</Documentation>
       </DoubleVectorProperty>
-	  
-	  
-	  <!-- <DoubleVectorProperty -->
-          <!-- name="Delta_lim" -->
-          <!-- label="Precision threshold for the Auction algorithm" -->
-          <!-- command="SetDelta_lim" -->
-          <!-- number_of_elements="1" -->
-          <!-- default_values="0.01" -->
-          <!-- panel_visibility="advanced" -->
-          <!-- > -->
-        <!-- <Documentation> -->
-          <!-- Relative precision for the Auction algorithm. The distance computed beetween --> 
-<!-- the diagrams to match will be higher than the real one of at most the Precision --> 
-<!-- Threshold. -->
-        <!-- </Documentation> -->
-      <!-- </DoubleVectorProperty> -->
 
-<!--
-	  
-	  <IntVectorProperty
-        name="Use KDTree"
-        command="SetUseKDTree"
-        label="UseKDTree"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-         Set to 1 in order to use a KDTree as an accelerating structure (only available for the auction mode,
-		 will not affect the Munkres mode)
-        </Documentation>
-      </IntVectorProperty>
-	  
-	  
--->
       <DoubleVectorProperty
       name="spz"
       label="Z weight"

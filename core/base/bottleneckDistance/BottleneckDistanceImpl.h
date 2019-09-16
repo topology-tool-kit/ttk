@@ -478,13 +478,7 @@ dataType BottleneckDistance::buildMappings(
   // Input map permutation (so as to ignore transposition later on)
   const std::vector<int> map1 = transposeLocal ? m2 : m1;
   const std::vector<int> map2 = transposeLocal ? m1 : m2;
-  /* PRINT MATCHINGS
-  for (int j = 0; j < (int) inputMatchings.size(); j++) {
-        std::cout << std::get<0>(inputMatchings[j]) << " " ;
-        std::cout << std::get<1>(inputMatchings[j]) << " " ;
-        std::cout << std::get<2>(inputMatchings[j]) << "  |   " ;
-    }
-    */
+
   std::stringstream msg;
   dataType addedPersistence = 0;
   for(int i = 0, s = (int)inputMatchings.size(); i < s; ++i) {
@@ -511,6 +505,7 @@ dataType BottleneckDistance::buildMappings(
       outputMatchings.push_back(newT);
     }
   }
+
   return addedPersistence;
 }
 
