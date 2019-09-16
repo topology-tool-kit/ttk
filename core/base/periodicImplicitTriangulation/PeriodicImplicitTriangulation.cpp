@@ -296,104 +296,11 @@ int PeriodicImplicitTriangulation::getVertexNeighbor(
   if(dimensionality_ == 3) {
     SimplexId p[3];
     vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId
-            = getVertexNeighborABCDEFGH(vertexId, localNeighborId); // abcdefgh
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborABDC(vertexId, localNeighborId); // abdc
-        else
-          neighborId = getVertexNeighborEFHG(vertexId, localNeighborId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborAEFB(vertexId, localNeighborId); // aefb
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborAB(vertexId, localNeighborId); // ab
-        else
-          neighborId = getVertexNeighborEF(vertexId, localNeighborId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborGHDC(vertexId, localNeighborId); // ghdc
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborCD(vertexId, localNeighborId); // cd
-        else
-          neighborId = getVertexNeighborGH(vertexId, localNeighborId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborAEGC(vertexId, localNeighborId); // aegc
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborAC(vertexId, localNeighborId); // ac
-        else
-          neighborId = getVertexNeighborEG(vertexId, localNeighborId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborAE(vertexId, localNeighborId); // ae
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborA(vertexId, localNeighborId); // a
-        else
-          neighborId = getVertexNeighborE(vertexId, localNeighborId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborCG(vertexId, localNeighborId); // cg
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborC(vertexId, localNeighborId); // c
-        else
-          neighborId = getVertexNeighborG(vertexId, localNeighborId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborBFHD(vertexId, localNeighborId); // bfhd
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborBD(vertexId, localNeighborId); // bd
-        else
-          neighborId = getVertexNeighborFH(vertexId, localNeighborId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborBF(vertexId, localNeighborId); // bf
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborB(vertexId, localNeighborId); // b
-        else
-          neighborId = getVertexNeighborF(vertexId, localNeighborId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborDH(vertexId, localNeighborId); // dh
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborD(vertexId, localNeighborId); // d
-        else
-          neighborId = getVertexNeighborH(vertexId, localNeighborId); // h
-      }
-    }
+    neighborId = getVertexNeighbor3d(p, vertexId, localNeighborId);
   } else if(dimensionality_ == 2) {
     SimplexId p[2];
     vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        neighborId = getVertexNeighbor2dABCD(vertexId, localNeighborId); // abcd
-      else if(p[1] == 0)
-        neighborId = getVertexNeighbor2dAB(vertexId, localNeighborId); // ab
-      else
-        neighborId = getVertexNeighbor2dCD(vertexId, localNeighborId); // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        neighborId = getVertexNeighbor2dAC(vertexId, localNeighborId); // ac
-      else if(p[1] == 0)
-        neighborId = getVertexNeighbor2dA(vertexId, localNeighborId); // a
-      else
-        neighborId = getVertexNeighbor2dC(vertexId, localNeighborId); // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        neighborId = getVertexNeighbor2dBD(vertexId, localNeighborId); // bd
-      else if(p[1] == 0)
-        neighborId = getVertexNeighbor2dB(vertexId, localNeighborId); // b
-      else
-        neighborId = getVertexNeighbor2dD(vertexId, localNeighborId); // d
-    }
+    neighborId = getVertexNeighbor2d(p, vertexId, localNeighborId);
   } else if(dimensionality_ == 1) {
     // ab
     if(vertexId > 0 and vertexId < nbvoxels_[Di_]) {
@@ -473,103 +380,11 @@ int PeriodicImplicitTriangulation::getVertexEdge(const SimplexId &vertexId,
   if(dimensionality_ == 3) {
     SimplexId p[3];
     vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeABCDEFGH(p, localEdgeId); // abcdefgh
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeABDC(p, localEdgeId); // abdc
-        else
-          edgeId = getVertexEdgeEFHG(p, localEdgeId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeAEFB(p, localEdgeId); // aefb
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeAB(p, localEdgeId); // ab
-        else
-          edgeId = getVertexEdgeEF(p, localEdgeId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeGHDC(p, localEdgeId); // ghdc
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeCD(p, localEdgeId); // cd
-        else
-          edgeId = getVertexEdgeGH(p, localEdgeId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeAEGC(p, localEdgeId); // aegc
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeAC(p, localEdgeId); // ac
-        else
-          edgeId = getVertexEdgeEG(p, localEdgeId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeAE(p, localEdgeId); // ae
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeA(p, localEdgeId); // a
-        else
-          edgeId = getVertexEdgeE(p, localEdgeId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeCG(p, localEdgeId); // cg
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeC(p, localEdgeId); // c
-        else
-          edgeId = getVertexEdgeG(p, localEdgeId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeBFHD(p, localEdgeId); // bfhd
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeBD(p, localEdgeId); // bd
-        else
-          edgeId = getVertexEdgeFH(p, localEdgeId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeBF(p, localEdgeId); // bf
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeB(p, localEdgeId); // b
-        else
-          edgeId = getVertexEdgeF(p, localEdgeId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeDH(p, localEdgeId); // dh
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeD(p, localEdgeId); // d
-        else
-          edgeId = getVertexEdgeH(p, localEdgeId); // h
-      }
-    }
+    edgeId = getVertexEdge3d(p, localEdgeId);
   } else if(dimensionality_ == 2) {
     SimplexId p[2];
     vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        edgeId = getVertexEdge2dABCD(p, localEdgeId); // abcd
-      else if(p[1] == 0)
-        edgeId = getVertexEdge2dAB(p, localEdgeId); // ab
-      else
-        edgeId = getVertexEdge2dCD(p, localEdgeId); // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        edgeId = getVertexEdge2dAC(p, localEdgeId); // ac
-      else if(p[1] == 0)
-        edgeId = getVertexEdge2dA(p, localEdgeId); // a
-      else
-        edgeId = getVertexEdge2dC(p, localEdgeId); // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        edgeId = getVertexEdge2dBD(p, localEdgeId); // bd
-      else if(p[1] == 0)
-        edgeId = getVertexEdge2dB(p, localEdgeId); // b
-      else
-        edgeId = getVertexEdge2dD(p, localEdgeId); // d
-    }
+    edgeId = getVertexEdge2d(p, localEdgeId);
   } else if(dimensionality_ == 1) {
     // ab
     if(vertexId > 0 and vertexId < nbvoxels_[Di_]) {
@@ -644,77 +459,7 @@ int PeriodicImplicitTriangulation::getVertexTriangle(
   if(dimensionality_ == 3) {
     SimplexId p[3];
     vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleABCDEFGH(p, localTriangleId); // abcdefgh
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleABDC(p, localTriangleId); // abdc
-        else
-          triangleId = getVertexTriangleEFHG(p, localTriangleId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleAEFB(p, localTriangleId); // aefb
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleAB(p, localTriangleId); // ab
-        else
-          triangleId = getVertexTriangleEF(p, localTriangleId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleGHDC(p, localTriangleId); // ghdc
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleCD(p, localTriangleId); // cd
-        else
-          triangleId = getVertexTriangleGH(p, localTriangleId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleAEGC(p, localTriangleId); // aegc
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleAC(p, localTriangleId); // ac
-        else
-          triangleId = getVertexTriangleEG(p, localTriangleId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleAE(p, localTriangleId); // ae
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleA(p, localTriangleId); // a
-        else
-          triangleId = getVertexTriangleE(p, localTriangleId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleCG(p, localTriangleId); // cg
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleC(p, localTriangleId); // c
-        else
-          triangleId = getVertexTriangleG(p, localTriangleId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleBFHD(p, localTriangleId); // bfhd
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleBD(p, localTriangleId); // bd
-        else
-          triangleId = getVertexTriangleFH(p, localTriangleId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleBF(p, localTriangleId); // bf
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleB(p, localTriangleId); // b
-        else
-          triangleId = getVertexTriangleF(p, localTriangleId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleDH(p, localTriangleId); // dh
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleD(p, localTriangleId); // d
-        else
-          triangleId = getVertexTriangleH(p, localTriangleId); // h
-      }
-    }
+    triangleId = getVertexTriangle3d(p, localTriangleId);
   }
 
   return 0;
@@ -761,103 +506,11 @@ int PeriodicImplicitTriangulation::getVertexLink(const SimplexId &vertexId,
   if(dimensionality_ == 3) {
     SimplexId p[3];
     vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkABCDEFGH(p, localLinkId); // abcdefgh
-        else if(p[2] == 0)
-          linkId = getVertexLinkABDC(p, localLinkId); // abdc
-        else
-          linkId = getVertexLinkEFHG(p, localLinkId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkAEFB(p, localLinkId); // aefb
-        else if(p[2] == 0)
-          linkId = getVertexLinkAB(p, localLinkId); // ab
-        else
-          linkId = getVertexLinkEF(p, localLinkId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkGHDC(p, localLinkId); // ghdc
-        else if(p[2] == 0)
-          linkId = getVertexLinkCD(p, localLinkId); // cd
-        else
-          linkId = getVertexLinkGH(p, localLinkId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkAEGC(p, localLinkId); // aegc
-        else if(p[2] == 0)
-          linkId = getVertexLinkAC(p, localLinkId); // ac
-        else
-          linkId = getVertexLinkEG(p, localLinkId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkAE(p, localLinkId); // ae
-        else if(p[2] == 0)
-          linkId = getVertexLinkA(p, localLinkId); // a
-        else
-          linkId = getVertexLinkE(p, localLinkId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkCG(p, localLinkId); // cg
-        else if(p[2] == 0)
-          linkId = getVertexLinkC(p, localLinkId); // c
-        else
-          linkId = getVertexLinkG(p, localLinkId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkBFHD(p, localLinkId); // bfhd
-        else if(p[2] == 0)
-          linkId = getVertexLinkBD(p, localLinkId); // bd
-        else
-          linkId = getVertexLinkFH(p, localLinkId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkBF(p, localLinkId); // bf
-        else if(p[2] == 0)
-          linkId = getVertexLinkB(p, localLinkId); // b
-        else
-          linkId = getVertexLinkF(p, localLinkId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkDH(p, localLinkId); // dh
-        else if(p[2] == 0)
-          linkId = getVertexLinkD(p, localLinkId); // d
-        else
-          linkId = getVertexLinkH(p, localLinkId); // h
-      }
-    }
+    linkId = getVertexLink3d(p, localLinkId);
   } else if(dimensionality_ == 2) {
     SimplexId p[2];
     vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        linkId = getVertexLink2dABCD(p, localLinkId); // abcd
-      else if(p[1] == 0)
-        linkId = getVertexLink2dAB(p, localLinkId); // ab
-      else
-        linkId = getVertexLink2dCD(p, localLinkId); // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        linkId = getVertexLink2dAC(p, localLinkId); // ac
-      else if(p[1] == 0)
-        linkId = getVertexLink2dA(p, localLinkId); // a
-      else
-        linkId = getVertexLink2dC(p, localLinkId); // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        linkId = getVertexLink2dBD(p, localLinkId); // bd
-      else if(p[1] == 0)
-        linkId = getVertexLink2dB(p, localLinkId); // b
-      else
-        linkId = getVertexLink2dD(p, localLinkId); // d
-    }
+    linkId = getVertexLink2d(p, localLinkId); // abcd
   }
 
   return 0;
@@ -915,103 +568,11 @@ int PeriodicImplicitTriangulation::getVertexStar(const SimplexId &vertexId,
   if(dimensionality_ == 3) {
     SimplexId p[3];
     vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarABCDEFGH(p, localStarId); // abcdefgh
-        else if(p[2] == 0)
-          starId = getVertexStarABDC(p, localStarId); // abdc
-        else
-          starId = getVertexStarEFHG(p, localStarId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarAEFB(p, localStarId); // aefb
-        else if(p[2] == 0)
-          starId = getVertexStarAB(p, localStarId); // ab
-        else
-          starId = getVertexStarEF(p, localStarId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarGHDC(p, localStarId); // ghdc
-        else if(p[2] == 0)
-          starId = getVertexStarCD(p, localStarId); // cd
-        else
-          starId = getVertexStarGH(p, localStarId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarAEGC(p, localStarId); // aegc
-        else if(p[2] == 0)
-          starId = getVertexStarAC(p, localStarId); // ac
-        else
-          starId = getVertexStarEG(p, localStarId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarAE(p, localStarId); // ae
-        else if(p[2] == 0)
-          starId = getVertexStarA(p, localStarId); // a
-        else
-          starId = getVertexStarE(p, localStarId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarCG(p, localStarId); // cg
-        else if(p[2] == 0)
-          starId = getVertexStarC(p, localStarId); // c
-        else
-          starId = getVertexStarG(p, localStarId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarBFHD(p, localStarId); // bfhd
-        else if(p[2] == 0)
-          starId = getVertexStarBD(p, localStarId); // bd
-        else
-          starId = getVertexStarFH(p, localStarId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarBF(p, localStarId); // bf
-        else if(p[2] == 0)
-          starId = getVertexStarB(p, localStarId); // b
-        else
-          starId = getVertexStarF(p, localStarId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarDH(p, localStarId); // dh
-        else if(p[2] == 0)
-          starId = getVertexStarD(p, localStarId); // d
-        else
-          starId = getVertexStarH(p, localStarId); // h
-      }
-    }
+    starId = getVertexStar3d(p, localStarId);
   } else if(dimensionality_ == 2) {
     SimplexId p[2];
     vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        starId = getVertexStar2dABCD(p, localStarId); // abcd
-      else if(p[1] == 0)
-        starId = getVertexStar2dAB(p, localStarId); // ab
-      else
-        starId = getVertexStar2dCD(p, localStarId); // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        starId = getVertexStar2dAC(p, localStarId); // ac
-      else if(p[1] == 0)
-        starId = getVertexStar2dA(p, localStarId); // a
-      else
-        starId = getVertexStar2dC(p, localStarId); // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        starId = getVertexStar2dBD(p, localStarId); // bd
-      else if(p[1] == 0)
-        starId = getVertexStar2dB(p, localStarId); // b
-      else
-        starId = getVertexStar2dD(p, localStarId); // d
-    }
+    starId = getVertexStar2d(p, localStarId);
   }
 
   return 0;
@@ -1445,122 +1006,37 @@ int PeriodicImplicitTriangulation::getEdgeTriangle(
     // L
     if(edgeId < esetshift_[0]) {
       edgeToPosition(edgeId, 0, p);
-
-      if(p[1] > 0 and p[1] < nbvoxels_[1]) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleL_xnn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleL_xn0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleL_xnN(p, localTriangleId);
-      } else if(p[1] == 0) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleL_x0n(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleL_x00(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleL_x0N(p, localTriangleId);
-      } else {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleL_xNn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleL_xN0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleL_xNN(p, localTriangleId);
-      }
+      triangleId = getEdgeTriangle3dL(p, localTriangleId);
     }
     // H
     else if(edgeId < esetshift_[1]) {
       edgeToPosition(edgeId, 1, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleH_nyn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleH_ny0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleH_nyN(p, localTriangleId);
-      } else if(p[0] == 0) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleH_0yn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleH_0y0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleH_0yN(p, localTriangleId);
-      } else {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleH_Nyn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleH_Ny0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleH_NyN(p, localTriangleId);
-      }
+      triangleId = getEdgeTriangle3dH(p, localTriangleId);
     }
     // P
     else if(edgeId < esetshift_[2]) {
       edgeToPosition(edgeId, 2, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          triangleId = getEdgeTriangleP_nnz(p, localTriangleId);
-        else if(p[1] == 0)
-          triangleId = getEdgeTriangleP_n0z(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleP_nNz(p, localTriangleId);
-      } else if(p[0] == 0) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          triangleId = getEdgeTriangleP_0nz(p, localTriangleId);
-        else if(p[1] == 0)
-          triangleId = getEdgeTriangleP_00z(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleP_0Nz(p, localTriangleId);
-      } else {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          triangleId = getEdgeTriangleP_Nnz(p, localTriangleId);
-        else if(p[1] == 0)
-          triangleId = getEdgeTriangleP_N0z(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleP_NNz(p, localTriangleId);
-      }
+      triangleId = getEdgeTriangle3dP(p, localTriangleId);
     }
     // D1
     else if(edgeId < esetshift_[3]) {
       edgeToPosition(edgeId, 3, p);
-
-      if(p[2] > 0 and p[2] < nbvoxels_[2])
-        triangleId = getEdgeTriangleD1_xyn(p, localTriangleId);
-      else if(p[2] == 0)
-        triangleId = getEdgeTriangleD1_xy0(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleD1_xyN(p, localTriangleId);
+      triangleId = getEdgeTriangle3dD1(p, localTriangleId);
     }
     // D2
     else if(edgeId < esetshift_[4]) {
       edgeToPosition(edgeId, 4, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0])
-        triangleId = getEdgeTriangleD2_nyz(p, localTriangleId);
-      else if(p[0] == 0)
-        triangleId = getEdgeTriangleD2_0yz(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleD2_Nyz(p, localTriangleId);
+      triangleId = getEdgeTriangle3dD2(p, localTriangleId);
     }
     // D3
     else if(edgeId < esetshift_[5]) {
       edgeToPosition(edgeId, 5, p);
-
-      if(p[1] > 0 and p[1] < nbvoxels_[1])
-        triangleId = getEdgeTriangleD3_xnz(p, localTriangleId);
-      else if(p[1] == 0)
-        triangleId = getEdgeTriangleD3_x0z(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleD3_xNz(p, localTriangleId);
+      triangleId = getEdgeTriangle3dD3(p, localTriangleId);
     }
     // D4
     else if(edgeId < esetshift_[6]) {
       edgeToPosition(edgeId, 6, p);
-
-      triangleId = getEdgeTriangleD4_xyz(p, localTriangleId);
+      triangleId = getEdgeTriangle3dD4(p, localTriangleId);
     }
   } else if(dimensionality_ == 2) {
     SimplexId p[2];
@@ -1568,30 +1044,17 @@ int PeriodicImplicitTriangulation::getEdgeTriangle(
     // L
     if(edgeId < esetshift_[0]) {
       edgeToPosition2d(edgeId, 0, p);
-
-      if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
-        triangleId = getEdgeTriangleL_xn(p, localTriangleId);
-      else if(p[1] == 0)
-        triangleId = getEdgeTriangleL_x0(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleL_xN(p, localTriangleId);
+      triangleId = getEdgeTriangle2dL(p, localTriangleId);
     }
     // H
     else if(edgeId < esetshift_[1]) {
       edgeToPosition2d(edgeId, 1, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[Di_])
-        triangleId = getEdgeTriangleH_ny(p, localTriangleId);
-      else if(p[0] == 0)
-        triangleId = getEdgeTriangleH_0y(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleH_Ny(p, localTriangleId);
+      triangleId = getEdgeTriangle2dH(p, localTriangleId);
     }
     // D1
     else if(edgeId < esetshift_[2]) {
       edgeToPosition2d(edgeId, 2, p);
-
-      triangleId = getEdgeTriangleD1_xy(p, localTriangleId);
+      triangleId = getEdgeTriangle2dD1(p, localTriangleId);
     }
   }
 

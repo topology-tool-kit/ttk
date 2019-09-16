@@ -3109,9 +3109,9 @@ namespace ttk {
       int retPeriodic = periodicImplicitTriangulation_.setInputGrid(
         xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
         zDim);
-      int ret = implicitTriangulation_.setInputGrid(
-        xOrigin, yOrigin, zOrigin, xSpacing, ySpacing, zSpacing, xDim, yDim,
-        zDim);
+      int ret = implicitTriangulation_.setInputGrid(xOrigin, yOrigin, zOrigin,
+                                                    xSpacing, ySpacing,
+                                                    zSpacing, xDim, yDim, zDim);
 
       if(usePeriodicBoundaries_) {
         abstractTriangulation_ = &periodicImplicitTriangulation_;
