@@ -207,7 +207,7 @@ namespace ttk {
 
     inline void printClustering() {
       for(int c = 0; c < k_; ++c) {
-        std::cout << "Cluster " << c << " : [";
+        std::cout << "[PersistenceDiagramClustering] Cluster " << c << " : [";
         for(unsigned int idx = 0; idx < clustering_[c].size(); ++idx) {
           if(idx == clustering_[c].size() - 1) {
             std::cout << clustering_[c][idx] << "]" << std::endl;

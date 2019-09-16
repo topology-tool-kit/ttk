@@ -62,7 +62,11 @@ public:
   vtkTypeMacro(ttkPersistenceDiagramClustering, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetdebugLevel_(int debugLevel) {
+    debugLevel_ = debugLevel;
+    Modified();
+    needUpdate_ = true;
+  }
 
   void SetThreads() {
     if(!UseAllCores)
@@ -71,6 +75,7 @@ public:
       threadNumber_ = ttk::OsCall::getNumberOfCores();
     }
     Modified();
+    needUpdate_ = true;
   }
 
   /*void SetThreadNumber(int threadNumber){
@@ -130,6 +135,11 @@ public:
     needUpdate_ = true;
   }
   vtkGetMacro(Alpha, double);
+
+  void SetAntiAlpha(double data){
+    double alpha = 1 - data;
+    SetAlpha(alpha);
+  }
 
   void SetDeltaLim(double data) {
     DeltaLim = data;

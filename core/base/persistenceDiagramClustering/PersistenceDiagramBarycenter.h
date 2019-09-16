@@ -174,6 +174,11 @@ namespace ttk {
 
     Timer t;
     {
+      if(debugLevel_ > 1) {
+        std::cout << "[PersistenceDiagramClustering] Clustering "
+                  << numberOfInputs_ << " diagrams in " << 1 << " cluster."
+                  << std::endl;
+      }
       std::vector<std::vector<diagramTuple>> *intermediateDiagrams
         = (std::vector<std::vector<diagramTuple>> *)inputData_;
 

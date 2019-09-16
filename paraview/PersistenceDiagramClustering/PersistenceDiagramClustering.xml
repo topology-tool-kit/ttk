@@ -10,18 +10,25 @@
      class="ttkPersistenceDiagramClustering"
      label="TTK PersistenceDiagramClustering">
      <Documentation
-        long_help="TTK plugin that takes an input ensemble data set (represented
-by a list of scalar fields) and which computes various vertexwise statistics
-(PDF estimation, bounds, moments, etc.)."
-        short_help="TTK plugin that takes an input ensemble data set
-(represented
-by a list of scalar fields) and which computes various vertexwise statistics
-(PDF estimation, bounds, moments, etc.).">
-          TTK plugin that takes an input ensemble data set (represented
-by a list of scalar fields) and which computes various vertexwise statistics
-(PDF estimation, bounds, moments, etc.).
+       long_help="TTK plugin for the computation of distances, barycenters and clustering within a set of persistence diagrams."
+       shorthelp="TTK plugin for the computation of distances, barycenters and clustering within a set of persistence diagrams."
+       >
+       Given an input set of persistence diagrams and a number of clusters, this plugin computes a clustering of the 
+       persistence diagrams using a progressive and interruptible K-Means approach. The result of the clustering is printed in the console. 
+       The clustered diagrams and the corresponding centroid diagrams are produced, as well as the assignment between the critical points. 
 
-See also MandatoryCriticalPoints.
+       If the number of clusters is set to 1 (default value), the Wasserstein barycenter of the set is computed using the same algorithm. 
+
+       If the number of clusters is set to 1 and there are only two input diagrams, by default their Wasserstein distance is computed with 
+       the Auction algorithm, and the barycenter is deduced from the assignments. The use of the progressive approach can nevertheless be toggled 
+       in the Properties menu. 
+
+       Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams" 
+       Jules Vidal, Joseph Budin, Julien Tierny 
+       IEEE Transactions on Visualization and Computer Graphics. 
+       Proceedings of IEEE VIS 2019.
+
+       See also PersistenceDiagram, BottleneckDistance
     </Documentation>
 
      <InputProperty
@@ -334,11 +341,11 @@ computation (type "inf" for the Bottleneck distance).
 
 
       <DoubleVectorProperty
-          name="Alpha"
-          label="Diagram blending"
-          command="SetAlpha"
+          name="AntiAlpha"
+          label="Geometrical Lifting (alpha)"
+          command="SetAntiAlpha"
           number_of_elements="1"
-          default_values="1"
+          default_values="0"
           >
         <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
         <Documentation>
