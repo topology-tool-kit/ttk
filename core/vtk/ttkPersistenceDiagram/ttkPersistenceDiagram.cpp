@@ -22,6 +22,7 @@ vtkStandardNewMacro(ttkPersistenceDiagram)
   UseAllCores = true;
   ShowInsideDomain = false;
   computeDiagram_ = true;
+  PeriodicBoundaryConditions = false;
 
   triangulation_ = nullptr;
   CTDiagram_ = nullptr;
@@ -102,6 +103,7 @@ int ttkPersistenceDiagram::getTriangulation(vtkDataSet *input) {
   }
 #endif
 
+  triangulation_->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
   triangulation_->setWrapper(this);
   persistenceDiagram_.setupTriangulation(triangulation_);
 

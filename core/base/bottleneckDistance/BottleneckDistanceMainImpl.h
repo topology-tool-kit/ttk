@@ -308,11 +308,11 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   dataType affectationD = d;
   d = wasserstein > 0
         ? pow(
-          d + addedMaxPersistence + addedMinPersistence + addedSadPersistence,
-          (1.0 / (double)wasserstein))
+            d + addedMaxPersistence + addedMinPersistence + addedSadPersistence,
+            (1.0 / (double)wasserstein))
         : std::max(
-          d, std::max(addedMaxPersistence,
-                      std::max(addedMinPersistence, addedSadPersistence)));
+            d, std::max(addedMaxPersistence,
+                        std::max(addedMinPersistence, addedSadPersistence)));
 
   {
     std::stringstream msg;

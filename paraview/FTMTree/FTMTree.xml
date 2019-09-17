@@ -117,6 +117,19 @@
                 </Documentation>
             </StringVectorProperty>
 
+            <IntVectorProperty
+                name="PeriodicBoundaryConditions"
+                command="SetPeriodicBoundaryConditions"
+                label="Periodic Boundary Conditions"
+                number_of_elements="1"
+                panel_visibility="advanced"
+                default_values="0">
+                <BooleanDomain name="bool"/>
+                <Documentation>
+                    Check this box to use periodic boundary conditions for computation.
+                </Documentation>
+            </IntVectorProperty>
+
             <IntVectorProperty name="Tree Type" command="SetTreeType"
                 number_of_elements="1" default_values="2">
                 <EnumerationDomain name="enum">
@@ -218,6 +231,7 @@ between nodes, ...)
                 <Property name="Scalar Field"/>
                 <Property name="ForceInputOffsetScalarField"/>
                 <Property name="InputOffsetScalarFieldName"/>
+                <Property name="PeriodicBoundaryConditions"/>
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Output options">

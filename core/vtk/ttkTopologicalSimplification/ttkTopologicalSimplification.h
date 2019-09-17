@@ -120,6 +120,9 @@ public:
   vtkSetMacro(InputVertexScalarFieldName, std::string);
   vtkGetMacro(InputVertexScalarFieldName, std::string);
 
+  vtkSetMacro(PeriodicBoundaryConditions, int);
+  vtkGetMacro(PeriodicBoundaryConditions, int);
+
   int getTriangulation(vtkDataSet *input);
   int getScalars(vtkDataSet *input);
   int getIdentifiers(vtkPointSet *input);
@@ -146,6 +149,7 @@ private:
   bool ForceInputVertexScalarField;
   std::string InputVertexScalarFieldName;
   bool ForceInputOffsetScalarField;
+  bool PeriodicBoundaryConditions;
   bool ConsiderIdentifierAsBlackList;
   bool AddPerturbation;
   bool hasUpdatedMesh_;

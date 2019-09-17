@@ -690,7 +690,7 @@ int ttkMandatoryCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
 
   if((triangulation_->isEmpty())
      || (ttkTriangulation::hasChangedConnectivity(
-       triangulation_, input, this))) {
+          triangulation_, input, this))) {
     Modified();
     hasChangedConnectivity = true;
   }
