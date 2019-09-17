@@ -348,15 +348,15 @@ dataType PDBarycenter<dataType>::updateBarycenter(
   for(unsigned int k = 0; k < points_to_append.size(); k++) {
     points_added_ += 1;
     Bidder<dataType> *b = points_to_append[k];
-    dataType x
+    dataType gx
       = (b->x_ + (n_diagrams - 1) * (b->x_ + b->y_) / 2.) / (n_diagrams);
-    dataType y
+    dataType gy
       = (b->y_ + (n_diagrams - 1) * (b->x_ + b->y_) / 2.) / (n_diagrams);
     std::tuple<dataType, dataType, dataType> critical_coordinates
       = b->GetCriticalCoordinates();
     for(unsigned int j = 0; j < n_diagrams; j++) {
       Good<dataType> g
-        = Good<dataType>(x, y, false, barycenter_goods_[j].size());
+        = Good<dataType>(gx, gy, false, barycenter_goods_[j].size());
       g.setPrice(min_prices[j]);
       if(geometrical_factor_ < 1) {
         g.SetCriticalCoordinates(std::get<0>(critical_coordinates),
@@ -638,7 +638,7 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence) {
 template <typename dataType>
 std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
   PDBarycenter<dataType>::getKDTree() {
-  Timer t;
+  Timer tm;
   KDTree<dataType> *kdt = new KDTree<dataType>(true, wasserstein_);
 
   const int dimension = geometrical_factor_ >= 1 ? 2 : 5;
@@ -671,7 +671,7 @@ std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
     = kdt->build(coordinates.data(), barycenter_goods_[0].size(), dimension,
                  weights, barycenter_goods_.size());
   if(debugLevel_ > 3)
-    std::cout << "[Building KD-Tree] Time elapsed : " << t.getElapsedTime()
+    std::cout << "[Building KD-Tree] Time elapsed : " << tm.getElapsedTime()
               << " s." << std::endl;
   return std::make_pair(kdt, correspondance_kdt_map);
 }
@@ -823,7 +823,7 @@ std::vector<std::vector<matchingTuple>>
   dataType total_cost;
 
   while(!finished) {
-    Timer t;
+    Timer tm;
 
     n_iterations += 1;
 
@@ -883,7 +883,7 @@ std::vector<std::vector<matchingTuple>>
 
     previous_matchings = std::move(all_matchings);
     // END OF TIMER
-    total_time += t.getElapsedTime();
+    total_time += tm.getElapsedTime();
     std::cout << "Time elapsed so far : " << total_time << std::endl;
 
     for(unsigned int i = 0; i < barycenter_goods_.size(); ++i) {

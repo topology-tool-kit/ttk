@@ -44,7 +44,7 @@ std::vector<int> PDClustering<dataType>::execute(
     }
   }
   int matchings_only = false;
-  Timer t;
+  Timer tm;
   {
     // PARTICULARITIES FOR THE CASE OF ONE UNIQUE CLUSTER
     if(k_ <= 1) {
@@ -80,11 +80,10 @@ std::vector<int> PDClustering<dataType>::execute(
     // dataType cost = std::numeric_limits<dataType>::max();
     setBidderDiagrams();
     cost_ = std::numeric_limits<dataType>::max();
-    dataType min_cost = std::numeric_limits<dataType>::max();
     dataType min_cost_min = std::numeric_limits<dataType>::max();
     dataType min_cost_max = std::numeric_limits<dataType>::max();
     dataType min_cost_sad = std::numeric_limits<dataType>::max();
-    dataType last_min_cost_obtained = -1;
+    // dataType last_min_cost_obtained = -1;
     dataType last_min_cost_obtained_min = -1;
     dataType last_min_cost_obtained_sad = -1;
     dataType last_min_cost_obtained_max = -1;
@@ -465,7 +464,7 @@ std::vector<int> PDClustering<dataType>::execute(
         // cout<<"\nconverged ? : "<<converged<<"\n"<<endl;
       }
 
-      dataType real_cost = 0;
+      // dataType real_cost = 0;
       // Timer t_real_cost;
       // real_cost = computeRealCost();
       total_time
@@ -624,7 +623,7 @@ template <typename dataType>
 void PDClustering<dataType>::correctMatchings(
   vector<vector<vector<vector<matchingTuple>>>> &previous_matchings) {
   for(int c = 0; c < k_; c++) {
-    for(int i = 0; i < clustering_[c].size(); i++) {
+    for(unsigned int i = 0; i < clustering_[c].size(); i++) {
       int diagram_id = clustering_[c][i];
       if(original_dos[0]) {
         // 1. Invert the current_bidder_ids_ vector
@@ -1577,7 +1576,7 @@ void PDClustering<dataType>::acceleratedUpdateClusters() {
           // std::cout<<" ]"<<std::endl;
         } else {
           // cout<<"test"<<endl;
-          if(copy_of_u.size() > idx) {
+          if(copy_of_u.size() > (size_t)idx) {
             copy_of_u.erase(argMax);
           } else {
             idx_acceptable = true;
@@ -1647,7 +1646,6 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
     &all_matchings_per_type_and_cluster,
   int only_matchings) {
   barycenter_inputs_reset_flag = true;
-  dataType max_shift = 0;
   std::vector<dataType> max_shift_vector(3);
   max_shift_vector[0] = 0;
   max_shift_vector[1] = 0;
@@ -1793,8 +1791,6 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         // cout<<"time first_thing "<<time_first_thing.getElapsedTime()<<endl;
       }
       // std::cout<<"here 2"<<std::endl;
-      std::vector<BidderDiagram<dataType>> diagrams_c_min, diagrams_c_sad,
-        diagrams_c_max;
       dataType total_cost = 0;
       dataType wasserstein_shift = 0;
 
@@ -1821,7 +1817,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
           barycenter_computer_min_[c].setCurrentBidders(diagrams_c_min);
 
           vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-          for(int i_diagram = 0; i_diagram < clustering_[c].size();
+          for(unsigned int i_diagram = 0; i_diagram < clustering_[c].size();
               i_diagram++) {
             barycenter_goods[i_diagram]
               = centroids_with_price_min_[clustering_[c][i_diagram]];
@@ -1873,7 +1869,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
           &total_cost, epsilon_[0], sizes, kdt, &correspondance_kdt_map,
           &(min_diag_price->at(0)), &(min_price->at(0)), &(all_matchings),
           use_kdt, only_matchings);
-        for(int ii = 0; ii < all_matchings.size(); ii++) {
+        for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
           all_matchings_per_type_and_cluster[c][0][ii].resize(
             all_matchings[ii].size());
           all_matchings_per_type_and_cluster[c][0][ii] = all_matchings[ii];
@@ -1951,7 +1947,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
           barycenter_computer_sad_[c].setNumberOfInputs(diagrams_c_min.size());
           barycenter_computer_sad_[c].setCurrentBidders(diagrams_c_min);
           vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-          for(int i_diagram = 0; i_diagram < clustering_[c].size();
+          for(unsigned int i_diagram = 0; i_diagram < clustering_[c].size();
               i_diagram++) {
             barycenter_goods[i_diagram]
               = centroids_with_price_saddle_[clustering_[c][i_diagram]];
@@ -1995,7 +1991,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
           &total_cost, epsilon_[1], sizes, kdt, &correspondance_kdt_map,
           &(min_diag_price->at(1)), &(min_price->at(1)), &(all_matchings),
           use_kdt, only_matchings);
-        for(int ii = 0; ii < all_matchings.size(); ii++) {
+        for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
           all_matchings_per_type_and_cluster[c][1][ii].resize(
             all_matchings[ii].size());
           all_matchings_per_type_and_cluster[c][1][ii] = all_matchings[ii];
@@ -2019,12 +2015,12 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
 
         // Now that barycenters and diagrams are updated in PDBarycenter class,
         // we import the results here.
-        diagrams_c_sad = barycenter_computer_sad_[c].getCurrentBidders();
+        diagrams_c_min = barycenter_computer_sad_[c].getCurrentBidders();
         centroids_with_price_sad
           = barycenter_computer_sad_[c].getCurrentBarycenter();
         int i = 0;
         for(int idx : clustering_[c]) {
-          current_bidder_diagrams_saddle_[idx] = diagrams_c_sad[i];
+          current_bidder_diagrams_saddle_[idx] = diagrams_c_min[i];
           centroids_with_price_saddle_[idx] = centroids_with_price_sad[i];
           i++;
         }
@@ -2059,7 +2055,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
           barycenter_computer_max_[c].setNumberOfInputs(diagrams_c_min.size());
           barycenter_computer_max_[c].setCurrentBidders(diagrams_c_min);
           vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-          for(int i_diagram = 0; i_diagram < clustering_[c].size();
+          for(unsigned int i_diagram = 0; i_diagram < clustering_[c].size();
               i_diagram++) {
             barycenter_goods[i_diagram]
               = centroids_with_price_max_[clustering_[c][i_diagram]];
@@ -2152,7 +2148,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
           &total_cost, epsilon_[2], sizes, kdt, &correspondance_kdt_map,
           &(min_diag_price->at(2)), &(min_price->at(2)), &(all_matchings),
           use_kdt, only_matchings);
-        for(int ii = 0; ii < all_matchings.size(); ii++) {
+        for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
           all_matchings_per_type_and_cluster[c][2][ii].resize(
             all_matchings[ii].size());
           all_matchings_per_type_and_cluster[c][2][ii] = all_matchings[ii];
@@ -2183,7 +2179,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
 
         // Now that barycenters and diagrams are updated in PDBarycenter class,
         // we import the results here.
-        diagrams_c_max = barycenter_computer_max_[c].getCurrentBidders();
+        diagrams_c_min = barycenter_computer_max_[c].getCurrentBidders();
         centroids_with_price_max
           = barycenter_computer_max_[c].getCurrentBarycenter();
         // for(int iii=0; iii<centroids_with_price_max.size(); iii++){
@@ -2192,7 +2188,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         // }
         int i = 0;
         for(int idx : clustering_[c]) {
-          current_bidder_diagrams_max_[idx] = diagrams_c_max[i];
+          current_bidder_diagrams_max_[idx] = diagrams_c_min[i];
           centroids_with_price_max_[idx] = centroids_with_price_max[i];
           i++;
         }
@@ -2769,7 +2765,7 @@ void PDClustering<dataType>::initializeBarycenterComputers(
       barycenter_computer_sad_[c].setCurrentBidders(diagrams_c);
 
       vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-      for(int i_diagram = 0; i_diagram < clustering_[c].size(); i_diagram++) {
+      for(unsigned int i_diagram = 0; i_diagram < clustering_[c].size(); i_diagram++) {
         barycenter_goods[i_diagram]
           = centroids_with_price_saddle_[clustering_[c][i_diagram]];
       }
@@ -2801,7 +2797,7 @@ void PDClustering<dataType>::initializeBarycenterComputers(
 
       // barycenter_computer_max_[c].setInitialBarycenter(min_persistence[2]);
       vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-      for(int i_diagram = 0; i_diagram < clustering_[c].size(); i_diagram++) {
+      for(unsigned int i_diagram = 0; i_diagram < clustering_[c].size(); i_diagram++) {
         barycenter_goods[i_diagram]
           = centroids_with_price_max_[clustering_[c][i_diagram]];
       }
@@ -2971,7 +2967,7 @@ void PDClustering<dataType>::computeBarycenterForTwo(
       }
     }
     vector<matchingTuple> matching_to_add(0);
-    for(int i = 0; i < all_matchings_per_type_and_cluster[0][0][1].size();
+    for(unsigned int i = 0; i < all_matchings_per_type_and_cluster[0][0][1].size();
         i++) {
       matchingTuple t = all_matchings_per_type_and_cluster[0][0][1][i];
       int bidderId = get<0>(t);
@@ -3012,7 +3008,7 @@ void PDClustering<dataType>::computeBarycenterForTwo(
         }
       }
     }
-    for(int j = 0; j < matching_to_add.size(); j++) {
+    for(unsigned int j = 0; j < matching_to_add.size(); j++) {
       all_matchings_per_type_and_cluster[0][0][1].push_back(matching_to_add[j]);
     }
   }
@@ -3027,7 +3023,7 @@ void PDClustering<dataType>::computeBarycenterForTwo(
       }
     }
     vector<matchingTuple> matching_to_add(0);
-    for(int i = 0; i < all_matchings_per_type_and_cluster[0][1][1].size();
+    for(unsigned int i = 0; i < all_matchings_per_type_and_cluster[0][1][1].size();
         i++) {
       matchingTuple t = all_matchings_per_type_and_cluster[0][1][1][i];
       int bidderId = get<0>(t);
@@ -3068,7 +3064,7 @@ void PDClustering<dataType>::computeBarycenterForTwo(
         }
       }
     }
-    for(int j = 0; j < matching_to_add.size(); j++) {
+    for(unsigned int j = 0; j < matching_to_add.size(); j++) {
       all_matchings_per_type_and_cluster[0][1][1].push_back(matching_to_add[j]);
     }
   }
@@ -3083,7 +3079,7 @@ void PDClustering<dataType>::computeBarycenterForTwo(
       }
     }
     vector<matchingTuple> matching_to_add(0);
-    for(int i = 0; i < all_matchings_per_type_and_cluster[0][2][1].size();
+    for(unsigned int i = 0; i < all_matchings_per_type_and_cluster[0][2][1].size();
         i++) {
       matchingTuple t = all_matchings_per_type_and_cluster[0][2][1][i];
       int bidderId = get<0>(t);
@@ -3124,7 +3120,7 @@ void PDClustering<dataType>::computeBarycenterForTwo(
         }
       }
     }
-    for(int j = 0; j < matching_to_add.size(); j++) {
+    for(unsigned int j = 0; j < matching_to_add.size(); j++) {
       all_matchings_per_type_and_cluster[0][2][1].push_back(matching_to_add[j]);
     }
   }

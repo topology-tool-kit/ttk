@@ -171,7 +171,7 @@ namespace ttk {
     std::vector<std::vector<diagramTuple>> *final_centroids,
     vector<vector<vector<matchingTuple>>> *all_matchings) {
 
-    Timer t;
+    Timer tm;
     {
       if(debugLevel_ > 1) {
         std::cout << "[PersistenceDiagramClustering] Clustering "
@@ -295,7 +295,7 @@ namespace ttk {
 
       std::stringstream msg;
       msg << "[PersistenceDiagramClustering] processed in "
-          << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
+          << tm.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
           << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
 
@@ -304,7 +304,7 @@ namespace ttk {
       std::vector<int> cluster_size;
       std::vector<int> idxInCluster(numberOfInputs_);
 
-      for(unsigned int j = 0; j < numberOfInputs_; ++j) {
+      for(int j = 0; j < numberOfInputs_; ++j) {
         unsigned int c = inv_clustering[j];
         if(c + 1 > cluster_size.size()) {
           cluster_size.resize(c + 1);
@@ -331,7 +331,7 @@ namespace ttk {
           matchingTuple t
             = all_matchings_per_type_and_cluster[c][2][idxInCluster[i]][0];
           int bidder_id = std::get<0>(t);
-          if(bidder_id >= 0 && bidder_id < data_max[i].size()) {
+          if(bidder_id >= 0 && bidder_id < (int)data_max[i].size()) {
             std::get<0>(t) = data_max_idx[i][bidder_id];
             if(std::get<1>(t) >= 0) {
               std::get<1>(t) = std::get<1>(t) + centroids_sizes[c][0]
@@ -350,7 +350,7 @@ namespace ttk {
             matchingTuple t
               = all_matchings_per_type_and_cluster[c][0][idxInCluster[i]][j];
             int bidder_id = std::get<0>(t);
-            if(bidder_id >= 0 && bidder_id < data_min[i].size()) {
+            if(bidder_id >= 0 && bidder_id < (int)data_min[i].size()) {
               std::get<0>(t) = data_min_idx[i][bidder_id];
               // cout<<" IDS :  "<<bidder_id<<" "<<std::get<0>(t)<<endl;
               if(std::get<1>(t) < 0) {
@@ -369,7 +369,7 @@ namespace ttk {
             matchingTuple t
               = all_matchings_per_type_and_cluster[c][1][idxInCluster[i]][j];
             int bidder_id = std::get<0>(t);
-            if(bidder_id >= 0 && bidder_id < data_sad[i].size()) {
+            if(bidder_id >= 0 && bidder_id < (int)data_sad[i].size()) {
               std::get<0>(t) = data_sad_idx[i][bidder_id];
               if(std::get<1>(t) >= 0) {
                 std::get<1>(t) = std::get<1>(t) + centroids_sizes[c][0];
@@ -389,7 +389,7 @@ namespace ttk {
             matchingTuple t
               = all_matchings_per_type_and_cluster[c][2][idxInCluster[i]][j];
             int bidder_id = std::get<0>(t);
-            if(bidder_id >= 0 && bidder_id < data_max[i].size()) {
+            if(bidder_id >= 0 && bidder_id < (int)data_max[i].size()) {
               std::get<0>(t) = data_max_idx[i][bidder_id];
               if(std::get<1>(t) >= 0) {
                 std::get<1>(t) = std::get<1>(t) + centroids_sizes[c][0]

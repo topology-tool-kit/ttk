@@ -172,7 +172,7 @@ namespace ttk {
     std::vector<diagramTuple> *barycenter,
     vector<vector<vector<matchingTuple>>> *all_matchings) {
 
-    Timer t;
+    Timer tm;
     {
       if(debugLevel_ > 1) {
         std::cout << "[PersistenceDiagramClustering] Clustering "
@@ -459,7 +459,7 @@ namespace ttk {
       }
       std::stringstream msg;
       msg << "[PersistenceDiagramBarycenter] processed in "
-          << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
+          << tm.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
           << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
     }

@@ -946,7 +946,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
       double z1 = 0;
 
       // endl;
-      if(bidder_id < diagram->size()) {
+      if(bidder_id < (int)diagram->size()) {
         diagramTuple t2 = diagram->at(bidder_id);
         double x2 = std::get<6>(t2);
         double y2 = std::get<10>(t2);
