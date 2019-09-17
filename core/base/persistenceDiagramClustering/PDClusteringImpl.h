@@ -1,3 +1,17 @@
+/// \ingroup base
+/// \class ttk::PDClustering
+/// \author Jules Vidal <jules.vidal@lip6.fr>
+/// \author Joseph Budin <joseph.budin@polytechnique.edu>
+/// \date September 2019
+///
+/// \b Related \b publication \n
+/// "Progressive Wasserstein Barycenters of Persistence Diagrams" \n
+/// Jules Vidal, Joseph Budin and Julien Tierny \n
+/// Proc. of IEEE VIS 2019.\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2019.
+///
+/// \sa PersistenceDiagramClustering
+
 #ifndef _PDCLUSTERINGIMPL_H
 #define _PDCLUSTERINGIMPL_H
 
