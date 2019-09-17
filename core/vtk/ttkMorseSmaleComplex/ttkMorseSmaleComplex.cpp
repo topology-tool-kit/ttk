@@ -8,15 +8,15 @@ vtkStandardNewMacro(ttkMorseSmaleComplex)
 
   ttkMorseSmaleComplex::ttkMorseSmaleComplex()
   : ScalarField{}, InputOffsetScalarFieldName{ttk::OffsetScalarFieldName},
-    ForceInputOffsetScalarField{}, IterationThreshold{-1},
-    ReverseSaddleMaximumConnection{true}, ReverseSaddleSaddleConnection{true},
-    ComputeCriticalPoints{true}, ComputeAscendingSeparatrices1{true},
-    ComputeDescendingSeparatrices1{true}, ComputeSaddleConnectors{true},
-    ComputeAscendingSeparatrices2{false}, ComputeDescendingSeparatrices2{false},
-    ComputeAscendingSegmentation{true}, ComputeDescendingSegmentation{true},
-    ComputeFinalSegmentation{true}, ScalarFieldId{}, OffsetFieldId{-1},
-    ReturnSaddleConnectors{false}, SaddleConnectorsPersistenceThreshold{0},
-    PrioritizeSpeedOverMemory{false},
+    ForceInputOffsetScalarField{}, PeriodicBoundaryConditions{false},
+    IterationThreshold{-1}, ReverseSaddleMaximumConnection{true},
+    ReverseSaddleSaddleConnection{true}, ComputeCriticalPoints{true},
+    ComputeAscendingSeparatrices1{true}, ComputeDescendingSeparatrices1{true},
+    ComputeSaddleConnectors{true}, ComputeAscendingSeparatrices2{false},
+    ComputeDescendingSeparatrices2{false}, ComputeAscendingSegmentation{true},
+    ComputeDescendingSegmentation{true}, ComputeFinalSegmentation{true},
+    ScalarFieldId{}, OffsetFieldId{-1}, ReturnSaddleConnectors{false},
+    SaddleConnectorsPersistenceThreshold{0}, PrioritizeSpeedOverMemory{false},
 
     triangulation_{}, defaultOffsets_{}, hasUpdatedMesh_{} {
   UseAllCores = true;
@@ -72,6 +72,7 @@ int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet *input) {
   }
 #endif
 
+  triangulation_->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
   triangulation_->setWrapper(this);
   // setupTriangulation() is called first to select the correct algorithm (2D or
   // 3D)

@@ -694,6 +694,8 @@ int ttkFTMTree::setupTriangulation() {
     }
 #endif
 
+    triangulation_[cc]->setPeriodicBoundaryConditions(
+      PeriodicBoundaryConditions);
     triangulation_[cc]->setWrapper(this);
     ftmTree_[cc].tree.setDebugLevel(debugLevel_);
     ftmTree_[cc].tree.setThreadNumber(threadNumber_);
@@ -718,8 +720,8 @@ int ttkFTMTree::setupTriangulation() {
 ttkFTMTree::ttkFTMTree()
   : ScalarField{}, ForceInputOffsetScalarField{false},
     InputOffsetScalarFieldName{ttk::OffsetScalarFieldName}, ScalarFieldId{},
-    OffsetFieldId{-1}, params_{}, triangulation_{}, inputScalars_{}, offsets_{},
-    hasUpdatedMesh_{} {
+    OffsetFieldId{-1}, PeriodicBoundaryConditions{false}, params_{},
+    triangulation_{}, inputScalars_{}, offsets_{}, hasUpdatedMesh_{} {
   SetSuperArcSamplingLevel(0);
   SetWithNormalize(true);
   SetWithAdvStats(true);

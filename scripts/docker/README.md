@@ -15,7 +15,7 @@ To run Kitware's binary distribution of ParaView with TTK's docker, simply run:
 
 To run a python script which uses TTK, simply run:
 
-``` ./runTTKPythonDocker.sh [<Standard pvpython arguments (Python script, data, etc.)>]```
+``` ./runTTKPythonDocker.sh [<Standard pvpython arguments: Python script, data, etc. ABSOLUTE PATHS ONLY)>]```
 
 ## Advanced usage
 
