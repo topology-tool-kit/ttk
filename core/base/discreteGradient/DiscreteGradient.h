@@ -404,7 +404,7 @@ function value.
         lowerStarType res{};
 
         // a belongs to its lower star
-        res[0].emplace(a);
+        // res[0].emplace(a);
 
         const auto sosGreaterThan
           = [&scalars, &offsets](const SimplexId m, const SimplexId n) {
@@ -429,6 +429,7 @@ function value.
             }
             if(sosGreaterThan(vertexId, a)) {
               isMax = false;
+              break;
             }
           }
           if(isMax) {
@@ -450,6 +451,7 @@ function value.
             }
             if(sosGreaterThan(vertexId, a)) {
               isMax = false;
+              break;
             }
           }
           if(isMax) {
@@ -472,6 +474,7 @@ function value.
               }
               if(sosGreaterThan(vertexId, a)) {
                 isMax = false;
+                break;
               }
             }
             if(isMax) {
