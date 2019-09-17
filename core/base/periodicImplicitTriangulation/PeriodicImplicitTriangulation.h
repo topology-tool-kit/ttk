@@ -1,3 +1,15 @@
+/// \ingroup base
+/// \class ttk::PeriodicImplicitTriangulation
+/// \author Talha Bin Masood <talha.bin.masood@liu.se>
+/// \date September 2019
+///
+/// \brief TTK triangulation class for grids with periodic boundary conditions
+/// implemented in all directions.
+///
+/// \sa ttk::Triangulation
+/// \sa ttk::Triangulation::setPeriodicBoundaryConditions
+///
+
 #ifndef _PERIODICIMPLICITTRIANGULATION_H
 #define _PERIODICIMPLICITTRIANGULATION_H
 
