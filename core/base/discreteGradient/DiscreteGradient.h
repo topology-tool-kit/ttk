@@ -21,6 +21,7 @@
 #include <Wrapper.h>
 
 #include <algorithm>
+#include <array>
 #include <queue>
 #include <set>
 #include <utility>
