@@ -3,7 +3,7 @@ Thanks for contributing to TTK!
 Please find below a few guidelines that we invite you to consider before making a pull request.
 
 # 1. Authorship
-  - Please enter in header files doxygen style information regarding authorship and, if applicable, related publications. See core/base/topologicalSimplification/TopologicalSimplification.h for a base layer example, core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h for a vtk wrapper example and [paraview/TopologicalSimplification/TopologicalSimplification.xml](https://github.com/topology-tool-kit/ttk/blob/master/paraview/TopologicalSimplification/TopologicalSimplification.xml) for a ParaView plugin example.
+  - Please enter in header files doxygen style information regarding authorship and, if applicable, related publications. See [core/base/topologicalSimplification/TopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/master/core/base/topologicalSimplification/TopologicalSimplification.h) for a base layer example, [core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/master/core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h) for a vtk wrapper example and [paraview/TopologicalSimplification/TopologicalSimplification.xml](https://github.com/topology-tool-kit/ttk/blob/master/paraview/TopologicalSimplification/TopologicalSimplification.xml) for a ParaView plugin example.
 
 # 2. Code formatting
   - To make TTK's source code more homogeneous and readable, we use [clang-format](https://clang.llvm.org/docs/ClangFormat.html). A style file is already available in TTK's source tree.
