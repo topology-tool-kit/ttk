@@ -280,11 +280,10 @@ namespace ttk {
     };
 
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-    using gradientSliceType = std::vector<std::vector<char>>;
+    using gradientType = std::vector<std::vector<std::vector<char>>>;
 #else
-    using gradientSliceType = std::vector<std::vector<SimplexId>>;
+    using gradientType = std::vector<std::vector<std::vector<SimplexId>>>;
 #endif
-    using gradientType = std::vector<gradientSliceType>;
 
     /**
      * Compute and manage a discrete gradient of a function on a triangulation.
