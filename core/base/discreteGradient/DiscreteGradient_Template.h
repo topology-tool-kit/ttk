@@ -190,6 +190,96 @@ dataType DiscreteGradient::getPersistence(const Cell &up,
 }
 
 template <typename dataType, typename idType>
+DiscreteGradient::lowerStarType
+  DiscreteGradient::lowerStar(const SimplexId a,
+                              const dataType *const scalars,
+                              const idType *const offsets) const {
+  lowerStarType res{};
+
+  // a belongs to its lower star
+  // res[0].emplace(a);
+
+  const auto sosGreaterThan
+    = [&scalars, &offsets](const SimplexId m, const SimplexId n) {
+        if(scalars[m] != scalars[n]) {
+          return scalars[m] > scalars[n];
+        } else {
+          return offsets[m] > offsets[n];
+        }
+      };
+
+  // store lower edges
+  const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
+  for(SimplexId i = 0; i < nedges; i++) {
+    SimplexId edgeId;
+    inputTriangulation_->getVertexEdge(a, i, edgeId);
+    bool isMax = true;
+    for(SimplexId j = 0; j < 2; j++) {
+      SimplexId vertexId;
+      inputTriangulation_->getEdgeVertex(edgeId, j, vertexId);
+      if(vertexId == a) {
+        continue;
+      }
+      if(sosGreaterThan(vertexId, a)) {
+        isMax = false;
+        break;
+      }
+    }
+    if(isMax) {
+      res[1].emplace(edgeId);
+    }
+  }
+
+  // store lower triangles
+  const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
+  for(SimplexId i = 0; i < ntri; i++) {
+    SimplexId triangleId;
+    inputTriangulation_->getVertexTriangle(a, i, triangleId);
+    bool isMax = true;
+    for(SimplexId j = 0; j < 3; j++) {
+      SimplexId vertexId;
+      inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
+      if(vertexId == a) {
+        continue;
+      }
+      if(sosGreaterThan(vertexId, a)) {
+        isMax = false;
+        break;
+      }
+    }
+    if(isMax) {
+      res[2].emplace(triangleId);
+    }
+  }
+
+  // store lower tetra
+  if(dimensionality_ == 3) {
+    const auto ntetra = inputTriangulation_->getVertexStarNumber(a);
+    for(SimplexId i = 0; i < ntetra; ++i) {
+      SimplexId tetraId;
+      inputTriangulation_->getVertexStar(a, i, tetraId);
+      bool isMax = true;
+      for(SimplexId j = 0; j < 4; ++j) {
+        SimplexId vertexId;
+        inputTriangulation_->getCellVertex(tetraId, j, vertexId);
+        if(vertexId == a) {
+          continue;
+        }
+        if(sosGreaterThan(vertexId, a)) {
+          isMax = false;
+          break;
+        }
+      }
+      if(isMax) {
+        res[3].emplace(tetraId);
+      }
+    }
+  }
+
+  return res;
+}
+
+template <typename dataType, typename idType>
 int DiscreteGradient::processLowerStars(const dataType *const scalars,
                                         const idType *const offsets) {
 

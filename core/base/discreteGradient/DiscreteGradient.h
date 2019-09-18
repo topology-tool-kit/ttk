@@ -399,93 +399,9 @@ function value.
        * 3-cells)
        */
       template <typename dataType, typename idType>
-      inline lowerStarType lowerStar(const SimplexId a,
-                                     const dataType *const scalars,
-                                     const idType *const offsets) const {
-        lowerStarType res{};
-
-        // a belongs to its lower star
-        // res[0].emplace(a);
-
-        const auto sosGreaterThan
-          = [&scalars, &offsets](const SimplexId m, const SimplexId n) {
-              if(scalars[m] != scalars[n]) {
-                return scalars[m] > scalars[n];
-              } else {
-                return offsets[m] > offsets[n];
-              }
-            };
-
-        // store lower edges
-        const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
-        for(SimplexId i = 0; i < nedges; i++) {
-          SimplexId edgeId;
-          inputTriangulation_->getVertexEdge(a, i, edgeId);
-          bool isMax = true;
-          for(SimplexId j = 0; j < 2; j++) {
-            SimplexId vertexId;
-            inputTriangulation_->getEdgeVertex(edgeId, j, vertexId);
-            if(vertexId == a) {
-              continue;
-            }
-            if(sosGreaterThan(vertexId, a)) {
-              isMax = false;
-              break;
-            }
-          }
-          if(isMax) {
-            res[1].emplace(edgeId);
-          }
-        }
-
-        // store lower triangles
-        const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
-        for(SimplexId i = 0; i < ntri; i++) {
-          SimplexId triangleId;
-          inputTriangulation_->getVertexTriangle(a, i, triangleId);
-          bool isMax = true;
-          for(SimplexId j = 0; j < 3; j++) {
-            SimplexId vertexId;
-            inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
-            if(vertexId == a) {
-              continue;
-            }
-            if(sosGreaterThan(vertexId, a)) {
-              isMax = false;
-              break;
-            }
-          }
-          if(isMax) {
-            res[2].emplace(triangleId);
-          }
-        }
-
-        // store lower tetra
-        if(dimensionality_ == 3) {
-          const auto ntetra = inputTriangulation_->getVertexStarNumber(a);
-          for(SimplexId i = 0; i < ntetra; ++i) {
-            SimplexId tetraId;
-            inputTriangulation_->getVertexStar(a, i, tetraId);
-            bool isMax = true;
-            for(SimplexId j = 0; j < 4; ++j) {
-              SimplexId vertexId;
-              inputTriangulation_->getCellVertex(tetraId, j, vertexId);
-              if(vertexId == a) {
-                continue;
-              }
-              if(sosGreaterThan(vertexId, a)) {
-                isMax = false;
-                break;
-              }
-            }
-            if(isMax) {
-              res[3].emplace(tetraId);
-            }
-          }
-        }
-
-        return res;
-      }
+      lowerStarType lowerStar(const SimplexId a,
+                              const dataType *const scalars,
+                              const idType *const offsets) const;
 
       /**
        * @brief Return the number of unpaired faces of a given cell in
@@ -497,45 +413,9 @@ function value.
        *
        * @return Number of unpaired faces
        */
-      inline SimplexId numUnpairedFaces(const Cell c,
-                                        const lowerStarType &ls,
-                                        isPairedType &isPaired) const {
-
-        // number of unpaired faces
-        SimplexId count = 0;
-
-        if(c.dim_ == 1) {
-          for(SimplexId i = 0; i < 2; i++) {
-            SimplexId v;
-            inputTriangulation_->getEdgeVertex(c.id_, i, v);
-            // check if v not paired
-            if(isPaired[0].find(v) == isPaired[0].end()) {
-              count++;
-            }
-          }
-        } else if(c.dim_ == 2) {
-          for(SimplexId i = 0; i < 3; i++) {
-            SimplexId e;
-            inputTriangulation_->getTriangleEdge(c.id_, i, e);
-            // check if e in ls and not paired
-            if(ls[1].find(e) != ls[1].end()
-               && isPaired[1].find(e) == isPaired[1].end()) {
-              count++;
-            }
-          }
-        } else if(c.dim_ == 3) {
-          for(SimplexId i = 0; i < 4; ++i) {
-            SimplexId t;
-            inputTriangulation_->getCellTriangle(c.id_, i, t);
-            // check if t in ls and not paired
-            if(ls[2].find(t) != ls[2].end()
-               && isPaired[2].find(t) == isPaired[2].end()) {
-              count++;
-            }
-          }
-        }
-        return count;
-      }
+      SimplexId numUnpairedFaces(const Cell c,
+                                 const lowerStarType &ls,
+                                 const isPairedType &isPaired) const;
 
       /**
        * @brief Get the input cell single unpaired face
@@ -546,40 +426,9 @@ function value.
        *
        * @return Paired cell of immediate lower dimension
        */
-      inline SimplexId
-        getPair(Cell c, lowerStarType &ls, isPairedType &isPaired) const {
-        if(c.dim_ == 1) {
-          for(SimplexId i = 0; i < 2; i++) {
-            SimplexId v;
-            inputTriangulation_->getEdgeVertex(c.id_, i, v);
-            // check if v not paired
-            if(isPaired[0].find(v) == isPaired[0].end()) {
-              return v;
-            }
-          }
-        } else if(c.dim_ == 2) {
-          for(SimplexId i = 0; i < 3; i++) {
-            SimplexId e;
-            inputTriangulation_->getTriangleEdge(c.id_, i, e);
-            // check if e in ls and not paired
-            if(ls[1].find(e) != ls[1].end()
-               && isPaired[1].find(e) == isPaired[1].end()) {
-              return e;
-            }
-          }
-        } else if(c.dim_ == 3) {
-          for(SimplexId i = 0; i < 4; ++i) {
-            SimplexId t;
-            inputTriangulation_->getCellTriangle(c.id_, i, t);
-            // check if t in ls and not paired
-            if(ls[2].find(t) != ls[2].end()
-               && isPaired[2].find(t) == isPaired[2].end()) {
-              return t;
-            }
-          }
-        }
-        return -1;
-      }
+      SimplexId getPair(const Cell c,
+                        const lowerStarType &ls,
+                        const isPairedType &isPaired) const;
 
       /**
        * Implements the ProcessLowerStars algorithm from "Theory and
