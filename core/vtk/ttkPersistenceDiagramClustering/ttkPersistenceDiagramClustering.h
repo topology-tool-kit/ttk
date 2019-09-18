@@ -153,7 +153,7 @@ public:
   }
   vtkGetMacro(Alpha, double);
 
-  void SetAntiAlpha(double data){
+  void SetAntiAlpha(double data) {
     double alpha = 1 - data;
     SetAlpha(alpha);
   }
@@ -505,7 +505,6 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
   return max_dimension;
 }
 
-
 template <typename dataType>
 vtkSmartPointer<vtkUnstructuredGrid>
   ttkPersistenceDiagramClustering::createOutputCentroids(
@@ -514,7 +513,8 @@ vtkSmartPointer<vtkUnstructuredGrid>
     double max_dimension,
     double spacing) {
   if(debugLevel_ > 5) {
-    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk diagrams" << std::endl;
+    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk diagrams"
+              << std::endl;
   }
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
@@ -679,7 +679,8 @@ vtkSmartPointer<vtkUnstructuredGrid>
     double max_dimension,
     double spacing) {
   if(debugLevel_ > 5) {
-    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Outputs" << std::endl;
+    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Outputs"
+              << std::endl;
   }
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
@@ -769,7 +770,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
       } else if(DisplayMethod == 2) {
         z2 = spacing;
         z1 = spacing;
-        if(j==0){
+        if(j == 0) {
           z2 = -spacing;
           z1 = -spacing;
         }
@@ -885,7 +886,8 @@ vtkSmartPointer<vtkUnstructuredGrid>
     double max_dimension,
     double spacing) {
   if(debugLevel_ > 5) {
-    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Matchings" << std::endl;
+    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Matchings"
+              << std::endl;
   }
   vtkSmartPointer<vtkPoints> matchingPoints = vtkSmartPointer<vtkPoints>::New();
 
@@ -913,7 +915,8 @@ vtkSmartPointer<vtkUnstructuredGrid>
   vtkSmartPointer<vtkIntArray> pairType = vtkSmartPointer<vtkIntArray>::New();
   pairType->SetName("PairType");
 
-  vtkSmartPointer<vtkIntArray> matchingCount = vtkSmartPointer<vtkIntArray>::New();
+  vtkSmartPointer<vtkIntArray> matchingCount
+    = vtkSmartPointer<vtkIntArray>::New();
   matchingCount->SetName("MatchNumber");
 
   std::vector<int> cluster_size;
@@ -953,7 +956,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
       matchingTuple m = matchings_j[i];
       int bidder_id = std::get<0>(m);
       int good_id = std::get<1>(m);
-      if(NumberOfClusters==1 && good_id > -1) {
+      if(NumberOfClusters == 1 && good_id > -1) {
         matchings_count[good_id] += 1;
         count_to_good.push_back(good_id);
       }
@@ -1015,7 +1018,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
       }
     }
   }
-  if(NumberOfClusters==1 and all_CTDiagrams.size() == 2) {
+  if(NumberOfClusters == 1 and all_CTDiagrams.size() == 2) {
     for(int i = 0; i < count; i++) {
       matchingCount->InsertTuple1(i, matchings_count[count_to_good[i]]);
     }
@@ -1028,7 +1031,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
   matchingMesh->GetCellData()->AddArray(idOfCluster);
   matchingMesh->GetCellData()->AddArray(pairType);
   matchingMesh->GetCellData()->AddArray(cost);
-  if(NumberOfClusters==1 and all_CTDiagrams.size() == 2) {
+  if(NumberOfClusters == 1 and all_CTDiagrams.size() == 2) {
     matchingMesh->GetCellData()->AddArray(matchingCount);
   }
 

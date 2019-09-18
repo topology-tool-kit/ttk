@@ -55,7 +55,7 @@ void PDBarycenter<dataType>::runMatching(
   std::vector<dataType> *min_diag_price,
   std::vector<dataType> *min_price,
   std::vector<std::vector<matchingTuple>> *all_matchings,
-  bool use_kdt, 
+  bool use_kdt,
   int actual_distance) {
   Timer time_matchings;
 #ifdef TTK_ENABLE_OPENMP

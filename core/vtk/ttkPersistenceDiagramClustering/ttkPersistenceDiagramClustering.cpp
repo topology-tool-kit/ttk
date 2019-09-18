@@ -72,10 +72,10 @@ int ttkPersistenceDiagramClustering::updateProgress(const float &progress) {
 }
 
 int ttkPersistenceDiagramClustering::doIt(vtkDataSet **input,
-                                           vtkUnstructuredGrid *outputClusters,
-                                           vtkUnstructuredGrid *outputCentroids,
-                                           vtkUnstructuredGrid *outputMatchings,
-                                           int numInputs) {
+                                          vtkUnstructuredGrid *outputClusters,
+                                          vtkUnstructuredGrid *outputCentroids,
+                                          vtkUnstructuredGrid *outputMatchings,
+                                          int numInputs) {
   // Get arrays from input datas
   // vtkDataArray* inputDiagram[numInputs] = { NULL };
   //
@@ -149,7 +149,8 @@ int ttkPersistenceDiagramClustering::doIt(vtkDataSet **input,
           }
           persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
           persistenceDiagramsClustering.setDeterministic(Deterministic);
-          persistenceDiagramsClustering.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
+          persistenceDiagramsClustering.setForceUseOfAlgorithm(
+            ForceUseOfAlgorithm);
           persistenceDiagramsClustering.setPairTypeClustering(
             PairTypeClustering);
           persistenceDiagramsClustering.setNumberOfInputs(numInputs);
