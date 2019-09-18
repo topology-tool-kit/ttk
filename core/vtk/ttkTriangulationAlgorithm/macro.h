@@ -2,6 +2,7 @@
 
 #include <vtkIdTypeArray.h>
 #include <vtkImageData.h>
+#include <vtkInformationVector.h>
 #include <vtkIntArray.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
@@ -70,8 +71,10 @@ using ttkSimplexIdTypeArray = vtkIntArray;
 
 #define TTK_COMMA ,
 
+//------------------------------------------------------------------
+
 // Macros for vtkWrappers
-#define TTK_POLY_DATA_NEW(i, ouputInformation, dataTYpe)           \
+#define TTK_POLY_DATA_NEW(i, ouputInformation, dataType)           \
   if(dataType == "vtkPolyData") {                                  \
     ttkPolyData *data = ttkPolyData::SafeDownCast(                 \
       outputInformation->Get(vtkDataObject::DATA_OBJECT()));       \
@@ -90,7 +93,9 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     }                                                              \
   }
 
-#define TTK_UNSTRUCTURED_GRID_NEW(i, ouputInformation, dataTYpe)   \
+//------------------------------------------------------------------
+
+#define TTK_UNSTRUCTURED_GRID_NEW(i, ouputInformation, dataType)   \
   if(dataType == "vtkUnstructuredGrid") {                          \
                                                                    \
     ttkUnstructuredGrid *data = ttkUnstructuredGrid::SafeDownCast( \
@@ -109,6 +114,8 @@ using ttkSimplexIdTypeArray = vtkIntArray;
       data->allocate();                                            \
     }                                                              \
   }
+
+//----------------------------------------------------------------------
 
 #define TTK_OUTPUT_MANAGEMENT()                                        \
 protected:                                                             \
@@ -142,9 +149,12 @@ protected:                                                             \
                                                                        \
 public:
 
+//-------------------------------------------------------------------------------
+
 #define TTK_PIPELINE_REQUEST()                                                 \
 protected:                                                                     \
-  std::vector<vtkSmartPointer<ttkTriangulationAlgorithm>> inputTriangulations_;   \
+  std::vector<vtkSmartPointer<ttkTriangulationAlgorithm>>                      \
+    inputTriangulations_;                                                      \
   int RequestData(vtkInformation *request, vtkInformationVector **inputVector, \
                   vtkInformationVector *outputVector) override {               \
                                                                                \
@@ -152,7 +162,7 @@ protected:                                                                     \
       inputTriangulations_.resize(GetNumberOfInputPorts());                    \
       for(int i = 0; i < (int)inputTriangulations_.size(); i++) {              \
         inputTriangulations_[i]                                                \
-          = vtkSmartPointer<ttkTriangulationAlgorithm>::New();                    \
+          = vtkSmartPointer<ttkTriangulationAlgorithm>::New();                 \
       }                                                                        \
     }                                                                          \
                                                                                \
@@ -180,6 +190,8 @@ protected:                                                                     \
                                                                                \
     return 1;                                                                  \
   }
+
+//-------------------------------------------------------------------------------
 
 #define TTK_SETUP()                                                         \
 public:                                                                     \
@@ -210,3 +222,41 @@ private:                                                                    \
 protected:                                                                  \
   bool UseAllCores;                                                         \
   int ThreadNumber;
+
+//----------------------------------------------------------------------------
+
+// Internal things to allow the ttkTriangulation to travel through a VTK
+// pipeline.
+#define ttkTypeMacro(thisClass, superClass)                      \
+protected:                                                       \
+  const char *GetClassNameInternal() const override {            \
+    return #superClass;                                          \
+  }                                                              \
+                                                                 \
+public:                                                          \
+  typedef superClass Superclass;                                 \
+  static bool IsTypeOf(const char *type) {                       \
+    if(!strcmp("superClass", type)) {                            \
+      return 1;                                                  \
+    }                                                            \
+    return superClass::IsTypeOf(type);                           \
+  }                                                              \
+  int IsA(const char *type) override {                           \
+    return this->thisClass::IsTypeOf(type);                      \
+  }                                                              \
+  static thisClass *SafeDownCast(vtkObjectBase *o) {             \
+    if((o) && (o->IsA("thisClass"))) {                           \
+      return static_cast<thisClass *>(o);                        \
+    }                                                            \
+    return NULL;                                                 \
+  }                                                              \
+  thisClass *NewInstance() const {                               \
+    return thisClass::SafeDownCast(this->NewInstanceInternal()); \
+  }                                                              \
+                                                                 \
+protected:                                                       \
+  vtkObjectBase *NewInstanceInternal() const override {          \
+    return thisClass::New();                                     \
+  }                                                              \
+                                                                 \
+public:

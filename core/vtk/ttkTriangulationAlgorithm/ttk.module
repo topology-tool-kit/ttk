@@ -6,6 +6,9 @@ SOURCES
 HEADERS
   ttkTriangulationAlgorithm.h
   ttkTriangulation.h
+  ttkImageData.h
+  ttkPolyData.h
+  ttkUnstructuredGrid.h
   macro.h
 DEPENDS
   triangulation

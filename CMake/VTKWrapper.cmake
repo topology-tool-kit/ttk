@@ -68,7 +68,7 @@ endfunction()
 # current dir
 macro(ttk_register_vtk_filter filterPath)
   ttk_parse_module_file(${filterPath}/ttk.module)
-  cmake_parse_arguments( "ARG" "" "NAME" "SOURCES;HEADERS;DEPENDS;XMLS" ${_ttkModuleFileContent})
+  cmake_parse_arguments( "ARG" "" "NAME" "SOURCES;HEADERS;DEPENDS;XMLS" ${moduleFileContent})
 
   _ttk_add_vtk_library(${ARG_NAME}
     SOURCES

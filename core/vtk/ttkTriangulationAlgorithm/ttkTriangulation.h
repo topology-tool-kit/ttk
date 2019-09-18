@@ -58,7 +58,6 @@
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
-#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -155,98 +154,9 @@ protected:
 private:
 };
 
-// Internal things to allow the ttkTriangulation to travel through a VTK
-// pipeline.
-#define ttkTypeMacro(thisClass, superClass)                      \
-protected:                                                       \
-  const char *GetClassNameInternal() const {                     \
-    return #superClass;                                          \
-  }                                                              \
-                                                                 \
-public:                                                          \
-  typedef superClass Superclass;                                 \
-  static bool IsTypeOf(const char *type) {                       \
-    if(!strcmp("superClass", type)) {                            \
-      return 1;                                                  \
-    }                                                            \
-    return superClass::IsTypeOf(type);                           \
-  }                                                              \
-  int IsA(const char *type) {                                    \
-    return this->thisClass::IsTypeOf(type);                      \
-  }                                                              \
-  static thisClass *SafeDownCast(vtkObjectBase *o) {             \
-    if((o) && (o->IsA("thisClass"))) {                           \
-      return static_cast<thisClass *>(o);                        \
-    }                                                            \
-    return NULL;                                                 \
-  }                                                              \
-  thisClass *NewInstance() const {                               \
-    return thisClass::SafeDownCast(this->NewInstanceInternal()); \
-  }                                                              \
-                                                                 \
-protected:                                                       \
-  vtkObjectBase *NewInstanceInternal() const {                   \
-    return thisClass::New();                                     \
-  }                                                              \
-                                                                 \
-public:
-
-class VTKCOMMONDATAMODEL_EXPORT ttkUnstructuredGrid
-  : public ttkTriangulation,
-    public vtkUnstructuredGrid {
-
-public:
-  static ttkUnstructuredGrid *New();
-  ttkTypeMacro(ttkUnstructuredGrid, vtkUnstructuredGrid);
-
-  void CopyStructure(vtkDataSet *other);
-
-  void DeepCopy(vtkDataObject *other);
-
-  void ShallowCopy(vtkDataObject *other);
-
-protected:
-  ttkUnstructuredGrid();
-
-  ~ttkUnstructuredGrid() override;
-};
-
-class VTKCOMMONDATAMODEL_EXPORT ttkImageData : public ttkTriangulation,
-                                               public vtkImageData {
-
-public:
-  static ttkImageData *New();
-  ttkTypeMacro(ttkImageData, vtkImageData);
-
-  void CopyStructure(vtkDataSet *other);
-
-  void DeepCopy(vtkDataObject *other);
-
-  void ShallowCopy(vtkDataObject *other);
-
-protected:
-  ttkImageData();
-
-  ~ttkImageData();
-};
-
-class VTKCOMMONDATAMODEL_EXPORT ttkPolyData : public ttkTriangulation,
-                                              public vtkPolyData {
-
-public:
-  static ttkPolyData *New();
-  ttkTypeMacro(ttkPolyData, vtkPolyData);
-
-  void CopyStructure(vtkDataSet *other);
-
-  void DeepCopy(vtkDataObject *other);
-
-  void ShallowCopy(vtkDataObject *other);
-
-protected:
-  ttkPolyData();
-
-  ~ttkPolyData();
-};
+// inclue only this file to access all TTK data sets
+#include <ttkImageData.h>
+#include <ttkPolyData.h>
+#include <ttkUnstructuredGrid.h>
 
 #endif // _TTK_TRIANGULATION_H

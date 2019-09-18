@@ -2,9 +2,9 @@ set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/../core/vtk/")
 
 # Fill TTK_MODULES, TTK_MODULES_FILES
 # These lists are then used by singlePlugin/CMakeLists.txt
-set(TTK_XMLS         "" CACHE INTERNAL "")
-set(TTK_MODULES      "" CACHE INTERNAL "")
-set(TTK_MODULE_FILES "" CACHE INTERNAL "")
+set(TTK_XMLS              "" CACHE INTERNAL "")
+set(TTK_MODULES           "" CACHE INTERNAL "")
+set(TTK_VTK_MODULE_FILESS "" CACHE INTERNAL "")
 file(GLOB PARAVIEW_PLUGIN_DIRS *)
 foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
   if(IS_DIRECTORY ${PARAVIEW_PLUGIN})
@@ -60,9 +60,20 @@ paraview_plugin_build(
   )
 
 if(DEFINED TTK_INSTALL_PLUGIN_DIR)
-  # This only install the TopologyToolKit.so file
-  # Assume a system installation of TTK, otherwise
-  # filters so won't be found (no rpath management yet)
+  # each filter library
+  foreach(TTK_MODULE ${TTK_MODULES})
+    install(
+      TARGETS
+        ${TTK_MODULE}
+      DESTINATION
+        "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
+      )
+  endforeach()
+  # the main plugin
+  set_target_properties(${TTK_PLUGINS}
+    PROPERTIES INSTALL_RPATH
+      "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
+    )
   install(
     TARGETS
       ${TTK_PLUGINS}

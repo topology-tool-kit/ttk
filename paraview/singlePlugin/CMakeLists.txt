@@ -5,7 +5,7 @@ paraview_add_plugin(TopologyToolKit
   MODULES
     ${TTK_MODULES}
   MODULE_FILES
-    ${TTK_MODULE_FILES}
+    ${TTK_VTK_MODULE_FILESS}
   SERVER_MANAGER_XML
     ${TTK_XMLS}
   )

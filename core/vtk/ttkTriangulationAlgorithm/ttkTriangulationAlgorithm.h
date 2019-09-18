@@ -8,15 +8,18 @@
 /// \date February 2016.
 ///
 
-#pragma once
-
-#include <vtkDataSetAlgorithm.h>
-#include <vtkImageData.h>
-#include <vtkPolyData.h>
-#include <vtkUnstructuredGrid.h>
+#ifndef _TTK_TRIANGULATION_ALGORITHM_H
+#define _TTK_TRIANGULATION_ALGORITHM_H
 
 #include <Wrapper.h>
 #include <ttkTriangulation.h>
+
+#include <vtkDataSetAlgorithm.h>
+#include <vtkImageData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkPolyData.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <macro.h>
 
@@ -50,3 +53,5 @@ private:
 };
 
 /// @}
+
+#endif /* end of include guard: _TTK_TRIANGULATION_ALGORITHM_H */
