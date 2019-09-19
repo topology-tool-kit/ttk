@@ -231,7 +231,7 @@ DiscreteGradient::lowerStarType
       }
     }
     if(isMax) {
-      res[1].emplace(edgeId);
+      res[1].emplace_back(edgeId);
     }
   }
 
@@ -258,7 +258,7 @@ DiscreteGradient::lowerStarType
       }
     }
     if(isMax) {
-      res[2].emplace(triangleId);
+      res[2].emplace_back(triangleId);
     }
   }
 
@@ -285,7 +285,7 @@ DiscreteGradient::lowerStarType
       }
     }
     if(isMax) {
-      res[3].emplace(tetraId);
+      res[3].emplace_back(tetraId);
     }
   }
 

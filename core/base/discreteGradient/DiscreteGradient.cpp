@@ -59,28 +59,41 @@ std::pair<size_t, SimplexId> DiscreteGradient::numUnpairedFaces(
   // c.dim_ cannot be <= 1
 
   if(c.dim_ == 2) {
-    for(SimplexId i = 0; i < 3; i++) {
-      SimplexId e;
-      inputTriangulation_->getTriangleEdge(c.id_, i, e);
-      // check if e in ls and not paired
-      if(ls[1].find(e) != ls[1].end()
-         && isPaired[1].find(e) == isPaired[1].end()) {
+    SimplexId e0{}, e1{}, e2{};
+    inputTriangulation_->getTriangleEdge(c.id_, 0, e0);
+    inputTriangulation_->getTriangleEdge(c.id_, 1, e1);
+    inputTriangulation_->getTriangleEdge(c.id_, 2, e2);
+
+    for(const auto e : ls[1]) {
+      if(isPaired[1].find(e) != isPaired[1].end()) {
+        continue;
+      }
+      // e is not paired
+      if(e == e0 || e == e1 || e == e2) {
         res.first++;
         res.second = e;
       }
     }
+
   } else if(c.dim_ == 3) {
-    for(SimplexId i = 0; i < 4; ++i) {
-      SimplexId t;
-      inputTriangulation_->getCellTriangle(c.id_, i, t);
-      // check if t in ls and not paired
-      if(ls[2].find(t) != ls[2].end()
-         && isPaired[2].find(t) == isPaired[2].end()) {
+    SimplexId t0{}, t1{}, t2{}, t3{};
+    inputTriangulation_->getCellTriangle(c.id_, 0, t0);
+    inputTriangulation_->getCellTriangle(c.id_, 1, t1);
+    inputTriangulation_->getCellTriangle(c.id_, 2, t2);
+    inputTriangulation_->getCellTriangle(c.id_, 3, t3);
+
+    for(const auto t : ls[2]) {
+      if(isPaired[2].find(t) != isPaired[2].end()) {
+        continue;
+      }
+      // t is not paired
+      if(t == t0 || t == t1 || t == t2 || t == t3) {
         res.first++;
         res.second = t;
       }
     }
   }
+
   return res;
 }
 

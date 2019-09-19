@@ -380,7 +380,7 @@ function value.
       /**
        * Type alias for lower stars of a given cell
        */
-      using lowerStarType = std::array<std::set<SimplexId>, 4>;
+      using lowerStarType = std::array<std::vector<SimplexId>, 4>;
       /**
        * Type alias for paired cells: one vector of fixed size per dimension
        */
