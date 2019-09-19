@@ -34,12 +34,18 @@ vtk_module_autoinit(
     ${TTK_ENABLED_MODULES}
   )
 
+if(NOT TTK_BUILD_PARAVIEW_PLUGINS)
+  # when building against VTK, we need the modules
+  # in addition to ttkAll.
+  set(TTK_EXPORT_TARGETS ${TTK_BUILD_PARAVIEW_PLUGINS})
+endif()
+
 # Use folder as configured by the distribution
 include(GNUInstallDirs)
 install(
   TARGETS
     ttkAll
-    ${TTK_ENABLED_MODULES}
+    ${TTK_EXPORT_TARGETS}
   EXPORT
     TTKVTKTargets
   RUNTIME DESTINATION
