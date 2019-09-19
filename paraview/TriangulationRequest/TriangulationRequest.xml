@@ -88,6 +88,19 @@
       </IntVectorProperty>
 
       <IntVectorProperty
+        name="PeriodicBoundaryConditions"
+        command="SetPeriodicBoundaryConditions"
+        label="Periodic Boundary Conditions"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Check this box to use periodic boundary conditions for computation.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
         command="SetUseAllCores"
@@ -134,6 +147,7 @@
         <Property name="SimplexType" />
         <Property name="SimplexIdentifier" />
         <Property name="KeepAllDataArrays" />
+        <Property name="PeriodicBoundaryConditions"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
