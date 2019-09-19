@@ -50,29 +50,23 @@ SimplexId DiscreteGradient::getNumberOfCells(const int dimension) const {
   return -1;
 }
 
-SimplexId DiscreteGradient::numUnpairedFaces(
+std::pair<size_t, SimplexId> DiscreteGradient::numUnpairedFaces(
   const Cell c, const lowerStarType &ls, const isPairedType &isPaired) const {
 
   // number of unpaired faces
-  SimplexId count = 0;
+  std::pair<size_t, SimplexId> res{0, -1};
 
-  if(c.dim_ == 1) {
-    for(SimplexId i = 0; i < 2; i++) {
-      SimplexId v;
-      inputTriangulation_->getEdgeVertex(c.id_, i, v);
-      // check if v not paired
-      if(isPaired[0].find(v) == isPaired[0].end()) {
-        count++;
-      }
-    }
-  } else if(c.dim_ == 2) {
+  // c.dim_ cannot be <= 1
+
+  if(c.dim_ == 2) {
     for(SimplexId i = 0; i < 3; i++) {
       SimplexId e;
       inputTriangulation_->getTriangleEdge(c.id_, i, e);
       // check if e in ls and not paired
       if(ls[1].find(e) != ls[1].end()
          && isPaired[1].find(e) == isPaired[1].end()) {
-        count++;
+        res.first++;
+        res.second = e;
       }
     }
   } else if(c.dim_ == 3) {
@@ -82,47 +76,12 @@ SimplexId DiscreteGradient::numUnpairedFaces(
       // check if t in ls and not paired
       if(ls[2].find(t) != ls[2].end()
          && isPaired[2].find(t) == isPaired[2].end()) {
-        count++;
+        res.first++;
+        res.second = t;
       }
     }
   }
-  return count;
-}
-
-SimplexId DiscreteGradient::getPair(const Cell c,
-                                    const lowerStarType &ls,
-                                    const isPairedType &isPaired) const {
-  if(c.dim_ == 1) {
-    for(SimplexId i = 0; i < 2; i++) {
-      SimplexId v;
-      inputTriangulation_->getEdgeVertex(c.id_, i, v);
-      // check if v not paired
-      if(isPaired[0].find(v) == isPaired[0].end()) {
-        return v;
-      }
-    }
-  } else if(c.dim_ == 2) {
-    for(SimplexId i = 0; i < 3; i++) {
-      SimplexId e;
-      inputTriangulation_->getTriangleEdge(c.id_, i, e);
-      // check if e in ls and not paired
-      if(ls[1].find(e) != ls[1].end()
-         && isPaired[1].find(e) == isPaired[1].end()) {
-        return e;
-      }
-    }
-  } else if(c.dim_ == 3) {
-    for(SimplexId i = 0; i < 4; ++i) {
-      SimplexId t;
-      inputTriangulation_->getCellTriangle(c.id_, i, t);
-      // check if t in ls and not paired
-      if(ls[2].find(t) != ls[2].end()
-         && isPaired[2].find(t) == isPaired[2].end()) {
-        return t;
-      }
-    }
-  }
-  return -1;
+  return res;
 }
 
 bool DiscreteGradient::isMinimum(const Cell &cell) const {

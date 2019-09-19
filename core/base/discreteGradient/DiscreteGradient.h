@@ -411,24 +411,12 @@ function value.
        * @param[in] ls Input lower star
        * @param[in] isPaired
        *
-       * @return Number of unpaired faces
+       * @return Number of unpaired faces and a face id
        */
-      SimplexId numUnpairedFaces(const Cell c,
-                                 const lowerStarType &ls,
-                                 const isPairedType &isPaired) const;
-
-      /**
-       * @brief Get the input cell single unpaired face
-       *
-       * @param[in] c Input cell
-       * @param[in] ls Input lower star
-       * @param[in] isPaired
-       *
-       * @return Paired cell of immediate lower dimension
-       */
-      SimplexId getPair(const Cell c,
-                        const lowerStarType &ls,
-                        const isPairedType &isPaired) const;
+      std::pair<size_t, SimplexId>
+        numUnpairedFaces(const Cell c,
+                         const lowerStarType &ls,
+                         const isPairedType &isPaired) const;
 
       /**
        * Implements the ProcessLowerStars algorithm from "Theory and

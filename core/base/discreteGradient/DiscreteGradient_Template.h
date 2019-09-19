@@ -473,7 +473,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
         for(SimplexId beta : ls[2]) {
           Cell cb{2, beta};
           if(isEdgeInTriangle(ca.id_, beta)
-             && numUnpairedFaces(cb, ls, isPaired) == 1) {
+             && numUnpairedFaces(cb, ls, isPaired).first == 1) {
             pqOne.push(cb);
           }
         }
@@ -481,7 +481,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
         for(SimplexId beta : ls[3]) {
           Cell cb{3, beta};
           if(isTriangleInTetra(ca.id_, beta)
-             && numUnpairedFaces(cb, ls, isPaired) == 1) {
+             && numUnpairedFaces(cb, ls, isPaired).first == 1) {
             pqOne.push(cb);
           }
         }
@@ -524,10 +524,11 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
         while(!pqOne.empty()) {
           Cell c_alpha{pqOne.top()};
           pqOne.pop();
-          if(numUnpairedFaces(c_alpha, Lx, isPaired) == 0) {
+          auto unpairedFaces = numUnpairedFaces(c_alpha, Lx, isPaired);
+          if(unpairedFaces.first == 0) {
             pqZero.push(c_alpha);
           } else {
-            Cell c_pair_alpha{c_alpha.dim_ - 1, getPair(c_alpha, Lx, isPaired)};
+            Cell c_pair_alpha{c_alpha.dim_ - 1, unpairedFaces.second};
 
             // store (pair_alpha) -> (alpha) V-path
             V(c_pair_alpha, c_alpha);
