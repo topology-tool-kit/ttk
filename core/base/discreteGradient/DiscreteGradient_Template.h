@@ -543,9 +543,11 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
           pqZero.pop();
           // skip pair_alpha from pqZero:
           // c_gamma is not critical if already paired
-          if(isPaired[c_gamma.dim_].find(c_gamma.id_)
-             != isPaired[c_gamma.dim_].end()) {
-            continue;
+          while(!pqZero.empty()
+                && isPaired[c_gamma.dim_].find(c_gamma.id_)
+                     != isPaired[c_gamma.dim_].end()) {
+            c_gamma = pqZero.top();
+            pqZero.pop();
           }
 
           // gamma is a critical cell
