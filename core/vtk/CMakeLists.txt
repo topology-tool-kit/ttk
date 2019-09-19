@@ -37,7 +37,8 @@ vtk_module_autoinit(
 if(NOT TTK_BUILD_PARAVIEW_PLUGINS)
   # when building against VTK, we need the modules
   # in addition to ttkAll.
-  set(TTK_EXPORT_TARGETS ${TTK_BUILD_PARAVIEW_PLUGINS})
+  set(TTK_EXPORT_TARGETS ${TTK_ENABLED_MODULES})
+  target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
 endif()
 
 # Use folder as configured by the distribution
