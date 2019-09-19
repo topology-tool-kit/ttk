@@ -25,6 +25,7 @@ include(config.cmake)
 if(VTK_FOUND)
   # required for both wrappers and paraview
   include(CMake/VTKModule.cmake)
+  include(CMake/VTKWrapper.cmake)
 endif()
 
 # Base code
@@ -39,10 +40,10 @@ add_subdirectory(core)
 if(TTK_BUILD_PARAVIEW_PLUGINS)
   # This option allows to build the TopologyToolKit.so file for paraview
   option(BUILD_SHARED_LIBS "Build TTK as shared lib" ON)
-  if (${TTK_WHITELIST_MODE})
-     set(TTK_ENABLE_FILTER_DEFAULT OFF CACHE INTERNAL "Default value for each filter build")
+  if(${TTK_WHITELIST_MODE})
+    set(TTK_ENABLE_FILTER_DEFAULT OFF CACHE INTERNAL "Default value for each filter build")
   else()
-     set(TTK_ENABLE_FILTER_DEFAULT ON CACHE INTERNAL "Default value for each filter build")
+    set(TTK_ENABLE_FILTER_DEFAULT ON CACHE INTERNAL "Default value for each filter build")
   endif()
   include(CMake/ParaViewFilter.cmake)
   add_subdirectory(paraview)
@@ -51,14 +52,8 @@ endif()
 # VTK Wrappers
 # ------------
 
-include(CMake/VTKWrapper.cmake)
 if(TTK_BUILD_VTK_WRAPPERS)
   add_subdirectory(core/vtk)
-# elseif(TTK_BUILD_PARAVIEW_PLUGINS)
-  # even without the TTK VTK wrappers, we need
-  # the triangulation target for paraview filters
-  # include(core/vtk/ttkTriangulation/TTKWrapper.cmake)
-  # install(TARGETS ttkTriangulationAlgorithm DESTINATION ${TTK_INSTALL_PLUGIN_DIR})
 endif()
 
 # Standalones

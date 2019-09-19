@@ -1,22 +1,21 @@
 vtk_module_find_modules(
-  TTK_VTK_MODULE_FILESS
+  TTK_VTK_MODULE_FILE
     "${CMAKE_CURRENT_SOURCE_DIR}/${VTKWRAPPER}"
   )
 
 vtk_module_scan(
   MODULE_FILES
-    ${TTK_VTK_MODULE_FILESS}
+    ${TTK_VTK_MODULE_FILE}
   PROVIDES_MODULES
     TTK_ENABLED_MODULES
   WANT_BY_DEFAULT
     ON
   )
 
-if (TTK_BUILD_PARAVIEW_PLUGINS)
+if(TTK_BUILD_PARAVIEW_PLUGINS)
   file(GLOB VTKWRAPPER_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ttk*)
   foreach(VTKWRAPPER ${VTKWRAPPER_DIRS})
     ttk_register_vtk_filter(${CMAKE_CURRENT_SOURCE_DIR}/${VTKWRAPPER})
-    list(APPEND TTK_ENABLED_MODULES ${VTKWRAPPER})
   endforeach()
 else()
   vtk_module_build(
@@ -27,7 +26,6 @@ endif()
 
 # Add a bundle library that will just link all the TTK vtkWrappers
 add_library(ttkAll INTERFACE)
-target_include_directories(ttkAll INTERFACE ${VTK_INCLUDE_DIRS})
 
 vtk_module_autoinit(
   TARGETS
@@ -41,6 +39,7 @@ include(GNUInstallDirs)
 install(
   TARGETS
     ttkAll
+    ${TTK_ENABLED_MODULES}
   EXPORT
     TTKVTKTargets
   RUNTIME DESTINATION
