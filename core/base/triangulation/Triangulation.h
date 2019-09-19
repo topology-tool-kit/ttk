@@ -3123,6 +3123,10 @@ namespace ttk {
       return 0;
     }
 
+    /// Set the input grid to use period boundary conditions.
+    ///
+    /// \param usePeriodicBoundaries If this set to true then a triangulation
+    /// with periodic boundaries will be used.
     inline void
       setPeriodicBoundaryConditions(const bool &usePeriodicBoundaries) {
 
