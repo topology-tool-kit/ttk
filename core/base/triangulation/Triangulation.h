@@ -3125,14 +3125,18 @@ namespace ttk {
 
     inline void
       setPeriodicBoundaryConditions(const bool &usePeriodicBoundaries) {
-      if(usePeriodicBoundaries == usePeriodicBoundaries_) {
-        return;
-      }
-      usePeriodicBoundaries_ = usePeriodicBoundaries;
-      if(usePeriodicBoundaries_) {
-        abstractTriangulation_ = &periodicImplicitTriangulation_;
-      } else {
-        abstractTriangulation_ = &implicitTriangulation_;
+
+      if((abstractTriangulation_ == &implicitTriangulation_)
+         || (abstractTriangulation_ == &periodicImplicitTriangulation_)) {
+        if(usePeriodicBoundaries == usePeriodicBoundaries_) {
+          return;
+        }
+        usePeriodicBoundaries_ = usePeriodicBoundaries;
+        if(usePeriodicBoundaries_) {
+          abstractTriangulation_ = &periodicImplicitTriangulation_;
+        } else {
+          abstractTriangulation_ = &implicitTriangulation_;
+        }
       }
     }
 
