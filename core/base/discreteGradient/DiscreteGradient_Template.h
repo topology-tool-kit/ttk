@@ -235,6 +235,11 @@ DiscreteGradient::lowerStarType
     }
   }
 
+  if(res[1].size() < 2) {
+    // at least two edges in the lower star for one triangle
+    return res;
+  }
+
   // store lower triangles
   const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
   for(SimplexId i = 0; i < ntri; i++) {
@@ -257,27 +262,30 @@ DiscreteGradient::lowerStarType
     }
   }
 
+  if(dimensionality_ == 2 || res[2].size() < 3) {
+    // at least three triangles in the lower star for one tetra
+    return res;
+  }
+
   // store lower tetra
-  if(dimensionality_ == 3) {
-    const auto ntetra = inputTriangulation_->getVertexStarNumber(a);
-    for(SimplexId i = 0; i < ntetra; ++i) {
-      SimplexId tetraId;
-      inputTriangulation_->getVertexStar(a, i, tetraId);
-      bool isMax = true;
-      for(SimplexId j = 0; j < 4; ++j) {
-        SimplexId vertexId;
-        inputTriangulation_->getCellVertex(tetraId, j, vertexId);
-        if(vertexId == a) {
-          continue;
-        }
-        if(sosGreaterThan(vertexId, a)) {
-          isMax = false;
-          break;
-        }
+  const auto ntetra = inputTriangulation_->getVertexStarNumber(a);
+  for(SimplexId i = 0; i < ntetra; ++i) {
+    SimplexId tetraId;
+    inputTriangulation_->getVertexStar(a, i, tetraId);
+    bool isMax = true;
+    for(SimplexId j = 0; j < 4; ++j) {
+      SimplexId vertexId;
+      inputTriangulation_->getCellVertex(tetraId, j, vertexId);
+      if(vertexId == a) {
+        continue;
       }
-      if(isMax) {
-        res[3].emplace(tetraId);
+      if(sosGreaterThan(vertexId, a)) {
+        isMax = false;
+        break;
       }
+    }
+    if(isMax) {
+      res[3].emplace(tetraId);
     }
   }
 
