@@ -16,8 +16,12 @@
 
 #include <DiscreteGradient.h>
 
+using ttk::SimplexId;
 using ttk::dcg::Cell;
+using ttk::dcg::CriticalPoint;
 using ttk::dcg::DiscreteGradient;
+using ttk::dcg::SaddleSaddleVPathComparator;
+using ttk::dcg::VPath;
 
 template <typename dataType>
 dataType DiscreteGradient::scalarMax(const Cell &cell,
