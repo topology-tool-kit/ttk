@@ -332,15 +332,6 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
 
-    const auto sosGreaterThan = [&](const SimplexId m, const SimplexId n) {
-      // compare scalar field values on non common vertices
-      if(scalars[m] != scalars[n]) {
-        return scalars[m] > scalars[n];
-      } else {
-        return offsets[m] > offsets[n];
-      }
-    };
-
     // Comparison function for Cells inside priority queues
     const auto orderCells = [&](const Cell &a, const Cell &b) -> bool {
       if(a.dim_ == b.dim_) {
@@ -358,7 +349,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
           if(n == x) {
             inputTriangulation_->getEdgeVertex(b.id_, 1, n);
           }
-          return sosGreaterThan(m, n);
+          return scalars[m] > scalars[n];
         } else if(a.dim_ == 2) {
           inputTriangulation_->getTriangleVertex(a.id_, 0, va[0]);
           inputTriangulation_->getTriangleVertex(a.id_, 1, va[1]);
@@ -388,7 +379,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
             n = vb[i];
           }
         }
-        return sosGreaterThan(m, n);
+        return scalars[m] > scalars[n];
       } else {
         // the cell of greater dimension should contain the cell of
         // smaller dimension
