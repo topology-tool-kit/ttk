@@ -338,7 +338,6 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
         // there should be a shared facet between the two cells
         // compare the vertices not in the shared facet
         SimplexId m{-1}, n{-1};
-        std::vector<SimplexId> va(a.dim_ + 1), vb(a.dim_ + 1);
 
         if(a.dim_ == 1) {
           inputTriangulation_->getEdgeVertex(a.id_, 0, m);
@@ -350,41 +349,70 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
             inputTriangulation_->getEdgeVertex(b.id_, 1, n);
           }
           return scalars[m] > scalars[n];
+
         } else if(a.dim_ == 2) {
-          inputTriangulation_->getTriangleVertex(a.id_, 0, va[0]);
-          inputTriangulation_->getTriangleVertex(a.id_, 1, va[1]);
-          inputTriangulation_->getTriangleVertex(a.id_, 2, va[2]);
-          inputTriangulation_->getTriangleVertex(b.id_, 0, vb[0]);
-          inputTriangulation_->getTriangleVertex(b.id_, 1, vb[1]);
-          inputTriangulation_->getTriangleVertex(b.id_, 2, vb[2]);
+          SimplexId m0{}, m1{}, n0{}, n1{};
+
+          inputTriangulation_->getTriangleVertex(a.id_, 0, m0);
+          inputTriangulation_->getTriangleVertex(a.id_, 1, m1);
+          if(m0 == x) {
+            inputTriangulation_->getTriangleVertex(a.id_, 2, m0);
+          } else if(m1 == x) {
+            inputTriangulation_->getTriangleVertex(a.id_, 2, m1);
+          }
+
+          inputTriangulation_->getTriangleVertex(b.id_, 0, n0);
+          inputTriangulation_->getTriangleVertex(b.id_, 1, n1);
+          if(n0 == x) {
+            inputTriangulation_->getTriangleVertex(b.id_, 2, n0);
+          } else if(n1 == x) {
+            inputTriangulation_->getTriangleVertex(b.id_, 2, n1);
+          }
+
+          if(m0 == n0) {
+            return scalars[m1] > scalars[n1];
+          } else if(m0 == n1) {
+            return scalars[m1] > scalars[n0];
+          } else if(m1 == n0) {
+            return scalars[m0] > scalars[n1];
+          } else if(m1 == n1) {
+            return scalars[m0] > scalars[n0];
+          }
 
         } else if(a.dim_ == 3) {
-          inputTriangulation_->getCellVertex(a.id_, 0, va[0]);
-          inputTriangulation_->getCellVertex(a.id_, 1, va[1]);
-          inputTriangulation_->getCellVertex(a.id_, 2, va[2]);
-          inputTriangulation_->getCellVertex(a.id_, 3, va[3]);
-          inputTriangulation_->getCellVertex(b.id_, 0, vb[0]);
-          inputTriangulation_->getCellVertex(b.id_, 1, vb[1]);
-          inputTriangulation_->getCellVertex(b.id_, 2, vb[2]);
-          inputTriangulation_->getCellVertex(b.id_, 3, vb[3]);
-        }
 
-        for(size_t i = 0; i < va.size(); ++i) {
-          // m is in va but not in vb
-          if(std::find(vb.begin(), vb.end(), va[i]) == vb.end()) {
-            m = va[i];
+          std::set<SimplexId> va{}, vb{};
+          for(SimplexId i = 0; i < 4; ++i) {
+            inputTriangulation_->getCellVertex(a.id_, i, m);
+            if(m != x) {
+              va.emplace(m);
+            }
+            inputTriangulation_->getCellVertex(b.id_, i, n);
+            if(n != x) {
+              vb.emplace(n);
+            }
           }
-          // n is in vb but not in va
-          if(std::find(va.begin(), va.end(), vb[i]) == va.end()) {
-            n = vb[i];
+          for(const auto v : va) {
+            if(vb.find(v) == vb.end()) {
+              // m is in va but not in vb
+              m = v;
+            }
           }
+          for(const auto v : vb) {
+            if(va.find(v) == va.end()) {
+              // n is in vb but not in va
+              n = v;
+            }
+          }
+          return scalars[m] > scalars[n];
         }
-        return scalars[m] > scalars[n];
       } else {
         // the cell of greater dimension should contain the cell of
         // smaller dimension
         return a.dim_ > b.dim_;
       }
+
+      return false;
     };
 
     // Type alias for priority queues
