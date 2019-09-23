@@ -23,6 +23,7 @@
 
 #include <algorithm>
 #include <array>
+#include <functional>
 #include <queue>
 #include <set>
 #include <utility>
@@ -48,6 +49,7 @@ namespace ttk {
 
       int dim_{-1};
       SimplexId id_{-1};
+      bool paired_{false};
     };
 
     /**
@@ -380,11 +382,7 @@ function value.
       /**
        * Type alias for lower stars of a given cell
        */
-      using lowerStarType = std::array<std::vector<SimplexId>, 4>;
-      /**
-       * Type alias for paired cells: one vector of fixed size per dimension
-       */
-      using isPairedType = std::array<std::set<SimplexId>, 4>;
+      using lowerStarType = std::array<std::vector<Cell>, 4>;
 
       /**
        * @brief Store the subcomplexes around vertex for which offset
@@ -409,14 +407,11 @@ function value.
        *
        * @param[in] c Input cell
        * @param[in] ls Input lower star
-       * @param[in] isPaired
        *
        * @return Number of unpaired faces and a face id
        */
       std::pair<size_t, SimplexId>
-        numUnpairedFaces(const Cell c,
-                         const lowerStarType &ls,
-                         const isPairedType &isPaired) const;
+        numUnpairedFaces(const Cell c, const lowerStarType &ls) const;
 
       /**
        * Implements the ProcessLowerStars algorithm from "Theory and

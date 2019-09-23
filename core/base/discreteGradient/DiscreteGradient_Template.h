@@ -202,7 +202,7 @@ DiscreteGradient::lowerStarType
   lowerStarType res{};
 
   // a belongs to its lower star
-  // res[0].emplace(a);
+  res[0].emplace_back(Cell{0, a});
 
   const auto sosGreaterThan
     = [&scalars, &offsets](const SimplexId m, const SimplexId n) {
@@ -231,7 +231,7 @@ DiscreteGradient::lowerStarType
       }
     }
     if(isMax) {
-      res[1].emplace_back(edgeId);
+      res[1].emplace_back(Cell{1, edgeId});
     }
   }
 
@@ -258,7 +258,7 @@ DiscreteGradient::lowerStarType
       }
     }
     if(isMax) {
-      res[2].emplace_back(triangleId);
+      res[2].emplace_back(Cell{2, triangleId});
     }
   }
 
@@ -285,7 +285,7 @@ DiscreteGradient::lowerStarType
       }
     }
     if(isMax) {
-      res[3].emplace_back(tetraId);
+      res[3].emplace_back(Cell{3, tetraId});
     }
   }
 
@@ -417,17 +417,16 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
 
     // Type alias for priority queues
     using pqType
-      = std::priority_queue<Cell, std::vector<Cell>, decltype(orderCells)>;
+      = std::priority_queue<std::reference_wrapper<Cell>,
+                            std::vector<std::reference_wrapper<Cell>>,
+                            decltype(orderCells)>;
 
     // Priority queues are pushed at the beginning and popped at the
     // end. To pop the minimum, elements should be sorted in a
     // decreasing order.
     pqType pqZero(orderCells), pqOne(orderCells);
 
-    // Stores paired simplexes
-    isPairedType isPaired{};
-
-    const auto V = [&](const Cell alpha, const Cell beta) {
+    const auto V = [&](Cell &alpha, Cell &beta) {
     // beta.dim_ == alpha.dim_ + 1
 
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
@@ -488,26 +487,24 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
       gradient_[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
       gradient_[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
 #endif // TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-      isPaired[alpha.dim_].emplace(alpha.id_);
-      isPaired[beta.dim_].emplace(beta.id_);
+      alpha.paired_ = true;
+      beta.paired_ = true;
     };
 
     // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
-    const auto insertCofacets = [&](const Cell &ca, const lowerStarType &ls) {
+    const auto insertCofacets = [&](const Cell &ca, lowerStarType &ls) {
       if(ca.dim_ == 1) {
-        for(SimplexId beta : ls[2]) {
-          Cell cb{2, beta};
-          if(isEdgeInTriangle(ca.id_, beta)
-             && numUnpairedFaces(cb, ls, isPaired).first == 1) {
-            pqOne.push(cb);
+        for(auto &beta : ls[2]) {
+          if(isEdgeInTriangle(ca.id_, beta.id_)
+             && numUnpairedFaces(beta, ls).first == 1) {
+            pqOne.push(beta);
           }
         }
       } else if(ca.dim_ == 2) {
-        for(SimplexId beta : ls[3]) {
-          Cell cb{3, beta};
-          if(isTriangleInTetra(ca.id_, beta)
-             && numUnpairedFaces(cb, ls, isPaired).first == 1) {
-            pqOne.push(cb);
+        for(auto &beta : ls[3]) {
+          if(isTriangleInTetra(ca.id_, beta.id_)
+             && numUnpairedFaces(beta, ls).first == 1) {
+            pqOne.push(beta);
           }
         }
       }
@@ -515,28 +512,27 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
 
     auto Lx = lowerStar(x, scalars, offsets);
 
-    if(Lx[1].empty()) {
-      // x is a local minimum
-      isPaired[0].emplace(x);
-    } else {
+    // Lx[1] empty => x is a local minimum
+
+    if(!Lx[1].empty()) {
       // get delta: 1-cell (edge) with minimal G value (steeper gradient)
-      Cell c_delta{1, *Lx[1].begin()};
-      for(const auto s : Lx[1]) {
-        Cell cs{1, s};
-        if(orderCells(c_delta, cs)) {
-          // cs < c_delta
-          c_delta = cs;
+      size_t minId = 0;
+      for(size_t i = 1; i < Lx[1].size(); ++i) {
+        if(orderCells(Lx[1][0], Lx[1][i])) {
+          // edge[i] < edge[0]
+          minId = i;
         }
       }
 
+      auto &c_delta = Lx[1][minId];
+
       // store x (0-cell) -> delta (1-cell) V-path
-      V(Cell{0, x}, c_delta);
+      V(Lx[0][0], c_delta);
 
       // push every 1-cell in Lx that is not delta into pqZero
-      for(auto alpha : Lx[1]) {
-        Cell c{1, alpha};
-        if(alpha != c_delta.id_) {
-          pqZero.push(c);
+      for(auto &alpha : Lx[1]) {
+        if(alpha.id_ != c_delta.id_) {
+          pqZero.push(alpha);
         }
       }
 
@@ -547,13 +543,13 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
 
       while(!pqOne.empty() || !pqZero.empty()) {
         while(!pqOne.empty()) {
-          Cell c_alpha{pqOne.top()};
+          auto &c_alpha = pqOne.top().get();
           pqOne.pop();
-          auto unpairedFaces = numUnpairedFaces(c_alpha, Lx, isPaired);
+          auto unpairedFaces = numUnpairedFaces(c_alpha, Lx);
           if(unpairedFaces.first == 0) {
             pqZero.push(c_alpha);
           } else {
-            Cell c_pair_alpha{c_alpha.dim_ - 1, unpairedFaces.second};
+            auto &c_pair_alpha = Lx[c_alpha.dim_ - 1][unpairedFaces.second];
 
             // store (pair_alpha) -> (alpha) V-path
             V(c_pair_alpha, c_alpha);
@@ -564,23 +560,23 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
           }
         }
         if(!pqZero.empty()) {
-          Cell c_gamma{pqZero.top()};
+          auto &c_gamma = pqZero.top().get();
           pqZero.pop();
           // skip pair_alpha from pqZero:
           // c_gamma is not critical if already paired
-          while(!pqZero.empty()
-                && isPaired[c_gamma.dim_].find(c_gamma.id_)
-                     != isPaired[c_gamma.dim_].end()) {
+          while(!pqZero.empty() && c_gamma.paired_) {
             c_gamma = pqZero.top();
             pqZero.pop();
           }
 
-          // gamma is a critical cell
-          // mark gamma as paired
-          isPaired[c_gamma.dim_].emplace(c_gamma.id_);
+          if(!c_gamma.paired_) {
+            // gamma is a critical cell
+            // mark gamma as paired
+            c_gamma.paired_ = true;
 
-          // add cofacets of c_gamma to pqOne
-          insertCofacets(c_gamma, Lx);
+            // add cofacets of c_gamma to pqOne
+            insertCofacets(c_gamma, Lx);
+          }
         }
       }
     }
