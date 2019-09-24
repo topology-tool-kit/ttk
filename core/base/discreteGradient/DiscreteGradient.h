@@ -47,9 +47,16 @@ namespace ttk {
       explicit Cell(const int dim, const SimplexId id) : dim_{dim}, id_{id} {
       }
 
+      explicit Cell(const int dim,
+                    const SimplexId id,
+                    const std::vector<SimplexId> &&children)
+        : dim_{dim}, id_{id}, children_{children} {
+      }
+
       int dim_{-1};
       SimplexId id_{-1};
       bool paired_{false};
+      std::vector<SimplexId> children_{};
     };
 
     /**
@@ -419,20 +426,13 @@ function value.
         for(SimplexId i = 0; i < nedges; i++) {
           SimplexId edgeId;
           inputTriangulation_->getVertexEdge(a, i, edgeId);
-          bool isMax = true;
-          for(SimplexId j = 0; j < 2; j++) {
-            SimplexId vertexId;
-            inputTriangulation_->getEdgeVertex(edgeId, j, vertexId);
-            if(vertexId == a) {
-              continue;
-            }
-            if(sosGreaterThan(vertexId, a)) {
-              isMax = false;
-              break;
-            }
+          SimplexId vertexId;
+          inputTriangulation_->getEdgeVertex(edgeId, 0, vertexId);
+          if(vertexId == a) {
+            inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
           }
-          if(isMax) {
-            res[1].emplace_back(Cell{1, edgeId});
+          if(!sosGreaterThan(vertexId, a)) {
+            res[1].emplace_back(Cell{1, edgeId, {vertexId}});
           }
         }
 
@@ -447,6 +447,7 @@ function value.
           SimplexId triangleId;
           inputTriangulation_->getVertexTriangle(a, i, triangleId);
           bool isMax = true;
+          std::vector<SimplexId> children{};
           for(SimplexId j = 0; j < 3; j++) {
             SimplexId vertexId;
             inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
@@ -457,9 +458,10 @@ function value.
               isMax = false;
               break;
             }
+            children.emplace_back(vertexId);
           }
           if(isMax) {
-            res[2].emplace_back(Cell{2, triangleId});
+            res[2].emplace_back(Cell{2, triangleId, std::move(children)});
           }
         }
 
@@ -474,6 +476,7 @@ function value.
           SimplexId tetraId;
           inputTriangulation_->getVertexStar(a, i, tetraId);
           bool isMax = true;
+          std::vector<SimplexId> children{};
           for(SimplexId j = 0; j < 4; ++j) {
             SimplexId vertexId;
             inputTriangulation_->getCellVertex(tetraId, j, vertexId);
@@ -484,9 +487,10 @@ function value.
               isMax = false;
               break;
             }
+            children.emplace_back(vertexId);
           }
           if(isMax) {
-            res[3].emplace_back(Cell{3, tetraId});
+            res[3].emplace_back(Cell{3, tetraId, std::move(children)});
           }
         }
 
