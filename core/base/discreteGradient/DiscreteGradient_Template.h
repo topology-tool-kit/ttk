@@ -305,16 +305,35 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
     const auto insertCofacets = [&](const Cell &ca, lowerStarType &ls) {
       if(ca.dim_ == 1) {
         for(auto &beta : ls[2]) {
-          if(isEdgeInTriangle(ca.id_, beta.id_)
-             && numUnpairedFaces(beta, ls).first == 1) {
-            pqOne.push(beta);
+          SimplexId e0{}, e1{}, e2{};
+          if(dimensionality_ == 2) {
+            inputTriangulation_->getCellEdge(beta.id_, 0, e0);
+            inputTriangulation_->getCellEdge(beta.id_, 1, e1);
+            inputTriangulation_->getCellEdge(beta.id_, 2, e2);
+          } else if(dimensionality_ == 3) {
+            inputTriangulation_->getTriangleEdge(beta.id_, 0, e0);
+            inputTriangulation_->getTriangleEdge(beta.id_, 1, e1);
+            inputTriangulation_->getTriangleEdge(beta.id_, 2, e2);
+          }
+          if(ca.id_ == e0 || ca.id_ == e1 || ca.id_ == e2) {
+            // edge ca belongs to triangle beta
+            if(numUnpairedFaces(beta, ls).first == 1) {
+              pqOne.push(beta);
+            }
           }
         }
       } else if(ca.dim_ == 2) {
         for(auto &beta : ls[3]) {
-          if(isTriangleInTetra(ca.id_, beta.id_)
-             && numUnpairedFaces(beta, ls).first == 1) {
-            pqOne.push(beta);
+          SimplexId t0{}, t1{}, t2{}, t3{};
+          inputTriangulation_->getCellTriangle(beta.id_, 0, t0);
+          inputTriangulation_->getCellTriangle(beta.id_, 1, t1);
+          inputTriangulation_->getCellTriangle(beta.id_, 2, t2);
+          inputTriangulation_->getCellTriangle(beta.id_, 3, t3);
+          if(ca.id_ == t0 || ca.id_ == t1 || ca.id_ == t2 || ca.id_ == t3) {
+            // triangle ca belongs to tetra beta
+            if(numUnpairedFaces(beta, ls).first == 1) {
+              pqOne.push(beta);
+            }
           }
         }
       }

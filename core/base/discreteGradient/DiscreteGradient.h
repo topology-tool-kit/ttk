@@ -576,34 +576,6 @@ function value.
         beta.paired_ = true;
       }
 
-      inline bool isEdgeInTriangle(const SimplexId edge,
-                                   const SimplexId triangle) const {
-        SimplexId e{};
-        inputTriangulation_->getTriangleEdge(triangle, 0, e);
-        if(e == edge) {
-          return true;
-        }
-        inputTriangulation_->getTriangleEdge(triangle, 1, e);
-        if(e == edge) {
-          return true;
-        }
-        inputTriangulation_->getTriangleEdge(triangle, 2, e);
-        return e == edge;
-      }
-
-      inline bool isTriangleInTetra(const SimplexId triangle,
-                                    const SimplexId tetra) const {
-        auto ntriangles = inputTriangulation_->getCellTriangleNumber(tetra);
-        for(SimplexId i = 0; i < ntriangles; ++i) {
-          SimplexId t{};
-          inputTriangulation_->getCellTriangle(tetra, i, t);
-          if(t == triangle) {
-            return true;
-          }
-        }
-        return false;
-      }
-
       /**
        * Implements the ProcessLowerStars algorithm from "Theory and
        * Algorithms for Constructing Discrete Morse Complexes from
