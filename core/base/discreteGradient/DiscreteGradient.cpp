@@ -100,6 +100,96 @@ std::pair<size_t, SimplexId>
   return res;
 }
 
+void DiscreteGradient::pairCells(Cell &alpha, Cell &beta) {
+  // beta.dim_ == alpha.dim_ + 1
+
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+  char localBId{0}, localAId{0};
+  SimplexId a{}, b{};
+
+  if(beta.dim_ == 1) {
+
+    for(SimplexId i = 0; i < 2; ++i) {
+      inputTriangulation_->getEdgeVertex(beta.id_, i, a);
+      if(a == alpha.id_) {
+        localAId = i;
+        break;
+      }
+    }
+    const auto nedges = inputTriangulation_->getVertexEdgeNumber(alpha.id_);
+    for(SimplexId i = 0; i < nedges; ++i) {
+      inputTriangulation_->getVertexEdge(alpha.id_, i, b);
+      if(b == beta.id_) {
+        localBId = i;
+      }
+    }
+  } else if(beta.dim_ == 2) {
+    for(SimplexId i = 0; i < 3; ++i) {
+      inputTriangulation_->getTriangleEdge(beta.id_, i, a);
+      if(a == alpha.id_) {
+        localAId = i;
+        break;
+      }
+    }
+    const auto ntri = inputTriangulation_->getEdgeTriangleNumber(alpha.id_);
+    for(SimplexId i = 0; i < ntri; ++i) {
+      inputTriangulation_->getEdgeTriangle(alpha.id_, i, b);
+      if(b == beta.id_) {
+        localBId = i;
+      }
+    }
+  } else {
+    for(SimplexId i = 0; i < 4; ++i) {
+      inputTriangulation_->getCellTriangle(beta.id_, i, a);
+      if(a == alpha.id_) {
+        localAId = i;
+        break;
+      }
+    }
+    const auto ntetra = inputTriangulation_->getTriangleStarNumber(alpha.id_);
+    for(SimplexId i = 0; i < ntetra; ++i) {
+      inputTriangulation_->getTriangleStar(alpha.id_, i, b);
+      if(b == beta.id_) {
+        localBId = i;
+      }
+    }
+  }
+  gradient_[alpha.dim_][alpha.dim_][alpha.id_] = localBId;
+  gradient_[alpha.dim_][alpha.dim_ + 1][beta.id_] = localAId;
+#else
+  gradient_[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
+  gradient_[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
+#endif // TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+  alpha.paired_ = true;
+  beta.paired_ = true;
+}
+
+bool DiscreteGradient::isEdgeInTriangle(const SimplexId edge,
+                                        const SimplexId triangle) const {
+  auto nedges = inputTriangulation_->getTriangleEdgeNumber(triangle);
+  for(SimplexId i = 0; i < nedges; ++i) {
+    SimplexId e{};
+    inputTriangulation_->getTriangleEdge(triangle, i, e);
+    if(e == edge) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool DiscreteGradient::isTriangleInTetra(const SimplexId triangle,
+                                         const SimplexId tetra) const {
+  auto ntriangles = inputTriangulation_->getCellTriangleNumber(tetra);
+  for(SimplexId i = 0; i < ntriangles; ++i) {
+    SimplexId t{};
+    inputTriangulation_->getCellTriangle(tetra, i, t);
+    if(t == triangle) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool DiscreteGradient::isMinimum(const Cell &cell) const {
   if(cell.dim_ == 0) {
     return (gradient_[0][0][cell.id_] == -1);

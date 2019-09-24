@@ -414,6 +414,19 @@ function value.
         numUnpairedFaces(const Cell c, const lowerStarType &ls) const;
 
       /**
+       * @brief Pair cells into discrete gradient field
+       *
+       * @param[in] alpha Cell of lower dimension
+       * @param[in] beta Cell of higher dimension
+       */
+      void pairCells(Cell &alpha, Cell &beta);
+
+      bool isEdgeInTriangle(const SimplexId edge,
+                            const SimplexId triangle) const;
+      bool isTriangleInTetra(const SimplexId triangle,
+                             const SimplexId tetra) const;
+
+      /**
        * Implements the ProcessLowerStars algorithm from "Theory and
        * Algorithms for Constructing Discrete Morse Complexes from
        * Grayscale Digital Images", V. Robins, P. J. Wood,
