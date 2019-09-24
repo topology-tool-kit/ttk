@@ -287,18 +287,13 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
     // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
     const auto insertCofacets = [&](const Cell &ca, lowerStarType &ls) {
       if(ca.dim_ == 1) {
+        const SimplexId v = ca.children_[0];
+
         for(auto &beta : ls[2]) {
-          SimplexId e0{}, e1{}, e2{};
-          if(dimensionality_ == 2) {
-            inputTriangulation_->getCellEdge(beta.id_, 0, e0);
-            inputTriangulation_->getCellEdge(beta.id_, 1, e1);
-            inputTriangulation_->getCellEdge(beta.id_, 2, e2);
-          } else if(dimensionality_ == 3) {
-            inputTriangulation_->getTriangleEdge(beta.id_, 0, e0);
-            inputTriangulation_->getTriangleEdge(beta.id_, 1, e1);
-            inputTriangulation_->getTriangleEdge(beta.id_, 2, e2);
-          }
-          if(ca.id_ == e0 || ca.id_ == e1 || ca.id_ == e2) {
+          const SimplexId v0 = beta.children_[0];
+          const SimplexId v1 = beta.children_[1];
+
+          if(v == v0 || v == v1) {
             // edge ca belongs to triangle beta
             if(numUnpairedFaces(beta, ls).first == 1) {
               pqOne.push(beta);
@@ -306,13 +301,16 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
           }
         }
       } else if(ca.dim_ == 2) {
+        const SimplexId v0 = ca.children_[0];
+        const SimplexId v1 = ca.children_[1];
+
         for(auto &beta : ls[3]) {
-          SimplexId t0{}, t1{}, t2{}, t3{};
-          inputTriangulation_->getCellTriangle(beta.id_, 0, t0);
-          inputTriangulation_->getCellTriangle(beta.id_, 1, t1);
-          inputTriangulation_->getCellTriangle(beta.id_, 2, t2);
-          inputTriangulation_->getCellTriangle(beta.id_, 3, t3);
-          if(ca.id_ == t0 || ca.id_ == t1 || ca.id_ == t2 || ca.id_ == t3) {
+          const SimplexId t0 = beta.children_[0];
+          const SimplexId t1 = beta.children_[1];
+          const SimplexId t2 = beta.children_[2];
+
+          if((v0 == t0 || v0 == t1 || v0 == t2)
+             && (v1 == t0 || v1 == t1 || v1 == t2)) {
             // triangle ca belongs to tetra beta
             if(numUnpairedFaces(beta, ls).first == 1) {
               pqOne.push(beta);
