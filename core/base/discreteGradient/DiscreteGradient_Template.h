@@ -233,20 +233,35 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
 
         } else if(a.dim_ == 3) {
           SimplexId m{-1}, n{-1};
-          const std::set<SimplexId> va(a.children_.begin(), a.children_.end());
-          const std::set<SimplexId> vb(b.children_.begin(), b.children_.end());
-          for(const auto v : va) {
-            if(vb.find(v) == vb.end()) {
-              // m is in va but not in vb
-              m = v;
+
+          for(const auto va : a.children_) {
+            bool inB{false};
+            for(const auto vb : b.children_) {
+              if(va == vb) {
+                inB = true;
+                break;
+              }
+            }
+            if(!inB) {
+              m = va;
+              break;
             }
           }
-          for(const auto v : vb) {
-            if(va.find(v) == va.end()) {
-              // n is in vb but not in va
-              n = v;
+
+          for(const auto vb : b.children_) {
+            bool inA{false};
+            for(const auto va : a.children_) {
+              if(vb == va) {
+                inA = true;
+                break;
+              }
+            }
+            if(!inA) {
+              n = vb;
+              break;
             }
           }
+
           return scalars[m] > scalars[n];
         }
       } else {
