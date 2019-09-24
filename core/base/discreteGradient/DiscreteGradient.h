@@ -441,56 +441,68 @@ function value.
           return res;
         }
 
-        // store lower triangles
-        const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
-        for(SimplexId i = 0; i < ntri; i++) {
-          SimplexId triangleId;
-          inputTriangulation_->getVertexTriangle(a, i, triangleId);
-          bool isMax = true;
-          std::vector<SimplexId> children{};
-          for(SimplexId j = 0; j < 3; j++) {
-            SimplexId vertexId;
-            inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
-            if(vertexId == a) {
-              continue;
+        auto lowerCells = [&](const int dim) {
+          const auto ncells = inputTriangulation_->getVertexStarNumber(a);
+          for(SimplexId i = 0; i < ncells; ++i) {
+            SimplexId cellId;
+            inputTriangulation_->getVertexStar(a, i, cellId);
+            bool isMax = true;
+            std::vector<SimplexId> children{};
+            for(SimplexId j = 0; j < (dim + 1); ++j) {
+              SimplexId vertexId;
+              inputTriangulation_->getCellVertex(cellId, j, vertexId);
+              if(vertexId == a) {
+                continue;
+              }
+              if(sosGreaterThan(vertexId, a)) {
+                isMax = false;
+                break;
+              }
+              children.emplace_back(vertexId);
             }
-            if(sosGreaterThan(vertexId, a)) {
-              isMax = false;
-              break;
+            if(isMax) {
+              res[dim].emplace_back(Cell{dim, cellId, std::move(children)});
             }
-            children.emplace_back(vertexId);
           }
-          if(isMax) {
-            res[2].emplace_back(Cell{2, triangleId, std::move(children)});
-          }
-        }
+        };
 
-        if(dimensionality_ == 2 || res[2].size() < 3) {
+        if(dimensionality_ == 2) {
+          // store lower triangles
+
+          // use optimised triangulation methods:
+          // getVertexStar instead of getVertexTriangle
+          // getCellVertex instead of getTriangleVertex
+          lowerCells(2);
+
+        } else if(dimensionality_ == 3) {
+          // store lower triangles
+          const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
+          for(SimplexId i = 0; i < ntri; i++) {
+            SimplexId triangleId;
+            inputTriangulation_->getVertexTriangle(a, i, triangleId);
+            bool isMax = true;
+            std::vector<SimplexId> children{};
+            for(SimplexId j = 0; j < 3; j++) {
+              SimplexId vertexId;
+              inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
+              if(vertexId == a) {
+                continue;
+              }
+              if(sosGreaterThan(vertexId, a)) {
+                isMax = false;
+                break;
+              }
+              children.emplace_back(vertexId);
+            }
+            if(isMax) {
+              res[2].emplace_back(Cell{2, triangleId, std::move(children)});
+            }
+          }
+
           // at least three triangles in the lower star for one tetra
-          return res;
-        }
-
-        // store lower tetra
-        const auto ntetra = inputTriangulation_->getVertexStarNumber(a);
-        for(SimplexId i = 0; i < ntetra; ++i) {
-          SimplexId tetraId;
-          inputTriangulation_->getVertexStar(a, i, tetraId);
-          bool isMax = true;
-          std::vector<SimplexId> children{};
-          for(SimplexId j = 0; j < 4; ++j) {
-            SimplexId vertexId;
-            inputTriangulation_->getCellVertex(tetraId, j, vertexId);
-            if(vertexId == a) {
-              continue;
-            }
-            if(sosGreaterThan(vertexId, a)) {
-              isMax = false;
-              break;
-            }
-            children.emplace_back(vertexId);
-          }
-          if(isMax) {
-            res[3].emplace_back(Cell{3, tetraId, std::move(children)});
+          if(res[2].size() >= 3) {
+            // store lower tetra
+            lowerCells(3);
           }
         }
 
