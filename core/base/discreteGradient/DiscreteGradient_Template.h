@@ -212,37 +212,14 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
       if(a.dim_ == b.dim_) {
         // there should be a shared facet between the two cells
         // compare the vertices not in the shared facet
-        SimplexId m{-1}, n{-1};
-
         if(a.dim_ == 1) {
-          inputTriangulation_->getEdgeVertex(a.id_, 0, m);
-          if(m == x) {
-            inputTriangulation_->getEdgeVertex(a.id_, 1, m);
-          }
-          inputTriangulation_->getEdgeVertex(b.id_, 0, n);
-          if(n == x) {
-            inputTriangulation_->getEdgeVertex(b.id_, 1, n);
-          }
-          return scalars[m] > scalars[n];
+          return scalars[a.children_[0]] > scalars[b.children_[0]];
 
         } else if(a.dim_ == 2) {
-          SimplexId m0{}, m1{}, n0{}, n1{};
-
-          inputTriangulation_->getTriangleVertex(a.id_, 0, m0);
-          inputTriangulation_->getTriangleVertex(a.id_, 1, m1);
-          if(m0 == x) {
-            inputTriangulation_->getTriangleVertex(a.id_, 2, m0);
-          } else if(m1 == x) {
-            inputTriangulation_->getTriangleVertex(a.id_, 2, m1);
-          }
-
-          inputTriangulation_->getTriangleVertex(b.id_, 0, n0);
-          inputTriangulation_->getTriangleVertex(b.id_, 1, n1);
-          if(n0 == x) {
-            inputTriangulation_->getTriangleVertex(b.id_, 2, n0);
-          } else if(n1 == x) {
-            inputTriangulation_->getTriangleVertex(b.id_, 2, n1);
-          }
+          const auto m0 = a.children_[0];
+          const auto m1 = a.children_[1];
+          const auto n0 = b.children_[0];
+          const auto n1 = b.children_[1];
 
           if(m0 == n0) {
             return scalars[m1] > scalars[n1];
@@ -255,18 +232,9 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
           }
 
         } else if(a.dim_ == 3) {
-
-          std::set<SimplexId> va{}, vb{};
-          for(SimplexId i = 0; i < 4; ++i) {
-            inputTriangulation_->getCellVertex(a.id_, i, m);
-            if(m != x) {
-              va.emplace(m);
-            }
-            inputTriangulation_->getCellVertex(b.id_, i, n);
-            if(n != x) {
-              vb.emplace(n);
-            }
-          }
+          SimplexId m{-1}, n{-1};
+          const std::set<SimplexId> va(a.children_.begin(), a.children_.end());
+          const std::set<SimplexId> vb(b.children_.begin(), b.children_.end());
           for(const auto v : va) {
             if(vb.find(v) == vb.end()) {
               // m is in va but not in vb
