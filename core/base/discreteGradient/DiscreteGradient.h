@@ -49,14 +49,14 @@ namespace ttk {
 
       explicit Cell(const int dim,
                     const SimplexId id,
-                    const std::vector<SimplexId> &&children)
-        : dim_{dim}, id_{id}, children_{children} {
+                    const std::vector<SimplexId> &&lowVerts)
+        : dim_{dim}, id_{id}, lowVerts_{lowVerts} {
       }
 
       int dim_{-1};
       SimplexId id_{-1};
       bool paired_{false};
-      std::vector<SimplexId> children_{};
+      std::vector<SimplexId> lowVerts_{};
     };
 
     /**
@@ -447,7 +447,7 @@ function value.
             SimplexId cellId;
             inputTriangulation_->getVertexStar(a, i, cellId);
             bool isMax = true;
-            std::vector<SimplexId> children{};
+            std::vector<SimplexId> lowVerts{};
             for(SimplexId j = 0; j < (dim + 1); ++j) {
               SimplexId vertexId;
               inputTriangulation_->getCellVertex(cellId, j, vertexId);
@@ -458,10 +458,10 @@ function value.
                 isMax = false;
                 break;
               }
-              children.emplace_back(vertexId);
+              lowVerts.emplace_back(vertexId);
             }
             if(isMax) {
-              res[dim].emplace_back(Cell{dim, cellId, std::move(children)});
+              res[dim].emplace_back(Cell{dim, cellId, std::move(lowVerts)});
             }
           }
         };
@@ -481,7 +481,7 @@ function value.
             SimplexId triangleId;
             inputTriangulation_->getVertexTriangle(a, i, triangleId);
             bool isMax = true;
-            std::vector<SimplexId> children{};
+            std::vector<SimplexId> lowVerts{};
             for(SimplexId j = 0; j < 3; j++) {
               SimplexId vertexId;
               inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
@@ -492,10 +492,10 @@ function value.
                 isMax = false;
                 break;
               }
-              children.emplace_back(vertexId);
+              lowVerts.emplace_back(vertexId);
             }
             if(isMax) {
-              res[2].emplace_back(Cell{2, triangleId, std::move(children)});
+              res[2].emplace_back(Cell{2, triangleId, std::move(lowVerts)});
             }
           }
 

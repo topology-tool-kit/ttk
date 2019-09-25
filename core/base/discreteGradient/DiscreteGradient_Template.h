@@ -213,13 +213,13 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
         // there should be a shared facet between the two cells
         // compare the vertices not in the shared facet
         if(a.dim_ == 1) {
-          return scalars[a.children_[0]] > scalars[b.children_[0]];
+          return scalars[a.lowVerts_[0]] > scalars[b.lowVerts_[0]];
 
         } else if(a.dim_ == 2) {
-          const auto m0 = a.children_[0];
-          const auto m1 = a.children_[1];
-          const auto n0 = b.children_[0];
-          const auto n1 = b.children_[1];
+          const auto m0 = a.lowVerts_[0];
+          const auto m1 = a.lowVerts_[1];
+          const auto n0 = b.lowVerts_[0];
+          const auto n1 = b.lowVerts_[1];
 
           if(m0 == n0) {
             return scalars[m1] > scalars[n1];
@@ -234,9 +234,9 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
         } else if(a.dim_ == 3) {
           SimplexId m{-1}, n{-1};
 
-          for(const auto va : a.children_) {
+          for(const auto va : a.lowVerts_) {
             bool inB{false};
-            for(const auto vb : b.children_) {
+            for(const auto vb : b.lowVerts_) {
               if(va == vb) {
                 inB = true;
                 break;
@@ -248,9 +248,9 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
             }
           }
 
-          for(const auto vb : b.children_) {
+          for(const auto vb : b.lowVerts_) {
             bool inA{false};
-            for(const auto va : a.children_) {
+            for(const auto va : a.lowVerts_) {
               if(vb == va) {
                 inA = true;
                 break;
@@ -287,11 +287,11 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
     // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
     const auto insertCofacets = [&](const Cell &ca, lowerStarType &ls) {
       if(ca.dim_ == 1) {
-        const SimplexId v = ca.children_[0];
+        const SimplexId v = ca.lowVerts_[0];
 
         for(auto &beta : ls[2]) {
-          const SimplexId v0 = beta.children_[0];
-          const SimplexId v1 = beta.children_[1];
+          const SimplexId v0 = beta.lowVerts_[0];
+          const SimplexId v1 = beta.lowVerts_[1];
 
           if(v == v0 || v == v1) {
             // edge ca belongs to triangle beta
@@ -301,13 +301,13 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
           }
         }
       } else if(ca.dim_ == 2) {
-        const SimplexId v0 = ca.children_[0];
-        const SimplexId v1 = ca.children_[1];
+        const SimplexId v0 = ca.lowVerts_[0];
+        const SimplexId v1 = ca.lowVerts_[1];
 
         for(auto &beta : ls[3]) {
-          const SimplexId t0 = beta.children_[0];
-          const SimplexId t1 = beta.children_[1];
-          const SimplexId t2 = beta.children_[2];
+          const SimplexId t0 = beta.lowVerts_[0];
+          const SimplexId t1 = beta.lowVerts_[1];
+          const SimplexId t2 = beta.lowVerts_[2];
 
           if((v0 == t0 || v0 == t1 || v0 == t2)
              && (v1 == t0 || v1 == t1 || v1 == t2)) {
