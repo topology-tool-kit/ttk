@@ -18,6 +18,7 @@
 
 using ttk::SimplexId;
 using ttk::dcg::Cell;
+using ttk::dcg::CellExt;
 using ttk::dcg::CriticalPoint;
 using ttk::dcg::DiscreteGradient;
 using ttk::dcg::SaddleSaddleVPathComparator;
@@ -208,7 +209,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
   for(SimplexId x = 0; x < nverts; x++) {
 
     // Comparison function for Cells inside priority queues
-    const auto orderCells = [&](const Cell &a, const Cell &b) -> bool {
+    const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
       if(a.dim_ == b.dim_) {
         // there should be a shared facet between the two cells
         // compare the vertices not in the shared facet
@@ -275,8 +276,8 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
 
     // Type alias for priority queues
     using pqType
-      = std::priority_queue<std::reference_wrapper<Cell>,
-                            std::vector<std::reference_wrapper<Cell>>,
+      = std::priority_queue<std::reference_wrapper<CellExt>,
+                            std::vector<std::reference_wrapper<CellExt>>,
                             decltype(orderCells)>;
 
     // Priority queues are pushed at the beginning and popped at the
@@ -285,7 +286,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
     pqType pqZero(orderCells), pqOne(orderCells);
 
     // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
-    const auto insertCofacets = [&](const Cell &ca, lowerStarType &ls) {
+    const auto insertCofacets = [&](const CellExt &ca, lowerStarType &ls) {
       if(ca.dim_ == 1) {
         const SimplexId v = ca.lowVerts_[0];
 

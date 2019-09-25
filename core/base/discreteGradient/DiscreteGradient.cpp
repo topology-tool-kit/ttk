@@ -51,7 +51,7 @@ SimplexId DiscreteGradient::getNumberOfCells(const int dimension) const {
 }
 
 std::pair<size_t, SimplexId>
-  DiscreteGradient::numUnpairedFaces(const Cell &c,
+  DiscreteGradient::numUnpairedFaces(const CellExt &c,
                                      const lowerStarType &ls) const {
 
   // number of unpaired faces

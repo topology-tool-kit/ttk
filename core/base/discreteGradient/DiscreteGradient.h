@@ -47,14 +47,22 @@ namespace ttk {
       explicit Cell(const int dim, const SimplexId id) : dim_{dim}, id_{id} {
       }
 
-      explicit Cell(const int dim,
-                    const SimplexId id,
-                    const std::vector<SimplexId> &&lowVerts)
-        : dim_{dim}, id_{id}, lowVerts_{lowVerts} {
-      }
-
       int dim_{-1};
       SimplexId id_{-1};
+    };
+
+    /**
+     * @brief Extended Cell structure for processLowerStars
+     */
+    struct CellExt : Cell {
+      explicit CellExt(const int dim, const SimplexId id) : Cell{dim, id} {
+      }
+      explicit CellExt(const int dim,
+                       const SimplexId id,
+                       const std::vector<SimplexId> &&lowVerts)
+        : Cell{dim, id}, lowVerts_{lowVerts} {
+      }
+
       bool paired_{false};
       std::vector<SimplexId> lowVerts_{};
     };
@@ -389,7 +397,7 @@ function value.
       /**
        * Type alias for lower stars of a given cell
        */
-      using lowerStarType = std::array<std::vector<Cell>, 4>;
+      using lowerStarType = std::array<std::vector<CellExt>, 4>;
 
       /**
        * @brief Store the subcomplexes around vertex for which offset
@@ -410,7 +418,7 @@ function value.
         lowerStarType res{};
 
         // a belongs to its lower star
-        res[0].emplace_back(Cell{0, a});
+        res[0].emplace_back(CellExt{0, a});
 
         const auto sosGreaterThan
           = [&scalars, &offsets](const SimplexId m, const SimplexId n) {
@@ -432,7 +440,7 @@ function value.
             inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
           }
           if(!sosGreaterThan(vertexId, a)) {
-            res[1].emplace_back(Cell{1, edgeId, {vertexId}});
+            res[1].emplace_back(CellExt{1, edgeId, {vertexId}});
           }
         }
 
@@ -461,7 +469,7 @@ function value.
               lowVerts.emplace_back(vertexId);
             }
             if(isMax) {
-              res[dim].emplace_back(Cell{dim, cellId, std::move(lowVerts)});
+              res[dim].emplace_back(CellExt{dim, cellId, std::move(lowVerts)});
             }
           }
         };
@@ -495,7 +503,7 @@ function value.
               lowVerts.emplace_back(vertexId);
             }
             if(isMax) {
-              res[2].emplace_back(Cell{2, triangleId, std::move(lowVerts)});
+              res[2].emplace_back(CellExt{2, triangleId, std::move(lowVerts)});
             }
           }
 
@@ -519,7 +527,7 @@ function value.
        * @return Number of unpaired faces and a face id
        */
       std::pair<size_t, SimplexId>
-        numUnpairedFaces(const Cell &c, const lowerStarType &ls) const;
+        numUnpairedFaces(const CellExt &c, const lowerStarType &ls) const;
 
       /**
        * @brief Pair cells into discrete gradient field
@@ -527,7 +535,7 @@ function value.
        * @param[in] alpha Cell of lower dimension
        * @param[in] beta Cell of higher dimension
        */
-      inline void pairCells(Cell &alpha, Cell &beta) {
+      inline void pairCells(CellExt &alpha, CellExt &beta) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
         char localBId{0}, localAId{0};
         SimplexId a{}, b{};
