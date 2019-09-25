@@ -519,7 +519,7 @@ function value.
        * @return Number of unpaired faces and a face id
        */
       std::pair<size_t, SimplexId>
-        numUnpairedFaces(const Cell c, const lowerStarType &ls) const;
+        numUnpairedFaces(const Cell &c, const lowerStarType &ls) const;
 
       /**
        * @brief Pair cells into discrete gradient field
