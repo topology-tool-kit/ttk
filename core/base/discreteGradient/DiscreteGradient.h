@@ -431,6 +431,7 @@ function value.
 
         // store lower edges
         const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
+        res[1].reserve(nedges);
         for(SimplexId i = 0; i < nedges; i++) {
           SimplexId edgeId;
           inputTriangulation_->getVertexEdge(a, i, edgeId);
@@ -451,6 +452,7 @@ function value.
 
         auto lowerCells = [&](const int dim) {
           const auto ncells = inputTriangulation_->getVertexStarNumber(a);
+          res[dim].reserve(ncells);
           for(SimplexId i = 0; i < ncells; ++i) {
             SimplexId cellId;
             inputTriangulation_->getVertexStar(a, i, cellId);
@@ -486,6 +488,7 @@ function value.
         } else if(dimensionality_ == 3) {
           // store lower triangles
           const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
+          res[2].reserve(ntri);
           for(SimplexId i = 0; i < ntri; i++) {
             SimplexId triangleId;
             inputTriangulation_->getVertexTriangle(a, i, triangleId);
