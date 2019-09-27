@@ -456,6 +456,7 @@ function value.
             inputTriangulation_->getVertexStar(a, i, cellId);
             bool isMax = true;
             std::vector<SimplexId> lowVerts{};
+            lowVerts.reserve(dim);
             for(SimplexId j = 0; j < (dim + 1); ++j) {
               SimplexId vertexId;
               inputTriangulation_->getCellVertex(cellId, j, vertexId);
@@ -490,6 +491,7 @@ function value.
             inputTriangulation_->getVertexTriangle(a, i, triangleId);
             bool isMax = true;
             std::vector<SimplexId> lowVerts{};
+            lowVerts.reserve(2);
             for(SimplexId j = 0; j < 3; j++) {
               SimplexId vertexId;
               inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
