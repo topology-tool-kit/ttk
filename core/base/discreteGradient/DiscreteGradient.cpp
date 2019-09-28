@@ -64,8 +64,9 @@ std::pair<size_t, SimplexId>
     const auto v0 = c.lowVerts_[0];
     const auto v1 = c.lowVerts_[1];
 
-    for(size_t i = 0; i < ls[1].size(); ++i) {
-      const auto &e = ls[1][i];
+    size_t i = 0;
+    for(const auto &e : ls[1]) {
+      i++;
       if(e.paired_) {
         continue;
       }
@@ -75,7 +76,7 @@ std::pair<size_t, SimplexId>
       const auto v = e.lowVerts_[0];
       if(v == v0 || v == v1) {
         res.first++;
-        res.second = i;
+        res.second = i - 1;
       }
     }
 
@@ -85,8 +86,9 @@ std::pair<size_t, SimplexId>
     const auto v1 = c.lowVerts_[1];
     const auto v2 = c.lowVerts_[2];
 
-    for(size_t i = 0; i < ls[2].size(); ++i) {
-      const auto &t = ls[2][i];
+    size_t i = 0;
+    for(const auto &t : ls[2]) {
+      i++;
       if(t.paired_) {
         continue;
       }
@@ -98,7 +100,7 @@ std::pair<size_t, SimplexId>
       if((vt0 == v0 || vt0 == v1 || vt0 == v2)
          && (vt1 == v0 || vt1 == v1 || vt1 == v2)) {
         res.first++;
-        res.second = i;
+        res.second = i - 1;
       }
     }
   }
