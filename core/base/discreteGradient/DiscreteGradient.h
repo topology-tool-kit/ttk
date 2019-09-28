@@ -59,12 +59,12 @@ namespace ttk {
       }
       explicit CellExt(const int dim,
                        const SimplexId id,
-                       const std::vector<SimplexId> &&lowVerts)
+                       const std::array<SimplexId, 3> &&lowVerts)
         : Cell{dim, id}, lowVerts_{lowVerts} {
       }
 
       bool paired_{false};
-      std::vector<SimplexId> lowVerts_{};
+      std::array<SimplexId, 3> lowVerts_{};
     };
 
     /**
@@ -450,40 +450,37 @@ function value.
           return res;
         }
 
-        auto lowerCells = [&](const int dim) {
-          const auto ncells = inputTriangulation_->getVertexStarNumber(a);
-          res[dim].reserve(ncells);
-          for(SimplexId i = 0; i < ncells; ++i) {
-            SimplexId cellId;
-            inputTriangulation_->getVertexStar(a, i, cellId);
-            bool isMax = true;
-            std::vector<SimplexId> lowVerts{};
-            lowVerts.reserve(dim);
-            for(SimplexId j = 0; j < (dim + 1); ++j) {
-              SimplexId vertexId;
-              inputTriangulation_->getCellVertex(cellId, j, vertexId);
-              if(vertexId == a) {
-                continue;
-              }
-              if(sosGreaterThan(vertexId, a)) {
-                isMax = false;
-                break;
-              }
-              lowVerts.emplace_back(vertexId);
-            }
-            if(isMax) {
-              res[dim].emplace_back(CellExt{dim, cellId, std::move(lowVerts)});
-            }
-          }
-        };
-
         if(dimensionality_ == 2) {
           // store lower triangles
 
           // use optimised triangulation methods:
           // getVertexStar instead of getVertexTriangle
           // getCellVertex instead of getTriangleVertex
-          lowerCells(2);
+          const auto ncells = inputTriangulation_->getVertexStarNumber(a);
+          res[2].reserve(ncells);
+          for(SimplexId i = 0; i < ncells; ++i) {
+            SimplexId cellId;
+            inputTriangulation_->getVertexStar(a, i, cellId);
+            std::array<SimplexId, 3> lowVerts{};
+            SimplexId v0{}, v1{}, v2{};
+            inputTriangulation_->getCellVertex(cellId, 0, v0);
+            inputTriangulation_->getCellVertex(cellId, 1, v1);
+            inputTriangulation_->getCellVertex(cellId, 2, v2);
+            if(v0 == a) {
+              lowVerts[0] = v1;
+              lowVerts[1] = v2;
+            } else if(v1 == a) {
+              lowVerts[0] = v0;
+              lowVerts[1] = v2;
+            } else if(v2 == a) {
+              lowVerts[0] = v0;
+              lowVerts[1] = v1;
+            }
+            if(sosGreaterThan(a, lowVerts[0])
+               && sosGreaterThan(a, lowVerts[1])) {
+              res[2].emplace_back(CellExt{2, cellId, std::move(lowVerts)});
+            }
+          }
 
         } else if(dimensionality_ == 3) {
           // store lower triangles
@@ -492,22 +489,23 @@ function value.
           for(SimplexId i = 0; i < ntri; i++) {
             SimplexId triangleId;
             inputTriangulation_->getVertexTriangle(a, i, triangleId);
-            bool isMax = true;
-            std::vector<SimplexId> lowVerts{};
-            lowVerts.reserve(2);
-            for(SimplexId j = 0; j < 3; j++) {
-              SimplexId vertexId;
-              inputTriangulation_->getTriangleVertex(triangleId, j, vertexId);
-              if(vertexId == a) {
-                continue;
-              }
-              if(sosGreaterThan(vertexId, a)) {
-                isMax = false;
-                break;
-              }
-              lowVerts.emplace_back(vertexId);
+            std::array<SimplexId, 3> lowVerts{};
+            SimplexId v0{}, v1{}, v2{};
+            inputTriangulation_->getTriangleVertex(triangleId, 0, v0);
+            inputTriangulation_->getTriangleVertex(triangleId, 1, v1);
+            inputTriangulation_->getTriangleVertex(triangleId, 2, v2);
+            if(v0 == a) {
+              lowVerts[0] = v1;
+              lowVerts[1] = v2;
+            } else if(v1 == a) {
+              lowVerts[0] = v0;
+              lowVerts[1] = v2;
+            } else if(v2 == a) {
+              lowVerts[0] = v0;
+              lowVerts[1] = v1;
             }
-            if(isMax) {
+            if(sosGreaterThan(a, lowVerts[0])
+               && sosGreaterThan(a, lowVerts[1])) {
               res[2].emplace_back(CellExt{2, triangleId, std::move(lowVerts)});
             }
           }
@@ -515,7 +513,40 @@ function value.
           // at least three triangles in the lower star for one tetra
           if(res[2].size() >= 3) {
             // store lower tetra
-            lowerCells(3);
+            const auto ncells = inputTriangulation_->getVertexStarNumber(a);
+            res[3].reserve(ncells);
+            for(SimplexId i = 0; i < ncells; ++i) {
+              SimplexId cellId;
+              inputTriangulation_->getVertexStar(a, i, cellId);
+              std::array<SimplexId, 3> lowVerts{};
+              SimplexId v0{}, v1{}, v2{}, v3{};
+              inputTriangulation_->getCellVertex(cellId, 0, v0);
+              inputTriangulation_->getCellVertex(cellId, 1, v1);
+              inputTriangulation_->getCellVertex(cellId, 2, v2);
+              inputTriangulation_->getCellVertex(cellId, 3, v3);
+              if(v0 == a) {
+                lowVerts[0] = v1;
+                lowVerts[1] = v2;
+                lowVerts[2] = v3;
+              } else if(v1 == a) {
+                lowVerts[0] = v0;
+                lowVerts[1] = v2;
+                lowVerts[2] = v3;
+              } else if(v2 == a) {
+                lowVerts[0] = v0;
+                lowVerts[1] = v1;
+                lowVerts[2] = v3;
+              } else if(v3 == a) {
+                lowVerts[0] = v0;
+                lowVerts[1] = v1;
+                lowVerts[2] = v2;
+              }
+              if(sosGreaterThan(a, lowVerts[0])
+                 && sosGreaterThan(a, lowVerts[1])
+                 && sosGreaterThan(a, lowVerts[2])) {
+                res[3].emplace_back(CellExt{3, cellId, std::move(lowVerts)});
+              }
+            }
           }
         }
 
