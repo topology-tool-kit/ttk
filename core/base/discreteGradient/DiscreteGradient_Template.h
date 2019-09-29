@@ -368,16 +368,15 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
           }
         }
         if(!pqZero.empty()) {
-          auto &c_gamma = pqZero.top().get();
-          pqZero.pop();
           // skip pair_alpha from pqZero:
           // c_gamma is not critical if already paired
-          while(!pqZero.empty() && c_gamma.paired_) {
-            c_gamma = pqZero.top();
+          while(!pqZero.empty() && pqZero.top().get().paired_) {
             pqZero.pop();
           }
+          if(!pqZero.empty()) {
+            auto &c_gamma = pqZero.top().get();
+            pqZero.pop();
 
-          if(!c_gamma.paired_) {
             // gamma is a critical cell
             // mark gamma as paired
             c_gamma.paired_ = true;

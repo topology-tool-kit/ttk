@@ -64,7 +64,7 @@ namespace ttk {
       }
 
       bool paired_{false};
-      std::array<SimplexId, 3> lowVerts_{};
+      const std::array<SimplexId, 3> lowVerts_{};
     };
 
     /**
