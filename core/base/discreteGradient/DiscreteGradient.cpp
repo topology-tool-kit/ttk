@@ -61,8 +61,8 @@ std::pair<size_t, SimplexId>
 
   if(c.dim_ == 2) {
     // vertices of triangle c
-    const auto v0 = c.lowVerts_[0];
-    const auto v1 = c.lowVerts_[1];
+    const auto &v0 = c.lowVerts_[0];
+    const auto &v1 = c.lowVerts_[1];
 
     size_t i = 0;
     for(const auto &e : ls[1]) {
@@ -82,9 +82,9 @@ std::pair<size_t, SimplexId>
 
   } else if(c.dim_ == 3) {
     // vertices of tetra c
-    const auto v0 = c.lowVerts_[0];
-    const auto v1 = c.lowVerts_[1];
-    const auto v2 = c.lowVerts_[2];
+    const auto &v0 = c.lowVerts_[0];
+    const auto &v1 = c.lowVerts_[1];
+    const auto &v2 = c.lowVerts_[2];
 
     size_t i = 0;
     for(const auto &t : ls[2]) {
@@ -95,8 +95,8 @@ std::pair<size_t, SimplexId>
       // t is not paired
 
       // vertices of triangle t
-      const auto vt0 = t.lowVerts_[0];
-      const auto vt1 = t.lowVerts_[1];
+      const auto &vt0 = t.lowVerts_[0];
+      const auto &vt1 = t.lowVerts_[1];
       if((vt0 == v0 || vt0 == v1 || vt0 == v2)
          && (vt1 == v0 || vt1 == v1 || vt1 == v2)) {
         res.first++;
