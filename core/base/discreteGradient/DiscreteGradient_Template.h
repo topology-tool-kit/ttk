@@ -235,32 +235,29 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
         } else if(a.dim_ == 3) {
           SimplexId m{-1}, n{-1};
 
-          for(const auto va : a.lowVerts_) {
-            bool inB{false};
-            for(const auto vb : b.lowVerts_) {
-              if(va == vb) {
-                inB = true;
-                break;
-              }
-            }
-            if(!inB) {
-              m = va;
-              break;
-            }
+          const auto m0 = a.lowVerts_[0];
+          const auto m1 = a.lowVerts_[1];
+          const auto m2 = a.lowVerts_[2];
+          const auto n0 = b.lowVerts_[0];
+          const auto n1 = b.lowVerts_[1];
+          const auto n2 = b.lowVerts_[2];
+
+          // extract vertex of a not in b
+          if(m0 != n0 && m0 != n1 && m0 != n2) {
+            m = m0;
+          } else if(m1 != n0 && m1 != n1 && m1 != n2) {
+            m = m1;
+          } else if(m2 != n0 && m2 != n1 && m2 != n2) {
+            m = m2;
           }
 
-          for(const auto vb : b.lowVerts_) {
-            bool inA{false};
-            for(const auto va : a.lowVerts_) {
-              if(vb == va) {
-                inA = true;
-                break;
-              }
-            }
-            if(!inA) {
-              n = vb;
-              break;
-            }
+          // extract vertex of b not in a
+          if(n0 != m0 && n0 != m1 && n0 != m2) {
+            n = n0;
+          } else if(n1 != m0 && n1 != m1 && n1 != m2) {
+            n = n1;
+          } else if(n2 != m0 && n2 != m1 && n2 != m2) {
+            n = n2;
           }
 
           return scalars[m] > scalars[n];
