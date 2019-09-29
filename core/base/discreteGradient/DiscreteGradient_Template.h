@@ -367,23 +367,23 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
             insertCofacets(c_pair_alpha, Lx);
           }
         }
+
+        // skip pair_alpha from pqZero:
+        // cells in pqZero are not critical if already paired
+        while(!pqZero.empty() && pqZero.top().get().paired_) {
+          pqZero.pop();
+        }
+
         if(!pqZero.empty()) {
-          // skip pair_alpha from pqZero:
-          // c_gamma is not critical if already paired
-          while(!pqZero.empty() && pqZero.top().get().paired_) {
-            pqZero.pop();
-          }
-          if(!pqZero.empty()) {
-            auto &c_gamma = pqZero.top().get();
-            pqZero.pop();
+          auto &c_gamma = pqZero.top().get();
+          pqZero.pop();
 
-            // gamma is a critical cell
-            // mark gamma as paired
-            c_gamma.paired_ = true;
+          // gamma is a critical cell
+          // mark gamma as paired
+          c_gamma.paired_ = true;
 
-            // add cofacets of c_gamma to pqOne
-            insertCofacets(c_gamma, Lx);
-          }
+          // add cofacets of c_gamma to pqOne
+          insertCofacets(c_gamma, Lx);
         }
       }
     }
