@@ -326,7 +326,10 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
       // get delta: 1-cell (edge) with minimal G value (steeper gradient)
       size_t minId = 0;
       for(size_t i = 1; i < Lx[1].size(); ++i) {
-        if(orderCells(Lx[1][0], Lx[1][i])) {
+        const auto &a = Lx[1][minId].lowVerts_[0];
+        const auto &b = Lx[1][i].lowVerts_[0];
+        if(scalars[a] > scalars[b]
+           || (scalars[a] == scalars[b] && offsets[a] > offsets[b])) {
           // edge[i] < edge[0]
           minId = i;
         }
