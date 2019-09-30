@@ -97,8 +97,9 @@ namespace ttk {
       return 0;
     }
 
-    inline void setDebugLevel(const int debugLevel) {
+    inline int setDebugLevel(const int &debugLevel) {
       debugLevel_ = debugLevel;
+      return 0;
     }
 
     inline void setDeterministic(const bool deterministic) {

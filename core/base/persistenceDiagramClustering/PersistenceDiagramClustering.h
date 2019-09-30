@@ -132,8 +132,9 @@ namespace ttk {
       pairTypeClustering_ = pairTypeClustering;
     }
 
-    inline void setDebugLevel(const int debugLevel) {
+    inline int setDebugLevel(const int &debugLevel) {
       debugLevel_ = debugLevel;
+      return 0;
     }
 
     inline void setUseDeltaLim(const bool useDeltaLim) {
