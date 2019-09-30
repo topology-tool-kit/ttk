@@ -250,7 +250,7 @@ namespace ttk {
     int threadNumber_;
     bool use_progressive_;
     double time_limit_;
-    float epsilon_min_;
+    double epsilon_min_;
     std::vector<std::vector<diagramTuple>> *inputDiagrams_;
 
     int points_added_;

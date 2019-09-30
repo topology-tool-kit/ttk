@@ -68,16 +68,16 @@ namespace ttk {
 
     dataType computeDistance(BidderDiagram<dataType> &D1,
                              BidderDiagram<dataType> &D2,
-                             dataType delta_lim);
+                             double delta_lim);
     dataType computeDistance(BidderDiagram<dataType> D1,
                              GoodDiagram<dataType> D2,
-                             dataType delta_lim);
+                             double delta_lim);
     dataType computeDistance(BidderDiagram<dataType> *D1,
                              GoodDiagram<dataType> *D2,
-                             dataType delta_lim);
+                             double delta_lim);
     dataType computeDistance(GoodDiagram<dataType> &D1,
                              GoodDiagram<dataType> &D2,
-                             dataType delta_lim);
+                             double delta_lim);
 
     GoodDiagram<dataType>
       centroidWithZeroPrices(GoodDiagram<dataType> centroid);
@@ -285,7 +285,7 @@ namespace ttk {
     bool use_kdtree_;
     double time_limit_;
 
-    dataType epsilon_min_;
+    double epsilon_min_;
     std::vector<double> epsilon_;
     dataType cost_;
     dataType cost_min_;

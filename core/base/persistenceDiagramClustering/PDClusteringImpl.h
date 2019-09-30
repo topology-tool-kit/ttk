@@ -951,7 +951,7 @@ std::vector<std::vector<dataType>>
 template <typename dataType>
 dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> &D1,
                                                  BidderDiagram<dataType> &D2,
-                                                 dataType delta_lim) {
+                                                 double delta_lim) {
   GoodDiagram<dataType> D2_bis = diagramToCentroid(D2);
   return computeDistance(D1, D2_bis, delta_lim);
 }
@@ -959,7 +959,7 @@ dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> &D1,
 template <typename dataType>
 dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> D1,
                                                  GoodDiagram<dataType> D2,
-                                                 dataType delta_lim) {
+                                                 double delta_lim) {
   std::vector<matchingTuple> matchings;
   D2 = centroidWithZeroPrices(D2);
   Auction<dataType> auction(
@@ -972,7 +972,7 @@ dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> D1,
 template <typename dataType>
 dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> *D1,
                                                  GoodDiagram<dataType> *D2,
-                                                 dataType delta_lim) {
+                                                 double delta_lim) {
   std::vector<matchingTuple> matchings;
   Auction<dataType> auction(
     wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
@@ -988,7 +988,7 @@ dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> *D1,
 template <typename dataType>
 dataType PDClustering<dataType>::computeDistance(GoodDiagram<dataType> &D1,
                                                  GoodDiagram<dataType> &D2,
-                                                 dataType delta_lim) {
+                                                 double delta_lim) {
   BidderDiagram<dataType> D1_bis = centroidToDiagram(D1);
   return computeDistance(D1_bis, D2, delta_lim);
 }
