@@ -250,7 +250,7 @@ int ttkPersistenceDiagramClustering::FillOutputPortInformation(
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
 int ttkPersistenceDiagramClustering::RequestData(
-  vtkInformation *request,
+  vtkInformation * /*request*/,
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
   Memory m;

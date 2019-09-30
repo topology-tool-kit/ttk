@@ -364,8 +364,8 @@ template <typename dataType>
 double ttkPersistenceDiagramClustering::getPersistenceDiagram(
   std::vector<diagramTuple> *diagram,
   vtkUnstructuredGrid *CTPersistenceDiagram_,
-  const double spacing,
-  const int diagramNumber) {
+  const double /*spacing*/,
+  const int /*diagramNumber*/) {
   vtkIntArray *vertexIdentifierScalars
     = vtkIntArray::SafeDownCast(CTPersistenceDiagram_->GetPointData()->GetArray(
       ttk::VertexScalarFieldName));
@@ -513,7 +513,7 @@ template <typename dataType>
 vtkSmartPointer<vtkUnstructuredGrid>
   ttkPersistenceDiagramClustering::createOutputCentroids(
     std::vector<std::vector<diagramTuple>> *final_centroids,
-    std::vector<int> inv_clustering,
+    std::vector<int> /*inv_clustering*/,
     double max_dimension,
     double spacing) {
   if(debugLevel_ > 5) {

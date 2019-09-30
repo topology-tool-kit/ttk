@@ -2721,7 +2721,7 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
 
 template <typename dataType>
 void PDClustering<dataType>::initializeBarycenterComputers(
-  vector<dataType> min_persistence) {
+  vector<dataType> /*min_persistence*/) {
   // cout<<" initialize barycenter computers "<<geometrical_factor_<<endl;
   if(do_min_) {
     // cout << "here0" << endl;

@@ -5,6 +5,7 @@
 #include <Debug.h>
 #include <KDTree.h>
 #include <PersistenceDiagram.h>
+#include <array>
 #include <cmath>
 #include <iostream>
 #include <limits>
