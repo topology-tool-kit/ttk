@@ -1,16 +1,5 @@
 #include <ttkPersistenceDiagramClustering.h>
 
-#ifndef macroDiagramTuple
-#define macroDiagramTuple                                                     \
-  std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,               \
-             ttk::CriticalType, VTK_TT, ttk::SimplexId, VTK_TT, float, float, \
-             float, VTK_TT, float, float, float>
-#endif
-
-#ifndef macroMatchingTuple
-#define macroMatchingTuple std::tuple<ttk::SimplexId, ttk::SimplexId, VTK_TT>
-#endif
-
 using namespace std;
 using namespace ttk;
 
@@ -78,6 +67,12 @@ int ttkPersistenceDiagramClustering::dispatch(
   vtkUnstructuredGrid *outputClusters,
   vtkUnstructuredGrid *outputCentroids,
   vtkUnstructuredGrid *outputMatchings) {
+
+  using macroDiagramTuple
+    = std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
+                 ttk::CriticalType, VTK_TT, ttk::SimplexId, VTK_TT, float,
+                 float, float, VTK_TT, float, float, float>;
+  using macroMatchingTuple = std::tuple<ttk::SimplexId, ttk::SimplexId, VTK_TT>;
 
   int ret{};
   vector<vector<macroDiagramTuple>> *intermediateDiagrams;
