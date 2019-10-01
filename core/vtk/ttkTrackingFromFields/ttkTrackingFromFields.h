@@ -197,6 +197,8 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   std::vector<vtkDataArray *> inputScalarFields) {
   unsigned long fieldNumber = inputScalarFields.size();
 
+  using trackingTuple = ttk::trackingTuple;
+
   // 0. get data
   trackingF_.setThreadNumber(ThreadNumber);
   trackingF_.setTriangulation(internalTriangulation_);

@@ -104,6 +104,8 @@ public:
   vtkSetMacro(PostProcThresh, double);
   vtkGetMacro(PostProcThresh, double);
 
+  using trackingTuple = ttk::trackingTuple;
+
   template <typename dataType>
   static int
     buildMesh(std::vector<trackingTuple> &trackings,
