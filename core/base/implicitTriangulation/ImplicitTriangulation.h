@@ -139,7 +139,8 @@ namespace ttk {
                         const int &id,
                         SimplexId &edgeId) const override;
 
-    SimplexId getTriangleEdgeNumber(const SimplexId &triangleId) const override {
+    SimplexId
+      getTriangleEdgeNumber(const SimplexId &triangleId) const override {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;
