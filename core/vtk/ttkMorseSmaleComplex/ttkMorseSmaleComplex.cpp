@@ -9,16 +9,15 @@ vtkStandardNewMacro(ttkMorseSmaleComplex)
   ttkMorseSmaleComplex::ttkMorseSmaleComplex()
   : ScalarField{}, InputOffsetScalarFieldName{ttk::OffsetScalarFieldName},
     ForceInputOffsetScalarField{}, PeriodicBoundaryConditions{false},
-    IterationThreshold{-1}, ReverseSaddleMaximumConnection{true},
-    ReverseSaddleSaddleConnection{true}, ComputeCriticalPoints{true},
-    ComputeAscendingSeparatrices1{true}, ComputeDescendingSeparatrices1{true},
-    ComputeSaddleConnectors{true}, ComputeAscendingSeparatrices2{false},
-    ComputeDescendingSeparatrices2{false}, ComputeAscendingSegmentation{true},
-    ComputeDescendingSegmentation{true}, ComputeFinalSegmentation{true},
-    ScalarFieldId{}, OffsetFieldId{-1}, ReturnSaddleConnectors{false},
-    SaddleConnectorsPersistenceThreshold{0}, PrioritizeSpeedOverMemory{false},
-
-    triangulation_{}, defaultOffsets_{}, hasUpdatedMesh_{} {
+    IterationThreshold{-1}, ReverseSaddleSaddleConnection{true},
+    ComputeCriticalPoints{true}, ComputeAscendingSeparatrices1{true},
+    ComputeDescendingSeparatrices1{true}, ComputeSaddleConnectors{true},
+    ComputeAscendingSeparatrices2{false}, ComputeDescendingSeparatrices2{false},
+    ComputeAscendingSegmentation{true}, ComputeDescendingSegmentation{true},
+    ComputeFinalSegmentation{true}, ScalarFieldId{}, OffsetFieldId{-1},
+    ReturnSaddleConnectors{false}, SaddleConnectorsPersistenceThreshold{0},
+    PrioritizeSpeedOverMemory{false}, triangulation_{}, defaultOffsets_{},
+    hasUpdatedMesh_{} {
   UseAllCores = true;
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(4);
@@ -939,12 +938,6 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   morseSmaleManifold->SetName("MorseSmaleManifold");
 
   morseSmaleComplex_.setIterationThreshold(IterationThreshold);
-
-  morseSmaleComplex_.setReverseSaddleMaximumConnection(
-    ReverseSaddleMaximumConnection);
-
-  morseSmaleComplex_.setReverseSaddleSaddleConnection(
-    ReverseSaddleSaddleConnection);
 
   morseSmaleComplex_.setComputeAscendingSeparatrices1(
     ComputeAscendingSeparatrices1);

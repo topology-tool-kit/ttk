@@ -2210,8 +2210,8 @@ int DiscreteGradient::reverseGradient(
       returnSaddleConnectors);
   }
 
-  if(dimensionality_ == 3 and ReverseSaddleMaximumConnection
-     and ReverseSaddleSaddleConnection and ReturnSaddleConnectors) {
+  if(dimensionality_ == 3 and ReverseSaddleSaddleConnection
+     and ReturnSaddleConnectors) {
     filterSaddleConnectors<dataType, idType>(allowBoundary);
   }
 
@@ -2230,7 +2230,7 @@ int DiscreteGradient::reverseGradient() {
   std::vector<std::pair<SimplexId, char>> criticalPoints;
 
   // get the PL critical points
-  if(ReverseSaddleMaximumConnection or ReverseSaddleSaddleConnection) {
+  if(ReverseSaddleSaddleConnection) {
     const auto *const offsets = static_cast<const idType *>(inputOffsets_);
     std::vector<SimplexId> sosOffsets(numberOfVertices_);
     for(SimplexId i = 0; i < numberOfVertices_; ++i) {

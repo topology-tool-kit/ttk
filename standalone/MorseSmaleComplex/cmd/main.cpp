@@ -36,7 +36,6 @@ int main(int argc, char **argv) {
   // to execution.
   program.ttkObject_->SetScalarFieldId(scalarFieldId);
   program.ttkObject_->SetOffsetFieldId(offsetFieldId);
-  program.ttkObject_->SetReverseSaddleMaximumConnection(plCompliantExtrema);
   program.ttkObject_->SetReverseSaddleSaddleConnection(plCompliantSaddles);
 
   // execute data processing

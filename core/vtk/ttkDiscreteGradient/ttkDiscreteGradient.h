@@ -78,9 +78,6 @@ public:
   vtkSetMacro(InputOffsetScalarFieldName, std::string);
   vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
-  vtkSetMacro(ReverseSaddleMaximumConnection, bool);
-  vtkGetMacro(ReverseSaddleMaximumConnection, bool);
-
   vtkSetMacro(ReverseSaddleSaddleConnection, bool);
   vtkGetMacro(ReverseSaddleSaddleConnection, bool);
 
@@ -124,7 +121,6 @@ private:
   std::string ScalarField;
   std::string InputOffsetScalarFieldName;
   bool ForceInputOffsetScalarField;
-  bool ReverseSaddleMaximumConnection;
   bool ReverseSaddleSaddleConnection;
   bool ComputeGradientGlyphs;
   int IterationThreshold;

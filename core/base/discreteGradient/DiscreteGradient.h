@@ -246,28 +246,6 @@ namespace ttk {
     };
 
     /**
-     * Comparator of VPaths, first compare persistence values then vpaths'
-     * identifiers.
-     */
-    template <typename dataType>
-    struct SaddleMaximumVPathComparator {
-      bool operator()(const std::pair<dataType, SimplexId> &v1,
-                      const std::pair<dataType, SimplexId> &v2) const {
-        const dataType persistence1 = v1.first;
-        const dataType persistence2 = v2.first;
-
-        const SimplexId vpathId1 = v1.second;
-        const SimplexId vpathId2 = v2.second;
-
-        if(persistence1 != persistence2) {
-          return (persistence1 < persistence2);
-        }
-
-        return (vpathId1 < vpathId2);
-      };
-    };
-
-    /**
      * Comparator of saddle-connectors, first compare persistence values then
      * saddle identifiers and finally vpaths' identifiers.
      */
@@ -316,14 +294,6 @@ namespace ttk {
        */
       int setIterationThreshold(const int iterationThreshold) {
         IterationThreshold = iterationThreshold;
-        return 0;
-      }
-
-      /**
-       * Enable/Disable gradient reversal of saddle to maximum VPaths.
-       */
-      int setReverseSaddleMaximumConnection(const bool state) {
-        ReverseSaddleMaximumConnection = state;
         return 0;
       }
 
@@ -1133,7 +1103,6 @@ tetra identifier.
 
     protected:
       int IterationThreshold{-1};
-      bool ReverseSaddleMaximumConnection{false};
       bool ReverseSaddleSaddleConnection{false};
       bool CollectPersistencePairs{false};
       bool ReturnSaddleConnectors{false};

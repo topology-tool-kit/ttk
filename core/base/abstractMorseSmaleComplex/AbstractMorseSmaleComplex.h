@@ -127,15 +127,6 @@ namespace ttk {
     }
 
     /**
-     * Enable/Disable gradient reversal of (saddle,...,maximum) vpaths
-     * (disabled by default).
-     */
-    int setReverveSaddleMaximumConnection(const bool state) {
-      discreteGradient_.setReverseSaddleMaximumConnection(state);
-      return 0;
-    }
-
-    /**
      * Enable/Disable gradient reversal of (saddle,...,saddle) vpaths
      * (disabled by default).
      */

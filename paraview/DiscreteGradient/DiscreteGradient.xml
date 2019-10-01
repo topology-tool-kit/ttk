@@ -94,18 +94,6 @@
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty name="ReverseSaddleMaximumConnection"
-        label="PL-compliant extrema"
-        command="SetReverseSaddleMaximumConnection"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="default">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Documentation.
-        </Documentation>
-      </IntVectorProperty>
-
       <IntVectorProperty name="ReverseSaddleSaddleConnection"
         label="PL-compliant saddles"
         command="SetReverseSaddleSaddleConnection"
@@ -189,7 +177,6 @@
         <Property name="ScalarField" />
         <Property name="ForceInputOffsetScalarField"/>
         <Property name="InputOffsetScalarFieldName"/>
-        <Property name="ReverseSaddleMaximumConnection"/>
         <Property name="ReverseSaddleSaddleConnection"/>
         <Property name="ComputeGradientGlyphs"/>
       </PropertyGroup>

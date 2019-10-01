@@ -1504,14 +1504,12 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
     // simplify to be PL-conformant
     discreteGradient_.setDebugLevel(debugLevel_);
     discreteGradient_.setThreadNumber(threadNumber_);
-    discreteGradient_.setReverseSaddleMaximumConnection(true);
     discreteGradient_.setReverseSaddleSaddleConnection(true);
     discreteGradient_.setCollectPersistencePairs(false);
     discreteGradient_.buildGradient<dataType, idType>();
     discreteGradient_.reverseGradient<dataType, idType>(pl_criticalPoints);
 
     // collect saddle-saddle connections
-    discreteGradient_.setReverseSaddleMaximumConnection(true);
     discreteGradient_.setCollectPersistencePairs(true);
     discreteGradient_.setOutputPersistencePairs(&dmt_pairs);
     discreteGradient_.reverseGradient<dataType, idType>(
