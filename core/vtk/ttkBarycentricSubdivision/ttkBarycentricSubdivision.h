@@ -77,6 +77,17 @@ protected:
   TTK_SETUP();
 
 private:
+  // output 3D coordinates of generated points: old points first, then edge
+  // middles, then triangle barycenters
+  std::vector<float> points_{};
+  // output triangles
+  std::vector<ttk::LongSimplexId> cells_{};
+  // generated point cell id
+  std::vector<ttk::SimplexId> pointId_{};
+  // generated points dimension: 0 vertex of parent triangulation, 1 edge
+  // middle, 2 triangle barycenter
+  std::vector<ttk::SimplexId> pointDim_{};
+
   // base worker
-  ttk::BarycentricSubdivision baseWorker_{};
+  ttk::BarycentricSubdivision baseWorker_{points_, cells_, pointId_, pointDim_};
 };

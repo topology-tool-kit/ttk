@@ -124,37 +124,31 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     output->GetCellData()->AddArray(outputScalarField);
   }
 
-  // output variables
-  auto &outPoints = baseWorker_.points_;
-  auto &outCells = baseWorker_.cells_;
-  auto &outPointId = baseWorker_.pointId_;
-  auto &outPointDim = baseWorker_.pointDim_;
-
   // generated 3D coordinates
   auto points = vtkSmartPointer<vtkPoints>::New();
-  for(size_t i = 0; i < outPoints.size() / 3; i++) {
-    points->InsertNextPoint(&outPoints[3 * i]);
+  for(size_t i = 0; i < points_.size() / 3; i++) {
+    points->InsertNextPoint(&points_[3 * i]);
   }
   output->SetPoints(points);
 
   // generated triangles
   const size_t dataPerCell = 4;
   auto cells = vtkSmartPointer<vtkCellArray>::New();
-  for(size_t i = 0; i < outCells.size() / dataPerCell; i++) {
-    cells->InsertNextCell(3, &outCells[dataPerCell * i + 1]);
+  for(size_t i = 0; i < cells_.size() / dataPerCell; i++) {
+    cells->InsertNextCell(3, &cells_[dataPerCell * i + 1]);
   }
   output->SetCells(VTK_TRIANGLE, cells);
 
   // cell id
   auto cellId = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   cellId->SetName("CellId");
-  cellId->SetVoidArray(outPointId.data(), outPointId.size(), 1);
+  cellId->SetVoidArray(pointId_.data(), pointId_.size(), 1);
   output->GetPointData()->AddArray(cellId);
 
   // cell dimension
   auto cellDim = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   cellDim->SetName("CellDimension");
-  cellDim->SetVoidArray(outPointDim.data(), outPointDim.size(), 1);
+  cellDim->SetVoidArray(pointDim_.data(), pointDim_.size(), 1);
   output->GetPointData()->AddArray(cellDim);
 
   {

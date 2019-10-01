@@ -30,6 +30,13 @@ namespace ttk {
   class BarycentricSubdivision : public Debug {
 
   public:
+    BarycentricSubdivision(std::vector<float> &points,
+                           std::vector<LongSimplexId> &cells,
+                           std::vector<SimplexId> &pointId,
+                           std::vector<SimplexId> &pointDim)
+      : points_{points}, cells_{cells}, pointId_{pointId}, pointDim_{pointDim} {
+    }
+
     inline void setOutputTriangulation(Triangulation *const triangulation) {
       outputTriangl_ = triangulation;
     }
@@ -177,18 +184,18 @@ namespace ttk {
     // list of input cell data
     std::vector<void *> cellData_{};
 
-  public:
     // output 3D coordinates of generated points: old points first, then edge
     // middles, then triangle barycenters
-    std::vector<float> points_{};
+    std::vector<float> &points_;
     // output triangles
-    std::vector<LongSimplexId> cells_{};
-    // output triangulation built on output points & output cells
-    Triangulation *outputTriangl_{};
+    std::vector<LongSimplexId> &cells_;
     // generated point cell id
-    std::vector<SimplexId> pointId_{};
+    std::vector<SimplexId> &pointId_;
     // generated points dimension: 0 vertex of parent triangulation, 1 edge
     // middle, 2 triangle barycenter
-    std::vector<SimplexId> pointDim_{};
+    std::vector<SimplexId> &pointDim_;
+
+    // output triangulation built on output points & output cells
+    Triangulation *outputTriangl_{};
   };
 } // namespace ttk
