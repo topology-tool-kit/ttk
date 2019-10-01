@@ -167,7 +167,6 @@ int ttkDiscreteGradient::dispatch(
 
   int ret = 0;
   vector<VTK_TT> criticalPoints_points_cellScalars;
-  const int dimensionality = triangulation_->getDimensionality();
 
   discreteGradient_.setOutputCriticalPoints(
     &criticalPoints_numberOfPoints, &criticalPoints_points,
