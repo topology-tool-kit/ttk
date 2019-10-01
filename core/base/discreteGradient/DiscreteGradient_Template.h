@@ -208,13 +208,22 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
 
+    const auto sosGreaterThan
+      = [&](const SimplexId a, const SimplexId b) -> bool {
+      if(scalars[a] != scalars[b]) {
+        return scalars[a] > scalars[b];
+      } else {
+        return offsets[a] > offsets[b];
+      }
+    };
+
     // Comparison function for Cells inside priority queues
     const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
       if(a.dim_ == b.dim_) {
         // there should be a shared facet between the two cells
         // compare the vertices not in the shared facet
         if(a.dim_ == 1) {
-          return scalars[a.lowVerts_[0]] > scalars[b.lowVerts_[0]];
+          return sosGreaterThan(a.lowVerts_[0], b.lowVerts_[0]);
 
         } else if(a.dim_ == 2) {
           const auto &m0 = a.lowVerts_[0];
@@ -223,13 +232,13 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
           const auto &n1 = b.lowVerts_[1];
 
           if(m0 == n0) {
-            return scalars[m1] > scalars[n1];
+            return sosGreaterThan(m1, n1);
           } else if(m0 == n1) {
-            return scalars[m1] > scalars[n0];
+            return sosGreaterThan(m1, n0);
           } else if(m1 == n0) {
-            return scalars[m0] > scalars[n1];
+            return sosGreaterThan(m0, n1);
           } else if(m1 == n1) {
-            return scalars[m0] > scalars[n0];
+            return sosGreaterThan(m0, n0);
           }
 
         } else if(a.dim_ == 3) {
@@ -260,7 +269,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
             n = n2;
           }
 
-          return scalars[m] > scalars[n];
+          return sosGreaterThan(m, n);
         }
       } else {
         // the cell of greater dimension should contain the cell of
