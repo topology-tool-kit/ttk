@@ -119,6 +119,8 @@ int ttk::EigenField::execute() const {
       outputStats[k] = outputEigenFunctions[i * eigenNumber_];
       outputStats[k + 1] = outputEigenFunctions[i * eigenNumber_];
       outputStats[k + 2] = outputEigenFunctions[i * eigenNumber_];
+      outputStats[k + 3] = outputEigenFunctions[i * eigenNumber_]
+                           * outputEigenFunctions[i * eigenNumber_];
       // loop from 1
       for(size_t j = 1; j < eigenNumber_; ++j) {
         outputStats[k] = std::min<T>(
@@ -126,8 +128,10 @@ int ttk::EigenField::execute() const {
         outputStats[k + 1] = std::max<T>(
           outputEigenFunctions[i * eigenNumber_ + j], outputStats[k]);
         outputStats[k + 2] += outputEigenFunctions[i * eigenNumber_ + j];
+        outputStats[k + 3] += outputEigenFunctions[i * eigenNumber_ + j]
+                              * outputEigenFunctions[i * eigenNumber_ + j];
+        ;
       }
-      outputStats[k + 3] = outputStats[k + 2] / eigenNumber_;
     }
   }
 
