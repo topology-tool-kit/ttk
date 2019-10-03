@@ -55,6 +55,9 @@ public:
   // default ttk setters
   vtkSetMacro(debugLevel_, int);
 
+  vtkGetMacro(SubdivisionLevel, unsigned int);
+  vtkSetMacro(SubdivisionLevel, unsigned int);
+
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();
@@ -78,6 +81,9 @@ protected:
   TTK_SETUP();
 
 private:
+  // number of subdivisions
+  unsigned int SubdivisionLevel{1};
+
   // output 3D coordinates of generated points: old points first, then edge
   // middles, then triangle barycenters
   std::vector<float> points_{};
