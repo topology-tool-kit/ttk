@@ -2543,7 +2543,8 @@ namespace ttk {
         return -1;
 #endif
 
-      return abstractTriangulation_->preprocessBoundaryEdges();
+      return !((!abstractTriangulation_->preprocessBoundaryEdges())
+               && (hasPreprocessedBoundaryEdges_ = true));
     }
 
     /// Pre-process the boundary triangles.
@@ -2565,7 +2566,8 @@ namespace ttk {
         return -1;
 #endif
 
-      return abstractTriangulation_->preprocessBoundaryTriangles();
+      return !((!abstractTriangulation_->preprocessBoundaryTriangles())
+               && (hasPreprocessedBoundaryTriangles_ = true));
     }
 
     /// Pre-process the boundary vertices.
@@ -2587,7 +2589,8 @@ namespace ttk {
         return -1;
 #endif
 
-      return abstractTriangulation_->preprocessBoundaryVertices();
+      return !((!abstractTriangulation_->preprocessBoundaryVertices())
+               && (hasPreprocessedBoundaryVertices_ = true));
     }
 
     /// Pre-process the cell edges.
@@ -2611,9 +2614,12 @@ namespace ttk {
         return -1;
 #endif
       if(getDimensionality() == 1)
-        return abstractTriangulation_->preprocessCellNeighbors();
+        return !((!abstractTriangulation_->preprocessCellNeighbors())
+                 && (hasPreprocessedCellEdges_ = true)
+                 && (hasPreprocessedCellNeighbors_ = true));
 
-      return abstractTriangulation_->preprocessCellEdges();
+      return !((!abstractTriangulation_->preprocessCellEdges())
+               && (hasPreprocessedCellEdges_ = true));
     }
 
     /// Pre-process the cell neighbors.
@@ -2640,7 +2646,8 @@ namespace ttk {
         return -1;
 #endif
 
-      return abstractTriangulation_->preprocessCellNeighbors();
+      return !((!abstractTriangulation_->preprocessCellNeighbors())
+               && (hasPreprocessedCellNeighbors_ = true));
     }
 
     /// Pre-process the cell triangles.
@@ -2670,9 +2677,12 @@ namespace ttk {
         return -2;
 #endif
       if(getDimensionality() == 2)
-        return abstractTriangulation_->preprocessCellNeighbors();
+        return !((!abstractTriangulation_->preprocessCellNeighbors())
+                 && (hasPreprocessedCellTriangles_ = true)
+                 && (hasPreprocessedCellNeighbors_ = true));
 
-      return abstractTriangulation_->preprocessCellTriangles();
+      return !((!abstractTriangulation_->preprocessCellTriangles())
+               && (hasPreprocessedCellTriangles_ = true));
     }
 
     /// Pre-process the edges.
@@ -2699,7 +2709,8 @@ namespace ttk {
         return -1;
 #endif
 
-      return abstractTriangulation_->preprocessEdges();
+      return !((!abstractTriangulation_->preprocessEdges())
+               && (hasPreprocessedBoundaryEdges_ = true));
     }
 
     /// Pre-process the edge links.
@@ -2729,7 +2740,8 @@ namespace ttk {
         return -2;
 #endif
 
-      return abstractTriangulation_->preprocessEdgeLinks();
+      return !((!abstractTriangulation_->preprocessEdgeLinks())
+               && (hasPreprocessedEdgeLinks_ = true));
     }
 
     /// Pre-process the edge stars.
@@ -2759,7 +2771,8 @@ namespace ttk {
         return -2;
 #endif
 
-      return abstractTriangulation_->preprocessEdgeStars();
+      return !((!abstractTriangulation_->preprocessEdgeStars())
+               && (hasPreprocessedEdgeStars_ = true));
     }
 
     /// Pre-process the edge triangles.
@@ -2790,10 +2803,13 @@ namespace ttk {
 #endif
 
       if(getDimensionality() == 2) {
-        return abstractTriangulation_->preprocessEdgeStars();
+        return !((!abstractTriangulation_->preprocessEdgeStars())
+                 && (hasPreprocessedEdgeTriangles_ = true)
+                 && (hasPreprocessedEdgeStars_ = true));
       }
 
-      return abstractTriangulation_->preprocessEdgeTriangles();
+      return !((!abstractTriangulation_->preprocessEdgeTriangles())
+               && (hasPreprocessedEdgeTriangles_ = true));
     }
 
     /// Pre-process the triangles.
@@ -2826,7 +2842,8 @@ namespace ttk {
       if(getDimensionality() == 2)
         return 0;
 
-      return abstractTriangulation_->preprocessTriangles();
+      return !((!abstractTriangulation_->preprocessTriangles())
+               && (hasPreprocessedTriangles_ = true));
     }
 
     /// Pre-process the triangle edges.
@@ -2857,9 +2874,12 @@ namespace ttk {
 #endif
 
       if(getDimensionality() == 2)
-        return abstractTriangulation_->preprocessCellEdges();
+        return !((!abstractTriangulation_->preprocessCellEdges())
+                 && (hasPreprocessedTriangleEdges_ = true)
+                 && (hasPreprocessedCellEdges_ = true));
 
-      return abstractTriangulation_->preprocessTriangleEdges();
+      return !((!abstractTriangulation_->preprocessTriangleEdges())
+               && (hasPreprocessedTriangleEdges_ = true));
     }
 
     /// Pre-process the triangle links.
@@ -2889,7 +2909,8 @@ namespace ttk {
         return -2;
 #endif
 
-      return abstractTriangulation_->preprocessTriangleLinks();
+      return !((!abstractTriangulation_->preprocessTriangleLinks())
+               && (hasPreprocessedTriangleLinks_ = true));
     }
 
     /// Pre-process the triangle stars.
@@ -2919,7 +2940,8 @@ namespace ttk {
         return -2;
 #endif
 
-      return abstractTriangulation_->preprocessTriangleStars();
+      return !((!abstractTriangulation_->preprocessTriangleStars())
+               && (hasPreprocessedTriangleStars_ = true));
     }
 
     /// Pre-process the vertex edges.
@@ -2946,9 +2968,12 @@ namespace ttk {
         return -1;
 #endif
       if(getDimensionality() == 1)
-        return abstractTriangulation_->preprocessVertexStars();
+        return !((!abstractTriangulation_->preprocessVertexStars())
+                 && (hasPreprocessedVertexEdges_ = true)
+                 && (hasPreprocessedVertexStars_ = true));
 
-      return abstractTriangulation_->preprocessVertexEdges();
+      return !((!abstractTriangulation_->preprocessVertexEdges())
+               && (hasPreprocessedVertexEdges_ = true));
     }
 
     /// Pre-process the vertex links.
@@ -2975,7 +3000,8 @@ namespace ttk {
         return -1;
 #endif
 
-      return abstractTriangulation_->preprocessVertexLinks();
+      return !((!abstractTriangulation_->preprocessVertexLinks())
+               && (hasPreprocessedVertexLinks_ = true));
     }
 
     /// Pre-process the vertex neighbors.
@@ -3002,7 +3028,8 @@ namespace ttk {
         return -1;
 #endif
 
-      return abstractTriangulation_->preprocessVertexNeighbors();
+      return !((!abstractTriangulation_->preprocessVertexNeighbors())
+               && (hasPreprocessedVertexNeighbors_ = true));
     }
 
     /// Pre-process the vertex stars.
@@ -3029,7 +3056,8 @@ namespace ttk {
         return -1;
 #endif
 
-      return abstractTriangulation_->preprocessVertexStars();
+      return !((!abstractTriangulation_->preprocessVertexStars())
+               && (hasPreprocessedVertexStars_ = true));
     }
 
     /// Pre-process the vertex triangles.
@@ -3058,10 +3086,13 @@ namespace ttk {
         return -2;
 #endif
       if(getDimensionality() == 2) {
-        return abstractTriangulation_->preprocessVertexStars();
+        return !((!abstractTriangulation_->preprocessVertexStars())
+                 && (hasPreprocessedVertexTriangles_ = true)
+                 && (hasPreprocessedVertexStars_ = true));
       }
 
-      return abstractTriangulation_->preprocessVertexTriangles();
+      return !((!abstractTriangulation_->preprocessVertexTriangles())
+               && (hasPreprocessedVertexTriangles_ = true));
     }
 
     /// Tune the debug level (default: 0)
