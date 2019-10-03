@@ -61,7 +61,13 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
       case VTK_ID_TYPE:
         outputScalarField = vtkSmartPointer<vtkIdTypeArray>::New();
         break;
+      case VTK_LONG:
+        outputScalarField = vtkSmartPointer<vtkLongArray>::New();
+        break;
       default:
+        std::stringstream msg;
+        msg << MODULE_S "Unsupported data array type" << endl;
+        dMsg(std::cout, msg.str(), fatalMsg);
         break;
     }
     return outputScalarField;
@@ -89,6 +95,10 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     break
 
     auto outputScalarField = allocateScalarField(inputScalarField);
+    if(outputScalarField == nullptr) {
+      return -3;
+    }
+
     // only for scalar fields
     outputScalarField->SetNumberOfComponents(1);
     outputScalarField->SetNumberOfTuples(outPointsNumber);
@@ -97,6 +107,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     switch(inputScalarField->GetDataType()) {
       DISPATCH_INTERPOLATE_DIS(VTK_CHAR, char);
       DISPATCH_INTERPOLATE_DIS(VTK_INT, int);
+      DISPATCH_INTERPOLATE_DIS(VTK_LONG, long);
       DISPATCH_INTERPOLATE_DIS(VTK_ID_TYPE, vtkIdType);
       DISPATCH_INTERPOLATE_CONT(VTK_FLOAT, float);
       DISPATCH_INTERPOLATE_CONT(VTK_DOUBLE, double);
@@ -113,6 +124,10 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     }
 
     auto outputScalarField = allocateScalarField(inputScalarField);
+    if(outputScalarField == nullptr) {
+      return -3;
+    }
+
     // only for scalar fields
     outputScalarField->SetNumberOfComponents(1);
     outputScalarField->SetNumberOfTuples(outCellsNumber);
