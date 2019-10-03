@@ -750,7 +750,14 @@ namespace ttk {
       // create the list of boundary elements
       // create their star
       // look for singletons
-      if(getDimensionality() == 2) {
+      if(getDimensionality() == 1) {
+        preprocessVertexStars();
+        for(SimplexId i = 0; i < (SimplexId)vertexStarList_.size(); i++) {
+          if(vertexStarList_[i].size() == 1) {
+            boundaryVertices_[i] = true;
+          }
+        }
+      } else if(getDimensionality() == 2) {
         preprocessEdges();
         preprocessEdgeStars();
 
