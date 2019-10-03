@@ -105,9 +105,6 @@ public:
   vtkSetMacro(IterationThreshold, int);
   vtkGetMacro(IterationThreshold, int);
 
-  vtkSetMacro(ReverseSaddleSaddleConnection, bool);
-  vtkGetMacro(ReverseSaddleSaddleConnection, bool);
-
   vtkSetMacro(ComputeCriticalPoints, bool);
   vtkGetMacro(ComputeCriticalPoints, bool);
 
@@ -199,7 +196,6 @@ private:
   bool ForceInputOffsetScalarField;
   bool PeriodicBoundaryConditions;
   int IterationThreshold;
-  bool ReverseSaddleSaddleConnection;
   bool ComputeCriticalPoints;
   bool ComputeAscendingSeparatrices1;
   bool ComputeDescendingSeparatrices1;
