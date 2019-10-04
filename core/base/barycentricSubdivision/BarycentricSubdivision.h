@@ -87,32 +87,29 @@ namespace ttk {
       if(inputTriangl_ == nullptr || outputTriangl_ == nullptr) {
         return 1;
       }
-      const auto nInVerts = inputTriangl_->getNumberOfVertices();
-      const auto nInEdges = inputTriangl_->getNumberOfEdges();
-      const auto nInTriangles = inputTriangl_->getNumberOfTriangles();
-      const auto nOutVerts = outputTriangl_->getNumberOfVertices();
-      if(nOutVerts < 0 || nOutVerts != nInVerts + nInEdges + nInTriangles) {
+      const auto nOutVerts = this->getNumberOfVertices();
+      if(nOutVerts < 0 || nOutVerts != nVertices_ + nEdges_ + nTriangles_) {
         return 1;
       }
 
       // copy data on parent vertices
-      std::copy(data, data + nInVerts, output);
+      std::copy(data, data + nVertices_, output);
 
       // interpolate on edges
-      for(SimplexId i = 0; i < nInEdges; ++i) {
+      for(SimplexId i = 0; i < nEdges_; ++i) {
         SimplexId a{}, b{};
         inputTriangl_->getEdgeVertex(i, 0, a);
         inputTriangl_->getEdgeVertex(i, 0, b);
-        output[nInVerts + i] = (data[a] + data[b]) / T{2.0};
+        output[nVertices_ + i] = (data[a] + data[b]) / T{2.0};
       }
 
       // interpolate on triangle barycenters
-      for(SimplexId i = 0; i < nInTriangles; ++i) {
+      for(SimplexId i = 0; i < nTriangles_; ++i) {
         SimplexId a{}, b{}, c{};
         inputTriangl_->getTriangleVertex(i, 0, a);
         inputTriangl_->getTriangleVertex(i, 1, b);
         inputTriangl_->getTriangleVertex(i, 2, c);
-        output[nInVerts + nInEdges + i]
+        output[nVertices_ + nEdges_ + i]
           = (data[a] + data[b] + data[c]) / T{3.0};
       }
       return 0;
@@ -134,13 +131,12 @@ namespace ttk {
       if(inputTriangl_ == nullptr || outputTriangl_ == nullptr) {
         return 1;
       }
-      const auto nInVerts = inputTriangl_->getNumberOfVertices();
-      const auto nOutVerts = outputTriangl_->getNumberOfVertices();
-      if(nOutVerts < 0 || nOutVerts < nInVerts) {
+      const auto nOutVerts = this->getNumberOfVertices();
+      if(nOutVerts < 0 || nOutVerts < nVertices_) {
         return 1;
       }
       std::fill(output, output + nOutVerts, T{0});
-      std::copy(data, data + nInVerts, output);
+      std::copy(data, data + nVertices_, output);
       return 0;
     }
 
@@ -160,13 +156,12 @@ namespace ttk {
         return 1;
       }
       const size_t newTrianglesPerParent{6};
-      const size_t nInTriangles = inputTriangl_->getNumberOfTriangles();
-      const size_t nOutTriangles = outputTriangl_->getNumberOfTriangles();
+      const size_t nOutTriangles = this->getNumberOfTriangles();
       if(nOutTriangles < 0
-         || nOutTriangles != newTrianglesPerParent * nInTriangles) {
+         || nOutTriangles != newTrianglesPerParent * nTriangles_) {
         return 1;
       }
-      for(size_t i = 0; i < nInTriangles; ++i) {
+      for(SimplexId i = 0; i < nTriangles_; ++i) {
         output[i * newTrianglesPerParent + 0] = data[i];
         output[i * newTrianglesPerParent + 1] = data[i];
         output[i * newTrianglesPerParent + 2] = data[i];
