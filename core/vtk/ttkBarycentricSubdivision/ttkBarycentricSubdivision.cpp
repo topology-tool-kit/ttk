@@ -38,6 +38,29 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   // generate the new triangulation
   baseWorker_.execute();
 
+  for(unsigned int i = 1; i < SubdivisionLevel; ++i) {
+    // move previous points to temp vector
+    decltype(points_) tmpPoints{};
+    std::swap(points_, tmpPoints);
+    baseWorker_.setInputPoints(tmpPoints.data());
+
+    // move previous triangulation cells to temp vector
+    decltype(cells_) tmpCells{};
+    std::swap(cells_, tmpCells);
+
+    // move previous triangulation to temp triangulation
+    decltype(triangulationSubdivision) tmpTr{};
+    std::swap(triangulationSubdivision, tmpTr);
+
+    tmpTr.setInputCells(tmpCells.size() / 4, tmpCells.data());
+    tmpTr.setInputPoints(tmpPoints.size() / 3, tmpPoints.data());
+    baseWorker_.setupTriangulation(&tmpTr);
+    baseWorker_.setOutputTriangulation(&triangulationSubdivision);
+
+    // generate the new triangulation
+    baseWorker_.execute();
+  }
+
   size_t npointdata = input->GetPointData()->GetNumberOfArrays();
   size_t ncelldata = input->GetCellData()->GetNumberOfArrays();
 
