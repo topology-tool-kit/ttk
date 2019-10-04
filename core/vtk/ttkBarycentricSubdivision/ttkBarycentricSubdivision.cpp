@@ -143,10 +143,10 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   baseWorker_.setOutputTriangulation(&triangulationSubdivision);
   baseWorker_.setInputPoints(input->GetPoints()->GetVoidPointer(0));
 
-  // generate the new triangulation
+  // first iteration: generate the new triangulation
   baseWorker_.execute();
 
-  // interpolate input scalar fields
+  // first iteration: interpolate input scalar fields
   InterpolateScalarFields(input, output);
 
   for(unsigned int i = 1; i < SubdivisionLevel; ++i) {
