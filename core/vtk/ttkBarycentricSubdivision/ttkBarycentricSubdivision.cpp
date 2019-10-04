@@ -154,7 +154,8 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   baseWorker_.execute();
 
   // first iteration: interpolate input scalar fields
-  InterpolateScalarFields(input, output);
+  int ret = InterpolateScalarFields(input, output);
+  TTK_ABORT_KK(ret < 0, "Error interpolating input data array(s)", -1);
 
   for(unsigned int i = 1; i < SubdivisionLevel; ++i) {
     // move previous points to temp vector
