@@ -87,6 +87,9 @@ protected:
     AllocateScalarField(vtkDataArray *const inputScalarField,
                         int ntuples) const;
 
+  int InterpolateScalarFields(vtkUnstructuredGrid *const input,
+                              vtkUnstructuredGrid *const output) const;
+
 private:
   // number of subdivisions
   unsigned int SubdivisionLevel{1};

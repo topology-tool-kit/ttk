@@ -51,52 +51,8 @@ vtkSmartPointer<vtkDataArray> ttkBarycentricSubdivision::AllocateScalarField(
   return res;
 }
 
-int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
-                                    std::vector<vtkDataSet *> &outputs) {
-
-  ttk::Memory m;
-
-  auto input = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
-  auto output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-
-  auto triangulation = ttkTriangulation::getTriangulation(input);
-  ttk::Triangulation triangulationSubdivision;
-
-  if(triangulation == nullptr) {
-    return -1;
-  }
-
-  triangulation->setWrapper(this);
-  baseWorker_.setupTriangulation(triangulation);
-  baseWorker_.setWrapper(this);
-  baseWorker_.setOutputTriangulation(&triangulationSubdivision);
-  baseWorker_.setInputPoints(input->GetPoints()->GetVoidPointer(0));
-
-  // generate the new triangulation
-  baseWorker_.execute();
-
-  for(unsigned int i = 1; i < SubdivisionLevel; ++i) {
-    // move previous points to temp vector
-    decltype(points_) tmpPoints{};
-    std::swap(points_, tmpPoints);
-    baseWorker_.setInputPoints(tmpPoints.data());
-
-    // move previous triangulation cells to temp vector
-    decltype(cells_) tmpCells{};
-    std::swap(cells_, tmpCells);
-
-    // move previous triangulation to temp triangulation
-    decltype(triangulationSubdivision) tmpTr{};
-    std::swap(triangulationSubdivision, tmpTr);
-
-    tmpTr.setInputCells(tmpCells.size() / 4, tmpCells.data());
-    tmpTr.setInputPoints(tmpPoints.size() / 3, tmpPoints.data());
-    baseWorker_.setupTriangulation(&tmpTr);
-    baseWorker_.setOutputTriangulation(&triangulationSubdivision);
-
-    // generate the new triangulation
-    baseWorker_.execute();
-  }
+int ttkBarycentricSubdivision::InterpolateScalarFields(
+  vtkUnstructuredGrid *const input, vtkUnstructuredGrid *const output) const {
 
   const size_t npointdata = input->GetPointData()->GetNumberOfArrays();
   const size_t ncelldata = input->GetCellData()->GetNumberOfArrays();
@@ -122,7 +78,8 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
       static_cast<TYPE *>(outputScalarField->GetVoidPointer(0))); \
     break
 
-    auto outputScalarField = AllocateScalarField(inputScalarField, outPointsNumber);
+    auto outputScalarField
+      = AllocateScalarField(inputScalarField, outPointsNumber);
     if(outputScalarField == nullptr) {
       return -3;
     }
@@ -147,7 +104,8 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
       return -2;
     }
 
-    auto outputScalarField = AllocateScalarField(inputScalarField, outCellsNumber);
+    auto outputScalarField
+      = AllocateScalarField(inputScalarField, outCellsNumber);
     if(outputScalarField == nullptr) {
       return -3;
     }
@@ -159,6 +117,59 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
         static_cast<VTK_TT *>(outputScalarField->GetVoidPointer(0))));
     }
     output->GetCellData()->AddArray(outputScalarField);
+  }
+
+  return 0;
+}
+
+int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
+                                    std::vector<vtkDataSet *> &outputs) {
+
+  ttk::Memory m;
+
+  auto input = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
+  auto output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+
+  auto triangulation = ttkTriangulation::getTriangulation(input);
+  ttk::Triangulation triangulationSubdivision;
+
+  if(triangulation == nullptr) {
+    return -1;
+  }
+
+  triangulation->setWrapper(this);
+  baseWorker_.setupTriangulation(triangulation);
+  baseWorker_.setWrapper(this);
+  baseWorker_.setOutputTriangulation(&triangulationSubdivision);
+  baseWorker_.setInputPoints(input->GetPoints()->GetVoidPointer(0));
+
+  // generate the new triangulation
+  baseWorker_.execute();
+
+  // interpolate input scalar fields
+  InterpolateScalarFields(input, output);
+
+  for(unsigned int i = 1; i < SubdivisionLevel; ++i) {
+    // move previous points to temp vector
+    decltype(points_) tmpPoints{};
+    std::swap(points_, tmpPoints);
+    baseWorker_.setInputPoints(tmpPoints.data());
+
+    // move previous triangulation cells to temp vector
+    decltype(cells_) tmpCells{};
+    std::swap(cells_, tmpCells);
+
+    // move previous triangulation to temp triangulation
+    decltype(triangulationSubdivision) tmpTr{};
+    std::swap(triangulationSubdivision, tmpTr);
+
+    tmpTr.setInputCells(tmpCells.size() / 4, tmpCells.data());
+    tmpTr.setInputPoints(tmpPoints.size() / 3, tmpPoints.data());
+    baseWorker_.setupTriangulation(&tmpTr);
+    baseWorker_.setOutputTriangulation(&triangulationSubdivision);
+
+    // generate the new triangulation
+    baseWorker_.execute();
   }
 
   // generated 3D coordinates
