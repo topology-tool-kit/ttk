@@ -51,15 +51,21 @@ namespace ttk {
         inputTriangl_->preprocessTriangles();
         inputTriangl_->preprocessTriangleEdges();
       }
+      nVertices_ = inputTriangl_->getNumberOfVertices();
+      nEdges_ = inputTriangl_->getNumberOfEdges();
+      nTriangles_ = inputTriangl_->getNumberOfTriangles();
     }
 
+    /** @brief Return the number of vertices in the output triangulation
+     */
     inline SimplexId getNumberOfVertices() {
-      if(inputTriangl_ == nullptr) {
-        return 0;
-      }
-      return inputTriangl_->getNumberOfVertices()
-             + inputTriangl_->getNumberOfEdges()
-             + inputTriangl_->getNumberOfTriangles();
+      return nVertices_ + nEdges_ + nTriangles_;
+    }
+
+    /** @brief Return the number of triangles in the output triangulation
+     */
+    inline SimplexId getNumberOfTriangles() {
+      return nTriangles_ * 6;
     }
 
     int execute();
@@ -174,6 +180,11 @@ namespace ttk {
   private:
     int subdiviseTriangulation();
     int buildOutputTriangulation();
+
+    // input triangulation properties
+    SimplexId nVertices_{};
+    SimplexId nEdges_{};
+    SimplexId nTriangles_{};
 
     // input triangulation
     Triangulation *inputTriangl_{};

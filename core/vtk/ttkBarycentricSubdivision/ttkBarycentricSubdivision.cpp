@@ -115,7 +115,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     output->GetPointData()->AddArray(outputScalarField);
   }
 
-  const auto outCellsNumber = triangulationSubdivision.getNumberOfTriangles();
+  const auto outCellsNumber = baseWorker_.getNumberOfTriangles();
 
   for(size_t i = 0; i < ncelldata; ++i) {
     auto inputScalarField = input->GetCellData()->GetArray(i);
