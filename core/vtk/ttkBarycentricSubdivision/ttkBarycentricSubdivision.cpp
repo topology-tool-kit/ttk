@@ -98,8 +98,8 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     baseWorker_.execute();
   }
 
-  size_t npointdata = input->GetPointData()->GetNumberOfArrays();
-  size_t ncelldata = input->GetCellData()->GetNumberOfArrays();
+  const size_t npointdata = input->GetPointData()->GetNumberOfArrays();
+  const size_t ncelldata = input->GetCellData()->GetNumberOfArrays();
 
   const auto outPointsNumber = baseWorker_.getNumberOfVertices();
 
