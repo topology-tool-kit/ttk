@@ -80,6 +80,13 @@ protected:
 
   TTK_SETUP();
 
+  /**
+   * @brief Allocate an output array of same type that input array
+   */
+  vtkSmartPointer<vtkDataArray>
+    AllocateScalarField(vtkDataArray *const inputScalarField,
+                        int ntuples) const;
+
 private:
   // number of subdivisions
   unsigned int SubdivisionLevel{1};

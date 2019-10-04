@@ -14,6 +14,43 @@
 
 vtkStandardNewMacro(ttkBarycentricSubdivision);
 
+vtkSmartPointer<vtkDataArray> ttkBarycentricSubdivision::AllocateScalarField(
+  vtkDataArray *const inputScalarField, int ntuples) const {
+
+  vtkSmartPointer<vtkDataArray> res{};
+
+  // allocate the memory for the output scalar field
+  switch(inputScalarField->GetDataType()) {
+    case VTK_CHAR:
+      res = vtkSmartPointer<vtkCharArray>::New();
+      break;
+    case VTK_DOUBLE:
+      res = vtkSmartPointer<vtkDoubleArray>::New();
+      break;
+    case VTK_FLOAT:
+      res = vtkSmartPointer<vtkFloatArray>::New();
+      break;
+    case VTK_INT:
+      res = vtkSmartPointer<vtkIntArray>::New();
+      break;
+    case VTK_ID_TYPE:
+      res = vtkSmartPointer<vtkIdTypeArray>::New();
+      break;
+    case VTK_LONG:
+      res = vtkSmartPointer<vtkLongArray>::New();
+      break;
+    default:
+      std::stringstream msg;
+      msg << MODULE_S "Unsupported data array type" << endl;
+      dMsg(std::cout, msg.str(), fatalMsg);
+      break;
+  }
+  res->SetNumberOfComponents(1);
+  res->SetNumberOfTuples(ntuples);
+  res->SetName(inputScalarField->GetName());
+  return res;
+}
+
 int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
                                     std::vector<vtkDataSet *> &outputs) {
 
@@ -64,38 +101,6 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   size_t npointdata = input->GetPointData()->GetNumberOfArrays();
   size_t ncelldata = input->GetCellData()->GetNumberOfArrays();
 
-  auto allocateScalarField = [&](vtkDataArray *const inputScalarField) {
-    vtkSmartPointer<vtkDataArray> outputScalarField{};
-
-    // allocate the memory for the output scalar field
-    switch(inputScalarField->GetDataType()) {
-      case VTK_CHAR:
-        outputScalarField = vtkSmartPointer<vtkCharArray>::New();
-        break;
-      case VTK_DOUBLE:
-        outputScalarField = vtkSmartPointer<vtkDoubleArray>::New();
-        break;
-      case VTK_FLOAT:
-        outputScalarField = vtkSmartPointer<vtkFloatArray>::New();
-        break;
-      case VTK_INT:
-        outputScalarField = vtkSmartPointer<vtkIntArray>::New();
-        break;
-      case VTK_ID_TYPE:
-        outputScalarField = vtkSmartPointer<vtkIdTypeArray>::New();
-        break;
-      case VTK_LONG:
-        outputScalarField = vtkSmartPointer<vtkLongArray>::New();
-        break;
-      default:
-        std::stringstream msg;
-        msg << MODULE_S "Unsupported data array type" << endl;
-        dMsg(std::cout, msg.str(), fatalMsg);
-        break;
-    }
-    return outputScalarField;
-  };
-
   const auto outPointsNumber = baseWorker_.getNumberOfVertices();
 
   for(size_t i = 0; i < npointdata; ++i) {
@@ -117,16 +122,12 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
       static_cast<TYPE *>(outputScalarField->GetVoidPointer(0))); \
     break
 
-    auto outputScalarField = allocateScalarField(inputScalarField);
+    auto outputScalarField = AllocateScalarField(inputScalarField, outPointsNumber);
     if(outputScalarField == nullptr) {
       return -3;
     }
 
     // only for scalar fields
-    outputScalarField->SetNumberOfComponents(1);
-    outputScalarField->SetNumberOfTuples(outPointsNumber);
-    outputScalarField->SetName(inputScalarField->GetName());
-    output->GetPointData()->AddArray(outputScalarField);
     switch(inputScalarField->GetDataType()) {
       DISPATCH_INTERPOLATE_DIS(VTK_CHAR, char);
       DISPATCH_INTERPOLATE_DIS(VTK_INT, int);
@@ -146,16 +147,12 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
       return -2;
     }
 
-    auto outputScalarField = allocateScalarField(inputScalarField);
+    auto outputScalarField = AllocateScalarField(inputScalarField, outCellsNumber);
     if(outputScalarField == nullptr) {
       return -3;
     }
 
     // only for scalar fields
-    outputScalarField->SetNumberOfComponents(1);
-    outputScalarField->SetNumberOfTuples(outCellsNumber);
-    outputScalarField->SetName(inputScalarField->GetName());
-    output->GetPointData()->AddArray(outputScalarField);
     switch(inputScalarField->GetDataType()) {
       vtkTemplateMacro(baseWorker_.interpolateCellDataField<VTK_TT>(
         static_cast<VTK_TT *>(inputScalarField->GetVoidPointer(0)),
