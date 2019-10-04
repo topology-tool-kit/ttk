@@ -138,6 +138,13 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   }
 
   triangulation->setWrapper(this);
+
+  // early return: copy input if no subdivision
+  if(SubdivisionLevel == 0) {
+    output->ShallowCopy(input);
+    return 0;
+  }
+
   baseWorker_.setupTriangulation(triangulation);
   baseWorker_.setWrapper(this);
   baseWorker_.setOutputTriangulation(&triangulationSubdivision);
