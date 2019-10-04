@@ -170,6 +170,11 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
     // generate the new triangulation
     baseWorker_.execute();
+
+    // temporary vtkUnstructuredGrid moved from output
+    vtkSmartPointer<vtkUnstructuredGrid> tmp(std::move(output));
+    // interpolate from tmp to output
+    InterpolateScalarFields(tmp, output);
   }
 
   // generated 3D coordinates
