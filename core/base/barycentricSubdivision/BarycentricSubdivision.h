@@ -58,13 +58,13 @@ namespace ttk {
 
     /** @brief Return the number of vertices in the output triangulation
      */
-    inline SimplexId getNumberOfVertices() {
+    inline SimplexId getNumberOfVertices() const {
       return nVertices_ + nEdges_ + nTriangles_;
     }
 
     /** @brief Return the number of triangles in the output triangulation
      */
-    inline SimplexId getNumberOfTriangles() {
+    inline SimplexId getNumberOfTriangles() const {
       return nTriangles_ * 6;
     }
 
@@ -81,7 +81,7 @@ namespace ttk {
      * @return 0 in case of success
      */
     template <typename T>
-    int interpolateContinuousScalarField(const T *data, T *output) {
+    int interpolateContinuousScalarField(const T *data, T *output) const {
       static_assert(
         std::is_floating_point<T>::value, "Floating point type required.");
       if(inputTriangl_ == nullptr || outputTriangl_ == nullptr) {
@@ -126,7 +126,7 @@ namespace ttk {
      * @return 0 in case of success
      */
     template <typename T>
-    int interpolateDiscreteScalarField(const T *data, T *output) {
+    int interpolateDiscreteScalarField(const T *data, T *output) const {
       static_assert(std::is_integral<T>::value, "Integral type required.");
       if(inputTriangl_ == nullptr || outputTriangl_ == nullptr) {
         return 1;
@@ -151,7 +151,7 @@ namespace ttk {
      * @return 0 in case of success
      */
     template <typename T>
-    int interpolateCellDataField(const T *data, T *output) {
+    int interpolateCellDataField(const T *data, T *output) const {
       if(inputTriangl_ == nullptr || outputTriangl_ == nullptr) {
         return 1;
       }
