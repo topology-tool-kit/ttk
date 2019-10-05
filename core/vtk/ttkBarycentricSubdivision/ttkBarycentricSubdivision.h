@@ -31,6 +31,7 @@
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
+#include <vtkLongArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -54,6 +55,9 @@ public:
   // default ttk setters
   vtkSetMacro(debugLevel_, int);
 
+  vtkGetMacro(SubdivisionLevel, unsigned int);
+  vtkSetMacro(SubdivisionLevel, unsigned int);
+
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();
@@ -76,7 +80,31 @@ protected:
 
   TTK_SETUP();
 
+  /**
+   * @brief Allocate an output array of same type that input array
+   */
+  vtkSmartPointer<vtkDataArray>
+    AllocateScalarField(vtkDataArray *const inputScalarField,
+                        int ntuples) const;
+
+  int InterpolateScalarFields(vtkUnstructuredGrid *const input,
+                              vtkUnstructuredGrid *const output) const;
+
 private:
+  // number of subdivisions
+  unsigned int SubdivisionLevel{1};
+
+  // output 3D coordinates of generated points: old points first, then edge
+  // middles, then triangle barycenters
+  std::vector<float> points_{};
+  // output triangles
+  std::vector<ttk::LongSimplexId> cells_{};
+  // generated point cell id
+  std::vector<ttk::SimplexId> pointId_{};
+  // generated points dimension: 0 vertex of parent triangulation, 1 edge
+  // middle, 2 triangle barycenter
+  std::vector<ttk::SimplexId> pointDim_{};
+
   // base worker
-  ttk::BarycentricSubdivision baseWorker_{};
+  ttk::BarycentricSubdivision baseWorker_{points_, cells_, pointId_, pointDim_};
 };

@@ -20,8 +20,14 @@ struct Quad {
 };
 
 int ttk::MorseSmaleQuadrangulation::detectCellSeps() {
-  BarycentricSubdivision bs{};
+
   Triangulation newT{};
+
+  std::vector<float> points_{};
+  std::vector<ttk::LongSimplexId> cells_{};
+  std::vector<ttk::SimplexId> pointId_{};
+  std::vector<ttk::SimplexId> pointDim_{};
+  BarycentricSubdivision bs{points_, cells_, pointId_, pointDim_};
 
   bs.setupTriangulation(triangulation_);
   bs.setOutputTriangulation(&newT);
