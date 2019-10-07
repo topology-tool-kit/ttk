@@ -17,7 +17,6 @@
 
 // base code includes
 #include <AbstractMorseSmaleComplex.h>
-#include <ScalarFieldCriticalPoints.h>
 
 namespace ttk {
 
@@ -1441,26 +1440,6 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
 
   // get original list of critical points
   std::vector<std::pair<SimplexId, char>> pl_criticalPoints;
-  {
-    const SimplexId *const offsets
-      = static_cast<const SimplexId *>(inputOffsets_);
-    std::vector<SimplexId> sosOffsets(numberOfVertices);
-    for(SimplexId i = 0; i < numberOfVertices; ++i)
-      sosOffsets[i] = offsets[i];
-
-    ScalarFieldCriticalPoints<dataType> scp;
-
-    scp.setDebugLevel(debugLevel_);
-    scp.setThreadNumber(threadNumber_);
-    scp.setDomainDimension(inputTriangulation_->getDimensionality());
-    scp.setScalarValues(inputScalarField_);
-    scp.setVertexNumber(numberOfVertices);
-    scp.setSosOffsets(&sosOffsets);
-    scp.setupTriangulation(inputTriangulation_);
-    scp.setOutput(&pl_criticalPoints);
-
-    scp.execute();
-  }
 
   // build accepting list
   std::vector<char> isAccepted(numberOfVertices, false);
@@ -1508,7 +1487,7 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
     discreteGradient_.setReverseSaddleSaddleConnection(true);
     discreteGradient_.setCollectPersistencePairs(false);
     discreteGradient_.buildGradient<dataType, idType>();
-    discreteGradient_.reverseGradient<dataType, idType>(pl_criticalPoints);
+    discreteGradient_.reverseGradient<dataType, idType>();
 
     // collect saddle-saddle connections
     discreteGradient_.setCollectPersistencePairs(true);

@@ -5,6 +5,5 @@ ttk_add_base_library(morseSmaleComplex3D
     MorseSmaleComplex3D.h
   LINK
     abstractMorseSmaleComplex
-    scalarFieldCriticalPoints
     )
 
