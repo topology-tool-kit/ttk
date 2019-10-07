@@ -8,9 +8,8 @@ vtkStandardNewMacro(ttkDiscreteGradient)
 
   ttkDiscreteGradient::ttkDiscreteGradient()
   : UseAllCores{true}, ScalarField{}, InputOffsetScalarFieldName{},
-    ForceInputOffsetScalarField{false}, ReverseSaddleSaddleConnection{false},
-    ComputeGradientGlyphs{true}, IterationThreshold{-1}, ScalarFieldId{},
-    OffsetFieldId{-1},
+    ForceInputOffsetScalarField{false}, ComputeGradientGlyphs{true},
+    IterationThreshold{-1}, ScalarFieldId{}, OffsetFieldId{-1},
 
     triangulation_{}, inputScalars_{}, offsets_{}, inputOffsets_{},
     hasUpdatedMesh_{} {
@@ -399,8 +398,6 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
   // baseCode processing
   discreteGradient_.setWrapper(this);
   discreteGradient_.setIterationThreshold(IterationThreshold);
-  discreteGradient_.setReverseSaddleSaddleConnection(
-    ReverseSaddleSaddleConnection);
   discreteGradient_.setInputScalarField(inputScalars_->GetVoidPointer(0));
   discreteGradient_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
 

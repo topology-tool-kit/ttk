@@ -94,18 +94,6 @@
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty name="ReverseSaddleSaddleConnection"
-        label="PL-compliant saddles"
-        command="SetReverseSaddleSaddleConnection"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="default">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Documentation.
-        </Documentation>
-      </IntVectorProperty>
-
       <IntVectorProperty name="ComputeGradientGlyphs"
         label="Compute Gradient Glyphs"
         command="SetComputeGradientGlyphs"
@@ -177,7 +165,6 @@
         <Property name="ScalarField" />
         <Property name="ForceInputOffsetScalarField"/>
         <Property name="InputOffsetScalarFieldName"/>
-        <Property name="ReverseSaddleSaddleConnection"/>
         <Property name="ComputeGradientGlyphs"/>
       </PropertyGroup>
 
