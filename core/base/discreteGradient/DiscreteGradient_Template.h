@@ -2235,8 +2235,10 @@ int DiscreteGradient::reverseGradient(
 }
 
 template <typename dataType, typename idType>
-int DiscreteGradient::reverseGradient() {
-  std::vector<std::pair<SimplexId, char>> criticalPoints{};
+void DiscreteGradient::getCriticalPoints(
+  std::vector<std::pair<SimplexId, char>> &criticalPoints) const {
+
+  criticalPoints.clear();
 
   // look for critical points in the gradient_ member
   auto fillCriticalPoints = [&](const SimplexId cellDim) {
@@ -2297,6 +2299,13 @@ int DiscreteGradient::reverseGradient() {
   if(dimensionality_ == 3) {
     fillCriticalPoints(3);
   }
+}
+
+template <typename dataType, typename idType>
+int DiscreteGradient::reverseGradient() {
+  std::vector<std::pair<SimplexId, char>> criticalPoints{};
+
+  getCriticalPoints<dataType, idType>(criticalPoints);
 
   // print number of critical cells
   {
