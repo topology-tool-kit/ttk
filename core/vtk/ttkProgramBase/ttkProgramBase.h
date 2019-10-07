@@ -6,8 +6,8 @@
 /// \brief Base VTK editor class for standalone programs. This class parses the
 /// the comamnd line, execute the TTK module and takes care of the IO.
 
-#ifndef _TTK_EDITOR_BASE_H
-#define _TTK_EDITOR_BASE_H
+#ifndef _TTK_PROGRAM_BASE_H
+#define _TTK_PROGRAM_BASE_H
 
 // VTK IO
 #include <vtkDataSet.h>
@@ -201,4 +201,4 @@ int ttkProgramBase::load(
   return 0;
 }
 
-#endif // VTK_EDITOR_BASE_H
+#endif // VTK_PROGRAM_BASE_H

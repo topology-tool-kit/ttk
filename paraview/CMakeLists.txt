@@ -2,9 +2,10 @@ set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/../core/vtk/")
 
 # Fill TTK_MODULES, TTK_MODULES_FILES
 # These lists are then used by singlePlugin/CMakeLists.txt
-set(TTK_XMLS              "" CACHE INTERNAL "")
-set(TTK_MODULES           "" CACHE INTERNAL "")
-set(TTK_VTK_MODULE_FILESS "" CACHE INTERNAL "")
+# The goal is to create a single plugin for parview
+set(TTK_XMLS             "" CACHE INTERNAL "")
+set(TTK_MODULES          "" CACHE INTERNAL "")
+set(TTK_VTK_MODULE_FILES "" CACHE INTERNAL "")
 file(GLOB PARAVIEW_PLUGIN_DIRS *)
 foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
   if(IS_DIRECTORY ${PARAVIEW_PLUGIN})
@@ -47,6 +48,8 @@ paraview_plugin_scan(
   )
 
 paraview_plugin_build(
+  TARGET
+    TTKPVTargets
   PLUGINS
     ${TTK_PLUGINS}
   AUTOLOAD
@@ -60,7 +63,7 @@ paraview_plugin_build(
   )
 
 if(DEFINED TTK_INSTALL_PLUGIN_DIR)
-  # each filter library
+  # Keep TTK libraries in the TopologyToolKit folder
   foreach(TTK_MODULE ${TTK_MODULES})
     install(
       TARGETS
@@ -69,14 +72,16 @@ if(DEFINED TTK_INSTALL_PLUGIN_DIR)
         "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
       )
   endforeach()
-  # the main plugin
   set_target_properties(${TTK_PLUGINS}
     PROPERTIES INSTALL_RPATH
       "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
     )
+
+  # Install the TopologyToolKit library
   install(
     TARGETS
-      ${TTK_PLUGINS}
+      TopologyToolKit
+      TTKPVTargets
     DESTINATION
       "${TTK_INSTALL_PLUGIN_DIR}"
     )

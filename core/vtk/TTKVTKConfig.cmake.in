@@ -2,7 +2,7 @@ include(CMakeFindDependencyMacro)
 
 # We need the VTK_LIBRARIES to be the same
 # as the one used to build TTK
-if(TTK_BUILD_PARAVIEW_PLUGINS)
+if(@TTK_BUILD_PARAVIEW_PLUGINS@)
   find_dependency(ParaView REQUIRED)
 else()
   find_dependency(VTK REQUIRED)

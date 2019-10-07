@@ -13,9 +13,11 @@ vtk_module_scan(
   )
 
 if(TTK_BUILD_PARAVIEW_PLUGINS)
+  # still want to add the header files in include/ttk
+  # when building against paraview
   file(GLOB VTKWRAPPER_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ttk*)
   foreach(VTKWRAPPER ${VTKWRAPPER_DIRS})
-    ttk_register_vtk_filter(${CMAKE_CURRENT_SOURCE_DIR}/${VTKWRAPPER})
+    ttk_module_register_headers(${CMAKE_CURRENT_SOURCE_DIR}/${VTKWRAPPER})
   endforeach()
 else()
   vtk_module_build(
@@ -34,19 +36,22 @@ vtk_module_autoinit(
     ${TTK_ENABLED_MODULES}
   )
 
-if(NOT TTK_BUILD_PARAVIEW_PLUGINS)
-  # when building against VTK, we need the modules
-  # in addition to ttkAll.
-  set(TTK_EXPORT_TARGETS ${TTK_ENABLED_MODULES})
-  target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
-endif()
+target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
+
+get_property(HH TARGET ttkBlank PROPERTY INCLUDE_DIRECTORIES)
+message(STATUS "headers: ${HH}")
+ # with VTK:
+ # -- headers: $<BUILD_INTERFACE:/home/charles/Software/compil/ttk-charles/build/core/vtk/ttkBlank>
+ #             $<BUILD_INTERFACE:/home/charles/Software/compil/ttk-charles/core/vtk/ttkBlank>
+ #             $<INSTALL_INTERFACE:include>
+ # with PV, the INSTALL_INTERFACE is missing
 
 # Use folder as configured by the distribution
 include(GNUInstallDirs)
 install(
   TARGETS
     ttkAll
-    ${TTK_EXPORT_TARGETS}
+    ${TTK_ENABLED_MODULES}
   EXPORT
     TTKVTKTargets
   RUNTIME DESTINATION

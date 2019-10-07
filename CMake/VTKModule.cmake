@@ -17,31 +17,40 @@ macro(ttk_parse_module_file moduleFile)
   string(REGEX REPLACE "( |\n)+" ";" moduleFileContent "${moduleFileContent}")
 endmacro()
 
-# add a new vtk module for the given name.
-# also used to add the xml for paraview
+# add a new vtk module for with given name.
+# This macro assume a ttk.module file is available
+# in the current context
+# it must have the following syntax:
+# NAME: module name
+# SOURCES: Specify the list of source files for the module
+# HEADERS: Specify the list of header files to install for the module
+# DEPENDS: Specify the link dependencies of the module
 macro(ttk_add_vtk_module)
   ttk_parse_module_file(${CMAKE_CURRENT_LIST_DIR}/ttk.module)
-  cmake_parse_arguments("ARG" "" "NAME" "SOURCES;HEADERS;DEPENDS" ${moduleFileContent})
+  cmake_parse_arguments("TTK" "" "NAME" "SOURCES;HEADERS;DEPENDS" ${moduleFileContent})
 
-  if(NOT TARGET ${ARG_NAME})
-    vtk_module_add_module(${ARG_NAME}
+  if(NOT TARGET ${TTK_NAME})
+    vtk_module_add_module(${TTK_NAME}
       SOURCES
-        ${ARG_SOURCES}
+        ${TTK_SOURCES}
       HEADERS
-        ${ARG_HEADERS}
+        ${TTK_HEADERS}
       )
   endif()
 
-  vtk_module_link(${ARG_NAME}
+  vtk_module_link(${TTK_NAME}
     PUBLIC
       ${VTK_LIBRARIES}
-      ${ARG_DEPENDS}
+      ${TTK_DEPENDS}
     )
+
+  # Maybe we could do this with ParaView, but how ?
+  # install(TARGETS ${TTK_NAME} PUBLIC_HEADER DESTINATION include/ttk)
 
   # Fix a race condition in the VTK's CMake:
   # https://discourse.vtk.org/t/building-vtk-modules-with-dependencies-results-in-race-condition-in-make/1711
-  if(TARGET ${ARG_NAME}-hierarchy)
-    add_dependencies(${ARG_NAME} ${ARG_NAME}-hierarchy)
+  if(TARGET ${TTK_NAME}-hierarchy)
+    add_dependencies(${TTK_NAME} ${TTK_NAME}-hierarchy)
   endif()
 
 endmacro()
