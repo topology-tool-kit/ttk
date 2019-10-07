@@ -17,6 +17,7 @@
 
 // base code includes
 #include <AbstractMorseSmaleComplex.h>
+#include <ScalarFieldCriticalPoints.h>
 
 namespace ttk {
 

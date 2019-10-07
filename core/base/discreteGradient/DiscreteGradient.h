@@ -17,7 +17,6 @@
 // base code includes
 #include <FTMTree.h>
 #include <Geometry.h>
-#include <ScalarFieldCriticalPoints.h>
 #include <Triangulation.h>
 #include <Wrapper.h>
 
