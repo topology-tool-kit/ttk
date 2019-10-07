@@ -1278,7 +1278,10 @@ int ttk::MorseSmaleComplex3D::execute() {
       dMsg(std::cout, msg.str(), timeMsg);
     }
   }
-  discreteGradient_.reverseGradient<dataType, idType>();
+
+  if(ReturnSaddleConnectors) {
+    discreteGradient_.reverseGradient<dataType, idType>();
+  }
 
   std::vector<dcg::Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
