@@ -2236,28 +2236,66 @@ int DiscreteGradient::reverseGradient(
 
 template <typename dataType, typename idType>
 int DiscreteGradient::reverseGradient() {
-  std::vector<std::pair<SimplexId, char>> criticalPoints;
+  std::vector<std::pair<SimplexId, char>> criticalPoints{};
 
-  // get the PL critical points
-  if(ReverseSaddleSaddleConnection) {
-    const auto *const offsets = static_cast<const idType *>(inputOffsets_);
-    std::vector<SimplexId> sosOffsets(numberOfVertices_);
-    for(SimplexId i = 0; i < numberOfVertices_; ++i) {
-      sosOffsets[i] = offsets[i];
+  // look for critical points in the gradient_ member
+  auto fillCriticalPoints = [&](const SimplexId cellDim) {
+    // determine the cell critical type according
+    CriticalType type;
+    if(cellDim == 0) {
+      type = CriticalType::Local_minimum;
+    } else if(cellDim == 1) {
+      type = CriticalType::Saddle1;
+    } else if(cellDim == 2) {
+      if(dimensionality_ == 2) {
+        type = CriticalType::Local_maximum;
+      } else if(dimensionality_ == 3) {
+        type = CriticalType::Saddle2;
+      }
+    } else if(cellDim == 3) {
+      type = CriticalType::Local_maximum;
+    }
+    // outer dimension index in the gradient_ member
+    auto gradientDim = cellDim;
+    if(cellDim == dimensionality_) {
+      gradientDim--;
     }
 
-    ScalarFieldCriticalPoints<dataType> scp;
+    // store critical point into vector
+    auto storeCritPoint = [&](const SimplexId j) {
+      Cell c{cellDim, static_cast<SimplexId>(j)};
+      // extract the maximum vertex of the critical cell
+      auto vertexId = getCellGreaterVertex<dataType, idType>(c);
+      criticalPoints.emplace_back(vertexId, static_cast<char>(type));
+    };
 
-    scp.setDebugLevel(debugLevel_);
-    scp.setThreadNumber(threadNumber_);
-    scp.setDomainDimension(dimensionality_);
-    scp.setScalarValues(inputScalarField_);
-    scp.setVertexNumber(numberOfVertices_);
-    scp.setSosOffsets(&sosOffsets);
-    scp.setupTriangulation(inputTriangulation_);
-    scp.setOutput(&criticalPoints);
+    if(cellDim == 0 || cellDim == dimensionality_) {
+      // extrema
+      // iterate over one gradient slice
+      auto slice = gradient_[gradientDim][cellDim];
+      for(size_t j = 0; j < slice.size(); ++j) {
+        if(slice[j] == -1) { // -1: not paired => critical
+          storeCritPoint(j);
+        }
+      }
+    } else {
+      // saddle points
+      // compare over two gradient slices
+      auto slice0 = gradient_[cellDim - 1][cellDim];
+      auto slice1 = gradient_[cellDim][cellDim];
+      for(size_t j = 0; j < slice0.size(); ++j) {
+        if(slice0[j] == -1 && slice1[j] == -1) { // -1: not paired => critical
+          storeCritPoint(j);
+        }
+      }
+    }
+  };
 
-    scp.execute();
+  fillCriticalPoints(0);
+  fillCriticalPoints(1);
+  fillCriticalPoints(2);
+  if(dimensionality_ == 3) {
+    fillCriticalPoints(3);
   }
 
   // print number of critical cells
