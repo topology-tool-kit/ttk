@@ -2228,65 +2228,28 @@ void DiscreteGradient::getCriticalPoints(
 
   criticalPoints.clear();
 
-  // look for critical points in the gradient_ member
-  auto fillCriticalPoints = [&](const SimplexId cellDim) {
-    // determine the cell critical type according
-    CriticalType type;
-    if(cellDim == 0) {
-      type = CriticalType::Local_minimum;
-    } else if(cellDim == 1) {
-      type = CriticalType::Saddle1;
-    } else if(cellDim == 2) {
-      if(dimensionality_ == 2) {
-        type = CriticalType::Local_maximum;
-      } else if(dimensionality_ == 3) {
-        type = CriticalType::Saddle2;
-      }
-    } else if(cellDim == 3) {
-      type = CriticalType::Local_maximum;
-    }
-    // outer dimension index in the gradient_ member
-    auto gradientDim = cellDim;
-    if(cellDim == dimensionality_) {
-      gradientDim--;
-    }
+  // get critical points as cells
+  std::vector<Cell> criticalCells{};
+  getCriticalPoints(criticalCells);
 
-    // store critical point into vector
-    auto storeCritPoint = [&](const SimplexId j) {
-      Cell c{cellDim, static_cast<SimplexId>(j)};
-      // extract the maximum vertex of the critical cell
-      auto vertexId = getCellGreaterVertex<dataType, idType>(c);
-      criticalPoints.emplace_back(vertexId, static_cast<char>(type));
-    };
-
-    if(cellDim == 0 || cellDim == dimensionality_) {
-      // extrema
-      // iterate over one gradient slice
-      auto slice = gradient_[gradientDim][cellDim];
-      for(size_t j = 0; j < slice.size(); ++j) {
-        if(slice[j] == -1) { // -1: not paired => critical
-          storeCritPoint(j);
-        }
-      }
-    } else {
-      // saddle points
-      // compare over two gradient slices
-      auto slice0 = gradient_[cellDim - 1][cellDim];
-      auto slice1 = gradient_[cellDim][cellDim];
-      for(size_t j = 0; j < slice0.size(); ++j) {
-        if(slice0[j] == -1 && slice1[j] == -1) { // -1: not paired => critical
-          storeCritPoint(j);
-        }
-      }
-    }
-  };
-
-  fillCriticalPoints(0);
-  fillCriticalPoints(1);
-  fillCriticalPoints(2);
-  if(dimensionality_ == 3) {
-    fillCriticalPoints(3);
-  }
+  // iterate over cells to get points (max vertex) and type
+  std::transform(criticalCells.begin(), criticalCells.end(),
+                 criticalPoints.begin(), [&](const Cell &c) {
+                   CriticalType type;
+                   if(c.dim_ == 0) {
+                     type = CriticalType::Local_minimum;
+                   } else if(c.dim_ == 1) {
+                     type = CriticalType::Saddle1;
+                   } else if(c.dim_ == 2 && dimensionality_ == 2) {
+                     type = CriticalType::Local_maximum;
+                   } else if(c.dim_ == 2 && dimensionality_ == 3) {
+                     type = CriticalType::Saddle2;
+                   } else if(c.dim_ == 3) {
+                     type = CriticalType::Local_maximum;
+                   }
+                   auto vertexId = getCellGreaterVertex<dataType, idType>(c);
+                   return std::make_pair(vertexId, static_cast<char>(type));
+                 });
 }
 
 template <typename dataType, typename idType>
